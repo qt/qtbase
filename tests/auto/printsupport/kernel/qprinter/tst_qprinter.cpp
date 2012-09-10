@@ -985,7 +985,16 @@ void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
     QFile file2("out2.ps");
     QVERIFY(file2.open(QIODevice::ReadOnly));
 
-    QCOMPARE(file1.readAll(), file2.readAll());
+    while (!file1.atEnd() && !file2.atEnd()) {
+        QByteArray file1Line = file1.readLine();
+        QByteArray file2Line = file2.readLine();
+
+        if (!file1Line.startsWith("%%CreationDate"))
+            QCOMPARE(file1Line, file2Line);
+    }
+
+    QVERIFY(file1.atEnd());
+    QVERIFY(file2.atEnd());
 }
 
 void tst_QPrinter::testCurrentPage()
