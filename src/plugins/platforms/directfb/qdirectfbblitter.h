@@ -59,6 +59,7 @@ public:
 
     virtual void fillRect(const QRectF &rect, const QColor &color);
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
+    void alphaFillRect(const QRectF &rect, const QColor &color, QPainter::CompositionMode cmode);
 
     IDirectFBSurface *dfbSurface() const;
 
@@ -74,6 +75,9 @@ protected:
     QImage m_image;
 
     friend class QDirectFbConvenience;
+
+private:
+    bool m_premult;
 };
 
 class QDirectFbBlitterPlatformPixmap : public QBlittablePlatformPixmap

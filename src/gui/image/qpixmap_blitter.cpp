@@ -130,8 +130,10 @@ int QBlittablePlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) con
 
 void QBlittablePlatformPixmap::fill(const QColor &color)
 {
-    //jlind: todo: change when blittables can support non opaque fillRects
-    if (color.alpha() == 255 && blittable()->capabilities() & QBlittable::SolidRectCapability) {
+    if (blittable()->capabilities() & QBlittable::AlphaFillRectCapability) {
+        blittable()->unlock();
+        blittable()->alphaFillRect(QRectF(0,0,w,h),color,QPainter::CompositionMode_Source);
+    } else if (color.alpha() == 255 && blittable()->capabilities() & QBlittable::SolidRectCapability) {
         blittable()->unlock();
         blittable()->fillRect(QRectF(0,0,w,h),color);
     } else {

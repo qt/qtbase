@@ -56,25 +56,34 @@ static QBlittable::Capabilities dfb_blitter_capabilities()
     return QBlittable::Capabilities(QBlittable::SolidRectCapability
                                     |QBlittable::SourcePixmapCapability
                                     |QBlittable::SourceOverPixmapCapability
-                                    |QBlittable::SourceOverScaledPixmapCapability);
+                                    |QBlittable::SourceOverScaledPixmapCapability
+                                    |QBlittable::AlphaFillRectCapability);
 }
 
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, IDirectFBSurface *surface)
     : QBlittable(rect, dfb_blitter_capabilities())
         , m_surface(surface)
 {
-        m_surface->AddRef(m_surface.data());
+    m_surface->AddRef(m_surface.data());
+
+    DFBSurfaceCapabilities surfaceCaps;
+    m_surface->GetCapabilities(m_surface.data(), &surfaceCaps);
+    m_premult = (surfaceCaps & DSCAPS_PREMULTIPLIED);
 }
 
 QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
-    : QBlittable(rect, dfb_blitter_capabilities())
+    : QBlittable(rect, dfb_blitter_capabilities()), m_premult(false)
 {
     DFBSurfaceDescription surfaceDesc;
     memset(&surfaceDesc,0,sizeof(DFBSurfaceDescription));
     surfaceDesc.width = rect.width();
     surfaceDesc.height = rect.height();
 
+    // force alpha format for AlphaFillRectCapability support
+    alpha = true;
+
     if (alpha) {
+        m_premult = true;
         surfaceDesc.caps = DSCAPS_PREMULTIPLIED;
         surfaceDesc.pixelformat = QDirectFbBlitter::alphaPixmapFormat();
         surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_CAPS | DSDESC_PIXELFORMAT);
@@ -82,7 +91,6 @@ QDirectFbBlitter::QDirectFbBlitter(const QSize &rect, bool alpha)
         surfaceDesc.flags = DFBSurfaceDescriptionFlags(DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT);
         surfaceDesc.pixelformat = QDirectFbBlitter::pixmapFormat();
     }
-
 
     IDirectFB *dfb = QDirectFbConvenience::dfbInterface();
     dfb->CreateSurface(dfb , &surfaceDesc, m_surface.outPtr());
@@ -111,14 +119,7 @@ DFBSurfacePixelFormat QDirectFbBlitter::selectPixmapFormat(bool withAlpha)
 
 void QDirectFbBlitter::fillRect(const QRectF &rect, const QColor &color)
 {
-    m_surface->SetColor(m_surface.data(), color.red(), color.green(), color.blue(), color.alpha());
-//    When the blitter api supports non opaque blits, also remember to change
-//    qpixmap_blitter.cpp::fill
-//    DFBSurfaceDrawingFlags drawingFlags = color.alpha() ? DSDRAW_BLEND : DSDRAW_NOFX;
-//    m_surface->SetDrawingFlags(m_surface, drawingFlags);
-    m_surface->SetDrawingFlags(m_surface.data(), DSDRAW_NOFX);
-    m_surface->FillRectangle(m_surface.data(), rect.x(), rect.y(),
-                              rect.width(), rect.height());
+    alphaFillRect(rect, color, QPainter::CompositionMode_Source);
 }
 
 void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &srcRect)
@@ -154,6 +155,43 @@ void QDirectFbBlitter::drawPixmap(const QRectF &rect, const QPixmap &pixmap, con
     }
     if (result != DFB_OK)
         DirectFBError("QDirectFBBlitter::drawPixmap()", result);
+}
+
+void QDirectFbBlitter::alphaFillRect(const QRectF &rect, const QColor &color, QPainter::CompositionMode cmode)
+{
+    int x, y, w, h;
+    DFBResult result;
+
+    // check paramters
+    rect.toRect().getRect(&x, &y ,&w, &h);
+    if ((w <= 0) || (h <= 0)) return;
+
+    if ((cmode == QPainter::CompositionMode_Source) || (color.alpha() == 255)) {
+        // CompositionMode_Source case or CompositionMode_SourceOver with opaque color
+
+        m_surface->SetDrawingFlags(m_surface.data(),
+            DFBSurfaceDrawingFlags(m_premult ? (DSDRAW_NOFX | DSDRAW_SRC_PREMULTIPLY) : DSDRAW_NOFX));
+        m_surface->SetPorterDuff(m_surface.data(), DSPD_SRC);
+
+    } else {
+        // CompositionMode_SourceOver case
+
+        // check if operation is useless
+        if (color.alpha() == 0)
+            return;
+
+        m_surface->SetDrawingFlags(m_surface.data(),
+            DFBSurfaceDrawingFlags(m_premult ? (DSDRAW_BLEND | DSDRAW_SRC_PREMULTIPLY) : DSDRAW_BLEND));
+        m_surface->SetPorterDuff(m_surface.data(), DSPD_SRC_OVER);
+    }
+
+    // set color
+    m_surface->SetColor(m_surface.data(), color.red(), color.green(), color.blue(), color.alpha());
+
+    // perform fill
+    result = m_surface->FillRectangle(m_surface.data(), x, y, w, h);
+    if (result != DFB_OK)
+        DirectFBError("QDirectFBBlitter::alphaFillRect()", result);
 }
 
 QImage *QDirectFbBlitter::doLock()
