@@ -256,6 +256,7 @@ static const Keyword keywords[] = {
     { " ", "WHITESPACE" },
     { "\t", "WHITESPACE" },
     { "#", "HASH" },
+    { "##", "PP_HASHHASH" },
     { "\\", "BACKSLASH" },
     { "//", "CPP_COMMENT" },
     { "/*", "C_COMMENT" },
