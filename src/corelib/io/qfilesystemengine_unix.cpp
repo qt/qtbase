@@ -191,11 +191,16 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
         }
     }
 # else
-#  if _POSIX_VERSION >= 200801L
+#  if (_POSIX_VERSION >= 200801L || defined(Q_OS_QNX))
     ret = realpath(entry.nativeFilePath().constData(), (char*)0);
 #  else
     ret = (char*)malloc(PATH_MAX);
-    realpath(entry.nativeFilePath().constData(), (char*)ret);
+    if (realpath(entry.nativeFilePath().constData(), (char*)ret) == 0) {
+        const int savedErrno = errno; // errno is checked below, and free() might change it
+        free(ret);
+        errno = savedErrno;
+        ret = 0;
+    }
 #  endif
 # endif
     if (ret) {
