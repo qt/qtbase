@@ -144,8 +144,8 @@ void QQnxVirtualKeyboardBps::applyKeyboardMode(KeyboardMode mode)
 bool QQnxVirtualKeyboardBps::handleLocaleEvent(bps_event_t *event)
 {
     if (bps_event_get_code(event) == LOCALE_INFO) {
-        const QString language = QString::fromAscii(locale_event_get_language(event));
-        const QString country  = QString::fromAscii(locale_event_get_country(event));
+        const QString language = QString::fromLatin1(locale_event_get_language(event));
+        const QString country  = QString::fromLatin1(locale_event_get_country(event));
         const QLocale newLocale(language + QLatin1Char('_') + country);
 
         qVirtualKeyboardDebug() << Q_FUNC_INFO << "current locale" << locale() << "new locale=" << newLocale;
