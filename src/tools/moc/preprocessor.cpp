@@ -267,7 +267,7 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                         ++data;
                     break;
                 case HASH:
-                    if (column == 1) {
+                    if (column == 1 && mode == TokenizeCpp) {
                         mode = PreparePreprocessorStatement;
                         while (*data && (*data == ' ' || *data == '\t'))
                             ++data;
@@ -275,6 +275,10 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                             mode = TokenizePreprocessorStatement;
                         continue;
                     }
+                    break;
+                case PP_HASHHASH:
+                    if (mode == TokenizeCpp)
+                        continue;
                     break;
                 case NEWLINE:
                     ++lineNum;
@@ -529,27 +533,166 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
     return symbols;
 }
 
-void Preprocessor::macroExpandIdentifier(const Symbol &s, Symbols &preprocessed, MacroSafeSet safeset)
+void Preprocessor::macroExpandSymbols(int lineNum, const Symbols &symbolList, Symbols &expanded, MacroSafeSet safeset)
 {
+    Symbols saveSymbols = symbols;
+    int saveIndex = index;
+    symbols = symbolList;
+    index = 0;
+
+    while (hasNext()) {
+        next();
+        macroExpandIdentifier(lineNum, expanded, safeset);
+    }
+
+    symbols = saveSymbols;
+    index = saveIndex;
+}
+
+void Preprocessor::macroExpandIdentifier(int lineNum, Symbols &preprocessed, MacroSafeSet safeset)
+{
+    const Symbol &s = symbol();
     // not a macro
-    if (!macros.contains(s)) {
+    if (s.token != PP_IDENTIFIER || !macros.contains(s) || safeset.contains(s)) {
         preprocessed += s;
+        preprocessed.last().lineNum = lineNum;
         return;
     }
 
     const Macro &macro = macros.value(s);
+    safeset += s;
 
     // don't expand macros with arguments for now
-    if (macro.isFunction)
-        return;
+    if (macro.isFunction) {
+        while (test(PP_WHITESPACE));
+        if (!test(PP_LPAREN)) {
+            preprocessed += s;
+            return;
+        }
+        QList<Symbols> arguments;
+        while (hasNext()) {
+            Symbols argument;
+            // strip leading space
+            while (test(PP_WHITESPACE));
+            int nesting = 0;
+            bool vararg = macro.isVariadic && (arguments.size() == macro.arguments.size() - 1);
+            while (hasNext()) {
+                Token t = next();
+                if (t == PP_LPAREN) {
+                    ++nesting;
+                } else if (t == PP_RPAREN) {
+                    --nesting;
+                    if (nesting < 0)
+                        break;
+                } else if (t == PP_COMMA && nesting == 0) {
+                    if (!vararg)
+                        break;
+                }
+                argument += symbol();
+            }
 
-    Symbols expanded = macro.symbols;
-    for (int i = 0; i < expanded.size(); ++i) {
-        expanded[i].lineNum = s.lineNum;
-        if (expanded.at(i).token == PP_IDENTIFIER)
-            macroExpandIdentifier(expanded.at(i), preprocessed, safeset);
-        else
-            preprocessed += expanded.at(i);
+            // each argument undoergoes macro expansion
+            Symbols expanded;
+            macroExpandSymbols(lineNum, argument, expanded, safeset);
+            arguments += expanded;
+
+            if (nesting < 0)
+                break;
+        }
+
+        // empty VA_ARGS
+        if (macro.isVariadic && arguments.size() == macro.arguments.size() - 1)
+            arguments += Symbols();
+
+        if (arguments.size() != macro.arguments.size() &&
+            // 0 argument macros are a bit special. They are ok if the
+            // argument is pure whitespace or empty
+            (macro.arguments.size() != 0 || arguments.size() != 1 || !arguments.at(0).isEmpty()))
+            error("Macro argument mismatch.");
+
+        // now replace the macro arguments with the expanded arguments
+
+        Symbols expansion;
+        enum Mode {
+            Normal,
+            Hash,
+            HashHash
+        } mode = Normal;
+
+        for (int i = 0; i < macro.symbols.size(); ++i) {
+            const Symbol &s = macro.symbols.at(i);
+            if (s.token == HASH || s.token == PP_HASHHASH) {
+                mode = (s.token == HASH ? Hash : HashHash);
+                continue;
+            }
+            int index = macro.arguments.indexOf(s);
+            if (mode == Normal) {
+                if (index >= 0)
+                    expansion += arguments.at(index);
+                else
+                    expansion += s;
+            } else if (mode == Hash) {
+                if (s.token == WHITESPACE)
+                    continue;
+                if (index < 0)
+                    error("'#' is not followed by a macro parameter");
+
+                const Symbols &arg = arguments.at(index);
+                QByteArray stringified;
+                for (int i = 0; i < arg.size(); ++i) {
+                    stringified += arg.at(i).lexem();
+                }
+                stringified.replace('"', "\\\"");
+                stringified.prepend('"');
+                stringified.append('"');
+                expansion += Symbol(lineNum, STRING_LITERAL, stringified);
+            } else if (mode == HashHash){
+                if (s.token == WHITESPACE)
+                    continue;
+
+                while (expansion.size() && expansion.last().token == PP_WHITESPACE)
+                    expansion.pop_back();
+                if (!expansion.size())
+                    error("'##' can't appear first in macro argument");
+
+                Symbol last = expansion.last();
+                expansion.pop_back();
+
+                Symbol next = s;
+                if (index >= 0) {
+                    const Symbols &arg = arguments.at(index);
+                    if (arg.size() == 0) {
+                        mode = Normal;
+                        continue;
+                    }
+                    next = arg.at(0);
+                }
+
+                if (last.token == STRING_LITERAL || s.token == STRING_LITERAL)
+                    error("Can't concatenate non identifier tokens");
+
+                if (last.token == s.token) {
+                    QByteArray lexem = last.lexem() + next.lexem();
+                    expansion += Symbol(lineNum, last.token, lexem);
+                } else {
+                    expansion += last;
+                    expansion += next;
+                }
+
+                if (index >= 0) {
+                    const Symbols &arg = arguments.at(index);
+                    for (int i = 1; i < arg.size(); ++i)
+                        expansion += arg.at(i);
+                }
+            }
+            mode = Normal;
+        }
+        if (mode != Normal)
+            error("'#' or '##' found at the end of a macro argument");
+
+        macroExpandSymbols(lineNum, expansion, preprocessed, safeset);
+    } else {
+        macroExpandSymbols(lineNum, macro.symbols, preprocessed, safeset);
     }
 }
 
@@ -935,7 +1078,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         }
         case PP_IDENTIFIER: {
             // substitute macros
-            macroExpandIdentifier(symbol(), preprocessed);
+            macroExpandIdentifier(symbol().lineNum, preprocessed);
             continue;
         }
         case PP_HASH:
@@ -1027,16 +1170,15 @@ void Preprocessor::parseDefineArguments(Macro *m)
 {
     Symbols arguments;
     while (hasNext()) {
+        while (test(PP_WHITESPACE));
         Token t = next();
-        if (t == PP_WHITESPACE)
-            t = next();
         if (t == PP_RPAREN)
             break;
         if (t != PP_IDENTIFIER) {
             QByteArray l = lexem();
             if (l == "...") {
                 m->isVariadic = true;
-                arguments += symbol();
+                arguments += Symbol(symbol().lineNum, PP_IDENTIFIER, "__VA_ARGS__");
                 while (test(PP_WHITESPACE));
                 if (!test(PP_RPAREN))
                     error("missing ')' in macro argument list");
@@ -1052,15 +1194,15 @@ void Preprocessor::parseDefineArguments(Macro *m)
             error("Duplicate macro parameter.");
         arguments += symbol();
 
+        while (test(PP_WHITESPACE));
         t = next();
-        while (t == PP_WHITESPACE)
-            t = next();
         if (t == PP_RPAREN)
             break;
         if (t != PP_COMMA)
             error("Unexpected character in macro argument list.");
     }
     m->arguments = arguments;
+    while (test(PP_WHITESPACE));
 }
 
 void Preprocessor::until(Token t)
