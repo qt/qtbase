@@ -119,9 +119,6 @@ void tst_uic::cleanupTestCase()
 
 void tst_uic::stdOut()
 {
-#ifdef Q_OS_WIN
-    QSKIP("QTBUG-26730");
-#endif
     // Checks of everything works when using stdout and whether
     // the OS file format conventions regarding newlines are met.
     QDir baseline(m_baseline);
