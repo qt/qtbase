@@ -3200,6 +3200,9 @@ Additional options:
  $CIN  -no-iconv .......... Do not compile support for iconv(3).
  $CIY  -iconv ............. Compile support for iconv(3).
 
+    -no-icu ............ Do not compile support for ICU libraries.
+ +  -icu ............... Compile support for ICU libraries.
+
  $PHN  -no-pch ............ Do not use precompiled header support.
  $PHY  -pch ............... Use precompiled header support.
 
