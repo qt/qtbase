@@ -51,7 +51,7 @@ QList<CustomGroup*> CustomScene::selectedCustomGroups() const
     QList<CustomGroup*> groups;
 
     foreach (QGraphicsItem *item, all) {
-        CustomGroup* group = dynamic_cast<CustomGroup*>(item);
+        CustomGroup* group = qgraphicsitem_cast<CustomGroup*>(item);
         if (group)
             groups.append(group);
     }
@@ -65,7 +65,7 @@ QList<CustomItem*> CustomScene::selectedCustomItems() const
     QList<CustomItem*> items;
 
     foreach (QGraphicsItem *item, all) {
-        CustomItem* citem = dynamic_cast<CustomItem*>(item);
+        CustomItem* citem = qgraphicsitem_cast<CustomItem*>(item);
         if (citem)
             items.append(citem);
     }
