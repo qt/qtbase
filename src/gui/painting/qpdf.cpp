@@ -1521,6 +1521,7 @@ bool QPdfEngine::begin(QPaintDevice *pdev)
     d->info = 0;
     d->graphicsState = 0;
     d->patternColorSpace = 0;
+    d->simplePen = false;
 
     d->pages.clear();
     d->imageCache.clear();

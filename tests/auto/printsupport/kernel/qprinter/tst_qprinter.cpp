@@ -985,9 +985,6 @@ void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
     QFile file2("out2.ps");
     QVERIFY(file2.open(QIODevice::ReadOnly));
 
-#ifndef Q_OS_WIN
-    QEXPECT_FAIL("", "QTBUG-22562, QTBUG-22296", Abort);
-#endif
     QCOMPARE(file1.readAll(), file2.readAll());
 }
 
