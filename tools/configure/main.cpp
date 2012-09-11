@@ -70,6 +70,10 @@ int runConfigure( int argc, char** argv )
 
     app.generateQConfigCpp();
 
+    app.generateHeaders();
+    if (!app.isOk())
+        return 3;
+
     app.buildQmake();
     if (!app.isOk())
         return 3;
@@ -92,8 +96,6 @@ int runConfigure( int argc, char** argv )
         app.generateBuildKey();
     if( !app.isDone() )
 	app.generateConfigfiles();
-    if( !app.isDone() )
-	app.generateHeaders();
     // must be done after buildQmake()
     if (!app.isDone())
         app.detectArch();

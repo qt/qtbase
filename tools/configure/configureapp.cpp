@@ -3383,6 +3383,9 @@ void Configure::displayConfig()
 #if !defined(EVAL)
 void Configure::generateHeaders()
 {
+    if (dictionary["SYNCQT"] == "auto")
+        dictionary["SYNCQT"] = defaultTo("SYNCQT");
+
     if (dictionary["SYNCQT"] == "yes") {
         if (findFile("perl.exe")) {
             cout << "Running syncqt..." << endl;
