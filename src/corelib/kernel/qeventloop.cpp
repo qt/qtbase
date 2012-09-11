@@ -377,6 +377,7 @@ private:
     \class QEventLoopLocker
     \inmodule QtCore
     \brief The QEventLoopLocker class provides a means to quit an event loop when it is no longer needed.
+    \since 5.0
 
     The QEventLoopLocker operates on particular objects - either a QCoreApplication
     instance, a QEventLoop instance or a QThread instance.
