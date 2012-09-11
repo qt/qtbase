@@ -949,27 +949,9 @@ qint64 QProcessPrivate::readFromStderr(char *data, qint64 maxlen)
     return bytesRead;
 }
 
-static void qt_ignore_sigpipe()
-{
-    // Set to ignore SIGPIPE once only.
-    static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (!atom.load()) {
-        // More than one thread could turn off SIGPIPE at the same time
-        // But that's acceptable because they all would be doing the same
-        // action
-        struct sigaction noaction;
-        memset(&noaction, 0, sizeof(noaction));
-        noaction.sa_handler = SIG_IGN;
-        ::sigaction(SIGPIPE, &noaction, 0);
-        atom.store(1);
-    }
-}
-
 qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 {
-    qt_ignore_sigpipe();
-
-    qint64 written = qt_safe_write(stdinChannel.pipe[1], data, maxlen);
+    qint64 written = qt_safe_write_nosignal(stdinChannel.pipe[1], data, maxlen);
 #if defined QPROCESS_DEBUG
     qDebug("QProcessPrivate::writeToStdin(%p \"%s\", %lld) == %lld",
            data, qt_prettyDebug(data, maxlen, 16).constData(), maxlen, written);

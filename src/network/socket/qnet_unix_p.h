@@ -188,6 +188,8 @@ static inline int qt_safe_sendto(int sockfd, const void *buf, size_t len, int fl
 {
 #ifdef MSG_NOSIGNAL
     flags |= MSG_NOSIGNAL;
+#else
+    qt_ignore_sigpipe();
 #endif
 
     register int ret;

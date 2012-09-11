@@ -54,11 +54,13 @@
 //
 
 #include "qplatformdefs.h"
+#include "qatomic.h"
 
 #ifndef Q_OS_UNIX
 # error "qcore_unix_p.h included on a non-Unix system"
 #endif
 
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -141,6 +143,22 @@ inline timeval operator*(const timeval &t1, int mul)
     tmp.tv_sec = t1.tv_sec * mul;
     tmp.tv_usec = t1.tv_usec * mul;
     return normalizedTimeval(tmp);
+}
+
+inline void qt_ignore_sigpipe()
+{
+    // Set to ignore SIGPIPE once only.
+    static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
+    if (!atom.load()) {
+        // More than one thread could turn off SIGPIPE at the same time
+        // But that's acceptable because they all would be doing the same
+        // action
+        struct sigaction noaction;
+        memset(&noaction, 0, sizeof(noaction));
+        noaction.sa_handler = SIG_IGN;
+        ::sigaction(SIGPIPE, &noaction, 0);
+        atom.store(1);
+    }
 }
 
 // don't call QT_OPEN or ::open
@@ -264,6 +282,12 @@ static inline qint64 qt_safe_write(int fd, const void *data, qint64 len)
 }
 #undef QT_WRITE
 #define QT_WRITE qt_safe_write
+
+static inline qint64 qt_safe_write_nosignal(int fd, const void *data, qint64 len)
+{
+    qt_ignore_sigpipe();
+    return qt_safe_write(fd, data, len);
+}
 
 static inline int qt_safe_close(int fd)
 {
