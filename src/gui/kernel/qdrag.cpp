@@ -229,7 +229,7 @@ QObject *QDrag::target() const
     can take some time, but this function does not block the event
     loop. Other events are still delivered to the application while
     the operation is performed. On Windows, the Qt event loop is
-    blocked while during the operation.
+    blocked during the operation.
 */
 
 Qt::DropAction QDrag::exec(Qt::DropActions supportedActions)
@@ -362,12 +362,23 @@ QPixmap QDrag::dragCursor(Qt::DropAction action) const
     return QGuiApplicationPrivate::instance()->getPixmapCursor(shape);
 }
 
+/*!
+    Returns the set of possible drop actions for this drag operation.
+
+    \sa exec(), defaultAction()
+*/
 Qt::DropActions QDrag::supportedActions() const
 {
     Q_D(const QDrag);
     return d->supported_actions;
 }
 
+
+/*!
+    Returns the default proposed drop action for this drag operation.
+
+    \sa exec(), supportedActions()
+*/
 Qt::DropAction QDrag::defaultAction() const
 {
     Q_D(const QDrag);

@@ -2677,6 +2677,18 @@
     of the object.
 */
 
+/*! \enum Qt::TouchPointState
+    \since 4.6
+
+    This enum represents the state of a touch point at the time a
+    QTouchEvent occurred.
+
+    \value TouchPointPressed The touch point is now pressed.
+    \value TouchPointMoved The touch point moved.
+    \value TouchPointStationary The touch point did not move.
+    \value TouchPointReleased The touch point was released.
+*/
+
 /*!
     \enum Qt::GestureState
     \since 4.6

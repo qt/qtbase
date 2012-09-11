@@ -86,12 +86,12 @@ protected:
 class Q_GUI_EXPORT QMouseEvent : public QInputEvent
 {
 public:
-    QMouseEvent(Type type, const QPointF &pos, Qt::MouseButton button,
+    QMouseEvent(Type type, const QPointF &localPos, Qt::MouseButton button,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    QMouseEvent(Type type, const QPointF &pos, const QPointF &globalPos,
+    QMouseEvent(Type type, const QPointF &localPos, const QPointF &screenPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
-    QMouseEvent(Type type, const QPointF &pos, const QPointF &windowPos, const QPointF &globalPos,
+    QMouseEvent(Type type, const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
     ~QMouseEvent();
@@ -203,8 +203,8 @@ public:
                  Qt::KeyboardModifiers keyState, qint64 uniqueID);
     ~QTabletEvent();
 
-    inline const QPoint pos() const { return mPos.toPoint(); }
-    inline const QPoint globalPos() const { return mGPos.toPoint(); }
+    inline QPoint pos() const { return mPos.toPoint(); }
+    inline QPoint globalPos() const { return mGPos.toPoint(); }
 #if QT_DEPRECATED_SINCE(5,0)
     QT_DEPRECATED inline const QPointF &hiResGlobalPos() const { return mPos; }
 #endif
@@ -500,7 +500,7 @@ public:
                Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Type type = Drop);
     ~QDropEvent();
 
-    inline const QPoint pos() const { return p.toPoint(); }
+    inline QPoint pos() const { return p.toPoint(); }
     inline const QPointF &posF() const { return p; }
     inline Qt::MouseButtons mouseButtons() const { return mouseState; }
     inline Qt::KeyboardModifiers keyboardModifiers() const { return modState; }

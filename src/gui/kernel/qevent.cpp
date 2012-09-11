@@ -95,6 +95,19 @@ QInputEvent::~QInputEvent()
 */
 
 /*!
+    \fn ulong QInputEvent::timestamp() const
+
+    Returns the window system's timestamp for this event.
+*/
+
+/*! \fn void QInputEvent::setTimestamp(ulong atimestamp)
+
+    \internal
+
+    Sets the timestamp for this event.
+*/
+
+/*!
     \class QMouseEvent
     \ingroup events
 
@@ -201,9 +214,11 @@ QMouseEvent::QMouseEvent(Type type, const QPointF &localPos, const QPointF &scre
     QEvent::MouseButtonRelease, QEvent::MouseButtonDblClick,
     or QEvent::MouseMove.
 
-    The \a pos is the mouse cursor's position relative to the
-    receiving widget. The cursor's position in global coordinates is
-    specified by \a globalPos.  The \a button that caused the event is
+    The points \a localPos, \a windowPos and \a screenPos specify the
+    mouse cursor's position relative to the receiving widget or item,
+    window, and screen, respectively.
+
+    The \a button that caused the event is
     given as a value from the \l Qt::MouseButton enum. If the event \a
     type is \l MouseMove, the appropriate button for this event is
     Qt::NoButton. \a buttons is the state of all buttons at the
@@ -267,7 +282,7 @@ QMouseEvent::~QMouseEvent()
 */
 
 /*!
-    \fn const QPoint &QMouseEvent::pos() const
+    \fn QPoint QMouseEvent::pos() const
 
     Returns the position of the mouse cursor, relative to the widget
     that received the event.
@@ -280,7 +295,7 @@ QMouseEvent::~QMouseEvent()
 */
 
 /*!
-    \fn const QPoint &QMouseEvent::globalPos() const
+    \fn QPoint QMouseEvent::globalPos() const
 
     Returns the global position of the mouse cursor \e{at the time
     of the event}. This is important on asynchronous window systems
@@ -354,6 +369,13 @@ QMouseEvent::~QMouseEvent()
 */
 
 /*!
+    \fn QPointF QMouseEvent::posF() const
+    \obsolete
+
+    Use localPos() instead.
+*/
+
+/*!
     \class QHoverEvent
     \ingroup events
 
@@ -401,7 +423,7 @@ QMouseEvent::~QMouseEvent()
 */
 
 /*!
-    \fn const QPoint &QHoverEvent::pos() const
+    \fn QPoint QHoverEvent::pos() const
 
     Returns the position of the mouse cursor, relative to the widget
     that received the event.
@@ -413,7 +435,7 @@ QMouseEvent::~QMouseEvent()
 */
 
 /*!
-    \fn const QPoint &QHoverEvent::oldPos() const
+    \fn QPoint QHoverEvent::oldPos() const
 
     Returns the previous position of the mouse cursor, relative to the widget
     that received the event. If there is no previous position, oldPos() will
@@ -426,14 +448,40 @@ QMouseEvent::~QMouseEvent()
 */
 
 /*!
+    \fn const QPointF &QHoverEvent::posF() const
+
+    Returns the position of the mouse cursor, relative to the widget
+    that received the event.
+
+    On QEvent::HoverLeave events, this position will always be
+    QPointF(-1, -1).
+
+    \sa oldPosF()
+*/
+
+/*!
+    \fn const QPointF &QHoverEvent::oldPosF() const
+
+    Returns the previous position of the mouse cursor, relative to the widget
+    that received the event. If there is no previous position, oldPosF() will
+    return the same position as posF().
+
+    On QEvent::HoverEnter events, this position will always be
+    QPointF(-1, -1).
+
+    \sa posF()
+*/
+
+/*!
     Constructs a hover event object.
 
     The \a type parameter must be QEvent::HoverEnter,
     QEvent::HoverLeave, or QEvent::HoverMove.
 
     The \a pos is the current mouse cursor's position relative to the
-    receiving widget, while \a oldPos is the previous mouse cursor's
-    position relative to the receiving widget.
+    receiving widget, while \a oldPos is its previous such position.
+    \a modifiers hold the state of all keyboard modifiers at the time
+    of the event.
 */
 QHoverEvent::QHoverEvent(Type type, const QPointF &pos, const QPointF &oldPos, Qt::KeyboardModifiers modifiers)
     : QInputEvent(type, modifiers), p(pos), op(oldPos)
@@ -488,15 +536,18 @@ QHoverEvent::~QHoverEvent()
 
 /*!
     \fn Qt::Orientation QWheelEvent::orientation() const
+    \obsolete
 
     Returns the wheel's orientation.
+
+    Use angleDelta() instead.
 */
 
 /*!
     \obsolete
     Constructs a wheel event object.
 
-    Use the QPoint-based constructor instead.
+    Use the constructor taking \e angleDelta and \e pixelDelta QPoints instead.
 
     The position, \a pos, is the location of the mouse cursor within
     the widget. The globalPos() is initialized to QCursor::pos()
@@ -531,7 +582,7 @@ QWheelEvent::~QWheelEvent()
     \obsolete
     Constructs a wheel event object.
 
-    Use the QPoint-based constructor instead.
+    Use the constructor taking \e angleDelta and \e pixelDelta QPoints instead.
 
     The \a pos provides the location of the mouse cursor
     within the widget. The position in global coordinates is specified
@@ -553,17 +604,20 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
 
     The \a pos provides the location of the mouse cursor
     within the window. The position in global coordinates is specified
-    by \a globalPos. \a pixelDelta contains the scrolling distance
-    in pixels on screen, \a angleDelta contains the wheel rotation distance.
-    \a pixelDelta is optional and can be null.
+    by \a globalPos.
 
-    \a modifiers holds the keyboard modifier flags at the time of the event.
+    \a pixelDelta contains the scrolling distance in pixels on screen, while
+    \a angleDelta contains the wheel rotation distance. \a pixelDelta is
+    optional and can be null.
 
-    \a pixelDelta contains the scrolling delta in pixels,
-    \a angleDelta contains the rotation distance, and
-    \a orient holds the wheel's orientation.
+    The mouse and keyboard states at the time of the event are specified by
+    \a buttons and \a modifiers.
 
-    \sa pos(), globalPos(), delta(), state()
+    For backwards compatibility, the event can also hold monodirectional wheel
+    event data: \a qt4Delta specifies the rotation, and \a qt4Orientation the
+    direction.
+
+    \sa posF(), globalPosF(), angleDelta(), pixelDelta()
 */
 
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
@@ -613,12 +667,13 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 
 /*!
     \fn int QWheelEvent::delta() const
+    \obsolete
 
     This function has been deprecated, use pixelDelta() or angleDelta() instead.
 */
 
 /*!
-    \fn const QPoint &QWheelEvent::pos() const
+    \fn QPoint QWheelEvent::pos() const
 
     Returns the position of the mouse cursor relative to the widget
     that received the event.
@@ -649,7 +704,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 
 
 /*!
-    \fn const QPoint &QWheelEvent::globalPos() const
+    \fn QPoint QWheelEvent::globalPos() const
 
     Returns the global position of the mouse pointer \e{at the time
     of the event}. This is important on asynchronous window systems
@@ -677,6 +732,31 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 
     \sa globalX(), globalPos()
 */
+
+/*!
+    \fn const QPointF &QWheelEvent::posF() const
+
+    Returns the position of the mouse cursor relative to the widget
+    that received the event.
+
+    If you move your widgets around in response to mouse events,
+    use globalPosF() instead of this function.
+
+    \sa globalPosF()
+*/
+
+/*!
+    \fn const QPointF &QWheelEvent::globalPosF() const
+
+    Returns the global position of the mouse pointer \e{at the time
+    of the event}. This is important on asynchronous window systems
+    such as X11; whenever you move your widgets around in response to
+    mouse events, globalPosF() can differ a lot from the current
+    cursor position returned by QCursor::pos().
+
+    \sa posF()
+*/
+
 
 /*!
     \class QKeyEvent
@@ -1133,6 +1213,10 @@ QMoveEvent::~QMoveEvent()
 
     The event handler QWindow::exposeEvent() receives expose events.
 */
+
+/*!
+    Constructs an expose event for the given \a exposeRegion.
+*/
 QExposeEvent::QExposeEvent(const QRegion &exposeRegion)
     : QEvent(Expose)
     , rgn(exposeRegion)
@@ -1145,6 +1229,12 @@ QExposeEvent::QExposeEvent(const QRegion &exposeRegion)
 QExposeEvent::~QExposeEvent()
 {
 }
+
+/*!
+    \fn const QRegion &QExposeEvent::region() const
+
+    Returns the window area that has been exposed.
+*/
 
 /*!
     \class QResizeEvent
@@ -1729,7 +1819,7 @@ void QInputMethodEvent::setCommitString(const QString &commitString, int replace
     \since 5.0
     \inmodule QtGui
 
-    \brief This event is sent by the input context to input objects.
+    \brief The QInputMethodQueryEvent class provides an event sent by the input context to input objects.
 
     It is used by the
     input method to query a set of properties of the object to be
@@ -1765,7 +1855,7 @@ QInputMethodQueryEvent::~QInputMethodQueryEvent()
 }
 
 /*!
-    Sets query property to given value.
+    Sets property \a query to \a value.
  */
 void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery query, const QVariant &value)
 {
@@ -1780,7 +1870,7 @@ void QInputMethodQueryEvent::setValue(Qt::InputMethodQuery query, const QVariant
 }
 
 /*!
-    Returns value of a query property.
+    Returns value of the property \a query.
  */
 QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
 {
@@ -1869,8 +1959,7 @@ QVariant QInputMethodQueryEvent::value(Qt::InputMethodQuery query) const
 
   The \a pos parameter indicates where the event occurred in the
   widget; \a globalPos is the corresponding position in absolute
-  coordinates. The \a hiResGlobalPos contains a high resolution
-  measurement of the position.
+  coordinates.
 
   \a pressure contains the pressure exerted on the \a device.
 
@@ -1994,7 +2083,7 @@ QTabletEvent::~QTabletEvent()
 */
 
 /*!
-    \fn const QPoint &QTabletEvent::pos() const
+    \fn QPoint QTabletEvent::pos() const
 
     Returns the position of the device, relative to the widget that
     received the event.
@@ -2034,7 +2123,7 @@ QTabletEvent::~QTabletEvent()
 */
 
 /*!
-    \fn const QPoint &QTabletEvent::globalPos() const
+    \fn QPoint QTabletEvent::globalPos() const
 
     Returns the global position of the device \e{at the time of the
     event}. This is important on asynchronous windows systems like X11;
@@ -2105,6 +2194,30 @@ QTabletEvent::~QTabletEvent()
     \fn qreal &QTabletEvent::hiResGlobalY() const
 
     The high precision y position of the tablet device.
+*/
+
+/*!
+    \fn const QPointF &QTabletEvent::posF() const
+
+    Returns the position of the device, relative to the widget that
+    received the event.
+
+    If you move widgets around in response to mouse events, use
+    globalPosF() instead of this function.
+
+    \sa globalPosF()
+*/
+
+/*!
+    \fn const QPointF &QTabletEvent::globalPosF() const
+
+    Returns the global position of the device \e{at the time of the
+    event}. This is important on asynchronous windows systems like X11;
+    whenever you move your widgets around in response to mouse events,
+    globalPosF() can differ significantly from the current position
+    QCursor::pos().
+
+    \sa posF()
 */
 
 #endif // QT_NO_TABLETEVENT
@@ -2278,7 +2391,13 @@ void QDropEvent::setDropAction(Qt::DropAction action)
 }
 
 /*!
-    \fn const QPoint& QDropEvent::pos() const
+    \fn QPoint QDropEvent::pos() const
+
+    Returns the position where the drop was made.
+*/
+
+/*!
+    \fn const QPointF& QDropEvent::posF() const
 
     Returns the position where the drop was made.
 */
@@ -3400,30 +3519,21 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     QGraphicsItem::acceptTouchEvents()
 */
 
-/*! \enum Qt::TouchPointState
-    \since 4.6
-
-    This enum represents the state of a touch point at the time the
-    QTouchEvent occurred.
-
-    \value TouchPointPressed The touch point is now pressed.
-    \value TouchPointMoved The touch point moved.
-    \value TouchPointStationary The touch point did not move.
-    \value TouchPointReleased The touch point was released.
-*/
-
 /*! \enum QTouchEvent::DeviceType
+    \obsolete
 
     This enum represents the type of device that generated a QTouchEvent.
 
     This enum has been deprecated. Use QTouchDevice::DeviceType instead.
+    \omitvalue TouchPad
+    \omitvalue TouchScreen
 
     \sa QTouchDevice::DeviceType, QTouchDevice::type(), QTouchEvent::device()
 */
 
 /*!
-    Constructs a QTouchEvent with the given \a eventType, \a deviceType, \a
-    touchPoints and \a device. The \a touchPointStates and \a modifiers
+    Constructs a QTouchEvent with the given \a eventType, \a device, and
+    \a touchPoints. The \a touchPointStates and \a modifiers
     are the current touch point states and keyboard modifiers at the time of
     the event.
 */
@@ -3461,6 +3571,7 @@ QTouchEvent::~QTouchEvent()
 */
 
 /*! \fn QTouchEvent::DeviceType QTouchEvent::deviceType() const
+    \obsolete
 
     Returns the touch device Type, which is of type \l {QTouchEvent::DeviceType} {DeviceType}.
 
@@ -3477,11 +3588,6 @@ QTouchEvent::~QTouchEvent()
 /*! \fn const QList<QTouchEvent::TouchPoint> &QTouchEvent::touchPoints() const
 
     Returns the list of touch points contained in the touch event.
-*/
-
-/*! \fn QTouchEvent::DeviceType QTouchEvent::deviceType() const
-
-    Returns the touch device Type, which is of type \l {QTouchEvent::DeviceType} {DeviceType}.
 */
 
 /*! \fn QTouchDevice* QTouchEvent::device() const
@@ -3517,19 +3623,11 @@ QTouchEvent::~QTouchEvent()
     Sets the list of touch points for this event.
 */
 
-/*! \fn void QTouchEvent::setDeviceType(DeviceType deviceType)
+/*! \fn void QTouchEvent::setDevice(QTouchDevice *adevice)
 
     \internal
 
-    Sets the device type to \a deviceType, which is of type \l {QTouchEvent::DeviceType}
-    {DeviceType}.
-*/
-
-/*! \fn void QTouchEvent::setTouchDevice(QTouchDevice *device)
-
-    \internal
-
-    Sets the touch event's device to the given one.
+    Sets the device to \a adevice.
 */
 
 /*! \class QTouchEvent::TouchPoint
@@ -3538,14 +3636,15 @@ QTouchEvent::~QTouchEvent()
     \inmodule QtGui
 */
 
-/*! \enum QTouchEvent::TouchPoint::InfoFlags
+/*! \enum TouchPoint::InfoFlag
 
     The values of this enum describe additional information about a touch point.
 
     \value Pen Indicates that the contact has been made by a designated pointing device (e.g. a pen) instead of a finger.
 */
 
-/*! \internal
+/*!
+    \internal
 
     Constructs a QTouchEvent::TouchPoint for use in a QTouchEvent.
 */
@@ -3553,7 +3652,9 @@ QTouchEvent::TouchPoint::TouchPoint(int id)
     : d(new QTouchEventTouchPointPrivate(id))
 { }
 
-/*! \internal
+/*!
+    \fn TouchPoint::TouchPoint(const TouchPoint &other)
+    \internal
 
     Constructs a copy of \a other.
 */
@@ -3563,7 +3664,8 @@ QTouchEvent::TouchPoint::TouchPoint(const QTouchEvent::TouchPoint &other)
     d->ref.ref();
 }
 
-/*! \internal
+/*!
+    \internal
 
     Destroys the QTouchEvent::TouchPoint.
 */
@@ -3989,7 +4091,9 @@ void QTouchEvent::TouchPoint::setRawScreenPositions(const QVector<QPointF> &posi
     d->rawScreenPositions = positions;
 }
 
-/* \internal */
+/*!
+    \internal
+*/
 void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
 {
     if (d->ref.load() != 1)
@@ -3998,7 +4102,7 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
 }
 
 /*!
-    \fn QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::TouchPoint &other)
+    \fn TouchPoint &TouchPoint::operator=(const TouchPoint &other)
     \internal
  */
 

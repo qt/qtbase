@@ -87,7 +87,7 @@ public:
 */
 
 /*!
-    Flushes the given \a region from the specified \a window onto the
+    Flushes the given \a region from the specified window \a win onto the
     screen.
 
     Note that the \a offset parameter is currently unused.
