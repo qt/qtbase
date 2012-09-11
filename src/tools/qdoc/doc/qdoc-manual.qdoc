@@ -8759,8 +8759,10 @@
     \li \l {15-qdoc-commands-navigation.html#indexpage-command} {\\indexpage}
     \li \l {19-qdoc-commands-grouping.html#ingroup-command} {\\ingroup}
     \li \l {18-qdoc-commands-relating.html#inherits-command}{\\inherits}
-    \li \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule}
     \li \l {09-qdoc-commands-includingimages.html#inlineimage-command} {\\inlineimage}
+    \li \l {19-qdoc-commands-grouping.html#inmodule-command} {\\inmodule}
+    \li \l {13-qdoc-commands-topics.html#inqmlmodule-command} {\\inqmlmodule}
+    \li \l {13-qdoc-commands-topics.html#instantiates-command} {\\instantiates} \span {class="newStuff"} {(new 27/7/2012)}
     \li \l {16-qdoc-commands-status.html#internal-command} {\\internal}
     \li \l {08-qdoc-commands-creatinglinks.html#keyword-command} {\\keyword}
     \li \l {08-qdoc-commands-creatinglinks.html#l-command} {\\l}
@@ -8800,8 +8802,6 @@
     \li \l {13-qdoc-commands-topics.html#qmlproperty-command} {\\qmlproperty}
     \li \l {13-qdoc-commands-topics.html#qmlsignal-command} {\\qmlsignal}
     \li \l {13-qdoc-commands-topics.html#qmlmodule-command} {\\qmlmodule}
-    \li \l {13-qdoc-commands-topics.html#inqmlmodule-command} {\\inqmlmodule}
-    \li \l {13-qdoc-commands-topics.html#instantiates-command} {\\instantiates} \span {class="newStuff"} {(new 27/7/2012)}
     \li \l {11-qdoc-commands-specialcontent.html#quotation-command} {\\quotation}
     \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefile-command} {\\quotefile}
     \li \l {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command} {\\quotefromfile}
