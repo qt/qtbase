@@ -194,7 +194,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 #  if _POSIX_VERSION >= 200801L
     ret = realpath(entry.nativeFilePath().constData(), (char*)0);
 #  else
-    ret = (char*)malloc(PATH_MAX);
+    ret = (char*)malloc(PATH_MAX + 1);
     if (realpath(entry.nativeFilePath().constData(), (char*)ret) == 0) {
         const int savedErrno = errno; // errno is checked below, and free() might change it
         free(ret);
