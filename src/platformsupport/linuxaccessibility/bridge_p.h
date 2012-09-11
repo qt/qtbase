@@ -62,7 +62,7 @@ public:
     QSpiAccessibleBridge();
 
     virtual ~QSpiAccessibleBridge();
-    virtual void setRootObject(QAccessibleInterface *obj);
+    virtual void setRootObject(QObject *obj);
 
     virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
     QDBusConnection dBusConnection() const;
