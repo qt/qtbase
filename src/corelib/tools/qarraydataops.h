@@ -57,6 +57,7 @@ struct QPodArrayOps
 {
     void appendInitialize(size_t newSize)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(newSize > uint(this->size));
         Q_ASSERT(newSize <= this->alloc);
@@ -67,6 +68,7 @@ struct QPodArrayOps
 
     void copyAppend(const T *b, const T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(b < e);
         Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
@@ -77,6 +79,7 @@ struct QPodArrayOps
 
     void copyAppend(size_t n, const T &t)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(n <= this->alloc - uint(this->size));
 
@@ -89,6 +92,7 @@ struct QPodArrayOps
 
     void truncate(size_t newSize)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(newSize < size_t(this->size));
 
@@ -97,6 +101,7 @@ struct QPodArrayOps
 
     void destroyAll() // Call from destructors, ONLY!
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(this->ref.atomic.load() == 0);
 
         // As this is to be called only from destructor, it doesn't need to be
@@ -105,6 +110,7 @@ struct QPodArrayOps
 
     void insert(T *where, const T *b, const T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
@@ -118,6 +124,7 @@ struct QPodArrayOps
 
     void erase(T *b, T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e < this->end());
@@ -133,6 +140,7 @@ struct QGenericArrayOps
 {
     void appendInitialize(size_t newSize)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(newSize > uint(this->size));
         Q_ASSERT(newSize <= this->alloc);
@@ -145,6 +153,7 @@ struct QGenericArrayOps
 
     void copyAppend(const T *b, const T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(b < e);
         Q_ASSERT(size_t(e - b) <= this->alloc - uint(this->size));
@@ -158,6 +167,7 @@ struct QGenericArrayOps
 
     void copyAppend(size_t n, const T &t)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(n <= this->alloc - uint(this->size));
 
@@ -171,6 +181,7 @@ struct QGenericArrayOps
 
     void truncate(size_t newSize)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(newSize < size_t(this->size));
 
@@ -182,6 +193,7 @@ struct QGenericArrayOps
 
     void destroyAll() // Call from destructors, ONLY
     {
+        Q_ASSERT(this->isMutable());
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
 
@@ -196,6 +208,7 @@ struct QGenericArrayOps
 
     void insert(T *where, const T *b, const T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
@@ -261,6 +274,7 @@ struct QGenericArrayOps
 
     void erase(T *b, T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e < this->end());
@@ -290,6 +304,7 @@ struct QMovableArrayOps
 
     void insert(T *where, const T *b, const T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(!this->ref.isShared());
         Q_ASSERT(where >= this->begin() && where < this->end()); // Use copyAppend at end
         Q_ASSERT(b < e);
@@ -354,6 +369,7 @@ struct QMovableArrayOps
 
     void erase(T *b, T *e)
     {
+        Q_ASSERT(this->isMutable());
         Q_ASSERT(b < e);
         Q_ASSERT(b >= this->begin() && b < this->end());
         Q_ASSERT(e > this->begin() && e < this->end());
