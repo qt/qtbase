@@ -77,7 +77,7 @@ public:
     {
         layout()->addWidget(widget);
         widget->show();
-        QTest::qWaitForWindowShown(widget);
+        QTest::qWaitForWindowExposed(widget);
     }
 
     void clearChildren()
@@ -176,7 +176,7 @@ void tst_QtAtSpi::initTestCase()
     qDebug() << "Explicitly activating accessibility...";
     delete QAccessible::queryAccessibleInterface(m_window);
 
-    QTest::qWaitForWindowShown(m_window);
+    QTest::qWaitForWindowExposed(m_window);
 
     address = m_window->dbusAddress();
     registerDbus();
