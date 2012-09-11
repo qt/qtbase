@@ -41,7 +41,6 @@
 
 #include "qdir.h"
 #include "qfile.h"
-#include "qconfig.h"
 #include "qsettings.h"
 #include "qlibraryinfo.h"
 #include "qscopedpointer.h"

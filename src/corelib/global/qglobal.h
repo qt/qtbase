@@ -55,7 +55,7 @@
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
-#if !defined(QT_BUILD_MOC)
+#if !defined(QT_BUILD_MOC) && !defined(QT_BUILD_QMAKE)
 #include <QtCore/qconfig.h>
 #endif
 

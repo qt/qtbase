@@ -3557,25 +3557,6 @@ setBootstrapVariable()
 if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     echo "Creating qmake. Please wait..."
 
-    OLD_QCONFIG_H=
-    QCONFIG_H="$outpath/src/corelib/global/qconfig.h"
-    QMAKE_QCONFIG_H="${QCONFIG_H}.qmake"
-    if [ -f "$QCONFIG_H" ]; then
-         OLD_QCONFIG_H=$QCONFIG_H
-         mv -f "$OLD_QCONFIG_H" "${OLD_QCONFIG_H}.old"
-    fi
-
-    # create temporary qconfig.h for compiling qmake, if it doesn't exist
-    # when building qmake, we use #defines for the install paths,
-    # however they are real functions in the library
-    if [ '!' -f "$QMAKE_QCONFIG_H" ]; then
-        mkdir -p "$outpath/src/corelib/global"
-        [ -f "$QCONFIG_H" ] && chmod +w "$QCONFIG_H"
-        echo "/* All features enabled while building qmake */" >"$QMAKE_QCONFIG_H"
-    fi
-
-    mv -f "$QMAKE_QCONFIG_H" "$QCONFIG_H"
-
     #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
     rm -rf mkspecs/default mkspecs/default-host
     ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
@@ -3686,11 +3667,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
     done
 
-    QMAKE_BUILD_ERROR=no
-    (cd "$outpath/qmake"; "$MAKE") || QMAKE_BUILD_ERROR=yes
-    [ '!' -z "$QCONFIG_H" ] && mv -f "$QCONFIG_H" "$QMAKE_QCONFIG_H" #move qmake's qconfig.h to qconfig.h.qmake
-    [ '!' -z "$OLD_QCONFIG_H" ] && mv -f "${OLD_QCONFIG_H}.old" "$OLD_QCONFIG_H" #put back qconfig.h
-    [ "$QMAKE_BUILD_ERROR" = "yes" ] && exit 2
+    (cd "$outpath/qmake"; "$MAKE") || exit 2
 fi # Build qmake
 
 #-------------------------------------------------------------------------------
