@@ -60,6 +60,7 @@ public:
     virtual void fillRect(const QRectF &rect, const QColor &color);
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect);
     void alphaFillRect(const QRectF &rect, const QColor &color, QPainter::CompositionMode cmode);
+    void drawPixmapOpacity(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect, QPainter::CompositionMode cmode, qreal opacity);
 
     IDirectFBSurface *dfbSurface() const;
 

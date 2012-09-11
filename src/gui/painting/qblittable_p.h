@@ -63,6 +63,7 @@ public:
         SourceOverPixmapCapability      = 0x0004,
         SourceOverScaledPixmapCapability = 0x0008,
         AlphaFillRectCapability         = 0x0010,
+        OpacityPixmapCapability         = 0x0020,
 
         // Internal ones
         OutlineCapability               = 0x0001000
@@ -82,6 +83,14 @@ public:
         Q_UNUSED(color);
         Q_UNUSED(cmode);
         qWarning("Please implement alphaFillRect function in your platform or remove AlphaFillRectCapability from it");
+    }
+    virtual void drawPixmapOpacity(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect, QPainter::CompositionMode cmode, qreal opacity) {
+        Q_UNUSED(rect);
+        Q_UNUSED(pixmap);
+        Q_UNUSED(subrect);
+        Q_UNUSED(cmode);
+        Q_UNUSED(opacity);
+        qWarning("Please implement drawPixmapOpacity function in your platform or remove OpacityPixmapCapability from it");
     }
 
     QImage *lock();
