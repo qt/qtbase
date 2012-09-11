@@ -178,6 +178,9 @@ private slots:
     void copyConstructorInt() const;
     void copyConstructorMovable() const;
     void copyConstructorCustom() const;
+    void assignmentInt() const;
+    void assignmentMovable() const;
+    void assignmentCustom() const;
     void addInt() const;
     void addMovable() const;
     void addCustom() const;
@@ -442,6 +445,52 @@ void tst_QVector::copyConstructorCustom() const
     const int instancesCount = Custom::counter.loadAcquire();
     copyConstructor<Custom>();
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
+}
+
+template <class T>
+static inline void testAssignment()
+{
+    QVector<T> v1(5);
+    QCOMPARE(v1.size(), 5);
+    QVERIFY(v1.isDetached());
+
+    QVector<T> v2(7);
+    QCOMPARE(v2.size(), 7);
+    QVERIFY(v2.isDetached());
+
+    QVERIFY(!v1.isSharedWith(v2));
+
+    v1 = v2;
+
+    QVERIFY(!v1.isDetached());
+    QVERIFY(!v2.isDetached());
+    QVERIFY(v1.isSharedWith(v2));
+
+    const void *const data1 = v1.constData();
+    const void *const data2 = v2.constData();
+
+    QCOMPARE(data1, data2);
+
+    v1.clear();
+
+    QVERIFY(v2.isDetached());
+    QVERIFY(!v1.isSharedWith(v2));
+    QCOMPARE((void *)v2.constData(), data2);
+}
+
+void tst_QVector::assignmentInt() const
+{
+    testAssignment<int>();
+}
+
+void tst_QVector::assignmentMovable() const
+{
+    testAssignment<Movable>();
+}
+
+void tst_QVector::assignmentCustom() const
+{
+    testAssignment<Custom>();
 }
 
 template<typename T>
