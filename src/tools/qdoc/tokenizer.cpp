@@ -599,8 +599,11 @@ int Tokenizer::getTokenAfterPreprocessor()
     }
     if (!directive.isEmpty()) {
         while (yyCh != EOF && yyCh != '\n') {
-            if (yyCh == '\\')
+            if (yyCh == '\\') {
                 yyCh = getChar();
+                if (yyCh == '\r')
+                    yyCh = getChar();
+            }
             condition += yyCh;
             yyCh = getChar();
         }
