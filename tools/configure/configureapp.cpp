@@ -169,9 +169,6 @@ Configure::Configure(int& argc, char** argv)
             }
         }
 
-        // For Windows CE and shadow builds we need to copy these to the
-        // build directory.
-        QFile::copy(sourcePath + "/bin/setcepaths.bat" , buildPath + "/bin/setcepaths.bat");
         //copy the mkspecs
         buildDir.mkpath("mkspecs");
         if (!Environment::cpdir(sourcePath + "/mkspecs", buildPath + "/mkspecs")){
