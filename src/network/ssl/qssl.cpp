@@ -164,8 +164,9 @@ QT_BEGIN_NAMESPACE
 
     By default, SslOptionDisableEmptyFragments is turned on since this causes
     problems with a large number of servers. SslOptionDisableLegacyRenegotiation
-    is also turned on, since it introduces a security risk. The other options
-    are turned off.
+    is also turned on, since it introduces a security risk.
+    SslOptionDisableCompression is turned on to prevent the attack publicised by
+    CRIME. The other options are turned off.
 
     Note: Availability of above options depends on the version of the SSL
     backend in use.

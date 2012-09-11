@@ -48,7 +48,8 @@
 QT_BEGIN_NAMESPACE
 
 const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOptionDisableEmptyFragments
-                                                                    |QSsl::SslOptionDisableLegacyRenegotiation;
+                                                                    |QSsl::SslOptionDisableLegacyRenegotiation
+                                                                    |QSsl::SslOptionDisableCompression;
 
 /*!
     \class QSslConfiguration

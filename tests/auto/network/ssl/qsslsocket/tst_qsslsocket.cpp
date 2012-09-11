@@ -2109,9 +2109,15 @@ void tst_QSslSocket::sslOptions()
     if (!QSslSocket::supportsSsl())
         return;
 
+#ifdef SSL_OP_NO_COMPRESSION
+    QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
+                                                           QSslConfigurationPrivate::defaultSslOptions),
+             long(SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_COMPRESSION));
+#else
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSslConfigurationPrivate::defaultSslOptions),
              long(SSL_OP_ALL|SSL_OP_NO_SSLv2));
+#endif
 
     QCOMPARE(QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SecureProtocols,
                                                            QSsl::SslOptionDisableEmptyFragments
