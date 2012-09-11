@@ -88,14 +88,14 @@ struct DefinedTypesFilter {
 } // namespace
 
 /*!
-    \macro Q_DECLARE_OPAQUE_POINTER(Pointer)
+    \macro Q_DECLARE_OPAQUE_POINTER(PointerType)
     \relates QMetaType
 
-    This macro enables pointers to forward-declared types to be registered with
-    QMetaType using either Q_DECLARE_METATYPE() or qRegisterMetaType().
+    This macro enables pointers to forward-declared types (\a PointerType)
+    to be registered with QMetaType using either Q_DECLARE_METATYPE()
+    or qRegisterMetaType().
 
     \sa Q_DECLARE_METATYPE(), qRegisterMetaType()
-
 */
 
 /*!
@@ -216,6 +216,8 @@ struct DefinedTypesFilter {
     \value QJsonObject QJsonObject
     \value QJsonArray QJsonArray
     \value QJsonDocument QJsonDocument
+    \value QModelIndex QModelIndex
+    \value QUuid QUuid
 
     \value User  Base value for user types
     \value UnknownType This is an invalid type id. It is returned from QMetaType for types that are not registered
@@ -233,6 +235,11 @@ struct DefinedTypesFilter {
     \value NeedsConstruction This type has non-trivial constructors. If the flag is not set instances can be safely initialized with memset to 0.
     \value NeedsDestruction This type has a non-trivial destructor. If the flag is not set calls to the destructor are not necessary before discarding objects.
     \value MovableType An instance of a type having this attribute can be safely moved by memcpy.
+    \omitvalue SharedPointerToQObject
+    \omitvalue IsEnumeration
+    \omitvalue PointerToQObject
+    \omitvalue WeakPointerToQObject
+    \omitvalue TrackingPointerToQObject
 */
 
 /*!
@@ -266,6 +273,117 @@ struct DefinedTypesFilter {
     operators.
 
     \sa Q_DECLARE_METATYPE(), QVariant::setValue(), QVariant::value(), QVariant::fromValue()
+*/
+
+/*!
+    \fn bool QMetaType::isValid() const
+    \since 5.0
+
+    Returns true if this QMetaType object contains valid
+    information about a type, false otherwise.
+*/
+
+/*!
+    \fn bool QMetaType::isRegistered() const
+    \since 5.0
+
+    Returns true if this QMetaType object contains valid
+    information about a type, false otherwise.
+*/
+
+/*!
+    \fn bool QMetaType::sizeOf() const
+    \since 5.0
+
+    Returns the size of the type in bytes (i.e. sizeof(T),
+    where T is the actual type for which this QMetaType instance
+    was constructed for).
+
+    This function is typically used together with construct()
+    to perform low-level management of the memory used by a type.
+
+    \sa QMetaType::construct(void *where, const void *copy), QMetaType::sizeOf(int)
+*/
+
+/*!
+    \fn TypeFlags QMetaType::flags() const
+    \since 5.0
+
+    Returns flags of the type for which this QMetaType instance was constructed.
+
+    \sa QMetaType::TypeFlags, QMetaType::typeFlags(int type)
+*/
+
+/*!
+    \fn const QMetaObject *QMetaType::metaObject() const
+    \since 5.0
+    \internal
+*/
+
+/*!
+    \fn void *QMetaType::create(const void *copy = 0) const
+    \since 5.0
+
+    Returns a copy of \a copy, assuming it is of the type that this
+    QMetaType instance was created for. If \a copy is null, creates
+    a default constructed instance.
+
+    \sa QMetaType::destroy(void*)
+*/
+
+/*!
+    \fn void QMetaType::destroy(void *data) const
+    \since 5.0
+
+    Destroys the \a data, assuming it is of the type that this
+    QMetaType instance was created for.
+
+    \sa QMetaType::create(const void *)
+*/
+
+/*!
+    \fn void *QMetaType::construct(void *where, const void *copy = 0) const
+    \since 5.0
+
+    Constructs a value of the type that this QMetaType instance
+    was constructed for in the existing memory addressed by \a where,
+    that is a copy of \a copy, and returns \a where. If \a copy is
+    zero, the value is default constructed.
+
+    This is a low-level function for explicitly managing the memory
+    used to store the type. Consider calling create() if you don't
+    need this level of control (that is, use "new" rather than
+    "placement new").
+
+    You must ensure that \a where points to a location where the new
+    value can be stored and that \a where is suitably aligned.
+    The type's size can be queried by calling sizeOf().
+
+    The rule of thumb for alignment is that a type is aligned to its
+    natural boundary, which is the smallest power of 2 that is bigger
+    than the type, unless that alignment is larger than the maximum
+    useful alignment for the platform. For practical purposes,
+    alignment larger than 2 * sizeof(void*) is only necessary for
+    special hardware instructions (e.g., aligned SSE loads and stores
+    on x86).
+*/
+
+/*!
+    \fn void QMetaType::destruct(void *data) const
+    \since 5.0
+
+    Destructs the value, located at \a data, assuming that it is
+    of the type for which this QMetaType instance was constructed for.
+
+    Unlike destroy(), this function only invokes the type's
+    destructor, it doesn't invoke the delete operator.
+    \sa QMetaType::construct()
+*/
+
+/*!
+    \fn QMetaType::~QMetaType()
+
+    Destructs this object.
 */
 
 #define QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeId, RealName) \
@@ -616,6 +734,7 @@ bool QMetaType::isRegistered(int type)
 }
 
 /*!
+    \fn int qMetaTypeTypeImpl(const char *typeName)
     \internal
 
     Implementation of QMetaType::type().
@@ -1165,7 +1284,7 @@ private:
 
 /*!
     Returns a copy of \a copy, assuming it is of type \a type. If \a
-    copy is zero, creates a default type.
+    copy is zero, creates a default constructed instance.
 
     \sa destroy(), isRegistered(), Type
 */
@@ -1450,7 +1569,7 @@ private:
 /*!
     \since 5.0
 
-    Returns the size of the given \a type in bytes (i.e., sizeof(T),
+    Returns the size of the given \a type in bytes (i.e. sizeof(T),
     where T is the actual type identified by the \a type argument).
 
     This function is typically used together with construct()
@@ -1520,7 +1639,7 @@ private:
 
     Returns flags of the given \a type.
 
-    \sa TypeFlags()
+    \sa QMetaType::TypeFlags
 */
 QMetaType::TypeFlags QMetaType::typeFlags(int type)
 {
@@ -1605,7 +1724,7 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
 */
 
 /*!
-    \fn int qRegisterMetaTypeStreamOperators(const char *typeName)
+    \fn void qRegisterMetaTypeStreamOperators(const char *typeName)
     \relates QMetaType
     \threadsafe
 
@@ -1645,7 +1764,7 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
 */
 
 /*!
-    \fn int qRegisterMetaType()
+    \fn int qRegisterMetaType(const char *typeName)
     \relates QMetaType
     \threadsafe
     \since 4.2
@@ -1670,7 +1789,8 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     \sa Q_DECLARE_METATYPE()
  */
 
-/*! \fn int qMetaTypeId()
+/*!
+    \fn int qMetaTypeId()
     \relates QMetaType
     \threadsafe
     \since 4.1
@@ -1747,6 +1867,10 @@ private:
 };
 } // namespace
 
+/*!
+    \fn QMetaType QMetaType::typeInfo(const int type)
+    \internal
+*/
 QMetaType QMetaType::typeInfo(const int type)
 {
     TypeInfo typeInfo(type);
@@ -1766,6 +1890,12 @@ QMetaType QMetaType::typeInfo(const int type)
                 : QMetaType(UnknownType);
 }
 
+/*!
+     \fn QMetaType::QMetaType(const int typeId)
+     \since 5.0
+
+     Constructs a QMetaType object that contains all information about type \a typeId.
+*/
 QMetaType::QMetaType(const int typeId)
     : m_typeId(typeId)
 {
@@ -1783,6 +1913,12 @@ QMetaType::QMetaType(const int typeId)
     }
 }
 
+/*!
+     \fn QMetaType::QMetaType(const QMetaType &other)
+     \since 5.0
+
+     Copy constructs a QMetaType object.
+*/
 QMetaType::QMetaType(const QMetaType &other)
     : m_creator(other.m_creator)
     , m_deleter(other.m_deleter)
@@ -1815,6 +1951,14 @@ QMetaType &QMetaType::operator =(const QMetaType &other)
     return *this;
 }
 
+/*!
+    \fn void QMetaType::ctor(const QMetaTypeInterface *info)
+    \internal
+
+    Method used for future binary compatible extensions.  The function may be
+    called from within QMetaType's constructor to force a library call from
+    inlined code.
+*/
 void QMetaType::ctor(const QMetaTypeInterface *info)
 {
     // Special case for Void type, the type is valid but not constructible.
@@ -1825,20 +1969,49 @@ void QMetaType::ctor(const QMetaTypeInterface *info)
     m_extensionFlags = CreateEx | DestroyEx | ConstructEx | DestructEx;
 }
 
+/*!
+    \fn void QMetaType::dtor()
+    \internal
+
+    Method used for future binary compatible extensions.  The function may be
+    called from within QMetaType's destructor to force a library call from
+    inlined code.
+*/
 void QMetaType::dtor()
 {}
 
+/*!
+    \fn void *QMetaType::createExtended(const void *copy) const
+    \internal
+
+    Method used for future binary compatible extensions. The function may be called
+    during QMetaType::create to force library call from inlined code.
+*/
 void *QMetaType::createExtended(const void *copy) const
 {
     Q_UNUSED(copy);
     return 0;
 }
 
+/*!
+    \fn void QMetaType::destroyExtended(void *data) const
+    \internal
+
+    Method used for future binary compatible extensions. The function may be called
+    during QMetaType::destroy to force library call from inlined code.
+*/
 void QMetaType::destroyExtended(void *data) const
 {
     Q_UNUSED(data);
 }
 
+/*!
+    \fn void *QMetaType::constructExtended(void *where, const void *copy) const
+    \internal
+
+    Method used for future binary compatible extensions. The function may be called
+    during QMetaType::construct to force library call from inlined code.
+*/
 void *QMetaType::constructExtended(void *where, const void *copy) const
 {
     Q_UNUSED(where);
@@ -1846,21 +2019,52 @@ void *QMetaType::constructExtended(void *where, const void *copy) const
     return 0;
 }
 
+/*!
+    \fn void QMetaType::destructExtended(void *data) const
+    \internal
+
+    Method used for future binary compatible extensions. The function may be called
+    during QMetaType::destruct to force library call from inlined code.
+*/
 void QMetaType::destructExtended(void *data) const
 {
     Q_UNUSED(data);
 }
 
+/*!
+    \fn uint QMetaType::sizeExtended() const
+    \internal
+
+    Method used for future binary compatible extensions. The function may be
+    called from within QMetaType::size to force a library call from
+    inlined code.
+*/
 uint QMetaType::sizeExtended() const
 {
     return 0;
 }
 
+/*!
+    \fn QMetaType::TypeFlags QMetaType::flagsExtended() const
+    \internal
+
+    Method used for future binary compatible extensions.  The function may be
+    called from within QMetaType::flags to force a library call from
+    inlined code.
+*/
 QMetaType::TypeFlags QMetaType::flagsExtended() const
 {
     return 0;
 }
 
+/*!
+    \brief QMetaType::metaObjectExtended
+    \internal
+
+    Method used for future binary compatible extensions. The function may be
+    called from within QMetaType::metaObject to force a library call from
+    inlined code.
+*/
 const QMetaObject *QMetaType::metaObjectExtended() const
 {
     return 0;

@@ -338,7 +338,7 @@ private:
     QMetaType &operator =(const QMetaType &);
     inline bool isExtended(const ExtensionFlag flag) const { return m_extensionFlags & flag; }
 
-    // Methods used for future binary compatibile extensions
+    // Methods used for future binary compatible extensions
     void ctor(const QMetaTypeInterface *info);
     void dtor();
     uint sizeExtended() const;
