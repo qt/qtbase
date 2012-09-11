@@ -191,7 +191,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
         }
     }
 # else
-#  if (_POSIX_VERSION >= 200801L || defined(Q_OS_QNX))
+#  if _POSIX_VERSION >= 200801L
     ret = realpath(entry.nativeFilePath().constData(), (char*)0);
 #  else
     ret = (char*)malloc(PATH_MAX);
