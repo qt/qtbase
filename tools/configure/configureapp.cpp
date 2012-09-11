@@ -169,13 +169,6 @@ Configure::Configure(int& argc, char** argv)
             }
         }
 
-        QFile configtests(buildPath + "/bin/qtmodule-configtests");
-        // no QFile::Text, just in case the perl interpreter can't cope with them (unlikely)
-        if (configtests.open(QFile::WriteOnly)) {
-            QTextStream stream(&configtests);
-            stream << "#!/usr/bin/perl -w" << endl
-                   << "require \"" << sourcePath + "/bin/qtmodule-configtests\";" << endl;
-        }
         // For Windows CE and shadow builds we need to copy these to the
         // build directory.
         QFile::copy(sourcePath + "/bin/setcepaths.bat" , buildPath + "/bin/setcepaths.bat");
