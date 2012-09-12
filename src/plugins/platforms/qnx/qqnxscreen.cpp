@@ -251,6 +251,8 @@ void QQnxScreen::setRotation(int rotation)
         if (m_rootWindow)
             m_rootWindow->setRotation(rotation);
 
+        const QRect previousScreenGeometry = geometry();
+
         // Swap dimensions if we've rotated 90 or 270 from initial orientation
         if (isOrthogonal(m_initialRotation, rotation)) {
             m_currentGeometry = QRect(0, 0, m_initialGeometry.height(), m_initialGeometry.width());
@@ -265,6 +267,9 @@ void QQnxScreen::setRotation(int rotation)
             qScreenDebug() << Q_FUNC_INFO << "resize, size =" << m_currentGeometry.size();
             if (m_rootWindow)
                 m_rootWindow->resize(m_currentGeometry.size());
+
+            if (m_primaryScreen)
+                resizeWindows(previousScreenGeometry);
         } else {
             // TODO: Find one global place to flush display updates
             // Force immediate display update if no geometry changes required
@@ -281,12 +286,117 @@ void QQnxScreen::setRotation(int rotation)
         if (m_primaryScreen) {
             QWindowSystemInterface::handleScreenOrientationChange(screen(), orientation());
             QWindowSystemInterface::handleScreenGeometryChange(screen(), m_currentGeometry);
-            resizeMaximizedWindows();
         }
 
         // Flush everything, so that the windows rotations are applied properly.
         // Needed for non-maximized windows
         screen_flush_context( m_screenContext, 0 );
+    }
+}
+
+/*!
+  Resize the given window proportionally to the screen geometry
+*/
+void QQnxScreen::resizeNativeWidgetWindow(QQnxWindow *w, const QRect &previousScreenGeometry) const
+{
+    const qreal relativeX = static_cast<qreal>(w->geometry().topLeft().x()) / previousScreenGeometry.width();
+    const qreal relativeY = static_cast<qreal>(w->geometry().topLeft().y()) / previousScreenGeometry.height();
+    const qreal relativeWidth = static_cast<qreal>(w->geometry().width()) / previousScreenGeometry.width();
+    const qreal relativeHeight = static_cast<qreal>(w->geometry().height()) / previousScreenGeometry.height();
+
+    const QRect windowGeometry(relativeX * geometry().width(), relativeY * geometry().height(),
+            relativeWidth * geometry().width(), relativeHeight * geometry().height());
+
+    w->setGeometry(windowGeometry);
+}
+
+/*!
+  Resize the given window to fit the screen geometry
+*/
+void QQnxScreen::resizeTopLevelWindow(QQnxWindow *w, const QRect &previousScreenGeometry) const
+{
+    QRect windowGeometry = w->geometry();
+
+    const qreal relativeCenterX = static_cast<qreal>(w->geometry().center().x()) / previousScreenGeometry.width();
+    const qreal relativeCenterY = static_cast<qreal>(w->geometry().center().y()) / previousScreenGeometry.height();
+    const QPoint newCenter(relativeCenterX * geometry().width(), relativeCenterY * geometry().height());
+
+    windowGeometry.moveCenter(newCenter);
+
+    // adjust center position in case the window
+    // is clipped
+    if (!geometry().contains(windowGeometry)) {
+        const int x1 = windowGeometry.x();
+        const int y1 = windowGeometry.y();
+        const int x2 = x1 + windowGeometry.width();
+        const int y2 = y1 + windowGeometry.height();
+
+        if (x1 < 0) {
+            const int centerX = qMin(qAbs(x1) + windowGeometry.center().x(),
+                                        geometry().center().x());
+
+            windowGeometry.moveCenter(QPoint(centerX, windowGeometry.center().y()));
+        }
+
+        if (y1 < 0) {
+            const int centerY = qMin(qAbs(y1) + windowGeometry.center().y(),
+                                        geometry().center().y());
+
+            windowGeometry.moveCenter(QPoint(windowGeometry.center().x(), centerY));
+        }
+
+        if (x2 > geometry().width()) {
+            const int centerX = qMax(windowGeometry.center().x() - (x2 - geometry().width()),
+                                        geometry().center().x());
+
+            windowGeometry.moveCenter(QPoint(centerX, windowGeometry.center().y()));
+        }
+
+        if (y2 > geometry().height()) {
+            const int centerY = qMax(windowGeometry.center().y() - (y2 - geometry().height()),
+                                        geometry().center().y());
+
+            windowGeometry.moveCenter(QPoint(windowGeometry.center().x(), centerY));
+        }
+    }
+
+    // at this point, if the window is still clipped,
+    // it means that it's too big to fit on the screen,
+    // so we need to proportionally shrink it
+    if (!geometry().contains(windowGeometry)) {
+        QSize newSize = windowGeometry.size();
+        newSize.scale(geometry().size(), Qt::KeepAspectRatio);
+        windowGeometry.setSize(newSize);
+
+        if (windowGeometry.x() < 0)
+            windowGeometry.moveCenter(QPoint(geometry().center().x(), windowGeometry.center().y()));
+
+        if (windowGeometry.y() < 0)
+            windowGeometry.moveCenter(QPoint(windowGeometry.center().x(), geometry().center().y()));
+    }
+
+    w->setGeometry(windowGeometry);
+}
+
+/*!
+  Adjust windows to the new screen geometry.
+*/
+void QQnxScreen::resizeWindows(const QRect &previousScreenGeometry)
+{
+    resizeMaximizedWindows();
+
+    Q_FOREACH (QQnxWindow *w, m_childWindows) {
+
+        if (w->window()->windowState() & Qt::WindowFullScreen || w->window()->windowState() & Qt::WindowMaximized)
+            continue;
+
+        if (w->parent()) {
+            // This is a native (non-alien) widget window
+            resizeNativeWidgetWindow(w, previousScreenGeometry);
+        } else {
+            // This is a toplevel window
+            resizeTopLevelWindow(w, previousScreenGeometry);
+        }
     }
 }
 

@@ -106,6 +106,9 @@ private Q_SLOTS:
     void keyboardHeightChanged(int height);
 
 private:
+    void resizeNativeWidgetWindow(QQnxWindow *w, const QRect &previousScreenGeometry) const;
+    void resizeTopLevelWindow(QQnxWindow *w, const QRect &previousScreenGeometry) const;
+    void resizeWindows(const QRect &previousScreenGeometry);
     void addOverlayWindow(screen_window_t window);
     void removeOverlayWindow(screen_window_t window);
 
