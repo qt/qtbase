@@ -116,7 +116,7 @@ public:
 
     enum Flags
     {
-        DCFromBeginPaint = 0x1,
+        AutoMouseCapture = 0x1, //! Automatic mouse capture on button press.
         WithinSetParent = 0x2,
         FrameDirty = 0x4,            //! Frame outdated by setStyle, recalculate in next query.
         OpenGLSurface = 0x10,
@@ -126,8 +126,7 @@ public:
         SizeGripOperation = 0x100,
         FrameStrutEventsEnabled = 0x200,
         SynchronousGeometryChangeEvent = 0x400,
-        WithinSetStyle = 0x800,
-        AutoMouseCapture = 0x1000 //! Automatic mouse capture on button press.
+        WithinSetStyle = 0x800
     };
 
     struct WindowData
