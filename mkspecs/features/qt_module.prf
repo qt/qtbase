@@ -221,7 +221,7 @@ DEFINES *= QT_DEPRECATED_WARNINGS
 win32 {
     # On Windows, due to the way DLLs work, we need to export all functions,
     # including the inlines
-    DEFINES *= QT_DISABLE_DEPRECATED_BEFORE=0x040900
+    DEFINES *= QT_DISABLE_DEPRECATED_BEFORE=0x040800
 } else {
     # On other platforms, Qt's own compilation goes needs to compile the Qt 5.0 API
     DEFINES *= QT_DISABLE_DEPRECATED_BEFORE=0x050000
