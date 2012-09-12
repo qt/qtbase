@@ -61,6 +61,8 @@
 #include <QtCore/qshareddata.h>
 #include "qdbusmacros.h"
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 class Q_DBUS_EXPORT QDBusIntrospection
@@ -167,4 +169,5 @@ private:
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
 #endif
