@@ -32,13 +32,16 @@ qhp.QtCore.subprojects.examples.selectors = fake:example
 outputdir               = ../../../doc/qtcore
 tagfile                 = ../../../doc/qtcore/qtcore.tags
 
+depends                 += qtwidgets
+
 headerdirs  += ..
 
 sourcedirs  += ..
 
 exampledirs += \
                ../ \
-               snippets
+               snippets \
+               ../../../examples/widgets
 
 excludedirs += ../../../examples/widgets/doc
 
