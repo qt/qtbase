@@ -888,6 +888,13 @@ static inline char qToLower(char c)
     \sa operator=()
 */
 
+/*! \fn QByteArray::QByteArray(QByteArrayDataPtr dd)
+
+    \internal
+
+    Constructs a byte array pointing to the same data as \a dd.
+*/
+
 /*! \fn QByteArray::~QByteArray()
     Destroys the byte array.
 */
