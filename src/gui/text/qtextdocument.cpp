@@ -2142,6 +2142,7 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         html += QLatin1String(" font-size:");
         html += QString::number(format.intProperty(QTextFormat::FontPixelSize));
         html += QLatin1String("px;");
+        attributesEmitted = true;
     }
 
     if (format.hasProperty(QTextFormat::FontWeight)

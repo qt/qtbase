@@ -180,6 +180,8 @@ private slots:
 
     void copiedFontSize();
 
+    void QTBUG25778_pixelSizeFromHtml();
+
     void htmlExportImportBlockCount();
 
 private:
@@ -2838,6 +2840,18 @@ void tst_QTextDocument::receiveCursorPositionChangedAfterContentsChange()
             &rec, SLOT(contentsChange()));
     cursor.insertText("Hello World");
     QCOMPARE(rec.first, QString("contentsChanged"));
+}
+
+void tst_QTextDocument::QTBUG25778_pixelSizeFromHtml()
+{
+    QTextDocument document1;
+    QTextDocument document2;
+
+    document1.setHtml("<span style=\"font-size: 24px\">Foobar</span>");
+    document2.setHtml(document1.toHtml());
+
+    QTextCursor cursor(&document2);
+    QCOMPARE(cursor.charFormat().font().pixelSize(), 24);
 }
 
 void tst_QTextDocument::copiedFontSize()
