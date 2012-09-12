@@ -225,7 +225,7 @@ void tst_QSemaphore::tryAcquireWithTimeout()
 
     // timers are not guaranteed to be accurate down to the last millisecond,
     // so we permit the elapsed times to be up to this far from the expected value.
-    int fuzz = 10;
+    int fuzz = 50;
 
     QSemaphore semaphore;
     QTime time;
