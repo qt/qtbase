@@ -228,7 +228,7 @@ void tst_QSemaphore::tryAcquireWithTimeout()
     int fuzz = 50;
 
     QSemaphore semaphore;
-    QTime time;
+    QElapsedTimer time;
 
 #define FUZZYCOMPARE(a,e) \
     do { \
