@@ -522,7 +522,7 @@ struct FLAG_STRING_STRUCT
     const char* str;
 };
 
-FLAG_STRING_STRUCT FLAG_STRING(int value = 0, const char *c = 0)
+FLAG_STRING_STRUCT FLAG_STRING(uint value = 0, const char *c = 0)
 {
     FLAG_STRING_STRUCT s = {value, c};
     return s;
