@@ -103,7 +103,7 @@ HANDLE QSharedMemoryPrivate::handle()
         if (nativeKey.isEmpty()) {
             error = QSharedMemory::KeyError;
             errorString = QSharedMemory::tr("%1: unable to make key").arg(function);
-            return false;
+            return 0;
         }
 #ifndef Q_OS_WINCE
         hand = OpenFileMapping(FILE_MAP_ALL_ACCESS, false, (wchar_t*)nativeKey.utf16());
@@ -114,7 +114,7 @@ HANDLE QSharedMemoryPrivate::handle()
 #endif
         if (!hand) {
             setErrorString(function);
-            return false;
+            return 0;
         }
     }
     return hand;
