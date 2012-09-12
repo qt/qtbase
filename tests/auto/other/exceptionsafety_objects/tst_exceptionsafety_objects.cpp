@@ -79,8 +79,8 @@ private slots:
     void linkedList();
 
 private:
-    static QtMsgHandler testMessageHandler;
-    static void safeMessageHandler(QtMsgType, const char *);
+    static QtMessageHandler testMessageHandler;
+    static void safeMessageHandler(QtMsgType, const QMessageLogContext&, const QString&);
 #endif
 };
 
@@ -275,15 +275,16 @@ public:
     }
 };
 
-QtMsgHandler tst_ExceptionSafety_Objects::testMessageHandler;
+QtMessageHandler tst_ExceptionSafety_Objects::testMessageHandler;
 
-void tst_ExceptionSafety_Objects::safeMessageHandler(QtMsgType type, const char *msg)
+void tst_ExceptionSafety_Objects::safeMessageHandler(QtMsgType type, const QMessageLogContext &ctxt,
+                                                     const QString &msg)
 {
     // this temporarily suspends OOM testing while handling a message
     int currentIndex = mallocFailIndex;
     AllocFailer allocFailer(0);
     allocFailer.deactivate();
-    (*testMessageHandler)(type, msg);
+    (*testMessageHandler)(type, ctxt, msg);
     allocFailer.reactivateAt(currentIndex);
 }
 
@@ -307,7 +308,7 @@ void tst_ExceptionSafety_Objects::initTestCase()
     // set handlers for bad exception cases, you might want to step in and breakpoint the default handlers too
     defaultTerminate = std::set_terminate(&debugTerminate);
     defaultUnexpected = std::set_unexpected(&debugUnexpected);
-    testMessageHandler = qInstallMsgHandler(safeMessageHandler);
+    testMessageHandler = qInstallMessageHandler(safeMessageHandler);
 
     QVERIFY(AllocFailer::initialize());
 
@@ -342,7 +343,7 @@ void tst_ExceptionSafety_Objects::initTestCase()
 
 void tst_ExceptionSafety_Objects::cleanupTestCase()
 {
-    qInstallMsgHandler(testMessageHandler);
+    qInstallMessageHandler(testMessageHandler);
 }
 
 void tst_ExceptionSafety_Objects::objects()

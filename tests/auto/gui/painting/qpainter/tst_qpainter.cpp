@@ -2410,7 +2410,7 @@ public:
 
 static bool success;
 
-void porterDuff_warningChecker(QtMsgType type, const char *msg)
+void porterDuff_warningChecker(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
     if (type == QtWarningMsg && msg == QLatin1String("QPainter::setCompositionMode: PorterDuff modes not supported on device"))
         success = false;
@@ -2418,7 +2418,7 @@ void porterDuff_warningChecker(QtMsgType type, const char *msg)
 
 void tst_QPainter::porterDuff_warning()
 {
-    QtMsgHandler old = qInstallMsgHandler(porterDuff_warningChecker);
+    QtMessageHandler old = qInstallMessageHandler(porterDuff_warningChecker);
     DummyPaintEngine dummy;
     QPainter p(&dummy);
 
@@ -2434,7 +2434,7 @@ void tst_QPainter::porterDuff_warning()
     p.setCompositionMode(QPainter::CompositionMode_DestinationOver);
     QVERIFY(!success);
 
-    QVERIFY(qInstallMsgHandler(old) == porterDuff_warningChecker);
+    QVERIFY(qInstallMessageHandler(old) == porterDuff_warningChecker);
 }
 
 class quint24

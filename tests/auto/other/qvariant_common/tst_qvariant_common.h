@@ -47,22 +47,21 @@
 struct MessageHandlerInvalidType
 {
     MessageHandlerInvalidType()
-        : oldMsgHandler(qInstallMsgHandler(handler))
+        : oldMsgHandler(qInstallMessageHandler(handler))
     {
         ok = false;
     }
 
     ~MessageHandlerInvalidType()
     {
-        qInstallMsgHandler(oldMsgHandler);
+        qInstallMessageHandler(oldMsgHandler);
     }
 
-    QtMsgHandler oldMsgHandler;
+    QtMessageHandler oldMsgHandler;
 
-    static void handler(QtMsgType type, const char *txt)
+    static void handler(QtMsgType type, const QMessageLogContext & /*ctxt*/, const QString &msg)
     {
         Q_UNUSED(type);
-        QString msg = QString::fromLatin1(txt);
         // uint(-1) can be platform dependent so we check only beginning of the message.
         ok = msg.startsWith("Trying to construct an instance of an invalid type, type id:");
         QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
@@ -74,15 +73,15 @@ bool MessageHandlerInvalidType::ok;
 
 class MessageHandler {
 public:
-    MessageHandler(const int typeId, QtMsgHandler msgHandler = handler)
-        : oldMsgHandler(qInstallMsgHandler(msgHandler))
+    MessageHandler(const int typeId, QtMessageHandler msgHandler = handler)
+        : oldMsgHandler(qInstallMessageHandler(msgHandler))
     {
         currentId = typeId;
     }
 
     ~MessageHandler()
     {
-        qInstallMsgHandler(oldMsgHandler);
+        qInstallMessageHandler(oldMsgHandler);
     }
 
     bool testPassed() const
@@ -90,9 +89,8 @@ public:
         return ok;
     }
 protected:
-    static void handler(QtMsgType, const char *txt)
+    static void handler(QtMsgType, const QMessageLogContext &, const QString &msg)
     {
-        QString msg = QString::fromLatin1(txt);
         // Format itself is not important, but basic data as a type name should be included in the output
         ok = msg.startsWith("QVariant(");
         QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
@@ -114,7 +112,7 @@ protected:
 
     }
 
-    QtMsgHandler oldMsgHandler;
+    QtMessageHandler oldMsgHandler;
     static int currentId;
     static bool ok;
 };

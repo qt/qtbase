@@ -3236,9 +3236,8 @@ struct MessageHandlerType : public MessageHandler
     MessageHandlerType(const int typeId)
         : MessageHandler(typeId, handler)
     {}
-    static void handler(QtMsgType, const char *txt)
+    static void handler(QtMsgType, const QMessageLogContext &, const QString &msg)
     {
-        QString msg = QString::fromLatin1(txt);
         // Format itself is not important, but basic data as a type name should be included in the output
         ok = msg.startsWith("QVariant::");
         QVERIFY2(ok, (QString::fromLatin1("Message is not started correctly: '") + msg + '\'').toLatin1().constData());
