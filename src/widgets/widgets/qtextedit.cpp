@@ -913,14 +913,6 @@ void QTextEdit::redo()
 }
 
 /*!
-    \fn void QTextEdit::undo() const
-    \fn void QTextEdit::redo() const
-    \overload
-
-    Use the non-const overload instead.
-*/
-
-/*!
     \fn void QTextEdit::redo()
     \since 4.2
 
@@ -2503,121 +2495,6 @@ void QTextEdit::ensureCursorVisible()
 }
 
 /*!
-    \fn bool QTextEdit::find(const QString &exp, bool cs, bool wo)
-
-    Use the find() overload that takes a QTextDocument::FindFlags
-    argument.
-*/
-
-/*!
-    \fn void QTextEdit::sync()
-
-    Does nothing.
-*/
-
-/*!
-    \fn void QTextEdit::setBold(bool b)
-
-    Use setFontWeight() instead.
-*/
-
-/*!
-    \fn void QTextEdit::setUnderline(bool b)
-
-    Use setFontUnderline() instead.
-*/
-
-/*!
-    \fn void QTextEdit::setItalic(bool i)
-
-    Use setFontItalic() instead.
-*/
-
-/*!
-    \fn void QTextEdit::setFamily(const QString &family)
-
-    Use setFontFamily() instead.
-*/
-
-/*!
-    \fn void QTextEdit::setPointSize(int size)
-
-    Use setFontPointSize() instead.
-*/
-
-/*!
-    \fn bool QTextEdit::italic() const
-
-    Use fontItalic() instead.
-*/
-
-/*!
-    \fn bool QTextEdit::bold() const
-
-    Use fontWeight() >= QFont::Bold instead.
-*/
-
-/*!
-    \fn bool QTextEdit::underline() const
-
-    Use fontUnderline() instead.
-*/
-
-/*!
-    \fn QString QTextEdit::family() const
-
-    Use fontFamily() instead.
-*/
-
-/*!
-    \fn int QTextEdit::pointSize() const
-
-    Use int(fontPointSize()+0.5) instead.
-*/
-
-/*!
-    \fn bool QTextEdit::hasSelectedText() const
-
-    Use textCursor().hasSelection() instead.
-*/
-
-/*!
-    \fn QString QTextEdit::selectedText() const
-
-    Use textCursor().selectedText() instead.
-*/
-
-/*!
-    \fn bool QTextEdit::isUndoAvailable() const
-
-    Use document()->isUndoAvailable() instead.
-*/
-
-/*!
-    \fn bool QTextEdit::isRedoAvailable() const
-
-    Use document()->isRedoAvailable() instead.
-*/
-
-/*!
-    \fn void QTextEdit::insert(const QString &text)
-
-    Use insertPlainText() instead.
-*/
-
-/*!
-    \fn bool QTextEdit::isModified() const
-
-    Use document()->isModified() instead.
-*/
-
-/*!
-    \fn QColor QTextEdit::color() const
-
-    Use textColor() instead.
-*/
-
-/*!
     \fn void QTextEdit::textChanged()
 
     This signal is emitted whenever the document's content changes; for
@@ -2638,29 +2515,6 @@ void QTextEdit::ensureCursorVisible()
     (\a available is true) or unavailable (\a available is false).
 */
 
-/*!
-    \fn void QTextEdit::currentFontChanged(const QFont &font)
-
-    Use currentCharFormatChanged() instead.
-*/
-
-/*!
-    \fn void QTextEdit::currentColorChanged(const QColor &color)
-
-    Use currentCharFormatChanged() instead.
-*/
-
-/*!
-    \fn void QTextEdit::setModified(bool m)
-
-    Use document->setModified() instead.
-*/
-
-/*!
-    \fn void QTextEdit::setColor(const QColor &color)
-
-    Use setTextColor() instead.
-*/
 #endif // QT_NO_TEXTEDIT
 
 QT_END_NAMESPACE
