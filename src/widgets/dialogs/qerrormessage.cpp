@@ -153,7 +153,7 @@ QSize QErrorMessageTextView::sizeHint() const
     connecting signals to it.
 
     The static qtHandler() function installs a message handler
-    using qInstallMsgHandler() and creates a QErrorMessage that displays
+    using qInstallMessageHandler() and creates a QErrorMessage that displays
     qDebug(), qWarning() and qFatal() messages. This is most useful in
     environments where no console is available to display warnings and
     error messages.
@@ -184,7 +184,7 @@ static void deleteStaticcQErrorMessage() // post-routine
 
 static bool metFatal = false;
 
-static void jump(QtMsgType t, const char * m)
+static void jump(QtMsgType t, const QMessageLogContext & /*context*/, const QString &m)
 {
     if (!qtMessageHandler)
         return;
@@ -203,7 +203,7 @@ static void jump(QtMsgType t, const char * m)
         rich = QErrorMessage::tr("Fatal Error:");
     }
     rich = QString::fromLatin1("<p><b>%1</b></p>").arg(rich);
-    rich += Qt::convertFromPlainText(QLatin1String(m), Qt::WhiteSpaceNormal);
+    rich += Qt::convertFromPlainText(m, Qt::WhiteSpaceNormal);
 
     // ### work around text engine quirk
     if (rich.endsWith(QLatin1String("</p>")))
@@ -273,10 +273,10 @@ QErrorMessage::~QErrorMessage()
 {
     if (this == qtMessageHandler) {
         qtMessageHandler = 0;
-        QtMsgHandler tmp = qInstallMsgHandler(0);
+        QtMessageHandler tmp = qInstallMessageHandler(0);
         // in case someone else has later stuck in another...
         if (tmp != jump)
-            qInstallMsgHandler(tmp);
+            qInstallMessageHandler(tmp);
     }
 }
 
@@ -314,7 +314,7 @@ QErrorMessage * QErrorMessage::qtHandler()
         qtMessageHandler = new QErrorMessage(0);
         qAddPostRoutine(deleteStaticcQErrorMessage); // clean up
         qtMessageHandler->setWindowTitle(QApplication::applicationName());
-        qInstallMsgHandler(jump);
+        qInstallMessageHandler(jump);
     }
     return qtMessageHandler;
 }
