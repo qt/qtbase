@@ -52,6 +52,7 @@ PUB_HEADERS = qdbusargument.h \
     qdbusunixfiledescriptor.h
 HEADERS += $$PUB_HEADERS \
     qdbusconnection_p.h \
+    qdbusconnectionmanager_p.h \
     qdbusmessage_p.h \
     qdbusinterface_p.h \
     qdbusxmlparser_p.h \
