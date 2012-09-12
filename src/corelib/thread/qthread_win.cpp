@@ -115,7 +115,7 @@ QThreadData *QThreadData::current()
         }
         threadData->deref();
         threadData->isAdopted = true;
-        threadData->threadId = (Qt::HANDLE)GetCurrentThreadId();
+        threadData->threadId = reinterpret_cast<Qt::HANDLE>(GetCurrentThreadId());
 
         if (!QCoreApplicationPrivate::theMainThread) {
             QCoreApplicationPrivate::theMainThread = threadData->thread;
@@ -130,7 +130,7 @@ QThreadData *QThreadData::current()
                     FALSE,
                     DUPLICATE_SAME_ACCESS);
 #else
-                        realHandle = (HANDLE)GetCurrentThreadId();
+                        realHandle = reinterpret_cast<HANDLE>(GetCurrentThreadId());
 #endif
             qt_watch_adopted_thread(realHandle, threadData->thread);
         }
@@ -314,7 +314,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 
     qt_create_tls();
     TlsSetValue(qt_current_thread_data_tls_index, data);
-    data->threadId = (Qt::HANDLE)GetCurrentThreadId();
+    data->threadId = reinterpret_cast<Qt::HANDLE>(GetCurrentThreadId());
 
     QThread::setTerminationEnabled(false);
 
@@ -392,7 +392,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
 
 Qt::HANDLE QThread::currentThreadId() Q_DECL_NOTHROW
 {
-    return (Qt::HANDLE)GetCurrentThreadId();
+    return reinterpret_cast<Qt::HANDLE>(GetCurrentThreadId());
 }
 
 int QThread::idealThreadCount() Q_DECL_NOTHROW
