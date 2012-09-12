@@ -222,7 +222,7 @@ Option::parseCommandLine(QStringList &args)
                     fprintf(stdout,
                             "QMake version %s\n"
                             "Using Qt version %s in %s\n",
-                            qmake_version(), QT_VERSION_STR,
+                            QMAKE_VERSION_STR, QT_VERSION_STR,
                             QLibraryInfo::location(QLibraryInfo::LibrariesPath).toLatin1().constData());
 #ifdef QMAKE_OPENSOURCE_VERSION
                     fprintf(stdout, "QMake is Open Source software from Nokia Corporation and/or its subsidiary(-ies).\n");
@@ -558,21 +558,6 @@ Option::fixString(QString string, uchar flags)
     //qDebug() << "Fix" << orig_string << "->" << string;
     cache->insert(cacheKey, string);
     return string;
-}
-
-const char *qmake_version()
-{
-    static char *ret = NULL;
-    if(ret)
-        return ret;
-    ret = (char *)malloc(15);
-    qmakeAddCacheClear(qmakeFreeCacheClear, (void**)&ret);
-#if defined(_MSC_VER) && _MSC_VER >= 1400
-    sprintf_s(ret, 15, "%d.%02d%c", QMAKE_VERSION_MAJOR, QMAKE_VERSION_MINOR, 'a' + QMAKE_VERSION_PATCH);
-#else
-    sprintf(ret, "%d.%02d%c", QMAKE_VERSION_MAJOR, QMAKE_VERSION_MINOR, 'a' + QMAKE_VERSION_PATCH);
-#endif
-    return ret;
 }
 
 void debug_msg_internal(int level, const char *fmt, ...)
