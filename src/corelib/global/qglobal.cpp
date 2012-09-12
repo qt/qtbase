@@ -1920,6 +1920,7 @@ void qBadAlloc()
     QT_THROW(std::bad_alloc());
 }
 
+#ifndef QT_NO_EXCEPTIONS
 /*
    \internal
    Allows you to call std::terminate() without including <exception>.
@@ -1929,6 +1930,7 @@ Q_NORETURN void qTerminate() Q_DECL_NOTHROW
 {
     std::terminate();
 }
+#endif
 
 /*
   The Q_ASSERT macro calls this function when the test fails.
