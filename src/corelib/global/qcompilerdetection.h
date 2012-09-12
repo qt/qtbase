@@ -108,7 +108,9 @@
 
 /* only defined for MSVC since that's the only compiler that actually optimizes for this */
 /* might get overridden further down when Q_COMPILER_NOEXCEPT is detected */
-#  define Q_DECL_NOTHROW  throw()
+#  ifdef __cplusplus
+#    define Q_DECL_NOTHROW  throw()
+#  endif
 
 #elif defined(__BORLANDC__) || defined(__TURBOC__)
 #  define Q_CC_BOR
