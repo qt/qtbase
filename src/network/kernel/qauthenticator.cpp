@@ -1551,7 +1551,7 @@ static QByteArray qNtlmPhase1_SSPI(QAuthenticatorPrivate *ctx)
     ULONG attrs;
 
     secStatus = pSecurityFunctionTable->InitializeSecurityContext(&ctx->ntlmWindowsHandles->credHandle, NULL,
-        L"" /* host */,
+        const_cast<SEC_WCHAR*>(L"") /* host */,
         ISC_REQ_ALLOCATE_MEMORY,
         0, SECURITY_NETWORK_DREP,
         NULL, 0,
@@ -1613,7 +1613,7 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
 
     SECURITY_STATUS secStatus = pSecurityFunctionTable->InitializeSecurityContext(&ctx->ntlmWindowsHandles->credHandle,
         &ctx->ntlmWindowsHandles->ctxHandle,
-        L"" /* host */,
+        const_cast<SEC_WCHAR*>(L"") /* host */,
         ISC_REQ_ALLOCATE_MEMORY,
         0, SECURITY_NETWORK_DREP, &type_2_desc,
         0, &ctx->ntlmWindowsHandles->ctxHandle, &type_3_desc,
