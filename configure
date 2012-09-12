@@ -1364,7 +1364,6 @@ while [ "$#" -gt 0 ]; do
         case `basename "$XPLATFORM"` in win32-g++*)
             XPLATFORM_MINGW=yes
             CFG_RPATH=no
-            PKG_CONFIG=no
             CFG_REDUCE_EXPORTS=no
             ;;
         esac
