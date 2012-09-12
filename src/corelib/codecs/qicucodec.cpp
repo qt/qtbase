@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qicucodec_p.h"
+
+#ifndef QT_NO_TEXTCODEC
+
 #include "qtextcodec_p.h"
 #include "qutfcodec_p.h"
 #include "qlatincodec_p.h"
@@ -682,3 +685,4 @@ int QIcuCodec::mibEnum() const
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_TEXTCODEC

@@ -61,6 +61,8 @@ extern "C" {
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_TEXTCODEC
+
 class QIcuCodec : public QTextCodec
 {
 public:
@@ -87,6 +89,8 @@ private:
 
     const char *m_name;
 };
+
+#endif // QT_NO_TEXTCODEC
 
 QT_END_NAMESPACE
 
