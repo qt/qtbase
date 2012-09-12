@@ -1518,8 +1518,9 @@ QString AtSpiAdaptor::pathForInterface(const QAIPointer &interface, bool inDestr
     QAIPointer interfaceWithObject = interface;
     QString path;
 
-    if (interface->role() == QAccessible::MenuItem && interface->object() &&
-            inheritsQAction(interface->object())) {
+    QAccessible::Role role = interface->role();
+    if (((role == QAccessible::MenuItem) || (role == QAccessible::Separator)) &&
+          interface->object() && inheritsQAction(interface->object())) {
         interfaceWithObject = QAIPointer(interface->parent());
         int childIndex = interfaceWithObject->indexOfChild(interface.data());
         path.append(QString::fromLatin1("/%1").arg(childIndex));
