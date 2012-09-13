@@ -65,7 +65,7 @@ public:
     virtual ~PureDocParser();
 
     virtual QStringList sourceFileNameFilter();
-    virtual void parseSourceFile(const Location& location, const QString& filePath, Tree* tree);
+    virtual void parseSourceFile(const Location& location, const QString& filePath);
 
  private:
     bool processQdocComments();

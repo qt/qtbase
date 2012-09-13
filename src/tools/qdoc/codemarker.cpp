@@ -625,26 +625,16 @@ QString CodeMarker::macName(const Node *node, const QString &name)
         return QLatin1Char('/') + protect(myName);
     }
     else {
-        return plainFullName(node) + QLatin1Char('/') + protect(myName);
+        return node->plainFullName() + QLatin1Char('/') + protect(myName);
     }
 }
 
 /*!
-  Get the list of documentation sections for the children of
-  the specified QmlClassNode.
+  Returns an empty list of documentation sections.
  */
-QList<Section> CodeMarker::qmlSections(const QmlClassNode* ,
-                                       SynopsisStyle )
+QList<Section> CodeMarker::qmlSections(const QmlClassNode* , SynopsisStyle )
 {
     return QList<Section>();
-}
-
-const Node* CodeMarker::resolveTarget(const QString& /* target */,
-                                      const Tree* ,
-                                      const Node* ,
-                                      const Node* )
-{
-    return 0;
 }
 
 QT_END_NAMESPACE

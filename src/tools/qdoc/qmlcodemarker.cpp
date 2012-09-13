@@ -108,38 +108,6 @@ Atom::Type QmlCodeMarker::atomType() const
     return Atom::Qml;
 }
 
-/*!
-  Returns the name of the \a node. Method names include are returned with a
-  trailing set of parentheses.
- */
-QString QmlCodeMarker::plainName(const Node *node)
-{
-    QString name = node->name();
-    if (node->type() == Node::QmlMethod)
-        name += "()";
-    return name;
-}
-
-QString QmlCodeMarker::plainFullName(const Node *node, const Node *relative)
-{
-    if (node->name().isEmpty()) {
-        return "global";
-    }
-    else {
-        QString fullName;
-        while (node) {
-            fullName.prepend(plainName(node));
-            if (node->parent() == relative ||
-                    node->parent()->subType() == Node::Collision ||
-                    node->parent()->name().isEmpty())
-                break;
-            fullName.prepend("::");
-            node = node->parent();
-        }
-        return fullName;
-    }
-}
-
 QString QmlCodeMarker::markedUpCode(const QString &code,
                                     const Node *relative,
                                     const Location &location)

@@ -48,6 +48,7 @@
 #include "tree.h"
 #include "config.h"
 #include "generator.h"
+#include "qdocdatabase.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -81,6 +82,7 @@ QMap<QString,QString> CodeParser::nameToTitle;
  */
 CodeParser::CodeParser()
 {
+    qdb_ = QDocDatabase::qdocDB();
     parsers.prepend(this);
 }
 
@@ -114,16 +116,14 @@ QStringList CodeParser::headerFileNameFilter()
     return sourceFileNameFilter();
 }
 
-void CodeParser::parseHeaderFile(const Location& location,
-                                 const QString& filePath,
-                                 Tree *tree)
+void CodeParser::parseHeaderFile(const Location& location, const QString& filePath)
 {
-    parseSourceFile(location, filePath, tree);
+    parseSourceFile(location, filePath);
 }
 
-void CodeParser::doneParsingHeaderFiles(Tree *tree)
+void CodeParser::doneParsingHeaderFiles()
 {
-    doneParsingSourceFiles(tree);
+    doneParsingSourceFiles();
 }
 
 /*!
@@ -230,8 +230,7 @@ QSet<QString> CodeParser::commonMetaCommands()
 void CodeParser::processCommonMetaCommand(const Location& location,
                                           const QString& command,
                                           const ArgLocPair& arg,
-                                          Node* node,
-                                          Tree* tree)
+                                          Node* node)
 {
     if (command == COMMAND_COMPAT) {
         location.warning(tr("\\compat command used, but Qt3 compatibility is no longer supported"));
@@ -241,21 +240,16 @@ void CodeParser::processCommonMetaCommand(const Location& location,
         node->setStatus(Node::Deprecated);
     }
     else if (command == COMMAND_INGROUP) {
-        tree->addToGroup(node, arg.first);
+        qdb_->addToGroup(node, arg.first);
     }
     else if (command == COMMAND_INPUBLICGROUP) {
-        tree->addToPublicGroup(node, arg.first);
+        qdb_->addToPublicGroup(node, arg.first);
     }
     else if (command == COMMAND_INMODULE) {
-        node->setModuleName(arg.first);
+        qdb_->addToModule(arg.first,node);
     }
     else if (command == COMMAND_INQMLMODULE) {
-        node->setQmlModule(arg);
-        DocNode* fn = DocNode::lookupQmlModuleNode(tree, arg);
-        fn->addQmlModuleMember(node);
-        QString qmid = node->qmlModuleIdentifier();
-        QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
-        QmlClassNode::insertQmlModuleMember(qmid, qcn);
+        qdb_->addToQmlModule(arg.first,node);
     }
     else if (command == COMMAND_MAINCLASS) {
         node->setStatus(Node::Main);

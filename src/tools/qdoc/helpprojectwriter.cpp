@@ -49,7 +49,8 @@
 #include "htmlgenerator.h"
 #include "config.h"
 #include "node.h"
-#include "tree.h"
+#include "qdocdatabase.h"
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,6 +59,13 @@ HelpProjectWriter::HelpProjectWriter(const Config &config,
                                      Generator* g)
     : gen_(g)
 {
+    /*
+      Get the pointer to the singleton for the qdoc database and
+      store it locally. This replaces all the local accesses to
+      the node tree, which are now private.
+     */
+    qdb_ = QDocDatabase::qdocDB();
+
     // The output directory should already have been checked by the calling
     // generator.
     outputDir = config.getOutputDir();
@@ -455,9 +463,8 @@ void HelpProjectWriter::generateSections(HelpProject &project,
     }
 }
 
-void HelpProjectWriter::generate(const Tree *t)
+void HelpProjectWriter::generate()
 {
-    this->tree = t;
     for (int i = 0; i < projects.size(); ++i)
         generateProject(projects[i]);
 }
@@ -581,9 +588,9 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 {
     const Node *rootNode;
     if (!project.indexRoot.isEmpty())
-        rootNode = tree->findDocNodeByTitle(project.indexRoot);
+        rootNode = qdb_->findDocNodeByTitle(project.indexRoot);
     else
-        rootNode = tree->root();
+        rootNode = qdb_->treeRoot();
 
     if (!rootNode)
         return;
@@ -624,9 +631,9 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
     writer.writeStartElement("toc");
     writer.writeStartElement("section");
-    const Node* node = tree->findDocNodeByTitle(project.indexTitle);
+    const Node* node = qdb_->findDocNodeByTitle(project.indexTitle);
     if (node == 0)
-        node = tree->findNode(QStringList("index.html"));
+        node = qdb_->findNode(QStringList("index.html"));
     QString indexPath;
     if (node)
         indexPath = gen_->fullDocumentLocation(node,true);
@@ -643,7 +650,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
         if (subproject.type == QLatin1String("manual")) {
 
-            const DocNode *indexPage = tree->findDocNodeByTitle(subproject.indexTitle);
+            const DocNode *indexPage = qdb_->findDocNodeByTitle(subproject.indexTitle);
             if (indexPage) {
                 Text indexBody = indexPage->doc().body();
                 const Atom *atom = indexBody.firstAtom();
@@ -670,7 +677,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                             if (sectionStack.top() > 0)
                                 writer.writeEndElement(); // section
 
-                            const DocNode *page = tree->findDocNodeByTitle(atom->string());
+                            const DocNode *page = qdb_->findDocNodeByTitle(atom->string());
                             writer.writeStartElement("section");
                             QString indexPath = gen_->fullDocumentLocation(page,true);
                             writer.writeAttribute("ref", indexPath);
@@ -697,7 +704,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
 
             if (!name.isEmpty()) {
                 writer.writeStartElement("section");
-                QString indexPath = gen_->fullDocumentLocation(tree->findDocNodeByTitle(subproject.indexTitle),true);
+                QString indexPath = gen_->fullDocumentLocation(qdb_->findDocNodeByTitle(subproject.indexTitle),true);
                 writer.writeAttribute("ref", indexPath);
                 writer.writeAttribute("title", subproject.title);
                 project.files.insert(indexPath);
@@ -717,7 +724,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                     if (!nextTitle.isEmpty() &&
                             node->links().value(Node::ContentsLink).first.isEmpty()) {
 
-                        DocNode *nextPage = const_cast<DocNode *>(tree->findDocNodeByTitle(nextTitle));
+                        DocNode *nextPage = const_cast<DocNode *>(qdb_->findDocNodeByTitle(nextTitle));
 
                         // Write the contents node.
                         writeNode(project, writer, node);
@@ -727,7 +734,7 @@ void HelpProjectWriter::generateProject(HelpProject &project)
                             nextTitle = nextPage->links().value(Node::NextLink).first;
                             if (nextTitle.isEmpty() || visited.contains(nextTitle))
                                 break;
-                            nextPage = const_cast<DocNode *>(tree->findDocNodeByTitle(nextTitle));
+                            nextPage = const_cast<DocNode *>(qdb_->findDocNodeByTitle(nextTitle));
                             visited.insert(nextTitle);
                         }
                         break;

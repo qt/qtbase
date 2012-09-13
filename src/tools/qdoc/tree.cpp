@@ -51,6 +51,7 @@
 #include "node.h"
 #include "text.h"
 #include "tree.h"
+#include "qdocdatabase.h"
 #include <limits.h>
 #include <qdebug.h>
 
@@ -103,14 +104,20 @@ public:
   \class Tree
 
   This class constructs and maintains a tree of instances of
-  Node and its many subclasses.
+  the subclasses of Node.
+
+  This class is now private. Only class QDocDatabase has access.
+  Please don't change this. If you must access class Tree, do it
+  though the pointer to the singleton QDocDatabase.
  */
 
 /*!
-  The default constructor is the only constructor.
+  Constructs the singleton tree. \a qdb is the pointer to the
+  qdoc database that is constructing the tree. This might not
+  be necessary, and it might be removed later.
  */
-Tree::Tree()
-    : roo(0, QString())
+Tree::Tree(QDocDatabase* qdb)
+      : qdb_(qdb), root_(0, QString())
 {
     priv = new TreePrivate;
 }
@@ -180,8 +187,8 @@ const Node* Tree::findNode(const QStringList& path,
           If the anser is yes, the reference identifies a QML
           class node.
         */
-        if (qml && path.size() >= 2) {
-            QmlClassNode* qcn = QmlClassNode::lookupQmlTypeNode(path[0], path[1]);
+        if (qml && path.size() >= 2 && !path[0].isEmpty()) {
+            QmlClassNode* qcn = qdb_->findQmlType(path[0], path[1]);
             if (qcn) {
                 node = qcn;
                 if (path.size() == 2)
@@ -227,30 +234,27 @@ const Node* Tree::findNode(const QStringList& path,
 }
 
 /*!
-  Find the QML class node for the specified \a module and \a name
-  identifiers. The \a module identifier may be empty. If the module
-  identifier is empty, then begin by finding the DocNode that has
-  the specified \a name. If that DocNode is a QML class, return it.
-  If it is a collision node, return its current child, if the current
-  child is a QML class. If the collision node does not have a child
-  that is a QML class node, return 0.
+  Find the Qml type node named \a path. Begin the search at the
+  \a start node. If the \a start node is 0, begin the search
+  at the root of the tree. Only a Qml type node named \a path is
+  acceptible. If one is not found, 0 is returned.
  */
-QmlClassNode* Tree::findQmlClassNode(const QString& module, const QString& name)
+QmlClassNode* Tree::findQmlTypeNode(const QStringList& path)
 {
-    if (module.isEmpty()) {
-        Node* n = findQmlClassNode(QStringList(name));
-        if (n) {
-            if (n->subType() == Node::QmlClass)
-                return static_cast<QmlClassNode*>(n);
-            else if (n->subType() == Node::Collision) {
-                NameCollisionNode* ncn;
-                ncn = static_cast<NameCollisionNode*>(n);
-                return static_cast<QmlClassNode*>(ncn->findAny(Node::Document,Node::QmlClass));
-            }
-        }
-        return 0;
+    /*
+      If the path contains one or two double colons ("::"),
+      check first to see if the first two path strings refer
+      to a QML element. If they do, path[0] will be the QML
+      module identifier, and path[1] will be the QML type.
+      If the anser is yes, the reference identifies a QML
+      class node.
+    */
+    if (path.size() >= 2 && !path[0].isEmpty()) {
+        QmlClassNode* qcn = qdb_->findQmlType(path[0], path[1]);
+        if (qcn)
+            return qcn;
     }
-    return QmlClassNode::lookupQmlTypeNode(module, name);
+    return static_cast<QmlClassNode*>(findNodeRecursive(path, 0, root(), Node::Document, Node::QmlClass));
 }
 
 /*!
@@ -327,8 +331,8 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& path,
       it is a reference to a QML method, first look up the
       QML class node in the QML module map.
      */
-    if (path.size() == 3) {
-        QmlClassNode* qcn = QmlClassNode::lookupQmlTypeNode(path[0], path[1]);
+    if (path.size() == 3 && !path[0].isEmpty()) {
+        QmlClassNode* qcn = qdb_->findQmlType(path[0], path[1]);
         if (qcn) {
             return static_cast<const FunctionNode*>(qcn->findFunctionNode(path[2]));
         }
@@ -415,12 +419,9 @@ const FunctionNode* Tree::findFunctionNode(const QStringList& parentPath,
                                            int findFlags) const
 {
     const Node* parent = findNode(parentPath, relative, findFlags);
-    if (parent == 0 || !parent->isInnerNode()) {
+    if (parent == 0 || !parent->isInnerNode())
         return 0;
-    }
-    else {
-        return ((InnerNode*)parent)->findFunctionNode(clone);
-    }
+    return ((InnerNode*)parent)->findFunctionNode(clone);
 }
 //findNode(parameter.leftType().split("::"), 0, SearchBaseClasses|NonFunction);
 
@@ -596,7 +597,7 @@ void Tree::addToGroup(Node* node, const QString& group)
 /*!
   Returns the group map.
  */
-NodeMultiMap Tree::groups() const
+const NodeMultiMap& Tree::groups() const
 {
     return priv->groupMap;
 }
@@ -745,9 +746,9 @@ void Tree::resolveGroups()
         if (i.value()->access() == Node::Private)
             continue;
 
-        Node* n = findGroupNode(QStringList(i.key()));
+        DocNode* n = findGroupNode(QStringList(i.key()));
         if (n)
-            n->addGroupMember(i.value());
+            n->addMember(i.value());
     }
 }
 
@@ -813,41 +814,12 @@ void Tree::resolveTargets(InnerNode* root)
 void Tree::resolveCppToQmlLinks()
 {
 
-    foreach (Node* child, roo.childNodes()) {
+    foreach (Node* child, root_.childNodes()) {
         if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
             QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
             ClassNode* cn = const_cast<ClassNode*>(qcn->classNode());
             if (cn)
                 cn->setQmlElement(qcn);
-        }
-    }
-}
-
-/*!
-  For each QML class node in the tree, determine whether
-  it inherits a QML base class and, if so, which one, and
-  store that pointer in the QML class node's state.
- */
-void Tree::resolveQmlInheritance()
-{
-
-    foreach (Node* child, roo.childNodes()) {
-        if (child->type() == Node::Document) {
-            if (child->subType() == Node::QmlClass) {
-                QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
-                qcn->resolveInheritance(this);
-            }
-            else if (child->subType() == Node::Collision) {
-                NameCollisionNode* ncn = static_cast<NameCollisionNode*>(child);
-                foreach (Node* child, ncn->childNodes()) {
-                    if (child->type() == Node::Document) {
-                        if (child->subType() == Node::QmlClass) {
-                            QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
-                            qcn->resolveInheritance(this);
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -1635,7 +1607,7 @@ bool Tree::generateIndexSection(QXmlStreamWriter& writer,
         QmlPropertyNode* qpn = static_cast<QmlPropertyNode*>(node);
         writer.writeAttribute("type", qpn->dataType());
         writer.writeAttribute("attached", qpn->isAttached() ? "true" : "false");
-        writer.writeAttribute("writable", qpn->isWritable(this) ? "true" : "false");
+        writer.writeAttribute("writable", qpn->isWritable(qdb_) ? "true" : "false");
     }
         break;
     case Node::Property:
@@ -2399,42 +2371,13 @@ ClassNode* Tree::findClassNode(const QStringList& path, Node* start)
 }
 
 /*!
-  Find the Qml class node named \a path. Begin the search at the
-  \a start node. If the \a start node is 0, begin the search
-  at the root of the tree. Only a Qml class node named \a path is
-  acceptible. If one is not found, 0 is returned.
+  Find the Namespace node named \a path. Begin the search at
+  the root of the tree. Only a Namespace node named \a path
+  is acceptible. If one is not found, 0 is returned.
  */
-QmlClassNode* Tree::findQmlClassNode(const QStringList& path, Node* start)
+NamespaceNode* Tree::findNamespaceNode(const QStringList& path)
 {
-    /*
-      If the path contains one or two double colons ("::"),
-      check first to see if the first two path strings refer
-      to a QML element. If they do, path[0] will be the QML
-      module identifier, and path[1] will be the QML type.
-      If the anser is yes, the reference identifies a QML
-      class node.
-    */
-    if (path.size() >= 2) {
-        QmlClassNode* qcn = QmlClassNode::lookupQmlTypeNode(path[0], path[1]);
-        if (qcn)
-            return qcn;
-    }
-
-    if (!start)
-        start = const_cast<NamespaceNode*>(root());
-    return static_cast<QmlClassNode*>(findNodeRecursive(path, 0, start, Node::Document, Node::QmlClass));
-}
-
-/*!
-  Find the Namespace node named \a path. Begin the search at the
-  \a start node. If the \a start node is 0, begin the search
-  at the root of the tree. Only a Namespace node named \a path is
-  acceptible. If one is not found, 0 is returned.
- */
-NamespaceNode* Tree::findNamespaceNode(const QStringList& path, Node* start)
-{
-    if (!start)
-        start = const_cast<NamespaceNode*>(root());
+    Node* start = const_cast<NamespaceNode*>(root());
     return static_cast<NamespaceNode*>(findNodeRecursive(path, 0, start, Node::Namespace, Node::NoSubType));
 }
 

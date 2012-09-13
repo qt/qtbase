@@ -60,8 +60,6 @@ public:
     virtual bool recognizeExtension(const QString& ext);
     virtual bool recognizeLanguage(const QString& lang);
     virtual Atom::Type atomType() const;
-    virtual QString plainName(const Node *node);
-    virtual QString plainFullName(const Node *node, const Node *relative);
     virtual QString markedUpCode(const QString& code,
                                  const Node *relative,
                                  const Location &location);
@@ -78,12 +76,7 @@ public:
     virtual QList<Section> sections(const InnerNode *innerNode,
                                     SynopsisStyle style,
                                     Status status);
-    virtual QList<Section> qmlSections(const QmlClassNode* qmlClassNode,
-                                       SynopsisStyle style);
-    virtual const Node* resolveTarget(const QString& target,
-                                      const Tree* tree,
-                                      const Node* relative,
-                                      const Node* self = 0);
+    virtual QList<Section> qmlSections(const QmlClassNode* qmlClassNode, SynopsisStyle style);
 
 private:
     QString addMarkUp(const QString& protectedCode,

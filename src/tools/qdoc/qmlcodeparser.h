@@ -70,9 +70,8 @@ public:
     virtual void terminateParser();
     virtual QString language();
     virtual QStringList sourceFileNameFilter();
-    virtual void parseSourceFile(const Location& location,
-                                 const QString& filePath, Tree *tree);
-    virtual void doneParsingSourceFiles(Tree *tree);
+    virtual void parseSourceFile(const Location& location, const QString& filePath);
+    virtual void doneParsingSourceFiles();
 
     /* Copied from src/declarative/qml/qdeclarativescriptparser.cpp */
     void extractPragmas(QString &script);

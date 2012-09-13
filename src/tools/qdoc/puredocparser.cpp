@@ -49,33 +49,42 @@
 #include "codechunk.h"
 #include "config.h"
 #include "tokenizer.h"
-#include "tree.h"
 #include <qdebug.h>
+#include "qdocdatabase.h"
 #include "puredocparser.h"
 
 QT_BEGIN_NAMESPACE
 
+/*!
+  Constructs the pure doc parser.
+*/
 PureDocParser::PureDocParser()
 {
 }
 
+/*!
+  Destroys the pure doc parser.
+ */
 PureDocParser::~PureDocParser()
 {
 }
 
+/*!
+  Returns a list of the kinds of files that the pure doc
+  parser is meant to parse. The elements of the list are
+  file suffixes.
+ */
 QStringList PureDocParser::sourceFileNameFilter()
 {
     return QStringList() << "*.qdoc" << "*.qtx" << "*.qtt" << "*.js";
 }
 
 /*!
-  Parse the source file identified by \a filePath and add its
-  parsed contents to the big \a tree. \a location is used for
+  Parses the source file identified by \a filePath and adds its
+  parsed contents to the database. The \a location is used for
   reporting errors.
  */
-void PureDocParser::parseSourceFile(const Location& location,
-                                    const QString& filePath,
-                                    Tree *tree)
+void PureDocParser::parseSourceFile(const Location& location, const QString& filePath)
 {
     QFile in(filePath);
     currentFile_ = filePath;
@@ -86,7 +95,7 @@ void PureDocParser::parseSourceFile(const Location& location,
     }
     createOutputSubdirectory(location, filePath);
 
-    reset(tree);
+    reset();
     Location fileLocation(filePath);
     Tokenizer fileTokenizer(fileLocation, in);
     tokenizer = &fileTokenizer;
@@ -181,6 +190,7 @@ bool PureDocParser::processQdocComments()
                 }
             }
 
+            Node* treeRoot = QDocDatabase::qdocDB()->treeRoot();
             NodeList::Iterator n = nodes.begin();
             QList<Doc>::Iterator d = docs.begin();
             while (n != nodes.end()) {
@@ -188,7 +198,7 @@ bool PureDocParser::processQdocComments()
                 (*n)->setDoc(*d);
                 if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
                     InnerNode *m = static_cast<InnerNode *>(*n);
-                    while (m->parent() != tree_->root())
+                    while (m->parent() && m->parent() != treeRoot)
                         m = m->parent();
                     if (m == *n)
                         ((InnerNode *)*n)->addInclude((*n)->name());

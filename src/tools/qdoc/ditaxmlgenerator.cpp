@@ -56,6 +56,7 @@
 #include "separator.h"
 #include "tree.h"
 #include <ctype.h>
+#include "qdocdatabase.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -463,23 +464,17 @@ int DitaXmlGenerator::leaveSection()
 }
 
 /*!
-  The default constructor.
+  Constructs the DITA XML output generator.
  */
 DitaXmlGenerator::DitaXmlGenerator()
-    : inContents(false),
-      inDetailedDescription(false),
+    : inDetailedDescription(false),
       inLegaleseText(false),
-      inLink(false),
       inObsoleteLink(false),
-      inSectionHeading(false),
-      inTableHeader(false),
       inTableBody(false),
       noLinks(false),
       obsoleteLinks(false),
       offlineDocs(true),
-      threeColumnEnumValueTable(true),
       codeIndent(0),
-      numTableRows(0),
       divNestingLevel(0),
       sectionNestingLevel(0),
       tableColumnCount(0),
@@ -488,11 +483,10 @@ DitaXmlGenerator::DitaXmlGenerator()
       nodeSubtypeMaps(Node::LastSubtype,0),
       pageTypeMaps(Node::OnBeyondZebra,0)
 {
-    // nothing yet.
 }
 
 /*!
-  The destructor has nothing to do.
+  Destroys the DITA XML output generator.
  */
 DitaXmlGenerator::~DitaXmlGenerator()
 {
@@ -504,7 +498,8 @@ DitaXmlGenerator::~DitaXmlGenerator()
 }
 
 /*!
-  A lot of internal structures are initialized.
+  Initializes the DITA XML output generator's data structures
+  from the configuration class \a config.
  */
 void DitaXmlGenerator::initializeGenerator(const Config &config)
 {
@@ -583,7 +578,7 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
 }
 
 /*!
-  All this does is call the same function in the base class.
+  Gracefully terminates the DITA XML output generator.
  */
 void DitaXmlGenerator::terminateGenerator()
 {
@@ -672,48 +667,17 @@ GuidMap* DitaXmlGenerator::lookupGuidMap(const QString& fileName)
 }
 
 /*!
-  This is where the DITA XML files are written.
-  \note The file is created in PageGenerator::generateTree().
+  Traverses the database generating all the DITA XML documentation.
  */
-void DitaXmlGenerator::generateTree(Tree *tree)
+void DitaXmlGenerator::generateTree()
 {
-    tree_ = tree;
-    nonCompatClasses.clear();
-    mainClasses.clear();
-    compatClasses.clear();
-    obsoleteClasses.clear();
-    moduleClassMap.clear();
-    moduleNamespaceMap.clear();
-    funcIndex.clear();
-    legaleseTexts.clear();
-    serviceClasses.clear();
-    qmlClasses.clear();
-    findAllClasses(tree->root());
-    findAllFunctions(tree->root());
-    findAllLegaleseTexts(tree->root());
-    findAllNamespaces(tree->root());
-    findAllSince(tree->root());
-
-    Generator::generateTree(tree);
+    qdb_->buildCollections();
+    Generator::generateTree();
     generateCollisionPages();
 
     QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
     generateIndex(fileBase, projectUrl, projectDescription);
-
-    writeDitaMap(tree);
-}
-
-void DitaXmlGenerator::startText(const Node* /* relative */,
-                                 CodeMarker* /* marker */)
-{
-    inLink = false;
-    inContents = false;
-    inSectionHeading = false;
-    inTableHeader = false;
-    numTableRows = 0;
-    threeColumnEnumValueTable = true;
-    link.clear();
-    sectionNumber.clear();
+    writeDitaMap();
 }
 
 static int countTableColumns(const Atom* t)
@@ -785,12 +749,12 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::AbstractRight:
         break;
     case Atom::AutoLink:
-        if (!noLinks && !inLink && !inContents && !inSectionHeading) {
+        if (!noLinks && !inLink_ && !inContents_ && !inSectionHeading_) {
             const Node* node = 0;
-            QString link = getLink(atom, relative, marker, &node);
+            QString link = getLink(atom, relative, &node);
             if (!link.isEmpty()) {
                 beginLink(link);
-                generateLink(atom, relative, marker);
+                generateLink(atom, marker);
                 endLink();
             }
             else {
@@ -849,11 +813,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::C:
         writeStartTag(DT_tt);
-        if (inLink) {
+        if (inLink_) {
             writeCharacters(protectEnc(plainCode(atom->string())));
         }
         else {
-            writeText(atom->string(), marker, relative);
+            writeText(atom->string(), relative);
         }
         writeEndTag(); // see writeStartElement() above
         break;
@@ -862,7 +826,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeStartTag(DT_codeblock);
             xmlWriter().writeAttribute("outputclass","cpp");
             writeCharacters("\n");
-            writeText(trimmedTrailing(atom->string()), marker, relative);
+            writeText(trimmedTrailing(atom->string()), relative);
             writeEndTag(); // </codeblock>
         }
         break;
@@ -870,7 +834,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeStartTag(DT_codeblock);
         xmlWriter().writeAttribute("outputclass","qml");
         writeCharacters("\n");
-        writeText(trimmedTrailing(atom->string()), marker, relative);
+        writeText(trimmedTrailing(atom->string()), relative);
         writeEndTag(); // </codeblock>
         break;
     case Atom::CodeNew:
@@ -879,7 +843,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeEndTag(); // </p>
         writeStartTag(DT_codeblock);
         writeCharacters("\n");
-        writeText(trimmedTrailing(atom->string()), marker, relative);
+        writeText(trimmedTrailing(atom->string()), relative);
         writeEndTag(); // </codeblock>
         break;
     case Atom::CodeOld:
@@ -1034,53 +998,57 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::AnnotatedList:
         {
-            QList<Node*> values = tree_->groups().values(atom->string());
             NodeMap nodeMap;
-            for (int i = 0; i < values.size(); ++i) {
-                const Node* n = values.at(i);
-                if ((n->status() != Node::Internal) && (n->access() != Node::Private)) {
-                    nodeMap.insert(n->nameForLists(),n);
-                }
-            }
+            qdb_->getGroup(atom->string(), nodeMap);
             generateAnnotatedList(relative, marker, nodeMap);
         }
         break;
     case Atom::GeneratedList:
         if (atom->string() == "annotatedclasses") {
-            generateAnnotatedList(relative, marker, nonCompatClasses);
+            generateAnnotatedList(relative, marker, qdb_->getCppClasses());
         }
         else if (atom->string() == "classes") {
-            generateCompactList(relative, marker, nonCompatClasses, true);
+            generateCompactList(relative, qdb_->getCppClasses(), true);
         }
         else if (atom->string() == "qmlclasses") {
-            generateCompactList(relative, marker, qmlClasses, true);
+            generateCompactList(relative, qdb_->getQmlTypes(), true);
         }
         else if (atom->string().contains("classesbymodule")) {
             QString arg = atom->string().trimmed();
-            QString moduleName = atom->string().mid(atom->string().indexOf(
-                                                        "classesbymodule") + 15).trimmed();
-            if (moduleClassMap.contains(moduleName))
-                generateAnnotatedList(relative, marker, moduleClassMap[moduleName]);
+            QString moduleName = atom->string().mid(atom->string().indexOf("classesbymodule") + 15).trimmed();
+            QDocDatabase* qdb = QDocDatabase::qdocDB();
+            DocNode* dn = qdb->findModule(moduleName);
+            if (dn) {
+                NodeMap m;
+                dn->getMemberClasses(m);
+                if (!m.isEmpty()) {
+                    generateAnnotatedList(relative, marker, m);
+                }
+            }
         }
         else if (atom->string().contains("classesbyedition")) {
 
             QString arg = atom->string().trimmed();
-            QString editionName = atom->string().mid(atom->string().indexOf(
-                                                         "classesbyedition") + 16).trimmed();
-
+            QString editionName = atom->string().mid(atom->string().indexOf("classesbyedition") + 16).trimmed();
             if (editionModuleMap.contains(editionName)) {
-
+                QDocDatabase* qdb = QDocDatabase::qdocDB();
                 // Add all classes in the modules listed for that edition.
                 NodeMap editionClasses;
-                foreach (const QString &moduleName, editionModuleMap[editionName]) {
-                    if (moduleClassMap.contains(moduleName))
-                        editionClasses.unite(moduleClassMap[moduleName]);
+                DocNodeMap::const_iterator i = qdb->modules().begin();
+                while (i != qdb->modules().end()) {
+                    NodeMap m;
+                    DocNode* dn = i.value();
+                    dn->getMemberClasses(m);
+                    if (!m.isEmpty())
+                        editionClasses.unite(m);
+                    m.clear();
+                    ++i;
                 }
 
                 // Add additional groups and remove groups of classes that
                 // should be excluded from the edition.
 
-                QMultiMap <QString, Node *> groups = tree_->groups();
+                const NodeMultiMap& groups = qdb_->groups();
                 foreach (const QString &groupName, editionGroupMap[editionName]) {
                     QList<Node *> groupClasses;
                     if (groupName.startsWith(QLatin1Char('-'))) {
@@ -1098,39 +1066,39 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             }
         }
         else if (atom->string() == "classhierarchy") {
-            generateClassHierarchy(relative, marker, nonCompatClasses);
+            generateClassHierarchy(relative, qdb_->getCppClasses());
         }
         else if (atom->string() == "compatclasses") {
-            generateCompactList(relative, marker, compatClasses, false);
+            generateCompactList(relative, qdb_->getCompatibilityClasses(), false);
         }
         else if (atom->string() == "obsoleteclasses") {
-            generateCompactList(relative, marker, obsoleteClasses, false);
+            generateCompactList(relative, qdb_->getObsoleteClasses(), false);
         }
         else if (atom->string() == "functionindex") {
-            generateFunctionIndex(relative, marker);
+            generateFunctionIndex(relative);
         }
         else if (atom->string() == "legalese") {
             generateLegaleseList(relative, marker);
         }
         else if (atom->string() == "mainclasses") {
-            generateCompactList(relative, marker, mainClasses, true);
+            generateCompactList(relative, qdb_->getMainClasses(), true);
         }
         else if (atom->string() == "services") {
-            generateCompactList(relative, marker, serviceClasses, false);
+            generateCompactList(relative, qdb_->getServiceClasses(), false);
         }
         else if (atom->string() == "overviews") {
-            generateOverviewList(relative, marker);
+            generateOverviewList(relative);
         }
         else if (atom->string() == "namespaces") {
-            generateAnnotatedList(relative, marker, namespaceIndex);
+            generateAnnotatedList(relative, marker, qdb_->getNamespaces());
         }
         else if (atom->string() == "related") {
             const DocNode *dn = static_cast<const DocNode *>(relative);
-            if (dn && !dn->groupMembers().isEmpty()) {
+            if (dn && !dn->members().isEmpty()) {
                 NodeMap groupMembersMap;
-                foreach (const Node *node, dn->groupMembers()) {
+                foreach (const Node *node, dn->members()) {
                     if (node->type() == Node::Document)
-                        groupMembersMap[fullName(node, relative, marker)] = node;
+                        groupMembersMap[node->fullName(relative)] = node;
                 }
                 generateAnnotatedList(dn, marker, groupMembersMap);
             }
@@ -1138,20 +1106,18 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::SinceList:
     {
-        NewSinceMaps::const_iterator nsmap;
-        nsmap = newSinceMaps.constFind(atom->string());
-        NewClassMaps::const_iterator ncmap;
-        ncmap = newClassMaps.constFind(atom->string());
-        NewClassMaps::const_iterator nqcmap;
-        nqcmap = newQmlClassMaps.constFind(atom->string());
-        if ((nsmap != newSinceMaps.constEnd()) && !nsmap.value().isEmpty()) {
+        const NodeMultiMap& nsmap = qdb_->getSinceMap(atom->string());
+        const NodeMap& ncmap = qdb_->getClassMap(atom->string());
+        const NodeMap& nqcmap = qdb_->getQmlTypeMap(atom->string());
+        if (!nsmap.isEmpty()) {
             QList<Section> sections;
             QList<Section>::ConstIterator s;
+
             for (int i=0; i<LastSinceType; ++i)
                 sections.append(Section(sinceTitle(i),QString(),QString(),QString()));
 
-            NodeMultiMap::const_iterator n = nsmap.value().constBegin();
-            while (n != nsmap.value().constEnd()) {
+            NodeMultiMap::const_iterator n = nsmap.constBegin();
+            while (n != nsmap.constEnd()) {
                 const Node* node = n.value();
                 switch (node->type()) {
                 case Node::Document:
@@ -1218,9 +1184,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 ++n;
             }
 
-            /*
-                  First generate the table of contents.
-                 */
             writeStartTag(DT_ul);
             s = sections.constBegin();
             while (s != sections.constEnd()) {
@@ -1242,9 +1205,9 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                     writeCharacters(protectEnc((*s).name));
                     writeEndTag(); // </p>
                     if (idx == Class)
-                        generateCompactList(0, marker, ncmap.value(), false, QString("Q"));
+                        generateCompactList(0, ncmap, false, QString("Q"));
                     else if (idx == QmlClass)
-                        generateCompactList(0, marker, nqcmap.value(), false, QString("Q"));
+                        generateCompactList(0, nqcmap, false, QString("Q"));
                     else if (idx == MemberFunction) {
                         ParentMaps parentmaps;
                         ParentMaps::iterator pmap;
@@ -1265,7 +1228,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                             writeStartTag(DT_xref);
                             // formathtml
                             xmlWriter().writeAttribute("href",linkForNode(pmap.key(), 0));
-                            QStringList pieces = fullName(pmap.key(), 0, marker).split("::");
+                            QStringList pieces = pmap.key()->fullName().split("::");
                             writeCharacters(protectEnc(pieces.last()));
                             writeEndTag(); // </xref>
                             xmlWriter().writeCharacters(":");
@@ -1365,12 +1328,12 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
     case Atom::Link:
         {
             const Node *node = 0;
-            QString myLink = getLink(atom, relative, marker, &node);
+            QString myLink = getLink(atom, relative, &node);
             if (myLink.isEmpty())
                 myLink = getCollisionLink(atom);
             if (myLink.isEmpty())
                 relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
-            else if (!inSectionHeading)
+            else if (!inSectionHeading_)
                 beginLink(myLink);
             skipAhead = 1;
         }
@@ -1400,8 +1363,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeStartTag(DT_dl);
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
-            threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
-            if (threeColumnEnumValueTable) {
+            threeColumnEnumValueTable_ = isThreeColumnEnumValueTable(atom);
+            if (threeColumnEnumValueTable_) {
                 writeStartTag(DT_simpletable);
                 xmlWriter().writeAttribute("outputclass","valuelist");
                 writeStartTag(DT_sthead);
@@ -1494,7 +1457,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeStartTag(DT_dd);
         }
         else if (atom->string() == ATOM_LIST_VALUE) {
-            if (threeColumnEnumValueTable) {
+            if (threeColumnEnumValueTable_) {
                 writeEndTag(); // </stentry>
                 writeStartTag(DT_stentry);
             }
@@ -1590,12 +1553,12 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeGuidAttribute(id);
         hx = QLatin1Char('h') + QString::number(atom->string().toInt() + hOffset(relative));
         xmlWriter().writeAttribute("outputclass",hx);
-        inSectionHeading = true;
+        inSectionHeading_ = true;
     }
         break;
     case Atom::SectionHeadingRight:
         writeEndTag(); // </title> (see case Atom::SectionHeadingLeft)
-        inSectionHeading = false;
+        inSectionHeading_ = false;
         break;
     case Atom::SidebarLeft:
         // nothing
@@ -1604,8 +1567,8 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         // nothing
         break;
     case Atom::String:
-        if (inLink && !inContents && !inSectionHeading) {
-            generateLink(atom, relative, marker);
+        if (inLink_ && !inContents_ && !inSectionHeading_) {
+            generateLink(atom, marker);
         }
         else {
             writeCharacters(atom->string());
@@ -1625,7 +1588,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeStartTag(DT_table);
         if (!attr.isEmpty())
             xmlWriter().writeAttribute("outputclass",attr);
-        numTableRows = 0;
+        numTableRows_ = 0;
         if (tableColumnCount != 0) {
             qDebug() << "ERROR: Nested tables!";
             tableColumnCount = 0;
@@ -1640,7 +1603,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             xmlWriter().writeAttribute("colwidth", QStringLiteral("1*"));
             writeEndTag(); // DT_colspec
         }
-        inTableHeader = false;
+        inTableHeader_ = false;
         inTableBody = false;
     }
         break;
@@ -1648,7 +1611,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         writeEndTag(); // </tbody>
         writeEndTag(); // </tgroup>
         writeEndTag(); // </table>
-        inTableHeader = false;
+        inTableHeader_ = false;
         inTableBody = false;
         tableColumnCount = 0;
         currentColumn = 0;
@@ -1658,11 +1621,11 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             writeEndTag(); // </tbody>
             writeEndTag(); // </tgroup>
             writeEndTag(); // </table>
-            inTableHeader = false;
+            inTableHeader_ = false;
             inTableBody = false;
             tableColumnCount = 0;
             writeStartTag(DT_table);
-            numTableRows = 0;
+            numTableRows_ = 0;
             tableColumnCount = countTableColumns(atom);
             writeStartTag(DT_tgroup);
             xmlWriter().writeAttribute("cols",QString::number(tableColumnCount));
@@ -1672,7 +1635,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         xmlWriter().writeAttribute("valign","top");
         writeStartTag(DT_row);
         xmlWriter().writeAttribute("valign","top");
-        inTableHeader = true;
+        inTableHeader_ = true;
         inTableBody = false;
         break;
     case Atom::TableHeaderRight:
@@ -1684,13 +1647,13 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         else {
             writeEndTag(); // </thead>
-            inTableHeader = false;
+            inTableHeader_ = false;
             inTableBody = true;
             writeStartTag(DT_tbody);
         }
         break;
     case Atom::TableRowLeft:
-        if (!inTableHeader && !inTableBody) {
+        if (!inTableHeader_ && !inTableBody) {
             inTableBody = true;
             writeStartTag(DT_tbody);
         }
@@ -1770,7 +1733,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         }
         break;
     case Atom::TableItemRight:
-        if (inTableHeader) {
+        if (inTableHeader_) {
             writeEndTag(); // </entry>
         }
         else {
@@ -1792,8 +1755,10 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 columnText = pieces.at(0);
                 pieces.pop_front();
                 QString path = pieces.join(" ").trimmed();
-                node = findNodeForTarget(path, relative, marker, atom);
-            }
+                node = qdb_->findNodeForTarget(path, relative, atom);
+                if (!node)
+                    relative->doc().location().warning(tr("Cannot link to '%1'").arg(path));
+           }
 
             if (params.size() == 2) {
                 numColumns = qMax(columnText.toInt(), numColumns);
@@ -1857,8 +1822,8 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     QString fullTitle;
     if (inner->type() == Node::Namespace) {
         const NamespaceNode* nsn = const_cast<NamespaceNode*>(static_cast<const NamespaceNode*>(inner));
-        rawTitle = marker->plainName(inner);
-        fullTitle = marker->plainFullName(inner);
+        rawTitle = inner->plainName();
+        fullTitle = inner->plainFullName();
         title = rawTitle + " Namespace";
 
         /*
@@ -1907,7 +1872,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                         writeCharacters(protectEnc((*s).name));
                         writeEndTag(); // </title>
                         generateSection(s->members, inner, marker, CodeMarker::Summary);
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     }
                     if (!s->reimpMembers.isEmpty()) {
                         QString name = QString("Reimplemented ") + (*s).name;
@@ -1917,7 +1882,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                         writeCharacters(protectEnc(name));
                         writeEndTag(); // </title>
                         generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     }
                 }
                 ++s;
@@ -1930,7 +1895,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                 s = summarySections.constBegin();
                 while (s != summarySections.constEnd()) {
                     if (s->members.isEmpty())
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     ++s;
                 }
             }
@@ -1977,8 +1942,8 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     }
     else if (inner->type() == Node::Class) {
         const ClassNode* cn = const_cast<ClassNode*>(static_cast<const ClassNode*>(inner));
-        rawTitle = marker->plainName(inner);
-        fullTitle = marker->plainFullName(inner);
+        rawTitle = inner->plainName();
+        fullTitle = inner->plainFullName();
         title = rawTitle + " Class";
 
         generateHeader(inner, fullTitle);
@@ -1996,7 +1961,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
             xmlWriter().writeAttribute("value","abstract");
             writeEndTag(); // </cxxClassAbstract>
         }
-        writeDerivations(cn, marker); // <cxxClassDerivations>
+        writeDerivations(cn); // <cxxClassDerivations>
 
         // not included: <cxxClassTemplateParameters>
 
@@ -2035,7 +2000,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                         writeCharacters(protectEnc((*s).name));
                         writeEndTag(); // </p>
                         generateSection(s->members, inner, marker, CodeMarker::Summary);
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     }
                     if (!s->reimpMembers.isEmpty()) {
                         QString name = QString("Reimplemented ") + (*s).name;
@@ -2045,7 +2010,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                         writeCharacters(protectEnc(name));
                         writeEndTag(); // </p>
                         generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     }
                 }
                 ++s;
@@ -2058,7 +2023,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                 s = summarySections.constBegin();
                 while (s != summarySections.constEnd()) {
                     if (s->members.isEmpty())
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     ++s;
                 }
             }
@@ -2105,8 +2070,8 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     }
     else if ((inner->type() == Node::Document) && (inner->subType() == Node::HeaderFile)) {
         const DocNode* dn = const_cast<DocNode*>(static_cast<const DocNode*>(inner));
-        rawTitle = marker->plainName(inner);
-        fullTitle = marker->plainFullName(inner);
+        rawTitle = inner->plainName();
+        fullTitle = inner->plainFullName();
         title = rawTitle;
 
         /*
@@ -2151,7 +2116,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                         writeCharacters(protectEnc((*s).name));
                         writeEndTag(); // </p>
                         generateSection(s->members, inner, marker, CodeMarker::Summary);
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     }
                     if (!s->reimpMembers.isEmpty()) {
                         QString name = QString("Reimplemented ") + (*s).name;
@@ -2161,7 +2126,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                         writeCharacters(protectEnc(name));
                         writeEndTag(); // </p>
                         generateSection(s->reimpMembers, inner, marker, CodeMarker::Summary);
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     }
                 }
                 ++s;
@@ -2175,7 +2140,7 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
                 s = summarySections.constBegin();
                 while (s != summarySections.constEnd()) {
                     if (s->members.isEmpty())
-                        generateSectionInheritedList(*s, inner, marker);
+                        generateSectionInheritedList(*s, inner);
                     ++s;
                 }
             }
@@ -2222,8 +2187,8 @@ DitaXmlGenerator::generateClassLikeNode(InnerNode* inner, CodeMarker* marker)
     else if ((inner->type() == Node::Document) && (inner->subType() == Node::QmlClass)) {
         QmlClassNode* qcn = const_cast<QmlClassNode*>(static_cast<const QmlClassNode*>(inner));
         ClassNode* cn = qcn->classNode();
-        rawTitle = marker->plainName(inner);
-        fullTitle = marker->plainFullName(inner);
+        rawTitle = inner->plainName();
+        fullTitle = inner->plainFullName();
         title = rawTitle + " Type";
         Node::clearPropertyGroupCount();
 
@@ -2317,16 +2282,21 @@ void DitaXmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
     enterSection(QString(), QString());
     if (dn->subType() == Node::Module) {
         generateStatus(dn, marker);
-        if (moduleNamespaceMap.contains(dn->name())) {
+        NodeMap nm;
+        dn->getMemberNamespaces(nm);
+        if (!nm.isEmpty()) {
             enterSection("h2","Namespaces");
-            generateAnnotatedList(dn, marker, moduleNamespaceMap[dn->name()]);
+            generateAnnotatedList(dn, marker, nm);
             leaveSection();
         }
-        if (moduleClassMap.contains(dn->name())) {
+        nm.clear();
+        dn->getMemberClasses(nm);
+        if (!nm.isEmpty()) {
             enterSection("h2","Classes");
-            generateAnnotatedList(dn, marker, moduleClassMap[dn->name()]);
+            generateAnnotatedList(dn, marker, nm);
             leaveSection();
         }
+        nm.clear();
     }
 
     if (dn->doc().isEmpty()) {
@@ -2356,17 +2326,17 @@ void DitaXmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         }
         generateAlsoList(dn, marker);
 
-        if ((dn->subType() == Node::QmlModule) && !dn->qmlModuleMembers().isEmpty()) {
+        if ((dn->subType() == Node::QmlModule) && !dn->members().isEmpty()) {
             NodeMap qmlModuleMembersMap;
-            foreach (const Node* node, dn->qmlModuleMembers()) {
+            foreach (const Node* node, dn->members()) {
                 if (node->type() == Node::Document && node->subType() == Node::QmlClass)
                     qmlModuleMembersMap[node->name()] = node;
             }
             generateAnnotatedList(dn, marker, qmlModuleMembersMap);
         }
-        else if (!dn->groupMembers().isEmpty()) {
+        else if (!dn->members().isEmpty()) {
             NodeMap groupMembersMap;
-            foreach (const Node *node, dn->groupMembers()) {
+            foreach (const Node *node, dn->members()) {
                 if (node->type() == Node::Class || node->type() == Node::Namespace)
                     groupMembersMap[node->name()] = node;
             }
@@ -2378,7 +2348,7 @@ void DitaXmlGenerator::generateDocNode(DocNode* dn, CodeMarker* marker)
         dn->doc().location().warning(tr("Pop of empty XML tag stack; generating DITA for '%1'").arg(dn->name()));
         return;
     }
-    writeRelatedLinks(dn, marker);
+    writeRelatedLinks(dn);
     writeEndTag(); // </topic>
 }
 
@@ -2413,7 +2383,7 @@ void DitaXmlGenerator::writeLink(const Node* node,
   value of the \e role attribute is \c{parent} for the
   \c{start} link.
  */
-void DitaXmlGenerator::writeRelatedLinks(const DocNode* node, CodeMarker* marker)
+void DitaXmlGenerator::writeRelatedLinks(const DocNode* node)
 {
     const Node* linkNode = 0;
     QPair<QString,QString> linkPair;
@@ -2421,7 +2391,9 @@ void DitaXmlGenerator::writeRelatedLinks(const DocNode* node, CodeMarker* marker
         writeStartTag(DT_relatedLinks);
         if (node->links().contains(Node::PreviousLink)) {
             linkPair = node->links()[Node::PreviousLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            linkNode = qdb_->findNodeForTarget(linkPair.first, node);
+            if (!linkNode)
+                node->doc().location().warning(tr("Cannot link to '%1'").arg(linkPair.first));
             if (linkNode && linkNode->type() == Node::Document) {
                 const DocNode *docNode = static_cast<const DocNode*>(linkNode);
                 linkPair.second = docNode->title();
@@ -2430,7 +2402,9 @@ void DitaXmlGenerator::writeRelatedLinks(const DocNode* node, CodeMarker* marker
         }
         if (node->links().contains(Node::NextLink)) {
             linkPair = node->links()[Node::NextLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            linkNode = qdb_->findNodeForTarget(linkPair.first, node);
+            if (!linkNode)
+                node->doc().location().warning(tr("Cannot link to '%1'").arg(linkPair.first));
             if (linkNode && linkNode->type() == Node::Document) {
                 const DocNode *docNode = static_cast<const DocNode*>(linkNode);
                 linkPair.second = docNode->title();
@@ -2439,7 +2413,9 @@ void DitaXmlGenerator::writeRelatedLinks(const DocNode* node, CodeMarker* marker
         }
         if (node->links().contains(Node::StartLink)) {
             linkPair = node->links()[Node::StartLink];
-            linkNode = findNodeForTarget(linkPair.first, node, marker);
+            linkNode = qdb_->findNodeForTarget(linkPair.first, node);
+            if (!linkNode)
+                node->doc().location().warning(tr("Cannot link to '%1'").arg(linkPair.first));
             if (linkNode && linkNode->type() == Node::Document) {
                 const DocNode *docNode = static_cast<const DocNode*>(linkNode);
                 linkPair.second = docNode->title();
@@ -2617,8 +2593,8 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
     }
 
     // disable nested links in table of contents
-    inContents = true;
-    inLink = true;
+    inContents_ = true;
+    inLink_ = true;
 
     for (int i = 0; i < toc.size(); ++i) {
         Atom *atom = toc.at(i);
@@ -2666,124 +2642,8 @@ void DitaXmlGenerator::generateTableOfContents(const Node* node,
     if (numColumns > 1)
         out() << "</td></tr></table>\n";
 
-    inContents = false;
-    inLink = false;
-}
-
-/*!
-  zzz
-  Revised for the new doc format.
-  Generates a table of contents beginning at \a node.
- */
-void DitaXmlGenerator::generateTableOfContents(const Node* node,
-                                               CodeMarker* marker,
-                                               QList<Section>* sections)
-{
-    QList<Atom*> toc;
-    if (node->doc().hasTableOfContents())
-        toc = node->doc().tableOfContents();
-    if (toc.isEmpty() && !sections && (node->subType() != Node::Module))
-        return;
-
-    QStringList sectionNumber;
-    int detailsBase = 0;
-
-    // disable nested links in table of contents
-    inContents = true;
-    inLink = true;
-
-    out() << "<div class=\"toc\">\n";
-    out() << "<h3>Contents</h3>\n";
-    sectionNumber.append("1");
-    out() << "<ul>\n";
-
-    if (node->subType() == Node::Module) {
-        if (moduleNamespaceMap.contains(node->name())) {
-            out() << "<li class=\"level"
-                  << sectionNumber.size()
-                  << "\"><xref href=\"#"
-                  << registerRef("namespaces")
-                  << "\">Namespaces</xref></li>\n";
-        }
-        if (moduleClassMap.contains(node->name())) {
-            out() << "<li class=\"level"
-                  << sectionNumber.size()
-                  << "\"><xref href=\"#"
-                  << registerRef("classes")
-                  << "\">Classes</xref></li>\n";
-        }
-        out() << "<li class=\"level"
-              << sectionNumber.size()
-              << "\"><xref href=\"#"
-              << registerRef("details")
-              << "\">Detailed Description</xref></li>\n";
-        for (int i = 0; i < toc.size(); ++i) {
-            if (toc.at(i)->string().toInt() == 1) {
-                detailsBase = 1;
-                break;
-            }
-        }
-    }
-    else if (sections && (node->type() == Node::Class)) {
-        QList<Section>::ConstIterator s = sections->constBegin();
-        while (s != sections->constEnd()) {
-            if (!s->members.isEmpty() || !s->reimpMembers.isEmpty()) {
-                out() << "<li class=\"level"
-                      << sectionNumber.size()
-                      << "\"><xref href=\"#"
-                      << registerRef((*s).pluralMember)
-                      << "\">" << (*s).name
-                      << "</xref></li>\n";
-            }
-            ++s;
-        }
-        out() << "<li class=\"level"
-              << sectionNumber.size()
-              << "\"><xref href=\"#"
-              << registerRef("details")
-              << "\">Detailed Description</xref></li>\n";
-        for (int i = 0; i < toc.size(); ++i) {
-            if (toc.at(i)->string().toInt() == 1) {
-                detailsBase = 1;
-                break;
-            }
-        }
-    }
-
-    for (int i = 0; i < toc.size(); ++i) {
-        Atom *atom = toc.at(i);
-        int nextLevel = atom->string().toInt() + detailsBase;
-        if (sectionNumber.size() < nextLevel) {
-            do {
-                sectionNumber.append("1");
-            } while (sectionNumber.size() < nextLevel);
-        }
-        else {
-            while (sectionNumber.size() > nextLevel) {
-                sectionNumber.removeLast();
-            }
-            sectionNumber.last() = QString::number(sectionNumber.last().toInt() + 1);
-        }
-        int numAtoms;
-        Text headingText = Text::sectionHeading(atom);
-        QString s = headingText.toString();
-        out() << "<li class=\"level"
-              << sectionNumber.size()
-              << "\">";
-        out() << "<xref href=\""
-              << '#'
-              << Doc::canonicalTitle(s)
-              << "\">";
-        generateAtomList(headingText.firstAtom(), node, marker, true, numAtoms);
-        out() << "</xref></li>\n";
-    }
-    while (!sectionNumber.isEmpty()) {
-        sectionNumber.removeLast();
-    }
-    out() << "</ul>\n";
-    out() << "</div>\n";
-    inContents = false;
-    inLink = false;
+    inContents_ = false;
+    inLink_ = false;
 }
 
 void DitaXmlGenerator::generateLowStatusMembers(const InnerNode* inner,
@@ -2832,9 +2692,7 @@ void DitaXmlGenerator::generateLowStatusMembers(const InnerNode* inner,
 /*!
   Write the XML for the class hierarchy to the current XML stream.
  */
-void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
-                                              CodeMarker* marker,
-                                              const QMap<QString,const Node*>& classMap)
+void DitaXmlGenerator::generateClassHierarchy(const Node* relative, const NodeMap& classMap)
 {
     if (classMap.isEmpty())
         return;
@@ -2863,7 +2721,7 @@ void DitaXmlGenerator::generateClassHierarchy(const Node* relative,
             const ClassNode *child =
                     static_cast<const ClassNode *>(*stack.top().constBegin());
             writeStartTag(DT_li);
-            generateFullName(child, relative, marker);
+            generateFullName(child, relative);
             writeEndTag(); // </li>
             stack.top().erase(stack.top().begin());
 
@@ -2906,7 +2764,7 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
         writeStartTag(DT_row);
         writeStartTag(DT_entry);
         writeStartTag(DT_p);
-        generateFullName(node, relative, marker);
+        generateFullName(node, relative);
         writeEndTag(); // </p>
         writeEndTag(); // <entry>
 
@@ -2944,7 +2802,6 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
   the name of the first and last classes in \a classMap.
  */
 void DitaXmlGenerator::generateCompactList(const Node* relative,
-                                           CodeMarker* marker,
                                            const NodeMap& classMap,
                                            bool includeAlphabet,
                                            QString commonPrefix)
@@ -3124,12 +2981,12 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
             if (it.value()->subType() == Node::QmlClass)
                 pieces << it.value()->name();
             else
-                pieces = fullName(it.value(), relative, marker).split("::");
+                pieces = it.value()->fullName(relative).split("::");
             xmlWriter().writeCharacters(protectEnc(pieces.last()));
             writeEndTag(); // </xref>
             if (pieces.size() > 1) {
                 xmlWriter().writeCharacters(" (");
-                generateFullName(it.value()->parent(),relative,marker);
+                generateFullName(it.value()->parent(),relative);
                 xmlWriter().writeCharacters(")");
             }
         }
@@ -3144,8 +3001,7 @@ void DitaXmlGenerator::generateCompactList(const Node* relative,
 /*!
   Write XML for a function index to the current XML stream.
  */
-void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
-                                             CodeMarker* marker)
+void DitaXmlGenerator::generateFunctionIndex(const Node* relative)
 {
     writeStartTag(DT_p);
     xmlWriter().writeAttribute("outputclass","alphabet");
@@ -3166,7 +3022,8 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
     char currentLetter;
 
     writeStartTag(DT_ul);
-    QMap<QString, NodeMap >::ConstIterator f = funcIndex.constBegin();
+    NodeMapMap& funcIndex = qdb_->getFunctionIndex();
+    NodeMapMap::ConstIterator f = funcIndex.constBegin();
     while (f != funcIndex.constEnd()) {
         writeStartTag(DT_li);
         currentLetter = f.key()[0].unicode();
@@ -3183,7 +3040,7 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
 
         NodeMap::ConstIterator s = (*f).constBegin();
         while (s != (*f).constEnd()) {
-            generateFullName((*s)->parent(), relative, marker, *s);
+            generateFullName((*s)->parent(), relative, *s);
             ++s;
         }
         writeEndTag(); // </li>
@@ -3195,17 +3052,17 @@ void DitaXmlGenerator::generateFunctionIndex(const Node* relative,
 /*!
   Write the legalese texts as XML to the current XML stream.
  */
-void DitaXmlGenerator::generateLegaleseList(const Node* relative,
-                                            CodeMarker* marker)
+void DitaXmlGenerator::generateLegaleseList(const Node* relative, CodeMarker* marker)
 {
-    QMap<Text, const Node*>::ConstIterator it = legaleseTexts.constBegin();
+    TextToNodeMap& legaleseTexts = qdb_->getLegaleseTexts();
+    TextToNodeMap::ConstIterator it = legaleseTexts.constBegin();
     while (it != legaleseTexts.constEnd()) {
         Text text = it.key();
         generateText(text, relative, marker);
         writeStartTag(DT_ul);
         do {
             writeStartTag(DT_li);
-            generateFullName(it.value(), relative, marker);
+            generateFullName(it.value(), relative);
             writeEndTag(); // </li>
             ++it;
         } while (it != legaleseTexts.constEnd() && it.key() == text);
@@ -3234,20 +3091,20 @@ void DitaXmlGenerator::generateQmlItem(const Node* node,
         marked.remove("<@type>");
         marked.remove("</@type>");
     }
-    writeText(marked, marker, relative);
+    writeText(marked, relative);
 }
 
 /*!
   Write the XML for the overview list to the current XML stream.
  */
-void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /* marker */)
+void DitaXmlGenerator::generateOverviewList(const Node* relative)
 {
     QMap<const DocNode*, QMap<QString, DocNode*> > docNodeMap;
     QMap<QString, const DocNode*> groupTitlesMap;
     QMap<QString, DocNode*> uncategorizedNodeMap;
     QRegExp singleDigit("\\b([0-9])\\b");
 
-    const NodeList children = tree_->root()->childNodes();
+    const NodeList children = qdb_->treeRoot()->childNodes();
     foreach (Node* child, children) {
         if (child->type() == Node::Document && child != relative) {
             DocNode* docNode = static_cast<DocNode*>(child);
@@ -3282,7 +3139,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
                 if (isGroupPage) {
                     // If we encounter a group definition page, we add all
                     // the pages in that group to the list for that group.
-                    foreach (Node* member, docNode->groupMembers()) {
+                    foreach (Node* member, docNode->members()) {
                         if (member->type() != Node::Document)
                             continue;
                         DocNode* page = static_cast<DocNode*>(member);
@@ -3299,7 +3156,7 @@ void DitaXmlGenerator::generateOverviewList(const Node* relative, CodeMarker* /*
                 else if (!isGroupPage) {
                     // If we encounter a page that belongs to a group then
                     // we add that page to the list for that group.
-                    const DocNode* gn = tree_->findGroupNode(QStringList(group));
+                    const DocNode* gn = qdb_->findGroupNode(QStringList(group));
                     if (gn)
                         docNodeMap[gn].insert(sortKey, docNode);
                 }
@@ -3383,7 +3240,7 @@ void DitaXmlGenerator::generateSection(const NodeList& nl,
             if ((*m)->access() != Node::Private) {
                 writeStartTag(DT_li);
                 QString marked = getMarkedUpSynopsis(*m, relative, marker, style);
-                writeText(marked, marker, relative);
+                writeText(marked, relative);
                 writeEndTag(); // </li>
             }
             ++m;
@@ -3395,9 +3252,7 @@ void DitaXmlGenerator::generateSection(const NodeList& nl,
 /*!
   Writes the "inherited from" list to the current XML stream.
  */
-void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
-                                                    const Node* relative,
-                                                    CodeMarker* marker)
+void DitaXmlGenerator::generateSectionInheritedList(const Section& section, const Node* relative)
 {
     if (section.inherited.isEmpty())
         return;
@@ -3420,7 +3275,7 @@ void DitaXmlGenerator::generateSectionInheritedList(const Section& section,
         text = fileName((*p).first) + QLatin1Char('#');
         text += DitaXmlGenerator::cleanRef(section.name.toLower());
         xmlWriter().writeAttribute("href",text);
-        text = protectEnc(marker->plainFullName((*p).first, relative));
+        text = protectEnc((*p).first->plainFullName(relative));
         writeCharacters(text);
         writeEndTag(); // </xref>
         writeEndTag(); // </li>
@@ -3472,9 +3327,7 @@ QString DitaXmlGenerator::getMarkedUpSynopsis(const Node* node,
   from \a markedCode , and then the text is written to the current XML
   stream.
  */
-void DitaXmlGenerator::writeText(const QString& markedCode,
-                                 CodeMarker* marker,
-                                 const Node* relative)
+void DitaXmlGenerator::writeText(const QString& markedCode, const Node* relative)
 {
     QString src = markedCode;
     QString text;
@@ -3587,7 +3440,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
                         }
                         par1 = QStringRef();
                         QString link;
-                        n = marker->resolveTarget(arg.toString(), tree_, relative);
+                        n = qdb_->resolveTarget(arg.toString(), relative);
                         if (n && n->subType() == Node::QmlBasicType) {
                             if (relative && relative->subType() == Node::QmlClass) {
                                 link = linkForNode(n,relative);
@@ -3616,9 +3469,7 @@ void DitaXmlGenerator::writeText(const QString& markedCode,
     }
 }
 
-void DitaXmlGenerator::generateLink(const Atom* atom,
-                                    const Node* /* relative */,
-                                    CodeMarker* marker)
+void DitaXmlGenerator::generateLink(const Atom* atom, CodeMarker* marker)
 {
     static QRegExp camelCase("[A-Z][A-Z][a-z]|[a-z][A-Z0-9]|_");
 
@@ -3626,13 +3477,13 @@ void DitaXmlGenerator::generateLink(const Atom* atom,
         // hack for C++: move () outside of link
         int k = funcLeftParen.pos(1);
         writeCharacters(protectEnc(atom->string().left(k)));
-        if (link.isEmpty()) {
+        if (link_.isEmpty()) {
             if (showBrokenLinks)
                 writeEndTag(); // </i>
         }
         else
             writeEndTag(); // </xref>
-        inLink = false;
+        inLink_ = false;
         writeCharacters(protectEnc(atom->string().mid(k)));
     }
     else if (marker->recognizeLanguage("Java")) {
@@ -3920,7 +3771,6 @@ QString DitaXmlGenerator::refForAtom(Atom* atom, const Node* /* node */)
 
 void DitaXmlGenerator::generateFullName(const Node* apparentNode,
                                         const Node* relative,
-                                        CodeMarker* marker,
                                         const Node* actualNode)
 {
     if (actualNode == 0)
@@ -3929,125 +3779,8 @@ void DitaXmlGenerator::generateFullName(const Node* apparentNode,
     // formathtml
     QString href = linkForNode(actualNode, relative);
     writeHrefAttribute(href);
-    writeCharacters(protectEnc(fullName(apparentNode, relative, marker)));
+    writeCharacters(protectEnc(apparentNode->fullName(relative)));
     writeEndTag(); // </xref>
-}
-
-void DitaXmlGenerator::findAllClasses(const InnerNode* node)
-{
-    NodeList::const_iterator c = node->childNodes().constBegin();
-    while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private && (*c)->url().isEmpty()) {
-            if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
-                QString className = (*c)->name();
-                if ((*c)->parent() &&
-                        (*c)->parent()->type() == Node::Namespace &&
-                        !(*c)->parent()->name().isEmpty())
-                    className = (*c)->parent()->name()+"::"+className;
-
-                if (!(static_cast<const ClassNode *>(*c))->hideFromMainList()) {
-                    if ((*c)->status() == Node::Compat) {
-                        compatClasses.insert(className, *c);
-                    }
-                    else if ((*c)->status() == Node::Obsolete) {
-                        obsoleteClasses.insert(className, *c);
-                    }
-                    else {
-                        nonCompatClasses.insert(className, *c);
-                        if ((*c)->status() == Node::Main)
-                            mainClasses.insert(className, *c);
-                    }
-                }
-
-                QString moduleName = (*c)->moduleName();
-                if (moduleName == "Qt3SupportLight") {
-                    moduleClassMap[moduleName].insert((*c)->name(), *c);
-                    moduleName = "Qt3Support";
-                }
-                if (!moduleName.isEmpty())
-                    moduleClassMap[moduleName].insert((*c)->name(), *c);
-
-                QString serviceName =
-                        (static_cast<const ClassNode *>(*c))->serviceName();
-                if (!serviceName.isEmpty())
-                    serviceClasses.insert(serviceName, *c);
-            }
-            else if ((*c)->type() == Node::Document &&
-                     (*c)->subType() == Node::QmlClass &&
-                     !(*c)->doc().isEmpty()) {
-                QString qmlClassName = (*c)->name();
-                qmlClasses.insert(qmlClassName,*c);
-            }
-            else if ((*c)->isInnerNode()) {
-                findAllClasses(static_cast<InnerNode *>(*c));
-            }
-        }
-        ++c;
-    }
-}
-
-void DitaXmlGenerator::findAllFunctions(const InnerNode* node)
-{
-    NodeList::ConstIterator c = node->childNodes().constBegin();
-    while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private) {
-            if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
-                findAllFunctions(static_cast<const InnerNode*>(*c));
-            }
-            else if ((*c)->type() == Node::Function) {
-                const FunctionNode* func = static_cast<const FunctionNode*>(*c);
-                if ((func->status() > Node::Obsolete) &&
-                        !func->isInternal() &&
-                        (func->metaness() != FunctionNode::Ctor) &&
-                        (func->metaness() != FunctionNode::Dtor)) {
-                    funcIndex[(*c)->name()].insert((*c)->parent()->fullDocumentName(), *c);
-                }
-            }
-        }
-        ++c;
-    }
-}
-
-void DitaXmlGenerator::findAllLegaleseTexts(const InnerNode* node)
-{
-    NodeList::ConstIterator c = node->childNodes().constBegin();
-    while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private) {
-            if (!(*c)->doc().legaleseText().isEmpty())
-                legaleseTexts.insertMulti((*c)->doc().legaleseText(), *c);
-            if ((*c)->isInnerNode())
-                findAllLegaleseTexts(static_cast<const InnerNode *>(*c));
-        }
-        ++c;
-    }
-}
-
-void DitaXmlGenerator::findAllNamespaces(const InnerNode* node)
-{
-    NodeList::ConstIterator c = node->childNodes().constBegin();
-    while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private) {
-            if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
-                findAllNamespaces(static_cast<const InnerNode *>(*c));
-                if ((*c)->type() == Node::Namespace) {
-                    const NamespaceNode *nspace = static_cast<const NamespaceNode *>(*c);
-                    // Ensure that the namespace's name is not empty (the root
-                    // namespace has no name).
-                    if (!nspace->name().isEmpty()) {
-                        namespaceIndex.insert(nspace->name(), *c);
-                        QString moduleName = (*c)->moduleName();
-                        if (moduleName == "Qt3SupportLight") {
-                            moduleNamespaceMap[moduleName].insert((*c)->name(), *c);
-                            moduleName = "Qt3Support";
-                        }
-                        if (!moduleName.isEmpty())
-                            moduleNamespaceMap[moduleName].insert((*c)->name(), *c);
-                    }
-                }
-            }
-        }
-        ++c;
-    }
 }
 
 /*!
@@ -4082,34 +3815,6 @@ bool DitaXmlGenerator::isThreeColumnEnumValueTable(const Atom* atom)
     return false;
 }
 
-const Node* DitaXmlGenerator::findNodeForTarget(const QString& target,
-                                                const Node* relative,
-                                                CodeMarker* marker,
-                                                const Atom* atom)
-{
-    const Node* node = 0;
-
-    if (target.isEmpty()) {
-        node = relative;
-    }
-    else if (target.endsWith(".html")) {
-        node = tree_->root()->findChildNodeByNameAndType(target, Node::Document);
-    }
-    else if (marker) {
-        node = marker->resolveTarget(target, tree_, relative);
-        if (!node)
-            node = tree_->findDocNodeByTitle(target, relative);
-        if (!node && atom) {
-            node = tree_->findUnambiguousTarget(target, *const_cast<Atom**>(&atom), relative);
-        }
-    }
-
-    if (!node)
-        relative->doc().location().warning(tr("Cannot link to '%1'").arg(target));
-
-    return node;
-}
-
 const QPair<QString,QString> DitaXmlGenerator::anchorForNode(const Node* node)
 {
     QPair<QString,QString> anchorPair;
@@ -4122,10 +3827,7 @@ const QPair<QString,QString> DitaXmlGenerator::anchorForNode(const Node* node)
     return anchorPair;
 }
 
-QString DitaXmlGenerator::getLink(const Atom* atom,
-                                  const Node* relative,
-                                  CodeMarker* marker,
-                                  const Node** node)
+QString DitaXmlGenerator::getLink(const Atom* atom, const Node* relative, const Node** node)
 {
     QString link;
     *node = 0;
@@ -4154,14 +3856,14 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
             *node = relative;
         }
         else if (first.endsWith(".html")) {
-            *node = tree_->root()->findChildNodeByNameAndType(first, Node::Document);
+            *node = qdb_->treeRoot()->findChildNodeByNameAndType(first, Node::Document);
         }
         else {
-            *node = marker->resolveTarget(first, tree_, relative);
+            *node = qdb_->resolveTarget(first, relative);
             if (!*node)
-                *node = tree_->findDocNodeByTitle(first, relative);
+                *node = qdb_->findDocNodeByTitle(first, relative);
             if (!*node)
-                *node = tree_->findUnambiguousTarget(first, targetAtom, relative);
+                *node = qdb_->findUnambiguousTarget(first, targetAtom, relative);
         }
 
         if (*node) {
@@ -4182,7 +3884,7 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
                     if (fake->title().startsWith("Porting"))
                         porting = true;
                 }
-                QString name = marker->plainFullName(relative);
+                QString name = relative->plainFullName();
                 if (!porting && !name.startsWith("Q3")) {
                     if (obsoleteLinks) {
                         relative->doc().location().warning(tr("Link to obsolete item '%1' in %2")
@@ -4195,7 +3897,7 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
         }
 
         while (!path.isEmpty()) {
-            targetAtom = tree_->findTarget(path.first(), *node);
+            targetAtom = qdb_->findTarget(path.first(), *node);
             if (targetAtom == 0)
                 break;
             path.removeFirst();
@@ -4211,8 +3913,7 @@ QString DitaXmlGenerator::getLink(const Atom* atom,
                 QString guid = lookupGuid(link,refForAtom(targetAtom,*node));
                 link += QLatin1Char('#') + guid;
             }
-            else if (!link.isEmpty() && *node &&
-                     (link.endsWith(".xml") || link.endsWith(".dita"))) {
+            else if (!link.isEmpty() && *node && (link.endsWith(".xml") || link.endsWith(".dita"))) {
                 link += QLatin1Char('#') + (*node)->guid();
             }
         }
@@ -4243,7 +3944,7 @@ void DitaXmlGenerator::generateIndex(const QString& fileBase,
                                      const QString& url,
                                      const QString& title)
 {
-    tree_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title, this);
+    qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title, this);
 }
 
 void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)
@@ -4267,12 +3968,12 @@ void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)
                  << "We strongly advise against "
                  << "using it in new code. See ";
 
-            const DocNode *docNode = tree_->findDocNodeByTitle("Porting To Qt 4");
+            const DocNode *docNode = qdb_->findDocNodeByTitle("Porting To Qt 4");
             Atom *targetAtom = 0;
             if (docNode && node->type() == Node::Class) {
                 QString oldName(node->name());
                 oldName.remove(QLatin1Char('3'));
-                targetAtom = tree_->findTarget(oldName,docNode);
+                targetAtom = qdb_->findTarget(oldName,docNode);
             }
 
             if (targetAtom) {
@@ -4298,19 +3999,19 @@ void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)
 
 void DitaXmlGenerator::beginLink(const QString& link)
 {
-    this->link = link;
-    if (link.isEmpty())
+    link_ = link;
+    if (link_.isEmpty())
         return;
     writeStartTag(DT_xref);
     // formathtml
-    writeHrefAttribute(link);
-    inLink = true;
+    writeHrefAttribute(link_);
+    inLink_ = true;
 }
 
 void DitaXmlGenerator::endLink()
 {
-    if (inLink) {
-        if (link.isEmpty()) {
+    if (inLink_) {
+        if (link_.isEmpty()) {
             if (showBrokenLinks)
                 writeEndTag(); // </i>
         }
@@ -4323,7 +4024,7 @@ void DitaXmlGenerator::endLink()
             writeEndTag(); // </xref>
         }
     }
-    inLink = false;
+    inLink_ = false;
     inObsoleteLink = false;
 }
 
@@ -4370,7 +4071,7 @@ void DitaXmlGenerator::startQmlProperty(QmlPropertyNode* qpn,
     writeStartTag(DT_qmlPropertyDetail);
     writeStartTag(DT_qmlPropertyDef);
     if (!qpn->isReadOnlySet())
-        qpn->setReadOnly(!qpn->isWritable(tree_));
+        qpn->setReadOnly(!qpn->isWritable(qdb_));
     if (qpn->isReadOnly()) {
         writeStartTag(DT_qmlQualifier);
         xmlWriter().writeAttribute("name","read-only");
@@ -4513,7 +4214,7 @@ void DitaXmlGenerator::writeQmlRef(DitaTag tag,
     writeStartTag((DitaTag)((int)tag+1));
     writeStartTag(DT_apiData);
     QString marked = getMarkedUpSynopsis(n, relative, marker, CodeMarker::Detailed);
-    writeText(marked, marker, relative);
+    writeText(marked, relative);
     writeEndTag(); // </apiData>
     if (node->isAttached()) {
         writeStartTag(DT_qmlAttached);
@@ -4583,7 +4284,7 @@ void DitaXmlGenerator::generateQmlInheritedBy(const QmlClassNode* qcn, CodeMarke
             //xmlWriter().writeAttribute("outputclass","inherited-by");
             writeStartTag(DT_apiData);
             Text text;
-            appendSortedQmlNames(text,qcn,subs,marker);
+            appendSortedQmlNames(text,qcn,subs);
             text << Atom::ParaRight;
             generateText(text, qcn, marker);
             writeEndTag(); // </apiData>
@@ -4714,7 +4415,7 @@ QString DitaXmlGenerator::fullQualification(const Node* n)
  </cxxClassDerivation>
   \endcode
  */
-void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
+void DitaXmlGenerator::writeDerivations(const ClassNode* cn)
 {
     QList<RelatedClass>::ConstIterator r;
 
@@ -4732,7 +4433,7 @@ void DitaXmlGenerator::writeDerivations(const ClassNode* cn, CodeMarker* marker)
             writeStartTag(DT_cxxClassBaseClass);
             QString attr = fileName((*r).node) + QLatin1Char('#') + (*r).node->guid();
             xmlWriter().writeAttribute("href",attr);
-            writeCharacters(marker->plainFullName((*r).node));
+            writeCharacters((*r).node->plainFullName());
             writeEndTag(); // </cxxClassBaseClass>
 
             // not included: <ClassBaseStruct> or <cxxClassBaseUnion>
@@ -4901,7 +4602,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
             else {
                 writeStartTag(DT_cxxFunctionDeclaredType);
                 QString src = marker->typified(fn->returnType());
-                replaceTypesWithLinks(fn,parent,marker,src);
+                replaceTypesWithLinks(fn,parent,src);
                 writeEndTag(); // <cxxFunctionDeclaredType>
             }
 
@@ -4933,7 +4634,7 @@ void DitaXmlGenerator::writeFunctions(const Section& s,
                 if (rfn && !rfn->isInternal()) {
                     writeStartTag(DT_cxxFunctionReimplemented);
                     xmlWriter().writeAttribute("href",ditaXmlHref(rfn));
-                    writeCharacters(marker->plainFullName(rfn));
+                    writeCharacters(rfn->plainFullName());
                     writeEndTag(); // </cxxFunctionReimplemented>
                 }
             }
@@ -4966,10 +4667,7 @@ static const QChar charAt = '@';
   This function replaces class and enum names with <apiRelation>
   elements, i.e. links.
  */
-void DitaXmlGenerator::replaceTypesWithLinks(const Node* n,
-                                             const InnerNode* parent,
-                                             CodeMarker* marker,
-                                             QString& src)
+void DitaXmlGenerator::replaceTypesWithLinks(const Node* n, const InnerNode* parent, QString& src)
 {
     QStringRef arg;
     QStringRef par1;
@@ -4983,7 +4681,7 @@ void DitaXmlGenerator::replaceTypesWithLinks(const Node* n,
             }
             i += 2;
             if (parseArg(src, typeTag, &i, srcSize, &arg, &par1)) {
-                const Node* tn = marker->resolveTarget(arg.toString(), tree_, parent, n);
+                const Node* tn = qdb_->resolveTarget(arg.toString(), parent, n);
                 if (tn) {
                     //Do not generate a link from a C++ function to a QML Basic Type (such as int)
                     if (n->type() == Node::Function && tn->subType() == Node::QmlBasicType)
@@ -5023,7 +4721,7 @@ void DitaXmlGenerator::writeParameters(const FunctionNode* fn,
             writeStartTag(DT_cxxFunctionParameter);
             writeStartTag(DT_cxxFunctionParameterDeclaredType);
             QString src = marker->typified((*p).leftType());
-            replaceTypesWithLinks(fn,parent,marker,src);
+            replaceTypesWithLinks(fn,parent,src);
             //writeCharacters((*p).leftType());
             if (!(*p).rightType().isEmpty())
                 writeCharacters((*p).rightType());
@@ -5325,7 +5023,7 @@ void DitaXmlGenerator::writeProperties(const Section& s,
                 PropertyNode* opn = (PropertyNode*)pn->overriddenFrom();
                 writeStartTag(DT_cxxVariableReimplemented);
                 xmlWriter().writeAttribute("href",ditaXmlHref(opn));
-                writeCharacters(marker->plainFullName(opn));
+                writeCharacters(opn->plainFullName());
                 writeEndTag(); // </cxxVariableReimplemented>
             }
 
@@ -5487,7 +5185,7 @@ void DitaXmlGenerator::writeMacros(const Section& s,
                     FunctionNode* rfn = (FunctionNode*)fn->reimplementedFrom();
                     writeStartTag(DT_cxxDefineReimplemented);
                     xmlWriter().writeAttribute("href",ditaXmlHref(rfn));
-                    writeCharacters(marker->plainFullName(rfn));
+                    writeCharacters(rfn->plainFullName());
                     writeEndTag(); // </cxxDefineReimplemented>
                 }
 
@@ -5861,7 +5559,7 @@ Node* DitaXmlGenerator::collectNodesByTypeAndSubtype(const InnerNode* parent)
   Creates the DITA map for the qdoc run. The map is written
   to the file \e{qt.ditamap" in the DITA XML output directory.
  */
-void DitaXmlGenerator::writeDitaMap(Tree *tree)
+void DitaXmlGenerator::writeDitaMap()
 {
     QString doctype;
 
@@ -5869,7 +5567,7 @@ void DitaXmlGenerator::writeDitaMap(Tree *tree)
     Remove #if 0 to get a flat ditamap.
 */
 #if 0
-    beginSubPage(tree->root(),"qt.ditamap");
+    beginSubPage(qdb_->treeRoot(),"qt.ditamap");
     doctype = "<!DOCTYPE map PUBLIC \"-//OASIS//DTD DITA Map//EN\" \"map.dtd\">";
     xmlWriter().writeDTD(doctype);
     writeStartTag(DT_map);
@@ -5895,9 +5593,9 @@ void DitaXmlGenerator::writeDitaMap(Tree *tree)
         nodeSubtypeMaps[i] = new NodeMultiMap;
     for (unsigned i=0; i<Node::OnBeyondZebra; ++i)
         pageTypeMaps[i] = new NodeMultiMap;
-    Node* rootPageNode = collectNodesByTypeAndSubtype(tree->root());
+    Node* rootPageNode = collectNodesByTypeAndSubtype(qdb_->treeRoot());
 
-    beginSubPage(tree->root(),"qt.ditamap");
+    beginSubPage(qdb_->treeRoot(),"qt.ditamap");
 
     doctype = "<!DOCTYPE map PUBLIC \"-//OASIS//DTD DITA Map//EN\" \"map.dtd\">";
     xmlWriter().writeDTD(doctype);
@@ -5987,7 +5685,7 @@ void DitaXmlGenerator::writeDitaRefs(const DitaRefList& ditarefs)
             writeStartTag(DT_topicref);
         xmlWriter().writeAttribute("navtitle",t->navtitle());
         if (t->href().isEmpty()) {
-            const DocNode* dn = tree_->findDocNodeByTitle(t->navtitle());
+            const DocNode* dn = qdb_->findDocNodeByTitle(t->navtitle());
             if (dn)
                 xmlWriter().writeAttribute("href",fileName(dn));
         }

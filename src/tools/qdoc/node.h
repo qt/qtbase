@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-  node.h
-*/
-
 #ifndef NODE_H
 #define NODE_H
 
@@ -61,11 +57,11 @@ QT_BEGIN_NAMESPACE
 class Node;
 class ClassNode;
 class InnerNode;
-class ClassNode;
 class ExampleNode;
 class QmlClassNode;
-class Tree;
+class QDocDatabase;
 
+typedef QList<Node*> NodeList;
 typedef QMap<QString, const Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
@@ -164,6 +160,10 @@ public:
 
     virtual ~Node();
 
+    QString plainName() const;
+    QString plainFullName(const Node* relative = 0) const;
+    QString fullName(const Node* relative=0) const;
+
     void setAccess(Access access) { access_ = access; }
     void setLocation(const Location& location) { loc = location; }
     void setDoc(const Doc& doc, bool replace = false);
@@ -171,7 +171,7 @@ public:
     void setThreadSafeness(ThreadSafeness safeness) { safeness_ = safeness; }
     void setSince(const QString &since);
     void setRelates(InnerNode* pseudoParent);
-    void setModuleName(const QString &module) { mod = module; }
+    void setModuleName(const QString &name) { moduleName_ = name; }
     void setLink(LinkType linkType, const QString &link, const QString &desc);
     void setUrl(const QString &url);
     void setTemplateStuff(const QString &templateStuff) { templateStuff_ = templateStuff; }
@@ -185,15 +185,22 @@ public:
     virtual bool isLeaf() const { return false; }
     virtual bool isReimp() const { return false; }
     virtual bool isFunction() const { return false; }
+    virtual bool isNamespace() const { return false; }
+    virtual bool isClass() const { return false; }
     virtual bool isQmlNode() const { return false; }
     virtual bool isQtQuickNode() const { return false; }
     virtual bool isAbstract() const { return false; }
     virtual bool isQmlPropertyGroup() const { return false; }
     virtual bool isCollisionNode() const { return false; }
     virtual bool isAttached() const { return false; }
+    virtual bool hasMembers() const { return false; }
+    virtual bool hasNamespaces() const { return false; }
+    virtual bool hasClasses() const { return false; }
     virtual void setAbstract(bool ) { }
     virtual QString title() const { return QString(); }
     virtual bool hasProperty(const QString& ) const { return false; }
+    virtual void getMemberNamespaces(NodeMap& ) { }
+    virtual void getMemberClasses(NodeMap& ) { }
     bool isInternal() const;
     bool isIndexNode() const { return indexNodeFlag_; }
     Type type() const { return nodeType_; }
@@ -201,13 +208,11 @@ public:
     InnerNode* parent() const { return parent_; }
     InnerNode* relates() const { return relatesTo_; }
     const QString& name() const { return name_; }
-    QMap<LinkType, QPair<QString,QString> > links() const { return linkMap; }
+    const QMap<LinkType, QPair<QString,QString> >& links() const { return linkMap_; }
     QString moduleName() const;
     QString url() const;
     virtual QString nameForLists() const { return name_; }
     virtual QString outputFileName() const { return QString(); }
-    virtual void addGroupMember(Node* ) { }
-    virtual void addQmlModuleMember(Node* ) { }
 
     Access access() const { return access_; }
     QString accessString() const;
@@ -233,12 +238,10 @@ public:
     virtual QString qmlModuleName() const { return qmlModuleName_; }
     virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
     virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
-    virtual bool setQmlModule(const ArgLocPair& );
+    virtual bool setQmlModuleInfo(const QString& );
     virtual ClassNode* classNode() { return 0; }
     virtual void setClassNode(ClassNode* ) { }
     virtual void clearCurrentChild() { }
-    virtual const ImportList* importList() const { return 0; }
-    virtual void setImportList(const ImportList& ) { }
     virtual const Node* applyModuleIdentifier(const Node* ) const { return 0; }
     virtual QString idNumber() { return "0"; }
     QmlClassNode* qmlClassNode();
@@ -274,8 +277,8 @@ private:
     QString name_;
     Location loc;
     Doc d;
-    QMap<LinkType, QPair<QString, QString> > linkMap;
-    QString mod;
+    QMap<LinkType, QPair<QString, QString> > linkMap_;
+    QString moduleName_;
     QString url_;
     QString sinc;
     QString templateStuff_;
@@ -291,10 +294,6 @@ private:
 class FunctionNode;
 class EnumNode;
 class NameCollisionNode;
-
-typedef QList<Node*> NodeList;
-typedef QMap<QString, const Node*> NodeMap;
-typedef QMultiMap<QString, Node*> NodeMultiMap;
 
 class InnerNode : public Node
 {
@@ -324,12 +323,21 @@ public:
     const FunctionNode* findFunctionNode(const QString& name) const;
     const FunctionNode* findFunctionNode(const FunctionNode* clone) const;
     const EnumNode* findEnumNodeForValue(const QString &enumValue) const;
-    const NodeList & childNodes() const { return children; }
+    const NodeList & childNodes() const { return children_; }
     const NodeList & relatedNodes() const { return related_; }
-    int count() const { return children.size(); }
+
+    void addMember(Node* node) { members_.append(node); }
+    const NodeList& members() const { return members_; }
+    virtual bool hasMembers() const;
+    virtual bool hasNamespaces() const;
+    virtual bool hasClasses() const;
+    virtual void getMemberNamespaces(NodeMap& out);
+    virtual void getMemberClasses(NodeMap& out);
+
+    int count() const { return children_.size(); }
     int overloadNumber(const FunctionNode* func) const;
     NodeList overloads(const QString &funcName) const;
-    const QStringList& includes() const { return inc; }
+    const QStringList& includes() const { return includes_; }
 
     QStringList primaryKeys();
     QStringList secondaryKeys();
@@ -339,6 +347,9 @@ public:
     virtual void setCurrentChild(InnerNode* ) { }
     virtual void setOutputFileName(const QString& f) { outputFileName_ = f; }
     virtual QString outputFileName() const { return outputFileName_; }
+
+    void printChildren(const QString& title);
+    void printMembers(const QString& title);
 
 protected:
     InnerNode(Type type, InnerNode* parent, const QString& name);
@@ -354,9 +365,10 @@ private:
 
     QString outputFileName_;
     QStringList pageKeywds;
-    QStringList inc;
-    NodeList children;
-    NodeList enumChildren;
+    QStringList includes_;
+    NodeList children_;
+    NodeList members_;
+    NodeList enumChildren_;
     NodeList related_;
     QMap<QString, Node*> childMap;
     QMap<QString, Node*> primaryFunctionMap;
@@ -382,6 +394,7 @@ class NamespaceNode : public InnerNode
 public:
     NamespaceNode(InnerNode* parent, const QString& name);
     virtual ~NamespaceNode() { }
+    virtual bool isNamespace() const { return true; }
 };
 
 class ClassNode;
@@ -409,6 +422,7 @@ class ClassNode : public InnerNode
 public:
     ClassNode(InnerNode* parent, const QString& name);
     virtual ~ClassNode() { }
+    virtual bool isClass() const { return true; }
 
     void addBaseClass(Access access,
                       ClassNode* node,
@@ -453,31 +467,21 @@ public:
 
     void setTitle(const QString &title) { title_ = title; }
     void setSubTitle(const QString &subTitle) { subtitle_ = subTitle; }
-    virtual void addGroupMember(Node* node) { nodeList.append(node); }
-    virtual void addQmlModuleMember(Node* node) { nodeList.append(node); }
 
     SubType subType() const { return nodeSubtype_; }
     virtual QString title() const;
     virtual QString fullTitle() const;
     virtual QString subTitle() const;
     virtual QString imageFileName() const { return QString(); }
-    const NodeList& groupMembers() const { return nodeList; }
-    const NodeList& qmlModuleMembers() const { return nodeList; }
     virtual QString nameForLists() const { return title(); }
     virtual void setImageFileName(const QString& ) { }
     virtual bool isQmlPropertyGroup() const { return (nodeSubtype_ == QmlPropertyGroup); }
     virtual bool hasProperty(const QString& ) const;
 
-    static void insertQmlModuleNode(const QString& qmid, DocNode* fn);
-    static DocNode* lookupQmlModuleNode(Tree* tree, const ArgLocPair& arg);
-
 protected:
     SubType nodeSubtype_;
     QString title_;
     QString subtitle_;
-    NodeList nodeList; // used for groups and QML modules.
-
-    static QMap<QString, DocNode*> qmlModuleMap_;
 };
 
 class NameCollisionNode : public DocNode
@@ -529,25 +533,21 @@ public:
     virtual void setClassNode(ClassNode* cn) { cnode_ = cn; }
     virtual void setCurrentChild();
     virtual void clearCurrentChild();
-    virtual const ImportList* importList() const { return &importList_; }
-    virtual void setImportList(const ImportList& il) { importList_ = il; }
     virtual bool isAbstract() const { return abstract_; }
     virtual void setAbstract(bool b) { abstract_ = b; }
+    const ImportList& importList() const { return importList_; }
+    void setImportList(const ImportList& il) { importList_ = il; }
     const DocNode* qmlBase() const { return base_; }
-    void resolveInheritance(Tree* tree);
+    void setQmlBase(DocNode* b) { base_ = b; }
     void requireCppClass() { cnodeRequired_ = true; }
     bool cppClassRequired() const { return cnodeRequired_; }
     static void addInheritedBy(const QString& base, Node* sub);
     static void subclasses(const QString& base, NodeList& subs);
     static void terminate();
 
-    static void insertQmlModuleMember(const QString& qmid, QmlClassNode* qcn);
-    static QmlClassNode* lookupQmlTypeNode(const QString& qmid, const QString& name);
-
 public:
     static bool qmlOnly;
     static QMultiMap<QString,Node*> inheritedBy;
-    static QMap<QString, QmlClassNode*> qmlModuleMemberMap_;
 
 private:
     bool abstract_;
@@ -616,7 +616,7 @@ public:
     bool isDefault() const { return isdefault_; }
     bool isStored() const { return fromFlagValue(stored_,true); }
     bool isDesignable() const { return fromFlagValue(designable_,false); }
-    bool isWritable(Tree* tree);
+    bool isWritable(QDocDatabase* qdb);
     bool isReadOnly() const { return fromFlagValue(readOnly_,false); }
     virtual bool isAttached() const { return attached_; }
     virtual bool isQmlNode() const { return true; }
@@ -627,7 +627,7 @@ public:
     virtual QString qmlModuleIdentifier() const { return parent()->qmlModuleIdentifier(); }
     virtual bool hasProperty(const QString& name) const;
 
-    PropertyNode* correspondingProperty(Tree* tree);
+    PropertyNode* correspondingProperty(QDocDatabase* qdb);
 
     const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
     void appendQmlPropNode(QmlPropertyNode* p) { qmlPropNodes_.append(p); }

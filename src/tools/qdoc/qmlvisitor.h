@@ -70,7 +70,6 @@ public:
     QmlDocVisitor(const QString &filePath,
                   const QString &code,
                   QQmlJS::Engine *engine,
-                  Tree *tree,
                   QSet<QString> &commands,
                   QSet<QString> &topics);
     virtual ~QmlDocVisitor();

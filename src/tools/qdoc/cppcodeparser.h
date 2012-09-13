@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-  cppcodeparser.h
-*/
-
 #ifndef CPPCODEPARSER_H
 #define CPPCODEPARSER_H
 
@@ -70,19 +66,10 @@ public:
     virtual QString language();
     virtual QStringList headerFileNameFilter();
     virtual QStringList sourceFileNameFilter();
-    virtual void parseHeaderFile(const Location& location,
-                                 const QString& filePath,
-                                 Tree *tree);
-    virtual void parseSourceFile(const Location& location,
-                                 const QString& filePath,
-                                 Tree *tree);
-    virtual void doneParsingHeaderFiles(Tree *tree);
-    virtual void doneParsingSourceFiles(Tree *tree);
-
-    const FunctionNode *findFunctionNode(const QString& synopsis,
-                                         Tree *tree,
-                                         Node *relative = 0,
-                                         bool fuzzy = false);
+    virtual void parseHeaderFile(const Location& location, const QString& filePath);
+    virtual void parseSourceFile(const Location& location, const QString& filePath);
+    virtual void doneParsingHeaderFiles();
+    virtual void doneParsingSourceFiles();
 
 protected:
     virtual QSet<QString> topicCommands();
@@ -109,7 +96,7 @@ protected:
     void processOtherMetaCommands(const Doc& doc, Node *node);
 
  protected:
-    void reset(Tree *tree);
+    void reset();
     void readToken();
     const Location& location();
     QString previousLexeme();
@@ -157,19 +144,17 @@ protected:
     void parseQiteratorDotH(const Location &location, const QString &filePath);
     void instantiateIteratorMacro(const QString &container,
                                   const QString &includeFile,
-                                  const QString &macroDef,
-                                  Tree *tree);
+                                  const QString &macroDef);
     void createExampleFileNodes(DocNode *dn);
 
  protected:
     QMap<QString, Node::Type> nodeTypeMap;
-    Tree* tree_;
     Tokenizer *tokenizer;
     int tok;
     Node::Access access;
     FunctionNode::Metaness metaness;
     QString moduleName;
-    QStringList lastPath;
+    QStringList lastPath_;
     QRegExp varComment;
     QRegExp sep;
     QSet<QString> activeNamespaces_;

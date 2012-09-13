@@ -39,15 +39,10 @@
 **
 ****************************************************************************/
 
-/*
-  codeparser.h
-*/
-
 #ifndef CODEPARSER_H
 #define CODEPARSER_H
 
 #include <QSet>
-
 #include "node.h"
 
 QT_BEGIN_NAMESPACE
@@ -55,7 +50,7 @@ QT_BEGIN_NAMESPACE
 class Config;
 class Node;
 class QString;
-class Tree;
+class QDocDatabase;
 
 class CodeParser
 {
@@ -68,12 +63,10 @@ public:
     virtual QString language() = 0;
     virtual QStringList headerFileNameFilter();
     virtual QStringList sourceFileNameFilter() = 0;
-    virtual void parseHeaderFile(const Location& location,
-                                 const QString& filePath, Tree *tree);
-    virtual void parseSourceFile(const Location& location,
-                                 const QString& filePath, Tree *tree) = 0;
-    virtual void doneParsingHeaderFiles(Tree *tree);
-    virtual void doneParsingSourceFiles(Tree *tree) = 0;
+    virtual void parseHeaderFile(const Location& location, const QString& filePath);
+    virtual void parseSourceFile(const Location& location, const QString& filePath) = 0;
+    virtual void doneParsingHeaderFiles();
+    virtual void doneParsingSourceFiles() = 0;
 
     bool isParsingH() const;
     bool isParsingCpp() const;
@@ -96,11 +89,12 @@ protected:
     void processCommonMetaCommand(const Location& location,
                                   const QString& command,
                                   const ArgLocPair& arg,
-                                  Node *node, Tree *tree);
+                                  Node *node);
     static void extractPageLinkAndDesc(const QString& arg,
                                        QString* link,
                                        QString* desc);
     QString currentFile_;
+    QDocDatabase* qdb_;
 
 private:
     static QString currentSubDir_;

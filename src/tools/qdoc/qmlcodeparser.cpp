@@ -45,10 +45,8 @@
 
 #include "qqmljsast_p.h"
 #include "qqmljsastvisitor_p.h"
-
 #include "qmlcodeparser.h"
 #include "node.h"
-#include "tree.h"
 #include "config.h"
 #include "qmlvisitor.h"
 #include <qdebug.h>
@@ -84,10 +82,16 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLBASICTYPE            Doc::alias("qmlbasictype")
 #define COMMAND_QMLMODULE               Doc::alias("qmlmodule")
 
+/*!
+  Constructs the QML code parser.
+ */
 QmlCodeParser::QmlCodeParser()
 {
 }
 
+/*!
+  Destroys the QML code parser.
+ */
 QmlCodeParser::~QmlCodeParser()
 {
 }
@@ -107,7 +111,8 @@ void QmlCodeParser::initializeParser(const Config &config)
 }
 
 /*!
-  Deletes the lexer and parser created by the constructor.
+  Terminates the QML code parser. Deletes the lexer and parser
+  created by the constructor.
  */
 void QmlCodeParser::terminateParser()
 {
@@ -124,7 +129,8 @@ QString QmlCodeParser::language()
 }
 
 /*!
-  Returns a filter string of "*.qml".
+  Returns a string list containing "*.qml". This is the only
+  file type parsed by the QMLN parser.
  */
 QStringList QmlCodeParser::sourceFileNameFilter()
 {
@@ -132,16 +138,13 @@ QStringList QmlCodeParser::sourceFileNameFilter()
 }
 
 /*!
-  Parses the source file at \a filePath, creating nodes as
-  needed and inserting them into the \a tree. \a location is
-  used for error reporting.
+  Parses the source file at \a filePath and inserts the contents
+  into the database. The \a location is used for error reporting.
 
-  If it can't open the file at \a filePath, it reports an
-  error and returns without doing anything.
+  If it can't open the file at \a filePath, it reports an error
+  and returns without doing anything.
  */
-void QmlCodeParser::parseSourceFile(const Location& location,
-                                    const QString& filePath,
-                                    Tree *tree)
+void QmlCodeParser::parseSourceFile(const Location& location, const QString& filePath)
 {
     QFile in(filePath);
     currentFile_ = filePath;
@@ -170,7 +173,6 @@ void QmlCodeParser::parseSourceFile(const Location& location,
         QmlDocVisitor visitor(filePath,
                               newCode,
                               &engine,
-                              tree,
                               metacommandsAllowed,
                               topicCommandsAllowed);
         QQmlJS::AST::Node::accept(ast, &visitor);
@@ -184,10 +186,10 @@ void QmlCodeParser::parseSourceFile(const Location& location,
 }
 
 /*!
-  This function is called when the parser finishes parsing
-  the file, but in this case the function does nothing.
+  Performs cleanup after qdoc is done parsing all the QML files.
+  Currently, no cleanup is required.
  */
-void QmlCodeParser::doneParsingSourceFiles(Tree *)
+void QmlCodeParser::doneParsingSourceFiles()
 {
 }
 

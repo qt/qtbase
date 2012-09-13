@@ -60,8 +60,6 @@ public:
     bool recognizeExtension( const QString& ext );
     bool recognizeLanguage( const QString& lang );
     Atom::Type atomType() const;
-    QString plainName( const Node *node );
-    QString plainFullName( const Node *node, const Node *relative );
     QString markedUpCode( const QString& code, const Node *relative, const Location &location );
     QString markedUpSynopsis( const Node *node, const Node *relative,
                               SynopsisStyle style );

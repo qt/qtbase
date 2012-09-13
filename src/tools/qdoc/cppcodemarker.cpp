@@ -116,38 +116,6 @@ Atom::Type CppCodeMarker::atomType() const
     return Atom::Code;
 }
 
-/*!
-  Returns the \a node name, or "()" if \a node is a
-  Node::Function node.
- */
-QString CppCodeMarker::plainName(const Node *node)
-{
-    QString name = node->name();
-    if (node->type() == Node::Function)
-        name += QLatin1String("()");
-    return name;
-}
-
-QString CppCodeMarker::plainFullName(const Node *node, const Node *relative)
-{
-    if (node->name().isEmpty()) {
-        return QLatin1String("global");
-    }
-    else {
-        QString fullName;
-        while (node) {
-            fullName.prepend(plainName(node));
-            if (node->parent() == relative ||
-                    node->parent()->subType() == Node::Collision ||
-                    node->parent()->name().isEmpty())
-                break;
-            fullName.prepend(QLatin1String("::"));
-            node = node->parent();
-        }
-        return fullName;
-    }
-}
-
 QString CppCodeMarker::markedUpCode(const QString &code,
                                     const Node *relative,
                                     const Location &location)
@@ -832,40 +800,6 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
     }
 
     return sections;
-}
-
-/*!
-  Search the \a tree for a node named \a target
- */
-const Node *CppCodeMarker::resolveTarget(const QString& target,
-                                         const Tree* tree,
-                                         const Node* relative,
-                                         const Node* self)
-{
-    const Node* node = 0;
-    if (target.endsWith("()")) {
-        QString funcName = target;
-        funcName.chop(2);
-        QStringList path = funcName.split("::");
-        const FunctionNode* fn = tree->findFunctionNode(path, relative, Tree::SearchBaseClasses);
-        if (fn) {
-            /*
-              Why is this case not accepted?
-             */
-            if (fn->metaness() != FunctionNode::MacroWithoutParams)
-                node = fn;
-        }
-    }
-    else if (target.contains(QLatin1Char('#'))) {
-        // This error message is never printed; I think we can remove the case.
-        qDebug() << "qdoc: target case not handled:" << target;
-    }
-    else {
-        QStringList path = target.split("::");
-        int flags = Tree::SearchBaseClasses | Tree::SearchEnumValues | Tree::NonFunction;
-        node = tree->findNode(path, relative, flags, self);
-    }
-    return node;
 }
 
 static const char * const typeTable[] = {

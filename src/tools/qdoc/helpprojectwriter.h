@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Tree;
+class QDocDatabase;
 class Generator;
 typedef QPair<QString, const Node*> QStringNodePair;
 
@@ -92,7 +92,7 @@ public:
                       Generator* g);
     void addExtraFile(const QString &file);
     void addExtraFiles(const QSet<QString> &files);
-    void generate(const Tree *t);
+    void generate();
 
 private:
     void generateProject(HelpProject &project);
@@ -105,7 +105,7 @@ private:
     void writeNode(HelpProject &project, QXmlStreamWriter &writer, const Node *node);
     void readSelectors(SubProject &subproject, const QStringList &selectors);
 
-    const Tree *tree;
+    QDocDatabase* qdb_;
     Generator* gen_;
 
     QString outputDir;

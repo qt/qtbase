@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-  generator.h
-*/
-
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
@@ -60,22 +56,14 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QMap<QString, NodeMap> NewClassMaps;
-typedef QMap<QString, NodeMultiMap> NewSinceMaps;
 typedef QMap<QString, const Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMap<Node*, NodeMultiMap> ParentMaps;
 
-class ClassNode;
 class Config;
 class CodeMarker;
-class DocNode;
-class FunctionNode;
-class InnerNode;
 class Location;
-class NamespaceNode;
-class Node;
-class Tree;
+class QDocDatabase;
 
 class Generator
 {
@@ -85,7 +73,7 @@ public:
 
     virtual bool canHandleFormat(const QString &format) { return format == this->format(); }
     virtual QString format() = 0;
-    virtual void generateTree(Tree *tree);
+    virtual void generateTree();
     virtual void initializeGenerator(const Config &config);
     virtual void terminateGenerator();
 
@@ -102,12 +90,8 @@ public:
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);
     virtual void endSubPage();
-    virtual void endText(const Node *relative, CodeMarker *marker);
     virtual QString fileBase(const Node* node) const;
     virtual QString fileExtension() const = 0;
-    virtual QString fullName(const Node *node,
-                             const Node *relative,
-                             CodeMarker *marker) const;
     virtual void generateAlsoList(const Node *node, CodeMarker *marker);
     virtual int generateAtom(const Atom *atom,
                              const Node *relative,
@@ -131,8 +115,7 @@ protected:
                               const Node *relative,
                               CodeMarker *marker);
     virtual QString imageFileName(const Node *relative, const QString& fileBase);
-        virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
-    virtual void startText(const Node *relative, CodeMarker *marker);
+    virtual int skipAtoms(const Atom *atom, Atom::Type type) const;
     virtual QString typeString(const Node *node);
 
     static bool matchAhead(const Atom *atom, Atom::Type expectedAtomType);
@@ -142,8 +125,8 @@ protected:
     static QString trimmedTrailing(const QString &string);
     static QString sinceTitles[];
 
+    void initializeTextOutput();
     QString fileName(const Node* node) const;
-    void findAllSince(const InnerNode *node);
     QMap<QString, QString> &formattingLeftMap();
     QMap<QString, QString> &formattingRightMap();
     const Atom* generateAtomList(const Atom *atom,
@@ -175,10 +158,7 @@ protected:
     QString plainCode(const QString& markedCode);
     void setImageFileExtensions(const QStringList& extensions);
     void unknownAtom(const Atom *atom);
-    void appendSortedQmlNames(Text& text,
-                              const Node* base,
-                              const NodeList& subs,
-                              CodeMarker *marker);
+    void appendSortedQmlNames(Text& text, const Node* base, const NodeList& subs);
 
     QList<NameCollisionNode*> collisionNodes;
     QMap<QString, QStringList> editionGroupMap;
@@ -187,9 +167,6 @@ protected:
     QTextCodec* outputCodec;
     QString outputEncoding;
     QStack<QTextStream*> outStreamStack;
-    NewClassMaps newClassMaps;
-    NewClassMaps newQmlClassMaps;
-    NewSinceMaps newSinceMaps;
 
 private:
     static QString baseDir_;
@@ -214,22 +191,14 @@ private:
     void appendFullName(Text& text,
                         const Node *apparentNode,
                         const Node *relative,
-                        CodeMarker *marker,
                         const Node *actualNode = 0);
     void appendFullName(Text& text,
                         const Node *apparentNode,
                         const QString& fullName,
                         const Node *actualNode);
-    void appendFullNames(Text& text,
-                         const NodeList& nodes,
-                         const Node* relative,
-                         CodeMarker* marker);
-    void appendSortedNames(Text& text,
-                           const ClassNode *classe,
-                           const QList<RelatedClass> &classes,
-                           CodeMarker *marker);
-    void generateReimplementedFrom(const FunctionNode *func,
-                                   CodeMarker *marker);
+    void appendFullNames(Text& text, const NodeList& nodes, const Node* relative);
+    void appendSortedNames(Text& text, const ClassNode *classe, const QList<RelatedClass> &classes);
+    void generateReimplementedFrom(const FunctionNode *func, CodeMarker *marker);
 
     QString amp;
     QString gt;
@@ -238,7 +207,15 @@ private:
     QRegExp tag;
 
  protected:
-    Tree* tree_;
+    QDocDatabase* qdb_;
+    bool inLink_;
+    bool inContents_;
+    bool inSectionHeading_;
+    bool inTableHeader_;
+    bool threeColumnEnumValueTable_;
+    int numTableRows_;
+    QString link_;
+    QString sectionNumber_;
 };
 
 QT_END_NAMESPACE

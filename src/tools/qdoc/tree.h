@@ -55,21 +55,24 @@ QT_BEGIN_NAMESPACE
 class Generator;
 class QStringList;
 class TreePrivate;
+class QDocDatabase;
 
 class Tree
 {
-public:
+ private:
+    friend class QDocDatabase;
+
     enum FindFlag { SearchBaseClasses = 0x1,
                     SearchEnumValues = 0x2,
                     NonFunction = 0x4 };
 
-    Tree();
+    Tree(QDocDatabase* qdb);
     ~Tree();
 
     EnumNode* findEnumNode(const QStringList& path, Node* start = 0);
     ClassNode* findClassNode(const QStringList& path, Node* start = 0);
-    QmlClassNode* findQmlClassNode(const QStringList& path, Node* start = 0);
-    NamespaceNode* findNamespaceNode(const QStringList& path, Node* start = 0);
+    QmlClassNode* findQmlTypeNode(const QStringList& path);
+    NamespaceNode* findNamespaceNode(const QStringList& path);
     DocNode* findGroupNode(const QStringList& path, Node* start = 0);
     DocNode* findQmlModuleNode(const QStringList& path, Node* start = 0);
 
@@ -91,15 +94,12 @@ public:
                          int findFlags = 0,
                          const Node* self=0) const;
 
- private:
     const Node* findNode(const QStringList& path,
                          const Node* start,
                          int findFlags,
                          const Node* self,
                          bool qml) const;
 
- public:
-    QmlClassNode* findQmlClassNode(const QString& module, const QString& name);
     NameCollisionNode* checkForCollision(const QString& name) const;
     NameCollisionNode* findCollisionNode(const QString& name) const;
     FunctionNode *findFunctionNode(const QStringList &path,
@@ -113,14 +113,14 @@ public:
                       Node::Access access,
                       const QStringList &basePath,
                       const QString &dataTypeWithTemplateArgs,
-                      InnerNode *parent = 0);
+                      InnerNode *parent);
     void addPropertyFunction(PropertyNode *property,
                              const QString &funcName,
                              PropertyNode::FunctionRole funcRole);
     void addToGroup(Node *node, const QString &group);
     void addToPublicGroup(Node *node, const QString &group);
     void addToQmlModule(Node* node);
-    NodeMultiMap groups() const;
+    const NodeMultiMap& groups() const;
     QMultiMap<QString,QString> publicGroups() const;
     void resolveInheritance(NamespaceNode *rootNode = 0);
     void resolveProperties();
@@ -129,7 +129,7 @@ public:
     void resolveCppToQmlLinks();
     void fixInheritance(NamespaceNode *rootNode = 0);
     void setVersion(const QString &version) { vers = version; }
-    NamespaceNode *root() { return &roo; }
+    NamespaceNode *root() { return &root_; }
     QString version() const { return vers; }
 
     const FunctionNode *findFunctionNode(const QStringList &path,
@@ -142,7 +142,7 @@ public:
     const DocNode *findDocNodeByTitle(const QString &title, const Node* relative = 0) const;
     const Node *findUnambiguousTarget(const QString &target, Atom *&atom, const Node* relative) const;
     Atom *findTarget(const QString &target, const Node *node) const;
-    const NamespaceNode *root() const { return &roo; }
+    const NamespaceNode *root() const { return &root_; }
     void readIndexes(const QStringList &indexFiles);
     bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
     void generateIndexSections(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
@@ -157,9 +157,7 @@ public:
                                 const InnerNode *inner);
     void generateTagFile(const QString &fileName);
     void addExternalLink(const QString &url, const Node *relative);
-    void resolveQmlInheritance();
 
-private:
     void resolveInheritance(int pass, ClassNode *classe);
     FunctionNode *findVirtualFunctionInBaseClasses(ClassNode *classe,
                                                    FunctionNode *clone);
@@ -172,7 +170,8 @@ private:
     void resolveIndex();
 
 private:
-    NamespaceNode roo;
+    QDocDatabase* qdb_;
+    NamespaceNode root_;
     QString vers;
     Generator* gen_;
     TreePrivate *priv;

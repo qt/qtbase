@@ -49,6 +49,7 @@
 #include "node.h"
 #include "codeparser.h"
 #include "qmlvisitor.h"
+#include "qdocdatabase.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +85,6 @@ QT_BEGIN_NAMESPACE
 QmlDocVisitor::QmlDocVisitor(const QString &filePath,
                              const QString &code,
                              QQmlJS::Engine *engine,
-                             Tree *tree,
                              QSet<QString> &commands,
                              QSet<QString> &topics)
     : nestingLevel(0)
@@ -93,10 +93,9 @@ QmlDocVisitor::QmlDocVisitor(const QString &filePath,
     this->name = QFileInfo(filePath).baseName();
     document = code;
     this->engine = engine;
-    this->tree = tree;
     this->commands = commands;
     this->topics = topics;
-    current = tree->root();
+    current = QDocDatabase::qdocDB()->treeRoot();
 }
 
 /*!
@@ -235,6 +234,8 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                                       Node* node,
                                       Doc& doc)
 {
+    QDocDatabase* qdb = QDocDatabase::qdocDB();
+
     const TopicList& topicsUsed = doc.topicsUsed();
     if (topicsUsed.size() > 0) {
         if (node->type() == Node::QmlProperty) {
@@ -317,12 +318,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
                 node->setStatus(Node::Deprecated);
             }
             else if (command == COMMAND_INQMLMODULE) {
-                node->setQmlModule(args[0]);
-                DocNode* dn = DocNode::lookupQmlModuleNode(tree, args[0]);
-                dn->addQmlModuleMember(node);
-                QString qmid = node->qmlModuleIdentifier();
-                QmlClassNode* qcn = static_cast<QmlClassNode*>(node);
-                QmlClassNode::insertQmlModuleMember(qmid, qcn);
+                qdb->addToQmlModule(args[0].first,node);
             }
             else if (command == COMMAND_QMLINHERITS) {
                 if (node->name() == args[0].first)
@@ -349,7 +345,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if ((command == COMMAND_INGROUP) && !args.isEmpty()) {
                 ArgList::ConstIterator argsIter = args.constBegin();
                 while (argsIter != args.constEnd()) {
-                    tree->addToGroup(node, argsIter->first);
+                    QDocDatabase::qdocDB()->addToGroup(node, argsIter->first);
                     ++argsIter;
                 }
             }
@@ -380,10 +376,10 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
 }
 
 /*!
-  Begin the visit of the object \a definition, recording it in a tree
-  structure.  Increment the object nesting level, which is used to
-  test whether we are at the public API level. The public level is
-  level 1.
+  Begin the visit of the object \a definition, recording it in the
+  qdoc database. Increment the object nesting level, which is used
+  to test whether we are at the public API level. The public level
+  is level 1.
 */
 bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
 {

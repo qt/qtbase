@@ -2918,8 +2918,6 @@ Text Doc::trimmedBriefText(const QString &className) const
     if (atom) {
         QString briefStr;
         QString whats;
-        bool standardWording = true;
-
         /*
           This code is really ugly. The entire \brief business
           should be rethought.
@@ -2937,21 +2935,9 @@ Text Doc::trimmedBriefText(const QString &className) const
         else {
             if (!w.isEmpty() && w.first() == "The")
                 w.removeFirst();
-            else {
-                location().warning(
-                            tr("Nonstandard wording in '\\%1' text for '%2' (expected 'The')")
-                            .arg(COMMAND_BRIEF).arg(className));
-                standardWording = false;
-            }
 
             if (!w.isEmpty() && (w.first() == className || w.first() == classNameOnly))
                 w.removeFirst();
-            else {
-                location().warning(
-                            tr("Nonstandard wording in '\\%1' text for '%2' (expected '%3')")
-                            .arg(COMMAND_BRIEF).arg(className).arg(className));
-                standardWording = false;
-            }
 
             if (!w.isEmpty() && ((w.first() == "class") ||
                                  (w.first() == "function") ||
@@ -2960,14 +2946,6 @@ Text Doc::trimmedBriefText(const QString &className) const
                                  (w.first() == "namespace") ||
                                  (w.first() == "header")))
                 w.removeFirst();
-            else {
-                location().warning(
-                            tr("Nonstandard wording in '\\%1' text for '%2' ("
-                               "expected 'class', 'function', 'macro', 'widget', "
-                               "'namespace' or 'header')")
-                            .arg(COMMAND_BRIEF).arg(className));
-                standardWording = false;
-            }
 
             if (!w.isEmpty() && (w.first() == "is" || w.first() == "provides"))
                 w.removeFirst();
@@ -2981,18 +2959,11 @@ Text Doc::trimmedBriefText(const QString &className) const
         if (whats.endsWith(QLatin1Char('.')))
             whats.truncate(whats.length() - 1);
 
-        if (whats.isEmpty()) {
-            location().warning(
-                        tr("Nonstandard wording in '\\%1' text for '%2' (expected more text)")
-                        .arg(COMMAND_BRIEF).arg(className));
-            standardWording = false;
-        }
-        else
+        if (!whats.isEmpty())
             whats[0] = whats[0].toUpper();
 
         // ### move this once \brief is abolished for properties
-        if (standardWording)
-            resultText << whats;
+        resultText << whats;
     }
     return resultText;
 }

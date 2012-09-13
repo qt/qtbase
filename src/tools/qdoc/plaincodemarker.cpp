@@ -71,16 +71,6 @@ Atom::Type PlainCodeMarker::atomType() const
     return Atom::Code;
 }
 
-QString PlainCodeMarker::plainName( const Node * /* node */ )
-{
-    return QString();
-}
-
-QString PlainCodeMarker::plainFullName(const Node * /* node */, const Node * /* relative */)
-{
-    return QString();
-}
-
 QString PlainCodeMarker::markedUpCode( const QString& code,
                                        const Node * /* relative */,
                                        const Location & /* location */ )

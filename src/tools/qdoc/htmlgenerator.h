@@ -86,7 +86,7 @@ public:
     virtual void initializeGenerator(const Config& config);
     virtual void terminateGenerator();
     virtual QString format();
-    virtual void generateTree(Tree *tree);
+    virtual void generateTree();
     void generateCollisionPages();
     void generateManifestFiles();
 
@@ -96,7 +96,6 @@ public:
     static QString sinceTitle(int i) { return sinceTitles[i]; }
 
 protected:
-    virtual void startText(const Node *relative, CodeMarker *marker);
     virtual int generateAtom(const Atom *atom,
                              const Node *relative,
                              CodeMarker *marker);
@@ -119,10 +118,6 @@ private:
     };
 
     const QPair<QString,QString> anchorForNode(const Node *node);
-    const Node *findNodeForTarget(const QString &target,
-                                  const Node *relative,
-                                  CodeMarker *marker,
-                                  const Atom *atom = 0);
     void generateBreadCrumbs(const QString& title,
                              const Node *node,
                              CodeMarker *marker);
@@ -149,21 +144,18 @@ private:
     QString generateLowStatusMemberFile(const InnerNode *inner,
                                         CodeMarker *marker,
                                         CodeMarker::Status status);
-    void generateClassHierarchy(const Node *relative,
-                                CodeMarker *marker,
-                                const NodeMap &classMap);
+    void generateClassHierarchy(const Node *relative, const NodeMap &classMap);
     void generateAnnotatedList(const Node *relative,
                                CodeMarker *marker,
                                const NodeMap &nodeMap,
                                bool allOdd = false);
     void generateCompactList(const Node *relative,
-                             CodeMarker *marker,
                              const NodeMap &classMap,
                              bool includeAlphabet,
                              QString commonPrefix = QString());
-    void generateFunctionIndex(const Node *relative, CodeMarker *marker);
+    void generateFunctionIndex(const Node *relative);
     void generateLegaleseList(const Node *relative, CodeMarker *marker);
-    void generateOverviewList(const Node *relative, CodeMarker *marker);
+    void generateOverviewList(const Node *relative);
     void generateSectionList(const Section& section,
                              const Node *relative,
                              CodeMarker *marker,
@@ -192,50 +184,32 @@ private:
                           CodeMarker::SynopsisStyle style,
                           bool alignNames = false,
                           const QString* prefix = 0);
-    void generateSectionInheritedList(const Section& section,
-                                      const Node *relative,
-                                      CodeMarker *marker);
+    void generateSectionInheritedList(const Section& section, const Node *relative);
     QString highlightedCode(const QString& markedCode,
-                            CodeMarker* marker,
                             const Node* relative,
                             bool alignNames = false,
                             const Node* self = 0);
 
-    void generateFullName(const Node *apparentNode,
-                          const Node *relative,
-                          CodeMarker *marker,
-                          const Node *actualNode = 0);
+    void generateFullName(const Node *apparentNode, const Node *relative, const Node *actualNode = 0);
     void generateDetailedMember(const Node *node,
                                 const InnerNode *relative,
                                 CodeMarker *marker);
-    void generateLink(const Atom *atom,
-                      const Node *relative,
-                      CodeMarker *marker);
+    void generateLink(const Atom *atom, CodeMarker *marker);
     void generateStatus(const Node *node, CodeMarker *marker);
 
     QString registerRef(const QString& ref);
     virtual QString fileBase(const Node *node) const;
     QString fileName(const Node *node);
-    void findAllClasses(const InnerNode *node);
-    void findAllFunctions(const InnerNode *node);
-    void findAllLegaleseTexts(const InnerNode *node);
-    void findAllNamespaces(const InnerNode *node);
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
-    QString getLink(const Atom *atom,
-                    const Node *relative,
-                    CodeMarker *marker,
-                    const Node** node);
+    QString getLink(const Atom *atom, const Node *relative, const Node** node);
     virtual void generateIndex(const QString &fileBase,
                                const QString &url,
                                const QString &title);
 #ifdef GENERATE_MAC_REFS
     void generateMacRef(const Node *node, CodeMarker *marker);
 #endif
-    void beginLink(const QString &link,
-                   const Node *node,
-                   const Node *relative,
-                   CodeMarker *marker);
+    void beginLink(const QString &link, const Node *node, const Node *relative);
     void endLink();
     void generateExtractionMark(const Node *node, ExtractionMarkType markType);
     void reportOrphans(const InnerNode* parent);
@@ -249,15 +223,7 @@ private:
     QMap<QString, QString> refMap;
     int codeIndent;
     HelpProjectWriter *helpProjectWriter;
-    bool inLink;
     bool inObsoleteLink;
-    bool inContents;
-    bool inSectionHeading;
-    bool inTableHeader;
-    int numTableRows;
-    bool threeColumnEnumValueTable;
-    QString link;
-    QStringList sectionNumber;
     QRegExp funcLeftParen;
     QString style;
     QString headerScripts;
@@ -277,17 +243,6 @@ private:
     QStringList stylesheets;
     QStringList customHeadElements;
     bool obsoleteLinks;
-    QMap<QString, NodeMap > moduleClassMap;
-    QMap<QString, NodeMap > moduleNamespaceMap;
-    NodeMap nonCompatClasses;
-    NodeMap mainClasses;
-    NodeMap compatClasses;
-    NodeMap obsoleteClasses;
-    NodeMap namespaceIndex;
-    NodeMap serviceClasses;
-    NodeMap qmlClasses;
-    QMap<QString, NodeMap > funcIndex;
-    QMap<Text, const Node *> legaleseTexts;
     QStack<QXmlStreamWriter*> xmlWriterStack;
     static int id;
 public:
