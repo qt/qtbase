@@ -257,14 +257,14 @@ class QSingleShotTimer : public QObject
     int timerId;
 public:
     ~QSingleShotTimer();
-    QSingleShotTimer(int msec, Qt::TimerType timerType, QObject *r, const char * m);
+    QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char * m);
 Q_SIGNALS:
     void timeout();
 protected:
     void timerEvent(QTimerEvent *);
 };
 
-QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, QObject *receiver, const char *member)
+QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member)
     : QObject(QAbstractEventDispatcher::instance())
 {
     connect(this, SIGNAL(timeout()), receiver, member);
@@ -312,7 +312,7 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
     \sa start()
 */
 
-void QTimer::singleShot(int msec, QObject *receiver, const char *member)
+void QTimer::singleShot(int msec, const QObject *receiver, const char *member)
 {
     // coarse timers are worst in their first firing
     // so we prefer a high precision timer for something that happens only once
@@ -334,7 +334,7 @@ void QTimer::singleShot(int msec, QObject *receiver, const char *member)
 
     \sa start()
 */
-void QTimer::singleShot(int msec, Qt::TimerType timerType, QObject *receiver, const char *member)
+void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member)
 {
     if (receiver && member) {
         if (msec == 0) {
@@ -345,7 +345,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, QObject *receiver, co
                 return;
             }
             QByteArray methodName(member+1, bracketPosition - 1 - member); // extract method name
-            QMetaObject::invokeMethod(receiver, methodName.constData(), Qt::QueuedConnection);
+            QMetaObject::invokeMethod(const_cast<QObject *>(receiver), methodName.constData(), Qt::QueuedConnection);
             return;
         }
         (void) new QSingleShotTimer(msec, timerType, receiver, member);

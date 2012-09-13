@@ -78,8 +78,8 @@ public:
     inline void setSingleShot(bool singleShot);
     inline bool isSingleShot() const { return single; }
 
-    static void singleShot(int msec, QObject *receiver, const char *member);
-    static void singleShot(int msec, Qt::TimerType timerType, QObject *receiver, const char *member);
+    static void singleShot(int msec, const QObject *receiver, const char *member);
+    static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
 
 public Q_SLOTS:
     void start(int msec);
