@@ -710,31 +710,6 @@ bool QPrinter::isValid() const
     return d->validPrinter;
 }
 
-
-/*!
-  \fn bool QPrinter::outputToFile() const
-
-  Returns true if the output should be written to a file, or false
-  if the output should be sent directly to the printer. The default
-  setting is false.
-
-  \sa setOutputToFile(), setOutputFileName()
-*/
-
-
-/*!
-  \fn void QPrinter::setOutputToFile(bool enable)
-
-  Specifies whether the output should be written to a file or sent
-  directly to the printer.
-
-  Will output to a file if \a enable is true, or will output
-  directly to the printer if \a enable is false.
-
-  \sa outputToFile(), setOutputFileName()
-*/
-
-
 /*!
   \fn QString QPrinter::outputFileName() const
 
@@ -767,7 +742,7 @@ QString QPrinter::outputFileName() const
     Mac OS X can generate PDF's from its print engine, set the output format
     back to NativeFormat.
 
-    \sa outputFileName(), setOutputToFile(), setOutputFormat()
+    \sa outputFileName(), setOutputFormat()
 */
 
 void QPrinter::setOutputFileName(const QString &fileName)
@@ -1568,7 +1543,7 @@ QRect QPrinter::paperRect() const
     page margins for this printer. The unit of the margins are
     specified with the \a unit parameter.
 
-    \sa getPageMargins
+    \sa getPageMargins()
 */
 void QPrinter::setPageMargins(qreal left, qreal top, qreal right, qreal bottom, QPrinter::Unit unit)
 {
@@ -1604,7 +1579,7 @@ void QPrinter::setMargins(const Margins &m)
     right, \a bottom. The unit of the returned margins are specified
     with the \a unit parameter.
 
-    \sa setPageMargins
+    \sa setPageMargins()
 */
 void QPrinter::getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bottom, QPrinter::Unit unit) const
 {
@@ -1742,54 +1717,6 @@ QPrinter::PrinterState QPrinter::printerState() const
     Q_D(const QPrinter);
     return d->printEngine->printerState();
 }
-
-
-/*! \fn void QPrinter::margins(uint *top, uint *left, uint *bottom, uint *right) const
-
-    Sets *\a top, *\a left, *\a bottom, *\a right to be the top,
-    left, bottom, and right margins.
-
-    This function has been superseded by paperRect() and pageRect().
-    Use paperRect().top() - pageRect().top() for the top margin,
-    paperRect().left() - pageRect().left() for the left margin,
-    paperRect().bottom() - pageRect().bottom() for the bottom margin,
-    and papaerRect().right() - pageRect().right() for the right
-    margin.
-
-    \oldcode
-        uint rightMargin;
-        uint bottomMargin;
-        printer->margins(0, 0, &bottomMargin, &rightMargin);
-    \newcode
-        int rightMargin = printer->paperRect().right() - printer->pageRect().right();
-        int bottomMargin = printer->paperRect().bottom() - printer->pageRect().bottom();
-    \endcode
-*/
-
-/*! \fn QSize QPrinter::margins() const
-
-    \overload
-
-    Returns a QSize containing the left margin and the top margin.
-
-    This function has been superseded by paperRect() and pageRect().
-    Use paperRect().left() - pageRect().left() for the left margin,
-    and paperRect().top() - pageRect().top() for the top margin.
-
-    \oldcode
-        QSize margins = printer->margins();
-        int leftMargin = margins.width();
-        int topMargin = margins.height();
-    \newcode
-        int leftMargin = printer->paperRect().left() - printer->pageRect().left();
-        int topMargin = printer->paperRect().top() - printer->pageRect().top();
-    \endcode
-*/
-
-/*! \fn bool QPrinter::aborted()
-
-    Use printerState() == QPrinter::Aborted instead.
-*/
 
 #ifdef Q_OS_WIN
 /*!
