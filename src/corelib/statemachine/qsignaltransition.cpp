@@ -148,7 +148,7 @@ QSignalTransition::QSignalTransition(QState *sourceState)
   Constructs a new signal transition associated with the given \a signal of
   the given \a sender, and with the given \a sourceState.
 */
-QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
+QSignalTransition::QSignalTransition(const QObject *sender, const char *signal,
                                      QState *sourceState)
     : QAbstractTransition(*new QSignalTransitionPrivate, sourceState)
 {
@@ -171,13 +171,13 @@ QSignalTransition::~QSignalTransition()
 QObject *QSignalTransition::senderObject() const
 {
     Q_D(const QSignalTransition);
-    return d->sender;
+    return const_cast<QObject *>(d->sender);
 }
 
 /*!
   Sets the \a sender object associated with this signal transition.
 */
-void QSignalTransition::setSenderObject(QObject *sender)
+void QSignalTransition::setSenderObject(const QObject *sender)
 {
     Q_D(QSignalTransition);
     if (sender == d->sender)

@@ -71,7 +71,7 @@ public:
 
     virtual void callOnTransition(QEvent *e);
 
-    QObject *sender;
+    const QObject *sender;
     QByteArray signal;
     int signalIndex;
     int originalSignalIndex;

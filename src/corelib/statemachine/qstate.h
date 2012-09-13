@@ -83,7 +83,7 @@ public:
     void setErrorState(QAbstractState *state);
 
     void addTransition(QAbstractTransition *transition);
-    QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
+    QSignalTransition *addTransition(const QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
     QList<QAbstractTransition*> transitions() const;

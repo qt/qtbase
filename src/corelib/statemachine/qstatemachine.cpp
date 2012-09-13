@@ -1739,7 +1739,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     Q_Q(QStateMachine);
     if (QSignalTransitionPrivate::get(transition)->signalIndex != -1)
         return; // already registered
-    QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
+    const QObject *sender = QSignalTransitionPrivate::get(transition)->sender;
     if (!sender)
         return;
     QByteArray signal = QSignalTransitionPrivate::get(transition)->signal;

@@ -348,7 +348,7 @@ void QState::addTransition(QAbstractTransition *transition)
   object, and returns the new QSignalTransition object. The transition has
   this state as the source, and the given \a target as the target state.
 */
-QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
+QSignalTransition *QState::addTransition(const QObject *sender, const char *signal,
                                          QAbstractState *target)
 {
     if (!sender) {
