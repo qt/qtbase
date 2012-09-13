@@ -54,6 +54,15 @@ QT_BEGIN_HEADER
 # else
 #  include <GLES2/gl2.h>
 # endif
+
+/*
+   Some GLES2 implementations (like the one on Harmattan) are missing the
+   typedef for GLchar. Work around it here by adding it. The Kkronos headers
+   specify GLChar as a typedef to char, so if an implementation already
+   provides it, then this doesn't do any harm.
+*/
+typedef char GLchar;
+
 # include "qopengles2ext.h"
 # ifndef GL_DOUBLE
 #  define GL_DOUBLE GL_FLOAT
