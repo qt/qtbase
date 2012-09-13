@@ -1583,6 +1583,8 @@ void tst_QAccessibility::textEditTest()
         edit.setTextCursor(c);
         QAccessibleTextSelectionEvent sel(&edit, 2, 4);
         QVERIFY_EVENT(&sel);
+        QAccessibleTextCursorEvent cursor(&edit, 4);
+        QVERIFY_EVENT(&cursor);
 
         edit.selectAll();
         int end = edit.textCursor().position();
