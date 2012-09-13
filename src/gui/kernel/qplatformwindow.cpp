@@ -188,6 +188,30 @@ bool QPlatformWindow::isEmbedded(const QPlatformWindow *parentWindow) const
 }
 
 /*!
+    Translates the window coordinate \a pos to global screen
+    coordinates using native methods. This is required for embedded windows,
+    where the topmost QWindow coordinates are not global screen coordinates.
+
+    Returns \a pos if there is no platform specific implementation.
+*/
+QPoint QPlatformWindow::mapToGlobal(const QPoint &pos) const
+{
+    return pos;
+}
+
+/*!
+    Translates the global screen coordinate \a pos to window
+    coordinates using native methods. This is required for embedded windows,
+    where the topmost QWindow coordinates are not global screen coordinates.
+
+    Returns \a pos if there is no platform specific implementation.
+*/
+QPoint QPlatformWindow::mapFromGlobal(const QPoint &pos) const
+{
+    return pos;
+}
+
+/*!
     Requests setting the window state of this surface
     to \a type. Returns the actual state set.
 

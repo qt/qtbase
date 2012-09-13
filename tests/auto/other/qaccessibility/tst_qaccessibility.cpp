@@ -1489,6 +1489,8 @@ void tst_QAccessibility::spinBoxTest()
     QVERIFY(interface);
     QCOMPARE(interface->role(), QAccessible::SpinBox);
 
+    QVERIFY(QTest::qWaitForWindowExposed(spinBox));
+
     const QRect widgetRect = spinBox->geometry();
     const QRect accessibleRect = interface->rect();
     QCOMPARE(accessibleRect, widgetRect);
@@ -1526,6 +1528,8 @@ void tst_QAccessibility::doubleSpinBoxTest()
 
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(doubleSpinBox);
     QVERIFY(interface);
+
+    QVERIFY(QTest::qWaitForWindowExposed(doubleSpinBox));
 
     const QRect widgetRect = doubleSpinBox->geometry();
     const QRect accessibleRect = interface->rect();
@@ -2197,6 +2201,8 @@ void tst_QAccessibility::dialTest()
     QVERIFY(interface);
     QCOMPARE(interface->childCount(), 0);
 
+    QVERIFY(QTest::qWaitForWindowExposed(&dial));
+
     QCOMPARE(interface->text(QAccessible::Value), QString::number(dial.value()));
     QCOMPARE(interface->rect(), dial.geometry());
 
@@ -2827,6 +2833,7 @@ void tst_QAccessibility::comboBoxTest()
     QComboBox combo;
     combo.addItems(QStringList() << "one" << "two" << "three");
     combo.show();
+
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&combo);
     QCOMPARE(verifyHierarchy(iface), 0);
 

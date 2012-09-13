@@ -849,6 +849,22 @@ bool QWindowsWindow::isEmbedded(const QPlatformWindow *parentWindow) const
     return m_data.embedded;
 }
 
+QPoint QWindowsWindow::mapToGlobal(const QPoint &pos) const
+{
+    if (m_data.hwnd)
+        return QWindowsGeometryHint::mapToGlobal(m_data.hwnd, pos);
+    else
+        return pos;
+}
+
+QPoint QWindowsWindow::mapFromGlobal(const QPoint &pos) const
+{
+    if (m_data.hwnd)
+        return QWindowsGeometryHint::mapFromGlobal(m_data.hwnd, pos);
+    else
+        return pos;
+}
+
 // partially from QWidgetPrivate::show_sys()
 void QWindowsWindow::show_sys() const
 {

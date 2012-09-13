@@ -104,6 +104,8 @@ public:
     virtual bool isExposed() const;
     virtual bool isActive() const;
     virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
+    virtual QPoint mapToGlobal(const QPoint &pos) const;
+    virtual QPoint mapFromGlobal(const QPoint &pos) const;
 
     virtual void propagateSizeHints();
 

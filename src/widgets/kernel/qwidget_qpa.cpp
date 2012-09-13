@@ -290,6 +290,10 @@ QPoint QWidget::mapToGlobal(const QPoint &pos) const
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
+        QWindow *window = w->windowHandle();
+        if (window && window->handle())
+            return window->mapToGlobal(QPoint(x, y));
+
         x += w->data->crect.x();
         y += w->data->crect.y();
         w = w->isWindow() ? 0 : w->parentWidget();
@@ -302,6 +306,10 @@ QPoint QWidget::mapFromGlobal(const QPoint &pos) const
     int x = pos.x(), y = pos.y();
     const QWidget *w = this;
     while (w) {
+        QWindow *window = w->windowHandle();
+        if (window && window->handle())
+            return window->mapFromGlobal(QPoint(x, y));
+
         x -= w->data->crect.x();
         y -= w->data->crect.y();
         w = w->isWindow() ? 0 : w->parentWidget();
