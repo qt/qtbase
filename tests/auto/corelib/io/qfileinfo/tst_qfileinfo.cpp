@@ -1484,7 +1484,10 @@ void tst_QFileInfo::isWritable()
     QVERIFY(fi.exists());
     QVERIFY(!fi.isWritable());
 #endif
-#if defined (Q_OS_UNIX)
+#if defined (Q_OS_BLACKBERRY)
+    // The Blackberry filesystem is read-only
+    QVERIFY(!QFileInfo("/etc/passwd").isWritable());
+#elif defined (Q_OS_UNIX)
     if (::getuid() == 0)
         QVERIFY(QFileInfo("/etc/passwd").isWritable());
     else
