@@ -146,6 +146,7 @@ private slots:
     void moveSourceRows();
 
     void hierarchyFilterInvalidation();
+    void simpleFilterInvalidation();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -3580,6 +3581,64 @@ void tst_QSortFilterProxyModel::hierarchyFilterInvalidation()
     QTest::qWaitForWindowExposed(&view);
 
     proxy.setMode(true);
+}
+
+class FilterProxy2 : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    FilterProxy2(QObject *parent = 0)
+      : QSortFilterProxyModel(parent),
+        mode(false)
+    {
+
+    }
+
+public slots:
+    void setMode(bool on)
+    {
+        mode = on;
+        invalidateFilter();
+    }
+
+protected:
+    virtual bool filterAcceptsRow ( int source_row, const QModelIndex & source_parent ) const
+    {
+        if (source_parent.isValid()) {
+            return true;
+        } else {
+            if (0 == source_row) {
+                return true;
+            } else {
+                return !mode;
+            }
+        }
+    }
+
+private:
+    bool mode;
+};
+
+void tst_QSortFilterProxyModel::simpleFilterInvalidation()
+{
+    QStandardItemModel model;
+    for (int i = 0; i < 2; ++i) {
+        QStandardItem *child = new QStandardItem(QString("Row %1").arg(i));
+        child->appendRow(new QStandardItem("child"));
+        model.appendRow(child);
+    }
+
+    FilterProxy2 proxy;
+    proxy.setSourceModel(&model);
+
+    QTreeView view;
+    view.setModel(&proxy);
+
+    view.show();
+    QTest::qWaitForWindowExposed(&view);
+
+    proxy.setMode(true);
+    model.insertRow(0, new QStandardItem("extra"));
 }
 
 
