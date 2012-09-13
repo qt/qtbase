@@ -184,6 +184,26 @@ defineTest(qtPrepareTool) {
     export($$1)
 }
 
+defineTest(qtAddToolEnv) {
+    for(env, 2) {
+        value = $$eval($${env}.value)
+        !isEmpty(value) {
+            name = $$eval($${env}.name)
+            equals(QMAKE_DIR_SEP, /) {
+                contains($${env}.CONFIG, prepend): infix = \${$$name:+:\$$$name}
+                else: infix =
+                $$1 = "$$name=$$join(value, :)$$infix $$eval($$1)"
+            } else {
+                # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
+                contains($${env}.CONFIG, prepend): infix = ;%$$name:)=^)%
+                else: infix =
+                $$1 = "(set $$name=$$join(value, ;)$$infix) & $$eval($$1)"
+            }
+        }
+    }
+    export($$1)
+}
+
 defineReplace(pkgConfigExecutable) {
     isEmpty(PKG_CONFIG) {
         PKG_CONFIG = pkg-config

@@ -64,22 +64,7 @@ INSTALLS += target
         QT_TOOL_ENV += deppath pluginpath
     }
 
-    for(env, QT_TOOL_ENV) {
-        value = $$eval($${env}.value)
-        !isEmpty(value) {
-            name = $$eval($${env}.name)
-            equals(QMAKE_DIR_SEP, /) {
-                contains($${env}.CONFIG, prepend): infix = \${$$name:+:\$$$name}
-                else: infix =
-                cmd = "$$name=$$join(value, :)$$infix $$cmd"
-            } else {
-                # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
-                contains($${env}.CONFIG, prepend): infix = ;%$$name:)=^)%
-                else: infix =
-                cmd = "(set $$name=$$join(value, ;)$$infix) & $$cmd"
-            }
-        }
-    }
+    qtAddToolEnv(cmd, $$QT_TOOL_ENV)
 
     TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
 
