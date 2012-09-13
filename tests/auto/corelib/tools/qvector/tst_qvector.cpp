@@ -2308,7 +2308,7 @@ void tst_QVector::setSharable() const
         if (isCapacityReserved)
             QVERIFY2(copy.capacity() >= capacity,
                     qPrintable(QString("Capacity is %1, expected at least %2.")
-                        .arg(vector.capacity())
+                        .arg(copy.capacity())
                         .arg(capacity)));
         QCOMPARE(copy, vector);
     }
