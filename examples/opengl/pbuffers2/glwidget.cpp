@@ -144,8 +144,6 @@ void GLWidget::draw()
     pbuffer_painter.end();
     glFlush();
 
-    // rendering directly to a texture is not supported on X11 and
-    // some Windows implementations, unfortunately
     if (!hasDynamicTextureUpdate)
         pbuffer->updateDynamicTexture(dynamicTexture);
 

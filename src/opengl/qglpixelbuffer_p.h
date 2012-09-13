@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 class QEglContext;
-
+class QOpenGLFramebufferObject;
 
 class QGLPBufferGLPaintDevice : public QGLPaintDevice
 {
@@ -77,7 +77,7 @@ private:
 class QGLPixelBufferPrivate {
     Q_DECLARE_PUBLIC(QGLPixelBuffer)
 public:
-    QGLPixelBufferPrivate(QGLPixelBuffer *q) : q_ptr(q), invalid(true), qctx(0), pbuf(0), ctx(0)
+    QGLPixelBufferPrivate(QGLPixelBuffer *q) : q_ptr(q), invalid(true), qctx(0), widget(0), fbo(0), blit_fbo(0), pbuf(0), ctx(0)
     {
     }
     bool init(const QSize &size, const QGLFormat &f, QGLWidget *shareWidget);
@@ -88,6 +88,9 @@ public:
     bool invalid;
     QGLContext *qctx;
     QGLPBufferGLPaintDevice glDevice;
+    QGLWidget *widget;
+    QOpenGLFramebufferObject *fbo;
+    QOpenGLFramebufferObject *blit_fbo;
     QGLFormat format;
 
     QGLFormat req_format;

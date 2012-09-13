@@ -49,14 +49,16 @@ int main(int argc, char **argv)
     Q_INIT_RESOURCE(pbuffers);
 
     QApplication a(argc, argv);
+    GLWidget widget(0);
+    widget.resize(640, 480);
+    widget.makeCurrent();
+
     if (!QGLFormat::hasOpenGL() || !QGLPixelBuffer::hasOpenGLPbuffers()) {
 	QMessageBox::information(0, "OpenGL pbuffers",
 				 "This system does not support OpenGL/pbuffers.");
         return -1;
     }
 
-    GLWidget widget(0);
-    widget.resize(640, 480);
     widget.show();
     return a.exec();
 }

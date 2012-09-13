@@ -570,6 +570,10 @@ QtOpenGL
   now have equivalents in QtGui, along with the naming change QGL -> QOpenGL.
   The classes in QtOpenGL that have equivalents in QtGui can now be considered
   deprecated.
+* QGLPixelBuffer is now deprecated and implemented in terms of a hidden
+  QGLWidget and a QOpenGLFramebufferObject. It is recommended that applications
+  using QGLPixelBuffer for offscreen rendering to a texture switch to using
+  QOpenGLFramebufferObject directly instead, for improved performance.
 
 QtScript
 --------

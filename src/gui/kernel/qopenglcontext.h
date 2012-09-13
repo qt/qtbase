@@ -137,6 +137,7 @@ Q_SIGNALS:
 
 private:
     friend class QGLContext;
+    friend class QGLPixelBuffer;
     friend class QOpenGLContextResourceBase;
     friend class QOpenGLPaintDevice;
     friend class QOpenGLGlyphTexture;

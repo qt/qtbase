@@ -61,7 +61,6 @@ SOURCES +=  qglshaderprogram.cpp \
             gl2paintengineex/qglcustomshaderstage.cpp \
             gl2paintengineex/qtextureglyphcache_gl.cpp
 
-SOURCES +=  qgl_qpa.cpp \
-            qglpixelbuffer_stub.cpp
+SOURCES +=  qgl_qpa.cpp
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
