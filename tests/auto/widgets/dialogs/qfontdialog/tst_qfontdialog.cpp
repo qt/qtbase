@@ -64,6 +64,8 @@ public:
 
 public slots:
     void postKeyReturn();
+    void testGetFont();
+    void testSetFont();
 
 public slots:
     void initTestCase();
@@ -100,7 +102,6 @@ void tst_QFontDialog::cleanup()
 {
 }
 
-
 void tst_QFontDialog::postKeyReturn() {
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i=0; i<list.count(); ++i) {
@@ -112,10 +113,10 @@ void tst_QFontDialog::postKeyReturn() {
     }
 }
 
-void tst_QFontDialog::defaultOkButton()
+void tst_QFontDialog::testGetFont()
 {
 #ifdef Q_OS_MAC
-    QSKIP("Test hangs on Mac OS X, see QTBUG-24321");
+    QEXPECT_FAIL("", "Sending QTest::keyClick to OSX font dialog helper fails, see QTBUG-24321", Continue);
 #endif
     bool ok = false;
     QTimer::singleShot(2000, this, SLOT(postKeyReturn()));
@@ -124,15 +125,15 @@ void tst_QFontDialog::defaultOkButton()
 }
 
 
-void tst_QFontDialog::setFont()
+void tst_QFontDialog::defaultOkButton()
 {
-#ifdef Q_OS_MAC
-    QSKIP("Test hangs on Mac OS X, see QTBUG-24321");
-#endif
-    /* The font should be the same before as it is after if nothing changed
-              while the font dialog was open.
-	      Task #27662
-    */
+    QTimer::singleShot(4000, qApp, SLOT(quit()));
+    QTimer::singleShot(0, this, SLOT(testGetFont()));
+    qApp->exec();
+}
+
+void tst_QFontDialog::testSetFont()
+{
     bool ok = false;
 #if defined Q_OS_HPUX
     QString fontName = "Courier";
@@ -151,11 +152,22 @@ void tst_QFontDialog::setFont()
     QCOMPARE(QFontInfo(f2).pointSize(), QFontInfo(f1).pointSize());
 }
 
+void tst_QFontDialog::setFont()
+{
+    /* The font should be the same before as it is after if nothing changed
+              while the font dialog was open.
+              Task #27662
+    */
+    QTimer::singleShot(4000, qApp, SLOT(quit()));
+    QTimer::singleShot(0, this, SLOT(testSetFont()));
+    qApp->exec();
+}
+
 
 class FriendlyFontDialog : public QFontDialog
 {
     friend class tst_QFontDialog;
-    Q_DECLARE_PRIVATE(QFontDialog);
+    Q_DECLARE_PRIVATE(QFontDialog)
 };
 
 void tst_QFontDialog::task256466_wrongStyle()

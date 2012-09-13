@@ -53,12 +53,10 @@ public:
     tst_QColorDialog();
     virtual ~tst_QColorDialog();
 
-#ifndef Q_OS_MAC
 public slots:
     void postKeyReturn();
-private slots:
-    void defaultOkButton();
-#endif
+    void testGetRgba();
+    void testNativeActiveModalWidget();
 
 public slots:
     void initTestCase();
@@ -67,6 +65,7 @@ public slots:
     void cleanup();
 
 private slots:
+    void defaultOkButton();
     void native_activeModalWidget();
     void task247349_alpha();
 };
@@ -98,11 +97,8 @@ tst_QColorDialog::~tst_QColorDialog()
 {
 }
 
-void tst_QColorDialog::native_activeModalWidget()
+void tst_QColorDialog::testNativeActiveModalWidget()
 {
-#ifdef Q_OS_MAC
-    QSKIP("Test hangs on Mac OS X, see QTBUG-24320");
-#endif
     // Check that QApplication::activeModalWidget retruns the
     // color dialog when it is executing, even when using a native
     // dialog:
@@ -110,6 +106,13 @@ void tst_QColorDialog::native_activeModalWidget()
     QTimer::singleShot(1000, &d, SLOT(hide()));
     d.exec();
     QVERIFY(&d == d.m_activeModalWidget);
+}
+
+void tst_QColorDialog::native_activeModalWidget()
+{
+    QTimer::singleShot(3000, qApp, SLOT(quit()));
+    QTimer::singleShot(0, this, SLOT(testNativeActiveModalWidget()));
+    qApp->exec();
 }
 
 void tst_QColorDialog::initTestCase()
@@ -128,8 +131,6 @@ void tst_QColorDialog::cleanup()
 {
 }
 
-#ifndef Q_OS_MAC
-//copied from QFontDialogTest
 void tst_QColorDialog::postKeyReturn() {
     QWidgetList list = QApplication::topLevelWidgets();
     for (int i=0; i<list.count(); ++i) {
@@ -141,14 +142,23 @@ void tst_QColorDialog::postKeyReturn() {
     }
 }
 
-void tst_QColorDialog::defaultOkButton()
+void tst_QColorDialog::testGetRgba()
 {
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Sending QTest::keyClick to OSX color dialog helper fails, see QTBUG-24320", Continue);
+#endif
     bool ok = false;
     QTimer::singleShot(500, this, SLOT(postKeyReturn()));
     QColorDialog::getRgba(0xffffffff, &ok);
     QVERIFY(ok);
 }
-#endif
+
+void tst_QColorDialog::defaultOkButton()
+{
+    QTimer::singleShot(4000, qApp, SLOT(quit()));
+    QTimer::singleShot(0, this, SLOT(testGetRgba()));
+    qApp->exec();
+}
 
 void tst_QColorDialog::task247349_alpha()
 {
