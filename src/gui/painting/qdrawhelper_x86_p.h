@@ -105,7 +105,7 @@ extern CompositionFunction qt_functionForMode_IWMMXT[];
 extern CompositionFunctionSolid qt_functionForModeSolid_IWMMXT[];
 #endif
 
-static const int numCompositionFunctions = 33;
+static const int numCompositionFunctions = 38;
 
 QT_END_NAMESPACE
 

@@ -98,7 +98,12 @@ CompositionFunctionSolid qt_functionForModeSolid_IWMMXT[numCompositionFunctions]
     rasterop_solid_NotSourceXorDestination<QIWMMXTIntrinsics>,
     rasterop_solid_NotSource<QIWMMXTIntrinsics>,
     rasterop_solid_NotSourceAndDestination<QIWMMXTIntrinsics>,
-    rasterop_solid_SourceAndNotDestination<QIWMMXTIntrinsics>
+    rasterop_solid_SourceAndNotDestination<QIWMMXTIntrinsics>,
+    rasterop_solid_NotSourceOrDestination<QIWMMXTIntrinsics>,
+    rasterop_solid_SourceOrNotDestination<QIWMMXTIntrinsics>,
+    rasterop_solid_ClearDestination<QIWMMXTIntrinsics>,
+    rasterop_solid_SetDestination<QIWMMXTIntrinsics>,
+    rasterop_solid_NotDestination<QIWMMXTIntrinsics>
 };
 
 CompositionFunction qt_functionForMode_IWMMXT[] = {
@@ -134,7 +139,12 @@ CompositionFunction qt_functionForMode_IWMMXT[] = {
     rasterop_NotSourceXorDestination,
     rasterop_NotSource,
     rasterop_NotSourceAndDestination,
-    rasterop_SourceAndNotDestination
+    rasterop_SourceAndNotDestination,
+    rasterop_NotSourceOrDestination,
+    rasterop_SourceOrNotDestination,
+    rasterop_ClearDestination,
+    rasterop_SetDestination,
+    rasterop_NotDestination
 };
 
 void qt_blend_color_argb_iwmmxt(int count, const QSpan *spans, void *userData)

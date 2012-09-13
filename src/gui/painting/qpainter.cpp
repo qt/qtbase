@@ -2320,6 +2320,23 @@ void QPainter::setBrushOrigin(const QPointF &p)
     where the source is AND'ed with the inverted destination pixels
     (src AND (NOT dst)).
 
+    \value RasterOp_NotSourceOrDestination Does a bitwise operation
+    where the source is inverted and then OR'ed with the destination
+    ((NOT src) OR dst).
+
+    \value RasterOp_ClearDestination The pixels in the destination are
+    cleared (set to 0) independent of the source.
+
+    \value RasterOp_SetDestination The pixels in the destination are
+    set (set to 1) independent of the source.
+
+    \value RasterOp_NotDestination Does a bitwise operation
+    where the destination pixels are inverted (NOT dst).
+
+    \value RasterOp_SourceOrNotDestination Does a bitwise operation
+    where the source is OR'ed with the inverted destination pixels
+    (src OR (NOT dst)).
+
     \sa compositionMode(), setCompositionMode(), {QPainter#Composition
     Modes}{Composition Modes}, {Image Composition Example}
 */

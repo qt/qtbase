@@ -3653,6 +3653,107 @@ void QT_FASTCALL rasterop_SourceAndNotDestination(uint *Q_DECL_RESTRICT dest,
     }
 }
 
+void QT_FASTCALL rasterop_NotSourceOrDestination(uint *Q_DECL_RESTRICT dest,
+                                                 const uint *Q_DECL_RESTRICT src,
+                                                 int length,
+                                                 uint const_alpha)
+{
+    Q_UNUSED(const_alpha);
+    while (length--) {
+        *dest = (~(*src) | *dest) | 0xff000000;
+        ++dest; ++src;
+    }
+}
+
+void QT_FASTCALL rasterop_solid_NotSourceOrDestination(uint *Q_DECL_RESTRICT dest,
+                                                       int length,
+                                                       uint color,
+                                                       uint const_alpha)
+{
+    Q_UNUSED(const_alpha);
+    color = ~color | 0xff000000;
+    while (length--)
+        *dest++ |= color;
+}
+
+void QT_FASTCALL rasterop_SourceOrNotDestination(uint *Q_DECL_RESTRICT dest,
+                                                 const uint *Q_DECL_RESTRICT src,
+                                                 int length,
+                                                 uint const_alpha)
+{
+    Q_UNUSED(const_alpha);
+    while (length--) {
+        *dest = (*src | ~(*dest)) | 0xff000000;
+        ++dest; ++src;
+    }
+}
+
+void QT_FASTCALL rasterop_solid_SourceOrNotDestination(uint *Q_DECL_RESTRICT dest,
+                                                       int length,
+                                                       uint color,
+                                                       uint const_alpha)
+{
+    Q_UNUSED(const_alpha);
+    while (length--) {
+        *dest = (color | ~(*dest)) | 0xff000000;
+        ++dest;
+    }
+}
+
+void QT_FASTCALL rasterop_ClearDestination(uint *Q_DECL_RESTRICT dest,
+                                           const uint *Q_DECL_RESTRICT src,
+                                           int length,
+                                           uint const_alpha)
+{
+    Q_UNUSED(src);
+    comp_func_solid_SourceOver (dest, length, 0xff000000, const_alpha);
+}
+
+void QT_FASTCALL rasterop_solid_ClearDestination(uint *Q_DECL_RESTRICT dest,
+                                                 int length,
+                                                 uint color,
+                                                 uint const_alpha)
+{
+    Q_UNUSED(color);
+    comp_func_solid_SourceOver (dest, length, 0xff000000, const_alpha);
+}
+
+void QT_FASTCALL rasterop_SetDestination(uint *Q_DECL_RESTRICT dest,
+                                         const uint *Q_DECL_RESTRICT src,
+                                         int length,
+                                         uint const_alpha)
+{
+    Q_UNUSED(src);
+    comp_func_solid_SourceOver (dest, length, 0xffffffff, const_alpha);
+}
+
+void QT_FASTCALL rasterop_solid_SetDestination(uint *Q_DECL_RESTRICT dest,
+                                               int length,
+                                               uint color,
+                                               uint const_alpha)
+{
+    Q_UNUSED(color);
+    comp_func_solid_SourceOver (dest, length, 0xffffffff, const_alpha);
+}
+
+void QT_FASTCALL rasterop_NotDestination(uint *Q_DECL_RESTRICT dest,
+                                         const uint *Q_DECL_RESTRICT src,
+                                         int length,
+                                         uint const_alpha)
+{
+    Q_UNUSED(src);
+    rasterop_solid_SourceXorDestination (dest, length, 0x00ffffff, const_alpha);
+}
+
+void QT_FASTCALL rasterop_solid_NotDestination(uint *Q_DECL_RESTRICT dest,
+                                               int length,
+                                               uint color,
+                                               uint const_alpha)
+{
+    Q_UNUSED(color);
+    rasterop_solid_SourceXorDestination (dest, length, 0x00ffffff, const_alpha);
+}
+
 static CompositionFunctionSolid functionForModeSolid_C[] = {
         comp_func_solid_SourceOver,
         comp_func_solid_DestinationOver,
@@ -3686,7 +3787,13 @@ static CompositionFunctionSolid functionForModeSolid_C[] = {
         rasterop_solid_NotSourceXorDestination,
         rasterop_solid_NotSource,
         rasterop_solid_NotSourceAndDestination,
-        rasterop_solid_SourceAndNotDestination
+        rasterop_solid_SourceAndNotDestination,
+        rasterop_solid_SourceAndNotDestination,
+        rasterop_solid_NotSourceOrDestination,
+        rasterop_solid_SourceOrNotDestination,
+        rasterop_solid_ClearDestination,
+        rasterop_solid_SetDestination,
+        rasterop_solid_NotDestination
 };
 
 static const CompositionFunctionSolid *functionForModeSolid = functionForModeSolid_C;
@@ -3724,7 +3831,13 @@ static CompositionFunction functionForMode_C[] = {
         rasterop_NotSourceXorDestination,
         rasterop_NotSource,
         rasterop_NotSourceAndDestination,
-        rasterop_SourceAndNotDestination
+        rasterop_SourceAndNotDestination,
+        rasterop_SourceAndNotDestination,
+        rasterop_NotSourceOrDestination,
+        rasterop_SourceOrNotDestination,
+        rasterop_ClearDestination,
+        rasterop_SetDestination,
+        rasterop_NotDestination
 };
 
 static const CompositionFunction *functionForMode = functionForMode_C;

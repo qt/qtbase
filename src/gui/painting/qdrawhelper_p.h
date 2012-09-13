@@ -926,7 +926,11 @@ void QT_FASTCALL rasterop_NotSourceXorDestination(uint *dest, const uint *src, i
 void QT_FASTCALL rasterop_NotSource(uint *dest, const uint *src, int length, uint const_alpha);
 void QT_FASTCALL rasterop_NotSourceAndDestination(uint *dest, const uint *src, int length, uint const_alpha);
 void QT_FASTCALL rasterop_SourceAndNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
-
+void QT_FASTCALL rasterop_NotSourceOrDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_SourceOrNotDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_ClearDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_SetDestination(uint *dest, const uint *src, int length, uint const_alpha);
+void QT_FASTCALL rasterop_NotDestination(uint *dest, const uint *src, int length, uint const_alpha);
 // prototypes of all the solid composition functions
 void QT_FASTCALL comp_func_solid_SourceOver(uint *dest, int length, uint color, uint const_alpha);
 void QT_FASTCALL comp_func_solid_DestinationOver(uint *dest, int length, uint color, uint const_alpha);
@@ -961,6 +965,11 @@ void QT_FASTCALL rasterop_solid_NotSourceXorDestination(uint *dest, int length, 
 void QT_FASTCALL rasterop_solid_NotSource(uint *dest, int length, uint color, uint const_alpha);
 void QT_FASTCALL rasterop_solid_NotSourceAndDestination(uint *dest, int length, uint color, uint const_alpha);
 void QT_FASTCALL rasterop_solid_SourceAndNotDestination(uint *dest, int length, uint color, uint const_alpha);
+void QT_FASTCALL rasterop_solid_NotSourceOrDestination(uint *dest, int length, uint color, uint const_alpha);
+void QT_FASTCALL rasterop_solid_SourceOrNotDestination(uint *dest, int length, uint color, uint const_alpha);
+void QT_FASTCALL rasterop_solid_ClearDestination(uint *dest, int length, uint color, uint const_alpha);
+void QT_FASTCALL rasterop_solid_SetDestination(uint *dest, int length, uint color, uint const_alpha);
+void QT_FASTCALL rasterop_solid_NotDestination(uint *dest, int length, uint color, uint const_alpha);
 
 
 struct QPixelLayout;
