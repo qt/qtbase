@@ -45,38 +45,23 @@ for(group, groups) {
         src_flags = $$eval($${grp}.source_flags)
     }
 
-    dthc = $${group}_header.commands
-    $$dthc = $$QMAKE_QDBUSXML2CPP $$hdr_flags $$qdbusxml2cpp_option ${QMAKE_FILE_OUT}: ${QMAKE_FILE_IN}
-    dtho = $${group}_header.output
-    $$dtho = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.h
-    dthn = $${group}_header.name
-    $$dthn = DBUSXML2CPP $${dbus_TYPE} HEADER ${QMAKE_FILE_IN}
-    dthvo = $${group}_header.variable_out
-    $$dthvo = $${GROUP}_HEADERS
-    dthi = $${group}_header.input
-    $$dthi = $$input_list
+    $${group}_header.commands = $$QMAKE_QDBUSXML2CPP $$hdr_flags $$qdbusxml2cpp_option ${QMAKE_FILE_OUT}: ${QMAKE_FILE_IN}
+    $${group}_header.output = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.h
+    $${group}_header.name = DBUSXML2CPP $${dbus_TYPE} HEADER ${QMAKE_FILE_IN}
+    $${group}_header.variable_out = $${GROUP}_HEADERS
+    $${group}_header.input = $$input_list
 
-    dtsc = $${group}_source.commands
-    $$dtsc = $$QMAKE_QDBUSXML2CPP -i ${QMAKE_FILE_OUT_BASE}.h $$src_flags $$qdbusxml2cpp_option :${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
-    dtso = $${group}_source.output
-    $$dtso = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.cpp
-    dtsn = $${group}_source.name
-    $$dtsn = DBUSXML2CPP $${dbus_TYPE} SOURCE ${QMAKE_FILE_IN}
-    dtsvo = $${group}_source.variable_out
-    $$dtsvo = SOURCES
-    dtsi = $${group}_source.input
-    $$dtsi = $$input_list
+    $${group}_source.commands = $$QMAKE_QDBUSXML2CPP -i ${QMAKE_FILE_OUT_BASE}.h $$src_flags $$qdbusxml2cpp_option :${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+    $${group}_source.output = ${QMAKE_FUNC_FILE_IN_qdbusOutputBasename}_$${dbus_type}.cpp
+    $${group}_source.name = DBUSXML2CPP $${dbus_TYPE} SOURCE ${QMAKE_FILE_IN}
+    $${group}_source.variable_out = SOURCES
+    $${group}_source.input = $$input_list
 
-    dtmc = $${group}_moc.commands
-    $$dtmc = $$moc_header.commands
-    dtmo = $${group}_moc.output
-    $$dtmo = $$moc_header.output
-    dtmi = $${group}_moc.input
-    $$dtmi = $${GROUP}_HEADERS
-    dtmvo = $${group}_moc.variable_out
-    $$dtmvo = GENERATED_SOURCES
-    dtmn = $${group}_moc.name
-    $$dtmn = $$moc_header.name
+    $${group}_moc.commands = $$moc_header.commands
+    $${group}_moc.output = $$moc_header.output
+    $${group}_moc.input = $${GROUP}_HEADERS
+    $${group}_moc.variable_out = GENERATED_SOURCES
+    $${group}_moc.name = $$moc_header.name
 
     QMAKE_EXTRA_COMPILERS += $${group}_header $${group}_source $${group}_moc
 }
