@@ -9,7 +9,7 @@ isEmpty(ACTIVEQT_VERSION):ACTIVEQT_VERSION = 1.0
 DEFINES += QAXSERVER
 INCLUDEPATH += $$QT.activeqt.includes
 
-qtPrepareTool(QMAKE_IDC, idc, activeqt)
+qtPrepareTool(QMAKE_IDC, idc)
 contains(TEMPLATE, "vc.*") {
     ACTIVEQT_IDC = $${QMAKE_IDC}
     ACTIVEQT_IDL = $${QMAKE_IDL}
