@@ -29,3 +29,18 @@ isEmpty(QMAKE_PLATFORM) {
         error("Qmake spec sets an invalid TARGET_PLATFORM.")
 }
 CONFIG += $$QMAKE_PLATFORM
+
+isEmpty(QMAKE_COMPILER) {
+    *-g++*: \
+        QMAKE_COMPILER = gcc
+    else:*-llvm*: \
+        QMAKE_COMPILER = gcc llvm
+    else:*-clang*: \
+        QMAKE_COMPILER = clang llvm
+    else:*-msvc*: \
+        QMAKE_COMPILER = msvc
+    else: \
+        error("qmake spec does not announce the compiler family, and it cannot be guessed.")
+    warning("qmake spec does not announce the compiler family. Guessed $$QMAKE_COMPILER.")
+}
+CONFIG += $$QMAKE_COMPILER
