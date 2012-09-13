@@ -3010,9 +3010,8 @@ Installation options:
                          Qt. This will install into
                          $QT_INSTALL_PREFIX, if this option is
                          disabled then some platforms will attempt a
-                         "system" install by placing default values to
-                         be placed in a system location other than
-                         PREFIX.
+                         "system" install by placing default values
+                         in a system location other than PREFIX.
 
  You may use these to separate different parts of the install:
 
