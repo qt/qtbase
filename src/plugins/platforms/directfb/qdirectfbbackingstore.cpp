@@ -82,6 +82,12 @@ void QDirectFbBackingStore::flush(QWindow *, const QRegion &region, const QPoint
 
 void QDirectFbBackingStore::resize(const QSize &size, const QRegion& reg)
 {
+    Q_UNUSED(reg);
+
+    if ((m_pmdata->width() == size.width()) &&
+        (m_pmdata->height() == size.height()))
+        return;
+
     QDirectFbBlitter *blitter = new QDirectFbBlitter(size, m_dfbSurface.data());
     m_pmdata->setBlittable(blitter);
 }
