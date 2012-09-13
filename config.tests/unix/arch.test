@@ -30,9 +30,9 @@ done
 
 # build a test program but don't run it
 test -d "$OUTDIR/config.tests/arch" || mkdir -p "$OUTDIR/config.tests/arch"
-[ -f Makefile ] && $MAKE distclean >/dev/null 2>&1
-OUTDIR=$OUTDIR "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "LIBS+=$LFLAGS" "QMAKE_CXXFLAGS+=$CXXFLAGS" "$SRCDIR/config.tests/arch/arch.pro" -o "$OUTDIR/config.tests/arch/Makefile" >/dev/null 2>&1 || echo "qmake is broken" >&2
 cd "$OUTDIR/config.tests/arch"
+[ -f Makefile ] && $MAKE distclean >/dev/null 2>&1
+OUTDIR=$OUTDIR "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "LIBS+=$LFLAGS" "QMAKE_CXXFLAGS+=$CXXFLAGS" "$SRCDIR/config.tests/arch/arch.pro" >/dev/null 2>&1 || echo "qmake is broken" >&2
 
 
 ARCH=""
