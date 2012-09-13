@@ -84,6 +84,7 @@ public:
     \class QUrlInfo
     \brief The QUrlInfo class stores information about URLs.
 
+    \internal
     \ingroup io
     \ingroup network
     \inmodule QtNetwork
