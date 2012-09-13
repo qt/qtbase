@@ -462,7 +462,7 @@
 
 
 /*!
-    \example qtestlib/tutorial1
+    \example tutorial1
 
     \contentspage {QTestLib Tutorial}{Contents}
     \nextpage {Chapter 2: Data Driven Testing}{Chapter 2}
@@ -478,7 +478,7 @@
     First, you need a class that contains your test functions. This class
     has to inherit from QObject:
 
-    \snippet qtestlib/tutorial1/testqstring.cpp 0
+    \snippet tutorial1/testqstring.cpp 0
 
     Note that you need to include the QTest header, and that the
     test functions have to be declared as private slots so the
@@ -498,7 +498,7 @@
     But if you want a more verbose output to the test log, you should
     use the \l QCOMPARE() macro instead:
 
-    \snippet qtestlib/tutorial1/testqstring.cpp 1
+    \snippet tutorial1/testqstring.cpp 1
 
     If the strings are not equal, the contents of both strings is
     appended to the test log, making it immediately visible why the
@@ -507,7 +507,7 @@
     Finally, to make our test case a stand-alone executable, the
     following two lines are needed:
 
-    \snippet qtestlib/tutorial1/testqstring.cpp 2
+    \snippet tutorial1/testqstring.cpp 2
 
     The \l QTEST_MAIN() macro expands to a simple \c main()
     method that runs all the test functions. Note that if both the
@@ -537,7 +537,7 @@
 */
 
 /*!
-    \example qtestlib/tutorial2
+    \example tutorial2
 
     \previouspage {Chapter 1: Writing a Unit Test}{Chapter 1}
     \contentspage {QTestLib Tutorial}{Contents}
@@ -558,14 +558,14 @@
     code, QTestLib supports adding test data to a test function. All
     we need is to add another private slot to our test class:
 
-    \snippet qtestlib/tutorial2/testqstring.cpp 0
+    \snippet tutorial2/testqstring.cpp 0
 
     \section1 Writing the Data Function
 
     A test function's associated data function carries the same name,
     appended by \c{_data}. Our data function looks like this:
 
-    \snippet qtestlib/tutorial2/testqstring.cpp 1
+    \snippet tutorial2/testqstring.cpp 1
 
     First, we define the two elements of our test table using the \l
     QTest::addColumn() function: A test string, and the
@@ -615,7 +615,7 @@
 
     Our test function can now be rewritten:
 
-    \snippet qtestlib/tutorial2/testqstring.cpp 2
+    \snippet tutorial2/testqstring.cpp 2
 
     The TestQString::toUpper() function will be executed three times,
     once for each entry in the test table that we created in the
@@ -632,7 +632,7 @@
     And again, to make our test case a stand-alone executable,
     the following two lines are needed:
 
-    \snippet qtestlib/tutorial2/testqstring.cpp 3
+    \snippet tutorial2/testqstring.cpp 3
 
     As before, the QTEST_MAIN() macro expands to a simple main()
     method that runs all the test functions, and since both the
@@ -642,7 +642,7 @@
 */
 
 /*!
-    \example qtestlib/tutorial3
+    \example tutorial3
 
     \previouspage {Chapter 2: Data Driven Testing}{Chapter 2}
     \contentspage {QTestLib Tutorial}{Contents}
@@ -663,12 +663,12 @@
     QLineEdit class. As before, you will need a class that contains
     your test function:
 
-    \snippet qtestlib/tutorial3/testgui.cpp 0
+    \snippet tutorial3/testgui.cpp 0
 
     The only difference is that you need to include the QtGui class
     definitions in addition to the QTest namespace.
 
-    \snippet qtestlib/tutorial3/testgui.cpp 1
+    \snippet tutorial3/testgui.cpp 1
 
     In the implementation of the test function we first create a
     QLineEdit. Then we simulate writing "hello world" in the line edit
@@ -692,7 +692,7 @@
     As before, to make our test case a stand-alone executable, the
     following two lines are needed:
 
-    \snippet qtestlib/tutorial3/testgui.cpp 2
+    \snippet tutorial3/testgui.cpp 2
 
     The QTEST_MAIN() macro expands to a simple main() method that
     runs all the test functions, and since both the declaration and
@@ -702,7 +702,7 @@
 */
 
 /*!
-    \example qtestlib/tutorial4
+    \example tutorial4
 
     \previouspage {Chapter 3: Simulating GUI Event}{Chapter 3}
     \contentspage {QTestLib Tutorial}{Contents}
@@ -719,14 +719,14 @@
     Data Driven Testing}{chapter 2}; all you need is to add a data
     function to your test class:
 
-    \snippet qtestlib/tutorial4/testgui.cpp 0
+    \snippet tutorial4/testgui.cpp 0
 
     \section1 Writing the Data Function
 
     As before, a test function's associated data function carries the
     same name, appended by \c{_data}.
 
-    \snippet qtestlib/tutorial4/testgui.cpp 1
+    \snippet tutorial4/testgui.cpp 1
 
     First, we define the elements of the table using the
     QTest::addColumn() function: A list of GUI events, and the
@@ -754,7 +754,7 @@
 
     Our test can now be rewritten:
 
-    \snippet qtestlib/tutorial4/testgui.cpp 2
+    \snippet tutorial4/testgui.cpp 2
 
     The TestGui::testGui() function will be executed two times,
     once for each entry in the test data that we created in the
@@ -772,7 +772,7 @@
     As before, to make our test case a stand-alone executable,
     the following two lines are needed:
 
-    \snippet qtestlib/tutorial4/testgui.cpp 3
+    \snippet tutorial4/testgui.cpp 3
 
     The QTEST_MAIN() macro expands to a simple main() method that
     runs all the test functions, and since both the declaration and
@@ -782,7 +782,7 @@
 */
 
 /*!
-    \example qtestlib/tutorial5
+    \example tutorial5
 
     \previouspage {Chapter 4: Replaying GUI Events}{Chapter 4}
     \contentspage {QTestLib Tutorial}{Contents}
@@ -798,7 +798,7 @@
     a QBENCHMARK macro that contains the code to be measured. This test
     function benchmarks QString::localeAwareCompare().
 
-    \snippet qtestlib/tutorial5/benchmarking.cpp 0
+    \snippet tutorial5/benchmarking.cpp 0
 
     Setup can be done at the beginning of the function, the clock is not
     running at this point. The code inside the QBENCHMARK macro will be
@@ -814,11 +814,11 @@
     multiple data inputs, for example locale aware compare against standard
     compare.
 
-    \snippet qtestlib/tutorial5/benchmarking.cpp 1
+    \snippet tutorial5/benchmarking.cpp 1
 
     The test function then uses the data to determine what to benchmark.
 
-    \snippet qtestlib/tutorial5/benchmarking.cpp 2
+    \snippet tutorial5/benchmarking.cpp 2
 
     The "if (useLocaleCompare)" switch is placed outside the QBENCHMARK
     macro to avoid measuring its overhead. Each benchmark test function

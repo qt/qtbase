@@ -1,0 +1,42 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** GNU Free Documentation License
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.
+**
+** Other Usage
+** Alternatively, this file may be used in accordance with the terms
+** and conditions contained in a signed written agreement between you
+** and Nokia.
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+/*!
+    \externalpage http://labs.qt.nokia.com
+    \title Qt Labs
+*/
+/*!
+    \externalpage http://labs.qt.nokia.com/blogs/2008/12/05/qtestlib-now-with-nice-graphs-pointing-upwards/
+    \title qtestlib-tools Announcement
+*/
+/*!
+    \externalpage http://qt.gitorious.org/qt-labs/qtestlib-tools
+    \title qtestlib-tools
+*/
+/*!
+    \externalpage http://qt.nokia.com/services-partners/partners/partner-directory
+    \title Partner Directory
+*/
