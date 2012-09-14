@@ -738,6 +738,7 @@ MIN_DBUS_1_VERSION=0.93
 # initalize internal variables
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
+CFG_STRIP=yes
 CFG_GUI=auto # (yes|no|auto)
 CFG_WIDGETS=yes
 CFG_QCONFIG=full
@@ -1293,6 +1294,13 @@ while [ "$#" -gt 0 ]; do
 	    QMakeVar add QMAKE_CXXFLAGS -pg
 	    QMakeVar add QMAKE_LFLAGS -pg
             QMAKE_VARS="$QMAKE_VARS CONFIG+=nostrip"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    strip)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_STRIP=$VAL
         else
             UNKNOWN_OPT=yes
         fi
@@ -3201,6 +3209,9 @@ Additional options:
 
     -no-icu ............ Do not compile support for ICU libraries.
  +  -icu ............... Compile support for ICU libraries.
+
+    -no-strip .......... Do not strip binaries and libraries of unneeded symbols.
+ *  -strip ............. Strip binaries and libraries of unneeded symbols when installing.
 
  $PHN  -no-pch ............ Do not use precompiled header support.
  $PHY  -pch ............... Use precompiled header support.
@@ -5282,6 +5293,7 @@ if [ "$CFG_USE_GNUMAKE" = "yes" ]; then
 fi
 [ "$CFG_REDUCE_EXPORTS" = "yes" ] && QT_CONFIG="$QT_CONFIG reduce_exports"
 [ "$CFG_REDUCE_RELOCATIONS" = "yes" ] && QT_CONFIG="$QT_CONFIG reduce_relocations"
+[ "$CFG_STRIP" = "no" ] && QMAKE_CONFIG="$QMAKE_CONFIG nostrip"
 [ "$CFG_PRECOMPILE" = "yes" ] && QMAKE_CONFIG="$QMAKE_CONFIG precompile_header"
 if [ "$CFG_SEPARATE_DEBUG_INFO" = "yes" ]; then
     QMakeVar add QMAKE_CFLAGS -g

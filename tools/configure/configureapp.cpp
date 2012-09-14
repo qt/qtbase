@@ -200,6 +200,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "PROCESS" ]         = "partial";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
+    dictionary[ "STRIP" ]           = "yes";
     dictionary[ "SSE2" ]            = "auto";
     dictionary[ "SSE3" ]            = "auto";
     dictionary[ "SSSE3" ]           = "auto";
@@ -808,6 +809,11 @@ void Configure::parseCmdLine()
             dictionary[ "RTTI" ] = "yes";
         else if (configCmdLine.at(i) == "-no-rtti")
             dictionary[ "RTTI" ] = "no";
+
+        else if (configCmdLine.at(i) == "-strip")
+            dictionary[ "STRIP" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-strip")
+            dictionary[ "STRIP" ] = "no";
 
         else if (configCmdLine.at(i) == "-accessibility")
             dictionary[ "ACCESSIBILITY" ] = "yes";
@@ -1741,7 +1747,10 @@ bool Configure::displayHelp()
         desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files. This will override -no-fast if specified.\n");
 
         desc("RTTI", "no",      "-no-rtti",             "Do not compile runtime type information.");
-        desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.\n");
+        desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.");
+        desc("STRIP", "no",     "-no-strip",            "Do not strip libraries and executables of debug info when installing.");
+        desc("STRIP", "yes",    "-strip",               "Strip libraries and executables of debug info when installing.\n");
+
         desc("SSE2", "no",      "-no-sse2",             "Do not compile with use of SSE2 instructions.");
         desc("SSE2", "yes",     "-sse2",                "Compile with use of SSE2 instructions.");
         desc("SSE3", "no",      "-no-sse3",             "Do not compile with use of SSE3 instructions.");
@@ -2711,6 +2720,8 @@ void Configure::generateCachefile()
             moduleStream << " neon";
         if (dictionary[ "LARGE_FILE" ] == "yes")
             moduleStream << " largefile";
+        if (dictionary[ "STRIP" ] == "no")
+            moduleStream << " nostrip";
         moduleStream << endl;
 
         moduleStream.flush();
