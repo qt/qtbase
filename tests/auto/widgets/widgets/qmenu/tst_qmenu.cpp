@@ -556,7 +556,7 @@ void tst_QMenu::tearOff()
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     menu->popup(QPoint(0,0));
-    QTest::qWait(50);
+    QVERIFY(QTest::qWaitForWindowActive(menu));
     QVERIFY(!menu->isTearOffMenuVisible());
 
     QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
@@ -791,12 +791,12 @@ void tst_QMenu::task258920_mouseBorder()
     QTest::qWait(30);
     QTest::mouseMove(&menu, actionRect.center() + QPoint(10, 0));
     QTest::qWait(30);
-    QCOMPARE(action, menu.activeAction());
+    QTRY_COMPARE(action, menu.activeAction());
     menu.painted = false;
     QTest::mouseMove(&menu, QPoint(actionRect.center().x(), actionRect.bottom() + 1));
     QTest::qWait(30);
-    QCOMPARE(static_cast<QAction*>(0), menu.activeAction());
-    QVERIFY(menu.painted);
+    QTRY_COMPARE(static_cast<QAction*>(0), menu.activeAction());
+    QTRY_VERIFY(menu.painted);
 }
 
 void tst_QMenu::setFixedWidth()
