@@ -36,6 +36,9 @@ else:           check.commands += $(DESTDIR_TARGET)
 # Allow for custom arguments to tests
 check.commands += $(TESTARGS)
 
+# Add environment for non-installed builds
+qtAddTargetEnv(check.commands)
+
 # If the test is marked as insignificant, discard the exit code
 insignificant_test:check.commands = -$${check.commands}
 
