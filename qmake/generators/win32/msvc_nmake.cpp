@@ -394,6 +394,8 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 manifest = escapeFilePath(target + ".embed.manifest");
                 extraLFlags = "/MANIFEST /MANIFESTFILE:" + manifest;
                 project->values("QMAKE_CLEAN") << manifest;
+            } else {
+                manifest = escapeFilePath(fileFixify(manifest));
             }
 
             const bool incrementalLinking = project->values("QMAKE_LFLAGS").toQStringList().filter(QRegExp("(/|-)INCREMENTAL:NO")).isEmpty();
@@ -406,7 +408,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 project->values("QMAKE_CLEAN") << manifest_rc << manifest_res;
 
                 t << "\n\techo 1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
-                  << cQuoted(QFileInfo(unescapeFilePath(manifest)).fileName()) << ">" << manifest_rc;
+                  << cQuoted(unescapeFilePath(manifest)) << ">" << manifest_rc;
 
                 if (generateManifest) {
                     t << "\n\tif not exist $(DESTDIR_TARGET) del " << manifest << ">NUL 2>&1";
