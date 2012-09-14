@@ -33,35 +33,7 @@ INSTALLS += target
 
     load(resolve_target)
     cmd = $$shell_path($$QMAKE_RESOLVED_TARGET)
-    deps = $$resolve_depends(QT, "QT.")
-    !isEmpty(deps) {
-        plugin_paths =
-        for(dep, deps) {
-            deppath += $$shell_path($$eval(QT.$${dep}.libs))
-            for(rpath, QT.$${dep}.rpath_link): \
-                deppath += $$shell_path($$rpath)
-            plugin_paths += $$eval(QT.$${dep}.plugin_path) $$eval(QT.$${dep}.plugins)
-        }
-        equals(QMAKE_HOST.os, Windows): \
-            deppath.name = PATH
-        else:contains(QMAKE_HOST.os, Linux|FreeBSD): \
-            deppath.name = LD_LIBRARY_PATH
-        else:equals(QMAKE_HOST.os, Darwin): \
-            deppath.name = DYLD_LIBRARY_PATH
-        else: \
-            error("Operating system not supported.")
-        deppath.value = $$unique(deppath)
-        deppath.CONFIG = prepend
-        pluginpath.name = QT_PLUGIN_PATH
-        pluginpath.value =
-        plugin_paths = $$unique(plugin_paths)
-        for(ppath, plugin_paths): \
-            exists($$ppath): \
-                pluginpath.value += $$shell_path($$ppath)
-        QT_TOOL_ENV += deppath pluginpath
-    }
-
-    qtAddToolEnv(cmd, $$QT_TOOL_ENV)
+    qtAddTargetEnv(cmd)
 
     TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
 
