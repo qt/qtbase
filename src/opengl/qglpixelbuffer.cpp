@@ -43,6 +43,7 @@
     \class QGLPixelBuffer
     \brief The QGLPixelBuffer class encapsulates an OpenGL pbuffer.
     \since 4.1
+    \obsolete
 
     \ingroup painting-3D
 
@@ -76,6 +77,8 @@
 
     \endlist
 
+    \note This class has been deprecated, use QOpenGLFramebufferObject
+    for offscreen rendering.
 
     \section1 Threading
 

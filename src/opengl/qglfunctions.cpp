@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
     \class QGLFunctions
     \brief The QGLFunctions class provides cross-platform access to the OpenGL/ES 2.0 API.
     \since 4.8
+    \obsolete
     \ingroup painting-3D
 
     OpenGL/ES 2.0 defines a subset of the OpenGL specification that is
@@ -117,6 +118,8 @@ QT_BEGIN_NAMESPACE
     QGLFunctions funcs(QGLContext::currentContext());
     bool npot = funcs.hasOpenGLFeature(QGLFunctions::NPOTTextures);
     \endcode
+
+    \note This class has been deprecated in favor of QOpenGLFunctions.
 */
 
 /*!

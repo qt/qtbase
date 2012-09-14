@@ -108,6 +108,7 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
     framebuffer object.
 
     \since 4.6
+    \obsolete
 
     \ingroup painting-3D
 
@@ -123,6 +124,8 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
     be supported by the hardware driver. Call QGLFramebufferObject::format()
     after creating a QGLFramebufferObject to find the exact format that was
     used to create the frame buffer object.
+
+    \note This class has been deprecated in favor of QOpenGLFramebufferObject.
 
     \sa QGLFramebufferObject
 */

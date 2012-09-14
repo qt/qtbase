@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
     \class QGLBuffer
     \brief The QGLBuffer class provides functions for creating and managing GL buffer objects.
     \since 4.7
+    \obsolete
     \ingroup painting-3D
 
     Buffer objects are created in the GL server so that the
@@ -70,6 +71,8 @@ QT_BEGIN_NAMESPACE
     QGLBuffer performs a shallow copy when objects are copied in this
     manner, but does not implement copy-on-write semantics.  The original
     object will be affected whenever the copy is modified.
+
+    \note This class has been deprecated in favor of QOpenGLBuffer.
 */
 
 /*!
