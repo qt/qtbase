@@ -18,9 +18,7 @@ win32:count($$list($$INCLUDEPATH), 40, >) {
 
     contains(TEMPLATE, "vc.*") {
         # the VCPROJ generator will replace the \r\h with the coded \r\n: &#x0d;&#x0a;
-        # No other generator understands the \h
-        if(win32-msvc2*|wince*msvc*): EOC = $$escape_expand(\\r\\h)
-        else: EOC = $$escape_expand(\\\\\\n\\t)
+        EOC = $$escape_expand(\\r\\h)
     }
 
     unset(INCFILELIST)
