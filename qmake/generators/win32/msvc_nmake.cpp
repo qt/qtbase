@@ -355,6 +355,16 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 
 }
 
+static QString cQuoted(const QString &str)
+{
+    QString ret = str;
+    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
+    ret.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
+    ret.prepend(QLatin1Char('"'));
+    ret.append(QLatin1Char('"'));
+    return ret;
+}
+
 void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
     const ProString templateName = project->first("TEMPLATE");
@@ -396,7 +406,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 project->values("QMAKE_CLEAN") << manifest_rc << manifest_res;
 
                 t << "\n\techo 1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
-                  << '"' << QFileInfo(unescapeFilePath(manifest)).fileName() << "\">" << manifest_rc;
+                  << cQuoted(QFileInfo(unescapeFilePath(manifest)).fileName()) << ">" << manifest_rc;
 
                 if (generateManifest) {
                     t << "\n\tif not exist $(DESTDIR_TARGET) del " << manifest << ">NUL 2>&1";
