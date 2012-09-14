@@ -3682,11 +3682,22 @@ Prefix=..
 EOF
 
 #-------------------------------------------------------------------------------
+# write out device config before we run the test.
+#-------------------------------------------------------------------------------
+DEVICE_VARS_OUTFILE="$outpath/mkspecs/qdevice.pri"
+if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
+    rm -f "$DEVICE_VARS_FILE"
+else
+    mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
+    DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
+fi
+
+#-------------------------------------------------------------------------------
 # Detect pkg-config
 #-------------------------------------------------------------------------------
 if [ -z "$PKG_CONFIG" ]; then
     # See if PKG_CONFIG is set in the mkspec:
-    PKG_CONFIG=`getXQMakeConf PKG_CONFIG`
+    PKG_CONFIG="`"$outpath/bin/qmake" -E -nocache -spec "$XQMAKESPEC" /dev/null 2>&1 | sed -n -e 's,^PKG_CONFIG = \(.*\),\1,p'`"
 fi
 if [ -z "$PKG_CONFIG" ]; then
     PKG_CONFIG=`"$WHICH" pkg-config 2>/dev/null`
@@ -3746,17 +3757,6 @@ fi
 
 if [ -z "$PKG_CONFIG" ]; then
     QT_CONFIG="$QT_CONFIG no-pkg-config"
-fi
-
-#-------------------------------------------------------------------------------
-# write out device config before we run the test.
-#-------------------------------------------------------------------------------
-DEVICE_VARS_OUTFILE="$outpath/mkspecs/qdevice.pri"
-if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
-    rm -f "$DEVICE_VARS_FILE"
-else
-    mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
-    DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
 fi
 
 #-------------------------------------------------------------------------------
