@@ -395,7 +395,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 QString manifest_bak = escapeFilePath(target +  "_manifest.bak");
                 project->values("QMAKE_CLEAN") << manifest_rc << manifest_res;
 
-                t << "\n\t" << "@if not exist " << manifest_rc << " echo 1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
+                t << "\n\techo 1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
                   << '"' << QFileInfo(unescapeFilePath(manifest)).fileName() << "\">" << manifest_rc;
 
                 if (generateManifest) {
