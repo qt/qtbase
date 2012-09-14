@@ -8,6 +8,5 @@ unix {
         else:LIBS += $$QT_LFLAGS_ODBC
     }
 } else {
-    win32-borland:LIBS *= $(BCB)/lib/PSDK/odbc32.lib
-    else:LIBS *= -lodbc32
+    LIBS *= -lodbc32
 }

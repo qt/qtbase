@@ -14,10 +14,5 @@ QMAKE_DOCS_INDEX = ../../doc
 
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
-win32-borland {
-        QMAKE_CFLAGS_WARN_ON        += -w-use
-        QMAKE_CXXFLAGS_WARN_ON        += -w-use
-}
-
 include(dom/dom.pri)
 include(sax/sax.pri)

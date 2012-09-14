@@ -9,7 +9,6 @@ QT = core
 
 wince*: DEFINES += WIN32_MSVC
 win32-msvc: DEFINES += WIN32_MSVC
-win32-borland: DEFINES += WIN32_BORLAND
 
 # Force a copy of the library to have an extension that is non-standard.
 # We want to test if we can load a shared library with *any* filename...
