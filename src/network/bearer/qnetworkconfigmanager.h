@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QNETWORKCONFIGURATIONMANAGER_H
-#define QNETWORKCONFIGURATIONMANAGER_H
+#ifndef QNETWORKCONFIGMANAGER_H
+#define QNETWORKCONFIGMANAGER_H
 
 #include <QtCore/qobject.h>
 #include <QtNetwork/qnetworkconfiguration.h>
@@ -102,4 +102,4 @@ QT_END_HEADER
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-#endif // QNETWORKCONFIGURATIONMANAGER_H
+#endif // QNETWORKCONFIGMANAGER_H

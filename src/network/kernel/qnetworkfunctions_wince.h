@@ -38,8 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef Q_NETWORK_FUNCTIONS_WCE_H
-#define Q_NETWORK_FUNCTIONS_WCE_H
+
+#ifndef QNETWORKFUNCTIONS_WINCE_H
+#define QNETWORKFUNCTIONS_WINCE_H
+
 #ifdef Q_OS_WINCE
 
 #include <qt_windows.h>
@@ -93,4 +95,4 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif // Q_OS_WINCE
-#endif // Q_NETWORK_FUNCTIONS_WCE_H
+#endif // QNETWORKFUNCTIONS_WINCE_H

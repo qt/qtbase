@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qnetworksession.h"
+#include "qnetworksession_p.h"
 #include "qbearerengine_p.h"
 
 #include <QEventLoop>
@@ -48,7 +49,6 @@
 #include <QThread>
 
 #include "qnetworkconfigmanager_p.h"
-#include "qnetworksession_p.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT
 

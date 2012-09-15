@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qhttpnetworkconnection_p.h"
 #include "qhttpnetworkconnectionchannel_p.h"
+#include "qhttpnetworkconnection_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
 #include <qpair.h>

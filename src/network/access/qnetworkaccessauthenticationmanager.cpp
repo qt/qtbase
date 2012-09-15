@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
+#include "qnetworkaccessauthenticationmanager_p.h"
 #include "qnetworkaccessmanager.h"
 #include "qnetworkaccessmanager_p.h"
-#include "qnetworkaccessauthenticationmanager_p.h"
 
 #include "QtCore/qbuffer.h"
 #include "QtCore/qurl.h"

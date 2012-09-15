@@ -90,13 +90,13 @@
     \sa hasPendingConnections(), nextPendingConnection()
 */
 
+#include "qtcpserver.h"
 #include "private/qobject_p.h"
 #include "qalgorithms.h"
 #include "qhostaddress.h"
 #include "qlist.h"
 #include "qpointer.h"
 #include "qabstractsocketengine_p.h"
-#include "qtcpserver.h"
 #include "qtcpsocket.h"
 #include "qnetworkproxy.h"
 

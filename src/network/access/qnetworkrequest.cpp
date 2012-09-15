@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "qplatformdefs.h"
 #include "qnetworkrequest.h"
-#include "qnetworkcookie.h"
 #include "qnetworkrequest_p.h"
+#include "qplatformdefs.h"
+#include "qnetworkcookie.h"
 #include "qsslconfiguration.h"
 #include "QtCore/qshareddata.h"
 #include "QtCore/qlocale.h"

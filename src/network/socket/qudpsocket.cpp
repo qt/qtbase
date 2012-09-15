@@ -98,10 +98,10 @@
     \sa QTcpSocket
 */
 
+#include "qudpsocket.h"
 #include "qhostaddress.h"
 #include "qnetworkinterface.h"
 #include "qabstractsocket_p.h"
-#include "qudpsocket.h"
 
 QT_BEGIN_NAMESPACE
 

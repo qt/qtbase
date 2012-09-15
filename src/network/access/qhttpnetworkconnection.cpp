@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <private/qabstractsocket_p.h>
 #include "qhttpnetworkconnection_p.h"
+#include <private/qabstractsocket_p.h>
 #include "qhttpnetworkconnectionchannel_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 #include <private/qnetworkrequest_p.h>

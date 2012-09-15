@@ -96,11 +96,12 @@
     errorString() can be called to determine the cause of the error.
 */
 
+#include "qnativesocketengine_p.h"
+
 #include <qabstracteventdispatcher.h>
 #include <qsocketnotifier.h>
 #include <qnetworkinterface.h>
 
-#include "qnativesocketengine_p.h"
 #include <private/qthread_p.h>
 #include <private/qobject_p.h>
 

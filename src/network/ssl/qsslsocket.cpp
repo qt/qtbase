@@ -288,8 +288,8 @@
     \sa peerVerifyError()
 */
 
-#include "qsslcipher.h"
 #include "qsslsocket.h"
+#include "qsslcipher.h"
 #include "qsslsocket_openssl_p.h"
 #include "qsslconfiguration_p.h"
 

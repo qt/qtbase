@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSSLCERTIFICATEEXTESNION_P_H
-#define QSSLCERTIFICATEEXTESNION_P_H
+#ifndef QSSLCERTIFICATEEXTENSION_P_H
+#define QSSLCERTIFICATEEXTENSION_P_H
 
 #include "qsslcertificateextension.h"
 
@@ -64,5 +64,5 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QSSLCERTIFICATEEXTESNION_P_H
+#endif // QSSLCERTIFICATEEXTENSION_P_H
 

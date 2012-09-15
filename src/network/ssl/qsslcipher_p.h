@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#ifndef QSSLCIPHER_P_H
+#define QSSLCIPHER_P_H
 
 #include "qsslcipher.h"
 
@@ -76,3 +78,5 @@ public:
 };
 
 QT_END_NAMESPACE
+
+#endif // QSSLCIPHER_P_H
