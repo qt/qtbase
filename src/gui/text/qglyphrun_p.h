@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QOpenGLYPHRUN_P_H
-#define QOpenGLYPHRUN_P_H
+#ifndef QGLYPHRUN_P_H
+#define QGLYPHRUN_P_H
 
 //
 //  W A R N I N G
@@ -113,6 +113,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QOpenGLYPHS_P_H
-
 #endif // QT_NO_RAWFONT
+
+#endif // QGLYPHRUN_P_H

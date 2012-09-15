@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSCONTEXT_OPENGL2_P_H
-#define QGRAPHICSCONTEXT_OPENGL2_P_H
+#ifndef QPAINTENGINEEX_OPENGL2_P_H
+#define QPAINTENGINEEX_OPENGL2_P_H
 
 //
 //  W A R N I N G
@@ -322,4 +322,4 @@ void QGL2PaintEngineExPrivate::setVertexAttributePointer(unsigned int arrayIndex
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QPAINTENGINEEX_OPENGL2_P_H

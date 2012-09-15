@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMSCREEN_QPA_P_H
-#define QPLATFORMSCREEN_QPA_P_H
+#ifndef QPLATFORMSCREEN_P_H
+#define QPLATFORMSCREEN_P_H
 
 //
 //  W A R N I N G
@@ -71,4 +71,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QPLATFORMSCREEN_QPA_P_H
+#endif // QPLATFORMSCREEN_P_H

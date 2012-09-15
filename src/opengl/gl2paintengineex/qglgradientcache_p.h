@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QGLGRADIENTCACHE_P_H
+#define QGLGRADIENTCACHE_P_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -99,3 +102,4 @@ private:
 
 QT_END_NAMESPACE
 
+#endif // QGLGRADIENTCACHE_P_H

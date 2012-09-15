@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMGLCONTEXT_H
-#define QPLATFORMGLCONTEXT_H
+#ifndef QPLATFORMOPENGLCONTEXT_H
+#define QPLATFORMOPENGLCONTEXT_H
 
 //
 //  W A R N I N G
@@ -104,4 +104,4 @@ QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 
-#endif // QPLATFORMGLCONTEXT_H
+#endif // QPLATFORMOPENGLCONTEXT_H

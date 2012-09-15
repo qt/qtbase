@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGUIGLCONTEXT_P_H
-#define QGUIGLCONTEXT_P_H
+#ifndef QOPENGLCONTEXT_P_H
+#define QOPENGLCONTEXT_P_H
 
 #ifndef QT_NO_OPENGL
 
@@ -251,4 +251,4 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif // QT_NO_OPENGL
-#endif // QGUIGLCONTEXT_P_H
+#endif // QOPENGLCONTEXT_P_H

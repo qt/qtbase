@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef QOPENGLGRADIENTCACHE_P_H
+#define QOPENGLGRADIENTCACHE_P_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -99,3 +102,4 @@ private:
 
 QT_END_NAMESPACE
 
+#endif // QOPENGLGRADIENTCACHE_P_H

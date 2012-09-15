@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QT_MIPS_DSP_H__
-#define QT_MIPS_DSP_H__
+#ifndef QT_MIPS_ASM_DSP_H
+#define QT_MIPS_ASM_DSP_H
 
 #define zero $0
 #define AT   $1
@@ -246,4 +246,4 @@ LEAF_MIPS32R2(symbol)                                   \
     or                \out_1,    \scratch1, \scratch3
 .endm
 
-#endif //QT_MIPS_DSP_H__
+#endif // QT_MIPS_ASM_DSP_H

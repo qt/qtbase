@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENTEXTUREGLYPHCACHE_P_H
-#define QOPENTEXTUREGLYPHCACHE_P_H
+#ifndef QOPENGLTEXTUREGLYPHCACHE_P_H
+#define QOPENGLTEXTUREGLYPHCACHE_P_H
 
 //
 //  W A R N I N G
@@ -166,5 +166,5 @@ private:
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QOPENGLTEXTUREGLYPHCACHE_P_H
 

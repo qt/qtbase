@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPIXMAPDATA_RASTER_P_H
-#define QPIXMAPDATA_RASTER_P_H
+#ifndef QPIXMAP_RASTER_P_H
+#define QPIXMAP_RASTER_P_H
 
 //
 //  W A R N I N G
@@ -95,6 +95,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QPIXMAPDATA_RASTER_P_H
+#endif // QPIXMAP_RASTER_P_H
 
 

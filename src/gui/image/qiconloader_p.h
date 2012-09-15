@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDESKTOPICON_P_H
-#define QDESKTOPICON_P_H
+#ifndef QICONLOADER_P_H
+#define QICONLOADER_P_H
 
 #ifndef QT_NO_ICON
 //
@@ -187,6 +187,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QDESKTOPICON_P_H
+#endif // QT_NO_ICON
 
-#endif //QT_NO_ICON
+#endif // QICONLOADER_P_H

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QDRAWHELPER_MIPS_P_H
-#define QDRAWHELPER_MIPS_P_H
+#ifndef QDRAWHELPER_MIPS_DSP_P_H
+#define QDRAWHELPER_MIPS_DSP_P_H
 
 #include <private/qdrawhelper_p.h>
 
@@ -164,4 +164,4 @@ extern "C" void  qConvertRgb16To32_asm_mips_dspr2(quint32 *dest, const quint16 *
 
 QT_END_NAMESPACE
 
-#endif // QDRAWHELPER_MIPS_P_H
+#endif // QDRAWHELPER_MIPS_DSP_P_H
