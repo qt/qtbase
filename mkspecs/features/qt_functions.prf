@@ -89,7 +89,7 @@ defineTest(qtAddModule) {
        LINKAGE += $$lib
 
        contains(QT_CONFIG, rpath) {
-           rpath = $$eval(QT.$${MODULE}.rpath)
+           rpath = $$eval(QT.$${1}.rpath)
            isEmpty(rpath): rpath = $$MODULE_LIBS
            QMAKE_RPATHDIR *= $$rpath
        }
