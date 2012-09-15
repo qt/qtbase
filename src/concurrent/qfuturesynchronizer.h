@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFUTRUESYNCHRONIZER_H
-#define QFUTRUESYNCHRONIZER_H
+#ifndef QFUTURESYNCHRONIZER_H
+#define QFUTURESYNCHRONIZER_H
 
 #include <QtConcurrent/qtconcurrent_global.h>
 
@@ -119,4 +119,4 @@ QT_END_HEADER
 
 #endif // QT_NO_CONCURRENT
 
-#endif // QFUTRUESYNCHRONIZER_H
+#endif // QFUTURESYNCHRONIZER_H

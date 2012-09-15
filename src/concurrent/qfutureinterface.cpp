@@ -44,12 +44,12 @@
 
 #ifndef QT_NO_QFUTURE
 
+#include "qfutureinterface_p.h"
+
 #include <QtCore/qatomic.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qthreadpool.h>
 #include <private/qthreadpool_p.h>
-
-#include "qfutureinterface_p.h"
 
 QT_BEGIN_NAMESPACE
 

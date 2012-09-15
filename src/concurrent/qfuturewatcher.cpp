@@ -43,12 +43,12 @@
 
 #ifndef QT_NO_QFUTURE
 
+#include "qfuturewatcher_p.h"
+
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qthread.h>
-
-#include "qfuturewatcher_p.h"
 
 QT_BEGIN_NAMESPACE
 
