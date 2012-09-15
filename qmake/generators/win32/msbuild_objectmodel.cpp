@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include "msvc_objectmodel.h"
 #include "msbuild_objectmodel.h"
+
+#include "msvc_objectmodel.h"
 #include "msvc_vcproj.h"
 #include "msvc_vcxproj.h"
 #include <qstringlist.h>
