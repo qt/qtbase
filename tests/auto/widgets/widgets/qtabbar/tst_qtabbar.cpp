@@ -283,7 +283,6 @@ void tst_QTabBar::setElideMode()
 void tst_QTabBar::sizeHints()
 {
     QTabBar tabBar;
-	QSKIP("To be fixed on Mac (font size below not large enough) and Linux QWS (probably too large for the screen).");
     tabBar.setFont(QFont("Arial", 10));
     tabBar.addTab("tab 01");
     tabBar.addTab("tab 02");
@@ -299,6 +298,9 @@ void tst_QTabBar::sizeHints()
     tabBar.setUsesScrollButtons(false);
     tabBar.setElideMode(Qt::ElideNone);
 //    qDebug() << tabBar.minimumSizeHint() << tabBar.sizeHint();
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-27230", Abort);
+#endif
     QVERIFY(tabBar.minimumSizeHint().width() > 700);
     QVERIFY(tabBar.sizeHint().width() > 700);
 
