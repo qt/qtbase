@@ -99,7 +99,7 @@ class GLTexture2D : public GLTexture
 {
 public:
     GLTexture2D(int width, int height);
-    GLTexture2D(const QString& fileName, int width = 0, int height = 0);
+    explicit GLTexture2D(const QString& fileName, int width = 0, int height = 0);
     void load(int width, int height, QRgb *data);
     virtual void bind();
     virtual void unbind();
@@ -120,7 +120,7 @@ class GLTextureCube : public GLTexture
 {
 public:
     GLTextureCube(int size);
-    GLTextureCube(const QStringList& fileNames, int size = 0);
+    explicit GLTextureCube(const QStringList& fileNames, int size = 0);
     void load(int size, int face, QRgb *data);
     virtual void bind();
     virtual void unbind();

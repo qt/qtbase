@@ -51,7 +51,7 @@
 class FlippablePad : public RoundRectItem
 {
 public:
-    FlippablePad(const QSize &size, QGraphicsItem *parent = 0);
+    explicit FlippablePad(const QSize &size, QGraphicsItem *parent = 0);
 
     RoundRectItem *iconAt(int column, int row) const;
 

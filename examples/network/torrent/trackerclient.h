@@ -59,7 +59,7 @@ class TrackerClient : public QObject
     Q_OBJECT
 
 public:
-    TrackerClient(TorrentClient *downloader, QObject *parent = 0);
+    explicit TrackerClient(TorrentClient *downloader, QObject *parent = 0);
 
     void start(const MetaInfo &info);
     void stop();

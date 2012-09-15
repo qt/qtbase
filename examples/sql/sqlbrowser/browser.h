@@ -107,7 +107,7 @@ class CustomModel: public QSqlTableModel
 {
     Q_OBJECT
 public:
-    CustomModel(QObject *parent = 0, QSqlDatabase db = QSqlDatabase()):QSqlTableModel(parent, db) {}
+    explicit CustomModel(QObject *parent = 0, QSqlDatabase db = QSqlDatabase()):QSqlTableModel(parent, db) {}
     QVariant data(const QModelIndex &idx, int role) const
     {
         if (role == Qt::BackgroundRole && isDirty(idx))

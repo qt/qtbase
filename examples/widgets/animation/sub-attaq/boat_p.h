@@ -139,7 +139,7 @@ private:
 class MoveStateRight : public QState
 {
 public:
-    MoveStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit MoveStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
     }
 protected:
@@ -156,7 +156,7 @@ private:
 class MoveStateLeft : public QState
 {
 public:
-    MoveStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit MoveStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
     }
 protected:
@@ -173,7 +173,7 @@ private:
 class StopState : public QState
 {
 public:
-    StopState(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit StopState(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
     }
 protected:
@@ -191,7 +191,7 @@ private:
 class LaunchStateRight : public QState
 {
 public:
-    LaunchStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit LaunchStateRight(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
     }
 protected:
@@ -212,7 +212,7 @@ private:
 class LaunchStateLeft : public QState
 {
 public:
-    LaunchStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
+    explicit LaunchStateLeft(Boat *boat,QState *parent = 0) : QState(parent), boat(boat)
     {
     }
 protected:

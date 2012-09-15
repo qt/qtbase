@@ -65,7 +65,7 @@ class GLRoundedBox : public GLTriangleMesh<P3T2N3Vertex, unsigned short>
 {
 public:
     // 0 < r < 0.5, 0 <= n <= 125
-    GLRoundedBox(float r = 0.25f, float scale = 1.0f, int n = 10);
+    explicit GLRoundedBox(float r = 0.25f, float scale = 1.0f, int n = 10);
 };
 
 

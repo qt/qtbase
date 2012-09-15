@@ -57,7 +57,7 @@ class PuzzleWidget : public QWidget
     Q_OBJECT
 
 public:
-    PuzzleWidget(int imageSize, QWidget *parent = 0);
+    explicit PuzzleWidget(int imageSize, QWidget *parent = 0);
     void clear();
 
     int pieceSize() const;

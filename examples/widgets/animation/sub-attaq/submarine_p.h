@@ -67,7 +67,7 @@ class MovementState : public QAnimationState
 {
 Q_OBJECT
 public:
-    MovementState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
+    explicit MovementState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
     {
         movementAnimation = new QPropertyAnimation(submarine, "pos");
         connect(movementAnimation,SIGNAL(valueChanged(const QVariant &)),this,SLOT(onAnimationMovementValueChanged(const QVariant &)));
@@ -106,7 +106,7 @@ private:
 class ReturnState : public QAnimationState
 {
 public:
-    ReturnState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
+    explicit ReturnState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
     {
         returnAnimation = new QPropertyAnimation(submarine->rotation(), "angle");
         returnAnimation->setDuration(500);

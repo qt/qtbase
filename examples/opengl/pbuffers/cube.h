@@ -95,7 +95,7 @@ class TileBuilder
 {
 public:
     enum { bl, br, tr, tl };
-    TileBuilder(Geometry *, qreal depth = 0.0f, qreal size = 1.0f);
+    explicit TileBuilder(Geometry *, qreal depth = 0.0f, qreal size = 1.0f);
     Tile *newTile(const QVector3D &loc = QVector3D()) const;
     void setColor(QColor c) { color = c; }
 protected:
@@ -140,7 +140,7 @@ private:
 class CubeBuilder : public TileBuilder
 {
 public:
-    CubeBuilder(Geometry *, qreal depth = 0.0f, qreal size = 1.0f);
+    explicit CubeBuilder(Geometry *, qreal depth = 0.0f, qreal size = 1.0f);
     Cube *newCube(const QVector3D &loc = QVector3D()) const;
 private:
     mutable int ix;

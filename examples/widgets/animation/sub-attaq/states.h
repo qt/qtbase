@@ -59,7 +59,7 @@ QT_END_NAMESPACE
 class PlayState : public QState
 {
 public:
-    PlayState(GraphicsScene *scene, QState *parent = 0);
+    explicit PlayState(GraphicsScene *scene, QState *parent = 0);
     ~PlayState();
 
  protected:
@@ -96,7 +96,7 @@ private :
 class PauseState : public QState
 {
 public:
-    PauseState(GraphicsScene *scene, QState *parent = 0);
+    explicit PauseState(GraphicsScene *scene, QState *parent = 0);
 
 protected:
     void onEntry(QEvent *);

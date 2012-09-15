@@ -70,7 +70,7 @@ private:
 class DeleteCommand : public QUndoCommand
 {
 public:
-    DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
+    explicit DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
 
     void undo();
     void redo();

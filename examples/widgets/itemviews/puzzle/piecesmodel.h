@@ -56,7 +56,7 @@ class PiecesModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    PiecesModel(int pieceSize, QObject *parent = 0);
+    explicit PiecesModel(int pieceSize, QObject *parent = 0);
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     Qt::ItemFlags flags(const QModelIndex &index) const;

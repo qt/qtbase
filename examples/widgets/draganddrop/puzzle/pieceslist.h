@@ -48,7 +48,7 @@ class PiecesList : public QListWidget
     Q_OBJECT
 
 public:
-    PiecesList(int pieceSize, QWidget *parent = 0);
+    explicit PiecesList(int pieceSize, QWidget *parent = 0);
     void addPiece(QPixmap pixmap, QPoint location);
 
 protected:

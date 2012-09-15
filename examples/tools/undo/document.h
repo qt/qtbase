@@ -52,7 +52,7 @@ class Shape
 public:
     enum Type { Rectangle, Circle, Triangle };
 
-    Shape(Type type = Rectangle, const QColor &color = Qt::red, const QRect &rect = QRect());
+    explicit Shape(Type type = Rectangle, const QColor &color = Qt::red, const QRect &rect = QRect());
 
     Type type() const;
     QString name() const;

@@ -53,7 +53,7 @@ class PathStrokeRenderer : public ArthurFrame
 public:
     enum PathMode { CurveMode, LineMode };
 
-    PathStrokeRenderer(QWidget *parent, bool smallScreen = false);
+    explicit PathStrokeRenderer(QWidget *parent, bool smallScreen = false);
 
     void paint(QPainter *);
     void mousePressEvent(QMouseEvent *e);

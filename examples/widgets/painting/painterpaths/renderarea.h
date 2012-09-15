@@ -50,7 +50,7 @@ class RenderArea : public QWidget
     Q_OBJECT
 
 public:
-    RenderArea(const QPainterPath &path, QWidget *parent = 0);
+    explicit RenderArea(const QPainterPath &path, QWidget *parent = 0);
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;

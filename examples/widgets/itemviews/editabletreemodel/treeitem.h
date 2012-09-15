@@ -49,7 +49,7 @@
 class TreeItem
 {
 public:
-    TreeItem(const QVector<QVariant> &data, TreeItem *parent = 0);
+    explicit TreeItem(const QVector<QVariant> &data, TreeItem *parent = 0);
     ~TreeItem();
 
     TreeItem *child(int number);

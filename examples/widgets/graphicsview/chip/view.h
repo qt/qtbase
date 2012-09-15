@@ -68,7 +68,7 @@ class View : public QFrame
 {
     Q_OBJECT
 public:
-    View(const QString &name, QWidget *parent = 0);
+    explicit View(const QString &name, QWidget *parent = 0);
 
     QGraphicsView *view() const;
 

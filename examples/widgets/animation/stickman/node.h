@@ -47,7 +47,7 @@ class Node: public QGraphicsObject
 {
     Q_OBJECT
 public:
-    Node(const QPointF &pos, QGraphicsItem *parent = 0);
+    explicit Node(const QPointF &pos, QGraphicsItem *parent = 0);
     ~Node();
 
     QRectF boundingRect() const;

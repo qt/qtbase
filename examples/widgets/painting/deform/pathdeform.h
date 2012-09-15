@@ -58,7 +58,7 @@ class PathDeformRenderer : public ArthurFrame
     Q_PROPERTY(QString text READ text WRITE setText)
 
 public:
-    PathDeformRenderer(QWidget *widget, bool smallScreen = false);
+    explicit PathDeformRenderer(QWidget *widget, bool smallScreen = false);
 
     void paint(QPainter *painter);
 
