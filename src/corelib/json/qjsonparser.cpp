@@ -407,7 +407,7 @@ bool Parser::parseObject()
         memcpy(data + table, parsedObject.offsets.constData(), tableSize);
 #else
         offset *o = (offset *)(data + table);
-        for (int i = 0; i < tableSize; ++i)
+        for (int i = 0; i < parsedObject.offsets.size(); ++i)
             o[i] = parsedObject.offsets[i];
 
 #endif
