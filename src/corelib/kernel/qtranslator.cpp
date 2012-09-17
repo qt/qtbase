@@ -782,7 +782,7 @@ bool QTranslatorPrivate::do_load(const uchar *data, int len, const QString &dire
         data += 4;
         if (!tag || !blockLen)
             break;
-        if (end - data < blockLen) {
+        if (quint32(end - data) < blockLen) {
             ok = false;
             break;
         }
