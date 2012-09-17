@@ -126,7 +126,7 @@ bool QLocalServerPrivate::addListener()
         }
 #endif
 
-        SID_IDENTIFIER_AUTHORITY WorldAuth = SECURITY_WORLD_SID_AUTHORITY;
+        SID_IDENTIFIER_AUTHORITY WorldAuth = { SECURITY_WORLD_SID_AUTHORITY };
         if (!AllocateAndInitializeSid(&WorldAuth, 1, SECURITY_WORLD_RID,
             0, 0, 0, 0, 0, 0, 0,
             &worldSID)) {
