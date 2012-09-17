@@ -75,6 +75,8 @@ private slots:
 
     void select_data() { generic_data(); }
     void select();
+    void selectRow_data() { generic_data(); }
+    void selectRow();
     void insertColumns_data() { generic_data_with_strategies(); }
     void insertColumns();
     void submitAll_data() { generic_data(); }
@@ -309,6 +311,49 @@ void tst_QSqlTableModel::select()
     QCOMPARE(model.data(model.index(3, 1)), QVariant());
     QCOMPARE(model.data(model.index(3, 2)), QVariant());
     QCOMPARE(model.data(model.index(3, 3)), QVariant());
+}
+
+void tst_QSqlTableModel::selectRow()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QString tbl = qTableName("pktest", __FILE__);
+    QSqlQuery q(db);
+    q.exec("DELETE FROM " + tbl);
+    q.exec("INSERT INTO " + tbl + " (id, a) VALUES (0, 'a')");
+    q.exec("INSERT INTO " + tbl + " (id, a) VALUES (1, 'b')");
+    q.exec("INSERT INTO " + tbl + " (id, a) VALUES (2, 'c')");
+
+    QSqlTableModel model(0, db);
+    model.setEditStrategy(QSqlTableModel::OnFieldChange);
+    model.setTable(tbl);
+    model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.columnCount(), 2);
+
+    QModelIndex idx = model.index(1, 1);
+
+    // Check if selectRow() refreshes an unchanged row.
+    // Row is not in cache yet.
+    q.exec("UPDATE " + tbl + " SET a = 'Qt' WHERE id = 1");
+    QCOMPARE(model.data(idx).toString(), QString("b"));
+    model.selectRow(1);
+    QCOMPARE(model.data(idx).toString(), QString("Qt"));
+
+    // Check if selectRow() refreshes a changed row.
+    // Row is already in the cache.
+    model.setData(idx, QString("b"));
+    QCOMPARE(model.data(idx).toString(), QString("b"));
+    q.exec("UPDATE " + tbl + " SET a = 'Qt' WHERE id = 1");
+    QCOMPARE(model.data(idx).toString(), QString("b"));
+    model.selectRow(1);
+    QCOMPARE(model.data(idx).toString(), QString("Qt"));
+
+    q.exec("DELETE FROM " + tbl);
 }
 
 void tst_QSqlTableModel::insertColumns()

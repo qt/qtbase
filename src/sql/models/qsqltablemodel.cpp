@@ -195,9 +195,27 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
     return true;
 }
 
+QSqlRecord QSqlTableModelPrivate::primaryValues(const QSqlRecord &rec, const QSqlRecord &pIndex)
+{
+    QSqlRecord pValues(pIndex);
+
+    for (int i = pValues.count() - 1; i >= 0; --i)
+        pValues.setValue(i, rec.value(pValues.fieldName(i)));
+
+    return pValues;
+}
+
 QSqlRecord QSqlTableModelPrivate::primaryValues(int row) const
 {
-    return cache.value(row).primaryValues(primaryIndex.isEmpty() ? rec : primaryIndex);
+    Q_Q(const QSqlTableModel);
+
+    const QSqlRecord &pIndex = primaryIndex.isEmpty() ? rec : primaryIndex;
+
+    ModifiedRow mr = cache.value(row);
+    if (mr.op() != None)
+        return mr.primaryValues(pIndex);
+    else
+        return primaryValues(q->QSqlQueryModel::record(row), pIndex);
 }
 
 /*!

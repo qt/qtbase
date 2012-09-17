@@ -70,6 +70,7 @@ public:
           busyInsertingRows(false)
     {}
     void clear();
+    static QSqlRecord primaryValues(const QSqlRecord &rec, const QSqlRecord &pIndex);
     QSqlRecord primaryValues(int index) const;
     virtual void clearCache();
     QSqlRecord record(const QVector<QVariant> &values) const;
@@ -167,12 +168,7 @@ public:
             if (m_op == None || m_op == Insert)
                 return QSqlRecord();
 
-            QSqlRecord values(pi);
-
-            for (int i = values.count() - 1; i >= 0; --i)
-                values.setValue(i, m_db_values.value(values.fieldName(i)));
-
-            return values;
+            return QSqlTableModelPrivate::primaryValues(m_db_values, pi);
         }
     private:
         inline static void setGenerated(QSqlRecord& r, bool g)
