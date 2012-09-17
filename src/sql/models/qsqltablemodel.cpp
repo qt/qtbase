@@ -427,9 +427,17 @@ bool QSqlTableModel::selectRow(int row)
     static const QString wh = Sql::where() + Sql::sp();
     if (d->filter.startsWith(wh, Qt::CaseInsensitive))
         d->filter.remove(0, wh.length());
-    const QString stmt = selectStatement();
+
+    QString stmt;
+
+    if (!d->filter.isEmpty())
+        stmt = selectStatement();
+
     d->sortColumn = table_sort_col;
     d->filter = table_filter;
+
+    if (stmt.isEmpty())
+        return false;
 
     {
         QSqlQuery q(d->db);
