@@ -544,7 +544,8 @@ void tst_QAbstractButton::shortcutEvents()
 
     for (int i = 0; i < 4; ++i) {
         QKeySequence sequence;
-        QShortcutEvent event(sequence, false);
+        // Default shortcutId for QAbstractButton is 0, so the shortcut event will work.
+        QShortcutEvent event(sequence, /*shortcutId*/ 0);
         QApplication::sendEvent(&button, &event);
         if (i < 2)
             QTest::qWait(500);
