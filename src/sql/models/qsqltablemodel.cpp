@@ -431,13 +431,15 @@ bool QSqlTableModel::selectRow(int row)
     d->sortColumn = table_sort_col;
     d->filter = table_filter;
 
-    QSqlQuery q(d->db);
-    q.setForwardOnly(true);
-    if (!q.exec(stmt))
-        return false;
+    {
+        QSqlQuery q(d->db);
+        q.setForwardOnly(true);
+        if (!q.exec(stmt))
+            return false;
 
-    bool exists = q.next();
-    d->cache[row].refresh(exists, q.record());
+        bool exists = q.next();
+        d->cache[row].refresh(exists, q.record());
+    }
 
     emit headerDataChanged(Qt::Vertical, row, row);
     emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
