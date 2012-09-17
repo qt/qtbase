@@ -3,10 +3,7 @@ TEMPLATE = app
 CONFIG += qt warn_on console
 isEmpty(QMAKE_INFO_PLIST): CONFIG -= app_bundle
 
-build_all:!build_pass {
-    CONFIG -= build_all
-    CONFIG += release
-}
+!build_pass:contains(QT_CONFIG, build_all): CONFIG += release
 
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
