@@ -306,7 +306,7 @@ void QXcbWindow::create()
 
     propagateSizeHints();
 
-    xcb_atom_t properties[4];
+    xcb_atom_t properties[5];
     int propertyCount = 0;
     properties[propertyCount++] = atom(QXcbAtom::WM_DELETE_WINDOW);
     properties[propertyCount++] = atom(QXcbAtom::WM_TAKE_FOCUS);
