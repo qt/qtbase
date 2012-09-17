@@ -85,6 +85,7 @@
 #include "../common/posix/qplatformdefs.h"
 
 #undef QT_OPEN_LARGEFILE
+#define QT_OPEN_LARGEFILE 0
 
 #if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
 #define QT_SNPRINTF		::snprintf
