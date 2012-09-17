@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 // Prevent windows system header files from defining min/max as macros.
-#define NOMINMAX
+#define NOMINMAX 1
 
 #include <winsock2.h>
 #include <ws2tcpip.h>

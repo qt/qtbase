@@ -51,7 +51,7 @@
 #endif
 
 // To prevent windows system header files from re-defining min/max
-#define NOMINMAX
+#define NOMINMAX 1
 
 #if defined(Q_OS_WIN) && !defined(QT_NO_GETADDRINFO)
 # include <winsock2.h>
