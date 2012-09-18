@@ -200,7 +200,7 @@ void QSplashScreen::repaint()
     is kept up to date with what your application is doing (e.g.,
     loading files).
 
-    \sa Qt::Alignment, clearMessage()
+    \sa Qt::Alignment, clearMessage(), message()
 */
 void QSplashScreen::showMessage(const QString &message, int alignment,
                                 const QColor &color)
@@ -211,6 +211,20 @@ void QSplashScreen::showMessage(const QString &message, int alignment,
     d->currColor = color;
     emit messageChanged(d->currStatus);
     repaint();
+}
+
+/*!
+    \since 5.2
+
+    Returns the message that is currently displayed on the splash screen.
+
+    \sa showMessage(), clearMessage()
+*/
+
+QString QSplashScreen::message() const
+{
+    Q_D(const QSplashScreen);
+    return d->currStatus;
 }
 
 /*!

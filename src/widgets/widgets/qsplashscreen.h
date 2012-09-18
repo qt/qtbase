@@ -63,6 +63,7 @@ public:
     const QPixmap pixmap() const;
     void finish(QWidget *w);
     void repaint();
+    QString message() const;
 
 public Q_SLOTS:
     void showMessage(const QString &message, int alignment = Qt::AlignLeft,
