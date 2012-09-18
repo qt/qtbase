@@ -2976,10 +2976,9 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the debug message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the console, if it is a
-    console application; otherwise, it is sent to the debugger. This
-    function does nothing if \c QT_NO_DEBUG_OUTPUT was defined
-    during compilation.
-
+    console application; otherwise, it is sent to the debugger. On Blackberry the
+    message is sent to slogger2. This function does nothing if \c QT_NO_DEBUG_OUTPUT
+    was defined during compilation.
 
     If you pass the function a format string and a list of arguments,
     it works in similar way to the C printf() function. The format
@@ -3012,7 +3011,8 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 
     Calls the message handler with the warning message \a message. If no
     message handler has been installed, the message is printed to
-    stderr. Under Windows, the message is sent to the debugger. This
+    stderr. Under Windows, the message is sent to the debugger.
+    On Blackberry the message is sent to slogger2. This
     function does nothing if \c QT_NO_WARNING_OUTPUT was defined
     during compilation; it exits if the environment variable \c
     QT_FATAL_WARNINGS is defined.
@@ -3046,6 +3046,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the critical message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
+    On Blackberry the message is sent to slogger2.
 
     This function takes a format string and a list of arguments,
     similar to the C printf() function. The format should be a Latin-1
@@ -3076,6 +3077,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     Calls the message handler with the fatal message \a message. If no
     message handler has been installed, the message is printed to
     stderr. Under Windows, the message is sent to the debugger.
+    On Blackberry the message is sent to slogger2.
 
     If you are using the \b{default message handler} this function will
     abort on Unix systems to create a core dump. On Windows, for debug builds,

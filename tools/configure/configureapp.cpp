@@ -228,6 +228,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_ICONV" ]        = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
+    dictionary[ "SLOG2" ]           = "no";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -871,6 +872,10 @@ void Configure::parseCmdLine()
             dictionary[ "PLUGIN_MANIFESTS" ] = "no";
         } else if (configCmdLine.at(i) == "-plugin-manifests") {
             dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-slog2") {
+            dictionary[ "SLOG2" ] = "no";
+        } else if (configCmdLine.at(i) == "-slog2") {
+            dictionary[ "SLOG2" ] = "yes";
         }
 
         // Work around compiler nesting limitation
@@ -1506,6 +1511,7 @@ void Configure::applySpecSpecifics()
         dictionary["DECORATIONS"]           = "default windows styled";
     } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
         dictionary["STACK_PROTECTOR_STRONG"] = "auto";
+        dictionary["SLOG2"]                 = "auto";
     }
 }
 
@@ -1713,6 +1719,11 @@ bool Configure::displayHelp()
         desc("FREETYPE", "no",   "-no-freetype",        "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",  "-qt-freetype",        "Use the libfreetype bundled with Qt.");
         desc("FREETYPE", "yes",  "-system-freetype",    "Use the libfreetype provided by the system.");
+
+        if ((platform() == QNX) || (platform() == BLACKBERRY)) {
+            desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
+            desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
+        }
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("\nQt for Windows only:\n\n");
@@ -2045,6 +2056,8 @@ bool Configure::checkAvailability(const QString &part)
         available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && tryCompileProject("unix/cups");
     } else if (part == "STACK_PROTECTOR_STRONG") {
         available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
+    } else if (part == "SLOG2") {
+        available = tryCompileProject("unix/slog2");
     }
 
     return available;
@@ -2160,6 +2173,10 @@ void Configure::autoDetection()
     // Detection of -fstack-protector-strong support
     if (dictionary["STACK_PROTECTOR_STRONG"] == "auto")
         dictionary["STACK_PROTECTOR_STRONG"] = checkAvailability("STACK_PROTECTOR_STRONG") ? "yes" : "no";
+
+    if ((platform() == QNX || platform() == BLACKBERRY) && dictionary["SLOG2"] == "auto") {
+        dictionary["SLOG2"] = checkAvailability("SLOG2") ? "yes" : "no";
+    }
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -2925,6 +2942,9 @@ void Configure::generateQConfigPri()
         if (dictionary["CROSS_COMPILE"] == "yes")
             configStream << " cross_compile";
 
+        if (dictionary[ "SLOG2" ] == "yes")
+            configStream << " slog2";
+
         if (dictionary["DIRECTWRITE"] == "yes")
             configStream << "directwrite";
 
@@ -3322,6 +3342,8 @@ void Configure::displayConfig()
     sout << "    FreeType support........" << dictionary[ "FREETYPE" ] << endl << endl;
     sout << "    PCRE support............" << dictionary[ "PCRE" ] << endl;
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
+    if ((platform() == QNX) || (platform() == BLACKBERRY))
+        sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
 
     sout << "Styles:" << endl;
     sout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;

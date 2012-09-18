@@ -35,3 +35,7 @@ linux*:!cross_compile:!static:!*-armcc* {
    DEFINES += ELF_INTERPRETER=\\\"$$system(readelf -l /bin/ls | perl -n -e \'$$prog\')\\\"
 }
 
+slog2 {
+    LIBS_PRIVATE += -lslog2
+    DEFINES += QT_USE_SLOG2
+}

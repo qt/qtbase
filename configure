@@ -784,6 +784,7 @@ CFG_QML_DEBUG=yes
 CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
+CFG_SLOG2=auto
 
 # Target architecture
 CFG_ARCH=
@@ -1780,6 +1781,13 @@ while [ "$#" -gt 0 ]; do
     glib)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_GLIB="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    slog2)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SLOG2="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3303,6 +3311,16 @@ EOF
 
 fi
 
+if [ "$XPLATFORM_QNX" = "yes" ]; then
+    cat << EOF
+
+    -no-slog2 .......... Do not compile with slog2 support.
+    -slog2 ............. Compile with slog2 support.
+
+EOF
+
+fi
+
 if [ "$BUILD_ON_MAC" = "yes" ]; then
     cat << EOF
 
@@ -4009,6 +4027,18 @@ if [ "$CFG_ZLIB" = "no" ]; then
     CFG_ZLIB=auto
     ZLIB_FORCED=yes
 fi
+
+if [ "$XPLATFORM_QNX" = "yes" ]; then
+    if [ "$CFG_SLOG2" != "no" ]; then
+        if compileTest unix/slog2 "slog2"; then
+            CFG_SLOG2=yes
+            QMAKE_CONFIG="$QMAKE_CONFIG slog2"
+        else
+            CFG_SLOG2=no
+        fi
+    fi
+fi
+
 if [ "$CFG_ZLIB" = "auto" ]; then
     if compileTest unix/zlib "zlib"; then
        CFG_ZLIB=system
@@ -6203,6 +6233,10 @@ fi
 echo "zlib support ........... $CFG_ZLIB"
 echo "Session management ..... $CFG_SM"
 echo "libudev support ........ $CFG_LIBUDEV"
+
+if [ "$XPLATFORM_QNX" = "yes" ]; then
+    echo "SLOG2 support .......... $CFG_SLOG2"
+fi
 
 if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ......... yes (Desktop OpenGL)"

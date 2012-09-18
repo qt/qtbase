@@ -29,6 +29,7 @@ unix {
 			(cd config.tests/unix/sqlite2 && $(MAKE) distclean); \
 			(cd config.tests/unix/libjpeg && $(MAKE) distclean); \
 			(cd config.tests/unix/libpng && $(MAKE) distclean); \
+                        (cd config.tests/unix/slog2 && $(MAKE) distclean); \
 			(cd config.tests/x11/xcursor && $(MAKE) distclean); \
 			(cd config.tests/x11/xrender && $(MAKE) distclean); \
 			(cd config.tests/x11/xrandr && $(MAKE) distclean); \
