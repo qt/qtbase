@@ -1426,8 +1426,8 @@ static QRectF boundingRectOfFloatsInSelection(const QTextCursor &cursor)
 
     const QList<QTextFrame *>::ConstIterator firstFrame = std::lower_bound(children.constBegin(), children.constEnd(),
                                                                            cursor.selectionStart(), firstFramePosLessThanCursorPos);
-    const QList<QTextFrame *>::ConstIterator lastFrame = qUpperBound(children.constBegin(), children.constEnd(),
-                                                                     cursor.selectionEnd(), cursorPosLessThanLastFramePos);
+    const QList<QTextFrame *>::ConstIterator lastFrame = std::upper_bound(children.constBegin(), children.constEnd(),
+                                                                          cursor.selectionEnd(), cursorPosLessThanLastFramePos);
     for (QList<QTextFrame *>::ConstIterator it = firstFrame; it != lastFrame; ++it) {
         if ((*it)->frameFormat().position() != QTextFrameFormat::InFlow)
             r |= frame->document()->documentLayout()->frameBoundingRect(*it);

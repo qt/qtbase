@@ -934,7 +934,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
     Example:
     \snippet code/src_corelib_tools_qmap.cpp 17
 
-    \sa qUpperBound(), lowerBound(), find()
+    \sa lowerBound(), find()
 */
 
 /*! \fn QMap::const_iterator QMap::upperBound(const Key &key) const

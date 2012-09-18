@@ -43,6 +43,8 @@
 #include "qthreadpool_p.h"
 #include "qelapsedtimer.h"
 
+#include <algorithm>
+
 #ifndef QT_NO_THREAD
 
 QT_BEGIN_NAMESPACE
@@ -214,7 +216,7 @@ void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
     QList<QPair<QRunnable *, int> >::const_iterator begin = queue.constBegin();
     QList<QPair<QRunnable *, int> >::const_iterator it = queue.constEnd();
     if (it != begin && priority < (*(it - 1)).second)
-        it = qUpperBound(begin, --it, priority);
+        it = std::upper_bound(begin, --it, priority);
     queue.insert(it - begin, qMakePair(runnable, priority));
     runnableReady.wakeOne();
 }

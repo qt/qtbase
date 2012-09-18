@@ -58,6 +58,7 @@
 #include "qrawfont_p.h"
 #include <qguiapplication.h>
 #include <qinputmethod.h>
+#include <algorithm>
 #include <stdlib.h>
 
 #include "qfontengine_qpa_p.h"
@@ -2552,8 +2553,8 @@ void QTextEngine::setBoundary(int strPos) const
     if (strPos <= 0 || strPos >= layoutData->string.length())
         return;
 
-    const QScriptItem* it = qUpperBound(layoutData->items.constBegin(), layoutData->items.constEnd(),
-                                        strPos, QScriptItemComparator());
+    const QScriptItem* it = std::upper_bound(layoutData->items.constBegin(), layoutData->items.constEnd(),
+                                             strPos, QScriptItemComparator());
     Q_ASSERT(it > layoutData->items.constBegin());
     --it;
     if (it->position == strPos) {
@@ -2743,7 +2744,7 @@ void QTextEngine::resolveAdditionalFormats() const
 
         while (startIt != addFormatSortedByStart.end() &&
             specialData->addFormats.at(*startIt).start <= si->position) {
-            currentFormats.insert(qUpperBound(currentFormats.begin(), currentFormats.end(), *startIt),
+            currentFormats.insert(std::upper_bound(currentFormats.begin(), currentFormats.end(), *startIt),
                                   *startIt);
             ++startIt;
         }
