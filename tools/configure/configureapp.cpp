@@ -2670,8 +2670,6 @@ void Configure::generateCachefile()
     if (cacheFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream cacheStream(&cacheFile);
 
-        cacheStream << "include($$PWD/mkspecs/qmodule.pri)" << endl;
-
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }

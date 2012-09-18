@@ -15,5 +15,6 @@ mac {
    }
 }
 
-# Qt modules get compiled without exceptions enabled by default
-CONFIG += exceptions_off
+# Qt modules get compiled without exceptions enabled by default.
+# However, testcases should be still built with exceptions.
+CONFIG += exceptions_off testcase_exceptions
