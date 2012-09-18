@@ -739,8 +739,6 @@ while ( @ARGV ) {
             $minimal--;
         }
     } elsif ($var eq "module") {
-        print "module :$val:\n" if($verbose_level);
-        die "No such module: $val" unless(defined $modules{$val});
         push @modules_to_sync, $val;
     } elsif ($var eq "separate-module") {
         my ($module, $prodir, $headerdir) = split(/:/, $val);
@@ -802,6 +800,8 @@ if (length($qt_version)) {
     $qt_version =~ s,.*^#\h*define\h+QT_VERSION_STR\h+"([^"]+)".*,$1,sm;
 }
 foreach my $lib (@modules_to_sync) {
+    die "No such module: $lib" unless(defined $modules{$lib});
+
     #iteration info
     my $dir = $modules{$lib};
 
