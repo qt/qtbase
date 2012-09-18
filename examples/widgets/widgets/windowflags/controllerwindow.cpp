@@ -193,6 +193,7 @@ void ControllerWindow::createHintsGroupBox()
     layout->addWidget(windowNoShadowCheckBox, 3, 0);
     layout->addWidget(windowTitleCheckBox, 4, 0);
     layout->addWidget(windowSystemMenuCheckBox, 5, 0);
+    layout->addWidget(customizeWindowHintCheckBox, 6, 0);
     layout->addWidget(windowMinimizeButtonCheckBox, 0, 1);
     layout->addWidget(windowMaximizeButtonCheckBox, 1, 1);
     layout->addWidget(windowCloseButtonCheckBox, 2, 1);
@@ -200,7 +201,6 @@ void ControllerWindow::createHintsGroupBox()
     layout->addWidget(windowShadeButtonCheckBox, 4, 1);
     layout->addWidget(windowStaysOnTopCheckBox, 5, 1);
     layout->addWidget(windowStaysOnBottomCheckBox, 6, 1);
-    layout->addWidget(customizeWindowHintCheckBox, 6, 0);
     hintsGroupBox->setLayout(layout);
 }
 //! [6]
