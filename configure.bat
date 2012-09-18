@@ -48,18 +48,16 @@ echo Please wait while bootstrapping configure ...
 
 for %%C in (cl.exe icl.exe g++.exe perl.exe) do set %%C=%%~$PATH:C
 
-if not exist include (
-    if "%perl.exe%" == "" (
-        echo Perl not found in PATH. Aborting. >&2
-        exit /b 1
-    )
-    if not exist mkspecs (
-        md mkspecs
-        if errorlevel 1 goto exit
-    )
-    perl %QTSRC%bin\syncqt -minimal -module QtCore -outdir %QTDIR% %QTSRC%
+if "%perl.exe%" == "" (
+    echo Perl not found in PATH. Aborting. >&2
+    exit /b 1
+)
+if not exist mkspecs (
+    md mkspecs
     if errorlevel 1 goto exit
 )
+perl %QTSRC%bin\syncqt -minimal -module QtCore -outdir %QTDIR% %QTSRC%
+if errorlevel 1 goto exit
 
 if not exist tools\configure (
     md tools\configure
