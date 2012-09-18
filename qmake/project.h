@@ -60,7 +60,7 @@ public:
     QString buildRoot() const { return m_buildRoot; }
     QString confFile() const { return m_conffile; }
     QString cacheFile() const { return m_cachefile; }
-    QString specDir() const { return m_qmakespecFull; }
+    QString specDir() const { return m_qmakespec; }
 
     ProString expand(const QString &v, const QString &file, int line);
     QStringList expand(const ProKey &func, const QList<ProStringList> &args);
