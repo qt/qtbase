@@ -780,6 +780,12 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
     return message;
 }
 
+#if !QT_DEPRECATED_SINCE(5, 0)
+// make sure they're defined to be exported
+typedef void (*QtMsgHandler)(QtMsgType, const char *);
+Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
+#endif
+
 static QtMsgHandler msgHandler = 0;                // pointer to debug handler (without context)
 static QtMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
 
