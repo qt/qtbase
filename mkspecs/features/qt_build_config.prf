@@ -9,6 +9,16 @@
     debug(1, "Not loading qmodule.pri twice")
 }
 
+!build_pass:!isEmpty(_QMAKE_SUPER_CACHE_):!exists($$[QT_HOST_DATA]/.qmake.cache) {
+    # When doing a -prefix build of top-level qt5/qt.pro, we need to announce
+    # this repo's module pris' location to the other repos.
+    isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$shadowed($$dirname(_QMAKE_CONF_))
+    modpath = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
+    !contains(QMAKEMODULES, $$modpath): \
+        cache(QMAKEMODULES, add super, modpath)
+    unset(modpath)
+}
+
 mac {
    !isEmpty(QMAKE_RPATHDIR){
        CONFIG += absolute_library_soname
