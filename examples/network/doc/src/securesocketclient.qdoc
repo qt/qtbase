@@ -26,11 +26,14 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example securesocketclient
+    \title Secure Socket Client Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Secure Socket Client example shows how to use QSslSocket to
+    communicate over an encrypted (SSL) connection. It also demonstrates how
+    to deal with authenticity problems, and how to display security and
+    certificate information.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image securesocketclient.png
+    \image securesocketclient2.png
 */

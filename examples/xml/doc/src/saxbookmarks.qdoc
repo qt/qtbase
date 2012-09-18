@@ -26,11 +26,15 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example saxbookmarks
+    \title SAX Bookmarks Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The SAX Bookmarks example provides a reader for XML Bookmark Exchange Language (XBEL)
+    files that uses Qt's SAX-based API to read and parse the files. The DOM Bookmarks
+    example provides an alternative way to read this type of file.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image saxbookmarks-example.png
+
+    See the \l{XML Bookmark Exchange Language Resource Page} for more
+    information about XBEL files.  
 */

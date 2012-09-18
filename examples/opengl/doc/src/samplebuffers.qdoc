@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example samplebuffers
+    \title Sample Buffers Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Sample Buffers example demonstrates how to use and enable
+    sample buffers in a QGLWidget.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image samplebuffers-example.png
 */

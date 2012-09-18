@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example multicastsender
+    \title Multicast Sender Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Multicast Sender example shows how to send information to multiple
+    clients in a multicast group.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image multicastsender-example.png
 */

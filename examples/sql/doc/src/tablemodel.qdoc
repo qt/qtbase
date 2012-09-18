@@ -25,12 +25,12 @@
 **
 ****************************************************************************/
 
-/*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+/*! 
+    \example tablemodel
+    \title Table Model Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Table Model example shows how to use a specialized SQL table model with table
+    views to edit information in a database.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image tablemodel-example.png
 */

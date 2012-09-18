@@ -25,12 +25,12 @@
 **
 ****************************************************************************/
 
-/*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+/*! 
+    \example relationaltablemodel
+    \title Relational Table Model Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Relational Table Model example shows how to use table views with a relational
+    model to visualize the relations between items in a database.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image relationaltablemodel-example.png
 */

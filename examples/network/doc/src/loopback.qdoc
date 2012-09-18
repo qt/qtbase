@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example loopback
+    \title Loopback Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Loopback example shows how to communicate between simple clients and servers on a local
+    host.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image loopback-example.png
 */

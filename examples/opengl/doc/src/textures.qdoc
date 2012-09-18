@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example textures
+    \title Textures Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Textures example demonstrates the use of Qt's image classes as textures in
+    applications that use both OpenGL and Qt to display graphics.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image textures-example.png
 */

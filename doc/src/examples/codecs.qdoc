@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example tools/codecs
+    \example codecs
     \title Codecs Example
 
     The Codecs example demonstrates the principles behind importing and exporting text

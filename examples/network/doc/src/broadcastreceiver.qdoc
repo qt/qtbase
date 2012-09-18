@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example broadcastreceiver
+    \title Broadcast Receiver Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Broadcast Receiver example shows how to receive information that is broadcasted
+    over a local network.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image broadcastreceiver-example.png
 */

@@ -37,7 +37,7 @@ depends                 += qtcore qtgui
 headerdirs  += ..
 
 sourcedirs  += .. \
-               ../../../examples/widgets/doc
+               ../../../examples/widgets/doc/src
 
 exampledirs += ../../../examples/widgets \
                ../../../doc/src/snippets \

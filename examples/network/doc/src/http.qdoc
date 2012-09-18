@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example http
+    \title HTTP Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The HTTP example demonstrates a simple HTTP client that shows how to fetch files
+    specified by URLs from remote hosts.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image http-example.png
 */

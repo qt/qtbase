@@ -26,11 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example network-chat
+    \title Network Chat Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Network Chat example demonstrates a stateful peer-to-peer Chat client
+    that uses broadcasting with QUdpSocket and QNetworkInterface to discover
+    its peers.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image network-chat-example.png
 */

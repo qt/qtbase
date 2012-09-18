@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example sqlbrowser
+    \title SQL Browser
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The SQL Browser example shows how a data browser can be used to visualize
+    the results of SQL statements on a live database.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image sqlbrowser-demo.png
 */

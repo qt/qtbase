@@ -26,11 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example querymodel
+    \title Query Model Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Query Model example shows how to make customized versions of
+    data obtained from a SQL query, using a model that encapsulates
+    the query and table views to display the results. 
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image querymodel-example.png
 */

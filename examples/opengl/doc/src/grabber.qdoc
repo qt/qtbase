@@ -26,11 +26,10 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example grabber
+    \title Grabber Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Grabber examples shows how to retrieve the contents of an OpenGL framebuffer.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    \image grabber-example.png
 */

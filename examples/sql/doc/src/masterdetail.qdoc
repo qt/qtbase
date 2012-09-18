@@ -26,11 +26,18 @@
 ****************************************************************************/
 
 /*!
-    \example complexpingpong
-    \title Complex Ping Pong Example
+    \example masterdetail
+    \title Master Detail Example
 
-    The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
-    a more useful demonstration of D-Bus interfaces.
+    The Master Detail Example shows how to present data from different
+    data sources in the same application. The album titles, and the
+    corresponding artists and release dates, are kept in a
+    database, while each album's tracks are stored in an XML
+    file.
 
-    \quotefile doc/src/snippets/complexpingpong-example.txt
+    The example also shows how to add as well as remove data from both
+    the database and the associated XML file using the API provided by
+    the QtSql and QtXml modules, respectively.
+
+    \image masterdetail-example.png
 */
