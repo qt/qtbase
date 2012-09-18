@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qdbusintegrator_p.h"
+
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qmetaobject.h>
@@ -62,7 +64,6 @@
 #include "qdbusmessage_p.h"
 #include "qdbuscontext_p.h"
 #include "qdbuspendingcall_p.h"
-#include "qdbusintegrator_p.h"
 
 #include "qdbusthreaddebug_p.h"
 

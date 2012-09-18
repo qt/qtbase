@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusargument.h"
+#include "qdbusargument_p.h"
 
 #include <qatomic.h>
 #include <qbytearray.h>
@@ -52,7 +53,6 @@
 #include <qrect.h>
 #include <qline.h>
 
-#include "qdbusargument_p.h"
 #include "qdbusmetatype_p.h"
 #include "qdbusutil_p.h"
 

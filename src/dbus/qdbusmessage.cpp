@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusmessage.h"
+#include "qdbusmessage_p.h"
 
 #include <qdebug.h>
 #include <qstringlist.h>
@@ -48,7 +49,6 @@
 
 #include "qdbusargument_p.h"
 #include "qdbuserror.h"
-#include "qdbusmessage_p.h"
 #include "qdbusmetatype.h"
 #include "qdbusconnection_p.h"
 #include "qdbusutil_p.h"

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusabstractadaptor.h"
+#include "qdbusabstractadaptor_p.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qmetaobject.h>
@@ -50,7 +51,6 @@
 #include "qdbusconnection.h"
 
 #include "qdbusconnection_p.h"  // for qDBusParametersForMethod
-#include "qdbusabstractadaptor_p.h"
 #include "qdbusmetatype_p.h"
 
 #include <algorithm>

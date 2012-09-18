@@ -40,13 +40,13 @@
 ****************************************************************************/
 
 #include "qdbusinterface.h"
+#include "qdbusinterface_p.h"
 
 #include "qdbus_symbols_p.h"
 #include <QtCore/qpointer.h>
 #include <QtCore/qstringlist.h>
 
 #include "qdbusmetatype_p.h"
-#include "qdbusinterface_p.h"
 #include "qdbusconnection_p.h"
 
 #ifndef QT_NO_DBUS

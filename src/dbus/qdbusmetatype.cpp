@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdbusmetatype.h"
+#include "qdbusmetatype_p.h"
 
 #include <string.h>
 #include "qdbus_symbols_p.h"
@@ -49,7 +50,6 @@
 #include <qreadwritelock.h>
 #include <qvector.h>
 
-#include "qdbusmetatype_p.h"
 #include "qdbusargument_p.h"
 #include "qdbusutil_p.h"
 #include "qdbusunixfiledescriptor.h"

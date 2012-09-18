@@ -39,17 +39,18 @@
 **
 ****************************************************************************/
 
+#include "qdbusconnection.h"
+#include "qdbusconnection_p.h"
+
 #include <qdebug.h>
 #include <qcoreapplication.h>
 #include <qstringlist.h>
 #include <qthread.h>
 
-#include "qdbusconnection.h"
 #include "qdbusconnectioninterface.h"
 #include "qdbuserror.h"
 #include "qdbusmessage.h"
 #include "qdbusmessage_p.h"
-#include "qdbusconnection_p.h"
 #include "qdbusinterface_p.h"
 #include "qdbusutil_p.h"
 #include "qdbusconnectionmanager_p.h"
