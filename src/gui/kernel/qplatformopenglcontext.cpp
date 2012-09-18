@@ -118,4 +118,38 @@ void QPlatformOpenGLContext::setContext(QOpenGLContext *context)
     d->context = context;
 }
 
+bool QPlatformOpenGLContext::parseOpenGLVersion(const QString& versionString, int &major, int &minor)
+{
+    bool majorOk = false;
+    bool minorOk = false;
+    QStringList parts = versionString.split(QLatin1Char(' '));
+    if (versionString.startsWith(QLatin1String("OpenGL ES"))) {
+        if (parts.size() >= 3) {
+            QStringList versionParts = parts.at(2).split(QLatin1Char('.'));
+            if (versionParts.size() >= 2) {
+                major = versionParts.at(0).toInt(&majorOk);
+                minor = versionParts.at(1).toInt(&minorOk);
+            } else {
+                qWarning("Unrecognized OpenGL ES version");
+            }
+        } else {
+            // If < 3 parts to the name, it is an unrecognised OpenGL ES
+            qWarning("Unrecognised OpenGL ES version");
+        }
+    } else {
+        // Not OpenGL ES, but regular OpenGL, the version numbers are first in the string
+        QStringList versionParts = parts.at(0).split(QLatin1Char('.'));
+        if (versionParts.size() >= 2) {
+            major = versionParts.at(0).toInt(&majorOk);
+            minor = versionParts.at(1).toInt(&minorOk);
+        } else {
+            qWarning("Unrecognized OpenGL version");
+        }
+    }
+
+    if (!majorOk || !minorOk)
+        qWarning("Unrecognized OpenGL version");
+    return (majorOk && minorOk);
+}
+
 QT_END_NAMESPACE

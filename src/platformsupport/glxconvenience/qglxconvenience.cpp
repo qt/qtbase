@@ -210,6 +210,8 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
         attribs.append(XNone);
 
         visualInfo = glXChooseVisual(display, screen, attribs.data());
+        if (visualInfo)
+            *format = reducedFormat;
 
         reducedFormat = qglx_reduceSurfaceFormat(reducedFormat, &reduced);
     }

@@ -74,7 +74,6 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXC
 #define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
 #endif
 
-
 QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
     : QPlatformOpenGLContext()
     , m_screen(screen)
@@ -86,18 +85,22 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
         m_shareContext = static_cast<const QGLXContext*>(share)->glxContext();
 
     GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
+    XVisualInfo *visualInfo = 0;
+    Window window = 0; // Temporary window used to query OpenGL context
 
     if (config) {
         // Resolve entry point for glXCreateContextAttribsARB
         glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
         glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 
+        // Use glXCreateContextAttribsARB if is available
         if (glXCreateContextAttribsARB != 0) {
 
             QVector<int> contextAttributes;
             contextAttributes << GLX_CONTEXT_MAJOR_VERSION_ARB << m_format.majorVersion()
                               << GLX_CONTEXT_MINOR_VERSION_ARB << m_format.minorVersion();
 
+            // If asking for OpenGL 3.2 or newer we should also specify a profile
             if (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
                 if (m_format.profile() == QSurfaceFormat::CoreProfile) {
                     contextAttributes << GLX_CONTEXT_FLAGS_ARB << GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB
@@ -129,14 +132,17 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
             }
         }
 
-        if (m_context) {
+        // Get the basic surface format details
+        if (m_context)
             m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
-            m_format.setMajorVersion(format.majorVersion());
-            m_format.setMinorVersion(format.minorVersion());
-            m_format.setProfile(format.profile());
-        }
+
+        // Used for creating the temporary window
+        visualInfo = glXGetVisualFromFBConfig(DISPLAY_FROM_XCB(screen), config);
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
     } else {
-        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), screen->screenNumber(), &m_format);
+        // Note that m_format gets updated with the used surface format
+        visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(screen), screen->screenNumber(), &m_format);
         if (!visualInfo)
             qFatal("Could not initialize GLX");
         m_context = glXCreateContext(DISPLAY_FROM_XCB(screen), visualInfo, m_shareContext, true);
@@ -145,8 +151,63 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
             m_shareContext = 0;
             m_context = glXCreateContext(DISPLAY_FROM_XCB(screen), visualInfo, 0, true);
         }
-        XFree(visualInfo);
     }
+
+    // Create a temporary window so that we can make the new context current
+    Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(screen), screen->root(), visualInfo->visual, AllocNone);
+    XSetWindowAttributes a;
+    a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(screen), screen->screenNumber());
+    a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(screen), screen->screenNumber());
+    a.colormap = cmap;
+
+    window = XCreateWindow(DISPLAY_FROM_XCB(screen), screen->root(),
+                           0, 0, 100, 100,
+                           0, visualInfo->depth, InputOutput, visualInfo->visual,
+                           CWBackPixel|CWBorderPixel|CWColormap, &a);
+
+    XFree(visualInfo);
+
+    // Query the OpenGL version and profile
+    if (m_context && window) {
+        glXMakeCurrent(DISPLAY_FROM_XCB(screen), window, m_context);
+
+        int major = 0, minor = 0;
+        QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
+        if (parseOpenGLVersion(versionString, major, minor)) {
+            m_format.setMajorVersion(major);
+            m_format.setMinorVersion(minor);
+        }
+
+        // If we have OpenGL 3.2 or newer we also need to query the profile in use
+        if (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
+            // nVidia drivers have a bug where querying GL_CONTEXT_PROFILE_MASK always returns 0.
+            // In this case let's assume that we got the profile that we asked for since nvidia implements
+            // both Core and Compatibility profiles
+            if (versionString.contains(QStringLiteral("NVIDIA"))) {
+                m_format.setProfile(format.profile());
+            } else {
+                GLint profileMask;
+                glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
+                switch (profileMask) {
+                case GLX_CONTEXT_CORE_PROFILE_BIT_ARB:
+                    m_format.setProfile(QSurfaceFormat::CoreProfile);
+                    break;
+
+                case GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+                default:
+                    m_format.setProfile(QSurfaceFormat::CompatibilityProfile);
+                }
+            }
+        } else {
+            m_format.setProfile(QSurfaceFormat::NoProfile);
+        }
+
+        // Make our context non-current
+        glXMakeCurrent(DISPLAY_FROM_XCB(screen), 0, 0);
+    }
+
+    // Destroy our temporary window
+    XDestroyWindow(DISPLAY_FROM_XCB(screen), window);
 }
 
 QGLXContext::~QGLXContext()
