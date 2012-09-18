@@ -3011,7 +3011,7 @@ bool Configure::copySpec(const char *name, const char *pfx, const QString &spec)
         fileStream.setDevice(&qfile);
         QString srcSpec = buildPath + "/mkspecs/" + spec; // We copied it to the build dir
         fileStream << "QMAKESPEC_ORIGINAL = " << formatPath(srcSpec) << endl;
-        fileStream << "include(" << formatPath(QDir(defSpec).relativeFilePath(srcSpec + "/qmake.conf")) << ")" << endl;
+        fileStream << "include($$QMAKESPEC_ORIGINAL/qmake.conf)" << endl;
         qfile.close();
     }
     if (qfile.error() != QFile::NoError) {
