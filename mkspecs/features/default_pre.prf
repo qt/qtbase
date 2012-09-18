@@ -12,21 +12,6 @@ CONFIG = lex yacc warn_on debug exceptions depend_includepath $$CONFIG
                 cache(QMAKEMODULES, add super, modpath)
             unset(modpath)
         }
-    } else {
-        # When doing a build without -prefix, put the headers directly into qtbase.
-        isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$[QT_HOST_DATA]
-    }
-
-    qtPrepareTool(QMAKE_SYNCQT, syncqt)
-    contains(QT_CONFIG, private_tests): \   # -developer-build
-        QMAKE_SYNCQT += -check-includes
-    isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$OUT_PWD
-    MSG = $$quote($$QMAKE_SYNCQT -qtdir $$[QT_HOST_DATA/get] -outdir $$MODULE_BASE_OUTDIR $$_PRO_FILE_PWD_)
-    !silent:message($$MSG)
-    system($$MSG) {
-        # success! Nothing to do
-    } else {
-        error("Failed to run: $$MSG")
     }
 }
 

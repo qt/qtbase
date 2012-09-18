@@ -127,3 +127,16 @@ QMAKE_EXTRA_TARGETS += freeze_target
 docs.commands =
 docs.depends = first
 QMAKE_EXTRA_TARGETS += docs
+
+# We need the forwarding headers before their respective modules are built,
+# so do a minimal syncqt run.
+qtPrepareTool(QMAKE_SYNCQT, syncqt)
+QTDIR = $$[QT_HOST_PREFIX]
+exists($$QTDIR/.qmake.cache): \
+    mod_component_base = $$QTDIR
+else: \
+    mod_component_base = $$dirname(_QMAKE_CACHE_)
+QMAKE_SYNCQT += -minimal -module QtCore -module QtDBus -module QtXml \
+    -qtdir $$[QT_HOST_DATA/get] -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
+!silent:message($$QMAKE_SYNCQT)
+system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
