@@ -43,10 +43,10 @@
 #define SYMBOLS_H
 
 #include "token.h"
-#include <QString>
-#include <QHash>
-#include <QVector>
-#include <QDebug>
+#include <qstring.h>
+#include <qhash.h>
+#include <qvector.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

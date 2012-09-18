@@ -42,7 +42,7 @@
 #ifndef TREEWALKER_H
 #define TREEWALKER_H
 
-#include <QtCore/QList>
+#include <qlist.h>
 
 QT_BEGIN_NAMESPACE
 

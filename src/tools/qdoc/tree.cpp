@@ -43,7 +43,7 @@
   tree.cpp
 */
 
-#include <QDomDocument>
+#include <qdom.h>
 #include "atom.h"
 #include "doc.h"
 #include "htmlgenerator.h"

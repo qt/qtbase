@@ -46,7 +46,7 @@
 #ifndef QMLCODEPARSER_H
 #define QMLCODEPARSER_H
 
-#include <QSet>
+#include <qset.h>
 #include "qqmljsengine_p.h"
 #include "qqmljslexer_p.h"
 #include "qqmljsparser_p.h"

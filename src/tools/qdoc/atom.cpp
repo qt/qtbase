@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QRegExp>
+#include <qregexp.h>
 #include "atom.h"
 #include "location.h"
 #include <stdio.h>

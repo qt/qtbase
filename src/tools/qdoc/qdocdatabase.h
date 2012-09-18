@@ -42,8 +42,8 @@
 #ifndef QDOCDATABASE_H
 #define QDOCDATABASE_H
 
-#include <QString>
-#include <QMultiMap>
+#include <qstring.h>
+#include <qmap.h>
 #include "tree.h"
 
 QT_BEGIN_NAMESPACE

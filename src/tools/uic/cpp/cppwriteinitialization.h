@@ -43,12 +43,12 @@
 #define CPPWRITEINITIALIZATION_H
 
 #include "treewalker.h"
-#include <QtCore/QPair>
-#include <QtCore/QHash>
-#include <QtCore/QSet>
-#include <QtCore/QMap>
-#include <QtCore/QStack>
-#include <QtCore/QTextStream>
+#include <qpair.h>
+#include <qhash.h>
+#include <qset.h>
+#include <qmap.h>
+#include <qstack.h>
+#include <qtextstream.h>
 
 QT_BEGIN_NAMESPACE
 

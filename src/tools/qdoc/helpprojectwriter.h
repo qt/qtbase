@@ -42,9 +42,8 @@
 #ifndef HELPPROJECTWRITER_H
 #define HELPPROJECTWRITER_H
 
-#include <QString>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include <qstring.h>
+#include <qxmlstream.h>
 
 #include "config.h"
 #include "node.h"

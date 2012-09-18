@@ -43,11 +43,11 @@
   config.cpp
 */
 
-#include <QDir>
-#include <QVariant>
-#include <QFile>
-#include <QTemporaryFile>
-#include <QTextStream>
+#include <qdir.h>
+#include <qvariant.h>
+#include <qfile.h>
+#include <qtemporaryfile.h>
+#include <qtextstream.h>
 #include <qdebug.h>
 #include "config.h"
 #include <stdlib.h>

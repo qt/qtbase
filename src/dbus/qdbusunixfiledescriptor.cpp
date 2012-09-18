@@ -41,7 +41,6 @@
 
 
 #include "qdbusunixfiledescriptor.h"
-#include <QSharedData>
 
 #ifdef Q_OS_UNIX
 # include <private/qcore_unix_p.h>

@@ -48,8 +48,8 @@
 #include "databaseinfo.h"
 #include "globaldefs.h"
 
-#include <QtCore/QTextStream>
-#include <QtCore/QDebug>
+#include <qtextstream.h>
+#include <qdebug.h>
 
 #include <ctype.h>
 

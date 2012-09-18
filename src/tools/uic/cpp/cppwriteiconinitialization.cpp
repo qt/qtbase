@@ -46,8 +46,8 @@
 #include "utils.h"
 #include "uic.h"
 
-#include <QtCore/QTextStream>
-#include <QtCore/QString>
+#include <qtextstream.h>
+#include <qstring.h>
 
 QT_BEGIN_NAMESPACE
 

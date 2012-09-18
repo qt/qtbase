@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtDebug>
+#include <qdebug.h>
 #include "config.h"
 #include "location.h"
 

@@ -42,13 +42,13 @@
 #include <rcc.h>
 #include "../../corelib/kernel/qcorecmdlineargs_p.h"
 
-#include <QDebug>
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QTextStream>
-#include <QAtomicInt>
-#include <QtGlobal>
+#include <qdebug.h>
+#include <qdir.h>
+#include <qfile.h>
+#include <qfileinfo.h>
+#include <qtextstream.h>
+#include <qatomic.h>
+#include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
 

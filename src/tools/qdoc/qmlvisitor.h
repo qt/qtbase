@@ -42,7 +42,7 @@
 #ifndef QMLVISITOR_H
 #define QMLVISITOR_H
 
-#include <QString>
+#include <qstring.h>
 #include "qqmljsastvisitor_p.h"
 #include "node.h"
 #include "tree.h"

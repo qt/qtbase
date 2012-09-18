@@ -55,12 +55,11 @@
 #ifndef UI4_H
 #define UI4_H
 
-#include <QtCore/QList>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QXmlStreamReader>
-#include <QtCore/QXmlStreamWriter>
-#include <QtCore/qglobal.h>
+#include <qlist.h>
+#include <qstring.h>
+#include <qstringlist.h>
+#include <qxmlstream.h>
+#include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
 

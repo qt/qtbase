@@ -44,7 +44,7 @@
 
 #include <qmap.h>
 #include <qregexp.h>
-#include <QXmlStreamWriter>
+#include <qxmlstream.h>
 #include "codemarker.h"
 #include "config.h"
 #include "generator.h"

@@ -43,8 +43,8 @@
 #include "uic.h"
 #include "ui4.h"
 
-#include <QtCore/QFileInfo>
-#include <QtCore/QDebug>
+#include <qfileinfo.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

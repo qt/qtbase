@@ -42,7 +42,7 @@
 #ifndef GLOBALDEFS_H
 #define GLOBALDEFS_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
 

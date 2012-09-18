@@ -46,9 +46,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <QMap>
-#include <QSet>
-#include <QStringList>
+#include <qmap.h>
+#include <qset.h>
+#include <qstringlist.h>
 
 #include "location.h"
 

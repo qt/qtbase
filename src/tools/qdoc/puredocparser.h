@@ -46,7 +46,7 @@
 #ifndef PUREDOCPARSER_H
 #define PUREDOCPARSER_H
 
-#include <QSet>
+#include <qset.h>
 
 #include "cppcodeparser.h"
 #include "location.h"

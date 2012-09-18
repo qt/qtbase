@@ -43,7 +43,7 @@
 #include "tree.h"
 #include "codemarker.h"
 #include "codeparser.h"
-#include <QUuid>
+#include <quuid.h>
 #include "qdocdatabase.h"
 #include <qdebug.h>
 

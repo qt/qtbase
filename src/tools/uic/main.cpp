@@ -43,10 +43,10 @@
 #include "option.h"
 #include "driver.h"
 #include "../../corelib/global/qconfig.cpp"
-#include <QtCore/QFile>
-#include <QtCore/QDir>
-#include <QtCore/QTextStream>
-#include <QtCore/QTextCodec>
+#include <qfile.h>
+#include <qdir.h>
+#include <qtextstream.h>
+#include <qtextcodec.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include <QFileInfo>
-#include <QStringList>
-#include <QtGlobal>
+#include <qfileinfo.h>
+#include <qstringlist.h>
+#include <qglobal.h>
 #include "qqmljsast_p.h"
 #include "qqmljsastfwd_p.h"
 #include "qqmljsengine_p.h"

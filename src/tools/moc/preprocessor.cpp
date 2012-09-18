@@ -41,10 +41,10 @@
 
 #include "preprocessor.h"
 #include "utils.h"
-#include <QStringList>
-#include <QFile>
-#include <QDir>
-#include <QFileInfo>
+#include <qstringlist.h>
+#include <qfile.h>
+#include <qdir.h>
+#include <qfileinfo.h>
 
 QT_BEGIN_NAMESPACE
 

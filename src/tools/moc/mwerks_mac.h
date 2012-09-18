@@ -42,7 +42,7 @@
 #ifndef MWERKS_MAC_H
 #define MWERKS_MAC_H
 
-#include <QtGlobal>
+#include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
 

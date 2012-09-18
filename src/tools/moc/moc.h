@@ -43,10 +43,10 @@
 #define MOC_H
 
 #include "parser.h"
-#include <QStringList>
-#include <QMap>
-#include <QPair>
-#include <QJsonDocument>
+#include <qstringlist.h>
+#include <qmap.h>
+#include <qpair.h>
+#include <qjsondocument.h>
 #include <stdio.h>
 #include <ctype.h>
 

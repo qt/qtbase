@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include <QCryptographicHash>
-#include <QDebug>
-#include <QHash>
-#include <QMap>
+#include <qcryptographichash.h>
+#include <qdebug.h>
+#include <qhash.h>
+#include <qmap.h>
 
 #include "atom.h"
 #include "helpprojectwriter.h"

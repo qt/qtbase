@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QMetaObject>
+#include <qobjectdefs.h>
 #include "codemarker.h"
 #include "config.h"
 #include "node.h"

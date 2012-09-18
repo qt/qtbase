@@ -47,8 +47,8 @@
 #define TREE_H
 
 #include "node.h"
-#include <QDomElement>
-#include <QXmlStreamWriter>
+#include <qdom.h>
+#include <qxmlstream.h>
 
 QT_BEGIN_NAMESPACE
 

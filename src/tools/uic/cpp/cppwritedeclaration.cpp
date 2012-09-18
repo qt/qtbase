@@ -50,8 +50,8 @@
 #include "databaseinfo.h"
 #include "customwidgetsinfo.h"
 
-#include <QtCore/QTextStream>
-#include <QtCore/QDebug>
+#include <qtextstream.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -42,7 +42,7 @@
 #ifndef QMLMARKUPVISITOR_H
 #define QMLMARKUPVISITOR_H
 
-#include <QString>
+#include <qstring.h>
 #include "qqmljsastvisitor_p.h"
 #include "node.h"
 #include "tree.h"

@@ -46,11 +46,11 @@
 #ifdef QT_BOOTSTRAPPED
 #define tr(x, y) QString(QLatin1String(y))
 #else
-#include <QtCore/QCoreApplication>
+#include <qcoreapplication.h>
 #define tr(x, y) QCoreApplication::translate(x, y)
 #endif
-#include <QtCore/QVarLengthArray>
-#include <QtCore/QDebug>
+#include <qvarlengtharray.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);

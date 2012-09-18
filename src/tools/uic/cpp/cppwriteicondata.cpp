@@ -44,7 +44,7 @@
 #include "ui4.h"
 #include "uic.h"
 
-#include <QtCore/QTextStream>
+#include <qtextstream.h>
 
 QT_BEGIN_NAMESPACE
 

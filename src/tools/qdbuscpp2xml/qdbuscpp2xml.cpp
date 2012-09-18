@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QByteArray>
-#include <QString>
-#include <QVarLengthArray>
-#include <QFile>
-#include <QList>
-#include <QBuffer>
-#include <QRegExp>
-#include <QVector>
+#include <qbytearray.h>
+#include <qstring.h>
+#include <qvarlengtharray.h>
+#include <qfile.h>
+#include <qlist.h>
+#include <qbuffer.h>
+#include <qregexp.h>
+#include <qvector.h>
 
 #include <stdio.h>
 #include <stdlib.h>

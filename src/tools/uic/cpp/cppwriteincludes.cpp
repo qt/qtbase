@@ -45,9 +45,9 @@
 #include "uic.h"
 #include "databaseinfo.h"
 
-#include <QtCore/QDebug>
-#include <QtCore/QFileInfo>
-#include <QtCore/QTextStream>
+#include <qdebug.h>
+#include <qfileinfo.h>
+#include <qtextstream.h>
 
 #include <stdio.h>
 

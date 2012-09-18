@@ -42,7 +42,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <QStack>
+#include <qstack.h>
 #include "symbols.h"
 
 QT_BEGIN_NAMESPACE

@@ -42,8 +42,8 @@
 /*
   generator.cpp
 */
-#include <QDir>
-#include <QDebug>
+#include <qdir.h>
+#include <qdebug.h>
 #include "codemarker.h"
 #include "config.h"
 #include "ditaxmlgenerator.h"

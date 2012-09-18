@@ -43,8 +43,8 @@
 #define PREPROCESSOR_H
 
 #include "parser.h"
-#include <QList>
-#include <QSet>
+#include <qlist.h>
+#include <qset.h>
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE

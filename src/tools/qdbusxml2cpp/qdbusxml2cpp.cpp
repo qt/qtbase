@@ -39,17 +39,17 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qbytearray.h>
-#include <QtCore/qdatetime.h>
-#include <QtCore/qdebug.h>
-#include <QtCore/qfile.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qstringlist.h>
-#include <QtCore/qtextstream.h>
-#include <QtCore/qset.h>
+#include <qbytearray.h>
+#include <qdatetime.h>
+#include <qdebug.h>
+#include <qfile.h>
+#include <qstring.h>
+#include <qstringlist.h>
+#include <qtextstream.h>
+#include <qset.h>
 
 #include "qdbusmetatype.h"
-#include "private/qdbusintrospection_p.h"
+#include <qdbusintrospection_p.h>
 
 #include <stdio.h>
 #include <stdlib.h>

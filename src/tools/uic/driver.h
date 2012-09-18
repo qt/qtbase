@@ -43,10 +43,10 @@
 #define DRIVER_H
 
 #include "option.h"
-#include <QtCore/QHash>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QTextStream>
+#include <qhash.h>
+#include <qstring.h>
+#include <qstringlist.h>
+#include <qtextstream.h>
 
 QT_BEGIN_NAMESPACE
 

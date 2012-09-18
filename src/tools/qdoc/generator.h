@@ -42,14 +42,14 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
-#include <QFile>
-#include <QFileInfo>
-#include <QList>
-#include <QMap>
-#include <QRegExp>
-#include <QString>
-#include <QStringList>
-#include <QTextStream>
+#include <qfile.h>
+#include <qfileinfo.h>
+#include <qlist.h>
+#include <qmap.h>
+#include <qregexp.h>
+#include <qstring.h>
+#include <qstringlist.h>
+#include <qtextstream.h>
 
 #include "node.h"
 #include "text.h"

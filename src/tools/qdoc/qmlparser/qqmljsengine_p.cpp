@@ -43,8 +43,8 @@
 #include "qqmljsglobal_p.h"
 
 #include <qnumeric.h>
-#include <QHash>
-#include <QDebug>
+#include <qhash.h>
+#include <qdebug.h>
 
 QT_QML_BEGIN_NAMESPACE
 

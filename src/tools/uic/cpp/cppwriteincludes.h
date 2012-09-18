@@ -44,10 +44,10 @@
 
 #include "treewalker.h"
 
-#include <QtCore/QHash>
-#include <QtCore/QMap>
-#include <QtCore/QSet>
-#include <QtCore/QString>
+#include <qhash.h>
+#include <qmap.h>
+#include <qset.h>
+#include <qstring.h>
 
 QT_BEGIN_NAMESPACE
 

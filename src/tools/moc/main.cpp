@@ -43,9 +43,9 @@
 #include "moc.h"
 #include "outputrevision.h"
 #include <qconfig.cpp>
-#include <QFile>
-#include <QFileInfo>
-#include <QDir>
+#include <qfile.h>
+#include <qfileinfo.h>
+#include <qdir.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>

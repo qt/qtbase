@@ -43,11 +43,11 @@
   ditaxmlgenerator.cpp
 */
 
-#include <QDebug>
-#include <QList>
+#include <qdebug.h>
+#include <qlist.h>
 #include <qiterator.h>
-#include <QTextCodec>
-#include <QUuid>
+#include <qtextcodec.h>
+#include <quuid.h>
 #include "codemarker.h"
 #include "codeparser.h"
 #include "ditaxmlgenerator.h"

@@ -44,9 +44,9 @@
 #ifndef RCC_H
 #define RCC_H
 
-#include <QtCore/QStringList>
-#include <QtCore/QHash>
-#include <QtCore/QString>
+#include <qstringlist.h>
+#include <qhash.h>
+#include <qstring.h>
 
 QT_BEGIN_NAMESPACE
 

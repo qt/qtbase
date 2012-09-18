@@ -46,9 +46,9 @@
 #ifndef DOC_H
 #define DOC_H
 
-#include <QSet>
-#include <QString>
-#include <QMap>
+#include <qset.h>
+#include <qstring.h>
+#include <qmap.h>
 
 #include "location.h"
 

@@ -41,16 +41,16 @@
 
 #include "rcc.h"
 
-#include <QtCore/QByteArray>
-#include <QtCore/QDateTime>
-#include <QtCore/QDebug>
-#include <QtCore/QDir>
-#include <QtCore/QDirIterator>
-#include <QtCore/QFile>
-#include <QtCore/QIODevice>
-#include <QtCore/QLocale>
-#include <QtCore/QStack>
-#include <QtCore/QXmlStreamReader>
+#include <qbytearray.h>
+#include <qdatetime.h>
+#include <qdebug.h>
+#include <qdir.h>
+#include <qdiriterator.h>
+#include <qfile.h>
+#include <qiodevice.h>
+#include <qlocale.h>
+#include <qstack.h>
+#include <qxmlstream.h>
 
 // Note: A copy of this file is used in Qt Designer (qttools/src/designer/src/lib/shared/rcc.cpp)
 

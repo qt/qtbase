@@ -46,12 +46,12 @@
 #include "utils.h"
 #include "uic.h"
 
-#include <QtCore/QDataStream>
-#include <QtCore/QTextStream>
-#include <QtCore/QTextCodec>
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
+#include <qdatastream.h>
+#include <qtextstream.h>
+#include <qtextcodec.h>
+#include <qdir.h>
+#include <qfile.h>
+#include <qfileinfo.h>
 
 QT_BEGIN_NAMESPACE
 

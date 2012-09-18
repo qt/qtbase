@@ -46,8 +46,8 @@
 #ifndef EDITDISTANCE_H
 #define EDITDISTANCE_H
 
-#include <QSet>
-#include <QString>
+#include <qset.h>
+#include <qstring.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -46,9 +46,9 @@
 #ifndef HTMLGENERATOR_H
 #define HTMLGENERATOR_H
 
-#include <QMap>
-#include <QRegExp>
-#include <QXmlStreamWriter>
+#include <qmap.h>
+#include <qregexp.h>
+#include <qxmlstream.h>
 #include "codemarker.h"
 #include "config.h"
 #include "generator.h"

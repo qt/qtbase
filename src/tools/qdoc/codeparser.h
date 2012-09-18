@@ -42,7 +42,7 @@
 #ifndef CODEPARSER_H
 #define CODEPARSER_H
 
-#include <QSet>
+#include <qset.h>
 #include "node.h"
 
 QT_BEGIN_NAMESPACE
