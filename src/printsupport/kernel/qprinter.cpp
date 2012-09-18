@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qprinter_p.h"
 #include "qprinter.h"
+#include "qprinter_p.h"
 
 #ifndef QT_NO_PRINTER
 

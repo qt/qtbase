@@ -38,8 +38,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <qdebug.h>
+
 #include "qcups_p.h"
+
+#include <qdebug.h>
 
 #ifndef QT_NO_CUPS
 
