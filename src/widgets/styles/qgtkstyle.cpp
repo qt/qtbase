@@ -182,7 +182,7 @@ static GdkColor fromQColor(const QColor &color)
           The Qt3-based "Qt" GTK+ theme engine will not work with QGtkStyle.
 
     \sa {Cleanlooks Style Widget Gallery}, QWindowsXPStyle, QMacStyle, QWindowsStyle,
-        QCDEStyle, QMotifStyle, QPlastiqueStyle, QCleanlooksStyle
+        QPlastiqueStyle, QCleanlooksStyle
 */
 
 /*!

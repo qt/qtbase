@@ -52,9 +52,6 @@
 #include <math.h>
 
 #include <QtWidgets/QLabel>
-#if !defined(QT_NO_STYLE_MOTIF)
-#include <QtWidgets/QMotifStyle>
-#endif
 #if !defined(QT_NO_STYLE_WINDOWS)
 #include <QtWidgets/QWindowsStyle>
 #endif
@@ -2736,6 +2733,23 @@ void tst_QGraphicsView::scrollBarRanges_data()
     _scrollBarRanges_data();
 }
 
+// Simulates motif scrollbar for range tests
+class FauxMotifStyle : public QCommonStyle {
+public:
+    int styleHint(StyleHint hint, const QStyleOption *option,
+                  const QWidget *widget, QStyleHintReturn *returnData) const {
+        if (hint == QStyle::SH_ScrollView_FrameOnlyAroundContents)
+            return true;
+        return QCommonStyle::styleHint(hint, option, widget, returnData);
+    }
+
+    int pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const {
+        if (m == QStyle::PM_ScrollView_ScrollBarSpacing)
+            return 4;
+        return QCommonStyle::pixelMetric(m, opt, widget);
+    }
+};
+
 void tst_QGraphicsView::scrollBarRanges()
 {
     QFETCH(QSize, viewportSize);
@@ -2758,10 +2772,10 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
     if (useMotif) {
-#if !defined(QT_NO_STYLE_MOTIF)
-        view.setStyle(new QMotifStyle);
+#if !defined(QT_NO_STYLE_WINDOWS)
+        view.setStyle(new FauxMotifStyle);
 #else
-        QSKIP("No Motif style compiled.");
+        QSKIP("No Windows style compiled.");
 #endif
     } else {
 #if defined(Q_OS_WINCE)

@@ -72,13 +72,6 @@
   \caption \l{GTK Style Widget Gallery}
 
   The GTK style is provided by QGtkStyle.
-  \li \image motif-tabwidget.png Motif Style Widget Gallery
-  \caption \l{Motif Style Widget Gallery}
 
-  The Motif style is provided by QMotifStyle.
-  \li \image cde-tabwidget.png CDE Style Widget Gallery
-  \caption \l{CDE Style Widget Gallery}
-
-  The Common Desktop Environment style is provided by QCDEStyle.
   \endtable
 */

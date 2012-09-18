@@ -169,8 +169,8 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     returnPressed()/editingFinished() signals will only be emitted if
     the validator returns QValidator::Acceptable.
 
-    By default, QLineEdits have a frame as specified by the Windows
-    and Motif style guides; you can turn it off by calling
+    By default, QLineEdits have a frame as specified by platform
+    style guides; you can turn it off by calling
     setFrame(false).
 
     The default key bindings are described below. The line edit also

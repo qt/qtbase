@@ -106,14 +106,12 @@ public:
     its roots back to a BASIC program on the \l{Sinclair Spectrum}{Sinclair Spectrum}.
 
     \table
-    \row \li \inlineimage motif-lcdnumber.png Screenshot of a Motif style LCD number widget
-    \inlineimage cde-lcdnumber.png Screenshot of a CDE style LCD number widget
+    \row \li
     \inlineimage windows-lcdnumber.png Screenshot of a Windows style LCD number widget
     \inlineimage windowsxp-lcdnumber.png Screenshot of a Windows XP style LCD number widget
     \inlineimage macintosh-lcdnumber.png Screenshot of a Macintosh style LCD number widget
     \inlineimage plastique-lcdnumber.png Screenshot of a Plastique style LCD number widget
     \row \li LCD number widgets shown in various widget styles (from left to right):
-    \l{Motif Style Widget Gallery}{Motif}, \l{CDE Style Widget Gallery}{CDE},
     \l{Windows Style Widget Gallery}{Windows}, \l{Windows XP Style Widget Gallery}{Windows XP},
     \l{Macintosh Style Widget Gallery}{Macintosh}, \l{Plastique Style Widget Gallery}{Plastique}.
     \endtable

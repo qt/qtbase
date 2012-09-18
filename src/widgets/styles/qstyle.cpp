@@ -89,7 +89,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 
     Qt provides a set of QStyle subclasses that emulate the native
     look of the different platforms supported by Qt (QWindowsStyle,
-    QMacStyle, QMotifStyle, etc.). These styles are built into the
+    QMacStyle, etc.). These styles are built into the
     QtGui library, other styles can be made available using Qt's
     plugin mechansim.
 
@@ -152,7 +152,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 
     Qt contains a set of QStyle subclasses that emulate the styles of
     the different platforms supported by Qt (QWindowsStyle,
-    QMacStyle, QMotifStyle, etc.). By default, these styles are built
+    QMacStyle etc.). By default, these styles are built
     into the QtGui library. Styles can also be made available as
     plugins.
 
@@ -1660,7 +1660,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
         manner, i.e., left on a vertical slider subtracts a line.
 
     \value SH_ProgressDialog_CenterCancelButton  Center button on
-        progress dialogs, like Motif, otherwise right aligned.
+        progress dialogs, otherwise right aligned.
 
     \value SH_ProgressDialog_TextLabelAlignment The alignment for text
     labels in progress dialogs; Qt::AlignCenter on Windows,

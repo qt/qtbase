@@ -44,6 +44,7 @@
 #include <QtTest/QtTest>
 #include <QtDebug>
 #include <QMetaObject>
+#include <QPlastiqueStyle>
 
 #include <private/qstylesheetstyle_p.h>
 #include "../../../platformquirks.h"
@@ -1590,7 +1591,7 @@ class ChangeEventWidget : public QWidget
             static bool recurse = false;
             if (!recurse) {
                 recurse = true;
-                QStyle *style = new QMotifStyle;
+                QStyle *style = new QPlastiqueStyle;
                 style->setParent(this);
                 setStyle(style);
                 recurse = false;

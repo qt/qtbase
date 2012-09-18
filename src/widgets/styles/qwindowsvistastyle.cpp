@@ -153,7 +153,7 @@ bool QWindowsVistaStylePrivate::useVista()
   \warning This style is only available on the Windows Vista platform
   because it makes use of Windows Vista's style engine.
 
-  \sa QMacStyle, QWindowsXPStyle, QPlastiqueStyle, QCleanlooksStyle, QMotifStyle
+  \sa QMacStyle, QWindowsXPStyle, QPlastiqueStyle, QCleanlooksStyle
 */
 
 /*!

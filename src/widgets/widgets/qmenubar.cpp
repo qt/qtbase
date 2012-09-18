@@ -632,12 +632,6 @@ void QMenuBar::initStyleOption(QStyleOptionMenuItem *option, const QAction *acti
     other styles, handles the \uicontrol{Help} menu in the same way as it
     handles any other menu.
 
-    \row \li \inlineimage motif-menubar.png A menu bar shown in the
-    Motif widget style.
-
-    \li The \l{QMotifStyle}{Motif widget style} treats \uicontrol{Help} menus
-    in a special way, placing them at right-hand end of the menu bar.
-
     \endtable
 
     \section1 QMenuBar on Mac OS X

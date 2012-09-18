@@ -447,8 +447,8 @@ void tst_QApplication::args_data()
 
     QTest::newRow( "App name" ) << 1 << "/usr/bin/appname" << 1 << "/usr/bin/appname";
     QTest::newRow( "No arguments" ) << 0 << QString() << 0 << QString();
-    QTest::newRow( "App name, style" ) << 3 << "/usr/bin/appname -style motif" << 1 << "/usr/bin/appname";
-    QTest::newRow( "App name, style, arbitrary, reverse" ) << 5 << "/usr/bin/appname -style motif -arbitrary -reverse"
+    QTest::newRow( "App name, style" ) << 3 << "/usr/bin/appname -style windows" << 1 << "/usr/bin/appname";
+    QTest::newRow( "App name, style, arbitrary, reverse" ) << 5 << "/usr/bin/appname -style windows -arbitrary -reverse"
 							<< 2 << "/usr/bin/appname -arbitrary";
 }
 

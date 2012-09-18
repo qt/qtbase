@@ -196,9 +196,6 @@
 // Status Tip
 //#define QT_NO_STATUSTIP
 
-// QMotifStyle
-//#define QT_NO_STYLE_MOTIF
-
 // QWindowsStyle
 //#define QT_NO_STYLE_WINDOWS
 
@@ -337,11 +334,6 @@
 // State machine
 #if !defined(QT_NO_STATEMACHINE) && (defined(QT_NO_PROPERTIES))
 #define QT_NO_STATEMACHINE
-#endif
-
-// QCDEStyle
-#if !defined(QT_NO_STYLE_CDE) && (defined(QT_NO_STYLE_MOTIF))
-#define QT_NO_STYLE_CDE
 #endif
 
 // QWindowsXPStyle

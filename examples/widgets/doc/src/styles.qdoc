@@ -42,7 +42,7 @@
     reimplementing a few virtual functions.
 
     In this example, the custom style is called \c NorwegianWoodStyle
-    and derives from QMotifStyle. Its main features are the wooden
+    and derives from QWindowsStyle. Its main features are the wooden
     textures used for filling most of the widgets and its round
     buttons and comboboxes.
 
@@ -56,7 +56,7 @@
     The example consists of the following classes:
 
     \list
-    \li \c NorwegianWoodStyle inherits from QMotifStyle and implements
+    \li \c NorwegianWoodStyle inherits from QWindowsStyle and implements
         the Norwegian Wood style.
     \li \c WidgetGallery is a \c QDialog subclass that shows the most
        common widgets and allows the user to switch style
@@ -69,8 +69,8 @@
 
     \snippet widgets/styles/norwegianwoodstyle.h 0
 
-    The public functions are all declared in QStyle (QMotifStyle's
-    grandparent class) and reimplemented here to override the Motif
+    The public functions are all declared in QStyle (QWindowsStyle's
+    grandparent class) and reimplemented here to override the Windows
     look and feel. The private functions are helper functions.
 
     \section1 NorwegianWoodStyle Class Implementation
@@ -154,7 +154,7 @@
     \image styles-disabledwood.png The Norwegian Wood style with disabled widgets
 
     Let's move on to the other functions reimplemented from
-    QMotifStyle:
+    QWindowsStyle:
 
     \snippet widgets/styles/norwegianwoodstyle.cpp 3
     \snippet widgets/styles/norwegianwoodstyle.cpp 4
@@ -186,23 +186,23 @@
     widgets are drawn and their size hint. Here, we return 8 as the
     width around a shown in a QComboBox, ensuring that there is
     enough place around the text and the arrow for the Norwegian Wood
-    round corners. The default value for this setting in the Motif
+    round corners. The default value for this setting in the Windows
     style is 2.
 
     We also change the extent of \l{QScrollBar}s, i.e., the height
     for a horizontal scroll bar and the width for a vertical scroll
-    bar, to be 4 pixels more than in the Motif style. This makes the
+    bar, to be 4 pixels more than in the Windows style. This makes the
     style a bit more distinctive.
 
-    For all other QStyle::PixelMetric elements, we use the Motif
+    For all other QStyle::PixelMetric elements, we use the Windows
     settings.
 
     \snippet widgets/styles/norwegianwoodstyle.cpp 9
     \snippet widgets/styles/norwegianwoodstyle.cpp 10
 
     The \l{QStyle::styleHint()}{styleHint()} function returns some
-    hints to widgets or to the base style (in our case QMotifStyle)
-    about how to draw the widgets. The Motif style returns \c true
+    hints to widgets or to the base style (in our case QWindowsStyle)
+    about how to draw the widgets. The Windows style returns \c true
     for the QStyle::SH_DitherDisabledText hint, resulting in a most
     unpleasing visual effect. We override this behavior and return \c
     false instead. We also return \c true for the

@@ -524,7 +524,7 @@ void QApplicationPrivate::process_cmdline()
     All Qt programs automatically support the following command line options:
     \list
         \li  -style= \e style, sets the application GUI style. Possible values
-            are \c motif, \c windows, and \c platinum. If you compiled Qt with
+            depend on your system configuration. If you compiled Qt with
             additional styles or have additional styles as plugins these will
             be available to the \c -style command line option.
         \li  -style \e style, is the same as listed above.
@@ -1206,7 +1206,7 @@ void QApplication::setStyle(QStyle *style)
     Requests a QStyle object for \a style from the QStyleFactory.
 
     The string must be one of the QStyleFactory::keys(), typically one of
-    "windows", "motif", "cde", "plastique", "windowsxp", or "macintosh". Style
+    "windows", "cleanlooks", "plastique", "windowsxp", or "macintosh". Style
     names are case insensitive.
 
     Returns 0 if an unknown \a style is passed, otherwise the QStyle object

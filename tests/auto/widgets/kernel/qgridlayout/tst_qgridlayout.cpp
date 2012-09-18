@@ -793,11 +793,6 @@ void tst_QGridLayout::minMaxSize_data()
                 << SizeInfo(QPoint(10, 10), QSize( 90, 90), QSize(100,100))
                 << SizeInfo(QPoint(10 + 100 + 1, 10), QSize( 90, 90))
                 );
-    QTest::newRow("2x1 grid, extend to minimumSize, motif") << QString::fromLatin1("motif") << 2 << 1
-                << int(QSizePolicy::Preferred) << QSize() << (SizeInfoList()
-                << SizeInfo(QPoint(11, 11), QSize( 90, 90), QSize(100,100))
-                << SizeInfo(QPoint(11 + 100 + 6, 11), QSize( 90, 90))
-                );
     QTest::newRow("2x1 grid, extend to minimumSize, windows") << QString::fromLatin1("windows") << 2 << 1
                 << int(QSizePolicy::Preferred) << QSize() << (SizeInfoList()
                 << SizeInfo(QPoint(11, 11), QSize( 90, 90), QSize(100,100))

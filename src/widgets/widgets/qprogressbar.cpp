@@ -216,7 +216,7 @@ bool QProgressBarPrivate::repaintRequired() const
     \value BottomToTop The text is rotated 90 degrees counter-clockwise.
 
     Note that whether or not the text is drawn is dependent on the style.
-    Currently CDE, CleanLooks, Motif, and Plastique draw the text. Mac, Windows
+    Currently CleanLooks and Plastique draw the text. Mac, Windows
     and WindowsXP style do not.
 
     \sa textDirection

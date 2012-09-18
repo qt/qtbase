@@ -26,7 +26,7 @@ SUBDIRS       = analogclock \
                 wiggly \
                 windowflags
 
-contains(styles, motif): SUBDIRS += styles
+contains(styles, windows): SUBDIRS += styles
 
 # install
 sources.files = widgets.pro README

@@ -46,8 +46,6 @@
 
 #include "qapplication.h"
 #include "qwindowsstyle.h"
-#include "qmotifstyle.h"
-#include "qcdestyle.h"
 #ifndef QT_NO_STYLE_PLASTIQUE
 #include "qplastiquestyle.h"
 #endif
@@ -95,7 +93,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     plugin (see QStylePlugin).
 
     The valid keys can be retrieved using the keys()
-    function. Typically they include "windows", "motif", "cde",
+    function. Typically they include "windows",
     "plastique" and "cleanlooks".  Depending on the platform,
     "windowsxp", "windowsvista" and "macintosh" may be available.
     Note that keys are case insensitive.
@@ -141,16 +139,6 @@ QStyle *QStyleFactory::create(const QString& key)
 #ifndef QT_NO_STYLE_WINDOWSVISTA
     if (style == QLatin1String("windowsvista"))
         ret = new QWindowsVistaStyle;
-    else
-#endif
-#ifndef QT_NO_STYLE_MOTIF
-    if (style == QLatin1String("motif"))
-        ret = new QMotifStyle;
-    else
-#endif
-#ifndef QT_NO_STYLE_CDE
-    if (style == QLatin1String("cde"))
-        ret = new QCDEStyle;
     else
 #endif
 #ifndef QT_NO_STYLE_PLASTIQUE
@@ -225,14 +213,6 @@ QStringList QStyleFactory::keys()
     if (!list.contains(QLatin1String("WindowsVista")) &&
         (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         list << QLatin1String("WindowsVista");
-#endif
-#ifndef QT_NO_STYLE_MOTIF
-    if (!list.contains(QLatin1String("Motif")))
-        list << QLatin1String("Motif");
-#endif
-#ifndef QT_NO_STYLE_CDE
-    if (!list.contains(QLatin1String("CDE")))
-        list << QLatin1String("CDE");
 #endif
 #ifndef QT_NO_STYLE_PLASTIQUE
     if (!list.contains(QLatin1String("Plastique")))

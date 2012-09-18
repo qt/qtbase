@@ -57,8 +57,6 @@
 
 #include <qplastiquestyle.h>
 #include <qwindowsstyle.h>
-#include <qcdestyle.h>
-#include <qmotifstyle.h>
 #include <qcommonstyle.h>
 #include <qproxystyle.h>
 #include <qstylefactory.h>
@@ -121,16 +119,10 @@ private slots:
     void cleanupTestCase();
     void init();
     void cleanup();
-#ifndef QT_NO_STYLE_MOTIF
-    void testMotifStyle();
-#endif
 #ifndef QT_NO_STYLE_PLASTIQUE
     void testPlastiqueStyle();
 #endif
     void testWindowsStyle();
-#ifndef QT_NO_STYLE_CDE
-    void testCDEStyle();
-#endif
 #ifndef QT_NO_STYLE_WINDOWSXP
     void testWindowsXPStyle();
 #endif
@@ -195,23 +187,14 @@ void tst_QStyle::cleanupTestCase()
 void tst_QStyle::testStyleFactory()
 {
     QStringList keys = QStyleFactory::keys();
-#ifndef QT_NO_STYLE_MOTIF
-    QVERIFY(keys.contains("Motif"));
-#endif
 #ifndef QT_NO_STYLE_CLEANLOOKS
     QVERIFY(keys.contains("Cleanlooks"));
 #endif
 #ifndef QT_NO_STYLE_PLASTIQUE
     QVERIFY(keys.contains("Plastique"));
 #endif
-#ifndef QT_NO_STYLE_CDE
-    QVERIFY(keys.contains("CDE"));
-#endif
 #ifndef QT_NO_STYLE_WINDOWS
     QVERIFY(keys.contains("Windows"));
-#endif
-#ifndef QT_NO_STYLE_MOTIF
-    QVERIFY(keys.contains("Motif"));
 #endif
 #ifdef Q_OS_WIN
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP &&
@@ -568,22 +551,6 @@ void tst_QStyle::testMacStyle()
     QVERIFY(testAllFunctions(&mstyle));
 #endif
 }
-
-#ifndef QT_NO_STYLE_MOTIF
-void tst_QStyle::testMotifStyle()
-{
-    QMotifStyle mstyle;
-    QVERIFY(testAllFunctions(&mstyle));
-}
-#endif
-
-#ifndef QT_NO_STYLE_CDE
-void tst_QStyle::testCDEStyle()
-{
-    QCDEStyle cstyle;
-    QVERIFY(testAllFunctions(&cstyle));
-}
-#endif
 
 void tst_QStyle::testWindowsCEStyle()
 {

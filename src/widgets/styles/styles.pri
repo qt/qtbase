@@ -62,19 +62,6 @@ contains( styles, mac ) {
 	DEFINES += QT_NO_STYLE_MAC
 }
 
-contains( styles, cde ) {
-	HEADERS += styles/qcdestyle.h
-	SOURCES += styles/qcdestyle.cpp
-
-	!contains( styles, motif ) {
-		message( cde requires motif )
-		styles += motif
-		DEFINES+= QT_STYLE_MOTIF
-	}
-} else {
-	DEFINES += QT_NO_STYLE_CDE
-}
-
 contains( styles, windowsvista ) {
 	HEADERS += styles/qwindowsvistastyle.h
 	HEADERS += styles/qwindowsvistastyle_p.h
@@ -144,13 +131,6 @@ contains( styles, windows ) {
 	SOURCES += styles/qwindowsstyle.cpp
 } else {
 	DEFINES += QT_NO_STYLE_WINDOWS
-}
-
-contains( styles, motif ) {
-	HEADERS += styles/qmotifstyle.h
-	SOURCES += styles/qmotifstyle.cpp
-} else {
-	DEFINES += QT_NO_STYLE_MOTIF
 }
 
 contains( styles, windowsce ) {

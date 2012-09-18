@@ -41,7 +41,7 @@
 #ifndef NORWEGIANWOODSTYLE_H
 #define NORWEGIANWOODSTYLE_H
 
-#include <QMotifStyle>
+#include <QWindowsStyle>
 #include <QPalette>
 
 QT_BEGIN_NAMESPACE
@@ -49,7 +49,7 @@ class QPainterPath;
 QT_END_NAMESPACE
 
 //! [0]
-class NorwegianWoodStyle : public QMotifStyle
+class NorwegianWoodStyle : public QWindowsStyle
 {
     Q_OBJECT
 

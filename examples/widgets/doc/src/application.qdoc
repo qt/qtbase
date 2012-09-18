@@ -231,16 +231,9 @@
 
     Just before we create the \uicontrol{Help} menu, we call
     QMenuBar::addSeparator(). This has no effect for most widget
-    styles (e.g., Windows and Mac OS X styles), but for Motif-based
+    styles (e.g., Windows and Mac OS X styles), but for some
     styles this makes sure that \uicontrol{Help} is pushed to the right
-    side of the menu bar. Try running the application with various
-    styles and see the results:
-
-    \code
-    application -style=windows
-    application -style=motif
-    application -style=cde
-    \endcode
+    side of the menu bar.
 
     Let's now review the toolbars:
 

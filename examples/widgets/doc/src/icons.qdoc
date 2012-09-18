@@ -600,8 +600,8 @@
     In particular we create the \c styleActionGroup based on the
     currently available GUI styles using
     QStyleFactory. QStyleFactory::keys() returns a list of valid keys,
-    typically including "windows", "motif", "cde", and
-    "plastique". Depending on the platform, "windowsxp" and
+    typically including "windows", "cleanlooks" and
+    "plastique". Depending on the platform, "windowsxp", "windowsvista", "gtk" and
     "macintosh" may be available.
 
     We create one action for each key, and adds the action to the

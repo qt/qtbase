@@ -561,12 +561,6 @@ void tst_QPushButton::defaultAndAutoDefault()
 void tst_QPushButton::sizeHint_data()
 {
     QTest::addColumn<QString>("stylename");
-#if !defined(QT_NO_STYLE_MOTIF)
-    QTest::newRow("motif") << QString::fromLatin1("motif");
-#endif
-#if !defined(QT_NO_STYLE_CDE)
-    QTest::newRow("cde") << QString::fromLatin1("cde");
-#endif
 #if !defined(QT_NO_STYLE_WINDOWS)
     QTest::newRow("windows") << QString::fromLatin1("windows");
 #endif

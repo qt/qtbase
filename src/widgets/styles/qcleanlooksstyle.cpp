@@ -600,7 +600,7 @@ static void qt_cleanlooks_draw_mdibutton(QPainter *painter, const QStyleOptionTi
     Stellingwerff and Daniel Borgmann.
 
     \sa {Cleanlooks Style Widget Gallery}, QWindowsXPStyle, QMacStyle, QWindowsStyle,
-        QCDEStyle, QMotifStyle, QPlastiqueStyle
+        QPlastiqueStyle
 */
 
 /*!

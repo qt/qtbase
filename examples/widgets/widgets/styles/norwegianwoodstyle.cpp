@@ -112,9 +112,9 @@ int NorwegianWoodStyle::pixelMetric(PixelMetric metric,
     case PM_ComboBoxFrameWidth:
         return 8;
     case PM_ScrollBarExtent:
-        return QMotifStyle::pixelMetric(metric, option, widget) + 4;
+        return QWindowsStyle::pixelMetric(metric, option, widget) + 4;
     default:
-        return QMotifStyle::pixelMetric(metric, option, widget);
+        return QWindowsStyle::pixelMetric(metric, option, widget);
     }
 }
 //! [8]
@@ -131,7 +131,7 @@ int NorwegianWoodStyle::styleHint(StyleHint hint, const QStyleOption *option,
     case SH_EtchDisabledText:
         return int(true);
     default:
-        return QMotifStyle::styleHint(hint, option, widget, returnData);
+        return QWindowsStyle::styleHint(hint, option, widget, returnData);
     }
 }
 //! [10]
@@ -256,7 +256,7 @@ void NorwegianWoodStyle::drawPrimitive(PrimitiveElement element,
 //! [32] //! [33]
     default:
 //! [33] //! [34]
-        QMotifStyle::drawPrimitive(element, option, painter, widget);
+        QWindowsStyle::drawPrimitive(element, option, painter, widget);
     }
 }
 //! [34]
@@ -284,11 +284,11 @@ void NorwegianWoodStyle::drawControl(ControlElement element,
                     }
                 }
             }
-            QMotifStyle::drawControl(element, &myButtonOption, painter, widget);
+            QWindowsStyle::drawControl(element, &myButtonOption, painter, widget);
         }
         break;
     default:
-        QMotifStyle::drawControl(element, option, painter, widget);
+        QWindowsStyle::drawControl(element, option, painter, widget);
     }
 }
 //! [36]

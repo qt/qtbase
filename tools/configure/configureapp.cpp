@@ -303,8 +303,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "STYLE_CLEANLOOKS" ]= "yes";
     dictionary[ "STYLE_WINDOWSCE" ] = "no";
     dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
-    dictionary[ "STYLE_MOTIF" ]     = "yes";
-    dictionary[ "STYLE_CDE" ]       = "yes";
     dictionary[ "STYLE_GTK" ]       = "no";
 
     dictionary[ "SQL_MYSQL" ]       = "no";
@@ -641,16 +639,6 @@ void Configure::parseCmdLine()
             dictionary[ "STYLE_CLEANLOOKS" ] = "yes";
         else if (configCmdLine.at(i) == "-no-style-cleanlooks")
             dictionary[ "STYLE_CLEANLOOKS" ] = "no";
-
-        else if (configCmdLine.at(i) == "-qt-style-motif")
-            dictionary[ "STYLE_MOTIF" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-motif")
-            dictionary[ "STYLE_MOTIF" ] = "no";
-
-        else if (configCmdLine.at(i) == "-qt-style-cde")
-            dictionary[ "STYLE_CDE" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-cde")
-            dictionary[ "STYLE_CDE" ] = "no";
 
         // Work around compiler nesting limitation
         else
@@ -1483,8 +1471,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_CLEANLOOKS" ]    = "no";
         dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
-        dictionary[ "STYLE_MOTIF" ]         = "no";
-        dictionary[ "STYLE_CDE" ]           = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "no";
         dictionary[ "RTTI" ]                = "no";
@@ -1786,8 +1772,6 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWSVISTA", "auto", "",          "  windowsvista", ' ');
         desc("STYLE_PLASTIQUE", "yes", "",              "  plastique", ' ');
         desc("STYLE_CLEANLOOKS", "yes", "",             "  cleanlooks", ' ');
-        desc("STYLE_MOTIF", "yes", "",                  "  motif", ' ');
-        desc("STYLE_CDE", "yes", "",                    "  cde", ' ');
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
         desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile\n", ' ');
         desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
@@ -2363,20 +2347,11 @@ void Configure::generateOutputVars()
     if (dictionary[ "STYLE_WINDOWSVISTA" ] == "yes")
         qmakeStyles += "windowsvista";
 
-    if (dictionary[ "STYLE_MOTIF" ] == "yes")
-        qmakeStyles += "motif";
-
-    if (dictionary[ "STYLE_SGI" ] == "yes")
-        qmakeStyles += "sgi";
-
     if (dictionary[ "STYLE_WINDOWSCE" ] == "yes")
     qmakeStyles += "windowsce";
 
     if (dictionary[ "STYLE_WINDOWSMOBILE" ] == "yes")
     qmakeStyles += "windowsmobile";
-
-    if (dictionary[ "STYLE_CDE" ] == "yes")
-        qmakeStyles += "cde";
 
     // Databases ----------------------------------------------------
     if (dictionary[ "SQL_MYSQL" ] == "yes")
@@ -3124,8 +3099,6 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_WINDOWSXP"] != "yes" && dictionary["STYLE_WINDOWSVISTA"] != "yes")
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
         if (dictionary["STYLE_WINDOWSVISTA"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSVISTA";
-        if (dictionary["STYLE_MOTIF"] != "yes")       qconfigList += "QT_NO_STYLE_MOTIF";
-        if (dictionary["STYLE_CDE"] != "yes")         qconfigList += "QT_NO_STYLE_CDE";
 
         // ### We still need the QT_NO_STYLE_S60 define for compiling Qt. Remove later!
         qconfigList += "QT_NO_STYLE_S60";
@@ -3324,8 +3297,6 @@ void Configure::displayConfig()
     sout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
     sout << "    Plastique..............." << dictionary[ "STYLE_PLASTIQUE" ] << endl;
     sout << "    Cleanlooks.............." << dictionary[ "STYLE_CLEANLOOKS" ] << endl;
-    sout << "    Motif..................." << dictionary[ "STYLE_MOTIF" ] << endl;
-    sout << "    CDE....................." << dictionary[ "STYLE_CDE" ] << endl;
     sout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
     sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;
 
