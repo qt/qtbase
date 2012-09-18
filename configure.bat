@@ -57,7 +57,7 @@ if not exist include (
         md mkspecs
         if errorlevel 1 goto exit
     )
-    perl %QTSRC%bin\syncqt -minimal -outdir %QTDIR% %QTSRC%
+    perl %QTSRC%bin\syncqt -minimal -module QtCore -outdir %QTDIR% %QTSRC%
     if errorlevel 1 goto exit
 )
 

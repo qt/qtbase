@@ -3541,7 +3541,7 @@ fi
 
 # symlink includes
 if [ -n "$PERL" ] && [ -x "$relpath/bin/syncqt" ]; then
-    "$outpath/bin/syncqt" -minimal "$relpath" || exit 1
+    "$outpath/bin/syncqt" -minimal -module QtCore "$relpath" || exit 1
 fi
 
 # $1: input variable name (awk regexp)

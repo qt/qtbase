@@ -3420,7 +3420,7 @@ void Configure::generateHeaders()
             cout << "Running syncqt..." << endl;
             QStringList args;
             args += buildPath + "/bin/syncqt.bat";
-            args += "-minimal";
+            args << "-minimal" << "-module" << "QtCore";
             args += sourcePath;
             int retc = Environment::execute(args, QStringList(), QStringList());
             if (retc) {
