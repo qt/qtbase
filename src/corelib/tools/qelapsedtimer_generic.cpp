@@ -84,7 +84,7 @@ void QElapsedTimer::start() Q_DECL_NOTHROW
 /*!
     Restarts the timer and returns the time elapsed since the previous start.
     This function is equivalent to obtaining the elapsed time with elapsed()
-    and then starting the timer again with restart(), but it does so in one
+    and then starting the timer again with start(), but it does so in one
     single operation, avoiding the need to obtain the clock value twice.
 
     The following example illustrates how to use this function to calibrate a
