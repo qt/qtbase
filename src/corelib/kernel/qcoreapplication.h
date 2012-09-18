@@ -178,7 +178,6 @@ protected:
     QCoreApplication(QCoreApplicationPrivate &p);
 
 private:
-    Q_PRIVATE_SLOT(d_func(), void _q_initializeProcessManager())
     static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
     bool notifyInternal(QObject *receiver, QEvent *event);
 

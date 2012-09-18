@@ -177,7 +177,7 @@ static QProcessManager *processManager()
     QMutexLocker locker(&processManagerGlobalMutex);
 
     if (!processManagerInstance)
-        QProcessPrivate::initializeProcessManager();
+        new QProcessManager;
 
     Q_ASSERT(processManagerInstance);
     return processManagerInstance;
@@ -185,9 +185,6 @@ static QProcessManager *processManager()
 
 QProcessManager::QProcessManager()
 {
-    // can only be called from main thread
-    Q_ASSERT(!qApp || qApp->thread() == QThread::currentThread());
-
 #if defined (QPROCESS_DEBUG)
     qDebug() << "QProcessManager::QProcessManager()";
 #endif
@@ -1434,15 +1431,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
 void QProcessPrivate::initializeProcessManager()
 {
-    if (qApp && qApp->thread() != QThread::currentThread()) {
-        // The process manager must be initialized in the main thread
-        // Note: The call below will re-enter this function, but in the right thread,
-        // so the else statement below will be executed.
-        QMetaObject::invokeMethod(qApp, "_q_initializeProcessManager", Qt::BlockingQueuedConnection);
-    } else {
-        static QProcessManager processManager;
-        Q_UNUSED(processManager);
-    }
+    (void) processManager();
 }
 
 QT_END_NAMESPACE

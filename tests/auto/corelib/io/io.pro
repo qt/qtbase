@@ -16,6 +16,7 @@ SUBDIRS=\
     qipaddress \
     qnodebug \
     qprocess \
+    qprocess-noapplication \
     qprocessenvironment \
     qresourceengine \
     qsettings \
