@@ -22,12 +22,12 @@
     <DataTag><![CDATA[empty rhs]]></DataTag>
     <Description><![CDATA[Compared values are not the same
    Actual   (operandA): http://example.com
-   Expected (operandB): ]]></Description>
+   Expected (operandB): Invalid URL: ]]></Description>
 </Incident>
 <Incident type="fail" file="/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp" line="74">
     <DataTag><![CDATA[empty lhs]]></DataTag>
     <Description><![CDATA[Compared values are not the same
-   Actual   (operandA): 
+   Actual   (operandA): Invalid URL: 
    Expected (operandB): http://example.com]]></Description>
 </Incident>
 <Incident type="pass" file="" line="0">

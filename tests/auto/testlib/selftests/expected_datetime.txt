@@ -8,10 +8,10 @@ FAIL!  : tst_DateTime::dateTime() Compared values are not the same
 PASS   : tst_DateTime::qurl(empty urls)
 FAIL!  : tst_DateTime::qurl(empty rhs) Compared values are not the same
    Actual   (operandA): http://example.com
-   Expected (operandB): 
+   Expected (operandB): Invalid URL: 
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp(41)]
 FAIL!  : tst_DateTime::qurl(empty lhs) Compared values are not the same
-   Actual   (operandA): 
+   Actual   (operandA): Invalid URL: 
    Expected (operandB): http://example.com
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/datetime/tst_datetime.cpp(41)]
 PASS   : tst_DateTime::qurl(same urls)

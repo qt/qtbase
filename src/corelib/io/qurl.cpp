@@ -3403,27 +3403,8 @@ QDebug operator<<(QDebug d, const QUrl &url)
 }
 #endif
 
-/*!
-    \since 4.2
-
-    Returns a text string that explains why an URL is invalid in the case being;
-    otherwise returns an empty string.
-*/
-QString QUrl::errorString() const
+static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
 {
-    if (!d)
-        return QString();
-
-    QUrlPrivate::ErrorCode errorCode = d->validityError();
-    if (errorCode == QUrlPrivate::NoError)
-        return QString();
-
-    // check if the error code matches a section with error
-    // unless it's a compound error (0x10000)
-    if ((d->sectionHasError & (errorCode >> 8)) == 0 && (errorCode & 0x10000) == 0)
-        return QString();
-
-    QChar c = d->errorSupplement;
     switch (errorCode) {
     case QUrlPrivate::NoError:
         return QString();
@@ -3444,7 +3425,7 @@ QString QUrl::errorString() const
                 .arg(c);
 
     case QUrlPrivate::InvalidRegNameError:
-        if (d->errorSupplement)
+        if (!c.isNull())
             return QString(QStringLiteral("Invalid hostname (character '%1' not permitted)"))
                     .arg(c);
         else
@@ -3480,6 +3461,58 @@ QString QUrl::errorString() const
         return QStringLiteral("Relative URL's path component contains ':' before any '/'");
     }
     return QStringLiteral("<unknown error>");
+}
+
+static inline void appendComponentIfPresent(QString &msg, bool present, const char *componentName,
+                                            const QString &component)
+{
+    if (present) {
+        msg += QLatin1String(componentName);
+        msg += QLatin1Char('"');
+        msg += component;
+        msg += QLatin1String("\",");
+    }
+}
+
+/*!
+    \since 4.2
+
+    Returns a text string that explains why an URL is invalid in the case being;
+    otherwise returns an empty string.
+*/
+QString QUrl::errorString() const
+{
+    if (!d)
+        return QString();
+
+    QUrlPrivate::ErrorCode errorCode = d->validityError();
+    if (errorCode == QUrlPrivate::NoError)
+        return QString();
+
+    // check if the error code matches a section with error
+    // unless it's a compound error (0x10000)
+    if ((d->sectionHasError & (errorCode >> 8)) == 0 && (errorCode & 0x10000) == 0)
+        return QString();
+
+    QString msg = errorMessage(errorCode, d->errorSupplement);
+    msg += QLatin1Char(';');
+    appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::Scheme,
+                             " scheme = ", d->scheme);
+    appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::UserInfo,
+                             " userinfo = ", userInfo());
+    appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::Host,
+                             " host = ", d->host);
+    appendComponentIfPresent(msg, d->port != -1,
+                             " port = ", QString::number(d->port));
+    appendComponentIfPresent(msg, !d->path.isEmpty(),
+                             " path = ", d->path);
+    appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::Query,
+                             " query = ", d->query);
+    appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::Fragment,
+                             " fragment = ", d->fragment);
+    if (msg.endsWith(QLatin1Char(',')))
+        msg.chop(1);
+    return msg;
 }
 
 /*!

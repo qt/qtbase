@@ -13,9 +13,9 @@
   <testcase result="fail" name="qurl">
     <failure tag="empty rhs" message="Compared values are not the same
    Actual   (operandA): http://example.com
-   Expected (operandB): " result="fail"/>
+   Expected (operandB): Invalid URL: " result="fail"/>
     <failure tag="empty lhs" message="Compared values are not the same
-   Actual   (operandA): 
+   Actual   (operandA): Invalid URL: 
    Expected (operandB): http://example.com" result="fail"/>
   </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
