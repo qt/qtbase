@@ -50,6 +50,8 @@
 #include "qtextengine_p.h"
 #include "qdebug.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 // ### DOC: We ought to explain the CONCEPT of objectIndexes if
@@ -253,7 +255,7 @@ QTextBlockGroup::~QTextBlockGroup()
 void QTextBlockGroup::blockInserted(const QTextBlock &block)
 {
     Q_D(QTextBlockGroup);
-    QTextBlockGroupPrivate::BlockList::Iterator it = qLowerBound(d->blocks.begin(), d->blocks.end(), block);
+    QTextBlockGroupPrivate::BlockList::Iterator it = std::lower_bound(d->blocks.begin(), d->blocks.end(), block);
     d->blocks.insert(it, block);
     d->markBlocksDirty();
 }

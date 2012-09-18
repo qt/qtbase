@@ -66,6 +66,8 @@
 
 #include "qdbusthreaddebug_p.h"
 
+#include <algorithm>
+
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -459,7 +461,7 @@ static bool findObject(const QDBusConnectionPrivate::ObjectTreeNode *root,
         QStringRef pathComponent(&fullpath, start, end - start);
 
         QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it =
-            qLowerBound(node->children.constBegin(), node->children.constEnd(), pathComponent);
+            std::lower_bound(node->children.constBegin(), node->children.constEnd(), pathComponent);
         if (it != node->children.constEnd() && it->name == pathComponent)
             // match
             node = it;
@@ -1419,8 +1421,8 @@ void QDBusConnectionPrivate::activateObject(ObjectTreeNode &node, const QDBusMes
         } else {
             // check if we have an interface matching the name that was asked:
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
-            it = qLowerBound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
-                             msg.interface());
+            it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
+                                  msg.interface());
             if (it != connector->adaptors.constEnd() && msg.interface() == QLatin1String(it->interface)) {
                 if (!activateCall(it->adaptor, newflags, msg))
                     sendError(msg, QDBusError::UnknownMethod);

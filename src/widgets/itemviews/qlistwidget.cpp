@@ -47,6 +47,8 @@
 #include <private/qwidgetitemdata_p.h>
 #include <private/qlistwidget_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 // workaround for VC++ 6.0 linker bug (?)
@@ -401,8 +403,8 @@ QList<QListWidgetItem*>::iterator QListModel::sortedInsertionIterator(
     Qt::SortOrder order, QListWidgetItem *item)
 {
     if (order == Qt::AscendingOrder)
-        return qLowerBound(begin, end, item, QListModelLessThan());
-    return qLowerBound(begin, end, item, QListModelGreaterThan());
+        return std::lower_bound(begin, end, item, QListModelLessThan());
+    return std::lower_bound(begin, end, item, QListModelGreaterThan());
 }
 
 void QListModel::itemChanged(QListWidgetItem *item)

@@ -58,6 +58,8 @@
 #include "qdbusutil_p.h"
 #include "qdbusvirtualobject.h"
 
+#include <algorithm>
+
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -245,8 +247,8 @@ QDBusMessage qDBusPropertyGet(const QDBusConnectionPrivate::ObjectTreeNode &node
             }
         } else {
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
-            it = qLowerBound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
-                             interface_name);
+            it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
+                                  interface_name);
             if (it != connector->adaptors.constEnd() && interface_name == QLatin1String(it->interface)) {
                 interfaceFound = true;
                 value = it->adaptor->property(property_name);
@@ -398,8 +400,8 @@ QDBusMessage qDBusPropertySet(const QDBusConnectionPrivate::ObjectTreeNode &node
             }
         } else {
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
-            it = qLowerBound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
-                             interface_name);
+            it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
+                                  interface_name);
             if (it != connector->adaptors.end() && interface_name == QLatin1String(it->interface)) {
                 return propertyWriteReply(msg, interface_name, property_name,
                                           writeProperty(it->adaptor, property_name, value));
@@ -496,8 +498,8 @@ QDBusMessage qDBusPropertyGetAll(const QDBusConnectionPrivate::ObjectTreeNode &n
         } else {
             // find the class that implements interface_name
             QDBusAdaptorConnector::AdaptorMap::ConstIterator it;
-            it = qLowerBound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
-                             interface_name);
+            it = std::lower_bound(connector->adaptors.constBegin(), connector->adaptors.constEnd(),
+                                  interface_name);
             if (it != connector->adaptors.constEnd() && interface_name == QLatin1String(it->interface)) {
                 interfaceFound = true;
                 result = readAllProperties(it->adaptor, QDBusConnection::ExportAllProperties);

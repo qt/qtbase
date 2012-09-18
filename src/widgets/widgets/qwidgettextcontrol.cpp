@@ -94,6 +94,8 @@
 #define ACCEL_KEY(k) QString()
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 // could go into QTextCursor...
@@ -1422,8 +1424,8 @@ static QRectF boundingRectOfFloatsInSelection(const QTextCursor &cursor)
     QTextFrame *frame = cursor.currentFrame();
     const QList<QTextFrame *> children = frame->childFrames();
 
-    const QList<QTextFrame *>::ConstIterator firstFrame = qLowerBound(children.constBegin(), children.constEnd(),
-                                                                      cursor.selectionStart(), firstFramePosLessThanCursorPos);
+    const QList<QTextFrame *>::ConstIterator firstFrame = std::lower_bound(children.constBegin(), children.constEnd(),
+                                                                           cursor.selectionStart(), firstFramePosLessThanCursorPos);
     const QList<QTextFrame *>::ConstIterator lastFrame = qUpperBound(children.constBegin(), children.constEnd(),
                                                                      cursor.selectionEnd(), cursorPosLessThanLastFramePos);
     for (QList<QTextFrame *>::ConstIterator it = firstFrame; it != lastFrame; ++it) {

@@ -46,6 +46,8 @@
 #include <qpainter.h>
 #include <private/qtablewidget_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 QTableModel::QTableModel(int rows, int columns, QTableWidget *parent)
@@ -671,8 +673,8 @@ QVector<QTableWidgetItem*>::iterator QTableModel::sortedInsertionIterator(
     Qt::SortOrder order, QTableWidgetItem *item)
 {
     if (order == Qt::AscendingOrder)
-        return qLowerBound(begin, end, item, QTableModelLessThan());
-    return qLowerBound(begin, end, item, QTableModelGreaterThan());
+        return std::lower_bound(begin, end, item, QTableModelLessThan());
+    return std::lower_bound(begin, end, item, QTableModelGreaterThan());
 }
 
 bool QTableModel::itemLessThan(const QPair<QTableWidgetItem*,int> &left,

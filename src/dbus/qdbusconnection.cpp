@@ -56,6 +56,8 @@
 
 #include "qdbusthreaddebug_p.h"
 
+#include <algorithm>
+
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -829,7 +831,7 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
 
         // find the position where we'd insert the node
         QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
-            qLowerBound(node->children.begin(), node->children.end(), pathComponents.at(i));
+            std::lower_bound(node->children.begin(), node->children.end(), pathComponents.at(i));
         if (it != node->children.end() && it->name == pathComponents.at(i)) {
             // match: this node exists
             node = it;
@@ -902,7 +904,7 @@ void QDBusConnection::unregisterObject(const QString &path, UnregisterMode mode)
         }
 
         QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
-            qLowerBound(node->children.begin(), node->children.end(), pathComponents.at(i));
+            std::lower_bound(node->children.begin(), node->children.end(), pathComponents.at(i));
         if (it == node->children.end() || it->name != pathComponents.at(i))
             break;              // node not found
 
@@ -938,7 +940,7 @@ QObject *QDBusConnection::objectRegisteredAt(const QString &path) const
             return node->obj;
 
         QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it =
-            qLowerBound(node->children.constBegin(), node->children.constEnd(), pathComponents.at(i));
+            std::lower_bound(node->children.constBegin(), node->children.constEnd(), pathComponents.at(i));
         if (it == node->children.constEnd() || it->name != pathComponents.at(i))
             break;              // node not found
 

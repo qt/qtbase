@@ -48,6 +48,8 @@
 #include "qcoreapplication.h"
 #include <private/qkeymapper_p.h>
 
+#include <algorithm>
+
 #ifndef QT_NO_SHORTCUT
 
 QT_BEGIN_NAMESPACE
@@ -419,7 +421,7 @@ bool QShortcutMap::hasShortcutForKeySequence(const QKeySequence &seq) const
     Q_D(const QShortcutMap);
     QShortcutEntry entry(seq); // needed for searching
     QList<QShortcutEntry>::ConstIterator itEnd = d->sequences.constEnd();
-    QList<QShortcutEntry>::ConstIterator it = qLowerBound(d->sequences.constBegin(), itEnd, entry);
+    QList<QShortcutEntry>::ConstIterator it = std::lower_bound(d->sequences.constBegin(), itEnd, entry);
 
     for (;it != itEnd; ++it) {
         if (matches(entry.keyseq, (*it).keyseq) == QKeySequence::ExactMatch && (*it).correctContext() && (*it).enabled) {
@@ -467,7 +469,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e)
         QShortcutEntry entry(d->newEntries.at(i)); // needed for searching
         QList<QShortcutEntry>::ConstIterator itEnd = d->sequences.constEnd();
         QList<QShortcutEntry>::ConstIterator it =
-             qLowerBound(d->sequences.constBegin(), itEnd, entry);
+             std::lower_bound(d->sequences.constBegin(), itEnd, entry);
 
         int oneKSResult = QKeySequence::NoMatch;
         int tempRes = QKeySequence::NoMatch;

@@ -53,6 +53,8 @@
 #include "qdbusabstractadaptor_p.h"
 #include "qdbusmetatype_p.h"
 
+#include <algorithm>
+
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
@@ -222,8 +224,8 @@ void QDBusAdaptorConnector::addAdaptor(QDBusAbstractAdaptor *adaptor)
         if (*mci.value()) {
             // find out if this interface exists first
             const char *interface = mci.value();
-            AdaptorMap::Iterator it = qLowerBound(adaptors.begin(), adaptors.end(),
-                                                  QByteArray(interface));
+            AdaptorMap::Iterator it = std::lower_bound(adaptors.begin(), adaptors.end(),
+                                                       QByteArray(interface));
             if (it != adaptors.end() && qstrcmp(interface, it->interface) == 0) {
                 // exists. Replace it (though it's probably the same)
                 if (it->adaptor != adaptor) {

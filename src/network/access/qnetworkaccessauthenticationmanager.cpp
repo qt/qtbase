@@ -49,6 +49,8 @@
 #include "QtCore/QMutexLocker"
 #include "QtNetwork/qauthenticator.h"
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -67,7 +69,7 @@ public:
 
     QNetworkAuthenticationCredential *findClosestMatch(const QString &domain)
     {
-        iterator it = qLowerBound(begin(), end(), domain);
+        iterator it = std::lower_bound(begin(), end(), domain);
         if (it == end() && !isEmpty())
             --it;
         if (it == end() || !domain.startsWith(it->domain))
