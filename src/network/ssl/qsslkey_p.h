@@ -56,6 +56,8 @@
 // We mean it.
 //
 
+#include "qsslsocket_p.h" // includes wincrypt.h
+
 #include <openssl/rsa.h>
 #include <openssl/dsa.h>
 
