@@ -747,19 +747,19 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
     case PE_PanelItemViewItem:
         {
-            const QStyleOptionViewItemV4 *vopt;
+            const QStyleOptionViewItem *vopt;
             const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
             bool newStyle = true;
 
             if (qobject_cast<const QTableView*>(widget))
                 newStyle = false;
 
-            if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))) {
+            if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option))) {
                 bool selected = vopt->state & QStyle::State_Selected;
                 bool hover = vopt->state & QStyle::State_MouseOver;
                 bool active = vopt->state & QStyle::State_Active;
 
-                if (vopt->features & QStyleOptionViewItemV2::Alternate)
+                if (vopt->features & QStyleOptionViewItem::Alternate)
                     painter->fillRect(vopt->rect, vopt->palette.alternateBase());
 
                 QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled
@@ -823,10 +823,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                         QRect srcRect = QRect(0, 0, sectionSize.width(), sectionSize.height());
                         QRect pixmapRect = vopt->rect;
                         bool reverse = vopt->direction == Qt::RightToLeft;
-                        bool leftSection = vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning;
-                        bool rightSection = vopt->viewItemPosition == QStyleOptionViewItemV4::End;
-                        if (vopt->viewItemPosition == QStyleOptionViewItemV4::OnlyOne
-                            || vopt->viewItemPosition == QStyleOptionViewItemV4::Invalid)
+                        bool leftSection = vopt->viewItemPosition == QStyleOptionViewItem::Beginning;
+                        bool rightSection = vopt->viewItemPosition == QStyleOptionViewItem::End;
+                        if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne
+                            || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)
                             painter->drawPixmap(pixmapRect.topLeft(), pixmap);
                         else if (reverse ? rightSection : leftSection){
                             painter->drawPixmap(QRect(pixmapRect.topLeft(), 
@@ -841,7 +841,7 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                                                 QSize(frame, pixmapRect.height())));
                             painter->drawPixmap(pixmapRect.adjusted(0, 0, -frame, 0), 
                                                 pixmap, srcRect.adjusted(frame, 0, -frame, 0));
-                        } else if (vopt->viewItemPosition == QStyleOptionViewItemV4::Middle)
+                        } else if (vopt->viewItemPosition == QStyleOptionViewItem::Middle)
                             painter->drawPixmap(pixmapRect, pixmap,
                                                 srcRect.adjusted(frame, 0, -frame, 0));
                     } else {
@@ -1523,14 +1523,14 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 #ifndef QT_NO_ITEMVIEWS
     case CE_ItemViewItem:
         {
-            const QStyleOptionViewItemV4 *vopt;
+            const QStyleOptionViewItem *vopt;
             const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
             bool newStyle = true;
 
             if (qobject_cast<const QTableView*>(widget))
                 newStyle = false;
 
-            if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))) {
+            if (newStyle && view && (vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option))) {
                 /*
                 // We cannot currently get the correct selection color for "explorer style" views
                 COLORREF cref = 0;
@@ -1542,7 +1542,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 palette.setColor(QPalette::All, QPalette::HighlightedText, palette.color(QPalette::Active, QPalette::Text));
                 // Note that setting a saturated color here results in ugly XOR colors in the focus rect
                 palette.setColor(QPalette::All, QPalette::Highlight, palette.base().color().darker(108));
-                QStyleOptionViewItemV4 adjustedOption = *vopt;
+                QStyleOptionViewItem adjustedOption = *vopt;
                 adjustedOption.palette = palette;
                 // We hide the  focusrect in singleselection as it is not required
                 if ((view->selectionMode() == QAbstractItemView::SingleSelection) 
@@ -2114,11 +2114,11 @@ QRect QWindowsVistaStyle::subElementRect(SubElement element, const QStyleOption 
         rect = QCommonStyle::subElementRect(SE_ProgressBarGroove, option, widget);
         break;
     case SE_ItemViewItemDecoration:
-        if (qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))
+        if (qstyleoption_cast<const QStyleOptionViewItem *>(option))
             rect.adjust(-2, 0, 2, 0);
         break;
     case SE_ItemViewItemFocusRect:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             QRect textRect = subElementRect(QStyle::SE_ItemViewItemText, option, widget);
             QRect displayRect = subElementRect(QStyle::SE_ItemViewItemDecoration, option, widget);
             if (!vopt->icon.isNull())

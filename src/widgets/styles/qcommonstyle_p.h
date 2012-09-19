@@ -78,14 +78,14 @@ public:
     {
         delete cachedOption;
     }
-    void viewItemDrawText(QPainter *p, const QStyleOptionViewItemV4 *option, const QRect &rect) const;
-    void viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRect *checkRect,
+    void viewItemDrawText(QPainter *p, const QStyleOptionViewItem *option, const QRect &rect) const;
+    void viewItemLayout(const QStyleOptionViewItem *opt,  QRect *checkRect,
                         QRect *pixmapRect, QRect *textRect, bool sizehint) const;
-    QSize viewItemSize(const QStyleOptionViewItemV4 *option, int role) const;
+    QSize viewItemSize(const QStyleOptionViewItem *option, int role) const;
 
     mutable QRect decorationRect, displayRect, checkRect;
-    mutable QStyleOptionViewItemV4 *cachedOption;
-    bool isViewItemCached(const QStyleOptionViewItemV4 &option) const {
+    mutable QStyleOptionViewItem *cachedOption;
+    bool isViewItemCached(const QStyleOptionViewItem &option) const {
         return cachedOption && (option.rect == cachedOption->rect
                && option.direction == cachedOption->direction
                && option.state == cachedOption->state

@@ -175,13 +175,13 @@ public:
     inline QModelIndex modelIndex(int row) const;
     inline int rowCount() const;
 
-    inline QStyleOptionViewItemV4 viewOptions() const;
+    inline QStyleOptionViewItem viewOptions() const;
     inline QWidget *viewport() const;
     inline QRect clipRect() const;
 
     inline QSize cachedItemSize() const;
     inline QRect viewItemRect(const QListViewItem &item) const;
-    inline QSize itemSize(const QStyleOptionViewItemV2 &opt, const QModelIndex &idx) const;
+    inline QSize itemSize(const QStyleOptionViewItem &opt, const QModelIndex &idx) const;
     inline QAbstractItemDelegate *delegate(const QModelIndex &idx) const;
 
     inline bool isHidden(int row) const;
@@ -468,13 +468,13 @@ inline QModelIndex QCommonListViewBase::modelIndex(int row) const
     { return dd->model->index(row, dd->column, dd->root); }
 inline int QCommonListViewBase::rowCount() const { return dd->model->rowCount(dd->root); }
 
-inline QStyleOptionViewItemV4 QCommonListViewBase::viewOptions() const { return dd->viewOptionsV4(); }
+inline QStyleOptionViewItem QCommonListViewBase::viewOptions() const { return dd->viewOptions(); }
 inline QWidget *QCommonListViewBase::viewport() const { return dd->viewport; }
 inline QRect QCommonListViewBase::clipRect() const { return dd->clipRect(); }
 
 inline QSize QCommonListViewBase::cachedItemSize() const { return dd->cachedItemSize; }
 inline QRect QCommonListViewBase::viewItemRect(const QListViewItem &item) const { return dd->viewItemRect(item); }
-inline QSize QCommonListViewBase::itemSize(const QStyleOptionViewItemV2 &opt, const QModelIndex &idx) const
+inline QSize QCommonListViewBase::itemSize(const QStyleOptionViewItem &opt, const QModelIndex &idx) const
     { return dd->itemSize(opt, idx); }
 
 inline QAbstractItemDelegate *QCommonListViewBase::delegate(const QModelIndex &idx) const

@@ -857,7 +857,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         } // fall through
 
     case PE_PanelItemViewItem:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             uint resolve_mask = vopt->palette.resolve();
             if (vopt->backgroundBrush.style() != Qt::NoBrush
                     || (resolve_mask & (1 << QPalette::Base)))
@@ -871,7 +871,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             }
             if (GtkWidget *gtkTreeView = d->gtkWidget("GtkTreeView")) {
                 const char *detail = "cell_even_ruled";
-                if (vopt && vopt->features & QStyleOptionViewItemV2::Alternate)
+                if (vopt && vopt->features & QStyleOptionViewItem::Alternate)
                     detail = "cell_odd_ruled";
                 bool isActive = option->state & State_Active;
                 QString key;

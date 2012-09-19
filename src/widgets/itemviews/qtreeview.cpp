@@ -1284,7 +1284,7 @@ void QTreeView::paintEvent(QPaintEvent *event)
     }
 }
 
-void QTreeViewPrivate::paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItemV4 *option, int y, int bottom) const
+void QTreeViewPrivate::paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItem *option, int y, int bottom) const
 {
     Q_Q(const QTreeView);
     if (!alternatingColors || !q->style()->styleHint(QStyle::SH_ItemView_PaintAlternatingRowColorsForEmptyArea, option, q))
@@ -1298,9 +1298,9 @@ void QTreeViewPrivate::paintAlternatingRowColors(QPainter *painter, QStyleOption
     while (y <= bottom) {
         option->rect.setRect(0, y, viewport->width(), rowHeight);
         if (current & 1) {
-            option->features |= QStyleOptionViewItemV2::Alternate;
+            option->features |= QStyleOptionViewItem::Alternate;
         } else {
-            option->features &= ~QStyleOptionViewItemV2::Alternate;
+            option->features &= ~QStyleOptionViewItem::Alternate;
         }
         ++current;
         q->style()->drawPrimitive(QStyle::PE_PanelItemViewRow, option, painter, q);
@@ -1360,7 +1360,7 @@ QItemViewPaintPairs QTreeViewPrivate::draggablePaintPairs(const QModelIndexList 
     return QAbstractItemViewPrivate::draggablePaintPairs(list, r);
 }
 
-void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option, const QModelIndex &current) const
+void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItem *option, const QModelIndex &current) const
 {
     const int row = viewIndex(current); // get the index in viewItems[]
     option->state = option->state | (viewItems.at(row).expanded ? QStyle::State_Open : QStyle::State_None)
@@ -1371,7 +1371,7 @@ void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option,
                                      || option->showDecorationSelected;
 
     QVector<int> logicalIndices; // index = visual index of visible columns only. data = logical index.
-    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex, visible columns only.
+    QVector<QStyleOptionViewItem::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex, visible columns only.
     const bool spanning = viewItems.at(row).spanning;
     const int left = (spanning ? header->visualIndex(0) : 0);
     const int right = (spanning ? header->visualIndex(0) : header->count() - 1 );
@@ -1401,7 +1401,7 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
     Q_D(const QTreeView);
     const QVector<QTreeViewItem> viewItems = d->viewItems;
 
-    QStyleOptionViewItemV4 option = d->viewOptionsV4();
+    QStyleOptionViewItem option = d->viewOptions();
     const QStyle::State state = option.state;
     d->current = 0;
 
@@ -1473,12 +1473,12 @@ static inline bool ancestorOf(QObject *widget, QObject *other)
     return false;
 }
 
-void QTreeViewPrivate::calcLogicalIndices(QVector<int> *logicalIndices, QVector<QStyleOptionViewItemV4::ViewItemPosition> *itemPositions, int left, int right) const
+void QTreeViewPrivate::calcLogicalIndices(QVector<int> *logicalIndices, QVector<QStyleOptionViewItem::ViewItemPosition> *itemPositions, int left, int right) const
 {
     const int columnCount = header->count();
     /* 'left' and 'right' are the left-most and right-most visible visual indices.
        Compute the first visible logical indices before and after the left and right.
-       We will use these values to determine the QStyleOptionViewItemV4::viewItemPosition. */
+       We will use these values to determine the QStyleOptionViewItem::viewItemPosition. */
     int logicalIndexBeforeLeft = -1, logicalIndexAfterRight = -1;
     for (int visualIndex = left - 1; visualIndex >= 0; --visualIndex) {
         int logicalIndex = header->logicalIndex(visualIndex);
@@ -1509,16 +1509,16 @@ void QTreeViewPrivate::calcLogicalIndices(QVector<int> *logicalIndices, QVector<
         int prevLogicalSection = currentLogicalSection - 1 < 0
                                  ? logicalIndexBeforeLeft
                                  : logicalIndices->at(currentLogicalSection - 1);
-        QStyleOptionViewItemV4::ViewItemPosition pos;
+        QStyleOptionViewItem::ViewItemPosition pos;
         if (columnCount == 1 || (nextLogicalSection == 0 && prevLogicalSection == -1)
             || (headerSection == 0 && nextLogicalSection == -1) || spanning)
-            pos = QStyleOptionViewItemV4::OnlyOne;
+            pos = QStyleOptionViewItem::OnlyOne;
         else if (headerSection == 0 || (nextLogicalSection != 0 && prevLogicalSection == -1))
-            pos = QStyleOptionViewItemV4::Beginning;
+            pos = QStyleOptionViewItem::Beginning;
         else if (nextLogicalSection == 0 || nextLogicalSection == -1)
-            pos = QStyleOptionViewItemV4::End;
+            pos = QStyleOptionViewItem::End;
         else
-            pos = QStyleOptionViewItemV4::Middle;
+            pos = QStyleOptionViewItem::Middle;
         (*itemPositions)[currentLogicalSection] = pos;
     }
 }
@@ -1535,7 +1535,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
                         const QModelIndex &index) const
 {
     Q_D(const QTreeView);
-    QStyleOptionViewItemV4 opt = option;
+    QStyleOptionViewItem opt = option;
     const QPoint offset = d->scrollDelayOffset;
     const int y = option.rect.y() + offset.y();
     const QModelIndex parent = index.parent();
@@ -1597,7 +1597,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
                   && index.row() == hover.row();
 
     QVector<int> logicalIndices;
-    QVector<QStyleOptionViewItemV4::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex
+    QVector<QStyleOptionViewItem::ViewItemPosition> viewItemPosList; // vector of left/middle/end for each logicalIndex
     d->calcLogicalIndices(&logicalIndices, &viewItemPosList, left, right);
 
     for (int currentLogicalSection = 0; currentLogicalSection < logicalIndices.count(); ++currentLogicalSection) {
@@ -1655,9 +1655,9 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
 
         if (alternate) {
             if (d->current & 1) {
-                opt.features |= QStyleOptionViewItemV2::Alternate;
+                opt.features |= QStyleOptionViewItem::Alternate;
             } else {
-                opt.features &= ~QStyleOptionViewItemV2::Alternate;
+                opt.features &= ~QStyleOptionViewItem::Alternate;
             }
         }
 
@@ -1746,7 +1746,7 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
     QModelIndex current = parent;
     QModelIndex ancestor = current.parent();
 
-    QStyleOptionViewItemV2 opt = viewOptions();
+    QStyleOptionViewItem opt = viewOptions();
     QStyle::State extraFlags = QStyle::State_None;
     if (isEnabled())
         extraFlags |= QStyle::State_Enabled;
@@ -1758,9 +1758,9 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
 
     if (d->alternatingColors) {
         if (d->current & 1) {
-            opt.features |= QStyleOptionViewItemV2::Alternate;
+            opt.features |= QStyleOptionViewItem::Alternate;
         } else {
-            opt.features &= ~QStyleOptionViewItemV2::Alternate;
+            opt.features &= ~QStyleOptionViewItem::Alternate;
         }
     }
 
@@ -2732,7 +2732,7 @@ int QTreeView::sizeHintForColumn(int column) const
         return -1;
     ensurePolished();
     int w = 0;
-    QStyleOptionViewItemV4 option = d->viewOptionsV4();
+    QStyleOptionViewItem option = d->viewOptions();
     const QVector<QTreeViewItem> viewItems = d->viewItems;
 
     int start = 0;
@@ -2799,7 +2799,7 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
         qSwap(end, start);
 
     int height = -1;
-    QStyleOptionViewItemV4 option = d->viewOptionsV4();
+    QStyleOptionViewItem option = d->viewOptions();
     // ### If we want word wrapping in the items,
     // ### we need to go through all the columns
     // ### and set the width of the column
@@ -3069,7 +3069,7 @@ QPixmap QTreeViewPrivate::renderTreeToPixmapForAnimation(const QRect &rect) cons
     painter.end();
 
     //and now let's render the editors the editors
-    QStyleOptionViewItemV4 option = viewOptionsV4();
+    QStyleOptionViewItem option = viewOptions();
     for (QEditorIndexHash::const_iterator it = editorIndexHash.constBegin(); it != editorIndexHash.constEnd(); ++it) {
         QWidget *editor = it.key();
         const QModelIndex &index = it.value();

@@ -125,7 +125,7 @@ public:
     void drawScrollbarGroove(QPainter *p, const QStyleOptionSlider *opt);
     void drawScrollbarGrip(QPainter *p, QStyleOptionSlider *newScrollbar, const QStyleOptionComplex *option, bool drawCompleteFrame);
     void drawTabBarTab(QPainter *p, const QStyleOptionTab *tab);
-    void drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect = QRect());
+    void drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItem *option, QRect rect = QRect());
 
 };
 

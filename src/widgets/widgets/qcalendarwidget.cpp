@@ -1525,7 +1525,7 @@ public:
 
 private:
     QCalendarWidgetPrivate *calendarWidgetPrivate;
-    mutable QStyleOptionViewItemV4 storedOption;
+    mutable QStyleOptionViewItem storedOption;
 };
 
 //Private tool button class

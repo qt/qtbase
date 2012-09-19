@@ -310,9 +310,8 @@ protected:
                const QModelIndex &index) const {
         if (isSeparator(index)) {
             QRect rect = option.rect;
-            if (const QStyleOptionViewItemV3 *v3 = qstyleoption_cast<const QStyleOptionViewItemV3*>(&option))
-                if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView*>(v3->widget))
-                    rect.setWidth(view->viewport()->width());
+            if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView*>(option.widget))
+                rect.setWidth(view->viewport()->width());
             QStyleOption opt;
             opt.rect = rect;
             mCombo->style()->drawPrimitive(QStyle::PE_IndicatorToolBarSeparator, &opt, painter, mCombo);

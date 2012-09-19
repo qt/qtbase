@@ -176,9 +176,9 @@ public:
     int sectionSpanSize(const QHeaderView *header, int logical, int span) const;
     bool spanContainsSection(const QHeaderView *header, int logical, int spanLogical, int span) const;
     void drawAndClipSpans(const QRegion &area, QPainter *painter,
-                          const QStyleOptionViewItemV4 &option, QBitArray *drawn,
+                          const QStyleOptionViewItem &option, QBitArray *drawn,
                           int firstVisualRow, int lastVisualRow, int firstVisualColumn, int lastVisualColumn);
-    void drawCell(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index);
+    void drawCell(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index);
 
     bool showGrid;
     Qt::PenStyle gridStyle;

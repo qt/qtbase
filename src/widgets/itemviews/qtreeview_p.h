@@ -97,7 +97,7 @@ public:
     void initialize();
 
     QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
-    void adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option, const QModelIndex &current) const;
+    void adjustViewOptionsForIndex(QStyleOptionViewItem *option, const QModelIndex &current) const;
 
 #ifndef QT_NO_ANIMATION
     struct AnimatedOperation : public QVariantAnimation
@@ -166,11 +166,11 @@ public:
 
     void updateChildCount(const int parentItem, const int delta);
 
-    void paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItemV4 *option, int y, int bottom) const;
+    void paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItem *option, int y, int bottom) const;
 
     // logicalIndices: vector of currently visibly logical indices
     // itemPositions: vector of view item positions (beginning/middle/end/onlyone)
-    void calcLogicalIndices(QVector<int> *logicalIndices, QVector<QStyleOptionViewItemV4::ViewItemPosition> *itemPositions, int left, int right) const;
+    void calcLogicalIndices(QVector<int> *logicalIndices, QVector<QStyleOptionViewItem::ViewItemPosition> *itemPositions, int left, int right) const;
 
     QHeaderView *header;
     int indent;

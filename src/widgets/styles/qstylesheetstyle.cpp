@@ -1990,19 +1990,18 @@ QRenderRule QStyleSheetStyle::renderRule(const QWidget *w, const QStyleOption *o
         }
 #endif // QT_NO_DOCKWIDGET
 #ifndef QT_NO_ITEMVIEWS
-        else if (const QStyleOptionViewItemV2 *v2 = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
-            if (v2->features & QStyleOptionViewItemV2::Alternate)
+        else if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            if (vopt->features & QStyleOptionViewItem::Alternate)
                 extraClass |= PseudoClass_Alternate;
-            if (const QStyleOptionViewItemV4 *v4 = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
-                if (v4->viewItemPosition == QStyleOptionViewItemV4::OnlyOne)
-                    extraClass |= PseudoClass_OnlyOne;
-                else if (v4->viewItemPosition == QStyleOptionViewItemV4::Beginning)
-                    extraClass |= PseudoClass_First;
-                else if (v4->viewItemPosition == QStyleOptionViewItemV4::End)
-                    extraClass |= PseudoClass_Last;
-                else if (v4->viewItemPosition == QStyleOptionViewItemV4::Middle)
-                    extraClass |= PseudoClass_Middle;
-            }
+            if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne)
+                extraClass |= PseudoClass_OnlyOne;
+            else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning)
+                extraClass |= PseudoClass_First;
+            else if (vopt->viewItemPosition == QStyleOptionViewItem::End)
+                extraClass |= PseudoClass_Last;
+            else if (vopt->viewItemPosition == QStyleOptionViewItem::Middle)
+                extraClass |= PseudoClass_Middle;
+
         }
 #endif
 #ifndef QT_NO_LINEEDIT
@@ -3974,15 +3973,15 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
 #ifndef QT_NO_ITEMVIEWS
     case CE_ItemViewItem:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_ViewItem);
             if (subRule.hasDrawable() || hasStyleRule(w, PseudoElement_Indicator)) {
-                QStyleOptionViewItemV4 optCopy(*vopt);
+                QStyleOptionViewItem optCopy(*vopt);
                 subRule.configurePalette(&optCopy.palette, vopt->state & QStyle::State_Selected ? QPalette::HighlightedText : QPalette::Text,
                                                            vopt->state & QStyle::State_Selected ? QPalette::Highlight : QPalette::Base);
                 QWindowsStyle::drawControl(ce, &optCopy, p, w);
             } else {
-                QStyleOptionViewItemV4 voptCopy(*vopt);
+                QStyleOptionViewItem voptCopy(*vopt);
                 subRule.configurePalette(&voptCopy.palette, QPalette::Text, QPalette::NoRole);
                 baseStyle()->drawControl(ce, &voptCopy, p, w);
             }
@@ -4338,16 +4337,16 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         break;
 
     case PE_IndicatorBranch:
-        if (const QStyleOptionViewItemV2 *v2 = qstyleoption_cast<const QStyleOptionViewItemV2 *>(opt)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TreeViewBranch);
             if (subRule.hasDrawable()) {
-                if ((v2->state & QStyle::State_Selected) && v2->showDecorationSelected)
-                    p->fillRect(v2->rect, v2->palette.highlight());
-                else if (v2->features & QStyleOptionViewItemV2::Alternate)
-                    p->fillRect(v2->rect, v2->palette.alternateBase());
+                if ((vopt->state & QStyle::State_Selected) && vopt->showDecorationSelected)
+                    p->fillRect(vopt->rect, vopt->palette.highlight());
+                else if (vopt->features & QStyleOptionViewItem::Alternate)
+                    p->fillRect(vopt->rect, vopt->palette.alternateBase());
                 subRule.drawRule(p, opt->rect);
             } else {
-                baseStyle()->drawPrimitive(pe, v2, p, w);
+                baseStyle()->drawPrimitive(pe, vopt, p, w);
             }
         }
         return;
@@ -5642,27 +5641,27 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 
 #ifndef QT_NO_ITEMVIEWS
     case SE_ViewItemCheckIndicator:
-        if (!qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+        if (!qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             return subElementRect(SE_CheckBoxIndicator, opt, w);
         }
         // intentionally falls through
     case SE_ItemViewItemText:
     case SE_ItemViewItemDecoration:
     case SE_ItemViewItemFocusRect:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             QRenderRule subRule = renderRule(w, opt, PseudoElement_ViewItem);
             PseudoElement pe = PseudoElement_None;
             if (se == SE_ItemViewItemText || se == SE_ItemViewItemFocusRect)
                 pe = PseudoElement_ViewItemText;
-            else if (se == SE_ItemViewItemDecoration && vopt->features & QStyleOptionViewItemV2::HasDecoration)
+            else if (se == SE_ItemViewItemDecoration && vopt->features & QStyleOptionViewItem::HasDecoration)
                 pe = PseudoElement_ViewItemIcon;
-            else if (se == SE_ItemViewItemCheckIndicator && vopt->features & QStyleOptionViewItemV2::HasCheckIndicator)
+            else if (se == SE_ItemViewItemCheckIndicator && vopt->features & QStyleOptionViewItem::HasCheckIndicator)
                 pe = PseudoElement_ViewItemIndicator;
             else
                 break;
             if (subRule.hasGeometry() || subRule.hasBox() || !subRule.hasNativeBorder() || hasStyleRule(w, pe)) {
                 QRenderRule subRule2 = renderRule(w, opt, pe);
-                QStyleOptionViewItemV4 optCopy(*vopt);
+                QStyleOptionViewItem optCopy(*vopt);
                 optCopy.rect = subRule.contentsRect(vopt->rect);
                 QRect rect = ParentStyle::subElementRect(se, &optCopy, w);
                 return positionRect(w, subRule2, pe, rect, opt->direction);

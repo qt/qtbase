@@ -1134,7 +1134,7 @@ void QColumnViewDelegate::paint(QPainter *painter,
     bool reverse = (option.direction == Qt::RightToLeft);
     int width = ((option.rect.height() * 2) / 3);
     // Modify the options to give us room to add an arrow
-    QStyleOptionViewItemV4 opt = option;
+    QStyleOptionViewItem opt = option;
     if (reverse)
         opt.rect.adjust(width,0,0,0);
     else

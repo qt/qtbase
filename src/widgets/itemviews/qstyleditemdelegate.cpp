@@ -89,9 +89,7 @@ public:
 
     static const QWidget *widget(const QStyleOptionViewItem &option)
     {
-        if (const QStyleOptionViewItemV3 *v3 = qstyleoption_cast<const QStyleOptionViewItemV3 *>(&option))
-            return v3->widget;
-        return 0;
+        return option.widget;
     }
 
     const QItemEditorFactory *editorFactory() const
@@ -315,9 +313,7 @@ QString QStyledItemDelegate::displayText(const QVariant &value, const QLocale& l
 /*!
     Initialize \a option with the values using the index \a index. This method
     is useful for subclasses when they need a QStyleOptionViewItem, but don't want
-    to fill in all the information themselves. This function will check the version
-    of the QStyleOptionViewItem and fill in the additional values for a
-    QStyleOptionViewItemV2, QStyleOptionViewItemV3 and QStyleOptionViewItemV4.
+    to fill in all the information themselves.
 
     \sa QStyleOption::initFrom()
 */
@@ -338,62 +334,60 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
     if (value.canConvert<QBrush>())
         option->palette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
 
-    if (QStyleOptionViewItemV4 *v4 = qstyleoption_cast<QStyleOptionViewItemV4 *>(option)) {
-        v4->index = index;
-        QVariant value = index.data(Qt::CheckStateRole);
-        if (value.isValid() && !value.isNull()) {
-            v4->features |= QStyleOptionViewItemV2::HasCheckIndicator;
-            v4->checkState = static_cast<Qt::CheckState>(value.toInt());
-        }
-
-        value = index.data(Qt::DecorationRole);
-        if (value.isValid() && !value.isNull()) {
-            v4->features |= QStyleOptionViewItemV2::HasDecoration;
-            switch (value.type()) {
-            case QVariant::Icon: {
-                v4->icon = qvariant_cast<QIcon>(value);
-                QIcon::Mode mode;
-                if (!(option->state & QStyle::State_Enabled))
-                    mode = QIcon::Disabled;
-                else if (option->state & QStyle::State_Selected)
-                    mode = QIcon::Selected;
-                else
-                    mode = QIcon::Normal;
-                QIcon::State state = option->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
-                v4->decorationSize = v4->icon.actualSize(option->decorationSize, mode, state);
-                break;
-            }
-            case QVariant::Color: {
-                QPixmap pixmap(option->decorationSize);
-                pixmap.fill(qvariant_cast<QColor>(value));
-                v4->icon = QIcon(pixmap);
-                break;
-            }
-            case QVariant::Image: {
-                QImage image = qvariant_cast<QImage>(value);
-                v4->icon = QIcon(QPixmap::fromImage(image));
-                v4->decorationSize = image.size();
-                break;
-            }
-            case QVariant::Pixmap: {
-                QPixmap pixmap = qvariant_cast<QPixmap>(value);
-                v4->icon = QIcon(pixmap);
-                v4->decorationSize = pixmap.size();
-                break;
-            }
-            default:
-                break;
-            }
-        }
-
-        value = index.data(Qt::DisplayRole);
-        if (value.isValid() && !value.isNull()) {
-            v4->features |= QStyleOptionViewItemV2::HasDisplay;
-            v4->text = displayText(value, v4->locale);
-        }
-
-        v4->backgroundBrush = qvariant_cast<QBrush>(index.data(Qt::BackgroundRole));
+    option->index = index;
+    value = index.data(Qt::CheckStateRole);
+    if (value.isValid() && !value.isNull()) {
+        option->features |= QStyleOptionViewItem::HasCheckIndicator;
+        option->checkState = static_cast<Qt::CheckState>(value.toInt());
     }
+
+    value = index.data(Qt::DecorationRole);
+    if (value.isValid() && !value.isNull()) {
+        option->features |= QStyleOptionViewItem::HasDecoration;
+        switch (value.type()) {
+        case QVariant::Icon: {
+            option->icon = qvariant_cast<QIcon>(value);
+            QIcon::Mode mode;
+            if (!(option->state & QStyle::State_Enabled))
+                mode = QIcon::Disabled;
+            else if (option->state & QStyle::State_Selected)
+                mode = QIcon::Selected;
+            else
+                mode = QIcon::Normal;
+            QIcon::State state = option->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
+            option->decorationSize = option->icon.actualSize(option->decorationSize, mode, state);
+            break;
+        }
+        case QVariant::Color: {
+            QPixmap pixmap(option->decorationSize);
+            pixmap.fill(qvariant_cast<QColor>(value));
+            option->icon = QIcon(pixmap);
+            break;
+        }
+        case QVariant::Image: {
+            QImage image = qvariant_cast<QImage>(value);
+            option->icon = QIcon(QPixmap::fromImage(image));
+            option->decorationSize = image.size();
+            break;
+        }
+        case QVariant::Pixmap: {
+            QPixmap pixmap = qvariant_cast<QPixmap>(value);
+            option->icon = QIcon(pixmap);
+            option->decorationSize = pixmap.size();
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    value = index.data(Qt::DisplayRole);
+    if (value.isValid() && !value.isNull()) {
+        option->features |= QStyleOptionViewItem::HasDisplay;
+        option->text = displayText(value, option->locale);
+    }
+
+    option->backgroundBrush = qvariant_cast<QBrush>(index.data(Qt::BackgroundRole));
 }
 
 /*!
@@ -404,9 +398,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
 
     When reimplementing paint in a subclass. Use the initStyleOption()
     to set up the \a option in the same way as the
-    QStyledItemDelegate; the option will always be an instance of
-    QStyleOptionViewItemV4. Please see its class description for
-    information on its contents.
+    QStyledItemDelegate.
 
     Whenever possible, use the \a option while painting.
     Especially its \l{QStyleOption::}{rect} variable to decide
@@ -425,7 +417,7 @@ void QStyledItemDelegate::paint(QPainter *painter,
 {
     Q_ASSERT(index.isValid());
 
-    QStyleOptionViewItemV4 opt = option;
+    QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
     const QWidget *widget = QStyledItemDelegatePrivate::widget(option);
@@ -450,7 +442,7 @@ QSize QStyledItemDelegate::sizeHint(const QStyleOptionViewItem &option,
     if (value.isValid())
         return qvariant_cast<QSize>(value);
 
-    QStyleOptionViewItemV4 opt = option;
+    QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
     const QWidget *widget = QStyledItemDelegatePrivate::widget(option);
     QStyle *style = widget ? widget->style() : QApplication::style();
@@ -544,7 +536,7 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
     Q_ASSERT(index.isValid());
     const QWidget *widget = QStyledItemDelegatePrivate::widget(option);
 
-    QStyleOptionViewItemV4 opt = option;
+    QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
     // let the editor take up all available space 
     //if the editor is not a QLineEdit
@@ -723,7 +715,7 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
     if ((event->type() == QEvent::MouseButtonRelease)
         || (event->type() == QEvent::MouseButtonDblClick)
         || (event->type() == QEvent::MouseButtonPress)) {
-        QStyleOptionViewItemV4 viewOpt(option);
+        QStyleOptionViewItem viewOpt(option);
         initStyleOption(&viewOpt, index);
         QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &viewOpt, widget);
         QMouseEvent *me = static_cast<QMouseEvent*>(event);

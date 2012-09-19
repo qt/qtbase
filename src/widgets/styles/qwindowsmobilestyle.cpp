@@ -4211,7 +4211,7 @@ void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOp
 #endif //QT_NO_TABBAR
 }
 
-void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect)
+void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItem *option, QRect rect)
 {
 #ifdef Q_OS_WINCE_WM
     if (wm65) {
@@ -4224,11 +4224,11 @@ void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, co
 
         painter->setPen(QColor(Qt::lightGray));
 
-        if (option->viewItemPosition ==  QStyleOptionViewItemV4::Middle) {
+        if (option->viewItemPosition ==  QStyleOptionViewItem::Middle) {
             painter->drawImage(r, imageListViewHighlightMiddle);
-        } else if (option->viewItemPosition ==  QStyleOptionViewItemV4::Beginning) {
+        } else if (option->viewItemPosition ==  QStyleOptionViewItem::Beginning) {
             painter->drawImage(r.adjusted(10, 0, 0, 0), imageListViewHighlightMiddle);
-        } else if (option->viewItemPosition ==  QStyleOptionViewItemV4::End) {
+        } else if (option->viewItemPosition ==  QStyleOptionViewItem::End) {
             painter->drawImage(r.adjusted(0, 0, -10, 0), imageListViewHighlightMiddle);
         } else {
             painter->drawImage(r.adjusted(10, 0, -10, 0), imageListViewHighlightMiddle);
@@ -4246,10 +4246,10 @@ void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, co
         cornerLeft = cornerLeft.scaled(width, r.height());
         cornerRight = cornerRight.scaled(width, r.height());
 
-        if ((option->viewItemPosition ==  QStyleOptionViewItemV4::Beginning) || (option->viewItemPosition ==  QStyleOptionViewItemV4::OnlyOne) || !option->viewItemPosition) {
+        if ((option->viewItemPosition ==  QStyleOptionViewItem::Beginning) || (option->viewItemPosition ==  QStyleOptionViewItem::OnlyOne) || !option->viewItemPosition) {
             painter->drawImage(r.topLeft(), cornerLeft);
         }
-        if ((option->viewItemPosition ==  QStyleOptionViewItemV4::End) || (option->viewItemPosition ==  QStyleOptionViewItemV4::OnlyOne) || !option->viewItemPosition) {
+        if ((option->viewItemPosition ==  QStyleOptionViewItem::End) || (option->viewItemPosition ==  QStyleOptionViewItem::OnlyOne) || !option->viewItemPosition) {
             painter->drawImage(r.topRight() - QPoint(cornerRight.width(),0), cornerRight);
         }
         return;
@@ -5262,7 +5262,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
 #endif //QT_NO_TABBAR
 #ifndef QT_NO_ITEMVIEWS
     case PE_PanelItemViewRow:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled
                                       ? QPalette::Normal : QPalette::Disabled;
             if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
@@ -5270,14 +5270,14 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
 
             if ((vopt->state & QStyle::State_Selected) &&  proxy()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, option, widget))
                  d->drawPanelItemViewSelected(painter, vopt);
-            else if (vopt->features & QStyleOptionViewItemV2::Alternate)
+            else if (vopt->features & QStyleOptionViewItem::Alternate)
                 painter->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::AlternateBase));
             else if (!(vopt->state & QStyle::State_Enabled))
                 painter->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::Base));
         }
         break;
     case PE_PanelItemViewItem:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled
                                       ? QPalette::Normal : QPalette::Disabled;
             if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))

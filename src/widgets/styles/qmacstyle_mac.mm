@@ -4606,11 +4606,11 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
 
     switch (sr) {
     case SE_ItemViewItemText:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int fw = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, widget);
             // We add the focusframeargin between icon and text in commonstyle
             rect = QCommonStyle::subElementRect(sr, opt, widget);
-            if (vopt->features & QStyleOptionViewItemV2::HasDecoration)
+            if (vopt->features & QStyleOptionViewItem::HasDecoration)
                 rect.adjust(-fw, 0, 0, 0);
         }
         break;
@@ -6319,7 +6319,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
     case CT_ItemViewItem:
-        if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             sz = QCommonStyle::sizeFromContents(ct, vopt, csz, widget);
             sz.setHeight(sz.height() + 2);
         }
