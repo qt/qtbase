@@ -805,11 +805,6 @@ inline void QUrlPrivate::setPath(const QString &value, int from, int end)
     // sectionIsPresent |= Path; // not used, save some cycles
     sectionHasError &= ~Path;
     path = recodeFromUser(value, decodedPathInIsolationActions, from, end);
-
-    // ### FIXME?
-    // check for the "path-noscheme" case
-    // if the path contains a ":" before the first "/", it could be misinterpreted
-    // as a scheme
 }
 
 inline void QUrlPrivate::setFragment(const QString &value, int from, int end)
@@ -1310,6 +1305,44 @@ static void removeDotsFromPath(QString *path)
     path->truncate(out - path->constData());
 }
 
+QUrlPrivate::ErrorCode QUrlPrivate::validityError() const
+{
+    if (sectionHasError)
+        return ErrorCode(errorCode);
+
+    // There are two more cases of invalid URLs that QUrl recognizes and they
+    // are only possible with constructed URLs (setXXX methods), not with
+    // parsing. Therefore, they are tested here.
+    //
+    // The two cases are a non-empty path that doesn't start with a slash and:
+    //  - with an authority
+    //  - without an authority, without scheme but the path with a colon before
+    //    the first slash
+    // Those cases are considered invalid because toString() would produce a URL
+    // that wouldn't be parsed back to the same QUrl.
+
+    if (path.isEmpty() || path.at(0) == QLatin1Char('/'))
+        return NoError;
+    if (sectionIsPresent & QUrlPrivate::Host)
+        return AuthorityPresentAndPathIsRelative;
+    if (sectionIsPresent & QUrlPrivate::Scheme)
+        return NoError;
+
+    // check for a path of "text:text/"
+    for (int i = 0; i < path.length(); ++i) {
+        register ushort c = path.at(i).unicode();
+        if (c == '/') {
+            // found the slash before the colon
+            return NoError;
+        }
+        if (c == ':') {
+            // found the colon before the slash, it's invalid
+            return RelativeUrlPathContainsColonBeforeSlash;
+        }
+    }
+    return NoError;
+}
+
 #if 0
 void QUrlPrivate::validate() const
 {
@@ -1519,8 +1552,11 @@ QUrl::~QUrl()
 */
 bool QUrl::isValid() const
 {
-    if (isEmpty()) return false;
-    return d->sectionHasError == 0;
+    if (isEmpty()) {
+        // also catches d == 0
+        return false;
+    }
+    return d->validityError() == QUrlPrivate::NoError;
 }
 
 /*!
@@ -3379,15 +3415,17 @@ QString QUrl::errorString() const
     if (!d)
         return QString();
 
-    if (d->sectionHasError == 0)
+    QUrlPrivate::ErrorCode errorCode = d->validityError();
+    if (errorCode == QUrlPrivate::NoError)
         return QString();
 
     // check if the error code matches a section with error
-    if ((d->sectionHasError & (d->errorCode >> 8)) == 0)
+    // unless it's a compound error (0x10000)
+    if ((d->sectionHasError & (errorCode >> 8)) == 0 && (errorCode & 0x10000) == 0)
         return QString();
 
     QChar c = d->errorSupplement;
-    switch (QUrlPrivate::ErrorCode(d->errorCode)) {
+    switch (errorCode) {
     case QUrlPrivate::NoError:
         return QString();
 
@@ -3428,8 +3466,6 @@ QString QUrl::errorString() const
     case QUrlPrivate::InvalidPathError:
         return QString(QStringLiteral("Invalid path (character '%1' not permitted)"))
                 .arg(c);
-    case QUrlPrivate::PathContainsColonBeforeSlash:
-        return QStringLiteral("Path component contains ':' before any '/'");
 
     case QUrlPrivate::InvalidQueryError:
         return QString(QStringLiteral("Invalid query (character '%1' not permitted)"))
@@ -3438,6 +3474,11 @@ QString QUrl::errorString() const
     case QUrlPrivate::InvalidFragmentError:
         return QString(QStringLiteral("Invalid fragment (character '%1' not permitted)"))
                 .arg(c);
+
+    case QUrlPrivate::AuthorityPresentAndPathIsRelative:
+        return QStringLiteral("Path component is relative and authority is present");
+    case QUrlPrivate::RelativeUrlPathContainsColonBeforeSlash:
+        return QStringLiteral("Relative URL's path component contains ':' before any '/'");
     }
     return QStringLiteral("<unknown error>");
 }

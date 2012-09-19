@@ -95,11 +95,15 @@ public:
         PortEmptyError,
 
         InvalidPathError = Path << 8,
-        PathContainsColonBeforeSlash,
 
         InvalidQueryError = Query << 8,
 
         InvalidFragmentError = Fragment << 8,
+
+        // the following two cases are only possible in combination
+        // with presence/absence of the authority and scheme. See validityError().
+        AuthorityPresentAndPathIsRelative = Authority << 8 | Path << 8 | 0x10000,
+        RelativeUrlPathContainsColonBeforeSlash = Scheme << 8 | Authority << 8 | Path << 8 | 0x10000,
 
         NoError = 0
     };
@@ -110,6 +114,7 @@ public:
     void parse(const QString &url, QUrl::ParsingMode parsingMode);
     bool isEmpty() const
     { return sectionIsPresent == 0 && port == -1 && path.isEmpty(); }
+    ErrorCode validityError() const;
 
     // no QString scheme() const;
     void appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
