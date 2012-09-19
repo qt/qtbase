@@ -1563,29 +1563,29 @@ bool Configure::displayHelp()
 
         desc("These are optional, but you may specify install directories.\n\n", 0, 1);
 
-        desc(       "-prefix <dir>",                    "This will install everything relative to <dir> (default $QT_INSTALL_PREFIX)\n\n");
+        desc(       "-prefix <dir>",                    "This will install everything relative to <dir> (default $QT_INSTALL_PREFIX)\n");
 
         desc(       "-hostprefix [dir]",                "Tools and libraries needed when developing applications are installed in [dir]. "
                                                         "If [dir] is not given, the current build directory will be used. (default PREFIX)\n");
 
         desc("You may use these to separate different parts of the install:\n\n");
 
-        desc(       "-bindir <dir>",                    "Executables will be installed to <dir> (default PREFIX/bin)");
-        desc(       "-libdir <dir>",                    "Libraries will be installed to <dir> (default PREFIX/lib)");
-        desc(       "-docdir <dir>",                    "Documentation will be installed to <dir> (default PREFIX/doc)");
-        desc(       "-headerdir <dir>",                 "Headers will be installed to <dir> (default PREFIX/include)");
-        desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir> (default PREFIX/plugins)");
-        desc(       "-importdir <dir>",                 "Imports for QML will be installed to <dir> (default PREFIX/imports)");
-        desc(       "-datadir <dir>",                   "Data used by Qt programs will be installed to <dir> (default PREFIX)");
-        desc(       "-translationdir <dir>",            "Translations of Qt programs will be installed to <dir> (default PREFIX/translations)");
-        desc(       "-examplesdir <dir>",               "Examples will be installed to <dir> (default PREFIX/examples)");
-        desc(       "-testsdir <dir>",                  "Tests will be installed to <dir> (default PREFIX/tests)");
+        desc(       "-bindir <dir>",                    "Executables will be installed to <dir>\n(default PREFIX/bin)");
+        desc(       "-libdir <dir>",                    "Libraries will be installed to <dir>\n(default PREFIX/lib)");
+        desc(       "-docdir <dir>",                    "Documentation will be installed to <dir>\n(default PREFIX/doc)");
+        desc(       "-headerdir <dir>",                 "Headers will be installed to <dir>\n(default PREFIX/include)");
+        desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir>\n(default PREFIX/plugins)");
+        desc(       "-importdir <dir>",                 "Imports for QML will be installed to <dir>\n(default PREFIX/imports)");
+        desc(       "-datadir <dir>",                   "Data used by Qt programs will be installed to <dir>\n(default PREFIX)");
+        desc(       "-translationdir <dir>",            "Translations of Qt programs will be installed to <dir>\n(default PREFIX/translations)");
+        desc(       "-examplesdir <dir>",               "Examples will be installed to <dir>\n(default PREFIX/examples)");
+        desc(       "-testsdir <dir>",                  "Tests will be installed to <dir>\n(default PREFIX/tests)\n");
 
-        desc(       "-hostbindir <dir>",                "Host executables will be installed to <dir> (default HOSTPREFIX/bin)");
-        desc(       "-hostdatadir <dir>",               "Data used by qmake will be installed to <dir> (default HOSTPREFIX)");
+        desc(       "-hostbindir <dir>",                "Host executables will be installed to <dir>\n(default HOSTPREFIX/bin)");
+        desc(       "-hostdatadir <dir>",               "Data used by qmake will be installed to <dir>\n(default HOSTPREFIX)");
 
 #if !defined(EVAL)
-        desc("Configure options:\n\n");
+        desc("\nConfigure options:\n\n");
 
         desc(" The defaults (*) are usually acceptable. A plus (+) denotes a default value"
              " that needs to be evaluated. If the evaluation succeeds, the feature is"
@@ -1614,14 +1614,14 @@ bool Configure::displayHelp()
         desc("FAST", "no",      "-no-fast",             "Configure Qt normally by generating Makefiles for all project files.");
         desc("FAST", "yes",     "-fast",                "Configure Qt quickly by generating Makefiles only for library and "
                                                         "subdirectory targets.  All other Makefiles are created as wrappers "
-                                                        "which will in turn run qmake\n");
+                                                        "which will in turn run qmake.\n");
 
-        desc(                   "-make <part>",         "Add part to the list of parts to be built at make time.");
+        desc(                   "-make <part>",         "Add part to the list of parts to be built at make time");
         for (int i=0; i<defaultBuildParts.size(); ++i)
             desc(               "",                     qPrintable(QString("  %1").arg(defaultBuildParts.at(i))), false, ' ');
         desc(                   "-nomake <part>",       "Exclude part from the list of parts to be built.\n");
 
-        desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module\n");
+        desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module.\n");
 
         desc("ACCESSIBILITY", "no",  "-no-accessibility", "Do not compile Windows Active Accessibility support.");
         desc("ACCESSIBILITY", "yes", "-accessibility",    "Compile Windows Active Accessibility support.\n");
@@ -1643,48 +1643,48 @@ bool Configure::displayHelp()
 
         desc(                   "-system-sqlite",       "Use sqlite from the operating system.\n");
 
-        desc("OPENGL", "no","-no-opengl",               "Disables OpenGL functionality\n");
+        desc("OPENGL", "no","-no-opengl",               "Do not support OpenGL.");
         desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
                                                         "Available values for <api>:");
         desc("", "", "",                                "  desktop - Enable support for Desktop OpenGL", ' ');
         desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
-        desc("OPENGL_ES_2",  "no", "",                  "  es2 - Enable support for OpenGL ES 2.0", ' ');
+        desc("OPENGL_ES_2",  "no", "",                  "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
 
-        desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality\n");
-        desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality");
+        desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
+        desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality.\n");
         desc(                   "-force-asserts",       "Activate asserts in release mode.\n");
 #endif
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
         desc(                   "-sysroot <dir>",       "Sets <dir> as the target compiler's and qmake's sysroot and also sets pkg-config paths.");
-        desc(                   "-no-gcc-sysroot",      "When using -sysroot, it disables the passing of --sysroot to the compiler ");
+        desc(                   "-no-gcc-sysroot",      "When using -sysroot, it disables the passing of --sysroot to the compiler.\n");
 
-        desc("NIS",  "no",      "-no-nis",              "Do not build NIS support.");
-        desc("NIS",  "yes",     "-nis",                 "Build NIS support.");
+        desc("NIS",  "no",      "-no-nis",              "Do not compile NIS support.");
+        desc("NIS",  "yes",     "-nis",                 "Compile NIS support.\n");
 
         desc("NEON", "yes",     "-neon",                "Enable the use of NEON instructions.");
-        desc("NEON", "no",      "-no-neon",             "Do not enable the use of NEON instructions.");
+        desc("NEON", "no",      "-no-neon",             "Do not enable the use of NEON instructions.\n");
 
         desc("QT_ICONV",    "disable", "-no-iconv",     "Do not enable support for iconv(3).");
         desc("QT_ICONV",    "yes",     "-iconv",        "Enable support for iconv(3).");
         desc("QT_ICONV",    "yes",     "-sun-iconv",    "Enable support for iconv(3) using sun-iconv.");
-        desc("QT_ICONV",    "yes",     "-gnu-iconv",    "Enable support for iconv(3) using gnu-libiconv");
+        desc("QT_ICONV",    "yes",     "-gnu-iconv",    "Enable support for iconv(3) using gnu-libiconv.\n");
 
-        desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.");
+        desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.\n");
 
         desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
-        desc("FONT_CONFIG", "no",      "-no-fontconfig", "Do not build with FontConfig support.");
+        desc("FONT_CONFIG", "no",      "-no-fontconfig", "Do not build with FontConfig support.\n");
 
-        desc("POSIX_IPC",   "yes",     "-posix-ipc",    "Enable POSIX IPC.");
+        desc("POSIX_IPC",   "yes",     "-posix-ipc",    "Enable POSIX IPC.\n");
 
-        desc("QT_GLIB",     "yes",     "-glib",         "Enable Glib support.");
+        desc("QT_GLIB",     "yes",     "-glib",         "Compile Glib support.\n");
 
-        desc("QT_INSTALL_SETTINGS", "auto", "-sysconfdir", "Settings used by Qt programs will be looked for in <dir>.");
+        desc("QT_INSTALL_SETTINGS", "auto", "-sysconfdir <dir>", "Settings used by Qt programs will be looked for in\n<dir>.\n");
 
 #if !defined(EVAL)
-        desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
-        desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>\n");
+        desc(                   "-qtnamespace <name>", "Wraps all Qt library code in 'namespace name {...}'.");
+        desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>.\n");
         desc(                   "-D <define>",          "Add an explicit define to the preprocessor.");
         desc(                   "-I <includepath>",     "Add an explicit include path.");
         desc(                   "-L <librarypath>",     "Add an explicit library path.");
@@ -1706,7 +1706,7 @@ bool Configure::displayHelp()
         desc("ICU", "yes",       "-icu",                "Use the ICU library.");
         desc("ICU", "no",        "-no-icu",             "Do not use the ICU library.\nSee http://site.icu-project.org/\n");
 
-        desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.");
+        desc("GIF", "no",       "-no-gif",              "Do not compile GIF reading support.\n");
 
         desc("LIBPNG", "no",    "-no-libpng",           "Do not compile PNG support.");
         desc("LIBPNG", "qt",    "-qt-libpng",           "Use the libpng bundled with Qt.");
@@ -1721,7 +1721,7 @@ bool Configure::displayHelp()
         desc("FREETYPE", "yes",  "-system-freetype",    "Use the libfreetype provided by the system.");
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
-        desc("Qt for Windows only:\n\n");
+        desc("\nQt for Windows only:\n\n");
 
         desc("VCPROJFILES", "no", "-no-vcproj",         "Do not generate VC++ .vcproj files.");
         desc("VCPROJFILES", "yes", "-vcproj",           "Generate VC++ .vcproj files, only if platform \"win32-msvc.net\".\n");
@@ -1736,38 +1736,38 @@ bool Configure::displayHelp()
         desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
 
-        desc("PROCESS", "partial", "-process",          "Generate top-level Makefiles/Project files.\n");
-        desc("PROCESS", "full", "-fully-process",       "Generate Makefiles/Project files for the entire Qt tree.\n");
-        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files. This will override -no-fast if specified.");
+        desc("PROCESS", "partial", "-process",          "Generate top-level Makefiles/Project files.");
+        desc("PROCESS", "full", "-fully-process",       "Generate Makefiles/Project files for the entire Qt\ntree.");
+        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files. This will override -no-fast if specified.\n");
 
         desc("RTTI", "no",      "-no-rtti",             "Do not compile runtime type information.");
         desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.\n");
-        desc("SSE2", "no",      "-no-sse2",             "Do not compile with use of SSE2 instructions");
-        desc("SSE2", "yes",     "-sse2",                "Compile with use of SSE2 instructions");
-        desc("SSE3", "no",      "-no-sse3",             "Do not compile with use of SSE3 instructions");
-        desc("SSE3", "yes",     "-sse3",                "Compile with use of SSE3 instructions");
-        desc("SSSE3", "no",     "-no-ssse3",            "Do not compile with use of SSSE3 instructions");
-        desc("SSSE3", "yes",    "-ssse3",               "Compile with use of SSSE3 instructions");
-        desc("SSE4_1", "no",    "-no-sse4.1",           "Do not compile with use of SSE4.1 instructions");
-        desc("SSE4_1", "yes",   "-sse4.1",              "Compile with use of SSE4.1 instructions");
-        desc("SSE4_2", "no",    "-no-sse4.2",           "Do not compile with use of SSE4.2 instructions");
-        desc("SSE4_2", "yes",   "-sse4.2",              "Compile with use of SSE4.2 instructions");
-        desc("AVX", "no",       "-no-avx",              "Do not compile with use of AVX instructions");
-        desc("AVX", "yes",      "-avx",                 "Compile with use of AVX instructions");
-        desc("AVX2", "no",      "-no-avx2",             "Do not compile with use of AVX2 instructions");
-        desc("AVX2", "yes",     "-avx2",                "Compile with use of AVX2 instructions");
-        desc("OPENSSL", "no",    "-no-openssl",         "Do not compile in OpenSSL support");
-        desc("OPENSSL", "yes",   "-openssl",            "Compile in run-time OpenSSL support");
-        desc("OPENSSL", "linked","-openssl-linked",     "Compile in linked OpenSSL support");
-        desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support");
-        desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1 dynamically");
-        desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1");
-        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into QtMultimedia");
-        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia");
-        desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the QML debugging support");
-        desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the QML debugging support");
-        desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering");
-        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)");
+        desc("SSE2", "no",      "-no-sse2",             "Do not compile with use of SSE2 instructions.");
+        desc("SSE2", "yes",     "-sse2",                "Compile with use of SSE2 instructions.");
+        desc("SSE3", "no",      "-no-sse3",             "Do not compile with use of SSE3 instructions.");
+        desc("SSE3", "yes",     "-sse3",                "Compile with use of SSE3 instructions.");
+        desc("SSSE3", "no",     "-no-ssse3",            "Do not compile with use of SSSE3 instructions.");
+        desc("SSSE3", "yes",    "-ssse3",               "Compile with use of SSSE3 instructions.");
+        desc("SSE4_1", "no",    "-no-sse4.1",           "Do not compile with use of SSE4.1 instructions.");
+        desc("SSE4_1", "yes",   "-sse4.1",              "Compile with use of SSE4.1 instructions.");
+        desc("SSE4_2", "no",    "-no-sse4.2",           "Do not compile with use of SSE4.2 instructions.");
+        desc("SSE4_2", "yes",   "-sse4.2",              "Compile with use of SSE4.2 instructions.");
+        desc("AVX", "no",       "-no-avx",              "Do not compile with use of AVX instructions.");
+        desc("AVX", "yes",      "-avx",                 "Compile with use of AVX instructions.");
+        desc("AVX2", "no",      "-no-avx2",             "Do not compile with use of AVX2 instructions.");
+        desc("AVX2", "yes",     "-avx2",                "Compile with use of AVX2 instructions.\n");
+        desc("OPENSSL", "no",    "-no-openssl",         "Do not compile support for OpenSSL.");
+        desc("OPENSSL", "yes",   "-openssl",            "Enable run-time OpenSSL support.");
+        desc("OPENSSL", "linked","-openssl-linked",     "Enable linked OpenSSL support.\n");
+        desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
+        desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1\ndynamically.");
+        desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
+        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQtMultimedia.");
+        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia.\n");
+        desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
+        desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
+        desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
+        desc("DIRECTWRITE", "yes", "-directwrite", "Build support for DirectWrite font rendering (experimental, requires DirectWrite availability on target systems, e.g. Windows Vista with Platform Update, Windows 7, etc.)\n");
 
         desc(                   "-no-style-<style>",    "Disable <style> entirely.");
         desc(                   "-qt-style-<style>",    "Enable <style> in the Qt Library.\nAvailable styles: ");
@@ -1780,11 +1780,11 @@ bool Configure::displayHelp()
         desc("STYLE_MOTIF", "yes", "",                  "  motif", ' ');
         desc("STYLE_CDE", "yes", "",                    "  cde", ' ');
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
-        desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile", ' ');
+        desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile\n", ' ');
         desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
-        desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.");
+        desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.\n");
         desc("MSVC_MP", "no", "-no-mp",                 "Do not use multiple processors for compiling with MSVC");
-        desc("MSVC_MP", "yes", "-mp",                   "Use multiple processors for compiling with MSVC (-MP)");
+        desc("MSVC_MP", "yes", "-mp",                   "Use multiple processors for compiling with MSVC (-MP).\n");
 
 /*      We do not support -qconfig on Windows yet
 
@@ -1800,14 +1800,14 @@ bool Configure::displayHelp()
 
         // Qt\Windows CE only options go below here -----------------------------------------------------------------------------
         desc("Qt for Windows CE only:\n\n");
-        desc("IWMMXT", "no",       "-no-iwmmxt",           "Do not compile with use of IWMMXT instructions");
-        desc("IWMMXT", "yes",      "-iwmmxt",              "Do compile with use of IWMMXT instructions (Qt for Windows CE on Arm only)");
-        desc("CE_CRT", "no",       "-no-crt" ,             "Do not add the C runtime to default deployment rules");
-        desc("CE_CRT", "yes",      "-qt-crt",              "Qt identifies C runtime during project generation");
-        desc(                      "-crt <path>",          "Specify path to C runtime used for project generation.");
-        desc("CETEST", "no",       "-no-cetest",           "Do not compile Windows CE remote test application");
-        desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application");
-        desc(                      "-signature <file>",    "Use file for signing the target project");
+        desc("IWMMXT", "no",       "-no-iwmmxt",           "Do not compile with use of IWMMXT instructions.");
+        desc("IWMMXT", "yes",      "-iwmmxt",              "Do compile with use of IWMMXT instructions. (Qt for Windows CE on Arm only)\n");
+        desc("CE_CRT", "no",       "-no-crt" ,             "Do not add the C runtime to default deployment rules.");
+        desc("CE_CRT", "yes",      "-qt-crt",              "Qt identifies C runtime during project generation.");
+        desc(                      "-crt <path>",          "Specify path to C runtime used for project generation.\n");
+        desc("CETEST", "no",       "-no-cetest",           "Do not compile Windows CE remote test application.");
+        desc("CETEST", "yes",      "-cetest",              "Compile Windows CE remote test application.\n");
+        desc(                      "-signature <file>",    "Use <file> for signing the target project.");
         return true;
     }
     return false;
