@@ -754,6 +754,8 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
     case QtWindows::DisplayChangedEvent:
         return d->m_screenManager.handleDisplayChange(wParam, lParam);
+    case QtWindows::SettingChangedEvent:
+        return d->m_screenManager.handleScreenChanges();
     default:
         break;
     }

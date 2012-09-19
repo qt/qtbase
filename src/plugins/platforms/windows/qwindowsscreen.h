@@ -129,7 +129,7 @@ public:
             delete m_screens.takeLast();
     }
 
-    void handleScreenChanges();
+    bool handleScreenChanges();
     bool handleDisplayChange(WPARAM wParam, LPARAM lParam);
     const WindowsScreenList &screens() const { return m_screens; }
 
