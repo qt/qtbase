@@ -42,8 +42,8 @@
     painter uses to draw onto different types of devices.
 
     The QPaintDevice class is the base class of objects that can be
-    painted: Its drawing capabilities are inherited by the
-    QOpenGLPaintDevice, QImage, QPixmap and QPicture classes. The
+    painted: Its drawing capabilities are inherited by the QWidget,
+    QImage, QPixmap, QPicture, and QOpenGLPaintDevice classes. The
     default coordinate system of a paint device has its origin at the
     top-left corner. The \e x values increase to the right and the \e
     y values increase downwards. The default unit is one pixel on
