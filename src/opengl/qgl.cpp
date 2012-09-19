@@ -1173,6 +1173,21 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                             QGLFormat::OpenGL_Version_3_2 |
                             QGLFormat::OpenGL_Version_3_3 |
                             QGLFormat::OpenGL_Version_4_0;
+            switch (versionString[2].toLatin1()) {
+            case '3':
+                versionFlags |= QGLFormat::OpenGL_Version_4_3;
+            case '2':
+                versionFlags |= QGLFormat::OpenGL_Version_4_2;
+            case '1':
+                versionFlags |= QGLFormat::OpenGL_Version_4_1;
+            case '0':
+                break;
+            default:
+                versionFlags |= QGLFormat::OpenGL_Version_4_1 |
+                                QGLFormat::OpenGL_Version_4_2 |
+                                QGLFormat::OpenGL_Version_4_3;
+                break;
+            }
         } else {
             versionFlags |= QGLFormat::OpenGL_Version_1_1 |
                             QGLFormat::OpenGL_Version_1_2 |
@@ -1185,7 +1200,10 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
                             QGLFormat::OpenGL_Version_3_1 |
                             QGLFormat::OpenGL_Version_3_2 |
                             QGLFormat::OpenGL_Version_3_3 |
-                            QGLFormat::OpenGL_Version_4_0;
+                            QGLFormat::OpenGL_Version_4_0 |
+                            QGLFormat::OpenGL_Version_4_1 |
+                            QGLFormat::OpenGL_Version_4_2 |
+                            QGLFormat::OpenGL_Version_4_3;
         }
     }
     return versionFlags;
@@ -1227,6 +1245,12 @@ QGLFormat::OpenGLVersionFlags Q_AUTOTEST_EXPORT qOpenGLVersionFlagsFromString(co
     \value OpenGL_Version_3_3  OpenGL version 3.3 or higher is present.
 
     \value OpenGL_Version_4_0  OpenGL version 4.0 or higher is present.
+
+    \value OpenGL_Version_4_1  OpenGL version 4.1 or higher is present.
+
+    \value OpenGL_Version_4_2  OpenGL version 4.2 or higher is present.
+
+    \value OpenGL_Version_4_3  OpenGL version 4.3 or higher is present.
 
     \value OpenGL_ES_CommonLite_Version_1_0  OpenGL ES version 1.0 Common Lite or higher is present.
 

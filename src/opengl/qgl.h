@@ -228,7 +228,10 @@ public:
         OpenGL_Version_3_1                = 0x00002000,
         OpenGL_Version_3_2                = 0x00004000,
         OpenGL_Version_3_3                = 0x00008000,
-        OpenGL_Version_4_0                = 0x00010000
+        OpenGL_Version_4_0                = 0x00010000,
+        OpenGL_Version_4_1                = 0x00020000,
+        OpenGL_Version_4_2                = 0x00040000,
+        OpenGL_Version_4_3                = 0x00080000
     };
     Q_DECLARE_FLAGS(OpenGLVersionFlags, OpenGLVersionFlag)
 
