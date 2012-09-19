@@ -78,6 +78,7 @@ public:
     void dump() const;
 
     using QMakeEvaluator::LoadFlags;
+    using QMakeEvaluator::VisitReturn;
     using QMakeEvaluator::setExtraVars;
     using QMakeEvaluator::setExtraConfigs;
     using QMakeEvaluator::loadSpec;
@@ -89,6 +90,9 @@ public:
     using QMakeEvaluator::isActiveConfig;
     using QMakeEvaluator::isHostBuild;
     using QMakeEvaluator::dirSep;
+
+private:
+    static bool boolRet(VisitReturn vr);
 };
 
 inline int QMakeProject::intValue(const ProKey &v, int defaultValue) const

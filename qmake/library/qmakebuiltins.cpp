@@ -686,7 +686,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             ProValueMap vars;
             QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
             fn.detach();
-            if (evaluateFileInto(fn, &vars, LoadProOnly))
+            if (evaluateFileInto(fn, &vars, LoadProOnly) == ReturnTrue)
                 ret = vars.value(map(args.at(1)));
         }
         break;
@@ -1094,8 +1094,9 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             ProValueMap vars;
             QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
             fn.detach();
-            if (!evaluateFileInto(fn, &vars, LoadProOnly))
-                return ReturnFalse;
+            VisitReturn ok = evaluateFileInto(fn, &vars, LoadProOnly);
+            if (ok != ReturnTrue)
+                return ok;
             if (args.count() == 2)
                 return returnBool(vars.contains(map(args.at(1))));
             QRegExp regx;
@@ -1305,12 +1306,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         QString fn = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
         fn.detach();
-        bool ok;
+        VisitReturn ok;
         if (parseInto.isEmpty()) {
             ok = evaluateFileChecked(fn, QMakeHandler::EvalIncludeFile, LoadProOnly | flags);
         } else {
             ProValueMap symbols;
-            if ((ok = evaluateFileInto(fn, &symbols, LoadAll | flags))) {
+            if ((ok = evaluateFileInto(fn, &symbols, LoadAll | flags)) == ReturnTrue) {
                 ProValueMap newMap;
                 for (ProValueMap::ConstIterator
                         it = m_valuemapStack.top().constBegin(),
@@ -1331,7 +1332,9 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 m_valuemapStack.top() = newMap;
             }
         }
-        return returnBool(ok || (flags & LoadSilent));
+        if (ok == ReturnFalse && (flags & LoadSilent))
+            ok = ReturnTrue;
+        return ok;
     }
     case T_LOAD: {
         bool ignore_error = false;
@@ -1341,8 +1344,11 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
             evalError(fL1S("load(feature) requires one or two arguments."));
             return ReturnFalse;
         }
-        return returnBool(evaluateFeatureFile(m_option->expandEnvVars(args.at(0).toQString()),
-                                              ignore_error) || ignore_error);
+        VisitReturn ok = evaluateFeatureFile(m_option->expandEnvVars(args.at(0).toQString()),
+                                             ignore_error);
+        if (ok == ReturnFalse && ignore_error)
+            ok = ReturnTrue;
+        return ok;
     }
     case T_DEBUG: {
 #ifdef PROEVALUATOR_DEBUG

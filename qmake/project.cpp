@@ -63,6 +63,14 @@ QMakeProject::QMakeProject(QMakeProject *p)
     initFrom(*p);
 }
 
+bool QMakeProject::boolRet(VisitReturn vr)
+{
+    if (vr == ReturnError)
+        exit(3);
+    Q_ASSERT(vr == ReturnTrue || vr == ReturnFalse);
+    return vr != ReturnFalse;
+}
+
 bool QMakeProject::read(const QString &project, LoadFlags what)
 {
     m_projectFile = project;
@@ -70,7 +78,7 @@ bool QMakeProject::read(const QString &project, LoadFlags what)
     QString absproj = (project == QLatin1String("-"))
             ? QLatin1String("(stdin)")
             : QDir::cleanPath(QDir(qmake_getpwd()).absoluteFilePath(project));
-    return evaluateFile(absproj, QMakeHandler::EvalProjectFile, what);
+    return boolRet(evaluateFile(absproj, QMakeHandler::EvalProjectFile, what));
 }
 
 static ProStringList prepareBuiltinArgs(const QList<ProStringList> &args)
@@ -87,12 +95,12 @@ bool QMakeProject::test(const ProKey &func, const QList<ProStringList> &args)
     m_current.clear();
 
     if (int func_t = statics.functions.value(func))
-        return evaluateBuiltinConditional(func_t, func, prepareBuiltinArgs(args)) == ReturnTrue;
+        return boolRet(evaluateBuiltinConditional(func_t, func, prepareBuiltinArgs(args)));
 
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
             m_functionDefs.testFunctions.constFind(func);
     if (it != m_functionDefs.testFunctions.constEnd())
-        return evaluateBoolFunction(*it, args, func) == ReturnTrue;
+        return boolRet(evaluateBoolFunction(*it, args, func));
 
     evalError(QStringLiteral("'%1' is not a recognized test function.")
               .arg(func.toQString(m_tmp1)));
@@ -108,8 +116,13 @@ QStringList QMakeProject::expand(const ProKey &func, const QList<ProStringList> 
 
     QHash<ProKey, ProFunctionDef>::ConstIterator it =
             m_functionDefs.replaceFunctions.constFind(func);
-    if (it != m_functionDefs.replaceFunctions.constEnd())
-        return evaluateFunction(*it, args, 0).toQStringList();
+    if (it != m_functionDefs.replaceFunctions.constEnd()) {
+        QMakeProject::VisitReturn vr;
+        ProStringList ret = evaluateFunction(*it, args, &vr);
+        if (vr == QMakeProject::ReturnError)
+            exit(3);
+        return ret.toQStringList();
+    }
 
     evalError(QStringLiteral("'%1' is not a recognized replace function.")
               .arg(func.toQString(m_tmp1)));
