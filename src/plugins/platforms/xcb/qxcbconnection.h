@@ -66,6 +66,7 @@ struct XInput2MaemoData;
 #endif
 struct XInput2DeviceData;
 #endif
+struct xcb_randr_get_output_info_reply_t;
 
 //#define Q_XCB_DEBUG
 
@@ -398,7 +399,9 @@ private:
     void handleGenericEventMaemo(xcb_ge_event_t *event);
 #endif
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
-    QXcbScreen* createScreenWithFabricatedName(int screenNumber, xcb_screen_t* xcbScreen);
+    QXcbScreen* findOrCreateScreen(QList<QXcbScreen *>& newScreens, int screenNumber,
+        xcb_screen_t* xcbScreen, xcb_randr_get_output_info_reply_t *output = NULL);
+    void updateScreens();
 
     bool m_xi2Enabled;
     int m_xi2Minor;
@@ -443,7 +446,6 @@ private:
 
     QList<QXcbScreen *> m_screens;
     int m_primaryScreen;
-    int m_primaryOutput;
 
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 

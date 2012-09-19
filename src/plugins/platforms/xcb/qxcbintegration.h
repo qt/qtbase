@@ -106,6 +106,8 @@ private:
 #endif
 
     QScopedPointer<QPlatformServices> m_services;
+
+    friend class QXcbConnection; // access QPlatformIntegration::screenAdded()
 };
 
 QT_END_NAMESPACE

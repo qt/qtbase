@@ -83,7 +83,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
 
 #ifdef Q_XCB_DEBUG
     qDebug();
-    qDebug("Screen %s:", m_outputName.toUtf8().constData());
+    qDebug("Screen output %s of xcb screen %d:", m_outputName.toUtf8().constData(), m_number);
     qDebug("  width..........: %lf", m_sizeMillimeters.width());
     qDebug("  height.........: %lf", m_sizeMillimeters.height());
     qDebug("  geometry.......: %d x %d +%d +%d", m_geometry.width(), m_geometry.height(), m_geometry.x(), m_geometry.y());
@@ -238,6 +238,12 @@ const xcb_visualtype_t *QXcbScreen::visualForId(xcb_visualid_t visualid) const
 QImage::Format QXcbScreen::format() const
 {
     return QImage::Format_RGB32;
+}
+
+QDpi QXcbScreen::logicalDpi() const
+{
+    return QDpi(25.4 * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
+                25.4 * m_virtualSize.height() / m_virtualSizeMillimeters.height());
 }
 
 QPlatformCursor *QXcbScreen::cursor() const

@@ -71,6 +71,7 @@ public:
     int depth() const { return m_screen->root_depth; }
     QImage::Format format() const;
     QSizeF physicalSize() const { return m_sizeMillimeters; }
+    QDpi logicalDpi() const;
     QPlatformCursor *cursor() const;
     qreal refreshRate() const { return m_refreshRate; }
     Qt::ScreenOrientation orientation() const { return m_orientation; }

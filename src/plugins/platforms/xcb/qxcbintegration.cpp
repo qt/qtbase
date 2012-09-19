@@ -110,10 +110,6 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
         m_connections << new QXcbConnection(m_nativeInterface.data(), display.toLatin1().constData());
     }
 
-    foreach (QXcbConnection *connection, m_connections)
-        foreach (QXcbScreen *screen, connection->screens())
-            screenAdded(screen);
-
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
     m_inputContext.reset(QPlatformInputContextFactory::create());
 #ifndef QT_NO_ACCESSIBILITY
