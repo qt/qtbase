@@ -308,6 +308,13 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
     d->window->create();
 
     d->context = new QOpenGLContext;
+#if !defined(QT_OPENGL_ES)
+    // On desktop, request latest released version
+    QSurfaceFormat format;
+    format.setMajorVersion(4);
+    format.setMinorVersion(3);
+    d->context->setFormat(format);
+#endif
     d->context->create();
     d->context->makeCurrent(d->window);
 }
