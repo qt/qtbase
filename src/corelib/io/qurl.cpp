@@ -2876,7 +2876,10 @@ QString QUrl::url(FormattingOptions options) const
 */
 QString QUrl::toString(FormattingOptions options) const
 {
-    if (!d) return QString();
+    if (!isValid()) {
+        // also catches isEmpty()
+        return QString();
+    }
     if (options == QUrl::FullyDecoded) {
         qWarning("QUrl: QUrl::FullyDecoded is not permitted when reconstructing the full URL");
         options = QUrl::PrettyDecoded;
@@ -2916,10 +2919,6 @@ QString QUrl::toString(FormattingOptions options) const
     }
 
     if (!(options & QUrl::RemovePath)) {
-        // check if we need to insert a slash
-        if (!pathIsAbsolute && !d->path.isEmpty() && !url.isEmpty() && !url.endsWith(QLatin1Char(':')))
-            url += QLatin1Char('/');
-
         d->appendPath(url, options, QUrlPrivate::FullUrl);
         // check if we need to remove trailing slashes
         if ((options & StripTrailingSlash) && !d->path.isEmpty() && d->path != QLatin1String("/") && url.endsWith(QLatin1Char('/')))
