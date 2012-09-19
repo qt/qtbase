@@ -25,13 +25,13 @@
 **
 ****************************************************************************/
 
-/*! 
-    \example tools/settingseditor
-    \title Settings Editor Example
+/*!
+    \example i18n
+    \title I18N Example
 
-    The Settings Editor example shows how Qt's standard settings support is used in an
-    application by providing an editor that enables the user to view the settings for
-    installed applications, and modify those that can be edited.
+    The Internationalization (I18N) example demonstrates Qt's support for translated
+    text. Developers can write the initial application text in one language, and
+    translations can be provided later without any modifications to the code.
 
-    \image settingseditor-example.png
+    \image i18n-example.png
 */

@@ -80,7 +80,7 @@
     \c MainWindow inherits from QWidget and acts as the top level widget of the
     application.
 
-    \snippet examples/widgets/orientation/mainwindow.h 0
+    \snippet widgets/orientation/mainwindow.h 0
 
     The \c resizeEvent() method is re-implemented, and used to check which
     UI to show. The \c onRadioButtonClicked() slot is connected to the
@@ -94,19 +94,19 @@
     In the constructor, the widgets that will hold the UIs are created and set
     up.
 
-    \snippet examples/widgets/orientation/mainwindow.cpp 0
+    \snippet widgets/orientation/mainwindow.cpp 0
 
     Since the exit buttons on the layouts are different from each other, both
     of them have to have their \c clicked() signal connected to the \c close()
     slot of the main widget. The first image is also made current with the call
     to \c onRadioButtonClicked().
 
-    \snippet examples/widgets/orientation/mainwindow.cpp 1
+    \snippet widgets/orientation/mainwindow.cpp 1
 
     On the Maemo platform, windows are stuck in landscape mode by default. The
     application has to explicitly say that rotation is supported.
 
-    \snippet examples/widgets/orientation/mainwindow.cpp 2
+    \snippet widgets/orientation/mainwindow.cpp 2
 
     The \c resizeEvent() is called when the main window is first created, and
     also whenever the window has been resized. If the window is shown in
@@ -118,7 +118,7 @@
     (possibly transposed) size of the window. Depending on the orientation, one
     widget is made visible and the other invisible.
 
-    \snippet examples/widgets/orientation/mainwindow.cpp 3
+    \snippet widgets/orientation/mainwindow.cpp 3
 
     When the user selects one of the radio buttons in the landscape UI, the
     current image is changed. The image is displayed by specifying the
@@ -126,7 +126,7 @@
     \c landscape have a \c choiceWidget of their own, the change has to be
     reflected in both instances.
 
-    \snippet examples/widgets/orientation/mainwindow.cpp 4
+    \snippet widgets/orientation/mainwindow.cpp 4
 
     Synchronizing both UIs like this might become unfeasible when there are
     many things that can change. In that case it is better to make use of the
@@ -139,5 +139,5 @@
 
     The main function creates a \c MainWindow instance and shows it full
     screen.
-    \snippet examples/widgets/orientation/main.cpp 0
+    \snippet widgets/orientation/main.cpp 0
 */

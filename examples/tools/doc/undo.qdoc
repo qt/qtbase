@@ -25,13 +25,19 @@
 **
 ****************************************************************************/
 
-/*! 
-    \example tools/regexp
-    \title Regular Expressions Example
+/*!
+    \example undo
+    \title Undo Framework
 
-    The Regular Expressions (RegExp) example shows how regular expressions in Qt are
-    applied to text by providing an environment in which new regular expressions can be
-    created and tested on custom text strings.
+    This example shows Qt's undo framework in action.
 
-    \image regexp-example.png
+    \image undodemo.png
+
+    Qt's undo framework is an implementation of the Command
+    pattern, which provides advanced undo/redo functionality. 
+
+    To show the abilities of the framework, we have implemented a
+    small diagram application in which the diagram items are geometric
+    primitives.  You can edit the diagram in the following ways: add,
+    move, change the color of, and delete the items.
 */

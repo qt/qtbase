@@ -40,7 +40,7 @@
     a view requests an item at row N it is also likely to ask for items at rows near
     to N.
 
-    \snippet examples/tools/contiguouscache/randomlistmodel.cpp 0
+    \snippet contiguouscache/randomlistmodel.cpp 0
 
     After getting the row, the class determines if the row is in the bounds
     of the contiguous cache's current range.  It would have been equally valid to
@@ -74,7 +74,7 @@
     to see how the cache range is kept for a local number of rows when running the
     example.
 
-    \snippet examples/tools/contiguouscache/randomlistmodel.cpp 1
+    \snippet contiguouscache/randomlistmodel.cpp 1
 
     It is also worth considering pre-fetching items into the cache outside of the
     application's paint routine.  This can be done either with a separate thread

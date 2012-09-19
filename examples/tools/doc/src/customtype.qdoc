@@ -56,7 +56,7 @@
     of information (a QString and a QStringList), each of which can be read
     using trivial getter functions:
 
-    \snippet examples/tools/customtype/message.h custom type definition
+    \snippet customtype/message.h custom type definition
 
     The default constructor, copy constructor and destructor are
     all required, and must be public, if the type is to be integrated into the
@@ -67,14 +67,14 @@
     To enable the type to be used with QVariant, we declare it using the
     Q_DECLARE_METATYPE() macro:
 
-    \snippet examples/tools/customtype/message.h custom type meta-type declaration
+    \snippet customtype/message.h custom type meta-type declaration
 
     We do not need to write any additional code to accompany this macro.
 
     To allow us to see a readable description of each \c Message object when it
     is sent to the debug output stream, we define a streaming operator:
 
-    \snippet examples/tools/customtype/message.h custom type streaming operator
+    \snippet customtype/message.h custom type streaming operator
 
     This facility is useful if you need to insert tracing statements in your
     code for debugging purposes.
@@ -84,11 +84,11 @@
     The implementation of the default constructor, copy constructor and destructor
     are straightforward for the \c Message class:
 
-    \snippet examples/tools/customtype/message.cpp Message class implementation
+    \snippet customtype/message.cpp Message class implementation
 
     The streaming operator is implemented in the following way:
 
-    \snippet examples/tools/customtype/message.cpp custom type streaming operator
+    \snippet customtype/message.cpp custom type streaming operator
 
     Here, we want to represent each value depending on how many lines are stored
     in the message body. We stream text to the QDebug object passed to the
@@ -99,7 +99,7 @@
 
     We include the code for the getter functions for completeness:
 
-    \snippet examples/tools/customtype/message.cpp getter functions
+    \snippet customtype/message.cpp getter functions
 
     With the type fully defined, implemented, and integrated with the
     meta-object system, we can now use it.
@@ -109,13 +109,13 @@
     In the example's \c{main()} function, we show how a \c Message object can
     be printed to the console by sending it to the debug stream:
 
-    \snippet examples/tools/customtype/main.cpp printing a custom type
+    \snippet customtype/main.cpp printing a custom type
 
     You can use the type with QVariant in exactly the same way as you would
     use standard Qt value types. Here's how to store a value using the
     QVariant::setValue() function:
 
-    \snippet examples/tools/customtype/main.cpp storing a custom value
+    \snippet customtype/main.cpp storing a custom value
 
     Alternatively, the QVariant::fromValue() and qVariantSetValue() functions
     can be used if you are using a compiler without support for member template
@@ -124,7 +124,7 @@
     The value can be retrieved using the QVariant::value() member template
     function:
 
-    \snippet examples/tools/customtype/main.cpp retrieving a custom value
+    \snippet customtype/main.cpp retrieving a custom value
 
     Alternatively, the qVariantValue() template function can be used if
     you are using a compiler without support for member template functions.

@@ -205,7 +205,7 @@
     supported formats using the \l{The foreach Keyword}{foreach keyword}.
     This keyword has the following format:
 
-    \snippet doc/src/snippets/code/doc_src_examples_dropsite.qdoc 0
+    \snippet code/doc_src_examples_dropsite.qdoc 0
 
     In our example, \c format is the \a variable and the \a container is a
     QStringList, obtained from \c mimeData->formats().

@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 /*!
-    \example widgets/mousebuttons/buttontester
+    \example widgets/mousebuttons
     \title Mouse Button Tester
 
     \brief The 'Mouse Button Tester' example demonstrates how to reimplement
@@ -38,21 +38,21 @@
     sending text shortcuts for certain games. With such a mouse, no mouse
     button events occur: The "mouse" sends keystrokes, and the
     'Mouse Button Tester' Window will not see the event. Receiving no event,
-    it will not repaint the Window with new text describing a \button event.
+    it will not repaint the Window with new text describing a button event.
 
     And so, in addition to it's use as Qt example code, the program may be
     useful s a mouse device tester. Note that there is another example
-    muouse buttons example which provides the same function, written in QML.
+    mouse buttons example which provides the same function, written in QML.
 
     This program (the Widget-based example) consists of three classes,
     in addition to the main() parent program:
 
     \list
-        \o \c A QPushButton, "Quit".
-        \o \c ButtonTester. This is derived from Qt's TextArea class, for
+        \li \c A QPushButton, "Quit".
+        \li \c ButtonTester. This is derived from Qt's TextArea class, for
             purpose of customizing/re-implementing the mouse and wheel event
             member functions.
-        \o \c A simple QVBoxLayout layout.
+        \li \c A simple QVBoxLayout layout.
     \endlist
 
     First we will review the main program, with it's layout and "Quit"
@@ -66,7 +66,7 @@
     class would result in the destructor of that second class being
     called twice. This "Quit" Button uses the traditional Signal/Slot
     connection to invoke termination of the QApp, which will properly destroy
-    its child classes \before terminating itself.
+    its child classes before terminating itself.
 
     The remainder of the main() program is concerned with defining the layout,
     and applying a minimum size to the customized ButtonTester.
@@ -90,5 +90,5 @@
     this automatically, but it is better programming practice to explicitly
     invoke the function.)
 
-    \image widgets/mousebutton-buttontester.png
+    \image mousebutton-buttontester.png
 */
