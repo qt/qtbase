@@ -104,6 +104,9 @@ QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
     if (format.stencil())
         retFormat.setStencilBufferSize(format.stencilBufferSize() == -1 ? 1 : format.stencilBufferSize());
     retFormat.setStereo(format.stereo());
+    retFormat.setMajorVersion(format.majorVersion());
+    retFormat.setMinorVersion(format.minorVersion());
+    retFormat.setProfile(static_cast<QSurfaceFormat::OpenGLContextProfile>(format.profile()));
     return retFormat;
 }
 
