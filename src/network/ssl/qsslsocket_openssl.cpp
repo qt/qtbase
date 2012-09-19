@@ -87,7 +87,7 @@ bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
     locking_function(int mode, int n, const char *file, int line) is needed to
     perform locking on shared data structures.  (Note that OpenSSL uses a
     number of global data structures that will be implicitly shared
-    when-whenever ever multiple threads use OpenSSL.)  Multi-threaded
+    whenever multiple threads use OpenSSL.)  Multi-threaded
     applications will crash at random if it is not set.  ...
     ...
     id_function(void) is a function that returns a thread ID. It is not
