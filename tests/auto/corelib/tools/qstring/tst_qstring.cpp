@@ -5339,11 +5339,15 @@ void tst_QString::compareRef()
 void tst_QString::arg_locale()
 {
     QLocale l(QLocale::English, QLocale::UnitedKingdom);
+    QString str("*%L1*%L2*");
+
+    QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123,456*1,234.56*"));
+    QLocale::setDefault(l);
+
     l.setNumberOptions(QLocale::OmitGroupSeparator);
     QLocale::setDefault(l);
-    QString str("*%L1*%L2*");
-    str = str.arg(123456).arg(1234.56);
-    QCOMPARE(str, QString::fromLatin1("*123456*1234.56*"));
+    QCOMPARE(str.arg(123456).arg(1234.56), QString::fromLatin1("*123456*1234.56*"));
+
     QLocale::setDefault(QLocale::C);
 }
 
