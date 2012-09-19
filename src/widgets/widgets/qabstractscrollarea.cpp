@@ -407,7 +407,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     if ((frameStyle != QFrame::NoFrame) &&
         q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, &opt, q)) {
         controlsRect = widgetRect;
-        const int extra = scrollOverlap;
+        const int extra = scrollOverlap + q->style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing, &opt, q);
         const QPoint cornerExtra(needv ? extra : 0, needh ? extra : 0);
         QRect frameRect = widgetRect;
         frameRect.adjust(0, 0, -cornerOffset.x() - cornerExtra.x(), -cornerOffset.y() - cornerExtra.y());

@@ -72,6 +72,7 @@
 #include <qradiobutton.h>
 #include <qlineedit.h>
 #include <qmdiarea.h>
+#include <qscrollarea.h>
 
 #include <QCleanlooksStyle>
 
@@ -148,6 +149,7 @@ private slots:
 #endif
     void defaultFont();
     void testDrawingShortcuts();
+    void testFrameOnlyAroundContents();
 private:
     void lineUpLayoutTest(QStyle *);
     QWidget *testWidget;
@@ -763,6 +765,7 @@ public:
     int alignment;
 };
 
+
 void tst_QStyle::testDrawingShortcuts()
 {
     {   
@@ -795,6 +798,42 @@ void tst_QStyle::testDrawingShortcuts()
         delete dts;
      }   
 }
+
+#define SCROLLBAR_SPACING 33
+
+class FrameTestStyle : public QWindowsStyle {
+    int styleHint(StyleHint hint, const QStyleOption *opt, const QWidget *widget, QStyleHintReturn *returnData) const {
+        if (hint == QStyle::SH_ScrollView_FrameOnlyAroundContents)
+            return 1;
+        return QWindowsStyle ::styleHint(hint, opt, widget, returnData);
+    }
+
+    int pixelMetric(PixelMetric pm, const QStyleOption *option, const QWidget *widget) const {
+        if (pm == QStyle::PM_ScrollView_ScrollBarSpacing)
+            return SCROLLBAR_SPACING;
+        return QWindowsStyle ::pixelMetric(pm, option ,widget);
+    }
+};
+
+void tst_QStyle::testFrameOnlyAroundContents()
+{
+    QScrollArea area;
+    area.setGeometry(0, 0, 200, 200);
+    QWindowsStyle winStyle;
+    FrameTestStyle frameStyle;
+    QWidget *widget = new QWidget(&area);
+    widget->setGeometry(0, 0, 400, 400);
+    area.setStyle(&winStyle);
+    area.verticalScrollBar()->setStyle(&winStyle);
+    area.setWidget(widget);
+    area.setVisible(true);
+    int viewPortWidth = area.viewport()->width();
+    area.verticalScrollBar()->setStyle(&frameStyle);
+    area.setStyle(&frameStyle);
+    // Test that we reserve space for scrollbar spacing
+    QVERIFY(viewPortWidth == area.viewport()->width() + SCROLLBAR_SPACING);
+}
+
 
 QTEST_MAIN(tst_QStyle)
 #include "tst_qstyle.moc"
