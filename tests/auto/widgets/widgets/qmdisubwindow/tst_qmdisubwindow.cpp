@@ -892,7 +892,6 @@ void tst_QMdiSubWindow::setWindowFlags_data()
 
 void tst_QMdiSubWindow::setWindowFlags()
 {
-    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip");
     QFETCH(Qt::WindowType, windowType);
     QFETCH(Qt::WindowType, expectedWindowType);
     QFETCH(Qt::WindowFlags, customFlags);
@@ -906,12 +905,40 @@ void tst_QMdiSubWindow::setWindowFlags()
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 
     window->setWindowFlags(windowType | customFlags);
+    QEXPECT_FAIL("Qt::Widget", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::Window", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::Dialog", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::Sheet", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::Drawer", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::Popup", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::Tool", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::ToolTip", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::SplashScreen", "QTBUG-27274", Continue);
+    QEXPECT_FAIL("Qt::Desktop", "QTBUG-27274", Continue);
     QCOMPARE(window->windowType(), expectedWindowType);
-    if (!expectedCustomFlags) // We expect the same as 'customFlags'
-        QCOMPARE(window->windowFlags() & ~expectedWindowType, customFlags);
-    else
-        QCOMPARE(window->windowFlags() & ~expectedWindowType, expectedCustomFlags);
 
+    if (!expectedCustomFlags) {
+        // We expect the same as 'customFlags'
+        QCOMPARE(window->windowFlags() & ~expectedWindowType, customFlags);
+    } else {
+        QEXPECT_FAIL("Qt::Widget", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::Window", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::Dialog", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::Sheet", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::Drawer", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::Popup", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::Tool", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::ToolTip", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::SplashScreen", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::Desktop", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Qt::SubWindow", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("StandardAndFrameless", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("StandardAndFramelessAndStaysOnTop", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Shade", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("Context", "QTBUG-27274", Continue);
+        QEXPECT_FAIL("ShadeAndContext", "QTBUG-27274", Continue);
+        QCOMPARE(window->windowFlags() & ~expectedWindowType, expectedCustomFlags);
+    }
 }
 
 void tst_QMdiSubWindow::mouseDoubleClick()
@@ -951,7 +978,6 @@ void tst_QMdiSubWindow::mouseDoubleClick()
     QCOMPARE(window->geometry(), originalGeometry);
 
     // With Qt::WindowShadeButtonHint flag set
-    QSKIP("Until we have a QEvent::WindowFlagsChange event, this will skip");
     window->setWindowFlags(window->windowFlags() | Qt::WindowShadeButtonHint);
     QVERIFY(window->windowFlags() & Qt::WindowShadeButtonHint);
     originalGeometry = window->geometry();
@@ -962,12 +988,18 @@ void tst_QMdiSubWindow::mouseDoubleClick()
     sendMouseDoubleClick(window, mousePosition);
     qApp->processEvents();
     QVERIFY(!window->isShaded());
+#ifndef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-27274", Continue);
+#endif
     QCOMPARE(window->geometry(), originalGeometry);
 
     window->showMinimized();
     QVERIFY(window->isMinimized());
     sendMouseDoubleClick(window, mousePosition);
     QVERIFY(!window->isMinimized());
+#ifndef Q_OS_MAC
+    QEXPECT_FAIL("", "QTBUG-27274", Continue);
+#endif
     QCOMPARE(window->geometry(), originalGeometry);
 }
 
