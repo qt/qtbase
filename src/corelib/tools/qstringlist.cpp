@@ -136,6 +136,8 @@ QT_BEGIN_NAMESPACE
 
     \snippet qstringlist/main.cpp 4
 
+    The argument to join can be a single character or a string.
+
     To break up a string into a string list, use the QString::split()
     function:
 

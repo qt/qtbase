@@ -75,8 +75,8 @@ Widget::Widget(QWidget *parent)
 //! [3]
 
 //! [4]
-    QString str = fonts.join(",");
-     // str == "Arial,Helvetica,Times,Courier"
+    QString str = fonts.join(", ");
+     // str == "Arial, Helvetica, Times, Courier"
 //! [4]
 
 //! [5] //! [6]
