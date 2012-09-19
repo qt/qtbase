@@ -50,7 +50,6 @@
 #include <QtWidgets/qstyleoption.h>
 
 #include <private/qgraphicseffect_p.h>
-#include "../../../platformquirks.h"
 
 class tst_QGraphicsEffect : public QObject
 {
@@ -703,10 +702,7 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
     scene.addItem(item);
 
     QGraphicsView view(&scene);
-    if(PlatformQuirks::isAutoMaximizing())
-        view.showFullScreen();
-    else
-        view.show();
+    view.show();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(item->nbPaint >= 1);

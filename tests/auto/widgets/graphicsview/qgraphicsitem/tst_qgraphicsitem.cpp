@@ -65,12 +65,15 @@
 #include <QLineEdit>
 #include <QGraphicsLinearLayout>
 #include <float.h>
+#include <QStyleHints>
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QPointF)
 Q_DECLARE_METATYPE(QRectF)
+
+#include "../../../platformquirks.h"
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
@@ -88,8 +91,6 @@ Q_DECLARE_METATYPE(QRectF)
 #else
 #define COMPARE_REGIONS QTRY_COMPARE
 #endif
-
-#include "../../../platformquirks.h"
 
 static QGraphicsRectItem staticItem; //QTBUG-7629, we should not crash at exit.
 
@@ -5067,11 +5068,7 @@ void tst_QGraphicsItem::paint()
     scene.addItem(&paintTester);
 
     QGraphicsView view(&scene);
-
-    if(PlatformQuirks::isAutoMaximizing())
-        view.showFullScreen();
-    else
-        view.show();
+    view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QApplication::processEvents();
 #ifdef Q_OS_WIN32
@@ -6706,10 +6703,7 @@ void tst_QGraphicsItem::opacity2()
     scene.addItem(parent);
 
     MyGraphicsView view(&scene);
-    if(PlatformQuirks::isAutoMaximizing())
-        view.showFullScreen();
-    else
-        view.show();
+    view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints >= 1);
 
@@ -8064,7 +8058,7 @@ void tst_QGraphicsItem::sorting_data()
 
 void tst_QGraphicsItem::sorting()
 {
-    if (PlatformQuirks::isAutoMaximizing())
+    if (qGuiApp->styleHints()->showIsFullScreen())
         QSKIP("Skipped because Platform is auto maximizing");
 
     _paintedItems.clear();
@@ -10853,10 +10847,7 @@ void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
     scene.addItem(parent);
 
     MyGraphicsView view(&scene);
-    if(PlatformQuirks::isAutoMaximizing())
-        view.showFullScreen();
-    else
-        view.show();
+    view.show();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints > 0);
@@ -10905,10 +10896,7 @@ void tst_QGraphicsItem::QT_2653_fullUpdateDiscardingOpacityUpdate()
     // ItemIgnoresTransformations, ItemClipsChildrenToShape, ItemIsSelectable
     parentGreen->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
-    if (PlatformQuirks::isAutoMaximizing())
-        view.showFullScreen();
-    else
-        view.show();
+    view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     view.reset();
 
@@ -11093,10 +11081,7 @@ void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
     item3->setParentItem(item2);
     item2->setParentItem(item);
     scene.addItem(item);
-    if(PlatformQuirks::isAutoMaximizing())
-        view.showFullScreen();
-    else
-        view.show();
+    view.show();
     QTest::qWaitForWindowActive(view.windowHandle());
     view.activateWindow();
     QTRY_VERIFY(view.isActiveWindow());

@@ -52,7 +52,6 @@
 #include <qboxlayout.h>
 #include <qaction.h>
 #include <qwidgetaction.h>
-#include "../../../platformquirks.h"
 
 
 class EventSpy : public QObject
@@ -3128,10 +3127,7 @@ void tst_QGraphicsWidget::initialShow()
     MyGraphicsWidget *widget = new MyGraphicsWidget;
 
     QGraphicsView view(&scene);
-    if(PlatformQuirks::isAutoMaximizing())
-        view.showFullScreen();
-    else
-        view.show();
+    view.show();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 

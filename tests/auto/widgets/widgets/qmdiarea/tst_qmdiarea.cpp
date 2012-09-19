@@ -61,8 +61,7 @@
 #include <QtOpenGL>
 #endif
 #include <QMacStyle>
-
-#include "../../../platformquirks.h"
+#include <QStyleHints>
 
 static const Qt::WindowFlags DefaultWindowFlags
     = Qt::SubWindow | Qt::WindowSystemMenuHint
@@ -502,7 +501,7 @@ void tst_QMdiArea::subWindowActivated2()
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 
-    if (PlatformQuirks::isAutoMaximizing())
+    if (qGuiApp->styleHints()->showIsFullScreen())
         QSKIP("Platform is auto maximizing, so no showMinimized()");
 
     // Check that we only emit _one_ signal and the active window
@@ -1576,8 +1575,6 @@ void tst_QMdiArea::tileSubWindows()
 {
     QMdiArea workspace;
     workspace.resize(600,480);
-    if (PlatformQuirks::isAutoMaximizing())
-        workspace.setWindowFlags(workspace.windowFlags() | Qt::X11BypassWindowManagerHint);
     workspace.show();
     QVERIFY(QTest::qWaitForWindowExposed(&workspace));
 

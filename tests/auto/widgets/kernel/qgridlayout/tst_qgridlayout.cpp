@@ -54,8 +54,6 @@
 #include <QtWidgets/QWindowsStyle>
 #include <QStyleFactory>
 
-#include "../../../platformquirks.h"
-
 class tst_QGridLayout : public QObject
 {
 Q_OBJECT
@@ -667,8 +665,6 @@ void tst_QGridLayout::spacingsAndMargins()
 
     QApplication::setStyle(new Qt42Style);
     QWidget toplevel;
-    if(PlatformQuirks::isAutoMaximizing())
-        toplevel.setWindowFlags(Qt::X11BypassWindowManagerHint);
     QVBoxLayout vbox(&toplevel);
     QGridLayout grid1;
     vbox.addLayout(&grid1);

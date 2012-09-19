@@ -425,8 +425,6 @@ void tst_QGraphicsView::interactive()
     scene.addItem(item);
 
     QGraphicsView view(&scene);
-    if (PlatformQuirks::isAutoMaximizing())
-        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.setFixedSize(300, 300);
     QCOMPARE(item->events.size(), 0);
     view.show();
@@ -1288,9 +1286,6 @@ void tst_QGraphicsView::fitInView()
     view.setFixedSize(400, 200);
 #endif
 
-    if (PlatformQuirks::isAutoMaximizing())
-        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
-
     view.show();
     view.fitInView(scene.itemsBoundingRect(), Qt::IgnoreAspectRatio);
     qApp->processEvents();
@@ -1518,8 +1513,6 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
     QGraphicsView view(&scene);
     view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, !adjustForAntialiasing);
     view.setRenderHint(QPainter::Antialiasing, adjustForAntialiasing);
-    if (PlatformQuirks::isAutoMaximizing())
-        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.setFrameStyle(0);
     view.resize(300, 300);
     view.show();
@@ -2328,8 +2321,6 @@ void tst_QGraphicsView::viewportUpdateMode()
     QDesktopWidget desktop;
     view.setFixedSize(QSize(500, 500).boundedTo(desktop.availableGeometry().size())); // 500 is too big for all common smartphones
     view.setScene(&scene);
-    if(PlatformQuirks::isAutoMaximizing())
-        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     QCOMPARE(view.viewportUpdateMode(), QGraphicsView::MinimalViewportUpdate);
 
     // Show the view, and initialize our test.
@@ -4489,8 +4480,6 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     scene.addItem(&item);
 
     QGraphicsView view(&scene);
-    if (PlatformQuirks::isAutoMaximizing())
-        view.setWindowFlags(view.windowFlags()|Qt::X11BypassWindowManagerHint);
     view.scale(4.15, 4.15);
     view.show();
     qApp->setActiveWindow(&view);

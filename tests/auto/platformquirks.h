@@ -51,18 +51,6 @@
 
 struct PlatformQuirks
 {
-    /* Some windowing systems automatically maximize apps on startup (e.g. Maemo)
-       "Normal" fixed-sized windows do not work, the WM ignores their size settings.
-    */
-    static inline bool isAutoMaximizing()
-    {
-#if defined(Q_WS_X11)
-        return X11->desktopEnvironment == DE_MEEGO_COMPOSITOR;
-#else
-        return false;
-#endif
-    }
-
     static inline bool haveMouseCursor()
     {
 #if defined(Q_WS_X11)
