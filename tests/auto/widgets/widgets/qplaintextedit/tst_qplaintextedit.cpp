@@ -58,6 +58,7 @@
 #include <qtextdocumentfragment.h>
 
 #include "qplaintextedit.h"
+#include "../../../shared/platformclipboard.h"
 
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
@@ -65,10 +66,6 @@ typedef QList<keyPairType> pairListType;
 Q_DECLARE_METATYPE(pairListType);
 Q_DECLARE_METATYPE(keyPairType);
 Q_DECLARE_METATYPE(QList<bool>);
-
-#ifdef Q_OS_MAC
-#include <Carbon/Carbon.h>
-#endif
 
 QT_FORWARD_DECLARE_CLASS(QPlainTextEdit)
 
@@ -155,23 +152,10 @@ private:
     void createSelection();
     int blockCount() const;
     int lineCount() const;
-    bool nativeClipboardWorking();
 
     QPlainTextEdit *ed;
     qreal rootFrameMargin;
 };
-
-bool tst_QPlainTextEdit::nativeClipboardWorking()
-{
-#ifdef Q_OS_MAC
-    PasteboardRef pasteboard;
-    OSStatus status = PasteboardCreate(0, &pasteboard);
-    if (status == noErr)
-        CFRelease(pasteboard);
-    return status == noErr;
-#endif
-    return true;
-}
 
 // Testing get/set functions
 void tst_QPlainTextEdit::getSetCheck()
@@ -305,7 +289,7 @@ void tst_QPlainTextEdit::createSelection()
 #ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::clearMustNotChangeClipboard()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
     ed->textCursor().insertText("Hello World");
     QString txt("This is different text");
@@ -482,7 +466,7 @@ void tst_QPlainTextEdit::setTextCursor()
 #ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::undoAvailableAfterPaste()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
 
     QSignalSpy spy(ed->document(), SIGNAL(undoAvailable(bool)));
@@ -675,7 +659,7 @@ void tst_QPlainTextEdit::preserveCharFormatInAppend()
 #ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::copyAndSelectAllInReadonly()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
 
     ed->setReadOnly(true);
@@ -1192,7 +1176,7 @@ void tst_QPlainTextEdit::selectWordsFromStringsContainingSeparators()
 #ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::canPaste()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
 
     QApplication::clipboard()->setText(QString());

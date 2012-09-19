@@ -51,13 +51,9 @@
 #include <qpa/qplatformtheme.h>
 #include "qstylehints.h"
 #include <private/qguiapplication_p.h>
-
-#ifndef QT_NO_CLIPBOARD
 #include "qclipboard.h"
-#endif
 
 #ifdef Q_OS_MAC
-#include <Carbon/Carbon.h> // For the random function.
 #include <cstdlib> // For the random function.
 #endif
 
@@ -74,6 +70,7 @@
 
 #include "qplatformdefs.h"
 
+#include "../../../shared/platformclipboard.h"
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
@@ -1431,21 +1428,9 @@ void tst_QLineEdit::undo_keypressevents()
 }
 
 #ifndef QT_NO_CLIPBOARD
-static bool nativeClipboardWorking()
-{
-#ifdef Q_OS_MAC
-    PasteboardRef pasteboard;
-    OSStatus status = PasteboardCreate(0, &pasteboard);
-    if (status == noErr)
-        CFRelease(pasteboard);
-    return status == noErr;
-#endif
-    return true;
-}
-
 void tst_QLineEdit::QTBUG5786_undoPaste()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
 	   QSKIP("this machine doesn't support the clipboard");
     QString initial("initial");
     QString string("test");
@@ -2826,16 +2811,9 @@ void tst_QLineEdit::setSelection()
 #ifndef QT_NO_CLIPBOARD
 void tst_QLineEdit::cut()
 {
-#ifdef Q_OS_MAC
-    {
-        PasteboardRef pasteboard;
-        OSStatus status = PasteboardCreate(0, &pasteboard);
-        if (status == noErr)
-            CFRelease(pasteboard);
-        else
-            QSKIP("Autotests run from cron and pasteboard don't get along quite ATM");
-    }
-#endif
+    if (!PlatformClipboard::isAvailable())
+        QSKIP("Autotests run from cron and pasteboard don't get along quite ATM");
+
     // test newlines in cut'n'paste
     testWidget->setText("A\nB\nC\n");
     testWidget->setSelection(0, 6);

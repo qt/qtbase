@@ -64,6 +64,7 @@
 #include <qtextdocumentfragment.h>
 #include <qsyntaxhighlighter.h>
 
+#include "../../../shared/platformclipboard.h"
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
@@ -75,23 +76,6 @@ Q_DECLARE_METATYPE(pairListType);
 Q_DECLARE_METATYPE(keyPairType);
 Q_DECLARE_METATYPE(QList<bool>);
 Q_DECLARE_METATYPE(QList<int>);
-
-#ifdef Q_OS_MAC
-#include <Carbon/Carbon.h>
-#endif
-
-bool nativeClipboardWorking()
-{
-#ifdef Q_OS_MAC
-    PasteboardRef pasteboard;
-    OSStatus status = PasteboardCreate(0, &pasteboard);
-    if (status == noErr)
-        CFRelease(pasteboard);
-    return status == noErr;
-#endif
-    return true;
-}
-
 
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 
@@ -187,7 +171,9 @@ private slots:
     void wordWrapProperty();
     void lineWrapProperty();
     void selectionChanged();
+#ifndef QT_NO_CLIPBOARD
     void copyPasteBackgroundImage();
+#endif
     void setText();
     void cursorRect();
 #ifdef QT_BUILD_INTERNAL
@@ -220,7 +206,6 @@ private slots:
 private:
     void createSelection();
     int blockCount() const;
-    bool nativeClipboardWorking();
     void compareWidgetAndImage(QTextEdit &widget, const QString &imageFileName);
 
     QTextEdit *ed;
@@ -228,18 +213,6 @@ private:
     PlatformInputContext m_platformInputContext;
     const QString m_fullWidthSelectionImagesFolder;
 };
-
-bool tst_QTextEdit::nativeClipboardWorking()
-{
-#ifdef Q_OS_MAC
-    PasteboardRef pasteboard;
-    OSStatus status = PasteboardCreate(0, &pasteboard);
-    if (status == noErr)
-        CFRelease(pasteboard);
-    return status == noErr;
-#endif
-    return true;
-}
 
 // Testing get/set functions
 void tst_QTextEdit::getSetCheck()
@@ -525,7 +498,7 @@ void tst_QTextEdit::createSelection()
 #ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::clearMustNotChangeClipboard()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
     ed->textCursor().insertText("Hello World");
     QString txt("This is different text");
@@ -814,7 +787,7 @@ void tst_QTextEdit::setTextCursor()
 #ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::undoAvailableAfterPaste()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
 
     QSignalSpy spy(ed->document(), SIGNAL(undoAvailable(bool)));
@@ -1035,7 +1008,7 @@ void tst_QTextEdit::preserveCharFormatInAppend()
 #ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::copyAndSelectAllInReadonly()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
 
     ed->setReadOnly(true);
@@ -1581,7 +1554,7 @@ void tst_QTextEdit::selectWordsFromStringsContainingSeparators()
 #ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::canPaste()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Clipboard not working with cron-started unit tests");
 
     QApplication::clipboard()->setText(QString());
@@ -1880,10 +1853,10 @@ void tst_QTextEdit::selectionChanged()
     QCOMPARE(selectionChangedSpy.count(), 4);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::copyPasteBackgroundImage()
 {
-#ifndef QT_NO_CLIPBOARD
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
 
     QImage foo(16, 16, QImage::Format_ARGB32_Premultiplied);
@@ -1923,8 +1896,8 @@ void tst_QTextEdit::copyPasteBackgroundImage()
     QVERIFY(ba.textureImage().cacheKey() == bb.textureImage().cacheKey() ||
             ba.texture().cacheKey() == bb.texture().cacheKey());
     QFile::remove(QLatin1String("foo.png"));
-#endif
 }
+#endif
 
 void tst_QTextEdit::setText()
 {
