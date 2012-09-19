@@ -1674,7 +1674,7 @@ bool Configure::displayHelp()
         desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.");
 
         desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
-        desc("FONT_CONFIG", "no",      "-no-fontconfig" "Do not build with FontConfig support.");
+        desc("FONT_CONFIG", "no",      "-no-fontconfig", "Do not build with FontConfig support.");
 
         desc("POSIX_IPC",   "yes",     "-posix-ipc",    "Enable POSIX IPC.");
 
