@@ -51,6 +51,8 @@ int main(int argc, char **argv)
     if (arguments.size() > 1)
         paste = arguments.at(1);
 #endif
+#ifndef QT_NO_CLIPBOARD
     QGuiApplication::clipboard()->setText(paste);
+#endif
     return 0;
 }

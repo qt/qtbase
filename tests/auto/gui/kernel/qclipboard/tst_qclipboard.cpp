@@ -46,14 +46,16 @@
 #include <QtCore/QDir>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QClipboard>
-#ifdef Q_OS_MAC
-#include <Carbon/Carbon.h>
-#endif
+#include "../../../shared/platformclipboard.h"
 
 class tst_QClipboard : public QObject
 {
     Q_OBJECT
 private slots:
+#ifdef QT_NO_CLIPBOARD
+    void initTestCase();
+    void cleanupTestCase();
+#else
     void init();
     void copy_exit_paste();
     void capabilityFunctions();
@@ -61,27 +63,26 @@ private slots:
     void testSignals();
     void setMimeData();
     void clearBeforeSetText();
-
-private:
-    bool nativeClipboardWorking();
+#endif
 };
+
+#ifdef QT_NO_CLIPBOARD
+void tst_QClipboard::initTestCase()
+{
+    QSKIP("This test requires clipboard support");
+}
+
+void tst_QClipboard::cleanupTestCase()
+{
+    QSKIP("This test requires clipboard support");
+}
+
+#else
 
 void tst_QClipboard::init()
 {
     const QString testdataDir = QFileInfo(QFINDTESTDATA("copier")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdataDir), qPrintable("Could not chdir to " + testdataDir));
-}
-
-bool tst_QClipboard::nativeClipboardWorking()
-{
-#ifdef Q_OS_MAC
-    PasteboardRef pasteboard;
-    OSStatus status = PasteboardCreate(0, &pasteboard);
-    if (status == noErr)
-        CFRelease(pasteboard);
-    return status == noErr;
-#endif
-    return true;
 }
 
 Q_DECLARE_METATYPE(QClipboard::Mode)
@@ -109,7 +110,7 @@ void tst_QClipboard::modes()
 {
     QClipboard * const clipboard =  QGuiApplication::clipboard();
 
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
 
     const QString defaultMode = "default mode text;";
@@ -139,7 +140,7 @@ void tst_QClipboard::testSignals()
 {
     qRegisterMetaType<QClipboard::Mode>("QClipboard::Mode");
 
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
 
     QClipboard * const clipboard =  QGuiApplication::clipboard();
@@ -236,7 +237,7 @@ void tst_QClipboard::copy_exit_paste()
     QSKIP("This test does not make sense on X11 and embedded, copied data disappears from the clipboard when the application exits ");
     // ### It's still possible to test copy/paste - just keep the apps running
 #endif
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
     const QStringList stringArgument(QStringLiteral("Test string."));
     QByteArray errorMessage;
@@ -253,7 +254,7 @@ void tst_QClipboard::copy_exit_paste()
 
 void tst_QClipboard::setMimeData()
 {
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
     QMimeData *mimeData = new QMimeData;
     const QString TestName(QLatin1String("tst_QClipboard::setMimeData() mimeData"));
@@ -339,7 +340,7 @@ void tst_QClipboard::clearBeforeSetText()
 {
     QGuiApplication::processEvents();
 
-    if (!nativeClipboardWorking())
+    if (!PlatformClipboard::isAvailable())
         QSKIP("Native clipboard not working in this setup");
 
     const QString text = "tst_QClipboard::clearBeforeSetText()";
@@ -370,6 +371,8 @@ void tst_QClipboard::clearBeforeSetText()
     QGuiApplication::processEvents();
     QCOMPARE(QGuiApplication::clipboard()->text(), text);
 }
+
+#endif
 
 QTEST_MAIN(tst_QClipboard)
 

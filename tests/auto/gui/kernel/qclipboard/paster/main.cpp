@@ -51,5 +51,9 @@ int main(int argc, char **argv)
     if (arguments.size() > 1)
         expected = arguments.at(1);
 #endif
-    return QGuiApplication::clipboard()->text() == expected ? 0 : 1;
+    QString actual;
+#ifndef QT_NO_CLIPBOARD
+    actual = QGuiApplication::clipboard()->text();
+#endif
+    return actual == expected ? 0 : 1;
 }
