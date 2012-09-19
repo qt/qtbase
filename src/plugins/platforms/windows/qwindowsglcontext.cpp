@@ -575,7 +575,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
         if (format.testOption(QSurfaceFormat::DeprecatedFunctions))
              attributes[attribIndex] |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
         if (format.testOption(QSurfaceFormat::DebugContext))
-            attributes[attribIndex++] |= WGL_CONTEXT_DEBUG_BIT_ARB;
+            attributes[attribIndex] |= WGL_CONTEXT_DEBUG_BIT_ARB;
         attribIndex++;
     }
     if (requestedVersion >= 0x0302) {
