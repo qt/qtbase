@@ -900,14 +900,20 @@ void QListView::startDrag(Qt::DropActions supportedActions)
 QStyleOptionViewItem QListView::viewOptions() const
 {
     Q_D(const QListView);
-    QStyleOptionViewItem option = QAbstractItemView::viewOptions();
-    if (!d->iconSize.isValid()) { // otherwise it was already set in abstractitemview
-        int pm = (d->viewMode == ListMode
-                  ? style()->pixelMetric(QStyle::PM_ListViewIconSize, 0, this)
-                  : style()->pixelMetric(QStyle::PM_IconViewIconSize, 0, this));
+    return d->viewOptions();
+}
+
+QStyleOptionViewItem QListViewPrivate::viewOptions() const
+{
+    Q_Q(const QListView);
+    QStyleOptionViewItem option = QAbstractItemViewPrivate::viewOptions();
+    if (!iconSize.isValid()) { // otherwise it was already set in abstractitemview
+        int pm = (viewMode == QListView::ListMode
+                  ? q->style()->pixelMetric(QStyle::PM_ListViewIconSize, 0, q)
+                  : q->style()->pixelMetric(QStyle::PM_IconViewIconSize, 0, q));
         option.decorationSize = QSize(pm, pm);
     }
-    if (d->viewMode == IconMode) {
+    if (viewMode == QListView::IconMode) {
         option.showDecorationSelected = false;
         option.decorationPosition = QStyleOptionViewItem::Top;
         option.displayAlignment = Qt::AlignCenter;
