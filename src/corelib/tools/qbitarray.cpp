@@ -390,7 +390,7 @@ void QBitArray::fill(bool value, int begin, int end)
     \overload
 */
 
-/*! \fn bool QBitArray::operator[](uint i)
+/*! \fn QBitRef QBitArray::operator[](uint i)
 
     \overload
 */
@@ -415,6 +415,12 @@ void QBitArray::fill(bool value, int begin, int end)
 /*! \fn QBitArray &QBitArray::operator=(const QBitArray &other)
 
     Assigns \a other to this bit array and returns a reference to
+    this bit array.
+*/
+
+/*! \fn QBitArray &QBitArray::operator=(QBitArray &&other)
+
+    Moves \a other to this bit array and returns a reference to
     this bit array.
 */
 

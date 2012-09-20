@@ -99,8 +99,8 @@ public:
     QBitArray& operator^=(const QBitArray &);
     QBitArray  operator~() const;
 
-    inline bool operator==(const QBitArray& a) const { return d == a.d; }
-    inline bool operator!=(const QBitArray& a) const { return d != a.d; }
+    inline bool operator==(const QBitArray& other) const { return d == other.d; }
+    inline bool operator!=(const QBitArray& other) const { return d != other.d; }
 
     inline bool fill(bool val, int size = -1);
     void fill(bool val, int first, int last);
