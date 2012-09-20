@@ -709,7 +709,7 @@ bool QUrlPrivate::setScheme(const QString &value, int len)
     return true;
 }
 
-bool QUrlPrivate::setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode)
+inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode)
 {
     sectionHasError &= ~Authority;
     sectionIsPresent &= ~Authority;
@@ -719,7 +719,7 @@ bool QUrlPrivate::setAuthority(const QString &auth, int from, int end, QUrl::Par
         password.clear();
         host.clear();
         port = -1;
-        return true;
+        return;
     }
 
     int userInfoIndex = auth.indexOf(QLatin1Char('@'), from);
@@ -769,7 +769,7 @@ bool QUrlPrivate::setAuthority(const QString &auth, int from, int end, QUrl::Par
         port = -1;
     }
 
-    return setHost(auth, from, qMin<uint>(end, colonIndex), mode) && !(sectionHasError & Port);
+    setHost(auth, from, qMin<uint>(end, colonIndex), mode);
 }
 
 void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
