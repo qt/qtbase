@@ -292,6 +292,8 @@ inline void OleUninitialize()
 inline DWORD GetGlyphOutline( HDC /*hdc*/, UINT /*uChar*/, INT /*fuFormat*/, GLYPHMETRICS * /*lpgm*/,
                        DWORD /*cjBuffer*/, LPVOID /*pvBuffer*/, CONST MAT2 * /*lpmat2*/ )
 {
+    qFatal("GetGlyphOutline not supported under Windows CE. Please try using freetype fontrendering, by"
+           "passing -platform windows:freetype as arguments to the application.");
     return GDI_ERROR;
 }
 
