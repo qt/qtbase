@@ -1894,32 +1894,32 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-scheme") << "ht%://example.com" << "character '%' not permitted";
     QTest::newRow("empty-scheme") << ":/" << "':' before any '/'";
 
-    QTest::newRow("invalid-user1") << "http://bad<user_name>@ok-hostname" << "Invalid user name";
-    QTest::newRow("invalid-user2") << "http://bad%@ok-hostname" << "Invalid user name";
+    QTest::newRow("invalid-user1") << "http://bad<user_name>@ok-hostname" << "Invalid user name (character '<' not permitted)";
+    QTest::newRow("invalid-user2") << "http://bad%@ok-hostname" << "Invalid user name (character '%' not permitted)";
 
-    QTest::newRow("invalid-password") << "http://user:pass\x7F@ok-hostname" << "Invalid password";
+    QTest::newRow("invalid-password") << "http://user:pass\x7F@ok-hostname" << "Invalid password (character '\x7F' not permitted)";
 
-    QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Invalid hostname";
-    QTest::newRow("invalid-regname-2") << "http://b%61d" << "Invalid hostname";
+    QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("invalid-regname-2") << "http://b%61d" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("invalid-ipv6") << "http://[:::]" << "Invalid IPv6 address";
     QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
-    QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']'";
+    QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']' to match '[' in hostname";
 
     // port errors happen in TolerantMode too
-    QTest::newRow("empty-port-1") << "http://example.com:" << "empty";
-    QTest::newRow("empty-port-2") << "http://example.com:/" << "empty";
+    QTest::newRow("empty-port-1") << "http://example.com:" << "Port field was empty";
+    QTest::newRow("empty-port-2") << "http://example.com:/" << "Port field was empty";
     QTest::newRow("invalid-port-1") << "http://example.com:-1" << "Invalid port";
     QTest::newRow("invalid-port-2") << "http://example.com:abc" << "Invalid port";
     QTest::newRow("invalid-port-3") << "http://example.com:9a" << "Invalid port";
     QTest::newRow("port-range") << "http://example.com:65536" << "out of range";
 
-    QTest::newRow("invalid-path") << "foo:/path%\x1F" << "Invalid path";
+    QTest::newRow("invalid-path") << "foo:/path%\x1F" << "Invalid path (character '%' not permitted)";
 
-    QTest::newRow("invalid-query") << "foo:?\\#" << "Invalid query";
+    QTest::newRow("invalid-query") << "foo:?\\#" << "Invalid query (character '\\' not permitted)";
 
-    QTest::newRow("invalid-fragment") << "#{}" << "Invalid fragment";
+    QTest::newRow("invalid-fragment") << "#{}" << "Invalid fragment (character '{' not permitted)";
 }
 
 void tst_QUrl::strictParser()
@@ -1931,6 +1931,11 @@ void tst_QUrl::strictParser()
     QVERIFY(!url.isValid());
     QVERIFY(url.toString().isEmpty());
     QVERIFY(!url.errorString().isEmpty());
+    QVERIFY2(url.errorString().contains(input),
+             "Error string does not contain the original input (\"" +
+             input.toLatin1() + "\"): " + url.errorString().toLatin1());
+
+    // Note: if the following fails due to changes in the parser, simply update the test data
     QVERIFY2(url.errorString().contains(needle),
              "Error string changed and does not contain \"" +
              needle.toLatin1() + "\" anymore: " + url.errorString().toLatin1());

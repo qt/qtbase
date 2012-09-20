@@ -108,6 +108,39 @@
     folding rules in QUrl conform to \l{RFC 3491} (Nameprep: A Stringprep
     Profile for Internationalized Domain Names (IDN)).
 
+    \section2 Error checking
+
+    QUrl is capable of detecting many errors in URLs while parsing it or when
+    components of the URL are set with individual setter methods (like
+    setScheme(), setHost() or setPath()). If the parsing or setter function is
+    succesful, any previously recorded error conditions will be discarded.
+
+    By default, QUrl setter methods operate in QUrl::TolerantMode, which means
+    they accept some common mistakes and mis-representation of data. An
+    alternate method of parsing is QUrl::StrictMode, which applies further
+    checks. See QUrl::ParsingMode for a description of the difference of the
+    parsing modes.
+
+    QUrl only checks for conformance with the URL specification. It does not
+    try to verify that high-level protocol URLs are in the format they are
+    expected to be by handlers elsewhere. For example, the following URIs are
+    all considered valid by QUrl, even if they do not make sense when used:
+
+    \list
+      \li "http:/filename.html"
+      \li "mailto://example.com"
+    \endlist
+
+    When the parser encounters an error, it signals the event by making
+    isValid() return false and toString() / toEncoded() return an empty string.
+    If it is necessary to show the user the reason why the URL failed to parse,
+    the error condition can be obtained from QUrl by calling errorString().
+    Note that this message is highly technical and may not make sense to
+    end-users.
+
+    QUrl is capable of recording only one error condition. If more than one
+    error is found, it is undefined which error is reported.
+
     \section2 Character Conversions
 
     Follow these rules to avoid erroneous character conversion when
@@ -161,7 +194,7 @@
     \endlist
 
     When in StrictMode, if a parsing error is found, isValid() will return \c
-    false and errorString() will return a simple message describing the error.
+    false and errorString() will return a message describing the error.
     If more than one error is detected, it is undefined which error gets
     reported.
 
@@ -358,13 +391,24 @@ public:
         NoError = 0
     };
 
+    struct Error {
+        QString source;
+        ErrorCode code;
+        int position;
+    };
+
     QUrlPrivate();
     QUrlPrivate(const QUrlPrivate &copy);
+    ~QUrlPrivate();
 
     void parse(const QString &url, QUrl::ParsingMode parsingMode);
     bool isEmpty() const
     { return sectionIsPresent == 0 && port == -1 && path.isEmpty(); }
-    ErrorCode validityError() const;
+
+    Error *cloneError() const;
+    void clearError();
+    void setError(ErrorCode errorCode, const QString &source, int supplement = -1);
+    ErrorCode validityError(QString *source = 0, int *position = 0) const;
 
     // no QString scheme() const;
     void appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
@@ -377,7 +421,7 @@ public:
     void appendFragment(QString &appendTo, QUrl::FormattingOptions options) const;
 
     // the "end" parameters are like STL iterators: they point to one past the last valid element
-    bool setScheme(const QString &value, int len);
+    bool setScheme(const QString &value, int len, bool doSetError);
     void setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode);
     void setUserInfo(const QString &userInfo, int from, int end);
     void setUserName(const QString &value, int from, int end);
@@ -411,24 +455,19 @@ public:
     QString query;
     QString fragment;
 
-    ushort errorCode;
-    ushort errorSupplement;
+    Error *error;
 
     // not used for:
     //  - Port (port == -1 means absence)
     //  - Path (there's no path delimiter, so we optimize its use out of existence)
     // Schemes are never supposed to be empty, but we keep the flag anyway
     uchar sectionIsPresent;
-
-    // UserName, Password, Path, Query, and Fragment never contain errors in TolerantMode.
-    // Those flags are set only by the strict parser.
-    uchar sectionHasError;
 };
 
 inline QUrlPrivate::QUrlPrivate()
     : ref(1), port(-1),
-      errorCode(NoError), errorSupplement(0),
-      sectionIsPresent(0), sectionHasError(0)
+      error(0),
+      sectionIsPresent(0)
 {
 }
 
@@ -441,11 +480,37 @@ inline QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
       path(copy.path),
       query(copy.query),
       fragment(copy.fragment),
-      errorCode(copy.errorCode),
-      errorSupplement(copy.errorSupplement),
-      sectionIsPresent(copy.sectionIsPresent),
-      sectionHasError(copy.sectionHasError)
+      error(copy.cloneError()),
+      sectionIsPresent(copy.sectionIsPresent)
 {
+}
+
+inline QUrlPrivate::~QUrlPrivate()
+{
+    delete error;
+}
+
+inline QUrlPrivate::Error *QUrlPrivate::cloneError() const
+{
+    return error ? new Error(*error) : 0;
+}
+
+inline void QUrlPrivate::clearError()
+{
+    delete error;
+    error = 0;
+}
+
+inline void QUrlPrivate::setError(ErrorCode errorCode, const QString &source, int supplement)
+{
+    if (error) {
+        // don't overwrite an error set in a previous section during parsing
+        return;
+    }
+    error = new Error;
+    error->code = errorCode;
+    error->source = source;
+    error->position = supplement;
 }
 
 // From RFC 3896, Appendix A Collected ABNF for URI
@@ -789,7 +854,6 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
     sectionIsPresent |= Scheme;
 
     // validate it:
-    errorCode = InvalidSchemeError;
     int needsLowercasing = -1;
     const ushort *p = reinterpret_cast<const ushort *>(value.constData());
     for (int i = 0; i < len; ++i) {
@@ -805,13 +869,14 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
             continue;
 
         // found something else
-        errorSupplement = p[i];
+        // don't call setError needlessly:
+        // if we've been called from parse(), it will try to recover
+        if (doSetError)
+            setError(InvalidSchemeError, value, i);
         return false;
     }
 
     scheme = value.left(len);
-    sectionHasError &= ~Scheme;
-    errorCode = NoError;
 
     if (needsLowercasing != -1) {
         // schemes are ASCII only, so we don't need the full Unicode toLower
@@ -827,7 +892,6 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
 
 inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode)
 {
-    sectionHasError &= ~Authority;
     sectionIsPresent &= ~Authority;
     sectionIsPresent |= Host;
     if (from == end) {
@@ -859,8 +923,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
 
     if (colonIndex == end - 1) {
         // found a colon but no digits after it
-        sectionHasError |= Port;
-        errorCode = PortEmptyError;
+        setError(PortEmptyError, auth, colonIndex + 1);
     } else if (uint(colonIndex) < uint(end)) {
         unsigned long x = 0;
         for (int i = colonIndex + 1; i < end; ++i) {
@@ -869,8 +932,6 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
                 x *= 10;
                 x += c - '0';
             } else {
-                sectionHasError |= Port;
-                errorCode = InvalidPortError;
                 x = ulong(-1); // x != ushort(x)
                 break;
             }
@@ -878,8 +939,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
         if (x == ushort(x)) {
             port = ushort(x);
         } else {
-            sectionHasError |= Port;
-            errorCode = InvalidPortError;
+            setError(InvalidPortError, auth, colonIndex + 1);
         }
     } else {
         port = -1;
@@ -896,7 +956,6 @@ inline void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
     if (uint(delimIndex) >= uint(end)) {
         password.clear();
         sectionIsPresent &= ~Password;
-        sectionHasError &= ~Password;
     } else {
         setPassword(userInfo, delimIndex + 1, end);
     }
@@ -905,35 +964,30 @@ inline void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
 inline void QUrlPrivate::setUserName(const QString &value, int from, int end)
 {
     sectionIsPresent |= UserName;
-    sectionHasError &= ~UserName;
     userName = recodeFromUser(value, decodedUserNameInIsolationActions, from, end);
 }
 
 inline void QUrlPrivate::setPassword(const QString &value, int from, int end)
 {
     sectionIsPresent |= Password;
-    sectionHasError &= ~Password;
     password = recodeFromUser(value, decodedPasswordInIsolationActions, from, end);
 }
 
 inline void QUrlPrivate::setPath(const QString &value, int from, int end)
 {
     // sectionIsPresent |= Path; // not used, save some cycles
-    sectionHasError &= ~Path;
     path = recodeFromUser(value, decodedPathInIsolationActions, from, end);
 }
 
 inline void QUrlPrivate::setFragment(const QString &value, int from, int end)
 {
     sectionIsPresent |= Fragment;
-    sectionHasError &= ~Fragment;
     fragment = recodeFromUser(value, decodedFragmentInIsolationActions, from, end);
 }
 
 inline void QUrlPrivate::setQuery(const QString &value, int from, int iend)
 {
     sectionIsPresent |= Query;
-    sectionHasError &= ~Query;
 
     // use the default actions for the query (don't set QUrl::DecodeAllDelimiters)
     QString output;
@@ -997,8 +1051,9 @@ inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions o
     }
 }
 
-// the whole IPvFuture is passed and parsed here, including brackets
-static int parseIpFuture(QString &host, const QChar *begin, const QChar *end)
+// the whole IPvFuture is passed and parsed here, including brackets;
+// returns null if the parsing was successful, or the QChar of the first failure
+static const QChar *parseIpFuture(QString &host, const QChar *begin, const QChar *end)
 {
     //    IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
     static const char acceptable[] =
@@ -1008,7 +1063,7 @@ static int parseIpFuture(QString &host, const QChar *begin, const QChar *end)
 
     // the brackets and the "v" have been checked
     if (begin[3].unicode() != '.')
-        return begin[3].unicode();
+        return &begin[3];
     if ((begin[2].unicode() >= 'A' && begin[2].unicode() >= 'F') ||
             (begin[2].unicode() >= 'a' && begin[2].unicode() <= 'f') ||
             (begin[2].unicode() >= '0' && begin[2].unicode() <= '9')) {
@@ -1034,12 +1089,12 @@ static int parseIpFuture(QString &host, const QChar *begin, const QChar *end)
             else if (begin->unicode() < 0x80 && strchr(acceptable, begin->unicode()) != 0)
                 host += *begin;
             else
-                return begin->unicode();
+                return begin;
         }
         host += QLatin1Char(']');
-        return -1;
+        return 0;
     }
-    return begin[2].unicode();
+    return &begin[2];
 }
 
 // ONLY the IPv6 address is parsed here, WITHOUT the brackets
@@ -1075,7 +1130,6 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
     const int len = end - begin;
     host.clear();
     sectionIsPresent |= Host;
-    sectionHasError &= ~Host;
     if (len == 0)
         return true;
 
@@ -1084,27 +1138,22 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
         // smallest IPv6 address is      "[::]"   (len = 4)
         // smallest IPvFuture address is "[v7.X]" (len = 6)
         if (end[-1].unicode() != ']') {
-            sectionHasError |= Host;
-            errorCode = HostMissingEndBracket;
+            setError(HostMissingEndBracket, value);
             return false;
         }
 
         if (len > 5 && begin[1].unicode() == 'v') {
-            int c = parseIpFuture(host, begin, end);
-            if (c != -1) {
-                sectionHasError |= Host;
-                errorCode = InvalidIPvFutureError;
-                errorSupplement = short(c);
-            }
-            return c == -1;
+            const QChar *c = parseIpFuture(host, begin, end);
+            if (c)
+                setError(InvalidIPvFutureError, value, c - value.constData());
+            return !c;
         }
 
         if (parseIp6(host, begin + 1, end - 1))
             return true;
 
-        sectionHasError |= Host;
-        errorCode = begin[1].unicode() == 'v' ?
-                        InvalidIPvFutureError : InvalidIPv6AddressError;
+        setError(begin[1].unicode() == 'v' ? InvalidIPvFutureError : InvalidIPv6AddressError,
+                 value, from);
         return false;
     }
 
@@ -1113,7 +1162,6 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
     if (QIPAddressUtils::parseIp4(ip4, begin, end)) {
         // yes, it was
         QIPAddressUtils::toString(host, ip4);
-        sectionHasError &= ~Host;
         return true;
     }
 
@@ -1135,9 +1183,9 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
     if (mode == QUrl::TolerantMode && qt_urlRecode(s, begin, end, QUrl::DecodeReserved, 0)) {
         // something was decoded
         // anything encoded left?
-        if (s.contains(QChar(0x25))) { // '%'
-            sectionHasError |= Host;
-            errorCode = InvalidRegNameError;
+        int pos = s.indexOf(QChar(0x25)); // '%'
+        if (pos != -1) {
+            setError(InvalidRegNameError, s, pos);
             return false;
         }
 
@@ -1147,8 +1195,7 @@ inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl:
 
     s = qt_ACE_do(QString::fromRawData(begin, len), NormalizeAce);
     if (s.isEmpty()) {
-        sectionHasError |= Host;
-        errorCode = InvalidRegNameError;
+        setError(InvalidRegNameError, value);
         return false;
     }
 
@@ -1172,7 +1219,7 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     //                 /  other path types here
 
     sectionIsPresent = 0;
-    sectionHasError = 0;
+    clearError();
 
     // find the important delimiters
     int colon = -1;
@@ -1201,12 +1248,11 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
 
     // check if we have a scheme
     int hierStart;
-    if (colon != -1 && setScheme(url, colon)) {
+    if (colon != -1 && setScheme(url, colon, /* don't set error */ false)) {
         hierStart = colon + 1;
     } else {
         // recover from a failed scheme: it might not have been a scheme at all
         scheme.clear();
-        sectionHasError = 0;
         sectionIsPresent = 0;
         hierStart = 0;
     }
@@ -1247,7 +1293,7 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     if (hash != -1)
         setFragment(url, hash + 1, len);
 
-    if (sectionHasError || parsingMode == QUrl::TolerantMode)
+    if (error || parsingMode == QUrl::TolerantMode)
         return;
 
     // The parsing so far was tolerant of errors, so the StrictMode
@@ -1279,19 +1325,16 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
         if ((uc == '%' && (uint(len) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
                 || uc <= 0x20 || strchr(forbidden, uc)) {
             // found an error
-            errorSupplement = uc;
+            ErrorCode errorCode;
 
             // where are we?
             if (i > uint(hash)) {
                 errorCode = InvalidFragmentError;
-                sectionHasError |= Fragment;
             } else if (i > uint(question)) {
                 errorCode = InvalidQueryError;
-                sectionHasError |= Query;
             } else if (i > uint(pathStart)) {
                 // pathStart is never -1
                 errorCode = InvalidPathError;
-                sectionHasError |= Path;
             } else {
                 // It must be in the authority, since the scheme is strict.
                 // Since the port and hostname parsers are also strict,
@@ -1299,12 +1342,13 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
                 int pos = url.indexOf(QLatin1Char(':'), hierStart);
                 if (i > uint(pos)) {
                     errorCode = InvalidPasswordError;
-                    sectionHasError |= Password;
                 } else {
                     errorCode = InvalidUserNameError;
-                    sectionHasError |= UserName;
                 }
             }
+
+            setError(errorCode, url, i);
+            return;
         }
     }
 }
@@ -1421,10 +1465,16 @@ static void removeDotsFromPath(QString *path)
     path->truncate(out - path->constData());
 }
 
-QUrlPrivate::ErrorCode QUrlPrivate::validityError() const
+inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *position) const
 {
-    if (sectionHasError)
-        return ErrorCode(errorCode);
+    Q_ASSERT(!source == !position);
+    if (error) {
+        if (source) {
+            *source = error->source;
+            *position = error->position;
+        }
+        return error->code;
+    }
 
     // There are two more cases of invalid URLs that QUrl recognizes and they
     // are only possible with constructed URLs (setXXX methods), not with
@@ -1439,8 +1489,13 @@ QUrlPrivate::ErrorCode QUrlPrivate::validityError() const
 
     if (path.isEmpty() || path.at(0) == QLatin1Char('/'))
         return NoError;
-    if (sectionIsPresent & QUrlPrivate::Host)
+    if (sectionIsPresent & QUrlPrivate::Host) {
+        if (source) {
+            *source = path;
+            *position = 0;
+        }
         return AuthorityPresentAndPathIsRelative;
+    }
     if (sectionIsPresent & QUrlPrivate::Scheme)
         return NoError;
 
@@ -1453,6 +1508,10 @@ QUrlPrivate::ErrorCode QUrlPrivate::validityError() const
         }
         if (c == ':') {
             // found the colon before the slash, it's invalid
+            if (source) {
+                *source = path;
+                *position = i;
+            }
             return RelativeUrlPathContainsColonBeforeSlash;
         }
     }
@@ -1762,13 +1821,13 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
 void QUrl::setScheme(const QString &scheme)
 {
     detach();
+    d->clearError();
     if (scheme.isEmpty()) {
         // schemes are not allowed to be empty
         d->sectionIsPresent &= ~QUrlPrivate::Scheme;
-        d->sectionHasError &= ~QUrlPrivate::Scheme;
         d->scheme.clear();
     } else {
-        d->setScheme(scheme, scheme.length());
+        d->setScheme(scheme, scheme.length(), /* do set error */ true);
     }
 }
 
@@ -1819,6 +1878,7 @@ QString QUrl::scheme() const
 void QUrl::setAuthority(const QString &authority, ParsingMode mode)
 {
     detach();
+    d->clearError();
     QString data = authority;
     if (mode == DecodedMode) {
         parseDecodedComponent(data);
@@ -1881,6 +1941,7 @@ QString QUrl::authority(ComponentFormattingOptions options) const
 void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
 {
     detach();
+    d->clearError();
     QString trimmed = userInfo.trimmed();
     if (mode == DecodedMode) {
         parseDecodedComponent(trimmed);
@@ -1940,6 +2001,7 @@ QString QUrl::userInfo(ComponentFormattingOptions options) const
 void QUrl::setUserName(const QString &userName, ParsingMode mode)
 {
     detach();
+    d->clearError();
 
     QString data = userName;
     if (mode == DecodedMode) {
@@ -2031,6 +2093,7 @@ QString QUrl::userName(ComponentFormattingOptions options) const
 void QUrl::setPassword(const QString &password, ParsingMode mode)
 {
     detach();
+    d->clearError();
 
     QString data = password;
     if (mode == DecodedMode) {
@@ -2120,6 +2183,7 @@ QString QUrl::password(ComponentFormattingOptions options) const
 void QUrl::setHost(const QString &host, ParsingMode mode)
 {
     detach();
+    d->clearError();
 
     QString data = host;
     if (mode == DecodedMode) {
@@ -2132,16 +2196,19 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
             d->sectionIsPresent &= ~QUrlPrivate::Host;
     } else if (!data.startsWith(QLatin1Char('['))) {
         // setHost failed, it might be IPv6 or IPvFuture in need of bracketing
-        ushort oldCode = d->errorCode;
-        ushort oldSupplement = d->errorSupplement;
+        Q_ASSERT(d->error);
+
         data.prepend(QLatin1Char('['));
         data.append(QLatin1Char(']'));
         if (!d->setHost(data, 0, data.length(), mode)) {
-            // failed again: choose if this was an IPv6 error or not
-            if (!data.contains(QLatin1Char(':'))) {
-                d->errorCode = oldCode;
-                d->errorSupplement = oldSupplement;
+            // failed again
+            if (data.contains(QLatin1Char(':'))) {
+                // source data contains ':', so it's an IPv6 error
+                d->error->code = QUrlPrivate::InvalidIPv6AddressError;
             }
+        } else {
+            // succeeded
+            d->clearError();
         }
     }
 }
@@ -2219,13 +2286,11 @@ QString QUrl::host(ComponentFormattingOptions options) const
 void QUrl::setPort(int port)
 {
     detach();
+    d->clearError();
 
     if (port < -1 || port > 65535) {
         port = -1;
-        d->sectionHasError |= QUrlPrivate::Port;
-        d->errorCode = QUrlPrivate::InvalidPortError;
-    } else {
-        d->sectionHasError &= ~QUrlPrivate::Port;
+        d->setError(QUrlPrivate::InvalidPortError, QString::number(port), 0);
     }
 
     d->port = port;
@@ -2275,6 +2340,7 @@ int QUrl::port(int defaultPort) const
 void QUrl::setPath(const QString &path, ParsingMode mode)
 {
     detach();
+    d->clearError();
 
     QString data = path;
     if (mode == DecodedMode) {
@@ -2396,6 +2462,7 @@ bool QUrl::hasQuery() const
 void QUrl::setQuery(const QString &query, ParsingMode mode)
 {
     detach();
+    d->clearError();
 
     QString data = query;
     if (mode == DecodedMode) {
@@ -2445,6 +2512,7 @@ void QUrl::setQuery(const QString &query, ParsingMode mode)
 void QUrl::setQuery(const QUrlQuery &query)
 {
     detach();
+    d->clearError();
 
     // we know the data is in the right format
     d->query = query.toString();
@@ -2755,6 +2823,7 @@ QString QUrl::query(ComponentFormattingOptions options) const
 void QUrl::setFragment(const QString &fragment, ParsingMode mode)
 {
     detach();
+    d->clearError();
 
     QString data = fragment;
     if (mode == DecodedMode) {
@@ -3518,8 +3587,11 @@ QDebug operator<<(QDebug d, const QUrl &url)
 }
 #endif
 
-static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
+static QString errorMessage(QUrlPrivate::ErrorCode errorCode, const QString &errorSource, int errorPosition)
 {
+    QChar c = uint(errorPosition) < uint(errorSource.length()) ?
+                errorSource.at(errorPosition) : QChar(QChar::Null);
+
     switch (errorCode) {
     case QUrlPrivate::NoError:
         Q_ASSERT_X(false, "QUrl::errorString",
@@ -3541,7 +3613,7 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
                 .arg(c);
 
     case QUrlPrivate::InvalidRegNameError:
-        if (!c.isNull())
+        if (errorPosition != -1)
             return QString(QStringLiteral("Invalid hostname (character '%1' not permitted)"))
                     .arg(c);
         else
@@ -3597,25 +3669,31 @@ static inline void appendComponentIfPresent(QString &msg, bool present, const ch
 /*!
     \since 4.2
 
-    Returns a text string that explains why an URL is invalid in the case being;
-    otherwise returns an empty string.
+    Returns an error message if the last operation that modified this QUrl
+    object ran into a parsing error. If no error was detected, this function
+    returns an empty string and isValid() returns true.
+
+    The error message returned by this function is technical in nature and may
+    not be understood by end users. It is mostly useful to developers trying to
+    understand why QUrl will not accept some input.
+
+    \sa QUrl::ParsingMode
 */
 QString QUrl::errorString() const
 {
     if (!d)
         return QString();
 
-    QUrlPrivate::ErrorCode errorCode = d->validityError();
+    QString errorSource;
+    int errorPosition;
+    QUrlPrivate::ErrorCode errorCode = d->validityError(&errorSource, &errorPosition);
     if (errorCode == QUrlPrivate::NoError)
         return QString();
 
-    // check if the error code matches a section with error
-    // unless it's a compound error (0x10000)
-    if ((d->sectionHasError & (errorCode >> 8)) == 0 && (errorCode & 0x10000) == 0)
-        return QString();
-
-    QString msg = errorMessage(errorCode, d->errorSupplement);
-    msg += QLatin1Char(';');
+    QString msg = errorMessage(errorCode, errorSource, errorPosition);
+    msg += QLatin1String("; source was \"");
+    msg += errorSource;
+    msg += QLatin1String("\";");
     appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::Scheme,
                              " scheme = ", d->scheme);
     appendComponentIfPresent(msg, d->sectionIsPresent & QUrlPrivate::UserInfo,
