@@ -1536,7 +1536,7 @@ void QSplitter::setSizes(const QList<int> &list)
     and style preferences.
 
     If you set handleWidth to 1 or 0, the actual grab area will grow to overlap a
-    few pixels of it's respective widgets.
+    few pixels of its respective widgets.
 */
 
 int QSplitter::handleWidth() const

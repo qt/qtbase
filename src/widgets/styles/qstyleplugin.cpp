@@ -82,8 +82,6 @@ QT_BEGIN_NAMESPACE
     style. Note that the keys are case insensitive. For example:
 
     \snippet qstyleplugin/main.cpp 1
-
-    \sa keys()
 */
 
 /*!
