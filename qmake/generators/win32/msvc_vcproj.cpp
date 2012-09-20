@@ -70,7 +70,7 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-struct {
+struct DotNetCombo {
     DotNET version;
     const char *versionStr;
     const char *regKey;
