@@ -173,13 +173,13 @@ template<>
 inline bool qCompare(QString const &t1, QLatin1String const &t2, const char *actual,
                     const char *expected, const char *file, int line)
 {
-    return qCompare<QString>(t1, QString(t2), actual, expected, file, line);
+    return qCompare(t1, QString(t2), actual, expected, file, line);
 }
 template<>
 inline bool qCompare(QLatin1String const &t1, QString const &t2, const char *actual,
                     const char *expected, const char *file, int line)
 {
-    return qCompare<QString>(QString(t1), t2, actual, expected, file, line);
+    return qCompare(QString(t1), t2, actual, expected, file, line);
 }
 
 template<>

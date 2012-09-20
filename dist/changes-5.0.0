@@ -120,6 +120,18 @@ information about a particular change.
     like SkipSingle -- skipping a non-data-driven test function or skipping
     only the current data row of a data-driven test function.  Every skipped
     data row is now reported in the test log.
+  * The qCompare() function template was both overloaded and specialised, which
+    made it almost impossible to specialise the correct primary template and
+    could lead to indecipherable error messages or surprising overload resolution
+    (such as going via qCompare(QFlags<void*>,int) to satisfy a request for
+    qCompare<void*>()). Now, specialisation has been replaced by overloading.
+    As a consquence, code such as qCompare<QString>(l, r) will no longer use the
+    QString-specific implementation and may fail to compile. We recommend you
+    replace specialisations with overloading, too. Also, don't pass explicit
+    template arguments to qCompare (e.g. qCompare<QString>(l, r)), but let
+    overload resolution pick the correct one, and cast arguments in case of
+    ambiguous overloads (e.g. qCompare(QString(l), r)). The resulting code will
+    continue to work against older QtTestlib versions.
 
 - The QSsl::TlsV1 enum value was renamed to QSsl::TlsV1_0 .
 
