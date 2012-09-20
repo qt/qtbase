@@ -1579,6 +1579,13 @@ void tst_QDateTime::fromStringToStringLocale()
     QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::SystemLocaleDate), Qt::SystemLocaleDate), dateTime);
     QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::LocaleDate), Qt::LocaleDate), dateTime);
 
+    QEXPECT_FAIL("data0", "This format is apparently failing because of a bug in the datetime parser. (QTBUG-22833)", Continue);
+    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::DefaultLocaleLongDate), Qt::DefaultLocaleLongDate), dateTime);
+#ifndef Q_OS_WIN
+    QEXPECT_FAIL("data0", "This format is apparently failing because of a bug in the datetime parser. (QTBUG-22833)", Continue);
+#endif
+    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::SystemLocaleLongDate), Qt::SystemLocaleLongDate), dateTime);
+
     QLocale::setDefault(def);
 }
 
