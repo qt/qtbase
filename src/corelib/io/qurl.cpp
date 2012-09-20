@@ -309,14 +309,130 @@ static inline QString fileScheme()
     return QStringLiteral("file");
 }
 
-QUrlPrivate::QUrlPrivate()
+class QUrlPrivate
+{
+public:
+    enum Section {
+        Scheme = 0x01,
+        UserName = 0x02,
+        Password = 0x04,
+        UserInfo = UserName | Password,
+        Host = 0x08,
+        Port = 0x10,
+        Authority = UserInfo | Host | Port,
+        Path = 0x20,
+        Hierarchy = Authority | Path,
+        Query = 0x40,
+        Fragment = 0x80,
+        FullUrl = 0xff
+    };
+
+    enum ErrorCode {
+        // the high byte of the error code matches the Section
+        InvalidSchemeError = Scheme << 8,
+
+        InvalidUserNameError = UserName << 8,
+
+        InvalidPasswordError = Password << 8,
+
+        InvalidRegNameError = Host << 8,
+        InvalidIPv4AddressError,
+        InvalidIPv6AddressError,
+        InvalidIPvFutureError,
+        HostMissingEndBracket,
+
+        InvalidPortError = Port << 8,
+        PortEmptyError,
+
+        InvalidPathError = Path << 8,
+
+        InvalidQueryError = Query << 8,
+
+        InvalidFragmentError = Fragment << 8,
+
+        // the following two cases are only possible in combination
+        // with presence/absence of the authority and scheme. See validityError().
+        AuthorityPresentAndPathIsRelative = Authority << 8 | Path << 8 | 0x10000,
+        RelativeUrlPathContainsColonBeforeSlash = Scheme << 8 | Authority << 8 | Path << 8 | 0x10000,
+
+        NoError = 0
+    };
+
+    QUrlPrivate();
+    QUrlPrivate(const QUrlPrivate &copy);
+
+    void parse(const QString &url, QUrl::ParsingMode parsingMode);
+    bool isEmpty() const
+    { return sectionIsPresent == 0 && port == -1 && path.isEmpty(); }
+    ErrorCode validityError() const;
+
+    // no QString scheme() const;
+    void appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
+    void appendUserInfo(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
+    void appendUserName(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendPassword(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendHost(QString &appendTo, QUrl::FormattingOptions options) const;
+    void appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
+    void appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
+    void appendFragment(QString &appendTo, QUrl::FormattingOptions options) const;
+
+    // the "end" parameters are like STL iterators: they point to one past the last valid element
+    bool setScheme(const QString &value, int len);
+    void setAuthority(const QString &auth, int from, int end, QUrl::ParsingMode mode);
+    void setUserInfo(const QString &userInfo, int from, int end);
+    void setUserName(const QString &value, int from, int end);
+    void setPassword(const QString &value, int from, int end);
+    bool setHost(const QString &value, int from, int end, QUrl::ParsingMode mode);
+    void setPath(const QString &value, int from, int end);
+    void setQuery(const QString &value, int from, int end);
+    void setFragment(const QString &value, int from, int end);
+
+    inline bool hasScheme() const { return sectionIsPresent & Scheme; }
+    inline bool hasAuthority() const { return sectionIsPresent & Authority; }
+    inline bool hasUserInfo() const { return sectionIsPresent & UserInfo; }
+    inline bool hasUserName() const { return sectionIsPresent & UserName; }
+    inline bool hasPassword() const { return sectionIsPresent & Password; }
+    inline bool hasHost() const { return sectionIsPresent & Host; }
+    inline bool hasPort() const { return port != -1; }
+    inline bool hasPath() const { return !path.isEmpty(); }
+    inline bool hasQuery() const { return sectionIsPresent & Query; }
+    inline bool hasFragment() const { return sectionIsPresent & Fragment; }
+
+    QString mergePaths(const QString &relativePath) const;
+
+    QAtomicInt ref;
+    int port;
+
+    QString scheme;
+    QString userName;
+    QString password;
+    QString host;
+    QString path;
+    QString query;
+    QString fragment;
+
+    ushort errorCode;
+    ushort errorSupplement;
+
+    // not used for:
+    //  - Port (port == -1 means absence)
+    //  - Path (there's no path delimiter, so we optimize its use out of existence)
+    // Schemes are never supposed to be empty, but we keep the flag anyway
+    uchar sectionIsPresent;
+
+    // UserName, Password, Path, Query, and Fragment never contain errors in TolerantMode.
+    // Those flags are set only by the strict parser.
+    uchar sectionHasError;
+};
+
+inline QUrlPrivate::QUrlPrivate()
     : ref(1), port(-1),
       errorCode(NoError), errorSupplement(0),
       sectionIsPresent(0), sectionHasError(0)
 {
 }
 
-QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
+inline QUrlPrivate::QUrlPrivate(const QUrlPrivate &copy)
     : ref(1), port(copy.port),
       scheme(copy.scheme),
       userName(copy.userName),
@@ -657,7 +773,7 @@ inline void QUrlPrivate::appendQuery(QString &appendTo, QUrl::FormattingOptions 
 
 // setXXX functions
 
-bool QUrlPrivate::setScheme(const QString &value, int len)
+inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetError)
 {
     // schemes are strictly RFC-compliant:
     //    scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
@@ -772,7 +888,7 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
     setHost(auth, from, qMin<uint>(end, colonIndex), mode);
 }
 
-void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
+inline void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
 {
     int delimIndex = userInfo.indexOf(QLatin1Char(':'), from);
     setUserName(userInfo, from, qMin<uint>(delimIndex, end));
@@ -951,7 +1067,7 @@ static bool parseIp6(QString &host, const QChar *begin, const QChar *end)
     return true;
 }
 
-bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl::ParsingMode mode)
+inline bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl::ParsingMode mode)
 {
     const QChar *begin = value.constData() + from;
     const QChar *end = value.constData() + iend;
@@ -1045,7 +1161,7 @@ bool QUrlPrivate::setHost(const QString &value, int from, int iend, QUrl::Parsin
     return true;
 }
 
-void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode)
+inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode)
 {
     //   URI-reference = URI / relative-ref
     //   URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
@@ -1201,7 +1317,7 @@ void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode)
 
     Note: \a relativePath is relative (does not start with '/').
 */
-QString QUrlPrivate::mergePaths(const QString &relativePath) const
+inline QString QUrlPrivate::mergePaths(const QString &relativePath) const
 {
     // If the base URI has a defined authority component and an empty
     // path, then return a string consisting of "/" concatenated with
@@ -1344,7 +1460,7 @@ QUrlPrivate::ErrorCode QUrlPrivate::validityError() const
 }
 
 #if 0
-void QUrlPrivate::validate() const
+inline void QUrlPrivate::validate() const
 {
     QUrlPrivate *that = (QUrlPrivate *)this;
     that->encodedOriginal = that->toEncoded(); // may detach
@@ -1377,7 +1493,7 @@ void QUrlPrivate::validate() const
     }
 }
 
-const QByteArray &QUrlPrivate::normalized() const
+inline const QByteArray &QUrlPrivate::normalized() const
 {
     if (QURL_HASFLAG(stateFlags, QUrlPrivate::Normalized))
         return encodedNormalized;
