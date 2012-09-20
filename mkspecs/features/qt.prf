@@ -38,16 +38,6 @@ plugin { #Qt plugins
 QT_PLUGIN_VERIFY = QTPLUGIN DEPLOYMENT_PLUGIN
 for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
     for(QTPLUG, $$list($$lower($$unique($$QT_CURRENT_VERIFY)))) {
-       qplugin_style =
-       !qt_debug:!qt_release {
-          CONFIG(debug, debug|release):qplugin_style = debug
-          else:qplugin_style = release
-       } else:CONFIG(qt_debug, qt_debug|qt_release) {
-          qplugin_style = debug
-       } else {
-          qplugin_style = release
-       }
-
        # Check if the plugin is known to Qt. We can use this to determine
        # the plugin path. Unknown plugins must rely on the default link path.
        ACCESSIBLEPLUGINS = qtaccessiblewidgets qtaccessiblecompatwidgets
@@ -86,12 +76,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
         target_qt:isEqual(TARGET, QTPLUG) {
             warning($$TARGET cannot have a QTPLUGIN of $$QTPLUG)
         } else {
-            QT_LINKAGE = -l$${QTPLUG}
-            win32 {
-               CONFIG(debug, debug|release):QT_LINKAGE = -l$${QTPLUG}d
-            } else:mac {
-               isEqual(qplugin_style, debug):QT_LINKAGE = -l$${QTPLUG}_debug
-            }
+            QT_LINKAGE = -l$${QTPLUG}$$qtPlatformTargetSuffix()
         }
 
         # Only link against plugin in static builds
