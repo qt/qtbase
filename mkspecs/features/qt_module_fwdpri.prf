@@ -32,11 +32,9 @@
     privqt = $$replace(QT_PRIVATE, -private$, )
     privdep = $$resolve_depends(privqt, "QT.")
     rpaths =
-    pluginpath =
     alldep = $$pubdep $$privdep
     for(dep, alldep) {   # Inherit link-rpaths from all our dependencies
         rpaths += $$eval(QT.$${dep}.rpath_link) $$eval(QT.$${dep}.rpath_link_private)
-        pluginpath += $$eval(QT.$${dep}.plugin_path) $$eval(QT.$${dep}.plugins)
     }
     privdep -= $$pubdep
     for(dep, privdep): \   # Add our private dependencies' lib paths as new link-rpaths
@@ -58,7 +56,6 @@
     } else {
         module_rpathlink_priv =
     }
-    pluginpath = $$unique(pluginpath)
 
     # Create a forwarding module .pri file
     MODULE_FWD_PRI_CONT = \
@@ -71,7 +68,6 @@
         $$module_rpathlink \
         $$module_rpathlink_priv \
         "QT.$${MODULE}.rpath = $$MODULE_INSTALL_LIBS" \
-        "QT.$${MODULE}.plugin_path = $$val_escape(pluginpath)" \
         "include($$MODULE_PRI)"
     write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
     touch($$MODULE_FWD_PRI, $$MODULE_PRI)
