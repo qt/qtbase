@@ -77,7 +77,8 @@ Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int ai) : i(ai) {}
 template<typename Enum>
 class QFlags
 {
-    typedef void **Zero;
+    struct Private;
+    typedef int (Private::*Zero);
     int i;
 public:
     typedef Enum enum_type;
