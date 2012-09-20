@@ -46,6 +46,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined (__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__  >= 406) && !defined(Q_CC_INTEL)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 const QArrayData QArrayData::shared_null[2] = {
     { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, sizeof(QArrayData) }, // shared null
     /* zero initialized terminator */};
@@ -54,6 +59,10 @@ static const QArrayData qt_array[3] = {
     { Q_REFCOUNT_INITIALIZE_STATIC, 0, 0, 0, sizeof(QArrayData) }, // shared empty
     { { Q_BASIC_ATOMIC_INITIALIZER(0) }, 0, 0, 0, sizeof(QArrayData) }, // unsharable empty
     /* zero initialized terminator */};
+
+#if defined (__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__  >= 406) && !defined(Q_CC_INTEL)
+  #pragma GCC diagnostic pop
+#endif
 
 static const QArrayData &qt_array_empty = qt_array[0];
 static const QArrayData &qt_array_unsharable_empty = qt_array[1];
