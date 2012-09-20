@@ -1241,19 +1241,14 @@ bool QTreeView::viewportEvent(QEvent *event)
         QHoverEvent *he = static_cast<QHoverEvent*>(event);
         int oldBranch = d->hoverBranch;
         d->hoverBranch = d->itemDecorationAt(he->pos());
-        if (oldBranch != d->hoverBranch) {
-            //we need to paint the whole items (including the decoration) so that when the user
-            //moves the mouse over those elements they are updated
-            if (oldBranch >= 0) {
-                int y = d->coordinateForItem(oldBranch);
-                int h = d->itemHeight(oldBranch);
-                viewport()->update(QRect(0, y, viewport()->width(), h));
-            }
-            if (d->hoverBranch >= 0) {
-                int y = d->coordinateForItem(d->hoverBranch);
-                int h = d->itemHeight(d->hoverBranch);
-                viewport()->update(QRect(0, y, viewport()->width(), h));
-            }
+        QModelIndex newIndex = indexAt(he->pos());
+        if (d->hover != newIndex || d->hoverBranch != oldBranch) {
+            // Update the whole hovered over row. No need to update the old hovered
+            // row, that is taken care in superclass hover handling.
+            QRect rect = visualRect(newIndex);
+            rect.setX(0);
+            rect.setWidth(viewport()->width());
+            viewport()->update(rect);
         }
         break; }
     default:
@@ -1418,6 +1413,9 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
     }
 
     const int viewportWidth = d->viewport->width();
+
+    QPoint hoverPos = d->viewport->mapFromGlobal(QCursor::pos());
+    d->hoverBranch = d->itemDecorationAt(hoverPos);
 
     QVector<QRect> rects = region.rects();
     QVector<int> drawn;

@@ -244,7 +244,7 @@ public:
     QBasicTimer openTimer;
 
     // used for drawing hilighted expand/collapse indicators
-    int hoverBranch;
+    mutable int hoverBranch;
 
     // used for blocking recursion when calling setViewportMargins from updateGeometries
     bool geometryRecursionBlock;
