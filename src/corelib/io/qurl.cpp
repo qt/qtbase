@@ -2105,7 +2105,6 @@ void QUrl::setPort(int port)
     detach();
 
     if (port < -1 || port > 65535) {
-        qWarning("QUrl::setPort: Out of range");
         port = -1;
         d->sectionHasError |= QUrlPrivate::Port;
         d->errorCode = QUrlPrivate::InvalidPortError;

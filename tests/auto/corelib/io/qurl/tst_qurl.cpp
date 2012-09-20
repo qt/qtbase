@@ -183,11 +183,9 @@ void tst_QUrl::getSetCheck()
     obj1.setPort(0);
     QCOMPARE(0, obj1.port());
 
-    QTest::ignoreMessage(QtWarningMsg, "QUrl::setPort: Out of range");
     obj1.setPort(INT_MIN);
     QCOMPARE(-1, obj1.port()); // Out of range, -1
 
-    QTest::ignoreMessage(QtWarningMsg, "QUrl::setPort: Out of range");
     obj1.setPort(INT_MAX);
     QCOMPARE(-1, obj1.port()); // Out of range, -1
 
@@ -2443,7 +2441,6 @@ void tst_QUrl::setPort()
         QCOMPARE(url.port(), -1);
         QCOMPARE(url.toString(), QString());
         url.setPort(80);
-        QTest::ignoreMessage(QtWarningMsg, "QUrl::setPort: Out of range");
         url.setPort(65536);
         QCOMPARE(url.port(), -1);
         QVERIFY(url.errorString().contains("out of range"));
