@@ -1932,11 +1932,8 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
     if (mode != PolylineMode) {
         // Do the fill...
         ensureBrush();
-        if (s->brushData.blend) {
-            d->outlineMapper->setCoordinateRounding(s->penData.blend && s->flags.fast_pen && s->lastPen.brush().isOpaque());
+        if (s->brushData.blend)
             fillPolygon(points, pointCount, mode);
-            d->outlineMapper->setCoordinateRounding(false);
-        }
     }
 
     // Do the outline...
@@ -1982,7 +1979,6 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
         if (s->brushData.blend) {
             // Compose polygon fill..,
             ensureOutlineMapper();
-            d->outlineMapper->setCoordinateRounding(s->penData.blend != 0);
             d->outlineMapper->beginOutline(mode == WindingMode ? Qt::WindingFill : Qt::OddEvenFill);
             d->outlineMapper->moveTo(*points);
             const QPoint *p = points;
@@ -1996,7 +1992,6 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
             ProcessSpans brushBlend = d->getBrushFunc(d->outlineMapper->controlPointRect,
                                                       &s->brushData);
             d->rasterize(d->outlineMapper->outline(), brushBlend, &s->brushData, d->rasterBuffer.data());
-            d->outlineMapper->setCoordinateRounding(false);
         }
     }
 

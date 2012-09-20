@@ -95,8 +95,7 @@ public:
         m_points(0),
         m_tags(0),
         m_contours(0),
-        m_in_clip_elements(false),
-        m_round_coords(false)
+        m_in_clip_elements(false)
     {
     }
 
@@ -197,8 +196,6 @@ public:
     QT_FT_Outline *convertPath(const QPainterPath &path);
     QT_FT_Outline *convertPath(const QVectorPath &path);
 
-    void setCoordinateRounding(bool coordinateRounding) { m_round_coords = coordinateRounding; }
-
     inline QPainterPath::ElementType *elementTypes() const { return m_element_types.size() == 0 ? 0 : m_element_types.data(); }
 
 public:
@@ -231,9 +228,6 @@ public:
 
     bool m_valid;
     bool m_in_clip_elements;
-
-private:
-    bool m_round_coords;
 };
 
 QT_END_NAMESPACE
