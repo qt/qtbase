@@ -3522,6 +3522,9 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
 {
     switch (errorCode) {
     case QUrlPrivate::NoError:
+        Q_ASSERT_X(false, "QUrl::errorString",
+                   "Impossible: QUrl::errorString should have treated this condition");
+        Q_UNREACHABLE();
         return QString();
 
     case QUrlPrivate::InvalidSchemeError: {
@@ -3573,7 +3576,10 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
     case QUrlPrivate::RelativeUrlPathContainsColonBeforeSlash:
         return QStringLiteral("Relative URL's path component contains ':' before any '/'");
     }
-    return QStringLiteral("<unknown error>");
+
+    Q_ASSERT_X(false, "QUrl::errorString", "Cannot happen, unknown error");
+    Q_UNREACHABLE();
+    return QString();
 }
 
 static inline void appendComponentIfPresent(QString &msg, bool present, const char *componentName,
