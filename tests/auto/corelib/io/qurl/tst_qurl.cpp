@@ -1626,6 +1626,7 @@ void tst_QUrl::ipv6()
     if (url.isValid()) {
         QCOMPARE(url.toString(), output);
         url.setHost(url.host());
+        QVERIFY(url.isValid());
         QCOMPARE(url.toString(), output);
     }
 }
@@ -1759,7 +1760,8 @@ void tst_QUrl::isValid()
         url.setAuthority("strange;hostname");
         QVERIFY(!url.isValid());
         QVERIFY(url.toString().isEmpty());
-        QVERIFY(url.errorString().contains("Hostname contains invalid characters"));
+        QVERIFY2(url.errorString().contains("Invalid hostname"),
+                 qPrintable(url.errorString()));
     }
 
     {
@@ -1776,7 +1778,7 @@ void tst_QUrl::isValid()
         url.setHost("stuff;1");
         QVERIFY(!url.isValid());
         QVERIFY(url.toString().isEmpty());
-        QVERIFY2(url.errorString().contains("Hostname contains invalid characters"),
+        QVERIFY2(url.errorString().contains("Invalid hostname"),
                  qPrintable(url.errorString()));
     }
 
@@ -1897,15 +1899,17 @@ void tst_QUrl::strictParser_data()
 
     QTest::newRow("invalid-password") << "http://user:pass\x7F@ok-hostname" << "Invalid password";
 
-    QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Hostname contains invalid characters";
-    QTest::newRow("invalid-regname-2") << "http://b%61d" << "Hostname contains invalid characters";
+    QTest::newRow("invalid-regname") << "http://bad<hostname>" << "Invalid hostname";
+    QTest::newRow("invalid-regname-2") << "http://b%61d" << "Invalid hostname";
     QTest::newRow("invalid-ipv6") << "http://[:::]" << "Invalid IPv6 address";
     QTest::newRow("invalid-ipvfuture-1") << "http://[v7]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-2") << "http://[v7.]" << "Invalid IPvFuture address";
     QTest::newRow("invalid-ipvfuture-3") << "http://[v789]" << "Invalid IPvFuture address";
     QTest::newRow("unbalanced-brackets") << "http://[ff02::1" << "Expected ']'";
 
-    QTest::newRow("empty-port") << "http://example.com:" << "Invalid port";
+    // port errors happen in TolerantMode too
+    QTest::newRow("empty-port-1") << "http://example.com:" << "empty";
+    QTest::newRow("empty-port-2") << "http://example.com:/" << "empty";
     QTest::newRow("invalid-port-1") << "http://example.com:-1" << "Invalid port";
     QTest::newRow("invalid-port-2") << "http://example.com:abc" << "Invalid port";
     QTest::newRow("invalid-port-3") << "http://example.com:9a" << "Invalid port";
@@ -1927,9 +1931,9 @@ void tst_QUrl::strictParser()
     QVERIFY(!url.isValid());
     QVERIFY(url.toString().isEmpty());
     QVERIFY(!url.errorString().isEmpty());
-    if (!url.errorString().contains(needle))
-        qWarning("Error string changed and does not contain \"%s\" anymore: %s",
-                 qPrintable(needle), qPrintable(url.errorString()));
+    QVERIFY2(url.errorString().contains(needle),
+             "Error string changed and does not contain \"" +
+             needle.toLatin1() + "\" anymore: " + url.errorString().toLatin1());
 }
 
 void tst_QUrl::tolerantParser()

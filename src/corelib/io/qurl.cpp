@@ -3545,7 +3545,7 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
             return QString(QStringLiteral("Invalid hostname (character '%1' not permitted)"))
                     .arg(c);
         else
-            return QStringLiteral("Hostname contains invalid characters");
+            return QStringLiteral("Invalid hostname (contains invalid characters)");
     case QUrlPrivate::InvalidIPv4AddressError:
         return QString(); // doesn't happen yet
     case QUrlPrivate::InvalidIPv6AddressError:
@@ -3556,8 +3556,9 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
         return QStringLiteral("Expected ']' to match '[' in hostname");
 
     case QUrlPrivate::InvalidPortError:
-    case QUrlPrivate::PortEmptyError:
         return QStringLiteral("Invalid port or port number out of range");
+    case QUrlPrivate::PortEmptyError:
+        return QStringLiteral("Port field was empty");
 
     case QUrlPrivate::InvalidPathError:
         return QString(QStringLiteral("Invalid path (character '%1' not permitted)"))
