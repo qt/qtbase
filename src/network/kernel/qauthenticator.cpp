@@ -125,7 +125,7 @@ static QByteArray qNtlmPhase3_SSPI(QAuthenticatorPrivate *ctx, const QByteArray&
   \section2 NTLM version 2
 
   The NTLM authentication mechanism currently supports no incoming or outgoing options.
-  On Windows, if no \a user has been set, domain\user credentials will be searched for on the
+  On Windows, if no \a user has been set, domain\\user credentials will be searched for on the
   local system to enable Single-Sign-On functionality.
 
   \section2 Digest-MD5

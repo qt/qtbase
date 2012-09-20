@@ -1424,7 +1424,7 @@ QAbstractSocket::PauseModes QAbstractSocket::pauseMode() const
 /*!
     \since 5.0
 
-    Controls whether to pause upon receiving a notification. The \pauseMode parameter
+    Controls whether to pause upon receiving a notification. The \a pauseMode parameter
     specifies the conditions in which the socket should be paused. The only notification
     currently supported is QSslSocket::sslErrors(). If set to PauseOnSslErrors,
     data transfer on the socket will be paused and needs to be enabled explicitly
