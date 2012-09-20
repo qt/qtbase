@@ -86,13 +86,9 @@ public:
 };
 Q_DECLARE_TYPEINFO(QPostEvent, Q_MOVABLE_TYPE);
 
-inline bool operator<(int priority, const QPostEvent &pe)
+inline bool operator<(const QPostEvent &first, const QPostEvent &second)
 {
-    return pe.priority < priority;
-}
-inline bool operator<(const QPostEvent &pe, int priority)
-{
-    return priority < pe.priority;
+    return first.priority > second.priority;
 }
 
 // This class holds the list of posted events.
@@ -126,7 +122,7 @@ public:
             // insert event in descending priority order, using upper
             // bound for a given priority (to ensure proper ordering
             // of events with the same priority)
-            QPostEventList::iterator at = std::upper_bound(begin() + insertionOffset, end(), priority);
+            QPostEventList::iterator at = std::upper_bound(begin() + insertionOffset, end(), ev);
             insert(at, ev);
         }
     }
