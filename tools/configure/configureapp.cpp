@@ -2778,11 +2778,17 @@ void Configure::detectArch()
         QString subarchKey = data.subarchKey;
 
         // run qmake
-        QString command = QString("%1 -spec %2 %3 2>&1")
+        QString command = QString("%1 -spec %2 %3")
             .arg(QDir::toNativeSeparators(buildPath + "/bin/qmake.exe"),
                  QDir::toNativeSeparators(qmakespec),
                  QDir::toNativeSeparators(sourcePath + "/config.tests/arch/arch.pro"));
-        Environment::execute(command);
+        int returnValue = 0;
+        Environment::execute(command, &returnValue);
+        if (returnValue != 0) {
+            cout << "QMake failed!" << endl;
+            dictionary["DONE"] = "error";
+            return;
+        }
 
         // compile
         command = dictionary[ "MAKE" ];
