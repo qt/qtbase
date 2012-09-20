@@ -79,7 +79,6 @@ public:
     enum ErrorCode {
         // the high byte of the error code matches the Section
         InvalidSchemeError = Scheme << 8,
-        SchemeEmptyError,
 
         InvalidUserNameError = UserName << 8,
 

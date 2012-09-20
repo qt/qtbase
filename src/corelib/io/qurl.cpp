@@ -661,16 +661,16 @@ bool QUrlPrivate::setScheme(const QString &value, int len)
 {
     // schemes are strictly RFC-compliant:
     //    scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-    // but we need to decode any percent-encoding sequences that fall on
-    // those characters
     // we also lowercase the scheme
 
+    // schemes in URLs are not allowed to be empty, but they can be in
+    // "Relative URIs" which QUrl also supports. QUrl::setScheme does
+    // not call us with len == 0, so this can only be from parse()
     scheme.clear();
-    sectionIsPresent |= Scheme;
-    sectionHasError |= Scheme; // assume it has errors, we'll clear before returning true
-    errorCode = SchemeEmptyError;
     if (len == 0)
         return false;
+
+    sectionIsPresent |= Scheme;
 
     // validate it:
     errorCode = InvalidSchemeError;
@@ -3413,8 +3413,6 @@ static QString errorMessage(QUrlPrivate::ErrorCode errorCode, QChar c)
         QString msg = QStringLiteral("Invalid scheme (character '%1' not permitted)");
         return msg.arg(c);
     }
-    case QUrlPrivate::SchemeEmptyError:
-        return QStringLiteral("Empty scheme");
 
     case QUrlPrivate::InvalidUserNameError:
         return QString(QStringLiteral("Invalid user name (character '%1' not permitted)"))
