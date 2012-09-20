@@ -266,7 +266,7 @@ QString QUndoCommand::actionText() const
     command does.
 
     If you need to have two different strings for text() and actionText(), separate
-    them with "\n" and pass into this function. Even if you do not use this feature
+    them with "\\n" and pass into this function. Even if you do not use this feature
     for English strings during development, you can still let translators use two
     different strings in order to match specific languages' needs.
     The described feature and the function actionText() are available since Qt 4.8.

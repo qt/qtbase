@@ -122,14 +122,6 @@
     \sa size()
 */
 
-/*! \fn HPALETTE QColormap::hPal()
-
-    This function is only available on Windows.
-
-    Returns an handle to the HPALETTE used by this colormap.  If no
-    HPALETTE is being used, this function returns zero.
-*/
-
 /*! \since 4.2
 
     \fn QColormap &QColormap::operator=(const QColormap &colormap)

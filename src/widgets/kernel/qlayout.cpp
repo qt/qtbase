@@ -286,13 +286,6 @@ bool QLayout::setAlignment(QLayout *l, Qt::Alignment alignment)
 */
 
 /*!
-    \fn bool QLayout::isTopLevel() const
-
-    Returns true if this layout is a top-level layout, i.e. not a
-    child of another layout; otherwise returns false.
-*/
-
-/*!
     \property QLayout::margin
     \brief the width of the outside border of the layout
     \obsolete

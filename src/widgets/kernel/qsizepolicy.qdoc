@@ -146,19 +146,6 @@
 */
 
 /*!
-    \fn QSizePolicy::QSizePolicy(Policy horizontal, Policy vertical)
-
-    Constructs a QSizePolicy object with the given \a horizontal and
-    \a vertical policies, and DefaultType as the control type.
-
-    Use setHeightForWidth() if the preferred height of the widget is
-    dependent on the width of the widget (for example, a QLabel with
-    line wrapping).
-
-    \sa setHorizontalStretch(), setVerticalStretch()
-*/
-
-/*!
     \fn QSizePolicy::QSizePolicy(Policy horizontal, Policy vertical, ControlType type)
     \since 4.3
 

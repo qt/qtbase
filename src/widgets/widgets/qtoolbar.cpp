@@ -1214,18 +1214,6 @@ QAction *QToolBar::toggleViewAction() const
 { Q_D(const QToolBar); return d->toggleViewAction; }
 
 /*!
-    \fn void QToolBar::setLabel(const QString &label)
-
-    Use setWindowTitle() instead.
-*/
-
-/*!
-    \fn QString QToolBar::label() const
-
-    Use windowTitle() instead.
-*/
-
-/*!
     \since 4.2
 
     Returns the widget associated with the specified \a action.

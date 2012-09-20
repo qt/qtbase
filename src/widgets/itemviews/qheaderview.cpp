@@ -1119,7 +1119,7 @@ bool QHeaderView::sectionsMovable() const
 // ### Qt 6 - remove this obsolete function
 /*!
     \obsolete
-    \fn bool QHeaderView::isMovable(bool movable) const
+    \fn bool QHeaderView::isMovable() const
 
     Use sectionsMovable instead.
 

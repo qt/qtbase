@@ -718,30 +718,6 @@ bool QPushButtonPrivate::hitButton(const QPoint &pos)
 #endif // Q_WS_MAC
 
 
-/*!
-    \fn void QPushButton::openPopup()
-
-    Use showMenu() instead.
-*/
-
-/*!
-    \fn bool QPushButton::isMenuButton() const
-
-    Use menu() != 0 instead.
-*/
-
-/*!
-    \fn void QPushButton::setPopup(QMenu* popup)
-
-    Use setMenu() instead.
-*/
-
-/*!
-    \fn QMenu* QPushButton::popup() const
-
-    Use menu() instead.
-*/
-
 QT_END_NAMESPACE
 
 #include "moc_qpushbutton.cpp"

@@ -10992,14 +10992,6 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 }
 #endif
 
-
-/*!
-    \typedef QWidgetList
-    \relates QWidget
-
-    Synonym for QList<QWidget *>.
-*/
-
 #ifndef QT_NO_GESTURES
 /*!
     Subscribes the widget to a given \a gesture with specific \a flags.
@@ -11029,13 +11021,6 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     }
 }
 #endif // QT_NO_GESTURES
-
-/*!
-    \typedef WId
-    \relates QWidget
-
-    Platform dependent window identifier.
-*/
 
 /*!
     \fn void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
@@ -11365,14 +11350,6 @@ void QWidget::clearMask()
 {
     setMask(QRegion());
 }
-
-/*! \fn Qt::HANDLE QWidget::x11PictureHandle() const
-    Returns the X11 Picture handle of the widget for XRender
-    support. Use of this function is not portable. This function will
-    return 0 if XRender support is not compiled into Qt, if the
-    XRender extension is not supported on the X11 display, or if the
-    handle could not be created.
-*/
 
 #ifdef Q_WS_MAC
 void QWidgetPrivate::syncUnifiedMode() {

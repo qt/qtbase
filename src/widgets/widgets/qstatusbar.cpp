@@ -599,18 +599,6 @@ QString QStatusBar::currentMessage() const
 }
 
 /*!
-    \fn void QStatusBar::message(const QString &message, int timeout)
-
-    Use the showMessage() function instead.
-*/
-
-/*!
-    \fn void QStatusBar::clear()
-
-    Use the clearMessage() function instead.
-*/
-
-/*!
     \fn QStatusBar::messageChanged(const QString &message)
 
     This signal is emitted whenever the temporary status message
