@@ -3174,6 +3174,12 @@ Additional options:
                          ($QT_DEFAULT_BUILD_PARTS)
     -nomake <part> ..... Exclude part from the list of parts to be built.
 
+    -no-gui ............ Don't build the QtGui library and dependencies.
+ +  -gui ............... Build the QtGui library and dependencies.
+
+    -no-widgets ........ Don't build the QtWidgets library and dependencies.
+ +  -widgets ........... Build the QtWidgets library and dependencies.
+
     -R <string> ........ Add an explicit runtime library path to the Qt
                          libraries.
     -l <string> ........ Add an explicit library.
@@ -3194,8 +3200,6 @@ Additional options:
 
  *  -no-optimized-qmake ... Do not build qmake optimized.
     -optimized-qmake ...... Build qmake optimized.
-
-    -no-gui ............ Don't build the Qt GUI library
 
  $NSN  -no-nis ............ Do not compile NIS support.
  $NSY  -nis ............... Compile NIS support.
