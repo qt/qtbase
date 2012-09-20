@@ -74,6 +74,7 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+#include "../../../qtest-config.h"
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -240,7 +241,7 @@ private slots:
 
     void noTextEditedOnClear();
 
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
     void cursor();
 #endif
 
@@ -3260,7 +3261,7 @@ void tst_QLineEdit::textMargin()
     QTRY_COMPARE(testWidget.cursorPosition(), cursorPosition);
 }
 
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
 void tst_QLineEdit::cursor()
 {
     testWidget->setReadOnly(false);

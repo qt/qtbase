@@ -71,6 +71,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
+#include "../../../qtest-config.h"
 
 QT_BEGIN_NAMESPACE
 static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
@@ -2231,7 +2232,9 @@ Q_GLOBAL_STATIC(QPixmap, tst_qapp_pixmap);
 Q_GLOBAL_STATIC(QFont, tst_qapp_font);
 Q_GLOBAL_STATIC(QRegion, tst_qapp_region);
 Q_GLOBAL_STATIC(QFontDatabase, tst_qapp_fontDatabase);
+#ifndef QTEST_NO_CURSOR
 Q_GLOBAL_STATIC(QCursor, tst_qapp_cursor);
+#endif
 
 void tst_QApplication::globalStaticObjectDestruction()
 {
@@ -2250,7 +2253,9 @@ void tst_QApplication::globalStaticObjectDestruction()
     QVERIFY(tst_qapp_font());
     QVERIFY(tst_qapp_region());
     QVERIFY(tst_qapp_fontDatabase());
+#ifndef QTEST_NO_CURSOR
     QVERIFY(tst_qapp_cursor());
+#endif
 }
 
 //QTEST_APPLESS_MAIN(tst_QApplication)

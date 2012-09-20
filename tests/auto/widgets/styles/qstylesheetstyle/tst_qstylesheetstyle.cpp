@@ -47,7 +47,8 @@
 #include <QPlastiqueStyle>
 
 #include <private/qstylesheetstyle_p.h>
-#include "../../../platformquirks.h"
+
+#include "../../../qtest-config.h"
 
 class tst_QStyleSheetStyle : public QObject
 {
@@ -78,7 +79,9 @@ private slots:
     void onWidgetDestroyed();
     void fontPrecedence();
     void focusColors();
+#ifndef QTEST_NO_CURSOR
     void hoverColors();
+#endif
     void background();
     void tabAlignement();
     void attributesList();
@@ -788,10 +791,9 @@ void tst_QStyleSheetStyle::focusColors()
     }
 }
 
+#ifndef QTEST_NO_CURSOR
 void tst_QStyleSheetStyle::hoverColors()
 {
-    if (!PlatformQuirks::haveMouseCursor())
-        QSKIP("No mouse Cursor on this platform");
     QList<QWidget *> widgets;
     widgets << new QPushButton("TESTING TESTING");
     widgets << new QLineEdit("TESTING TESTING");
@@ -880,8 +882,8 @@ void tst_QStyleSheetStyle::hoverColors()
                 (QString::fromLatin1(widget->metaObject()->className())
                 + " did not contain text color #ff0084").toLocal8Bit().constData());
     }
-
 }
+#endif
 
 class SingleInheritanceDialog : public QDialog
 {

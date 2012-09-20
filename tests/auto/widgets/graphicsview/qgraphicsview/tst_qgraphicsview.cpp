@@ -68,9 +68,10 @@
 #include <QtWidgets/QDesktopWidget>
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicsview_p.h>
-#include "../../../platformquirks.h"
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
+
+#include "../../../qtest-config.h"
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
@@ -196,8 +197,10 @@ private slots:
     void mapFromScenePath();
     void sendEvent();
     void wheelEvent();
+#ifndef QTEST_NO_CURSOR
     void cursor();
     void cursor2();
+#endif
     void transformationAnchor();
     void resizeAnchor();
     void viewportUpdateMode();
@@ -256,7 +259,9 @@ private slots:
     void QTBUG_4151_clipAndIgnore_data();
     void QTBUG_4151_clipAndIgnore();
     void QTBUG_5859_exposedRect();
+#ifndef QTEST_NO_CURSOR
     void QTBUG_7438_cursor();
+#endif
     void hoverLeave();
     void QTBUG_16063_microFocusRect();
 
@@ -678,7 +683,7 @@ void tst_QGraphicsView::dragMode_scrollHand()
 
         for (int i = 0; i < 2; ++i) {
             // ScrollHandDrag
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
             Qt::CursorShape cursorShape = view.viewport()->cursor().shape();
 #endif
             int horizontalScrollBarValue = view.horizontalScrollBar()->value();
@@ -697,7 +702,7 @@ void tst_QGraphicsView::dragMode_scrollHand()
             QTRY_VERIFY(item->isSelected());
 
             for (int k = 0; k < 4; ++k) {
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
                 QCOMPARE(view.viewport()->cursor().shape(), Qt::ClosedHandCursor);
 #endif
                 {
@@ -740,7 +745,7 @@ void tst_QGraphicsView::dragMode_scrollHand()
             QTRY_VERIFY(item->isSelected());
             QCOMPARE(view.horizontalScrollBar()->value(), horizontalScrollBarValue - 10);
             QCOMPARE(view.verticalScrollBar()->value(), verticalScrollBarValue - 10);
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
             QCOMPARE(view.viewport()->cursor().shape(), cursorShape);
 #endif
 
@@ -800,7 +805,7 @@ void tst_QGraphicsView::dragMode_rubberBand()
 
     for (int i = 0; i < 2; ++i) {
         // RubberBandDrag
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
         Qt::CursorShape cursorShape = view.viewport()->cursor().shape();
 #endif
         int horizontalScrollBarValue = view.horizontalScrollBar()->value();
@@ -814,7 +819,7 @@ void tst_QGraphicsView::dragMode_rubberBand()
             QApplication::sendEvent(view.viewport(), &event);
             QVERIFY(event.isAccepted());
         }
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
         QCOMPARE(view.viewport()->cursor().shape(), cursorShape);
 #endif
 
@@ -862,7 +867,7 @@ void tst_QGraphicsView::dragMode_rubberBand()
         }
         QCOMPARE(view.horizontalScrollBar()->value(), horizontalScrollBarValue);
         QCOMPARE(view.verticalScrollBar()->value(), verticalScrollBarValue);
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
         QCOMPARE(view.viewport()->cursor().shape(), cursorShape);
 #endif
 
@@ -2102,15 +2107,9 @@ void tst_QGraphicsView::wheelEvent()
     QVERIFY(widget->hasFocus());
 }
 
+#ifndef QTEST_NO_CURSOR
 void tst_QGraphicsView::cursor()
 {
-#ifndef QT_NO_CURSOR
-#if defined(Q_OS_WINCE)
-    QSKIP("Qt/CE does not have regular cursor support");
-#endif
-    if (PlatformQuirks::haveMouseCursor())
-        QSKIP("The Platform does not have regular cursor support");
-
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
     item->setCursor(Qt::IBeamCursor);
@@ -2129,20 +2128,12 @@ void tst_QGraphicsView::cursor()
 
     sendMouseMove(view.viewport(), QPoint(5, 5));
     QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
-#endif
 }
+#endif
 
-// Qt/CE does not have regular cursor support.
-#if !defined(QT_NO_CURSOR) && !defined(Q_OS_WINCE)
+#ifndef QTEST_NO_CURSOR
 void tst_QGraphicsView::cursor2()
 {
-#ifndef QT_NO_CURSOR
-#if defined(Q_OS_WINCE)
-    QSKIP("Qt/CE does not have regular cursor support");
-#endif
-    if (PlatformQuirks::haveMouseCursor())
-        QSKIP("The Platform does not have regular cursor support");
-
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
     item->setCursor(Qt::IBeamCursor);
@@ -2205,8 +2196,8 @@ void tst_QGraphicsView::cursor2()
     QCOMPARE(view.viewport()->cursor().shape(), Qt::IBeamCursor);
     sendMouseMove(view.viewport(), view.mapFromScene(-15, -15));
     QCOMPARE(view.viewport()->cursor().shape(), Qt::SizeAllCursor);
-#endif
 }
+#endif
 
 void tst_QGraphicsView::transformationAnchor()
 {
@@ -3529,7 +3520,7 @@ void tst_QGraphicsView::mouseTracking()
         QGraphicsView view(&scene);
 
         QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
         item->setCursor(Qt::CrossCursor);
 #endif
         scene.addItem(item);
@@ -3539,7 +3530,7 @@ void tst_QGraphicsView::mouseTracking()
         // Adding an item to the scene before the scene is set on the view.
         QGraphicsScene scene(-10000, -10000, 20000, 20000);
         QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
         item->setCursor(Qt::CrossCursor);
 #endif
         scene.addItem(item);
@@ -3556,7 +3547,7 @@ void tst_QGraphicsView::mouseTracking()
         QGraphicsView view3(&scene);
 
         QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
         item->setCursor(Qt::CrossCursor);
 #endif
         scene.addItem(item);
@@ -4359,7 +4350,6 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     QEXPECT_FAIL("", message.constData(), Abort);
 #endif
     QVERIFY2(dx < slack && dy < slack, message.constData());
-#endif
 }
 
 void tst_QGraphicsView::task259503_scrollingArtifacts()
@@ -4505,12 +4495,9 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     QCOMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
 }
 
+#ifndef QTEST_NO_CURSOR
 void tst_QGraphicsView::QTBUG_7438_cursor()
 {
-#ifndef QT_NO_CURSOR
-#if defined(Q_OS_WINCE)
-    QSKIP("Qt/CE does not have regular cursor support");
-#endif
     QGraphicsScene scene;
     QGraphicsItem *item = scene.addRect(QRectF(-10, -10, 20, 20));
     item->setFlag(QGraphicsItem::ItemIsMovable);
@@ -4529,8 +4516,8 @@ void tst_QGraphicsView::QTBUG_7438_cursor()
     QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
     sendMouseRelease(view.viewport(), view.mapFromScene(0, 0));
     QCOMPARE(view.viewport()->cursor().shape(), Qt::PointingHandCursor);
-#endif
 }
+#endif
 
 class GraphicsItemWithHover : public QGraphicsRectItem
 {

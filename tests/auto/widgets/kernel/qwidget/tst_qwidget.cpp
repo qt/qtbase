@@ -76,6 +76,8 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsProxyWidget>
 
+#include "../../../qtest-config.h"
+
 #if defined(Q_OS_MAC)
 #include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.
 #endif
@@ -273,7 +275,9 @@ private slots:
     void deleteStyle();
     void multipleToplevelFocusCheck();
     void setFocus();
+#ifndef QTEST_NO_CURSOR
     void setCursor();
+#endif
     void setToolTip();
     void testWindowIconChangeEventPropagation();
 
@@ -344,7 +348,7 @@ private slots:
 
     void setClearAndResizeMask();
     void maskedUpdate();
-#if !defined(Q_OS_WINCE_WM)
+#ifndef QTEST_NO_CURSOR
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
 #endif
@@ -5222,9 +5226,9 @@ private:
     int m_count;
 };
 
+#ifndef QTEST_NO_CURSOR
 void tst_QWidget::setCursor()
 {
-#ifndef QT_NO_CURSOR
     {
         QWidget window;
         window.resize(200, 200);
@@ -5339,8 +5343,8 @@ void tst_QWidget::setCursor()
         widget.unsetCursor();
         QCOMPARE(spy.count(), 2);
     }
-#endif
 }
+#endif
 
 void tst_QWidget::setToolTip()
 {
@@ -8491,8 +8495,7 @@ void tst_QWidget::maskedUpdate()
     QTRY_COMPARE(grandChild.paintedRegion, QRegion(grandChild.rect())); // Full update.
 }
 
-// Windows Mobile has no proper cursor support, so skip this test on that platform.
-#if !defined(Q_OS_WINCE_WM)
+#ifndef QTEST_NO_CURSOR
 void tst_QWidget::syntheticEnterLeave()
 {
     class MyWidget : public QWidget
@@ -8595,8 +8598,7 @@ void tst_QWidget::syntheticEnterLeave()
 }
 #endif
 
-// Windows Mobile has no proper cursor support, so skip this test on that platform.
-#if !defined(Q_OS_WINCE_WM)
+#ifndef QTEST_NO_CURSOR
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
     if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb"))
@@ -8812,7 +8814,9 @@ QWidgetBackingStore* backingStore(QWidget &widget)
 #ifndef Q_OS_WINCE_WM
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 {
+#ifndef QTEST_NO_CURSOR
     QApplication::setOverrideCursor(Qt::BlankCursor); //keep the cursor out of screen grabs
+#endif
     QWidget main(0,Qt::FramelessWindowHint); //don't get confused by the size of the window frame
     QPalette palette;
     palette.setColor(QPalette::Window, Qt::red);
@@ -8845,7 +8849,9 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
 
     QTRY_COMPARE(mainPixmap.toImage().convertToFormat(QImage::Format_RGB32),
                  correct.toImage().convertToFormat(QImage::Format_RGB32));
+#ifndef QTEST_NO_CURSOR
     QApplication::restoreOverrideCursor();
+#endif
 }
 #endif
 

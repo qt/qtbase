@@ -65,6 +65,7 @@
 
 #include "tst_qvariant_common.h"
 
+#include "../../../../qtest-config.h"
 
 class tst_QGuiVariant : public QObject
 {
@@ -182,7 +183,7 @@ void tst_QGuiVariant::canConvert_data()
     var = QVariant::fromValue(QColor());
     QTest::newRow("Color")
         << var << N << N << N << Y << Y << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << Y << N << N << N << N;
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
     var = QVariant::fromValue(QCursor());
     QTest::newRow("Cursor")
         << var << N << N << N << N << N << N << Y << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N << N;
@@ -508,7 +509,7 @@ void tst_QGuiVariant::writeToReadFromDataStream_data()
     QTest::newRow( "bitmap_valid" ) << QVariant::fromValue( bitmap ) << false;
     QTest::newRow( "brush_valid" ) << QVariant::fromValue( QBrush( Qt::red ) ) << false;
     QTest::newRow( "color_valid" ) << QVariant::fromValue( QColor( Qt::red ) ) << false;
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
     QTest::newRow( "cursor_valid" ) << QVariant::fromValue( QCursor( Qt::PointingHandCursor ) ) << false;
 #endif
     QTest::newRow( "font_valid" ) << QVariant::fromValue( QFont( "times", 12 ) ) << false;
@@ -676,12 +677,16 @@ void tst_QGuiVariant::implicitConstruction()
 void tst_QGuiVariant::guiVariantAtExit()
 {
     // crash test, it should not crash at QGuiApplication exit
+#ifndef QTEST_NO_CURSOR
     static QVariant cursor = QCursor();
+#endif
     static QVariant point = QPoint();
     static QVariant icon = QIcon();
     static QVariant image = QImage();
     static QVariant palette = QPalette();
+#ifndef QTEST_NO_CURSOR
     Q_UNUSED(cursor);
+#endif
     Q_UNUSED(point);
     Q_UNUSED(icon);
     Q_UNUSED(image);

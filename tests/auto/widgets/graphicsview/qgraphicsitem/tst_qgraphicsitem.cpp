@@ -73,7 +73,7 @@ Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QPointF)
 Q_DECLARE_METATYPE(QRectF)
 
-#include "../../../platformquirks.h"
+#include "../../../qtest-config.h"
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
@@ -360,7 +360,9 @@ private slots:
     void filtersChildEvents();
     void filtersChildEvents2();
     void ensureVisible();
+#ifndef QTEST_NO_CURSOR
     void cursor();
+#endif
     //void textControlGetterSetter();
     void defaultItemTest_QGraphicsLineItem();
     void defaultItemTest_QGraphicsPixmapItem();
@@ -4145,9 +4147,9 @@ void tst_QGraphicsItem::ensureVisible()
     QTest::qWait(25);
 }
 
+#ifndef QTEST_NO_CURSOR
 void tst_QGraphicsItem::cursor()
 {
-#ifndef QT_NO_CURSOR
     QGraphicsScene scene;
     QGraphicsRectItem *item1 = scene.addRect(QRectF(0, 0, 50, 50));
     QGraphicsRectItem *item2 = scene.addRect(QRectF(0, 0, 50, 50));
@@ -4203,15 +4205,6 @@ void tst_QGraphicsItem::cursor()
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    if (!PlatformQuirks::haveMouseCursor())
-        return;
-#if !defined(Q_OS_WINCE)
-    QTest::qWait(250);
-#else
-    // Test environment does not have any cursor, therefore no shape
-    return;
-#endif
-
     QCOMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
 
     {
@@ -4233,8 +4226,8 @@ void tst_QGraphicsItem::cursor()
     QTest::qWait(25);
 
     QCOMPARE(view.viewport()->cursor().shape(), cursor.shape());
-#endif
 }
+#endif
 /*
 void tst_QGraphicsItem::textControlGetterSetter()
 {
@@ -4499,7 +4492,7 @@ protected:
         case QGraphicsItem::ItemSceneHasChanged:
             break;
         case QGraphicsItem::ItemCursorChange:
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
             oldValues << cursor();
 #endif
             break;
