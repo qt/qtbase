@@ -44,6 +44,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qtypeinfo.h>
+#include <QtCore/qtypetraits.h>
 
 QT_BEGIN_HEADER
 
@@ -82,11 +83,18 @@ class QFlags
                       "long long would overflow. Qt 5.1 will have support for 64bit enums.");
     struct Private;
     typedef int (Private::*Zero);
-    int i;
 public:
+#ifndef qdoc
+    typedef typename QtPrivate::if_<
+            QtPrivate::is_unsigned<Enum>::value,
+            unsigned int,
+            signed int
+        >::type Int;
+#endif
     typedef Enum enum_type;
     // compiler-generated copy/move ctor/assignment operators are fine!
 #ifdef qdoc
+    typedef int Int; // the real typedef above is too complex for qdoc
     inline QFlags(const QFlags &other);
     inline QFlags &operator=(const QFlags &other);
 #endif
@@ -101,7 +109,7 @@ public:
     inline QFlags &operator^=(QFlags f) { i ^= f.i; return *this; }
     inline QFlags &operator^=(Enum f) { i ^= f; return *this; }
 
-    Q_DECL_CONSTEXPR  inline operator int() const { return i; }
+    Q_DECL_CONSTEXPR  inline operator Int() const { return i; }
 
     Q_DECL_CONSTEXPR inline QFlags operator|(QFlags f) const { return QFlags(Enum(i | f.i)); }
     Q_DECL_CONSTEXPR inline QFlags operator|(Enum f) const { return QFlags(Enum(i | f)); }
@@ -114,7 +122,9 @@ public:
 
     Q_DECL_CONSTEXPR inline bool operator!() const { return !i; }
 
-    Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == int(f) ); }
+    Q_DECL_CONSTEXPR inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == Int(f) ); }
+private:
+    Int i;
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\
