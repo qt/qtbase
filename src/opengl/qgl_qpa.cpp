@@ -314,8 +314,17 @@ QGLTemporaryContext::QGLTemporaryContext(bool, QWidget *)
 #if !defined(QT_OPENGL_ES)
     // On desktop, request latest released version
     QSurfaceFormat format;
+#if defined(Q_OS_MAC)
+    // OS X is limited to OpenGL 3.2 Core Profile at present
+    // so set that here. If we use compatibility profile it
+    // only reports 2.x contexts.
+    format.setMajorVersion(3);
+    format.setMinorVersion(2);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+#else
     format.setMajorVersion(4);
     format.setMinorVersion(3);
+#endif
     d->context->setFormat(format);
 #endif
     d->context->create();
