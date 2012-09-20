@@ -89,10 +89,10 @@
     to exchange datagrams without specifying the receiver for each
     datagram.
 
-    The \l{network/broadcastsender}{Broadcast Sender},
-    \l{network/broadcastreceiver}{Broadcast Receiver},
-    \l{network/multicastsender}{Multicast Sender}, and
-    \l{network/multicastreceiver}{Multicast Receiver} examples illustrate how
+    The \l{broadcastsender}{Broadcast Sender},
+    \l{broadcastreceiver}{Broadcast Receiver},
+    \l{multicastsender}{Multicast Sender}, and
+    \l{multicastreceiver}{Multicast Receiver} examples illustrate how
     to use QUdpSocket in applications.
 
     \sa QTcpSocket

@@ -238,7 +238,7 @@ QT_BEGIN_NAMESPACE
     \fn void QNetworkSession::usagePoliciesChanged(UsagePolicies)
     \since 5.0
 
-    This signal is emitted when the usage policies in force are changed by the system.
+    This signal is emitted when the \a UsagePolicies in force are changed by the system.
 */
 
 /*!

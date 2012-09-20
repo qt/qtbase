@@ -148,13 +148,13 @@
     you use synchronous sockets only in non-GUI threads. When used
     synchronously, QTcpSocket doesn't require an event loop.
 
-    The \l{network/fortuneclient}{Fortune Client} and
-    \l{network/fortuneserver}{Fortune Server} examples show how to use
+    The \l{fortuneclient}{Fortune Client} and
+    \l{fortuneserver}{Fortune Server} examples show how to use
     QTcpSocket and QTcpServer to write TCP client-server
-    applications. See also \l{network/blockingfortuneclient}{Blocking
+    applications. See also \l{blockingfortuneclient}{Blocking
     Fortune Client} for an example on how to use a synchronous
     QTcpSocket in a separate thread (without using an event loop),
-    and \l{network/threadedfortuneserver}{Threaded Fortune Server}
+    and \l{threadedfortuneserver}{Threaded Fortune Server}
     for an example of a multithreaded TCP server with one thread per
     active client.
 
@@ -195,13 +195,13 @@
     \l{QUdpSocket::readyRead()}{readyRead()} signal. Call
     QUdpSocket::readDatagram() to read the datagram.
 
-    The \l{network/broadcastsender}{Broadcast Sender} and
-    \l{network/broadcastreceiver}{Broadcast Receiver} examples show how to
+    The \l{broadcastsender}{Broadcast Sender} and
+    \l{broadcastreceiver}{Broadcast Receiver} examples show how to
     write a UDP sender and a UDP receiver using Qt.
 
     QUdpSocket also supports multicasting. The
-    \l{network/multicastsender}{Multicast Sender} and
-    \l{network/multicastreceiver}{Multicast Receiver} examples show how to use
+    \l{multicastsender}{Multicast Sender} and
+    \l{multicastreceiver}{Multicast Receiver} examples show how to use
     write UDP multicast clients.
 
     \section1 Resolving Host Names using QHostInfo

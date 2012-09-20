@@ -91,6 +91,7 @@ QT_BEGIN_NAMESPACE
     that support access permissions on the socket. Both GroupAccess and OtherAccess
     may vary slightly in meanings depending on the platform.
 
+    \value NoOptions No access restrictions have been set.
     \value UserAccessOption
     Access is restricted to the same user as the process that created the socket.
     \value GroupAccessOption
@@ -102,7 +103,7 @@ QT_BEGIN_NAMESPACE
     \value WorldAccessOption
     No access restrictions.
 
-    \sa SocketOptions
+    \sa socketOptions
 */
 
 

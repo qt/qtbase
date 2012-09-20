@@ -151,7 +151,7 @@
     require an event loop and typically leads to simpler code.
     However, in a GUI application, blocking sockets should only be
     used in non-GUI threads, to avoid freezing the user interface.
-    See the \l network/fortuneclient and \l network/blockingfortuneclient
+    See the \l fortuneclient and \l blockingfortuneclient
     examples for an overview of both approaches.
 
     \note We discourage the use of the blocking functions together
