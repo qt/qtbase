@@ -409,7 +409,7 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
     if (clipLine(rx1, ry1, rx2, ry2))
         return;
 
-    const int half = 32;
+    const int half = 31;
     int x1 = toF26Dot6(rx1) + half;
     int y1 = toF26Dot6(ry1) + half;
     int x2 = toF26Dot6(rx2) + half;
@@ -429,8 +429,8 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
         int xinc = F16Dot16FixedDiv(x2 - x1, y2 - y1);
         int x = x1 << 10;
 
-        int y = y1 >> 6;
-        int ys = y2 >> 6;
+        int y = (y1 + 32) >> 6;
+        int ys = (y2 + 32) >> 6;
 
         if (y != ys) {
             x += ( ((((y << 6) + 32 - y1)))  * xinc ) >> 6;
@@ -460,8 +460,8 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
         int yinc = F16Dot16FixedDiv(y2 - y1, x2 - x1);
         int y = y1 << 10;
 
-        int x = x1 >> 6;
-        int xs = x2 >> 6;
+        int x = (x1 + 32) >> 6;
+        int xs = (x2 + 32) >> 6;
 
         if (x != xs) {
             y += ( ((((x << 6) + 32 - x1)))  * yinc ) >> 6;
@@ -702,7 +702,7 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
     if (stroker->clipLine(rx1, ry1, rx2, ry2))
         return;
 
-    static const int half = 32;
+    static const int half = 31;
     int x1 = toF26Dot6(rx1) + half;
     int y1 = toF26Dot6(ry1) + half;
     int x2 = toF26Dot6(rx2) + half;
@@ -735,8 +735,8 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
 
         capAdjust(caps, y1, y2, x, xinc);
 
-        int y = y1 >> 6;
-        int ys = y2 >> 6;
+        int y = (y1 + 32) >> 6;
+        int ys = (y2 + 32) >> 6;
 
         if (y != ys) {
             x += ( ((((y << 6) + 32 - y1)))  * xinc ) >> 6;
@@ -810,8 +810,8 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
 
         capAdjust(caps, x1, x2, y, yinc);
 
-        int x = x1 >> 6;
-        int xs = x2 >> 6;
+        int x = (x1 + 32) >> 6;
+        int xs = (x2 + 32) >> 6;
 
         if (x != xs) {
             y += ( ((((x << 6) + 32 - x1)))  * yinc ) >> 6;

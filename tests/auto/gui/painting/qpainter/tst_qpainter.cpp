@@ -278,6 +278,7 @@ private slots:
     void drawTextOutsideGuiThread();
 
     void drawTextWithComplexBrush();
+    void QTBUG26013_squareCapStroke();
 
 private:
     void fillData();
@@ -4359,6 +4360,34 @@ void tst_QPainter::drawTextWithComplexBrush()
 
     int paintedPixels = getPaintedPixels(image, Qt::white);
     QVERIFY(paintedPixels > 0);
+}
+
+void tst_QPainter::QTBUG26013_squareCapStroke()
+{
+    QImage image(4, 4, QImage::Format_RGB32);
+
+    QPainter p(&image);
+    p.setPen(QPen(Qt::black, 0, Qt::SolidLine, Qt::SquareCap));
+
+    for (int i = 0; i < 3; ++i) {
+        qreal d = i / 3.0;
+
+        image.fill(0xffffffff);
+
+        p.drawLine(QLineF(0, d, 0, d + 2));
+        p.drawLine(QLineF(1, d, 3, d));
+
+        // ensure that a horizontal line and a vertical line with square cap round up (downwards) at the same time
+        QCOMPARE(image.pixel(0, 0), image.pixel(1, 0));
+
+        image.fill(0xffffffff);
+
+        p.drawLine(QLineF(d, 0, d + 2, 0));
+        p.drawLine(QLineF(d, 1, d, 3));
+
+        // ensure that a vertical line and a horizontal line with square cap round up (to the right) at the same time
+        QCOMPARE(image.pixel(0, 0), image.pixel(0, 1));
+    }
 }
 
 QTEST_MAIN(tst_QPainter)
