@@ -1504,6 +1504,8 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_ICONV" ]            = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
+    } else if ((platform() == QNX) || (platform() == BLACKBERRY)) {
+        dictionary["STACK_PROTECTOR_STRONG"] = "auto";
     }
 }
 
@@ -2041,6 +2043,8 @@ bool Configure::checkAvailability(const QString &part)
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
     } else if (part == "CUPS") {
         available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && tryCompileProject("unix/cups");
+    } else if (part == "STACK_PROTECTOR_STRONG") {
+        available = (platform() == QNX || platform() == BLACKBERRY) && compilerSupportsFlag("qcc -fstack-protector-strong");
     }
 
     return available;
@@ -2152,6 +2156,10 @@ void Configure::autoDetection()
     // Detection of cups support
     if (dictionary["QT_CUPS"] == "auto")
         dictionary["QT_CUPS"] = checkAvailability("CUPS") ? "yes" : "no";
+
+    // Detection of -fstack-protector-strong support
+    if (dictionary["STACK_PROTECTOR_STRONG"] == "auto")
+        dictionary["STACK_PROTECTOR_STRONG"] = checkAvailability("STACK_PROTECTOR_STRONG") ? "yes" : "no";
 
     // Mark all unknown "auto" to the default value..
     for (QMap<QString,QString>::iterator i = dictionary.begin(); i != dictionary.end(); ++i) {
@@ -2511,6 +2519,9 @@ void Configure::generateOutputVars()
     if (dictionary["QT_GLIB"] == "yes")
         qtConfig += "glib";
 
+    if (dictionary["STACK_PROTECTOR_STRONG"] == "yes")
+        qtConfig += "stack-protector-strong";
+
     // We currently have no switch for QtConcurrent, so add it unconditionally.
     qtConfig += "concurrent";
 
@@ -2869,6 +2880,27 @@ bool Configure::tryCompileProject(const QString &projectPath, const QString &ext
     }
 
     QDir::setCurrent(oldpwd);
+    return code == 0;
+}
+
+bool Configure::compilerSupportsFlag(const QString &compilerAndArgs)
+{
+    QFile file("conftest.cpp");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        cout << "could not open temp file for writing" << endl;
+        return false;
+    }
+    if (!file.write("int main() { return 0; }\r\n")) {
+        cout << "could not write to temp file" << endl;
+        return false;
+    }
+    file.close();
+    // compilerAndArgs contains compiler because there is no way to query it
+    QString command = compilerAndArgs + " -o conftest-out.o conftest.cpp";
+    int code = 0;
+    QString output = Environment::execute(command, &code);
+    file.remove();
+    QFile::remove("conftest-out.o");
     return code == 0;
 }
 

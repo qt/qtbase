@@ -175,6 +175,7 @@ private:
 #endif
 
     bool tryCompileProject(const QString &projectPath, const QString &extraOptions = QString());
+    bool compilerSupportsFlag(const QString &compilerAndArgs);
 
     void desc(const char *description, int startingAt = 0, int wrapIndent = 0);
     void desc(const char *option, const char *description, bool skipIndent = false, char fillChar = '.');
