@@ -510,7 +510,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are using an old license file."
             echo
-            echo "Please install the license file supplied by Nokia,"
+            echo "Please install the license file supplied by Digia,"
             echo "or install the Qt Open Source Edition if you intend to"
             echo "develop free software."
             exit 1
@@ -617,9 +617,9 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are not licensed for the $Platform platform."
             echo
-            echo "Please contact qt-info@nokia.com to upgrade your license to"
-            echo "include the $Platform platform, or install the Qt Open Source Edition"
-            echo "if you intend to develop free software."
+            echo "Please use the contact form at http://qt.digia.com/contact-us"
+            echo "to upgrade your license to include the $Platform platform, or install"
+            echo "the Qt Open Source Edition if you intend to develop free software."
             exit 1
             ;;
     esac
@@ -2513,7 +2513,7 @@ if [ '!' -f "${XQMAKESPEC}/qplatformdefs.h" ]; then
     echo
     echo "      $XQMAKESPEC/qplatformdefs.h"
     echo
-    echo "   Please contact qt-info@nokia.com."
+    echo "   Please use the contact form at http://qt.digia.com/contact-us"
     echo
     exit 2
 fi
@@ -2532,9 +2532,9 @@ if [ "$CFG_RTOS_ENABLED" = "no" ]; then
             echo ""
             echo "You are not licensed for Qt for `basename $XPLATFORM`."
             echo ""
-            echo "Please contact qt-info@nokia.com to upgrade your license to"
-            echo "include this platform, or install the Qt Open Source Edition"
-            echo "if you intend to develop free software."
+            echo "Please use the contact form at http://qt.digia.com/contact-us"
+            echo "to upgrade your license to include this platform, or install"
+            echo "the Qt Open Source Edition if you intend to develop free software."
             exit 1
 	    ;;
     esac
@@ -3398,8 +3398,8 @@ elif [ "$Edition" != "OpenSource" ]; then
                 echo "  support, nor are you entitled to use any more recent"
                 echo "  Qt releases."
                 echo
-                echo "  Please contact qt-info@nokia.com to renew your"
-                echo "  support and upgrades for this license."
+                echo "  Please use the contact form at http://qt.digia.com/contact-us"
+                echo "  to renew your support and upgrades for this license."
                 echo
                 echo "WARNING  WARNING  WARNING  WARNING"
                 echo
@@ -3412,9 +3412,9 @@ elif [ "$Edition" != "OpenSource" ]; then
                 echo "  Your Evaluation license has expired."
                 echo
                 echo "  You are no longer licensed to use this software. Please"
-                echo "  contact qt-info@nokia.com to purchase license, or install"
-                echo "  the Qt Open Source Edition if you intend to develop free"
-                echo "  software."
+                echo "  use the contact form at http://qt.digia.com/contact-us to"
+                echo "  purchase license, or install the Qt Open Source Edition"
+                echo "  if you intend to develop free software."
                 echo
                 echo "NOTICE  NOTICE  NOTICE  NOTICE"
                 echo

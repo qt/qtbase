@@ -201,7 +201,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
 
     if (dictionary.value("DONE") == "error") {
         cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
-        cout << "Please contact qt-info@nokia.com to upgrade your license" << endl;
+        cout << "Please use the contact form at http://qt.digia.com/contact-us to upgrade your license" << endl;
         cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
         cout << "Qt Open Source Edition if you intend to develop free software." << endl;
         return;
