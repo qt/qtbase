@@ -16,6 +16,7 @@ macro(expect_pass _dir)
     --build-and-test
     "${CMAKE_CURRENT_SOURCE_DIR}/${_dir}"
     "${CMAKE_CURRENT_BINARY_DIR}/${_dir}"
+    --build-config "${CMAKE_BUILD_TYPE}"
     --build-generator ${CMAKE_GENERATOR}
     --build-makeprogram ${CMAKE_MAKE_PROGRAM}
     --build-project ${_dir}
@@ -51,6 +52,7 @@ macro(expect_fail _dir)
     --build-and-test
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}"
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/build"
+    --build-config "${CMAKE_BUILD_TYPE}"
     --build-generator ${CMAKE_GENERATOR}
     --build-makeprogram ${CMAKE_MAKE_PROGRAM}
     --build-project ${_dir}
