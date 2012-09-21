@@ -108,7 +108,9 @@ private slots:
     void deleteinstanceOnUnload();
     void loadDebugObj();
     void loadCorruptElf();
+#if defined (Q_OS_UNIX)
     void loadGarbage();
+#endif
     void reloadPlugin();
 };
 
@@ -281,16 +283,16 @@ void tst_QPluginLoader::loadCorruptElf()
 #endif
 }
 
+#if defined (Q_OS_UNIX)
 void tst_QPluginLoader::loadGarbage()
 {
-#if defined (Q_OS_UNIX)
     for (int i=0; i<5; i++) {
-        QPluginLoader lib(QFINDTESTDATA(QString("elftest/garbage%1.so").arg(i)));
+        QPluginLoader lib(QFINDTESTDATA(QString("elftest/garbage%1.so").arg(i+1)));
         QCOMPARE(lib.load(), false);
         QVERIFY(lib.errorString() != QString("Unknown error"));
     }
-#endif
 }
+#endif
 
 void tst_QPluginLoader::reloadPlugin()
 {
