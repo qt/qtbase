@@ -79,7 +79,7 @@
 
 #include <algorithm>
 
-#ifndef QT_NAMESPACE /* user namespace */
+#if !defined(QT_NAMESPACE) || defined(Q_MOC_RUN) /* user namespace */
 
 # define QT_PREPEND_NAMESPACE(name) ::name
 # define QT_USE_NAMESPACE
