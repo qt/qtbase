@@ -458,6 +458,8 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
         if (!window->d_func()->blockedByModalWindow)
             updateBlockedStatus(window);
     }
+
+    updateBlockedStatus(modal);
 }
 
 void QGuiApplicationPrivate::hideModalWindow(QWindow *window)

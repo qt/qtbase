@@ -73,6 +73,7 @@ private slots:
     void windowModality();
     void inputReentrancy();
     void tabletEvents();
+    void windowModality_QTBUG27039();
 
     void initTestCase()
     {
@@ -987,5 +988,44 @@ void tst_QWindow::tabletEvents()
 #endif
 }
 
+void tst_QWindow::windowModality_QTBUG27039()
+{
+    QWindow parent;
+    parent.setGeometry(10, 10, 100, 100);
+    parent.show();
+
+    InputTestWindow modalA;
+    modalA.setTransientParent(&parent);
+    modalA.setGeometry(10, 10, 20, 20);
+    modalA.setWindowModality(Qt::ApplicationModal);
+    modalA.show();
+
+    InputTestWindow modalB;
+    modalB.setTransientParent(&parent);
+    modalB.setGeometry(30, 10, 20, 20);
+    modalB.setWindowModality(Qt::ApplicationModal);
+    modalB.show();
+
+    QPointF local(5, 5);
+    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&modalB, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&modalB, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+
+    // modal A should be blocked since it was shown first, but modal B should not be blocked
+    QCOMPARE(modalB.mousePressedCount, 1);
+    QCOMPARE(modalA.mousePressedCount, 0);
+
+    modalB.hide();
+    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::NoButton);
+    QCoreApplication::processEvents();
+
+    // modal B has been hidden, modal A should be unblocked again
+    QCOMPARE(modalA.mousePressedCount, 1);
+}
+
 #include <tst_qwindow.moc>
 QTEST_MAIN(tst_QWindow)
+
