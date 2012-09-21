@@ -875,6 +875,7 @@ void tst_QLocale::formatDate_data()
     QTest::newRow("28") << QDate() << "'\"yy\"'" << "";
     QTest::newRow("29") << QDate(1974, 12, 1) << "hh:mm:ss.zzz ap d'd'dd/M/yy" << "hh:mm:ss.zzz ap 1d01/12/74";
 
+    QTest::newRow("dd MMMM yyyy") << QDate(1, 1, 1) << "dd MMMM yyyy" << "01 January 0001";
 }
 
 void tst_QLocale::formatDate()
@@ -973,6 +974,9 @@ void tst_QLocale::formatDateTime_data()
                          << "d'dd'd/MMM'M'/yysss" << "1dd1/DecM/74033";
     QTest::newRow("12C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(15, 14, 13))
                          << "d'd'dd/M/yyh" << "1d01/12/7415";
+
+    QTest::newRow("dd MMMM yyyy, hh:mm:ss") << "C" << QDateTime(QDate(1, 1, 1), QTime(12, 00, 00))
+                         << "dd MMMM yyyy, hh:mm:ss" << "01 January 0001, 12:00:00";
 
     QTest::newRow("20C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(15, 14, 13))
                          << "foo" << "foo";
