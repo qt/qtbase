@@ -6120,7 +6120,7 @@ QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
 
 include(\$\$PWD/mkspecs/qmodule.pri)
-CONFIG += dylib fix_output_dirs no_private_qt_headers_warning QTDIR_build
+CONFIG += fix_output_dirs no_private_qt_headers_warning QTDIR_build
 
 EOF
 
