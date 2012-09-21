@@ -48,7 +48,6 @@
 
 #include <QtConcurrent/qfutureinterface.h>
 #include <QtCore/qstring.h>
-#include <QtConcurrent/qtconcurrentcompilertest.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

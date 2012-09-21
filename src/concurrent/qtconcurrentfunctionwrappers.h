@@ -42,7 +42,7 @@
 #ifndef QTCONCURRENT_FUNCTIONWRAPPERS_H
 #define QTCONCURRENT_FUNCTIONWRAPPERS_H
 
-#include <QtConcurrent/qtconcurrent_global.h>
+#include <QtConcurrent/qtconcurrentcompilertest.h>
 
 #ifndef QT_NO_CONCURRENT
 
