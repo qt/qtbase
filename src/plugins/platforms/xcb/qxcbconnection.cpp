@@ -141,68 +141,74 @@ void QXcbConnection::updateScreens()
         // which will become virtual siblings.
         xcb_screen_t *xcbScreen = it.data;
         QList<QPlatformScreen *> siblings;
+        int outputCount = 0;
         if (has_randr_extension) {
+            xcb_generic_error_t *error = NULL;
             xcb_randr_get_output_primary_cookie_t primaryCookie =
-                xcb_randr_get_output_primary_unchecked(xcb_connection(), xcbScreen->root);
+                xcb_randr_get_output_primary(xcb_connection(), xcbScreen->root);
             xcb_randr_get_screen_resources_current_cookie_t resourcesCookie =
-                xcb_randr_get_screen_resources_current_unchecked(xcb_connection(), xcbScreen->root);
+                xcb_randr_get_screen_resources_current(xcb_connection(), xcbScreen->root);
             xcb_randr_get_output_primary_reply_t *primary =
-                    xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, NULL);
-            xcb_randr_get_screen_resources_current_reply_t *resources =
-                    xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, NULL);
-            xcb_timestamp_t timestamp = resources->config_timestamp;
-            int outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources);
-            xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(resources);
+                    xcb_randr_get_output_primary_reply(xcb_connection(), primaryCookie, &error);
+            if (!primary || error) {
+                qWarning("QXcbConnection: Failed to get the primary output of the screen");
+                free(error);
+            } else {
+                xcb_randr_get_screen_resources_current_reply_t *resources =
+                        xcb_randr_get_screen_resources_current_reply(xcb_connection(), resourcesCookie, &error);
+                if (!resources || error) {
+                    qWarning("QXcbConnection: Failed to get the screen resources");
+                    free(error);
+                } else {
+                    xcb_timestamp_t timestamp = resources->config_timestamp;
+                    outputCount = xcb_randr_get_screen_resources_current_outputs_length(resources);
+                    xcb_randr_output_t *outputs = xcb_randr_get_screen_resources_current_outputs(resources);
 
-            if (outputCount == 0) {
-                // This happens on VNC for example.  But there is actually a screen anyway.
+                    for (int i = 0; i < outputCount; i++) {
+                        xcb_randr_get_output_info_reply_t *output =
+                                xcb_randr_get_output_info_reply(xcb_connection(),
+                                    xcb_randr_get_output_info_unchecked(xcb_connection(), outputs[i], timestamp), NULL);
+                        if (output == NULL)
+                            continue;
+
+#ifdef Q_XCB_DEBUG
+                        QString outputName = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
+                                                               xcb_randr_get_output_info_name_length(output));
+#endif
+
+                        if (output->crtc == XCB_NONE) {
+#ifdef Q_XCB_DEBUG
+                            qDebug("Screen output %s is not connected", qPrintable(outputName));
+#endif
+                            continue;
+                        }
+
+                        QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen, output);
+                        siblings << screen;
+                        activeScreens << screen;
+                        ++screenNumber;
+                        if (!primaryScreen && primary) {
+                            if (primary->output == XCB_NONE || outputs[i] == primary->output) {
+                                primaryScreen = screen;
+                                siblings.prepend(siblings.takeLast());
+#ifdef Q_XCB_DEBUG
+                                qDebug("Primary output is %d: %s", primary->output, qPrintable(outputName));
+#endif
+                            }
+                        }
+                        free(output);
+                    }
+                }
+                free(resources);
+            }
+            free(primary);
+        }
+        // If there's no randr extension, or there was some error above, or the screen
+        // doesn't have outputs for some other reason (e.g. on VNC or ssh -X), just assume there is one screen.
+        if (outputCount == 0) {
 #ifdef Q_XCB_DEBUG
                 qDebug("Found a screen with zero outputs");
 #endif
-                QXcbScreen* screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen);
-                siblings << screen;
-                activeScreens << screen;
-                if (!primaryScreen)
-                    primaryScreen = screen;
-                ++screenNumber;
-            }
-            for (int i = 0; i < outputCount; i++) {
-                xcb_randr_get_output_info_reply_t *output =
-                        xcb_randr_get_output_info_reply(xcb_connection(),
-                            xcb_randr_get_output_info_unchecked(xcb_connection(), outputs[i], timestamp), NULL);
-                if (output == NULL)
-                    continue;
-
-#ifdef Q_XCB_DEBUG
-                QString outputName = QString::fromUtf8((const char*)xcb_randr_get_output_info_name(output),
-                    xcb_randr_get_output_info_name_length(output));
-#endif
-
-                if (output->crtc == XCB_NONE) {
-#ifdef Q_XCB_DEBUG
-                    qDebug("Screen output %s is not connected", qPrintable(outputName));
-#endif
-                    continue;
-                }
-
-                QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen, output);
-                siblings << screen;
-                activeScreens << screen;
-                ++screenNumber;
-                if (!primaryScreen && primary) {
-                    if (primary->output == XCB_NONE || outputs[i] == primary->output) {
-                        primaryScreen = screen;
-                        siblings.prepend(siblings.takeLast());
-#ifdef Q_XCB_DEBUG
-                        qDebug("Primary output is %d: %s", primary->output, qPrintable(outputName));
-#endif
-                    }
-                }
-                free(output);
-            }
-            free(primary);
-            free(resources);
-        } else {
             QXcbScreen *screen = findOrCreateScreen(newScreens, xcbScreenNumber, xcbScreen);
             siblings << screen;
             activeScreens << screen;
@@ -214,7 +220,7 @@ void QXcbConnection::updateScreens()
             ((QXcbScreen*)s)->setVirtualSiblings(siblings);
         xcb_screen_next(&it);
         ++xcbScreenNumber;
-    }
+    } // for each xcb screen
 
     // Now activeScreens is the complete set of screens which are active at this time.
     // Delete any existing screens which are not in activeScreens
