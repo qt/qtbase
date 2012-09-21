@@ -238,7 +238,7 @@ QString Location::fileName() const
  */
 QString Location::canonicalRelativePath(const QString &path) const
 {
-    QDir configFileDir(QFileInfo(filePath()).dir());
+    QDir configFileDir(QDir::current());
     QDir dir(path);
     const QString canon = dir.canonicalPath();
     return configFileDir.relativeFilePath(canon);
