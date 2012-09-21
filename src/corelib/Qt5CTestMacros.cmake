@@ -34,7 +34,7 @@ macro(expect_fail _dir)
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/CMakeLists.txt"
     "
       cmake_minimum_required(VERSION 2.8)
-      project(${_dir}_build)
+      project(${_dir})
 
       try_compile(Result \${CMAKE_CURRENT_BINARY_DIR}/${_dir}
           \${CMAKE_CURRENT_SOURCE_DIR}/${_dir}
