@@ -72,6 +72,15 @@ public:
     QStyle *proxyStyle;
 };
 
+inline QImage styleCacheImage(const QSize &size)
+{
+    return QImage(size, QImage::Format_ARGB32_Premultiplied);
+}
+
+inline QPixmap styleCachePixmap(const QSize &size)
+{
+    return QPixmap(size);
+}
 
 #define BEGIN_STYLE_PIXMAPCACHE(a) \
     QRect rect = option->rect; \
@@ -80,13 +89,14 @@ public:
     QPainter *p = painter; \
     QString unique = QStyleHelper::uniqueName((a), option, option->rect.size()); \
     int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
-    bool doPixmapCache = txType <= QTransform::TxTranslate; \
+    bool doPixmapCache = (txType <= QTransform::TxTranslate) \
+            || (painter->deviceTransform().type() == QTransform::TxScale); \
     if (doPixmapCache && QPixmapCache::find(unique, internalPixmapCache)) { \
         painter->drawPixmap(option->rect.topLeft(), internalPixmapCache); \
     } else { \
         if (doPixmapCache) { \
             rect.setRect(0, 0, option->rect.width(), option->rect.height()); \
-            imageCache = QImage(option->rect.size(), QImage::Format_ARGB32_Premultiplied); \
+            imageCache = styleCacheImage(option->rect.size()); \
             imageCache.fill(0); \
             p = new QPainter(&imageCache); \
         }

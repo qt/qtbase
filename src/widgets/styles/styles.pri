@@ -129,6 +129,18 @@ contains( styles, cleanlooks ) {
     DEFINES += QT_NO_STYLE_CLEANLOOKS
 }
 
+contains( styles, fusion ) {
+        HEADERS += styles/qfusionstyle.h
+        HEADERS += styles/qfusionstyle_p.h
+        SOURCES += styles/qfusionstyle.cpp
+    !contains( styles, windows ) {
+        styles += windows
+        DEFINES+= QT_STYLE_WINDOWS
+    }
+} else {
+    DEFINES += QT_NO_STYLE_FUSION
+}
+
 contains( styles, windows ) {
     HEADERS += styles/qwindowsstyle.h
     SOURCES += styles/qwindowsstyle.cpp
