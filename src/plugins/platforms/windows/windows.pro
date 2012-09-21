@@ -18,6 +18,7 @@ win32-g++*: LIBS *= -luuid
 # For the dialog helpers:
 !wince*:LIBS *= -lshlwapi -lshell32
 !wince*:LIBS *= -ladvapi32
+wince*:DEFINES *= QT_LIBINFIX=L"\"\\\"$${QT_LIBINFIX}\\\"\""
 
 DEFINES *= QT_NO_CAST_FROM_ASCII
 

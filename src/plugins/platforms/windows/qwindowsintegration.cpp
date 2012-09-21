@@ -339,7 +339,8 @@ QPlatformOpenGLContext
 
 enum FontDatabaseOption {
     FontDatabaseFreeType,
-    FontDatabaseNative
+    FontDatabaseNative,
+    FontDatabaseAuto
 };
 
 static inline FontDatabaseOption fontDatabaseOption(const QObject &nativeInterface)
@@ -352,22 +353,50 @@ static inline FontDatabaseOption fontDatabaseOption(const QObject &nativeInterfa
         if (argument == QLatin1String("native"))
             return FontDatabaseNative;
     }
-    return FontDatabaseNative;
+    return FontDatabaseAuto;
 }
+
+#ifdef Q_OS_WINCE
+// It's not easy to detect if we are running a QML application
+// Let's try to do so by checking if the QtQuick module is loaded.
+inline bool isQMLApplication()
+{
+    // check if the QtQuick library is loaded
+#ifdef _DEBUG
+    HMODULE handle = GetModuleHandle(L"QtQuick" QT_LIBINFIX L"d5.dll");
+#else
+    HMODULE handle = GetModuleHandle(L"QtQuick" QT_LIBINFIX L"5.dll");
+#endif
+    return (handle != NULL);
+}
+#endif
 
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     if (!d->m_fontDatabase) {
 #ifdef QT_NO_FREETYPE
         d->m_fontDatabase = new QWindowsFontDatabase();
-#else
+#else // QT_NO_FREETYPE
         FontDatabaseOption option = fontDatabaseOption(d->m_nativeInterface);
         if (option == FontDatabaseFreeType) {
             d->m_fontDatabase = new QWindowsFontDatabaseFT;
-        } else {
+        } else if (option == FontDatabaseNative){
             d->m_fontDatabase = new QWindowsFontDatabase;
-        }
+        } else {
+#ifndef Q_OS_WINCE
+            d->m_fontDatabase = new QWindowsFontDatabase;
+#else
+            if (isQMLApplication()) {
+                if (QWindowsContext::verboseIntegration) {
+                    qDebug() << "QML application detected, using FreeType rendering";
+                }
+                d->m_fontDatabase = new QWindowsFontDatabaseFT;
+            }
+            else
+                d->m_fontDatabase = new QWindowsFontDatabase;
 #endif
+        }
+#endif // QT_NO_FREETYPE
     }
     return d->m_fontDatabase;
 }
