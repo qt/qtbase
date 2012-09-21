@@ -374,6 +374,63 @@ void qMetaTypeDeleteHelper(void *t)
 }
 template <> inline void qMetaTypeDeleteHelper<void>(void *) {}
 
+namespace QtMetaTypePrivate {
+template <typename T, bool Accepted = true>
+struct QMetaTypeFunctionHelper {
+    static void Delete(void *t)
+    {
+        delete static_cast<T*>(t);
+    }
+
+    static void *Create(const void *t)
+    {
+        if (t)
+            return new T(*static_cast<const T*>(t));
+        return new T();
+    }
+
+    static void Destruct(void *t)
+    {
+        Q_UNUSED(t) // Silence MSVC that warns for POD types.
+        static_cast<T*>(t)->~T();
+    }
+
+    static void *Construct(void *where, const void *t)
+    {
+        if (t)
+            return new (where) T(*static_cast<const T*>(t));
+        return new (where) T;
+    }
+#ifndef QT_NO_DATASTREAM
+    static void Save(QDataStream &stream, const void *t)
+    {
+        stream << *static_cast<const T*>(t);
+    }
+
+    static void Load(QDataStream &stream, void *t)
+    {
+        stream >> *static_cast<T*>(t);
+    }
+#endif // QT_NO_DATASTREAM
+};
+
+template <typename T>
+struct QMetaTypeFunctionHelper<T, /* Accepted */ false> {
+    static void Delete(void *) {}
+    static void *Create(const void *) { return 0; }
+    static void Destruct(void *) {}
+    static void *Construct(void *, const void *) { return 0; }
+#ifndef QT_NO_DATASTREAM
+    static void Save(QDataStream &, const void *) {}
+    static void Load(QDataStream &, void *) {}
+#endif // QT_NO_DATASTREAM
+};
+template <>
+struct QMetaTypeFunctionHelper<void, /* Accepted */ true>
+        : public QMetaTypeFunctionHelper<void, /* Accepted */ false>
+{};
+}
+
 template <typename T>
 void *qMetaTypeCreateHelper(const void *t)
 {
@@ -575,10 +632,11 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
         return QMetaType::registerNormalizedTypedef(normalizedTypeName, typedefOf);
 
     QMetaType::TypeFlags flags(QtPrivate::QMetaTypeTypeFlags<T>::Flags);
-    return QMetaType::registerNormalizedType(normalizedTypeName, qMetaTypeDeleteHelper<T>,
-                                   qMetaTypeCreateHelper<T>,
-                                   qMetaTypeDestructHelper<T>,
-                                   qMetaTypeConstructHelper<T>,
+    return QMetaType::registerNormalizedType(normalizedTypeName,
+                                   QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Delete,
+                                   QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Create,
+                                   QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct,
+                                   QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct,
                                    sizeof(T),
                                    flags,
                                    QtPrivate::MetaObjectForType<T>::value());
@@ -608,7 +666,8 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
 )
 {
     qRegisterMetaType<T>(typeName);
-    QMetaType::registerStreamOperators(typeName, qMetaTypeSaveHelper<T>, qMetaTypeLoadHelper<T>);
+    QMetaType::registerStreamOperators(typeName, QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Save,
+                                                 QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Load);
 }
 #endif // QT_NO_DATASTREAM
 
@@ -666,7 +725,8 @@ template <typename T>
 inline int qRegisterMetaTypeStreamOperators()
 {
     register int id = qMetaTypeId<T>();
-    QMetaType::registerStreamOperators(id, qMetaTypeSaveHelper<T>, qMetaTypeLoadHelper<T>);
+    QMetaType::registerStreamOperators(id, QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Save,
+                                           QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Load);
     return id;
 }
 #endif

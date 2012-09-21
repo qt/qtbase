@@ -548,7 +548,9 @@ static int qMetaTypeCustomType_unlocked(const char *typeName, int length)
 int QMetaType::registerType(const char *typeName, Deleter deleter,
                             Creator creator)
 {
-    return registerType(typeName, deleter, creator, qMetaTypeDestructHelper<void>, qMetaTypeConstructHelper<void>, 0, TypeFlags(), 0);
+    return registerType(typeName, deleter, creator,
+                        QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
+                        QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct, 0, TypeFlags(), 0);
 }
 
 /*!
@@ -1233,7 +1235,7 @@ class TypeCreator {
     struct CreatorImpl {
         static void *Create(const int /* type */, const void *copy)
         {
-            // Using qMetaTypeCreateHelper<T> adds function call cost, even if it is a template (gcc).
+            // Using QMetaTypeFunctionHelper<T>::Create adds function call cost, even if it is a template (gcc).
             // This "copy" check is moved out from the switcher by compiler (at least by gcc)
             return copy ? new T(*static_cast<const T*>(copy)) : new T();
         }
@@ -1298,7 +1300,7 @@ namespace {
 class TypeDestroyer {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestroyerImpl {
-        static void Destroy(const int /* type */, void *where) { qMetaTypeDeleteHelper<T>(where); }
+        static void Destroy(const int /* type */, void *where) { QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Delete(where); }
     };
     template<typename T>
     struct DestroyerImpl<T, /* IsAcceptedType = */ false> {
@@ -1364,7 +1366,7 @@ namespace {
 class TypeConstructor {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct ConstructorImpl {
-        static void *Construct(const int /*type*/, void *where, const void *copy) { return qMetaTypeConstructHelper<T>(where, copy); }
+        static void *Construct(const int /*type*/, void *where, const void *copy) { return QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Construct(where, copy); }
     };
     template<typename T>
     struct ConstructorImpl<T, /* IsAcceptedType = */ false> {
@@ -1452,7 +1454,7 @@ namespace {
 class TypeDestructor {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
     struct DestructorImpl {
-        static void Destruct(const int /* type */, void *where) { qMetaTypeDestructHelper<T>(where); }
+        static void Destruct(const int /* type */, void *where) { QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Destruct(where); }
     };
     template<typename T>
     struct DestructorImpl<T, /* IsAcceptedType = */ false> {

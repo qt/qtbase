@@ -135,8 +135,8 @@ public:
 
 #ifndef QT_NO_DATASTREAM
 #  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
-    /*saveOp*/(qMetaTypeSaveHelper<Type>), \
-    /*loadOp*/(qMetaTypeLoadHelper<Type>),
+    /*saveOp*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Save), \
+    /*loadOp*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Load),
 #  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
     /*saveOp*/ 0, \
     /*loadOp*/ 0,
@@ -156,11 +156,11 @@ public:
 
 #define QT_METATYPE_INTERFACE_INIT_IMPL(Type, DATASTREAM_DELEGATE) \
 { \
-    /*creator*/(qMetaTypeCreateHelper<Type>), \
-    /*deleter*/(qMetaTypeDeleteHelper<Type>), \
+    /*creator*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Create), \
+    /*deleter*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Delete), \
     DATASTREAM_DELEGATE(Type) \
-    /*constructor*/(qMetaTypeConstructHelper<Type>), \
-    /*destructor*/(qMetaTypeDestructHelper<Type>), \
+    /*constructor*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Construct), \
+    /*destructor*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Destruct), \
     /*size*/(QTypeInfo<Type>::sizeOf), \
     /*flags*/QtPrivate::QMetaTypeTypeFlags<Type>::Flags, \
     /*metaObject*/METAOBJECT_DELEGATE(Type) \

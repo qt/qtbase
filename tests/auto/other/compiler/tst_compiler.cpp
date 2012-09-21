@@ -268,7 +268,7 @@ namespace QtTestInternal
         struct Getter {
             static QMetaType::SaveOperator saveOp()
             {
-                return ::qMetaTypeSaveHelper<T>;
+                return ::QtMetaTypePrivate::QMetaTypeFunctionHelper<T>::Save;
             }
         };
 
