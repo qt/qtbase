@@ -62,7 +62,8 @@ enum DotNET {
     NET2003 = 0x71,
     NET2005 = 0x80,
     NET2008 = 0x90,
-    NET2010 = 0xa0
+    NET2010 = 0xa0,
+    NET2012 = 0xb0
 };
 
 /*

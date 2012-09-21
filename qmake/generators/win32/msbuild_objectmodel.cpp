@@ -451,6 +451,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
             << attrTag("Condition", condition)
             << valueTag(tool.Configuration.IntermediateDirectory);
     }
+    if (tool.Configuration.CompilerVersion >= NET2012) {
+        xml << tagValue("PlatformToolSet",
+                        platformToolSetVersion(tool.Configuration.CompilerVersion));
+    }
     if ( !tool.Configuration.PrimaryOutput.isEmpty() ) {
         xml<< tag("TargetName")
             << attrTag("Condition", condition)
@@ -651,6 +655,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
             xml << tag("IntDir")
                 << attrTag("Condition", condition)
                 << valueTag(config.IntermediateDirectory);
+        }
+        if (config.CompilerVersion >= NET2012) {
+            xml << tagValue("PlatformToolSet",
+                            platformToolSetVersion(config.CompilerVersion));
         }
         if (!config.PrimaryOutput.isEmpty()) {
             xml << tag("TargetName")
@@ -2032,6 +2040,17 @@ bool VCXProjectWriter::outputFileConfig(VCFilter &filter, XmlOutput &xml, XmlOut
 QString VCXProjectWriter::generateCondition(const VCConfiguration &config)
 {
     return QStringLiteral("'$(Configuration)|$(Platform)'=='") + config.Name + QLatin1Char('\'');
+}
+
+QString VCXProjectWriter::platformToolSetVersion(const DotNET version)
+{
+    switch (version)
+    {
+    case NET2012:
+        return "v110";
+    }
+    Q_ASSERT(!"This MSVC version does not support the PlatformToolSet tag!");
+    return QString();
 }
 
 QT_END_NAMESPACE
