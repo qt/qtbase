@@ -1,5 +1,4 @@
 TARGET = qnx
-include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 QT += platformsupport platformsupport-private
@@ -140,3 +139,5 @@ include (../../../platformsupport/fontdatabases/fontdatabases.pri)
 
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
+
+load(qt_plugin)
