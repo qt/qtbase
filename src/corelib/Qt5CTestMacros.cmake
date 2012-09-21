@@ -18,7 +18,7 @@ macro(expect_pass _dir)
     "${CMAKE_CURRENT_BINARY_DIR}/${_dir}"
     --build-generator ${CMAKE_GENERATOR}
     --build-makeprogram ${CMAKE_MAKE_PROGRAM}
-    --build-project ${testname}
+    --build-project ${_dir}
     --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
   )
 endmacro()
@@ -53,7 +53,7 @@ macro(expect_fail _dir)
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/${_dir}/build"
     --build-generator ${CMAKE_GENERATOR}
     --build-makeprogram ${CMAKE_MAKE_PROGRAM}
-    --build-project ${testname}
+    --build-project ${_dir}
     --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
   )
 endmacro()
