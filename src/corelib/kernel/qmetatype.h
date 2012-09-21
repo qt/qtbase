@@ -367,13 +367,6 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMetaType::TypeFlags)
 
-template <typename T>
-void qMetaTypeDeleteHelper(void *t)
-{
-    delete static_cast<T*>(t);
-}
-template <> inline void qMetaTypeDeleteHelper<void>(void *) {}
-
 namespace QtMetaTypePrivate {
 template <typename T, bool Accepted = true>
 struct QMetaTypeFunctionHelper {
@@ -430,53 +423,6 @@ struct QMetaTypeFunctionHelper<void, /* Accepted */ true>
         : public QMetaTypeFunctionHelper<void, /* Accepted */ false>
 {};
 }
-
-template <typename T>
-void *qMetaTypeCreateHelper(const void *t)
-{
-    if (t)
-        return new T(*static_cast<const T*>(t));
-    return new T();
-}
-
-template <> inline void *qMetaTypeCreateHelper<void>(const void *) { return 0; }
-
-template <typename T>
-void qMetaTypeDestructHelper(void *t)
-{
-    Q_UNUSED(t) // Silence MSVC that warns for POD types.
-    static_cast<T*>(t)->~T();
-}
-
-template <> inline void qMetaTypeDestructHelper<void>(void *) {}
-
-template <typename T>
-void *qMetaTypeConstructHelper(void *where, const void *t)
-{
-    if (t)
-        return new (where) T(*static_cast<const T*>(t));
-    return new (where) T;
-}
-
-template <> inline void *qMetaTypeConstructHelper<void>(void *, const void *) { return 0; }
-
-#ifndef QT_NO_DATASTREAM
-template <typename T>
-void qMetaTypeSaveHelper(QDataStream &stream, const void *t)
-{
-    stream << *static_cast<const T*>(t);
-}
-
-template <> inline void qMetaTypeSaveHelper<void>(QDataStream &, const void *) {}
-
-template <typename T>
-void qMetaTypeLoadHelper(QDataStream &stream, void *t)
-{
-    stream >> *static_cast<T*>(t);
-}
-
-template <> inline void qMetaTypeLoadHelper<void>(QDataStream &, void *) {}
-#endif // QT_NO_DATASTREAM
 
 class QObject;
 class QWidget;
