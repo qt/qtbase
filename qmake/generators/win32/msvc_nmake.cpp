@@ -96,6 +96,17 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
                     t << "\nINCLUDE = " << sdk.includePath();
                     t << "\nLIB = " << sdk.libPath();
                     t << "\nPATH = " << sdk.binPath() << "\n";
+                } else {
+                    QStringList sdkStringList;
+                    foreach (const CeSdkInfo &info, sdkList)
+                        sdkStringList << info.name();
+
+                    fprintf(stderr, "Failed to find Windows CE SDK matching %s, found: %s\n"
+                                    "SDK needs to be specified in mkspec (using: %s/qmake.conf)\n"
+                                    "SDK name needs to match the following format: CE_SDK (CE_ARCH)\n",
+                            qPrintable(sdkName), qPrintable(sdkStringList.join(", ")),
+                            qPrintable(variables["QMAKESPEC"].first().toQString()));
+                    return false;
                 }
             }
         }
