@@ -108,6 +108,135 @@ typedef GLfloat GLdouble;
 
 QT_BEGIN_NAMESPACE
 
+
+// When all else fails we provide sensible fallbacks - this is needed to
+// allow compilation on OS X 10.6
+#if !defined(QT_OPENGL_ES_2)
+
+// OS X 10.6 doesn't define these which are needed below
+// OS X 10.7 and later defien them in gl3.h
+#ifndef APIENTRY
+#define APIENTRY
+#endif
+#ifndef APIENTRYP
+#define APIENTRYP APIENTRY *
+#endif
+#ifndef GLAPI
+#define GLAPI extern
+#endif
+
+
+// This block is copied from glext.h and defines the types needed by
+// a few extension classes.
+
+#include <stddef.h>
+#ifndef GL_VERSION_2_0
+/* GL type for program/shader text */
+typedef char GLchar;
+#endif
+
+#ifndef GL_VERSION_1_5
+/* GL types for handling large vertex buffer objects */
+typedef ptrdiff_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
+#endif
+
+#ifndef GL_ARB_vertex_buffer_object
+/* GL types for handling large vertex buffer objects */
+typedef ptrdiff_t GLintptrARB;
+typedef ptrdiff_t GLsizeiptrARB;
+#endif
+
+#ifndef GL_ARB_shader_objects
+/* GL types for program/shader text and shader object handles */
+typedef char GLcharARB;
+typedef unsigned int GLhandleARB;
+#endif
+
+/* GL type for "half" precision (s10e5) float data in host memory */
+#ifndef GL_ARB_half_float_pixel
+typedef unsigned short GLhalfARB;
+#endif
+
+#ifndef GL_NV_half_float
+typedef unsigned short GLhalfNV;
+#endif
+
+#ifndef GLEXT_64_TYPES_DEFINED
+/* This code block is duplicated in glxext.h, so must be protected */
+#define GLEXT_64_TYPES_DEFINED
+/* Define int32_t, int64_t, and uint64_t types for UST/MSC */
+/* (as used in the GL_EXT_timer_query extension). */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#include <inttypes.h>
+#elif defined(__sun__) || defined(__digital__)
+#include <inttypes.h>
+#if defined(__STDC__)
+#if defined(__arch64__) || defined(_LP64)
+typedef long int int64_t;
+typedef unsigned long int uint64_t;
+#else
+typedef long long int int64_t;
+typedef unsigned long long int uint64_t;
+#endif /* __arch64__ */
+#endif /* __STDC__ */
+#elif defined( __VMS ) || defined(__sgi)
+#include <inttypes.h>
+#elif defined(__SCO__) || defined(__USLC__)
+#include <stdint.h>
+#elif defined(__UNIXOS2__) || defined(__SOL64__)
+typedef long int int32_t;
+typedef long long int int64_t;
+typedef unsigned long long int uint64_t;
+#elif defined(_WIN32) && defined(__GNUC__)
+#include <stdint.h>
+#elif defined(_WIN32)
+typedef __int32 int32_t;
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#else
+/* Fallback if nothing above works */
+#include <inttypes.h>
+#endif
+#endif
+
+#ifndef GL_EXT_timer_query
+typedef int64_t GLint64EXT;
+typedef uint64_t GLuint64EXT;
+#endif
+
+#ifndef GL_ARB_sync
+typedef int64_t GLint64;
+typedef uint64_t GLuint64;
+typedef struct __GLsync *GLsync;
+#endif
+
+#ifndef GL_ARB_cl_event
+/* These incomplete types let us declare types compatible with OpenCL's cl_context and cl_event */
+struct _cl_context;
+struct _cl_event;
+#endif
+
+#ifndef GL_ARB_debug_output
+typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
+#endif
+
+#ifndef GL_AMD_debug_output
+typedef void (APIENTRY *GLDEBUGPROCAMD)(GLuint id,GLenum category,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
+#endif
+
+#ifndef GL_KHR_debug
+typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
+#endif
+
+#ifndef GL_NV_vdpau_interop
+typedef GLintptr GLvdpauSurfaceNV;
+#endif
+
+// End of block copied from glext.h
+#endif
+
+
 // Types that aren't defined in all system's gl.h files.
 typedef ptrdiff_t qopengl_GLintptr;
 typedef ptrdiff_t qopengl_GLsizeiptr;

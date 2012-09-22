@@ -213,6 +213,9 @@ public:
         //QWidgetPrivate::deleteTLSysExtra()
     }
 
+    mutable QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> versionFunctions;
+    mutable QHash<QOpenGLVersionStatus, QOpenGLVersionFunctionsBackend *> versionFunctionsBackend;
+
     void *qGLContextHandle;
     void (*qGLContextDeleteFunction)(void *handle);
 

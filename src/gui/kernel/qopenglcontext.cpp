@@ -54,10 +54,162 @@
 #include <QtGui/QScreen>
 
 #include <private/qopenglextensions_p.h>
+#include <private/qopenglversionfunctionsfactory_p.h>
 
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
+
+class QOpenGLVersionProfilePrivate
+{
+public:
+    QOpenGLVersionProfilePrivate()
+        : majorVersion(0),
+          minorVersion(0),
+          profile(QSurfaceFormat::NoProfile)
+    {}
+
+    int majorVersion;
+    int minorVersion;
+    QSurfaceFormat::OpenGLContextProfile profile;
+};
+
+
+/*!
+    \class QOpenGLVersionProfile
+    \inmodule QtGui
+    \since 5.1
+    \brief The QOpenGLVersionProfile class represents the version and if applicable
+           the profile of an OpenGL context.
+
+    An object of this class can be passed to QOpenGLContext::versionFunctions() to
+    request a functions object for a specific version and profile of OpenGL.
+
+    It also contains some helper functions to check if a version supports profiles
+    or is a legacy version.
+*/
+
+/*!
+    Creates a default invalid QOpenGLVersionProfile object.
+*/
+QOpenGLVersionProfile::QOpenGLVersionProfile()
+    : d(new QOpenGLVersionProfilePrivate)
+{
+}
+
+/*!
+    Creates a QOpenGLVersionProfile object initialised with the version and profile
+    from \a format.
+*/
+QOpenGLVersionProfile::QOpenGLVersionProfile(const QSurfaceFormat &format)
+    : d(new QOpenGLVersionProfilePrivate)
+{
+    d->majorVersion = format.majorVersion();
+    d->minorVersion = format.minorVersion();
+    d->profile = format.profile();
+}
+
+/*!
+    Constructs a copy of \a other.
+*/
+QOpenGLVersionProfile::QOpenGLVersionProfile(const QOpenGLVersionProfile &other)
+    : d(new QOpenGLVersionProfilePrivate)
+{
+    *d = *(other.d);
+}
+
+/*!
+    Destroys the QOpenGLVersionProfile object.
+*/
+QOpenGLVersionProfile::~QOpenGLVersionProfile()
+{
+    delete d;
+}
+
+/*!
+    Assigns the version and profile of \a rhs to this QOpenGLVersionProfile object.
+*/
+QOpenGLVersionProfile &QOpenGLVersionProfile::operator=(const QOpenGLVersionProfile &rhs)
+{
+    if (this == &rhs)
+        return *this;
+    *d = *(rhs.d);
+    return *this;
+}
+
+/*!
+    Returns a QPair<int,int> where the components represent the major and minor OpenGL
+    version numbers respectively.
+
+    \sa setVersion()
+*/
+QPair<int, int> QOpenGLVersionProfile::version() const
+{
+    return qMakePair( d->majorVersion, d->minorVersion);
+}
+
+/*!
+    Sets the major and minor version numbers to \a majorVersion and \a minorVersion respectively.
+
+    \sa version()
+*/
+void QOpenGLVersionProfile::setVersion(int majorVersion, int minorVersion)
+{
+    d->majorVersion = majorVersion;
+    d->minorVersion = minorVersion;
+}
+
+/*!
+    Returns the OpenGL profile. Only make sense if profiles are supported by this version.
+
+    \sa setProfile(), supportsProfiles()
+*/
+QSurfaceFormat::OpenGLContextProfile QOpenGLVersionProfile::profile() const
+{
+    return d->profile;
+}
+
+/*!
+    Sets the profile.  Only make sense if profiles are supported by this version.
+
+    \sa profile(), supportsProfiles()
+*/
+void QOpenGLVersionProfile::setProfile(QSurfaceFormat::OpenGLContextProfile profile)
+{
+    d->profile = profile;
+}
+
+/*!
+    Returns true if profiles are supported by the OpenGL version returned by version(). Only
+    OpenGL versions >= 3.2 support profiles.
+
+    \sa profile(), version()
+*/
+bool QOpenGLVersionProfile::hasProfiles() const
+{
+    return ( d->majorVersion > 3
+             || (d->majorVersion == 3 && d->minorVersion > 1));
+}
+
+/*!
+    Returns true is the OpenGL version returned by version() contains deprecated functions
+    and does not support profiles i.e. if the OpenGL version is <= 3.1.
+*/
+bool QOpenGLVersionProfile::isLegacyVersion() const
+{
+    return (d->majorVersion < 3 || (d->majorVersion == 3 && d->minorVersion == 0));
+}
+
+/*!
+    Returns true if the version number is valid. Note that for a default constructed
+    QOpenGLVersionProfile object this function will return false.
+
+    \sa setVersion(), version()
+*/
+bool QOpenGLVersionProfile::isValid() const
+{
+    return d->majorVersion > 0 && d->minorVersion >= 0;
+}
 
 class QGuiGLThreadContext
 {
@@ -367,6 +519,10 @@ void QOpenGLContext::destroy()
     d->platformGLContext = 0;
     delete d->functions;
     d->functions = 0;
+    qDeleteAll(d->versionFunctions);
+    d->versionFunctions.clear();
+    qDeleteAll(d->versionFunctionsBackend);
+    d->versionFunctionsBackend.clear();
 }
 
 /*!
@@ -422,6 +578,97 @@ QOpenGLFunctions *QOpenGLContext::functions() const
     if (!d->functions)
         const_cast<QOpenGLFunctions *&>(d->functions) = new QOpenGLExtensions(QOpenGLContext::currentContext());
     return d->functions;
+}
+
+/*!
+    \fn T *QOpenGLContext::versionFunctions() const
+
+    Returns a pointer to an object that provides access to all functions for
+    the version and profile of this context. Before using any of the functions
+    they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
+
+    Usually one would use the template version of this function to automatically
+    have the result cast to the correct type.
+
+    \code
+        QOpenGLFunctions_3_3_Core* funcs = 0;
+        funcs = context->versionFunctions<QOpenGLFunctions_3_3_Core>();
+        if (!funcs) {
+            qWarning() << "Could not obtain required OpenGL context version";
+            exit(1);
+        }
+        funcs->initializeOpenGLFunctions(context);
+    \endcode
+
+    It is possible to request a functions object for a different version and profile
+    than that for which the context was created. To do this either use the template
+    version of this function specifying the desired functions object type as the
+    template parameter or by passing in a QOpenGLVersionProfile object as an argument
+    to the non-template function.
+
+    Note that requests for function objects of other versions or profiles can fail and
+    in doing so will return a null pointer. Situations in which creation of the functions
+    object can fail are if the request cannot be satisfied due to asking for functions
+    that are not in the version or profile of this context. For example:
+
+    \list
+        \li Requesting a 3.3 core profile functions object would succeed.
+        \li Requesting a 3.3 compatibility profile functions object would fail. We would fail
+            to resolve the deprecated functions.
+        \li Requesting a 4.3 core profile functions object would fail. We would fail to resolve
+            the new core functions introduced in versions 4.0-4.3.
+        \li Requesting a 3.1 functions object would succeed. There is nothing in 3.1 that is not
+            also in 3.3 core.
+    \endlist
+
+    Note that if creating a functions object via this method that the QOpenGLContext
+    retains ownership of the object. This is to allow the object to be cached and shared.
+*/
+
+/*!
+    Returns a pointer to an object that provides access to all functions for
+    the version of the current context. Before using any of the functions
+    they must be initialized by calling QAbstractOpenGLFunctions::initializeOpenGLFunctions().
+
+    Usually one would use the template version of this function to automatically
+    have the result cast to the correct type.
+
+    \sa T *QOpenGLContext::versionFunctions()
+*/
+QAbstractOpenGLFunctions *QOpenGLContext::versionFunctions(const QOpenGLVersionProfile &versionProfile) const
+{
+    Q_D(const QOpenGLContext);
+    const QSurfaceFormat f = format();
+
+    // Ensure we have a valid version and profile. Default to context's if none specified
+    QOpenGLVersionProfile vp = versionProfile;
+    if (!vp.isValid())
+        vp = QOpenGLVersionProfile(f);
+
+    // Check that context is compatible with requested version
+    const QPair<int, int> v = qMakePair(f.majorVersion(), f.minorVersion());
+    if (v < vp.version())
+        return 0;
+
+    // If this context only offers core profile functions then we can't create
+    // function objects for legacy or compatibility profile requests
+    if (((vp.hasProfiles() && vp.profile() != QSurfaceFormat::CoreProfile) || vp.isLegacyVersion())
+        && f.profile() == QSurfaceFormat::CoreProfile)
+        return 0;
+
+    // Create object if suitable one not cached
+    QAbstractOpenGLFunctions* funcs = 0;
+    if (!d->versionFunctions.contains(vp)) {
+        funcs = QOpenGLVersionFunctionsFactory::create(vp);
+        if (funcs) {
+            funcs->setOwningContext(this);
+            d->versionFunctions.insert(vp, funcs);
+        }
+    } else {
+        funcs = d->versionFunctions.value(vp);
+    }
+
+    return funcs;
 }
 
 /*!
@@ -699,6 +946,34 @@ void QOpenGLContext::deleteQGLContext()
         d->qGLContextDeleteFunction = 0;
         d->qGLContextHandle = 0;
     }
+}
+
+/*!
+    \internal
+*/
+QOpenGLVersionFunctionsBackend *QOpenGLContext::functionsBackend(const QOpenGLVersionStatus &v) const
+{
+    Q_D(const QOpenGLContext);
+    return d->versionFunctionsBackend.value(v, 0);
+}
+
+/*!
+    \internal
+*/
+void QOpenGLContext::insertFunctionsBackend(const QOpenGLVersionStatus &v,
+                                            QOpenGLVersionFunctionsBackend *backend)
+{
+    Q_D(QOpenGLContext);
+    d->versionFunctionsBackend.insert(v, backend);
+}
+
+/*!
+    \internal
+*/
+void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionStatus &v)
+{
+    Q_D(QOpenGLContext);
+    d->versionFunctionsBackend.remove(v);
 }
 
 /*!

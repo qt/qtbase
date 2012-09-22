@@ -27,7 +27,9 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglshadercache_p.h \
                opengl/qopenglshadercache_meego_p.h \
                opengl/qtriangulator_p.h \
-               opengl/qrbtree_p.h
+               opengl/qrbtree_p.h \
+               opengl/qopenglversionfunctions.h \
+               opengl/qopenglversionfunctionsfactory_p.h
 
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
@@ -43,6 +45,62 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qopenglcustomshaderstage.cpp \
                opengl/qtriangulatingstroker.cpp \
                opengl/qopengltextureglyphcache.cpp \
-               opengl/qtriangulator.cpp
+               opengl/qtriangulator.cpp \
+               opengl/qopenglversionfunctions.cpp \
+               opengl/qopenglversionfunctionsfactory.cpp
 
+
+    !contains(QT_CONFIG, opengles2) {
+        HEADERS += opengl/qopenglfunctions_1_0.h \
+                   opengl/qopenglfunctions_1_1.h \
+                   opengl/qopenglfunctions_1_2.h \
+                   opengl/qopenglfunctions_1_3.h \
+                   opengl/qopenglfunctions_1_4.h \
+                   opengl/qopenglfunctions_1_5.h \
+                   opengl/qopenglfunctions_2_0.h \
+                   opengl/qopenglfunctions_2_1.h \
+                   opengl/qopenglfunctions_3_0.h \
+                   opengl/qopenglfunctions_3_1.h \
+                   opengl/qopenglfunctions_3_2_core.h \
+                   opengl/qopenglfunctions_3_3_core.h \
+                   opengl/qopenglfunctions_4_0_core.h \
+                   opengl/qopenglfunctions_4_1_core.h \
+                   opengl/qopenglfunctions_4_2_core.h \
+                   opengl/qopenglfunctions_4_3_core.h \
+                   opengl/qopenglfunctions_3_2_compatibility.h \
+                   opengl/qopenglfunctions_3_3_compatibility.h \
+                   opengl/qopenglfunctions_4_0_compatibility.h \
+                   opengl/qopenglfunctions_4_1_compatibility.h \
+                   opengl/qopenglfunctions_4_2_compatibility.h \
+                   opengl/qopenglfunctions_4_3_compatibility.h
+
+        SOURCES += opengl/qopenglfunctions_1_0.cpp \
+                   opengl/qopenglfunctions_1_1.cpp \
+                   opengl/qopenglfunctions_1_2.cpp \
+                   opengl/qopenglfunctions_1_3.cpp \
+                   opengl/qopenglfunctions_1_4.cpp \
+                   opengl/qopenglfunctions_1_5.cpp \
+                   opengl/qopenglfunctions_2_0.cpp \
+                   opengl/qopenglfunctions_2_1.cpp \
+                   opengl/qopenglfunctions_3_0.cpp \
+                   opengl/qopenglfunctions_3_1.cpp \
+                   opengl/qopenglfunctions_3_2_core.cpp \
+                   opengl/qopenglfunctions_3_3_core.cpp \
+                   opengl/qopenglfunctions_4_0_core.cpp \
+                   opengl/qopenglfunctions_4_1_core.cpp \
+                   opengl/qopenglfunctions_4_2_core.cpp \
+                   opengl/qopenglfunctions_4_3_core.cpp \
+                   opengl/qopenglfunctions_3_2_compatibility.cpp \
+                   opengl/qopenglfunctions_3_3_compatibility.cpp \
+                   opengl/qopenglfunctions_4_0_compatibility.cpp \
+                   opengl/qopenglfunctions_4_1_compatibility.cpp \
+                   opengl/qopenglfunctions_4_2_compatibility.cpp \
+                   opengl/qopenglfunctions_4_3_compatibility.cpp
+    }
+
+    contains(QT_CONFIG, opengles2) {
+        HEADERS += opengl/qopenglfunctions_es2.h
+
+        SOURCES += opengl/qopenglfunctions_es2.cpp
+    }
 }
