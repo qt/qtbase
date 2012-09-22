@@ -2369,17 +2369,17 @@ void tst_QAccessibility::listTest()
     // Check for events
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(1)).center());
     QAccessibleEvent selectionEvent(listView, QAccessible::Selection);
-    selectionEvent.setChild(2);
+    selectionEvent.setChild(1);
     QAccessibleEvent focusEvent(listView, QAccessible::Focus);
-    focusEvent.setChild(2);
+    focusEvent.setChild(1);
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(2)).center());
 
     QAccessibleEvent selectionEvent2(listView, QAccessible::Selection);
-    selectionEvent2.setChild(3);
+    selectionEvent2.setChild(2);
     QAccessibleEvent focusEvent2(listView, QAccessible::Focus);
-    focusEvent2.setChild(3);
+    focusEvent2.setChild(2);
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent2));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent2));
 
