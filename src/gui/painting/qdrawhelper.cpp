@@ -250,6 +250,117 @@ static const uint *QT_FASTCALL convertFromARGB32PM(uint *buffer, const uint *src
     return buffer;
 }
 
+template <QPixelLayout::BPP bpp> static
+uint QT_FASTCALL fetchPixel(const uchar *src, int index);
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP1LSB>(const uchar *src, int index)
+{
+    return (src[index >> 3] >> (index & 7)) & 1;
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP1MSB>(const uchar *src, int index)
+{
+    return (src[index >> 3] >> (~index & 7)) & 1;
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP8>(const uchar *src, int index)
+{
+    return src[index];
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP16>(const uchar *src, int index)
+{
+    return reinterpret_cast<const quint16 *>(src)[index];
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP24>(const uchar *src, int index)
+{
+    return reinterpret_cast<const quint24 *>(src)[index];
+}
+
+template <>
+inline uint QT_FASTCALL fetchPixel<QPixelLayout::BPP32>(const uchar *src, int index)
+{
+    return reinterpret_cast<const uint *>(src)[index];
+}
+
+template <QPixelLayout::BPP bpp>
+inline const uint *QT_FASTCALL fetchPixels(uint *buffer, const uchar *src, int index, int count)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = fetchPixel<bpp>(src, index + i);
+    return buffer;
+}
+
+template <>
+inline const uint *QT_FASTCALL fetchPixels<QPixelLayout::BPP32>(uint *, const uchar *src, int index, int)
+{
+    return reinterpret_cast<const uint *>(src) + index;
+}
+
+template <QPixelLayout::BPP width> static
+void QT_FASTCALL storePixel(uchar *dest, int index, uint pixel);
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP1LSB>(uchar *dest, int index, uint pixel)
+{
+    if (pixel)
+        dest[index >> 3] |= 1 << (index & 7);
+    else
+        dest[index >> 3] &= ~(1 << (index & 7));
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP1MSB>(uchar *dest, int index, uint pixel)
+{
+    if (pixel)
+        dest[index >> 3] |= 1 << (~index & 7);
+    else
+        dest[index >> 3] &= ~(1 << (~index & 7));
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP8>(uchar *dest, int index, uint pixel)
+{
+    dest[index] = uchar(pixel);
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP16>(uchar *dest, int index, uint pixel)
+{
+    reinterpret_cast<quint16 *>(dest)[index] = quint16(pixel);
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP24>(uchar *dest, int index, uint pixel)
+{
+    reinterpret_cast<quint24 *>(dest)[index] = quint24(pixel);
+}
+
+template <>
+inline void QT_FASTCALL storePixel<QPixelLayout::BPP32>(uchar *dest, int index, uint pixel)
+{
+    reinterpret_cast<uint *>(dest)[index] = pixel;
+}
+
+template <QPixelLayout::BPP width>
+inline void QT_FASTCALL storePixels(uchar *dest, const uint *src, int index, int count)
+{
+    for (int i = 0; i < count; ++i)
+        storePixel<width>(dest, index + i, src[i]);
+}
+
+template <>
+inline void QT_FASTCALL storePixels<QPixelLayout::BPP32>(uchar *dest, const uint *src, int index, int count)
+{
+    memcpy(reinterpret_cast<uint *>(dest) + index, src, count * sizeof(uint));
+}
+
 // Note:
 // convertToArgb32() assumes that no color channel is less than 4 bits.
 // convertFromArgb32() assumes that no color channel is more than 8 bits.
