@@ -278,9 +278,9 @@ int Value::usedStorage(const Base *b) const
     case QJsonValue::String: {
         char *d = data(b);
         if (latinOrIntValue)
-            s = sizeof(ushort) + *(ushort *)d;
+            s = sizeof(ushort) + qFromLittleEndian(*(ushort *)d);
         else
-            s = sizeof(int) + sizeof(ushort)*(*(int *)d);
+            s = sizeof(int) + sizeof(ushort) * qFromLittleEndian(*(int *)d);
         break;
     }
     case QJsonValue::Array:

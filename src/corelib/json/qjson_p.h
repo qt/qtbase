@@ -590,9 +590,9 @@ public:
     int size() const {
         int s = sizeof(Entry);
         if (value.latinKey)
-            s += sizeof(ushort) + *(ushort *) ((const char *)this + sizeof(Entry));
+            s += sizeof(ushort) + qFromLittleEndian(*(ushort *) ((const char *)this + sizeof(Entry)));
         else
-            s += sizeof(uint) + *(int *) ((const char *)this + sizeof(Entry));
+            s += sizeof(uint) + qFromLittleEndian(*(int *) ((const char *)this + sizeof(Entry)));
         return alignedSize(s);
     }
 
