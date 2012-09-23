@@ -1756,10 +1756,10 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "use such applications in combination with software subject to the "
         "terms of the GNU GPL version 3.0 or where you are otherwise willing "
         "to comply with the terms of the GNU GPL version 3.0.</p>"
-        "<p>Please see <a href=\"http://qt.nokia.com/products/licensing\">qt.nokia.com/products/licensing</a> "
+        "<p>Please see <a href=\"http://qt.digia.com/Product/Licensing/\">qt.digia.com/Product/Licensing</a> "
         "for an overview of Qt licensing.</p>"
         "<p>Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).</p>"
-        "<p>Qt is a Nokia product. See <a href=\"http://qt.nokia.com/\">qt.nokia.com</a> "
+        "<p>Qt is a Digia product. See <a href=\"http://qt.digia.com/\">qt.digia.com</a> "
         "for more information.</p>"
         );
     QMessageBox *msgBox = new QMessageBox(parent);
