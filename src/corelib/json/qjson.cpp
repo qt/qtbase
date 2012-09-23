@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 namespace QJsonPrivate
 {
 
-#ifdef Q_LITTLE_ENDIAN
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
 #define Q_TO_LITTLE_ENDIAN(x) (x)
 #else
 #define Q_TO_LITTLE_ENDIAN(x) ( ((x & 0xff) << 24) | ((x & 0xff00) << 8) | ((x & 0xff0000) >> 8) | ((x & 0xff000000) >> 24) )
