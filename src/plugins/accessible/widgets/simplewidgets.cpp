@@ -55,6 +55,7 @@
 #include <qlineedit.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
+#include <qtextdocument.h>
 #include <QtCore/qvarlengtharray.h>
 
 #ifdef Q_OS_MAC
@@ -392,7 +393,14 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
         str = widget()->accessibleName();
         if (str.isEmpty()) {
             if (qobject_cast<QLabel*>(object())) {
-                str = qobject_cast<QLabel*>(object())->text();
+                QLabel *label = qobject_cast<QLabel*>(object());
+                str = label->text();
+                if (label->textFormat() == Qt::RichText
+                    || (label->textFormat() == Qt::AutoText && Qt::mightBeRichText(str))) {
+                    QTextDocument doc;
+                    doc.setHtml(str);
+                    str = doc.toPlainText();
+                }
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
