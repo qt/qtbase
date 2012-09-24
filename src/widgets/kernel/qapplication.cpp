@@ -3771,7 +3771,7 @@ int QApplication::doubleClickInterval()
 }
 
 /*!
-    \fn QGuiApplication::keyboardInputDirection()
+    \fn QApplication::keyboardInputDirection()
     \since 4.2
     \deprecated
 
@@ -3867,14 +3867,6 @@ int QApplication::keyboardInputInterval()
     \obsolete
 
     Returns the current keyboard input locale. Replaced with QInputMethod::locale()
-*/
-
-/*!
-    \fn Qt::LayoutDirection QApplication::keyboardInputDirection()
-    \since 4.2
-    \obsolete
-
-    Returns the current keyboard input direction. Replaced with QInputMethod::inputDirection()
 */
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
