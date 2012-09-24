@@ -70,6 +70,7 @@ public:
         BinariesPath,
         PluginsPath,
         ImportsPath,
+        ArchDataPath,
         DataPath,
         TranslationsPath,
         ExamplesPath,

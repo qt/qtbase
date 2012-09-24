@@ -56,6 +56,7 @@ static const struct {
 } propList[] = {
     { "QT_SYSROOT", QLibraryInfo::SysrootPath, true },
     { "QT_INSTALL_PREFIX", QLibraryInfo::PrefixPath, false },
+    { "QT_INSTALL_ARCHDATA", QLibraryInfo::ArchDataPath, false },
     { "QT_INSTALL_DATA", QLibraryInfo::DataPath, false },
     { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath, false },
     { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath, false },

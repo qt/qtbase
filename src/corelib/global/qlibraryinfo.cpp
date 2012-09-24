@@ -261,14 +261,15 @@ static const struct {
     char key[14], value[13];
 } qtConfEntries[] = {
     { "Prefix", "." },
-    { "Documentation", "doc" },
+    { "Documentation", "doc" }, // should be ${Data}/doc
     { "Headers", "include" },
     { "Libraries", "lib" },
     { "Binaries", "bin" },
-    { "Plugins", "plugins" },
-    { "Imports", "imports" },
+    { "Plugins", "plugins" }, // should be ${ArchData}/plugins
+    { "Imports", "imports" }, // should be ${ArchData}/imports
+    { "ArchData", "." },
     { "Data", "." },
-    { "Translations", "translations" },
+    { "Translations", "translations" }, // should be ${Data}/translations
     { "Examples", "examples" },
     { "Tests", "tests" },
 #ifdef QT_BOOTSTRAPPED
@@ -444,7 +445,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     \value BinariesPath The location of installed Qt binaries (tools and applications).
     \value PluginsPath The location of installed Qt plugins.
     \value ImportsPath The location of installed QML extensions to import.
-    \value DataPath The location of general Qt data.
+    \value ArchDataPath The location of general architecture-dependent Qt data.
+    \value DataPath The location of general architecture-independent Qt data.
     \value TranslationsPath The location of translation information for Qt strings.
     \value ExamplesPath The location for examples upon install.
     \value TestsPath The location of installed Qt testcases.

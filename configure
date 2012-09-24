@@ -884,6 +884,7 @@ QT_INSTALL_LIBS=
 QT_INSTALL_BINS=
 QT_INSTALL_PLUGINS=
 QT_INSTALL_IMPORTS=
+QT_INSTALL_ARCHDATA=
 QT_INSTALL_DATA=
 QT_INSTALL_TRANSLATIONS=
 QT_INSTALL_SETTINGS=
@@ -992,7 +993,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-archdatadir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1206,6 +1207,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     importdir)
         QT_INSTALL_IMPORTS="$VAL"
+        ;;
+    archdatadir)
+        QT_INSTALL_ARCHDATA="$VAL"
         ;;
     datadir)
         QT_INSTALL_DATA="$VAL"
@@ -2772,11 +2776,6 @@ if [ -z "$QT_INSTALL_PREFIX" ]; then
 fi
 QT_INSTALL_PREFIX=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PREFIX"`
 
-if [ -z "$QT_INSTALL_DOCS" ]; then #default
-    QT_INSTALL_DOCS="$QT_INSTALL_PREFIX/doc" #fallback
-fi
-QT_INSTALL_DOCS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DOCS"`
-
 if [ -z "$QT_INSTALL_HEADERS" ]; then #default
     QT_INSTALL_HEADERS="$QT_INSTALL_PREFIX/include"
 fi
@@ -2787,28 +2786,38 @@ if [ -z "$QT_INSTALL_LIBS" ]; then #default
 fi
 QT_INSTALL_LIBS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBS"`
 
+if [ -z "$QT_INSTALL_ARCHDATA" ]; then #default
+    QT_INSTALL_ARCHDATA="$QT_INSTALL_PREFIX" #fallback
+fi
+QT_INSTALL_ARCHDATA=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_ARCHDATA"`
+
+if [ -z "$QT_INSTALL_DATA" ]; then #default
+    QT_INSTALL_DATA="$QT_INSTALL_PREFIX" #fallback
+fi
+QT_INSTALL_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DATA"`
+
 if [ -z "$QT_INSTALL_BINS" ]; then #default
     QT_INSTALL_BINS="$QT_INSTALL_PREFIX/bin" #fallback
 fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
+if [ -z "$QT_INSTALL_DOCS" ]; then #default
+    QT_INSTALL_DOCS="$QT_INSTALL_DATA/doc" #fallback
+fi
+QT_INSTALL_DOCS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DOCS"`
+
 if [ -z "$QT_INSTALL_PLUGINS" ]; then #default
-    QT_INSTALL_PLUGINS="$QT_INSTALL_PREFIX/plugins" #fallback
+    QT_INSTALL_PLUGINS="$QT_INSTALL_ARCHDATA/plugins" #fallback
 fi
 QT_INSTALL_PLUGINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_PLUGINS"`
 
 if [ -z "$QT_INSTALL_IMPORTS" ]; then #default
-    QT_INSTALL_IMPORTS="$QT_INSTALL_PREFIX/imports" #fallback
+    QT_INSTALL_IMPORTS="$QT_INSTALL_ARCHDATA/imports" #fallback
 fi
 QT_INSTALL_IMPORTS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_IMPORTS"`
 
-if [ -z "$QT_INSTALL_DATA" ]; then #default
-    QT_INSTALL_DATA="$QT_INSTALL_PREFIX"
-fi
-QT_INSTALL_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_DATA"`
-
 if [ -z "$QT_INSTALL_TRANSLATIONS" ]; then #default
-    QT_INSTALL_TRANSLATIONS="$QT_INSTALL_PREFIX/translations"
+    QT_INSTALL_TRANSLATIONS="$QT_INSTALL_DATA/translations" #fallback
 fi
 QT_INSTALL_TRANSLATIONS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_TRANSLATIONS"`
 
@@ -2855,7 +2864,7 @@ if [ -z "$QT_HOST_DATA" ]; then #default
     if $haveHpx; then
         QT_HOST_DATA="$QT_HOST_PREFIX"
     else
-        QT_HOST_DATA="$QT_INSTALL_DATA"
+        QT_HOST_DATA="$QT_INSTALL_ARCHDATA"
     fi
 else
     QT_HOST_DATA=`"$relpath/config.tests/unix/makeabs" "$QT_HOST_DATA"`
@@ -2995,20 +3004,22 @@ Installation options:
 
     -bindir <dir> ......... Executables will be installed to <dir>
                             (default PREFIX/bin)
-    -libdir <dir> ......... Libraries will be installed to <dir>
-                            (default PREFIX/lib)
-    -docdir <dir> ......... Documentation will be installed to <dir>
-                            (default PREFIX/doc)
     -headerdir <dir> ...... Headers will be installed to <dir>
                             (default PREFIX/include)
-    -plugindir <dir> ...... Plugins will be installed to <dir>
-                            (default PREFIX/plugins)
-    -importdir <dir> ...... Imports for QML will be installed to <dir>
-                            (default PREFIX/imports)
-    -datadir <dir> ........ Data used by Qt programs will be installed to <dir>
+    -libdir <dir> ......... Libraries will be installed to <dir>
+                            (default PREFIX/lib)
+    -archdatadir <dir>..... Arch-dependent data used by Qt will be installed to <dir>
                             (default PREFIX)
+    -plugindir <dir> ...... Plugins will be installed to <dir>
+                            (default ARCHDATADIR/plugins)
+    -importdir <dir> ...... Imports for QML will be installed to <dir>
+                            (default ARCHDATADIR/imports)
+    -datadir <dir> ........ Arch-independent data used by Qt will be installed to <dir>
+                            (default PREFIX)
+    -docdir <dir> ......... Documentation will be installed to <dir>
+                            (default DATADIR/doc)
     -translationdir <dir> . Translations of Qt programs will be installed to <dir>
-                            (default PREFIX/translations)
+                            (default DATADIR/translations)
     -sysconfdir <dir> ..... Settings used by Qt programs will be looked for in <dir>
                             (default PREFIX/etc/settings)
     -examplesdir <dir> .... Examples will be installed to <dir>
@@ -3486,6 +3497,7 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_binspath=$QT_INSTALL_BINS",
     "qt_plugpath=$QT_INSTALL_PLUGINS",
     "qt_impspath=$QT_INSTALL_IMPORTS",
+    "qt_adatpath=$QT_INSTALL_ARCHDATA",
     "qt_datapath=$QT_INSTALL_DATA",
     "qt_trnspath=$QT_INSTALL_TRANSLATIONS",
     "qt_xmplpath=$QT_INSTALL_EXAMPLES",
@@ -3644,7 +3656,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         fi
         QMAKE_BIN_DIR="$QT_INSTALL_BINS"
         [ -z "$QMAKE_BIN_DIR" ] && QMAKE_BIN_DIR="${QT_INSTALL_PREFIX}/bin"
-        QMAKE_DATA_DIR="$QT_INSTALL_DATA"
+        QMAKE_DATA_DIR="$QT_INSTALL_ARCHDATA"
         [ -z "$QMAKE_DATA_DIR" ] && QMAKE_DATA_DIR="${QT_INSTALL_PREFIX}"
         echo >>"$mkfile"
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
