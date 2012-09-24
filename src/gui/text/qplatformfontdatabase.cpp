@@ -273,7 +273,7 @@ void QPlatformFontDatabase::populateFontDatabase()
 
 /*!
     Returns a multi font engine in the specified \a script to encapsulate \a fontEngine with the
-    option to fall back to to the fonts given by \a fallbacks if \a fontEngine does not support
+    option to fall back to the fonts given by \a fallbacks if \a fontEngine does not support
     a certain character.
 */
 QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine,

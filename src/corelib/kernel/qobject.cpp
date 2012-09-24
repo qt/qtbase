@@ -348,7 +348,7 @@ QObjectList QObjectPrivate::senderList() const
 
 /*!
   \internal
-  Add the connection \a c to to the list of connections of the sender's object
+  Add the connection \a c to the list of connections of the sender's object
   for the specified \a signal
 
   The signalSlotLock() of the sender and receiver must be locked while calling

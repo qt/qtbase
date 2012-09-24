@@ -225,7 +225,7 @@ QUrl QNetworkCacheMetaData::url() const
 }
 
 /*!
-    Sets the URL this network cache meta data to to be \a url.
+    Sets the URL this network cache meta data to be \a url.
 
     The password and fragment are removed from the url.
 

@@ -414,7 +414,7 @@ QUrl QNetworkRequest::url() const
 }
 
 /*!
-    Sets the URL this network request is referring to to be \a url.
+    Sets the URL this network request is referring to be \a url.
 
     \sa url()
 */

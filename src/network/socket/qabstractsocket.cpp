@@ -366,7 +366,7 @@
     IP_MULTICAST_LOOP (multicast loopback) socket option.
 
     \value TypeOfServiceOption This option is not supported on
-    Windows. This maps to to the IP_TOS socket option.
+    Windows. This maps to the IP_TOS socket option.
 
     Possible values for the \e{TypeOfServiceOption} are:
 

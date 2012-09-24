@@ -489,7 +489,7 @@ bool QLabel::wordWrap() const
     If a label displays text, the indent applies to the left edge if
     alignment() is Qt::AlignLeft, to the right edge if alignment() is
     Qt::AlignRight, to the top edge if alignment() is Qt::AlignTop, and
-    to to the bottom edge if alignment() is Qt::AlignBottom.
+    to the bottom edge if alignment() is Qt::AlignBottom.
 
     If indent is negative, or if no indent has been set, the label
     computes the effective indent as follows: If frameWidth() is 0,

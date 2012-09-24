@@ -689,7 +689,7 @@
 
     We set the layout and window title, as well as connect the signals to their
     respective slots. Notice that \c{findButton}'s \l{QPushButton::clicked()}
-    {clicked()} signal is connected to to \c findClicked() and
+    {clicked()} signal is connected to \c findClicked() and
     \l{QDialog::accept()}{accept()}. The \l{QDialog::accept()}{accept()} slot
     provided by QDialog hides the dialog and sets the result code to
     \l{QDialog::}{Accepted}. We use this function to help \c{AddressBook}'s

@@ -204,7 +204,7 @@
 
     Here is the interesting part: We create an instance of MyModel and use 
     \l{QTableView::setModel()}{tableView.setModel(&myModel);} to pass a
-    pointer of it to to \l{QTableView}{tableView}. \l{QTableView}{tableView}
+    pointer of it to \l{QTableView}{tableView}. \l{QTableView}{tableView}
     will invoke the methods of the pointer it has received to find out two
     things:
 

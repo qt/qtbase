@@ -47,7 +47,7 @@
     With the Scribble application the users can draw an image.  The
     \uicontrol File menu gives the users the possibility to open and edit an
     existing image file, save an image and exit the application. While
-    drawing, the \uicontrol Options menu allows the users to to choose the
+    drawing, the \uicontrol Options menu allows the users to choose the
     pen color and pen width, as well as clear the screen. In addition
     the \uicontrol Help menu provides the users with information about the
     Scribble example in particular, and about Qt in general.
