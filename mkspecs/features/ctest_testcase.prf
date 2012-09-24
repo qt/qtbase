@@ -1,5 +1,10 @@
 
-CMAKE_VERSION = $$system(cmake --version)
+win32 {
+    CMAKE_VERSION = $$system(cmake --version 2>NUL)
+} else {
+    CMAKE_VERSION = $$system(cmake --version 2>/dev/null)
+}
+
 
 check.commands =
 isEmpty(CMAKE_VERSION) {
