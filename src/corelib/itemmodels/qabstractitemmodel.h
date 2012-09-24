@@ -59,12 +59,12 @@ class Q_CORE_EXPORT QModelIndex
 {
     friend class QAbstractItemModel;
 public:
-    inline QModelIndex() : r(-1), c(-1), p(0), m(0) {}
+    inline QModelIndex() : r(-1), c(-1), i(0), m(0) {}
     // compiler-generated copy/move ctors/assignment operators are fine!
     inline int row() const { return r; }
     inline int column() const { return c; }
-    inline void *internalPointer() const { return p; }
-    inline quintptr internalId() const { return quintptr(p); }
+    inline quintptr internalId() const { return i; }
+    inline void *internalPointer() const { return reinterpret_cast<void*>(i); }
     inline QModelIndex parent() const;
     inline QModelIndex sibling(int row, int column) const;
     inline QModelIndex child(int row, int column) const;
@@ -73,27 +73,23 @@ public:
     inline const QAbstractItemModel *model() const { return m; }
     inline bool isValid() const { return (r >= 0) && (c >= 0) && (m != 0); }
     inline bool operator==(const QModelIndex &other) const
-        { return (other.r == r) && (other.p == p) && (other.c == c) && (other.m == m); }
+        { return (other.r == r) && (other.i == i) && (other.c == c) && (other.m == m); }
     inline bool operator!=(const QModelIndex &other) const
         { return !(*this == other); }
     inline bool operator<(const QModelIndex &other) const
         {
-          if (r < other.r) return true;
-          if (r == other.r) {
-              if (c < other.c) return true;
-              if (c == other.c) {
-                  if (p < other.p) return true;
-                  if (p == other.p) return m < other.m;
-              }
-          }
-          return false; }
+            return  r <  other.r
+                || (r == other.r && (c <  other.c
+                                 || (c == other.c && (i <  other.i
+                                                  || (i == other.i && m < other.m )))));
+        }
 private:
     inline QModelIndex(int arow, int acolumn, void *ptr, const QAbstractItemModel *amodel)
-        : r(arow), c(acolumn), p(ptr), m(amodel) {}
+        : r(arow), c(acolumn), i(reinterpret_cast<quintptr>(ptr)), m(amodel) {}
     inline QModelIndex(int arow, int acolumn, quintptr id, const QAbstractItemModel *amodel)
-        : r(arow), c(acolumn), p(reinterpret_cast<void*>(id)), m(amodel) {}
+        : r(arow), c(acolumn), i(id), m(amodel) {}
     int r, c;
-    void *p;
+    quintptr i;
     const QAbstractItemModel *m;
 };
 Q_DECLARE_TYPEINFO(QModelIndex, Q_MOVABLE_TYPE);
