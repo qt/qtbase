@@ -229,8 +229,6 @@ private slots:
     void openDirectory();
     void writeNothing();
 
-public:
-// disabled this test for the moment... it hangs
     void invalidFile_data();
     void invalidFile();
 
@@ -1062,6 +1060,7 @@ void tst_QFile::invalidFile()
 {
     QFETCH( QString, fileName );
     QFile f( fileName );
+    QEXPECT_FAIL("colon1", "QTBUG-27306", Continue);
     QVERIFY( !f.open( QIODevice::ReadWrite ) );
 }
 
