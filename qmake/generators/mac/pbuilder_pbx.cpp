@@ -290,6 +290,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
           << "\t\t\t" << writeSettings("children", grp_it.value(), SettingsAsList, 4) << ";" << "\n"
           << "\t\t\t" << writeSettings("name", escapeFilePath(grp_it.key().section(Option::dir_sep, -1))) << ";" << "\n"
           << "\t\t\t" << writeSettings("refType", "4", SettingsNoQuote) << ";" << "\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";" << "\n"
           << "\t\t" << "};" << "\n";
     }
 
@@ -551,14 +552,16 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (project->isEmpty(inputs.at(input).toKey()))
                     continue;
                 bool duplicate = false;
-                for(int i = 0; i < sources.size(); ++i) {
-                    if(sources.at(i).keyName() == inputs.at(input)) {
-                        duplicate = true;
-                        break;
+                bool isObj = project->values(ProKey(*it + ".CONFIG")).indexOf("no_link") == -1;
+                if (!isObj) {
+                    for (int i = 0; i < sources.size(); ++i) {
+                        if (sources.at(i).keyName() == inputs.at(input)) {
+                            duplicate = true;
+                            break;
+                        }
                     }
                 }
-                if(!duplicate) {
-                    bool isObj = project->values(ProKey(*it + ".CONFIG")).indexOf("no_link") == -1;
+                if (!duplicate) {
                     const ProStringList &outputs = project->values(ProKey(*it + ".variable_out"));
                     for(int output = 0; output < outputs.size(); ++output) {
                         if(outputs.at(output) != "OBJECT") {
@@ -624,7 +627,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
               << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
               << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";" << "\n"
               << "\t\t\t" << writeSettings("path", escapeFilePath(file)) << ";" << "\n"
-              << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(file)), SettingsNoQuote) << ";" << "\n";
+              << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(file)), SettingsNoQuote) << ";" << "\n"
+              << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(file)) << ";" << "\n";
             QString filetype;
             for (QStringList::Iterator cppit = Option::cpp_ext.begin(); cppit != Option::cpp_ext.end(); ++cppit) {
                 if (file.endsWith((*cppit))) {
@@ -666,6 +670,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("children", grp_it.value(), SettingsAsList, 4) << ";" << "\n"
           << "\t\t\t" << writeSettings("name", escapeFilePath(grp_it.key().section(Option::dir_sep, -1))) << ";" << "\n"
           << "\t\t\t" << writeSettings("refType", "4", SettingsNoQuote) << ";" << "\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";" << "\n"
           << "\t\t" << "};" << "\n";
     }
 
@@ -867,9 +872,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     fdirs << "/System/Library/Frameworks/" << "/Library/Frameworks/";
                     for(int fdir = 0; fdir < fdirs.count(); fdir++) {
                         if(exists(fdirs[fdir] + QDir::separator() + framework + ".framework")) {
-                            tmp.removeAt(x);
                             remove = true;
                             library = fdirs[fdir] + Option::dir_sep + framework + ".framework";
+                            tmp.removeAt(x);
                             break;
                         }
                     }
@@ -899,6 +904,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                       << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";" << "\n"
                       << "\t\t\t" << writeSettings("path", escapeFilePath(library)) << ";" << "\n"
                       << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(library)), SettingsNoQuote) << ";" << "\n"
+                      << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";" << "\n"
                       << "\t\t" << "};" << "\n";
                     project->values("QMAKE_PBX_LIBRARIES").append(key);
                     QString build_key = keyFor(library + ".BUILDABLE");
@@ -967,6 +973,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
               << "\t\t\t" << writeSettings("name", escapeFilePath(grp)) << ";" << "\n"
               << "\t\t\t" << writeSettings("path", ProStringList()) << ";" << "\n"
               << "\t\t\t" << writeSettings("refType", "4", SettingsNoQuote) << ";" << "\n"
+              << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";" << "\n"
               << "\t\t" << "};" << "\n";
         }
     }
@@ -1032,6 +1039,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                   << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
                   << "\t\t\t" << writeSettings("path", escapeFilePath(fn)) << ";" << "\n"
                   << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(fn)), SettingsNoQuote) << ";" << "\n"
+                  << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(fn)) << ";" << "\n"
                   << "\t\t" << "};" << "\n";
                 QString copy_file_key = keyFor("QMAKE_PBX_BUNDLE_COPY_FILE." + bundle_data[i] + "-" + fn);
                 pbx_files += copy_file_key;
@@ -1068,6 +1076,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Source [bundle data]") << ";" << "\n"
           << "\t\t\t" << writeSettings("path", ProStringList()) << ";" << "\n"
           << "\t\t\t" << writeSettings("refType", "4", SettingsNoQuote) << ";" << "\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";" << "\n"
           << "\t\t" << "};" << "\n";
     }
 
@@ -1079,6 +1088,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t\t\t" << writeSettings("name", escapeFilePath(project->first("QMAKE_ORIG_TARGET"))) << ";" << "\n"
       << "\t\t\t" << writeSettings("path", ProStringList()) << ";" << "\n"
       << "\t\t\t" << writeSettings("refType", "4", SettingsNoQuote) << ";" << "\n"
+      << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";" << "\n"
       << "\t\t" << "};" << "\n";
     //REFERENCE
     project->values("QMAKE_PBX_PRODUCTS").append(keyFor(pbx_dir + "QMAKE_PBX_REFERENCE"));
@@ -1143,6 +1153,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("isa", "PBXGroup", SettingsNoQuote) << ";" << "\n"
           << "\t\t\t" << writeSettings("name", "Products") << ";" << "\n"
           << "\t\t\t" << writeSettings("refType", "4", SettingsNoQuote) << ";" << "\n"
+          << "\t\t\t" << writeSettings("sourceTree", "<Group>") << ";" << "\n"
           << "\t\t" << "};" << "\n";
     }
     //TARGET
@@ -1413,28 +1424,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                                                      + fixListForOutput("QMAKE_LIBS_PRIVATE"),
                                                      SettingsAsList, 6) << ";" << "\n";
                 }
-                {
-                    ProStringList archs;
-                    if (project->isActiveConfig("x86"))
-                        archs += "i386";
-                    if (project->isActiveConfig("ppc")) {
-                        if (!archs.isEmpty())
-                            archs += " ";
-                        archs += "ppc";
-                    }
-                    if (project->isActiveConfig("ppc64")) {
-                        if (!archs.isEmpty())
-                            archs += " ";
-                        archs += "ppc64";
-                    }
-                    if (project->isActiveConfig("x86_64")) {
-                        if (!archs.isEmpty())
-                            archs += " ";
-                        archs += "x86_64";
-                    }
-                    if (!archs.isEmpty())
-                        t << "\t\t\t\t" << writeSettings("ARCHS", archs) << ";" << "\n";
-                }
+                const ProStringList &archs = project->values("QT_ARCH");
+                if (!archs.isEmpty())
+                    t << "\t\t\t\t" << writeSettings("ARCHS", archs) << ";" << "\n";
             } else {
                 if (project->first("TEMPLATE") == "app") {
                     t << "\t\t\t\t" << writeSettings("PRODUCT_NAME", fixForOutput(project->first("QMAKE_ORIG_TARGET").toQString())) << ";" << "\n";
@@ -1725,6 +1717,14 @@ ProjectBuilderMakefileGenerator::reftypeForFile(const QString &where)
     int ret = 0; //absolute is the default..
     if(QDir::isRelativePath(unescapeFilePath(where)))
         ret = 4; //relative
+    return ret;
+}
+
+QString ProjectBuilderMakefileGenerator::sourceTreeForFile(const QString &where)
+{
+    QString ret = "<absolute>";
+    if (QDir::isRelativePath(unescapeFilePath(where)))
+        ret = "SOURCE_ROOT"; //relative
     return ret;
 }
 
