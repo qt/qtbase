@@ -359,7 +359,7 @@ QStringList QMimeType::suffixes() const
 
     QStringList result;
     foreach (const QString &pattern, d->globPatterns) {
-        // Not a simple suffix if if looks like: README or *. or *.* or *.JP*G or *.JP?
+        // Not a simple suffix if it looks like: README or *. or *.* or *.JP*G or *.JP?
         if (pattern.startsWith(QLatin1String("*.")) &&
             pattern.length() > 2 &&
             pattern.indexOf(QLatin1Char('*'), 2) < 0 && pattern.indexOf(QLatin1Char('?'), 2) < 0) {

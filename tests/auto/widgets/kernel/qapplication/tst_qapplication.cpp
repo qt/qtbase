@@ -753,7 +753,7 @@ void tst_QApplication::quitOnLastWindowClosed()
         int returnValue = app.exec();
         QCOMPARE(returnValue, 0);
         // failure here means the timer above didn't fire, and the
-        // quit was caused the the dialog being closed (not the window)
+        // quit was caused the dialog being closed (not the window)
         QCOMPARE(timerSpy.count(), 1);
         QCOMPARE(appSpy.count(), 2);
     }

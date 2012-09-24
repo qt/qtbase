@@ -250,7 +250,7 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
     Creates an anchor between the edge \a firstEdge of item \a firstItem and the edge \a secondEdge
     of item \a secondItem. The spacing of the anchor is picked up from the style. Anchors
     between a layout edge and an item edge will have a size of 0.
-    If there is already an anchor between the edges, the the new anchor will replace the old one.
+    If there is already an anchor between the edges, the new anchor will replace the old one.
 
     \a firstItem and \a secondItem are automatically added to the layout if they are not part
     of the layout. This means that count() can increase by up to 2.

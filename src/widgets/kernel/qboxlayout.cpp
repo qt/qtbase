@@ -384,7 +384,7 @@ void QBoxLayoutPrivate::setupGeom()
         }
 
         a[i].empty = empty;
-        a[i].spacing = 0;   // might be be initialized with a non-zero value in a later iteration
+        a[i].spacing = 0;   // might be initialized with a non-zero value in a later iteration
         hasHfw = hasHfw || box->item->hasHeightForWidth();
     }
 

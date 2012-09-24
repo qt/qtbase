@@ -122,7 +122,7 @@ void tst_MacGui::dummy()
     const int delay = 1000;
     clickLater(interface, Qt::LeftButton, delay);
 
-    // Show dialog and and enter event loop.
+    // Show dialog and enter event loop.
     connect(wn.getWidget(interface), SIGNAL(clicked()), SLOT(exitLoopSlot()));
     const int timeout = 4;
     QTestEventLoop::instance().enterLoop(timeout);
@@ -148,7 +148,7 @@ void tst_MacGui::splashScreenModality()
     const int delay = 1000;
     clickLater(interface, Qt::LeftButton, delay);
 
-    // Show dialog and and enter event loop.
+    // Show dialog and enter event loop.
     connect(wn.getWidget(interface), SIGNAL(clicked()), SLOT(exitLoopSlot()));
     const int timeout = 4;
     QTestEventLoop::instance().enterLoop(timeout);

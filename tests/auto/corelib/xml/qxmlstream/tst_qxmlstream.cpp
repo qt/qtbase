@@ -276,7 +276,7 @@ public:
     int skipCount;
 
     /**
-     * \a baseURI is the the URI of where the catalog file resides.
+     * \a baseURI is the URI of where the catalog file resides.
      */
     TestSuiteHandler(const QUrl &baseURI) : runCount(0),
                                             skipCount(0)

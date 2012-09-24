@@ -1988,7 +1988,7 @@ namespace {
     //    indicating success or not
     // b) the GNU version, which returns a char*, which may or may not
     //    be the beginning of the buffer we used
-    // The GNU libc manpage for strerror_r says you should use the the XSI
+    // The GNU libc manpage for strerror_r says you should use the XSI
     // version in portable code. However, it's impossible to do that if
     // _GNU_SOURCE is defined so we use C++ overloading to decide what to do
     // depending on the return type

@@ -782,7 +782,7 @@ void QTapAndHoldGesture::setPosition(const QPointF &value)
 /*!
     Set the timeout, in milliseconds, before the gesture triggers.
 
-    The recognizer will detect a touch down and and if \a msecs
+    The recognizer will detect a touch down and if \a msecs
     later the touch is still down, it will trigger the QTapAndHoldGesture.
     The default value is 700 milliseconds.
 */
@@ -795,7 +795,7 @@ void QTapAndHoldGesture::setTimeout(int msecs)
 /*!
     Gets the timeout, in milliseconds, before the gesture triggers.
 
-    The recognizer will detect a touch down and and if timeout()
+    The recognizer will detect a touch down and if timeout()
     later the touch is still down, it will trigger the QTapAndHoldGesture.
     The default value is 700 milliseconds.
 */

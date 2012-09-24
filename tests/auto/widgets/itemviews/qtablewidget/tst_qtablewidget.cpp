@@ -1462,7 +1462,7 @@ void tst_QTableWidget::task219380_removeLastRow()
     testWidget->setColumnCount(1);
     testWidget->setRowCount(20);
     QTableWidgetItem item;
-    testWidget->setItem(18, 0, &item); //we put the item in the the second last row
+    testWidget->setItem(18, 0, &item); //we put the item in the second last row
     testWidget->openPersistentEditor(&item);
 
     testWidget->scrollToBottom();

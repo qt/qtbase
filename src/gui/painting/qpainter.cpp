@@ -4375,8 +4375,7 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
 /*!
     \fn void QPainter::drawPie(const QRectF &rectangle, int startAngle, int spanAngle)
 
-    Draws a pie defined by the given \a rectangle, \a startAngle and
-    and \a spanAngle.
+    Draws a pie defined by the given \a rectangle, \a startAngle and \a spanAngle.
 
     The pie is filled with the current brush().
 

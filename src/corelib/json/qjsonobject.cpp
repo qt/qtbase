@@ -219,7 +219,7 @@ QStringList QJsonObject::keys() const
 }
 
 /*!
-    Returns the the number of (key, value) pairs stored in the object.
+    Returns the number of (key, value) pairs stored in the object.
  */
 int QJsonObject::size() const
 {

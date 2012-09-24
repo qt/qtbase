@@ -492,7 +492,7 @@ void tst_MacNativeEvents::testModifierCtrlWithDontSwapCtrlAndMeta()
     // don't (and never have) respected this flag for raw key events. Only for
     // menus, through QKeySequence. I don't want to change this behaviour now, at
     // least not until someone complains. So I choose to let the test just stop
-    // any unintended regressions instead. If we decide to resepect the the flag at one
+    // any unintended regressions instead. If we decide to resepect the flag at one
     // point, fix the test.
     QCoreApplication::setAttribute(Qt::AA_MacDontSwapCtrlAndMeta);
     QWidget w;

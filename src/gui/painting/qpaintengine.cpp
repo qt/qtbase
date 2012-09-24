@@ -923,7 +923,7 @@ QPoint QPaintEngine::coordinateOffset() const
 
     Sets the system clip for this engine. The system clip defines the
     basis area that the engine has to draw in. All clips that are
-    set will be be an intersection with the system clip.
+    set will be an intersection with the system clip.
 
     Reset the systemclip to no clip by setting an empty region.
 */

@@ -961,7 +961,7 @@ void tst_QSqlRelationalTableModel::clearDisplayValuesCache()
         QCOMPARE(model.data(model.index(4, 3)).toInt(), 2);
 }
 
-// For task 140782 and 176374: If the main table and the the related tables uses the same
+// For task 140782 and 176374: If the main table and the related tables uses the same
 // name for a column or display column then insertRecord() would return true though it
 // actually failed.
 void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()

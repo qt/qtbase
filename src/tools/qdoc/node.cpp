@@ -566,7 +566,7 @@ Node::ThreadSafeness Node::inheritedThreadSafeness() const
 #if 0
 /*!
   Returns the sanitized file name without the path.
-  If the the file is an html file, the html suffix
+  If the file is an html file, the html suffix
   is removed. Why?
  */
 QString Node::fileBase() const

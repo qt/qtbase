@@ -174,7 +174,7 @@ QUdpSocket::~QUdpSocket()
 /*!
     \since 4.8
 
-    Joins the the multicast group specified by \a groupAddress on the default
+    Joins the multicast group specified by \a groupAddress on the default
     interface chosen by the operating system. The socket must be in BoundState,
     otherwise an error occurs.
 

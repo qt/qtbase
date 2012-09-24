@@ -2475,7 +2475,7 @@ bool QMdiArea::event(QEvent *event)
     switch (event->type()) {
 #ifdef Q_WS_WIN
     // QWidgetPrivate::hide_helper activates another sub-window when closing a
-    // modal dialog on Windows (see activateWindow() inside the the ifdef).
+    // modal dialog on Windows (see activateWindow() inside the ifdef).
     case QEvent::WindowUnblocked:
         d->activateCurrentWindow();
         break;

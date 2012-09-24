@@ -75,13 +75,13 @@ QT_BEGIN_NAMESPACE
     \value StartDragDistance (int) Start drag distance,
                              overriding QPlatformIntegration::styleHint.
 
-    \value StartDragTime (int) Start drag time in ms,,
+    \value StartDragTime (int) Start drag time in ms,
                                overriding QPlatformIntegration::styleHint.
 
     \value KeyboardAutoRepeatRate (int) Keyboard auto repeat rate,
                                   overriding QPlatformIntegration::styleHint.
 
-    \value PasswordMaskDelay (int) Pass word mask delay in ms,,
+    \value PasswordMaskDelay (int) Pass word mask delay in ms,
                                    overriding QPlatformIntegration::styleHint.
 
     \value StartDragVelocity (int) Velocity of a drag,
