@@ -1219,8 +1219,10 @@ void QXcbConnection::initializeXFixes()
 {
     xcb_generic_error_t *error = 0;
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_xfixes_id);
-    xfixes_first_event = reply->first_event;
+    if (!reply || !reply->present)
+        return;
 
+    xfixes_first_event = reply->first_event;
     xcb_xfixes_query_version_cookie_t xfixes_query_cookie = xcb_xfixes_query_version(m_connection,
                                                                                      XCB_XFIXES_MAJOR_VERSION,
                                                                                      XCB_XFIXES_MINOR_VERSION);
@@ -1237,6 +1239,10 @@ void QXcbConnection::initializeXFixes()
 void QXcbConnection::initializeXRender()
 {
 #ifdef XCB_USE_RENDER
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_render_id);
+    if (!reply || !reply->present)
+        return;
+
     xcb_generic_error_t *error = 0;
     xcb_render_query_version_cookie_t xrender_query_cookie = xcb_render_query_version(m_connection,
                                                                                       XCB_RENDER_MAJOR_VERSION,
@@ -1253,11 +1259,11 @@ void QXcbConnection::initializeXRender()
 
 void QXcbConnection::initializeXRandr()
 {
-    const xcb_query_extension_reply_t *xrandr_reply = xcb_get_extension_data(m_connection, &xcb_randr_id);
-    if (!xrandr_reply || !xrandr_reply->present)
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_randr_id);
+    if (!reply || !reply->present)
         return;
 
-    xrandr_first_event = xrandr_reply->first_event;
+    xrandr_first_event = reply->first_event;
 
     xcb_generic_error_t *error = 0;
     xcb_randr_query_version_cookie_t xrandr_query_cookie = xcb_randr_query_version(m_connection,
