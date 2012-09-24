@@ -2651,6 +2651,41 @@ void tst_QAccessibility::tableTest()
     QCOMPARE(table2->rowDescription(1), QString("v2"));
     QCOMPARE(table2->rowDescription(2), QString("v3"));
 
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    QVERIFY(!table2->selectRow(0));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    QVERIFY(table2->selectRow(0));
+    QVERIFY(table2->selectRow(1));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->setSelectionMode(QAbstractItemView::MultiSelection);
+    QVERIFY(table2->selectRow(0));
+    QVERIFY(table2->isRowSelected(1));
+    QVERIFY(table2->unselectRow(0));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->setSelectionBehavior(QAbstractItemView::SelectColumns);
+    QVERIFY(!table2->selectRow(0));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->clearSelection();
+    QCOMPARE(table2->selectedColumnCount(), 0);
+    QCOMPARE(table2->selectedRowCount(), 0);
+    QVERIFY(table2->selectColumn(1));
+    QVERIFY(table2->isColumnSelected(1));
+    tableView->clearSelection();
+    tableView->setSelectionMode(QAbstractItemView::ContiguousSelection);
+    table2->selectColumn(0);
+    table2->selectColumn(2);
+    QVERIFY(!(table2->isColumnSelected(2) && table2->isColumnSelected(0)));
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tableView->setSelectionMode(QAbstractItemView::MultiSelection);
+    table2->selectColumn(1);
+    table2->selectRow(1);
+    QVERIFY(table2->isColumnSelected(1));
+    QVERIFY(table2->isRowSelected(1));
+
     delete tableView;
 
     QTestAccessibility::clearEvents();
