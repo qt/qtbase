@@ -1752,6 +1752,10 @@ QString &QString::remove(QChar ch, Qt::CaseSensitivity cs)
   Replaces \a n characters beginning at index \a position with
   the string \a after and returns a reference to this string.
 
+  \note If the specified \a position index is within the string,
+  but \a position + \a n goes outside the strings range,
+  then \a n will be adjusted to stop at the end of the string.
+
   Example:
 
   \snippet qstring/main.cpp 40
@@ -1775,7 +1779,7 @@ QString &QString::replace(int pos, int len, const QChar *unicode, int size)
 {
     if (pos < 0 || pos > d->size)
         return *this;
-    if (pos + len > d->size)
+    if (len > d->size - pos)
         len = d->size - pos;
 
     uint index = pos;

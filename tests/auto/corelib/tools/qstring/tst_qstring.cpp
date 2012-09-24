@@ -2230,8 +2230,6 @@ void tst_QString::replace_uint_uint()
     QFETCH( int, len );
     QFETCH( QString, after );
 
-    QEXPECT_FAIL("overflow", "QTBUG-22967: integer overflow if (index + len) > INT_MAX", Abort);
-
     QString s1 = string;
     s1.replace( (uint) index, (int) len, after );
     QTEST( s1, "result" );
