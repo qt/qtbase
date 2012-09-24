@@ -4218,7 +4218,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (!enabled)
                 p->setPen(mi->palette.text().color());
             else if (active)
-                p->setPen(mi->palette.highlightedText().color());
+                p->setPen(QColor(Qt::white)); // QPalette's API is incomplete for this case
             else
                 p->setPen(mi->palette.buttonText().color());
 
