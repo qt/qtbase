@@ -700,6 +700,8 @@ void *QAccessibleTableCell::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TableCellInterface)
         return static_cast<QAccessibleTableCellInterface*>(this);
+    if (t == QAccessible::ActionInterface)
+        return static_cast<QAccessibleActionInterface*>(this);
     return 0;
 }
 
@@ -771,6 +773,89 @@ int QAccessibleTableCell::rowIndex() const
 bool QAccessibleTableCell::isSelected() const
 {
     return view->selectionModel()->isSelected(m_index);
+}
+
+QStringList QAccessibleTableCell::actionNames() const
+{
+    QStringList names;
+    names << toggleAction();
+    return names;
+}
+
+void QAccessibleTableCell::doAction(const QString& actionName)
+{
+    if (actionName == toggleAction()) {
+        if (isSelected())
+            unselectCell();
+        else
+            selectCell();
+    }
+}
+
+QStringList QAccessibleTableCell::keyBindingsForAction(const QString& actionName) const
+{
+    return QStringList();
+}
+
+
+void QAccessibleTableCell::selectCell()
+{
+    QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
+    if (!m_index.isValid() || (selectionMode == QAbstractItemView::NoSelection))
+        return;
+
+    QSharedPointer<QAccessibleTableInterface> cellTable(table()->tableInterface());
+
+    switch (view->selectionBehavior()) {
+    case QAbstractItemView::SelectItems:
+        break;
+    case QAbstractItemView::SelectColumns:
+        if (cellTable.data())
+            cellTable->selectColumn(m_index.column());
+        return;
+    case QAbstractItemView::SelectRows:
+        if (cellTable.data())
+            cellTable->selectRow(m_index.row());
+        return;
+    }
+
+    if (selectionMode == QAbstractItemView::SingleSelection) {
+        view->clearSelection();
+    }
+
+    view->selectionModel()->select(m_index, QItemSelectionModel::Select);
+}
+
+void QAccessibleTableCell::unselectCell()
+{
+
+    QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
+    if (!m_index.isValid() || (selectionMode & QAbstractItemView::NoSelection))
+        return;
+
+    QSharedPointer<QAccessibleTableInterface> cellTable(table()->tableInterface());
+
+    switch (view->selectionBehavior()) {
+    case QAbstractItemView::SelectItems:
+        break;
+    case QAbstractItemView::SelectColumns:
+        if (cellTable.data())
+            cellTable->unselectColumn(m_index.column());
+        return;
+    case QAbstractItemView::SelectRows:
+        if (cellTable.data())
+            cellTable->unselectRow(m_index.row());
+        return;
+    }
+
+    //If the mode is not MultiSelection or ExtendedSelection and only
+    //one cell is selected it cannot be unselected by the user
+    if ((selectionMode != QAbstractItemView::MultiSelection)
+        && (selectionMode != QAbstractItemView::ExtendedSelection)
+        && (view->selectionModel()->selectedIndexes().count() <= 1))
+        return;
+
+    view->selectionModel()->select(m_index, QItemSelectionModel::Deselect);
 }
 
 void QAccessibleTableCell::rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const

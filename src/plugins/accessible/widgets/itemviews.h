@@ -159,7 +159,7 @@ private:
     QModelIndex indexFromLogical(int row, int column = 0) const;
 };
 
-class QAccessibleTableCell: public QAccessibleInterface, public QAccessibleTableCellInterface
+class QAccessibleTableCell: public QAccessibleInterface, public QAccessibleTableCellInterface, public QAccessibleActionInterface
 {
 public:
     QAccessibleTableCell(QAbstractItemView *view, const QModelIndex &m_index, QAccessible::Role role);
@@ -192,12 +192,20 @@ public:
     virtual void rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const;
     virtual QAccessibleInterface* table() const;
 
+    //action interface
+    virtual QStringList actionNames() const;
+    virtual void doAction(const QString &actionName);
+    virtual QStringList keyBindingsForAction(const QString &actionName) const;
+
 private:
     QHeaderView *verticalHeader() const;
     QHeaderView *horizontalHeader() const;
     QPointer<QAbstractItemView > view;
     QModelIndex m_index;
     QAccessible::Role m_role;
+
+    void selectCell();
+    void unselectCell();
 
 friend class QAccessibleTable;
 friend class QAccessibleTree;

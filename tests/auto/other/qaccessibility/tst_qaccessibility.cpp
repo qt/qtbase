@@ -2725,6 +2725,41 @@ void tst_QAccessibility::tableTest()
     QVERIFY(table2->isColumnSelected(1));
     QVERIFY(table2->isRowSelected(1));
 
+    QAIPtr cell4(table2->cellAt(2,2));
+    QVERIFY(cell1->actionInterface());
+    QVERIFY(cell1->tableCellInterface());
+
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    QVERIFY(!cell1->tableCellInterface()->isSelected());
+    QVERIFY(cell1->actionInterface()->actionNames().contains(QAccessibleActionInterface::toggleAction()));
+    cell1->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell2->tableCellInterface()->isSelected());
+
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectColumns);
+    cell3->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell4->tableCellInterface()->isSelected());
+
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    cell1->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell1->tableCellInterface()->isSelected());
+    cell2->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(!cell1->tableCellInterface()->isSelected());
+
+    tableView->clearSelection();
+    tableView->setSelectionMode(QAbstractItemView::MultiSelection);
+    cell1->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    cell2->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell1->tableCellInterface()->isSelected());
+    QVERIFY(cell2->tableCellInterface()->isSelected());
+    cell2->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell1->tableCellInterface()->isSelected());
+    QVERIFY(!cell2->tableCellInterface()->isSelected());
+
     delete tableView;
 
     QTestAccessibility::clearEvents();
