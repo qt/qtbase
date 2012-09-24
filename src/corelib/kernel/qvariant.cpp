@@ -2808,6 +2808,10 @@ bool QVariant::convert(const int type, void *ptr) const
     \a v1. See \l{QVariant::}{canConvert()} for a list of possible
     conversions.
 
+    The result of the function is not affected by the result of QVariant::isNull,
+    which means that two values can be equal even if one of them is null and
+    another is not.
+
     \warning This function doesn't support custom types registered
     with qRegisterMetaType().
 */
@@ -2902,7 +2906,13 @@ void* QVariant::data()
 
 
 /*!
-  Returns true if this is a NULL variant, false otherwise.
+    Returns true if this is a null variant, false otherwise. A variant is
+    considered null if it contains a default constructed value or a built-in
+    type instance that has an isNull method, in which case the result
+    would be the same as calling isNull on the wrapped object.
+
+    \warning The result of the function doesn't affect == operator, which means
+    that two values can be equal even if one of them is null and another is not.
 */
 bool QVariant::isNull() const
 {
