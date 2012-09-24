@@ -2618,9 +2618,6 @@ void tst_QWidget::raise()
     foreach (UpdateWidget *child, allChildren) {
         int expectedPaintEvents = child == child2 ? 1 : 0;
         int expectedZOrderChangeEvents = child == child2 ? 1 : 0;
-#ifdef Q_OS_MAC
-        QSKIP("Not yet sure why this fails.");
-#endif
         QTRY_COMPARE(child->numPaintEvents, expectedPaintEvents);
         QCOMPARE(child->numZOrderChangeEvents, expectedZOrderChangeEvents);
         child->reset();
