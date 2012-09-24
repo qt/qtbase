@@ -83,6 +83,7 @@ template<> inline char *toString(const QByteArray &ba)
     return QTest::toHexRepresentation(ba.constData(), ba.length());
 }
 
+#ifndef QT_NO_DATESTRING
 template<> inline char *toString(const QTime &time)
 {
     return time.isValid()
@@ -104,6 +105,7 @@ template<> inline char *toString(const QDateTime &dateTime)
                   (dateTime.timeSpec() == Qt::LocalTime ? QLatin1String("[local time]") : QLatin1String("[UTC]"))).toLatin1().constData())
         : qstrdup("Invalid QDateTime");
 }
+#endif // QT_NO_DATESTRING
 
 template<> inline char *toString(const QChar &c)
 {
