@@ -166,6 +166,7 @@ protected:
     QString naturalLanguage;
     QTextCodec* outputCodec;
     QString outputEncoding;
+    QString tagFile_;
     QStack<QTextStream*> outStreamStack;
 
 private:

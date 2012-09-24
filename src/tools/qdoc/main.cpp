@@ -435,10 +435,6 @@ static void processQdocconfFile(const QString &fileName)
         ++of;
     }
 
-    /*
-      Generate the XML tag file, if it was requested.
-     */
-    qdb->generateTagFile(config.getString(CONFIG_TAGFILE));
 
     //Generator::writeOutFileNames();
 

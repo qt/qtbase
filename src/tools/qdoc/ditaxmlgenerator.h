@@ -436,9 +436,6 @@ private:
     static int hOffset(const Node *node);
     static bool isThreeColumnEnumValueTable(const Atom *atom);
     QString getLink(const Atom *atom, const Node *relative, const Node **node);
-    virtual void generateIndex(const QString& fileBase,
-                               const QString& url,
-                               const QString& title);
 #ifdef GENERATE_MAC_REFS
     void generateMacRef(const Node* node, CodeMarker* marker);
 #endif

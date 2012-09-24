@@ -39,8 +39,11 @@
 **
 ****************************************************************************/
 
+#include "atom.h"
 #include "tree.h"
 #include "qdocdatabase.h"
+#include "qdoctagfiles.h"
+#include "qdocindexfiles.h"
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -555,7 +558,7 @@ const NodeMultiMap& QDocDatabase::getSinceMap(const QString& key) const
  */
 void QDocDatabase::resolveIssues() {
     tree_->resolveGroups();
-    tree_->resolveTargets(tree_->root());
+    resolveTargets(treeRoot());
     tree_->resolveCppToQmlLinks();
 }
 
@@ -589,7 +592,7 @@ const Node* QDocDatabase::resolveTarget(const QString& target,
         QString funcName = target;
         funcName.chop(2);
         QStringList path = funcName.split("::");
-        const FunctionNode* fn = tree_->findFunctionNode(path, relative, Tree::SearchBaseClasses);
+        const FunctionNode* fn = tree_->findFunctionNode(path, relative, SearchBaseClasses);
         if (fn) {
             /*
               Why is this case not accepted?
@@ -604,19 +607,17 @@ const Node* QDocDatabase::resolveTarget(const QString& target,
     }
     else {
         QStringList path = target.split("::");
-        int flags = Tree::SearchBaseClasses | Tree::SearchEnumValues | Tree::NonFunction;
+        int flags = SearchBaseClasses | SearchEnumValues | NonFunction;
         node = tree_->findNode(path, relative, flags, self);
     }
     return node;
 }
 
 /*!
-  zzz
-  Is the atom necessary?
+  Finds the node that will generate the documentation that
+  contains the \a target and returns a pointer to it.
  */
-const Node* QDocDatabase::findNodeForTarget(const QString& target,
-                                            const Node* relative,
-                                            const Atom* atom)
+const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* relative)
 {
     const Node* node = 0;
     if (target.isEmpty())
@@ -626,13 +627,244 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target,
     else {
         node = resolveTarget(target, relative);
         if (!node)
-            node = tree_->findDocNodeByTitle(target, relative);
-        if (!node && atom) {
-            qDebug() << "USING ATOM!";
-            node = tree_->findUnambiguousTarget(target, *const_cast<Atom**>(&atom), relative);
-        }
+            node = findDocNodeByTitle(target, relative);
     }
     return node;
+}
+
+/*!
+  Inserts a new target into the target table with the specified
+  \a name, \a node, and \a priority.
+ */
+void QDocDatabase::insertTarget(const QString& name, Node* node, int priority)
+{
+    Target target;
+    target.node = node;
+    target.priority = priority;
+    target.atom = new Atom(Atom::Target, name);
+    targetHash_.insert(name, target);
+}
+
+static const int NumSuffixes = 3;
+static const char*  const suffixes[NumSuffixes] = { "", "s", "es" };
+
+/*!
+  This function searches for a \a target anchor node. If it
+  finds one, it sets \a atom from the found node and returns
+  the found node.
+ */
+const Node*
+QDocDatabase::findUnambiguousTarget(const QString& target, Atom *&atom, const Node* relative) const
+{
+    Target bestTarget = {0, 0, INT_MAX};
+    int numBestTargets = 0;
+    QList<Target> bestTargetList;
+
+    for (int pass = 0; pass < NumSuffixes; ++pass) {
+        TargetHash::const_iterator i = targetHash_.constFind(Doc::canonicalTitle(target + suffixes[pass]));
+        if (i != targetHash_.constEnd()) {
+            TargetHash::const_iterator j = i;
+            do {
+                const Target& candidate = j.value();
+                if (candidate.priority < bestTarget.priority) {
+                    bestTarget = candidate;
+                    bestTargetList.clear();
+                    bestTargetList.append(candidate);
+                    numBestTargets = 1;
+                } else if (candidate.priority == bestTarget.priority) {
+                    bestTargetList.append(candidate);
+                    ++numBestTargets;
+                }
+                ++j;
+            } while (j != targetHash_.constEnd() && j.key() == i.key());
+
+            if (numBestTargets == 1) {
+                atom = bestTarget.atom;
+                return bestTarget.node;
+            }
+            else if (bestTargetList.size() > 1) {
+                if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
+                    for (int i=0; i<bestTargetList.size(); ++i) {
+                        const Node* n = bestTargetList.at(i).node;
+                        if (n && relative->qmlModuleIdentifier() == n->qmlModuleIdentifier()) {
+                            atom = bestTargetList.at(i).atom;
+                            return n;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/*!
+  This function searches for a node with the specified \a title.
+  If \a relative node is provided, it is used to disambiguate if
+  it has a QML module identifier.
+ */
+const DocNode* QDocDatabase::findDocNodeByTitle(const QString& title, const Node* relative) const
+{
+    for (int pass = 0; pass < NumSuffixes; ++pass) {
+        DocNodeHash::const_iterator i = docNodesByTitle_.constFind(Doc::canonicalTitle(title + suffixes[pass]));
+        if (i != docNodesByTitle_.constEnd()) {
+            if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
+                const DocNode* dn = i.value();
+                InnerNode* parent = dn->parent();
+                if (parent && parent->type() == Node::Document && parent->subType() == Node::Collision) {
+                    const NodeList& nl = parent->childNodes();
+                    NodeList::ConstIterator it = nl.constBegin();
+                    while (it != nl.constEnd()) {
+                        if ((*it)->qmlModuleIdentifier() == relative->qmlModuleIdentifier()) {
+                            /*
+                              By returning here, we avoid printing all the duplicate
+                              header warnings, which are not really duplicates now,
+                              because of the QML module identifier being used as a
+                              namespace qualifier.
+                             */
+                            dn = static_cast<const DocNode*>(*it);
+                            return dn;
+                        }
+                        ++it;
+                    }
+                }
+            }
+            /*
+              Reporting all these duplicate section titles is probably
+              overkill. We should report the duplicate file and let
+              that suffice.
+             */
+            DocNodeHash::const_iterator j = i;
+            ++j;
+            if (j != docNodesByTitle_.constEnd() && j.key() == i.key()) {
+                QList<Location> internalLocations;
+                while (j != docNodesByTitle_.constEnd()) {
+                    if (j.key() == i.key() && j.value()->url().isEmpty())
+                        internalLocations.append(j.value()->location());
+                    ++j;
+                }
+                if (internalLocations.size() > 0) {
+                    i.value()->location().warning(tr("This page exists in more than one file: \"%1\"").arg(title));
+                    foreach (const Location &location, internalLocations)
+                        location.warning(tr("[It also exists here]"));
+                }
+            }
+            return i.value();
+        }
+    }
+    return 0;
+}
+
+/*!
+  This function searches for a node with a canonical title
+  constructed from \a target and each of the possible suffixes.
+  If the node it finds is \a node, it returns the Atom from that
+  node. Otherwise it returns null.
+ */
+Atom* QDocDatabase::findTarget(const QString& target, const Node* node) const
+{
+    for (int pass = 0; pass < NumSuffixes; ++pass) {
+        QString key = Doc::canonicalTitle(target + suffixes[pass]);
+        TargetHash::const_iterator i = targetHash_.constFind(key);
+
+        if (i != targetHash_.constEnd()) {
+            do {
+                if (i.value().node == node)
+                    return i.value().atom;
+                ++i;
+            } while (i != targetHash_.constEnd() && i.key() == key);
+        }
+    }
+    return 0;
+}
+
+/*!
+ */
+void QDocDatabase::resolveTargets(InnerNode* root)
+{
+    // need recursion
+
+    foreach (Node* child, root->childNodes()) {
+        if (child->type() == Node::Document) {
+            DocNode* node = static_cast<DocNode*>(child);
+            if (!node->title().isEmpty())
+                docNodesByTitle_.insert(Doc::canonicalTitle(node->title()), node);
+            if (node->subType() == Node::Collision) {
+                resolveTargets(node);
+            }
+        }
+
+        if (child->doc().hasTableOfContents()) {
+            const QList<Atom*>& toc = child->doc().tableOfContents();
+            Target target;
+            target.node = child;
+            target.priority = 3;
+
+            for (int i = 0; i < toc.size(); ++i) {
+                target.atom = toc.at(i);
+                QString title = Text::sectionHeading(target.atom).toString();
+                if (!title.isEmpty())
+                    targetHash_.insert(Doc::canonicalTitle(title), target);
+            }
+        }
+        if (child->doc().hasKeywords()) {
+            const QList<Atom*>& keywords = child->doc().keywords();
+            Target target;
+            target.node = child;
+            target.priority = 1;
+
+            for (int i = 0; i < keywords.size(); ++i) {
+                target.atom = keywords.at(i);
+                targetHash_.insert(Doc::canonicalTitle(target.atom->string()), target);
+            }
+        }
+        if (child->doc().hasTargets()) {
+            const QList<Atom*>& toc = child->doc().targets();
+            Target target;
+            target.node = child;
+            target.priority = 2;
+
+            for (int i = 0; i < toc.size(); ++i) {
+                target.atom = toc.at(i);
+                targetHash_.insert(Doc::canonicalTitle(target.atom->string()), target);
+            }
+        }
+    }
+}
+
+/*!
+  Generates a tag file and writes it to \a name.
+ */
+void QDocDatabase::generateTagFile(const QString& name, Generator* g)
+{
+    if (!name.isEmpty()) {
+        QDocTagFiles::qdocTagFiles()->generateTagFile(name, g);
+        QDocTagFiles::destroyQDocTagFiles();
+    }
+}
+
+/*!
+  Reads and parses the qdoc index files listed in \a indexFiles.
+ */
+void QDocDatabase::readIndexes(const QStringList& indexFiles)
+{
+    QDocIndexFiles::qdocIndexFiles()->readIndexes(indexFiles);
+    QDocIndexFiles::destroyQDocIndexFiles();
+}
+
+/*!
+  Generates a qdoc index file and write it to \a fileName. The
+  index file is generated with the parameters \a url, \a title,
+  \a g, and \a generateInternalNodes.
+ */
+void QDocDatabase::generateIndex(const QString& fileName,
+                                 const QString& url,
+                                 const QString& title,
+                                 Generator* g,
+                                 bool generateInternalNodes)
+{
+    QDocIndexFiles::qdocIndexFiles()->generateIndex(fileName, url, title, g, generateInternalNodes);
+    QDocIndexFiles::destroyQDocIndexFiles();
 }
 
 QT_END_NAMESPACE

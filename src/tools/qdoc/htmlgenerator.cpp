@@ -176,6 +176,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         projectDescription = project + " Reference Documentation";
 
     projectUrl = config.getString(CONFIG_URL);
+    tagFile_ = config.getString(CONFIG_TAGFILE);
 
     outputEncoding = config.getString(CONFIG_OUTPUTENCODING);
     if (outputEncoding.isEmpty())
@@ -259,10 +260,17 @@ void HtmlGenerator::generateTree()
     generateCollisionPages();
 
     QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
-    generateIndex(fileBase, projectUrl, projectDescription);
+    qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index",
+                        projectUrl,
+                        projectDescription,
+                        this);
 
     helpProjectWriter->generate();
     generateManifestFiles();
+    /*
+      Generate the XML tag file, if it was requested.
+     */
+    qdb_->generateTagFile(tagFile_, this);
 }
 
 /*!
@@ -3634,13 +3642,6 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
         }
     }
     return link;
-}
-
-void HtmlGenerator::generateIndex(const QString &fileBase,
-                                  const QString &url,
-                                  const QString &title)
-{
-    qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title, this);
 }
 
 void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)

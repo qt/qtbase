@@ -54,10 +54,29 @@ typedef QMap<QString, NodeMap> NodeMapMap;
 typedef QMap<QString, NodeMultiMap> NodeMultiMapMap;
 typedef QMultiMap<QString, Node*> QDocMultiMap;
 typedef QMap<Text, const Node*> TextToNodeMap;
+typedef QMultiHash<QString, DocNode*> DocNodeHash;
+
+class Atom;
+class Generator;
+
+enum FindFlag {
+    SearchBaseClasses = 0x1,
+    SearchEnumValues = 0x2,
+    NonFunction = 0x4
+};
 
 class QDocDatabase
 {
- public:
+
+    struct Target
+    {
+        Node* node;
+        Atom* atom;
+        int priority;
+    };
+    typedef QMultiHash<QString, Target> TargetHash;
+
+  public:
     static QDocDatabase* qdocDB();
     static void destroyQdocDB();
     ~QDocDatabase();
@@ -97,19 +116,16 @@ class QDocDatabase
     const NodeMultiMap& getSinceMap(const QString& key) const;
 
     const Node* resolveTarget(const QString& target, const Node* relative, const Node* self=0);
-    const Node* findNodeForTarget(const QString& target, const Node* relative, const Atom* atom=0);
+    const Node* findNodeForTarget(const QString& target, const Node* relative);
+    void insertTarget(const QString& name, Node* node, int priority);
 
     /* convenience functions
        Many of these will be either eliminated or replaced.
     */
     Tree* tree() { return tree_; }
-    QString version() const { return tree_->version(); }
     NamespaceNode* treeRoot() { return tree_->root(); }
-    void setVersion(const QString& version) { tree_->setVersion(version); }
     void resolveInheritance() { tree_->resolveInheritance(); }
-    void readIndexes(const QStringList& indexFiles) { tree_->readIndexes(indexFiles); }
     void resolveIssues();
-    void generateTagFile(const QString& name) { if (!name.isEmpty()) tree_->generateTagFile(name); }
     void addToGroup(Node* node, const QString& group) { tree_->addToGroup(node, group); }
     void addToPublicGroup(Node* node, const QString& group) { tree_->addToPublicGroup(node, group); }
     void fixInheritance() { tree_->fixInheritance(); }
@@ -124,22 +140,11 @@ class QDocDatabase
         return tree_->findCollisionNode(name);
     }
 
-    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative=0) const {
-        return tree_->findDocNodeByTitle(title, relative);
-    }
-    const Node* findUnambiguousTarget(const QString& target, Atom* &atom, const Node* relative) const {
-        return  tree_->findUnambiguousTarget(target, atom, relative);
-    }
-    Atom* findTarget(const QString& target, const Node* node) const {
-        return tree_->findTarget(target, node);
-    }
-    void generateIndex(const QString& fileName,
-                       const QString& url,
-                       const QString& title,
-                       Generator* g,
-                       bool generateInternalNodes = false) {
-        tree_->generateIndex(fileName, url, title, g, generateInternalNodes);
-    }
+    const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) const;
+    const Node *findUnambiguousTarget(const QString &target, Atom *&atom, const Node* relative) const;
+    Atom *findTarget(const QString &target, const Node *node) const;
+    void resolveTargets(InnerNode* root);
+
     FunctionNode* findFunctionNode(const QStringList& parentPath, const FunctionNode* clone) {
         return tree_->findFunctionNode(parentPath, clone);
     }
@@ -162,9 +167,28 @@ class QDocDatabase
         tree_->addPropertyFunction(property, funcName, funcRole);
     }
 
+    void setVersion(const QString& v) { version_ = v; }
+    QString version() const { return version_; }
+
+    void generateTagFile(const QString& name, Generator* g);
+    void readIndexes(const QStringList& indexFiles);
+    void generateIndex(const QString& fileName,
+                       const QString& url,
+                       const QString& title,
+                       Generator* g,
+                       bool generateInternalNodes = false);
+
     /* debugging functions */
     void printModules() const;
     void printQmlModules() const;
+
+ private:
+    friend class QDocIndexFiles;
+    friend class QDocTagFiles;
+
+    const Node* findNode(const QStringList& path, const Node* relative, int findFlags) {
+        return tree_->findNode(path, relative, findFlags);
+    }
 
  private:
     QDocDatabase();
@@ -173,6 +197,7 @@ class QDocDatabase
 
  private:
     static QDocDatabase*    qdocDB_;
+    QString                 version_;
     QDocMultiMap            masterMap_;
     Tree*                   tree_;
     DocNodeMap              modules_;
@@ -191,6 +216,8 @@ class QDocDatabase
     NodeMultiMapMap         newSinceMaps_;
     NodeMapMap              funcIndex_;
     TextToNodeMap           legaleseTexts_;
+    TargetHash              targetHash_;
+    DocNodeHash             docNodesByTitle_;
 };
 
 QT_END_NAMESPACE

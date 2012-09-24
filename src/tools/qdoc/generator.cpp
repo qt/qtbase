@@ -1456,9 +1456,11 @@ void Generator::initialize(const Config &config)
         baseDir_ = config.getString(CONFIG_BASEDIR);
         if (!baseDir_.isEmpty())
             config.location().warning(tr("\"basedir\" specified in config file. "
-                                         "All output will be in module directories of the output directory"));
+                                         "All output will be in module directories "
+                                         "of the output directory"));
         if (outDir_.isEmpty())
-            config.lastLocation().fatal(tr("No output directory specified in configuration file or on the command line"));
+            config.lastLocation().fatal(tr("No output directory specified in "
+                                           "configuration file or on the command line"));
 
         QDir dirInfo;
         if (dirInfo.exists(outDir_)) {
@@ -1471,17 +1473,13 @@ void Generator::initialize(const Config &config)
         }
 
         if (!dirInfo.mkdir(outDir_ + "/images"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
-                                        .arg(outDir_ + "/images"));
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/images"));
         if (!dirInfo.mkdir(outDir_ + "/images/used-in-examples"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
-                                        .arg(outDir_ + "/images/used-in-examples"));
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/images/used-in-examples"));
         if (!dirInfo.mkdir(outDir_ + "/scripts"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
-                                        .arg(outDir_ + "/scripts"));
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/scripts"));
         if (!dirInfo.mkdir(outDir_ + "/style"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'")
-                                        .arg(outDir_ + "/style"));
+            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/style"));
     }
 
     imageFiles = config.getCleanPathList(CONFIG_IMAGES);
@@ -1491,16 +1489,13 @@ void Generator::initialize(const Config &config)
     styleFiles = config.getCleanPathList(CONFIG_STYLES);
     styleDirs = config.getCleanPathList(CONFIG_STYLEDIRS);
     exampleDirs = config.getCleanPathList(CONFIG_EXAMPLEDIRS);
-    exampleImgExts = config.getStringList(CONFIG_EXAMPLES + Config::dot +
-                                          CONFIG_IMAGEEXTENSIONS);
+    exampleImgExts = config.getStringList(CONFIG_EXAMPLES + Config::dot + CONFIG_IMAGEEXTENSIONS);
 
-    QString imagesDotFileExtensions =
-            CONFIG_IMAGES + Config::dot + CONFIG_FILEEXTENSIONS;
+    QString imagesDotFileExtensions = CONFIG_IMAGES + Config::dot + CONFIG_FILEEXTENSIONS;
     QSet<QString> formats = config.subVars(imagesDotFileExtensions);
     QSet<QString>::ConstIterator f = formats.constBegin();
     while (f != formats.constEnd()) {
-        imgFileExts[*f] = config.getStringList(imagesDotFileExtensions +
-                                               Config::dot + *f);
+        imgFileExts[*f] = config.getStringList(imagesDotFileExtensions + Config::dot + *f);
         ++f;
     }
 
@@ -1509,8 +1504,7 @@ void Generator::initialize(const Config &config)
         if (outputFormats.contains((*g)->format())) {
             currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
-            QStringList extraImages =
-                    config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
+            QStringList extraImages = config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
             QStringList::ConstIterator e = extraImages.constBegin();
             while (e != extraImages.constEnd()) {
                 QString userFriendlyFilePath;
@@ -1530,8 +1524,7 @@ void Generator::initialize(const Config &config)
             }
 
             // Documentation template handling
-            QString templateDir = config.getString(
-                        (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
+            QString templateDir = config.getString((*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
 
             QStringList searchDirs;
             if (!templateDir.isEmpty()) {
@@ -1543,8 +1536,7 @@ void Generator::initialize(const Config &config)
 
             if (!searchDirs.isEmpty()) {
                 QStringList noExts;
-                QStringList scripts =
-                        config.getCleanPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
+                QStringList scripts = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
                 e = scripts.constBegin();
                 while (e != scripts.constEnd()) {
                     QString userFriendlyFilePath;
@@ -1563,8 +1555,7 @@ void Generator::initialize(const Config &config)
                     ++e;
                 }
 
-                QStringList styles =
-                        config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+                QStringList styles = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
                 e = styles.constBegin();
                 while (e != styles.constEnd()) {
                     QString userFriendlyFilePath;
@@ -1592,16 +1583,13 @@ void Generator::initialize(const Config &config)
     QSet<QString>::ConstIterator n = formattingNames.constBegin();
     while (n != formattingNames.constEnd()) {
         QString formattingDotName = CONFIG_FORMATTING + Config::dot + *n;
-
         QSet<QString> formats = config.subVars(formattingDotName);
         QSet<QString>::ConstIterator f = formats.constBegin();
         while (f != formats.constEnd()) {
-            QString def = config.getString(formattingDotName +
-                                           Config::dot + *f);
+            QString def = config.getString(formattingDotName + Config::dot + *f);
             if (!def.isEmpty()) {
                 int numParams = Config::numParams(def);
                 int numOccs = def.count("\1");
-
                 if (numParams != 1) {
                     config.lastLocation().warning(tr("Formatting '%1' must "
                                                      "have exactly one "
@@ -1631,9 +1619,9 @@ void Generator::initialize(const Config &config)
     QStringList prefixes = config.getStringList(CONFIG_OUTPUTPREFIXES);
     if (!prefixes.isEmpty()) {
         foreach (const QString &prefix, prefixes)
-            outputPrefixes[prefix] = config.getString(
-                        CONFIG_OUTPUTPREFIXES + Config::dot + prefix);
-    } else
+            outputPrefixes[prefix] = config.getString(CONFIG_OUTPUTPREFIXES + Config::dot + prefix);
+    }
+    else
         outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
 }
 

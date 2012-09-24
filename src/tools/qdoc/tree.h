@@ -47,14 +47,10 @@
 #define TREE_H
 
 #include "node.h"
-#include <qdom.h>
-#include <qxmlstream.h>
 
 QT_BEGIN_NAMESPACE
 
-class Generator;
 class QStringList;
-class TreePrivate;
 class QDocDatabase;
 
 class Tree
@@ -62,9 +58,25 @@ class Tree
  private:
     friend class QDocDatabase;
 
-    enum FindFlag { SearchBaseClasses = 0x1,
-                    SearchEnumValues = 0x2,
-                    NonFunction = 0x4 };
+    typedef QMap<PropertyNode::FunctionRole, QString> RoleMap;
+    typedef QMap<PropertyNode*, RoleMap> PropertyMap;
+
+    struct InheritanceBound
+    {
+        Node::Access access;
+        QStringList basePath;
+        QString dataTypeWithTemplateArgs;
+        InnerNode* parent;
+
+      InheritanceBound() : access(Node::Public) { }
+      InheritanceBound(Node::Access access0,
+                       const QStringList& basePath0,
+                       const QString& dataTypeWithTemplateArgs0,
+                       InnerNode* parent)
+          : access(access0), basePath(basePath0),
+            dataTypeWithTemplateArgs(dataTypeWithTemplateArgs0),
+            parent(parent) { }
+    };
 
     Tree(QDocDatabase* qdb);
     ~Tree();
@@ -125,12 +137,9 @@ class Tree
     void resolveInheritance(NamespaceNode *rootNode = 0);
     void resolveProperties();
     void resolveGroups();
-    void resolveTargets(InnerNode* root);
     void resolveCppToQmlLinks();
     void fixInheritance(NamespaceNode *rootNode = 0);
-    void setVersion(const QString &version) { vers = version; }
     NamespaceNode *root() { return &root_; }
-    QString version() const { return vers; }
 
     const FunctionNode *findFunctionNode(const QStringList &path,
                                          const Node *relative = 0,
@@ -139,42 +148,21 @@ class Tree
                                          const FunctionNode *clone,
                                          const Node *relative = 0,
                                          int findFlags = 0) const;
-    const DocNode *findDocNodeByTitle(const QString &title, const Node* relative = 0) const;
-    const Node *findUnambiguousTarget(const QString &target, Atom *&atom, const Node* relative) const;
-    Atom *findTarget(const QString &target, const Node *node) const;
     const NamespaceNode *root() const { return &root_; }
-    void readIndexes(const QStringList &indexFiles);
-    bool generateIndexSection(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
-    void generateIndexSections(QXmlStreamWriter& writer, Node* node, bool generateInternalNodes = false);
-    void generateIndex(const QString &fileName,
-                       const QString &url,
-                       const QString &title,
-                       Generator* g,
-                       bool generateInternalNodes = false);
-    void generateTagFileCompounds(QXmlStreamWriter &writer,
-                                  const InnerNode *inner);
-    void generateTagFileMembers(QXmlStreamWriter &writer,
-                                const InnerNode *inner);
-    void generateTagFile(const QString &fileName);
-    void addExternalLink(const QString &url, const Node *relative);
 
     void resolveInheritance(int pass, ClassNode *classe);
     FunctionNode *findVirtualFunctionInBaseClasses(ClassNode *classe,
                                                    FunctionNode *clone);
     void fixPropertyUsingBaseClasses(ClassNode *classe, PropertyNode *property);
     NodeList allBaseClasses(const ClassNode *classe) const;
-    void readIndexFile(const QString &path);
-    void readIndexSection(const QDomElement &element, InnerNode *parent,
-                          const QString &indexUrl);
-    QString readIndexText(const QDomElement &element);
-    void resolveIndex();
 
 private:
     QDocDatabase* qdb_;
     NamespaceNode root_;
-    QString vers;
-    Generator* gen_;
-    TreePrivate *priv;
+    QMap<ClassNode* , QList<InheritanceBound> > unresolvedInheritanceMap;
+    PropertyMap unresolvedPropertyMap;
+    NodeMultiMap groupMap;
+    QMultiMap<QString, QString> publicGroupMap;
 };
 
 QT_END_NAMESPACE

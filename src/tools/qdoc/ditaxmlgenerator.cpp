@@ -532,6 +532,7 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
         projectDescription = project + " Reference Documentation";
 
     projectUrl = config.getString(CONFIG_URL);
+    tagFile_ = config.getString(CONFIG_TAGFILE);
 
     outputEncoding = config.getString(CONFIG_OUTPUTENCODING);
     if (outputEncoding.isEmpty())
@@ -676,8 +677,15 @@ void DitaXmlGenerator::generateTree()
     generateCollisionPages();
 
     QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
-    generateIndex(fileBase, projectUrl, projectDescription);
+    qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index",
+                        projectUrl,
+                        projectDescription,
+                        this);
     writeDitaMap();
+    /*
+      Generate the XML tag file, if it was requested.
+     */
+    qdb_->generateTagFile(tagFile_, this);
 }
 
 static int countTableColumns(const Atom* t)
@@ -1755,7 +1763,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
                 columnText = pieces.at(0);
                 pieces.pop_front();
                 QString path = pieces.join(' ').trimmed();
-                node = qdb_->findNodeForTarget(path, relative, atom);
+                node = qdb_->findNodeForTarget(path, relative);
                 if (!node)
                     relative->doc().location().warning(tr("Cannot link to '%1'").arg(path));
            }
@@ -3938,13 +3946,6 @@ QString DitaXmlGenerator::getLink(const Atom* atom, const Node* relative, const 
         link.prepend(outFileName());
     }
     return link;
-}
-
-void DitaXmlGenerator::generateIndex(const QString& fileBase,
-                                     const QString& url,
-                                     const QString& title)
-{
-    qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index", url, title, this);
 }
 
 void DitaXmlGenerator::generateStatus(const Node* node, CodeMarker* marker)

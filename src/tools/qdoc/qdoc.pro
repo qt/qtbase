@@ -43,6 +43,8 @@ HEADERS += atom.h \
            plaincodemarker.h \
            puredocparser.h \
            qdocdatabase.h \
+           qdoctagfiles.h \
+           qdocindexfiles.h \
            quoter.h \
            separator.h \
            text.h \
@@ -69,6 +71,8 @@ SOURCES += atom.cpp \
            plaincodemarker.cpp \
            puredocparser.cpp \
            qdocdatabase.cpp \
+           qdoctagfiles.cpp \
+           qdocindexfiles.cpp \
            quoter.cpp \
            separator.cpp \
            text.cpp \
