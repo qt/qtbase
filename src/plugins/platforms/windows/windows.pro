@@ -161,6 +161,12 @@ contains(QT_CONFIG, freetype) {
    contains(QT_CONFIG, system-zlib) {
         DEFINES += FT_CONFIG_OPTION_SYSTEM_ZLIB
    }
+} else:contains(QT_CONFIG, system-freetype) {
+    include($$QT_SOURCE_TREE/src/platformsupport/fontdatabases/basic/basic.pri)
+    HEADERS += \
+               qwindowsfontdatabase_ft.h
+    SOURCES += \
+               qwindowsfontdatabase_ft.cpp
 }
 
 OTHER_FILES += windows.json
