@@ -61,6 +61,8 @@
 #include <qdbuserror.h>
 #include <qdbusunixfiledescriptor.h>
 
+#ifndef QT_NO_DBUS
+
 QT_BEGIN_NAMESPACE
 
 struct QDBusMetaTypeId
@@ -107,4 +109,5 @@ inline int QDBusMetaTypeId::unixfd()
 
 QT_END_NAMESPACE
 
+#endif // QT_NO_DBUS
 #endif
