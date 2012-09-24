@@ -1220,6 +1220,38 @@ int QInputDialog::getInt(QWidget *parent, const QString &title, const QString &l
 }
 
 /*!
+    \fn QInputDialog::getInteger(QWidget *parent, const QString &title, const QString &label, int value, int min, int max, int step, bool *ok, Qt::WindowFlags flags)
+    \deprecated use getInt()
+
+    Static convenience function to get an integer input from the user.
+
+    \a title is the text which is displayed in the title bar of the dialog.
+    \a label is the text which is shown to the user (it should say what should
+    be entered).
+    \a value is the default integer which the spinbox will be set to.
+    \a min and \a max are the minimum and maximum values the user may choose.
+    \a step is the amount by which the values change as the user presses the
+    arrow buttons to increment or decrement the value.
+
+    If \a ok is nonnull *\a ok will be set to true if the user pressed \uicontrol OK
+    and to false if the user pressed \uicontrol Cancel. The dialog's parent is
+    \a parent. The dialog will be modal and uses the widget \a flags.
+
+    On success, this function returns the integer which has been entered by the
+    user; on failure, it returns the initial \a value.
+
+    Use this static function like this:
+
+    \snippet dialogs/standarddialogs/dialog.cpp 0
+
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QInputDialog constructors.
+
+    \sa getText(), getDouble(), getItem()
+*/
+
+/*!
     Static convenience function to get a floating point number from the user.
 
     \a title is the text which is displayed in the title bar of the dialog.
