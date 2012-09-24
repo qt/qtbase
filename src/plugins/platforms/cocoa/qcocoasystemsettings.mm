@@ -107,10 +107,10 @@ QPalette * qt_mac_createSystemPalette()
     QColor qc;
 
     // Standard palette initialization (copied from Qt 4 styles)
-    QColor background = QColor(0xd4, 0xd0, 0xc8); // win 2000 grey
-    QColor light(background.lighter());
-    QColor dark(background.darker());
-    QColor mid(Qt::gray);
+    QColor background = QColor(237, 237, 237);
+    QColor light(background.lighter(110));
+    QColor dark(background.darker(160));
+    QColor mid(background.darker(140));
     QPalette *palette = new QPalette(Qt::black, background, light, dark, mid, Qt::black, Qt::white);
 
     palette->setBrush(QPalette::Disabled, QPalette::WindowText, dark);
@@ -127,10 +127,7 @@ QPalette * qt_mac_createSystemPalette()
     palette->setBrush(QPalette::Inactive, QPalette::Highlight, qc);
     palette->setBrush(QPalette::Disabled, QPalette::Highlight, qc);
 
-    palette->setBrush(QPalette::Active, QPalette::Shadow, qt_mac_colorForTheme(kThemeBrushButtonActiveDarkShadow));
-    qc = qt_mac_colorForTheme(kThemeBrushButtonInactiveDarkShadow);
-    palette->setBrush(QPalette::Inactive, QPalette::Shadow, qc);
-    palette->setBrush(QPalette::Disabled, QPalette::Shadow, qc);
+    palette->setBrush(QPalette::Shadow, background.darker(170));
 
     qc = qt_mac_colorForThemeTextColor(kThemeTextColorDialogActive);
     palette->setColor(QPalette::Active, QPalette::Text, qc);
