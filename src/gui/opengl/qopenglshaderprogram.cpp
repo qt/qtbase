@@ -145,8 +145,6 @@ QT_BEGIN_NAMESPACE
 
     \value Vertex Vertex shader written in the OpenGL Shading Language (GLSL).
     \value Fragment Fragment shader written in the OpenGL Shading Language (GLSL).
-    \value Geometry Geometry shaders written in the OpenGL Shading
-           Language (GLSL), based on the GL_EXT_geometry_shader4 extension.
 */
 
 class QOpenGLShaderPrivate : public QObjectPrivate
@@ -196,10 +194,6 @@ bool QOpenGLShaderPrivate::create()
     GLuint shader;
     if (shaderType == QOpenGLShader::Vertex)
         shader = glfuncs->glCreateShader(GL_VERTEX_SHADER);
-#if 0
-    else if (shaderType == QOpenGLShader::Geometry)
-        shader = glfuncs->glCreateShader(GL_GEOMETRY_SHADER_EXT);
-#endif
     else
         shader = glfuncs->glCreateShader(GL_FRAGMENT_SHADER);
     if (!shader) {
@@ -240,8 +234,6 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
             type = types[0];
         else if (shaderType == QOpenGLShader::Vertex)
             type = types[1];
-        else if (shaderType == QOpenGLShader::Geometry)
-            type = types[2];
 
         // Get info and source code lengths
         GLint infoLogLength = 0;
@@ -517,9 +509,6 @@ public:
         , linked(false)
         , inited(false)
         , removingShaders(false)
-        , geometryVertexCount(64)
-        , geometryInputType(0)
-        , geometryOutputType(0)
         , glfuncs(new QOpenGLFunctions)
     {
     }
@@ -529,10 +518,6 @@ public:
     bool linked;
     bool inited;
     bool removingShaders;
-
-    int geometryVertexCount;
-    GLenum geometryInputType;
-    GLenum geometryOutputType;
 
     QString log;
     QList<QOpenGLShader *> shaders;
@@ -837,23 +822,6 @@ bool QOpenGLShaderProgram::link()
         if (d->linked)
             return true;
     }
-
-    // Set up the geometry shader parameters
-#if 0
-    if (glProgramParameteriEXT) {
-        foreach (QOpenGLShader *shader, d->shaders) {
-            if (shader->shaderType() & QOpenGLShader::Geometry) {
-                glProgramParameteriEXT(program, GL_GEOMETRY_INPUT_TYPE_EXT,
-                                       d->geometryInputType);
-                glProgramParameteriEXT(program, GL_GEOMETRY_OUTPUT_TYPE_EXT,
-                                       d->geometryOutputType);
-                glProgramParameteriEXT(program, GL_GEOMETRY_VERTICES_OUT_EXT,
-                                       d->geometryVertexCount);
-                break;
-            }
-        }
-    }
-#endif
 
     d->glfuncs->glLinkProgram(program);
     value = 0;
@@ -2959,96 +2927,6 @@ void QOpenGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4
 }
 
 /*!
-    Returns the hardware limit for how many vertices a geometry shader
-    can output.
-
-    \sa setGeometryOutputVertexCount()
-*/
-int QOpenGLShaderProgram::maxGeometryOutputVertices() const
-{
-    GLint n = 0;
-//    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
-    return n;
-}
-
-/*!
-    Sets the maximum number of vertices the current geometry shader
-    program will produce, if active, to \a count.
-
-    This parameter takes effect the next time the program is linked.
-*/
-void QOpenGLShaderProgram::setGeometryOutputVertexCount(int count)
-{
-#ifndef QT_NO_DEBUG
-    int max = maxGeometryOutputVertices();
-    if (count > max) {
-        qWarning("QOpenGLShaderProgram::setGeometryOutputVertexCount: count: %d higher than maximum: %d",
-                 count, max);
-    }
-#endif
-    d_func()->geometryVertexCount = count;
-}
-
-
-/*!
-    Returns the maximum number of vertices the current geometry shader
-    program will produce, if active.
-
-    This parameter takes effect the ntext time the program is linked.
-*/
-int QOpenGLShaderProgram::geometryOutputVertexCount() const
-{
-    return d_func()->geometryVertexCount;
-}
-
-
-/*!
-    Sets the input type from \a inputType.
-
-    This parameter takes effect the next time the program is linked.
-*/
-void QOpenGLShaderProgram::setGeometryInputType(GLenum inputType)
-{
-    d_func()->geometryInputType = inputType;
-}
-
-
-/*!
-    Returns the geometry shader input type, if active.
-
-    This parameter takes effect the next time the program is linked.
- */
-
-GLenum QOpenGLShaderProgram::geometryInputType() const
-{
-    return d_func()->geometryInputType;
-}
-
-
-/*!
-    Sets the output type from the geometry shader, if active, to
-    \a outputType.
-
-    This parameter takes effect the next time the program is linked.
-*/
-void QOpenGLShaderProgram::setGeometryOutputType(GLenum outputType)
-{
-    d_func()->geometryOutputType = outputType;
-}
-
-
-/*!
-    Returns the geometry shader output type, if active.
-
-    This parameter takes effect the next time the program is linked.
- */
-GLenum QOpenGLShaderProgram::geometryOutputType() const
-{
-    return d_func()->geometryOutputType;
-}
-
-
-/*!
     Returns true if shader programs written in the OpenGL Shading
     Language (GLSL) are supported on this system; false otherwise.
 
@@ -3094,17 +2972,8 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
     if (!context)
         return false;
 
-    if ((type & ~(Geometry | Vertex | Fragment)) || type == 0)
+    if ((type & ~(Vertex | Fragment)) || type == 0)
         return false;
-
-#if 0
-    bool resolved = qt_resolve_glsl_extensions(const_cast<QOpenGLContext *>(context));
-    if (!resolved)
-        return false;
-
-    if ((type & Geometry) && !QByteArray((const char *) glGetString(GL_EXTENSIONS)).contains("GL_EXT_geometry_shader4"))
-        return false;
-#endif
 
     return true;
 }
