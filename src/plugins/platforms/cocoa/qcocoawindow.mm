@@ -187,6 +187,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
     , m_synchedWindowState(Qt::WindowActive)
+    , m_windowModality(Qt::NonModal)
     , m_inConstructor(true)
     , m_glContext(0)
     , m_menubar(0)
@@ -248,6 +249,9 @@ void QCocoaWindow::setVisible(bool visible)
     qDebug() << "QCocoaWindow::setVisible" << window() << visible;
 #endif
     if (visible) {
+        // We need to recreate if the modality has changed as the style mask will need updating
+        if (m_windowModality != window()->windowModality())
+            recreateWindow(parent());
         QCocoaWindow *parentCocoaWindow = 0;
         if (window()->transientParent()) {
             parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
@@ -359,6 +363,8 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
                  Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
         if (flags == Qt::Window) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
+        } else if ((flags & Qt::Dialog) && (window()->windowModality() != Qt::NonModal)) {
+            styleMask = NSTitledWindowMask;
         } else if (!(flags & Qt::FramelessWindowHint)) {
             if (flags & Qt::WindowMaximizeButtonHint)
                 styleMask |= NSResizableWindowMask;
@@ -655,7 +661,7 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     NSInteger level = windowLevel(flags);
     [createdWindow setLevel:level];
-
+    m_windowModality = window()->windowModality();
     return createdWindow;
 }
 

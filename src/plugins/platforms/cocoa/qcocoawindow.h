@@ -157,6 +157,7 @@ public: // for QNSView
     NSWindow *m_nsWindow;
     Qt::WindowFlags m_windowFlags;
     Qt::WindowState m_synchedWindowState;
+    Qt::WindowModality m_windowModality;
     QPointer<QWindow> m_activePopupWindow;
 
     bool m_inConstructor;
