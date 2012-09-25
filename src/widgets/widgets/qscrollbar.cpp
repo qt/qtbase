@@ -476,8 +476,18 @@ bool QScrollBar::event(QEvent *event)
     if (const QHoverEvent *he = static_cast<const QHoverEvent *>(event))
         d_func()->updateHoverControl(he->pos());
         break;
+    default:
+        break;
+    }
+    return QAbstractSlider::event(event);
+}
+
+/*!
+    \reimp
+*/
 #ifndef QT_NO_WHEELEVENT
-    case QEvent::Wheel: {
+void QScrollBar::wheelEvent(QWheelEvent *event)
+{
         event->ignore();
         // override wheel event without adding virtual function override
         QWheelEvent *ev = static_cast<QWheelEvent *>(event);
@@ -492,14 +502,8 @@ bool QScrollBar::event(QEvent *event)
         Q_D(QScrollBar);
         if (d->scrollByDelta(ev->orientation(), ev->modifiers(), delta))
             event->accept();
-        return true;
-    }
-#endif
-    default:
-        break;
-    }
-    return QAbstractSlider::event(event);
 }
+#endif
 
 /*!
     \reimp

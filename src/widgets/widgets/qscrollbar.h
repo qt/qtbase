@@ -67,6 +67,9 @@ public:
     bool event(QEvent *event);
 
 protected:
+#ifndef QT_NO_WHEELEVENT
+    void wheelEvent(QWheelEvent *);
+#endif
     void paintEvent(QPaintEvent *);
     void mousePressEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);

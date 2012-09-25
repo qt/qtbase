@@ -56,6 +56,9 @@ public slots:
 private slots:
     void scrollSingleStep();
     void task_209492();
+#ifndef QT_NO_WHEELEVENT
+    void QTBUG_27308();
+#endif
 
 private:
     QScrollBar *testWidget;
@@ -142,6 +145,22 @@ void tst_QScrollBar::task_209492()
     QCOMPARE(scrollArea.scrollCount, 1);
     QCOMPARE(spy.count(), 1);
 }
+
+#ifndef QT_NO_WHEELEVENT
+#define WHEEL_DELTA 120 // copied from tst_QAbstractSlider / tst_QComboBox
+void tst_QScrollBar::QTBUG_27308()
+{
+    // https://bugreports.qt-project.org/browse/QTBUG-27308
+    // Check that a disabled scrollbar doesn't react on wheel events anymore
+
+    testWidget->setValue(testWidget->minimum());
+    testWidget->setEnabled(false);
+    QWheelEvent event(testWidget->rect().center(),
+                      -WHEEL_DELTA, Qt::NoButton, Qt::NoModifier, testWidget->orientation());
+    qApp->sendEvent(testWidget, &event);
+    QCOMPARE(testWidget->value(), testWidget->minimum());
+}
+#endif
 
 QTEST_MAIN(tst_QScrollBar)
 #include "tst_qscrollbar.moc"
