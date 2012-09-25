@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+     <file>resources/test.txt</file>
+</qresource>
+</RCC>

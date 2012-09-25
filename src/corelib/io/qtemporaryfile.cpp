@@ -700,6 +700,21 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 /*!
   \fn QTemporaryFile *QTemporaryFile::createLocalFile(const QString &fileName)
   \overload
+  \obsolete
+
+  Use QTemporaryFile::createNativeFile(const QString &fileName) instead.
+*/
+
+/*!
+  \fn QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
+  \obsolete
+
+  Use QTemporaryFile::createNativeFile(QFile &file) instead.
+*/
+
+/*!
+  \fn QTemporaryFile *QTemporaryFile::createNativeFile(const QString &fileName)
+  \overload
 
   Works on the given \a fileName rather than an existing QFile
   object.
@@ -707,16 +722,27 @@ void QTemporaryFile::setFileTemplate(const QString &name)
 
 
 /*!
-  If \a file is not on a local disk, a temporary file is created
-  on a local disk, \a file is copied into the temporary local file,
-  and a pointer to the temporary local file is returned. If \a file
-  is already on a local disk, a copy is not created and 0 is returned.
+  If \a file is not already a native file then a QTemporaryFile is created
+  in the tempPath() and \a file is copied into the temporary file, then a
+  pointer to the temporary file is returned. If \a file is already a native
+  file, a QTemporaryFile is not created, no copy is made and 0 is returned.
+
+  For example:
+
+  QFile f(":/resources/file.txt");
+  QTemporaryFile::createNativeFile(f); // Returns a pointer to a temporary file
+
+  QFile f("/users/qt/file.txt");
+  QTemporaryFile::createNativeFile(f); // Returns 0
+
+  \sa QFileInfo::isNativePath()
 */
-QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
+
+QTemporaryFile *QTemporaryFile::createNativeFile(QFile &file)
 {
     if (QAbstractFileEngine *engine = file.d_func()->engine()) {
         if(engine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)
-            return 0; //local already
+            return 0; //native already
         //cache
         bool wasOpen = file.isOpen();
         qint64 old_off = 0;

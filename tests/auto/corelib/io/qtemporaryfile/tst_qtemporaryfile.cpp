@@ -88,7 +88,8 @@ private slots:
     void resetTemplateAfterError();
     void setTemplateAfterOpen();
     void autoRemoveAfterFailedRename();
-
+    void createNativeFile_data();
+    void createNativeFile();
     void QTBUG_4796_data();
     void QTBUG_4796();
 };
@@ -631,6 +632,41 @@ void tst_QTemporaryFile::autoRemoveAfterFailedRename()
 
     QVERIFY( !QFile::exists(cleaner.tempName) );
     cleaner.reset();
+}
+
+void tst_QTemporaryFile::createNativeFile_data()
+{
+    QTest::addColumn<QString>("filePath");
+    QTest::addColumn<qint64>("currentPos");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QByteArray>("content");
+
+    QTest::newRow("nativeFile") << QFINDTESTDATA("resources/test.txt") << (qint64)-1 << false << QByteArray();
+    QTest::newRow("nativeFileWithPos") << QFINDTESTDATA("resources/test.txt") << (qint64)5 << false << QByteArray();
+    QTest::newRow("resourceFile") << ":/resources/test.txt" << (qint64)-1 << true << QByteArray("This is a test");
+    QTest::newRow("resourceFileWithPos") << ":/resources/test.txt" << (qint64)5 << true << QByteArray("This is a test");
+}
+
+void tst_QTemporaryFile::createNativeFile()
+{
+    QFETCH(QString, filePath);
+    QFETCH(qint64, currentPos);
+    QFETCH(bool, valid);
+    QFETCH(QByteArray, content);
+
+    QFile f(filePath);
+    if (currentPos != -1) {
+        f.open(QIODevice::ReadOnly);
+        f.seek(currentPos);
+    }
+    QTemporaryFile *tempFile = QTemporaryFile::createNativeFile(f);
+    QVERIFY(valid == (bool)tempFile);
+    if (currentPos != -1)
+        QCOMPARE(currentPos, f.pos());
+    if (valid) {
+        QCOMPARE(content, tempFile->readAll());
+        delete tempFile;
+    }
 }
 
 void tst_QTemporaryFile::QTBUG_4796_data()

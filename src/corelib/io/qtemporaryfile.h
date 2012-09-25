@@ -83,10 +83,15 @@ public:
     QString fileName() const;
     QString fileTemplate() const;
     void setFileTemplate(const QString &name);
-
-    inline static QTemporaryFile *createLocalFile(const QString &fileName)
-        { QFile file(fileName); return createLocalFile(file); }
-    static QTemporaryFile *createLocalFile(QFile &file);
+#if QT_DEPRECATED_SINCE(5,1)
+    QT_DEPRECATED inline static QTemporaryFile *createLocalFile(const QString &fileName)
+        { return createNativeFile(fileName); }
+    QT_DEPRECATED inline static QTemporaryFile *createLocalFile(QFile &file)
+        { return createNativeFile(file); }
+#endif
+    inline static QTemporaryFile *createNativeFile(const QString &fileName)
+        { QFile file(fileName); return createNativeFile(file); }
+    static QTemporaryFile *createNativeFile(QFile &file);
 
 protected:
     bool open(OpenMode flags);
