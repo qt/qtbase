@@ -93,7 +93,6 @@ void PureDocParser::parseSourceFile(const Location& location, const QString& fil
         currentFile_.clear();
         return;
     }
-    createOutputSubdirectory(location, filePath);
 
     reset();
     Location fileLocation(filePath);

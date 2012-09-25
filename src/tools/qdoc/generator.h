@@ -79,7 +79,6 @@ public:
 
     QString fullDocumentLocation(const Node *node, bool subdir = false);
 
-    static const QString& baseDir() { return baseDir_; }
     static Generator *currentGenerator() { return currentGenerator_; }
     static Generator *generatorForFormat(const QString& format);
     static void initialize(const Config& config);
@@ -170,7 +169,6 @@ protected:
     QStack<QTextStream*> outStreamStack;
 
 private:
-    static QString baseDir_;
     static Generator* currentGenerator_;
     static QStringList exampleDirs;
     static QStringList exampleImgExts;

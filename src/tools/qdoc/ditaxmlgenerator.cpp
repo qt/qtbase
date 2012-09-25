@@ -1274,8 +1274,6 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
         if (fileName.isEmpty()) {
             relative->location().warning(tr("Missing image: %1").arg(protectEnc(atom->string())));
             QString images = "images";
-            if (!baseDir().isEmpty())
-                images.prepend("../");
             if (!atom->string().isEmpty() && atom->string()[0] != '/')
                 images.append(QLatin1Char('/'));
             fileName = images + atom->string();
@@ -3923,22 +3921,6 @@ QString DitaXmlGenerator::getLink(const Atom* atom, const Node* relative, const 
             }
             else if (!link.isEmpty() && *node && (link.endsWith(".xml") || link.endsWith(".dita"))) {
                 link += QLatin1Char('#') + (*node)->guid();
-            }
-        }
-        /*
-          If the output is going to subdirectories, then if the
-          two nodes will be output to different directories, then
-          the link must go up to the parent directory and then
-          back down into the other subdirectory.
-        */
-        if (!baseDir().isEmpty()) {
-            if (link.startsWith("images/")) {
-                link.prepend(QString("../"));
-            }
-            else if (*node && relative && (*node != relative)) {
-                if ((*node)->outputSubdirectory() != relative->outputSubdirectory()) {
-                    link.prepend(QString("../" + (*node)->outputSubdirectory() + QLatin1Char('/')));
-                }
             }
         }
     }

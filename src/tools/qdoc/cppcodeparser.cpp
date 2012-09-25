@@ -166,7 +166,6 @@ void CppCodeParser::parseHeaderFile(const Location& location, const QString& fil
         currentFile_.clear();
         return;
     }
-    createOutputSubdirectory(location, filePath);
 
     reset();
     Location fileLocation(filePath);
@@ -199,7 +198,6 @@ void CppCodeParser::parseSourceFile(const Location& location, const QString& fil
         currentFile_.clear();
         return;
     }
-    createOutputSubdirectory(location, filePath);
 
     reset();
     Location fileLocation(filePath);

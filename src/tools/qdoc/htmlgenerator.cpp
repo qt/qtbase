@@ -222,19 +222,6 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     manifestDir = "qthelp://" + config.getString(prefix + "namespace");
     manifestDir += QLatin1Char('/') + config.getString(prefix + "virtualFolder") + QLatin1Char('/');
 
-    /*
-      If the output files will be in subdirectores in the output
-      directory, change the references to files in the style and
-      scripts subdirectories that appear in the headerscipts and
-      headerstyles string so that they link to the correct files,
-      whic means prepending "../" to each
-     */
-    if (!baseDir().isEmpty()) {
-        headerScripts = headerScripts.replace("style/","../style/");
-        headerScripts = headerScripts.replace("scripts/","../scripts/");
-        headerStyles = headerStyles.replace("style/","../style/");
-        headerStyles = headerStyles.replace("scripts/","../scripts/");
-    }
 }
 
 /*!
@@ -746,8 +733,6 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         }
         else {
             QString prefix;
-            if (!baseDir().isEmpty())
-                prefix = "../";
             out() << "<img src=\"" << protectEnc(prefix + fileName) << '"';
             if (!text.isEmpty())
                 out() << " alt=\"" << protectEnc(text) << '"';
@@ -3623,22 +3608,6 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
                 link = "images/used-in-examples/" + link;
             if (targetAtom)
                 link += QLatin1Char('#') + refForAtom(targetAtom, *node);
-        }
-        /*
-          If the output is going to subdirectories, then if the
-          two nodes will be output to different directories, then
-          the link must go up to the parent directory and then
-          back down into the other subdirectory.
-        */
-        if (!baseDir().isEmpty()) {
-            if (link.startsWith("images/")) {
-                link.prepend(QString("../"));
-            }
-            else if (*node && relative && (*node != relative)) {
-                if ((*node)->outputSubdirectory() != relative->outputSubdirectory()) {
-                    link.prepend(QString("../" + (*node)->outputSubdirectory() + QLatin1Char('/')));
-                }
-            }
         }
     }
     return link;

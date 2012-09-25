@@ -58,7 +58,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QString Generator::baseDir_;
 Generator* Generator::currentGenerator_;
 QStringList Generator::exampleDirs;
 QStringList Generator::exampleImgExts;
@@ -1453,11 +1452,7 @@ void Generator::initialize(const Config &config)
     outputFormats = config.getOutputFormats();
     if (!outputFormats.isEmpty()) {
         outDir_ = config.getOutputDir();
-        baseDir_ = config.getString(CONFIG_BASEDIR);
-        if (!baseDir_.isEmpty())
-            config.location().warning(tr("\"basedir\" specified in config file. "
-                                         "All output will be in module directories "
-                                         "of the output directory"));
+
         if (outDir_.isEmpty())
             config.lastLocation().fatal(tr("No output directory specified in "
                                            "configuration file or on the command line"));

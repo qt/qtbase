@@ -7198,7 +7198,6 @@
     \li \l {22-qdoc-configuration-generalvariables.html#alias-variable} {alias}
     \li \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoredirectives-variable} {Cpp.ignoredirectives}
     \li \l {23-qdoc-configuration-cppvariables.html#Cpp.ignoretokens-variable} {Cpp.ignoretokens}
-    \li \l {22-qdoc-configuration-generalvariables.html#basedir-variable} {basedir} \span {class="newStuff"} {(experimental)}
     \li \l {22-qdoc-configuration-generalvariables.html#defines-variable} {defines}
     \li \l {22-qdoc-configuration-generalvariables.html#edition-variable} {edition}
     \li \l {22-qdoc-configuration-generalvariables.html#exampledirs-variable} {exampledirs}
@@ -7370,40 +7369,6 @@
     Specific Configuration Variables#HTML.stylesheets} {stylesheets}
     to adjust the appearance of certain types of HTML elements, this
     level of indentation is not always required.
-
-    \target basedir-variable
-    \section1 basedir
-
-    The \c basedir variable tells QDoc two things. First, the fact that
-    it is set it tells QDoc to the put the output files in subdirectories
-    of the output directory. Second, the value of basedir is the name of
-    the bundle directory for your project. .e.g. if you are working with
-    the Qt5 bundle, you will have checked out the bundle into some root
-    subdirectory (the base directory), and that root directory might
-    very well be \e {qt5}
-
-    Then in your qdocconf file, you would assign to the basedir variable:
-
-    \code
-        basedir = qt5
-    \endcode
-
-    Now, QDoc knows to scan the file path of each source file it parses,
-    looking for \e qt5. For example, this file would be:
-
-    \code
-        ~/depot/qt5/qtdoc/tools/qdoc/doc/qdoc-manual.qdoc
-    \endcode
-
-    QDoc scans the path for the basedir \e{qt5} and the next subdirectory
-    \e{qtdoc} becomes one of the subdirectories in the output directory.
-    The HTML output file created from this file will be stored in the
-    \e{qtdoc} subdirectory.
-
-    \note This is an experimental command. It is currently used only by
-    the Qt documentation group. If you use it, be advised that you might
-    find some broken links in your HTML output due to remaining problems
-    with cross-subdirectory linking.
 
     \target defines-variable
     \section1 defines

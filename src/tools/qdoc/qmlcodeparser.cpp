@@ -153,7 +153,6 @@ void QmlCodeParser::parseSourceFile(const Location& location, const QString& fil
         currentFile_.clear();
         return;
     }
-    createOutputSubdirectory(location, filePath);
 
     QString document = in.readAll();
     in.close();

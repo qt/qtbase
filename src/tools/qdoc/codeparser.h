@@ -73,8 +73,6 @@ public:
     bool isParsingQdoc() const;
     const QString& currentFile() const { return currentFile_; }
 
-    void createOutputSubdirectory(const Location& location, const QString& filePath);
-
     static void initialize(const Config& config);
     static void terminate();
     static CodeParser *parserForLanguage(const QString& language);
