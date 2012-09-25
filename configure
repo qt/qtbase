@@ -3247,7 +3247,7 @@ Additional options:
                                    (experimental)
 
  $SBN  -no-separate-debug-info . Do not store debug information in a separate file.
- $SBY  -separate-debug-info .... Strip debug information into a separate .debug file.
+ $SBY  -separate-debug-info .... Strip debug information into a separate file.
 
  $XCBN  -no-xcb ............ Do not compile Xcb (X protocol C-language Binding) support.
  $XCBY  -xcb ............... Compile Xcb support.
