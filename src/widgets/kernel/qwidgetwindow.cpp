@@ -443,13 +443,13 @@ void QWidgetWindow::handleDragEnterMoveEvent(QDragMoveEvent *event)
     QWidget *widget = m_widget->childAt(event->pos());
     if (!widget)
         widget = m_widget;
-    for ( ; widget && widget != m_widget && !widget->acceptDrops(); widget = widget->parentWidget()) ;
+    for ( ; widget && !widget->isWindow() && !widget->acceptDrops(); widget = widget->parentWidget()) ;
     if (widget && !widget->acceptDrops())
         widget = 0;
     // Target widget unchanged: DragMove
     if (widget && widget == m_dragTarget.data()) {
         Q_ASSERT(event->type() == QEvent::DragMove);
-        const QPoint mapped = widget->mapFrom(m_widget, event->pos());
+        const QPoint mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
         QDragMoveEvent translated(mapped, event->possibleActions(), event->mimeData(), event->mouseButtons(), event->keyboardModifiers());
         translated.setDropAction(event->dropAction());
         QGuiApplication::sendSpontaneousEvent(widget, &translated);
@@ -472,7 +472,7 @@ void QWidgetWindow::handleDragEnterMoveEvent(QDragMoveEvent *event)
          return;
     }
     m_dragTarget = widget;
-    const QPoint mapped = widget->mapFrom(m_widget, event->pos());
+    const QPoint mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
     QDragEnterEvent translated(mapped, event->possibleActions(), event->mimeData(), event->mouseButtons(), event->keyboardModifiers());
     QGuiApplication::sendSpontaneousEvent(widget, &translated);
     if (translated.isAccepted()) {
@@ -492,7 +492,7 @@ void QWidgetWindow::handleDragLeaveEvent(QDragLeaveEvent *event)
 
 void QWidgetWindow::handleDropEvent(QDropEvent *event)
 {
-    const QPoint mapped = m_dragTarget.data()->mapFrom(m_widget, event->pos());
+    const QPoint mapped = m_dragTarget.data()->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
     QDropEvent translated(mapped, event->possibleActions(), event->mimeData(), event->mouseButtons(), event->keyboardModifiers());
     QGuiApplication::sendSpontaneousEvent(m_dragTarget.data(), &translated);
     if (translated.isAccepted())

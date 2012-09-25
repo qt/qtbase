@@ -409,7 +409,13 @@ static const char *expectedLogC[] = {
     "acceptingDropsWidget2::dragMoveEvent at 1,31 action=1 MIME_DATA_ADDRESS 'testmimetext'",
     "Event at 11,241 accepted",
     "acceptingDropsWidget2::dropEvent at 1,51 action=1 MIME_DATA_ADDRESS 'testmimetext'",
-    "Event at 11,261 accepted"
+    "Event at 11,261 accepted",
+    "acceptingDropsWidget1::dragEnterEvent at 10,10 action=1 MIME_DATA_ADDRESS 'testmimetext'",
+    "Event at 0,0 accepted",
+    "acceptingDropsWidget1::dragMoveEvent at 11,11 action=1 MIME_DATA_ADDRESS 'testmimetext'",
+    "Event at 1,1 accepted",
+    "acceptingDropsWidget1::dropEvent at 12,12 action=1 MIME_DATA_ADDRESS 'testmimetext'",
+    "Event at 2,2 accepted"
 };
 
 // A widget that logs the DnD events it receives into a QStringList.
@@ -497,6 +503,12 @@ void tst_QWidget_window::tst_dnd()
     dropsAcceptingWidget1->resize(180, 80);
     dropsAcceptingWidget1->move(10, 110);
 
+    // Create a native widget on top of dropsAcceptingWidget1 to check QTBUG-27336
+    QWidget *nativeWidget = new QWidget(dropsAcceptingWidget1);
+    nativeWidget->resize(160, 60);
+    nativeWidget->move(10, 10);
+    nativeWidget->winId();
+
     QWidget *dropsAcceptingWidget2 = new DnDEventLoggerWidget(&log, &dndTestWidget);
     dropsAcceptingWidget2->setAcceptDrops(true);
     dropsAcceptingWidget2->setObjectName(QLatin1String("acceptingDropsWidget2"));
@@ -534,6 +546,19 @@ void tst_QWidget_window::tst_dnd()
             log.push_back(msgEventAccepted(e));
         }
     }
+
+    window = nativeWidget->windowHandle();
+    QDragEnterEvent enterEvent(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    qApp->sendEvent(window, &enterEvent);
+    log.push_back(msgEventAccepted(enterEvent));
+
+    QDragMoveEvent moveEvent(QPoint(1, 1), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    qApp->sendEvent(window, &moveEvent);
+    log.push_back(msgEventAccepted(moveEvent));
+
+    QDropEvent dropEvent(QPoint(2, 2), Qt::CopyAction, &mimeData, Qt::LeftButton, Qt::NoModifier);
+    qApp->sendEvent(window, &dropEvent);
+    log.push_back(msgEventAccepted(dropEvent));
 
     // Compare logs.
     QStringList expectedLog;
