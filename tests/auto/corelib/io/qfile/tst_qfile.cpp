@@ -2273,7 +2273,7 @@ void tst_QFile::writeLargeDataBlock()
         qint64 fileWriteOriginalData = file.write(originalData);
         qint64 originalDataSize      = (qint64)originalData.size();
 #if defined(Q_OS_WIN)
-        if (fileWriteOriginalData == -1) {
+        if (fileWriteOriginalData != originalDataSize) {
             qWarning() << qPrintable(QString("Error writing a large data block to [%1]: %2")
                 .arg(fileName)
                 .arg(file.errorString()));
