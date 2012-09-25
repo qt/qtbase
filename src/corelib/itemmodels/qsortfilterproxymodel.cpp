@@ -457,9 +457,9 @@ bool QSortFilterProxyModelPrivate::update_source_sort_column()
 {
     Q_Q(QSortFilterProxyModel);
     QModelIndex proxy_index = q->index(0, proxy_sort_column, QModelIndex());
-    int old_source_sort_colum = source_sort_column;
+    int old_source_sort_column = source_sort_column;
     source_sort_column = q->mapToSource(proxy_index).column();
-    return old_source_sort_colum != source_sort_column;
+    return old_source_sort_column != source_sort_column;
 }
 
 
