@@ -364,7 +364,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*!
     \class QMap
     \inmodule QtCore
-    \brief The QMap class is a template class that provides a skip-list-based dictionary.
+    \brief The QMap class is a template class that provides a red-black-tree-based dictionary.
 
     \ingroup tools
     \ingroup shared
