@@ -133,19 +133,6 @@ translations/*.qm
 translations/*_untranslated.ts
 qrc_*.cpp
 
-src/concurrent/qtconcurrentversion.h
-src/corelib/qtcoreversion.h
-src/dbus/qtdbusversion.h
-src/gui/qtguiversion.h
-src/network/qtnetworkversion.h
-src/opengl/qtopenglversion.h
-src/sql/qtsqlversion.h
-src/testlib/qttestversion.h
-src/xml/qtxmlversion.h
-src/platformsupport/qtplatformsupportversion.h
-src/printsupport/qtprintsupportversion.h
-src/widgets/qtwidgetsversion.h
-
 # Test generated files
 QObject.log
 tst_*
