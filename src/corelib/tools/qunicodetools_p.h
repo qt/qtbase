@@ -64,7 +64,9 @@ struct Q_PACKED QCharAttributes
     uchar sentenceBoundary : 1;
     uchar lineBreak        : 1;
     uchar whiteSpace       : 1;
-    uchar unused           : 3;
+    uchar wordStart        : 1;
+    uchar wordEnd          : 1;
+    uchar unused           : 1;
 };
 Q_DECLARE_TYPEINFO(QCharAttributes, Q_PRIMITIVE_TYPE);
 
@@ -89,6 +91,7 @@ enum CharAttributeOption {
 };
 Q_DECLARE_FLAGS(CharAttributeOptions, CharAttributeOption)
 
+// attributes buffer has to have a length of string length + 1
 Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
                                       const ScriptItem *items, int numItems,
                                       QCharAttributes *attributes, CharAttributeOptions options = DefaultOptionsCompat);

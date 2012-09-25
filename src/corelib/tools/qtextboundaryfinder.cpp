@@ -89,7 +89,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
         scriptItems.append(item);
     }
 
-    QUnicodeTools::CharAttributeOptions options = QUnicodeTools::WhiteSpaces;
+    QUnicodeTools::CharAttributeOptions options = 0;
     switch (type) {
     case QTextBoundaryFinder::Grapheme: options |= QUnicodeTools::GraphemeBreaks; break;
     case QTextBoundaryFinder::Word: options |= QUnicodeTools::WordBreaks; break;
@@ -189,9 +189,9 @@ QTextBoundaryFinder::QTextBoundaryFinder(const QTextBoundaryFinder &other)
     , pos(other.pos)
     , freePrivate(true)
 {
-    d = (QTextBoundaryFinderPrivate *) malloc(length*sizeof(QCharAttributes));
+    d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
     Q_CHECK_PTR(d);
-    memcpy(d, other.d, length*sizeof(QCharAttributes));
+    memcpy(d, other.d, (length + 1) * sizeof(QCharAttributes));
 }
 
 /*!
@@ -209,11 +209,11 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     pos = other.pos;
 
     QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *)
-        realloc(freePrivate ? d : 0, length*sizeof(QCharAttributes));
+        realloc(freePrivate ? d : 0, (length + 1) * sizeof(QCharAttributes));
     Q_CHECK_PTR(newD);
     freePrivate = true;
     d = newD;
-    memcpy(d, other.d, length*sizeof(QCharAttributes));
+    memcpy(d, other.d, (length + 1) * sizeof(QCharAttributes));
 
     return *this;
 }
@@ -238,7 +238,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
     , pos(0)
     , freePrivate(true)
 {
-    d = (QTextBoundaryFinderPrivate *) malloc(length*sizeof(QCharAttributes));
+    d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
     Q_CHECK_PTR(d);
     init(t, chars, length, d->attributes);
 }
@@ -249,7 +249,8 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
 
   \a buffer is an optional working buffer of size \a bufferSize you can pass to
   the QTextBoundaryFinder. If the buffer is large enough to hold the working
-  data required, it will use this instead of allocating its own buffer.
+  data required (bufferSize >= length + 1), it will use this
+  instead of allocating its own buffer.
 
   \warning QTextBoundaryFinder does not create a copy of \a chars. It is the
   application programmer's responsibility to ensure the array is allocated for
@@ -262,11 +263,11 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QChar *chars, 
     , length(length)
     , pos(0)
 {
-    if (buffer && (uint)bufferSize >= length*sizeof(QCharAttributes)) {
+    if (buffer && (uint)bufferSize >= (length + 1) * sizeof(QCharAttributes)) {
         d = (QTextBoundaryFinderPrivate *)buffer;
         freePrivate = false;
     } else {
-        d = (QTextBoundaryFinderPrivate *) malloc(length*sizeof(QCharAttributes));
+        d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
         Q_CHECK_PTR(d);
         freePrivate = true;
     }
@@ -455,38 +456,30 @@ bool QTextBoundaryFinder::isAtBoundary() const
 */
 QTextBoundaryFinder::BoundaryReasons QTextBoundaryFinder::boundaryReasons() const
 {
-    if (!d)
-        return NotAtBoundary;
-    if (! isAtBoundary())
-        return NotAtBoundary;
-    if (pos == 0) {
-        if (d->attributes[pos].whiteSpace)
-            return NotAtBoundary;
-        return StartWord;
+    BoundaryReasons reasons = NotAtBoundary;
+    if (!d || !isAtBoundary())
+        return reasons;
+
+    switch (t) {
+    case Word:
+        if (d->attributes[pos].wordStart)
+            reasons |= StartWord;
+        if (d->attributes[pos].wordEnd)
+            reasons |= EndWord;
+        break;
+    case Line:
+        if (pos > 0 && chars[pos - 1].unicode() == QChar::SoftHyphen)
+            reasons |= SoftHyphen;
+        // fall through
+    case Grapheme:
+    case Sentence:
+        reasons |= StartWord | EndWord;
+        break;
+    default:
+        break;
     }
-    if (pos == length) {
-        if (d->attributes[length-1].whiteSpace)
-            return NotAtBoundary;
-        return EndWord;
-    }
 
-    if (t == Line && chars[pos - 1].unicode() == QChar::SoftHyphen)
-        return SoftHyphen;
-
-    if (t != Word)
-        return BoundaryReasons(StartWord | EndWord);
-
-    const bool nextIsSpace = d->attributes[pos].whiteSpace;
-    const bool prevIsSpace = d->attributes[pos - 1].whiteSpace;
-
-    if (prevIsSpace && !nextIsSpace)
-        return StartWord;
-    else if (!prevIsSpace && nextIsSpace)
-        return EndWord;
-    else if (!prevIsSpace && !nextIsSpace)
-        return BoundaryReasons(StartWord | EndWord);
-    else
-        return NotAtBoundary;
+    return reasons;
 }
 
 QT_END_NAMESPACE

@@ -395,8 +395,10 @@ static void HB_ThaiAssignAttributes(const HB_UChar16 *string, hb_uint32 len, HB_
     to_tis620(string, len, cstr);
 
     for (i = 0; i < len; ++i) {
-        attributes[i].lineBreak = FALSE;
         attributes[i].wordBreak = FALSE;
+        attributes[i].wordStart = FALSE;
+        attributes[i].wordEnd = FALSE;
+        attributes[i].lineBreak = FALSE;
     }
 
     if (len > 128) {
@@ -411,11 +413,17 @@ static void HB_ThaiAssignAttributes(const HB_UChar16 *string, hb_uint32 len, HB_
 
     if (break_positions) {
         attributes[0].wordBreak = TRUE;
+        attributes[0].wordStart = TRUE;
+        attributes[0].wordEnd = FALSE;
         numbreaks = th_brk((const unsigned char *)cstr, break_positions, brp_size);
         for (i = 0; i < numbreaks; ++i) {
             attributes[break_positions[i]].wordBreak = TRUE;
+            attributes[break_positions[i]].wordStart = TRUE;
+            attributes[break_positions[i]].wordEnd = TRUE;
             attributes[break_positions[i]].lineBreak = TRUE;
         }
+        if (numbreaks > 0)
+            attributes[break_positions[numbreaks - 1]].wordStart = FALSE;
 
         if (break_positions != brp)
             free(break_positions);

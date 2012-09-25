@@ -133,7 +133,9 @@ typedef struct {
     hb_bitfield sentenceBoundary : 1;
     hb_bitfield lineBreak        : 1;
     hb_bitfield whiteSpace       : 1;     /* A unicode whitespace character */
-    hb_bitfield unused           : 3;
+    hb_bitfield wordStart        : 1;
+    hb_bitfield wordEnd          : 1;
+    hb_bitfield unused           : 1;
 } HB_CharAttributes;
 
 void HB_GetTailoredCharAttributes(const HB_UChar16 *string, hb_uint32 stringLength,

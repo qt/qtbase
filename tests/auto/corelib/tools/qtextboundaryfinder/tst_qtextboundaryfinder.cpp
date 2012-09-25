@@ -72,6 +72,7 @@ private slots:
     void lineBoundaries_manual();
 
     void fastConstructor();
+    void wordBoundaries_qtbug6498();
     void isAtSoftHyphen_data();
     void isAtSoftHyphen();
     void thaiLineBreak();
@@ -544,6 +545,67 @@ void tst_QTextBoundaryFinder::fastConstructor()
     QCOMPARE(finder.boundaryReasons(), QTextBoundaryFinder::NotAtBoundary);
 }
 
+void tst_QTextBoundaryFinder::wordBoundaries_qtbug6498()
+{
+    // text with trailing space
+    QString text("Please test me. Finish ");
+    QTextBoundaryFinder finder(QTextBoundaryFinder::Word, text);
+
+    QCOMPARE(finder.position(), 0);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::StartWord);
+
+    QCOMPARE(finder.toNextBoundary(), 6);
+    QCOMPARE(finder.position(), 6);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::EndWord);
+
+    QCOMPARE(finder.toNextBoundary(), 7);
+    QCOMPARE(finder.position(), 7);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::StartWord);
+
+    QCOMPARE(finder.toNextBoundary(), 11);
+    QCOMPARE(finder.position(), 11);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::EndWord);
+
+    QCOMPARE(finder.toNextBoundary(), 12);
+    QCOMPARE(finder.position(), 12);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::StartWord);
+
+    QCOMPARE(finder.toNextBoundary(), 14);
+    QCOMPARE(finder.position(), 14);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::EndWord);
+
+    QCOMPARE(finder.toNextBoundary(), 15);
+    QCOMPARE(finder.position(), 15);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() == QTextBoundaryFinder::NotAtBoundary);
+
+    QCOMPARE(finder.toNextBoundary(), 16);
+    QCOMPARE(finder.position(), 16);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::StartWord);
+
+    QCOMPARE(finder.toNextBoundary(), 22);
+    QCOMPARE(finder.position(), 22);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() & QTextBoundaryFinder::EndWord);
+
+    QCOMPARE(finder.toNextBoundary(), 23);
+    QCOMPARE(finder.position(), 23);
+    QVERIFY(finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() == QTextBoundaryFinder::NotAtBoundary);
+
+    QCOMPARE(finder.toNextBoundary(), -1);
+    QCOMPARE(finder.position(), -1);
+    QVERIFY(!finder.isAtBoundary());
+    QVERIFY(finder.boundaryReasons() == QTextBoundaryFinder::NotAtBoundary);
+}
+
 void tst_QTextBoundaryFinder::isAtSoftHyphen_data()
 {
     QTest::addColumn<QString>("testString");
@@ -568,7 +630,7 @@ void tst_QTextBoundaryFinder::isAtSoftHyphen()
         QVERIFY(expectedBreakPositions.contains(i + 1));
         boundaryFinder.setPosition(i + 1);
         QVERIFY(boundaryFinder.isAtBoundary());
-        QVERIFY(boundaryFinder.boundaryReasons() == QTextBoundaryFinder::SoftHyphen);
+        QVERIFY(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::SoftHyphen);
     }
 }
 

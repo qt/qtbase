@@ -102,6 +102,8 @@ static void getGraphemeBreaks(const ushort *string, quint32 len, QCharAttributes
 
         lcls = cls;
     }
+
+    attributes[len].graphemeBoundary = true; // GB2
 }
 
 
@@ -133,6 +135,10 @@ static const uchar breakTable[QUnicodeTables::WordBreak_ExtendNumLet + 1][QUnico
 
 static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *attributes)
 {
+    enum WordType {
+        WordTypeNone, WordTypeAlphaNumeric, WordTypeHiraganaKatakana
+    } currentWordType = WordTypeNone;
+
     QUnicodeTables::WordBreakClass cls = QUnicodeTables::WordBreak_LF; // to meet WB1
     for (quint32 i = 0; i != len; ++i) {
         quint32 pos = i;
@@ -178,9 +184,30 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
                 continue;
         }
         cls = ncls;
-        if (action == WB::Break)
+        if (action == WB::Break) {
             attributes[pos].wordBreak = true;
+            if (currentWordType != WordTypeNone)
+                attributes[pos].wordEnd = true;
+            switch (cls) {
+            case QUnicodeTables::WordBreak_Katakana:
+                currentWordType = WordTypeHiraganaKatakana;
+                attributes[pos].wordStart = true;
+                break;
+            case QUnicodeTables::WordBreak_ALetter:
+            case QUnicodeTables::WordBreak_Numeric:
+                currentWordType = WordTypeAlphaNumeric;
+                attributes[pos].wordStart = true;
+                break;
+            default:
+                currentWordType = WordTypeNone;
+                break;
+            }
+        }
     }
+
+    if (currentWordType != WordTypeNone)
+        attributes[len].wordEnd = true;
+    attributes[len].wordBreak = true; // WB2
 }
 
 
@@ -277,6 +304,8 @@ static void getSentenceBreaks(const ushort *string, quint32 len, QCharAttributes
             state = SB::breakTable[SB::Initial][ncls];
         }
     }
+
+    attributes[len].sentenceBoundary = true; // SB2
 }
 
 
@@ -514,6 +543,7 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
     }
 
     attributes[0].lineBreak = false; // LB2
+    attributes[len].lineBreak = true; // LB3
 }
 
 
@@ -543,7 +573,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
         return;
 
     if (!(options & DontClearAttributes))
-        ::memset(attributes, 0, length * sizeof(QCharAttributes));
+        ::memset(attributes, 0, (length + 1) * sizeof(QCharAttributes));
 
     if (options & GraphemeBreaks)
         getGraphemeBreaks(string, length, attributes);
