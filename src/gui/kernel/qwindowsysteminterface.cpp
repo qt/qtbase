@@ -604,6 +604,13 @@ void QWindowSystemInterface::handleTabletLeaveProximityEvent(int device, int poi
     handleTabletLeaveProximityEvent(time, device, pointerType, uid);
 }
 
+void QWindowSystemInterface::handlePlatformPanelEvent(QWindow *w)
+{
+    QWindowSystemInterfacePrivate::PlatformPanelEvent *e =
+            new QWindowSystemInterfacePrivate::PlatformPanelEvent(w);
+    QWindowSystemInterfacePrivate::queueWindowSystemEvent(e);
+}
+
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
     QWindowSystemInterface::handleMouseEvent(w, local, global,  b,  mods);
 }

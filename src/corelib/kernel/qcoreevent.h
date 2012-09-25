@@ -277,6 +277,8 @@ public:
 
         SockClose = 211,                        // socket closed
 
+        PlatformPanel = 212,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

@@ -1203,6 +1203,10 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::processTabletLeaveProximityEvent(
                     static_cast<QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::PlatformPanel:
+        QGuiApplicationPrivate::processPlatformPanelEvent(
+                    static_cast<QWindowSystemInterfacePrivate::PlatformPanelEvent *>(e));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
@@ -1615,6 +1619,20 @@ void QGuiApplicationPrivate::processTabletLeaveProximityEvent(QWindowSystemInter
 #else
     Q_UNUSED(e)
 #endif
+}
+
+void QGuiApplicationPrivate::processPlatformPanelEvent(QWindowSystemInterfacePrivate::PlatformPanelEvent *e)
+{
+    if (!e->window)
+        return;
+
+    if (e->window->d_func()->blockedByModalWindow) {
+        // a modal window is blocking this window, don't allow events through
+        return;
+    }
+
+    QEvent ev(QEvent::PlatformPanel);
+    QGuiApplication::sendSpontaneousEvent(e->window.data(), &ev);
 }
 
 Q_GUI_EXPORT uint qHash(const QGuiApplicationPrivate::ActiveTouchPointsKey &k)

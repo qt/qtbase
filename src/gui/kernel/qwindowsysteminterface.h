@@ -176,6 +176,7 @@ public:
     static void handleTabletLeaveProximityEvent(ulong timestamp, int device, int pointerType, qint64 uid);
     static void handleTabletLeaveProximityEvent(int device, int pointerType, qint64 uid);
 
+    static void handlePlatformPanelEvent(QWindow *w);
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);

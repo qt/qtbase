@@ -187,6 +187,7 @@ QT_BEGIN_NAMESPACE
     \value PaletteChange                    Palette of the widget changed.
     \value ParentAboutToChange              The widget parent is about to change.
     \value ParentChange                     The widget parent has changed.
+    \value PlatformPanel                    A platform specific panel has been requested.
     \value Polish                           The widget is polished.
     \value PolishRequest                    The widget should be polished.
     \value QueryWhatsThis                   The widget should accept the event if it has "What's This?" help.

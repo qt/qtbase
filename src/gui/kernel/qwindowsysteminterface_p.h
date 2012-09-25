@@ -76,7 +76,8 @@ public:
         FileOpen,
         Tablet,
         TabletEnterProximity,
-        TabletLeaveProximity
+        TabletLeaveProximity,
+        PlatformPanel
     };
 
     class WindowSystemEvent {
@@ -323,6 +324,13 @@ public:
         int device;
         int pointerType;
         qint64 uid;
+    };
+
+    class PlatformPanelEvent : public WindowSystemEvent {
+    public:
+        explicit PlatformPanelEvent(QWindow *w)
+            : WindowSystemEvent(PlatformPanel), window(w) { }
+        QPointer<QWindow> window;
     };
 
     class WindowSystemEventList {

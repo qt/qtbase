@@ -75,11 +75,16 @@ void QQnxNavigatorEventHandler::handleOrientationChange(int angle)
 
 void QQnxNavigatorEventHandler::handleSwipeDown()
 {
-    // simulate menu key press
     qNavigatorEventHandlerDebug() << Q_FUNC_INFO;
     QWindow *w = QGuiApplication::focusWindow();
-    QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyPress, Qt::Key_Menu, Qt::NoModifier);
-    QWindowSystemInterface::handleKeyEvent(w, QEvent::KeyRelease, Qt::Key_Menu, Qt::NoModifier);
+
+    if (w) {
+        // Get the top level window that is ancestor of the focus window
+        while (QWindow *parent = w->parent())
+            w = parent;
+
+        QWindowSystemInterface::handlePlatformPanelEvent(w);
+    }
 }
 
 void QQnxNavigatorEventHandler::handleExit()
