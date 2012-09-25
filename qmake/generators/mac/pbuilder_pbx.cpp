@@ -63,6 +63,8 @@ QT_BEGIN_NAMESPACE
 
 // Note: this is fairly hacky, but it does the job...
 
+using namespace QMakeInternal;
+
 static QString qtMD5(const QByteArray &src)
 {
     QByteArray digest = QCryptographicHash::hash(src, QCryptographicHash::Md5);
@@ -526,7 +528,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Qmake") << ";" << "\n"
           << "\t\t\t" << writeSettings("neededFileNames", ProStringList(), SettingsAsList, 4) << ";" << "\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";" << "\n"
-          << "\t\t\t" << writeSettings("shellScript", fixForOutput("make -C " + escapeFilePath(qmake_getpwd()) + " -f '" + escapeFilePath(mkfile) + "'")) << ";" << "\n"
+          << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";" << "\n"
           << "\t\t" << "};" << "\n";
     }
 
@@ -778,7 +780,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Preprocessors") << ";" << "\n"
           << "\t\t\t" << writeSettings("neededFileNames", fixListForOutput("QMAKE_PBX_OBJ"), SettingsAsList, 4) << ";" << "\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << ";" << "\n"
-          << "\t\t\t" << writeSettings("shellScript", fixForOutput("make -C " + escapeFilePath(qmake_getpwd()) + " -f '" + escapeFilePath(mkfile) + "'")) << ";" << "\n"
+          << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";" << "\n"
           << "\t\t" << "};" << "\n";
    }
 
@@ -958,7 +960,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("name", "Qt Sublibs") << ";" << "\n"
           << "\t\t\t" << writeSettings("neededFileNames", ProStringList(), SettingsAsList, 4) << ";" << "\n"
           << "\t\t\t" << writeSettings("shellPath", "/bin/sh") << "\n"
-          << "\t\t\t" << writeSettings("shellScript", fixForOutput("make -C " + escapeFilePath(qmake_getpwd()) + " -f '" + escapeFilePath(mkfile) + "'")) << ";" << "\n"
+          << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";" << "\n"
           << "\t\t" << "};" << "\n";
     }
     //LIBRARY BUILDPHASE
