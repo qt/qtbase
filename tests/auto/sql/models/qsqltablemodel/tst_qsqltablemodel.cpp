@@ -77,6 +77,8 @@ private slots:
     void select();
     void selectRow_data() { generic_data(); }
     void selectRow();
+    void selectRowOverride_data() { generic_data(); }
+    void selectRowOverride();
     void insertColumns_data() { generic_data_with_strategies(); }
     void insertColumns();
     void submitAll_data() { generic_data(); }
@@ -351,6 +353,53 @@ void tst_QSqlTableModel::selectRow()
     q.exec("UPDATE " + tbl + " SET a = 'Qt' WHERE id = 1");
     QCOMPARE(model.data(idx).toString(), QString("b"));
     model.selectRow(1);
+    QCOMPARE(model.data(idx).toString(), QString("Qt"));
+
+    q.exec("DELETE FROM " + tbl);
+}
+
+class SelectRowOverrideTestModel: public QSqlTableModel
+{
+    Q_OBJECT
+public:
+    SelectRowOverrideTestModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) { }
+    bool selectRow(int row)
+    {
+        Q_UNUSED(row)
+        return select();
+    }
+};
+
+void tst_QSqlTableModel::selectRowOverride()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QString tbl = qTableName("pktest", __FILE__);
+    QSqlQuery q(db);
+    q.exec("DELETE FROM " + tbl);
+    q.exec("INSERT INTO " + tbl + " (id, a) VALUES (0, 'a')");
+    q.exec("INSERT INTO " + tbl + " (id, a) VALUES (1, 'b')");
+    q.exec("INSERT INTO " + tbl + " (id, a) VALUES (2, 'c')");
+
+    SelectRowOverrideTestModel model(0, db);
+    model.setEditStrategy(QSqlTableModel::OnFieldChange);
+    model.setTable(tbl);
+    model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(model.columnCount(), 2);
+
+    q.exec("UPDATE " + tbl + " SET a = 'Qt' WHERE id = 2");
+    QModelIndex idx = model.index(1, 1);
+    // overridden selectRow() should select() whole table and not crash
+    model.setData(idx, QString("Qt"));
+
+    // both rows should have changed
+    QCOMPARE(model.data(idx).toString(), QString("Qt"));
+    idx = model.index(2, 1);
     QCOMPARE(model.data(idx).toString(), QString("Qt"));
 
     q.exec("DELETE FROM " + tbl);

@@ -718,20 +718,25 @@ bool QSqlTableModel::submitAll()
 
     bool success = true;
 
-    for (QSqlTableModelPrivate::CacheMap::Iterator it = d->cache.begin();
-         it != d->cache.end(); ++it) {
-        if (it.value().submitted())
+    foreach (int row, d->cache.keys()) {
+        // be sure cache *still* contains the row since overriden selectRow() could have called select()
+        QSqlTableModelPrivate::CacheMap::iterator it = d->cache.find(row);
+        if (it == d->cache.end())
             continue;
 
-        switch (it.value().op()) {
+        QSqlTableModelPrivate::ModifiedRow &mrow = it.value();
+        if (mrow.submitted())
+            continue;
+
+        switch (mrow.op()) {
         case QSqlTableModelPrivate::Insert:
-            success = insertRowIntoTable(it.value().rec());
+            success = insertRowIntoTable(mrow.rec());
             break;
         case QSqlTableModelPrivate::Update:
-            success = updateRowInTable(it.key(), it.value().rec());
+            success = updateRowInTable(row, mrow.rec());
             break;
         case QSqlTableModelPrivate::Delete:
-            success = deleteRowFromTable(it.key());
+            success = deleteRowFromTable(row);
             break;
         case QSqlTableModelPrivate::None:
             Q_ASSERT_X(false, "QSqlTableModel::submitAll()", "Invalid cache operation");
@@ -739,9 +744,9 @@ bool QSqlTableModel::submitAll()
         }
 
         if (success) {
-            it.value().setSubmitted();
+            mrow.setSubmitted();
             if (d->strategy != OnManualSubmit)
-                success = selectRow(it.key());
+                success = selectRow(row);
         }
 
         if (!success)
