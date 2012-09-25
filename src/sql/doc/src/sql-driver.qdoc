@@ -229,7 +229,7 @@
         \c{C:\Qt\4.6.2\src\plugins\sqldrivers\mysql} and run the
         following command: 
 	\list
-        \li \c{qmake "INCLUDEPATH+=C:\MySQL\MySQL51\include" "LIBS+=-L. mysql" mysql.pro}
+        \li \c{qmake "INCLUDEPATH+=C:/MySQL/MySQL51/include" "LIBS+=-L. mysql" mysql.pro}
 	\endlist
 
     \li Now the following libraries are ready in \c{C:\Qt\4.6.2\plugins\sqldrivers}.
