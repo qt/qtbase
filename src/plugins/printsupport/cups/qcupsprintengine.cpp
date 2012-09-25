@@ -180,6 +180,7 @@ bool QCupsPrintEnginePrivate::openPrintDevice()
         cupsTempFile = ret.second;
         outDevice = new QFile();
         static_cast<QFile *>(outDevice)->open(ret.first, QIODevice::WriteOnly);
+        fd = ret.first;
     }
 
     return true;
