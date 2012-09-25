@@ -149,14 +149,13 @@ void QGroupBoxPrivate::click()
     \ingroup geomanagement
     \inmodule QtWidgets
 
-    A group box provides a frame, a title and a keyboard shortcut, and
-    displays various other widgets inside itself. The title is on top,
-    the keyboard shortcut moves keyboard focus to one of the group
-    box's child widgets.
+    A group box provides a frame, a title on top, a keyboard shortcut, and
+    displays various other widgets inside itself. The keyboard shortcut moves
+    keyboard focus to one of the group box's child widgets.
 
     QGroupBox also lets you set the \l title (normally set in the
     constructor) and the title's \l alignment. Group boxes can be
-    \l checkable; child widgets in checkable group boxes are enabled or
+    \l checkable. Child widgets in checkable group boxes are enabled or
     disabled depending on whether or not the group box is \l checked.
 
     You can minimize the space consumption of a group box by enabling
@@ -512,9 +511,9 @@ QSize QGroupBox::minimumSizeHint() const
 
     A group box usually consists of a surrounding frame with a title
     at the top. If this property is enabled, only the top part of the frame is
-    drawn in most styles; otherwise the whole frame is drawn.
+    drawn in most styles; otherwise, the whole frame is drawn.
 
-    By default, this property is disabled; i.e. group boxes are not flat unless
+    By default, this property is disabled, i.e., group boxes are not flat unless
     explicitly specified.
 
     \b{Note:} In some styles, flat and non-flat group boxes have similar
@@ -546,7 +545,7 @@ void QGroupBox::setFlat(bool b)
 
     If this property is true, the group box displays its title using
     a checkbox in place of an ordinary label. If the checkbox is checked,
-    the group box's children are enabled; otherwise they are disabled and
+    the group box's children are enabled; otherwise, they are disabled and
     inaccessible.
 
     By default, group boxes are not checkable.
@@ -603,7 +602,7 @@ bool QGroupBox::isChecked() const
     \fn void QGroupBox::toggled(bool on)
 
     If the group box is checkable, this signal is emitted when the check box
-    is toggled. \a on is true if the check box is checked; otherwise it is false.
+    is toggled. \a on is true if the check box is checked; otherwise, it is false.
 
     \sa checkable
 */
@@ -613,12 +612,12 @@ bool QGroupBox::isChecked() const
     \fn void QGroupBox::clicked(bool checked)
     \since 4.2
 
-    This signal is emitted when the check box is activated (i.e. pressed down
+    This signal is emitted when the check box is activated (i.e., pressed down
     then released while the mouse cursor is inside the button), or when the
-    shortcut key is typed, Notably, this signal is \e not emitted if you call
+    shortcut key is typed. Notably, this signal is \e not emitted if you call
     setChecked().
 
-    If the check box is checked \a checked is true; it is false if the check
+    If the check box is checked, \a checked is true; it is false if the check
     box is unchecked.
 
     \sa checkable, toggled(), checked
@@ -630,7 +629,7 @@ bool QGroupBox::isChecked() const
 
     If the group box is checkable, it is displayed with a check box.
     If the check box is checked, the group box's children are enabled;
-    otherwise the children are disabled and are inaccessible to the user.
+    otherwise, the children are disabled and are inaccessible to the user.
 
     By default, checkable group boxes are also checked.
 

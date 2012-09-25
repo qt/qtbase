@@ -99,18 +99,18 @@ QT_BEGIN_NAMESPACE
 
     Push buttons display a textual label, and optionally a small
     icon. These can be set using the constructors and changed later
-    using setText() and setIcon().  If the button is disabled the
+    using setText() and setIcon().  If the button is disabled, the
     appearance of the text and icon will be manipulated with respect
     to the GUI style to make the button look "disabled".
 
     A push button emits the signal clicked() when it is activated by
     the mouse, the Spacebar or by a keyboard shortcut. Connect to
     this signal to perform the button's action. Push buttons also
-    provide less commonly used signals, for example, pressed() and
+    provide less commonly used signals, for example pressed() and
     released().
 
     Command buttons in dialogs are by default auto-default buttons,
-    i.e. they become the default push button automatically when they
+    i.e., they become the default push button automatically when they
     receive the keyboard input focus. A default button is a push
     button that is activated when the user presses the Enter or Return
     key in a dialog. You can change this with setAutoDefault(). Note
@@ -190,7 +190,7 @@ QT_BEGIN_NAMESPACE
 
     In some GUI styles a default button is drawn with an extra frame
     around it, up to 3 pixels or more. Qt automatically keeps this
-    space free around auto-default buttons, i.e. auto-default buttons
+    space free around auto-default buttons, i.e., auto-default buttons
     may have a slightly larger size hint.
 
     This property's default is true for buttons that have a QDialog
@@ -224,7 +224,7 @@ QT_BEGIN_NAMESPACE
 
     If the default property is set to false on the current default button
     while the dialog is visible, a new default will automatically be
-    assigned the next time a pushbutton in the dialog receives focus.
+    assigned the next time a push button in the dialog receives focus.
 
     This property's default is false.
 */
