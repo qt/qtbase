@@ -131,7 +131,7 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
     Qt::Alignment type is simply a typedef for
     QFlags<Qt::AlignmentFlag>. QLabel::setAlignment() takes a
     Qt::Alignment parameter, which means that any combination of
-    Qt::AlignmentFlag values,or 0, is legal:
+    Qt::AlignmentFlag values, or 0, is legal:
 
     \snippet code/src_corelib_global_qglobal.cpp 0
 
