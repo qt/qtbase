@@ -121,7 +121,9 @@ private slots:
     void detailsText();
     void detailsButtonText();
 
+#ifndef Q_OS_MAC
     void shortcut();
+#endif
 
     void staticSourceCompat();
     void instanceSourceCompat();
@@ -361,17 +363,17 @@ void tst_QMessageBox::statics()
     }
 }
 
+// shortcuts are not used on MAC OS X
+#ifndef Q_OS_MAC
 void tst_QMessageBox::shortcut()
 {
-#ifdef Q_OS_MAC
-    QSKIP("shortcuts are not used on MAC OS X");
-#endif
     QMessageBox msgBox;
     msgBox.addButton("O&k", QMessageBox::YesRole);
     msgBox.addButton("&No", QMessageBox::YesRole);
     msgBox.addButton("&Maybe", QMessageBox::YesRole);
     QCOMPARE(exec(&msgBox, Qt::Key_M), 2);
 }
+#endif
 
 void tst_QMessageBox::about()
 {
