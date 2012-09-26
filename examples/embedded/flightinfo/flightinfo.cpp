@@ -199,11 +199,13 @@ public slots:
 
         ui.flightName->setText("Searching for " + code);
 
+        QUrlQuery query;
+        query.addQueryItem("view", "detail");
+        query.addQueryItem("al", airlineCode);
+        query.addQueryItem("fn", flightNumber);
+        query.addQueryItem("dpdat", date.toString("yyyyMMdd"));
         m_url = QUrl(FLIGHTVIEW_URL);
-        m_url.addEncodedQueryItem("view", "detail");
-        m_url.addEncodedQueryItem("al", QUrl::toPercentEncoding(airlineCode));
-        m_url.addEncodedQueryItem("fn", QUrl::toPercentEncoding(flightNumber));
-        m_url.addEncodedQueryItem("dpdat", QUrl::toPercentEncoding(date.toString("yyyyMMdd")));
+        m_url.setQuery(query);
 
         if (code.isEmpty()) {
             // random flight as sample
@@ -231,7 +233,9 @@ private:
             QRegExp regex("dpap=([A-Za-z0-9]+)");
             regex.indexIn(href);
             QString airport = regex.cap(1);
-            m_url.addEncodedQueryItem("dpap", QUrl::toPercentEncoding(airport));
+            QUrlQuery query(m_url);
+            query.addQueryItem("dpap", airport);
+            m_url.setQuery(query);
             m_manager.get(QNetworkRequest(m_url));
             return;
         }
@@ -269,7 +273,7 @@ private:
                 if (xml.name() == "img" && inFlightMap) {
                     QString src = xml.attributes().value("src").toString();
                     src.prepend("http://mobile.flightview.com/");
-                    QUrl url = QUrl::fromPercentEncoding(src.toAscii());
+                    QUrl url = QUrl::fromPercentEncoding(src.toLatin1());
                     mapReplies.append(m_manager.get(QNetworkRequest(url)));
                 }
             }
