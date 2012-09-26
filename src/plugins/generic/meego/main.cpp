@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 class QMeeGoIntegrationPlugin : public QGenericPlugin
 {
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "meego.json")
 public:
     QMeeGoIntegrationPlugin();
 
