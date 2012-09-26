@@ -1938,6 +1938,11 @@ QString Configure::defaultTo(const QString &option)
         && option == "SQL_OCI")
         return "no";
 
+    // keep 'auto' default for msvc, since we can't set the language supported
+    if (option == "C++11"
+        && dictionary["QMAKESPEC"].contains("msvc"))
+        return "auto";
+
     if (option == "SYNCQT"
         && (!QFile::exists(sourcePath + "/bin/syncqt") ||
             !QFile::exists(sourcePath + "/bin/syncqt.bat")))
