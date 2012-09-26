@@ -44,6 +44,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <qpa/qwindowsysteminterface.h>
+#include <qgenericplugin.h>
 
 #include <QDebug>
 
@@ -61,6 +62,7 @@ private slots:
     void keyboardModifiers();
     void modalWindow();
     void quitOnLastWindowClosed();
+    void genericPluginsAndWindowSystemEvents();
 };
 
 void tst_QGuiApplication::displayName()
@@ -568,6 +570,74 @@ void tst_QGuiApplication::quitOnLastWindowClosed()
     }
 }
 
+static Qt::ScreenOrientation testOrientationToSend = Qt::PrimaryOrientation;
+
+class TestPlugin : public QObject
+{
+    Q_OBJECT
+public:
+    TestPlugin()
+    {
+        QScreen* screen = QGuiApplication::primaryScreen();
+        // Make sure the orientation we want to send doesn't get filtered out.
+        screen->setOrientationUpdateMask(screen->orientationUpdateMask() | testOrientationToSend);
+        QWindowSystemInterface::handleScreenOrientationChange(screen, testOrientationToSend);
+    }
+};
+
+class TestPluginFactory : public QGenericPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QGenericPluginFactoryInterface" FILE "testplugin.json")
+public:
+    QObject* create(const QString &key, const QString &)
+    {
+        if (key == "testplugin")
+            return new TestPlugin;
+        return 0;
+    }
+};
+
+class TestEventReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    int customEvents;
+
+    TestEventReceiver()
+        : customEvents(0)
+    {}
+
+    virtual void customEvent(QEvent *)
+    {
+        customEvents++;
+    }
+};
+
+#include "tst_qguiapplication.moc"
+
+void tst_QGuiApplication::genericPluginsAndWindowSystemEvents()
+{
+    testOrientationToSend = Qt::InvertedLandscapeOrientation;
+
+    TestEventReceiver testReceiver;
+    QCoreApplication::postEvent(&testReceiver, new QEvent(QEvent::User));
+    QCOMPARE(testReceiver.customEvents, 0);
+
+    QStaticPlugin testPluginInfo;
+    testPluginInfo.instance = qt_plugin_instance;
+    testPluginInfo.metaData = qt_plugin_query_metadata;
+    qRegisterStaticPluginFunction(testPluginInfo);
+    int argc = 3;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication"), const_cast<char*>("-plugin"), const_cast<char*>("testplugin") };
+    QGuiApplication app(argc, argv);
+
+    QVERIFY(QGuiApplication::primaryScreen());
+    QVERIFY(QGuiApplication::primaryScreen()->orientation() == testOrientationToSend);
+
+    QCOMPARE(testReceiver.customEvents, 0);
+    QCoreApplication::sendPostedEvents(&testReceiver);
+    QCOMPARE(testReceiver.customEvents, 1);
+}
 
 QTEST_APPLESS_MAIN(tst_QGuiApplication)
-#include "tst_qguiapplication.moc"

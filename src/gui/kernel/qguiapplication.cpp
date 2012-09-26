@@ -905,7 +905,7 @@ void QGuiApplicationPrivate::init()
 
     is_app_running = true;
     init_plugins(pluginList);
-    QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 extern void qt_cleanupFontDatabase();
