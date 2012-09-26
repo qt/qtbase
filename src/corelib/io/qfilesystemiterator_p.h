@@ -98,6 +98,10 @@ private:
 #if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
     // for readdir_r
     QScopedPointer<QT_DIRENT, QScopedPointerPodDeleter> mt_file;
+#if defined(Q_OS_QNX) && defined(__EXT_QNX__READDIR_R)
+    // for _readdir_r
+    size_t direntSize;
+#endif
 #endif
     int lastError;
 #endif

@@ -54,6 +54,9 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     : nativePath(entry.nativeFilePath())
     , dir(0)
     , dirEntry(0)
+#if defined(Q_OS_QNX) && defined(__EXT_QNX__READDIR_R)
+    , direntSize(0)
+#endif
     , lastError(0)
 {
     Q_UNUSED(filters)
@@ -78,6 +81,15 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
         Q_CHECK_PTR(p);
 
         mt_file.reset(p);
+#if defined(Q_OS_QNX) && defined(__EXT_QNX__READDIR_R)
+        direntSize = maxPathName;
+
+        // Include extra stat information in the readdir() call (d_stat member of dirent_extra_stat).
+        // This is used in QFileSystemMetaData::fillFromDirEnt() to avoid extra stat() calls when iterating
+        // over directories
+        if (dircntl(dir, D_SETFLAG, D_FLAG_STAT) == -1)
+            lastError = errno;
+#endif
 #endif
     }
 }
@@ -93,7 +105,11 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
     if (!dir)
         return false;
 
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+#if defined(Q_OS_QNX) && defined(__EXT_QNX__READDIR_R)
+    lastError = _readdir_r(dir, mt_file.data(), &dirEntry, direntSize);
+    if (lastError)
+        return false;
+#elif defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
     lastError = QT_READDIR_R(dir, mt_file.data(), &dirEntry);
     if (lastError)
         return false;
