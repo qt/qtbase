@@ -3165,6 +3165,31 @@ void tst_QUrl::setComponents_data()
                                       << int(Scheme) << "http%61" << Strict << false
                                       << PrettyDecoded << "" << "";
 
+    QTest::newRow("invalid-username-1") << QUrl("http://example.com")
+                                        << int(UserName) << "{}" << Strict << false
+                                        << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-username-2") << QUrl("http://example.com")
+                                        << int(UserName) << "foo/bar" << Strict << false
+                                        << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-username-3") << QUrl("http://example.com")
+                                        << int(UserName) << "foo:bar" << Strict << false
+                                        << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-password-1") << QUrl("http://example.com")
+                                        << int(Password) << "{}" << Strict << false
+                                        << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-password-2") << QUrl("http://example.com")
+                                        << int(Password) << "foo/bar" << Strict << false
+                                        << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-password-3") << QUrl("http://example.com")
+                                        << int(Password) << "foo:bar" << Strict << false
+                                        << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-userinfo-1") << QUrl("http://example.com")
+                                        << int(UserInfo) << "{}" << Strict << false
+                                        << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-userinfo-2") << QUrl("http://example.com")
+                                        << int(UserInfo) << "foo/bar" << Strict << false
+                                        << PrettyDecoded << "" << "";
+
     QTest::newRow("invalid-host-1") << QUrl("http://example.com")
                                     << int(Host) << "-not-valid-" << Tolerant << false
                                     << PrettyDecoded << "" << "";
@@ -3178,6 +3203,16 @@ void tst_QUrl::setComponents_data()
                                          << int(Authority) << "%31%30.%30.%30.%31" << Strict << false
                                          << PrettyDecoded << "" << "";
 
+    QTest::newRow("invalid-path-0") << QUrl("http://example.com")
+                                    << int(Path) << "{}" << Strict << false
+                                    << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-query-1") << QUrl("http://example.com")
+                                     << int(Query) << "{}" << Strict << false
+                                     << PrettyDecoded << "" << "";
+    QTest::newRow("invalid-fragment-1") << QUrl("http://example.com")
+                                        << int(Fragment) << "{}" << Strict << false
+                                        << PrettyDecoded << "" << "";
+
     // these test cases are "compound invalid":
     // they produces isValid == false, but the original is still available
     QTest::newRow("invalid-path-1") << QUrl("/relative")
@@ -3186,6 +3221,49 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("invalid-path-2") << QUrl("http://example.com")
                                     << int(Path) << "relative" << Strict << false
                                     << PrettyDecoded << "relative" << "";
+
+    // -- test bad percent encoding --
+    // unnecessary to test the scheme, since percent-decoding is not performed in it;
+    // see tests above
+    QTest::newRow("bad-percent-username") << QUrl("http://example.com")
+                                          << int(UserName) << "bar%foo" << Strict << false
+                                          << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-password") << QUrl("http://user@example.com")
+                                          << int(Password) << "bar%foo" << Strict << false
+                                          << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-userinfo-1") << QUrl("http://example.com")
+                                            << int(UserInfo) << "bar%foo" << Strict << false
+                                            << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-userinfo-2") << QUrl("http://example.com")
+                                            << int(UserInfo) << "bar%:foo" << Strict << false
+                                            << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-userinfo-3") << QUrl("http://example.com")
+                                            << int(UserInfo) << "bar:%foo" << Strict << false
+                                            << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-authority-1") << QUrl("http://example.com")
+                                             << int(Authority) << "bar%foo@example.org" << Strict << false
+                                             << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-authority-2") << QUrl("http://example.com")
+                                             << int(Authority) << "bar%:foo@example.org" << Strict << false
+                                             << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-authority-3") << QUrl("http://example.com")
+                                             << int(Authority) << "bar:%foo@example.org" << Strict << false
+                                             << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-authority-4") << QUrl("http://example.com")
+                                             << int(Authority) << "bar:foo@bar%foo" << Strict << false
+                                             << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-host") << QUrl("http://example.com")
+                                      << int(Host) << "bar%foo" << Strict << false
+                                      << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-path") << QUrl("http://example.com")
+                                      << int(Path) << "/bar%foo" << Strict << false
+                                      << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-query") << QUrl("http://example.com")
+                                       << int(Query) << "bar%foo" << Strict << false
+                                       << PrettyDecoded << "" << "";
+    QTest::newRow("bad-percent-fragment") << QUrl("http://example.com")
+                                          << int(Fragment) << "bar%foo" << Strict << false
+                                          << PrettyDecoded << "" << "";
 
     // -- test decoded behaviour --
     // '%' characters are not permitted in the scheme, this tests that it fails to set anything
