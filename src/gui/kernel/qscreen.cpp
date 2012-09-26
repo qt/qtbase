@@ -42,6 +42,7 @@
 #include "qscreen.h"
 #include "qscreen_p.h"
 #include "qpixmap.h"
+#include "qguiapplication_p.h"
 #include <qpa/qplatformscreen.h>
 
 #include <QtCore/private/qobject_p.h>
@@ -367,6 +368,7 @@ void QScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
     Q_D(QScreen);
     d->orientationUpdateMask = mask;
     d->platformScreen->setOrientationUpdateMask(mask);
+    QGuiApplicationPrivate::updateFilteredScreenOrientation(this);
 }
 
 /*!
