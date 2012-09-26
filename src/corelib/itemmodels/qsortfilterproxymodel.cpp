@@ -1173,12 +1173,12 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
         remove_source_items(m->proxy_rows, m->source_rows,
                             source_rows_remove, source_parent, Qt::Vertical);
         QSet<int> source_rows_remove_set = qVectorToSet(source_rows_remove);
-        QVector<QModelIndex>::iterator it = m->mapped_children.end();
-        while (it != m->mapped_children.begin()) {
-            --it;
-            const QModelIndex source_child_index = *it;
+        QVector<QModelIndex>::iterator childIt = m->mapped_children.end();
+        while (childIt != m->mapped_children.begin()) {
+            --childIt;
+            const QModelIndex source_child_index = *childIt;
             if (source_rows_remove_set.contains(source_child_index.row())) {
-                it = m->mapped_children.erase(it);
+                childIt = m->mapped_children.erase(childIt);
                 remove_from_mapping(source_child_index);
             }
         }
