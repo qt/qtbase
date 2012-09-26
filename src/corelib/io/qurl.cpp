@@ -1315,61 +1315,18 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     if (error || parsingMode == QUrl::TolerantMode)
         return;
 
-    // The parsing so far was tolerant of errors, so the StrictMode
-    // parsing is actually implemented here, as an extra post-check.
-    // We only execute it if we haven't found any errors so far.
+    // The parsing so far was partially tolerant of errors, except for the
+    // scheme parser (which is always strict) and the authority (which was
+    // executed in strict mode).
+    // If we haven't found any errors so far, continue the strict-mode parsing
+    // from the path component onwards.
 
-    // What we need to look out for, that the regular parser tolerates:
-    //  - percent signs not followed by two hex digits
-    //  - forbidden characters, which should always appear encoded
-    //    '"' / '<' / '>' / '\' / '^' / '`' / '{' / '|' / '}' / BKSP
-    //    control characters
-    //  - delimiters not allowed in certain positions
-    //    . scheme: parser is already strict
-    //    . user info: gen-delims (except for ':') disallowed
-    //    . host: parser is stricter than the standard
-    //    . port: parser is stricter than the standard
-    //    . path: all delimiters allowed
-    //    . fragment: all delimiters allowed
-    //    . query: all delimiters allowed
-    //    We would only need to check the user-info. However, the presence
-    //    of the disallowed gen-delims changes the parsing, so we don't
-    //    actually need to do anything
-    static const char forbidden[] = "\"<>\\^`{|}\x7F";
-    for (uint i = 0; i < uint(len); ++i) {
-        register uint uc = data[i];
-        if (uc >= 0x80)
-            continue;
-
-        if ((uc == '%' && (uint(len) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
-                || uc <= 0x20 || strchr(forbidden, uc)) {
-            // found an error
-            ErrorCode errorCode;
-
-            // where are we?
-            if (i > uint(hash)) {
-                errorCode = InvalidFragmentError;
-            } else if (i > uint(question)) {
-                errorCode = InvalidQueryError;
-            } else if (i > uint(pathStart)) {
-                // pathStart is never -1
-                errorCode = InvalidPathError;
-            } else {
-                // It must be in the authority, since the scheme is strict.
-                // Since the port and hostname parsers are also strict,
-                // the error can only have happened in the user info.
-                int pos = url.indexOf(QLatin1Char(':'), hierStart);
-                if (i > uint(pos)) {
-                    errorCode = InvalidPasswordError;
-                } else {
-                    errorCode = InvalidUserNameError;
-                }
-            }
-
-            setError(errorCode, url, i);
-            return;
-        }
-    }
+    if (!validateComponent(Path, url, pathStart, hierEnd))
+        return;
+    if (uint(question) < uint(hash) && !validateComponent(Query, url, question + 1, qMin<uint>(hash, len)))
+        return;
+    if (hash != -1)
+        validateComponent(Fragment, url, hash + 1, len);
 }
 
 /*
