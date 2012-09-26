@@ -2277,7 +2277,7 @@ void tst_QFile::writeLargeDataBlock()
             qWarning() << qPrintable(QString("Error writing a large data block to [%1]: %2")
                 .arg(fileName)
                 .arg(file.errorString()));
-            QEXPECT_FAIL("unc file", "QTBUG-26906", Abort);
+            QEXPECT_FAIL("unc file", "QTBUG-26906 writing", Abort);
         }
 #endif
         QCOMPARE( fileWriteOriginalData, originalDataSize );
@@ -2294,9 +2294,17 @@ void tst_QFile::writeLargeDataBlock()
         QVERIFY2( openFile(file, QIODevice::ReadOnly, (FileType)type),
             qPrintable(QString("Couldn't open file for reading: [%1]").arg(fileName)) );
         readData = file.readAll();
+
+#if defined(Q_OS_WIN)
+        if (readData != originalData) {
+            qWarning() << qPrintable(QString("Error reading a large data block from [%1]: %2")
+                .arg(fileName)
+                .arg(file.errorString()));
+            QEXPECT_FAIL("unc file", "QTBUG-26906 reading", Abort);
+        }
+#endif
         closeFile(file);
     }
-
     QCOMPARE( readData, originalData );
     QVERIFY( QFile::remove(fileName) );
 }
