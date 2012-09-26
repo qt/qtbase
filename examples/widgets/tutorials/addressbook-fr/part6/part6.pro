@@ -4,6 +4,8 @@ SOURCES   = addressbook.cpp \
 HEADERS   = addressbook.h \
             finddialog.h
 
+QMAKE_PROJECT_NAME = abfr_part6
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook/part6
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part6.pro

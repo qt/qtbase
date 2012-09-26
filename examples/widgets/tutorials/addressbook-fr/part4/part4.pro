@@ -2,6 +2,8 @@ SOURCES = addressbook.cpp \
           main.cpp
 HEADERS = addressbook.h
 
+QMAKE_PROJECT_NAME = abfr_part4
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/addressbook/part4
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part4.pro
