@@ -1511,7 +1511,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             if (!dwOpt->title.isEmpty()) {
                 QString titleText = painter->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight,
                                                                       verticalTitleBar ? titleRect.height() : titleRect.width());
-                const int indent = painter->fontMetrics().descent();
+                const int indent = 4;
                 drawItemText(painter, rect.adjusted(indent + 1, 1, -indent - 1, -1),
                                 Qt::AlignLeft | Qt::AlignVCenter, dwOpt->palette,
                                 dwOpt->state & State_Enabled, titleText,
@@ -1524,6 +1524,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
     case CE_ItemViewItem:
         {
             const QStyleOptionViewItem *vopt;
+
             const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
             bool newStyle = true;
 

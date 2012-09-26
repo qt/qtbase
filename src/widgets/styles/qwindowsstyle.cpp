@@ -377,6 +377,9 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
     case PM_MenuVMargin:
         ret = 1;
         break;
+    case PM_DockWidgetSeparatorExtent:
+        ret = int(QStyleHelper::dpiScaled(4.));
+        break;
 #ifndef QT_NO_TABBAR
     case PM_TabBarTabShiftHorizontal:
         ret = 0;
@@ -1699,31 +1702,9 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
          qDrawWinPanel(p, opt->rect, popupPal, opt->state & State_Sunken);
         break; }
 #ifndef QT_NO_DOCKWIDGET
-    case PE_IndicatorDockWidgetResizeHandle: {
-        QPen oldPen = p->pen();
-        p->setPen(opt->palette.light().color());
-        if (opt->state & State_Horizontal) {
-            p->drawLine(opt->rect.left(),          opt->rect.top(),
-                        opt->rect.right(), opt->rect.top());
-            p->setPen(opt->palette.dark().color());
-            p->drawLine(opt->rect.left(),          opt->rect.bottom() - 1,
-                        opt->rect.right(), opt->rect.bottom() - 1);
-            p->setPen(opt->palette.shadow().color());
-            p->drawLine(opt->rect.left(),          opt->rect.bottom(),
-                        opt->rect.right(), opt->rect.bottom());
-        } else {
-            p->drawLine(opt->rect.left(), opt->rect.top(),
-                        opt->rect.left(), opt->rect.bottom());
-            p->setPen(opt->palette.dark().color());
-            p->drawLine(opt->rect.right() - 1, opt->rect.top(),
-                        opt->rect.right() - 1, opt->rect.bottom());
-            p->setPen(opt->palette.shadow().color());
-            p->drawLine(opt->rect.right(), opt->rect.top(),
-                        opt->rect.right(), opt->rect.bottom());
-        }
-        p->setPen(oldPen);
-        break; }
-case PE_FrameDockWidget:
+    case PE_IndicatorDockWidgetResizeHandle:
+        break;
+    case PE_FrameDockWidget:
         if (qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             proxy()->drawPrimitive(QStyle::PE_FrameWindow, opt, p, w);
         }
@@ -2286,8 +2267,11 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 #ifndef QT_NO_TOOLBAR
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolbar = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
-            QRect rect = opt->rect;
+            // Reserve the beveled appearance only for mainwindow toolbars
+            if (!(widget && qobject_cast<const QMainWindow*> (widget->parentWidget())))
+                break;
 
+            QRect rect = opt->rect;
             bool paintLeftBorder = true;
             bool paintRightBorder = true;
             bool paintBottomBorder = true;
@@ -2513,11 +2497,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                     }
                     p->fillRect(r.adjusted(0, 0, 0, -3), fillBrush);
                 }
-                p->setPen(dwOpt->palette.color(QPalette::Light));
-                if (!widget || !widget->isWindow()) {
-                    p->drawLine(r.topLeft(), r.topRight());
-                    p->setPen(dwOpt->palette.color(QPalette::Dark));
-                    p->drawLine(r.bottomLeft(), r.bottomRight());            }
             }
             if (!dwOpt->title.isEmpty()) {
                 QFont oldFont = p->font();
