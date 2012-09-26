@@ -69,6 +69,7 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+    QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
 
     QItemSelection mapSelectionFromSource(const QItemSelection& selection) const;
     QItemSelection mapSelectionToSource(const QItemSelection& selection) const;

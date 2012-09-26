@@ -60,6 +60,7 @@ public:
     explicit QStringListModel(const QStringList &strings, QObject *parent = 0);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
 
     QVariant data(const QModelIndex &index, int role) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);

@@ -171,6 +171,15 @@ QModelIndex QIdentityProxyModel::index(int row, int column, const QModelIndex& p
 /*!
     \reimp
  */
+QModelIndex QIdentityProxyModel::sibling(int row, int column, const QModelIndex &idx) const
+{
+    Q_D(const QIdentityProxyModel);
+    return d->model->sibling(row, column, mapToSource(idx));
+}
+
+/*!
+    \reimp
+ */
 bool QIdentityProxyModel::insertColumns(int column, int count, const QModelIndex& parent)
 {
     Q_ASSERT(parent.isValid() ? parent.model() == this : true);

@@ -420,6 +420,7 @@ public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
     bool dropMimeData(const QMimeData *data, Qt::DropAction action,
                       int row, int column, const QModelIndex &parent);
+
 protected:
     QAbstractTableModel(QAbstractItemModelPrivate &dd, QObject *parent);
 

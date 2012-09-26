@@ -1871,6 +1871,22 @@ QModelIndex QSortFilterProxyModel::parent(const QModelIndex &child) const
 /*!
   \reimp
 */
+QModelIndex QSortFilterProxyModel::sibling(int row, int column, const QModelIndex &idx) const
+{
+    Q_D(const QSortFilterProxyModel);
+    if (!d->indexValid(idx))
+        return QModelIndex();
+
+    const IndexMap::const_iterator it = d->index_to_iterator(idx);
+    if (it.value()->source_rows.count() <= row || it.value()->source_columns.count() <= column)
+        return QModelIndex();
+
+    return d->create_index(row, column, it);
+}
+
+/*!
+  \reimp
+*/
 int QSortFilterProxyModel::rowCount(const QModelIndex &parent) const
 {
     Q_D(const QSortFilterProxyModel);

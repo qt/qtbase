@@ -90,6 +90,7 @@ public:
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
     QSize span(const QModelIndex &index) const;
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
 
     QMimeData* mimeData(const QModelIndexList &indexes) const;
     QStringList mimeTypes() const;

@@ -2712,6 +2712,15 @@ bool QStandardItemModel::hasChildren(const QModelIndex &parent) const
 /*!
   \reimp
 */
+QModelIndex QStandardItemModel::sibling(int row, int column, const QModelIndex &idx) const
+{
+    Q_D(const QStandardItemModel);
+    return createIndex(row, column, idx.internalPointer());
+}
+
+/*!
+  \reimp
+*/
 QVariant QStandardItemModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     Q_D(const QStandardItemModel);

@@ -363,6 +363,15 @@ bool QAbstractProxyModel::hasChildren(const QModelIndex &parent) const
 /*!
     \reimp
  */
+QModelIndex QAbstractProxyModel::sibling(int row, int column, const QModelIndex &idx) const
+{
+    Q_D(const QAbstractProxyModel);
+    return d->model->sibling(row, column, mapToSource(idx));
+}
+
+/*!
+    \reimp
+ */
 QMimeData* QAbstractProxyModel::mimeData(const QModelIndexList &indexes) const
 {
     Q_D(const QAbstractProxyModel);

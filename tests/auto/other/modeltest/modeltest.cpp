@@ -339,6 +339,8 @@ void ModelTest::checkChildren ( const QModelIndex &parent, int currentDepth )
     //qDebug() << "parent:" << model->data(parent).toString() << "rows:" << rows
     //         << "columns:" << columns << "parent column:" << parent.column();
 
+    const QModelIndex topLeftChild = model->index( 0, 0, parent );
+
     QVERIFY( !model->hasIndex ( rows + 1, 0, parent ) );
     for ( int r = 0; r < rows; ++r ) {
         if ( model->canFetchMore ( parent ) ) {
@@ -361,6 +363,15 @@ void ModelTest::checkChildren ( const QModelIndex &parent, int currentDepth )
             QModelIndex a = model->index ( r, c, parent );
             QModelIndex b = model->index ( r, c, parent );
             QVERIFY( a == b );
+
+            {
+                const QModelIndex sibling = model->sibling( r, c, topLeftChild );
+                QVERIFY( index == sibling );
+            }
+            {
+                const QModelIndex sibling = topLeftChild.sibling( r, c );
+                QVERIFY( index == sibling );
+            }
 
             // Some basic checking on the index that is returned
             QVERIFY( index.model() == model );

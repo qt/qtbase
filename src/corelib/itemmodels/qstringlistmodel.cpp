@@ -127,6 +127,17 @@ int QStringListModel::rowCount(const QModelIndex &parent) const
 }
 
 /*!
+  \reimp
+*/
+QModelIndex QStringListModel::sibling(int row, int column, const QModelIndex &idx) const
+{
+    if (!idx.isValid() || column != 0 || row >= lst.count())
+        return QModelIndex();
+
+    return createIndex(row, 0);
+}
+
+/*!
     Returns data for the specified \a role, from the item with the
     given \a index.
 

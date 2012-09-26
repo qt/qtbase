@@ -392,6 +392,8 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
     int rows = currentModel->rowCount(parent);
     int columns = currentModel->columnCount(parent);
 
+    const QModelIndex topLeftChild = currentModel->index( 0, 0, parent );
+
     QCOMPARE(rows > 0, (currentModel->hasChildren(parent)));
 
     // Some reasuring testing against rows(),columns(), and hasChildren()
@@ -422,6 +424,15 @@ void checkChildren(QAbstractItemModel *currentModel, const QModelIndex &parent, 
             QModelIndex a = currentModel->index(r, c, parent);
             QModelIndex b = currentModel->index(r, c, parent);
             QVERIFY(a == b);
+
+            {
+                const QModelIndex sibling = currentModel->sibling( r, c, topLeftChild );
+                QVERIFY( index == sibling );
+            }
+            {
+                const QModelIndex sibling = topLeftChild.sibling( r, c );
+                QVERIFY( index == sibling );
+            }
 
             // Some basic checking on the index that is returned
             QVERIFY(index.model() == currentModel);
