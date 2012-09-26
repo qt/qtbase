@@ -4519,15 +4519,25 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
         }
-    case CE_Splitter: {
-        HIThemeSplitterDrawInfo sdi;
-        sdi.version = qt_mac_hitheme_version;
-        sdi.state = tds;
-        sdi.adornment = qt_mac_is_metal(w) ? kHIThemeSplitterAdornmentMetal
-                                           : kHIThemeSplitterAdornmentNone;
-        HIRect hirect = qt_hirectForQRect(opt->rect);
-        HIThemeDrawPaneSplitter(&hirect, &sdi, cg, kHIThemeOrientationNormal);
-        break; }
+    case CE_Splitter:
+        if (opt->rect.width() > 1 && opt->rect.height() > 1){
+            HIThemeSplitterDrawInfo sdi;
+            sdi.version = qt_mac_hitheme_version;
+            sdi.state = tds;
+            sdi.adornment = qt_mac_is_metal(w) ? kHIThemeSplitterAdornmentMetal
+                                               : kHIThemeSplitterAdornmentNone;
+            HIRect hirect = qt_hirectForQRect(opt->rect);
+            HIThemeDrawPaneSplitter(&hirect, &sdi, cg, kHIThemeOrientationNormal);
+        } else {
+            QPen oldPen = p->pen();
+            p->setPen(opt->palette.dark().color());
+            if (opt->state & QStyle::State_Horizontal)
+                p->drawLine(opt->rect.topLeft(), opt->rect.bottomLeft());
+            else
+                p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
+            p->setPen(oldPen);
+        }
+        break;
     case CE_RubberBand:
         if (const QStyleOptionRubberBand *rubber = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
             QColor fillColor(opt->palette.color(QPalette::Disabled, QPalette::Highlight));
