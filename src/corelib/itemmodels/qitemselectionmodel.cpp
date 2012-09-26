@@ -291,7 +291,8 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
   it avoid concatenating list and works on one
  */
 
-static void indexesFromRange(const QItemSelectionRange &range, QModelIndexList &result)
+template<typename ModelIndexContainer>
+static void indexesFromRange(const QItemSelectionRange &range, ModelIndexContainer &result)
 {
     if (range.isValid() && range.model()) {
         const QModelIndex topLeft = range.topLeft();
@@ -303,7 +304,7 @@ static void indexesFromRange(const QItemSelectionRange &range, QModelIndexList &
                 QModelIndex index = columnLeader.sibling(row, column);
                 Qt::ItemFlags flags = range.model()->flags(index);
                 if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
-                    result.append(index);
+                    result.push_back(index);
             }
         }
     }
@@ -454,6 +455,15 @@ QModelIndexList QItemSelection::indexes() const
     QModelIndexList result;
     QList<QItemSelectionRange>::const_iterator it = begin();
     for (; it != end(); ++it)
+        indexesFromRange(*it, result);
+    return result;
+}
+
+static QList<QPersistentModelIndex> qSelectionPersistentindexes(const QItemSelection &sel)
+{
+    QList<QPersistentModelIndex> result;
+    QList<QItemSelectionRange>::const_iterator it = sel.constBegin();
+    for (; it != sel.constEnd(); ++it)
         indexesFromRange(*it, result);
     return result;
 }
@@ -826,13 +836,8 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     }
     tableSelected = false;
 
-    QModelIndexList indexes = ranges.indexes();
-    QModelIndexList::const_iterator it;
-    for (it = indexes.constBegin(); it != indexes.constEnd(); ++it)
-        savedPersistentIndexes.append(QPersistentModelIndex(*it));
-    indexes = currentSelection.indexes();
-    for (it = indexes.constBegin(); it != indexes.constEnd(); ++it)
-        savedPersistentCurrentIndexes.append(QPersistentModelIndex(*it));
+    savedPersistentIndexes = qSelectionPersistentindexes(ranges);
+    savedPersistentCurrentIndexes = qSelectionPersistentindexes(currentSelection);
 }
 
 /*!
