@@ -102,9 +102,7 @@ struct Q_CORE_EXPORT QMapNodeBase
     void setParent(QMapNodeBase *pp) { p = (p & Mask) | quintptr(pp); }
 
     QMapNodeBase *minimumNode() { QMapNodeBase *n = this; while (n->left) n = n->left; return n; }
-    QMapNodeBase *maximumNode() { QMapNodeBase *n = this; while (n->right) n = n->right; return n; }
     const QMapNodeBase *minimumNode() const { const QMapNodeBase *n = this; while (n->left) n = n->left; return n; }
-    const QMapNodeBase *maximumNode() const { const QMapNodeBase *n = this; while (n->right) n = n->right; return n; }
 };
 
 template <class Key, class T>
@@ -122,9 +120,7 @@ struct QMapNode : public QMapNodeBase
     inline QMapNode *previousNode() { return static_cast<QMapNode *>(QMapNodeBase::previousNode()); }
 
     QMapNode *minimumNode() { return static_cast<QMapNode *>(QMapNodeBase::minimumNode()); }
-    QMapNode *maximumNode() { return static_cast<QMapNode *>(QMapNodeBase::maximumNode()); }
     const QMapNode *minimumNode() const { return static_cast<QMapNode *>(QMapNodeBase::minimumNode()); }
-    const QMapNode *maximumNode() const { return static_cast<QMapNode *>(QMapNodeBase::maximumNode()); }
 
     QMapNode<Key, T> *copy(QMapData<Key, T> *d) const;
 
