@@ -1245,7 +1245,7 @@ public:
     QStringRef appendTo(QString *string) const;
 
     inline const QChar at(int i) const
-        { Q_ASSERT(i >= 0 && i < size()); return m_string->at(i + m_position); }
+        { Q_ASSERT(uint(i) < uint(size())); return m_string->at(i + m_position); }
 
 #ifndef QT_NO_CAST_FROM_ASCII
     // ASCII compatibility
