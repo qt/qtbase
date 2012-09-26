@@ -77,6 +77,9 @@ Q_DECL_CONSTEXPR inline QIncompatibleFlag::QIncompatibleFlag(int ai) : i(ai) {}
 template<typename Enum>
 class QFlags
 {
+    Q_STATIC_ASSERT_X((sizeof(Enum) <= sizeof(int)),
+                      "QFlags uses an int as storage, so an enum with underlying "
+                      "long long would overflow. Qt 5.1 will have support for 64bit enums.");
     struct Private;
     typedef int (Private::*Zero);
     int i;
