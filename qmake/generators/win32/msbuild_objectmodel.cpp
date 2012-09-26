@@ -324,6 +324,22 @@ static QString vcxCommandSeparator()
     return cmdSep;
 }
 
+static QString unquote(const QString &value)
+{
+    QString result = value;
+    result.replace(QStringLiteral("\\\""), QStringLiteral("\""));
+    return result;
+}
+
+static QStringList unquote(const QStringList &values)
+{
+    QStringList result;
+    result.reserve(values.size());
+    for (int i = values.count(); --i >= 0;)
+        result << unquote(values.at(i));
+    return result;
+}
+
 // Tree file generation ---------------------------------------------
 void XTreeNode::generateXML(XmlOutput &xml, XmlOutput &xmlFilter, const QString &tagName, VCProject &tool, const QString &filter) {
 
@@ -1391,7 +1407,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagS(_PrecompiledHeaderFile, tool.PrecompiledHeaderThrough)
             << attrTagS(_PrecompiledHeaderOutputFile, tool.PrecompiledHeaderFile)
             << attrTagT(_PreprocessKeepComments, tool.KeepComments)
-            << attrTagX(_PreprocessorDefinitions, tool.PreprocessorDefinitions, ";")
+            << attrTagX(_PreprocessorDefinitions, unquote(tool.PreprocessorDefinitions), ";")
             << attrTagS(_PreprocessOutputPath, tool.PreprocessOutputPath)
             << attrTagT(_PreprocessSuppressLineNumbers, tool.PreprocessSuppressLineNumbers)
             << attrTagT(_PreprocessToFile, toTriState(tool.GeneratePreprocessedFile))
@@ -1526,7 +1542,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCMIDLTool &tool)
             << attrTagL(_LocaleID, tool.LocaleID, /*ifNot*/ -1)
             << attrTagT(_MkTypLibCompatible, tool.MkTypLibCompatible)
             << attrTagS(_OutputDirectory, tool.OutputDirectory)
-            << attrTagX(_PreprocessorDefinitions, tool.PreprocessorDefinitions, ";")
+            << attrTagX(_PreprocessorDefinitions, unquote(tool.PreprocessorDefinitions), ";")
             << attrTagS(_ProxyFileName, tool.ProxyFileName)
             << attrTagS(_RedirectOutputAndErrors, tool.RedirectOutputAndErrors)
             << attrTagS(_ServerStubFile, tool.ServerStubFile)
@@ -1611,7 +1627,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCResourceCompilerTool &tool)
             << attrTagS(_Culture, toString(tool.Culture))
             << attrTagT(_IgnoreStandardIncludePath, tool.IgnoreStandardIncludePath)
 //unused    << attrTagT(_NullTerminateStrings, tool.NullTerminateStrings)
-            << attrTagX(_PreprocessorDefinitions, tool.PreprocessorDefinitions, ";")
+            << attrTagX(_PreprocessorDefinitions, unquote(tool.PreprocessorDefinitions), ";")
             << attrTagS(_ResourceOutputFileName, tool.ResourceOutputFileName)
             << attrTagT(_ShowProgress, toTriState(tool.ShowProgress))
             << attrTagT(_SuppressStartupBanner, tool.SuppressStartupBanner)
