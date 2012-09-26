@@ -90,8 +90,7 @@ SlippyMap::SlippyMap(QObject *parent)
     m_emptyTile.fill(Qt::lightGray);
 
     QNetworkDiskCache *cache = new QNetworkDiskCache;
-    cache->setCacheDirectory(QDesktopServices::storageLocation
-                                (QDesktopServices::CacheLocation));
+    cache->setCacheDirectory(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
     m_manager.setCache(cache);
     connect(&m_manager, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(handleNetworkData(QNetworkReply*)));
