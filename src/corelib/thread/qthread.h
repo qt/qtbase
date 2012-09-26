@@ -103,7 +103,7 @@ public Q_SLOTS:
     void quit();
 
 public:
-    // default argument causes thread to block indefinately
+    // default argument causes thread to block indefinetely
     bool wait(unsigned long time = ULONG_MAX);
 
     static void sleep(unsigned long);
