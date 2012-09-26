@@ -87,7 +87,9 @@ private slots:
     void shortcutEvents();
     void stopRepeatTimer();
 
+#ifdef QT_KEYPAD_NAVIGATION
     void keyNavigation();
+#endif
 
 protected slots:
     void onClicked();
@@ -586,9 +588,10 @@ void tst_QAbstractButton::stopRepeatTimer()
     QCOMPARE(button.timerEventCount(), 0);
 }
 
+#ifdef QT_KEYPAD_NAVIGATION
 void tst_QAbstractButton::keyNavigation()
 {
-    QSKIP("Key navigation in QAbstractButton will be fixed/improved as part of task 194373");
+    QApplication::setNavigationMode(Qt::NavigationModeKeypadDirectional);
 
     QWidget widget;
     QGridLayout *layout = new QGridLayout(&widget);
@@ -636,10 +639,11 @@ void tst_QAbstractButton::keyNavigation()
     buttons[0][1]->hide();
     QTest::keyPress(buttons[0][2], Qt::Key_Left);
     QTest::qWait(100);
+    QTest::keyPress(buttons[0][2], Qt::Key_Left);
+    QEXPECT_FAIL("", "QTBUG-22286" ,Abort);
     QVERIFY(buttons[0][0]->hasFocus());
-
-
 }
+#endif
 
 QTEST_MAIN(tst_QAbstractButton)
 #include "tst_qabstractbutton.moc"
