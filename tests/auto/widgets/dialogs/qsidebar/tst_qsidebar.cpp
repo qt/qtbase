@@ -190,19 +190,16 @@ void tst_QSidebar::addUrls()
     qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 1);
 
-#if defined(Q_OS_WIN)
-    //Windows is case insensitive so no duplicate entries in that case
     doubleUrls << QUrl::fromLocalFile(testDir.absolutePath());
     doubleUrls << QUrl::fromLocalFile(testDir.absolutePath().toUpper());
     qsidebar.setUrls(emptyUrls);
     qsidebar.addUrls(doubleUrls, 1);
+
+#ifdef Q_OS_WIN
+    //Windows is case insensitive so no duplicate entries in that case
     QCOMPARE(qsidebar.urls().size(), 1);
 #else
     //Two different paths we should have two entries
-    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath());
-    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath().toUpper());
-    qsidebar.setUrls(emptyUrls);
-    qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 2);
 #endif
 }
