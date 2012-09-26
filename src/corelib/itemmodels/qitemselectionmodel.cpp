@@ -294,9 +294,10 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 static void indexesFromRange(const QItemSelectionRange &range, QModelIndexList &result)
 {
     if (range.isValid() && range.model()) {
+        const QModelIndex parent = range.parent();
         for (int column = range.left(); column <= range.right(); ++column) {
             for (int row = range.top(); row <= range.bottom(); ++row) {
-                QModelIndex index = range.model()->index(row, column, range.parent());
+                QModelIndex index = range.model()->index(row, column, parent);
                 Qt::ItemFlags flags = range.model()->flags(index);
                 if ((flags & Qt::ItemIsSelectable) && (flags & Qt::ItemIsEnabled))
                     result.append(index);
