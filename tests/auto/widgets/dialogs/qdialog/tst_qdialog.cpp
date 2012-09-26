@@ -72,11 +72,15 @@ private slots:
     void showMaximized();
     void showMinimized();
     void showFullScreen();
+#ifndef Q_OS_WINCE
     void showAsTool();
     void toolDialogPosition();
+#endif
     void deleteMainDefault();
     void deleteInExec();
+#ifndef QT_NO_SIZEGRIP
     void showSizeGrip();
+#endif
     void setVisible();
     void reject();
 
@@ -243,20 +247,24 @@ void tst_QDialog::showMaximized()
 {
     QDialog dialog(0);
     dialog.setSizeGripEnabled(true);
+#ifndef QT_NO_SIZEGRIP
     QSizeGrip *sizeGrip = qFindChild<QSizeGrip *>(&dialog);
     QVERIFY(sizeGrip);
+#endif
 
     dialog.showMaximized();
     QVERIFY(dialog.isMaximized());
     QVERIFY(dialog.isVisible());
-#if !defined(Q_OS_MAC) && !defined(Q_OS_IRIX) && !defined(Q_OS_HPUX)
+#if !defined(QT_NO_SIZEGRIP) && !defined(Q_OS_MAC) && !defined(Q_OS_IRIX) && !defined(Q_OS_HPUX)
     QVERIFY(!sizeGrip->isVisible());
 #endif
 
     dialog.showNormal();
     QVERIFY(!dialog.isMaximized());
     QVERIFY(dialog.isVisible());
+#ifndef QT_NO_SIZEGRIP
     QVERIFY(sizeGrip->isVisible());
+#endif
 
     dialog.showMaximized();
     QVERIFY(dialog.isMaximized());
@@ -316,20 +324,26 @@ void tst_QDialog::showFullScreen()
 {
     QDialog dialog(0, Qt::X11BypassWindowManagerHint);
     dialog.setSizeGripEnabled(true);
+#ifndef QT_NO_SIZEGRIP
     QSizeGrip *sizeGrip = qFindChild<QSizeGrip *>(&dialog);
     QVERIFY(sizeGrip);
+#endif
 
     qApp->syncX();
     dialog.showFullScreen();
     QVERIFY(dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
+#ifndef QT_NO_SIZEGRIP
     QVERIFY(!sizeGrip->isVisible());
+#endif
 
     qApp->syncX();
     dialog.showNormal();
     QVERIFY(!dialog.isFullScreen());
     QVERIFY(dialog.isVisible());
+#ifndef QT_NO_SIZEGRIP
     QVERIFY(sizeGrip->isVisible());
+#endif
 
     qApp->syncX();
     dialog.showFullScreen();
@@ -362,12 +376,12 @@ void tst_QDialog::showFullScreen()
     QVERIFY(!dialog.isVisible());
 }
 
+// No real support for Qt::Tool on WinCE
+#ifndef Q_OS_WINCE
 void tst_QDialog::showAsTool()
 {
 #if defined(Q_OS_UNIX)
     QSKIP("Qt/X11: Skipped since activeWindow() is not respected by all window managers");
-#elif defined(Q_OS_WINCE)
-    QSKIP("No real support for Qt::Tool on WinCE");
 #endif
     ToolDialog dialog(testWidget);
     testWidget->activateWindow();
@@ -379,22 +393,22 @@ void tst_QDialog::showAsTool()
         QCOMPARE(dialog.wasActive(), false);
     }
 }
+#endif
 
+// No real support for Qt::Tool on WinCE
+#ifndef Q_OS_WINCE
 // Verify that pos() returns the same before and after show()
 // for a dialog with the Tool window type.
 void tst_QDialog::toolDialogPosition()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("No real support for Qt::Tool on WinCE");
-#endif
     QDialog dialog(0, Qt::Tool);
     dialog.move(QPoint(100,100));
     const QPoint beforeShowPosition = dialog.pos();
     dialog.show();
     const QPoint afterShowPosition = dialog.pos();
     QCOMPARE(afterShowPosition, beforeShowPosition);
-
 }
+#endif
 
 class Dialog : public QDialog
 {
@@ -422,10 +436,10 @@ void tst_QDialog::deleteInExec()
     QCOMPARE(dialog->exec(), int(QDialog::Rejected));
 }
 
+#ifndef QT_NO_SIZEGRIP
 // From Task 124269
 void tst_QDialog::showSizeGrip()
 {
-#ifndef QT_NO_SIZEGRIP
     QDialog dialog(0);
     dialog.show();
     QWidget *ext = new QWidget(&dialog);
@@ -476,8 +490,8 @@ void tst_QDialog::showSizeGrip()
     dialog.hide();
     dialog.show();
     QVERIFY(!sizeGrip->isVisible());
-#endif
 }
+#endif
 
 void tst_QDialog::setVisible()
 {
