@@ -164,7 +164,6 @@ private slots:
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void largeUncFileSupport();
 #endif
-    void tailFile();
     void flush();
     void bufferedRead();
     void isSequential();
@@ -1535,28 +1534,6 @@ void tst_QFile::largeUncFileSupport()
     }
 }
 #endif
-
-void tst_QFile::tailFile()
-{
-    QSKIP("File change notifications are so far unsupported.");
-
-    QFile file("tail.txt");
-    QVERIFY(file.open(QFile::WriteOnly | QFile::Append));
-
-    QFile tailFile("tail.txt");
-    QVERIFY(tailFile.open(QFile::ReadOnly));
-    tailFile.seek(file.size());
-
-    QSignalSpy readSignalSpy(&tailFile, SIGNAL(readyRead()));
-    QVERIFY(readSignalSpy.isValid());
-
-    file.write("", 1);
-
-    QTestEventLoop::instance().enterLoop(5);
-
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(readSignalSpy.count(), 1);
-}
 
 void tst_QFile::flush()
 {
