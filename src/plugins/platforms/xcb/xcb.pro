@@ -20,7 +20,8 @@ SOURCES = \
         main.cpp \
         qxcbnativeinterface.cpp \
         qxcbcursor.cpp \
-        qxcbimage.cpp
+        qxcbimage.cpp \
+        qxlibconvenience.cpp
 
 HEADERS = \
         qxcbclipboard.h \
@@ -36,7 +37,8 @@ HEADERS = \
         qxcbwmsupport.h \
         qxcbnativeinterface.h \
         qxcbcursor.h \
-        qxcbimage.h
+        qxcbimage.h \
+        qxlibconvenience.h
 
 contains(QT_CONFIG, xcb-poll-for-queued-event) {
     DEFINES += XCB_POLL_FOR_QUEUED_EVENT

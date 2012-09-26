@@ -42,6 +42,7 @@
 #include "qxcbkeyboard.h"
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
+#include "qxlibconvenience.h"
 #include <xcb/xcb_keysyms.h>
 #include <X11/keysym.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -1132,46 +1133,15 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     }
 }
 
-#ifdef XCB_USE_XLIB
-extern "C" {
-    int XLookupString(void *event, char *buf, int count, void *keysym, void *comp);
-}
-typedef struct { // must match XKeyEvent in Xlib.h
-    int type;
-    unsigned long serial;
-    int send_event;
-    void *display;
-    unsigned long window;
-    unsigned long root;
-    unsigned long subwindow;
-    unsigned long time;
-    int x, y;
-    int x_root, y_root;
-    unsigned int state;
-    unsigned int keycode;
-    int same_screen;
-} FakeXKeyEvent;
-#endif
-
 xcb_keysym_t QXcbKeyboard::lookupString(QWindow *window, uint state, xcb_keycode_t code,
                                         QEvent::Type type, QByteArray *chars)
 {
 #ifdef XCB_USE_XLIB
-
-    xcb_keysym_t sym = XCB_NO_SYMBOL;
-    chars->resize(512);
-    FakeXKeyEvent event;
-    memset(&event, 0, sizeof(event));
-    event.type = (type == QEvent::KeyRelease ? 3 : 2);
-    event.display = connection()->xlib_display();
-    event.window = static_cast<QXcbWindow *>(window->handle())->xcb_window();
-    event.root = connection()->screens().at(0)->root();
-    event.state = state;
-    event.keycode = code;
-    int count = XLookupString(&event, chars->data(), chars->size(), &sym, 0);
-    chars->resize(count);
-    return sym;
-
+    xcb_window_t xWindow = static_cast<QXcbWindow *>(window->handle())->xcb_window();
+    xcb_window_t root = connection()->screens().at(0)->root();
+    void *xDisplay = connection()->xlib_display();
+    int xType = (type == QEvent::KeyRelease ? 3 : 2);
+    return q_XLookupString(xDisplay, xWindow, root, state, code, xType, chars);
 #else
 
     // No XLookupString available. The following is really incomplete...
