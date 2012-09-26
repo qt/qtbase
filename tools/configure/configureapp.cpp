@@ -1968,7 +1968,8 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("pcre.h");
 
     else if (part == "ICU")
-        available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h") && findFile("icuin.lib");
+        available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h")
+                        && (findFile("icuin.lib") || findFile("libicuin.lib")); // libicun.lib if compiled with mingw
 
     else if (part == "LIBJPEG")
         available = findFile("jpeglib.h");
