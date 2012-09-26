@@ -299,22 +299,17 @@ void tst_QWMatrix::mapRect()
 
 void tst_QWMatrix::operator_star_qwmatrix()
 {
-#if 0
-    // Left out until the matrix multiply operator behaves properly..
     QMatrix m1( 2, 3, 4, 5, 6, 7 );
     QMatrix m2( 3, 4, 5, 6, 7, 8 );
 
-    QMatrix result1x2( 21, 26, 37, 46, 44, 75 );
-    QMatrix result2x1( 22, 29, 34, 45, 53, 80);
+    QMatrix result1x2( 21, 26, 37, 46, 60, 74 );
+    QMatrix result2x1( 22, 29, 34, 45, 52, 68);
 
     QMatrix product12 = m1*m2;
     QMatrix product21 = m2*m1;
 
     QVERIFY( product12==result1x2 );
     QVERIFY( product21==result2x1 );
-#else
-    QSKIP( "Not tested with Qt versions since the operator is broken.." );
-#endif
 }
 
 
