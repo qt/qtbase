@@ -459,9 +459,9 @@ QModelIndexList QItemSelection::indexes() const
     return result;
 }
 
-static QList<QPersistentModelIndex> qSelectionPersistentindexes(const QItemSelection &sel)
+static QVector<QPersistentModelIndex> qSelectionPersistentindexes(const QItemSelection &sel)
 {
-    QList<QPersistentModelIndex> result;
+    QVector<QPersistentModelIndex> result;
     QList<QItemSelectionRange>::const_iterator it = sel.constBegin();
     for (; it != sel.constEnd(); ++it)
         indexesFromRange(*it, result);
@@ -846,7 +846,7 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     Merges \a indexes into an item selection made up of ranges.
     Assumes that the indexes are sorted.
 */
-static QItemSelection mergeIndexes(const QList<QPersistentModelIndex> &indexes)
+static QItemSelection mergeIndexes(const QVector<QPersistentModelIndex> &indexes)
 {
     QItemSelection colSpans;
     // merge columns

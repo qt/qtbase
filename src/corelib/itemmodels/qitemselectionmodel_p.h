@@ -98,8 +98,8 @@ public:
     QItemSelection currentSelection;
     QPersistentModelIndex currentIndex;
     QItemSelectionModel::SelectionFlags currentCommand;
-    QList<QPersistentModelIndex> savedPersistentIndexes;
-    QList<QPersistentModelIndex> savedPersistentCurrentIndexes;
+    QVector<QPersistentModelIndex> savedPersistentIndexes;
+    QVector<QPersistentModelIndex> savedPersistentCurrentIndexes;
     // optimization when all indexes are selected
     bool tableSelected;
     QPersistentModelIndex tableParent;
