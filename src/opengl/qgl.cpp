@@ -3002,6 +3002,14 @@ bool QGLContext::areSharing(const QGLContext *context1, const QGLContext *contex
     specified in the constructor; otherwise returns false (i.e. the
     context is invalid).
 
+    If the OpenGL implementation on your system does not support the requested
+    version of OpenGL context, then QGLContext will try to create the closest
+    matching version. The actual created context properties can be queried
+    using the QGLFormat returned by the format() function. For example, if
+    you request a context that supports OpenGL 4.3 Core profile but the driver
+    and/or hardware only supports version 3.2 Core profile contexts then you will
+    get a 3.2 Core profile context.
+
     After successful creation, format() returns the set of features of
     the created GL rendering context.
 

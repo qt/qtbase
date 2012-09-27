@@ -562,12 +562,21 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     int attributes[attribSize];
     int attribIndex = 0;
     qFill(attributes, attributes + attribSize, int(0));
-    const int requestedVersion = (format.majorVersion() << 8) + format.minorVersion();
+
+    // We limit the requested version by the version of the static context as
+    // wglCreateContextAttribsARB fails and returns NULL if the requested context
+    // version is not supported. This means that we will get the closest supported
+    // context format that that which was requested and is supported by the driver
+    const int requestedVersion = qMin((format.majorVersion() << 8) + format.minorVersion(),
+                                      staticContext.defaultFormat.version);
+    const int majorVersion = requestedVersion >> 8;
+    const int minorVersion = requestedVersion & 0xFF;
+
     if (requestedVersion > 0x0101) {
         attributes[attribIndex++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
-        attributes[attribIndex++] = format.majorVersion();
+        attributes[attribIndex++] = majorVersion;
         attributes[attribIndex++] = WGL_CONTEXT_MINOR_VERSION_ARB;
-        attributes[attribIndex++] = format.minorVersion();
+        attributes[attribIndex++] = minorVersion;
     }
     if (requestedVersion >= 0x0300) {
         attributes[attribIndex++] = WGL_CONTEXT_FLAGS_ARB;
@@ -594,7 +603,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
     }
     if (QWindowsContext::verboseGL)
         qDebug("%s: Creating context version %d.%d with %d attributes",
-               __FUNCTION__,  format.majorVersion(), format.minorVersion(), attribIndex / 2);
+               __FUNCTION__,  majorVersion, minorVersion, attribIndex / 2);
 
     const HGLRC result =
         staticContext.wglCreateContextAttribsARB(hdc, shared, attributes);

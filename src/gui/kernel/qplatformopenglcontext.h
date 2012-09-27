@@ -88,7 +88,7 @@ public:
 
     QOpenGLContext *context() const;
 
-    static bool parseOpenGLVersion(const QString& versionString, int &major, int &minor);
+    static bool parseOpenGLVersion(const QByteArray &versionString, int &major, int &minor);
 
 private:
     friend class QOpenGLContext;

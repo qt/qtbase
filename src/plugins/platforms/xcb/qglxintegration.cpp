@@ -74,7 +74,197 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXC
 #define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
 #endif
 
-QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
+static Window createDummyWindow(QXcbScreen *screen, XVisualInfo *visualInfo)
+{
+    Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(screen), screen->root(), visualInfo->visual, AllocNone);
+    XSetWindowAttributes a;
+    a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(screen), screen->screenNumber());
+    a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(screen), screen->screenNumber());
+    a.colormap = cmap;
+
+    Window window = XCreateWindow(DISPLAY_FROM_XCB(screen), screen->root(),
+                                  0, 0, 100, 100,
+                                  0, visualInfo->depth, InputOutput, visualInfo->visual,
+                                  CWBackPixel|CWBorderPixel|CWColormap, &a);
+    return window;
+}
+
+static Window createDummyWindow(QXcbScreen *screen, GLXFBConfig config)
+{
+    XVisualInfo *visualInfo = glXGetVisualFromFBConfig(DISPLAY_FROM_XCB(screen), config);
+    if (!visualInfo)
+        qFatal("Could not initialize GLX");
+    Window window = createDummyWindow(screen, visualInfo);
+    XFree(visualInfo);
+    return window;
+}
+
+// Per-window data for active OpenGL contexts.
+struct QOpenGLContextData
+{
+    QOpenGLContextData(Display *display, Window window, GLXContext context)
+        : m_display(display),
+          m_window(window),
+          m_context(context)
+    {}
+
+    QOpenGLContextData()
+        : m_display(0),
+          m_window(0),
+          m_context(0)
+    {}
+
+    Display *m_display;
+    Window m_window;
+    GLXContext m_context;
+};
+
+static inline QOpenGLContextData currentOpenGLContextData()
+{
+    QOpenGLContextData result;
+    result.m_display = glXGetCurrentDisplay();
+    result.m_window = glXGetCurrentDrawable();
+    result.m_context = glXGetCurrentContext();
+    return result;
+}
+
+static inline QOpenGLContextData createDummyWindowOpenGLContextData(QXcbScreen *screen)
+{
+    QOpenGLContextData result;
+    result.m_display = DISPLAY_FROM_XCB(screen);
+
+    QSurfaceFormat format;
+    GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen), screen->screenNumber(), format);
+    if (config) {
+        result.m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, 0, true);
+        result.m_window = createDummyWindow(screen, config);
+    } else {
+        XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(screen), screen->screenNumber(), &format);
+        if (!visualInfo)
+            qFatal("Could not initialize GLX");
+        result.m_context = glXCreateContext(DISPLAY_FROM_XCB(screen), visualInfo, 0, true);
+        result.m_window = createDummyWindow(screen, visualInfo);
+        XFree(visualInfo);
+    }
+
+    return result;
+}
+
+static inline QByteArray getGlString(GLenum param)
+{
+    if (const GLubyte *s = glGetString(param))
+        return QByteArray(reinterpret_cast<const char*>(s));
+    return QByteArray();
+}
+
+static void updateFormatFromContext(QSurfaceFormat &format)
+{
+    // Update the version, profile, and context bit of the format
+    int major = 0, minor = 0;
+    QByteArray versionString(getGlString(GL_VERSION));
+    if (QPlatformOpenGLContext::parseOpenGLVersion(versionString, major, minor)) {
+        format.setMajorVersion(major);
+        format.setMinorVersion(minor);
+    }
+
+    const int version = (major << 8) + minor;
+    if (version < 0x0300) {
+        format.setProfile(QSurfaceFormat::NoProfile);
+        format.setOption(QSurfaceFormat::DeprecatedFunctions);
+        return;
+    }
+
+    // Version 3.0 onwards - check if it includes deprecated functionality or is
+    // a debug context
+    GLint value = 0;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &value);
+    if (value & ~GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+        format.setOption(QSurfaceFormat::DeprecatedFunctions);
+    if (value & GLX_CONTEXT_DEBUG_BIT_ARB)
+        format.setOption(QSurfaceFormat::DebugContext);
+    if (version < 0x0302)
+        return;
+
+    // Version 3.2 and newer have a profile
+    value = 0;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
+    switch (value) {
+    case GLX_CONTEXT_CORE_PROFILE_BIT_ARB:
+        format.setProfile(QSurfaceFormat::CoreProfile);
+        break;
+    case GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+        format.setProfile(QSurfaceFormat::CompatibilityProfile);
+        break;
+    default:
+        format.setProfile(QSurfaceFormat::NoProfile);
+        break;
+    }
+}
+
+/*!
+    \class QOpenGLTemporaryContext
+    \brief A temporary context that can be instantiated on the stack.
+
+    Functions like glGetString() only work if there is a current GL context.
+
+    \internal
+    \ingroup qt-lighthouse-xcb
+*/
+class QOpenGLTemporaryContext
+{
+    Q_DISABLE_COPY(QOpenGLTemporaryContext)
+public:
+    QOpenGLTemporaryContext(QXcbScreen *screen);
+    ~QOpenGLTemporaryContext();
+
+private:
+    const QOpenGLContextData m_previous;
+    const QOpenGLContextData m_current;
+};
+
+QOpenGLTemporaryContext::QOpenGLTemporaryContext(QXcbScreen *screen)
+    : m_previous(currentOpenGLContextData()),
+      m_current(createDummyWindowOpenGLContextData(screen))
+{
+    // Make our temporary context current on our temporary window
+    glXMakeCurrent(m_current.m_display, m_current.m_window, m_current.m_context);
+}
+
+QOpenGLTemporaryContext::~QOpenGLTemporaryContext()
+{
+    // Restore the previous context if possible, otherwise just release our temporary context
+    if (m_previous.m_display)
+        glXMakeCurrent(m_previous.m_display, m_previous.m_window, m_previous.m_context);
+    else
+        glXMakeCurrent(m_current.m_display, 0, 0);
+
+    // Destroy our temporary window
+    XDestroyWindow(m_current.m_display, m_current.m_window);
+
+    // Finally destroy our temporary context itself
+    glXDestroyContext(m_current.m_display, m_current.m_context);
+}
+
+QOpenGLDefaultContextInfo::QOpenGLDefaultContextInfo()
+    : vendor(getGlString(GL_VENDOR)),
+      renderer(getGlString(GL_RENDERER))
+{
+    updateFormatFromContext(format);
+}
+
+QOpenGLDefaultContextInfo *QOpenGLDefaultContextInfo::create(QXcbScreen *screen)
+{
+    // We need a current context for getGLString() to work. To have
+    // the QOpenGLDefaultContextInfo contain the latest supported
+    // context version, we rely upon the QOpenGLTemporaryContext to
+    // correctly obtain a context with the latest version
+    QScopedPointer<QOpenGLTemporaryContext> temporaryContext(new QOpenGLTemporaryContext(screen));
+    QOpenGLDefaultContextInfo *result = new QOpenGLDefaultContextInfo;
+    return result;
+}
+
+
+QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share, QOpenGLDefaultContextInfo *defaultContextInfo)
     : QPlatformOpenGLContext()
     , m_screen(screen)
     , m_context(0)
@@ -95,10 +285,20 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 
         // Use glXCreateContextAttribsARB if is available
         if (glXCreateContextAttribsARB != 0) {
+            // We limit the requested version by the version of the static context as
+            // glXCreateContextAttribsARB fails and returns NULL if the requested context
+            // version is not supported. This means that we will get the closest supported
+            // context format that that which was requested and is supported by the driver
+            const int maxSupportedVersion = (defaultContextInfo->format.majorVersion() << 8)
+                                          + defaultContextInfo->format.minorVersion();
+            const int requestedVersion = qMin((format.majorVersion() << 8) + format.minorVersion(),
+                                               maxSupportedVersion);
+            const int majorVersion = requestedVersion >> 8;
+            const int minorVersion = requestedVersion & 0xFF;
 
             QVector<int> contextAttributes;
-            contextAttributes << GLX_CONTEXT_MAJOR_VERSION_ARB << m_format.majorVersion()
-                              << GLX_CONTEXT_MINOR_VERSION_ARB << m_format.minorVersion();
+            contextAttributes << GLX_CONTEXT_MAJOR_VERSION_ARB << majorVersion
+                              << GLX_CONTEXT_MINOR_VERSION_ARB << minorVersion;
 
             // If asking for OpenGL 3.2 or newer we should also specify a profile
             if (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
@@ -136,10 +336,8 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
         if (m_context)
             m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
 
-        // Used for creating the temporary window
-        visualInfo = glXGetVisualFromFBConfig(DISPLAY_FROM_XCB(screen), config);
-        if (!visualInfo)
-            qFatal("Could not initialize GLX");
+        // Create a temporary window so that we can make the new context current
+        window = createDummyWindow(screen, config);
     } else {
         // Note that m_format gets updated with the used surface format
         visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(screen), screen->screenNumber(), &m_format);
@@ -151,56 +349,16 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
             m_shareContext = 0;
             m_context = glXCreateContext(DISPLAY_FROM_XCB(screen), visualInfo, 0, true);
         }
+
+        // Create a temporary window so that we can make the new context current
+        window = createDummyWindow(screen, visualInfo);
+        XFree(visualInfo);
     }
-
-    // Create a temporary window so that we can make the new context current
-    Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(screen), screen->root(), visualInfo->visual, AllocNone);
-    XSetWindowAttributes a;
-    a.background_pixel = WhitePixel(DISPLAY_FROM_XCB(screen), screen->screenNumber());
-    a.border_pixel = BlackPixel(DISPLAY_FROM_XCB(screen), screen->screenNumber());
-    a.colormap = cmap;
-
-    window = XCreateWindow(DISPLAY_FROM_XCB(screen), screen->root(),
-                           0, 0, 100, 100,
-                           0, visualInfo->depth, InputOutput, visualInfo->visual,
-                           CWBackPixel|CWBorderPixel|CWColormap, &a);
-
-    XFree(visualInfo);
 
     // Query the OpenGL version and profile
     if (m_context && window) {
         glXMakeCurrent(DISPLAY_FROM_XCB(screen), window, m_context);
-
-        int major = 0, minor = 0;
-        QString versionString(QLatin1String(reinterpret_cast<const char*>(glGetString(GL_VERSION))));
-        if (parseOpenGLVersion(versionString, major, minor)) {
-            m_format.setMajorVersion(major);
-            m_format.setMinorVersion(minor);
-        }
-
-        // If we have OpenGL 3.2 or newer we also need to query the profile in use
-        if (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
-            // nVidia drivers have a bug where querying GL_CONTEXT_PROFILE_MASK always returns 0.
-            // In this case let's assume that we got the profile that we asked for since nvidia implements
-            // both Core and Compatibility profiles
-            if (versionString.contains(QStringLiteral("NVIDIA"))) {
-                m_format.setProfile(format.profile());
-            } else {
-                GLint profileMask;
-                glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
-                switch (profileMask) {
-                case GLX_CONTEXT_CORE_PROFILE_BIT_ARB:
-                    m_format.setProfile(QSurfaceFormat::CoreProfile);
-                    break;
-
-                case GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
-                default:
-                    m_format.setProfile(QSurfaceFormat::CompatibilityProfile);
-                }
-            }
-        } else {
-            m_format.setProfile(QSurfaceFormat::NoProfile);
-        }
+        updateFormatFromContext(m_format);
 
         // Make our context non-current
         glXMakeCurrent(DISPLAY_FROM_XCB(screen), 0, 0);

@@ -118,14 +118,14 @@ void QPlatformOpenGLContext::setContext(QOpenGLContext *context)
     d->context = context;
 }
 
-bool QPlatformOpenGLContext::parseOpenGLVersion(const QString& versionString, int &major, int &minor)
+bool QPlatformOpenGLContext::parseOpenGLVersion(const QByteArray &versionString, int &major, int &minor)
 {
     bool majorOk = false;
     bool minorOk = false;
-    QStringList parts = versionString.split(QLatin1Char(' '));
-    if (versionString.startsWith(QLatin1String("OpenGL ES"))) {
+    QList<QByteArray> parts = versionString.split(' ');
+    if (versionString.startsWith(QByteArrayLiteral("OpenGL ES"))) {
         if (parts.size() >= 3) {
-            QStringList versionParts = parts.at(2).split(QLatin1Char('.'));
+            QList<QByteArray> versionParts = parts.at(2).split('.');
             if (versionParts.size() >= 2) {
                 major = versionParts.at(0).toInt(&majorOk);
                 minor = versionParts.at(1).toInt(&minorOk);
@@ -138,7 +138,7 @@ bool QPlatformOpenGLContext::parseOpenGLVersion(const QString& versionString, in
         }
     } else {
         // Not OpenGL ES, but regular OpenGL, the version numbers are first in the string
-        QStringList versionParts = parts.at(0).split(QLatin1Char('.'));
+        QList<QByteArray> versionParts = parts.at(0).split('.');
         if (versionParts.size() >= 2) {
             major = versionParts.at(0).toInt(&majorOk);
             minor = versionParts.at(1).toInt(&minorOk);
