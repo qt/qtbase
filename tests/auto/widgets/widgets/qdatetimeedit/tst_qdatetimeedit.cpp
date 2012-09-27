@@ -277,7 +277,7 @@ private slots:
     void focusNextPrevChild();
 
     void taskQTBUG_12384_timeSpecShowTimeOnly();
-    
+
     void deleteCalendarWidget();
 
 #ifdef QT_BUILD_INTERNAL
@@ -332,7 +332,6 @@ tst_QDateTimeEdit::tst_QDateTimeEdit()
 
 tst_QDateTimeEdit::~tst_QDateTimeEdit()
 {
-
 }
 
 void tst_QDateTimeEdit::initTestCase()
@@ -355,7 +354,6 @@ void tst_QDateTimeEdit::cleanupTestCase()
     delete testWidget;
     testWidget = 0;
 }
-
 
 void tst_QDateTimeEdit::init()
 {
@@ -400,17 +398,15 @@ void tst_QDateTimeEdit::constructor_qdatetime_data()
     QTest::addColumn<QTime>("maximumTime");
 
     QTest::newRow("normal") << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764))
-			 << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764))
-			 << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-			 << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                            << QDateTime(QDate(2004, 6, 16), QTime(13, 46, 32, 764))
+                            << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
+                            << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
 
     QTest::newRow("invalid") << QDateTime(QDate(9999, 99, 99), QTime(13, 46, 32, 764))
-			  << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
-			  << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-			  << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                             << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
+                             << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
+                             << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
 }
-
-
 
 void tst_QDateTimeEdit::constructor_qdatetime()
 {
@@ -442,17 +438,15 @@ void tst_QDateTimeEdit::constructor_qdate_data()
     QTest::addColumn<QTime>("maximumTime");
 
     QTest::newRow("normal") << QDate(2004, 6, 16)
-			 << QDateTime(QDate(2004, 6, 16), QTime(0, 0, 0, 0))
-			 << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-			 << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                            << QDateTime(QDate(2004, 6, 16), QTime(0, 0, 0, 0))
+                            << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
+                            << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
 
     QTest::newRow("invalid") << QDate(9999, 99, 99)
-			  << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
-			  << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
-			  << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
+                             << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
+                             << QDate(1752, 9, 14) << QTime(0, 0, 0, 0)
+                             << QDate(7999, 12, 31) << QTime(23, 59, 59, 999);
 }
-
-
 
 void tst_QDateTimeEdit::constructor_qdate()
 {
@@ -484,17 +478,15 @@ void tst_QDateTimeEdit::constructor_qtime_data()
     QTest::addColumn<QTime>("maximumTime");
 
     QTest::newRow("normal") << QTime(13, 46, 32, 764)
-			 << QDateTime(QDate(2000, 1, 1), QTime(13, 46, 32, 764))
-			 << QDate(2000, 1, 1) << QTime(0, 0, 0, 0)
-			 << QDate(2000, 1, 1) << QTime(23, 59, 59, 999);
+                            << QDateTime(QDate(2000, 1, 1), QTime(13, 46, 32, 764))
+                            << QDate(2000, 1, 1) << QTime(0, 0, 0, 0)
+                            << QDate(2000, 1, 1) << QTime(23, 59, 59, 999);
 
     QTest::newRow("invalid") << QTime(99, 99, 99, 5000)
-			  << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
-			  << QDate(2000, 1, 1) << QTime(0, 0, 0, 0)
-			  << QDate(2000, 1, 1) << QTime(23, 59, 59, 999);
+                             << QDateTime(QDate(2000, 1, 1), QTime(0, 0, 0, 0))
+                             << QDate(2000, 1, 1) << QTime(0, 0, 0, 0)
+                             << QDate(2000, 1, 1) << QTime(23, 59, 59, 999);
 }
-
-
 
 void tst_QDateTimeEdit::constructor_qtime()
 {
@@ -568,7 +560,6 @@ void tst_QDateTimeEdit::minimumDateTime()
     QCOMPARE(testWidget->minimumDateTime(), expectedMinDateTime);
 }
 
-
 void tst_QDateTimeEdit::maximumDateTime_data()
 {
     QTest::addColumn<QDateTime>("maximumDateTime");
@@ -638,9 +629,8 @@ void tst_QDateTimeEdit::clearMinimumDate()
     QFETCH(QDate, expectedMinDateAfterClear);
 
     testWidget->setMinimumDate(minimumDate);
-    if (valid) {
-	QCOMPARE(testWidget->minimumDate(), minimumDate);
-    }
+    if (valid)
+        QCOMPARE(testWidget->minimumDate(), minimumDate);
     testWidget->clearMinimumDate();
     QCOMPARE(testWidget->minimumDate(), expectedMinDateAfterClear);
 }
@@ -662,7 +652,6 @@ void tst_QDateTimeEdit::clearMinimumDateTime_data()
     QTest::newRow("invalid-0") << QDateTime() << false << QDateTime(QDate(1752, 9, 14), QTime(0, 0));
     QTest::newRow("old") << QDateTime(QDate(1492, 8, 3), QTime(2, 3, 1)) << true
                          << QDateTime(QDate(1752, 9, 14), QTime(0, 0));
-
 }
 
 void tst_QDateTimeEdit::clearMinimumDateTime()
@@ -672,13 +661,11 @@ void tst_QDateTimeEdit::clearMinimumDateTime()
     QFETCH(QDateTime, expectedMinDateTimeAfterClear);
 
     testWidget->setMinimumDateTime(minimumDateTime);
-    if (valid) {
-	QCOMPARE(testWidget->minimumDateTime(), minimumDateTime);
-    }
+    if (valid)
+        QCOMPARE(testWidget->minimumDateTime(), minimumDateTime);
     testWidget->clearMinimumDateTime();
     QCOMPARE(testWidget->minimumDateTime(), expectedMinDateTimeAfterClear);
 }
-
 
 void tst_QDateTimeEdit::clearMaximumDateTime_data()
 {
@@ -705,13 +692,11 @@ void tst_QDateTimeEdit::clearMaximumDateTime()
     QFETCH(QDateTime, expectedMinDateTimeAfterClear);
 
     testWidget->setMaximumDateTime(maximumDateTime);
-    if (valid) {
-	QCOMPARE(testWidget->maximumDateTime(), maximumDateTime);
-    }
+    if (valid)
+        QCOMPARE(testWidget->maximumDateTime(), maximumDateTime);
     testWidget->clearMaximumDateTime();
     QCOMPARE(testWidget->maximumDateTime(), expectedMinDateTimeAfterClear);
 }
-
 
 void tst_QDateTimeEdit::clearMaximumDate_data()
 {
@@ -733,9 +718,8 @@ void tst_QDateTimeEdit::clearMaximumDate()
     QFETCH(QDate, expectedMaxDateAfterClear);
 
     testWidget->setMaximumDate(maximumDate);
-    if (valid) {
-	QCOMPARE(testWidget->maximumDate(), maximumDate);
-    }
+    if (valid)
+        QCOMPARE(testWidget->maximumDate(), maximumDate);
     testWidget->clearMaximumDate();
     QCOMPARE(testWidget->maximumDate(), expectedMaxDateAfterClear);
 }
@@ -777,7 +761,7 @@ void tst_QDateTimeEdit::displayFormat()
 
     QString compareFormat = format;
     if (!valid)
-	compareFormat = testWidget->displayFormat();
+        compareFormat = testWidget->displayFormat();
     testWidget->setDisplayFormat(format);
     QCOMPARE(testWidget->displayFormat(), compareFormat);
     if (valid)
@@ -910,16 +894,15 @@ void tst_QDateTimeEdit::backspaceKey()
     QCOMPARE(testWidget->text(), QString("11/05/20"));
     // Check that moving into another field reverts it
     for (int i=0;i<3;i++)
-	QTest::keyClick(testWidget, Qt::Key_Left);
+        QTest::keyClick(testWidget, Qt::Key_Left);
     QCOMPARE(testWidget->text(), QString("11/05/2004"));
 #ifdef Q_OS_MAC
     QTest::keyClick(testWidget, Qt::Key_Right, Qt::ControlModifier);
 #else
     QTest::keyClick(testWidget, Qt::Key_End);
 #endif
-    for (int i=0;i<4;i++) {
-	QTest::keyClick(testWidget, Qt::Key_Left, Qt::ShiftModifier);
-    }
+    for (int i=0;i<4;i++)
+        QTest::keyClick(testWidget, Qt::Key_Left, Qt::ShiftModifier);
 
     QTest::keyClick(testWidget, Qt::Key_Backspace);
     QCOMPARE(testWidget->text(), QString("11/05/"));
@@ -1026,7 +1009,6 @@ void tst_QDateTimeEdit::tabKeyNavigationWithSuffix()
     QTest::keyClick(testWidget, Qt::Key_Tab, Qt::ShiftModifier);
     QCOMPARE(testWidget->lineEdit()->selectedText(), QString("11"));
 }
-
 
 void tst_QDateTimeEdit::enterKey()
 {
@@ -1144,7 +1126,6 @@ void tst_QDateTimeEdit::specialValueText()
     QTest::keyClick(testWidget, Qt::Key_O);
     QCOMPARE(testWidget->text(), QString("fOo"));
 }
-
 
 void tst_QDateTimeEdit::setRange_data()
 {
@@ -1282,7 +1263,6 @@ void tst_QDateTimeEdit::wrappingTime_data()
     QTest::newRow("data17") << true << QTime(1,1,1) << QTime(1,2,1) << (uint)QDateTimeEdit::SecondSection
                          << QTime(1,1,59);
 }
-
 
 void tst_QDateTimeEdit::wrappingTime()
 {
@@ -2005,7 +1985,6 @@ void tst_QDateTimeEdit::wrappingDate_data()
                          << QDate(2000, 1, 1);
 }
 
-
 void tst_QDateTimeEdit::wrappingDate()
 {
     QFETCH(bool, startWithMin);
@@ -2164,7 +2143,6 @@ void tst_QDateTimeEdit::dateTimeSignalChecking()
     }
 }
 
-
 void tst_QDateTimeEdit::sectionText_data()
 {
     QTest::addColumn<QString>("format");
@@ -2242,7 +2220,6 @@ void tst_QDateTimeEdit::mousePress()
     // Send mouseClick to center of SC_SpinBoxUp
     QTest::mouseClick(testWidget, Qt::LeftButton, 0, rectUp.center());
     QCOMPARE(testWidget->date().year(), 2005);
-
 }
 
 void tst_QDateTimeEdit::stepHourAMPM_data()
@@ -2359,7 +2336,6 @@ void tst_QDateTimeEdit::stepHourAMPM_data()
         QTest::newRow("HH:ap 2") << QString("HH:ap") << keys << expected
                                  << QTime(0, 0) << QTime(0, 0)
                                  << QTime(23, 59, 59);
-
     }
     {
         KeyList keys;
@@ -2402,7 +2378,6 @@ void tst_QDateTimeEdit::stepHourAMPM()
     QFETCH(QTime, min);
     QFETCH(QTime, max);
 
-
     testWidget->setDisplayFormat(format);
     testWidget->setTime(start);
     testWidget->setMinimumTime(min);
@@ -2417,7 +2392,6 @@ void tst_QDateTimeEdit::stepHourAMPM()
         QCOMPARE(testWidget->time(), expected.at(i));
     }
 }
-
 
 void tst_QDateTimeEdit::displayedSections_data()
 {
@@ -2580,7 +2554,6 @@ void tst_QDateTimeEdit::newCase()
     QTest::keyClick(testWidget, Qt::Key_Delete);
     QTest::keyClick(testWidget, Qt::Key_Left);
 
-
     QCOMPARE(testWidget->text(), QString("Jula7bJulc07"));
     QTest::keyClick(testWidget, Qt::Key_Delete);
     QCOMPARE(testWidget->text(), QString("Jua7bJulc07"));
@@ -2618,7 +2591,6 @@ void tst_QDateTimeEdit::newCase3()
     QTest::keyClick(testWidget, Qt::Key_A);
     QTest::keyClick(testWidget, Qt::Key_R);
 }
-
 
 void tst_QDateTimeEdit::cursorPos()
 {
@@ -2711,7 +2683,6 @@ void tst_QDateTimeEdit::newCase6()
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("12-2005-10-12"));
 }
 
-
 void tst_QDateTimeEdit::task98554()
 {
     testWidget->setDisplayFormat("mm.ss.zzz(ms)");
@@ -2731,7 +2702,6 @@ static QList<int> makeList(int val1, int val2, int val3)
     ret << val1 << val2 << val3;
     return ret;
 }
-
 
 void tst_QDateTimeEdit::setCurrentSection_data()
 {
@@ -2786,7 +2756,6 @@ void tst_QDateTimeEdit::setCurrentSection()
         QCOMPARE(testWidget->lineEdit()->cursorPosition(), expectedCursorPositions.at(i));
     }
 }
-
 
 void tst_QDateTimeEdit::setSelectedSection()
 {
@@ -2888,7 +2857,6 @@ void tst_QDateTimeEdit::calendarPopup()
     QWidget *wid3 = qFindChild<QWidget *>(&dateEdit, "qt_datetimedit_calendar");
     QVERIFY(wid3 == 0);
     dateEdit.hide();
-
 }
 
 class RestoreLayoutDirectioner
@@ -2926,7 +2894,6 @@ void tst_QDateTimeEdit::reverseTest()
     QCOMPARE(testWidget->date(), QDate(2001, 3, 31));
     QCOMPARE(testWidget->lineEdit()->displayText(), QString("2001/03/31"));
 }
-
 
 void tst_QDateTimeEdit::hour12Test()
 {
@@ -3169,7 +3136,6 @@ void tst_QDateTimeEdit::nextPrevSection_data()
 #endif
 }
 
-
 void tst_QDateTimeEdit::nextPrevSection()
 {
     QFETCH(Qt::Key, key);
@@ -3197,14 +3163,12 @@ void tst_QDateTimeEdit::dateEditTimeEditFormats()
     QCOMPARE(d.displayedSections(), QDateTimeEdit::YearSection);
 }
 
-
 void tst_QDateTimeEdit::timeSpec_data()
 {
     QTest::addColumn<bool>("useSetProperty");
     QTest::newRow("setProperty") << true;
     QTest::newRow("setTimeSpec") << false;
 }
-
 
 void tst_QDateTimeEdit::timeSpec()
 {
@@ -3259,7 +3223,6 @@ void tst_QDateTimeEdit::timeSpecBug()
     QCOMPARE(oldText, testWidget->text());
 }
 
-
 void tst_QDateTimeEdit::cachedDayTest()
 {
     testWidget->setDisplayFormat("MM/dd");
@@ -3287,7 +3250,6 @@ void tst_QDateTimeEdit::cachedDayTest()
     testWidget->setCurrentSection(QDateTimeEdit::MonthSection);
     QTest::keyClick(testWidget, Qt::Key_Up);
     QCOMPARE(testWidget->date(), QDate(2007, 3, 30));
-
 }
 
 void tst_QDateTimeEdit::monthEdgeCase()
@@ -3316,9 +3278,6 @@ public:
 private:
     const QLocale old;
 };
-
-
-
 
 void tst_QDateTimeEdit::setLocale()
 {
@@ -3349,7 +3308,6 @@ void tst_QDateTimeEdit::setLocale()
         edit.setLocale(QLocale("no_NO"));
     }
 }
-
 
 void tst_QDateTimeEdit::potentialYYValueBug()
 {
@@ -3398,7 +3356,6 @@ void tst_QDateTimeEdit::keypadAutoAdvance_data()
     QTest::newRow("Keypad+Shift") << (Qt::KeyboardModifiers)(Qt::KeypadModifier|Qt::ShiftModifier);
 }
 
-
 void tst_QDateTimeEdit::keypadAutoAdvance()
 {
     QFETCH(Qt::KeyboardModifiers, modifiers);
@@ -3417,7 +3374,6 @@ void tst_QDateTimeEdit::keypadAutoAdvance()
     QTest::keyClick(&edit, Qt::Key_2, modifiers);
     QCOMPARE(edit.lineEdit()->selectedText(), QString("02"));
 }
-
 
 void tst_QDateTimeEdit::task196924()
 {
@@ -3440,7 +3396,6 @@ void tst_QDateTimeEdit::task196924()
     QTest::keyClick(&edit, Qt::Key_3);
     QCOMPARE(edit.lineEdit()->selectedText(), QString("2345"));
     QCOMPARE(edit.text(), QString("17/03/2345"));
-
 }
 
 void tst_QDateTimeEdit::focusNextPrevChild()
