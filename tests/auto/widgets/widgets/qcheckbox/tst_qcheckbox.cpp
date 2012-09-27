@@ -213,19 +213,11 @@ void tst_QCheckBox::setText_data()
 {
     QTest::addColumn<QString>("s1");
 
-#ifdef Q_OS_WIN32
-    QTest::newRow( "win32_data0" ) << QString("This is a text");
-    QTest::newRow( "win32_data1" ) << QString("A");
-    QTest::newRow( "win32_data2" ) << QString("ABCDEFG ");
-    QTest::newRow( "win32_data3" ) << QString("Text\nwith a cr-lf");
-    QTest::newRow( "win32_data4" ) << QString("");
-#else
     QTest::newRow( "data0" ) << QString("This is a text");
     QTest::newRow( "data1" ) << QString("A");
     QTest::newRow( "data2" ) << QString("ABCDEFG ");
     QTest::newRow( "data3" ) << QString("Text\nwith a cr-lf");
     QTest::newRow( "data4" ) << QString("");
-#endif
 }
 
 void tst_QCheckBox::setText()
