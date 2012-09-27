@@ -80,15 +80,15 @@ public:
     static void handleFrameStrutMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
     static void handleFrameStrutMouseEvent(QWindow *w, ulong timestamp, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
-    static bool tryHandleSynchronousShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
+    static bool tryHandleShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
                                                   const QString & text = QString(), bool autorep = false, ushort count = 1);
-    static bool tryHandleSynchronousShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+    static bool tryHandleShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
                                                   const QString & text = QString(), bool autorep = false, ushort count = 1);
 
-    static bool tryHandleSynchronousExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
+    static bool tryHandleExtendedShortcutEvent(QWindow *w, int k, Qt::KeyboardModifiers mods,
                                                           quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                                                           const QString & text = QString(), bool autorep = false, ushort count = 1);
-    static bool tryHandleSynchronousExtendedShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
+    static bool tryHandleExtendedShortcutEvent(QWindow *w, ulong timestamp, int k, Qt::KeyboardModifiers mods,
                                                           quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers,
                                                           const QString & text = QString(), bool autorep = false, ushort count = 1);
 
@@ -133,16 +133,13 @@ public:
     static void handleTouchCancelEvent(QWindow *w, ulong timestamp, QTouchDevice *device, Qt::KeyboardModifiers mods = Qt::NoModifier);
 
     static void handleGeometryChange(QWindow *w, const QRect &newRect);
-    static void handleSynchronousGeometryChange(QWindow *w, const QRect &newRect);
     static void handleCloseEvent(QWindow *w);
-    static void handleSynchronousCloseEvent(QWindow *w);
     static void handleEnterEvent(QWindow *w);
     static void handleLeaveEvent(QWindow *w);
     static void handleWindowActivated(QWindow *w);
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 
     static void handleExposeEvent(QWindow *tlw, const QRegion &region);
-    static void handleSynchronousExposeEvent(QWindow *tlw, const QRegion &region);
 
 #ifndef QT_NO_DRAGANDDROP
     // Drag and drop. These events are sent immediately.
@@ -180,6 +177,7 @@ public:
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
+    static void setSynchronousWindowsSystemEvents(bool enable);
     static void flushWindowSystemEvents();
     static int windowSystemEventsQueued();
 

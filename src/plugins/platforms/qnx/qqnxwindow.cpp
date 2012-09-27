@@ -180,7 +180,8 @@ void QQnxWindow::setGeometry(const QRect &rect)
     }
 
     // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget)
-    QWindowSystemInterface::handleSynchronousGeometryChange(window(), rect);
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
+    QWindowSystemInterface::flushWindowSystemEvents();
 
     // Now move all children.
     if (!oldGeometry.isEmpty()) {

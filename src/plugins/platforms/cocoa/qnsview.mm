@@ -143,8 +143,10 @@ static QTouchDevice *touchDevice = 0;
     m_platformWindow->QPlatformWindow::setGeometry(geo);
 
     // Send a geometry change event to Qt, if it's ready to handle events
-    if (!m_platformWindow->m_inConstructor)
-        QWindowSystemInterface::handleSynchronousGeometryChange(m_window, geo);
+    if (!m_platformWindow->m_inConstructor) {
+        QWindowSystemInterface::handleGeometryChange(m_window, geo);
+        QWindowSystemInterface::flushWindowSystemEvents();
+    }
 }
 
 - (void)windowNotification : (NSNotification *) windowNotification
@@ -355,7 +357,8 @@ static QTouchDevice *touchDevice = 0;
 - (void)mouseDown:(NSEvent *)theEvent
 {
     if (m_platformWindow->m_activePopupWindow) {
-        QWindowSystemInterface::handleSynchronousCloseEvent(m_platformWindow->m_activePopupWindow);
+        QWindowSystemInterface::handleCloseEvent(m_platformWindow->m_activePopupWindow);
+        QWindowSystemInterface::flushWindowSystemEvents();
         m_platformWindow->m_activePopupWindow = 0;
     }
     if ([self hasMarkedText]) {
@@ -691,7 +694,7 @@ static QTouchDevice *touchDevice = 0;
             text = QCFString::toQString([nsevent characters]);
 
         if (m_composingText.isEmpty())
-            m_sendKeyEvent = !QWindowSystemInterface::tryHandleSynchronousShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
+            m_sendKeyEvent = !QWindowSystemInterface::tryHandleShortcutEvent(m_window, timestamp, keyCode, modifiers, text);
 
         QObject *fo = QGuiApplication::focusObject();
         if (m_sendKeyEvent && fo) {

@@ -139,7 +139,8 @@ void QPlatformWindow::setVisible(bool visible)
 {
     Q_UNUSED(visible);
     QRect rect(QPoint(), geometry().size());
-    QWindowSystemInterface::handleSynchronousExposeEvent(window(), rect);
+    QWindowSystemInterface::handleExposeEvent(window(), rect);
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 /*!
     Requests setting the window flags of this surface

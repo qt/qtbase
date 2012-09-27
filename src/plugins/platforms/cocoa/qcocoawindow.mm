@@ -270,7 +270,8 @@ void QCocoaWindow::setVisible(bool visible)
         }
 
         // Make sure the QWindow has a frame ready before we show the NSWindow.
-        QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRect(QPoint(), geometry().size()));
+        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
+        QWindowSystemInterface::flushWindowSystemEvents();
 
         if (m_nsWindow) {
             // setWindowState might have been called while the window was hidden and
@@ -536,7 +537,8 @@ void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
     if (m_activePopupWindow) {
-        QWindowSystemInterface::handleSynchronousCloseEvent(m_activePopupWindow);
+        QWindowSystemInterface::handleCloseEvent(m_activePopupWindow);
+        QWindowSystemInterface::flushWindowSystemEvents();
         m_activePopupWindow = 0;
     }
 }
@@ -558,7 +560,8 @@ void QCocoaWindow::windowDidResize()
 
 void QCocoaWindow::windowWillClose()
 {
-    QWindowSystemInterface::handleSynchronousCloseEvent(window());
+    QWindowSystemInterface::handleCloseEvent(window());
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const

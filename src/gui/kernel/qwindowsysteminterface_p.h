@@ -357,9 +357,10 @@ public:
 
     static int windowSystemEventsQueued();
     static WindowSystemEvent * getWindowSystemEvent();
-    static void queueWindowSystemEvent(WindowSystemEvent *ev);
+    static void handleWindowSystemEvent(WindowSystemEvent *ev);
 
     static QElapsedTimer eventTime;
+    static bool synchronousWindowsSystemEvents;
 
     static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };

@@ -224,7 +224,8 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
 
 void QEglFSCursor::update(const QRegion &rgn)
 {
-    QWindowSystemInterface::handleSynchronousExposeEvent(m_screen->topLevelAt(m_cursor.pos), rgn);
+    QWindowSystemInterface::handleExposeEvent(m_screen->topLevelAt(m_cursor.pos), rgn);
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 QRect QEglFSCursor::cursorRect() const

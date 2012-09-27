@@ -1071,10 +1071,9 @@ void QWindowsWindow::handleGeometryChange()
         return;
     m_data.geometry = geometry_sys();
     QPlatformWindow::setGeometry(m_data.geometry);
+    QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     if (testFlag(SynchronousGeometryChangeEvent))
-        QWindowSystemInterface::handleSynchronousGeometryChange(window(), m_data.geometry);
-    else
-        QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
+        QWindowSystemInterface::flushWindowSystemEvents();
 
     if (QWindowsContext::verboseEvents || QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() << m_data.geometry;
@@ -1153,8 +1152,9 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
         if (testFlag(OpenGLDoubleBuffered))
             InvalidateRect(hwnd, 0, false);
         BeginPaint(hwnd, &ps);
-        QWindowSystemInterface::handleSynchronousExposeEvent(window(),
-                                                             QRegion(qrectFromRECT(ps.rcPaint)));
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(qrectFromRECT(ps.rcPaint)));
+        QWindowSystemInterface::flushWindowSystemEvents();
+
         EndPaint(hwnd, &ps);
     } else {
         BeginPaint(hwnd, &ps);
@@ -1163,7 +1163,8 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
         if (QWindowsContext::verboseIntegration)
             qDebug() << __FUNCTION__ << this << window() << updateRect;
 
-        QWindowSystemInterface::handleSynchronousExposeEvent(window(), QRegion(updateRect));
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(updateRect));
+        QWindowSystemInterface::flushWindowSystemEvents();
         EndPaint(hwnd, &ps);
     }
     return true;
@@ -1324,7 +1325,8 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowState newState)
             SetWindowPos(m_data.hwnd, HWND_TOP, r.left(), r.top(), r.width(), r.height(), swpf);
             if (!wasSync)
                 clearFlag(SynchronousGeometryChangeEvent);
-            QWindowSystemInterface::handleSynchronousGeometryChange(window(), r);
+            QWindowSystemInterface::handleGeometryChange(window(), r);
+            QWindowSystemInterface::flushWindowSystemEvents();
         } else if (newState != Qt::WindowMinimized) {
             // Restore saved state.
             unsigned newStyle = m_savedStyle ? m_savedStyle : style();
