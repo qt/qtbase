@@ -301,9 +301,15 @@ public:
     STDMETHOD(GiveFeedback)(DWORD dwEffect);
 
 private:
-    typedef QMap <Qt::DropAction, HCURSOR> ActionCursorMap;
-
-    inline void clearCursors();
+    class DragCursorHandle {
+        Q_DISABLE_COPY(DragCursorHandle)
+    public:
+        DragCursorHandle(HCURSOR c, quint64 k) :  cursor(c), cacheKey(k) {}
+        ~DragCursorHandle() { DestroyCursor(cursor); }
+        HCURSOR cursor;
+        quint64 cacheKey;
+    };
+    typedef QMap <Qt::DropAction, QSharedPointer<DragCursorHandle> > ActionCursorMap;
 
     QWindowsDrag *m_drag;
     Qt::MouseButtons m_currentButtons;
@@ -322,7 +328,7 @@ QWindowsOleDropSource::QWindowsOleDropSource(QWindowsDrag *drag) :
 
 QWindowsOleDropSource::~QWindowsOleDropSource()
 {
-    clearCursors();
+    m_cursors.clear();
     if (QWindowsContext::verboseOLE)
         qDebug("%s", __FUNCTION__);
 }
@@ -347,10 +353,14 @@ void QWindowsOleDropSource::createCursors()
         QPixmap cpm = drag->dragCursor(action);
         if (cpm.isNull())
             cpm = m_drag->defaultCursor(action);
+        QSharedPointer<DragCursorHandle> cursorHandler = m_cursors.value(action);
+        if (!cursorHandler.isNull() && cpm.cacheKey() == cursorHandler->cacheKey)
+            continue;
         if (cpm.isNull()) {
             qWarning("%s: Unable to obtain drag cursor for %d.", __FUNCTION__, action);
             continue;
         }
+
         int w = cpm.width();
         int h = cpm.height();
 
@@ -380,21 +390,12 @@ void QWindowsOleDropSource::createCursors()
         const int hotX = hasPixmap ? qMax(0,newHotSpot.x()) : 0;
         const int hotY = hasPixmap ? qMax(0,newHotSpot.y()) : 0;
 
-        if (const HCURSOR sysCursor = QWindowsCursor::createPixmapCursor(newCursor, hotX, hotY))
-            m_cursors.insert(actions.at(cnum), sysCursor);
+        if (const HCURSOR sysCursor = QWindowsCursor::createPixmapCursor(newCursor, hotX, hotY)) {
+            m_cursors.insert(action, QSharedPointer<DragCursorHandle>(new DragCursorHandle(sysCursor, cpm.cacheKey())));
+        }
     }
     if (QWindowsContext::verboseOLE)
         qDebug("%s %d cursors", __FUNCTION__, m_cursors.size());
-}
-
-void QWindowsOleDropSource::clearCursors()
-{
-    if (!m_cursors.isEmpty()) {
-        const ActionCursorMap::const_iterator cend = m_cursors.constEnd();
-        for (ActionCursorMap::const_iterator it = m_cursors.constBegin(); it != cend; ++it)
-            DestroyCursor(it.value());
-        m_cursors.clear();
-    }
 }
 
 //---------------------------------------------------------------------
@@ -488,9 +489,14 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
     if (QWindowsContext::verboseOLE > 2)
         qDebug("%s dwEffect=%lu, action=%d", __FUNCTION__, dwEffect, action);
 
+    QSharedPointer<DragCursorHandle> cursorHandler = m_cursors.value(action);
+    quint64 currentCacheKey = m_drag->currentDrag()->dragCursor(action).cacheKey();
+    if (cursorHandler.isNull() || currentCacheKey != cursorHandler->cacheKey)
+        createCursors();
+
     const ActionCursorMap::const_iterator it = m_cursors.constFind(action);
     if (it != m_cursors.constEnd()) {
-        SetCursor(it.value());
+        SetCursor(it.value()->cursor);
         return ResultFromScode(S_OK);
     }
 
