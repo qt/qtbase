@@ -1,0 +1,138 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+\page qtwidgets-index.html
+\title Qt Widgets
+\brief A module which provides a set of C++ technologies for building user
+interfaces
+
+Qt Widgets is a module which provides primary elements for building user
+interfaces in C++.
+
+\section1 Getting Started
+
+    To include the definitions of the module's classes, use the
+    following directive:
+
+    \snippet code/doc_src_qtwidgets.cpp 1
+
+    To link against the module, add this line to your \l qmake \c
+    .pro file:
+
+    \snippet code/doc_src_qtwidgets.pro 0
+
+\section1 Widgets
+
+    Widgets are for building C++ user interfaces. They are customizable with
+    layouts and stylesheets.
+
+    \list
+    \li \l{Basic Widgets}
+    \li \l{Advanced Widgets}
+    \li \l{Organizers}
+    \li \l{Widgets Tutorial}
+    \li \l{Window and Dialog Widgets}
+    \li \l{Application Main Window}
+    \li \l{Standard Dialogs}
+    \li \l{Dialog Windows}
+    \endlist
+
+    Qt's support for widget styles and themes enables your application to fit in
+    with the native desktop environment. Below, you can find links to the
+    various widget styles that are supplied with Qt Widgets.
+    \list
+    \li \l{Qt Widget Gallery}
+    \li \l{Plastique Style Widget Gallery}
+    \li \l{Cleanlooks Style Widget Gallery}
+    \li \l{Windows XP Style Widget Gallery}
+    \li \l{Windows Vista Style Widget Gallery}
+    \li \l{GTK Style Widget Gallery}
+    \li \l{Macintosh Style Widget Gallery}
+    \endlist
+
+    \section2 Layouts
+
+    Widgets may use to automatically arrange child widgets within their
+    container. Each widget reports its size requirements to the layout and the
+    layout distributes the available space accordingly.
+
+    \list
+    \li \l{Widgets and Layouts}
+    \li \l{Qt Designer Integration}
+    \li \l{Layout Management}
+    \endlist
+
+    \section2 Style Sheets
+
+    \l{Qt Style Sheets} are a powerful mechanism that allows for customization
+    of the appearance of widgets. The concepts, terminology, and syntax of Qt
+    Style Sheets are heavily inspired by HTML Cascading Style Sheets (CSS) but
+    adapted to the world of widgets.
+
+    \list
+    \li \l{Customizing Qt Widgets Using Style Sheets}
+    \li \l{Qt Style Sheets}
+    \li \l{The Style Sheet Syntax}
+    \li \l{Styles and Style Aware Widgets}
+    \li \l{Qt Style Sheets Examples}
+    \endlist
+
+\section1 Graphics View
+
+    The \l{Graphics View Framework} is for managing and interacting with a large
+    number of custom-made 2D graphical items, and a view widget for visualizing
+    the items, with support for zooming and rotation.
+
+\section1 Model/View
+
+    The \l{Model/View Programming}{model/view} architecture provides classes
+    that manage the way data is presented to the user. Data-driven applications
+    which use lists and tables are structured to separate the data and view
+    using models, views, and delegates.
+
+    \list
+    \li \l{Model/View Programming}
+    \li \l{Model/View Tutorial}
+    \endlist
+
+\section1 Reference
+
+\list
+\li \l{Qt Widgets C++ API}
+    \list
+    \li \l{Abstract Widget Classes}
+    \li \l{Graphics View Classes}
+    \li \l{Model/View Classes}
+    \li \l{Main Window and Related Classes}
+    \li \l{Widget Appearance and Style Related Classes}
+    \li \l{Layout Classes}
+    \endlist
+\li \l{Qt Style Sheets Reference}
+\endlist
+
+*/

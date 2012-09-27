@@ -27,7 +27,7 @@
 
 /*!
     \group appearance
-    \title Widget Appearance and Style
+    \title Widget Appearance and Style-Related Classes
     \brief Classes used for customizing UI appearance and style.
 */
 
@@ -244,7 +244,7 @@
     the PM_LayoutHorizontalSpacing and PM_LayoutVerticalSpacing, which
     is the way the java style does it (through QCommonStyle).
     Alternatively, you can implement QStyle::layoutSpacing() and
-    QStyle::layoutSpacingImplementation() if you need more control over 
+    QStyle::layoutSpacingImplementation() if you need more control over
     this part of the layout. In these functions you can calculate the
     spacing based on control types (QSizePolicy::ControlType) for
     different size policies (QSizePolicy::Policy) and also the style
@@ -253,7 +253,7 @@
     \section2 Style Options
 
     The sub-classes of QStyleOption contain all information necessary
-    to style the individual elements. Style options are instantiated - 
+    to style the individual elements. Style options are instantiated -
     usually on the stack - and filled out by the caller of the QStyle
     function. Depending on what is drawn the style will expect
     different a different style option class. For example, the
@@ -538,7 +538,7 @@
     details; most widgets follow the same structure as the check
     boxes. We have edited the QCommonStyle code somewhat to remove
     code that is not directly relevant for check box styling.
- 
+
     We start with a look at how QCheckBox builds it style option,
     which is QStyleOptionButton for checkboxes:
 
@@ -839,7 +839,7 @@
     As mentioned, the style calculates the size of the widgets
     contents, which the widgets calculate their size hints from. In
     addition, complex controls also use the style to test which
-    sub-controls the mouse is over. 
+    sub-controls the mouse is over.
 
     \section2 Widget Reference
 
@@ -1800,7 +1800,7 @@
     The setup of the style option for CE_MenuTearOff and
     CE_MenuScroller also uses QStyleOptionMenuItem; they only set the
     \c menuRect variable in addition to the common settings with
-    QStyleOption's \l{QStyleOption::}{initFrom()}. 
+    QStyleOption's \l{QStyleOption::}{initFrom()}.
 
     \section3 Menu Bar
 
@@ -1845,7 +1845,7 @@
     QStyleOptionFrame is used for drawing the panel frame The
     \l{QStyleOptionFrame::}{lineWidth} is set to PM_MenuBarPanelWidth.
     The \l{QStyleOptionFrame::}{midLineWidth} is currently always set
-    to 0. 
+    to 0.
 
     \section3 Item View Headers
 
@@ -2048,7 +2048,7 @@
             \li shape
             \li a QRubberBand::Shape enum value that holds the
                shape of the band (which is either a rectangle or a
-               line) 
+               line)
     \endtable
 
     \section3 Dock Widgets
@@ -2068,7 +2068,7 @@
     from its main window (i.e., it is a top level window). If it is
     docked it draws the indicator dock widget resize handle. We show a
     dock widget in both docked and floating state in the plastique
-    style: 
+    style:
 
     \image javastyle/dockwidgetimage.png
 

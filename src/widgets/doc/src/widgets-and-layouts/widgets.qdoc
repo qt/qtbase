@@ -57,7 +57,7 @@
   and the layout distributes the available space accordingly.
 
   \table
-  \row    
+  \row
   \li \image qgridlayout-with-5-children.png
   \li \image qformlayout-with-6-children.png
   \endtable
