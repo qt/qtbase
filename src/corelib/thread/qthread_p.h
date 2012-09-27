@@ -114,7 +114,7 @@ public:
         int priority = ev.priority;
         if (isEmpty() ||
             last().priority >= priority ||
-            begin() + insertionOffset >= end()) {
+            insertionOffset >= size()) {
             // optimization: we can simply append if the last event in
             // the queue has higher or equal priority
             append(ev);
