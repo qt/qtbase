@@ -1861,11 +1861,15 @@ void QStandardItem::sortChildren(int column, Qt::SortOrder order)
     Q_D(QStandardItem);
     if ((column < 0) || (rowCount() == 0))
         return;
-    if (d->model)
-        emit d->model->layoutAboutToBeChanged();
+
+    QList<QPersistentModelIndex> parents;
+    if (d->model) {
+        parents << index();
+        emit d->model->layoutAboutToBeChanged(parents, QAbstractItemModel::VerticalSortHint);
+    }
     d->sortChildren(column, order);
     if (d->model)
-        emit d->model->layoutChanged();
+        emit d->model->layoutChanged(parents, QAbstractItemModel::VerticalSortHint);
 }
 
 /*!
