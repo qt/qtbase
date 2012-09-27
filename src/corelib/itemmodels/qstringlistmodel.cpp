@@ -249,7 +249,7 @@ static bool decendingLessThan(const QPair<QString, int> &s1, const QPair<QString
 */
 void QStringListModel::sort(int, Qt::SortOrder order)
 {
-    emit layoutAboutToBeChanged();
+    emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), VerticalSortHint);
 
     QList<QPair<QString, int> > list;
     for (int i = 0; i < lst.count(); ++i)
@@ -273,7 +273,7 @@ void QStringListModel::sort(int, Qt::SortOrder order)
         newList.append(index(forwarding.at(oldList.at(i).row()), 0));
     changePersistentIndexList(oldList, newList);
 
-    emit layoutChanged();
+    emit layoutChanged(QList<QPersistentModelIndex>(), VerticalSortHint);
 }
 
 /*!
