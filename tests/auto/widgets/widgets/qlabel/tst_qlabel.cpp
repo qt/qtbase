@@ -87,7 +87,9 @@ private slots:
     void setText_data();
     void setText();
     void setTextFormat();
+#ifndef Q_OS_MAC
     void setBuddy();
+#endif
     void setNum();
     void clear();
     void wordWrap();
@@ -193,11 +195,10 @@ void tst_QLabel::cleanup()
     }
 }
 
+// Set buddy doesn't make much sense on Mac OS X
+#ifndef Q_OS_MAC
 void tst_QLabel::setBuddy()
 {
-#ifdef Q_OS_MAC
-    QSKIP("Set buddy doesn't make much sense on Mac OS X");
-#endif
     testWidget->hide();
 
     test_box = new Widget;
@@ -218,6 +219,7 @@ void tst_QLabel::setBuddy()
     QVERIFY( test_edit->hasFocus() );
     delete test_box;
 }
+#endif
 
 void tst_QLabel::setText_data()
 {
