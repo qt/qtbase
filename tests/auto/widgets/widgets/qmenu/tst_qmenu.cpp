@@ -80,7 +80,9 @@ private slots:
     void overrideMenuAction();
     void statusTip();
     void widgetActionFocus();
+#ifndef Q_OS_WINCE
     void mouseActivation();
+#endif
     void tearOff();
     void layoutDirection();
 
@@ -91,7 +93,9 @@ private slots:
     void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
     void menuSizeHint();
+#ifndef Q_OS_WINCE
     void task258920_mouseBorder();
+#endif
     void setFixedWidth();
     void deleteActionInTriggered();
     void pushButtonPopulateOnAboutToShow();
@@ -264,11 +268,10 @@ void tst_QMenu::addActionsAndClear()
     QCOMPARE(menus[0]->actions().count(), 0);
 }
 
+// We have a separate mouseActivation test for Windows mobile
+#ifndef Q_OS_WINCE
 void tst_QMenu::mouseActivation()
 {
-#ifdef Q_OS_WINCE_WM
-    QSKIP("We have a separate mouseActivation test for Windows mobile.");
-#endif
     QWidget topLevel;
     QMenu menu(&topLevel);
     topLevel.show();
@@ -301,6 +304,7 @@ void tst_QMenu::mouseActivation()
     QVERIFY(submenu.isVisible());
 #endif
 }
+#endif
 
 void tst_QMenu::keyboardNavigation_data()
 {
@@ -773,11 +777,10 @@ public:
     bool painted;
 };
 
+// Mouse move related signals for Windows Mobile unavailable
+#ifndef Q_OS_WINCE
 void tst_QMenu::task258920_mouseBorder()
 {
-#ifdef Q_OS_WINCE_WM
-    QSKIP("Mouse move related signals for Windows Mobile unavailable");
-#endif
     Menu258920 menu;
     // For styles which inherit from QWindowsStyle, styleHint(QStyle::SH_Menu_MouseTracking) is true.
     menu.setMouseTracking(true);
@@ -798,6 +801,7 @@ void tst_QMenu::task258920_mouseBorder()
     QTRY_COMPARE(static_cast<QAction*>(0), menu.activeAction());
     QTRY_VERIFY(menu.painted);
 }
+#endif
 
 void tst_QMenu::setFixedWidth()
 {
