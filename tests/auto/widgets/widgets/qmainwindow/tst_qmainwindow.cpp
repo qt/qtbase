@@ -145,7 +145,9 @@ private slots:
     void dockWidgetSize();
     void QTBUG2774_stylechange();
     void QTBUG15080_restoreState();
+#ifdef Q_OS_MAC
     void toggleUnifiedTitleAndToolBarOnMac();
+#endif
     void QTBUG21378_animationFinished();
 };
 
@@ -1792,9 +1794,9 @@ void tst_QMainWindow::QTBUG15080_restoreState()
     QCOMPARE(dw2->width(), 101);
 }
 
+#ifdef Q_OS_MAC
 void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
 {
-#ifdef Q_OS_MAC
     QMainWindow mw;
     QToolBar *tb = new QToolBar;
     tb->addAction("Test");
@@ -1806,10 +1808,8 @@ void tst_QMainWindow::toggleUnifiedTitleAndToolBarOnMac()
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
     mw.setUnifiedTitleAndToolBarOnMac(true);
     QVERIFY(frameGeometry.topLeft() == mw.frameGeometry().topLeft());
-#else
-    QSKIP("Mac specific test");
-#endif
 }
+#endif
 
 void tst_QMainWindow::QTBUG21378_animationFinished()
 {
