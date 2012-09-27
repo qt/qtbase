@@ -1436,7 +1436,7 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
     QRect ret = outerBounds;
     switch (bdi.kind){
     case kThemeComboBox:
-        ret.adjust(5, 8, -21, -4);
+        ret.adjust(5, 8, -23, -4);
         break;
     case kThemeComboBoxSmall:
         ret.adjust(4, 5, -18, 0);
