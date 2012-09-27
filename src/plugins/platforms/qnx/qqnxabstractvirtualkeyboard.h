@@ -74,6 +74,7 @@ public:
     QLocale locale() const { return m_locale; }
 
     void setKeyboardMode(KeyboardMode mode);
+    void setInputHintsFromObject(QObject *focusObject);
     KeyboardMode keyboardMode() const { return m_keyboardMode; }
 
 Q_SIGNALS:

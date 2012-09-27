@@ -62,6 +62,28 @@ void QQnxAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
     applyKeyboardMode(mode);
 }
 
+void QQnxAbstractVirtualKeyboard::setInputHintsFromObject(QObject *focusObject)
+{
+    if (focusObject && focusObject->isWidgetType()) {
+        const Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(
+                    focusObject->property("inputMethodHints").toInt());
+        if (hints & Qt::ImhEmailCharactersOnly) {
+            setKeyboardMode(QQnxAbstractVirtualKeyboard::Email);
+        } else if (hints & Qt::ImhDialableCharactersOnly) {
+            setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
+        } else if (hints & Qt::ImhUrlCharactersOnly) {
+            setKeyboardMode(QQnxAbstractVirtualKeyboard::Web);
+        } else if (hints & Qt::ImhFormattedNumbersOnly || hints & Qt::ImhDigitsOnly ||
+                   hints & Qt::ImhDate || hints & Qt::ImhTime) {
+            setKeyboardMode(QQnxAbstractVirtualKeyboard::NumPunc);
+        } else {
+            setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
+        }
+    } else {
+        setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
+    }
+}
+
 void QQnxAbstractVirtualKeyboard::setHeight(int height)
 {
     if (height == m_height)

@@ -163,10 +163,7 @@ void QQnxInputContext::setFocusObject(QObject *object)
         if (m_inputPanelVisible)
             hideInputPanel();
     } else {
-        if (object->inherits("QAbstractSpinBox"))
-            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Phone);
-        else
-            m_virtualKeyboard.setKeyboardMode(QQnxAbstractVirtualKeyboard::Default);
+        m_virtualKeyboard.setInputHintsFromObject(object);
 
         if (!m_inputPanelVisible)
             showInputPanel();
