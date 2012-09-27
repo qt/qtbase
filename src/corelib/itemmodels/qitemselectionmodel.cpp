@@ -284,12 +284,21 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 
 */
 
-/*
-  \internal
-
-  utility function for getting the indexes from a range
-  it avoid concatenating list and works on one
- */
+static void rowLengthsFromRange(const QItemSelectionRange &range, QVector<QPair<QPersistentModelIndex, uint> > &result)
+{
+    if (range.isValid() && range.model()) {
+        const QModelIndex topLeft = range.topLeft();
+        const int bottom = range.bottom();
+        const uint width = range.width();
+        const int column = topLeft.column();
+        for (int row = topLeft.row(); row <= bottom; ++row) {
+            // We don't need to keep track of ItemIsSelectable and ItemIsEnabled here. That is
+            // required in indexesFromRange() because that method is called from public API
+            // which requires the limitation.
+            result.push_back(qMakePair(QPersistentModelIndex(topLeft.sibling(row, column)), width));
+        }
+    }
+}
 
 template<typename ModelIndexContainer>
 static void indexesFromRange(const QItemSelectionRange &range, ModelIndexContainer &result)
@@ -468,6 +477,14 @@ static QVector<QPersistentModelIndex> qSelectionPersistentindexes(const QItemSel
     return result;
 }
 
+static QVector<QPair<QPersistentModelIndex, uint> > qSelectionPersistentRowLengths(const QItemSelection &sel)
+{
+    QVector<QPair<QPersistentModelIndex, uint> > result;
+    Q_FOREACH (const QItemSelectionRange &range, sel)
+        rowLengthsFromRange(range, result);
+    return result;
+}
+
 /*!
     Merges the \a other selection with this QItemSelection using the
     \a command given. This method guarantees that no ranges are overlapping.
@@ -599,10 +616,10 @@ void QItemSelectionModelPrivate::initModel(QAbstractItemModel *model)
                 q, SLOT(_q_layoutChanged()));
         QObject::connect(model, SIGNAL(columnsMoved(QModelIndex,int,int,QModelIndex,int)),
                 q, SLOT(_q_layoutChanged()));
-        QObject::connect(model, SIGNAL(layoutAboutToBeChanged()),
-                q, SLOT(_q_layoutAboutToBeChanged()));
-        QObject::connect(model, SIGNAL(layoutChanged()),
-                q, SLOT(_q_layoutChanged()));
+        QObject::connect(model, SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                q, SLOT(_q_layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
+        QObject::connect(model, SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                q, SLOT(_q_layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
     }
 }
 
@@ -812,10 +829,12 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeInserted(const QModelIndex &par
     preparation for the layoutChanged() signal, where the indexes can be
     merged again.
 */
-void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
+void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint hint)
 {
     savedPersistentIndexes.clear();
     savedPersistentCurrentIndexes.clear();
+    savedPersistentRowLengths.clear();
+    savedPersistentCurrentRowLengths.clear();
 
     // optimization for when all indexes are selected
     // (only if there is lots of items (1000) because this is not entirely correct)
@@ -836,8 +855,53 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     }
     tableSelected = false;
 
-    savedPersistentIndexes = qSelectionPersistentindexes(ranges);
-    savedPersistentCurrentIndexes = qSelectionPersistentindexes(currentSelection);
+    if (hint == QAbstractItemModel::VerticalSortHint) {
+        // Special case when we know we're sorting vertically. We can assume that all indexes for columns
+        // are displaced the same way, and therefore we only need to track an index from one column per
+        // row with a QPersistentModelIndex together with the length of items to the right of it
+        // which are displaced the same way.
+        // An algorithm which contains the same assumption is used to process layoutChanged.
+        savedPersistentRowLengths = qSelectionPersistentRowLengths(ranges);
+        savedPersistentCurrentRowLengths = qSelectionPersistentRowLengths(currentSelection);
+    } else {
+        savedPersistentIndexes = qSelectionPersistentindexes(ranges);
+        savedPersistentCurrentIndexes = qSelectionPersistentindexes(currentSelection);
+    }
+}
+/*!
+    \internal
+*/
+static QItemSelection mergeRowLengths(const QVector<QPair<QPersistentModelIndex, uint> > &rowLengths)
+{
+    if (rowLengths.isEmpty())
+      return QItemSelection();
+
+    QItemSelection result;
+    int i = 0;
+    while (i < rowLengths.count()) {
+        const QPersistentModelIndex &tl = rowLengths.at(i).first;
+        if (!tl.isValid()) {
+            ++i;
+            continue;
+        }
+        QPersistentModelIndex br = tl;
+        const uint length = rowLengths.at(i).second;
+        while (++i < rowLengths.count()) {
+            const QPersistentModelIndex &next = rowLengths.at(i).first;
+            if (!next.isValid())
+                continue;
+            const uint nextLength = rowLengths.at(i).second;
+            if ((nextLength == length)
+                && (next.row() == br.row() + 1)
+                && (next.parent() == br.parent())) {
+                br = next;
+            } else {
+                break;
+            }
+        }
+        result.append(QItemSelectionRange(tl, br.sibling(br.row(),  length - 1)));
+    }
+    return result;
 }
 
 /*!
@@ -913,7 +977,7 @@ static QItemSelection mergeIndexes(const QVector<QPersistentModelIndex> &indexes
 
     Merge the selected indexes into selection ranges again.
 */
-void QItemSelectionModelPrivate::_q_layoutChanged()
+void QItemSelectionModelPrivate::_q_layoutChanged(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint hint)
 {
     // special case for when all indexes are selected
     if (tableSelected && tableColCount == model->columnCount(tableParent)
@@ -930,26 +994,42 @@ void QItemSelectionModelPrivate::_q_layoutChanged()
         return;
     }
 
-    if (savedPersistentCurrentIndexes.isEmpty() && savedPersistentIndexes.isEmpty()) {
+    if ((hint != QAbstractItemModel::VerticalSortHint && savedPersistentCurrentIndexes.isEmpty() && savedPersistentIndexes.isEmpty())
+     || (hint == QAbstractItemModel::VerticalSortHint && savedPersistentRowLengths.isEmpty() && savedPersistentCurrentRowLengths.isEmpty())) {
         // either the selection was actually empty, or we
         // didn't get the layoutAboutToBeChanged() signal
         return;
     }
+
     // clear the "old" selection
     ranges.clear();
     currentSelection.clear();
 
-    // sort the "new" selection, as preparation for merging
-    qStableSort(savedPersistentIndexes.begin(), savedPersistentIndexes.end());
-    qStableSort(savedPersistentCurrentIndexes.begin(), savedPersistentCurrentIndexes.end());
+    if (hint != QAbstractItemModel::VerticalSortHint) {
+        // sort the "new" selection, as preparation for merging
+        qStableSort(savedPersistentIndexes.begin(), savedPersistentIndexes.end());
+        qStableSort(savedPersistentCurrentIndexes.begin(), savedPersistentCurrentIndexes.end());
 
-    // update the selection by merging the individual indexes
-    ranges = mergeIndexes(savedPersistentIndexes);
-    currentSelection = mergeIndexes(savedPersistentCurrentIndexes);
+        // update the selection by merging the individual indexes
+        ranges = mergeIndexes(savedPersistentIndexes);
+        currentSelection = mergeIndexes(savedPersistentCurrentIndexes);
 
-    // release the persistent indexes
-    savedPersistentIndexes.clear();
-    savedPersistentCurrentIndexes.clear();
+        // release the persistent indexes
+        savedPersistentIndexes.clear();
+        savedPersistentCurrentIndexes.clear();
+    } else {
+        // sort the "new" selection, as preparation for merging
+        qStableSort(savedPersistentRowLengths.begin(), savedPersistentRowLengths.end());
+        qStableSort(savedPersistentCurrentRowLengths.begin(), savedPersistentCurrentRowLengths.end());
+
+        // update the selection by merging the individual indexes
+        ranges = mergeRowLengths(savedPersistentRowLengths);
+        currentSelection = mergeRowLengths(savedPersistentCurrentRowLengths);
+
+        // release the persistent indexes
+        savedPersistentRowLengths.clear();
+        savedPersistentCurrentRowLengths.clear();
+    }
 }
 
 /*!

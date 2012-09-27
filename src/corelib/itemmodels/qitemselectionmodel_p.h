@@ -76,8 +76,8 @@ public:
     void _q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
     void _q_rowsAboutToBeInserted(const QModelIndex &parent, int start, int end);
     void _q_columnsAboutToBeInserted(const QModelIndex &parent, int start, int end);
-    void _q_layoutAboutToBeChanged();
-    void _q_layoutChanged();
+    void _q_layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
+    void _q_layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
 
     inline void remove(QList<QItemSelectionRange> &r)
     {
@@ -100,6 +100,8 @@ public:
     QItemSelectionModel::SelectionFlags currentCommand;
     QVector<QPersistentModelIndex> savedPersistentIndexes;
     QVector<QPersistentModelIndex> savedPersistentCurrentIndexes;
+    QVector<QPair<QPersistentModelIndex, uint> > savedPersistentRowLengths;
+    QVector<QPair<QPersistentModelIndex, uint> > savedPersistentCurrentRowLengths;
     // optimization when all indexes are selected
     bool tableSelected;
     QPersistentModelIndex tableParent;
