@@ -336,6 +336,9 @@ General Improvements
   'contains(QT_CONFIG,c++11):CONFIG+=c++11'. This will enable C++11 support
   only if Qt was built with C++11 support.
 
+- The Unicode Data and Algorithms has been updated to match the
+  Unicode Standard of version 6.2. For more information see http://www.unicode.org/
+
 Third party components
 ----------------------
 
@@ -350,7 +353,12 @@ the 3rdparty directory.
 
 QtCore
 ------
-* drop a bogus QChar::NoCategory enum value; the proper QChar::Other_NotAssigned
+* [QTBUG-12144], [QTBUG-18360] The QChar methods are now able to handle the full range
+  of Unicode codepoints defined by the Unicode Standard of version 6.2.
+  QChar::isPrint() will no longer return a false positives for
+  the Unicode format characters, surrogates, and private use characters.
+
+* Drop a bogus QChar::NoCategory enum value; the proper QChar::Other_NotAssigned
   value is returned for an unassigned codepoints now.
 
 * layoutAboutToBeChanged is no longer emitted by QAbstractItemModel::beginMoveRows.

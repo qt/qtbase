@@ -600,6 +600,11 @@ void tst_QChar::unicodeVersion()
     QVERIFY(QChar::unicodeVersion((uint)0xa69f) == QChar::Unicode_6_1);
     QVERIFY(QChar::unicodeVersion((uint)0x1f600) == QChar::Unicode_6_1);
 
+    QVERIFY(QChar(0x20ba).unicodeVersion() == QChar::Unicode_6_2);
+    QVERIFY(QChar::unicodeVersion((ushort)0x20ba) == QChar::Unicode_6_2);
+    QVERIFY(QChar::unicodeVersion((uint)0x20ba) == QChar::Unicode_6_2);
+    QVERIFY(QChar::unicodeVersion((uint)0x20ba) == QChar::Unicode_6_2);
+
     QVERIFY(QChar(0x09ff).unicodeVersion() == QChar::Unicode_Unassigned);
     QVERIFY(QChar::unicodeVersion((ushort)0x09ff) == QChar::Unicode_Unassigned);
     QVERIFY(QChar::unicodeVersion((uint)0x09ff) == QChar::Unicode_Unassigned);
@@ -695,6 +700,7 @@ void tst_QChar::lineBreakClass()
     QVERIFY(QUnicodeTables::lineBreakClass(0xe0164u) == QUnicodeTables::LineBreak_CM);
     QVERIFY(QUnicodeTables::lineBreakClass(0x2f9a4u) == QUnicodeTables::LineBreak_ID);
     QVERIFY(QUnicodeTables::lineBreakClass(0x10000u) == QUnicodeTables::LineBreak_AL);
+    QVERIFY(QUnicodeTables::lineBreakClass(0x1f1e6u) == QUnicodeTables::LineBreak_RI);
 
     // mapped to AL:
     QVERIFY(QUnicodeTables::lineBreakClass(0xfffdu) == QUnicodeTables::LineBreak_AL); // AI -> AL

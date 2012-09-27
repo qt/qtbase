@@ -51,8 +51,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "6.1"
-#define DATA_VERSION_STR "QChar::Unicode_6_1"
+#define DATA_VERSION_S "6.2"
+#define DATA_VERSION_STR "QChar::Unicode_6_2"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -76,6 +76,7 @@ static void initAgeMap()
         { QChar::Unicode_5_2,   "5.2" },
         { QChar::Unicode_6_0,   "6.0" },
         { QChar::Unicode_6_1,   "6.1" },
+        { QChar::Unicode_6_2,   "6.2" },
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -254,6 +255,7 @@ static const char *grapheme_break_class_string =
     "    GraphemeBreak_LF,\n"
     "    GraphemeBreak_Control,\n"
     "    GraphemeBreak_Extend,\n"
+    "    GraphemeBreak_RegionalIndicator,\n"
     "    GraphemeBreak_Prepend,\n"
     "    GraphemeBreak_SpacingMark,\n"
     "    GraphemeBreak_L,\n"
@@ -269,6 +271,7 @@ enum GraphemeBreakClass {
     GraphemeBreak_LF,
     GraphemeBreak_Control,
     GraphemeBreak_Extend,
+    GraphemeBreak_RegionalIndicator,
     GraphemeBreak_Prepend,
     GraphemeBreak_SpacingMark,
     GraphemeBreak_L,
@@ -293,6 +296,7 @@ static void initGraphemeBreak()
         { GraphemeBreak_LF, "LF" },
         { GraphemeBreak_Control, "Control" },
         { GraphemeBreak_Extend, "Extend" },
+        { GraphemeBreak_RegionalIndicator, "Regional_Indicator" },
         { GraphemeBreak_Prepend, "Prepend" },
         { GraphemeBreak_SpacingMark, "SpacingMark" },
         { GraphemeBreak_L, "L" },
@@ -317,6 +321,7 @@ static const char *word_break_class_string =
     "    WordBreak_LF,\n"
     "    WordBreak_Newline,\n"
     "    WordBreak_Extend,\n"
+    "    WordBreak_RegionalIndicator,\n"
     "    WordBreak_Katakana,\n"
     "    WordBreak_ALetter,\n"
     "    WordBreak_MidNumLet,\n"
@@ -332,6 +337,7 @@ enum WordBreakClass {
     WordBreak_LF,
     WordBreak_Newline,
     WordBreak_Extend,
+    WordBreak_RegionalIndicator,
     WordBreak_Katakana,
     WordBreak_ALetter,
     WordBreak_MidNumLet,
@@ -357,6 +363,7 @@ static void initWordBreak()
         { WordBreak_Newline, "Newline" },
         { WordBreak_Extend, "Extend" },
         { WordBreak_Extend, "Format" },
+        { WordBreak_RegionalIndicator, "Regional_Indicator" },
         { WordBreak_Katakana, "Katakana" },
         { WordBreak_ALetter, "ALetter" },
         { WordBreak_MidNumLet, "MidNumLet" },
@@ -445,7 +452,7 @@ static void initSentenceBreak()
 
 
 static const char *line_break_class_string =
-    "// see http://www.unicode.org/reports/tr14/tr14-28.html\n"
+    "// see http://www.unicode.org/reports/tr14/tr14-30.html\n"
     "// we don't use the XX and AI classes and map them to AL instead.\n"
     "enum LineBreakClass {\n"
     "    LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,\n"
@@ -453,8 +460,9 @@ static const char *line_break_class_string =
     "    LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,\n"
     "    LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,\n"
     "    LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,\n"
-    "    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_CB, LineBreak_SA,\n"
-    "    LineBreak_SG, LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK\n"
+    "    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_RI, LineBreak_CB,\n"
+    "    LineBreak_SA, LineBreak_SG, LineBreak_SP, LineBreak_CR, LineBreak_LF,\n"
+    "    LineBreak_BK\n"
     "};\n\n";
 
 enum LineBreakClass {
@@ -463,8 +471,9 @@ enum LineBreakClass {
     LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,
     LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,
     LineBreak_ZW, LineBreak_CM, LineBreak_WJ, LineBreak_H2, LineBreak_H3,
-    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_CB, LineBreak_SA,
-    LineBreak_SG, LineBreak_SP, LineBreak_CR, LineBreak_LF, LineBreak_BK
+    LineBreak_JL, LineBreak_JV, LineBreak_JT, LineBreak_RI, LineBreak_CB,
+    LineBreak_SA, LineBreak_SG, LineBreak_SP, LineBreak_CR, LineBreak_LF,
+    LineBreak_BK
 
     , LineBreak_Unassigned
 };
@@ -518,6 +527,7 @@ static void initLineBreak()
         { LineBreak_JL, "JL" },
         { LineBreak_JV, "JV" },
         { LineBreak_JT, "JT" },
+        { LineBreak_RI, "RI" },
         { LineBreak_SA, "SA" },
         { LineBreak_AL, "XX" },
         { LineBreak_Unassigned, 0 }
@@ -583,7 +593,7 @@ static const char *methods =
 static const int SizeOfPropertiesStruct = 20;
 
 struct PropertyFlags {
-    bool operator ==(const PropertyFlags &o) {
+    bool operator==(const PropertyFlags &o) const {
         return (combiningClass == o.combiningClass
                 && category == o.category
                 && direction == o.direction
