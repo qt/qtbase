@@ -138,7 +138,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 
     // Qt never calls these setters after creating the window, so we need to do that ourselves here
     setWindowState(window->windowState());
-    if (window->parent())
+    if (window->parent() && window->parent()->handle())
         setParent(window->parent()->handle());
     setGeometryHelper(window->geometry());
     setVisible(window->isVisible());
