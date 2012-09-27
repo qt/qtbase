@@ -87,24 +87,19 @@ void tst_QNumeric::fuzzyCompare()
     QCOMPARE(::qFuzzyCompare(-val2, -val1), isEqual);
 }
 
+#if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ >= 404)
+   // turn -ffast-math off
+#  pragma GCC optimize "no-fast-math"
+#endif
+
 void tst_QNumeric::qNan()
 {
-    double nan = qQNaN();
-#if defined( __INTEL_COMPILER)
-    QCOMPARE((0 > nan), false);
-    QCOMPARE((0 < nan), false);
-    QSKIP("This fails due to a bug in the Intel Compiler");
-#else
-    if (0 > nan)
-        QFAIL("compiler thinks 0 > nan");
-
-#  if defined(Q_CC_DIAB)
-    QWARN("!(0 < nan) would fail due to a bug in dcc");
-#  else
-    if (0 < nan)
-        QFAIL("compiler thinks 0 < nan");
-#  endif
+#if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ < 404)
+    QSKIP("Non-conformant fast math mode is enabled, cannot run test");
 #endif
+    double nan = qQNaN();
+    QVERIFY(!(0 > nan));
+    QVERIFY(!(0 < nan));
     QVERIFY(qIsNaN(nan));
     QVERIFY(qIsNaN(nan + 1));
     QVERIFY(qIsNaN(-nan));
@@ -115,7 +110,13 @@ void tst_QNumeric::qNan()
     QVERIFY(qIsInf(-inf));
     QVERIFY(qIsInf(2*inf));
     QCOMPARE(1/inf, 0.0);
+#ifdef Q_CC_INTEL
+    QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
+#endif
     QVERIFY(qIsNaN(0*nan));
+#ifdef Q_CC_INTEL
+    QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
+#endif
     QVERIFY(qIsNaN(0*inf));
     QVERIFY(qFuzzyCompare(1/inf, 0.0));
 }
