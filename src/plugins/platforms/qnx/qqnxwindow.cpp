@@ -147,17 +147,16 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
 QQnxWindow::~QQnxWindow()
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
+
+    // Qt should have already deleted the children before deleting the parent.
+    Q_ASSERT(m_childWindows.size() > 0);
+
     // Remove from plugin's window mapper
     QQnxIntegration::removeWindow(m_window);
 
     // Remove from parent's Hierarchy.
     removeFromParent();
     m_screen->updateHierarchy();
-
-    // We shouldn't allow this case unless QT allows it. Does it? Or should we send the
-    // handleCloseEvent on all children when this window is deleted?
-    if (m_childWindows.size() > 0)
-        qFatal("QQnxWindow: window destroyed before children!");
 
     // Cleanup QNX window and its buffers
     screen_destroy_window(m_window);
