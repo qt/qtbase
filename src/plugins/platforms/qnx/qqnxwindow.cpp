@@ -547,10 +547,9 @@ void QQnxWindow::raise()
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
-    QQnxWindow *oldParent = m_parentWindow;
-    if (oldParent) {
-        removeFromParent();
-        oldParent->m_childWindows.push_back(this);
+    if (m_parentWindow) {
+        m_parentWindow->m_childWindows.removeAll(this);
+        m_parentWindow->m_childWindows.push_back(this);
     } else {
         m_screen->raiseWindow(this);
     }
@@ -562,10 +561,9 @@ void QQnxWindow::lower()
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
-    QQnxWindow *oldParent = m_parentWindow;
-    if (oldParent) {
-        removeFromParent();
-        oldParent->m_childWindows.push_front(this);
+    if (m_parentWindow) {
+        m_parentWindow->m_childWindows.removeAll(this);
+        m_parentWindow->m_childWindows.push_front(this);
     } else {
         m_screen->lowerWindow(this);
     }
