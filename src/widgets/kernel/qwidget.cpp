@@ -5530,17 +5530,15 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
         return cap;
 
     QLatin1String placeHolder("[*]");
-    int placeHolderLength = 3; // QLatin1String doesn't have length()
-
     int index = cap.indexOf(placeHolder);
 
     // here the magic begins
     while (index != -1) {
-        index += placeHolderLength;
+        index += placeHolder.size();
         int count = 1;
         while (cap.indexOf(placeHolder, index) == index) {
             ++count;
-            index += placeHolderLength;
+            index += placeHolder.size();
         }
 
         if (count%2) { // odd number of [*] -> replace last one
