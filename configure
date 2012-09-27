@@ -1108,6 +1108,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-R,,'`
         fi
         ;;
+    -largefile)
+        VAR="largefile"
+        VAL="yes"
+        ;;
     -l?*|-l)
         VAR="add_link"
         if [ "$1" = "-l" ]; then
