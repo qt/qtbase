@@ -1301,7 +1301,7 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<Q
     QList<QPersistentModelIndex> parents;
     foreach (const QPersistentModelIndex &parent, sourceParents) {
         if (!parent.isValid()) {
-            parents << QModelIndex();
+            parents << QPersistentModelIndex();
             continue;
         }
         const QModelIndex mappedParent = q->mapFromSource(parent);
@@ -1342,7 +1342,7 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersisten
     QList<QPersistentModelIndex> parents;
     foreach (const QPersistentModelIndex &parent, sourceParents) {
         if (!parent.isValid()) {
-            parents << QModelIndex();
+            parents << QPersistentModelIndex();
             continue;
         }
         const QModelIndex mappedParent = q->mapFromSource(parent);
