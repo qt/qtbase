@@ -555,8 +555,9 @@ QWindowsWindow *QWindowsContext::findClosestPlatformWindow(HWND hwnd) const
     // Find the closest parent that has a platform window.
     if (!window) {
         for (HWND w = hwnd; w; w = GetParent(w)) {
-            if (window = d->m_windows.value(w))
-                return window;
+            window = d->m_windows.value(w);
+            if (window)
+                break;
         }
     }
 
