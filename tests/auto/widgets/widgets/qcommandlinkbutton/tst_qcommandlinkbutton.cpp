@@ -57,11 +57,10 @@ Q_DECLARE_METATYPE(QCommandLinkButton*)
 
 class tst_QCommandLinkButton : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     tst_QCommandLinkButton();
     virtual ~tst_QCommandLinkButton();
-
 
 public slots:
     void initTestCase();
@@ -106,15 +105,14 @@ void tst_QCommandLinkButton::getSetCheck()
 {
     QCommandLinkButton obj1;
 
-	QString text("mytext");
-	QVERIFY(obj1.description().isEmpty());
-	obj1.setDescription(text);
-	QVERIFY(obj1.description() == text);
+    QString text("mytext");
+    QVERIFY(obj1.description().isEmpty());
+    obj1.setDescription(text);
+    QVERIFY(obj1.description() == text);
 
-	QVERIFY(obj1.text().isEmpty());
-	obj1.setText(text);
-	QVERIFY(obj1.text() == text);
-
+    QVERIFY(obj1.text().isEmpty());
+    obj1.setText(text);
+    QVERIFY(obj1.text() == text);
 
     QMenu *var1 = new QMenu;
     obj1.setMenu(var1);
@@ -168,7 +166,6 @@ void tst_QCommandLinkButton::init()
 void tst_QCommandLinkButton::cleanup()
 {
 }
-
 
 void tst_QCommandLinkButton::resetCounters()
 {
@@ -306,10 +303,7 @@ void tst_QCommandLinkButton::pressed()
     QCOMPARE( press_count, (uint)2 );
     QCOMPARE( release_count, (uint)2 );
     testWidget->setAutoDefault(false);
-
 }
-
-
 
 void tst_QCommandLinkButton::isCheckable()
 {
@@ -495,8 +489,8 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     // Adding buttons to QDialog through a layout
     QDialog dialog;
 
-	QCommandLinkButton button3;
-	button3.setAutoDefault(false);
+    QCommandLinkButton button3;
+    button3.setAutoDefault(false);
 
     QCommandLinkButton button1;
     QVERIFY(!button1.autoDefault());
@@ -517,7 +511,7 @@ void tst_QCommandLinkButton::defaultAndAutoDefault()
     layout.addWidget(&button2, 0, 2);
     layout.addWidget(&button1, 0, 1);
     dialog.setLayout(&layout);
-	button3.setFocus();
+    button3.setFocus();
     QVERIFY(button1.autoDefault());
     QVERIFY(button1.isDefault());
     QVERIFY(button2.autoDefault());
