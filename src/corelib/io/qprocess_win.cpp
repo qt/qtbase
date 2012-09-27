@@ -160,23 +160,25 @@ bool QProcessPrivate::createChannel(Channel &channel)
         else
             duplicateStdWriteChannel(channel.pipe, (&channel == &stdoutChannel) ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE);
 
-        QWindowsPipeReader *pipeReader = 0;
-        if (&channel == &stdoutChannel) {
-            if (!stdoutReader) {
-                stdoutReader = new QWindowsPipeReader(q);
-                q->connect(stdoutReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
+        if (processChannelMode != QProcess::ForwardedChannels) {
+            QWindowsPipeReader *pipeReader = 0;
+            if (&channel == &stdoutChannel) {
+                if (!stdoutReader) {
+                    stdoutReader = new QWindowsPipeReader(q);
+                    q->connect(stdoutReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardOutput()));
+                }
+                pipeReader = stdoutReader;
+            } else if (&channel == &stderrChannel) {
+                if (!stderrReader) {
+                    stderrReader = new QWindowsPipeReader(q);
+                    q->connect(stderrReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
+                }
+                pipeReader = stderrReader;
             }
-            pipeReader = stdoutReader;
-        } else if (&channel == &stderrChannel) {
-            if (!stderrReader) {
-                stderrReader = new QWindowsPipeReader(q);
-                q->connect(stderrReader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
+            if (pipeReader) {
+                pipeReader->setHandle(channel.pipe[0]);
+                pipeReader->startAsyncRead();
             }
-            pipeReader = stderrReader;
-        }
-        if (pipeReader) {
-            pipeReader->setHandle(channel.pipe[0]);
-            pipeReader->startAsyncRead();
         }
 
         return true;
@@ -473,7 +475,9 @@ void QProcessPrivate::startProcess()
     qDebug("   pass environment : %s", environment.isEmpty() ? "no" : "yes");
 #endif
 
-    DWORD dwCreationFlags = CREATE_NO_WINDOW;
+    // Forwarded channels must not set the CREATE_NO_WINDOW flag because this
+    // will render the stdout/stderr handles we're passing useless.
+    DWORD dwCreationFlags = (processChannelMode == QProcess::ForwardedChannels ? 0 : CREATE_NO_WINDOW);
     dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
     STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
                                  (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
