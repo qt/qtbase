@@ -156,6 +156,7 @@ template <class Key, class T> class QMap;
 class Q_CORE_EXPORT QAbstractItemModel : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(LayoutChangeHints)
 
     friend class QPersistentModelIndexData;
     friend class QAbstractItemViewPrivate;
@@ -237,11 +238,18 @@ public:
     using QObject::parent;
 #endif
 
+    enum LayoutChangeHint
+    {
+        NoLayoutChangeHint,
+        VerticalSortHint,
+        HorizontalSortHint
+    };
+
 Q_SIGNALS:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>());
     void headerDataChanged(Qt::Orientation orientation, int first, int last);
-    void layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());
-    void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>());
+    void layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
+    void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
 
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last
 #if !defined(qdoc)

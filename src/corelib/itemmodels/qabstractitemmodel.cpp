@@ -1322,9 +1322,20 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \sa headerData(), setHeaderData(), dataChanged()
 */
 
+
 /*!
-    \fn void QAbstractItemModel::layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>())
-    \since 4.2
+    \enum QAbstractItemModel::LayoutChangeHint
+
+    This enum describes the way the model changes layout.
+
+    \value NoLayoutChangeHint   No hint is available.
+    \value VerticalSortHint     Rows are being sorted.
+    \value HorizontalSortHint   Columns are being sorted.
+*/
+
+/*!
+    \fn void QAbstractItemModel::layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint)
+    \since 5.0
 
     This signal is emitted just before the layout of a model is changed.
     Components connected to this signal use it to adapt to changes in the
@@ -1335,13 +1346,15 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
     The optional \a parents parameter is used to give a more specific notification
     about what parts of the layout of the model are changing. An empty list indicates
-    a change to the layout of the entire model.
+    a change to the layout of the entire model. The order of elements in the \a parents list is not significant. The optional \a hint parameter is used
+    to give a hint about what is happening while the model is relayouting.
 
     \sa layoutChanged(), changePersistentIndex()
 */
 
 /*!
-    \fn void QAbstractItemModel::layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>())
+    \fn void QAbstractItemModel::layoutChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint)
+    \since 5.0
 
     This signal is emitted whenever the layout of items exposed by the model
     has changed; for example, when the model has been sorted. When this signal
@@ -1355,7 +1368,8 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 
     The optional \a parents parameter is used to give a more specific notification
     about what parts of the layout of the model are changing. An empty list indicates
-    a change to the layout of the entire model.
+    a change to the layout of the entire model. The order of elements in the \a parents list is not significant. The optional \a hint parameter is used
+    to give a hint about what is happening while the model is relayouting.
 
     Subclasses should update any persistent model indexes before emitting
     layoutChanged(). In other words, when the structure changes:
