@@ -104,8 +104,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_sourceDataChanged(QModelIndex,QModelIndex))
     Q_PRIVATE_SLOT(d_func(), void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last))
 
-    Q_PRIVATE_SLOT(d_func(), void _q_sourceLayoutAboutToBeChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_sourceLayoutChanged())
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint))
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint))
     Q_PRIVATE_SLOT(d_func(), void _q_sourceModelAboutToBeReset())
     Q_PRIVATE_SLOT(d_func(), void _q_sourceModelReset())
 };

@@ -77,8 +77,8 @@ class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
     void _q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
     void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last);
 
-    void _q_sourceLayoutAboutToBeChanged();
-    void _q_sourceLayoutChanged();
+    void _q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint);
+    void _q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint);
     void _q_sourceModelAboutToBeReset();
     void _q_sourceModelReset();
 
@@ -366,10 +366,10 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
                    this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
         disconnect(sourceModel(), SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                    this, SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
-        disconnect(sourceModel(), SIGNAL(layoutAboutToBeChanged()),
-                   this, SLOT(_q_sourceLayoutAboutToBeChanged()));
-        disconnect(sourceModel(), SIGNAL(layoutChanged()),
-                   this, SLOT(_q_sourceLayoutChanged()));
+        disconnect(sourceModel(), SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                   this, SLOT(_q_sourceLayoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
+        disconnect(sourceModel(), SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                   this, SLOT(_q_sourceLayoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
     }
 
     QAbstractProxyModel::setSourceModel(newSourceModel);
@@ -407,10 +407,10 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
                 SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
         connect(sourceModel(), SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                 SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
-        connect(sourceModel(), SIGNAL(layoutAboutToBeChanged()),
-                SLOT(_q_sourceLayoutAboutToBeChanged()));
-        connect(sourceModel(), SIGNAL(layoutChanged()),
-                SLOT(_q_sourceLayoutChanged()));
+        connect(sourceModel(), SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                SLOT(_q_sourceLayoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
+        connect(sourceModel(), SIGNAL(layoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
+                SLOT(_q_sourceLayoutChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)));
     }
 
     endResetModel();
@@ -485,7 +485,7 @@ void QIdentityProxyModelPrivate::_q_sourceHeaderDataChanged(Qt::Orientation orie
     q->headerDataChanged(orientation, first, last);
 }
 
-void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
+void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint)
 {
     Q_Q(QIdentityProxyModel);
 
@@ -497,10 +497,22 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutAboutToBeChanged()
         layoutChangePersistentIndexes << srcPersistentIndex;
     }
 
-    q->layoutAboutToBeChanged();
+    QList<QPersistentModelIndex> parents;
+    parents.reserve(sourceParents.size());
+    foreach (const QPersistentModelIndex &parent, sourceParents) {
+        if (!parent.isValid()) {
+            parents << QPersistentModelIndex();
+            continue;
+        }
+        const QModelIndex mappedParent = q->mapFromSource(parent);
+        Q_ASSERT(mappedParent.isValid());
+        parents << mappedParent;
+    }
+
+    q->layoutAboutToBeChanged(parents, hint);
 }
 
-void QIdentityProxyModelPrivate::_q_sourceLayoutChanged()
+void QIdentityProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint)
 {
     Q_Q(QIdentityProxyModel);
 
@@ -511,7 +523,19 @@ void QIdentityProxyModelPrivate::_q_sourceLayoutChanged()
     layoutChangePersistentIndexes.clear();
     proxyIndexes.clear();
 
-    q->layoutChanged();
+    QList<QPersistentModelIndex> parents;
+    parents.reserve(sourceParents.size());
+    foreach (const QPersistentModelIndex &parent, sourceParents) {
+        if (!parent.isValid()) {
+            parents << QPersistentModelIndex();
+            continue;
+        }
+        const QModelIndex mappedParent = q->mapFromSource(parent);
+        Q_ASSERT(mappedParent.isValid());
+        parents << mappedParent;
+    }
+
+    q->layoutChanged(parents, hint);
 }
 
 void QIdentityProxyModelPrivate::_q_sourceModelAboutToBeReset()
