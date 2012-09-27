@@ -1329,7 +1329,7 @@ bool QTreeViewPrivate::expandOrCollapseItemAtPos(const QPoint &pos)
 
 void QTreeViewPrivate::_q_modelDestroyed()
 {
-    //we need to clear that list because it contais QModelIndex to 
+    //we need to clear the viewItems because it contains QModelIndexes to
     //the model currently being destroyed
     viewItems.clear();
     QAbstractItemViewPrivate::_q_modelDestroyed();
