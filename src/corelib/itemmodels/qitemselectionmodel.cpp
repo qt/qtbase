@@ -852,16 +852,26 @@ static QItemSelection mergeIndexes(const QVector<QPersistentModelIndex> &indexes
     // merge columns
     int i = 0;
     while (i < indexes.count()) {
-        QModelIndex tl = indexes.at(i);
-        QModelIndex br = tl;
+        const QPersistentModelIndex &tl = indexes.at(i);
+        QPersistentModelIndex br = tl;
+        QModelIndex brParent = br.parent();
+        int brRow = br.row();
+        int brColumn = br.column();
         while (++i < indexes.count()) {
-            QModelIndex next = indexes.at(i);
-            if ((next.parent() == br.parent())
-                 && (next.row() == br.row())
-                 && (next.column() == br.column() + 1))
+            const QPersistentModelIndex &next = indexes.at(i);
+            const QModelIndex nextParent = next.parent();
+            const int nextRow = next.row();
+            const int nextColumn = next.column();
+            if ((nextParent == brParent)
+                 && (nextRow == brRow)
+                 && (nextColumn == brColumn + 1)) {
                 br = next;
-            else
+                brParent = nextParent;
+                brRow = nextRow;
+                brColumn = nextColumn;
+            } else {
                 break;
+            }
         }
         colSpans.append(QItemSelectionRange(tl, br));
     }
