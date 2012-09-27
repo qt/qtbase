@@ -364,8 +364,9 @@ void QCompletionModel::setFiltered(bool filtered)
 {
     if (showAll == !filtered)
         return;
+    beginResetModel();
     showAll = !filtered;
-    resetModel();
+    endResetModel();
 }
 
 bool QCompletionModel::hasChildren(const QModelIndex &parent) const
@@ -410,28 +411,12 @@ void QCompletionModel::invalidate()
 void QCompletionModel::filter(const QStringList& parts)
 {
     Q_D(QCompletionModel);
+    beginResetModel();
     engine->filter(parts);
-    resetModel();
+    endResetModel();
 
     if (d->model->canFetchMore(engine->curParent))
         d->model->fetchMore(engine->curParent);
-}
-
-void QCompletionModel::resetModel()
-{
-    if (rowCount() == 0) {
-        beginResetModel();
-        endResetModel();
-        return;
-    }
-
-    emit layoutAboutToBeChanged();
-    QModelIndexList piList = persistentIndexList();
-    QModelIndexList empty;
-    for (int i = 0; i < piList.size(); i++)
-        empty.append(QModelIndex());
-    changePersistentIndexList(piList, empty);
-    emit layoutChanged();
 }
 
 //////////////////////////////////////////////////////////////////////////////

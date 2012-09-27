@@ -224,7 +224,6 @@ public:
     int currentRow() const { return engine->curRow; }
     bool setCurrentRow(int row);
     QModelIndex currentIndex(bool) const;
-    void resetModel();
 
     QModelIndex index(int row, int column, const QModelIndex & = QModelIndex()) const;
     int rowCount(const QModelIndex &index = QModelIndex()) const;
