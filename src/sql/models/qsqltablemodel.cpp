@@ -1373,14 +1373,16 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();
     for ( ; i != e; ++i) {
-        mrow.setValue(i.value(), values.value(i.key()));
-        // mrow.setValue() sets generated to TRUE, but source record should prevail.
+        // have to use virtual setData() here rather than mrow.setValue()
+        EditStrategy strategy = d->strategy;
+        d->strategy = OnManualSubmit;
+        QModelIndex cIndex = createIndex(row, i.value());
+        setData(cIndex, values.value(i.key()));
+        d->strategy = strategy;
+        // setData() sets generated to TRUE, but source record should prevail.
         if (!values.isGenerated(i.key()))
             mrow.recRef().setGenerated(i.value(), false);
     }
-
-    if (columnCount())
-        emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
 
     if (d->strategy != OnManualSubmit)
         return submit();

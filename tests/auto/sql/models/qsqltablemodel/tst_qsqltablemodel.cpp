@@ -85,6 +85,8 @@ private slots:
     void submitAll();
     void setRecord_data()  { generic_data(); }
     void setRecord();
+    void setRecordReimpl_data()  { generic_data(); }
+    void setRecordReimpl();
     void insertRow_data() { generic_data_with_strategies(); }
     void insertRow();
     void insertRowFailure_data() { generic_data_with_strategies(); }
@@ -505,24 +507,28 @@ void tst_QSqlTableModel::setRecord()
             rec.setValue(2, rec.value(2).toString() + 'X');
             QVERIFY(model.setRecord(i, rec));
 
+            // dataChanged() emitted by setData() for each *changed* column
             if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnManualSubmit) {
-                // setRecord should emit dataChanged() itself for manualSubmit
-                QCOMPARE(spy.count(), 1);
+                QCOMPARE(spy.count(), 2);
                 QCOMPARE(spy.at(0).count(), 2);
-                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 0));
-                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, rec.count() - 1));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(1)), model.index(i, 2));
                 QVERIFY(model.submitAll());
             } else if ((QSqlTableModel::EditStrategy)submitpolicy == QSqlTableModel::OnRowChange && i == model.rowCount() -1)
                 model.submit();
             else {
-                // dataChanged() emitted by selectRow() as well as setRecord()
                 if ((QSqlTableModel::EditStrategy)submitpolicy != QSqlTableModel::OnManualSubmit)
-                    QCOMPARE(spy.count(), 2);
+                    // dataChanged() also emitted by selectRow()
+                    QCOMPARE(spy.count(), 3);
                 else
-                    QCOMPARE(spy.count(), 1);
+                    QCOMPARE(spy.count(), 2);
                 QCOMPARE(spy.at(0).count(), 2);
-                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 0));
-                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, rec.count() - 1));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(0)), model.index(i, 1));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(0)), model.index(i, 2));
+                QCOMPARE(qvariant_cast<QModelIndex>(spy.at(1).at(1)), model.index(i, 2));
             }
         }
 
@@ -533,6 +539,39 @@ void tst_QSqlTableModel::setRecord()
         QCOMPARE(model.data(model.index(1, 1)).toString(), QString("baz").append(Xsuffix));
         QCOMPARE(model.data(model.index(1, 2)).toString(), QString("joe").append(Xsuffix));
     }
+}
+
+class SetRecordReimplModel: public QSqlTableModel
+{
+    Q_OBJECT
+public:
+    SetRecordReimplModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) {}
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)
+    {
+        return QSqlTableModel::setData(index, QString("Qt"), role);
+    }
+};
+
+void tst_QSqlTableModel::setRecordReimpl()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    SetRecordReimplModel model(0, db);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model.setTable(test3);
+    model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    // make sure that a reimplemented setData() affects setRecord()
+    QSqlRecord rec = model.record(0);
+    rec.setValue(1, QString("x"));
+    rec.setValue(2, QString("y"));
+    QVERIFY(model.setRecord(0, rec));
+
+    rec = model.record(0);
+    QCOMPARE(rec.value(1).toString(), QString("Qt"));
+    QCOMPARE(rec.value(2).toString(), QString("Qt"));
 }
 
 void tst_QSqlTableModel::insertRow()
