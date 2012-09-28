@@ -713,7 +713,7 @@ void QAccessibleTableCell::setText(QAccessible::Text /*t*/, const QString &text)
 
 bool QAccessibleTableCell::isValid() const
 {
-    return m_index.isValid();
+    return view && view->model() && m_index.isValid();
 }
 
 QAccessibleInterface *QAccessibleTableCell::parent() const
@@ -799,7 +799,8 @@ void QAccessibleTableHeaderCell::setText(QAccessible::Text, const QString &)
 
 bool QAccessibleTableHeaderCell::isValid() const
 {
-    return true;
+    return view && view->model() && (index > 0)
+            && ((orientation == Qt::Horizontal) ? (index < view->model()->columnCount()) : (index < view->model()->rowCount()));
 }
 
 QAccessibleInterface *QAccessibleTableHeaderCell::parent() const
