@@ -1405,7 +1405,7 @@ bool AtSpiAdaptor::accessibleInterface(const QAIPointer &interface, const QStrin
         }
         connection.send(message.createReply(QVariant::fromValue(children)));
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::handleMessage does not implement " << function << message.path();
+        qAtspiDebug() << "WARNING: AtSpiAdaptor::accessibleInterface does not implement " << function << message.path();
         return false;
     }
     return true;
@@ -1673,7 +1673,7 @@ bool AtSpiAdaptor::componentInterface(const QAIPointer &interface, const QString
         qAtspiDebug() << "SetSize is not implemented.";
         sendReply(connection, message, false);
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::handleMessage does not implement " << function << message.path();
+        qAtspiDebug() << "WARNING: AtSpiAdaptor::componentInterface does not implement " << function << message.path();
         return false;
     }
     return true;
@@ -1727,7 +1727,7 @@ bool AtSpiAdaptor::actionInterface(const QAIPointer &interface, const QString &f
         else
             sendReply(connection, message, QString());
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::handleMessage does not implement " << function << message.path();
+        qAtspiDebug() << "WARNING: AtSpiAdaptor::actionInterface does not implement " << function << message.path();
         return false;
     }
     return true;
@@ -1884,7 +1884,7 @@ bool AtSpiAdaptor::textInterface(const QAIPointer &interface, const QString &fun
         interface->textInterface()->setSelection(selectionNum, startOffset, endOffset);
         sendReply(connection, message, true);
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::handleMessage does not implement " << function << message.path();
+        qAtspiDebug() << "WARNING: AtSpiAdaptor::textInterface does not implement " << function << message.path();
         return false;
     }
     return true;
@@ -2080,7 +2080,7 @@ bool AtSpiAdaptor::editableTextInterface(const QAIPointer &interface, const QStr
     } else if (function == QLatin1String("")) {
         connection.send(message.createReply());
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::handleMessage does not implement " << function << message.path();
+        qAtspiDebug() << "WARNING: AtSpiAdaptor::editableTextInterface does not implement " << function << message.path();
         return false;
     }
     return true;
@@ -2125,7 +2125,7 @@ bool AtSpiAdaptor::valueInterface(const QAIPointer &interface, const QString &fu
         connection.send(message.createReply(
                             QVariant::fromValue(QDBusVariant(QVariant::fromValue(val)))));
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::handleMessage does not implement " << function << message.path();
+        qAtspiDebug() << "WARNING: AtSpiAdaptor::valueInterface does not implement " << function << message.path();
         return false;
     }
     return true;
@@ -2335,7 +2335,7 @@ bool AtSpiAdaptor::tableInterface(const QAIPointer &interface, const QString &fu
         int row = message.arguments().at(0).toInt();
         connection.send(message.createReply(interface->tableInterface()->unselectRow(row)));
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::handleMessage does not implement " << function << message.path();
+        qAtspiDebug() << "WARNING: AtSpiAdaptor::tableInterface does not implement " << function << message.path();
         return false;
     }
     return true;
