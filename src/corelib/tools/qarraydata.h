@@ -209,12 +209,12 @@ struct QTypedArrayData
     T *data() { return static_cast<T *>(QArrayData::data()); }
     const T *data() const { return static_cast<const T *>(QArrayData::data()); }
 
-    iterator begin() { return data(); }
-    iterator end() { return data() + size; }
-    const_iterator begin() const { return data(); }
-    const_iterator end() const { return data() + size; }
-    const_iterator constBegin() const { return data(); }
-    const_iterator constEnd() const { return data() + size; }
+    iterator begin(iterator = iterator()) { return data(); }
+    iterator end(iterator = iterator()) { return data() + size; }
+    const_iterator begin(const_iterator = const_iterator()) const { return data(); }
+    const_iterator end(const_iterator = const_iterator()) const { return data() + size; }
+    const_iterator constBegin(const_iterator = const_iterator()) const { return data(); }
+    const_iterator constEnd(const_iterator = const_iterator()) const { return data() + size; }
 
     class AlignmentDummy { QArrayData header; T data; };
 
