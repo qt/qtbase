@@ -1146,6 +1146,14 @@ void tst_QSqlTableModel::isDirty()
     QVERIFY_SQL(model, select());
     QFAIL_SQL(model, isDirty());
 
+    // check that setting the current value does not add to the cache
+    {
+        QModelIndex i = model.index(0, 1);
+        QVariant v = model.data(i, Qt::EditRole);
+        QVERIFY_SQL(model, setData(i, v));
+        QFAIL_SQL(model, isDirty());
+    }
+
     if (submitpolicy != QSqlTableModel::OnFieldChange) {
         // setData() followed by revertAll()
         QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));

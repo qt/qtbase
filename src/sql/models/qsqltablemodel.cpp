@@ -542,6 +542,9 @@ bool QSqlTableModel::isDirty(const QModelIndex &index) const
     For OnRowChange, an index may receive a change only if no other
     row has a cached change. Changes are not submitted automatically.
 
+    Returns true if \a value is equal to the current value. However,
+    the value will not be submitted to the database.
+
     Returns true if the value could be set or false on error, for
     example if \a index is out of bounds.
 
@@ -561,6 +564,9 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
 
     if (!(flags(index) & Qt::ItemIsEditable))
         return false;
+
+    if (QSqlTableModel::data(index, role) == value)
+        return true;
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
 
