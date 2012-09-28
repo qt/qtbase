@@ -82,12 +82,12 @@ Window::Window()
 
 //! [3]
     penStyleComboBox = new QComboBox;
-    penStyleComboBox->addItem(tr("Solid"), Qt::SolidLine);
-    penStyleComboBox->addItem(tr("Dash"), Qt::DashLine);
-    penStyleComboBox->addItem(tr("Dot"), Qt::DotLine);
-    penStyleComboBox->addItem(tr("Dash Dot"), Qt::DashDotLine);
-    penStyleComboBox->addItem(tr("Dash Dot Dot"), Qt::DashDotDotLine);
-    penStyleComboBox->addItem(tr("None"), Qt::NoPen);
+    penStyleComboBox->addItem(tr("Solid"), static_cast<int>(Qt::SolidLine));
+    penStyleComboBox->addItem(tr("Dash"), static_cast<int>(Qt::DashLine));
+    penStyleComboBox->addItem(tr("Dot"), static_cast<int>(Qt::DotLine));
+    penStyleComboBox->addItem(tr("Dash Dot"), static_cast<int>(Qt::DashDotLine));
+    penStyleComboBox->addItem(tr("Dash Dot Dot"), static_cast<int>(Qt::DashDotDotLine));
+    penStyleComboBox->addItem(tr("None"), static_cast<int>(Qt::NoPen));
 
     penStyleLabel = new QLabel(tr("&Pen Style:"));
     penStyleLabel->setBuddy(penStyleComboBox);
@@ -112,27 +112,27 @@ Window::Window()
 //! [4]
     brushStyleComboBox = new QComboBox;
     brushStyleComboBox->addItem(tr("Linear Gradient"),
-            Qt::LinearGradientPattern);
+            static_cast<int>(Qt::LinearGradientPattern));
     brushStyleComboBox->addItem(tr("Radial Gradient"),
-            Qt::RadialGradientPattern);
+            static_cast<int>(Qt::RadialGradientPattern));
     brushStyleComboBox->addItem(tr("Conical Gradient"),
-            Qt::ConicalGradientPattern);
-    brushStyleComboBox->addItem(tr("Texture"), Qt::TexturePattern);
-    brushStyleComboBox->addItem(tr("Solid"), Qt::SolidPattern);
-    brushStyleComboBox->addItem(tr("Horizontal"), Qt::HorPattern);
-    brushStyleComboBox->addItem(tr("Vertical"), Qt::VerPattern);
-    brushStyleComboBox->addItem(tr("Cross"), Qt::CrossPattern);
-    brushStyleComboBox->addItem(tr("Backward Diagonal"), Qt::BDiagPattern);
-    brushStyleComboBox->addItem(tr("Forward Diagonal"), Qt::FDiagPattern);
-    brushStyleComboBox->addItem(tr("Diagonal Cross"), Qt::DiagCrossPattern);
-    brushStyleComboBox->addItem(tr("Dense 1"), Qt::Dense1Pattern);
-    brushStyleComboBox->addItem(tr("Dense 2"), Qt::Dense2Pattern);
-    brushStyleComboBox->addItem(tr("Dense 3"), Qt::Dense3Pattern);
-    brushStyleComboBox->addItem(tr("Dense 4"), Qt::Dense4Pattern);
-    brushStyleComboBox->addItem(tr("Dense 5"), Qt::Dense5Pattern);
-    brushStyleComboBox->addItem(tr("Dense 6"), Qt::Dense6Pattern);
-    brushStyleComboBox->addItem(tr("Dense 7"), Qt::Dense7Pattern);
-    brushStyleComboBox->addItem(tr("None"), Qt::NoBrush);
+            static_cast<int>(Qt::ConicalGradientPattern));
+    brushStyleComboBox->addItem(tr("Texture"), static_cast<int>(Qt::TexturePattern));
+    brushStyleComboBox->addItem(tr("Solid"), static_cast<int>(Qt::SolidPattern));
+    brushStyleComboBox->addItem(tr("Horizontal"), static_cast<int>(Qt::HorPattern));
+    brushStyleComboBox->addItem(tr("Vertical"), static_cast<int>(Qt::VerPattern));
+    brushStyleComboBox->addItem(tr("Cross"), static_cast<int>(Qt::CrossPattern));
+    brushStyleComboBox->addItem(tr("Backward Diagonal"), static_cast<int>(Qt::BDiagPattern));
+    brushStyleComboBox->addItem(tr("Forward Diagonal"), static_cast<int>(Qt::FDiagPattern));
+    brushStyleComboBox->addItem(tr("Diagonal Cross"), static_cast<int>(Qt::DiagCrossPattern));
+    brushStyleComboBox->addItem(tr("Dense 1"), static_cast<int>(Qt::Dense1Pattern));
+    brushStyleComboBox->addItem(tr("Dense 2"), static_cast<int>(Qt::Dense2Pattern));
+    brushStyleComboBox->addItem(tr("Dense 3"), static_cast<int>(Qt::Dense3Pattern));
+    brushStyleComboBox->addItem(tr("Dense 4"), static_cast<int>(Qt::Dense4Pattern));
+    brushStyleComboBox->addItem(tr("Dense 5"), static_cast<int>(Qt::Dense5Pattern));
+    brushStyleComboBox->addItem(tr("Dense 6"), static_cast<int>(Qt::Dense6Pattern));
+    brushStyleComboBox->addItem(tr("Dense 7"), static_cast<int>(Qt::Dense7Pattern));
+    brushStyleComboBox->addItem(tr("None"), static_cast<int>(Qt::NoBrush));
 
     brushStyleLabel = new QLabel(tr("&Brush:"));
     brushStyleLabel->setBuddy(brushStyleComboBox);

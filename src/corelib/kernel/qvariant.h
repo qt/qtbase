@@ -461,6 +461,16 @@ private:
     // want QVariant(QMetaType::String) to compile and falsely be an
     // int variant, so delete this constructor:
     QVariant(QMetaType::Type) Q_DECL_EQ_DELETE;
+
+    // These constructors don't create QVariants of the type associcated
+    // with the enum, as expected, but they would create a QVariant of
+    // type int with the value of the enum value.
+    // Use QVariant v = QColor(Qt::red) instead of QVariant v = Qt::red for
+    // example.
+    QVariant(Qt::GlobalColor) Q_DECL_EQ_DELETE;
+    QVariant(Qt::BrushStyle) Q_DECL_EQ_DELETE;
+    QVariant(Qt::PenStyle) Q_DECL_EQ_DELETE;
+    QVariant(Qt::CursorShape) Q_DECL_EQ_DELETE;
 #ifdef QT_NO_CAST_FROM_ASCII
     // force compile error when implicit conversion is not wanted
     inline QVariant(const char *) Q_DECL_EQ_DELETE;

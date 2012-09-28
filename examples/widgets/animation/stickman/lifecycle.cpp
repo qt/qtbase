@@ -114,9 +114,9 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     
     // Make it blink when lightning strikes before entering dead animation
     QState *lightningBlink = new QState(m_machine);    
-    lightningBlink->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::white);
-    lightningBlink->assignProperty(m_stickMan, "penColor", Qt::black);
-    lightningBlink->assignProperty(m_stickMan, "fillColor", Qt::white);
+    lightningBlink->assignProperty(m_stickMan->scene(), "backgroundBrush", QColor(Qt::white));
+    lightningBlink->assignProperty(m_stickMan, "penColor", QColor(Qt::black));
+    lightningBlink->assignProperty(m_stickMan, "fillColor", QColor(Qt::white));
     lightningBlink->assignProperty(m_stickMan, "isDead", true);
     
 //! [5]
@@ -128,9 +128,9 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
 //! [5]
   
     m_dead = new QState(m_machine);
-    m_dead->assignProperty(m_stickMan->scene(), "backgroundBrush", Qt::black);
-    m_dead->assignProperty(m_stickMan, "penColor", Qt::white);
-    m_dead->assignProperty(m_stickMan, "fillColor", Qt::black);
+    m_dead->assignProperty(m_stickMan->scene(), "backgroundBrush", QColor(Qt::black));
+    m_dead->assignProperty(m_stickMan, "penColor", QColor(Qt::white));
+    m_dead->assignProperty(m_stickMan, "fillColor", QColor(Qt::black));
     m_dead->setObjectName("dead");
            
     // Idle state (sets no properties)

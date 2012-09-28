@@ -203,7 +203,9 @@ void tst_QTextFormat::resolveFont()
     QTextDocument doc;
 
     QTextCharFormat fmt;
-    fmt.setProperty(QTextFormat::ForegroundBrush, Qt::blue);
+    fmt.setProperty(QTextFormat::ForegroundBrush, QColor(Qt::blue));
+    QCOMPARE(fmt.property(QTextFormat::ForegroundBrush).userType(), qMetaTypeId<QColor>());
+    QCOMPARE(fmt.property(QTextFormat::ForegroundBrush).value<QColor>(), QColor(Qt::blue));
     fmt.setProperty(QTextFormat::FontItalic, true);
     QTextCursor(&doc).insertText("Test", fmt);
 
