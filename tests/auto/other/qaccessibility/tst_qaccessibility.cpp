@@ -870,17 +870,6 @@ public Q_SLOTS:
     }
 };
 
-static QAccessibleInterface *relatedInterface(QAccessibleInterface *iface, QAccessible::RelationFlag flag)
-{
-    typedef QPair<QAccessibleInterface *, QAccessible::Relation> RelationPair;
-    QVector<RelationPair> rels = iface->relations(flag);
-
-    for (int i = 1; i < rels.count(); ++i)
-        delete rels.at(i).first;
-
-    return rels.value(0).first;
-}
-
 void tst_QAccessibility::buttonTest()
 {
     QWidget window;
