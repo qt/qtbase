@@ -125,8 +125,11 @@ QDBusArgument &operator<<(QDBusArgument &argument, const QSpiAction &action)
 
 const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiAction &action)
 {
-    Q_UNUSED(action)
-    qWarning() << "QDBusArgument &operator>>(const QDBusArgument &argument, QSpiAction &action): implement me!";
+    argument.beginStructure();
+    argument >> action.name;
+    argument >> action.description;
+    argument >> action.keyBinding;
+    argument.endStructure();
     return argument;
 }
 
