@@ -149,7 +149,7 @@ QQnxWindow::~QQnxWindow()
     qWindowDebug() << Q_FUNC_INFO << "window =" << window();
 
     // Qt should have already deleted the children before deleting the parent.
-    Q_ASSERT(m_childWindows.size() > 0);
+    Q_ASSERT(m_childWindows.size() == 0);
 
     // Remove from plugin's window mapper
     QQnxIntegration::removeWindow(m_window);
