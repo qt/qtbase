@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include "../../kernel/qsqldatabase/tst_databases.h"
 #include <QtSql>
+#include <QtSql/private/qsqltablemodel_p.h>
 
 const QString test(qTableName("test", __FILE__)),
                    test2(qTableName("test2", __FILE__)),
@@ -319,6 +320,19 @@ void tst_QSqlTableModel::select()
     QCOMPARE(model.data(model.index(3, 3)), QVariant());
 }
 
+class SelectRowModel: public QSqlTableModel
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QSqlTableModel)
+public:
+    SelectRowModel(QObject *parent, QSqlDatabase db): QSqlTableModel(parent, db) {}
+    bool cacheEmpty() const
+    {
+        Q_D(const QSqlTableModel);
+        return d->cache.isEmpty();
+    }
+};
+
 void tst_QSqlTableModel::selectRow()
 {
     QFETCH(QString, dbName);
@@ -332,7 +346,7 @@ void tst_QSqlTableModel::selectRow()
     q.exec("INSERT INTO " + tbl + " (id, a) VALUES (1, 'b')");
     q.exec("INSERT INTO " + tbl + " (id, a) VALUES (2, 'c')");
 
-    QSqlTableModel model(0, db);
+    SelectRowModel model(0, db);
     model.setEditStrategy(QSqlTableModel::OnFieldChange);
     model.setTable(tbl);
     model.setSort(0, Qt::AscendingOrder);
@@ -342,6 +356,11 @@ void tst_QSqlTableModel::selectRow()
     QCOMPARE(model.columnCount(), 2);
 
     QModelIndex idx = model.index(1, 1);
+
+    // selectRow should not make the cache grow if there is no change.
+    model.selectRow(1);
+    QCOMPARE(model.data(idx).toString(), QString("b"));
+    QVERIFY_SQL(model, cacheEmpty());
 
     // Check if selectRow() refreshes an unchanged row.
     // Row is not in cache yet.

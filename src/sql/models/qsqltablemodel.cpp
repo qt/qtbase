@@ -439,18 +439,40 @@ bool QSqlTableModel::selectRow(int row)
     if (stmt.isEmpty())
         return false;
 
+    bool exists;
+    QSqlRecord newValues;
+
     {
         QSqlQuery q(d->db);
         q.setForwardOnly(true);
         if (!q.exec(stmt))
             return false;
 
-        bool exists = q.next();
-        d->cache[row].refresh(exists, q.record());
+        exists = q.next();
+        newValues = q.record();
     }
 
-    emit headerDataChanged(Qt::Vertical, row, row);
-    emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
+    bool needsAddingToCache = !exists || d->cache.contains(row);
+
+    if (!needsAddingToCache) {
+        const QSqlRecord curValues = record(row);
+        needsAddingToCache = curValues.count() != newValues.count();
+        if (!needsAddingToCache) {
+            // Look for changed values. Primary key fields are customarily first
+            // and probably change less often than other fields, so start at the end.
+            for (int f = curValues.count() - 1; f >= 0; --f) {
+                if (curValues.value(f) != newValues.value(f))
+                    needsAddingToCache = true;
+                    break;
+            }
+        }
+    }
+
+    if (needsAddingToCache) {
+        d->cache[row].refresh(exists, newValues);
+        emit headerDataChanged(Qt::Vertical, row, row);
+        emit dataChanged(createIndex(row, 0), createIndex(row, columnCount() - 1));
+    }
 
     return true;
 }

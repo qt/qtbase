@@ -2,7 +2,7 @@ CONFIG += testcase
 TARGET = tst_qsqltablemodel
 SOURCES  += tst_qsqltablemodel.cpp
 
-QT = core sql testlib
+QT = core core-private sql sql-private testlib
 
 wince*: {
    plugFiles.files = ../../../plugins/sqldrivers
