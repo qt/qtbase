@@ -165,10 +165,8 @@ static void processQdocconfFile(const QString &fileName)
         ++i;
     }
     config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(highlighting ? "true" : "false"));
-    config.setStringList(CONFIG_SHOWINTERNAL,
-                         QStringList(showInternal ? "true" : "false"));
-    config.setStringList(CONFIG_OBSOLETELINKS,
-                         QStringList(obsoleteLinks ? "true" : "false"));
+    config.setStringList(CONFIG_SHOWINTERNAL, QStringList(showInternal ? "true" : "false"));
+    config.setStringList(CONFIG_OBSOLETELINKS, QStringList(obsoleteLinks ? "true" : "false"));
 
     /*
       With the default configuration values in place, load
@@ -371,6 +369,18 @@ static void processQdocconfFile(const QString &fileName)
             sourceFileNames.insert(t,t);
         }
     }
+
+    QSet<QString> exampleImageDirs;
+    QStringList exampleImageList = config.getExampleImageFiles(excludedDirs, excludedFiles);
+    for (int i=0; i<exampleImageList.size(); ++i) {
+        if (exampleImageList[i].contains("doc/images")) {
+            QString t = exampleImageList[i].left(exampleImageList[i].lastIndexOf("doc/images")+10);
+            if (!exampleImageDirs.contains(t)) {
+                exampleImageDirs.insert(t);
+            }
+        }
+    }
+    Generator::augmentImageDirs(exampleImageDirs);
 
     /*
       Parse each header file in the set using the appropriate parser and add it

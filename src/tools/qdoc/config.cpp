@@ -507,8 +507,23 @@ QStringList Config::getExampleQdocFiles(const QSet<QString> &excludedDirs,
                                         const QSet<QString> &excludedFiles)
 {
     QStringList result;
-    QStringList dirs = getStringList("exampledirs");
+    QStringList dirs = getCanonicalRelativePathList("exampledirs");
     QString nameFilter = " *.qdoc";
+
+    QStringList::ConstIterator d = dirs.constBegin();
+    while (d != dirs.constEnd()) {
+        result += getFilesHere(*d, nameFilter, location(), excludedDirs, excludedFiles);
+        ++d;
+    }
+    return result;
+}
+
+QStringList Config::getExampleImageFiles(const QSet<QString> &excludedDirs,
+                                         const QSet<QString> &excludedFiles)
+{
+    QStringList result;
+    QStringList dirs = getCanonicalRelativePathList("exampledirs");
+    QString nameFilter = getString(CONFIG_EXAMPLES + dot + QLatin1String(CONFIG_IMAGEEXTENSIONS));
 
     QStringList::ConstIterator d = dirs.constBegin();
     while (d != dirs.constEnd()) {

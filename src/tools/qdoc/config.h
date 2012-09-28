@@ -87,6 +87,8 @@ public:
                             const QSet<QString> &excludedDirs = QSet<QString>(),
                             const QSet<QString> &excludedFiles = QSet<QString>());
     QStringList getExampleQdocFiles(const QSet<QString> &excludedDirs, const QSet<QString> &excludedFiles);
+    QStringList getExampleImageFiles(const QSet<QString> &excludedDirs, const QSet<QString> &excludedFiles);
+
     static QStringList getFilesHere(const QString& dir,
                                     const QString& nameFilter,
                                     const Location &location = Location(),

@@ -1405,9 +1405,12 @@ QStringList Generator::getMetadataElements(const InnerNode* inner, const QString
 QString Generator::imageFileName(const Node *relative, const QString& fileBase)
 {
     QString userFriendlyFilePath;
-    QString filePath = Config::findFile(
-                relative->doc().location(), imageFiles, imageDirs, fileBase,
-                imgFileExts[format()], userFriendlyFilePath);
+    QString filePath = Config::findFile(relative->doc().location(),
+                                        imageFiles,
+                                        imageDirs,
+                                        fileBase,
+                                        imgFileExts[format()],
+                                        userFriendlyFilePath);
 
     if (filePath.isEmpty())
         return QString();
@@ -1618,6 +1621,21 @@ void Generator::initialize(const Config &config)
     }
     else
         outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
+}
+
+/*!
+  Appends each directory path in \a moreImageDirs to the
+  list of image directories.
+ */
+void Generator::augmentImageDirs(QSet<QString>& moreImageDirs)
+{
+    if (moreImageDirs.isEmpty())
+        return;
+    QSet<QString>::const_iterator i = moreImageDirs.begin();
+    while (i != moreImageDirs.end()) {
+        imageDirs.append(*i);
+        ++i;
+    }
 }
 
 void Generator::initializeGenerator(const Config & /* config */)
