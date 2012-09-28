@@ -41,35 +41,47 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QRect>
+#include <QSharedPointer>
 
 #include "window.h"
 
 int main(int argc, char **argv)
 {
+    typedef QSharedPointer<QWindow> WindowPtr;
+
     QGuiApplication app(argc, argv);
 
     Window a;
+    a.setFramePos(QPoint(10, 10));
+    a.setWindowTitle(QStringLiteral("Window A"));
+    a.setObjectName(a.windowTitle());
     a.setVisible(true);
 
     Window b;
+    b.setFramePos(QPoint(100, 100));
+    b.setWindowTitle(QStringLiteral("Window B"));
+    b.setObjectName(b.windowTitle());
     b.setVisible(true);
 
     Window child(&b);
+    child.setObjectName(QStringLiteral("ChildOfB"));
     child.setVisible(true);
 
     // create one window on each additional screen as well
 
     QList<QScreen *> screens = app.screens();
+    QList<WindowPtr> windows;
     foreach (QScreen *screen, screens) {
         if (screen == app.primaryScreen())
             continue;
-        Window *window = new Window(screen);
+        WindowPtr window(new Window(screen));
         QRect geometry = window->geometry();
         geometry.moveCenter(screen->availableGeometry().center());
         window->setGeometry(geometry);
         window->setVisible(true);
         window->setWindowTitle(screen->name());
+        window->setObjectName(window->windowTitle());
+        windows.push_back(window);
     }
-
     return app.exec();
 }

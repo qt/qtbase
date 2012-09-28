@@ -73,10 +73,13 @@ void Window::initialize()
     if (parent())
         setGeometry(QRect(160, 120, 320, 240));
     else {
-        setGeometry(QRect(10, 10, 640, 480));
+        setWindowFlags(windowFlags() | Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                       | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+        const QSize baseSize = QSize(640, 480);
+        setGeometry(QRect(geometry().topLeft(), baseSize));
 
         setSizeIncrement(QSize(10, 10));
-        setBaseSize(QSize(640, 480));
+        setBaseSize(baseSize);
         setMinimumSize(QSize(240, 160));
         setMaximumSize(QSize(800, 600));
     }
