@@ -519,10 +519,7 @@ void QQnxWindow::setParent(const QPlatformWindow *window)
 {
     qWindowDebug() << Q_FUNC_INFO << "window =" << this->window() << "platformWindow =" << window;
     // Cast away the const, we need to modify the hierarchy.
-    QQnxWindow *newParent = 0;
-
-    if (window)
-        newParent = static_cast<QQnxWindow*>((QPlatformWindow *)window);
+    QQnxWindow* const newParent = static_cast<QQnxWindow*>(const_cast<QPlatformWindow*>(window));
 
     if (newParent == m_parentWindow)
         return;
