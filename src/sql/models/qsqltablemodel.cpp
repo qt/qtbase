@@ -1311,10 +1311,18 @@ QSqlRecord QSqlTableModel::record(int row) const
 {
     Q_D(const QSqlTableModel);
 
-    if (d->cache.contains(row))
-        return d->cache.value(row).rec();
+    // the query gets the values from virtual data()
+    QSqlRecord rec = QSqlQueryModel::record(row);
 
-    return QSqlQueryModel::record(row);
+    // get generated flags from the cache
+    const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(row);
+    if (mrow.op() != QSqlTableModelPrivate::None) {
+        const QSqlRecord crec = mrow.rec();
+        for (int i = 0, cnt = rec.count(); i < cnt; ++i)
+            rec.setGenerated(i, crec.isGenerated(i));
+    }
+
+    return rec;
 }
 
 /*!

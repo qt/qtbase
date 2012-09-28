@@ -87,6 +87,8 @@ private slots:
     void setRecord();
     void setRecordReimpl_data()  { generic_data(); }
     void setRecordReimpl();
+    void recordReimpl_data()  { generic_data(); }
+    void recordReimpl();
     void insertRow_data() { generic_data_with_strategies(); }
     void insertRow();
     void insertRowFailure_data() { generic_data_with_strategies(); }
@@ -568,6 +570,45 @@ void tst_QSqlTableModel::setRecordReimpl()
     rec.setValue(1, QString("x"));
     rec.setValue(2, QString("y"));
     QVERIFY(model.setRecord(0, rec));
+
+    rec = model.record(0);
+    QCOMPARE(rec.value(1).toString(), QString("Qt"));
+    QCOMPARE(rec.value(2).toString(), QString("Qt"));
+}
+
+class RecordReimplModel: public QSqlTableModel
+{
+    Q_OBJECT
+public:
+    RecordReimplModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) {}
+    QVariant data(const QModelIndex &index, int role = Qt::EditRole) const
+    {
+        if (role == Qt::EditRole)
+            return QString("Qt");
+        else
+            return QSqlTableModel::data(index, role);
+    }
+};
+
+void tst_QSqlTableModel::recordReimpl()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    RecordReimplModel model(0, db);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model.setTable(test3);
+    model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    // make sure reimplemented data() affects record(row)
+    QSqlRecord rec = model.record(0);
+    QCOMPARE(rec.value(1).toString(), QString("Qt"));
+    QCOMPARE(rec.value(2).toString(), QString("Qt"));
+
+    // and also when the record is in the cache
+    QVERIFY_SQL(model, setData(model.index(0, 1), QString("not Qt")));
+    QVERIFY_SQL(model, setData(model.index(0, 2), QString("not Qt")));
 
     rec = model.record(0);
     QCOMPARE(rec.value(1).toString(), QString("Qt"));
