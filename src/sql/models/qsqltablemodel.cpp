@@ -1362,9 +1362,9 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
     Map::const_iterator i = map.constBegin();
     const Map::const_iterator e = map.constEnd();
     for ( ; i != e; ++i) {
-         mrow.setValue(i.value(), values.value(i.key()));
-         // mrow.setValue() sets generated to TRUE, but source record should prevail.
-         if (!values.isGenerated(i.key()))
+        mrow.setValue(i.value(), values.value(i.key()));
+        // mrow.setValue() sets generated to TRUE, but source record should prevail.
+        if (!values.isGenerated(i.key()))
             mrow.recRef().setGenerated(i.value(), false);
     }
 
