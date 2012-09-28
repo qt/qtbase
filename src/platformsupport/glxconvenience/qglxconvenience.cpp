@@ -48,6 +48,8 @@
 #include <X11/extensions/Xrender.h>
 #endif
 
+#include <GL/glxext.h>
+
 enum {
     XFocusOut = FocusOut,
     XFocusIn = FocusIn,
@@ -240,7 +242,7 @@ QSurfaceFormat qglx_surfaceFormatFromGLXFBConfig(Display *display, GLXFBConfig c
     glXGetFBConfigAttrib(display, config, GLX_ALPHA_SIZE,   &alphaSize);
     glXGetFBConfigAttrib(display, config, GLX_DEPTH_SIZE,   &depthSize);
     glXGetFBConfigAttrib(display, config, GLX_STENCIL_SIZE, &stencilSize);
-    glXGetFBConfigAttrib(display, config, GLX_SAMPLES,      &sampleBuffers);
+    glXGetFBConfigAttrib(display, config, GLX_SAMPLES_ARB,  &sampleBuffers);
     glXGetFBConfigAttrib(display, config, GLX_STEREO,       &stereo);
 
     format.setRedBufferSize(redSize);
