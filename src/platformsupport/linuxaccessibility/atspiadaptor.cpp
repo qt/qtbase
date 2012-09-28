@@ -1429,6 +1429,8 @@ QStringList AtSpiAdaptor::accessibleInterfaces(const QAIPointer &interface) cons
         qAtspiDebug() << " IS NOT a component";
     }
 #endif
+    if (interface->role() == QAccessible::Application)
+        ifaces << QLatin1String(ATSPI_DBUS_INTERFACE_APPLICATION);
 
     if (interface->actionInterface())
         ifaces << QLatin1String(ATSPI_DBUS_INTERFACE_ACTION);
