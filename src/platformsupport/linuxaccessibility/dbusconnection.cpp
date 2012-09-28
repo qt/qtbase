@@ -95,7 +95,6 @@ QString DBusConnection::getAccessibilityBusAddress() const
     }
 
     QString busAddress = reply.arguments().at(0).toString();
-    qDebug() << "Got bus address: " << busAddress;
     return busAddress;
 }
 

@@ -75,8 +75,7 @@ QSpiAccessibleBridge::QSpiAccessibleBridge()
     cache = new QSpiDBusCache(dBusConnection(), this);
     dec = new DeviceEventControllerAdaptor(this);
 
-    bool reg = dBusConnection().registerObject(QLatin1String(ATSPI_DBUS_PATH_DEC), this, QDBusConnection::ExportAdaptors);
-    qDebug() << "Registered DEC: " << reg;
+    dBusConnection().registerObject(QLatin1String(ATSPI_DBUS_PATH_DEC), this, QDBusConnection::ExportAdaptors);
 
     dbusAdaptor = new AtSpiAdaptor(dbusConnection, this);
     dBusConnection().registerVirtualObject(QLatin1String(QSPI_OBJECT_PATH_ACCESSIBLE), dbusAdaptor, QDBusConnection::SubPath);

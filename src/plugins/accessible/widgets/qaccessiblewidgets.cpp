@@ -974,7 +974,7 @@ QPair< int, int > QAccessibleTextWidget::getBoundaries(int offset, BoundaryType 
         result.second = characterCount();
         break;
     default:
-        qDebug("QAccessibleTextWidget::getBoundaries: Unknown boundary type %d", boundaryType);
+        qWarning("QAccessibleTextWidget::getBoundaries: Unknown boundary type %d", boundaryType);
         result.first = -1;
         result.second = -1;
     }
