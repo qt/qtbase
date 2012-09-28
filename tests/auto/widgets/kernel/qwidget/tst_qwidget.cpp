@@ -3734,16 +3734,13 @@ void tst_QWidget::winIdChangeEvent()
 
     {
         // Changing parent of a native widget
-        // Should cause winId of child to change, on all platforms
         QWidget parent1, parent2;
         WinIdChangeWidget child(&parent1);
         const WId winIdBefore = child.winId();
         QCOMPARE(child.winIdChangeEventCount(), 1);
         child.setParent(&parent2);
         const WId winIdAfter = child.internalWinId();
-        if (m_platform == QStringLiteral("windows"))
-            QEXPECT_FAIL("", "QTBUG-26424", Continue);
-        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(winIdBefore, winIdAfter);
         QCOMPARE(child.winIdChangeEventCount(), 3);
         // winId is set to zero during reparenting
         QVERIFY(0 == child.m_winIdList[1]);
@@ -3783,9 +3780,7 @@ void tst_QWidget::winIdChangeEvent()
         const Qt::WindowFlags flags = child.windowFlags();
         child.setWindowFlags(flags | Qt::Window);
         const WId winIdAfter = child.internalWinId();
-        if (m_platform == QStringLiteral("windows"))
-            QEXPECT_FAIL("", "QTBUG-26424", Continue);
-        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(winIdBefore, winIdAfter);
         QCOMPARE(child.winIdChangeEventCount(), 3);
         // winId is set to zero during reparenting
         QVERIFY(0 == child.m_winIdList[1]);
@@ -3806,61 +3801,37 @@ void tst_QWidget::persistentWinId()
     WId winId2 = w2->winId();
     WId winId3 = w3->winId();
 
-    // reparenting should change the winId of the widget being reparented, but not of its children
+    // reparenting should preserve the winId of the widget being reparented and of its children
     w1->setParent(0);
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w1->winId() != winId1);
-    winId1 = w1->winId();
+    QCOMPARE(w1->winId(), winId1);
     QCOMPARE(w2->winId(), winId2);
     QCOMPARE(w3->winId(), winId3);
 
     w1->setParent(parent.data());
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w1->winId() != winId1);
-    winId1 = w1->winId();
+    QCOMPARE(w1->winId(), winId1);
     QCOMPARE(w2->winId(), winId2);
     QCOMPARE(w3->winId(), winId3);
 
     w2->setParent(0);
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
+    QCOMPARE(w2->winId(), winId2);
     QCOMPARE(w3->winId(), winId3);
 
     w2->setParent(parent.data());
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
+    QCOMPARE(w2->winId(), winId2);
     QCOMPARE(w3->winId(), winId3);
 
     w2->setParent(w1);
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w2->winId() != winId2);
-    winId2 = w2->winId();
+    QCOMPARE(w2->winId(), winId2);
     QCOMPARE(w3->winId(), winId3);
 
     w3->setParent(0);
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
+    QCOMPARE(w3->winId(), winId3);
 
     w3->setParent(w1);
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
+    QCOMPARE(w3->winId(), winId3);
 
     w3->setParent(w2);
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QVERIFY(w3->winId() != winId3);
-    winId3 = w3->winId();
+    QCOMPARE(w3->winId(), winId3);
 }
 
 void tst_QWidget::showNativeChild()

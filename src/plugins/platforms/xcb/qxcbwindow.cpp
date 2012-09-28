@@ -1111,9 +1111,6 @@ WId QXcbWindow::winId() const
 
 void QXcbWindow::setParent(const QPlatformWindow *parent)
 {
-    // re-create for compatibility
-    create();
-
     QPoint topLeft = geometry().topLeft();
 
     xcb_window_t xcb_parent_id = parent ? static_cast<const QXcbWindow *>(parent)->xcb_window() : m_screen->root();
