@@ -102,6 +102,7 @@ public:
 
     virtual void setText(const QString &text) = 0;
     virtual void setEnabled(bool enabled) = 0;
+    virtual void setVisible(bool visible) = 0;
 
     virtual QPlatformMenuItem *menuItemAt(int position) const = 0;
     virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const = 0;

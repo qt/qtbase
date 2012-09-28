@@ -268,6 +268,12 @@ void QCocoaMenu::setParentItem(QCocoaMenuItem *item)
 void QCocoaMenu::setEnabled(bool enabled)
 {
     m_enabled = enabled;
+    syncModalState(!m_enabled);
+}
+
+void QCocoaMenu::setVisible(bool visible)
+{
+    [m_nativeItem setSubmenu:(visible ? m_nativeMenu : nil)];
 }
 
 QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const

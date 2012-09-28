@@ -1285,6 +1285,8 @@ void QMenuBar::actionEvent(QActionEvent *e)
                 }
             } else if (menu) {
                 menu->setText(e->action()->text());
+                menu->setVisible(e->action()->isVisible());
+                menu->setEnabled(e->action()->isEnabled());
                 d->platformMenuBar->syncMenu(menu);
             }
         }

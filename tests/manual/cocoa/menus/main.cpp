@@ -39,9 +39,12 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include <QtWidgets>
-
+#include <QMainWindow>
+#include <QMenu>
+#include <QApplication>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QDebug>
 
 class Responder : public QObject
 {
@@ -49,13 +52,34 @@ class Responder : public QObject
 
 public:
     Responder(QObject *pr) :
-        QObject(pr)
+        QObject(pr), visibleMenu(0), visibleSubMenu(0), enabledMenu(0), enabledSubMenu(0), visibleAction(0), enabledAction(0)
     {
     }
-
+    void setVisibleObjects(QMenu *vm, QMenu *vsm, QAction *va)
+    {
+        visibleMenu = vm;
+        visibleSubMenu = vsm;
+        visibleAction = va;
+    }
+    void setEnabledObjects(QMenu *em, QMenu *esm, QAction *ea)
+    {
+        enabledMenu = em;
+        enabledSubMenu = esm;
+        enabledAction = ea;
+    }
 public slots:
-
-
+    void toggleVisiblity()
+    {
+        visibleMenu->menuAction()->setVisible(!visibleMenu->menuAction()->isVisible());
+        visibleSubMenu->menuAction()->setVisible(!visibleSubMenu->menuAction()->isVisible());
+        visibleAction->setVisible(!visibleAction->isVisible());
+    }
+    void toggleEnabled()
+    {
+        enabledMenu->menuAction()->setEnabled(!enabledMenu->menuAction()->isEnabled());
+        enabledSubMenu->menuAction()->setEnabled(!enabledSubMenu->menuAction()->isEnabled());
+        enabledAction->setEnabled(!enabledAction->isEnabled());
+    }
     void toggleChecked(bool b)
     {
         QAction *a = qobject_cast<QAction *>(sender());
@@ -82,6 +106,9 @@ public slots:
             m->addAction(QString("Recent File %1").arg(i + 1));
         }
     }
+private:
+    QMenu *visibleMenu, *visibleSubMenu, *enabledMenu, *enabledSubMenu;
+    QAction *visibleAction, *enabledAction;
 };
 
 void createWindow1()
@@ -156,6 +183,39 @@ void createWindow1()
 
     menu2->addAction(checkableAction);
 
+    QMenu *menu4 = new QMenu("Toggle menu", window);
+    QAction *toggleVisiblity = new QAction("Toggle visibility", window);
+    QAction *toggleEnabled = new QAction("Toggle enabled", window);
+    QObject::connect(toggleVisiblity, SIGNAL(triggered()), r, SLOT(toggleVisiblity()));
+    QObject::connect(toggleEnabled, SIGNAL(triggered()), r, SLOT(toggleEnabled()));
+    menu4->addAction(toggleVisiblity);
+    menu4->addAction(toggleEnabled);
+    window->menuBar()->addMenu(menu4);
+
+    QMenu *menu5 = new QMenu("Visible Menu", window);
+    menu5->addAction("Dummy action");
+    window->menuBar()->addMenu(menu5);
+    QMenu *menu6 = new QMenu("Menu with visible action and submenu", window);
+    QAction *visibleAction = new QAction("Visible action", window);
+    menu6->addAction(visibleAction);
+    QMenu *subMenu6 = new QMenu("Submenu");
+    subMenu6->addAction("Dummy action");
+    menu6->addMenu(subMenu6);
+    window->menuBar()->addMenu(menu6);
+
+    QMenu *menu7 = new QMenu("Enabled Menu", window);
+    menu7->addAction("Dummy action");
+    window->menuBar()->addMenu(menu7);
+    QMenu *menu8 = new QMenu("Menu with enabled action and submenu", window);
+    QAction *enabledAction = new QAction("Enabled action", window);
+    menu8->addAction(enabledAction);
+    QMenu *subMenu8 = new QMenu("Submenu");
+    subMenu8->addAction("Dummy action");
+    menu8->addMenu(subMenu8);
+    window->menuBar()->addMenu(menu8);
+
+    r->setVisibleObjects(menu5, subMenu6, visibleAction);
+    r->setEnabledObjects(menu7, subMenu8, enabledAction);
     window->show();
 
 }

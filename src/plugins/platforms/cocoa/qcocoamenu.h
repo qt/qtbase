@@ -70,6 +70,7 @@ public:
     void removeMenuItem(QPlatformMenuItem *menuItem);
     void syncMenuItem(QPlatformMenuItem *menuItem);
     void setEnabled(bool enabled);
+    void setVisible(bool visible);
     void syncSeparatorsCollapsible(bool enable);
 
     void syncModalState(bool modal);
