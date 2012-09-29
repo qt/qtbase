@@ -68,7 +68,7 @@ QWindowsPipeReader::~QWindowsPipeReader()
 {
     if (readSequenceStarted) {
         CancelIo(handle);
-        dataReadNotifier->waitForNotified(-1);
+        dataReadNotifier->waitForNotified(-1, &overlapped);
     }
 }
 
@@ -156,8 +156,10 @@ bool QWindowsPipeReader::canReadLine() const
     \internal
     Will be called whenever the read operation completes.
  */
-void QWindowsPipeReader::notified(DWORD numberOfBytesRead, DWORD errorCode)
+void QWindowsPipeReader::notified(DWORD numberOfBytesRead, DWORD errorCode, OVERLAPPED *notifiedOverlapped)
 {
+    if (&overlapped != notifiedOverlapped)
+        return;
     if (!completeAsyncRead(numberOfBytesRead, errorCode)) {
         pipeBroken = true;
         emit pipeClosed();
@@ -281,7 +283,7 @@ bool QWindowsPipeReader::waitForReadyRead(int msecs)
     if (!readSequenceStarted)
         return false;
     readyReadEmitted = false;
-    dataReadNotifier->waitForNotified(msecs);
+    dataReadNotifier->waitForNotified(msecs, &overlapped);
     return readyReadEmitted;
 }
 

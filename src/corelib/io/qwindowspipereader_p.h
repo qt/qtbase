@@ -96,7 +96,7 @@ Q_SIGNALS:
     void pipeClosed();
 
 private Q_SLOTS:
-    void notified(DWORD numberOfBytesRead, DWORD errorCode);
+    void notified(DWORD numberOfBytesRead, DWORD errorCode, OVERLAPPED *notifiedOverlapped);
 
 private:
     bool completeAsyncRead(DWORD bytesRead, DWORD errorCode);

@@ -157,22 +157,22 @@ void tst_QWinOverlappedIoNotifier::waitForNotified()
     HANDLE hFile = CreateFile(reinterpret_cast<const wchar_t*>(fileName.utf16()),
                               GENERIC_READ, FILE_SHARE_READ,
                               NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
-    QCOMPARE(notifier.waitForNotified(0), false);
+    QCOMPARE(notifier.waitForNotified(0, 0), false);
     notifier.setHandle(hFile);
     notifier.setEnabled(true);
-    QCOMPARE(notifier.waitForNotified(100), false);
+    QCOMPARE(notifier.waitForNotified(100, 0), false);
 
     OVERLAPPED overlapped = {0};
     QByteArray buffer(readBufferSize, 0);
     BOOL readSuccess = ReadFile(hFile, buffer.data(), buffer.size(), NULL, &overlapped);
     QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
 
-    QCOMPARE(notifier.waitForNotified(3000), true);
+    QCOMPARE(notifier.waitForNotified(3000, &overlapped), true);
     CloseHandle(hFile);
     QCOMPARE(sink.notifications, 1);
     QCOMPARE(sink.notifiedBytesRead, expectedBytesRead);
     QCOMPARE(sink.notifiedErrorCode, DWORD(ERROR_SUCCESS));
-    QCOMPARE(notifier.waitForNotified(100), false);
+    QCOMPARE(notifier.waitForNotified(100, &overlapped), false);
 }
 
 void tst_QWinOverlappedIoNotifier::brokenPipe()

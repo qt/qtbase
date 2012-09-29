@@ -55,6 +55,7 @@
 
 #include <qobject.h>
 #include <qt_windows.h>
+#include <qqueue.h>
 
 QT_BEGIN_HEADER
 
@@ -73,23 +74,35 @@ public:
     HANDLE handle() const { return hHandle; }
 
     void setEnabled(bool enabled);
-    bool waitForNotified(int msecs);
+    bool waitForNotified(int msecs, OVERLAPPED *overlapped);
 
 Q_SIGNALS:
-    void notified(DWORD numberOfBytes, DWORD errorCode);
+    void notified(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped);
     void _q_notify();
 
 private Q_SLOTS:
-    void _q_notified();
+    OVERLAPPED *_q_notified();
 
 private:
-    void notify(DWORD numberOfBytes, DWORD errorCode);
+    void notify(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped);
 
 private:
     HANDLE hHandle;
-    HANDLE hEvent;
-    DWORD lastNumberOfBytes;
-    DWORD lastErrorCode;
+    HANDLE hSemaphore;
+    HANDLE hResultsMutex;
+
+    struct IOResult
+    {
+        IOResult(DWORD n = 0, DWORD e = 0, OVERLAPPED *p = 0)
+            : numberOfBytes(n), errorCode(e), overlapped(p)
+        {}
+
+        DWORD numberOfBytes;
+        DWORD errorCode;
+        OVERLAPPED *overlapped;
+    };
+
+    QQueue<IOResult> results;
 
     friend class QWinIoCompletionPort;
 };

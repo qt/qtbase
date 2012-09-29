@@ -62,7 +62,8 @@ QT_BEGIN_NAMESPACE
     Once you have obtained a file handle, you can use setHandle() to get
     notifications for I/O operations. Whenever an I/O operation completes,
     the notified() signal is emitted which will pass the number of transferred
-    bytes and the operation's error code to the receiver.
+    bytes, the operation's error code and a pointer to the operation's
+    OVERLAPPED object to the receiver.
 
     Every handle that supports overlapped I/O can be used by
     QWinOverlappedIoNotifier. That includes file handles, TCP sockets
@@ -149,7 +150,7 @@ protected:
             QWinOverlappedIoNotifier *notifier = reinterpret_cast<QWinOverlappedIoNotifier *>(pulCompletionKey);
             mutex.lock();
             if (notifiers.contains(notifier))
-                notifier->notify(dwBytesRead, errorCode);
+                notifier->notify(dwBytesRead, errorCode, overlapped);
             mutex.unlock();
         }
     }
@@ -164,11 +165,10 @@ Q_GLOBAL_STATIC(QWinIoCompletionPort, iocp)
 
 QWinOverlappedIoNotifier::QWinOverlappedIoNotifier(QObject *parent)
     : QObject(parent),
-      hHandle(INVALID_HANDLE_VALUE),
-      lastNumberOfBytes(0),
-      lastErrorCode(ERROR_SUCCESS)
+      hHandle(INVALID_HANDLE_VALUE)
 {
-    hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    hSemaphore = CreateSemaphore(NULL, 0, 255, NULL);
+    hResultsMutex = CreateMutex(NULL, FALSE, NULL);
     connect(this, &QWinOverlappedIoNotifier::_q_notify,
             this, &QWinOverlappedIoNotifier::_q_notified, Qt::QueuedConnection);
 }
@@ -176,7 +176,8 @@ QWinOverlappedIoNotifier::QWinOverlappedIoNotifier(QObject *parent)
 QWinOverlappedIoNotifier::~QWinOverlappedIoNotifier()
 {
     setEnabled(false);
-    CloseHandle(hEvent);
+    CloseHandle(hResultsMutex);
+    CloseHandle(hSemaphore);
 }
 
 void QWinOverlappedIoNotifier::setHandle(HANDLE h)
@@ -192,15 +193,24 @@ void QWinOverlappedIoNotifier::setEnabled(bool enabled)
         iocp()->unregisterNotifier(this);
 }
 
-bool QWinOverlappedIoNotifier::waitForNotified(int msecs)
+/*!
+ * Wait synchronously for the notified signal.
+ *
+ * \returns true, if the notified signal was emitted for the I/O operation
+ *          that corresponds to the OVERLAPPED object.
+ */
+bool QWinOverlappedIoNotifier::waitForNotified(int msecs, OVERLAPPED *overlapped)
 {
-    DWORD result = WaitForSingleObject(hEvent, msecs == -1 ? INFINITE : DWORD(msecs));
-    switch (result) {
-    case WAIT_OBJECT_0:
-        _q_notified();
-        return true;
-    case WAIT_TIMEOUT:
-        return false;
+    forever {
+        DWORD result = WaitForSingleObject(hSemaphore, msecs == -1 ? INFINITE : DWORD(msecs));
+        if (result == WAIT_OBJECT_0) {
+            ReleaseSemaphore(hSemaphore, 1, NULL);
+            if (_q_notified() == overlapped)
+                return true;
+            continue;
+        } else if (result == WAIT_TIMEOUT) {
+            return false;
+        }
     }
 
     qErrnoWarning("QWinOverlappedIoNotifier::waitForNotified: WaitForSingleObject failed.");
@@ -210,20 +220,25 @@ bool QWinOverlappedIoNotifier::waitForNotified(int msecs)
 /*!
   * Note: This function runs in the I/O completion port thread.
   */
-void QWinOverlappedIoNotifier::notify(DWORD numberOfBytes, DWORD errorCode)
+void QWinOverlappedIoNotifier::notify(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped)
 {
-    lastNumberOfBytes = numberOfBytes;
-    lastErrorCode = errorCode;
-    SetEvent(hEvent);
+    WaitForSingleObject(hResultsMutex, INFINITE);
+    results.enqueue(IOResult(numberOfBytes, errorCode, overlapped));
+    ReleaseMutex(hResultsMutex);
+    ReleaseSemaphore(hSemaphore, 1, NULL);
     emit _q_notify();
 }
 
-void QWinOverlappedIoNotifier::_q_notified()
+OVERLAPPED *QWinOverlappedIoNotifier::_q_notified()
 {
-    if (WaitForSingleObject(hEvent, 0) == WAIT_OBJECT_0) {
-        ResetEvent(hEvent);
-        emit notified(lastNumberOfBytes, lastErrorCode);
+    if (WaitForSingleObject(hSemaphore, 0) == WAIT_OBJECT_0) {
+        WaitForSingleObject(hResultsMutex, INFINITE);
+        IOResult ioresult = results.dequeue();
+        ReleaseMutex(hResultsMutex);
+        emit notified(ioresult.numberOfBytes, ioresult.errorCode, ioresult.overlapped);
+        return ioresult.overlapped;
     }
+    return 0;
 }
 
 QT_END_NAMESPACE
