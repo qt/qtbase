@@ -53,8 +53,9 @@
 // We mean it.
 //
 
-#include "QtCore/qmap.h"
 #include "private/qsqlquerymodel_p.h"
+#include "QtSql/qsqlindex.h"
+#include "QtCore/qmap.h"
 
 QT_BEGIN_NAMESPACE
 
