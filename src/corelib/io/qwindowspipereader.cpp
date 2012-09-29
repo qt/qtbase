@@ -64,10 +64,25 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
     connect(dataReadNotifier, &QWinOverlappedIoNotifier::notified, this, &QWindowsPipeReader::notified);
 }
 
+static void qt_cancelIo(HANDLE handle, OVERLAPPED *overlapped)
+{
+    typedef BOOL (WINAPI *PtrCancelIoEx)(HANDLE, LPOVERLAPPED);
+    static PtrCancelIoEx ptrCancelIoEx = 0;
+    if (!ptrCancelIoEx) {
+        HMODULE kernel32 = GetModuleHandleA("kernel32");
+        if (kernel32)
+            ptrCancelIoEx = PtrCancelIoEx(GetProcAddress(kernel32, "CancelIoEx"));
+    }
+    if (ptrCancelIoEx)
+        ptrCancelIoEx(handle, overlapped);
+    else
+        CancelIo(handle);
+}
+
 QWindowsPipeReader::~QWindowsPipeReader()
 {
     if (readSequenceStarted) {
-        CancelIo(handle);
+        qt_cancelIo(handle, &overlapped);
         dataReadNotifier->waitForNotified(-1, &overlapped);
     }
 }
