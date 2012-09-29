@@ -345,10 +345,8 @@ void tst_QLocalSocket::listenAndConnect()
     QFETCH(QString, name);
     QFETCH(bool, canListen);
     QCOMPARE(server.listen(name), canListen);
-    QTest::qWait(1000);
-    //QVERIFY(!server.errorString().isEmpty());
-    QCOMPARE(server.serverError(),
-            canListen ? QAbstractSocket::UnknownSocketError : QAbstractSocket::HostNotFoundError);
+    QTRY_COMPARE(server.serverError(),
+                 canListen ? QAbstractSocket::UnknownSocketError : QAbstractSocket::HostNotFoundError);
 
     // test creating connection(s)
     QFETCH(int, connections);
