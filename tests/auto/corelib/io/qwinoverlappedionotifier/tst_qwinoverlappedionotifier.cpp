@@ -54,6 +54,7 @@ private slots:
     void waitForNotified_data();
     void waitForNotified();
     void brokenPipe();
+    void multipleOperations();
 
 private:
     QFileInfo sourceFileInfo;
@@ -67,29 +68,40 @@ class NotifierSink : public QObject
 public:
     NotifierSink(QWinOverlappedIoNotifier *notifier)
         : QObject(notifier),
-          notifications(0),
-          notifiedBytesRead(0),
-          notifiedErrorCode(ERROR_SUCCESS)
+          threshold(1)
     {
         connect(notifier, &QWinOverlappedIoNotifier::notified, this, &NotifierSink::notified);
     }
 
 protected slots:
-    void notified(DWORD bytesRead, DWORD errorCode)
+    void notified(DWORD bytesRead, DWORD errorCode, OVERLAPPED *overlapped)
     {
-        notifications++;
-        notifiedBytesRead = bytesRead;
-        notifiedErrorCode = errorCode;
-        emit notificationReceived();
+        IOResult ioResult;
+        ioResult.bytes = bytesRead;
+        ioResult.errorCode = errorCode;
+        ioResult.overlapped = overlapped;
+        notifications.append(ioResult);
+        if (notifications.count() >= threshold)
+            emit notificationReceived();
     }
 
 signals:
     void notificationReceived();
 
 public:
-    int notifications;
-    DWORD notifiedBytesRead;
-    DWORD notifiedErrorCode;
+    int threshold;
+
+    struct IOResult
+    {
+        IOResult()
+            : bytes(0), errorCode(ERROR_SUCCESS), overlapped(0)
+        {}
+        DWORD bytes;
+        DWORD errorCode;
+        OVERLAPPED *overlapped;
+    };
+
+    QList<IOResult> notifications;
 };
 
 void tst_QWinOverlappedIoNotifier::initTestCase()
@@ -136,9 +148,10 @@ void tst_QWinOverlappedIoNotifier::readFile()
 
     QTestEventLoop::instance().enterLoop(3);
     CloseHandle(hFile);
-    QCOMPARE(sink.notifications, 1);
-    QCOMPARE(sink.notifiedBytesRead, expectedBytesRead);
-    QCOMPARE(sink.notifiedErrorCode, DWORD(ERROR_SUCCESS));
+    QCOMPARE(sink.notifications.count(), 1);
+    QCOMPARE(sink.notifications.last().bytes, expectedBytesRead);
+    QCOMPARE(sink.notifications.last().errorCode, DWORD(ERROR_SUCCESS));
+    QCOMPARE(sink.notifications.last().overlapped, &overlapped);
 }
 
 void tst_QWinOverlappedIoNotifier::waitForNotified_data()
@@ -169,9 +182,10 @@ void tst_QWinOverlappedIoNotifier::waitForNotified()
 
     QCOMPARE(notifier.waitForNotified(3000, &overlapped), true);
     CloseHandle(hFile);
-    QCOMPARE(sink.notifications, 1);
-    QCOMPARE(sink.notifiedBytesRead, expectedBytesRead);
-    QCOMPARE(sink.notifiedErrorCode, DWORD(ERROR_SUCCESS));
+    QCOMPARE(sink.notifications.count(), 1);
+    QCOMPARE(sink.notifications.last().bytes, expectedBytesRead);
+    QCOMPARE(sink.notifications.last().errorCode, DWORD(ERROR_SUCCESS));
+    QCOMPARE(sink.notifications.last().overlapped, &overlapped);
     QCOMPARE(notifier.waitForNotified(100, &overlapped), false);
 }
 
@@ -202,9 +216,77 @@ void tst_QWinOverlappedIoNotifier::brokenPipe()
 
     QTestEventLoop::instance().enterLoop(3);
     CloseHandle(hReadEnd);
-    QCOMPARE(sink.notifications, 1);
-    QCOMPARE(sink.notifiedBytesRead, DWORD(0));
-    QCOMPARE(sink.notifiedErrorCode, DWORD(ERROR_BROKEN_PIPE));
+    QCOMPARE(sink.notifications.count(), 1);
+    QCOMPARE(sink.notifications.last().bytes, DWORD(0));
+    QCOMPARE(sink.notifications.last().errorCode, DWORD(ERROR_BROKEN_PIPE));
+    QCOMPARE(sink.notifications.last().overlapped, &overlapped);
+}
+
+void tst_QWinOverlappedIoNotifier::multipleOperations()
+{
+    QWinOverlappedIoNotifier clientNotifier;
+    NotifierSink sink(&clientNotifier);
+    sink.threshold = 2;
+    connect(&sink, &NotifierSink::notificationReceived,
+            &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
+
+    wchar_t pipeName[] = L"\\\\.\\pipe\\tst_QWinOverlappedIoNotifier_multipleOperations";
+    HANDLE hServer = CreateNamedPipe(pipeName,
+                                   PIPE_ACCESS_DUPLEX,
+                                   PIPE_TYPE_BYTE | PIPE_NOWAIT | PIPE_REJECT_REMOTE_CLIENTS,
+                                   1, 0, 0, 0, NULL);
+    QVERIFY(hServer != INVALID_HANDLE_VALUE);
+    HANDLE hClient = CreateFile(pipeName, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+                                OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
+    QVERIFY(hClient != INVALID_HANDLE_VALUE);
+    clientNotifier.setHandle(hClient);
+    clientNotifier.setEnabled(true);
+
+    // start async read on client
+    QByteArray clientReadBuffer(377, Qt::Uninitialized);
+    OVERLAPPED clientReadOverlapped = {0};
+    BOOL readSuccess = ReadFile(hClient, clientReadBuffer.data(), clientReadBuffer.size(),
+                                NULL, &clientReadOverlapped);
+    QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
+
+    // start async write client -> server
+    QByteArray clientDataToWrite(233, 'B');
+    OVERLAPPED clientWriteOverlapped = {0};
+    BOOL writeSuccess = WriteFile(hClient, clientDataToWrite.data(), clientDataToWrite.size(),
+                             NULL, &clientWriteOverlapped);
+    QVERIFY(writeSuccess || GetLastError() == ERROR_IO_PENDING);
+
+    // start async write server -> client
+    QByteArray serverDataToWrite(144, 'A');
+    OVERLAPPED serverOverlapped = {0};
+    writeSuccess = WriteFile(hServer, serverDataToWrite.data(), serverDataToWrite.size(),
+                                  NULL, &serverOverlapped);
+    QVERIFY(writeSuccess || GetLastError() == ERROR_IO_PENDING);
+
+    // read synchronously on server to complete the client -> server write
+    QByteArray serverReadBuffer(610, Qt::Uninitialized);
+    DWORD dwBytesRead = 0;
+    readSuccess = ReadFile(hServer, serverReadBuffer.data(), serverReadBuffer.size(),
+                           &dwBytesRead, NULL);
+    QVERIFY(readSuccess);
+    QCOMPARE(int(dwBytesRead), clientDataToWrite.size());
+    serverReadBuffer.resize(dwBytesRead);
+    QCOMPARE(serverReadBuffer, clientDataToWrite);
+
+    QTestEventLoop::instance().enterLoop(3);
+    QTRY_COMPARE(sink.notifications.count(), 2);
+    foreach (const NotifierSink::IOResult &r, sink.notifications) {
+        QCOMPARE(r.errorCode, DWORD(ERROR_SUCCESS));
+        if (r.bytes == serverDataToWrite.count())
+            QCOMPARE(r.overlapped, &clientReadOverlapped);
+        else if (r.bytes == clientDataToWrite.count())
+            QCOMPARE(r.overlapped, &clientWriteOverlapped);
+        else
+            QVERIFY2(false, "Unexpected number of bytes received.");
+    }
+
+    CloseHandle(hClient);
+    CloseHandle(hServer);
 }
 
 QTEST_MAIN(tst_QWinOverlappedIoNotifier)
