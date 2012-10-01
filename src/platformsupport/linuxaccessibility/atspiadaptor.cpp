@@ -707,7 +707,8 @@ void AtSpiAdaptor::setBitFlag(const QString &flag)
                 sendObject_text_selection_changed = 1;
             } else if (right.startsWith(QLatin1String("ValueChanged"))) {
                 sendObject_value_changed = 1;
-            } else if (right.startsWith(QLatin1String("VisibleDataChanged"))) {
+            } else if (right.startsWith(QLatin1String("VisibleDataChanged"))
+                    || right.startsWith(QLatin1String("VisibledataChanged"))) { // typo in libatspi
                 sendObject_visible_data_changed = 1;
             } else {
                 qAtspiDebug() << "WARNING: subscription string not handled:" << flag;
