@@ -414,9 +414,9 @@ void QXcbDrag::move(const QMouseEvent *me)
         xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection(), cookie, 0);
         if (!reply || reply->type == XCB_NONE)
             target = 0;
-        target_version = xcb_get_property_value_length(reply) == 1 ? *(uint32_t *)xcb_get_property_value(reply) : 1;
-        if (target_version > xdnd_version)
-            target_version = xdnd_version;
+
+        target_version = *(uint32_t *)xcb_get_property_value(reply);
+        target_version = qMin(xdnd_version, target_version ? target_version : 1);
 
         free(reply);
     }
