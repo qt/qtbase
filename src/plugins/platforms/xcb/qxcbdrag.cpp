@@ -484,6 +484,12 @@ void QXcbDrag::move(const QMouseEvent *me)
 void QXcbDrag::drop(const QMouseEvent *event)
 {
     QBasicDrag::drop(event);
+
+    if (heartbeat != -1) {
+        killTimer(heartbeat);
+        heartbeat = -1;
+    }
+
     if (!current_target)
         return;
 

@@ -143,7 +143,7 @@ private:
     xcb_window_t current_proxy_target;
 
     QXcbScreen *current_screen;
-
+    // timer used when target wants "continuous" move messages (eg. scroll)
     int heartbeat;
 
     QVector<xcb_atom_t> drag_types;
