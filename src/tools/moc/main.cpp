@@ -170,6 +170,14 @@ int runMoc(int _argc, char **_argv)
     Moc moc;
     pp.macros["Q_MOC_RUN"];
     pp.macros["__cplusplus"];
+
+    // Don't stumble over GCC extensions
+    Macro dummyVariadicFunctionMacro;
+    dummyVariadicFunctionMacro.isFunction = true;
+    dummyVariadicFunctionMacro.isVariadic = true;
+    dummyVariadicFunctionMacro.arguments += Symbol(0, PP_IDENTIFIER, "__VA_ARGS__");
+    pp.macros["__attribute__"] = dummyVariadicFunctionMacro;
+
     QByteArray filename;
     QByteArray output;
     FILE *in = 0;
