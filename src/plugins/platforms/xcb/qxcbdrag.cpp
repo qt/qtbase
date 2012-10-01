@@ -1086,7 +1086,7 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
     notify.property = XCB_NONE;
     notify.time = event->time;
 
-    // which transaction do we use? (note: -2 means use current manager->object)
+    // which transaction do we use? (note: -2 means use current currentDrag())
     int at = -1;
 
     // figure out which data the requestor is really interested in
@@ -1095,11 +1095,11 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
         at = -2;
     } else {
         // if someone has requested data in response to XdndDrop, find the corresponding transaction. the
-        // spec says to call XConvertSelection() using the timestamp from the XdndDrop
+        // spec says to call xcb_convert_selection() using the timestamp from the XdndDrop
         at = findTransactionByTime(event->time);
         if (at == -1) {
-            // no dice, perhaps the client was nice enough to use the same window id in XConvertSelection()
-            // that we sent the XdndDrop event to.
+            // no dice, perhaps the client was nice enough to use the same window id in
+            // xcb_convert_selection() that we sent the XdndDrop event to.
             at = findTransactionByWindow(event->requestor);
         }
 //        if (at == -1 && event->time == XCB_CURRENT_TIME) {
@@ -1118,9 +1118,11 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
     QDrag *transactionDrag = 0;
     if (at >= 0) {
         restartDropExpiryTimer();
-
         transactionDrag = transactions.at(at).drag;
+    } else if (at == -2) {
+        transactionDrag = currentDrag();
     }
+
     if (transactionDrag) {
         xcb_atom_t atomFormat = event->target;
         int dataFormat = 0;
