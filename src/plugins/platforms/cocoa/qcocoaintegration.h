@@ -61,23 +61,38 @@ public:
     QCocoaScreen(int screenIndex);
     ~QCocoaScreen();
 
+    // ----------------------------------------------------
+    // Virtual methods overridden from QPlatformScreen
     QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
-
     QRect geometry() const { return m_geometry; }
     QRect availableGeometry() const { return m_availableGeometry; }
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
+    QDpi logicalDpi() const { return m_logicalDpi; }
+    qreal refreshRate() const { return m_refreshRate; }
+    QString name() const { return m_name; }
     QPlatformCursor *cursor() const  { return m_cursor; }
+    QList<QPlatformScreen *> virtualSiblings() const { return m_siblings; }
+
+    // ----------------------------------------------------
+    // Additional methods
+    void setVirtualSiblings(QList<QPlatformScreen *> siblings) { m_siblings = siblings; }
+    NSScreen *osScreen() const { return m_screen; }
+    void updateGeometry();
 
 public:
     NSScreen *m_screen;
     QRect m_geometry;
     QRect m_availableGeometry;
+    QDpi m_logicalDpi;
+    qreal m_refreshRate;
     int m_depth;
+    QString m_name;
     QImage::Format m_format;
     QSizeF m_physicalSize;
     QCocoaCursor *m_cursor;
+    QList<QPlatformScreen *> m_siblings;
 };
 
 class QCocoaIntegration : public QPlatformIntegration
@@ -104,6 +119,8 @@ public:
     QPlatformTheme *createPlatformTheme(const QString &name) const;
     QPlatformServices *services() const;
     QVariant styleHint(StyleHint hint) const;
+
+    void updateScreens();
 
 private:
 

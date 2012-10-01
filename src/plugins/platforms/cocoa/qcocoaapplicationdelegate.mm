@@ -77,6 +77,7 @@
 #import "qcocoaapplicationdelegate.h"
 #import "qnswindowdelegate.h"
 #import "qcocoamenuloader.h"
+#include "qcocoaintegration.h"
 #include <qevent.h>
 #include <qurl.h>
 #include <qdebug.h>
@@ -346,7 +347,7 @@ static void cleanupCocoaApplicationDelegate()
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    //QDesktopWidgetImplementation::instance()->onResize();
+    ((QCocoaIntegration*)QGuiApplicationPrivate::platformIntegration())->updateScreens();
 }
 
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate

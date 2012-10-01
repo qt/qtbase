@@ -58,6 +58,7 @@
 #include <QtCore/qcoreapplication.h>
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
+#include <IOKit/graphics/IOGraphicsLib.h>
 
 static void initResources()
 {
@@ -67,10 +68,21 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-QCocoaScreen::QCocoaScreen(int screenIndex)
-    :QPlatformScreen()
+QCocoaScreen::QCocoaScreen(int screenIndex) :
+    QPlatformScreen(), m_refreshRate(60.0)
 {
     m_screen = [[NSScreen screens] objectAtIndex:screenIndex];
+    updateGeometry();
+    m_cursor = new QCocoaCursor;
+}
+
+QCocoaScreen::~QCocoaScreen()
+{
+    delete m_cursor;
+}
+
+void QCocoaScreen::updateGeometry()
+{
     NSRect frameRect = [m_screen frame];
     m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
     NSRect visibleRect = [m_screen visibleFrame];
@@ -79,19 +91,28 @@ QCocoaScreen::QCocoaScreen(int screenIndex)
                                 visibleRect.size.width, visibleRect.size.height);
 
     m_format = QImage::Format_RGB32;
-
     m_depth = NSBitsPerPixelFromDepth([m_screen depth]);
 
-    const int dpi = 72;
-    const qreal inch = 25.4;
-    m_physicalSize = QSizeF(m_geometry.size()) * inch / dpi;
+    NSDictionary *devDesc = [m_screen deviceDescription];
+    CGDirectDisplayID dpy = [[devDesc objectForKey:@"NSScreenNumber"] unsignedIntValue];
+    CGSize size = CGDisplayScreenSize(dpy);
+    m_physicalSize = QSizeF(size.width, size.height);
+    NSSize resolution = [[devDesc valueForKey:NSDeviceResolution] sizeValue];
+    m_logicalDpi.first = resolution.width;
+    m_logicalDpi.second = resolution.height;
+    m_refreshRate = CGDisplayModeGetRefreshRate(CGDisplayCopyDisplayMode(dpy));
 
-    m_cursor = new QCocoaCursor;
-};
+    // Get m_name (brand/model of the monitor)
+    NSDictionary *deviceInfo = (NSDictionary *)IODisplayCreateInfoDictionary(CGDisplayIOServicePort(dpy), kIODisplayOnlyPreferredName);
+    NSDictionary *localizedNames = [deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
+    if ([localizedNames count] > 0)
+        m_name = QString::fromUtf8([[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String]);
+    [deviceInfo release];
 
-QCocoaScreen::~QCocoaScreen()
-{
-    delete m_cursor;
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), geometry());
+    QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(screen(), resolution.width, resolution.height);
+    QWindowSystemInterface::handleScreenRefreshRateChange(screen(), m_refreshRate);
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), availableGeometry());
 }
 
 extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
@@ -204,12 +225,7 @@ QCocoaIntegration::QCocoaIntegration()
         [newDelegate setMenuLoader:qtMenuLoader];
     }
 
-    NSArray *screens = [NSScreen screens];
-    for (uint i = 0; i < [screens count]; i++) {
-        QCocoaScreen *screen = new QCocoaScreen(i);
-        mScreens.append(screen);
-        screenAdded(screen);
-    }
+    updateScreens();
 
     QMacPasteboardMime::initializeMimeTypes();
 }
@@ -235,6 +251,52 @@ QCocoaIntegration::~QCocoaIntegration()
     while (!mScreens.isEmpty()) {
         delete mScreens.takeLast();
     }
+}
+
+/*!
+    \brief Synchronizes the screen list, adds new screens, removes deleted ones
+*/
+void QCocoaIntegration::updateScreens()
+{
+    NSArray *screens = [NSScreen screens];
+    QSet<QCocoaScreen*> remainingScreens = QSet<QCocoaScreen*>::fromList(mScreens);
+    QList<QPlatformScreen *> siblings;
+    for (uint i = 0; i < [screens count]; i++) {
+        NSScreen* scr = [[NSScreen screens] objectAtIndex:i];
+        CGDirectDisplayID dpy = [[[scr deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
+        // If this screen is a mirror and is not the primary one of the mirror set, ignore it.
+        if (CGDisplayIsInMirrorSet(dpy)) {
+            CGDirectDisplayID primary = CGDisplayMirrorsDisplay(dpy);
+            if (primary != kCGNullDirectDisplay && primary != dpy)
+                continue;
+        }
+        QCocoaScreen* screen = NULL;
+        foreach (QCocoaScreen* existingScr, mScreens)
+            // NSScreen documentation says do not cache the array returned from [NSScreen screens].
+            // However in practice, we can identify a screen by its pointer: if resolution changes,
+            // the NSScreen object will be the same instance, just with different values.
+            if (existingScr->osScreen() == scr) {
+                screen = existingScr;
+                break;
+            }
+        if (screen) {
+            remainingScreens.remove(screen);
+            screen->updateGeometry();
+        } else {
+            screen = new QCocoaScreen(i);
+            mScreens.append(screen);
+            screenAdded(screen);
+        }
+        siblings << screen;
+    }
+    // Now the leftovers in remainingScreens are no longer current, so we can delete them.
+    foreach (QCocoaScreen* screen, remainingScreens) {
+        mScreens.removeOne(screen);
+        delete screen;
+    }
+    // All screens in mScreens are siblings, because we ignored the mirrors.
+    foreach (QCocoaScreen* screen, mScreens)
+        screen->setVirtualSiblings(siblings);
 }
 
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
