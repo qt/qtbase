@@ -52,7 +52,7 @@
 #include <qsharedpointer.h>
 #include <qpointer.h>
 #include <qvector.h>
-
+#include <qdatetime.h>
 #include <qpixmap.h>
 #include <qbackingstore.h>
 
@@ -146,6 +146,10 @@ private:
     // timer used when target wants "continuous" move messages (eg. scroll)
     int heartbeat;
 
+    // 10 minute timer used to discard old XdndDrop transactions
+    enum { XdndDropTransactionTimeout = 600000 };
+    int cleanup_timer;
+
     QVector<xcb_atom_t> drag_types;
 
     struct Transaction
@@ -156,6 +160,7 @@ private:
         QWindow *targetWindow;
 //        QWidget *embedding_widget;
         QDrag *drag;
+        QTime time;
     };
     QList<Transaction> transactions;
 
