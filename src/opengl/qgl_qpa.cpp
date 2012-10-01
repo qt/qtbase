@@ -79,6 +79,8 @@ QGLFormat QGLFormat::fromSurfaceFormat(const QSurfaceFormat &format)
     }
     retFormat.setDoubleBuffer(format.swapBehavior() != QSurfaceFormat::SingleBuffer);
     retFormat.setStereo(format.stereo());
+    retFormat.setVersion(format.majorVersion(), format.minorVersion());
+    retFormat.setProfile(static_cast<QGLFormat::OpenGLContextProfile>(format.profile()));
     return retFormat;
 }
 
