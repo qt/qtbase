@@ -456,6 +456,37 @@ bool QPlatformWindow::frameStrutEventsEnabled() const
     The only way to retrieve a QPlatformOpenGLContext in QPA is by calling the glContext() function
     on QPlatformWindow.
 
+    \section1 Implementation Aspects
+
+    \list 1
+        \li Mouse grab: Qt expects windows to automatically grab the mouse if the user presses
+            a button until the button is released.
+            Automatic grab should be released if some window is explicitly grabbed.
+        \li Enter/Leave events: Enter and leave events should be sent independently of
+            explicit mouse grabs (\c{setMouseGrabEnabled()}). That is, if the mouse leaves
+            a window that has explicit mouse grab, a leave event should be sent and other
+            windows should get enter/leave events as well as the mouse traverses them.
+            For automatic mouse grab, however, a leave event should be sent when the
+            button is released.
+        \li Window positioning: When calling \c{QWindow::setFramePos()}, the flag
+            \c{QWindowPrivate::positionPolicy} is set to \c{QWindowPrivate::WindowFrameInclusive}.
+            This means the position includes the window frame, whose size is at this point
+            unknown and the geometry's topleft point is the position of the window frame.
+    \endlist
+
+    Apart from the auto-tests (\c{tests/auto/gui/kernel/qwindow},
+    \c{tests/auto/gui/kernel/qguiapplication} and \c{tests/auto/widgets/kernel/qwidget}),
+    there are a number of manual tests and examples that can help testing a platform plugin:
+
+    \list 1
+        \li \c{examples/qpa/windows}: Basic \c{QWindow} creation.
+        \li \c{examples/opengl/hellowindow}: Basic Open GL windows.
+        \li \c{tests/manual/windowflags}: Tests setting the window flags.
+        \li \c{tests/manual/windowgeometry} Tests setting the window geometry.
+        \li \c{tests/manual/windowmodality} Tests setting the window modality.
+        \li \c{tests/manual/widgetgrab} Tests mouse grab and dialogs.
+    \endlist
+
     \sa QBackingStore, QWindow
 */
 
