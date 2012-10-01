@@ -291,6 +291,10 @@ void QCocoaWindow::setVisible(bool visible)
                 } else {
                     [m_nsWindow orderFront: nil];
                 }
+
+                // We want the events to properly reach the popup
+                if (window()->windowType() == Qt::Popup)
+                    [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
             }
         }
     } else {
