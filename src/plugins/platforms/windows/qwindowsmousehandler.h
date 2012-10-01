@@ -78,6 +78,7 @@ private:
                                          MSG msg, LRESULT *result);
 
     QPointer<QWindow> m_windowUnderMouse;
+    QPointer<QWindow> m_trackedWindow;
     QHash<DWORD, int> m_touchInputIDToTouchPointID;
     QTouchDevice *m_touchDevice;
 };

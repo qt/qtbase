@@ -44,6 +44,7 @@
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
+#include "qwindowsscreen.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QGuiApplication>
@@ -127,6 +128,7 @@ static inline void compressMouseMove(MSG *msg)
 
 QWindowsMouseHandler::QWindowsMouseHandler() :
     m_windowUnderMouse(0),
+    m_trackedWindow(0),
     m_touchDevice(0)
 {
 }
@@ -162,20 +164,32 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         return false; // Allow further event processing (dragging of windows).
     }
 
+
     *result = 0;
     if (msg.message == WM_MOUSELEAVE) {
-        // When moving out of a child, MouseMove within parent is received first
-        // (see below)
         if (QWindowsContext::verboseEvents)
-            qDebug() << "WM_MOUSELEAVE for " << window << " current= " << m_windowUnderMouse;
-        if (window == m_windowUnderMouse) {
-            QWindowSystemInterface::handleLeaveEvent(window);
+            qDebug() << "WM_MOUSELEAVE for " << window << " previous window under mouse = " << m_windowUnderMouse << " tracked window =" << m_trackedWindow;
+
+        // When moving out of a window, WM_MOUSEMOVE within the moved-to window is received first,
+        // so if m_trackedWindow is not the window here, it means the cursor has left the
+        // application.
+        if (window == m_trackedWindow) {
+            QWindow *leaveTarget = m_windowUnderMouse ? m_windowUnderMouse : m_trackedWindow;
+            if (QWindowsContext::verboseEvents)
+                qDebug() << "Generating leave event for " << leaveTarget;
+            QWindowSystemInterface::handleLeaveEvent(leaveTarget);
+            m_trackedWindow = 0;
             m_windowUnderMouse = 0;
         }
         return true;
     }
-    compressMouseMove(&msg);
+
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    const QPoint globalPosition = QWindowsGeometryHint::mapToGlobal(hwnd, winEventPosition);
+    QWindow *currentWindowUnderMouse = platformWindow->hasMouseCapture() ?
+        QWindowsScreen::windowAt(globalPosition) : window;
+
+    compressMouseMove(&msg);
     // Qt expects the platform plugin to capture the mouse on
     // any button press until release.
     if (!platformWindow->hasMouseCapture()
@@ -202,22 +216,13 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             return true;
         }
     }
-    // Enter new window: track to generate leave event.
-    if (m_windowUnderMouse != window) {
-        // The tracking on m_windowUnderMouse might still be active and
-        // trigger later on.
-        if (m_windowUnderMouse) {
-            if (QWindowsContext::verboseEvents)
-                qDebug() << "Synthetic leave for " << m_windowUnderMouse;
-            QWindowSystemInterface::handleLeaveEvent(m_windowUnderMouse);
-        }
-        m_windowUnderMouse = window;
-        if (QWindowsContext::verboseEvents)
-            qDebug() << "Entering " << window;
-        QWindowsWindow::baseWindowOf(window)->applyCursor();
-//#ifndef Q_OS_WINCE
-        QWindowSystemInterface::handleEnterEvent(window);
+
 #ifndef Q_OS_WINCE
+    // Enter new window: track to generate leave event.
+    // If there is an active capture, we must track the actual capture window instead of window
+    // under cursor or leaves will trigger constantly, so always track the window we got
+    // native mouse event for.
+    if (window != m_trackedWindow) {
         TRACKMOUSEEVENT tme;
         tme.cbSize = sizeof(TRACKMOUSEEVENT);
         tme.dwFlags = TME_LEAVE;
@@ -225,11 +230,40 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         tme.dwHoverTime = HOVER_DEFAULT; //
         if (!TrackMouseEvent(&tme))
             qWarning("TrackMouseEvent failed.");
-#endif // !Q_OS_WINCE
+        m_trackedWindow =  window;
     }
-    const QPoint clientPosition = winEventPosition;
-    QWindowSystemInterface::handleMouseEvent(window, clientPosition,
-                                             QWindowsGeometryHint::mapToGlobal(hwnd, clientPosition),
+#endif // !Q_OS_WINCE
+
+    // Qt expects enter/leave events for windows even when some window is capturing mouse input,
+    // except for automatic capture when mouse button is pressed - in that case enter/leave
+    // should be sent only after the last button is released.
+    // We need to track m_windowUnderMouse separately from m_trackedWindow, as
+    // Windows mouse tracking will not trigger WM_MOUSELEAVE for leaving window when
+    // mouse capture is set.
+    if (!platformWindow->hasMouseCapture()
+        || !platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)) {
+        if (m_windowUnderMouse != currentWindowUnderMouse) {
+            if (m_windowUnderMouse) {
+                if (QWindowsContext::verboseEvents)
+                    qDebug() << "Synthetic leave for " << m_windowUnderMouse;
+                QWindowSystemInterface::handleLeaveEvent(m_windowUnderMouse);
+                // Clear tracking if we are no longer over application,
+                // since we have already sent the leave.
+                if (!currentWindowUnderMouse)
+                    m_trackedWindow = 0;
+            }
+
+            if (currentWindowUnderMouse) {
+                if (QWindowsContext::verboseEvents)
+                    qDebug() << "Entering " << currentWindowUnderMouse;
+                QWindowsWindow::baseWindowOf(currentWindowUnderMouse)->applyCursor();
+                QWindowSystemInterface::handleEnterEvent(currentWindowUnderMouse);
+            }
+        }
+        m_windowUnderMouse = currentWindowUnderMouse;
+    }
+
+    QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition,
                                              keyStateToMouseButtons((int)msg.wParam),
                                              QWindowsKeyMapper::queryKeyboardModifiers());
     return true;
