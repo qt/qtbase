@@ -571,6 +571,27 @@ QString QWindow::windowTitle() const
 }
 
 /*!
+    \property QWindow::windowFilePath
+    \brief the file name this window is representing.
+
+    This property might be used by the windowing system to display the file
+    path of the document this window is representing in the tile bar.
+*/
+void QWindow::setWindowFilePath(const QString &filePath)
+{
+    Q_D(QWindow);
+    d->windowFilePath = filePath;
+    if (d->platformWindow)
+        d->platformWindow->setWindowFilePath(filePath);
+}
+
+QString QWindow::windowFilePath() const
+{
+    Q_D(const QWindow);
+    return d->windowFilePath;
+}
+
+/*!
     \property QWindow::windowIcon
     \brief the window's icon in the windowing system
 

@@ -253,6 +253,11 @@ void QPlatformWindow::setParent(const QPlatformWindow *parent)
 void QPlatformWindow::setWindowTitle(const QString &title) { Q_UNUSED(title); }
 
 /*!
+  Reimplement to set the window file path to \a filePath
+*/
+void QPlatformWindow::setWindowFilePath(const QString &filePath) { Q_UNUSED(filePath); }
+
+/*!
   Reimplement to set the window icon to \a icon
 */
 void QPlatformWindow::setWindowIcon(const QIcon &icon) { Q_UNUSED(icon); }

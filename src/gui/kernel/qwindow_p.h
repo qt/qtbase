@@ -114,6 +114,7 @@ public:
     bool exposed;
     QSurfaceFormat requestedFormat;
     QString windowTitle;
+    QString windowFilePath;
     QIcon windowIcon;
     QRect geometry;
     Qt::WindowState windowState;

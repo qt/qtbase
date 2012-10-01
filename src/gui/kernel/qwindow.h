@@ -94,6 +94,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_DECLARE_PRIVATE(QWindow)
 
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
+    Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath)
     Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
     Q_PROPERTY(Qt::WindowModality windowModality READ windowModality WRITE setWindowModality NOTIFY windowModalityChanged)
     Q_PROPERTY(int x READ x WRITE setX NOTIFY xChanged)
@@ -202,6 +203,9 @@ public:
 
     void resize(const QSize &newSize);
     inline void resize(int w, int h) { resize(QSize(w, h)); }
+
+    void setWindowFilePath(const QString &filePath);
+    QString windowFilePath() const;
 
     void setWindowIcon(const QIcon &icon);
     QIcon windowIcon() const;
