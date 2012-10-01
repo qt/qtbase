@@ -86,6 +86,9 @@ public:
     static void terminate();
     static void writeOutFileNames();
     static void augmentImageDirs(QSet<QString>& moreImageDirs);
+    static void debugSegfault(const QString& message);
+    static void setDebugSegfaultFlag(bool b);
+    static bool debugging() { return debugging_; }
 
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);
@@ -187,6 +190,7 @@ private:
     static QStringList scriptFiles;
     static QStringList styleDirs;
     static QStringList styleFiles;
+    static bool debugging_;
 
     void appendFullName(Text& text,
                         const Node *apparentNode,

@@ -94,6 +94,24 @@ QString Generator::sinceTitles[] =
 };
 QStringList Generator::styleDirs;
 QStringList Generator::styleFiles;
+bool Generator::debugging_ = false;
+
+void Generator::setDebugSegfaultFlag(bool b)
+{
+    if (b)
+        qDebug() << "DEBUG: Setting debug flag.";
+    else
+        qDebug() << "DEBUG: Clearing debug flag.";
+    debugging_ = b;
+}
+
+/*!
+  Prints \a message as an aid to debugging the release version.
+ */
+void Generator::debugSegfault(const QString& message)
+{
+    qDebug() << "DEBUG:" << message;
+}
 
 /*!
   Constructs the generator base class. Prepends the newly
@@ -244,6 +262,7 @@ void Generator::beginSubPage(const InnerNode* node, const QString& fileName)
     if (!node->outputSubdirectory().isEmpty())
         path += node->outputSubdirectory() + QLatin1Char('/');
     path += fileName;
+    Generator::debugSegfault("Writing: " + path);
     outFileNames.insert(fileName,fileName);
     QFile* outFile = new QFile(path);
     if (!outFile->open(QFile::WriteOnly))

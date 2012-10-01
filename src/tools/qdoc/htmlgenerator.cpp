@@ -268,6 +268,9 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
     int skipAhead = 0;
     static bool in_para = false;
 
+    if (Generator::debugging()) {
+        atom->dump();
+    }
     switch (atom->type()) {
     case Atom::AbstractLeft:
         if (relative)

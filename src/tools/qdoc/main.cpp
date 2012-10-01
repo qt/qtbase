@@ -328,18 +328,21 @@ static void processQdocconfFile(const QString &fileName)
     QStringList excludedDirsList;
     QStringList excludedFilesList;
 
+    Generator::debugSegfault("Reading excludedirs");
     excludedDirsList = config.getCanonicalRelativePathList(CONFIG_EXCLUDEDIRS);
     foreach (const QString &excludeDir, excludedDirsList) {
         QString p = QDir::fromNativeSeparators(excludeDir);
         excludedDirs.insert(p);
     }
 
+    Generator::debugSegfault("Reading excludefiles");
     excludedFilesList = config.getCleanPathList(CONFIG_EXCLUDEFILES);
     foreach (const QString& excludeFile, excludedFilesList) {
         QString p = QDir::fromNativeSeparators(excludeFile);
         excludedFiles.insert(p);
     }
 
+    Generator::debugSegfault("Reading headerdirs");
     headerList = config.getAllFiles(CONFIG_HEADERS,CONFIG_HEADERDIRS,excludedDirs,excludedFiles);
     QMap<QString,QString> headers;
     QMultiMap<QString,QString> headerFileNames;
@@ -349,6 +352,7 @@ static void processQdocconfFile(const QString &fileName)
         headerFileNames.insert(t,t);
     }
 
+    Generator::debugSegfault("Reading sourcedirs");
     sourceList = config.getAllFiles(CONFIG_SOURCES,CONFIG_SOURCEDIRS,excludedDirs,excludedFiles);
     QMap<QString,QString> sources;
     QMultiMap<QString,QString> sourceFileNames;
@@ -361,6 +365,7 @@ static void processQdocconfFile(const QString &fileName)
       Find all the qdoc files in the example dirs, and add
       them to the source files to be parsed.
      */
+    Generator::debugSegfault("Reading exampledirs");
     QStringList exampleQdocList = config.getExampleQdocFiles(excludedDirs, excludedFiles);
     for (int i=0; i<exampleQdocList.size(); ++i) {
         if (!sources.contains(exampleQdocList[i])) {
@@ -370,6 +375,7 @@ static void processQdocconfFile(const QString &fileName)
         }
     }
 
+    Generator::debugSegfault("Adding doc/image dirs found in exampledirs to imagedirs");
     QSet<QString> exampleImageDirs;
     QStringList exampleImageList = config.getExampleImageFiles(excludedDirs, excludedFiles);
     for (int i=0; i<exampleImageList.size(); ++i) {
@@ -388,6 +394,7 @@ static void processQdocconfFile(const QString &fileName)
      */
     QSet<CodeParser *> usedParsers;
 
+    Generator::debugSegfault("Parsing header files");
     int parsed = 0;
     QMap<QString,QString>::ConstIterator h = headers.constBegin();
     while (h != headers.constEnd()) {
@@ -409,6 +416,7 @@ static void processQdocconfFile(const QString &fileName)
       add it to the big tree.
      */
     parsed = 0;
+    Generator::debugSegfault("Parsing source files");
     QMap<QString,QString>::ConstIterator s = sources.constBegin();
     while (s != sources.constEnd()) {
         CodeParser *codeParser = CodeParser::parserForSourceFile(s.key());
@@ -428,6 +436,7 @@ static void processQdocconfFile(const QString &fileName)
       source files. Resolve all the class names, function names,
       targets, URLs, links, and other stuff that needs resolving.
      */
+    Generator::debugSegfault("Resolving stuff prior to generating docs");
     qdb->resolveIssues();
 
     /*
@@ -436,6 +445,7 @@ static void processQdocconfFile(const QString &fileName)
       documentation output. More than one output format can be
       requested. The tree is traversed for each one.
      */
+    Generator::debugSegfault("Generating docs");
     QSet<QString>::ConstIterator of = outputFormats.constBegin();
     while (of != outputFormats.constEnd()) {
         Generator* generator = Generator::generatorForFormat(*of);
@@ -447,6 +457,7 @@ static void processQdocconfFile(const QString &fileName)
 
 
     //Generator::writeOutFileNames();
+    Generator::debugSegfault("Shutting down qdoc");
 
     QDocDatabase::qdocDB()->setVersion(QString());
     Generator::terminate();
@@ -467,6 +478,7 @@ static void processQdocconfFile(const QString &fileName)
 #ifdef DEBUG_SHUTDOWN_CRASH
     qDebug() << "main(): qdoc database deleted";
 #endif
+    Generator::debugSegfault("qdoc finished!");
 }
 
 QT_END_NAMESPACE
@@ -559,6 +571,9 @@ int main(int argc, char **argv)
         else if (opt == "-outputformat") {
             Config::overrideOutputFormats.insert(argv[i]);
             i++;
+        }
+        else if (opt == "-debug") {
+            Generator::setDebugSegfaultFlag(true);
         }
         else {
             qdocFiles.append(opt);
