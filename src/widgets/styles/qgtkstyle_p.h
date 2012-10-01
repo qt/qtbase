@@ -63,7 +63,7 @@
 #include <QtWidgets/QFileDialog>
 
 #include <QtWidgets/QGtkStyle>
-#include <private/qcleanlooksstyle_p.h>
+#include <private/qwindowsstyle_p.h>
 
 #undef signals // Collides with GTK symbols
 #include <gtk/gtk.h>
@@ -313,7 +313,7 @@ typedef char* (*Ptr_gnome_icon_lookup_sync)  (
         GnomeIconLookupFlags flags,
         GnomeIconLookupResultFlags *result);
 
-class QGtkStylePrivate : public QCleanlooksStylePrivate
+class QGtkStylePrivate : public QWindowsStylePrivate
 {
     Q_DECLARE_PUBLIC(QGtkStyle)
 public:

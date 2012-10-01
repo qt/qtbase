@@ -285,7 +285,7 @@ QList<QGtkStylePrivate *> QGtkStylePrivate::instances;
 QGtkStylePrivate::WidgetMap *QGtkStylePrivate::widgetMap = 0;
 
 QGtkStylePrivate::QGtkStylePrivate()
-  : QCleanlooksStylePrivate()
+  : QWindowsStylePrivate()
   , filter(this)
 {
     instances.append(this);

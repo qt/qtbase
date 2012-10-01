@@ -56,7 +56,6 @@
 #include <QtCore/qglobal.h>
 #if !defined(QT_NO_STYLE_GTK)
 
-#include <QtWidgets/QCleanlooksStyle>
 #include <QtGui/QPainter>
 #include <QtGui/QPalette>
 #include <QtGui/QFont>

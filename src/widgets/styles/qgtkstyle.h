@@ -42,7 +42,7 @@
 #ifndef QGTKSTYLE_H
 #define QGTKSTYLE_H
 
-#include <QtWidgets/QCleanlooksStyle>
+#include <QtWidgets/QWindowsStyle>
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
 #include <QtWidgets/QFileDialog>
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QPainterPath;
 class QGtkStylePrivate;
 
-class Q_WIDGETS_EXPORT QGtkStyle : public QCleanlooksStyle
+class Q_WIDGETS_EXPORT QGtkStyle : public QWindowsStyle
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGtkStyle)
