@@ -64,7 +64,7 @@ void QQnxAbstractVirtualKeyboard::setKeyboardMode(KeyboardMode mode)
 
 void QQnxAbstractVirtualKeyboard::setInputHintsFromObject(QObject *focusObject)
 {
-    if (focusObject && focusObject->isWidgetType()) {
+    if (focusObject) {
         const Qt::InputMethodHints hints = static_cast<Qt::InputMethodHints>(
                     focusObject->property("inputMethodHints").toInt());
         if (hints & Qt::ImhEmailCharactersOnly) {
