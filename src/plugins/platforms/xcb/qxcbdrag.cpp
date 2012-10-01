@@ -1233,7 +1233,7 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QVariant::Type r
         return result; // should never happen?
 
     xcb_atom_t xdnd_selection = c->atom(QXcbAtom::XdndSelection);
-    result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection);
+    result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
 
     return mimeConvertToFormat(c, a, result, QLatin1String(format), requestedType, encoding);
 }

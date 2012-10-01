@@ -98,6 +98,7 @@ public:
     bool dndEnable(QXcbWindow *win, bool on);
 
     void updatePixmap();
+    xcb_timestamp_t targetTime() { return target_time; }
 
 protected:
     void timerEvent(QTimerEvent* e);
@@ -128,6 +129,7 @@ private:
     enum { xdnd_max_type = 100 };
     QList<xcb_atom_t> xdnd_types;
 
+    // timestamp from XdndPosition and XdndDroptime for retrieving the data
     xcb_timestamp_t target_time;
     xcb_timestamp_t source_time;
 

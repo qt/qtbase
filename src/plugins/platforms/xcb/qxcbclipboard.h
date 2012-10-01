@@ -84,7 +84,7 @@ public:
     QByteArray getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtatom);
 
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
-    QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property);
+    QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
 
 private:
     xcb_generic_event_t *waitForClipboardEvent(xcb_window_t win, int type, int timeout, bool checkManager = false);

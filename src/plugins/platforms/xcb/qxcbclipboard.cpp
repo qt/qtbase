@@ -846,13 +846,15 @@ QByteArray QXcbClipboard::getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtAto
     return getSelection(modeAtom, fmtAtom, atom(QXcbAtom::_QT_SELECTION));
 }
 
-QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property)
+QByteArray QXcbClipboard::getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t time)
 {
     QByteArray buf;
     xcb_window_t win = requestor();
 
+    if (time == 0) time = connection()->time();
+
     xcb_delete_property(xcb_connection(), win, property);
-    xcb_convert_selection(xcb_connection(), win, selection, target, property, connection()->time());
+    xcb_convert_selection(xcb_connection(), win, selection, target, property, time);
 
     connection()->sync();
 
