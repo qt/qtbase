@@ -233,9 +233,7 @@ void QXcbWindow::create()
     m_format = window()->requestedFormat();
 
 #if (defined(XCB_USE_GLX) || defined(XCB_USE_EGL)) && defined(XCB_USE_XLIB)
-    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)
-        || m_format.hasAlpha())
-    {
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL)) {
 #if defined(XCB_USE_GLX)
         XVisualInfo *visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), &m_format);
         if (!visualInfo && window()->surfaceType() == QSurface::OpenGLSurface)

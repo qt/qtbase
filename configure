@@ -801,6 +801,7 @@ CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
+CFG_XCB_GLX=no
 CFG_XCB_LIMITED=yes
 CFG_EGLFS=auto
 CFG_DIRECTFB=auto
@@ -4788,6 +4789,11 @@ if [ "$CFG_XCB" != "no" ]; then
         CFG_XCB=yes
         if compileTest qpa/xcb-render "xcb-render" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
             QT_CONFIG="$QT_CONFIG xcb-render"
+        fi
+
+        if compileTest qpa/xcb-glx "xcb-glx" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
+            CFG_XCB_GLX=yes
+            QT_CONFIG="$QT_CONFIG xcb-glx"
         fi
 
         if compileTest qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then

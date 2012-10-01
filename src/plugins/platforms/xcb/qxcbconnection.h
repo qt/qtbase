@@ -374,6 +374,7 @@ public:
     inline xcb_timestamp_t time() const { return m_time; }
     inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
 
+    bool hasGLX() const { return has_glx_extension; }
     bool hasXFixes() const { return xfixes_first_event > 0; }
     bool hasXShape() const { return has_shape_extension; }
     bool hasXRandr() const { return has_randr_extension; }
@@ -387,6 +388,7 @@ private slots:
 private:
     void initializeAllAtoms();
     void sendConnectionEvent(QXcbAtom::Atom atom, uint id = 0);
+    void initializeGLX();
     void initializeXFixes();
     void initializeXRender();
     void initializeXRandr();
@@ -507,6 +509,7 @@ private:
     uint32_t xfixes_first_event;
     uint32_t xrandr_first_event;
 
+    bool has_glx_extension;
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;

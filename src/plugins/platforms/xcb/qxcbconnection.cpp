@@ -72,6 +72,10 @@
 #include <xcb/render.h>
 #endif
 
+#if defined(XCB_HAS_XCB_GLX)
+#include <xcb/glx.h>
+#endif
+
 #ifdef XCB_USE_EGL //don't pull in eglext prototypes
 #include <EGL/egl.h>
 #endif
@@ -263,6 +267,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 #endif
     , xfixes_first_event(0)
     , xrandr_first_event(0)
+    , has_glx_extension(false)
     , has_shape_extension(false)
     , has_randr_extension(false)
     , has_input_shape(false)
@@ -320,6 +325,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
                       0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
                       m_screens.at(0)->screen()->root_visual, 0, 0);
 
+    initializeGLX();
     initializeXFixes();
     initializeXRender();
     m_xi2Enabled = false;
@@ -1309,6 +1315,33 @@ void QXcbConnection::initializeXRender()
         free(error);
     }
     free(xrender_query);
+#endif
+}
+
+void QXcbConnection::initializeGLX()
+{
+#ifdef XCB_HAS_XCB_GLX
+    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_connection, &xcb_glx_id);
+    if (!reply || !reply->present)
+        return;
+
+    has_glx_extension = true;
+
+    xcb_generic_error_t *error = 0;
+    xcb_glx_query_version_cookie_t xglx_query_cookie = xcb_glx_query_version(m_connection,
+                                                                             XCB_GLX_MAJOR_VERSION,
+                                                                             XCB_GLX_MINOR_VERSION);
+    xcb_glx_query_version_reply_t *xglx_query = xcb_glx_query_version_reply(m_connection,
+                                                                            xglx_query_cookie, &error);
+    if (!xglx_query || error) {
+        qWarning("QXcbConnection: Failed to initialize GLX");
+        free(error);
+        has_glx_extension = false;
+    }
+    free(xglx_query);
+#else
+    // no way to check, assume GLX is present
+    has_glx_extension = true;
 #endif
 }
 

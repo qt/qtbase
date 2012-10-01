@@ -98,6 +98,10 @@ contains(DEFINES, XCB_USE_DRI2) {
         HEADERS += qglxintegration.h
         SOURCES += qglxintegration.cpp
         LIBS += $$QMAKE_LIBS_DYNLOAD
+        contains(QT_CONFIG, xcb-glx) {
+            DEFINES += XCB_HAS_XCB_GLX
+            LIBS += -lxcb-glx
+        }
     }
 }
 
