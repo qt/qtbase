@@ -177,6 +177,7 @@ QWindow::QWindow(QWindow *parent)
         d->screen = parent->screen();
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
+    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
     QGuiApplicationPrivate::window_list.prepend(this);
 }
 
@@ -202,6 +203,7 @@ QWindow::QWindow(QWindowPrivate &dd, QWindow *parent)
         d->screen = parent->screen();
     if (!d->screen)
         d->screen = QGuiApplication::primaryScreen();
+    connect(d->screen, SIGNAL(destroyed(QObject*)), this, SLOT(screenDestroyed(QObject*)));
     QGuiApplicationPrivate::window_list.prepend(this);
 }
 
