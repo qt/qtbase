@@ -1013,12 +1013,9 @@ void tst_Collections::vector()
     QVERIFY(v1 + v2 == v3);
 
     QVector<int> emptyVector;
+    // emptyVector.remove(3, -3); // Q_ASSERT_X() triggered with "index out of range" message.
     QCOMPARE(emptyVector.size(), 0);
-#if 0
-    // this should trigger an assert
-    emptyVector.remove(3, -3);
-    QCOMPARE(emptyVector.size(), 0);
-#endif
+
     emptyVector.remove(0, 0);
     QCOMPARE(emptyVector.size(), 0);
 
@@ -1318,19 +1315,22 @@ void tst_Collections::byteArray()
     QVERIFY(hello.mid(hello.size()-2) == "lo");
     QVERIFY(hello.mid(hello.size()-200) == "hello");
 
-    QByteArray null;
-    QByteArray nonNull = "";
-    QVERIFY(null.left(10).isNull());
-    QVERIFY(null.mid(0).isNull());
+    QByteArray nullByteArray;
+    QByteArray nonNullByteArray = "";
+    QVERIFY(nullByteArray.left(10).isNull());
+    QVERIFY(nullByteArray.mid(0).isNull());
 
-#if 0
-    QVERIFY(null == QByteArray::null);
-    QVERIFY(QByteArray::null  == null);
-    QVERIFY(nonNull != QByteArray::null);
-    QVERIFY(QByteArray::null != nonNull);
-    QVERIFY(null == nonNull);
-    QVERIFY(QByteArray::null == QByteArray::null);
-#endif
+    QVERIFY(nullByteArray.isEmpty() == nonNullByteArray.isEmpty());
+    QVERIFY(nullByteArray.size() == nonNullByteArray.size());
+
+    QVERIFY(nullByteArray == QByteArray()); // QByteArray() is both null and empty.
+    QVERIFY(QByteArray()  == nullByteArray);
+
+    QVERIFY(nonNullByteArray == QByteArray("")); // QByteArray("") is empty, but not null.
+    QVERIFY(QByteArray("") == nonNullByteArray);
+
+    QVERIFY(nullByteArray == nonNullByteArray);
+    QVERIFY(QByteArray() == QByteArray(""));
 
     QByteArray str = "Hello";
     QByteArray cstr(str.data(), str.size());
@@ -2170,13 +2170,11 @@ void tst_Collections::qstring()
     s = s.arg("foo").arg(7);
     QVERIFY(s == "(foo)(7)");
 
-
-#if 0
     s = "stl rocks";
-    std::string stl_string = s;
-    s = stl_string;
+    std::string stl_string = s.toStdString(); // TODO: std::string stl_string = s does not work.
     QVERIFY(s == "stl rocks");
-#endif
+    s = QString::fromStdString(stl_string); // TODO: s = stl_string does not work.
+    QVERIFY(s == "stl rocks");
 
     {
 	QString str("Bananas");
