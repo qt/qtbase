@@ -101,6 +101,7 @@ public:
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
     Qt::WindowState setWindowState(Qt::WindowState state);
     void setWindowTitle(const QString &title);
+    void setWindowFilePath(const QString &filePath);
     void raise();
     void lower();
     void propagateSizeHints();

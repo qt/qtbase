@@ -346,6 +346,16 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
 
 }
 
+void QWidgetPrivate::setWindowFilePath_sys(const QString &filePath)
+{
+    Q_Q(QWidget);
+    if (!q->isWindow())
+        return;
+
+    if (QWindow *window = q->windowHandle())
+        window->setWindowFilePath(filePath);
+}
+
 void QWidgetPrivate::setWindowIcon_sys()
 {
     Q_Q(QWidget);

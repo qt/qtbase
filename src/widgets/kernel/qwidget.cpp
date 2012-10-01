@@ -5725,7 +5725,7 @@ void QWidget::setWindowFilePath(const QString &filePath)
 void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
 {
     if (extra->topextra && extra->topextra->caption.isEmpty()) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         setWindowTitle_helper(QFileInfo(filePath).fileName());
 #else
         Q_Q(QWidget);
@@ -5733,7 +5733,7 @@ void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
         setWindowTitle_helper(q->windowTitle());
 #endif
     }
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     setWindowFilePath_sys(filePath);
 #endif
 }

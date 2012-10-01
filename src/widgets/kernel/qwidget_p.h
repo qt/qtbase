@@ -477,6 +477,7 @@ public:
     void setWindowIconText_sys(const QString &cap);
     void setWindowIconText_helper(const QString &cap);
     void setWindowTitle_sys(const QString &cap);
+    void setWindowFilePath_sys(const QString &filePath);
 
 #ifndef QT_NO_CURSOR
     void setCursor_sys(const QCursor &cursor);
@@ -766,7 +767,6 @@ public:
     void update_sys(const QRegion &rgn);
     void setGeometry_sys_helper(int, int, int, int, bool);
     void updateMaximizeButton_sys();
-    void setWindowFilePath_sys(const QString &filePath);
     void createWindow_sys();
     void recreateMacWindow();
     void setSubWindowStacking(bool set);

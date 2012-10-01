@@ -45,6 +45,7 @@
 #include "qcocoaglcontext.h"
 #include "qcocoahelpers.h"
 #include "qnsview.h"
+#include <QtCore/qfileinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -407,6 +408,16 @@ void QCocoaWindow::setWindowTitle(const QString &title)
     CFStringRef windowTitle = QCFString::toCFStringRef(title);
     [m_nsWindow setTitle: const_cast<NSString *>(reinterpret_cast<const NSString *>(windowTitle))];
     CFRelease(windowTitle);
+}
+
+void QCocoaWindow::setWindowFilePath(const QString &filePath)
+{
+    QCocoaAutoReleasePool pool;
+    if (!m_nsWindow)
+        return;
+
+    QFileInfo fi(filePath);
+    [m_nsWindow setRepresentedFilename: fi.exists() ? QCFString::toNSString(filePath) : @""];
 }
 
 void QCocoaWindow::raise()
