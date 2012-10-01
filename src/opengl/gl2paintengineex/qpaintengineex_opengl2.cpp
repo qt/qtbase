@@ -1443,7 +1443,7 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
 
     // don't try to cache huge fonts or vastly transformed fonts
     QFontEngine *fontEngine = textItem->fontEngine();
-    if (shouldDrawCachedGlyphs(fontEngine, s->matrix) || det < 0.25f || det > 4.f) {
+    if (shouldDrawCachedGlyphs(fontEngine, s->matrix) && det >= 0.25f && det <= 4.f) {
         QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
@@ -1501,7 +1501,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     bool drawCached = txtype < QTransform::TxProject;
 
     // don't try to cache huge fonts or vastly transformed fonts
-    if (shouldDrawCachedGlyphs(ti.fontEngine, s->matrix) || det < 0.25f || det > 4.f)
+    if (!shouldDrawCachedGlyphs(ti.fontEngine, s->matrix) || det < 0.25f || det > 4.f)
         drawCached = false;
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
