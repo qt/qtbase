@@ -27,7 +27,7 @@
 
 /*!
     \module QtGui
-    \title The Qt GUI Module
+    \title Qt GUI C++ API
     \ingroup modules
 
     \brief The Qt GUI module provides the basic enablers for graphical
@@ -45,13 +45,13 @@
 
     \snippet code/doc_src_qtgui.pro 0
 
-    See the \l {Qt GUI Module Overview} for more details.
+    See the \l {Qt GUI} page for more details.
 
 */
 
 /*!
-    \page qtgui-overview.html
-    \title Qt GUI Module Overview
+    \page qtgui-index.html
+    \title Qt GUI
 
     The Qt GUI module provides classes for windowing system
     integration, event handling, OpenGL and OpenGL ES integration, 2D
@@ -63,7 +63,13 @@
     For application developers writing user interfaces, Qt provides
     higher level API's, like Qt Quick, that are much more suitable
     than the enablers found in the Qt GUI module. 
-    than the enablers found in the Qt GUI module.
+
+    \section1 Getting started
+
+    To include the definitions of the module's classes, use the
+    following directive:
+
+    \snippet code/doc_src_qtgui.pro 0
 
 
 
@@ -152,14 +158,23 @@
     QtGui now contains only a small set of enablers, which are generally
     useful for all graphical applications.
 
+
+
+    \section1 Reference
+    \list
+    \li \l{Qt GUI C++ API}
+        \list
+        \li \l{Event Classes}
+        \li \l{Painting Classes}
+        \li \l{Rendering in 3D}
+        \endlist
+    \endlist
  */
 
+/*!
+    \group events
+    \title Event Classes
+    \ingroup groups
 
-/*
-
-    ### DOC-TODO: link under OpenGL to hello-opengl for QWindow in
-        examples/gui/opengl/openglwindow. Idea: QWindow which draws a
-        triangle using GLES 2.0 compatible shaders. Do not care about
-        1.1 API as almost everyone has 2.0 support these days.
-
+    \brief Classes that provide UI and input events.
 */
