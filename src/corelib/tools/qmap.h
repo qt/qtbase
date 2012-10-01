@@ -946,7 +946,7 @@ Q_OUTOFLINE_TEMPLATE std::map<Key, T> QMap<Key, T>::toStdMap() const
     const_iterator it = end();
     while (it != begin()) {
         --it;
-        map.insert(std::pair<Key, T>(it.key(), it.value()));
+        map.insert(map.begin(), std::pair<Key, T>(it.key(), it.value()));
     }
     return map;
 }

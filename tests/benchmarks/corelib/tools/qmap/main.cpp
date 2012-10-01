@@ -60,6 +60,7 @@ private slots:
     void lookup_string_int();
 
     void iteration();
+    void toStdMap();
 };
 
 
@@ -159,6 +160,17 @@ void tst_QMap::iteration()
     }
 }
 
+void tst_QMap::toStdMap()
+{
+    QMap<int, int> map;
+    for (int i = 0; i < 100000; ++i)
+        map.insert(i, i);
+
+    QBENCHMARK {
+        std::map<int, int> n = map.toStdMap();
+        n.begin();
+    }
+}
 
 QTEST_MAIN(tst_QMap)
 
