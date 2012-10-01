@@ -173,8 +173,7 @@ void MainWidget::initShaders()
 //! [4]
 void MainWidget::initTextures()
 {
-    // Loading cube.png to texture unit 0
-    glActiveTexture(GL_TEXTURE0);
+    // Loading cube.png
     glEnable(GL_TEXTURE_2D);
     texture = bindTexture(QImage(":/cube.png"));
 
