@@ -52,8 +52,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-class QModelIndex;
-
 namespace QAccessible2
 {
     enum BoundaryType {
