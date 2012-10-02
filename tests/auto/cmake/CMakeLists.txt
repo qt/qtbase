@@ -78,6 +78,7 @@ endif()
 expect_pass(test_private_includes)
 expect_pass(test_modules)
 expect_pass(test_testlib_definitions)
+expect_pass(test_json_plugin_includes)
 
 expect_fail(test_testlib_no_link_gui)
 expect_fail(test_testlib_no_link_widgets)

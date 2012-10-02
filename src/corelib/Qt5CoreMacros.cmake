@@ -69,6 +69,10 @@ macro(QT5_GET_MOC_FLAGS _moc_flags)
     set(${_moc_flags})
     get_directory_property(_inc_DIRS INCLUDE_DIRECTORIES)
 
+    if(CMAKE_INCLUDE_CURRENT_DIR)
+        list(APPEND _inc_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+
     foreach(_current ${_inc_DIRS})
         if("${_current}" MATCHES "\\.framework/?$")
             string(REGEX REPLACE "/[^/]+\\.framework" "" framework_path "${_current}")
