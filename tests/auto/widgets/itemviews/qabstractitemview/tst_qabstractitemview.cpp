@@ -226,6 +226,7 @@ private slots:
     void QTBUG6753_selectOnSelection();
     void testDelegateDestroyEditor();
     void testClickedSignal();
+    void testChangeEditorState();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1532,6 +1533,61 @@ void tst_QAbstractItemView::testClickedSignal()
     // be emitted.
     QCOMPARE(clickedSpy.count(), 1);
 
+}
+
+class StateChangeDelegate : public QItemDelegate {
+  Q_OBJECT
+
+public:
+  explicit StateChangeDelegate(QObject* parent = 0) :
+    QItemDelegate(parent)
+  {}
+
+  void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE {
+      static bool w = true;
+      editor->setEnabled(w);
+      w = !w;
+  }
+};
+
+class StateChangeModel : public QStandardItemModel {
+  Q_OBJECT
+
+public:
+  explicit StateChangeModel(QObject *parent = 0) :
+    QStandardItemModel(parent)
+  {}
+
+  void emitDataChanged() {
+    emit dataChanged(index(0, 0), index(0, 1));
+  }
+};
+
+
+void tst_QAbstractItemView::testChangeEditorState()
+{
+    // Test for QTBUG-25370
+    StateChangeModel model;
+    {
+      QStandardItem* item = new QStandardItem("a");
+      model.setItem(0, 0, item);
+    }
+    {
+      QStandardItem* item = new QStandardItem("b");
+      model.setItem(0, 1, item);
+    }
+
+    QTableView view;
+    view.setEditTriggers(QAbstractItemView::CurrentChanged);
+    view.setItemDelegate(new StateChangeDelegate);
+    view.setModel(&model);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
+
+    model.emitDataChanged();
+    // No segfault - the test passes.
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

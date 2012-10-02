@@ -4118,8 +4118,12 @@ void QAbstractItemViewPrivate::updateEditorData(const QModelIndex &tl, const QMo
     // we are counting on having relatively few editors
     const bool checkIndexes = tl.isValid() && br.isValid();
     const QModelIndex parent = tl.parent();
-    QIndexEditorHash::const_iterator it = indexEditorHash.constBegin();
-    for (; it != indexEditorHash.constEnd(); ++it) {
+    // QTBUG-25370: We need to copy the indexEditorHash, because while we're
+    // iterating over it, we are calling methods which can allow user code to
+    // call a method on *this which can modify the member indexEditorHash.
+    const QIndexEditorHash indexEditorHashCopy = indexEditorHash;
+    QIndexEditorHash::const_iterator it = indexEditorHashCopy.constBegin();
+    for (; it != indexEditorHashCopy.constEnd(); ++it) {
         QWidget *editor = it.value().widget.data();
         const QModelIndex index = it.key();
         if (it.value().isStatic || !editor || !index.isValid() ||
