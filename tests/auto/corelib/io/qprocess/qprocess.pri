@@ -16,5 +16,7 @@ SUBPROGRAMS = \
           testSetWorkingDirectory \
           testSoftExit
 
+!contains(QMAKE_PLATFORM, wince): SUBPROGRAMS += testForwarding
+
 contains(QT_CONFIG, no-widgets): SUBPROGRAMS -= \
           testGuiProcess
