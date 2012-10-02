@@ -65,10 +65,8 @@ QDBusConnection DBusConnection::connectDBus()
 
     if (!address.isEmpty()) {
         QDBusConnection c = QDBusConnection::connectToBus(address, QStringLiteral("a11y"));
-        if (c.isConnected()) {
-            qDebug() << "Connected to accessibility bus at: " << address;
+        if (c.isConnected())
             return c;
-        }
         qWarning("Found Accessibility DBus address but cannot connect. Falling back to session bus.");
     } else {
         qWarning("Accessibility DBus not found. Falling back to session bus.");
