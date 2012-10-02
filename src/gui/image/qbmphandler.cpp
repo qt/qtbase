@@ -757,7 +757,10 @@ bool QBmpHandler::read(QImage *image)
     s.setByteOrder(QDataStream::LittleEndian);
 
     // read image
-    if (!read_dib_body(s, infoHeader, fileHeader.bfOffBits, startpos, *image))
+    const bool readSuccess = m_format == BmpFormat ?
+        read_dib_body(s, infoHeader, fileHeader.bfOffBits, startpos, *image) :
+        read_dib_body(s, infoHeader, -1, startpos - BMP_FILEHDR_SIZE, *image);
+    if (!readSuccess)
         return false;
 
     state = Ready;
