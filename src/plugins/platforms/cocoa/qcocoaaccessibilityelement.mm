@@ -109,6 +109,7 @@ static QAccessibleInterface *acast(void *ptr)
         NSAccessibilityPositionAttribute,
         NSAccessibilitySizeAttribute,
         NSAccessibilityDescriptionAttribute,
+        NSAccessibilityEnabledAttribute,
         nil];
     }
     return attributes;
@@ -150,6 +151,8 @@ static QAccessibleInterface *acast(void *ptr)
         return [NSValue valueWithSize: NSMakeSize(qtSize.width(), qtSize.height())];
     } else if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
         return QCFString::toNSString(acast(accessibleInterface)->text(QAccessible::Name));
+    } else if ([attribute isEqualToString:NSAccessibilityEnabledAttribute]) {
+        return [NSNumber numberWithBool:!acast(accessibleInterface)->state().disabled];
     }
 
     return nil;
