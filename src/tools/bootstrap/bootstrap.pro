@@ -22,12 +22,14 @@ DEFINES += \
         QT_NO_THREAD \
         QT_NO_UNICODETABLES \
         QT_NO_USING_NAMESPACE \
-        QT_NO_DEPRECATED
+        QT_NO_DEPRECATED \
+        QT_QMAKE_LOCATION=\\\"$$QMAKE_QMAKE\\\"
 
 INCLUDEPATH += $$QT_BUILD_TREE/include \
             $$QT_BUILD_TREE/include/QtCore \
             $$QT_BUILD_TREE/include/QtCore/$$QT_VERSION \
-            $$QT_BUILD_TREE/include/QtCore/$$QT_VERSION/QtCore
+            $$QT_BUILD_TREE/include/QtCore/$$QT_VERSION/QtCore \
+            $$QT_BUILD_TREE/src/corelib/global
 
 DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/global \
@@ -42,6 +44,7 @@ SOURCES += \
            ../../corelib/codecs/qtextcodec.cpp \
            ../../corelib/codecs/qutfcodec.cpp \
            ../../corelib/global/qglobal.cpp \
+           ../../corelib/global/qlibraryinfo.cpp \
            ../../corelib/global/qlogging.cpp \
            ../../corelib/global/qmalloc.cpp \
            ../../corelib/global/qnumeric.cpp \
@@ -58,6 +61,7 @@ SOURCES += \
            ../../corelib/io/qfsfileengine_iterator.cpp \
            ../../corelib/io/qiodevice.cpp \
            ../../corelib/io/qfiledevice.cpp \
+           ../../corelib/io/qsettings.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
            ../../corelib/kernel/qcoreglobaldata.cpp \
@@ -101,11 +105,13 @@ unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
 win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
                  ../../corelib/io/qfsfileengine_win.cpp \
+                 ../../corelib/io/qsettings_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 macx: {
-   SOURCES += ../../corelib/io/qfilesystemengine_mac.cpp
-   SOURCES += ../../corelib/kernel/qcore_mac.cpp
+   SOURCES += ../../corelib/io/qfilesystemengine_mac.cpp \
+              ../../corelib/io/qsettings_mac.cpp \
+              ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
 }
 

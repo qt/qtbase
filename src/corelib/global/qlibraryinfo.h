@@ -75,7 +75,7 @@ public:
         ExamplesPath,
         TestsPath,
         // Insert new values above this line
-#ifdef QT_BUILD_QMAKE
+#ifdef QT_BOOTSTRAPPED
         // These are not subject to binary compatibility constraints
         SysrootPath,
         HostPrefixPath,
@@ -86,7 +86,7 @@ public:
         SettingsPath = 100
     };
     static QString location(LibraryLocation); // ### Qt 6: consider renaming it to path()
-#ifdef QT_BUILD_QMAKE
+#ifdef QT_BOOTSTRAPPED
     enum PathGroup { FinalPaths, EffectivePaths };
     static QString rawLocation(LibraryLocation, PathGroup);
 #endif

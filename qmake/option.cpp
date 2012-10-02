@@ -645,7 +645,7 @@ qmakeAddCacheClear(qmakeCacheClearFunc func, void **data)
     cache_items.append(new QMakeCacheClearItem(func, data));
 }
 
-QString qmake_libraryInfoFile()
+QString qt_libraryInfoFile()
 {
     if (!Option::globals->qmake_abslocation.isEmpty())
         return QDir(QFileInfo(Option::globals->qmake_abslocation).absolutePath()).filePath("qt.conf");
