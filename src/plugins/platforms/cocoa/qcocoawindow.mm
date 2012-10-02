@@ -319,17 +319,10 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
 
     NSInteger windowLevel = NSNormalWindowLevel;
 
-    if (type == Qt::Tool) {
+    if (type == Qt::Tool)
         windowLevel = NSFloatingWindowLevel;
-    } else if ((type & Qt::Popup) == Qt::Popup) {
+    else if ((type & Qt::Popup) == Qt::Popup)
         windowLevel = NSPopUpMenuWindowLevel;
-
-        // Popup should be in at least the same level as its parent.
-        const QWindow * const transientParent = window()->transientParent();
-        const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
-        if (transientParentWindow)
-            windowLevel = qMax([transientParentWindow->m_nsWindow level], windowLevel);
-    }
 
     // StayOnTop window should appear above Tool windows.
     if (flags & Qt::WindowStaysOnTopHint)
@@ -337,6 +330,12 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
     // Tooltips should appear above StayOnTop windows.
     if (type == Qt::ToolTip)
         windowLevel = NSScreenSaverWindowLevel;
+
+    // A window should be in at least the same level as its parent.
+    const QWindow * const transientParent = window()->transientParent();
+    const QCocoaWindow * const transientParentWindow = transientParent ? static_cast<QCocoaWindow *>(transientParent->handle()) : 0;
+    if (transientParentWindow)
+        windowLevel = qMax([transientParentWindow->m_nsWindow level], windowLevel);
 
     return windowLevel;
 }
@@ -592,12 +591,6 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         setWindowFlags(window()->windowFlags());
         setWindowTitle(window()->windowTitle());
         setWindowState(window()->windowState());
-
-        if (window()->transientParent()) {
-            // keep this window on the same level as its transient parent (which may be a modal dialog, for example)
-            QCocoaWindow *parentCocoaWindow = static_cast<QCocoaWindow *>(window()->transientParent()->handle());
-            [m_nsWindow setLevel:[parentCocoaWindow->m_nsWindow level]];
-        }
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
         const QCocoaWindow *parentCococaWindow = static_cast<const QCocoaWindow *>(parentWindow);
