@@ -60,6 +60,8 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <xcb/shm.h>
+#include <xcb/sync.h>
 #include <xcb/xfixes.h>
 
 #ifdef XCB_USE_XLIB
@@ -308,7 +310,19 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     connect(dispatcher, SIGNAL(awake()), this, SLOT(processXcbEvents()));
 #endif
 
-    xcb_prefetch_extension_data (m_connection, &xcb_xfixes_id);
+    xcb_extension_t *extensions[] = {
+        &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
+#ifdef XCB_USE_RENDER
+        &xcb_render_id,
+#endif
+#ifdef XCB_HAS_XCB_GLX
+        &xcb_glx_id,
+#endif
+        0
+    };
+
+    for (xcb_extension_t **ext_it = extensions; *ext_it; ++ext_it)
+        xcb_prefetch_extension_data (m_connection, *ext_it);
 
     m_setup = xcb_get_setup(xcb_connection());
 
