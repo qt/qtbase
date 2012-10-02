@@ -139,10 +139,6 @@ void tst_QToolButton::triggered()
     QCOMPARE(spy.count(),1);
     QCOMPARE(qvariant_cast<QAction *>(spy.at(0).at(0)), def);
 
-#ifdef Q_OS_MAC
-    QSKIP("QTBUG-24374 - This test hangs here on Mac OSX");
-#endif
-
     w = menu;
     QTimer::singleShot(30, this, SLOT(sendMouseClick()));
     tb.showMenu();
