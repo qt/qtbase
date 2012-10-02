@@ -1408,14 +1408,15 @@ QRectF QWidgetTextControlPrivate::rectForPosition(int position) const
     return r;
 }
 
-static inline bool firstFramePosLessThanCursorPos(QTextFrame *frame, int position)
-{
-    return frame->firstPosition() < position;
-}
-
-static inline bool cursorPosLessThanLastFramePos(int position, QTextFrame *frame)
-{
-    return position < frame->lastPosition();
+namespace {
+struct QTextFrameComparator {
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+//The STL implementation of MSVC 2008 requires the definition
+    bool operator()(QTextFrame *frame1, QTextFrame *frame2) { return frame1->firstPosition() < frame2->firstPosition(); }
+#endif
+    bool operator()(QTextFrame *frame, int position) { return frame->firstPosition() < position; }
+    bool operator()(int position, QTextFrame *frame) { return position < frame->firstPosition(); }
+};
 }
 
 static QRectF boundingRectOfFloatsInSelection(const QTextCursor &cursor)
@@ -1425,9 +1426,9 @@ static QRectF boundingRectOfFloatsInSelection(const QTextCursor &cursor)
     const QList<QTextFrame *> children = frame->childFrames();
 
     const QList<QTextFrame *>::ConstIterator firstFrame = std::lower_bound(children.constBegin(), children.constEnd(),
-                                                                           cursor.selectionStart(), firstFramePosLessThanCursorPos);
+                                                                           cursor.selectionStart(), QTextFrameComparator());
     const QList<QTextFrame *>::ConstIterator lastFrame = std::upper_bound(children.constBegin(), children.constEnd(),
-                                                                          cursor.selectionEnd(), cursorPosLessThanLastFramePos);
+                                                                          cursor.selectionEnd(), QTextFrameComparator());
     for (QList<QTextFrame *>::ConstIterator it = firstFrame; it != lastFrame; ++it) {
         if ((*it)->frameFormat().position() != QTextFrameFormat::InFlow)
             r |= frame->document()->documentLayout()->frameBoundingRect(*it);

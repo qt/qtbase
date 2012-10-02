@@ -2540,7 +2540,10 @@ namespace {
 struct QScriptItemComparator {
     bool operator()(const QScriptItem &a, const QScriptItem &b) { return a.position < b.position; }
     bool operator()(int p, const QScriptItem &b) { return p < b.position; }
-    //bool operator()(const QScriptItem &a, int p) { return a.position < p; }
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+//The STL implementation of MSVC 2008 requires the definition
+    bool operator()(const QScriptItem &a, int p) { return a.position < p; }
+#endif
 };
 }
 

@@ -401,6 +401,26 @@ Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint, int pos)
     return checkPoint.positionInFrame < pos;
 }
 
+#if defined(Q_CC_MSVC) && _MSC_VER < 1600
+//The STL implementation of MSVC 2008 requires the definitions
+
+Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint2, const QCheckPoint &checkPoint1)
+{
+    return checkPoint1.y < checkPoint2.y;
+}
+
+Q_STATIC_GLOBAL_OPERATOR bool operator<(QFixed y, const QCheckPoint &checkPoint)
+{
+    return y < checkPoint.y;
+}
+
+Q_STATIC_GLOBAL_OPERATOR bool operator<(int pos, const QCheckPoint &checkPoint)
+{
+    return pos < checkPoint.positionInFrame;
+}
+
+#endif
+
 static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, const QPointF &origin, QRectF gradientRect = QRectF())
 {
     p->save();
