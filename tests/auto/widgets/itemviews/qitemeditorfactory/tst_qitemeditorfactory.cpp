@@ -48,6 +48,7 @@ class tst_QItemEditorFactory: public QObject
 private slots:
     void createEditor();
     void createCustomEditor();
+    void uintValues();
 };
 
 void tst_QItemEditorFactory::createEditor()
@@ -98,6 +99,24 @@ void tst_QItemEditorFactory::createCustomEditor()
     QVERIFY(creator2.isNull());
 
     delete creator;
+}
+
+void tst_QItemEditorFactory::uintValues()
+{
+    QItemEditorFactory editorFactory;
+
+    QWidget parent;
+
+    {
+        QWidget *editor = editorFactory.createEditor(QMetaType::UInt, &parent);
+        QCOMPARE(editor->metaObject()->className(), "QUIntSpinBox");
+        QCOMPARE(editor->metaObject()->userProperty().type(), QVariant::UInt);
+    }
+    {
+        QWidget *editor = editorFactory.createEditor(QMetaType::Int, &parent);
+        QCOMPARE(editor->metaObject()->className(), "QSpinBox");
+        QCOMPARE(editor->metaObject()->userProperty().type(), QVariant::Int);
+    }
 }
 
 QTEST_MAIN(tst_QItemEditorFactory)
