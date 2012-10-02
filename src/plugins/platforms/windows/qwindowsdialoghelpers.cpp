@@ -884,7 +884,7 @@ void QWindowsNativeFileDialogBase::setNameFilters(const QStringList &filters)
     QScopedArrayPointer<COMDLG_FILTERSPEC> comFilterSpec(new COMDLG_FILTERSPEC[size]);
 
     const QString matchesAll = QStringLiteral(" (*)");
-    const QRegExp filterSeparatorRE(QStringLiteral("; *"));
+    const QRegExp filterSeparatorRE(QStringLiteral("[;\\s]+"));
     const QString separator = QStringLiteral(";");
     Q_ASSERT(filterSeparatorRE.isValid());
 
