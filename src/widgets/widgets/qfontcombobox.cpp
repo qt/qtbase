@@ -164,7 +164,18 @@ void QFontFamilyDelegate::paint(QPainter *painter,
 
     QFont old = painter->font();
     painter->setFont(font);
-    painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeading|Qt::TextSingleLine, text);
+
+    // If the ascent of the font is larger than the height of the rect,
+    // we will clip the text, so it's better to align the tight bounding rect in this case
+    // This is specifically for fonts where the ascent is very large compared to
+    // the descent, like certain of the Stix family.
+    QFontMetricsF fontMetrics(font);
+    if (fontMetrics.ascent() > r.height()) {
+        QRectF tbr = fontMetrics.tightBoundingRect(text);
+        painter->drawText(r.x(), r.y() + (r.height() + tbr.height()) / 2.0, text);
+    } else {
+        painter->drawText(r, Qt::AlignVCenter|Qt::AlignLeading|Qt::TextSingleLine, text);
+    }
 
     if (writingSystem != QFontDatabase::Any)
         system = writingSystem;
