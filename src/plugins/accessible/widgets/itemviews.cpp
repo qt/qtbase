@@ -764,6 +764,8 @@ QRect QAccessibleTableHeaderCell::rect() const
         header = tv->header();
 #endif
     }
+    if (!header)
+        return QRect();
     QPoint zero = header->mapToGlobal(QPoint(0, 0));
     int sectionSize = header->sectionSize(index);
     int sectionPos = header->sectionPosition(index);
