@@ -72,6 +72,7 @@ private slots:
     void lineBoundaries_manual();
 
     void fastConstructor();
+    void assignmentOperator();
     void wordBoundaries_qtbug6498();
     void isAtSoftHyphen_data();
     void isAtSoftHyphen();
@@ -543,6 +544,30 @@ void tst_QTextBoundaryFinder::fastConstructor()
     finder.toNextBoundary();
     QCOMPARE(finder.position(), -1);
     QCOMPARE(finder.boundaryReasons(), QTextBoundaryFinder::NotAtBoundary);
+}
+
+void tst_QTextBoundaryFinder::assignmentOperator()
+{
+    QString text(QLatin1String("Hello World"));
+
+    QTextBoundaryFinder invalidFinder;
+    QVERIFY(!invalidFinder.isValid());
+    QCOMPARE(invalidFinder.string(), QString());
+
+    QTextBoundaryFinder validFinder(QTextBoundaryFinder::Word, text);
+    QVERIFY(validFinder.isValid());
+    QCOMPARE(validFinder.string(), text);
+
+    QTextBoundaryFinder finder(QTextBoundaryFinder::Line, QLatin1String("dummy"));
+    QVERIFY(finder.isValid());
+
+    finder = invalidFinder;
+    QVERIFY(!finder.isValid());
+    QCOMPARE(finder.string(), QString());
+
+    finder = validFinder;
+    QVERIFY(finder.isValid());
+    QCOMPARE(finder.string(), text);
 }
 
 void tst_QTextBoundaryFinder::wordBoundaries_qtbug6498()

@@ -202,18 +202,27 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     if (&other == this)
         return *this;
 
+    if (other.d) {
+        uint newCapacity = (length + 1) * sizeof(QCharAttributes);
+        QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *) realloc(freePrivate ? d : 0, newCapacity);
+        Q_CHECK_PTR(newD);
+        freePrivate = true;
+        d = newD;
+    }
+
     t = other.t;
     s = other.s;
     chars = other.chars;
     length = other.length;
     pos = other.pos;
 
-    QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *)
-        realloc(freePrivate ? d : 0, (length + 1) * sizeof(QCharAttributes));
-    Q_CHECK_PTR(newD);
-    freePrivate = true;
-    d = newD;
-    memcpy(d, other.d, (length + 1) * sizeof(QCharAttributes));
+    if (other.d) {
+        memcpy(d, other.d, (length + 1) * sizeof(QCharAttributes));
+    } else {
+        if (freePrivate)
+            free(d);
+        d = 0;
+    }
 
     return *this;
 }
