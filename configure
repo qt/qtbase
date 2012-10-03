@@ -3281,11 +3281,6 @@ Additional options:
     -feature-<feature> .. Compile in <feature>. The available features
                           are described in src/corelib/global/qfeatures.txt
 
-    -no-freetype ........ Do not compile in Freetype2 support.
-    -qt-freetype ........ Use the libfreetype bundled with Qt.
- *  -system-freetype .... Use libfreetype from the operating system.
-                          See http://www.freetype.org/
-
     -qconfig local ...... Use src/corelib/global/qconfig-local.h rather than the
                           default ($CFG_QCONFIG).
 
