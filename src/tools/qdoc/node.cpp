@@ -357,7 +357,7 @@ QString Node::nodeSubtypeString(unsigned t)
     case ExternalPage:
         return "external page";
     case QmlClass:
-        return "QML class";
+        return "QML type";
     case QmlPropertyGroup:
         return "QML property group";
     case QmlBasicType:
