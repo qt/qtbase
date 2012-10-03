@@ -110,7 +110,8 @@ void Generator::setDebugSegfaultFlag(bool b)
  */
 void Generator::debugSegfault(const QString& message)
 {
-    qDebug() << "DEBUG:" << message;
+    if (debugging())
+        qDebug() << "DEBUG:" << message;
 }
 
 /*!
