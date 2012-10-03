@@ -300,6 +300,9 @@ void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         m_timestamp[mode] = XCB_CURRENT_TIME;
     }
 
+    if (connection()->time() == XCB_CURRENT_TIME)
+        connection()->setTime(connection()->getTimestamp());
+
     if (data) {
         newOwner = owner();
 
