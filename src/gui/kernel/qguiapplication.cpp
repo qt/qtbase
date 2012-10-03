@@ -2328,6 +2328,15 @@ static inline void applyCursor(const QList<QWindow *> &l, const QCursor &c)
     }
 }
 
+static inline void applyWindowCursor(const QList<QWindow *> &l)
+{
+    for (int i = 0; i < l.size(); ++i) {
+        QWindow *w = l.at(i);
+        if (w->handle() && w->windowType() != Qt::Desktop)
+            applyCursor(w, w->cursor());
+    }
+}
+
 /*!
     \fn void QGuiApplication::setOverrideCursor(const QCursor &cursor)
 
@@ -2376,8 +2385,12 @@ void QGuiApplication::restoreOverrideCursor()
     if (qGuiApp->d_func()->cursor_list.isEmpty())
         return;
     qGuiApp->d_func()->cursor_list.removeFirst();
-    QCursor c(qGuiApp->d_func()->cursor_list.value(0, QCursor()));
-    applyCursor(QGuiApplicationPrivate::window_list, c);
+    if (qGuiApp->d_func()->cursor_list.size() > 0) {
+        QCursor c(qGuiApp->d_func()->cursor_list.value(0));
+        applyCursor(QGuiApplicationPrivate::window_list, c);
+    } else {
+        applyWindowCursor(QGuiApplicationPrivate::window_list);
+    }
 }
 #endif// QT_NO_CURSOR
 

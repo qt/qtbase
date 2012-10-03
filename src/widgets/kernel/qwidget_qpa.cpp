@@ -1064,9 +1064,7 @@ void QWidgetPrivate::setModal_sys()
 static inline void applyCursor(QWidget *w, QCursor c)
 {
     if (QWindow *window = w->windowHandle())
-        if (const QScreen *screen = window->screen())
-            if (QPlatformCursor *cursor = screen->handle()->cursor())
-                cursor->changeCursor(&c, window);
+        window->setCursor(c);
 }
 
 void qt_qpa_set_cursor(QWidget *w, bool force)
@@ -1097,10 +1095,7 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
         return;
 
     if (w->isWindow() || w->testAttribute(Qt::WA_SetCursor)) {
-        QCursor *oc = QApplication::overrideCursor();
-        if (oc)
-            applyCursor(nativeParent, *oc);
-        else if (w->isEnabled())
+        if (w->isEnabled())
             applyCursor(nativeParent, w->cursor());
         else
             // Enforce the windows behavior of clearing the cursor on
