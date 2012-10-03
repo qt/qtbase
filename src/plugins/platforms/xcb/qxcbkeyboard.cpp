@@ -1108,7 +1108,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
 
     if (!filtered)
         QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
-                                                       code, 0, state, string.left(count), isAutoRepeat);
+                                                       code, sym, state, string.left(count), isAutoRepeat);
 
     if (isAutoRepeat && type == QEvent::KeyRelease) {
         // since we removed it from the event queue using checkEvent we need to send the key press here
@@ -1129,7 +1129,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         }
         if (!filtered)
             QWindowSystemInterface::handleExtendedKeyEvent(window, time, QEvent::KeyPress, qtcode, modifiers,
-                                                           code, 0, state, string.left(count), isAutoRepeat);
+                                                           code, sym, state, string.left(count), isAutoRepeat);
     }
 }
 
