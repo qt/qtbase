@@ -90,9 +90,15 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
     qDebug() << "QCocoaMenuBar" << this << "insertMenu" << menu << "before" << before;
 #endif
 
-    Q_ASSERT(!m_menus.contains(menu));
+    if (m_menus.contains(menu)) {
+        qWarning() << Q_FUNC_INFO << "This menu already belongs to the menubar, remove it first";
+        return;
+    }
     if (beforeMenu) {
-        Q_ASSERT(m_menus.contains(beforeMenu));
+        if (!m_menus.contains(beforeMenu)) {
+            qWarning() << Q_FUNC_INFO << "The before menu does not belong to the menubar";
+            return;
+        }
         m_menus.insert(m_menus.indexOf(beforeMenu), menu);
         NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeMenu->nsMenuItem()];
         [m_nativeMenu insertItem: menu->nsMenuItem() atIndex: nativeIndex];
@@ -107,7 +113,10 @@ void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *befor
 void QCocoaMenuBar::removeMenu(QPlatformMenu *platformMenu)
 {
     QCocoaMenu *menu = static_cast<QCocoaMenu *>(platformMenu);
-    Q_ASSERT(m_menus.contains(menu));
+    if (!m_menus.contains(menu)) {
+        qWarning() << Q_FUNC_INFO << "Trying to remove a menu that does not belong to the menubar";
+        return;
+    }
     m_menus.removeOne(menu);
 
     NSUInteger realIndex = [m_nativeMenu indexOfItem:menu->nsMenuItem()];

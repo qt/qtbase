@@ -44,6 +44,8 @@
 #include "qcocoahelpers.h"
 #include "qcocoaautoreleasepool.h"
 
+#include <QtCore/QtDebug>
+
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuDelegate) : NSObject <NSMenuDelegate> {
     QCocoaMenu *m_menu;
 }
@@ -134,7 +136,10 @@ void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *
     if (beforeItem) {
         int index = m_menuItems.indexOf(beforeItem);
         // if a before item is supplied, it should be in the menu
-        Q_ASSERT(index >= 0);
+        if (index < 0) {
+            qWarning() << Q_FUNC_INFO << "Before menu item not found";
+            return;
+        }
         m_menuItems.insert(index, cocoaItem);
     } else {
         m_menuItems.append(cocoaItem);
@@ -152,7 +157,10 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     if (item->isMerged())
         return;
 
-    Q_ASSERT([item->nsItem() menu] == NULL);
+    if ([item->nsItem() menu]) {
+        qWarning() << Q_FUNC_INFO << "Menu item is already in a menu, remove it from the other menu first before inserting";
+        return;
+    }
     // if the item we're inserting before is merged, skip along until
     // we find a non-merged real item to insert ahead of.
     while (beforeItem && beforeItem->isMerged()) {
@@ -160,7 +168,10 @@ void QCocoaMenu::insertNative(QCocoaMenuItem *item, QCocoaMenuItem *beforeItem)
     }
 
     if (beforeItem) {
-        Q_ASSERT(!beforeItem->isMerged());
+        if (beforeItem->isMerged()) {
+            qWarning() << Q_FUNC_INFO << "No non-merged before menu item found";
+            return;
+        }
         NSUInteger nativeIndex = [m_nativeMenu indexOfItem:beforeItem->nsItem()];
         [m_nativeMenu insertItem: item->nsItem() atIndex: nativeIndex];
     } else {
@@ -172,10 +183,16 @@ void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
     QCocoaAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
-    Q_ASSERT(m_menuItems.contains(cocoaItem));
+    if (!m_menuItems.contains(cocoaItem)) {
+        qWarning() << Q_FUNC_INFO << "Menu does not contain the item to be removed";
+        return;
+    }
     m_menuItems.removeOne(cocoaItem);
     if (!cocoaItem->isMerged()) {
-        Q_ASSERT(m_nativeMenu == [cocoaItem->nsItem() menu]);
+        if (m_nativeMenu != [cocoaItem->nsItem() menu]) {
+            qWarning() << Q_FUNC_INFO << "Item to remove does not belong to this menu";
+            return;
+        }
         [m_nativeMenu removeItem: cocoaItem->nsItem()];
     }
 }
@@ -192,7 +209,10 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
 {
     QCocoaAutoReleasePool pool;
     QCocoaMenuItem *cocoaItem = static_cast<QCocoaMenuItem *>(menuItem);
-    Q_ASSERT(m_menuItems.contains(cocoaItem));
+    if (!m_menuItems.contains(cocoaItem)) {
+        qWarning() << Q_FUNC_INFO << "Item does not belong to this menu";
+        return;
+    }
 
     bool wasMerged = cocoaItem->isMerged();
     NSMenuItem *oldItem = [m_nativeMenu itemWithTag:(NSInteger) cocoaItem];

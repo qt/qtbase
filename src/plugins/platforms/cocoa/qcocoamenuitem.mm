@@ -347,7 +347,10 @@ QKeySequence QCocoaMenuItem::mergeAccel()
 
 void QCocoaMenuItem::syncMerged()
 {
-    Q_ASSERT(m_merged);
+    if (!m_merged) {
+        qWarning() << Q_FUNC_INFO << "Trying to sync a non-merged item";
+        return;
+    }
     [m_native setTag:reinterpret_cast<NSInteger>(this)];
     [m_native setHidden: !m_isVisible];
 }
