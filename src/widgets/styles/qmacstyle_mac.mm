@@ -5152,6 +5152,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 }
 
                 CGContextSaveGState(cg);
+                [NSGraphicsContext saveGraphicsState];
 
                 [NSGraphicsContext setCurrentContext:[NSGraphicsContext
                      graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
@@ -5230,6 +5231,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 }
 
                 CGContextEndTransparencyLayer(cg);
+
+                [NSGraphicsContext restoreGraphicsState];
                 CGContextRestoreGState(cg);
             } else
 #endif
