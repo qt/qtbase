@@ -246,9 +246,9 @@ static QString strippedText(QString s)
     bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:nil shouldShowFilename:filepath];
 
-    [mOpenPanel setDirectoryURL:selectable ? [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath())]
+    [mSavePanel setDirectoryURL:selectable ? [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath())]
                                            : [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.path())]];
-    mReturnCode = [mOpenPanel runModal];
+    mReturnCode = [mSavePanel runModal];
 
     QAbstractEventDispatcher::instance()->interrupt();
     return (mReturnCode == NSOKButton);
@@ -266,7 +266,7 @@ static QString strippedText(QString s)
     bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:nil shouldShowFilename:filepath];
 
-    [mOpenPanel setDirectoryURL:selectable ? [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath())]
+    [mSavePanel setDirectoryURL:selectable ? [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath())]
                                            : [NSURL fileURLWithPath:QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.path())]];
     NSWindow *nsparent = static_cast<NSWindow *>(qGuiApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parent));
 
@@ -403,9 +403,9 @@ static QString strippedText(QString s)
         ext.prepend(defaultSuffix);
     [mSavePanel setAllowedFileTypes:ext.isEmpty() ? nil : QT_PREPEND_NAMESPACE(qt_mac_QStringListToNSMutableArray(ext))];
 
-    if ([mOpenPanel respondsToSelector:@selector(isVisible)] && [mSavePanel isVisible]) {
-        if ([mOpenPanel respondsToSelector:@selector(validateVisibleColumns)])
-            [mOpenPanel validateVisibleColumns];
+    if ([mSavePanel respondsToSelector:@selector(isVisible)] && [mSavePanel isVisible]) {
+        if ([mSavePanel respondsToSelector:@selector(validateVisibleColumns)])
+            [mSavePanel validateVisibleColumns];
     }
 }
 
