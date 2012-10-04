@@ -1124,6 +1124,8 @@ QAquaWidgetSize QMacStylePrivate::aquaSizeConstrain(const QStyleOption *option, 
             return QAquaSizeMini;
         return QAquaSizeUnknown;
     }
+
+    Q_Q(const QMacStyle);
     QSize large = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeLarge),
           small = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeSmall),
           mini  = qt_aqua_get_known_size(ct, widg, szHint, QAquaSizeMini);
@@ -1204,6 +1206,7 @@ HIRect QMacStylePrivate::pushButtonContentBounds(const QStyleOptionButton *btn,
 */
 QSize QMacStylePrivate::pushButtonSizeFromContents(const QStyleOptionButton *btn) const
 {
+    Q_Q(const QMacStyle);
     QSize csz(0, 0);
     QSize iconSize = btn->icon.isNull() ? QSize(0, 0)
                 : (btn->iconSize + QSize(QMacStylePrivate::PushButtonContentPadding, 0));
@@ -1306,7 +1309,7 @@ bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOpti
     if (!macStyle)
         return false;
     HIThemeButtonDrawInfo bdi;
-    macStyle->d->initHIThemePushButton(option, pushButton, kThemeStateActive, &bdi);
+    macStyle->d_func()->initHIThemePushButton(option, pushButton, kThemeStateActive, &bdi);
     return bdi.kind == kThemeBevelButton;
 }
 
@@ -1317,7 +1320,7 @@ bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOpti
     explicit user style settings, etc.
 */
 void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThemeButtonDrawInfo *bdi,
-                                    const QWidget *widget, const ThemeDrawState &tds)
+                                    const QWidget *widget, const ThemeDrawState &tds) const
 {
     bdi->version = qt_mac_hitheme_version;
     bdi->adornment = kThemeAdornmentArrowLeftArrow;
@@ -1595,7 +1598,7 @@ static int scrollButtonsCutoffSize(ScrollBarCutoffType cutoffType, QMacStyle::Wi
 }
 
 void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
-                          HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe)
+                          HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const
 {
     memset(tdi, 0, sizeof(HIThemeTrackDrawInfo)); // We don't get it all for some reason or another...
     tdi->version = qt_mac_hitheme_version;
@@ -1664,8 +1667,8 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
     }
 }
 
-QMacStylePrivate::QMacStylePrivate(QMacStyle *style)
-    : timerID(-1), progressFrame(0), q(style), mouseDown(false)
+QMacStylePrivate::QMacStylePrivate()
+    : timerID(-1), progressFrame(0), mouseDown(false)
 {
     defaultButtonStart = CFAbsoluteTimeGetCurrent();
     memset(&buttonState, 0, sizeof(ButtonState));
@@ -1730,8 +1733,9 @@ void QMacStylePrivate::startAnimate(QMacStylePrivate::Animates as, QWidget *w)
 
 void QMacStylePrivate::startAnimationTimer()
 {
+    Q_Q(QMacStyle);
     if ((defaultButton || !progressBars.isEmpty() || !scrollBars.isEmpty()) && timerID <= -1)
-        timerID = startTimer(animateSpeed(AquaListViewItemOpen));
+        timerID = q->startTimer(animateSpeed(AquaListViewItemOpen));
 }
 
 bool QMacStylePrivate::addWidget(QWidget *w)
@@ -1742,27 +1746,28 @@ bool QMacStylePrivate::addWidget(QWidget *w)
             || scrollBars.contains(static_cast<QScrollBar*>(w)))
         return false;
 
+    Q_Q(QMacStyle);
     if (QPushButton *btn = qobject_cast<QPushButton *>(w)) {
-        btn->installEventFilter(this);
+        btn->installEventFilter(q);
         if (btn->isDefault() || (btn->autoDefault() && btn->hasFocus()))
             startAnimate(AquaPushButton, btn);
         return true;
     } else {
         bool isProgressBar = (qobject_cast<QProgressBar *>(w));
         if (isProgressBar) {
-            w->installEventFilter(this);
+            w->installEventFilter(q);
             startAnimate(AquaProgressBar, w);
             return true;
         }
         bool isScrollBar = (qobject_cast<QScrollBar *>(w));
         if (isScrollBar) {
-            w->installEventFilter(this);
+            w->installEventFilter(q);
             startAnimate(AquaScrollBar, w);
             return true;
         }
     }
     if (w->isWindow()) {
-        w->installEventFilter(this);
+        w->installEventFilter(q);
         return true;
     }
     return false;
@@ -1797,8 +1802,9 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
-void QMacStylePrivate::timerEvent(QTimerEvent *)
+void QMacStylePrivate::animate()
 {
+    Q_Q(QMacStyle);
     int animated = 0;
     if (defaultButton && defaultButton->isEnabled() && defaultButton->window()->isActiveWindow()
         && defaultButton->isVisibleTo(0) && (defaultButton->isDefault()
@@ -1853,25 +1859,27 @@ void QMacStylePrivate::timerEvent(QTimerEvent *)
         }
     }
     if (animated <= 0) {
-        killTimer(timerID);
+        q->killTimer(timerID);
         timerID = -1;
     }
 }
 
-bool QMacStylePrivate::eventFilter(QObject *o, QEvent *e)
+/*! \reimp */
+bool QMacStyle::eventFilter(QObject *o, QEvent *e)
 {
     //animate
+    Q_D(QMacStyle);
     if (QProgressBar *pb = qobject_cast<QProgressBar *>(o)) {
         switch (e->type()) {
         default:
             break;
         case QEvent::Show:
-            if (!progressBars.contains(pb))
-                startAnimate(AquaProgressBar, pb);
+            if (!d->progressBars.contains(pb))
+                d->startAnimate(QMacStylePrivate::AquaProgressBar, pb);
             break;
         case QEvent::Destroy:
         case QEvent::Hide:
-            progressBars.removeAll(pb);
+            d->progressBars.removeAll(pb);
         }
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     } else if (QScrollBar *sb = qobject_cast<QScrollBar *>(o)) {
@@ -1879,10 +1887,10 @@ bool QMacStylePrivate::eventFilter(QObject *o, QEvent *e)
         const QAbstractScrollArea *scrollArea = scrollBarsScrollArea(sb);
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
                 [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay && scrollArea) {
-            OverlayScrollBarInfo& info = scrollBarInfos[sb];
+            QMacStylePrivate::OverlayScrollBarInfo& info = d->scrollBarInfos[sb];
             const qreal elapsed = info.lastUpdate.msecsTo(QDateTime::currentDateTime());
-            const CGFloat opacity = 1.0 - qMax(0.0, (elapsed - ScrollBarFadeOutDelay)
-                                                          / ScrollBarFadeOutDuration);
+            const CGFloat opacity = 1.0 - qMax(0.0, (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay)
+                                                          / QMacStylePrivate::ScrollBarFadeOutDuration);
             switch (e->type()) {
             case QEvent::MouseMove:
                 // whenever the mouse moves on a not 100% transparent scroll bar,
@@ -1936,22 +1944,22 @@ bool QMacStylePrivate::eventFilter(QObject *o, QEvent *e)
             break;
         case QEvent::FocusIn:
             if (btn->autoDefault())
-                startAnimate(AquaPushButton, btn);
+                d->startAnimate(QMacStylePrivate::AquaPushButton, btn);
             break;
         case QEvent::Destroy:
         case QEvent::Hide:
-            if (btn == defaultButton)
-                stopAnimate(AquaPushButton, btn);
+            if (btn == d->defaultButton)
+                d->stopAnimate(QMacStylePrivate::AquaPushButton, btn);
             break;
         case QEvent::MouseButtonPress:
             // It is very confusing to keep the button pulsing, so just stop the animation.
             if (static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)
-                mouseDown = true;
-            stopAnimate(AquaPushButton, btn);
+                d->mouseDown = true;
+            d->stopAnimate(QMacStylePrivate::AquaPushButton, btn);
             break;
         case QEvent::MouseButtonRelease:
             if (static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)
-                mouseDown = false;
+                d->mouseDown = false;
             // fall through
         case QEvent::FocusOut:
         case QEvent::Show:
@@ -1966,7 +1974,7 @@ bool QMacStylePrivate::eventFilter(QObject *o, QEvent *e)
                          || e->type() == QEvent::WindowActivate)
                         && pBtn->isDefault())) {
                     if (pBtn->window()->isActiveWindow()) {
-                        startAnimate(AquaPushButton, pBtn);
+                        d->startAnimate(QMacStylePrivate::AquaPushButton, pBtn);
                     }
                     break;
                 }
@@ -2094,11 +2102,10 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
 }
 
 QMacStyle::QMacStyle()
-    : QWindowsStyle()
+    : QWindowsStyle(*new QMacStylePrivate)
 {
-    d = new QMacStylePrivate(this);
-
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    Q_D(QMacStyle);
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
         d->receiver = [[NotificationReceiver alloc] initWithPrivate:d];
         NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
@@ -2116,6 +2123,7 @@ QMacStyle::QMacStyle()
 QMacStyle::~QMacStyle()
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    Q_D(QMacStyle);
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
         [reinterpret_cast<NSScroller*>(d->nsscroller) release];
 
@@ -2126,7 +2134,6 @@ QMacStyle::~QMacStyle()
 
     delete qt_mac_backgroundPattern;
     qt_mac_backgroundPattern = 0;
-    delete d;
 }
 
 /*! \internal
@@ -2183,6 +2190,7 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush 
 
 void QMacStyle::polish(QPalette &pal)
 {
+    Q_D(QMacStyle);
     if (!qt_mac_backgroundPattern) {
         if (!qApp)
             return;
@@ -2214,6 +2222,7 @@ void QMacStyle::unpolish(QApplication *)
 
 void QMacStyle::polish(QWidget* w)
 {
+    Q_D(QMacStyle);
     d->addWidget(w);
     if (qt_mac_is_metal(w) && !w->testAttribute(Qt::WA_SetPalette)) {
         // Set a clear brush so that the metal shines through.
@@ -2272,6 +2281,7 @@ void QMacStyle::polish(QWidget* w)
 
 void QMacStyle::unpolish(QWidget* w)
 {
+    Q_D(QMacStyle);
     d->removeWidget(w);
     if ((qobject_cast<QMenu*>(w) || qt_mac_is_metal(w)) && !w->testAttribute(Qt::WA_SetPalette)) {
         QPalette pal = qApp->palette(w);
@@ -2306,6 +2316,7 @@ void QMacStyle::unpolish(QWidget* w)
 
 int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QWidget *widget) const
 {
+    Q_D(const QMacStyle);
     int controlSize = getControlSize(opt, widget);
     SInt32 ret = 0;
 
@@ -3088,6 +3099,7 @@ QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget)
 void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                               const QWidget *w) const
 {
+    Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
     switch (pe) {
@@ -3516,6 +3528,7 @@ static inline QPixmap darkenPixmap(const QPixmap &pixmap)
 void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter *p,
                             const QWidget *w) const
 {
+    Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
     switch (ce) {
@@ -3740,8 +3753,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 bdi.adornment |= kThemeAdornmentDefault;
                 bdi.animation.time.start = d->defaultButtonStart;
                 bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
-                if (d->timerID <= -1)
-                    QMetaObject::invokeMethod(d, "startAnimationTimer", Qt::QueuedConnection);
+                const_cast<QMacStylePrivate*>(d)->startAnimationTimer();
             }
             // Unlike Carbon, we want the button to always be drawn inside its bounds.
             // Therefore, make the button a bit smaller, so that even if it got focus,
@@ -4618,6 +4630,7 @@ static void setLayoutItemMargins(int left, int top, int right, int bottom, QRect
 QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                 const QWidget *widget) const
 {
+    Q_D(const QMacStyle);
     QRect rect;
     int controlSize = getControlSize(opt, widget);
 
@@ -5020,6 +5033,7 @@ static inline void drawToolbarButtonArrow(const QRect &toolButtonRect, ThemeDraw
 void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                    const QWidget *widget) const
 {
+    Q_D(const QMacStyle);
     ThemeDrawState tds = d->getDrawState(opt->state);
     QMacCGContext cg(p);
     switch (cc) {
@@ -5643,6 +5657,7 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
                                                     const QStyleOptionComplex *opt,
                                                     const QPoint &pt, const QWidget *widget) const
 {
+    Q_D(const QMacStyle);
     SubControl sc = QStyle::SC_None;
     switch (cc) {
     case CC_ComboBox:
@@ -5772,6 +5787,7 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
 QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc,
                                 const QWidget *widget) const
 {
+    Q_D(const QMacStyle);
     QRect ret;
     switch (cc) {
     case CC_Slider:
@@ -6119,6 +6135,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
 QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                                   const QSize &csz, const QWidget *widget) const
 {
+    Q_D(const QMacStyle);
     QSize sz(csz);
     bool useAquaGuideline = true;
 
@@ -6452,6 +6469,7 @@ void QMacStyle::drawItemText(QPainter *p, const QRect &r, int flags, const QPale
 
 bool QMacStyle::event(QEvent *e)
 {
+    Q_D(QMacStyle);
     if(e->type() == QEvent::FocusIn) {
         QWidget *f = 0;
         QWidget *focusWidget = QApplication::focusWidget();
@@ -6494,6 +6512,9 @@ bool QMacStyle::event(QEvent *e)
     } else if(e->type() == QEvent::FocusOut) {
         if(d->focusWidget)
             d->focusWidget->setWidget(0);
+    } else if (e->type() == QEvent::Timer) {
+        if (static_cast<QTimerEvent*>(e)->timerId() == d->timerID)
+            d->animate();
     }
     return false;
 }
