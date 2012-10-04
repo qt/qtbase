@@ -28,7 +28,7 @@
 /*!
     \page qtnetwork-index.html
     \title Qt Network
-    \brief A module that provides networking capabilities
+    \brief Provides networking capabilities
 
     Qt Network provides a set of APIs for programming applications that use
     TCP/IP. Operations such as requests, cookies, and sending data over HTTP
@@ -58,16 +58,14 @@
     \section1 API Reference
     These are links to the API reference materials.
     \list
-    \li \l{Qt Network - C++ Classes}
+    \li \l{Qt Network C++ Classes}{C++ Classes}
     \endlist
 */
 /*!
     \module QtNetwork
-    \title Qt Network - C++ Classes
+    \title Qt Network C++ Classes
     \ingroup modules
-
-    \brief The QtNetwork module provides classes to make network programming
-    easier and portable.
+    \brief Provides classes to make network programming easier and portable
 
     To include the definitions of the module's classes, use the
     following directive:
