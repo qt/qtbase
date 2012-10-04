@@ -69,9 +69,10 @@ public:
 
     enum BoundaryReason {
         NotAtBoundary = 0,
-        StartWord = 1,
-        EndWord = 2,
-        SoftHyphen = 4
+        StartWord = 0x10,
+        EndWord = 0x20,
+        MandatoryBreak = 0x40,
+        SoftHyphen = 0x80
     };
     Q_DECLARE_FLAGS( BoundaryReasons, BoundaryReason )
 

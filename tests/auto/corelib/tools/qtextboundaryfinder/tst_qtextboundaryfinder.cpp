@@ -76,6 +76,8 @@ private slots:
     void wordBoundaries_qtbug6498();
     void isAtSoftHyphen_data();
     void isAtSoftHyphen();
+    void isAtMandatoryBreak_data();
+    void isAtMandatoryBreak();
     void thaiLineBreak();
 };
 
@@ -656,6 +658,41 @@ void tst_QTextBoundaryFinder::isAtSoftHyphen()
         boundaryFinder.setPosition(i + 1);
         QVERIFY(boundaryFinder.isAtBoundary());
         QVERIFY(boundaryFinder.boundaryReasons() & QTextBoundaryFinder::SoftHyphen);
+    }
+}
+
+void tst_QTextBoundaryFinder::isAtMandatoryBreak_data()
+{
+    QTest::addColumn<QString>("testString");
+    QTest::addColumn<QList<int> >("expectedBreakPositions");
+
+    {
+        QChar s[] = { 0x000D, 0x0308, 0x000A, 0x000A };
+        QString testString(s, sizeof(s)/sizeof(s[0]));
+        QList<int> expectedBreakPositions;
+        expectedBreakPositions << 0 << 1 << 3 << 4;
+
+        QTest::newRow("+CR+FExLF+LF+") << testString << expectedBreakPositions;
+    }
+    {
+        QString testString(QString::fromUtf8("Aaa bbb ccc.\r\nDdd eee fff."));
+        QList<int> expectedBreakPositions;
+        expectedBreakPositions << 0 << 14 << 26;
+
+        QTest::newRow("data1") << testString << expectedBreakPositions;
+    }
+}
+
+void tst_QTextBoundaryFinder::isAtMandatoryBreak()
+{
+    QFETCH(QString, testString);
+    QFETCH(QList<int>, expectedBreakPositions);
+
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Line, testString);
+    for (int i = 0; i <= testString.size(); ++i) {
+        boundaryFinder.setPosition(i);
+        if (boundaryFinder.boundaryReasons() & QTextBoundaryFinder::MandatoryBreak)
+            QVERIFY(expectedBreakPositions.contains(i));
     }
 }
 

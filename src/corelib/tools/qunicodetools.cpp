@@ -497,7 +497,7 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
         if (Q_UNLIKELY(lcls >= QUnicodeTables::LineBreak_CR)) {
             // LB4: BK!, LB5: (CRxLF|CR|LF|NL)!
             if (lcls > QUnicodeTables::LineBreak_CR || ncls != QUnicodeTables::LineBreak_LF)
-                attributes[pos].lineBreak = true;
+                attributes[pos].lineBreak = attributes[pos].mandatoryBreak = true;
             goto next;
         }
 
@@ -547,8 +547,8 @@ static void getLineBreaks(const ushort *string, quint32 len, QCharAttributes *at
             attributes[j].lineBreak = false;
     }
 
-    attributes[0].lineBreak = false; // LB2
-    attributes[len].lineBreak = true; // LB3
+    attributes[0].lineBreak = attributes[0].mandatoryBreak = false; // LB2
+    attributes[len].lineBreak = attributes[len].mandatoryBreak = true; // LB3
 }
 
 

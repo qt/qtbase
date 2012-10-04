@@ -66,7 +66,7 @@ struct Q_PACKED QCharAttributes
     uchar whiteSpace       : 1;
     uchar wordStart        : 1;
     uchar wordEnd          : 1;
-    uchar unused           : 1;
+    uchar mandatoryBreak   : 1;
 };
 Q_DECLARE_TYPEINFO(QCharAttributes, Q_PRIMITIVE_TYPE);
 

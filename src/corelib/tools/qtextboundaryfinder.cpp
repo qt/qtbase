@@ -162,6 +162,8 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
   \value NotAtBoundary  The boundary finder is not at a boundary position.
   \value StartWord  The boundary finder is at the start of a word.
   \value EndWord  The boundary finder is at the end of a word.
+  \value MandatoryBreak  Since 5.0. The boundary finder is at the end of line
+                         (can occur for a Line boundary type only).
   \value SoftHyphen  The boundary finder is at the soft hyphen
                      (can occur for a Line boundary type only).
 */
@@ -477,7 +479,10 @@ QTextBoundaryFinder::BoundaryReasons QTextBoundaryFinder::boundaryReasons() cons
             reasons |= EndWord;
         break;
     case Line:
-        if (pos > 0 && chars[pos - 1].unicode() == QChar::SoftHyphen)
+        // ### TR#14 LB2 prohibits break at sot
+        if (d->attributes[pos].mandatoryBreak || pos == 0)
+            reasons |= MandatoryBreak;
+        else if (pos > 0 && chars[pos - 1].unicode() == QChar::SoftHyphen)
             reasons |= SoftHyphen;
         // fall through
     case Grapheme:
