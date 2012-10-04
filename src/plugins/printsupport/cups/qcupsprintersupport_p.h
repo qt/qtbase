@@ -42,6 +42,8 @@
 #ifndef QCUPSPRINTERSUPPORT_H
 #define QCUPSPRINTERSUPPORT_H
 
+#ifndef QT_NO_PRINTER
+
 #include <qpa/qplatformprintersupport.h>
 
 #include <QtCore/qlibrary.h>
@@ -85,4 +87,5 @@ private:
 QT_END_NAMESPACE
 QT_END_HEADER
 
+#endif // QT_NO_PRINTER
 #endif // QCUPSPRINTERSUPPORT_H

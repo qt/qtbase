@@ -41,6 +41,8 @@
 
 #include "qcupsprintersupport_p.h"
 
+#ifndef QT_NO_PRINTER
+
 #include "qcupsprintengine_p.h"
 #include <private/qprinterinfo_p.h>
 
@@ -144,3 +146,5 @@ PrinterOptions QCupsPrinterSupport::printerOptions(const QPrinterInfo &printer) 
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_PRINTER
