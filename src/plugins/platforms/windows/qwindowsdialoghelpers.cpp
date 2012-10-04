@@ -633,7 +633,7 @@ IFileDialogEvents *QWindowsNativeFileDialogEventHandler::create(QWindowsNativeFi
     IFileDialogEvents *result;
     QWindowsNativeFileDialogEventHandler *eventHandler = new QWindowsNativeFileDialogEventHandler(nativeFileDialog);
     if (FAILED(eventHandler->QueryInterface(IID_IFileDialogEvents, reinterpret_cast<void **>(&result)))) {
-        qErrnoWarning("%s: Unable to obtain IFileDialogEvents");
+        qErrnoWarning("Unable to obtain IFileDialogEvents");
         return 0;
     }
     eventHandler->Release();
@@ -727,7 +727,7 @@ bool QWindowsNativeFileDialogBase::init(const CLSID &clsId, const IID &iid)
     HRESULT hr = CoCreateInstance(clsId, NULL, CLSCTX_INPROC_SERVER,
                                   iid, reinterpret_cast<void **>(&m_fileDialog));
     if (FAILED(hr)) {
-        qErrnoWarning("%s: CoCreateInstance failed");
+        qErrnoWarning("CoCreateInstance failed");
         return false;
     }
     m_dialogEvents = QWindowsNativeFileDialogEventHandler::create(this);
@@ -736,7 +736,7 @@ bool QWindowsNativeFileDialogBase::init(const CLSID &clsId, const IID &iid)
     // Register event handler
     hr = m_fileDialog->Advise(m_dialogEvents, &m_cookie);
     if (FAILED(hr)) {
-        qErrnoWarning("%s: IFileDialog::Advise failed");
+        qErrnoWarning("IFileDialog::Advise failed");
         return false;
     }
     if (QWindowsContext::verboseDialogs)
