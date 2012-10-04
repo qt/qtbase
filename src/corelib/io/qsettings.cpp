@@ -2296,7 +2296,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \list 1
     \li \c{HKEY_CURRENT_USER\Software\MySoft\Star Runner}
-    \li \c{HKEY_CURRENT_USER\Software\MySoft}
+    \li \c{HKEY_CURRENT_USER\Software\MySoft\OrganizationDefaults}
     \li \c{HKEY_LOCAL_MACHINE\Software\MySoft\Star Runner}
     \li \c{HKEY_LOCAL_MACHINE\Software\MySoft}
     \endlist
