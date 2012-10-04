@@ -429,6 +429,26 @@ void QCocoaWindow::setWindowFilePath(const QString &filePath)
     [m_nsWindow setRepresentedFilename: fi.exists() ? QCFString::toNSString(filePath) : @""];
 }
 
+void QCocoaWindow::setWindowIcon(const QIcon &icon)
+{
+    QCocoaAutoReleasePool pool;
+
+    NSButton *iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
+    if (iconButton == nil) {
+        NSString *title = QCFString::toNSString(window()->windowTitle());
+        [m_nsWindow setRepresentedURL:[NSURL fileURLWithPath:title]];
+        iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
+    }
+    if (icon.isNull()) {
+        [iconButton setImage:nil];
+    } else {
+        QPixmap pixmap = icon.pixmap(QSize(22, 22));
+        NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(pixmap));
+        [iconButton setImage:image];
+        [image release];
+    }
+}
+
 void QCocoaWindow::raise()
 {
     //qDebug() << "raise" << this;

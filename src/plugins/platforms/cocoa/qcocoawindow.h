@@ -102,6 +102,7 @@ public:
     Qt::WindowState setWindowState(Qt::WindowState state);
     void setWindowTitle(const QString &title);
     void setWindowFilePath(const QString &filePath);
+    void setWindowIcon(const QIcon &icon);
     void raise();
     void lower();
     void propagateSizeHints();
