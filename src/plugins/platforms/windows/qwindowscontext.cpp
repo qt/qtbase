@@ -706,13 +706,23 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     msg.pt.x = GET_X_LPARAM(lParam);
     msg.pt.y = GET_Y_LPARAM(lParam);
 
+    // Run the native event filters.
     long filterResult = 0;
     QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance();
     if (dispatcher && dispatcher->filterNativeEvent(d->m_eventType, &msg, &filterResult)) {
         *result = LRESULT(filterResult);
         return true;
     }
-    // Events without an associated QWindow or events we are not interested in.
+
+    QWindowsWindow *platformWindow = findPlatformWindow(hwnd);
+    if (platformWindow) {
+        filterResult = 0;
+        if (QWindowSystemInterface::handleNativeEvent(platformWindow->window(), d->m_eventType, &msg, &filterResult)) {
+            *result = LRESULT(filterResult);
+            return true;
+        }
+    }
+
     switch (et) {
     case QtWindows::InputMethodStartCompositionEvent:
         return QWindowsInputContext::instance()->startComposition(hwnd);
@@ -743,7 +753,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         break;
     }
 
-    QWindowsWindow *platformWindow = findPlatformWindow(hwnd);
     // Before CreateWindowEx() returns, some events are sent,
     // for example WM_GETMINMAXINFO asking for size constraints for top levels.
     // Pass on to current creation context
@@ -774,12 +783,6 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                  __FUNCTION__, message,
                  QWindowsGuiEventDispatcher::windowsMessageName(message), hwnd);
         return false;
-    }
-
-    filterResult = 0;
-    if (QWindowSystemInterface::handleNativeEvent(platformWindow->window(), d->m_eventType, &msg, &filterResult)) {
-        *result = LRESULT(filterResult);
-        return true;
     }
 
     switch (et) {
