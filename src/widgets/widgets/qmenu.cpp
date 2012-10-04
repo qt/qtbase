@@ -1765,6 +1765,8 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 {
     Q_D(QMenu);
     if (d->scroll) { // reset scroll state from last popup
+        if (d->scroll->scrollOffset)
+            d->itemsDirty = 1; // sizeHint will be incorrect if there is previous scroll
         d->scroll->scrollOffset = 0;
         d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
     }
@@ -1862,6 +1864,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->mousePopupPos = mouse;
     const bool snapToMouse = (QRect(p.x() - 3, p.y() - 3, 6, 6).contains(mouse));
 
+    const QSize menuSize(sizeHint());
     if (adjustToDesktop) {
         // handle popup falling "off screen"
         if (isRightToLeft()) {
@@ -1895,7 +1898,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
         if (pos.y() < screen.top() + desktopFrame)
             pos.setY(screen.top() + desktopFrame);
-        if (pos.y() + size.height() - 1 > screen.bottom() - desktopFrame) {
+        if (pos.y() + menuSize.height() - 1 > screen.bottom() - desktopFrame) {
             if (d->scroll) {
                 d->scroll->scrollFlags |= uint(QMenuPrivate::QMenuScroller::ScrollDown);
                 int y = qMax(screen.y(),pos.y());
@@ -1907,7 +1910,6 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
         }
     }
     const int subMenuOffset = style()->pixelMetric(QStyle::PM_SubMenuOverlap, 0, this);
-    const QSize menuSize(sizeHint());
     QMenu *caused = qobject_cast<QMenu*>(d_func()->causedPopup.widget);
     if (caused && caused->geometry().width() + menuSize.width() + subMenuOffset < screen.width()) {
         QRect parentActionRect(caused->d_func()->actionRect(caused->d_func()->currentAction));
