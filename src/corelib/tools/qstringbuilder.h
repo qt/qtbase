@@ -403,8 +403,7 @@ QByteArray &appendToByteArray(QByteArray &a, const QStringBuilder<A, B> &b, char
 template <typename A, typename B>
 QByteArray &appendToByteArray(QByteArray &a, const QStringBuilder<A, B> &b, QChar)
 {
-    // append UTF-16 data to the byte array
-    return a += QString(b);
+    return a += QString(b).toUtf8();
 }
 #endif
 }
