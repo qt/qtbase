@@ -1408,6 +1408,7 @@ bool QGraphicsWidget::event(QEvent *event)
         break;
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
+    case QEvent::StyleAnimationUpdate:
         update();
         break;
         // Taken from QWidget::event

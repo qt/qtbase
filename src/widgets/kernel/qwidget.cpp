@@ -8142,6 +8142,9 @@ bool QWidget::event(QEvent *event)
     case QEvent::UpdateLater:
         update(static_cast<QUpdateLaterEvent*>(event)->region());
         break;
+    case QEvent::StyleAnimationUpdate:
+        update();
+        break;
 
     case QEvent::WindowBlocked:
     case QEvent::WindowUnblocked:

@@ -279,6 +279,8 @@ public:
 
         PlatformPanel = 212,
 
+        StyleAnimationUpdate = 213,             // style animation target should be updated
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 
