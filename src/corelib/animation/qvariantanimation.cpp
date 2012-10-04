@@ -148,13 +148,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QVariantAnimation::updateCurrentValue(const QVariant &value) = 0;
-
-    This pure virtual function is called every time the animation's current
+    This virtual function is called every time the animation's current
     value changes. The \a value argument is the new current value.
+
+    The base class implementation does nothing.
 
     \sa currentValue
 */
+void QVariantAnimation::updateCurrentValue(const QVariant &) {}
 
 static bool animationValueLessThan(const QVariantAnimation::KeyValue &p1, const QVariantAnimation::KeyValue &p2)
 {

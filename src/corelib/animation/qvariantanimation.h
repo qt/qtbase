@@ -104,7 +104,7 @@ protected:
     void updateCurrentTime(int);
     void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
 
-    virtual void updateCurrentValue(const QVariant &value) = 0;
+    virtual void updateCurrentValue(const QVariant &value);
     virtual QVariant interpolated(const QVariant &from, const QVariant &to, qreal progress) const;
 
 private:
