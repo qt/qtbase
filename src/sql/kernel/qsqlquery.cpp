@@ -406,6 +406,24 @@ QVariant QSqlQuery::value(int index) const
 }
 
 /*!
+    \overload
+
+    Returns the value of the field called \a name in the current record.
+    If field \a name does not exist an invalid variant is returned.
+
+    This overload is less efficient than \l{QSqlQuery::}{value()}
+*/
+
+QVariant QSqlQuery::value(const QString& name) const
+{
+    int index = d->sqlResult->record().indexOf(name);
+    if (index > -1)
+        return value(index);
+    qWarning("QSqlQuery::value: unknown field name '%s'", qPrintable(name));
+    return QVariant();
+}
+
+/*!
     Returns the current internal position of the query. The first
     record is at position zero. If the position is invalid, the
     function returns QSql::BeforeFirstRow or

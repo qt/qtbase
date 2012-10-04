@@ -86,6 +86,7 @@ public:
     void setForwardOnly(bool forward);
     bool exec(const QString& query);
     QVariant value(int i) const;
+    QVariant value(const QString& name) const;
 
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;

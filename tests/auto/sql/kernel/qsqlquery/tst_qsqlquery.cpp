@@ -903,6 +903,7 @@ void tst_QSqlQuery::value()
 
     while ( q.next() ) {
         QCOMPARE( q.value( 0 ).toInt(), i );
+        QCOMPARE( q.value( "id" ).toInt(), i );
 
         if ( db.driverName().startsWith( "QIBASE" ) )
             QVERIFY( q.value( 1 ).toString().startsWith( "VarChar" + QString::number( i ) ) );
