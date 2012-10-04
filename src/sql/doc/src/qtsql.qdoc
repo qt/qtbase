@@ -27,9 +27,8 @@
 /*!
     \page qtsql-index.html
     \title Qt SQL
-    \brief A module that provides a driver layer, SQL API layer, and a user
-    interface layer for SQL databases.
-    \ingroup modules
+    \brief Provides a driver layer, SQL API layer, and a user
+    interface layer for SQL databases
 
     Qt SQL is an essential module which provides support for SQL databases. Qt
     SQL's APIs are divided into different layers:
@@ -55,14 +54,16 @@
     \section1 Reference
     These are links to the API reference materials.
     \list
-    \li \l{Qt SQL Module - C++ Classes}{C++ classes}
+    \li \l{Qt SQL Module C++ Classes}{C++ classes}
     \endlist
 */
 
 /*!
     \module QtSql
-    \title Qt SQL Module - C++ Classes
+    \title Qt SQL Module C++ Classes
     \ingroup modules
+    \brief Provides a driver layer, SQL API layer, and a user
+    interface layer for SQL databases.
 
     To include the definitions of the module's classes, use the
     following directive:
