@@ -39,18 +39,40 @@
 ****************************************************************************/
 
 //! [0]
-class MyThread : public QThread
+class Worker : public QObject
 {
-public:
-    void run();
+    Q_OBJECT
+
+public slots:
+    void doWork() {
+        ...
+    }
 };
 
-void MyThread::run()
+void MyObject::putWorkerInAThread()
 {
-    QTcpSocket socket;
-    // connect QTcpSocket's signals somewhere meaningful
-    ...
-    socket.connectToHost(hostName, portNumber);
-    exec();
+    Worker *worker = new Worker;
+    QThread *workerThread = new QThread(this);
+
+    connect(workerThread, &QThread::started, worker, &Worker::doWork);
+    connect(workerThread, &QThread::finished, worker, &Worker::deleteLater);
+    worker->moveToThread(workerThread);
+
+    // Starts an event loop, and emits workerThread->started()
+    workerThread->start();
 }
 //! [0]
+
+//! [1]
+class AdvancedThreadManager : public QThread
+{
+protected:
+    void run()
+    {
+        /* ... other code to initialize thread... */
+
+        // Begin event handling
+        exec();
+    }
+};
+//! [1]
