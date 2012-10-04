@@ -42,4 +42,7 @@ integrity:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel
 mac:LIBS_PRIVATE += -framework SystemConfiguration -framework CoreFoundation -framework CoreServices
 mac:!ios:SOURCES += kernel/qnetworkproxy_mac.cpp
 else:win32:SOURCES += kernel/qnetworkproxy_win.cpp
+else:blackberry:SOURCES += kernel/qnetworkproxy_blackberry.cpp
 else:SOURCES += kernel/qnetworkproxy_generic.cpp
+
+blackberry: LIBS_PRIVATE += -lbps

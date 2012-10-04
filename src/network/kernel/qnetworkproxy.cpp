@@ -1534,6 +1534,12 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     SOCKS server for all queries. If SOCKS isn't enabled, it will use
     the HTTPS proxy for all TcpSocket and UrlRequest queries.
 
+    On BlackBerry, this function obtains proxy settings for the default
+    configuration using system configuration. The type will be set based on
+    protocol tag "http", "https", "ftp", respectively. By default, it
+    assumes http type. Proxy username and password are also set during
+    the query using system configuration.
+
     On other systems, this function will pick up proxy settings from
     the "http_proxy" environment variable. This variable must be a URL
     using one of the following schemes: "http", "socks5" or "socks5h".
@@ -1550,6 +1556,11 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
 
     \li On Windows platforms, this function may take several seconds to
     execute depending on the configuration of the user's system.
+
+    \li On BlackBerry, this function ignores network configuration specified
+    in \a query. Only UrlRequest quieries are supported. SOCKS is not supported.
+    The proxy information is retrieved only for the default configuration.
+    Also, PAC and exclusion lists are currently not supported.
     \endlist
 */
 
