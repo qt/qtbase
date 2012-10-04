@@ -152,14 +152,16 @@ QFont QTextItem::font() const
   \brief The QPaintEngine class provides an abstract definition of how
   QPainter draws to a given device on a given platform.
 
-  Qt 4.0 provides several premade implementations of QPaintEngine for the
-  different painter backends we support. We provide one paint engine for each
-  window system and painting framework we support. This includes X11 on
-  Unix/Linux and CoreGraphics on Mac OS X. In addition we provide QPaintEngine
-  implementations for OpenGL (accessible through QOpenGLWidget) and PostScript
-  (accessible through QPSPrinter on X11). Additionally there is a raster-based
-  paint engine that is a fallback for when an engine does not support a certain
-  capability.
+  Qt provides several premade implementations of QPaintEngine for the
+  different painter backends we support. The primary paint engine
+  provided is the raster paint engine, which contains a software
+  rasterizer which supports the full feature set on all supported platforms.
+  This is the default for painting on QWidget-based classes in e.g. on Windows,
+  X11 and Mac OS X, it is the backend for painting on QImage and it is
+  used as a fallback for paint engines that do not support a certain
+  capability. In addition we provide QPaintEngine implementations for
+  OpenGL (accessible through QGLWidget) and printing (which allows using
+  QPainter to draw on a QPrinter object).
 
   If one wants to use QPainter to draw to a different backend,
   one must subclass QPaintEngine and reimplement all its virtual
@@ -168,11 +170,6 @@ QFont QTextItem::font() const
   QPaintDevice::paintEngine().
 
   QPaintEngine is created and owned by the QPaintDevice that created it.
-
-  The big advantage of the QPaintEngine approach opposed to
-  Qt 3's QPainter/QPaintDevice::cmd() approach is that it is now
-  possible to adapt to multiple technologies on each platform and take
-  advantage of each to the fullest.
 
   \sa QPainter, QPaintDevice::paintEngine(), {Paint System}
 */
