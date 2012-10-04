@@ -1025,6 +1025,26 @@ public:
     virtual QStringList selectedFiles() const;
 };
 
+// Append a suffix from the name filter "Foo files (*.foo;*.bar)"
+// unless the file name already has one.
+static inline QString appendSuffix(const QString &fileName, const QString &filter)
+{
+    const int lastDot = fileName.lastIndexOf(QLatin1Char('.'));
+    const int lastSlash = fileName.lastIndexOf(QLatin1Char('/'));
+    if (lastDot >= 0 && (lastSlash == -1 || lastDot > lastSlash))
+        return fileName;
+    int suffixPos = filter.indexOf(QLatin1String("(*."));
+    if (suffixPos < 0)
+        return fileName;
+    suffixPos += 3;
+    int endPos = filter.indexOf(QLatin1Char(';'), suffixPos + 1);
+    if (endPos < 0)
+        endPos = filter.indexOf(QLatin1Char(')'), suffixPos + 1);
+    if (endPos < 0)
+        return fileName;
+    return fileName + QLatin1Char('.') + filter.mid(suffixPos, endPos - suffixPos);
+}
+
 QPlatformDialogHelper::DialogCode QWindowsNativeSaveFileDialog::fileResult(QStringList *result /* = 0 */) const
 {
     if (result)
@@ -1034,7 +1054,7 @@ QPlatformDialogHelper::DialogCode QWindowsNativeSaveFileDialog::fileResult(QStri
     if (FAILED(hr) || !item)
         return QPlatformDialogHelper::Rejected;
     if (result)
-        result->push_back(QWindowsNativeFileDialogBase::itemPath(item));
+        result->push_back(appendSuffix(QWindowsNativeFileDialogBase::itemPath(item), selectedNameFilter()));
     return QPlatformDialogHelper::Accepted;
 }
 
