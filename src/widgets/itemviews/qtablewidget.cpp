@@ -2352,9 +2352,9 @@ QList<QTableWidgetSelectionRange> QTableWidget::selectedRanges() const
   \sa selectedIndexes()
 */
 
-QList<QTableWidgetItem*> QTableWidget::selectedItems()
+QList<QTableWidgetItem*> QTableWidget::selectedItems() const
 {
-    Q_D(QTableWidget);
+    Q_D(const QTableWidget);
     QModelIndexList indexes = selectionModel()->selectedIndexes();
     QList<QTableWidgetItem*> items;
     for (int i = 0; i < indexes.count(); ++i) {

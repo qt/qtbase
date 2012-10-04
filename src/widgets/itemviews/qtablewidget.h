@@ -276,7 +276,7 @@ public:
     void setRangeSelected(const QTableWidgetSelectionRange &range, bool select);
 
     QList<QTableWidgetSelectionRange> selectedRanges() const;
-    QList<QTableWidgetItem*> selectedItems();
+    QList<QTableWidgetItem*> selectedItems() const;
     QList<QTableWidgetItem*> findItems(const QString &text, Qt::MatchFlags flags) const;
 
     int visualRow(int logicalRow) const;
