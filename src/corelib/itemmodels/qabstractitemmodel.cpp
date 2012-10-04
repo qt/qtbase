@@ -1331,6 +1331,10 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \value NoLayoutChangeHint   No hint is available.
     \value VerticalSortHint     Rows are being sorted.
     \value HorizontalSortHint   Columns are being sorted.
+
+    Note that VerticalSortHint and HorizontalSortHint carry the meaning that
+    items are being moved within the same parent, not moved to a different
+    parent in the model, and not filtered out or in.
 */
 
 /*!
