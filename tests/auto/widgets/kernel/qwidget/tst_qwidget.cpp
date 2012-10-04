@@ -174,6 +174,8 @@ private slots:
     void palettePropagation();
     void palettePropagation2();
     void enabledPropagation();
+    void ignoreKeyEventsWhenDisabled_QTBUG27417();
+    void properTabHandlingWhenDisabled_QTBUG27417();
     void popupEnterLeave();
 #ifndef QT_NO_DRAGANDDROP
     void acceptDropsPropagation();
@@ -1051,6 +1053,43 @@ void tst_QWidget::enabledPropagation()
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
+}
+
+void tst_QWidget::ignoreKeyEventsWhenDisabled_QTBUG27417()
+{
+    QLineEdit lineEdit;
+    lineEdit.setDisabled(true);
+    lineEdit.show();
+    QTest::keyClick(&lineEdit, Qt::Key_A);
+    QTRY_VERIFY(lineEdit.text().isEmpty());
+}
+
+void tst_QWidget::properTabHandlingWhenDisabled_QTBUG27417()
+{
+    QWidget widget;
+    QVBoxLayout *layout = new QVBoxLayout();
+    QLineEdit *lineEdit = new QLineEdit();
+    layout->addWidget(lineEdit);
+    QLineEdit *lineEdit2 = new QLineEdit();
+    layout->addWidget(lineEdit2);
+    QLineEdit *lineEdit3 = new QLineEdit();
+    layout->addWidget(lineEdit3);
+    widget.setLayout(layout);
+    widget.show();
+
+    lineEdit->setFocus();
+    QTRY_VERIFY(lineEdit->hasFocus());
+    QTest::keyClick(&widget, Qt::Key_Tab);
+    QTRY_VERIFY(lineEdit2->hasFocus());
+    QTest::keyClick(&widget, Qt::Key_Tab);
+    QTRY_VERIFY(lineEdit3->hasFocus());
+
+    lineEdit2->setDisabled(true);
+    lineEdit->setFocus();
+    QTRY_VERIFY(lineEdit->hasFocus());
+    QTest::keyClick(&widget, Qt::Key_Tab);
+    QTRY_VERIFY(!lineEdit2->hasFocus());
+    QVERIFY(lineEdit3->hasFocus());
 }
 
 // Drag'n drop disabled in this build.
