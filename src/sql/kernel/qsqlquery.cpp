@@ -399,7 +399,7 @@ bool QSqlQuery::exec(const QString& query)
 
 QVariant QSqlQuery::value(int index) const
 {
-    if (isActive() && isValid() && (index > QSql::BeforeFirstRow))
+    if (isActive() && isValid() && (index > -1))
         return d->sqlResult->data(index);
     qWarning("QSqlQuery::value: not positioned on a valid record");
     return QVariant();
