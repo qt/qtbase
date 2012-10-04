@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef WIDGET_H
-#define WIDGET_H
+#ifndef PROPERTY_WATCHER_H
+#define PROPERTY_WATCHER_H
 
 #include <QWidget>
 
@@ -69,4 +69,4 @@ protected:
     QFormLayout * m_layout;
 };
 
-#endif // WIDGET_H
+#endif // PROPERTY_WATCHER_H

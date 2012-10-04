@@ -63,6 +63,7 @@ PropertyWatcher::PropertyWatcher(QObject *subject, QString annotation, QWidget *
     QPushButton *updateButton = new QPushButton("update");
     connect(updateButton, &QPushButton::clicked, this, &PropertyWatcher::updateAllFields);
     m_layout->addRow("", updateButton);
+    m_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
     setLayout(m_layout);
     connect(subject, &QObject::destroyed, this, &PropertyWatcher::subjectDestroyed);
 }
