@@ -28,12 +28,12 @@
 /*!
     \class QPaintDevice
     \brief The QPaintDevice class is the base class of objects that
-    can be painted.
+    can be painted on with QPainter.
 
     \ingroup painting
 
     A paint device is an abstraction of a two-dimensional space that
-    can be drawn using a QPainter.  Its default coordinate system has
+    can be drawn on using a QPainter.  Its default coordinate system has
     its origin located at the top-left position. X increases to the
     right and Y increases downwards. The unit is one pixel.
 
@@ -48,7 +48,7 @@
     paint engine to be able to draw on the device, i.e derive from
     QPaintEngine and reimplement its virtual functions.
 
-    \warning Qt requires that a QApplication object exists before
+    \warning Qt requires that a QGuiApplication object exists before
     any paint devices can be created. Paint devices access window
     system resources, and these resources are not initialized before
     an application object is created.
@@ -208,9 +208,9 @@
     \fn int QPaintDevice::colorCount() const
 
     Returns the number of different colors available for the paint
-    device. Since this value is an int, it will not be sufficient to
-    represent the number of colors on 32 bit displays, in this case
-    INT_MAX is returned instead.
+    device. If the number of colors available is too great to be
+    represented by the int data type, then INT_MAX will be returned
+    instead.
 */
 
 /*!

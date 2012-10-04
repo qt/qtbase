@@ -215,7 +215,7 @@ void QPagedPaintDevice::setMargins(const Margins &margins)
 /*!
   returns the current margins of the paint device. The default is 0.
 
-  /sa setMargins
+  \sa setMargins
   */
 QPagedPaintDevice::Margins QPagedPaintDevice::margins() const
 {
