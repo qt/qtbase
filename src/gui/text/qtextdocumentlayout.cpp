@@ -404,7 +404,7 @@ Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint, int pos)
 #if defined(Q_CC_MSVC) && _MSC_VER < 1600
 //The STL implementation of MSVC 2008 requires the definitions
 
-Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint2, const QCheckPoint &checkPoint1)
+Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCheckPoint &checkPoint1, const QCheckPoint &checkPoint2)
 {
     return checkPoint1.y < checkPoint2.y;
 }
