@@ -1022,7 +1022,8 @@ void QCoreGraphicsPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, co
         image = qt_mac_create_imagemask(pm, sr);
     } else if (differentSize) {
         QCFType<CGImageRef> img = qt_mac_image_to_cgimage(pm.toImage());
-        image = CGImageCreateWithImageInRect(img, CGRectMake(qRound(sr.x()), qRound(sr.y()), qRound(sr.width()), qRound(sr.height())));
+        if (img)
+            image = CGImageCreateWithImageInRect(img, CGRectMake(qRound(sr.x()), qRound(sr.y()), qRound(sr.width()), qRound(sr.height())));
     } else {
         image = qt_mac_image_to_cgimage(pm.toImage());
     }

@@ -192,12 +192,20 @@ static QTouchDevice *touchDevice = 0;
 {
     CGImageRelease(m_cgImage);
 
+    int width = image->width();
+    int height = image->height();
+
+    if (width <= 0 || height <= 0) {
+        qWarning() << Q_FUNC_INFO <<
+            "setting invalid size" << width << "x" << height << "for qnsview image";
+        m_cgImage = 0;
+        return;
+    }
+
     const uchar *imageData = image->bits();
     int bitDepth = image->depth();
     int colorBufferSize = 8;
     int bytesPrLine = image->bytesPerLine();
-    int width = image->width();
-    int height = image->height();
 
     CGColorSpaceRef cgColourSpaceRef = CGColorSpaceCreateDeviceRGB();
 
