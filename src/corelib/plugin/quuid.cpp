@@ -181,7 +181,7 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     are in use. Each UUID contains a bit field that specifies which
     type (variant) of UUID it is. Call variant() to discover which
     type of UUID an instance of QUuid contains. It extracts the three
-    most signifcant bits of byte 8 of the 16 bytes. In QUuid, byte 8
+    most significant bits of byte 8 of the 16 bytes. In QUuid, byte 8
     is \c{QUuid::data4[0]}. If you create instances of QUuid using the
     constructor that accepts all the numeric values as parameters, use
     the following table to set the three most significant bits of
@@ -428,7 +428,17 @@ QUuid::QUuid(const QByteArray &text)
   \since 5.0
   \fn QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData);
 
-  This functions returns a new UUID with variant QUuid::DCE and version QUuid::Md5.
+  This function returns a new UUID with variant QUuid::DCE and version QUuid::Md5.
+  \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
+
+  \sa variant(), version(), createUuidV5()
+*/
+
+/*!
+  \since 5.0
+  \fn QUuid QUuid::createUuidV3(const QUuid &ns, const QString &baseData);
+
+  This function returns a new UUID with variant QUuid::DCE and version QUuid::Md5.
   \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
 
   \sa variant(), version(), createUuidV5()
@@ -438,7 +448,17 @@ QUuid::QUuid(const QByteArray &text)
   \since 5.0
   \fn QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData);
 
-  This functions returns a new UUID with variant QUuid::DCE and version QUuid::Sha1.
+  This function returns a new UUID with variant QUuid::DCE and version QUuid::Sha1.
+  \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
+
+  \sa variant(), version(), createUuidV3()
+*/
+
+/*!
+  \since 5.0
+  \fn QUuid QUuid::createUuidV5(const QUuid &ns, const QString &baseData);
+
+  This function returns a new UUID with variant QUuid::DCE and version QUuid::Sha1.
   \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
 
   \sa variant(), version(), createUuidV3()
@@ -990,6 +1010,10 @@ QUuid QUuid::createUuid()
 */
 
 #ifndef QT_NO_DEBUG_STREAM
+/*!
+    \relates QUuid
+    Writes the UUID \a id to the output stream for debugging information \a dbg.
+*/
 QDebug operator<<(QDebug dbg, const QUuid &id)
 {
 #ifndef QT_NO_QUUID_STRING
