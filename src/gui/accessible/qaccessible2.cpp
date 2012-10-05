@@ -134,19 +134,184 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QString QAccessibleTextInterface::textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
-                      int *startOffset, int *endOffset) const
+    Returns the text item of type \a boundaryType that is close to offset \a offset
+    and sets \a startOffset and \a endOffset values to the start and end positions
+    of that item; returns an empty string if there is no such an item.
+    Sets \a startOffset and \a endOffset values to -1 on error.
 */
+QString QAccessibleTextInterface::textBeforeOffset(int offset, QAccessible2::BoundaryType boundaryType,
+                                                   int *startOffset, int *endOffset) const
+{
+    const QString txt = text(0, characterCount());
+
+    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
+        *startOffset = *endOffset = -1;
+        return QString();
+    }
+    if (offset == 0) {
+        *startOffset = *endOffset = offset;
+        return QString();
+    }
+
+    QTextBoundaryFinder::BoundaryType type;
+    switch (boundaryType) {
+    case QAccessible2::CharBoundary:
+        type = QTextBoundaryFinder::Grapheme;
+        break;
+    case QAccessible2::WordBoundary:
+        type = QTextBoundaryFinder::Word;
+        break;
+    case QAccessible2::SentenceBoundary:
+        type = QTextBoundaryFinder::Sentence;
+        break;
+    default:
+        // in any other case return the whole line
+        *startOffset = 0;
+        *endOffset = txt.length();
+        return txt;
+    }
+
+    // keep behavior in sync with QTextCursor::movePosition()!
+
+    QTextBoundaryFinder boundary(type, txt);
+    boundary.setPosition(offset);
+
+    do {
+        if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
+            break;
+    } while (boundary.toPreviousBoundary() > 0);
+    Q_ASSERT(boundary.position() >= 0);
+    *endOffset = boundary.position();
+
+    while (boundary.toPreviousBoundary() > 0) {
+        if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
+            break;
+    }
+    Q_ASSERT(boundary.position() >= 0);
+    *startOffset = boundary.position();
+
+    return txt.mid(*startOffset, *endOffset - *startOffset);
+}
 
 /*!
-    \fn QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
-                    int *startOffset, int *endOffset) const
+    Returns the text item of type \a boundaryType that is right after offset \a offset
+    and sets \a startOffset and \a endOffset values to the start and end positions
+    of that item; returns an empty string if there is no such an item.
+    Sets \a startOffset and \a endOffset values to -1 on error.
 */
+QString QAccessibleTextInterface::textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
+                                                  int *startOffset, int *endOffset) const
+{
+    const QString txt = text(0, characterCount());
+
+    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
+        *startOffset = *endOffset = -1;
+        return QString();
+    }
+    if (offset == txt.length()) {
+        *startOffset = *endOffset = offset;
+        return QString();
+    }
+
+    QTextBoundaryFinder::BoundaryType type;
+    switch (boundaryType) {
+    case QAccessible2::CharBoundary:
+        type = QTextBoundaryFinder::Grapheme;
+        break;
+    case QAccessible2::WordBoundary:
+        type = QTextBoundaryFinder::Word;
+        break;
+    case QAccessible2::SentenceBoundary:
+        type = QTextBoundaryFinder::Sentence;
+        break;
+    default:
+        // in any other case return the whole line
+        *startOffset = 0;
+        *endOffset = txt.length();
+        return txt;
+    }
+
+    // keep behavior in sync with QTextCursor::movePosition()!
+
+    QTextBoundaryFinder boundary(type, txt);
+    boundary.setPosition(offset);
+
+    while (boundary.toNextBoundary() < txt.length()) {
+        if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
+            break;
+    }
+    Q_ASSERT(boundary.position() <= txt.length());
+    *startOffset = boundary.position();
+
+    while (boundary.toNextBoundary() < txt.length()) {
+        if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
+            break;
+    }
+    Q_ASSERT(boundary.position() <= txt.length());
+    *endOffset = boundary.position();
+
+    return txt.mid(*startOffset, *endOffset - *startOffset);
+}
 
 /*!
-    \fn QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
-                 int *startOffset, int *endOffset) const
+    Returns the text item of type \a boundaryType at offset \a offset
+    and sets \a startOffset and \a endOffset values to the start and end positions
+    of that item; returns an empty string if there is no such an item.
+    Sets \a startOffset and \a endOffset values to -1 on error.
 */
+QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
+                                               int *startOffset, int *endOffset) const
+{
+    const QString txt = text(0, characterCount());
+
+    if (txt.isEmpty() || offset < 0 || offset > txt.length()) {
+        *startOffset = *endOffset = -1;
+        return QString();
+    }
+    if (offset == txt.length()) {
+        *startOffset = *endOffset = offset;
+        return QString();
+    }
+
+    QTextBoundaryFinder::BoundaryType type;
+    switch (boundaryType) {
+    case QAccessible2::CharBoundary:
+        type = QTextBoundaryFinder::Grapheme;
+        break;
+    case QAccessible2::WordBoundary:
+        type = QTextBoundaryFinder::Word;
+        break;
+    case QAccessible2::SentenceBoundary:
+        type = QTextBoundaryFinder::Sentence;
+        break;
+    default:
+        // in any other case return the whole line
+        *startOffset = 0;
+        *endOffset = txt.length();
+        return txt;
+    }
+
+    // keep behavior in sync with QTextCursor::movePosition()!
+
+    QTextBoundaryFinder boundary(type, txt);
+    boundary.setPosition(offset);
+
+    do {
+        if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
+            break;
+    } while (boundary.toPreviousBoundary() > 0);
+    Q_ASSERT(boundary.position() >= 0);
+    *startOffset = boundary.position();
+
+    while (boundary.toNextBoundary() < txt.length()) {
+        if ((boundary.boundaryReasons() & (QTextBoundaryFinder::StartOfItem | QTextBoundaryFinder::EndOfItem)))
+            break;
+    }
+    Q_ASSERT(boundary.position() <= txt.length());
+    *endOffset = boundary.position();
+
+    return txt.mid(*startOffset, *endOffset - *startOffset);
+}
 
 /*!
     \fn void QAccessibleTextInterface::removeSelection(int selectionIndex)
@@ -510,117 +675,6 @@ const QString &QAccessibleActionInterface::setFocusAction()
 const QString &QAccessibleActionInterface::toggleAction()
 {
     return accessibleActionStrings()->toggleAction;
-}
-
-
-/*!
-  \internal
-*/
-QString Q_GUI_EXPORT qTextBeforeOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
-        int *startOffset, int *endOffset, const QString& text)
-{
-    QTextBoundaryFinder::BoundaryType type;
-    switch (boundaryType) {
-    case QAccessible2::CharBoundary:
-        type = QTextBoundaryFinder::Grapheme;
-        break;
-    case QAccessible2::WordBoundary:
-        type = QTextBoundaryFinder::Word;
-        break;
-    case QAccessible2::SentenceBoundary:
-        type = QTextBoundaryFinder::Sentence;
-        break;
-    default:
-        // in any other case return the whole line
-        *startOffset = 0;
-        *endOffset = text.length();
-        return text;
-    }
-
-    QTextBoundaryFinder boundary(type, text);
-    boundary.setPosition(offset);
-
-    if (!boundary.isAtBoundary()) {
-        boundary.toPreviousBoundary();
-    }
-    boundary.toPreviousBoundary();
-    *startOffset = boundary.position();
-    boundary.toNextBoundary();
-    *endOffset = boundary.position();
-
-    return text.mid(*startOffset, *endOffset - *startOffset);
-}
-
-/*!
-  \internal
-*/
-QString Q_GUI_EXPORT qTextAfterOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
-        int *startOffset, int *endOffset, const QString& text)
-{
-    QTextBoundaryFinder::BoundaryType type;
-    switch (boundaryType) {
-    case QAccessible2::CharBoundary:
-        type = QTextBoundaryFinder::Grapheme;
-        break;
-    case QAccessible2::WordBoundary:
-        type = QTextBoundaryFinder::Word;
-        break;
-    case QAccessible2::SentenceBoundary:
-        type = QTextBoundaryFinder::Sentence;
-        break;
-    default:
-        // in any other case return the whole line
-        *startOffset = 0;
-        *endOffset = text.length();
-        return text;
-    }
-
-    QTextBoundaryFinder boundary(type, text);
-    boundary.setPosition(offset);
-
-    boundary.toNextBoundary();
-    *startOffset = boundary.position();
-    boundary.toNextBoundary();
-    *endOffset = boundary.position();
-
-    return text.mid(*startOffset, *endOffset - *startOffset);
-}
-
-/*!
-  \internal
-*/
-QString Q_GUI_EXPORT qTextAtOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
-        int *startOffset, int *endOffset, const QString& text)
-{
-    QTextBoundaryFinder::BoundaryType type;
-    switch (boundaryType) {
-    case QAccessible2::CharBoundary:
-        type = QTextBoundaryFinder::Grapheme;
-        break;
-    case QAccessible2::WordBoundary:
-        type = QTextBoundaryFinder::Word;
-        break;
-    case QAccessible2::SentenceBoundary:
-        type = QTextBoundaryFinder::Sentence;
-        break;
-    default:
-        // in any other case return the whole line
-        *startOffset = 0;
-        *endOffset = text.length();
-        return text;
-    }
-
-    QTextBoundaryFinder boundary(type, text);
-    boundary.setPosition(offset);
-
-    if (!boundary.isAtBoundary()) {
-        boundary.toPreviousBoundary();
-    }
-    *startOffset = boundary.position();
-    boundary.toNextBoundary();
-    *endOffset = boundary.position();
-
-    return text.mid(*startOffset, *endOffset - *startOffset);
 }
 
 QT_END_NAMESPACE
