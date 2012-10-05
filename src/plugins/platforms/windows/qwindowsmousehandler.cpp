@@ -269,6 +269,17 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     return true;
 }
 
+static bool isValidWheelReceiver(QWindow *candidate)
+{
+    if (candidate) {
+        const QWindow *toplevel = QWindowsWindow::topLevelOf(candidate);
+        if (const QWindowsWindow *ww = QWindowsWindow::baseWindowOf(toplevel))
+            return !ww->testFlag(QWindowsWindow::BlockedByModal);
+    }
+
+    return false;
+}
+
 bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
                                                     MSG msg, LRESULT *)
 {
@@ -292,18 +303,26 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
     if (msg.message == WM_MOUSEHWHEEL)
         delta = -delta;
 
+    // Redirect wheel event to one of the following, in order of preference:
+    // 1) The window under mouse
+    // 2) The window receiving the event
+    // If a window is blocked by modality, it can't get the event.
     const QPoint globalPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-    // TODO: if there is a widget under the mouse and it is not shadowed
-    // QWindow *receiver = windowAt(pos);
-    // by modality, we send the event to it first.
-    //synaptics touchpad shows its own widget at this position
-    //so widgetAt() will fail with that HWND, try child of this widget
-    // if (!receiver) receiver = window->childAt(pos);
-    QWindow *receiver = window;
-    QWindowSystemInterface::handleWheelEvent(receiver,
-                                             QWindowsGeometryHint::mapFromGlobal(receiver, globalPos),
-                                             globalPos,
-                                             delta, orientation, mods);
+    QWindow *receiver = QWindowsScreen::windowAt(globalPos);
+    bool handleEvent = true;
+    if (!isValidWheelReceiver(receiver)) {
+        receiver = window;
+        if (!isValidWheelReceiver(receiver))
+            handleEvent = false;
+    }
+
+    if (handleEvent) {
+        QWindowSystemInterface::handleWheelEvent(receiver,
+                                                 QWindowsGeometryHint::mapFromGlobal(receiver, globalPos),
+                                                 globalPos,
+                                                 delta, orientation, mods);
+    }
+
     return true;
 }
 

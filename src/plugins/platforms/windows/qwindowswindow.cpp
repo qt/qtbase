@@ -783,10 +783,26 @@ void QWindowsWindow::unregisterDropSite()
     }
 }
 
+// Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.
+// Returns this window if it is the topmost ancestor.
 QWindow *QWindowsWindow::topLevelOf(QWindow *w)
 {
     while (QWindow *parent = w->parent())
         w = parent;
+
+    const QWindowsWindow *ww = static_cast<const QWindowsWindow *>(w->handle());
+
+    // In case the topmost parent is embedded, find next ancestor using native methods
+    if (ww->isEmbedded(0)) {
+        HWND parentHWND = GetAncestor(ww->handle(), GA_PARENT);
+        const HWND desktopHwnd = GetDesktopWindow();
+        const QWindowsContext *ctx = QWindowsContext::instance();
+        while (parentHWND && parentHWND != desktopHwnd) {
+            if (QWindowsWindow *ancestor = ctx->findPlatformWindow(parentHWND))
+                return topLevelOf(ancestor->window());
+            parentHWND = GetAncestor(parentHWND, GA_PARENT);
+        }
+    }
     return w;
 }
 
