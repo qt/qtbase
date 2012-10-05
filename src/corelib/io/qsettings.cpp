@@ -2298,7 +2298,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \li \c{HKEY_CURRENT_USER\Software\MySoft\Star Runner}
     \li \c{HKEY_CURRENT_USER\Software\MySoft\OrganizationDefaults}
     \li \c{HKEY_LOCAL_MACHINE\Software\MySoft\Star Runner}
-    \li \c{HKEY_LOCAL_MACHINE\Software\MySoft}
+    \li \c{HKEY_LOCAL_MACHINE\Software\MySoft\OrganizationDefaults}
     \endlist
 
     \note On Windows, for 32-bit programs running in WOW64 mode, settings are
