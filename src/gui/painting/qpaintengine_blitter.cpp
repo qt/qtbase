@@ -558,7 +558,8 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         && qbrush_color(brush).alpha() == 0xff
         && d->caps.canBlitterFillRect()) {
         d->fillRect(rect, qbrush_color(brush), false);
-    } else if (brush.style() == Qt::TexturePattern &&
+    } else if ((brush.style() == Qt::TexturePattern) &&
+               (brush.transform().type() <= QTransform::TxTranslate) &&
                 ((d->caps.canBlitterDrawPixmapOpacity(brush.texture())) ||
                  (d->caps.canBlitterDrawPixmap(rect, brush.texture(), rect)))) {
         bool rectIsFilled = false;
@@ -567,11 +568,11 @@ void QBlitterPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
         qreal y = transformedRect.y();
         QPixmap pm = brush.texture();
         d->unlock();
-        int srcX = int(rect.x() - state()->brushOrigin.x()) % pm.width();
+        int srcX = int(rect.x() - state()->brushOrigin.x() - brush.transform().dx()) % pm.width();
         if (srcX < 0)
             srcX = pm.width() + srcX;
         const int startX = srcX;
-        int srcY = int(rect.y() - state()->brushOrigin.y()) % pm.height();
+        int srcY = int(rect.y() - state()->brushOrigin.y() - brush.transform().dy()) % pm.height();
         if (srcY < 0)
             srcY = pm.height() + srcY;
         while (!rectIsFilled) {
@@ -685,7 +686,7 @@ void QBlitterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const Q
     }
 }
 
-// Overridden methods to lock the graphics memory
+// Overriden methods to lock the graphics memory
 void QBlitterPaintEngine::drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode)
 {
     Q_D(QBlitterPaintEngine);
