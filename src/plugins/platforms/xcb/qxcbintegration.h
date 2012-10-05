@@ -50,10 +50,10 @@ QT_BEGIN_NAMESPACE
 class QXcbConnection;
 class QAbstractEventDispatcher;
 class QXcbNativeInterface;
+class QXcbScreen;
 
 #if !defined(QT_NO_OPENGL) && defined(XCB_USE_GLX)
 class QOpenGLDefaultContextInfo;
-class QXcbScreen;
 #endif
 
 class QXcbIntegration : public QPlatformIntegration
@@ -97,9 +97,7 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-#if !defined(QT_NO_OPENGL) && defined(XCB_USE_GLX)
     void removeDefaultOpenGLContextInfo(QXcbScreen *screen);
-#endif
 
 private:
     QList<QXcbConnection *> m_connections;

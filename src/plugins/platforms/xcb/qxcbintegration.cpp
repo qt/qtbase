@@ -119,7 +119,9 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 
 QXcbIntegration::~QXcbIntegration()
 {
+#if !defined(QT_NO_OPENGL) && defined(XCB_USE_GLX)
     qDeleteAll(m_defaultContextInfos);
+#endif
     qDeleteAll(m_connections);
 }
 
@@ -289,10 +291,14 @@ QPlatformTheme *QXcbIntegration::createPlatformTheme(const QString &name) const
 */
 void QXcbIntegration::removeDefaultOpenGLContextInfo(QXcbScreen *screen)
 {
+#if !defined(QT_NO_OPENGL) && defined(XCB_USE_GLX)
     if (!m_defaultContextInfos.contains(screen))
         return;
     QOpenGLDefaultContextInfo* info = m_defaultContextInfos.take(screen);
     delete info;
+#else
+    Q_UNUSED(screen);
+#endif
 }
 
 QT_END_NAMESPACE
