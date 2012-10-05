@@ -981,6 +981,32 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa insertMulti()
 */
 
+/*! \fn QMap::iterator QMap::insert(const_iterator pos, const Key &key, const T &value)
+    \overload
+    \since 5.1
+    Inserts a new item with the key \a key and value \a value and with hint \a pos
+    suggesting where to do the insert.
+
+    If constBegin() is used as hint it indicates that the \a key is less than any key in the map
+    while constEnd() suggests that the \a key is (strictly) larger than any key in the map.
+    Otherwise the hint should meet the condition (\a pos - 1).key() < \a key <= pos.key().
+    If the hint \a pos is wrong it is ignored and a regular insert is done.
+
+    If there is already an item with the key \a key, that item's value
+    is replaced with \a value.
+
+    If there are multiple items with the key \a key, then exactly one of them
+    is replaced with \a value.
+
+    When creating a map from sorted data inserting the largest key first with constBegin()
+    is faster than inserting in sorted order with constEnd()
+
+    \b {Note:} Be careful with the hint. Providing an iterator from an older shared instance might
+    crash but there is also a risk that it will silently corrupt both the map and the \a pos map.
+
+    \sa insertMulti()
+*/
+
 /*! \fn QMap::iterator QMap::insertMulti(const Key &key, const T &value)
 
     Inserts a new item with the key \a key and a value of \a value.

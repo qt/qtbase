@@ -85,6 +85,7 @@ private slots:
     void insert();
     void checkMostLeftNode();
     void initializerList();
+    void testInsertWithHint();
 };
 
 typedef QMap<QString, QString> StringMap;
@@ -1157,6 +1158,70 @@ void tst_QMap::initializerList()
 #else
     QSKIP("Compiler doesn't support initializer lists");
 #endif
+}
+
+void tst_QMap::testInsertWithHint()
+{
+    QMap<int, int> map;
+    map.setSharable(false);
+
+    // Check with end hint();
+    map.insert(map.constEnd(), 3, 1);     // size == 1
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 5, 1);     // size = 2
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 50, 1);    // size = 3
+    sanityCheckTree(map, __LINE__);
+    QMap<int, int>::const_iterator key75(map.insert(map.constEnd(), 75, 1)); // size = 4
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 100, 1);   // size = 5
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 105, 1);   // size = 6
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 10, 5); // invalid hint and size = 7
+    sanityCheckTree(map, __LINE__);
+    QMap<int, int>::iterator lastkey = map.insert(map.constEnd(), 105, 12); // overwrite
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(lastkey.value(), 12);
+    QCOMPARE(lastkey.key(), 105);
+    QCOMPARE(map.size(), 7);
+
+    // With regular hint
+    map.insert(key75, 75, 100); // overwrite current key
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 7);
+    QCOMPARE(key75.key(), 75);
+    QCOMPARE(key75.value(), 100);
+
+    map.insert(key75, 50, 101); // overwrite previous value
+    QMap<int, int>::const_iterator key50(key75);
+    --key50;
+    QCOMPARE(map.size(), 7);
+    QCOMPARE(key50.key(), 50);
+    QCOMPARE(key50.value(), 101);
+
+    map.insert(key75, 17, 125);     // invalid hint - size 8
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 8);
+
+    // begin
+    map.insert(map.constBegin(), 1, 1);  // size 9
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 9);
+
+    map.insert(map.constBegin(), 1, 10);  // overwrite existing (leftmost) value
+    QCOMPARE(map.constBegin().value(), 10);
+
+    map.insert(map.constBegin(), 47, 47); // wrong hint  - size 10
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 10);
+
+    // insert with right == 0
+    QMap<int, int>::const_iterator i1 (map.insert(key75, 70, 12)); // overwrite
+    map.insert(i1, 69, 12);  // size 12
+
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 12);
 }
 
 QTEST_APPLESS_MAIN(tst_QMap)
