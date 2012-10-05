@@ -75,6 +75,7 @@
 #include <qsettings.h>
 #include <qvariant.h>
 #include <qpixmapcache.h>
+#include <private/qstyleanimation_p.h>
 
 #include <limits.h>
 
@@ -1048,6 +1049,57 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
 }
 #endif //QT_NO_TABBAR
 
+/*! \internal */
+QList<const QObject*> QCommonStylePrivate::animationTargets() const
+{
+    return animations.keys();
+}
+
+/*! \internal */
+QStyleAnimation * QCommonStylePrivate::animation(const QObject *target) const
+{
+    return animations.value(target);
+}
+
+/*! \internal */
+void QCommonStylePrivate::startAnimation(QStyleAnimation *animation)
+{
+#ifndef QT_NO_ANIMATION
+    Q_Q(QCommonStyle);
+    stopAnimation(animation->target());
+    q->connect(animation, SIGNAL(finished()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
+    q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
+    animations.insert(animation->target(), animation);
+    animation->start();
+#endif // QT_NO_ANIMATION
+}
+
+/*! \internal */
+void QCommonStylePrivate::stopAnimation(const QObject *target)
+{
+#ifndef QT_NO_ANIMATION
+    QStyleAnimation *animation = animations.value(target);
+    if (animation) {
+        if (animation->state() == QAbstractAnimation::Stopped)
+            animations.take(target)->deleteLater();
+        else
+            animation->stop();
+    }
+#endif // QT_NO_ANIMATION
+}
+
+/*! \internal */
+void QCommonStylePrivate::_q_removeAnimation()
+{
+#ifndef QT_NO_ANIMATION
+    Q_Q(QCommonStyle);
+    QObject *animation = q->sender();
+    if (animation) {
+        animations.remove(animation->parent());
+        animation->deleteLater();
+    }
+#endif // QT_NO_ANIMATION
+}
 
 /*!
   \reimp
@@ -5903,3 +5955,5 @@ void QCommonStyle::unpolish(QApplication *application)
 
 
 QT_END_NAMESPACE
+
+#include "moc_qcommonstyle.cpp"

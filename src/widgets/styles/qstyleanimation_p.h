@@ -39,70 +39,72 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSSTYLE_H
-#define QWINDOWSSTYLE_H
+#ifndef QSTYLEANIMATION_P_H
+#define QSTYLEANIMATION_P_H
 
-#include <QtWidgets/qcommonstyle.h>
-
-QT_BEGIN_HEADER
+#include "qabstractanimation.h"
+#include "qdatetime.h"
 
 QT_BEGIN_NAMESPACE
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists for the convenience of
+// qcommonstyle.cpp.  This header file may change from version to version
+// without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if !defined(QT_NO_STYLE_WINDOWS)
+#ifndef QT_NO_ANIMATION
 
-class QWindowsStylePrivate;
-
-class Q_WIDGETS_EXPORT QWindowsStyle : public QCommonStyle
+class QStyleAnimation : public QAbstractAnimation
 {
     Q_OBJECT
+
 public:
-    QWindowsStyle();
-    ~QWindowsStyle();
+    QStyleAnimation(QObject *target);
+    virtual ~QStyleAnimation();
 
-    void polish(QApplication*);
-    void unpolish(QApplication*);
+    int duration() const;
+    QObject *target() const;
 
-    void polish(QWidget*);
-    void unpolish(QWidget*);
-
-    void polish(QPalette &);
-
-    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
-                       const QWidget *w = 0) const;
-    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
-                     const QWidget *w = 0) const;
-    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const;
-    void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
-                            const QWidget *w = 0) const;
-    QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
-                           const QSize &contentsSize, const QWidget *widget = 0) const;
-
-    int pixelMetric(PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0) const;
-
-    int styleHint(StyleHint hint, const QStyleOption *opt = 0, const QWidget *widget = 0,
-                  QStyleHintReturn *returnData = 0) const;
-
-    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
-                           const QWidget *widget = 0) const;
-
-    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
-                       const QWidget *widget = 0) const;
+    QTime startTime() const;
+    void setStartTime(const QTime &time);
 
 protected:
-    bool eventFilter(QObject *o, QEvent *e);
-    QWindowsStyle(QWindowsStylePrivate &dd);
+    virtual bool isUpdateNeeded() const;
+    virtual void updateCurrentTime(int time);
 
 private:
-    Q_DISABLE_COPY(QWindowsStyle)
-    Q_DECLARE_PRIVATE(QWindowsStyle)
-    void *reserved;
+    QTime _startTime;
 };
 
-#endif // QT_NO_STYLE_WINDOWS
+class QProgressStyleAnimation : public QStyleAnimation
+{
+    Q_OBJECT
+
+public:
+    QProgressStyleAnimation(int speed, QObject *target);
+
+    int animationStep() const;
+    int progressStep(int width) const;
+
+    int speed() const;
+    void setSpeed(int speed);
+
+protected:
+    bool isUpdateNeeded() const;
+
+private:
+    int _speed;
+    mutable int _step;
+};
+
+#endif // QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QWINDOWSSTYLE_H
+#endif // QSTYLEANIMATION_P_H

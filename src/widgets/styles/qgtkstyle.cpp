@@ -71,6 +71,7 @@
 #include <QtWidgets/QWizard>
 
 #include <qpixmapcache.h>
+#include <private/qstyleanimation_p.h>
 #undef signals // Collides with GTK stymbols
 #include <private/qgtkpainter_p.h>
 #include <private/qstylehelper_p.h>
@@ -3491,9 +3492,11 @@ void QGtkStyle::drawControl(ControlElement element,
             } else {
                 Q_D(const QGtkStyle);
                 int slideWidth = ((rect.width() - 4) * 2) / 3;
-                int step = ((d->animateStep * slideWidth) / d->animationFps) % slideWidth;
-                if ((((d->animateStep * slideWidth) / d->animationFps) % (2 * slideWidth)) >= slideWidth)
-                    step = slideWidth - step;
+                int step = 0;
+#ifndef QT_NO_ANIMATION
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                    step = animation->progressStep(slideWidth);
+#endif
                 progressBar.setRect(rect.left() + step, rect.top(), slideWidth / 2, rect.height());
             }
 

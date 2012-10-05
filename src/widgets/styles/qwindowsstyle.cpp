@@ -70,6 +70,7 @@
 #include <qmath.h>
 
 #include <private/qstylehelper_p.h>
+#include <private/qstyleanimation_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -117,7 +118,7 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
     \internal
 */
 QWindowsStylePrivate::QWindowsStylePrivate()
-    : alt_down(false), menuBarTimer(0), animationFps(10), animateTimer(0), animateStep(0)
+    : alt_down(false), menuBarTimer(0)
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
@@ -126,27 +127,21 @@ QWindowsStylePrivate::QWindowsStylePrivate()
         pSHGetStockIconInfo = (PtrSHGetStockIconInfo)shellLib.resolve("SHGetStockIconInfo");
     }
 #endif
-    startTime.start();
 }
 
-void QWindowsStylePrivate::startAnimation(QObject *o, QProgressBar *bar)
+void QWindowsStylePrivate::startProgressAnimation(QObject *o, QProgressBar *bar)
 {
-    if (!animatedProgressBars.contains(bar)) {
-        animatedProgressBars << bar;
-        if (!animateTimer) {
-            Q_ASSERT(animationFps > 0);
-            animateTimer = o->startTimer(1000 / animationFps);
-        }
-    }
+    Q_UNUSED(o);
+#ifndef QT_NO_ANIMATION
+    if (!animation(bar))
+        startAnimation(new QProgressStyleAnimation(animationFps, bar));
+#endif
 }
 
-void QWindowsStylePrivate::stopAnimation(QObject *o, QProgressBar *bar)
+void QWindowsStylePrivate::stopProgressAnimation(QObject *o, QProgressBar *bar)
 {
-    animatedProgressBars.removeAll(bar);
-    if (animatedProgressBars.isEmpty() && animateTimer) {
-        o->killTimer(animateTimer);
-        animateTimer = 0;
-    }
+    Q_UNUSED(o);
+    stopAnimation(bar);
 }
 
 // Returns true if the toplevel parent of \a widget has seen the Alt-key
@@ -154,23 +149,6 @@ bool QWindowsStylePrivate::hasSeenAlt(const QWidget *widget) const
 {
     widget = widget->window();
     return seenAlt.contains(widget);
-}
-
-/*!
-    \reimp
-*/
-void QWindowsStyle::timerEvent(QTimerEvent *event)
-{
-#ifndef QT_NO_PROGRESSBAR
-    Q_D(QWindowsStyle);
-    if (event->timerId() == d->animateTimer) {
-        Q_ASSERT(d->animationFps> 0);
-        d->animateStep = d->startTime.elapsed() / (1000 / d->animationFps);
-        foreach (QProgressBar *bar, d->animatedProgressBars)
-            bar->update();
-    }
-#endif // QT_NO_PROGRESSBAR
-    event->ignore();
 }
 
 /*!
@@ -232,9 +210,9 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
             // Animation by timer for progress bars that have their min and
             // max values the same
             if (bar->minimum() == bar->maximum())
-                d->startAnimation(this, bar);
+                d->startProgressAnimation(this, bar);
             else
-                d->stopAnimation(this, bar);
+                d->stopProgressAnimation(this, bar);
         }
         break;
     case QEvent::Destroy:
@@ -242,7 +220,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
         // Do static_cast because there is no type info when getting
         // the destroy event. We know that it is a QProgressBar, since
         // we only install a widget event filter for QScrollBars.
-        d->stopAnimation(this, static_cast<QProgressBar *>(o));
+        d->stopProgressAnimation(this, static_cast<QProgressBar *>(o));
         break;
 #endif // QT_NO_PROGRESSBAR
     default:
@@ -349,7 +327,7 @@ void QWindowsStyle::unpolish(QWidget *widget)
     if (QProgressBar *bar=qobject_cast<QProgressBar *>(widget)) {
         Q_D(QWindowsStyle);
         widget->removeEventFilter(this);
-        d->stopAnimation(this, bar);
+        d->stopProgressAnimation(this, bar);
     }
 #endif
 }
@@ -2405,8 +2383,12 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 pbBits.rect = rect;
                 pbBits.palette = pal2;
 
+                int step = 0;
                 int chunkCount = w / unit_width + 1;
-                int step = d->animateStep%chunkCount;
+#ifndef QT_NO_ANIMATION
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                    step = (animation->animationStep() / 3) % chunkCount;
+#endif
                 int chunksInRow = 5;
                 int myY = pbBits.rect.y();
                 int myHeight = pbBits.rect.height();

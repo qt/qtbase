@@ -79,7 +79,6 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <qsplitter.h>
 #include <qstyleoption.h>
 #include <qtextedit.h>
-#include <qelapsedtimer.h>
 #include <qtoolbar.h>
 #include <qtoolbox.h>
 #include <qtoolbutton.h>
@@ -89,6 +88,7 @@ static const int blueFrameWidth =  2;  // with of line edit focus frame
 #include <private/qstylehelper_p.h>
 #include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
+#include <private/qstyleanimation_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -987,12 +987,6 @@ public:
     virtual ~QPlastiqueStylePrivate();
     void drawPartialFrame(QPainter *painter, const QStyleOptionComplex *option,
                           const QRect &rect, const QWidget *widget) const;
-
-#ifndef QT_NO_PROGRESSBAR
-    QList<QProgressBar *> bars;
-    int progressBarAnimateTimer;
-    QElapsedTimer timer;
-#endif
 };
 
 /*!
@@ -1000,9 +994,6 @@ public:
  */
 QPlastiqueStylePrivate::QPlastiqueStylePrivate() :
     QWindowsStylePrivate()
-#ifndef QT_NO_PROGRESSBAR
-    , progressBarAnimateTimer(0)
-#endif
 {
 }
 
@@ -2577,9 +2568,11 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 }
             } else {
                 int slideWidth = ((rect.width() - 4) * 2) / 3;
-                int step = ((d->animateStep * slideWidth) / ProgressBarFps) % slideWidth;
-                if ((((d->animateStep * slideWidth) / ProgressBarFps) % (2 * slideWidth)) >= slideWidth)
-                    step = slideWidth - step;
+                int step = 0;
+#ifndef QT_NO_ANIMATION
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                    step = animation->progressStep(slideWidth);
+#endif
                 progressBar.setRect(rect.left() + 2 + step, rect.top() + 2,
                                     slideWidth / 2, rect.height() - 4);
             }
@@ -2732,7 +2725,13 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             if (!vertical)
                 progressBar.adjust(0, 1, 0, 1);
             if (!indeterminate) {
-                int step = (AnimateProgressBar || (indeterminate && AnimateBusyProgressBar)) ? (d->animateStep % 20) : 0;
+                int step = 0;
+                if (AnimateProgressBar || (indeterminate && AnimateBusyProgressBar)) {
+#ifndef QT_NO_ANIMATION
+                    if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                        step = animation->animationStep() % 20;
+#endif
+                }
                 if (reverse)
                     painter->drawPixmap(progressBar.left() - 25 + step, progressBar.top(), cache);
                 else
@@ -5706,11 +5705,8 @@ void QPlastiqueStyle::unpolish(QWidget *widget)
     }
 
 #ifndef QT_NO_PROGRESSBAR
-    if (AnimateBusyProgressBar && qobject_cast<QProgressBar *>(widget)) {
-        Q_D(QPlastiqueStyle);
+    if (AnimateBusyProgressBar && qobject_cast<QProgressBar *>(widget))
         widget->removeEventFilter(this);
-        d->bars.removeAll(static_cast<QProgressBar*>(widget));
-    }
 #endif
 
 #if defined QPlastique_MaskButtons
@@ -5834,24 +5830,13 @@ bool QPlastiqueStyle::eventFilter(QObject *watched, QEvent *event)
 
     switch (event->type()) {
     case QEvent::Show:
-        if (QProgressBar *bar = qobject_cast<QProgressBar *>(watched)) {
-            d->bars.append(bar);
-            if (d->bars.size() == 1) {
-                Q_ASSERT(ProgressBarFps > 0);
-                d->timer.start();
-                d->progressBarAnimateTimer = startTimer(1000 / ProgressBarFps);
-            }
-        }
+        if (QProgressBar *bar = qobject_cast<QProgressBar *>(watched))
+            d->startProgressAnimation(this, bar);
         break;
     case QEvent::Destroy:
     case QEvent::Hide:
-        if(!d->bars.isEmpty()) {
-            d->bars.removeAll(reinterpret_cast<QProgressBar*>(watched));
-            if (d->bars.isEmpty()) {
-                killTimer(d->progressBarAnimateTimer);
-                d->progressBarAnimateTimer = 0;
-            }
-        }
+        if (QProgressBar *bar = qobject_cast<QProgressBar *>(watched))
+            d->stopProgressAnimation(this, bar);
         break;
 #if defined QPlastique_MaskButtons
     case QEvent::Resize:
@@ -5877,26 +5862,6 @@ bool QPlastiqueStyle::eventFilter(QObject *watched, QEvent *event)
 #endif // QT_NO_PROGRESSBAR
 
     return QWindowsStyle::eventFilter(watched, event);
-}
-
-/*!
-    \reimp
-*/
-void QPlastiqueStyle::timerEvent(QTimerEvent *event)
-{
-#ifndef QT_NO_PROGRESSBAR
-    Q_D(QPlastiqueStyle);
-
-    if (event->timerId() == d->progressBarAnimateTimer) {
-        Q_ASSERT(ProgressBarFps > 0);
-        d->animateStep = d->timer.elapsed() / (1000 / ProgressBarFps);
-        foreach (QProgressBar *bar, d->bars) {
-            if (AnimateProgressBar || (bar->minimum() == 0 && bar->maximum() == 0))
-                bar->update();
-        }
-    }
-#endif // QT_NO_PROGRESSBAR
-    event->ignore();
 }
 
 QT_END_NAMESPACE

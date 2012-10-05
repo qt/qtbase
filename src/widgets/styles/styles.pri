@@ -3,6 +3,7 @@
 HEADERS += \
         styles/qdrawutil.h \
         styles/qstyle.h \
+        styles/qstyleanimation_p.h \
         styles/qstylefactory.h \
         styles/qstyleoption.h \
         styles/qstyleplugin.h \
@@ -11,12 +12,14 @@ HEADERS += \
         styles/qstylehelper_p.h \
         styles/qproxystyle.h \
         styles/qproxystyle_p.h \
+        styles/qcommonstyle_p.h \
         styles/qstylepainter.h \
         styles/qstylesheetstyle_p.h
 
 SOURCES += \
         styles/qdrawutil.cpp \
         styles/qstyle.cpp \
+        styles/qstyleanimation.cpp \
         styles/qstylefactory.cpp \
         styles/qstyleoption.cpp \
         styles/qstyleplugin.cpp \

@@ -71,6 +71,7 @@
 #include <qheaderview.h>
 #include <qprogressbar.h>
 #include <private/qwindowsstyle_p.h>
+#include <private/qstyleanimation_p.h>
 #include <qtabbar.h>
 #include <QMetaProperty>
 #include <qmainwindow.h>
@@ -3832,7 +3833,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (pb->minimum == 0 && pb->maximum == 0) {
                     Q_D(const QWindowsStyle);
                     int chunkCount = fillWidth/chunkWidth;
-                    int offset = (d->animateStep*8%rect.width());
+                    int offset = 0;
+#ifndef QT_NO_ANIMATION
+                    if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(w)))
+                        offset = animation->animationStep() * 8 % rect.width();
+#endif
                     int x = reverse ? r.left() + r.width() - offset - chunkWidth : r.x() + offset;
                     while (chunkCount > 0) {
                         r.setRect(x, rect.y(), chunkWidth, rect.height());
