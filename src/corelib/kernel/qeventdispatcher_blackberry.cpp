@@ -245,6 +245,14 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
 
 static inline bool updateTimeout(int *timeout, const struct timeval &start)
 {
+    // A timeout of -1 means we should block indefinitely. If we get here, we got woken up by a
+    // non-IO BPS event, and that event has been processed already. This means we can go back and
+    // block in bps_get_event().
+    // Note that processing the BPS event might have triggered a wakeup, in that case we get a
+    // IO event in the next bps_get_event() right away.
+    if (*timeout == -1)
+        return true;
+
     if (Q_UNLIKELY(!QElapsedTimer::isMonotonic())) {
         // we cannot recalculate the timeout without a monotonic clock as the time may have changed
         return false;
