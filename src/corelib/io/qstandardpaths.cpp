@@ -180,16 +180,12 @@ QStringList QStandardPaths::locateAll(StandardLocation type, const QString &file
 #ifdef Q_OS_WIN
 static QStringList executableExtensions()
 {
-    QStringList ret = QString::fromLocal8Bit(qgetenv("PATHEXT")).split(QLatin1Char(';'));
-    if (!ret.contains(QLatin1String(".exe"), Qt::CaseInsensitive)) {
-        // If %PATHEXT% does not contain .exe, it is either empty, malformed, or distorted in ways that we cannot support, anyway.
-        ret.clear();
-        ret << QLatin1String(".exe")
-            << QLatin1String(".com")
-            << QLatin1String(".bat")
-            << QLatin1String(".cmd");
-    }
-    return ret;
+    // If %PATHEXT% does not contain .exe, it is either empty, malformed, or distorted in ways that we cannot support, anyway.
+    const QStringList pathExt = QString::fromLocal8Bit(qgetenv("PATHEXT")).toLower().split(QLatin1Char(';'));
+    return pathExt.contains(QLatin1String(".exe"), Qt::CaseInsensitive) ?
+           pathExt :
+           QStringList() << QLatin1String(".exe") << QLatin1String(".com")
+                         << QLatin1String(".bat") << QLatin1String(".cmd");
 }
 #endif
 
@@ -202,6 +198,42 @@ static QString checkExecutable(const QString &path)
         return QDir::cleanPath(path);
     return QString();
 }
+
+static inline QString searchExecutable(const QStringList &searchPaths,
+                                       const QString &executableName)
+{
+    const QDir currentDir = QDir::current();
+    foreach (const QString &searchPath, searchPaths) {
+        const QString candidate = currentDir.absoluteFilePath(searchPath + QLatin1Char('/') + executableName);
+        const QString absPath = checkExecutable(candidate);
+        if (!absPath.isEmpty())
+            return absPath;
+    }
+    return QString();
+}
+
+#ifdef Q_OS_WIN
+
+// Find executable appending candidate suffixes, used for suffix-less executables
+// on Windows.
+static inline QString
+    searchExecutableAppendSuffix(const QStringList &searchPaths,
+                                 const QString &executableName,
+                                 const QStringList &suffixes)
+{
+    const QDir currentDir = QDir::current();
+    foreach (const QString &searchPath, searchPaths) {
+        const QString candidateRoot = currentDir.absoluteFilePath(searchPath + QLatin1Char('/') + executableName);
+        foreach (const QString &suffix, suffixes) {
+            const QString absPath = checkExecutable(candidateRoot + suffix);
+            if (!absPath.isEmpty())
+                return absPath;
+        }
+    }
+    return QString();
+}
+
+#endif // Q_OS_WIN
 
 /*!
   Finds the executable named \a executableName in the paths specified by \a paths,
@@ -235,33 +267,30 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
 #else
         const QLatin1Char pathSep(':');
 #endif
-        searchPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, QString::SkipEmptyParts);
-    }
-
-    QDir currentDir = QDir::current();
-    QString absPath;
-#ifdef Q_OS_WIN
-    static QStringList executable_extensions = executableExtensions();
-#endif
-
-    for (QStringList::const_iterator p = searchPaths.constBegin(); p != searchPaths.constEnd(); ++p) {
-        const QString candidate = currentDir.absoluteFilePath(*p + QLatin1Char('/') + executableName);
-#ifdef Q_OS_WIN
-        const QString extension = QLatin1Char('.') + QFileInfo(executableName).suffix();
-        if (!executable_extensions.contains(extension, Qt::CaseInsensitive)) {
-            foreach (const QString &extension, executable_extensions) {
-                absPath = checkExecutable(candidate + extension.toLower());
-                if (!absPath.isEmpty())
-                    break;
-            }
-        }
-#endif
-        absPath = checkExecutable(candidate);
-        if (!absPath.isEmpty()) {
-            break;
+        // Remove trailing slashes, which occur on Windows.
+        const QStringList rawPaths = QString::fromLocal8Bit(pEnv.constData()).split(pathSep, QString::SkipEmptyParts);
+        searchPaths.reserve(rawPaths.size());
+        foreach (const QString &rawPath, rawPaths) {
+            QString cleanPath = QDir::cleanPath(rawPath);
+            if (cleanPath.size() > 1 && cleanPath.endsWith('/'))
+                cleanPath.truncate(cleanPath.size() - 1);
+            searchPaths.push_back(cleanPath);
         }
     }
-    return absPath;
+
+#ifdef Q_OS_WIN
+    // On Windows, if the name does not have a suffix or a suffix not
+    // in PATHEXT ("xx.foo"), append suffixes from PATHEXT.
+    static const QStringList executable_extensions = executableExtensions();
+    if (executableName.contains(QLatin1Char('.'))) {
+        const QString suffix = QFileInfo(executableName).suffix();
+        if (suffix.isEmpty() || !executable_extensions.contains(QLatin1Char('.') + suffix, Qt::CaseInsensitive))
+            return searchExecutableAppendSuffix(searchPaths, executableName, executable_extensions);
+    } else {
+        return searchExecutableAppendSuffix(searchPaths, executableName, executable_extensions);
+    }
+#endif
+    return searchExecutable(searchPaths, executableName);
 }
 
 /*!
