@@ -70,7 +70,7 @@ int qFindByteArray(
 int qAllocMore(int alloc, int extra)
 {
     Q_ASSERT(alloc >= 0 && extra >= 0);
-    Q_ASSERT(alloc < (1 << 30) - extra);
+    Q_ASSERT_X(alloc < (1 << 30) - extra, "qAllocMore", "Requested size is too large!");
 
     unsigned nalloc = alloc + extra;
 
