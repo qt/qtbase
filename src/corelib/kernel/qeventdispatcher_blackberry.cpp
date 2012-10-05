@@ -136,18 +136,20 @@ QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberryPrivate()
             qWarning("QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberry: bps_register_domain() failed");
     }
 
-    // \TODO Reinstate this when bps is fixed. See comment in select() below.
     // Register thread_pipe[0] with bps
-    /*
     int io_events = BPS_IO_INPUT;
     result = bps_add_fd(thread_pipe[0], io_events, &bpsIOHandler, ioData.data());
     if (result != BPS_SUCCESS)
         qWarning() << Q_FUNC_INFO << "bps_add_fd() failed";
-    */
 }
 
 QEventDispatcherBlackberryPrivate::~QEventDispatcherBlackberryPrivate()
 {
+    // Unregister thread_pipe[0] from bps
+    const int result = bps_remove_fd(thread_pipe[0]);
+    if (result != BPS_SUCCESS)
+        qWarning() << Q_FUNC_INFO << "bps_remove_fd() failed";
+
     // we're done using BPS
     bps_shutdown();
 }
@@ -270,22 +272,6 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     d->ioData->writefds = writefds;
     d->ioData->exceptfds = exceptfds;
 
-    // \TODO Remove this when bps is fixed
-    //
-    // Work around a bug in BPS with which if we register the thread_pipe[0] fd with bps in the
-    // private class' ctor once only then we get spurious notifications that thread_pipe[0] is
-    // ready for reading. The first time the notification is correct and the pipe is emptied in
-    // the calling doSelect() function. The 2nd notification is an error and the resulting attempt
-    // to read and call to wakeUps.testAndSetRelease(1, 0) fails as there has been no intervening
-    // call to QEventDispatcherUNIX::wakeUp().
-    //
-    // Registering thread_pipe[0] here and unregistering it at the end of this call works around
-    // this issue.
-    int io_events = BPS_IO_INPUT;
-    int result = bps_add_fd(d->thread_pipe[0], io_events, &bpsIOHandler, d->ioData.data());
-    if (result != BPS_SUCCESS)
-        qWarning() << Q_FUNC_INFO << "bps_add_fd() failed";
-
     // reset all file sets
     if (readfds)
         FD_ZERO(readfds);
@@ -307,7 +293,7 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     forever {
         // Wait for event or file to be ready
         bps_event_t *event = NULL;
-        result = bps_get_event(&event, timeout_bps);
+        const int result = bps_get_event(&event, timeout_bps);
 
         if (result != BPS_SUCCESS)
             qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
@@ -329,11 +315,6 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
         if (!updateTimeout(&timeout_bps, startTime))
             break;
     }
-
-    // \TODO Remove this when bps is fixed (see comment above)
-    result = bps_remove_fd(d->thread_pipe[0]);
-    if (result != BPS_SUCCESS)
-        qWarning() << Q_FUNC_INFO << "bps_remove_fd() failed";
 
     // the number of bits set in the file sets
     return d->ioData->count;
