@@ -318,7 +318,6 @@ protected:
     virtual QString fileExtension() const;
     virtual QString guidForNode(const Node* node);
     virtual QString linkForNode(const Node* node, const Node* relative);
-    virtual QString refForAtom(Atom* atom, const Node* node);
 
     void writeXrefListItem(const QString& link, const QString& text);
     QString fullQualification(const Node* n);

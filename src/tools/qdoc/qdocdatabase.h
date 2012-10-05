@@ -54,7 +54,7 @@ typedef QMap<QString, NodeMap> NodeMapMap;
 typedef QMap<QString, NodeMultiMap> NodeMultiMapMap;
 typedef QMultiMap<QString, Node*> QDocMultiMap;
 typedef QMap<Text, const Node*> TextToNodeMap;
-typedef QMultiHash<QString, DocNode*> DocNodeHash;
+typedef QMultiMap<QString, DocNode*> DocNodeMultiMap;
 
 class Atom;
 class Generator;
@@ -70,11 +70,15 @@ class QDocDatabase
 
     struct Target
     {
-        Node* node;
-        Atom* atom;
-        int priority;
+      public:
+        Target() : node_(0), priority_(INT_MAX) { }
+        bool isEmpty() const { return ref_.isEmpty(); }
+        //void debug(int idx, const QString& key);
+        Node* node_;
+        QString ref_;
+        int priority_;
     };
-    typedef QMultiHash<QString, Target> TargetHash;
+    typedef QMultiMap<QString, Target> TargetMultiMap;
 
   public:
     static QDocDatabase* qdocDB();
@@ -122,6 +126,7 @@ class QDocDatabase
     /* convenience functions
        Many of these will be either eliminated or replaced.
     */
+    QString refForAtom(const Atom* atom);
     Tree* tree() { return tree_; }
     NamespaceNode* treeRoot() { return tree_->root(); }
     void resolveInheritance() { tree_->resolveInheritance(); }
@@ -141,8 +146,8 @@ class QDocDatabase
     }
 
     const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) const;
-    const Node *findUnambiguousTarget(const QString &target, Atom *&atom, const Node* relative) const;
-    Atom *findTarget(const QString &target, const Node *node) const;
+    const Node *findUnambiguousTarget(const QString &target, QString& ref, const Node* relative) const;
+    QString findTarget(const QString &target, const Node *node) const;
     void resolveTargets(InnerNode* root);
 
     FunctionNode* findFunctionNode(const QStringList& parentPath, const FunctionNode* clone) {
@@ -216,8 +221,8 @@ class QDocDatabase
     NodeMultiMapMap         newSinceMaps_;
     NodeMapMap              funcIndex_;
     TextToNodeMap           legaleseTexts_;
-    TargetHash              targetHash_;
-    DocNodeHash             docNodesByTitle_;
+    TargetMultiMap          targetMultiMap_;
+    DocNodeMultiMap         docNodesByTitle_;
 };
 
 QT_END_NAMESPACE

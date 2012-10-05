@@ -3344,19 +3344,6 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     return link;
 }
 
-QString HtmlGenerator::refForAtom(Atom *atom, const Node * /* node */)
-{
-    if (atom->type() == Atom::SectionLeft) {
-        return Doc::canonicalTitle(Text::sectionHeading(atom).toString());
-    }
-    else if (atom->type() == Atom::Target) {
-        return Doc::canonicalTitle(atom->string());
-    }
-    else {
-        return QString();
-    }
-}
-
 void HtmlGenerator::generateFullName(const Node *apparentNode, const Node *relative, const Node *actualNode)
 {
     if (actualNode == 0)
@@ -3519,7 +3506,7 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
             path.append(atom->string());
         }
 
-        Atom *targetAtom = 0;
+        QString ref;
         QString first = path.first().trimmed();
         if (first.isEmpty()) {
             *node = relative;
@@ -3539,7 +3526,7 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
                 *node = qdb_->findDocNodeByTitle(first, relative);
             }
             if (!*node) {
-                *node = qdb_->findUnambiguousTarget(first, targetAtom, relative);
+                *node = qdb_->findUnambiguousTarget(first, ref, relative);
             }
         }
         if (*node) {
@@ -3589,12 +3576,11 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
           In that case, The node *node points to represents a
           qdoc page, so the link will ultimately point to some
           target on that page. This loop finds that target on
-          the page that *node represents. targetAtom is that
-          target.
+          the page that *node represents. ref is that target.
          */
         while (!path.isEmpty()) {
-            targetAtom = qdb_->findTarget(path.first(), *node);
-            if (targetAtom == 0)
+            ref = qdb_->findTarget(path.first(), *node);
+            if (ref.isEmpty())
                 break;
             path.removeFirst();
         }
@@ -3609,8 +3595,9 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
             link = linkForNode(*node, relative);
             if (*node && (*node)->subType() == Node::Image)
                 link = "images/used-in-examples/" + link;
-            if (targetAtom)
-                link += QLatin1Char('#') + refForAtom(targetAtom, *node);
+            if (!ref.isEmpty()) {
+                link += QLatin1Char('#') + ref;
+            }
         }
     }
     return link;
@@ -3638,16 +3625,15 @@ void HtmlGenerator::generateStatus(const Node *node, CodeMarker *marker)
                  << "using it in new code. See ";
 
             const DocNode *docNode = qdb_->findDocNodeByTitle("Porting To Qt 4");
-            Atom *targetAtom = 0;
+            QString ref;
             if (docNode && node->type() == Node::Class) {
                 QString oldName(node->name());
                 oldName.remove(QLatin1Char('3'));
-                targetAtom = qdb_->findTarget(oldName, docNode);
+                ref = qdb_->findTarget(oldName, docNode);
             }
 
-            if (targetAtom) {
-                text << Atom(Atom::Link, linkForNode(docNode, node) + QLatin1Char('#') +
-                             refForAtom(targetAtom, docNode));
+            if (!ref.isEmpty()) {
+                text << Atom(Atom::Link, linkForNode(docNode, node) + QLatin1Char('#') + ref);
             }
             else
                 text << Atom(Atom::Link, "Porting to Qt 4");

@@ -104,7 +104,6 @@ protected:
     virtual QString fileExtension() const;
     virtual QString refForNode(const Node *node);
     virtual QString linkForNode(const Node *node, const Node *relative);
-    virtual QString refForAtom(Atom *atom, const Node *node);
 
     void generateManifestFile(QString manifest, QString element);
 
