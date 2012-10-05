@@ -424,7 +424,7 @@ void tst_QFiledialog::completer_data()
     QStringList list = root.entryList();
     QString folder;
     for (int i = 0; i < list.count(); ++i) {
-        if (list.at(0) == QChar('.'))
+        if (list[i].at(0) == QChar('.'))
             continue;
         QFileInfo info(QDir::rootPath() + list[i]);
         if (info.isDir()) {
