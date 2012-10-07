@@ -14,11 +14,9 @@ SUBDIRS=\
    qdialogbuttonbox \
    qdockwidget \
    qdoublespinbox \
-   qdoublevalidator \
    qfocusframe \
    qfontcombobox \
    qgroupbox \
-   qintvalidator \
    qlabel \
    qlcdnumber \
    qlineedit \
@@ -31,7 +29,6 @@ SUBDIRS=\
    qprogressbar \
    qpushbutton \
    qradiobutton \
-   qregexpvalidator \
    qscrollarea \
    qscrollbar \
    qsizegrip \

@@ -1,4 +1,7 @@
 TEMPLATE=subdirs
-SUBDIRS=\
-   qdesktopservices \
+SUBDIRS= \
+    qdesktopservices \
+    qdoublevalidator \
+    qintvalidator \
+    qregexpvalidator \
 
