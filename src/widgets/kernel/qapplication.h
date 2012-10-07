@@ -115,7 +115,11 @@ public:
     QT_DEPRECATED static inline void setGraphicsSystem(const QString &) {}
 #endif
 
+#ifdef Q_NO_USING_KEYWORD
+    static QPalette palette() { return QGuiApplication::palette(); }
+#else
     using QGuiApplication::palette;
+#endif
     static QPalette palette(const QWidget *);
     static QPalette palette(const char *className);
     static void setPalette(const QPalette &, const char* className = 0);
