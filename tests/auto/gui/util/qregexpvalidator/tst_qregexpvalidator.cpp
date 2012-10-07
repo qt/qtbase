@@ -122,5 +122,5 @@ void tst_QRegExpValidator::validate()
     QCOMPARE(changedSpy.count(), 1);
 }
 
-QTEST_MAIN(tst_QRegExpValidator)
+QTEST_APPLESS_MAIN(tst_QRegExpValidator)
 #include "tst_qregexpvalidator.moc"

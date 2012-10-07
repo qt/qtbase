@@ -286,5 +286,5 @@ void tst_QIntValidator::notifySignals()
     QCOMPARE(changedSpy.count(), 6);
 }
 
-QTEST_MAIN(tst_QIntValidator)
+QTEST_APPLESS_MAIN(tst_QIntValidator)
 #include "tst_qintvalidator.moc"
