@@ -108,7 +108,6 @@ protected slots:
     void onStatusMessageChanged(const QString &);
     void onStatusTipTimer();
     void deleteAction(QAction *a) { delete a; }
-    void populateMenu();
 private:
     void createActions();
     QMenu *menus[2], *lastMenu;
@@ -240,15 +239,6 @@ void tst_QMenu::onActivated(QAction *action)
 void tst_QMenu::onStatusMessageChanged(const QString &s)
 {
     statustip=s;
-}
-
-void tst_QMenu::populateMenu()
-{
-    //just adds 3 dummy actions and a separator.
-    lastMenu->addAction("Foo");
-    lastMenu->addAction("Bar");
-    lastMenu->addAction("FooBar");
-    lastMenu->addSeparator();
 }
 
 void tst_QMenu::addActionsAndClear()
@@ -823,14 +813,37 @@ void tst_QMenu::deleteActionInTriggered()
     QVERIFY(!a);
 }
 
+class PopulateOnAboutToShowTestMenu : public QMenu {
+    Q_OBJECT
+public:
+    explicit PopulateOnAboutToShowTestMenu(QWidget *parent = 0);
+
+public slots:
+    void populateMenu();
+};
+
+PopulateOnAboutToShowTestMenu::PopulateOnAboutToShowTestMenu(QWidget *parent) : QMenu(parent)
+{
+    connect(this, SIGNAL(aboutToShow()), this, SLOT(populateMenu()));
+}
+
+void PopulateOnAboutToShowTestMenu::populateMenu()
+{
+    // just adds 3 dummy actions and a separator.
+    addAction("Foo");
+    addAction("Bar");
+    addAction("FooBar");
+    addSeparator();
+}
+
 void tst_QMenu::pushButtonPopulateOnAboutToShow()
 {
     QPushButton b("Test PushButton");
     b.setWindowFlags(Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
-    lastMenu = new QMenu;
-    b.setMenu(lastMenu);
+
+    QMenu *buttonMenu= new PopulateOnAboutToShowTestMenu(&b);
+    b.setMenu(buttonMenu);
     const int scrNumber = QApplication::desktop()->screenNumber(&b);
-    connect(lastMenu, SIGNAL(aboutToShow()), this, SLOT(populateMenu()));
     b.show();
     const QRect screen = QApplication::desktop()->screenGeometry(scrNumber);
 
@@ -850,17 +863,17 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
         QSKIP("Your window manager won't allow a window against the bottom of the screen");
     }
 
-    QTimer::singleShot(300,lastMenu, SLOT(hide()));
+    QTimer::singleShot(300, buttonMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
-    QVERIFY(!lastMenu->geometry().intersects(b.geometry()));
+    QVERIFY(!buttonMenu->geometry().intersects(b.geometry()));
 
     // note: we're assuming that, if we previously got the desired geometry, we'll get it here too
-    b.move(10, screen.bottom()-lastMenu->height()-5);
-    QTimer::singleShot(300,lastMenu, SLOT(hide()));
+    b.move(10, screen.bottom()-buttonMenu->height()-5);
+    QTimer::singleShot(300, buttonMenu, SLOT(hide()));
     QTest::mouseClick(&b, Qt::LeftButton, Qt::NoModifier, b.rect().center());
-    QVERIFY(!lastMenu->geometry().intersects(b.geometry()));
-
+    QVERIFY(!buttonMenu->geometry().intersects(b.geometry()));
 }
+
 void tst_QMenu::QTBUG7907_submenus_autoselect()
 {
     QMenu menu("Test Menu");
