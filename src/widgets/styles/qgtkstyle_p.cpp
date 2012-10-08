@@ -175,6 +175,9 @@ Ptr_gtk_widget_get_type QGtkStylePrivate::gtk_widget_get_type = 0;
 Ptr_gtk_rc_get_style_by_paths QGtkStylePrivate::gtk_rc_get_style_by_paths = 0;
 Ptr_gtk_check_version QGtkStylePrivate::gtk_check_version = 0;
 Ptr_gtk_border_free QGtkStylePrivate::gtk_border_free = 0;
+Ptr_gtk_widget_get_allocation QGtkStylePrivate::gtk_widget_get_allocation = 0;
+Ptr_gtk_widget_set_allocation QGtkStylePrivate::gtk_widget_set_allocation = 0;
+
 Ptr_pango_font_description_get_size QGtkStylePrivate::pango_font_description_get_size = 0;
 Ptr_pango_font_description_get_weight QGtkStylePrivate::pango_font_description_get_weight = 0;
 Ptr_pango_font_description_get_family QGtkStylePrivate::pango_font_description_get_family = 0;
@@ -439,6 +442,9 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_rc_get_style_by_paths =(Ptr_gtk_rc_get_style_by_paths)libgtk.resolve("gtk_rc_get_style_by_paths");
     gtk_check_version =(Ptr_gtk_check_version)libgtk.resolve("gtk_check_version");
     gtk_border_free =(Ptr_gtk_border_free)libgtk.resolve("gtk_border_free");
+    gtk_widget_get_allocation = (Ptr_gtk_widget_get_allocation)libgtk.resolve("gtk_widget_get_allocation");
+    gtk_widget_set_allocation = (Ptr_gtk_widget_set_allocation)libgtk.resolve("gtk_widget_set_allocation");
+
     pango_font_description_get_size = (Ptr_pango_font_description_get_size)libgtk.resolve("pango_font_description_get_size");
     pango_font_description_get_weight = (Ptr_pango_font_description_get_weight)libgtk.resolve("pango_font_description_get_weight");
     pango_font_description_get_family = (Ptr_pango_font_description_get_family)libgtk.resolve("pango_font_description_get_family");

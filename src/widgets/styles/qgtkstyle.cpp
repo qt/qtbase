@@ -1921,10 +1921,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     : QHashableLatin1Literal("GtkComboBox.GtkToggleButton.GtkHBox.GtkVSeparator");
 
                 if (GtkWidget *gtkVSeparator = d->gtkWidget(vSeparatorPath)) {
-                    QRect vLineRect(gtkVSeparator->allocation.x,
-                                    gtkVSeparator->allocation.y,
-                                    gtkVSeparator->allocation.width,
-                                    gtkVSeparator->allocation.height);
+                    GtkAllocation allocation;
+                    d->gtk_widget_get_allocation(gtkVSeparator, &allocation);
+                    QRect vLineRect(allocation.x, allocation.y, allocation.width, allocation.height);
 
                     gtkCachedPainter.paintVline( gtkVSeparator, "vseparator",
                                            vLineRect, state, gtkVSeparator->style,
@@ -1976,8 +1975,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     d->gtk_widget_style_get(gtkCombo, "arrow-size", &minSize, NULL);
                 }
                 if (gtkArrow) {
-                    arrowWidgetRect = QRect(gtkArrow->allocation.x, gtkArrow->allocation.y,
-                                            gtkArrow->allocation.width, gtkArrow->allocation.height);
+                    GtkAllocation allocation;
+                    d->gtk_widget_get_allocation(gtkArrow, &allocation);
+                    arrowWidgetRect = QRect(allocation.x, allocation.y, allocation.width, allocation.height);
                     style = gtkArrow->style;
                 }
 
@@ -2199,10 +2199,15 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             }
 
             if (scrollBar->subControls & SC_ScrollBarAddLine) {
-                gtkVScrollBar->allocation.y = scrollBarAddLine.top();
-                gtkVScrollBar->allocation.height = scrollBarAddLine.height() - rect.height() + 6;
-                gtkHScrollBar->allocation.x = scrollBarAddLine.right();
-                gtkHScrollBar->allocation.width = scrollBarAddLine.width() - rect.width();
+                GtkAllocation vAllocation;
+                vAllocation.y = scrollBarAddLine.top();
+                vAllocation.height = scrollBarAddLine.height() - rect.height() + 6;
+                d->gtk_widget_set_allocation(gtkVScrollBar, &vAllocation);
+
+                GtkAllocation hAllocation;
+                hAllocation.x = scrollBarAddLine.right();
+                hAllocation.width = scrollBarAddLine.width() - rect.width();
+                d->gtk_widget_set_allocation(gtkHScrollBar, &hAllocation);
 
                 GtkShadowType shadow = GTK_SHADOW_OUT;
                 GtkStateType state = GTK_STATE_NORMAL;
@@ -2226,10 +2231,15 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             }
 
             if (scrollBar->subControls & SC_ScrollBarSubLine) {
-                gtkVScrollBar->allocation.y = 0;
-                gtkVScrollBar->allocation.height = scrollBarSubLine.height();
-                gtkHScrollBar->allocation.x = 0;
-                gtkHScrollBar->allocation.width = scrollBarSubLine.width();
+                GtkAllocation vAllocation;
+                vAllocation.y = 0;
+                vAllocation.height = scrollBarSubLine.height();
+                d->gtk_widget_set_allocation(gtkVScrollBar, &vAllocation);
+
+                GtkAllocation hAllocation;
+                hAllocation.x = 0;
+                hAllocation.width = scrollBarSubLine.width();
+                d->gtk_widget_set_allocation(gtkHScrollBar, &hAllocation);
 
                 GtkShadowType shadow = GTK_SHADOW_OUT;
                 GtkStateType state = GTK_STATE_NORMAL;
@@ -3761,9 +3771,11 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
             if (!arrowWidget)
                 return QWindowsStyle::subControlRect(control, option, subControl, widget);
 
-            QRect buttonRect(option->rect.left() + arrowWidget->allocation.x,
-                             option->rect.top() + arrowWidget->allocation.y,
-                             arrowWidget->allocation.width, arrowWidget->allocation.height);
+            GtkAllocation allocation;
+            d->gtk_widget_get_allocation(arrowWidget, &allocation);
+            QRect buttonRect(option->rect.left() + allocation.x,
+                             option->rect.top() + allocation.y,
+                             allocation.width, allocation.height);
 
             switch (subControl) {
 
