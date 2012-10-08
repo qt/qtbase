@@ -1836,6 +1836,7 @@ void QMacStylePrivate::animate()
     }
     if (!scrollBars.isEmpty()) {
         int i = 0;
+        const qint64 dt = QDateTime::currentMSecsSinceEpoch();
         while (i < scrollBars.size()) {
             QWidget *maybeScroll = scrollBars.at(i);
             if (!maybeScroll) {
@@ -1843,9 +1844,8 @@ void QMacStylePrivate::animate()
             } else {
                 if (QScrollBar *sb = qobject_cast<QScrollBar *>(maybeScroll)) {
                     const OverlayScrollBarInfo& info = scrollBarInfos[sb];
-                    const QDateTime dt = QDateTime::currentDateTime();
-                    const qreal elapsed = qMax(info.lastHovered.msecsTo(dt),
-                                               info.lastUpdate.msecsTo(dt));
+                    const qreal elapsed = qMax(dt - info.lastHovered,
+                                               dt - info.lastUpdate);
                     const CGFloat opacity = 1.0 - qMax(0.0, (elapsed - ScrollBarFadeOutDelay) /
                                                              ScrollBarFadeOutDuration);
                     if ((opacity > 0.0 || !info.cleared) && (elapsed > ScrollBarFadeOutDelay)) {
@@ -1888,7 +1888,8 @@ bool QMacStyle::eventFilter(QObject *o, QEvent *e)
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
                 [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay && scrollArea) {
             QMacStylePrivate::OverlayScrollBarInfo& info = d->scrollBarInfos[sb];
-            const qreal elapsed = info.lastUpdate.msecsTo(QDateTime::currentDateTime());
+            const qint64 dt = QDateTime::currentMSecsSinceEpoch();
+            const qreal elapsed = dt - info.lastUpdate;
             const CGFloat opacity = 1.0 - qMax(0.0, (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay)
                                                           / QMacStylePrivate::ScrollBarFadeOutDuration);
             switch (e->type()) {
@@ -1897,8 +1898,8 @@ bool QMacStyle::eventFilter(QObject *o, QEvent *e)
                 // the fade out is stopped and it's set to 100% opaque
                 if (opacity > 0.0) {
                     info.hovered = true;
-                    info.lastUpdate = QDateTime::currentDateTime();
-                    info.lastHovered = QDateTime::currentDateTime();
+                    info.lastUpdate = dt;
+                    info.lastHovered = info.lastUpdate;
                     sb->update();
                     break;
                 }
@@ -5113,6 +5114,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+            const qint64 dt = QDateTime::currentMSecsSinceEpoch();
             if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
                 [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay &&
                 scrollBarsScrollArea(qobject_cast<const QScrollBar *>(widget)) &&
@@ -5127,7 +5129,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     info.lastMinimum = slider->minimum;
                     info.lastSize = slider->rect.size();
                     info.lastMaximum = slider->maximum;
-                    info.lastUpdate = QDateTime::currentDateTime();
+                    info.lastUpdate = dt;
                     showSiblings = true;
                 }
 
@@ -5139,18 +5141,18 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                            d->scrollBarInfos.value(sibling).lastUpdate);
                     info.cleared = false;
                     if (d->scrollBarInfos.value(sibling).hovered)
-                        info.lastUpdate = QDateTime::currentDateTime();
+                        info.lastUpdate = dt;
                 }
 
-                qreal elapsed = info.lastHovered.msecsTo(QDateTime::currentDateTime());
+                qreal elapsed = dt - info.lastHovered;
                 CGFloat opacity = 1.0 - qMax(0.0,
                     (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay) /
                     QMacStylePrivate::ScrollBarFadeOutDuration);
                 const bool isHorizontal = slider->orientation == Qt::Horizontal;
 
                 if (info.hovered) {
-                    info.lastHovered = QDateTime::currentDateTime();
-                    info.lastUpdate = QDateTime::currentDateTime();
+                    info.lastHovered = dt;
+                    info.lastUpdate = dt;
                     opacity = 1.0;
                     // if the current scroll bar is hovered, none of the others might fade out
                     Q_FOREACH (const QScrollBar *sibling, siblings) {
@@ -5206,7 +5208,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 // afterwards we draw the knob, since we cannot drow the know w/o the track,
                 // we simulate a scrollbar with a knob from 0.0 to 1.0
-                elapsed = info.lastUpdate.msecsTo(QDateTime::currentDateTime());
+                elapsed = dt - info.lastUpdate;
                 opacity = 1.0 - qMax(0.0, (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay) /
                                           QMacStylePrivate::ScrollBarFadeOutDuration);
                 info.cleared = opacity <= 0.0;
