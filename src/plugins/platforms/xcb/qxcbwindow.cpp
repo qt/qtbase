@@ -55,10 +55,6 @@
 
 #include <qpa/qplatformintegration.h>
 
-#ifdef XCB_USE_DRI2
-#include "qdri2context.h"
-#endif
-
 // FIXME This workaround can be removed for xcb-icccm > 3.8
 #define class class_name
 #include <xcb/xcb_icccm.h>
@@ -1391,11 +1387,6 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     }
 
     m_dirtyFrameMargins = true;
-
-#if XCB_USE_DRI2
-    if (m_context)
-        static_cast<QDri2Context *>(m_context)->resize(rect.size());
-#endif
 }
 
 bool QXcbWindow::isExposed() const

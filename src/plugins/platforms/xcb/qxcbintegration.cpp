@@ -190,11 +190,9 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 #elif defined(XCB_USE_EGL)
     return new QEGLXcbPlatformContext(context->format(), context->shareHandle(),
         screen->connection()->egl_display(), screen->connection());
-#elif defined(XCB_USE_DRI2)
-    return new QDri2Context(context->format(), context->shareHandle());
 #else
     Q_UNUSED(screen);
-    qWarning("QXcbIntegration: Cannot create platform OpenGL context, none of GLX, EGL, or DRI2 are enabled");
+    qWarning("QXcbIntegration: Cannot create platform OpenGL context, neither GLX nor EGL are enabled");
     return 0;
 #endif
 }
@@ -211,7 +209,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ThreadedPixmaps: return true;
 #if defined(XCB_USE_GLX)
     case OpenGL: return m_connections.at(0)->hasGLX();
-#elif defined(XCB_USE_EGL) || defined(XCB_USE_DRI2)
+#elif defined(XCB_USE_EGL)
     case OpenGL: return true;
 #else
     case OpenGL: return false;

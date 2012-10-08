@@ -82,17 +82,6 @@
 #include <EGL/egl.h>
 #endif
 
-#ifdef XCB_USE_DRI2
-#include <xcb/dri2.h>
-extern "C" {
-#include <xf86drm.h>
-}
-#define MESA_EGL_NO_X11_HEADERS
-#define EGL_EGLEXT_PROTOTYPES
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#endif
-
 #if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XI2proto.h>
@@ -261,12 +250,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
 #ifdef XCB_USE_XINPUT2_MAEMO
     , m_xinputData(0)
 #endif
-#ifdef XCB_USE_DRI2
-    , m_dri2_major(0)
-    , m_dri2_minor(0)
-    , m_dri2_support_probed(false)
-    , m_has_support_for_dri2(false)
-#endif
     , xfixes_first_event(0)
     , xrandr_first_event(0)
     , has_glx_extension(false)
@@ -359,9 +342,6 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     m_drag = new QXcbDrag(this);
 #endif
 
-#ifdef XCB_USE_DRI2
-    initializeDri2();
-#endif
     sync();
 }
 
@@ -1409,94 +1389,6 @@ bool QXcbConnection::hasEgl() const
     return m_has_egl;
 }
 #endif // defined(XCB_USE_EGL)
-
-#ifdef XCB_USE_DRI2
-void QXcbConnection::initializeDri2()
-{
-    xcb_dri2_connect_cookie_t connect_cookie = xcb_dri2_connect_unchecked (m_connection,
-                                                                           m_screens[0]->root(),
-                                                                           XCB_DRI2_DRIVER_TYPE_DRI);
-
-    xcb_dri2_connect_reply_t *connect = xcb_dri2_connect_reply (m_connection,
-                                                                connect_cookie, NULL);
-
-    if (! connect || connect->driver_name_length + connect->device_name_length == 0) {
-        qWarning("QXcbConnection: Failed to connect to DRI2");
-        return;
-    }
-
-    m_dri2_device_name = QByteArray(xcb_dri2_connect_device_name (connect),
-                                                    xcb_dri2_connect_device_name_length (connect));
-    delete connect;
-
-    int fd = open(m_dri2_device_name.constData(), O_RDWR);
-    if (fd < 0) {
-        qWarning() << "QXcbConnection: Couldn't open DRI2 device" << m_dri2_device_name;
-        m_dri2_device_name = QByteArray();
-        return;
-    }
-
-    drm_magic_t magic;
-    if (drmGetMagic(fd, &magic)) {
-        qWarning("QXcbConnection: Failed to get drmMagic");
-        return;
-    }
-
-    xcb_dri2_authenticate_cookie_t authenticate_cookie = xcb_dri2_authenticate_unchecked(m_connection,
-                                                                                         m_screens[0]->root(), magic);
-    xcb_dri2_authenticate_reply_t *authenticate = xcb_dri2_authenticate_reply(m_connection,
-                                                                              authenticate_cookie, NULL);
-    if (authenticate == NULL || !authenticate->authenticated) {
-        qWarning("QXcbConnection: DRI2: failed to authenticate");
-        free(authenticate);
-        return;
-    }
-
-    delete authenticate;
-
-    EGLDisplay display = eglGetDRMDisplayMESA(fd);
-    if (!display) {
-        qWarning("QXcbConnection: Failed to create EGL display using DRI2");
-        return;
-    }
-
-    m_egl_display = display;
-    EGLint major,minor;
-    if (!eglInitialize(display, &major, &minor)) {
-        qWarning("QXcbConnection: Failed to initialize EGL display using DRI2");
-        return;
-    }
-}
-
-bool QXcbConnection::hasSupportForDri2() const
-{
-    if (!m_dri2_support_probed) {
-        xcb_generic_error_t *error = 0;
-
-        xcb_prefetch_extension_data (m_connection, &xcb_dri2_id);
-
-        xcb_dri2_query_version_cookie_t dri2_query_cookie = xcb_dri2_query_version (m_connection,
-                                                                                    XCB_DRI2_MAJOR_VERSION,
-                                                                                    XCB_DRI2_MINOR_VERSION);
-
-        xcb_dri2_query_version_reply_t *dri2_query = xcb_dri2_query_version_reply (m_connection,
-                                                                                   dri2_query_cookie, &error);
-        if (!dri2_query || error) {
-            delete error;
-            delete dri2_query;
-            return false;
-        }
-
-        QXcbConnection *that = const_cast<QXcbConnection *>(this);
-        that->m_dri2_major = dri2_query->major_version;
-        that->m_dri2_minor = dri2_query->minor_version;
-
-        that->m_has_support_for_dri2 = true;
-        that->m_dri2_support_probed = true;
-    }
-    return m_has_support_for_dri2;
-}
-#endif //XCB_USE_DRI2
 
 #if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
 // Borrowed from libXi.

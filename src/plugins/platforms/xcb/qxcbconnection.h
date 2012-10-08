@@ -338,14 +338,10 @@ public:
     void *xlib_display() const { return m_xlib_display; }
 #endif
 
-#ifdef XCB_USE_DRI2
-    bool hasSupportForDri2() const;
-    QByteArray dri2DeviceName() const { return m_dri2_device_name; }
-#endif
 #ifdef XCB_USE_EGL
     bool hasEgl() const;
 #endif
-#if defined(XCB_USE_EGL) || defined(XCB_USE_DRI2)
+#if defined(XCB_USE_EGL)
     void *egl_display() const { return m_egl_display; }
 #endif
 #ifdef XCB_USE_XINPUT2_MAEMO
@@ -393,9 +389,6 @@ private:
     void initializeXRender();
     void initializeXRandr();
     void initializeXShape();
-#ifdef XCB_USE_DRI2
-    void initializeDri2();
-#endif
 #ifdef XCB_USE_XINPUT2_MAEMO
     void initializeXInput2Maemo();
     void finalizeXInput2Maemo();
@@ -478,14 +471,7 @@ private:
     QHash<int, QWindowSystemInterface::TouchPoint> m_touchPoints;
     QHash<int, XInput2DeviceData*> m_touchDevices;
 #endif
-#ifdef XCB_USE_DRI2
-    uint32_t m_dri2_major;
-    uint32_t m_dri2_minor;
-    bool m_dri2_support_probed;
-    bool m_has_support_for_dri2;
-    QByteArray m_dri2_device_name;
-#endif
-#if defined(XCB_USE_EGL) || defined(XCB_USE_DRI2)
+#if defined(XCB_USE_EGL)
     void *m_egl_display;
     bool m_has_egl;
 #endif
@@ -552,9 +538,9 @@ cookie_t q_xcb_call_template(const cookie_t &cookie, QXcbConnection *connection,
 #endif
 
 
-#if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
+#if defined(XCB_USE_EGL)
 #define EGL_DISPLAY_FROM_XCB(object) ((EGLDisplay)(object->connection()->egl_display()))
-#endif //endifXCB_USE_DRI2
+#endif
 
 QT_END_NAMESPACE
 

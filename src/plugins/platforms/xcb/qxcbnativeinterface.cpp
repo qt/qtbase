@@ -53,8 +53,6 @@
 
 #if defined(XCB_USE_EGL)
 #include "QtPlatformSupport/private/qeglplatformcontext_p.h"
-#elif defined (XCB_USE_DRI2)
-#include "qdri2context.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +67,6 @@ public:
         insert("egldisplay",QXcbNativeInterface::EglDisplay);
         insert("connection",QXcbNativeInterface::Connection);
         insert("screen",QXcbNativeInterface::Screen);
-        insert("graphicsdevice",QXcbNativeInterface::GraphicsDevice);
         insert("eglcontext",QXcbNativeInterface::EglContext);
     }
 };
@@ -122,9 +119,6 @@ void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceStr
     case Screen:
         result = qPlatformScreenForWindow(window);
         break;
-    case GraphicsDevice:
-        result = graphicsDeviceForWindow(window);
-        break;
     default:
         break;
     }
@@ -165,7 +159,7 @@ void *QXcbNativeInterface::displayForWindow(QWindow *window)
 
 void *QXcbNativeInterface::eglDisplayForWindow(QWindow *window)
 {
-#if defined(XCB_USE_DRI2) || defined(XCB_USE_EGL)
+#if defined(XCB_USE_EGL)
     QXcbScreen *screen = qPlatformScreenForWindow(window);
     return screen->connection()->egl_display();
 #else
@@ -186,46 +180,12 @@ void *QXcbNativeInterface::screenForWindow(QWindow *window)
     return screen->screen();
 }
 
-void *QXcbNativeInterface::graphicsDeviceForWindow(QWindow *window)
-{
-#if defined(XCB_USE_DRI2)
-    QXcbScreen *screen = qPlatformScreenForWindow(window);
-    QByteArray deviceName = screen->connection()->dri2DeviceName();
-    return deviceName.data();
-#else
-    Q_UNUSED(window);
-    return 0;
-#endif
-
-}
-
 void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
 {
     Q_ASSERT(context);
 #if defined(XCB_USE_EGL)
     QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(context->handle());
     return eglPlatformContext->eglContext();
-#endif
-#if 0
-    Q_ASSERT(window);
-    QPlatformOpenGLContext *platformContext = window->glContext()->handle();
-    if (!platformContext) {
-        qDebug() << "QWindow" << window << "does not have a glContext"
-                 << "cannot return EGLContext";
-        return 0;
-    }
-#if defined(XCB_USE_EGL)
-    QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(platformContext);
-    return eglPlatformContext->eglContext();
-#elif defined (XCB_USE_DRI2)
-    QDri2Context *dri2Context = static_cast<QDri2Context *>(platformContext);
-    return dri2Context->eglContext();
-#else
-    return 0;
-#endif
-#else
-    Q_UNUSED(context)
-    return 0;
 #endif
 }
 
