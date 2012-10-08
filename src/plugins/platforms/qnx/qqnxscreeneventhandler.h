@@ -48,11 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQnxIntegration;
+
 class QQnxScreenEventHandler : public QObject
 {
     Q_OBJECT
 public:
-    QQnxScreenEventHandler();
+    explicit QQnxScreenEventHandler(QQnxIntegration *integration);
 
     bool handleEvent(screen_event_t event);
     bool handleEvent(screen_event_t event, int qnxType);
@@ -69,12 +71,14 @@ private:
     void handleTouchEvent(screen_event_t event, int qnxType);
     void handleCloseEvent(screen_event_t event);
     void handleCreateEvent(screen_event_t event);
+    void handleDisplayEvent(screen_event_t event);
 
 private:
     enum {
         MaximumTouchPoints = 10
     };
 
+    QQnxIntegration *m_qnxIntegration;
     QPoint m_lastGlobalMousePoint;
     QPoint m_lastLocalMousePoint;
     Qt::MouseButtons m_lastButtonState;

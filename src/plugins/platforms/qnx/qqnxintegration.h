@@ -118,6 +118,10 @@ public:
 
     static QWindow *window(screen_window_t qnxWindow);
 
+    QQnxScreen *screenForNative(screen_display_t qnxScreen) const;
+
+    void createDisplay(screen_display_t display, bool isPrimary);
+    void removeDisplay(QQnxScreen *screen);
 private:
     void createDisplays();
     void destroyDisplays();

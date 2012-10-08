@@ -57,8 +57,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QQnxScreenEventHandler::QQnxScreenEventHandler()
-    : m_lastButtonState(Qt::NoButton)
+QQnxScreenEventHandler::QQnxScreenEventHandler(QQnxIntegration *integration)
+    : m_qnxIntegration(integration)
+    , m_lastButtonState(Qt::NoButton)
     , m_lastMouseWindow(0)
     , m_touchDevice(0)
 {
@@ -120,9 +121,13 @@ bool QQnxScreenEventHandler::handleEvent(screen_event_t event, int qnxType)
         handleCloseEvent(event);
         break;
 
+    case SCREEN_EVENT_DISPLAY:
+        handleDisplayEvent(event);
+        break;
+
     default:
         // event ignored
-        qScreenEventDebug() << Q_FUNC_INFO << "unknown event";
+        qScreenEventDebug() << Q_FUNC_INFO << "unknown event" << qnxType;
         return false;
     }
 
@@ -453,6 +458,34 @@ void QQnxScreenEventHandler::handleCreateEvent(screen_event_t event)
         qFatal("QQnx: failed to query window property, errno=%d", errno);
 
     Q_EMIT newWindowCreated(window);
+}
+
+void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
+{
+    screen_display_t nativeDisplay = NULL;
+    if (screen_get_event_property_pv(event, SCREEN_PROPERTY_DISPLAY, (void **)&nativeDisplay) != 0) {
+        qWarning("QQnx: failed to query display property, errno=%d", errno);
+        return;
+    }
+
+    int isAttached = 0;
+    if (screen_get_event_property_iv(event, SCREEN_PROPERTY_ATTACHED, &isAttached) != 0) {
+        qWarning("QQnx: failed to query display attached property, errno=%d", errno);
+        return;
+    }
+
+    qScreenEventDebug() << Q_FUNC_INFO << "display attachment is now:" << isAttached;
+    QQnxScreen *screen = m_qnxIntegration->screenForNative(nativeDisplay);
+    if (!screen) {
+        if (isAttached) {
+            qScreenEventDebug() << "creating new QQnxScreen for newly attached display";
+            m_qnxIntegration->createDisplay(nativeDisplay, false /* not primary, we assume */);
+        }
+    } else if (!isAttached) {
+        // libscreen display is deactivated, let's remove the QQnxScreen / QScreen
+        qScreenEventDebug() << "removing display";
+        m_qnxIntegration->removeDisplay(screen);
+    }
 }
 
 #include "moc_qqnxscreeneventhandler.cpp"

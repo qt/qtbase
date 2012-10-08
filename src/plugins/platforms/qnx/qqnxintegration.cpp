@@ -124,7 +124,7 @@ QQnxIntegration::QQnxIntegration()
     , m_eventDispatcher(createUnixEventDispatcher())
 #endif
     , m_nativeInterface(new QQnxNativeInterface())
-    , m_screenEventHandler(new QQnxScreenEventHandler())
+    , m_screenEventHandler(new QQnxScreenEventHandler(this))
 #if !defined(QT_NO_CLIPBOARD)
     , m_clipboard(0)
 #endif
@@ -437,20 +437,45 @@ void QQnxIntegration::createDisplays()
     }
 
     for (int i=0; i<displayCount; i++) {
+        int isAttached = 0;
+        result = screen_get_display_property_iv(displays[i], SCREEN_PROPERTY_ATTACHED, &isAttached);
+        if (result != 0) {
+            qWarning("QQnxIntegration: failed to query display attachment, errno=%d", errno);
+            isAttached = 1; // assume attached
+        }
+
+        if (!isAttached) {
+            qIntegrationDebug() << Q_FUNC_INFO << "Skipping non-attached display" << i;
+            continue;
+        }
+
         qIntegrationDebug() << Q_FUNC_INFO << "Creating screen for display" << i;
-        QQnxScreen *screen = new QQnxScreen(m_screenContext, displays[i], i==0);
-        m_screens.append(screen);
-        screenAdded(screen);
+        createDisplay(displays[i], i==0);
+    } // of displays iteration
+}
 
-        QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void*)),
-                         screen, SLOT(newWindowCreated(void*)));
-        QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void*)),
-                         screen, SLOT(windowClosed(void*)));
+void QQnxIntegration::createDisplay(screen_display_t display, bool isPrimary)
+{
+    QQnxScreen *screen = new QQnxScreen(m_screenContext, display, isPrimary);
+    m_screens.append(screen);
+    screenAdded(screen);
 
-        QObject::connect(m_navigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
-        QObject::connect(m_navigatorEventHandler, SIGNAL(windowGroupActivated(QByteArray)), screen, SLOT(activateWindowGroup(QByteArray)));
-        QObject::connect(m_navigatorEventHandler, SIGNAL(windowGroupDeactivated(QByteArray)), screen, SLOT(deactivateWindowGroup(QByteArray)));
-    }
+    QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void*)),
+                     screen, SLOT(newWindowCreated(void*)));
+    QObject::connect(m_screenEventHandler, SIGNAL(windowClosed(void*)),
+                     screen, SLOT(windowClosed(void*)));
+
+    QObject::connect(m_navigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
+    QObject::connect(m_navigatorEventHandler, SIGNAL(windowGroupActivated(QByteArray)), screen, SLOT(activateWindowGroup(QByteArray)));
+    QObject::connect(m_navigatorEventHandler, SIGNAL(windowGroupDeactivated(QByteArray)), screen, SLOT(deactivateWindowGroup(QByteArray)));
+}
+
+void QQnxIntegration::removeDisplay(QQnxScreen *screen)
+{
+    Q_CHECK_PTR(screen);
+    Q_ASSERT(m_screens.contains(screen));
+    m_screens.removeAll(screen);
+    screen->deleteLater();
 }
 
 void QQnxIntegration::destroyDisplays()
@@ -458,6 +483,16 @@ void QQnxIntegration::destroyDisplays()
     qIntegrationDebug() << Q_FUNC_INFO;
     qDeleteAll(m_screens);
     m_screens.clear();
+}
+
+QQnxScreen *QQnxIntegration::screenForNative(screen_display_t qnxScreen) const
+{
+    Q_FOREACH (QQnxScreen *screen, m_screens) {
+        if (screen->nativeDisplay() == qnxScreen)
+            return screen;
+    }
+
+    return 0;
 }
 
 QQnxScreen *QQnxIntegration::primaryDisplay() const
