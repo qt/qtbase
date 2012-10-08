@@ -275,10 +275,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g, QFixed subPixelPosition
 {
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
         return m_current_fontengine->alphaRGBMapForGlyph(g, subPixelPosition, m_transform);
-    else
-        return m_current_fontengine->alphaMapForGlyph(g, subPixelPosition, m_transform);
-
-    return QImage();
+    return m_current_fontengine->alphaMapForGlyph(g, subPixelPosition, m_transform);
 }
 
 /************************************************************************

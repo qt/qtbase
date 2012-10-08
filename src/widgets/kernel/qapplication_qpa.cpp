@@ -387,7 +387,6 @@ bool QApplication::isEffectEnabled(Qt::UIEffect effect)
     return QColormap::instance().depth() >= 16
            && (QApplicationPrivate::enabledAnimations & QPlatformTheme::GeneralUiEffect)
            && (QApplicationPrivate::enabledAnimations & uiEffectToFlag(effect));
-        return false;
 }
 
 QWidget *QApplication::topLevelAt(const QPoint &pos)

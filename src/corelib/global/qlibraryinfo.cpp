@@ -250,8 +250,9 @@ QLibraryInfo::isDebugBuild()
 {
 #ifdef QT_DEBUG
     return true;
-#endif
+#else
     return false;
+#endif
 }
 
 #endif // QT_BOOTSTRAPPED

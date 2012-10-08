@@ -583,9 +583,9 @@ QTextCodec* QTextCodec::codecForMib(int mib)
 
 #ifdef QT_USE_ICU
     return QIcuCodec::codecForMibUnlocked(mib);
-#endif
-
+#else
     return 0;
+#endif
 }
 
 /*!
