@@ -1179,7 +1179,7 @@ void WriteInitialization::writeProperties(const QString &varName,
         const DomProperty *p = lst.at(i);
         if (!checkProperty(m_option.inputFile, p))
             continue;
-        const QString propertyName = p->attributeName();
+        QString propertyName = p->attributeName();
         QString propertyValue;
 
         // special case for the property `geometry': Do not use position
@@ -1245,6 +1245,11 @@ void WriteInitialization::writeProperties(const QString &varName,
         } else if (propertyName == QLatin1String("bottomMargin") && p->kind() == DomProperty::Number) {
             bottomMargin = p->elementNumber();
             continue;
+        } else if (propertyName == QLatin1String("numDigits") // Deprecated in Qt 4, removed in Qt 5.
+                   && m_uic->customWidgetsInfo()->extends(className, QLatin1String("QLCDNumber"))) {
+            qWarning("Widget '%s': Deprecated property QLCDNumber::numDigits encountered. It has been replaced by QLCDNumber::digitCount.",
+                     qPrintable(varName));
+            propertyName = QLatin1String("digitCount");
         } else if (propertyName == QLatin1String("frameShadow"))
             frameShadowEncountered = true;
 
