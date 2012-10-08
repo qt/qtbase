@@ -737,10 +737,10 @@ void QWindowsWindow::destroyWindow()
     if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() << m_data.hwnd;
     if (m_data.hwnd) { // Stop event dispatching before Window is destroyed.
+        setFlag(WithinDestroy);
         if (hasMouseCapture())
             setMouseGrabEnabled(false);
         unregisterDropSite();
-        QWindowsContext::instance()->removeWindow(m_data.hwnd);
 #ifdef QT_OPENGL_ES_2
         if (m_eglSurface) {
             if (QWindowsContext::verboseGL)
@@ -760,6 +760,7 @@ void QWindowsWindow::destroyWindow()
 #endif
         if (m_data.hwnd != GetDesktopWindow())
             DestroyWindow(m_data.hwnd);
+        QWindowsContext::instance()->removeWindow(m_data.hwnd);
         m_data.hwnd = 0;
     }
 }

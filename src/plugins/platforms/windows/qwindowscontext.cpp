@@ -776,6 +776,9 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         }
     }
     if (platformWindow) {
+        // Suppress events sent during DestroyWindow() for native children.
+        if (platformWindow->testFlag(QWindowsWindow::WithinDestroy))
+            return false;
         if (QWindowsContext::verboseEvents > 1)
             qDebug().nospace() << "Event window: " << platformWindow->window();
     } else {

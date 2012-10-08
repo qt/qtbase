@@ -126,7 +126,8 @@ public:
         SizeGripOperation = 0x100,
         FrameStrutEventsEnabled = 0x200,
         SynchronousGeometryChangeEvent = 0x400,
-        WithinSetStyle = 0x800
+        WithinSetStyle = 0x800,
+        WithinDestroy = 0x1000
     };
 
     struct WindowData
