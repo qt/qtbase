@@ -43,7 +43,6 @@
 
 #include <QObject>
 #include <QtPlugin>
-#include "echoplugin.h"
 #include "echointerface.h"
 
 //! [0]
