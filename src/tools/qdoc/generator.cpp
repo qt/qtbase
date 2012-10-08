@@ -95,6 +95,7 @@ QString Generator::sinceTitles[] =
 QStringList Generator::styleDirs;
 QStringList Generator::styleFiles;
 bool Generator::debugging_ = false;
+bool Generator::noLinkErrors_ = false;
 
 void Generator::setDebugSegfaultFlag(bool b)
 {
@@ -1641,6 +1642,7 @@ void Generator::initialize(const Config &config)
     }
     else
         outputPrefixes[QLatin1String("QML")] = QLatin1String("qml-");
+    noLinkErrors_ = config.getBool(QLatin1String(CONFIG_NOLINKERRORS));
 }
 
 /*!

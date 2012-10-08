@@ -791,9 +791,8 @@ int HtmlGenerator::generateAtom(const Atom *atom, const Node *relative, CodeMark
         QString myLink = getLink(atom, relative, &node);
         if (myLink.isEmpty()) {
             myLink = getCollisionLink(atom);
-            if (myLink.isEmpty()) {
-                relative->doc().location().warning(tr("Can't create link to '%1'")
-                                                   .arg(atom->string()));
+            if (myLink.isEmpty() && !noLinkErrors()) {
+                relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
             }
             else
                 node = 0;

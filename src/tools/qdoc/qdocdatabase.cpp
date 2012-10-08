@@ -652,63 +652,39 @@ void QDocDatabase::insertTarget(const QString& name, Node* node, int priority)
   finds one, it sets \a ref and returns the found node.
  */
 const Node*
-QDocDatabase::findUnambiguousTarget(const QString& target, QString& ref, const Node* relative) const
+QDocDatabase::findUnambiguousTarget(const QString& target, QString& ref, const Node* relative)
 {
     Target bestTarget;
     int numBestTargets = 0;
     QList<Target> bestTargetList;
 
-    bool debug = false;
-    if (target == "Manager" && Generator::debugging())
-        debug = true;
-
     QString key = Doc::canonicalTitle(target);
-    TargetMultiMap::const_iterator i = targetMultiMap_.constFind(key);
-    if (i != targetMultiMap_.constEnd()) {
-        if (debug)
-            qDebug() << "DEBUG: A";
-        TargetMultiMap::const_iterator j = i;
-        do {
-            const Target& candidate = j.value();
-            if (candidate.priority_ < bestTarget.priority_) {
-                if (debug)
-                    qDebug() << "DEBUG: B";
-                bestTarget = candidate;
-                bestTargetList.clear();
-                bestTargetList.append(candidate);
-                numBestTargets = 1;
-            } else if (candidate.priority_ == bestTarget.priority_) {
-                if (debug)
-                    qDebug() << "DEBUG: C";
-                bestTargetList.append(candidate);
-                ++numBestTargets;
-            }
-            ++j;
-        } while (j != targetMultiMap_.constEnd() && j.key() == i.key());
-
-        if (debug)
-            qDebug() << "DEBUG: D";
+    TargetMultiMap::iterator i = targetMultiMap_.find(key);
+    while (i != targetMultiMap_.end()) {
+        if (i.key() != key)
+            break;
+        const Target& candidate = i.value();
+        if (candidate.priority_ < bestTarget.priority_) {
+            bestTarget = candidate;
+            bestTargetList.clear();
+            bestTargetList.append(candidate);
+            numBestTargets = 1;
+        } else if (candidate.priority_ == bestTarget.priority_) {
+            bestTargetList.append(candidate);
+            ++numBestTargets;
+        }
+        ++i;
+    }
+    if (numBestTargets > 0) {
         if (numBestTargets == 1) {
-            if (debug)
-                qDebug() << "DEBUG: E";
             ref = bestTarget.ref_;
             return bestTarget.node_;
         }
         else if (bestTargetList.size() > 1) {
-            if (debug)
-                qDebug() << "DEBUG: F";
             if (relative && !relative->qmlModuleIdentifier().isEmpty()) {
-                if (debug)
-                    qDebug() << "DEBUG: G";
                 for (int i=0; i<bestTargetList.size(); ++i) {
-                    if (debug)
-                        qDebug() << "DEBUG: H";
                     const Node* n = bestTargetList.at(i).node_;
-                    if (debug)
-                        qDebug() << "DEBUG: I";
                     if (n && relative->qmlModuleIdentifier() == n->qmlModuleIdentifier()) {
-                        if (debug)
-                            qDebug() << "DEBUG: J";
                         ref = bestTargetList.at(i).ref_;
                         return n;
                     }
@@ -716,8 +692,7 @@ QDocDatabase::findUnambiguousTarget(const QString& target, QString& ref, const N
             }
         }
     }
-    if (debug)
-        qDebug() << "DEBUG: K";
+    ref.clear();
     return 0;
 }
 

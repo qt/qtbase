@@ -146,7 +146,7 @@ class QDocDatabase
     }
 
     const DocNode* findDocNodeByTitle(const QString& title, const Node* relative = 0) const;
-    const Node *findUnambiguousTarget(const QString &target, QString& ref, const Node* relative) const;
+    const Node *findUnambiguousTarget(const QString &target, QString& ref, const Node* relative);
     QString findTarget(const QString &target, const Node *node) const;
     void resolveTargets(InnerNode* root);
 
@@ -221,8 +221,8 @@ class QDocDatabase
     NodeMultiMapMap         newSinceMaps_;
     NodeMapMap              funcIndex_;
     TextToNodeMap           legaleseTexts_;
-    TargetMultiMap          targetMultiMap_;
     DocNodeMultiMap         docNodesByTitle_;
+    TargetMultiMap          targetMultiMap_;
 };
 
 QT_END_NAMESPACE

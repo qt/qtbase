@@ -1337,7 +1337,7 @@ int DitaXmlGenerator::generateAtom(const Atom *atom,
             QString myLink = getLink(atom, relative, &node);
             if (myLink.isEmpty())
                 myLink = getCollisionLink(atom);
-            if (myLink.isEmpty())
+            if (myLink.isEmpty() && !noLinkErrors())
                 relative->doc().location().warning(tr("Can't link to '%1'").arg(atom->string()));
             else if (!inSectionHeading_)
                 beginLink(myLink);

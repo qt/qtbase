@@ -95,6 +95,7 @@ bool creationTimeBefore(const QFileInfo &fi1, const QFileInfo &fi2)
 
 static bool highlighting = false;
 static bool showInternal = false;
+static bool noLinkErrors = false;
 static bool obsoleteLinks = false;
 static QStringList defines;
 static QStringList dependModules;
@@ -121,6 +122,8 @@ static void printHelp()
                              "Specify the directory where the output will be after running \"make install\"\n"
                              "    -no-examples   "
                              "Do not generate documentation for examples\n"
+                             "    -no-link-errors   "
+                             "Do not print link errors (i.e. missing targets)\n"
                              "    -obsoletelinks "
                              "Report links from obsolete items to non-obsolete items\n"
                              "    -outputdir     "
@@ -166,6 +169,7 @@ static void processQdocconfFile(const QString &fileName)
     }
     config.setStringList(CONFIG_SYNTAXHIGHLIGHTING, QStringList(highlighting ? "true" : "false"));
     config.setStringList(CONFIG_SHOWINTERNAL, QStringList(showInternal ? "true" : "false"));
+    config.setStringList(CONFIG_NOLINKERRORS, QStringList(noLinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS, QStringList(obsoleteLinks ? "true" : "false"));
 
     /*
@@ -571,6 +575,9 @@ int main(int argc, char **argv)
         else if (opt == "-outputformat") {
             Config::overrideOutputFormats.insert(argv[i]);
             i++;
+        }
+        else if (opt == "-no-link-errors") {
+            noLinkErrors = true;
         }
         else if (opt == "-debug") {
             Generator::setDebugSegfaultFlag(true);

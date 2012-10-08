@@ -89,6 +89,7 @@ public:
     static void debugSegfault(const QString& message);
     static void setDebugSegfaultFlag(bool b);
     static bool debugging() { return debugging_; }
+    static bool noLinkErrors() { return noLinkErrors_; }
 
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);
@@ -191,6 +192,7 @@ private:
     static QStringList styleDirs;
     static QStringList styleFiles;
     static bool debugging_;
+    static bool noLinkErrors_;
 
     void appendFullName(Text& text,
                         const Node *apparentNode,

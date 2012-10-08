@@ -164,6 +164,7 @@ private:
 #define CONFIG_LANGUAGE                 "language"
 #define CONFIG_MACRO                    "macro"
 #define CONFIG_NATURALLANGUAGE          "naturallanguage"
+#define CONFIG_NOLINKERRORS             "nolinkerrors"
 #define CONFIG_OBSOLETELINKS            "obsoletelinks"
 #define CONFIG_OUTPUTDIR                "outputdir"
 #define CONFIG_OUTPUTENCODING           "outputencoding"
