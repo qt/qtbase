@@ -953,7 +953,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         }
         GtkShadowType shadow_type;
         GtkWidget *gtkStatusbarFrame = d->gtkWidget("GtkStatusbar.GtkFrame");
-        d->gtk_widget_style_get(gtkStatusbarFrame->parent, "shadow-type", &shadow_type, NULL);
+        d->gtk_widget_style_get(d->gtk_widget_get_parent(gtkStatusbarFrame), "shadow-type", &shadow_type, NULL);
         gtkPainter.paintShadow(gtkStatusbarFrame, "frame", option->rect, GTK_STATE_NORMAL,
                                shadow_type, gtkStatusbarFrame->style);
     }

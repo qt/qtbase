@@ -172,6 +172,8 @@ Ptr_gtk_widget_path QGtkStylePrivate::gtk_widget_path = 0;
 Ptr_gtk_container_get_type QGtkStylePrivate::gtk_container_get_type = 0;
 Ptr_gtk_window_get_type QGtkStylePrivate::gtk_window_get_type = 0;
 Ptr_gtk_widget_get_type QGtkStylePrivate::gtk_widget_get_type = 0;
+Ptr_gtk_widget_get_parent QGtkStylePrivate::gtk_widget_get_parent = 0;
+Ptr_gtk_widget_is_toplevel QGtkStylePrivate::gtk_widget_is_toplevel = 0;
 Ptr_gtk_rc_get_style_by_paths QGtkStylePrivate::gtk_rc_get_style_by_paths = 0;
 Ptr_gtk_check_version QGtkStylePrivate::gtk_check_version = 0;
 Ptr_gtk_border_free QGtkStylePrivate::gtk_border_free = 0;
@@ -438,6 +440,8 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_container_get_type =(Ptr_gtk_container_get_type)libgtk.resolve("gtk_container_get_type");
     gtk_window_get_type =(Ptr_gtk_window_get_type)libgtk.resolve("gtk_window_get_type");
     gtk_widget_get_type =(Ptr_gtk_widget_get_type)libgtk.resolve("gtk_widget_get_type");
+    gtk_widget_get_parent =(Ptr_gtk_widget_get_parent)libgtk.resolve("gtk_widget_get_parent");
+    gtk_widget_is_toplevel =(Ptr_gtk_widget_is_toplevel)libgtk.resolve("gtk_widget_is_toplevel");
 
     gtk_rc_get_style_by_paths =(Ptr_gtk_rc_get_style_by_paths)libgtk.resolve("gtk_rc_get_style_by_paths");
     gtk_check_version =(Ptr_gtk_check_version)libgtk.resolve("gtk_check_version");
@@ -755,7 +759,7 @@ void QGtkStylePrivate::setupGtkWidget(GtkWidget* widget)
         }
         Q_ASSERT(protoLayout);
 
-        if (!widget->parent && !GTK_WIDGET_TOPLEVEL(widget))
+        if (!QGtkStylePrivate::gtk_widget_get_parent(widget) && !QGtkStylePrivate::gtk_widget_is_toplevel(widget))
             QGtkStylePrivate::gtk_container_add((GtkContainer*)(protoLayout), widget);
         QGtkStylePrivate::gtk_widget_realize(widget);
     }
