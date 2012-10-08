@@ -494,6 +494,11 @@ QtGui
   For consistency with RGB32 and other 32-bit formats, function now expects
   image data in RGB layout as opposed to BGR layout.
 
+* Behavioral change in QImage and QPixmap load()/loadFromData() on a non-null image:
+  If load() or loadFromData() fails to load the image (returns false) then
+  the existent image data will be invalidated, so that isNull() is guaranteed
+  to return true in this case.
+
 QtWidgets
 ---------
 * QInputContext removed as well as related getters and setters on QWidget and QApplication.

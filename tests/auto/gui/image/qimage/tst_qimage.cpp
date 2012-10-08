@@ -95,6 +95,12 @@ private slots:
 
     void copy();
 
+    void load();
+    void loadFromData();
+#if !defined(QT_NO_DATASTREAM)
+    void loadFromDataStream();
+#endif
+
     void setPixel_data();
     void setPixel();
 
@@ -1005,6 +1011,85 @@ void tst_QImage::copy()
         img.copy(QRect(1000,1,1,1));
     }
 }
+
+void tst_QImage::load()
+{
+    const QString prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("can not find images directory!");
+    const QString filePath = prefix + QLatin1String("image.jpg");
+
+    QImage dest(filePath);
+    QVERIFY(!dest.isNull());
+    QVERIFY(!dest.load("image_that_does_not_exist.png"));
+    QVERIFY(dest.isNull());
+    QVERIFY(dest.load(filePath));
+    QVERIFY(!dest.isNull());
+}
+
+void tst_QImage::loadFromData()
+{
+    const QString prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("can not find images directory!");
+    const QString filePath = prefix + QLatin1String("image.jpg");
+
+    QImage original(filePath);
+    QVERIFY(!original.isNull());
+
+    QByteArray ba;
+    {
+        QBuffer buf(&ba);
+        QVERIFY(buf.open(QIODevice::WriteOnly));
+        QVERIFY(original.save(&buf, "BMP"));
+    }
+    QVERIFY(!ba.isEmpty());
+
+    QImage dest;
+    QVERIFY(dest.loadFromData(ba, "BMP"));
+    QVERIFY(!dest.isNull());
+
+    QCOMPARE(original, dest);
+
+    QVERIFY(!dest.loadFromData(QByteArray()));
+    QVERIFY(dest.isNull());
+}
+
+#if !defined(QT_NO_DATASTREAM)
+void tst_QImage::loadFromDataStream()
+{
+    const QString prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("can not find images directory!");
+    const QString filePath = prefix + QLatin1String("image.jpg");
+
+    QImage original(filePath);
+    QVERIFY(!original.isNull());
+
+    QByteArray ba;
+    {
+        QDataStream s(&ba, QIODevice::WriteOnly);
+        s << original;
+    }
+    QVERIFY(!ba.isEmpty());
+
+    QImage dest;
+    {
+        QDataStream s(&ba, QIODevice::ReadOnly);
+        s >> dest;
+    }
+    QVERIFY(!dest.isNull());
+
+    QCOMPARE(original, dest);
+
+    {
+        ba.clear();
+        QDataStream s(&ba, QIODevice::ReadOnly);
+        s >> dest;
+    }
+    QVERIFY(dest.isNull());
+}
+#endif // QT_NO_DATASTREAM
 
 void tst_QImage::setPixel_data()
 {

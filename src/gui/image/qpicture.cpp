@@ -246,7 +246,7 @@ void QPicture::setData(const char* data, uint size)
 
 /*!
     Loads a picture from the file specified by \a fileName and returns
-    true if successful; otherwise returns false.
+    true if successful; otherwise invalidates the picture and returns false.
 
     Please note that the \a format parameter has been deprecated and
     will have no effect.
@@ -257,8 +257,10 @@ void QPicture::setData(const char* data, uint size)
 bool QPicture::load(const QString &fileName, const char *format)
 {
     QFile f(fileName);
-    if (!f.open(QIODevice::ReadOnly))
+    if (!f.open(QIODevice::ReadOnly)) {
+        operator=(QPicture());
         return false;
+    }
     return load(&f, format);
 }
 
@@ -273,18 +275,14 @@ bool QPicture::load(QIODevice *dev, const char *format)
     if(format) {
 #ifndef QT_NO_PICTUREIO
         QPictureIO io(dev, format);
-        bool result = io.read();
-        if (result) {
+        if (io.read()) {
             operator=(io.picture());
-
-        } else if (format)
-#else
-            bool result = false;
-#endif
-        {
-            qWarning("QPicture::load: No such picture format: %s", format);
+            return true;
         }
-        return result;
+#endif
+        qWarning("QPicture::load: No such picture format: %s", format);
+        operator=(QPicture());
+        return false;
     }
 
     detach();

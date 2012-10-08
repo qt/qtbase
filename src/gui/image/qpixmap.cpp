@@ -684,8 +684,8 @@ QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode)
 
 /*!
     Loads a pixmap from the file with the given \a fileName. Returns
-    true if the pixmap was successfully loaded; otherwise returns
-    false.
+    true if the pixmap was successfully loaded; otherwise invalidates
+    the pixmap and returns false.
 
     The loader attempts to read the pixmap using the specified \a
     format. If the \a format is not specified (which is the default),
@@ -711,8 +711,10 @@ QBitmap QPixmap::createMaskFromColor(const QColor &maskColor, Qt::MaskMode mode)
 
 bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConversionFlags flags)
 {
-    if (fileName.isEmpty())
+    if (fileName.isEmpty()) {
+        data.reset();
         return false;
+    }
 
     QFileInfo info(fileName);
     QString key = QLatin1String("qt_pixmap")
@@ -723,19 +725,23 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
     // Note: If no extension is provided, we try to match the
     // file against known plugin extensions
-    if (!info.completeSuffix().isEmpty() && !info.exists())
+    if (!info.completeSuffix().isEmpty() && !info.exists()) {
+        data.reset();
         return false;
+    }
 
-    if (QPixmapCache::find(key, *this))
+    if (QPixmapCache::find(key, this))
         return true;
 
-    QScopedPointer<QPlatformPixmap> tmp(QPlatformPixmap::create(0, 0, data ? data->type : QPlatformPixmap::PixmapType));
-    if (tmp->fromFile(fileName, format, flags)) {
-        data = tmp.take();
+    if (!data)
+        data = QPlatformPixmap::create(0, 0, QPlatformPixmap::PixmapType);
+
+    if (data->fromFile(fileName, format, flags)) {
         QPixmapCache::insert(key, *this);
         return true;
     }
 
+    data.reset();
     return false;
 }
 
@@ -744,7 +750,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
     Loads a pixmap from the \a len first bytes of the given binary \a
     data.  Returns true if the pixmap was loaded successfully;
-    otherwise returns false.
+    otherwise invalidates the pixmap and returns false.
 
     The loader attempts to read the pixmap using the specified \a
     format. If the \a format is not specified (which is the default),
@@ -760,13 +766,19 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
-    if (len == 0 || buf == 0)
+    if (len == 0 || buf == 0) {
+        data.reset();
         return false;
+    }
 
     if (!data)
         data = QPlatformPixmap::create(0, 0, QPlatformPixmap::PixmapType);
 
-    return data->fromData(buf, len, format, flags);
+    if (data->fromData(buf, len, format, flags))
+        return true;
+
+    data.reset();
+    return false;
 }
 
 /*!

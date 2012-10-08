@@ -4346,7 +4346,8 @@ QImage QImage::rgbSwapped() const
 
 /*!
     Loads an image from the file with the given \a fileName. Returns true if
-    the image was successfully loaded; otherwise returns false.
+    the image was successfully loaded; otherwise invalidates the image
+    and returns false.
 
     The loader attempts to read the image using the specified \a format, e.g.,
     PNG or JPG. If \a format is not specified (which is the default), the
@@ -4363,15 +4364,9 @@ QImage QImage::rgbSwapped() const
 
 bool QImage::load(const QString &fileName, const char* format)
 {
-    if (fileName.isEmpty())
-        return false;
-
     QImage image = QImageReader(fileName, format).read();
-    if (!image.isNull()) {
-        operator=(image);
-        return true;
-    }
-    return false;
+    operator=(image);
+    return !isNull();
 }
 
 /*!
@@ -4384,11 +4379,8 @@ bool QImage::load(const QString &fileName, const char* format)
 bool QImage::load(QIODevice* device, const char* format)
 {
     QImage image = QImageReader(device, format).read();
-    if(!image.isNull()) {
-        operator=(image);
-        return true;
-    }
-    return false;
+    operator=(image);
+    return !isNull();
 }
 
 /*!
@@ -4396,7 +4388,7 @@ bool QImage::load(QIODevice* device, const char* format)
 
     Loads an image from the first \a len bytes of the given binary \a
     data. Returns true if the image was successfully loaded; otherwise
-    returns false.
+    invalidates the image and returns false.
 
     The loader attempts to read the image using the specified \a format, e.g.,
     PNG or JPG. If \a format is not specified (which is the default), the
@@ -4408,11 +4400,8 @@ bool QImage::load(QIODevice* device, const char* format)
 bool QImage::loadFromData(const uchar *data, int len, const char *format)
 {
     QImage image = fromData(data, len, format);
-    if (!image.isNull()) {
-        operator=(image);
-        return true;
-    }
-    return false;
+    operator=(image);
+    return !isNull();
 }
 
 /*!
