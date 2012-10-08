@@ -157,27 +157,27 @@ private:
         m_splitter->setPosition(start);
         QScriptAnalysis itemAnalysis = m_analysis[start];
 
-        if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartWord) {
+        if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartOfItem)
             itemAnalysis.flags = QScriptAnalysis::Uppercase;
-            m_splitter->toNextBoundary();
-        }
+
+        m_splitter->toNextBoundary();
 
         const int end = start + length;
         for (int i = start + 1; i < end; ++i) {
-
-            bool atWordBoundary = false;
+            bool atWordStart = false;
 
             if (i == m_splitter->position()) {
-                if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartWord
-                    && m_analysis[i].flags < QScriptAnalysis::TabOrObject)
-                    atWordBoundary = true;
+                if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartOfItem) {
+                    Q_ASSERT(m_analysis[i].flags < QScriptAnalysis::TabOrObject);
+                    atWordStart = true;
+                }
 
                 m_splitter->toNextBoundary();
             }
 
             if (m_analysis[i] == itemAnalysis
                 && m_analysis[i].flags < QScriptAnalysis::TabOrObject
-                && !atWordBoundary
+                && !atWordStart
                 && i - start < MaxItemLength)
                 continue;
 
@@ -185,7 +185,7 @@ private:
             start = i;
             itemAnalysis = m_analysis[start];
 
-            if (atWordBoundary)
+            if (atWordStart)
                 itemAnalysis.flags = QScriptAnalysis::Uppercase;
         }
         m_items.append(QScriptItem(start, itemAnalysis));
