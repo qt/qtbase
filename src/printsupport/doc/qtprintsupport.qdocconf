@@ -1,5 +1,5 @@
-include(../../../doc/global/qt-html-templates-offline.qdocconf)
-include(../../../doc/global/qt-module-defaults.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtPrintSupport
 description             = Qt Print Support Reference Documentation
@@ -29,7 +29,6 @@ qhp.QtPrintSupport.subprojects.examples.title = Qt Print Support Examples
 qhp.QtPrintSupport.subprojects.examples.indexTitle = Qt Print Support Examples
 qhp.QtPrintSupport.subprojects.examples.selectors = fake:example
 
-outputdir               = ../../../doc/qtprintsupport
 tagfile                 = ../../../doc/qtprintsupport/qtprintsupport.tags
 
 depends                 += qtcore qtgui qtwidgets

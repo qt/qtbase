@@ -12,7 +12,6 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Library
 
 QMAKE_DOCS = $$PWD/doc/qttest.qdocconf
-QMAKE_DOCS_INDEX = ../../doc
 
 HEADERS = qbenchmark.h \
     qbenchmark_p.h \

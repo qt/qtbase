@@ -47,3 +47,11 @@ qt_install_module {
         warning("Project $$basename(_PRO_FILE_) is a module, but has not defined MODULE_PRI, which is required for Qt to expose the module to other projects.")
     }
 }
+
+qt_install_module_docs {
+    module_docs.files = $$QMAKE_DOCS_OUTPUTDIR
+    module_docs.path = $$[QT_INSTALL_DOCS]
+    module_docs.CONFIG += no_check_exist directory
+    module_docs.depends += docs
+    INSTALLS += module_docs
+}

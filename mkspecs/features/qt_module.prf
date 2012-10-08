@@ -121,6 +121,11 @@ CONFIG          += qt warn_on depend_includepath
 CONFIG          += qmake_cache target_qt
 CONFIG          -= fix_output_dirs
 
+!isEmpty(QMAKE_DOCS) {
+    QMAKE_DOCS_OUTPUTDIR = $$eval(QT.$${MODULE}.docs)/qt$${MODULE}
+    CONFIG += qt_install_module_docs
+}
+
 # If Qt was configured with -debug-and-release then build the module the same way
 if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release

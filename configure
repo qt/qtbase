@@ -2254,9 +2254,9 @@ if [ "$OPT_SHADOW" = "yes" ]; then
         mv "$outpath/mkspecs-modules-inst" "$outpath/mkspecs/modules-inst"
     fi
 
-    # symlink the doc directory
-    rm -rf "$outpath/doc"
-    ln -s "$relpath/doc" "$outpath/doc"
+    # Prepare doc directory
+    mkdir -p "$outpath/doc"
+    ln -s "$relpath"/doc/global "$outpath/doc"
 fi
 
 # symlink fonts to be able to run application from build directory

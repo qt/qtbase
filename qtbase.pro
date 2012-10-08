@@ -99,6 +99,10 @@ mkspecs.files -= $$PWD/mkspecs/modules
 }
 INSTALLS += mkspecs
 
+global_docs.files = $$PWD/doc/global
+global_docs.path = $$[QT_INSTALL_DOCS]
+INSTALLS += global_docs
+
 OTHER_FILES += \
     configure \
     header.BSD \

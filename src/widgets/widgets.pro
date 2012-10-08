@@ -9,7 +9,6 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 QMAKE_DOCS = $$PWD/doc/qtwidgets.qdocconf
-QMAKE_DOCS_INDEX = ../../doc
 
 load(qt_module)
 

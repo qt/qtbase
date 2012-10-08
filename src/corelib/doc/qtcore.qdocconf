@@ -1,5 +1,5 @@
-include(../../../doc/global/qt-html-templates-offline.qdocconf)
-include(../../../doc/global/qt-module-defaults.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtCore
 description             = Qt Core Reference Documentation
@@ -29,7 +29,6 @@ qhp.QtCore.subprojects.examples.title = Qt Core Examples
 qhp.QtCore.subprojects.examples.indexTitle = Qt Core Examples
 qhp.QtCore.subprojects.examples.selectors = fake:example
 
-outputdir               = ../../../doc/qtcore
 tagfile                 = ../../../doc/qtcore/qtcore.tags
 
 depends                 += qtwidgets

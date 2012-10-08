@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <qglobal.h>
+#include <qlibraryinfo.h>
 #include <stdlib.h>
 #include "codemarker.h"
 #include "codeparser.h"
@@ -172,6 +173,12 @@ static void processQdocconfFile(const QString &fileName)
     config.setStringList(CONFIG_NOLINKERRORS, QStringList(noLinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS, QStringList(obsoleteLinks ? "true" : "false"));
 
+    QString documentationPath = QLibraryInfo::rawLocation(QLibraryInfo::DocumentationPath,
+                                                          QLibraryInfo::EffectivePaths);
+
+    // Set a few environment variables that can be used from the qdocconf file
+    qputenv("QT_INSTALL_DOCS", documentationPath.toLatin1());
+
     /*
       With the default configuration values in place, load
       the qdoc configuration file. Note that the configuration
@@ -255,6 +262,11 @@ static void processQdocconfFile(const QString &fileName)
     QStringList indexFiles = config.getStringList(CONFIG_INDEXES);
 
     dependModules += config.getStringList(CONFIG_DEPENDS);
+
+    // Allow modules and third-party application/libraries to link
+    // to the Qt docs without having to explicitly pass --indexdir.
+    if (!indexDirs.contains(documentationPath))
+        indexDirs.append(documentationPath);
 
     if (dependModules.size() > 0) {
         if (indexDirs.size() > 0) {

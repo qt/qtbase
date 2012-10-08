@@ -1,5 +1,5 @@
-include(../../../doc/global/qt-html-templates-offline.qdocconf)
-include(../../../doc/global/qt-module-defaults.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtDBus
 description             = Qt DBus Reference Documentation
@@ -29,7 +29,6 @@ qhp.QtDBus.subprojects.examples.title = Qt DBus Examples
 qhp.QtDBus.subprojects.examples.indexTitle = Qt DBus Examples
 qhp.QtDBus.subprojects.examples.selectors = fake:example
 
-outputdir               = ../../../doc/qtdbus
 tagfile                 = ../../../doc/qtdbus/qtdbus.tags
 
 depends                 += qtcore

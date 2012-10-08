@@ -1,5 +1,5 @@
-include(../../../doc/global/qt-html-templates-offline.qdocconf)
-include(../../../doc/global/qt-module-defaults.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtOpenGL
 description             = Qt OpenGL Reference Documentation
@@ -29,7 +29,6 @@ qhp.QtOpenGL.subprojects.examples.title = Qt OpenGL Examples
 qhp.QtOpenGL.subprojects.examples.indexTitle = Qt OpenGL Examples
 qhp.QtOpenGL.subprojects.examples.selectors = fake:example
 
-outputdir               = ../../../doc/qtopengl
 tagfile                 = ../../../doc/qtopengl/qtopengl.tags
 
 depends                 += qtcore qtgui qtwidgets

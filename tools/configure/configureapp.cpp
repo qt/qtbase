@@ -176,6 +176,13 @@ Configure::Configure(int& argc, char** argv)
             dictionary["DONE"] = "error";
             return;
         }
+
+        buildDir.mkpath("doc");
+        if (!Environment::cpdir(sourcePath + "/doc/global", buildPath + "/doc/global")) {
+            cout << "Couldn't copy global documentation!" << sourcePath << " " << buildPath << endl;
+            dictionary["DONE"] = "error";
+            return;
+        }
     }
 
     defaultBuildParts << QStringLiteral("libs") << QStringLiteral("tools") << QStringLiteral("examples");

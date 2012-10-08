@@ -8,15 +8,14 @@ win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x63000000
 solaris-cc*:QMAKE_CXXFLAGS_RELEASE -= -O2
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
+QMAKE_DOCS = $$PWD/doc/qtopengl.qdocconf
+
 load(qt_module)
 
 contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
 contains(QT_CONFIG, egl):CONFIG += egl
-
-QMAKE_DOCS = $$PWD/doc/qtopengl.qdocconf
-QMAKE_DOCS_INDEX = ../../doc
 
 HEADERS += qgl.h \
            qgl_p.h \

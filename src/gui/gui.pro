@@ -6,6 +6,8 @@ MODULE_CONFIG = opengl
 
 DEFINES   += QT_NO_USING_NAMESPACE
 
+QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
+
 load(qt_module)
 
 # Code coverage with TestCocoon
@@ -21,9 +23,6 @@ mac {
 }
 
 CONFIG += simd
-
-QMAKE_DOCS = $$PWD/doc/qtgui.qdocconf
-QMAKE_DOCS_INDEX = ../../doc
 
 include(accessible/accessible.pri)
 include(kernel/kernel.pri)

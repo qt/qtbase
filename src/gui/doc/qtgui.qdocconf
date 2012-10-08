@@ -1,5 +1,5 @@
-include(../../../doc/global/qt-html-templates-offline.qdocconf)
-include(../../../doc/global/qt-module-defaults.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtGui
 description             = Qt GUI Reference Documentation
@@ -29,7 +29,6 @@ qhp.QtGui.subprojects.examples.title = Qt GUI Examples
 qhp.QtGui.subprojects.examples.indexTitle = Qt GUI Examples
 qhp.QtGui.subprojects.examples.selectors = fake:example
 
-outputdir               = ../../../doc/qtgui
 tagfile                 = ../../../doc/qtgui/qtgui.tags
 
 depends                 += qtcore

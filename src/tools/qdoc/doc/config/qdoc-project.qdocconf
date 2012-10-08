@@ -26,7 +26,6 @@ exampledirs = .. \
 imagedirs = ../../../doc/src/templates/images \
             images
 
-outputdir = ../html
 tagfile = ../html/qdoc.tags
 
 qhp.projects            = QDoc

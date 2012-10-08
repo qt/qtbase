@@ -92,6 +92,7 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
             !exists($$QMAKE_DOCS):error("Cannot find documentation specification file $$QMAKE_DOCS")
             qtPrepareTool(QDOC, qdoc)
             for(index, QMAKE_DOCS_INDEX):QDOC_INDEX += -indexdir $$index
+            !isEmpty(QMAKE_DOCS_OUTPUTDIR):QMAKE_DOCS_OPTIONS += -outputdir $$QMAKE_DOCS_OUTPUTDIR
             !isEmpty(QMAKE_DOCS_INSTALLDIR):QMAKE_DOCS_OPTIONS += -installdir $$QMAKE_DOCS_INSTALLDIR
             docs.commands += $$QDOC $$QMAKE_DOCS_OPTIONS $$QDOC_INDEX $$QMAKE_DOCS
         }

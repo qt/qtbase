@@ -12,8 +12,6 @@ showinternal = true
 headers.fileextensions  = "*.h"
 sources.fileextensions  = "*.cpp *.qdoc"
 
-outputdir = doc
-
 qhp.projects            = QtLighthouseWindows
 qhp.QtLighthouseWindowsDev.file             = qtlighthousewindows-dev.qhp
 qhp.QtLighthouseWindowsDev.namespace        = com.nokia.qt.developer.lighthouse

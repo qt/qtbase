@@ -14,10 +14,9 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 # otherwise mingw headers do not declare common functions like putenv
 win32-g++*:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
 
-load(qt_module)
-
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
-QMAKE_DOCS_INDEX = ../../doc
+
+load(qt_module)
 
 include(animation/animation.pri)
 include(arch/arch.pri)

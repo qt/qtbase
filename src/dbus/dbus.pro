@@ -26,10 +26,10 @@ win32 {
     CONFIG(debug, debug|release):LIBS_PRIVATE += -ldbus-1d
     else:LIBS_PRIVATE += -ldbus-1
 }
-load(qt_module)
 
 QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf
-QMAKE_DOCS_INDEX = ../../doc
+
+load(qt_module)
 
 PUB_HEADERS = qdbusargument.h \
     qdbusconnectioninterface.h \
