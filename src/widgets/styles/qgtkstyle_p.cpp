@@ -139,6 +139,7 @@ Ptr_gtk_range_set_adjustment QGtkStylePrivate::gtk_range_set_adjustment = 0;
 Ptr_gtk_range_set_inverted QGtkStylePrivate::gtk_range_set_inverted = 0;
 Ptr_gtk_icon_factory_lookup_default QGtkStylePrivate::gtk_icon_factory_lookup_default = 0;
 Ptr_gtk_icon_theme_get_default QGtkStylePrivate::gtk_icon_theme_get_default = 0;
+Ptr_gtk_widget_get_style QGtkStylePrivate::gtk_widget_get_style = 0;
 Ptr_gtk_widget_style_get QGtkStylePrivate::gtk_widget_style_get = 0;
 Ptr_gtk_icon_set_render_icon QGtkStylePrivate::gtk_icon_set_render_icon = 0;
 Ptr_gtk_fixed_new QGtkStylePrivate::gtk_fixed_new = 0;
@@ -318,7 +319,7 @@ GtkWidget* QGtkStylePrivate::gtkWidget(const QHashableLatin1Literal &path)
 GtkStyle* QGtkStylePrivate::gtkStyle(const QHashableLatin1Literal &path)
 {
     if (GtkWidget *w = gtkWidgetMap()->value(path))
-        return w->style;
+        return QGtkStylePrivate::gtk_widget_get_style(w);
     return 0;
 }
 
@@ -400,6 +401,7 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_container_add = (Ptr_gtk_container_add)libgtk.resolve("gtk_container_add");
     gtk_icon_factory_lookup_default = (Ptr_gtk_icon_factory_lookup_default)libgtk.resolve("gtk_icon_factory_lookup_default");
     gtk_icon_theme_get_default = (Ptr_gtk_icon_theme_get_default)libgtk.resolve("gtk_icon_theme_get_default");
+    gtk_widget_get_style = (Ptr_gtk_widget_get_style)libgtk.resolve("gtk_widget_get_style");
     gtk_widget_style_get = (Ptr_gtk_widget_style_get)libgtk.resolve("gtk_widget_style_get");
     gtk_icon_set_render_icon = (Ptr_gtk_icon_set_render_icon)libgtk.resolve("gtk_icon_set_render_icon");
     gtk_fixed_new = (Ptr_gtk_fixed_new)libgtk.resolve("gtk_fixed_new");
@@ -708,7 +710,7 @@ int QGtkStylePrivate::getSpinboxArrowSize() const
 {
     const int MIN_ARROW_WIDTH = 6;
     GtkWidget *spinButton = gtkWidget("GtkSpinButton");
-    GtkStyle *style = spinButton->style;
+    GtkStyle *style = QGtkStylePrivate::gtk_widget_get_style(spinButton);
     gint size = pango_font_description_get_size (style->font_desc);
     gint arrow_size;
     arrow_size = qMax(PANGO_PIXELS (size), MIN_ARROW_WIDTH) + style->xthickness;
@@ -728,7 +730,7 @@ bool QGtkStylePrivate::isKDE4Session()
 void QGtkStylePrivate::applyCustomPaletteHash()
 {
     QPalette menuPal = gtkWidgetPalette("GtkMenu");
-    GdkColor gdkBg = gtkWidget("GtkMenu")->style->bg[GTK_STATE_NORMAL];
+    GdkColor gdkBg = QGtkStylePrivate::gtk_widget_get_style(gtkWidget("GtkMenu"))->bg[GTK_STATE_NORMAL];
     QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
     menuPal.setBrush(QPalette::Base, bgColor);
     menuPal.setBrush(QPalette::Window, bgColor);
@@ -803,9 +805,9 @@ QPalette QGtkStylePrivate::gtkWidgetPalette(const QHashableLatin1Literal &gtkWid
     GtkWidget *gtkWidget = QGtkStylePrivate::gtkWidget(gtkWidgetName);
     Q_ASSERT(gtkWidget);
     QPalette pal = QApplication::palette();
-    GdkColor gdkBg = gtkWidget->style->bg[GTK_STATE_NORMAL];
-    GdkColor gdkText = gtkWidget->style->fg[GTK_STATE_NORMAL];
-    GdkColor gdkDisabledText = gtkWidget->style->fg[GTK_STATE_INSENSITIVE];
+    GdkColor gdkBg = gtk_widget_get_style(gtkWidget)->bg[GTK_STATE_NORMAL];
+    GdkColor gdkText = gtk_widget_get_style(gtkWidget)->fg[GTK_STATE_NORMAL];
+    GdkColor gdkDisabledText = gtk_widget_get_style(gtkWidget)->fg[GTK_STATE_INSENSITIVE];
     QColor bgColor(gdkBg.red>>8, gdkBg.green>>8, gdkBg.blue>>8);
     QColor textColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
     QColor disabledTextColor(gdkDisabledText.red>>8, gdkDisabledText.green>>8, gdkDisabledText.blue>>8);

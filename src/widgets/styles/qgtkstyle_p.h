@@ -181,6 +181,7 @@ typedef void (*Ptr_gtk_range_set_inverted)(GtkRange*, bool);
 typedef void (*Ptr_gtk_container_add)(GtkContainer *container, GtkWidget *widget);
 typedef GtkIconSet* (*Ptr_gtk_icon_factory_lookup_default) (const gchar*);
 typedef GtkIconTheme* (*Ptr_gtk_icon_theme_get_default) (void);
+typedef GtkStyle* (*Ptr_gtk_widget_get_style)(GtkWidget *);
 typedef void (*Ptr_gtk_widget_style_get)(GtkWidget *, const gchar *first_property_name, ...);
 typedef GtkTreeViewColumn* (*Ptr_gtk_tree_view_column_new)(void);
 typedef GtkWidget* (*Ptr_gtk_fixed_new)(void);
@@ -408,6 +409,7 @@ public:
     static Ptr_gtk_range_set_inverted gtk_range_set_inverted;
     static Ptr_gtk_icon_factory_lookup_default gtk_icon_factory_lookup_default;
     static Ptr_gtk_icon_theme_get_default gtk_icon_theme_get_default;
+    static Ptr_gtk_widget_get_style gtk_widget_get_style;
     static Ptr_gtk_widget_style_get gtk_widget_style_get;
     static Ptr_gtk_icon_set_render_icon gtk_icon_set_render_icon;
     static Ptr_gtk_fixed_new gtk_fixed_new;
