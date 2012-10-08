@@ -92,7 +92,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool displayDepth  =  -1;
 Q_GLOBAL_STATIC(QGtkStyleUpdateScheduler, styleScheduler)
 
 Ptr_gtk_container_forall QGtkStylePrivate::gtk_container_forall = 0;
@@ -204,7 +203,6 @@ Ptr_gdk_pixbuf_get_from_drawable QGtkStylePrivate::gdk_pixbuf_get_from_drawable 
 Ptr_gdk_draw_rectangle QGtkStylePrivate::gdk_draw_rectangle = 0;
 Ptr_gdk_pixbuf_unref QGtkStylePrivate::gdk_pixbuf_unref = 0;
 Ptr_gdk_drawable_unref QGtkStylePrivate::gdk_drawable_unref = 0;
-Ptr_gdk_drawable_get_depth QGtkStylePrivate::gdk_drawable_get_depth = 0;
 Ptr_gdk_color_free QGtkStylePrivate::gdk_color_free = 0;
 Ptr_gdk_x11_window_set_user_time QGtkStylePrivate::gdk_x11_window_set_user_time = 0;
 Ptr_gdk_x11_drawable_get_xid QGtkStylePrivate::gdk_x11_drawable_get_xid = 0;
@@ -357,7 +355,6 @@ void QGtkStylePrivate::resolveGtk() const
     gdk_draw_rectangle = (Ptr_gdk_draw_rectangle)libgtk.resolve("gdk_draw_rectangle");
     gdk_pixbuf_unref = (Ptr_gdk_pixbuf_unref)libgtk.resolve("gdk_pixbuf_unref");
     gdk_drawable_unref = (Ptr_gdk_drawable_unref)libgtk.resolve("gdk_drawable_unref");
-    gdk_drawable_get_depth = (Ptr_gdk_drawable_get_depth)libgtk.resolve("gdk_drawable_get_depth");
     gdk_color_free = (Ptr_gdk_color_free)libgtk.resolve("gdk_color_free");
     gdk_x11_window_set_user_time = (Ptr_gdk_x11_window_set_user_time)libgtk.resolve("gdk_x11_window_set_user_time");
     gdk_x11_drawable_get_xid = (Ptr_gdk_x11_drawable_get_xid)libgtk.resolve("gdk_x11_drawable_get_xid");
@@ -536,8 +533,6 @@ void QGtkStylePrivate::initGtkWidgets() const
         // make a window
         GtkWidget* gtkWindow = QGtkStylePrivate::gtk_window_new(GTK_WINDOW_POPUP);
         QGtkStylePrivate::gtk_widget_realize(gtkWindow);
-        if (displayDepth == -1)
-            displayDepth = QGtkStylePrivate::gdk_drawable_get_depth(gtkWindow->window);
         QHashableLatin1Literal widgetPath = QHashableLatin1Literal::fromData(strdup("GtkWindow"));
         removeWidgetFromMap(widgetPath);
         gtkWidgetMap()->insert(widgetPath, gtkWindow);

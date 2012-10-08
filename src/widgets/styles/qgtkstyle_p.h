@@ -254,7 +254,6 @@ typedef void (*Ptr_gdk_draw_rectangle) (GdkDrawable *drawable, GdkGC *gc,
                                         gboolean filled, gint x, gint y, gint width, gint height);
 typedef void (*Ptr_gdk_pixbuf_unref)(GdkPixbuf *);
 typedef void (*Ptr_gdk_drawable_unref)(GdkDrawable *);
-typedef gint (*Ptr_gdk_drawable_get_depth)(GdkDrawable *);
 typedef void (*Ptr_gdk_x11_window_set_user_time) (GdkWindow *window, guint32);
 typedef XID  (*Ptr_gdk_x11_drawable_get_xid) (GdkDrawable *);
 typedef Display* (*Ptr_gdk_x11_drawable_get_xdisplay) ( GdkDrawable *);
@@ -469,7 +468,6 @@ public:
     static Ptr_gdk_draw_rectangle gdk_draw_rectangle;
     static Ptr_gdk_pixbuf_unref gdk_pixbuf_unref;
     static Ptr_gdk_drawable_unref gdk_drawable_unref;
-    static Ptr_gdk_drawable_get_depth gdk_drawable_get_depth;
     static Ptr_gdk_color_free gdk_color_free;
     static Ptr_gdk_x11_window_set_user_time gdk_x11_window_set_user_time;
     static Ptr_gdk_x11_drawable_get_xid gdk_x11_drawable_get_xid;
