@@ -121,8 +121,8 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
 
 private:
     static inline qint64 nullJd() { return std::numeric_limits<qint64>::min(); }
-    static inline qint64 minJd() { return std::numeric_limits<qint64>::min() / 2; }
-    static inline qint64 maxJd() { return (std::numeric_limits<qint64>::max()) / 2; }
+    static inline qint64 minJd() { return Q_INT64_C(-784350574879); }
+    static inline qint64 maxJd() { return Q_INT64_C( 784354017364); }
 
     qint64 jd;
 
