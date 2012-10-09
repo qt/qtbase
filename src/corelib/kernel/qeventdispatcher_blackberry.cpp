@@ -295,14 +295,35 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     if (timeout)
         timeout_bps = (timeout->tv_sec * 1000) + (timeout->tv_usec / 1000);
 
+    bool hasProcessedEventsOnce = false;
+    bps_event_t *event = 0;
+
     // This loop exists such that we can drain the bps event queue of all native events
     // more efficiently than if we were to return control to Qt after each event. This
     // is important for handling touch events which can come in rapidly.
     forever {
-        // Wait for event or file to be ready
-        bps_event_t *event = NULL;
-        const int result = bps_get_event(&event, timeout_bps);
+        Q_ASSERT(!hasProcessedEventsOnce || event);
 
+        // Only emit the awake() and aboutToBlock() signals in the second iteration. For the first
+        // iteration, the UNIX event dispatcher will have taken care of that already.
+        if (hasProcessedEventsOnce)
+            emit awake();
+
+        // Filtering the native event should happen between the awake() and aboutToBlock() signal
+        // emissions. The calls awake() - filterNativeEvent() - aboutToBlock() - bps_get_event()
+        // need not to be interrupted by a break or return statement.
+        //
+        // Because of this, the native event is actually processed one loop iteration
+        // after it was retrieved with bps_get_event().
+        if (event)
+            filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
+
+        if (hasProcessedEventsOnce)
+            emit aboutToBlock();
+
+        // Wait for event or file to be ready
+        event = 0;
+        const int result = bps_get_event(&event, timeout_bps);
         if (result != BPS_SUCCESS)
             qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
 
@@ -314,14 +335,16 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
         if (!event || bps_event_get_domain(event) == bpsIOReadyDomain)
             break;
 
-        // Any other events must be bps native events so we pass all such received
-        // events through the native event filter chain
-        filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
-
         // Update the timeout. If this fails we have exceeded our alloted time or the system
         // clock has changed time and we cannot calculate a new timeout so we bail out.
-        if (!updateTimeout(&timeout_bps, startTime))
+        if (!updateTimeout(&timeout_bps, startTime)) {
+
+            // No more loop iteration, so we need to filter the event here.
+            filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
             break;
+        }
+
+        hasProcessedEventsOnce = true;
     }
 
     // the number of bits set in the file sets
