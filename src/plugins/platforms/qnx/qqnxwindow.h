@@ -101,7 +101,7 @@ public:
     void raise();
     void lower();
     void requestActivateWindow();
-    Qt::WindowState setWindowState(Qt::WindowState state);
+    void setWindowState(Qt::WindowState state);
 
     void gainedFocus();
 

@@ -803,8 +803,6 @@ public:
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
     void registerTouchWindow(bool enable = true);
 #endif
-    void setMaxWindowState_helper();
-    void setFullScreenSize_helper();
     bool stealKeyboardGrab(bool grab);
     bool stealMouseGrab(bool grab);
 };

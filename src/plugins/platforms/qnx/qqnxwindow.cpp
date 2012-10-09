@@ -580,13 +580,13 @@ void QQnxWindow::requestActivateWindow()
 }
 
 
-Qt::WindowState QQnxWindow::setWindowState(Qt::WindowState state)
+void QQnxWindow::setWindowState(Qt::WindowState state)
 {
     qWindowDebug() << Q_FUNC_INFO << "state =" << state;
 
     // Prevent two calls with Qt::WindowFullScreen from changing m_unmaximizedGeometry
     if (m_windowState == state)
-        return state;
+        return;
 
     switch (state) {
 
@@ -594,7 +594,7 @@ Qt::WindowState QQnxWindow::setWindowState(Qt::WindowState state)
     // WindowActive is not an accepted parameter according to the docs
     case Qt::WindowMinimized:
     case Qt::WindowActive:
-        return m_windowState;
+        return;
 
     case Qt::WindowMaximized:
     case Qt::WindowFullScreen:
@@ -609,7 +609,6 @@ Qt::WindowState QQnxWindow::setWindowState(Qt::WindowState state)
     }
 
     m_windowState = state;
-    return state;
 }
 
 void QQnxWindow::gainedFocus()

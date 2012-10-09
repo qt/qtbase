@@ -828,9 +828,8 @@ void QWindow::setWindowState(Qt::WindowState state)
 
     Q_D(QWindow);
     if (d->platformWindow)
-        d->windowState = d->platformWindow->setWindowState(state);
-    else
-        d->windowState = state;
+        d->platformWindow->setWindowState(state);
+    d->windowState = state;
 }
 
 /*!

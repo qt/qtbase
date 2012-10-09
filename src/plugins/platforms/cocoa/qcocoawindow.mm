@@ -400,12 +400,10 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     m_windowFlags = flags;
 }
 
-Qt::WindowState QCocoaWindow::setWindowState(Qt::WindowState state)
+void QCocoaWindow::setWindowState(Qt::WindowState state)
 {
     if ([m_nsWindow isVisible])
         syncWindowState(state);  // Window state set for hidden windows take effect when show() is called.
-
-    return state;
 }
 
 void QCocoaWindow::setWindowTitle(const QString &title)

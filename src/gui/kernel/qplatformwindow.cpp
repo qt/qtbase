@@ -213,13 +213,12 @@ QPoint QPlatformWindow::mapFromGlobal(const QPoint &pos) const
 
 /*!
     Requests setting the window state of this surface
-    to \a type. Returns the actual state set.
+    to \a type.
 
     Qt::WindowActive can be ignored.
 */
-Qt::WindowState QPlatformWindow::setWindowState(Qt::WindowState)
+void QPlatformWindow::setWindowState(Qt::WindowState)
 {
-    return Qt::WindowNoState;
 }
 
 /*!

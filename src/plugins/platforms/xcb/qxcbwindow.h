@@ -82,7 +82,7 @@ public:
 
     void setVisible(bool visible);
     void setWindowFlags(Qt::WindowFlags flags);
-    Qt::WindowState setWindowState(Qt::WindowState state);
+    void setWindowState(Qt::WindowState state);
     WId winId() const;
     void setParent(const QPlatformWindow *window);
 

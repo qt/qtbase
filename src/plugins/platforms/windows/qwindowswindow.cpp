@@ -1235,13 +1235,12 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
 }
 
-Qt::WindowState QWindowsWindow::setWindowState(Qt::WindowState state)
+void QWindowsWindow::setWindowState(Qt::WindowState state)
 {
     if (m_data.hwnd) {
         setWindowState_sys(state);
         m_windowState = state;
     }
-    return state;
 }
 
 bool QWindowsWindow::isFullScreen_sys() const
