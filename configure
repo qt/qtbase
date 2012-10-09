@@ -2311,12 +2311,10 @@ if [ -z "$PLATFORM" ]; then
             PLATFORM=macx-clang
          elif [ "$OSX_VERSION" -eq 11 ]; then
              # We're on Lion. Check if we have a supported Clang version
-             case "$(clang -v 2>&1 | grep -Po '(?<=version )\d[\d.]+')" in
-                 3.*)
+             if [ "$(clang -v 2>&1 | grep -Po '(?<=version )[\d]')" -ge 3 ]; then
                      PLATFORM=macx-clang
                      PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
-                     ;;
-             esac
+             fi
          fi
          ;;
      AIX:*)
