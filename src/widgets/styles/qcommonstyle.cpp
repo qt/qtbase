@@ -712,67 +712,6 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 
 #ifndef QT_NO_ITEMVIEWS
 
-QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int role) const
-{
-    const QWidget *widget = option->widget;
-    switch (role) {
-    case Qt::CheckStateRole:
-        if (option->features & QStyleOptionViewItem::HasCheckIndicator)
-            return QSize(proxyStyle->pixelMetric(QStyle::PM_IndicatorWidth, option, widget),
-                         proxyStyle->pixelMetric(QStyle::PM_IndicatorHeight, option, widget));
-        break;
-    case Qt::DisplayRole:
-        if (option->features & QStyleOptionViewItem::HasDisplay) {
-            QTextOption textOption;
-            textOption.setWrapMode(QTextOption::WordWrap);
-            QTextLayout textLayout;
-            textLayout.setTextOption(textOption);
-            textLayout.setFont(option->font);
-            textLayout.setText(option->text);
-            const bool wrapText = option->features & QStyleOptionViewItem::WrapText;
-            const int textMargin = proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, option, widget) + 1;
-            QRect bounds = option->rect;
-            switch (option->decorationPosition) {
-            case QStyleOptionViewItem::Left:
-            case QStyleOptionViewItem::Right:
-                bounds.setWidth(wrapText && bounds.isValid() ? bounds.width() - 2 * textMargin : QFIXED_MAX);
-                break;
-            case QStyleOptionViewItem::Top:
-            case QStyleOptionViewItem::Bottom:
-                bounds.setWidth(wrapText ? option->decorationSize.width() : QFIXED_MAX);
-                break;
-            default:
-                break;
-            }
-
-            qreal height = 0, widthUsed = 0;
-            textLayout.beginLayout();
-            while (true) {
-                QTextLine line = textLayout.createLine();
-                if (!line.isValid())
-                    break;
-                line.setLineWidth(bounds.width());
-                line.setPosition(QPointF(0, height));
-                height += line.height();
-                widthUsed = qMax(widthUsed, line.naturalTextWidth());
-            }
-            textLayout.endLayout();
-            const QSize size(qCeil(widthUsed), qCeil(height));
-            return QSize(size.width() + 2 * textMargin, size.height());
-        }
-        break;
-    case Qt::DecorationRole:
-        if (option->features & QStyleOptionViewItem::HasDecoration) {
-            return option->decorationSize;
-        }
-        break;
-    default:
-        break;
-    }
-
-    return QSize(0, 0);
-}
-
 static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
 {
     qreal height = 0;
@@ -791,6 +730,53 @@ static QSizeF viewItemTextLayout(QTextLayout &textLayout, int lineWidth)
     return QSizeF(widthUsed, height);
 }
 
+QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItem *option, int role) const
+{
+    const QWidget *widget = option->widget;
+    switch (role) {
+    case Qt::CheckStateRole:
+        if (option->features & QStyleOptionViewItem::HasCheckIndicator)
+            return QSize(proxyStyle->pixelMetric(QStyle::PM_IndicatorWidth, option, widget),
+                         proxyStyle->pixelMetric(QStyle::PM_IndicatorHeight, option, widget));
+        break;
+    case Qt::DisplayRole:
+        if (option->features & QStyleOptionViewItem::HasDisplay) {
+            QTextOption textOption;
+            textOption.setWrapMode(QTextOption::WordWrap);
+            QTextLayout textLayout(option->text, option->font);
+            textLayout.setTextOption(textOption);
+            const bool wrapText = option->features & QStyleOptionViewItem::WrapText;
+            const int textMargin = proxyStyle->pixelMetric(QStyle::PM_FocusFrameHMargin, option, widget) + 1;
+            QRect bounds = option->rect;
+            switch (option->decorationPosition) {
+            case QStyleOptionViewItem::Left:
+            case QStyleOptionViewItem::Right:
+                bounds.setWidth(wrapText && bounds.isValid() ? bounds.width() - 2 * textMargin : QFIXED_MAX);
+                break;
+            case QStyleOptionViewItem::Top:
+            case QStyleOptionViewItem::Bottom:
+                bounds.setWidth(wrapText ? option->decorationSize.width() : QFIXED_MAX);
+                break;
+            default:
+                break;
+            }
+
+            const int lineWidth = bounds.width();
+            const QSizeF size = viewItemTextLayout(textLayout, lineWidth);
+            return QSize(qCeil(size.width()) + 2 * textMargin, qCeil(size.height()));
+        }
+        break;
+    case Qt::DecorationRole:
+        if (option->features & QStyleOptionViewItem::HasDecoration) {
+            return option->decorationSize;
+        }
+        break;
+    default:
+        break;
+    }
+
+    return QSize(0, 0);
+}
 
 void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewItem *option, const QRect &rect) const
 {
@@ -803,10 +789,8 @@ void QCommonStylePrivate::viewItemDrawText(QPainter *p, const QStyleOptionViewIt
     textOption.setWrapMode(wrapText ? QTextOption::WordWrap : QTextOption::ManualWrap);
     textOption.setTextDirection(option->direction);
     textOption.setAlignment(QStyle::visualAlignment(option->direction, option->displayAlignment));
-    QTextLayout textLayout;
+    QTextLayout textLayout(option->text, option->font);
     textLayout.setTextOption(textOption);
-    textLayout.setFont(option->font);
-    textLayout.setText(option->text);
 
     viewItemTextLayout(textLayout, textRect.width());
 
