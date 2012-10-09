@@ -100,7 +100,7 @@ static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QLi
 
 
 
-extern bool Q_GUI_EXPORT qt_tab_all_widgets; // from qapplication.cpp
+extern bool Q_GUI_EXPORT qt_tab_all_widgets(); // from qapplication.cpp
 QT_END_NAMESPACE
 
 class tst_QApplication : public QObject
@@ -1597,14 +1597,10 @@ void tst_QApplication::focusChanged()
     QSettings appleSettings(QLatin1String("apple.com"));
     QVariant appleValue = appleSettings.value(QLatin1String("AppleKeyboardUIMode"), 0);
     tabAllControls = (appleValue.toInt() & 0x2);
-    if (!tabAllControls) {
-        QEXPECT_FAIL("", "QTBUG-24372 Mac tab key \"Text boxes and lists only\" vs "
-                         "\"All controls\" setting is not respected in Qt5", Abort);
-    }
 #endif
 
     // make sure Qt's idea of tabbing between widgets matches what we think it should
-    QCOMPARE(qt_tab_all_widgets, tabAllControls);
+    QCOMPARE(qt_tab_all_widgets(), tabAllControls);
 
     tab.simulate(now);
     if (!tabAllControls) {

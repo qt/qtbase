@@ -121,13 +121,13 @@ void tst_QButtonGroup::cleanup()
 }
 
 QT_BEGIN_NAMESPACE
-extern bool Q_GUI_EXPORT qt_tab_all_widgets;
+extern bool Q_GUI_EXPORT qt_tab_all_widgets();
 QT_END_NAMESPACE
 
 
 void tst_QButtonGroup::arrowKeyNavigation()
 {
-    if (!qt_tab_all_widgets)
+    if (!qt_tab_all_widgets())
         QSKIP("This test requires full keyboard control to be enabled.");
 
     QDialog dlg(0);

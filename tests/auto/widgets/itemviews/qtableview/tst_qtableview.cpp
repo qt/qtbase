@@ -3331,12 +3331,12 @@ void tst_QTableView::resizeToContents()
 }
 
 QT_BEGIN_NAMESPACE
-extern bool Q_GUI_EXPORT qt_tab_all_widgets; // qapplication.cpp
+extern bool Q_GUI_EXPORT qt_tab_all_widgets(); // qapplication.cpp
 QT_END_NAMESPACE
 
 void tst_QTableView::tabFocus()
 {
-    if (!qt_tab_all_widgets)
+    if (!qt_tab_all_widgets())
         QSKIP("This test requires full keyboard control to be enabled.");
 
     // QTableView enables tabKeyNavigation by default, but you should be able

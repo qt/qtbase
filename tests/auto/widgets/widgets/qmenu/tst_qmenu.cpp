@@ -366,7 +366,7 @@ void tst_QMenu::keyboardNavigation()
 
 #ifdef Q_OS_MAC
 QT_BEGIN_NAMESPACE
-    extern bool qt_tab_all_widgets; // from qapplication.cpp
+extern bool qt_tab_all_widgets(); // from qapplication.cpp
 QT_END_NAMESPACE
 #endif
 
@@ -378,7 +378,7 @@ void tst_QMenu::focus()
     menu.addAction("Three");
 
 #ifdef Q_OS_MAC
-    if (!qt_tab_all_widgets)
+    if (!qt_tab_all_widgets())
         QSKIP("Computer is currently set up to NOT tab to all widgets,"
              " this test assumes you can tab to all widgets");
 #endif

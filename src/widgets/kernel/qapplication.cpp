@@ -397,7 +397,6 @@ QWidget *QApplicationPrivate::active_window = 0;        // toplevel with keyboar
 #ifndef QT_NO_WHEELEVENT
 int QApplicationPrivate::wheel_scroll_lines;   // number of lines to scroll
 #endif
-bool Q_WIDGETS_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
 QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut
@@ -414,6 +413,13 @@ bool qt_tabletChokeMouse = false;
 inline bool QApplicationPrivate::isAlien(QWidget *widget)
 {
     return widget && !widget->isWindow();
+}
+
+bool Q_WIDGETS_EXPORT qt_tab_all_widgets()
+{
+    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        return theme->themeHint(QPlatformTheme::TabAllWidgets).toBool();
+    return true;
 }
 
 // ######## move to QApplicationPrivate
@@ -2080,7 +2086,7 @@ void QApplication::setActiveWindow(QWidget* act)
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
-    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
+    uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
 
     QWidget *f = toplevel->focusWidget();
     if (!f)

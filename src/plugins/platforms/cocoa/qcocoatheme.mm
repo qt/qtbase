@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#import <Cocoa/Cocoa.h>
+
 #include "qcocoatheme.h"
 
 #include <QtCore/QVariant>
@@ -142,6 +144,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QVariant(1); // QDialogButtonBox::MacLayout
     case KeyboardScheme:
         return QVariant(int(MacKeyboardScheme));
+    case TabAllWidgets:
+        return QVariant(bool([[NSApplication sharedApplication] isFullKeyboardAccessEnabled]));
     default:
         break;
     }

@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 #define AUTO_REPEAT_DELAY  300
 #define AUTO_REPEAT_INTERVAL 100
 
-Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets;
+Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
 /*!
     \class QAbstractButton
@@ -385,7 +385,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
     int bestScore = -1;
     QRect target = f->rect().translated(f->mapToGlobal(QPoint(0,0)));
     QPoint goal = target.center();
-    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
+    uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
 
     for (int i = 0; i < buttonList.count(); ++i) {
         QAbstractButton *button = buttonList.at(i);

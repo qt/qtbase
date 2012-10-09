@@ -129,6 +129,9 @@ QT_BEGIN_NAMESPACE
     \value SpellCheckUnderlineStyle (int) A QTextCharFormat::UnderlineStyle specifying
                                     the underline style used misspelled words when spell checking.
 
+    \value TabAllWidgets (bool) Whether tab navigation should go through all the widgets or components,
+                         or just through text boxes and list views. This is mostly a Mac feature.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -218,6 +221,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(int(0));
     case SpellCheckUnderlineStyle:
         return QVariant(int(QTextCharFormat::SpellCheckUnderline));
+    case TabAllWidgets:
+        return QVariant(true);
     }
     return QVariant();
 }

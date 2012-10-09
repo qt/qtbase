@@ -96,7 +96,8 @@ public:
         UseFullScreenForPopupMenu,
         KeyboardScheme,
         UiEffects,
-        SpellCheckUnderlineStyle
+        SpellCheckUnderlineStyle,
+        TabAllWidgets
     };
 
     enum DialogType {
