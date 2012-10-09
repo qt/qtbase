@@ -5993,8 +5993,10 @@ void QWidget::setFocus(Qt::FocusReason reason)
         f->d_func()->updateFocusChild();
     }
 
-    if (QTLWExtra *extra = f->window()->d_func()->maybeTopData())
-        emit extra->window->focusObjectChanged(f);
+    if (QTLWExtra *extra = f->window()->d_func()->maybeTopData()) {
+        if (extra->window)
+            emit extra->window->focusObjectChanged(f);
+    }
 }
 
 // updates focus_child on parent widgets to point into this widget
