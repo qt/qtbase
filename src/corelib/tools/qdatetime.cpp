@@ -2756,9 +2756,9 @@ void QDateTimePrivate::addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs)
     \sa addMSecs(), secsTo(), addDays(), addMonths(), addYears()
 */
 
-QDateTime QDateTime::addSecs(int s) const
+QDateTime QDateTime::addSecs(qint64 s) const
 {
-    return d->addMSecs(*this, qint64(s) * 1000);
+    return d->addMSecs(*this, s * 1000);
 }
 
 /*!
@@ -2811,7 +2811,7 @@ qint64 QDateTime::daysTo(const QDateTime &other) const
     \sa addSecs(), daysTo(), QTime::secsTo()
 */
 
-int QDateTime::secsTo(const QDateTime &other) const
+qint64 QDateTime::secsTo(const QDateTime &other) const
 {
     if (!isValid() || !other.isValid())
         return 0;

@@ -232,13 +232,13 @@ public:
     QDateTime addDays(qint64 days) const;
     QDateTime addMonths(int months) const;
     QDateTime addYears(int years) const;
-    QDateTime addSecs(int secs) const;
+    QDateTime addSecs(qint64 secs) const;
     QDateTime addMSecs(qint64 msecs) const;
     QDateTime toTimeSpec(Qt::TimeSpec spec) const;
     inline QDateTime toLocalTime() const { return toTimeSpec(Qt::LocalTime); }
     inline QDateTime toUTC() const { return toTimeSpec(Qt::UTC); }
     qint64 daysTo(const QDateTime &) const;
-    int secsTo(const QDateTime &) const;
+    qint64 secsTo(const QDateTime &) const;
     qint64 msecsTo(const QDateTime &) const;
 
     bool operator==(const QDateTime &other) const;

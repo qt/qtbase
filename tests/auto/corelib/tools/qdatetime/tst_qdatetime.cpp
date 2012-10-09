@@ -916,8 +916,8 @@ void tst_QDateTime::secsTo()
 #ifdef Q_OS_IRIX
     QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
 #endif
-    QCOMPARE(dt.secsTo(result), nsecs);
-    QCOMPARE(result.secsTo(dt), -nsecs);
+    QCOMPARE(dt.secsTo(result), (qint64)nsecs);
+    QCOMPARE(result.secsTo(dt), (qint64)-nsecs);
     QVERIFY((dt == result) == (0 == nsecs));
     QVERIFY((dt != result) == (0 != nsecs));
     QVERIFY((dt < result) == (0 < nsecs));
