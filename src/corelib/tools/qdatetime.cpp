@@ -917,20 +917,9 @@ QDate QDate::addDays(qint64 ndays) const
     if (isNull())
         return QDate();
 
-    QDate d;
-    quint64 diff = 0;
-
-    // this is basically "d.jd = jd + ndays" with checks for integer overflow
-    // Due to limits on minJd() and maxJd() we know diff will never overflow
-    if (ndays >= 0)
-        diff = maxJd() - jd;
-    else
-        diff = jd - minJd();
-
-    if ((quint64)qAbs(ndays) <= diff)
-        d.jd = jd + ndays;
-
-    return d;
+    // Due to limits on minJd() and maxJd() we know that any overflow
+    // will be invalid and caught by fromJulianDay().
+    return fromJulianDay(jd + ndays);
 }
 
 /*!
