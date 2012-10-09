@@ -48,7 +48,7 @@ hpux-acc*|hpuxi-acc* {
 !contains(QT_CONFIG, zlib):!contains(QT_CONFIG, no-zlib):!cross_compile {
     include($$PWD/../../3rdparty/zlib_dependency.pri)
 }
-win32:LIBS += -luser32 -lole32
+win32:LIBS += -luser32 -lole32 -ladvapi32
 
 mac {
     CONFIG -= incremental
