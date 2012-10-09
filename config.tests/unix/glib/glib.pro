@@ -1,2 +1,2 @@
 SOURCES = glib.cpp
-CONFIG -= qt
+CONFIG -= qt app_bundle
