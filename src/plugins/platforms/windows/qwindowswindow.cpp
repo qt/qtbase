@@ -1178,7 +1178,7 @@ void QWindowsWindow::setWindowTitle(const QString &title)
         SetWindowText(m_data.hwnd, (const wchar_t*)title.utf16());
 }
 
-Qt::WindowFlags QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
+void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     if (QWindowsContext::verboseWindows)
         qDebug() << '>' << __FUNCTION__ << this << window() << "\n    from: "
@@ -1202,7 +1202,6 @@ Qt::WindowFlags QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
         qDebug() << '<' << __FUNCTION__ << "\n    returns: "
                  << QWindowsWindow::debugWindowFlags(m_data.flags)
                  << " geometry " << oldGeometry << "->" << newGeometry;
-    return m_data.flags;
 }
 
 QWindowsWindow::WindowData QWindowsWindow::setWindowFlags_sys(Qt::WindowFlags wt,

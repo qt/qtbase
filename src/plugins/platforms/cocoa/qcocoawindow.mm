@@ -387,7 +387,7 @@ void QCocoaWindow::setWindowShadow(Qt::WindowFlags flags)
     [m_nsWindow setHasShadow:(keepShadow ? YES : NO)];
 }
 
-Qt::WindowFlags QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
+void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     if (m_nsWindow) {
         NSUInteger styleMask = windowStyleMask(flags);
@@ -398,7 +398,6 @@ Qt::WindowFlags QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
     m_windowFlags = flags;
-    return m_windowFlags;
 }
 
 Qt::WindowState QCocoaWindow::setWindowState(Qt::WindowState state)

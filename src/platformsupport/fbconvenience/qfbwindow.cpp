@@ -76,11 +76,10 @@ void QFbWindow::setGeometry(const QRect &rect)
     QPlatformWindow::setGeometry(rect);
 }
 
-Qt::WindowFlags QFbWindow::setWindowFlags(Qt::WindowFlags flags)
+void QFbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     mWindowFlags = flags;
     platformScreen()->invalidateRectCache();
-    return mWindowFlags;
 }
 
 Qt::WindowFlags QFbWindow::windowFlags() const

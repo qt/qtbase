@@ -90,7 +90,7 @@ public:
     virtual QMargins frameMargins() const;
 
     virtual void setVisible(bool visible);
-    virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    virtual void setWindowFlags(Qt::WindowFlags flags);
     virtual Qt::WindowState setWindowState(Qt::WindowState state);
 
     virtual WId winId() const;

@@ -740,7 +740,7 @@ void QXcbWindow::setNetWmStates(NetWmStates states)
     xcb_flush(xcb_connection());
 }
 
-Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
+void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
@@ -763,8 +763,6 @@ Qt::WindowFlags QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
 
     setTransparentForMouseEvents(flags & Qt::WindowTransparentForInput);
     updateDoesNotAcceptFocus(flags & Qt::WindowDoesNotAcceptFocus);
-
-    return flags;
 }
 
 void QXcbWindow::setMotifWindowFlags(Qt::WindowFlags flags)

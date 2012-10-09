@@ -140,7 +140,7 @@ void QDirectFbWindow::setVisible(bool visible)
         QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
 }
 
-Qt::WindowFlags QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
+void QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     switch (flags & Qt::WindowType_Mask) {
     case Qt::ToolTip: {
@@ -154,7 +154,6 @@ Qt::WindowFlags QDirectFbWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
     m_dfbWindow->SetStackingClass(m_dfbWindow.data(), flags & Qt::WindowStaysOnTopHint ? DWSC_UPPER : DWSC_MIDDLE);
-    return flags;
 }
 
 void QDirectFbWindow::raise()

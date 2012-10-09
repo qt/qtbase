@@ -514,9 +514,8 @@ void QWindow::setWindowFlags(Qt::WindowFlags flags)
 {
     Q_D(QWindow);
     if (d->platformWindow)
-        d->windowFlags = d->platformWindow->setWindowFlags(flags);
-    else
-        d->windowFlags = flags;
+        d->platformWindow->setWindowFlags(flags);
+    d->windowFlags = flags;
 }
 
 /*!
