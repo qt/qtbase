@@ -252,12 +252,17 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
 
     const int copySize = qMin(asize, osize);
     if (aalloc != a) {
-        T* newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
-        Q_CHECK_PTR(newPtr); // could throw
-        // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
-        ptr = newPtr;
+        if (aalloc > Prealloc) {
+            T* newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
+            Q_CHECK_PTR(newPtr); // could throw
+            // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
+            ptr = newPtr;
+            a = aalloc;
+        } else {
+            ptr = reinterpret_cast<T *>(array);
+            a = Prealloc;
+        }
         s = 0;
-        a = aalloc;
         if (QTypeInfo<T>::isStatic) {
             QT_TRY {
                 // copy all the old elements
