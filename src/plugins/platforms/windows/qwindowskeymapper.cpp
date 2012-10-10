@@ -679,7 +679,7 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
 
 bool QWindowsKeyMapper::isADeadKey(unsigned int vk_key, unsigned int modifiers)
 {
-    if (keyLayout && (vk_key < 256) && keyLayout[vk_key]) {
+    if ((vk_key < 256) && keyLayout[vk_key]) {
         for (register size_t i = 0; i < NumMods; ++i) {
             if (uint(ModsTbl[i]) == modifiers)
                 return bool(keyLayout[vk_key]->deadkeys & 1<<i);
