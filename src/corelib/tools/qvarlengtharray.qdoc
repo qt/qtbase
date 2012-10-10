@@ -210,7 +210,7 @@
     initialized. For other types, the elements are initialized with a
     \l{default-constructed value}.
 
-    \sa size()
+    \sa size(), squeeze()
 */
 
 /*! \fn int QVarLengthArray::capacity() const
@@ -223,7 +223,7 @@
     need to call this function. If you want to know how many items are
     in the array, call size().
 
-    \sa reserve()
+    \sa reserve(), squeeze()
 */
 
 /*! \fn void QVarLengthArray::reserve(int size)
@@ -240,7 +240,21 @@
     rarely ever need to call this function. If you want to change the
     size of the array, call resize().
 
-    \sa capacity()
+    \sa capacity(), squeeze()
+*/
+
+/*! \fn void QVarLengthArray::squeeze()
+    \since 5.1
+
+    Releases any memory not required to store the items.
+    If the container can fit its storage on the stack allocation,
+    it will free the heap allocation and copy the elements back to the stack.
+
+    The sole purpose of this function is to provide a means of fine
+    tuning QVarLengthArray's memory usage. In general, you will rarely ever
+    need to call this function.
+
+    \sa reserve(), capacity(), resize()
 */
 
 /*! \fn T &QVarLengthArray::operator[](int i)

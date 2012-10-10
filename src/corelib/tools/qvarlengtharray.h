@@ -103,6 +103,7 @@ public:
     inline bool isEmpty() const { return (s == 0); }
     inline void resize(int size);
     inline void clear() { resize(0); }
+    inline void squeeze();
 
     inline int capacity() const { return a; }
     inline void reserve(int size);
@@ -242,6 +243,10 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, in
         s = asize;
     }
 }
+
+template <class T, int Prealloc>
+Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::squeeze()
+{ realloc(s, s); }
 
 template <class T, int Prealloc>
 Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int aalloc)
