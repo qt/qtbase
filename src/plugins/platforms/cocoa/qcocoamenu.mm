@@ -218,10 +218,9 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
     NSMenuItem *oldItem = [m_nativeMenu itemWithTag:(NSInteger) cocoaItem];
 
     if (cocoaItem->sync() != oldItem) {
-    // native item was changed for some reason
-        if (!wasMerged) {
+        // native item was changed for some reason
+        if (!wasMerged && oldItem)
             [m_nativeMenu removeItem:oldItem];
-        }
 
         QCocoaMenuItem* beforeItem = itemOrNull(m_menuItems.indexOf(cocoaItem) + 1);
         insertNative(cocoaItem, beforeItem);
