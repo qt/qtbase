@@ -39,6 +39,13 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
+#include <stdlib.h>
+
+void* internalMalloc(size_t bytes);
+#define malloc internalMalloc
+#include <QVarLengthArray>
+#undef malloc
 
 #include <QtTest/QtTest>
 
@@ -59,6 +66,7 @@ private slots:
     void exceptionLinkedList();
 //    void exceptionEventLoop();
 //    void exceptionSignalSlot();
+    void exceptionOOMQVarLengthArray();
 #endif
 };
 
@@ -787,6 +795,50 @@ void tst_ExceptionSafety::exceptionSignalSlot()
     QCOMPARE(r2.received, 0);
 }
 #endif
+
+
+static bool outOfMemory = false;
+void* internalMalloc(size_t bytes) { return outOfMemory ? 0 : malloc(bytes); }
+
+struct OutOfMemory
+{
+    OutOfMemory() { outOfMemory = true; }
+    ~OutOfMemory() { outOfMemory = false; }
+};
+
+void tst_ExceptionSafety::exceptionOOMQVarLengthArray()
+{
+#ifdef QT_NO_EXCEPTIONS
+    // it will crash by design
+    Q_STATIC_ASSERT(false);
+#else
+     QVarLengthArray<char> arr0;
+    int minSize = arr0.capacity();
+
+    // constructor throws
+    bool success = false;
+    try {
+        OutOfMemory oom;
+        QVarLengthArray<char> arr(minSize * 2);
+    } catch (const std::bad_alloc&) {
+        success = true;
+    }
+    QVERIFY(success);
+
+    QVarLengthArray<char> arr;
+
+    // resize throws
+    success = false;
+    try {
+        OutOfMemory oom;
+        arr.resize(minSize * 2);
+    } catch(const std::bad_alloc&) {
+        arr.resize(1);
+        success = true;
+    }
+    QVERIFY(success);
+#endif
+}
 
 #endif
 
