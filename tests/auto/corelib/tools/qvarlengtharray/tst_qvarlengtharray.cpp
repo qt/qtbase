@@ -58,7 +58,6 @@ private slots:
     void count();
     void first();
     void last();
-    void outOfMemory();
 };
 
 int fooCtor = 0;
@@ -198,55 +197,6 @@ void tst_QVarLengthArray::oldTests()
 
         QVarLengthArray<int> sa3(sa);
         QCOMPARE(sa3[5], 5);
-    }
-}
-
-void tst_QVarLengthArray::outOfMemory()
-{
-    QSKIP("QTBUG-27361");
-    QVarLengthArray<Foo> a;
-    const int N = 0x7fffffff / sizeof(Foo);
-    const int Prealloc = a.capacity();
-    const Foo *data0 = a.constData();
-
-    a.resize(N);
-    if (a.size() == N) {
-        QVERIFY(a.capacity() >= N);
-        QCOMPARE(fooCtor, N);
-        QCOMPARE(fooDtor, 0);
-
-        for (int i = 0; i < N; i += 35000)
-            a[i] = Foo();
-    } else {
-        // this is the case we're actually testing
-        QCOMPARE(a.size(), 0);
-        QCOMPARE(a.capacity(), Prealloc);
-        QCOMPARE(a.constData(), data0);
-        QCOMPARE(fooCtor, 0);
-        QCOMPARE(fooDtor, 0);
-
-        a.resize(5);
-        QCOMPARE(a.size(), 5);
-        QCOMPARE(a.capacity(), Prealloc);
-        QCOMPARE(a.constData(), data0);
-        QCOMPARE(fooCtor, 5);
-        QCOMPARE(fooDtor, 0);
-
-        a.resize(Prealloc + 1);
-        QCOMPARE(a.size(), Prealloc + 1);
-        QVERIFY(a.capacity() >= Prealloc + 1);
-        QVERIFY(a.constData() != data0);
-        QCOMPARE(fooCtor, Prealloc + 6);
-        QCOMPARE(fooDtor, 5);
-
-        const Foo *data1 = a.constData();
-
-        a.resize(0x10000000);
-        QCOMPARE(a.size(), 0);
-        QVERIFY(a.capacity() >= Prealloc + 1);
-        QVERIFY(a.constData() == data1);
-        QCOMPARE(fooCtor, Prealloc + 6);
-        QCOMPARE(fooDtor, Prealloc + 6);
     }
 }
 
