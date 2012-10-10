@@ -315,7 +315,8 @@ static QTouchDevice *touchDevice = 0;
     QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
     nativeDrag->setLastMouseEvent(theEvent, self);
 
-    QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons);
+    Qt::KeyboardModifiers keyboardModifiers = [self convertKeyModifiers:[theEvent modifierFlags]];
+    QWindowSystemInterface::handleMouseEvent(m_window, timestamp, qtWindowPoint, qtScreenPoint, m_buttons, keyboardModifiers);
 }
 
 - (void)handleFrameStrutMouseEvent:(NSEvent *)theEvent
