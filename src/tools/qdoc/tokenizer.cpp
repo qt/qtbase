@@ -244,6 +244,13 @@ int Tokenizer::getToken()
                 }
             case '\'':
                 yyCh = getChar();
+                /*
+                  Allow empty character literal. QTBUG-25775
+                 */
+                if (yyCh == '\'') {
+                    yyCh = getChar();
+                    break;
+                }
                 if (yyCh == '\\')
                     yyCh = getChar();
                 do {
@@ -251,8 +258,7 @@ int Tokenizer::getToken()
                 } while (yyCh != EOF && yyCh != '\'');
 
                 if (yyCh == EOF) {
-                    yyTokLoc.warning(tr("Unterminated C++ character"
-                                        " literal"));
+                    yyTokLoc.warning(tr("Unterminated C++ character literal"));
                 }
                 else {
                     yyCh = getChar();
