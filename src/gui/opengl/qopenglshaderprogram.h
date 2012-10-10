@@ -64,7 +64,8 @@ public:
     enum ShaderTypeBit
     {
         Vertex          = 0x0001,
-        Fragment        = 0x0002
+        Fragment        = 0x0002,
+        Geometry        = 0x0004
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBit)
 
@@ -125,6 +126,8 @@ public:
     void release();
 
     GLuint programId() const;
+
+    int maxGeometryOutputVertices() const;
 
     void bindAttributeLocation(const char *name, int location);
     void bindAttributeLocation(const QByteArray& name, int location);

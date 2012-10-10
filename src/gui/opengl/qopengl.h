@@ -103,6 +103,7 @@ typedef GLfloat GLdouble;
 #if !defined(QT_OPENGL_ES_2)
 # if !defined(Q_OS_MAC) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7)
 #  define QT_OPENGL_3
+#  define QT_OPENGL_3_2
 # endif
 #endif
 

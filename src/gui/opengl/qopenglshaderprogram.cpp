@@ -145,6 +145,8 @@ QT_BEGIN_NAMESPACE
 
     \value Vertex Vertex shader written in the OpenGL Shading Language (GLSL).
     \value Fragment Fragment shader written in the OpenGL Shading Language (GLSL).
+    \value Geometry Geometry shaders written in the OpenGL Shading Language (GLSL)
+           based on the OpenGL core feature (requires OpenGL >= 3.2).
 */
 
 class QOpenGLShaderPrivate : public QObjectPrivate
@@ -156,7 +158,17 @@ public:
         , shaderType(type)
         , compiled(false)
         , glfuncs(new QOpenGLFunctions(ctx))
+#ifndef QT_OPENGL_ES_2
+        , supportsGeometryShaders(false)
+#endif
     {
+#ifndef QT_OPENGL_ES_2
+        // Geometry shaders require OpenGL >= 3.2
+        if (shaderType & QOpenGLShader::Geometry) {
+            QSurfaceFormat f = ctx->format();
+            supportsGeometryShaders = (f.version() >= qMakePair<int, int>(3, 2));
+        }
+#endif
     }
     ~QOpenGLShaderPrivate();
 
@@ -166,6 +178,11 @@ public:
     QString log;
 
     QOpenGLFunctions *glfuncs;
+
+#ifndef QT_OPENGL_ES_2
+    // Support for geometry shaders
+    bool supportsGeometryShaders;
+#endif
 
     bool create();
     bool compile(QOpenGLShader *q);
@@ -192,10 +209,15 @@ bool QOpenGLShaderPrivate::create()
     if (!context)
         return false;
     GLuint shader;
-    if (shaderType == QOpenGLShader::Vertex)
+    if (shaderType == QOpenGLShader::Vertex) {
         shader = glfuncs->glCreateShader(GL_VERTEX_SHADER);
-    else
+#if defined(QT_OPENGL_3_2)
+    } else if (shaderType == QOpenGLShader::Geometry && supportsGeometryShaders) {
+        shader = glfuncs->glCreateShader(GL_GEOMETRY_SHADER);
+#endif
+    } else {
         shader = glfuncs->glCreateShader(GL_FRAGMENT_SHADER);
+    }
     if (!shader) {
         qWarning() << "QOpenGLShader: could not create shader";
         return false;
@@ -234,6 +256,8 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
             type = types[0];
         else if (shaderType == QOpenGLShader::Vertex)
             type = types[1];
+        else if (shaderType == QOpenGLShader::Geometry)
+            type = types[2];
 
         // Get info and source code lengths
         GLint infoLogLength = 0;
@@ -2927,6 +2951,19 @@ void QOpenGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4
 }
 
 /*!
+    Returns the hardware limit for how many vertices a geometry shader
+    can output.
+*/
+int QOpenGLShaderProgram::maxGeometryOutputVertices() const
+{
+    GLint n = 0;
+#if defined(QT_OPENGL_3_2)
+    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &n);
+#endif
+    return n;
+}
+
+/*!
     Returns true if shader programs written in the OpenGL Shading
     Language (GLSL) are supported on this system; false otherwise.
 
@@ -2972,9 +3009,22 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
     if (!context)
         return false;
 
-    if ((type & ~(Vertex | Fragment)) || type == 0)
+    if ((type & ~(Geometry | Vertex | Fragment)) || type == 0)
         return false;
 
+    if (type == Geometry) {
+#ifndef QT_OPENGL_ES_2
+        // Geometry shaders require OpenGL 3.2 or newer
+        QSurfaceFormat format = context->format();
+        return (format.version() >= qMakePair<int, int>(3, 2));
+#else
+        // No geometry shader support in OpenGL ES2
+        return false;
+#endif
+    }
+
+    // Unconditional support of vertex and fragment shaders implicitly assumes
+    // a minimum OpenGL version of 2.0
     return true;
 }
 
