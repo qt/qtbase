@@ -713,6 +713,7 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
 
 void QCocoaWindow::clearNSWindow(NSWindow *window)
 {
+    [window setContentView:nil];
     [window setDelegate:nil];
     [window clearPlatformWindow];
     [[NSNotificationCenter defaultCenter] removeObserver:m_contentView];

@@ -89,6 +89,14 @@ static QTouchDevice *touchDevice = 0;
     return self;
 }
 
+- (void)dealloc
+{
+    CGImageRelease(m_cgImage);
+    m_cgImage = 0;
+    m_window = 0;
+    [super dealloc];
+}
+
 - (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow
 {
     self = [self init];
