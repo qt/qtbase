@@ -175,11 +175,18 @@ Ptr_gtk_window_get_type QGtkStylePrivate::gtk_window_get_type = 0;
 Ptr_gtk_widget_get_type QGtkStylePrivate::gtk_widget_get_type = 0;
 Ptr_gtk_widget_get_parent QGtkStylePrivate::gtk_widget_get_parent = 0;
 Ptr_gtk_widget_is_toplevel QGtkStylePrivate::gtk_widget_is_toplevel = 0;
+Ptr_gtk_widget_get_toplevel QGtkStylePrivate::gtk_widget_get_toplevel = 0;
 Ptr_gtk_rc_get_style_by_paths QGtkStylePrivate::gtk_rc_get_style_by_paths = 0;
 Ptr_gtk_check_version QGtkStylePrivate::gtk_check_version = 0;
 Ptr_gtk_border_free QGtkStylePrivate::gtk_border_free = 0;
 Ptr_gtk_widget_get_allocation QGtkStylePrivate::gtk_widget_get_allocation = 0;
 Ptr_gtk_widget_set_allocation QGtkStylePrivate::gtk_widget_set_allocation = 0;
+Ptr_gtk_widget_set_can_default QGtkStylePrivate::gtk_widget_set_can_default = 0;
+Ptr_gtk_window_set_default QGtkStylePrivate::gtk_window_set_default = 0;
+
+Ptr_gdk_event_new QGtkStylePrivate::gdk_event_new = 0;
+Ptr_gdk_event_free QGtkStylePrivate::gdk_event_free = 0;
+Ptr_gtk_widget_send_focus_change QGtkStylePrivate::gtk_widget_send_focus_change = 0;
 
 Ptr_pango_font_description_get_size QGtkStylePrivate::pango_font_description_get_size = 0;
 Ptr_pango_font_description_get_weight QGtkStylePrivate::pango_font_description_get_weight = 0;
@@ -324,6 +331,24 @@ GtkStyle* QGtkStylePrivate::gtkStyle(const QHashableLatin1Literal &path)
     return 0;
 }
 
+void QGtkStylePrivate::gtkWidgetSetFocus(GtkWidget *widget, bool focus)
+{
+    if (QGtkStylePrivate::gtk_widget_send_focus_change) {
+        GdkEvent *event = QGtkStylePrivate::gdk_event_new(GDK_FOCUS_CHANGE);
+        event->focus_change.type = GDK_FOCUS_CHANGE;
+        event->focus_change.in = focus;
+        QGtkStylePrivate::gtk_widget_send_focus_change(widget, event);
+        QGtkStylePrivate::gdk_event_free(event);
+    } else {
+#if defined(GTK_WIDGET_SET_FLAGS) && defined(GTK_WIDGET_UNSET_FLAGS)
+        if (focus)
+            GTK_WIDGET_SET_FLAGS(widget, GTK_HAS_FOCUS);
+        else
+            GTK_WIDGET_UNSET_FLAGS(widget, GTK_HAS_FOCUS);
+#endif
+    }
+}
+
 /*! \internal
  *  Get references to gtk functions after we dynamically load the library.
  */
@@ -445,12 +470,20 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_widget_get_type =(Ptr_gtk_widget_get_type)libgtk.resolve("gtk_widget_get_type");
     gtk_widget_get_parent =(Ptr_gtk_widget_get_parent)libgtk.resolve("gtk_widget_get_parent");
     gtk_widget_is_toplevel =(Ptr_gtk_widget_is_toplevel)libgtk.resolve("gtk_widget_is_toplevel");
+    gtk_widget_get_toplevel =(Ptr_gtk_widget_get_toplevel)libgtk.resolve("gtk_widget_get_toplevel");
 
     gtk_rc_get_style_by_paths =(Ptr_gtk_rc_get_style_by_paths)libgtk.resolve("gtk_rc_get_style_by_paths");
     gtk_check_version =(Ptr_gtk_check_version)libgtk.resolve("gtk_check_version");
     gtk_border_free =(Ptr_gtk_border_free)libgtk.resolve("gtk_border_free");
     gtk_widget_get_allocation = (Ptr_gtk_widget_get_allocation)libgtk.resolve("gtk_widget_get_allocation");
     gtk_widget_set_allocation = (Ptr_gtk_widget_set_allocation)libgtk.resolve("gtk_widget_set_allocation");
+
+    gtk_widget_set_can_default = (Ptr_gtk_widget_set_can_default)libgtk.resolve("gtk_widget_set_can_default");
+    gtk_window_set_default = (Ptr_gtk_window_set_default)libgtk.resolve("gtk_window_set_default");
+
+    gdk_event_new = (Ptr_gdk_event_new)libgtk.resolve("gdk_event_new");
+    gdk_event_free = (Ptr_gdk_event_free)libgtk.resolve("gdk_event_free");
+    gtk_widget_send_focus_change = (Ptr_gtk_widget_send_focus_change)libgtk.resolve("gtk_widget_send_focus_change");
 
     pango_font_description_get_size = (Ptr_pango_font_description_get_size)libgtk.resolve("pango_font_description_get_size");
     pango_font_description_get_weight = (Ptr_pango_font_description_get_weight)libgtk.resolve("pango_font_description_get_weight");

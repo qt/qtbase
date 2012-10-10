@@ -1056,7 +1056,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
                 if (isActive ) {
                     // Required for active/non-active window appearance
                     key = QLS("a");
-                    GTK_WIDGET_SET_FLAGS(gtkTreeView, GTK_HAS_FOCUS);
+                    QGtkStylePrivate::gtkWidgetSetFocus(gtkTreeView, true);
                 }
                 bool isEnabled = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled));
                 gtkPainter.paintFlatBox(gtkTreeView, detail, option->rect,
@@ -1064,7 +1064,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
                                         isEnabled ? GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE,
                                         GTK_SHADOW_OUT, d->gtk_widget_get_style(gtkTreeView), key);
                 if (isActive )
-                    GTK_WIDGET_UNSET_FLAGS(gtkTreeView, GTK_HAS_FOCUS);
+                    QGtkStylePrivate::gtkWidgetSetFocus(gtkTreeView, false);
             }
         }
         break;
@@ -1193,7 +1193,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             rect.adjust(focus_line_width, focus_line_width, -focus_line_width, -focus_line_width);
 
         if (option->state & State_HasFocus)
-            GTK_WIDGET_SET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkEntry, true);
         gtkPainter.paintShadow(gtkEntry, "entry", rect, option->state & State_Enabled ? 
                                GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE, 
                                GTK_SHADOW_IN, d->gtk_widget_get_style(gtkEntry),
@@ -1204,7 +1204,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
                                    GTK_SHADOW_IN, d->gtk_widget_get_style(gtkEntry), QLS("GtkEntryShadowIn"));
 
         if (option->state & State_HasFocus)
-            GTK_WIDGET_UNSET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkEntry, false);
     }
     break;
 
@@ -1292,7 +1292,8 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         QString key;
         if (isDefault) {
             key += QLS("def");
-            GTK_WIDGET_SET_FLAGS(gtkButton, GTK_HAS_DEFAULT);
+            QGtkStylePrivate::gtk_widget_set_can_default(gtkButton, true);
+            QGtkStylePrivate::gtk_window_set_default((GtkWindow*)QGtkStylePrivate::gtk_widget_get_toplevel(gtkButton), gtkButton);
             gtkPainter.paintBox(gtkButton, "buttondefault", buttonRect, state, GTK_SHADOW_IN,
                                 style, isDefault ? QLS("d") : QString());
         }
@@ -1301,7 +1302,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
         if (hasFocus) {
             key += QLS("def");
-            GTK_WIDGET_SET_FLAGS(gtkButton, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkButton, true);
         }
 
         if (!interiorFocus)
@@ -1313,9 +1314,9 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         gtkPainter.paintBox(gtkButton, "button", buttonRect, state, shadow,
                             style, key);
         if (isDefault)
-            GTK_WIDGET_UNSET_FLAGS(gtkButton, GTK_HAS_DEFAULT);
+            QGtkStylePrivate::gtk_window_set_default((GtkWindow*)QGtkStylePrivate::gtk_widget_get_toplevel(gtkButton), 0);
         if (hasFocus)
-            GTK_WIDGET_UNSET_FLAGS(gtkButton, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkButton, false);
     }
     break;
 
@@ -1344,11 +1345,11 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         QString key(QLS("radiobutton"));
         if (option->state & State_HasFocus) { // Themes such as Nodoka check this flag
             key += QLatin1Char('f');
-            GTK_WIDGET_SET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkCheckButton, true);
         }
         gtkPainter.paintOption(gtkCheckButton , buttonRect, state, shadow, d->gtk_widget_get_style(gtkRadioButton), key);
         if (option->state & State_HasFocus)
-            GTK_WIDGET_UNSET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkCheckButton, false);
     }
     break;
 
@@ -1372,7 +1373,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         QString key(QLS("checkbutton"));
         if (option->state & State_HasFocus) { // Themes such as Nodoka checks this flag
             key += QLatin1Char('f');
-            GTK_WIDGET_SET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkCheckButton, true);
         }
 
         // Some styles such as aero-clone assume they can paint in the spacing area
@@ -1385,7 +1386,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         gtkPainter.paintCheckbox(gtkCheckButton, checkRect, state, shadow, d->gtk_widget_get_style(gtkCheckButton),
                                  key);
         if (option->state & State_HasFocus)
-            GTK_WIDGET_UNSET_FLAGS(gtkCheckButton, GTK_HAS_FOCUS);
+            QGtkStylePrivate::gtkWidgetSetFocus(gtkCheckButton, false);
 
     }
     break;
@@ -1848,7 +1849,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             d->gtk_widget_set_direction(gtkToggleButton, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             if (gtkToggleButton && (appears_as_list || comboBox->editable)) {
                 if (focus)
-                    GTK_WIDGET_SET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
+                    QGtkStylePrivate::gtkWidgetSetFocus(gtkToggleButton, true);
                 // Draw the combo box as a line edit with a button next to it
                 if (comboBox->editable || appears_as_list) {
                     GtkStateType frameState = (state == GTK_STATE_PRELIGHT) ? GTK_STATE_NORMAL : state;
@@ -1870,7 +1871,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                                                            -gtkEntryStyle->xthickness, -gtkEntryStyle->ythickness);
                     // Required for inner blue highlight with clearlooks
                     if (focus)
-                        GTK_WIDGET_SET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
+                        QGtkStylePrivate::gtkWidgetSetFocus(gtkEntry, true);
 
                     if (widget && widget->testAttribute(Qt::WA_SetPalette) &&
                         resolve_mask & (1 << QPalette::Base)) // Palette overridden by user
@@ -1886,7 +1887,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                                            QString::number(focus) + QString::number(comboBox->editable) +
                                            QString::number(option->direction));
                     if (focus)
-                        GTK_WIDGET_UNSET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
+                        QGtkStylePrivate::gtkWidgetSetFocus(gtkEntry, false);
                 }
 
                 GtkStateType buttonState = GTK_STATE_NORMAL;
@@ -1903,20 +1904,20 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                                      shadow, d->gtk_widget_get_style(gtkToggleButton), buttonPath.toString() +
                                      QString::number(focus) + QString::number(option->direction));
                 if (focus)
-                    GTK_WIDGET_UNSET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
+                    QGtkStylePrivate::gtkWidgetSetFocus(gtkToggleButton, false);
             } else {
                 // Draw combo box as a button
                 QRect buttonRect = option->rect;
                 GtkStyle *gtkToggleButtonStyle = d->gtk_widget_get_style(gtkToggleButton);
 
                 if (focus) // Clearlooks actually check the widget for the default state
-                    GTK_WIDGET_SET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
+                    QGtkStylePrivate::gtkWidgetSetFocus(gtkToggleButton, true);
                 gtkCachedPainter.paintBox(gtkToggleButton, "button",
                                     buttonRect, state,
                                     shadow, gtkToggleButtonStyle,
                                     buttonPath.toString() + QString::number(focus));
                 if (focus)
-                    GTK_WIDGET_UNSET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
+                    QGtkStylePrivate::gtkWidgetSetFocus(gtkToggleButton, false);
 
 
                 // Draw the separator between label and arrows
@@ -2329,7 +2330,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                 if (option->state & State_HasFocus) {
                     key += QLatin1Char('f');
-                    GTK_WIDGET_SET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
+                    QGtkStylePrivate::gtkWidgetSetFocus(gtkSpinButton, true);
                 }
 
                 uint resolve_mask = option->palette.resolve();
@@ -2366,7 +2367,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                         gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
 
                     if (option->state & State_HasFocus)
-                        GTK_WIDGET_UNSET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
+                        QGtkStylePrivate::gtkWidgetSetFocus(gtkSpinButton, false);
                 }
             }
 

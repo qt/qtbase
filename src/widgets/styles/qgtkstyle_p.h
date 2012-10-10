@@ -218,6 +218,7 @@ typedef GtkType (*Ptr_gtk_window_get_type) (void);
 typedef GtkType (*Ptr_gtk_widget_get_type) (void);
 typedef GtkWidget* (*Ptr_gtk_widget_get_parent) (GtkWidget *);
 typedef gboolean (*Ptr_gtk_widget_is_toplevel) (GtkWidget *);
+typedef GtkWidget* (*Ptr_gtk_widget_get_toplevel) (GtkWidget *);
 typedef GtkStyle* (*Ptr_gtk_rc_get_style_by_paths) (GtkSettings *, const char *, const char *, GType);
 typedef gint (*Ptr_pango_font_description_get_size) (const PangoFontDescription *);
 typedef PangoWeight (*Ptr_pango_font_description_get_weight) (const PangoFontDescription *);
@@ -243,6 +244,13 @@ typedef gint (*Ptr_gtk_dialog_run) (GtkDialog*);
 typedef void (*Ptr_gtk_border_free)(GtkBorder *);
 typedef void (*Ptr_gtk_widget_get_allocation) (GtkWidget*, GtkAllocation*);
 typedef void (*Ptr_gtk_widget_set_allocation) (GtkWidget*, const GtkAllocation*);
+
+typedef void (*Ptr_gtk_widget_set_can_default) (GtkWidget*, gboolean);
+typedef void (*Ptr_gtk_window_set_default) (GtkWindow*, GtkWidget*);
+
+typedef GdkEvent* (*Ptr_gdk_event_new) (GdkEventType);
+typedef void (*Ptr_gdk_event_free) (GdkEvent*);
+typedef void (*Ptr_gtk_widget_send_focus_change) (GtkWidget*, GdkEvent*);
 
 typedef guchar* (*Ptr_gdk_pixbuf_get_pixels) (const GdkPixbuf *pixbuf);
 typedef int (*Ptr_gdk_pixbuf_get_width) (const GdkPixbuf *pixbuf);
@@ -328,6 +336,7 @@ public:
 
     static GtkWidget* gtkWidget(const QHashableLatin1Literal &path);
     static GtkStyle* gtkStyle(const QHashableLatin1Literal &path = QHashableLatin1Literal("GtkWindow"));
+    static void gtkWidgetSetFocus(GtkWidget *widget, bool focus);
 
     virtual void resolveGtk() const;
     virtual void initGtkMenu() const;
@@ -444,11 +453,18 @@ public:
     static Ptr_gtk_widget_get_type gtk_widget_get_type;
     static Ptr_gtk_widget_get_parent gtk_widget_get_parent;
     static Ptr_gtk_widget_is_toplevel gtk_widget_is_toplevel;
+    static Ptr_gtk_widget_get_toplevel gtk_widget_get_toplevel;
     static Ptr_gtk_rc_get_style_by_paths gtk_rc_get_style_by_paths;
     static Ptr_gtk_check_version gtk_check_version;
     static Ptr_gtk_border_free gtk_border_free;
     static Ptr_gtk_widget_get_allocation gtk_widget_get_allocation;
     static Ptr_gtk_widget_set_allocation gtk_widget_set_allocation;
+    static Ptr_gtk_widget_set_can_default gtk_widget_set_can_default;
+    static Ptr_gtk_window_set_default gtk_window_set_default;
+
+    static Ptr_gdk_event_new gdk_event_new;
+    static Ptr_gdk_event_free gdk_event_free;
+    static Ptr_gtk_widget_send_focus_change gtk_widget_send_focus_change;
 
     static Ptr_pango_font_description_get_size pango_font_description_get_size;
     static Ptr_pango_font_description_get_weight pango_font_description_get_weight;
