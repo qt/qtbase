@@ -233,7 +233,7 @@ static bool runHelper(const QString &program, const QStringList &arguments, QByt
 void tst_QClipboard::copy_exit_paste()
 {
 #ifndef QT_NO_PROCESS
-#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_MAC) && !defined(Q_OS_QNX)
     QSKIP("This test does not make sense on X11 and embedded, copied data disappears from the clipboard when the application exits ");
     // ### It's still possible to test copy/paste - just keep the apps running
 #endif
