@@ -279,6 +279,7 @@ private slots:
 
     void drawTextWithComplexBrush();
     void QTBUG26013_squareCapStroke();
+    void QTBUG25153_drawLine();
 
 private:
     void fillData();
@@ -4385,6 +4386,26 @@ void tst_QPainter::QTBUG26013_squareCapStroke()
 
         // ensure that a vertical line and a horizontal line with square cap round up (to the right) at the same time
         QCOMPARE(image.pixel(0, 0), image.pixel(0, 1));
+    }
+}
+
+void tst_QPainter::QTBUG25153_drawLine()
+{
+    QImage image(2, 2, QImage::Format_RGB32);
+
+    QVector<Qt::PenCapStyle> styles;
+    styles << Qt::FlatCap << Qt::SquareCap << Qt::RoundCap;
+
+    foreach (Qt::PenCapStyle style, styles) {
+        image.fill(0xffffffff);
+        QPainter p(&image);
+        p.setPen(QPen(Qt::black, 0, Qt::SolidLine, style));
+        p.drawLine(QLineF(0, 0, 0, 0));
+        p.end();
+
+        QCOMPARE(image.pixel(0, 0), 0xff000000);
+        QCOMPARE(image.pixel(0, 1), 0xffffffff);
+        QCOMPARE(image.pixel(1, 0), 0xffffffff);
     }
 }
 

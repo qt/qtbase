@@ -356,6 +356,11 @@ bool QCosmeticStroker::clipLine(qreal &x1, qreal &y1, qreal &x2, qreal &y2)
 
 void QCosmeticStroker::drawLine(const QPointF &p1, const QPointF &p2)
 {
+    if (p1 == p2) {
+        drawPoints(&p1, 1);
+        return;
+    }
+
     QPointF start = p1 * state->matrix;
     QPointF end = p2 * state->matrix;
 
