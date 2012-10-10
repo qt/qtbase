@@ -502,9 +502,17 @@ int QStackedLayout::heightForWidth(int width) const
     int hfw = 0;
     for (int i = 0; i < n; ++i) {
         if (QLayoutItem *item = itemAt(i)) {
-            hfw = qMax(hfw, item->heightForWidth(width));
+            if (QWidget *w = item->widget())
+                /*
+                Note: Does not query the layout item, but bypasses it and asks the widget
+                directly. This is consistent with how QStackedLayout::sizeHint() is
+                implemented. This also avoids an issue where QWidgetItem::heightForWidth()
+                returns -1 if the widget is hidden.
+                */
+                hfw = qMax(hfw, w->heightForWidth(width));
         }
     }
+    hfw = qMax(hfw, minimumSize().height());
     return hfw;
 }
 

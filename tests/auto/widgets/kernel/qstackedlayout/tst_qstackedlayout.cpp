@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QLineEdit>
+#include <QLabel>
 #include <QStackedLayout>
 #include <qapplication.h>
 #include <qwidget.h>
@@ -68,6 +69,7 @@ private slots:
     void deleteCurrent();
     void removeWidget();
     void keepFocusAfterSetCurrent();
+    void heigthForWidth();
 
 private:
     QWidget *testWidget;
@@ -360,6 +362,36 @@ void tst_QStackedLayout::keepFocusAfterSetCurrent()
     QVERIFY(!edit1->hasFocus());
     QVERIFY(edit2->hasFocus());
     QVERIFY(edit2->hasFakeEditFocus);
+}
+
+void tst_QStackedLayout::heigthForWidth()
+{
+    if (testWidget->layout()) delete testWidget->layout();
+    QStackedLayout *stackLayout = new QStackedLayout(testWidget);
+
+    QLabel *shortLabel = new QLabel("This is a short text.");
+    shortLabel->setWordWrap(true);
+    stackLayout->addWidget(shortLabel);
+
+    QLabel *longLabel = new QLabel("Write code once to target multiple platforms\n"
+                         "Qt allows you to write advanced applications and UIs once, "
+                         "and deploy them across desktop and embedded operating systems "
+                         "without rewriting the source code saving time and development cost.\n\n"
+                         "Create amazing user experiences\n"
+                         "Whether you prefer C++ or JavaScript, Qt provides the building blocks - "
+                         "a broad set of customizable widgets, graphics canvas, style engine "
+                         "and more that you need to build modern user interfaces. "
+                         "Incorporate 3D graphics, multimedia audio or video, visual effects, "
+                         "and animations to set your application apart from the competition.");
+
+    longLabel->setWordWrap(true);
+    stackLayout->addWidget(longLabel);
+    stackLayout->setCurrentIndex(0);
+    int hfw_index0 = stackLayout->heightForWidth(200);
+
+    stackLayout->setCurrentIndex(1);
+    QCOMPARE(stackLayout->heightForWidth(200), hfw_index0);
+
 }
 
 QTEST_MAIN(tst_QStackedLayout)
