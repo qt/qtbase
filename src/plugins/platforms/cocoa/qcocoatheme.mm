@@ -54,7 +54,9 @@
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 
+#include <QtCore/qfileinfo.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpainter.h>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
 
@@ -135,6 +137,143 @@ const QFont *QCocoaTheme::font(Font type) const
     return m_fonts.value(type, 0);
 }
 
+// Defined in qpaintengine_mac.mm
+extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
+
+//! \internal
+QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)
+{
+    QPixmap ret(width, height);
+    ret.fill(QColor(0, 0, 0, 0));
+
+    CGRect rect = CGRectMake(0, 0, width, height);
+
+    CGContextRef ctx = qt_mac_cg_context(&ret);
+    CGAffineTransform old_xform = CGContextGetCTM(ctx);
+    CGContextConcatCTM(ctx, CGAffineTransformInvert(old_xform));
+    CGContextConcatCTM(ctx, CGAffineTransformIdentity);
+
+    ::RGBColor b;
+    b.blue = b.green = b.red = 255*255;
+    PlotIconRefInContext(ctx, &rect, kAlignNone, kTransformNone, &b, kPlotIconRefNormalFlags, icon);
+    CGContextRelease(ctx);
+    return ret;
+}
+
+QPixmap QCocoaTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
+{
+    OSType iconType = 0;
+    switch (sp) {
+    case MessageBoxQuestion:
+        iconType = kQuestionMarkIcon;
+        break;
+    case MessageBoxInformation:
+        iconType = kAlertNoteIcon;
+        break;
+    case MessageBoxWarning:
+        iconType = kAlertCautionIcon;
+        break;
+    case MessageBoxCritical:
+        iconType = kAlertStopIcon;
+        break;
+    case DesktopIcon:
+        iconType = kDesktopIcon;
+        break;
+    case TrashIcon:
+        iconType = kTrashIcon;
+        break;
+    case ComputerIcon:
+        iconType = kComputerIcon;
+        break;
+    case DriveFDIcon:
+        iconType = kGenericFloppyIcon;
+        break;
+    case DriveHDIcon:
+        iconType = kGenericHardDiskIcon;
+        break;
+    case DriveCDIcon:
+    case DriveDVDIcon:
+        iconType = kGenericCDROMIcon;
+        break;
+    case DriveNetIcon:
+        iconType = kGenericNetworkIcon;
+        break;
+    case DirOpenIcon:
+        iconType = kOpenFolderIcon;
+        break;
+    case DirClosedIcon:
+    case DirLinkIcon:
+        iconType = kGenericFolderIcon;
+        break;
+    case FileLinkIcon:
+    case FileIcon:
+        iconType = kGenericDocumentIcon;
+        break;
+    default:
+        break;
+    }
+    if (iconType != 0) {
+        QPixmap pixmap;
+        IconRef icon;
+        IconRef overlayIcon = 0;
+        if (iconType != kGenericApplicationIcon) {
+            GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
+        } else {
+            FSRef fsRef;
+            ProcessSerialNumber psn = { 0, kCurrentProcess };
+            GetProcessBundleLocation(&psn, &fsRef);
+            GetIconRefFromFileInfo(&fsRef, 0, 0, 0, 0, kIconServicesNormalUsageFlag, &icon, 0);
+            if (sp == MessageBoxCritical) {
+                overlayIcon = icon;
+                GetIconRef(kOnSystemDisk, kSystemIconsCreator, kAlertCautionIcon, &icon);
+            }
+        }
+
+        if (icon) {
+            pixmap = qt_mac_convert_iconref(icon, size.width(), size.height());
+            ReleaseIconRef(icon);
+        }
+
+        if (overlayIcon) {
+            QSizeF littleSize = size / 2;
+            QPixmap overlayPix = qt_mac_convert_iconref(overlayIcon, littleSize.width(), littleSize.height());
+            QPainter painter(&pixmap);
+            painter.drawPixmap(littleSize.width(), littleSize.height(), overlayPix);
+            ReleaseIconRef(overlayIcon);
+        }
+
+        return pixmap;
+    }
+
+    return QPlatformTheme::standardPixmap(sp, size);
+}
+
+QPixmap QCocoaTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const
+{
+    FSRef macRef;
+    OSStatus status = FSPathMakeRef(reinterpret_cast<const UInt8*>(fileInfo.canonicalFilePath().toUtf8().constData()),
+                                    &macRef, 0);
+    if (status != noErr)
+        return QPixmap();
+    FSCatalogInfo info;
+    HFSUniStr255 macName;
+    status = FSGetCatalogInfo(&macRef, kIconServicesCatalogInfoMask, &info, &macName, 0, 0);
+    if (status != noErr)
+        return QPixmap();
+    IconRef iconRef;
+    SInt16 iconLabel;
+    status = GetIconRefFromFileInfo(&macRef, macName.length, macName.unicode,
+                                    kIconServicesCatalogInfoMask, &info, kIconServicesNormalUsageFlag,
+                                    &iconRef, &iconLabel);
+    if (status != noErr)
+        return QPixmap();
+
+    QPixmap pixmap = qt_mac_convert_iconref(iconRef, size.width(), size.height());
+    ReleaseIconRef(iconRef);
+
+    return pixmap;
+}
+
 QVariant QCocoaTheme::themeHint(ThemeHint hint) const
 {
     switch (hint) {
@@ -146,6 +285,11 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QVariant(int(MacKeyboardScheme));
     case TabAllWidgets:
         return QVariant(bool([[NSApplication sharedApplication] isFullKeyboardAccessEnabled]));
+    case IconPixmapSizes: {
+        QList<int> sizes;
+        sizes << 16 << 32 << 64 << 128;
+        return QVariant::fromValue(sizes);
+    }
     default:
         break;
     }

@@ -68,6 +68,8 @@
 #include "qlistview.h"
 #include <private/qmath_p.h>
 #include <qmath.h>
+#include <qpa/qplatformtheme.h>
+#include <private/qguiapplication_p.h>
 
 #include <private/qstylehelper_p.h>
 #include <private/qstyleanimation_p.h>
@@ -889,26 +891,6 @@ static const char *const question_xpm[] = {
 
 #endif //QT_NO_IMAGEFORMAT_XPM
 
-#ifdef Q_OS_WIN
-static QPixmap loadIconFromShell32( int resourceId, int size )
-{
-#ifdef Q_OS_WINCE
-    HMODULE hmod = LoadLibrary(L"ceshell");
-#else
-    HMODULE hmod = QSystemLibrary::load(L"shell32");
-#endif
-    if( hmod ) {
-        HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);
-        if( iconHandle ) {
-            QPixmap iconpixmap = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            return iconpixmap;
-        }
-    }
-    return QPixmap();
-}
-#endif
-
 /*!
  \reimp
  */
@@ -920,125 +902,32 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     switch(standardPixmap) {
     case SP_DriveCDIcon:
     case SP_DriveDVDIcon:
-        {
-            desktopIcon = loadIconFromShell32(12, 16);
-            break;
-        }
     case SP_DriveNetIcon:
-        {
-            desktopIcon = loadIconFromShell32(10, 16);
-            break;
-        }
     case SP_DriveHDIcon:
-        {
-            desktopIcon = loadIconFromShell32(9, 16);
-            break;
-        }
     case SP_DriveFDIcon:
-        {
-            desktopIcon = loadIconFromShell32(7, 16);
-            break;
-        }
     case SP_FileIcon:
-        {
-            desktopIcon = loadIconFromShell32(1, 16);
-            break;
-        }
     case SP_FileLinkIcon:
-        {
-            desktopIcon = loadIconFromShell32(1, 16);
-            QPainter painter(&desktopIcon);
-            QPixmap link = loadIconFromShell32(30, 16);
-            painter.drawPixmap(0, 0, 16, 16, link);
-            break;
-        }
     case SP_DirLinkIcon:
-        {
-            desktopIcon = loadIconFromShell32(4, 16);
-            QPainter painter(&desktopIcon);
-            QPixmap link = loadIconFromShell32(30, 16);
-            painter.drawPixmap(0, 0, 16, 16, link);
-            break;
-        }
     case SP_DirClosedIcon:
-        {
-            desktopIcon = loadIconFromShell32(4, 16);
-            break;
-        }
     case SP_DesktopIcon:
-        {
-            desktopIcon = loadIconFromShell32(35, 16);
-            break;
-        }
     case SP_ComputerIcon:
-        {
-            desktopIcon = loadIconFromShell32(16, 16);
-            break;
-        }
     case SP_DirOpenIcon:
-        {
-            desktopIcon = loadIconFromShell32(5, 16);
-            break;
-        }
     case SP_FileDialogNewFolder:
-        {
-            desktopIcon = loadIconFromShell32(319, 16);
-            break;
-        }
     case SP_DirHomeIcon:
-        {
-            desktopIcon = loadIconFromShell32(235, 16);
-            break;
-        }
     case SP_TrashIcon:
-        {
-            desktopIcon = loadIconFromShell32(191, 16);
-            break;
-        }
-    case SP_MessageBoxInformation:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_INFORMATION);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
-    case SP_MessageBoxWarning:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_WARNING);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
-    case SP_MessageBoxCritical:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_ERROR);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
-    case SP_MessageBoxQuestion:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_QUESTION);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
     case SP_VistaShield:
-        {
-            if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
-                && pSHGetStockIconInfo)
-            {
-                QPixmap pixmap;
-                QSHSTOCKICONINFO iconInfo;
-                memset(&iconInfo, 0, sizeof(iconInfo));
-                iconInfo.cbSize = sizeof(iconInfo);
-                if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_SMALLICON, &iconInfo) == S_OK) {
-                    pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
-                    DestroyIcon(iconInfo.hIcon);
-                    return pixmap;
-                }
-            }
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardPixmap);
+            desktopIcon = theme->standardPixmap(sp, QSizeF(16, 16));
+        }
+        break;
+    case SP_MessageBoxInformation:
+    case SP_MessageBoxWarning:
+    case SP_MessageBoxCritical:
+    case SP_MessageBoxQuestion:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardPixmap);
+            desktopIcon = theme->standardPixmap(sp, QSizeF());
         }
         break;
     default:
@@ -3046,122 +2935,45 @@ QIcon QWindowsStyle::standardIcon(StandardPixmap standardIcon, const QStyleOptio
                                   const QWidget *widget) const
 {
     QIcon icon;
-    QPixmap pixmap;
 #ifdef Q_OS_WIN
+    QPixmap pixmap;
     switch (standardIcon) {
-    case SP_FileDialogNewFolder:
-    {
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(319, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-    }
-    case SP_DirHomeIcon:
-    {
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(235, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-    }
-    case SP_DirIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(4, size);
-            icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
-            pixmap = loadIconFromShell32(5, size);
-            icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
-        }
-        break;
-    case SP_DirLinkIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            QPixmap link = loadIconFromShell32(30, size);
-            pixmap = loadIconFromShell32(4, size);
-            if (!pixmap.isNull() && !link.isNull()) {
-                QPainter painter(&pixmap);
-                painter.drawPixmap(0, 0, size, size, link);
-                icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
-            }
-            link = loadIconFromShell32(30, size);
-            pixmap = loadIconFromShell32(5, size);
-            if (!pixmap.isNull() && !link.isNull()) {
-                QPainter painter(&pixmap);
-                painter.drawPixmap(0, 0, size, size, link);
-                icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
-            }
-        }
-        break;
-    case SP_FileIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(1, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-    case SP_ComputerIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(16, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-
-    case SP_DesktopIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(35, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveCDIcon:
     case SP_DriveDVDIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(12, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveNetIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(10, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveHDIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(9, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveFDIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(7, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
+    case SP_FileIcon:
     case SP_FileLinkIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            QPixmap link;
-            link = loadIconFromShell32(30, size);
-            pixmap = loadIconFromShell32(1, size);
-            if (!pixmap.isNull() && !link.isNull()) {
-                QPainter painter(&pixmap);
-                painter.drawPixmap(0, 0, size, size, link);
+    case SP_DesktopIcon:
+    case SP_ComputerIcon:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            for (int size = 16 ; size <= 32 ; size += 16) {
+                pixmap = theme->standardPixmap(sp, QSizeF(size, size));
                 icon.addPixmap(pixmap, QIcon::Normal);
             }
         }
         break;
-    case SP_VistaShield:
-        {
-            if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
-                && pSHGetStockIconInfo)
-            {
-                icon.addPixmap(proxy()->standardPixmap(SP_VistaShield, option, widget)); //fetches small icon
-                QSHSTOCKICONINFO iconInfo; //append large icon
-                memset(&iconInfo, 0, sizeof(iconInfo));
-                iconInfo.cbSize = sizeof(iconInfo);
-                if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_LARGEICON, &iconInfo) == S_OK) {
-                    icon.addPixmap(qt_pixmapFromWinHICON(iconInfo.hIcon));
-                    DestroyIcon(iconInfo.hIcon);
-                }
+    case SP_DirIcon:
+    case SP_DirLinkIcon:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap spOff = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            QPlatformTheme::StandardPixmap spOn = standardIcon == SP_DirIcon ? QPlatformTheme::DirOpenIcon :
+                                                                                 QPlatformTheme::DirLinkOpenIcon;
+            for (int size = 16 ; size <= 32 ; size += 16) {
+                QSizeF pixSize(size, size);
+                pixmap = theme->standardPixmap(spOff, pixSize);
+                icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
+                pixmap = theme->standardPixmap(spOn, pixSize);
+                icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
             }
+        }
+        break;
+    case SP_VistaShield:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            pixmap = theme->standardPixmap(sp, QSizeF(32, 32));
         }
         break;
     default:

@@ -43,6 +43,7 @@
 
 #include <QtCore/QVariant>
 #include <QtCore/QStringList>
+#include <QtCore/qfileinfo.h>
 #include <qpalette.h>
 #include <qtextformat.h>
 
@@ -164,6 +165,22 @@ const QFont *QPlatformTheme::font(Font type) const
     return 0;
 }
 
+QPixmap QPlatformTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
+{
+    Q_UNUSED(sp);
+    Q_UNUSED(size);
+    // TODO Should return QCommonStyle pixmaps?
+    return QPixmap();
+}
+
+QPixmap QPlatformTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const
+{
+    Q_UNUSED(fileInfo);
+    Q_UNUSED(size);
+    // TODO Should return QCommonStyle pixmaps?
+    return QPixmap();
+}
+
 QVariant QPlatformTheme::themeHint(ThemeHint hint) const
 {
     return QPlatformTheme::defaultThemeHint(hint);
@@ -223,6 +240,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(int(QTextCharFormat::SpellCheckUnderline));
     case TabAllWidgets:
         return QVariant(true);
+    case IconPixmapSizes:
+        return QVariant::fromValue(QList<int>());
     }
     return QVariant();
 }

@@ -67,6 +67,9 @@ public:
     virtual const QFont *font(Font type = SystemFont) const
         { return m_fonts[type]; }
 
+    virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
+    virtual QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const;
+
     void windowsThemeChanged(QWindow *window);
 
     static const char *name;

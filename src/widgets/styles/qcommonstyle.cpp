@@ -5519,67 +5519,24 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             break;
         }
     } // if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty())
-        if (!icon.isNull())
-            return icon;
-#if defined(Q_WS_MAC)
+
+    if (!icon.isNull())
+        return icon;
+
+#if defined(Q_OS_MAC)
     if (QApplication::desktopSettingsAware()) {
-        OSType iconType = 0;
         switch (standardIcon) {
-        case QStyle::SP_MessageBoxQuestion:
-            iconType = kQuestionMarkIcon;
-            break;
-        case QStyle::SP_MessageBoxInformation:
-            iconType = kAlertNoteIcon;
-            break;
-        case QStyle::SP_MessageBoxWarning:
-            iconType = kAlertCautionIcon;
-            break;
-        case QStyle::SP_MessageBoxCritical:
-            iconType = kAlertStopIcon;
-            break;
-        case SP_DesktopIcon:
-            iconType = kDesktopIcon;
-            break;
-        case SP_TrashIcon:
-            iconType = kTrashIcon;
-            break;
-        case SP_ComputerIcon:
-            iconType = kComputerIcon;
-            break;
-        case SP_DriveFDIcon:
-            iconType = kGenericFloppyIcon;
-            break;
-        case SP_DriveHDIcon:
-            iconType = kGenericHardDiskIcon;
-            break;
-        case SP_DriveCDIcon:
-        case SP_DriveDVDIcon:
-            iconType = kGenericCDROMIcon;
-            break;
-        case SP_DriveNetIcon:
-            iconType = kGenericNetworkIcon;
-            break;
-        case SP_DirOpenIcon:
-            iconType = kOpenFolderIcon;
-            break;
-        case SP_DirClosedIcon:
-        case SP_DirLinkIcon:
-            iconType = kGenericFolderIcon;
-            break;
-        case SP_FileLinkIcon:
-        case SP_FileIcon:
-            iconType = kGenericDocumentIcon;
-            break;
         case SP_DirIcon: {
             // A rather special case
-            QIcon closeIcon = QStyle::standardIcon(SP_DirClosedIcon, option, widget);
-            QIcon openIcon = QStyle::standardIcon(SP_DirOpenIcon, option, widget);
+            QIcon closeIcon = QCommonStyle::standardIcon(SP_DirClosedIcon, option, widget);
+            QIcon openIcon = QCommonStyle::standardIcon(SP_DirOpenIcon, option, widget);
             closeIcon.addPixmap(openIcon.pixmap(16, 16), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(32, 32), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(64, 64), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(128, 128), QIcon::Normal, QIcon::On);
             return closeIcon;
         }
+
         case SP_TitleBarNormalButton:
         case SP_TitleBarCloseButton: {
             QIcon titleBarIcon;
@@ -5592,35 +5549,49 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             }
             return titleBarIcon;
         }
+
+        case SP_MessageBoxQuestion:
+        case SP_MessageBoxInformation:
+        case SP_MessageBoxWarning:
+        case SP_MessageBoxCritical:
+        case SP_DesktopIcon:
+        case SP_TrashIcon:
+        case SP_ComputerIcon:
+        case SP_DriveFDIcon:
+        case SP_DriveHDIcon:
+        case SP_DriveCDIcon:
+        case SP_DriveDVDIcon:
+        case SP_DriveNetIcon:
+        case SP_DirOpenIcon:
+        case SP_DirClosedIcon:
+        case SP_DirLinkIcon:
+        case SP_FileLinkIcon:
+        case SP_FileIcon:
+            if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+                QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+                QIcon retIcon;
+                QList<int> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
+                Q_FOREACH (int size, sizes) {
+                    QPixmap mainIcon;
+                    const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size);
+                    if (standardIcon >= QStyle::SP_CustomBase) {
+                        mainIcon = theme->standardPixmap(sp, QSizeF(size, size));
+                    } else if (QPixmapCache::find(cacheKey, mainIcon) == false) {
+                        mainIcon = theme->standardPixmap(sp, QSizeF(size, size));
+                        QPixmapCache::insert(cacheKey, mainIcon);
+                    }
+
+                    retIcon.addPixmap(mainIcon);
+                }
+                if (!retIcon.isNull())
+                    return retIcon;
+            }
+
         default:
             break;
         }
-        if (iconType != 0) {
-            QIcon retIcon;
-            IconRef icon;
-            IconRef overlayIcon = 0;
-            if (iconType != kGenericApplicationIcon) {
-                GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
-            } else {
-                FSRef fsRef;
-                ProcessSerialNumber psn = { 0, kCurrentProcess };
-                GetProcessBundleLocation(&psn, &fsRef);
-                GetIconRefFromFileInfo(&fsRef, 0, 0, 0, 0, kIconServicesNormalUsageFlag, &icon, 0);
-                if (standardIcon == SP_MessageBoxCritical) {
-                    overlayIcon = icon;
-                    GetIconRef(kOnSystemDisk, kSystemIconsCreator, kAlertCautionIcon, &icon);
-                }
-            }
-            if (icon) {
-                qt_mac_constructQIconFromIconRef(icon, overlayIcon, &retIcon, standardIcon);
-                ReleaseIconRef(icon);
-            }
-            if (overlayIcon)
-                ReleaseIconRef(overlayIcon);
-            return retIcon;
-        }
     } // if (QApplication::desktopSettingsAware())
-#endif // Q_WS_MAC
+#endif // Q_OS_MAC
 
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG

@@ -731,6 +731,7 @@ public:
         SP_DirOpenIcon,
         SP_DirClosedIcon,
         SP_DirLinkIcon,
+        SP_DirLinkOpenIcon,
         SP_FileIcon,
         SP_FileLinkIcon,
         SP_ToolBarHorizontalExtensionButton,
