@@ -436,6 +436,7 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
     Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier,  // 7
     Qt::NoModifier,                                             // Fall-back to raw Key_*
 };
+static const size_t NumMods = sizeof ModsTbl / sizeof *ModsTbl;
 
 /**
   Remap return or action key to select key for windows mobile.
@@ -535,7 +536,7 @@ static inline bool isModifierKey(int code)
 struct KeyboardLayoutItem {
     bool dirty;
     quint8 deadkeys;
-    quint32 qtKey[9]; // Can by any Qt::Key_<foo>, or unicode character
+    quint32 qtKey[NumMods]; // Can by any Qt::Key_<foo>, or unicode character
 };
 
 void QWindowsKeyMapper::deleteLayouts()
@@ -666,8 +667,8 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
 
     if (QWindowsContext::verboseEvents > 1) {
         qDebug("updatePossibleKeyCodes for virtual key = 0x%02x!", vk_key);
-        for (int i = 0; i < 9; ++i) {
-            qDebug("    [%d] (%d,0x%02x,'%c')  %s", i,
+        for (size_t i = 0; i < NumMods; ++i) {
+            qDebug("    [%d] (%d,0x%02x,'%c')  %s", int(i),
                    keyLayout[vk_key]->qtKey[i],
                    keyLayout[vk_key]->qtKey[i],
                    keyLayout[vk_key]->qtKey[i] ? keyLayout[vk_key]->qtKey[i] : 0x03,
@@ -679,7 +680,7 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
 bool QWindowsKeyMapper::isADeadKey(unsigned int vk_key, unsigned int modifiers)
 {
     if (keyLayout && (vk_key < 256) && keyLayout[vk_key]) {
-        for (register int i = 0; i < 9; ++i) {
+        for (register size_t i = 0; i < NumMods; ++i) {
             if (uint(ModsTbl[i]) == modifiers)
                 return bool(keyLayout[vk_key]->deadkeys & 1<<i);
         }
@@ -1135,7 +1136,7 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     }
     result << int(baseKey + keyMods); // The base key is _always_ valid, of course
 
-    for (int i = 1; i < 9; ++i) {
+    for (int i = 1; i < NumMods; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         quint32 key = kbItem->qtKey[i];
         if (key && key != baseKey && ((keyMods & neededMods) == neededMods))
