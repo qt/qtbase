@@ -74,6 +74,7 @@ public:
 
     void setAntialiased(bool antialiased);
     void setClipRect(const QRect &clipRect);
+    void setLegacyRoundingEnabled(bool legacyRoundingEnabled);
 
     void initialize(ProcessSpans blend, void *data);
 
