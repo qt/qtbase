@@ -362,7 +362,7 @@ void tst_QText::formattedLayout_data()
             ranges.append(formatRange);
         }
 
-        QTest::newRow("long-many") << text << ranges;
+        QTest::newRow("long-many") << m_shortLorem << ranges;
     }
 }
 
