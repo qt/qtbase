@@ -252,35 +252,31 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
 
     const int copySize = qMin(asize, osize);
     if (aalloc != a) {
-        ptr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
-        Q_CHECK_PTR(ptr);
-        if (ptr) {
-            s = 0;
-            a = aalloc;
-
-            if (QTypeInfo<T>::isStatic) {
-                QT_TRY {
-                    // copy all the old elements
-                    while (s < copySize) {
-                        new (ptr+s) T(*(oldPtr+s));
-                        (oldPtr+s)->~T();
-                        s++;
-                    }
-                } QT_CATCH(...) {
-                    // clean up all the old objects and then free the old ptr
-                    int sClean = s;
-                    while (sClean < osize)
-                        (oldPtr+(sClean++))->~T();
-                    if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != ptr)
-                        free(oldPtr);
-                    QT_RETHROW;
+        T* newPtr = reinterpret_cast<T *>(malloc(aalloc * sizeof(T)));
+        Q_CHECK_PTR(newPtr); // could throw
+        // by design: in case of QT_NO_EXCEPTIONS malloc must not fail or it crashes here
+        ptr = newPtr;
+        s = 0;
+        a = aalloc;
+        if (QTypeInfo<T>::isStatic) {
+            QT_TRY {
+                // copy all the old elements
+                while (s < copySize) {
+                    new (ptr+s) T(*(oldPtr+s));
+                    (oldPtr+s)->~T();
+                    s++;
                 }
-            } else {
-                memcpy(ptr, oldPtr, copySize * sizeof(T));
+            } QT_CATCH(...) {
+                // clean up all the old objects and then free the old ptr
+                int sClean = s;
+                while (sClean < osize)
+                    (oldPtr+(sClean++))->~T();
+                if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != ptr)
+                    free(oldPtr);
+                QT_RETHROW;
             }
         } else {
-            ptr = oldPtr;
-            return;
+            memcpy(ptr, oldPtr, copySize * sizeof(T));
         }
     }
     s = copySize;
