@@ -516,6 +516,8 @@ void tst_QApplication::args()
     QCOMPARE( argv_out, args_out );
 
     delete [] argv;
+    // Make sure we switch back to native style.
+    QApplicationPrivate::styleOverride = QString();
 }
 
 void tst_QApplication::appName()
