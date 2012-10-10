@@ -51,7 +51,25 @@ QT_BEGIN_NAMESPACE
 class QKeyEvent;
 class QWindow;
 
-struct KeyboardLayoutItem;
+/*
+    \internal
+    A Windows KeyboardLayoutItem has 8 possible states:
+        1. Unmodified
+        2. Shift
+        3. Control
+        4. Control + Shift
+        5. Alt
+        6. Alt + Shift
+        7. Alt + Control
+        8. Alt + Control + Shift
+*/
+struct KeyboardLayoutItem {
+    uint dirty : 1;
+    uint exists : 1; // whether this item has been initialized (by updatePossibleKeyCodes)
+    quint8 deadkeys;
+    static const size_t NumQtKeys = 9;
+    quint32 qtKey[NumQtKeys]; // Can by any Qt::Key_<foo>, or unicode character
+};
 
 class QWindowsKeyMapper
 {
@@ -87,8 +105,9 @@ private:
     bool isADeadKey(unsigned int vk_key, unsigned int modifiers);
     void deleteLayouts();
 
-    KeyboardLayoutItem *keyLayout[256];
     QWindow *m_keyGrabber;
+    static const size_t NumKeyboardLayoutItems = 256;
+    KeyboardLayoutItem keyLayout[NumKeyboardLayoutItems];
 };
 
 enum WindowsNativeModifiers {
