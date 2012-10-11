@@ -131,6 +131,10 @@ static void printHelp()
                              "Specify output directory, overrides setting in qdocconf file\n"
                              "    -outputformat  "
                              "Specify output format, overrides setting in qdocconf file\n"
+                             "    -prepare        "
+                             "Run qdoc only to generate an index file, not the docs\n"
+                             "    -generate        "
+                             "Run qdoc to read the index files and generate the docs\n"
                              "    -showinternal  "
                              "Include content marked internal\n"
                              "    -version       "
@@ -593,6 +597,12 @@ int main(int argc, char **argv)
         }
         else if (opt == "-debug") {
             Generator::setDebugSegfaultFlag(true);
+        }
+        else if (opt == "-prepare") {
+            Generator::setQDocPass(Generator::Prepare);
+        }
+        else if (opt == "-generate") {
+            Generator::setQDocPass(Generator::Generate);
         }
         else {
             qdocFiles.append(opt);
