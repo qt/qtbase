@@ -63,6 +63,7 @@ private slots:
     void assignment();
     void equalsOperator_data();
     void equalsOperator();
+    void isEmpty();
     void textLayoutGlyphIndexes();
     void drawExistingGlyphs();
     void drawNonExistentGlyphs();
@@ -75,6 +76,7 @@ private slots:
     void detach();
     void setRawData();
     void setRawDataAndGetAsVector();
+    void boundingRect();
 
 private:
     int m_testFontId;
@@ -235,6 +237,22 @@ void tst_QGlyphRun::equalsOperator()
     QCOMPARE(one != two, !equals);
 }
 
+void tst_QGlyphRun::isEmpty()
+{
+    QGlyphRun glyphs;
+    QVERIFY(glyphs.isEmpty());
+
+    glyphs.setGlyphIndexes(QVector<quint32>() << 1 << 2 << 3);
+    QVERIFY(!glyphs.isEmpty());
+
+    glyphs.clear();
+    QVERIFY(glyphs.isEmpty());
+
+    QVector<quint32> glyphIndexes = QVector<quint32>() << 1 << 2 << 3;
+    QVector<QPointF> positions = QVector<QPointF>() << QPointF(0, 0) << QPointF(0, 0) << QPointF(0, 0);
+    glyphs.setRawData(glyphIndexes.constData(), positions.constData(), glyphIndexes.size());
+    QVERIFY(!glyphs.isEmpty());
+}
 
 void tst_QGlyphRun::textLayoutGlyphIndexes()
 {
@@ -673,6 +691,34 @@ void tst_QGlyphRun::drawRightToLeft()
 
     QCOMPARE(textLayoutDraw, drawGlyphs);
 
+}
+
+void tst_QGlyphRun::boundingRect()
+{
+    QString s(QLatin1String("AbCdE"));
+
+    QRawFont rawFont(QRawFont::fromFont(QFont()));
+    QVERIFY(rawFont.isValid());
+    QVector<quint32> glyphIndexes = rawFont.glyphIndexesForString(s);
+    QVector<QPointF> positions = rawFont.advancesForGlyphIndexes(glyphIndexes);
+    QCOMPARE(glyphIndexes.size(), s.size());
+    QCOMPARE(positions.size(), glyphIndexes.size());
+
+    QGlyphRun glyphs;
+    glyphs.setRawFont(rawFont);
+    glyphs.setGlyphIndexes(glyphIndexes);
+    glyphs.setPositions(positions);
+
+    QRectF boundingRect = glyphs.boundingRect();
+
+    glyphs.clear();
+    glyphs.setRawFont(rawFont);
+    glyphs.setRawData(glyphIndexes.constData(), positions.constData(), glyphIndexes.size());
+    QCOMPARE(glyphs.boundingRect(), boundingRect);
+
+    boundingRect = QRectF(0, 0, 1, 1);
+    glyphs.setBoundingRect(boundingRect);
+    QCOMPARE(glyphs.boundingRect(), boundingRect);
 }
 
 #endif // QT_NO_RAWFONT
