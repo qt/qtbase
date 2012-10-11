@@ -2768,7 +2768,7 @@ void QFontCache::timerEvent(QTimerEvent *)
                                       end = engineDataCache.constEnd();
         for (; it != end; ++it) {
 #ifdef QFONTCACHE_DEBUG
-            FC_DEBUG("    %p: ref %2d", it.value(), int(it.value()->ref));
+            FC_DEBUG("    %p: ref %2d", it.value(), int(it.value()->ref.load()));
 
 #endif // QFONTCACHE_DEBUG
 
