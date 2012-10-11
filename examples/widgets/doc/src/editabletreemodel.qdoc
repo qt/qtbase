@@ -39,10 +39,6 @@
     possible to insert new child items, and this is shown in the supporting
     example code.
 
-    \note The model only shows the basic principles used when creating an
-    editable, hierarchical model. You may wish to use the \l{ModelTest}
-    project to test production models.
-
     \section1 Overview
 
     As described in the \l{Model Subclassing Reference}, models must
@@ -212,7 +208,7 @@
     As with the \l{itemviews/simpletreemodel}{Simple Tree Model} example,
     the \c TreeModel needs to be able to take a model index, find the
     corresponding \c TreeItem, and return model indexes that correspond to
-    its parents and children. 
+    its parents and children.
 
     In the diagram, we show how the model's \l{TreeModel::parent}{parent()}
     implementation obtains the model index corresponding to the parent of

@@ -100,8 +100,8 @@
     Let's have a closer look at a standard table widget. A table widget is a 2D
     array of the data elements that the user can change. The table widget can be
     integrated into a program flow by reading and writing the data elements that
-    the table widget provides. 
-    This method is very intuitive and useful in many applications, but displaying 
+    the table widget provides.
+    This method is very intuitive and useful in many applications, but displaying
     and editing a database table with a standard table widget can be problematic.
     Two copies of the data have to be coordinated: one outside the
     widget; one inside the widget. The developer is responsible for
@@ -180,12 +180,12 @@
 
 
     \section1 2. A Simple Model/View Application
-    If you want to develop a model/view application, where should you start? 
-    We recommend starting with a simple example and extending it step-by-step. 
-    This makes understanding the architecture a lot easier. Trying to understand 
-    the model/view architecture in detail before invoking the IDE has proven 
-    to be less convenient for many developers. It is substantially easier to 
-    start with a simple model/view application that has demo data. Give it a 
+    If you want to develop a model/view application, where should you start?
+    We recommend starting with a simple example and extending it step-by-step.
+    This makes understanding the architecture a lot easier. Trying to understand
+    the model/view architecture in detail before invoking the IDE has proven
+    to be less convenient for many developers. It is substantially easier to
+    start with a simple model/view application that has demo data. Give it a
     try! Simply replace the data in the examples below with your own.
 
     Below are 7 very simple and independent applications that show different
@@ -202,7 +202,7 @@
 
     We have the usual \l {modelview-part2-main-cpp.html}{main()} function:
 
-    Here is the interesting part: We create an instance of MyModel and use 
+    Here is the interesting part: We create an instance of MyModel and use
     \l{QTableView::setModel()}{tableView.setModel(&myModel);} to pass a
     pointer of it to \l{QTableView}{tableView}. \l{QTableView}{tableView}
     will invoke the methods of the pointer it has received to find out two
@@ -606,11 +606,8 @@
           \e{Open Source Press}, ISBN 3-937514-12-0.
        \li \b{Foundations of Qt Development} / Johan Thelin, \e{Apress}, ISBN 1-59059-831-8.
        \li \b{Advanced Qt Programming} / Mark Summerfield, \e{Prentice Hall}, ISBN 0-321-63590-6.
-          This book covers Model/View programming on more than 150 pages. 
+          This book covers Model/View programming on more than 150 pages.
     \endlist
-
-    More information about these books is available on the
-    \l{Books about Qt Programming}{Qt Web site}.
 
     The following list provides an overview of example programs contained in the first three
     books listed above. Some of them make very good templates for developing similar
