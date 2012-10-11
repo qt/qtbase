@@ -167,6 +167,9 @@ void QCoreApplicationPrivate::processCommandLineArguments()
         QByteArray arg = argv[i];
         if (arg.startsWith("-qmljsdebugger=")) {
             qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
+        } else if (arg == "-qmljsdebugger" && i < argc - 1) {
+            ++i;
+            qmljs_debug_arguments = QString::fromLocal8Bit(argv[i]);
         } else {
             argv[j++] = argv[i];
         }
