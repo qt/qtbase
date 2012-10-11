@@ -2038,7 +2038,7 @@ void tst_QTextEdit::fullWidthSelection2()
     selections.append(es);
     widget.setExtraSelections(selections);
 
-    compareWidgetAndImage(widget, "fullWidthSelection/nowrap_long.png");
+    compareWidgetAndImage(widget, m_fullWidthSelectionImagesFolder + "/nowrap_long.png");
 }
 #endif
 
