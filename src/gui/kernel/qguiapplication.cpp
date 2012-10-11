@@ -1207,6 +1207,10 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         QGuiApplicationPrivate::processPlatformPanelEvent(
                     static_cast<QWindowSystemInterfacePrivate::PlatformPanelEvent *>(e));
         break;
+    case QWindowSystemInterfacePrivate::FileOpen:
+        QGuiApplicationPrivate::processFileOpenEvent(
+                    static_cast<QWindowSystemInterfacePrivate::FileOpenEvent *>(e));
+        break;
     default:
         qWarning() << "Unknown user input event type:" << e->type;
         break;
