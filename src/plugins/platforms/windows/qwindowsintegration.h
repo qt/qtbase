@@ -81,6 +81,7 @@ public:
     virtual QVariant styleHint(StyleHint hint) const;
 
     virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
+    virtual QList<int> possibleKeys(const QKeyEvent *e) const;
 
     static QWindowsIntegration *instance();
 

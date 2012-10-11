@@ -1119,4 +1119,30 @@ Qt::KeyboardModifiers QWindowsKeyMapper::queryKeyboardModifiers()
     return modifiers;
 }
 
+QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
+{
+    QList<int> result;
+
+    KeyboardLayoutItem *kbItem = keyLayout[e->nativeVirtualKey()];
+    if (!kbItem)
+        return result;
+
+    quint32 baseKey = kbItem->qtKey[0];
+    Qt::KeyboardModifiers keyMods = e->modifiers();
+    if (baseKey == Qt::Key_Return && (e->nativeModifiers() & ExtendedKey)) {
+        result << int(Qt::Key_Enter + keyMods);
+        return result;
+    }
+    result << int(baseKey + keyMods); // The base key is _always_ valid, of course
+
+    for (int i = 1; i < 9; ++i) {
+        Qt::KeyboardModifiers neededMods = ModsTbl[i];
+        quint32 key = kbItem->qtKey[i];
+        if (key && key != baseKey && ((keyMods & neededMods) == neededMods))
+            result << int(key + (keyMods & ~neededMods));
+    }
+
+    return result;
+}
+
 QT_END_NAMESPACE

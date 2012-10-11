@@ -331,6 +331,11 @@ bool QWindowsContext::useRTLExtensions() const
     return d->m_keyMapper.useRTLExtensions();
 }
 
+QList<int> QWindowsContext::possibleKeys(const QKeyEvent *e) const
+{
+    return d->m_keyMapper.possibleKeys(e);
+}
+
 void QWindowsContext::setWindowCreationContext(const QSharedPointer<QWindowCreationContext> &ctx)
 {
     d->m_creationContext = ctx;

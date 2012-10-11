@@ -60,6 +60,7 @@ class QWindowsMimeConverter;
 struct QWindowCreationContext;
 struct QWindowsContextPrivate;
 class QPoint;
+class QKeyEvent;
 
 #ifndef Q_OS_WINCE
 struct QWindowsUser32DLL
@@ -170,6 +171,7 @@ public:
     unsigned systemInfo() const;
 
     bool useRTLExtensions() const;
+    QList<int> possibleKeys(const QKeyEvent *e) const;
 
     QWindowsMimeConverter &mimeConverter() const;
     QWindowsScreenManager &screenManager();
