@@ -76,6 +76,7 @@ class QPlatformTheme;
 class QPlatformDialogHelper;
 class QPlatformSharedGraphicsCache;
 class QPlatformServices;
+class QKeyEvent;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -141,6 +142,7 @@ public:
     virtual QVariant styleHint(StyleHint hint) const;
 
     virtual Qt::KeyboardModifiers queryKeyboardModifiers() const;
+    virtual QList<int> possibleKeys(const QKeyEvent *) const;
 
     virtual QStringList themeNames() const;
     virtual QPlatformTheme *createPlatformTheme(const QString &name) const;

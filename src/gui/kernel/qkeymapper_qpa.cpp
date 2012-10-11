@@ -43,6 +43,8 @@
 #include <qdebug.h>
 #include <private/qevent_p.h>
 #include <private/qlocale_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +68,10 @@ void QKeyMapperPrivate::clearMappings()
 
 QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
 {
-    QList<int> result;
+    QList<int> result = QGuiApplicationPrivate::platformIntegration()->possibleKeys(e);
+    if (!result.isEmpty())
+        return result;
+
     if (e->key() && (e->key() != Qt::Key_unknown))
         result << int(e->key() + e->modifiers());
     else if (!e->text().isEmpty())
