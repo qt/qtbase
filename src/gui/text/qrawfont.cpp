@@ -388,10 +388,7 @@ qreal QRawFont::unitsPerEm() const
  */
 qreal QRawFont::lineThickness() const
 {
-    if (!isValid())
-        return 0.0;
-
-    return d->fontEngine->lineThickness().toReal();
+    return d->isValid() ? d->fontEngine->lineThickness().toReal() : 0.0;
 }
 
 /*!
@@ -400,10 +397,7 @@ qreal QRawFont::lineThickness() const
  */
 qreal QRawFont::underlinePosition() const
 {
-    if (!isValid())
-        return 0.0;
-
-    return d->fontEngine->underlinePosition().toReal();
+    return d->isValid() ? d->fontEngine->underlinePosition().toReal() : 0.0;
 }
 
 /*!
@@ -459,23 +453,28 @@ int QRawFont::weight() const
 */
 QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
 {
-    if (!d->isValid())
-        return QVector<quint32>();
+    QVector<quint32> glyphIndexes;
+    if (!d->isValid() || text.isEmpty())
+        return glyphIndexes;
 
-    int nglyphs = text.size();
-    QVarLengthGlyphLayoutArray glyphs(nglyphs);
-    if (!glyphIndexesForChars(text.data(), text.size(), glyphs.glyphs, &nglyphs)) {
-        glyphs.resize(nglyphs);
-        if (!glyphIndexesForChars(text.data(), text.size(), glyphs.glyphs, &nglyphs)) {
+    int numGlyphs = text.size();
+    glyphIndexes.resize(numGlyphs);
+
+    QGlyphLayout glyphs;
+    glyphs.numGlyphs = numGlyphs;
+    glyphs.glyphs = glyphIndexes.data();
+    if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly)) {
+        glyphIndexes.resize(numGlyphs);
+
+        glyphs.numGlyphs = numGlyphs;
+        glyphs.glyphs = glyphIndexes.data();
+        if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly)) {
             Q_ASSERT_X(false, Q_FUNC_INFO, "stringToCMap shouldn't fail twice");
             return QVector<quint32>();
         }
     }
 
-    QVector<quint32> glyphIndexes;
-    for (int i=0; i<nglyphs; ++i)
-        glyphIndexes.append(glyphs.glyphs[i]);
-
+    glyphIndexes.resize(numGlyphs);
     return glyphIndexes;
 }
 
@@ -491,38 +490,32 @@ QVector<quint32> QRawFont::glyphIndexesForString(const QString &text) const
 */
 bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const
 {
-    if (!d->isValid())
+    Q_ASSERT(numGlyphs);
+    if (!d->isValid() || numChars <= 0) {
+        *numGlyphs = 0;
         return false;
+    }
+
+    if (*numGlyphs <= 0 || !glyphIndexes) {
+        *numGlyphs = numChars;
+        return false;
+    }
 
     QGlyphLayout glyphs;
+    glyphs.numGlyphs = *numGlyphs;
     glyphs.glyphs = glyphIndexes;
     return d->fontEngine->stringToCMap(chars, numChars, &glyphs, numGlyphs, QFontEngine::GlyphIndicesOnly);
 }
 
 /*!
+    \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+
    Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
    give the distance from the position of a given glyph to where the next glyph should be drawn
    to make it appear as if the two glyphs are unspaced.
 
    \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
 */
-QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
-{
-    if (!d->isValid())
-        return QVector<QPointF>();
-
-    int numGlyphs = glyphIndexes.size();
-    QVarLengthGlyphLayoutArray glyphs(numGlyphs);
-    memcpy(glyphs.glyphs, glyphIndexes.data(), numGlyphs * sizeof(quint32));
-
-    d->fontEngine->recalcAdvances(&glyphs, 0);
-
-    QVector<QPointF> advances;
-    for (int i=0; i<numGlyphs; ++i)
-        advances.append(QPointF(glyphs.advances_x[i].toReal(), glyphs.advances_y[i].toReal()));
-
-    return advances;
-}
 
 /*!
    Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
@@ -535,7 +528,8 @@ QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyph
 */
 bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const
 {
-    if (!d->isValid())
+    Q_ASSERT(glyphIndexes && advances);
+    if (!d->isValid() || numGlyphs <= 0)
         return false;
 
     QGlyphLayout glyphs;

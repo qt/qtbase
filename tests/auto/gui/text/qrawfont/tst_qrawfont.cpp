@@ -267,6 +267,24 @@ void tst_QRawFont::glyphIndices()
     expectedGlyphIndices << 44 << 83 << 83 << 70 << 69 << 86;
 
     QCOMPARE(glyphIndices, expectedGlyphIndices);
+
+    glyphIndices = font.glyphIndexesForString(QString());
+    QVERIFY(glyphIndices.isEmpty());
+
+    QString str(QLatin1String("Foobar"));
+    int numGlyphs = str.size();
+    glyphIndices.resize(numGlyphs);
+
+    QVERIFY(!font.glyphIndexesForChars(str.constData(), 0, glyphIndices.data(), &numGlyphs));
+    QCOMPARE(numGlyphs, 0);
+
+    QVERIFY(!font.glyphIndexesForChars(str.constData(), str.size(), glyphIndices.data(), &numGlyphs));
+    QCOMPARE(numGlyphs, str.size());
+
+    QVERIFY(font.glyphIndexesForChars(str.constData(), str.size(), glyphIndices.data(), &numGlyphs));
+    QCOMPARE(numGlyphs, str.size());
+
+    QCOMPARE(glyphIndices, expectedGlyphIndices);
 }
 
 void tst_QRawFont::advances_data()
@@ -294,6 +312,33 @@ void tst_QRawFont::advances()
 
     bool supportsSubPixelPositions = font_d->fontEngine->supportsSubPixelPositions();
     QVector<QPointF> advances = font.advancesForGlyphIndexes(glyphIndices);
+    for (int i=0; i<glyphIndices.size(); ++i) {
+#ifdef Q_OS_WIN
+        // In Windows, freetype engine returns advance of 9 when full hinting is used (default) for
+        // some of the glyphs.
+        if (font_d->fontEngine->type() == QFontEngine::Freetype
+            && (hintingPreference == QFont::PreferFullHinting || hintingPreference == QFont::PreferDefaultHinting)
+            && (i == 0 || i == 5)) {
+            QEXPECT_FAIL("", "Advance for some glyphs is not the expected with Windows Freetype engine (9 instead of 8)", Continue);
+        }
+#endif
+        QVERIFY(qFuzzyCompare(qRound(advances.at(i).x()), 8.0));
+        if (supportsSubPixelPositions)
+            QVERIFY(advances.at(i).x() > 8.0);
+
+        QVERIFY(qFuzzyIsNull(advances.at(i).y()));
+    }
+
+    advances = font.advancesForGlyphIndexes(QVector<quint32>());
+    QVERIFY(advances.isEmpty());
+
+    int numGlyphs = glyphIndices.size();
+    advances.resize(numGlyphs);
+
+    QVERIFY(!font.advancesForGlyphIndexes(glyphIndices.constData(), advances.data(), 0));
+
+    QVERIFY(font.advancesForGlyphIndexes(glyphIndices.constData(), advances.data(), numGlyphs));
+
     for (int i=0; i<glyphIndices.size(); ++i) {
 #ifdef Q_OS_WIN
         // In Windows, freetype engine returns advance of 9 when full hinting is used (default) for
