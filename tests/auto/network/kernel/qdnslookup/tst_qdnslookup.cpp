@@ -80,22 +80,22 @@ void tst_QDnsLookup::lookup_data()
     QTest::addColumn<QByteArray>("txt");
 
     QTest::newRow("a-empty") << int(QDnsLookup::A) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << ""<< "" << QByteArray();
-    QTest::newRow("a-notfound") << int(QDnsLookup::A) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("a-notfound") << int(QDnsLookup::A) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("a-idn") << int(QDnsLookup::A) << QString::fromUtf8("alqualondë.troll.no") << int(QDnsLookup::NoError) << "alqualonde.troll.no" << "10.3.3.55" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("a-single") << int(QDnsLookup::A) << "lupinella.troll.no" << int(QDnsLookup::NoError) << "" << "10.3.4.6" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("a-multi") << int(QDnsLookup::A) << "multi.dev.troll.no" << int(QDnsLookup::NoError) << "" << "1.2.3.4 1.2.3.5 10.3.3.31" << "" << "" << "" << "" << QByteArray();
 
     QTest::newRow("aaaa-empty") << int(QDnsLookup::AAAA) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("aaaa-notfound") << int(QDnsLookup::AAAA) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("aaaa-notfound") << int(QDnsLookup::AAAA) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("aaaa-single") << int(QDnsLookup::AAAA) << "dns6-test-dev.troll.no" << int(QDnsLookup::NoError) << "" << "2001:470:1f01:115::10" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("aaaa-multi") << int(QDnsLookup::AAAA) << "multi-dns6-test-dev.troll.no" << int(QDnsLookup::NoError) << "" << "2001:470:1f01:115::11 2001:470:1f01:115::12" << "" << "" << "" << "" << QByteArray();
 
     QTest::newRow("any-empty") << int(QDnsLookup::ANY) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("any-notfound") << int(QDnsLookup::ANY) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("any-notfound") << int(QDnsLookup::ANY) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("any-ascii") << int(QDnsLookup::ANY) << "fluke.troll.no" << int(QDnsLookup::NoError) << "" << "10.3.3.31" << "" << "" << "" << ""  << QByteArray();
 
     QTest::newRow("mx-empty") << int(QDnsLookup::MX) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("mx-notfound") << int(QDnsLookup::MX) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("mx-notfound") << int(QDnsLookup::MX) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("mx-ascii") << int(QDnsLookup::MX) << "troll.no" << int(QDnsLookup::NoError) << "" << "" << "10 smtp.trolltech.com" << "" << "" << "" << QByteArray();
 #if 0
     // FIXME: we need an IDN MX record in the troll.no domain
@@ -103,23 +103,23 @@ void tst_QDnsLookup::lookup_data()
 #endif
 
     QTest::newRow("ns-empty") << int(QDnsLookup::NS) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("ns-notfound") << int(QDnsLookup::NS) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     QTest::newRow("ns-ascii") << int(QDnsLookup::NS) << "troll.no" << int(QDnsLookup::NoError) << "" << "" << "" << "ns-0.trolltech.net ns-1.trolltech.net" << "" << "" << QByteArray();
 
     QTest::newRow("ptr-empty") << int(QDnsLookup::PTR) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("ptr-notfound") << int(QDnsLookup::PTR) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     // FIXME: we need PTR records in the troll.no domain
     QTest::newRow("ptr-ascii") << int(QDnsLookup::PTR) << "8.8.8.8.in-addr.arpa" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "google-public-dns-a.google.com" << "" << QByteArray();
 
     QTest::newRow("srv-empty") << int(QDnsLookup::SRV) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("srv-notfound") << int(QDnsLookup::SRV) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("srv-notfound") << int(QDnsLookup::SRV) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
 #if 0
     // FIXME: we need SRV records in the troll.no domain
     QTest::newRow("srv-idn") << int(QDnsLookup::SRV) << QString::fromUtf8("_xmpp-client._tcp.råkat.se") << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "5 0 5224 jabber.cdr.se" << QByteArray();
 #endif
 
     QTest::newRow("txt-empty") << int(QDnsLookup::TXT) << "" << int(QDnsLookup::InvalidRequestError) << "" << "" << "" << "" << "" << "" << QByteArray();
-    QTest::newRow("txt-notfound") << int(QDnsLookup::TXT) << "invalid." << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
+    QTest::newRow("txt-notfound") << int(QDnsLookup::TXT) << "invalid.invalid" << int(QDnsLookup::NotFoundError) << "" << "" << "" << "" << "" << "" << QByteArray();
     // FIXME: we need TXT records in the troll.no domain
     QTest::newRow("txt-ascii") << int(QDnsLookup::TXT) << "gmail.com" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << QByteArray("v=spf1 redirect=_spf.google.com");
 }
