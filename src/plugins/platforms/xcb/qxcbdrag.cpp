@@ -763,6 +763,8 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
     response.data.data32[3] = 0; // w, h
     response.data.data32[4] = toXdndAction(qt_response.acceptedAction()); // action
 
+    accepted_drop_action = qt_response.acceptedAction();
+
     if (answerRect.left() < 0)
         answerRect.setLeft(0);
     if (answerRect.right() > 4096)
@@ -775,8 +777,6 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
         answerRect.setWidth(0);
     if (answerRect.height() < 0)
         answerRect.setHeight(0);
-
-    response.data.data32[4] = toXdndAction(qt_response.acceptedAction());
 
     // reset
     target_time = XCB_CURRENT_TIME;
@@ -948,15 +948,14 @@ void QXcbDrag::handleDrop(QWindow *, const xcb_client_message_event_t *event)
     if (l[2] != 0)
         target_time = /*X11->userTime =*/ l[2];
 
-    // this could be a same-application drop, just proxied due to
-    // some XEMBEDding, so try to find the real QMimeData used
-    // based on the timestamp for this drop.
-    Qt::DropActions supported_drop_actions(l[4]);
+    Qt::DropActions supported_drop_actions;
     QMimeData *dropData = 0;
     if (currentDrag()) {
         dropData = currentDrag()->mimeData();
+        supported_drop_actions = Qt::DropActions(l[4]);
     } else {
         dropData = platformDropData();
+        supported_drop_actions = accepted_drop_action;
     }
 
     if (!dropData)
