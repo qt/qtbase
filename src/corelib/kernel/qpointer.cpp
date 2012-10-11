@@ -123,7 +123,7 @@
 /*!
     \fn QPointer::QPointer(T* p)
 
-    Constructs a guarded pointer that points to same object that \a p
+    Constructs a guarded pointer that points to the same object that \a p
     points to.
 */
 
@@ -272,4 +272,12 @@
     Inequality operator. Returns true if  the guarded pointers \a p1 and
     \a p2 are not pointing to the same object, otherwise
     returns false.
+*/
+/*!
+    \fn QPointer<T> qPointerFromVariant(const QVariant &variant)
+
+    \internal
+
+    Returns a guarded pointer that points to the same object that
+    \a variant holds.
 */
