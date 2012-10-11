@@ -96,6 +96,7 @@ QStringList Generator::styleDirs;
 QStringList Generator::styleFiles;
 bool Generator::debugging_ = false;
 bool Generator::noLinkErrors_ = false;
+Generator::Passes Generator::qdocPass_ = Both;
 
 void Generator::setDebugSegfaultFlag(bool b)
 {

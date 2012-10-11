@@ -673,19 +673,26 @@ GuidMap* DitaXmlGenerator::lookupGuidMap(const QString& fileName)
 void DitaXmlGenerator::generateTree()
 {
     qdb_->buildCollections();
-    Generator::generateTree();
-    generateCollisionPages();
+    if (!runPrepareOnly()) {
+        Generator::generateTree();
+        generateCollisionPages();
+    }
 
-    QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
-    qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index",
-                        projectUrl,
-                        projectDescription,
-                        this);
-    writeDitaMap();
-    /*
-      Generate the XML tag file, if it was requested.
-     */
-    qdb_->generateTagFile(tagFile_, this);
+    if (!runGenerateOnly()) {
+        QString fileBase = project.toLower().simplified().replace(QLatin1Char(' '), QLatin1Char('-'));
+        qdb_->generateIndex(outputDir() + QLatin1Char('/') + fileBase + ".index",
+                            projectUrl,
+                            projectDescription,
+                            this);
+    }
+
+    if (!runPrepareOnly()) {
+        writeDitaMap();
+        /*
+          Generate the XML tag file, if it was requested.
+        */
+        qdb_->generateTagFile(tagFile_, this);
+    }
 }
 
 static int countTableColumns(const Atom* t)
