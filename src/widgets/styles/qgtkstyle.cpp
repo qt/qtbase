@@ -1935,7 +1935,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                     gint interiorFocus = true;
                     d->gtk_widget_style_get(gtkToggleButton, "interior-focus", &interiorFocus, NULL);
-                    GtkStyle *gtkToggleButtonStyle = gtkToggleButtonStyle;
                     int xt = interiorFocus ? gtkToggleButtonStyle->xthickness : 0;
                     int yt = interiorFocus ? gtkToggleButtonStyle->ythickness : 0;
                     if (focus && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget)))
