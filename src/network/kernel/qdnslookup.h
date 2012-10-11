@@ -52,8 +52,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Network)
-
 class QHostAddress;
 class QDnsLookupPrivate;
 class QDnsDomainNameRecordPrivate;
