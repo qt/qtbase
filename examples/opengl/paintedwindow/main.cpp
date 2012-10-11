@@ -50,6 +50,6 @@ int main(int argc, char **argv)
     PaintedWindow window;
     window.show();
 
-    app.exec();
+    return app.exec();
 }
 
