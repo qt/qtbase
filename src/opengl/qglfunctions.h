@@ -61,6 +61,9 @@ QT_BEGIN_NAMESPACE
 typedef ptrdiff_t qgl_GLintptr;
 typedef ptrdiff_t qgl_GLsizeiptr;
 
+#if defined(APIENTRY) && !defined(QGLF_APIENTRY)
+#   define QGLF_APIENTRY APIENTRY
+#endif
 
 # ifndef QGLF_APIENTRYP
 #   ifdef QGLF_APIENTRY
