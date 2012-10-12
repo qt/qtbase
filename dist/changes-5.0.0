@@ -470,6 +470,15 @@ QtCore
   variable. qInstallMsgHandler() has been deprecated, and should be replaced with
   qInstallMessageHandler().
 
+* QTextBoundaryFinder
+  - [QTBUG-6498] The word start and word end boundaries detection is now
+    unaware of surrounding white space characters.
+  - SoftHyphen enum value has been added to specify a line break opportunity
+    at a soft hyphen (SHY) character.
+  - MandatoryBreak enum value has been added to specify a mandatory (aka "hard") line breaks.
+  - StartWord/EndWord enum values has been logically replaced with StartOfItem/EndOfItem ones
+    to mention they are not about the word boundaries only.
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

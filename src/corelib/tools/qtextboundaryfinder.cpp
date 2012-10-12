@@ -148,7 +148,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     \enum QTextBoundaryFinder::BoundaryType
 
     \value Grapheme Finds a grapheme which is the smallest boundary. It
-    including letters, punctation marks, numerals and more.
+                    including letters, punctuation marks, numerals and more.
     \value Word Finds a word.
     \value Line Finds possible positions for breaking the text into multiple
     lines.
@@ -160,12 +160,25 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
   \enum QTextBoundaryFinder::BoundaryReason
 
   \value NotAtBoundary  The boundary finder is not at a boundary position.
-  \value StartWord  The boundary finder is at the start of a word.
-  \value EndWord  The boundary finder is at the end of a word.
+  \value BreakOpportunity  The boundary finder is at a break opportunity position.
+                           Such a break opportunity might also be an item boundary
+                           (either StartOfItem, EndOfItem, or combination of both),
+                           a mandatory line break, or a soft hyphen.
+  \value StartOfItem  Since 5.0. The boundary finder is at the start of
+                      a grapheme, a word, a sentence, or a line.
+  \value EndOfItem  Since 5.0. The boundary finder is at the end of
+                    a grapheme, a word, a sentence, or a line.
   \value MandatoryBreak  Since 5.0. The boundary finder is at the end of line
                          (can occur for a Line boundary type only).
   \value SoftHyphen  The boundary finder is at the soft hyphen
                      (can occur for a Line boundary type only).
+
+  \value StartWord  Deprecated since 5.0. Use StartOfItem instead.
+                    The boundary finder is at the start of a word.
+                    (can occur for a Word boundary type only).
+  \value EndWord  Deprecated since 5.0. Use EndOfItem instead.
+                  The boundary finder is at the end of a word.
+                  (can occur for a Word boundary type only).
 */
 
 /*!
@@ -190,10 +203,14 @@ QTextBoundaryFinder::QTextBoundaryFinder(const QTextBoundaryFinder &other)
     , length(other.length)
     , pos(other.pos)
     , freePrivate(true)
+    , d(0)
 {
-    d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
-    Q_CHECK_PTR(d);
-    memcpy(d, other.d, (length + 1) * sizeof(QCharAttributes));
+    if (other.d) {
+        Q_ASSERT(length > 0);
+        d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
+        Q_CHECK_PTR(d);
+        memcpy(d, other.d, (length + 1) * sizeof(QCharAttributes));
+    }
 }
 
 /*!
@@ -205,7 +222,8 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
         return *this;
 
     if (other.d) {
-        uint newCapacity = (length + 1) * sizeof(QCharAttributes);
+        Q_ASSERT(other.length > 0);
+        uint newCapacity = (other.length + 1) * sizeof(QCharAttributes);
         QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *) realloc(freePrivate ? d : 0, newCapacity);
         Q_CHECK_PTR(newD);
         freePrivate = true;
@@ -248,10 +266,13 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
     , length(string.length())
     , pos(0)
     , freePrivate(true)
+    , d(0)
 {
-    d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
-    Q_CHECK_PTR(d);
-    init(t, chars, length, d->attributes);
+    if (length > 0) {
+        d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
+        Q_CHECK_PTR(d);
+        init(t, chars, length, d->attributes);
+    }
 }
 
 /*!
@@ -273,16 +294,21 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QChar *chars, 
     , chars(chars)
     , length(length)
     , pos(0)
+    , freePrivate(true)
+    , d(0)
 {
-    if (buffer && (uint)bufferSize >= (length + 1) * sizeof(QCharAttributes)) {
-        d = (QTextBoundaryFinderPrivate *)buffer;
-        freePrivate = false;
-    } else {
-        d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
-        Q_CHECK_PTR(d);
-        freePrivate = true;
+    if (!chars) {
+        length = 0;
+    } else if (length > 0) {
+        if (buffer && (uint)bufferSize >= (length + 1) * sizeof(QCharAttributes)) {
+            d = (QTextBoundaryFinderPrivate *)buffer;
+            freePrivate = false;
+        } else {
+            d = (QTextBoundaryFinderPrivate *) malloc((length + 1) * sizeof(QCharAttributes));
+            Q_CHECK_PTR(d);
+        }
+        init(t, chars, length, d->attributes);
     }
-    init(t, chars, length, d->attributes);
 }
 
 /*!
@@ -361,19 +387,12 @@ QString QTextBoundaryFinder::string() const
 */
 int QTextBoundaryFinder::toNextBoundary()
 {
-    if (!d) {
+    if (!d || pos < 0 || pos >= length) {
         pos = -1;
         return pos;
     }
 
-    if (pos < 0 || pos >= length) {
-        pos = -1;
-        return pos;
-    }
     ++pos;
-    if (pos == length)
-        return pos;
-    
     switch(t) {
     case Grapheme:
         while (pos < length && !d->attributes[pos].graphemeBoundary)
@@ -403,19 +422,12 @@ int QTextBoundaryFinder::toNextBoundary()
 */
 int QTextBoundaryFinder::toPreviousBoundary()
 {
-    if (!d) {
+    if (!d || pos <= 0 || pos > length) {
         pos = -1;
         return pos;
     }
 
-    if (pos <= 0 || pos > length) {
-        pos = -1;
-        return pos;
-    }
     --pos;
-    if (pos == 0)
-        return pos;
-
     switch(t) {
     case Grapheme:
         while (pos > 0 && !d->attributes[pos].graphemeBoundary)
@@ -443,21 +455,19 @@ int QTextBoundaryFinder::toPreviousBoundary()
 */
 bool QTextBoundaryFinder::isAtBoundary() const
 {
-    if (!d || pos < 0)
+    if (!d || pos < 0 || pos > length)
         return false;
-
-    if (pos == length)
-        return true;
 
     switch(t) {
     case Grapheme:
         return d->attributes[pos].graphemeBoundary;
     case Word:
         return d->attributes[pos].wordBreak;
-    case Line:
-        return pos == 0 || d->attributes[pos].lineBreak;
     case Sentence:
         return d->attributes[pos].sentenceBoundary;
+    case Line:
+        // ### TR#14 LB2 prohibits break at sot
+        return d->attributes[pos].lineBreak || pos == 0;
     }
     return false;
 }
@@ -468,26 +478,52 @@ bool QTextBoundaryFinder::isAtBoundary() const
 QTextBoundaryFinder::BoundaryReasons QTextBoundaryFinder::boundaryReasons() const
 {
     BoundaryReasons reasons = NotAtBoundary;
-    if (!d || !isAtBoundary())
+    if (!d || pos < 0 || pos > length)
         return reasons;
 
+    const QCharAttributes attr = d->attributes[pos];
     switch (t) {
+    case Grapheme:
+        if (attr.graphemeBoundary) {
+            reasons |= BreakOpportunity | StartOfItem | EndOfItem;
+            if (pos == 0)
+                reasons &= (~EndOfItem);
+            else if (pos == length)
+                reasons &= (~StartOfItem);
+        }
+        break;
     case Word:
-        if (d->attributes[pos].wordStart)
-            reasons |= StartWord;
-        if (d->attributes[pos].wordEnd)
-            reasons |= EndWord;
+        if (attr.wordBreak) {
+            reasons |= BreakOpportunity;
+            if (attr.wordStart)
+                reasons |= StartOfItem | StartWord;
+            if (attr.wordEnd)
+                reasons |= EndOfItem | EndWord;
+        }
+        break;
+    case Sentence:
+        if (attr.sentenceBoundary) {
+            reasons |= BreakOpportunity | StartOfItem | EndOfItem;
+            if (pos == 0)
+                reasons &= (~EndOfItem);
+            else if (pos == length)
+                reasons &= (~StartOfItem);
+        }
         break;
     case Line:
         // ### TR#14 LB2 prohibits break at sot
-        if (d->attributes[pos].mandatoryBreak || pos == 0)
-            reasons |= MandatoryBreak;
-        else if (pos > 0 && chars[pos - 1].unicode() == QChar::SoftHyphen)
-            reasons |= SoftHyphen;
-        // fall through
-    case Grapheme:
-    case Sentence:
-        reasons |= StartWord | EndWord;
+        if (attr.lineBreak || pos == 0) {
+            reasons |= BreakOpportunity;
+            if (attr.mandatoryBreak || pos == 0) {
+                reasons |= MandatoryBreak | StartOfItem | EndOfItem;
+                if (pos == 0)
+                    reasons &= (~EndOfItem);
+                else if (pos == length)
+                    reasons &= (~StartOfItem);
+            } else if (pos > 0 && chars[pos - 1].unicode() == QChar::SoftHyphen) {
+                reasons |= SoftHyphen;
+            }
+        }
         break;
     default:
         break;
