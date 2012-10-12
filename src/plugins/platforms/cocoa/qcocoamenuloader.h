@@ -79,7 +79,7 @@
 - (NSMenuItem *)aboutMenuItem;
 - (NSMenuItem *)aboutQtMenuItem;
 - (NSMenuItem *)hideMenuItem;
-- (NSMenuItem *)appSpecificMenuItem;
+- (NSMenuItem *)appSpecificMenuItem:(NSInteger)tag;
 - (IBAction)terminate:(id)sender;
 - (IBAction)orderFrontStandardAboutPanel:(id)sender;
 - (IBAction)hideOtherApplications:(id)sender;

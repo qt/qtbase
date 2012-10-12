@@ -195,7 +195,7 @@ NSMenuItem *QCocoaMenuItem::sync()
         QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
         switch (m_role) {
         case ApplicationSpecificRole:
-            mergeItem = [loader appSpecificMenuItem];
+            mergeItem = [loader appSpecificMenuItem:reinterpret_cast<NSInteger>(this)];
             break;
         case AboutRole:
             mergeItem = [loader aboutMenuItem];

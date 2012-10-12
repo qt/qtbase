@@ -246,11 +246,17 @@ QT_END_NAMESPACE
     return [[hideItem retain] autorelease];
 }
 
-- (NSMenuItem *)appSpecificMenuItem
+- (NSMenuItem *)appSpecificMenuItem:(NSInteger)tag
 {
+    NSMenuItem *item = [appMenu itemWithTag:tag];
+
+    // No reason to create the item if it already exists. See QTBUG-27202.
+    if (item)
+        return [[item retain] autorelease];
+
     // Create an App-Specific menu item, insert it into the menu and return
     // it as an autorelease item.
-    NSMenuItem *item = [[NSMenuItem alloc] init];
+    item = [[NSMenuItem alloc] init];
 
     NSInteger location;
     if (lastAppSpecificItem == nil) {
