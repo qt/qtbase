@@ -193,9 +193,12 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                 token = keywords[state].ident;
 
             if (token == NOTOKEN) {
-                // an error really
                 ++data;
-                continue;
+                // an error really, but let's ignore this input
+                // to not confuse moc later. However in pre-processor
+                // only mode let's continue.
+                if (!Preprocessor::preprocessOnly)
+                    continue;
             }
 
             ++column;
