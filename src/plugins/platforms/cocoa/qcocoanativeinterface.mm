@@ -65,6 +65,17 @@ QCocoaNativeInterface::QCocoaNativeInterface()
 {
 }
 
+void *QCocoaNativeInterface::nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context)
+{
+    if (!context)
+        return 0;
+
+    if (resourceString.toLower() == "cglcontextobj")
+        return cglContextForContext(context);
+
+    return 0;
+}
+
 void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     if (!window->handle()) {
@@ -107,6 +118,19 @@ void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
 {
     Q_UNUSED(window);
     QCocoaMenuBar::updateMenuBarImmediately();
+}
+
+void *QCocoaNativeInterface::cglContextForContext(QOpenGLContext* context)
+{
+    if (context) {
+        QCocoaGLContext *cocoaGLContext = static_cast<QCocoaGLContext *>(context->handle());
+        if (cocoaGLContext) {
+            NSOpenGLContext *nsOpenGLContext = cocoaGLContext->nsOpenGLContext();
+            if (nsOpenGLContext)
+                return [nsOpenGLContext CGLContextObj];
+        }
+    }
+    return 0;
 }
 
 QT_END_NAMESPACE
