@@ -123,7 +123,7 @@ QT_BEGIN_NAMESPACE
     that can be taken for views that are intended to display items with equal sizes
     is to set the \l uniformItemSizes property to true.
 
-    \sa {View Classes}, QTreeView, QTableView, QListWidget
+    \sa {View Classes}, {Item Views Puzzle Example}, QTreeView, QTableView, QListWidget
 */
 
 /*!
