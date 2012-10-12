@@ -463,10 +463,10 @@
     The following code snippet shows how the QSqlRelationalTableModel
     was set up:
 
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 0
+    \snippet relationaltablemodel/relationaltablemodel.cpp 0
     \codeline
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 1
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 2
+    \snippet relationaltablemodel/relationaltablemodel.cpp 1
+    \snippet relationaltablemodel/relationaltablemodel.cpp 2
 
     See the QSqlRelationalTableModel documentation for details.
 */
@@ -503,7 +503,7 @@
     You can use the same model as a data source for multiple views.
     If the user edits the model through one of the views, the other
     views will reflect the changes immediately. The
-    \l{sql/tablemodel}{Table Model} example shows how it works.
+    \l{tablemodel}{Table Model} example shows how it works.
 
     View classes display a header at the top to label the columns. To
     change the header texts, call
@@ -511,7 +511,7 @@
     model. The header's labels default to the table's field names.
     For example:
 
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 3
+    \snippet relationaltablemodel/relationaltablemodel.cpp 3
 
     QTableView also has a vertical header on the left with numbers
     identifying the rows. If you insert rows programmatically using
@@ -545,16 +545,16 @@
     read-write. The following two functions make fields 1 and 2 of a
     query model editable:
 
-    \snippet sql/querymodel/editablesqlmodel.cpp 0
+    \snippet querymodel/editablesqlmodel.cpp 0
     \codeline
-    \snippet sql/querymodel/editablesqlmodel.cpp 1
+    \snippet querymodel/editablesqlmodel.cpp 1
 
     The setFirstName() helper function is defined as follows:
 
-    \snippet sql/querymodel/editablesqlmodel.cpp 2
+    \snippet querymodel/editablesqlmodel.cpp 2
 
     The setLastName() function is similar. See the
-    \l{sql/querymodel}{Query Model} example for the complete source code.
+    \l{querymodel}{Query Model} example for the complete source code.
 
     Subclassing a model makes it possible to customize it in many
     ways: You can provide tooltips for the items, change the
@@ -570,7 +570,7 @@
 
     \image relationaltable.png Editing a foreign key in a relational table
 
-    The \l{sql/relationaltablemodel}{Relational Table Model} example
+    The \l{relationaltablemodel}{Relational Table Model} example
     illustrates how to use QSqlRelationalTableModel in conjunction with
     QSqlRelationalDelegate to provide tables with foreign key
     support.
@@ -603,7 +603,7 @@
 
     \image qdatawidgetmapper-simple.png
 
-    The \l{sql/books}{Books} example shows how information can
+    The \l{books}{Books} example shows how information can
     be presented for easy access by using QDataWidgetMapper and a set of
     simple input widgets.
 */

@@ -340,10 +340,10 @@ void QSqlRelationalTableModelPrivate::clearCache()
     The following code snippet shows how the QSqlRelationalTableModel
     was set up:
 
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 0
+    \snippet relationaltablemodel/relationaltablemodel.cpp 0
     \codeline
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 1
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 2
+    \snippet relationaltablemodel/relationaltablemodel.cpp 1
+    \snippet relationaltablemodel/relationaltablemodel.cpp 2
 
     The setRelation() function calls establish a relationship between
     two tables. The first call specifies that column 2 in table \c
@@ -359,9 +359,9 @@ void QSqlRelationalTableModelPrivate::clearCache()
     call QAbstractItemView::setItemDelegate() on the view with an
     instance of QSqlRelationalDelegate:
 
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 4
+    \snippet relationaltablemodel/relationaltablemodel.cpp 4
 
-    The \l{sql/relationaltablemodel} example illustrates how to use
+    The \l{relationaltablemodel} example illustrates how to use
     QSqlRelationalTableModel in conjunction with
     QSqlRelationalDelegate to provide tables with foreign key
     support.
@@ -486,9 +486,9 @@ bool QSqlRelationalTableModel::setData(const QModelIndex &index, const QVariant 
 
     Example:
 
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 0
+    \snippet relationaltablemodel/relationaltablemodel.cpp 0
     \codeline
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 1
+    \snippet relationaltablemodel/relationaltablemodel.cpp 1
 
     The setRelation() call specifies that column 2 in table \c
     employee is a foreign key that maps with field \c id of table \c
