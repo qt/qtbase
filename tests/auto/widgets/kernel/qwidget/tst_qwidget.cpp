@@ -353,6 +353,7 @@ private slots:
 #ifndef QTEST_NO_CURSOR
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
+    void underMouse();
 #endif
     void windowFlags();
     void initialPosForDontShowOnScreenWidgets();
@@ -9597,6 +9598,87 @@ void tst_QWidget::styleSheetPropagation()
             QCOMPARE(w->style(), tw.style());
     }
 }
+
+#ifndef QTEST_NO_CURSOR
+void tst_QWidget::underMouse()
+{
+    // Move the mouse cursor to a safe location
+    QCursor::setPos(0,0);
+
+    QWidget topLevelWidget;
+    QLineEdit childWidget1(&topLevelWidget);
+    QLineEdit childWidget2(&topLevelWidget);
+    QWidget popupWidget(0, Qt::Popup);
+
+    topLevelWidget.setObjectName("topLevelWidget");
+    childWidget1.setObjectName("childWidget1");
+    childWidget2.setObjectName("childWidget2");
+    popupWidget.setObjectName("popupWidget");
+
+    topLevelWidget.setGeometry(100, 100, 300, 300);
+    childWidget1.setGeometry(20, 20, 100, 100);
+    childWidget2.setGeometry(20, 120, 100, 100);
+    popupWidget.setGeometry(50, 100, 50, 50);
+
+    topLevelWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevelWidget));
+    QWindow *window = topLevelWidget.windowHandle();
+
+    QPoint outsideWindowPoint(30, -10);
+    QPoint inWindowPoint(30, 10);
+    QPoint child1Point(30, 50);
+    QPoint child2Point(30, 150);
+
+    // Outside window
+    QTest::mouseMove(window, outsideWindowPoint);
+    QVERIFY(!topLevelWidget.underMouse());
+    QVERIFY(!childWidget1.underMouse());
+    QVERIFY(!childWidget2.underMouse());
+
+    // Enter window, outside children
+    // Note: QTest::mouseMove will not generate enter events for windows, so send one explicitly
+    QWindowSystemInterface::handleEnterEvent(window);
+    QTest::mouseMove(window, inWindowPoint);
+    QVERIFY(topLevelWidget.underMouse());
+    QVERIFY(!childWidget1.underMouse());
+    QVERIFY(!childWidget2.underMouse());
+
+    // In childWidget1
+    QTest::mouseMove(window, child1Point);
+    QVERIFY(topLevelWidget.underMouse());
+    QVERIFY(childWidget1.underMouse());
+    QVERIFY(!childWidget2.underMouse());
+
+    // In childWidget2
+    QTest::mouseMove(window, child2Point);
+    QVERIFY(topLevelWidget.underMouse());
+    QVERIFY(!childWidget1.underMouse());
+    QVERIFY(childWidget2.underMouse());
+
+    // Throw up a popup window
+    popupWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&popupWidget));
+    QWindow *popupWindow = popupWidget.windowHandle();
+    QVERIFY(popupWindow);
+    QVERIFY(QApplication::activePopupWidget() == &popupWidget);
+
+    // If there is an active popup, undermouse should not be reported (QTBUG-27478)
+    QVERIFY(!topLevelWidget.underMouse());
+    QVERIFY(!childWidget1.underMouse());
+    QVERIFY(!childWidget2.underMouse());
+
+    // Moving around while popup active should not change undermouse either
+    QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(inWindowPoint)));
+    QVERIFY(!topLevelWidget.underMouse());
+    QVERIFY(!childWidget1.underMouse());
+    QVERIFY(!childWidget2.underMouse());
+
+    QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(child1Point)));
+    QVERIFY(!topLevelWidget.underMouse());
+    QVERIFY(!childWidget1.underMouse());
+    QVERIFY(!childWidget2.underMouse());
+}
+#endif // QTEST_NO_CURSOR
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"
