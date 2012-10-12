@@ -1206,10 +1206,12 @@ if($check_includes) {
                                 my $qt_begin_namespace_found = 0;
                                 my $qt_end_namespace_found = 0;
                                 my $line;
+                                my $stop_processing = 0;
                                 while($line = <F>) {
                                     chomp $line;
                                     my $output_line = 1;
                                     if($line =~ /^ *\# *pragma (qt_no_included_check|qt_sync_stop_processing)/) {
+                                        $stop_processing = 1;
                                         last;
                                     } elsif($line =~ /^ *\# *include/) {
                                         my $include = $line;
@@ -1237,7 +1239,7 @@ if($check_includes) {
                                         $qt_end_namespace_found = 1;
                                     }
                                 }
-                                if ($header_skip_qt_begin_header_test == 0) {
+                                if ($header_skip_qt_begin_header_test == 0 and $stop_processing  == 0) {
                                     if ($qt_begin_header_found == 0) {
                                         print "$lib: WARNING: $iheader does not include QT_BEGIN_HEADER\n";
                                     }
@@ -1247,7 +1249,7 @@ if($check_includes) {
                                     }
                                 }
 
-                                if ($header_skip_qt_begin_namespace_test == 0) {
+                                if ($header_skip_qt_begin_namespace_test == 0 and $stop_processing  == 0) {
                                     if ($qt_begin_namespace_found == 0) {
                                         print "$lib: WARNING: $iheader does not include QT_BEGIN_NAMESPACE\n";
                                     }
