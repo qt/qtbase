@@ -1201,8 +1201,18 @@ void Preprocessor::parseDefineArguments(Macro *m)
         t = next();
         if (t == PP_RPAREN)
             break;
-        if (t != PP_COMMA)
-            error("Unexpected character in macro argument list.");
+        if (t == PP_COMMA)
+            continue;
+        if (lexem() == "...") {
+            //GCC extension:    #define FOO(x, y...) x(y)
+            // The last argument was already parsed. Just mark the macro as variadic.
+            m->isVariadic = true;
+            while (test(PP_WHITESPACE));
+            if (!test(PP_RPAREN))
+                error("missing ')' in macro argument list");
+            break;
+        }
+        error("Unexpected character in macro argument list.");
     }
     m->arguments = arguments;
     while (test(PP_WHITESPACE));

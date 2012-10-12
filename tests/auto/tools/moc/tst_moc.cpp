@@ -2744,6 +2744,12 @@ void tst_Moc::parseDefines()
     QVERIFY(index != -1);
     index = mo->indexOfSlot("vararg3(int,int)");
     QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg4()");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg5(int)");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg6(int,int)");
+    QVERIFY(index != -1);
 #endif
 
     int count = 0;
