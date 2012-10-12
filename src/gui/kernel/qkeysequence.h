@@ -227,11 +227,6 @@ public:
     QKeySequence(int) {}
 };
 
-#ifndef QT_NO_DATASTREAM
-Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QKeySequence &ks) {}
-Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QKeySequence &ks) {}
-#endif /* #ifndef QT_NO_DATASTREAM */
-
 #endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
