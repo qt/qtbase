@@ -1597,6 +1597,8 @@ QGraphicsScene *QGraphicsView::scene() const
     When a scene is set on a view, the QGraphicsScene::changed() signal
     is automatically connected to this view's updateScene() slot, and the
     view's scroll bars are adjusted to fit the size of the scene.
+
+    The view does not take ownership of \a scene.
 */
 void QGraphicsView::setScene(QGraphicsScene *scene)
 {
