@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+#if 0
+#pragma qt_sync_stop_processing
+#endif
+
 #define QT_FONTS_ARE_RESOURCES
 
 /* Data structures */

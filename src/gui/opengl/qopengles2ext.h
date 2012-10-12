@@ -3,6 +3,7 @@
 
 #if 0
 #pragma qt_no_master_include
+#pragma qt_sync_stop_processing
 #endif
 
 /* $Revision: 18481 $ on $Date:: 2012-07-11 18:07:26 -0700 #$ */

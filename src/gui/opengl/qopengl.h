@@ -63,7 +63,7 @@ QT_BEGIN_HEADER
 */
 typedef char GLchar;
 
-# include "qopengles2ext.h"
+# include <QtGui/qopengles2ext.h>
 # ifndef GL_DOUBLE
 #  define GL_DOUBLE GL_FLOAT
 # endif
@@ -96,7 +96,7 @@ typedef GLfloat GLdouble;
 #   include <QtCore/qt_windows.h>
 #  endif
 #  include <GL/gl.h>
-#  include "qopenglext.h"
+#  include <QtGui/qopenglext.h>
 # endif // Q_OS_MAC
 #endif
 

@@ -42,6 +42,10 @@
 #ifndef QT_MIPS_ASM_DSP_H
 #define QT_MIPS_ASM_DSP_H
 
+#if 0
+#pragma qt_sync_stop_processing
+#endif
+
 #define zero $0
 #define AT   $1
 #define v0   $2

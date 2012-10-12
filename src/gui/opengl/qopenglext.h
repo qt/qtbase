@@ -3,6 +3,7 @@
 
 #if 0
 #pragma qt_no_master_include
+#pragma qt_sync_stop_processing
 #endif
 
 #ifdef __cplusplus
