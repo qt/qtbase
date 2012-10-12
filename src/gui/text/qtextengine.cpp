@@ -2741,13 +2741,13 @@ void QTextEngine::resolveAdditionalFormats() const
         const QScriptItem *si = &layoutData->items.at(i);
         int end = si->position + length(si);
 
-        while (startIt != addFormatSortedByStart.end() &&
+        while (startIt != addFormatSortedByStart.constEnd() &&
             specialData->addFormats.at(*startIt).start <= si->position) {
             currentFormats.insert(std::upper_bound(currentFormats.begin(), currentFormats.end(), *startIt),
                                   *startIt);
             ++startIt;
         }
-        while (endIt != addFormatSortedByEnd.end() &&
+        while (endIt != addFormatSortedByEnd.constEnd() &&
             specialData->addFormats.at(*endIt).start + specialData->addFormats.at(*endIt).length < end) {
             currentFormats.remove(qBinaryFind(currentFormats, *endIt) - currentFormats.begin());
             ++endIt;

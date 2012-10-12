@@ -2648,9 +2648,9 @@ void QFontCache::clear()
 
 QFontEngineData *QFontCache::findEngineData(const QFontDef &def) const
 {
-    EngineDataCache::ConstIterator it = engineDataCache.find(def),
-                                  end = engineDataCache.end();
-    if (it == end) return 0;
+    EngineDataCache::ConstIterator it = engineDataCache.constFind(def);
+    if (it == engineDataCache.constEnd())
+        return 0;
 
     // found
     return it.value();
