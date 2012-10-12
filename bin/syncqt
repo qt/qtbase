@@ -794,10 +794,10 @@ $isunix = checkUnix; #cache checkUnix
 
 my $qt_version = fileContents($qtbasedir."/mkspecs/qconfig.pri");
 if (length($qt_version)) {
-    $qt_version =~ s,.*^QT_VERSION\h*=\h*(\S+).*,$1,sm;
+    $qt_version =~ s,.*^QT_VERSION[ \t]*=[ \t]*(\S+).*,$1,sm;
 } else {
     $qt_version = fileContents($basedir."/src/corelib/global/qglobal.h");
-    $qt_version =~ s,.*^#\h*define\h+QT_VERSION_STR\h+"([^"]+)".*,$1,sm;
+    $qt_version =~ s,.*^#[ \t]*define[ \t]+QT_VERSION_STR[ \t]+"([^"]+)".*,$1,sm;
 }
 foreach my $lib (@modules_to_sync) {
     die "No such module: $lib" unless(defined $modules{$lib});
@@ -808,7 +808,7 @@ foreach my $lib (@modules_to_sync) {
     my $project = $dir;
     $project =~ s,/([^/]+)$,/$1/$1.pro,;
     my $module_version = fileContents($project);
-    $module_version = $qt_version unless ($module_version =~ s,.*^VERSION\h*=\h*(\S+).*,$1,sm);
+    $module_version = $qt_version unless ($module_version =~ s,.*^VERSION[ \t]*=[ \t]*(\S+).*,$1,sm);
 
     # Backwards compatibility for modules with checked in .pri files.
     if (defined $modulepris{$lib} and -e "$modulepris{$lib}") {
