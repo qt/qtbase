@@ -141,6 +141,7 @@ private slots:
     void returnValue2_data();
     void returnValue2();
     void connectVirtualSlots();
+    void connectPrivateSlots();
     void connectFunctorArgDifference();
     void disconnectDoesNotLeakFunctor();
 };
@@ -5564,6 +5565,72 @@ void tst_QObject::connectVirtualSlots()
     QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObject::slot1, Qt::UniqueConnection));
     */
 }
+
+#ifndef QT_BUILD_INTERNAL
+void tst_QObject::connectPrivateSlots()
+{QSKIP("Needs QT_BUILD_INTERNAL");}
+#else
+class ConnectToPrivateSlotPrivate;
+
+class ConnectToPrivateSlot :public QObject {
+    Q_OBJECT
+public:
+    ConnectToPrivateSlot();
+    void test(SenderObject *obj1) ;
+    Q_DECLARE_PRIVATE(ConnectToPrivateSlot)
+};
+
+class ConnectToPrivateSlotPrivate : public QObjectPrivate {
+public:
+    Q_DECLARE_PUBLIC(ConnectToPrivateSlot)
+    int receivedCount;
+    QVariant receivedValue;
+
+    void thisIsAPrivateSlot() {
+        receivedCount++;
+    };
+
+    void thisIsAPrivateSlotWithArg(const QVariant &v) {
+        receivedCount++;
+        receivedValue = v;
+    };
+};
+
+ConnectToPrivateSlot::ConnectToPrivateSlot(): QObject(*new ConnectToPrivateSlotPrivate) {}
+
+void ConnectToPrivateSlot::test(SenderObject* obj1) {
+    Q_D(ConnectToPrivateSlot);
+    d->receivedCount = 0;
+    QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal1, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
+    QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal7, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlotWithArg));
+    QCOMPARE(d->receivedCount, 0);
+    obj1->signal1();
+    QCOMPARE(d->receivedCount, 1);
+    QCOMPARE(d->receivedValue, QVariant());
+    obj1->signal7(666, QLatin1Literal("_"));
+    QCOMPARE(d->receivedCount, 2);
+    QCOMPARE(d->receivedValue, QVariant(666));
+    QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot, Qt::UniqueConnection));
+    QVERIFY(!QObjectPrivate::connect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot, Qt::UniqueConnection));
+    obj1->signal2();
+    QCOMPARE(d->receivedCount, 3);
+    QVERIFY(QObjectPrivate::disconnect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
+    obj1->signal2();
+    QCOMPARE(d->receivedCount, 3);
+    QVERIFY(!QObjectPrivate::disconnect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
+}
+
+void tst_QObject::connectPrivateSlots()
+{
+    SenderObject sender;
+    {
+        ConnectToPrivateSlot o;
+        o.test(&sender);
+    }
+    sender.signal7(777, QLatin1String("check that deleting the object properly disconnected"));
+    sender.signal1();
+}
+#endif
 
 struct SlotFunctor
 {
