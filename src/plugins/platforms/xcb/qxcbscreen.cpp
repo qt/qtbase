@@ -50,6 +50,7 @@
 #include <QDebug>
 
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qmath_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -242,8 +243,8 @@ QImage::Format QXcbScreen::format() const
 
 QDpi QXcbScreen::logicalDpi() const
 {
-    return QDpi(25.4 * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
-                25.4 * m_virtualSize.height() / m_virtualSizeMillimeters.height());
+    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
+                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
@@ -315,6 +316,9 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry());
     QWindowSystemInterface::handleScreenAvailableGeometryChange(QPlatformScreen::screen(), availableGeometry());
     QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
+    QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QPlatformScreen::screen(),
+        Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
+        Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
 }
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
