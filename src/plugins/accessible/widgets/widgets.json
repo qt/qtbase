@@ -21,6 +21,7 @@
     "QGroupBox",
     "QStatusBar",
     "QProgressBar",
+    "QPlainTextEdit",
     "QMenuBar",
     "QMenu",
     "QHeaderView",

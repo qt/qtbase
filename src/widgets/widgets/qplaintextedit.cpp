@@ -56,6 +56,7 @@
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
 #include "qtextlist.h"
+#include "qaccessible.h"
 
 #include <qtextformat.h>
 #include <qdatetime.h>
@@ -441,6 +442,11 @@ QPlainTextEditControl::QPlainTextEditControl(QPlainTextEdit *parent)
 void QPlainTextEditPrivate::_q_cursorPositionChanged()
 {
     pageUpDownLastCursorYIsValid = false;
+#ifndef QT_NO_ACCESSIBILITY
+    Q_Q(QPlainTextEdit);
+    QAccessibleTextCursorEvent ev(q, q->textCursor().position());
+    QAccessible::updateAccessibility(&ev);
+#endif
 }
 
 void QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered(int action) {

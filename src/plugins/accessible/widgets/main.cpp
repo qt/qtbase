@@ -202,6 +202,8 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
 #ifndef QT_NO_TEXTEDIT
     } else if (classname == QLatin1String("QTextEdit")) {
         iface = new QAccessibleTextEdit(widget);
+    } else if (classname == QLatin1String("QPlainTextEdit")) {
+        iface = new QAccessiblePlainTextEdit(widget);
 #endif
     } else if (classname == QLatin1String("QTipLabel")) {
         iface = new QAccessibleDisplay(widget, QAccessible::ToolTip);
