@@ -1011,6 +1011,12 @@ Requires: LIBRARY NETWORKINTERFACE PROPERTIES
 Name: Bearer Management
 SeeAlso: ???
 
+Feature: LOCALSERVER
+Description: Supports a local socket based server
+Section: Networking
+Requires: TEMPORARYFILE
+Name: QLocalServer
+SeeAlso: ???
 
 # Utilities
 
