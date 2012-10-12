@@ -170,7 +170,14 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QSidebar" name="sidebar"/>
+     <widget class="QSidebar" name="sidebar">
+      <property name="accessibleName">
+       <string>Sidebar</string>
+      </property>
+      <property name="accessibleDescription">
+       <string>List of places and bookmarks</string>
+      </property>
+     </widget>
      <widget class="QFrame" name="frame">
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
@@ -217,7 +224,11 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QFileDialogListView" name="listView"/>
+            <widget class="QFileDialogListView" name="listView">
+             <property name="accessibleName">
+              <string>Files</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -239,7 +250,11 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QFileDialogTreeView" name="treeView"/>
+            <widget class="QFileDialogTreeView" name="treeView">
+             <property name="accessibleName">
+              <string>Files</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -346,11 +361,11 @@
   <tabstop>listModeButton</tabstop>
   <tabstop>detailModeButton</tabstop>
   <tabstop>sidebar</tabstop>
+  <tabstop>treeView</tabstop>
   <tabstop>listView</tabstop>
   <tabstop>fileNameEdit</tabstop>
-  <tabstop>fileTypeCombo</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>treeView</tabstop>
+  <tabstop>fileTypeCombo</tabstop>
  </tabstops>
  <resources/>
  <connections/>
