@@ -1282,6 +1282,8 @@ void tst_QComboBox::textpixmapdata_data()
     QStringList text;
     IconList icon;
     VariantList variant;
+    QString qtlogoPath = QFINDTESTDATA("qtlogo.png");
+    QString qtlogoinvertedPath = QFINDTESTDATA("qtlogoinverted.png");
 
     {
         text.clear(); icon.clear(); variant.clear();
@@ -1293,7 +1295,7 @@ void tst_QComboBox::textpixmapdata_data()
     {
         text.clear(); icon.clear(); variant.clear();
         text << QString() << QString();
-        icon << QIcon(QPixmap("qtlogo.png")) << QIcon(QPixmap("qtlogoinverted.png"));
+        icon << QIcon(QPixmap(qtlogoPath)) << QIcon(QPixmap(qtlogoinvertedPath));
         variant << QVariant() << QVariant();
         QTest::newRow("just icons") << text << icon << variant;
     }
@@ -1307,7 +1309,7 @@ void tst_QComboBox::textpixmapdata_data()
     {
         text.clear(); icon.clear(); variant.clear();
         text << "foo" << "bar";
-        icon << QIcon(QPixmap("qtlogo.png")) << QIcon(QPixmap("qtlogoinverted.png"));
+        icon << QIcon(QPixmap(qtlogoPath)) << QIcon(QPixmap(qtlogoinvertedPath));
         variant << 12 << "bingo";
         QTest::newRow("text, icons and user data") << text << icon << variant;
     }
