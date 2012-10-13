@@ -713,7 +713,9 @@ subclass.
 and modelReset() signals suffice to inform views that they must reinterrogate
 the model.
 
-* QSqlTableModel::selectRow(): This is a new method that refreshes a single
+* QSqlTableModel::select() is now a slot.
+
+* QSqlTableModel::selectRow(): This is a new slot that refreshes a single
 row in the model from the database.
 
 * QSqlTableModel edit strategies OnFieldChange/OnRowChange QTBUG-2875
