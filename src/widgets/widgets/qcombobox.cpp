@@ -2007,10 +2007,13 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
 
 /*!
     \property QComboBox::currentText
-    \brief the text of the current item
+    \brief the current text
 
-    By default, for an empty combo box or a combo box in which no current
-    item is set, this property contains an empty string.
+    If the combo box is editable, the current text is the value displayed
+    by the line edit. Otherwise, it is the value of the current item or
+    an empty string if the combo box is empty or no current item is set.
+
+    \sa editable
 */
 QString QComboBox::currentText() const
 {
