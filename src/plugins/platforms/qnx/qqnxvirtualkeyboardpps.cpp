@@ -130,7 +130,7 @@ bool QQnxVirtualKeyboardPps::connect()
     m_decoder = new pps_decoder_t;
 
     pps_encoder_initialize(m_encoder, false);
-    pps_decoder_initialize(m_decoder, NULL);
+    pps_decoder_initialize(m_decoder, 0);
 
     errno = 0;
     m_fd = ::open(ms_PPSPath, O_RDWR);
@@ -197,7 +197,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 
     m_buffer[nread] = 0;
     pps_decoder_parse_pps_str(m_decoder, m_buffer);
-    pps_decoder_push(m_decoder, NULL);
+    pps_decoder_push(m_decoder, 0);
 #if defined(QQNXVIRTUALKEYBOARD_DEBUG)
     pps_decoder_dump_tree(m_decoder, stderr);
 #endif
