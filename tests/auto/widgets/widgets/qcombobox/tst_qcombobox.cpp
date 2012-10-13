@@ -116,6 +116,8 @@ private slots:
     void insertOnCurrentIndex();
     void textpixmapdata_data();
     void textpixmapdata();
+    void currentTextChanged_data();
+    void currentTextChanged();
     void editTextChanged();
     void setModel();
     void modelDeleted();
@@ -1406,6 +1408,59 @@ void tst_QComboBox::setCurrentText()
     testWidget->setProperty(n, QString("bar"));
     QCOMPARE(testWidget->property(n).toString(), QString("bar"));
 #endif
+}
+
+void tst_QComboBox::currentTextChanged_data()
+{
+    QTest::addColumn<bool>("editable");
+    QTest::newRow("editable") << true;
+    QTest::newRow("not editable") << false;
+}
+
+void tst_QComboBox::currentTextChanged()
+{
+    QFETCH(bool, editable);
+
+    QCOMPARE(testWidget->count(), 0);
+    testWidget->addItems(QStringList() << "foo" << "bar");
+    QCOMPARE(testWidget->count(), 2);
+
+    QSignalSpy spy(testWidget, SIGNAL(currentTextChanged(QString)));
+
+    testWidget->setEditable(editable);
+
+    // set text in list
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(testWidget->currentIndex(), 0);
+    spy.clear();
+    testWidget->setCurrentText(QString("bar"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("bar"));
+
+    // set text not in list
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(testWidget->currentIndex(), 0);
+    spy.clear();
+    testWidget->setCurrentText(QString("qt"));
+    if (editable) {
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("qt"));
+    } else {
+        QCOMPARE(spy.count(), 0);
+    }
+
+    // item changed
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(testWidget->currentIndex(), 0);
+    spy.clear();
+    testWidget->setItemText(0, QString("ape"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("ape"));
+    // change it back
+    spy.clear();
+    testWidget->setItemText(0, QString("foo"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("foo"));
 }
 
 void tst_QComboBox::editTextChanged()

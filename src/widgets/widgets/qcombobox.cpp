@@ -822,6 +822,14 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
 */
 
 /*!
+    \fn void QComboBox::currentTextChanged(const QString &text)
+    \since 5.0
+
+    This signal is sent whenever currentText changes. The new value
+    is passed as \a text.
+*/
+
+/*!
     Constructs a combobox with the given \a parent, using the default
     model QStandardItemModel.
 */
@@ -980,9 +988,12 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
     }
 
     if (currentIndex.row() >= topLeft.row() && currentIndex.row() <= bottomRight.row()) {
+        const QString text = q->itemText(currentIndex.row());
         if (lineEdit) {
-            lineEdit->setText(q->itemText(currentIndex.row()));
+            lineEdit->setText(text);
             updateLineEditGeometry();
+        } else {
+            emit q->currentTextChanged(text);
         }
         q->update();
     }
@@ -1242,7 +1253,11 @@ void QComboBoxPrivate::_q_emitCurrentIndexChanged(const QModelIndex &index)
 {
     Q_Q(QComboBox);
     emit q->currentIndexChanged(index.row());
-    emit q->currentIndexChanged(itemText(index));
+    const QString text = itemText(index);
+    emit q->currentIndexChanged(text);
+    // signal lineEdit.textChanged already connected to signal currentTextChanged, so don't emit double here
+    if (!lineEdit)
+        emit q->currentTextChanged(text);
 #ifndef QT_NO_ACCESSIBILITY
         QAccessibleEvent event(q, QAccessible::NameChanged);
         QAccessible::updateAccessibility(&event);
@@ -1714,6 +1729,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     connect(d->lineEdit, SIGNAL(returnPressed()), this, SLOT(_q_returnPressed()));
     connect(d->lineEdit, SIGNAL(editingFinished()), this, SLOT(_q_editingFinished()));
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(editTextChanged(QString)));
+    connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(currentTextChanged(QString)));
     d->lineEdit->setFrame(false);
     d->lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     d->lineEdit->setFocusProxy(this);
