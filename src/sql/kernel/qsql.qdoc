@@ -81,7 +81,7 @@
 /*!
     \enum QSql::NumericalPrecisionPolicy
 
-    This enum type describes at which precision levels numercial values are read from
+    This enum type describes at which precision levels numerical values are read from
     a database.
 
     Some databases support numerical values with a precision that is not storable in a
