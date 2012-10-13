@@ -362,8 +362,10 @@ void tst_QDataWidgetMapper::comboBox()
     mapper.addMapping(&readWriteBox, 1, "currentText");
     mapper.toFirst();
 
+    // setCurrentIndex caused the value at index 0 to be displayed
     QCOMPARE(readOnlyBox.currentText(), QString("read only item 0"));
-    QCOMPARE(readWriteBox.currentText(), QString("read write item 0"));
+    // setCurrentText set the value in the line edit since the combobox is editable
+    QCOMPARE(readWriteBox.currentText(), QString("item 0 1"));
 
     // set some new values on the boxes
     readOnlyBox.setCurrentIndex(1);
@@ -380,7 +382,6 @@ void tst_QDataWidgetMapper::comboBox()
     model->setData(model->index(0, 1), QString("read write item z"), Qt::EditRole);
 
     QCOMPARE(readOnlyBox.currentIndex(), 2);
-    QEXPECT_FAIL("", "See task 125493 and QTBUG-428", Abort);
     QCOMPARE(readWriteBox.currentText(), QString("read write item z"));
 }
 

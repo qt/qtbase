@@ -2001,6 +2001,17 @@ void QComboBox::setCurrentIndex(int index)
     d->setCurrentIndex(mi);
 }
 
+void QComboBox::setCurrentText(const QString &text)
+{
+    if (isEditable()) {
+        setEditText(text);
+    } else {
+        const int i = findText(text);
+        if (i > -1)
+            setCurrentIndex(i);
+    }
+}
+
 void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
 {
     Q_Q(QComboBox);
@@ -2034,7 +2045,11 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
     by the line edit. Otherwise, it is the value of the current item or
     an empty string if the combo box is empty or no current item is set.
 
-    \sa editable
+    The setter setCurrentText() simply calls setEditText() if the combo box is editable.
+    Otherwise, if there is a matching text in the list, currentIndex is set to the
+    corresponding index.
+
+    \sa editable, setEditText()
 */
 QString QComboBox::currentText() const
 {
