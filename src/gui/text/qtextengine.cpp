@@ -1799,7 +1799,6 @@ struct QJustificationPoint {
     int type;
     QFixed kashidaWidth;
     QGlyphLayout glyph;
-    QFontEngine *fontEngine;
 };
 
 Q_DECLARE_TYPEINFO(QJustificationPoint, Q_PRIMITIVE_TYPE);
@@ -1808,7 +1807,6 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
 {
     point->type = type;
     point->glyph = glyph;
-    point->fontEngine = fe;
 
     if (type >= HB_Arabic_Normal) {
         QChar ch(0x640); // Kashida character
