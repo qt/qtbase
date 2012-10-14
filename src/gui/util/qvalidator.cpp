@@ -862,7 +862,8 @@ QRegExpValidator::~QRegExpValidator()
     partially (i.e. could be a valid match if additional valid
     characters are added), and \l Invalid if \a input is not matched.
 
-    The \a pos parameter is set to the length of the \a input parameter.
+    Additionally, if \a input is not matched, the \a pos parameter is set to
+    the length of the \a input parameter.
 
     For example, if the regular expression is \b{\\w\\d\\d}
     (word-character, digit, digit) then "A57" is \l Acceptable,
