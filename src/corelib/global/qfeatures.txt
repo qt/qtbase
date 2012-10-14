@@ -28,6 +28,13 @@ Requires:
 Name: CssParser
 SeeAlso: ???
 
+Feature: REGULAREXPRESSION
+Description: Perl-compatible regular expression APIs
+Section: Kernel
+Requires:
+Name: QRegularExpression
+SeeAlso: ???
+
 Feature: CONCURRENT
 Description: Provides a high-level multi-threaded APIs
 Section: Kernel

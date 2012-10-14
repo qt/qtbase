@@ -502,9 +502,6 @@ void QIntValidator::setTop(int top)
     setRange(bottom(), top);
 }
 
-
-#ifndef QT_NO_REGEXP
-
 /*!
     \internal
 */
@@ -520,6 +517,8 @@ QValidator::QValidator(QValidatorPrivate &d, QObject *parent)
         : QObject(d, parent)
 {
 }
+
+#ifndef QT_NO_REGEXP
 
 class QDoubleValidatorPrivate : public QValidatorPrivate
 {
@@ -907,7 +906,7 @@ void QRegExpValidator::setRegExp(const QRegExp& rx)
 
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 
 /*!
     \class QRegularExpressionValidator
@@ -1058,7 +1057,7 @@ void QRegularExpressionValidatorPrivate::setRegularExpression(const QRegularExpr
     }
 }
 
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 QT_END_NAMESPACE
 

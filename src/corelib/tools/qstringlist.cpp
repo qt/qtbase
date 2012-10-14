@@ -320,7 +320,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegExp
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 /*!
     \fn QStringList QStringList::filter(const QRegularExpression &re) const
     \overload
@@ -338,7 +338,7 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
     }
     return res;
 }
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
 /*!
@@ -395,7 +395,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 /*!
     \fn QStringList &QStringList::replaceInStrings(const QRegularExpression &re, const QString &after)
     \overload
@@ -424,7 +424,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegularEx
     for (int i = 0; i < that->size(); ++i)
         (*that)[i].replace(re, after);
 }
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
 /*!
@@ -619,7 +619,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 /*!
     \fn int QStringList::indexOf(const QRegularExpression &re, int from) const
     \overload
@@ -676,7 +676,7 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, const QRegularEx
     }
     return -1;
 }
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
 /*!

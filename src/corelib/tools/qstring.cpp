@@ -2762,13 +2762,17 @@ int QString::lastIndexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs
                              str.size(), cs);
 }
 
-#ifndef QT_NO_REGEXP
+
+#if !(defined(QT_NO_REGEXP) && defined(QT_NO_REGULAREXPRESSION))
 struct QStringCapture
 {
     int pos;
     int len;
     int no;
 };
+#endif
+
+#ifndef QT_NO_REGEXP
 
 /*!
   \overload replace()
@@ -2925,7 +2929,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
 }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
   \overload replace()
@@ -3055,7 +3059,7 @@ QString &QString::replace(const QRegularExpression &re, const QString &after)
     return *this;
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     Returns the number of (potentially overlapping) occurrences of
@@ -3256,7 +3260,7 @@ int QString::count(const QRegExp& rx) const
 }
 #endif // QT_NO_REGEXP
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
     \overload indexOf()
@@ -3366,7 +3370,7 @@ int QString::count(const QRegularExpression &re) const
     return count;
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*! \fn int QString::count() const
 
@@ -3487,7 +3491,7 @@ QString QString::section(const QString &sep, int start, int end, SectionFlags fl
     return ret;
 }
 
-#ifndef QT_NO_REGEXP
+#if !(defined(QT_NO_REGEXP) && defined(QT_NO_REGULAREXPRESSION))
 class qt_section_chunk {
 public:
     qt_section_chunk(int l, QString s) { length = l; string = s; }
@@ -3537,7 +3541,9 @@ static QString extractSections(const QList<qt_section_chunk> &sections,
 
     return ret;
 }
+#endif
 
+#ifndef QT_NO_REGEXP
 /*!
     \overload section()
 
@@ -3575,7 +3581,7 @@ QString QString::section(const QRegExp &reg, int start, int end, SectionFlags fl
 }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
     \overload section()
@@ -3621,7 +3627,7 @@ QString QString::section(const QRegularExpression &re, int start, int end, Secti
     return extractSections(sections, start, end, flags);
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     Returns a substring that contains the \a n leftmost characters
@@ -6416,7 +6422,7 @@ QStringList QString::split(const QRegExp &rx, SplitBehavior behavior) const
 }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 #ifndef QT_BOOTSTRAPPED
 /*!
     \overload
@@ -6470,7 +6476,7 @@ QStringList QString::split(const QRegularExpression &re, SplitBehavior behavior)
     return list;
 }
 #endif // QT_BOOTSTRAPPED
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     \enum QString::NormalizationForm

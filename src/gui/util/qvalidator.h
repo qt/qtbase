@@ -197,7 +197,7 @@ private:
 
 #endif // QT_NO_REGEXP
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 
 class QRegularExpressionValidatorPrivate;
 
@@ -226,7 +226,7 @@ private:
     Q_DECLARE_PRIVATE(QRegularExpressionValidator)
 };
 
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 #endif // QT_NO_VALIDATOR
 

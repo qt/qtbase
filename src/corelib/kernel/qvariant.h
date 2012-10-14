@@ -76,8 +76,10 @@ class QRect;
 class QRectF;
 #ifndef QT_NO_REGEXP
 class QRegExp;
-class QRegularExpression;
 #endif // QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
+class QRegularExpression;
+#endif // QT_NO_REGULAREXPRESSION
 class QTextFormat;
 class QTextLength;
 class QUrl;
@@ -240,11 +242,11 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QLocale &locale);
 #ifndef QT_NO_REGEXP
     QVariant(const QRegExp &regExp);
-#ifndef QT_BOOTSRAPPED
-    QVariant(const QRegularExpression &re);
-#endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGULAREXPRESSION
+    QVariant(const QRegularExpression &re);
+#endif // QT_NO_REGULAREXPRESSION
     QVariant(const QUrl &url);
     QVariant(const QEasingCurve &easing);
     QVariant(const QUuid &uuid);
@@ -253,7 +255,7 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QJsonObject &jsonObject);
     QVariant(const QJsonArray &jsonArray);
     QVariant(const QJsonDocument &jsonDocument);
-#endif
+#endif // QT_BOOTSTRAPPED
 
     QVariant& operator=(const QVariant &other);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -313,11 +315,11 @@ class Q_CORE_EXPORT QVariant
     QLocale toLocale() const;
 #ifndef QT_NO_REGEXP
     QRegExp toRegExp() const;
-#ifndef QT_BOOTSTRAPPED
-    QRegularExpression toRegularExpression() const;
-#endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGULAREXPRESSION
+    QRegularExpression toRegularExpression() const;
+#endif // QT_NO_REGULAREXPRESSION
     QUrl toUrl() const;
     QEasingCurve toEasingCurve() const;
     QUuid toUuid() const;
@@ -326,7 +328,7 @@ class Q_CORE_EXPORT QVariant
     QJsonObject toJsonObject() const;
     QJsonArray toJsonArray() const;
     QJsonDocument toJsonDocument() const;
-#endif
+#endif // QT_BOOTSTRAPPED
 
 #ifndef QT_NO_DATASTREAM
     void load(QDataStream &ds);

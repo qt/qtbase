@@ -42,7 +42,7 @@
 #ifndef QREGULAREXPRESSION_H
 #define QREGULAREXPRESSION_H
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
@@ -241,6 +241,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 #endif // QREGULAREXPRESSION_H

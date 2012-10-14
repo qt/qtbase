@@ -1690,7 +1690,7 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegExp &re,
 }
 #endif // QT_NO_REGEXP
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 /*!
     \internal
 */
@@ -1712,7 +1712,7 @@ void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re
             qt_qFindChildren_helper(obj, re, mo, list, options);
     }
 }
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 
 /*!
     \internal
