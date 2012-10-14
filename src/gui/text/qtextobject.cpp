@@ -1185,8 +1185,15 @@ Qt::LayoutDirection QTextBlock::textDirection() const
         const QChar *p = buffer.constData() + frag->stringPosition;
         const QChar * const end = p + frag->size_array[0];
         while (p < end) {
-            switch(QChar::direction(p->unicode()))
-            {
+            uint ucs4 = p->unicode();
+            if (QChar::isHighSurrogate(ucs4) && p + 1 < end) {
+                ushort low = p[1].unicode();
+                if (QChar::isLowSurrogate(low)) {
+                    ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                    ++p;
+                }
+            }
+            switch (QChar::direction(ucs4)) {
             case QChar::DirL:
                 return Qt::LeftToRight;
             case QChar::DirR:
