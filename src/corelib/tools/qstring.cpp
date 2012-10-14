@@ -3340,6 +3340,33 @@ bool QString::contains(const QRegularExpression &re) const
 }
 
 /*!
+    \overload contains()
+    \since 5.1
+
+    Returns true if the regular expression \a re matches somewhere in this
+    string; otherwise returns false.
+
+    If the match is successful and \a match is not a null pointer, it also
+    writes the results of the match into the QRegularExpressionMatch object
+    pointed by \a match.
+
+    \sa QRegularExpression::match()
+*/
+
+bool QString::contains(const QRegularExpression &re, QRegularExpressionMatch *match) const
+{
+    if (!re.isValid()) {
+        qWarning("QString::contains: invalid QRegularExpresssion object");
+        return false;
+    }
+    QRegularExpressionMatch m = re.match(*this);
+    bool hasMatch = m.hasMatch();
+    if (hasMatch && match)
+        *match = m;
+    return hasMatch;
+}
+
+/*!
     \overload count()
     \since 5.0
 

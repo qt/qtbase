@@ -72,6 +72,7 @@ QT_BEGIN_NAMESPACE
 class QCharRef;
 class QRegExp;
 class QRegularExpression;
+class QRegularExpressionMatch;
 class QString;
 class QStringList;
 class QTextCodec;
@@ -339,6 +340,7 @@ public:
     int indexOf(const QRegularExpression &re, int from = 0) const;
     int lastIndexOf(const QRegularExpression &re, int from = -1) const;
     bool contains(const QRegularExpression &re) const;
+    bool contains(const QRegularExpression &re, QRegularExpressionMatch *match) const;
     int count(const QRegularExpression &re) const;
 #endif
 
