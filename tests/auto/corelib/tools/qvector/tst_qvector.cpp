@@ -205,8 +205,11 @@ private slots:
     void eraseEmptyReservedMovable() const;
     void eraseEmptyReservedCustom() const;
     void eraseInt() const;
+    void eraseIntShared() const;
     void eraseMovable() const;
+    void eraseMovableShared() const;
     void eraseCustom() const;
+    void eraseCustomShared() const;
     void eraseReservedInt() const;
     void eraseReservedMovable() const;
     void eraseReservedCustom() const;
@@ -268,6 +271,7 @@ private slots:
     void detachInt() const;
     void detachMovable() const;
     void detachCustom() const;
+
 private:
     template<typename T> void copyConstructor() const;
     template<typename T> void add() const;
@@ -278,7 +282,7 @@ private:
     template<typename T> void empty() const;
     template<typename T> void eraseEmpty() const;
     template<typename T> void eraseEmptyReserved() const;
-    template<typename T> void erase() const;
+    template<typename T> void erase(bool shared) const;
     template<typename T> void eraseReserved() const;
     template<typename T> void fill() const;
     template<typename T> void fromList() const;
@@ -300,6 +304,15 @@ template<typename T> struct SimpleValue
     {
         return Values[index % MaxIndex];
     }
+
+    static QVector<T> vector(int size)
+    {
+        QVector<T> ret;
+        for (int i = 0; i < size; i++)
+            ret.append(at(i));
+        return ret;
+    }
+
     static const uint MaxIndex = 6;
     static const T Values[MaxIndex];
 };
@@ -565,7 +578,6 @@ void tst_QVector::capacity() const
     // make sure it grows ok
     myvec << SimpleValue<T>::at(0) << SimpleValue<T>::at(1) << SimpleValue<T>::at(2);
     QVERIFY(myvec.capacity() >= 6);
-
     // let's try squeeze a bit
     myvec.remove(3);
     myvec.remove(3);
@@ -865,60 +877,139 @@ void tst_QVector::eraseEmptyReservedCustom() const
 }
 
 template<typename T>
-void tst_QVector::erase() const
+struct SharedVectorChecker
 {
+    SharedVectorChecker(const QVector<T> &original, bool doCopyVector)
+        : originalSize(-1),
+          copy(0)
     {
-        QVector<T> v(12);
+        if (doCopyVector) {
+            originalSize = original.size();
+            copy = new QVector<T>(original);
+            // this is unlikely to fail, but if the check in the destructor fails it's good to know that
+            // we were still alright here.
+            QCOMPARE(originalSize, copy->size());
+        }
+    }
+
+    ~SharedVectorChecker()
+    {
+        if (copy)
+            QCOMPARE(copy->size(), originalSize);
+        delete copy;
+    }
+
+    int originalSize;
+    QVector<T> *copy;
+};
+
+template<typename T>
+void tst_QVector::erase(bool shared) const
+{
+    // note: remove() is actually more efficient, and more dangerous, because it uses the non-detaching
+    // begin() / end() internally. you can also use constBegin() and constEnd() with erase(), but only
+    // using reinterpret_cast... because both iterator types are really just pointers.
+    // so we use a mix of erase() and remove() to cover more cases.
+    {
+        QVector<T> v = SimpleValue<T>::vector(12);
+        SharedVectorChecker<T> svc(v, shared);
         v.erase(v.begin());
         QCOMPARE(v.size(), 11);
+        for (int i = 0; i < 11; i++)
+            QCOMPARE(v.at(i), SimpleValue<T>::at(i + 1));
         v.erase(v.begin(), v.end());
         QCOMPARE(v.size(), 0);
+        if (shared)
+            QCOMPARE(SimpleValue<T>::vector(12), *svc.copy);
     }
     {
-        QVector<T> v(12);
-        v.erase(v.begin() + 1);
+        QVector<T> v = SimpleValue<T>::vector(12);
+        SharedVectorChecker<T> svc(v, shared);
+        v.remove(1);
         QCOMPARE(v.size(), 11);
+        QCOMPARE(v.at(0), SimpleValue<T>::at(0));
+        for (int i = 1; i < 11; i++)
+            QCOMPARE(v.at(i), SimpleValue<T>::at(i + 1));
         v.erase(v.begin() + 1, v.end());
         QCOMPARE(v.size(), 1);
+        QCOMPARE(v.at(0), SimpleValue<T>::at(0));
+        if (shared)
+            QCOMPARE(SimpleValue<T>::vector(12), *svc.copy);
     }
     {
-        QVector<T> v(12);
+        QVector<T> v = SimpleValue<T>::vector(12);
+        SharedVectorChecker<T> svc(v, shared);
         v.erase(v.begin(), v.end() - 1);
         QCOMPARE(v.size(), 1);
+        QCOMPARE(v.at(0), SimpleValue<T>::at(11));
+        if (shared)
+            QCOMPARE(SimpleValue<T>::vector(12), *svc.copy);
     }
     {
-        QVector<T> v(12);
-        v.erase(v.begin() + 5);
+        QVector<T> v = SimpleValue<T>::vector(12);
+        SharedVectorChecker<T> svc(v, shared);
+        v.remove(5);
         QCOMPARE(v.size(), 11);
+        for (int i = 0; i < 5; i++)
+            QCOMPARE(v.at(i), SimpleValue<T>::at(i));
+        for (int i = 5; i < 11; i++)
+            QCOMPARE(v.at(i), SimpleValue<T>::at(i + 1));
         v.erase(v.begin() + 1, v.end() - 1);
+        QCOMPARE(v.at(0), SimpleValue<T>::at(0));
+        QCOMPARE(v.at(1), SimpleValue<T>::at(11));
         QCOMPARE(v.size(), 2);
+        if (shared)
+            QCOMPARE(SimpleValue<T>::vector(12), *svc.copy);
     }
     {
-        QVector<T> v(10);
+        QVector<T> v = SimpleValue<T>::vector(10);
+        SharedVectorChecker<T> svc(v, shared);
         v.setSharable(false);
+        SharedVectorChecker<T> svc2(v, shared);
         v.erase(v.begin() + 3);
         QCOMPARE(v.size(), 9);
         v.erase(v.begin(), v.end() - 1);
         QCOMPARE(v.size(), 1);
+        if (shared)
+            QCOMPARE(SimpleValue<T>::vector(10), *svc.copy);
     }
 }
 
 void tst_QVector::eraseInt() const
 {
-    erase<int>();
+    erase<int>(false);
+}
+
+void tst_QVector::eraseIntShared() const
+{
+    erase<int>(true);
 }
 
 void tst_QVector::eraseMovable() const
 {
     const int instancesCount = Movable::counter;
-    erase<Movable>();
+    erase<Movable>(false);
+    QCOMPARE(instancesCount, Movable::counter);
+}
+
+void tst_QVector::eraseMovableShared() const
+{
+    const int instancesCount = Movable::counter;
+    erase<Movable>(true);
     QCOMPARE(instancesCount, Movable::counter);
 }
 
 void tst_QVector::eraseCustom() const
 {
     const int instancesCount = Custom::counter;
-    erase<Custom>();
+    erase<Custom>(false);
+    QCOMPARE(instancesCount, Custom::counter);
+}
+
+void tst_QVector::eraseCustomShared() const
+{
+    const int instancesCount = Custom::counter;
+    erase<Custom>(true);
     QCOMPARE(instancesCount, Custom::counter);
 }
 

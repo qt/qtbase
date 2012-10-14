@@ -200,8 +200,8 @@ public:
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
     inline void push_front(const T &t) { prepend(t); }
-    void pop_back() { Q_ASSERT(!isEmpty()); erase(end()-1); }
-    void pop_front() { Q_ASSERT(!isEmpty()); erase(begin()); }
+    void pop_back() { Q_ASSERT(!isEmpty()); erase(d->end() - 1); }
+    void pop_front() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
     inline bool empty() const
     { return d->size == 0; }
     inline T& front() { return first(); }
@@ -366,11 +366,11 @@ inline void QVector<T>::insert(int i, int n, const T &t)
 template <typename T>
 inline void QVector<T>::remove(int i, int n)
 { Q_ASSERT_X(i >= 0 && n >= 0 && i + n <= d->size, "QVector<T>::remove", "index out of range");
-  erase(begin() + i, begin() + i + n); }
+  erase(d->begin() + i, d->begin() + i + n); }
 template <typename T>
 inline void QVector<T>::remove(int i)
 { Q_ASSERT_X(i >= 0 && i < d->size, "QVector<T>::remove", "index out of range");
-  erase(begin() + i, begin() + i + 1); }
+  erase(d->begin() + i, d->begin() + i + 1); }
 template <typename T>
 inline void QVector<T>::prepend(const T &t)
 { insert(begin(), 1, t); }
@@ -607,6 +607,8 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
     // FIXME we ara about to delete data maybe it is good time to shrink?
     if (d->alloc) {
         detach();
+        abegin = d->begin() + itemsUntouched;
+        aend = abegin + itemsToErase;
         if (QTypeInfo<T>::isStatic) {
             iterator moveBegin = abegin + itemsToErase;
             iterator moveEnd = d->end();
