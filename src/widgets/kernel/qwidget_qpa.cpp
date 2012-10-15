@@ -547,6 +547,9 @@ void QWidgetPrivate::show_sys()
             }
         }
 
+#ifndef QT_NO_CURSOR
+        qt_qpa_set_cursor(q, false); // Needed in case cursor was set before show
+#endif
         invalidateBuffer(q->rect());
         window->setVisible(true);
     }
