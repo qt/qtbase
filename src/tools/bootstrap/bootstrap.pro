@@ -140,6 +140,6 @@ exists($$QTDIR/.qmake.cache): \
 else: \
     mod_component_base = $$dirname(_QMAKE_CACHE_)
 QMAKE_SYNCQT += -minimal -module QtCore -module QtDBus -module QtXml \
-    -qtdir $$[QT_HOST_DATA/get] -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
+    -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
 !silent:message($$QMAKE_SYNCQT)
 system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")

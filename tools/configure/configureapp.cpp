@@ -164,7 +164,7 @@ Configure::Configure(int& argc, char** argv)
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
                        << "call " << QDir::toNativeSeparators(sourcePath + "/bin/syncqt.bat")
-                       << " -qtdir \"" << QDir::toNativeSeparators(buildPath) << "\" %*" << endl;
+                       << " -mkspecsdir \"" << QDir::toNativeSeparators(buildPath) << "/mkspecs\" %*" << endl;
                 syncqt_bat.close();
             }
         }
