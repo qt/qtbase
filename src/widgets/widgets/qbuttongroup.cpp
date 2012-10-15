@@ -56,21 +56,21 @@
     each of the buttons in the group.
 
     An \l {QButtonGroup::exclusive} {exclusive} button group switches
-    off all checkable (toggle) buttons except the one that was
+    off all checkable (toggle) buttons except the one that has been
     clicked. By default, a button group is exclusive. The buttons in a
-    button group are usually checkable QPushButton's, \l{QCheckBox}es
+    button group are usually checkable \l{QPushButton}s, \l{QCheckBox}es
     (normally for non-exclusive button groups), or \l{QRadioButton}s.
     If you create an exclusive button group, you should ensure that
     one of the buttons in the group is initially checked; otherwise,
     the group will initially be in a state where no buttons are
     checked.
 
-    A button is added to the group with addButton(). It can be removed
-    from the group with removeButton(). If the group is exclusive, the
-    currently checked button is available as checkedButton(). If a
-    button is clicked the buttonClicked() signal is emitted. For a
+    A button can be added to the group with addButton() and removed
+    with removeButton(). If the group is exclusive, the
+    currently checked button is available with checkedButton(). If a
+    button is clicked, the buttonClicked() signal is emitted; for a
     checkable button in an exclusive group this means that the button
-    was checked. The list of buttons in the group is returned by
+    has been checked. The list of buttons in the group is returned by
     buttons().
 
     In addition, QButtonGroup can map between integers and buttons.
@@ -103,7 +103,7 @@
     \property QButtonGroup::exclusive
     \brief whether the button group is exclusive
 
-    If this property is true then only one button in the group can be checked
+    If this property is true, then only one button in the group can be checked
     at any given time. The user can click on any button to check it, and that
     button will replace the existing one as the checked button in the group.
 
@@ -119,9 +119,8 @@
 
     This signal is emitted when the given \a button is clicked. A
     button is clicked when it is first pressed and then released, when
-    its shortcut key is typed, or programmatically when
-    QAbstractButton::click() or QAbstractButton::animateClick() is
-    called.
+    its shortcut key is typed, or when QAbstractButton::click()
+    or QAbstractButton::animateClick() is programmatically called.
 
 
     \sa checkedButton(), QAbstractButton::clicked()
@@ -177,8 +176,8 @@
 /*!
     \fn void QButtonGroup::addButton(QAbstractButton *button, int id = -1);
 
-    Adds the given \a button to the button group.  If \a id is -1,
-    an id will be assigned to the button by this QButtonGroup.
+    Adds the given \a button to the button group. If \a id is -1,
+    an id will be assigned to the button.
     Automatically assigned ids are guaranteed to be negative,
     starting with -2. If you are assigning your own ids, use
     positive values to avoid conflicts.
@@ -197,7 +196,7 @@
 /*!
     \fn QList<QAbstractButton*> QButtonGroup::buttons() const
 
-    Returns the list of this groups's buttons. This may be empty.
+    Returns the button group's list of buttons. This may be empty.
 
     \sa addButton(), removeButton()
 */
@@ -223,8 +222,8 @@
     \fn void QButtonGroup::setId(QAbstractButton *button, int id)
     \since 4.1
 
-    Sets the \a id for the specified \a button. Note that \a id can
-    not be -1.
+    Sets the \a id for the specified \a button. Note that \a id cannot
+    be -1.
 
     \sa id()
 */

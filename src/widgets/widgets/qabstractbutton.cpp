@@ -90,19 +90,19 @@ Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
     The \uicontrol Alt+C shortcut is assigned to the button, i.e., when the
     user presses \uicontrol Alt+C the button will call animateClick(). See
-    the \l {QShortcut#mnemonic}{QShortcut} documentation for details
-    (to display an actual ampersand, use '&&').
+    the \l {QShortcut#mnemonic}{QShortcut} documentation for details. To
+    display an actual ampersand, use '&&'.
 
     You can also set a custom shortcut key using the setShortcut()
     function. This is useful mostly for buttons that do not have any
-    text, because they have no automatic shortcut.
+    text, and therefore can't have any automatic shortcut.
 
     \snippet code/src_gui_widgets_qabstractbutton.cpp 1
 
-    All of the buttons provided by Qt (QPushButton, QToolButton,
+    All the buttons provided by Qt (QPushButton, QToolButton,
     QCheckBox, and QRadioButton) can display both \l text and \l{icon}{icons}.
 
-    A button can be made the default button in a dialog are provided by
+    A button can be made the default button in a dialog by means of
     QPushButton::setDefault() and QPushButton::setAutoDefault().
 
     QAbstractButton provides most of the states used for buttons:
@@ -116,7 +116,7 @@ Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
 
     \li isEnabled() indicates whether the button can be pressed by the
     user. \note As opposed to other widgets, buttons derived from
-    QAbstractButton accepts mouse and context menu events
+    QAbstractButton accept mouse and context menu events
     when disabled.
 
     \li setAutoRepeat() sets whether the button will auto-repeat if the
@@ -611,15 +611,15 @@ QAbstractButton::QAbstractButton(QAbstractButtonPrivate &dd, QWidget *parent)
 \property QAbstractButton::text
 \brief the text shown on the button
 
-If the button has no text, the text() function will return a an empty
+If the button has no text, the text() function will return an empty
 string.
 
 If the text contains an ampersand character ('&'), a shortcut is
 automatically created for it. The character that follows the '&' will
 be used as the shortcut key. Any previous shortcut will be
-overwritten, or cleared if no shortcut is defined by the text. See the
-\l {QShortcut#mnemonic}{QShortcut} documentation for details (to
-display an actual ampersand, use '&&').
+overwritten or cleared if no shortcut is defined by the text. See the
+\l {QShortcut#mnemonic}{QShortcut} documentation for details. To
+display an actual ampersand, use '&&'.
 
 There is no default text.
 */
@@ -932,7 +932,7 @@ QButtonGroup *QAbstractButton::group() const
 Performs an animated click: the button is pressed immediately, and
 released \a msec milliseconds later (the default is 100 ms).
 
-Calling this function again before the button was released will reset
+Calling this function again before the button is released resets
 the release timer.
 
 All signals associated with a click are emitted as appropriate.
@@ -998,8 +998,8 @@ void QAbstractButton::toggle()
 }
 
 
-/*! This virtual handler is called when setChecked() was called,
-unless it was called from within nextCheckState(). It allows
+/*! This virtual handler is called when setChecked() is used,
+unless it is called from within nextCheckState(). It allows
 subclasses to reset their intermediate button states.
 
 \sa nextCheckState()
@@ -1010,7 +1010,7 @@ void QAbstractButton::checkStateSet()
 
 /*! This virtual handler is called when a button is clicked. The
 default implementation calls setChecked(!isChecked()) if the button
-isCheckable().  It allows subclasses to implement intermediate button
+isCheckable(). It allows subclasses to implement intermediate button
 states.
 
 \sa checkStateSet()
@@ -1330,7 +1330,7 @@ void QAbstractButton::changeEvent(QEvent *e)
 /*!
 \fn void QAbstractButton::clicked(bool checked)
 
-This signal is emitted when the button is activated (i.e. pressed down
+This signal is emitted when the button is activated (i.e., pressed down
 then released while the mouse cursor is inside the button), when the
 shortcut key is typed, or when click() or animateClick() is called.
 Notably, this signal is \e not emitted if you call setDown(),
@@ -1350,7 +1350,7 @@ This signal is emitted whenever a checkable button changes its state.
 unchecked.
 
 This may be the result of a user action, click() slot activation,
-or because setChecked() was called.
+or because setChecked() is called.
 
 The states of buttons in exclusive button groups are updated before this
 signal is emitted. This means that slots can act on either the "off"

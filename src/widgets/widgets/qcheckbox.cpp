@@ -77,8 +77,8 @@ public:
 
     A QCheckBox is an option button that can be switched on (checked) or off
     (unchecked). Checkboxes are typically used to represent features in an
-    application that can be enabled or disabled without affecting others, but
-    different types of behavior can be implemented. For example, a
+    application that can be enabled or disabled without affecting others.
+    Different types of behavior can be implemented. For example, a
     QButtonGroup can be used to group check buttons logically, allowing
     exclusive checkboxes. However, QButtonGroup does not provide any visual
     representation.
@@ -91,7 +91,7 @@ public:
          \li \inlineimage checkboxes-non-exclusive.png
     \endtable
 
-    Whenever a checkbox is checked or cleared it emits the signal
+    Whenever a checkbox is checked or cleared, it emits the signal
     stateChanged(). Connect to this signal if you want to trigger an action
     each time the checkbox changes state. You can use isChecked() to query
     whether or not a checkbox is checked.
@@ -109,9 +109,9 @@ public:
 
     \snippet code/src_gui_widgets_qcheckbox.cpp 0
 
-    In this example the shortcut is \e{Alt+A}. See the \l{QShortcut#mnemonic}
-    {QShortcut} documentation for details (to display an actual ampersand,
-    use '&&').
+    In this example, the shortcut is \e{Alt+A}. See the \l{QShortcut#mnemonic}
+    {QShortcut} documentation for details. To display an actual ampersand,
+    use '&&'.
 
     Important inherited functions: text(), setText(), text(), pixmap(),
     setPixmap(), accel(), setAccel(), isToggleButton(), setDown(), isDown(),
@@ -137,17 +137,17 @@ public:
 /*!
     \fn void QCheckBox::stateChanged(int state)
 
-    This signal is emitted whenever the check box's state changes, i.e.
+    This signal is emitted whenever the checkbox's state changes, i.e.,
     whenever the user checks or unchecks it.
 
-    \a state contains the check box's new Qt::CheckState.
+    \a state contains the checkbox's new Qt::CheckState.
 */
 
 /*!
     \property QCheckBox::tristate
     \brief whether the checkbox is a tri-state checkbox
 
-    The default is false; i.e. the checkbox has only two states.
+    The default is false, i.e., the checkbox has only two states.
 */
 
 void QCheckBoxPrivate::init()
@@ -237,8 +237,8 @@ bool QCheckBox::isTristate() const
 
 
 /*!
-    Returns the check box's check state. If you do not need tristate support,
-    you can also  use \l QAbstractButton::isChecked() which returns a boolean.
+    Returns the checkbox's check state. If you do not need tristate support,
+    you can also use \l QAbstractButton::isChecked(), which returns a boolean.
 
     \sa setCheckState(), Qt::CheckState
 */
@@ -251,8 +251,8 @@ Qt::CheckState QCheckBox::checkState() const
 }
 
 /*!
-    Sets the check box's check state to \a state. If you do not need tristate
-    support, you can also use \l QAbstractButton::setChecked() which takes a
+    Sets the checkbox's check state to \a state. If you do not need tristate
+    support, you can also use \l QAbstractButton::setChecked(), which takes a
     boolean.
 
     \sa checkState(), Qt::CheckState

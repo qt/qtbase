@@ -84,7 +84,7 @@ void QRadioButtonPrivate::init()
 
     A QRadioButton is an option button that can be switched on (checked) or
     off (unchecked). Radio buttons typically present the user with a "one
-    of many" choice. In a group of radio buttons only one radio button at
+    of many" choice. In a group of radio buttons, only one radio button at
     a time can be checked; if the user selects another button, the
     previously selected button is switched off.
 
@@ -94,7 +94,7 @@ void QRadioButtonPrivate::init()
     you need multiple exclusive button groups for radio buttons that
     belong to the same parent widget, put them into a QButtonGroup.
 
-    Whenever a button is switched on or off it emits the toggled() signal.
+    Whenever a button is switched on or off, it emits the toggled() signal.
     Connect to this signal if you want to trigger an action each time the
     button changes state. Use isChecked() to see if a particular button is
     selected.
@@ -108,8 +108,8 @@ void QRadioButtonPrivate::init()
     \snippet code/src_gui_widgets_qradiobutton.cpp 0
 
     In this example the shortcut is \e{Alt+c}. See the \l
-    {QShortcut#mnemonic}{QShortcut} documentation for details (to
-    display an actual ampersand, use '&&').
+    {QShortcut#mnemonic}{QShortcut} documentation for details. To
+    display an actual ampersand, use '&&'.
 
     Important inherited members: text(), setText(), text(),
     setDown(), isDown(), autoRepeat(), group(), setAutoRepeat(),
@@ -151,7 +151,7 @@ QRadioButton::~QRadioButton()
 }
 
 /*!
-    Constructs a radio button with the given \a parent and a \a text string.
+    Constructs a radio button with the given \a parent and \a text string.
 
     The \a parent argument is passed on to the QAbstractButton constructor.
 */
