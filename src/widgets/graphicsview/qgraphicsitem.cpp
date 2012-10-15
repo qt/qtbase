@@ -7575,6 +7575,18 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
     QGraphicsItem::d_ptr->isObject = true;
 }
 
+/*!
+  \reimp
+*/
+bool QGraphicsObject::event(QEvent *ev)
+{
+    if (ev->type() == QEvent::StyleAnimationUpdate) {
+        update();
+        return true;
+    }
+    return QObject::event(ev);
+}
+
 #ifndef QT_NO_GESTURES
 /*!
     Subscribes the graphics object to the given \a gesture with specific \a flags.
