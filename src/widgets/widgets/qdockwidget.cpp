@@ -1052,7 +1052,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
         }
     }
 
-    if (unplug && floating && nativeDeco)
+    if (floating && nativeDeco)
         if (const QWindow *window = q->windowHandle())
             if (QPlatformWindow *platformWindow = window->handle())
                 platformWindow->setFrameStrutEventsEnabled(true);
