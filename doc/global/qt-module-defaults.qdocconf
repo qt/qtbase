@@ -95,3 +95,4 @@ sources.fileextensions  = "*.c++ *.cc *.cpp *.cxx *.mm *.qml *.qdoc"
 
 versionsym              = QT_VERSION_STR
 
+macro.raisedaster.HTML  = "<sup>*</sup>"
