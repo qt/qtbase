@@ -17,17 +17,19 @@ isEmpty(CXX_MODULE) {
     TARGET = declarative_$${TARGET}
 }
 isEmpty(TARGETPATH): TARGETPATH = $$eval(QT.$${CXX_MODULE}.name)
-DESTDIR = $$eval(QT.$${CXX_MODULE}.imports)/$$TARGETPATH
 
 QMLTYPEFILE = $$_PRO_FILE_PWD_/plugins.qmltypes
 exists($$QMLTYPEFILE): QML_FILES += $$QMLTYPEFILE
 
 # Install rules
 
-qml1_target: \
-    instbase = $$[QT_INSTALL_IMPORTS]/QtDeclarative
-else: \
+qml1_target {
+    DESTDIR = $$eval(QT.$${CXX_MODULE}.imports)/$$TARGETPATH
     instbase = $$[QT_INSTALL_IMPORTS]
+} else {
+    DESTDIR = $$eval(QT.$${CXX_MODULE}.qml)/$$TARGETPATH
+    instbase = $$[QT_INSTALL_QML]
+}
 
 target.path = $$instbase/$$TARGETPATH
 INSTALLS += target

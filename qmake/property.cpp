@@ -65,6 +65,7 @@ static const struct {
     { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath, false },
     { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, false },
     { "QT_INSTALL_IMPORTS", QLibraryInfo::ImportsPath, false },
+    { "QT_INSTALL_QML", QLibraryInfo::Qml2ImportsPath, false },
     { "QT_INSTALL_TRANSLATIONS", QLibraryInfo::TranslationsPath, false },
     { "QT_INSTALL_CONFIGURATION", QLibraryInfo::SettingsPath, false },
     { "QT_INSTALL_EXAMPLES", QLibraryInfo::ExamplesPath, false },

@@ -70,12 +70,14 @@ public:
         BinariesPath,
         PluginsPath,
         ImportsPath,
+        Qml2ImportsPath,
         ArchDataPath,
         DataPath,
         TranslationsPath,
         ExamplesPath,
         TestsPath,
         // Insert new values above this line
+        // Please read the comments in qlibraryinfo.cpp before adding
 #ifdef QT_BOOTSTRAPPED
         // These are not subject to binary compatibility constraints
         SysrootPath,

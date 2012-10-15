@@ -10,9 +10,9 @@ for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
 OTHER_FILES += $$fq_qml_files
 
 qml1_target: \
-    instbase = $$[QT_INSTALL_IMPORTS]/QtDeclarative
-else: \
     instbase = $$[QT_INSTALL_IMPORTS]
+else: \
+    instbase = $$[QT_INSTALL_QML]
 
 exists($$[QT_HOST_PREFIX]/.qmake.cache) {
     # These bizarre rules copy the files to the qtbase build directory

@@ -81,7 +81,8 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
         "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
         "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]" \
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
-        "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE$$MODULE_IMPORT_SUFFIX" \
+        "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \
+        "QT.$${MODULE}.qml = \$\$QT_MODULE_QML_BASE" \
         "QT.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_privdep \
         $$module_build_type \

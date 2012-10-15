@@ -1067,6 +1067,14 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "QT_INSTALL_IMPORTS" ] = configCmdLine.at(i);
         }
+
+        else if (configCmdLine.at(i) == "-qmldir") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "QT_INSTALL_QML" ] = configCmdLine.at(i);
+        }
+
         else if (configCmdLine.at(i) == "-archdatadir") {
             ++i;
             if (i == argCount)
@@ -1595,6 +1603,7 @@ bool Configure::displayHelp()
         desc(       "-archdatadir <dir>",               "Architecture-dependent data used by Qt will be installed to <dir>\n(default PREFIX)");
         desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir>\n(default ARCHDATADIR/plugins)");
         desc(       "-importdir <dir>",                 "Imports for QML1 will be installed to <dir>\n(default ARCHDATADIR/imports)");
+        desc(       "-qmldir <dir>",                    "Imports for QML2 will be installed to <dir>\n(default ARCHDATADIR/qml)");
         desc(       "-datadir <dir>",                   "Data used by Qt programs will be installed to <dir>\n(default PREFIX)");
         desc(       "-docdir <dir>",                    "Documentation will be installed to <dir>\n(default DATADIR/doc)");
         desc(       "-translationdir <dir>",            "Translations of Qt programs will be installed to <dir>\n(default DATADIR/translations)");
@@ -3414,7 +3423,8 @@ void Configure::displayConfig()
     sout << "Libraries installed to......" << QDir::toNativeSeparators(dictionary["QT_INSTALL_LIBS"]) << endl;
     sout << "Arch-dep. data to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_ARCHDATA"]) << endl;
     sout << "Plugins installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_PLUGINS"]) << endl;
-    sout << "Imports installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << endl;
+    sout << "QML1 imports installed to..." << QDir::toNativeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << endl;
+    sout << "QML2 imports installed to..." << QDir::toNativeSeparators(dictionary["QT_INSTALL_QML"]) << endl;
     sout << "Binaries installed to......." << QDir::toNativeSeparators(dictionary["QT_INSTALL_BINS"]) << endl;
     sout << "Arch-indep. data to........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DATA"]) << endl;
     sout << "Docs installed to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DOCS"]) << endl;
@@ -3550,6 +3560,8 @@ void Configure::generateQConfigCpp()
         dictionary["QT_INSTALL_PLUGINS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/plugins";
     if (!dictionary["QT_INSTALL_IMPORTS"].size())
         dictionary["QT_INSTALL_IMPORTS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/imports";
+    if (!dictionary["QT_INSTALL_QML"].size())
+        dictionary["QT_INSTALL_QML"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/qml";
     if (!dictionary["QT_INSTALL_DATA"].size())
         dictionary["QT_INSTALL_DATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
     if (!dictionary["QT_INSTALL_DOCS"].size())
@@ -3597,6 +3609,7 @@ void Configure::generateQConfigCpp()
                   << "    \"qt_binspath=" << formatPath(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
                   << "    \"qt_plugpath=" << formatPath(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
                   << "    \"qt_impspath=" << formatPath(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
+                  << "    \"qt_qml2path=" << formatPath(dictionary["QT_INSTALL_QML"]) << "\","  << endl
                   << "    \"qt_adatpath=" << formatPath(dictionary["QT_INSTALL_ARCHDATA"]) << "\","  << endl
                   << "    \"qt_datapath=" << formatPath(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
                   << "    \"qt_trnspath=" << formatPath(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl

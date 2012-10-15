@@ -52,6 +52,7 @@
         "QT_MODULE_BIN_BASE = $$MODULE_BASE_OUTDIR/bin" \
         "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
         "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
+        "QT_MODULE_QML_BASE = $$MODULE_BASE_OUTDIR/qml" \
         "QT_MODULE_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
         "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
         $$module_rpathlink \
@@ -69,7 +70,7 @@
     include($$MODULE_FWD_PRI)
     for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
                     name depends private_depends module_config CONFIG DEFINES sources \
-                    includes private_includes bins libs plugins imports \
+                    includes private_includes bins libs plugins imports qml \
             )):defined(QT.$${MODULE}.$$var, var):cache(QT.$${MODULE}.$$var, transient)
     cache(QT_CONFIG, transient)
 
