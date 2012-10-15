@@ -59,9 +59,7 @@ expect_pass(test_dependent_modules)
 expect_fail(test_add_resource_options)
 expect_fail(test_wrap_cpp_options)
 expect_pass("test(needsquoting)dirname")
-if (NOT WIN32)
-    expect_pass(test_platform_defs_include)
-endif()
+expect_pass(test_platform_defs_include)
 expect_pass(test_qtmainwin_library)
 
 # If QtDBus has been installed then run the tests for its macros.

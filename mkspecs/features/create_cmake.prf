@@ -60,6 +60,8 @@ static|staticlib:CMAKE_STATIC_TYPE = true
 
 contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
+CMAKE_MKSPEC = $$relative_path($$QMAKESPEC, $$[QT_HOST_DATA/get]/mkspecs)
+
 macx {
     !isEmpty(CMAKE_STATIC_TYPE) {
         CMAKE_LIB_FILE_LOCATION_DEBUG = libQt$${CMAKE_MODULE_NAME}$${QT_LIBINFIX}_debug.a
