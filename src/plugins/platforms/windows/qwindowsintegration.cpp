@@ -187,6 +187,40 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
     \class QWindowsIntegration
     \brief QPlatformIntegration implementation for Windows.
     \internal
+
+    \section1 Programming Considerations
+
+    The platform plugin should run on Desktop Windows from Windows XP onwards
+    and Windows Embedded.
+
+    It should compile with:
+    \list
+    \li Microsoft Visual Studio 2008 or later (using the Microsoft Windows SDK,
+        (\c Q_CC_MSVC).
+    \li Stock \l{http://mingw.org/}{MinGW} (\c Q_CC_MINGW).
+        This version ships with headers that are missing a lot of WinAPI.
+    \li MinGW distributions using GCC 4.7 or higher and a recent MinGW-w64 runtime API,
+        such as \l{http://tdm-gcc.tdragon.net/}{TDM-GCC}, or
+        \l{http://mingwbuilds.sourceforge.net/}{MinGW-builds}
+        (\c Q_CC_MINGW and \c __MINGW64_VERSION_MAJOR indicating the version).
+        MinGW-w64 provides more complete headers (compared to stock MinGW from mingw.org),
+        including a considerable part of the Windows SDK.
+    \li Visual Studio 2008 for Windows Embedded (\c Q_OS_WINCE).
+    \endlist
+
+    The file \c qtwindows_additional.h contains defines and declarations that
+    are missing in MinGW. When encountering missing declarations, it should
+    be added there so that \c #ifdefs for MinGW can be avoided. Similarly,
+    \c qplatformfunctions_wince.h contains defines and declarations for
+    Windows Embedded.
+
+    When using a function from the WinAPI, the minimum supported Windows version
+    and Windows Embedded support should be checked. If the function is not supported
+    on Windows XP or is not present in the MinGW-headers, it should be dynamically
+    resolved. For this purpose, QWindowsContext has static structs like
+    QWindowsUser32DLL and QWindowsShell32DLL. All function pointers should go to
+    these structs to avoid lookups in several places.
+
     \ingroup qt-lighthouse-win
 */
 
