@@ -31,7 +31,7 @@ qhp.QtNetwork.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtnetwork/qtnetwork.tags
 
-depends                 += qtcore
+depends                 += qtcore qtgui qtdoc
 
 headerdirs  += ..
 

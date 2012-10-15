@@ -31,7 +31,7 @@ qhp.QtWidgets.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtwidgets/qtwidgets.tags
 
-depends                 += qtcore qtgui
+depends                 += qtcore qtgui qtdoc qtsql
 
 headerdirs  += ..
 

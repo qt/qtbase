@@ -31,7 +31,7 @@ qhp.QtOpenGL.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtopengl/qtopengl.tags
 
-depends                 += qtcore qtgui qtwidgets
+depends                 += qtcore qtgui qtwidgets qtdoc
 
 headerdirs  += ..
 

@@ -31,7 +31,7 @@ qhp.QtXml.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtxml/qtxml.tags
 
-depends                 += qtcore
+depends                 += qtcore qtnetwork qtdoc
 
 headerdirs  += ..
 

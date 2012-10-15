@@ -31,7 +31,15 @@ qhp.QtGui.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtgui/qtgui.tags
 
-depends                 += qtcore
+depends += \
+    qtcore \
+    qtnetwork \
+    qtopengl \
+    qtsvg \
+    qtqml \
+    qtquickt \
+    qtwidgets \
+    qtdoc
 
 headerdirs  += ..
 
