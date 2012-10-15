@@ -1278,13 +1278,13 @@ bool AtSpiAdaptor::applicationInterface(const QAIPointer &interface, const QStri
         QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant(QLatin1String("Qt"))));
         return connection.send(reply);
     }
-    if (function == "GetVersion") {
-        Q_ASSERT(message.signature() == "ss");
+    if (function == QLatin1String("GetVersion")) {
+        Q_ASSERT(message.signature() == QLatin1String("ss"));
         QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant(QLatin1String(qVersion()))));
         return connection.send(reply);
     }
-    if (function == "GetLocale") {
-        Q_ASSERT(message.signature() == "u");
+    if (function == QLatin1String("GetLocale")) {
+        Q_ASSERT(message.signature() == QLatin1String("u"));
         QDBusMessage reply = message.createReply(QVariant::fromValue(QLocale().name()));
         return connection.send(reply);
     }
