@@ -2570,44 +2570,38 @@ void tst_QAccessibility::tableTest()
 
     tableView->resize(600,600);
     tableView->show();
-    QTest::qWait(1); // Need this for indexOfchild to work.
-    QCoreApplication::processEvents();
-    QTest::qWait(100);
+    QTest::qWaitForWindowExposed(tableView);
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(tableView);
-    QCOMPARE(verifyHierarchy(iface), 0);
+    QAIPtr iface = QAIPtr(QAccessible::queryAccessibleInterface(tableView));
+    QCOMPARE(verifyHierarchy(iface.data()), 0);
 
-    QCOMPARE((int)iface->role(), (int)QAccessible::Table);
+    QCOMPARE(iface->role(), QAccessible::Table);
     // header and 2 rows (the others are not expanded, thus not visible)
     QCOMPARE(iface->childCount(), 9+3+3+1); // cell+headers+topleft button
 
-    QAccessibleInterface *cornerButton = iface->child(0);
+    QAIPtr cornerButton(iface->child(0));
     QVERIFY(cornerButton);
-    QCOMPARE(iface->indexOfChild(cornerButton), 0);
+    QCOMPARE(iface->indexOfChild(cornerButton.data()), 0);
     QCOMPARE(cornerButton->role(), QAccessible::Pane);
-    delete cornerButton;
 
-    QAccessibleInterface *child1 = iface->child(2);
+    QAIPtr child1(iface->child(2));
     QVERIFY(child1);
-    QCOMPARE(iface->indexOfChild(child1), 2);
+    QCOMPARE(iface->indexOfChild(child1.data()), 2);
     QCOMPARE(child1->text(QAccessible::Name), QString("h2"));
     QCOMPARE(child1->role(), QAccessible::ColumnHeader);
     QVERIFY(!(child1->state().expanded));
-    delete child1;
 
-    QAccessibleInterface *child2 = iface->child(10);
+    QAIPtr child2(iface->child(10));
     QVERIFY(child2);
-    QCOMPARE(iface->indexOfChild(child2), 10);
+    QCOMPARE(iface->indexOfChild(child2.data()), 10);
     QCOMPARE(child2->text(QAccessible::Name), QString("1.1"));
     QAccessibleTableCellInterface *cell2Iface = child2->tableCellInterface();
     QCOMPARE(cell2Iface->rowIndex(), 1);
     QCOMPARE(cell2Iface->columnIndex(), 1);
-    delete child2;
 
-    QAccessibleInterface *child3 = iface->child(11);
-    QCOMPARE(iface->indexOfChild(child3), 11);
+    QAIPtr child3(iface->child(11));
+    QCOMPARE(iface->indexOfChild(child3.data()), 11);
     QCOMPARE(child3->text(QAccessible::Name), QString("1.2"));
-    delete child3;
 
     QTestAccessibility::clearEvents();
 
@@ -2621,23 +2615,21 @@ void tst_QAccessibility::tableTest()
     QCOMPARE(cell1->text(QAccessible::Name), QString("0.0"));
     QCOMPARE(iface->indexOfChild(cell1), 5);
 
-    QAccessibleInterface *cell2;
-    QVERIFY(cell2 = table2->cellAt(0,1));
+    QAIPtr cell2(table2->cellAt(0,1));
+    QVERIFY(cell2);
     QCOMPARE(cell2->text(QAccessible::Name), QString("0.1"));
     QCOMPARE(cell2->role(), QAccessible::Cell);
     QCOMPARE(cell2->tableCellInterface()->rowIndex(), 0);
     QCOMPARE(cell2->tableCellInterface()->columnIndex(), 1);
-    QCOMPARE(iface->indexOfChild(cell2), 6);
-    delete cell2;
+    QCOMPARE(iface->indexOfChild(cell2.data()), 6);
 
-    QAccessibleInterface *cell3;
-    QVERIFY(cell3 = table2->cellAt(1,2));
+    QAIPtr cell3(table2->cellAt(1,2));
+    QVERIFY(cell3);
     QCOMPARE(cell3->text(QAccessible::Name), QString("1.2"));
     QCOMPARE(cell3->role(), QAccessible::Cell);
     QCOMPARE(cell3->tableCellInterface()->rowIndex(), 1);
     QCOMPARE(cell3->tableCellInterface()->columnIndex(), 2);
-    QCOMPARE(iface->indexOfChild(cell3), 11);
-    delete cell3;
+    QCOMPARE(iface->indexOfChild(cell3.data()), 11);
 
     QCOMPARE(table2->columnDescription(0), QString("h1"));
     QCOMPARE(table2->columnDescription(1), QString("h2"));
@@ -2645,8 +2637,6 @@ void tst_QAccessibility::tableTest()
     QCOMPARE(table2->rowDescription(0), QString("v1"));
     QCOMPARE(table2->rowDescription(1), QString("v2"));
     QCOMPARE(table2->rowDescription(2), QString("v3"));
-
-    delete iface;
 
     delete tableView;
 
