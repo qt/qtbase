@@ -1,0 +1,29 @@
+This is the ANGLE project from:
+
+http://code.google.com/p/angleproject/
+
+The upstream version used here can be found in:
+
+src/common/version.h
+
+This copy of the library has been modified with several patches
+that can be found in the 'patches' subdirectory.
+
+Updating ANGLE
+-------------------------------------------------------------
+To update to a newer version of ANGLE, extract the archive
+directly into the 'src/3rdparty/angle' directory. ANGLE contains
+a .gitignore file that will overwrite the one in Qt, but this is
+not desirable so the ANGLE one should be discarded and the one in
+Qt should be kept. If there are new source/header files in ANGLE
+(git status -u) then they should be added to the relevant .pro
+file before committing.
+
+
+Using a custom ANGLE
+-------------------------------------------------------------
+Qt supports building a version of ANGLE other than the one that
+is contained in the source tree. To get Qt to build a different
+copy of ANGLE, you can set the ANGLE_DIR environment variable
+to point to the location of the custom ANGLE before building Qt.
+

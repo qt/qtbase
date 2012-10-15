@@ -115,7 +115,7 @@ QWindowsEGLStaticContext::~QWindowsEGLStaticContext()
        When building for 64bit, de-activate the "WarnAsError" option
        in every project file (as otherwise integer conversion
        warnings will break the build).
-    \o Run configure.exe with the options "-opengl es2 -angle <path>".
+    \o Run configure.exe with the options "-opengl es2".
     \o Build qtbase and test some examples.
     \endlist
 
