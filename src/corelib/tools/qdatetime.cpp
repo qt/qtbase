@@ -408,8 +408,6 @@ int QDate::daysInMonth() const
     getDateFromJulianDay(jd, &y, &m, 0);
     if (m == 2 && isLeapYear(y))
         return 29;
-    else if (m < 1 || m > 12)
-        return 0;
     else
         return monthDays[m];
 }
@@ -1150,9 +1148,10 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
                     break;
                 }
             }
-        }
-        if (month < 1 || month > 12) {
-            return QDate();
+            if (month == -1) {
+                // Month name matches neither English nor other localised name.
+                return QDate();
+            }
         }
 
         bool ok;
