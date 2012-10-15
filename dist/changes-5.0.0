@@ -588,6 +588,11 @@ QtWidgets
   returned from permissions() or data(FilePermissions), even if in read-only mode
   (QFileSystemModel::isReadOnly()).
 
+* [QTBUG-158 QTBUG-428 QTBUG-26501] QComboBox::currentText improvements
+  Restored currentText as USER property.
+  New setter setCurrentText(), marked as WRITE method, usable by QItemDelegate and QDataWidgetMapper.
+  New signal currentTextChanged() marked as NOTIFY method.
+
 QtNetwork
 ---------
 * QHostAddress::isLoopback() API added. Returns true if the address is
