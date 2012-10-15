@@ -55,7 +55,7 @@ class Q_GUI_EXPORT QTriangulatingStroker
 {
 public:
     QTriangulatingStroker() : m_vertices(0) {}
-    void process(const QVectorPath &path, const QPen &pen, const QRectF &clip);
+    void process(const QVectorPath &path, const QPen &pen, const QRectF &clip, QPainter::RenderHints hints);
 
     inline int vertexCount() const { return m_vertices.size(); }
     inline const float *vertices() const { return m_vertices.data(); }
@@ -97,7 +97,7 @@ class Q_GUI_EXPORT QDashedStrokeProcessor
 public:
     QDashedStrokeProcessor();
 
-    void process(const QVectorPath &path, const QPen &pen, const QRectF &clip);
+    void process(const QVectorPath &path, const QPen &pen, const QRectF &clip, QPainter::RenderHints hints);
 
     inline void addElement(QPainterPath::ElementType type, qreal x, qreal y) {
         m_points.add(x);

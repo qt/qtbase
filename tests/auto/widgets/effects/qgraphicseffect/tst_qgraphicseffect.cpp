@@ -234,6 +234,7 @@ void tst_QGraphicsEffect::boundingRect()
     // Install effect on QGraphicsItem.
     QRectF itemRect(0, 0, 100, 100);
     QGraphicsRectItem *item = new QGraphicsRectItem;
+    item->setPen(QPen(Qt::black, 0));
     item->setRect(itemRect);
     item->setGraphicsEffect(effect);
     int margin = effect->margin();
@@ -265,16 +266,19 @@ void tst_QGraphicsEffect::boundingRect2()
 {
     CustomEffect *effect = new CustomEffect;
     QGraphicsRectItem *root = new QGraphicsRectItem;
+    root->setPen(QPen(Qt::black, 0));
     root->setGraphicsEffect(effect);
 
     QGraphicsRectItem *child = new QGraphicsRectItem;
     QRectF childRect(0, 0, 100, 100);
+    child->setPen(QPen(Qt::black, 0));
     child->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
     child->setRect(childRect);
     child->setParentItem(root);
 
     QGraphicsRectItem *grandChild = new QGraphicsRectItem;
     QRectF grandChildRect(0, 0, 200, 200);
+    grandChild->setPen(QPen(Qt::black, 0));
     grandChild->setRect(grandChildRect);
     grandChild->setParentItem(child);
 

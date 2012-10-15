@@ -275,7 +275,7 @@ void QCosmeticStroker::setup()
     qreal width = state->lastPen.widthF();
     if (width == 0)
         opacity = 256;
-    else if (state->lastPen.isCosmetic())
+    else if (qt_pen_is_cosmetic(state->lastPen, state->renderHints))
         opacity = (int) 256*width;
     else
         opacity = (int) 256*width*state->txscale;

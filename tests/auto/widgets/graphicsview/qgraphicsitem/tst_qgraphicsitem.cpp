@@ -491,6 +491,7 @@ void tst_QGraphicsItem::construction()
         switch (i) {
         case 0:
             item = new QGraphicsEllipseItem;
+            ((QGraphicsEllipseItem *)item)->setPen(QPen(Qt::black, 0));
             QCOMPARE(int(item->type()), int(QGraphicsEllipseItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsEllipseItem *>(item), (QGraphicsEllipseItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
@@ -498,6 +499,7 @@ void tst_QGraphicsItem::construction()
             break;
         case 1:
             item = new QGraphicsLineItem;
+            ((QGraphicsLineItem *)item)->setPen(QPen(Qt::black, 0));
             QCOMPARE(int(item->type()), int(QGraphicsLineItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
@@ -505,6 +507,7 @@ void tst_QGraphicsItem::construction()
             break;
         case 2:
             item = new QGraphicsPathItem;
+            ((QGraphicsPathItem *)item)->setPen(QPen(Qt::black, 0));
             QCOMPARE(int(item->type()), int(QGraphicsPathItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPathItem *>(item), (QGraphicsPathItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
@@ -519,6 +522,7 @@ void tst_QGraphicsItem::construction()
             break;
         case 4:
             item = new QGraphicsPolygonItem;
+            ((QGraphicsPolygonItem *)item)->setPen(QPen(Qt::black, 0));
             QCOMPARE(int(item->type()), int(QGraphicsPolygonItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPolygonItem *>(item), (QGraphicsPolygonItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
@@ -526,6 +530,7 @@ void tst_QGraphicsItem::construction()
             break;
         case 5:
             item = new QGraphicsRectItem;
+            ((QGraphicsRectItem *)item)->setPen(QPen(Qt::black, 0));
             QCOMPARE(int(item->type()), int(QGraphicsRectItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)0);
@@ -579,7 +584,9 @@ public:
     BoundingRectItem(QGraphicsItem *parent = 0)
         : QGraphicsRectItem(0, 0, parent ? 200 : 100, parent ? 200 : 100,
                             parent)
-    {}
+    {
+        setPen(QPen(Qt::black, 0));
+    }
 
     QRectF boundingRect() const
     {
@@ -2204,6 +2211,7 @@ void tst_QGraphicsItem::setMatrix()
     QSignalSpy spy(&scene, SIGNAL(changed(QList<QRectF>)));
     QRectF unrotatedRect(-12, -34, 56, 78);
     QGraphicsRectItem item(unrotatedRect, 0);
+    item.setPen(QPen(Qt::black, 0));
     scene.addItem(&item);
     scene.update(scene.sceneRect());
     QApplication::instance()->processEvents();
@@ -2277,6 +2285,7 @@ void tst_QGraphicsItem::zValue()
 void tst_QGraphicsItem::shape()
 {
     QGraphicsLineItem line(QLineF(-10, -10, 20, 20));
+    line.setPen(QPen(Qt::black, 0));
 
     // We unfortunately need this hack as QPainterPathStroker will set a width of 1.0
     // if we pass a value of 0.0 to QPainterPathStroker::setWidth()
@@ -2317,6 +2326,7 @@ void tst_QGraphicsItem::shape()
     QCOMPARE(line.shape(), p);
 
     QGraphicsRectItem rect(QRectF(-10, -10, 20, 20));
+    rect.setPen(QPen(Qt::black, 0));
     QPainterPathStroker ps1;
     ps1.setWidth(penWidthZero);
     path = QPainterPath();
@@ -2326,6 +2336,7 @@ void tst_QGraphicsItem::shape()
     QCOMPARE(rect.shape(), p);
 
     QGraphicsEllipseItem ellipse(QRectF(-10, -10, 20, 20));
+    ellipse.setPen(QPen(Qt::black, 0));
     QPainterPathStroker ps2;
     ps2.setWidth(ellipse.pen().widthF() <= 0.0 ? penWidthZero : ellipse.pen().widthF());
     path = QPainterPath();
@@ -2339,6 +2350,7 @@ void tst_QGraphicsItem::shape()
     p = ps3.createStroke(path);
     p.addPath(path);
     QGraphicsPathItem pathItem(path);
+    pathItem.setPen(QPen(Qt::black, 0));
     QCOMPARE(pathItem.shape(), p);
 
     QRegion region(QRect(0, 0, 300, 200));
@@ -2377,6 +2389,7 @@ void tst_QGraphicsItem::shape()
     QPolygonF poly;
     poly << QPointF(0, 0) << QPointF(10, 0) << QPointF(0, 10);
     QGraphicsPolygonItem polygon(poly);
+    polygon.setPen(QPen(Qt::black, 0));
     path = QPainterPath();
     path.addPolygon(poly);
 
@@ -3393,6 +3406,12 @@ void tst_QGraphicsItem::childrenBoundingRectTransformed()
     rect4->setParentItem(rect3);
     rect5->setParentItem(rect4);
 
+    rect->setPen(QPen(Qt::black, 0));
+    rect2->setPen(QPen(Qt::black, 0));
+    rect3->setPen(QPen(Qt::black, 0));
+    rect4->setPen(QPen(Qt::black, 0));
+    rect5->setPen(QPen(Qt::black, 0));
+
     rect2->setTransform(QTransform().translate(50, 50).rotate(45));
     rect2->setPos(25, 25);
     rect3->setTransform(QTransform().translate(50, 50).rotate(45));
@@ -3425,6 +3444,9 @@ void tst_QGraphicsItem::childrenBoundingRect2()
     QGraphicsLineItem l2(100, 0, 100, 100, &box);
     QGraphicsLineItem l3(0, 0, 0, 100, &box);
     // Make sure lines (zero with/height) are included in the childrenBoundingRect.
+    l1.setPen(QPen(Qt::black, 0));
+    l2.setPen(QPen(Qt::black, 0));
+    l3.setPen(QPen(Qt::black, 0));
     QCOMPARE(box.childrenBoundingRect(), QRectF(0, 0, 100, 100));
 }
 
@@ -3441,6 +3463,12 @@ void tst_QGraphicsItem::childrenBoundingRect3()
     rect3->setParentItem(rect2);
     rect4->setParentItem(rect3);
     rect5->setParentItem(rect4);
+
+    rect->setPen(QPen(Qt::black, 0));
+    rect2->setPen(QPen(Qt::black, 0));
+    rect3->setPen(QPen(Qt::black, 0));
+    rect4->setPen(QPen(Qt::black, 0));
+    rect5->setPen(QPen(Qt::black, 0));
 
     rect2->setTransform(QTransform().translate(50, 50).rotate(45));
     rect2->setPos(25, 25);
@@ -3494,6 +3522,9 @@ void tst_QGraphicsItem::childrenBoundingRect5()
     QGraphicsRectItem *parent = scene.addRect(QRectF(0, 0, 100, 100));
     QGraphicsRectItem *child = scene.addRect(QRectF(0, 0, 100, 100));
     child->setParentItem(parent);
+
+    parent->setPen(QPen(Qt::black, 0));
+    child->setPen(QPen(Qt::black, 0));
 
     QGraphicsView view(&scene);
     view.show();
@@ -4382,6 +4413,7 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsTextItem()
 void tst_QGraphicsItem::defaultItemTest_QGraphicsEllipseItem()
 {
     QGraphicsEllipseItem item;
+    item.setPen(QPen(Qt::black, 0));
     QVERIFY(item.rect().isNull());
     QVERIFY(item.boundingRect().isNull());
     QVERIFY(item.shape().isEmpty());
@@ -6517,6 +6549,7 @@ void tst_QGraphicsItem::boundingRegion()
     QFETCH(QRegion, expectedRegion);
 
     QGraphicsLineItem item(line);
+    item.setPen(QPen(Qt::black, 0));
     QCOMPARE(item.boundingRegionGranularity(), qreal(0.0));
     item.setBoundingRegionGranularity(granularity);
     QCOMPARE(item.boundingRegionGranularity(), granularity);
@@ -6980,6 +7013,7 @@ public:
     TransformDebugItem()
         : QGraphicsRectItem(QRectF(-10, -10, 20, 20))
     {
+        setPen(QPen(Qt::black, 0));
         setBrush(QColor(qrand() % 256, qrand() % 256, qrand() % 256));
     }
 
@@ -7047,7 +7081,9 @@ void tst_QGraphicsItem::sceneTransformCache()
     // parent is transformed.
     QGraphicsScene scene;
     QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
+    rect->setPen(QPen(Qt::black, 0));
     QGraphicsRectItem *rect2 = scene.addRect(0, 0, 100, 100);
+    rect2->setPen(QPen(Qt::black, 0));
     rect2->setParentItem(rect);
     rect2->rotate(90);
     rect->translate(0, 50);
@@ -7071,9 +7107,11 @@ void tst_QGraphicsItem::sceneTransformCache()
     QGraphicsRectItem *rect3 = scene.addRect(0, 0, 100, 100);
     QGraphicsRectItem *rect4 = scene.addRect(0, 0, 100, 100);
     rect3->setPos(QPointF(10,10));
+    rect3->setPen(QPen(Qt::black, 0));
 
     rect4->setParentItem(rect3);
     rect4->setPos(QPointF(10,10));
+    rect4->setPen(QPen(Qt::black, 0));
 
     QCOMPARE(rect4->mapToScene(rect4->boundingRect().topLeft()), QPointF(20,20));
 
@@ -7084,9 +7122,11 @@ void tst_QGraphicsItem::sceneTransformCache()
     QGraphicsRectItem *rect5 = scene.addRect(0, 0, 100, 100);
     QGraphicsRectItem *rect6 = scene.addRect(0, 0, 100, 100);
     rect5->setPos(QPointF(20,20));
+    rect5->setPen(QPen(Qt::black, 0));
 
     rect6->setParentItem(rect5);
     rect6->setPos(QPointF(10,10));
+    rect6->setPen(QPen(Qt::black, 0));
     //test if rect6 transform is ok
     QCOMPARE(rect6->mapToScene(rect6->boundingRect().topLeft()), QPointF(30,30));
 

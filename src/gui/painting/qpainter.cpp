@@ -897,26 +897,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     if (!newState) {
         engine->state = newState;
-
     } else if (newState->state() || engine->state!=newState) {
-        bool setNonCosmeticPen = (newState->renderHints & QPainter::NonCosmeticDefaultPen)
-                                 && newState->pen.widthF() == 0;
-        if (setNonCosmeticPen) {
-            // Override the default pen's cosmetic state if the
-            // NonCosmeticDefaultPen render hint is used.
-            QPen oldPen = newState->pen;
-            newState->pen.setWidth(1);
-            newState->pen.setCosmetic(false);
-            newState->dirtyFlags |= QPaintEngine::DirtyPen;
-
-            updateStateImpl(newState);
-
-            // Restore the state pen back to its default to preserve visible
-            // state.
-            newState->pen = oldPen;
-        } else {
-            updateStateImpl(newState);
-        }
+        updateStateImpl(newState);
     }
 }
 
@@ -1417,14 +1399,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     indicating that the engine should use fragment programs and offscreen
     rendering for antialiasing.
 
-    \value NonCosmeticDefaultPen The engine should interpret pens with a width
-    of 0 (which otherwise enables QPen::isCosmetic()) as being a non-cosmetic
-    pen with a width of 1.
+    \value NonCosmeticDefaultPen This value is obsolete, the default for QPen
+    is now non-cosmetic.
 
     \value Qt4CompatiblePainting Compatibility hint telling the engine to use the
     same X11 based fill rules as in Qt 4, where aliased rendering is offset
-    by slightly less than half a pixel. Potentially useful when porting a
-    Qt 4 application to Qt 5.
+    by slightly less than half a pixel. Also will treat default constructed pens
+    as cosmetic. Potentially useful when porting a Qt 4 application to Qt 5.
 
     \sa renderHints(), setRenderHint(), {QPainter#Rendering
     Quality}{Rendering Quality}, {Concentric Circles Example}
@@ -3849,13 +3830,10 @@ void QPainter::setPen(const QColor &color)
         return;
     }
 
-    if (d->state->pen.style() == Qt::SolidLine
-        && d->state->pen.widthF() == 0
-        && d->state->pen.isSolid()
-        && d->state->pen.color() == color)
-        return;
+    QPen pen(color.isValid() ? color : QColor(Qt::black));
 
-    QPen pen(color.isValid() ? color : QColor(Qt::black), 0, Qt::SolidLine);
+    if (d->state->pen == pen)
+        return;
 
     d->state->pen = pen;
     if (d->extended)
@@ -3904,7 +3882,7 @@ void QPainter::setPen(const QPen &pen)
 /*!
     \overload
 
-    Sets the painter's pen to have the given \a style, width 0 and
+    Sets the painter's pen to have the given \a style, width 1 and
     black color.
 */
 
@@ -3916,15 +3894,12 @@ void QPainter::setPen(Qt::PenStyle style)
         return;
     }
 
-    if (d->state->pen.style() == style
-        && (style == Qt::NoPen || (d->state->pen.widthF() == 0
-                                   && d->state->pen.isSolid()
-                                   && d->state->pen.color() == QColor(Qt::black))))
+    QPen pen = QPen(style);
+
+    if (d->state->pen == pen)
         return;
 
-    // QPen(Qt::NoPen) is to avoid creating QPenData, including its brush (from the color)
-    // Note that this works well as long as QPen(Qt::NoPen) returns a black, zero-width pen
-    d->state->pen = (style == Qt::NoPen) ? QPen(Qt::NoPen) : QPen(Qt::black, 0, style);
+    d->state->pen = pen;
 
     if (d->extended)
         d->extended->penChanged();

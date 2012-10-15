@@ -470,9 +470,9 @@ void tst_QPathClipper::clipTest(int subjectIndex, int clipIndex, QPathClipper::O
     p.setRenderHint(QPainter::Antialiasing);
     p.scale(scale, scale);
     p.translate(-bounds.topLeft());
-    p.setPen(Qt::black);
+    p.setPen(QPen(Qt::black, 0));
     p.drawPath(subject);
-    p.setPen(Qt::red);
+    p.setPen(QPen(Qt::red, 0));
     p.drawPath(clip);
     p.end();
 

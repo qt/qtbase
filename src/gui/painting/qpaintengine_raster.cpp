@@ -771,7 +771,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     } else if (pen_style != Qt::NoPen) {
         if (!d->dashStroker)
             d->dashStroker.reset(new QDashStroker(&d->basicStroker));
-        if (pen.isCosmetic()) {
+        if (qt_pen_is_cosmetic(pen, s->renderHints)) {
             d->dashStroker->setClipRect(d->deviceRect);
         } else {
             // ### I've seen this inverted devrect multiple places now...
@@ -786,10 +786,11 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     }
 
     ensureRasterState(); // needed because of tx_noshear...
+    bool cosmetic = qt_pen_is_cosmetic(pen, s->renderHints);
     s->flags.fast_pen = pen_style > Qt::NoPen
             && s->penData.blend
-            && ((pen.isCosmetic() && penWidth <= 1)
-                || (!pen.isCosmetic() && s->flags.tx_noshear && penWidth * s->txscale <= 1));
+            && ((cosmetic && penWidth <= 1)
+                || (!cosmetic && s->flags.tx_noshear && penWidth * s->txscale <= 1));
 
     s->flags.non_complex_pen = qpen_capStyle(s->lastPen) <= Qt::SquareCap && s->flags.tx_noshear;
 
@@ -1610,7 +1611,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         stroker.drawPath(path);
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
-        qreal width = s->lastPen.isCosmetic()
+        qreal width = qt_pen_is_cosmetic(s->lastPen, s->renderHints)
                       ? (qpen_widthf(s->lastPen) == 0 ? 1 : qpen_widthf(s->lastPen))
                       : qpen_widthf(s->lastPen) * s->txscale;
         int dashIndex = 0;

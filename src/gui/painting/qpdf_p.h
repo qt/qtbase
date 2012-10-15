@@ -124,7 +124,7 @@ namespace QPdf {
 
     struct Stroker {
         Stroker();
-        void setPen(const QPen &pen);
+        void setPen(const QPen &pen, QPainter::RenderHints hints);
         void strokePath(const QPainterPath &path);
         ByteStream *stream;
         bool first;

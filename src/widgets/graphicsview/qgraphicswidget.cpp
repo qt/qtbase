@@ -2299,7 +2299,6 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
             painter->fillRect(windowFrameRect, palette().window());
         }
     }
-    painter->setRenderHint(QPainter::NonCosmeticDefaultPen);
 
     // Draw title
     int height = (int)d->titleBarHeight(bar);

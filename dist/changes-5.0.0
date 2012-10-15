@@ -519,6 +519,11 @@ QtGui
   rectangle filling. It's possible to still get the old behavior by setting the
   QPainter::Qt4CompatiblePainting render hint.
 
+* Behavioral change regarding QPen: The default QPen constructors now create a
+  1-width non-cosmetic pen as opposed to a 0-width cosmetic pen. The old
+  behavior can be emulated by setting the QPainter::Qt4CompatiblePainting
+  render hint when painting.
+
 QtWidgets
 ---------
 * QInputContext removed as well as related getters and setters on QWidget and QApplication.

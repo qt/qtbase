@@ -852,6 +852,8 @@ void QWin32PrintEnginePrivate::fillPath_dev(const QPainterPath &path, const QCol
 
 void QWin32PrintEnginePrivate::strokePath_dev(const QPainterPath &path, const QColor &color, qreal penWidth)
 {
+    Q_Q(QWin32PrintEngine);
+
     composeGdiPath(path);
     LOGBRUSH brush;
     brush.lbStyle = BS_SOLID;
@@ -868,7 +870,9 @@ void QWin32PrintEnginePrivate::strokePath_dev(const QPainterPath &path, const QC
     else if (pen.joinStyle() == Qt::RoundJoin)
         joinStyle = PS_JOIN_ROUND;
 
-    HPEN pen = ExtCreatePen(((penWidth == 0) ? PS_COSMETIC : PS_GEOMETRIC)
+    bool cosmetic = qt_pen_is_cosmetic(pen, q->state->renderHints());
+
+    HPEN pen = ExtCreatePen((cosmetic ? PS_COSMETIC : PS_GEOMETRIC)
                             | PS_SOLID | capStyle | joinStyle,
                             (penWidth == 0) ? 1 : penWidth, &brush, 0, 0);
 
@@ -885,6 +889,8 @@ void QWin32PrintEnginePrivate::fillPath(const QPainterPath &path, const QColor &
 
 void QWin32PrintEnginePrivate::strokePath(const QPainterPath &path, const QColor &color)
 {
+    Q_Q(QWin32PrintEngine);
+
     QPainterPathStroker stroker;
     if (pen.style() == Qt::CustomDashLine) {
         stroker.setDashPattern(pen.dashPattern());
@@ -898,11 +904,12 @@ void QWin32PrintEnginePrivate::strokePath(const QPainterPath &path, const QColor
 
     QPainterPath stroke;
     qreal width = pen.widthF();
-    if (pen.style() == Qt::SolidLine && (pen.isCosmetic() || matrix.type() < QTransform::TxScale)) {
+    bool cosmetic = qt_pen_is_cosmetic(pen, q->state->renderHints());
+    if (pen.style() == Qt::SolidLine && (cosmetic || matrix.type() < QTransform::TxScale)) {
         strokePath_dev(path * matrix, color, width);
     } else {
         stroker.setWidth(width);
-        if (pen.isCosmetic()) {
+        if (cosmetic) {
             stroke = stroker.createStroke(path * matrix);
         } else {
             stroke = stroker.createStroke(path) * painterMatrix;

@@ -241,10 +241,6 @@ public:
     void updateMatrix();
     void updateInvMatrix();
 
-    int rectSubtraction() const {
-        return state->pen.style() != Qt::NoPen && state->pen.width() == 0 ? 1 : 0;
-    }
-
     void checkEmulation();
 
     static QPainterPrivate *get(QPainter *painter)
@@ -268,6 +264,11 @@ public:
 Q_GUI_EXPORT void qt_draw_helper(QPainterPrivate *p, const QPainterPath &path, QPainterPrivate::DrawOperation operation);
 
 QString qt_generate_brush_key(const QBrush &brush);
+
+inline bool qt_pen_is_cosmetic(const QPen &pen, QPainter::RenderHints hints)
+{
+    return pen.isCosmetic() || (const_cast<QPen &>(pen).data_ptr()->defaultWidth && (hints & QPainter::Qt4CompatiblePainting));
+}
 
 QT_END_NAMESPACE
 
