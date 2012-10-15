@@ -81,7 +81,6 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearray.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qarraydata.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearraymatcher.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qchar.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qlocale.cpp \
@@ -118,8 +117,6 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qregexp.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstring.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qstringlist.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qstringmatcher.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qunicodetables.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror.cpp \
