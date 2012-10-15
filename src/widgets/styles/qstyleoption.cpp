@@ -155,7 +155,7 @@ QT_BEGIN_NAMESPACE
 
 QStyleOption::QStyleOption(int version, int type)
     : version(version), type(type), state(QStyle::State_None),
-      direction(QApplication::layoutDirection()), fontMetrics(QFont())
+      direction(QApplication::layoutDirection()), fontMetrics(QFont()), styleObject(0)
 {
 }
 
@@ -171,8 +171,8 @@ QStyleOption::~QStyleOption()
     \fn void QStyleOption::initFrom(const QWidget *widget)
     \since 4.1
 
-    Initializes the \l state, \l direction, \l rect, \l palette, and
-    \l fontMetrics member variables based on the specified \a widget.
+    Initializes the \l state, \l direction, \l rect, \l palette, \l fontMetrics
+    and \l styleObject member variables based on the specified \a widget.
 
     This is a convenience function; the member variables can also be
     initialized manually.
@@ -227,6 +227,7 @@ void QStyleOption::init(const QWidget *widget)
     rect = widget->rect();
     palette = widget->palette();
     fontMetrics = widget->fontMetrics();
+    styleObject = const_cast<QWidget*>(widget);
 }
 
 /*!
@@ -235,7 +236,7 @@ void QStyleOption::init(const QWidget *widget)
 QStyleOption::QStyleOption(const QStyleOption &other)
     : version(Version), type(Type), state(other.state),
       direction(other.direction), rect(other.rect), fontMetrics(other.fontMetrics),
-      palette(other.palette)
+      palette(other.palette), styleObject(other.styleObject)
 {
 }
 
@@ -249,6 +250,7 @@ QStyleOption &QStyleOption::operator=(const QStyleOption &other)
     rect = other.rect;
     fontMetrics = other.fontMetrics;
     palette = other.palette;
+    styleObject = other.styleObject;
     return *this;
 }
 
@@ -307,6 +309,15 @@ QStyleOption &QStyleOption::operator=(const QStyleOption &other)
     \brief the font metrics that should be used when drawing text in the control
 
     By default, the application's default font is used.
+
+    \sa initFrom()
+*/
+
+/*!
+    \variable QStyleOption::styleObject
+    \brief the object being styled
+
+    The built-in styles support the following types: QWidget, QGraphicsObject and QQuickItem.
 
     \sa initFrom()
 */
@@ -4056,6 +4067,7 @@ QDebug operator<<(QDebug debug, const QStyleOption &option)
     debug << ',' << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
     debug << ',' << option.state;
     debug << ',' << option.rect;
+    debug << ',' << option.styleObject;
     debug << ')';
 #else
     Q_UNUSED(option);

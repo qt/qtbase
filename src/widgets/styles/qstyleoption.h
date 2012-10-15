@@ -89,6 +89,7 @@ public:
     QRect rect;
     QFontMetrics fontMetrics;
     QPalette palette;
+    QObject *styleObject;
 
     QStyleOption(int version = QStyleOption::Version, int type = SO_Default);
     QStyleOption(const QStyleOption &other);
