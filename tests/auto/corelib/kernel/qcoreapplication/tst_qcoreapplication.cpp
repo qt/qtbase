@@ -53,7 +53,9 @@ private slots:
     void sendEventsOnProcessEvents(); // this must be the first test
     void getSetCheck();
     void qAppName();
+#ifndef Q_OS_WIN
     void argc();
+#endif
     void postEvent();
     void removePostedEvents();
 #ifndef QT_NO_THREAD
@@ -125,11 +127,11 @@ void tst_QCoreApplication::qAppName()
     QCOMPARE(QCoreApplication::applicationName(), QString::fromLatin1("tst_qcoreapplication"));
 }
 
+// "QCoreApplication::arguments() always parses arguments from actual command line on Windows
+// making this test invalid."
+#ifndef Q_OS_WIN
 void tst_QCoreApplication::argc()
 {
-#ifdef Q_OS_WIN
-    QSKIP("QCoreApplication::arguments() always parses arguments from actual command line in Windows, making this test invalid.");
-#endif
     {
         int argc = 1;
         char *argv[] = { const_cast<char*>("tst_qcoreapplication") };
@@ -166,6 +168,7 @@ void tst_QCoreApplication::argc()
         QCOMPARE(app.arguments().count(), 1);
     }
 }
+#endif
 
 class EventGenerator : public QObject
 {
