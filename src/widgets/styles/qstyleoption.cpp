@@ -1271,7 +1271,8 @@ QStyleOptionTab::QStyleOptionTab()
       row(0),
       position(Beginning),
       selectedPosition(NotAdjacent), cornerWidgets(QStyleOptionTab::NoCornerWidgets),
-      documentMode(false)
+      documentMode(false),
+      features(QStyleOptionTab::None)
 {
 }
 
@@ -1284,7 +1285,8 @@ QStyleOptionTab::QStyleOptionTab(int version)
       row(0),
       position(Beginning),
       selectedPosition(NotAdjacent), cornerWidgets(QStyleOptionTab::NoCornerWidgets),
-      documentMode(false)
+      documentMode(false),
+      features(QStyleOptionTab::None)
 {
 }
 
@@ -1435,6 +1437,17 @@ QStyleOptionTab::QStyleOptionTab(int version)
     \brief whether the tabbar is in document mode.
 
     The default value is false;
+*/
+
+/*!
+    \enum QStyleOptionTab::TabFeature
+
+    Describes the various features that a tab button can have.
+
+    \value None A normal tab button.
+    \value HasFrame The tab button is positioned on a tab frame
+
+    \sa features
 */
 
 /*!
