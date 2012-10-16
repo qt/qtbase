@@ -171,6 +171,7 @@ mac {
 DEFINES += QT_BUILDING_QT
 win32 {
     INCLUDEPATH += tmp
+    CONFIG += skip_target_version_ext
 }
 
 aix-g++* {

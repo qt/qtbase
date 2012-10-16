@@ -14,6 +14,11 @@ defineReplace(qtLibraryTarget) {
    mac:!static:contains(QT_CONFIG, qt_framework) {
       QMAKE_FRAMEWORK_BUNDLE_NAME = $$LIBRARY_NAME
       export(QMAKE_FRAMEWORK_BUNDLE_NAME)
+   } else {
+       # insert the major version in the library name
+       # unless it's a framework build
+       MAJOR_VERSION = $$section(VERSION, ., 0, 0)
+       LIBRARY_NAME ~= s,^Qt,Qt$$MAJOR_VERSION,
    }
    unset(LIBRARY_SUFFIX)
    contains(TEMPLATE, .*lib):LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
@@ -79,12 +84,17 @@ defineTest(qtAddModule) {
         }
     }
 
+    # Re-insert the major version in the library name (cf qtLibraryTarget above)
+    # unless it's a framework build
+    !mac|!contains(MODULE_CONFIG, lib_bundle): \
+        MODULE_NAME ~= s,^Qt,Qt$$MODULE_MAJOR_VERSION,
+
     win32 {
-        # Make sure we link against the version pulled from the module's .pri
+        # Make sure the version number isn't appended again to the lib name
         ver_var    = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}_VERSION_OVERRIDE
         dver_var   = QMAKE_$${upper($$MODULE_NAME$$QT_LIBINFIX)}D_VERSION_OVERRIDE
-        $$ver_var  = $$MODULE_MAJOR_VERSION
-        $$dver_var = $$MODULE_MAJOR_VERSION
+        $$ver_var  = 0
+        $$dver_var = 0
         export($$ver_var)
         export($$dver_var)
     }
