@@ -176,7 +176,10 @@ public:
 
     int addResults(int index, const QVector<T> *results, int totalCount)
     {
-        return ResultStoreBase::addResults(index, new QVector<T>(*results), results->count(), totalCount);
+        if (m_filterMode == true && results->count() != totalCount && 0 == results->count())
+            return ResultStoreBase::addResults(index, 0, 0, totalCount);
+        else
+            return ResultStoreBase::addResults(index, new QVector<T>(*results), results->count(), totalCount);
     }
 
     int addCanceledResult(int index)
