@@ -1334,7 +1334,7 @@ void tst_QTableWidget::setItemWithSorting()
         w.sortItems(sortColumn, static_cast<Qt::SortOrder>(sortOrder));
         w.setSortingEnabled(true);
         
-        QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+        QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
         QSignalSpy layoutChangedSpy(model, SIGNAL(layoutChanged()));
 
         if (i == 0) {

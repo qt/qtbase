@@ -4311,7 +4311,7 @@ void tst_QWidget::qobject_castInDestroyedSlot()
 
     QWidget *widget = new QWidget();
 
-    QObject::connect(widget, SIGNAL(destroyed(QObject *)), &checker, SLOT(destroyedSlot(QObject *)));
+    QObject::connect(widget, SIGNAL(destroyed(QObject*)), &checker, SLOT(destroyedSlot(QObject*)));
     delete widget;
 
     QVERIFY(checker.wasQWidget == true);
@@ -8757,7 +8757,7 @@ class MyEvilObject : public QObject
 public:
     MyEvilObject(QWidget *widgetToCrash) : QObject(), widget(widgetToCrash)
     {
-        connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(beEvil(QObject *)));
+        connect(widget, SIGNAL(destroyed(QObject*)), this, SLOT(beEvil(QObject*)));
         delete widget;
     }
     QWidget *widget;

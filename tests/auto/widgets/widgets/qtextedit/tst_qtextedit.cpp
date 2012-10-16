@@ -1744,7 +1744,7 @@ void tst_QTextEdit::currentCharFormatChanged()
     ff.setPointSize(11);
 
     SignalReceiver receiver;
-    QObject::connect(ed, SIGNAL(currentCharFormatChanged(const QTextCharFormat &)) , &receiver, SLOT(charFormatChanged(const QTextCharFormat &)));
+    QObject::connect(ed, SIGNAL(currentCharFormatChanged(QTextCharFormat)) , &receiver, SLOT(charFormatChanged(QTextCharFormat)));
 
     ed->show();
     ed->setCurrentFont(ff);

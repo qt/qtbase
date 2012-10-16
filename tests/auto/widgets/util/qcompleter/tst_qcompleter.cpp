@@ -1184,7 +1184,7 @@ void tst_QCompleter::disabledItems()
     model->appendRow(suggestions);
     model->appendRow(new QStandardItem("suggestions Enabled"));
     QCompleter *completer = new QCompleter(model, &lineEdit);
-    QSignalSpy spy(completer, SIGNAL(activated(const QString &)));
+    QSignalSpy spy(completer, SIGNAL(activated(QString)));
     lineEdit.setCompleter(completer);
     lineEdit.show();
 
@@ -1207,7 +1207,7 @@ void tst_QCompleter::task178797_activatedOnReturn()
     QLineEdit *ledit = new QLineEdit;
     QCompleter *completer = new QCompleter(words);
     ledit->setCompleter(completer);
-    QSignalSpy spy(completer, SIGNAL(activated(const QString)));
+    QSignalSpy spy(completer, SIGNAL(activated(QString)));
     QCOMPARE(spy.count(), 0);
     ledit->show();
     QTest::keyClick(ledit, Qt::Key_F);

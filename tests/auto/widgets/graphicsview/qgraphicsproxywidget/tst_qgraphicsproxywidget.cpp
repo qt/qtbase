@@ -2768,7 +2768,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     QVERIFY(view.isActiveWindow());
 
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
-    QSignalSpy signalSpy(&scene, SIGNAL(changed(const QList<QRectF> &)));
+    QSignalSpy signalSpy(&scene, SIGNAL(changed(QList<QRectF>)));
 
     EventSpy eventSpy(widget);
     QVERIFY(widget->isVisible());

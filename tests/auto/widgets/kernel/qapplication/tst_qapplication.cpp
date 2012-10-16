@@ -1513,7 +1513,7 @@ void tst_QApplication::focusChanged()
     int argc = 0;
     QApplication app(argc, 0, QApplication::GuiServer);
 
-    QSignalSpy spy(&app, SIGNAL(focusChanged(QWidget *, QWidget *)));
+    QSignalSpy spy(&app, SIGNAL(focusChanged(QWidget*,QWidget*)));
     QWidget *now = 0;
     QWidget *old = 0;
 

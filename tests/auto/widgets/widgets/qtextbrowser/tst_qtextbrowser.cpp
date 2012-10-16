@@ -250,7 +250,7 @@ void tst_QTextBrowser::viewportPositionInHistory()
 void tst_QTextBrowser::relativeLinks()
 {
     qRegisterMetaType<QUrl>("QUrl");
-    QSignalSpy sourceChangedSpy(browser, SIGNAL(sourceChanged(const QUrl &)));
+    QSignalSpy sourceChangedSpy(browser, SIGNAL(sourceChanged(QUrl)));
     browser->setSource(QUrl("subdir/../qtextbrowser.html"));
     QVERIFY(!browser->document()->isEmpty());
     QVERIFY(sourceChangedSpy.count() == 1);
@@ -658,7 +658,7 @@ void tst_QTextBrowser::urlEncoding()
     browser->setHtml("<a href=\"http://www.google.com/q=%22\">link</a>");
     browser->focusTheNextChild();
 
-    QSignalSpy spy(browser, SIGNAL(anchorClicked(const QUrl &)));
+    QSignalSpy spy(browser, SIGNAL(anchorClicked(QUrl)));
 
 #ifdef QT_KEYPAD_NAVIGATION
     browser->setEditFocus(true);

@@ -702,7 +702,7 @@ void tst_QItemDelegate::eventFilter()
 
     qRegisterMetaType<QAbstractItemDelegate::EndEditHint>("QAbstractItemDelegate::EndEditHint");
 
-    QSignalSpy commitDataSpy(&delegate, SIGNAL(commitData(QWidget *)));
+    QSignalSpy commitDataSpy(&delegate, SIGNAL(commitData(QWidget*)));
     QSignalSpy closeEditorSpy(&delegate,
                               SIGNAL(closeEditor(QWidget *,
                                                  QAbstractItemDelegate::EndEditHint)));

@@ -189,10 +189,10 @@ void tst_QGraphicsSceneIndex::connectedToSceneRectChanged()
     };
 
     MyScene scene; // Uses QGraphicsSceneBspTreeIndex by default.
-    QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(const QRectF&))), 1);
+    QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(QRectF))), 1);
 
     scene.setItemIndexMethod(QGraphicsScene::NoIndex); // QGraphicsSceneLinearIndex
-    QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(const QRectF&))), 1);
+    QCOMPARE(scene.receivers(SIGNAL(sceneRectChanged(QRectF))), 1);
 }
 
 void tst_QGraphicsSceneIndex::items()

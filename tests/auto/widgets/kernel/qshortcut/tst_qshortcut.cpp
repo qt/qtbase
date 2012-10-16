@@ -218,8 +218,8 @@ void tst_QShortcut::initTestCase()
     mainW->show();
     mainW->activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(mainW));
-    connect( mainW->statusBar(), SIGNAL(messageChanged(const QString&)),
-	     this, SLOT(statusMessage(const QString&)) );
+    connect( mainW->statusBar(), SIGNAL(messageChanged(QString)),
+             this, SLOT(statusMessage(QString)) );
 }
 
 void tst_QShortcut::cleanupTestCase()

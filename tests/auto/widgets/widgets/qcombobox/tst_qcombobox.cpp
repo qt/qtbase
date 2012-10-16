@@ -1121,7 +1121,7 @@ void tst_QComboBox::currentIndex()
 
         // spy on currentIndexChanged
         QSignalSpy indexChangedInt(testWidget, SIGNAL(currentIndexChanged(int)));
-        QSignalSpy indexChangedString(testWidget, SIGNAL(currentIndexChanged(const QString&)));
+        QSignalSpy indexChangedString(testWidget, SIGNAL(currentIndexChanged(QString)));
 
         // stuff items into it
         foreach(QString text, initialItems) {
@@ -2120,7 +2120,7 @@ void tst_QComboBox::task247863_keyBoardSelection()
   QApplication::setActiveWindow(&combo);
   QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
-  QSignalSpy spy(&combo, SIGNAL(activated(const QString &)));
+  QSignalSpy spy(&combo, SIGNAL(activated(QString)));
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
   QTest::keyClick(&combo, Qt::Key_Space);
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, true);

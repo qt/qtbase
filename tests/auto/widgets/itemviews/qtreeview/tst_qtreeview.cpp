@@ -1428,8 +1428,8 @@ void tst_QTreeView::expandAndCollapse()
     QModelIndex a = model.index(0, 0, QModelIndex());
     QModelIndex b = model.index(0, 0, a);
 
-    QSignalSpy expandedSpy(&view, SIGNAL(expanded(const QModelIndex&)));
-    QSignalSpy collapsedSpy(&view, SIGNAL(collapsed(const QModelIndex&)));
+    QSignalSpy expandedSpy(&view, SIGNAL(expanded(QModelIndex)));
+    QSignalSpy collapsedSpy(&view, SIGNAL(collapsed(QModelIndex)));
     QVariantList args;
 
     for (int y = 0; y < 2; ++y) {
@@ -1552,8 +1552,8 @@ void tst_QTreeView::expandAndCollapseAll()
     view.setUniformRowHeights(true);
     view.setModel(&model);
 
-    QSignalSpy expandedSpy(&view, SIGNAL(expanded(const QModelIndex&)));
-    QSignalSpy collapsedSpy(&view, SIGNAL(collapsed(const QModelIndex&)));
+    QSignalSpy expandedSpy(&view, SIGNAL(expanded(QModelIndex)));
+    QSignalSpy collapsedSpy(&view, SIGNAL(collapsed(QModelIndex)));
 
     view.expandAll();
     view.show();
@@ -1982,7 +1982,7 @@ void tst_QTreeView::clicked()
         QModelIndex index = view.indexAt(p);
         if (!index.isValid())
             continue;
-        QSignalSpy spy(&view, SIGNAL(clicked(const QModelIndex&)));
+        QSignalSpy spy(&view, SIGNAL(clicked(QModelIndex)));
         QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
         QTRY_COMPARE(spy.count(), 1);
     }
@@ -2329,7 +2329,7 @@ void tst_QTreeView::selection()
     treeView.setSelectionBehavior(QAbstractItemView::SelectRows);
     treeView.setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    connect(treeView.selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
+    connect(treeView.selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(selectionOrderTest()));
 
     treeView.show();
@@ -3756,7 +3756,7 @@ public slots:
         //let's select the last item
         QModelIndex idx = model()->index(0, 0);
         selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
-        disconnect(selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(handleSelectionChanged()));
+        disconnect(selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(handleSelectionChanged()));
     }
 };
 
@@ -3769,7 +3769,7 @@ void tst_QTreeView::task248022_changeSelection()
     QStringListModel model(list);
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view.setModel(&model);
-    view.connect(view.selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), SLOT(handleSelectionChanged()));
+    view.connect(view.selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(handleSelectionChanged()));
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(1)).center());
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), list.count());
 }
@@ -3935,8 +3935,8 @@ public:
         // set up the model to have two top level items and a few others
         m_selectionModel = new QItemSelectionModel(this, this); // owned by this
 
-        connect(m_selectionModel, SIGNAL(currentChanged(const QModelIndex &,const QModelIndex &)),
-                this, SLOT(slotCurrentChanged(const QModelIndex &,const QModelIndex &)));
+        connect(m_selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+                this, SLOT(slotCurrentChanged(QModelIndex,QModelIndex)));
     };
 
     int rowCount(const QModelIndex &parent) const

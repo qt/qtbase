@@ -657,7 +657,7 @@ void tst_QListView::clicked()
         QModelIndex index = view.indexAt(p);
         if (!index.isValid())
             continue;
-        QSignalSpy spy(&view, SIGNAL(clicked(const QModelIndex&)));
+        QSignalSpy spy(&view, SIGNAL(clicked(QModelIndex)));
         QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
         QCOMPARE(spy.count(), 1);
     }
@@ -1568,7 +1568,7 @@ void tst_QListView::task228566_infiniteRelayout()
     view.show();
     QTest::qWait(100); //make sure the layout is done once
 
-    QSignalSpy spy(view.horizontalScrollBar(), SIGNAL(rangeChanged(int, int)));
+    QSignalSpy spy(view.horizontalScrollBar(), SIGNAL(rangeChanged(int,int)));
 
     QTest::qWait(200);
     //the layout should already have been done

@@ -3157,9 +3157,9 @@ void tst_QGraphicsView::task239729_noViewUpdate()
 
     if (a) {
         view = new QGraphicsView(&scene);
-        connect(&scene, SIGNAL(changed(const QList<QRectF> &)), &cl, SLOT(changed(const QList<QRectF> &)));
+        connect(&scene, SIGNAL(changed(QList<QRectF>)), &cl, SLOT(changed(QList<QRectF>)));
     } else {
-        connect(&scene, SIGNAL(changed(const QList<QRectF> &)), &cl, SLOT(changed(const QList<QRectF> &)));
+        connect(&scene, SIGNAL(changed(QList<QRectF>)), &cl, SLOT(changed(QList<QRectF>)));
         view = new QGraphicsView(&scene);
     }
 

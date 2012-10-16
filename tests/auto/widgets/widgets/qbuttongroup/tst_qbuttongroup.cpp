@@ -317,11 +317,11 @@ void tst_QButtonGroup::testSignals()
     buttons.addButton(&pb3);
 
     qRegisterMetaType<QAbstractButton *>("QAbstractButton *");
-    QSignalSpy clickedSpy(&buttons, SIGNAL(buttonClicked(QAbstractButton *)));
+    QSignalSpy clickedSpy(&buttons, SIGNAL(buttonClicked(QAbstractButton*)));
     QSignalSpy clickedIdSpy(&buttons, SIGNAL(buttonClicked(int)));
-    QSignalSpy pressedSpy(&buttons, SIGNAL(buttonPressed(QAbstractButton *)));
+    QSignalSpy pressedSpy(&buttons, SIGNAL(buttonPressed(QAbstractButton*)));
     QSignalSpy pressedIdSpy(&buttons, SIGNAL(buttonPressed(int)));
-    QSignalSpy releasedSpy(&buttons, SIGNAL(buttonReleased(QAbstractButton *)));
+    QSignalSpy releasedSpy(&buttons, SIGNAL(buttonReleased(QAbstractButton*)));
     QSignalSpy releasedIdSpy(&buttons, SIGNAL(buttonReleased(int)));
 
     pb1.animateClick();
@@ -480,7 +480,7 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
 
     task209485_ButtonDeleter buttonDeleter(&group, deleteButton);
 
-    QSignalSpy spy1(&group, SIGNAL(buttonClicked(QAbstractButton *)));
+    QSignalSpy spy1(&group, SIGNAL(buttonClicked(QAbstractButton*)));
     QSignalSpy spy2(&group, SIGNAL(buttonClicked(int)));
 
     // NOTE: Reintroducing the bug of this task will cause the following line to crash:

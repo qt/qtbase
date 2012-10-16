@@ -57,7 +57,7 @@ SomeHandler::SomeHandler(QHeaderView *hv, QTableView *tv)
     m_hv = hv;
     m_tv = tv;
     m_tv->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-    connect(hv, SIGNAL(sectionResized(int, int, int)), this, SLOT(slotSectionResized(int, int, int)));
+    connect(hv, SIGNAL(sectionResized(int,int,int)), this, SLOT(slotSectionResized(int,int,int)));
 }
 void SomeHandler::slotSectionResized(int logsection, int oldsize, int newsize)
 {

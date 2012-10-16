@@ -107,7 +107,7 @@ void tst_QSidebar::selectUrls()
     QSidebar qsidebar;
     qsidebar.setModelAndUrls(&fsmodel, urls);
 
-    QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(const QUrl &)));
+    QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(QUrl)));
     qsidebar.selectUrl(urls.at(0));
     QCOMPARE(spy.count(), 0);
 }
@@ -214,7 +214,7 @@ void tst_QSidebar::goToUrl()
     qsidebar.setModelAndUrls(&fsmodel, urls);
     qsidebar.show();
 
-    QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(const QUrl &)));
+    QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(QUrl)));
     QTest::mousePress(qsidebar.viewport(), Qt::LeftButton, 0, qsidebar.visualRect(qsidebar.model()->index(0, 0)).center());
     QCOMPARE(spy.count(), 1);
     QCOMPARE((spy.value(0)).at(0).toUrl(), urls.first());

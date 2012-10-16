@@ -182,23 +182,23 @@ void tst_QListWidget::initTestCase()
     testWidget = new QListWidget();
     testWidget->show();
 
-    connect(testWidget->model(), SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)),
-            this, SLOT(rowsAboutToBeInserted(QModelIndex, int, int)));
-    connect(testWidget->model(), SIGNAL(rowsInserted(QModelIndex, int, int)),
-            this, SLOT(rowsInserted(QModelIndex, int, int)));
-    connect(testWidget->model(), SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)),
-            this, SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
-    connect(testWidget->model(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-            this, SLOT(rowsRemoved(QModelIndex, int, int)));
+    connect(testWidget->model(), SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));
+    connect(testWidget->model(), SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(rowsInserted(QModelIndex,int,int)));
+    connect(testWidget->model(), SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(testWidget->model(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(rowsRemoved(QModelIndex,int,int)));
 
-    connect(testWidget->model(), SIGNAL(columnsAboutToBeInserted(QModelIndex, int, int)),
-            this, SLOT(columnsAboutToBeInserted(QModelIndex, int, int)));
-    connect(testWidget->model(), SIGNAL(columnsInserted(QModelIndex, int, int)),
-            this, SLOT(columnsInserted(QModelIndex, int, int)));
-    connect(testWidget->model(), SIGNAL(columnsAboutToBeRemoved(QModelIndex, int, int)),
-            this, SLOT(columnsAboutToBeRemoved(QModelIndex, int, int)));
-    connect(testWidget->model(), SIGNAL(columnsRemoved(QModelIndex, int, int)),
-            this, SLOT(columnsRemoved(QModelIndex, int, int)));
+    connect(testWidget->model(), SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(columnsAboutToBeInserted(QModelIndex,int,int)));
+    connect(testWidget->model(), SIGNAL(columnsInserted(QModelIndex,int,int)),
+            this, SLOT(columnsInserted(QModelIndex,int,int)));
+    connect(testWidget->model(), SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(columnsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(testWidget->model(), SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            this, SLOT(columnsRemoved(QModelIndex,int,int)));
 
     checkDefaultValues();
 }
@@ -1187,8 +1187,8 @@ void tst_QListWidget::setData()
         testWidget->insertItems(0, initialItems);
         QCOMPARE(testWidget->count(), initialItems.count());
 
-        QSignalSpy itemChanged(testWidget, SIGNAL(itemChanged(QListWidgetItem *)));
-        QSignalSpy dataChanged(testWidget->model(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+        QSignalSpy itemChanged(testWidget, SIGNAL(itemChanged(QListWidgetItem*)));
+        QSignalSpy dataChanged(testWidget->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)));
 
         for (int i=0; i < roles.count(); ++i) {
             if (manipulateModel)
@@ -1454,7 +1454,7 @@ void tst_QListWidget::changeDataWithSorting()
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
         persistent << model->index(j, 0, QModelIndex());
 
-    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     QSignalSpy layoutChangedSpy(model, SIGNAL(layoutChanged()));
 
     QListWidgetItem *item = w.item(itemIndex);
@@ -1569,7 +1569,7 @@ void tst_QListWidget::task199503_crashWhenCleared()
     QListWidget w;
     w.addItems( QStringList() << "item1" << "item2" << "item3");
     w.setCurrentRow(0);
-    w.connect(&w, SIGNAL(currentItemChanged(QListWidgetItem *,QListWidgetItem*)), SLOT(clear()));
+    w.connect(&w, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), SLOT(clear()));
     w.setCurrentRow(1);
 }
 
@@ -1630,7 +1630,7 @@ void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
     edit.setFocus();
     win.show();
 
-    QSignalSpy spy(&list, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)));
+    QSignalSpy spy(&list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
 
     QVERIFY(QTest::qWaitForWindowExposed(&win));
 
