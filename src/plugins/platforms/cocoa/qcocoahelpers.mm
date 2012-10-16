@@ -159,6 +159,16 @@ NSSize qt_mac_toNSSize(const QSize &qtSize)
     return NSMakeSize(qtSize.width(), qtSize.height());
 }
 
+NSRect qt_mac_toNSRect(const QRect &rect)
+{
+    return NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+QRect qt_mac_toQRect(const NSRect &rect)
+{
+    return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+}
+
 QColor qt_mac_toQColor(const NSColor *color)
 {
     QColor qtColor;

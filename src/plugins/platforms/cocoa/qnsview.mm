@@ -129,22 +129,29 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)updateGeometry
 {
-    NSRect rect = [self frame];
-    NSRect windowRect = [[self window] frame];
-    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    QRect geometry;
+    if (m_platformWindow->m_nsWindow) {
+        // top level window, get window rect and flip y.
+        NSRect rect = [self frame];
+        NSRect windowRect = [[self window] frame];
+        geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    } else {
+        // child window, use the frame rect
+        geometry = qt_mac_toQRect([self frame]);
+    }
 
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QNSView::udpateGeometry" << geo;
+    qDebug() << "QNSView::udpateGeometry" << m_platformWindow << geometry;
 #endif
 
     // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
     // doing that will initiate a geometry change it and possibly create
     // an infinite loop when this notification is triggered again.)
-    m_platformWindow->QPlatformWindow::setGeometry(geo);
+    m_platformWindow->QPlatformWindow::setGeometry(geometry);
 
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
-        QWindowSystemInterface::handleGeometryChange(m_window, geo);
+        QWindowSystemInterface::handleGeometryChange(m_window, geometry);
         QWindowSystemInterface::flushWindowSystemEvents();
     }
 }

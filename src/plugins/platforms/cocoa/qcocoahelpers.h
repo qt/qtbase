@@ -73,8 +73,11 @@ NSImage *qt_mac_cgimage_to_nsimage(CGImageRef iamge);
 NSImage *qt_mac_create_nsimage(const QPixmap &pm);
 
 NSSize qt_mac_toNSSize(const QSize &qtSize);
+NSRect qt_mac_toNSRect(const QRect &rect);
+QRect qt_mac_toQRect(const NSRect &rect);
 
 QColor qt_mac_toQColor(const NSColor *color);
+
 
 // Creates a mutable shape, it's the caller's responsibility to release.
 HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
