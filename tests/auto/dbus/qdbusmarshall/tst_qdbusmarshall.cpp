@@ -90,8 +90,10 @@ private slots:
     void sendCallErrors_data();
     void sendCallErrors();
 
+#ifdef DBUS_TYPE_UNIX_FD
     void receiveUnknownType_data();
     void receiveUnknownType();
+#endif
 
     void demarshallPrimitives_data();
     void demarshallPrimitives();
@@ -1028,6 +1030,8 @@ void tst_QDBusMarshall::sendCallErrors()
     QCOMPARE(reply.errorMessage(), errorMsg);
 }
 
+#ifdef DBUS_TYPE_UNIX_FD
+// If DBUS_TYPE_UNIX_FD is not defined, it means the current system's D-Bus library is too old for this test
 void tst_QDBusMarshall::receiveUnknownType_data()
 {
     QTest::addColumn<int>("receivedTypeId");
@@ -1078,9 +1082,6 @@ public:
 
 void tst_QDBusMarshall::receiveUnknownType()
 {
-#ifndef DBUS_TYPE_UNIX_FD
-    QSKIP("Your system's D-Bus library is too old for this test");
-#else
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
 
@@ -1184,8 +1185,8 @@ void tst_QDBusMarshall::receiveUnknownType()
         //qDebug() << spy.list.at(0).arguments().at(0).typeName();
         QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
     }
-#endif
 }
+#endif
 
 void tst_QDBusMarshall::demarshallPrimitives_data()
 {
