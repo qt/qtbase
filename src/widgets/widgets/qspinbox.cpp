@@ -1258,7 +1258,7 @@ bool QSpinBox::event(QEvent *event)
 {
     Q_D(QSpinBox);
     if (event->type() == QEvent::StyleChange
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
             || event->type() == QEvent::MacSizeChange
 #endif
             )
