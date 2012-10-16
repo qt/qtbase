@@ -83,15 +83,17 @@ bool QStyleAnimation::isUpdateNeeded() const
 
 void QStyleAnimation::updateCurrentTime(int)
 {
-    if (target()->isWidgetType()) {
-        QWidget *widget = static_cast<QWidget *>(target());
-        if (!widget->isVisible() || widget->window()->isMinimized())
-            stop();
-    }
+    if (QObject *tgt = target()) {
+        if (tgt->isWidgetType()) {
+            QWidget *widget = static_cast<QWidget *>(tgt);
+            if (!widget->isVisible() || widget->window()->isMinimized())
+                stop();
+        }
 
-    if (isUpdateNeeded()) {
-        QEvent event(QEvent::StyleAnimationUpdate);
-        QCoreApplication::sendEvent(target(), &event);
+        if (isUpdateNeeded()) {
+            QEvent event(QEvent::StyleAnimationUpdate);
+            QCoreApplication::sendEvent(tgt, &event);
+        }
     }
 }
 
