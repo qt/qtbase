@@ -847,6 +847,7 @@ QString QDate::toString(const QString& format) const
 
     If \a y is in the range 0 to 99, it is interpreted as 1900 to
     1999.
+    Returns \c false if the date is invalid.
 
     Use setDate() instead.
 */
