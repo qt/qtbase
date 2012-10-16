@@ -55,7 +55,8 @@ MainWidget::MainWidget(QWidget *parent) :
     QGLWidget(parent),
     timer(new QBasicTimer),
     program(new QGLShaderProgram),
-    geometries(new GeometryEngine)
+    geometries(new GeometryEngine),
+    angularSpeed(0)
 {
 }
 
