@@ -75,7 +75,7 @@ MapZoom::MapZoom()
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
         // Get saved network configuration
-        QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+        QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
         settings.beginGroup(QLatin1String("QtNetwork"));
         const QString id =
             settings.value(QLatin1String("DefaultNetworkConfiguration")).toString();
@@ -112,7 +112,7 @@ void MapZoom::sessionOpened()
         id = config.identifier();
     }
 
-    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
     settings.beginGroup(QLatin1String("QtNetwork"));
     settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
     settings.endGroup();

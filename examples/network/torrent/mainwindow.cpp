@@ -234,7 +234,7 @@ int MainWindow::rowOfClient(TorrentClient *client) const
 void MainWindow::loadSettings()
 {
     // Load base settings (last working directory, upload/download limits).
-    QSettings settings("Trolltech", "Torrent");
+    QSettings settings("QtProject", "Torrent");
     lastDirectory = settings.value("LastDirectory").toString();
     if (lastDirectory.isEmpty())
         lastDirectory = QDir::currentPath();
@@ -411,7 +411,7 @@ void MainWindow::saveSettings()
     saveChanges = false;
 
     // Prepare and reset the settings
-    QSettings settings("Trolltech", "Torrent");
+    QSettings settings("QtProject", "Torrent");
     settings.clear();
 
     settings.setValue("LastDirectory", lastDirectory);
