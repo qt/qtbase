@@ -87,7 +87,6 @@ private slots:
     void echoTest_data();
     void echoTest();
     void echoTest2();
-    void echoTest_performance();
 #if defined Q_OS_WIN
     void echoTestGui();
     void batFiles_data();
@@ -491,56 +490,6 @@ void tst_QProcess::echoTest2()
 
     delete process;
     process = 0;
-}
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::echoTest_performance()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
-    QProcess process;
-    process.start("testProcessLoopback/testProcessLoopback");
-
-    QByteArray array;
-    array.resize(1024 * 1024);
-    for (int j = 0; j < array.size(); ++j)
-        array[j] = 'a' + (j % 20);
-
-    QVERIFY(process.waitForStarted());
-
-    QTime stopWatch;
-    stopWatch.start();
-
-    qint64 totalBytes = 0;
-    QByteArray dump;
-    QSignalSpy readyReadSpy(&process, SIGNAL(readyRead()));
-    QVERIFY(readyReadSpy.isValid());
-    while (stopWatch.elapsed() < 2000) {
-        process.write(array);
-        while (process.bytesToWrite() > 0) {
-            int readCount = readyReadSpy.count();
-            QVERIFY(process.waitForBytesWritten(5000));
-            if (readyReadSpy.count() == readCount)
-                QVERIFY(process.waitForReadyRead(5000));
-        }
-
-        while (process.bytesAvailable() < array.size())
-            QVERIFY2(process.waitForReadyRead(5000), qPrintable(process.errorString()));
-        dump = process.readAll();
-        totalBytes += dump.size();
-    }
-
-    qDebug() << "Elapsed time:" << stopWatch.elapsed() << "ms;"
-             << "transfer rate:" << totalBytes / (1048.576) / stopWatch.elapsed()
-             << "MB/s";
-
-    for (int j = 0; j < array.size(); ++j)
-        QCOMPARE(char(dump.at(j)), char('a' + (j % 20)));
-
-    process.closeWriteChannel();
-    QVERIFY(process.waitForFinished());
 }
 
 #if defined Q_OS_WIN
