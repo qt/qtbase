@@ -112,7 +112,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
     return dbg.space();
 }
 
-Q_AUTOTEST_EXPORT void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)
+void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)
 {
     qDBusDebug() << QThread::currentThread()
                  << "QtDBus threading action" << action
@@ -131,7 +131,7 @@ Q_AUTOTEST_EXPORT void qdbusDefaultThreadDebug(int action, int condition, QDBusC
                      "condition unknown")
                  << "in connection" << conn;
 }
-Q_AUTOTEST_EXPORT qdbusThreadDebugFunc qdbusThreadDebug = 0;
+qdbusThreadDebugFunc qdbusThreadDebug = 0;
 #endif
 
 typedef void (*QDBusSpyHook)(const QDBusMessage&);
