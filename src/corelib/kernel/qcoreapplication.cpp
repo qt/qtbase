@@ -577,8 +577,12 @@ void QCoreApplication::flush()
     \a argc must be greater than zero and \a argv must contain at least
     one valid character string.
 */
-QCoreApplication::QCoreApplication(int &argc, char **argv, int _internal)
-: QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
+QCoreApplication::QCoreApplication(int &argc, char **argv
+#ifndef Q_QDOC
+                                   , int _internal
+#endif
+                                   )
+    : QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
@@ -698,7 +702,17 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
     return QCoreApplicationPrivate::testAttribute(attribute);
 }
 
-/*!/
+
+/*!
+    \property QCoreApplication::quitLockEnabled
+
+    Returns true if the use of the QEventLoopLocker feature can cause the
+    application to quit, otherwise returns false.
+
+    \sa QEventLoopLocker
+*/
+
+/*!
     Returns true if the use of the QEventLoopLocker feature can cause the
     application to quit, otherwise returns false.
 
@@ -2220,7 +2234,7 @@ void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filt
 }
 
 /*!
-    Removes an event filter object \a obj from this object. The
+    Removes an event \a filterObject from this object. The
     request is ignored if such an event filter has not been installed.
 
     All event filters for this object are automatically removed when
@@ -2232,12 +2246,12 @@ void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filt
     \sa installNativeEventFilter()
     \since 5.0
 */
-void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filterObj)
+void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filterObject)
 {
     QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-    if (!filterObj || !eventDispatcher)
+    if (!filterObject || !eventDispatcher)
         return;
-    eventDispatcher->removeNativeEventFilter(filterObj);
+    eventDispatcher->removeNativeEventFilter(filterObject);
 }
 
 /*!

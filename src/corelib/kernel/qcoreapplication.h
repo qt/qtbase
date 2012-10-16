@@ -85,7 +85,11 @@ public:
         GuiServer // # deprecated
     };
 
-    QCoreApplication(int &argc, char **argv, int = ApplicationFlags);
+    QCoreApplication(int &argc, char **argv
+#ifndef Q_QDOC
+                     , int = ApplicationFlags
+#endif
+            );
 
     ~QCoreApplication();
 
