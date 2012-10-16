@@ -238,6 +238,7 @@ public:
 
     void setEnabled(bool enabled);
     bool isEnabled() const;
+    void setWindowIcon(const QIcon &icon);
 
 #ifndef Q_OS_WINCE
     void alertWindow(int durationMs = 0);
@@ -259,6 +260,7 @@ private:
     void unregisterDropSite();
     void handleGeometryChange();
     void handleWindowStateChange(Qt::WindowState state);
+    inline void destroyIcon();
 
     mutable WindowData m_data;
     mutable unsigned m_flags;
@@ -277,6 +279,8 @@ private:
 #ifdef Q_OS_WINCE
     bool m_previouslyHidden;
 #endif
+    HICON m_iconSmall;
+    HICON m_iconBig;
 };
 
 // Conveniences for window frames.
@@ -344,6 +348,18 @@ void *QWindowsWindow::userDataOf(HWND hwnd)
 void QWindowsWindow::setUserDataOf(HWND hwnd, void *ud)
 {
     SetWindowLongPtr(hwnd, GWLP_USERDATA, LONG_PTR(ud));
+}
+
+inline void QWindowsWindow::destroyIcon()
+{
+    if (m_iconBig) {
+        DestroyIcon(m_iconBig);
+        m_iconBig = 0;
+    }
+    if (m_iconSmall) {
+        DestroyIcon(m_iconSmall);
+        m_iconSmall = 0;
+    }
 }
 
 QT_END_NAMESPACE
