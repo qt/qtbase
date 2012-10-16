@@ -540,24 +540,14 @@ public:
 
     int findItem(int strPos) const;
     inline QTextFormatCollection *formats() const {
-#ifdef QT_BUILD_COMPAT_LIB
-        return 0; // Compat should never reference this symbol
-#else
         if (block.docHandle())
             return block.docHandle()->formatCollection();
-        else if (specialData)
-            return specialData->formats.data();
-
-        return 0;
-#endif
+        return specialData ? specialData->formats.data() : 0;
     }
     QTextCharFormat format(const QScriptItem *si) const;
     inline QAbstractTextDocumentLayout *docLayout() const {
-#ifdef QT_BUILD_COMPAT_LIB
-        return 0; // Compat should never reference this symbol
-#else
+        Q_ASSERT(block.docHandle());
         return block.docHandle()->document()->documentLayout();
-#endif
     }
     int formatIndex(const QScriptItem *si) const;
 
