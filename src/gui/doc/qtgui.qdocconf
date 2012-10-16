@@ -39,12 +39,7 @@ sourcedirs  += .. \
                ../../../examples/gui/doc
 
 exampledirs += ../../../examples/gui \
-               ../../../doc/src/snippets \
-               ../ \
+               ../../../examples/widgets \
                snippets
 
-excludedirs += snippets
-
-imagedirs   += images \
-               ../../../doc/src/images \
-               ../../../examples/gui/doc/images
+imagedirs   += images

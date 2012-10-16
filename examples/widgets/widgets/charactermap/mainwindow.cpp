@@ -76,8 +76,8 @@ MainWindow::MainWindow()
 
 //! [3]
     clipboard = QApplication::clipboard();
-#endif
 //! [3]
+#endif
 
 //! [4]
     connect(fontCombo, SIGNAL(currentFontChanged(QFont)),

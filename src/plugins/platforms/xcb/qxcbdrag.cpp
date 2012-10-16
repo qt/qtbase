@@ -680,8 +680,6 @@ void QXcbDrag::handleEnter(QWindow *window, const xcb_client_message_event_t *ev
     DEBUG() << "handleEnter" << window;
 
     xdnd_types.clear();
-//    motifdnd_active = false;
-//    last_enter_event.xclient = xe->xclient;
 
     int version = (int)(event->data.data32[1] >> 24);
     if (version > xdnd_version)
@@ -1217,9 +1215,7 @@ QXcbDropData::~QXcbDropData()
 QVariant QXcbDropData::retrieveData_sys(const QString &mimetype, QVariant::Type requestedType) const
 {
     QByteArray mime = mimetype.toLatin1();
-    QVariant data = /*X11->motifdnd_active
-                      ? X11->motifdndObtainData(mime)
-                      :*/ xdndObtainData(mime, requestedType);
+    QVariant data = xdndObtainData(mime, requestedType);
     return data;
 }
 
@@ -1260,20 +1256,11 @@ bool QXcbDropData::hasFormat_sys(const QString &format) const
 QStringList QXcbDropData::formats_sys() const
 {
     QStringList formats;
-//    if (X11->motifdnd_active) {
-//        int i = 0;
-//        QByteArray fmt;
-//        while (!(fmt = X11->motifdndFormat(i)).isEmpty()) {
-//            formats.append(QLatin1String(fmt));
-//            ++i;
-//        }
-//    } else {
-        for (int i = 0; i < drag->xdnd_types.size(); ++i) {
-            QString f = mimeAtomToString(drag->connection(), drag->xdnd_types.at(i));
-            if (!formats.contains(f))
-                formats.append(f);
-        }
-//    }
+    for (int i = 0; i < drag->xdnd_types.size(); ++i) {
+        QString f = mimeAtomToString(drag->connection(), drag->xdnd_types.at(i));
+        if (!formats.contains(f))
+            formats.append(f);
+    }
     return formats;
 }
 
