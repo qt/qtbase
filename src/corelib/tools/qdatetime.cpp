@@ -1804,7 +1804,7 @@ QTime fromStringImpl(const QString &s, Qt::DateFormat f, bool &isMidnight24)
             if (s.size() == 5) {
                 // Do not need to specify seconds if using ISO format.
                 return QTime(hour, minute, 0, 0);
-            } else if ((s.size() > 6 && s[5] == QLatin1Char(',')) || s[5] == QLatin1Char('.')) {
+            } else if ((s.size() > 6) && (s[5] == QLatin1Char(',') || s[5] == QLatin1Char('.'))) {
                 // Possibly specifying fraction of a minute.
 
                 // We only want 5 digits worth of fraction of minute. This follows the existing
