@@ -46,7 +46,6 @@
 #include <QImage>
 #include <QImageReader>
 #include <QImageWriter>
-#include <QLabel>
 #include <QPixmap>
 #include <QSet>
 #include <QTcpSocket>
