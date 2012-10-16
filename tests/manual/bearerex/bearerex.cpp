@@ -53,14 +53,14 @@ BearerEx::BearerEx(QWidget* parent)
     createMenus();
     
     connect(&m_NetworkConfigurationManager, SIGNAL(updateCompleted()), this, SLOT(configurationsUpdateCompleted()));
-    connect(&m_NetworkConfigurationManager, SIGNAL(configurationAdded(const QNetworkConfiguration&)),
-            this, SLOT(configurationAdded(const QNetworkConfiguration&)));
-    connect(&m_NetworkConfigurationManager, SIGNAL(configurationRemoved(const QNetworkConfiguration&)),
-            this, SLOT(configurationRemoved(const QNetworkConfiguration&)));
+    connect(&m_NetworkConfigurationManager, SIGNAL(configurationAdded(QNetworkConfiguration)),
+            this, SLOT(configurationAdded(QNetworkConfiguration)));
+    connect(&m_NetworkConfigurationManager, SIGNAL(configurationRemoved(QNetworkConfiguration)),
+            this, SLOT(configurationRemoved(QNetworkConfiguration)));
     connect(&m_NetworkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
             this, SLOT(onlineStateChanged(bool)));
-    connect(&m_NetworkConfigurationManager, SIGNAL(configurationChanged(const QNetworkConfiguration&)),
-            this, SLOT(configurationChanged(const QNetworkConfiguration&)));
+    connect(&m_NetworkConfigurationManager, SIGNAL(configurationChanged(QNetworkConfiguration)),
+            this, SLOT(configurationChanged(QNetworkConfiguration)));
     showConfigurations();
 }
 
@@ -318,7 +318,7 @@ void SessionTab::on_createQNetworkAccessManagerButton_clicked()
         return;
     }
     createQNetworkAccessManagerButton->setText("Recreate");
-    connect(m_dataTransferer, SIGNAL(finished(quint32, qint64, QString)), this, SLOT(finished(quint32, qint64, QString)));
+    connect(m_dataTransferer, SIGNAL(finished(quint32,qint64,QString)), this, SLOT(finished(quint32,qint64,QString)));
 }
 
 void SessionTab::on_sendRequestButton_clicked()
@@ -362,12 +362,12 @@ void SessionTab::on_stopConnectionButton_clicked()
 void SessionTab::on_alrButton_clicked()
 {
     if (!m_alrEnabled) {
-        connect(m_NetworkSession, SIGNAL(preferredConfigurationChanged(const QNetworkConfiguration&, bool)),
-                this, SLOT(preferredConfigurationChanged(const QNetworkConfiguration&, bool)));
+        connect(m_NetworkSession, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)),
+                this, SLOT(preferredConfigurationChanged(QNetworkConfiguration,bool)));
         alrButton->setText("Disable ALR");
         m_alrEnabled = true;
     } else {
-        disconnect(m_NetworkSession, SIGNAL(preferredConfigurationChanged(const QNetworkConfiguration&, bool)), 0, 0);
+        disconnect(m_NetworkSession, SIGNAL(preferredConfigurationChanged(QNetworkConfiguration,bool)), 0, 0);
         alrButton->setText("Enable ALR");
         m_alrEnabled = false;
     }

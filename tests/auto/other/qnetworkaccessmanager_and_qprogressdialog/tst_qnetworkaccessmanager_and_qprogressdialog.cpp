@@ -87,8 +87,8 @@ public slots:
                 QNetworkRequest(
                 QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile")
                 ));
-        connect(reply, SIGNAL(downloadProgress(qint64, qint64)),
-                this, SLOT(dataReadProgress(qint64, qint64)));
+        connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                this, SLOT(dataReadProgress(qint64,qint64)));
         connect(reply, SIGNAL(readyRead()),
                 this, SLOT(dataReadyRead()));
         connect(reply, SIGNAL(finished()), this, SLOT(finishedFromReply()));

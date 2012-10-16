@@ -515,7 +515,7 @@ void tst_qnetworkreply::echoPerformance()
 
     QBENCHMARK{
         QNetworkReply* reply = manager.post(request, data);
-        connect(reply, SIGNAL(sslErrors( const QList<QSslError> &)), reply, SLOT(ignoreSslErrors()));
+        connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
         connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
         QTestEventLoop::instance().enterLoop(5);
         QVERIFY(!QTestEventLoop::instance().timeout());
@@ -783,7 +783,7 @@ public slots:
         QNetworkRequest request = requestList.takeFirst();
         timeOneRequest.restart();
         reply = manager.get(request);
-        QObject::connect(reply, SIGNAL(sslErrors( const QList<QSslError> &)), reply, SLOT(ignoreSslErrors()));
+        QObject::connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
         QObject::connect(reply, SIGNAL(finished()), this, SLOT(doNextRequest()));
     }
 
