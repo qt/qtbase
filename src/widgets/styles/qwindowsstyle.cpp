@@ -54,7 +54,6 @@
 #include <private/qmenubar_p.h>
 #include "qpaintengine.h"
 #include "qpainter.h"
-#include "qprogressbar.h"
 #include "qrubberband.h"
 #include "qstyleoption.h"
 #include "qtabbar.h"
@@ -131,21 +130,6 @@ QWindowsStylePrivate::QWindowsStylePrivate()
 #endif
 }
 
-void QWindowsStylePrivate::startProgressAnimation(QObject *o, QProgressBar *bar)
-{
-    Q_UNUSED(o);
-#ifndef QT_NO_ANIMATION
-    if (!animation(bar))
-        startAnimation(new QProgressStyleAnimation(animationFps, bar));
-#endif
-}
-
-void QWindowsStylePrivate::stopProgressAnimation(QObject *o, QProgressBar *bar)
-{
-    Q_UNUSED(o);
-    stopAnimation(bar);
-}
-
 // Returns true if the toplevel parent of \a widget has seen the Alt-key
 bool QWindowsStylePrivate::hasSeenAlt(const QWidget *widget) const
 {
@@ -204,27 +188,6 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
         d->seenAlt.removeAll(widget);
         d->seenAlt.removeAll(widget->window());
         break;
-#ifndef QT_NO_PROGRESSBAR
-    case QEvent::StyleChange:
-    case QEvent::Paint:
-    case QEvent::Show:
-        if (QProgressBar *bar = qobject_cast<QProgressBar *>(o)) {
-            // Animation by timer for progress bars that have their min and
-            // max values the same
-            if (bar->minimum() == bar->maximum())
-                d->startProgressAnimation(this, bar);
-            else
-                d->stopProgressAnimation(this, bar);
-        }
-        break;
-    case QEvent::Destroy:
-    case QEvent::Hide:
-        // Do static_cast because there is no type info when getting
-        // the destroy event. We know that it is a QProgressBar, since
-        // we only install a widget event filter for QScrollBars.
-        d->stopProgressAnimation(this, static_cast<QProgressBar *>(o));
-        break;
-#endif // QT_NO_PROGRESSBAR
     default:
         break;
     }
@@ -315,23 +278,12 @@ void QWindowsStyle::unpolish(QApplication *app)
 void QWindowsStyle::polish(QWidget *widget)
 {
     QCommonStyle::polish(widget);
-#ifndef QT_NO_PROGRESSBAR
-    if (qobject_cast<QProgressBar *>(widget))
-        widget->installEventFilter(this);
-#endif
 }
 
 /*! \reimp */
 void QWindowsStyle::unpolish(QWidget *widget)
 {
     QCommonStyle::unpolish(widget);
-#ifndef QT_NO_PROGRESSBAR
-    if (QProgressBar *bar=qobject_cast<QProgressBar *>(widget)) {
-        Q_D(QWindowsStyle);
-        widget->removeEventFilter(this);
-        d->stopProgressAnimation(this, bar);
-    }
-#endif
 }
 
 /*!
@@ -1582,7 +1534,6 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         qDrawShadePanel(p, opt->rect, opt->palette, true, 1, 0);
         break;
 
-#ifndef QT_NO_PROGRESSBAR
     case PE_IndicatorProgressChunk:
         {
             bool vertical = false, inverted = false;
@@ -1616,7 +1567,6 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
 
     case PE_FrameTabWidget: {
         qDrawWinButton(p, opt->rect, opt->palette, false, 0);
@@ -2232,7 +2182,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
 
 #endif // QT_NO_TOOLBAR
-#ifndef QT_NO_PROGRESSBAR
+
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             QRect rect = pb->rect;
@@ -2263,8 +2213,8 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             if (inverted)
                 reverse = !reverse;
             int w = rect.width();
+            Q_D(const QWindowsStyle);
             if (pb->minimum == 0 && pb->maximum == 0) {
-                Q_D(const QWindowsStyle);
                 const int unit_width = proxy()->pixelMetric(PM_ProgressBarChunkWidth, pb, widget);
                 QStyleOptionProgressBarV2 pbBits = *pb;
                 Q_ASSERT(unit_width >0);
@@ -2274,10 +2224,10 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
                 int step = 0;
                 int chunkCount = w / unit_width + 1;
-#ifndef QT_NO_ANIMATION
-                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
                     step = (animation->animationStep() / 3) % chunkCount;
-#endif
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, opt->styleObject));
                 int chunksInRow = 5;
                 int myY = pbBits.rect.y();
                 int myHeight = pbBits.rect.height();
@@ -2311,11 +2261,11 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 p->restore(); //restore state
             }
             else {
+                d->stopAnimation(opt->styleObject);
                 QCommonStyle::drawControl(ce, opt, p, widget);
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
 
 #ifndef QT_NO_DOCKWIDGET
     case CE_DockWidgetTitle:

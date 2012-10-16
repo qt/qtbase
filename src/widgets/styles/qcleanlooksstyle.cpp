@@ -1751,20 +1751,21 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 reverse = !reverse;
 
             QRect progressBar;
+            Q_D(const QCleanlooksStyle);
             if (!indeterminate) {
                 if (!reverse) {
                     progressBar.setRect(rect.left() + 1, rect.top() + 1, width + 1, rect.height() - 3);
                 } else {
                     progressBar.setRect(rect.right() - 1 - width, rect.top() + 1, width + 1, rect.height() - 3);
                 }
+                d->stopAnimation(option->styleObject);
             } else {
-                Q_D(const QCleanlooksStyle);
                 int slideWidth = ((rect.width() - 4) * 2) / 3;
                 int step = 0;
-#ifndef QT_NO_ANIMATION
-                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject)))
                     step = animation->progressStep(slideWidth);
-#endif
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
                 progressBar.setRect(rect.left() + 1 + step, rect.top() + 1,
                                     slideWidth / 2, rect.height() - 3);
             }

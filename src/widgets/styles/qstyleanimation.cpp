@@ -47,8 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ANIMATION
-
 QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(target),
     _startTime(QTime::currentTime())
 {
@@ -128,21 +126,13 @@ void QProgressStyleAnimation::setSpeed(int speed)
 
 bool QProgressStyleAnimation::isUpdateNeeded() const
 {
-    QProgressBar *pb = qobject_cast<QProgressBar*>(parent());
-    if (pb && pb->minimum() == 0 && pb->maximum() == 0) {
-        int current = animationStep();
-        if (_step == -1 || _step != current)
-        {
-            _step = current;
-            return true;
-        }
-    } else {
-        // the progress bar is no longer indeterminate -> stop
-        const_cast<QProgressStyleAnimation *>(this)->stop();
+    int current = animationStep();
+    if (_step == -1 || _step != current)
+    {
+        _step = current;
+        return true;
     }
     return false;
 }
-
-#endif // QT_NO_ANIMATION
 
 QT_END_NAMESPACE

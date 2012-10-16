@@ -1089,7 +1089,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             return;
         }
         break;
-#ifndef QT_NO_PROGRESSBAR
+
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *bar
                 = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
@@ -1101,11 +1101,11 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 inverted = pb2->invertedAppearance;
             }
 
-            if (const QProgressBar *progressbar = qobject_cast<const QProgressBar *>(widget)) {
-                if (isIndeterminate || (progressbar->value() > 0 && (progressbar->value() < progressbar->maximum()) && d->transitionsEnabled()))
-                    d->startProgressAnimation(0, const_cast<QProgressBar *>(progressbar));
-                else
-                    d->stopAnimation(progressbar);
+            if (isIndeterminate || (bar->progress > 0 && (bar->progress < bar->maximum) && d->transitionsEnabled())) {
+                if (!d->animation(option->styleObject))
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
+            } else {
+                d->stopAnimation(option->styleObject);
             }
 
             XPThemeData theme(widget, painter,
@@ -1116,7 +1116,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             QTime current = QTime::currentTime();
 
             if (isIndeterminate) {
-                if (QProgressStyleAnimation *a = qobject_cast<QProgressStyleAnimation *>(d->animation(widget))) {
+                if (QProgressStyleAnimation *a = qobject_cast<QProgressStyleAnimation *>(d->animation(option->styleObject))) {
                     int glowSize = 120;
                     int animationWidth = glowSize * 2 + (vertical ? theme.rect.height() : theme.rect.width());
                     int animOffset = a->startTime().msecsTo(current) / 4;
@@ -1186,7 +1186,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                 }
                 d->drawBackground(theme);
 
-                if (QProgressStyleAnimation *a = qobject_cast<QProgressStyleAnimation *>(d->animation(widget))) {
+                if (QProgressStyleAnimation *a = qobject_cast<QProgressStyleAnimation *>(d->animation(option->styleObject))) {
                     int glowSize = 140;
                     int animationWidth = glowSize * 2 + (vertical ? theme.rect.height() : theme.rect.width());
                     int animOffset = a->startTime().msecsTo(current) / 4;
@@ -1195,8 +1195,8 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                         if (bar->progress < bar->maximum)
                             a->setStartTime(QTime::currentTime());
                         else
-                            d->stopAnimation(widget); //we stop the glow motion only after it has
-                                                      //moved out of view
+                            d->stopAnimation(option->styleObject); //we stop the glow motion only after it has
+                                                                   //moved out of view
                     }
                     painter->save();
                     painter->setClipRect(theme.rect);
@@ -1215,7 +1215,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+
     case CE_MenuBarItem:
         {
 

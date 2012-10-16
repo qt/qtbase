@@ -69,7 +69,6 @@
 #include <qcheckbox.h>
 #include <qstatusbar.h>
 #include <qheaderview.h>
-#include <qprogressbar.h>
 #include <private/qwindowsstyle_p.h>
 #include <private/qstyleanimation_p.h>
 #include <qtabbar.h>
@@ -2726,12 +2725,6 @@ void QStyleSheetStyle::polish(QWidget *w)
     }
 #endif
 
-#ifndef QT_NO_PROGRESSBAR
-    if (QProgressBar *pb = qobject_cast<QProgressBar *>(w)) {
-        QWindowsStyle::polish(pb);
-    }
-#endif
-
     QRenderRule rule = renderRule(w, PseudoElement_None, PseudoClass_Any);
     if (rule.hasDrawable() || rule.hasBox()) {
         if (w->metaObject() == &QWidget::staticMetaObject
@@ -2825,10 +2818,6 @@ void QStyleSheetStyle::unpolish(QWidget *w)
         QObject::disconnect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
                             sa, SLOT(update()));
     }
-#endif
-#ifndef QT_NO_PROGRESSBAR
-    if (QProgressBar *pb = qobject_cast<QProgressBar *>(w))
-        QWindowsStyle::unpolish(pb);
 #endif
     baseStyle()->unpolish(w);
 }
@@ -3830,14 +3819,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
 
                 QRect r = rect;
+                Q_D(const QWindowsStyle);
                 if (pb->minimum == 0 && pb->maximum == 0) {
-                    Q_D(const QWindowsStyle);
                     int chunkCount = fillWidth/chunkWidth;
                     int offset = 0;
-#ifndef QT_NO_ANIMATION
-                    if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(w)))
+                    if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
                         offset = animation->animationStep() * 8 % rect.width();
-#endif
+                    else
+                        d->startAnimation(new QProgressStyleAnimation(d->animationFps, opt->styleObject));
                     int x = reverse ? r.left() + r.width() - offset - chunkWidth : r.x() + offset;
                     while (chunkCount > 0) {
                         r.setRect(x, rect.y(), chunkWidth, rect.height());
@@ -3868,6 +3857,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         subRule.drawRule(p, r);
                         x += reverse ? -chunkWidth : chunkWidth;
                     }
+
+                    d->stopAnimation(opt->styleObject);
                 }
 
                 p->restore();

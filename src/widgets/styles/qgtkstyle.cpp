@@ -3488,15 +3488,15 @@ void QGtkStyle::drawControl(ControlElement element,
                     progressBar.setRect(rect.left(), rect.top(), width, rect.height());
                 else
                     progressBar.setRect(rect.right() - width, rect.top(), width, rect.height());
-
+                d->stopAnimation(option->styleObject);
             } else {
                 Q_D(const QGtkStyle);
                 int slideWidth = ((rect.width() - 4) * 2) / 3;
                 int step = 0;
-#ifndef QT_NO_ANIMATION
-                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject)))
                     step = animation->progressStep(slideWidth);
-#endif
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
                 progressBar.setRect(rect.left() + step, rect.top(), slideWidth / 2, rect.height());
             }
 

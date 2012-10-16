@@ -58,8 +58,6 @@ QT_BEGIN_NAMESPACE
 // We mean it.
 //
 
-#ifndef QT_NO_ANIMATION
-
 class QStyleAnimation : public QAbstractAnimation
 {
     Q_OBJECT
@@ -102,8 +100,6 @@ private:
     int _speed;
     mutable int _step;
 };
-
-#endif // QT_NO_ANIMATION
 
 QT_END_NAMESPACE
 

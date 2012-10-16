@@ -63,15 +63,12 @@
 QT_BEGIN_NAMESPACE
 
 class QTime;
-class QProgressBar;
 
 class QWindowsStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsStyle)
 public:
     QWindowsStylePrivate();
-    void startProgressAnimation(QObject *o, QProgressBar *bar);
-    void stopProgressAnimation(QObject *o, QProgressBar *bar);
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }
     bool alt_down;

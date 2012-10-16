@@ -163,9 +163,9 @@ public:
     void removeWidget(QWidget *);
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
-    bool animatable(Animates, const QWidget *) const;
-    void stopAnimate(Animates, QWidget *);
-    void startAnimate(Animates, QWidget *);
+    bool animatable(Animates, const QObject *) const;
+    void stopAnimate(Animates, QObject *);
+    void startAnimate(Animates, QObject *);
     static ThemeDrawState getDrawState(QStyle::State flags);
     QAquaWidgetSize aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,

@@ -1062,22 +1062,19 @@ QStyleAnimation * QCommonStylePrivate::animation(const QObject *target) const
 }
 
 /*! \internal */
-void QCommonStylePrivate::startAnimation(QStyleAnimation *animation)
+void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
 {
-#ifndef QT_NO_ANIMATION
-    Q_Q(QCommonStyle);
+    Q_Q(const QCommonStyle);
     stopAnimation(animation->target());
     q->connect(animation, SIGNAL(finished()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
     q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
     animations.insert(animation->target(), animation);
     animation->start();
-#endif // QT_NO_ANIMATION
 }
 
 /*! \internal */
-void QCommonStylePrivate::stopAnimation(const QObject *target)
+void QCommonStylePrivate::stopAnimation(const QObject *target) const
 {
-#ifndef QT_NO_ANIMATION
     QStyleAnimation *animation = animations.value(target);
     if (animation) {
         if (animation->state() == QAbstractAnimation::Stopped)
@@ -1085,20 +1082,17 @@ void QCommonStylePrivate::stopAnimation(const QObject *target)
         else
             animation->stop();
     }
-#endif // QT_NO_ANIMATION
 }
 
 /*! \internal */
 void QCommonStylePrivate::_q_removeAnimation()
 {
-#ifndef QT_NO_ANIMATION
     Q_Q(QCommonStyle);
     QObject *animation = q->sender();
     if (animation) {
         animations.remove(animation->parent());
         animation->deleteLater();
     }
-#endif // QT_NO_ANIMATION
 }
 
 /*!

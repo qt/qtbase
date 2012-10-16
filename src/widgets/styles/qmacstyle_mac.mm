@@ -1683,15 +1683,15 @@ QMacStylePrivate::QMacStylePrivate()
 
 }
 
-bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QWidget *w) const
+bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QObject *obj) const
 {
-    if (!w)
+    if (!obj)
         return false;
 
     if (as == AquaPushButton) {
-        QPushButton *pb = const_cast<QPushButton *>(static_cast<const QPushButton *>(w));
-        if (w->window()->isActiveWindow() && pb && !mouseDown) {
-            if (static_cast<const QPushButton *>(w) != defaultButton) {
+        QPushButton *pb = const_cast<QPushButton *>(qobject_cast<const QPushButton *>(obj));
+        if (pb && pb->window()->isActiveWindow() && !mouseDown) {
+            if (pb != defaultButton) {
                 // Changed on its own, update the value.
                 const_cast<QMacStylePrivate *>(this)->stopAnimate(as, defaultButton);
                 const_cast<QMacStylePrivate *>(this)->startAnimate(as, pb);
@@ -1699,35 +1699,28 @@ bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QWidget *
             return true;
         }
     }
-    return animation(w);
+    return animation(obj);
 }
 
-void QMacStylePrivate::stopAnimate(QMacStylePrivate::Animates as, QWidget *w)
+void QMacStylePrivate::stopAnimate(QMacStylePrivate::Animates as, QObject *obj)
 {
-    stopAnimation(w);
+    stopAnimation(obj);
     if (as == AquaPushButton && defaultButton) {
         stopAnimation(defaultButton);
         QPushButton *tmp = defaultButton;
         defaultButton = 0;
         tmp->update();
     } else if (as == AquaScrollBar) {
-        scrollBarInfos.remove(w);
+        scrollBarInfos.remove(qobject_cast<QWidget*>(obj));
     }
 }
 
-void QMacStylePrivate::startAnimate(QMacStylePrivate::Animates as, QWidget *w)
+void QMacStylePrivate::startAnimate(QMacStylePrivate::Animates as, QObject *obj)
 {
-#ifndef QT_NO_ANIMATION
-    if (!animation(w))
-    {
-        if (as == AquaProgressBar)
-            startAnimation(new QProgressStyleAnimation(animateSpeed(as), w));
-        else
-            startAnimation(new QStyleAnimation(w));
-    }
-#endif
+    if (!animation(obj))
+        startAnimation(new QStyleAnimation(obj));
     if (as == AquaPushButton)
-        defaultButton = static_cast<QPushButton *>(w);
+        defaultButton = qobject_cast<QPushButton *>(obj);
 }
 
 bool QMacStylePrivate::addWidget(QWidget *w)
@@ -1743,12 +1736,6 @@ bool QMacStylePrivate::addWidget(QWidget *w)
             startAnimate(AquaPushButton, btn);
         return true;
     } else {
-        bool isProgressBar = (qobject_cast<QProgressBar *>(w));
-        if (isProgressBar) {
-            w->installEventFilter(q);
-            startAnimate(AquaProgressBar, w);
-            return true;
-        }
         bool isScrollBar = (qobject_cast<QScrollBar *>(w));
         if (isScrollBar) {
             w->installEventFilter(q);
@@ -1768,8 +1755,6 @@ void QMacStylePrivate::removeWidget(QWidget *w)
     QPushButton *btn = qobject_cast<QPushButton *>(w);
     if (btn && btn == defaultButton) {
         stopAnimate(AquaPushButton, btn);
-    } else if (qobject_cast<QProgressBar *>(w)) {
-        stopAnimate(AquaProgressBar, w);
     } else if (qobject_cast<QScrollBar *>(w)) {
         stopAnimate(AquaScrollBar, w);
     }
@@ -1797,19 +1782,8 @@ bool QMacStyle::eventFilter(QObject *o, QEvent *e)
 {
     //animate
     Q_D(QMacStyle);
-    if (QProgressBar *pb = qobject_cast<QProgressBar *>(o)) {
-        switch (e->type()) {
-        default:
-            break;
-        case QEvent::Show:
-            d->startAnimate(QMacStylePrivate::AquaProgressBar, pb);
-            break;
-        case QEvent::Destroy:
-        case QEvent::Hide:
-            d->stopAnimate(QMacStylePrivate::AquaProgressBar, pb);
-        }
+    if (QScrollBar *sb = qobject_cast<QScrollBar *>(o)) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    } else if (QScrollBar *sb = qobject_cast<QScrollBar *>(o)) {
         // take care of fading out overlaying scrollbars (and only those!) when inactive
         const QAbstractScrollArea *scrollArea = scrollBarsScrollArea(sb);
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
@@ -4377,10 +4351,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             tdi.min = pb->minimum;
             tdi.value = pb->progress;
             tdi.attributes = vertical ? 0 : kThemeTrackHorizontal;
-#ifndef QT_NO_ANIMATION
-            if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(w)))
-                tdi.trackInfo.progress.phase = animation->animationStep();
-#endif
+            if (isIndeterminate) {
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
+                    tdi.trackInfo.progress.phase = animation->animationStep();
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animateSpeed(QMacStylePrivate::AquaProgressBar), opt->styleObject));
+            } else {
+                d->stopAnimation(opt->styleObject);
+            }
             if (!(pb->state & State_Active))
                 tdi.enableState = kThemeTrackInactive;
             else if (!(pb->state & State_Enabled))

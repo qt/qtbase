@@ -2396,7 +2396,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
         }
         break;
 #endif // QT_NO_TABBAR
-#ifndef QT_NO_PROGRESSBAR
+
     case CE_ProgressBarGroove:
         if (const QStyleOptionProgressBar *bar = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
             QRect rect = bar->rect;
@@ -2566,13 +2566,14 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 } else {
                     progressBar.setRect(rect.right() - 1 - width, rect.top() + 2, width, rect.height() - 4);
                 }
+                d->stopAnimation(option->styleObject);
             } else {
                 int slideWidth = ((rect.width() - 4) * 2) / 3;
                 int step = 0;
-#ifndef QT_NO_ANIMATION
-                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject)))
                     step = animation->progressStep(slideWidth);
-#endif
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
                 progressBar.setRect(rect.left() + 2 + step, rect.top() + 2,
                                     slideWidth / 2, rect.height() - 4);
             }
@@ -2727,10 +2728,8 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             if (!indeterminate) {
                 int step = 0;
                 if (AnimateProgressBar || (indeterminate && AnimateBusyProgressBar)) {
-#ifndef QT_NO_ANIMATION
                     if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(widget)))
                         step = animation->animationStep() % 20;
-#endif
                 }
                 if (reverse)
                     painter->drawPixmap(progressBar.left() - 25 + step, progressBar.top(), cache);
@@ -2743,7 +2742,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             painter->restore();
         }
         break;
-#endif // QT_NO_PROGRESSBAR
+
     case CE_HeaderSection:
         // Draws the header in tables.
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
@@ -4956,12 +4955,10 @@ QRect QPlastiqueStyle::subElementRect(SubElement element, const QStyleOption *op
         rect = visualRect(option->direction, option->rect,
                           QWindowsStyle::subElementRect(element, option, widget)).adjusted(0, 0, 1, 1);
         break;
-#ifndef QT_NO_PROGRESSBAR
     case SE_ProgressBarLabel:
     case SE_ProgressBarContents:
     case SE_ProgressBarGroove:
         return option->rect;
-#endif // QT_NO_PROGRESSBAR
     default:
         return QWindowsStyle::subElementRect(element, option, widget);
     }
@@ -5647,11 +5644,6 @@ void QPlastiqueStyle::polish(QWidget *widget)
         widget->setBackgroundRole(QPalette::Window);
     }
 
-#ifndef QT_NO_PROGRESSBAR
-    if (AnimateBusyProgressBar && qobject_cast<QProgressBar *>(widget))
-        widget->installEventFilter(this);
-#endif
-
 #if defined QPlastique_MaskButtons
     if (qobject_cast<QPushButton *>(widget) || qobject_cast<QToolButton *>(widget))
         widget->installEventFilter(this);
@@ -5703,11 +5695,6 @@ void QPlastiqueStyle::unpolish(QWidget *widget)
         ) {
         widget->setBackgroundRole(QPalette::Button);
     }
-
-#ifndef QT_NO_PROGRESSBAR
-    if (AnimateBusyProgressBar && qobject_cast<QProgressBar *>(widget))
-        widget->removeEventFilter(this);
-#endif
 
 #if defined QPlastique_MaskButtons
     if (qobject_cast<QPushButton *>(widget) || qobject_cast<QToolButton *>(widget))
@@ -5825,20 +5812,8 @@ int QPlastiqueStyle::layoutSpacing(QSizePolicy::ControlType control1,
 */
 bool QPlastiqueStyle::eventFilter(QObject *watched, QEvent *event)
 {
-#ifndef QT_NO_PROGRESSBAR
-    Q_D(QPlastiqueStyle);
-
-    switch (event->type()) {
-    case QEvent::Show:
-        if (QProgressBar *bar = qobject_cast<QProgressBar *>(watched))
-            d->startProgressAnimation(this, bar);
-        break;
-    case QEvent::Destroy:
-    case QEvent::Hide:
-        if (QProgressBar *bar = qobject_cast<QProgressBar *>(watched))
-            d->stopProgressAnimation(this, bar);
-        break;
 #if defined QPlastique_MaskButtons
+    switch (event->type()) {
     case QEvent::Resize:
         if (qobject_cast<QPushButton *>(watched) || qobject_cast<QToolButton *>(watched)) {
             QWidget *widget = qobject_cast<QWidget *>(watched);
@@ -5855,11 +5830,10 @@ bool QPlastiqueStyle::eventFilter(QObject *watched, QEvent *event)
             widget->setMask(region);
         }
         break;
-#endif
     default:
         break;
     }
-#endif // QT_NO_PROGRESSBAR
+#endif
 
     return QWindowsStyle::eventFilter(watched, event);
 }
