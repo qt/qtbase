@@ -393,7 +393,7 @@ public:
                                                             m_path(path),
                                                             m_connections()
     {
-        connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
+        connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));
     }
 
     bool registerObject(const QDBusConnection& c)
@@ -605,7 +605,7 @@ public:
     MyServer2(QString addr, QObject* parent) : QDBusServer(addr, parent),
                                                m_conn("none")
     {
-        connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
+        connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));
     }
 
     QDBusConnection connection()
