@@ -1680,6 +1680,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     const int subWindowCount =  5;
     for (int i = 0; i < subWindowCount; ++i) {
         QMdiSubWindow *window = mdiArea.addSubWindow(new QPushButton("QAccessibilityTest"));
+        window->setAttribute(Qt::WA_LayoutUsesWidgetRect);
         window->show();
         // Parts of this test requires that the sub windows are placed next
         // to each other. In order to achieve that QMdiArea must have
@@ -1759,7 +1760,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     const QPoint globalWidgetPos = QPoint(globalPos.x() + widgetGeometry.x(),
                                           globalPos.y() + widgetGeometry.y());
 #ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-22812", Abort);
+    QSKIP("QTBUG-22812");
 #endif
     QCOMPARE(childRect(interface), QRect(globalWidgetPos, widgetGeometry.size()));
 
