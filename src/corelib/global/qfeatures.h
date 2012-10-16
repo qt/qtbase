@@ -306,6 +306,11 @@
 #define QT_NO_NETWORKDISKCACHE
 #endif
 
+// QLocalServer
+#if !defined(QT_NO_LOCALSERVER) && (defined(QT_NO_TEMPORARYFILE))
+#define QT_NO_LOCALSERVER
+#endif
+
 // QProgressDialog
 #if !defined(QT_NO_PROGRESSDIALOG) && (defined(QT_NO_PROGRESSBAR))
 #define QT_NO_PROGRESSDIALOG

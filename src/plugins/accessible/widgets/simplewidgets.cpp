@@ -72,13 +72,6 @@ extern QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel 
 QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
 QString Q_GUI_EXPORT qt_accHotKey(const QString &text);
 
-QString Q_GUI_EXPORT qTextBeforeOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
-        int *startOffset, int *endOffset, const QString& text);
-QString Q_GUI_EXPORT qTextAtOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
-        int *startOffset, int *endOffset, const QString& text);
-QString Q_GUI_EXPORT qTextAfterOffsetFromString(int offset, QAccessible2::BoundaryType boundaryType,
-        int *startOffset, int *endOffset, const QString& text);
-
 /*!
   \class QAccessibleButton
   \brief The QAccessibleButton class implements the QAccessibleInterface for button type widgets.
@@ -725,7 +718,7 @@ QString QAccessibleLineEdit::textBeforeOffset(int offset, BoundaryType boundaryT
         *startOffset = *endOffset = -1;
         return QString();
     }
-    return qTextBeforeOffsetFromString(offset, boundaryType, startOffset, endOffset, lineEdit()->text());
+    return QAccessibleTextInterface::textBeforeOffset(offset, boundaryType, startOffset, endOffset);
 }
 
 QString QAccessibleLineEdit::textAfterOffset(int offset, BoundaryType boundaryType,
@@ -735,7 +728,7 @@ QString QAccessibleLineEdit::textAfterOffset(int offset, BoundaryType boundaryTy
         *startOffset = *endOffset = -1;
         return QString();
     }
-    return qTextAfterOffsetFromString(offset, boundaryType, startOffset, endOffset, lineEdit()->text());
+    return QAccessibleTextInterface::textAfterOffset(offset, boundaryType, startOffset, endOffset);
 }
 
 QString QAccessibleLineEdit::textAtOffset(int offset, BoundaryType boundaryType,
@@ -745,7 +738,7 @@ QString QAccessibleLineEdit::textAtOffset(int offset, BoundaryType boundaryType,
         *startOffset = *endOffset = -1;
         return QString();
     }
-    return qTextAtOffsetFromString(offset, boundaryType, startOffset, endOffset, lineEdit()->text());
+    return QAccessibleTextInterface::textAtOffset(offset, boundaryType, startOffset, endOffset);
 }
 
 void QAccessibleLineEdit::removeSelection(int selectionIndex)

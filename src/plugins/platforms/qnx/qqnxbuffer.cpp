@@ -88,7 +88,7 @@ QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
     if (result != 0) {
         qFatal("QQNX: failed to query buffer pointer, errno=%d", errno);
     }
-    if (dataPtr == NULL) {
+    if (dataPtr == 0) {
         qFatal("QQNX: buffer pointer is NULL, errno=%d", errno);
     }
 

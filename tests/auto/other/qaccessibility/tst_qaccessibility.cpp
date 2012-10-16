@@ -1885,6 +1885,7 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(textIface->textAtOffset(8, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
     QCOMPARE(textIface->textAtOffset(25, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("advice"));
     QCOMPARE(textIface->textAtOffset(92, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("oneself"));
+    QCOMPARE(textIface->textAtOffset(101, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(". --"));
 
     QCOMPARE(textIface->textBeforeOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
     QCOMPARE(textIface->textAfterOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
@@ -2821,7 +2822,10 @@ void tst_QAccessibility::comboBoxTest()
     { // not editable combobox
     QComboBox combo;
     combo.addItems(QStringList() << "one" << "two" << "three");
+    // Fully decorated windows have a minimum width of 160 on Windows.
+    combo.setMinimumWidth(200);
     combo.show();
+    QVERIFY(QTest::qWaitForWindowShown(&combo));
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&combo);
     QCOMPARE(verifyHierarchy(iface), 0);
@@ -2847,13 +2851,14 @@ void tst_QAccessibility::comboBoxTest()
     QVERIFY(iface->actionInterface());
     QCOMPARE(iface->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::showMenuAction());
     iface->actionInterface()->doAction(QAccessibleActionInterface::showMenuAction());
-    QVERIFY(combo.view()->isVisible());
+    QTRY_VERIFY(combo.view()->isVisible());
 
     delete iface;
     }
 
     { // editable combobox
     QComboBox editableCombo;
+    editableCombo.setMinimumWidth(200);
     editableCombo.show();
     editableCombo.setEditable(true);
     editableCombo.addItems(QStringList() << "foo" << "bar" << "baz");

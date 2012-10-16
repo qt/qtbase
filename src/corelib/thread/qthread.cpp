@@ -323,7 +323,8 @@ QThreadPrivate::~QThreadPrivate()
 /*!
     \fn void QThread::started()
 
-    This signal is emitted when the thread starts executing.
+    This signal is emitted from the associated thread when it starts executing,
+    before the run() function is called.
 
     \sa finished(), terminated()
 */
@@ -331,7 +332,14 @@ QThreadPrivate::~QThreadPrivate()
 /*!
     \fn void QThread::finished()
 
-    This signal is emitted when the thread has finished executing.
+    This signal is emitted from the associated thread right before it finishes executing.
+
+    When this signal is emitted, the event loop has already stopped running.
+    No more events will be processed in the thread, except for deferred deletion events.
+    This signal can be connected to QObject::deleteLater(), to free objects in that thread.
+
+    \note If the associated thread was terminated using terminate(), it is undefined from
+    which thread this signal is emitted.
 
     \sa started(), terminated()
 */
@@ -340,6 +348,8 @@ QThreadPrivate::~QThreadPrivate()
     \fn void QThread::terminated()
 
     This signal is emitted when the thread is terminated.
+
+    It is undefined from which thread this signal is emitted.
 
     \sa started(), finished()
 */

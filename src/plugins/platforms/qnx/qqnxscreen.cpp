@@ -524,7 +524,7 @@ void QQnxScreen::newWindowCreated(void *window)
 {
     Q_ASSERT(thread() == QThread::currentThread());
     const screen_window_t windowHandle = reinterpret_cast<screen_window_t>(window);
-    screen_display_t display = NULL;
+    screen_display_t display = 0;
     if (screen_get_window_property_pv(windowHandle, SCREEN_PROPERTY_DISPLAY, (void**)&display) != 0) {
         qWarning("QQnx: Failed to get screen for window, errno=%d", errno);
         return;

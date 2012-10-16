@@ -77,6 +77,7 @@ extern QWidget *qt_button_down;
 extern QWidget *qt_popup_down;
 extern bool qt_replay_popup_mouse_event;
 int openPopupCount = 0;
+extern QPointer<QWidget> qt_last_mouse_receiver;
 
 void QApplicationPrivate::createEventDispatcher()
 {
@@ -248,6 +249,12 @@ void QApplicationPrivate::openPopup(QWidget *popup)
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
             QApplication::sendEvent(fw, &e);
         }
+    }
+
+    // Dispatch leave for last mouse receiver to update undermouse states
+    if (qt_last_mouse_receiver && !QWidget::mouseGrabber()) {
+        QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver.data());
+        qt_last_mouse_receiver = 0;
     }
 }
 

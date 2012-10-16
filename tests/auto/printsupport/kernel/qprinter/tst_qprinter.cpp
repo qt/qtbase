@@ -965,28 +965,28 @@ static void printPage(QPainter *painter)
 
 void tst_QPrinter::taskQTBUG4497_reusePrinterOnDifferentFiles()
 {
-    TempFileCleanup tmpFile1("out1.ps");
-    TempFileCleanup tmpFile2("out2.ps");
+    TempFileCleanup tmpFile1("out1.pdf");
+    TempFileCleanup tmpFile2("out2.pdf");
 
     QPrinter printer;
     {
 
-        printer.setOutputFileName("out1.ps");
+        printer.setOutputFileName("out1.pdf");
         QPainter painter(&printer);
         printPage(&painter);
 
     }
     {
 
-        printer.setOutputFileName("out2.ps");
+        printer.setOutputFileName("out2.pdf");
         QPainter painter(&printer);
         printPage(&painter);
 
     }
-    QFile file1("out1.ps");
+    QFile file1("out1.pdf");
     QVERIFY(file1.open(QIODevice::ReadOnly));
 
-    QFile file2("out2.ps");
+    QFile file2("out2.pdf");
     QVERIFY(file2.open(QIODevice::ReadOnly));
 
     while (!file1.atEnd() && !file2.atEnd()) {

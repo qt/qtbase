@@ -215,18 +215,18 @@ public:
             : lastValue(-1),
               lastMinimum(-1),
               lastMaximum(-1),
-              lastUpdate(QDateTime::currentDateTime()),
+              lastUpdate(QDateTime::currentMSecsSinceEpoch()),
               hovered(false),
-              lastHovered(QDateTime::fromTime_t(0)),
+              lastHovered(0),
               cleared(false)
         {}
         int lastValue;
         int lastMinimum;
         int lastMaximum;
         QSize lastSize;
-        QDateTime lastUpdate;
+        qint64 lastUpdate;
         bool hovered;
-        QDateTime lastHovered;
+        qint64 lastHovered;
         bool cleared;
     };
     mutable QMap<const QWidget*, OverlayScrollBarInfo> scrollBarInfos;

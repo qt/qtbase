@@ -89,7 +89,6 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
         "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
         "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE$$MODULE_IMPORT_SUFFIX" \
-        "QT.$${MODULE}.docs = \$\$QT_MODULE_DOC_BASE" \
         "QT.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
         $$module_privdep \
         $$module_build_type \
@@ -122,7 +121,19 @@ CONFIG          += qmake_cache target_qt
 CONFIG          -= fix_output_dirs
 
 !isEmpty(QMAKE_DOCS) {
-    QMAKE_DOCS_OUTPUTDIR = $$eval(QT.$${MODULE}.docs)/qt$${MODULE}
+    doc_subdir = doc
+
+    QTDIR = $$[QT_HOST_PREFIX]
+    !force_independent:exists($$QTDIR/.qmake.cache): \
+        mod_component_base = $$QTDIR
+    else: \
+        mod_component_base = $$MODULE_BASE_OUTDIR
+
+    unset(QMAKE_DOCS_INDEX)
+    QMAKE_DOCS_OUTPUTDIR = $$mod_component_base/$$doc_subdir/qt$${MODULE}
+    for(qmod, QMAKEMODULES): \
+        QMAKE_DOCS_INDEX += $$section(qmod, /, 0, -3)/$$doc_subdir
+
     CONFIG += qt_install_module_docs
 }
 

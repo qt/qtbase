@@ -864,6 +864,59 @@ void QXcbConnection::sendConnectionEvent(QXcbAtom::Atom a, uint id)
     xcb_flush(xcb_connection());
 }
 
+namespace
+{
+    class PropertyNotifyEvent {
+    public:
+        PropertyNotifyEvent(xcb_window_t win, xcb_atom_t property)
+            : window(win), type(XCB_PROPERTY_NOTIFY), atom(property) {}
+        xcb_window_t window;
+        int type;
+        xcb_atom_t atom;
+        bool checkEvent(xcb_generic_event_t *event) const {
+            if (!event)
+                return false;
+            if ((event->response_type & ~0x80) != type) {
+                return false;
+            } else {
+                xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+                if ((pn->window == window) && (pn->atom == atom))
+                    return true;
+            }
+            return false;
+        }
+    };
+}
+
+xcb_timestamp_t QXcbConnection::getTimestamp()
+{
+    // send a dummy event to myself to get the timestamp from X server.
+    xcb_window_t rootWindow = screens().at(primaryScreen())->root();
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_APPEND, rootWindow, atom(QXcbAtom::CLIP_TEMPORARY),
+                        XCB_ATOM_INTEGER, 32, 0, NULL);
+
+    connection()->flush();
+    PropertyNotifyEvent checker(rootWindow, atom(QXcbAtom::CLIP_TEMPORARY));
+
+    xcb_generic_event_t *event = 0;
+    // lets keep this inside a loop to avoid a possible race condition, where
+    // reader thread has not yet had the time to acquire the mutex in order
+    // to add the new set of events to its event queue
+    while (true) {
+        connection()->sync();
+        if (event = checkEvent(checker))
+            break;
+    }
+
+    xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
+    xcb_timestamp_t timestamp = pn->time;
+    free(event);
+
+    xcb_delete_property(xcb_connection(), rootWindow, atom(QXcbAtom::CLIP_TEMPORARY));
+
+    return timestamp;
+}
+
 void QXcbConnection::processXcbEvents()
 {
     QXcbEventArray *eventqueue = m_reader->lock();

@@ -70,20 +70,20 @@ class Q_GUI_EXPORT QScreen : public QObject
 
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(int depth READ depth CONSTANT)
-    Q_PROPERTY(QSize size READ size NOTIFY sizeChanged)
-    Q_PROPERTY(QSize availableSize READ availableSize NOTIFY availableSizeChanged)
-    Q_PROPERTY(QSize virtualSize READ virtualSize NOTIFY sizeChanged)
-    Q_PROPERTY(QSize availableVirtualSize READ availableVirtualSize NOTIFY availableSizeChanged)
+    Q_PROPERTY(QSize size READ size NOTIFY geometryChanged)
+    Q_PROPERTY(QSize availableSize READ availableSize NOTIFY virtualGeometryChanged)
+    Q_PROPERTY(QSize virtualSize READ virtualSize NOTIFY virtualGeometryChanged)
+    Q_PROPERTY(QSize availableVirtualSize READ availableVirtualSize NOTIFY virtualGeometryChanged)
     Q_PROPERTY(QRect geometry READ geometry NOTIFY geometryChanged)
-    Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY availableGeometryChanged)
-    Q_PROPERTY(QRect virtualGeometry READ virtualGeometry NOTIFY sizeChanged)
-    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY availableGeometryChanged)
-    Q_PROPERTY(QSizeF physicalSize READ physicalSize CONSTANT)
-    Q_PROPERTY(qreal physicalDotsPerInchX READ physicalDotsPerInchX NOTIFY physicalDotsPerInchXChanged)
-    Q_PROPERTY(qreal physicalDotsPerInchY READ physicalDotsPerInchY NOTIFY physicalDotsPerInchYChanged)
+    Q_PROPERTY(QRect availableGeometry READ availableGeometry NOTIFY virtualGeometryChanged)
+    Q_PROPERTY(QRect virtualGeometry READ virtualGeometry NOTIFY virtualGeometryChanged)
+    Q_PROPERTY(QRect availableVirtualGeometry READ availableVirtualGeometry NOTIFY virtualGeometryChanged)
+    Q_PROPERTY(QSizeF physicalSize READ physicalSize NOTIFY physicalSizeChanged)
+    Q_PROPERTY(qreal physicalDotsPerInchX READ physicalDotsPerInchX NOTIFY physicalDotsPerInchChanged)
+    Q_PROPERTY(qreal physicalDotsPerInchY READ physicalDotsPerInchY NOTIFY physicalDotsPerInchChanged)
     Q_PROPERTY(qreal physicalDotsPerInch READ physicalDotsPerInch NOTIFY physicalDotsPerInchChanged)
-    Q_PROPERTY(qreal logicalDotsPerInchX READ logicalDotsPerInchX NOTIFY logicalDotsPerInchXChanged)
-    Q_PROPERTY(qreal logicalDotsPerInchY READ logicalDotsPerInchY NOTIFY logicalDotsPerInchYChanged)
+    Q_PROPERTY(qreal logicalDotsPerInchX READ logicalDotsPerInchX NOTIFY logicalDotsPerInchChanged)
+    Q_PROPERTY(qreal logicalDotsPerInchY READ logicalDotsPerInchY NOTIFY logicalDotsPerInchChanged)
     Q_PROPERTY(qreal logicalDotsPerInch READ logicalDotsPerInch NOTIFY logicalDotsPerInchChanged)
     Q_PROPERTY(Qt::ScreenOrientation primaryOrientation READ primaryOrientation NOTIFY primaryOrientationChanged)
     Q_PROPERTY(Qt::ScreenOrientation orientation READ orientation NOTIFY orientationChanged)
@@ -138,16 +138,11 @@ public:
     qreal refreshRate() const;
 
 Q_SIGNALS:
-    void sizeChanged(const QSize &size);
     void geometryChanged(const QRect &geometry);
-    void physicalDotsPerInchXChanged(qreal dpi);
-    void physicalDotsPerInchYChanged(qreal dpi);
+    void physicalSizeChanged(const QSizeF &size);
     void physicalDotsPerInchChanged(qreal dpi);
-    void logicalDotsPerInchXChanged(qreal dpi);
-    void logicalDotsPerInchYChanged(qreal dpi);
     void logicalDotsPerInchChanged(qreal dpi);
-    void availableSizeChanged(const QSize &size);
-    void availableGeometryChanged(const QRect &rect);
+    void virtualGeometryChanged(const QRect &rect);
     void primaryOrientationChanged(Qt::ScreenOrientation orientation);
     void orientationChanged(Qt::ScreenOrientation orientation);
     void refreshRateChanged(qreal refreshRate);

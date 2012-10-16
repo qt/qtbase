@@ -60,7 +60,7 @@ public:
 
     void setGeometry(const QRect &rect);
 
-    virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
+    virtual void setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;
 
     WId winId() const { return mWindowId; }

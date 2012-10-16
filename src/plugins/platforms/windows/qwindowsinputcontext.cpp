@@ -560,12 +560,8 @@ int QWindowsInputContext::reconvertString(RECONVERTSTRING *reconv)
     // Find the word in the surrounding text.
     QTextBoundaryFinder bounds(QTextBoundaryFinder::Word, surroundingText);
     bounds.setPosition(pos);
-    if (bounds.isAtBoundary()) {
-        if (QTextBoundaryFinder::EndWord == bounds.boundaryReasons())
-            bounds.toPreviousBoundary();
-    } else {
+    if (bounds.position() > 0 && !(bounds.boundaryReasons() & QTextBoundaryFinder::StartOfItem))
         bounds.toPreviousBoundary();
-    }
     const int startPos = bounds.position();
     bounds.toNextBoundary();
     const int endPos = bounds.position();

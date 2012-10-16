@@ -66,9 +66,6 @@ public:
     explicit QSqlTableModel(QObject *parent = 0, QSqlDatabase db = QSqlDatabase());
     virtual ~QSqlTableModel();
 
-    virtual bool select();
-    virtual bool selectRow(int row);
-
     virtual void setTable(const QString &tableName);
     QString tableName() const;
 
@@ -111,6 +108,9 @@ public:
     virtual void revertRow(int row);
 
 public Q_SLOTS:
+    virtual bool select();
+    virtual bool selectRow(int row);
+
     bool submit();
     void revert();
 

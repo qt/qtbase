@@ -84,11 +84,6 @@
          \li Custom types can easily be added to the test data and test output.
     \endtable
 
-    \note For higher-level GUI and application testing needs, please
-    see the \l{Partner Directory} for Qt testing products provided by
-    Nokia partners.
-
-
     \section1 QTestLib API
 
     All public methods are in the \l QTest namespace. In addition, the
@@ -835,6 +830,3 @@
     for more information on these tools and a simple graphing example.
 
 */
-
-
-

@@ -473,15 +473,15 @@ void QGlyphRun::setBoundingRect(const QRectF &boundingRect)
 */
 QRectF QGlyphRun::boundingRect() const
 {
-    if (!d->boundingRect.isEmpty())
+    if (!d->boundingRect.isEmpty() || !d->rawFont.isValid())
         return d->boundingRect;
 
     qreal minX, minY, maxX, maxY;
     minX = minY = maxX = maxY = 0;
 
-    for (int i=0; i<qMin(d->glyphPositions.size(), d->glyphIndexes.size()); ++i) {
-        QRectF glyphRect = d->rawFont.boundingRect(d->glyphIndexes.at(i));
-        glyphRect.translate(d->glyphPositions.at(i));
+    for (int i = 0, n = qMin(d->glyphIndexDataSize, d->glyphPositionDataSize); i < n; ++i) {
+        QRectF glyphRect = d->rawFont.boundingRect(d->glyphIndexData[i]);
+        glyphRect.translate(d->glyphPositionData[i]);
 
         if (i == 0) {
             minX = glyphRect.left();
@@ -506,7 +506,7 @@ QRectF QGlyphRun::boundingRect() const
 */
 bool QGlyphRun::isEmpty() const
 {
-    return d->glyphIndexes.isEmpty();
+    return d->glyphIndexDataSize == 0;
 }
 
 QT_END_NAMESPACE

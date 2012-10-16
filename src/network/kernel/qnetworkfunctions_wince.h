@@ -42,6 +42,10 @@
 #ifndef QNETWORKFUNCTIONS_WINCE_H
 #define QNETWORKFUNCTIONS_WINCE_H
 
+#if 0
+#pragma qt_sync_stop_processing
+#endif
+
 #ifdef Q_OS_WINCE
 
 #include <qt_windows.h>

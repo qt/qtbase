@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     and ends in ".cache".  Data is written to disk only in insert()
     and updateMetaData().
 
-    Currently you can not share the same cache files with more then
+    Currently you cannot share the same cache files with more than
     one disk cache.
 
     QNetworkDiskCache by default limits the amount of space that the cache will

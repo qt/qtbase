@@ -83,12 +83,12 @@ public:
 
     // text
     virtual QString text(int startOffset, int endOffset) const = 0;
-    virtual QString textBeforeOffset (int offset, QAccessible2::BoundaryType boundaryType,
-                              int *startOffset, int *endOffset) const = 0;
+    virtual QString textBeforeOffset(int offset, QAccessible2::BoundaryType boundaryType,
+                                     int *startOffset, int *endOffset) const;
     virtual QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
-                            int *startOffset, int *endOffset) const = 0;
+                                    int *startOffset, int *endOffset) const;
     virtual QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
-                         int *startOffset, int *endOffset) const = 0;
+                                 int *startOffset, int *endOffset) const;
     virtual int characterCount() const = 0;
 
     // character <-> geometry

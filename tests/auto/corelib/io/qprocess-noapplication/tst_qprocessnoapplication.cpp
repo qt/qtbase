@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,44 +39,46 @@
 **
 ****************************************************************************/
 
-#ifndef QMOTIFSTYLE_P_H
-#define QMOTIFSTYLE_P_H
-#include <qlist.h>
-#include <qdatetime.h>
-#include <qprogressbar.h>
-#include "qmotifstyle.h"
-#include "qcommonstyle_p.h"
+#include <QtCore/QCoreApplication>
+#include <QtCore/QProcess>
+#include <QtCore/QThread>
+#include <QtTest>
 
-QT_BEGIN_NAMESPACE
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-// Private class
-class QMotifStylePrivate : public QCommonStylePrivate
+class tst_QProcessNoApplication : public QObject
 {
-    Q_DECLARE_PUBLIC(QMotifStyle)
-public:
-    QMotifStylePrivate();
+    Q_OBJECT
 
-public:
-#ifndef QT_NO_PROGRESSBAR
-    QList<QProgressBar *> bars;
-    int animationFps;
-    int animateTimer;
-    QTime startTime;
-    int animateStep;
-#endif // QT_NO_PROGRESSBAR
+private Q_SLOTS:
+    void initializationDeadlock();
 };
 
-QT_END_NAMESPACE
+void tst_QProcessNoApplication::initializationDeadlock()
+{
+    // see QTBUG-27260
+    // QProcess on Unix uses (or used to, at the time of the writing of this test)
+    // a global class called QProcessManager.
+    // This class is instantiated (or was) only in the main thread, which meant that
+    // blocking the main thread while waiting for QProcess could mean a deadlock.
 
-#endif //QMOTIFSTYLE_P_H
+    struct MyThread : public QThread
+    {
+        void run()
+        {
+            // what we execute does not matter, as long as we try to
+            // and that the process exits
+            QProcess::execute("true");
+        }
+    };
+
+    static char argv0[] = "tst_QProcessNoApplication";
+    char *argv[] = { argv0, 0 };
+    int argc = 1;
+    QCoreApplication app(argc, argv);
+    MyThread thread;
+    thread.start();
+    QVERIFY(thread.wait(10000));
+}
+
+QTEST_APPLESS_MAIN(tst_QProcessNoApplication)
+
+#include "tst_qprocessnoapplication.moc"

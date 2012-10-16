@@ -94,7 +94,7 @@ public:
     int weight() const;
 
     QVector<quint32> glyphIndexesForString(const QString &text) const;
-    QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const;
+    inline QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const;
     bool glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const;
     bool advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const;
 
@@ -146,6 +146,14 @@ private:
 };
 
 Q_DECLARE_SHARED(QRawFont)
+
+inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+{
+    QVector<QPointF> advances(glyphIndexes.size());
+    if (advancesForGlyphIndexes(glyphIndexes.constData(), advances.data(), glyphIndexes.size()))
+        return advances;
+    return QVector<QPointF>();
+}
 
 QT_END_NAMESPACE
 

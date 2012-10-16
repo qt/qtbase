@@ -157,27 +157,27 @@ private:
         m_splitter->setPosition(start);
         QScriptAnalysis itemAnalysis = m_analysis[start];
 
-        if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartWord) {
+        if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartOfItem)
             itemAnalysis.flags = QScriptAnalysis::Uppercase;
-            m_splitter->toNextBoundary();
-        }
+
+        m_splitter->toNextBoundary();
 
         const int end = start + length;
         for (int i = start + 1; i < end; ++i) {
-
-            bool atWordBoundary = false;
+            bool atWordStart = false;
 
             if (i == m_splitter->position()) {
-                if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartWord
-                    && m_analysis[i].flags < QScriptAnalysis::TabOrObject)
-                    atWordBoundary = true;
+                if (m_splitter->boundaryReasons() & QTextBoundaryFinder::StartOfItem) {
+                    Q_ASSERT(m_analysis[i].flags < QScriptAnalysis::TabOrObject);
+                    atWordStart = true;
+                }
 
                 m_splitter->toNextBoundary();
             }
 
             if (m_analysis[i] == itemAnalysis
                 && m_analysis[i].flags < QScriptAnalysis::TabOrObject
-                && !atWordBoundary
+                && !atWordStart
                 && i - start < MaxItemLength)
                 continue;
 
@@ -185,7 +185,7 @@ private:
             start = i;
             itemAnalysis = m_analysis[start];
 
-            if (atWordBoundary)
+            if (atWordStart)
                 itemAnalysis.flags = QScriptAnalysis::Uppercase;
         }
         m_items.append(QScriptItem(start, itemAnalysis));
@@ -1799,7 +1799,6 @@ struct QJustificationPoint {
     int type;
     QFixed kashidaWidth;
     QGlyphLayout glyph;
-    QFontEngine *fontEngine;
 };
 
 Q_DECLARE_TYPEINFO(QJustificationPoint, Q_PRIMITIVE_TYPE);
@@ -1808,7 +1807,6 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
 {
     point->type = type;
     point->glyph = glyph;
-    point->fontEngine = fe;
 
     if (type >= HB_Arabic_Normal) {
         QChar ch(0x640); // Kashida character
@@ -2741,13 +2739,13 @@ void QTextEngine::resolveAdditionalFormats() const
         const QScriptItem *si = &layoutData->items.at(i);
         int end = si->position + length(si);
 
-        while (startIt != addFormatSortedByStart.end() &&
+        while (startIt != addFormatSortedByStart.constEnd() &&
             specialData->addFormats.at(*startIt).start <= si->position) {
             currentFormats.insert(std::upper_bound(currentFormats.begin(), currentFormats.end(), *startIt),
                                   *startIt);
             ++startIt;
         }
-        while (endIt != addFormatSortedByEnd.end() &&
+        while (endIt != addFormatSortedByEnd.constEnd() &&
             specialData->addFormats.at(*endIt).start + specialData->addFormats.at(*endIt).length < end) {
             currentFormats.remove(qBinaryFind(currentFormats, *endIt) - currentFormats.begin());
             ++endIt;

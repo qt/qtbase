@@ -162,8 +162,9 @@ public:
 
     If \a mode is QMutex::Recursive, a thread can lock the same mutex
     multiple times and the mutex won't be unlocked until a
-    corresponding number of unlock() calls have been made. The
-    default is QMutex::NonRecursive.
+    corresponding number of unlock() calls have been made. Otherwise
+    a thread may only lock a mutex once. The default is
+    QMutex::NonRecursive.
 
     \sa lock(), unlock()
 */
@@ -369,6 +370,13 @@ bool QBasicMutex::isRecursive()
     Relocks an unlocked mutex locker.
 
     \sa unlock()
+*/
+
+/*!
+    \fn QMutex *QMutexLocker::mutex()
+
+    Returns the mutex on which the QMutexLocker is operating.
+
 */
 
 #ifndef QT_LINUX_FUTEX //linux implementation is in qmutex_linux.cpp

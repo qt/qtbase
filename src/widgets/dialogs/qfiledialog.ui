@@ -1,4 +1,5 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <comment>*********************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
@@ -40,8 +41,8 @@
 **
 *********************************************************************</comment>
  <class>QFileDialog</class>
- <widget class="QDialog" name="QFileDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="QFileDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -49,28 +50,28 @@
     <height>316</height>
    </rect>
   </property>
-  <property name="sizeGripEnabled" >
+  <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QGridLayout" >
-   <item row="0" column="0" >
-    <widget class="QLabel" name="lookInLabel" >
-     <property name="text" >
+  <layout class="QGridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="lookInLabel">
+     <property name="text">
       <string>Look in:</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2" >
-    <layout class="QHBoxLayout" >
+   <item row="0" column="1" colspan="2">
+    <layout class="QHBoxLayout">
      <item>
-      <widget class="QFileDialogComboBox" name="lookInCombo" >
-       <property name="sizePolicy" >
-        <sizepolicy vsizetype="Fixed" hsizetype="Ignored" >
+      <widget class="QFileDialogComboBox" name="lookInCombo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
          <horstretch>1</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="minimumSize" >
+       <property name="minimumSize">
         <size>
          <width>50</width>
          <height>0</height>
@@ -79,8 +80,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="backButton" >
-       <property name="toolTip" >
+      <widget class="QToolButton" name="backButton">
+       <property name="toolTip">
         <string>Back</string>
        </property>
        <property name="accessibleName">
@@ -92,8 +93,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="forwardButton" >
-       <property name="toolTip" >
+      <widget class="QToolButton" name="forwardButton">
+       <property name="toolTip">
         <string>Forward</string>
        </property>
        <property name="accessibleName">
@@ -105,8 +106,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="toParentButton" >
-       <property name="toolTip" >
+      <widget class="QToolButton" name="toParentButton">
+       <property name="toolTip">
         <string>Parent Directory</string>
        </property>
        <property name="accessibleName">
@@ -118,8 +119,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="newFolderButton" >
-       <property name="toolTip" >
+      <widget class="QToolButton" name="newFolderButton">
+       <property name="toolTip">
         <string>Create New Folder</string>
        </property>
        <property name="accessibleName">
@@ -131,8 +132,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="listModeButton" >
-       <property name="toolTip" >
+      <widget class="QToolButton" name="listModeButton">
+       <property name="toolTip">
         <string>List View</string>
        </property>
        <property name="accessibleName">
@@ -144,8 +145,8 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="detailModeButton" >
-       <property name="toolTip" >
+      <widget class="QToolButton" name="detailModeButton">
+       <property name="toolTip">
         <string>Detail View</string>
        </property>
        <property name="accessibleName">
@@ -158,87 +159,102 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0" colspan="3" >
-    <widget class="QSplitter" name="splitter" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+   <item row="1" column="0" colspan="3">
+    <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="orientation" >
+     <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QSidebar" name="sidebar" />
-     <widget class="QFrame" name="frame" >
-      <property name="frameShape" >
+     <widget class="QSidebar" name="sidebar">
+      <property name="accessibleName">
+       <string>Sidebar</string>
+      </property>
+      <property name="accessibleDescription">
+       <string>List of places and bookmarks</string>
+      </property>
+     </widget>
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
       </property>
-      <property name="frameShadow" >
+      <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" >
-       <property name="spacing" >
+      <layout class="QVBoxLayout">
+       <property name="spacing">
         <number>0</number>
        </property>
-       <property name="leftMargin" >
+       <property name="leftMargin">
         <number>0</number>
        </property>
-       <property name="topMargin" >
+       <property name="topMargin">
         <number>0</number>
        </property>
-       <property name="rightMargin" >
+       <property name="rightMargin">
         <number>0</number>
        </property>
-       <property name="bottomMargin" >
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
-        <widget class="QStackedWidget" name="stackedWidget" >
-         <property name="currentIndex" >
+        <widget class="QStackedWidget" name="stackedWidget">
+         <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="page" >
-          <layout class="QVBoxLayout" >
-           <property name="spacing" >
+         <widget class="QWidget" name="page">
+          <layout class="QVBoxLayout">
+           <property name="spacing">
             <number>0</number>
            </property>
-           <property name="leftMargin" >
+           <property name="leftMargin">
             <number>0</number>
            </property>
-           <property name="topMargin" >
+           <property name="topMargin">
             <number>0</number>
            </property>
-           <property name="rightMargin" >
+           <property name="rightMargin">
             <number>0</number>
            </property>
-           <property name="bottomMargin" >
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
-            <widget class="QFileDialogListView" name="listView" />
+            <widget class="QFileDialogListView" name="listView">
+             <property name="accessibleName">
+              <string>Files</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="page_2" >
-          <layout class="QVBoxLayout" >
-           <property name="spacing" >
+         <widget class="QWidget" name="page_2">
+          <layout class="QVBoxLayout">
+           <property name="spacing">
             <number>0</number>
            </property>
-           <property name="leftMargin" >
+           <property name="leftMargin">
             <number>0</number>
            </property>
-           <property name="topMargin" >
+           <property name="topMargin">
             <number>0</number>
            </property>
-           <property name="rightMargin" >
+           <property name="rightMargin">
             <number>0</number>
            </property>
-           <property name="bottomMargin" >
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <item>
-            <widget class="QFileDialogTreeView" name="treeView" />
+            <widget class="QFileDialogTreeView" name="treeView">
+             <property name="accessibleName">
+              <string>Files</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -248,15 +264,15 @@
      </widget>
     </widget>
    </item>
-   <item row="2" column="0" >
-    <widget class="QLabel" name="fileNameLabel" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Preferred" hsizetype="Minimum" >
+   <item row="2" column="0">
+    <widget class="QLabel" name="fileNameLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="minimumSize" >
+     <property name="minimumSize">
       <size>
        <width>0</width>
        <height>0</height>
@@ -264,43 +280,43 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1" >
-    <widget class="QFileDialogLineEdit" name="fileNameEdit" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+   <item row="2" column="1">
+    <widget class="QFileDialogLineEdit" name="fileNameEdit">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>1</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
     </widget>
    </item>
-   <item rowspan="2" row="2" column="2" >
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
+   <item row="2" column="2" rowspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="standardButtons" >
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
-   <item row="3" column="0" >
-    <widget class="QLabel" name="fileTypeLabel" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+   <item row="3" column="0">
+    <widget class="QLabel" name="fileTypeLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="text" >
+     <property name="text">
       <string>Files of type:</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1" >
-    <widget class="QComboBox" name="fileTypeCombo" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+   <item row="3" column="1">
+    <widget class="QComboBox" name="fileTypeCombo">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -345,11 +361,11 @@
   <tabstop>listModeButton</tabstop>
   <tabstop>detailModeButton</tabstop>
   <tabstop>sidebar</tabstop>
+  <tabstop>treeView</tabstop>
   <tabstop>listView</tabstop>
   <tabstop>fileNameEdit</tabstop>
-  <tabstop>fileTypeCombo</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>treeView</tabstop>
+  <tabstop>fileTypeCombo</tabstop>
  </tabstops>
  <resources/>
  <connections/>

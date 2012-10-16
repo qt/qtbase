@@ -65,6 +65,14 @@
 
 #if defined(Q_COMPILER_VARIADIC_MACROS)
 #define PD_VARARG(x, ...) x(__VA_ARGS__)
+
+#if defined(Q_CC_GNU) || defined(Q_MOC_RUN)
+//GCC extension for variadic macros
+#define PD_VARARGEXT(x, y...) x(y)
+#else
+#define PD_VARARGEXT(x, ...) x(__VA_ARGS__)
+#endif
+
 #endif
 
 PD_BEGIN_NAMESPACE
@@ -95,6 +103,10 @@ public slots:
     PD_VARARG(void vararg1) {}
     PD_VARARG(void vararg2, int) {}
     PD_VARARG(void vararg3, int, int) {}
+
+    PD_VARARGEXT(void vararg4) {}
+    PD_VARARGEXT(void vararg5, int) {}
+    PD_VARARGEXT(void vararg6, int, int) {}
 #endif
 };
 

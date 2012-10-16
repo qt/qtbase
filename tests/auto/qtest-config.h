@@ -39,27 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef PLATFORMQUIRKS_H
-#define PLATFORMQUIRKS_H
+#ifndef QTEST_CONFIG_H
+#define QTEST_CONFIG_H
 
 #include <qglobal.h>
 
-#ifdef QT_GUI_LIB
-#include <qapplication.h>
-#endif
+#ifndef QTEST_NO_CURSOR
+#  if defined(QT_NO_CURSOR) || defined(Q_OS_WINCE) || defined(MEEGO_EDITION_HARMATTAN)
+#    define QTEST_NO_CURSOR
+#  endif
+#endif // QTEST_NO_CURSOR
 
-
-struct PlatformQuirks
-{
-    static inline bool haveMouseCursor()
-    {
-#if defined(Q_WS_X11)
-        return X11->desktopEnvironment != DE_MEEGO_COMPOSITOR;
-#else
-        return true;
-#endif
-    }
-};
-
-#endif
-
+#endif // QTEST_CONFIG_H

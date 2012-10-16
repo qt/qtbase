@@ -727,20 +727,6 @@ Requires:
 Name: QWindowsStyle
 SeeAlso: ???
 
-Feature: STYLE_MOTIF
-Description: Supports a Motif look and feel.
-Section: Styles
-Requires:
-Name: QMotifStyle
-SeeAlso: ???
-
-Feature: STYLE_CDE
-Description:  Supports a CDE look and feel.
-Section: Styles
-Requires: STYLE_MOTIF
-Name: QCDEStyle
-SeeAlso: ???
-
 Feature: STYLE_PLASTIQUE
 Description: Supports a widget style similar to the Plastik style available in KDE.
 Section: Styles
@@ -1025,6 +1011,12 @@ Requires: LIBRARY NETWORKINTERFACE PROPERTIES
 Name: Bearer Management
 SeeAlso: ???
 
+Feature: LOCALSERVER
+Description: Supports a local socket based server
+Section: Networking
+Requires: TEMPORARYFILE
+Name: QLocalServer
+SeeAlso: ???
 
 # Utilities
 

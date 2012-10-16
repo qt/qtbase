@@ -319,7 +319,6 @@ public:
     QByteArray atomName(xcb_atom_t atom);
 
     const char *displayName() const { return m_displayName.constData(); }
-
     xcb_connection_t *xcb_connection() const { return m_connection; }
     const xcb_setup_t *setup() const { return m_setup; }
     const xcb_format_t *formatForDepth(uint8_t depth) const;
@@ -379,6 +378,8 @@ public:
     bool hasXShape() const { return has_shape_extension; }
     bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
+
+    xcb_timestamp_t getTimestamp();
 
 private slots:
     void processXcbEvents();

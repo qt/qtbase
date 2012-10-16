@@ -159,7 +159,7 @@ public:
     virtual QPoint mapToGlobal(const QPoint &pos) const;
     virtual QPoint mapFromGlobal(const QPoint &pos) const;
 
-    virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    virtual void setWindowFlags(Qt::WindowFlags flags);
     virtual Qt::WindowState setWindowState(Qt::WindowState state);
 
     HWND handle() const { return m_data.hwnd; }

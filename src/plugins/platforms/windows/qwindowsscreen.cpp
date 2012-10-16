@@ -372,7 +372,7 @@ static inline int indexOfMonitor(const QList<QWindowsScreenData> &screenData,
     ones and propagates resolution changes to QWindowSystemInterface.
 */
 
-void QWindowsScreenManager::handleScreenChanges()
+bool QWindowsScreenManager::handleScreenChanges()
 {
     // Look for changed monitors, add new ones
     const WindowsScreenDataList newDataList = monitorData();
@@ -396,6 +396,7 @@ void QWindowsScreenManager::handleScreenChanges()
             delete m_screens.takeAt(i);
         } // not found
     }     // for existing screens
+    return true;
 }
 
 QT_END_NAMESPACE

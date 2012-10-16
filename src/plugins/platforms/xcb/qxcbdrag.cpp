@@ -53,6 +53,7 @@
 #include <qguiapplication.h>
 #include <qrect.h>
 #include <qpainter.h>
+#include <qtimer.h>
 
 #include <qpa/qwindowsysteminterface.h>
 
@@ -140,8 +141,7 @@ QXcbDrag::QXcbDrag(QXcbConnection *c) : QXcbObject(c)
 
     init();
     heartbeat = -1;
-
-    transaction_expiry_timer = -1;
+    cleanup_timer = -1;
 }
 
 QXcbDrag::~QXcbDrag()
@@ -510,17 +510,21 @@ void QXcbDrag::drop(const QMouseEvent *event)
     if (w && (w->window()->windowType() == Qt::Desktop) /*&& !w->acceptDrops()*/)
         w = 0;
 
-
     Transaction t = {
         connection()->time(),
         current_target,
         current_proxy_target,
         (w ? w->window() : 0),
-//        current_embedding_widget,
-        currentDrag()
+//        current_embeddig_widget,
+        currentDrag(),
+        QTime::currentTime()
     };
     transactions.append(t);
-    restartDropExpiryTimer();
+
+    // timer is needed only for drops that came from other processes.
+    if (!t.targetWindow && cleanup_timer == -1) {
+        cleanup_timer = startTimer(XdndDropTransactionTimeout);
+    }
 
     if (w) {
         handleDrop(w->window(), &drop);
@@ -561,16 +565,6 @@ xcb_atom_t QXcbDrag::toXdndAction(Qt::DropAction a) const
     default:
         return atom(QXcbAtom::XdndActionCopy);
     }
-}
-
-// timer used to discard old XdndDrop transactions
-enum { XdndDropTransactionTimeout = 5000 }; // 5 seconds
-
-void QXcbDrag::restartDropExpiryTimer()
-{
-    if (transaction_expiry_timer != -1)
-        killTimer(transaction_expiry_timer);
-    transaction_expiry_timer = startTimer(XdndDropTransactionTimeout);
 }
 
 int QXcbDrag::findTransactionByWindow(xcb_window_t window)
@@ -770,8 +764,6 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
     response.data.data32[2] = 0; // x, y
     response.data.data32[3] = 0; // w, h
     response.data.data32[4] = toXdndAction(qt_response.acceptedAction()); // action
-
-
 
     if (answerRect.left() < 0)
         answerRect.setLeft(0);
@@ -1015,7 +1007,6 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
     if (l[0]) {
         int at = findTransactionByWindow(l[0]);
         if (at != -1) {
-            restartDropExpiryTimer();
 
             Transaction t = transactions.takeAt(at);
 //            QDragManager *manager = QDragManager::self();
@@ -1044,11 +1035,12 @@ void QXcbDrag::handleFinished(const xcb_client_message_event_t *event)
 //            current_proxy_target = proxy_target;
 //            current_embedding_widget = embedding_widget;
 //            manager->object = currentObject;
+        } else {
+            qWarning("QXcbDrag::handleFinished - drop data has expired");
         }
     }
     waiting_for_status = false;
 }
-
 
 void QXcbDrag::timerEvent(QTimerEvent* e)
 {
@@ -1057,19 +1049,35 @@ void QXcbDrag::timerEvent(QTimerEvent* e)
         QMouseEvent me(QEvent::MouseMove, pos, pos, pos, Qt::LeftButton,
                        QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
         move(&me);
-    } else if (e->timerId() == transaction_expiry_timer) {
+    } else if (e->timerId() == cleanup_timer) {
+        bool stopTimer = true;
         for (int i = 0; i < transactions.count(); ++i) {
             const Transaction &t = transactions.at(i);
             if (t.targetWindow) {
-                // dnd within the same process, don't delete these
+                // dnd within the same process, don't delete, these are taken care of
+                // in handleFinished()
                 continue;
             }
-            t.drag->deleteLater();
-            transactions.removeAt(i--);
-        }
+            QTime currentTime = QTime::currentTime();
+            int delta = t.time.msecsTo(currentTime);
+            if (delta > XdndDropTransactionTimeout) {
+                /* delete transactions which are older than XdndDropTransactionTimeout. It could mean
+                 one of these:
+                 - client has crashed and as a result we have never received XdndFinished
+                 - showing dialog box on drop event where user's response takes more time than XdndDropTransactionTimeout (QTBUG-14493)
+                 - dnd takes unusually long time to process data
+                 */
+                t.drag->deleteLater();
+                transactions.removeAt(i--);
+            } else {
+                stopTimer = false;
+            }
 
-        killTimer(transaction_expiry_timer);
-        transaction_expiry_timer = -1;
+        }
+        if (stopTimer && cleanup_timer != -1) {
+            killTimer(cleanup_timer);
+            cleanup_timer = -1;
+        }
     }
 }
 
@@ -1123,7 +1131,6 @@ void QXcbDrag::handleSelectionRequest(const xcb_selection_request_event_t *event
 
     QDrag *transactionDrag = 0;
     if (at >= 0) {
-        restartDropExpiryTimer();
         transactionDrag = transactions.at(at).drag;
     } else if (at == -2) {
         transactionDrag = currentDrag();

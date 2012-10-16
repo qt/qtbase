@@ -44,6 +44,10 @@
 #include <ui/DisplayInfo.h>
 #include <ui/FramebufferNativeWindow.h>
 #include <gui/SurfaceComposerClient.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <linux/fb.h>
+#include <sys/ioctl.h>
 
 using namespace android;
 
@@ -53,6 +57,8 @@ class QEglFSPandaHooks : public QEglFSHooks
 {
 public:
     virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    virtual QSize screenSize() const;
+    virtual int screenDepth() const;
 private:
     // androidy things
     sp<android::SurfaceComposerClient> mSession;
@@ -72,12 +78,73 @@ EGLNativeWindowType QEglFSPandaHooks::createNativeWindow(const QSize &size, cons
             0, dinfo.w, dinfo.h, PIXEL_FORMAT_RGB_888);
     SurfaceComposerClient::openGlobalTransaction();
     mControl->setLayer(0x40000000);
-    mControl->setAlpha(0.4);
+//    mControl->setAlpha(1);
     SurfaceComposerClient::closeGlobalTransaction();
     mAndroidSurface = mControl->getSurface();
 
     EGLNativeWindowType eglWindow = mAndroidSurface.get();
     return eglWindow;
+}
+QSize  QEglFSPandaHooks::screenSize() const
+{
+    static QSize size;
+
+    if (size.isEmpty()) {
+        int width = qgetenv("QT_QPA_EGLFS_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_HEIGHT").toInt();
+
+        if (width && height) {
+            // no need to read fb0
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
+        struct fb_var_screeninfo vinfo;
+        int fd = open("/dev/graphics/fb0", O_RDONLY);
+
+        if (fd != -1) {
+            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("Could not query variable screen info.");
+            else
+                size = QSize(vinfo.xres, vinfo.yres);
+
+            close(fd);
+        } else {
+            qWarning("Failed to open /dev/graphics/fb0 to detect screen resolution.");
+        }
+
+        // override fb0 from environment var setting
+        if (width)
+            size.setWidth(width);
+        if (height)
+            size.setHeight(height);
+    }
+
+    return size;
+}
+
+int QEglFSPandaHooks::screenDepth() const
+{
+    static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();
+
+    if (depth == 0) {
+        struct fb_var_screeninfo vinfo;
+        int fd = open("/dev/graphics/fb0", O_RDONLY);
+
+        if (fd != -1) {
+            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("Could not query variable screen info.");
+            else
+                depth = vinfo.bits_per_pixel;
+
+            close(fd);
+        } else {
+            qWarning("Failed to open /dev/graphics/fb0 to detect screen depth.");
+        }
+    }
+
+    return depth == 0 ? 32 : depth;
 }
 
 static QEglFSPandaHooks eglFSPandaHooks;

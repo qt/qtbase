@@ -49,6 +49,8 @@
 #include <QMacStyle>
 #endif
 
+#include "../../../qtest-config.h"
+
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton)
 {
     QMouseEvent event(QEvent::MouseMove, point, widget->mapToGlobal(point), button, button, 0);
@@ -115,8 +117,10 @@ private slots:
     void focusNextPrevChild();
     void focusOutEvent_data();
     void focusOutEvent();
+#ifndef QTEST_NO_CURSOR
     void hoverEnterLeaveEvent_data();
     void hoverEnterLeaveEvent();
+#endif
     void hoverMoveEvent_data();
     void hoverMoveEvent();
     void keyPressEvent_data();
@@ -154,7 +158,9 @@ private slots:
     void setFocus_complexTwoWidgets();
     void popup_basic();
     void popup_subwidget();
+#ifndef QTEST_NO_CURSOR
     void changingCursor_basic();
+#endif
     void tooltip_basic();
     void childPos_data();
     void childPos();
@@ -423,7 +429,7 @@ void tst_QGraphicsProxyWidget::setWidget()
     }
 
     QWidget *widget = new QWidget;
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
     widget->setCursor(Qt::IBeamCursor);
 #endif
     widget->setPalette(QPalette(Qt::magenta));
@@ -461,7 +467,7 @@ void tst_QGraphicsProxyWidget::setWidget()
         QVERIFY(subWidget->testAttribute(Qt::WA_DontShowOnScreen));
         QVERIFY(!subWidget->testAttribute(Qt::WA_QuitOnClose));
         QCOMPARE(proxy->acceptHoverEvents(), true);
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
         QVERIFY(proxy->hasCursor());
 
         // These should match
@@ -938,6 +944,7 @@ protected:
     }
 };
 
+#ifndef QTEST_NO_CURSOR
 void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent_data()
 {
     QTest::addColumn<bool>("hasWidget");
@@ -953,10 +960,6 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
 {
     QFETCH(bool, hasWidget);
     QFETCH(bool, hoverEnabled);
-
-#if defined(Q_OS_WINCE) && (!defined(GWES_ICONCURS) || defined(QT_NO_CURSOR))
-    QSKIP("hover events not supported on this platform");
-#endif
 
     // proxy should translate this into events that the widget would expect
 
@@ -1003,6 +1006,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     if (!hasWidget)
         delete widget;
 }
+#endif
 
 void tst_QGraphicsProxyWidget::hoverMoveEvent_data()
 {
@@ -1522,7 +1526,7 @@ void tst_QGraphicsProxyWidget::setWidget_simple()
     // Properties
     // QCOMPARE(proxy.focusPolicy(), lineEdit->focusPolicy());
     // QCOMPARE(proxy.palette(), lineEdit->palette());
-#ifndef QT_NO_CURSOR
+#ifndef QTEST_NO_CURSOR
     QCOMPARE(proxy.cursor().shape(), lineEdit->cursor().shape());
 #endif
     QCOMPARE(proxy.layoutDirection(), lineEdit->layoutDirection());
@@ -2538,12 +2542,9 @@ void tst_QGraphicsProxyWidget::popup_subwidget()
     QCOMPARE(popup->size(), child->size().toSize());
 }
 
+#ifndef QTEST_NO_CURSOR
 void tst_QGraphicsProxyWidget::changingCursor_basic()
 {
-#if defined(Q_OS_WINCE) && (!defined(GWES_ICONCURS) || defined(QT_NO_CURSOR))
-    QSKIP("hover events not supported on this platform");
-#endif
-#ifndef QT_NO_CURSOR
     // Confirm that mouse events are working properly by checking that
     // when moving the mouse over a line edit it will change the cursor into the I
     QGraphicsScene scene;
@@ -2568,8 +2569,8 @@ void tst_QGraphicsProxyWidget::changingCursor_basic()
     QTest::mouseMove(view.viewport(), QPoint(1, 1));
     sendMouseMove(view.viewport(), QPoint(1, 1));
     QTRY_COMPARE(view.viewport()->cursor().shape(), Qt::ArrowCursor);
-#endif
 }
+#endif
 
 void tst_QGraphicsProxyWidget::tooltip_basic()
 {
@@ -3617,7 +3618,7 @@ public slots:
 
 void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
 {
-#if defined(Q_OS_MAC) || defined(Q_OS_WIN) || defined(QT_NO_CURSOR)
+#if defined(Q_OS_MAC) || defined(Q_OS_WIN) || defined(QTEST_NO_CURSOR)
     QSKIP("Test case unstable on this platform");
 #endif
     QGraphicsView view;

@@ -68,6 +68,7 @@
 #include "../../../shared/platforminputcontext.h"
 #include <private/qinputmethod_p.h>
 
+#include "../../../qtest-config.h"
 
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
@@ -141,7 +142,9 @@ private slots:
     void shiftDownInLineLastShouldSelectToEnd();
     void undoRedoShouldRepositionTextEditCursor();
     void lineWrapModes();
+#ifndef QTEST_NO_CURSOR
     void mouseCursorShape();
+#endif
     void implicitClear();
     void undoRedoAfterSetContent();
     void numPadKeyNavigation();
@@ -1235,9 +1238,9 @@ void tst_QTextEdit::lineWrapModes()
     QCOMPARE(ed->document()->pageSize().width(), qreal(1000));
 }
 
+#ifndef QTEST_NO_CURSOR
 void tst_QTextEdit::mouseCursorShape()
 {
-#ifndef QT_NO_CURSOR
     // always show an IBeamCursor, see change 170146
     QVERIFY(!ed->isReadOnly());
     QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
@@ -1247,8 +1250,8 @@ void tst_QTextEdit::mouseCursorShape()
 
     ed->setPlainText("Foo");
     QVERIFY(ed->viewport()->cursor().shape() == Qt::IBeamCursor);
-#endif
 }
+#endif
 
 void tst_QTextEdit::implicitClear()
 {

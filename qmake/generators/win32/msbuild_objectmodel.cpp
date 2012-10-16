@@ -335,7 +335,7 @@ static QStringList unquote(const QStringList &values)
 {
     QStringList result;
     result.reserve(values.size());
-    for (int i = values.count(); --i >= 0;)
+    for (int i = 0; i < values.count(); ++i)
         result << unquote(values.at(i));
     return result;
 }

@@ -554,6 +554,7 @@ private slots:
     void autoPropertyMetaTypeRegistration();
     void autoMethodArgumentMetaTypeRegistration();
     void parseDefines();
+    void preprocessorOnly();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2743,6 +2744,12 @@ void tst_Moc::parseDefines()
     QVERIFY(index != -1);
     index = mo->indexOfSlot("vararg3(int,int)");
     QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg4()");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg5(int)");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("vararg6(int,int)");
+    QVERIFY(index != -1);
 #endif
 
     int count = 0;
@@ -2758,6 +2765,26 @@ void tst_Moc::parseDefines()
         }
     }
     QVERIFY(count == 2);
+}
+
+void tst_Moc::preprocessorOnly()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QProcess proc;
+    proc.start("moc", QStringList() << "-E" << srcify("/pp-dollar-signs.h"));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 0);
+    QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(!mocOut.isEmpty());
+    QCOMPARE(proc.readAllStandardError(), QByteArray());
+
+    QVERIFY(mocOut.contains("$$ = parser->createFoo()"));
+#else
+    QSKIP("Only tested on linux/gcc");
+#endif
 }
 
 QTEST_MAIN(tst_Moc)

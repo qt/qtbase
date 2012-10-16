@@ -949,7 +949,7 @@ QPair< int, int > QAccessibleTextWidget::getBoundaries(int offset, BoundaryType 
         sentenceFinder.setPosition(offsetWithinBlockText);
         int prevBoundary = offsetWithinBlockText;
         int nextBoundary = offsetWithinBlockText;
-        if (!sentenceFinder.isAtBoundary())
+        if (!(sentenceFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem))
             prevBoundary = sentenceFinder.toPreviousBoundary();
         nextBoundary = sentenceFinder.toNextBoundary();
         if (nextBoundary != -1)

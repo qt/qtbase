@@ -142,16 +142,15 @@ void QPlatformWindow::setVisible(bool visible)
     QWindowSystemInterface::handleExposeEvent(window(), rect);
     QWindowSystemInterface::flushWindowSystemEvents();
 }
+
 /*!
     Requests setting the window flags of this surface
-    to \a type. Returns the actual flags set.
+    to \a flags.
 */
-Qt::WindowFlags QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
+void QPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
 {
-    return flags;
+    Q_UNUSED(flags);
 }
-
-
 
 /*!
     Returns if this window is exposed in the windowing system.

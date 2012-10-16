@@ -707,7 +707,8 @@ void AtSpiAdaptor::setBitFlag(const QString &flag)
                 sendObject_text_selection_changed = 1;
             } else if (right.startsWith(QLatin1String("ValueChanged"))) {
                 sendObject_value_changed = 1;
-            } else if (right.startsWith(QLatin1String("VisibleDataChanged"))) {
+            } else if (right.startsWith(QLatin1String("VisibleDataChanged"))
+                    || right.startsWith(QLatin1String("VisibledataChanged"))) { // typo in libatspi
                 sendObject_visible_data_changed = 1;
             } else {
                 qAtspiDebug() << "WARNING: subscription string not handled:" << flag;
@@ -1277,7 +1278,16 @@ bool AtSpiAdaptor::applicationInterface(const QAIPointer &interface, const QStri
         QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant(QLatin1String("Qt"))));
         return connection.send(reply);
     }
-
+    if (function == QLatin1String("GetVersion")) {
+        Q_ASSERT(message.signature() == QLatin1String("ss"));
+        QDBusMessage reply = message.createReply(QVariant::fromValue(QDBusVariant(QLatin1String(qVersion()))));
+        return connection.send(reply);
+    }
+    if (function == QLatin1String("GetLocale")) {
+        Q_ASSERT(message.signature() == QLatin1String("u"));
+        QDBusMessage reply = message.createReply(QVariant::fromValue(QLocale().name()));
+        return connection.send(reply);
+    }
     qAtspiDebug() << "AtSpiAdaptor::applicationInterface " << message.path() << interface << function;
     return false;
 }

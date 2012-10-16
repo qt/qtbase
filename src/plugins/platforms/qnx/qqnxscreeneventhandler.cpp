@@ -462,7 +462,7 @@ void QQnxScreenEventHandler::handleCreateEvent(screen_event_t event)
 
 void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
 {
-    screen_display_t nativeDisplay = NULL;
+    screen_display_t nativeDisplay = 0;
     if (screen_get_event_property_pv(event, SCREEN_PROPERTY_DISPLAY, (void **)&nativeDisplay) != 0) {
         qWarning("QQnx: failed to query display property, errno=%d", errno);
         return;

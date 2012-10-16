@@ -447,6 +447,11 @@ Qt::KeyboardModifiers QWindowsIntegration::queryKeyboardModifiers() const
     return QWindowsKeyMapper::queryKeyboardModifiers();
 }
 
+QList<int> QWindowsIntegration::possibleKeys(const QKeyEvent *e) const
+{
+    return d->m_context.possibleKeys(e);
+}
+
 QPlatformNativeInterface *QWindowsIntegration::nativeInterface() const
 {
     return &d->m_nativeInterface;

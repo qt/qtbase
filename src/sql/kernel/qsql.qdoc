@@ -81,19 +81,15 @@
 /*!
     \enum QSql::NumericalPrecisionPolicy
 
-    This enum type describes at which precision levels numercial values are read from
-    a database.
-
-    Some databases support numerical values with a precision that is not storable in a
-    C++ basic data type. The default behavior is to bind these values as a QString.
-    This enum can be used to override this behavior.
+    Numerical values in a database can have precisions greater than their corresponding
+    C++ types. This enum lists the policies for representing such values in the application.
 
     \value LowPrecisionInt32  Force 32bit integer values. In case of floating point numbers,
                               the fractional part is silently discarded.
     \value LowPrecisionInt64  Force 64bit integer values. In case of floating point numbers,
                               the fractional part is silently discarded.
-    \value LowPrecisionDouble Force \c double values.
-    \value HighPrecision      The default behavior - try to preserve maximum precision.
+    \value LowPrecisionDouble Force \c double values. This is the default policy.
+    \value HighPrecision      Strings will be used to preserve precision.
 
     Note: The actual behaviour if an overflow occurs is driver specific. The Oracle database
     just returns an error in this case.

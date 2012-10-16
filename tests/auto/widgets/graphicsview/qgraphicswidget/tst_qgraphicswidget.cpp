@@ -53,6 +53,7 @@
 #include <qaction.h>
 #include <qwidgetaction.h>
 
+#include "../../../qtest-config.h"
 
 class EventSpy : public QObject
 {
@@ -3203,10 +3204,12 @@ void tst_QGraphicsWidget::itemChangeEvents()
                 valueDuringEvents.insert(QEvent::ParentChange, QVariant::fromValue(parentItem()));
                 break;
             }
+#ifndef QTEST_NO_CURSOR
             case QEvent::CursorChange: {
                 valueDuringEvents.insert(QEvent::CursorChange, int(cursor().shape()));
                 break;
             }
+#endif
             case QEvent::ToolTipChange: {
                 valueDuringEvents.insert(QEvent::ToolTipChange, toolTip());
                 break;
@@ -3252,9 +3255,11 @@ void tst_QGraphicsWidget::itemChangeEvents()
     QVERIFY(!item->isVisible());
     QTRY_VERIFY(!item->valueDuringEvents.value(QEvent::Hide).toBool());
 
+#ifndef QTEST_NO_CURSOR
     // CursorChange should be triggered after the cursor has changed
     item->setCursor(Qt::PointingHandCursor);
     QTRY_COMPARE(item->valueDuringEvents.value(QEvent::CursorChange).toInt(), int(item->cursor().shape()));
+#endif
 
     // ToolTipChange should be triggered after the tooltip has changed
     item->setToolTip("tooltipText");

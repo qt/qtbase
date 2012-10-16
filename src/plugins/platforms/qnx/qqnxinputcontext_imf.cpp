@@ -571,7 +571,7 @@ spannable_string_t *toSpannableString(const QString &text)
     spannable_string_t *pString = reinterpret_cast<spannable_string_t *>(malloc(sizeof(spannable_string_t)));
     pString->str = (wchar_t *)malloc(sizeof(wchar_t) * text.length() + 1);
     pString->length = text.length();
-    pString->spans = NULL;
+    pString->spans = 0;
     pString->spans_count = 0;
 
     const QChar *pData = text.constData();
@@ -601,7 +601,7 @@ static bool s_imfInitFailed = false;
 
 static bool imfAvailable()
 {
-    static bool s_imfDisabled = getenv("DISABLE_IMF") != NULL;
+    static bool s_imfDisabled = getenv("DISABLE_IMF") != 0;
     static bool s_imfReady = false;
 
     if ( s_imfInitFailed || s_imfDisabled) {
@@ -611,7 +611,7 @@ static bool imfAvailable()
         return true;
     }
 
-    if ( p_imf_client_init == NULL ) {
+    if ( p_imf_client_init == 0 ) {
         void *handle = dlopen("libinput_client.so.1", 0);
         if ( handle ) {
             p_imf_client_init = (int32_t (*)()) dlsym(handle, "imf_client_init");
@@ -632,8 +632,8 @@ static bool imfAvailable()
             s_imfReady = true;
         }
         else {
-            p_ictrl_open_session = NULL;
-            p_ictrl_dispatch_event = NULL;
+            p_ictrl_open_session = 0;
+            p_ictrl_dispatch_event = 0;
             s_imfDisabled = true;
             qCritical() << Q_FUNC_INFO << "libinput_client.so.1 did not contain the correct symbols, library mismatch? IMF services are disabled.";
             return false;

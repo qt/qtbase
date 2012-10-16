@@ -56,7 +56,10 @@ class QCocoaNativeInterface : public QPlatformNativeInterface
 public:
     QCocoaNativeInterface();
 
+    void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+
+    static void *cglContextForContext(QOpenGLContext *context);
 
 public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);

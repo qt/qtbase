@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,44 +39,4 @@
 **
 ****************************************************************************/
 
-#include "qkeymapper_p.h"
-#include <qdebug.h>
-#include <private/qevent_p.h>
-#include <private/qlocale_p.h>
-#include <private/qguiapplication_p.h>
-#include <qpa/qplatformintegration.h>
-
-QT_BEGIN_NAMESPACE
-
-QT_USE_NAMESPACE
-
-
-QKeyMapperPrivate::QKeyMapperPrivate()
-{
-    keyboardInputLocale = QLocale::system();
-    keyboardInputDirection = keyboardInputLocale.textDirection();
-}
-
-QKeyMapperPrivate::~QKeyMapperPrivate()
-{
-    // clearMappings();
-}
-
-void QKeyMapperPrivate::clearMappings()
-{
-}
-
-QList<int> QKeyMapperPrivate::possibleKeys(QKeyEvent *e)
-{
-    QList<int> result = QGuiApplicationPrivate::platformIntegration()->possibleKeys(e);
-    if (!result.isEmpty())
-        return result;
-
-    if (e->key() && (e->key() != Qt::Key_unknown))
-        result << int(e->key() + e->modifiers());
-    else if (!e->text().isEmpty())
-        result << int(e->text().at(0).unicode() + e->modifiers());
-    return result;
-}
-
-QT_END_NAMESPACE
+$$ = parser->createFoo()

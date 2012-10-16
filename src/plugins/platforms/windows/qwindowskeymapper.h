@@ -48,6 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QKeyEvent;
 class QWindow;
 
 struct KeyboardLayoutItem;
@@ -70,6 +71,7 @@ public:
     void setKeyGrabber(QWindow *w)   { m_keyGrabber = w; }
 
     static Qt::KeyboardModifiers queryKeyboardModifiers();
+    QList<int> possibleKeys(const QKeyEvent *e) const;
 
 private:
     bool translateKeyEventInternal(QWindow *receiver, const MSG &msg, bool grab);

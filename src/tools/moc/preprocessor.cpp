@@ -193,9 +193,12 @@ static Symbols tokenize(const QByteArray &input, int lineNum = 1, TokenizeMode m
                 token = keywords[state].ident;
 
             if (token == NOTOKEN) {
-                // an error really
                 ++data;
-                continue;
+                // an error really, but let's ignore this input
+                // to not confuse moc later. However in pre-processor
+                // only mode let's continue.
+                if (!Preprocessor::preprocessOnly)
+                    continue;
             }
 
             ++column;
@@ -1198,8 +1201,18 @@ void Preprocessor::parseDefineArguments(Macro *m)
         t = next();
         if (t == PP_RPAREN)
             break;
-        if (t != PP_COMMA)
-            error("Unexpected character in macro argument list.");
+        if (t == PP_COMMA)
+            continue;
+        if (lexem() == "...") {
+            //GCC extension:    #define FOO(x, y...) x(y)
+            // The last argument was already parsed. Just mark the macro as variadic.
+            m->isVariadic = true;
+            while (test(PP_WHITESPACE));
+            if (!test(PP_RPAREN))
+                error("missing ')' in macro argument list");
+            break;
+        }
+        error("Unexpected character in macro argument list.");
     }
     m->arguments = arguments;
     while (test(PP_WHITESPACE));

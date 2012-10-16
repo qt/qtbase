@@ -44,9 +44,9 @@ set(Qt5Core_MOC_EXECUTABLE Qt5::moc)
 set(Qt5Core_RCC_EXECUTABLE Qt5::rcc)
 
 !!IF isEmpty(CMAKE_DATA_DIR_IS_ABSOLUTE)
-list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5_corelib_install_prefix}/mkspecs/default\")
+list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5_corelib_install_prefix}/mkspecs/$${CMAKE_MKSPEC}\")
 !!ELSE
-list(APPEND Qt5Core_INCLUDE_DIRS \"$${CMAKE_DATA_DIR}mkspecs/default\")
+list(APPEND Qt5Core_INCLUDE_DIRS \"$${CMAKE_DATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
 !!ENDIF
 
 !!IF !isEmpty(CMAKE_ADD_FPIE_FLAGS)

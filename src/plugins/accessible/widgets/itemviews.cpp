@@ -407,7 +407,7 @@ QModelIndex QAccessibleTree::indexFromLogical(int row, int column) const
         return QModelIndex();
 
     const QTreeView *treeView = qobject_cast<const QTreeView*>(view());
-    if (treeView->d_func()->viewItems.count() <= row) {
+    if ((row < 0) || (column < 0) || (treeView->d_func()->viewItems.count() <= row)) {
         qWarning() << "QAccessibleTree::indexFromLogical: invalid index: " << row << column << " for " << treeView;
         return QModelIndex();
     }

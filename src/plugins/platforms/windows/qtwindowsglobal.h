@@ -104,6 +104,7 @@ enum WindowsEventType // Simplify event types
     InputMethodRequest = InputMethodEventFlag + 6,
     ThemeChanged = ThemingEventFlag + 1,
     DisplayChangedEvent = 437,
+    SettingChangedEvent = DisplayChangedEvent + 1,
     UnknownEvent = 542
 };
 
@@ -184,6 +185,11 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return QtWindows::FocusInEvent;
     case WM_KILLFOCUS:
         return QtWindows::FocusOutEvent;
+    // Among other things, WM_SETTINGCHANGE happens when the taskbar is moved
+    // and therefore the "working area" changes.
+    // http://msdn.microsoft.com/en-us/library/ms695534(v=vs.85).aspx
+    case WM_SETTINGCHANGE:
+        return QtWindows::SettingChangedEvent;
     case WM_DISPLAYCHANGE:
         return QtWindows::DisplayChangedEvent;
     case WM_THEMECHANGED:
