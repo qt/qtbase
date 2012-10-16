@@ -112,7 +112,7 @@ void tst_QRegExpValidator::validate()
     QFETCH( int, state );
 
     QRegExpValidator rv( 0 );
-    QSignalSpy spy(&rv, SIGNAL(regExpChanged(const QRegExp&)));
+    QSignalSpy spy(&rv, SIGNAL(regExpChanged(QRegExp)));
     QSignalSpy changedSpy(&rv, SIGNAL(changed()));
 
     rv.setRegExp( QRegExp( rx ) );

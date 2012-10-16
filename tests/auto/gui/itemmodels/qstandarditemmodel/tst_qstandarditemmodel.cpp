@@ -183,23 +183,23 @@ void tst_QStandardItemModel::init()
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
 
     m_model = new QStandardItemModel(defaultSize, defaultSize);
-    connect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)),
-            this, SLOT(rowsAboutToBeInserted(QModelIndex, int, int)));
-    connect(m_model, SIGNAL(rowsInserted(QModelIndex, int, int)),
-            this, SLOT(rowsInserted(QModelIndex, int, int)));
-    connect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)),
-            this, SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
-    connect(m_model, SIGNAL(rowsRemoved(QModelIndex, int, int)),
-            this, SLOT(rowsRemoved(QModelIndex, int, int)));
+    connect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));
+    connect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(rowsInserted(QModelIndex,int,int)));
+    connect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(rowsRemoved(QModelIndex,int,int)));
 
-    connect(m_model, SIGNAL(columnsAboutToBeInserted(QModelIndex, int, int)),
-            this, SLOT(columnsAboutToBeInserted(QModelIndex, int, int)));
-    connect(m_model, SIGNAL(columnsInserted(QModelIndex, int, int)),
-            this, SLOT(columnsInserted(QModelIndex, int, int)));
-    connect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex, int, int)),
-            this, SLOT(columnsAboutToBeRemoved(QModelIndex, int, int)));
-    connect(m_model, SIGNAL(columnsRemoved(QModelIndex, int, int)),
-            this, SLOT(columnsRemoved(QModelIndex, int, int)));
+    connect(m_model, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(columnsAboutToBeInserted(QModelIndex,int,int)));
+    connect(m_model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+            this, SLOT(columnsInserted(QModelIndex,int,int)));
+    connect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(columnsAboutToBeRemoved(QModelIndex,int,int)));
+    connect(m_model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            this, SLOT(columnsRemoved(QModelIndex,int,int)));
 
     rcFirst.fill(-1);
     rcLast.fill(-1);
@@ -207,23 +207,23 @@ void tst_QStandardItemModel::init()
 
 void tst_QStandardItemModel::cleanup()
 {
-    disconnect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)),
-               this, SLOT(rowsAboutToBeInserted(QModelIndex, int, int)));
-    disconnect(m_model, SIGNAL(rowsInserted(QModelIndex, int, int)),
-               this, SLOT(rowsInserted(QModelIndex, int, int)));
-    disconnect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)),
-               this, SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
-    disconnect(m_model, SIGNAL(rowsRemoved(QModelIndex, int, int)),
-               this, SLOT(rowsRemoved(QModelIndex, int, int)));
+    disconnect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+               this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));
+    disconnect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+               this, SLOT(rowsInserted(QModelIndex,int,int)));
+    disconnect(m_model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+               this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    disconnect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+               this, SLOT(rowsRemoved(QModelIndex,int,int)));
 
-    disconnect(m_model, SIGNAL(columnsAboutToBeInserted(QModelIndex, int, int)),
-               this, SLOT(columnsAboutToBeInserted(QModelIndex, int, int)));
-    disconnect(m_model, SIGNAL(columnsInserted(QModelIndex, int, int)),
-               this, SLOT(columnsInserted(QModelIndex, int, int)));
-    disconnect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex, int, int)),
-               this, SLOT(columnsAboutToBeRemoved(QModelIndex, int, int)));
-    disconnect(m_model, SIGNAL(columnsRemoved(QModelIndex, int, int)),
-               this, SLOT(columnsRemoved(QModelIndex, int, int)));
+    disconnect(m_model, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+               this, SLOT(columnsAboutToBeInserted(QModelIndex,int,int)));
+    disconnect(m_model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+               this, SLOT(columnsInserted(QModelIndex,int,int)));
+    disconnect(m_model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+               this, SLOT(columnsAboutToBeRemoved(QModelIndex,int,int)));
+    disconnect(m_model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+               this, SLOT(columnsRemoved(QModelIndex,int,int)));
     delete m_model;
     m_model = 0;
 }
@@ -470,9 +470,9 @@ void tst_QStandardItemModel::setHeaderData()
             QCOMPARE(m_model->headerData(i, orient).toString(), QString::number(i + 1));
 
         QSignalSpy headerDataChangedSpy(
-            m_model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
+            m_model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
         QSignalSpy dataChangedSpy(
-            m_model, SIGNAL(dataChanged(QModelIndex, QModelIndex)));
+            m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
         // insert custom values and check
         for (int i = 0; i < count; ++i) {
             QString customString = QString("custom") + QString::number(i);
@@ -752,7 +752,7 @@ void tst_QStandardItemModel::clear()
 
     QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
     QSignalSpy layoutChangedSpy(&model, SIGNAL(layoutChanged()));
-    QSignalSpy rowsRemovedSpy(&model, SIGNAL(rowsRemoved(QModelIndex, int, int)));
+    QSignalSpy rowsRemovedSpy(&model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
     model.clear();
 
     QCOMPARE(modelResetSpy.count(), 1);
@@ -1135,7 +1135,7 @@ void tst_QStandardItemModel::getSetItemData()
     QModelIndex idx = model.index(0, 0, QModelIndex());
 
     QSignalSpy modelDataChangedSpy(
-         &model, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)));
+         &model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     QVERIFY(model.setItemData(idx, roles));
     QCOMPARE(modelDataChangedSpy.count(), 1);
     QVERIFY(model.setItemData(idx, roles));
@@ -1218,9 +1218,9 @@ void tst_QStandardItemModel::itemDataChanged()
     QStandardItemModel model(6, 4);
     QStandardItem item;
     QSignalSpy dataChangedSpy(
-        &model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+        &model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     QSignalSpy itemChangedSpy(
-        &model, SIGNAL(itemChanged(QStandardItem *)));
+        &model, SIGNAL(itemChanged(QStandardItem*)));
 
     model.setItem(0, &item);
     QCOMPARE(dataChangedSpy.count(), 1);

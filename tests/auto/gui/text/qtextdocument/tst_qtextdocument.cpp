@@ -1927,8 +1927,8 @@ public:
     CursorPosSignalSpy(QTextDocument *doc)
     {
         calls = 0;
-        connect(doc, SIGNAL(cursorPositionChanged(const QTextCursor &)),
-                this, SLOT(cursorPositionChanged(const QTextCursor &)));
+        connect(doc, SIGNAL(cursorPositionChanged(QTextCursor)),
+                this, SLOT(cursorPositionChanged(QTextCursor)));
     }
 
     int calls;
@@ -2054,17 +2054,17 @@ void tst_QTextDocument::markContentsDirty()
     QTestDocumentLayout *lout = new QTestDocumentLayout(doc);
     doc->setDocumentLayout(lout);
     TestSyntaxHighlighter *highlighter = new TestSyntaxHighlighter(doc);
-    connect(doc, SIGNAL(contentsChange(int, int, int)),
-            highlighter, SLOT(markBlockDirty(int, int, int)));
+    connect(doc, SIGNAL(contentsChange(int,int,int)),
+            highlighter, SLOT(markBlockDirty(int,int,int)));
 
     highlighter->ok = false;
     cursor.insertText("Some dummy text blah blah");
     QVERIFY(highlighter->ok);
 
-    disconnect(doc, SIGNAL(contentsChange(int, int, int)),
-               highlighter, SLOT(markBlockDirty(int, int, int)));
-    connect(doc, SIGNAL(contentsChange(int, int, int)),
-            highlighter, SLOT(modifyBlockAgain(int, int, int)));
+    disconnect(doc, SIGNAL(contentsChange(int,int,int)),
+               highlighter, SLOT(markBlockDirty(int,int,int)));
+    connect(doc, SIGNAL(contentsChange(int,int,int)),
+            highlighter, SLOT(modifyBlockAgain(int,int,int)));
     highlighter->ok = false;
     cursor.insertText("FooBar");
     QVERIFY(highlighter->ok);
