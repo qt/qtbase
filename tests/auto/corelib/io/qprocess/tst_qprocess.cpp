@@ -312,7 +312,7 @@ void tst_QProcess::crashTest()
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ExitStatus");
 
     QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy spy2(process, SIGNAL(finished(int, QProcess::ExitStatus)));
+    QSignalSpy spy2(process, SIGNAL(finished(int,QProcess::ExitStatus)));
 
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
@@ -350,7 +350,7 @@ void tst_QProcess::crashTest2()
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ExitStatus");
 
     QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
-    QSignalSpy spy2(process, SIGNAL(finished(int, QProcess::ExitStatus)));
+    QSignalSpy spy2(process, SIGNAL(finished(int,QProcess::ExitStatus)));
 
     QVERIFY(spy.isValid());
     QVERIFY(spy2.isValid());
@@ -922,8 +922,8 @@ public:
 
     SoftExitProcess(int n) : waitedForFinished(false), n(n), killing(false)
     {
-        connect(this, SIGNAL(finished(int, QProcess::ExitStatus)),
-                this, SLOT(finishedSlot(int, QProcess::ExitStatus)));
+        connect(this, SIGNAL(finished(int,QProcess::ExitStatus)),
+                this, SLOT(finishedSlot(int,QProcess::ExitStatus)));
 
         switch (n) {
         case 0:
@@ -1488,7 +1488,7 @@ void tst_QProcess::failToStart()
     QSignalSpy stateSpy(&process, SIGNAL(stateChanged(QProcess::ProcessState)));
     QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
     QSignalSpy finishedSpy(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int, QProcess::ExitStatus)));
+    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
 
     QVERIFY(stateSpy.isValid());
     QVERIFY(errorSpy.isValid());
@@ -1554,7 +1554,7 @@ void tst_QProcess::failToStartWithWait()
     QEventLoop loop;
     QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
     QSignalSpy finishedSpy(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int, QProcess::ExitStatus)));
+    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
@@ -1581,7 +1581,7 @@ void tst_QProcess::failToStartWithEventLoop()
     QEventLoop loop;
     QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
     QSignalSpy finishedSpy(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int, QProcess::ExitStatus)));
+    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy.isValid());
@@ -1819,7 +1819,7 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
     QProcess process;
     QSignalSpy errorSpy(&process, SIGNAL(error(QProcess::ProcessError)));
     QSignalSpy finishedSpy1(&process, SIGNAL(finished(int)));
-    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int, QProcess::ExitStatus)));
+    QSignalSpy finishedSpy2(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
 
     QVERIFY(errorSpy.isValid());
     QVERIFY(finishedSpy1.isValid());
@@ -2153,7 +2153,7 @@ void tst_QProcess::onlyOneStartedSignal()
     QProcess process;
 
     QSignalSpy spyStarted(&process,  SIGNAL(started()));
-    QSignalSpy spyFinished(&process, SIGNAL(finished(int, QProcess::ExitStatus)));
+    QSignalSpy spyFinished(&process, SIGNAL(finished(int,QProcess::ExitStatus)));
 
     QVERIFY(spyStarted.isValid());
     QVERIFY(spyFinished.isValid());

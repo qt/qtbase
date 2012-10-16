@@ -56,48 +56,48 @@ ModelTest::ModelTest ( QAbstractItemModel *_model, QObject *parent ) : QObject (
     if (!model)
         qFatal("%s: model must not be null", Q_FUNC_INFO);
 
-    connect ( model, SIGNAL ( columnsAboutToBeInserted ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( columnsAboutToBeRemoved ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( columnsInserted ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( columnsRemoved ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( dataChanged ( const QModelIndex &, const QModelIndex & ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( headerDataChanged ( Qt::Orientation, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( layoutAboutToBeChanged () ), this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( layoutChanged () ), this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( modelReset () ), this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( rowsAboutToBeInserted ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( rowsAboutToBeRemoved ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( rowsInserted ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
-    connect ( model, SIGNAL ( rowsRemoved ( const QModelIndex &, int, int ) ),
-              this, SLOT ( runAllTests() ) );
+    connect(model, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(layoutAboutToBeChanged()), this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(layoutChanged()), this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(modelReset()), this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
+    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(runAllTests()) );
 
     // Special checks for changes
-    connect ( model, SIGNAL ( layoutAboutToBeChanged() ),
-              this, SLOT ( layoutAboutToBeChanged() ) );
-    connect ( model, SIGNAL ( layoutChanged() ),
-              this, SLOT ( layoutChanged() ) );
+    connect(model, SIGNAL(layoutAboutToBeChanged()),
+            this, SLOT(layoutAboutToBeChanged()) );
+    connect(model, SIGNAL(layoutChanged()),
+            this, SLOT(layoutChanged()) );
 
-    connect ( model, SIGNAL ( rowsAboutToBeInserted ( const QModelIndex &, int, int ) ),
-              this, SLOT ( rowsAboutToBeInserted ( const QModelIndex &, int, int ) ) );
-    connect ( model, SIGNAL ( rowsAboutToBeRemoved ( const QModelIndex &, int, int ) ),
-              this, SLOT ( rowsAboutToBeRemoved ( const QModelIndex &, int, int ) ) );
-    connect ( model, SIGNAL ( rowsInserted ( const QModelIndex &, int, int ) ),
-              this, SLOT ( rowsInserted ( const QModelIndex &, int, int ) ) );
-    connect ( model, SIGNAL ( rowsRemoved ( const QModelIndex &, int, int ) ),
-              this, SLOT ( rowsRemoved ( const QModelIndex &, int, int ) ) );
-    connect ( model, SIGNAL ( dataChanged ( const QModelIndex &, const QModelIndex & ) ),
-              this, SLOT ( dataChanged ( const QModelIndex &, const QModelIndex & ) ) );
-    connect ( model, SIGNAL ( headerDataChanged ( Qt::Orientation, int, int ) ),
-              this, SLOT ( headerDataChanged ( Qt::Orientation, int, int ) ) );
+    connect(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)) );
+    connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)) );
+    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(rowsInserted(QModelIndex,int,int)) );
+    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(rowsRemoved(QModelIndex,int,int)) );
+    connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
+            this, SLOT(dataChanged(QModelIndex,QModelIndex)) );
+    connect(model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
+            this, SLOT(headerDataChanged(Qt::Orientation,int,int)) );
 
     runAllTests();
 }

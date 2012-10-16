@@ -597,7 +597,7 @@ void tst_QItemModel::setData()
     QFETCH(QString, modelType);
     currentModel = testModels->createModel(modelType);
     QVERIFY(currentModel);
-    QSignalSpy spy(currentModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+    QSignalSpy spy(currentModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     QVERIFY(spy.isValid());
     QCOMPARE(currentModel->setData(QModelIndex(), QVariant()), false);
     QCOMPARE(spy.count(), 0);
@@ -659,7 +659,7 @@ void tst_QItemModel::setHeaderData()
     QVERIFY(index.isValid());
 
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-    QSignalSpy spy(currentModel, SIGNAL(headerDataChanged( Qt::Orientation, int , int )));
+    QSignalSpy spy(currentModel, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
     QVERIFY(spy.isValid());
 
     QString text = "Index private pointers should always be the same";
@@ -838,10 +838,10 @@ void tst_QItemModel::remove()
 
     // When a row or column is removed there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
-    QSignalSpy columnsAboutToBeRemovedSpy(currentModel, SIGNAL(columnsAboutToBeRemoved( const QModelIndex &, int , int )));
-    QSignalSpy rowsAboutToBeRemovedSpy(currentModel, SIGNAL(rowsAboutToBeRemoved( const QModelIndex &, int , int )));
-    QSignalSpy columnsRemovedSpy(currentModel, SIGNAL(columnsRemoved( const QModelIndex &, int, int )));
-    QSignalSpy rowsRemovedSpy(currentModel, SIGNAL(rowsRemoved( const QModelIndex &, int, int )));
+    QSignalSpy columnsAboutToBeRemovedSpy(currentModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)));
+    QSignalSpy rowsAboutToBeRemovedSpy(currentModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    QSignalSpy columnsRemovedSpy(currentModel, SIGNAL(columnsRemoved(QModelIndex,int,int)));
+    QSignalSpy rowsRemovedSpy(currentModel, SIGNAL(rowsRemoved(QModelIndex,int,int)));
     QSignalSpy modelResetSpy(currentModel, SIGNAL(modelReset()));
     QSignalSpy modelLayoutChangedSpy(currentModel, SIGNAL(layoutChanged()));
 
@@ -860,10 +860,10 @@ void tst_QItemModel::remove()
     //
     // test removeRow()
     //
-    connect(currentModel, SIGNAL(rowsAboutToBeRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsAboutToRemove(const QModelIndex &)));
-    connect(currentModel, SIGNAL(rowsRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsRemoved(const QModelIndex &)));
+    connect(currentModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_rowsAboutToRemove(QModelIndex)));
+    connect(currentModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_rowsRemoved(QModelIndex)));
     int beforeRemoveRowCount = currentModel->rowCount(parentOfRemoved);
     QPersistentModelIndex dyingIndex = currentModel->index(start + count + 1, 0, parentOfRemoved);
     QCOMPARE(currentModel->removeRows(start, count, parentOfRemoved), shouldSucceed);
@@ -921,20 +921,20 @@ void tst_QItemModel::remove()
             QCOMPARE(currentModel->rowCount(parentOfRemoved), beforeRemoveRowCount);
 
     }
-    disconnect(currentModel, SIGNAL(rowsAboutToBeRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsAboutToRemove(const QModelIndex &)));
-    disconnect(currentModel, SIGNAL(rowsRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsRemoved(const QModelIndex &)));
+    disconnect(currentModel, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_rowsAboutToRemove(QModelIndex)));
+    disconnect(currentModel, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_rowsRemoved(QModelIndex)));
     modelResetSpy.clear();
     QCOMPARE(modelResetSpy.count(), 0);
 
     //
     // Test remove column
     //
-    connect(currentModel, SIGNAL(columnsAboutToBeRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsAboutToRemove(const QModelIndex &)));
-    connect(currentModel, SIGNAL(columnsRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsRemoved(const QModelIndex &)));
+    connect(currentModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_columnsAboutToRemove(QModelIndex)));
+    connect(currentModel, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_columnsRemoved(QModelIndex)));
     int beforeRemoveColumnCount = currentModel->columnCount(parentOfRemoved);
 
     // Some models don't let you remove the column, only row
@@ -966,10 +966,10 @@ void tst_QItemModel::remove()
         else
             QCOMPARE(currentModel->rowCount(parentOfRemoved), beforeRemoveRowCount);
     }
-    disconnect(currentModel, SIGNAL(columnsAboutToBeRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsAboutToRemove(const QModelIndex &)));
-    disconnect(currentModel, SIGNAL(columnsRemoved( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsRemoved(const QModelIndex &)));
+    disconnect(currentModel, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_columnsAboutToRemove(QModelIndex)));
+    disconnect(currentModel, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            this, SLOT(slot_columnsRemoved(QModelIndex)));
 
     if (columnsAboutToBeRemovedSpy.count() > 0){
         QList<QVariant> arguments = columnsAboutToBeRemovedSpy.at(0);
@@ -1180,10 +1180,10 @@ void tst_QItemModel::insert()
 
     // When a row or column is inserted there should be two signals.
     // Watch to make sure they are emitted and get the row/column count when they do get emitted by connecting them to a slot
-    QSignalSpy columnsAboutToBeInsertedSpy(currentModel, SIGNAL(columnsAboutToBeInserted( const QModelIndex &, int , int )));
-    QSignalSpy rowsAboutToBeInsertedSpy(currentModel, SIGNAL(rowsAboutToBeInserted( const QModelIndex &, int , int )));
-    QSignalSpy columnsInsertedSpy(currentModel, SIGNAL(columnsInserted( const QModelIndex &, int, int )));
-    QSignalSpy rowsInsertedSpy(currentModel, SIGNAL(rowsInserted( const QModelIndex &, int, int )));
+    QSignalSpy columnsAboutToBeInsertedSpy(currentModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)));
+    QSignalSpy rowsAboutToBeInsertedSpy(currentModel, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
+    QSignalSpy columnsInsertedSpy(currentModel, SIGNAL(columnsInserted(QModelIndex,int,int)));
+    QSignalSpy rowsInsertedSpy(currentModel, SIGNAL(rowsInserted(QModelIndex,int,int)));
     QSignalSpy modelResetSpy(currentModel, SIGNAL(modelReset()));
     QSignalSpy modelLayoutChangedSpy(currentModel, SIGNAL(layoutChanged()));
 
@@ -1202,10 +1202,10 @@ void tst_QItemModel::insert()
     //
     // test insertRow()
     //
-    connect(currentModel, SIGNAL(rowsAboutToBeInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsAboutToInserted(const QModelIndex &)));
-    connect(currentModel, SIGNAL(rowsInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsInserted(const QModelIndex &)));
+    connect(currentModel, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(slot_rowsAboutToInserted(QModelIndex)));
+    connect(currentModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(slot_rowsInserted(QModelIndex)));
     int beforeInsertRowCount = currentModel->rowCount(parentOfInserted);
     QCOMPARE(currentModel->insertRows(start, count, parentOfInserted), shouldSucceed);
     currentModel->submit();
@@ -1259,19 +1259,19 @@ void tst_QItemModel::insert()
             QCOMPARE(currentModel->rowCount(parentOfInserted), beforeInsertRowCount);
 
     }
-    disconnect(currentModel, SIGNAL(rowsAboutToBeInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsAboutToInserted(const QModelIndex &)));
-    disconnect(currentModel, SIGNAL(rowsInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_rowsInserted(const QModelIndex &)));
+    disconnect(currentModel, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(slot_rowsAboutToInserted(QModelIndex)));
+    disconnect(currentModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(slot_rowsInserted(QModelIndex)));
     modelResetSpy.clear();
 
     //
     // Test insertColumn()
     //
-    connect(currentModel, SIGNAL(columnsAboutToBeInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsAboutToInserted(const QModelIndex &)));
-    connect(currentModel, SIGNAL(columnsInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsInserted(const QModelIndex &)));
+    connect(currentModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(slot_columnsAboutToInserted(QModelIndex)));
+    connect(currentModel, SIGNAL(columnsInserted(QModelIndex,int,int)),
+            this, SLOT(slot_columnsInserted(QModelIndex)));
     int beforeInsertColumnCount = currentModel->columnCount(parentOfInserted);
 
     // Some models don't let you insert the column, only row
@@ -1303,10 +1303,10 @@ void tst_QItemModel::insert()
         else
             QCOMPARE(currentModel->rowCount(parentOfInserted), beforeInsertRowCount);
     }
-    disconnect(currentModel, SIGNAL(columnsAboutToBeInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsAboutToInserted(const QModelIndex &)));
-    disconnect(currentModel, SIGNAL(columnsInserted( const QModelIndex &, int , int )),
-            this, SLOT(slot_columnsInserted(const QModelIndex &)));
+    disconnect(currentModel, SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
+            this, SLOT(slot_columnsAboutToInserted(QModelIndex)));
+    disconnect(currentModel, SIGNAL(columnsInserted(QModelIndex,int,int)),
+            this, SLOT(slot_columnsInserted(QModelIndex)));
 
     if (columnsAboutToBeInsertedSpy.count() > 0){
         QList<QVariant> arguments = columnsAboutToBeInsertedSpy.at(0);

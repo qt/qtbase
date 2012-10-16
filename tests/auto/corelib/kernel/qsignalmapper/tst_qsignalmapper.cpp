@@ -102,7 +102,7 @@ void tst_QSignalMapper::mapped()
     mapper.setMapping(&src3, "three");
 
     connect(&mapper, SIGNAL(mapped(int)), &target, SLOT(myslot(int)));
-    connect(&mapper, SIGNAL(mapped(const QString &)), &target, SLOT(myslot(const QString &)));
+    connect(&mapper, SIGNAL(mapped(QString)), &target, SLOT(myslot(QString)));
 
     src1.emit_mysignal(20);
     QVERIFY(target.id == 1);

@@ -120,7 +120,7 @@ void tst_QFileSystemWatcher::basicTest()
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
     QVERIFY(watcher.addPath(testFile.fileName()));
 
-    QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
+    QSignalSpy changedSpy(&watcher, SIGNAL(fileChanged(QString)));
     QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
@@ -253,7 +253,7 @@ void tst_QFileSystemWatcher::watchDirectory()
     watcher.setObjectName(QLatin1String("_qt_autotest_force_engine_") + backend);
     QVERIFY(watcher.addPath(testDir.absolutePath()));
 
-    QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
+    QSignalSpy changedSpy(&watcher, SIGNAL(directoryChanged(QString)));
     QVERIFY(changedSpy.isValid());
     QEventLoop eventLoop;
     QTimer timer;
@@ -410,8 +410,8 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QVERIFY(watcher.addPath(testDir.absolutePath()));
     QVERIFY(watcher.addPath(testFileName));
 
-    QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(const QString &)));
-    QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(const QString &)));
+    QSignalSpy fileChangedSpy(&watcher, SIGNAL(fileChanged(QString)));
+    QSignalSpy dirChangedSpy(&watcher, SIGNAL(directoryChanged(QString)));
     QVERIFY(fileChangedSpy.isValid());
     QVERIFY(dirChangedSpy.isValid());
     QEventLoop eventLoop;

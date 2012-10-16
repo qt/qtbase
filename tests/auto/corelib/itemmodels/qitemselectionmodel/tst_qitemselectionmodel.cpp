@@ -2231,7 +2231,7 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
     QItemSelectionModel selectionModel(&model);
     selectionModel.select(sel, QItemSelectionModel::SelectCurrent);
 
-    QSignalSpy deselectSpy(&selectionModel, SIGNAL(selectionChanged(const QItemSelection& , const QItemSelection&)));
+    QSignalSpy deselectSpy(&selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
     QVERIFY(deselectSpy.isValid());
     model.removeRows(0, 1, root);
     QVERIFY(deselectSpy.count() == 1);
@@ -2383,7 +2383,7 @@ public:
     RemovalObserver(QItemSelectionModel *selectionModel)
       : m_itemSelectionModel(selectionModel)
     {
-        connect(m_itemSelectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), SLOT(selectionChanged(QItemSelection, QItemSelection)));
+        connect(m_itemSelectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(selectionChanged(QItemSelection,QItemSelection)));
     }
 
 public slots:
@@ -2414,7 +2414,7 @@ void tst_QItemSelectionModel::deselectRemovedMiddleRange()
 
     RemovalObserver ro(&selModel);
 
-    QSignalSpy spy(&selModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)));
+    QSignalSpy spy(&selModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)));
     QVERIFY(spy.isValid());
     bool ok = model.removeRows(4, 2);
 

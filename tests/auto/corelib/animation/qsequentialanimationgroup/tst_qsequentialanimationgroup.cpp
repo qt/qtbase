@@ -639,8 +639,8 @@ void tst_QSequentialAnimationGroup::pauseAndResume()
     sequence->addAnimation(a3_s_o1);
     sequence->setLoopCount(2);
 
-    QSignalSpy a1StateChangedSpy(a1_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
-    QSignalSpy seqStateChangedSpy(sequence, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy a1StateChangedSpy(a1_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy seqStateChangedSpy(sequence, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
 
     QVERIFY(a1StateChangedSpy.isValid());
     QVERIFY(seqStateChangedSpy.isValid());
@@ -747,7 +747,7 @@ void tst_QSequentialAnimationGroup::restart()
     // sequence operating on same object/property
     QAnimationGroup *sequence = new QSequentialAnimationGroup();
     QSignalSpy seqCurrentAnimChangedSpy(sequence, SIGNAL(currentAnimationChanged(QAbstractAnimation*)));
-    QSignalSpy seqStateChangedSpy(sequence, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy seqStateChangedSpy(sequence, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
 
     QVERIFY(seqCurrentAnimChangedSpy.isValid());
     QVERIFY(seqStateChangedSpy.isValid());
@@ -758,7 +758,7 @@ void tst_QSequentialAnimationGroup::restart()
     for (int i = 0; i < 3; i++) {
         anims[i] = new DummyPropertyAnimation;
         anims[i]->setDuration(100);
-        animsStateChanged[i] = new QSignalSpy(anims[i], SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+        animsStateChanged[i] = new QSignalSpy(anims[i], SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
         QVERIFY(animsStateChanged[i]->isValid());
     }
 
@@ -818,10 +818,10 @@ void tst_QSequentialAnimationGroup::looping()
     QAbstractAnimation *a2_s_o1 = new DummyPropertyAnimation;
     QAbstractAnimation *a3_s_o1 = new DummyPropertyAnimation;
 
-    QSignalSpy a1Spy(a1_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
-    QSignalSpy a2Spy(a2_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
-    QSignalSpy a3Spy(a3_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
-    QSignalSpy seqSpy(sequence, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy a1Spy(a1_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy a2Spy(a2_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy a3Spy(a3_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy seqSpy(sequence, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
 
     QVERIFY(a1Spy.isValid());
     QVERIFY(a2Spy.isValid());
@@ -835,7 +835,7 @@ void tst_QSequentialAnimationGroup::looping()
     sequence->setLoopCount(2);
 
     QSequentialAnimationGroup group;
-    QSignalSpy groupSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy groupSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
     QVERIFY(groupSpy.isValid());
 
     group.addAnimation(sequence);
@@ -1103,8 +1103,8 @@ void tst_QSequentialAnimationGroup::updateChildrenWithRunningGroup()
     anim.setEndValue(100);
     anim.setDuration(200);
 
-    QSignalSpy groupStateChangedSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
-    QSignalSpy childStateChangedSpy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy groupStateChangedSpy(&group, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy childStateChangedSpy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
 
     QVERIFY(groupStateChangedSpy.isValid());
     QVERIFY(childStateChangedSpy.isValid());
@@ -1270,8 +1270,8 @@ void tst_QSequentialAnimationGroup::startGroupWithRunningChild()
     anim2->setEndValue(100);
     anim2->setDuration(200);
 
-    QSignalSpy stateChangedSpy1(anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
-    QSignalSpy stateChangedSpy2(anim2, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy stateChangedSpy1(anim1, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
+    QSignalSpy stateChangedSpy2(anim2, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
 
     QVERIFY(stateChangedSpy1.isValid());
     QVERIFY(stateChangedSpy2.isValid());
@@ -1347,7 +1347,7 @@ void tst_QSequentialAnimationGroup::zeroDurationAnimation()
     anim3->setEndValue(100);
     anim3->setDuration(0);
 
-    QSignalSpy stateChangedSpy(anim1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy stateChangedSpy(anim1, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
     QVERIFY(stateChangedSpy.isValid());
 
     group.addAnimation(anim1);
@@ -1439,7 +1439,7 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
     // lets make sure the seeking will work again
     spy.clear();
     DummyPropertyAnimation anim(&group);
-    QSignalSpy animStateChangedSpy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy animStateChangedSpy(&anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
     QVERIFY(animStateChangedSpy.isValid());
 
     group.setCurrentTime(300);
@@ -1641,7 +1641,7 @@ void tst_QSequentialAnimationGroup::pauseResume()
     QPropertyAnimation *anim = new QPropertyAnimation(&dummy, "foo", &group);
     anim->setDuration(250);
     anim->setEndValue(250);
-    QSignalSpy spy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QSignalSpy spy(anim, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
     QVERIFY(spy.isValid());
     QCOMPARE(group.duration(), 250);
     group.start();
