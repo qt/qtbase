@@ -617,6 +617,9 @@ QtOpenGL
   QGLWidget and a QOpenGLFramebufferObject. It is recommended that applications
   using QGLPixelBuffer for offscreen rendering to a texture switch to using
   QOpenGLFramebufferObject directly instead, for improved performance.
+* The default major version of QGLFormat has been changed to 2 to be aligned
+  with QSurfaceFormat. Applications that want to use a different version should
+  explicitly request it using QGLFormat::setVersion().
 
 QtScript
 --------

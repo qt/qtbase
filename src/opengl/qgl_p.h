@@ -86,7 +86,7 @@ public:
         depthSize = accumSize = stencilSize = redSize = greenSize = blueSize = alphaSize = -1;
         numSamples = -1;
         swapInterval = -1;
-        majorVersion = 1;
+        majorVersion = 2;
         minorVersion = 0;
         profile = QGLFormat::NoProfile;
     }
