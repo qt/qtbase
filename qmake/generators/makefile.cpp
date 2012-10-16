@@ -1010,13 +1010,6 @@ MakefileGenerator::writePrlFile(QTextStream &t)
         for (ProStringList::Iterator it = libs.begin(); it != libs.end(); ++it)
             t << project->values((*it).toKey()).join(' ').replace('\\', "\\\\") << " ";
         t << endl;
-        t << "QMAKE_PRL_LIBS_FOR_CMAKE = ";
-        QString sep;
-        for (ProStringList::Iterator it = libs.begin(); it != libs.end(); ++it) {
-            t << sep << project->values((*it).toKey()).join(';').replace('\\', "\\\\");
-            sep = ';';
-        }
-        t << endl;
     }
 }
 
