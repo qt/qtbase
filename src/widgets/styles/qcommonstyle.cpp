@@ -277,35 +277,38 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
 #endif // QT_NO_PROGRESSBAR
     case PE_IndicatorBranch: {
+        static const int decoration_size = 9;
         int mid_h = opt->rect.x() + opt->rect.width() / 2;
         int mid_v = opt->rect.y() + opt->rect.height() / 2;
         int bef_h = mid_h;
         int bef_v = mid_v;
         int aft_h = mid_h;
         int aft_v = mid_v;
-#ifndef QT_NO_IMAGEFORMAT_XPM
-        static const int decoration_size = 9;
-        static QPixmap open(tree_branch_open_xpm);
-        static QPixmap closed(tree_branch_closed_xpm);
         if (opt->state & State_Children) {
             int delta = decoration_size / 2;
             bef_h -= delta;
             bef_v -= delta;
             aft_h += delta;
             aft_v += delta;
-            p->drawPixmap(bef_h, bef_v, opt->state & State_Open ? open : closed);
+            p->drawLine(bef_h + 2, bef_v + 4, bef_h + 6, bef_v + 4);
+            if (!(opt->state & State_Open))
+                p->drawLine(bef_h + 4, bef_v + 2, bef_h + 4, bef_v + 6);
+            QPen oldPen = p->pen();
+            p->setPen(opt->palette.dark().color());
+            p->drawRect(bef_h, bef_v, decoration_size - 1, decoration_size - 1);
+            p->setPen(oldPen);
         }
-#endif // QT_NO_IMAGEFORMAT_XPM
+        QBrush brush(opt->palette.dark().color(), Qt::Dense4Pattern);
         if (opt->state & State_Item) {
             if (opt->direction == Qt::RightToLeft)
-                p->drawLine(opt->rect.left(), mid_v, bef_h, mid_v);
+                p->fillRect(opt->rect.left(), mid_v, bef_h - opt->rect.left(), 1, brush);
             else
-                p->drawLine(aft_h, mid_v, opt->rect.right(), mid_v);
+                p->fillRect(aft_h, mid_v, opt->rect.right() - aft_h + 1, 1, brush);
         }
         if (opt->state & State_Sibling)
-            p->drawLine(mid_h, aft_v, mid_h, opt->rect.bottom());
+            p->fillRect(mid_h, aft_v, 1, opt->rect.bottom() - aft_v + 1, brush);
         if (opt->state & (State_Open | State_Children | State_Item | State_Sibling))
-            p->drawLine(mid_h, opt->rect.y(), mid_h, bef_v);
+            p->fillRect(mid_h, opt->rect.y(), 1, bef_v - opt->rect.y(), brush);
         break; }
     case PE_FrameStatusBarItem:
         qDrawShadeRect(p, opt->rect, opt->palette, true, 1, 0, 0);

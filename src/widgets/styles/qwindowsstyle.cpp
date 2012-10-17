@@ -1459,41 +1459,6 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         }
         break;
 #endif // QT_NO_FRAME
-    case PE_IndicatorBranch: {
-        // This is _way_ too similar to the common style.
-        static const int decoration_size = 9;
-        int mid_h = opt->rect.x() + opt->rect.width() / 2;
-        int mid_v = opt->rect.y() + opt->rect.height() / 2;
-        int bef_h = mid_h;
-        int bef_v = mid_v;
-        int aft_h = mid_h;
-        int aft_v = mid_v;
-        if (opt->state & State_Children) {
-            int delta = decoration_size / 2;
-            bef_h -= delta;
-            bef_v -= delta;
-            aft_h += delta;
-            aft_v += delta;
-            p->drawLine(bef_h + 2, bef_v + 4, bef_h + 6, bef_v + 4);
-            if (!(opt->state & State_Open))
-                p->drawLine(bef_h + 4, bef_v + 2, bef_h + 4, bef_v + 6);
-            QPen oldPen = p->pen();
-            p->setPen(opt->palette.dark().color());
-            p->drawRect(bef_h, bef_v, decoration_size - 1, decoration_size - 1);
-            p->setPen(oldPen);
-        }
-        QBrush brush(opt->palette.dark().color(), Qt::Dense4Pattern);
-        if (opt->state & State_Item) {
-            if (opt->direction == Qt::RightToLeft)
-                p->fillRect(opt->rect.left(), mid_v, bef_h - opt->rect.left(), 1, brush);
-            else
-                p->fillRect(aft_h, mid_v, opt->rect.right() - aft_h + 1, 1, brush);
-        }
-        if (opt->state & State_Sibling)
-            p->fillRect(mid_h, aft_v, 1, opt->rect.bottom() - aft_v + 1, brush);
-        if (opt->state & (State_Open | State_Children | State_Item | State_Sibling))
-            p->fillRect(mid_h, opt->rect.y(), 1, bef_v - opt->rect.y(), brush);
-        break; }
     case PE_FrameButtonBevel:
     case PE_PanelButtonBevel: {
         QBrush fill;
