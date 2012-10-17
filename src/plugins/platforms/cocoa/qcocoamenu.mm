@@ -45,6 +45,13 @@
 #include "qcocoaautoreleasepool.h"
 
 #include <QtCore/QtDebug>
+#include "qcocoaapplication.h"
+#include "qcocoamenuloader.h"
+
+static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
+{
+    return [NSApp QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader)];
+}
 
 @interface QT_MANGLE_NAMESPACE(QCocoaMenuDelegate) : NSObject <NSMenuDelegate> {
     QCocoaMenu *m_menu;
@@ -215,12 +222,19 @@ void QCocoaMenu::syncMenuItem(QPlatformMenuItem *menuItem)
     }
 
     bool wasMerged = cocoaItem->isMerged();
-    NSMenuItem *oldItem = [m_nativeMenu itemWithTag:(NSInteger) cocoaItem];
+    NSMenu *oldMenu = wasMerged ? [getMenuLoader() applicationMenu] : m_nativeMenu;
+    NSMenuItem *oldItem = [oldMenu itemWithTag:(NSInteger) cocoaItem];
 
     if (cocoaItem->sync() != oldItem) {
         // native item was changed for some reason
-        if (!wasMerged && oldItem)
-            [m_nativeMenu removeItem:oldItem];
+        if (oldItem) {
+            if (wasMerged) {
+                [oldItem setEnabled:NO];
+                [oldItem setHidden:YES];
+            } else {
+                [m_nativeMenu removeItem:oldItem];
+            }
+        }
 
         QCocoaMenuItem* beforeItem = itemOrNull(m_menuItems.indexOf(cocoaItem) + 1);
         insertNative(cocoaItem, beforeItem);
