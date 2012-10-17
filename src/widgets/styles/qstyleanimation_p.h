@@ -44,6 +44,7 @@
 
 #include "qabstractanimation.h"
 #include "qdatetime.h"
+#include "qimage.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -132,6 +133,33 @@ private:
     qreal _start;
     qreal _end;
     mutable qreal _prev;
+};
+
+class QBlendStyleAnimation : public QStyleAnimation
+{
+    Q_OBJECT
+
+public:
+    enum Type { Transition, Pulse };
+
+    QBlendStyleAnimation(Type type, QObject *target);
+
+    QImage startImage() const;
+    void setStartImage(const QImage& image);
+
+    QImage endImage() const;
+    void setEndImage(const QImage& image);
+
+    QImage currentImage() const;
+
+protected:
+    virtual void updateCurrentTime(int time);
+
+private:
+    Type _type;
+    QImage _start;
+    QImage _end;
+    QImage _current;
 };
 
 QT_END_NAMESPACE

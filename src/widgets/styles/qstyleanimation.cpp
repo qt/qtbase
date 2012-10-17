@@ -41,7 +41,6 @@
 
 #include "qstyleanimation_p.h"
 #include <qcoreapplication.h>
-#include <qprogressbar.h>
 #include <qwidget.h>
 #include <qevent.h>
 
@@ -206,6 +205,110 @@ bool QNumberStyleAnimation::isUpdateNeeded() const
         }
     }
     return false;
+}
+
+QBlendStyleAnimation::QBlendStyleAnimation(Type type, QObject *target) :
+    QStyleAnimation(target), _type(type)
+{
+    setDuration(250);
+}
+
+QImage QBlendStyleAnimation::startImage() const
+{
+    return _start;
+}
+
+void QBlendStyleAnimation::setStartImage(const QImage& image)
+{
+    _start = image;
+}
+
+QImage QBlendStyleAnimation::endImage() const
+{
+    return _end;
+}
+
+void QBlendStyleAnimation::setEndImage(const QImage& image)
+{
+    _end = image;
+}
+
+QImage QBlendStyleAnimation::currentImage() const
+{
+    return _current;
+}
+
+/*! \internal
+
+    A helper function to blend two images.
+
+    The result consists of ((alpha)*startImage) + ((1-alpha)*endImage)
+
+*/
+static QImage blendedImage(const QImage &start, const QImage &end, float alpha)
+{
+    if (start.isNull() || end.isNull())
+        return QImage();
+
+    QImage blended;
+    const int a = qRound(alpha*256);
+    const int ia = 256 - a;
+    const int sw = start.width();
+    const int sh = start.height();
+    const int bpl = start.bytesPerLine();
+    switch (start.depth()) {
+    case 32:
+        {
+            blended = QImage(sw, sh, start.format());
+            uchar *mixed_data = blended.bits();
+            const uchar *back_data = start.bits();
+            const uchar *front_data = end.bits();
+            for (int sy = 0; sy < sh; sy++) {
+                quint32* mixed = (quint32*)mixed_data;
+                const quint32* back = (const quint32*)back_data;
+                const quint32* front = (const quint32*)front_data;
+                for (int sx = 0; sx < sw; sx++) {
+                    quint32 bp = back[sx];
+                    quint32 fp = front[sx];
+                    mixed[sx] =  qRgba ((qRed(bp)*ia + qRed(fp)*a)>>8,
+                                        (qGreen(bp)*ia + qGreen(fp)*a)>>8,
+                                        (qBlue(bp)*ia + qBlue(fp)*a)>>8,
+                                        (qAlpha(bp)*ia + qAlpha(fp)*a)>>8);
+                }
+                mixed_data += bpl;
+                back_data += bpl;
+                front_data += bpl;
+            }
+        }
+    default:
+        break;
+    }
+    return blended;
+}
+
+void QBlendStyleAnimation::updateCurrentTime(int time)
+{
+    QStyleAnimation::updateCurrentTime(time);
+
+    float alpha = 1.0;
+    if (duration() > 0) {
+        if (_type == Pulse) {
+            time = time % duration() * 2;
+            if (time > duration())
+                time = duration() * 2 - time;
+        }
+
+        alpha = time / static_cast<float>(duration());
+
+        if (_type == Transition && time > duration()) {
+            alpha = 1.0;
+            stop();
+        }
+    } else if (time > 0) {
+        stop();
+    }
+
+    _current = blendedImage(_start, _end, alpha);
 }
 
 QT_END_NAMESPACE
