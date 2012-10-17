@@ -2280,9 +2280,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         // The combo box popup has no frame.
         if (qstyleoption_cast<const QStyleOptionComboBox *>(opt) != 0)
             ret = 0;
-        // Frame of mac style line edits is two pixels on top and one on the bottom
-        else if (qobject_cast<const QLineEdit *>(widget) != 0)
-            ret = 2;
         else
             ret = 1;
         break;
