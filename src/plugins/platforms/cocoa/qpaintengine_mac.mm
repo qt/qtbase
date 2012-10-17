@@ -116,13 +116,6 @@ void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig
     }
 }
 
-CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice)
-{
-    bool isWidget = (paintDevice->devType() == QInternal::Widget);
-    return QCoreGraphicsPaintEngine::macDisplayColorSpace(isWidget ? static_cast<const QWidget *>(paintDevice)
-                                                                   : 0);
-}
-
 // Implemented for qt_mac_p.h
 QMacCGContext::QMacCGContext(QPainter *p)
 {
@@ -204,46 +197,6 @@ inline static float qt_mac_convert_color_to_cg(int c) { return ((float)c * 1000 
 inline static int qt_mac_convert_color_from_cg(float c) { return qRound(c * 255); }
 CGAffineTransform qt_mac_convert_transform_to_cg(const QTransform &t) {
     return CGAffineTransformMake(t.m11(), t.m12(), t.m21(), t.m22(), t.dx(),  t.dy());
-}
-
-/*! \internal
-
-    Returns the CoreGraphics CGContextRef of the paint device. 0 is
-    returned if it can't be obtained. It is the caller's responsibility to
-    CGContextRelease the context when finished using it.
-
-    \warning This function is only available on Mac OS X.
-    \warning This function is duplicated in qmacstyle_mac.mm
-*/
-CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
-{
-    if (pdev->devType() == QInternal::Pixmap) {
-        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
-        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
-        uint flags = kCGImageAlphaPremultipliedFirst;
-        flags |= kCGBitmapByteOrder32Host;
-        CGContextRef ret = 0;
-
-        QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
-        if (data && data->classId() == QPlatformPixmap::RasterClass) {
-            QImage *image = data->buffer();
-            ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorspace, flags);
-        } else {
-            qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
-        }
-
-        CGContextTranslateCTM(ret, 0, pm->height());
-        CGContextScaleCTM(ret, 1, -1);
-        return ret;
-    } else if (pdev->devType() == QInternal::Widget) {
-        //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
-        ///CGContextRetain(ret);
-        //return ret;
-        qDebug() << "qt_mac_cg_context: not implemented: Widget class";
-        return 0;
-    }
-    return 0;
 }
 
 inline static QCFType<CGColorRef> cgColorForQColor(const QColor &col, QPaintDevice *pdev)

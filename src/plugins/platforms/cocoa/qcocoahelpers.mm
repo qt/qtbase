@@ -48,6 +48,10 @@
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
 
+#ifndef QT_NO_WIDGETS
+#include <QtWidgets/QWidget>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //
@@ -551,6 +555,17 @@ void qt_mac_cleanUpMacColorSpaces()
     m_displayColorSpaceHash.clear();
 }
 
+CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice)
+{
+#ifdef QT_NO_WIDGETS
+    return qt_mac_displayColorSpace(0);
+#else
+    bool isWidget = (paintDevice->devType() == QInternal::Widget);
+    return qt_mac_displayColorSpace(isWidget ? static_cast<const QWidget *>(paintDevice): 0);
+#endif
+
+}
+
 QString qt_mac_applicationName()
 {
     QString appName;
@@ -694,6 +709,46 @@ QString qt_mac_removeAmpersandEscapes(QString s)
         s.remove(i-1,1);
     }
     return s.trimmed();
+}
+
+/*! \internal
+
+ Returns the CoreGraphics CGContextRef of the paint device. 0 is
+ returned if it can't be obtained. It is the caller's responsibility to
+ CGContextRelease the context when finished using it.
+
+ \warning This function is only available on Mac OS X.
+ \warning This function is duplicated in qmacstyle_mac.mm
+ */
+CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
+{
+    if (pdev->devType() == QInternal::Pixmap) {
+        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
+        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
+        uint flags = kCGImageAlphaPremultipliedFirst;
+        flags |= kCGBitmapByteOrder32Host;
+        CGContextRef ret = 0;
+
+        QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
+        if (data && data->classId() == QPlatformPixmap::RasterClass) {
+            QImage *image = data->buffer();
+            ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
+                                        8, image->bytesPerLine(), colorspace, flags);
+        } else {
+            qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
+        }
+
+        CGContextTranslateCTM(ret, 0, pm->height());
+        CGContextScaleCTM(ret, 1, -1);
+        return ret;
+    } else if (pdev->devType() == QInternal::Widget) {
+        //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
+        ///CGContextRetain(ret);
+        //return ret;
+        qDebug() << "qt_mac_cg_context: not implemented: Widget class";
+        return 0;
+    }
+    return 0;
 }
 
 QT_END_NAMESPACE

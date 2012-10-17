@@ -79,7 +79,6 @@
 #include "qcocoasystemtrayicon.h"
 #include <qtemporaryfile.h>
 #include <qimagewriter.h>
-#include <qapplication.h>
 #include <qdebug.h>
 
 #include "qcocoamenu.h"
@@ -238,7 +237,7 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
         return;
     QPixmap notificationIconPixmap = icon.pixmap(32, 32);
     QTemporaryFile notificationIconFile;
-    QString notificationType(QLatin1String("Notification")), notificationIcon, notificationApp(QApplication::applicationName());
+    QString notificationType(QLatin1String("Notification")), notificationIcon, notificationApp(qt_mac_applicationName());
     if (notificationApp.isEmpty())
         notificationApp = QLatin1String("Application");
     if (!notificationIconPixmap.isNull() && notificationIconFile.open()) {

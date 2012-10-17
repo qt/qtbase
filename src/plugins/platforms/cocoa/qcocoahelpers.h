@@ -99,6 +99,7 @@ void qt_mac_transformProccessToForegroundApplication();
 QString qt_mac_removeMnemonics(const QString &original);
 CGColorSpaceRef qt_mac_genericColorSpace();
 CGColorSpaceRef qt_mac_displayColorSpace(const QWidget *widget);
+CGColorSpaceRef qt_mac_colorSpaceForDeviceType(const QPaintDevice *paintDevice);
 QString qt_mac_applicationName();
 
 inline int qt_mac_flipYCoordinate(int y)
@@ -156,6 +157,8 @@ public:
         [target release];
     }
 };
+
+CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
 
 QT_END_NAMESPACE
 
