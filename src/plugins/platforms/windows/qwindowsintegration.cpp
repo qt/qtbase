@@ -232,9 +232,10 @@ struct QWindowsIntegrationPrivate
     typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
 #endif
 
-    QWindowsIntegrationPrivate();
+    explicit QWindowsIntegrationPrivate(const QStringList &paramList);
     ~QWindowsIntegrationPrivate();
 
+    const unsigned m_options;
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase;
     QWindowsNativeInterface m_nativeInterface;
@@ -255,8 +256,27 @@ struct QWindowsIntegrationPrivate
     QWindowsServices m_services;
 };
 
-QWindowsIntegrationPrivate::QWindowsIntegrationPrivate()
-    : m_fontDatabase(0), m_eventDispatcher(new QWindowsGuiEventDispatcher)
+static inline unsigned parseOptions(const QStringList &paramList)
+{
+    unsigned options = 0;
+    foreach (const QString &param, paramList) {
+        if (param.startsWith(QLatin1String("fontengine="))) {
+            if (param.endsWith(QLatin1String("freetype"))) {
+                options |= QWindowsIntegration::FontDatabaseFreeType;
+            } else if (param.endsWith(QLatin1String("native"))) {
+                options |= QWindowsIntegration::FontDatabaseNative;
+            }
+        } else if (param == QLatin1String("gl=gdi")) {
+            options |= QWindowsIntegration::DisableArb;
+        }
+    }
+    return options;
+}
+
+QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramList)
+    : m_options(parseOptions(paramList))
+    , m_fontDatabase(0)
+    , m_eventDispatcher(new QWindowsGuiEventDispatcher)
 {
 }
 
@@ -266,8 +286,8 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
         delete m_fontDatabase;
 }
 
-QWindowsIntegration::QWindowsIntegration() :
-    d(new QWindowsIntegrationPrivate)
+QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
+    d(new QWindowsIntegrationPrivate(paramList))
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(d->m_eventDispatcher);
 #ifndef QT_NO_CLIPBOARD
@@ -371,25 +391,6 @@ QPlatformOpenGLContext
 /* Workaround for QTBUG-24205: In 'Auto', pick the FreeType engine for
  * QML2 applications. */
 
-enum FontDatabaseOption {
-    FontDatabaseFreeType,
-    FontDatabaseNative,
-    FontDatabaseAuto
-};
-
-static inline FontDatabaseOption fontDatabaseOption(const QObject &nativeInterface)
-{
-    const QVariant argumentV = nativeInterface.property("fontengine");
-    if (argumentV.isValid()) {
-        const QString argument = argumentV.toString();
-        if (argument == QLatin1String("freetype"))
-            return FontDatabaseFreeType;
-        if (argument == QLatin1String("native"))
-            return FontDatabaseNative;
-    }
-    return FontDatabaseAuto;
-}
-
 #ifdef Q_OS_WINCE
 // It's not easy to detect if we are running a QML application
 // Let's try to do so by checking if the QtQuick module is loaded.
@@ -411,10 +412,9 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 #ifdef QT_NO_FREETYPE
         d->m_fontDatabase = new QWindowsFontDatabase();
 #else // QT_NO_FREETYPE
-        FontDatabaseOption option = fontDatabaseOption(d->m_nativeInterface);
-        if (option == FontDatabaseFreeType) {
+        if (d->m_options & QWindowsIntegration::FontDatabaseFreeType) {
             d->m_fontDatabase = new QWindowsFontDatabaseFT;
-        } else if (option == FontDatabaseNative){
+        } else if (d->m_options & QWindowsIntegration::FontDatabaseNative){
             d->m_fontDatabase = new QWindowsFontDatabase;
         } else {
 #ifndef Q_OS_WINCE
@@ -518,6 +518,11 @@ QPlatformAccessibility *QWindowsIntegration::accessibility() const
 QWindowsIntegration *QWindowsIntegration::instance()
 {
     return static_cast<QWindowsIntegration *>(QGuiApplicationPrivate::platformIntegration());
+}
+
+unsigned QWindowsIntegration::options() const
+{
+    return d->m_options;
 }
 
 QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const

@@ -53,7 +53,13 @@ struct QWindowsIntegrationPrivate;
 class QWindowsIntegration : public QPlatformIntegration
 {
 public:
-    QWindowsIntegration();
+    enum Options { // Options to be passed on command line.
+        FontDatabaseFreeType = 0x1,
+        FontDatabaseNative = 0x2,
+        DisableArb = 0x4
+    };
+
+    explicit QWindowsIntegration(const QStringList &paramList);
     virtual ~QWindowsIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
@@ -86,6 +92,8 @@ public:
     static QWindowsIntegration *instance();
 
     inline void emitScreenAdded(QPlatformScreen *s) { screenAdded(s); }
+
+    unsigned options() const;
 
 private:
     QScopedPointer<QWindowsIntegrationPrivate> d;
