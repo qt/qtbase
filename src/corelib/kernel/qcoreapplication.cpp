@@ -1796,8 +1796,6 @@ QString QCoreApplication::applicationFilePath()
     if (!executables.empty()) {
         //We assume that there is only one executable in the folder
         return dir.absoluteFilePath(executables.first());
-    } else {
-        return QString();
     }
 #elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
