@@ -42,7 +42,7 @@
 #ifndef QMACSTYLE_MAC_H
 #define QMACSTYLE_MAC_H
 
-#include <QtWidgets/qwindowsstyle.h>
+#include <QtWidgets/qcommonstyle.h>
 
 QT_BEGIN_HEADER
 
@@ -62,7 +62,7 @@ class QPalette;
 class QPushButton;
 class QStyleOptionButton;
 class QMacStylePrivate;
-class Q_WIDGETS_EXPORT_STYLE_MAC QMacStyle : public QWindowsStyle
+class Q_WIDGETS_EXPORT_STYLE_MAC QMacStyle : public QCommonStyle
 {
     Q_OBJECT
 public:
