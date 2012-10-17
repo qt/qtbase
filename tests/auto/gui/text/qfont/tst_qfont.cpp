@@ -44,6 +44,7 @@
 
 
 #include <qfont.h>
+#include <private/qfont_p.h>
 #include <qfontdatabase.h>
 #include <qfontinfo.h>
 #include <qstringlist.h>
@@ -81,6 +82,8 @@ private slots:
     void styleName();
     void defaultFamily_data();
     void defaultFamily();
+
+    void sharing();
 };
 
 // Testing get/set functions
@@ -683,6 +686,46 @@ void tst_QFont::defaultFamily()
         }
     }
     QVERIFY2(isAcceptable, msgNotAcceptableFont(familyForHint, acceptableFamilies));
+}
+
+void tst_QFont::sharing()
+{
+    QFont f;
+    f.setStyleHint(QFont::Serif);
+    f.exactMatch(); // loads engine
+    QCOMPARE(QFontPrivate::get(f)->ref.load(), 1);
+    QVERIFY(QFontPrivate::get(f)->engineData);
+    QCOMPARE(QFontPrivate::get(f)->engineData->ref.load(), 1);
+
+    QFont f2(f);
+    QVERIFY(QFontPrivate::get(f2) == QFontPrivate::get(f));
+    QCOMPARE(QFontPrivate::get(f2)->ref.load(), 2);
+    QVERIFY(QFontPrivate::get(f2)->engineData);
+    QVERIFY(QFontPrivate::get(f2)->engineData == QFontPrivate::get(f)->engineData);
+    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 1);
+
+    f2.setKerning(!f.kerning());
+    QVERIFY(QFontPrivate::get(f2) != QFontPrivate::get(f));
+    QCOMPARE(QFontPrivate::get(f2)->ref.load(), 1);
+    QVERIFY(QFontPrivate::get(f2)->engineData);
+    QVERIFY(QFontPrivate::get(f2)->engineData == QFontPrivate::get(f)->engineData);
+    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 2);
+
+    f2 = f;
+    QVERIFY(QFontPrivate::get(f2) == QFontPrivate::get(f));
+    QCOMPARE(QFontPrivate::get(f2)->ref.load(), 2);
+    QVERIFY(QFontPrivate::get(f2)->engineData);
+    QVERIFY(QFontPrivate::get(f2)->engineData == QFontPrivate::get(f)->engineData);
+    QCOMPARE(QFontPrivate::get(f2)->engineData->ref.load(), 1);
+
+    if (f.pointSize() > 0)
+        f2.setPointSize(f.pointSize() * 2 / 3);
+    else
+        f2.setPixelSize(f.pixelSize() * 2 / 3);
+    QVERIFY(QFontPrivate::get(f2) != QFontPrivate::get(f));
+    QCOMPARE(QFontPrivate::get(f2)->ref.load(), 1);
+    QVERIFY(!QFontPrivate::get(f2)->engineData);
+    QVERIFY(QFontPrivate::get(f2)->engineData != QFontPrivate::get(f)->engineData);
 }
 
 QTEST_MAIN(tst_QFont)

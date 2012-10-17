@@ -649,6 +649,24 @@ void QFont::detach()
 }
 
 /*!
+    \internal
+    Detaches the font object from common font attributes data.
+    Call this instead of QFont::detach() if the only font attributes data
+    has been changed (underline, letterSpacing, kerning, etc.).
+*/
+void QFontPrivate::detachButKeepEngineData(QFont *font)
+{
+    if (font->d->ref.load() == 1)
+        return;
+
+    QFontEngineData *engineData = font->d->engineData;
+    if (engineData)
+        engineData->ref.ref();
+    font->d.detach();
+    font->d->engineData = engineData;
+}
+
+/*!
     Constructs a font object that uses the application's default font.
 
     \sa QGuiApplication::setFont(), QGuiApplication::font()
@@ -1149,7 +1167,7 @@ void QFont::setUnderline(bool enable)
     if ((resolve_mask & QFont::UnderlineResolved) && d->underline == enable)
         return;
 
-    detach();
+    QFontPrivate::detachButKeepEngineData(this);
 
     d->underline = enable;
     resolve_mask |= QFont::UnderlineResolved;
@@ -1175,7 +1193,7 @@ void QFont::setOverline(bool enable)
     if ((resolve_mask & QFont::OverlineResolved) && d->overline == enable)
         return;
 
-    detach();
+    QFontPrivate::detachButKeepEngineData(this);
 
     d->overline = enable;
     resolve_mask |= QFont::OverlineResolved;
@@ -1202,7 +1220,7 @@ void QFont::setStrikeOut(bool enable)
     if ((resolve_mask & QFont::StrikeOutResolved) && d->strikeOut == enable)
         return;
 
-    detach();
+    QFontPrivate::detachButKeepEngineData(this);
 
     d->strikeOut = enable;
     resolve_mask |= QFont::StrikeOutResolved;
@@ -1262,7 +1280,7 @@ void QFont::setKerning(bool enable)
     if ((resolve_mask & QFont::KerningResolved) && d->kerning == enable)
         return;
 
-    detach();
+    QFontPrivate::detachButKeepEngineData(this);
 
     d->kerning = enable;
     resolve_mask |= QFont::KerningResolved;
@@ -1512,7 +1530,7 @@ void QFont::setLetterSpacing(SpacingType type, qreal spacing)
         d->letterSpacing == newSpacing)
         return;
 
-    detach();
+    QFontPrivate::detachButKeepEngineData(this);
 
     d->letterSpacing = newSpacing;
     d->letterSpacingIsAbsolute = absoluteSpacing;
@@ -1562,7 +1580,7 @@ void QFont::setWordSpacing(qreal spacing)
         d->wordSpacing == newSpacing)
         return;
 
-    detach();
+    QFontPrivate::detachButKeepEngineData(this);
 
     d->wordSpacing = newSpacing;
     resolve_mask |= QFont::WordSpacingResolved;
@@ -1596,7 +1614,7 @@ void QFont::setCapitalization(Capitalization caps)
         capitalization() == caps)
         return;
 
-    detach();
+    QFontPrivate::detachButKeepEngineData(this);
 
     d->capital = caps;
     resolve_mask |= QFont::CapitalizationResolved;
@@ -1635,6 +1653,7 @@ void QFont::setRawMode(bool enable)
 {
     if ((bool) d->rawMode == enable) return;
 
+    // might change behavior, thus destroy engine data
     detach();
 
     d->rawMode = enable;
