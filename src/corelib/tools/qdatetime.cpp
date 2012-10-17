@@ -2692,6 +2692,9 @@ QDateTime QDateTime::addYears(int nyears) const
 
 QDateTime QDateTimePrivate::addMSecs(const QDateTime &dt, qint64 msecs)
 {
+    if (!dt.isValid())
+        return QDateTime();
+
     QDate utcDate;
     QTime utcTime;
     dt.d->getUTC(utcDate, utcTime);
@@ -2742,6 +2745,8 @@ void QDateTimePrivate::addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs)
     later than the datetime of this object (or earlier if \a s is
     negative).
 
+    If this datetime is invalid, an invalid datetime will be returned.
+
     \sa addMSecs(), secsTo(), addDays(), addMonths(), addYears()
 */
 
@@ -2754,6 +2759,8 @@ QDateTime QDateTime::addSecs(qint64 s) const
     Returns a QDateTime object containing a datetime \a msecs miliseconds
     later than the datetime of this object (or earlier if \a msecs is
     negative).
+
+    If this datetime is invalid, an invalid datetime will be returned.
 
     \sa addSecs(), msecsTo(), addDays(), addMonths(), addYears()
 */
