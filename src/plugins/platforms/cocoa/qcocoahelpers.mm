@@ -135,7 +135,10 @@ NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
 NSImage *qt_mac_create_nsimage(const QPixmap &pm)
 {
     QImage image = pm.toImage();
-    return qt_mac_cgimage_to_nsimage(qt_mac_image_to_cgimage(image));
+    CGImageRef cgImage = qt_mac_image_to_cgimage(image);
+    NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
+    CGImageRelease(cgImage);
+    return nsImage;
 }
 
 HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
