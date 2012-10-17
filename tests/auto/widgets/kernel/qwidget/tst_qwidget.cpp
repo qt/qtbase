@@ -3968,16 +3968,7 @@ void tst_QWidget::showHideEvent()
     if (create && !widget.testAttribute(Qt::WA_WState_Created))
         widget.create();
 
-    if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb")) {
-        QEXPECT_FAIL("window: only show", "QTBUG-26424", Continue);
-        QEXPECT_FAIL("window: show/hide", "QTBUG-26424", Continue);
-        QEXPECT_FAIL("window: show/hide/create", "QTBUG-26424", Continue);
-    }
     QCOMPARE(widget.numberOfShowEvents, expectedShowEvents);
-    if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb")) {
-        QEXPECT_FAIL("window: show/hide", "QTBUG-26424", Continue);
-        QEXPECT_FAIL("window: show/hide/create", "QTBUG-26424", Continue);
-    }
     QCOMPARE(widget.numberOfHideEvents, expectedHideEvents);
 }
 

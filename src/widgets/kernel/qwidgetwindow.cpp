@@ -205,6 +205,12 @@ bool QWidgetWindow::event(QEvent *event)
         handleContextMenuEvent(static_cast<QContextMenuEvent *>(event));
         return true;
 #endif
+
+    // Handing show events to widgets (see below) here would cause them to be triggered twice
+    case QEvent::Show:
+    case QEvent::Hide:
+        return QWindow::event(event);
+
     default:
         break;
     }

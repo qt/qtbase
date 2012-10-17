@@ -620,7 +620,6 @@ void tst_QMenu::activeSubMenuPosition()
     // to check that submenu is to the right of the main menu too.
 #ifndef Q_OS_WINCE_WM
     QVERIFY(sub->pos().x() > main->pos().x());
-    QEXPECT_FAIL("", "QTBUG-22565", Abort);
     QCOMPARE(sub->activeAction(), subAction);
 #endif
 }

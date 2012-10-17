@@ -1011,7 +1011,7 @@ void tst_QDoubleSpinBox::task221221()
     QTest::keyClick(&spin, Qt::Key_1);
     spin.show();
     QVERIFY(QTest::qWaitForWindowExposed(&spin));
-    QCOMPARE(spin.text(), QLatin1String("1.00"));
+    QCOMPARE(spin.text(), QLatin1String("1"));
 }
 
 void tst_QDoubleSpinBox::task255471_decimalsValidation()
