@@ -431,16 +431,20 @@ void Configure::parseCmdLine()
     argCount = configCmdLine.size();
 #endif
 
+    bool isDeviceMkspec = false;
+
     // Look first for XQMAKESPEC
     for (int j = 0 ; j < argCount; ++j)
     {
-        if (configCmdLine.at(j) == "-xplatform") {
+        if ((configCmdLine.at(j) == "-xplatform") || (configCmdLine.at(j) == "-device")) {
+            isDeviceMkspec = (configCmdLine.at(j) == "-device");
             ++j;
             if (j == argCount)
                 break;
             dictionary["XQMAKESPEC"] = configCmdLine.at(j);
             if (!dictionary[ "XQMAKESPEC" ].isEmpty())
                 applySpecSpecifics();
+            break;
         }
     }
 
@@ -519,7 +523,8 @@ void Configure::parseCmdLine()
             dictionary["OBSOLETE_ARCH_ARG"] = "yes";
         } else if (configCmdLine.at(i) == "-embedded") {
             dictionary[ "EMBEDDED" ] = "yes";
-        } else if (configCmdLine.at(i) == "-xplatform") {
+        } else if (configCmdLine.at(i) == "-xplatform"
+                || configCmdLine.at(i) == "-device") {
             ++i;
             // do nothing
         }
@@ -1269,11 +1274,32 @@ void Configure::parseCmdLine()
     // Tell the user how to confclean before the next configure
     dictionary["CONFCLEANINSTRUCTION"] = dictionary["MAKE"] + QString(" confclean");
 
-    // Ensure that -spec (XQMAKESPEC) exists in the mkspecs folder as well
-    if (dictionary.contains("XQMAKESPEC") &&
-        !mkspecs.contains(dictionary["XQMAKESPEC"], Qt::CaseInsensitive)) {
+    if (isDeviceMkspec) {
+        const QStringList devices = mkspecs.filter("devices/", Qt::CaseInsensitive);
+        const QStringList family = devices.filter(dictionary["XQMAKESPEC"], Qt::CaseInsensitive);
+
+        if (family.isEmpty()) {
+            dictionary["HELP"] = "yes";
+            cout << "Error: No device matching '" << dictionary["XQMAKESPEC"] << "'." << endl;
+        } else if (family.size() > 1) {
+            dictionary["HELP"] = "yes";
+
+            cout << "Error: Multiple matches for device '" << dictionary["XQMAKESPEC"] << "'. Candidates are:" << endl;
+
+            foreach (const QString &device, family)
+                cout << "\t* " << device << endl;
+        } else {
+            Q_ASSERT(family.size() == 1);
+            dictionary["XQMAKESPEC"] = family.at(0);
+        }
+
+    } else {
+        // Ensure that -spec (XQMAKESPEC) exists in the mkspecs folder as well
+        if (dictionary.contains("XQMAKESPEC") &&
+                !mkspecs.contains(dictionary["XQMAKESPEC"], Qt::CaseInsensitive)) {
             dictionary["HELP"] = "yes";
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
+        }
     }
 
     // Ensure that the crt to be deployed can be found
