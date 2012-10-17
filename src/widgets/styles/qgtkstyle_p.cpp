@@ -289,10 +289,11 @@ QList<QGtkStylePrivate *> QGtkStylePrivate::instances;
 QGtkStylePrivate::WidgetMap *QGtkStylePrivate::widgetMap = 0;
 
 QGtkStylePrivate::QGtkStylePrivate()
-  : QWindowsStylePrivate()
+  : QCommonStylePrivate()
   , filter(this)
 {
     instances.append(this);
+    animationFps = 60;
 }
 
 QGtkStylePrivate::~QGtkStylePrivate()
