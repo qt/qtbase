@@ -703,11 +703,6 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
                                           name:nil // Get all notifications
                                           object:m_nsWindow];
 
-    // ### Accept touch events by default.
-    // Beware that enabling touch events has a negative impact on the overall performance.
-    // We probably need a QWindowSystemInterface API to enable/disable touch events.
-    [m_contentView setAcceptsTouchEvents:YES];
-
     [window setContentView:m_contentView];
 }
 
