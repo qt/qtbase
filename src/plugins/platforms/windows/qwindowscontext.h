@@ -118,7 +118,7 @@ public:
         SI_SupportsTouch = 0x2
     };
 
-    // Verbose flag set by environment variable QT_LIGHTHOUSE_WINDOWS_VERBOSE
+    // Verbose flag set by environment variable QT_QPA_VERBOSE
     static int verboseIntegration;
     static int verboseWindows;
     static int verboseBackingStore;
