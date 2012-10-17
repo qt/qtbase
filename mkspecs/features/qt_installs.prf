@@ -51,7 +51,11 @@ qt_install_module {
 qt_install_module_docs {
     module_docs.files = $$QMAKE_DOCS_OUTPUTDIR
     module_docs.path = $$[QT_INSTALL_DOCS]
-    module_docs.CONFIG += no_check_exist directory
+    module_docs.CONFIG += no_check_exist directory no_default_install
     module_docs.depends += docs
     INSTALLS += module_docs
+
+    install_docs.depends = install_module_docs
+    uninstall_docs.depends = uninstall_module_docs
+    QMAKE_EXTRA_TARGETS += install_docs uninstall_docs
 }

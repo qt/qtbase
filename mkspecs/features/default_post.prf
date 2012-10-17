@@ -73,3 +73,11 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
     }
     QMAKE_EXTRA_TARGETS += docs
 }
+
+!contains(QMAKE_EXTRA_TARGETS, install_docs) {
+    contains(TEMPLATE, subdirs) {
+        prepareRecursiveTarget(install_docs)
+        prepareRecursiveTarget(uninstall_docs)
+    }
+    QMAKE_EXTRA_TARGETS += install_docs uninstall_docs
+}
