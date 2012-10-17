@@ -42,7 +42,7 @@
 #include "atspiadaptor_p.h"
 
 #include <QtGui/qwindow.h>
-#include <QtWidgets/qapplication.h>
+#include <QtGui/qguiapplication.h>
 #include <qdbusmessage.h>
 #include <qdbusreply.h>
 #include <QtWidgets/qwidget.h>
