@@ -708,8 +708,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 #ifdef Q_OS_WINCE
     m_previouslyHidden(false),
 #endif
-    m_iconBig(0),
-    m_iconSmall(0)
+    m_iconSmall(0),
+    m_iconBig(0)
 {
     if (aWindow->surfaceType() == QWindow::OpenGLSurface)
         setFlag(OpenGLSurface);

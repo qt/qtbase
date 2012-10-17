@@ -83,7 +83,7 @@
 #define CHILDID_SELF 0
 #define WM_GETOBJECT 0x003D
 
-#ifndef SIID_SHIELD // Shell structures for icons.
+#ifndef SHGFI_ADDOVERLAYS // Shell structures for icons.
 typedef struct _SHSTOCKICONINFO
 {
     DWORD cbSize;

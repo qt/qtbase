@@ -587,7 +587,7 @@ public:
 
     T operator * () const
     {
-        return reinterpret_cast<T>(this);
+        return T(qintptr(this));
     }
 
     void operator delete (void *) {}
