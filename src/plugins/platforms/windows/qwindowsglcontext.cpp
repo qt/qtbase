@@ -439,7 +439,7 @@ static int choosePixelFormat(HDC hdc,
         iAttributes[i++] = WGL_SAMPLES_ARB;
         samplesValuePosition = i;
         iAttributes[i++] = format.samples();
-    } else if (samples == 0 || samples == 1 ) {
+    } else {
         iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB;
         iAttributes[i++] = FALSE;
     }
