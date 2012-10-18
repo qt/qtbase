@@ -73,43 +73,53 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp, qcolor_x11.cpp, qfiledialog.cpp
-// and many other.  This header file may change from version to version
-// without notice, or even be removed.
-//
-// We mean it.
-//
-
-/*
-	Cocoa Application Categories
-*/
-#include "qglobal.h"
-
-#import <AppKit/AppKit.h>
-@class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
-
-@interface NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
-- (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu;
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader);
-- (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel;
-
-- (void)qt_sendPostedMessage:(NSEvent *)event;
-- (BOOL)qt_filterEvent:(NSEvent *)event;
-@end
-
-@interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication {
-}
-@end
+#include "qcocoaintrospection.h"
 
 QT_BEGIN_NAMESPACE
 
-void qt_redirectNSApplicationSendEvent();
-void qt_resetNSApplicationSendEvent();
+void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class proxyClass, SEL replacementSel, SEL backupSel)
+{
+#ifndef QT_MAC_USE_COCOA
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
+#endif
+    {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+        // The following code replaces the _implementation_ for the selector we want to hack
+        // (originalSel) with the implementation found in proxyClass. Then it creates
+        // a new 'backup' method inside baseClass containing the old, original,
+        // implementation (fakeSel). You can let the proxy implementation of originalSel
+        // call fakeSel if needed (similar approach to calling a super class implementation).
+        // fakeSel must also be implemented in proxyClass, as the signature is used
+        // as template for the method one we add into baseClass.
+        // NB: You will typically never create any instances of proxyClass; we use it
+        // only for stealing its contents and put it into baseClass.
+        if (!replacementSel)
+            replacementSel = originalSel;
+
+        Method originalMethod = class_getInstanceMethod(baseClass, originalSel);
+        Method replacementMethod = class_getInstanceMethod(proxyClass, replacementSel);
+        IMP originalImp = method_setImplementation(originalMethod, method_getImplementation(replacementMethod));
+
+        if (backupSel) {
+            Method backupMethod = class_getInstanceMethod(proxyClass, backupSel);
+            class_addMethod(baseClass, backupSel, originalImp, method_getTypeEncoding(backupMethod));
+        }
+#endif
+    }
+}
+
+void qt_cocoa_change_back_implementation(Class baseClass, SEL originalSel, SEL backupSel)
+{
+#ifndef QT_MAC_USE_COCOA
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
+#endif
+    {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
+        Method originalMethod = class_getInstanceMethod(baseClass, originalSel);
+        Method backupMethodInBaseClass = class_getInstanceMethod(baseClass, backupSel);
+        method_setImplementation(originalMethod, method_getImplementation(backupMethodInBaseClass));
+#endif
+    }
+}
 
 QT_END_NAMESPACE
-

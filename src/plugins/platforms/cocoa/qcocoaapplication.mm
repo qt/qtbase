@@ -75,6 +75,7 @@
 
 #include <qcocoaapplication.h>
 
+#include <qcocoaintrospection.h>
 #include <qcocoaapplicationdelegate.h>
 #include <qcocoahelpers.h>
 #include <qguiapplication.h>
@@ -107,8 +108,6 @@ QT_USE_NAMESPACE
 
 - (void)qt_sendPostedMessage:(NSEvent *)event
 {
-    Q_UNUSED(event);
-/*
     // WARNING: data1 and data2 is truncated to from 64-bit to 32-bit on OS 10.5!
     // That is why we need to split the address in two parts:
     quint64 lower = [event data1];
@@ -131,14 +130,14 @@ QT_USE_NAMESPACE
     }
 
     delete args;
-*/
 }
+
+static const QByteArray q_macLocalEventType = QByteArrayLiteral("mac_generic_NSEvent");
 
 - (BOOL)qt_filterEvent:(NSEvent *)event
 {
-    Q_UNUSED(event);
-/*
-    if (qApp && qApp->macEventFilter(0, reinterpret_cast<EventRef>(event)))
+    if (qApp && qApp->eventDispatcher()->
+            filterNativeEvent(q_macLocalEventType, static_cast<void*>(event), 0))
         return true;
 
     if ([event type] == NSApplicationDefined) {
@@ -150,13 +149,13 @@ QT_USE_NAMESPACE
                 break;
         }
     }
-*/
+
     return false;
 }
 
 @end
 
-@implementation QNSApplication
+@implementation QT_MANGLE_NAMESPACE(QNSApplication)
 
 - (void)qt_sendEvent_original:(NSEvent *)event
 {
@@ -190,8 +189,7 @@ QT_BEGIN_NAMESPACE
 
 void qt_redirectNSApplicationSendEvent()
 {
-/*
-    if ([NSApp isMemberOfClass:[QNSApplication class]]) {
+    if ([NSApp isMemberOfClass:[QT_MANGLE_NAMESPACE(QNSApplication) class]]) {
         // No need to change implementation since Qt
         // already controls a subclass of NSApplication
         return;
@@ -204,10 +202,16 @@ void qt_redirectNSApplicationSendEvent()
     qt_cocoa_change_implementation(
             [NSApplication class],
             @selector(sendEvent:),
-            [QNSApplication class],
+            [QT_MANGLE_NAMESPACE(QNSApplication) class],
             @selector(qt_sendEvent_replacement:),
             @selector(qt_sendEvent_original:));
- */
  }
+
+void qt_resetNSApplicationSendEvent()
+{
+    qt_cocoa_change_back_implementation([NSApplication class],
+                                         @selector(sendEvent:),
+                                         @selector(QT_MANGLE_NAMESPACE(qt_sendEvent_original):));
+}
 
 QT_END_NAMESPACE

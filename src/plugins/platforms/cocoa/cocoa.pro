@@ -37,6 +37,7 @@ OBJECTIVE_SOURCES += main.mm \
     qcocoainputcontext.mm \
     qcocoaservices.mm \
     qcocoasystemtrayicon.mm \
+    qcocoaintrospection.mm \
 
 HEADERS += qcocoaintegration.h \
     qcocoatheme.h \
@@ -70,6 +71,7 @@ HEADERS += qcocoaintegration.h \
     qcocoainputcontext.h \
     qcocoaservices.h \
     qcocoasystemtrayicon.h \
+    qcocoaintrospection.h \
 
 RESOURCES += qcocoaresources.qrc
 

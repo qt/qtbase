@@ -73,43 +73,12 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp, qcolor_x11.cpp, qfiledialog.cpp
-// and many other.  This header file may change from version to version
-// without notice, or even be removed.
-//
-// We mean it.
-//
-
-/*
-	Cocoa Application Categories
-*/
-#include "qglobal.h"
-
-#import <AppKit/AppKit.h>
-@class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
-
-@interface NSApplication (QT_MANGLE_NAMESPACE(QApplicationIntegration))
-- (void)QT_MANGLE_NAMESPACE(qt_setDockMenu):(NSMenu *)newMenu;
-- (QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *)QT_MANGLE_NAMESPACE(qt_qcocoamenuLoader);
-- (int)QT_MANGLE_NAMESPACE(qt_validModesForFontPanel):(NSFontPanel *)fontPanel;
-
-- (void)qt_sendPostedMessage:(NSEvent *)event;
-- (BOOL)qt_filterEvent:(NSEvent *)event;
-@end
-
-@interface QT_MANGLE_NAMESPACE(QNSApplication) : NSApplication {
-}
-@end
+#include <qglobal.h>
+#import <objc/objc-class.h>
 
 QT_BEGIN_NAMESPACE
 
-void qt_redirectNSApplicationSendEvent();
-void qt_resetNSApplicationSendEvent();
+void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class proxyClass, SEL replacementSel = 0, SEL backupSel = 0);
+void qt_cocoa_change_back_implementation(Class baseClass, SEL originalSel, SEL backupSel);
 
 QT_END_NAMESPACE
-

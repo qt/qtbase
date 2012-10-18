@@ -192,7 +192,8 @@ QCocoaIntegration::QCocoaIntegration()
 
     qApp->setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 
-    NSApplication *cocoaApplication = [NSApplication sharedApplication];
+    NSApplication *cocoaApplication = [QT_MANGLE_NAMESPACE(QNSApplication) sharedApplication];
+    qt_redirectNSApplicationSendEvent();
 
     if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
         // Applications launched from plain executables (without an app
@@ -233,6 +234,8 @@ QCocoaIntegration::QCocoaIntegration()
 
 QCocoaIntegration::~QCocoaIntegration()
 {
+    qt_resetNSApplicationSendEvent();
+
     QCocoaAutoReleasePool pool;
     if (!QCoreApplication::testAttribute(Qt::AA_MacPluginApplication)) {
         // remove the apple event handlers installed by QCocoaApplicationDelegate
