@@ -52,7 +52,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QWindowSystemInterfacePrivate {
+class Q_GUI_EXPORT QWindowSystemInterfacePrivate {
 public:
     enum EventType {
         Close,
@@ -349,6 +349,25 @@ public:
         { const QMutexLocker locker(&mutex); impl.append(e); }
         int count() const
         { const QMutexLocker locker(&mutex); return impl.count(); }
+        WindowSystemEvent *peekAtFirstOfType(EventType t) const
+        {
+            const QMutexLocker locker(&mutex);
+            for (int i = 0; i < impl.size(); ++i) {
+                if (impl.at(i)->type == t)
+                    return impl.at(i);
+            }
+            return 0;
+        }
+        void remove(const WindowSystemEvent *e)
+        {
+            const QMutexLocker locker(&mutex);
+            for (int i = 0; i < impl.size(); ++i) {
+                if (impl.at(i) == e) {
+                    impl.removeAt(i);
+                    break;
+                }
+            }
+        }
     private:
         Q_DISABLE_COPY(WindowSystemEventList);
     };
@@ -356,7 +375,9 @@ public:
     static WindowSystemEventList windowSystemEventQueue;
 
     static int windowSystemEventsQueued();
-    static WindowSystemEvent * getWindowSystemEvent();
+    static WindowSystemEvent *getWindowSystemEvent();
+    static WindowSystemEvent *peekWindowSystemEvent(EventType t);
+    static void removeWindowSystemEvent(WindowSystemEvent *event);
     static void handleWindowSystemEvent(WindowSystemEvent *ev);
 
     static QElapsedTimer eventTime;

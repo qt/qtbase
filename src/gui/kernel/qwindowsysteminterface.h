@@ -136,6 +136,7 @@ public:
     static void handleCloseEvent(QWindow *w);
     static void handleEnterEvent(QWindow *w);
     static void handleLeaveEvent(QWindow *w);
+    static void handleEnterLeaveEvent(QWindow *enter, QWindow *leave);
     static void handleWindowActivated(QWindow *w);
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 

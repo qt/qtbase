@@ -47,6 +47,7 @@
 #include <QtGui/qaccessible.h>
 #endif
 #include <private/qwidgetbackingstore_p.h>
+#include <qpa/qwindowsysteminterface_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -212,9 +213,31 @@ QPointer<QWidget> qt_last_mouse_receiver = 0;
 void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
 {
     if (event->type() == QEvent::Leave) {
+        QWidget *enter = 0;
+        // Check from window system event queue if the next queued enter targets a window
+        // in the same window hierarchy (e.g. enter a child of this window). If so,
+        // remove the enter event from queue and handle both in single dispatch.
+        QWindowSystemInterfacePrivate::EnterEvent *systemEvent =
+            static_cast<QWindowSystemInterfacePrivate::EnterEvent *>
+            (QWindowSystemInterfacePrivate::peekWindowSystemEvent(QWindowSystemInterfacePrivate::Enter));
+        if (systemEvent) {
+            if (QWidgetWindow *enterWindow = qobject_cast<QWidgetWindow *>(systemEvent->enter))
+            {
+                QWindow *thisParent = this;
+                QWindow *enterParent = enterWindow;
+                while (thisParent->parent())
+                    thisParent = thisParent->parent();
+                while (enterParent->parent())
+                    enterParent = enterParent->parent();
+                if (thisParent == enterParent) {
+                    enter = enterWindow->widget();
+                    QWindowSystemInterfacePrivate::removeWindowSystemEvent(systemEvent);
+                }
+            }
+        }
         QWidget *leave = qt_last_mouse_receiver ? qt_last_mouse_receiver.data() : m_widget;
-        QApplicationPrivate::dispatchEnterLeave(0, leave);
-        qt_last_mouse_receiver = 0;
+        QApplicationPrivate::dispatchEnterLeave(enter, leave);
+        qt_last_mouse_receiver = enter;
     } else {
         QApplicationPrivate::dispatchEnterLeave(m_widget, 0);
         qt_last_mouse_receiver = m_widget;
