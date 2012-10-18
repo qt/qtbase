@@ -192,13 +192,16 @@ defineTest(qtAddToolEnv) {
             equals(QMAKE_DIR_SEP, /) {
                 contains($${env}.CONFIG, prepend): infix = \${$$name:+:\$$$name}
                 else: infix =
-                $$1 = "$$name=$$join(value, :)$$infix $$eval($$1)"
+                val = "$$name=$$join(value, :)$$infix"
             } else {
                 # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
                 contains($${env}.CONFIG, prepend): infix = ;%$$name:)=^)%
                 else: infix =
-                $$1 = "(set $$name=$$join(value, ;)$$infix) & $$eval($$1)"
+                val = "(set $$name=$$join(value, ;)$$infix) &"
             }
+            contains(MAKEFILE_GENERATOR, MS.*): val ~= s,%,%%,g
+            else: val ~= s,\\\$,\$\$,g
+            $$1 = "$$val $$eval($$1)"
         }
     }
     export($$1)
