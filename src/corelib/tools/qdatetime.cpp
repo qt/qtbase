@@ -3743,7 +3743,8 @@ static bool hasUnquotedAP(const QString &f)
     for (int i=0; i<max; ++i) {
         if (f.at(i) == quote) {
             inquote = !inquote;
-        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')) {
+        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')
+            && i + 1 < max && f.at(i + 1).toUpper() == QLatin1Char('P')) {
             return true;
         }
     }

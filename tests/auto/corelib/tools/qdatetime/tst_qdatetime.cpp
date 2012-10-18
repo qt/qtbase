@@ -1352,8 +1352,6 @@ void tst_QDateTime::toString_strformat_data()
                                  << QString("d'foobar'") << QString("31foobar");
     QTest::newRow( "datetime9" ) << QDateTime(QDate(1999, 12, 31), QTime(3, 59, 59, 999))
                                  << QString("hhhhh") << QString("03033");
-    QTest::newRow( "datetime10" ) << QDateTime(QDate(1999, 12, 31), QTime(3, 59, 59, 999))
-                                 << QString("hhhhhaA") << QString("03033amAM");
     QTest::newRow( "datetime11" ) << QDateTime(QDate(1999, 12, 31), QTime(23, 59, 59, 999))
                                  << QString("HHHhhhAaAPap") << QString("23231111PMpmPMpm");
     QTest::newRow( "datetime12" ) << QDateTime(QDate(1999, 12, 31), QTime(3, 59, 59, 999))
@@ -1361,6 +1359,10 @@ void tst_QDateTime::toString_strformat_data()
     QTest::newRow( "datetime13" ) << QDateTime(QDate(1974, 12, 1), QTime(14, 14, 20))
                                  << QString("hh''mm''ss dd''MM''yyyy")
                                  << QString("14'14'20 01'12'1974");
+    QTest::newRow( "missing p and P" ) << QDateTime(QDate(1999, 12, 31), QTime(3, 59, 59, 999))
+                                 << QString("hhhhhaA") << QString("03033aA");
+    QTest::newRow( "OK A, bad P" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
+        << QString("hhAX") << QString("00AX");
 }
 
 void tst_QDateTime::toString_strformat()
