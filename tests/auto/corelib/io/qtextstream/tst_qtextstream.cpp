@@ -188,7 +188,9 @@ private slots:
     void octTest();
     void zeroTermination();
     void ws_manipulator();
+#ifndef Q_OS_WINCE
     void stillOpenWhenAtEnd();
+#endif
     void readNewlines_data();
     void readNewlines();
     void seek();
@@ -1096,6 +1098,8 @@ void tst_QTextStream::ws_manipulator()
 }
 
 // ------------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Qt/CE: Cannot test network on emulator
 void tst_QTextStream::stillOpenWhenAtEnd()
 {
     QFile file(QFINDTESTDATA("tst_qtextstream.cpp"));
@@ -1105,9 +1109,6 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     while (!stream.readLine().isNull()) {}
     QVERIFY(file.isOpen());
 
-#ifdef Q_OS_WINCE
-    QSKIP("Qt/CE: Cannot test network on emulator");
-#endif
     if (!QtNetworkSettings::verifyTestNetworkSettings())
         QSKIP("No network test server available");
 
@@ -1119,6 +1120,7 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     while (!stream2.readLine().isNull()) {}
     QVERIFY(socket.isOpen());
 }
+#endif
 
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readNewlines_data()
