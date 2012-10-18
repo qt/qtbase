@@ -138,8 +138,10 @@ private slots:
     void stream_qint64_data();
     void stream_qint64();
 
+#ifndef Q_OS_WINCE
     void stream_QIcon_data();
     void stream_QIcon();
+#endif
 
     void stream_QEasingCurve_data();
     void stream_QEasingCurve();
@@ -1544,20 +1546,18 @@ void tst_QDataStream::stream_QPixmap()
 }
 #endif
 
+#ifndef Q_OS_WINCE
+// Test depends on more memory than available on Qt/CE
 void tst_QDataStream::stream_QIcon_data()
 {
-#ifndef Q_OS_WINCE
     stream_data(1);
-#endif
 }
 
 void tst_QDataStream::stream_QIcon()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Test depends on more memory than available on Qt/CE");
-#endif
     STREAM_IMPL(QIcon);
 }
+#endif
 
 void tst_QDataStream::writeQPixmap(QDataStream *s)
 {
