@@ -191,7 +191,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
                 for (int i = 0; i < NSIG; ++i) {
                     if (signals_fired[i]) {
                         signals_fired[i] = 0;
-                        emit QCoreApplication::instance()->unixSignal(i);
+                        emit QCoreApplication::instance()->unixSignal(i, QCoreApplication::QPrivateSignal());
                     }
                 }
             }

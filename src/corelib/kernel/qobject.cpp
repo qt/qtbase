@@ -1004,7 +1004,7 @@ void QObject::setObjectName(const QString &name)
 
     if (d->extraData->objectName != name) {
         d->extraData->objectName = name;
-        emit objectNameChanged(d->extraData->objectName);
+        emit objectNameChanged(d->extraData->objectName, QPrivateSignal());
     }
 }
 

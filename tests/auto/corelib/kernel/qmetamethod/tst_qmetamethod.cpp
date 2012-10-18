@@ -714,9 +714,8 @@ void tst_QMetaMethod::comparisonOperators()
 void tst_QMetaMethod::fromSignal()
 {
 #define FROMSIGNAL_HELPER(ObjectType, Name, Arguments)  { \
-        void (ObjectType::*signal)Arguments = &ObjectType::Name; \
         const QMetaObject *signalMeta = &ObjectType::staticMetaObject; \
-        QCOMPARE(QMetaMethod::fromSignal(signal), \
+        QCOMPARE(QMetaMethod::fromSignal(&ObjectType::Name), \
             signalMeta->method(signalMeta->indexOfSignal(QMetaObject::normalizedSignature(#Name #Arguments)))); \
     }
 

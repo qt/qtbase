@@ -166,8 +166,16 @@ public Q_SLOTS:
     static void quit();
 
 Q_SIGNALS:
-    void aboutToQuit();
-    void unixSignal(int);
+    void aboutToQuit(
+#if !defined(qdoc)
+    QPrivateSignal
+#endif
+    );
+    void unixSignal(int
+#if !defined(qdoc)
+    , QPrivateSignal
+#endif
+    );
 
 protected:
     bool event(QEvent *);

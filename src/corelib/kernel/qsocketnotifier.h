@@ -69,7 +69,11 @@ public Q_SLOTS:
     void setEnabled(bool);
 
 Q_SIGNALS:
-    void activated(int socket);
+    void activated(int socket
+#if !defined(qdoc)
+    , QPrivateSignal
+#endif
+    );
 
 protected:
     bool event(QEvent *);

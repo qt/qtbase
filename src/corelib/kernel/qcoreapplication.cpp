@@ -1003,7 +1003,7 @@ int QCoreApplication::exec()
     if (self) {
         self->d_func()->in_exec = false;
         if (!self->d_func()->aboutToQuitEmitted)
-            emit self->aboutToQuit();
+            emit self->aboutToQuit(QPrivateSignal());
         self->d_func()->aboutToQuitEmitted = true;
         sendPostedEvents(0, QEvent::DeferredDelete);
     }

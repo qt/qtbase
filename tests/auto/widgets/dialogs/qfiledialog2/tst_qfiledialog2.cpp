@@ -319,10 +319,11 @@ void tst_QFileDialog2::emptyUncPath()
 }
 
 #if !defined(QT_NO_CONTEXTMENU) && !defined(QT_NO_MENU)
-struct MenuCloser {
+struct MenuCloser : public QObject {
     QWidget *w;
     explicit MenuCloser(QWidget *w) : w(w) {}
-    void operator()() const
+
+    void close()
     {
         QMenu *menu = qFindChild<QMenu*>(w);
         if (!menu) {
@@ -342,7 +343,8 @@ static bool openContextMenu(QFileDialog &fd)
     QTimer timer;
     timer.setInterval(300);
     timer.setSingleShot(true);
-    QObject::connect(&timer, &QTimer::timeout, MenuCloser(&fd));
+    MenuCloser closer(&fd);
+    QObject::connect(&timer, &QTimer::timeout, &closer, &MenuCloser::close);
     timer.start();
     QContextMenuEvent cme(QContextMenuEvent::Mouse, QPoint(10, 10));
     qApp->sendEvent(list->viewport(), &cme); // blocks until menu is closed again.
