@@ -46,12 +46,6 @@
 
 #include "qapplication.h"
 #include "qwindowsstyle.h"
-#ifndef QT_NO_STYLE_PLASTIQUE
-#include "qplastiquestyle.h"
-#endif
-#ifndef QT_NO_STYLE_CLEANLOOKS
-#include "qcleanlooksstyle.h"
-#endif
 #ifndef QT_NO_STYLE_FUSION
 #include "qfusionstyle.h"
 #endif
@@ -96,9 +90,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     plugin (see QStylePlugin).
 
     The valid keys can be retrieved using the keys()
-    function. Typically they include "windows",
-    "plastique" and "cleanlooks".  Depending on the platform,
-    "windowsxp", "windowsvista" and "macintosh" may be available.
+    function. Typically they include "windows" and "fusion".
+    Depending on the platform, "windowsxp", "windowsvista", "gtk"
+    and "macintosh" may be available.
     Note that keys are case insensitive.
 
     \sa QStyle
@@ -144,19 +138,9 @@ QStyle *QStyleFactory::create(const QString& key)
         ret = new QWindowsVistaStyle;
     else
 #endif
-#ifndef QT_NO_STYLE_PLASTIQUE
-    if (style == QLatin1String("plastique"))
-        ret = new QPlastiqueStyle;
-    else
-#endif
 #ifndef QT_NO_STYLE_FUSION
     if (style == QLatin1String("fusion"))
         ret = new QFusionStyle;
-    else
-#endif
-#ifndef QT_NO_STYLE_CLEANLOOKS
-    if (style == QLatin1String("cleanlooks"))
-        ret = new QCleanlooksStyle;
     else
 #endif
 #ifndef QT_NO_STYLE_GTK
@@ -222,10 +206,6 @@ QStringList QStyleFactory::keys()
         (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         list << QLatin1String("WindowsVista");
 #endif
-#ifndef QT_NO_STYLE_PLASTIQUE
-    if (!list.contains(QLatin1String("Plastique")))
-        list << QLatin1String("Plastique");
-#endif
 #ifndef QT_NO_STYLE_GTK
     if (!list.contains(QLatin1String("GTK+")))
         list << QLatin1String("GTK+");
@@ -233,10 +213,6 @@ QStringList QStyleFactory::keys()
 #ifndef QT_NO_STYLE_FUSION
     if (!list.contains(QLatin1String("Fusion")))
         list << QLatin1String("Fusion");
-#endif
-#ifndef QT_NO_STYLE_CLEANLOOKS
-    if (!list.contains(QLatin1String("Cleanlooks")))
-        list << QLatin1String("Cleanlooks");
 #endif
 #ifndef QT_NO_STYLE_MAC
     QString mstyle = QLatin1String("Macintosh");

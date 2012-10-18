@@ -50,8 +50,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWizard>
-#include <QStyle>
-#include <QPlastiqueStyle>
+#include <QWindowsStyle>
 #include <QTreeWidget>
 
 static QImage grabWidget(QWidget *window)
@@ -104,7 +103,6 @@ private slots:
     void sideWidget();
 
     // task-specific tests below me:
-    void task161660_buttonSpacing();
     void task177716_disableCommitButton();
     void task183550_stretchFactor();
     void task161658_alignments();
@@ -2398,23 +2396,6 @@ void tst_QWizard::sideWidget()
     w1->setParent(0);
     wizard.setSideWidget(0);
     QVERIFY(wizard.sideWidget() == 0);
-}
-
-void tst_QWizard::task161660_buttonSpacing()
-{
-#ifndef QT_NO_STYLE_PLASTIQUE
-    QString origStyle = QApplication::style()->objectName();
-    QApplication::setStyle(new QPlastiqueStyle);
-    QWizard wizard;
-    wizard.addPage(new QWizardPage);
-    wizard.show();
-    const QAbstractButton *finishButton = wizard.button(QWizard::FinishButton);
-    const QAbstractButton *cancelButton = wizard.button(QWizard::CancelButton);
-    const int spacing = cancelButton->geometry().left() - finishButton->geometry().right() - 1;
-    QCOMPARE(spacing, wizard.style()->layoutSpacing(
-                 QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal));
-    QApplication::setStyle(origStyle);
-#endif
 }
 
 class task177716_CommitPage : public QWizardPage

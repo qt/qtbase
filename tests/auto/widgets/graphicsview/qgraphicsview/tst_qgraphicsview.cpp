@@ -55,9 +55,6 @@
 #if !defined(QT_NO_STYLE_WINDOWS)
 #include <QtWidgets/QWindowsStyle>
 #endif
-#if !defined(QT_NO_STYLE_PLASTIQUE)
-#include <QtWidgets/QPlastiqueStyle>
-#endif
 #include <QtGui/QPainterPath>
 #include <QtWidgets/QRubberBand>
 #include <QtWidgets/QScrollBar>
@@ -2770,16 +2767,10 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
     if (useMotif) {
-#if !defined(QT_NO_STYLE_WINDOWS)
         view.setStyle(new FauxMotifStyle);
-#else
-        QSKIP("No Windows style compiled.");
-#endif
     } else {
-#if defined(Q_OS_WINCE)
+#if !defined(QT_NO_STYLE_WINDOWS)
         view.setStyle(new QWindowsStyle);
-#elif !defined(QT_NO_STYLE_PLASTIQUE)
-        view.setStyle(new QPlastiqueStyle);
 #endif
     }
     view.setStyleSheet(" "); // enables style propagation ;-)
@@ -3291,9 +3282,7 @@ void tst_QGraphicsView::scrollAfterResize_data()
     QTest::addColumn<QTransform>("x2");
     QTest::addColumn<QTransform>("x3");
 
-#if !defined(QT_NO_STYLE_PLASTIQUE)
-    QPlastiqueStyle style;
-#elif !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS)
     QWindowsStyle style;
 #else
     QCommonStyle style;
@@ -3322,9 +3311,7 @@ void tst_QGraphicsView::scrollAfterResize()
     QFETCH(QTransform, x2);
     QFETCH(QTransform, x3);
 
-#if !defined(QT_NO_STYLE_PLASTIQUE)
-    QPlastiqueStyle style;
-#elif !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS)
     QWindowsStyle style;
 #else
     QCommonStyle style;

@@ -376,17 +376,8 @@
 #endif
 
 /* Styles */
-#ifndef QT_NO_STYLE_MOTIF
-#  define QT_NO_STYLE_MOTIF
-#endif
-#ifndef QT_NO_STYLE_CDE
-#  define QT_NO_STYLE_CDE
-#endif
-#ifndef QT_NO_STYLE_CLEANLOOKS
-#  define QT_NO_STYLE_CLEANLOOKS
-#endif
-#ifndef QT_NO_STYLE_PLASTIQUE
-#  define QT_NO_STYLE_PLASTIQUE
+#ifndef QT_NO_STYLE_FUSION
+#  define QT_NO_STYLE_FUSION
 #endif
 #ifndef QT_NO_STYLE_STYLESHEET
 #  define QT_NO_STYLE_STYLESHEET

@@ -526,6 +526,10 @@ QtGui
 
 QtWidgets
 ---------
+* A new style QFusionStyle has been introduced, while QPlastiqueStyle, QCleanlooksStyle,
+  QCDEStyle and QMotifStyle have been removed. The older styles will be
+  made available to applications as a standalone source package.
+
 * QInputContext removed as well as related getters and setters on QWidget and QApplication.
   Input contexts are now platform specific.
 

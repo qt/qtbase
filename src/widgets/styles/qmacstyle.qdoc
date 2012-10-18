@@ -81,7 +81,7 @@
     documentation.
 
     \image qmacstyle.png
-    \sa QWindowsXPStyle, QWindowsStyle, QPlastiqueStyle
+    \sa QWindowsXPStyle, QWindowsStyle, QFusionStyle
 */
 
 

@@ -55,7 +55,6 @@
 #include <qtoolbutton.h>
 #include <qtoolbar.h>
 
-#include <qplastiquestyle.h>
 #include <qwindowsstyle.h>
 #include <qcommonstyle.h>
 #include <qproxystyle.h>
@@ -72,7 +71,9 @@
 #include <qmdiarea.h>
 #include <qscrollarea.h>
 
-#include <QCleanlooksStyle>
+#ifndef Q_NO_STYLE_FUSION
+#include <qfusionstyle.h>
+#endif
 
 #ifdef Q_OS_MAC
 #include <QMacStyle>
@@ -116,27 +117,24 @@ private:
 private slots:
     void drawItemPixmap();
     void initTestCase();
+    void cleanup();
     void cleanupTestCase();
     void init();
-    void cleanup();
-#ifndef QT_NO_STYLE_PLASTIQUE
-    void testPlastiqueStyle();
+#ifndef QT_NO_STYLE_FUSION
+    void testFusionStyle();
 #endif
     void testWindowsStyle();
 #ifndef QT_NO_STYLE_WINDOWSXP
     void testWindowsXPStyle();
 #endif
     void testWindowsVistaStyle();
-#ifndef QT_NO_STYLE_CLEANLOOKS
-    void testCleanlooksStyle();
-#endif
     void testMacStyle();
     void testWindowsCEStyle();
     void testWindowsMobileStyle();
     void testStyleFactory();
     void testProxyStyle();
     void pixelMetric();
-#if !defined(QT_NO_STYLE_PLASTIQUE) && !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS)
     void progressBarChangeStyle();
 #endif
     void defaultFont();
@@ -187,11 +185,8 @@ void tst_QStyle::cleanupTestCase()
 void tst_QStyle::testStyleFactory()
 {
     QStringList keys = QStyleFactory::keys();
-#ifndef QT_NO_STYLE_CLEANLOOKS
-    QVERIFY(keys.contains("Cleanlooks"));
-#endif
-#ifndef QT_NO_STYLE_PLASTIQUE
-    QVERIFY(keys.contains("Plastique"));
+#ifndef QT_NO_STYLE_FUSION
+    QVERIFY(keys.contains("Fusion"));
 #endif
 #ifndef QT_NO_STYLE_WINDOWS
     QVERIFY(keys.contains("Windows"));
@@ -366,21 +361,12 @@ bool tst_QStyle::testScrollBarSubControls(QStyle* style)
     return true;
 }
 
-#ifndef QT_NO_STYLE_PLASTIQUE
-void tst_QStyle::testPlastiqueStyle()
+#ifndef QT_NO_STYLE_FUSION
+void tst_QStyle::testFusionStyle()
 {
-    QPlastiqueStyle pstyle;
-    QVERIFY(testAllFunctions(&pstyle));
-    lineUpLayoutTest(&pstyle);
-}
-#endif
-
-#ifndef QT_NO_STYLE_CLEANLOOKS
-void tst_QStyle::testCleanlooksStyle()
-{
-    QCleanlooksStyle cstyle;
-    QVERIFY(testAllFunctions(&cstyle));
-    lineUpLayoutTest(&cstyle);
+    QFusionStyle fstyle;
+    QVERIFY(testAllFunctions(&fstyle));
+    lineUpLayoutTest(&fstyle);
 }
 #endif
 
@@ -653,14 +639,14 @@ void tst_QStyle::pixelMetric()
     delete style;
 }
 
-#if !defined(QT_NO_STYLE_PLASTIQUE) && !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS)
 void tst_QStyle::progressBarChangeStyle()
 {
     //test a crashing situation (task 143530)
     //where changing the styles and deleting a progressbar would crash
 
     QWindowsStyle style1;
-    QPlastiqueStyle style2;
+    QFusionStyle style2;
 
     QProgressBar *progress=new QProgressBar;
     progress->setStyle(&style1);

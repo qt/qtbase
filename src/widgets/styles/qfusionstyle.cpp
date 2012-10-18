@@ -350,7 +350,7 @@ QFusionStylePrivate::QFusionStylePrivate()
     The Fusion style provides a custom look and feel that is not
     tied to a particular platform.
     //{Fusion Style Widget Gallery}
-    \sa QWindowsXPStyle, QMacStyle, QCommonStyle, QPlastiqueStyle
+    \sa QWindowsStyle, QWindowsVistaStyle, QMacStyle, QCommonStyle
 */
 
 /*!
@@ -3024,7 +3024,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
         newSize += QSize(2, 2);
         break;
     case CT_SpinBox:
-        newSize += QSize(0, -2);
+        newSize += QSize(0, -3);
         break;
     case CT_ComboBox:
         newSize += QSize(2, 4);
@@ -3478,7 +3478,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
         return 0;
 
     case SH_Table_GridLineColor:
-        return option->palette.background().color().darker(120).rgb();
+        return option ? option->palette.background().color().darker(120).rgb() : 0;
 
     case SH_MessageBox_TextInteractionFlags:
         return Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;

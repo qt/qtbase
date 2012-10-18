@@ -50,7 +50,6 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QPlastiqueStyle>
 #include <QtWidgets/QWindowsStyle>
 #include <QStyleFactory>
 
@@ -403,7 +402,7 @@ void tst_QFormLayout::setFormStyle()
     QFormLayout layout;
     widget.setLayout(&layout);
 
-#ifndef QT_NO_STYLE_PLASTIQUE
+#if 0 // QT_NO_STYLE_PLASTIQUE
     widget.setStyle(new QPlastiqueStyle());
 
     QVERIFY(layout.labelAlignment() == Qt::AlignRight);

@@ -396,16 +396,6 @@
 #define QT_NO_SCROLLAREA
 #endif
 
-// QCleanLooksStyle
-#if !defined(QT_NO_STYLE_CLEANLOOKS) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
-#define QT_NO_STYLE_CLEANLOOKS
-#endif
-
-// QPlastiqueStyle
-#if !defined(QT_NO_STYLE_PLASTIQUE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
-#define QT_NO_STYLE_PLASTIQUE
-#endif
-
 // QWindowsCEStyle
 #if !defined(QT_NO_STYLE_WINDOWSCE) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_IMAGEFORMAT_XPM))
 #define QT_NO_STYLE_WINDOWSCE

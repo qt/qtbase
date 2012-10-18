@@ -307,8 +307,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
     dictionary[ "STYLE_WINDOWSVISTA" ] = "auto";
-    dictionary[ "STYLE_PLASTIQUE" ] = "yes";
-    dictionary[ "STYLE_CLEANLOOKS" ]= "yes";
     dictionary[ "STYLE_FUSION" ]    = "yes";
     dictionary[ "STYLE_WINDOWSCE" ] = "no";
     dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
@@ -638,16 +636,6 @@ void Configure::parseCmdLine()
             dictionary[ "STYLE_WINDOWSVISTA" ] = "yes";
         else if (configCmdLine.at(i) == "-no-style-windowsvista")
             dictionary[ "STYLE_WINDOWSVISTA" ] = "no";
-
-        else if (configCmdLine.at(i) == "-qt-style-plastique")
-            dictionary[ "STYLE_PLASTIQUE" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-plastique")
-            dictionary[ "STYLE_PLASTIQUE" ] = "no";
-
-        else if (configCmdLine.at(i) == "-qt-style-cleanlooks")
-            dictionary[ "STYLE_CLEANLOOKS" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-cleanlooks")
-            dictionary[ "STYLE_CLEANLOOKS" ] = "no";
 
         else if (configCmdLine.at(i) == "-qt-style-fusion")
             dictionary[ "STYLE_FUSION" ] = "yes";
@@ -1485,8 +1473,6 @@ void Configure::applySpecSpecifics()
     if (dictionary[ "XQMAKESPEC" ].startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
-        dictionary[ "STYLE_PLASTIQUE" ]     = "no";
-        dictionary[ "STYLE_CLEANLOOKS" ]    = "no";
         dictionary[ "STYLE_FUSION" ]        = "no";
         dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
@@ -1797,8 +1783,6 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWS", "yes", "",                "  windows", ' ');
         desc("STYLE_WINDOWSXP", "auto", "",             "  windowsxp", ' ');
         desc("STYLE_WINDOWSVISTA", "auto", "",          "  windowsvista", ' ');
-        desc("STYLE_PLASTIQUE", "yes", "",              "  plastique", ' ');
-        desc("STYLE_CLEANLOOKS", "yes", "",             "  cleanlooks", ' ');
         desc("STYLE_FUSION", "yes", "",                 "  fusion", ' ');
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
         desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile\n", ' ');
@@ -2374,12 +2358,6 @@ void Configure::generateOutputVars()
     // Styles -------------------------------------------------------
     if (dictionary[ "STYLE_WINDOWS" ] == "yes")
         qmakeStyles += "windows";
-
-    if (dictionary[ "STYLE_PLASTIQUE" ] == "yes")
-        qmakeStyles += "plastique";
-
-    if (dictionary[ "STYLE_CLEANLOOKS" ] == "yes")
-        qmakeStyles += "cleanlooks";
 
     if (dictionary[ "STYLE_FUSION" ] == "yes")
         qmakeStyles += "fusion";
@@ -3162,8 +3140,6 @@ void Configure::generateConfigfiles()
 
         QStringList qconfigList;
         if (dictionary["STYLE_WINDOWS"] != "yes")     qconfigList += "QT_NO_STYLE_WINDOWS";
-        if (dictionary["STYLE_PLASTIQUE"] != "yes")   qconfigList += "QT_NO_STYLE_PLASTIQUE";
-        if (dictionary["STYLE_CLEANLOOKS"] != "yes")   qconfigList += "QT_NO_STYLE_CLEANLOOKS";
         if (dictionary["STYLE_FUSION"] != "yes")       qconfigList += "QT_NO_STYLE_FUSION";
         if (dictionary["STYLE_WINDOWSXP"] != "yes" && dictionary["STYLE_WINDOWSVISTA"] != "yes")
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
@@ -3366,8 +3342,6 @@ void Configure::displayConfig()
     sout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;
     sout << "    Windows XP.............." << dictionary[ "STYLE_WINDOWSXP" ] << endl;
     sout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
-    sout << "    Plastique..............." << dictionary[ "STYLE_PLASTIQUE" ] << endl;
-    sout << "    Cleanlooks.............." << dictionary[ "STYLE_CLEANLOOKS" ] << endl;
     sout << "    Fusion.................." << dictionary[ "STYLE_FUSION" ] << endl;
     sout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
     sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;

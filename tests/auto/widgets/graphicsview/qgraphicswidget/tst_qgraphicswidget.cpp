@@ -47,11 +47,13 @@
 #include <qgraphicsview.h>
 #include <qstyleoption.h>
 #include <qgraphicslinearlayout.h>
-#include <qcleanlooksstyle.h>
 #include <qlineedit.h>
 #include <qboxlayout.h>
 #include <qaction.h>
 #include <qwidgetaction.h>
+#ifndef Q_NO_STYLE_FUSION
+#include <qfusionstyle.h>
+#endif
 
 #include "../../../qtest-config.h"
 
@@ -1397,21 +1399,22 @@ void tst_QGraphicsWidget::setStyle_data()
 {
     QTest::addColumn<QString>("style");
     QTest::newRow("null") << "";
-    QTest::newRow("cleanlooks") << "QCleanlooksStyle";
+    QTest::newRow("fusion") << "QFusionStyle";
 }
 
 // void setStyle(QStyle* style) public
 void tst_QGraphicsWidget::setStyle()
 {
+#ifndef Q_NO_STYLE_FUSION
     SubQGraphicsWidget widget;
-    QCleanlooksStyle cleanlooksStyle;
+    QFusionStyle fusionStyle;
 
     int oldEventCounts = widget.eventCount;
 
     QFETCH(QString, style);
-    if (style == "QCleanlooksStyle") {
-        widget.setStyle(&cleanlooksStyle);
-        QCOMPARE(widget.style(), static_cast<QStyle*>(&cleanlooksStyle));
+    if (style == "QFusionStyle") {
+        widget.setStyle(&fusionStyle);
+        QCOMPARE(widget.style(), static_cast<QStyle*>(&fusionStyle));
     } else {
         widget.setStyle(0);
         QVERIFY(widget.style() != (QStyle *)0);
@@ -1421,6 +1424,7 @@ void tst_QGraphicsWidget::setStyle()
 
     // cleanup
     widget.setStyle(0);
+#endif
 }
 
 void tst_QGraphicsWidget::setTabOrder_data()

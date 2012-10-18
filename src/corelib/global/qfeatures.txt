@@ -727,11 +727,11 @@ Requires:
 Name: QWindowsStyle
 SeeAlso: ???
 
-Feature: STYLE_PLASTIQUE
-Description: Supports a widget style similar to the Plastik style available in KDE.
+Feature: STYLE_FUSION
+Description: Supports a modern platform independent widget style.
 Section: Styles
 Requires: STYLE_WINDOWS IMAGEFORMAT_XPM
-Name: QPlastiqueStyle
+Name: QFusionStyle
 SeeAlso: ???
 
 Feature: STYLE_WINDOWSXP
@@ -746,13 +746,6 @@ Description: Supports a Microsoft WindowsVista-like look and feel.
 Section: Styles
 Requires: STYLE_WINDOWSXP
 Name: QWindowsVistaStyle
-SeeAlso: ???
-
-Feature: STYLE_CLEANLOOKS
-Description: Supports a Gnome CleanLooks-like look and feel.
-Section: Styles
-Requires: STYLE_WINDOWS IMAGEFORMAT_XPM
-Name: QCleanLooksStyle
 SeeAlso: ???
 
 Feature: STYLE_WINDOWSCE

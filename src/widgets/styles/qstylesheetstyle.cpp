@@ -54,7 +54,7 @@
 #include <qlineedit.h>
 #include <qwindowsstyle.h>
 #include <qcombobox.h>
-#include <qplastiquestyle.h>
+#include <qwindowsstyle.h>
 #include "private/qcssparser_p.h"
 #include "private/qmath_p.h"
 #include <qabstractscrollarea.h>

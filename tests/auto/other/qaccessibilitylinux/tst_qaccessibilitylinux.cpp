@@ -164,8 +164,8 @@ QDBusInterface *tst_QtAtSpi::getInterface(const QString &path, const QString &in
 void tst_QtAtSpi::initTestCase()
 {
     // Oxygen style creates many extra items, it's simply unusable here
-    qDebug() << "Using plastique style...";
-    qApp->setStyle("plastique");
+    qDebug() << "Using fusion style...";
+    qApp->setStyle("fusion");
     qApp->setApplicationName("tst_QtAtSpi app");
     dbus = DBusConnection();
 

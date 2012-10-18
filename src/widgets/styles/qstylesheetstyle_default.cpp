@@ -335,11 +335,12 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
     }
 
     /*QComboBox[style="QPlastiqueStyle"][readOnly="true"],
+    QComboBox[style="QFusionStyle"][readOnly="true"],
     QComboBox[style="QCleanlooksStyle"][readOnly="true"]
     {
         -qt-background-role: button;
     }*/
-    if (baseStyle()->inherits("QPlastiqueStyle")  || baseStyle()->inherits("QCleanlooksStyle"))
+    if (baseStyle()->inherits("QPlastiqueStyle")  || baseStyle()->inherits("QCleanlooksStyle") || baseStyle()->inherits("QFusionStyle"))
     {
         SET_ELEMENT_NAME(QLatin1String("QComboBox"));
         ADD_ATTRIBUTE_SELECTOR(QLatin1String("readOnly"), QLatin1String("true"), AttributeSelector::MatchEqual);
