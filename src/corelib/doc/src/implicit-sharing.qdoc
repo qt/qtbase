@@ -31,6 +31,12 @@
 /*!
     \group shared
     \title Implicitly Shared Classes
+
+    These \l{Qt Core} classes provides a safe and efficient way of sharing and
+    manipulating data by \l{Implicit Sharing}{implicitly sharing} data.
+
+    \annotatedlist shared
+
 */
 
 /*!

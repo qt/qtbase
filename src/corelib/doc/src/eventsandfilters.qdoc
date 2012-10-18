@@ -32,10 +32,11 @@
 
     \brief Classes used to create and handle events.
 
-    These classes are used to create and handle events.
+    These \l{Qt Core} classes are used to create and handle events.
 
-    For more information see the \link object.html Object model\endlink
-    and \link signalsandslots.html Signals and Slots\endlink.
+    For more information see the \l{The Event System}{Event System} page.
+
+    \annotatedlist events
 */
 
 /*!

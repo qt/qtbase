@@ -33,12 +33,13 @@
     \brief Collection classes such as list, queue, stack and string, along
     with other classes that can be used without needing QApplication.
 
-    The non-GUI classes are general-purpose collection and string classes
-    that may be used independently of the GUI classes.
+    These \l{Qt Core} non-GUI classes are general-purpose collection and string
+    classes that may be used independently of the GUI classes.
 
     In particular, these classes do not depend on QApplication at all,
     and so can be used in non-GUI programs.
 
+    \annotatedlist tools
 */
 
 /*!
@@ -394,13 +395,13 @@
     QMapIterator, which is somewhat different because it iterates on
     (key, value) pairs.
 
-    Like QListIterator, QMapIterator provides 
-    \l{QMapIterator::toFront()}{toFront()}, 
-    \l{QMapIterator::toBack()}{toBack()}, 
-    \l{QMapIterator::hasNext()}{hasNext()}, 
-    \l{QMapIterator::next()}{next()}, 
-    \l{QMapIterator::peekNext()}{peekNext()}, 
-    \l{QMapIterator::hasPrevious()}{hasPrevious()}, 
+    Like QListIterator, QMapIterator provides
+    \l{QMapIterator::toFront()}{toFront()},
+    \l{QMapIterator::toBack()}{toBack()},
+    \l{QMapIterator::hasNext()}{hasNext()},
+    \l{QMapIterator::next()}{next()},
+    \l{QMapIterator::peekNext()}{peekNext()},
+    \l{QMapIterator::hasPrevious()}{hasPrevious()},
     \l{QMapIterator::previous()}{previous()}, and
     \l{QMapIterator::peekPrevious()}{peekPrevious()}. The key and
     value components are extracted by calling key() and value() on

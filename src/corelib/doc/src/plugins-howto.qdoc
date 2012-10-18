@@ -32,12 +32,14 @@
 
     \brief Plugin related classes.
 
-    These classes deal with shared libraries, (e.g. .so and DLL files),
-    and with Qt plugins.
+    These \l{Qt Core} classes deal with shared libraries, (e.g. .so and DLL
+    files), and with Qt plugins.
 
-    See the \link plugins-howto.html plugins documentation\endlink.
+    See the \l{How to Create Qt Plugins} page for more information..
 
     See also the \l{ActiveQt framework} for Windows.
+
+    \annotatedlist plugins
 */
 
 /*!

@@ -27,16 +27,13 @@
 
 /*!
     \module QtCore
-    \title QtCore Module
+    \title Qt Core C++ Classes
     \ingroup modules
 
-    \keyword QtCore
-
-    \brief The QtCore module contains core non-GUI functionality.
+    \brief Provides core non-GUI functionality.
 
     All other Qt modules rely on this module. To include the
     definitions of the module's classes, use the following directive:
 
     \snippet code/doc_src_qtcore.cpp 0
 */
-

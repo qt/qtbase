@@ -28,6 +28,10 @@
 /*!
     \group thread
     \title Threading Classes
+
+    These \l{Qt Core} classes provide threading support to applications.
+    The \l{Thread Support in Qt} page covers how to use these classes.
+    \annotatedlist thread
 */
 
 /*!
@@ -111,13 +115,13 @@
 /*!
     \page threads-starting.html
     \title Starting Threads with QThread
-    
+
     \contentspage Thread Support in Qt
     \nextpage Synchronizing Threads
 
     A QThread instance represents a thread and provides the means to
     \l{QThread::start()}{start()} a thread, which will then execute the
-    reimplementation of QThread::run(). The \c run() implementation is for a 
+    reimplementation of QThread::run(). The \c run() implementation is for a
     thread what the \c main() entry point is for the application. All code
     executed in a call stack that starts in the \c run() function is executed
     by the new thread, and the thread finishes when the function returns.
@@ -141,12 +145,12 @@
     Then, create an instance of the thread object and call
     QThread::start(). Note that you must create the QApplication (or
     QCoreApplication) object before you can create a QThread.
-    
-    The function will return immediately and the 
+
+    The function will return immediately and the
     main thread will continue. The code that appears in the
     \l{QThread::run()}{run()} reimplementation will then be executed
     in a separate thread.
-    
+
     Creating threads is explained in more detail in the QThread
     documentation.
 
@@ -160,7 +164,7 @@
 /*!
     \page threads-synchronizing.html
     \title Synchronizing Threads
-    
+
     \previouspage Starting Threads with QThread
     \contentspage Thread Support in Qt
     \nextpage Reentrancy and Thread-Safety
@@ -227,7 +231,7 @@
 
     \list
     \li A \e thread-safe function can be called simultaneously from
-       multiple threads, even when the invocations use shared data, 
+       multiple threads, even when the invocations use shared data,
        because all references to the shared data are serialized.
     \li A \e reentrant function can also be called simultaneously from
        multiple threads, but only if each invocation uses its own data.
@@ -577,8 +581,8 @@
 
     \endlist
 
-    Qt Concurrent supports several STL-compatible container and iterator types, 
-    but works best with Qt containers that have random-access iterators, such as 
+    Qt Concurrent supports several STL-compatible container and iterator types,
+    but works best with Qt containers that have random-access iterators, such as
     QList or QVector. The map and filter functions accept both containers and begin/end iterators.
 
     STL Iterator support overview:
@@ -609,14 +613,14 @@
         \li QList, QVector, std::vector
         \li Supported and Recommended
     \endtable
-    
+
     Random access iterators can be faster in cases where Qt Concurrent is iterating
     over a large number of lightweight items, since they allow skipping to any point
     in the container. In addition, using random access iterators allows Qt Concurrent
     to provide progress information trough QFuture::progressValue() and QFutureWatcher::
     progressValueChanged().
 
-    The non in-place modifying functions such as mapped() and filtered() makes a 
+    The non in-place modifying functions such as mapped() and filtered() makes a
     copy of the container when called. If you are using STL containers this copy operation
     might take some time, in this case we recommend specifying the begin and end iterators
     for the container instead.
@@ -643,7 +647,7 @@
 
     QPainter can be used in a thread to paint onto QImage, QPrinter, and
     QPicture paint devices. Painting onto QPixmaps and QWidgets is \e not
-    supported. On Mac OS X the automatic progress dialog will not be 
+    supported. On Mac OS X the automatic progress dialog will not be
     displayed if you are printing from outside the GUI thread.
 
     Any number of threads can paint at any given time, however only

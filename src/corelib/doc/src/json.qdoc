@@ -108,5 +108,6 @@
 
     \annotatedlist json
 
-    All JSON classes are value based, implicitly shared classes.
+    All JSON classes are value based,
+    \l{Implicit Sharing}{implicitly shared classes}.
 */

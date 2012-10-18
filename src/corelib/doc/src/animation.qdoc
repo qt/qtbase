@@ -28,6 +28,11 @@
 /*!
     \group animation
     \title Animation Framework
+
+    This page lists classes belonging to \l{Qt Core}'s
+    \l{The Animation Framework}{animation framework}.
+
+    \annotatedlist animation
 */
 
 /*!
@@ -102,7 +107,7 @@
     the framework, please look up their class descriptions.
 
     \section1 Classes in the Animation Framework
-    
+
     These classes provide a framework for creating both simple and complex
     animations.
 
@@ -361,4 +366,3 @@
     framework for animations, see the states example (it lives in the
     \c{examples/animation/states} directory).
 */
-
