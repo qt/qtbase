@@ -45,7 +45,6 @@
 #include <QtGui/qguiapplication.h>
 #include <qdbusmessage.h>
 #include <qdbusreply.h>
-#include <QtWidgets/qwidget.h>
 #include <qclipboard.h>
 
 #include <qdebug.h>
