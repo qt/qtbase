@@ -323,6 +323,8 @@ information about a particular change.
 
 - QAbstractPageSetupDialog has been removed.
 
+- QThread::terminated() has been removed, since its emission cannot be guaranteed.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

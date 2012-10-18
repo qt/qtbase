@@ -352,17 +352,12 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
     QMutexLocker locker(lockAnyway ? &d->mutex : 0);
     d->isInFinish = true;
     d->priority = QThread::InheritPriority;
-    bool terminated = d->terminated;
     void **tls_data = reinterpret_cast<void **>(&d->data->tls);
     locker.unlock();
-    if (terminated)
-        emit thr->terminated();
     emit thr->finished();
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     QThreadStorageData::finish(tls_data);
     locker.relock();
-
-    d->terminated = false;
 
     QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
     if (eventDispatcher) {
@@ -443,7 +438,6 @@ void QThread::start(Priority priority)
 
     d->running = true;
     d->finished = false;
-    d->terminated = false;
     d->exited = false;
     d->returnCode = 0;
 
@@ -524,7 +518,6 @@ void QThread::terminate()
         return;
     }
     TerminateThread(d->handle, 0);
-    d->terminated = true;
     QThreadPrivate::finish(this, false);
 }
 
@@ -562,7 +555,7 @@ bool QThread::wait(unsigned long time)
 
     if (ret && !d->finished) {
         // thread was terminated by someone else
-        d->terminated = true;
+
         QThreadPrivate::finish(this, false);
     }
 
@@ -583,7 +576,6 @@ void QThread::setTerminationEnabled(bool enabled)
     QMutexLocker locker(&d->mutex);
     d->terminationEnabled = enabled;
     if (enabled && d->terminatePending) {
-        d->terminated = true;
         QThreadPrivate::finish(thr, false);
         locker.unlock(); // don't leave the mutex locked!
         _endthreadex(0);

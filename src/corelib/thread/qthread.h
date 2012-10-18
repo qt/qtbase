@@ -113,7 +113,6 @@ public:
 Q_SIGNALS:
     void started();
     void finished();
-    void terminated();
 
 protected:
     virtual void run();
