@@ -149,6 +149,7 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
         // layout of the primary display
         NSDictionary *d = (NSDictionary *) IODisplayCreateInfoDictionary(iodisplay, kIODisplayOnlyPreferredName);
         uint displaySubpixelLayout = [[d objectForKey:@kDisplaySubPixelLayout] unsignedIntValue];
+        [d release];
         font_smoothing = (displaySubpixelLayout == kDisplaySubPixelLayoutUndefined ? 0 : 1);
 
         [pool release];
@@ -382,6 +383,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
                     NSLog(@"Unable to register font: %@", error);
                     CFRelease(error);
                 }
+                CGFontRelease(cgFont);
             }
         } else {
             CFErrorRef error;
