@@ -135,6 +135,8 @@ private slots:
 
     void sizeHint();
 
+    void integerOverflow();
+
     void taskQTBUG_5008_textFromValueAndValidate();
 
 public slots:
@@ -1014,6 +1016,35 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     QCOMPARE(spinbox.text(), spinbox.locale().toString(spinbox.value()));
 }
 
+void tst_QSpinBox::integerOverflow()
+{
+    QSpinBox sb;
+    sb.setRange(INT_MIN, INT_MAX);
+
+    sb.setValue(INT_MAX - 1);
+    sb.stepUp();
+    QCOMPARE(sb.value(), INT_MAX);
+    sb.stepUp();
+    QCOMPARE(sb.value(), INT_MAX);
+
+    sb.setValue(INT_MIN + 1);
+    sb.stepDown();
+    QCOMPARE(sb.value(), INT_MIN);
+    sb.stepDown();
+    QCOMPARE(sb.value(), INT_MIN);
+
+    sb.setValue(0);
+    QCOMPARE(sb.value(), 0);
+    sb.setSingleStep(INT_MAX);
+    sb.stepUp();
+    QCOMPARE(sb.value(), INT_MAX);
+    sb.stepDown();
+    QCOMPARE(sb.value(), 0);
+    sb.stepDown();
+    QCOMPARE(sb.value(), INT_MIN + 1);
+    sb.stepDown();
+    QCOMPARE(sb.value(), INT_MIN);
+}
 
 QTEST_MAIN(tst_QSpinBox)
 #include "tst_qspinbox.moc"
