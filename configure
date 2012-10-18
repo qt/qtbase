@@ -224,28 +224,28 @@ getXQMakeConf()
     getQMakeConf3 "$1" "$xspecvals"
 }
 
-# relies on $TEST_COMPILER being set correctly
 compilerSupportsFlag()
 {
     cat >conftest.cpp <<EOF
 int main() { return 0; }
 EOF
-    $TEST_COMPILER "$@" -o conftest-out.o conftest.cpp
+    "$@" -o conftest-out.o conftest.cpp
     ret=$?
     rm -f conftest.cpp conftest-out.o
     return $ret
 }
 
-# relies on $TEST_COMPILER being set correctly
 linkerSupportsFlag()
 {
+    compiler=$1
+    shift
     lflags=-Wl
     for flag
     do
 	safe_flag=`shellEscape "$flag"`
 	lflags=$lflags,$safe_flag
     done
-    compilerSupportsFlag "$lflags" >/dev/null 2>&1
+    compilerSupportsFlag $compiler $lflags >/dev/null 2>&1
 }
 
 # $1: newline-separated list of default paths
@@ -2669,7 +2669,7 @@ fi
 
 # auto-detect -fstack-protector-strong support (for QNX only currently)
 if [ "$XPLATFORM_QNX" = "yes" ]; then
-    if compilerSupportsFlag -fstack-protector-strong; then
+    if compilerSupportsFlag $TEST_COMPILER -fstack-protector-strong; then
        CFG_STACK_PROTECTOR_STRONG=yes
     else
        CFG_STACK_PROTECTOR_STRONG=no
