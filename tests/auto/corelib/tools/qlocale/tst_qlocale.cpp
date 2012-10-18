@@ -95,7 +95,9 @@ private slots:
 #endif
 
     void ctor();
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
     void emptyCtor();
+#endif
     void unixLocaleName();
     void double_conversion_data();
     void double_conversion();
@@ -374,6 +376,10 @@ void tst_QLocale::ctor()
 #undef TEST_CTOR
 }
 
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
+// Not when Q_OS_WINCE is defined because the test uses unsupported
+// Windows CE QProcess functionality (std streams, env)
+// Also Qt needs to be compiled without QT_NO_PROCESS
 static inline bool runSysApp(const QString &binary,
                              const QStringList &env,
                              QString *output,
@@ -424,12 +430,6 @@ static inline bool runSysAppTest(const QString &binary,
 
 void tst_QLocale::emptyCtor()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Uses unsupported Windows CE QProcess functionality (std streams, env)");
-#endif
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS");
-#else
 #define TEST_CTOR(req_lc, exp_str) \
     { \
     /* Test constructor without arguments. Needs separate process */ \
@@ -492,8 +492,8 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("123456", defaultLoc.toLatin1());
 
 #undef TEST_CTOR
-#endif
 }
+#endif
 
 void tst_QLocale::unixLocaleName()
 {
