@@ -1023,7 +1023,11 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::TextCaretMoved: {
         if (sendObject || sendObject_text_caret_moved) {
             QAIPointer iface = QAIPointer(event->accessibleInterface());
-            Q_ASSERT(iface->textInterface());
+            if (!iface->textInterface()) {
+                qWarning() << "Sending TextCaretMoved from object that does not implement text interface: " << iface << iface->object();
+                return;
+            }
+
             QString path = pathForInterface(iface);
             QDBusVariant cursorData;
             int pos = iface->textInterface()->cursorPosition();
