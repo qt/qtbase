@@ -358,11 +358,15 @@ static QTouchDevice *touchDevice = 0;
     }
 
     NSWindow *window = [self window];
-    int windowHeight = [window frame].size.height;
     NSPoint windowPoint = [theEvent locationInWindow];
+
+    int windowScreenY = [window frame].origin.y + [window frame].size.height;
+    int viewScreenY = [window convertBaseToScreen:[self convertPoint:[self frame].origin toView:nil]].y;
+    int titleBarHeight = windowScreenY - viewScreenY;
+
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
-    QPoint qtWindowPoint = QPoint(nsViewPoint.x, windowHeight - nsViewPoint.y);
-    NSPoint screenPoint = [window convertBaseToScreen : windowPoint];
+    QPoint qtWindowPoint = QPoint(nsViewPoint.x, titleBarHeight + nsViewPoint.y);
+    NSPoint screenPoint = [window convertBaseToScreen:windowPoint];
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     ulong timestamp = [theEvent timestamp] * 1000;
