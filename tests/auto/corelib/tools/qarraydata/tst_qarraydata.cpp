@@ -87,8 +87,13 @@ private slots:
     void fromRawData_data();
     void fromRawData();
     void literals();
+#if defined(Q_COMPILER_VARIADIC_MACROS) \
+        && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
     void variadicLiterals();
+#endif
+#ifdef Q_COMPILER_RVALUE_REFS
     void rValueReferences();
+#endif
     void grow();
 };
 
@@ -1564,10 +1569,11 @@ void tst_QArrayData::literals()
     }
 }
 
-void tst_QArrayData::variadicLiterals()
-{
 #if defined(Q_COMPILER_VARIADIC_MACROS) \
         && (defined(Q_COMPILER_LAMBDA) || defined(Q_CC_GNU))
+// Variadic Q_ARRAY_LITERAL need to be available in the current configuration.
+void tst_QArrayData::variadicLiterals()
+{
     {
         QArrayDataPointer<int> d =
             Q_ARRAY_LITERAL(int, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
@@ -1610,10 +1616,8 @@ void tst_QArrayData::variadicLiterals()
         for (int i = 0; i < 7; ++i)
             QCOMPARE(const_(v)[i], i);
     }
-#else
-    QSKIP("Variadic Q_ARRAY_LITERAL not available in current configuration.");
-#endif // defined(Q_COMPILER_VARIADIC_MACROS)
 }
+#endif
 
 #ifdef Q_COMPILER_RVALUE_REFS
 // std::remove_reference is in C++11, but requires library support
@@ -1666,11 +1670,10 @@ struct CompilerHasCxx11ImplicitMoves
     {
     };
 };
-#endif
 
+// RValue references need to be supported in the current configuration
 void tst_QArrayData::rValueReferences()
 {
-#ifdef Q_COMPILER_RVALUE_REFS
     if (!CompilerHasCxx11ImplicitMoves::value())
         QSKIP("Implicit move ctor not supported in current configuration");
 
@@ -1698,10 +1701,8 @@ void tst_QArrayData::rValueReferences()
 
     QCOMPARE(v3.size(), size_t(1));
     QCOMPARE(v3.front(), 42);
-#else
-    QSKIP("RValue references are not supported in current configuration");
-#endif
 }
+#endif
 
 void tst_QArrayData::grow()
 {
