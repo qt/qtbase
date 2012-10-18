@@ -1540,7 +1540,7 @@ QString AtSpiAdaptor::pathForInterface(const QAIPointer &interface, bool inDestr
     quintptr uintptr = reinterpret_cast<quintptr>(interfaceWithObject->object());
     path.prepend(QLatin1String(QSPI_OBJECT_PATH_PREFIX) + QString::number(uintptr));
 
-    if (!inDestructor && !m_handledObjects.contains(uintptr))
+    if (!inDestructor && (!m_handledObjects.contains(uintptr) || m_handledObjects.value(uintptr) == 0))
         m_handledObjects[uintptr] = QPointer<QObject>(interfaceWithObject->object());
 
     return path;
