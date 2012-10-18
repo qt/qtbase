@@ -137,7 +137,7 @@ private:
 #endif
 
 #ifndef QT_NO_LINEEDIT
-class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface
+class QAccessibleLineEdit : public QAccessibleWidget, public QAccessibleTextInterface, public QAccessibleEditableTextInterface
 {
 public:
     explicit QAccessibleLineEdit(QWidget *o, const QString &name = QString());
@@ -168,6 +168,10 @@ public:
     int characterCount() const;
     void scrollToSubstring(int startIndex, int endIndex);
 
+    // QAccessibleEditableTextInterface
+    void deleteText(int startOffset, int endOffset);
+    void insertText(int offset, const QString &text);
+    void replaceText(int startOffset, int endOffset, const QString &text);
 protected:
     QLineEdit *lineEdit() const;
 };

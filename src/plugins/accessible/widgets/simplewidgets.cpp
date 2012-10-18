@@ -653,6 +653,8 @@ void *QAccessibleLineEdit::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TextInterface)
         return static_cast<QAccessibleTextInterface*>(this);
+    if (t == QAccessible::EditableTextInterface)
+        return static_cast<QAccessibleEditableTextInterface*>(this);
     return QAccessibleWidget::interface_cast(t);
 }
 
@@ -782,6 +784,21 @@ void QAccessibleLineEdit::scrollToSubstring(int startIndex, int endIndex)
 {
     lineEdit()->setCursorPosition(endIndex);
     lineEdit()->setCursorPosition(startIndex);
+}
+
+void QAccessibleLineEdit::deleteText(int startOffset, int endOffset)
+{
+    lineEdit()->setText(lineEdit()->text().remove(startOffset, endOffset - startOffset));
+}
+
+void QAccessibleLineEdit::insertText(int offset, const QString &text)
+{
+    lineEdit()->setText(lineEdit()->text().insert(offset, text));
+}
+
+void QAccessibleLineEdit::replaceText(int startOffset, int endOffset, const QString &text)
+{
+    lineEdit()->setText(lineEdit()->text().replace(startOffset, endOffset - startOffset, text));
 }
 
 #endif // QT_NO_LINEEDIT
