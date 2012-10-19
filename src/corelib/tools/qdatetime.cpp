@@ -3391,10 +3391,11 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
         int year;
         QStringList timeParts = parts.at(3).split(QLatin1Char(':'));
         if ((timeParts.count() == 3) || (timeParts.count() == 2)) {
+            // Year is after time, e.g. "Sun Dec 1 13:02:00 1974"
             year = parts.at(4).toInt(&ok);
             if (!ok)
                 return QDateTime();
-        } else {
+        } else { // Year is before time, e.g. "Sun Dec 1 1974 13:02:00"
             timeParts = parts.at(4).split(QLatin1Char(':'));
             if ((timeParts.count() != 3) && (timeParts.count() != 2))
                 return QDateTime();
