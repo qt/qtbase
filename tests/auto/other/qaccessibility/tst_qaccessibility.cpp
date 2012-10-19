@@ -99,7 +99,7 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     }
 
     // Verify that we get a valid QAccessibleInterface for the child.
-    QAccessibleInterface *childInterface = QAccessible::queryAccessibleInterface(child);
+    QAIPtr childInterface(QAccessible::queryAccessibleInterface(child));
     if (!childInterface) {
         qWarning("tst_QAccessibility::verifyChild: Failed to retrieve interface for child.");
         return false;
@@ -107,7 +107,7 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
 
     // QAccessibleInterface::indexOfChild():
     // Verify that indexOfChild() returns an index equal to the index passed in
-    int indexFromIndexOfChild = interface->indexOfChild(childInterface);
+    int indexFromIndexOfChild = interface->indexOfChild(childInterface.data());
     if (indexFromIndexOfChild != index) {
         qWarning("tst_QAccessibility::verifyChild (indexOfChild()):");
         qWarning() << "Expected:" << index;
@@ -116,18 +116,17 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
     }
 
     // Navigate to child, compare its object and role with the interface from queryAccessibleInterface(child).
-    QAccessibleInterface *navigatedChildInterface = interface->child(index);
-    if (navigatedChildInterface == 0)
+    QAIPtr navigatedChildInterface(interface->child(index));
+    if (!navigatedChildInterface)
         return false;
 
     const QRect rectFromInterface = navigatedChildInterface->rect();
-    delete navigatedChildInterface;
 
     // QAccessibleInterface::childAt():
     // Calculate global child position and check that the interface
     // returns the correct index for that position.
     QPoint globalChildPos = child->mapToGlobal(QPoint(0, 0));
-    QAccessibleInterface *childAtInterface = interface->childAt(globalChildPos.x(), globalChildPos.y());
+    QAIPtr childAtInterface(interface->childAt(globalChildPos.x(), globalChildPos.y()));
     if (!childAtInterface) {
         qWarning("tst_QAccessibility::verifyChild (childAt()):");
         qWarning() << "Expected:" << childInterface;
@@ -140,8 +139,6 @@ static inline bool verifyChild(QWidget *child, QAccessibleInterface *interface,
         qWarning() << "Actual:  " << childAtInterface;
         return false;
     }
-    delete childInterface;
-    delete childAtInterface;
 
     // QAccessibleInterface::rect():
     // Calculate global child geometry and check that the interface
@@ -167,12 +164,10 @@ static inline int indexOfChild(QAccessibleInterface *parentInterface, QWidget *c
 {
     if (!parentInterface || !childWidget)
         return -1;
-    QAccessibleInterface *childInterface = QAccessible::queryAccessibleInterface(childWidget);
+    QAIPtr childInterface(QAccessible::queryAccessibleInterface(childWidget));
     if (!childInterface)
         return -1;
-    int index = parentInterface->indexOfChild(childInterface);
-    delete childInterface;
-    return index;
+    return parentInterface->indexOfChild(childInterface.data());
 }
 
 #define EXPECT(cond) \
@@ -187,36 +182,24 @@ static int verifyHierarchy(QAccessibleInterface *iface)
 {
     int errorAt = 0;
     static int treelevel = 0;   // for error diagnostics
-    QAccessibleInterface *middleChild, *if2;
-    middleChild = 0;
+    QAIPtr middleChild;
+    QAIPtr if2;
     ++treelevel;
     int middle = iface->childCount()/2 + 1;
     if (iface->childCount() >= 2) {
-        middleChild = iface->child(middle - 1);
+        middleChild = QAIPtr(iface->child(middle - 1));
     }
     for (int i = 0; i < iface->childCount() && !errorAt; ++i) {
-        if2 = iface->child(i);
+        if2 = QAIPtr(iface->child(i));
         EXPECT(if2 != 0);
-        // navigate Ancestor...
-        QAccessibleInterface *parent = if2->parent();
+        // navigate Ancestor
+        QAIPtr parent(if2->parent());
         EXPECT(iface->object() == parent->object());
-        delete parent;
 
-            // navigate Sibling...
-//            if (middleChild) {
-//                entry = if2->navigate(QAccessible::Sibling, middle, &if3);
-//                EXPECT(entry == 0 && if3->object() == middleChild->object());
-//                if (entry == 0)
-//                    delete if3;
-//                EXPECT(iface->indexOfChild(middleChild) == middle);
-//            }
-
-        // verify children...
+        // verify children
         if (!errorAt)
-            errorAt = verifyHierarchy(if2);
-        delete if2;
+            errorAt = verifyHierarchy(if2.data());
     }
-    delete middleChild;
 
     --treelevel;
     return errorAt;
@@ -224,10 +207,7 @@ static int verifyHierarchy(QAccessibleInterface *iface)
 
 QRect childRect(QAccessibleInterface *iface, int index = 0)
 {
-    QAccessibleInterface *child = iface->child(index);
-    QRect rect = child->rect();
-    delete child;
-    return rect;
+    return QAIPtr(iface->child(index))->rect();
 }
 
 class tst_QAccessibility : public QObject
@@ -298,12 +278,12 @@ const double Q_PI = 3.14159265358979323846;
 
 QAccessible::State state(QWidget * const widget)
 {
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(widget);
-    if (!iface)
+    QAIPtr iface(QAccessible::queryAccessibleInterface(widget));
+    if (!iface) {
         qWarning() << "Cannot get QAccessibleInterface for widget";
-    QAccessible::State state = (iface ? iface->state() : QAccessible::State());
-    delete iface;
-    return state;
+        return QAccessible::State();
+    }
+    return iface->state();
 }
 
 class QtTestAccessibleWidget: public QWidget
