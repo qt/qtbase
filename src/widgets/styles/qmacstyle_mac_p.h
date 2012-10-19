@@ -211,7 +211,8 @@ public:
               lastUpdate(QDateTime::currentMSecsSinceEpoch()),
               hovered(false),
               lastHovered(0),
-              cleared(false)
+              cleared(false),
+              animating(false)
         {}
         int lastValue;
         int lastMinimum;
@@ -221,6 +222,7 @@ public:
         bool hovered;
         qint64 lastHovered;
         bool cleared;
+        bool animating;
     };
     mutable QMap<const QWidget*, OverlayScrollBarInfo> scrollBarInfos;
 

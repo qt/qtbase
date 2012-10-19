@@ -1739,7 +1739,6 @@ bool QMacStylePrivate::addWidget(QWidget *w)
         bool isScrollBar = (qobject_cast<QScrollBar *>(w));
         if (isScrollBar) {
             w->installEventFilter(q);
-            startAnimate(AquaScrollBar, w);
             return true;
         }
     }
@@ -5105,6 +5104,14 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 opacity = 1.0 - qMax(0.0, (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay) /
                                           QMacStylePrivate::ScrollBarFadeOutDuration);
                 info.cleared = opacity <= 0.0;
+
+                if (info.animating && info.cleared) {
+                    d->stopAnimation(slider->styleObject);
+                    info.animating = false;
+                } else if (!info.animating && !info.cleared) {
+                    d->startAnimation(new QStyleAnimation(slider->styleObject));
+                    info.animating = true;
+                }
 
                 CGContextBeginTransparencyLayerWithRect(cg, qt_hirectForQRect(slider->rect), NULL);
                 CGContextSetAlpha(cg, opacity);
