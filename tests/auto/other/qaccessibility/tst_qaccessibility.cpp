@@ -3056,60 +3056,127 @@ void tst_QAccessibility::dockWidgetTest()
     mw->setMenuBar(mb);
 
     QDockWidget *dock1 = new QDockWidget(mw);
+    dock1->setWindowTitle("Dock 1");
     mw->addDockWidget(Qt::LeftDockWidgetArea, dock1);
     QPushButton *pb1 = new QPushButton(tr("Push me"), dock1);
     dock1->setWidget(pb1);
 
     QDockWidget *dock2 = new QDockWidget(mw);
+    dock2->setWindowTitle("Dock 2");
     mw->addDockWidget(Qt::BottomDockWidgetArea, dock2);
     QPushButton *pb2 = new QPushButton(tr("Push me"), dock2);
     dock2->setWidget(pb2);
+    dock2->setFeatures(QDockWidget::DockWidgetClosable);
 
     mw->resize(600,400);
     mw->show();
-#if defined(Q_OS_UNIX)
-    QCoreApplication::processEvents();
-    QTest::qWait(100);
-#endif
+    QTest::qWaitForWindowExposed(mw);
 
     QAccessibleInterface *accMainWindow = QAccessible::queryAccessibleInterface(mw);
     // 4 children: menu bar, dock1, dock2, and central widget
     QCOMPARE(accMainWindow->childCount(), 4);
     QAccessibleInterface *accDock1 = 0;
+    QAccessibleInterface *accDock2 = 0;
     for (int i = 0; i < 4; ++i) {
-        accDock1 = accMainWindow->child(i);
-        if (accMainWindow->role() == QAccessible::Window) {
-            if (accDock1 && qobject_cast<QDockWidget*>(accDock1->object()) == dock1) {
-                break;
-            }
-        }
+        QAccessibleInterface *child = accMainWindow->child(i);
+        if (child && child->object() == dock1)
+            accDock1 = child;
+        if (child && child->object() == dock2)
+            accDock2 = child;
     }
+
+    // Dock widgets consist of
+    // 0 contents
+    // 1 close button
+    // 2 float button
     QVERIFY(accDock1);
     QCOMPARE(accDock1->role(), QAccessible::Window);
+    QCOMPARE(accDock1->text(QAccessible::Name), dock1->windowTitle());
+    QCOMPARE(accDock1->childCount(), 3);
 
-    QAccessibleInterface *dock1TitleBar = accDock1->child(0);
-    QCOMPARE(dock1TitleBar->role(), QAccessible::TitleBar);
-    QVERIFY(accDock1->rect().contains(dock1TitleBar->rect()));
+    QAccessibleInterface *dock1Widget = accDock1->child(0);
+    QCOMPARE(dock1Widget->role(), QAccessible::Button);
+    QCOMPARE(dock1Widget->text(QAccessible::Name), pb1->text());
 
-    QPoint globalPos = dock1->mapToGlobal(QPoint(0,0));
-    globalPos.rx()+=5;  //### query style
-    globalPos.ry()+=5;
-    QAccessibleInterface *childAt = accDock1->childAt(globalPos.x(), globalPos.y());    //###
-    QCOMPARE(childAt->role(), QAccessible::TitleBar);
-    int index = accDock1->indexOfChild(childAt);
-    QAccessibleInterface *accTitleBar = accDock1->child(index);
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Dock Widget geometry on Mac seems broken.", Continue);
+#endif
+    QVERIFY(accDock1->rect().contains(dock1Widget->rect()));
+    QCOMPARE(accDock1->indexOfChild(dock1Widget), 0);
+    QCOMPARE(dock1Widget->parent()->object(), dock1);
 
-    QCOMPARE(accTitleBar->role(), QAccessible::TitleBar);
-    QCOMPARE(accDock1->indexOfChild(accTitleBar), 0);
-    QAccessibleInterface *acc;
-    acc = accTitleBar->parent();
-    QVERIFY(acc);
-    QCOMPARE(acc->role(), QAccessible::Window);
+    QAccessibleInterface *dock1Close = accDock1->child(1);
+    QCOMPARE(dock1Close->role(), QAccessible::Button);
+    QCOMPARE(dock1Close->text(QAccessible::Name), QDockWidget::tr("Close"));
+    QVERIFY(accDock1->rect().contains(dock1Close->rect()));
+    QCOMPARE(accDock1->indexOfChild(dock1Close), 1);
+    QCOMPARE(dock1Close->parent()->object(), dock1);
 
-    delete pb1;
-    delete pb2;
-    delete dock1;
-    delete dock2;
+    QAccessibleInterface *dock1Float = accDock1->child(2);
+    QCOMPARE(dock1Float->role(), QAccessible::Button);
+    QCOMPARE(dock1Float->text(QAccessible::Name), QDockWidget::tr("Float"));
+    QVERIFY(accDock1->rect().contains(dock1Float->rect()));
+    QCOMPARE(accDock1->indexOfChild(dock1Float), 2);
+    QVERIFY(!dock1Float->state().invisible);
+
+    QVERIFY(accDock2);
+    QCOMPARE(accDock2->role(), QAccessible::Window);
+    QCOMPARE(accDock2->text(QAccessible::Name), dock2->windowTitle());
+    QCOMPARE(accDock2->childCount(), 3);
+
+    QAccessibleInterface *dock2Widget = accDock2->child(0);
+    QCOMPARE(dock2Widget->role(), QAccessible::Button);
+    QCOMPARE(dock2Widget->text(QAccessible::Name), pb1->text());
+#ifdef Q_OS_MAC
+    QEXPECT_FAIL("", "Dock Widget geometry on Mac seems broken.", Continue);
+#endif
+    QVERIFY(accDock2->rect().contains(dock2Widget->rect()));
+    QCOMPARE(accDock2->indexOfChild(dock2Widget), 0);
+
+    QAccessibleInterface *dock2Close = accDock2->child(1);
+    QCOMPARE(dock2Close->role(), QAccessible::Button);
+    QCOMPARE(dock2Close->text(QAccessible::Name), QDockWidget::tr("Close"));
+    QVERIFY(accDock2->rect().contains(dock2Close->rect()));
+    QCOMPARE(accDock2->indexOfChild(dock2Close), 1);
+    QVERIFY(!dock2Close->state().invisible);
+
+    QAccessibleInterface *dock2Float = accDock2->child(2);
+    QCOMPARE(dock2Float->role(), QAccessible::Button);
+    QCOMPARE(dock2Float->text(QAccessible::Name), QDockWidget::tr("Float"));
+    QCOMPARE(accDock2->indexOfChild(dock2Float), 2);
+    QVERIFY(dock2Float->state().invisible);
+
+    QPoint buttonPoint = pb2->mapToGlobal(QPoint(pb2->width()/2, pb2->height()/2));
+    QAccessibleInterface *childAt = accDock2->childAt(buttonPoint.x(), buttonPoint.y());
+    QVERIFY(childAt);
+    QVERIFY(childAt->object() == pb2);
+
+    QWidget *close1 = qobject_cast<QWidget*>(dock1Close->object());
+    QPoint close1ButtonPoint = close1->mapToGlobal(QPoint(close1->width()/2, close1->height()/2));
+    QAccessibleInterface *childAt2 = accDock1->childAt(close1ButtonPoint.x(), close1ButtonPoint.y());
+    QVERIFY(childAt2);
+    QVERIFY(childAt2->object() == close1);
+
+    // custom title bar widget
+    QDockWidget *dock3 = new QDockWidget(mw);
+    dock3->setWindowTitle("Dock 3");
+    mw->addDockWidget(Qt::LeftDockWidgetArea, dock3);
+    QPushButton *pb3 = new QPushButton(tr("Push me"), dock3);
+    dock3->setWidget(pb3);
+    QLabel *titleLabel = new QLabel("I am a title widget");
+    dock3->setTitleBarWidget(titleLabel);
+
+    QAccessibleInterface *accDock3 = accMainWindow->child(4);
+    QVERIFY(accDock3);
+    QCOMPARE(accDock3->role(), QAccessible::Window);
+    QCOMPARE(accDock3->text(QAccessible::Name), dock3->windowTitle());
+    QCOMPARE(accDock3->childCount(), 2);
+    QAccessibleInterface *titleWidget = accDock3->child(1);
+    QVERIFY(titleWidget);
+    QCOMPARE(titleWidget->text(QAccessible::Name), titleLabel->text());
+    QAccessibleInterface *dock3Widget = accDock3->child(0);
+    QCOMPARE(dock3Widget->text(QAccessible::Name), pb3->text());
+
     delete mw;
     QTestAccessibility::clearEvents();
 #endif // QT_NO_DOCKWIDGET

@@ -674,12 +674,18 @@ void QDockWidgetPrivate::updateButtons()
         = qobject_cast<QAbstractButton*>(dwLayout->widgetForRole(QDockWidgetLayout::FloatButton));
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarNormalButton, &opt, q));
     button->setVisible(canFloat && !hideButtons);
-
+#ifndef QT_NO_ACCESSIBILITY
+    button->setAccessibleName(QDockWidget::tr("Float"));
+    button->setAccessibleDescription(QDockWidget::tr("Undocks and re-attaches the dock widget"));
+#endif
     button
         = qobject_cast <QAbstractButton*>(dwLayout->widgetForRole(QDockWidgetLayout::CloseButton));
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarCloseButton, &opt, q));
     button->setVisible(canClose && !hideButtons);
-
+#ifndef QT_NO_ACCESSIBILITY
+    button->setAccessibleName(QDockWidget::tr("Close"));
+    button->setAccessibleDescription(QDockWidget::tr("Closes the dock widget"));
+#endif
     q->setAttribute(Qt::WA_ContentsPropagated,
                     (canFloat || canClose) && !hideButtons);
 
