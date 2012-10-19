@@ -1507,7 +1507,7 @@ QString AtSpiAdaptor::pathForObject(QObject *object) const
         qAtspiDebug() << "AtSpiAdaptor::pathForObject: warning: creating path with QAction as object.";
     }
     quintptr uintptr = reinterpret_cast<quintptr>(object);
-    if (!m_handledObjects.contains(uintptr))
+    if (!m_handledObjects.contains(uintptr) || m_handledObjects.value(uintptr) == 0)
         m_handledObjects[uintptr] = QPointer<QObject>(object);
     return QLatin1String(QSPI_OBJECT_PATH_PREFIX) + QString::number(uintptr);
 }
