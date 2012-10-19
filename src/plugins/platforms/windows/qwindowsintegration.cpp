@@ -187,6 +187,40 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
     \class QWindowsIntegration
     \brief QPlatformIntegration implementation for Windows.
     \internal
+
+    \section1 Programming Considerations
+
+    The platform plugin should run on Desktop Windows from Windows XP onwards
+    and Windows Embedded.
+
+    It should compile with:
+    \list
+    \li Microsoft Visual Studio 2008 or later (using the Microsoft Windows SDK,
+        (\c Q_CC_MSVC).
+    \li Stock \l{http://mingw.org/}{MinGW} (\c Q_CC_MINGW).
+        This version ships with headers that are missing a lot of WinAPI.
+    \li MinGW distributions using GCC 4.7 or higher and a recent MinGW-w64 runtime API,
+        such as \l{http://tdm-gcc.tdragon.net/}{TDM-GCC}, or
+        \l{http://mingwbuilds.sourceforge.net/}{MinGW-builds}
+        (\c Q_CC_MINGW and \c __MINGW64_VERSION_MAJOR indicating the version).
+        MinGW-w64 provides more complete headers (compared to stock MinGW from mingw.org),
+        including a considerable part of the Windows SDK.
+    \li Visual Studio 2008 for Windows Embedded (\c Q_OS_WINCE).
+    \endlist
+
+    The file \c qtwindows_additional.h contains defines and declarations that
+    are missing in MinGW. When encountering missing declarations, it should
+    be added there so that \c #ifdefs for MinGW can be avoided. Similarly,
+    \c qplatformfunctions_wince.h contains defines and declarations for
+    Windows Embedded.
+
+    When using a function from the WinAPI, the minimum supported Windows version
+    and Windows Embedded support should be checked. If the function is not supported
+    on Windows XP or is not present in the MinGW-headers, it should be dynamically
+    resolved. For this purpose, QWindowsContext has static structs like
+    QWindowsUser32DLL and QWindowsShell32DLL. All function pointers should go to
+    these structs to avoid lookups in several places.
+
     \ingroup qt-lighthouse-win
 */
 
@@ -198,9 +232,10 @@ struct QWindowsIntegrationPrivate
     typedef QSharedPointer<QOpenGLStaticContext> QOpenGLStaticContextPtr;
 #endif
 
-    QWindowsIntegrationPrivate();
+    explicit QWindowsIntegrationPrivate(const QStringList &paramList);
     ~QWindowsIntegrationPrivate();
 
+    const unsigned m_options;
     QWindowsContext m_context;
     QPlatformFontDatabase *m_fontDatabase;
     QWindowsNativeInterface m_nativeInterface;
@@ -221,8 +256,27 @@ struct QWindowsIntegrationPrivate
     QWindowsServices m_services;
 };
 
-QWindowsIntegrationPrivate::QWindowsIntegrationPrivate()
-    : m_fontDatabase(0), m_eventDispatcher(new QWindowsGuiEventDispatcher)
+static inline unsigned parseOptions(const QStringList &paramList)
+{
+    unsigned options = 0;
+    foreach (const QString &param, paramList) {
+        if (param.startsWith(QLatin1String("fontengine="))) {
+            if (param.endsWith(QLatin1String("freetype"))) {
+                options |= QWindowsIntegration::FontDatabaseFreeType;
+            } else if (param.endsWith(QLatin1String("native"))) {
+                options |= QWindowsIntegration::FontDatabaseNative;
+            }
+        } else if (param == QLatin1String("gl=gdi")) {
+            options |= QWindowsIntegration::DisableArb;
+        }
+    }
+    return options;
+}
+
+QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramList)
+    : m_options(parseOptions(paramList))
+    , m_fontDatabase(0)
+    , m_eventDispatcher(new QWindowsGuiEventDispatcher)
 {
 }
 
@@ -232,8 +286,8 @@ QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()
         delete m_fontDatabase;
 }
 
-QWindowsIntegration::QWindowsIntegration() :
-    d(new QWindowsIntegrationPrivate)
+QWindowsIntegration::QWindowsIntegration(const QStringList &paramList) :
+    d(new QWindowsIntegrationPrivate(paramList))
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(d->m_eventDispatcher);
 #ifndef QT_NO_CLIPBOARD
@@ -337,25 +391,6 @@ QPlatformOpenGLContext
 /* Workaround for QTBUG-24205: In 'Auto', pick the FreeType engine for
  * QML2 applications. */
 
-enum FontDatabaseOption {
-    FontDatabaseFreeType,
-    FontDatabaseNative,
-    FontDatabaseAuto
-};
-
-static inline FontDatabaseOption fontDatabaseOption(const QObject &nativeInterface)
-{
-    const QVariant argumentV = nativeInterface.property("fontengine");
-    if (argumentV.isValid()) {
-        const QString argument = argumentV.toString();
-        if (argument == QLatin1String("freetype"))
-            return FontDatabaseFreeType;
-        if (argument == QLatin1String("native"))
-            return FontDatabaseNative;
-    }
-    return FontDatabaseAuto;
-}
-
 #ifdef Q_OS_WINCE
 // It's not easy to detect if we are running a QML application
 // Let's try to do so by checking if the QtQuick module is loaded.
@@ -377,10 +412,9 @@ QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 #ifdef QT_NO_FREETYPE
         d->m_fontDatabase = new QWindowsFontDatabase();
 #else // QT_NO_FREETYPE
-        FontDatabaseOption option = fontDatabaseOption(d->m_nativeInterface);
-        if (option == FontDatabaseFreeType) {
+        if (d->m_options & QWindowsIntegration::FontDatabaseFreeType) {
             d->m_fontDatabase = new QWindowsFontDatabaseFT;
-        } else if (option == FontDatabaseNative){
+        } else if (d->m_options & QWindowsIntegration::FontDatabaseNative){
             d->m_fontDatabase = new QWindowsFontDatabase;
         } else {
 #ifndef Q_OS_WINCE
@@ -484,6 +518,11 @@ QPlatformAccessibility *QWindowsIntegration::accessibility() const
 QWindowsIntegration *QWindowsIntegration::instance()
 {
     return static_cast<QWindowsIntegration *>(QGuiApplicationPrivate::platformIntegration());
+}
+
+unsigned QWindowsIntegration::options() const
+{
+    return d->m_options;
 }
 
 QAbstractEventDispatcher * QWindowsIntegration::guiThreadEventDispatcher() const

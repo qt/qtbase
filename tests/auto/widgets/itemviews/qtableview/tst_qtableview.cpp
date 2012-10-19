@@ -2028,7 +2028,7 @@ void tst_QTableView::resizeRowsToContents()
 
     delegate.hint = QSize(cellWidth, cellHeight);
 
-    QSignalSpy resizedSpy(view.verticalHeader(), SIGNAL(sectionResized(int, int, int)));
+    QSignalSpy resizedSpy(view.verticalHeader(), SIGNAL(sectionResized(int,int,int)));
     view.resizeRowsToContents();
 
     QCOMPARE(resizedSpy.count(), model.rowCount());
@@ -2075,7 +2075,7 @@ void tst_QTableView::resizeColumnsToContents()
 
     delegate.hint = QSize(cellWidth, cellHeight);
 
-    QSignalSpy resizedSpy(view.horizontalHeader(), SIGNAL(sectionResized(int, int, int)));
+    QSignalSpy resizedSpy(view.horizontalHeader(), SIGNAL(sectionResized(int,int,int)));
     view.resizeColumnsToContents();
 
     QCOMPARE(resizedSpy.count(), model.columnCount());
@@ -3981,7 +3981,7 @@ Q_OBJECT
 public:
     TestTableView(QWidget *parent = 0) : QTableView(parent)
     {
-        connect(this, SIGNAL(entered(const QModelIndex&)), this, SLOT(openEditor(const QModelIndex&)));
+        connect(this, SIGNAL(entered(QModelIndex)), this, SLOT(openEditor(QModelIndex)));
     }
     ~TestTableView(){}
 public slots:

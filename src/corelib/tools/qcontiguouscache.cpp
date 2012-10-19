@@ -80,8 +80,15 @@ void QContiguousCacheData::freeData(QContiguousCacheData *data)
     of matching how user interface views most commonly request data, as
     a set of rows localized around the current scrolled position.  This
     restriction allows the cache to consume less memory and processor
-    cycles than QCache.  The QContiguousCache class also can provide
-    an upper bound on memory usage via setCapacity().
+    cycles than QCache.
+
+    QContiguousCache operates on a fixed capacity, set with setCapacity() or
+    passed as a parameter to the constructor. This capacity is the upper bound
+    on memory usage by the cache itself, not including the memory allocated by
+    the elements themselves. Note that a cache with a capacity of zero (the
+    default) means no items will be stored: the insert(), append() and
+    prepend() operations will effectively be no-ops. Therefore, it's important
+    to set the capacity to a reasonable value before adding items to the cache.
 
     The simplest way of using a contiguous cache is to use the append()
     and prepend().

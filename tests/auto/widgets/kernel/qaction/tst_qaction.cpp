@@ -369,7 +369,7 @@ void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
     checkedAction->setChecked(true);
 
     QSignalSpy actionSpy(checkedAction, SIGNAL(triggered(bool)));
-    QSignalSpy actionGroupSpy(&ag, SIGNAL(triggered(QAction *)));
+    QSignalSpy actionGroupSpy(&ag, SIGNAL(triggered(QAction*)));
     QCOMPARE(actionGroupSpy.count(), 0);
     QCOMPARE(actionSpy.count(), 0);
     checkedAction->trigger();

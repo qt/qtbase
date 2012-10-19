@@ -341,6 +341,8 @@ void QContiguousCache<T>::freeData(Data *x)
 template <typename T>
 void QContiguousCache<T>::append(const T &value)
 {
+    if (!d->alloc)
+        return;     // zero capacity
     detach();
     if (QTypeInfo<T>::isComplex) {
         if (d->count == d->alloc)
@@ -362,6 +364,8 @@ void QContiguousCache<T>::append(const T &value)
 template<typename T>
 void QContiguousCache<T>::prepend(const T &value)
 {
+    if (!d->alloc)
+        return;     // zero capacity
     detach();
     if (d->start)
         d->start--;
@@ -385,6 +389,8 @@ template<typename T>
 void QContiguousCache<T>::insert(int pos, const T &value)
 {
     Q_ASSERT_X(pos >= 0 && pos < INT_MAX, "QContiguousCache<T>::insert", "index out of range");
+    if (!d->alloc)
+        return;     // zero capacity
     detach();
     if (containsIndex(pos)) {
         if (QTypeInfo<T>::isComplex) {

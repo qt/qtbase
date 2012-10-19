@@ -3,6 +3,15 @@ load(qt_build_config)
 TEMPLATE = lib
 CONFIG += plugin
 
+if(win32|mac):!macx-xcode {
+    contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
+    contains(QT_CONFIG, build_all):CONFIG += build_all
+}
+contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
+contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
+contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
+contains(QT_CONFIG, c++11):CONFIG += c++11
+
 isEmpty(CXX_MODULE) {
     CXX_MODULE = $$TARGET
     TARGET = declarative_$${TARGET}
@@ -21,7 +30,6 @@ INSTALLS += target
 # Some final setup
 
 TARGET = $$qtLibraryTarget($$TARGET)
-contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 
 load(qt_targets)
 

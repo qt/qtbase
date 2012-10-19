@@ -725,7 +725,9 @@ public:
     void grabMouseWhileInWindow();
     void registerTouchWindow();
     void winSetupGestures();
-#elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
+#elif defined(Q_OS_MAC) // <--------------------------------------------------------- MAC
+    void macUpdateSizeAttribute();
+#elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC (old stuff)
     // This is new stuff
     uint needWindowChange : 1;
 
@@ -752,7 +754,6 @@ public:
     //these are here just for code compat (HIViews)
     Qt::HANDLE qd_hd;
 
-    void macUpdateSizeAttribute();
     void macUpdateHideOnSuspend();
     void macUpdateOpaqueSizeGrip();
     void macUpdateIgnoreMouseEvents();
@@ -802,8 +803,6 @@ public:
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
     void registerTouchWindow(bool enable = true);
 #endif
-    void setMaxWindowState_helper();
-    void setFullScreenSize_helper();
     bool stealKeyboardGrab(bool grab);
     bool stealMouseGrab(bool grab);
 };

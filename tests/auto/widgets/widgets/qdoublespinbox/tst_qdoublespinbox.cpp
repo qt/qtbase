@@ -311,7 +311,7 @@ void tst_QDoubleSpinBox::setTracking()
     spin.setDecimals(decimals);
     spin.show();
 
-    connect(&spin, SIGNAL(valueChanged(QString)), this, SLOT(valueChangedHelper(const QString &)));
+    connect(&spin, SIGNAL(valueChanged(QString)), this, SLOT(valueChangedHelper(QString)));
 
     keys.simulate(&spin);
     QCOMPARE(actualTexts, texts);

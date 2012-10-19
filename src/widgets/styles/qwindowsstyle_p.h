@@ -59,31 +59,22 @@
 #ifndef QT_NO_STYLE_WINDOWS
 #include <qlist.h>
 #include <qhash.h>
-#include <qelapsedtimer.h>
 
 QT_BEGIN_NAMESPACE
 
 class QTime;
-class QProgressBar;
 
 class QWindowsStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QWindowsStyle)
 public:
     QWindowsStylePrivate();
-    void startAnimation(QObject *o, QProgressBar *bar);
-    void stopAnimation(QObject *o, QProgressBar *bar);
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }
     bool alt_down;
     QList<const QWidget *> seenAlt;
     int menuBarTimer;
 
-    QList<QProgressBar *> animatedProgressBars;
-    int animationFps;
-    int animateTimer;
-    QElapsedTimer startTime;
-    int animateStep;    
     QColor inactiveCaptionText;
     QColor activeCaptionColor;
     QColor activeGradientCaptionColor;

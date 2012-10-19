@@ -60,7 +60,7 @@ public:
         : QDBusServer(addr, parent),
           m_conn("none")
     {
-        connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
+        connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));
     }
 
 public slots:

@@ -383,7 +383,7 @@ void tst_QTreeWidget::currentItem()
         tree.setSelectionBehavior(x ? QAbstractItemView::SelectItems
                                   : QAbstractItemView::SelectRows);
         QSignalSpy currentItemChangedSpy(
-            &tree, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
+            &tree, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
         QSignalSpy itemSelectionChangedSpy(
             &tree, SIGNAL(itemSelectionChanged()));
 
@@ -1719,9 +1719,9 @@ void tst_QTreeWidget::setData()
         testWidget->setHeaderItem(headerItem);
 
         QSignalSpy headerDataChangedSpy(
-            testWidget->model(), SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
+            testWidget->model(), SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
         QSignalSpy dataChangedSpy(
-            testWidget->model(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+            testWidget->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)));
         QSignalSpy itemChangedSpy(
             testWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)));
         headerItem->setText(0, "test");
@@ -2403,7 +2403,7 @@ void tst_QTreeWidget::changeDataWithSorting()
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
         persistent << model->index(j, 0, QModelIndex());
 
-    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     QSignalSpy layoutChangedSpy(model, SIGNAL(layoutChanged()));
 
     QTreeWidgetItem *item = w.topLevelItem(itemIndex);
@@ -2579,7 +2579,7 @@ void tst_QTreeWidget::changeDataWithStableSorting()
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
         persistent << model->index(j, 0, QModelIndex());
 
-    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)));
+    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     QSignalSpy layoutChangedSpy(model, SIGNAL(layoutChanged()));
 
     StableItem *item = static_cast<StableItem *>(w.topLevelItem(itemIndex));
@@ -2675,8 +2675,8 @@ void tst_QTreeWidget::expandAndCallapse()
         for (int j = 0; j < 10; ++j)
             new QTreeWidgetItem(p, QStringList() << QString("%1").arg(j));
     }
-    QSignalSpy spy0(&tw, SIGNAL(itemExpanded(QTreeWidgetItem *)));
-    QSignalSpy spy1(&tw, SIGNAL(itemCollapsed(QTreeWidgetItem *)));
+    QSignalSpy spy0(&tw, SIGNAL(itemExpanded(QTreeWidgetItem*)));
+    QSignalSpy spy1(&tw, SIGNAL(itemCollapsed(QTreeWidgetItem*)));
 
 
     tw.expandItem(p);
@@ -3183,7 +3183,7 @@ void tst_QTreeWidget::emitDataChanged()
 {
 
     QTreeWidget *tree = new QTreeWidget;
-    QSignalSpy spy(tree, SIGNAL(itemChanged(QTreeWidgetItem *, int)));
+    QSignalSpy spy(tree, SIGNAL(itemChanged(QTreeWidgetItem*,int)));
     TreeWidgetItem *item = new TreeWidgetItem();
     tree->insertTopLevelItem(0, item);
     item->_emitDataChanged();

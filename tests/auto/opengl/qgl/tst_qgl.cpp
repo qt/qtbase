@@ -439,7 +439,7 @@ void tst_QGL::getSetCheck()
 
     // int QGLFormat::major/minorVersion()
     // void QGLFormat::setVersion(int, int)
-    QCOMPARE(obj1.majorVersion(), 1);
+    QCOMPARE(obj1.majorVersion(), 2);
     QCOMPARE(obj1.minorVersion(), 0);
     obj1.setVersion(3, 2);
     QCOMPARE(obj1.majorVersion(), 3);
@@ -2277,7 +2277,7 @@ protected:
 
         delete display;
         display = new DisplayWidget(this);
-        connect(producer, SIGNAL(imageReady(const QImage &)), display, SLOT(setImage(const QImage &)));
+        connect(producer, SIGNAL(imageReady(QImage)), display, SLOT(setImage(QImage)));
 
         display->setGeometry(rect());
         display->show();

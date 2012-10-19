@@ -192,7 +192,9 @@ private:
 #ifndef QT_NO_FILESYSTEMWATCHER
     QFileSystemWatcher *watcher;
 #endif
+#ifdef Q_OS_WIN
     bool m_resolveSymlinks; // not accessed by run()
+#endif
     QFileIconProvider *m_iconProvider; // not accessed by run()
     QFileIconProvider defaultProvider;
 };

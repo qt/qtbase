@@ -63,7 +63,7 @@
 #include <QtWidgets/QFileDialog>
 
 #include <QtWidgets/QGtkStyle>
-#include <private/qwindowsstyle_p.h>
+#include <private/qcommonstyle_p.h>
 
 #undef signals // Collides with GTK symbols
 #include <gtk/gtk.h>
@@ -317,7 +317,7 @@ typedef char* (*Ptr_gnome_icon_lookup_sync)  (
         GnomeIconLookupFlags flags,
         GnomeIconLookupResultFlags *result);
 
-class QGtkStylePrivate : public QWindowsStylePrivate
+class QGtkStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QGtkStyle)
 public:
@@ -521,6 +521,15 @@ protected:
     static void removeWidgetFromMap(const QHashableLatin1Literal &path);
 
     virtual void init();
+
+    enum {
+        menuItemFrame        =  2, // menu item frame width
+        menuItemHMargin      =  3, // menu item hor text margin
+        menuArrowHMargin     =  6, // menu arrow horizontal margin
+        menuItemVMargin      =  2, // menu item ver text margin
+        menuRightBorder      = 15, // right border on menus
+        menuCheckMarkWidth   = 12  // checkmarks width on menus
+    };
 
 private:
     static QList<QGtkStylePrivate *> instances;

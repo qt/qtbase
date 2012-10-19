@@ -5,5 +5,6 @@ SUBDIRS = \
         qfile \
         #qfileinfo \    # FIXME: broken
         qiodevice \
+        qprocess \
         qtemporaryfile
 

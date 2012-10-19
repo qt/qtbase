@@ -121,7 +121,7 @@ QT_BEGIN_NAMESPACE
     isDigit() (decimal digits). All of these are wrappers around
     category() which return the Unicode-defined category of each
     character. Some of these also calculate the derived properties
-    (i.e. isSpace() returns true if the character is of category
+    (for example isSpace() returns true if the character is of category
     Separator_* or an exceptional code point from Other_Control category).
 
     QChar also provides direction(), which indicates the "natural"
@@ -766,14 +766,14 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
     \fn bool QChar::isHighSurrogate() const
 
     Returns true if the QChar is the high part of a UTF16 surrogate
-    (i.e. if its code point is in range [0xd800..0xdbff]); false otherwise.
+    (for example if its code point is in range [0xd800..0xdbff]); false otherwise.
 */
 
 /*!
     \fn bool QChar::isLowSurrogate() const
 
     Returns true if the QChar is the low part of a UTF16 surrogate
-    (i.e. if its code point is in range [0xdc00..0xdfff]); false otherwise.
+    (for example if its code point is in range [0xdc00..0xdfff]); false otherwise.
 */
 
 /*!
@@ -782,7 +782,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the QChar contains a code point that is in either
     the high or the low part of the UTF-16 surrogate range
-    (i.e. if its code point is in range [0xd800..0xdfff]); false otherwise.
+    (for example if its code point is in range [0xd800..0xdfff]); false otherwise.
 */
 
 /*!
@@ -806,7 +806,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
     is the high part of a UTF16 surrogate
-    (i.e. if its code point is in range [0xd800..0xdbff]); false otherwise.
+    (for example if its code point is in range [0xd800..0xdbff]); false otherwise.
 */
 
 /*!
@@ -815,7 +815,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
     is the low part of a UTF16 surrogate
-    (i.e. if its code point is in range [0xdc00..0xdfff]); false otherwise.
+    (for example if its code point is in range [0xdc00..0xdfff]); false otherwise.
 */
 
 /*!
@@ -825,7 +825,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
     contains a code point that is in either the high or the low part of the
-    UTF-16 surrogate range (i.e. if its code point is in range [0xd800..0xdfff]);
+    UTF-16 surrogate range (for example if its code point is in range [0xd800..0xdfff]);
     false otherwise.
 */
 
@@ -834,7 +834,7 @@ bool QT_FASTCALL QChar::isLetterOrNumber_helper(uint ucs4)
 
     Returns true if the UCS-4-encoded character specified by \a ucs4
     can be split into the high and low parts of a UTF16 surrogate
-    (i.e. if its code point is greater than or equals to 0x10000);
+    (for example if its code point is greater than or equals to 0x10000);
     false otherwise.
 */
 
@@ -969,8 +969,19 @@ bool QChar::hasMirrored(uint ucs4)
 /*!
     \fn bool QChar::isLower() const
 
-    Returns true if the character is a lowercase letter, i.e.
+    Returns true if the character is a lowercase letter, for example
     category() is Letter_Lowercase.
+
+    \sa isUpper(), toLower(), toUpper()
+*/
+
+/*!
+    \fn static bool QChar::isLower(uint ucs4)
+    \overload
+    \since 5.0
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is a lowercase letter, for example category() is Letter_Lowercase.
 
     \sa isUpper(), toLower(), toUpper()
 */
@@ -978,8 +989,19 @@ bool QChar::hasMirrored(uint ucs4)
 /*!
     \fn bool QChar::isUpper() const
 
-    Returns true if the character is an uppercase letter, i.e.
+    Returns true if the character is an uppercase letter, for example
     category() is Letter_Uppercase.
+
+    \sa isLower(), toUpper(), toLower()
+*/
+
+/*!
+    \fn static bool QChar::isUpper(uint ucs4)
+    \overload
+    \since 5.0
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is an uppercase letter, for example category() is Letter_Uppercase.
 
     \sa isLower(), toUpper(), toLower()
 */
@@ -987,12 +1009,22 @@ bool QChar::hasMirrored(uint ucs4)
 /*!
     \fn bool QChar::isTitleCase() const
 
-    Returns true if the character is a titlecase letter, i.e.
+    Returns true if the character is a titlecase letter, for example
     category() is Letter_Titlecase.
 
     \sa isLower(), toUpper(), toLower(), toTitleCase()
 */
 
+/*!
+    \fn static bool QChar::isTitleCase(uint ucs4)
+    \overload
+    \since 5.0
+
+    Returns true if the UCS-4-encoded character specified by \a ucs4
+    is a titlecase letter, for example category() is Letter_Titlecase.
+
+    \sa isLower(), toUpper(), toLower(), toTitleCase()
+*/
 /*!
     \fn QChar QChar::mirroredChar() const
 

@@ -48,11 +48,13 @@ QT_BEGIN_NAMESPACE
 
 QHash<QPlatformTheme::Font, QFont *> qt_qnx_createRoleFonts(QPlatformFontDatabase *fontDatabase)
 {
-    // See http://docs.blackberry.com/en/developers/deliverables/27299/Text_tablet_1526156_11.jsp
-    // which recommends using normal font size of 21 pixels and 36 pixels for titles (not covered
-    // by the theme system).
+    // See http://docs.blackberry.com/en/developers/deliverables/41577/typography.jsp
+    // which recommends using
+    // - small font size of 6 points
+    // - normal font size of 8 points
+    // - 11 points for titles (not covered by the theme system).
     QFont baseFont = fontDatabase->defaultFont();
-    baseFont.setPixelSize(21);
+    baseFont.setPointSize(8);
 
     QHash<QPlatformTheme::Font, QFont *> fonts;
     fonts.insert(QPlatformTheme::SystemFont, new QFont(baseFont));
@@ -70,7 +72,7 @@ QHash<QPlatformTheme::Font, QFont *> qt_qnx_createRoleFonts(QPlatformFontDatabas
     fonts.insert(QPlatformTheme::ComboLineEditFont, new QFont(baseFont));
 
     QFont smallFont(baseFont);
-    smallFont.setPixelSize(15);
+    smallFont.setPointSize(6);
     fonts.insert(QPlatformTheme::SmallFont, new QFont(smallFont));
     fonts.insert(QPlatformTheme::MiniFont, new QFont(smallFont));
 

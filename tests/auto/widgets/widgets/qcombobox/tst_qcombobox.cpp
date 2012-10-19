@@ -160,15 +160,10 @@ private slots:
     void task_QTBUG_10491_currentIndexAndModelColumn();
     void highlightedSignal();
 
-protected slots:
-    void onEditTextChanged( const QString &newString );
-
 private:
     QComboBox *testWidget;
     QWidget *parent;
     QPushButton* ok;
-    int editTextCount;
-    QString editText;
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -403,10 +398,6 @@ void tst_QComboBox::initTestCase()
     testWidget = new QComboBox(parent);
     testWidget->setObjectName("testObject");
     testWidget->setGeometry(0, 0, 100, 100);
-    editTextCount = 0;
-    editText.clear();
-    connect(testWidget, SIGNAL(editTextChanged(const QString&)),
-            this, SLOT(onEditTextChanged(const QString&)));
     parent->show();
 }
 
@@ -1130,7 +1121,7 @@ void tst_QComboBox::currentIndex()
 
         // spy on currentIndexChanged
         QSignalSpy indexChangedInt(testWidget, SIGNAL(currentIndexChanged(int)));
-        QSignalSpy indexChangedString(testWidget, SIGNAL(currentIndexChanged(const QString&)));
+        QSignalSpy indexChangedString(testWidget, SIGNAL(currentIndexChanged(QString)));
 
         // stuff items into it
         foreach(QString text, initialItems) {
@@ -1282,6 +1273,8 @@ void tst_QComboBox::textpixmapdata_data()
     QStringList text;
     IconList icon;
     VariantList variant;
+    QString qtlogoPath = QFINDTESTDATA("qtlogo.png");
+    QString qtlogoinvertedPath = QFINDTESTDATA("qtlogoinverted.png");
 
     {
         text.clear(); icon.clear(); variant.clear();
@@ -1293,7 +1286,7 @@ void tst_QComboBox::textpixmapdata_data()
     {
         text.clear(); icon.clear(); variant.clear();
         text << QString() << QString();
-        icon << QIcon(QPixmap("qtlogo.png")) << QIcon(QPixmap("qtlogoinverted.png"));
+        icon << QIcon(QPixmap(qtlogoPath)) << QIcon(QPixmap(qtlogoinvertedPath));
         variant << QVariant() << QVariant();
         QTest::newRow("just icons") << text << icon << variant;
     }
@@ -1307,7 +1300,7 @@ void tst_QComboBox::textpixmapdata_data()
     {
         text.clear(); icon.clear(); variant.clear();
         text << "foo" << "bar";
-        icon << QIcon(QPixmap("qtlogo.png")) << QIcon(QPixmap("qtlogoinverted.png"));
+        icon << QIcon(QPixmap(qtlogoPath)) << QIcon(QPixmap(qtlogoinvertedPath));
         variant << 12 << "bingo";
         QTest::newRow("text, icons and user data") << text << icon << variant;
     }
@@ -1373,23 +1366,19 @@ void tst_QComboBox::editTextChanged()
     testWidget->setEditable(false);
     QCOMPARE(testWidget->isEditable(), false);
 
+    QSignalSpy spy(testWidget, SIGNAL(editTextChanged(QString)));
+
     // no signal should be sent when current is set to the same
     QCOMPARE(testWidget->currentIndex(), 0);
-    editTextCount = 0;
-    editText.clear();
     testWidget->setCurrentIndex(0);
     QCOMPARE(testWidget->currentIndex(), 0);
-    QCOMPARE(editTextCount, 0);
-    QCOMPARE(editText.isEmpty(), true);
+    QCOMPARE(spy.count(), 0);
 
     // no signal should be sent when changing to other index because we are not editable
     QCOMPARE(testWidget->currentIndex(), 0);
-    editTextCount = 0;
-    editText.clear();
     testWidget->setCurrentIndex(1);
     QCOMPARE(testWidget->currentIndex(), 1);
-    QCOMPARE(editTextCount, 0);
-    QCOMPARE(editText.isEmpty(), true);
+    QCOMPARE(spy.count(), 0);
 
     // now set to editable and reset current index
     testWidget->setEditable(true);
@@ -1397,35 +1386,25 @@ void tst_QComboBox::editTextChanged()
     testWidget->setCurrentIndex(0);
 
     // no signal should be sent when current is set to the same
+    spy.clear();
     QCOMPARE(testWidget->currentIndex(), 0);
-    editTextCount = 0;
-    editText.clear();
     testWidget->setCurrentIndex(0);
     QCOMPARE(testWidget->currentIndex(), 0);
-    QCOMPARE(editTextCount, 0);
-    QCOMPARE(editText.isEmpty(), true);
+    QCOMPARE(spy.count(), 0);
 
     // signal should be sent when changing to other index
     QCOMPARE(testWidget->currentIndex(), 0);
-    editTextCount = 0;
-    editText.clear();
     testWidget->setCurrentIndex(1);
     QCOMPARE(testWidget->currentIndex(), 1);
-    QCOMPARE(editTextCount, 1);
-    QCOMPARE(editText, QString("bar"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("bar"));
+
 
     // insert some keys and notice they are all signaled
-    editTextCount = 0;
-    editText.clear();
+    spy.clear();
     QTest::keyClicks(testWidget, "bingo");
-    QCOMPARE(editTextCount, 5);
-    QCOMPARE(editText, QString("barbingo"));
-}
-
-void tst_QComboBox::onEditTextChanged(const QString &text)
-{
-    editTextCount++;
-    editText = text;
+    QCOMPARE(spy.count(), 5);
+    QCOMPARE(qvariant_cast<QString>(spy.at(4).at(0)), QString("barbingo"));
 }
 
 void tst_QComboBox::setModel()
@@ -2141,7 +2120,7 @@ void tst_QComboBox::task247863_keyBoardSelection()
   QApplication::setActiveWindow(&combo);
   QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
-  QSignalSpy spy(&combo, SIGNAL(activated(const QString &)));
+  QSignalSpy spy(&combo, SIGNAL(activated(QString)));
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
   QTest::keyClick(&combo, Qt::Key_Space);
   qApp->setEffectEnabled(Qt::UI_AnimateCombo, true);

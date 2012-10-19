@@ -63,7 +63,7 @@ public:
           m_conn("none"),
           obj(NULL)
     {
-        connect(this, SIGNAL(newConnection(const QDBusConnection&)), SLOT(handleConnection(const QDBusConnection&)));
+        connect(this, SIGNAL(newConnection(QDBusConnection)), SLOT(handleConnection(QDBusConnection)));
     }
 
     ~MyServer()

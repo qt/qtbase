@@ -966,11 +966,11 @@ void tst_QFtp::mkdir2()
 
     QEventLoop loop;
     connect(ftp, SIGNAL(done(bool)), &loop, SLOT(quit()));
-    connect(ftp, SIGNAL(commandFinished(int, bool)), this, SLOT(mkdir2Slot(int, bool)));
+    connect(ftp, SIGNAL(commandFinished(int,bool)), this, SLOT(mkdir2Slot(int,bool)));
     QTimer::singleShot(5000, &loop, SLOT(quit()));
 
     QSignalSpy commandStartedSpy(ftp, SIGNAL(commandStarted(int)));
-    QSignalSpy commandFinishedSpy(ftp, SIGNAL(commandFinished(int, bool)));
+    QSignalSpy commandFinishedSpy(ftp, SIGNAL(commandFinished(int,bool)));
 
     loop.exec();
 
@@ -1933,12 +1933,12 @@ QFtp *tst_QFtp::newFtp()
              SLOT(done(bool)) );
     connect( nFtp, SIGNAL(stateChanged(int)),
              SLOT(stateChanged(int)) );
-    connect( nFtp, SIGNAL(listInfo(const QUrlInfo&)),
-             SLOT(listInfo(const QUrlInfo&)) );
+    connect( nFtp, SIGNAL(listInfo(QUrlInfo)),
+             SLOT(listInfo(QUrlInfo)) );
     connect( nFtp, SIGNAL(readyRead()),
              SLOT(readyRead()) );
-    connect( nFtp, SIGNAL(dataTransferProgress(qint64, qint64)),
-             SLOT(dataTransferProgress(qint64, qint64)) );
+    connect( nFtp, SIGNAL(dataTransferProgress(qint64,qint64)),
+             SLOT(dataTransferProgress(qint64,qint64)) );
 
     return nFtp;
 }
@@ -2072,7 +2072,7 @@ void tst_QFtp::queueMoreCommandsInDoneSlot()
 
     QFtp ftp;
     QSignalSpy doneSpy(&ftp, SIGNAL(done(bool)));
-    QSignalSpy commandFinishedSpy(&ftp, SIGNAL(commandFinished(int, bool)));
+    QSignalSpy commandFinishedSpy(&ftp, SIGNAL(commandFinished(int,bool)));
 
     this->ftp = &ftp;
     connect(&ftp, SIGNAL(done(bool)), this, SLOT(cdUpSlot(bool)));

@@ -735,12 +735,32 @@ void tst_QLocalSocket::processConnection_data()
 {
     QTest::addColumn<int>("processes");
     QTest::newRow("1 client") << 1;
-#ifndef Q_OS_WIN
     QTest::newRow("2 clients") << 2;
     QTest::newRow("5 clients") << 5;
-#endif
     QTest::newRow("30 clients") << 30;
 }
+
+class ProcessOutputDumper
+{
+public:
+    ProcessOutputDumper(QProcess *p = 0)
+        : process(p)
+    {}
+
+    ~ProcessOutputDumper()
+    {
+        if (process)
+            fputs(process->readAll().data(), stdout);
+    }
+
+    void clear()
+    {
+        process = 0;
+    }
+
+private:
+    QProcess *process;
+};
 
 /*!
     Create external processes that produce and consume.
@@ -748,40 +768,40 @@ void tst_QLocalSocket::processConnection_data()
 void tst_QLocalSocket::processConnection()
 {
 #ifdef Q_OS_WIN
-#  define EXE_SUFFIX ".exe"
+    const QString exeSuffix = QStringLiteral(".exe");
 #else
-#  define EXE_SUFFIX
+    const QString exeSuffix;
 #endif
 
-// ### lackey is currently not build
-    QEXPECT_FAIL("", "lackey is currently not built due to qscript dependency, QTBUG-24142", Abort);
-    QVERIFY(QFile::exists("lackey/lackey" EXE_SUFFIX));
+    QString socketProcess = QStringLiteral("socketprocess/socketprocess") + exeSuffix;
+    QVERIFY(QFile::exists(socketProcess));
 
     QFETCH(int, processes);
-    QStringList serverArguments = QStringList() << SRCDIR "lackey/scripts/server.js" << QString::number(processes);
+    QStringList serverArguments = QStringList() << "--server" << QString::number(processes);
     QProcess producer;
-    producer.setProcessChannelMode(QProcess::ForwardedChannels);
+    ProcessOutputDumper producerOutputDumper(&producer);
     QList<QProcess*> consumers;
-    producer.start("lackey/lackey", serverArguments);
+    producer.start(socketProcess, serverArguments);
     QVERIFY2(producer.waitForStarted(-1), qPrintable(producer.errorString()));
-    QTest::qWait(2000);
     for (int i = 0; i < processes; ++i) {
-       QStringList arguments = QStringList() << SRCDIR "lackey/scripts/client.js";
+        QStringList arguments = QStringList() << "--client";
         QProcess *p = new QProcess;
-        p->setProcessChannelMode(QProcess::ForwardedChannels);
         consumers.append(p);
-        p->start("lackey/lackey", arguments);
+        p->start(socketProcess, arguments);
     }
 
     while (!consumers.isEmpty()) {
-        consumers.first()->waitForFinished(20000);
-        QCOMPARE(consumers.first()->exitStatus(), QProcess::NormalExit);
-        QCOMPARE(consumers.first()->exitCode(), 0);
         QProcess *consumer = consumers.takeFirst();
+        ProcessOutputDumper consumerOutputDumper(consumer);
+        consumer->waitForFinished(20000);
+        QCOMPARE(consumer->exitStatus(), QProcess::NormalExit);
+        QCOMPARE(consumer->exitCode(), 0);
+        consumerOutputDumper.clear();
         consumer->terminate();
         delete consumer;
     }
     producer.waitForFinished(15000);
+    producerOutputDumper.clear();
 }
 #endif
 

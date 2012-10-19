@@ -508,6 +508,15 @@ QtGui
   the existent image data will be invalidated, so that isNull() is guaranteed
   to return true in this case.
 
+* Behavioral change regarding QPainter fill rules when not using antialiased
+  painting: The fill rules have changed so that the aliased and antialiased
+  coordinate systems match. Earlier there used to be an offset of slightly less
+  than half a pixel when doing sub-pixel rendering, in order to be consistent
+  with the old X11 paint engine. The new behavior should be more predictable and
+  gives the same consistent rounding for images / pixmaps as for paths and
+  rectangle filling. It's possible to still get the old behavior by setting the
+  QPainter::Qt4CompatiblePainting render hint.
+
 QtWidgets
 ---------
 * QInputContext removed as well as related getters and setters on QWidget and QApplication.
@@ -608,6 +617,9 @@ QtOpenGL
   QGLWidget and a QOpenGLFramebufferObject. It is recommended that applications
   using QGLPixelBuffer for offscreen rendering to a texture switch to using
   QOpenGLFramebufferObject directly instead, for improved performance.
+* The default major version of QGLFormat has been changed to 2 to be aligned
+  with QSurfaceFormat. Applications that want to use a different version should
+  explicitly request it using QGLFormat::setVersion().
 
 QtScript
 --------

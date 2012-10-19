@@ -11,7 +11,6 @@ testProcessEcho/testProcessEcho
 testProcessEcho2/testProcessEcho2
 testProcessEcho3/testProcessEcho3
 testProcessEnvironment/testProcessEnvironment
-testProcessLoopback/testProcessLoopback
 testProcessNormal/testProcessNormal
 testProcessOutput/testProcessOutput
 testProcessSpacesArgs/nospace

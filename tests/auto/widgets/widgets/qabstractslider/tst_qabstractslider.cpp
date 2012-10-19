@@ -1130,7 +1130,7 @@ void tst_QAbstractSlider::rangeChanged()
     QFETCH(int, expectedCount);
     QSlider slider;
     slider.setRange(minimum, maximum);
-    QSignalSpy spy(&slider, SIGNAL(rangeChanged(int, int)));
+    QSignalSpy spy(&slider, SIGNAL(rangeChanged(int,int)));
     slider.setRange(newMin, newMax);
     QCOMPARE(spy.count(), expectedCount);
 }
@@ -1263,7 +1263,7 @@ void tst_QAbstractSlider::setRepeatAction()
 void tst_QAbstractSlider::connectedSliders()
 {
     Slider *slider2 = new Slider(topLevel);
-    connect(slider, SIGNAL(rangeChanged(int, int)), slider2, SLOT(setRange(int, int)));
+    connect(slider, SIGNAL(rangeChanged(int,int)), slider2, SLOT(setRange(int,int)));
     const int sliderlow = 13;
     const int sliderhigh = 1017;
     slider->setRange(sliderlow, sliderhigh);

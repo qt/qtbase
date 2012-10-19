@@ -76,6 +76,14 @@ static void saveCoverageTool(const char * appname, bool testfailed, bool install
 #endif
 }
 
+//
+// declare deprecated API from qlogging.h locally
+// (we can't use qInstallMessageHandler because it would break
+// tests that (still) rely on qInstallMsgHandler.)
+//
+typedef void (*QtMsgHandler)(QtMsgType, const char *);
+Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
+
 namespace QTest {
 
     int fails = 0;

@@ -143,8 +143,8 @@ private:
 
     friend class QRenderRule;
     int nativeFrameWidth(const QWidget *);
-    QRenderRule renderRule(const QWidget *, int, quint64 = 0) const;
-    QRenderRule renderRule(const QWidget *, const QStyleOption *, int = 0) const;
+    QRenderRule renderRule(const QObject *, int, quint64 = 0) const;
+    QRenderRule renderRule(const QObject *, const QStyleOption *, int = 0) const;
     QSize defaultSize(const QWidget *, QSize, const QRect&, int) const;
     QRect positionRect(const QWidget *, const QRenderRule&, const QRenderRule&, int,
                        const QRect&, Qt::LayoutDirection) const;
@@ -157,16 +157,16 @@ private:
     void unsetPalette(QWidget *);
     void setProperties(QWidget *);
     void setGeometry(QWidget *);
-    QVector<QCss::StyleRule> styleRules(const QWidget *w) const;
-    bool hasStyleRule(const QWidget *w, int part) const;
+    QVector<QCss::StyleRule> styleRules(const QObject *obj) const;
+    bool hasStyleRule(const QObject *obj, int part) const;
 
     QHash<QStyle::SubControl, QRect> titleBarLayout(const QWidget *w, const QStyleOptionTitleBar *tb) const;
 
     QCss::StyleSheet getDefaultStyleSheet() const;
 
     static Qt::Alignment resolveAlignment(Qt::LayoutDirection, Qt::Alignment);
-    static bool isNaturalChild(const QWidget *w);
-    bool initWidget(const QWidget *w) const;
+    static bool isNaturalChild(const QObject *obj);
+    bool initObject(const QObject *obj) const;
 public:
     static int numinstances;
 
@@ -179,13 +179,13 @@ class QStyleSheetStyleCaches : public QObject
 {
     Q_OBJECT
 public Q_SLOTS:
-    void widgetDestroyed(QObject *);
+    void objectDestroyed(QObject *);
     void styleDestroyed(QObject *);
 public:
-    QHash<const QWidget *, QVector<QCss::StyleRule> > styleRulesCache;
-    QHash<const QWidget *, QHash<int, bool> > hasStyleRuleCache;
+    QHash<const QObject *, QVector<QCss::StyleRule> > styleRulesCache;
+    QHash<const QObject *, QHash<int, bool> > hasStyleRuleCache;
     typedef QHash<int, QHash<quint64, QRenderRule> > QRenderRules;
-    QHash<const QWidget *, QRenderRules> renderRulesCache;
+    QHash<const QObject *, QRenderRules> renderRulesCache;
     QHash<const QWidget *, QPalette> customPaletteWidgets; // widgets whose palette we tampered
     QHash<const void *, QCss::StyleSheet> styleSheetCache; // parsed style sheets
     QSet<const QWidget *> autoFillDisabledWidgets;

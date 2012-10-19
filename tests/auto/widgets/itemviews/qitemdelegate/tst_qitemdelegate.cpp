@@ -224,6 +224,7 @@ private slots:
     void dateTimeEditor_data();
     void dateTimeEditor();
     void dateAndTimeEditorTest2();
+    void uintEdit();
     void decoration_data();
     void decoration();
     void editorEvent_data();
@@ -702,7 +703,7 @@ void tst_QItemDelegate::eventFilter()
 
     qRegisterMetaType<QAbstractItemDelegate::EndEditHint>("QAbstractItemDelegate::EndEditHint");
 
-    QSignalSpy commitDataSpy(&delegate, SIGNAL(commitData(QWidget *)));
+    QSignalSpy commitDataSpy(&delegate, SIGNAL(commitData(QWidget*)));
     QSignalSpy closeEditorSpy(&delegate,
                               SIGNAL(closeEditor(QWidget *,
                                                  QAbstractItemDelegate::EndEditHint)));
@@ -937,6 +938,66 @@ void tst_QItemDelegate::dateAndTimeEditorTest2()
     QVERIFY(dateEdit);
     QCOMPARE(dateEdit->date(), date1);
     w.doCloseEditor(dateEdit);
+}
+
+void tst_QItemDelegate::uintEdit()
+{
+    QListView view;
+    QStandardItemModel model;
+
+    {
+        QStandardItem *data=new QStandardItem;
+        data->setEditable(true);
+        data->setData(QVariant((uint)1), Qt::DisplayRole);
+        model.setItem(0, 0, data);
+    }
+    {
+        QStandardItem *data=new QStandardItem;
+        data->setEditable(true);
+        data->setData(QVariant((uint)1), Qt::DisplayRole);
+        model.setItem(1, 0, data);
+    }
+
+    view.setModel(&model);
+    view.setEditTriggers(QAbstractItemView::AllEditTriggers);
+
+    const QModelIndex firstCell = model.index(0, 0);
+
+    QCOMPARE(firstCell.data(Qt::DisplayRole).userType(), static_cast<int>(QMetaType::UInt));
+
+    view.selectionModel()->setCurrentIndex(model.index(0, 0), QItemSelectionModel::Select);
+    view.edit(firstCell);
+
+    QSpinBox *sb = view.findChild<QSpinBox*>();
+    QVERIFY(sb);
+
+    sb->stepUp();
+
+    // Select another index to trigger the end of editing.
+    const QModelIndex secondCell = model.index(1, 0);
+    view.selectionModel()->setCurrentIndex(secondCell, QItemSelectionModel::Select);
+
+    QCOMPARE(firstCell.data(Qt::DisplayRole).userType(), static_cast<int>(QMetaType::UInt));
+    QCOMPARE(firstCell.data(Qt::DisplayRole).toUInt(), static_cast<uint>(2));
+
+
+    view.edit(secondCell);
+
+    // The first spinbox is deleted with deleteLater, so it is still there.
+    QList<QSpinBox*> sbList = view.findChildren<QSpinBox*>();
+    QCOMPARE(sbList.size(), 2);
+
+    sb = sbList.at(1);
+
+    sb->stepDown(); // 1 -> 0
+    sb->stepDown(); // 0 (no effect)
+    sb->stepDown(); // 0 (no effect)
+
+    // Select another index to trigger the end of editing.
+    view.selectionModel()->setCurrentIndex(firstCell, QItemSelectionModel::Select);
+
+    QCOMPARE(secondCell.data(Qt::DisplayRole).userType(), static_cast<int>(QMetaType::UInt));
+    QCOMPARE(secondCell.data(Qt::DisplayRole).toUInt(), static_cast<uint>(0));
 }
 
 void tst_QItemDelegate::decoration_data()

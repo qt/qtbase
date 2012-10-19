@@ -57,7 +57,9 @@ private slots:
 
     void caseSensitivity();
     void systemEnvironment();
+#ifndef Q_OS_WINCE
     void putenv();
+#endif
 };
 
 void tst_QProcessEnvironment::operator_eq()
@@ -276,11 +278,10 @@ void tst_QProcessEnvironment::systemEnvironment()
 #endif
 }
 
+#ifndef Q_OS_WINCE
+//Windows CE has no environment
 void tst_QProcessEnvironment::putenv()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Windows CE has no environment");
-#else
     static const char envname[] = "WE_RE_SETTING_THIS_ENVIRONMENT_VARIABLE";
     static bool testRan = false;
 
@@ -311,8 +312,8 @@ void tst_QProcessEnvironment::putenv()
     QVERIFY(eAfter.contains(lower));
     QCOMPARE(eAfter.value(lower), QString("Hello, World"));
 # endif
-#endif
 }
+#endif
 
 QTEST_MAIN(tst_QProcessEnvironment)
 

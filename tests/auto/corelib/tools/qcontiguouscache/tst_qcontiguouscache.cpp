@@ -67,6 +67,7 @@ private slots:
     void setCapacity();
 
     void zeroCapacity();
+    void modifyZeroCapacityCache();
 };
 
 QTEST_MAIN(tst_QContiguousCache)
@@ -363,6 +364,26 @@ void tst_QContiguousCache::zeroCapacity()
     QCOMPARE(contiguousCache.capacity(),10);
     contiguousCache.setCapacity(0);
     QCOMPARE(contiguousCache.capacity(),0);
+}
+
+void tst_QContiguousCache::modifyZeroCapacityCache()
+{
+    {
+        QContiguousCache<int> contiguousCache;
+        contiguousCache.insert(0, 42);
+    }
+    {
+        QContiguousCache<int> contiguousCache;
+        contiguousCache.insert(1, 42);
+    }
+    {
+        QContiguousCache<int> contiguousCache;
+        contiguousCache.append(42);
+    }
+    {
+        QContiguousCache<int> contiguousCache;
+        contiguousCache.prepend(42);
+    }
 }
 
 #include "tst_qcontiguouscache.moc"

@@ -100,6 +100,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QCommonStyle)
     Q_DISABLE_COPY(QCommonStyle)
+    Q_PRIVATE_SLOT(d_func(), void _q_removeAnimation())
 };
 
 QT_END_NAMESPACE

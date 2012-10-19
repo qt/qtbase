@@ -853,12 +853,18 @@ static QItemSelection mergeIndexes(const QVector<QPersistentModelIndex> &indexes
     int i = 0;
     while (i < indexes.count()) {
         const QPersistentModelIndex &tl = indexes.at(i);
+        if (!tl.isValid()) {
+            ++i;
+            continue;
+        }
         QPersistentModelIndex br = tl;
         QModelIndex brParent = br.parent();
         int brRow = br.row();
         int brColumn = br.column();
         while (++i < indexes.count()) {
             const QPersistentModelIndex &next = indexes.at(i);
+            if (!next.isValid())
+                continue;
             const QModelIndex nextParent = next.parent();
             const int nextRow = next.row();
             const int nextColumn = next.column();

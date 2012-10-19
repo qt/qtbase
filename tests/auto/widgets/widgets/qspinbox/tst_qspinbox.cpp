@@ -377,7 +377,7 @@ void tst_QSpinBox::setTracking()
     QSpinBox spin(0);
     spin.setKeyboardTracking(tracking);
     spin.show();
-    connect(&spin, SIGNAL(valueChanged(QString)), this, SLOT(valueChangedHelper(const QString &)));
+    connect(&spin, SIGNAL(valueChanged(QString)), this, SLOT(valueChangedHelper(QString)));
 
     keys.simulate(&spin);
     QCOMPARE(actualTexts, texts);

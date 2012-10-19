@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
     \section1 Tips
 
     \list
-    \li The environment variable \c QT_LIGHTHOUSE_WINDOWS_VERBOSE controls
+    \li The environment variable \c QT_QPA_VERBOSE controls
        the debug level. It takes the form
        \c{<keyword1>:<level1>,<keyword2>:<level2>}, where
        keyword is one of \c integration, \c windows, \c backingstore and
@@ -112,9 +112,8 @@ public:
 
 QPlatformIntegration *QWindowsIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
-    Q_UNUSED(paramList);
     if (system.compare(system, QStringLiteral("windows"), Qt::CaseInsensitive) == 0)
-        return new QWindowsIntegration;
+        return new QWindowsIntegration(paramList);
     return 0;
 }
 

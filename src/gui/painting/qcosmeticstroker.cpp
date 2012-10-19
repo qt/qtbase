@@ -414,7 +414,7 @@ void QCosmeticStroker::calculateLastPoint(qreal rx1, qreal ry1, qreal rx2, qreal
     if (clipLine(rx1, ry1, rx2, ry2))
         return;
 
-    const int half = 31;
+    const int half = legacyRounding ? 31 : 0;
     int x1 = toF26Dot6(rx1) + half;
     int y1 = toF26Dot6(ry1) + half;
     int x2 = toF26Dot6(rx2) + half;
@@ -707,7 +707,7 @@ static void drawLine(QCosmeticStroker *stroker, qreal rx1, qreal ry1, qreal rx2,
     if (stroker->clipLine(rx1, ry1, rx2, ry2))
         return;
 
-    static const int half = 31;
+    const int half = stroker->legacyRounding ? 31 : 0;
     int x1 = toF26Dot6(rx1) + half;
     int y1 = toF26Dot6(ry1) + half;
     int x2 = toF26Dot6(rx2) + half;

@@ -119,7 +119,11 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
     m_drag = o;
     m_executed_drop_action = Qt::IgnoreAction;
 
-    NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(m_drag->pixmap()));
+    QPixmap pm = m_drag->pixmap();
+    if (pm.isNull())
+        pm = defaultPixmap();
+
+    NSImage *nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(pm));
 
     QMacPasteboard dragBoard((CFStringRef) NSDragPboard, QMacPasteboardMime::MIME_DND);
     m_drag->mimeData()->setData(QLatin1String("application/x-qt-mime-type-name"), QByteArray("dummy"));

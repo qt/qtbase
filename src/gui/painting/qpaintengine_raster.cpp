@@ -644,6 +644,7 @@ QRasterPaintEngineState::QRasterPaintEngineState()
     flags.fast_pen = true;
     flags.antialiased = false;
     flags.bilinear = false;
+    flags.legacy_rounding = false;
     flags.fast_text = true;
     flags.int_xform = true;
     flags.tx_noshear = true;
@@ -927,6 +928,7 @@ void QRasterPaintEngine::renderHintsChanged()
 
     s->flags.antialiased = bool(s->renderHints & QPainter::Antialiasing);
     s->flags.bilinear = bool(s->renderHints & QPainter::SmoothPixmapTransform);
+    s->flags.legacy_rounding = !bool(s->renderHints & QPainter::Antialiasing) && bool(s->renderHints & QPainter::Qt4CompatiblePainting);
 
     if (was_aa != s->flags.antialiased)
         s->strokeFlags |= DirtyHints;
@@ -1524,6 +1526,7 @@ void QRasterPaintEngine::drawRects(const QRect *rects, int rectCount)
         QRectVectorPath path;
         if (s->flags.fast_pen) {
             QCosmeticStroker stroker(s, d->deviceRect);
+            stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
             for (int i = 0; i < rectCount; ++i) {
                 path.set(rects[i]);
                 stroker.drawPath(path);
@@ -1570,6 +1573,7 @@ void QRasterPaintEngine::drawRects(const QRectF *rects, int rectCount)
             QRectVectorPath path;
             if (s->flags.fast_pen) {
                 QCosmeticStroker stroker(s, d->deviceRect);
+                stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
                 for (int i = 0; i < rectCount; ++i) {
                     path.set(rects[i]);
                     stroker.drawPath(path);
@@ -1603,6 +1607,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
     if (s->flags.fast_pen) {
         QCosmeticStroker stroker(s, d->deviceRect);
+        stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         stroker.drawPath(path);
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
         qreal width = s->lastPen.isCosmetic()
@@ -1658,12 +1663,16 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         QPaintEngineEx::stroke(path, pen);
 }
 
-static inline QRect toNormalizedFillRect(const QRectF &rect)
+QRect QRasterPaintEngine::toNormalizedFillRect(const QRectF &rect)
 {
-    int x1 = qRound(rect.x() + aliasedCoordinateDelta);
-    int y1 = qRound(rect.y() + aliasedCoordinateDelta);
-    int x2 = qRound(rect.right() + aliasedCoordinateDelta);
-    int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
+    QRasterPaintEngineState *s = state();
+
+    qreal delta = s->flags.legacy_rounding ? aliasedCoordinateDelta : qreal(0);
+
+    int x1 = qRound(rect.x() + delta);
+    int y1 = qRound(rect.y() + delta);
+    int x2 = qRound(rect.right() + delta);
+    int y2 = qRound(rect.bottom() + delta);
 
     if (x2 < x1)
         qSwap(x1, x2);
@@ -1941,6 +1950,7 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
         QVectorPath vp((qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
         if (s->flags.fast_pen) {
             QCosmeticStroker stroker(s, d->deviceRect);
+            stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
             stroker.drawPath(vp);
         } else {
             QPaintEngineEx::stroke(vp, s->lastPen);
@@ -2005,6 +2015,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
 
         if (s->flags.fast_pen) {
             QCosmeticStroker stroker(s, d->deviceRect);
+            stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
             stroker.drawPath(vp);
         } else {
             QPaintEngineEx::stroke(vp, s->lastPen);
@@ -2233,7 +2244,9 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         // as fillRect will apply the aliased coordinate delta we need to
         // subtract it here as we don't use it for image drawing
         QTransform old = s->matrix;
-        s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
+
+        if (s->flags.legacy_rounding)
+            s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
 
         // Do whatever fillRect() does, but without premultiplying the color if it's already premultiplied.
         QRgb color = img.pixel(sr_l, sr_t);
@@ -2376,8 +2389,9 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         if (s->flags.tx_noshear || s->matrix.type() == QTransform::TxScale) {
             d->initializeRasterizer(&d->image_filler_xform);
             d->rasterizer->setAntialiased(s->flags.antialiased);
+            d->rasterizer->setLegacyRoundingEnabled(s->flags.legacy_rounding);
 
-            const QPointF offs = s->flags.antialiased ? QPointF() : QPointF(aliasedCoordinateDelta, aliasedCoordinateDelta);
+            const QPointF offs = s->flags.legacy_rounding ? QPointF(aliasedCoordinateDelta, aliasedCoordinateDelta) : QPointF();
 
             const QRectF &rect = r.normalized();
             const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f) - offs;
@@ -2390,7 +2404,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
             return;
         }
 #endif
-        const qreal offs = s->flags.antialiased ? qreal(0) : aliasedCoordinateDelta;
+        const qreal offs = s->flags.legacy_rounding ? aliasedCoordinateDelta : qreal(0);
         QPainterPath path;
         path.addRect(r);
         QTransform m = s->matrix;
@@ -2471,6 +2485,7 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
         if (s->flags.tx_noshear || s->matrix.type() == QTransform::TxScale) {
             d->initializeRasterizer(&d->image_filler_xform);
             d->rasterizer->setAntialiased(s->flags.antialiased);
+            d->rasterizer->setLegacyRoundingEnabled(s->flags.legacy_rounding);
 
             const QRectF &rect = r.normalized();
             const QPointF a = s->matrix.map((rect.topLeft() + rect.bottomLeft()) * 0.5f);
@@ -2802,7 +2817,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             rightShift = 3; // divide by 8
 
         int margin = fontEngine->glyphMargin(glyphType);
-        const QFixed offs = QFixed::fromReal(aliasedCoordinateDelta);
+        const QFixed offs = s->flags.legacy_rounding ? QFixed::fromReal(aliasedCoordinateDelta) : QFixed();
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
@@ -3078,6 +3093,7 @@ void QRasterPaintEngine::drawPoints(const QPointF *points, int pointCount)
     }
 
     QCosmeticStroker stroker(s, d->deviceRect);
+    stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
     stroker.drawPoints(points, pointCount);
 }
 
@@ -3097,6 +3113,7 @@ void QRasterPaintEngine::drawPoints(const QPoint *points, int pointCount)
     }
 
     QCosmeticStroker stroker(s, d->deviceRect);
+    stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
     stroker.drawPoints(points, pointCount);
 }
 
@@ -3117,6 +3134,7 @@ void QRasterPaintEngine::drawLines(const QLine *lines, int lineCount)
 
     if (s->flags.fast_pen) {
         QCosmeticStroker stroker(s, d->deviceRect);
+        stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         for (int i=0; i<lineCount; ++i) {
             const QLine &l = lines[i];
             stroker.drawLine(l.p1(), l.p2());
@@ -3188,6 +3206,7 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
         return;
     if (s->flags.fast_pen) {
         QCosmeticStroker stroker(s, d->deviceRect);
+        stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         for (int i=0; i<lineCount; ++i) {
             QLineF line = lines[i];
             stroker.drawLine(line.p1(), line.p2());
@@ -3420,6 +3439,7 @@ void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)
     QRasterPaintEngineState *s = q->state();
 
     rasterizer->setAntialiased(s->flags.antialiased);
+    rasterizer->setLegacyRoundingEnabled(s->flags.legacy_rounding);
 
     QRect clipRect(deviceRect);
     ProcessSpans blend;
@@ -3484,6 +3504,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 
     if (!s->flags.antialiased) {
         rasterizer->setAntialiased(s->flags.antialiased);
+        rasterizer->setLegacyRoundingEnabled(s->flags.legacy_rounding);
         rasterizer->setClipRect(deviceRect);
         rasterizer->initialize(callback, userData);
 

@@ -547,8 +547,8 @@ void tst_QDialogButtonBox::testSignalOrder()
     buttonClicked1TimeStamp = acceptTimeStamp
             = rejectTimeStamp = helpRequestedTimeStamp = timeStamp = 0;
     QDialogButtonBox buttonBox;
-    connect(&buttonBox, SIGNAL(clicked(QAbstractButton *)),
-            this, SLOT(buttonClicked1(QAbstractButton *)));
+    connect(&buttonBox, SIGNAL(clicked(QAbstractButton*)),
+            this, SLOT(buttonClicked1(QAbstractButton*)));
     connect(&buttonBox, SIGNAL(accepted()), this, SLOT(acceptClicked()));
     connect(&buttonBox, SIGNAL(rejected()), this, SLOT(rejectClicked()));
     connect(&buttonBox, SIGNAL(helpRequested()), this, SLOT(helpRequestedClicked()));

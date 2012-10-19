@@ -8318,10 +8318,11 @@ void QWidget::changeEvent(QEvent * event)
         }
         break;
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     case QEvent::MacSizeChange:
         updateGeometry();
         break;
+#elif defined Q_WS_MAC
     case QEvent::ToolTipChange:
     case QEvent::MouseTrackingChange:
         qt_mac_update_mouseTracking(this);
@@ -9923,6 +9924,24 @@ static void setAttribute_internal(Qt::WidgetAttribute attribute, bool on, QWidge
     }
 }
 
+#ifdef Q_OS_MAC
+void QWidgetPrivate::macUpdateSizeAttribute()
+{
+    Q_Q(QWidget);
+    QEvent event(QEvent::MacSizeChange);
+    QApplication::sendEvent(q, &event);
+    for (int i = 0; i < children.size(); ++i) {
+        QWidget *w = qobject_cast<QWidget *>(children.at(i));
+        if (w && (!w->isWindow() || w->testAttribute(Qt::WA_WindowPropagation))
+              && !q->testAttribute(Qt::WA_MacMiniSize) // no attribute set? inherit from parent
+              && !w->testAttribute(Qt::WA_MacSmallSize)
+              && !w->testAttribute(Qt::WA_MacNormalSize))
+            w->d_func()->macUpdateSizeAttribute();
+    }
+    resolveFont();
+}
+#endif
+
 /*!
     Sets the attribute \a attribute on this widget if \a on is true;
     otherwise clears the attribute.
@@ -10004,7 +10023,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     case Qt::WA_MacNormalSize:
     case Qt::WA_MacSmallSize:
     case Qt::WA_MacMiniSize:
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         {
             // We can only have one of these set at a time
             const Qt::WidgetAttribute MacSizes[] = { Qt::WA_MacNormalSize, Qt::WA_MacSmallSize,

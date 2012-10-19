@@ -62,8 +62,8 @@ void updateSiblings(PropertyWatcher* w)
 void screenAdded(QScreen* screen)
 {
     screen->setOrientationUpdateMask((Qt::ScreenOrientations)0x0F);
-    qDebug("\nscreenAdded %s siblings %d first %s", qPrintable(screen->name()),
-        screen->virtualSiblings().count(), qPrintable(screen->virtualSiblings().first()->name()));
+    qDebug("\nscreenAdded %s siblings %d first %s", qPrintable(screen->name()), screen->virtualSiblings().count(),
+        (screen->virtualSiblings().isEmpty() ? "none" : qPrintable(screen->virtualSiblings().first()->name())));
     PropertyWatcher *w = new PropertyWatcher(screen, QString::number(i++));
     QLineEdit *siblingsField = new QLineEdit();
     siblingsField->setObjectName("siblings");

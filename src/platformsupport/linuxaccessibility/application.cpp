@@ -42,7 +42,7 @@
 
 #include "application_p.h"
 
-#include <QtWidgets/qapplication.h>
+#include <QtCore/qcoreapplication.h>
 #include <QtDBus/qdbuspendingreply.h>
 #include <qdebug.h>
 
@@ -204,7 +204,7 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerCallback(const QDBusMessage& 
         delete event.second;
     } else {
         QPair<QObject*, QKeyEvent*> event = keyEvents.dequeue();
-        QApplication::postEvent(event.first, event.second);
+        QCoreApplication::postEvent(event.first, event.second);
     }
 }
 
@@ -213,7 +213,7 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerError(const QDBusError& error
     qWarning() << QStringLiteral("QSpiApplication::keyEventError ") << error.name() << error.message();
     while (!keyEvents.isEmpty()) {
         QPair<QObject*, QKeyEvent*> event = keyEvents.dequeue();
-        QApplication::postEvent(event.first, event.second);
+        QCoreApplication::postEvent(event.first, event.second);
     }
 }
 

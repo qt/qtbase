@@ -39,6 +39,8 @@ contains(QT_CONFIG, no-widgets): SUBDIRS -= \
    qnetworkaccessmanager_and_qprogressdialog \
    qsharedpointer_and_qwidget \
    windowsmobile \
+   qaccessibility \
+   qaccessibilitylinux \
 
 testcocoon: SUBDIRS -= headersclean
 

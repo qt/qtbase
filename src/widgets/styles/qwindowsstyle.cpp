@@ -54,7 +54,6 @@
 #include <private/qmenubar_p.h>
 #include "qpaintengine.h"
 #include "qpainter.h"
-#include "qprogressbar.h"
 #include "qrubberband.h"
 #include "qstyleoption.h"
 #include "qtabbar.h"
@@ -68,8 +67,11 @@
 #include "qlistview.h"
 #include <private/qmath_p.h>
 #include <qmath.h>
+#include <qpa/qplatformtheme.h>
+#include <private/qguiapplication_p.h>
 
 #include <private/qstylehelper_p.h>
+#include <private/qstyleanimation_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -117,7 +119,7 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
     \internal
 */
 QWindowsStylePrivate::QWindowsStylePrivate()
-    : alt_down(false), menuBarTimer(0), animationFps(10), animateTimer(0), animateStep(0)
+    : alt_down(false), menuBarTimer(0)
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
@@ -126,27 +128,6 @@ QWindowsStylePrivate::QWindowsStylePrivate()
         pSHGetStockIconInfo = (PtrSHGetStockIconInfo)shellLib.resolve("SHGetStockIconInfo");
     }
 #endif
-    startTime.start();
-}
-
-void QWindowsStylePrivate::startAnimation(QObject *o, QProgressBar *bar)
-{
-    if (!animatedProgressBars.contains(bar)) {
-        animatedProgressBars << bar;
-        if (!animateTimer) {
-            Q_ASSERT(animationFps > 0);
-            animateTimer = o->startTimer(1000 / animationFps);
-        }
-    }
-}
-
-void QWindowsStylePrivate::stopAnimation(QObject *o, QProgressBar *bar)
-{
-    animatedProgressBars.removeAll(bar);
-    if (animatedProgressBars.isEmpty() && animateTimer) {
-        o->killTimer(animateTimer);
-        animateTimer = 0;
-    }
 }
 
 // Returns true if the toplevel parent of \a widget has seen the Alt-key
@@ -154,23 +135,6 @@ bool QWindowsStylePrivate::hasSeenAlt(const QWidget *widget) const
 {
     widget = widget->window();
     return seenAlt.contains(widget);
-}
-
-/*!
-    \reimp
-*/
-void QWindowsStyle::timerEvent(QTimerEvent *event)
-{
-#ifndef QT_NO_PROGRESSBAR
-    Q_D(QWindowsStyle);
-    if (event->timerId() == d->animateTimer) {
-        Q_ASSERT(d->animationFps> 0);
-        d->animateStep = d->startTime.elapsed() / (1000 / d->animationFps);
-        foreach (QProgressBar *bar, d->animatedProgressBars)
-            bar->update();
-    }
-#endif // QT_NO_PROGRESSBAR
-    event->ignore();
 }
 
 /*!
@@ -224,27 +188,6 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
         d->seenAlt.removeAll(widget);
         d->seenAlt.removeAll(widget->window());
         break;
-#ifndef QT_NO_PROGRESSBAR
-    case QEvent::StyleChange:
-    case QEvent::Paint:
-    case QEvent::Show:
-        if (QProgressBar *bar = qobject_cast<QProgressBar *>(o)) {
-            // Animation by timer for progress bars that have their min and
-            // max values the same
-            if (bar->minimum() == bar->maximum())
-                d->startAnimation(this, bar);
-            else
-                d->stopAnimation(this, bar);
-        }
-        break;
-    case QEvent::Destroy:
-    case QEvent::Hide:
-        // Do static_cast because there is no type info when getting
-        // the destroy event. We know that it is a QProgressBar, since
-        // we only install a widget event filter for QScrollBars.
-        d->stopAnimation(this, static_cast<QProgressBar *>(o));
-        break;
-#endif // QT_NO_PROGRESSBAR
     default:
         break;
     }
@@ -335,23 +278,12 @@ void QWindowsStyle::unpolish(QApplication *app)
 void QWindowsStyle::polish(QWidget *widget)
 {
     QCommonStyle::polish(widget);
-#ifndef QT_NO_PROGRESSBAR
-    if (qobject_cast<QProgressBar *>(widget))
-        widget->installEventFilter(this);
-#endif
 }
 
 /*! \reimp */
 void QWindowsStyle::unpolish(QWidget *widget)
 {
     QCommonStyle::unpolish(widget);
-#ifndef QT_NO_PROGRESSBAR
-    if (QProgressBar *bar=qobject_cast<QProgressBar *>(widget)) {
-        Q_D(QWindowsStyle);
-        widget->removeEventFilter(this);
-        d->stopAnimation(this, bar);
-    }
-#endif
 }
 
 /*!
@@ -911,26 +843,6 @@ static const char *const question_xpm[] = {
 
 #endif //QT_NO_IMAGEFORMAT_XPM
 
-#ifdef Q_OS_WIN
-static QPixmap loadIconFromShell32( int resourceId, int size )
-{
-#ifdef Q_OS_WINCE
-    HMODULE hmod = LoadLibrary(L"ceshell");
-#else
-    HMODULE hmod = QSystemLibrary::load(L"shell32");
-#endif
-    if( hmod ) {
-        HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size, size, 0);
-        if( iconHandle ) {
-            QPixmap iconpixmap = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            return iconpixmap;
-        }
-    }
-    return QPixmap();
-}
-#endif
-
 /*!
  \reimp
  */
@@ -942,125 +854,32 @@ QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyl
     switch(standardPixmap) {
     case SP_DriveCDIcon:
     case SP_DriveDVDIcon:
-        {
-            desktopIcon = loadIconFromShell32(12, 16);
-            break;
-        }
     case SP_DriveNetIcon:
-        {
-            desktopIcon = loadIconFromShell32(10, 16);
-            break;
-        }
     case SP_DriveHDIcon:
-        {
-            desktopIcon = loadIconFromShell32(9, 16);
-            break;
-        }
     case SP_DriveFDIcon:
-        {
-            desktopIcon = loadIconFromShell32(7, 16);
-            break;
-        }
     case SP_FileIcon:
-        {
-            desktopIcon = loadIconFromShell32(1, 16);
-            break;
-        }
     case SP_FileLinkIcon:
-        {
-            desktopIcon = loadIconFromShell32(1, 16);
-            QPainter painter(&desktopIcon);
-            QPixmap link = loadIconFromShell32(30, 16);
-            painter.drawPixmap(0, 0, 16, 16, link);
-            break;
-        }
     case SP_DirLinkIcon:
-        {
-            desktopIcon = loadIconFromShell32(4, 16);
-            QPainter painter(&desktopIcon);
-            QPixmap link = loadIconFromShell32(30, 16);
-            painter.drawPixmap(0, 0, 16, 16, link);
-            break;
-        }
     case SP_DirClosedIcon:
-        {
-            desktopIcon = loadIconFromShell32(4, 16);
-            break;
-        }
     case SP_DesktopIcon:
-        {
-            desktopIcon = loadIconFromShell32(35, 16);
-            break;
-        }
     case SP_ComputerIcon:
-        {
-            desktopIcon = loadIconFromShell32(16, 16);
-            break;
-        }
     case SP_DirOpenIcon:
-        {
-            desktopIcon = loadIconFromShell32(5, 16);
-            break;
-        }
     case SP_FileDialogNewFolder:
-        {
-            desktopIcon = loadIconFromShell32(319, 16);
-            break;
-        }
     case SP_DirHomeIcon:
-        {
-            desktopIcon = loadIconFromShell32(235, 16);
-            break;
-        }
     case SP_TrashIcon:
-        {
-            desktopIcon = loadIconFromShell32(191, 16);
-            break;
-        }
-    case SP_MessageBoxInformation:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_INFORMATION);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
-    case SP_MessageBoxWarning:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_WARNING);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
-    case SP_MessageBoxCritical:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_ERROR);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
-    case SP_MessageBoxQuestion:
-        {
-            HICON iconHandle = LoadIcon(NULL, IDI_QUESTION);
-            desktopIcon = qt_pixmapFromWinHICON(iconHandle);
-            DestroyIcon(iconHandle);
-            break;
-        }
     case SP_VistaShield:
-        {
-            if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
-                && pSHGetStockIconInfo)
-            {
-                QPixmap pixmap;
-                QSHSTOCKICONINFO iconInfo;
-                memset(&iconInfo, 0, sizeof(iconInfo));
-                iconInfo.cbSize = sizeof(iconInfo);
-                if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_SMALLICON, &iconInfo) == S_OK) {
-                    pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
-                    DestroyIcon(iconInfo.hIcon);
-                    return pixmap;
-                }
-            }
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardPixmap);
+            desktopIcon = theme->standardPixmap(sp, QSizeF(16, 16));
+        }
+        break;
+    case SP_MessageBoxInformation:
+    case SP_MessageBoxWarning:
+    case SP_MessageBoxCritical:
+    case SP_MessageBoxQuestion:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardPixmap);
+            desktopIcon = theme->standardPixmap(sp, QSizeF());
         }
         break;
     default:
@@ -1424,6 +1243,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 imagePainter.translate(sx + bsx, sy + bsy);
                 imagePainter.setPen(opt->palette.buttonText().color());
                 imagePainter.setBrush(opt->palette.buttonText());
+                imagePainter.setRenderHint(QPainter::Qt4CompatiblePainting);
 
                 if (!(opt->state & State_Enabled)) {
                     imagePainter.translate(1, 1);
@@ -1562,6 +1382,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             }
 
             p->save();
+            p->setRenderHint(QPainter::Qt4CompatiblePainting);
             bool down = opt->state & State_Sunken;
             bool enabled = opt->state & State_Enabled;
             bool on = opt->state & State_On;
@@ -1640,41 +1461,6 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         }
         break;
 #endif // QT_NO_FRAME
-    case PE_IndicatorBranch: {
-        // This is _way_ too similar to the common style.
-        static const int decoration_size = 9;
-        int mid_h = opt->rect.x() + opt->rect.width() / 2;
-        int mid_v = opt->rect.y() + opt->rect.height() / 2;
-        int bef_h = mid_h;
-        int bef_v = mid_v;
-        int aft_h = mid_h;
-        int aft_v = mid_v;
-        if (opt->state & State_Children) {
-            int delta = decoration_size / 2;
-            bef_h -= delta;
-            bef_v -= delta;
-            aft_h += delta;
-            aft_v += delta;
-            p->drawLine(bef_h + 2, bef_v + 4, bef_h + 6, bef_v + 4);
-            if (!(opt->state & State_Open))
-                p->drawLine(bef_h + 4, bef_v + 2, bef_h + 4, bef_v + 6);
-            QPen oldPen = p->pen();
-            p->setPen(opt->palette.dark().color());
-            p->drawRect(bef_h, bef_v, decoration_size - 1, decoration_size - 1);
-            p->setPen(oldPen);
-        }
-        QBrush brush(opt->palette.dark().color(), Qt::Dense4Pattern);
-        if (opt->state & State_Item) {
-            if (opt->direction == Qt::RightToLeft)
-                p->fillRect(opt->rect.left(), mid_v, bef_h - opt->rect.left(), 1, brush);
-            else
-                p->fillRect(aft_h, mid_v, opt->rect.right() - aft_h + 1, 1, brush);
-        }
-        if (opt->state & State_Sibling)
-            p->fillRect(mid_h, aft_v, 1, opt->rect.bottom() - aft_v + 1, brush);
-        if (opt->state & (State_Open | State_Children | State_Item | State_Sibling))
-            p->fillRect(mid_h, opt->rect.y(), 1, bef_v - opt->rect.y(), brush);
-        break; }
     case PE_FrameButtonBevel:
     case PE_PanelButtonBevel: {
         QBrush fill;
@@ -1715,7 +1501,6 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         qDrawShadePanel(p, opt->rect, opt->palette, true, 1, 0);
         break;
 
-#ifndef QT_NO_PROGRESSBAR
     case PE_IndicatorProgressChunk:
         {
             bool vertical = false, inverted = false;
@@ -1749,7 +1534,6 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
 
     case PE_FrameTabWidget: {
         qDrawWinButton(p, opt->rect, opt->palette, false, 0);
@@ -2365,7 +2149,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
 
 #endif // QT_NO_TOOLBAR
-#ifndef QT_NO_PROGRESSBAR
+
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             QRect rect = pb->rect;
@@ -2396,8 +2180,8 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             if (inverted)
                 reverse = !reverse;
             int w = rect.width();
+            Q_D(const QWindowsStyle);
             if (pb->minimum == 0 && pb->maximum == 0) {
-                Q_D(const QWindowsStyle);
                 const int unit_width = proxy()->pixelMetric(PM_ProgressBarChunkWidth, pb, widget);
                 QStyleOptionProgressBarV2 pbBits = *pb;
                 Q_ASSERT(unit_width >0);
@@ -2405,8 +2189,12 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 pbBits.rect = rect;
                 pbBits.palette = pal2;
 
+                int step = 0;
                 int chunkCount = w / unit_width + 1;
-                int step = d->animateStep%chunkCount;
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
+                    step = (animation->animationStep() / 3) % chunkCount;
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, opt->styleObject));
                 int chunksInRow = 5;
                 int myY = pbBits.rect.y();
                 int myHeight = pbBits.rect.height();
@@ -2440,11 +2228,11 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 p->restore(); //restore state
             }
             else {
+                d->stopAnimation(opt->styleObject);
                 QCommonStyle::drawControl(ce, opt, p, widget);
             }
         }
         break;
-#endif // QT_NO_PROGRESSBAR
 
 #ifndef QT_NO_DOCKWIDGET
     case CE_DockWidgetTitle:
@@ -2701,8 +2489,10 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                 }
 
                 QBrush oldBrush = p->brush();
+                bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
                 p->setPen(Qt::NoPen);
                 p->setBrush(handleBrush);
+                p->setRenderHint(QPainter::Qt4CompatiblePainting);
                 Qt::BGMode oldMode = p->backgroundMode();
                 p->setBackgroundMode(Qt::OpaqueMode);
                 p->drawRect(x1, y1, x2-x1+1, y2-y1+1);
@@ -2785,6 +2575,7 @@ void QWindowsStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComp
                     p->drawLine(x2, y2-1, x2+d, y2-1-d);
                     break;
                 }
+                p->setRenderHint(QPainter::Qt4CompatiblePainting, oldQt4CompatiblePainting);
             }
         }
         break;
@@ -3064,122 +2855,45 @@ QIcon QWindowsStyle::standardIcon(StandardPixmap standardIcon, const QStyleOptio
                                   const QWidget *widget) const
 {
     QIcon icon;
-    QPixmap pixmap;
 #ifdef Q_OS_WIN
+    QPixmap pixmap;
     switch (standardIcon) {
-    case SP_FileDialogNewFolder:
-    {
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(319, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-    }
-    case SP_DirHomeIcon:
-    {
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(235, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-    }
-    case SP_DirIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(4, size);
-            icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
-            pixmap = loadIconFromShell32(5, size);
-            icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
-        }
-        break;
-    case SP_DirLinkIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            QPixmap link = loadIconFromShell32(30, size);
-            pixmap = loadIconFromShell32(4, size);
-            if (!pixmap.isNull() && !link.isNull()) {
-                QPainter painter(&pixmap);
-                painter.drawPixmap(0, 0, size, size, link);
-                icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
-            }
-            link = loadIconFromShell32(30, size);
-            pixmap = loadIconFromShell32(5, size);
-            if (!pixmap.isNull() && !link.isNull()) {
-                QPainter painter(&pixmap);
-                painter.drawPixmap(0, 0, size, size, link);
-                icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
-            }
-        }
-        break;
-    case SP_FileIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(1, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-    case SP_ComputerIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(16, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
-
-    case SP_DesktopIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(35, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveCDIcon:
     case SP_DriveDVDIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(12, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveNetIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(10, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveHDIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(9, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
     case SP_DriveFDIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            pixmap = loadIconFromShell32(7, size);
-            icon.addPixmap(pixmap, QIcon::Normal);
-        }
-        break;
+    case SP_FileIcon:
     case SP_FileLinkIcon:
-        for (int size = 16 ; size <= 32 ; size += 16) {
-            QPixmap link;
-            link = loadIconFromShell32(30, size);
-            pixmap = loadIconFromShell32(1, size);
-            if (!pixmap.isNull() && !link.isNull()) {
-                QPainter painter(&pixmap);
-                painter.drawPixmap(0, 0, size, size, link);
+    case SP_DesktopIcon:
+    case SP_ComputerIcon:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            for (int size = 16 ; size <= 32 ; size += 16) {
+                pixmap = theme->standardPixmap(sp, QSizeF(size, size));
                 icon.addPixmap(pixmap, QIcon::Normal);
             }
         }
         break;
-    case SP_VistaShield:
-        {
-            if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
-                && pSHGetStockIconInfo)
-            {
-                icon.addPixmap(proxy()->standardPixmap(SP_VistaShield, option, widget)); //fetches small icon
-                QSHSTOCKICONINFO iconInfo; //append large icon
-                memset(&iconInfo, 0, sizeof(iconInfo));
-                iconInfo.cbSize = sizeof(iconInfo);
-                if (pSHGetStockIconInfo(_SIID_SHIELD, _SHGFI_ICON | _SHGFI_LARGEICON, &iconInfo) == S_OK) {
-                    icon.addPixmap(qt_pixmapFromWinHICON(iconInfo.hIcon));
-                    DestroyIcon(iconInfo.hIcon);
-                }
+    case SP_DirIcon:
+    case SP_DirLinkIcon:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap spOff = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            QPlatformTheme::StandardPixmap spOn = standardIcon == SP_DirIcon ? QPlatformTheme::DirOpenIcon :
+                                                                                 QPlatformTheme::DirLinkOpenIcon;
+            for (int size = 16 ; size <= 32 ; size += 16) {
+                QSizeF pixSize(size, size);
+                pixmap = theme->standardPixmap(spOff, pixSize);
+                icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
+                pixmap = theme->standardPixmap(spOn, pixSize);
+                icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
             }
+        }
+        break;
+    case SP_VistaShield:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            pixmap = theme->standardPixmap(sp, QSizeF(32, 32));
         }
         break;
     default:

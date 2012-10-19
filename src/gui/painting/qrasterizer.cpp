@@ -129,7 +129,7 @@ public:
     ~QScanConverter();
 
     void begin(int top, int bottom, int left, int right,
-               Qt::FillRule fillRule, QSpanBuffer *spanBuffer);
+               Qt::FillRule fillRule, bool legacyRounding, QSpanBuffer *spanBuffer);
     void end();
 
     void mergeCurve(const QT_FT_Vector &a, const QT_FT_Vector &b,
@@ -177,6 +177,7 @@ private:
     Q16Dot16 m_rightFP;
 
     int m_fillRuleMask;
+    bool m_legacyRounding;
 
     int m_x;
     int m_y;
@@ -196,6 +197,7 @@ class QRasterizerPrivate
 {
 public:
     bool antialiased;
+    bool legacyRounding;
     ProcessSpans blend;
     void *data;
     QRect clipRect;
@@ -219,7 +221,8 @@ QScanConverter::~QScanConverter()
 }
 
 void QScanConverter::begin(int top, int bottom, int left, int right,
-                           Qt::FillRule fillRule, QSpanBuffer *spanBuffer)
+                           Qt::FillRule fillRule, bool legacyRounding,
+                           QSpanBuffer *spanBuffer)
 {
     m_top = top;
     m_bottom = bottom;
@@ -229,6 +232,7 @@ void QScanConverter::begin(int top, int bottom, int left, int right,
     m_lines.reset();
 
     m_fillRuleMask = fillRule == Qt::WindingFill ? ~0x0 : 0x1;
+    m_legacyRounding = legacyRounding;
     m_spanBuffer = spanBuffer;
 }
 
@@ -595,16 +599,20 @@ void QScanConverter::mergeLine(QT_FT_Vector a, QT_FT_Vector b)
         winding = -1;
     }
 
-    a.x += COORD_OFFSET;
-    a.y += COORD_OFFSET;
-    b.x += COORD_OFFSET;
-    b.y += COORD_OFFSET;
+    if (m_legacyRounding) {
+        a.x += COORD_OFFSET;
+        a.y += COORD_OFFSET;
+        b.x += COORD_OFFSET;
+        b.y += COORD_OFFSET;
+    }
 
-    int iTop = qMax(m_top, int((a.y + 32 - COORD_ROUNDING) >> 6));
-    int iBottom = qMin(m_bottom, int((b.y - 32 - COORD_ROUNDING) >> 6));
+    int rounding = m_legacyRounding ? COORD_ROUNDING : 0;
+
+    int iTop = qMax(m_top, int((a.y + 32 - rounding) >> 6));
+    int iBottom = qMin(m_bottom, int((b.y - 32 - rounding) >> 6));
 
     if (iTop <= iBottom) {
-        Q16Dot16 aFP = Q16Dot16Factor/2 + (a.x << 10) - COORD_ROUNDING;
+        Q16Dot16 aFP = Q16Dot16Factor/2 + (a.x << 10) - rounding;
 
         if (b.x == a.x) {
             Line line = { qBound(m_leftFP, aFP, m_rightFP), 0, iTop, iBottom, winding };
@@ -635,6 +643,7 @@ void QScanConverter::mergeLine(QT_FT_Vector a, QT_FT_Vector b)
 QRasterizer::QRasterizer()
     : d(new QRasterizerPrivate)
 {
+    d->legacyRounding = false;
 }
 
 QRasterizer::~QRasterizer()
@@ -656,6 +665,11 @@ void QRasterizer::initialize(ProcessSpans blend, void *data)
 void QRasterizer::setClipRect(const QRect &clipRect)
 {
     d->clipRect = clipRect;
+}
+
+void QRasterizer::setLegacyRoundingEnabled(bool legacyRoundingEnabled)
+{
+    d->legacyRounding = legacyRoundingEnabled;
 }
 
 static Q16Dot16 intersectPixelFP(int x, Q16Dot16 top, Q16Dot16 bottom, Q16Dot16 leftIntersectX, Q16Dot16 rightIntersectX, Q16Dot16 slope, Q16Dot16 invSlope)
@@ -775,7 +789,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         pb = npb;
     }
 
-    if (!d->antialiased) {
+    if (!d->antialiased && d->legacyRounding) {
         pa.rx() += (COORD_OFFSET - COORD_ROUNDING)/64.;
         pa.ry() += (COORD_OFFSET - COORD_ROUNDING)/64.;
         pb.rx() += (COORD_OFFSET - COORD_ROUNDING)/64.;
@@ -1174,13 +1188,15 @@ void QRasterizer::rasterize(const QT_FT_Outline *outline, Qt::FillRule fillRule)
         max_y = qMax(p.y, max_y);
     }
 
-    int iTopBound = qMax(d->clipRect.top(), int((min_y + 32 + COORD_OFFSET - COORD_ROUNDING) >> 6));
-    int iBottomBound = qMin(d->clipRect.bottom(), int((max_y - 32 + COORD_OFFSET - COORD_ROUNDING) >> 6));
+    int rounding = d->legacyRounding ? COORD_OFFSET - COORD_ROUNDING : 0;
+
+    int iTopBound = qMax(d->clipRect.top(), int((min_y + 32 + rounding) >> 6));
+    int iBottomBound = qMin(d->clipRect.bottom(), int((max_y - 32 + rounding) >> 6));
 
     if (iTopBound > iBottomBound)
         return;
 
-    d->scanConverter.begin(iTopBound, iBottomBound, d->clipRect.left(), d->clipRect.right(), fillRule, &buffer);
+    d->scanConverter.begin(iTopBound, iBottomBound, d->clipRect.left(), d->clipRect.right(), fillRule, d->legacyRounding, &buffer);
 
     int first = 0;
     for (int i = 0; i < outline->n_contours; ++i) {
@@ -1210,13 +1226,15 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
 
     QRectF bounds = path.controlPointRect();
 
-    int iTopBound = qMax(d->clipRect.top(), int(bounds.top() + 0.5 + (COORD_OFFSET - COORD_ROUNDING)/64.));
-    int iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - 0.5 + (COORD_OFFSET - COORD_ROUNDING)/64.));
+    double rounding = d->legacyRounding ? (COORD_OFFSET - COORD_ROUNDING) / 64. : 0.0;
+
+    int iTopBound = qMax(d->clipRect.top(), int(bounds.top() + 0.5 + rounding));
+    int iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - 0.5 + rounding));
 
     if (iTopBound > iBottomBound)
         return;
 
-    d->scanConverter.begin(iTopBound, iBottomBound, d->clipRect.left(), d->clipRect.right(), fillRule, &buffer);
+    d->scanConverter.begin(iTopBound, iBottomBound, d->clipRect.left(), d->clipRect.right(), fillRule, d->legacyRounding, &buffer);
 
     int subpathStart = 0;
     QT_FT_Vector last = { 0, 0 };

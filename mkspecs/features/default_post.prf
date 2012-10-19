@@ -50,42 +50,16 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
 
 # Let every project have a standard GNU `check' target
 !contains(QMAKE_EXTRA_TARGETS, check) {
-    # `make check' should iterate through all subdirs
-    # (except those with no_default_target or no_check_target)
-    contains(TEMPLATE, subdirs) {
-        for(subdir, SUBDIRS) {
-            subdir_config=$$eval($${subdir}.CONFIG)
-            !contains(subdir_config, no_check_target):!contains(subdir_config, no_default_target):check.recurse += $$subdir
-            unset(subdir_config)
-        }
-        !isEmpty(check.recurse) {
-            # setup the recurse target only when there is to recurse into
-            check.CONFIG = recursive
-            check.recurse_target = check
-        }
-    }
-    # `make check' should imply building the project
-    else {
-        check.depends = first
-    }
+    contains(TEMPLATE, subdirs): \
+        prepareRecursiveTarget(check)
+    else: \
+        check.depends = first # `make check' implies build
     QMAKE_EXTRA_TARGETS += check
 }
 
-# Let every project have a 'docs' target
 !contains(QMAKE_EXTRA_TARGETS, docs) {
     contains(TEMPLATE, subdirs) {
-        # `make docs' should iterate through all subdirs
-        # (except those with no_default_target or no_docs_target)
-        !contains(CONFIG, no_docs_target):for(subdir, SUBDIRS) {
-            subdir_config = $$eval($${subdir}.CONFIG)
-            !contains(subdir_config, no_docs_target):!contains(subdir_config, no_default_target):docs.recurse += $$subdir
-            unset(subdir_config)
-        }
-        !isEmpty(docs.recurse) {
-            # setup the recurse target only when there is something to recurse into
-            docs.CONFIG = recursive
-            docs.recurse_target = docs
-        }
+        prepareRecursiveTarget(docs)
     } else {
         # apps and libs only generate docs if QMAKE_DOCS is set
         !isEmpty(QMAKE_DOCS) {
@@ -98,4 +72,12 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
         }
     }
     QMAKE_EXTRA_TARGETS += docs
+}
+
+!contains(QMAKE_EXTRA_TARGETS, install_docs) {
+    contains(TEMPLATE, subdirs) {
+        prepareRecursiveTarget(install_docs)
+        prepareRecursiveTarget(uninstall_docs)
+    }
+    QMAKE_EXTRA_TARGETS += install_docs uninstall_docs
 }

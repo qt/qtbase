@@ -547,6 +547,9 @@ void QWidgetPrivate::show_sys()
             }
         }
 
+#ifndef QT_NO_CURSOR
+        qt_qpa_set_cursor(q, false); // Needed in case cursor was set before show
+#endif
         invalidateBuffer(q->rect());
         window->setVisible(true);
     }
@@ -583,33 +586,6 @@ void QWidgetPrivate::hide_sys()
         window->setVisible(false);
 }
 
-void QWidgetPrivate::setMaxWindowState_helper()
-{
-    Q_Q(QWidget);
-
-    const uint old_state = data.in_set_window_state;
-    data.in_set_window_state = 1;
-
-    const QRect desktop = qApp->desktop()->availableGeometry(qApp->desktop()->screenNumber(q));
-    q->setGeometry(desktop);
-
-    data.in_set_window_state = old_state;
-}
-
-void QWidgetPrivate::setFullScreenSize_helper()
-{
-    Q_Q(QWidget);
-
-    const uint old_state = data.in_set_window_state;
-    data.in_set_window_state = 1;
-
-    const QRect screen = qApp->desktop()->screenGeometry(qApp->desktop()->screenNumber(q));
-    q->move(screen.topLeft());
-    q->resize(screen.size());
-
-    data.in_set_window_state = old_state;
-}
-
 Qt::WindowState effectiveState(Qt::WindowStates state)
  {
      if (state & Qt::WindowMinimized)
@@ -632,7 +608,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
     data->window_state = newstate;
     data->in_set_window_state = 1;
-    bool needShow = false;
     Qt::WindowState newEffectiveState = effectiveState(newstate);
     Qt::WindowState oldEffectiveState = effectiveState(oldstate);
     if (isWindow() && newEffectiveState != oldEffectiveState) {
@@ -646,53 +621,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
 
         Q_ASSERT(windowHandle());
         windowHandle()->setWindowState(newEffectiveState);
-        bool supported = windowHandle()->windowState() == newEffectiveState;
-
-        if (!supported) {
-            const bool wasResized = testAttribute(Qt::WA_Resized);
-            const bool wasMoved = testAttribute(Qt::WA_Moved);
-
-            // undo the effects of the old emulated state
-            if (oldEffectiveState == Qt::WindowFullScreen) {
-                setParent(0, d->topData()->savedFlags);
-                needShow = true;
-            } else if (oldEffectiveState == Qt::WindowMinimized) {
-                needShow = true;
-            }
-
-            // emulate the new window state
-            if (newEffectiveState == Qt::WindowMinimized) {
-                //### not ideal...
-                hide();
-                needShow = false;
-            } else if (newEffectiveState == Qt::WindowFullScreen) {
-                d->topData()->savedFlags = windowFlags();
-                setParent(0, Qt::FramelessWindowHint | (windowFlags() & Qt::WindowStaysOnTopHint));
-                d->setFullScreenSize_helper();
-                raise();
-                needShow = true;
-            } else if (newEffectiveState == Qt::WindowMaximized) {
-                createWinId();
-                d->setMaxWindowState_helper();
-            } else if (newEffectiveState == Qt::WindowNoState) {
-                // reset old geometry
-                QRect r = d->topData()->normalGeometry;
-                if (r.width() >= 0) {
-                    d->topData()->normalGeometry = QRect(0,0,-1,-1);
-                    setGeometry(r);
-                }
-            }
-
-            // setWindowState() is not an explicit move/resize, same as the supported == true
-            // case
-            setAttribute(Qt::WA_Resized, wasResized);
-            setAttribute(Qt::WA_Moved, wasMoved);
-        }
     }
     data->in_set_window_state = 0;
-
-    if (needShow)
-        setVisible(true);
 
     if (newstate & Qt::WindowActive)
         activateWindow();

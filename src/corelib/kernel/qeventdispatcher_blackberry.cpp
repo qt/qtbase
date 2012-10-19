@@ -243,28 +243,6 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
     }
 }
 
-static inline bool updateTimeout(int *timeout, const struct timeval &start)
-{
-    // A timeout of -1 means we should block indefinitely. If we get here, we got woken up by a
-    // non-IO BPS event, and that event has been processed already. This means we can go back and
-    // block in bps_get_event().
-    // Note that processing the BPS event might have triggered a wakeup, in that case we get a
-    // IO event in the next bps_get_event() right away.
-    if (*timeout == -1)
-        return true;
-
-    if (Q_UNLIKELY(!QElapsedTimer::isMonotonic())) {
-        // we cannot recalculate the timeout without a monotonic clock as the time may have changed
-        return false;
-    }
-
-    // clock source is monotonic, so we can recalculate how much timeout is left
-    timeval t2 = qt_gettime();
-    int elapsed = (t2.tv_sec * 1000 + t2.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000);
-    *timeout -= elapsed;
-    return *timeout >= 0;
-}
-
 int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                        timeval *timeout)
 {
@@ -291,60 +269,70 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
         FD_ZERO(exceptfds);
 
     // Convert timeout to milliseconds
-    int timeout_bps = -1;
+    int timeoutTotal = -1;
     if (timeout)
-        timeout_bps = (timeout->tv_sec * 1000) + (timeout->tv_usec / 1000);
+        timeoutTotal = (timeout->tv_sec * 1000) + (timeout->tv_usec / 1000);
 
-    bool hasProcessedEventsOnce = false;
+    int timeoutLeft = timeoutTotal;
+
     bps_event_t *event = 0;
+    unsigned int eventCount = 0;
 
     // This loop exists such that we can drain the bps event queue of all native events
     // more efficiently than if we were to return control to Qt after each event. This
     // is important for handling touch events which can come in rapidly.
     forever {
-        Q_ASSERT(!hasProcessedEventsOnce || event);
+        // Only emit the awake() and aboutToBlock() signals in the second iteration. For the
+        // first iteration, the UNIX event dispatcher will have taken care of that already.
+        // Also native events are actually processed one loop iteration after they were
+        // retrieved with bps_get_event().
 
-        // Only emit the awake() and aboutToBlock() signals in the second iteration. For the first
-        // iteration, the UNIX event dispatcher will have taken care of that already.
-        if (hasProcessedEventsOnce)
-            emit awake();
+        // Filtering the native event should happen between the awake() and aboutToBlock()
+        // signal emissions. The calls awake() - filterNativeEvent() - aboutToBlock() -
+        // bps_get_event() need not to be interrupted by a break or return statement.
+        if (eventCount > 0) {
+            if (event) {
+                emit awake();
+                filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
+                emit aboutToBlock();
+            }
 
-        // Filtering the native event should happen between the awake() and aboutToBlock() signal
-        // emissions. The calls awake() - filterNativeEvent() - aboutToBlock() - bps_get_event()
-        // need not to be interrupted by a break or return statement.
-        //
-        // Because of this, the native event is actually processed one loop iteration
-        // after it was retrieved with bps_get_event().
-        if (event)
-            filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
-
-        if (hasProcessedEventsOnce)
-            emit aboutToBlock();
+            // Update the timeout
+            // Clock source is monotonic, so we can recalculate how much timeout is left
+            if (timeoutTotal != -1) {
+                timeval t2 = qt_gettime();
+                timeoutLeft = timeoutTotal - ((t2.tv_sec * 1000 + t2.tv_usec / 1000)
+                                              - (startTime.tv_sec * 1000 + startTime.tv_usec / 1000));
+                if (timeoutLeft < 0)
+                    timeoutLeft = 0;
+            }
+        }
 
         // Wait for event or file to be ready
         event = 0;
-        const int result = bps_get_event(&event, timeout_bps);
+        const int result = bps_get_event(&event, timeoutLeft);
         if (result != BPS_SUCCESS)
             qWarning("QEventDispatcherBlackberry::select: bps_get_event() failed");
 
-        // In the case of !event, we break out of the loop to let Qt process the timers
-        // that are now ready (since timeout has expired).
-        // In the case of bpsIOReadyDomain, we break out to let Qt process the FDs that
-        // are ready. If we do not do this activation of QSocketNotifiers etc would be
-        // delayed.
-        if (!event || bps_event_get_domain(event) == bpsIOReadyDomain)
-            break;
+        if (!event)    // In case of !event, we break out of the loop to let Qt process the timers
+            break;     // (since timeout has expired) and socket notifiers that are now ready.
 
-        // Update the timeout. If this fails we have exceeded our alloted time or the system
-        // clock has changed time and we cannot calculate a new timeout so we bail out.
-        if (!updateTimeout(&timeout_bps, startTime)) {
-
-            // No more loop iteration, so we need to filter the event here.
-            filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
-            break;
+        if (bps_event_get_domain(event) == bpsIOReadyDomain) {
+            timeoutTotal = 0;   // in order to immediately drain the event queue of native events
+            event = 0;          // (especially touch move events) we don't break out here
         }
 
-        hasProcessedEventsOnce = true;
+        ++eventCount;
+
+        // Make sure we are not trapped in this loop due to continuous native events
+        // also we cannot recalculate the timeout without a monotonic clock as the time may have changed
+        const unsigned int maximumEventCount = 12;
+        if (Q_UNLIKELY((eventCount > maximumEventCount && timeoutLeft == 0)
+                       || !QElapsedTimer::isMonotonic())) {
+            if (event)
+                filterNativeEvent(QByteArrayLiteral("bps_event_t"), static_cast<void*>(event), 0);
+            break;
+        }
     }
 
     // the number of bits set in the file sets

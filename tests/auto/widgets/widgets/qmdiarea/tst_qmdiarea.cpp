@@ -333,8 +333,8 @@ void tst_QMdiArea::subWindowActivated()
     QMdiArea *workspace = new QMdiArea(&mw);
     workspace->setObjectName(QLatin1String("testWidget"));
     mw.setCentralWidget(workspace);
-    QSignalSpy spy(workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)));
-    connect( workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(activeChanged(QMdiSubWindow *)));
+    QSignalSpy spy(workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)));
+    connect( workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(activeChanged(QMdiSubWindow*)));
     mw.show();
     qApp->setActiveWindow(&mw);
 
@@ -456,7 +456,7 @@ bool macHasAccessToWindowsServer()
 void tst_QMdiArea::subWindowActivated2()
 {
     QMdiArea mdiArea;
-    QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)));
+    QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)));
     for (int i = 0; i < 5; ++i)
         mdiArea.addSubWindow(new QWidget);
     QCOMPARE(spy.count(), 0);
@@ -540,8 +540,8 @@ void tst_QMdiArea::subWindowActivatedWithMinimize()
     QMdiArea *workspace = new QMdiArea(&mw);
     workspace->setObjectName(QLatin1String("testWidget"));
     mw.setCentralWidget(workspace);
-    QSignalSpy spy(workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)));
-    connect( workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(activeChanged(QMdiSubWindow *)) );
+    QSignalSpy spy(workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)));
+    connect( workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(activeChanged(QMdiSubWindow*)) );
     mw.show();
     qApp->setActiveWindow(&mw);
     QWidget *widget = new QWidget(workspace);
@@ -924,8 +924,8 @@ void tst_QMdiArea::setActiveSubWindow()
     QMdiArea workspace;
     workspace.show();
 
-    QSignalSpy spy(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)));
-    connect(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(activeChanged(QMdiSubWindow *)));
+    QSignalSpy spy(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)));
+    connect(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(activeChanged(QMdiSubWindow*)));
     qApp->setActiveWindow(&workspace);
 
     // Activate hidden windows
@@ -1321,8 +1321,8 @@ void tst_QMdiArea::closeWindows()
         workspace.addSubWindow(new QWidget)->show();
     qApp->processEvents();
     QCOMPARE(workspace.subWindowList().count(), windowCount);
-    QSignalSpy spy(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)));
-    connect(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(activeChanged(QMdiSubWindow *)));
+    QSignalSpy spy(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)));
+    connect(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(activeChanged(QMdiSubWindow*)));
     workspace.closeAllSubWindows();
     qApp->processEvents();
     QCOMPARE(workspace.subWindowList().count(), 0);
@@ -1344,8 +1344,8 @@ void tst_QMdiArea::activateNextAndPreviousWindow()
         qApp->processEvents();
     }
 
-    QSignalSpy spy(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)));
-    connect(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow *)), this, SLOT(activeChanged(QMdiSubWindow *)));
+    QSignalSpy spy(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)));
+    connect(&workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(activeChanged(QMdiSubWindow*)));
 
     // activateNextSubWindow
     for (int i = 0; i < windowCount; ++i) {
@@ -2284,7 +2284,7 @@ void tst_QMdiArea::tabBetweenSubWindows()
     QWidget *focusWidget = subWindows.back()->widget();
     QCOMPARE(qApp->focusWidget(), focusWidget);
 
-    QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)));
+    QSignalSpy spy(&mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)));
     QCOMPARE(spy.count(), 0);
 
     // Walk through the entire list of sub windows.

@@ -97,6 +97,9 @@ public:
     }
 
     void maybeQuitOnLastWindowClosed();
+#ifndef QT_NO_CURSOR
+    void applyCursor();
+#endif
 
     QPoint globalPosition() const {
         Q_Q(const QWindow);

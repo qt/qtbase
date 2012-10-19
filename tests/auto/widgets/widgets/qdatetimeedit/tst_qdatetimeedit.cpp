@@ -1068,7 +1068,7 @@ void tst_QDateTimeEdit::enterKey()
     // causes the dateChanged() signal to be emitted, even if the date
     // wasn't actually changed.  While this behaviour is questionable,
     // we include this test so a change to the behaviour can't go unnoticed.
-    QSignalSpy enterSpy(testWidget, SIGNAL(dateChanged(const QDate &)));
+    QSignalSpy enterSpy(testWidget, SIGNAL(dateChanged(QDate)));
     QTest::keyClick(testWidget, Qt::Key_Enter);
     QCOMPARE(enterSpy.count(), 1);
     QVariantList list = enterSpy.takeFirst();
@@ -2028,9 +2028,9 @@ void tst_QDateTimeEdit::dateSignalChecking()
 
     testWidget->setDate(originalDate);
 
-    QSignalSpy dateSpy(testWidget, SIGNAL(dateChanged(const QDate &)));
-    QSignalSpy dateTimeSpy(testWidget, SIGNAL(dateTimeChanged(const QDateTime &)));
-    QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(const QTime &)));
+    QSignalSpy dateSpy(testWidget, SIGNAL(dateChanged(QDate)));
+    QSignalSpy dateTimeSpy(testWidget, SIGNAL(dateTimeChanged(QDateTime)));
+    QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(QTime)));
 
     testWidget->setDate(newDate);
     QCOMPARE(dateSpy.count(), timesEmitted);
@@ -2064,9 +2064,9 @@ void tst_QDateTimeEdit::timeSignalChecking()
     testWidget->setTime(originalTime);
 
     testWidget->setDisplayFormat("hh:mm:ss");
-    QSignalSpy dateSpy(testWidget, SIGNAL(dateChanged(const QDate &)));
-    QSignalSpy dateTimeSpy(testWidget, SIGNAL(dateTimeChanged(const QDateTime &)));
-    QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(const QTime &)));
+    QSignalSpy dateSpy(testWidget, SIGNAL(dateChanged(QDate)));
+    QSignalSpy dateTimeSpy(testWidget, SIGNAL(dateTimeChanged(QDateTime)));
+    QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(QTime)));
 
     testWidget->setTime(newTime);
     QCOMPARE(timeSpy.count(), timesEmitted);
@@ -2114,9 +2114,9 @@ void tst_QDateTimeEdit::dateTimeSignalChecking()
     testWidget->setDisplayFormat("dd/MM/yyyy hh:mm:ss");
     testWidget->setDateTime(originalDateTime);
 
-    QSignalSpy dateSpy(testWidget, SIGNAL(dateChanged(const QDate &)));
-    QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(const QTime &)));
-    QSignalSpy dateTimeSpy(testWidget, SIGNAL(dateTimeChanged(const QDateTime &)));
+    QSignalSpy dateSpy(testWidget, SIGNAL(dateChanged(QDate)));
+    QSignalSpy timeSpy(testWidget, SIGNAL(timeChanged(QTime)));
+    QSignalSpy dateTimeSpy(testWidget, SIGNAL(dateTimeChanged(QDateTime)));
 
     testWidget->setDateTime(newDateTime);
     QCOMPARE(dateSpy.count(), timesDateEmitted);
@@ -2981,9 +2981,9 @@ void tst_QDateTimeEdit::task108572()
 
 void tst_QDateTimeEdit::task149097()
 {
-    QSignalSpy dtSpy(testWidget, SIGNAL(dateTimeChanged(const QDateTime &)));
-    QSignalSpy dSpy(testWidget, SIGNAL(dateChanged(const QDate &)));
-    QSignalSpy tSpy(testWidget, SIGNAL(timeChanged(const QTime &)));
+    QSignalSpy dtSpy(testWidget, SIGNAL(dateTimeChanged(QDateTime)));
+    QSignalSpy dSpy(testWidget, SIGNAL(dateChanged(QDate)));
+    QSignalSpy tSpy(testWidget, SIGNAL(timeChanged(QTime)));
 
     testWidget->setDisplayFormat("yyyy/MM/dd hh:mm:ss");
     testWidget->setDateTime(QDateTime(QDate(2001, 02, 03), QTime(5, 1, 2)));

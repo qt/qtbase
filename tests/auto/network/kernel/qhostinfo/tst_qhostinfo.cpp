@@ -283,7 +283,7 @@ void tst_QHostInfo::lookupIPv4()
     QFETCH(QString, addresses);
 
     lookupDone = false;
-    QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(const QHostInfo&)));
+    QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(QHostInfo)));
 
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
@@ -333,7 +333,7 @@ void tst_QHostInfo::lookupIPv6()
         QSKIP("This platform does not support IPv6 lookups");
 
     lookupDone = false;
-    QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(const QHostInfo&)));
+    QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(QHostInfo)));
 
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
@@ -468,7 +468,7 @@ public:
 void LookupReceiver::start()
 {
     for (int i=0;i<numrequests;i++)
-        QHostInfo::lookupHost(QString("qt.nokia.com"), this, SLOT(resultsReady(const QHostInfo&)));
+        QHostInfo::lookupHost(QString("qt.nokia.com"), this, SLOT(resultsReady(QHostInfo)));
 }
 
 void LookupReceiver::resultsReady(const QHostInfo &info)
@@ -512,7 +512,7 @@ void tst_QHostInfo::multipleSameLookups()
     lookupsDoneCounter = 0;
 
     for (int i = 0; i < COUNT; i++)
-        QHostInfo::lookupHost("localhost", this, SLOT(resultsReady(const QHostInfo)));
+        QHostInfo::lookupHost("localhost", this, SLOT(resultsReady(QHostInfo)));
 
     QElapsedTimer timer;
     timer.start();
@@ -546,7 +546,7 @@ void tst_QHostInfo::multipleDifferentLookups()
 
     for (int i = 0; i < hostnameList.size(); i++)
         for (int j = 0; j < repeats; ++j)
-            QHostInfo::lookupHost(hostnameList.at(i), this, SLOT(resultsReady(const QHostInfo)));
+            QHostInfo::lookupHost(hostnameList.at(i), this, SLOT(resultsReady(QHostInfo)));
 
     QElapsedTimer timer;
     timer.start();

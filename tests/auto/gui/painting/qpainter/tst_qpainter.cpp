@@ -830,6 +830,7 @@ void tst_QPainter::drawLine()
     { // unclipped
         pixmapUnclipped.fill(Qt::white);
         QPainter p(&pixmapUnclipped);
+        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.translate(offset, offset);
         p.setPen(QPen(Qt::black));
         p.drawLine(line);
@@ -856,6 +857,7 @@ void tst_QPainter::drawLine()
 
         pixmapClipped.fill(Qt::white);
         QPainter p(&pixmapClipped);
+        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.translate(offset, offset);
         p.setClipRect(clip);
         p.setPen(QPen(Qt::black));
@@ -892,6 +894,7 @@ void tst_QPainter::drawLine_task121143()
     image.fill(0xffffffff);
     QPainter p(&image);
     p.setPen(pen);
+    p.setRenderHint(QPainter::Qt4CompatiblePainting);
     p.drawLine(QLine(0, 0+4, 0+4, 0));
     p.end();
 
@@ -1028,6 +1031,7 @@ void tst_QPainter::drawRect2()
         QTransform transform(0.368567, 0, 0, 0, 0.368567, 0, 0.0289, 0.0289, 1);
 
         QPainter p(&image);
+        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.setTransform(transform);
         p.setBrush(Qt::red);
         p.setPen(Qt::NoPen);
@@ -1038,6 +1042,7 @@ void tst_QPainter::drawRect2()
         image.fill(0xffffffff);
 
         p.begin(&image);
+        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.setTransform(transform);
         p.drawRect(QRect(14, 14, 39, 39));
         p.end();
@@ -1184,6 +1189,7 @@ void tst_QPainter::drawPath()
     image.fill(QColor(Qt::white).rgb());
 
     QPainter p(&image);
+    p.setRenderHint(QPainter::Qt4CompatiblePainting);
     p.setPen(Qt::NoPen);
     p.setBrush(Qt::black);
     p.translate(offset - expectedBounds.left(), offset - expectedBounds.top());
@@ -1246,11 +1252,7 @@ void tst_QPainter::drawPath2()
 
 void tst_QPainter::drawPath3()
 {
-#if !defined(Q_OS_WINCE)
-    QImage imgA(400, 400, QImage::Format_RGB32);
-#else
     QImage imgA(100, 100, QImage::Format_RGB32);
-#endif
     imgA.fill(0xffffff);
     QImage imgB = imgA;
 
@@ -1413,6 +1415,7 @@ void tst_QPainter::drawRoundRect()
     {
         pixmap.fill(Qt::white);
         QPainter p(&pixmap);
+        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.setPen(usePen ? QPen(Qt::black) : QPen(Qt::NoPen));
         p.setBrush(Qt::black);
         p.drawRoundRect(rect);
@@ -4185,6 +4188,7 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
     baseLine.fill(Qt::white);
     {
         QPainter p(&baseLine);
+        p.setRenderHint(QPainter::Qt4CompatiblePainting);
         p.drawText(0, fm.ascent(), QString::fromLatin1("e"));
     }
 
@@ -4195,6 +4199,7 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 
         {
             QPainter p(&comparison);
+            p.setRenderHint(QPainter::Qt4CompatiblePainting);
             p.drawText(QPointF(i / 12.0, fm.ascent()), QString::fromLatin1("e"));
         }
 

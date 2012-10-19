@@ -56,14 +56,26 @@ PropertyField::PropertyField(QObject* subject, const QMetaProperty& prop, QWidge
 
 QString PropertyField::valueToString(QVariant val)
 {
-    QString text = val.toString();
-    if (val.type() == QVariant::Size)
+    QString text;
+    switch (val.type()) {
+    case QVariant::Double:
+        text = QString("%1").arg(val.toReal(), 0, 'f', 4);
+        break;
+    case QVariant::Size:
         text = QString("%1 x %2").arg(val.toSize().width()).arg(val.toSize().height());
-    else if (val.type() == QVariant::SizeF)
+        break;
+    case QVariant::SizeF:
         text = QString("%1 x %2").arg(val.toSizeF().width()).arg(val.toSizeF().height());
-    else if (val.type() == QVariant::Rect)
-        text = QString("%1 x %2 +%3 +%4").arg(val.toRect().width())
-                .arg(val.toRect().height()).arg(val.toRect().x()).arg(val.toRect().y());
+        break;
+    case QVariant::Rect: {
+        QRect rect = val.toRect();
+        text = QString("%1 x %2 %3%4 %5%6").arg(rect.width())
+                .arg(rect.height()).arg(rect.x() < 0 ? "" : "+").arg(rect.x())
+                .arg(rect.y() < 0 ? "" : "+").arg(rect.y());
+        } break;
+    default:
+        text = val.toString();
+    }
     return text;
 }
 

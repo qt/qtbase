@@ -83,6 +83,21 @@
 #define CHILDID_SELF 0
 #define WM_GETOBJECT 0x003D
 
+#ifndef SHGFI_ADDOVERLAYS // Shell structures for icons.
+typedef struct _SHSTOCKICONINFO
+{
+    DWORD cbSize;
+    HICON hIcon;
+    int   iSysImageIndex;
+    int   iIcon;
+    WCHAR szPath[MAX_PATH];
+} SHSTOCKICONINFO;
+
+#  define SIID_SHIELD 77
+#  define SHGFI_ADDOVERLAYS 0x20
+#  define SHGFI_OVERLAYINDEX 0x40
+#endif // SIID_SHIELD
+
 #if !defined(__MINGW64_VERSION_MAJOR)
 
 #define STATE_SYSTEM_HASPOPUP 0x40000000

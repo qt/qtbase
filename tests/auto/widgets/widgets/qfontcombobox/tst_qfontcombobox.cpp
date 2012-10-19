@@ -142,7 +142,7 @@ void tst_QFontComboBox::currentFont()
     QFETCH(QFont, currentFont);
 
     SubQFontComboBox box;
-    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont const&)));
+    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont)));
     QFont oldCurrentFont = box.currentFont();
 
     box.setCurrentFont(currentFont);
@@ -192,7 +192,7 @@ void tst_QFontComboBox::fontFilters()
     QFETCH(QFontComboBox::FontFilters, fontFilters);
 
     SubQFontComboBox box;
-    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont const&)));
+    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont)));
     QFont currentFont = box.currentFont();
 
     box.setFontFilters(fontFilters);
@@ -265,7 +265,7 @@ void tst_QFontComboBox::writingSystem()
     QFETCH(QFontDatabase::WritingSystem, writingSystem);
 
     SubQFontComboBox box;
-    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont const&)));
+    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont)));
     QFont currentFont = box.currentFont();
 
     box.setWritingSystem(writingSystem);
@@ -285,7 +285,7 @@ void tst_QFontComboBox::writingSystem()
 void tst_QFontComboBox::currentFontChanged()
 {
     SubQFontComboBox box;
-    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont const&)));
+    QSignalSpy spy0(&box, SIGNAL(currentFontChanged(QFont)));
 
     if (box.model()->rowCount() > 2) {
         QTest::keyPress(&box, Qt::Key_Down);

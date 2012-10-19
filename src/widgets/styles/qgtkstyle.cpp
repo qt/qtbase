@@ -71,6 +71,7 @@
 #include <QtWidgets/QWizard>
 
 #include <qpixmapcache.h>
+#include <private/qstyleanimation_p.h>
 #undef signals // Collides with GTK stymbols
 #include <private/qgtkpainter_p.h>
 #include <private/qstylehelper_p.h>
@@ -266,7 +267,7 @@ static GdkColor fromQColor(const QColor &color)
     \since 4.5
 
     \inmodule QtWidgets
- 
+
     The QGtkStyle style provides a look and feel that integrates well
     into GTK-based desktop environments such as the XFCe and GNOME.
 
@@ -284,7 +285,7 @@ static GdkColor fromQColor(const QColor &color)
     Constructs a QGtkStyle object.
 */
 QGtkStyle::QGtkStyle()
-    : QWindowsStyle(*new QGtkStylePrivate)
+    : QCommonStyle(*new QGtkStylePrivate)
 {
     Q_D(QGtkStyle);
     d->init();
@@ -296,7 +297,7 @@ QGtkStyle::QGtkStyle()
     Constructs a QGtkStyle object.
 */
 QGtkStyle::QGtkStyle(QGtkStylePrivate &dd)
-     : QWindowsStyle(dd)
+     : QCommonStyle(dd)
 {
     Q_D(QGtkStyle);
     d->init();
@@ -317,7 +318,7 @@ QPalette QGtkStyle::standardPalette() const
 {
     Q_D(const QGtkStyle);
 
-    QPalette palette = QWindowsStyle::standardPalette();
+    QPalette palette = QCommonStyle::standardPalette();
     if (d->isThemeAvailable()) {
         GtkStyle *style = d->gtkStyle();
         GtkWidget *gtkButton = d->gtkWidget("GtkButton");
@@ -408,7 +409,7 @@ void QGtkStyle::polish(QPalette &palette)
     Q_D(QGtkStyle);
 
     if (!d->isThemeAvailable())
-        QWindowsStyle::polish(palette);
+        QCommonStyle::polish(palette);
     else
         palette = palette.resolve(standardPalette());
 }
@@ -420,8 +421,8 @@ void QGtkStyle::polish(QApplication *app)
 {
     Q_D(QGtkStyle);
 
-    QWindowsStyle::polish(app);
-    // Custom fonts and palettes with QtConfig are intentionally 
+    QCommonStyle::polish(app);
+    // Custom fonts and palettes with QtConfig are intentionally
     // not supported as these should be entirely determined by
     // current Gtk settings
     if (app->desktopSettingsAware() && d->isThemeAvailable()) {
@@ -447,7 +448,7 @@ void QGtkStyle::unpolish(QApplication *app)
 {
     Q_D(QGtkStyle);
 
-    QWindowsStyle::unpolish(app);
+    QCommonStyle::unpolish(app);
     QPixmapCache::clear();
 
     if (app->desktopSettingsAware() && d->isThemeAvailable()
@@ -470,7 +471,7 @@ void QGtkStyle::polish(QWidget *widget)
 {
     Q_D(QGtkStyle);
 
-    QWindowsStyle::polish(widget);
+    QCommonStyle::polish(widget);
     if (!d->isThemeAvailable())
         return;
     if (qobject_cast<QAbstractButton*>(widget)
@@ -494,7 +495,7 @@ void QGtkStyle::polish(QWidget *widget)
 */
 void QGtkStyle::unpolish(QWidget *widget)
 {
-    QWindowsStyle::unpolish(widget);
+    QCommonStyle::unpolish(widget);
 }
 
 /*!
@@ -507,7 +508,7 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable())
-        return QWindowsStyle::pixelMetric(metric, option, widget);
+        return QCommonStyle::pixelMetric(metric, option, widget);
 
     switch (metric) {
     case PM_DefaultFrameWidth:
@@ -692,7 +693,7 @@ int QGtkStyle::pixelMetric(PixelMetric metric,
     case PM_TabCloseIndicatorHeight:
         return 20;
     default:
-        return QWindowsStyle::pixelMetric(metric, option, widget);
+        return QCommonStyle::pixelMetric(metric, option, widget);
     }
 }
 
@@ -706,16 +707,20 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable())
-        return QWindowsStyle::styleHint(hint, option, widget, returnData);
+        return QCommonStyle::styleHint(hint, option, widget, returnData);
 
     switch (hint) {
+    case SH_ItemView_ChangeHighlightOnFocus:
+        return true;
     case SH_ScrollBar_MiddleClickAbsolutePosition:
         return true;
     case SH_Menu_AllowActiveAndDisabled:
         return false;
     case SH_MainWindow_SpaceBelowMenuBar:
-        return 0;
+        return false;
     case SH_MenuBar_MouseTracking:
+        return true;
+    case SH_Menu_MouseTracking:
         return true;
     case SH_TitleBar_AutoRaise:
         return true;
@@ -742,7 +747,7 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
             mask->region -= QRect(option->rect.right() - 1, option->rect.top() + 2, 2, 1);
             mask->region -= QRect(option->rect.right() , option->rect.top() + 3, 1, 2);
         }
-        return QWindowsStyle::styleHint(hint, option, widget, returnData);
+        return QCommonStyle::styleHint(hint, option, widget, returnData);
     case SH_MessageBox_TextInteractionFlags:
         return Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;
     case SH_MessageBox_CenterButtons:
@@ -767,7 +772,7 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
     case SH_ToolButtonStyle:
     {
         if (d->isKDE4Session())
-            return QWindowsStyle::styleHint(hint, option, widget, returnData);
+            return QCommonStyle::styleHint(hint, option, widget, returnData);
         GtkWidget *gtkToolbar = d->gtkWidget("GtkToolbar");
         GtkToolbarStyle toolbar_style = GTK_TOOLBAR_ICONS;
         g_object_get(gtkToolbar, "toolbar-style", &toolbar_style, NULL);
@@ -838,7 +843,7 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
     default:
         break;
     }
-    return QWindowsStyle::styleHint(hint, option, widget, returnData);
+    return QCommonStyle::styleHint(hint, option, widget, returnData);
 }
 
 /*!
@@ -852,7 +857,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable()) {
-        QWindowsStyle::drawPrimitive(element, option, painter, widget);
+        QCommonStyle::drawPrimitive(element, option, painter, widget);
         return;
     }
 
@@ -979,14 +984,11 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         break;
 
     case PE_FrameDefaultButton: // fall through
-    case PE_FrameFocusRect:
-        if ((widget && qobject_cast<const QAbstractItemView*>(widget))) {
-            if (option->state & State_KeyboardFocusChange)
-                QWindowsStyle::drawPrimitive(element, option, painter, widget);
-        } else {
-            // ### this mess should move to subcontrolrect
-            QRect frameRect = option->rect.adjusted(1, 1, -2, -2);
-            if ( qobject_cast<const QTabBar*>(widget)) {
+    case PE_FrameFocusRect: {
+            QRect frameRect = option->rect.adjusted(1, 1, -2, -2); // ### this mess should move to subcontrolrect
+            if (qobject_cast<const QAbstractItemView*>(widget)) {
+                // Dont draw anything
+            } else if (qobject_cast<const QTabBar*>(widget)) {
                 GtkWidget *gtkNotebook = d->gtkWidget("GtkNotebook");
                 style = gtkPainter.getStyle(gtkNotebook);
                 gtkPainter.paintFocus(gtkNotebook, "tab", frameRect.adjusted(-1, 1, 1, 1), GTK_STATE_ACTIVE, style);
@@ -1421,7 +1423,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             case QTabBar::TriangularWest:
             case QTabBar::TriangularSouth:
                 painter->restore();
-                QWindowsStyle::drawPrimitive(element, option, painter, widget);
+                QCommonStyle::drawPrimitive(element, option, painter, widget);
                 return;
             }
 
@@ -1435,7 +1437,7 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         break;
 
     default:
-        QWindowsStyle::drawPrimitive(element, option, painter, widget);
+        QCommonStyle::drawPrimitive(element, option, painter, widget);
     }
 }
 
@@ -1449,7 +1451,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable()) {
-        QWindowsStyle::drawComplexControl(control, option, painter, widget);
+        QCommonStyle::drawComplexControl(control, option, painter, widget);
         return;
     }
 
@@ -2614,7 +2616,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 #endif // QT_NO_SLIDER
 
     default:
-        QWindowsStyle::drawComplexControl(control, option, painter, widget);
+        QCommonStyle::drawComplexControl(control, option, painter, widget);
 
         break;
     }
@@ -2632,7 +2634,7 @@ void QGtkStyle::drawControl(ControlElement element,
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable()) {
-        QWindowsStyle::drawControl(element, option, painter, widget);
+        QCommonStyle::drawControl(element, option, painter, widget);
         return;
     }
 
@@ -3061,10 +3063,8 @@ void QGtkStyle::drawControl(ControlElement element,
 
         // Draws one item in a popup menu.
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            const int windowsItemFrame        =  2; // menu item frame width
             const int windowsItemHMargin      =  3; // menu item hor text margin
             const int windowsItemVMargin      = 26; // menu item ver text margin
-            const int windowsRightBorder      = 15; // right border on windows
             GtkWidget *gtkMenuItem = menuItem->checked ? d->gtkWidget("GtkMenu.GtkCheckMenuItem") :
                                      d->gtkWidget("GtkMenu.GtkMenuItem");
 
@@ -3251,9 +3251,9 @@ void QGtkStyle::drawControl(ControlElement element,
             int x, y, w, h;
             menuitem->rect.getRect(&x, &y, &w, &h);
             int tab = menuitem->tabWidth;
-            int xm = windowsItemFrame + checkcol + windowsItemHMargin;
+            int xm = QGtkStylePrivate::menuItemFrame + checkcol + windowsItemHMargin;
             int xpos = menuitem->rect.x() + xm + 1;
-            QRect textRect(xpos, y + windowsItemVMargin, w - xm - windowsRightBorder - tab + 1, h - 2 * windowsItemVMargin);
+            QRect textRect(xpos, y + windowsItemVMargin, w - xm - QGtkStylePrivate::menuRightBorder - tab + 1, h - 2 * windowsItemVMargin);
             QRect vTextRect = visualRect(opt->direction, menuitem->rect, textRect);
             QString s = menuitem->text;
 
@@ -3406,7 +3406,7 @@ void QGtkStyle::drawControl(ControlElement element,
                 break;
 
             default:
-                QWindowsStyle::drawControl(element, option, painter, widget);
+                QCommonStyle::drawControl(element, option, painter, widget);
                 break;
             }
 
@@ -3487,13 +3487,15 @@ void QGtkStyle::drawControl(ControlElement element,
                     progressBar.setRect(rect.left(), rect.top(), width, rect.height());
                 else
                     progressBar.setRect(rect.right() - width, rect.top(), width, rect.height());
-
+                d->stopAnimation(option->styleObject);
             } else {
                 Q_D(const QGtkStyle);
                 int slideWidth = ((rect.width() - 4) * 2) / 3;
-                int step = ((d->animateStep * slideWidth) / d->animationFps) % slideWidth;
-                if ((((d->animateStep * slideWidth) / d->animationFps) % (2 * slideWidth)) >= slideWidth)
-                    step = slideWidth - step;
+                int step = 0;
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(option->styleObject)))
+                    step = animation->progressStep(slideWidth);
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animationFps, option->styleObject));
                 progressBar.setRect(rect.left() + step, rect.top(), slideWidth / 2, rect.height());
             }
 
@@ -3508,7 +3510,7 @@ void QGtkStyle::drawControl(ControlElement element,
         break;
 
     default:
-        QWindowsStyle::drawControl(element, option, painter, widget);
+        QCommonStyle::drawControl(element, option, painter, widget);
     }
 }
 
@@ -3520,9 +3522,9 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
 {
     Q_D(const QGtkStyle);
 
-    QRect rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
+    QRect rect = QCommonStyle::subControlRect(control, option, subControl, widget);
     if (!d->isThemeAvailable())
-        return QWindowsStyle::subControlRect(control, option, subControl, widget);
+        return QCommonStyle::subControlRect(control, option, subControl, widget);
 
     switch (control) {
     case CC_ScrollBar:
@@ -3777,7 +3779,7 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
 
             GtkWidget *arrowWidget = d->gtkWidget(arrowPath);
             if (!arrowWidget)
-                return QWindowsStyle::subControlRect(control, option, subControl, widget);
+                return QCommonStyle::subControlRect(control, option, subControl, widget);
 
             GtkAllocation allocation;
             d->gtk_widget_get_allocation(arrowWidget, &allocation);
@@ -3826,7 +3828,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 {
     Q_D(const QGtkStyle);
 
-    QSize newSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
+    QSize newSize = QCommonStyle::sizeFromContents(type, option, size, widget);
     if (!d->isThemeAvailable())
         return newSize;
 
@@ -3860,34 +3862,6 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 
             if (toolbutton->features & QStyleOptionToolButton::HasMenu)
                 newSize += QSize(6, 0);
-        }
-        break;
-    case CT_MenuItem:
-        if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            int textMargin = 8;
-
-            if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
-                GtkWidget *gtkMenuSeparator = d->gtkWidget("GtkMenu.GtkSeparatorMenuItem");
-                GtkRequisition sizeReq = {0, 0};
-                d->gtk_widget_size_request(gtkMenuSeparator, &sizeReq);
-                newSize = QSize(size.width(), sizeReq.height);
-                break;
-            }
-
-            GtkWidget *gtkMenuItem = d->gtkWidget("GtkMenu.GtkCheckMenuItem");
-            GtkStyle* style = d->gtk_widget_get_style(gtkMenuItem);
-
-            // Note we get the perfect height for the default font since we
-            // set a fake text label on the gtkMenuItem
-            // But if custom fonts are used on the widget we need a minimum size
-            GtkRequisition sizeReq = {0, 0};
-            d->gtk_widget_size_request(gtkMenuItem, &sizeReq);
-            newSize.setHeight(qMax(newSize.height() - 4, sizeReq.height));
-            newSize += QSize(textMargin + style->xthickness - 1, 0);
-
-            gint checkSize;
-            d->gtk_widget_style_get(gtkMenuItem, "indicator-size", &checkSize, NULL);
-            newSize.setWidth(newSize.width() + qMax(0, checkSize - 20));
         }
         break;
     case CT_SpinBox:
@@ -3954,7 +3928,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
         newSize += QSize(1, 1);
         break;
     case CT_MenuBarItem:
-        newSize += QSize(0, 2);
+        newSize += QSize(QGtkStylePrivate::menuItemHMargin * 4, QGtkStylePrivate::menuItemVMargin * 2 + 2);
         break;
     case CT_SizeGrip:
         newSize += QSize(4, 4);
@@ -3973,6 +3947,56 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
             newSize = QSize(60, 19);
         }
     break;
+    case CT_MenuItem:
+        if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+            int w = newSize.width();
+            int maxpmw = menuItem->maxIconWidth;
+            int tabSpacing = 20;
+            if (menuItem->text.contains(QLatin1Char('\t')))
+                w += tabSpacing;
+            else if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
+                w += 2 * QGtkStylePrivate::menuArrowHMargin;
+            else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
+                // adjust the font and add the difference in size.
+                // it would be better if the font could be adjusted in the initStyleOption qmenu func!!
+                QFontMetrics fm(menuItem->font);
+                QFont fontBold = menuItem->font;
+                fontBold.setBold(true);
+                QFontMetrics fmBold(fontBold);
+                w += fmBold.width(menuItem->text) - fm.width(menuItem->text);
+            }
+
+            int checkcol = qMax<int>(maxpmw, QGtkStylePrivate::menuCheckMarkWidth); // Windows always shows a check column
+            w += checkcol;
+            w += int(QGtkStylePrivate::menuRightBorder) + 10;
+
+            newSize.setWidth(w);
+
+            int textMargin = 8;
+            if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
+                GtkWidget *gtkMenuSeparator = d->gtkWidget("GtkMenu.GtkSeparatorMenuItem");
+                GtkRequisition sizeReq = {0, 0};
+                d->gtk_widget_size_request(gtkMenuSeparator, &sizeReq);
+                newSize = QSize(newSize.width(), sizeReq.height);
+                break;
+            }
+
+            GtkWidget *gtkMenuItem = d->gtkWidget("GtkMenu.GtkCheckMenuItem");
+            GtkStyle* style = d->gtk_widget_get_style(gtkMenuItem);
+
+            // Note we get the perfect height for the default font since we
+            // set a fake text label on the gtkMenuItem
+            // But if custom fonts are used on the widget we need a minimum size
+            GtkRequisition sizeReq = {0, 0};
+            d->gtk_widget_size_request(gtkMenuItem, &sizeReq);
+            newSize.setHeight(qMax(newSize.height() - 4, sizeReq.height));
+            newSize += QSize(textMargin + style->xthickness - 1, 0);
+
+            gint checkSize;
+            d->gtk_widget_style_get(gtkMenuItem, "indicator-size", &checkSize, NULL);
+            newSize.setWidth(newSize.width() + qMax(0, checkSize - 20));
+        }
+        break;
     default:
         break;
     }
@@ -3988,7 +4012,7 @@ QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable())
-        return QWindowsStyle::standardPixmap(sp, option, widget);
+        return QCommonStyle::standardPixmap(sp, option, widget);
 
     QPixmap pixmap;
     switch (sp) {
@@ -4042,7 +4066,7 @@ QPixmap QGtkStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
     case SP_MessageBoxCritical:
         return QGtkPainter::getIcon(GTK_STOCK_DIALOG_ERROR, GTK_ICON_SIZE_DIALOG);
     default:
-        return QWindowsStyle::standardPixmap(sp, option, widget);
+        return QCommonStyle::standardPixmap(sp, option, widget);
     }
     return pixmap;
 }
@@ -4057,7 +4081,7 @@ QIcon QGtkStyle::standardIcon(StandardPixmap standardIcon,
     Q_D(const QGtkStyle);
 
     if (!d->isThemeAvailable())
-        return QWindowsStyle::standardIcon(standardIcon, option, widget);
+        return QCommonStyle::standardIcon(standardIcon, option, widget);
     switch (standardIcon) {
     case SP_DialogDiscardButton:
         return QGtkPainter::getIcon(GTK_STOCK_DELETE);
@@ -4086,7 +4110,7 @@ QIcon QGtkStyle::standardIcon(StandardPixmap standardIcon,
     case SP_MessageBoxCritical:
         return QGtkPainter::getIcon(GTK_STOCK_DIALOG_ERROR, GTK_ICON_SIZE_DIALOG);
     default:
-        return QWindowsStyle::standardIcon(standardIcon, option, widget);
+        return QCommonStyle::standardIcon(standardIcon, option, widget);
     }
 }
 
@@ -4096,7 +4120,7 @@ QRect QGtkStyle::subElementRect(SubElement element, const QStyleOption *option, 
 {
     Q_D(const QGtkStyle);
 
-    QRect r = QWindowsStyle::subElementRect(element, option, widget);
+    QRect r = QCommonStyle::subElementRect(element, option, widget);
     if (!d->isThemeAvailable())
         return r;
 
@@ -4149,7 +4173,7 @@ QRect QGtkStyle::subElementRect(SubElement element, const QStyleOption *option, 
 */
 QRect QGtkStyle::itemPixmapRect(const QRect &r, int flags, const QPixmap &pixmap) const
 {
-    return QWindowsStyle::itemPixmapRect(r, flags, pixmap);
+    return QCommonStyle::itemPixmapRect(r, flags, pixmap);
 }
 
 /*!
@@ -4158,7 +4182,7 @@ QRect QGtkStyle::itemPixmapRect(const QRect &r, int flags, const QPixmap &pixmap
 void QGtkStyle::drawItemPixmap(QPainter *painter, const QRect &rect,
                             int alignment, const QPixmap &pixmap) const
 {
-    QWindowsStyle::drawItemPixmap(painter, rect, alignment, pixmap);
+    QCommonStyle::drawItemPixmap(painter, rect, alignment, pixmap);
 }
 
 /*!
@@ -4167,7 +4191,7 @@ void QGtkStyle::drawItemPixmap(QPainter *painter, const QRect &rect,
 QStyle::SubControl QGtkStyle::hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
                               const QPoint &pt, const QWidget *w) const
 {
-    return QWindowsStyle::hitTestComplexControl(cc, opt, pt, w);
+    return QCommonStyle::hitTestComplexControl(cc, opt, pt, w);
 }
 
 /*!
@@ -4176,7 +4200,7 @@ QStyle::SubControl QGtkStyle::hitTestComplexControl(ComplexControl cc, const QSt
 QPixmap QGtkStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                         const QStyleOption *opt) const
 {
-    return QWindowsStyle::generatedIconPixmap(iconMode, pixmap, opt);
+    return QCommonStyle::generatedIconPixmap(iconMode, pixmap, opt);
 }
 
 /*!
@@ -4185,7 +4209,7 @@ QPixmap QGtkStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixm
 void QGtkStyle::drawItemText(QPainter *painter, const QRect &rect, int alignment, const QPalette &pal,
                                     bool enabled, const QString& text, QPalette::ColorRole textRole) const
 {
-    return QWindowsStyle::drawItemText(painter, rect, alignment, pal, enabled, text, textRole);
+    return QCommonStyle::drawItemText(painter, rect, alignment, pal, enabled, text, textRole);
 }
 
 QT_END_NAMESPACE

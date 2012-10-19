@@ -45,7 +45,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setOrganizationName("Trolltech");
+    app.setOrganizationName("QtProject");
     app.setApplicationName("Recent Files Example");
     MainWindow *mainWin = new MainWindow;
     mainWin->show();

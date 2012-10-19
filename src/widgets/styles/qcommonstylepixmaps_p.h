@@ -75,33 +75,6 @@ static const char * const check_list_controller_xpm[] = {
 "                ",
 "                "};
 
-static const char * const tree_branch_open_xpm[] = {
-"9 9 2 1",
-"  c None",
-"# c #000000",
-"#########",
-"#       #",
-"# ##### #",
-"#  ###  #",
-"#  ###  #",
-"#   #   #",
-"#   #   #",
-"#       #",
-"#########"};
-
-static const char * const tree_branch_closed_xpm[] = {
-"9 9 2 1",
-"  c None",
-"# c #000000",
-"#########",
-"#       #",
-"# #     #",
-"# ###   #",
-"# ##### #",
-"# ###   #",
-"# #     #",
-"#       #",
-"#########"};
 
 static const char * const tb_extension_arrow_v_xpm[] = {
     "5 8 3 1",

@@ -70,48 +70,11 @@ endif()
 
 set(_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES \"$${CMAKE_QT5_MODULE_DEPS}\")
 
-!!IF !isEmpty(CMAKE_STATIC_TYPE)
-
-if (NOT Qt5_EXCLUDE_STATIC_DEPENDENCIES)
-    # For static builds, we also list the dependencies of
-    # Qt so that consumers can build easily.
-
-    macro(macro_process_prl_file prl_file_location Configuration)
-        if (EXISTS \"${prl_file_location}\")
-            file(STRINGS \"${prl_file_location}\" prl_strings REGEX \"QMAKE_PRL_LIBS_FOR_CMAKE\")
-            string(REGEX REPLACE \"QMAKE_PRL_LIBS_FOR_CMAKE *= *([^\\n]*)\" \"\\\\1\" static_depends ${prl_strings} )
-            if (_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES)
-                set(_list_sep \";\")
-            endif()
-            set(_Qt5$${CMAKE_MODULE_NAME}_STATIC_${Configuration}_LIB_DEPENDENCIES \"${_list_sep}${static_depends}\")
-        endif()
-    endmacro()
-
-!!IF !isEmpty(CMAKE_DEBUG_TYPE)
-!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
-    macro_process_prl_file(\"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_DEBUG}\" DEBUG)
-!!ELSE
-    macro_process_prl_file(\"$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_DEBUG}\" DEBUG)
-!!ENDIF
-!!ENDIF
-
-!!IF !isEmpty(CMAKE_RELEASE_TYPE)
-!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
-    macro_process_prl_file(\"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_RELEASE}\" RELEASE)
-!!ELSE
-    macro_process_prl_file(\"$${CMAKE_LIB_DIR}$${CMAKE_PRL_FILE_LOCATION_RELEASE}\" RELEASE)
-!!ENDIF
-!!ENDIF
-
-endif()
-
-!!ENDIF # Static
-
 macro(_populate_imported_target_properties Configuration LIB_LOCATION IMPLIB_LOCATION)
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${Configuration})
 
     set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
-        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}${_Qt5$${CMAKE_MODULE_NAME}_STATIC_${Configuration}_LIB_DEPENDENCIES}\"
+        \"IMPORTED_LINK_INTERFACE_LIBRARIES_${Configuration}\" \"${_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES}\"
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
         \"IMPORTED_LOCATION_${Configuration}\" \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}${LIB_LOCATION}\"
 !!ELSE

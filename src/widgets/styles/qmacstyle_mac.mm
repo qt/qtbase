@@ -101,7 +101,9 @@
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
 #include <private/qstylehelper_p.h>
+#include <private/qstyleanimation_p.h>
 #include <qpa/qplatformfontdatabase.h>
+#include <qpa/qplatformtheme.h>
 
 QT_USE_NAMESPACE
 
@@ -125,9 +127,9 @@ QMacStylePrivate *mPrivate;
 {
     Q_UNUSED(notification);
     QEvent event(QEvent::StyleChange);
-    Q_FOREACH (QPointer<QWidget> sb, mPrivate->scrollBars) {
-        if (sb)
-            QCoreApplication::sendEvent(sb, &event);
+    Q_FOREACH (const QObject* target, mPrivate->animationTargets()) {
+        if (target)
+            QCoreApplication::sendEvent(const_cast<QObject*>(target), &event);
     }
 }
 @end
@@ -1011,7 +1013,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         if (!widg || !qobject_cast<QComboBox *>(widg->parentWidget())) {
             //should I take into account the font dimentions of the lineedit? -Sam
             if (sz == QAquaSizeLarge)
-                ret = QSize(-1, 22);
+                ret = QSize(-1, 21);
             else
                 ret = QSize(-1, 19);
         }
@@ -1390,7 +1392,7 @@ HIRect QMacStylePrivate::comboboxInnerBounds(const HIRect &outerBounds, int butt
     switch (buttonKind){
     case kThemePopupButton:
         innerBounds.origin.x += 2;
-        innerBounds.origin.y += 3;
+        innerBounds.origin.y += 2;
         innerBounds.size.width -= 5;
         innerBounds.size.height -= 6;
         break;
@@ -1408,9 +1410,9 @@ HIRect QMacStylePrivate::comboboxInnerBounds(const HIRect &outerBounds, int butt
         break;
     case kThemeComboBox:
         innerBounds.origin.x += 3;
-        innerBounds.origin.y += 3;
+        innerBounds.origin.y += 2;
         innerBounds.size.width -= 6;
-        innerBounds.size.height -= 6;
+        innerBounds.size.height -= 8;
         break;
     case kThemeComboBoxSmall:
         innerBounds.origin.x += 3;
@@ -1439,7 +1441,7 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
     QRect ret = outerBounds;
     switch (bdi.kind){
     case kThemeComboBox:
-        ret.adjust(5, 8, -23, -4);
+        ret.adjust(5, 5, -22, -5);
         break;
     case kThemeComboBoxSmall:
         ret.adjust(4, 5, -18, 0);
@@ -1450,7 +1452,7 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
         ret.setHeight(13);
         break;
     case kThemePopupButton:
-        ret.adjust(10, 3, -23, -3);
+        ret.adjust(10, 2, -23, -4);
         break;
     case kThemePopupButtonSmall:
         ret.adjust(9, 3, -20, -3);
@@ -1668,7 +1670,7 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
 }
 
 QMacStylePrivate::QMacStylePrivate()
-    : timerID(-1), progressFrame(0), mouseDown(false)
+    : mouseDown(false)
 {
     defaultButtonStart = CFAbsoluteTimeGetCurrent();
     memset(&buttonState, 0, sizeof(ButtonState));
@@ -1681,69 +1683,50 @@ QMacStylePrivate::QMacStylePrivate()
 
 }
 
-bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QWidget *w) const
+bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QObject *obj) const
 {
-    if (!w)
+    if (!obj)
         return false;
 
     if (as == AquaPushButton) {
-        QPushButton *pb = const_cast<QPushButton *>(static_cast<const QPushButton *>(w));
-        if (w->window()->isActiveWindow() && pb && !mouseDown) {
-            if (static_cast<const QPushButton *>(w) != defaultButton) {
+        QPushButton *pb = const_cast<QPushButton *>(qobject_cast<const QPushButton *>(obj));
+        if (pb && pb->window()->isActiveWindow() && !mouseDown) {
+            if (pb != defaultButton) {
                 // Changed on its own, update the value.
                 const_cast<QMacStylePrivate *>(this)->stopAnimate(as, defaultButton);
                 const_cast<QMacStylePrivate *>(this)->startAnimate(as, pb);
             }
             return true;
         }
-    } else if (as == AquaProgressBar) {
-        if (progressBars.contains((const_cast<QWidget *>(w))))
-            return true;
-    } else if (as == AquaScrollBar) {
-        if (scrollBars.contains((const_cast<QWidget *>(w))))
-            return true;
     }
-    return false;
+    return animation(obj);
 }
 
-void QMacStylePrivate::stopAnimate(QMacStylePrivate::Animates as, QWidget *w)
+void QMacStylePrivate::stopAnimate(QMacStylePrivate::Animates as, QObject *obj)
 {
+    stopAnimation(obj);
     if (as == AquaPushButton && defaultButton) {
+        stopAnimation(defaultButton);
         QPushButton *tmp = defaultButton;
         defaultButton = 0;
         tmp->update();
-    } else if (as == AquaProgressBar) {
-        progressBars.removeAll(w);
     } else if (as == AquaScrollBar) {
-        scrollBars.removeAll(w);
-        scrollBarInfos.remove(w);
+        scrollBarInfos.remove(qobject_cast<QWidget*>(obj));
     }
 }
 
-void QMacStylePrivate::startAnimate(QMacStylePrivate::Animates as, QWidget *w)
+void QMacStylePrivate::startAnimate(QMacStylePrivate::Animates as, QObject *obj)
 {
+    if (!animation(obj))
+        startAnimation(new QStyleAnimation(obj));
     if (as == AquaPushButton)
-        defaultButton = static_cast<QPushButton *>(w);
-    else if (as == AquaProgressBar)
-        progressBars.append(w);
-    else if (as == AquaScrollBar)
-        scrollBars.append(w);
-    startAnimationTimer();
-}
-
-void QMacStylePrivate::startAnimationTimer()
-{
-    Q_Q(QMacStyle);
-    if ((defaultButton || !progressBars.isEmpty() || !scrollBars.isEmpty()) && timerID <= -1)
-        timerID = q->startTimer(animateSpeed(AquaListViewItemOpen));
+        defaultButton = qobject_cast<QPushButton *>(obj);
 }
 
 bool QMacStylePrivate::addWidget(QWidget *w)
 {
     //already knew of it
-    if (static_cast<QPushButton*>(w) == defaultButton
-            || progressBars.contains(static_cast<QProgressBar*>(w))
-            || scrollBars.contains(static_cast<QScrollBar*>(w)))
+    if (w == defaultButton || animation(w))
         return false;
 
     Q_Q(QMacStyle);
@@ -1753,12 +1736,6 @@ bool QMacStylePrivate::addWidget(QWidget *w)
             startAnimate(AquaPushButton, btn);
         return true;
     } else {
-        bool isProgressBar = (qobject_cast<QProgressBar *>(w));
-        if (isProgressBar) {
-            w->installEventFilter(q);
-            startAnimate(AquaProgressBar, w);
-            return true;
-        }
         bool isScrollBar = (qobject_cast<QScrollBar *>(w));
         if (isScrollBar) {
             w->installEventFilter(q);
@@ -1778,8 +1755,6 @@ void QMacStylePrivate::removeWidget(QWidget *w)
     QPushButton *btn = qobject_cast<QPushButton *>(w);
     if (btn && btn == defaultButton) {
         stopAnimate(AquaPushButton, btn);
-    } else if (qobject_cast<QProgressBar *>(w)) {
-        stopAnimate(AquaProgressBar, w);
     } else if (qobject_cast<QScrollBar *>(w)) {
         stopAnimate(AquaScrollBar, w);
     }
@@ -1802,87 +1777,13 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
     return tds;
 }
 
-void QMacStylePrivate::animate()
-{
-    Q_Q(QMacStyle);
-    int animated = 0;
-    if (defaultButton && defaultButton->isEnabled() && defaultButton->window()->isActiveWindow()
-        && defaultButton->isVisibleTo(0) && (defaultButton->isDefault()
-        || (defaultButton->autoDefault() && defaultButton->hasFocus()))
-        && doAnimate(AquaPushButton)) {
-        ++animated;
-        defaultButton->update();
-    }
-    if (!progressBars.isEmpty()) {
-        int i = 0;
-        while (i < progressBars.size()) {
-            QWidget *maybeProgress = progressBars.at(i);
-            if (!maybeProgress) {
-                progressBars.removeAt(i);
-            } else {
-                if (QProgressBar *pb = qobject_cast<QProgressBar *>(maybeProgress)) {
-                    if (pb->maximum() == 0 || (pb->value() > 0 && pb->value() < pb->maximum())) {
-                        if (doAnimate(AquaProgressBar))
-                            pb->update();
-                    }
-                }
-                ++i;
-            }
-        }
-        if (i > 0) {
-            ++progressFrame;
-            animated += i;
-        }
-    }
-    if (!scrollBars.isEmpty()) {
-        int i = 0;
-        const qint64 dt = QDateTime::currentMSecsSinceEpoch();
-        while (i < scrollBars.size()) {
-            QWidget *maybeScroll = scrollBars.at(i);
-            if (!maybeScroll) {
-                scrollBars.removeAt(i);
-            } else {
-                if (QScrollBar *sb = qobject_cast<QScrollBar *>(maybeScroll)) {
-                    const OverlayScrollBarInfo& info = scrollBarInfos[sb];
-                    const qreal elapsed = qMax(dt - info.lastHovered,
-                                               dt - info.lastUpdate);
-                    const CGFloat opacity = 1.0 - qMax(0.0, (elapsed - ScrollBarFadeOutDelay) /
-                                                             ScrollBarFadeOutDuration);
-                    if ((opacity > 0.0 || !info.cleared) && (elapsed > ScrollBarFadeOutDelay)) {
-                        if (doAnimate(AquaScrollBar))
-                            sb->update();
-                    }
-                }
-                ++i;
-                ++animated;
-            }
-        }
-    }
-    if (animated <= 0) {
-        q->killTimer(timerID);
-        timerID = -1;
-    }
-}
-
 /*! \reimp */
 bool QMacStyle::eventFilter(QObject *o, QEvent *e)
 {
     //animate
     Q_D(QMacStyle);
-    if (QProgressBar *pb = qobject_cast<QProgressBar *>(o)) {
-        switch (e->type()) {
-        default:
-            break;
-        case QEvent::Show:
-            if (!d->progressBars.contains(pb))
-                d->startAnimate(QMacStylePrivate::AquaProgressBar, pb);
-            break;
-        case QEvent::Destroy:
-        case QEvent::Hide:
-            d->progressBars.removeAll(pb);
-        }
+    if (QScrollBar *sb = qobject_cast<QScrollBar *>(o)) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    } else if (QScrollBar *sb = qobject_cast<QScrollBar *>(o)) {
         // take care of fading out overlaying scrollbars (and only those!) when inactive
         const QAbstractScrollArea *scrollArea = scrollBarsScrollArea(sb);
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
@@ -1984,17 +1885,6 @@ bool QMacStyle::eventFilter(QObject *o, QEvent *e)
         }
     }
     return false;
-}
-
-bool QMacStylePrivate::doAnimate(QMacStylePrivate::Animates as)
-{
-    if (as == AquaPushButton) {
-    } else if (as == AquaProgressBar) {
-        // something for later...
-    } else if (as == AquaListViewItemOpen) {
-        // To be revived later...
-    }
-    return true;
 }
 
 void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
@@ -2390,9 +2280,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         // The combo box popup has no frame.
         if (qstyleoption_cast<const QStyleOptionComboBox *>(opt) != 0)
             ret = 0;
-        // Frame of mac style line edits is two pixels on top and one on the bottom
-        else if (qobject_cast<const QLineEdit *>(widget) != 0)
-            ret = 2;
         else
             ret = 1;
         break;
@@ -3754,7 +3641,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 bdi.adornment |= kThemeAdornmentDefault;
                 bdi.animation.time.start = d->defaultButtonStart;
                 bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
-                const_cast<QMacStylePrivate*>(d)->startAnimationTimer();
             }
             // Unlike Carbon, we want the button to always be drawn inside its bounds.
             // Therefore, make the button a bit smaller, so that even if it got focus,
@@ -4462,7 +4348,14 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             tdi.min = pb->minimum;
             tdi.value = pb->progress;
             tdi.attributes = vertical ? 0 : kThemeTrackHorizontal;
-            tdi.trackInfo.progress.phase = d->progressFrame;
+            if (isIndeterminate) {
+                if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
+                    tdi.trackInfo.progress.phase = animation->animationStep();
+                else
+                    d->startAnimation(new QProgressStyleAnimation(d->animateSpeed(QMacStylePrivate::AquaProgressBar), opt->styleObject));
+            } else {
+                d->stopAnimation(opt->styleObject);
+            }
             if (!(pb->state & State_Active))
                 tdi.enableState = kThemeTrackInactive;
             else if (!(pb->state & State_Enabled))
@@ -4762,7 +4655,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         if(widget->parentWidget() && qobject_cast<const QComboBox*>(widget->parentWidget()))
             rect.adjust(-1, -2, 0, 0);
         else
-            rect.adjust(-1, 0, 0, +1);
+            rect.adjust(-1, -1, 0, +1);
         break;
     case SE_CheckBoxLayoutItem:
         rect = opt->rect;
@@ -6514,9 +6407,6 @@ bool QMacStyle::event(QEvent *e)
     } else if(e->type() == QEvent::FocusOut) {
         if(d->focusWidget)
             d->focusWidget->setWidget(0);
-    } else if (e->type() == QEvent::Timer) {
-        if (static_cast<QTimerEvent*>(e)->timerId() == d->timerID)
-            d->animate();
     }
     return false;
 }

@@ -8,7 +8,7 @@ else: \
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
     contains(QT_CONFIG, private_tests): \   # -developer-build
         QMAKE_SYNCQT += -check-includes
-    QMAKE_SYNCQT += -module $$TARGET -qtdir $$[QT_HOST_DATA/get] -outdir $$mod_component_base $$MODULE_BASE_DIR
+    QMAKE_SYNCQT += -module $$TARGET -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs -outdir $$mod_component_base $$MODULE_BASE_DIR
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 }

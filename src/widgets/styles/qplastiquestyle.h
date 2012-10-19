@@ -101,7 +101,6 @@ public:
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event);
-    void timerEvent(QTimerEvent *event);
 
 private:
     Q_DISABLE_COPY(QPlastiqueStyle)

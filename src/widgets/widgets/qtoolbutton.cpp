@@ -573,7 +573,7 @@ void QToolButton::changeEvent(QEvent *e)
         if (qobject_cast<QToolBar*>(parentWidget()))
             d->autoRaise = true;
     } else if (e->type() == QEvent::StyleChange
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
                || e->type() == QEvent::MacSizeChange
 #endif
                ) {

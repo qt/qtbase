@@ -145,8 +145,10 @@ private slots:
     void append();
     void permissions_data();
     void permissions();
+#ifdef Q_OS_WIN
     void permissionsNtfs_data();
     void permissionsNtfs();
+#endif
     void setPermissions();
     void copy();
     void copyAfterFail();
@@ -192,7 +194,9 @@ private slots:
     void writeLargeDataBlock();
     void readFromWriteOnlyFile();
     void writeToReadOnlyFile();
+#if defined(Q_OS_LINUX) || defined(Q_OS_AIX) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
     void virtualFile();
+#endif
     void textFile();
     void rename_data();
     void rename();
@@ -1132,6 +1136,7 @@ void tst_QFile::permissions()
     QCOMPARE((staticResult == QFile::Permissions(perms)), expected);
 }
 
+#ifdef Q_OS_WIN
 void tst_QFile::permissionsNtfs_data()
 {
     permissions_data();
@@ -1139,14 +1144,11 @@ void tst_QFile::permissionsNtfs_data()
 
 void tst_QFile::permissionsNtfs()
 {
-#ifdef Q_OS_WIN
     QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
     qt_ntfs_permission_lookup++;
     permissions();
-#else
-    QSKIP("windows test");
-#endif
 }
+#endif
 
 void tst_QFile::setPermissions()
 {
@@ -2290,6 +2292,8 @@ void tst_QFile::writeToReadOnlyFile()
     QCOMPARE(file.write(&c, 1), qint64(-1));
 }
 
+#if defined(Q_OS_LINUX) || defined(Q_OS_AIX) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
+// This platform have 0-sized virtual files
 void tst_QFile::virtualFile()
 {
     // test if QFile works with virtual files
@@ -2298,10 +2302,8 @@ void tst_QFile::virtualFile()
     fname = "/proc/self/maps";
 #elif defined(Q_OS_AIX)
     fname = QString("/proc/%1/map").arg(getpid());
-#elif defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
+#else // defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD)
     fname = "/proc/curproc/map";
-#else
-    QSKIP("This platform does not have 0-sized virtual files");
 #endif
 
     // consistency check
@@ -2334,6 +2336,7 @@ void tst_QFile::virtualFile()
     QVERIFY(f.seek(1));
     QCOMPARE(f.pos(), Q_INT64_C(1));
 }
+#endif
 
 void tst_QFile::textFile()
 {

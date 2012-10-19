@@ -501,6 +501,7 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
     }
 
     CGContextRelease(ctx);
+    CGColorSpaceRelease(colorspace);
 
     return im;
 }

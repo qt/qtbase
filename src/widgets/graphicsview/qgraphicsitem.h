@@ -594,6 +594,9 @@ Q_SIGNALS:
 
 protected:
     QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent);
+
+    bool event(QEvent *ev);
+
 private:
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;

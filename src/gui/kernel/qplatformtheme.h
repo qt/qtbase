@@ -67,6 +67,9 @@ class QPlatformSystemTrayIcon;
 class QVariant;
 class QPalette;
 class QFont;
+class QPixmap;
+class QSizeF;
+class QFileInfo;
 
 class Q_GUI_EXPORT QPlatformTheme
 {
@@ -97,7 +100,8 @@ public:
         KeyboardScheme,
         UiEffects,
         SpellCheckUnderlineStyle,
-        TabAllWidgets
+        TabAllWidgets,
+        IconPixmapSizes
     };
 
     enum DialogType {
@@ -150,6 +154,81 @@ public:
         NFonts
     };
 
+    enum StandardPixmap {  // Keep in sync with QStyle::StandardPixmap
+        TitleBarMenuButton,
+        TitleBarMinButton,
+        TitleBarMaxButton,
+        TitleBarCloseButton,
+        TitleBarNormalButton,
+        TitleBarShadeButton,
+        TitleBarUnshadeButton,
+        TitleBarContextHelpButton,
+        DockWidgetCloseButton,
+        MessageBoxInformation,
+        MessageBoxWarning,
+        MessageBoxCritical,
+        MessageBoxQuestion,
+        DesktopIcon,
+        TrashIcon,
+        ComputerIcon,
+        DriveFDIcon,
+        DriveHDIcon,
+        DriveCDIcon,
+        DriveDVDIcon,
+        DriveNetIcon,
+        DirOpenIcon,
+        DirClosedIcon,
+        DirLinkIcon,
+        DirLinkOpenIcon,
+        FileIcon,
+        FileLinkIcon,
+        ToolBarHorizontalExtensionButton,
+        ToolBarVerticalExtensionButton,
+        FileDialogStart,
+        FileDialogEnd,
+        FileDialogToParent,
+        FileDialogNewFolder,
+        FileDialogDetailedView,
+        FileDialogInfoView,
+        FileDialogContentsView,
+        FileDialogListView,
+        FileDialogBack,
+        DirIcon,
+        DialogOkButton,
+        DialogCancelButton,
+        DialogHelpButton,
+        DialogOpenButton,
+        DialogSaveButton,
+        DialogCloseButton,
+        DialogApplyButton,
+        DialogResetButton,
+        DialogDiscardButton,
+        DialogYesButton,
+        DialogNoButton,
+        ArrowUp,
+        ArrowDown,
+        ArrowLeft,
+        ArrowRight,
+        ArrowBack,
+        ArrowForward,
+        DirHomeIcon,
+        CommandLink,
+        VistaShield,
+        BrowserReload,
+        BrowserStop,
+        MediaPlay,
+        MediaStop,
+        MediaPause,
+        MediaSkipForward,
+        MediaSkipBackward,
+        MediaSeekForward,
+        MediaSeekBackward,
+        MediaVolume,
+        MediaVolumeMuted,
+        // do not add any values below/greater than this
+        CustomBase = 0xf0000000
+    };
+
     enum KeyboardSchemes
     {
         WindowsKeyboardScheme,
@@ -189,6 +268,9 @@ public:
     virtual const QFont *font(Font type = SystemFont) const;
 
     virtual QVariant themeHint(ThemeHint hint) const;
+
+    virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
+    virtual QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const;
 
     static QVariant defaultThemeHint(ThemeHint hint);
 };

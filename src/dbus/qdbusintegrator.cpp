@@ -112,7 +112,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
     return dbg.space();
 }
 
-Q_AUTOTEST_EXPORT void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)
+void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)
 {
     qDBusDebug() << QThread::currentThread()
                  << "QtDBus threading action" << action
@@ -131,7 +131,7 @@ Q_AUTOTEST_EXPORT void qdbusDefaultThreadDebug(int action, int condition, QDBusC
                      "condition unknown")
                  << "in connection" << conn;
 }
-Q_AUTOTEST_EXPORT qdbusThreadDebugFunc qdbusThreadDebug = 0;
+qdbusThreadDebugFunc qdbusThreadDebug = 0;
 #endif
 
 typedef void (*QDBusSpyHook)(const QDBusMessage&);
@@ -1687,24 +1687,23 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
 static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnection *connection)
 {
     QDBusConnection::ConnectionCapabilities result = 0;
+    typedef dbus_bool_t (*can_send_type_t)(DBusConnection *, int);
+    static can_send_type_t can_send_type = 0;
 
-#if defined(QT_LINKED_LIBDBUS) && DBUS_VERSION < 0x010400
-    // no capabilities are possible
-#else
-# if !defined(QT_LINKED_LIBDBUS)
-    // run-time check if the next functions are available
-    int major, minor, micro;
-    q_dbus_get_version(&major, &minor, &micro);
-    if (major == 1 && minor < 4)
-        return result;
+#if defined(QT_LINKED_LIBDBUS)
+# if DBUS_VERSION-0 >= 0x010400
+    can_send_type = dbus_connection_can_send_type;
 # endif
+#else
+    // run-time check if the next functions are available
+    can_send_type = (can_send_type_t)qdbus_resolve_conditionally("dbus_connection_can_send_type");
+#endif
 
 #ifndef DBUS_TYPE_UNIX_FD
 # define DBUS_TYPE_UNIX_FD int('h')
 #endif
-    if (q_dbus_connection_can_send_type(connection, DBUS_TYPE_UNIX_FD))
+    if (can_send_type && can_send_type(connection, DBUS_TYPE_UNIX_FD))
         result |= QDBusConnection::UnixFileDescriptorPassing;
-#endif
 
     return result;
 }

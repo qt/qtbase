@@ -89,6 +89,14 @@ static QTouchDevice *touchDevice = 0;
     return self;
 }
 
+- (void)dealloc
+{
+    CGImageRelease(m_cgImage);
+    m_cgImage = 0;
+    m_window = 0;
+    [super dealloc];
+}
+
 - (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow
 {
     self = [self init];
@@ -129,22 +137,29 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)updateGeometry
 {
-    NSRect rect = [self frame];
-    NSRect windowRect = [[self window] frame];
-    QRect geo(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    QRect geometry;
+    if (m_platformWindow->m_nsWindow) {
+        // top level window, get window rect and flip y.
+        NSRect rect = [self frame];
+        NSRect windowRect = [[self window] frame];
+        geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    } else {
+        // child window, use the frame rect
+        geometry = qt_mac_toQRect([self frame]);
+    }
 
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
-    qDebug() << "QNSView::udpateGeometry" << geo;
+    qDebug() << "QNSView::udpateGeometry" << m_platformWindow << geometry;
 #endif
 
     // Call setGeometry on QPlatformWindow. (not on QCocoaWindow,
     // doing that will initiate a geometry change it and possibly create
     // an infinite loop when this notification is triggered again.)
-    m_platformWindow->QPlatformWindow::setGeometry(geo);
+    m_platformWindow->QPlatformWindow::setGeometry(geometry);
 
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
-        QWindowSystemInterface::handleGeometryChange(m_window, geo);
+        QWindowSystemInterface::handleGeometryChange(m_window, geometry);
         QWindowSystemInterface::flushWindowSystemEvents();
     }
 }
@@ -343,11 +358,15 @@ static QTouchDevice *touchDevice = 0;
     }
 
     NSWindow *window = [self window];
-    int windowHeight = [window frame].size.height;
     NSPoint windowPoint = [theEvent locationInWindow];
+
+    int windowScreenY = [window frame].origin.y + [window frame].size.height;
+    int viewScreenY = [window convertBaseToScreen:[self convertPoint:[self frame].origin toView:nil]].y;
+    int titleBarHeight = windowScreenY - viewScreenY;
+
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
-    QPoint qtWindowPoint = QPoint(nsViewPoint.x, windowHeight - nsViewPoint.y);
-    NSPoint screenPoint = [window convertBaseToScreen : windowPoint];
+    QPoint qtWindowPoint = QPoint(nsViewPoint.x, titleBarHeight + nsViewPoint.y);
+    NSPoint screenPoint = [window convertBaseToScreen:windowPoint];
     QPoint qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
 
     ulong timestamp = [theEvent timestamp] * 1000;

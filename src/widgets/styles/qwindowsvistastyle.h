@@ -88,7 +88,6 @@ public:
     void polish(QPalette &pal);
     void polish(QApplication *app);
     void unpolish(QApplication *app);
-    bool event(QEvent *event);
     QPalette standardPalette() const;
 
 private:

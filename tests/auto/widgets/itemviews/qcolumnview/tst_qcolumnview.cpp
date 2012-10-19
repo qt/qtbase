@@ -589,7 +589,7 @@ void tst_QColumnView::clicked()
     QVERIFY(parent.isValid());
 
     qRegisterMetaType<QModelIndex>("QModelIndex");
-    QSignalSpy clickedSpy(&view, SIGNAL(clicked(const QModelIndex &)));
+    QSignalSpy clickedSpy(&view, SIGNAL(clicked(QModelIndex)));
 
     QPoint localPoint = view.visualRect(home).center();
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, localPoint);
@@ -829,7 +829,7 @@ void tst_QColumnView::swapPreview()
     QStringListModel model(sl);
     view.setModel(&model);
     view.setCurrentIndex(view.indexAt(QPoint(1, 1)));
-    connect(&view, SIGNAL(updatePreviewWidget(const QModelIndex &)),
+    connect(&view, SIGNAL(updatePreviewWidget(QModelIndex)),
             this, SLOT(setPreviewWidget()));
     view.setCurrentIndex(view.indexAt(QPoint(1, 1)));
     QTest::qWait(ANIMATION_DELAY);

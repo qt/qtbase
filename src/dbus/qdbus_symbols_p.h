@@ -297,10 +297,6 @@ DEFINEFUNC(void          , dbus_message_unref, (DBusMessage   *message),
            (message), )
 
 /* dbus-misc.h */
-DEFINEFUNC(void          , dbus_get_version ,     (int *major_version_p,
-                                                   int *minor_version_p,
-                                                   int *micro_version_p),
-           (major_version_p, minor_version_p, micro_version_p), )
 DEFINEFUNC(char*         , dbus_get_local_machine_id ,  (void), (), return)
 
 
@@ -362,14 +358,6 @@ DEFINEFUNC(void        , dbus_server_unref, (DBusServer     *server),
 
 /* dbus-thread.h */
 DEFINEFUNC(dbus_bool_t     , dbus_threads_init_default, (), (), return)
-
-
-/* D-Bus 1.4 symbols */
-#if !defined(QT_LINKED_LIBDBUS) || (DBUS_VERSION >= 0x010400)
-DEFINEFUNC(dbus_bool_t    ,  dbus_connection_can_send_type ,               (DBusConnection             *connection,
-                                                                            int                         type),
-           (connection, type), return)
-#endif
 
 QT_END_NAMESPACE
 

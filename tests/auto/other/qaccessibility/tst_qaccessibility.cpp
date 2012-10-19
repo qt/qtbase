@@ -1680,6 +1680,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     const int subWindowCount =  5;
     for (int i = 0; i < subWindowCount; ++i) {
         QMdiSubWindow *window = mdiArea.addSubWindow(new QPushButton("QAccessibilityTest"));
+        window->setAttribute(Qt::WA_LayoutUsesWidgetRect);
         window->show();
         // Parts of this test requires that the sub windows are placed next
         // to each other. In order to achieve that QMdiArea must have
@@ -1759,7 +1760,7 @@ void tst_QAccessibility::mdiSubWindowTest()
     const QPoint globalWidgetPos = QPoint(globalPos.x() + widgetGeometry.x(),
                                           globalPos.y() + widgetGeometry.y());
 #ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-22812", Abort);
+    QSKIP("QTBUG-22812");
 #endif
     QCOMPARE(childRect(interface), QRect(globalWidgetPos, widgetGeometry.size()));
 
@@ -2368,17 +2369,17 @@ void tst_QAccessibility::listTest()
     // Check for events
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(1)).center());
     QAccessibleEvent selectionEvent(listView, QAccessible::Selection);
-    selectionEvent.setChild(2);
+    selectionEvent.setChild(1);
     QAccessibleEvent focusEvent(listView, QAccessible::Focus);
-    focusEvent.setChild(2);
+    focusEvent.setChild(1);
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
     QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(2)).center());
 
     QAccessibleEvent selectionEvent2(listView, QAccessible::Selection);
-    selectionEvent2.setChild(3);
+    selectionEvent2.setChild(2);
     QAccessibleEvent focusEvent2(listView, QAccessible::Focus);
-    focusEvent2.setChild(3);
+    focusEvent2.setChild(2);
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent2));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent2));
 

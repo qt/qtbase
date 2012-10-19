@@ -350,7 +350,7 @@ void tst_QDBusInterface::invalidAfterServiceOwnerChanged()
     QDBusInterface invalidInterface("com.example.Test", "/");
     QVERIFY(!invalidInterface.isValid());
 
-    QTestEventLoop::instance().connect(connIface, SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+    QTestEventLoop::instance().connect(connIface, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
                                        SLOT(exitLoop()));
     QVERIFY(connIface->registerService("com.example.Test") == QDBusConnectionInterface::ServiceRegistered);
 

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(sdi);
     QApplication app(argc, argv);
     app.setApplicationName("SDI Example");
-    app.setOrganizationName("Trolltech");
+    app.setOrganizationName("QtProject");
     MainWindow *mainWin = new MainWindow;
     mainWin->show();
     return app.exec();

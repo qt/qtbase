@@ -69,6 +69,7 @@ private slots:
     void testWriteAll();
     void testWriteSection();
     void testWriteTable();
+    void testWriteFrameFormat();
 
 private:
     /// closes the document and returns the part of the XML stream that the test wrote
@@ -416,6 +417,24 @@ void tst_QTextOdfWriter::testWriteTable()
         "</table:table>"
         "<text:p text:style-name=\"p1\"/>");
 
+    QCOMPARE(getContentFromXml(), xml);
+}
+
+void tst_QTextOdfWriter::testWriteFrameFormat()
+{
+    QTextFrameFormat tff;
+    tff.setTopMargin(20);
+    tff.setBottomMargin(20);
+    tff.setLeftMargin(20);
+    tff.setRightMargin(20);
+    QTextCursor tc(document);
+    odfWriter->writeFrameFormat(*xmlWriter, tff, 0);
+    // Value of 15pt is based on the pixelToPoint() calculation done in qtextodfwriter.cpp
+    QString xml = QString::fromLatin1(
+            "<style:style style:name=\"s0\" style:family=\"section\">"
+            "<style:section-properties fo:margin-top=\"15pt\" fo:margin-bottom=\"15pt\""
+            " fo:margin-left=\"15pt\" fo:margin-right=\"15pt\"/>"
+            "</style:style>");
     QCOMPARE(getContentFromXml(), xml);
 }
 

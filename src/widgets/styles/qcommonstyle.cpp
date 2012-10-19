@@ -75,6 +75,7 @@
 #include <qsettings.h>
 #include <qvariant.h>
 #include <qpixmapcache.h>
+#include <private/qstyleanimation_p.h>
 
 #include <limits.h>
 
@@ -173,7 +174,10 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         if (opt->state & (State_Sunken | State_On)) {
             ir.adjust(2, 2, -2, -2);
             p->setBrush(opt->palette.foreground());
+            bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
+            p->setRenderHint(QPainter::Qt4CompatiblePainting);
             p->drawEllipse(ir);
+            p->setRenderHint(QPainter::Qt4CompatiblePainting, oldQt4CompatiblePainting);
         }
         break; }
     case PE_FrameFocusRect:
@@ -276,35 +280,38 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
 #endif // QT_NO_PROGRESSBAR
     case PE_IndicatorBranch: {
+        static const int decoration_size = 9;
         int mid_h = opt->rect.x() + opt->rect.width() / 2;
         int mid_v = opt->rect.y() + opt->rect.height() / 2;
         int bef_h = mid_h;
         int bef_v = mid_v;
         int aft_h = mid_h;
         int aft_v = mid_v;
-#ifndef QT_NO_IMAGEFORMAT_XPM
-        static const int decoration_size = 9;
-        static QPixmap open(tree_branch_open_xpm);
-        static QPixmap closed(tree_branch_closed_xpm);
         if (opt->state & State_Children) {
             int delta = decoration_size / 2;
             bef_h -= delta;
             bef_v -= delta;
             aft_h += delta;
             aft_v += delta;
-            p->drawPixmap(bef_h, bef_v, opt->state & State_Open ? open : closed);
+            p->drawLine(bef_h + 2, bef_v + 4, bef_h + 6, bef_v + 4);
+            if (!(opt->state & State_Open))
+                p->drawLine(bef_h + 4, bef_v + 2, bef_h + 4, bef_v + 6);
+            QPen oldPen = p->pen();
+            p->setPen(opt->palette.dark().color());
+            p->drawRect(bef_h, bef_v, decoration_size - 1, decoration_size - 1);
+            p->setPen(oldPen);
         }
-#endif // QT_NO_IMAGEFORMAT_XPM
+        QBrush brush(opt->palette.dark().color(), Qt::Dense4Pattern);
         if (opt->state & State_Item) {
             if (opt->direction == Qt::RightToLeft)
-                p->drawLine(opt->rect.left(), mid_v, bef_h, mid_v);
+                p->fillRect(opt->rect.left(), mid_v, bef_h - opt->rect.left(), 1, brush);
             else
-                p->drawLine(aft_h, mid_v, opt->rect.right(), mid_v);
+                p->fillRect(aft_h, mid_v, opt->rect.right() - aft_h + 1, 1, brush);
         }
         if (opt->state & State_Sibling)
-            p->drawLine(mid_h, aft_v, mid_h, opt->rect.bottom());
+            p->fillRect(mid_h, aft_v, 1, opt->rect.bottom() - aft_v + 1, brush);
         if (opt->state & (State_Open | State_Children | State_Item | State_Sibling))
-            p->drawLine(mid_h, opt->rect.y(), mid_h, bef_v);
+            p->fillRect(mid_h, opt->rect.y(), 1, bef_v - opt->rect.y(), brush);
         break; }
     case PE_FrameStatusBarItem:
         qDrawShadeRect(p, opt->rect, opt->palette, true, 1, 0, 0);
@@ -526,6 +533,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->translate(sx + bsx, sy + bsy);
         p->setPen(opt->palette.buttonText().color());
         p->setBrush(opt->palette.buttonText());
+        p->setRenderHint(QPainter::Qt4CompatiblePainting);
         p->drawPolygon(a);
         p->restore();
         break; }
@@ -1048,6 +1056,51 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
 }
 #endif //QT_NO_TABBAR
 
+/*! \internal */
+QList<const QObject*> QCommonStylePrivate::animationTargets() const
+{
+    return animations.keys();
+}
+
+/*! \internal */
+QStyleAnimation * QCommonStylePrivate::animation(const QObject *target) const
+{
+    return animations.value(target);
+}
+
+/*! \internal */
+void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
+{
+    Q_Q(const QCommonStyle);
+    stopAnimation(animation->target());
+    q->connect(animation, SIGNAL(finished()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
+    q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
+    animations.insert(animation->target(), animation);
+    animation->start();
+}
+
+/*! \internal */
+void QCommonStylePrivate::stopAnimation(const QObject *target) const
+{
+    QStyleAnimation *animation = animations.value(target);
+    if (animation) {
+        if (animation->state() == QAbstractAnimation::Stopped)
+            animations.take(target)->deleteLater();
+        else
+            animation->stop();
+    }
+}
+
+/*! \internal */
+void QCommonStylePrivate::_q_removeAnimation()
+{
+    Q_Q(QCommonStyle);
+    QObject *animation = q->sender();
+    if (animation) {
+        animations.remove(animation->parent());
+        animation->deleteLater();
+    }
+}
 
 /*!
   \reimp
@@ -1530,7 +1583,10 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
 
             p->setPen(tb->palette.mid().color().darker(150));
+            bool oldQt4CompatiblePainting = p->testRenderHint(QPainter::Qt4CompatiblePainting);
+            p->setRenderHint(QPainter::Qt4CompatiblePainting);
             p->drawPolygon(a);
+            p->setRenderHint(QPainter::Qt4CompatiblePainting, oldQt4CompatiblePainting);
             p->setPen(tb->palette.light().color());
             if (tb->direction != Qt::RightToLeft) {
                 p->drawLine(0, 2, tb->rect.width() - d, 2);
@@ -3438,6 +3494,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
 
             p->setPen(Qt::NoPen);
             p->setBrush(pal.button());
+            p->setRenderHint(QPainter::Qt4CompatiblePainting);
             p->drawPolygon(arrow);
 
             a = QStyleHelper::angle(QPointF(width / 2, height / 2), arrow[0]);
@@ -5467,67 +5524,24 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             break;
         }
     } // if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty())
-        if (!icon.isNull())
-            return icon;
-#if defined(Q_WS_MAC)
+
+    if (!icon.isNull())
+        return icon;
+
+#if defined(Q_OS_MAC)
     if (QApplication::desktopSettingsAware()) {
-        OSType iconType = 0;
         switch (standardIcon) {
-        case QStyle::SP_MessageBoxQuestion:
-            iconType = kQuestionMarkIcon;
-            break;
-        case QStyle::SP_MessageBoxInformation:
-            iconType = kAlertNoteIcon;
-            break;
-        case QStyle::SP_MessageBoxWarning:
-            iconType = kAlertCautionIcon;
-            break;
-        case QStyle::SP_MessageBoxCritical:
-            iconType = kAlertStopIcon;
-            break;
-        case SP_DesktopIcon:
-            iconType = kDesktopIcon;
-            break;
-        case SP_TrashIcon:
-            iconType = kTrashIcon;
-            break;
-        case SP_ComputerIcon:
-            iconType = kComputerIcon;
-            break;
-        case SP_DriveFDIcon:
-            iconType = kGenericFloppyIcon;
-            break;
-        case SP_DriveHDIcon:
-            iconType = kGenericHardDiskIcon;
-            break;
-        case SP_DriveCDIcon:
-        case SP_DriveDVDIcon:
-            iconType = kGenericCDROMIcon;
-            break;
-        case SP_DriveNetIcon:
-            iconType = kGenericNetworkIcon;
-            break;
-        case SP_DirOpenIcon:
-            iconType = kOpenFolderIcon;
-            break;
-        case SP_DirClosedIcon:
-        case SP_DirLinkIcon:
-            iconType = kGenericFolderIcon;
-            break;
-        case SP_FileLinkIcon:
-        case SP_FileIcon:
-            iconType = kGenericDocumentIcon;
-            break;
         case SP_DirIcon: {
             // A rather special case
-            QIcon closeIcon = QStyle::standardIcon(SP_DirClosedIcon, option, widget);
-            QIcon openIcon = QStyle::standardIcon(SP_DirOpenIcon, option, widget);
+            QIcon closeIcon = QCommonStyle::standardIcon(SP_DirClosedIcon, option, widget);
+            QIcon openIcon = QCommonStyle::standardIcon(SP_DirOpenIcon, option, widget);
             closeIcon.addPixmap(openIcon.pixmap(16, 16), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(32, 32), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(64, 64), QIcon::Normal, QIcon::On);
             closeIcon.addPixmap(openIcon.pixmap(128, 128), QIcon::Normal, QIcon::On);
             return closeIcon;
         }
+
         case SP_TitleBarNormalButton:
         case SP_TitleBarCloseButton: {
             QIcon titleBarIcon;
@@ -5540,35 +5554,49 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
             }
             return titleBarIcon;
         }
+
+        case SP_MessageBoxQuestion:
+        case SP_MessageBoxInformation:
+        case SP_MessageBoxWarning:
+        case SP_MessageBoxCritical:
+        case SP_DesktopIcon:
+        case SP_TrashIcon:
+        case SP_ComputerIcon:
+        case SP_DriveFDIcon:
+        case SP_DriveHDIcon:
+        case SP_DriveCDIcon:
+        case SP_DriveDVDIcon:
+        case SP_DriveNetIcon:
+        case SP_DirOpenIcon:
+        case SP_DirClosedIcon:
+        case SP_DirLinkIcon:
+        case SP_FileLinkIcon:
+        case SP_FileIcon:
+            if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+                QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+                QIcon retIcon;
+                QList<int> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<int> >();
+                Q_FOREACH (int size, sizes) {
+                    QPixmap mainIcon;
+                    const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size);
+                    if (standardIcon >= QStyle::SP_CustomBase) {
+                        mainIcon = theme->standardPixmap(sp, QSizeF(size, size));
+                    } else if (QPixmapCache::find(cacheKey, mainIcon) == false) {
+                        mainIcon = theme->standardPixmap(sp, QSizeF(size, size));
+                        QPixmapCache::insert(cacheKey, mainIcon);
+                    }
+
+                    retIcon.addPixmap(mainIcon);
+                }
+                if (!retIcon.isNull())
+                    return retIcon;
+            }
+
         default:
             break;
         }
-        if (iconType != 0) {
-            QIcon retIcon;
-            IconRef icon;
-            IconRef overlayIcon = 0;
-            if (iconType != kGenericApplicationIcon) {
-                GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
-            } else {
-                FSRef fsRef;
-                ProcessSerialNumber psn = { 0, kCurrentProcess };
-                GetProcessBundleLocation(&psn, &fsRef);
-                GetIconRefFromFileInfo(&fsRef, 0, 0, 0, 0, kIconServicesNormalUsageFlag, &icon, 0);
-                if (standardIcon == SP_MessageBoxCritical) {
-                    overlayIcon = icon;
-                    GetIconRef(kOnSystemDisk, kSystemIconsCreator, kAlertCautionIcon, &icon);
-                }
-            }
-            if (icon) {
-                qt_mac_constructQIconFromIconRef(icon, overlayIcon, &retIcon, standardIcon);
-                ReleaseIconRef(icon);
-            }
-            if (overlayIcon)
-                ReleaseIconRef(overlayIcon);
-            return retIcon;
-        }
     } // if (QApplication::desktopSettingsAware())
-#endif // Q_WS_MAC
+#endif // Q_OS_MAC
 
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG
@@ -5903,3 +5931,5 @@ void QCommonStyle::unpolish(QApplication *application)
 
 
 QT_END_NAMESPACE
+
+#include "moc_qcommonstyle.cpp"

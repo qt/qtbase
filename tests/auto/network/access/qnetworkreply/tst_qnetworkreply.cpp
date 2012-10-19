@@ -4346,7 +4346,7 @@ public:
             connect(serverSocket, SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
             connect(serverSocket, SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
             serverSocket->setProtocol(QSsl::AnyProtocol);
-            connect(serverSocket, SIGNAL(sslErrors(const QList<QSslError>&)), serverSocket, SLOT(ignoreSslErrors()));
+            connect(serverSocket, SIGNAL(sslErrors(QList<QSslError>)), serverSocket, SLOT(ignoreSslErrors()));
             serverSocket->setLocalCertificate(testDataDir + "/certs/server.pem");
             serverSocket->setPrivateKey(testDataDir + "/certs/server.key");
             serverSocket->startServerEncryption();
@@ -4396,7 +4396,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
 
     QSignalSpy spy(reply.data(), SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newEncryptedConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    connect(reply, SIGNAL(sslErrors(const QList<QSslError>&)), reply.data(), SLOT(ignoreSslErrors()));
+    connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply.data(), SLOT(ignoreSslErrors()));
 
     // get the request started and the incoming socket connected
     QTestEventLoop::instance().enterLoop(10);
@@ -5611,8 +5611,8 @@ void tst_QNetworkReply::ignoreSslErrorsListWithSlot()
     QFETCH(QList<QSslError>, expectedSslErrors);
     // store the errors to ignore them later in the slot connected below
     storedExpectedSslErrors = expectedSslErrors;
-    connect(&manager, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)),
-            this, SLOT(ignoreSslErrorListSlot(QNetworkReply *, const QList<QSslError> &)));
+    connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
+            this, SLOT(ignoreSslErrorListSlot(QNetworkReply*,QList<QSslError>)));
 
 
     QVERIFY(waitForFinish(reply) != Timeout);
@@ -6141,10 +6141,10 @@ void tst_QNetworkReply::authenticationCacheAfterCancel()
 #endif
     manager.setProxy(proxy);
     QSignalSpy authSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-    QSignalSpy proxyAuthSpy(&manager, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)));
+    QSignalSpy proxyAuthSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
     AuthenticationCacheHelper helper;
-    connect(&manager, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)), &helper, SLOT(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)));
+    connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)), &helper, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), &helper, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
     QNetworkRequest request(url);
@@ -6266,7 +6266,7 @@ void tst_QNetworkReply::authenticationWithDifferentRealm()
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-    connect(&manager, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)), &helper, SLOT(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)));
+    connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)), &helper, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), &helper, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
 
     helper.httpUserName = "httptest";
@@ -6630,7 +6630,7 @@ void tst_QNetworkReply::synchronousRequestSslFailure()
             QNetworkRequest::SynchronousRequestAttribute,
             true);
     QNetworkReplyPtr reply;
-    QSignalSpy sslErrorsSpy(&manager, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)));
+    QSignalSpy sslErrorsSpy(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
     runSimpleRequest(QNetworkAccessManager::GetOperation, request, reply, 0);
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::SslHandshakeFailedError);

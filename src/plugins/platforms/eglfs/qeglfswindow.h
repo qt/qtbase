@@ -56,7 +56,7 @@ public:
     ~QEglFSWindow();
 
     void setGeometry(const QRect &);
-    Qt::WindowState setWindowState(Qt::WindowState state);
+    void setWindowState(Qt::WindowState state);
     WId winId() const;
 
     EGLSurface surface() const { return m_surface; }

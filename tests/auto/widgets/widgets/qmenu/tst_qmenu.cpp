@@ -448,7 +448,7 @@ void tst_QMenu::statusTip()
 {
     //check that the statustip of actions inserted into the menu are displayed
     QMainWindow w;
-    connect(w.statusBar(), SIGNAL(messageChanged(const QString &)), SLOT(onStatusMessageChanged(const QString &)));; //creates the status bar
+    connect(w.statusBar(), SIGNAL(messageChanged(QString)), SLOT(onStatusMessageChanged(QString)));; //creates the status bar
     QToolBar tb;
     QAction a("main action", &tb);
     a.setStatusTip("main action");

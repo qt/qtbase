@@ -135,7 +135,10 @@ NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
 NSImage *qt_mac_create_nsimage(const QPixmap &pm)
 {
     QImage image = pm.toImage();
-    return qt_mac_cgimage_to_nsimage(qt_mac_image_to_cgimage(image));
+    CGImageRef cgImage = qt_mac_image_to_cgimage(image);
+    NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
+    CGImageRelease(cgImage);
+    return nsImage;
 }
 
 HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
@@ -157,6 +160,16 @@ HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region)
 NSSize qt_mac_toNSSize(const QSize &qtSize)
 {
     return NSMakeSize(qtSize.width(), qtSize.height());
+}
+
+NSRect qt_mac_toNSRect(const QRect &rect)
+{
+    return NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+QRect qt_mac_toQRect(const NSRect &rect)
+{
+    return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
 QColor qt_mac_toQColor(const NSColor *color)

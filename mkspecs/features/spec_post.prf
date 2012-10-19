@@ -41,6 +41,6 @@ isEmpty(QMAKE_COMPILER) {
         QMAKE_COMPILER = msvc
     else: \
         error("qmake spec does not announce the compiler family, and it cannot be guessed.")
-    warning("qmake spec does not announce the compiler family. Guessed $$QMAKE_COMPILER.")
+    warning("qmake spec does not announce the compiler family. Guessed $${QMAKE_COMPILER}.")
 }
 CONFIG += $$QMAKE_COMPILER

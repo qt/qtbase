@@ -210,7 +210,9 @@ bool QWindowsUser32DLL::initTouch()
     \ingroup qt-lighthouse-win
 */
 
-QWindowsShell32DLL::QWindowsShell32DLL() : sHCreateItemFromParsingName(0)
+QWindowsShell32DLL::QWindowsShell32DLL()
+    : sHCreateItemFromParsingName(0)
+    , sHGetStockIconInfo(0)
 {
 }
 
@@ -218,6 +220,7 @@ void QWindowsShell32DLL::init()
 {
     QSystemLibrary library(QStringLiteral("shell32"));
     sHCreateItemFromParsingName = (SHCreateItemFromParsingName)(library.resolve("SHCreateItemFromParsingName"));
+    sHGetStockIconInfo = (SHGetStockIconInfo)library.resolve("SHGetStockIconInfo");
 }
 
 QWindowsUser32DLL QWindowsContext::user32dll;

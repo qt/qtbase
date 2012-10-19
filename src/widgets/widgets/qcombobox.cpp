@@ -1597,7 +1597,10 @@ void QComboBox::setIconSize(const QSize &size)
     \property QComboBox::editable
     \brief whether the combo box can be edited by the user
 
-    By default, this property is false.
+    By default, this property is false. The effect of editing depends
+    on the insert policy.
+
+    \sa InsertPolicy
 */
 bool QComboBox::isEditable() const
 {
@@ -2657,7 +2660,7 @@ void QComboBox::changeEvent(QEvent *e)
     switch (e->type()) {
     case QEvent::StyleChange:
         d->updateDelegate();
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     case QEvent::MacSizeChange:
 #endif
         d->sizeHint = QSize(); // invalidate size hint

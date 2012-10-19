@@ -1421,6 +1421,11 @@ void QPainterPrivate::updateState(QPainterState *newState)
     of 0 (which otherwise enables QPen::isCosmetic()) as being a non-cosmetic
     pen with a width of 1.
 
+    \value Qt4CompatiblePainting Compatibility hint telling the engine to use the
+    same X11 based fill rules as in Qt 4, where aliased rendering is offset
+    by slightly less than half a pixel. Potentially useful when porting a
+    Qt 4 application to Qt 5.
+
     \sa renderHints(), setRenderHint(), {QPainter#Rendering
     Quality}{Rendering Quality}, {Concentric Circles Example}
 

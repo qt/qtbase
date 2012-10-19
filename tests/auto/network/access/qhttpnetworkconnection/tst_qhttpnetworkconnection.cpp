@@ -335,8 +335,8 @@ void tst_QHttpNetworkConnection::put()
 
     QHttpNetworkReply *reply = connection.sendRequest(request);
     connect(reply, SIGNAL(finished()), SLOT(finishedReply()));
-    connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError, const QString &)),
-        SLOT(finishedWithError(QNetworkReply::NetworkError, const QString &)));
+    connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
+        SLOT(finishedWithError(QNetworkReply::NetworkError,QString)));
 
     QTime stopWatch;
     stopWatch.start();
@@ -561,15 +561,15 @@ void tst_QHttpNetworkConnection::get401()
 
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);
-    connect(reply, SIGNAL(authenticationRequired(const QHttpNetworkRequest&, QAuthenticator *)),
-                           SLOT(challenge401(const QHttpNetworkRequest&, QAuthenticator *)));
+    connect(reply, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
+                           SLOT(challenge401(QHttpNetworkRequest,QAuthenticator*)));
 
     finishedCalled = false;
     finishedWithErrorCalled = false;
 
     connect(reply, SIGNAL(finished()), SLOT(finishedReply()));
-    connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError, const QString &)),
-        SLOT(finishedWithError(QNetworkReply::NetworkError, const QString &)));
+    connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
+        SLOT(finishedWithError(QNetworkReply::NetworkError,QString)));
 
     QTime stopWatch;
     stopWatch.start();
@@ -722,8 +722,8 @@ void tst_QHttpNetworkConnection::ignoresslerror()
 
     QHttpNetworkRequest request(protocol + host + path);
     QHttpNetworkReply *reply = connection.sendRequest(request);
-    connect(reply, SIGNAL(sslErrors(const QList<QSslError>&)),
-        SLOT(sslErrors(const QList<QSslError>&)));
+    connect(reply, SIGNAL(sslErrors(QList<QSslError>)),
+        SLOT(sslErrors(QList<QSslError>)));
 
     finishedWithErrorCalled = false;
 
@@ -778,8 +778,8 @@ void tst_QHttpNetworkConnection::nossl()
     netErrorCode = QNetworkReply::NoError;
 
     connect(reply, SIGNAL(finished()), SLOT(finishedReply()));
-    connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError, const QString &)),
-        SLOT(finishedWithError(QNetworkReply::NetworkError, const QString &)));
+    connect(reply, SIGNAL(finishedWithError(QNetworkReply::NetworkError,QString)),
+        SLOT(finishedWithError(QNetworkReply::NetworkError,QString)));
 
     QTime stopWatch;
     stopWatch.start();

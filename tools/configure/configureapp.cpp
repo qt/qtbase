@@ -164,7 +164,7 @@ Configure::Configure(int& argc, char** argv)
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
                        << "call " << QDir::toNativeSeparators(sourcePath + "/bin/syncqt.bat")
-                       << " -qtdir \"" << QDir::toNativeSeparators(buildPath) << "\" %*" << endl;
+                       << " -mkspecsdir \"" << QDir::toNativeSeparators(buildPath) << "/mkspecs\" %*" << endl;
                 syncqt_bat.close();
             }
         }
@@ -309,6 +309,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "STYLE_WINDOWSVISTA" ] = "auto";
     dictionary[ "STYLE_PLASTIQUE" ] = "yes";
     dictionary[ "STYLE_CLEANLOOKS" ]= "yes";
+    dictionary[ "STYLE_FUSION" ]    = "yes";
     dictionary[ "STYLE_WINDOWSCE" ] = "no";
     dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
     dictionary[ "STYLE_GTK" ]       = "no";
@@ -647,6 +648,11 @@ void Configure::parseCmdLine()
             dictionary[ "STYLE_CLEANLOOKS" ] = "yes";
         else if (configCmdLine.at(i) == "-no-style-cleanlooks")
             dictionary[ "STYLE_CLEANLOOKS" ] = "no";
+
+        else if (configCmdLine.at(i) == "-qt-style-fusion")
+            dictionary[ "STYLE_FUSION" ] = "yes";
+        else if (configCmdLine.at(i) == "-no-style-fusion")
+            dictionary[ "STYLE_FUSION" ] = "no";
 
         // Work around compiler nesting limitation
         else
@@ -1481,6 +1487,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
         dictionary[ "STYLE_PLASTIQUE" ]     = "no";
         dictionary[ "STYLE_CLEANLOOKS" ]    = "no";
+        dictionary[ "STYLE_FUSION" ]        = "no";
         dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
         dictionary[ "OPENGL" ]              = "no";
@@ -1792,6 +1799,7 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWSVISTA", "auto", "",          "  windowsvista", ' ');
         desc("STYLE_PLASTIQUE", "yes", "",              "  plastique", ' ');
         desc("STYLE_CLEANLOOKS", "yes", "",             "  cleanlooks", ' ');
+        desc("STYLE_FUSION", "yes", "",                 "  fusion", ' ');
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
         desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile\n", ' ');
         desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
@@ -2373,6 +2381,9 @@ void Configure::generateOutputVars()
     if (dictionary[ "STYLE_CLEANLOOKS" ] == "yes")
         qmakeStyles += "cleanlooks";
 
+    if (dictionary[ "STYLE_FUSION" ] == "yes")
+        qmakeStyles += "fusion";
+
     if (dictionary[ "STYLE_WINDOWSXP" ] == "yes")
         qmakeStyles += "windowsxp";
 
@@ -2669,8 +2680,6 @@ void Configure::generateCachefile()
     QFile cacheFile(buildPath + "/.qmake.cache");
     if (cacheFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream cacheStream(&cacheFile);
-
-        cacheStream << "include($$PWD/mkspecs/qmodule.pri)" << endl;
 
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
@@ -3155,6 +3164,7 @@ void Configure::generateConfigfiles()
         if (dictionary["STYLE_WINDOWS"] != "yes")     qconfigList += "QT_NO_STYLE_WINDOWS";
         if (dictionary["STYLE_PLASTIQUE"] != "yes")   qconfigList += "QT_NO_STYLE_PLASTIQUE";
         if (dictionary["STYLE_CLEANLOOKS"] != "yes")   qconfigList += "QT_NO_STYLE_CLEANLOOKS";
+        if (dictionary["STYLE_FUSION"] != "yes")       qconfigList += "QT_NO_STYLE_FUSION";
         if (dictionary["STYLE_WINDOWSXP"] != "yes" && dictionary["STYLE_WINDOWSVISTA"] != "yes")
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
         if (dictionary["STYLE_WINDOWSVISTA"] != "yes")   qconfigList += "QT_NO_STYLE_WINDOWSVISTA";
@@ -3358,6 +3368,7 @@ void Configure::displayConfig()
     sout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
     sout << "    Plastique..............." << dictionary[ "STYLE_PLASTIQUE" ] << endl;
     sout << "    Cleanlooks.............." << dictionary[ "STYLE_CLEANLOOKS" ] << endl;
+    sout << "    Fusion.................." << dictionary[ "STYLE_FUSION" ] << endl;
     sout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
     sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;
 

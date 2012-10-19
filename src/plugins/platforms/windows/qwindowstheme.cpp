@@ -55,9 +55,13 @@
 #include <QtCore/QDebug>
 #include <QtCore/QTextStream>
 #include <QtCore/QSysInfo>
+#include <QtCore/QCache>
 #include <QtGui/QPalette>
 #include <QtGui/QGuiApplication>
+#include <QtGui/QPainter>
+#include <QtGui/QPixmapCache>
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qsystemlibrary_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -348,6 +352,11 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return QVariant(int(WindowsKeyboardScheme));
     case UiEffects:
         return QVariant(uiEffects());
+    case IconPixmapSizes: {
+        QList<int> sizes;
+        sizes << 16 << 32;
+        return QVariant::fromValue(sizes);
+    }
     default:
         break;
     }
@@ -431,6 +440,227 @@ void QWindowsTheme::windowsThemeChanged(QWindow * window)
 {
     refresh();
     QWindowSystemInterface::handleThemeChange(window);
+}
+
+// Defined in qpixmap_win.cpp
+Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
+
+static QPixmap loadIconFromShell32(int resourceId, QSizeF size)
+{
+#ifdef Q_OS_WINCE
+    HMODULE hmod = LoadLibrary(L"ceshell");
+#else
+    HMODULE hmod = QSystemLibrary::load(L"shell32");
+#endif
+    if (hmod) {
+        HICON iconHandle = (HICON)LoadImage(hmod, MAKEINTRESOURCE(resourceId), IMAGE_ICON, size.width(), size.height(), 0);
+        if (iconHandle) {
+            QPixmap iconpixmap = qt_pixmapFromWinHICON(iconHandle);
+            DestroyIcon(iconHandle);
+            return iconpixmap;
+        }
+    }
+    return QPixmap();
+}
+
+QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) const
+{
+    int resourceId = -1;
+    LPCTSTR iconName = 0;
+    switch (sp) {
+    case DriveCDIcon:
+    case DriveDVDIcon:
+        resourceId = 12;
+        break;
+    case DriveNetIcon:
+        resourceId = 10;
+        break;
+    case DriveHDIcon:
+        resourceId = 9;
+        break;
+    case DriveFDIcon:
+        resourceId = 7;
+        break;
+    case FileIcon:
+    case FileLinkIcon:
+        resourceId = 1;
+        break;
+    case DirIcon:
+    case DirLinkIcon:
+    case DirClosedIcon:
+        resourceId = 4;
+        break;
+    case DesktopIcon:
+        resourceId = 35;
+        break;
+    case ComputerIcon:
+        resourceId = 16;
+        break;
+    case DirOpenIcon:
+    case DirLinkOpenIcon:
+        resourceId = 5;
+        break;
+    case FileDialogNewFolder:
+        resourceId = 319;
+        break;
+    case DirHomeIcon:
+        resourceId = 235;
+        break;
+    case TrashIcon:
+        resourceId = 191;
+        break;
+    case MessageBoxInformation:
+        iconName = IDI_INFORMATION;
+        break;
+    case MessageBoxWarning:
+        iconName = IDI_WARNING;
+        break;
+    case MessageBoxCritical:
+        iconName = IDI_ERROR;
+        break;
+    case MessageBoxQuestion:
+        iconName = IDI_QUESTION;
+        break;
+    case VistaShield:
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
+            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)) {
+            if (!QWindowsContext::shell32dll.sHGetStockIconInfo)
+                return QPixmap();
+            QPixmap pixmap;
+            SHSTOCKICONINFO iconInfo;
+            memset(&iconInfo, 0, sizeof(iconInfo));
+            iconInfo.cbSize = sizeof(iconInfo);
+            const int iconSize = size.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON;
+            if (QWindowsContext::shell32dll.sHGetStockIconInfo(SIID_SHIELD, SHGFI_ICON | iconSize, &iconInfo) == S_OK) {
+                pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
+                DestroyIcon(iconInfo.hIcon);
+                return pixmap;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (resourceId != -1) {
+        QPixmap pixmap = loadIconFromShell32(resourceId, size);
+        if (!pixmap.isNull()) {
+            if (sp == FileLinkIcon || sp == DirLinkIcon || sp == DirLinkOpenIcon) {
+                QPainter painter(&pixmap);
+                QPixmap link = loadIconFromShell32(30, size);
+                painter.drawPixmap(0, 0, size.width(), size.height(), link);
+            }
+            return pixmap;
+        }
+    }
+
+    if (iconName) {
+        HICON iconHandle = LoadIcon(NULL, iconName);
+        QPixmap pixmap = qt_pixmapFromWinHICON(iconHandle);
+        DestroyIcon(iconHandle);
+        if (!pixmap.isNull())
+            return pixmap;
+    }
+
+    return QPlatformTheme::standardPixmap(sp, size);
+}
+
+static QString dirIconPixmapCacheKey(int iIcon, int iconSize)
+{
+    QString key = QLatin1String("qt_dir_") + QString::number(iIcon);
+    if (iconSize == SHGFI_LARGEICON)
+        key += QLatin1Char('l');
+    return key;
+}
+
+template <typename T>
+class FakePointer
+{
+public:
+
+    Q_STATIC_ASSERT_X(sizeof(T) <= sizeof(void *), "FakePointers can only go that far.");
+
+    static FakePointer *create(T thing)
+    {
+        return reinterpret_cast<FakePointer *>(thing);
+    }
+
+    T operator * () const
+    {
+        return T(qintptr(this));
+    }
+
+    void operator delete (void *) {}
+};
+
+QPixmap QWindowsTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const
+{
+    /* We don't use the variable, but by storing it statically, we
+     * ensure CoInitialize is only called once. */
+    static HRESULT comInit = CoInitialize(NULL);
+    Q_UNUSED(comInit);
+
+    static QCache<QString, FakePointer<int> > dirIconEntryCache(1000);
+    static QMutex mx;
+
+    QPixmap pixmap;
+    const QString filePath = QDir::toNativeSeparators(fileInfo.filePath());
+    int iconSize = size.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON;
+
+    bool cacheableDirIcon = fileInfo.isDir() && !fileInfo.isRoot();
+    if (cacheableDirIcon) {
+        QMutexLocker locker(&mx);
+        int iIcon = **dirIconEntryCache.object(filePath);
+        if (iIcon) {
+            QPixmapCache::find(dirIconPixmapCacheKey(iIcon, iconSize), pixmap);
+            if (pixmap.isNull()) // Let's keep both caches in sync
+                dirIconEntryCache.remove(filePath);
+            else
+                return pixmap;
+        }
+    }
+
+    SHFILEINFO info;
+    unsigned int flags =
+#ifndef Q_OS_WINCE
+        SHGFI_ICON|iconSize|SHGFI_SYSICONINDEX|SHGFI_ADDOVERLAYS|SHGFI_OVERLAYINDEX;
+#else
+        iconSize|SHGFI_SYSICONINDEX;
+#endif // Q_OS_WINCE
+    unsigned long val = SHGetFileInfo((const wchar_t *)filePath.utf16(), 0,
+                                      &info, sizeof(SHFILEINFO), flags);
+
+    // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
+    if (val && info.hIcon) {
+        QString key;
+        if (cacheableDirIcon) {
+            //using the unique icon index provided by windows save us from duplicate keys
+            key = dirIconPixmapCacheKey(info.iIcon, iconSize);
+            QPixmapCache::find(key, pixmap);
+            if (!pixmap.isNull()) {
+                QMutexLocker locker(&mx);
+                dirIconEntryCache.insert(filePath, FakePointer<int>::create(info.iIcon));
+            }
+        }
+
+        if (pixmap.isNull()) {
+            pixmap = qt_pixmapFromWinHICON(info.hIcon);
+            if (!pixmap.isNull()) {
+                if (cacheableDirIcon) {
+                    QMutexLocker locker(&mx);
+                    QPixmapCache::insert(key, pixmap);
+                    dirIconEntryCache.insert(filePath, FakePointer<int>::create(info.iIcon));
+                }
+            } else {
+                qWarning("QWindowsTheme::fileIconPixmap() no icon found");
+            }
+        }
+        DestroyIcon(info.hIcon);
+    }
+
+    if (!pixmap.isNull())
+        return pixmap;
+    return QPlatformTheme::fileIconPixmap(fileInfo, size);
 }
 
 QT_END_NAMESPACE

@@ -68,7 +68,6 @@ QWindowsKeyMapper::QWindowsKeyMapper()
 
 QWindowsKeyMapper::~QWindowsKeyMapper()
 {
-    deleteLayouts();
 }
 
 #ifndef LANG_PASHTO
@@ -436,6 +435,8 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
     Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier,  // 7
     Qt::NoModifier,                                             // Fall-back to raw Key_*
 };
+static const size_t NumMods = sizeof ModsTbl / sizeof *ModsTbl;
+Q_STATIC_ASSERT((NumMods == KeyboardLayoutItem::NumQtKeys));
 
 /**
   Remap return or action key to select key for windows mobile.
@@ -520,32 +521,10 @@ static inline bool isModifierKey(int code)
 
 // Keyboard map private ----------------------------------------------------------------[ start ]---
 
-/*
-    \internal
-    A Windows KeyboardLayoutItem has 8 possible states:
-        1. Unmodified
-        2. Shift
-        3. Control
-        4. Control + Shift
-        5. Alt
-        6. Alt + Shift
-        7. Alt + Control
-        8. Alt + Control + Shift
-*/
-struct KeyboardLayoutItem {
-    bool dirty;
-    quint8 deadkeys;
-    quint32 qtKey[9]; // Can by any Qt::Key_<foo>, or unicode character
-};
-
 void QWindowsKeyMapper::deleteLayouts()
 {
-    for (int i = 0; i < 255; ++i) {
-        if (keyLayout[i]) {
-            delete keyLayout[i];
-            keyLayout[i] = 0;
-        }
-    }
+    for (size_t i = 0; i < NumKeyboardLayoutItems; ++i)
+        keyLayout[i].exists = false;
 }
 
 void QWindowsKeyMapper::changeKeyboard()
@@ -594,11 +573,8 @@ void QWindowsKeyMapper::updateKeyMap(const MSG &msg)
 void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32 scancode,
                                                quint32 vk_key)
 {
-    if (!vk_key || (keyLayout[vk_key] && !keyLayout[vk_key]->dirty))
+    if (!vk_key || (keyLayout[vk_key].exists && !keyLayout[vk_key].dirty))
         return;
-
-    if (!keyLayout[vk_key])
-        keyLayout[vk_key] = new KeyboardLayoutItem;
 
     // Copy keyboard state, so we can modify and query output for each possible permutation
     unsigned char buffer[256];
@@ -615,40 +591,41 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     buffer[VK_LMENU   ] = 0; // Use right Alt, since left Ctrl + right Alt is considered AltGraph
 
     bool isDeadKey = false;
-    keyLayout[vk_key]->deadkeys = 0;
-    keyLayout[vk_key]->dirty = false;
+    keyLayout[vk_key].deadkeys = 0;
+    keyLayout[vk_key].dirty = false;
+    keyLayout[vk_key].exists = true;
     setKbdState(buffer, false, false, false);
-    keyLayout[vk_key]->qtKey[0] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x01 : 0;
+    keyLayout[vk_key].qtKey[0] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x01 : 0;
     setKbdState(buffer, true, false, false);
-    keyLayout[vk_key]->qtKey[1] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x02 : 0;
+    keyLayout[vk_key].qtKey[1] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x02 : 0;
     setKbdState(buffer, false, true, false);
-    keyLayout[vk_key]->qtKey[2] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x04 : 0;
+    keyLayout[vk_key].qtKey[2] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x04 : 0;
     setKbdState(buffer, true, true, false);
-    keyLayout[vk_key]->qtKey[3] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x08 : 0;
+    keyLayout[vk_key].qtKey[3] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x08 : 0;
     setKbdState(buffer, false, false, true);
-    keyLayout[vk_key]->qtKey[4] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x10 : 0;
+    keyLayout[vk_key].qtKey[4] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x10 : 0;
     setKbdState(buffer, true, false, true);
-    keyLayout[vk_key]->qtKey[5] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x20 : 0;
+    keyLayout[vk_key].qtKey[5] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x20 : 0;
     setKbdState(buffer, false, true, true);
-    keyLayout[vk_key]->qtKey[6] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x40 : 0;
+    keyLayout[vk_key].qtKey[6] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x40 : 0;
     setKbdState(buffer, true, true, true);
-    keyLayout[vk_key]->qtKey[7] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
-    keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x80 : 0;
+    keyLayout[vk_key].qtKey[7] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
+    keyLayout[vk_key].deadkeys |= isDeadKey ? 0x80 : 0;
     // Add a fall back key for layouts which don't do composition and show non-latin1 characters
     int fallbackKey = winceKeyBend(vk_key);
     if (!fallbackKey || fallbackKey == Qt::Key_unknown) {
         fallbackKey = 0;
-        if (vk_key != keyLayout[vk_key]->qtKey[0] && vk_key < 0x5B && vk_key > 0x2F)
+        if (vk_key != keyLayout[vk_key].qtKey[0] && vk_key < 0x5B && vk_key > 0x2F)
             fallbackKey = vk_key;
     }
-    keyLayout[vk_key]->qtKey[8] = fallbackKey;
+    keyLayout[vk_key].qtKey[8] = fallbackKey;
 
     // If this vk_key a Dead Key
     if (MapVirtualKey(vk_key, 2) & 0x80000000) {
@@ -666,22 +643,22 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
 
     if (QWindowsContext::verboseEvents > 1) {
         qDebug("updatePossibleKeyCodes for virtual key = 0x%02x!", vk_key);
-        for (int i = 0; i < 9; ++i) {
-            qDebug("    [%d] (%d,0x%02x,'%c')  %s", i,
-                   keyLayout[vk_key]->qtKey[i],
-                   keyLayout[vk_key]->qtKey[i],
-                   keyLayout[vk_key]->qtKey[i] ? keyLayout[vk_key]->qtKey[i] : 0x03,
-                   keyLayout[vk_key]->deadkeys & (1<<i) ? "deadkey" : "");
+        for (size_t i = 0; i < NumMods; ++i) {
+            qDebug("    [%d] (%d,0x%02x,'%c')  %s", int(i),
+                   keyLayout[vk_key].qtKey[i],
+                   keyLayout[vk_key].qtKey[i],
+                   keyLayout[vk_key].qtKey[i] ? keyLayout[vk_key].qtKey[i] : 0x03,
+                   keyLayout[vk_key].deadkeys & (1<<i) ? "deadkey" : "");
         }
     }
 }
 
 bool QWindowsKeyMapper::isADeadKey(unsigned int vk_key, unsigned int modifiers)
 {
-    if (keyLayout && (vk_key < 256) && keyLayout[vk_key]) {
-        for (register int i = 0; i < 9; ++i) {
+    if ((vk_key < NumKeyboardLayoutItems) && keyLayout[vk_key].exists) {
+        for (register size_t i = 0; i < NumMods; ++i) {
             if (uint(ModsTbl[i]) == modifiers)
-                return bool(keyLayout[vk_key]->deadkeys & 1<<i);
+                return bool(keyLayout[vk_key].deadkeys & 1<<i);
         }
     }
     return false;
@@ -1123,11 +1100,11 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
 {
     QList<int> result;
 
-    KeyboardLayoutItem *kbItem = keyLayout[e->nativeVirtualKey()];
-    if (!kbItem)
+    const KeyboardLayoutItem &kbItem = keyLayout[e->nativeVirtualKey()];
+    if (!kbItem.exists)
         return result;
 
-    quint32 baseKey = kbItem->qtKey[0];
+    quint32 baseKey = kbItem.qtKey[0];
     Qt::KeyboardModifiers keyMods = e->modifiers();
     if (baseKey == Qt::Key_Return && (e->nativeModifiers() & ExtendedKey)) {
         result << int(Qt::Key_Enter + keyMods);
@@ -1135,9 +1112,9 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     }
     result << int(baseKey + keyMods); // The base key is _always_ valid, of course
 
-    for (int i = 1; i < 9; ++i) {
+    for (int i = 1; i < NumMods; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
-        quint32 key = kbItem->qtKey[i];
+        quint32 key = kbItem.qtKey[i];
         if (key && key != baseKey && ((keyMods & neededMods) == neededMods))
             result << int(key + (keyMods & ~neededMods));
     }

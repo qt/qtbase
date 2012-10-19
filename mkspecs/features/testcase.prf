@@ -1,5 +1,11 @@
 have_target {
 
+# qt_build_config.prf disables execptions for all Qt modules which don't
+# explicitly turn it on again, while the qmake default is to build with
+# exceptions. As we want tests to be built like 3rd party applications,
+# qt_build_config tells us to re-enable exceptions here.
+testcase_exceptions: CONFIG += exceptions
+
 check.files                =
 check.path                 = .
 

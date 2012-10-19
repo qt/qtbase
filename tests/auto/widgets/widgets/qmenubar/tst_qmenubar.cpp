@@ -245,7 +245,7 @@ void tst_QMenuBar::initTestCase()
     // widget under test
     mw = new QMainWindow(0, Qt::X11BypassWindowManagerHint);
     mb = new QMenuBar( mw );
-    connect( mb, SIGNAL(triggered(QAction *)), this, SLOT(onActivated(QAction *)) );
+    connect( mb, SIGNAL(triggered(QAction*)), this, SLOT(onActivated(QAction*)) );
 
     initSimpleMenubar();
     mw->show();

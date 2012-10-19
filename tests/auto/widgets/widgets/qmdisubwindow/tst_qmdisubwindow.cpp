@@ -502,7 +502,7 @@ void tst_QMdiSubWindow::emittingOfSignals()
 
     QSignalSpy spy(window, signal == SIGNAL(aboutToActivate())
                            ? signal.data()
-                           : SIGNAL(windowStateChanged(Qt::WindowStates, Qt::WindowStates)));
+                           : SIGNAL(windowStateChanged(Qt::WindowStates,Qt::WindowStates)));
     QVERIFY(spy.isEmpty());
     triggerSignal(window, &workspace, signal);
     // Unless the signal is windowRestored or windowDeactivated,

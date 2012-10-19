@@ -66,7 +66,6 @@ class QCleanlooksStylePrivate : public QWindowsStylePrivate
 public:
     QCleanlooksStylePrivate()
         : QWindowsStylePrivate() {
-        animationFps = 24;
     }
 
     ~QCleanlooksStylePrivate() {

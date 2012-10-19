@@ -57,6 +57,7 @@
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
 #include <private/qwindowsxpstyle_p.h>
+#include <private/qstyleanimation_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <qlibrary.h>
 #include <qpaintengine.h>
@@ -83,7 +84,6 @@
 #include <qdialogbuttonbox.h>
 #include <qinputdialog.h>
 #include <qtableview.h>
-#include <qbasictimer.h>
 #include <qdatetime.h>
 #include <qcommandlinkbutton.h>
 
@@ -135,57 +135,50 @@ QT_BEGIN_NAMESPACE
 #define TDLG_SECONDARYPANEL         8
 #endif
 
-class QWindowsVistaAnimation
+class QWindowsVistaAnimation : public QStyleAnimation
 {
-public :
-    QWindowsVistaAnimation() : _running(true) { }
+    Q_OBJECT
+public:
+    QWindowsVistaAnimation(QObject *target) : QStyleAnimation(target), _duration(-1) { }
     virtual ~QWindowsVistaAnimation() { }
-    QWidget * widget() const { return _widget; }
-    bool running() const { return _running; }
-    const QTime &startTime() const { return _startTime; }
-    void setRunning(bool val) { _running = val; }
-    void setWidget(QWidget *widget) { _widget = widget; }
-    void setStartTime(const QTime &startTime) { _startTime = startTime; }
     virtual void paint(QPainter *painter, const QStyleOption *option);
+    virtual bool isUpdateNeeded() const;
+    virtual int duration() const { return _duration; }
+    //set time in ms to complete a state transition / pulse cycle
+    void setDuration(int duration) { _duration = duration; }
 
 protected:
     void drawBlendedImage(QPainter *painter, QRect rect, float value);
-    QTime _startTime;
-    QPointer<QWidget> _widget;
     QImage _primaryImage;
     QImage _secondaryImage;
     QImage _tempImage;
-    bool _running;
+    int _duration;
 };
 
 
 // Handles state transition animations
 class QWindowsVistaTransition : public QWindowsVistaAnimation
 {
-public :
-    QWindowsVistaTransition() : QWindowsVistaAnimation() {}
+    Q_OBJECT
+public:
+    QWindowsVistaTransition(QObject *target) : QWindowsVistaAnimation(target) {}
     virtual ~QWindowsVistaTransition() { }
-    void setDuration(int duration) { _duration = duration; }
     void setStartImage(const QImage &image) { _primaryImage = image; }
     void setEndImage(const QImage &image) { _secondaryImage = image; }
     virtual void paint(QPainter *painter, const QStyleOption *option);
-    int duration() const { return _duration; }
-    int _duration; //set time in ms to complete a state transition
 };
 
 
 // Handles pulse animations (default buttons)
 class QWindowsVistaPulse: public QWindowsVistaAnimation
 {
-public :
-    QWindowsVistaPulse() : QWindowsVistaAnimation() {}
+    Q_OBJECT
+public:
+    QWindowsVistaPulse(QObject *target) : QWindowsVistaAnimation(target) {}
     virtual ~QWindowsVistaPulse() { }
-    void setDuration(int duration) { _duration = duration; }
     void setPrimaryImage(const QImage &image) { _primaryImage = image; }
     void setAlternateImage(const QImage &image) { _secondaryImage = image; }
     virtual void paint(QPainter *painter, const QStyleOption *option);
-    int duration() const { return _duration; }
-    int _duration; //time in ms to complete a pulse cycle
 };
 
 
@@ -198,18 +191,12 @@ public:
     ~QWindowsVistaStylePrivate();
     static bool resolveSymbols();
     static inline bool useVista();
-    void startAnimation(QWindowsVistaAnimation *);
-    void stopAnimation(const QWidget *);
-    QWindowsVistaAnimation* widgetAnimation(const QWidget *) const;
-    void timerEvent();
     bool transitionsEnabled() const;
 
 private:
     bool initTreeViewTheming();
     void cleanupTreeViewTheming();
 
-    QList <QWindowsVistaAnimation*> animations;
-    QBasicTimer animationTimer;
     HWND m_treeViewHelper;
 };
 

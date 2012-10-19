@@ -416,7 +416,7 @@ void tst_QHeaderView::init()
     }
     */
 
-    QSignalSpy spy(view, SIGNAL(sectionCountChanged(int, int)));
+    QSignalSpy spy(view, SIGNAL(sectionCountChanged(int,int)));
     view->setModel(model);
     QCOMPARE(spy.count(), 1);
     view->resize(200,200);
@@ -846,7 +846,7 @@ void tst_QHeaderView::swapSections()
 
     QVector<int> logical = (QVector<int>() << 0 << 1 << 2 << 3);
 
-    QSignalSpy spy1(view, SIGNAL(sectionMoved(int, int, int)));
+    QSignalSpy spy1(view, SIGNAL(sectionMoved(int,int,int)));
 
     QCOMPARE(view->sectionsMoved(), false);
     view->swapSections(1, 1);
@@ -914,7 +914,7 @@ void tst_QHeaderView::moveSection()
     QVERIFY(from.count() == moved.count());
     QVERIFY(view->count() == logical.count());
 
-    QSignalSpy spy1(view, SIGNAL(sectionMoved(int, int, int)));
+    QSignalSpy spy1(view, SIGNAL(sectionMoved(int,int,int)));
     QCOMPARE(view->sectionsMoved(), false);
 
     for (int h = 0; h < hidden.count(); ++h)
@@ -1227,7 +1227,7 @@ void tst_QHeaderView::resizeSection()
     for (int j = 0; j < logical.count(); ++j)
         view->resizeSection(logical.at(j), initial);
 
-    QSignalSpy spy(view, SIGNAL(sectionResized(int, int, int)));
+    QSignalSpy spy(view, SIGNAL(sectionResized(int,int,int)));
 
     for (int k = 0; k < logical.count(); ++k)
         view->resizeSection(logical.at(k), size.at(k));

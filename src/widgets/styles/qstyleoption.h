@@ -89,6 +89,7 @@ public:
     QRect rect;
     QFontMetrics fontMetrics;
     QPalette palette;
+    QObject *styleObject;
 
     QStyleOption(int version = QStyleOption::Version, int type = SO_Default);
     QStyleOption(const QStyleOption &other);
@@ -255,7 +256,9 @@ public:
     enum SelectedPosition { NotAdjacent, NextIsSelected, PreviousIsSelected };
     enum CornerWidget { NoCornerWidgets = 0x00, LeftCornerWidget = 0x01,
                         RightCornerWidget = 0x02 };
+    enum TabFeature { None = 0x00, HasFrame = 0x01 };
     Q_DECLARE_FLAGS(CornerWidgets, CornerWidget)
+    Q_DECLARE_FLAGS(TabFeatures, TabFeature)
 
     QTabBar::Shape shape;
     QString text;
@@ -268,6 +271,7 @@ public:
     bool documentMode;
     QSize leftButtonSize;
     QSize rightButtonSize;
+    TabFeatures features;
 
     QStyleOptionTab();
     QStyleOptionTab(const QStyleOptionTab &other) : QStyleOption(Version, Type) { *this = other; }

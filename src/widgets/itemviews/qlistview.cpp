@@ -3162,7 +3162,7 @@ void QListView::currentChanged(const QModelIndex &current, const QModelIndex &pr
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive()) {
         if (current.isValid()) {
-            int entry = visualIndex(current) + 1;
+            int entry = visualIndex(current);
             QAccessibleEvent event(this, QAccessible::Focus);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
@@ -3183,14 +3183,14 @@ void QListView::selectionChanged(const QItemSelection &selected,
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
-            int entry = visualIndex(sel) + 1;
+            int entry = visualIndex(sel);
             QAccessibleEvent event(this, QAccessible::Selection);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
-            int entry = visualIndex(desel) + 1;
+            int entry = visualIndex(desel);
             QAccessibleEvent event(this, QAccessible::SelectionRemove);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);

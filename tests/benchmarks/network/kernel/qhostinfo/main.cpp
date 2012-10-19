@@ -108,7 +108,7 @@ void tst_qhostinfo::lookupSpeed()
 
     QBENCHMARK {
         for (int i = 0; i < hostnameList.size(); i++)
-            QHostInfo::lookupHost(hostnameList.at(i), &receiver, SLOT(resultsReady(const QHostInfo)));
+            QHostInfo::lookupHost(hostnameList.at(i), &receiver, SLOT(resultsReady(QHostInfo)));
         QTestEventLoop::instance().enterLoop(20);
         QVERIFY(!QTestEventLoop::instance().timeout());
     }

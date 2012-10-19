@@ -218,6 +218,14 @@ private:
             ev = upd;
         } else if (event->type() == QAccessible::ValueChanged) {
             ev = new QAccessibleValueChangeEvent(event->object(), static_cast<QAccessibleValueChangeEvent*>(event)->value());
+        } else if (event->type() == QAccessible::TableModelChanged) {
+            QAccessibleTableModelChangeEvent *oldEvent = static_cast<QAccessibleTableModelChangeEvent*>(event);
+            QAccessibleTableModelChangeEvent *newEvent = new QAccessibleTableModelChangeEvent(event->object(), oldEvent->modelChangeType());
+            newEvent->setFirstRow(oldEvent->firstRow());
+            newEvent->setFirstColumn(oldEvent->firstColumn());
+            newEvent->setLastRow(oldEvent->lastRow());
+            newEvent->setLastColumn(oldEvent->lastColumn());
+            ev = newEvent;
         } else {
             ev = new QAccessibleEvent(event->object(), event->type());
         }

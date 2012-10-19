@@ -120,7 +120,9 @@ private slots:
     void uncPaths_data();
     void uncPaths();
 #endif
+#ifndef Q_OS_WIN
     void hiddenDirs_hiddenFiles();
+#endif
 };
 
 void tst_QDirIterator::initTestCase()
@@ -600,15 +602,13 @@ void tst_QDirIterator::uncPaths()
 }
 #endif
 
+#ifndef Q_OS_WIN
+// In Unix it is easy to create hidden files, but in Windows it requires
+// a special call since hidden files need to be "marked" while in Unix
+// anything starting by a '.' is a hidden file.
+// For that reason this test is not run in Windows.
 void tst_QDirIterator::hiddenDirs_hiddenFiles()
 {
-    // In Unix it is easy to create hidden files, but in Windows it requires
-    // a special call since hidden files need to be "marked" while in Unix
-    // anything starting by a '.' is a hidden file.
-    // For that reason this test is not run in Windows.
-#if defined(Q_OS_WIN)
-    QSKIP("To create hidden files a special call is required in Windows.");
-#else
     // Only files
     {
         int matches = 0;
@@ -637,8 +637,8 @@ void tst_QDirIterator::hiddenDirs_hiddenFiles()
         QCOMPARE(matches, 6);
         QCOMPARE(failures, 0);
     }
-#endif // Q_OS_WIN || Q_OS_WINCE
 }
+#endif // Q_OS_WIN
 
 QTEST_MAIN(tst_QDirIterator)
 

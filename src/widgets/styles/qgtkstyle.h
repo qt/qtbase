@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QPainterPath;
 class QGtkStylePrivate;
 
-class Q_WIDGETS_EXPORT QGtkStyle : public QWindowsStyle
+class Q_WIDGETS_EXPORT QGtkStyle : public QCommonStyle
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGtkStyle)

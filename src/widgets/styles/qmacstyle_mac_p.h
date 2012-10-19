@@ -163,17 +163,15 @@ public:
     void removeWidget(QWidget *);
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
-    bool animatable(Animates, const QWidget *) const;
-    void stopAnimate(Animates, QWidget *);
-    void startAnimate(Animates, QWidget *);
+    bool animatable(Animates, const QObject *) const;
+    void stopAnimate(Animates, QObject *);
+    void startAnimate(Animates, QObject *);
     static ThemeDrawState getDrawState(QStyle::State flags);
     QAquaWidgetSize aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
                              QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
     void getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
                           HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const;
-    void animate();
-    bool doAnimate(Animates);
     inline int animateSpeed(Animates) const { return 33; }
 
     // Utility functions
@@ -202,13 +200,8 @@ public:
                                HIThemeButtonDrawInfo *bdi) const;
     QPixmap generateBackgroundPattern() const;
 
-    void startAnimationTimer();
-
 public:
     QPointer<QPushButton> defaultButton; //default push buttons
-    int timerID;
-    QList<QPointer<QWidget> > progressBars; //existing progress bars that need animation
-    QList<QPointer<QWidget> > scrollBars; //existing scroll bars that need animation
 
     struct OverlayScrollBarInfo {
         OverlayScrollBarInfo()
@@ -235,7 +228,6 @@ public:
         int frame;
         enum { ButtonDark, ButtonLight } dir;
     } buttonState;
-    UInt8 progressFrame;
     mutable QPointer<QFocusFrame> focusWidget;
     CFAbsoluteTime defaultButtonStart;
     bool mouseDown;

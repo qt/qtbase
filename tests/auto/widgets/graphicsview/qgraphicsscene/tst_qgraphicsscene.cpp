@@ -3655,7 +3655,7 @@ void tst_QGraphicsScene::changedSignal()
     QFETCH(bool, withView);
     QGraphicsScene scene;
     ChangedListener cl;
-    connect(&scene, SIGNAL(changed(const QList<QRectF> &)), &cl, SLOT(changed(const QList<QRectF> &)));
+    connect(&scene, SIGNAL(changed(QList<QRectF>)), &cl, SLOT(changed(QList<QRectF>)));
 
     QGraphicsView *view = 0;
     if (withView)
@@ -4533,7 +4533,7 @@ void tst_QGraphicsScene::zeroScale()
     QGraphicsView view(&scene);
 
     ChangedListener cl;
-    connect(&scene, SIGNAL(changed(const QList<QRectF> &)), &cl, SLOT(changed(const QList<QRectF> &)));
+    connect(&scene, SIGNAL(changed(QList<QRectF>)), &cl, SLOT(changed(QList<QRectF>)));
 
     QGraphicsRectItem *rect1 = new QGraphicsRectItem(0, 0, 0.0000001, 0.00000001);
     scene.addItem(rect1);

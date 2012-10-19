@@ -838,7 +838,7 @@ void tst_QToolBar::toolButtonStyle()
 void tst_QToolBar::actionTriggered()
 {
     QToolBar tb;
-    connect(&tb, SIGNAL(actionTriggered(QAction *)), SLOT(slot(QAction *)));
+    connect(&tb, SIGNAL(actionTriggered(QAction*)), SLOT(slot(QAction*)));
 
     QAction action1(0);
     QAction action2(0);

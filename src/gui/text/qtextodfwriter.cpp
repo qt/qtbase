@@ -666,13 +666,13 @@ void QTextOdfWriter::writeFrameFormat(QXmlStreamWriter &writer, QTextFrameFormat
     writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("s%1").arg(formatIndex));
     writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("section"));
     writer.writeEmptyElement(styleNS, QString::fromLatin1("section-properties"));
-    if (format.hasProperty(QTextFormat::BlockTopMargin))
+    if (format.hasProperty(QTextFormat::FrameTopMargin))
         writer.writeAttribute(foNS, QString::fromLatin1("margin-top"), pixelToPoint(qMax(qreal(0.), format.topMargin())) );
-    if (format.hasProperty(QTextFormat::BlockBottomMargin))
+    if (format.hasProperty(QTextFormat::FrameBottomMargin))
         writer.writeAttribute(foNS, QString::fromLatin1("margin-bottom"), pixelToPoint(qMax(qreal(0.), format.bottomMargin())) );
-    if (format.hasProperty(QTextFormat::BlockLeftMargin))
+    if (format.hasProperty(QTextFormat::FrameLeftMargin))
         writer.writeAttribute(foNS, QString::fromLatin1("margin-left"), pixelToPoint(qMax(qreal(0.), format.leftMargin())) );
-    if (format.hasProperty(QTextFormat::BlockRightMargin))
+    if (format.hasProperty(QTextFormat::FrameRightMargin))
         writer.writeAttribute(foNS, QString::fromLatin1("margin-right"), pixelToPoint(qMax(qreal(0.), format.rightMargin())) );
 
     writer.writeEndElement(); // style

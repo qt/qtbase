@@ -44,6 +44,7 @@
 
 #include "qcommonstyle.h"
 #include "qstyle_p.h"
+#include "qstyleanimation_p.h"
 
 #include "qstyleoption.h"
 
@@ -67,17 +68,22 @@ class QCommonStylePrivate : public QStylePrivate
 {
     Q_DECLARE_PUBLIC(QCommonStyle)
 public:
-    inline QCommonStylePrivate()
+    inline QCommonStylePrivate() :
 #ifndef QT_NO_ITEMVIEWS
-    : cachedOption(0)
+    cachedOption(0),
 #endif
+    animationFps(30)
     { }
 
-#ifndef QT_NO_ITEMVIEWS
     ~QCommonStylePrivate()
     {
+        qDeleteAll(animations);
+#ifndef QT_NO_ITEMVIEWS
         delete cachedOption;
+#endif
     }
+
+#ifndef QT_NO_ITEMVIEWS
     void viewItemDrawText(QPainter *p, const QStyleOptionViewItem *option, const QRect &rect) const;
     void viewItemLayout(const QStyleOptionViewItem *opt,  QRect *checkRect,
                         QRect *pixmapRect, QRect *textRect, bool sizehint) const;
@@ -106,6 +112,17 @@ public:
 #ifndef QT_NO_TABBAR
     void tabLayout(const QStyleOptionTabV3 *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
 #endif
+
+    int animationFps;
+    void _q_removeAnimation();
+
+    QList<const QObject*> animationTargets() const;
+    QStyleAnimation* animation(const QObject *target) const;
+    void startAnimation(QStyleAnimation *animation) const;
+    void stopAnimation(const QObject *target) const;
+
+private:
+    mutable QHash<const QObject*, QStyleAnimation*> animations;
 };
 
 QT_END_NAMESPACE

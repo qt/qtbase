@@ -1934,6 +1934,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SP_DirClosedIcon The closed directory icon.
     \value SP_DirIcon The directory icon.
     \value SP_DirLinkIcon The link to directory icon.
+    \value SP_DirLinkOpenIcon The link to open directory icon.
     \value SP_FileIcon The file icon.
     \value SP_FileLinkIcon The link to file icon.
     \value SP_FileDialogStart The "start" icon in a file dialog.

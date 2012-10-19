@@ -52,6 +52,9 @@
 #ifndef QT_NO_STYLE_CLEANLOOKS
 #include "qcleanlooksstyle.h"
 #endif
+#ifndef QT_NO_STYLE_FUSION
+#include "qfusionstyle.h"
+#endif
 #ifndef QT_NO_STYLE_GTK
 #include "qgtkstyle.h"
 #endif
@@ -146,6 +149,11 @@ QStyle *QStyleFactory::create(const QString& key)
         ret = new QPlastiqueStyle;
     else
 #endif
+#ifndef QT_NO_STYLE_FUSION
+    if (style == QLatin1String("fusion"))
+        ret = new QFusionStyle;
+    else
+#endif
 #ifndef QT_NO_STYLE_CLEANLOOKS
     if (style == QLatin1String("cleanlooks"))
         ret = new QCleanlooksStyle;
@@ -221,6 +229,10 @@ QStringList QStyleFactory::keys()
 #ifndef QT_NO_STYLE_GTK
     if (!list.contains(QLatin1String("GTK+")))
         list << QLatin1String("GTK+");
+#endif
+#ifndef QT_NO_STYLE_FUSION
+    if (!list.contains(QLatin1String("Fusion")))
+        list << QLatin1String("Fusion");
 #endif
 #ifndef QT_NO_STYLE_CLEANLOOKS
     if (!list.contains(QLatin1String("Cleanlooks")))

@@ -185,6 +185,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
 
 #ifndef QT_NO_TABWIDGET
     if (const QTabWidget *tw = qobject_cast<const QTabWidget *>(parentWidget())) {
+        option->features |= QStyleOptionTab::HasFrame;
         if (tw->cornerWidget(Qt::TopLeftCorner) || tw->cornerWidget(Qt::BottomLeftCorner))
             option->cornerWidgets |= QStyleOptionTab::LeftCornerWidget;
         if (tw->cornerWidget(Qt::TopRightCorner) || tw->cornerWidget(Qt::BottomRightCorner))

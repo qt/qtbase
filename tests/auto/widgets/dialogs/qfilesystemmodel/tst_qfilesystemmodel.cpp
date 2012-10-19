@@ -202,7 +202,7 @@ void tst_QFileSystemModel::rootPath()
 {
     QCOMPARE(model->rootPath(), QString(QDir().path()));
 
-    QSignalSpy rootChanged(model, SIGNAL(rootPathChanged(const QString &)));
+    QSignalSpy rootChanged(model, SIGNAL(rootPathChanged(QString)));
     QModelIndex root = model->setRootPath(model->rootPath());
     root = model->setRootPath("this directory shouldn't exist");
     QCOMPARE(rootChanged.count(), 0);
@@ -430,8 +430,8 @@ void tst_QFileSystemModel::rowCount()
     QString tmp = flatDirTestPath;
     QVERIFY(createFiles(tmp, QStringList()));
 
-    QSignalSpy spy2(model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
-    QSignalSpy spy3(model, SIGNAL(rowsAboutToBeInserted(const QModelIndex &, int, int)));
+    QSignalSpy spy2(model, SIGNAL(rowsInserted(QModelIndex,int,int)));
+    QSignalSpy spy3(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
 
 #if !defined(Q_OS_WINCE)
     QStringList files = QStringList() <<  "b" << "d" << "f" << "h" << "j" << ".a" << ".c" << ".e" << ".g";
@@ -472,8 +472,8 @@ void tst_QFileSystemModel::rowsInserted()
     QFETCH(int, count);
     model->sort(0, (Qt::SortOrder)assending);
 
-    QSignalSpy spy0(model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
-    QSignalSpy spy1(model, SIGNAL(rowsAboutToBeInserted(const QModelIndex &, int, int)));
+    QSignalSpy spy0(model, SIGNAL(rowsInserted(QModelIndex,int,int)));
+    QSignalSpy spy1(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
     int oldCount = model->rowCount(root);
     QStringList files;
     for (int i = 0; i < count; ++i)
@@ -528,8 +528,8 @@ void tst_QFileSystemModel::rowsRemoved()
     model->sort(0, (Qt::SortOrder)assending);
     QTest::qWait(WAITTIME);
 
-    QSignalSpy spy0(model, SIGNAL(rowsRemoved(const QModelIndex &, int, int)));
-    QSignalSpy spy1(model, SIGNAL(rowsAboutToBeRemoved(const QModelIndex &, int, int)));
+    QSignalSpy spy0(model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy spy1(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
     int oldCount = model->rowCount(root);
     for (int i = count - 1; i >= 0; --i) {
         //qDebug() << "removing" <<  model->index(i, 0, root).data().toString();
@@ -588,7 +588,7 @@ void tst_QFileSystemModel::dataChanged()
     QFETCH(int, assending);
     model->sort(0, (Qt::SortOrder)assending);
 
-    QSignalSpy spy(model, SIGNAL(dataChanged (const QModelIndex &, const QModelIndex &)));
+    QSignalSpy spy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
     QStringList files;
     for (int i = 0; i < count; ++i)
         files.append(model->index(i, 0, root).data().toString());
@@ -763,7 +763,7 @@ void tst_QFileSystemModel::setData_data()
 
 void tst_QFileSystemModel::setData()
 {
-    QSignalSpy spy(model, SIGNAL(fileRenamed(const QString&, const QString&, const QString&)));
+    QSignalSpy spy(model, SIGNAL(fileRenamed(QString,QString,QString)));
     QString tmp = flatDirTestPath;
     QFETCH(QStringList, files);
     QFETCH(QString, oldFileName);

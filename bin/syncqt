@@ -83,8 +83,8 @@ our $quoted_basedir;
 # Make sure we use Windows line endings for chomp and friends on Windows.
 $INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
 
-my $qtbasedir = dirname(dirname($0));
-normalizePath(\$qtbasedir) if (defined $qtbasedir);
+my $mkspecsdir = dirname(dirname($0));
+normalizePath(\$mkspecsdir) if (defined $mkspecsdir);
 
 # will be defined based on the modules sync.profile
 our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %modulepris, %explicitheaders, %deprecatedheaders);
@@ -128,7 +128,7 @@ sub showUsage
     print "  -showonly             Show action but not perform        (default: " . ($showonly ? "yes" : "no") . ")\n";
     print "  -minimal              Do not create CamelCase headers    (default: " . ($minimal ? "yes" : "no") . ")\n";
     print "  -outdir <PATH>        Specify output directory for sync  (default: $out_basedir)\n";
-    print "  -qtdir <PATH>         Set the path to QtBase             (detected: " . (defined $qtbasedir ? $qtbasedir : "-none-") . ")\n";
+    print "  -mkspecsdir <PATH>    Set the path to the mkspecs        (detected: " . (defined $mkspecsdir ? $mkspecsdir : "-none-") . ")\n";
     print "  -quiet                Only report problems, not activity (same as -verbose 0)\n";
     print "  -v, -verbose <level>  Sets the verbosity level (max. 4)  (default: $verbose_level)\n";
     print "                        The short form increases the level by +1\n";
@@ -669,8 +669,8 @@ while ( @ARGV ) {
     } elsif($arg eq "-private") {
         $var = "create_private_headers";
         $val = "yes";
-    } elsif($arg eq "-qtdir") {
-        $var = "qtdir";
+    } elsif($arg eq "-mkspecsdir") {
+        $var = "mkspecsdir";
         $val = shift @ARGV;
     } elsif($arg =~/^-/) {
         print "Unknown option: $arg\n\n" if(!$var);
@@ -746,12 +746,12 @@ while ( @ARGV ) {
         push @modules_to_sync, $module;
         $moduleheaders{$module} = $headerdir;
         $create_uic_class_map = 0;
-    } elsif ($var eq "qtdir") {
+    } elsif ($var eq "mkspecsdir") {
         if($val) {
-            $qtbasedir = $val;
-            normalizePath(\$qtbasedir);
+            $mkspecsdir = $val;
+            normalizePath(\$mkspecsdir);
         } else {
-            die "The -qtdir option requires an argument";
+            die "The -mkspecsdir option requires an argument";
         }
     } elsif ($var eq "output") {
         my $outdir = $val;
@@ -767,9 +767,9 @@ while ( @ARGV ) {
 }
 
 die "Cannot automatically detect/use provided path to QtBase's build directory!\n" .
-    "QTDIR detected/provided: " . (defined $qtbasedir ? $qtbasedir : "-none-") . "\n" .
-    "Please use the -qtdir option to provide the correct path.\nsyncqt failed"
-        if (!$qtbasedir || !-d "$qtbasedir/mkspecs");
+    "QTDIR detected/provided: " . (defined $mkspecsdir ? $mkspecsdir : "-none-") . "\n" .
+    "Please use the -mkspecsdir option to provide the correct path.\nsyncqt failed"
+        if (!$mkspecsdir || !-d $mkspecsdir);
 
 # if we have no $basedir we cannot be sure which sources you want, so die
 die "Could not find any sync.profile for your module!\nPass <module directory> to syncqt to sync your header files.\nsyncqt failed" if (!$basedir);
@@ -792,12 +792,12 @@ my %allmoduleheadersprivate = map { $_ => 1 } @allmoduleheadersprivate;
 
 $isunix = checkUnix; #cache checkUnix
 
-my $qt_version = fileContents($qtbasedir."/mkspecs/qconfig.pri");
+my $qt_version = fileContents($mkspecsdir."/qconfig.pri");
 if (length($qt_version)) {
-    $qt_version =~ s,.*^QT_VERSION\h*=\h*(\S+).*,$1,sm;
+    $qt_version =~ s,.*^QT_VERSION[ \t]*=[ \t]*(\S+).*,$1,sm;
 } else {
     $qt_version = fileContents($basedir."/src/corelib/global/qglobal.h");
-    $qt_version =~ s,.*^#\h*define\h+QT_VERSION_STR\h+"([^"]+)".*,$1,sm;
+    $qt_version =~ s,.*^#[ \t]*define[ \t]+QT_VERSION_STR[ \t]+"([^"]+)".*,$1,sm;
 }
 foreach my $lib (@modules_to_sync) {
     die "No such module: $lib" unless(defined $modules{$lib});
@@ -808,7 +808,7 @@ foreach my $lib (@modules_to_sync) {
     my $project = $dir;
     $project =~ s,/([^/]+)$,/$1/$1.pro,;
     my $module_version = fileContents($project);
-    $module_version = $qt_version unless ($module_version =~ s,.*^VERSION\h*=\h*(\S+).*,$1,sm);
+    $module_version = $qt_version unless ($module_version =~ s,.*^VERSION[ \t]*=[ \t]*(\S+).*,$1,sm);
 
     # Backwards compatibility for modules with checked in .pri files.
     if (defined $modulepris{$lib} and -e "$modulepris{$lib}") {

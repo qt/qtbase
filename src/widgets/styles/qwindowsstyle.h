@@ -91,7 +91,6 @@ public:
 
 protected:
     bool eventFilter(QObject *o, QEvent *e);
-    void timerEvent(QTimerEvent *event);
     QWindowsStyle(QWindowsStylePrivate &dd);
 
 private:

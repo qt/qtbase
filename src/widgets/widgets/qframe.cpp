@@ -518,7 +518,7 @@ void QFrame::changeEvent(QEvent *ev)
 {
     Q_D(QFrame);
     if (ev->type() == QEvent::StyleChange
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
             || ev->type() == QEvent::MacSizeChange
 #endif
             )

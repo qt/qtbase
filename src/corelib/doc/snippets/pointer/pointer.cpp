@@ -53,7 +53,8 @@ int main(int argc, char *argv[])
 
 //! [1]
     if (label)
-//! [1] //! [2]
+//! [1]
+//! [2]
         label->show();
 //! [2]
     return 0;

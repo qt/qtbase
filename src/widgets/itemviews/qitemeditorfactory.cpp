@@ -73,6 +73,36 @@ public:
 
 #endif // QT_NO_COMBOBOX
 
+
+#ifndef QT_NO_SPINBOX
+
+class QUIntSpinBox : public QSpinBox
+{
+    Q_OBJECT
+    Q_PROPERTY(uint value READ uintValue WRITE setUIntValue NOTIFY uintValueChanged USER true)
+public:
+    explicit QUIntSpinBox(QWidget *parent = 0)
+      : QSpinBox(parent)
+    {
+        connect(this, SIGNAL(valueChanged(int)), SIGNAL(uintValueChanged()));
+    }
+
+    uint uintValue()
+    {
+        return value();
+    }
+
+    void setUIntValue(uint value_)
+    {
+        return setValue(value_);
+    }
+
+Q_SIGNALS:
+    void uintValueChanged();
+};
+
+#endif // QT_NO_SPINBOX
+
 /*!
     \class QItemEditorFactory
     \brief The QItemEditorFactory class provides widgets for editing item data
@@ -206,8 +236,9 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
 #endif
 #ifndef QT_NO_SPINBOX
     case QVariant::UInt: {
-        QSpinBox *sb = new QSpinBox(parent);
+        QSpinBox *sb = new QUIntSpinBox(parent);
         sb->setFrame(false);
+        sb->setMinimum(0);
         sb->setMaximum(INT_MAX);
         return sb; }
     case QVariant::Int: {

@@ -42,6 +42,7 @@
 #include "qwindowsglcontext.h"
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
+#include "qwindowsintegration.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QSysInfo>
@@ -439,7 +440,7 @@ static int choosePixelFormat(HDC hdc,
         iAttributes[i++] = WGL_SAMPLES_ARB;
         samplesValuePosition = i;
         iAttributes[i++] = format.samples();
-    } else if (samples == 0 || samples == 1 ) {
+    } else {
         iAttributes[i++] = WGL_SAMPLE_BUFFERS_ARB;
         iAttributes[i++] = FALSE;
     }
@@ -855,16 +856,6 @@ QDebug operator<<(QDebug d, const QOpenGLStaticContext &s)
     return d;
 }
 
-// Use ARB unless explicitly turned off on command line.
-static inline bool useARB()
-{
-    const QVariant glExtension = qApp->platformNativeInterface()->property("gl");
-    if (glExtension.type() == QVariant::String
-        && !glExtension.toString().compare(QStringLiteral("gdi"), Qt::CaseInsensitive))
-        return false;
-    return true;
-}
-
 /*!
     \class QWindowsGLContext
     \brief Open GL context.
@@ -914,12 +905,13 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
 
         if (QWindowsContext::verboseGL > 1)
             describeFormats(hdc);
-        // Preferably use direct rendering and ARB extensions (unless pixmap)
+        // Preferably use direct rendering and ARB extensions (unless pixmap
+        // or explicitly turned off on command line).
         const QWindowsOpenGLAdditionalFormat
             requestedAdditional(QWindowsGLDirectRendering);
         tryExtensions = m_staticContext->hasExtensions()
                 && !testFlag(requestedAdditional.formatFlags, QWindowsGLRenderToPixmap)
-                && useARB();
+                && !(QWindowsIntegration::instance()->options() & QWindowsIntegration::DisableArb);
         QWindowsOpenGLAdditionalFormat obtainedAdditional;
         if (tryExtensions) {
             m_pixelFormat =
