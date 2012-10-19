@@ -59,3 +59,78 @@ macro(expect_fail _dir)
     --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
   )
 endmacro()
+
+function(test_module_includes)
+
+  set(all_args ${ARGN})
+  set(packages_string "")
+  set(libraries_string "")
+
+  foreach(_package ${Qt5_MODULE_TEST_DEPENDS})
+    set(packages_string
+      "
+      ${packages_string}
+      find_package(Qt5${_package} REQUIRED)
+      "
+    )
+  endforeach()
+
+  while(all_args)
+    list(GET all_args 0 qtmodule)
+    list(REMOVE_AT all_args 0 1)
+    set(packages_string
+      "${packages_string}
+      find_package(Qt5${qtmodule} REQUIRED)
+      include_directories(\${Qt5${qtmodule}_INCLUDE_DIRS})
+      add_definitions(\${Qt5${qtmodule}_DEFINITIONS})\n"
+    )
+    set(libraries_string "${libraries_string} Qt5::${qtmodule}")
+  endwhile()
+
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/module_includes/CMakeLists.txt"
+    "
+      cmake_minimum_required(VERSION 2.8)
+      project(module_includes)
+
+      ${packages_string}
+
+      set(CMAKE_CXX_FLAGS \"\${CMAKE_CXX_FLAGS} \${Qt5Core_EXECUTABLE_COMPILE_FLAGS}\")
+
+      add_executable(module_includes_exe \"\${CMAKE_CURRENT_SOURCE_DIR}/main.cpp\")
+      target_link_libraries(module_includes_exe ${libraries_string})\n"
+  )
+
+  set(all_args ${ARGN})
+  set(includes_string "")
+  while(all_args)
+    list(GET all_args 0 qtmodule)
+    list(GET all_args 1 qtinclude)
+    list(REMOVE_AT all_args 0 1)
+    set(includes_string
+      "${includes_string}
+      #include <${qtinclude}>
+      #include <Qt${qtmodule}/${qtinclude}>
+      #include <Qt${qtmodule}>
+      #include <Qt${qtmodule}/Qt${qtmodule}>"
+    )
+  endwhile()
+
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/module_includes/main.cpp"
+    "
+
+    ${includes_string}
+
+    int main(int, char **) { return 0; }\n"
+  )
+
+  add_test(module_includes ${CMAKE_CTEST_COMMAND}
+    --build-and-test
+    "${CMAKE_CURRENT_BINARY_DIR}/module_includes/"
+    "${CMAKE_CURRENT_BINARY_DIR}/module_includes/build"
+    --build-config "${CMAKE_BUILD_TYPE}"
+    --build-generator ${CMAKE_GENERATOR}
+    --build-makeprogram ${CMAKE_MAKE_PROGRAM}
+    --build-project module_includes
+    --build-options "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" ${BUILD_OPTIONS_LIST}
+  )
+endfunction()

@@ -89,3 +89,26 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_widgets/test_testlib_no_link_widgets/"
 )
+
+set(qt_module_includes
+  Core QObject
+  Concurrent QtConcurrentRun
+  Gui QImage
+  Widgets QWidget
+  Network QHostInfo
+  OpenGL QGLContext
+  Sql QSqlError
+  Test QSignalSpy
+  Xml QDomDocument
+  PrintSupport QPrintDialog
+)
+
+if (UNIX AND NOT APPLE AND NOT QNXNTO)
+  list(APPEND qt_module_includes
+    DBus QDBusConnection
+  )
+endif()
+
+test_module_includes(
+  ${qt_module_includes}
+)
