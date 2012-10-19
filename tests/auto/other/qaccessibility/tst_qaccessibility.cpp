@@ -274,8 +274,6 @@ private:
     int click_count;
 };
 
-const double Q_PI = 3.14159265358979323846;
-
 QAccessible::State state(QWidget * const widget)
 {
     QAIPtr iface(QAccessible::queryAccessibleInterface(widget));
@@ -444,8 +442,8 @@ void tst_QAccessibility::sliderTest()
     QSlider *slider = new QSlider(0);
     slider->setObjectName(QString("Slidy"));
     slider->show();
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(slider);
-    QVERIFY(iface != 0);
+    QAIPtr iface(QAccessible::queryAccessibleInterface(slider));
+    QVERIFY(iface);
     QVERIFY(iface->isValid());
 
     QCOMPARE(iface->childCount(), 0);
@@ -464,7 +462,6 @@ void tst_QAccessibility::sliderTest()
     valueIface->setCurrentValue(77);
     QCOMPARE(77, slider->value());
 
-    delete iface;
     delete slider;
     }
     QTestAccessibility::clearEvents();
@@ -489,54 +486,44 @@ void tst_QAccessibility::navigateHierarchy()
     w31->setObjectName(QString("31"));
     w31->show();
 
-    QAccessibleInterface *target = 0;
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(w);
-    QVERIFY(iface != 0);
-    QVERIFY(iface->isValid());
+    QAIPtr ifaceW(QAccessible::queryAccessibleInterface(w));
+    QVERIFY(ifaceW != 0);
+    QVERIFY(ifaceW->isValid());
 
-    target = iface->child(14);
+    QAIPtr target = QAIPtr(ifaceW->child(14));
     QVERIFY(target == 0);
-    target = iface->child(-1);
+    target = QAIPtr(ifaceW->child(-1));
     QVERIFY(target == 0);
-    target = iface->child(0);
-    QAccessibleInterface *interfaceW1 = iface->child(0);
+    target = QAIPtr(ifaceW->child(0));
+    QAIPtr interfaceW1(ifaceW->child(0));
     QVERIFY(target);
     QVERIFY(target->isValid());
     QCOMPARE(target->object(), (QObject*)w1);
     QVERIFY(interfaceW1 != 0);
     QVERIFY(interfaceW1->isValid());
     QCOMPARE(interfaceW1->object(), (QObject*)w1);
-    delete interfaceW1;
-    delete iface; iface = 0;
 
-    iface = QAccessible::queryAccessibleInterface(w);
-    target = iface->child(2);
+    target = QAIPtr(ifaceW->child(2));
     QVERIFY(target != 0);
     QVERIFY(target->isValid());
     QCOMPARE(target->object(), (QObject*)w3);
-    delete iface; iface = 0;
 
+    QAIPtr child = QAIPtr(target->child(1));
+    QVERIFY(child == 0);
+    child = QAIPtr(target->child(0));
+    QVERIFY(child != 0);
+    QVERIFY(child->isValid());
+    QCOMPARE(child->object(), (QObject*)w31);
 
-    iface = target->child(1);
-    QCOMPARE(iface, (QAccessibleInterface*)0);
-    iface = target->child(0);
-    QVERIFY(iface != 0);
-    QVERIFY(iface->isValid());
-    QCOMPARE(iface->object(), (QObject*)w31);
-
-    iface = QAccessible::queryAccessibleInterface(w);
-    QAccessibleInterface *acc3 = iface->child(2);
-    target = acc3->child(0);
-    delete acc3;
-    delete iface;
+    ifaceW = QAIPtr(QAccessible::queryAccessibleInterface(w));
+    QAIPtr acc3(ifaceW->child(2));
+    target = QAIPtr(acc3->child(0));
     QCOMPARE(target->object(), (QObject*)w31);
 
-    iface = target->parent();
-    QVERIFY(iface != 0);
-    QVERIFY(iface->isValid());
-    QCOMPARE(iface->object(), (QObject*)w3);
-    delete iface; iface = 0;
-    delete target; target = 0;
+    QAIPtr parent = QAIPtr(target->parent());
+    QVERIFY(parent != 0);
+    QVERIFY(parent->isValid());
+    QCOMPARE(parent->object(), (QObject*)w3);
 
     delete w;
     }
