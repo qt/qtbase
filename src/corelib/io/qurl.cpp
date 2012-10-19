@@ -78,9 +78,10 @@
     Call isValid() to check if the URL is valid. This can be done at
     any point during the constructing of a URL.
 
-    Constructing a query is particularly convenient through the use
-    of setQueryItems(), addQueryItem() and removeQueryItem(). Use
-    setQueryDelimiters() to customize the delimiters used for
+    Constructing a query is particularly convenient through the use of the \l
+    QUrlQuery class and its methods QUrlQuery::setQueryItems(),
+    QUrlQuery::addQueryItem() and QUrlQuery::removeQueryItem(). Use
+    QUrlQuery::setQueryDelimiters() to customize the delimiters used for
     generating the query string.
 
     For the convenience of generating encoded URL strings or query
