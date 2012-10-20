@@ -726,6 +726,7 @@ void QFontEngineMultiQPA::setFallbackFamiliesList(const QStringList &fallbacks)
         // Turns out we lied about having any fallback at all.
         fallbackFamilies << fe->fontDef.family;
         engines[1] = fe;
+        fe->ref.ref();
     }
     fallbacksQueried = true;
 }
