@@ -59,7 +59,7 @@
     \snippet code/doc_src_qsignalspy.cpp 3
  */
 
-/*! \fn QSignalSpy::QSignalSpy(QObject *object, const char *signal)
+/*! \fn QSignalSpy::QSignalSpy(const QObject *object, const char *signal)
 
     Constructs a new QSignalSpy that listens for emissions of the \a signal
     from the QObject \a object. If QSignalSpy is not able to listen for a

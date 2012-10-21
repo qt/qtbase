@@ -47,6 +47,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qvector.h>
 #include <QtTest/qtesteventloop.h>
 
 QT_BEGIN_HEADER
@@ -59,7 +60,7 @@ class QVariant;
 class QSignalSpy: public QObject, public QList<QList<QVariant> >
 {
 public:
-    QSignalSpy(QObject *obj, const char *aSignal)
+    explicit QSignalSpy(const QObject *obj, const char *aSignal)
         : m_waiting(false)
     {
 #ifdef Q_CC_BOR
@@ -82,9 +83,9 @@ public:
             return;
         }
 
-        QByteArray ba = QMetaObject::normalizedSignature(aSignal + 1);
-        const QMetaObject *mo = obj->metaObject();
-        int sigIndex = mo->indexOfMethod(ba.constData());
+        const QByteArray ba = QMetaObject::normalizedSignature(aSignal + 1);
+        const QMetaObject * const mo = obj->metaObject();
+        const int sigIndex = mo->indexOfMethod(ba.constData());
         if (sigIndex < 0) {
             qWarning("QSignalSpy: No such signal: '%s'", ba.constData());
             return;
@@ -112,7 +113,7 @@ public:
         return count() > origCount;
     }
 
-    int qt_metacall(QMetaObject::Call call, int methodId, void **a)
+    int qt_metacall(QMetaObject::Call call, int methodId, void **a) Q_DECL_OVERRIDE
     {
         methodId = QObject::qt_metacall(call, methodId, a);
         if (methodId < 0)
@@ -130,9 +131,10 @@ public:
 private:
     void initArgs(const QMetaMethod &member)
     {
-        QList<QByteArray> params = member.parameterTypes();
+        const QList<QByteArray> params = member.parameterTypes();
+        args.reserve(params.size());
         for (int i = 0; i < params.count(); ++i) {
-            int tp = QMetaType::type(params.at(i).constData());
+            const int tp = QMetaType::type(params.at(i).constData());
             if (tp == QMetaType::UnknownType) {
                 Q_ASSERT(tp != QMetaType::Void); // void parameter => metaobject is corrupt
                 qWarning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
@@ -145,8 +147,9 @@ private:
     void appendArgs(void **a)
     {
         QList<QVariant> list;
+        list.reserve(args.count());
         for (int i = 0; i < args.count(); ++i) {
-            QMetaType::Type type = static_cast<QMetaType::Type>(args.at(i));
+            const QMetaType::Type type = static_cast<QMetaType::Type>(args.at(i));
             if (type == QMetaType::QVariant)
                 list << *reinterpret_cast<QVariant *>(a[i + 1]);
             else
@@ -161,7 +164,7 @@ private:
     // the full, normalized signal name
     QByteArray sig;
     // holds the QMetaType types for the argument list of the signal
-    QList<int> args;
+    QVector<int> args;
 
     QTestEventLoop m_loop;
     bool m_waiting;
