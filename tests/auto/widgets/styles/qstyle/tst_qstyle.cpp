@@ -124,17 +124,25 @@ private slots:
     void testFusionStyle();
 #endif
     void testWindowsStyle();
-#ifndef QT_NO_STYLE_WINDOWSXP
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
     void testWindowsXPStyle();
 #endif
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     void testWindowsVistaStyle();
+#endif
+#ifdef Q_OS_MAC
     void testMacStyle();
+#endif
+#ifdef Q_OS_WINCE
     void testWindowsCEStyle();
+#endif
+#ifdef Q_OS_WINCE_WM
     void testWindowsMobileStyle();
+#endif
     void testStyleFactory();
     void testProxyStyle();
     void pixelMetric();
-#if !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS) && !defined(QT_NO_STYLE_FUSION)
     void progressBarChangeStyle();
 #endif
     void defaultFont();
@@ -384,16 +392,13 @@ void tst_QStyle::testWindowsStyle()
     wstyle.drawControl(QStyle::CE_ProgressBar, &pb, &painter, 0);
 }
 
-#ifndef QT_NO_STYLE_WINDOWSXP
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
+// WindowsXP style
 void tst_QStyle::testWindowsXPStyle()
 {
-#ifdef Q_OS_WIN
     QWindowsXPStyle xpstyle;
     QVERIFY(testAllFunctions(&xpstyle));
     lineUpLayoutTest(&xpstyle);
-#else
-    QSKIP("No WindowsXP style");
-#endif
 }
 #endif
 
@@ -411,9 +416,9 @@ QImage readImage(const QString &fileName)
 }
 
 
+#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
 void tst_QStyle::testWindowsVistaStyle()
 {
-#if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
     QWindowsVistaStyle vistastyle;
     QVERIFY(testAllFunctions(&vistastyle));
 
@@ -421,8 +426,8 @@ void tst_QStyle::testWindowsVistaStyle()
         testPainting(&vistastyle, "vista");
     else if (QSysInfo::WindowsVersion == QSysInfo::WV_XP)
         testPainting(&vistastyle, "xp");
-#endif
 }
+#endif
 
 void comparePixmap(const QString &filename, const QPixmap &pixmap)
 {
@@ -530,33 +535,31 @@ qDebug("TEST PAINTING");
 
 }
 
+#ifdef Q_OS_MAC
 void tst_QStyle::testMacStyle()
 {
-#ifdef Q_OS_MAC
     QMacStyle mstyle;
     QVERIFY(testAllFunctions(&mstyle));
-#endif
 }
+#endif
 
+#ifdef Q_OS_WINCE
+// WindowsCEStyle style
 void tst_QStyle::testWindowsCEStyle()
 {
-#if defined(Q_OS_WINCE)
     QWindowsCEStyle cstyle;
     QVERIFY(testAllFunctions(&cstyle));
-#else
-    QSKIP("No WindowsCEStyle style");
-#endif
 }
+#endif
 
+#ifdef Q_OS_WINCE_WM
+// WindowsMobileStyle style
 void tst_QStyle::testWindowsMobileStyle()
 {
-#if defined(Q_OS_WINCE_WM)
     QWindowsMobileStyle cstyle;
     QVERIFY(testAllFunctions(&cstyle));
-#else
-    QSKIP("No WindowsMobileStyle style");
-#endif
 }
+#endif
 
 // Helper class...
 
@@ -639,7 +642,7 @@ void tst_QStyle::pixelMetric()
     delete style;
 }
 
-#if !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS) && !defined(QT_NO_STYLE_FUSION)
 void tst_QStyle::progressBarChangeStyle()
 {
     //test a crashing situation (task 143530)
