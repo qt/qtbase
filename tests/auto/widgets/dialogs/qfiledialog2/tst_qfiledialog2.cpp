@@ -121,7 +121,9 @@ private slots:
     void task178897_minimumSize();
     void task180459_lastDirectory_data();
     void task180459_lastDirectory();
+#ifndef Q_OS_MAC
     void task227930_correctNavigationKeyboardBehavior();
+#endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     void task226366_lowerCaseHardDriveWindows();
 #endif
@@ -595,11 +597,12 @@ void tst_QFileDialog2::task227304_proxyOnFileDialog()
 }
 #endif
 
+#ifndef Q_OS_MAC
+// The following test implies the folder created will appear first in
+// the list. On Mac files sorting depends on the locale and the order
+// displayed cannot be known for sure.
 void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
 {
-#if defined (Q_OS_MAC) || defined (Q_OS_LINUX)
-    QSKIP("This test currently fails on Mac OS X and linux CI, see QTBUG-23602");
-#endif
     QDir current = QDir::currentPath();
     current.mkdir("test");
     current.cd("test");
@@ -635,6 +638,7 @@ void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
     current.rmdir("test");
     current.rmdir("test2");
 }
+#endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 void tst_QFileDialog2::task226366_lowerCaseHardDriveWindows()
