@@ -375,7 +375,7 @@ QPlatformOpenGLContext
             return 0;
         d->m_staticEGLContext = QSharedPointer<QWindowsEGLStaticContext>(staticContext);
     }
-    return new QWindowsEGLContext(d->m_staticEGLContext, context->format(), context->handle());
+    return new QWindowsEGLContext(d->m_staticEGLContext, context->format(), context->shareHandle());
 #else  // QT_OPENGL_ES_2
     if (d->m_staticOpenGLContext.isNull())
         d->m_staticOpenGLContext =
