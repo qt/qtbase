@@ -51,6 +51,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QStyleFactory>
+#include <QSharedPointer>
 
 #include <qformlayout.h>
 
@@ -122,6 +123,8 @@ private slots:
     int heightForWidth(int width) const;
     Qt::Orientations expandingDirections() const;
 */
+
+    void taskQTBUG_27420_takeAtShouldUnparentLayout();
 
 };
 
@@ -899,6 +902,27 @@ void tst_QFormLayout::layoutAlone()
     w.show();
     layout.activate();
     QTest::qWait(500);
+}
+
+void tst_QFormLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
+{
+    QSharedPointer<QFormLayout> outer(new QFormLayout);
+    QPointer<QFormLayout> inner = new QFormLayout;
+
+    outer->addRow(inner);
+    QCOMPARE(outer->count(), 1);
+    QCOMPARE(inner->parent(), outer.data());
+
+    QLayoutItem *item = outer->takeAt(0);
+    QCOMPARE(item->layout(), inner.data());
+    QVERIFY(!item->layout()->parent());
+
+    outer.reset();
+
+    if (inner)
+        delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
+    else
+        QVERIFY(!inner.isNull());
 }
 
 QTEST_MAIN(tst_QFormLayout)

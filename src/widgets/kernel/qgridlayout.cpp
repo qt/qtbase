@@ -156,15 +156,20 @@ public:
             return 0;
     }
     inline QLayoutItem *takeAt(int index) {
-        QLayoutItem *item = 0;
+        Q_Q(QGridLayout);
         if (index < things.count()) {
-            QGridBox *b = things.takeAt(index);
-            if (b) {
-                item = b->takeItem();
+            if (QGridBox *b = things.takeAt(index)) {
+                QLayoutItem *item = b->takeItem();
+                if (QLayout *l = item->layout()) {
+                    // sanity check in case the user passed something weird to QObject::setParent()
+                    if (l->parent() == q)
+                        l->setParent(0);
+                }
                 delete b;
+                return item;
             }
         }
-        return item;
+        return 0;
     }
 
     void getItemPosition(int index, int *row, int *column, int *rowSpan, int *columnSpan) const {

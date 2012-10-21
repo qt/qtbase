@@ -729,6 +729,12 @@ QLayoutItem *QBoxLayout::takeAt(int index)
     b->item = 0;
     delete b;
 
+    if (QLayout *l = item->layout()) {
+        // sanity check in case the user passed something weird to QObject::setParent()
+        if (l->parent() == this)
+            l->setParent(0);
+    }
+
     invalidate();
     return item;
 }

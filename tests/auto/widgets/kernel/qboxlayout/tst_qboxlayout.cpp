@@ -66,6 +66,7 @@ private slots:
     void setStyleShouldChangeSpacing();
 
     void taskQTBUG_7103_minMaxWidthNotRespected();
+    void taskQTBUG_27420_takeAtShouldUnparentLayout();
 };
 
 class CustomLayoutStyle : public QProxyStyle
@@ -271,6 +272,27 @@ void tst_QBoxLayout::taskQTBUG_7103_minMaxWidthNotRespected()
     QTest::qWait(50);
 
     QCOMPARE(label->height(), height);
+}
+
+void tst_QBoxLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
+{
+    QSharedPointer<QHBoxLayout> outer(new QHBoxLayout);
+    QPointer<QVBoxLayout> inner = new QVBoxLayout;
+
+    outer->addLayout(inner);
+    QCOMPARE(outer->count(), 1);
+    QCOMPARE(inner->parent(), outer.data());
+
+    QLayoutItem *item = outer->takeAt(0);
+    QCOMPARE(item->layout(), inner.data());
+    QVERIFY(!item->layout()->parent());
+
+    outer.reset();
+
+    if (inner)
+        delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
+    else
+        QVERIFY(!inner.isNull());
 }
 
 QTEST_MAIN(tst_QBoxLayout)

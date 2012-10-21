@@ -52,6 +52,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QRadioButton>
 #include <QStyleFactory>
+#include <QSharedPointer>
 
 class tst_QGridLayout : public QObject
 {
@@ -88,6 +89,8 @@ private slots:
     void spacerWithSpacing();
     void contentsRect();
     void distributeMultiCell();
+
+    void taskQTBUG_27420_takeAtShouldUnparentLayout();
 
 private:
     QWidget *testWidget;
@@ -1603,6 +1606,27 @@ void tst_QGridLayout::distributeMultiCell()
 
     QCOMPARE(box.sizeHint().height(), 57);
     QCOMPARE(w.sizeHint().height(), 11 + 57 + 11);
+}
+
+void tst_QGridLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
+{
+    QSharedPointer<QGridLayout> outer(new QGridLayout);
+    QPointer<QGridLayout> inner = new QGridLayout;
+
+    outer->addLayout(inner, 0, 0);
+    QCOMPARE(outer->count(), 1);
+    QCOMPARE(inner->parent(), outer.data());
+
+    QLayoutItem *item = outer->takeAt(0);
+    QCOMPARE(item->layout(), inner.data());
+    QVERIFY(!item->layout()->parent());
+
+    outer.reset();
+
+    if (inner)
+        delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
+    else
+        QVERIFY(!inner.isNull());
 }
 
 QTEST_MAIN(tst_QGridLayout)

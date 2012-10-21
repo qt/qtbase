@@ -1409,6 +1409,13 @@ QLayoutItem *QFormLayout::takeAt(int index)
     QLayoutItem *i = item->item;
     item->item = 0;
     delete item;
+
+    if (QLayout *l = i->layout()) {
+        // sanity check in case the user passed something weird to QObject::setParent()
+        if (l->parent() == this)
+            l->setParent(0);
+    }
+
     return i;
 }
 
