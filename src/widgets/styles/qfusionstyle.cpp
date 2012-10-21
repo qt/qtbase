@@ -746,11 +746,23 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 painter->setPen(QPen(highlightedOutline, 1));
             painter->drawRect(rect);
 
-            if (checkbox->state & (State_On | State_Sunken | State_NoChange)) {
-                QColor checkMarkColor = option->palette.text().color().darker(120);
+            QColor checkMarkColor = option->palette.text().color().darker(120);
+
+            if (checkbox->state & State_NoChange) {
+                gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft());
+                checkMarkColor.setAlpha(80);
+                gradient.setColorAt(0, checkMarkColor);
+                checkMarkColor.setAlpha(140);
+                gradient.setColorAt(1, checkMarkColor);
+                checkMarkColor.setAlpha(180);
+                painter->setPen(QPen(checkMarkColor, 1));
+                painter->setBrush(gradient);
+                painter->drawRect(rect.adjusted(3, 3, -3, -3));
+
+            } else if (checkbox->state & (State_On)) {
+                QPen checkPen = QPen(checkMarkColor, 1.8);
                 checkMarkColor.setAlpha(210);
                 painter->translate(-1, 0.5);
-                QPen checkPen = QPen(checkMarkColor, 1.8);
                 painter->setPen(checkPen);
                 painter->setBrush(Qt::NoBrush);
                 painter->translate(0.2, 0.0);
@@ -761,13 +773,6 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 path.lineTo(rect.width() / 2.0 - 0, rect.height() - 3);
                 path.lineTo(rect.width() - 2.5, 3);
                 painter->drawPath(path.translated(rect.topLeft()));
-
-                if (checkbox->state & State_NoChange) {
-                    QColor bgc = option->palette.background().color();
-                    bgc.setAlpha(127);
-                    painter->fillRect(rect.adjusted(1, 1, -1, -1), bgc);
-                }
-
             }
         }
         painter->restore();
