@@ -87,8 +87,7 @@ static const int windowsItemVMargin      =  8; // menu item ver text margin
 static const int windowsRightBorder      = 15; // right border on windows
 
 static const int groupBoxBottomMargin    =  0;  // space below the groupbox
-static const int groupBoxTitleMargin     =  2;  // space between contents and title
-static const int groupBoxTopMargin       =  18;
+static const int groupBoxTopMargin       =  3;
 
 
 /* XPM */
@@ -439,7 +438,8 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameGroupBox:
     {
         QPixmap pixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_groupbox.png"));
-        QRect frame = option->rect.adjusted(0, groupBoxTopMargin, 0, 0);
+        int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+        QRect frame = option->rect.adjusted(0, topMargin, 0, 0);
         qDrawBorderPixmap(painter, frame, QMargins(6, 6, 6, 6), pixmap);
         break;
     }
@@ -1084,7 +1084,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             // Draws the light line above and the dark line below menu bars and
             // tool bars.
             QLinearGradient gradient(option->rect.topLeft(), option->rect.bottomLeft());
-            if (!option->state & State_Horizontal)
+            if (!(option->state & State_Horizontal))
                 gradient = QLinearGradient(rect.left(), rect.center().y(),
                                            rect.right(), rect.center().y());
             gradient.setColorAt(0, option->palette.window().color().lighter(104));
@@ -1990,7 +1990,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 if (groupBox->state & State_HasFocus) {
                     QStyleOptionFocusRect fropt;
                     fropt.QStyleOption::operator=(*groupBox);
-                    fropt.rect = textRect.translated(0, -2);
+                    fropt.rect = textRect.adjusted(-2, -1, 2, 1);
                     proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
                 }
             }
@@ -3011,7 +3011,10 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
         }
         break;
     case CT_GroupBox:
-        newSize += QSize(10, 10); // Add some space below the groupbox
+        if (option) {
+            int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+            newSize += QSize(10, topMargin); // Add some space below the groupbox
+        }
         break;
     case CT_RadioButton:
     case CT_CheckBox:
@@ -3260,21 +3263,22 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 QRect frameRect = option->rect.adjusted(0, 0, 0, -groupBoxBottomMargin);
                 int margin = 3;
                 int leftMarginExtension = 0;
-                return frameRect.adjusted(leftMarginExtension + margin, margin + groupBoxTopMargin + groupBoxTitleMargin, -margin, -margin - groupBoxBottomMargin);
+                int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+                return frameRect.adjusted(leftMarginExtension + margin, margin + topMargin, -margin, -margin - groupBoxBottomMargin);
             }
 
-            QSize textSize = option->fontMetrics.boundingRect(groupBox->text).size() + QSize(4, 4);
+            QSize textSize = option->fontMetrics.boundingRect(groupBox->text).size() + QSize(2, 2);
             int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, option, widget);
             int indicatorHeight = proxy()->pixelMetric(PM_IndicatorHeight, option, widget);
             rect = QRect();
             if (subControl == SC_GroupBoxCheckBox) {
                 rect.setWidth(indicatorWidth);
                 rect.setHeight(indicatorHeight);
-                rect.moveTop((textSize.height() - indicatorHeight - 5) / 2);
+                rect.moveTop(textSize.height() > indicatorHeight ? (textSize.height() - indicatorHeight) / 2 : 0);
                 rect.moveLeft(1);
             } else if (subControl == SC_GroupBoxLabel) {
                 rect.setSize(textSize);
-                rect.moveTop(0);
+                rect.moveTop(1);
                 if (option->subControls & QStyle::SC_GroupBoxCheckBox)
                     rect.translate(indicatorWidth + 5, 0);
             }
