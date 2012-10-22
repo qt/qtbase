@@ -3384,6 +3384,13 @@ QWizardPage::QWizardPage(QWidget *parent)
 }
 
 /*!
+    Destructor.
+*/
+QWizardPage::~QWizardPage()
+{
+}
+
+/*!
     \property QWizardPage::title
     \brief the title of the page
 

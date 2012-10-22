@@ -218,6 +218,7 @@ class Q_WIDGETS_EXPORT QWizardPage : public QWidget
 
 public:
     explicit QWizardPage(QWidget *parent = 0);
+    ~QWizardPage();
 
     void setTitle(const QString &title);
     QString title() const;

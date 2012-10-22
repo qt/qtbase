@@ -100,6 +100,7 @@ public:
     explicit QDateTimeEdit(const QDateTime &dt, QWidget *parent = 0);
     explicit QDateTimeEdit(const QDate &d, QWidget *parent = 0);
     explicit QDateTimeEdit(const QTime &t, QWidget *parent = 0);
+    ~QDateTimeEdit();
 
     QDateTime dateTime() const;
     QDate date() const;
@@ -209,6 +210,7 @@ class Q_WIDGETS_EXPORT QTimeEdit : public QDateTimeEdit
 public:
     explicit QTimeEdit(QWidget *parent = 0);
     explicit QTimeEdit(const QTime &time, QWidget *parent = 0);
+    ~QTimeEdit();
 
 Q_SIGNALS:
     void userTimeChanged(const QTime &time);
@@ -221,6 +223,7 @@ class Q_WIDGETS_EXPORT QDateEdit : public QDateTimeEdit
 public:
     explicit QDateEdit(QWidget *parent = 0);
     explicit QDateEdit(const QDate &date, QWidget *parent = 0);
+    ~QDateEdit();
 
 Q_SIGNALS:
     void userDateChanged(const QDate &date);

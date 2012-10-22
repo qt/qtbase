@@ -57,6 +57,7 @@ class Q_WIDGETS_EXPORT QWindowsVistaStyle : public QWindowsXPStyle
     Q_OBJECT
 public:
     QWindowsVistaStyle();
+    ~QWindowsVistaStyle();
     
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                        QPainter *painter, const QWidget *widget = 0) const;

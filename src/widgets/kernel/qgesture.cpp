@@ -295,6 +295,12 @@ QPanGesture::QPanGesture(QObject *parent)
     d_func()->gestureType = Qt::PanGesture;
 }
 
+/*!
+    Destructor.
+*/
+QPanGesture::~QPanGesture()
+{
+}
 
 QPointF QPanGesture::lastOffset() const
 {
@@ -486,6 +492,13 @@ QPinchGesture::QPinchGesture(QObject *parent)
     d_func()->gestureType = Qt::PinchGesture;
 }
 
+/*!
+    Destructor.
+*/
+QPinchGesture::~QPinchGesture()
+{
+}
+
 QPinchGesture::ChangeFlags QPinchGesture::totalChangeFlags() const
 {
     return d_func()->totalChangeFlags;
@@ -673,6 +686,13 @@ QSwipeGesture::QSwipeGesture(QObject *parent)
     d_func()->gestureType = Qt::SwipeGesture;
 }
 
+/*!
+    Destructor.
+*/
+QSwipeGesture::~QSwipeGesture()
+{
+}
+
 QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
 {
     Q_D(const QSwipeGesture);
@@ -732,6 +752,13 @@ QTapGesture::QTapGesture(QObject *parent)
     d_func()->gestureType = Qt::TapGesture;
 }
 
+/*!
+    Destructor.
+*/
+QTapGesture::~QTapGesture()
+{
+}
+
 QPointF QTapGesture::position() const
 {
     return d_func()->position;
@@ -767,6 +794,13 @@ QTapAndHoldGesture::QTapAndHoldGesture(QObject *parent)
     : QGesture(*new QTapAndHoldGesturePrivate, parent)
 {
     d_func()->gestureType = Qt::TapAndHoldGesture;
+}
+
+/*!
+    Destructor.
+*/
+QTapAndHoldGesture::~QTapAndHoldGesture()
+{
 }
 
 QPointF QTapAndHoldGesture::position() const

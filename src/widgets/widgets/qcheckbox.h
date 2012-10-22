@@ -61,7 +61,7 @@ class Q_WIDGETS_EXPORT QCheckBox : public QAbstractButton
 public:
     explicit QCheckBox(QWidget *parent=0);
     explicit QCheckBox(const QString &text, QWidget *parent=0);
-
+    ~QCheckBox();
 
     QSize sizeHint() const;
     QSize minimumSizeHint() const;

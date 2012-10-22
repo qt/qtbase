@@ -144,6 +144,13 @@ QRadioButton::QRadioButton(QWidget *parent)
 }
 
 /*!
+    Destructor.
+*/
+QRadioButton::~QRadioButton()
+{
+}
+
+/*!
     Constructs a radio button with the given \a parent and a \a text string.
 
     The \a parent argument is passed on to the QAbstractButton constructor.

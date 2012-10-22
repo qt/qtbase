@@ -118,6 +118,7 @@ class Q_WIDGETS_EXPORT QPanGesture : public QGesture
 
 public:
     explicit QPanGesture(QObject *parent = 0);
+    ~QPanGesture();
 
     QPointF lastOffset() const;
     QPointF offset() const;
@@ -164,6 +165,7 @@ public:
 
 public:
     explicit QPinchGesture(QObject *parent = 0);
+    ~QPinchGesture();
 
     ChangeFlags totalChangeFlags() const;
     void setTotalChangeFlags(ChangeFlags value);
@@ -219,6 +221,7 @@ public:
     enum SwipeDirection { NoDirection, Left, Right, Up, Down };
 
     explicit QSwipeGesture(QObject *parent = 0);
+    ~QSwipeGesture();
 
     SwipeDirection horizontalDirection() const;
     SwipeDirection verticalDirection() const;
@@ -239,6 +242,7 @@ class Q_WIDGETS_EXPORT QTapGesture : public QGesture
 
 public:
     explicit QTapGesture(QObject *parent = 0);
+    ~QTapGesture();
 
     QPointF position() const;
     void setPosition(const QPointF &pos);
@@ -256,6 +260,7 @@ class Q_WIDGETS_EXPORT QTapAndHoldGesture : public QGesture
 
 public:
     explicit QTapAndHoldGesture(QObject *parent = 0);
+    ~QTapAndHoldGesture();
 
     QPointF position() const;
     void setPosition(const QPointF &pos);

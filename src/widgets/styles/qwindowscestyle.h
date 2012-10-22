@@ -56,6 +56,7 @@ class Q_WIDGETS_EXPORT QWindowsCEStyle : public QWindowsStyle
    Q_OBJECT
 public:
     QWindowsCEStyle();
+    ~QWindowsCEStyle();
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                        QPainter *painter, const QWidget *widget = 0) const;

@@ -244,6 +244,13 @@ QProgressBar::QProgressBar(QWidget *parent)
 }
 
 /*!
+    Destructor.
+*/
+QProgressBar::~QProgressBar()
+{
+}
+
+/*!
     Reset the progress bar. The progress bar "rewinds" and shows no
     progress.
 */

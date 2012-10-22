@@ -709,6 +709,7 @@ public:
     enum StyleOptionVersion { Version = 1 };
 
     QStyleHintReturnMask();
+    ~QStyleHintReturnMask();
 
     QRegion region;
 };
@@ -719,6 +720,7 @@ public:
     enum StyleOptionVersion { Version = 1 };
 
     QStyleHintReturnVariant();
+    ~QStyleHintReturnVariant();
 
     QVariant variant;
 };

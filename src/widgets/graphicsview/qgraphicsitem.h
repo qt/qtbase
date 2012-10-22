@@ -563,6 +563,7 @@ class Q_WIDGETS_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_INTERFACES(QGraphicsItem)
 public:
     explicit QGraphicsObject(QGraphicsItem *parent = 0);
+    ~QGraphicsObject();
 
 #ifdef Q_NO_USING_KEYWORD
     const QObjectList &children() const { return QObject::children(); }

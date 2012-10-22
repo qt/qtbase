@@ -219,6 +219,13 @@ QDateTimeEdit::QDateTimeEdit(const QVariant &var, QVariant::Type parserType, QWi
 }
 
 /*!
+    Destructor.
+*/
+QDateTimeEdit::~QDateTimeEdit()
+{
+}
+
+/*!
   \property QDateTimeEdit::dateTime
   \brief the QDateTime that is set in the QDateTimeEdit
 
@@ -1562,6 +1569,13 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
 }
 
 /*!
+  Destructor.
+*/
+QTimeEdit::~QTimeEdit()
+{
+}
+
+/*!
   \property QTimeEdit::time
   \internal
   \sa QDateTimeEdit::time
@@ -1627,6 +1641,13 @@ QDateEdit::QDateEdit(QWidget *parent)
 
 QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
     : QDateTimeEdit(date, QVariant::Date, parent)
+{
+}
+
+/*!
+  Destructor.
+*/
+QDateEdit::~QDateEdit()
 {
 }
 

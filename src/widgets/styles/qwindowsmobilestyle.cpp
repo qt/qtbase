@@ -4515,6 +4515,10 @@ QWindowsMobileStyle::QWindowsMobileStyle() : QWindowsStyle(*new QWindowsMobileSt
     qApp->setEffectEnabled(Qt::UI_AnimateMenu, false);
 }
 
+QWindowsMobileStyle::~QWindowsMobileStyle()
+{
+}
+
 QWindowsMobileStylePrivate::QWindowsMobileStylePrivate() :QWindowsStylePrivate() {
 
 #ifdef Q_OS_WINCE

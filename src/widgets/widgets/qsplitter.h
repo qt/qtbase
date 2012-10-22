@@ -141,6 +141,7 @@ class Q_WIDGETS_EXPORT QSplitterHandle : public QWidget
     Q_OBJECT
 public:
     explicit QSplitterHandle(Qt::Orientation o, QSplitter *parent);
+    ~QSplitterHandle();
 
     void setOrientation(Qt::Orientation o);
     Qt::Orientation orientation() const;

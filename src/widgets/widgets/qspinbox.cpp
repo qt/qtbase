@@ -209,6 +209,10 @@ QSpinBox::QSpinBox(QWidget *parent)
     d->init();
 }
 
+/*!
+    Destructor.
+*/
+QSpinBox::~QSpinBox() {}
 
 /*!
     \property QSpinBox::value
@@ -578,6 +582,11 @@ QDoubleSpinBox::QDoubleSpinBox(QWidget *parent)
     Q_D(QDoubleSpinBox);
     d->init();
 }
+
+/*!
+    Destructor.
+*/
+QDoubleSpinBox::~QDoubleSpinBox() {}
 
 /*!
     \property QDoubleSpinBox::value

@@ -7576,6 +7576,13 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 }
 
 /*!
+  Destructor.
+*/
+QGraphicsObject::~QGraphicsObject()
+{
+}
+
+/*!
   \reimp
 */
 bool QGraphicsObject::event(QEvent *ev)

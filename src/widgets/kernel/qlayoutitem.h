@@ -99,6 +99,8 @@ public:
                  QSizePolicy::Policy hData = QSizePolicy::Minimum,
                  QSizePolicy::Policy vData = QSizePolicy::Minimum)
         : width(w), height(h), sizeP(hData, vData) { }
+    ~QSpacerItem();
+
     void changeSize(int w, int h,
                      QSizePolicy::Policy hData = QSizePolicy::Minimum,
                      QSizePolicy::Policy vData = QSizePolicy::Minimum);
@@ -124,6 +126,8 @@ class Q_WIDGETS_EXPORT QWidgetItem : public QLayoutItem
 
 public:
     explicit QWidgetItem(QWidget *w) : wid(w) { }
+    ~QWidgetItem();
+
     QSize sizeHint() const;
     QSize minimumSize() const;
     QSize maximumSize() const;

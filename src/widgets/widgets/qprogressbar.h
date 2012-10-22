@@ -73,6 +73,7 @@ public:
     enum Direction { TopToBottom, BottomToTop };
 
     explicit QProgressBar(QWidget *parent = 0);
+    ~QProgressBar();
 
     int minimum() const;
     int maximum() const;

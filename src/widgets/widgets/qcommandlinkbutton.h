@@ -62,6 +62,7 @@ public:
     explicit QCommandLinkButton(QWidget *parent=0);
     explicit QCommandLinkButton(const QString &text, QWidget *parent=0);
     explicit QCommandLinkButton(const QString &text, const QString &description, QWidget *parent=0);
+    ~QCommandLinkButton();
 
     QString description() const;
     void setDescription(const QString &description);
