@@ -186,6 +186,8 @@ void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
 #if defined(XCB_USE_EGL)
     QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(context->handle());
     return eglPlatformContext->eglContext();
+#else
+    return 0;
 #endif
 }
 
