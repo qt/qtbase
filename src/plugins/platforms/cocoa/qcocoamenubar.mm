@@ -219,7 +219,7 @@ QList<QCocoaMenuItem*> QCocoaMenuBar::merged() const
 
 bool QCocoaMenuBar::shouldDisable(QCocoaWindow *active) const
 {
-    if (active && (active->window()->windowModality() == Qt::NonModal))
+    if (active && (active->window()->modality() == Qt::NonModal))
         return false;
 
     if (m_window == active) {
@@ -232,7 +232,7 @@ bool QCocoaMenuBar::shouldDisable(QCocoaWindow *active) const
     // the menubar should be disabled. The exception in Qt is that if the
     // modal window is the only window on screen, then we enable the menu bar.
     foreach (QWindow *w, topWindows) {
-        if (w->isVisible() && w->windowModality() == Qt::ApplicationModal) {
+        if (w->isVisible() && w->modality() == Qt::ApplicationModal) {
             // check for other visible windows
             foreach (QWindow *other, topWindows) {
                 if ((w != other) && (other->isVisible())) {

@@ -813,7 +813,7 @@ void tst_QAccessibility::mainWindowTest()
     child.setGeometry(10, 10, 20, 20);
     child.show();
 
-    child.requestActivateWindow();
+    child.requestActivate();
     QTRY_VERIFY(QGuiApplication::focusWindow() == &child);
 
     QAccessibleStateChangeEvent deactivate(&window, activeState);

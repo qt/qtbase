@@ -2331,7 +2331,7 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
                 return false;
         }
 
-        Qt::WindowModality windowModality = modalWindow->windowModality();
+        Qt::WindowModality windowModality = modalWindow->modality();
         QWidgetWindow *modalWidgetWindow = qobject_cast<QWidgetWindow *>(modalWindow);
         if (windowModality == Qt::NonModal) {
             // determine the modality type if it hasn't been set on the

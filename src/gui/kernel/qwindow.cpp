@@ -411,7 +411,7 @@ bool QWindow::isTopLevel() const
 
     A modal window prevents other windows from getting any input.
 
-    \sa QWindow::windowModality
+    \sa QWindow::modality
 */
 bool QWindow::isModal() const
 {
@@ -419,7 +419,7 @@ bool QWindow::isModal() const
     return d->modality != Qt::NonModal;
 }
 
-/*! \property QWindow::windowModality
+/*! \property QWindow::modality
     \brief the modality of the window
 
     A modal window prevents other windows from receiving input events. Qt
@@ -430,24 +430,24 @@ bool QWindow::isModal() const
     \sa Qt::WindowModality
 */
 
-Qt::WindowModality QWindow::windowModality() const
+Qt::WindowModality QWindow::modality() const
 {
     Q_D(const QWindow);
     return d->modality;
 }
 
-void QWindow::setWindowModality(Qt::WindowModality modality)
+void QWindow::setModality(Qt::WindowModality modality)
 {
     Q_D(QWindow);
     if (d->modality == modality)
         return;
     d->modality = modality;
-    emit windowModalityChanged(modality);
+    emit modalityChanged(modality);
 }
 
-/*! \fn void QWindow::windowModalityChanged(Qt::WindowModality windowModality)
+/*! \fn void QWindow::modalityChanged(Qt::WindowModality modality)
 
-    This signal is emitted when the Qwindow::windowModality property changes to \a windowModality.
+    This signal is emitted when the Qwindow::modality property changes to \a modality.
 */
 
 /*!
@@ -510,15 +510,17 @@ QSurfaceFormat QWindow::format() const
 }
 
 /*!
-    Sets the window flags of the window to \a flags.
+    \property QWindow::flags
+    \brief the window flags of the window
 
     The window flags control the window's appearance in the windowing system,
     whether it's a dialog, popup, or a regular window, and whether it should
     have a title bar, etc.
 
-    \sa windowFlags()
+    The actual window flags might differ from the flags set with setFlags()
+    if the requested flags could not be fulfilled.
 */
-void QWindow::setWindowFlags(Qt::WindowFlags flags)
+void QWindow::setFlags(Qt::WindowFlags flags)
 {
     Q_D(QWindow);
     if (d->platformWindow)
@@ -526,15 +528,7 @@ void QWindow::setWindowFlags(Qt::WindowFlags flags)
     d->windowFlags = flags;
 }
 
-/*!
-    Returns the window flags of the window.
-
-    This might differ from the flags set with setWindowFlags() if the
-    requested flags could not be fulfilled.
-
-    \sa setWindowFlags()
-*/
-Qt::WindowFlags QWindow::windowFlags() const
+Qt::WindowFlags QWindow::flags() const
 {
     Q_D(const QWindow);
     return d->windowFlags;
@@ -546,16 +540,16 @@ Qt::WindowFlags QWindow::windowFlags() const
     This returns the part of the window flags that represents
     whether the window is a dialog, tooltip, popup, regular window, etc.
 
-    \sa windowFlags(), setWindowFlags()
+    \sa flags(), setFlags()
 */
-Qt::WindowType QWindow::windowType() const
+Qt::WindowType QWindow::type() const
 {
     Q_D(const QWindow);
     return static_cast<Qt::WindowType>(int(d->windowFlags & Qt::WindowType_Mask));
 }
 
 /*!
-    \property QWindow::windowTitle
+    \property QWindow::title
     \brief the window's title in the windowing system
 
     The window title might appear in the title area of the window decorations,
@@ -563,9 +557,9 @@ Qt::WindowType QWindow::windowType() const
     be used by the windowing system to identify the window in other contexts,
     such as in the task switcher.
 
-    \sa windowFlags()
+    \sa flags()
 */
-void QWindow::setWindowTitle(const QString &title)
+void QWindow::setTitle(const QString &title)
 {
     Q_D(QWindow);
     d->windowTitle = title;
@@ -573,20 +567,20 @@ void QWindow::setWindowTitle(const QString &title)
         d->platformWindow->setWindowTitle(title);
 }
 
-QString QWindow::windowTitle() const
+QString QWindow::title() const
 {
     Q_D(const QWindow);
     return d->windowTitle;
 }
 
 /*!
-    \property QWindow::windowFilePath
-    \brief the file name this window is representing.
+    \brief set the file name this window is representing.
 
-    This property might be used by the windowing system to display the file
+    The windowing system might use \a filePath to display the
     path of the document this window is representing in the tile bar.
+
 */
-void QWindow::setWindowFilePath(const QString &filePath)
+void QWindow::setFilePath(const QString &filePath)
 {
     Q_D(QWindow);
     d->windowFilePath = filePath;
@@ -594,20 +588,24 @@ void QWindow::setWindowFilePath(const QString &filePath)
         d->platformWindow->setWindowFilePath(filePath);
 }
 
-QString QWindow::windowFilePath() const
+/*!
+    \brief the file name this window is representing.
+
+    \sa setFilePath()
+*/
+QString QWindow::filePath() const
 {
     Q_D(const QWindow);
     return d->windowFilePath;
 }
 
 /*!
-    \property QWindow::windowIcon
-    \brief the window's icon in the windowing system
+    \brief set the window's \a icon in the windowing system
 
     The window icon might be used by the windowing system for example to
     decorate the window, and/or in the task switcher.
 */
-void QWindow::setWindowIcon(const QIcon &icon)
+void QWindow::setIcon(const QIcon &icon)
 {
     Q_D(QWindow);
     d->windowIcon = icon;
@@ -615,7 +613,12 @@ void QWindow::setWindowIcon(const QIcon &icon)
         d->platformWindow->setWindowIcon(icon);
 }
 
-QIcon QWindow::windowIcon() const
+/*!
+    \brief set the window's icon in the windowing system
+
+    \sa setIcon()
+*/
+QIcon QWindow::icon() const
 {
     Q_D(const QWindow);
     return d->windowIcon;
@@ -668,7 +671,7 @@ void QWindow::setOpacity(qreal level)
 
     \sa isActive(), QGuiApplication::focusWindow()
 */
-void QWindow::requestActivateWindow()
+void QWindow::requestActivate()
 {
     Q_D(QWindow);
     if (d->platformWindow)
@@ -741,7 +744,7 @@ bool QWindow::isActive() const
 
     The default value is Qt::PrimaryOrientation
 
-    \sa requestWindowOrientation(), QScreen::orientation()
+    \sa requestOrientation(), QScreen::orientation()
 */
 void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
 {
@@ -774,12 +777,12 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
   on a device that only handles landscape buffers, typically a desktop
   system).
 
-  If the return value is false, call windowOrientation() to get the actual
+  If the return value is false, call \l orientation() to get the actual
   supported orientation.
 
-  \sa windowOrientation(), reportContentOrientationChange(), QScreen::orientation()
+  \sa orientation(), reportContentOrientationChange(), QScreen::orientation()
 */
-bool QWindow::requestWindowOrientation(Qt::ScreenOrientation orientation)
+bool QWindow::requestOrientation(Qt::ScreenOrientation orientation)
 {
     Q_D(QWindow);
     if (!d->platformWindow)
@@ -794,34 +797,23 @@ bool QWindow::requestWindowOrientation(Qt::ScreenOrientation orientation)
 
   The default value is Qt::PrimaryOrientation.
 
-  \sa requestWindowOrientation()
+  \sa requestOrientation()
 */
-Qt::ScreenOrientation QWindow::windowOrientation() const
+Qt::ScreenOrientation QWindow::orientation() const
 {
     Q_D(const QWindow);
     return d->windowOrientation;
 }
 
 /*!
-    Returns the window state.
+    \brief set the screen-occupation state of the window
 
-    \sa setWindowState()
-*/
-Qt::WindowState QWindow::windowState() const
-{
-    Q_D(const QWindow);
-    return d->windowState;
-}
-
-/*!
-    Sets the desired window \a state.
-
-    The window state represents whether the window appears in the
+    The window \a state represents whether the window appears in the
     windowing system as maximized, minimized, fullscreen, or normal.
 
     The enum value Qt::WindowActive is not an accepted parameter.
 
-    \sa windowState(), showNormal(), showFullScreen(), showMinimized(), showMaximized()
+    \sa showNormal(), showFullScreen(), showMinimized(), showMaximized()
 */
 void QWindow::setWindowState(Qt::WindowState state)
 {
@@ -834,7 +826,27 @@ void QWindow::setWindowState(Qt::WindowState state)
     if (d->platformWindow)
         d->platformWindow->setWindowState(state);
     d->windowState = state;
+    emit windowStateChanged(d->windowState);
 }
+
+/*!
+    \brief the screen-occupation state of the window
+
+    \sa setWindowState()
+*/
+Qt::WindowState QWindow::windowState() const
+{
+    Q_D(const QWindow);
+    return d->windowState;
+}
+
+/*!
+    \fn QWindow::windowStateChanged(Qt::WindowState windowState)
+
+    This signal is emitted when the \a windowState changes, either
+    by being set explicitly with setWindowState(), or automatically when
+    the user clicks one of the titlebar buttons or by other means.
+*/
 
 /*!
     Sets the transient \a parent
@@ -1463,7 +1475,7 @@ void QWindow::showFullScreen()
 {
     setWindowState(Qt::WindowFullScreen);
     setVisible(true);
-    requestActivateWindow();
+    requestActivate();
 }
 
 /*!
@@ -1670,6 +1682,11 @@ bool QWindow::event(QEvent *ev)
     case QEvent::Hide:
         hideEvent(static_cast<QHideEvent *>(ev));
         break;
+
+    case QEvent::WindowStateChange: {
+        Q_D(QWindow);
+        emit windowStateChanged(d->windowState);
+    }
 
 #ifndef QT_NO_TABLETEVENT
     case QEvent::TabletPress:
@@ -1882,17 +1899,16 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 
 }
 
+#ifndef QT_NO_CURSOR
 /*!
-    \property QWindow::cursor
-    \brief the cursor shape for this window
+    \brief set the cursor shape for this window
 
-    The mouse cursor will assume this shape when it is over this
+    The mouse \a cursor will assume this shape when it is over this
     window, unless an override cursor is set.
     See the \l{Qt::CursorShape}{list of predefined cursor objects} for a
     range of useful shapes.
 
-    By default, this property contains a cursor with the Qt::ArrowCursor
-    shape.
+    By default, the cursor has the Qt::ArrowCursor shape.
 
     Some underlying window implementations will reset the cursor if it
     leaves a window even if the mouse is grabbed. If you want to have
@@ -1901,14 +1917,6 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 
     \sa QGuiApplication::setOverrideCursor()
 */
-
-#ifndef QT_NO_CURSOR
-QCursor QWindow::cursor() const
-{
-    Q_D(const QWindow);
-    return d->cursor;
-}
-
 void QWindow::setCursor(const QCursor &cursor)
 {
     Q_D(QWindow);
@@ -1929,6 +1937,17 @@ void QWindow::unsetCursor()
     setCursor(Qt::ArrowCursor);
 }
 
+/*!
+    \brief the cursor shape for this window
+
+    \sa setCursor(), unsetCursor()
+*/
+QCursor QWindow::cursor() const
+{
+    Q_D(const QWindow);
+    return d->cursor;
+}
+
 void QWindowPrivate::applyCursor()
 {
     Q_Q(QWindow);
@@ -1940,6 +1959,6 @@ void QWindowPrivate::applyCursor()
         }
     }
 }
-#endif
+#endif // QT_NO_CURSOR
 
 QT_END_NAMESPACE

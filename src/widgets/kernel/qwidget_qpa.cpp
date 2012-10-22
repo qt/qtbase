@@ -107,7 +107,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         win = topData()->window;
     }
 
-    win->setWindowFlags(data.window_flags);
+    win->setFlags(data.window_flags);
     fixPosIncludesFrame();
     win->setGeometry(q->geometry());
     win->setScreen(QGuiApplication::screens().value(topData()->screenIndex, 0));
@@ -134,7 +134,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         QWindowPrivate::WindowFrameInclusive : QWindowPrivate::WindowFrameExclusive;
     win->create();
 
-    data.window_flags = win->windowFlags();
+    data.window_flags = win->flags();
 
     QBackingStore *store = q->backingStore();
 
@@ -227,7 +227,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     if (parent != newparent) {
         QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
         if (q->windowHandle()) {
-            q->windowHandle()->setWindowFlags(f);
+            q->windowHandle()->setFlags(f);
             QWidget *parentWithWindow =
                 newparent ? (newparent->windowHandle() ? newparent : newparent->nativeParentWidget()) : 0;
             if (parentWithWindow) {
@@ -342,7 +342,7 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
         return;
 
     if (QWindow *window = q->windowHandle())
-        window->setWindowTitle(caption);
+        window->setTitle(caption);
 
 }
 
@@ -353,14 +353,14 @@ void QWidgetPrivate::setWindowFilePath_sys(const QString &filePath)
         return;
 
     if (QWindow *window = q->windowHandle())
-        window->setWindowFilePath(filePath);
+        window->setFilePath(filePath);
 }
 
 void QWidgetPrivate::setWindowIcon_sys()
 {
     Q_Q(QWidget);
     if (QWindow *window = q->windowHandle())
-        window->setWindowIcon(q->windowIcon());
+        window->setIcon(q->windowIcon());
 }
 
 void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
@@ -463,7 +463,7 @@ void QWidget::activateWindow()
     QWindow *const wnd = window()->windowHandle();
 
     if (wnd)
-        wnd->requestActivateWindow();
+        wnd->requestActivate();
 }
 
 // Position top level windows at the center, avoid showing
@@ -640,7 +640,7 @@ void QWidgetPrivate::setFocus_sys()
         if (QWindow *nativeWindow = q->window()->windowHandle()) {
             if (nativeWindow != QGuiApplication::focusWindow()
                 && q->testAttribute(Qt::WA_WState_Created)) {
-                nativeWindow->requestActivateWindow();
+                nativeWindow->requestActivate();
             }
         }
     }
@@ -987,7 +987,7 @@ void QWidgetPrivate::setModal_sys()
 {
     Q_Q(QWidget);
     if (q->windowHandle())
-        q->windowHandle()->setWindowModality(q->windowModality());
+        q->windowHandle()->setModality(q->windowModality());
 }
 
 #ifndef QT_NO_CURSOR

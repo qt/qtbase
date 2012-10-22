@@ -396,7 +396,7 @@ void QXcbDrag::move(const QMouseEvent *me)
     QXcbWindow *w = 0;
     if (target) {
         w = connection()->platformWindowFromId(target);
-        if (w && (w->window()->windowType() == Qt::Desktop) /*&& !w->acceptDrops()*/)
+        if (w && (w->window()->type() == Qt::Desktop) /*&& !w->acceptDrops()*/)
             w = 0;
     } else {
         w = 0;
@@ -507,7 +507,7 @@ void QXcbDrag::drop(const QMouseEvent *event)
 
     QXcbWindow *w = connection()->platformWindowFromId(current_proxy_target);
 
-    if (w && (w->window()->windowType() == Qt::Desktop) /*&& !w->acceptDrops()*/)
+    if (w && (w->window()->type() == Qt::Desktop) /*&& !w->acceptDrops()*/)
         w = 0;
 
     Transaction t = {
@@ -722,7 +722,7 @@ void QXcbDrag::handle_xdnd_position(QWindow *w, const xcb_client_message_event_t
 
     p -= geometry.topLeft();
 
-    if (!w || (w->windowType() == Qt::Desktop))
+    if (!w || (w->type() == Qt::Desktop))
         return;
 
     if (e->data.data32[0] != xdnd_dragsource) {
@@ -912,7 +912,7 @@ void QXcbDrag::send_leave()
 
     QXcbWindow *w = connection()->platformWindowFromId(current_proxy_target);
 
-    if (w && (w->window()->windowType() == Qt::Desktop) /*&& !w->acceptDrops()*/)
+    if (w && (w->window()->type() == Qt::Desktop) /*&& !w->acceptDrops()*/)
         w = 0;
 
     if (w)
@@ -1157,7 +1157,7 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
     DNDDEBUG << "xdndEnable" << w << on;
     if (on) {
         QXcbWindow *xdnd_widget = 0;
-        if ((w->window()->windowType() == Qt::Desktop)) {
+        if ((w->window()->type() == Qt::Desktop)) {
             if (desktop_proxy) // *WE* already have one.
                 return false;
 
@@ -1191,7 +1191,7 @@ bool QXcbDrag::dndEnable(QXcbWindow *w, bool on)
             return false;
         }
     } else {
-        if ((w->window()->windowType() == Qt::Desktop)) {
+        if ((w->window()->type() == Qt::Desktop)) {
             xcb_delete_property(xcb_connection(), w->xcb_window(), atom(QXcbAtom::XdndProxy));
             delete desktop_proxy;
             desktop_proxy = 0;
@@ -1225,7 +1225,7 @@ QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QVariant::Type r
 
     QXcbConnection *c = drag->connection();
     QXcbWindow *xcb_window = c->platformWindowFromId(drag->xdnd_dragsource);
-    if (xcb_window && drag->currentDrag() && xcb_window->window()->windowType() != Qt::Desktop) {
+    if (xcb_window && drag->currentDrag() && xcb_window->window()->type() != Qt::Desktop) {
         QMimeData *data = drag->currentDrag()->mimeData();
         if (data->hasFormat(QLatin1String(format)))
             result = data->data(QLatin1String(format));

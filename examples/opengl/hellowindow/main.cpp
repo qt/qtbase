@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 
     HelloWindow *windowA = new HelloWindow(rendererA);
     windowA->setGeometry(QRect(center, windowSize).translated(-windowSize.width() - delta / 2, 0));
-    windowA->setWindowTitle(QLatin1String("Thread A - Context A"));
+    windowA->setTitle(QLatin1String("Thread A - Context A"));
     windowA->setVisible(true);
     windows.prepend(windowA);
 
@@ -85,13 +85,13 @@ int main(int argc, char **argv)
 
         HelloWindow *windowB = new HelloWindow(rendererA);
         windowB->setGeometry(QRect(center, windowSize).translated(delta / 2, 0));
-        windowB->setWindowTitle(QLatin1String("Thread A - Context A"));
+        windowB->setTitle(QLatin1String("Thread A - Context A"));
         windowB->setVisible(true);
         windows.prepend(windowB);
 
         HelloWindow *windowC = new HelloWindow(rendererB);
         windowC->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, windowSize.height() + delta));
-        windowC->setWindowTitle(QLatin1String("Thread B - Context B"));
+        windowC->setTitle(QLatin1String("Thread B - Context B"));
         windowC->setVisible(true);
         windows.prepend(windowC);
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
             window->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, -windowSize.height() / 2));
 
             QChar id = QChar('B' + i);
-            window->setWindowTitle(QLatin1String("Thread ") + id + QLatin1String(" - Context ") + id);
+            window->setTitle(QLatin1String("Thread ") + id + QLatin1String(" - Context ") + id);
             window->setVisible(true);
             windows.prepend(window);
         }

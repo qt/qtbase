@@ -111,7 +111,7 @@ void tst_QGuiApplication::focusObject()
 
 
     // verify active window focus propagates to qguiapplication
-    window1.requestActivateWindow();
+    window1.requestActivate();
     QVERIFY(QTest::qWaitForWindowActive(&window1));
     QCOMPARE(app.focusWindow(), &window1);
 
@@ -247,10 +247,10 @@ void tst_QGuiApplication::changeFocusWindow()
     window2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window1));
     QVERIFY(QTest::qWaitForWindowExposed(&window2));
-    window1.requestActivateWindow();
+    window1.requestActivate();
     QTRY_COMPARE(app.focusWindow(), &window1);
 
-    window2.requestActivateWindow();
+    window2.requestActivate();
     QTRY_COMPARE(app.focusWindow(), &window2);
     QCOMPARE(window1.windowDuringFocusAboutToChange, &window1);
     QCOMPARE(window1.windowDuringFocusOut, &window2);
@@ -381,14 +381,14 @@ void tst_QGuiApplication::modalWindow()
 
     BlockableWindow *windowModalWindow1 = new BlockableWindow;
     windowModalWindow1->setTransientParent(window1);
-    windowModalWindow1->setWindowModality(Qt::WindowModal);
+    windowModalWindow1->setModality(Qt::WindowModal);
 
     BlockableWindow *windowModalWindow2 = new BlockableWindow;
     windowModalWindow2->setTransientParent(windowModalWindow1);
-    windowModalWindow2->setWindowModality(Qt::WindowModal);
+    windowModalWindow2->setModality(Qt::WindowModal);
 
     BlockableWindow *applicationModalWindow1 = new BlockableWindow;
-    applicationModalWindow1->setWindowModality(Qt::ApplicationModal);
+    applicationModalWindow1->setModality(Qt::ApplicationModal);
 
     // show the 2 windows, nothing is blocked
     window1->show();

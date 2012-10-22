@@ -149,9 +149,9 @@ static bool isMouseEvent(NSEvent *ev)
 - (BOOL)canBecomeKeyWindow
 {
     // Most panels can be come the key window. Exceptions are:
-    if (m_cocoaPlatformWindow->window()->windowType() == Qt::ToolTip)
+    if (m_cocoaPlatformWindow->window()->type() == Qt::ToolTip)
         return NO;
-    if (m_cocoaPlatformWindow->window()->windowType() == Qt::SplashScreen)
+    if (m_cocoaPlatformWindow->window()->type() == Qt::SplashScreen)
         return NO;
     return YES;
 }
@@ -252,7 +252,7 @@ void QCocoaWindow::setVisible(bool visible)
 #endif
     if (visible) {
         // We need to recreate if the modality has changed as the style mask will need updating
-        if (m_windowModality != window()->windowModality())
+        if (m_windowModality != window()->modality())
             recreateWindow(parent());
         QCocoaWindow *parentCocoaWindow = 0;
         if (window()->transientParent()) {
@@ -264,8 +264,8 @@ void QCocoaWindow::setVisible(bool visible)
 
             // Register popup windows so that the parent window can
             // close them when needed.
-            if (window()->windowType() == Qt::Popup) {
-                // qDebug() << "transientParent and popup" << window()->windowType() << Qt::Popup << (window()->windowType() & Qt::Popup);
+            if (window()->type() == Qt::Popup) {
+                // qDebug() << "transientParent and popup" << window()->type() << Qt::Popup << (window()->type() & Qt::Popup);
                 parentCocoaWindow->m_activePopupWindow = window();
             }
 
@@ -281,12 +281,12 @@ void QCocoaWindow::setVisible(bool visible)
             syncWindowState(window()->windowState());
 
             if (window()->windowState() != Qt::WindowMinimized) {
-                if ((window()->windowModality() == Qt::WindowModal
-                     || window()->windowType() == Qt::Sheet)
+                if ((window()->modality() == Qt::WindowModal
+                     || window()->type() == Qt::Sheet)
                         && parentCocoaWindow) {
                     // show the window as a sheet
                     [NSApp beginSheet:m_nsWindow modalForWindow:parentCocoaWindow->m_nsWindow modalDelegate:nil didEndSelector:nil contextInfo:nil];
-                } else if (window()->windowModality() != Qt::NonModal) {
+                } else if (window()->modality() != Qt::NonModal) {
                     // show the window as application modal
                     QCocoaEventDispatcher *cocoaEventDispatcher = qobject_cast<QCocoaEventDispatcher *>(QGuiApplication::instance()->eventDispatcher());
                     Q_ASSERT(cocoaEventDispatcher != 0);
@@ -300,7 +300,7 @@ void QCocoaWindow::setVisible(bool visible)
                 }
 
                 // We want the events to properly reach the popup
-                if (window()->windowType() == Qt::Popup)
+                if (window()->type() == Qt::Popup)
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
             }
         }
@@ -366,7 +366,7 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
                  Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
         if (flags == Qt::Window) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
-        } else if ((flags & Qt::Dialog) && (window()->windowModality() != Qt::NonModal)) {
+        } else if ((flags & Qt::Dialog) && (window()->modality() != Qt::NonModal)) {
             styleMask = NSTitledWindowMask;
         } else if (!(flags & Qt::FramelessWindowHint)) {
             if (flags & Qt::WindowMaximizeButtonHint)
@@ -435,7 +435,7 @@ void QCocoaWindow::setWindowIcon(const QIcon &icon)
 
     NSButton *iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
     if (iconButton == nil) {
-        NSString *title = QCFString::toNSString(window()->windowTitle());
+        NSString *title = QCFString::toNSString(window()->title());
         [m_nsWindow setRepresentedURL:[NSURL fileURLWithPath:title]];
         iconButton = [m_nsWindow standardWindowButton:NSWindowDocumentIconButton];
     }
@@ -596,7 +596,7 @@ void QCocoaWindow::windowWillClose()
 bool QCocoaWindow::windowIsPopupType(Qt::WindowType type) const
 {
     if (type == Qt::Widget)
-        type = window()->windowType();
+        type = window()->type();
     if (type == Qt::Tool)
         return false; // Qt::Tool has the Popup bit set but isn't, at least on Mac.
 
@@ -632,8 +632,8 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
 
         // QPlatformWindow subclasses must sync up with QWindow on creation:
         propagateSizeHints();
-        setWindowFlags(window()->windowFlags());
-        setWindowTitle(window()->windowTitle());
+        setWindowFlags(window()->flags());
+        setWindowTitle(window()->title());
         setWindowState(window()->windowState());
     } else {
         // Child windows have no NSWindow, link the NSViews instead.
@@ -648,8 +648,8 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     NSRect frame = qt_mac_flipRect(window()->geometry(), window());
 
-    Qt::WindowType type = window()->windowType();
-    Qt::WindowFlags flags = window()->windowFlags();
+    Qt::WindowType type = window()->type();
+    Qt::WindowFlags flags = window()->flags();
 
     NSUInteger styleMask = windowStyleMask(flags);
     NSWindow *createdWindow = 0;
@@ -695,7 +695,7 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     NSInteger level = windowLevel(flags);
     [createdWindow setLevel:level];
-    m_windowModality = window()->windowModality();
+    m_windowModality = window()->modality();
     return createdWindow;
 }
 

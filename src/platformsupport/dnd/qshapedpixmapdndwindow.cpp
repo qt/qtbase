@@ -54,7 +54,7 @@ QShapedPixmapWindow::QShapedPixmapWindow()
     format.setAlphaBufferSize(8);
     setFormat(format);
     setSurfaceType(RasterSurface);
-    setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint |
+    setFlags(Qt::ToolTip | Qt::FramelessWindowHint |
                    Qt::X11BypassWindowManagerHint | Qt::WindowTransparentForInput);
     create();
     m_backingStore = new QBackingStore(this);

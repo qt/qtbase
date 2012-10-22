@@ -61,7 +61,7 @@ private:
 //! [6]
 AnalogClockWindow::AnalogClockWindow()
 {
-    setWindowTitle("Analog Clock");
+    setTitle("Analog Clock");
     resize(200, 200);
 
     m_timerId = startTimer(1000);

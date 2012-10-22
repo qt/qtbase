@@ -422,14 +422,14 @@ QString QGuiApplication::applicationDisplayName()
     visible, this function returns zero.
 
     A modal window is a window which has its
-    \l{QWindow::windowModality}{windowModality} property set to Qt::WindowModal
+    \l{QWindow::modality}{modality} property set to Qt::WindowModal
     or Qt::ApplicationModal. A modal window must be closed before the user can
     continue with other parts of the program.
 
     Modal window are organized in a stack. This function returns the modal
     window at the top of the stack.
 
-    \sa Qt::WindowModality, QWindow::setWindowModality()
+    \sa Qt::WindowModality, QWindow::setModality()
 */
 QWindow *QGuiApplication::modalWindow()
 {
@@ -441,7 +441,7 @@ QWindow *QGuiApplication::modalWindow()
 void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 {
     bool shouldBeBlocked = false;
-    if ((window->windowType() & Qt::Popup) != Qt::Popup && !self->modalWindowList.isEmpty())
+    if ((window->type() & Qt::Popup) != Qt::Popup && !self->modalWindowList.isEmpty())
         shouldBeBlocked = self->isWindowBlocked(window);
 
     if (shouldBeBlocked != window->d_func()->blockedByModalWindow) {
@@ -457,7 +457,7 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
     self->modalWindowList.prepend(modal);
 
     // Send leave for currently entered window if it should be blocked
-    if (currentMouseWindow && (currentMouseWindow->windowType() & Qt::Popup) != Qt::Popup) {
+    if (currentMouseWindow && (currentMouseWindow->type() & Qt::Popup) != Qt::Popup) {
         bool shouldBeBlocked = self->isWindowBlocked(currentMouseWindow);
         if (shouldBeBlocked) {
             // Remove the new window from modalWindowList temporarily so leave can go through
@@ -525,7 +525,7 @@ bool QGuiApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blocking
             }
         }
 
-        Qt::WindowModality windowModality = modalWindow->windowModality();
+        Qt::WindowModality windowModality = modalWindow->modality();
         switch (windowModality) {
         case Qt::ApplicationModal:
         {
@@ -2359,7 +2359,7 @@ static inline void applyCursor(const QList<QWindow *> &l, const QCursor &c)
 {
     for (int i = 0; i < l.size(); ++i) {
         QWindow *w = l.at(i);
-        if (w->handle() && w->windowType() != Qt::Desktop)
+        if (w->handle() && w->type() != Qt::Desktop)
             applyCursor(w, c);
     }
 }
@@ -2368,7 +2368,7 @@ static inline void applyWindowCursor(const QList<QWindow *> &l)
 {
     for (int i = 0; i < l.size(); ++i) {
         QWindow *w = l.at(i);
-        if (w->handle() && w->windowType() != Qt::Desktop)
+        if (w->handle() && w->type() != Qt::Desktop)
             applyCursor(w, w->cursor());
     }
 }

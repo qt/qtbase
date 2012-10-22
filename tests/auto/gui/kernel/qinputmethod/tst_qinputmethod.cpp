@@ -202,7 +202,7 @@ void tst_qinputmethod::cursorRectangle()
     DummyWindow window;
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
-    window.requestActivateWindow();
+    window.requestActivate();
     QTRY_COMPARE(qApp->focusWindow(), &window);
     window.setFocusObject(&m_inputItem);
 
@@ -300,7 +300,7 @@ void tst_qinputmethod::inputMethodAccepted()
     DummyWindow window;
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
-    window.requestActivateWindow();
+    window.requestActivate();
     QTRY_COMPARE(qApp->focusWindow(), &window);
     window.setFocusObject(&disabledItem);
 

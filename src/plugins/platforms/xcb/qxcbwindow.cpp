@@ -121,13 +121,13 @@ QT_BEGIN_NAMESPACE
 // Returns true if we should set WM_TRANSIENT_FOR on \a w
 static inline bool isTransient(const QWindow *w)
 {
-    return w->windowType() == Qt::Dialog
-           || w->windowType() == Qt::Sheet
-           || w->windowType() == Qt::Tool
-           || w->windowType() == Qt::SplashScreen
-           || w->windowType() == Qt::ToolTip
-           || w->windowType() == Qt::Drawer
-           || w->windowType() == Qt::Popup;
+    return w->type() == Qt::Dialog
+           || w->type() == Qt::Sheet
+           || w->type() == Qt::Tool
+           || w->type() == Qt::SplashScreen
+           || w->type() == Qt::ToolTip
+           || w->type() == Qt::Drawer
+           || w->type() == Qt::Popup;
 }
 
 static inline QImage::Format imageFormatForDepth(int depth)
@@ -175,7 +175,7 @@ void QXcbWindow::create()
     m_configureNotifyPending = true;
     m_windowState = Qt::WindowNoState;
 
-    Qt::WindowType type = window()->windowType();
+    Qt::WindowType type = window()->type();
 
     if (type == Qt::Desktop) {
         m_window = m_screen->root();
@@ -309,7 +309,7 @@ void QXcbWindow::create()
     if (m_screen->syncRequestSupported())
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_SYNC_REQUEST);
 
-    if (window()->windowFlags() & Qt::WindowContextHelpButtonHint)
+    if (window()->flags() & Qt::WindowContextHelpButtonHint)
         properties[propertyCount++] = atom(QXcbAtom::_NET_WM_CONTEXT_HELP);
 
     Q_XCB_CALL(xcb_change_property(xcb_connection(),
@@ -347,7 +347,7 @@ void QXcbWindow::create()
     memset(&hints, 0, sizeof(hints));
     xcb_wm_hints_set_normal(&hints);
 
-    xcb_wm_hints_set_input(&hints, !(window()->windowFlags() & Qt::WindowDoesNotAcceptFocus));
+    xcb_wm_hints_set_input(&hints, !(window()->flags() & Qt::WindowDoesNotAcceptFocus));
 
     xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
@@ -375,11 +375,11 @@ void QXcbWindow::create()
     connection()->xi2Select(m_window);
 #endif
 
-    setWindowFlags(window()->windowFlags());
-    setWindowTitle(window()->windowTitle());
     setWindowState(window()->windowState());
+    setWindowFlags(window()->flags());
+    setWindowTitle(window()->title());
 
-    if (window()->windowFlags() & Qt::WindowTransparentForInput)
+    if (window()->flags() & Qt::WindowTransparentForInput)
         setTransparentForMouseEvents(true);
 
 #ifndef QT_NO_DRAGANDDROP
@@ -534,7 +534,7 @@ void QXcbWindow::show()
         else
             xcb_wm_hints_set_normal(&hints);
 
-        xcb_wm_hints_set_input(&hints, !(window()->windowFlags() & Qt::WindowDoesNotAcceptFocus));
+        xcb_wm_hints_set_input(&hints, !(window()->flags() & Qt::WindowDoesNotAcceptFocus));
 
         xcb_set_wm_hints(xcb_connection(), m_window, &hints);
 
@@ -943,8 +943,8 @@ void QXcbWindow::updateMotifWmHintsBeforeMap()
 {
     QtMotifWmHints mwmhints = getMotifWmHints(connection(), m_window);
 
-    if (window()->windowModality() != Qt::NonModal) {
-        switch (window()->windowModality()) {
+    if (window()->modality() != Qt::NonModal) {
+        switch (window()->modality()) {
         case Qt::WindowModal:
             mwmhints.input_mode = MWM_INPUT_PRIMARY_APPLICATION_MODAL;
             break;
@@ -979,17 +979,17 @@ void QXcbWindow::updateMotifWmHintsBeforeMap()
         }
     }
 
-    if (window()->windowFlags() & Qt::WindowMinimizeButtonHint) {
+    if (window()->flags() & Qt::WindowMinimizeButtonHint) {
         mwmhints.flags |= MWM_HINTS_DECORATIONS;
         mwmhints.decorations |= MWM_DECOR_MINIMIZE;
         mwmhints.functions |= MWM_FUNC_MINIMIZE;
     }
-    if (window()->windowFlags() & Qt::WindowMaximizeButtonHint) {
+    if (window()->flags() & Qt::WindowMaximizeButtonHint) {
         mwmhints.flags |= MWM_HINTS_DECORATIONS;
         mwmhints.decorations |= MWM_DECOR_MAXIMIZE;
         mwmhints.functions |= MWM_FUNC_MAXIMIZE;
     }
-    if (window()->windowFlags() & Qt::WindowCloseButtonHint)
+    if (window()->flags() & Qt::WindowCloseButtonHint)
         mwmhints.functions |= MWM_FUNC_CLOSE;
 
     setMotifWmHints(connection(), m_window, mwmhints);
@@ -999,7 +999,7 @@ void QXcbWindow::updateNetWmStateBeforeMap()
 {
     NetWmStates states(0);
 
-    const Qt::WindowFlags flags = window()->windowFlags();
+    const Qt::WindowFlags flags = window()->flags();
     if (flags & Qt::WindowStaysOnTopHint) {
         states |= NetWmStateAbove;
         states |= NetWmStateStaysOnTop;
@@ -1015,7 +1015,7 @@ void QXcbWindow::updateNetWmStateBeforeMap()
         states |= NetWmStateMaximizedVert;
     }
 
-    if (window()->windowModality() != Qt::NonModal)
+    if (window()->modality() != Qt::NonModal)
         states |= NetWmStateModal;
 
     setNetWmStates(states);

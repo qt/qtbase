@@ -374,7 +374,7 @@ void QWindowsContext::setKeyGrabber(QWindow *w)
 
 QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
 {
-    const Qt::WindowFlags flags = w ? w->windowFlags() : (Qt::WindowFlags)0;
+    const Qt::WindowFlags flags = w ? w->flags() : (Qt::WindowFlags)0;
     const Qt::WindowFlags type = flags & Qt::WindowType_Mask;
 
     uint style = 0;

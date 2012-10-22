@@ -354,10 +354,10 @@ QPlatformPixmap *QWindowsIntegration::createPlatformPixmap(QPlatformPixmap::Pixe
 QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) const
 {
     QWindowsWindow::WindowData requested;
-    requested.flags = window->windowFlags();
+    requested.flags = window->flags();
     requested.geometry = window->geometry();
     const QWindowsWindow::WindowData obtained
-            = QWindowsWindow::WindowData::create(window, requested, window->windowTitle());
+            = QWindowsWindow::WindowData::create(window, requested, window->title());
     if (QWindowsContext::verboseIntegration || QWindowsContext::verboseWindows)
         qDebug().nospace()
             << __FUNCTION__ << '<' << window << '\n'
@@ -372,7 +372,7 @@ QPlatformWindow *QWindowsIntegration::createPlatformWindow(QWindow *window) cons
     if (!obtained.hwnd)
         return 0;
     if (requested.flags != obtained.flags)
-        window->setWindowFlags(obtained.flags);
+        window->setFlags(obtained.flags);
     return new QWindowsWindow(window, obtained);
 }
 

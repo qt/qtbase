@@ -715,7 +715,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
         setFlag(OpenGLSurface);
     QWindowsContext::instance()->addWindow(m_data.hwnd, this);
     if (aWindow->isTopLevel()) {
-        switch (aWindow->windowType()) {
+        switch (aWindow->type()) {
         case Qt::Window:
         case Qt::Dialog:
         case Qt::Sheet:
@@ -893,8 +893,8 @@ void QWindowsWindow::show_sys() const
     int sm = SW_SHOWNORMAL;
     bool fakedMaximize = false;
     const QWindow *w = window();
-    const Qt::WindowFlags flags = w->windowFlags();
-    const Qt::WindowType type = w->windowType();
+    const Qt::WindowFlags flags = w->flags();
+    const Qt::WindowType type = w->type();
     if (w->isTopLevel()) {
         const Qt::WindowState state = w->windowState();
         if (state & Qt::WindowMinimized) {
@@ -931,7 +931,7 @@ void QWindowsWindow::show_sys() const
 // partially from QWidgetPrivate::hide_sys()
 void QWindowsWindow::hide_sys() const
 {
-    const Qt::WindowFlags flags = window()->windowFlags();
+    const Qt::WindowFlags flags = window()->flags();
     if (flags != Qt::Desktop) {
         if (flags & Qt::Popup)
             ShowWindow(m_data.hwnd, SW_HIDE);
@@ -979,7 +979,7 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
         // to dialog frames, etc (see  SetParent() ) if the top level state changes.
         if (wasTopLevel != isTopLevel) {
             const unsigned flags = isTopLevel ? unsigned(0) : unsigned(WindowCreationData::ForceChild);
-            setWindowFlags_sys(window()->windowFlags(), flags);
+            setWindowFlags_sys(window()->flags(), flags);
         }
     }
 }

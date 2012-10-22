@@ -56,7 +56,7 @@ PaintedWindow::PaintedWindow()
     format.setSamples(4);
 
     setSurfaceType(QWindow::OpenGLSurface);
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
     setFormat(format);
 
     create();
@@ -70,12 +70,12 @@ PaintedWindow::PaintedWindow()
     m_animation->setEndValue(qreal(1));
     m_animation->setDuration(500);
 
-    requestWindowOrientation(Qt::PortraitOrientation);
+    requestOrientation(Qt::PortraitOrientation);
 
     QRect screenGeometry = screen()->availableGeometry();
 
     QPoint center = screenGeometry.center();
-    QRect windowRect = screen()->isLandscape(windowOrientation()) ? QRect(0, 0, 640, 480) : QRect(0, 0, 480, 640);
+    QRect windowRect = screen()->isLandscape(orientation()) ? QRect(0, 0, 640, 480) : QRect(0, 0, 480, 640);
     setGeometry(QRect(center - windowRect.center(), windowRect.size()));
 
     m_rotation = 0;
@@ -142,13 +142,13 @@ void PaintedWindow::orientationChanged(Qt::ScreenOrientation newOrientation)
 
     QPainter p;
     p.begin(&m_prevImage);
-    p.setTransform(screen()->transformBetween(contentOrientation(), windowOrientation(), rect));
-    paint(&p, screen()->mapBetween(contentOrientation(), windowOrientation(), rect));
+    p.setTransform(screen()->transformBetween(contentOrientation(), orientation(), rect));
+    paint(&p, screen()->mapBetween(contentOrientation(), orientation(), rect));
     p.end();
 
     p.begin(&m_nextImage);
-    p.setTransform(screen()->transformBetween(newOrientation, windowOrientation(), rect));
-    paint(&p, screen()->mapBetween(newOrientation, windowOrientation(), rect));
+    p.setTransform(screen()->transformBetween(newOrientation, orientation(), rect));
+    paint(&p, screen()->mapBetween(newOrientation, orientation(), rect));
     p.end();
 
     m_deltaRotation = screen()->angleBetween(newOrientation, contentOrientation());
@@ -207,9 +207,9 @@ void PaintedWindow::paint()
         painter.setOpacity(m_rotation);
         painter.drawImage(0, 0, m_nextImage);
     } else {
-        QRect mapped = screen()->mapBetween(contentOrientation(), windowOrientation(), rect);
+        QRect mapped = screen()->mapBetween(contentOrientation(), orientation(), rect);
 
-        painter.setTransform(screen()->transformBetween(contentOrientation(), windowOrientation(), rect));
+        painter.setTransform(screen()->transformBetween(contentOrientation(), orientation(), rect));
         paint(&painter, mapped);
         painter.end();
     }
