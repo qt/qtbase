@@ -1015,10 +1015,22 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             casedString.resize(entire_shaper_item.item.length);
         HB_UChar16 *uc = casedString.data();
         for (uint i = 0; i < entire_shaper_item.item.length; ++i) {
-            if(si.analysis.flags == QScriptAnalysis::Lowercase)
-                uc[i] = QChar::toLower(entire_shaper_item.string[si.position + i]);
-            else
-                uc[i] = QChar::toUpper(entire_shaper_item.string[si.position + i]);
+            uint ucs4 = entire_shaper_item.string[si.position + i];
+            if (QChar::isHighSurrogate(ucs4)) {
+                uc[i] = ucs4; // high part never changes in simple casing
+                if (i + 1 < entire_shaper_item.item.length) {
+                    ushort low = entire_shaper_item.string[si.position + i + 1];
+                    if (QChar::isLowSurrogate(low)) {
+                        ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                        ucs4 = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
+                                                                               : QChar::toUpper(ucs4);
+                        uc[++i] = QChar::lowSurrogate(ucs4);
+                    }
+                }
+            } else {
+                uc[i] = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
+                                                                        : QChar::toUpper(ucs4);
+            }
         }
         entire_shaper_item.item.pos = 0;
         entire_shaper_item.string = uc;
