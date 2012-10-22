@@ -5336,6 +5336,41 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     default:
         break;
     }
+
+#ifndef QT_NO_IMAGEFORMAT_XPM
+    switch (sp) {
+    case SP_TitleBarMenuButton:
+        return QPixmap(qt_menu_xpm);
+    case SP_TitleBarShadeButton:
+        return QPixmap(qt_shade_xpm);
+    case SP_TitleBarUnshadeButton:
+        return QPixmap(qt_unshade_xpm);
+    case SP_TitleBarNormalButton:
+        return QPixmap(qt_normalizeup_xpm);
+    case SP_TitleBarMinButton:
+        return QPixmap(qt_minimize_xpm);
+    case SP_TitleBarMaxButton:
+        return QPixmap(qt_maximize_xpm);
+    case SP_TitleBarCloseButton:
+        return QPixmap(qt_close_xpm);
+    case SP_TitleBarContextHelpButton:
+        return QPixmap(qt_help_xpm);
+    case SP_DockWidgetCloseButton:
+        return QPixmap(dock_widget_close_xpm);
+    case SP_MessageBoxInformation:
+        return QPixmap(information_xpm);
+    case SP_MessageBoxWarning:
+        return QPixmap(warning_xpm);
+    case SP_MessageBoxCritical:
+        return QPixmap(critical_xpm);
+    case SP_MessageBoxQuestion:
+        return QPixmap(question_xpm);
+    default:
+        break;
+    }
+#endif //QT_NO_IMAGEFORMAT_XPM
+
+
     return QPixmap();
 }
 
@@ -5346,6 +5381,55 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
                                  const QWidget *widget) const
 {
     QIcon icon;
+#ifdef Q_OS_WIN
+    switch (standardIcon) {
+    case SP_DriveCDIcon:
+    case SP_DriveDVDIcon:
+    case SP_DriveNetIcon:
+    case SP_DriveHDIcon:
+    case SP_DriveFDIcon:
+    case SP_FileIcon:
+    case SP_FileLinkIcon:
+    case SP_DesktopIcon:
+    case SP_ComputerIcon:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            for (int size = 16 ; size <= 32 ; size += 16) {
+                QPixmap pixmap = theme->standardPixmap(sp, QSizeF(size, size));
+                icon.addPixmap(pixmap, QIcon::Normal);
+            }
+        }
+        break;
+    case SP_DirIcon:
+    case SP_DirLinkIcon:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap spOff = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            QPlatformTheme::StandardPixmap spOn = standardIcon == SP_DirIcon ? QPlatformTheme::DirOpenIcon :
+                                                                                 QPlatformTheme::DirLinkOpenIcon;
+            for (int size = 16 ; size <= 32 ; size += 16) {
+                QSizeF pixSize(size, size);
+                QPixmap pixmap = theme->standardPixmap(spOff, pixSize);
+                icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
+                pixmap = theme->standardPixmap(spOn, pixSize);
+                icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
+            }
+        }
+        break;
+    case SP_VistaShield:
+        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
+            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
+            QPixmap pixmap = theme->standardPixmap(sp, QSizeF(32, 32));
+            icon.addPixmap(pixmap);
+        }
+        break;
+    default:
+        break;
+    }
+    if (!icon.isNull())
+        return icon;
+
+#endif
+
     const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
