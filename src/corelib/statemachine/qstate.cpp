@@ -279,7 +279,7 @@ void QState::assignProperty(QObject *object, const char *name,
 #endif // QT_NO_PROPERTIES
 
 /*!
-  Returns this state's error state. 
+  Returns this state's error state.
 
   \sa QStateMachine::error()
 */
@@ -292,7 +292,7 @@ QAbstractState *QState::errorState() const
 /*!
   Sets this state's error state to be the given \a state. If the error state
   is not set, or if it is set to 0, the state will inherit its parent's error
-  state recursively. If no error state is set for the state itself or any of 
+  state recursively. If no error state is set for the state itself or any of
   its ancestors, an error will cause the machine to stop executing and an error
   will be printed to the console.
 */
@@ -314,7 +314,7 @@ void QState::setErrorState(QAbstractState *state)
 
 /*!
   Adds the given \a transition. The transition has this state as the source.
-  This state takes ownership of the transition. 
+  This state takes ownership of the transition.
 */
 void QState::addTransition(QAbstractTransition *transition)
 {

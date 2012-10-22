@@ -520,8 +520,8 @@ void QProcessPrivate::startProcess()
 
     q->setProcessState(QProcess::Running);
     // User can call kill()/terminate() from the stateChanged() slot
-    // so check before proceeding 
-    if (!pid) 
+    // so check before proceeding
+    if (!pid)
         return;
 
     if (threadData->eventDispatcher) {

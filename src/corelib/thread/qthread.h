@@ -138,7 +138,7 @@ class Q_CORE_EXPORT QThread : public QObject
 public:
     static Qt::HANDLE currentThreadId() { return Qt::HANDLE(currentThread()); }
     static QThread* currentThread();
-    
+
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = 0);
 

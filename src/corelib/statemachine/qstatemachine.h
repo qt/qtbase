@@ -107,7 +107,7 @@ public:
     };
 
     enum Error {
-        NoError, 
+        NoError,
         NoInitialStateError,
         NoDefaultStateInHistoryStateError,
         NoCommonAncestorForTransitionError
