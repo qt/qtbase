@@ -105,6 +105,7 @@ enum WindowsEventType // Simplify event types
     ThemeChanged = ThemingEventFlag + 1,
     DisplayChangedEvent = 437,
     SettingChangedEvent = DisplayChangedEvent + 1,
+    ContextMenu = 123,
     UnknownEvent = 542
 };
 
@@ -194,6 +195,10 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
         return QtWindows::DisplayChangedEvent;
     case WM_THEMECHANGED:
         return QtWindows::ThemeChanged;
+#ifndef QT_NO_CONTEXTMENU
+    case WM_CONTEXTMENU:
+        return QtWindows::ContextMenu;
+#endif
     default:
         break;
     }

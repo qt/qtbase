@@ -77,7 +77,8 @@ public:
         Tablet,
         TabletEnterProximity,
         TabletLeaveProximity,
-        PlatformPanel
+        PlatformPanel,
+        ContextMenu
     };
 
     class WindowSystemEvent {
@@ -332,6 +333,21 @@ public:
             : WindowSystemEvent(PlatformPanel), window(w) { }
         QPointer<QWindow> window;
     };
+
+#ifndef QT_NO_CONTEXTMENU
+    class ContextMenuEvent : public WindowSystemEvent {
+    public:
+        explicit ContextMenuEvent(QWindow *w, bool mouseTriggered, const QPoint &pos,
+                                  const QPoint &globalPos, Qt::KeyboardModifiers modifiers)
+            : WindowSystemEvent(ContextMenu), window(w), mouseTriggered(mouseTriggered), pos(pos),
+              globalPos(globalPos), modifiers(modifiers) { }
+        QPointer<QWindow> window;
+        bool mouseTriggered;
+        QPoint pos;       // Only valid if triggered by mouse
+        QPoint globalPos; // Only valid if triggered by mouse
+        Qt::KeyboardModifiers modifiers;
+    };
+#endif
 
     class WindowSystemEventList {
         QList<WindowSystemEvent *> impl;

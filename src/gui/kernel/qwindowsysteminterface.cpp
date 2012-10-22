@@ -630,6 +630,18 @@ void QWindowSystemInterface::handlePlatformPanelEvent(QWindow *w)
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+#ifndef QT_NO_CONTEXTMENU
+void QWindowSystemInterface::handleContextMenuEvent(QWindow *w, bool mouseTriggered,
+                                                    const QPoint &pos, const QPoint &globalPos,
+                                                    Qt::KeyboardModifiers modifiers)
+{
+    QWindowSystemInterfacePrivate::ContextMenuEvent *e =
+            new QWindowSystemInterfacePrivate::ContextMenuEvent(w, mouseTriggered, pos,
+                                                                globalPos, modifiers);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+#endif
+
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
     QWindowSystemInterface::handleMouseEvent(w, local, global,  b,  mods);
 }

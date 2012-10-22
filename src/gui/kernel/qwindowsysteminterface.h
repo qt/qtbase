@@ -175,6 +175,11 @@ public:
     static void handleTabletLeaveProximityEvent(int device, int pointerType, qint64 uid);
 
     static void handlePlatformPanelEvent(QWindow *w);
+#ifndef QT_NO_CONTEXTMENU
+    static void handleContextMenuEvent(QWindow *w, bool mouseTriggered,
+                                       const QPoint &pos, const QPoint &globalPos,
+                                       Qt::KeyboardModifiers modifiers);
+#endif
 
     // For event dispatcher implementations
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
