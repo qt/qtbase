@@ -188,9 +188,6 @@ public:
     void wceRefresh();
     bool wceEmitSignals(QList<QWceMenuAction*> actions, uint command);
 #endif
-#ifdef QT_SOFTKEYS_ENABLED
-    QAction *menuBarAction;
-#endif
 };
 
 #endif // QT_NO_MENUBAR

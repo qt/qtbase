@@ -442,9 +442,6 @@ static QEvent *cloneEvent(QEvent *e)
         break;
 #endif
 
-    case QEvent::UpdateSoftKeys:
-        return new QEvent(*e);
-
     case QEvent::User:
     case QEvent::MaxUser:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");

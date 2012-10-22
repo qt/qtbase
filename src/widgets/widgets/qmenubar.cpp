@@ -70,10 +70,6 @@
 extern bool qt_wince_is_mobile(); //defined in qguifunctions_wce.cpp
 #endif
 
-#ifdef QT_SOFTKEYS_ENABLED
-#include <private/qsoftkeymanager_p.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QMenuBarExtension : public QToolButton
@@ -719,9 +715,6 @@ void QMenuBarPrivate::init()
 #endif
     q->setBackgroundRole(QPalette::Button);
     oldWindow = oldParent = 0;
-#ifdef QT_SOFTKEYS_ENABLED
-    menuBarAction = 0;
-#endif
     handleReparent();
     q->setMouseTracking(q->style()->styleHint(QStyle::SH_MenuBar_MouseTracking, 0, q));
 
@@ -1405,11 +1398,6 @@ void QMenuBar::changeEvent(QEvent *e)
                || e->type() == QEvent::ApplicationFontChange) {
         d->itemsDirty = true;
         d->updateGeometries();
-#ifdef QT_SOFTKEYS_ENABLED
-    } else if (e->type() == QEvent::LanguageChange) {
-        if (d->menuBarAction)
-            d->menuBarAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::MenuSoftKey));
-#endif
     }
 
     QWidget::changeEvent(e);

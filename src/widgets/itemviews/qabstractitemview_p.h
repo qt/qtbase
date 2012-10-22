@@ -402,10 +402,6 @@ public:
     Qt::DropAction defaultDropAction;
 #endif
 
-#ifdef QT_SOFTKEYS_ENABLED
-    QAction *doneSoftKey;
-#endif
-
     QString keyboardInput;
     QElapsedTimer keyboardInputTime;
 

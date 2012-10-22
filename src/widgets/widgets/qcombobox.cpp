@@ -64,7 +64,6 @@
 #include <private/qcombobox_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
-#include <private/qsoftkeymanager_p.h>
 #include <qdebug.h>
 #if defined(Q_WS_MAC) && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
 #include <private/qcore_mac_p.h>
@@ -561,13 +560,6 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
 #endif
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
-
-#ifdef QT_SOFTKEYS_ENABLED
-    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, itemView);
-    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, itemView);
-    addAction(selectAction);
-    addAction(cancelAction);
-#endif
 }
 
 /*!
@@ -617,11 +609,6 @@ void QComboBoxPrivateContainer::changeEvent(QEvent *e)
         view->setMouseTracking(combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking, &opt, combo) ||
                                combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo));
         setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
-#ifdef QT_SOFTKEYS_ENABLED
-    } else if (e->type() == QEvent::LanguageChange) {
-        selectAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::SelectSoftKey));
-        cancelAction->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::CancelSoftKey));
-#endif
     }
 
     QWidget::changeEvent(e);

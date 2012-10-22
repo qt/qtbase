@@ -106,13 +106,9 @@ public:
     uint separator : 1;
     uint fontSet : 1;
 
-    //for soft keys management
-    uint forceEnabledInSoftkeys : 1;
-    uint menuActionSoftkeys : 1;
     int iconVisibleInMenu : 3;  // Only has values -1, 0, and 1
 
     QAction::MenuRole menuRole;
-    QAction::SoftKeyRole softKeyRole;
     QAction::Priority priority;
 
     QList<QWidget *> widgets;

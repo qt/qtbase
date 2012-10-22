@@ -63,13 +63,6 @@ Requires:
 Name: QAction
 SeeAlso: ???
 
-Feature: SOFTKEYMANAGER
-Description: Supports softkeys.
-Section: Gui
-Requires: ACTION
-Name: QSoftKeyManager
-SeeAlso: ???
-
 Feature: CURSOR
 Description: Supports mouse cursors.
 Section: Kernel

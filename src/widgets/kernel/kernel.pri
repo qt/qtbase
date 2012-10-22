@@ -33,8 +33,6 @@ HEADERS += \
 	kernel/qstandardgestures_p.h \
 	kernel/qgesturerecognizer.h \
 	kernel/qgesturemanager_p.h \
-	kernel/qsoftkeymanager_p.h \
-        kernel/qsoftkeymanager_common_p.h \
         kernel/qdesktopwidget_qpa_p.h \
         kernel/qwidgetwindow_qpa_p.h
 
@@ -59,7 +57,6 @@ SOURCES += \
 	kernel/qstandardgestures.cpp \
 	kernel/qgesturerecognizer.cpp \
 	kernel/qgesturemanager.cpp \
-	kernel/qsoftkeymanager.cpp \
         kernel/qdesktopwidget.cpp \
         kernel/qwidgetsvariant.cpp \
         kernel/qapplication_qpa.cpp \

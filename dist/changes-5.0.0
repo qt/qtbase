@@ -481,6 +481,15 @@ QtCore
   - StartWord/EndWord enum values has been logically replaced with StartOfItem/EndOfItem ones
     to mention they are not about the word boundaries only.
 
+* Softkeys API was removed. The following functions and enums were removed:
+  - QAction::setSoftKeyRole()
+  - QAction::softKeyRole()
+  - QAction::SoftKeyRole
+  - Qt::WA_MergeSoftkeys
+  - Qt::WA_MergeSoftkeysRecursively
+  - Qt::WindowSoftkeysVisibleHint
+  - Qt::WindowSoftkeysRespondHint
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via

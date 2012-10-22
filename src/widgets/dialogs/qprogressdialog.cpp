@@ -57,10 +57,6 @@
 #include <private/qdialog_p.h>
 #include <limits.h>
 
-#if defined(QT_SOFTKEYS_ENABLED)
-#include <qaction.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 // If the operation is expected to take this long (as predicted by
@@ -80,9 +76,6 @@ public:
         showTime(defaultShowTime),
 #ifndef QT_NO_SHORTCUT
         escapeShortcut(0),
-#endif
-#ifdef QT_SOFTKEYS_ENABLED
-        cancelAction(0),
 #endif
         useDefaultCancelText(false)
     {
@@ -109,9 +102,6 @@ public:
     bool forceHide;
 #ifndef QT_NO_SHORTCUT
     QShortcut *escapeShortcut;
-#endif
-#ifdef QT_SOFTKEYS_ENABLED
-    QAction *cancelAction;
 #endif
     bool useDefaultCancelText;
     QPointer<QObject> receiverToDisconnectOnClose;
@@ -443,16 +433,7 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
     int h = qMax(isVisible() ? height() : 0, sizeHint().height());
     resize(w, h);
     if (cancelButton)
-#if !defined(QT_SOFTKEYS_ENABLED)
         cancelButton->show();
-#else
-    {
-        d->cancelAction = new QAction(cancelButton->text(), cancelButton);
-        d->cancelAction->setSoftKeyRole(QAction::NegativeSoftKey);
-        connect(d->cancelAction, SIGNAL(triggered()), this, SIGNAL(canceled()));
-        addAction(d->cancelAction);
-    }
-#endif
 }
 
 /*!
@@ -471,9 +452,6 @@ void QProgressDialog::setCancelButtonText(const QString &cancelButtonText)
     if (!cancelButtonText.isNull()) {
         if (d->cancel) {
             d->cancel->setText(cancelButtonText);
-#ifdef QT_SOFTKEYS_ENABLED
-            d->cancelAction->setText(cancelButtonText);
-#endif
         } else {
             setCancelButton(new QPushButton(cancelButtonText, this));
         }
