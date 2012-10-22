@@ -1683,46 +1683,6 @@ QMacStylePrivate::QMacStylePrivate()
 
 }
 
-bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QObject *obj) const
-{
-    if (!obj)
-        return false;
-
-    if (as == AquaPushButton) {
-        QPushButton *pb = const_cast<QPushButton *>(qobject_cast<const QPushButton *>(obj));
-        if (pb && pb->window()->isActiveWindow() && !mouseDown) {
-            if (pb != defaultButton) {
-                // Changed on its own, update the value.
-                const_cast<QMacStylePrivate *>(this)->stopAnimate(as, defaultButton);
-                const_cast<QMacStylePrivate *>(this)->startAnimate(as, pb);
-            }
-            return true;
-        }
-    }
-    return animation(obj);
-}
-
-void QMacStylePrivate::stopAnimate(QMacStylePrivate::Animates as, QObject *obj)
-{
-    stopAnimation(obj);
-    if (as == AquaPushButton && defaultButton) {
-        stopAnimation(defaultButton);
-        QPushButton *tmp = defaultButton;
-        defaultButton = 0;
-        tmp->update();
-    } else if (as == AquaScrollBar) {
-        scrollBarInfos.remove(qobject_cast<QWidget*>(obj));
-    }
-}
-
-void QMacStylePrivate::startAnimate(QMacStylePrivate::Animates as, QObject *obj)
-{
-    if (!animation(obj))
-        startAnimation(new QStyleAnimation(obj));
-    if (as == AquaPushButton)
-        defaultButton = qobject_cast<QPushButton *>(obj);
-}
-
 bool QMacStylePrivate::addWidget(QWidget *w)
 {
     //already knew of it
@@ -1730,33 +1690,15 @@ bool QMacStylePrivate::addWidget(QWidget *w)
         return false;
 
     Q_Q(QMacStyle);
-    if (QPushButton *btn = qobject_cast<QPushButton *>(w)) {
-        btn->installEventFilter(q);
-        if (btn->isDefault() || (btn->autoDefault() && btn->hasFocus()))
-            startAnimate(AquaPushButton, btn);
+    if (qobject_cast<QScrollBar *>(w)) {
+        w->installEventFilter(q);
         return true;
-    } else {
-        bool isScrollBar = (qobject_cast<QScrollBar *>(w));
-        if (isScrollBar) {
-            w->installEventFilter(q);
-            return true;
-        }
     }
     if (w->isWindow()) {
         w->installEventFilter(q);
         return true;
     }
     return false;
-}
-
-void QMacStylePrivate::removeWidget(QWidget *w)
-{
-    QPushButton *btn = qobject_cast<QPushButton *>(w);
-    if (btn && btn == defaultButton) {
-        stopAnimate(AquaPushButton, btn);
-    } else if (qobject_cast<QScrollBar *>(w)) {
-        stopAnimate(AquaScrollBar, w);
-    }
 }
 
 ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
@@ -1839,49 +1781,6 @@ bool QMacStyle::eventFilter(QObject *o, QEvent *e)
             }
         }
 #endif
-    } else if (QPushButton *btn = qobject_cast<QPushButton *>(o)) {
-        switch (e->type()) {
-        default:
-            break;
-        case QEvent::FocusIn:
-            if (btn->autoDefault())
-                d->startAnimate(QMacStylePrivate::AquaPushButton, btn);
-            break;
-        case QEvent::Destroy:
-        case QEvent::Hide:
-            if (btn == d->defaultButton)
-                d->stopAnimate(QMacStylePrivate::AquaPushButton, btn);
-            break;
-        case QEvent::MouseButtonPress:
-            // It is very confusing to keep the button pulsing, so just stop the animation.
-            if (static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)
-                d->mouseDown = true;
-            d->stopAnimate(QMacStylePrivate::AquaPushButton, btn);
-            break;
-        case QEvent::MouseButtonRelease:
-            if (static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)
-                d->mouseDown = false;
-            // fall through
-        case QEvent::FocusOut:
-        case QEvent::Show:
-        case QEvent::WindowActivate: {
-            QList<QPushButton *> list = btn->window()->findChildren<QPushButton *>();
-            for (int i = 0; i < list.size(); ++i) {
-                QPushButton *pBtn = list.at(i);
-                if ((e->type() == QEvent::FocusOut
-                     && (pBtn->isDefault() || (pBtn->autoDefault() && pBtn->hasFocus()))
-                     && pBtn != btn)
-                    || ((e->type() == QEvent::Show || e->type() == QEvent::MouseButtonRelease
-                         || e->type() == QEvent::WindowActivate)
-                        && pBtn->isDefault())) {
-                    if (pBtn->window()->isActiveWindow()) {
-                        d->startAnimate(QMacStylePrivate::AquaPushButton, pBtn);
-                    }
-                    break;
-                }
-            }
-            break; }
-        }
     }
     return false;
 }
@@ -2172,7 +2071,6 @@ void QMacStyle::polish(QWidget* w)
 void QMacStyle::unpolish(QWidget* w)
 {
     Q_D(QMacStyle);
-    d->removeWidget(w);
     if ((qobject_cast<QMenu*>(w) || qt_mac_is_metal(w)) && !w->testAttribute(Qt::WA_SetPalette)) {
         QPalette pal = qApp->palette(w);
         w->setPalette(pal);
@@ -2201,6 +2099,7 @@ void QMacStyle::unpolish(QWidget* w)
     if (qobject_cast<QScrollBar*>(w)) {
         w->setAttribute(Qt::WA_OpaquePaintEvent, true);
         w->setMouseTracking(false);
+        d->scrollBarInfos.remove(w);
     }
 }
 
@@ -3633,13 +3532,64 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
             }
 
+            // a focused auto-default button within an active window
+            // takes precedence over a normal default button
+            if (btn->features & QStyleOptionButton::AutoDefaultButton
+                    && opt->state & State_Active && opt->state & State_HasFocus) {
+                d->autoDefaultButton = opt->styleObject;
+                if (!d->animation(opt->styleObject))
+                    d->startAnimation(new QStyleAnimation(opt->styleObject));
+            } else if (d->autoDefaultButton == opt->styleObject) {
+                if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
+                    animation->updateTarget();
+                    d->stopAnimation(opt->styleObject);
+                }
+                d->autoDefaultButton = 0;
+            }
+
+            if (!d->autoDefaultButton) {
+                if (btn->features & QStyleOptionButton::DefaultButton && opt->state & State_Active) {
+                    d->defaultButton = opt->styleObject;
+                    if (!d->animation(opt->styleObject))
+                        d->startAnimation(new QStyleAnimation(opt->styleObject));
+                } else if (d->defaultButton == opt->styleObject) {
+                    if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
+                        animation->updateTarget();
+                        d->stopAnimation(opt->styleObject);
+                    }
+                    d->defaultButton = 0;
+                }
+            }
+
+            // TODO: find out the pressed button in a qwidget independent way
+            extern QWidget *qt_button_down; // qwidgetwindow.cpp
+            if (opt->styleObject == qt_button_down)
+                d->pressedButton = opt->styleObject;
+            else if (d->pressedButton == opt->styleObject)
+                d->pressedButton = 0;
+
+            // the default button animation is paused meanwhile any button
+            // is pressed or an auto-default button is animated instead
+            if (QStyleAnimation *defaultAnimation = d->animation(d->defaultButton)) {
+                if (d->pressedButton || d->autoDefaultButton) {
+                    if (defaultAnimation->state() == QStyleAnimation::Running) {
+                        defaultAnimation->pause();
+                        defaultAnimation->updateTarget();
+                    }
+                } else if (defaultAnimation->state() == QStyleAnimation::Paused) {
+                    defaultAnimation->resume();
+                }
+            }
+
             HIThemeButtonDrawInfo bdi;
             d->initHIThemePushButton(btn, w, tds, &bdi);
-            if (btn->features & QStyleOptionButton::DefaultButton
-                    && d->animatable(QMacStylePrivate::AquaPushButton, w)) {
-                bdi.adornment |= kThemeAdornmentDefault;
-                bdi.animation.time.start = d->defaultButtonStart;
-                bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
+            if (!d->pressedButton) {
+                QStyleAnimation* animation = d->animation(opt->styleObject);
+                if (animation && animation->state() == QStyleAnimation::Running) {
+                    bdi.adornment |= kThemeAdornmentDefault;
+                    bdi.animation.time.start = d->defaultButtonStart;
+                    bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
+                }
             }
             // Unlike Carbon, we want the button to always be drawn inside its bounds.
             // Therefore, make the button a bit smaller, so that even if it got focus,

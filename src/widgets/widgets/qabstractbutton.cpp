@@ -1113,6 +1113,8 @@ void QAbstractButton::mouseReleaseEvent(QMouseEvent *e)
     }
 
     if (!d->down) {
+        // refresh is required by QMacStyle to resume the default button animation
+        d->refresh();
         e->ignore();
         return;
     }
