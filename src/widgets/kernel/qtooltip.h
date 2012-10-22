@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_WIDGETS_EXPORT QToolTip
 {
-    QToolTip();
+    QToolTip() Q_DECL_EQ_DELETE;
 public:
     static void showText(const QPoint &pos, const QString &text, QWidget *w = 0);
     static void showText(const QPoint &pos, const QString &text, QWidget *w, const QRect &rect);

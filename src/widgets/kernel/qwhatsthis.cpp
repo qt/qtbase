@@ -521,11 +521,6 @@ void QWhatsThisAction::actionTriggered()
     }
 }
 
-QWhatsThis::QWhatsThis()
-{
-}
-
-
 /*!
     This function switches the user interface into "What's This?"
     mode. The user interface can be switched back into normal mode by
