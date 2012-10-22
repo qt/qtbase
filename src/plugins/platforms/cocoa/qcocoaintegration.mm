@@ -199,6 +199,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mCocoaDrag(new QCocoaDrag)
     , mNativeInterface(new QCocoaNativeInterface)
     , mServices(new QCocoaServices)
+    , mKeyboardMapper(new QCocoaKeyMapper)
 {
     initResources();
     QCocoaAutoReleasePool pool;
@@ -412,6 +413,11 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
         return false;
 
     return QPlatformIntegration::styleHint(hint);
+}
+
+QList<int> QCocoaIntegration::possibleKeys(const QKeyEvent *event) const
+{
+    return mKeyboardMapper->possibleKeys(event);
 }
 
 QT_END_NAMESPACE

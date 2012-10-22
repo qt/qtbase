@@ -756,8 +756,18 @@ static QTouchDevice *touchDevice = 0;
 - (void)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
 {
     ulong timestamp = [nsevent timestamp] * 1000;
-    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers:[nsevent modifierFlags]];
+    ulong nativeModifiers = [nsevent modifierFlags];
+    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers: nativeModifiers];
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
+
+    // [from Qt 4 impl] There is no way to get the scan code from carbon. But we cannot
+    // use the value 0, since it indicates that the event originates from somewhere
+    // else than the keyboard.
+    quint32 nativeScanCode = 1;
+
+    UInt32 nativeVirtualKey = 0;
+    EventRef eventRef = EventRef([nsevent eventRef]);
+    GetEventParameter(eventRef, kEventParamKeyCode, typeUInt32, 0, sizeof(nativeVirtualKey), 0, &nativeVirtualKey);
 
     QChar ch;
     int keyCode;
@@ -799,7 +809,8 @@ static QTouchDevice *touchDevice = 0;
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
-        QWindowSystemInterface::handleKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers, text);
+        QWindowSystemInterface::handleExtendedKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+                                                       nativeScanCode, nativeVirtualKey, nativeModifiers, text);
 
     m_sendKeyEvent = false;
 }

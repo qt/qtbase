@@ -49,6 +49,7 @@
 #include "qcocoaclipboard.h"
 #include "qcocoadrag.h"
 #include "qcocoaservices.h"
+#include "qcocoakeymapper.h"
 
 #include <QtCore/QScopedPointer>
 #include <qpa/qplatformintegration.h>
@@ -121,6 +122,8 @@ public:
     QPlatformServices *services() const;
     QVariant styleHint(StyleHint hint) const;
 
+    QList<int> possibleKeys(const QKeyEvent *event) const;
+
     void updateScreens();
 
 private:
@@ -138,6 +141,7 @@ private:
     QScopedPointer<QCocoaDrag> mCocoaDrag;
     QScopedPointer<QPlatformNativeInterface> mNativeInterface;
     QScopedPointer<QCocoaServices> mServices;
+    QScopedPointer<QCocoaKeyMapper> mKeyboardMapper;
 };
 
 QT_END_NAMESPACE
