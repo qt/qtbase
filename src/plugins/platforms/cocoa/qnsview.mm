@@ -263,6 +263,7 @@ static CGImageRef qt_mac_toCGImage(QImage *qImage, bool isMask, uchar **dataCopy
                                 kCGRenderingIntentDefault);
         CGColorSpaceRelease(cgColourSpaceRef);
     }
+    CGDataProviderRelease(cgDataProviderRef);
     return cgImage;
 }
 

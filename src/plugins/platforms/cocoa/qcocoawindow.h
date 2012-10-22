@@ -66,6 +66,8 @@ class QT_PREPEND_NAMESPACE(QCocoaWindow);
 - (BOOL)canBecomeKeyWindow;
 @end
 
+@class QNSWindowDelegate;
+
 QT_BEGIN_NAMESPACE
 // QCocoaWindow
 //
@@ -157,6 +159,7 @@ public: // for QNSView
 
     QNSView *m_contentView;
     NSWindow *m_nsWindow;
+    QNSWindowDelegate *m_nsWindowDelegate;
     Qt::WindowFlags m_windowFlags;
     Qt::WindowState m_synchedWindowState;
     Qt::WindowModality m_windowModality;

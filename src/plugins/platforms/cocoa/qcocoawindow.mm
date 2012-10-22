@@ -186,6 +186,7 @@ static bool isMouseEvent(NSEvent *ev)
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
+    , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
     , m_inConstructor(true)
@@ -217,6 +218,7 @@ QCocoaWindow::~QCocoaWindow()
     clearNSWindow(m_nsWindow);
     [m_contentView release];
     [m_nsWindow release];
+    [m_nsWindowDelegate release];
 }
 
 void QCocoaWindow::setGeometry(const QRect &rect)
@@ -619,6 +621,8 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         [m_nsWindow close];
         [m_nsWindow release];
         m_nsWindow = 0;
+        [m_nsWindowDelegate release];
+        m_nsWindowDelegate = 0;
     }
 
     if (!parentWindow) {
@@ -697,8 +701,8 @@ NSWindow * QCocoaWindow::createNSWindow()
 
 void QCocoaWindow::setNSWindow(NSWindow *window)
 {
-    QNSWindowDelegate *delegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
-    [window setDelegate:delegate];
+    m_nsWindowDelegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
+    [window setDelegate:m_nsWindowDelegate];
     [window setAcceptsMouseMovedEvents:YES];
 
     // Prevent Cocoa from releasing the window on close. Qt

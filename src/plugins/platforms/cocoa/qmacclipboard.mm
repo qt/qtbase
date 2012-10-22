@@ -193,7 +193,10 @@ QMacPasteboard::hasOSType(int c_flavor) const
         const int type_count = CFArrayGetCount(types);
         for (int i = 0; i < type_count; ++i) {
             CFStringRef flavor = (CFStringRef)CFArrayGetValueAtIndex(types, i);
-            const int os_flavor = UTGetOSTypeFromString(UTTypeCopyPreferredTagWithClass(flavor, kUTTagClassOSType));
+            CFStringRef preferredTag = UTTypeCopyPreferredTagWithClass(flavor, kUTTagClassOSType);
+            const int os_flavor = UTGetOSTypeFromString(preferredTag);
+            if (preferredTag)
+                CFRelease(preferredTag);
             if (os_flavor == c_flavor) {
 #ifdef DEBUG_PASTEBOARD
                 qDebug("  - Found!");
