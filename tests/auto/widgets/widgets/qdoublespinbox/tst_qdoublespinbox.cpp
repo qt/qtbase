@@ -1010,7 +1010,7 @@ void tst_QDoubleSpinBox::task221221()
     QDoubleSpinBox spin;
     QTest::keyClick(&spin, Qt::Key_1);
     spin.show();
-    QVERIFY(spin.isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(&spin));
     QCOMPARE(spin.text(), QLatin1String("1.00"));
 }
 
@@ -1026,7 +1026,7 @@ void tst_QDoubleSpinBox::task255471_decimalsValidation()
         spinBox.setMaximum(12);
 
         spinBox.show();
-        QTRY_VERIFY(spinBox.isVisible());
+        QVERIFY(QTest::qWaitForWindowExposed(&spinBox));
         spinBox.setFocus();
         QTRY_VERIFY(spinBox.hasFocus());
 
