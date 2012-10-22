@@ -1869,7 +1869,7 @@ void tst_QDir::equalityOperator_data()
 #if defined (Q_OS_WIN)
     QString pathinroot("c:/windows/..");
 #else
-    QString pathinroot("/sbin/..");
+    QString pathinroot("/usr/..");
 #endif
     QTest::newRow("QTBUG-20495-root") << pathinroot << "*.cpp" << int(QDir::Name) << int(QDir::Files)
         << QDir::rootPath() << "*.cpp" << int(QDir::Name) << int(QDir::Files)
