@@ -2724,7 +2724,7 @@ void Configure::generateCachefile()
         if (!dictionary["DECORATIONS"].isEmpty())
             moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
-        moduleStream << "CONFIG += create_prl link_prl";
+        moduleStream << "CONFIG += create_prl link_prl prepare_docs";
         if (dictionary[ "SSE2" ] == "yes")
             moduleStream << " sse2";
         if (dictionary[ "SSE3" ] == "yes")
