@@ -61,7 +61,8 @@ class Q_WIDGETS_EXPORT QCommandLinkButton: public QPushButton
 public:
     explicit QCommandLinkButton(QWidget *parent=0);
     explicit QCommandLinkButton(const QString &text, QWidget *parent=0);
-    QCommandLinkButton(const QString &text, const QString &description, QWidget *parent=0);
+    explicit QCommandLinkButton(const QString &text, const QString &description, QWidget *parent=0);
+
     QString description() const;
     void setDescription(const QString &description);
 

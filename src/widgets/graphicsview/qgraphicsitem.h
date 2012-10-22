@@ -162,7 +162,7 @@ public:
         SceneModal
     };
 
-    QGraphicsItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsItem(QGraphicsItem *parent = 0);
     virtual ~QGraphicsItem();
 
     QGraphicsScene *scene() const;
@@ -562,7 +562,7 @@ class Q_WIDGETS_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_CLASSINFO("DefaultProperty", "children")
     Q_INTERFACES(QGraphicsItem)
 public:
-    QGraphicsObject(QGraphicsItem *parent = 0);
+    explicit QGraphicsObject(QGraphicsItem *parent = 0);
 
 #ifdef Q_NO_USING_KEYWORD
     const QObjectList &children() const { return QObject::children(); }
@@ -607,7 +607,7 @@ class QAbstractGraphicsShapeItemPrivate;
 class Q_WIDGETS_EXPORT QAbstractGraphicsShapeItem : public QGraphicsItem
 {
 public:
-    QAbstractGraphicsShapeItem(QGraphicsItem *parent = 0);
+    explicit QAbstractGraphicsShapeItem(QGraphicsItem *parent = 0);
     ~QAbstractGraphicsShapeItem();
 
     QPen pen() const;
@@ -632,8 +632,8 @@ class QGraphicsPathItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsPathItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsPathItem(QGraphicsItem *parent = 0);
-    QGraphicsPathItem(const QPainterPath &path, QGraphicsItem *parent = 0);
+    explicit QGraphicsPathItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsPathItem(const QPainterPath &path, QGraphicsItem *parent = 0);
     ~QGraphicsPathItem();
 
     QPainterPath path() const;
@@ -665,9 +665,9 @@ class QGraphicsRectItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsRectItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsRectItem(QGraphicsItem *parent = 0);
-    QGraphicsRectItem(const QRectF &rect, QGraphicsItem *parent = 0);
-    QGraphicsRectItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0);
+    explicit QGraphicsRectItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsRectItem(const QRectF &rect, QGraphicsItem *parent = 0);
+    explicit QGraphicsRectItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0);
     ~QGraphicsRectItem();
 
     QRectF rect() const;
@@ -703,9 +703,9 @@ class QGraphicsEllipseItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsEllipseItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsEllipseItem(QGraphicsItem *parent = 0);
-    QGraphicsEllipseItem(const QRectF &rect, QGraphicsItem *parent = 0);
-    QGraphicsEllipseItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0);
+    explicit QGraphicsEllipseItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsEllipseItem(const QRectF &rect, QGraphicsItem *parent = 0);
+    explicit QGraphicsEllipseItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0);
     ~QGraphicsEllipseItem();
 
     QRectF rect() const;
@@ -747,9 +747,9 @@ class QGraphicsPolygonItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsPolygonItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsPolygonItem(QGraphicsItem *parent = 0);
-    QGraphicsPolygonItem(const QPolygonF &polygon,
-                         QGraphicsItem *parent = 0);
+    explicit QGraphicsPolygonItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsPolygonItem(const QPolygonF &polygon,
+                                  QGraphicsItem *parent = 0);
     ~QGraphicsPolygonItem();
 
     QPolygonF polygon() const;
@@ -784,9 +784,9 @@ class QGraphicsLineItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsLineItem : public QGraphicsItem
 {
 public:
-    QGraphicsLineItem(QGraphicsItem *parent = 0);
-    QGraphicsLineItem(const QLineF &line, QGraphicsItem *parent = 0);
-    QGraphicsLineItem(qreal x1, qreal y1, qreal x2, qreal y2, QGraphicsItem *parent = 0);
+    explicit QGraphicsLineItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsLineItem(const QLineF &line, QGraphicsItem *parent = 0);
+    explicit QGraphicsLineItem(qreal x1, qreal y1, qreal x2, qreal y2, QGraphicsItem *parent = 0);
     ~QGraphicsLineItem();
 
     QPen pen() const;
@@ -829,8 +829,8 @@ public:
         HeuristicMaskShape
     };
 
-    QGraphicsPixmapItem(QGraphicsItem *parent = 0);
-    QGraphicsPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = 0);
+    explicit QGraphicsPixmapItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = 0);
     ~QGraphicsPixmapItem();
 
     QPixmap pixmap() const;
@@ -881,8 +881,8 @@ class Q_WIDGETS_EXPORT QGraphicsTextItem : public QGraphicsObject
     QDOC_PROPERTY(QTextCursor textCursor READ textCursor WRITE setTextCursor)
 
 public:
-    QGraphicsTextItem(QGraphicsItem *parent = 0);
-    QGraphicsTextItem(const QString &text, QGraphicsItem *parent = 0);
+    explicit QGraphicsTextItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsTextItem(const QString &text, QGraphicsItem *parent = 0);
     ~QGraphicsTextItem();
 
     QString toHtml() const;
@@ -972,8 +972,8 @@ class QGraphicsSimpleTextItemPrivate;
 class Q_WIDGETS_EXPORT QGraphicsSimpleTextItem : public QAbstractGraphicsShapeItem
 {
 public:
-    QGraphicsSimpleTextItem(QGraphicsItem *parent = 0);
-    QGraphicsSimpleTextItem(const QString &text, QGraphicsItem *parent = 0);
+    explicit QGraphicsSimpleTextItem(QGraphicsItem *parent = 0);
+    explicit QGraphicsSimpleTextItem(const QString &text, QGraphicsItem *parent = 0);
     ~QGraphicsSimpleTextItem();
 
     void setText(const QString &text);
@@ -1008,7 +1008,7 @@ class QGraphicsItemGroupPrivate;
 class Q_WIDGETS_EXPORT QGraphicsItemGroup : public QGraphicsItem
 {
 public:
-    QGraphicsItemGroup(QGraphicsItem *parent = 0);
+    explicit QGraphicsItemGroup(QGraphicsItem *parent = 0);
     ~QGraphicsItemGroup();
 
     void addToGroup(QGraphicsItem *item);
