@@ -72,6 +72,8 @@ public:
     QTime startTime() const;
     void setStartTime(const QTime &time);
 
+    void updateTarget();
+
 protected:
     virtual bool isUpdateNeeded() const;
     virtual void updateCurrentTime(int time);

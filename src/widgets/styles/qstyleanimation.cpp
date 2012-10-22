@@ -81,6 +81,12 @@ void QStyleAnimation::setStartTime(const QTime &time)
     _startTime = time;
 }
 
+void QStyleAnimation::updateTarget()
+{
+    QEvent event(QEvent::StyleAnimationUpdate);
+    QCoreApplication::sendEvent(target(), &event);
+}
+
 bool QStyleAnimation::isUpdateNeeded() const
 {
     return true;
@@ -95,10 +101,8 @@ void QStyleAnimation::updateCurrentTime(int)
                 stop();
         }
 
-        if (isUpdateNeeded()) {
-            QEvent event(QEvent::StyleAnimationUpdate);
-            QCoreApplication::sendEvent(tgt, &event);
-        }
+        if (isUpdateNeeded())
+            updateTarget();
     }
 }
 
