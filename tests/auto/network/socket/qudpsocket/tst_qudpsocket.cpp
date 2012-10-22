@@ -166,7 +166,8 @@ void tst_QUdpSocket::initTestCase_data()
 
 void tst_QUdpSocket::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 }
 
 void tst_QUdpSocket::init()
