@@ -106,9 +106,6 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(QPoint pos READ pos WRITE setPos)
-    Q_PROPERTY(QSize size READ size WRITE resize)
-    Q_PROPERTY(QRect geometry READ geometry WRITE setGeometry)
     Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged)
     Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged)
     Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
@@ -236,10 +233,10 @@ public:
     inline int y() const { return geometry().y(); }
 
     inline QSize size() const { return geometry().size(); }
-    inline QPoint pos() const { return geometry().topLeft(); }
+    inline QPoint position() const { return geometry().topLeft(); }
 
-    inline void setPos(const QPoint &pt) { setGeometry(QRect(pt, size())); }
-    inline void setPos(int posx, int posy) { setPos(QPoint(posx, posy)); }
+    inline void setPosition(const QPoint &pt) { setGeometry(QRect(pt, size())); }
+    inline void setPosition(int posx, int posy) { setPosition(QPoint(posx, posy)); }
 
     void resize(const QSize &newSize);
     inline void resize(int w, int h) { resize(QSize(w, h)); }

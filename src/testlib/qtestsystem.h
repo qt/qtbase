@@ -92,7 +92,7 @@ namespace QTest
         // qWaitForWindowShown() will generate bogus results.
         if (window->isActive()) {
             int waitNo = 0; // 0, 0 might be a valid position after all, so do not wait for ever
-            while (window->pos().isNull()) {
+            while (window->position().isNull()) {
                 if (waitNo++ > timeout / 10)
                     break;
                 qWait(10);

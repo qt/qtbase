@@ -104,9 +104,9 @@ public:
 
     QPoint globalPosition() const {
         Q_Q(const QWindow);
-        QPoint offset = q->pos();
+        QPoint offset = q->position();
         for (const QWindow *p = q->parent(); p; p = p->parent())
-            offset += p->pos();
+            offset += p->position();
         return offset;
     }
 

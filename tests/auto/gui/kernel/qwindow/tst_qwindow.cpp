@@ -186,10 +186,10 @@ void tst_QWindow::positioning()
 
     QMargins originalMargins = window.frameMargins();
 
-    QCOMPARE(window.pos(), window.framePos() + QPoint(originalMargins.left(), originalMargins.top()));
+    QCOMPARE(window.position(), window.framePos() + QPoint(originalMargins.left(), originalMargins.top()));
     QVERIFY(window.frameGeometry().contains(window.geometry()));
 
-    QPoint originalPos = window.pos();
+    QPoint originalPos = window.position();
     QPoint originalFramePos = window.framePos();
 
     window.setWindowState(Qt::WindowFullScreen);
@@ -200,7 +200,7 @@ void tst_QWindow::positioning()
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.received(QEvent::Resize), 3);
 
-    QTRY_COMPARE(originalPos, window.pos());
+    QTRY_COMPARE(originalPos, window.position());
     QTRY_COMPARE(originalFramePos, window.framePos());
     QTRY_COMPARE(originalMargins, window.frameMargins());
 
@@ -215,14 +215,14 @@ void tst_QWindow::positioning()
         QTRY_VERIFY(window.received(QEvent::Move));
         QTRY_COMPARE(framePos, window.framePos());
         QTRY_COMPARE(originalMargins, window.frameMargins());
-        QCOMPARE(window.pos(), window.framePos() + QPoint(originalMargins.left(), originalMargins.top()));
+        QCOMPARE(window.position(), window.framePos() + QPoint(originalMargins.left(), originalMargins.top()));
 
         // and back to regular positioning
 
         window.reset();
-        window.setPos(originalPos);
+        window.setPosition(originalPos);
         QTRY_VERIFY(window.received(QEvent::Move));
-        QTRY_COMPARE(originalPos, window.pos());
+        QTRY_COMPARE(originalPos, window.position());
     }
 }
 

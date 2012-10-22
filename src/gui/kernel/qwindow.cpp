@@ -1056,9 +1056,14 @@ void QWindow::setSizeIncrement(const QSize &size)
     Sets the geometry of the window, excluding its window frame, to a
     rectangle constructed from \a posx, \a posy, \a w and \a h.
 
-    \sa geometry
+    \sa geometry()
 */
 
+/*!
+    \brief Sets the geometry of the window, excluding its window frame, to \a rect.
+
+    \sa geometry()
+*/
 void QWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWindow);
@@ -1198,40 +1203,52 @@ void QWindow::setFramePos(const QPoint &point)
 }
 
 /*!
-    \property QWindow::pos
-    \brief the position of the window on the desktop
+    \fn void QWindow::setPosition(const QPoint &pt)
+    \brief set the position of the window on the desktop to \a pt
 
-    \sa geometry
+    \sa position()
 */
 
 /*!
-    \property QWindow::size
-    \brief the size of the window excluding any window frame
+    \fn void QWindow::setPosition(int posx, int posy)
+    \brief set the position of the window on the desktop to \a posx, \a posy
 
-    \sa geometry
+    \sa position()
 */
 
 /*!
-    \property QWindow::geometry
-    \brief the geometry of the window excluding any window frame
+    \fn QPoint QWindow::position() const
+    \brief get the position of the window on the desktop excluding any window frame
 
-    To make sure the window is visible, make sure the geometry is within
-    the virtual geometry of its screen.
-
-    See the \l{Window Geometry} documentation for an overview of geometry
-    issues with windows.
-
-    By default, this property contains a value that depends on the user's
-    platform and screen geometry.
-
-    \sa size, pos
+    \sa setPosition()
 */
 
+/*!
+    \fn QSize QWindow::size() const
+    \brief get the size of the window excluding any window frame
+
+    \sa resize()
+*/
+
+/*!
+    \fn void QWindow::resize(int w, int h)
+
+    set the size of the window, excluding any window frame, to a QSize
+    constructed from width \a w and height \a h
+
+    \sa size(), geometry()
+*/
+
+/*!
+    \brief set the size of the window, excluding any window frame, to \a newSize
+
+    \sa size(), geometry()
+*/
 void QWindow::resize(const QSize &newSize)
 {
     Q_D(QWindow);
     if (d->platformWindow) {
-        d->platformWindow->setGeometry(QRect(pos(), newSize));
+        d->platformWindow->setGeometry(QRect(position(), newSize));
     } else {
         d->geometry.setSize(newSize);
     }
