@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2012 David Faure <faure@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -39,67 +39,6 @@
 **
 ****************************************************************************/
 
-#ifndef TST_QMIMEDATABASE_H
-#define TST_QMIMEDATABASE_H
-
-#include <QtCore/QObject>
-#include <QtCore/QTemporaryDir>
-
-class tst_QMimeDatabase : public QObject
-{
-    Q_OBJECT
-
-public:
-    tst_QMimeDatabase();
-
-private slots:
-    void initTestCase();
-
-    void mimeTypeForName();
-    void mimeTypeForFileName_data();
-    void mimeTypeForFileName();
-    void mimeTypesForFileName_data();
-    void mimeTypesForFileName();
-    void inheritance();
-    void aliases();
-    void icons();
-    void mimeTypeForFileWithContent();
-    void mimeTypeForUrl();
-    void mimeTypeForData_data();
-    void mimeTypeForData();
-    void mimeTypeForFileAndContent_data();
-    void mimeTypeForFileAndContent();
-    void allMimeTypes();
-    void suffixes_data();
-    void suffixes();
-    void knownSuffix();
-    void fromThreads();
-
-    // shared-mime-info test suite
-
-    void findByFileName_data();
-    void findByFileName();
-
-    void findByData_data();
-    void findByData();
-
-    void findByFile_data();
-    void findByFile();
-
-    //
-
-    void installNewGlobalMimeType();
-    void installNewLocalMimeType();
-
-private:
-    void init(); // test-specific
-
-    QString m_globalXdgDir;
-    QString m_localXdgDir;
-    QString m_yastMimeTypes;
-    QString m_qmlAgainFileName;
-    QTemporaryDir m_temporaryDir;
-    QString m_testSuite;
-};
-
-#endif   // TST_QMIMEDATABASE_H
+import QtQuick 1.1
+Item {
+}

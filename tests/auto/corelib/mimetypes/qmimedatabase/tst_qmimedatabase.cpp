@@ -52,6 +52,7 @@
 #include <QtTest/QtTest>
 
 static const char yastFileName[] ="yast2-metapackage-handler-mimetypes.xml";
+static const char qmlAgainFileName[] ="qml-again.xml";
 
 void initializeLang()
 {
@@ -121,6 +122,10 @@ void tst_QMimeDatabase::initTestCase()
     QVERIFY2(!m_yastMimeTypes.isEmpty(),
              qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
                         arg(yastFileName, QDir::currentPath())));
+    m_qmlAgainFileName = QFINDTESTDATA(qmlAgainFileName);
+    QVERIFY2(!m_qmlAgainFileName.isEmpty(),
+             qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
+                        arg(qmlAgainFileName, QDir::currentPath())));
 
     init();
 }
@@ -796,11 +801,14 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     const QString destDir = mimeDir + QLatin1String("/packages/");
     const QString destFile = destDir + QLatin1String(yastFileName);
     QFile::remove(destFile);
+    const QString destQmlFile = destDir + QLatin1String(qmlAgainFileName);
+    QFile::remove(destQmlFile);
     //qDebug() << destFile;
 
     if (!QFileInfo(destDir).isDir())
         QVERIFY(QDir(m_globalXdgDir).mkpath(destDir));
     QVERIFY(QFile::copy(m_yastMimeTypes, destFile));
+    QVERIFY(QFile::copy(m_qmlAgainFileName, destQmlFile));
     if (!waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
 
@@ -809,8 +817,17 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
     checkHasMimeType("text/x-suse-ymp");
 
+    // Test that a double-definition of a mimetype doesn't lead to sniffing ("conflicting globs").
+    const QString qmlTestFile = QFINDTESTDATA("test.qml");
+    QVERIFY2(!qmlTestFile.isEmpty(),
+             qPrintable(QString::fromLatin1("Cannot find '%1' starting from '%2'").
+                        arg("test.qml", QDir::currentPath())));
+    QCOMPARE(db.mimeTypeForFile(qmlTestFile).name(),
+             QString::fromLatin1("text/x-qml"));
+
     // Now test removing it again
     QFile::remove(destFile);
+    QFile::remove(destQmlFile);
     if (!waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),

@@ -165,15 +165,15 @@ void QMimeAllGlobPatterns::addGlob(const QMimeGlobPattern &glob)
         // The bulk of the patterns is *.foo with weight 50 --> those go into the fast patterns hash.
         const QString extension = pattern.mid(2).toLower();
         QStringList &patterns = m_fastPatterns[extension]; // find or create
-        // This would just slow things down: if (!patterns.contains(glob.mimeType()))
-        patterns.append(glob.mimeType());
+        if (!patterns.contains(glob.mimeType()))
+            patterns.append(glob.mimeType());
     } else {
         if (glob.weight() > 50) {
-            // This would just slow things down: if (!m_highWeightGlobs.hasPattern(glob.mimeType(), glob.pattern()))
-            m_highWeightGlobs.append(glob);
+            if (!m_highWeightGlobs.hasPattern(glob.mimeType(), glob.pattern()))
+                m_highWeightGlobs.append(glob);
         } else {
-            //This would just slow things down: if (!m_lowWeightGlobs.hasPattern(glob.mimeType(), glob.pattern()))
-            m_lowWeightGlobs.append(glob);
+            if (!m_lowWeightGlobs.hasPattern(glob.mimeType(), glob.pattern()))
+                m_lowWeightGlobs.append(glob);
         }
     }
 }

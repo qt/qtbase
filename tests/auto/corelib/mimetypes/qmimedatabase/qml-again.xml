@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="text/x-qml">
+    <comment>Qt Markup Language file</comment>
+    <magic priority="80">
+      <match type="string" value="import Qt " offset="0:256"/>
+    </magic>
+    <glob pattern="*.qml"/>
+  </mime-type>
+</mime-info>
+
+
