@@ -100,8 +100,16 @@ public:
 #endif
 
 Q_SIGNALS:
-    void finished();
-    void propertiesAssigned();
+    void finished(
+#if !defined(qdoc)
+      QPrivateSignal
+#endif
+    );
+    void propertiesAssigned(
+#if !defined(qdoc)
+      QPrivateSignal
+#endif
+    );
 
 protected:
     void onEntry(QEvent *event);

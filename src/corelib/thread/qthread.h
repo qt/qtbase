@@ -58,6 +58,7 @@ class QAbstractEventDispatcher;
 #ifndef QT_NO_THREAD
 class Q_CORE_EXPORT QThread : public QObject
 {
+    Q_OBJECT
 public:
     static Qt::HANDLE currentThreadId() Q_DECL_NOTHROW;
     static QThread *currentThread();
@@ -111,8 +112,16 @@ public:
     static void usleep(unsigned long);
 
 Q_SIGNALS:
-    void started();
-    void finished();
+    void started(
+#if !defined(qdoc)
+      QPrivateSignal
+#endif
+    );
+    void finished(
+#if !defined(qdoc)
+      QPrivateSignal
+#endif
+    );
 
 protected:
     virtual void run();
@@ -124,7 +133,6 @@ protected:
     QThread(QThreadPrivate &dd, QObject *parent = 0);
 
 private:
-    Q_OBJECT
     Q_DECLARE_PRIVATE(QThread)
 
     friend class QCoreApplication;

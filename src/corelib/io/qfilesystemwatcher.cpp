@@ -128,7 +128,7 @@ void QFileSystemWatcherPrivate::_q_fileChanged(const QString &path, bool removed
     }
     if (removed)
         files.removeAll(path);
-    emit q->fileChanged(path);
+    emit q->fileChanged(path, QFileSystemWatcher::QPrivateSignal());
 }
 
 void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool removed)
@@ -140,7 +140,7 @@ void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool re
     }
     if (removed)
         directories.removeAll(path);
-    emit q->directoryChanged(path);
+    emit q->directoryChanged(path, QFileSystemWatcher::QPrivateSignal());
 }
 
 

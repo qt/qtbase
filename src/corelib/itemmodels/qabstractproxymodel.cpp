@@ -139,7 +139,7 @@ void QAbstractProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
             d->model = QAbstractItemModelPrivate::staticEmptyModel();
         }
         d->roleNames = d->model->roleNames();
-        emit sourceModelChanged();
+        emit sourceModelChanged(QPrivateSignal());
     }
 }
 

@@ -164,13 +164,13 @@ QStatePrivate::~QStatePrivate()
 void QStatePrivate::emitFinished()
 {
     Q_Q(QState);
-    emit q->finished();
+    emit q->finished(QState::QPrivateSignal());
 }
 
 void QStatePrivate::emitPropertiesAssigned()
 {
     Q_Q(QState);
-    emit q->propertiesAssigned();
+    emit q->propertiesAssigned(QState::QPrivateSignal());
 }
 
 /*!

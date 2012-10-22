@@ -1408,14 +1408,14 @@ void QStateMachinePrivate::_q_start()
     qDebug() << q << ": initial configuration:" << configuration;
 #endif
 
-    emit q->started();
+    emit q->started(QStateMachine::QPrivateSignal());
 
     if (stopProcessingReason == Finished) {
         // The state machine immediately reached a final state.
         processingScheduled = false;
         state = NotRunning;
         unregisterAllTransitions();
-        emit q->finished();
+        emitFinished();
     } else {
         _q_process();
     }
@@ -1497,13 +1497,13 @@ void QStateMachinePrivate::_q_process()
         state = NotRunning;
         cancelAllDelayedEvents();
         unregisterAllTransitions();
-        emit q->finished();
+        emitFinished();
         break;
     case Stopped:
         state = NotRunning;
         cancelAllDelayedEvents();
         unregisterAllTransitions();
-        emit q->stopped();
+        emit q->stopped(QStateMachine::QPrivateSignal());
         break;
     }
 }

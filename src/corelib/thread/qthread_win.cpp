@@ -336,7 +336,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
                        thr->metaObject()->className() : objectName.constData());
 #endif
 
-    emit thr->started();
+    emit thr->started(QThread::QPrivateSignal());
     QThread::setTerminationEnabled(true);
     thr->run();
 
@@ -354,7 +354,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
     d->priority = QThread::InheritPriority;
     void **tls_data = reinterpret_cast<void **>(&d->data->tls);
     locker.unlock();
-    emit thr->finished();
+    emit thr->finished(QThread::QPrivateSignal());
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     QThreadStorageData::finish(tls_data);
     locker.relock();

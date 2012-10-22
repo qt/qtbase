@@ -909,7 +909,7 @@ bool QProcessPrivate::_q_canReadStandardOutput()
             emittedReadyRead = false;
         }
     }
-    emit q->readyReadStandardOutput();
+    emit q->readyReadStandardOutput(QProcess::QPrivateSignal());
     return didRead;
 }
 
@@ -954,7 +954,7 @@ bool QProcessPrivate::_q_canReadStandardError()
             emittedReadyRead = false;
         }
     }
-    emit q->readyReadStandardError();
+    emit q->readyReadStandardError(QProcess::QPrivateSignal());
     return didRead;
 }
 
@@ -1087,7 +1087,7 @@ bool QProcessPrivate::_q_startupNotification()
         startupSocketNotifier->setEnabled(false);
     if (processStarted()) {
         q->setProcessState(QProcess::Running);
-        emit q->started();
+        emit q->started(QProcess::QPrivateSignal());
         return true;
     }
 
@@ -1767,7 +1767,7 @@ void QProcess::setProcessState(ProcessState state)
     if (d->processState == state)
         return;
     d->processState = state;
-    emit stateChanged(state);
+    emit stateChanged(state, QPrivateSignal());
 }
 
 /*!

@@ -79,7 +79,7 @@ public:
     {
         Q_Q(QTimeLine);
         if (newState != state)
-            emit q->stateChanged(state = newState);
+            emit q->stateChanged(state = newState, QTimeLine::QPrivateSignal());
     }
 
     void setCurrentTime(int msecs);
@@ -126,14 +126,14 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     qDebug() << "QTimeLinePrivate::setCurrentTime: frameForTime" << currentTime << currentFrame;
 #endif
     if (!qFuzzyCompare(lastValue, q->currentValue()))
-        emit q->valueChanged(q->currentValue());
+        emit q->valueChanged(q->currentValue(), QTimeLine::QPrivateSignal());
     if (lastFrame != currentFrame) {
         const int transitionframe = (direction == QTimeLine::Forward ? endFrame : startFrame);
         if (looping && !finished && transitionframe != currentFrame) {
 #ifdef QTIMELINE_DEBUG
             qDebug() << "QTimeLinePrivate::setCurrentTime: transitionframe";
 #endif
-            emit q->frameChanged(transitionframe);
+            emit q->frameChanged(transitionframe, QTimeLine::QPrivateSignal());
         }
 #ifdef QTIMELINE_DEBUG
         else {
@@ -153,11 +153,11 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
             qDebug("QTimeLinePrivate::setCurrentTime: not transitionframe because %s",  reason.constData());
         }
 #endif
-        emit q->frameChanged(currentFrame);
+        emit q->frameChanged(currentFrame, QTimeLine::QPrivateSignal());
     }
     if (finished && state == QTimeLine::Running) {
         q->stop();
-        emit q->finished();
+        emit q->finished(QTimeLine::QPrivateSignal());
     }
 }
 

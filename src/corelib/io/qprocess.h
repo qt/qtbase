@@ -210,14 +210,30 @@ public Q_SLOTS:
     void kill();
 
 Q_SIGNALS:
-    void started();
+    void started(
+#if !defined(qdoc)
+        QPrivateSignal
+#endif
+    );
     void finished(int exitCode);
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
     void error(QProcess::ProcessError error);
-    void stateChanged(QProcess::ProcessState state);
+    void stateChanged(QProcess::ProcessState state
+#if !defined(qdoc)
+        , QPrivateSignal
+#endif
+    );
 
-    void readyReadStandardOutput();
-    void readyReadStandardError();
+    void readyReadStandardOutput(
+#if !defined(qdoc)
+        QPrivateSignal
+#endif
+    );
+    void readyReadStandardError(
+#if !defined(qdoc)
+        QPrivateSignal
+#endif
+    );
 
 protected:
     void setProcessState(ProcessState state);

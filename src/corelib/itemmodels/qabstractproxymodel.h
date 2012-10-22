@@ -97,7 +97,11 @@ public:
     Qt::DropActions supportedDropActions() const;
 
 Q_SIGNALS:
-    void sourceModelChanged();
+    void sourceModelChanged(
+#if !defined(qdoc)
+        QPrivateSignal
+#endif
+    );
 
 protected:
     QAbstractProxyModel(QAbstractProxyModelPrivate &, QObject *parent);
