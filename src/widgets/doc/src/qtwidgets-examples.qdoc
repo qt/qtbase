@@ -43,33 +43,6 @@
     be used to change the appearance of standard widgets and appropriately
     written custom widgets.
 
-    \list
-    \li \l{widgets/analogclock}{Analog Clock}\raisedaster
-    \li \l{widgets/calculator}{Calculator}\raisedaster
-    \li \l{widgets/calendarwidget}{Calendar Widget}\raisedaster
-    \li \l{widgets/charactermap}{Character Map}\raisedaster
-    \li \l{widgets/codeeditor}{Code Editor}\raisedaster
-    \li \l{widgets/digitalclock}{Digital Clock}\raisedaster
-    \li \l{widgets/groupbox}{Group Box}\raisedaster
-    \li \l{widgets/icons}{Icons}\raisedaster
-    \li \l{widgets/imageviewer}{Image Viewer}\raisedaster
-    \li \l{widgets/lineedits}{Line Edits}\raisedaster
-    \li \l{widgets/movie}{Movie}
-    \li \l{widgets/scribble}{Scribble}\raisedaster
-    \li \l{widgets/shapedclock}{Shaped Clock}\raisedaster
-    \li \l{widgets/sliders}{Sliders}\raisedaster
-    \li \l{widgets/softkeys}{Soft Keys}
-    \li \l{widgets/spinboxes}{Spin Boxes}\raisedaster
-    \li \l{widgets/styles}{Styles}\raisedaster
-    \li \l{widgets/stylesheet}{Style Sheet}\raisedaster
-    \li \l{widgets/tablet}{Tablet}\raisedaster
-    \li \l{widgets/tetrix}{Tetrix}\raisedaster
-    \li \l{widgets/tooltips}{Tooltips}\raisedaster
-    \li \l{widgets/validators}{Validators}
-    \li \l{widgets/wiggly}{Wiggly}\raisedaster
-    \li \l{widgets/windowflags}{Window Flags}\raisedaster
-    \endlist
-
-    Examples marked with an asterisk (*) are fully documented.
+    \annotatedlist examples-widgets
 
 */

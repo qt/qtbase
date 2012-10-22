@@ -28,6 +28,9 @@
 /*!
     \example widgets/sliders
     \title Sliders Example
+    \ingroup examples-widgets
+    \brief The Sliders example shows how to use the different types of sliders
+    available in Qt: QSlider, QScrollBar and QDial.
 
     Qt provides three types of slider-like widgets: QSlider,
     QScrollBar and QDial. They all inherit most of their

@@ -28,8 +28,8 @@
 /*!
     \example widgets/tablet
     \title Tablet Example
-
-    This example shows how to use a Wacom tablet in Qt applications.
+    \ingroup examples-widgets
+    \brief This example shows how to use a Wacom tablet in Qt applications.
 
     \image tabletexample.png
 
