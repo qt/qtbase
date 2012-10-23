@@ -236,6 +236,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
+    dictionary[ "SYSTEM_PROXIES" ]  = "no";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -877,6 +878,10 @@ void Configure::parseCmdLine()
             dictionary[ "SLOG2" ] = "no";
         } else if (configCmdLine.at(i) == "-slog2") {
             dictionary[ "SLOG2" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-system-proxies") {
+            dictionary[ "SYSTEM_PROXIES" ] = "no";
+        } else if (configCmdLine.at(i) == "-system-proxies") {
+            dictionary[ "SYSTEM_PROXIES" ] = "yes";
         }
 
         // Work around compiler nesting limitation
@@ -1681,6 +1686,10 @@ bool Configure::displayHelp()
         desc("QT_GLIB",     "yes",     "-glib",         "Compile Glib support.\n");
 
         desc("QT_INSTALL_SETTINGS", "auto", "-sysconfdir <dir>", "Settings used by Qt programs will be looked for in\n<dir>.\n");
+
+        desc("SYSTEM_PROXIES", "yes",  "-system-proxies",    "Use system network proxies by default.");
+        desc("SYSTEM_PROXIES", "no",   "-no-system-proxies", "Do not use system network proxies by default.\n");
+
 
 #if !defined(EVAL)
         desc(                   "-qtnamespace <name>", "Wraps all Qt library code in 'namespace name {...}'.");
@@ -2560,6 +2569,9 @@ void Configure::generateOutputVars()
     if (dictionary[ "V8SNAPSHOT" ] == "yes")
         qtConfig += "v8snapshot";
 
+    if (dictionary[ "SYSTEM_PROXIES" ] == "yes")
+        qtConfig += "system-proxies";
+
     // Add config levels --------------------------------------------
     QStringList possible_configs = QStringList()
         << "minimal"
@@ -3328,7 +3340,8 @@ void Configure::displayConfig()
     sout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     sout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
-    sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
+    sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
+    sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl << endl;
 
     sout << "Third Party Libraries:" << endl;
     sout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;

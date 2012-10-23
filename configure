@@ -785,6 +785,7 @@ CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
+CFG_SYSTEM_PROXIES=no
 
 # Target architecture
 CFG_ARCH=
@@ -1002,6 +1003,14 @@ while [ "$#" -gt 0 ]; do
     -enable-*|-disable-*)
         VAR=`echo $1 | sed "s,^-\([^-]*\)-.*,\1,"`
         VAL=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
+        ;;
+    -system-proxies)
+        VAR=system-proxies
+        VAL=yes
+        ;;
+    -no-system-proxies)
+        VAR=system-proxies
+        VAL=no
         ;;
     #Qt Builtin/System style options
     -no-*|-system-*|-qt-*)
@@ -2086,6 +2095,13 @@ while [ "$#" -gt 0 ]; do
     c++11)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_CXX11="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    system-proxies)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SYSTEM_PROXIES="$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -3290,6 +3306,9 @@ Additional options:
                           With no parameter, this will attempt to auto-detect
                           OpenGL ES 2, or regular desktop OpenGL.
                           Use es2 for <api> to override auto-detection.
+
+ *  -no-system-proxies .. Do not use system network proxies by default.
+    -system-proxies ..... Use system network proxies by default.
 
  $GBN  -no-glib ........... Do not compile Glib support.
  $GBY  -glib .............. Compile Glib support.
@@ -5454,6 +5473,7 @@ fi
 [ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
 [ "$CFG_XCB" = "yes" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
+[ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
 
 [ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
@@ -6235,6 +6255,7 @@ echo "libudev support ........ $CFG_LIBUDEV"
 if [ "$XPLATFORM_QNX" = "yes" ]; then
     echo "SLOG2 support .......... $CFG_SLOG2"
 fi
+echo "Use system proxies ..... $CFG_SYSTEM_PROXIES"
 
 if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ......... yes (Desktop OpenGL)"

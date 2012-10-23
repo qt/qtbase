@@ -253,6 +253,9 @@ public:
         , httpSocketEngineHandler(0)
 #endif
     {
+#ifdef QT_USE_SYSTEM_PROXIES
+        setApplicationProxyFactory(new QSystemConfigurationProxyFactory);
+#endif
 #ifndef QT_NO_SOCKS5
         socks5SocketEngineHandler = new QSocks5SocketEngineHandler();
 #endif
