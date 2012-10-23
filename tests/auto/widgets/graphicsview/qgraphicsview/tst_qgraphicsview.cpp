@@ -2508,8 +2508,8 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
-        dirtyPainter = (painter->pen().width() != 0);
-        painter->setPen(QPen(Qt::black, 1.0));
+        dirtyPainter = (painter->pen().color() != Qt::black);
+        painter->setPen(Qt::red);
     }
 };
 

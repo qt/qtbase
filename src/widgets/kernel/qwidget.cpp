@@ -11237,7 +11237,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
 void QWidget::initPainter(QPainter *painter) const
 {
     const QPalette &pal = palette();
-    painter->d_func()->state->pen = QPen(pal.brush(foregroundRole()), 0);
+    painter->d_func()->state->pen = QPen(pal.brush(foregroundRole()), 1);
     painter->d_func()->state->bgBrush = pal.brush(backgroundRole());
     QFont f(font(), const_cast<QWidget *>(this));
     painter->d_func()->state->deviceFont = f;
