@@ -6074,7 +6074,7 @@ fi
 #-------------------------------------------------------------------------------
 QTMODULE="$outpath/mkspecs/qmodule.pri"
 
-echo "CONFIG += $QMAKE_CONFIG create_prl link_prl" >> "$QTMODULE.tmp"
+echo "CONFIG += $QMAKE_CONFIG create_prl link_prl fix_output_dirs no_private_qt_headers_warning QTDIR_build" >> "$QTMODULE.tmp"
 echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
@@ -6139,9 +6139,6 @@ cat >>"$CACHEFILE.tmp" <<EOF
 #paths
 QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
-
-CONFIG += fix_output_dirs no_private_qt_headers_warning QTDIR_build
-
 EOF
 
 # replace .qmake.cache if it differs from the newly created temp file
