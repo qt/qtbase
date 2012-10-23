@@ -595,6 +595,9 @@ QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState,
                                  POINTL pt, LPDWORD pdwEffect)
 {
+    if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
+        dh->DragEnter(reinterpret_cast<HWND>(m_window->winId()), pDataObj, reinterpret_cast<POINT*>(&pt), *pdwEffect);
+
     if (QWindowsContext::verboseOLE)
         qDebug("%s widget=%p key=%lu, pt=%ld,%ld", __FUNCTION__, m_window, grfKeyState, pt.x, pt.y);
 
@@ -608,6 +611,9 @@ QWindowsOleDropTarget::DragEnter(LPDATAOBJECT pDataObj, DWORD grfKeyState,
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 {
+    if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
+        dh->DragOver(reinterpret_cast<POINT*>(&pt), *pdwEffect);
+
     QWindow *dragOverWindow = findDragOverWindow(pt);
     if (QWindowsContext::verboseOLE)
         qDebug("%s widget=%p key=%lu, pt=%ld,%ld", __FUNCTION__, dragOverWindow, grfKeyState, pt.x, pt.y);
@@ -628,6 +634,9 @@ QWindowsOleDropTarget::DragOver(DWORD grfKeyState, POINTL pt, LPDWORD pdwEffect)
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
 QWindowsOleDropTarget::DragLeave()
 {
+    if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
+        dh->DragLeave();
+
     if (QWindowsContext::verboseOLE)
         qDebug().nospace() <<__FUNCTION__ << ' ' << m_window;
 
@@ -640,9 +649,12 @@ QWindowsOleDropTarget::DragLeave()
 #define KEY_STATE_BUTTON_MASK (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)
 
 QT_ENSURE_STACK_ALIGNED_FOR_SSE STDMETHODIMP
-QWindowsOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState,
+QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
                             POINTL pt, LPDWORD pdwEffect)
 {
+    if (IDropTargetHelper* dh = QWindowsDrag::instance()->dropHelper())
+        dh->Drop(pDataObj, reinterpret_cast<POINT*>(&pt), *pdwEffect);
+
     QWindow *dropWindow = findDragOverWindow(pt);
 
     if (QWindowsContext::verboseOLE)
@@ -700,6 +712,10 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState,
     return NOERROR;
 }
 
+#if defined(Q_CC_MINGW) && !defined(_WIN32_IE)
+# define _WIN32_IE 0x0501
+#endif
+
 /*!
     \class QWindowsDrag
     \brief Windows drag implementation.
@@ -707,12 +723,15 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT /*pDataObj*/, DWORD grfKeyState,
     \ingroup qt-lighthouse-win
 */
 
-QWindowsDrag::QWindowsDrag() : m_dropDataObject(0)
+QWindowsDrag::QWindowsDrag() :
+    m_dropDataObject(0), m_cachedDropTargetHelper(0)
 {
 }
 
 QWindowsDrag::~QWindowsDrag()
 {
+    if (m_cachedDropTargetHelper)
+        m_cachedDropTargetHelper->Release();
 }
 
 /*!
@@ -724,6 +743,18 @@ QMimeData *QWindowsDrag::dropData()
     if (const QDrag *drag = currentDrag())
         return drag->mimeData();
     return &m_dropData;
+}
+
+/*!
+    \brief May be used to handle extended cursors functionality for drags from outside the app.
+*/
+IDropTargetHelper* QWindowsDrag::dropHelper() {
+    if (!m_cachedDropTargetHelper) {
+        CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
+                         IID_IDropTargetHelper,
+                         reinterpret_cast<void**>(&m_cachedDropTargetHelper));
+    }
+    return m_cachedDropTargetHelper;
 }
 
 QPixmap QWindowsDrag::defaultCursor(Qt::DropAction action) const

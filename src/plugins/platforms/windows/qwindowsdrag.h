@@ -47,6 +47,8 @@
 #include <qpa/qplatformdrag.h>
 #include <QtGui/QPixmap>
 
+struct IDropTargetHelper;
+
 QT_BEGIN_NAMESPACE
 class QWindowsDropMimeData : public QWindowsInternalMimeData {
 public:
@@ -100,11 +102,15 @@ public:
     void releaseDropDataObject();
     QMimeData *dropData();
 
+    IDropTargetHelper* dropHelper();
+
     QPixmap defaultCursor(Qt::DropAction action) const;
 
 private:
     QWindowsDropMimeData m_dropData;
     IDataObject *m_dropDataObject;
+
+    IDropTargetHelper* m_cachedDropTargetHelper;
 
     mutable QPixmap m_copyDragCursor;
     mutable QPixmap m_moveDragCursor;
