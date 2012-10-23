@@ -625,7 +625,7 @@ public:
 
 #ifndef QT_NO_QOBJECT
     template <class X>
-    inline QWeakPointer(X *ptr, bool) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
+    inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : 0), value(ptr)
     { }
 #endif
 
