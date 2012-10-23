@@ -14,12 +14,8 @@ isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
 
 QTDIR = $$[QT_HOST_PREFIX]
 exists($$QTDIR/.qmake.cache) {
-    mod_component_base = $$QTDIR
-    mod_qmake_base = $$QTDIR
-} else {
-    mod_component_base = $$MODULE_BASE_OUTDIR
-    mod_qmake_base = $$MODULE_QMAKE_OUTDIR
+    # Permit modules to enforce being built outside QTDIR ...
+    !force_independent: MODULE_BASE_OUTDIR = $$QTDIR
+    # ... though this sort of breaks the idea.
+    MODULE_QMAKE_OUTDIR = $$QTDIR
 }
-# Permit modules to enforce being built outside QTDIR.
-force_independent: mod_component_base = $$MODULE_BASE_OUTDIR
-

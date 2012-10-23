@@ -112,7 +112,7 @@ CONFIG          -= fix_output_dirs
     doc_subdir = doc
 
     unset(QMAKE_DOCS_INDEX)
-    QMAKE_DOCS_OUTPUTDIR = $$mod_component_base/$$doc_subdir/qt$${MODULE}
+    QMAKE_DOCS_OUTPUTDIR = $$MODULE_BASE_OUTDIR/$$doc_subdir/qt$${MODULE}
     for(qmod, QMAKEMODULES): \
         QMAKE_DOCS_INDEX += $$section(qmod, /, 0, -3)/$$doc_subdir
 

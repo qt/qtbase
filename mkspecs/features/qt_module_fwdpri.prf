@@ -4,7 +4,7 @@
 
     isEmpty(MODULE_INSTALL_LIBS): MODULE_INSTALL_LIBS = $$[QT_INSTALL_LIBS/raw]
 
-    MODULE_FWD_PRI = $$mod_qmake_base/mkspecs/modules/qt_$${MODULE}.pri
+    MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
 
     # -rpath-link is used by the linker to find depedencies of dynamic
     # libraries which were NOT specified on the command line.
@@ -51,11 +51,11 @@
     # Create a forwarding module .pri file
     MODULE_FWD_PRI_CONT = \
         "QT_MODULE_BASE = $$MODULE_BASE_DIR" \
-        "QT_MODULE_BIN_BASE = $$mod_component_base/bin" \
-        "QT_MODULE_INCLUDE_BASE = $$mod_component_base/include" \
-        "QT_MODULE_IMPORT_BASE = $$mod_component_base/imports" \
-        "QT_MODULE_LIB_BASE = $$mod_component_base/lib" \
-        "QT_MODULE_PLUGIN_BASE = $$mod_component_base/plugins" \
+        "QT_MODULE_BIN_BASE = $$MODULE_BASE_OUTDIR/bin" \
+        "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
+        "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
+        "QT_MODULE_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
+        "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
         $$module_rpathlink \
         $$module_rpathlink_priv \
         "QT.$${MODULE}.rpath = $$MODULE_INSTALL_LIBS" \
