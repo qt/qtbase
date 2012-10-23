@@ -135,24 +135,14 @@ QT_BEGIN_NAMESPACE
 #define TDLG_SECONDARYPANEL         8
 #endif
 
-class QWindowsVistaAnimation : public QStyleAnimation
+class QWindowsVistaAnimation : public QBlendStyleAnimation
 {
     Q_OBJECT
 public:
-    QWindowsVistaAnimation(QObject *target) : QStyleAnimation(target), _duration(-1) { }
-    virtual ~QWindowsVistaAnimation() { }
-    virtual void paint(QPainter *painter, const QStyleOption *option);
-    virtual bool isUpdateNeeded() const;
-    virtual int duration() const { return _duration; }
-    //set time in ms to complete a state transition / pulse cycle
-    void setDuration(int duration) { _duration = duration; }
+    QWindowsVistaAnimation(Type type, QObject *target) : QBlendStyleAnimation(type, target) { }
 
-protected:
-    void drawBlendedImage(QPainter *painter, QRect rect, float value);
-    QImage _primaryImage;
-    QImage _secondaryImage;
-    QImage _tempImage;
-    int _duration;
+    virtual bool isUpdateNeeded() const;
+    void paint(QPainter *painter, const QStyleOption *option);
 };
 
 
@@ -161,11 +151,7 @@ class QWindowsVistaTransition : public QWindowsVistaAnimation
 {
     Q_OBJECT
 public:
-    QWindowsVistaTransition(QObject *target) : QWindowsVistaAnimation(target) {}
-    virtual ~QWindowsVistaTransition() { }
-    void setStartImage(const QImage &image) { _primaryImage = image; }
-    void setEndImage(const QImage &image) { _secondaryImage = image; }
-    virtual void paint(QPainter *painter, const QStyleOption *option);
+    QWindowsVistaTransition(QObject *target) : QWindowsVistaAnimation(Transition, target) {}
 };
 
 
@@ -174,11 +160,7 @@ class QWindowsVistaPulse: public QWindowsVistaAnimation
 {
     Q_OBJECT
 public:
-    QWindowsVistaPulse(QObject *target) : QWindowsVistaAnimation(target) {}
-    virtual ~QWindowsVistaPulse() { }
-    void setPrimaryImage(const QImage &image) { _primaryImage = image; }
-    void setAlternateImage(const QImage &image) { _secondaryImage = image; }
-    virtual void paint(QPainter *painter, const QStyleOption *option);
+    QWindowsVistaPulse(QObject *target) : QWindowsVistaAnimation(Pulse, target) {}
 };
 
 
