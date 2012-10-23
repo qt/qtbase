@@ -316,15 +316,14 @@ void QBBEngine::updateConfiguration(const char *interface)
     const QString id = idForName(name);
 
 
-    const int numberOfIpAddresses = netstatus_interface_get_num_ip_addresses(details);
-    const bool isConnected = netstatus_interface_is_connected(details);
     const netstatus_interface_type_t type = netstatus_interface_get_type(details);
+    const netstatus_ip_status_t ipStatus = netstatus_interface_get_ip_status(details);
 
     netstatus_free_interface_details(&details);
 
     QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Defined;
 
-    if (isConnected && (numberOfIpAddresses > 0))
+    if (ipStatus == NETSTATUS_IP_STATUS_OK)
         state |= QNetworkConfiguration::Active;
 
     QMutexLocker locker(&mutex);
