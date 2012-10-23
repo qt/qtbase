@@ -48,7 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(),
-    _startTime(QTime::currentTime())
+    _delay(0), _duration(-1), _startTime(QTime::currentTime())
 {
     if (target) {
         moveToThread(target->thread());
@@ -61,14 +61,29 @@ QStyleAnimation::~QStyleAnimation()
 {
 }
 
-int QStyleAnimation::duration() const
-{
-    return -1;
-}
-
 QObject *QStyleAnimation::target() const
 {
     return parent();
+}
+
+int QStyleAnimation::duration() const
+{
+    return _duration;
+}
+
+void QStyleAnimation::setDuration(int duration)
+{
+    _duration = duration;
+}
+
+int QStyleAnimation::delay() const
+{
+    return _delay;
+}
+
+void QStyleAnimation::setDelay(int delay)
+{
+    _delay = delay;
 }
 
 QTime QStyleAnimation::startTime() const
@@ -89,7 +104,7 @@ void QStyleAnimation::updateTarget()
 
 bool QStyleAnimation::isUpdateNeeded() const
 {
-    return true;
+    return currentTime() > _delay;
 }
 
 void QStyleAnimation::updateCurrentTime(int)
@@ -137,11 +152,13 @@ void QProgressStyleAnimation::setSpeed(int speed)
 
 bool QProgressStyleAnimation::isUpdateNeeded() const
 {
-    int current = animationStep();
-    if (_step == -1 || _step != current)
-    {
-        _step = current;
-        return true;
+    if (QStyleAnimation::isUpdateNeeded()) {
+        int current = animationStep();
+        if (_step == -1 || _step != current)
+        {
+            _step = current;
+            return true;
+        }
     }
     return false;
 }
