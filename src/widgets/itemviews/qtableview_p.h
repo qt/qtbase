@@ -150,6 +150,8 @@ public:
     void init();
     void trimHiddenSelections(QItemSelectionRange *range) const;
 
+    QStyleOptionViewItem viewOptions() const;
+
     inline bool isHidden(int row, int col) const {
         return verticalHeader->isSectionHidden(row)
             || horizontalHeader->isSectionHidden(col);

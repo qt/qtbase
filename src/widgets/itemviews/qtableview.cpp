@@ -1290,14 +1290,20 @@ void QTableView::scrollContentsBy(int dx, int dy)
     }
 }
 
+QStyleOptionViewItem QTableViewPrivate::viewOptions() const
+{
+    QStyleOptionViewItem option = QAbstractItemViewPrivate::viewOptions();
+    option.showDecorationSelected = true;
+    return option;
+}
+
 /*!
   \reimp
 */
 QStyleOptionViewItem QTableView::viewOptions() const
 {
-    QStyleOptionViewItem option = QAbstractItemView::viewOptions();
-    option.showDecorationSelected = true;
-    return option;
+    Q_D(const QTableView);
+    return d->viewOptions();
 }
 
 /*!
