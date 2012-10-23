@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
     priority over any readers that might also be waiting.
 
     Like QMutex, a QReadWriteLock can be recursively locked by the
-    same thread when constructed in
+    same thread when constructed with \l{QReadWriteLock::Recursive} as
     \l{QReadWriteLock::RecursionMode}. In such cases,
     unlock() must be called the same number of times lockForWrite() or
     lockForRead() was called. Note that the lock type cannot be
@@ -133,8 +133,10 @@ QReadWriteLock::~QReadWriteLock()
 
 /*!
     Locks the lock for reading. This function will block the current
-    thread if any thread (including the current) has locked for
-    writing.
+    thread if another thread has locked for writing.
+
+    It is not possible to lock for read if the thread already has
+    locked for write.
 
     \sa unlock(), lockForWrite(), tryLockForRead()
 */
@@ -177,7 +179,10 @@ void QReadWriteLock::lockForRead()
     writing.
 
     If the lock was obtained, the lock must be unlocked with unlock()
-    before another thread can successfully lock it.
+    before another thread can successfully lock it for writing.
+
+    It is not possible to lock for read if the thread already has
+    locked for write.
 
     \sa unlock(), lockForRead()
 */
@@ -222,7 +227,10 @@ bool QReadWriteLock::tryLockForRead()
     lock can be locked for reading when \a timeout is negative.
 
     If the lock was obtained, the lock must be unlocked with unlock()
-    before another thread can successfully lock it.
+    before another thread can successfully lock it for writing.
+
+    It is not possible to lock for read if the thread already has
+    locked for write.
 
     \sa unlock(), lockForRead()
 */
@@ -262,7 +270,12 @@ bool QReadWriteLock::tryLockForRead(int timeout)
 
 /*!
     Locks the lock for writing. This function will block the current
-    thread if another thread has locked for reading or writing.
+    thread if another thread (including the current) has locked for
+    reading or writing (unless the lock has been created using the
+    \l{QReadWriteLock::Recursive} mode).
+
+    It is not possible to lock for write if the thread already has
+    locked for read.
 
     \sa unlock(), lockForRead(), tryLockForWrite()
 */
@@ -303,6 +316,9 @@ void QReadWriteLock::lockForWrite()
 
     If the lock was obtained, the lock must be unlocked with unlock()
     before another thread can successfully lock it.
+
+    It is not possible to lock for write if the thread already has
+    locked for read.
 
     \sa unlock(), lockForWrite()
 */
@@ -347,6 +363,9 @@ bool QReadWriteLock::tryLockForWrite()
 
     If the lock was obtained, the lock must be unlocked with unlock()
     before another thread can successfully lock it.
+
+    It is not possible to lock for write if the thread already has
+    locked for read.
 
     \sa unlock(), lockForWrite()
 */
