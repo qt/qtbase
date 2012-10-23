@@ -283,14 +283,16 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 {
     d->m_exceptionStore.throwPossibleException();
 
+    QMutexLocker lock(&d->m_mutex);
     if (!(d->state & Running))
         return;
+    lock.unlock();
 
     // To avoid deadlocks and reduce the number of threads used, try to 
     // run the runnable in the current thread.
     QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
 
-    QMutexLocker lock(&d->m_mutex);
+    lock.relock();
 
     if (!(d->state & Running))
         return;
@@ -304,10 +306,14 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
 
 void QFutureInterfaceBase::waitForFinished()
 {
-    if (d->state & Running) {
+    QMutexLocker lock(&d->m_mutex);
+    const bool alreadyFinished = !(d->state & Running);
+    lock.unlock();
+
+    if (!alreadyFinished) {
         QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
 
-        QMutexLocker lock(&d->m_mutex);
+        lock.relock();
 
         while (d->state & Running)
             d->waitCondition.wait(&d->m_mutex);
