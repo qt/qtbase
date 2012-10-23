@@ -997,16 +997,12 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
         }
     }
 
-    if (object) {
+    if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
         QStyleSheetStyle *style = const_cast<QStyleSheetStyle *>(globalStyleSheetStyle);
-        if (!style) {
-            if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
-                style = qobject_cast<QStyleSheetStyle *>(widget->style());
-                if (style)
-                    fixupBorder(style->nativeFrameWidth(widget));
-            }
-        }
-
+        if (!style)
+            style = qobject_cast<QStyleSheetStyle *>(widget->style());
+        if (style)
+            fixupBorder(style->nativeFrameWidth(widget));
     }
     if (hasBorder() && border()->hasBorderImage())
         defaultBackground = QBrush();
