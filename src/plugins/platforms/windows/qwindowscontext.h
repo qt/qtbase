@@ -184,6 +184,8 @@ public:
 #endif
 
     static QByteArray comErrorString(HRESULT hr);
+    bool asyncExpose() const;
+    void setAsyncExpose(bool value);
 
 private:
     void handleFocusEvent(QtWindows::WindowsEventType et, QWindowsWindow *w);

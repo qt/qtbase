@@ -259,6 +259,7 @@ struct QWindowsContextPrivate {
     const HRESULT m_oleInitializeResult;
     const QByteArray m_eventType;
     QWindow *m_lastActiveWindow;
+    bool m_asyncExpose;
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate() :
@@ -267,7 +268,7 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     m_defaultDPI(GetDeviceCaps(m_displayContext,LOGPIXELSY)),
     m_oleInitializeResult(OleInitialize(NULL)),
     m_eventType(QByteArrayLiteral("windows_generic_MSG")),
-    m_lastActiveWindow(0)
+    m_lastActiveWindow(0), m_asyncExpose(0)
 {
 #ifndef Q_OS_WINCE
     QWindowsContext::user32dll.init();
@@ -922,6 +923,16 @@ void QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
                                                    QWindowsKeyMapper::queryKeyboardModifiers());
 }
 #endif
+
+bool QWindowsContext::asyncExpose() const
+{
+    return d->m_asyncExpose;
+}
+
+void QWindowsContext::setAsyncExpose(bool value)
+{
+    d->m_asyncExpose = value;
+}
 
 /*!
     \brief Windows functions for actual windows.
