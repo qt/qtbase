@@ -32,19 +32,7 @@ else: \
     MODULE_DEFINE = QT_$${ucmodule}_LIB
 MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
-# Find the module's source root dir.
-MODULE_PROFILE_DIR = $$_PRO_FILE_PWD_
-for(ever) {
-    exists($$MODULE_PROFILE_DIR/sync.profile):break()
-    nmpri = $$dirname(MODULE_PROFILE_DIR)
-    equals(nmpri, $$MODULE_PROFILE_DIR):error("No sync.profile found. This does not look like a Qt module source tree.")
-    MODULE_PROFILE_DIR = $$nmpri
-    unset(nmpri)
-}
-
-isEmpty(MODULE_BASE_DIR): MODULE_BASE_DIR = $$MODULE_PROFILE_DIR
-isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$shadowed($$MODULE_BASE_DIR)
-isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
+load(qt_build_paths)
 
 # This check will be removed soon. Weird indentation to avoid reindenting the code later.
 !isEmpty(MODULE_PRI) {
@@ -122,12 +110,6 @@ CONFIG          -= fix_output_dirs
 
 !isEmpty(QMAKE_DOCS) {
     doc_subdir = doc
-
-    QTDIR = $$[QT_HOST_PREFIX]
-    !force_independent:exists($$QTDIR/.qmake.cache): \
-        mod_component_base = $$QTDIR
-    else: \
-        mod_component_base = $$MODULE_BASE_OUTDIR
 
     unset(QMAKE_DOCS_INDEX)
     QMAKE_DOCS_OUTPUTDIR = $$mod_component_base/$$doc_subdir/qt$${MODULE}
