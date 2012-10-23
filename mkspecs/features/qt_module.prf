@@ -103,7 +103,6 @@ win32:!wince*:exists($$[QT_INSTALL_PREFIX]/.qmake.cache): DLLDESTDIR = $$eval(QT
 
 CONFIG          += qt warn_on depend_includepath
 CONFIG          += qmake_cache target_qt
-CONFIG          -= fix_output_dirs
 
 !isEmpty(QMAKE_DOCS) {
     doc_subdir = doc

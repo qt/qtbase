@@ -6,7 +6,6 @@ TARGET = qtmain
 DESTDIR = $$QT.core.libs
 
 CONFIG += static warn_on depend_includepath
-CONFIG -= fix_output_dirs
 QT =   # qt.prf is still needed for some DEFINES, etc.
 
 contains(QT_CONFIG, build_all):CONFIG += build_all
