@@ -2750,8 +2750,7 @@ void Configure::generateCachefile()
         if (!dictionary["DECORATIONS"].isEmpty())
             moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
-        moduleStream << "CONFIG += " << qmakeConfig.join(' ')
-                     << " create_prl link_prl no_private_qt_headers_warning QTDIR_build";
+        moduleStream << "CONFIG += " << qmakeConfig.join(' ');
         if (dictionary[ "SSE2" ] == "yes")
             moduleStream << " sse2";
         if (dictionary[ "SSE3" ] == "yes")

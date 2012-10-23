@@ -25,6 +25,8 @@ mac {
    }
 }
 
+CONFIG += create_prl link_prl no_private_qt_headers_warning QTDIR_build
+
 # Qt modules get compiled without exceptions enabled by default.
 # However, testcases should be still built with exceptions.
 CONFIG += exceptions_off testcase_exceptions
