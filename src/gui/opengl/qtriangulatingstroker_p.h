@@ -54,7 +54,10 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QTriangulatingStroker
 {
 public:
-    QTriangulatingStroker() : m_vertices(0) {}
+    QTriangulatingStroker() : m_vertices(0), m_cx(0), m_cy(0), m_nvx(0), m_nvy(0), m_width(1), m_miter_limit(2),
+        m_roundness(0), m_sin_theta(0), m_cos_theta(0), m_inv_scale(1), m_curvyness_mul(1), m_curvyness_add(0),
+        m_join_style(Qt::BevelJoin), m_cap_style(Qt::SquareCap) {}
+
     void process(const QVectorPath &path, const QPen &pen, const QRectF &clip, QPainter::RenderHints hints);
 
     inline int vertexCount() const { return m_vertices.size(); }
