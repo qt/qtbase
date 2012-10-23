@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_BIG_CODECS
+#ifndef QT_NO_CODECS
 
 class QIsciiCodec : public QTextCodec {
 public:

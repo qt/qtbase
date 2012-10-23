@@ -86,7 +86,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_BIG_CODECS
+#ifndef QT_NO_CODECS
 
 class QTsciiCodec : public QTextCodec {
 public:
@@ -99,7 +99,7 @@ public:
     QByteArray convertFromUnicode(const QChar *, int, ConverterState *) const;
 };
 
-#endif // QT_NO_BIG_CODECS
+#endif // QT_NO_CODECS
 
 QT_END_NAMESPACE
 
