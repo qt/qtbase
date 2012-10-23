@@ -33,7 +33,7 @@
     The \l QDataStream allows you to serialize some of the Qt data types.
     The table below lists the data types that QDataStream can serialize
     and how they are represented. The format described below is
-    \l{QDataStream::setVersion()}{version 12}.
+    \l{QDataStream::setVersion()}{version 13}.
 
     It is always best to cast integers to a Qt integer type, such as
     qint16 or quint32, when reading and writing. This ensures that
@@ -129,7 +129,7 @@
          \li \list
             \li Date (QDate)
             \li Time (QTime)
-            \li 0 for Qt::LocalTime, 1 for Qt::UTC (quint8)
+            \li The \l{Qt::TimeSpec}{time spec} (quint8)
             \endlist
     \row \li QEasingCurve
          \li \list
