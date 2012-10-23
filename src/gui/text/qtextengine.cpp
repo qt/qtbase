@@ -3060,8 +3060,7 @@ void QTextEngine::drawItemDecorationList(QPainter *painter, const ItemDecoration
 
     foreach (const ItemDecoration &decoration, decorationList) {
         painter->setPen(decoration.pen);
-        QLineF line(decoration.x1, decoration.y, decoration.x2, decoration.y);
-        painter->drawLine(line);
+        painter->drawLine(QLineF(decoration.x1, decoration.y, decoration.x2, decoration.y));
     }
 }
 
@@ -3069,13 +3068,23 @@ void QTextEngine::drawDecorations(QPainter *painter)
 {
     QPen oldPen = painter->pen();
 
+    bool wasCompatiblePainting = painter->renderHints()
+            & QPainter::Qt4CompatiblePainting;
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
+
     adjustUnderlines();
     drawItemDecorationList(painter, underlineList);
     drawItemDecorationList(painter, strikeOutList);
     drawItemDecorationList(painter, overlineList);
 
-    painter->setPen(oldPen);
     clearDecorations();
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting);
+
+    painter->setPen(oldPen);
 }
 
 void QTextEngine::clearDecorations()

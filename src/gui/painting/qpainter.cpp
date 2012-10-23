@@ -6182,10 +6182,16 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     QLineF line(pos.x(), pos.y(), pos.x() + qFloor(width), pos.y());
 
+    bool wasCompatiblePainting = painter->renderHints()
+            & QPainter::Qt4CompatiblePainting;
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
+
     const qreal underlineOffset = fe->underlinePosition().toReal();
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
+    const qreal underlinePos = pos.y() + qCeil(underlineOffset) + 0.5;
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
@@ -6247,6 +6253,9 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     painter->setPen(oldPen);
     painter->setBrush(oldBrush);
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting);
 }
 
 Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
@@ -7500,36 +7509,16 @@ start_lengthVariant:
 
     qreal yoff = 0;
     qreal xoff = 0;
-    if (tf & Qt::AlignBottom) {
+    if (tf & Qt::AlignBottom)
         yoff = r.height() - height;
-    } else if (tf & Qt::AlignVCenter) {
+    else if (tf & Qt::AlignVCenter)
         yoff = (r.height() - height)/2;
-        if (painter) {
-            QTransform::TransformationType type = painter->transform().type();
-            if (type <= QTransform::TxScale) {
-                // do the rounding manually to work around inconsistencies
-                // in the paint engines when drawing on floating point offsets
-                const qreal scale = painter->transform().m22();
-                if (scale != 0)
-                    yoff = -qRound(-yoff * scale) / scale;
-            }
-        }
-    }
-    if (tf & Qt::AlignRight) {
+
+    if (tf & Qt::AlignRight)
         xoff = r.width() - width;
-    } else if (tf & Qt::AlignHCenter) {
+    else if (tf & Qt::AlignHCenter)
         xoff = (r.width() - width)/2;
-        if (painter) {
-            QTransform::TransformationType type = painter->transform().type();
-            if (type <= QTransform::TxScale) {
-                // do the rounding manually to work around inconsistencies
-                // in the paint engines when drawing on floating point offsets
-                const qreal scale = painter->transform().m11();
-                if (scale != 0)
-                    xoff = qRound(xoff * scale) / scale;
-            }
-        }
-    }
+
     QRectF bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
 
     if (hasMoreLengthVariants && !(tf & Qt::TextLongestVariant) && !r.contains(bounds)) {

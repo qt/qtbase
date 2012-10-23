@@ -1638,7 +1638,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
                 continue;
 
             int x = qFloor(staticTextItem->glyphPositions[i].x) + c.baseLineX - margin;
-            int y = qFloor(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
+            int y = qRound(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
 
             vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
             textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));

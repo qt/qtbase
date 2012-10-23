@@ -2787,7 +2787,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
 
             alphaPenBlt(alphaMap->bits(), alphaMap->bytesPerLine(), alphaMap->depth(),
                         qFloor(positions[i].x) + offset.x(),
-                        qFloor(positions[i].y) + offset.y(),
+                        qRound(positions[i].y) + offset.y(),
                         alphaMap->width(), alphaMap->height());
 
             fontEngine->unlockAlphaMapForGlyph();
@@ -2818,7 +2818,6 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             rightShift = 3; // divide by 8
 
         int margin = fontEngine->glyphMargin(glyphType);
-        const QFixed offs = s->flags.legacy_rounding ? QFixed::fromReal(aliasedCoordinateDelta) : QFixed();
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
@@ -2829,7 +2828,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                 continue;
 
             int x = qFloor(positions[i].x) + c.baseLineX - margin;
-            int y = qFloor(positions[i].y + offs) - c.baseLineY - margin;
+            int y = qRound(positions[i].y) - c.baseLineY - margin;
 
             // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
             //        c.x, c.y,
