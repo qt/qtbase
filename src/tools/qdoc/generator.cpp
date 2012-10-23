@@ -1484,22 +1484,24 @@ void Generator::initialize(const Config &config)
 
         QDir dirInfo;
         if (dirInfo.exists(outDir_)) {
-            if (!Config::removeDirContents(outDir_))
-                config.lastLocation().error(tr("Cannot empty output directory '%1'").arg(outDir_));
+            if (!runGenerateOnly()) {
+                if (!Config::removeDirContents(outDir_))
+                    config.lastLocation().error(tr("Cannot empty output directory '%1'").arg(outDir_));
+            }
         }
         else {
             if (!dirInfo.mkpath(outDir_))
                 config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_));
         }
 
-        if (!dirInfo.mkdir(outDir_ + "/images"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/images"));
-        if (!dirInfo.mkdir(outDir_ + "/images/used-in-examples"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/images/used-in-examples"));
-        if (!dirInfo.mkdir(outDir_ + "/scripts"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/scripts"));
-        if (!dirInfo.mkdir(outDir_ + "/style"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/style"));
+        if (!dirInfo.exists(outDir_ + "/images") && !dirInfo.mkdir(outDir_ + "/images"))
+            config.lastLocation().fatal(tr("Cannot create images directory '%1'").arg(outDir_ + "/images"));
+        if (!dirInfo.exists(outDir_ + "/images/used-in-examples") && !dirInfo.mkdir(outDir_ + "/images/used-in-examples"))
+            config.lastLocation().fatal(tr("Cannot create images used in examples directory '%1'").arg(outDir_ + "/images/used-in-examples"));
+        if (!dirInfo.exists(outDir_ + "/scripts") && !dirInfo.mkdir(outDir_ + "/scripts"))
+            config.lastLocation().fatal(tr("Cannot create scripts directory '%1'").arg(outDir_ + "/scripts"));
+        if (!dirInfo.exists(outDir_ + "/style") && !dirInfo.mkdir(outDir_ + "/style"))
+            config.lastLocation().fatal(tr("Cannot create style directory '%1'").arg(outDir_ + "/style"));
     }
 
     imageFiles = config.getCleanPathList(CONFIG_IMAGES);
