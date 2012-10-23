@@ -47,8 +47,17 @@ load(qt_targets)
 
         load(resolve_target)
         qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
+        importpath.value =
+        for(qmod, QMAKEMODULES) {
+            qmod = $$section(qmod, /, 0, -3)/imports
+            exists($$qmod): importpath.value += $$shell_path($$qmod)
+        }
+        importpath.name = QML_IMPORT_PATH
+        importpath.value = $$unique(importpath.value)
+        qtAddToolEnv(QMLPLUGINDUMP, importpath)
+        TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )
         qmltypes.target = qmltypes
-        qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATH, /, .) $$IMPORT_VERSION $$QMAKE_RESOLVED_TARGET > $$QMLTYPEFILE
+        qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
         qmltypes.depends = $$QMAKE_RESOLVED_TARGET
     } else {
         qmltypes.CONFIG += recursive
