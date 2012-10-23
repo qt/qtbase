@@ -163,4 +163,49 @@ bool QProgressStyleAnimation::isUpdateNeeded() const
     return false;
 }
 
+QNumberStyleAnimation::QNumberStyleAnimation(QObject *target) :
+    QStyleAnimation(target), _start(0.0), _end(1.0), _prev(0.0)
+{
+    setDuration(250);
+}
+
+qreal QNumberStyleAnimation::startValue() const
+{
+    return _start;
+}
+
+void QNumberStyleAnimation::setStartValue(qreal value)
+{
+    _start = value;
+}
+
+qreal QNumberStyleAnimation::endValue() const
+{
+    return _end;
+}
+
+void QNumberStyleAnimation::setEndValue(qreal value)
+{
+    _end = value;
+}
+
+qreal QNumberStyleAnimation::currentValue() const
+{
+    qreal step = qreal(currentTime() - delay()) / (duration() - delay());
+    return _start + qMax(qreal(0), step) * (_end - _start);
+}
+
+bool QNumberStyleAnimation::isUpdateNeeded() const
+{
+    if (QStyleAnimation::isUpdateNeeded()) {
+        qreal current = currentValue();
+        if (!qFuzzyCompare(_prev, current))
+        {
+            _prev = current;
+            return true;
+        }
+    }
+    return false;
+}
+
 QT_END_NAMESPACE
