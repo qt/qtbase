@@ -1073,7 +1073,6 @@ void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
 {
     Q_Q(const QCommonStyle);
     stopAnimation(animation->target());
-    q->connect(animation, SIGNAL(finished()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
     q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
     animations.insert(animation->target(), animation);
     animation->start();
@@ -1096,10 +1095,8 @@ void QCommonStylePrivate::_q_removeAnimation()
 {
     Q_Q(QCommonStyle);
     QObject *animation = q->sender();
-    if (animation) {
+    if (animation)
         animations.remove(animation->parent());
-        animation->deleteLater();
-    }
 }
 
 /*!
