@@ -148,12 +148,10 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (BOOL)canBecomeKeyWindow
 {
-    // Most panels can be come the key window. Exceptions are:
-    if (m_cocoaPlatformWindow->window()->type() == Qt::ToolTip)
-        return NO;
-    if (m_cocoaPlatformWindow->window()->type() == Qt::SplashScreen)
-        return NO;
-    return YES;
+    // Only tool windows should become key for popup types:
+    if (m_cocoaPlatformWindow->window()->type() == Qt::Tool)
+        return YES;
+    return NO;
 }
 
 - (void) sendEvent: (NSEvent*) theEvent
