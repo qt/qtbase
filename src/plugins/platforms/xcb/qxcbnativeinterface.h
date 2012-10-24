@@ -58,7 +58,8 @@ public:
         Connection,
         Screen,
         GraphicsDevice,
-        EglContext
+        EglContext,
+        GLXContext
     };
 
     QXcbNativeInterface();
@@ -76,6 +77,7 @@ public:
     void *screenForWindow(QWindow *window);
     void *graphicsDeviceForWindow(QWindow *window);
     static void *eglContextForContext(QOpenGLContext *context);
+    static void *glxContextForContext(QOpenGLContext *context);
 
 private:
     const QByteArray m_genericEventFilterType;
