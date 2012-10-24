@@ -849,13 +849,6 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, vo
         png_set_gAMA(png_ptr, info_ptr, 1.0/gamma);
     }
 
-    png_color_8 sig_bit;
-    sig_bit.red = 8;
-    sig_bit.green = 8;
-    sig_bit.blue = 8;
-    sig_bit.alpha = image.hasAlphaChannel() ? 8 : 0;
-    png_set_sBIT(png_ptr, info_ptr, &sig_bit);
-
     if (image.format() == QImage::Format_MonoLSB)
        png_set_packswap(png_ptr);
 
