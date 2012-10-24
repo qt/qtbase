@@ -4,7 +4,7 @@ TARGET = libEGL
 include(../common/common.pri)
 
 LIBS += -ld3d9 -ldxguid -ldwmapi \
-        -L$$[QT_INSTALL_LIBS] -llibGLESv2
+        -L$$QT_BUILD_TREE/lib -llibGLESv2
 
 HEADERS += \
     $$ANGLE_DIR/src/libEGL/Config.h \
