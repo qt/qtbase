@@ -22,7 +22,7 @@ INSTALLS += target
     cmd = $$shell_path($$QMAKE_RESOLVED_TARGET)
     qtAddTargetEnv(cmd)
 
-    TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
+    TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_tool_$${MODULE}.pri
 
     TOOL_PRI_CONT = "QT_TOOL.$${MODULE}.command = $$val_escape(cmd)"
     write_file($$TOOL_PRI, TOOL_PRI_CONT)|error("Aborting.")

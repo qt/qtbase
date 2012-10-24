@@ -4,7 +4,7 @@
 
     isEmpty(MODULE_INSTALL_LIBS): MODULE_INSTALL_LIBS = $$[QT_INSTALL_LIBS/raw]
 
-    MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_$${MODULE}.pri
+    MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
 
     # -rpath-link is used by the linker to find depedencies of dynamic
     # libraries which were NOT specified on the command line.

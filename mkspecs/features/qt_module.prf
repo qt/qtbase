@@ -41,7 +41,7 @@ load(qt_build_paths)
     exists($$MODULE_PRI)|error("Specified module pri file $$MODULE_PRI does not exist.")
 } else {
 
-MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_$${MODULE}.pri
+MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
 
 !build_pass {
 
