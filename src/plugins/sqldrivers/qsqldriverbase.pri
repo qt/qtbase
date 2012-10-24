@@ -1,8 +1,6 @@
-load(qt_plugin)
 QT  = core sql-private
-DESTDIR = $$QT.sql.plugins/sqldrivers
 
-target.path     += $$[QT_INSTALL_PLUGINS]/sqldrivers
-INSTALLS        += target
+PLUGIN_TYPE = sqldrivers
+load(qt_plugin)
 
 DEFINES += QT_NO_CAST_TO_ASCII QT_NO_CAST_FROM_ASCII

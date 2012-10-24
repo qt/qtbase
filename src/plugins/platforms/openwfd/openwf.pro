@@ -1,7 +1,7 @@
 TARGET = qopenwf
 
+PLUGIN_TYPE = platforms
 load(qt_plugin)
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 QT += core-private gui-private platformsupport-private
 
@@ -35,7 +35,4 @@ SOURCES += \
     qopenwfdwindow.cpp
 
 LIBS += -lWFD -lgbm -lGLESv2 -lEGL
-
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target
 

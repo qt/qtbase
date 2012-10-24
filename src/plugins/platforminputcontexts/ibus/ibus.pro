@@ -1,7 +1,7 @@
 TARGET = ibusplatforminputcontextplugin
-load(qt_plugin)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforminputcontexts
+PLUGIN_TYPE = platforminputcontexts
+load(qt_plugin)
 
 QT += dbus gui-private
 SOURCES += $$PWD/qibusplatforminputcontext.cpp \
@@ -16,6 +16,3 @@ HEADERS += $$PWD/qibusplatforminputcontext.h \
            $$PWD/qibustypes.h
 
 OTHER_FILES += $$PWD/ibus.json
-
-target.path += $$[QT_INSTALL_PLUGINS]/platforminputcontexts
-INSTALLS += target

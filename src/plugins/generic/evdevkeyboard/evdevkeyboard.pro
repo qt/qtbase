@@ -1,9 +1,7 @@
 TARGET = qevdevkeyboardplugin
-load(qt_plugin)
 
-DESTDIR = $$QT.gui.plugins/generic
-target.path = $$[QT_INSTALL_PLUGINS]/generic
-INSTALLS += target
+PLUGIN_TYPE = generic
+load(qt_plugin)
 
 QT += core-private platformsupport-private gui-private
 

@@ -1,4 +1,6 @@
 TARGET = windows
+
+PLUGIN_TYPE = platforms
 load(qt_plugin)
 
 QT *= core-private
@@ -6,7 +8,6 @@ QT *= gui-private
 QT *= platformsupport-private
 
 INCLUDEPATH += ../../../3rdparty/harfbuzz/src
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
 LIBS *= -lole32
@@ -172,6 +173,3 @@ contains(QT_CONFIG, freetype) {
 OTHER_FILES += windows.json
 
 contains(QT_CONFIG, accessibility):include(accessible/accessible.pri)
-
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target

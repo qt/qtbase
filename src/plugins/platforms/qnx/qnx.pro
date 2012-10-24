@@ -1,6 +1,5 @@
 TARGET = qnx
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 QT += platformsupport platformsupport-private
 
 # Uncomment this to build with support for IMF once it becomes available in the BBNDK
@@ -137,7 +136,5 @@ QMAKE_CXXFLAGS += -I./private
 include (../../../platformsupport/eglconvenience/eglconvenience.pri)
 include (../../../platformsupport/fontdatabases/fontdatabases.pri)
 
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target
-
+PLUGIN_TYPE = platforms
 load(qt_plugin)

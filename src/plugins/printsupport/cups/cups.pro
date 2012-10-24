@@ -1,6 +1,7 @@
 TARGET = cupsprintersupport
+
+PLUGIN_TYPE = printsupport
 load(qt_plugin)
-DESTDIR = $$QT.gui.plugins/printsupport
 
 QT += core-private gui-private printsupport printsupport-private
 
@@ -14,6 +15,3 @@ HEADERS += qcupsprintersupport_p.h \
     qcupsprintengine_p.h
 
 OTHER_FILES += cups.json
-
-target.path += $$[QT_INSTALL_PLUGINS]/printsupport
-INSTALLS += target

@@ -1,9 +1,9 @@
 TARGET = qeglfs
+
+PLUGIN_TYPE = platforms
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
-
-DESTDIR = $$QT.gui.plugins/platforms
 
 #DEFINES += QEGL_EXTRA_DEBUG
 
@@ -43,9 +43,6 @@ INCLUDEPATH += $$PWD
 }
 
 CONFIG += egl qpa/genericunixfontdatabase
-
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target
 
 RESOURCES += cursor.qrc
 

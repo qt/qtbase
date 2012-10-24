@@ -1,6 +1,7 @@
 TARGET = qcocoa
+
+PLUGIN_TYPE = platforms
 load(qt_plugin)
-DESTDIR = $$QT.gui.plugins/platforms
 
 OBJECTIVE_SOURCES += main.mm \
     qcocoaintegration.mm \
@@ -91,8 +92,6 @@ QT += core-private gui-private platformsupport-private
 }
 
 OTHER_FILES += cocoa.json
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target
 
 # Build the release libqcocoa.dylib only, skip the debug version.
 # The Qt plugin loader will dlopen both if found, causing duplicate

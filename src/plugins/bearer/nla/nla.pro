@@ -1,4 +1,6 @@
 TARGET = qnlabearer
+
+PLUGIN_TYPE = bearer
 load(qt_plugin)
 
 QT = core core-private network network-private
@@ -19,7 +21,3 @@ SOURCES += main.cpp \
            ../qnetworksession_impl.cpp
 
 OTHER_FILES += nla.json
-
-DESTDIR = $$QT.network.plugins/bearer
-target.path += $$[QT_INSTALL_PLUGINS]/bearer
-INSTALLS += target
