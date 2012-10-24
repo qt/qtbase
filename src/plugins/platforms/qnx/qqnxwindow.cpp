@@ -374,10 +374,22 @@ QQnxBuffer &QQnxWindow::renderBuffer()
 
     // Check if render buffer is invalid
     if (m_currentBufferIndex == -1) {
+        // check if there are any buffers available
+        int bufferCount = 0;
+        int result = screen_get_window_property_iv(m_window, SCREEN_PROPERTY_RENDER_BUFFER_COUNT, &bufferCount);
+
+        if (result != 0) {
+            qFatal("QQnxWindow: failed to query window buffer count, errno=%d", errno);
+        }
+
+        if (bufferCount != MAX_BUFFER_COUNT) {
+            qFatal("QQnxWindow: invalid buffer count. Expected = %d, got = %d", MAX_BUFFER_COUNT, bufferCount);
+        }
+
         // Get all buffers available for rendering
         errno = 0;
         screen_buffer_t buffers[MAX_BUFFER_COUNT];
-        int result = screen_get_window_property_pv(m_window, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)buffers);
+        result = screen_get_window_property_pv(m_window, SCREEN_PROPERTY_RENDER_BUFFERS, (void **)buffers);
         if (result != 0) {
             qFatal("QQnxWindow: failed to query window buffers, errno=%d", errno);
         }

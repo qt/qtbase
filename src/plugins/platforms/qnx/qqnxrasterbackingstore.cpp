@@ -71,7 +71,10 @@ QQnxRasterBackingStore::~QQnxRasterBackingStore()
 
 QPaintDevice *QQnxRasterBackingStore::paintDevice()
 {
-    return m_platformWindow->renderBuffer().image();
+    if (m_platformWindow->hasBuffers())
+        return m_platformWindow->renderBuffer().image();
+
+    return 0;
 }
 
 void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
