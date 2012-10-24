@@ -75,6 +75,8 @@ static QTouchDevice *touchDevice = 0;
     self = [super initWithFrame : NSMakeRect(0,0, 300,300)];
     if (self) {
         m_cgImage = 0;
+        m_maskImage = 0;
+        m_maskData = 0;
         m_window = 0;
         m_buttons = Qt::NoButton;
         m_sendKeyEvent = false;
@@ -93,6 +95,10 @@ static QTouchDevice *touchDevice = 0;
 {
     CGImageRelease(m_cgImage);
     m_cgImage = 0;
+    CGImageRelease(m_maskImage);
+    m_maskImage = 0;
+    delete[] m_maskData;
+    m_maskData = 0;
     m_window = 0;
     [super dealloc];
 }
@@ -205,47 +211,86 @@ static QTouchDevice *touchDevice = 0;
     }
 }
 
-- (void) setImage:(QImage *)image
+static CGImageRef qt_mac_toCGImage(QImage *qImage, bool isMask, uchar **dataCopy)
 {
-    CGImageRelease(m_cgImage);
-
-    int width = image->width();
-    int height = image->height();
+    int width = qImage->width();
+    int height = qImage->height();
 
     if (width <= 0 || height <= 0) {
         qWarning() << Q_FUNC_INFO <<
             "setting invalid size" << width << "x" << height << "for qnsview image";
-        m_cgImage = 0;
-        return;
+        return 0;
     }
 
-    const uchar *imageData = image->bits();
-    int bitDepth = image->depth();
+    const uchar *imageData = qImage->bits();
+    if (dataCopy) {
+        delete[] *dataCopy;
+        *dataCopy = new uchar[qImage->byteCount()];
+        memcpy(*dataCopy, imageData, qImage->byteCount());
+    }
+    int bitDepth = qImage->depth();
     int colorBufferSize = 8;
-    int bytesPrLine = image->bytesPerLine();
-
-    CGColorSpaceRef cgColourSpaceRef = CGColorSpaceCreateDeviceRGB();
+    int bytesPrLine = qImage->bytesPerLine();
 
     CGDataProviderRef cgDataProviderRef = CGDataProviderCreateWithData(
                 NULL,
-                imageData,
-                image->byteCount(),
+                dataCopy ? *dataCopy : imageData,
+                qImage->byteCount(),
                 NULL);
 
-    m_cgImage = CGImageCreate(width,
-                              height,
-                              colorBufferSize,
-                              bitDepth,
-                              bytesPrLine,
-                              cgColourSpaceRef,
-                              kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
-                              cgDataProviderRef,
-                              NULL,
-                              false,
-                              kCGRenderingIntentDefault);
+    CGImageRef cgImage = 0;
+    if (isMask) {
+        cgImage = CGImageMaskCreate(width,
+                                    height,
+                                    colorBufferSize,
+                                    bitDepth,
+                                    bytesPrLine,
+                                    cgDataProviderRef,
+                                    NULL,
+                                    false);
+    } else {
+        CGColorSpaceRef cgColourSpaceRef = CGColorSpaceCreateDeviceRGB();
+        cgImage = CGImageCreate(width,
+                                height,
+                                colorBufferSize,
+                                bitDepth,
+                                bytesPrLine,
+                                cgColourSpaceRef,
+                                kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
+                                cgDataProviderRef,
+                                NULL,
+                                false,
+                                kCGRenderingIntentDefault);
+        CGColorSpaceRelease(cgColourSpaceRef);
+    }
+    return cgImage;
+}
 
-    CGColorSpaceRelease(cgColourSpaceRef);
+- (void) setImage:(QImage *)image
+{
+    CGImageRelease(m_cgImage);
+    m_cgImage = qt_mac_toCGImage(image, false, 0);
+}
 
+- (void) setMaskRegion:(const QRegion *)region
+{
+    if (m_maskImage)
+        CGImageRelease(m_maskImage);
+    if (region->isEmpty()) {
+        m_maskImage = 0;
+    }
+
+    const QRect &rect = qt_mac_toQRect([self frame]);
+    QImage maskImage(rect.size(), QImage::Format_RGB888);
+    maskImage.fill(Qt::white);
+    QPainter p(&maskImage);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setClipRegion(*region);
+    p.fillRect(rect, QBrush(Qt::black));
+    p.end();
+
+    maskImage = maskImage.convertToFormat(QImage::Format_Indexed8);
+    m_maskImage = qt_mac_toCGImage(&maskImage, true, &m_maskData);
 }
 
 - (void) drawRect:(NSRect)dirtyRect
@@ -263,13 +308,19 @@ static QTouchDevice *touchDevice = 0;
     CGContextTranslateCTM(cgContext, 0, dy);
     CGContextScaleCTM(cgContext, 1, -1);
 
+    CGImageRef subMask = 0;
+    if (m_maskImage) {
+        subMask = CGImageCreateWithImageInRect(m_maskImage, dirtyCGRect);
+        CGContextClipToMask(cgContext, dirtyCGRect, subMask);
+    }
+
     CGImageRef subImage = CGImageCreateWithImageInRect(m_cgImage, dirtyCGRect);
     CGContextDrawImage(cgContext,dirtyCGRect,subImage);
 
     CGContextRestoreGState(cgContext);
 
     CGImageRelease(subImage);
-
+    CGImageRelease(subMask);
 }
 
 - (BOOL) isFlipped

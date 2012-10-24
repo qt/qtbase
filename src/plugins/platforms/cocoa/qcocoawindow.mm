@@ -509,6 +509,16 @@ void QCocoaWindow::setOpacity(qreal level)
         [m_nsWindow setAlphaValue:level];
 }
 
+void QCocoaWindow::setMask(const QRegion &region)
+{
+    if (m_nsWindow) {
+        [m_nsWindow setOpaque:NO];
+        [m_nsWindow setBackgroundColor:[NSColor clearColor]];
+    }
+
+    [m_contentView setMaskRegion:&region];
+}
+
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 {
     if (!m_nsWindow)

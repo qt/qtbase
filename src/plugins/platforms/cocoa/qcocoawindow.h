@@ -107,6 +107,7 @@ public:
     void lower();
     void propagateSizeHints();
     void setOpacity(qreal level);
+    void setMask(const QRegion &region);
     bool setKeyboardGrabEnabled(bool grab);
     bool setMouseGrabEnabled(bool grab);
     QMargins frameMargins() const;

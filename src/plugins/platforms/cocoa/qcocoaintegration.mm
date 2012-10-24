@@ -302,11 +302,14 @@ void QCocoaIntegration::updateScreens()
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
-    case ThreadedPixmaps: return true;
-    case OpenGL : return true;
-    case ThreadedOpenGL : return true;
-    case BufferQueueingOpenGL: return true;
-    default: return QPlatformIntegration::hasCapability(cap);
+    case ThreadedPixmaps:
+    case OpenGL:
+    case ThreadedOpenGL:
+    case BufferQueueingOpenGL:
+    case WindowMasks:
+        return true;
+    default:
+        return QPlatformIntegration::hasCapability(cap);
     }
 }
 
