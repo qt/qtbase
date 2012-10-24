@@ -357,7 +357,7 @@ void tst_QDataWidgetMapper::comboBox()
     readWriteBox.addItem("read write item 1");
     readWriteBox.addItem("read write item 2");
 
-    // populat the combo boxes with data
+    // populate the combo boxes with data
     mapper.addMapping(&readOnlyBox, 0, "currentIndex");
     mapper.addMapping(&readWriteBox, 1, "currentText");
     mapper.toFirst();
