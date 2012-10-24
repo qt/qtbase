@@ -1,7 +1,9 @@
 TEMPLATE = lib
 CONFIG += qt plugin
 
-if(win32|mac):!macx-xcode {
+tool_plugin {
+    !build_pass:contains(QT_CONFIG, build_all): CONFIG += release
+} else:if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
