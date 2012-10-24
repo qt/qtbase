@@ -279,6 +279,12 @@ static inline unsigned parseOptions(const QStringList &paramList)
             } else if (param.endsWith(QLatin1String("native"))) {
                 options |= QWindowsIntegration::FontDatabaseNative;
             }
+        } else if (param.startsWith(QLatin1String("dialogs="))) {
+            if (param.endsWith(QLatin1String("xp"))) {
+                options |= QWindowsIntegration::XpNativeDialogs;
+            } else if (param.endsWith(QLatin1String("none"))) {
+                options |= QWindowsIntegration::NoNativeDialogs;
+            }
         } else if (param == QLatin1String("gl=gdi")) {
             options |= QWindowsIntegration::DisableArb;
         }
