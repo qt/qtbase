@@ -3,7 +3,7 @@
 
 setRenderHint LineAntialiasing
 
-setPen red
+setPen red 0
 
 drawEllipse 0 0 600 400
 
@@ -59,7 +59,7 @@ drawPath arcs
 translate 200 400
 rotate 10
 scale 0.5 0.5
-setPen red
+setPen red 0
 setBrush nobrush
 drawEllipse 0 0 600 400
 
