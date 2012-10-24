@@ -64,8 +64,9 @@ class QByteDataBuffer
 private:
     QList<QByteArray> buffers;
     qint64 bufferCompleteSize;
+    qint64 firstPos;
 public:
-    QByteDataBuffer() : bufferCompleteSize(0)
+    QByteDataBuffer() : bufferCompleteSize(0), firstPos(0)
     {
     }
 
@@ -74,13 +75,29 @@ public:
         clear();
     }
 
-    inline void append(QByteDataBuffer& other)
+    static inline void popFront(QByteArray &ba, qint64 n)
+    {
+        ba = QByteArray(ba.constData() + n, ba.size() - n);
+    }
+
+    inline void squeezeFirst()
+    {
+        if (!buffers.isEmpty() && firstPos > 0) {
+            popFront(buffers.first(), firstPos);
+            firstPos = 0;
+        }
+    }
+
+    inline void append(const QByteDataBuffer& other)
     {
         if (other.isEmpty())
             return;
 
         buffers.append(other.buffers);
         bufferCompleteSize += other.byteAmount();
+
+        if (other.firstPos > 0)
+            popFront(buffers[bufferCount() - other.bufferCount()], other.firstPos);
     }
 
 
@@ -93,10 +110,12 @@ public:
         bufferCompleteSize += bd.size();
     }
 
-    inline void prepend(QByteArray& bd)
+    inline void prepend(const QByteArray& bd)
     {
         if (bd.isEmpty())
             return;
+
+        squeezeFirst();
 
         buffers.prepend(bd);
         bufferCompleteSize += bd.size();
@@ -106,6 +125,7 @@ public:
     // preferably use this function to read data.
     inline QByteArray read()
     {
+        squeezeFirst();
         bufferCompleteSize -= buffers.first().size();
         return buffers.takeFirst();
     }
@@ -137,27 +157,22 @@ public:
         char *writeDst = dst;
 
         while (amount > 0) {
-            QByteArray first = buffers.takeFirst();
-            if (amount >= first.size()) {
+            const QByteArray &first = buffers.first();
+            qint64 firstSize = first.size() - firstPos;
+            if (amount >= firstSize) {
                 // take it completely
-                bufferCompleteSize -= first.size();
-                amount -= first.size();
-                memcpy(writeDst, first.constData(), first.size());
-                writeDst += first.size();
-                first.clear();
+                bufferCompleteSize -= firstSize;
+                amount -= firstSize;
+                memcpy(writeDst, first.constData() + firstPos, firstSize);
+                writeDst += firstSize;
+                firstPos = 0;
+                buffers.takeFirst();
             } else {
                 // take a part of it & it is the last one to take
                 bufferCompleteSize -= amount;
-                memcpy(writeDst, first.constData(), amount);
-
-                qint64 newFirstSize = first.size() - amount;
-                QByteArray newFirstData;
-                newFirstData.resize(newFirstSize);
-                memcpy(newFirstData.data(), first.constData() + amount, newFirstSize);
-                buffers.prepend(newFirstData);
-
+                memcpy(writeDst, first.constData() + firstPos, amount);
+                firstPos += amount;
                 amount = 0;
-                first.clear();
             }
         }
 
@@ -175,6 +190,7 @@ public:
     {
         buffers.clear();
         bufferCompleteSize = 0;
+        firstPos = 0;
     }
 
     // The byte count of all QByteArrays
@@ -199,18 +215,28 @@ public:
         if(buffers.isEmpty())
             return 0;
         else
-            return buffers.first().size();
+            return buffers.first().size() - firstPos;
     }
 
     inline QByteArray& operator[](int i)
     {
+        if (i == 0)
+            squeezeFirst();
+
         return buffers[i];
     }
 
     inline bool canReadLine() const {
-        for (int i = 0; i < buffers.length(); i++)
-            if (buffers.at(i).contains('\n'))
+        int i = 0;
+        if (i < buffers.length()) {
+            if (buffers.at(i).indexOf('\n', firstPos) != -1)
                 return true;
+            ++i;
+
+            for (; i < buffers.length(); i++)
+                if (buffers.at(i).contains('\n'))
+                    return true;
+        }
         return false;
     }
 };

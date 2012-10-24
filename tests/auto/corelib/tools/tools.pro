@@ -5,6 +5,7 @@ SUBDIRS=\
     qbitarray \
     qbytearray \
     qbytearraymatcher \
+    qbytedatabuffer \
     qcache \
     qchar \
     qcontiguouscache \
