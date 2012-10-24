@@ -151,6 +151,7 @@ QWindow *QGuiApplicationPrivate::focus_window = 0;
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;
 bool QGuiApplicationPrivate::obey_desktop_settings = true;
+bool QGuiApplicationPrivate::noGrab = false;
 
 static qreal fontSmoothingGamma = 1.7;
 
@@ -864,8 +865,18 @@ void QGuiApplicationPrivate::setEventDispatcher(QAbstractEventDispatcher *eventD
 
 }
 
+#if defined(QT_DEBUG) && defined(Q_OS_LINUX)
+// Find out if our parent process is gdb by looking at the 'exe' symlink under /proc.
+static bool runningUnderDebugger()
+{
+    const QFileInfo parentProcExe(QStringLiteral("/proc/") + QString::number(getppid()) + QStringLiteral("/exe"));
+    return parentProcExe.isSymLink() && parentProcExe.symLinkTarget().endsWith(QStringLiteral("/gdb"));
+}
+#endif
+
 void QGuiApplicationPrivate::init()
 {
+    bool doGrabUnderDebugger = false;
     QList<QByteArray> pluginList;
     // Get command line params
 
@@ -894,6 +905,10 @@ void QGuiApplicationPrivate::init()
                     QDir::setCurrent(qbundlePath.section(QLatin1Char('/'), 0, -2));
             }
 #endif
+        } else if (arg == "-nograb") {
+            QGuiApplicationPrivate::noGrab = true;
+        } else if (arg == "-dograb") {
+            doGrabUnderDebugger = true;
         } else {
             argv[j++] = argv[i];
         }
@@ -903,6 +918,16 @@ void QGuiApplicationPrivate::init()
         argv[j] = 0;
         argc = j;
     }
+
+#if defined(QT_DEBUG) && defined(Q_OS_LINUX)
+    if (!doGrabUnderDebugger && !QGuiApplicationPrivate::noGrab && runningUnderDebugger()) {
+        QGuiApplicationPrivate::noGrab = true;
+        qDebug("Qt: gdb: -nograb added to command-line options.\n"
+               "\t Use the -dograb option to enforce grabbing.");
+    }
+#else
+    Q_UNUSED(doGrabUnderDebugger)
+#endif
 
     // Load environment exported generic plugins
     foreach (const QByteArray &plugin, qgetenv("QT_QPA_GENERIC_PLUGINS").split(','))
