@@ -1,5 +1,4 @@
 TEMPLATE = lib
-isEmpty(VERSION):VERSION = $$QT_VERSION
 CONFIG += qt plugin
 
 if(win32|mac):!macx-xcode {
