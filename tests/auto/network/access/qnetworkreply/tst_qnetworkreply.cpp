@@ -1354,7 +1354,8 @@ void tst_QNetworkReply::initTestCase()
     if (testDataDir.isEmpty())
         testDataDir = QCoreApplication::applicationDirPath();
 
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 #if !defined Q_OS_WIN
     wronlyFileName = testDataDir + "/write-only" + uniqueExtension;
     QFile wr(wronlyFileName);
