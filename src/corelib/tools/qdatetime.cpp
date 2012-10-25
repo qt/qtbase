@@ -2418,7 +2418,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 
     QDateTimePrivate::Spec oldSpec = d->spec;
 
-    int ddays = msecs / MSECS_PER_DAY;
+    qint64 ddays = msecs / MSECS_PER_DAY;
     msecs %= MSECS_PER_DAY;
     if (msecs < 0) {
         // negative
