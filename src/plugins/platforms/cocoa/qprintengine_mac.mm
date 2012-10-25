@@ -795,13 +795,15 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         if (d->hasCustomPageMargins) {
             margins << d->leftMargin << d->topMargin
                     << d->rightMargin << d->bottomMargin;
-        } else {
+        } else if (!d->hasCustomPaperSize) {
             PMPaperMargins paperMargins;
             PMPaper paper;
             PMGetPageFormatPaper(d->format(), &paper);
             PMPaperGetMargins(paper, &paperMargins);
             margins << paperMargins.left << paperMargins.top
                     << paperMargins.right << paperMargins.bottom;
+        } else {
+            margins << 0 << 0 << 0 << 0;
         }
         ret = margins;
         break;

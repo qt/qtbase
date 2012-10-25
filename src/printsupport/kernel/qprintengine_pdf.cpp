@@ -213,6 +213,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         d->topMargin = margins.at(1).toReal();
         d->rightMargin = margins.at(2).toReal();
         d->bottomMargin = margins.at(3).toReal();
+        d->pageMarginsSet = true;
         break;
     }
     default:
@@ -298,8 +299,11 @@ QVariant QPdfPrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_PageMargins:
     {
         QList<QVariant> margins;
-        margins << d->leftMargin << d->topMargin
-                << d->rightMargin << d->bottomMargin;
+        if (d->printerPaperSize == QPrinter::Custom && !d->pageMarginsSet)
+            margins << 0 << 0 << 0 << 0;
+        else
+            margins << d->leftMargin << d->topMargin
+                    << d->rightMargin << d->bottomMargin;
         ret = margins;
         break;
     }
@@ -353,6 +357,7 @@ QPdfPrintEnginePrivate::QPdfPrintEnginePrivate(QPrinter::PrinterMode m)
       pageOrder(QPrinter::FirstPageFirst),
       paperSource(QPrinter::Auto),
       printerPaperSize(QPrinter::A4),
+      pageMarginsSet(false),
       fd(-1)
 {
     resolution = 72;

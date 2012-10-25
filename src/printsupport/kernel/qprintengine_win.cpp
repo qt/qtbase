@@ -1540,13 +1540,17 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
     case PPK_PageMargins:
     {
         QList<QVariant> margins;
-        QRect pageMargins(d->getPageMargins());
+        if (d->has_custom_paper_size && !d->pageMarginsSet) {
+            margins << 0 << 0 << 0 << 0;
+        } else {
+            QRect pageMargins(d->getPageMargins());
 
-        // specified in 1/100 mm
-        margins << (mmToInches(pageMargins.left()/100.0) * 72)
-                << (mmToInches(pageMargins.top()/100.0) * 72)
-                << (mmToInches(pageMargins.width()/100.0) * 72)
-                << (mmToInches(pageMargins.height()/100.0) * 72);
+            // specified in 1/100 mm
+            margins << (mmToInches(pageMargins.left()/100.0) * 72)
+                    << (mmToInches(pageMargins.top()/100.0) * 72)
+                    << (mmToInches(pageMargins.width()/100.0) * 72)
+                    << (mmToInches(pageMargins.height()/100.0) * 72);
+        }
         value = margins;
         break;
     }

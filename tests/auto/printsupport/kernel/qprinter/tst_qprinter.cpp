@@ -109,6 +109,8 @@ private slots:
     void valuePreservation();
     void errorReporting();
     void testCustomPageSizes();
+    void customPaperSizeAndMargins_data();
+    void customPaperSizeAndMargins();
 #if !defined(QT_NO_COMPLETER) && !defined(QT_NO_FILEDIALOG)
     void printDialogCompleter();
 #endif
@@ -931,6 +933,63 @@ void tst_QPrinter::testCustomPageSizes()
     p2.setPaperSize(customSize, QPrinter::Inch);
     paperSize = p.paperSize(QPrinter::Inch);
     QCOMPARE(paperSize, customSize);
+}
+
+void tst_QPrinter::customPaperSizeAndMargins_data()
+{
+    QTest::addColumn<bool>("pdf");
+    QTest::addColumn<bool>("before");
+    QTest::addColumn<qreal>("left");
+    QTest::addColumn<qreal>("top");
+    QTest::addColumn<qreal>("right");
+    QTest::addColumn<qreal>("bottom");
+
+    QTest::newRow("beforeNoPDF") << false << true << qreal(2) << qreal(2) << qreal(2) << qreal(2);
+    QTest::newRow("beforePDF") << true << true << qreal(2) << qreal(2) << qreal(2) << qreal(2);
+    QTest::newRow("afterNoPDF") << false << false << qreal(2) << qreal(2) << qreal(2) << qreal(2);
+    QTest::newRow("afterAfterPDF") << true << false << qreal(2) << qreal(2) << qreal(2) << qreal(2);
+}
+
+void tst_QPrinter::customPaperSizeAndMargins()
+{
+    QFETCH(bool, pdf);
+    QFETCH(bool, before);
+    QFETCH(qreal, left);
+    QFETCH(qreal, top);
+    QFETCH(qreal, right);
+    QFETCH(qreal, bottom);
+
+    qreal tolerance = 0.05;
+    qreal getLeft = 0;
+    qreal getRight = 0;
+    qreal getTop = 0;
+    qreal getBottom = 0;
+    QSizeF customSize(8.5, 11.0);
+
+    QPrinter p;
+    if (pdf)
+        p.setOutputFormat(QPrinter::PdfFormat);
+    if (before)
+        p.setPageMargins(left, top, right, bottom, QPrinter::Millimeter);
+    p.setPaperSize(customSize, QPrinter::Millimeter);
+    p.getPageMargins(&getLeft, &getTop, &getRight, &getBottom, QPrinter::Millimeter);
+    if (before) {
+        QVERIFY(fabs(left - getLeft) < tolerance);
+        QVERIFY(fabs(left - getTop) < tolerance);
+        QVERIFY(fabs(left - getRight) < tolerance);
+        QVERIFY(fabs(left - getBottom) < tolerance);
+    } else {
+        QVERIFY(getLeft == 0);
+        QVERIFY(getTop == 0);
+        QVERIFY(getRight == 0);
+        QVERIFY(getBottom == 0);
+        p.setPageMargins(left, top, right, bottom, QPrinter::Millimeter);
+        p.getPageMargins(&getLeft, &getTop, &getRight, &getBottom, QPrinter::Millimeter);
+        QVERIFY(fabs(left - getLeft) < tolerance);
+        QVERIFY(fabs(left - getTop) < tolerance);
+        QVERIFY(fabs(left - getRight) < tolerance);
+        QVERIFY(fabs(left - getBottom) < tolerance);
+    }
 }
 
 #if !defined(QT_NO_COMPLETER) && !defined(QT_NO_FILEDIALOG)
