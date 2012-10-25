@@ -57,6 +57,7 @@ QT_STATIC_CONST_IMPL Location Location::null;
 int Location::tabSize;
 QString Location::programName;
 QRegExp *Location::spuriousRegExp = 0;
+bool Location::logProgress_ = false;
 
 /*!
   \class Location
@@ -336,12 +337,15 @@ void Location::information(const QString& message)
 }
 
 /*!
-  Prints \a message to \c stderr followed by a \c{'\n'}.
+  Prints \a message to \c stderr followed by a \c{'\n'},
+  but only if the -log-progress option is set.
  */
 void Location::logToStdErr(const QString& message)
 {
-    fprintf(stderr, "%s\n", message.toLatin1().data());
-    fflush(stderr);
+    if (logProgress_) {
+        fprintf(stderr, "LOG: %s\n", message.toLatin1().data());
+        fflush(stderr);
+    }
 }
 
 /*!

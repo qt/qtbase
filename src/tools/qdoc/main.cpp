@@ -293,10 +293,10 @@ static void processQdocconfFile(const QString &fileName)
 
     QString phase;
     if (Generator::runPrepareOnly())
-        phase = "in -prepare mode ";
+        phase = " in -prepare mode ";
     else if (Generator::runGenerateOnly())
-        phase = "in -generate mode ";
-    QString msg = "Running qdoc " + phase + "for " + config.getString(CONFIG_PROJECT);
+        phase = " in -generate mode ";
+    QString msg = "Running qdoc for " + config.getString(CONFIG_PROJECT) + phase;
     Location::logToStdErr(msg);
 
     /*
@@ -616,6 +616,9 @@ int main(int argc, char **argv)
         }
         else if (opt == "-generate") {
             Generator::setQDocPass(Generator::Generate);
+        }
+        else if (opt == "-log-progress") {
+            Location::startLoggingProgress();
         }
         else {
             qdocFiles.append(opt);

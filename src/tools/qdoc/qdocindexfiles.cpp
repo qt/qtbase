@@ -111,7 +111,7 @@ void QDocIndexFiles::destroyQDocIndexFiles()
 void QDocIndexFiles::readIndexes(const QStringList& indexFiles)
 {
     foreach (const QString& indexFile, indexFiles) {
-        QString msg = "  Loading index file: " + indexFile;
+        QString msg = "Loading index file: " + indexFile;
         Location::logToStdErr(msg);
         readIndexFile(indexFile);
     }
@@ -1052,7 +1052,7 @@ void QDocIndexFiles::generateIndex(const QString& fileName,
     if (!file.open(QFile::WriteOnly | QFile::Text))
         return;
 
-    QString msg = "  Writing index file: " + fileName;
+    QString msg = "Writing index file: " + fileName;
     Location::logToStdErr(msg);
 
     gen_ = g;
