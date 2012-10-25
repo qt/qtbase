@@ -148,6 +148,9 @@ public:
     virtual int processThreadWakeUp(int nsel);
 
     bool mainThread;
+
+    // note for eventfd(7) support:
+    // if thread_pipe[1] is -1, then eventfd(7) is in use and is stored in thread_pipe[0]
     int thread_pipe[2];
 
     // highest fd for all socket notifiers

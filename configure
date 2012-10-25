@@ -842,6 +842,7 @@ CFG_GETADDRINFO=auto
 CFG_IPV6IFNAME=auto
 CFG_GETIFADDRS=auto
 CFG_INOTIFY=auto
+CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_MAC_HARFBUZZ=no
@@ -5099,6 +5100,23 @@ if [ "$CFG_INOTIFY" != "no" ]; then
     fi
 fi
 
+# find if the platform provides eventfd
+if [ "$CFG_EVENTFD" != "no" ]; then
+    if compileTest unix/eventfd "eventfd"; then
+        CFG_EVENTFD=yes
+    else
+        if [ "$CFG_EVENTFD" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "eventfd support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_EVENTFD=no
+        fi
+    fi
+fi
+
 # find if the platform provides if_nametoindex (ipv6 interface name support)
 if [ "$CFG_IPV6IFNAME" != "no" ]; then
     if compileTest unix/ipv6ifname "IPv6 interface name"; then
@@ -5385,6 +5403,9 @@ if [ "$CFG_GETIFADDRS" = "yes" ]; then
 fi
 if [ "$CFG_INOTIFY" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG inotify"
+fi
+if [ "$CFG_EVENTFD" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eventfd"
 fi
 if [ "$CFG_LIBJPEG" = "no" ]; then
     CFG_JPEG="no"
@@ -5862,6 +5883,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
 [ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
+[ "$CFG_EVENTFD" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVENTFD"
 [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
 [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL QT_NO_SSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
