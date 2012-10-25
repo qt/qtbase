@@ -192,6 +192,11 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
     [printPanel retain];
     [printPanel setOptions:macOptions];
 
+    // Call processEvents in case the event dispatcher has been interrupted, and needs to do
+    // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
+    // close down during the cleanup (QTBUG-17913):
+    qApp->processEvents(QEventLoop::ExcludeUserInputEvents, QEventLoop::ExcludeSocketNotifiers);
+
     QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) *delegate = [[QT_MANGLE_NAMESPACE(QCocoaPrintPanelDelegate) alloc] init];
     if (modality == Qt::ApplicationModal) {
         int rval = [printPanel runModalWithPrintInfo:printInfo];
