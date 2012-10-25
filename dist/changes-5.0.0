@@ -550,7 +550,7 @@ QtWidgets
   the proper Qt API: due to the version bump, QStyle will try to use the additional
   QStyleOption members, which are left default-initialized.
 
-* QHeaderView - The following functions have been obsoleted.
+* QHeaderView has been refactored and the following functions have been obsoleted:
 
   * void setMovable(bool movable) - use void setSectionsMovable(bool movable) instead.
 
