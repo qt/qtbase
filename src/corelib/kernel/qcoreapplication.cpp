@@ -69,6 +69,8 @@
 #if defined(Q_OS_UNIX)
 #  if defined(Q_OS_BLACKBERRY)
 #    include "qeventdispatcher_blackberry_p.h"
+#    include <process.h>
+#    include <unistd.h>
 #  else
 #    if !defined(QT_NO_GLIB)
 #      include "qeventdispatcher_glib_p.h"
@@ -1805,11 +1807,34 @@ QString QCoreApplication::applicationFilePath()
     d->cachedApplicationFilePath = QFileInfo(qAppFileName()).filePath();
     return d->cachedApplicationFilePath;
 #elif defined(Q_OS_BLACKBERRY)
-    QDir dir(QStringLiteral("./app/native/"));
-    QStringList executables = dir.entryList(QDir::Executable | QDir::Files);
-    if (!executables.empty()) {
-        //We assume that there is only one executable in the folder
-        return dir.absoluteFilePath(executables.first());
+    if (!arguments().isEmpty()) { // args is never empty, but the navigator can change behaviour some day
+        QFileInfo fileInfo(arguments().at(0));
+        const bool zygotized = fileInfo.exists();
+        if (zygotized) {
+            // Handle the zygotized case:
+            d->cachedApplicationFilePath = QDir::cleanPath(fileInfo.absoluteFilePath());
+            return d->cachedApplicationFilePath;
+        }
+    }
+
+    // Handle the non-zygotized case:
+    const size_t maximum_path = static_cast<size_t>(pathconf("/",_PC_PATH_MAX));
+    char buff[maximum_path+1];
+    if (_cmdname(buff)) {
+        d->cachedApplicationFilePath = QDir::cleanPath(QString::fromLocal8Bit(buff));
+        return d->cachedApplicationFilePath;
+    } else {
+        qWarning("QCoreApplication::applicationFilePath: _cmdname() failed");
+        // _cmdname() won't fail, but just in case, fallback to the old method
+        QDir dir(QStringLiteral("./app/native/"));
+        QStringList executables = dir.entryList(QDir::Executable | QDir::Files);
+        if (!executables.empty()) {
+            //We assume that there is only one executable in the folder
+            d->cachedApplicationFilePath = dir.absoluteFilePath(executables.first());
+            return d->cachedApplicationFilePath;
+        } else {
+            return QString();
+        }
     }
 #elif defined(Q_OS_MAC)
     QString qAppFileName_str = qAppFileName();
