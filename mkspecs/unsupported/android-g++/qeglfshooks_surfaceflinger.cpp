@@ -56,17 +56,62 @@ QT_BEGIN_NAMESPACE
 class QEglFSPandaHooks : public QEglFSHooks
 {
 public:
+    QEglFSPandaHooks();
     virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
     virtual QSize screenSize() const;
     virtual int screenDepth() const;
+    virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
+
 private:
+    EGLNativeWindowType createNativeWindowSurfaceFlinger(const QSize &size, const QSurfaceFormat &format);
+    EGLNativeWindowType createNativeWindowFramebuffer(const QSize &size, const QSurfaceFormat &format);
+
+    void ensureFramebufferNativeWindowCreated();
+
     // androidy things
     sp<android::SurfaceComposerClient> mSession;
     sp<android::SurfaceControl> mControl;
     sp<android::Surface> mAndroidSurface;
+
+    sp<android::FramebufferNativeWindow> mFramebufferNativeWindow;
+    EGLint mFramebufferVisualId;
+
+    bool mUseFramebuffer;
 };
 
-EGLNativeWindowType QEglFSPandaHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &)
+QEglFSPandaHooks::QEglFSPandaHooks()
+    : mFramebufferVisualId(EGL_DONT_CARE)
+{
+    mUseFramebuffer = qgetenv("QT_QPA_EGLFS_NO_SURFACEFLINGER").toInt();
+}
+
+void QEglFSPandaHooks::ensureFramebufferNativeWindowCreated()
+{
+    if (mFramebufferNativeWindow.get())
+        return;
+    mFramebufferNativeWindow = new FramebufferNativeWindow();
+    framebuffer_device_t const *fbDev = mFramebufferNativeWindow->getDevice();
+    if (!fbDev)
+        qFatal("Failed to get valid FramebufferNativeWindow, no way to create EGL surfaces");
+
+    ANativeWindow *window = mFramebufferNativeWindow.get();
+
+    window->query(window, NATIVE_WINDOW_FORMAT, &mFramebufferVisualId);
+}
+
+EGLNativeWindowType QEglFSPandaHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+{
+    return mUseFramebuffer ? createNativeWindowFramebuffer(size, format) : createNativeWindowSurfaceFlinger(size, format);
+}
+
+EGLNativeWindowType QEglFSPandaHooks::createNativeWindowFramebuffer(const QSize &size, const QSurfaceFormat &)
+{
+    Q_UNUSED(size);
+    ensureFramebufferNativeWindowCreated();
+    return mFramebufferNativeWindow.get();
+}
+
+EGLNativeWindowType QEglFSPandaHooks::createNativeWindowSurfaceFlinger(const QSize &size, const QSurfaceFormat &)
 {
     Q_UNUSED(size);
 
@@ -85,6 +130,23 @@ EGLNativeWindowType QEglFSPandaHooks::createNativeWindow(const QSize &size, cons
     EGLNativeWindowType eglWindow = mAndroidSurface.get();
     return eglWindow;
 }
+
+bool QEglFSPandaHooks::filterConfig(EGLDisplay display, EGLConfig config) const
+{
+    if (!mUseFramebuffer)
+        return true;
+
+    const_cast<QEglFSPandaHooks *>(this)->ensureFramebufferNativeWindowCreated();
+
+    if (mFramebufferVisualId == EGL_DONT_CARE)
+        return true;
+
+    EGLint nativeVisualId = 0;
+    eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &nativeVisualId);
+
+    return nativeVisualId == mFramebufferVisualId;
+}
+
 QSize  QEglFSPandaHooks::screenSize() const
 {
     static QSize size;
