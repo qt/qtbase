@@ -32,7 +32,8 @@ widgets/itemviews/delegate \
 windowflags \
 windowgeometry \
 windowmodality \
-widgetgrab
+widgetgrab \
+dialogs
 
 !contains(QT_CONFIG, openssl):!contains(QT_CONFIG, openssl-linked):SUBDIRS -= qssloptions
 
