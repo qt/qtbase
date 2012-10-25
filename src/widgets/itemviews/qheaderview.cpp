@@ -1349,6 +1349,8 @@ void QHeaderView::setSortIndicator(int logicalIndex, Qt::SortOrder order)
 
     // This is so that people can set the position of the sort indicator before the fill the model
     int old = d->sortIndicatorSection;
+    if (old == logicalIndex && order == d->sortIndicatorOrder)
+        return;
     d->sortIndicatorSection = logicalIndex;
     d->sortIndicatorOrder = order;
 

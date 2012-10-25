@@ -566,6 +566,8 @@ QtWidgets
   * ResizeMode resizeMode(int logicalindex) const -
     use sectionResizeMode(int logicalindex) instead.
 
+  * setSortIndicator will no longer emit sortIndicatorChanged when the sort indicator is unchanged.
+
 * QDateEdit and QTimeEdit have re-gained a USER property. These were originally removed
     before Qt 4.7.0, and are re-added for 5.0. This means that the userProperty for
     those classes are now QDate and QTime respectively, not QDateTime as they have been
