@@ -67,7 +67,7 @@ struct bpsIOHandlerData {
     fd_set *exceptfds;
 };
 
-static int bpsIOReadyDomain = -1;
+static int bpsUnblockDomain = -1;
 
 static int bpsIOHandler(int fd, int io_events, void *data)
 {
@@ -103,13 +103,13 @@ static int bpsIOHandler(int fd, int io_events, void *data)
         qEventDispatcherDebug << "Sending bpsIOReadyDomain event";
         // create IO ready event
         bps_event_t *event;
-        int result = bps_event_create(&event, bpsIOReadyDomain, 0, NULL, NULL);
+        int result = bps_event_create(&event, bpsUnblockDomain, 0, NULL, NULL);
         if (result != BPS_SUCCESS) {
             qWarning("QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberry: bps_event_create() failed");
             return BPS_FAILURE;
         }
 
-        // post IO ready event to our thread
+        // post unblock event to our thread
         result = bps_push_event(event);
         if (result != BPS_SUCCESS) {
             qWarning("QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberry: bps_push_event() failed");
@@ -129,29 +129,31 @@ QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberryPrivate()
     if (result != BPS_SUCCESS)
         qFatal("QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberry: bps_initialize() failed");
 
-    // get domain for IO ready events - ignoring race condition here for now
-    if (bpsIOReadyDomain == -1) {
-        bpsIOReadyDomain = bps_register_domain();
-        if (bpsIOReadyDomain == -1)
+    bps_channel = bps_channel_get_active();
+
+    // get domain for IO ready and wake up events - ignoring race condition here for now
+    if (bpsUnblockDomain == -1) {
+        bpsUnblockDomain = bps_register_domain();
+        if (bpsUnblockDomain == -1)
             qWarning("QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberry: bps_register_domain() failed");
     }
-
-    // Register thread_pipe[0] with bps
-    int io_events = BPS_IO_INPUT;
-    result = bps_add_fd(thread_pipe[0], io_events, &bpsIOHandler, ioData.data());
-    if (result != BPS_SUCCESS)
-        qWarning() << Q_FUNC_INFO << "bps_add_fd() failed";
 }
 
 QEventDispatcherBlackberryPrivate::~QEventDispatcherBlackberryPrivate()
 {
-    // Unregister thread_pipe[0] from bps
-    const int result = bps_remove_fd(thread_pipe[0]);
-    if (result != BPS_SUCCESS)
-        qWarning() << Q_FUNC_INFO << "bps_remove_fd() failed";
-
     // we're done using BPS
     bps_shutdown();
+}
+
+int QEventDispatcherBlackberryPrivate::initThreadWakeUp()
+{
+    return -1;  // no fd's used
+}
+
+int QEventDispatcherBlackberryPrivate::processThreadWakeUp(int nsel)
+{
+    Q_UNUSED(nsel);
+    return wakeUps.fetchAndStoreRelaxed(0);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -317,7 +319,7 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
         if (!event)    // In case of !event, we break out of the loop to let Qt process the timers
             break;     // (since timeout has expired) and socket notifiers that are now ready.
 
-        if (bps_event_get_domain(event) == bpsIOReadyDomain) {
+        if (bps_event_get_domain(event) == bpsUnblockDomain) {
             timeoutTotal = 0;   // in order to immediately drain the event queue of native events
             event = 0;          // (especially touch move events) we don't break out here
         }
@@ -337,6 +339,21 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
 
     // the number of bits set in the file sets
     return d->ioData->count;
+}
+
+void QEventDispatcherBlackberry::wakeUp()
+{
+    Q_D(QEventDispatcherBlackberry);
+    if (d->wakeUps.testAndSetAcquire(0, 1)) {
+        bps_event_t *event;
+        if (bps_event_create(&event, bpsUnblockDomain, 0, 0, 0) == BPS_SUCCESS) {
+            if (bps_channel_push_event(d->bps_channel, event) == BPS_SUCCESS)
+                return;
+            else
+                bps_event_destroy(event);
+        }
+        qWarning("QEventDispatcherBlackberryPrivate::wakeUp failed");
+    }
 }
 
 int QEventDispatcherBlackberry::ioEvents(int fd)

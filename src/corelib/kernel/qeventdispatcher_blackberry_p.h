@@ -71,6 +71,8 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier);
     void unregisterSocketNotifier(QSocketNotifier *notifier);
 
+    void wakeUp();
+
 protected:
     QEventDispatcherBlackberry(QEventDispatcherBlackberryPrivate &dd, QObject *parent = 0);
 
@@ -89,6 +91,10 @@ public:
     QEventDispatcherBlackberryPrivate();
     ~QEventDispatcherBlackberryPrivate();
 
+    int initThreadWakeUp();
+    int processThreadWakeUp(int nsel);
+
+    int bps_channel;
     QScopedPointer<bpsIOHandlerData> ioData;
 };
 
