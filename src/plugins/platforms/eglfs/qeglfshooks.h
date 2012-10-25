@@ -67,6 +67,7 @@ public:
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
     virtual QEglFSCursor *createCursor(QEglFSScreen *screen) const;
+    virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
 };
 
 #ifdef EGLFS_PLATFORM_HOOKS

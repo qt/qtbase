@@ -210,75 +210,106 @@ bool q_reduceConfigAttributes(QVector<EGLint> *configAttributes)
     return false;
 }
 
-EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat, int surfaceType)
+QEglConfigChooser::QEglConfigChooser(EGLDisplay display)
+    : m_display(display)
+    , m_surfaceType(EGL_WINDOW_BIT)
+    , m_ignore(false)
+    , m_confAttrRed(0)
+    , m_confAttrGreen(0)
+    , m_confAttrBlue(0)
+    , m_confAttrAlpha(0)
 {
-    EGLConfig cfg = 0;
-    QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(format);
+}
+
+QEglConfigChooser::~QEglConfigChooser()
+{
+}
+
+EGLConfig QEglConfigChooser::chooseConfig()
+{
+    QVector<EGLint> configureAttributes = q_createConfigAttributesFromFormat(m_format);
     configureAttributes.append(EGL_SURFACE_TYPE);
-    configureAttributes.append(surfaceType);
+    configureAttributes.append(surfaceType());
 
     configureAttributes.append(EGL_RENDERABLE_TYPE);
-    if (format.renderableType() == QSurfaceFormat::OpenVG)
+    if (m_format.renderableType() == QSurfaceFormat::OpenVG)
         configureAttributes.append(EGL_OPENVG_BIT);
 #ifdef EGL_VERSION_1_4
-    else if (format.renderableType() == QSurfaceFormat::OpenGL)
+    else if (m_format.renderableType() == QSurfaceFormat::OpenGL)
         configureAttributes.append(EGL_OPENGL_BIT);
 #endif
-    else if (format.majorVersion() == 1)
+    else if (m_format.majorVersion() == 1)
         configureAttributes.append(EGL_OPENGL_ES_BIT);
     else
         configureAttributes.append(EGL_OPENGL_ES2_BIT);
 
     configureAttributes.append(EGL_NONE);
 
+    EGLConfig cfg;
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
-        if (!eglChooseConfig(display, configureAttributes.constData(), 0, 0, &matching) || !matching)
+        if (!eglChooseConfig(display(), configureAttributes.constData(), 0, 0, &matching) || !matching)
             continue;
-
-        // If we want the best pixel format, then return the first
-        // matching configuration.
-        if (highestPixelFormat) {
-            eglChooseConfig(display, configureAttributes.constData(), &cfg, 1, &matching);
-            if (matching < 1)
-                continue;
-            return cfg;
-        }
 
         // Fetch all of the matching configurations and find the
         // first that matches the pixel format we wanted.
         int i = configureAttributes.indexOf(EGL_RED_SIZE);
-        int confAttrRed = configureAttributes.at(i+1);
+        m_confAttrRed = configureAttributes.at(i+1);
         i = configureAttributes.indexOf(EGL_GREEN_SIZE);
-        int confAttrGreen = configureAttributes.at(i+1);
+        m_confAttrGreen = configureAttributes.at(i+1);
         i = configureAttributes.indexOf(EGL_BLUE_SIZE);
-        int confAttrBlue = configureAttributes.at(i+1);
+        m_confAttrBlue = configureAttributes.at(i+1);
         i = configureAttributes.indexOf(EGL_ALPHA_SIZE);
-        int confAttrAlpha = i == -1 ? 0 : configureAttributes.at(i+1);
+        m_confAttrAlpha = i == -1 ? 0 : configureAttributes.at(i+1);
 
-        EGLint size = matching;
-        EGLConfig *configs = new EGLConfig [size];
-        eglChooseConfig(display, configureAttributes.constData(), configs, size, &matching);
-        for (EGLint index = 0; index < size; ++index) {
-            EGLint red, green, blue, alpha;
-            eglGetConfigAttrib(display, configs[index], EGL_RED_SIZE, &red);
-            eglGetConfigAttrib(display, configs[index], EGL_GREEN_SIZE, &green);
-            eglGetConfigAttrib(display, configs[index], EGL_BLUE_SIZE, &blue);
-            eglGetConfigAttrib(display, configs[index], EGL_ALPHA_SIZE, &alpha);
-            if ((confAttrRed == 0 || red == confAttrRed) &&
-                (confAttrGreen == 0 || green == confAttrGreen) &&
-                (confAttrBlue == 0 || blue == confAttrBlue) &&
-                (confAttrAlpha == 0 || alpha == confAttrAlpha)) {
-                cfg = configs[index];
-                delete [] configs;
-                return cfg;
-            }
+        QVector<EGLConfig> configs(matching);
+        eglChooseConfig(display(), configureAttributes.constData(), configs.data(), configs.size(), &matching);
+        if (!cfg && matching > 0)
+            cfg = configs.first();
+
+        for (int i = 0; i < configs.size(); ++i) {
+            if (filterConfig(configs[i]))
+                return configs.at(i);
         }
-        delete [] configs;
     } while (q_reduceConfigAttributes(&configureAttributes));
-    qWarning("Cant find EGLConfig, returning null config");
-    return 0;
+
+    if (!cfg)
+        qWarning("Cant find EGLConfig, returning null config");
+    return cfg;
+}
+
+bool QEglConfigChooser::filterConfig(EGLConfig config) const
+{
+    if (m_ignore)
+        return true;
+
+    EGLint red = 0;
+    EGLint green = 0;
+    EGLint blue = 0;
+    EGLint alpha = 0;
+
+    if (m_confAttrRed)
+        eglGetConfigAttrib(display(), config, EGL_RED_SIZE, &red);
+    if (m_confAttrGreen)
+        eglGetConfigAttrib(display(), config, EGL_GREEN_SIZE, &green);
+    if (m_confAttrBlue)
+        eglGetConfigAttrib(display(), config, EGL_BLUE_SIZE, &blue);
+    if (m_confAttrAlpha)
+        eglGetConfigAttrib(display(), config, EGL_ALPHA_SIZE, &alpha);
+
+    return red == m_confAttrRed && green == m_confAttrGreen
+           && blue == m_confAttrBlue && alpha == m_confAttrAlpha;
+}
+
+EGLConfig q_configFromGLFormat(EGLDisplay display, const QSurfaceFormat &format, bool highestPixelFormat, int surfaceType)
+{
+    QEglConfigChooser chooser(display);
+    chooser.setSurfaceFormat(format);
+    chooser.setSurfaceType(surfaceType);
+    chooser.setIgnoreColorChannels(highestPixelFormat);
+
+    return chooser.chooseConfig();
 }
 
 QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, const QSurfaceFormat &referenceFormat)

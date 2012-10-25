@@ -64,8 +64,22 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
     : m_eglDisplay(display)
     , m_eglApi(eglApi)
     , m_eglConfig(q_configFromGLFormat(display, format, true))
-    , m_format(q_glFormatFromConfig(display, m_eglConfig))
 {
+    init(format, share);
+}
+
+QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
+                                         EGLConfig config, EGLenum eglApi)
+    : m_eglDisplay(display)
+    , m_eglApi(eglApi)
+    , m_eglConfig(config)
+{
+    init(format, share);
+}
+
+void QEGLPlatformContext::init(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
+{
+    m_format = q_glFormatFromConfig(m_eglDisplay, m_eglConfig);
     m_shareContext = share ? static_cast<QEGLPlatformContext *>(share)->m_eglContext : 0;
 
     QVector<EGLint> contextAttrs;

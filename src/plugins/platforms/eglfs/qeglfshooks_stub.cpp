@@ -134,6 +134,11 @@ QSurfaceFormat QEglFSHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat) 
     return inputFormat;
 }
 
+bool QEglFSHooks::filterConfig(EGLDisplay, EGLConfig) const
+{
+    return true;
+}
+
 EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
 {
     Q_UNUSED(size);

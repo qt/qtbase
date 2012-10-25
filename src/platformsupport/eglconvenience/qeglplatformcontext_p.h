@@ -51,6 +51,8 @@ class QEGLPlatformContext : public QPlatformOpenGLContext
 public:
     QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
                         EGLenum eglApi = EGL_OPENGL_ES_API);
+    QEGLPlatformContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display,
+                        EGLConfig config, EGLenum eglApi = EGL_OPENGL_ES_API);
     ~QEGLPlatformContext();
 
     bool makeCurrent(QPlatformSurface *surface);
@@ -70,12 +72,14 @@ protected:
     virtual EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) = 0;
 
 private:
+    void init(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
+
     EGLContext m_eglContext;
     EGLContext m_shareContext;
     EGLDisplay m_eglDisplay;
     EGLenum m_eglApi;
     EGLConfig m_eglConfig;
-    const QSurfaceFormat m_format;
+    QSurfaceFormat m_format;
 };
 
 #endif //QEGLPLATFORMCONTEXT_H

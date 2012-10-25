@@ -49,6 +49,7 @@
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 
 #if !defined(QT_NO_EVDEV)
@@ -150,7 +151,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return new QEglFSContext(context->format(), 0 /*share*/, mDisplay);
+    return new QEglFSContext(hooks->surfaceFormatFor(context->format()), 0 /*share*/, mDisplay);
 }
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
@@ -199,6 +200,31 @@ void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QO
         return handle->eglContext();
 
     return 0;
+}
+
+EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
+{
+    class Chooser : public QEglConfigChooser {
+    public:
+        Chooser(EGLDisplay display, QEglFSHooks *hooks)
+            : QEglConfigChooser(display)
+            , m_hooks(hooks)
+        {
+        }
+
+    protected:
+        bool filterConfig(EGLConfig config) const
+        {
+            return m_hooks->filterConfig(display(), config) && QEglConfigChooser::filterConfig(config);
+        }
+
+    private:
+        QEglFSHooks *m_hooks;
+    };
+
+    Chooser chooser(display, hooks);
+    chooser.setSurfaceFormat(format);
+    return chooser.chooseConfig();
 }
 
 QT_END_NAMESPACE
