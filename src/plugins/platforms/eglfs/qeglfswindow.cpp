@@ -89,8 +89,9 @@ void QEglFSWindow::create()
     m_window = hooks->createNativeWindow(hooks->screenSize(), m_format);
     m_surface = eglCreateWindowSurface(display, config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
+        EGLint error = eglGetError();
         eglTerminate(display);
-        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", eglGetError());
+        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
     }
 }
 
