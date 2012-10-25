@@ -267,12 +267,13 @@ QLibraryInfo::isDebugBuild()
  */
 
 static const struct {
-    char key[14], value[13];
+    char key[19], value[13];
 } qtConfEntries[] = {
     { "Prefix", "." },
     { "Documentation", "doc" }, // should be ${Data}/doc
     { "Headers", "include" },
     { "Libraries", "lib" },
+    { "LibraryExecutables", "libexec" }, // should be ${ArchData}/libexec
     { "Binaries", "bin" },
     { "Plugins", "plugins" }, // should be ${ArchData}/plugins
     { "Imports", "imports" }, // should be ${ArchData}/imports
@@ -452,6 +453,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     \value DocumentationPath The location for documentation upon install.
     \value HeadersPath The location for all headers.
     \value LibrariesPath The location of installed libraries.
+    \value LibraryExecutablesPath The location of installed executables required by libraries at runtime.
     \value BinariesPath The location of installed Qt binaries (tools and applications).
     \value PluginsPath The location of installed Qt plugins.
     \value ImportsPath The location of installed QML extensions to import (QML 1.x).

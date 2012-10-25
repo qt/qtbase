@@ -61,6 +61,7 @@ static const struct {
     { "QT_INSTALL_DOCS", QLibraryInfo::DocumentationPath, false },
     { "QT_INSTALL_HEADERS", QLibraryInfo::HeadersPath, false },
     { "QT_INSTALL_LIBS", QLibraryInfo::LibrariesPath, false },
+    { "QT_INSTALL_LIBEXECS", QLibraryInfo::LibraryExecutablesPath, false },
     { "QT_INSTALL_BINS", QLibraryInfo::BinariesPath, false },
     { "QT_INSTALL_TESTS", QLibraryInfo::TestsPath, false },
     { "QT_INSTALL_PLUGINS", QLibraryInfo::PluginsPath, false },

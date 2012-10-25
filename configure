@@ -881,6 +881,7 @@ QT_INSTALL_DOCS=
 QT_INSTALL_HEADERS=
 QT_INSTALL_LIBS=
 QT_INSTALL_BINS=
+QT_INSTALL_LIBEXECS=
 QT_INSTALL_PLUGINS=
 QT_INSTALL_IMPORTS=
 QT_INSTALL_QML=
@@ -993,7 +994,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1249,6 +1250,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     bindir)
         QT_INSTALL_BINS="$VAL"
+        ;;
+    libexecdir)
+        QT_INSTALL_LIBEXECS="$VAL"
         ;;
     sse)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
@@ -2805,6 +2809,11 @@ if [ -z "$QT_INSTALL_BINS" ]; then #default
 fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
+if [ -z "$QT_INSTALL_LIBEXECS" ]; then #default
+    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/libexec" #fallback
+fi
+QT_INSTALL_LIBEXECS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBEXECS"`
+
 if [ -z "$QT_INSTALL_DOCS" ]; then #default
     QT_INSTALL_DOCS="$QT_INSTALL_DATA/doc" #fallback
 fi
@@ -3012,7 +3021,7 @@ Installation options:
 
  You may use these to separate different parts of the install:
 
-    -bindir <dir> ......... Executables will be installed to <dir>
+    -bindir <dir> ......... User executables will be installed to <dir>
                             (default PREFIX/bin)
     -headerdir <dir> ...... Headers will be installed to <dir>
                             (default PREFIX/include)
@@ -3022,6 +3031,8 @@ Installation options:
                             (default PREFIX)
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default ARCHDATADIR/plugins)
+    -libexecdir <dir> ..... Program executables will be installed to <dir>
+                            (default ARCHDATADIR/libexec)
     -importdir <dir> ...... Imports for QML1 will be installed to <dir>
                             (default ARCHDATADIR/imports)
     -qmldir <dir> ......... Imports for QML2 will be installed to <dir>
@@ -3506,6 +3517,7 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_docspath=$QT_INSTALL_DOCS",
     "qt_hdrspath=$QT_INSTALL_HEADERS",
     "qt_libspath=$QT_INSTALL_LIBS",
+    "qt_lbexpath=$QT_INSTALL_LIBEXECS",
     "qt_binspath=$QT_INSTALL_BINS",
     "qt_plugpath=$QT_INSTALL_PLUGINS",
     "qt_impspath=$QT_INSTALL_IMPORTS",

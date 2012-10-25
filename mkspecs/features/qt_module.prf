@@ -79,6 +79,7 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
         "QT.$${MODULE}.private_includes = $$MODULE_PRIVATE_INCLUDES" \
         "QT.$${MODULE}.sources = $$val_escape(_PRO_FILE_PWD_)" \
         "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
+        "QT.$${MODULE}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
         "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]" \
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
         "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \

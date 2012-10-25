@@ -67,6 +67,7 @@ public:
         DocumentationPath,
         HeadersPath,
         LibrariesPath,
+        LibraryExecutablesPath,
         BinariesPath,
         PluginsPath,
         ImportsPath,
