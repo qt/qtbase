@@ -336,6 +336,15 @@ void Location::information(const QString& message)
 }
 
 /*!
+  Prints \a message to \c stderr followed by a \c{'\n'}.
+ */
+void Location::logToStdErr(const QString& message)
+{
+    fprintf(stderr, "%s\n", message.toLatin1().data());
+    fflush(stderr);
+}
+
+/*!
   Report a program bug, including the \a hint.
  */
 void Location::internalError(const QString& hint)

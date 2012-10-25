@@ -48,6 +48,7 @@
 #include "location.h"
 #include "atom.h"
 #include "generator.h"
+#include <qdebug.h>
 
 //include "doc.h"
 //include "htmlgenerator.h"
@@ -109,8 +110,11 @@ void QDocIndexFiles::destroyQDocIndexFiles()
  */
 void QDocIndexFiles::readIndexes(const QStringList& indexFiles)
 {
-    foreach (const QString& indexFile, indexFiles)
+    foreach (const QString& indexFile, indexFiles) {
+        QString msg = "  Loading index file: " + indexFile;
+        Location::logToStdErr(msg);
         readIndexFile(indexFile);
+    }
 }
 
 /*!
@@ -1047,6 +1051,9 @@ void QDocIndexFiles::generateIndex(const QString& fileName,
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text))
         return;
+
+    QString msg = "  Writing index file: " + fileName;
+    Location::logToStdErr(msg);
 
     gen_ = g;
     QXmlStreamWriter writer(&file);

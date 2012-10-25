@@ -96,6 +96,7 @@ public:
     static void terminate();
     static void information(const QString& message);
     static void internalError(const QString& hint);
+    static void logToStdErr(const QString& message);
 
 private:
     enum MessageType { Warning, Error };
