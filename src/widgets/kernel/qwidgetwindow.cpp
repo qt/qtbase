@@ -239,9 +239,14 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
                 }
             }
         }
-        QWidget *leave = qt_last_mouse_receiver ? qt_last_mouse_receiver.data() : m_widget;
-        QApplicationPrivate::dispatchEnterLeave(enter, leave);
-        qt_last_mouse_receiver = enter;
+        // Enter-leave between sibling widgets is ignored when there is a mousegrabber - this makes
+        // both native and non-native widgets work similarly.
+        // When mousegrabbing, leaves are only generated if leaving the parent window.
+        if (!enter || !QWidget::mouseGrabber()) {
+            QWidget *leave = qt_last_mouse_receiver ? qt_last_mouse_receiver.data() : m_widget;
+            QApplicationPrivate::dispatchEnterLeave(enter, leave);
+            qt_last_mouse_receiver = enter;
+        }
     } else {
         QApplicationPrivate::dispatchEnterLeave(m_widget, 0);
         qt_last_mouse_receiver = m_widget;
