@@ -439,12 +439,7 @@ void tst_QPixmap::fill_data()
         QTest::newRow(QString("syscolor_%1").arg(color).toLatin1())
             << uint(color) << true << false;
 
-#ifdef Q_WS_QWS
-    if (QScreen::instance()->depth() >= 24) {
-#elif defined (Q_WS_X11)
-    QPixmap pm(1, 1);
-    if (pm.x11PictureHandle()) {
-#elif defined (Q_OS_WINCE)
+#if defined (Q_OS_WINCE)
     QPixmap pixmap(1,1);
     if (QApplication::desktop()->grab().depth() >= 24) {
 #else
