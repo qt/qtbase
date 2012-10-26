@@ -30,6 +30,7 @@
     "qevent.h" => "QtEvents",
     "qnamespace.h" => "Qt",
     "qnumeric.h" => "QtNumeric",
+    "qsql.h" => "QSql",
     "qssl.h" => "QSsl",
     "qtest.h" => "QTest",
     "qtconcurrentmap.h" => "QtConcurrentMap",

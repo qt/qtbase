@@ -31,7 +31,6 @@
     \brief The QSql namespace contains miscellaneous identifiers used throughout
     the Qt SQL library.
 
-    \inheaderfile QtSql
     \ingroup database
 
 
