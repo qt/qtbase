@@ -2696,6 +2696,30 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
     \internal
 */
 
+/*! \fn bool QTest::qCompare(qint64 const &t1, qint32 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(qint64 const &t1, quint32 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(quint64 const &t1, quint32 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(qint32 const &t1, qint64 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(quint32 const &t1, qint64 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(quint32 const &t1, quint64 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
 /*! \fn bool QTest::qCompare(bool const &t1, int const &t2, const char *actual, const char *expected, const char *file, int line)
   \internal
  */

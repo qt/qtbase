@@ -232,6 +232,48 @@ inline bool qCompare(QFlags<T> const &t1, int const &t2, const char *actual, con
     return qCompare(int(t1), t2, actual, expected, file, line);
 }
 
+template<>
+inline bool qCompare(qint64 const &t1, qint32 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(t1, static_cast<qint64>(t2), actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(qint64 const &t1, quint32 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(t1, static_cast<qint64>(t2), actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(quint64 const &t1, quint32 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(t1, static_cast<quint64>(t2), actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(qint32 const &t1, qint64 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(static_cast<qint64>(t1), t2, actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(quint32 const &t1, qint64 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(static_cast<qint64>(t1), t2, actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(quint32 const &t1, quint64 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(static_cast<quint64>(t1), t2, actual, expected, file, line);
+}
+
 }
 QT_END_NAMESPACE
 
