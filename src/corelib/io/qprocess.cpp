@@ -458,8 +458,8 @@ void QProcessPrivate::Channel::clear()
     are supplied as individual strings in a QStringList.
 
     For example, the following code snippet runs the analog clock
-    example in the Motif style on X11 platforms by passing strings
-    containing "-style" and "motif" as two items in the list of
+    example in the Fusion style on X11 platforms by passing strings
+    containing "-style" and "fusion" as two items in the list of
     arguments:
 
     \snippet qprocess/qprocess-simpleexecution.cpp 0
