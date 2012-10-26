@@ -272,7 +272,7 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
         searchPaths.reserve(rawPaths.size());
         foreach (const QString &rawPath, rawPaths) {
             QString cleanPath = QDir::cleanPath(rawPath);
-            if (cleanPath.size() > 1 && cleanPath.endsWith('/'))
+            if (cleanPath.size() > 1 && cleanPath.endsWith(QLatin1Char('/')))
                 cleanPath.truncate(cleanPath.size() - 1);
             searchPaths.push_back(cleanPath);
         }
