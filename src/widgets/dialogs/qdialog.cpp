@@ -516,9 +516,6 @@ int QDialog::exec()
     setAttribute(Qt::WA_ShowModal, true);
     setResult(0);
 
-    bool showSystemDialogFullScreen = false;
-    if (showSystemDialogFullScreen)
-        setWindowState(Qt::WindowFullScreen);
     show();
 
     QPointer<QDialog> guard = this;
