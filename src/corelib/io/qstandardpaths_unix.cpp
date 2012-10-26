@@ -44,10 +44,13 @@
 #include <qfile.h>
 #include <qhash.h>
 #include <qtextstream.h>
-#include <qcoreapplication.h>
 #include <private/qfilesystemengine_p.h>
 #include <errno.h>
 #include <stdlib.h>
+
+#ifndef QT_BOOTSTRAPPED
+#include <qcoreapplication.h>
+#endif
 
 #ifndef QT_NO_STANDARDPATHS
 
@@ -55,12 +58,16 @@ QT_BEGIN_NAMESPACE
 
 static void appendOrganizationAndApp(QString &path)
 {
+#ifndef QT_BOOTSTRAPPED
     const QString org = QCoreApplication::organizationName();
     if (!org.isEmpty())
         path += QLatin1Char('/') + org;
     const QString appName = QCoreApplication::applicationName();
     if (!appName.isEmpty())
         path += QLatin1Char('/') + appName;
+#else
+    Q_UNUSED(path);
+#endif
 }
 
 QString QStandardPaths::writableLocation(StandardLocation type)
@@ -141,6 +148,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
     }
 
+#ifndef QT_BOOTSTRAPPED
     // http://www.freedesktop.org/wiki/Software/xdg-user-dirs
     QString xdgConfigHome = QFile::decodeName(qgetenv("XDG_CONFIG_HOME"));
     if (xdgConfigHome.isEmpty())
@@ -199,6 +207,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             }
         }
     }
+#endif
 
     QString path;
     switch (type) {

@@ -42,7 +42,10 @@
 #include "qstandardpaths.h"
 #include <qdir.h>
 #include <private/qcore_mac_p.h>
+
+#ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
+#endif
 
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -101,12 +104,16 @@ static QString getFullPath(const FSRef &ref)
 
 static void appendOrganizationAndApp(QString &path)
 {
+#ifndef QT_BOOTSTRAPPED
     const QString org = QCoreApplication::organizationName();
     if (!org.isEmpty())
         path += QLatin1Char('/') + org;
     const QString appName = QCoreApplication::applicationName();
     if (!appName.isEmpty())
         path += QLatin1Char('/') + appName;
+#else
+    Q_UNUSED(path);
+#endif
 }
 
 static QString macLocation(QStandardPaths::StandardLocation type, short domain)
@@ -180,6 +187,7 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
     return dirs;
 }
 
+#ifndef QT_BOOTSTRAPPED
 QString QStandardPaths::displayName(StandardLocation type)
 {
     if (QStandardPaths::HomeLocation == type)
@@ -197,5 +205,6 @@ QString QStandardPaths::displayName(StandardLocation type)
 
     return static_cast<QString>(displayName);
 }
+#endif
 
 QT_END_NAMESPACE

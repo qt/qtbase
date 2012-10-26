@@ -44,7 +44,10 @@
 #include <qdir.h>
 #include <private/qsystemlibrary_p.h>
 #include <qstringlist.h>
+
+#ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
+#endif
 
 #include <qt_windows.h>
 #include <shlobj.h>
@@ -107,12 +110,14 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             result = convertCharArray(path);
         if (isTestModeEnabled())
             result += QLatin1String("/qttest");
+#ifndef QT_BOOTSTRAPPED
         if (type != GenericDataLocation) {
             if (!QCoreApplication::organizationName().isEmpty())
                 result += QLatin1Char('/') + QCoreApplication::organizationName();
             if (!QCoreApplication::applicationName().isEmpty())
                 result += QLatin1Char('/') + QCoreApplication::applicationName();
         }
+#endif
         break;
 
     case DesktopLocation:
@@ -189,10 +194,12 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
             if (SHGetSpecialFolderPath(0, path, CSIDL_COMMON_APPDATA, FALSE)) {
                 QString result = convertCharArray(path);
                 if (type != GenericDataLocation) {
+#ifndef QT_BOOTSTRAPPED
                     if (!QCoreApplication::organizationName().isEmpty())
                         result += QLatin1Char('/') + QCoreApplication::organizationName();
                     if (!QCoreApplication::applicationName().isEmpty())
                         result += QLatin1Char('/') + QCoreApplication::applicationName();
+#endif
                 }
                 dirs.append(result);
             }
