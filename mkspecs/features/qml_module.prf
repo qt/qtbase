@@ -9,6 +9,11 @@ for(qmlf, QML_FILES): fq_qml_files += $$absolute_path($$qmlf, $$_PRO_FILE_PWD_)
 # Only for Qt Creator's project view
 OTHER_FILES += $$fq_qml_files
 
+qml1_target: \
+    instbase = $$[QT_INSTALL_IMPORTS]/QtDeclarative
+else: \
+    instbase = $$[QT_INSTALL_IMPORTS]
+
 exists($$[QT_HOST_PREFIX]/.qmake.cache) {
     # These bizarre rules copy the files to the qtbase build directory
 
@@ -17,7 +22,7 @@ exists($$[QT_HOST_PREFIX]/.qmake.cache) {
     }
 
     qmlfiles2build.input = fq_qml_files
-    qmlfiles2build.output = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH/${QMAKE_FUNC_FILE_IN_qmlModStripSrcDir}
+    qmlfiles2build.output = $$instbase/$$TARGETPATH/${QMAKE_FUNC_FILE_IN_qmlModStripSrcDir}
     !contains(TEMPLATE, vc.*): qmlfiles2build.variable_out = PRE_TARGETDEPS
     qmlfiles2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
     qmlfiles2build.name = COPY ${QMAKE_FILE_IN}
@@ -29,5 +34,5 @@ exists($$[QT_HOST_PREFIX]/.qmake.cache) {
 # Install rules
 qmldir.base = $$_PRO_FILE_PWD_
 qmldir.files = $$fq_qml_files
-qmldir.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
+qmldir.path = $$instbase/$$TARGETPATH
 INSTALLS += qmldir

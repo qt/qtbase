@@ -24,7 +24,12 @@ exists($$QMLTYPEFILE): QML_FILES += $$QMLTYPEFILE
 
 # Install rules
 
-target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
+qml1_target: \
+    instbase = $$[QT_INSTALL_IMPORTS]/QtDeclarative
+else: \
+    instbase = $$[QT_INSTALL_IMPORTS]
+
+target.path = $$instbase/$$TARGETPATH
 INSTALLS += target
 
 # Some final setup
@@ -46,10 +51,15 @@ load(qt_targets)
         isEmpty(IMPORT_VERSION): IMPORT_VERSION = $$eval(QT.$${CXX_MODULE}.MAJOR_VERSION).$$eval(QT.$${CXX_MODULE}.MINOR_VERSION)
 
         load(resolve_target)
-        qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
+        qml1_target: \
+            qmlplugindump = qml1plugindump
+        else: \
+            qmlplugindump = qmlplugindump
+        qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
         importpath.value =
         for(qmod, QMAKEMODULES) {
             qmod = $$section(qmod, /, 0, -3)/imports
+            qml1_target: qmod = $$qmod/QtDeclarative
             exists($$qmod): importpath.value += $$shell_path($$qmod)
         }
         importpath.name = QML_IMPORT_PATH

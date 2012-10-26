@@ -1,0 +1,2 @@
+CONFIG += qml1_target
+load(qml_plugin)
