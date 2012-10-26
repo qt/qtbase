@@ -128,6 +128,7 @@ public:
     static QString workingDirectory(const QString &path);
     static QString initialSelection(const QString &path);
     QStringList typedFiles() const;
+    QStringList userSelectedFiles() const;
     QStringList addDefaultSuffixToFiles(const QStringList filesToFix) const;
     bool removeDirectory(const QString &path);
     void setLabelTextControl(QFileDialog::DialogLabel label, const QString &text);

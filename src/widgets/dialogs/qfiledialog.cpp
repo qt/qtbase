@@ -552,7 +552,7 @@ void QFileDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
                                  directory.absolutePath() :
                                  QString());
     options->setInitiallySelectedNameFilter(q->selectedNameFilter());
-    options->setInitiallySelectedFiles(q->selectedFiles());
+    options->setInitiallySelectedFiles(userSelectedFiles());
 }
 
 void QFileDialogPrivate::helperDone(QDialog::DialogCode code, QPlatformDialogHelper *)
@@ -1009,6 +1009,24 @@ QStringList QFileDialogPrivate::typedFiles() const
     return addDefaultSuffixToFiles(files);
 }
 
+// Return selected files without defaulting to the root of the file system model
+// used for initializing QFileDialogOptions for native dialogs. The default is
+// not suitable for native dialogs since it mostly equals directory().
+QStringList QFileDialogPrivate::userSelectedFiles() const
+{
+    if (nativeDialogInUse)
+        return addDefaultSuffixToFiles(selectedFiles_sys());
+
+    QStringList files;
+    foreach (const QModelIndex &index, qFileDialogUi->listView->selectionModel()->selectedRows())
+        files.append(index.data(QFileSystemModel::FilePathRole).toString());
+
+    if (files.isEmpty() && !lineEdit()->text().isEmpty())
+        files = typedFiles();
+
+    return files;
+}
+
 QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList filesToFix) const
 {
     QStringList files;
@@ -1046,19 +1064,13 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList filesT
 QStringList QFileDialog::selectedFiles() const
 {
     Q_D(const QFileDialog);
-    if (d->nativeDialogInUse)
-        return d->addDefaultSuffixToFiles(d->selectedFiles_sys());
 
-    QModelIndexList indexes = d->qFileDialogUi->listView->selectionModel()->selectedRows();
-    QStringList files;
-    for (int i = 0; i < indexes.count(); ++i)
-        files.append(indexes.at(i).data(QFileSystemModel::FilePathRole).toString());
-
-    if (files.isEmpty() && !d->lineEdit()->text().isEmpty())
-        files = d->typedFiles();
-    const FileMode fm = fileMode();
-    if (files.isEmpty() && !(fm == ExistingFile || fm == ExistingFiles))
-        files.append(d->rootIndex().data(QFileSystemModel::FilePathRole).toString());
+    QStringList files = d->userSelectedFiles();
+    if (files.isEmpty()) {
+        const FileMode fm = fileMode();
+        if (fm != ExistingFile && fm != ExistingFiles)
+            files.append(d->rootIndex().data(QFileSystemModel::FilePathRole).toString());
+    }
     return files;
 }
 
