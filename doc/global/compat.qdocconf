@@ -1,0 +1,11 @@
+alias.include                   = input
+
+macro.0                         = "\\\\0"
+macro.n                         = "\\\\n"
+macro.r                         = "\\\\r"
+macro.img                       = "\\image"
+macro.endquote                  = "\\endquotation"
+macro.relatesto                 = "\\relates"
+
+spurious                        = "Missing comma in .*" \
+                                  "Missing pattern .*"
