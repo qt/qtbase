@@ -728,6 +728,8 @@ void tst_QDateTime::addSecs_data()
     QTest::newRow("toPositive") << QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59), Qt::UTC)
                                 << 1
                                 << QDateTime(QDate(1, 1, 1), QTime(0, 0, 0), Qt::UTC);
+
+    QTest::newRow("invalid") << invalidDateTime() << 1 << invalidDateTime();
 }
 
 void tst_QDateTime::addSecs()
@@ -915,17 +917,22 @@ void tst_QDateTime::secsTo()
     QFETCH(int, nsecs);
     QFETCH(QDateTime, result);
 
-#ifdef Q_OS_IRIX
-    QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
-#endif
-    QCOMPARE(dt.secsTo(result), (qint64)nsecs);
-    QCOMPARE(result.secsTo(dt), (qint64)-nsecs);
-    QVERIFY((dt == result) == (0 == nsecs));
-    QVERIFY((dt != result) == (0 != nsecs));
-    QVERIFY((dt < result) == (0 < nsecs));
-    QVERIFY((dt <= result) == (0 <= nsecs));
-    QVERIFY((dt > result) == (0 > nsecs));
-    QVERIFY((dt >= result) == (0 >= nsecs));
+    if (dt.isValid()) {
+    #ifdef Q_OS_IRIX
+        QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
+    #endif
+        QCOMPARE(dt.secsTo(result), (qint64)nsecs);
+        QCOMPARE(result.secsTo(dt), (qint64)-nsecs);
+        QVERIFY((dt == result) == (0 == nsecs));
+        QVERIFY((dt != result) == (0 != nsecs));
+        QVERIFY((dt < result) == (0 < nsecs));
+        QVERIFY((dt <= result) == (0 <= nsecs));
+        QVERIFY((dt > result) == (0 > nsecs));
+        QVERIFY((dt >= result) == (0 >= nsecs));
+    } else {
+        QVERIFY(dt.secsTo(result) == 0);
+        QVERIFY(result.secsTo(dt) == 0);
+    }
 }
 
 void tst_QDateTime::msecsTo_data()
@@ -939,17 +946,22 @@ void tst_QDateTime::msecsTo()
     QFETCH(int, nsecs);
     QFETCH(QDateTime, result);
 
-#ifdef Q_OS_IRIX
-    QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
-#endif
-    QCOMPARE(dt.msecsTo(result), qint64(nsecs) * 1000);
-    QCOMPARE(result.msecsTo(dt), -qint64(nsecs) * 1000);
-    QVERIFY((dt == result) == (0 == (qint64(nsecs) * 1000)));
-    QVERIFY((dt != result) == (0 != (qint64(nsecs) * 1000)));
-    QVERIFY((dt < result) == (0 < (qint64(nsecs) * 1000)));
-    QVERIFY((dt <= result) == (0 <= (qint64(nsecs) * 1000)));
-    QVERIFY((dt > result) == (0 > (qint64(nsecs) * 1000)));
-    QVERIFY((dt >= result) == (0 >= (qint64(nsecs) * 1000)));
+    if (dt.isValid()) {
+    #ifdef Q_OS_IRIX
+        QEXPECT_FAIL("cet4", "IRIX databases say 1970 had DST", Abort);
+    #endif
+        QCOMPARE(dt.msecsTo(result), qint64(nsecs) * 1000);
+        QCOMPARE(result.msecsTo(dt), -qint64(nsecs) * 1000);
+        QVERIFY((dt == result) == (0 == (qint64(nsecs) * 1000)));
+        QVERIFY((dt != result) == (0 != (qint64(nsecs) * 1000)));
+        QVERIFY((dt < result) == (0 < (qint64(nsecs) * 1000)));
+        QVERIFY((dt <= result) == (0 <= (qint64(nsecs) * 1000)));
+        QVERIFY((dt > result) == (0 > (qint64(nsecs) * 1000)));
+        QVERIFY((dt >= result) == (0 >= (qint64(nsecs) * 1000)));
+    } else {
+        QVERIFY(dt.msecsTo(result) == 0);
+        QVERIFY(result.msecsTo(dt) == 0);
+    }
 }
 
 void tst_QDateTime::currentDateTime()
@@ -1578,6 +1590,13 @@ void tst_QDateTime::fromStringToStringLocale()
     // obsolete
     QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::SystemLocaleDate), Qt::SystemLocaleDate), dateTime);
     QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::LocaleDate), Qt::LocaleDate), dateTime);
+
+    QEXPECT_FAIL("data0", "This format is apparently failing because of a bug in the datetime parser. (QTBUG-22833)", Continue);
+    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::DefaultLocaleLongDate), Qt::DefaultLocaleLongDate), dateTime);
+#ifndef Q_OS_WIN
+    QEXPECT_FAIL("data0", "This format is apparently failing because of a bug in the datetime parser. (QTBUG-22833)", Continue);
+#endif
+    QCOMPARE(QDateTime::fromString(dateTime.toString(Qt::SystemLocaleLongDate), Qt::SystemLocaleLongDate), dateTime);
 
     QLocale::setDefault(def);
 }

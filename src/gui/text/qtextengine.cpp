@@ -1015,10 +1015,22 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             casedString.resize(entire_shaper_item.item.length);
         HB_UChar16 *uc = casedString.data();
         for (uint i = 0; i < entire_shaper_item.item.length; ++i) {
-            if(si.analysis.flags == QScriptAnalysis::Lowercase)
-                uc[i] = QChar::toLower(entire_shaper_item.string[si.position + i]);
-            else
-                uc[i] = QChar::toUpper(entire_shaper_item.string[si.position + i]);
+            uint ucs4 = entire_shaper_item.string[si.position + i];
+            if (QChar::isHighSurrogate(ucs4)) {
+                uc[i] = ucs4; // high part never changes in simple casing
+                if (i + 1 < entire_shaper_item.item.length) {
+                    ushort low = entire_shaper_item.string[si.position + i + 1];
+                    if (QChar::isLowSurrogate(low)) {
+                        ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                        ucs4 = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
+                                                                               : QChar::toUpper(ucs4);
+                        uc[++i] = QChar::lowSurrogate(ucs4);
+                    }
+                }
+            } else {
+                uc[i] = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
+                                                                        : QChar::toUpper(ucs4);
+            }
         }
         entire_shaper_item.item.pos = 0;
         entire_shaper_item.string = uc;
@@ -3060,8 +3072,7 @@ void QTextEngine::drawItemDecorationList(QPainter *painter, const ItemDecoration
 
     foreach (const ItemDecoration &decoration, decorationList) {
         painter->setPen(decoration.pen);
-        QLineF line(decoration.x1, decoration.y, decoration.x2, decoration.y);
-        painter->drawLine(line);
+        painter->drawLine(QLineF(decoration.x1, decoration.y, decoration.x2, decoration.y));
     }
 }
 
@@ -3069,13 +3080,23 @@ void QTextEngine::drawDecorations(QPainter *painter)
 {
     QPen oldPen = painter->pen();
 
+    bool wasCompatiblePainting = painter->renderHints()
+            & QPainter::Qt4CompatiblePainting;
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
+
     adjustUnderlines();
     drawItemDecorationList(painter, underlineList);
     drawItemDecorationList(painter, strikeOutList);
     drawItemDecorationList(painter, overlineList);
 
-    painter->setPen(oldPen);
     clearDecorations();
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting);
+
+    painter->setPen(oldPen);
 }
 
 void QTextEngine::clearDecorations()

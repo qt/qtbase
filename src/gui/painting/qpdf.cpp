@@ -44,6 +44,7 @@
 #include <qfile.h>
 #include <qtemporaryfile.h>
 #include <private/qmath_p.h>
+#include <private/qpainter_p.h>
 #include <qnumeric.h>
 #include "private/qfont_p.h"
 #include <qimagewriter.h>
@@ -784,7 +785,7 @@ QPdf::Stroker::Stroker()
     basicStroker.setStrokeWidth(.1);
 }
 
-void QPdf::Stroker::setPen(const QPen &pen)
+void QPdf::Stroker::setPen(const QPen &pen, QPainter::RenderHints hints)
 {
     if (pen.style() == Qt::NoPen) {
         stroker = 0;
@@ -792,7 +793,7 @@ void QPdf::Stroker::setPen(const QPen &pen)
     }
     qreal w = pen.widthF();
     bool zeroWidth = w < 0.0001;
-    cosmeticPen = pen.isCosmetic();
+    cosmeticPen = qt_pen_is_cosmetic(pen, hints);
     if (zeroWidth)
         w = .1;
 
@@ -1198,12 +1199,14 @@ void QPdfEngine::updateState(const QPaintEngineState &state)
     if (flags & DirtyPen) {
         d->pen = state.pen();
         d->hasPen = d->pen.style() != Qt::NoPen;
-        d->stroker.setPen(d->pen);
+        d->stroker.setPen(d->pen, state.renderHints());
         QBrush penBrush = d->pen.brush();
         bool oldSimple = d->simplePen;
         d->simplePen = (d->hasPen && (penBrush.style() == Qt::SolidPattern) && penBrush.isOpaque());
         if (oldSimple != d->simplePen)
             flags |= DirtyTransform;
+    } else if (flags & DirtyHints) {
+        d->stroker.setPen(d->pen, state.renderHints());
     }
     if (flags & DirtyBrush) {
         d->brush = state.brush();

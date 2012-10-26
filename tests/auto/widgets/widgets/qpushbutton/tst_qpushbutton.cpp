@@ -564,17 +564,14 @@ void tst_QPushButton::sizeHint_data()
 #if !defined(QT_NO_STYLE_WINDOWS)
     QTest::newRow("windows") << QString::fromLatin1("windows");
 #endif
-#if !defined(QT_NO_STYLE_CLEANLOOKS)
-    QTest::newRow("cleanlooks") << QString::fromLatin1("cleanlooks");
-#endif
 #if !defined(QT_NO_STYLE_GTK)
     QTest::newRow("gtk") << QString::fromLatin1("gtk");
 #endif
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
     QTest::newRow("mac") << QString::fromLatin1("mac");
 #endif
-#if !defined(QT_NO_STYLE_PLASTIQUE)
-    QTest::newRow("plastique") << QString::fromLatin1("plastique");
+#if !defined(QT_NO_STYLE_FUSION)
+    QTest::newRow("fusion") << QString::fromLatin1("fusion");
 #endif
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSXP)
     QTest::newRow("windowsxp") << QString::fromLatin1("windowsxp");

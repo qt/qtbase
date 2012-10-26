@@ -71,7 +71,7 @@ void AbstractItemView::setModel(QAbstractItemModel *model, AbstractViewItem *pro
         disconnect(m_model, SIGNAL(destroyed()),
                    this, SLOT(_q_modelDestroyed()));
         disconnect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                   this, SLOT( dataChanged(QModelIndex,QModelIndex)));
+                   this, SLOT(dataChanged(QModelIndex,QModelIndex)));
         disconnect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(rowsInserted(QModelIndex,int,int)));
         disconnect(m_model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
@@ -112,7 +112,7 @@ void AbstractItemView::setModel(QAbstractItemModel *model, AbstractViewItem *pro
 
     connect(m_model, SIGNAL(destroyed()), this, SLOT(modelDestroyed()));
     connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-            this, SLOT( dataChanged(QModelIndex,QModelIndex)));
+            this, SLOT(dataChanged(QModelIndex,QModelIndex)));
     connect(m_model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
             this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));
     connect(m_model, SIGNAL(rowsInserted(QModelIndex,int,int)),
@@ -205,11 +205,11 @@ void AbstractItemView::setSelectionModel(QItemSelectionModel *smodel)
         return;
     }
     if (m_selectionModel) {
-        disconnect(m_selectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
-                   this, SLOT(currentSelectionChanged(QItemSelection, QItemSelection)));
+        disconnect(m_selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+                   this, SLOT(currentSelectionChanged(QItemSelection,QItemSelection)));
 
-        disconnect(m_selectionModel, SIGNAL(currentChanged(QModelIndex, QModelIndex)),
-                   this, SLOT(currentIndexChanged(QModelIndex, QModelIndex)));
+        disconnect(m_selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+                   this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
 
         delete m_selectionModel;
         m_selectionModel = 0;
@@ -218,10 +218,10 @@ void AbstractItemView::setSelectionModel(QItemSelectionModel *smodel)
     m_selectionModel = smodel;
 
     if (m_selectionModel) {
-        connect(m_selectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
-                this, SLOT(currentSelectionChanged(QItemSelection, QItemSelection)));
-        connect(m_selectionModel, SIGNAL(currentChanged(QModelIndex, QModelIndex)),
-                this, SLOT(currentIndexChanged(QModelIndex, QModelIndex)));
+        connect(m_selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+                this, SLOT(currentSelectionChanged(QItemSelection,QItemSelection)));
+        connect(m_selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+                this, SLOT(currentIndexChanged(QModelIndex,QModelIndex)));
     }
 }
 

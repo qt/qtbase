@@ -298,7 +298,7 @@ bool QSocketNotifier::event(QEvent *e)
     }
     QObject::event(e);                        // will activate filters
     if ((e->type() == QEvent::SockAct) || (e->type() == QEvent::SockClose)) {
-        emit activated(d->sockfd);
+        emit activated(d->sockfd, QPrivateSignal());
         return true;
     }
     return false;

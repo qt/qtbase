@@ -2262,7 +2262,7 @@ QString QLocalePrivate::dateTimeToString(const QString &format, const QDate *dat
 
                 switch (repeat) {
                 case 4:
-                    result.append(longLongToString(date->year()));
+                    result.append(longLongToString(date->year(), -1, 10, 4, QLocalePrivate::ZeroPadded));
                     break;
                 case 2:
                     result.append(longLongToString(date->year() % 100, -1, 10, 2,

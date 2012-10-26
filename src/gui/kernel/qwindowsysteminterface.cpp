@@ -89,6 +89,26 @@ void QWindowSystemInterface::handleLeaveEvent(QWindow *tlw)
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+/*!
+    This method can be used to ensure leave and enter events are both in queue when moving from
+    one QWindow to another. This allows QWindow subclasses to check for a queued enter event
+    when handling the leave event (\c QWindowSystemInterfacePrivate::peekWindowSystemEvent) to
+    determine where mouse went and act accordingly. E.g. QWidgetWindow needs to know if mouse
+    cursor moves between windows in same window hierarchy.
+*/
+void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leave)
+{
+    bool wasSynchronous = QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents;
+    if (wasSynchronous)
+        setSynchronousWindowsSystemEvents(false);
+    handleLeaveEvent(leave);
+    handleEnterEvent(enter);
+    if (wasSynchronous) {
+        flushWindowSystemEvents();
+        setSynchronousWindowsSystemEvents(true);
+    }
+}
+
 void QWindowSystemInterface::handleWindowActivated(QWindow *tlw)
 {
     QWindowSystemInterfacePrivate::ActivatedWindowEvent *e = new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw);
@@ -322,6 +342,16 @@ int QWindowSystemInterfacePrivate::windowSystemEventsQueued()
 QWindowSystemInterfacePrivate::WindowSystemEvent * QWindowSystemInterfacePrivate::getWindowSystemEvent()
 {
     return windowSystemEventQueue.takeFirstOrReturnNull();
+}
+
+QWindowSystemInterfacePrivate::WindowSystemEvent *QWindowSystemInterfacePrivate::peekWindowSystemEvent(EventType t)
+{
+    return windowSystemEventQueue.peekAtFirstOfType(t);
+}
+
+void QWindowSystemInterfacePrivate::removeWindowSystemEvent(WindowSystemEvent *event)
+{
+    windowSystemEventQueue.remove(event);
 }
 
 void QWindowSystemInterfacePrivate::handleWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *ev)
@@ -599,6 +629,18 @@ void QWindowSystemInterface::handlePlatformPanelEvent(QWindow *w)
             new QWindowSystemInterfacePrivate::PlatformPanelEvent(w);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
+
+#ifndef QT_NO_CONTEXTMENU
+void QWindowSystemInterface::handleContextMenuEvent(QWindow *w, bool mouseTriggered,
+                                                    const QPoint &pos, const QPoint &globalPos,
+                                                    Qt::KeyboardModifiers modifiers)
+{
+    QWindowSystemInterfacePrivate::ContextMenuEvent *e =
+            new QWindowSystemInterfacePrivate::ContextMenuEvent(w, mouseTriggered, pos,
+                                                                globalPos, modifiers);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+#endif
 
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
     QWindowSystemInterface::handleMouseEvent(w, local, global,  b,  mods);

@@ -247,7 +247,7 @@ void QTimer::timerEvent(QTimerEvent *e)
     if (e->timerId() == id) {
         if (single)
             stop();
-        emit timeout();
+        emit timeout(QPrivateSignal());
     }
 }
 

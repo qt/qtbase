@@ -323,6 +323,8 @@ information about a particular change.
 
 - QAbstractPageSetupDialog has been removed.
 
+- QThread::terminated() has been removed, since its emission cannot be guaranteed.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
@@ -517,8 +519,17 @@ QtGui
   rectangle filling. It's possible to still get the old behavior by setting the
   QPainter::Qt4CompatiblePainting render hint.
 
+* Behavioral change regarding QPen: The default QPen constructors now create a
+  1-width non-cosmetic pen as opposed to a 0-width cosmetic pen. The old
+  behavior can be emulated by setting the QPainter::Qt4CompatiblePainting
+  render hint when painting.
+
 QtWidgets
 ---------
+* A new style QFusionStyle has been introduced, while QPlastiqueStyle, QCleanlooksStyle,
+  QCDEStyle and QMotifStyle have been removed. The older styles will be
+  made available to applications as a standalone source package.
+
 * QInputContext removed as well as related getters and setters on QWidget and QApplication.
   Input contexts are now platform specific.
 
@@ -702,7 +713,9 @@ subclass.
 and modelReset() signals suffice to inform views that they must reinterrogate
 the model.
 
-* QSqlTableModel::selectRow(): This is a new method that refreshes a single
+* QSqlTableModel::select() is now a slot.
+
+* QSqlTableModel::selectRow(): This is a new slot that refreshes a single
 row in the model from the database.
 
 * QSqlTableModel edit strategies OnFieldChange/OnRowChange QTBUG-2875

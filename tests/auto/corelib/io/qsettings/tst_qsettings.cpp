@@ -106,7 +106,9 @@ private slots:
     void testThreadSafety();
     void testEmptyData();
     void testResourceFiles();
+#ifdef Q_OS_MAC
     void fileName();
+#endif
     void isWritable_data();
     void isWritable();
     void registerFormat();
@@ -2576,9 +2578,10 @@ void tst_QSettings::testCaseSensitivity()
     }
 }
 
+#ifdef Q_OS_MAC
+// Please write a fileName() test for the other platforms
 void tst_QSettings::fileName()
 {
-#ifdef Q_OS_MAC
     QSettings s1(QSettings::UserScope, "Apple", "Console");
     QSettings s2(QSettings::UserScope, "Apple");
     QSettings s3(QSettings::SystemScope, "Apple", "Console");
@@ -2642,10 +2645,8 @@ void tst_QSettings::fileName()
 
     QSettings s21(QSettings::SystemScope, QLatin1String("   ") + QChar(0xbd) + QLatin1String("Foo//:/Bar,,,  Baz!()#"), "Console");
     QCOMPARE(s21.fileName(), QString("/Library/Preferences/com.foo-bar-baz.Console.plist"));
-#else
-    QSKIP("Please write a fileName() test for the other platforms");
-#endif
 }
+#endif
 
 void tst_QSettings::isWritable_data()
 {

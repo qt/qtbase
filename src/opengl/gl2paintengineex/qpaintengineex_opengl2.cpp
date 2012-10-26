@@ -1201,7 +1201,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     QOpenGL2PaintEngineState *s = state();
-    if (pen.isCosmetic() && !qt_scaleForTransform(s->transform(), 0)) {
+    if (qt_pen_is_cosmetic(pen, s->renderHints) && !qt_scaleForTransform(s->transform(), 0)) {
         // QTriangulatingStroker class is not meant to support cosmetically sheared strokes.
         QPaintEngineEx::stroke(path, pen);
         return;
@@ -1236,15 +1236,15 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
                                                         : QRectF(0, 0, width, height));
 
     if (penStyle == Qt::SolidLine) {
-        stroker.process(path, pen, clip);
+        stroker.process(path, pen, clip, s->renderHints);
 
     } else { // Some sort of dash
-        dasher.process(path, pen, clip);
+        dasher.process(path, pen, clip, s->renderHints);
 
         QVectorPath dashStroke(dasher.points(),
                                dasher.elementCount(),
                                dasher.elementTypes());
-        stroker.process(dashStroke, pen, clip);
+        stroker.process(dashStroke, pen, clip, s->renderHints);
     }
 
     if (!stroker.vertexCount())
@@ -1268,7 +1268,7 @@ void QGL2PaintEngineExPrivate::stroke(const QVectorPath &path, const QPen &pen)
                       ? qMax(pen.miterLimit() * width, width)
                       : width;
 
-        if (pen.isCosmetic())
+        if (qt_pen_is_cosmetic(pen, s->renderHints))
             extra = extra * inverseScale;
 
         QRectF bounds = path.controlPointRect().adjusted(-extra, -extra, extra, extra);
@@ -1675,7 +1675,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
                 continue;
 
             int x = qFloor(staticTextItem->glyphPositions[i].x) + c.baseLineX - margin;
-            int y = qFloor(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
+            int y = qRound(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
 
             vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
             textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));

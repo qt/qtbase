@@ -941,7 +941,7 @@ void tst_QSqlTableModel::removeRow()
 
     // headerDataChanged must be emitted by the model since the row won't vanish until select
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-    QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
+    QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
 
     QVERIFY(model.removeRow(1));
     QCOMPARE(headerDataChangedSpy.count(), 1);
@@ -1028,7 +1028,7 @@ void tst_QSqlTableModel::removeRows()
     QVERIFY(!model.removeRows(1, 0, model.index(2, 0))); // can't pass a valid modelindex
 
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-    QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
+    QSignalSpy headerDataChangedSpy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
     QVERIFY(model.removeRows(0, 2, QModelIndex()));
     QCOMPARE(headerDataChangedSpy.count(), 2);
     QCOMPARE(headerDataChangedSpy.at(0).at(1).toInt(), 1);
@@ -1677,7 +1677,7 @@ void tst_QSqlTableModel::insertRecordsInLoop()
 
     QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
     QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
-    QSignalSpy spyRowsInserted(&model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
+    QSignalSpy spyRowsInserted(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
     for (int i = 0; i < 10; i++) {
         QVERIFY(model.insertRecord(model.rowCount(), record));
         QCOMPARE(spyRowsInserted.at(i).at(1).toInt(), i+3); // The table already contains three rows

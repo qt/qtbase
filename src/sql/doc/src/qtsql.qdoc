@@ -44,7 +44,7 @@
     \section1 Getting Started
     To enable Qt SQL in a project, add this directive into the C++ files:
     \code
-    #include <QtSQL>
+    #include <QtSql>
     \endcode
     To link against the Qt SQL module, add this line to the project file:
     \code

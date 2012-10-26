@@ -61,8 +61,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
-
 class Q_CORE_EXPORT QWinOverlappedIoNotifier : public QObject
 {
     Q_OBJECT

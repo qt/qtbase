@@ -8030,7 +8030,7 @@ QAbstractGraphicsShapeItem::~QAbstractGraphicsShapeItem()
 
 /*!
     Returns the item's pen. If no pen has been set, this function returns
-    QPen(), a default black solid line pen with 0 width.
+    QPen(), a default black solid line pen with 1 width.
 */
 QPen QAbstractGraphicsShapeItem::pen() const
 {
@@ -8204,7 +8204,7 @@ QRectF QGraphicsPathItem::boundingRect() const
 {
     Q_D(const QGraphicsPathItem);
     if (d->boundingRect.isNull()) {
-        qreal pw = pen().widthF();
+        qreal pw = pen().style() == Qt::NoPen ? qreal(0) : pen().widthF();
         if (pw == 0.0)
             d->boundingRect = d->path.controlPointRect();
         else {
@@ -8434,7 +8434,7 @@ QRectF QGraphicsRectItem::boundingRect() const
 {
     Q_D(const QGraphicsRectItem);
     if (d->boundingRect.isNull()) {
-        qreal halfpw = pen().widthF() / 2;
+        qreal halfpw = pen().style() == Qt::NoPen ? qreal(0) : pen().widthF() / 2;
         d->boundingRect = d->rect;
         if (halfpw > 0.0)
             d->boundingRect.adjust(-halfpw, -halfpw, halfpw, halfpw);
@@ -8723,7 +8723,7 @@ QRectF QGraphicsEllipseItem::boundingRect() const
 {
     Q_D(const QGraphicsEllipseItem);
     if (d->boundingRect.isNull()) {
-        qreal pw = pen().widthF();
+        qreal pw = pen().style() == Qt::NoPen ? qreal(0) : pen().widthF();
         if (pw == 0.0 && d->spanAngle == 360 * 16)
             d->boundingRect = d->rect;
         else
@@ -8959,7 +8959,7 @@ QRectF QGraphicsPolygonItem::boundingRect() const
 {
     Q_D(const QGraphicsPolygonItem);
     if (d->boundingRect.isNull()) {
-        qreal pw = pen().widthF();
+        qreal pw = pen().style() == Qt::NoPen ? qreal(0) : pen().widthF();
         if (pw == 0.0)
             d->boundingRect = d->polygon.boundingRect();
         else

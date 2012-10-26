@@ -184,9 +184,14 @@ public:
 #endif
 
     static QByteArray comErrorString(HRESULT hr);
+    bool asyncExpose() const;
+    void setAsyncExpose(bool value);
 
 private:
     void handleFocusEvent(QtWindows::WindowsEventType et, QWindowsWindow *w);
+#ifndef QT_NO_CONTEXTMENU
+    void handleContextMenuEvent(QWindow *window, const MSG &msg);
+#endif
     void unregisterWindowClasses();
 
     QScopedPointer<QWindowsContextPrivate> d;

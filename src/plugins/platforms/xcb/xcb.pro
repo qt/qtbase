@@ -74,17 +74,7 @@ contains(QT_CONFIG, xcb-render) {
 
 !contains(DEFINES, QT_NO_SHAPE):LIBS += -lxcb-shape
 
-#    DEFINES += XCB_USE_DRI2
-contains(DEFINES, XCB_USE_DRI2) {
-    LIBS += -lxcb-dri2 -lEGL
-
-    CONFIG += link_pkgconfig
-    PKGCONFIG += libdrm
-
-    HEADERS += qdri2context.h
-    SOURCES += qdri2context.cpp
-
-} else:contains(QT_CONFIG, opengl) {
+contains(QT_CONFIG, opengl) {
     contains(QT_CONFIG, opengles2) {
         DEFINES += XCB_USE_EGL
         LIBS += -lEGL
@@ -98,6 +88,10 @@ contains(DEFINES, XCB_USE_DRI2) {
         HEADERS += qglxintegration.h
         SOURCES += qglxintegration.cpp
         LIBS += $$QMAKE_LIBS_DYNLOAD
+        contains(QT_CONFIG, xcb-glx) {
+            DEFINES += XCB_HAS_XCB_GLX
+            LIBS += -lxcb-glx
+        }
     }
 }
 

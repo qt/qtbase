@@ -48,6 +48,7 @@
 #include <QtTest>
 #include <QWidget>
 #include <QDomDocument>
+#include <QPrintDialog>
 
 #ifdef EXPECT_DBUS_AVAILABLE
 #include <QDBusMessage>
@@ -70,6 +71,8 @@ int main(int argc, char **argv)
     QWidget widget;
 
     QDomDocument domDocument;
+
+    QPrintDialog printDialog;
 
 #ifdef EXPECT_DBUS_AVAILABLE
     QDBusMessage dBusMessage;

@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TARGET = QtTest
 QT = core-private
 CONFIG += exceptions

@@ -95,7 +95,9 @@ private slots:
 #endif
 
     void ctor();
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
     void emptyCtor();
+#endif
     void unixLocaleName();
     void double_conversion_data();
     void double_conversion();
@@ -374,6 +376,10 @@ void tst_QLocale::ctor()
 #undef TEST_CTOR
 }
 
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
+// Not when Q_OS_WINCE is defined because the test uses unsupported
+// Windows CE QProcess functionality (std streams, env)
+// Also Qt needs to be compiled without QT_NO_PROCESS
 static inline bool runSysApp(const QString &binary,
                              const QStringList &env,
                              QString *output,
@@ -424,12 +430,6 @@ static inline bool runSysAppTest(const QString &binary,
 
 void tst_QLocale::emptyCtor()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Uses unsupported Windows CE QProcess functionality (std streams, env)");
-#endif
-#if defined(QT_NO_PROCESS)
-    QSKIP("Qt was compiled with QT_NO_PROCESS");
-#else
 #define TEST_CTOR(req_lc, exp_str) \
     { \
     /* Test constructor without arguments. Needs separate process */ \
@@ -492,8 +492,8 @@ void tst_QLocale::emptyCtor()
     TEST_CTOR("123456", defaultLoc.toLatin1());
 
 #undef TEST_CTOR
-#endif
 }
+#endif
 
 void tst_QLocale::unixLocaleName()
 {
@@ -875,6 +875,7 @@ void tst_QLocale::formatDate_data()
     QTest::newRow("28") << QDate() << "'\"yy\"'" << "";
     QTest::newRow("29") << QDate(1974, 12, 1) << "hh:mm:ss.zzz ap d'd'dd/M/yy" << "hh:mm:ss.zzz ap 1d01/12/74";
 
+    QTest::newRow("dd MMMM yyyy") << QDate(1, 1, 1) << "dd MMMM yyyy" << "01 January 0001";
 }
 
 void tst_QLocale::formatDate()
@@ -973,6 +974,9 @@ void tst_QLocale::formatDateTime_data()
                          << "d'dd'd/MMM'M'/yysss" << "1dd1/DecM/74033";
     QTest::newRow("12C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(15, 14, 13))
                          << "d'd'dd/M/yyh" << "1d01/12/7415";
+
+    QTest::newRow("dd MMMM yyyy, hh:mm:ss") << "C" << QDateTime(QDate(1, 1, 1), QTime(12, 00, 00))
+                         << "dd MMMM yyyy, hh:mm:ss" << "01 January 0001, 12:00:00";
 
     QTest::newRow("20C") << "C" << QDateTime(QDate(1974, 12, 1), QTime(15, 14, 13))
                          << "foo" << "foo";

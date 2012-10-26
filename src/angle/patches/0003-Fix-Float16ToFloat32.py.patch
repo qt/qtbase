@@ -1,0 +1,54 @@
+From e4f894847ebefe54f9a9f9911c38dc3efe77c260 Mon Sep 17 00:00:00 2001
+From: Jason Barron <jason.barron@digia.com>
+Date: Tue, 16 Oct 2012 10:34:32 +0200
+Subject: [PATCH 3/3] Fix Float16ToFloat32.py.
+
+To ensure generation of compilable code, the script should
+be using the alternate form of the hex string formatter to
+be sure it gets prefixed by '0x'.
+
+Also remove an extra '=' character.
+
+This issue has been reported upstream to the ANGLE team:
+
+    http://code.google.com/p/angleproject/issues/detail?id=376
+
+Change-Id: I8ccf017afcfbd2c2f52ed291b89f29ba597c9c41
+---
+ src/3rdparty/angle/src/libGLESv2/Float16ToFloat32.py | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/Float16ToFloat32.py b/src/3rdparty/angle/src/libGLESv2/Float16ToFloat32.py
+index ae646ff..fb2964e 100644
+--- a/src/3rdparty/angle/src/libGLESv2/Float16ToFloat32.py
++++ b/src/3rdparty/angle/src/libGLESv2/Float16ToFloat32.py
+@@ -56,22 +56,22 @@ namespace gl
+ 
+ print "const static unsigned g_mantissa[2048] = {"
+ for i in range(0, 2048):
+-    print "    %08x," % convertMantissa(i)
++    print "    %#10x," % convertMantissa(i)
+ print "};\n"
+ 
+ print "const static unsigned g_exponent[64] = {"
+ for i in range(0, 64):
+-    print "    %08x," % convertExponent(i)
++    print "    %#10x," % convertExponent(i)
+ print "};\n"
+ 
+ print "const static unsigned g_offset[64] = {"
+ for i in range(0, 64):
+-    print "    %08x," % convertOffset(i)
++    print "    %#10x," % convertOffset(i)
+ print "};\n"
+ 
+ print """float float16ToFloat32(unsigned short h)
+ {
+-    unsigned i32 = =g_mantissa[g_offset[h >> 10] + (h & 0x3ff)] + g_exponent[h >> 10];
++    unsigned i32 = g_mantissa[g_offset[h >> 10] + (h & 0x3ff)] + g_exponent[h >> 10];
+     return *(float*) &i32;
+ }
+ }
+-- 
+1.7.11.msysgit.1
+

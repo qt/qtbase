@@ -76,6 +76,9 @@ private slots:
     void defaultOkButton();
     void setFont();
     void task256466_wrongStyle();
+
+private:
+    void runSlotWithFailsafeTimer(const char *member);
 };
 
 tst_QFontDialog::tst_QFontDialog()
@@ -124,12 +127,24 @@ void tst_QFontDialog::testGetFont()
     QVERIFY(ok);
 }
 
+void tst_QFontDialog::runSlotWithFailsafeTimer(const char *member)
+{
+    // FailSafeTimer quits the nested event loop if the dialog closing doesn't do it.
+    QTimer failSafeTimer;
+    failSafeTimer.setInterval(4000);
+    failSafeTimer.setSingleShot(true);
+    connect(&failSafeTimer, SIGNAL(timeout()), qApp, SLOT(quit()));
+    failSafeTimer.start();
+
+    QTimer::singleShot(0, this, member);
+    qApp->exec();
+
+    // FailSafeTimer stops once it goes out of scope.
+}
 
 void tst_QFontDialog::defaultOkButton()
 {
-    QTimer::singleShot(4000, qApp, SLOT(quit()));
-    QTimer::singleShot(0, this, SLOT(testGetFont()));
-    qApp->exec();
+    runSlotWithFailsafeTimer(SLOT(testGetFont()));
 }
 
 void tst_QFontDialog::testSetFont()
@@ -158,9 +173,7 @@ void tst_QFontDialog::setFont()
               while the font dialog was open.
               Task #27662
     */
-    QTimer::singleShot(4000, qApp, SLOT(quit()));
-    QTimer::singleShot(0, this, SLOT(testSetFont()));
-    qApp->exec();
+    runSlotWithFailsafeTimer(SLOT(testSetFont()));
 }
 
 

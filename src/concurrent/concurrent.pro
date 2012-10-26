@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TARGET     = QtConcurrent
 QT         = core-private
 CONFIG    += exceptions

@@ -72,8 +72,8 @@
 #include <qstringlist.h>
 #include <qvalidator.h>
 #include <qcompleter.h>
-#ifndef QT_NO_STYLE_CLEANLOOKS
-#include <qcleanlooksstyle.h>
+#ifndef QT_NO_STYLE_FUSION
+#include <qfusionstyle.h>
 #endif
 #include <qabstractitemview.h>
 #include <qstyleditemdelegate.h>
@@ -133,7 +133,7 @@ private slots:
     void itemListPosition();
     void separatorItem_data();
     void separatorItem();
-#ifndef QT_NO_STYLE_CLEANLOOKS
+#ifndef QT_NO_STYLE_FUSION
     void task190351_layout();
     void task191329_size();
 #endif
@@ -1942,12 +1942,12 @@ void tst_QComboBox::separatorItem()
     }
 }
 
-// This test requires the Cleanlooks style
-#ifndef QT_NO_STYLE_CLEANLOOKS
+// This test requires the Fusionstyle
+#ifndef QT_NO_STYLE_FUSION
 void tst_QComboBox::task190351_layout()
 {
     const QString oldStyle = QApplication::style()->objectName();
-    QApplication::setStyle(new QCleanlooksStyle);
+    QApplication::setStyle(new QFusionStyle);
 
     QComboBox listCombo;
     QListWidget *list = new QListWidget();
@@ -2007,12 +2007,12 @@ void tst_QComboBox::task166349_setEditableOnReturn()
     QCOMPARE(QLatin1String("two1"), comboBox.itemText(comboBox.count() - 1));
 }
 
-// This test requires the Cleanlooks style.
-#ifndef QT_NO_STYLE_CLEANLOOKS
+// This test requires the Fusion style.
+#ifndef QT_NO_STYLE_FUSION
 void tst_QComboBox::task191329_size()
 {
     const QString oldStyle = QApplication::style()->objectName();
-    QApplication::setStyle(new QCleanlooksStyle);
+    QApplication::setStyle(new QFusionStyle);
 
     QComboBox tableCombo;
     int rows;

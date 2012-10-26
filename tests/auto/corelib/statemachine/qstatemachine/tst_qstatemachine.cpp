@@ -2333,13 +2333,13 @@ void tst_QStateMachine::signalTransitions()
         SignalEmitter emitter;
         QState *s0 = new QState(&machine);
         QFinalState *s1 = new QFinalState(&machine);
-        QSignalTransition *t0 = s0->addTransition(&emitter, SIGNAL( signalWithNoArg( ) ), s1);
+        QSignalTransition *t0 = s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), s1);
         QVERIFY(t0 != 0);
-        QCOMPARE(t0->signal(), QByteArray(SIGNAL( signalWithNoArg( ) )));
+        QCOMPARE(t0->signal(), QByteArray(SIGNAL(signalWithNoArg())));
 
-        QSignalTransition *t1 = s0->addTransition(&emitter, SIGNAL( signalWithStringArg( const QString & ) ), s1);
+        QSignalTransition *t1 = s0->addTransition(&emitter, SIGNAL(signalWithStringArg(QString)), s1);
         QVERIFY(t1 != 0);
-        QCOMPARE(t1->signal(), QByteArray(SIGNAL( signalWithStringArg( const QString & ) )));
+        QCOMPARE(t1->signal(), QByteArray(SIGNAL(signalWithStringArg(QString))));
 
         QSignalSpy startedSpy(&machine, SIGNAL(started()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
@@ -3503,11 +3503,11 @@ void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
     s1->addTransition(at);
 
     QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
-    connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
+    connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     QPropertyAnimation *moreSpecificAnimation = new QPropertyAnimation(object, "foo");
     s2->addTransition(moreSpecificAnimation, SIGNAL(finished()), s3);
-    connect(moreSpecificAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));
+    connect(moreSpecificAnimation, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)), &counter, SLOT(slot()));
 
     machine.addDefaultAnimation(defaultAnimation);
     at->addAnimation(moreSpecificAnimation);
@@ -4742,7 +4742,7 @@ void tst_QStateMachine::signalTransitionNormalizeSignature()
     machine.setInitialState(s0);
     QState *s1 = new QState(&machine);
     SignalEmitter emitter;
-    TestSignalTransition *t0 = new TestSignalTransition(&emitter, SIGNAL( signalWithNoArg( ) ), s1);
+    TestSignalTransition *t0 = new TestSignalTransition(&emitter, SIGNAL(signalWithNoArg()), s1);
     s0->addTransition(t0);
 
     machine.start();

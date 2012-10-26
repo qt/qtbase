@@ -2153,11 +2153,13 @@ void QSslSocketPrivate::_q_connectedSlot()
     qDebug() << "\tlocal =" << QHostInfo::fromName(q->localAddress().toString()).hostName()
              << q->localAddress() << q->localPort();
 #endif
+
+    if (autoStartHandshake)
+        q->startClientEncryption();
+
     emit q->connected();
 
-    if (autoStartHandshake) {
-        q->startClientEncryption();
-    } else if (pendingClose) {
+    if (pendingClose && !autoStartHandshake) {
         pendingClose = false;
         q->disconnectFromHost();
     }

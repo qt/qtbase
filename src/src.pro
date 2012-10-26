@@ -35,6 +35,9 @@ src_testlib.subdir = $$PWD/testlib
 src_testlib.target = sub-testlib
 src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depends
 
+src_angle.subdir = $$PWD/angle
+src_angle.target = src_angle
+
 src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui
 src_gui.depends = src_corelib
@@ -69,6 +72,10 @@ contains(QT_CONFIG, dbus) {
 }
 contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 !contains(QT_CONFIG, no-gui) {
+    win32:contains(QT_CONFIG, angle) {
+        SUBDIRS += src_angle
+        src_gui.depends += src_angle
+    }
     SUBDIRS += src_gui src_platformsupport
     src_plugins.depends += src_gui src_platformsupport
     !contains(QT_CONFIG, no-widgets) {

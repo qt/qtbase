@@ -197,7 +197,9 @@ void QDirectFbBlitter::drawPixmapOpacity(const QRectF &rect, const QPixmap &pixm
 
     m_surface->SetBlittingFlags(m_surface.data(), DFBSurfaceBlittingFlags(blittingFlags));
     m_surface->SetPorterDuff(m_surface.data(), porterDuff);
-    m_surface->SetDstBlendFunction(m_surface.data(), DSBF_INVSRCALPHA);
+
+    if (cmode == QPainter::CompositionMode_SourceOver)
+        m_surface->SetDstBlendFunction(m_surface.data(), DSBF_INVSRCALPHA);
 
     if ((sRect.w == dRect.w) && (sRect.h == dRect.h))
         result = m_surface->Blit(m_surface.data(), s, &sRect, dRect.x, dRect.y);

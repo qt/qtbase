@@ -1683,46 +1683,6 @@ QMacStylePrivate::QMacStylePrivate()
 
 }
 
-bool QMacStylePrivate::animatable(QMacStylePrivate::Animates as, const QObject *obj) const
-{
-    if (!obj)
-        return false;
-
-    if (as == AquaPushButton) {
-        QPushButton *pb = const_cast<QPushButton *>(qobject_cast<const QPushButton *>(obj));
-        if (pb && pb->window()->isActiveWindow() && !mouseDown) {
-            if (pb != defaultButton) {
-                // Changed on its own, update the value.
-                const_cast<QMacStylePrivate *>(this)->stopAnimate(as, defaultButton);
-                const_cast<QMacStylePrivate *>(this)->startAnimate(as, pb);
-            }
-            return true;
-        }
-    }
-    return animation(obj);
-}
-
-void QMacStylePrivate::stopAnimate(QMacStylePrivate::Animates as, QObject *obj)
-{
-    stopAnimation(obj);
-    if (as == AquaPushButton && defaultButton) {
-        stopAnimation(defaultButton);
-        QPushButton *tmp = defaultButton;
-        defaultButton = 0;
-        tmp->update();
-    } else if (as == AquaScrollBar) {
-        scrollBarInfos.remove(qobject_cast<QWidget*>(obj));
-    }
-}
-
-void QMacStylePrivate::startAnimate(QMacStylePrivate::Animates as, QObject *obj)
-{
-    if (!animation(obj))
-        startAnimation(new QStyleAnimation(obj));
-    if (as == AquaPushButton)
-        defaultButton = qobject_cast<QPushButton *>(obj);
-}
-
 bool QMacStylePrivate::addWidget(QWidget *w)
 {
     //already knew of it
@@ -1730,34 +1690,15 @@ bool QMacStylePrivate::addWidget(QWidget *w)
         return false;
 
     Q_Q(QMacStyle);
-    if (QPushButton *btn = qobject_cast<QPushButton *>(w)) {
-        btn->installEventFilter(q);
-        if (btn->isDefault() || (btn->autoDefault() && btn->hasFocus()))
-            startAnimate(AquaPushButton, btn);
+    if (qobject_cast<QScrollBar *>(w)) {
+        w->installEventFilter(q);
         return true;
-    } else {
-        bool isScrollBar = (qobject_cast<QScrollBar *>(w));
-        if (isScrollBar) {
-            w->installEventFilter(q);
-            startAnimate(AquaScrollBar, w);
-            return true;
-        }
     }
     if (w->isWindow()) {
         w->installEventFilter(q);
         return true;
     }
     return false;
-}
-
-void QMacStylePrivate::removeWidget(QWidget *w)
-{
-    QPushButton *btn = qobject_cast<QPushButton *>(w);
-    if (btn && btn == defaultButton) {
-        stopAnimate(AquaPushButton, btn);
-    } else if (qobject_cast<QScrollBar *>(w)) {
-        stopAnimate(AquaScrollBar, w);
-    }
 }
 
 ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
@@ -1840,49 +1781,6 @@ bool QMacStyle::eventFilter(QObject *o, QEvent *e)
             }
         }
 #endif
-    } else if (QPushButton *btn = qobject_cast<QPushButton *>(o)) {
-        switch (e->type()) {
-        default:
-            break;
-        case QEvent::FocusIn:
-            if (btn->autoDefault())
-                d->startAnimate(QMacStylePrivate::AquaPushButton, btn);
-            break;
-        case QEvent::Destroy:
-        case QEvent::Hide:
-            if (btn == d->defaultButton)
-                d->stopAnimate(QMacStylePrivate::AquaPushButton, btn);
-            break;
-        case QEvent::MouseButtonPress:
-            // It is very confusing to keep the button pulsing, so just stop the animation.
-            if (static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)
-                d->mouseDown = true;
-            d->stopAnimate(QMacStylePrivate::AquaPushButton, btn);
-            break;
-        case QEvent::MouseButtonRelease:
-            if (static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)
-                d->mouseDown = false;
-            // fall through
-        case QEvent::FocusOut:
-        case QEvent::Show:
-        case QEvent::WindowActivate: {
-            QList<QPushButton *> list = btn->window()->findChildren<QPushButton *>();
-            for (int i = 0; i < list.size(); ++i) {
-                QPushButton *pBtn = list.at(i);
-                if ((e->type() == QEvent::FocusOut
-                     && (pBtn->isDefault() || (pBtn->autoDefault() && pBtn->hasFocus()))
-                     && pBtn != btn)
-                    || ((e->type() == QEvent::Show || e->type() == QEvent::MouseButtonRelease
-                         || e->type() == QEvent::WindowActivate)
-                        && pBtn->isDefault())) {
-                    if (pBtn->window()->isActiveWindow()) {
-                        d->startAnimate(QMacStylePrivate::AquaPushButton, pBtn);
-                    }
-                    break;
-                }
-            }
-            break; }
-        }
     }
     return false;
 }
@@ -1993,7 +1891,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
 }
 
 QMacStyle::QMacStyle()
-    : QWindowsStyle(*new QMacStylePrivate)
+    : QCommonStyle(*new QMacStylePrivate)
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     Q_D(QMacStyle);
@@ -2156,7 +2054,7 @@ void QMacStyle::polish(QWidget* w)
         }
     }
 
-    QWindowsStyle::polish(w);
+    QCommonStyle::polish(w);
 
     if (QRubberBand *rubber = qobject_cast<QRubberBand*>(w)) {
         rubber->setWindowOpacity(0.25);
@@ -2173,7 +2071,6 @@ void QMacStyle::polish(QWidget* w)
 void QMacStyle::unpolish(QWidget* w)
 {
     Q_D(QMacStyle);
-    d->removeWidget(w);
     if ((qobject_cast<QMenu*>(w) || qt_mac_is_metal(w)) && !w->testAttribute(Qt::WA_SetPalette)) {
         QPalette pal = qApp->palette(w);
         w->setPalette(pal);
@@ -2197,11 +2094,12 @@ void QMacStyle::unpolish(QWidget* w)
     if (QFocusFrame *frame = qobject_cast<QFocusFrame *>(w))
         frame->setAttribute(Qt::WA_NoSystemBackground, true);
 
-    QWindowsStyle::unpolish(w);
+    QCommonStyle::unpolish(w);
 
     if (qobject_cast<QScrollBar*>(w)) {
         w->setAttribute(Qt::WA_OpaquePaintEvent, true);
         w->setMouseTracking(false);
+        d->scrollBarInfos.remove(w);
     }
 }
 
@@ -2307,6 +2205,47 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_SliderLength:
         ret = 17;
         break;
+        // Returns the number of pixels to use for the business part of the
+        // slider (i.e., the non-tickmark portion). The remaining space is shared
+        // equally between the tickmark regions.
+    case PM_SliderControlThickness:
+        if (const QStyleOptionSlider *sl = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            int space = (sl->orientation == Qt::Horizontal) ? sl->rect.height() : sl->rect.width();
+            int ticks = sl->tickPosition;
+            int n = 0;
+            if (ticks & QSlider::TicksAbove)
+                ++n;
+            if (ticks & QSlider::TicksBelow)
+                ++n;
+            if (!n) {
+                ret = space;
+                break;
+            }
+
+            int thick = 6;        // Magic constant to get 5 + 16 + 5
+            if (ticks != QSlider::TicksBothSides && ticks != QSlider::NoTicks)
+                thick += proxy()->pixelMetric(PM_SliderLength, sl, widget) / 4;
+
+            space -= thick;
+            if (space > 0)
+                thick += (space * 2) / (n + 2);
+            ret = thick;
+        } else {
+            ret = 0;
+        }
+        break;
+    case PM_SmallIconSize:
+        ret = int(QStyleHelper::dpiScaled(16.));
+        break;
+
+    case PM_LargeIconSize:
+        ret = int(QStyleHelper::dpiScaled(32.));
+        break;
+
+    case PM_IconViewIconSize:
+        ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
+        break;
+
     case PM_ButtonDefaultIndicator:
         ret = 0;
         break;
@@ -2554,7 +2493,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         switch (d->aquaSizeConstrain(opt, widget)) {
         case QAquaSizeLarge:
         case QAquaSizeUnknown:
-            ret = QWindowsStyle::pixelMetric(metric, opt, widget);
+            ret = QCommonStyle::pixelMetric(metric, opt, widget);
             break;
         case QAquaSizeSmall:
             ret = 20;
@@ -2585,7 +2524,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 #endif
         break;
     default:
-        ret = QWindowsStyle::pixelMetric(metric, opt, widget);
+        ret = QCommonStyle::pixelMetric(metric, opt, widget);
         break;
     }
     return ret;
@@ -2593,7 +2532,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 
 QPalette QMacStyle::standardPalette() const
 {
-    QPalette pal = QWindowsStyle::standardPalette();
+    QPalette pal = QCommonStyle::standardPalette();
     pal.setColor(QPalette::Disabled, QPalette::Dark, QColor(191, 191, 191));
     pal.setColor(QPalette::Active, QPalette::Dark, QColor(191, 191, 191));
     pal.setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
@@ -2605,6 +2544,22 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
 {
     SInt32 ret = 0;
     switch (sh) {
+    case SH_Slider_SnapToValue:
+    case SH_PrintDialog_RightAlignButtons:
+    case SH_FontDialog_SelectAssociatedText:
+    case SH_MenuBar_MouseTracking:
+    case SH_Menu_MouseTracking:
+    case SH_ComboBox_ListMouseTracking:
+    case SH_MainWindow_SpaceBelowMenuBar:
+    case SH_ItemView_ChangeHighlightOnFocus:
+        ret = 1;
+        break;
+    case SH_ToolBox_SelectedPageTitleBold:
+        ret = 0;
+        break;
+    case SH_DialogButtonBox_ButtonsHaveIcons:
+        ret = 0;
+        break;
     case SH_Menu_SelectionWrap:
         ret = false;
         break;
@@ -2658,7 +2613,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = Qt::AlignTop;
         break;
     case SH_ScrollView_FrameOnlyAroundContents:
-        ret = QWindowsStyle::styleHint(sh, opt, w, hret);
+        ret = QCommonStyle::styleHint(sh, opt, w, hret);
         break;
     case SH_Menu_FillScreenWithScroll:
         ret = false;
@@ -2882,7 +2837,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = false;
         break;
     default:
-        ret = QWindowsStyle::styleHint(sh, opt, w, hret);
+        ret = QCommonStyle::styleHint(sh, opt, w, hret);
         break;
     }
     return ret;
@@ -2909,7 +2864,7 @@ QPixmap QMacStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixm
     default:
         ;
     }
-    return QWindowsStyle::generatedIconPixmap(iconMode, pixmap, opt);
+    return QCommonStyle::generatedIconPixmap(iconMode, pixmap, opt);
 }
 
 
@@ -2924,7 +2879,7 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
     static bool recursionGuard = false;
 
     if (recursionGuard)
-        return QWindowsStyle::standardPixmap(standardPixmap, opt, widget);
+        return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 
     recursionGuard = true;
     QIcon icon = standardIcon(standardPixmap, opt, widget);
@@ -3066,7 +3021,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         if (const QStyleOptionFrame *groupBox = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             const QStyleOptionFrameV2 *frame2 = qstyleoption_cast<const QStyleOptionFrameV2 *>(opt);
             if (frame2 && frame2->features & QStyleOptionFrameV2::Flat) {
-                QWindowsStyle::drawPrimitive(pe, groupBox, p, w);
+                QCommonStyle::drawPrimitive(pe, groupBox, p, w);
             } else {
                 HIThemeGroupBoxDrawInfo gdi;
                 gdi.version = qt_mac_hitheme_version;
@@ -3300,12 +3255,12 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 
                 HIThemeDrawFrame(&hirect, &fdi, cg, kHIThemeOrientationNormal);
             } else {
-                QWindowsStyle::drawPrimitive(pe, opt, p, w);
+                QCommonStyle::drawPrimitive(pe, opt, p, w);
             }
         }
         break;
     case PE_PanelLineEdit:
-        QWindowsStyle::drawPrimitive(pe, opt, p, w);
+        QCommonStyle::drawPrimitive(pe, opt, p, w);
         // Draw the focus frame for widgets other than QLineEdit (e.g. for line edits in Webkit).
         // Focus frame is drawn outside the rectangle passed in the option-rect.
         if (const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
@@ -3350,14 +3305,14 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         } break;
     case PE_PanelStatusBar: {
         if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_4) {
-            QWindowsStyle::drawPrimitive(pe, opt, p, w);
+            QCommonStyle::drawPrimitive(pe, opt, p, w);
             break;
         }
         // Use the Leopard style only if the status bar is the status bar for a
         // QMainWindow with a unifed toolbar.
         if (w == 0 || w->parent() == 0 || qobject_cast<QMainWindow *>(w->parent()) == 0 ||
             qobject_cast<QMainWindow *>(w->parent())->unifiedTitleAndToolBarOnMac() == false ) {
-            QWindowsStyle::drawPrimitive(pe, opt, p, w);
+            QCommonStyle::drawPrimitive(pe, opt, p, w);
             break;
         }
 
@@ -3383,7 +3338,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     }
 
     default:
-        QWindowsStyle::drawPrimitive(pe, opt, p, w);
+        QCommonStyle::drawPrimitive(pe, opt, p, w);
         break;
     }
 }
@@ -3614,10 +3569,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         }
                     }
                 } else {
-                    QWindowsStyle::drawControl(ce, &myTb, p, w);
+                    QCommonStyle::drawControl(ce, &myTb, p, w);
                 }
             } else {
-                QWindowsStyle::drawControl(ce, &myTb, p, w);
+                QCommonStyle::drawControl(ce, &myTb, p, w);
             }
         }
         break;
@@ -3630,17 +3585,68 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 break;
 
             if (btn->features & QStyleOptionButton::CommandLinkButton) {
-                QWindowsStyle::drawControl(ce, opt, p, w);
+                QCommonStyle::drawControl(ce, opt, p, w);
                 break;
+            }
+
+            // a focused auto-default button within an active window
+            // takes precedence over a normal default button
+            if (btn->features & QStyleOptionButton::AutoDefaultButton
+                    && opt->state & State_Active && opt->state & State_HasFocus) {
+                d->autoDefaultButton = opt->styleObject;
+                if (!d->animation(opt->styleObject))
+                    d->startAnimation(new QStyleAnimation(opt->styleObject));
+            } else if (d->autoDefaultButton == opt->styleObject) {
+                if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
+                    animation->updateTarget();
+                    d->stopAnimation(opt->styleObject);
+                }
+                d->autoDefaultButton = 0;
+            }
+
+            if (!d->autoDefaultButton) {
+                if (btn->features & QStyleOptionButton::DefaultButton && opt->state & State_Active) {
+                    d->defaultButton = opt->styleObject;
+                    if (!d->animation(opt->styleObject))
+                        d->startAnimation(new QStyleAnimation(opt->styleObject));
+                } else if (d->defaultButton == opt->styleObject) {
+                    if (QStyleAnimation *animation = d->animation(opt->styleObject)) {
+                        animation->updateTarget();
+                        d->stopAnimation(opt->styleObject);
+                    }
+                    d->defaultButton = 0;
+                }
+            }
+
+            // TODO: find out the pressed button in a qwidget independent way
+            extern QWidget *qt_button_down; // qwidgetwindow.cpp
+            if (opt->styleObject == qt_button_down)
+                d->pressedButton = opt->styleObject;
+            else if (d->pressedButton == opt->styleObject)
+                d->pressedButton = 0;
+
+            // the default button animation is paused meanwhile any button
+            // is pressed or an auto-default button is animated instead
+            if (QStyleAnimation *defaultAnimation = d->animation(d->defaultButton)) {
+                if (d->pressedButton || d->autoDefaultButton) {
+                    if (defaultAnimation->state() == QStyleAnimation::Running) {
+                        defaultAnimation->pause();
+                        defaultAnimation->updateTarget();
+                    }
+                } else if (defaultAnimation->state() == QStyleAnimation::Paused) {
+                    defaultAnimation->resume();
+                }
             }
 
             HIThemeButtonDrawInfo bdi;
             d->initHIThemePushButton(btn, w, tds, &bdi);
-            if (btn->features & QStyleOptionButton::DefaultButton
-                    && d->animatable(QMacStylePrivate::AquaPushButton, w)) {
-                bdi.adornment |= kThemeAdornmentDefault;
-                bdi.animation.time.start = d->defaultButtonStart;
-                bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
+            if (!d->pressedButton) {
+                QStyleAnimation* animation = d->animation(opt->styleObject);
+                if (animation && animation->state() == QStyleAnimation::Running) {
+                    bdi.adornment |= kThemeAdornmentDefault;
+                    bdi.animation.time.start = d->defaultButtonStart;
+                    bdi.animation.time.current = CFAbsoluteTimeGetCurrent();
+                }
             }
             // Unlike Carbon, we want the button to always be drawn inside its bounds.
             // Therefore, make the button a bit smaller, so that even if it got focus,
@@ -3707,7 +3713,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     }
                 }
                 if (themeId == kThemePushButtonFont) {
-                    QWindowsStyle::drawControl(ce, btn, p, w);
+                    QCommonStyle::drawControl(ce, btn, p, w);
                 } else {
                     p->save();
                     CGContextSetShouldAntialias(cg, true);
@@ -3735,7 +3741,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 }
             } else {
                 if (hasIcon && !hasText) {
-                    QWindowsStyle::drawControl(ce, btn, p, w);
+                    QCommonStyle::drawControl(ce, btn, p, w);
                 } else {
                     QRect freeContentRect = btn->rect;
                     QRect textRect = itemTextRect(
@@ -3779,7 +3785,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QStyleOptionComboBox comboCopy = *cb;
             comboCopy.direction = Qt::LeftToRight;
-            QWindowsStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
+            QCommonStyle::drawControl(CE_ComboBoxLabel, &comboCopy, p, w);
         }
         break;
     case CE_TabBarTabShape:
@@ -4507,7 +4513,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
         } break;
     default:
-        QWindowsStyle::drawControl(ce, opt, p, w);
+        QCommonStyle::drawControl(ce, opt, p, w);
         break;
     }
 }
@@ -4554,7 +4560,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     case SE_HeaderLabel:
         if (qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-            rect = QWindowsStyle::subElementRect(sr, opt, widget);
+            rect = QCommonStyle::subElementRect(sr, opt, widget);
             if (widget && widget->height() <= 22){
                 // We need to allow the text a bit more space when the header is
                 // small, otherwise it gets clipped:
@@ -4630,7 +4636,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
     case SE_TabWidgetTabContents:
-        rect = QWindowsStyle::subElementRect(sr, opt, widget);
+        rect = QCommonStyle::subElementRect(sr, opt, widget);
         if (const QStyleOptionTabWidgetFrame *twf
                 = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(opt)) {
             if (twf->lineWidth != 0) {
@@ -4651,7 +4657,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
     case SE_LineEditContents:
-        rect = QWindowsStyle::subElementRect(sr, opt, widget);
+        rect = QCommonStyle::subElementRect(sr, opt, widget);
         if(widget->parentWidget() && qobject_cast<const QComboBox*>(widget->parentWidget()))
             rect.adjust(-1, -2, 0, 0);
         else
@@ -4906,7 +4912,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
 #endif
     default:
-        rect = QWindowsStyle::subElementRect(sr, opt, widget);
+        rect = QCommonStyle::subElementRect(sr, opt, widget);
         break;
     }
     return rect;
@@ -5105,6 +5111,14 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 opacity = 1.0 - qMax(0.0, (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay) /
                                           QMacStylePrivate::ScrollBarFadeOutDuration);
                 info.cleared = opacity <= 0.0;
+
+                if (info.animating && info.cleared) {
+                    d->stopAnimation(slider->styleObject);
+                    info.animating = false;
+                } else if (!info.animating && !info.cleared) {
+                    d->startAnimation(new QStyleAnimation(slider->styleObject));
+                    info.animating = true;
+                }
 
                 CGContextBeginTransparencyLayerWithRect(cg, qt_hirectForQRect(slider->rect), NULL);
                 CGContextSetAlpha(cg, opacity);
@@ -5390,7 +5404,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 groupBox.subControls = groupBox.subControls & ~SC_GroupBoxLabel;
                 didModifySubControls = true;
             }
-            QWindowsStyle::drawComplexControl(cc, &groupBox, p, widget);
+            QCommonStyle::drawComplexControl(cc, &groupBox, p, widget);
             if (didModifySubControls) {
                 p->save();
                 CGContextSetShouldAntialias(cg, true);
@@ -5543,7 +5557,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             QStyleHelper::drawDial(dial, p);
         break;
     default:
-        QWindowsStyle::drawComplexControl(cc, opt, p, widget);
+        QCommonStyle::drawComplexControl(cc, opt, p, widget);
         break;
     }
 }
@@ -5557,7 +5571,7 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
     switch (cc) {
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-            sc = QWindowsStyle::hitTestComplexControl(cc, cmb, pt, widget);
+            sc = QCommonStyle::hitTestComplexControl(cc, cmb, pt, widget);
             if (!cmb->editable && sc != QStyle::SC_None)
                 sc = SC_ComboBoxArrow;  // A bit of a lie, but what we want
         }
@@ -5673,7 +5687,7 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
         break;
 */
     default:
-        sc = QWindowsStyle::hitTestComplexControl(cc, opt, pt, widget);
+        sc = QCommonStyle::hitTestComplexControl(cc, opt, pt, widget);
         break;
     }
     return sc;
@@ -5895,7 +5909,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             case SC_GroupBoxContents:
             case SC_GroupBoxFrame: {
                 if (flat) {
-                    ret = QWindowsStyle::subControlRect(cc, groupBox, sc, widget);
+                    ret = QCommonStyle::subControlRect(cc, groupBox, sc, widget);
                     break;
                 }
                 QFontMetrics fm = groupBox->fontMetrics;
@@ -5916,7 +5930,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             }
                 break;
             default:
-                ret = QWindowsStyle::subControlRect(cc, groupBox, sc, widget);
+                ret = QCommonStyle::subControlRect(cc, groupBox, sc, widget);
                 break;
             }
         }
@@ -6009,19 +6023,19 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:
-                ret = QWindowsStyle::subControlRect(cc, spin, sc, widget);
+                ret = QCommonStyle::subControlRect(cc, spin, sc, widget);
                 break;
             }
         }
         break;
     case CC_ToolButton:
-        ret = QWindowsStyle::subControlRect(cc, opt, sc, widget);
+        ret = QCommonStyle::subControlRect(cc, opt, sc, widget);
         if (sc == SC_ToolButtonMenu && widget && !qobject_cast<QToolBar*>(widget->parentWidget())) {
             ret.adjust(-1, 0, 0, 0);
         }
         break;
     default:
-        ret = QWindowsStyle::subControlRect(cc, opt, sc, widget);
+        ret = QCommonStyle::subControlRect(cc, opt, sc, widget);
         break;
     }
     return ret;
@@ -6042,7 +6056,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 	case QStyle::CT_TabWidget:
         // the size between the pane and the "contentsRect" (+4,+4)
         // (the "contentsRect" is on the inside of the pane)
-        sz = QWindowsStyle::sizeFromContents(ct, opt, csz, widget);
+        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
         /**
             This is supposed to show the relationship between the tabBar and
             the stack widget of a QTabWidget.
@@ -6240,7 +6254,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break; }
     case CT_HeaderSection:{
         const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt);
-        sz = QWindowsStyle::sizeFromContents(ct, opt, csz, widget);
+        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
         if (header->text.contains(QLatin1Char('\n')))
             useAquaGuideline = false;
         break; }
@@ -6262,7 +6276,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         break;
 
     default:
-        sz = QWindowsStyle::sizeFromContents(ct, opt, csz, widget);
+        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
     }
 
     if (useAquaGuideline){
@@ -6304,7 +6318,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         case CT_PushButton:
             if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
                 if (btn->features & QStyleOptionButton::CommandLinkButton) {
-                    return QWindowsStyle::sizeFromContents(ct, opt, sz, widget);
+                    return QCommonStyle::sizeFromContents(ct, opt, sz, widget);
                 }
             }
 
@@ -6359,7 +6373,7 @@ void QMacStyle::drawItemText(QPainter *p, const QRect &r, int flags, const QPale
 {
     if(flags & Qt::TextShowMnemonic)
         flags |= Qt::TextHideMnemonic;
-    QWindowsStyle::drawItemText(p, r, flags, pal, enabled, text, textRole);
+    QCommonStyle::drawItemText(p, r, flags, pal, enabled, text, textRole);
 }
 
 bool QMacStyle::event(QEvent *e)
@@ -6416,7 +6430,7 @@ QIcon QMacStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *o
 {
     switch (standardIcon) {
     default:
-        return QWindowsStyle::standardIcon(standardIcon, opt, widget);
+        return QCommonStyle::standardIcon(standardIcon, opt, widget);
     case SP_ToolBarHorizontalExtensionButton:
     case SP_ToolBarVerticalExtensionButton: {
         QPixmap pixmap(qt_mac_toolbar_ext);

@@ -990,10 +990,9 @@ QSize QDateTimeEdit::sizeHint() const
         if (d->calendarPopupEnabled()) {
             QStyleOptionComboBox opt;
             d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_ComboBox, &opt, hint, this);
-        } else {
-#else
-        {
+        } else
 #endif
+        {
             QSize extra(35, 6);
             QStyleOptionSpinBox opt;
             initStyleOption(&opt);

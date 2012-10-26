@@ -41,13 +41,14 @@
 
 
 #include <qcoreapplication.h>
+#include <qelapsedtimer.h>
+#include <qeventloop.h>
 #include <qlocalsocket.h>
 #include <qlocalserver.h>
-#include <qsystemsemaphore.h>
+#include <qtimer.h>
 
 const QString serverName = QStringLiteral("qlocalsocket_autotest");
 const QByteArray testData("test");
-QSystemSemaphore *semaphore = 0;
 
 bool runServer(int numberOfConnections)
 {
@@ -61,11 +62,9 @@ bool runServer(int numberOfConnections)
         fprintf(stderr, "server: listen failed: %s\n", qPrintable(server->errorString()));
         return false;
     }
-    semaphore->release();
     for (int i = 1; i <= numberOfConnections; ++i) {
         printf("server: wait for connection %d\n", i);
         if (!server->waitForNewConnection(30000)) {
-            semaphore->acquire();
             fprintf(stderr, "server: waitForNewConnection failed: %s\n",
                     qPrintable(server->errorString()));
             return false;
@@ -74,31 +73,40 @@ bool runServer(int numberOfConnections)
         printf("server: writing \"%s\"\n", testData.data());
         socket->write(testData);
         if (!socket->waitForBytesWritten()) {
-            semaphore->acquire();
             fprintf(stderr, "server: waitForBytesWritten failed: %s\n",
                     qPrintable(socket->errorString()));
             return false;
         }
         printf("server: data written\n");
         if (socket->error() != QLocalSocket::UnknownSocketError) {
-            semaphore->acquire();
             fprintf(stderr, "server: socket error %d\n", socket->error());
             return false;
         }
     }
-    semaphore->acquire();
     return true;
 }
 
 bool runClient()
 {
-    semaphore->acquire();   // wait until the server is up and running
-    semaphore->release();
-
     QLocalSocket socket;
     printf("client: connecting to \"%s\"\n", qPrintable(serverName));
-    socket.connectToServer(serverName, QLocalSocket::ReadWrite);
-    if (!socket.waitForConnected()) {
+    QElapsedTimer connectTimer;
+    connectTimer.start();
+    forever {
+        socket.connectToServer(serverName, QLocalSocket::ReadWrite);
+        if (socket.waitForConnected())
+            break;
+        if (socket.error() == QLocalSocket::ServerNotFoundError) {
+            if (connectTimer.elapsed() > 5000) {
+                fprintf(stderr, "client: server not found. Giving up.\n");
+                return false;
+            }
+            printf("client: server not found. Trying again...\n");
+            QEventLoop eventLoop;
+            QTimer::singleShot(500, &eventLoop, SLOT(quit()));
+            eventLoop.exec();
+            continue;
+        }
         fprintf(stderr, "client: waitForConnected failed: %s\n",
                 qPrintable(socket.errorString()));
         return false;
@@ -122,8 +130,6 @@ bool runClient()
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
-    QSystemSemaphore s("tst_qlocalsocket_socketprocess");
-    semaphore = &s;
     if (argc < 2)
         return EXIT_FAILURE;
     if (strcmp(argv[1], "--server") == 0) {

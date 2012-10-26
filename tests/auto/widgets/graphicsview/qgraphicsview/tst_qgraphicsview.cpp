@@ -55,9 +55,6 @@
 #if !defined(QT_NO_STYLE_WINDOWS)
 #include <QtWidgets/QWindowsStyle>
 #endif
-#if !defined(QT_NO_STYLE_PLASTIQUE)
-#include <QtWidgets/QPlastiqueStyle>
-#endif
 #include <QtGui/QPainterPath>
 #include <QtWidgets/QRubberBand>
 #include <QtWidgets/QScrollBar>
@@ -542,6 +539,7 @@ void tst_QGraphicsView::sceneRect()
     QCOMPARE(view.sceneRect(), QRectF());
     QGraphicsScene scene;
     QGraphicsRectItem *item = scene.addRect(QRectF(-100, -100, 100, 100));
+    item->setPen(QPen(Qt::black, 0));
 
     view.setScene(&scene);
 
@@ -1510,6 +1508,7 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
 
     QGraphicsScene scene(-100, -100, 200, 200);
     CountPaintItem *rect = new CountPaintItem(QRectF(-50, -50, 100, 100));
+    rect->setPen(QPen(Qt::black, 0));
     scene.addItem(rect);
 
     QGraphicsView view(&scene);
@@ -2509,8 +2508,8 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
     {
-        dirtyPainter = (painter->pen().width() != 0);
-        painter->setPen(QPen(Qt::black, 1.0));
+        dirtyPainter = (painter->pen().color() != Qt::black);
+        painter->setPen(Qt::red);
     }
 };
 
@@ -2603,8 +2602,13 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
 
     MyScene scene;
     // Add transformed dummy items to make sure the painter's worldTransform() is changed in drawItems.
-    scene.addRect(0, 0, 20, 20)->setTransform(QTransform::fromScale(2, 2));
-    scene.addRect(50, 50, 20, 20)->setTransform(QTransform::fromTranslate(200, 200));
+    QGraphicsRectItem *rectA = scene.addRect(0, 0, 20, 20);
+    QGraphicsRectItem *rectB = scene.addRect(50, 50, 20, 20);
+
+    rectA->setTransform(QTransform::fromScale(2, 2));
+    rectA->setPen(QPen(Qt::black, 0));
+    rectB->setTransform(QTransform::fromTranslate(200, 200));
+    rectB->setPen(QPen(Qt::black, 0));
 
     foreach (QGraphicsItem *item, scene.items())
         item->setOpacity(0.6);
@@ -2763,16 +2767,10 @@ void tst_QGraphicsView::scrollBarRanges()
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
     if (useMotif) {
-#if !defined(QT_NO_STYLE_WINDOWS)
         view.setStyle(new FauxMotifStyle);
-#else
-        QSKIP("No Windows style compiled.");
-#endif
     } else {
-#if defined(Q_OS_WINCE)
+#if !defined(QT_NO_STYLE_WINDOWS)
         view.setStyle(new QWindowsStyle);
-#elif !defined(QT_NO_STYLE_PLASTIQUE)
-        view.setStyle(new QPlastiqueStyle);
 #endif
     }
     view.setStyleSheet(" "); // enables style propagation ;-)
@@ -3284,9 +3282,7 @@ void tst_QGraphicsView::scrollAfterResize_data()
     QTest::addColumn<QTransform>("x2");
     QTest::addColumn<QTransform>("x3");
 
-#if !defined(QT_NO_STYLE_PLASTIQUE)
-    QPlastiqueStyle style;
-#elif !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS)
     QWindowsStyle style;
 #else
     QCommonStyle style;
@@ -3315,9 +3311,7 @@ void tst_QGraphicsView::scrollAfterResize()
     QFETCH(QTransform, x2);
     QFETCH(QTransform, x3);
 
-#if !defined(QT_NO_STYLE_PLASTIQUE)
-    QPlastiqueStyle style;
-#elif !defined(QT_NO_STYLE_WINDOWS)
+#if !defined(QT_NO_STYLE_WINDOWS)
     QWindowsStyle style;
 #else
     QCommonStyle style;
@@ -3367,10 +3361,11 @@ void tst_QGraphicsView::moveItemWhileScrolling()
             setScene(new QGraphicsScene(0, 0, 1000, 1000));
             rect = scene()->addRect(0, 0, 10, 10);
             rect->setPos(50, 50);
+            rect->setPen(QPen(Qt::black, 0));
             painted = false;
         }
         QRegion lastPaintedRegion;
-        QGraphicsItem *rect;
+        QGraphicsRectItem *rect;
         bool painted;
         void waitForPaintEvent()
         {
@@ -4331,25 +4326,31 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     view.show();
     qApp->setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
-    QPoint mouseViewPos(20, 20);
-    sendMouseMove(view.viewport(), mouseViewPos);
-
-    QPointF mouseScenePos = view.mapToScene(mouseViewPos);
-    view.setTransform(QTransform().scale(5, 5).rotate(5, Qt::ZAxis), true);
-
-    QPointF newMouseScenePos = view.mapToScene(mouseViewPos);
-
-    qreal slack = 1;
-
-    const qreal dx = qAbs(newMouseScenePos.x() - mouseScenePos.x());
-    const qreal dy = qAbs(newMouseScenePos.y() - mouseScenePos.y());
-    const QByteArray message = QString::fromLatin1("QTBUG-22455, distance: dx=%1, dy=%2 slack=%3 (%4).").
-                     arg(dx).arg(dy).arg(slack).arg(qApp->style()->metaObject()->className()).toLocal8Bit();
     // This is highly unstable (observed to pass on Windows and some Linux configurations).
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", message.constData(), Abort);
+#ifndef Q_OS_MAC
+    for (int i = 0; i < 4; ++i) {
+        QPoint mouseViewPos(20, 20);
+        sendMouseMove(view.viewport(), mouseViewPos);
+
+        QPointF mouseScenePos = view.mapToScene(mouseViewPos);
+        view.setTransform(QTransform().scale(5, 5).rotate(5, Qt::ZAxis), true);
+
+        qreal slack = 1;
+
+        QPointF newMouseScenePos = view.mapToScene(mouseViewPos);
+
+        const qreal dx = qAbs(newMouseScenePos.x() - mouseScenePos.x());
+        const qreal dy = qAbs(newMouseScenePos.y() - mouseScenePos.y());
+        const QByteArray message = QString::fromLatin1("QTBUG-22455, distance: dx=%1, dy=%2 slack=%3 (%4).").
+                         arg(dx).arg(dy).arg(slack).arg(qApp->style()->metaObject()->className()).toLocal8Bit();
+        if (i == 9 || (dx < slack && dy < slack)) {
+            QVERIFY2(dx < slack && dy < slack, message.constData());
+            break;
+        }
+
+        QTest::qWait(100);
+    }
 #endif
-    QVERIFY2(dx < slack && dy < slack, message.constData());
 }
 
 void tst_QGraphicsView::task259503_scrollingArtifacts()

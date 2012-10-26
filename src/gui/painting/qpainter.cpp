@@ -897,26 +897,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
 
     if (!newState) {
         engine->state = newState;
-
     } else if (newState->state() || engine->state!=newState) {
-        bool setNonCosmeticPen = (newState->renderHints & QPainter::NonCosmeticDefaultPen)
-                                 && newState->pen.widthF() == 0;
-        if (setNonCosmeticPen) {
-            // Override the default pen's cosmetic state if the
-            // NonCosmeticDefaultPen render hint is used.
-            QPen oldPen = newState->pen;
-            newState->pen.setWidth(1);
-            newState->pen.setCosmetic(false);
-            newState->dirtyFlags |= QPaintEngine::DirtyPen;
-
-            updateStateImpl(newState);
-
-            // Restore the state pen back to its default to preserve visible
-            // state.
-            newState->pen = oldPen;
-        } else {
-            updateStateImpl(newState);
-        }
+        updateStateImpl(newState);
     }
 }
 
@@ -1417,14 +1399,13 @@ void QPainterPrivate::updateState(QPainterState *newState)
     indicating that the engine should use fragment programs and offscreen
     rendering for antialiasing.
 
-    \value NonCosmeticDefaultPen The engine should interpret pens with a width
-    of 0 (which otherwise enables QPen::isCosmetic()) as being a non-cosmetic
-    pen with a width of 1.
+    \value NonCosmeticDefaultPen This value is obsolete, the default for QPen
+    is now non-cosmetic.
 
     \value Qt4CompatiblePainting Compatibility hint telling the engine to use the
     same X11 based fill rules as in Qt 4, where aliased rendering is offset
-    by slightly less than half a pixel. Potentially useful when porting a
-    Qt 4 application to Qt 5.
+    by slightly less than half a pixel. Also will treat default constructed pens
+    as cosmetic. Potentially useful when porting a Qt 4 application to Qt 5.
 
     \sa renderHints(), setRenderHint(), {QPainter#Rendering
     Quality}{Rendering Quality}, {Concentric Circles Example}
@@ -3849,13 +3830,10 @@ void QPainter::setPen(const QColor &color)
         return;
     }
 
-    if (d->state->pen.style() == Qt::SolidLine
-        && d->state->pen.widthF() == 0
-        && d->state->pen.isSolid()
-        && d->state->pen.color() == color)
-        return;
+    QPen pen(color.isValid() ? color : QColor(Qt::black));
 
-    QPen pen(color.isValid() ? color : QColor(Qt::black), 0, Qt::SolidLine);
+    if (d->state->pen == pen)
+        return;
 
     d->state->pen = pen;
     if (d->extended)
@@ -3904,7 +3882,7 @@ void QPainter::setPen(const QPen &pen)
 /*!
     \overload
 
-    Sets the painter's pen to have the given \a style, width 0 and
+    Sets the painter's pen to have the given \a style, width 1 and
     black color.
 */
 
@@ -3916,15 +3894,12 @@ void QPainter::setPen(Qt::PenStyle style)
         return;
     }
 
-    if (d->state->pen.style() == style
-        && (style == Qt::NoPen || (d->state->pen.widthF() == 0
-                                   && d->state->pen.isSolid()
-                                   && d->state->pen.color() == QColor(Qt::black))))
+    QPen pen = QPen(style);
+
+    if (d->state->pen == pen)
         return;
 
-    // QPen(Qt::NoPen) is to avoid creating QPenData, including its brush (from the color)
-    // Note that this works well as long as QPen(Qt::NoPen) returns a black, zero-width pen
-    d->state->pen = (style == Qt::NoPen) ? QPen(Qt::NoPen) : QPen(Qt::black, 0, style);
+    d->state->pen = pen;
 
     if (d->extended)
         d->extended->penChanged();
@@ -6207,10 +6182,16 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     QLineF line(pos.x(), pos.y(), pos.x() + qFloor(width), pos.y());
 
+    bool wasCompatiblePainting = painter->renderHints()
+            & QPainter::Qt4CompatiblePainting;
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting, false);
+
     const qreal underlineOffset = fe->underlinePosition().toReal();
     // deliberately ceil the offset to avoid the underline coming too close to
     // the text above it.
-    const qreal underlinePos = pos.y() + qCeil(underlineOffset);
+    const qreal underlinePos = pos.y() + qCeil(underlineOffset) + 0.5;
 
     if (underlineStyle == QTextCharFormat::SpellCheckUnderline) {
         QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
@@ -6272,6 +6253,9 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     painter->setPen(oldPen);
     painter->setBrush(oldBrush);
+
+    if (wasCompatiblePainting)
+        painter->setRenderHint(QPainter::Qt4CompatiblePainting);
 }
 
 Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t *glyphArray,
@@ -7525,36 +7509,16 @@ start_lengthVariant:
 
     qreal yoff = 0;
     qreal xoff = 0;
-    if (tf & Qt::AlignBottom) {
+    if (tf & Qt::AlignBottom)
         yoff = r.height() - height;
-    } else if (tf & Qt::AlignVCenter) {
+    else if (tf & Qt::AlignVCenter)
         yoff = (r.height() - height)/2;
-        if (painter) {
-            QTransform::TransformationType type = painter->transform().type();
-            if (type <= QTransform::TxScale) {
-                // do the rounding manually to work around inconsistencies
-                // in the paint engines when drawing on floating point offsets
-                const qreal scale = painter->transform().m22();
-                if (scale != 0)
-                    yoff = -qRound(-yoff * scale) / scale;
-            }
-        }
-    }
-    if (tf & Qt::AlignRight) {
+
+    if (tf & Qt::AlignRight)
         xoff = r.width() - width;
-    } else if (tf & Qt::AlignHCenter) {
+    else if (tf & Qt::AlignHCenter)
         xoff = (r.width() - width)/2;
-        if (painter) {
-            QTransform::TransformationType type = painter->transform().type();
-            if (type <= QTransform::TxScale) {
-                // do the rounding manually to work around inconsistencies
-                // in the paint engines when drawing on floating point offsets
-                const qreal scale = painter->transform().m11();
-                if (scale != 0)
-                    xoff = qRound(xoff * scale) / scale;
-            }
-        }
-    }
+
     QRectF bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
 
     if (hasMoreLengthVariants && !(tf & Qt::TextLongestVariant) && !r.contains(bounds)) {

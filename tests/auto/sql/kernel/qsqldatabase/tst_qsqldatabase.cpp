@@ -2048,7 +2048,7 @@ void tst_QSqlDatabase::eventNotificationIBase()
     q.exec(QString("DROP PROCEDURE %1").arg(procedureName));
     q.exec(QString("CREATE PROCEDURE %1\nAS BEGIN\nPOST_EVENT '%1';\nEND;").arg(procedureName));
     q.exec(QString("EXECUTE PROCEDURE %1").arg(procedureName));
-    QSignalSpy spy(driver, SIGNAL(notification(const QString&)));
+    QSignalSpy spy(driver, SIGNAL(notification(QString)));
     db.commit();        // No notifications are posted until the transaction is committed.
     QTest::qWait(300);  // Interbase needs some time to post the notification and call the driver callback.
                         // This happends from another thread, and we have to process events in order for the
@@ -2072,7 +2072,7 @@ void tst_QSqlDatabase::eventNotificationPSQL()
     QString payload = "payload";
     QSqlDriver &driver=*(db.driver());
     QVERIFY_SQL(driver, subscribeToNotification(procedureName));
-    QSignalSpy spy(db.driver(), SIGNAL(notification(const QString&,QSqlDriver::NotificationSource,const QVariant&)));
+    QSignalSpy spy(db.driver(), SIGNAL(notification(QString,QSqlDriver::NotificationSource,QVariant)));
     query.exec(QString("NOTIFY \"%1\", '%2'").arg(procedureName).arg(payload));
     QCoreApplication::processEvents();
     QCOMPARE(spy.count(), 1);

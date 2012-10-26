@@ -47,6 +47,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qtypetraits.h>
 
 #include <string.h>
 
@@ -218,6 +219,8 @@ namespace QTest
     template <typename T>
     inline void addColumn(const char *name, T * = 0)
     {
+        typedef QtPrivate::is_same<T, const char*> QIsSameTConstChar;
+        Q_STATIC_ASSERT_X(!QIsSameTConstChar::value, "const char* is not allowed as a test data format.");
         addColumnInternal(qMetaTypeId<T>(), name);
     }
     Q_TESTLIB_EXPORT QTestData &newRow(const char *dataTag);

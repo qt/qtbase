@@ -185,6 +185,9 @@ public:
     }
 
     void resolve(uint mask, const QFontPrivate *other);
+
+    static void detachButKeepEngineData(QFont *font);
+
 private:
     QFontPrivate &operator=(const QFontPrivate &) { return *this; }
 };

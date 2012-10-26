@@ -234,7 +234,7 @@ bool QWinEventNotifier::event(QEvent * e)
     }
     QObject::event(e);                        // will activate filters
     if (e->type() == QEvent::WinEventAct) {
-        emit activated(d->handleToEvent);
+        emit activated(d->handleToEvent, QPrivateSignal());
         return true;
     }
     return false;

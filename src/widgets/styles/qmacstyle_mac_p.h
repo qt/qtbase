@@ -47,7 +47,7 @@
 #undef check
 
 #include "qmacstyle_mac.h"
-#include "qwindowsstyle_p.h"
+#include "qcommonstyle_p.h"
 #include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qpainter_p.h>
@@ -139,7 +139,7 @@ enum QAquaWidgetSize { QAquaSizeLarge = 0, QAquaSizeSmall = 1, QAquaSizeMini = 2
 
 bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
 
-class QMacStylePrivate : public QWindowsStylePrivate
+class QMacStylePrivate : public QCommonStylePrivate
 {
     Q_DECLARE_PUBLIC(QMacStyle)
 public:
@@ -160,12 +160,8 @@ public:
 
     // Stuff from QAquaAnimate:
     bool addWidget(QWidget *);
-    void removeWidget(QWidget *);
 
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
-    bool animatable(Animates, const QObject *) const;
-    void stopAnimate(Animates, QObject *);
-    void startAnimate(Animates, QObject *);
     static ThemeDrawState getDrawState(QStyle::State flags);
     QAquaWidgetSize aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
                              QStyle::ContentsType ct = QStyle::CT_CustomBase,
@@ -201,7 +197,9 @@ public:
     QPixmap generateBackgroundPattern() const;
 
 public:
-    QPointer<QPushButton> defaultButton; //default push buttons
+    mutable QPointer<QObject> pressedButton;
+    mutable QPointer<QObject> defaultButton;
+    mutable QPointer<QObject> autoDefaultButton;
 
     struct OverlayScrollBarInfo {
         OverlayScrollBarInfo()
@@ -211,7 +209,8 @@ public:
               lastUpdate(QDateTime::currentMSecsSinceEpoch()),
               hovered(false),
               lastHovered(0),
-              cleared(false)
+              cleared(false),
+              animating(false)
         {}
         int lastValue;
         int lastMinimum;
@@ -221,6 +220,7 @@ public:
         bool hovered;
         qint64 lastHovered;
         bool cleared;
+        bool animating;
     };
     mutable QMap<const QWidget*, OverlayScrollBarInfo> scrollBarInfos;
 

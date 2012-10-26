@@ -113,7 +113,6 @@ public:
 Q_SIGNALS:
     void started();
     void finished();
-    void terminated();
 
 protected:
     virtual void run();
@@ -139,7 +138,7 @@ class Q_CORE_EXPORT QThread : public QObject
 public:
     static Qt::HANDLE currentThreadId() { return Qt::HANDLE(currentThread()); }
     static QThread* currentThread();
-    
+
 protected:
     QThread(QThreadPrivate &dd, QObject *parent = 0);
 

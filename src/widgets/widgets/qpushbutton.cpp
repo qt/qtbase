@@ -329,7 +329,7 @@ void QPushButton::initStyleOption(QStyleOptionButton *option) const
     if (d->menu)
         option->features |= QStyleOptionButton::HasMenu;
 #endif
-    if (autoDefault() || d->defaultButton)
+    if (autoDefault())
         option->features |= QStyleOptionButton::AutoDefaultButton;
     if (d->defaultButton)
         option->features |= QStyleOptionButton::DefaultButton;

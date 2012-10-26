@@ -1170,7 +1170,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     sizeFromContents(), are documented here.
 
     \image qwindowsxpstyle.png
-    \sa QMacStyle, QWindowsStyle, QPlastiqueStyle
+    \sa QMacStyle, QWindowsStyle, QFusionStyle
 */
 
 /*!

@@ -2028,7 +2028,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             QString in = Option::fixPathToTargetOS(inpf, false);
             QStringList deps = findDependencies(inpf);
             deps += escapeDependencyPath(in);
-            QString out = replaceExtraCompilerVariables(tmp_out, inpf, QString());
+            QString out = unescapeFilePath(replaceExtraCompilerVariables(tmp_out, inpf, QString()));
             if(!tmp_dep.isEmpty()) {
                 QStringList pre_deps = fileFixify(tmp_dep, Option::output_dir, Option::output_dir);
                 for(int i = 0; i < pre_deps.size(); ++i)

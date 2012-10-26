@@ -1485,17 +1485,7 @@ void QGraphicsProxyWidget::paint(QPainter *painter, const QStyleOptionGraphicsIt
     if (exposedWidgetRect.isEmpty())
         return;
 
-    // Disable QPainter's default pen being cosmetic. This allows widgets and
-    // styles to follow Qt's existing defaults without getting ugly cosmetic
-    // lines when scaled.
-    bool restore = !(painter->renderHints() & QPainter::NonCosmeticDefaultPen);
-    painter->setRenderHints(QPainter::NonCosmeticDefaultPen, true);
-
     d->widget->render(painter, exposedWidgetRect.topLeft(), exposedWidgetRect);
-
-    // Restore the render hints if necessary.
-    if (restore)
-        painter->setRenderHints(QPainter::NonCosmeticDefaultPen, false);
 }
 
 /*!

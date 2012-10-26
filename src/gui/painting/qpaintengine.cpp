@@ -445,7 +445,7 @@ void QPaintEngine::drawPoints(const QPointF *points, int pointCount)
     p->save();
 
     QTransform transform;
-    if (p->pen().isCosmetic()) {
+    if (qt_pen_is_cosmetic(p->pen(), p->renderHints())) {
         transform = p->transform();
         p->setTransform(QTransform());
     }

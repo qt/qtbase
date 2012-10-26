@@ -112,12 +112,19 @@ void tst_QRegExpValidator::validate()
     QFETCH( int, state );
 
     QRegExpValidator rv( 0 );
-    QSignalSpy spy(&rv, SIGNAL(regExpChanged(const QRegExp&)));
+    QSignalSpy spy(&rv, SIGNAL(regExpChanged(QRegExp)));
     QSignalSpy changedSpy(&rv, SIGNAL(changed()));
 
     rv.setRegExp( QRegExp( rx ) );
-    int dummy;
-    QCOMPARE( (int)rv.validate( value, dummy ), state );
+    int pos = -1;
+
+    QCOMPARE( (int)rv.validate( value, pos ), state );
+
+    if (state == QValidator::Invalid)
+        QCOMPARE(pos, value.length());
+    else
+        QCOMPARE(pos, -1); // untouched on Acceptable or Intermediate
+
     QCOMPARE(spy.count(), 1);
     QCOMPARE(changedSpy.count(), 1);
 }

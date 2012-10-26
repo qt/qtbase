@@ -213,22 +213,22 @@
             \endlist
     \row \li QMatrix4x4
          \li \list
-            \li m11 (double)
-            \li m12 (double)
-            \li m13 (double)
-            \li m14 (double)
-            \li m21 (double)
-            \li m22 (double)
-            \li m23 (double)
-            \li m24 (double)
-            \li m31 (double)
-            \li m32 (double)
-            \li m33 (double)
-            \li m34 (double)
-            \li m41 (double)
-            \li m42 (double)
-            \li m43 (double)
-            \li m44 (double)
+            \li m11 (float)
+            \li m12 (float)
+            \li m13 (float)
+            \li m14 (float)
+            \li m21 (float)
+            \li m22 (float)
+            \li m23 (float)
+            \li m24 (float)
+            \li m31 (float)
+            \li m32 (float)
+            \li m33 (float)
+            \li m34 (float)
+            \li m41 (float)
+            \li m42 (float)
+            \li m43 (float)
+            \li m44 (float)
             \endlist
     \row \li QPair<T1, T2>
          \li \list
@@ -278,10 +278,10 @@
             \endlist
     \row \li QQuaternion
          \li \list
-            \li The scalar component (double)
-            \li The x coordinate (double)
-            \li The y coordinate (double)
-            \li The z coordinate (double)
+            \li The scalar component (float)
+            \li The x coordinate (float)
+            \li The y coordinate (float)
+            \li The z coordinate (float)
             \endlist
     \row \li QRect
          \li \list
@@ -347,21 +347,21 @@
             \endlist
     \row \li QVector2D
          \li \list
-            \li the x coordinate (double)
-            \li the y coordinate (double)
+            \li the x coordinate (float)
+            \li the y coordinate (float)
             \endlist
     \row \li QVector3D
          \li \list
-            \li the x coordinate (double)
-            \li the y coordinate (double)
-            \li the z coordinate (double)
+            \li the x coordinate (float)
+            \li the y coordinate (float)
+            \li the z coordinate (float)
             \endlist
     \row \li QVector4D
          \li \list
-            \li the x coordinate (double)
-            \li the y coordinate (double)
-            \li the z coordinate (double)
-            \li the w coordinate (double)
+            \li the x coordinate (float)
+            \li the y coordinate (float)
+            \li the z coordinate (float)
+            \li the w coordinate (float)
             \endlist
     \row \li QVector<T>
          \li \list

@@ -66,17 +66,26 @@ public:
     QStyleAnimation(QObject *target);
     virtual ~QStyleAnimation();
 
-    int duration() const;
     QObject *target() const;
+
+    int duration() const;
+    void setDuration(int duration);
+
+    int delay() const;
+    void setDelay(int delay);
 
     QTime startTime() const;
     void setStartTime(const QTime &time);
+
+    void updateTarget();
 
 protected:
     virtual bool isUpdateNeeded() const;
     virtual void updateCurrentTime(int time);
 
 private:
+    int _delay;
+    int _duration;
     QTime _startTime;
 };
 

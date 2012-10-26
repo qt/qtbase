@@ -47,6 +47,7 @@
 #include "private/qtextedit_p.h"
 #include "qtextdocument.h"
 #include "qtextobject.h"
+#include "qplaintextedit.h"
 #include "qtextboundaryfinder.h"
 #include "qscrollbar.h"
 #include "qdebug.h"
@@ -100,6 +101,90 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
 
 #ifndef QT_NO_TEXTEDIT
 
+QAccessiblePlainTextEdit::QAccessiblePlainTextEdit(QWidget* o)
+  :QAccessibleTextWidget(o)
+{
+    Q_ASSERT(widget()->inherits("QPlainTextEdit"));
+}
+
+QPlainTextEdit* QAccessiblePlainTextEdit::plainTextEdit() const
+{
+    return static_cast<QPlainTextEdit *>(widget());
+}
+
+QString QAccessiblePlainTextEdit::text(QAccessible::Text t) const
+{
+    if (t == QAccessible::Value)
+        return plainTextEdit()->toPlainText();
+
+    return QAccessibleWidget::text(t);
+}
+
+void QAccessiblePlainTextEdit::setText(QAccessible::Text t, const QString &text)
+{
+    if (t != QAccessible::Value) {
+        QAccessibleWidget::setText(t, text);
+        return;
+    }
+    if (plainTextEdit()->isReadOnly())
+        return;
+
+    plainTextEdit()->setPlainText(text);
+}
+
+QAccessible::State QAccessiblePlainTextEdit::state() const
+{
+    QAccessible::State st = QAccessibleWidget::state();
+    if (plainTextEdit()->isReadOnly())
+        st.readOnly = true;
+    else
+        st.editable = true;
+    return st;
+}
+
+void *QAccessiblePlainTextEdit::interface_cast(QAccessible::InterfaceType t)
+{
+    if (t == QAccessible::TextInterface)
+        return static_cast<QAccessibleTextInterface*>(this);
+    return QAccessibleWidget::interface_cast(t);
+}
+
+QPoint QAccessiblePlainTextEdit::scrollBarPosition() const
+{
+    QPoint result;
+    result.setX(plainTextEdit()->horizontalScrollBar() ? plainTextEdit()->horizontalScrollBar()->sliderPosition() : 0);
+    result.setY(plainTextEdit()->verticalScrollBar() ? plainTextEdit()->verticalScrollBar()->sliderPosition() : 0);
+    return result;
+}
+
+QTextCursor QAccessiblePlainTextEdit::textCursor() const
+{
+    return plainTextEdit()->textCursor();
+}
+
+void QAccessiblePlainTextEdit::setTextCursor(const QTextCursor &textCursor)
+{
+    plainTextEdit()->setTextCursor(textCursor);
+}
+
+QTextDocument* QAccessiblePlainTextEdit::textDocument() const
+{
+    return plainTextEdit()->document();
+}
+
+QWidget* QAccessiblePlainTextEdit::viewport() const
+{
+    return plainTextEdit()->viewport();
+}
+
+void QAccessiblePlainTextEdit::scrollToSubstring(int startIndex, int endIndex)
+{
+    //TODO: Not implemented
+    Q_UNUSED(startIndex);
+    Q_UNUSED(endIndex);
+}
+
+
 /*!
   \class QAccessibleTextEdit
   \brief The QAccessibleTextEdit class implements the QAccessibleInterface for richtext editors.
@@ -143,9 +228,9 @@ QWidget *QAccessibleTextEdit::viewport() const
     return textEdit()->viewport();
 }
 
-QPoint QAccessibleTextEdit::scrollBarsCurrentPosition() const
+QPoint QAccessibleTextEdit::scrollBarPosition() const
 {
-    QPoint result(0, 0);
+    QPoint result;
     result.setX(textEdit()->horizontalScrollBar() ? textEdit()->horizontalScrollBar()->sliderPosition() : 0);
     result.setY(textEdit()->verticalScrollBar() ? textEdit()->verticalScrollBar()->sliderPosition() : 0);
     return result;
@@ -750,9 +835,8 @@ QRect QAccessibleTextWidget::characterRect(int offset) const
                       w, h);
             r.moveTo(viewport()->mapToGlobal(r.topLeft()));
         }
+        r.translate(-scrollBarPosition());
     }
-
-    r.translate(-scrollBarsCurrentPosition());
 
     return r;
 }
@@ -761,7 +845,7 @@ int QAccessibleTextWidget::offsetAtPoint(const QPoint &point) const
 {
     QPoint p = viewport()->mapFromGlobal(point);
     // convert to document coordinates
-    p += scrollBarsCurrentPosition();
+    p += scrollBarPosition();
     return textDocument()->documentLayout()->hitTest(p, Qt::ExactHit);
 }
 
@@ -907,7 +991,7 @@ QString QAccessibleTextWidget::text(int startOffset, int endOffset) const
     return cursor.selectedText();
 }
 
-QPoint QAccessibleTextWidget::scrollBarsCurrentPosition() const
+QPoint QAccessibleTextWidget::scrollBarPosition() const
 {
     return QPoint(0, 0);
 }

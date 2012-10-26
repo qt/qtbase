@@ -259,6 +259,7 @@ struct QWindowsContextPrivate {
     const HRESULT m_oleInitializeResult;
     const QByteArray m_eventType;
     QWindow *m_lastActiveWindow;
+    bool m_asyncExpose;
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate() :
@@ -267,7 +268,7 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     m_defaultDPI(GetDeviceCaps(m_displayContext,LOGPIXELSY)),
     m_oleInitializeResult(OleInitialize(NULL)),
     m_eventType(QByteArrayLiteral("windows_generic_MSG")),
-    m_lastActiveWindow(0)
+    m_lastActiveWindow(0), m_asyncExpose(0)
 {
 #ifndef Q_OS_WINCE
     QWindowsContext::user32dll.init();
@@ -869,6 +870,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                 QWindowsWindow::baseWindowOf(modalWindow)->alertWindow();
         break;
 #endif
+#ifndef QT_NO_CONTEXTMENU
+    case QtWindows::ContextMenu:
+        handleContextMenuEvent(platformWindow->window(), msg);
+        return true;
+#endif
     default:
         break;
     }
@@ -898,6 +904,34 @@ void QWindowsContext::handleFocusEvent(QtWindows::WindowsEventType et,
          d->m_lastActiveWindow = nextActiveWindow;
          QWindowSystemInterface::handleWindowActivated(nextActiveWindow);
     }
+}
+
+#ifndef QT_NO_CONTEXTMENU
+void QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
+{
+    bool mouseTriggered = false;
+    QPoint globalPos;
+    QPoint pos;
+    if (msg.lParam != (int)0xffffffff) {
+        mouseTriggered = true;
+        globalPos.setX(msg.pt.x);
+        globalPos.setY(msg.pt.y);
+        pos = QWindowsGeometryHint::mapFromGlobal(msg.hwnd, globalPos);
+    }
+
+    QWindowSystemInterface::handleContextMenuEvent(window, mouseTriggered, pos, globalPos,
+                                                   QWindowsKeyMapper::queryKeyboardModifiers());
+}
+#endif
+
+bool QWindowsContext::asyncExpose() const
+{
+    return d->m_asyncExpose;
+}
+
+void QWindowsContext::setAsyncExpose(bool value)
+{
+    d->m_asyncExpose = value;
 }
 
 /*!

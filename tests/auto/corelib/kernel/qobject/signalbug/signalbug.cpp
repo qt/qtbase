@@ -99,9 +99,9 @@ void Disconnector::received ()
 
     if (::Step == 5)
     {
-        disconnect (s, SIGNAL (fired ()), s->d, SLOT (received ()));
+        disconnect (s, SIGNAL(fired()), s->d, SLOT(received()));
 
-        connect (&RandomSender, SIGNAL (fired ()), s->d, SLOT (received ()));
+        connect (&RandomSender, SIGNAL(fired()), s->d, SLOT(received()));
     }
 
     TRACE (stepCopy, "ends Disconnector::received()");
@@ -113,9 +113,9 @@ Sender::Sender (Receiver *r, Disconnector *d)
 {
     this->r = r; this->d = d;
     if (r)
-        connect (this, SIGNAL (fired ()), r, SLOT (received ()));
+        connect (this, SIGNAL(fired()), r, SLOT(received()));
     if (d)
-        connect (this, SIGNAL (fired ()), d, SLOT (received ()));
+        connect (this, SIGNAL(fired()), d, SLOT(received()));
 };
 
 void Sender::fire ()

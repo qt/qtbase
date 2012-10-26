@@ -408,8 +408,6 @@ int QDate::daysInMonth() const
     getDateFromJulianDay(jd, &y, &m, 0);
     if (m == 2 && isLeapYear(y))
         return 29;
-    else if (m < 1 || m > 12)
-        return 0;
     else
         return monthDays[m];
 }
@@ -1150,9 +1148,10 @@ QDate QDate::fromString(const QString& s, Qt::DateFormat f)
                     break;
                 }
             }
-        }
-        if (month < 1 || month > 12) {
-            return QDate();
+            if (month == -1) {
+                // Month name matches neither English nor other localised name.
+                return QDate();
+            }
         }
 
         bool ok;
@@ -1805,7 +1804,7 @@ QTime fromStringImpl(const QString &s, Qt::DateFormat f, bool &isMidnight24)
             if (s.size() == 5) {
                 // Do not need to specify seconds if using ISO format.
                 return QTime(hour, minute, 0, 0);
-            } else if ((s.size() > 6 && s[5] == QLatin1Char(',')) || s[5] == QLatin1Char('.')) {
+            } else if ((s.size() > 6) && (s[5] == QLatin1Char(',') || s[5] == QLatin1Char('.'))) {
                 // Possibly specifying fraction of a minute.
 
                 // We only want 5 digits worth of fraction of minute. This follows the existing
@@ -2693,6 +2692,9 @@ QDateTime QDateTime::addYears(int nyears) const
 
 QDateTime QDateTimePrivate::addMSecs(const QDateTime &dt, qint64 msecs)
 {
+    if (!dt.isValid())
+        return QDateTime();
+
     QDate utcDate;
     QTime utcTime;
     dt.d->getUTC(utcDate, utcTime);
@@ -2743,6 +2745,8 @@ void QDateTimePrivate::addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs)
     later than the datetime of this object (or earlier if \a s is
     negative).
 
+    If this datetime is invalid, an invalid datetime will be returned.
+
     \sa addMSecs(), secsTo(), addDays(), addMonths(), addYears()
 */
 
@@ -2755,6 +2759,8 @@ QDateTime QDateTime::addSecs(qint64 s) const
     Returns a QDateTime object containing a datetime \a msecs miliseconds
     later than the datetime of this object (or earlier if \a msecs is
     negative).
+
+    If this datetime is invalid, an invalid datetime will be returned.
 
     \sa addSecs(), msecsTo(), addDays(), addMonths(), addYears()
 */

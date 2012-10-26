@@ -48,8 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
-
 class QEventLoopPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QEventLoop)

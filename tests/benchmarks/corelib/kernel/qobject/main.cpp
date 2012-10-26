@@ -198,8 +198,8 @@ void QObjectBenchmark::connect_disconnect_benchmark()
         case 1: {
             QTreeView obj;
             QBENCHMARK {
-                QObject::connect   (&obj, SIGNAL(viewportEntered(  )), &obj, SLOT(expandAll(  )));
-                QObject::disconnect(&obj, SIGNAL(viewportEntered(  )), &obj, SLOT(expandAll(  )));
+                QObject::connect   (&obj, SIGNAL(viewportEntered(  )), &obj, SLOT(expandAll(  ))); // sic: non-normalised
+                QObject::disconnect(&obj, SIGNAL(viewportEntered(  )), &obj, SLOT(expandAll(  ))); // sic: non-normalised
             }
         } break;
         case 2: {
@@ -218,7 +218,7 @@ void QObjectBenchmark::connect_disconnect_benchmark()
         case 4: {
             QTreeView obj;
             QBENCHMARK {
-                QObject::disconnect(QObject::connect(&obj, SIGNAL(viewportEntered(  )), &obj, SLOT(expandAll(  ))));
+                QObject::disconnect(QObject::connect(&obj, SIGNAL(viewportEntered(  )), &obj, SLOT(expandAll(  )))); // sic: non-normalised
             }
         } break;
         case 5: {

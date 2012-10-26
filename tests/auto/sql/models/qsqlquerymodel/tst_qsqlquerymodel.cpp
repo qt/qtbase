@@ -235,7 +235,7 @@ void tst_QSqlQueryModel::removeColumn()
     DBTestModel model;
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__), db));
     model.fetchMore();
-    QSignalSpy spy(&model, SIGNAL(columnsAboutToBeRemoved(QModelIndex, int, int)));
+    QSignalSpy spy(&model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)));
 
     QCOMPARE(model.columnCount(), 3);
     QVERIFY(model.removeColumn(0));
@@ -323,7 +323,7 @@ void tst_QSqlQueryModel::insertColumn()
     const QString nameColumn(isToUpper ? "NAME" : "name");
     const QString titleColumn(isToUpper ? "TITLE" : "title");
 
-    QSignalSpy spy(&model, SIGNAL(columnsInserted(QModelIndex, int, int)));
+    QSignalSpy spy(&model, SIGNAL(columnsInserted(QModelIndex,int,int)));
 
     QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
@@ -455,7 +455,7 @@ void tst_QSqlQueryModel::setHeaderData()
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__), db));
 
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
-    QSignalSpy spy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
+    QSignalSpy spy(&model, SIGNAL(headerDataChanged(Qt::Orientation,int,int)));
     QVERIFY(model.setHeaderData(2, Qt::Horizontal, "bar"));
     QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), QString("bar"));
     QCOMPARE(spy.count(), 1);
@@ -491,7 +491,7 @@ void tst_QSqlQueryModel::fetchMore()
 
     // If the driver doesn't return the query size fetchMore() causes the
     // model to grow and new signals are emitted
-    QSignalSpy rowsInsertedSpy(&model, SIGNAL(rowsInserted(QModelIndex, int, int)));
+    QSignalSpy rowsInsertedSpy(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
     if (!db.driver()->hasFeature(QSqlDriver::QuerySize)) {
         model.fetchMore();
         int newRowCount = model.rowCount();
@@ -524,7 +524,7 @@ void tst_QSqlQueryModel::withSortFilterProxyModel()
 
     QSignalSpy modelAboutToBeResetSpy(&model, SIGNAL(modelAboutToBeReset()));
     QSignalSpy modelResetSpy(&model, SIGNAL(modelReset()));
-    QSignalSpy modelRowsInsertedSpy(&model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
+    QSignalSpy modelRowsInsertedSpy(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
     model.setQuery(QSqlQuery("SELECT * FROM " + qTableName("test3", __FILE__), db));
     view.scrollToBottom();
 
@@ -576,8 +576,8 @@ void tst_QSqlQueryModel::setQueryWithNoRowsInResultSet()
     CHECK_DATABASE(db);
 
     QSqlQueryModel model;
-    QSignalSpy modelRowsAboutToBeInsertedSpy(&model, SIGNAL(rowsAboutToBeInserted(const QModelIndex &, int, int)));
-    QSignalSpy modelRowsInsertedSpy(&model, SIGNAL(rowsInserted(const QModelIndex &, int, int)));
+    QSignalSpy modelRowsAboutToBeInsertedSpy(&model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
+    QSignalSpy modelRowsInsertedSpy(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
 
     // The query's result set will be empty so no signals should be emitted!
     QSqlQuery query(db);

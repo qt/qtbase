@@ -89,7 +89,7 @@ void atWrapper::downloadBaseline()
 
     QFtp ftp;
 
-    QObject::connect( &ftp, SIGNAL( listInfo( const QUrlInfo & ) ), this, SLOT( ftpMgetAddToList(const QUrlInfo & ) ) );
+    QObject::connect( &ftp, SIGNAL(listInfo(QUrlInfo)), this, SLOT(ftpMgetAddToList(QUrlInfo)) );
 
     //Making sure that the needed local directories exist.
 
@@ -268,8 +268,8 @@ void atWrapper::ftpRmDir( QString dir )
     //Hack to remove a populated directory. (caveat: containing only files and empty dirs, not recursive!)
     qDebug() << "Now removing directory: " << dir;
     QFtp ftp;
-    QObject::connect( &ftp, SIGNAL( listInfo( const QUrlInfo & ) ), this, SLOT( ftpRmDirAddToList(const QUrlInfo & ) ) );
-    QObject::connect( &ftp, SIGNAL( done( bool ) ), this, SLOT( ftpRmDirDone( bool ) ) );
+    QObject::connect( &ftp, SIGNAL(listInfo(QUrlInfo)), this, SLOT(ftpRmDirAddToList(QUrlInfo)) );
+    QObject::connect( &ftp, SIGNAL(done(bool)), this, SLOT(ftpRmDirDone(bool)) );
 
     ftp.connectToHost( ftpHost );
     ftp.login( ftpUser, ftpPass );
@@ -308,7 +308,7 @@ bool atWrapper::ftpMkDir( QString dir )
     // IE: conveniance.
     QFtp ftp;
 
-    QSignalSpy commandSpy(&ftp, SIGNAL(commandFinished(int, bool)));
+    QSignalSpy commandSpy(&ftp, SIGNAL(commandFinished(int,bool)));
 
     ftp.connectToHost( ftpHost );
     ftp.login( ftpUser, ftpPass );

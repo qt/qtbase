@@ -105,8 +105,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
-
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE

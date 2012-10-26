@@ -54,7 +54,7 @@
 #include <qlineedit.h>
 #include <qwindowsstyle.h>
 #include <qcombobox.h>
-#include <qplastiquestyle.h>
+#include <qwindowsstyle.h>
 #include "private/qcssparser_p.h"
 #include "private/qmath_p.h"
 #include <qabstractscrollarea.h>
@@ -997,16 +997,12 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
         }
     }
 
-    if (object) {
+    if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
         QStyleSheetStyle *style = const_cast<QStyleSheetStyle *>(globalStyleSheetStyle);
-        if (!style) {
-            if (const QWidget *widget = qobject_cast<const QWidget *>(object)) {
-                style = qobject_cast<QStyleSheetStyle *>(widget->style());
-                if (style)
-                    fixupBorder(style->nativeFrameWidth(widget));
-            }
-        }
-
+        if (!style)
+            style = qobject_cast<QStyleSheetStyle *>(widget->style());
+        if (style)
+            fixupBorder(style->nativeFrameWidth(widget));
     }
     if (hasBorder() && border()->hasBorderImage())
         defaultBackground = QBrush();
@@ -1408,7 +1404,7 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
 
 ///////////////////////////////////////////////////////////////////////////////
 // Style rules
-#define WIDGET(x) (static_cast<QWidget *>(x.ptr))
+#define OBJECT_PTR(x) (static_cast<QObject *>(x.ptr))
 
 static inline QObject *parentObject(const QObject *obj)
 {
@@ -1429,7 +1425,7 @@ public:
     {
         if (isNullNode(node))
             return QStringList();
-        const QMetaObject *metaObject = WIDGET(node)->metaObject();
+        const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
 #ifndef QT_NO_TOOLTIP
         if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
             return QStringList(QLatin1String("QToolTip"));
@@ -1446,21 +1442,23 @@ public:
         if (isNullNode(node))
             return QString();
 
-        QHash<QString, QString> &cache = m_attributeCache[WIDGET(node)];
+        QHash<QString, QString> &cache = m_attributeCache[OBJECT_PTR(node)];
         QHash<QString, QString>::const_iterator cacheIt = cache.constFind(name);
         if (cacheIt != cache.constEnd())
             return cacheIt.value();
 
-        QVariant value = WIDGET(node)->property(name.toLatin1());
+        QObject *obj = OBJECT_PTR(node);
+        QVariant value = obj->property(name.toLatin1());
         if (!value.isValid()) {
             if (name == QLatin1String("class")) {
-                QString className = QString::fromLatin1(WIDGET(node)->metaObject()->className());
+                QString className = QString::fromLatin1(obj->metaObject()->className());
                 if (className.contains(QLatin1Char(':')))
                     className.replace(QLatin1Char(':'), QLatin1Char('-'));
                 cache[name] = className;
                 return className;
             } else if (name == QLatin1String("style")) {
-                QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle *>(WIDGET(node)->style());
+                QWidget *w = qobject_cast<QWidget *>(obj);
+                QStyleSheetStyle *proxy = w ? qobject_cast<QStyleSheetStyle *>(w->style()) : 0;
                 if (proxy) {
                     QString styleName = QString::fromLatin1(proxy->baseStyle()->metaObject()->className());
                     cache[name] = styleName;
@@ -1480,7 +1478,7 @@ public:
     {
         if (isNullNode(node))
             return false;
-        const QMetaObject *metaObject = WIDGET(node)->metaObject();
+        const QMetaObject *metaObject = OBJECT_PTR(node)->metaObject();
 #ifndef QT_NO_TOOLTIP
         if (qstrcmp(metaObject->className(), "QTipLabel") == 0)
             return nodeName == QLatin1String("QToolTip");
@@ -1502,11 +1500,11 @@ public:
     bool hasAttributes(NodePtr) const
     { return true; }
     QStringList nodeIds(NodePtr node) const
-    { return isNullNode(node) ? QStringList() : QStringList(WIDGET(node)->objectName()); }
+    { return isNullNode(node) ? QStringList() : QStringList(OBJECT_PTR(node)->objectName()); }
     bool isNullNode(NodePtr node) const
     { return node.ptr == 0; }
     NodePtr parentNode(NodePtr node) const
-    { NodePtr n; n.ptr = isNullNode(node) ? 0 : parentObject(WIDGET(node)); return n; }
+    { NodePtr n; n.ptr = isNullNode(node) ? 0 : parentObject(OBJECT_PTR(node)); return n; }
     NodePtr previousSiblingNode(NodePtr) const
     { NodePtr n; n.ptr = 0; return n; }
     NodePtr duplicateNode(NodePtr node) const
@@ -1515,7 +1513,7 @@ public:
     { }
 
 private:
-    mutable QHash<const QWidget *, QHash<QString, QString> > m_attributeCache;
+    mutable QHash<const QObject *, QHash<QString, QString> > m_attributeCache;
 };
 
 QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QObject *obj) const

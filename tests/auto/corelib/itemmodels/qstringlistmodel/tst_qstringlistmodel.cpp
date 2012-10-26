@@ -144,11 +144,11 @@ void tst_QStringListModel::rowsAboutToBeRemoved_rowsRemoved()
 
     QStringListModel *model = new QStringListModel(input);
     QModelListener *pListener = new QModelListener(&aboutto, &res, model);
-    pListener->connect(model,       SIGNAL( rowsAboutToBeRemoved(const QModelIndex & , int , int )),
-                       pListener,   SLOT(   rowsAboutToBeRemovedOrInserted(const QModelIndex & , int , int ))    );
+    pListener->connect(model,       SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
+                       pListener,   SLOT(rowsAboutToBeRemovedOrInserted(QModelIndex,int,int))    );
 
-    pListener->connect(model,       SIGNAL( rowsRemoved(const QModelIndex & , int , int )),
-                       pListener,   SLOT(   rowsRemovedOrInserted(const QModelIndex & , int , int ))    );
+    pListener->connect(model,       SIGNAL(rowsRemoved(QModelIndex,int,int)),
+                       pListener,   SLOT(rowsRemovedOrInserted(QModelIndex,int,int))    );
 
     model->removeRows(row,count);
     // At this point, control goes to our connected slots inn this order:
@@ -208,11 +208,11 @@ void tst_QStringListModel::rowsAboutToBeInserted_rowsInserted()
 
     QStringListModel *model = new QStringListModel(input);
     QModelListener *pListener = new QModelListener(&aboutto, &res, model);
-    connect(model,       SIGNAL( rowsAboutToBeInserted(const QModelIndex & , int , int )),
-                       pListener,   SLOT(   rowsAboutToBeRemovedOrInserted(const QModelIndex & , int , int ))    );
+    connect(model,       SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
+                       pListener,   SLOT(rowsAboutToBeRemovedOrInserted(QModelIndex,int,int))    );
 
-    connect(model,       SIGNAL( rowsInserted(const QModelIndex & , int , int )),
-                       pListener,   SLOT(   rowsRemovedOrInserted(const QModelIndex & , int , int ))    );
+    connect(model,       SIGNAL(rowsInserted(QModelIndex,int,int)),
+                       pListener,   SLOT(rowsRemovedOrInserted(QModelIndex,int,int))    );
 
     model->insertRows(row,count);
     // At this point, control goes to our connected slots inn this order:

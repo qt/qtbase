@@ -77,7 +77,7 @@ private slots:
     void quit();
     void started();
     void finished();
-    void terminated();
+    void terminated(); // Named after a signal that was removed in Qt 5.0
     void exec();
     void sleep();
     void msleep();
@@ -535,7 +535,7 @@ void tst_QThread::terminated()
 {
     SignalRecorder recorder;
     Terminate_Thread thread;
-    connect(&thread, SIGNAL(terminated()), &recorder, SLOT(slot()), Qt::DirectConnection);
+    connect(&thread, SIGNAL(finished()), &recorder, SLOT(slot()), Qt::DirectConnection);
     {
         QMutexLocker locker(&thread.mutex);
         thread.start();

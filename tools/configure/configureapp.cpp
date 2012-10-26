@@ -291,6 +291,8 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "ICU" ]             = "auto";
 
+    dictionary[ "ANGLE" ]           = "auto";
+
     dictionary[ "GIF" ]             = "auto";
     dictionary[ "JPEG" ]            = "auto";
     dictionary[ "PNG" ]             = "auto";
@@ -300,6 +302,7 @@ Configure::Configure(int& argc, char** argv)
 
     dictionary[ "ACCESSIBILITY" ]   = "yes";
     dictionary[ "OPENGL" ]          = "yes";
+    dictionary[ "OPENGL_ES_2" ]     = "yes";
     dictionary[ "OPENVG" ]          = "no";
     dictionary[ "OPENSSL" ]         = "auto";
     dictionary[ "DBUS" ]            = "auto";
@@ -307,8 +310,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "STYLE_WINDOWS" ]   = "yes";
     dictionary[ "STYLE_WINDOWSXP" ] = "auto";
     dictionary[ "STYLE_WINDOWSVISTA" ] = "auto";
-    dictionary[ "STYLE_PLASTIQUE" ] = "yes";
-    dictionary[ "STYLE_CLEANLOOKS" ]= "yes";
     dictionary[ "STYLE_FUSION" ]    = "yes";
     dictionary[ "STYLE_WINDOWSCE" ] = "no";
     dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
@@ -547,6 +548,12 @@ void Configure::parseCmdLine()
             dictionary[ "ICU" ] = "no";
         }
 
+        else if (configCmdLine.at(i) == "-angle") {
+            dictionary[ "ANGLE" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-angle") {
+            dictionary[ "ANGLE" ] = "no";
+        }
+
         // Image formats --------------------------------------------
         else if (configCmdLine.at(i) == "-no-gif")
             dictionary[ "GIF" ] = "no";
@@ -639,16 +646,6 @@ void Configure::parseCmdLine()
         else if (configCmdLine.at(i) == "-no-style-windowsvista")
             dictionary[ "STYLE_WINDOWSVISTA" ] = "no";
 
-        else if (configCmdLine.at(i) == "-qt-style-plastique")
-            dictionary[ "STYLE_PLASTIQUE" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-plastique")
-            dictionary[ "STYLE_PLASTIQUE" ] = "no";
-
-        else if (configCmdLine.at(i) == "-qt-style-cleanlooks")
-            dictionary[ "STYLE_CLEANLOOKS" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-style-cleanlooks")
-            dictionary[ "STYLE_CLEANLOOKS" ] = "no";
-
         else if (configCmdLine.at(i) == "-qt-style-fusion")
             dictionary[ "STYLE_FUSION" ] = "yes";
         else if (configCmdLine.at(i) == "-no-style-fusion")
@@ -675,6 +672,7 @@ void Configure::parseCmdLine()
             if (i == argCount)
                 break;
 
+            dictionary[ "OPENGL_ES_2" ]         = "no";
             if (configCmdLine.at(i) == "es1") {
                 dictionary[ "OPENGL_ES_CM" ]    = "yes";
             } else if ( configCmdLine.at(i) == "es2" ) {
@@ -686,16 +684,6 @@ void Configure::parseCmdLine()
                 dictionary[ "DONE" ] = "error";
                 break;
             }
-        // External location of ANGLE library  (Open GL ES 2)
-        } else if (configCmdLine.at(i) == QStringLiteral("-angle")) {
-            if (++i == argCount)
-              break;
-            const QFileInfo fi(configCmdLine.at(i));
-            if (!fi.isDir()) {
-                cout << "Argument passed to -angle option is not a directory." << endl;
-                dictionary.insert(QStringLiteral("DONE"), QStringLiteral( "error"));
-            }
-            dictionary.insert(QStringLiteral("ANGLE_DIR"), fi.absoluteFilePath());
         }
 
         // OpenVG Support -------------------------------------------
@@ -1485,8 +1473,6 @@ void Configure::applySpecSpecifics()
     if (dictionary[ "XQMAKESPEC" ].startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
-        dictionary[ "STYLE_PLASTIQUE" ]     = "no";
-        dictionary[ "STYLE_CLEANLOOKS" ]    = "no";
         dictionary[ "STYLE_FUSION" ]        = "no";
         dictionary[ "STYLE_WINDOWSCE" ]     = "yes";
         dictionary[ "STYLE_WINDOWSMOBILE" ] = "yes";
@@ -1660,9 +1646,9 @@ bool Configure::displayHelp()
         desc("OPENGL", "no","-no-opengl",               "Do not support OpenGL.");
         desc("OPENGL", "no","-opengl <api>",            "Enable OpenGL support with specified API version.\n"
                                                         "Available values for <api>:");
-        desc("", "", "",                                "  desktop - Enable support for Desktop OpenGL", ' ');
+        desc("", "no", "",                                "  desktop - Enable support for Desktop OpenGL", ' ');
         desc("OPENGL_ES_CM", "no", "",                  "  es1 - Enable support for OpenGL ES Common Profile", ' ');
-        desc("OPENGL_ES_2",  "no", "",                  "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
+        desc("OPENGL_ES_2",  "yes", "",                  "  es2 - Enable support for OpenGL ES 2.0\n", ' ');
 
         desc("OPENVG", "no","-no-openvg",               "Disables OpenVG functionality.");
         desc("OPENVG", "yes","-openvg",                 "Enables OpenVG functionality.\n");
@@ -1738,6 +1724,9 @@ bool Configure::displayHelp()
             desc("SLOG2", "yes",  "-slog2",             "Compile with slog2 support.");
             desc("SLOG2", "no",  "-no-slog2",           "Do not compile with slog2 support.");
         }
+
+        desc("ANGLE", "yes",       "-angle",            "Use the ANGLE implementation of OpenGL ES 2.0.");
+        desc("ANGLE", "no",        "-no-angle",         "Do not use ANGLE.\nSee http://code.google.com/p/angleproject/\n");
 #endif
         // Qt\Windows only options go below here --------------------------------------------------------------------------------
         desc("\nQt for Windows only:\n\n");
@@ -1750,7 +1739,6 @@ bool Configure::displayHelp()
 
         desc("PLUGIN_MANIFESTS", "no", "-no-plugin-manifests", "Do not embed manifests in plugins.");
         desc("PLUGIN_MANIFESTS", "yes", "-plugin-manifests",   "Embed manifests in plugins.\n");
-        desc(       "-angle <dir>",                     "Use ANGLE library from location <dir>.\n");
 #if !defined(EVAL)
         desc("BUILD_QMAKE", "no", "-no-qmake",          "Do not compile qmake.");
         desc("BUILD_QMAKE", "yes", "-qmake",            "Compile qmake.\n");
@@ -1797,8 +1785,6 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWS", "yes", "",                "  windows", ' ');
         desc("STYLE_WINDOWSXP", "auto", "",             "  windowsxp", ' ');
         desc("STYLE_WINDOWSVISTA", "auto", "",          "  windowsvista", ' ');
-        desc("STYLE_PLASTIQUE", "yes", "",              "  plastique", ' ');
-        desc("STYLE_CLEANLOOKS", "yes", "",             "  cleanlooks", ' ');
         desc("STYLE_FUSION", "yes", "",                 "  fusion", ' ');
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
         desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile\n", ' ');
@@ -1897,6 +1883,9 @@ bool Configure::findFile(const QString &fileName)
             }
         }
         paths = QString::fromLocal8Bit(getenv("INCLUDE"));
+        const QByteArray directXSdk = qgetenv("DXSDK_DIR");
+        if (!directXSdk.isEmpty()) // Add Direct X SDK for ANGLE
+            paths += QLatin1Char(';') + QString::fromLocal8Bit(directXSdk) + QLatin1String("/include");
     } else if (file.endsWith(".lib") ||  file.endsWith(".a")) {
         if (!mingwPath.isNull() && !findFileInPaths(file, mingwPaths(mingwPath, "lib")).isNull())
             return true;
@@ -1982,6 +1971,9 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "ICU")
         available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h")
                         && (findFile("icuin.lib") || findFile("libicuin.lib")); // libicun.lib if compiled with mingw
+
+    else if (part == "ANGLE")
+        available = findFile("d3dcompiler.h");
 
     else if (part == "LIBJPEG")
         available = findFile("jpeglib.h");
@@ -2105,6 +2097,12 @@ void Configure::autoDetection()
     // ICU detection
     if (dictionary["ICU"] == "auto")
         dictionary["ICU"] = checkAvailability("ICU") ? "yes" : "no";
+
+    // ANGLE detection
+    if (dictionary["ANGLE"] == "auto") {
+        bool gles2 = (dictionary["OPENGL_ES_2"] == "yes");
+        dictionary["ANGLE"] = (gles2 && checkAvailability("ANGLE")) ? "yes" : "no";
+    }
 
     // Image format detection
     if (dictionary["GIF"] == "auto")
@@ -2345,6 +2343,10 @@ void Configure::generateOutputVars()
     if (dictionary[ "ICU" ] == "yes")
         qtConfig  += "icu";
 
+    // ANGLE --------------------------------------------------------
+    if (dictionary[ "ANGLE" ] == "yes")
+        qtConfig  += "angle";
+
     // Image formates -----------------------------------------------
     if (dictionary[ "GIF" ] == "no")
         qtConfig += "no-gif";
@@ -2374,12 +2376,6 @@ void Configure::generateOutputVars()
     // Styles -------------------------------------------------------
     if (dictionary[ "STYLE_WINDOWS" ] == "yes")
         qmakeStyles += "windows";
-
-    if (dictionary[ "STYLE_PLASTIQUE" ] == "yes")
-        qmakeStyles += "plastique";
-
-    if (dictionary[ "STYLE_CLEANLOOKS" ] == "yes")
-        qmakeStyles += "cleanlooks";
 
     if (dictionary[ "STYLE_FUSION" ] == "yes")
         qmakeStyles += "fusion";
@@ -3008,16 +3004,6 @@ void Configure::generateQConfigPri()
         if (!dictionary["QT_NAMESPACE"].isEmpty())
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
 
-        if (dictionary.value(QStringLiteral("OPENGL_ES_2")) == QStringLiteral("yes")) {
-            const QString angleDir = dictionary.value(QStringLiteral("ANGLE_DIR"));
-            if (!angleDir.isEmpty()) {
-                configStream
-                    << "QMAKE_INCDIR_OPENGL_ES2 = " << angleDir << "/include\n"
-                    << "QMAKE_LIBDIR_OPENGL_ES2_DEBUG = " << angleDir << "/lib/Debug\n"
-                    << "QMAKE_LIBDIR_OPENGL_ES2_RELEASE = " << angleDir << "/lib/Release\n";
-            }
-        }
-
         configStream.flush();
         configFile.close();
     }
@@ -3162,8 +3148,6 @@ void Configure::generateConfigfiles()
 
         QStringList qconfigList;
         if (dictionary["STYLE_WINDOWS"] != "yes")     qconfigList += "QT_NO_STYLE_WINDOWS";
-        if (dictionary["STYLE_PLASTIQUE"] != "yes")   qconfigList += "QT_NO_STYLE_PLASTIQUE";
-        if (dictionary["STYLE_CLEANLOOKS"] != "yes")   qconfigList += "QT_NO_STYLE_CLEANLOOKS";
         if (dictionary["STYLE_FUSION"] != "yes")       qconfigList += "QT_NO_STYLE_FUSION";
         if (dictionary["STYLE_WINDOWSXP"] != "yes" && dictionary["STYLE_WINDOWSVISTA"] != "yes")
             qconfigList += "QT_NO_STYLE_WINDOWSXP";
@@ -3339,11 +3323,6 @@ void Configure::displayConfig()
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
     sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
-    if (dictionary.value(QStringLiteral("OPENGL_ES_2")) == QStringLiteral("yes")) {
-        const QString angleDir = dictionary.value(QStringLiteral("ANGLE_DIR"));
-        if (!angleDir.isEmpty())
-            sout << "ANGLE......................." << QDir::toNativeSeparators(angleDir) << endl;
-    }
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
     sout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
@@ -3361,13 +3340,12 @@ void Configure::displayConfig()
     sout << "    ICU support............." << dictionary[ "ICU" ] << endl;
     if ((platform() == QNX) || (platform() == BLACKBERRY))
         sout << "    SLOG2 support..........." << dictionary[ "SLOG2" ] << endl;
+    sout << "    ANGLE..................." << dictionary[ "ANGLE" ] << endl;
 
     sout << "Styles:" << endl;
     sout << "    Windows................." << dictionary[ "STYLE_WINDOWS" ] << endl;
     sout << "    Windows XP.............." << dictionary[ "STYLE_WINDOWSXP" ] << endl;
     sout << "    Windows Vista..........." << dictionary[ "STYLE_WINDOWSVISTA" ] << endl;
-    sout << "    Plastique..............." << dictionary[ "STYLE_PLASTIQUE" ] << endl;
-    sout << "    Cleanlooks.............." << dictionary[ "STYLE_CLEANLOOKS" ] << endl;
     sout << "    Fusion.................." << dictionary[ "STYLE_FUSION" ] << endl;
     sout << "    Windows CE.............." << dictionary[ "STYLE_WINDOWSCE" ] << endl;
     sout << "    Windows Mobile.........." << dictionary[ "STYLE_WINDOWSMOBILE" ] << endl << endl;

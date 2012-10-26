@@ -257,11 +257,11 @@ void tst_QObject::disconnect()
     ReceiverObject *r1 = new ReceiverObject;
     ReceiverObject *r2 = new ReceiverObject;
 
-    connect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
+    connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
 
-    connect( s, SIGNAL( signal2() ), r1, SLOT( slot2() ) );
-    connect( s, SIGNAL( signal3() ), r1, SLOT( slot3() ) );
-    connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) );
+    connect( s, SIGNAL(signal2()), r1, SLOT(slot2()) );
+    connect( s, SIGNAL(signal3()), r1, SLOT(slot3()) );
+    connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) );
 
     s->emitSignal1();
     s->emitSignal2();
@@ -275,7 +275,7 @@ void tst_QObject::disconnect()
     r1->reset();
 
     // usual disconnect with all parameters given
-    bool ret = QObject::disconnect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
+    bool ret = QObject::disconnect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
 
     s->emitSignal1();
 
@@ -283,7 +283,7 @@ void tst_QObject::disconnect()
     r1->reset();
 
     QVERIFY(ret);
-    ret = QObject::disconnect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
+    ret = QObject::disconnect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
     QVERIFY(!ret);
 
     // disconnect all signals from s from all slots from r1
@@ -298,13 +298,13 @@ void tst_QObject::disconnect()
     QVERIFY(!r1->called(4));
     r1->reset();
 
-    connect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
-    connect( s, SIGNAL( signal1() ), r1, SLOT( slot2() ) );
-    connect( s, SIGNAL( signal1() ), r1, SLOT( slot3() ) );
-    connect( s, SIGNAL( signal2() ), r1, SLOT( slot4() ) );
+    connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
+    connect( s, SIGNAL(signal1()), r1, SLOT(slot2()) );
+    connect( s, SIGNAL(signal1()), r1, SLOT(slot3()) );
+    connect( s, SIGNAL(signal2()), r1, SLOT(slot4()) );
 
     // disconnect s's signal1() from all slots of r1
-    QObject::disconnect( s, SIGNAL( signal1() ), r1, 0 );
+    QObject::disconnect( s, SIGNAL(signal1()), r1, 0 );
 
     s->emitSignal1();
     s->emitSignal2();
@@ -317,15 +317,15 @@ void tst_QObject::disconnect()
     // make sure all is disconnected again
     QObject::disconnect( s, 0, r1, 0 );
 
-    connect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) );
-    connect( s, SIGNAL( signal1() ), r2, SLOT( slot1() ) );
-    connect( s, SIGNAL( signal2() ), r1, SLOT( slot2() ) );
-    connect( s, SIGNAL( signal2() ), r2, SLOT( slot2() ) );
-    connect( s, SIGNAL( signal3() ), r1, SLOT( slot3() ) );
-    connect( s, SIGNAL( signal3() ), r2, SLOT( slot3() ) );
+    connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) );
+    connect( s, SIGNAL(signal1()), r2, SLOT(slot1()) );
+    connect( s, SIGNAL(signal2()), r1, SLOT(slot2()) );
+    connect( s, SIGNAL(signal2()), r2, SLOT(slot2()) );
+    connect( s, SIGNAL(signal3()), r1, SLOT(slot3()) );
+    connect( s, SIGNAL(signal3()), r2, SLOT(slot3()) );
 
     // disconnect signal1() from all receivers
-    QObject::disconnect( s, SIGNAL( signal1() ), 0, 0 );
+    QObject::disconnect( s, SIGNAL(signal1()), 0, 0 );
     s->emitSignal1();
     s->emitSignal2();
     s->emitSignal3();
@@ -3378,7 +3378,7 @@ void tst_QObject::disconnectSelfInSlotAndDeleteAfterEmit()
 void tst_QObject::dumpObjectInfo()
 {
     QObject a, b;
-    QObject::connect(&a, SIGNAL(destroyed(QObject *)), &b, SLOT(deleteLater()));
+    QObject::connect(&a, SIGNAL(destroyed(QObject*)), &b, SLOT(deleteLater()));
     a.disconnect(&b);
 #ifdef QT_DEBUG
     QTest::ignoreMessage(QtDebugMsg, "OBJECT QObject::unnamed");
@@ -3442,10 +3442,10 @@ void tst_QObject::uniqConnection()
     r2->reset();
     ReceiverObject::sequence = 0;
 
-    QVERIFY( connect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL( signal1() ), r2, SLOT( slot1() ) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL( signal1() ), r1, SLOT( slot3() ) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL( signal3() ), r1, SLOT( slot3() ) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL(signal1()), r1, SLOT(slot1()) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL(signal1()), r2, SLOT(slot1()) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL(signal1()), r1, SLOT(slot3()) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL(signal3()), r1, SLOT(slot3()) , Qt::UniqueConnection) );
 
     s->emitSignal1();
     s->emitSignal2();
@@ -3468,11 +3468,11 @@ void tst_QObject::uniqConnection()
     r2->reset();
     ReceiverObject::sequence = 0;
 
-    QVERIFY( connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL( signal4() ), r2, SLOT( slot4() ) , Qt::UniqueConnection) );
-    QVERIFY(!connect( s, SIGNAL( signal4() ), r2, SLOT( slot4() ) , Qt::UniqueConnection) );
-    QVERIFY( connect( s, SIGNAL( signal1() ), r2, SLOT( slot4() ) , Qt::UniqueConnection) );
-    QVERIFY(!connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL(signal4()), r2, SLOT(slot4()) , Qt::UniqueConnection) );
+    QVERIFY(!connect( s, SIGNAL(signal4()), r2, SLOT(slot4()) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL(signal1()), r2, SLOT(slot4()) , Qt::UniqueConnection) );
+    QVERIFY(!connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) , Qt::UniqueConnection) );
 
     s->emitSignal4();
     QCOMPARE( r1->count_slot4, 1 );
@@ -3484,7 +3484,7 @@ void tst_QObject::uniqConnection()
     r2->reset();
     ReceiverObject::sequence = 0;
 
-    connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) );
+    connect( s, SIGNAL(signal4()), r1, SLOT(slot4()) );
 
     s->emitSignal4();
     QCOMPARE( r1->count_slot4, 2 );
@@ -3637,11 +3637,11 @@ void tst_QObject::overloads()
     obj2.s_num = 0;
 
     connect (&obj1, SIGNAL(sig(int)) , &obj1, SLOT(slo(int)));
-    connect (&obj1, SIGNAL(sig(QObject *, QObject *, QObject *)) , &obj1, SLOT(slo(QObject * , QObject *, QObject *)));
+    connect (&obj1, SIGNAL(sig(QObject*,QObject*,QObject*)) , &obj1, SLOT(slo(QObject*,QObject*,QObject*)));
 
-    connect (&obj1, SIGNAL(sig(QObject *, QObject *, QObject *, QObject *)) , &obj2, SLOT(slo(QObject * , QObject *, QObject *)));
-    connect (&obj1, SIGNAL(sig(QObject *)) , &obj2, SLOT(slo()));
-    connect (&obj1, SIGNAL(sig(int, int)) , &obj2, SLOT(slo(int, int)));
+    connect (&obj1, SIGNAL(sig(QObject*,QObject*,QObject*,QObject*)) , &obj2, SLOT(slo(QObject*,QObject*,QObject*)));
+    connect (&obj1, SIGNAL(sig(QObject*)) , &obj2, SLOT(slo()));
+    connect (&obj1, SIGNAL(sig(int,int)) , &obj2, SLOT(slo(int,int)));
 
     emit obj1.sig(0.5); //connected to nothing
     emit obj1.sig(1, 'a'); //connected to nothing

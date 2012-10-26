@@ -107,7 +107,7 @@ void tst_QGuiApplication::focusObject()
     DummyWindow window2;
     window1.show();
 
-    QSignalSpy spy(&app, SIGNAL(focusObjectChanged(QObject *)));
+    QSignalSpy spy(&app, SIGNAL(focusObjectChanged(QObject*)));
 
 
     // verify active window focus propagates to qguiapplication

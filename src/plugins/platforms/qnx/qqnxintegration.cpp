@@ -89,6 +89,8 @@
 #include <QtGui/QOpenGLContext>
 #endif
 
+#include <QtPlatformSupport/private/qsimpledrag_p.h>
+
 #include <QtCore/QDebug>
 #include <QtCore/QHash>
 
@@ -127,6 +129,9 @@ QQnxIntegration::QQnxIntegration()
     , m_screenEventHandler(new QQnxScreenEventHandler(this))
 #if !defined(QT_NO_CLIPBOARD)
     , m_clipboard(0)
+#endif
+#if !defined(QT_NO_DRAGANDDROP)
+    , m_drag(new QSimpleDrag())
 #endif
 {
     qIntegrationDebug() << Q_FUNC_INFO;
@@ -223,6 +228,11 @@ QQnxIntegration::~QQnxIntegration()
 {
     qIntegrationDebug() << Q_FUNC_INFO << "platform plugin shutdown begin";
     delete m_nativeInterface;
+
+#if !defined(QT_NO_DRAGANDDROP)
+    // Destroy the drag object
+    delete m_drag;
+#endif
 
 #if defined(QQNX_PPS)
     // Destroy the hardware button notifier
@@ -361,6 +371,13 @@ QPlatformClipboard *QQnxIntegration::clipboard() const
     }
 #endif
     return m_clipboard;
+}
+#endif
+
+#if !defined(QT_NO_DRAGANDDROP)
+QPlatformDrag *QQnxIntegration::drag() const
+{
+    return m_drag;
 }
 #endif
 

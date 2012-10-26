@@ -205,10 +205,10 @@ static void ensureInitialized()
     QNetworkAccessManager gained the ability to manage network connections.
     QNetworkAccessManager can start the network interface if the device is
     offline and terminates the interface if the current process is the last
-    one to use the uplink. Note that some platform utilize grace periods from
+    one to use the uplink. Note that some platforms utilize grace periods from
     when the last application stops using a uplink until the system actually
     terminates the connectivity link. Roaming is equally transparent. Any
-    queued/pending network requests are automatically transferred to new
+    queued/pending network requests are automatically transferred to the new
     access point.
 
     Clients wanting to utilize this feature should not require any changes. In fact

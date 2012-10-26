@@ -58,8 +58,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
 class Q_GUI_EXPORT QPlatformSharedGraphicsCache: public QObject
 {
     Q_OBJECT

@@ -158,7 +158,9 @@
     QtGui now contains only a small set of enablers, which are generally
     useful for all graphical applications.
 
+    \section1 Drag and Drop
 
+    More info in \l{Drag and Drop}
 
     \section1 Reference
     \list

@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <qgraphicsitem.h>
+#include <qpen.h>
 
 Q_DECLARE_METATYPE(QPolygonF)
 
@@ -170,6 +171,7 @@ void tst_QGraphicsPolygonItem::boundingRect()
     QFETCH(QRectF, boundingRect);
 
     SubQGraphicsPolygonItem item(polygon);
+    item.setPen(QPen(Qt::black, 0));
     QCOMPARE(item.boundingRect(), boundingRect);
 }
 

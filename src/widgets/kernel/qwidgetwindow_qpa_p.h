@@ -92,6 +92,9 @@ protected:
 #ifndef QT_NO_TABLETEVENT
     void handleTabletEvent(QTabletEvent *);
 #endif
+#ifndef QT_NO_CONTEXTMENU
+    void handleContextMenuEvent(QContextMenuEvent *);
+#endif
 
 private slots:
     void updateObjectName();

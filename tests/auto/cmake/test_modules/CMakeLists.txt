@@ -13,6 +13,7 @@ set(qtbase_modules
     Sql
     Test
     Xml
+    PrintSupport
 )
 
 if (UNIX AND NOT APPLE AND NOT QNXNTO)

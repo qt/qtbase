@@ -48,8 +48,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Gui)
-
 class QInputMethodPrivate;
 class QWindow;
 class QRectF;

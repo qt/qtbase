@@ -370,7 +370,7 @@ void tst_QFutureWatcher::watchFinishedFuture()
     connect(&watcher, SIGNAL(canceled()), &object, SLOT(canceled()));
     connect(&watcher, SIGNAL(finished()), &object, SLOT(finished()));
     connect(&watcher, SIGNAL(progressValueChanged(int)), &object, SLOT(progressValueChanged(int)));
-    connect(&watcher, SIGNAL(progressRangeChanged(int, int)), &object, SLOT(progressRangeChanged(int, int)));
+    connect(&watcher, SIGNAL(progressRangeChanged(int,int)), &object, SLOT(progressRangeChanged(int,int)));
 #endif
     connect(&watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
 
@@ -404,7 +404,7 @@ void tst_QFutureWatcher::watchCanceledFuture()
     connect(&watcher, SIGNAL(canceled()), &object, SLOT(canceled()));
     connect(&watcher, SIGNAL(finished()), &object, SLOT(finished()));
     connect(&watcher, SIGNAL(progressValueChanged(int)), &object, SLOT(progressValueChanged(int)));
-    connect(&watcher, SIGNAL(progressRangeChanged(int, int)), &object, SLOT(progressRangeChanged(int, int)));
+    connect(&watcher, SIGNAL(progressRangeChanged(int,int)), &object, SLOT(progressRangeChanged(int,int)));
 #endif
     connect(&watcher, SIGNAL(resultReadyAt(int)), &object, SLOT(resultReadyAt(int)));
 
@@ -528,10 +528,10 @@ void tst_QFutureWatcher::progressText()
         QObject::connect(&watcher, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 #ifdef PRINT
         QObject::connect(&watcher, SIGNAL(progressValueChanged(int)), &o, SLOT(printProgress(int)));
-        QObject::connect(&watcher, SIGNAL(progressTextChanged(const QString &)), &o, SLOT(printText(const QString &)));
+        QObject::connect(&watcher, SIGNAL(progressTextChanged(QString)), &o, SLOT(printText(QString)));
 #endif
         QObject::connect(&watcher, SIGNAL(progressValueChanged(int)), &o, SLOT(registerProgress(int)));
-        QObject::connect(&watcher, SIGNAL(progressTextChanged(const QString &)), &o, SLOT(registerText(const QString &)));
+        QObject::connect(&watcher, SIGNAL(progressTextChanged(QString)), &o, SLOT(registerText(QString)));
 
         watcher.setFuture(f);
         QTestEventLoop::instance().enterLoop(5);

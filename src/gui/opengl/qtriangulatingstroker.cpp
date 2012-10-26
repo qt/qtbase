@@ -81,7 +81,7 @@ static inline void skipDuplicatePoints(const qreal **pts, const qreal *endPts)
     }
 }
 
-void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, const QRectF &)
+void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, const QRectF &, QPainter::RenderHints hints)
 {
     const qreal *pts = path.points();
     const QPainterPath::ElementType *types = path.elements();
@@ -95,7 +95,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen, co
 
     m_width = realWidth / 2;
 
-    bool cosmetic = pen.isCosmetic();
+    bool cosmetic = qt_pen_is_cosmetic(pen, hints);
     if (cosmetic) {
         m_width = m_width * m_inv_scale;
     }
@@ -519,14 +519,14 @@ QDashedStrokeProcessor::QDashedStrokeProcessor()
     m_dash_stroker.setCubicToHook(qdashprocessor_cubicTo);
 }
 
-void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, const QRectF &clip)
+void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen, const QRectF &clip, QPainter::RenderHints hints)
 {
 
     const qreal *pts = path.points();
     const QPainterPath::ElementType *types = path.elements();
     int count = path.elementCount();
 
-    bool cosmetic = pen.isCosmetic();
+    bool cosmetic = qt_pen_is_cosmetic(pen, hints);
 
     m_points.reset();
     m_types.reset();

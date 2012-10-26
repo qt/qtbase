@@ -62,6 +62,8 @@ class QQnxAbstractNavigator;
 class QQnxAbstractVirtualKeyboard;
 class QQnxServices;
 
+class QSimpleDrag;
+
 #if defined(QQNX_PPS)
 class QQnxInputContext;
 class QQnxNavigatorEventNotifier;
@@ -105,7 +107,9 @@ public:
 #if !defined(QT_NO_CLIPBOARD)
     QPlatformClipboard *clipboard() const;
 #endif
-
+#if !defined(QT_NO_DRAGANDDROP)
+    QPlatformDrag *drag() const;
+#endif
     QVariant styleHint(StyleHint hint) const;
 
     QPlatformServices *services() const;
@@ -151,9 +155,10 @@ private:
 #if !defined(QT_NO_CLIPBOARD)
     mutable QQnxClipboard* m_clipboard;
 #endif
-
     QQnxAbstractNavigator *m_navigator;
-
+#if !defined(QT_NO_DRAGANDDROP)
+    QSimpleDrag *m_drag;
+#endif
     static QQnxWindowMapper ms_windowMapper;
     static QMutex ms_windowMapperMutex;
 

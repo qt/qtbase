@@ -45,6 +45,7 @@
 #include <qdebug.h>
 #include "private/qpaintengine_alpha_p.h"
 
+#include "private/qpainter_p.h"
 #include "private/qpicture_p.h"
 #include "private/qfont_p.h"
 #include "QtGui/qpicture.h"
@@ -384,11 +385,14 @@ QAlphaPaintEnginePrivate::~QAlphaPaintEnginePrivate()
 
 QRectF QAlphaPaintEnginePrivate::addPenWidth(const QPainterPath &path)
 {
+    Q_Q(QAlphaPaintEngine);
+
     QPainterPath tmp = path;
 
     if (m_pen.style() == Qt::NoPen)
         return (path.controlPointRect() * m_transform).boundingRect();
-    if (m_pen.isCosmetic())
+    bool cosmetic = qt_pen_is_cosmetic(m_pen, q->state->renderHints());
+    if (cosmetic)
         tmp = path * m_transform;
 
     QPainterPathStroker stroker;
@@ -399,7 +403,7 @@ QRectF QAlphaPaintEnginePrivate::addPenWidth(const QPainterPath &path)
     stroker.setJoinStyle(m_pen.joinStyle());
     stroker.setCapStyle(m_pen.capStyle());
     tmp = stroker.createStroke(tmp);
-    if (m_pen.isCosmetic())
+    if (cosmetic)
         return tmp.controlPointRect();
 
     return (tmp.controlPointRect() * m_transform).boundingRect();

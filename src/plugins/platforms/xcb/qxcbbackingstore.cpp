@@ -262,11 +262,14 @@ QXcbBackingStore::~QXcbBackingStore()
 
 QPaintDevice *QXcbBackingStore::paintDevice()
 {
-    return m_image->image();
+    return m_image ? m_image->image() : 0;
 }
 
 void QXcbBackingStore::beginPaint(const QRegion &region)
 {
+    if (!m_image)
+        return;
+
     m_image->preparePaint(region);
 
 #if 0

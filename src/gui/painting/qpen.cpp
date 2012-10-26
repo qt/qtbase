@@ -86,7 +86,7 @@ typedef QPenPrivate QPenData;
 
     \snippet code/src_gui_painting_qpen.cpp 1
 
-    The default pen is a solid black brush with 0 width, square
+    The default pen is a solid black brush with 1 width, square
     cap style (Qt::SquareCap), and  bevel join style (Qt::BevelJoin).
 
     In addition QPen provides the color() and setColor()
@@ -230,9 +230,9 @@ typedef QPenPrivate QPenData;
   \internal
 */
 inline QPenPrivate::QPenPrivate(const QBrush &_brush, qreal _width, Qt::PenStyle penStyle,
-                                Qt::PenCapStyle _capStyle, Qt::PenJoinStyle _joinStyle)
+                                Qt::PenCapStyle _capStyle, Qt::PenJoinStyle _joinStyle, bool _defaultWidth)
     : ref(1), dashOffset(0), miterLimit(2),
-      cosmetic(false)
+      cosmetic(false), defaultWidth(_defaultWidth)
 {
     width = _width;
     brush = _brush;
@@ -261,12 +261,12 @@ public:
 };
 
 Q_GLOBAL_STATIC_WITH_ARGS(QPenDataHolder, defaultPenInstance,
-                          (Qt::black, 0, Qt::SolidLine, qpen_default_cap, qpen_default_join))
+                          (Qt::black, 1, Qt::SolidLine, qpen_default_cap, qpen_default_join))
 Q_GLOBAL_STATIC_WITH_ARGS(QPenDataHolder, nullPenInstance,
-                          (Qt::black, 0, Qt::NoPen, qpen_default_cap, qpen_default_join))
+                          (Qt::black, 1, Qt::NoPen, qpen_default_cap, qpen_default_join))
 
 /*!
-    Constructs a default black solid line pen with 0 width.
+    Constructs a default black solid line pen with 1 width.
 */
 
 QPen::QPen()
@@ -276,7 +276,7 @@ QPen::QPen()
 }
 
 /*!
-    Constructs a black pen with 0 width and the given \a style.
+    Constructs a black pen with 1 width and the given \a style.
 
     \sa setStyle()
 */
@@ -287,20 +287,20 @@ QPen::QPen(Qt::PenStyle style)
         d = nullPenInstance()->pen;
         d->ref.ref();
     } else {
-        d = new QPenData(Qt::black, 0, style, qpen_default_cap, qpen_default_join);
+        d = new QPenData(Qt::black, 1, style, qpen_default_cap, qpen_default_join);
     }
 }
 
 
 /*!
-    Constructs a solid line pen with 0 width and the given \a color.
+    Constructs a solid line pen with 1 width and the given \a color.
 
     \sa setBrush(), setColor()
 */
 
 QPen::QPen(const QColor &color)
 {
-    d = new QPenData(color, 0, Qt::SolidLine, qpen_default_cap, qpen_default_join);
+    d = new QPenData(color, 1, Qt::SolidLine, qpen_default_cap, qpen_default_join);
 }
 
 
@@ -315,7 +315,7 @@ QPen::QPen(const QColor &color)
 
 QPen::QPen(const QBrush &brush, qreal width, Qt::PenStyle s, Qt::PenCapStyle c, Qt::PenJoinStyle j)
 {
-    d = new QPenData(brush, width, s, c, j);
+    d = new QPenData(brush, width, s, c, j, false);
 }
 
 /*!
@@ -655,12 +655,15 @@ void QPen::setWidth(int width)
 
 void QPen::setWidthF(qreal width)
 {
-    if (width < 0.f)
+    if (width < 0.f) {
         qWarning("QPen::setWidthF: Setting a pen width with a negative value is not defined");
+        return;
+    }
     if (qAbs(d->width - width) < 0.00000001f)
         return;
     detach();
     d->width = width;
+    d->defaultWidth = false;
 }
 
 
@@ -785,8 +788,7 @@ bool QPen::isSolid() const
     used with. Drawing a shape with a cosmetic pen ensures that its
     outline will have the same thickness at different scale factors.
 
-    A zero width pen is cosmetic by default; pens with a non-zero width
-    are non-cosmetic.
+    A zero width pen is cosmetic by default.
 
     \sa setCosmetic(), widthF()
 */
@@ -848,7 +850,8 @@ bool QPen::operator==(const QPen &p) const
                 || (qFuzzyCompare(pdd->dashOffset, dd->dashOffset) &&
                     pdd->dashPattern == dd->dashPattern))
             && p.d->brush == d->brush
-            && pdd->cosmetic == dd->cosmetic);
+            && pdd->cosmetic == dd->cosmetic
+            && pdd->defaultWidth == dd->defaultWidth);
 }
 
 
@@ -910,6 +913,8 @@ QDataStream &operator<<(QDataStream &s, const QPen &p)
         }
         if (s.version() >= 9)
             s << double(p.dashOffset());
+        if (s.version() >= QDataStream::Qt_5_0)
+            s << bool(dd->defaultWidth);
     }
     return s;
 }
@@ -935,6 +940,7 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
     QVector<qreal> dashPattern;
     double dashOffset = 0;
     bool cosmetic = false;
+    bool defaultWidth = false;
     if (s.version() < QDataStream::Qt_4_3) {
         quint8 style8;
         s >> style8;
@@ -967,6 +973,13 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
             s >> dashOffset;
     }
 
+    if (s.version() >= QDataStream::Qt_5_0) {
+        s >> defaultWidth;
+    } else {
+        // best we can do for legacy pens
+        defaultWidth = qFuzzyIsNull(width);
+    }
+
     p.detach();
     QPenData *dd = static_cast<QPenData *>(p.d);
     dd->width = width;
@@ -978,6 +991,7 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
     dd->miterLimit = miterLimit;
     dd->dashOffset = dashOffset;
     dd->cosmetic = cosmetic;
+    dd->defaultWidth = defaultWidth;
 
     return s;
 }

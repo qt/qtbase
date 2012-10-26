@@ -1490,6 +1490,7 @@ void tst_QPainter::setWindow()
     pixmap.fill(QColor(Qt::white));
 
     QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Qt4CompatiblePainting);
     painter.setWindow(0, 0, 3, 3);
     painter.drawLine(1, 1, 2, 2);
 

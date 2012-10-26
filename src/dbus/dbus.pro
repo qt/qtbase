@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TARGET = QtDBus
 QT = core-private
 CONFIG += link_pkgconfig

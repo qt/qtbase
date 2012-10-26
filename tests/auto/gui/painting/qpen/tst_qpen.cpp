@@ -154,9 +154,9 @@ void tst_QPen::constructor_data()
     QTest::addColumn<int>("capStyle");
     QTest::addColumn<int>("joinStyle");
 
-    QTest::newRow("solid_black") << QPen() << QBrush(Qt::black) << 0. << (int)Qt::SolidLine
+    QTest::newRow("solid_black") << QPen() << QBrush(Qt::black) << 1. << (int)Qt::SolidLine
                               << (int) Qt::SquareCap << (int)Qt::BevelJoin;
-    QTest::newRow("solid_red") << QPen(Qt::red) << QBrush(Qt::red) << 0. << (int)Qt::SolidLine
+    QTest::newRow("solid_red") << QPen(Qt::red) << QBrush(Qt::red) << 1. << (int)Qt::SolidLine
                             << (int)Qt::SquareCap << (int)Qt::BevelJoin;
     QTest::newRow("full") << QPen(QBrush(QLinearGradient(0, 0, 100, 100)), 10,
                                Qt::SolidLine, Qt::RoundCap, Qt::MiterJoin)

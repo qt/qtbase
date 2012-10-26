@@ -346,16 +346,12 @@ void QThreadPrivate::finish(void *arg)
 
     d->isInFinish = true;
     d->priority = QThread::InheritPriority;
-    bool terminated = d->terminated;
     void *data = &d->data->tls;
     locker.unlock();
-    if (terminated)
-        emit thr->terminated();
     emit thr->finished();
     QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
     QThreadStorageData::finish((void **)data);
     locker.relock();
-    d->terminated = false;
 
     QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
     if (eventDispatcher) {
@@ -523,7 +519,6 @@ void QThread::start(Priority priority)
 
     d->running = true;
     d->finished = false;
-    d->terminated = false;
     d->returnCode = 0;
     d->exited = false;
 
@@ -631,8 +626,6 @@ void QThread::terminate()
     if (code) {
         qWarning("QThread::start: Thread termination error: %s",
                  qPrintable(qt_error_string((code))));
-    } else {
-        d->terminated = true;
     }
 #endif
 }

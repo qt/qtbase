@@ -199,6 +199,7 @@ private slots:
     void task234926_setHeaderSorting();
 
     void changeHeaderData();
+    void viewOptions();
 };
 
 // Testing get/set functions
@@ -475,6 +476,10 @@ public:
     int sizeHintForRow(int row) const
     {
         return QTableView::sizeHintForRow(row);
+    }
+
+    QStyleOptionViewItem viewOptions() const {
+        return QTableView::viewOptions();
     }
 
     bool checkSignalOrder;
@@ -4072,6 +4077,13 @@ void tst_QTableView::taskQTBUG_10169_sizeHintForRow()
 
     //the order of the columns shouldn't matter.
     QCOMPARE(orderedHeight, reorderedHeight);
+}
+
+void tst_QTableView::viewOptions()
+{
+    QtTestTableView view;
+    QStyleOptionViewItem options = view.viewOptions();
+    QVERIFY(options.showDecorationSelected);
 }
 
 QTEST_MAIN(tst_QTableView)

@@ -141,8 +141,8 @@ QT_BEGIN_NAMESPACE
     enter this state. The types of errors possible are described by the
     \l{QStateMachine::}{Error} enum. After the error state is entered,
     the type of the error can be retrieved with error(). The execution
-    of the state graph will not stop when the error state is entered. If 
-    no error state applies to the erroneous state, the machine will stop 
+    of the state graph will not stop when the error state is entered. If
+    no error state applies to the erroneous state, the machine will stop
     executing and an error message will be printed to the console.
 
     \sa QAbstractState, QAbstractTransition, QState, {The State Machine Framework}
@@ -1040,17 +1040,17 @@ QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
         if (errorState == 0)
             errorState = findErrorState(context->parentState());
     }
-    
-    return errorState;   
+
+    return errorState;
 }
 
 void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractState *currentContext)
 {
     Q_Q(QStateMachine);
-    
+
     error = errorCode;
     switch (errorCode) {
-    case QStateMachine::NoInitialStateError:        
+    case QStateMachine::NoInitialStateError:
         Q_ASSERT(currentContext != 0);
 
         errorString = QStateMachine::tr("Missing initial state in compound state '%1'")
@@ -1074,23 +1074,23 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
         errorString = QStateMachine::tr("Unknown error");
     };
 
-    pendingErrorStates.clear(); 
+    pendingErrorStates.clear();
     pendingErrorStatesForDefaultEntry.clear();
 
     QAbstractState *currentErrorState = findErrorState(currentContext);
 
     // Avoid infinite loop if the error state itself has an error
     if (currentContext == currentErrorState)
-        currentErrorState = 0;    
+        currentErrorState = 0;
 
     Q_ASSERT(currentErrorState != rootState());
 
-    if (currentErrorState != 0) {    
+    if (currentErrorState != 0) {
         QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
         addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
         addAncestorStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
     } else {
-        qWarning("Unrecoverable error detected in running state machine: %s", 
+        qWarning("Unrecoverable error detected in running state machine: %s",
                  qPrintable(errorString));
         q->stop();
     }
@@ -1099,7 +1099,7 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
 #ifndef QT_NO_ANIMATION
 
 QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
-QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation, 
+QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
                                           const QPropertyAssignment &prop)
 {
     QList<QAbstractAnimation*> handledAnimations;
@@ -1113,9 +1113,9 @@ QStateMachinePrivate::initializeAnimation(QAbstractAnimation *abstractAnimation,
             handledAnimations << ret.first;
             localResetEndValues << ret.second;
         }
-    } else { 
+    } else {
         QPropertyAnimation *animation = qobject_cast<QPropertyAnimation *>(abstractAnimation);
-        if (animation != 0 
+        if (animation != 0
             && prop.object == animation->targetObject()
             && prop.propertyName == animation->propertyName()) {
 
@@ -1894,7 +1894,7 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 }
 
 void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
-{    
+{
     if (qobjectEvents.value(watched).contains(event->type())) {
         postInternalEvent(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
         processEvents(DirectProcessing);
@@ -1980,24 +1980,24 @@ QStateMachine::~QStateMachine()
   \value HighPriority The event has high priority.
 */
 
-/*! \enum QStateMachine::Error 
+/*! \enum QStateMachine::Error
 
     This enum type defines errors that can occur in the state machine at run time. When the state
-    machine encounters an unrecoverable error at run time, it will set the error code returned 
-    by error(), the error message returned by errorString(), and enter an error state based on 
+    machine encounters an unrecoverable error at run time, it will set the error code returned
+    by error(), the error message returned by errorString(), and enter an error state based on
     the context of the error.
 
     \value NoError No error has occurred.
     \value NoInitialStateError The machine has entered a QState with children which does not have an
            initial state set. The context of this error is the state which is missing an initial
            state.
-    \value NoDefaultStateInHistoryStateError The machine has entered a QHistoryState which does not have 
+    \value NoDefaultStateInHistoryStateError The machine has entered a QHistoryState which does not have
            a default state set. The context of this error is the QHistoryState which is missing a
            default state.
-    \value NoCommonAncestorForTransitionError The machine has selected a transition whose source 
-           and targets are not part of the same tree of states, and thus are not part of the same 
-           state machine. Commonly, this could mean that one of the states has not been given 
-           any parent or added to any machine. The context of this error is the source state of 
+    \value NoCommonAncestorForTransitionError The machine has selected a transition whose source
+           and targets are not part of the same tree of states, and thus are not part of the same
+           state machine. Commonly, this could mean that one of the states has not been given
+           any parent or added to any machine. The context of this error is the source state of
            the transition.
 
     \sa setErrorState()
@@ -2043,9 +2043,9 @@ QState::RestorePolicy QStateMachine::globalRestorePolicy() const
 }
 
 /*!
-   Sets the restore policy of the state machine to \a restorePolicy. The default 
+   Sets the restore policy of the state machine to \a restorePolicy. The default
    restore policy is QState::DontRestoreProperties.
-   
+
    \sa globalRestorePolicy()
 */
 void QStateMachine::setGlobalRestorePolicy(QState::RestorePolicy restorePolicy)
@@ -2437,7 +2437,7 @@ void QStateMachine::onEntry(QEvent *event)
 
 /*!
   \reimp
-    This function will call stop() to stop the state machine and 
+    This function will call stop() to stop the state machine and
     subsequently emit the stopped() signal.
 */
 void QStateMachine::onExit(QEvent *event)
@@ -2468,7 +2468,7 @@ void QStateMachine::setAnimated(bool enabled)
 
 /*!
     Adds a default \a animation to be considered for any transition.
-*/    
+*/
 void QStateMachine::addDefaultAnimation(QAbstractAnimation *animation)
 {
     Q_D(QStateMachine);
@@ -2479,13 +2479,13 @@ void QStateMachine::addDefaultAnimation(QAbstractAnimation *animation)
     Returns the list of default animations that will be considered for any transition.
 */
 QList<QAbstractAnimation*> QStateMachine::defaultAnimations() const
-{    
+{
     Q_D(const QStateMachine);
     return d->defaultAnimations;
 }
 
 /*!
-    Removes \a animation from the list of default animations. 
+    Removes \a animation from the list of default animations.
 */
 void QStateMachine::removeDefaultAnimation(QAbstractAnimation *animation)
 {

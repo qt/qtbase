@@ -1,5 +1,3 @@
-load(qt_build_config)
-
 TARGET     = QtGui
 QT = core-private
 MODULE_CONFIG = opengl

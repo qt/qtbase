@@ -59,6 +59,7 @@ private slots:
     void dayOfYear();
     void daysInMonth_data();
     void daysInMonth();
+    void daysInYear_data();
     void daysInYear();
     void getDate();
     void weekNumber_invalid_data();
@@ -342,6 +343,7 @@ void tst_QDate::daysInMonth_data()
     QTest::newRow("data11") <<  2000 << 11 <<  1 <<  30;
     QTest::newRow("data12") <<  2000 << 12 <<  1 <<  31;
     QTest::newRow("data13") <<  2001 <<  2 <<  1 <<  28;
+    QTest::newRow("data14")  <<  2000 <<  0 <<  1 <<   0;
 }
 
 void tst_QDate::daysInMonth()
@@ -355,16 +357,24 @@ void tst_QDate::daysInMonth()
     QCOMPARE(dt.daysInMonth(), daysInMonth);
 }
 
+void tst_QDate::daysInYear_data()
+{
+    QTest::addColumn<QDate>("date");
+    QTest::addColumn<int>("expectedDaysInYear");
+
+    QTest::newRow("2000, 1, 1") << QDate(2000, 1, 1) << 366;
+    QTest::newRow("2001, 1, 1") << QDate(2001, 1, 1) << 365;
+    QTest::newRow("4, 1, 1") << QDate(4, 1, 1) << 366;
+    QTest::newRow("5, 1, 1") << QDate(5, 1, 1) << 365;
+    QTest::newRow("0, 0, 0") << QDate(0, 0, 0) << 0;
+}
+
 void tst_QDate::daysInYear()
 {
-    QDate dt(2000, 1, 1);
-    QCOMPARE(dt.daysInYear(), 366);
-    dt.setDate(2001, 1, 1);
-    QCOMPARE(dt.daysInYear(), 365);
-    dt.setDate(4, 1, 1);
-    QCOMPARE(dt.daysInYear(), 366);
-    dt.setDate(5, 1, 1);
-    QCOMPARE(dt.daysInYear(), 365);
+    QFETCH(QDate, date);
+    QFETCH(int, expectedDaysInYear);
+
+    QCOMPARE(date.daysInYear(), expectedDaysInYear);
 }
 
 void tst_QDate::getDate()
@@ -399,6 +409,7 @@ void tst_QDate::weekNumber_data()
     QTest::newRow( "data5" )  << 53 << 1998 << 1998 << 12 << 31;
     QTest::newRow( "data6" )  << 1 << 1985 << 1984 << 12 << 31;
     QTest::newRow( "data7" )  << 52 << 2006 << 2006 << 12 << 31;
+    QTest::newRow( "data8" )  << 53 << 2004 << 2005 << 1 << 1;
 }
 
 void tst_QDate::weekNumber()
@@ -539,6 +550,8 @@ void tst_QDate::addDays_data()
 
     QTest::newRow( "data12" ) << -4713 << 1 << 2 << -2 << -4714 << 12 << 31;
     QTest::newRow( "data13" ) << -4713 << 1 << 2 <<  2 << -4713 <<  1 <<  4;
+
+    QTest::newRow( "invalid" ) << 0 << 0 << 0 << 1 << 0 << 0 << 0;
 }
 
 void tst_QDate::addMonths()
@@ -591,6 +604,9 @@ void tst_QDate::addMonths_data()
     QTest::newRow( "data16" ) << 1 << 1 << 1 << -12 << -1 << 1 << 1;
     QTest::newRow( "data17" ) << -1 << 12 << 1 << 1 << 1 << 1 << 1;
     QTest::newRow( "data18" ) << -1 << 1 << 1 << 12 << 1 << 1 << 1;
+    QTest::newRow( "data19" ) << -2 << 1 << 1 << 12 << -1 << 1 << 1;
+
+    QTest::newRow( "invalid" ) << 0 << 0 << 0 << 1 << 0 << 0 << 0;
 }
 
 void tst_QDate::addYears()
@@ -642,6 +658,8 @@ void tst_QDate::addYears_data()
     QTest::newRow( "data17" ) << -2000 << 1 << 1 << 1999 << -1 << 1 << 1;
     QTest::newRow( "data18" ) << -2000 << 1 << 1 << 2000 << 1 << 1 << 1;
     QTest::newRow( "data19" ) << -2000 << 1 << 1 << 2001 << 2 << 1 << 1;
+
+    QTest::newRow( "invalid" ) << 0 << 0 << 0 << 1 << 0 << 0 << 0;
 }
 
 void tst_QDate::daysTo()
@@ -903,36 +921,39 @@ void tst_QDate::operator_insert_extract()
 
 void tst_QDate::fromStringDateFormat_data()
 {
-    // Since we can't define an element of Qt::DateFormat, d1 will be the date
-    // expected when we have a TextDate, and d2 will be the date expected when
-    // we have an ISODate.
+    QTest::addColumn<QString>("dateStr");
+    QTest::addColumn<Qt::DateFormat>("dateFormat");
+    QTest::addColumn<QDate>("expectedDate");
 
-    QTest::addColumn<QString>("str1");
-    QTest::addColumn<QString>("str2");
-    QTest::addColumn<QDate>("d1");
+    QTest::newRow("text0") << QString("Sat May 20 1995") << Qt::TextDate << QDate(1995, 5, 20);
+    QTest::newRow("text1") << QString("Tue Dec 17 2002") << Qt::TextDate << QDate(2002, 12, 17);
+    QTest::newRow("text2") << QDate(1999, 11, 14).toString(Qt::TextDate) << Qt::TextDate << QDate(1999, 11, 14);
+    QTest::newRow("text3") << QString("xxx Jan 1 0999") << Qt::TextDate << QDate(999, 1, 1);
+    QTest::newRow("text3b") << QString("xxx Jan 1 999") << Qt::TextDate << QDate(999, 1, 1);
+    QTest::newRow("text4") << QString("xxx Jan 1 12345") << Qt::TextDate << QDate(12345, 1, 1);
+    QTest::newRow("text5") << QString("xxx Jan 1 -0001") << Qt::TextDate << QDate(-1, 1, 1);
+    QTest::newRow("text6") << QString("xxx Jan 1 -4712") << Qt::TextDate << QDate(-4712, 1, 1);
+    QTest::newRow("text7") << QString("xxx Nov 25 -4713") << Qt::TextDate << QDate(-4713, 11, 25);
+    QTest::newRow("text, empty") << QString() << Qt::TextDate << QDate();
+    QTest::newRow("text, 3 part") << QString("part1 part2 part3") << Qt::TextDate << QDate();
+    QTest::newRow("text, invalid month name") << QString("Wed BabytownFrolics 8 2012") << Qt::TextDate << QDate();
+    QTest::newRow("text, invalid day") << QString("Wed May Wilhelm 2012") << Qt::TextDate << QDate();
+    QTest::newRow("text, invalid year") << QString("Wed May 8 Cats") << Qt::TextDate << QDate();
 
-    QTest::newRow( "data0" ) << QString("Sat May 20 1995") << QString("1995-05-20") << QDate(1995,5,20);
-    QTest::newRow( "data1" ) << QString("Tue Dec 17 2002") << QString("2002-12-17") << QDate(2002,12,17);
-    QDate d( 1999, 11, 14 );
-    QTest::newRow( "data2" ) << d.toString( Qt::TextDate ) << d.toString( Qt::ISODate ) << d;
-
-    QTest::newRow( "data3" ) << QString("xxx Jan 1 0999") << QString("0999-01-01") << QDate(999, 1, 1);
-    QTest::newRow( "data3b" ) << QString("xxx Jan 1 999") << QString("0999-01-01") << QDate(999, 1, 1);
-    QTest::newRow( "data4" ) << QString("xxx Jan 1 12345") << QString() << QDate(12345, 1, 1);
-    QTest::newRow( "data5" ) << QString("xxx Jan 1 -0001") << QString() << QDate(-1, 1, 1);
-    QTest::newRow( "data6" ) << QString("xxx Jan 1 -4712") << QString() << QDate(-4712, 1, 1);
-    QTest::newRow( "data7" ) << QString("xxx Nov 25 -4713") << QString() << QDate(-4713, 11, 25);
+    QTest::newRow("iso0") << QString("1995-05-20") << Qt::ISODate << QDate(1995, 5, 20);
+    QTest::newRow("iso1") << QString("2002-12-17") << Qt::ISODate << QDate(2002, 12, 17);
+    QTest::newRow("iso2") << QDate(1999, 11, 14).toString(Qt::ISODate) << Qt::ISODate << QDate(1999, 11, 14);
+    QTest::newRow("iso3") << QString("0999-01-01") << Qt::ISODate << QDate(999, 1, 1);
+    QTest::newRow("iso3b") << QString("0999-01-01") << Qt::ISODate << QDate(999, 1, 1);
 }
 
 void tst_QDate::fromStringDateFormat()
 {
-    QFETCH( QString, str1 );
-    QFETCH( QString, str2 );
-    QFETCH( QDate, d1 );
+    QFETCH(QString, dateStr);
+    QFETCH(Qt::DateFormat, dateFormat);
+    QFETCH(QDate, expectedDate);
 
-    QCOMPARE( QDate::fromString( str1, Qt::TextDate ), d1 );
-    if (!str2.isEmpty())
-        QCOMPARE( QDate::fromString( str2, Qt::ISODate ), d1 );
+    QCOMPARE(QDate::fromString(dateStr, dateFormat), expectedDate);
 }
 
 void tst_QDate::fromStringFormat_data()
@@ -1050,6 +1071,8 @@ void tst_QDate::toStringDateFormat_data()
     QTest::newRow("data1") << QDate(11,1,1) << Qt::ISODate << QString("0011-01-01");
     QTest::newRow("data2") << QDate(111,1,1) << Qt::ISODate << QString("0111-01-01");
     QTest::newRow("data3") << QDate(1974,12,1) << Qt::ISODate << QString("1974-12-01");
+    QTest::newRow("year < 0") << QDate(-1,1,1) << Qt::ISODate << QString();
+    QTest::newRow("year > 9999") << QDate(-1,1,1) << Qt::ISODate << QString();
 }
 
 void tst_QDate::toStringDateFormat()
@@ -1202,6 +1225,7 @@ void tst_QDate::roundtripGermanLocale() const
 void tst_QDate::shortDayName() const
 {
     QCOMPARE(QDate::shortDayName(0), QString());
+    QCOMPARE(QDate::shortDayName(8), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortDayName(1), QLatin1String("Mon"));
@@ -1217,6 +1241,7 @@ void tst_QDate::shortDayName() const
 void tst_QDate::standaloneShortDayName() const
 {
     QCOMPARE(QDate::shortDayName(0, QDate::StandaloneFormat), QString());
+    QCOMPARE(QDate::shortDayName(8, QDate::StandaloneFormat), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortDayName(1, QDate::StandaloneFormat), QLatin1String("Mon"));
@@ -1232,6 +1257,7 @@ void tst_QDate::standaloneShortDayName() const
 void tst_QDate::longDayName() const
 {
     QCOMPARE(QDate::longDayName(0), QString());
+    QCOMPARE(QDate::longDayName(8), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longDayName(1), QLatin1String("Monday"));
@@ -1247,6 +1273,7 @@ void tst_QDate::longDayName() const
 void tst_QDate::standaloneLongDayName() const
 {
     QCOMPARE(QDate::longDayName(0, QDate::StandaloneFormat), QString());
+    QCOMPARE(QDate::longDayName(8, QDate::StandaloneFormat), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longDayName(1, QDate::StandaloneFormat), QLatin1String("Monday"));
@@ -1262,6 +1289,7 @@ void tst_QDate::standaloneLongDayName() const
 void tst_QDate::shortMonthName() const
 {
     QCOMPARE(QDate::shortMonthName(0), QString());
+    QCOMPARE(QDate::shortMonthName(13), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortMonthName(1), QLatin1String("Jan"));
@@ -1277,6 +1305,7 @@ void tst_QDate::shortMonthName() const
 void tst_QDate::standaloneShortMonthName() const
 {
     QCOMPARE(QDate::shortMonthName(0, QDate::StandaloneFormat), QString());
+    QCOMPARE(QDate::shortMonthName(13, QDate::StandaloneFormat), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::shortMonthName(1, QDate::StandaloneFormat), QLatin1String("Jan"));
@@ -1292,6 +1321,7 @@ void tst_QDate::standaloneShortMonthName() const
 void tst_QDate::longMonthName() const
 {
     QCOMPARE(QDate::longMonthName(0), QString());
+    QCOMPARE(QDate::longMonthName(13), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longMonthName(1), QLatin1String("January"));
@@ -1307,6 +1337,7 @@ void tst_QDate::longMonthName() const
 void tst_QDate::standaloneLongMonthName() const
 {
     QCOMPARE(QDate::longMonthName(0, QDate::StandaloneFormat), QString());
+    QCOMPARE(QDate::longMonthName(13, QDate::StandaloneFormat), QString());
 
     if (QLocale::system().language() == QLocale::C) {
         QCOMPARE(QDate::longMonthName(1, QDate::StandaloneFormat), QLatin1String("January"));

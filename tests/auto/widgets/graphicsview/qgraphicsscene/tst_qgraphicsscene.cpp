@@ -322,7 +322,8 @@ void tst_QGraphicsScene::sceneRect()
     QCOMPARE(scene.sceneRect(), QRectF());
     QCOMPARE(sceneRectChanged.count(), 0);
 
-    QGraphicsItem *item = scene.addRect(QRectF(0, 0, 10, 10));
+    QGraphicsRectItem *item = scene.addRect(QRectF(0, 0, 10, 10));
+    item->setPen(QPen(Qt::black, 0));
     item->setPos(-5, -5);
     QCOMPARE(sceneRectChanged.count(), 0);
 
@@ -458,7 +459,9 @@ void tst_QGraphicsScene::items()
     {
         QGraphicsScene scene;
         QGraphicsLineItem *l1 = scene.addLine(-5, 0, 5, 0);
+        l1->setPen(QPen(Qt::black, 0));
         QGraphicsLineItem *l2 = scene.addLine(0, -5, 0, 5);
+        l2->setPen(QPen(Qt::black, 0));
         QVERIFY(!l1->sceneBoundingRect().intersects(l2->sceneBoundingRect()));
         QVERIFY(!l2->sceneBoundingRect().intersects(l1->sceneBoundingRect()));
         QList<QGraphicsItem *> items;
@@ -533,7 +536,9 @@ void tst_QGraphicsScene::itemsBoundingRect()
     foreach (QRectF rect, rects) {
         QPainterPath path;
         path.addRect(rect);
-        scene.addPath(path)->setMatrix(matrix);
+        QGraphicsPathItem *item = scene.addPath(path);
+        item->setPen(QPen(Qt::black, 0));
+        item->setMatrix(matrix);
     }
 
     QCOMPARE(scene.itemsBoundingRect(), boundingRect);
@@ -597,7 +602,8 @@ void tst_QGraphicsScene::items_QPointF()
         QPainterPath path;
         path.addRect(0, 0, rect.width(), rect.height());
 
-        QGraphicsItem *item = scene.addPath(path);
+        QGraphicsPathItem *item = scene.addPath(path);
+        item->setPen(QPen(Qt::black, 0));
         item->setZValue(n++);
         item->setPos(rect.topLeft());
         addedItems << item;
@@ -1170,6 +1176,9 @@ void tst_QGraphicsScene::addPath()
     QCOMPARE(path->pen(), QPen(Qt::red));
     QCOMPARE(path->path(), p);
     QCOMPARE(path->brush(), QBrush(Qt::blue));
+
+    path->setPen(QPen(Qt::red, 0));
+
     QCOMPARE(scene.itemAt(0, 0), (QGraphicsItem *)path);
     QCOMPARE(scene.itemAt(-9.9, 0), (QGraphicsItem *)path);
     QCOMPARE(scene.itemAt(9.9, 0), (QGraphicsItem *)path);
@@ -1222,6 +1231,9 @@ void tst_QGraphicsScene::addRect()
     QCOMPARE(rect->pen(), QPen(Qt::red));
     QCOMPARE(rect->brush(), QBrush(Qt::blue));
     QCOMPARE(rect->rect(), QRectF(-10, -10, 20, 20));
+
+    rect->setPen(QPen(Qt::red, 0));
+
     QCOMPARE(scene.itemAt(0, 0), (QGraphicsItem *)rect);
     QCOMPARE(scene.itemAt(-10, -10), (QGraphicsItem *)rect);
     QCOMPARE(scene.itemAt(-9.9, 0), (QGraphicsItem *)rect);
@@ -1397,7 +1409,7 @@ void tst_QGraphicsScene::clear()
     QGraphicsScene scene;
     scene.clear();
     QVERIFY(scene.items().isEmpty());
-    scene.addRect(0, 0, 100, 100);
+    scene.addRect(0, 0, 100, 100)->setPen(QPen(Qt::black, 0));
     QCOMPARE(scene.sceneRect(), QRectF(0, 0, 100, 100));
     scene.clear();
     QVERIFY(scene.items().isEmpty());
@@ -2610,8 +2622,8 @@ void tst_QGraphicsScene::render()
 
     QGraphicsView view;
     QGraphicsScene scene(&view);
-    scene.addEllipse(QRectF(-10, -10, 20, 20), QPen(Qt::black), QBrush(Qt::white));
-    scene.addEllipse(QRectF(-2, -7, 4, 4), QPen(Qt::black), QBrush(Qt::yellow))->setZValue(1);
+    scene.addEllipse(QRectF(-10, -10, 20, 20), QPen(Qt::black, 0), QBrush(Qt::white));
+    scene.addEllipse(QRectF(-2, -7, 4, 4), QPen(Qt::black, 0), QBrush(Qt::yellow))->setZValue(1);
     QGraphicsPixmapItem *item = scene.addPixmap(pix);
     item->setZValue(2);
     item->setOffset(QPointF(3, 3));
@@ -2808,6 +2820,7 @@ void tst_QGraphicsScene::update()
     QGraphicsScene scene;
 
     QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 100, 100);
+    rect->setPen(QPen(Qt::black, 0));
     scene.addItem(rect);
     qApp->processEvents();
     rect->setPos(-100, -100);
@@ -3484,6 +3497,7 @@ void tst_QGraphicsScene::task176178_itemIndexMethodBreaksSceneRect()
     QGraphicsScene scene;
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     QGraphicsRectItem *rect = new QGraphicsRectItem;
+    rect->setPen(QPen(Qt::black, 0));
     rect->setRect(0,0,100,100);
     scene.addItem(rect);
     QCOMPARE(scene.sceneRect(), rect->rect());
@@ -3513,11 +3527,11 @@ void tst_QGraphicsScene::task250680_childClip()
 {
     QGraphicsRectItem *clipper = new QGraphicsRectItem;
     clipper->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
-    clipper->setPen(QPen(Qt::green));
+    clipper->setPen(QPen(Qt::green, 0));
     clipper->setRect(200, 200, 640, 480);
 
     QGraphicsRectItem *rect = new QGraphicsRectItem(clipper);
-    rect->setPen(QPen(Qt::red));
+    rect->setPen(QPen(Qt::red, 0));
     rect->setBrush(QBrush(QColor(255, 0, 0, 75)));
     rect->setPos(320, 240);
     rect->setRect(-25, -25, 50, 50);
@@ -3662,6 +3676,7 @@ void tst_QGraphicsScene::changedSignal()
         view = new QGraphicsView(&scene);
 
     QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 10, 10);
+    rect->setPen(QPen(Qt::black, 0));
     scene.addItem(rect);
 
     QCOMPARE(cl.changes.size(), 0);
@@ -4246,13 +4261,13 @@ void tst_QGraphicsScene::siblingIndexAlwaysValid()
 
     // first add the blue rect
     QGraphicsRectItem* const item1 = new QGraphicsRectItem(QRect( 10, 10, 10, 10 ));
-    item1->setPen(QColor(Qt::blue));
+    item1->setPen(QPen(Qt::blue, 0));
     item1->setBrush(Qt::blue);
     scene2.addItem(item1);
 
     // then add the red rect
     QGraphicsRectItem* const item2 = new QGraphicsRectItem(5, 5, 10, 10);
-    item2->setPen(QColor(Qt::red));
+    item2->setPen(QPen(Qt::red, 0));
     item2->setBrush(Qt::red);
     scene2.addItem(item2);
 

@@ -277,8 +277,7 @@ static GdkColor fromQColor(const QColor &color)
     Note: The style requires GTK+ version 2.10 or later.
           The Qt3-based "Qt" GTK+ theme engine will not work with QGtkStyle.
 
-    \sa {Cleanlooks Style Widget Gallery}, QWindowsXPStyle, QMacStyle, QWindowsStyle,
-        QPlastiqueStyle, QCleanlooksStyle
+    \sa QWindowsXPStyle, QMacStyle, QWindowsStyle, QFusionStyle
 */
 
 /*!

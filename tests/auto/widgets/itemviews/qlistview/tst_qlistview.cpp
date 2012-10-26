@@ -55,6 +55,11 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QStyledItemDelegate>
+
+#if !defined(QT_NO_STYLE_WINDOWS)
+#include <qwindowsstyle.h>
+#endif // QT_NO_STYLE_WINDOWS
+
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #  include <windows.h>
 #  include <QtGui/QGuiApplication>
@@ -2190,6 +2195,11 @@ void tst_QListView::taskQTBUG_21804_hiddenItemsAndScrollingWithKeys()
 
     // create listview
     QListView lv;
+#if !defined(QT_NO_STYLE_WINDOWS)
+    // The test fails on Fusion style
+    // See https://bugreports.qt-project.org/browse/QTBUG-27675
+    lv.setStyle(new QWindowsStyle());
+#endif
     lv.setFlow(static_cast<QListView::Flow>(flow));
     lv.setSpacing(spacing);
     lv.setModel(&model);

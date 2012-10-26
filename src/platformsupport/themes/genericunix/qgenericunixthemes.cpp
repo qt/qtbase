@@ -130,7 +130,7 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
         return QVariant(true);
     case QPlatformTheme::StyleNames: {
         QStringList styleNames;
-        styleNames << QStringLiteral("Plastique") << QStringLiteral("Windows");
+        styleNames << QStringLiteral("Fusion") << QStringLiteral("Windows");
         return QVariant(styleNames);
     }
     case QPlatformTheme::KeyboardScheme:
@@ -225,7 +225,7 @@ void QKdeTheme::refresh()
     m_toolButtonStyle = Qt::ToolButtonTextBesideIcon;
     m_toolBarIconSize = 0;
     m_styleNames.clear();
-    m_styleNames << QStringLiteral("Oxygen") << QStringLiteral("plastique") << QStringLiteral("windows");
+    m_styleNames << QStringLiteral("Oxygen") << QStringLiteral("fusion") << QStringLiteral("windows");
     m_iconFallbackThemeName = m_iconThemeName = QStringLiteral("oxygen");
 
     // Read settings file.

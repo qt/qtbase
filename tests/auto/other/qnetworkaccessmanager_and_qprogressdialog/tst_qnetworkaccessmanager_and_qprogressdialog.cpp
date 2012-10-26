@@ -128,7 +128,8 @@ tst_QNetworkAccessManager_And_QProgressDialog::tst_QNetworkAccessManager_And_QPr
 
 void tst_QNetworkAccessManager_And_QProgressDialog::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 }
 
 void tst_QNetworkAccessManager_And_QProgressDialog::downloadCheck_data()

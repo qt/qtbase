@@ -96,6 +96,7 @@ QT_BEGIN_NAMESPACE
 class QWindowsNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
+    Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
 public:
 #ifndef QT_NO_OPENGL
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
@@ -106,6 +107,8 @@ public:
     Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
                                           const QString &windowName,
                                           void *eventProc) const;
+    bool asyncExpose() const;
+    void setAsyncExpose(bool value);
 };
 
 void *QWindowsNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
@@ -181,6 +184,16 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
                                              (wchar_t*)windowName.utf16(),
                                              (WNDPROC)eventProc);
     return hwnd;
+}
+
+bool QWindowsNativeInterface::asyncExpose() const
+{
+    return QWindowsContext::instance()->asyncExpose();
+}
+
+void QWindowsNativeInterface::setAsyncExpose(bool value)
+{
+    QWindowsContext::instance()->setAsyncExpose(value);
 }
 
 /*!
@@ -375,7 +388,7 @@ QPlatformOpenGLContext
             return 0;
         d->m_staticEGLContext = QSharedPointer<QWindowsEGLStaticContext>(staticContext);
     }
-    return new QWindowsEGLContext(d->m_staticEGLContext, context->format(), context->handle());
+    return new QWindowsEGLContext(d->m_staticEGLContext, context->format(), context->shareHandle());
 #else  // QT_OPENGL_ES_2
     if (d->m_staticOpenGLContext.isNull())
         d->m_staticOpenGLContext =

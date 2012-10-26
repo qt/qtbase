@@ -435,7 +435,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
     }
 
     if (pen.style() > Qt::SolidLine) {
-        if (pen.isCosmetic()) {
+        if (qt_pen_is_cosmetic(pen, state()->renderHints)){
             d->activeStroker->setClipRect(d->exDeviceRect);
         } else {
             QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
@@ -462,7 +462,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         flags |= QVectorPath::CurvedShapeMask;
 
     // ### Perspective Xforms are currently not supported...
-    if (!pen.isCosmetic()) {
+    if (!qt_pen_is_cosmetic(pen, state()->renderHints)) {
         // We include cosmetic pens in this case to avoid having to
         // change the current transform. Normal transformed,
         // non-cosmetic pens will be transformed as part of fill

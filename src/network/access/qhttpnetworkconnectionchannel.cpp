@@ -1025,31 +1025,29 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 void QHttpNetworkConnectionChannel::_q_connected()
 {
     // For the Happy Eyeballs we need to check if this is the first channel to connect.
-    if (!pendingEncrypt) {
-        if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
-            if (connection->d_func()->delayedConnectionTimer.isActive())
-                connection->d_func()->delayedConnectionTimer.stop();
-            if (networkLayerPreference == QAbstractSocket::IPv4Protocol)
+    if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::InProgress) {
+        if (connection->d_func()->delayedConnectionTimer.isActive())
+            connection->d_func()->delayedConnectionTimer.stop();
+        if (networkLayerPreference == QAbstractSocket::IPv4Protocol)
+            connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
+        else if (networkLayerPreference == QAbstractSocket::IPv6Protocol)
+            connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
+        else {
+            if (socket->peerAddress().protocol() == QAbstractSocket::IPv4Protocol)
                 connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
-            else if (networkLayerPreference == QAbstractSocket::IPv6Protocol)
+            else
                 connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
-            else {
-                if (socket->peerAddress().protocol() == QAbstractSocket::IPv4Protocol)
-                    connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
-                else
-                    connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
-            }
-            connection->d_func()->networkLayerDetected(networkLayerPreference);
-        } else {
-            if (((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (networkLayerPreference != QAbstractSocket::IPv4Protocol))
-                || ((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (networkLayerPreference != QAbstractSocket::IPv6Protocol))) {
-                close();
-                // This is the second connection so it has to be closed and we can schedule it for another request.
-                QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
-                return;
-            }
-            //The connections networkLayerState had already been decided.
         }
+        connection->d_func()->networkLayerDetected(networkLayerPreference);
+    } else {
+        if (((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4) && (networkLayerPreference != QAbstractSocket::IPv4Protocol))
+            || ((connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv6) && (networkLayerPreference != QAbstractSocket::IPv6Protocol))) {
+            close();
+            // This is the second connection so it has to be closed and we can schedule it for another request.
+            QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
+            return;
+        }
+        //The connections networkLayerState had already been decided.
     }
 
     // improve performance since we get the request sent by the kernel ASAP

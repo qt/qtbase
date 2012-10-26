@@ -1158,7 +1158,8 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
             InvalidateRect(hwnd, 0, false);
         BeginPaint(hwnd, &ps);
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(qrectFromRECT(ps.rcPaint)));
-        QWindowSystemInterface::flushWindowSystemEvents();
+        if (!QWindowsContext::instance()->asyncExpose())
+            QWindowSystemInterface::flushWindowSystemEvents();
 
         EndPaint(hwnd, &ps);
     } else {
@@ -1169,7 +1170,8 @@ bool QWindowsWindow::handleWmPaint(HWND hwnd, UINT message,
             qDebug() << __FUNCTION__ << this << window() << updateRect;
 
         QWindowSystemInterface::handleExposeEvent(window(), QRegion(updateRect));
-        QWindowSystemInterface::flushWindowSystemEvents();
+        if (!QWindowsContext::instance()->asyncExpose())
+            QWindowSystemInterface::flushWindowSystemEvents();
         EndPaint(hwnd, &ps);
     }
     return true;

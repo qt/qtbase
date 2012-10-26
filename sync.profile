@@ -11,6 +11,9 @@
     "QtDBus" => "$basedir/src/dbus",
     "QtConcurrent" => "$basedir/src/concurrent",
     "QtPlatformSupport" => "$basedir/src/platformsupport",
+    "KHR" => "$basedir/src/3rdparty/angle/include/KHR",
+    "GLES2" => "$basedir/src/3rdparty/angle/include/GLES2",
+    "EGL" => "$basedir/src/3rdparty/angle/include/EGL",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );

@@ -144,7 +144,7 @@ void QAdoptedThread::run()
 */
 
 QThreadPrivate::QThreadPrivate(QThreadData *d)
-    : QObjectPrivate(), running(false), finished(false), terminated(false),
+    : QObjectPrivate(), running(false), finished(false),
       isInFinish(false), exited(false), returnCode(-1),
       stackSize(0), priority(QThread::InheritPriority), data(d)
 {
@@ -203,10 +203,9 @@ QThreadPrivate::~QThreadPrivate()
 
     \section1 Managing threads
 
-    QThread will notifiy you via a signal
-    when the thread is started(), finished(), and terminated(), or
-    you can use isFinished() and isRunning() to query the state of
-    the thread.
+    QThread will notifiy you via a signal when the thread is
+    started() and finished(), or you can use isFinished() and
+    isRunning() to query the state of the thread.
 
     You can stop the thread by calling exit() or quit(). In extreme
     cases, you may want to forcibly terminate() an executing thread.
@@ -326,7 +325,7 @@ QThreadPrivate::~QThreadPrivate()
     This signal is emitted from the associated thread when it starts executing,
     before the run() function is called.
 
-    \sa finished(), terminated()
+    \sa finished()
 */
 
 /*!
@@ -341,17 +340,7 @@ QThreadPrivate::~QThreadPrivate()
     \note If the associated thread was terminated using terminate(), it is undefined from
     which thread this signal is emitted.
 
-    \sa started(), terminated()
-*/
-
-/*!
-    \fn void QThread::terminated()
-
-    This signal is emitted when the thread is terminated.
-
-    It is undefined from which thread this signal is emitted.
-
-    \sa started(), finished()
+    \sa started()
 */
 
 /*!
@@ -656,8 +645,8 @@ QThread::Priority QThread::priority() const
 
     Terminates the execution of the thread. The thread may or may not
     be terminated immediately, depending on the operating system's
-    scheduling policies. Listen for the terminated() signal, or use
-    QThread::wait() after terminate(), to be sure.
+    scheduling policies. Use QThread::wait() after terminate(), to be
+    sure.
 
     When the thread is terminated, all threads waiting for the thread
     to finish will be woken up.

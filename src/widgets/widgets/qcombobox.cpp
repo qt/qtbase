@@ -919,7 +919,17 @@ QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
 void QComboBoxPrivate::init()
 {
     Q_Q(QComboBox);
-    q->setFocusPolicy(Qt::WheelFocus);
+#ifdef Q_OS_MAC
+    // On Mac, only line edits and list views always get tab focus. It's only
+    // when we enable full keyboard access that other controls can get tab focus.
+    // When it's not editable, a combobox looks like a button, and it behaves as
+    // such in this respect.
+    if (!q->isEditable())
+        q->setFocusPolicy(Qt::TabFocus);
+    else
+#endif
+        q->setFocusPolicy(Qt::WheelFocus);
+
     q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed,
                                  QSizePolicy::ComboBox));
     setLayoutItemMargins(QStyle::SE_ComboBoxLayoutItem);
@@ -1655,6 +1665,10 @@ void QComboBox::setEditable(bool editable)
         }
         QLineEdit *le = new QLineEdit(this);
         setLineEdit(le);
+#ifdef Q_OS_MAC
+        // See comment in QComboBoxPrivate::init()
+        setFocusPolicy(Qt::WheelFocus);
+#endif
     } else {
         if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
             d->viewContainer()->updateScrollers();
@@ -1664,6 +1678,10 @@ void QComboBox::setEditable(bool editable)
         d->lineEdit->hide();
         d->lineEdit->deleteLater();
         d->lineEdit = 0;
+#ifdef Q_OS_MAC
+        // See comment in QComboBoxPrivate::init()
+        setFocusPolicy(Qt::TabFocus);
+#endif
     }
 
     d->viewContainer()->updateTopBottomMargin();

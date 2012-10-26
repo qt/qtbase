@@ -138,6 +138,9 @@ public:
     static void processTabletLeaveProximityEvent(QWindowSystemInterfacePrivate::TabletLeaveProximityEvent *e);
 
     static void processPlatformPanelEvent(QWindowSystemInterfacePrivate::PlatformPanelEvent *e);
+#ifndef QT_NO_CONTEXTMENU
+    static void processContextMenuEvent(QWindowSystemInterfacePrivate::ContextMenuEvent *e);
+#endif
 
 #ifndef QT_NO_DRAGANDDROP
     static QPlatformDragQtResponse processDrag(QWindow *w, const QMimeData *dropData, const QPoint &p, Qt::DropActions supportedActions);

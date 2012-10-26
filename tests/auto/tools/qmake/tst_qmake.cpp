@@ -92,6 +92,7 @@ private slots:
     void includefunction();
     void substitutes();
     void project();
+    void proFileCache();
 
 private:
     TestCompiler test_compiler;
@@ -544,6 +545,12 @@ void tst_qmake::project()
     QVERIFY( test_compiler.exists( workDir, "project", Exe, "" ));
     QVERIFY( test_compiler.makeDistClean( workDir ));
     QVERIFY( test_compiler.removeProject( workDir, "project" ));
+}
+
+void tst_qmake::proFileCache()
+{
+    QString workDir = base_path + "/testdata/pro_file_cache";
+    QVERIFY( test_compiler.qmake( workDir, "pro_file_cache" ));
 }
 
 QTEST_MAIN(tst_qmake)

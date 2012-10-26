@@ -299,10 +299,8 @@ void tst_QProgressBar::task245201_testChangeStyleAndDelete_data()
     QTest::addColumn<QString>("style1_str");
     QTest::addColumn<QString>("style2_str");
 
-    QTest::newRow("plastique-windows") << QString::fromLatin1("plastique") << QString::fromLatin1("windows");
-    QTest::newRow("mlotif-windows") << QString::fromLatin1("motif") << QString::fromLatin1("windows");
-    QTest::newRow("cleanlooks-cde") << QString::fromLatin1("cleanlooks") << QString::fromLatin1("cde");
-    QTest::newRow("gtk-plastique") << QString::fromLatin1("gtk") << QString::fromLatin1("plastique");
+    QTest::newRow("fusion-windows") << QString::fromLatin1("fusion") << QString::fromLatin1("windows");
+    QTest::newRow("gtk-fusion") << QString::fromLatin1("gtk") << QString::fromLatin1("fusion");
 }
 
 void tst_QProgressBar::task245201_testChangeStyleAndDelete()

@@ -41,8 +41,9 @@
 
 //#define QPROCESS_DEBUG
 
-#if defined QPROCESS_DEBUG
 #include <qdebug.h>
+#include <qdir.h>
+#if defined QPROCESS_DEBUG
 #include <qstring.h>
 #include <ctype.h>
 #if !defined(Q_OS_WINCE)
@@ -1147,7 +1148,8 @@ QProcess::~QProcess()
 {
     Q_D(QProcess);
     if (d->processState != NotRunning) {
-        qWarning("QProcess: Destroyed while process is still running.");
+        qWarning().nospace()
+            << "QProcess: Destroyed while process (" << QDir::toNativeSeparators(program()) << ") is still running.";
         kill();
         waitForFinished();
     }

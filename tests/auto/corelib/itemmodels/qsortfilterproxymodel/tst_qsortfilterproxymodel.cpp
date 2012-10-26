@@ -1473,7 +1473,7 @@ void tst_QSortFilterProxyModel::filterCurrent()
 
     view.show();
     view.setModel(&proxy);
-    QSignalSpy spy(view.selectionModel(), SIGNAL(currentChanged(QModelIndex, QModelIndex)));
+    QSignalSpy spy(view.selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)));
     QVERIFY(spy.isValid());
 
     view.setCurrentIndex(proxy.index(0, 0));
@@ -1594,10 +1594,10 @@ void tst_QSortFilterProxyModel::removeSourceRows()
         proxy.sort(0, static_cast<Qt::SortOrder>(sortOrder));
     (void)proxy.rowCount(QModelIndex()); // force mapping
 
-    QSignalSpy removeSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex, int, int)));
-    QSignalSpy insertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
-    QSignalSpy aboutToRemoveSpy(&proxy, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)));
-    QSignalSpy aboutToInsertSpy(&proxy, SIGNAL(rowsAboutToBeInserted(QModelIndex, int, int)));
+    QSignalSpy removeSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy insertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
+    QSignalSpy aboutToRemoveSpy(&proxy, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    QSignalSpy aboutToInsertSpy(&proxy, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
 
     QVERIFY(removeSpy.isValid());
     QVERIFY(insertSpy.isValid());
@@ -1775,8 +1775,8 @@ void tst_QSortFilterProxyModel::changeFilter()
     proxy.sort(0, static_cast<Qt::SortOrder>(sortOrder));
     (void)proxy.rowCount(QModelIndex()); // force mapping
 
-    QSignalSpy initialRemoveSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex, int, int)));
-    QSignalSpy initialInsertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
+    QSignalSpy initialRemoveSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy initialInsertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
 
     QVERIFY(initialRemoveSpy.isValid());
     QVERIFY(initialInsertSpy.isValid());
@@ -1799,8 +1799,8 @@ void tst_QSortFilterProxyModel::changeFilter()
         QCOMPARE(proxy.data(index, Qt::DisplayRole).toString(), initialProxyItems.at(i));
     }
 
-    QSignalSpy finalRemoveSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex, int, int)));
-    QSignalSpy finalInsertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
+    QSignalSpy finalRemoveSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy finalInsertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
 
     QVERIFY(finalRemoveSpy.isValid());
     QVERIFY(finalInsertSpy.isValid());
@@ -1950,8 +1950,8 @@ void tst_QSortFilterProxyModel::changeSourceData()
 
     proxy.setFilterRegExp(filter);
 
-    QSignalSpy removeSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex, int, int)));
-    QSignalSpy insertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex, int, int)));
+    QSignalSpy removeSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy insertSpy(&proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
 
     QVERIFY(removeSpy.isValid());
     QVERIFY(insertSpy.isValid());
@@ -2049,7 +2049,7 @@ void tst_QSortFilterProxyModel::selectionFilteredOut()
 
     view.show();
     view.setModel(&proxy);
-    QSignalSpy spy(view.selectionModel(), SIGNAL(currentChanged(QModelIndex, QModelIndex)));
+    QSignalSpy spy(view.selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)));
     QVERIFY(spy.isValid());
 
     view.setCurrentIndex(proxy.index(0, 0));
@@ -2164,8 +2164,8 @@ void tst_QSortFilterProxyModel::insertIntoChildrenlessItem()
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
 
-    QSignalSpy colsInsertedSpy(&proxy, SIGNAL(columnsInserted(const QModelIndex&, int, int)));
-    QSignalSpy rowsInsertedSpy(&proxy, SIGNAL(rowsInserted(const QModelIndex&, int, int)));
+    QSignalSpy colsInsertedSpy(&proxy, SIGNAL(columnsInserted(QModelIndex,int,int)));
+    QSignalSpy rowsInsertedSpy(&proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
 
     QVERIFY(colsInsertedSpy.isValid());
     QVERIFY(rowsInsertedSpy.isValid());
@@ -2244,7 +2244,7 @@ void tst_QSortFilterProxyModel::insertRowIntoFilteredParent()
     EvenOddFilterModel proxy;
     proxy.setSourceModel(&model);
 
-    QSignalSpy spy(&proxy, SIGNAL(rowsInserted(const QModelIndex&, int, int)));
+    QSignalSpy spy(&proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
     QVERIFY(spy.isValid());
 
     QStandardItem *itemA = new QStandardItem();
@@ -2273,8 +2273,8 @@ void tst_QSortFilterProxyModel::filterOutParentAndFilterInChild()
     QStandardItem *itemC = new QStandardItem("C");
     itemA->appendRow(itemC); // filtered
 
-    QSignalSpy removedSpy(&proxy, SIGNAL(rowsRemoved(const QModelIndex&, int, int)));
-    QSignalSpy insertedSpy(&proxy, SIGNAL(rowsInserted(const QModelIndex&, int, int)));
+    QSignalSpy removedSpy(&proxy, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy insertedSpy(&proxy, SIGNAL(rowsInserted(QModelIndex,int,int)));
 
     QVERIFY(removedSpy.isValid());
     QVERIFY(insertedSpy.isValid());

@@ -53,9 +53,6 @@
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
-#if !defined(QT_NO_STYLE_CLEANLOOKS)
-#include <QCleanlooksStyle>
-#endif
 
 #define CONVENIENCE_FUNC_SYMS(func) \
     { \

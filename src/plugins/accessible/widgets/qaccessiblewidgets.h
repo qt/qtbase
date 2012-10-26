@@ -64,6 +64,7 @@ class QAbstractItemView;
 class QDockWidget;
 class QDockWidgetLayout;
 class QMainWindow;
+class QPlainTextEdit;
 class QTextCursor;
 class QTextDocument;
 
@@ -111,7 +112,7 @@ public:
 protected:
     QTextCursor textCursorForRange(int startOffset, int endOffset) const;
     QPair<int, int> getBoundaries(int offset, QAccessible2::BoundaryType boundaryType) const;
-    virtual QPoint scrollBarsCurrentPosition() const;
+    virtual QPoint scrollBarPosition() const;
     virtual QTextCursor textCursor() const = 0;
     virtual void setTextCursor(const QTextCursor &) = 0;
     virtual QTextDocument *textDocument() const = 0;
@@ -120,6 +121,29 @@ protected:
 #endif  //QT_NO_CURSOR
 
 #ifndef QT_NO_TEXTEDIT
+class QAccessiblePlainTextEdit : public QAccessibleTextWidget
+{
+public:
+    explicit QAccessiblePlainTextEdit(QWidget *o);
+
+    QString text(QAccessible::Text t) const;
+    void setText(QAccessible::Text t, const QString &text);
+    QAccessible::State state() const;
+
+    void *interface_cast(QAccessible::InterfaceType t);
+
+    // QAccessibleTextInterface
+    void scrollToSubstring(int startIndex, int endIndex);
+protected:
+    QPlainTextEdit *plainTextEdit() const;
+
+    QPoint scrollBarPosition() const;
+    QTextCursor textCursor() const;
+    void setTextCursor(const QTextCursor &textCursor);
+    QTextDocument *textDocument() const;
+    QWidget *viewport() const;
+};
+
 class QAccessibleTextEdit : public QAccessibleTextWidget
 {
 public:
@@ -137,13 +161,11 @@ public:
 protected:
     QTextEdit *textEdit() const;
 
-    QPoint scrollBarsCurrentPosition() const;
+    QPoint scrollBarPosition() const;
     QTextCursor textCursor() const;
     void setTextCursor(const QTextCursor &textCursor);
     QTextDocument *textDocument() const;
     QWidget *viewport() const;
-private:
-    int childOffset;
 };
 #endif // QT_NO_TEXTEDIT
 

@@ -771,7 +771,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     } else if (pen_style != Qt::NoPen) {
         if (!d->dashStroker)
             d->dashStroker.reset(new QDashStroker(&d->basicStroker));
-        if (pen.isCosmetic()) {
+        if (qt_pen_is_cosmetic(pen, s->renderHints)) {
             d->dashStroker->setClipRect(d->deviceRect);
         } else {
             // ### I've seen this inverted devrect multiple places now...
@@ -786,10 +786,11 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     }
 
     ensureRasterState(); // needed because of tx_noshear...
+    bool cosmetic = qt_pen_is_cosmetic(pen, s->renderHints);
     s->flags.fast_pen = pen_style > Qt::NoPen
             && s->penData.blend
-            && ((pen.isCosmetic() && penWidth <= 1)
-                || (!pen.isCosmetic() && s->flags.tx_noshear && penWidth * s->txscale <= 1));
+            && ((cosmetic && penWidth <= 1)
+                || (!cosmetic && s->flags.tx_noshear && penWidth * s->txscale <= 1));
 
     s->flags.non_complex_pen = qpen_capStyle(s->lastPen) <= Qt::SquareCap && s->flags.tx_noshear;
 
@@ -1610,7 +1611,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         stroker.drawPath(path);
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
-        qreal width = s->lastPen.isCosmetic()
+        qreal width = qt_pen_is_cosmetic(s->lastPen, s->renderHints)
                       ? (qpen_widthf(s->lastPen) == 0 ? 1 : qpen_widthf(s->lastPen))
                       : qpen_widthf(s->lastPen) * s->txscale;
         int dashIndex = 0;
@@ -2786,7 +2787,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
 
             alphaPenBlt(alphaMap->bits(), alphaMap->bytesPerLine(), alphaMap->depth(),
                         qFloor(positions[i].x) + offset.x(),
-                        qFloor(positions[i].y) + offset.y(),
+                        qRound(positions[i].y) + offset.y(),
                         alphaMap->width(), alphaMap->height());
 
             fontEngine->unlockAlphaMapForGlyph();
@@ -2817,7 +2818,6 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             rightShift = 3; // divide by 8
 
         int margin = fontEngine->glyphMargin(glyphType);
-        const QFixed offs = s->flags.legacy_rounding ? QFixed::fromReal(aliasedCoordinateDelta) : QFixed();
         const uchar *bits = image.bits();
         for (int i=0; i<numGlyphs; ++i) {
 
@@ -2828,7 +2828,7 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
                 continue;
 
             int x = qFloor(positions[i].x) + c.baseLineX - margin;
-            int y = qFloor(positions[i].y + offs) - c.baseLineY - margin;
+            int y = qRound(positions[i].y) - c.baseLineY - margin;
 
             // printf("drawing [%d %d %d %d] baseline [%d %d], glyph: %d, to: %d %d, pos: %d %d\n",
             //        c.x, c.y,

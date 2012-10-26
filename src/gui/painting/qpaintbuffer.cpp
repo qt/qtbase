@@ -680,7 +680,7 @@ void QPaintBufferEngine::penChanged()
         } else {
             qreal penWidth = (pen.widthF() == 0) ? 1 : pen.widthF();
             QPointF transformedWidth(penWidth, penWidth);
-            if (!pen.isCosmetic())
+            if (!qt_pen_is_cosmetic(pen, state()->renderHints))
                 transformedWidth = painter()->transform().map(transformedWidth);
             buffer->penWidthAdjustment = transformedWidth.x() / 2.0;
         }

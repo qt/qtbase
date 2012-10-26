@@ -1904,7 +1904,20 @@ QVariant operator+(const QVariant &arg1, const QVariant &arg2)
         qWarning("QAbstractSpinBox: Internal error: Different types (%s vs %s) (%s:%d)",
                  arg1.typeName(), arg2.typeName(), __FILE__, __LINE__);
     switch (arg1.type()) {
-    case QVariant::Int: ret = QVariant(arg1.toInt() + arg2.toInt()); break;
+    case QVariant::Int: {
+        const int int1 = arg1.toInt();
+        const int int2 = arg2.toInt();
+        if (int1 > 0 && (int2 >= INT_MAX - int1)) {
+            // The increment overflows
+            ret = QVariant(INT_MAX);
+        } else if (int1 < 0 && (int2 <= INT_MIN - int1)) {
+            // The increment underflows
+            ret = QVariant(INT_MIN);
+        } else {
+            ret = QVariant(int1 + int2);
+        }
+        break;
+    }
     case QVariant::Double: ret = QVariant(arg1.toDouble() + arg2.toDouble()); break;
     case QVariant::DateTime: {
         QDateTime a2 = arg2.toDateTime();
@@ -1962,7 +1975,9 @@ QVariant operator*(const QVariant &arg1, double multiplier)
     QVariant ret;
 
     switch (arg1.type()) {
-    case QVariant::Int: ret = QVariant((int)(arg1.toInt() * multiplier)); break;
+    case QVariant::Int:
+        ret = static_cast<int>(qBound<double>(INT_MIN, arg1.toInt() * multiplier, INT_MAX));
+        break;
     case QVariant::Double: ret = QVariant(arg1.toDouble() * multiplier); break;
     case QVariant::DateTime: {
         double days = QDATETIMEEDIT_DATE_MIN.daysTo(arg1.toDateTime().date()) * multiplier;
