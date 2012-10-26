@@ -183,13 +183,25 @@ BEGIN {
         }
         ovalue = ovalue values[var]
     }
-    ovalue = ovalue value
+    value = ovalue value
+
+    ovalue = ""
+    while (match(value, /\$\$system\((.*?)\)/)) {
+        ovalue = ovalue substr(value, 1, RSTART - 1)
+        cmd = substr(value, RSTART + 9, RLENGTH - 10)
+        value = substr(value, RSTART + RLENGTH)
+        while ((cmd | getline line) > 0) {
+            ovalue = ovalue line
+        }
+        close(cmd)
+    }
+    value = ovalue value
 
     combinedValue = values[variable]
     if (append == 1 && length(combinedValue) > 0) {
-        combinedValue = combinedValue " " ovalue
+        combinedValue = combinedValue " " value
     } else {
-        combinedValue = ovalue
+        combinedValue = value
     }
     values[variable] = combinedValue
 }
