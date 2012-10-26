@@ -1094,6 +1094,13 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
 
                 int isActive = iface->state().active;
                 notifyStateChange(iface, QLatin1String("active"), isActive);
+            } else if (stateChange.disabled) {
+                QAIPointer iface = QAIPointer(event->accessibleInterface());
+                QAccessible::State state = iface->state();
+                bool enabled = !state.disabled;
+
+                notifyStateChange(iface, QLatin1String("enabled"), enabled);
+                notifyStateChange(iface, QLatin1String("sensitive"), enabled);
             }
         }
         break;
