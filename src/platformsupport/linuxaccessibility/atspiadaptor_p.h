@@ -111,6 +111,8 @@ private:
     QString pathForInterface(const QAIPointer &interface, bool inDestructor = false) const;
     QString pathForObject(QObject *object) const;
 
+    void notifyStateChange(const QAIPointer& interface, const QString& state, int value);
+
     // accessible helper functions
     AtspiRole getRole(const QAIPointer &interface) const;
     QSpiRelationArray relationSet(const QAIPointer &interface, const QDBusConnection &connection) const;

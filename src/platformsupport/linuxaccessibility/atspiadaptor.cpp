@@ -904,6 +904,14 @@ QAIPointer AtSpiAdaptor::interfaceFromPath(const QString& dbusPath) const
     return QAIPointer();
 }
 
+void AtSpiAdaptor::notifyStateChange(const QAIPointer &interface, const QString &state, int value)
+{
+    QString path = pathForInterface(interface);
+    QVariantList stateArgs = packDBusSignalArguments(state, value, 0, variantForPath(path));
+    sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
+                    QLatin1String("StateChanged"), stateArgs);
+}
+
 
 /*!
     This function gets called when Qt notifies about accessibility updates.
@@ -920,19 +928,13 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         break;
     case QAccessible::ObjectShow: {
         if (sendObject || sendObject_state_changed) {
-            QString path = pathForInterface(QAIPointer(event->accessibleInterface()));
-            QVariantList stateArgs = packDBusSignalArguments(QLatin1String("showing"), 1, 0, variantForPath(path));
-            sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
-                           QLatin1String("StateChanged"), stateArgs);
+            notifyStateChange(QAIPointer(event->accessibleInterface()), QLatin1String("showing"), 1);
         }
         break;
     }
     case QAccessible::ObjectHide: {
         if (sendObject || sendObject_state_changed) {
-            QString path = pathForInterface(QAIPointer(event->accessibleInterface()));
-            QVariantList stateArgs = packDBusSignalArguments(QLatin1String("showing"), 0, 0, variantForPath(path));
-            sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
-                           QLatin1String("StateChanged"), stateArgs);
+            notifyStateChange(QAIPointer(event->accessibleInterface()), QLatin1String("showing"), 0);
         }
         break;
     }
@@ -1076,10 +1078,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
             if (stateChange.checked) {
                 QAIPointer iface = QAIPointer(event->accessibleInterface());
                 int checked = iface->state().checked;
-                QString path = pathForInterface(iface);
-                QVariantList args = packDBusSignalArguments(QLatin1String("checked"), checked, 0, variantForPath(path));
-                sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
-                               QLatin1String("StateChanged"), args);
+                notifyStateChange(iface, QLatin1String("checked"), checked);
             } else if (stateChange.active) {
                 QAIPointer iface = QAIPointer(event->accessibleInterface());
                 if (!(iface->role() == QAccessible::Window && (sendWindow || sendWindow_activate)))
@@ -1093,9 +1092,8 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
                 QString path = pathForInterface(iface);
                 sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_WINDOW), status, args);
 
-                QVariantList stateArgs = packDBusSignalArguments(QLatin1String("active"), iface->state().active ? 1 : 0, 0, variantForPath(path));
-                sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
-                               QLatin1String("StateChanged"), stateArgs);
+                int isActive = iface->state().active;
+                notifyStateChange(iface, QLatin1String("active"), isActive);
             }
         }
         break;
