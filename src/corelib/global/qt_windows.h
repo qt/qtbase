@@ -46,17 +46,17 @@
 // Borland's windows.h does not set these correctly, resulting in
 // unusable WinSDK standard dialogs
 #ifndef WINVER
-#define WINVER 0x400
+#  define WINVER 0x0501
 #endif
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x400
+#  define _WIN32_WINNT 0x0501
 #endif
 #endif
 
 #if defined(Q_CC_MINGW)
 // mingw's windows.h does not set _WIN32_WINNT, resulting breaking compilation
 #ifndef WINVER
-#define WINVER 0x500
+#  define WINVER 0x501
 #endif
 #endif
 
@@ -64,6 +64,13 @@
 #  define NOMINMAX
 #endif
 #include <windows.h>
+
+#if defined(_WIN32_IE) && _WIN32_IE < 0x0501
+#  undef _WIN32_IE
+#endif
+#if !defined(_WIN32_IE)
+#  define _WIN32_IE 0x0501
+#endif
 
 #ifdef _WIN32_WCE
 #include <ceconfig.h>

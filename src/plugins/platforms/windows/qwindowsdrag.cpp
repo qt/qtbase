@@ -718,9 +718,6 @@ QWindowsOleDropTarget::Drop(LPDATAOBJECT pDataObj, DWORD grfKeyState,
     return NOERROR;
 }
 
-#if defined(Q_CC_MINGW) && !defined(_WIN32_IE)
-# define _WIN32_IE 0x0501
-#endif
 
 /*!
     \class QWindowsDrag
