@@ -118,8 +118,6 @@ win32 {
             } else {
                 SOURCES += io/qstandardpaths_unix.cpp
             }
-        } else:standardpathsjson {
-            SOURCES += io/qstandardpaths_json.cpp
         } else:blackberry {
             SOURCES += io/qstandardpaths_blackberry.cpp
         } else {
