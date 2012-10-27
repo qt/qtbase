@@ -192,13 +192,10 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
         case QVariant::ByteArray:
         case QVariant::Color:
             return data.toByteArray();
-            break;
         case QVariant::String:
             return data.toString().toUtf8();
-            break;
         case QVariant::Url:
             return data.toUrl().toEncoded();
-            break;
         case QVariant::List: {
             // has to be list of URLs
             QByteArray result;

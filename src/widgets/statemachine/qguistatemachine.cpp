@@ -69,7 +69,6 @@ static QEvent *cloneEvent(QEvent *e)
         return new QEvent(*e);
     case QEvent::Leave:
         return new QEvent(*e);
-        break;
     case QEvent::Paint:
         Q_ASSERT_X(false, "cloneEvent()", "not implemented");
         break;

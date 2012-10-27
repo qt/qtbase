@@ -4915,43 +4915,33 @@ int QImage::metric(PaintDeviceMetric metric) const
     switch (metric) {
     case PdmWidth:
         return d->width;
-        break;
 
     case PdmHeight:
         return d->height;
-        break;
 
     case PdmWidthMM:
         return qRound(d->width * 1000 / d->dpmx);
-        break;
 
     case PdmHeightMM:
         return qRound(d->height * 1000 / d->dpmy);
-        break;
 
     case PdmNumColors:
         return d->colortable.size();
-        break;
 
     case PdmDepth:
         return d->depth;
-        break;
 
     case PdmDpiX:
         return qRound(d->dpmx * 0.0254);
-        break;
 
     case PdmDpiY:
         return qRound(d->dpmy * 0.0254);
-        break;
 
     case PdmPhysicalDpiX:
         return qRound(d->dpmx * 0.0254);
-        break;
 
     case PdmPhysicalDpiY:
         return qRound(d->dpmy * 0.0254);
-        break;
 
     default:
         qWarning("QImage::metric(): Unhandled metric type %d", metric);

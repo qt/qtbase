@@ -2777,7 +2777,6 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                     return widget->style()->subElementRect(QStyle::SE_FrameContents, opt, widget);
                 else
                     return subElementRect(QStyle::SE_FrameContents, opt, widget);
-                break;
 
             case QFrame::WinPanel:
                 frameWidth = 2;

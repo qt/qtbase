@@ -1630,7 +1630,6 @@ QPainterPath QPathClipper::clip(Operation operation)
                         result.addRect(subjectBounds);
                         return result;
                     }
-                    break;
                 case BoolAnd:
                     return clipPath;
                 case BoolOr:

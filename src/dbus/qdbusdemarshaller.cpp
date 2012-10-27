@@ -300,7 +300,6 @@ QVariant QDBusDemarshaller::toVariantInternal()
 
         // I hope you never dereference this pointer!
         return QVariant::fromValue<void *>(ptr);
-        break;
     };
 }
 

@@ -296,7 +296,6 @@ bool QHttpNetworkConnectionChannel::sendRequest()
                 // premature eof happened
                 connection->d_func()->emitReplyError(socket, reply, QNetworkReply::UnknownNetworkError);
                 return false;
-                break;
             } else if (readPointer == 0 || currentReadSize == 0) {
                 // nothing to read currently, break the loop
                 break;
