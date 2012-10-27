@@ -102,7 +102,6 @@ QT_BEGIN_NAMESPACE
   All PNG files load to the minimal QImage equivalent.
 
   All QImage formats output to reasonably efficient PNG equivalents.
-  Never to grayscale.
 */
 
 class QPngHandlerPrivate
@@ -834,8 +833,12 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, vo
 
 
     int color_type = 0;
-    if (image.colorCount())
-        color_type = PNG_COLOR_TYPE_PALETTE;
+    if (image.colorCount()) {
+        if (image.isGrayscale())
+            color_type = PNG_COLOR_TYPE_GRAY;
+        else
+            color_type = PNG_COLOR_TYPE_PALETTE;
+    }
     else if (image.hasAlphaChannel())
         color_type = PNG_COLOR_TYPE_RGB_ALPHA;
     else
@@ -852,7 +855,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image, vo
     if (image.format() == QImage::Format_MonoLSB)
        png_set_packswap(png_ptr);
 
-    if (image.colorCount()) {
+    if (color_type == PNG_COLOR_TYPE_PALETTE) {
         // Paletted
         int num_palette = qMin(256, image.colorCount());
         png_color palette[256];
