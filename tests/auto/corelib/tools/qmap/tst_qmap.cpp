@@ -55,6 +55,7 @@ protected:
 public slots:
     void init();
 private slots:
+    void ctor();
     void count();
     void clear();
     void beginEnd();
@@ -145,6 +146,30 @@ void tst_QMap::init()
 {
     MyClass::count = 0;
 }
+
+void tst_QMap::ctor()
+{
+    std::map<int, int> map;
+    for (int i = 0; i < 100000; ++i)
+        map.insert(std::pair<int, int>(i * 3, i * 7));
+
+    QMap<int, int> qmap(map); // ctor.
+
+    // Check that we have the same
+    std::map<int, int>::iterator j = map.begin();
+    QMap<int, int>::const_iterator i = qmap.constBegin();
+
+    while (i != qmap.constEnd()) {
+        QCOMPARE( (*j).first, i.key());
+        QCOMPARE( (*j).second, i.value());
+        ++i;
+        ++j;
+    }
+
+    QCOMPARE( (int) map.size(), qmap.size());
+}
+
+
 
 void tst_QMap::count()
 {

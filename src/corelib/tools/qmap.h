@@ -939,7 +939,7 @@ Q_OUTOFLINE_TEMPLATE QMap<Key, T>::QMap(const std::map<Key, T> &other)
     typename std::map<Key,T>::const_iterator it = other.end();
     while (it != other.begin()) {
         --it;
-        insert((*it).first, (*it).second);
+        d->createNode((*it).first, (*it).second, d->begin(), true); // insert on most left node.
     }
 }
 

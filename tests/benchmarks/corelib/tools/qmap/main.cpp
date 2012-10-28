@@ -62,6 +62,8 @@ private slots:
     void iteration();
     void toStdMap();
     void iterator_begin();
+
+    void ctorStdMap();
 };
 
 
@@ -188,6 +190,19 @@ void tst_QMap::iterator_begin()
         }
     }
 }
+
+void tst_QMap::ctorStdMap()
+{
+    std::map<int, int> map;
+    for (int i = 0; i < 100000; ++i)
+        map.insert(std::pair<int, int>(i, i));
+
+    QBENCHMARK {
+        QMap<int, int> qmap(map);
+        qmap.constBegin();
+    }
+}
+
 
 QTEST_MAIN(tst_QMap)
 
