@@ -172,13 +172,6 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
                          (can occur for a Line boundary type only).
   \value SoftHyphen  The boundary finder is at the soft hyphen
                      (can occur for a Line boundary type only).
-
-  \value StartWord  Deprecated since 5.0. Use StartOfItem instead.
-                    The boundary finder is at the start of a word.
-                    (can occur for a Word boundary type only).
-  \value EndWord  Deprecated since 5.0. Use EndOfItem instead.
-                  The boundary finder is at the end of a word.
-                  (can occur for a Word boundary type only).
 */
 
 /*!
@@ -496,9 +489,9 @@ QTextBoundaryFinder::BoundaryReasons QTextBoundaryFinder::boundaryReasons() cons
         if (attr.wordBreak) {
             reasons |= BreakOpportunity;
             if (attr.wordStart)
-                reasons |= StartOfItem | StartWord;
+                reasons |= StartOfItem;
             if (attr.wordEnd)
-                reasons |= EndOfItem | EndWord;
+                reasons |= EndOfItem;
         }
         break;
     case Sentence:

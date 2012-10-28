@@ -73,10 +73,7 @@ public:
         StartOfItem = 0x20,
         EndOfItem = 0x40,
         MandatoryBreak = 0x80,
-        SoftHyphen = 0x100,
-        // ### Qt6: remove
-        StartWord = 0x1000,
-        EndWord = 0x2000
+        SoftHyphen = 0x100
     };
     Q_DECLARE_FLAGS( BoundaryReasons, BoundaryReason )
 
