@@ -22,7 +22,11 @@ win32-msvc2012 {
         DXLIB_DIR = $$quote($${DX_DIR}Lib\\x86)
     }
 
-    FXC = "\"$${DX_DIR}Utilities\\bin\\x86\\fxc.exe\""
+    equals(QMAKE_TARGET.arch, x86_64) {
+        FXC = "\"$${DX_DIR}Utilities\\bin\\x64\\fxc.exe\""
+    } else {
+        FXC = "\"$${DX_DIR}Utilities\\bin\\x86\\fxc.exe\""
+    }
 
     msvc {
         # Unfortunately MinGW cannot use the DirectX headers from the DX SDK because d3d11shader.h uses
