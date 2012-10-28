@@ -92,7 +92,7 @@ private:
 };
 
 
-class tst_QtAtSpi : public QObject
+class tst_QAccessibilityLinux : public QObject
 {
     Q_OBJECT
 
@@ -126,7 +126,7 @@ private:
 };
 
 // helper to find children of a dbus object
-QStringList tst_QtAtSpi::getChildren(QDBusInterface *interface)
+QStringList tst_QAccessibilityLinux::getChildren(QDBusInterface *interface)
 {
     QSpiObjectReferenceArray list;
     interface->call(QDBus::Block, "GetChildren").arguments().first().value<QDBusArgument>() >> list;
@@ -140,7 +140,7 @@ QStringList tst_QtAtSpi::getChildren(QDBusInterface *interface)
     return children;
 }
 
-QString tst_QtAtSpi::getParent(QDBusInterface *interface)
+QString tst_QAccessibilityLinux::getParent(QDBusInterface *interface)
 {
     if (!interface->isValid())
         return QString();
@@ -155,18 +155,18 @@ QString tst_QtAtSpi::getParent(QDBusInterface *interface)
 }
 
 // helper to get dbus object
-QDBusInterface *tst_QtAtSpi::getInterface(const QString &path, const QString &interfaceName)
+QDBusInterface *tst_QAccessibilityLinux::getInterface(const QString &path, const QString &interfaceName)
 {
     return new QDBusInterface(address, path, interfaceName, dbus.connection(), this);
 }
 
 
-void tst_QtAtSpi::initTestCase()
+void tst_QAccessibilityLinux::initTestCase()
 {
     // Oxygen style creates many extra items, it's simply unusable here
     qDebug() << "Using fusion style...";
     qApp->setStyle("fusion");
-    qApp->setApplicationName("tst_QtAtSpi app");
+    qApp->setApplicationName("tst_QAccessibilityLinux app");
     dbus = DBusConnection();
 
     m_window = new AccessibleTestWindow();
@@ -186,7 +186,7 @@ void tst_QtAtSpi::initTestCase()
     mainWindow = getInterface(window, "org.a11y.atspi.Accessible");
 }
 
-void tst_QtAtSpi::cleanupTestCase()
+void tst_QAccessibilityLinux::cleanupTestCase()
 {
     delete mainWindow;
     delete rootApplication;
@@ -194,7 +194,7 @@ void tst_QtAtSpi::cleanupTestCase()
     delete m_window;
 }
 
-void tst_QtAtSpi::registerDbus()
+void tst_QAccessibilityLinux::registerDbus()
 {
     QVERIFY(dbus.connection().isConnected());
 
@@ -213,7 +213,7 @@ void tst_QtAtSpi::registerDbus()
 
 #define ROOTPATH "/org/a11y/atspi/accessible"
 
-void tst_QtAtSpi::testLabel()
+void tst_QAccessibilityLinux::testLabel()
 {
     QLabel *l = new QLabel(m_window);
     l->setText("Hello A11y");
@@ -238,7 +238,7 @@ void tst_QtAtSpi::testLabel()
     delete labelInterface;
 }
 
-void tst_QtAtSpi::testLineEdit()
+void tst_QAccessibilityLinux::testLineEdit()
 {
     QLineEdit *lineEdit = new QLineEdit(m_window);
     lineEdit->setText("a11y test QLineEdit");
@@ -288,7 +288,7 @@ void tst_QtAtSpi::testLineEdit()
     delete editableTextInterface;
 }
 
-void tst_QtAtSpi::testListWidget()
+void tst_QAccessibilityLinux::testListWidget()
 {
     QListWidget *lw = new QListWidget;
     lw->addItem("Hello");
@@ -319,7 +319,7 @@ void tst_QtAtSpi::testListWidget()
     delete listIface;
 }
 
-void tst_QtAtSpi::testTreeWidget()
+void tst_QAccessibilityLinux::testTreeWidget()
 {
     QTreeWidget *tree = new QTreeWidget;
     tree->setColumnCount(2);
@@ -394,7 +394,7 @@ void tst_QtAtSpi::testTreeWidget()
     delete treeIface;
 }
 
-void tst_QtAtSpi::testTextEdit()
+void tst_QAccessibilityLinux::testTextEdit()
 {
     QTextEdit *textEdit = new QTextEdit(m_window);
     textEdit->setText("<html><head></head><body>This is a <b>sample</b> text.<br />"
@@ -439,7 +439,7 @@ void tst_QtAtSpi::testTextEdit()
     delete textInterface;
 }
 
-void tst_QtAtSpi::testSlider()
+void tst_QAccessibilityLinux::testSlider()
 {
     QSlider *slider = new QSlider(m_window);
     slider->setMinimum(2);
@@ -462,6 +462,6 @@ void tst_QtAtSpi::testSlider()
     QCOMPARE(valueInterface->property("CurrentValue").toInt(), 4);
 }
 
-QTEST_MAIN(tst_QtAtSpi)
+QTEST_MAIN(tst_QAccessibilityLinux)
 #include "tst_qaccessibilitylinux.moc"
 
