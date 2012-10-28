@@ -114,6 +114,7 @@ macx: {
               ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
 }
+*-g++*: QMAKE_CXXFLAGS += -ffunction-sections
 
 if(contains(QT_CONFIG, zlib)|cross_compile):include(../../3rdparty/zlib.pri)
 else:include(../../3rdparty/zlib_dependency.pri)
