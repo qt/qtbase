@@ -44,6 +44,7 @@
 #include <qfont.h>
 #include <qfontmetrics.h>
 #include <qfontdatabase.h>
+#include <private/qfontengine_p.h>
 #include <qstringlist.h>
 #include <qlist.h>
 
@@ -277,6 +278,39 @@ void tst_QFontMetrics::inFontUcs4()
     {
         QFontMetricsF fm(font);
         QVERIFY(fm.inFontUcs4(0x1D7FF));
+    }
+
+    {
+        QFontEngine *engine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
+        QGlyphLayout glyphs;
+        glyphs.numGlyphs = 3;
+        uint buf[3];
+        glyphs.glyphs = buf;
+
+        QString string;
+        {
+            string.append(QChar::highSurrogate(0x1D7FF));
+            string.append(QChar::lowSurrogate(0x1D7FF));
+
+            glyphs.numGlyphs = 3;
+            glyphs.glyphs[0] = 0;
+            QVERIFY(engine->stringToCMap(string.constData(), string.size(),
+                                         &glyphs, &glyphs.numGlyphs,
+                                         QFontEngine::GlyphIndicesOnly));
+            QCOMPARE(glyphs.numGlyphs, 1);
+            QCOMPARE(glyphs.glyphs[0], uint(1));
+        }
+        {
+            string.clear();
+            string.append(QChar::ObjectReplacementCharacter);
+
+            glyphs.numGlyphs = 3;
+            glyphs.glyphs[0] = 0;
+            QVERIFY(engine->stringToCMap(string.constData(), string.size(),
+                                         &glyphs, &glyphs.numGlyphs,
+                                         QFontEngine::GlyphIndicesOnly));
+            QVERIFY(glyphs.glyphs[0] != 1);
+        }
     }
 
     QFontDatabase::removeApplicationFont(id);
