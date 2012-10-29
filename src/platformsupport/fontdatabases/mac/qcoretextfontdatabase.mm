@@ -137,22 +137,44 @@ QCoreTextFontDatabase::QCoreTextFontDatabase()
     if (appleValue.isValid()) {
         font_smoothing = appleValue.toInt();
     } else {
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+        // non-Apple displays do not provide enough information about subpixel rendering so
+        // draw text with cocoa and compare pixel colors to see if subpixel rendering is enabled
+        int w = 10;
+        int h = 10;
+        NSRect rect = NSMakeRect(0.0, 0.0, w, h);
+        NSImage *fontImage = [[NSImage alloc] initWithSize:NSMakeSize(w, h)];
 
-        // find the primary display (which is always the first NSScreen
-        // according to the documentation)
-        NSScreen *defaultScreen = [[NSScreen screens] objectAtIndex:0];
-        CGDirectDisplayID displayId = [[[defaultScreen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
-        io_service_t iodisplay = CGDisplayIOServicePort(displayId);
+        [fontImage lockFocus];
 
-        // determine if font smoothing is available based on the subpixel
-        // layout of the primary display
-        NSDictionary *d = (NSDictionary *) IODisplayCreateInfoDictionary(iodisplay, kIODisplayOnlyPreferredName);
-        uint displaySubpixelLayout = [[d objectForKey:@kDisplaySubPixelLayout] unsignedIntValue];
-        [d release];
-        font_smoothing = (displaySubpixelLayout == kDisplaySubPixelLayoutUndefined ? 0 : 1);
+        [[NSColor whiteColor] setFill];
+        NSRectFill(rect);
 
-        [pool release];
+        NSString *str = @"X\\";
+        NSFont *font = [NSFont fontWithName:@"Helvetica" size:10.0];
+        NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
+        [attrs setObject:font forKey:NSFontAttributeName];
+        [attrs setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+
+        [str drawInRect:rect withAttributes:attrs];
+
+        NSBitmapImageRep *nsBitmapImage = [[NSBitmapImageRep alloc] initWithFocusedViewRect:rect];
+
+        [fontImage unlockFocus];
+
+        float red, green, blue;
+        for (int x = 0; x < w; x++) {
+            for (int y = 0; y < h; y++) {
+                NSColor *pixelColor = [nsBitmapImage colorAtX:x y:y];
+                red = [pixelColor redComponent];
+                green = [pixelColor greenComponent];
+                blue = [pixelColor blueComponent];
+                if (red != green || red != blue)
+                    font_smoothing = 1;
+            }
+        }
+
+        [nsBitmapImage release];
+        [fontImage release];
     }
     QCoreTextFontEngine::defaultGlyphFormat = (font_smoothing > 0
                                                ? QFontEngineGlyphCache::Raster_RGBMask
