@@ -1,13 +1,6 @@
 # Find the module's source root dir.
-MODULE_PROFILE_DIR = $$_PRO_FILE_PWD_
-for(ever) {
-    exists($$MODULE_PROFILE_DIR/sync.profile):break()
-    nmpri = $$dirname(MODULE_PROFILE_DIR)
-    equals(nmpri, $$MODULE_PROFILE_DIR):error("No sync.profile found. This does not look like a Qt module source tree.")
-    MODULE_PROFILE_DIR = $$nmpri
-    unset(nmpri)
-}
-
+isEmpty(_QMAKE_CONF_): error("Project has no top-level .qmake.conf file.")
+MODULE_PROFILE_DIR = $$dirname(_QMAKE_CONF_)
 isEmpty(MODULE_BASE_DIR): MODULE_BASE_DIR = $$MODULE_PROFILE_DIR
 isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$shadowed($$MODULE_BASE_DIR)
 isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
