@@ -92,10 +92,7 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
 
 load(qt_module_fwdpri)
 
-MODULE_INCLUDES = $$eval(QT.$${MODULE}.includes)
-MODULE_PRIVATE_INCLUDES = $$eval(QT.$${MODULE}.private_includes)
-INCLUDEPATH *= $$MODULE_INCLUDES
-INCLUDEPATH *= $$MODULE_PRIVATE_INCLUDES
+INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}.private_includes)
 
 load(qt_module_headers)
 
