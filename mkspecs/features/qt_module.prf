@@ -12,8 +12,8 @@ isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
 isEmpty(VERSION):VERSION = $$QT_VERSION
 
 # Compile as shared/DLL or static according to the option given to configure
-# unless overridden
-staticlib: CONFIG += static
+# unless overridden. Host builds are always static
+host_build|staticlib: CONFIG += static
 !static:!shared {
     contains(QT_CONFIG, static): \
         CONFIG += static
@@ -62,6 +62,11 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
         module_config = "QT.$${MODULE}.CONFIG = $$MODULE_CONFIG"
     else: \
         module_config =
+    !no_module_headers {
+        MODULE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$TARGET"
+        MODULE_PRIVATE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION \
+                                   \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION/$$TARGET"
+    }
     MODULE_PRI_CONT = \
         "QT.$${MODULE}.VERSION = $${VERSION}" \
         "QT.$${MODULE}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
@@ -70,9 +75,8 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
         "" \
         "QT.$${MODULE}.name = $$TARGET" \
         "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
-        "QT.$${MODULE}.includes = \$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$TARGET" \
-        "QT.$${MODULE}.private_includes = \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION \
-                                          \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION/$$TARGET" \
+        "QT.$${MODULE}.includes = $$MODULE_INCLUDES" \
+        "QT.$${MODULE}.private_includes = $$MODULE_PRIVATE_INCLUDES" \
         "QT.$${MODULE}.sources = $$val_escape(_PRO_FILE_PWD_)" \
         "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
@@ -94,7 +98,7 @@ load(qt_module_fwdpri)
 
 INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}.private_includes)
 
-load(qt_module_headers)
+!no_module_headers: load(qt_module_headers)
 
 #other
 TEMPLATE         = lib
@@ -116,7 +120,8 @@ CONFIG          += qmake_cache target_qt
 }
 
 # If Qt was configured with -debug-and-release then build the module the same way
-if(win32|mac):!macx-xcode {
+# - unless this is a host library
+!host_build:if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }

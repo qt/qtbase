@@ -1,12 +1,11 @@
 option(host_build)
 TEMPLATE = app
 TARGET = qdoc
+QT = bootstrap-private
 
 DESTDIR = ../../../bin
 DEFINES += QDOC2_COMPAT
 
-include(../bootstrap/bootstrap.pri)
-DEFINES -= QT_NO_CAST_FROM_ASCII
 DEFINES += QT_NO_TRANSLATION
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \

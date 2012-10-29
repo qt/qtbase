@@ -1,10 +1,11 @@
 option(host_build)
 TEMPLATE = app
 TARGET = qdbusxml2cpp
+QT = bootstrap-private
 
 DESTDIR = ../../../bin
 
-include(../bootstrap/bootstrap.pri)
+DEFINES += QT_NO_CAST_FROM_ASCII
 
 INCLUDEPATH += $$QT_BUILD_TREE/include \
                    $$QT_BUILD_TREE/include/QtDBus \

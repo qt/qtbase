@@ -1,18 +1,16 @@
 option(host_build)
-TEMPLATE	= app
-TARGET		= moc
+TEMPLATE = app
+TARGET = moc
+QT = bootstrap-private
 
-DEFINES         += QT_MOC QT_NO_CAST_FROM_BYTEARRAY QT_NO_COMPRESS
-DESTDIR         = ../../../bin
-INCLUDEPATH	+= $$OUT_PWD/../../corelib/global
-DEPENDPATH	+= $$OUT_PWD/../../corelib/global
-LIBS	        =
-OBJECTS_DIR	= .
+DEFINES += QT_MOC QT_NO_CAST_FROM_ASCII QT_NO_CAST_FROM_BYTEARRAY QT_NO_COMPRESS
+DESTDIR = ../../../bin
+
+INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 
 include(moc.pri)
 HEADERS += qdatetime_p.h
 SOURCES += main.cpp
-include(../bootstrap/bootstrap.pri)
 
 target.path = $$[QT_HOST_BINS]
 INSTALLS += target
