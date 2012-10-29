@@ -7,7 +7,6 @@ CONFIG += exceptions_off
 DEFINES	       += \
         QT_BOOTSTRAPPED \
         QT_LITE_UNICODE \
-        QT_TEXTCODEC \
         QT_NO_CAST_FROM_ASCII \
         QT_NO_CAST_TO_ASCII \
         QT_NO_CODECS \
