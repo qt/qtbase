@@ -916,7 +916,7 @@ QRectF QTextLayout::boundingRect() const
         QFixed lineWidth = si.width < QFIXED_MAX ? qMax(si.width, si.textWidth) : si.textWidth;
         xmax = qMax(xmax, si.x+lineWidth);
         // ### shouldn't the ascent be used in ymin???
-        ymax = qMax(ymax, si.y+si.height());
+        ymax = qMax(ymax, si.y+si.height().ceil());
     }
     return QRectF(xmin.toReal(), ymin.toReal(), (xmax-xmin).toReal(), (ymax-ymin).toReal());
 }
@@ -1466,7 +1466,7 @@ qreal QTextLine::descent() const
 */
 qreal QTextLine::height() const
 {
-    return eng->lines[index].height().toReal();
+    return eng->lines[index].height().ceil().toReal();
 }
 
 /*!
