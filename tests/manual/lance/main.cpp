@@ -102,8 +102,8 @@ static void printHelp()
            "    -imagemono      Paints the files to a monochrome image\n"
            "    -imagewidget    same as image, but with interacion...\n"
 #ifndef QT_NO_OPENGL
-           "    -opengl         Paints the files to an OpenGL on screen\n"
-           "    -pbuffer        Paints the files to an OpenGL pbuffer\n"
+           "    -opengl         Paints the files to a QGLWidget (Qt4 style) on screen\n"
+           "    -glbuffer       Paints the files to a QOpenGLFrameBufferObject (Qt5 style) \n"
 #endif
 #ifdef USE_CUSTOM_DEVICE
            "    -customdevice   Paints the files to the custom paint device\n"
@@ -289,8 +289,8 @@ int main(int argc, char **argv)
 #ifndef QT_NO_OPENGL
             else if (option == "opengl")
                 type = OpenGLType;
-            else if (option == "pbuffer")
-                type = OpenGLPBufferType;
+            else if (option == "glbuffer")
+                type = OpenGLBufferType;
 #endif
 #ifdef USE_CUSTOM_DEVICE
             else if (option == "customdevice")
@@ -424,16 +424,28 @@ int main(int argc, char **argv)
 
             }
 #ifndef QT_NO_OPENGL
-            case OpenGLPBufferType:
+            case OpenGLBufferType:
             {
-                QGLPixelBuffer pbuffer(QSize(width, height));
-                QPainter pt(&pbuffer);
+                QWindow win;
+                win.setSurfaceType(QSurface::OpenGLSurface);
+                win.create();
+                QOpenGLFramebufferObjectFormat fmt;
+                fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+                fmt.setSamples(4);
+                QOpenGLContext ctx;
+                ctx.create();
+                ctx.makeCurrent(&win);
+                QOpenGLFramebufferObject fbo(width, height, fmt);
+                fbo.bind();
+                QOpenGLPaintDevice pdev(width, height);
+
+                QPainter pt(&pdev);
                 pcmd.setPainter(&pt);
                 pcmd.setFilePath(fileinfo.absolutePath());
                 pcmd.runCommands();
                 pt.end();
 
-                QImage image = pbuffer.toImage();
+                QImage image = fbo.toImage();
 
                 QLabel *label = createLabel();
                 label->setPixmap(QPixmap::fromImage(image));
@@ -456,8 +468,11 @@ int main(int argc, char **argv)
             }
 #else
             case OpenGLType:
+            case OpenGLBufferType:
+            {
                 printf("OpenGL type not supported in this Qt build\n");
                 break;
+            }
 #endif
 #ifdef USE_CUSTOM_DEVICE
             case CustomDeviceType:

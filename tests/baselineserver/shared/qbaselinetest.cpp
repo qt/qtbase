@@ -51,10 +51,12 @@ namespace QBaselineTest {
 static char *fargv[MAXCMDLINEARGS];
 static bool simfail = false;
 static PlatformInfo customInfo;
+static bool customAutoModeSet = false;
 
 static BaselineProtocol proto;
 static bool connected = false;
 static bool triedConnecting = false;
+static bool dryRunMode = false;
 
 static QByteArray curFunction;
 static ImageItemList itemList;
@@ -81,8 +83,10 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         if (arg == "-simfail") {
             simfail = true;
         } else if (arg == "-auto") {
+            customAutoModeSet = true;
             customInfo.setAdHocRun(false);
         } else if (arg == "-adhoc") {
+            customAutoModeSet = true;
             customInfo.setAdHocRun(true);
         } else if (arg == "-compareto") {
             i++;
@@ -135,7 +139,7 @@ void addClientProperty(const QString& key, const QString& value)
 */
 void fetchCustomClientProperties()
 {
-    QString script = "hostinfo.sh";  //### TBD: better name
+    QString script = "hostinfo.sh";  //### TBD: Windows implementation (hostinfo.bat)
 
     QProcess runScript;
     runScript.setWorkingDirectory(QCoreApplication::applicationDirPath());
@@ -181,6 +185,8 @@ bool connect(QByteArray *msg, bool *error)
         if (!clientInfo.contains(key))
             clientInfo.insert(key, defaultInfo.value(key));
     }
+    if (!customAutoModeSet)
+        clientInfo.setAdHocRun(defaultInfo.isAdHocRun());
 
     if (!definedTestProject.isEmpty())
         clientInfo.insert(PI_Project, definedTestProject);
@@ -195,8 +201,7 @@ bool connect(QByteArray *msg, bool *error)
         return false;
     }
 
-    bool dummy;                                                // ### TBD: dryrun handling
-    if (!proto.connect(testCase, &dummy, clientInfo)) {
+    if (!proto.connect(testCase, &dryRunMode, clientInfo)) {
         *msg += "Failed to connect to baseline server: " + proto.errorMessage().toLatin1();
         *error = true;
         return false;
@@ -230,6 +235,7 @@ bool connectToBaselineServer(QByteArray *msg, const QString &testProject, const 
 void setAutoMode(bool mode)
 {
     customInfo.setAdHocRun(!mode);
+    customAutoModeSet = true;
 }
 
 void setSimFail(bool fail)
@@ -277,7 +283,10 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;
         break;
     case ImageItem::BaselineNotFound:
-        // ### TBD: don't submit if have overrides; will be rejected anyway
+        if (!customInfo.overrides().isEmpty()) {
+            qWarning() << "Cannot compare to other system's baseline: No such baseline found on server.";
+            return true;
+        }
         if (proto.submitNewBaseline(item, &srvMsg))
             qDebug() << msg->constData() << "Baseline not found on server. New baseline uploaded.";
         else
@@ -304,6 +313,10 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;            // The server decides: a fuzzy match means no mismatch
     }
     *msg += "Mismatch. See report:\n   " + srvMsg;
+    if (dryRunMode) {
+        qDebug() << "Dryrun, so ignoring" << *msg;
+        return true;
+    }
     return false;
 }
 

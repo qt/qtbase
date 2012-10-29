@@ -53,7 +53,9 @@
 QT_FORWARD_DECLARE_CLASS(QPainter)
 QT_FORWARD_DECLARE_CLASS(QRegExp)
 #ifndef QT_NO_OPENGL
-QT_FORWARD_DECLARE_CLASS(QGLPixelBuffer)
+QT_FORWARD_DECLARE_CLASS(QOpenGLFramebufferObject)
+QT_FORWARD_DECLARE_CLASS(QOpenGLPaintDevice)
+QT_FORWARD_DECLARE_CLASS(QOpenGLContext)
 #endif
 
 enum DeviceType {
@@ -63,7 +65,7 @@ enum DeviceType {
         ImageType,
         ImageMonoType,
         OpenGLType,
-        OpenGLPBufferType,
+        OpenGLBufferType,
         PictureType,
         PrinterType,
         PdfType,
@@ -91,6 +93,12 @@ public:
         , m_type(WidgetType)
         , m_checkers_background(true)
         , m_shouldDrawText(true)
+#ifndef QT_NO_OPENGL
+        , m_default_glcontext(0)
+        , m_surface_glcontext(0)
+        , m_surface_glbuffer(0)
+        , m_surface_glpaintdevice(0)
+#endif
     { staticInit(); }
 
 public:
@@ -253,9 +261,6 @@ private:
     QPainter *m_surface_painter;
     QImage m_surface_image;
     QPixmap m_surface_pixmap;
-#ifndef QT_NO_OPENGL
-    QGLPixelBuffer *m_surface_pbuffer;
-#endif
     QRectF m_surface_rect;
     QStringList m_commands;
     QString m_currentCommand;
@@ -279,6 +284,13 @@ private:
     bool m_shouldDrawText;
 
     QVector<QPointF> m_controlPoints;
+
+#ifndef QT_NO_OPENGL
+    QOpenGLContext *m_default_glcontext;
+    QOpenGLContext *m_surface_glcontext;
+    QOpenGLFramebufferObject *m_surface_glbuffer;
+    QOpenGLPaintDevice *m_surface_glpaintdevice;
+#endif
 
     // painter functionalities string tables
     static const char *brushStyleTable[];

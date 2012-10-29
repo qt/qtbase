@@ -51,7 +51,9 @@
 #include <QStaticText>
 
 #ifndef QT_NO_OPENGL
-#include <qglpixelbuffer.h>
+#include <QOpenGLFramebufferObjectFormat>
+#include <QOpenGLContext>
+#include <QOpenGLPaintDevice>
 #endif
 
 /*********************************************************************************
@@ -2375,10 +2377,20 @@ void PaintCommands::command_surface_begin(QRegExp re)
 
     m_surface_painter = m_painter;
 
-    if (m_type == OpenGLType || m_type == OpenGLPBufferType) {
+    if (m_type == OpenGLType || m_type == OpenGLBufferType) {
 #ifndef QT_NO_OPENGL
-        m_surface_pbuffer = new QGLPixelBuffer(qRound(w), qRound(h));
-        m_painter = new QPainter(m_surface_pbuffer);
+        m_default_glcontext = QOpenGLContext::currentContext();
+        m_surface_glcontext = new QOpenGLContext();
+        m_surface_glcontext->setFormat(m_default_glcontext->format());
+        m_surface_glcontext->create();
+        m_surface_glcontext->makeCurrent(m_default_glcontext->surface());
+        QOpenGLFramebufferObjectFormat fmt;  // ###TBD: get format from caller
+        fmt.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        fmt.setSamples(4);
+        m_surface_glbuffer = new QOpenGLFramebufferObject(qRound(w), qRound(h), fmt);
+        m_surface_glbuffer->bind();
+        m_surface_glpaintdevice = new QOpenGLPaintDevice(qRound(w), qRound(h));
+        m_painter = new QPainter(m_surface_glpaintdevice);
         m_painter->fillRect(QRect(0, 0, qRound(w), qRound(h)), Qt::transparent);
 #endif
 #ifdef Q_WS_X11
@@ -2415,23 +2427,21 @@ void PaintCommands::command_surface_end(QRegExp)
     m_painter = m_surface_painter;
     m_surface_painter = 0;
 
-    if (m_type == OpenGLType || m_type == OpenGLPBufferType) {
+    if (m_type == OpenGLType || m_type == OpenGLBufferType) {
 #ifndef QT_NO_OPENGL
-        QImage image = m_surface_pbuffer->toImage();
-        QImage new_image(image.bits(), image.width(),
-                         image.height(), QImage::Format_ARGB32_Premultiplied);
-        QPaintDevice *pdev = m_painter->device();
-        if (pdev->devType() == QInternal::Widget) {
-            QWidget *w = static_cast<QWidget *>(pdev);
-            static_cast<QGLWidget *>(w)->makeCurrent();
-        } else if (pdev->devType() == QInternal::Pbuffer) {
-            static_cast<QGLPixelBuffer *>(pdev)->makeCurrent();
-        }
-
+        QImage new_image = m_surface_glbuffer->toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        m_default_glcontext->makeCurrent(m_default_glcontext->surface());
         m_painter->drawImage(m_surface_rect, new_image);
+        // Flush the pipeline:
+        m_painter->beginNativePainting();
+        m_painter->endNativePainting();
 
-        delete m_surface_pbuffer;
-        m_surface_pbuffer = 0;
+        delete m_surface_glpaintdevice;
+        m_surface_glpaintdevice = 0;
+        delete m_surface_glbuffer;
+        m_surface_glbuffer = 0;
+        delete m_surface_glcontext;
+        m_surface_glcontext = 0;
 #endif
 #ifdef Q_WS_X11
     } else if (m_type == WidgetType) {
