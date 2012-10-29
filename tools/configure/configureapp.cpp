@@ -2312,6 +2312,25 @@ void Configure::generateBuildKey()
     build_defines.sort();
 }
 
+void Configure::generateSystemVars()
+{
+    // Generate an empty .qmake.cache file for config.tests
+    QDir buildDir(buildPath);
+    bool success = true;
+    if (!buildDir.exists("config.tests"))
+        success = buildDir.mkdir("config.tests");
+
+    QString fileName(buildPath + "/config.tests/.qmake.cache");
+    QFile cacheFile(fileName);
+    success &= cacheFile.open(QIODevice::WriteOnly);
+    cacheFile.close();
+
+    if (!success) {
+        cout << "Failed to create file " << qPrintable(QDir::toNativeSeparators(fileName)) << endl;
+        dictionary[ "DONE" ] = "error";
+    }
+}
+
 void Configure::generateOutputVars()
 {
     // Generate variables for output

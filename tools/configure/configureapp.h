@@ -83,6 +83,7 @@ public:
     void generateConfigfiles();
     void detectArch();
     void generateQConfigPri();
+    void generateSystemVars();
 #endif
     void showSummary();
     void findProjects( const QString& dirName );
