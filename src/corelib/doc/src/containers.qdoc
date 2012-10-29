@@ -26,23 +26,6 @@
 ****************************************************************************/
 
 /*!
-    \group tools
-    \title Non-GUI Classes
-    \ingroup groups
-
-    \brief Collection classes such as list, queue, stack and string, along
-    with other classes that can be used without needing QApplication.
-
-    These \l{Qt Core} non-GUI classes are general-purpose collection and string
-    classes that may be used independently of the GUI classes.
-
-    In particular, these classes do not depend on QApplication at all,
-    and so can be used in non-GUI programs.
-
-    \annotatedlist tools
-*/
-
-/*!
     \page containers.html
     \title Container Classes
     \ingroup technology-apis

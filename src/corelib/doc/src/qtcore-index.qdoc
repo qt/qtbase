@@ -28,7 +28,6 @@
 /*!
     \page qtcore-index.html
     \title Qt Core
-    \ingroup modules
 
     \brief The Qt Core module is part of Qt's essential modules.
 
@@ -108,7 +107,6 @@
         \list
         \li \l{Animation Framework}{Animation Classes}
         \li \l{Threading Classes}
-        \li \l{Non-GUI Classes}
         \li \l{Container Classes}
         \li \l{Plugin Classes}
         \li \l{Implicitly Shared Classes}
