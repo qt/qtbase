@@ -6,8 +6,6 @@ QT = bootstrap-private
 DESTDIR = ../../../bin
 DEFINES += QDOC2_COMPAT
 
-DEFINES += QT_NO_TRANSLATION
-
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
                $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser \
                $$QT_BUILD_TREE/include/QtXml \
