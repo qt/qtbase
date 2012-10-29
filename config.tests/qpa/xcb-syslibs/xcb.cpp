@@ -41,9 +41,26 @@
 
 #include <xcb/xcb.h>
 
+// FIXME This workaround can be removed for xcb-icccm > 3.8
+#define class class_name
+#include <xcb/xcb_icccm.h>
+#undef class
+
+#include <xcb/xfixes.h>
+#include <xcb/xcb_image.h>
+#include <xcb/xcb_keysyms.h>
+#include <xcb/sync.h>
+#include <xcb/randr.h>
+#include <xcb/shm.h>
+
 int main(int, char **)
 {
     int primaryScreen = 0;
-    xcb_connection_t *t = xcb_connect("", &primaryScreen);
+
+    xcb_connection_t *connection = xcb_connect("", &primaryScreen);
+
+    // This won't compile unless libxcb >= 1.5 which defines XCB_ATOM_PRIMARY.
+    int xcbAtomPrimary = XCB_ATOM_PRIMARY;
+
     return 0;
 }
