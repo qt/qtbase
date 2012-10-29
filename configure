@@ -2243,7 +2243,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     mkdir -p "$outpath/mkspecs"
     rm -rf "$outpath"/mkspecs/*
     ln -s "$relpath"/mkspecs/* "$outpath/mkspecs"
-    rm -f "$outpath/mkspecs/default"
 
     ShadowMkspecs()
     {
@@ -3527,6 +3526,9 @@ esac
 #-------------------------------------------------------------------------------
 [ -d "$outpath/src/corelib/global" ] || mkdir -p "$outpath/src/corelib/global"
 
+shortxspec=`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
+shortspec=`echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
+
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* License Info */
 static const char qt_configure_licensee_str          [256 + 12] = "qt_lcnsuser=$Licensee";
@@ -3553,6 +3555,8 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_hpfxpath=$QT_HOST_PREFIX",
     "qt_hbinpath=$QT_HOST_BINS",
     "qt_hdatpath=$QT_HOST_DATA",
+    "qt_targspec=$shortxspec",
+    "qt_hostspec=$shortspec",
 #endif
 };
 static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
@@ -3616,10 +3620,6 @@ setBootstrapVariable()
 if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     echo "Creating qmake. Please wait..."
 
-    #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
-    rm -rf mkspecs/default mkspecs/default-host
-    ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
-    ln -s `echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default-host
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
     for mkfile in GNUmakefile Makefile; do

@@ -81,7 +81,9 @@ public:
         HostPrefixPath,
         HostBinariesPath,
         HostDataPath,
-        LastHostPath = HostDataPath,
+        TargetSpecPath,
+        HostSpecPath,
+        LastHostPath = HostSpecPath,
 #endif
         SettingsPath = 100
     };

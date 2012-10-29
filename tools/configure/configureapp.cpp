@@ -3074,37 +3074,6 @@ QString Configure::addDefine(QString def)
 }
 
 #if !defined(EVAL)
-bool Configure::copySpec(const char *name, const char *pfx, const QString &spec)
-{
-    // "Link" configured mkspec to default directory, but remove the old one first, if there is any
-    QString defSpec = buildPath + "/mkspecs/" + name;
-    QFileInfo defSpecInfo(defSpec);
-    if (defSpecInfo.exists()) {
-        if (!Environment::rmdir(defSpec)) {
-            cout << "Couldn't update default " << pfx << "mkspec! Are files in " << qPrintable(defSpec) << " read-only?" << endl;
-            dictionary["DONE"] = "error";
-            return false;
-        }
-    }
-
-    QDir::current().mkpath(defSpec);
-    QFile qfile(defSpec + "/qmake.conf");
-    if (qfile.open(QFile::WriteOnly | QFile::Text)) {
-        QTextStream fileStream;
-        fileStream.setDevice(&qfile);
-        QString srcSpec = buildPath + "/mkspecs/" + spec; // We copied it to the build dir
-        fileStream << "QMAKESPEC_ORIGINAL = " << formatPath(srcSpec) << endl;
-        fileStream << "include($$QMAKESPEC_ORIGINAL/qmake.conf)" << endl;
-        qfile.close();
-    }
-    if (qfile.error() != QFile::NoError) {
-        cout << "Couldn't update default " << pfx << "mkspec: " << qPrintable(qfile.errorString()) << endl;
-        dictionary["DONE"] = "error";
-        return false;
-    }
-    return true;
-}
-
 void Configure::generateConfigfiles()
 {
     QDir(buildPath).mkpath("src/corelib/global");
@@ -3510,6 +3479,11 @@ void Configure::generateHeaders()
     }
 }
 
+static QString stripPrefix(const QString &str, const QString &pfx)
+{
+    return str.startsWith(pfx) ? str.mid(pfx.length()) : str;
+}
+
 void Configure::generateQConfigCpp()
 {
     // if QT_INSTALL_* have not been specified on commandline, define them now from QT_INSTALL_PREFIX
@@ -3553,6 +3527,10 @@ void Configure::generateQConfigCpp()
     QDir(buildPath).mkpath("src/corelib/global");
     const QString outName(buildPath + "/src/corelib/global/qconfig.cpp");
 
+    QString specPfx = dictionary["QT_HOST_DATA"] + "/mkspecs/";
+    QString hostSpec = stripPrefix(dictionary["QMAKESPEC"], specPfx);
+    QString targSpec = dictionary.contains("XQMAKESPEC") ? stripPrefix(dictionary["XQMAKESPEC"], specPfx) : hostSpec;
+
     QTemporaryFile tmpFile;
     if (tmpFile.open()) {
         QTextStream tmpStream(&tmpFile);
@@ -3580,6 +3558,8 @@ void Configure::generateQConfigCpp()
                   << "    \"qt_hpfxpath=" << formatPath(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
                   << "    \"qt_hbinpath=" << formatPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
                   << "    \"qt_hdatpath=" << formatPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
+                  << "    \"qt_targspec=" << targSpec << "\"," << endl
+                  << "    \"qt_hostspec=" << hostSpec << "\"," << endl
                   << "#endif" << endl
                   << "};" << endl;
 
@@ -3690,14 +3670,6 @@ void Configure::buildQmake()
 
         confStream.flush();
         confFile.close();
-    }
-
-    //create default mkspecs
-    QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
-    if (!copySpec("default", "", spec)
-        || !copySpec("default-host", "host ", dictionary["QMAKESPEC"])) {
-        cout << "Error installing default mkspecs" << endl << endl;
-        exit(EXIT_FAILURE);
     }
 
 }

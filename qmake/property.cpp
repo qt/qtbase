@@ -71,6 +71,8 @@ static const struct {
     { "QT_HOST_PREFIX", QLibraryInfo::HostPrefixPath, true },
     { "QT_HOST_DATA", QLibraryInfo::HostDataPath, true },
     { "QT_HOST_BINS", QLibraryInfo::HostBinariesPath, true },
+    { "QMAKE_SPEC", QLibraryInfo::HostSpecPath, true },
+    { "QMAKE_XSPEC", QLibraryInfo::TargetSpecPath, true },
 };
 
 QMakeProperty::QMakeProperty() : settings(0)
