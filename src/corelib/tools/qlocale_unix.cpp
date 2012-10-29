@@ -47,7 +47,78 @@
 #include "qvariant.h"
 #include "qreadwritelock.h"
 
+#if defined(Q_OS_QNX)
+#include <QtCore/private/qcore_unix_p.h>
+
+#include <unistd.h>
+#include <errno.h>
+#include <sys/pps.h>
+#endif
+
 QT_BEGIN_NAMESPACE
+
+#if defined(Q_OS_QNX)
+static const char ppsServicePath[] = "/pps/services/locale/uom";
+static const size_t ppsBufferSize = 256;
+
+QBBLocaleData::QBBLocaleData()
+    :ppsNotifier(0)
+    ,ppsFd(-1)
+{
+    readPPSLocale();
+}
+
+QBBLocaleData::~QBBLocaleData()
+{
+    if (ppsFd != -1)
+        qt_safe_close(ppsFd);
+}
+
+void QBBLocaleData::updateMesurementSystem()
+{
+    char buffer[ppsBufferSize];
+
+    errno = 0;
+    int bytes = qt_safe_read(ppsFd, buffer, ppsBufferSize - 1);
+    if (bytes == -1) {
+        qWarning("Failed to read Locale pps, errno=%d", errno);
+        return;
+    }
+    // ensure data is null terminated
+    buffer[bytes] = '\0';
+
+    pps_decoder_t ppsDecoder;
+    pps_decoder_initialize(&ppsDecoder, 0);
+    if (pps_decoder_parse_pps_str(&ppsDecoder, buffer) == PPS_DECODER_OK) {
+        pps_decoder_push(&ppsDecoder, 0);
+        const char *measurementBuff;
+        if (pps_decoder_get_string(&ppsDecoder, "uom", &measurementBuff) == PPS_DECODER_OK) {
+            if (qstrcmp(measurementBuff, "imperial") == 0) {
+                pps_decoder_cleanup(&ppsDecoder);
+                ppsMeasurement = QLocale::ImperialSystem;
+                return;
+            }
+        }
+    }
+
+    pps_decoder_cleanup(&ppsDecoder);
+    ppsMeasurement = QLocale::MetricSystem;
+}
+
+void QBBLocaleData::readPPSLocale()
+{
+    errno = 0;
+    ppsFd = qt_safe_open(ppsServicePath, O_RDONLY);
+    if (ppsFd == -1) {
+        qWarning("Failed to open Locale pps, errno=%d", errno);
+        return;
+    }
+
+    ppsNotifier = new QSocketNotifier(ppsFd, QSocketNotifier::Read, this);
+    updateMesurementSystem();
+    QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMesurementSystem()));
+}
+#endif
 
 #ifndef QT_NO_SYSTEMLOCALE
 struct QSystemLocaleData
@@ -105,6 +176,9 @@ void QSystemLocaleData::readEnvironment()
 
 
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
+#if defined(Q_OS_QNX)
+    Q_GLOBAL_STATIC(QBBLocaleData, qbbLocaleData)
+#endif
 
 #endif
 
@@ -136,6 +210,9 @@ QLocale QSystemLocale::fallbackUiLocale() const
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QSystemLocaleData *d = qSystemLocaleData();
+#if defined(Q_OS_QNX)
+    QBBLocaleData *bbd = qbbLocaleData();
+#endif
 
     if (type == LocaleChanged) {
         d->readEnvironment();
@@ -223,6 +300,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             return QLocale::MetricSystem;
         if (meas_locale.compare(QLatin1String("Other"), Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
+#if defined(Q_OS_QNX)
+        return bbd->ppsMeasurement;
+#endif
         return QVariant((int)QLocale(meas_locale).measurementSystem());
     }
     case UILanguages: {

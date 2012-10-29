@@ -59,6 +59,10 @@
 
 #include "qlocale.h"
 
+#if defined(Q_OS_QNX)
+#include "qsocketnotifier.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -346,6 +350,25 @@ inline char QLocalePrivate::digitToCLocale(QChar in) const
 
     return 0;
 }
+
+#if defined(Q_OS_QNX)
+class QBBLocaleData: public QObject
+{
+    Q_OBJECT
+public:
+    QBBLocaleData();
+    virtual ~QBBLocaleData();
+    void readPPSLocale();
+
+public Q_SLOTS:
+    void updateMesurementSystem();
+
+public:
+    uint ppsMeasurement;
+    QSocketNotifier *ppsNotifier;
+    int ppsFd;
+};
+#endif
 
 QString qt_readEscapedFormatString(const QString &format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
