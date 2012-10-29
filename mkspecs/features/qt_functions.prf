@@ -215,14 +215,18 @@ defineTest(qtAddTargetEnv) {
             for(rpath, QT.$${dep}.rpath_link): \
                 deppath += $$shell_path($$rpath)
         }
-        equals(QMAKE_HOST.os, Windows): \
+        equals(QMAKE_HOST.os, Windows) {
             deppath.name = PATH
-        else:contains(QMAKE_HOST.os, Linux|FreeBSD): \
+        } else:contains(QMAKE_HOST.os, Linux|FreeBSD) {
             deppath.name = LD_LIBRARY_PATH
-        else:equals(QMAKE_HOST.os, Darwin): \
-            deppath.name = DYLD_LIBRARY_PATH
-        else: \
+        } else:equals(QMAKE_HOST.os, Darwin) {
+            contains(QT_CONFIG, qt_framework): \
+                deppath.name = DYLD_FRAMEWORK_PATH
+            else: \
+                deppath.name = DYLD_LIBRARY_PATH
+        } else {
             error("Operating system not supported.")
+        }
         deppath.value = $$unique(deppath)
         deppath.CONFIG = prepend
 
