@@ -39,44 +39,15 @@
 **
 ****************************************************************************/
 
-#include <QString>
-#include <qtconcurrentiteratekernel.h>
-#include <QImage>
-#include <QHostAddress>
-#include <QGLBuffer>
-#include <QSqlQuery>
-#include <QtTest>
-#include <QWidget>
-#include <QDomDocument>
-#include <QPrintDialog>
-
-#ifdef EXPECT_DBUS_AVAILABLE
-#include <QDBusMessage>
-#endif
+#include <QtConcurrent>
+#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent/QtConcurrentRun>
+#include <QtConcurrentRun>
 
 int main(int argc, char **argv)
 {
-    QObject object;
-
-    QtConcurrent::BlockSizeManager blockSizeManager(42);
-
-    QHostAddress hostAddress;
-
-    QGLBuffer glBuffer;
-
-    QSqlQuery sqlQuery;
-
-    QSignalSpy signalSpy(&object, SIGNAL(destroyed()));
-
-    QWidget widget;
-
-    QDomDocument domDocument;
-
-    QPrintDialog printDialog;
-
-#ifdef EXPECT_DBUS_AVAILABLE
-    QDBusMessage dBusMessage;
-#endif
+    QByteArray bytearray = "hello world";
+    QtConcurrent::run(bytearray, &QByteArray::split, ',');
 
     return 0;
 }
