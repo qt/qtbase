@@ -58,6 +58,7 @@
 #include "qtranslator_p.h"
 #include "qlocale.h"
 #include "qendian.h"
+#include "qresource.h"
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #define QT_USE_MMAP
@@ -292,15 +293,18 @@ public:
 #if defined(QT_USE_MMAP)
           used_mmap(0),
 #endif
-          unmapPointer(0), unmapLength(0),
+          unmapPointer(0), unmapLength(0), resource(0),
           messageArray(0), offsetArray(0), contextArray(0), numerusRulesArray(0),
           messageLength(0), offsetLength(0), contextLength(0), numerusRulesLength(0) {}
 
 #if defined(QT_USE_MMAP)
     bool used_mmap : 1;
 #endif
-    char *unmapPointer;     // owned memory (mmap or new)
+    char *unmapPointer;     // used memory (mmap, new or resource file)
     quint32 unmapLength;
+
+    // The resource object in case we loaded the translations from a resource
+    QResource *resource;
 
     // used if the translator has dependencies
     QList<QTranslator*> subTranslators;
@@ -518,22 +522,42 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
     QTranslatorPrivate *d = this;
     bool ok = false;
 
-    QFile file(realname);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
-        return false;
-
-    qint64 fileSize = file.size();
-    if (fileSize <= MagicLength || quint32(-1) <= fileSize)
-        return false;
-
-    {
-        char magicBuffer[MagicLength];
-        if (MagicLength != file.read(magicBuffer, MagicLength)
-                || memcmp(magicBuffer, magic, MagicLength))
-            return false;
+    if (realname.startsWith(':')) {
+        // If the translation is in a non-compressed resource file, the data is already in
+        // memory, so no need to use QFile to copy it again.
+        Q_ASSERT(!d->resource);
+        d->resource = new QResource(realname);
+        if (resource->isValid() && !resource->isCompressed() && resource->size() > MagicLength
+                && !memcmp(resource->data(), magic, MagicLength)) {
+            d->unmapLength = resource->size();
+            d->unmapPointer = reinterpret_cast<char *>(const_cast<uchar *>(resource->data()));
+#if defined(QT_USE_MMAP)
+            d->used_mmap = false;
+#endif
+            ok = true;
+        } else {
+            delete resource;
+            resource = 0;
+        }
     }
 
-    d->unmapLength = quint32(fileSize);
+    if (!ok) {
+        QFile file(realname);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Unbuffered))
+            return false;
+
+        qint64 fileSize = file.size();
+        if (fileSize <= MagicLength || quint32(-1) <= fileSize)
+            return false;
+
+        {
+            char magicBuffer[MagicLength];
+            if (MagicLength != file.read(magicBuffer, MagicLength)
+                    || memcmp(magicBuffer, magic, MagicLength))
+                return false;
+        }
+
+        d->unmapLength = quint32(fileSize);
 
 #ifdef QT_USE_MMAP
 
@@ -544,30 +568,31 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
 #define MAP_FAILED -1
 #endif
 
-    int fd = file.handle();
-    if (fd >= 0) {
-        char *ptr;
-        ptr = reinterpret_cast<char *>(
-            mmap(0, d->unmapLength,         // any address, whole file
-                 PROT_READ,                 // read-only memory
-                 MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
-                 fd, 0));                   // from offset 0 of fd
-        if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
-            file.close();
-            d->used_mmap = true;
-            d->unmapPointer = ptr;
-            ok = true;
+        int fd = file.handle();
+        if (fd >= 0) {
+            char *ptr;
+            ptr = reinterpret_cast<char *>(
+                mmap(0, d->unmapLength,         // any address, whole file
+                     PROT_READ,                 // read-only memory
+                     MAP_FILE | MAP_PRIVATE,    // swap-backed map from file
+                     fd, 0));                   // from offset 0 of fd
+            if (ptr && ptr != reinterpret_cast<char *>(MAP_FAILED)) {
+                file.close();
+                d->used_mmap = true;
+                d->unmapPointer = ptr;
+                ok = true;
+            }
         }
-    }
 #endif // QT_USE_MMAP
 
-    if (!ok) {
-        d->unmapPointer = new char[d->unmapLength];
-        if (d->unmapPointer) {
-            file.seek(0);
-            qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
-            if (readResult == qint64(unmapLength))
-                ok = true;
+        if (!ok) {
+            d->unmapPointer = new char[d->unmapLength];
+            if (d->unmapPointer) {
+                file.seek(0);
+                qint64 readResult = file.read(d->unmapPointer, d->unmapLength);
+                if (readResult == qint64(unmapLength))
+                    ok = true;
+            }
         }
     }
 
@@ -580,8 +605,11 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         munmap(unmapPointer, unmapLength);
     } else
 #endif
+    if (!d->resource)
         delete [] unmapPointer;
 
+    delete d->resource;
+    d->resource = 0;
     d->unmapPointer = 0;
     d->unmapLength = 0;
 
@@ -1030,9 +1058,12 @@ void QTranslatorPrivate::clear()
             munmap(unmapPointer, unmapLength);
         } else
 #endif
+        if (!resource)
             delete [] unmapPointer;
     }
 
+    delete resource;
+    resource = 0;
     unmapPointer = 0;
     unmapLength = 0;
     messageArray = 0;
