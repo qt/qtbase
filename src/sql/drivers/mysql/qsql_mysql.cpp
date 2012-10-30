@@ -987,11 +987,16 @@ bool QMYSQLResult::exec()
                     break; }
                 case QVariant::UInt:
                 case QVariant::Int:
-                case QVariant::Bool:
                     currBind->buffer_type = MYSQL_TYPE_LONG;
                     currBind->buffer = data;
                     currBind->buffer_length = sizeof(int);
                     currBind->is_unsigned = (val.type() != QVariant::Int);
+                break;
+                case QVariant::Bool:
+                    currBind->buffer_type = MYSQL_TYPE_TINY;
+                    currBind->buffer = data;
+                    currBind->buffer_length = sizeof(bool);
+                    currBind->is_unsigned = false;
                     break;
                 case QVariant::Double:
                     currBind->buffer_type = MYSQL_TYPE_DOUBLE;

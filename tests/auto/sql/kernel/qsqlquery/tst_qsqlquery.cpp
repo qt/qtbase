@@ -161,6 +161,8 @@ private slots:
     void lastInsertId();
     void lastQuery_data() { generic_data(); }
     void lastQuery();
+    void bindBool_data() { generic_data(); }
+    void bindBool();
     void bindWithDoubleColonCastOperator_data() { generic_data(); }
     void bindWithDoubleColonCastOperator();
     void queryOnInvalidDatabase_data() { generic_data(); }
@@ -573,6 +575,39 @@ void tst_QSqlQuery::mysqlOutValues()
     QCOMPARE( q.value( 0 ).toInt(), 42 );
 
     QVERIFY_SQL( q, exec( "drop procedure " + qtestproc ) );
+}
+
+void tst_QSqlQuery::bindBool()
+{
+    // QTBUG-27763: bool value got converted to int 127 by mysql driver becuase sizeof(bool) < sizeof(int).
+    // The problem was the way the bool value from the application was handled. It doesn't matter
+    // whether the table column type is BOOL or INT. Use INT here because all DBMSs have it and all
+    // should pass this test.
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    QSqlQuery q(db);
+
+    const QString tableName(qTableName( "bindBool", __FILE__ ));
+    q.exec("DROP TABLE " + tableName);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT, flag INT NOT NULL, PRIMARY KEY(id))"));
+
+    for (int i = 0; i < 2; ++i) {
+        bool flag = i;
+        q.prepare("INSERT INTO " + tableName + " (id, flag) VALUES(:id, :flag)");
+        q.bindValue(":id", i);
+        q.bindValue(":flag", flag);
+        QVERIFY_SQL(q, exec());
+    }
+
+    QVERIFY_SQL(q, exec("SELECT id, flag FROM " + tableName));
+    for (int i = 0; i < 2; ++i) {
+        bool flag = i;
+        QVERIFY_SQL(q, next());
+        QCOMPARE(q.value(0).toInt(), i);
+        QCOMPARE(q.value(1).toBool(), flag);
+    }
+    QVERIFY_SQL(q, exec("DROP TABLE " + tableName));
 }
 
 void tst_QSqlQuery::oraOutValues()
