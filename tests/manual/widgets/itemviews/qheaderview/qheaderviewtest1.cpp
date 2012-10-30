@@ -101,9 +101,9 @@ int main(int argc, char *argv[])
     m.setColumnCount(36);
     tv.setModel(&m);
     SomeHandler handler(tv.horizontalHeader(), &tv);
-    tv.horizontalHeader()->setDefaultSectionSize(200);
+    tv.horizontalHeader()->setDefaultSectionSize(50);
+    tv.horizontalHeader()->setSectionsMovable(true);
     tv.showMaximized();
-    tv.horizontalScrollBar()->setValue(tv.horizontalScrollBar()->maximum());
     app.exec();
 }
 

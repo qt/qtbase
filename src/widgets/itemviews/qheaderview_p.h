@@ -91,6 +91,7 @@ public:
           stretchLastSection(false),
           cascadingResizing(false),
           resizeRecursionBlock(false),
+          allowUserMoveOfSection0(true), // will be false for QTreeView and true for QTableView
           stretchSections(0),
           contentsSections(0),
           minimumSectionSize(-1),
@@ -234,6 +235,10 @@ public:
         }
     }
 
+    inline void setAllowUserMoveOfSection0(bool b) {
+        allowUserMoveOfSection0 = b;
+    }
+
     void clear();
     void flipSortIndicator(int section);
     void cascadingResize(int visual, int newSize);
@@ -274,6 +279,7 @@ public:
     bool stretchLastSection;
     bool cascadingResizing;
     bool resizeRecursionBlock;
+    bool allowUserMoveOfSection0;
     int stretchSections;
     int contentsSections;
     int defaultSectionSize;

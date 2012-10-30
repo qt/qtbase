@@ -240,6 +240,9 @@ protected:
     QRegion visualRegionForSelection(const QItemSelection &selection) const;
     void initStyleOption(QStyleOptionHeader *option) const;
 
+    friend class QTableView;
+    friend class QTreeView;
+
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_sectionsRemoved(const QModelIndex &parent, int logicalFirst, int logicalLast))
     Q_PRIVATE_SLOT(d_func(), void _q_layoutAboutToBeChanged())
