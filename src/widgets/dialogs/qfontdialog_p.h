@@ -145,22 +145,6 @@ public:
 
     bool canBeNativeDialog() const;
     void _q_runNativeAppModalPanel();
-#ifdef Q_WS_MAC
-    static void setFont(void *delegate, const QFont &font);
-
-    inline void done(int result) { q_func()->done(result); }
-    inline QFontDialog *fontDialog() { return q_func(); }
-
-    void *delegate;
-    void closeCocoaFontPanel();
-
-    bool setVisible_sys(bool visible);
-    void createNSFontPanelDelegate();
-    bool showCocoaFontPanel();
-    bool hideCocoaFontPanel();
-
-    static bool sharedFontPanelAvailable;
-#endif
 
 private:
     virtual void initHelper(QPlatformDialogHelper *);
