@@ -532,8 +532,8 @@ void tst_QProcess::batFiles_data()
     QTest::addColumn<QString>("batFile");
     QTest::addColumn<QByteArray>("output");
 
-    QTest::newRow("simple") << QString::fromLatin1("testBatFiles/simple.bat") << QByteArray("Hello");
-    QTest::newRow("with space") << QString::fromLatin1("testBatFiles/with space.bat") << QByteArray("Hello");
+    QTest::newRow("simple") << QFINDTESTDATA("testBatFiles/simple.bat") << QByteArray("Hello");
+    QTest::newRow("with space") << QFINDTESTDATA("testBatFiles/with space.bat") << QByteArray("Hello");
 }
 
 void tst_QProcess::batFiles()
