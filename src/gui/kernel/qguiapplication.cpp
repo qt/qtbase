@@ -469,7 +469,6 @@ void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
         }
     }
 
-    QEvent e(QEvent::WindowBlocked);
     QWindowList windows = QGuiApplication::topLevelWindows();
     for (int i = 0; i < windows.count(); ++i) {
         QWindow *window = windows.at(i);
@@ -484,7 +483,6 @@ void QGuiApplicationPrivate::hideModalWindow(QWindow *window)
 {
     self->modalWindowList.removeAll(window);
 
-    QEvent e(QEvent::WindowUnblocked);
     QWindowList windows = QGuiApplication::topLevelWindows();
     for (int i = 0; i < windows.count(); ++i) {
         QWindow *window = windows.at(i);
