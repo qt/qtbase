@@ -372,7 +372,7 @@ void QDocDatabase::findAllFunctions(const InnerNode* node)
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
-            if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
+            if ((*c)->isInnerNode()) {
                 findAllFunctions(static_cast<const InnerNode*>(*c));
             }
             else if ((*c)->type() == Node::Function) {
