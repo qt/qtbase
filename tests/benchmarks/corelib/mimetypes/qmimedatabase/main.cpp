@@ -39,66 +39,49 @@
 **
 ****************************************************************************/
 
-#ifndef TST_QMIMEDATABASE_H
-#define TST_QMIMEDATABASE_H
+#include <QtTest/QtTest>
 
-#include <QtCore/QObject>
-#include <QtCore/QTemporaryDir>
-
-class tst_QMimeDatabase : public QObject
+class tst_QMimeDatabase: public QObject
 {
+
     Q_OBJECT
 
-public:
-    tst_QMimeDatabase();
-
 private slots:
-    void initTestCase();
-
-    void mimeTypeForName();
-    void mimeTypeForFileName_data();
-    void mimeTypeForFileName();
-    void mimeTypesForFileName_data();
-    void mimeTypesForFileName();
-    void inheritance();
-    void aliases();
-    void icons();
-    void mimeTypeForFileWithContent();
-    void mimeTypeForUrl();
-    void mimeTypeForData_data();
-    void mimeTypeForData();
-    void mimeTypeForFileAndContent_data();
-    void mimeTypeForFileAndContent();
-    void allMimeTypes();
-    void suffixes_data();
-    void suffixes();
-    void knownSuffix();
-    void fromThreads();
-
-    // shared-mime-info test suite
-
-    void findByFileName_data();
-    void findByFileName();
-
-    void findByData_data();
-    void findByData();
-
-    void findByFile_data();
-    void findByFile();
-
-    //
-
-    void installNewGlobalMimeType();
-    void installNewLocalMimeType();
-
-private:
-    void init(); // test-specific
-
-    QString m_globalXdgDir;
-    QString m_localXdgDir;
-    QString m_yastMimeTypes;
-    QTemporaryDir m_temporaryDir;
-    QString m_testSuite;
+    void inheritsPerformance();
 };
 
-#endif   // TST_QMIMEDATABASE_H
+void tst_QMimeDatabase::inheritsPerformance()
+{
+    // Check performance of inherits().
+    // This benchmark (which started in 2009 in kmimetypetest.cpp) uses 40 mimetypes.
+    QStringList mimeTypes;
+    mimeTypes << QLatin1String("image/jpeg") << QLatin1String("image/png") << QLatin1String("image/tiff") << QLatin1String("text/plain") << QLatin1String("text/html");
+    mimeTypes += mimeTypes;
+    mimeTypes += mimeTypes;
+    mimeTypes += mimeTypes;
+    QCOMPARE(mimeTypes.count(), 40);
+    QMimeDatabase db;
+    QMimeType mime = db.mimeTypeForName(QString::fromLatin1("text/x-chdr"));
+    QVERIFY(mime.isValid());
+    QBENCHMARK {
+        QString match;
+        foreach (const QString &mt, mimeTypes) {
+            if (mime.inherits(mt)) {
+                match = mt;
+                // of course there would normally be a "break" here, but we're testing worse-case
+                // performance here
+            }
+        }
+        QCOMPARE(match, QString::fromLatin1("text/plain"));
+    }
+    // Numbers from 2011, in release mode:
+    // KDE 4.7 numbers: 0.21 msec / 494,000 ticks / 568,345 instr. loads per iteration
+    // QMimeBinaryProvider (with Qt 5): 0.16 msec / NA / 416,049 instr. reads per iteration
+    // QMimeXmlProvider (with Qt 5): 0.062 msec / NA / 172,889 instr. reads per iteration
+    //   (but the startup time is way higher)
+    // And memory usage is flat at 200K with QMimeBinaryProvider, while it peaks at 6 MB when
+    // parsing XML, and then keeps being around 4.5 MB for all the in-memory hashes.
+}
+
+QTEST_MAIN(tst_QMimeDatabase)
+#include "main.moc"
