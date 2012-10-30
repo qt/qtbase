@@ -698,6 +698,7 @@ public:
         SH_DockWidget_ButtonsHaveFrame,
         SH_ToolButtonStyle,
         SH_RequestSoftwareInputPanel,
+        SH_ScrollBar_Transient,
         // Add new style hint values here
 
         SH_CustomBase = 0xf0000000

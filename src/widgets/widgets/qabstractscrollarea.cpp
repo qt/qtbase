@@ -57,6 +57,7 @@
 #include <QDebug>
 
 #include "qabstractscrollarea_p.h"
+#include "qscrollbar_p.h"
 #include <qwidget.h>
 
 #include <private/qapplication_p.h>
@@ -183,6 +184,7 @@ QAbstractScrollAreaScrollBarContainer::QAbstractScrollAreaScrollBarContainer(Qt:
     layout->setMargin(0);
     layout->setSpacing(0);
     layout->addWidget(scrollBar);
+    layout->setSizeConstraint(QLayout::SetMaximumSize);
 }
 
 /*! \internal
@@ -266,6 +268,8 @@ void QAbstractScrollAreaPrivate::replaceScrollBar(QScrollBar *scrollBar,
     scrollBar->setSliderPosition(oldBar->sliderPosition());
     scrollBar->setTracking(oldBar->hasTracking());
     scrollBar->setValue(oldBar->value());
+    scrollBar->installEventFilter(q);
+    oldBar->removeEventFilter(q);
     delete oldBar;
 
     QObject::connect(scrollBar, SIGNAL(valueChanged(int)),
@@ -286,6 +290,7 @@ void QAbstractScrollAreaPrivate::init()
     hbar = scrollBarContainers[Qt::Horizontal]->scrollBar;
     hbar->setRange(0,0);
     scrollBarContainers[Qt::Horizontal]->setVisible(false);
+    hbar->installEventFilter(q);
     QObject::connect(hbar, SIGNAL(valueChanged(int)), q, SLOT(_q_hslide(int)));
     QObject::connect(hbar, SIGNAL(rangeChanged(int,int)), q, SLOT(_q_showOrHideScrollBars()), Qt::QueuedConnection);
     scrollBarContainers[Qt::Vertical] = new QAbstractScrollAreaScrollBarContainer(Qt::Vertical, q);
@@ -293,6 +298,7 @@ void QAbstractScrollAreaPrivate::init()
     vbar = scrollBarContainers[Qt::Vertical]->scrollBar;
     vbar->setRange(0,0);
     scrollBarContainers[Qt::Vertical]->setVisible(false);
+    vbar->installEventFilter(q);
     QObject::connect(vbar, SIGNAL(valueChanged(int)), q, SLOT(_q_vslide(int)));
     QObject::connect(vbar, SIGNAL(rangeChanged(int,int)), q, SLOT(_q_showOrHideScrollBars()), Qt::QueuedConnection);
     viewportFilter.reset(new QAbstractScrollAreaFilter(this));
@@ -323,10 +329,10 @@ void QAbstractScrollAreaPrivate::layoutChildren()
 {
     Q_Q(QAbstractScrollArea);
     bool needh = (hbarpolicy == Qt::ScrollBarAlwaysOn
-                  || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
+                  || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum() && !hbar->sizeHint().isEmpty()));
 
     bool needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
-                  || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
+                  || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty()));
 
     QStyleOption opt(0);
     opt.init(q);
@@ -648,6 +654,7 @@ void QAbstractScrollArea::setVerticalScrollBarPolicy(Qt::ScrollBarPolicy policy)
         d->layoutChildren();
     if (oldPolicy != d->vbarpolicy)
         d->scrollBarPolicyChanged(Qt::Vertical, d->vbarpolicy);
+    d->setScrollBarTransient(d->vbar, policy == Qt::ScrollBarAsNeeded);
 }
 
 
@@ -709,6 +716,7 @@ void QAbstractScrollArea::setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy polic
         d->layoutChildren();
     if (oldPolicy != d->hbarpolicy)
         d->scrollBarPolicyChanged(Qt::Horizontal, d->hbarpolicy);
+    d->setScrollBarTransient(d->hbar, policy == Qt::ScrollBarAsNeeded);
 }
 
 /*!
@@ -919,6 +927,20 @@ void QAbstractScrollArea::setViewportMargins(const QMargins &margins)
 {
     setViewportMargins(margins.left(), margins.top(),
                        margins.right(), margins.bottom());
+}
+
+/*! \internal */
+bool QAbstractScrollArea::eventFilter(QObject *o, QEvent *e)
+{
+    Q_D(QAbstractScrollArea);
+    if ((o == d->hbar || o == d->vbar) && (e->type() == QEvent::HoverEnter || e->type() == QEvent::HoverLeave)) {
+        Qt::ScrollBarPolicy policy = o == d->hbar ? d->vbarpolicy : d->hbarpolicy;
+        if (policy == Qt::ScrollBarAsNeeded) {
+            QScrollBar *sibling = o == d->hbar ? d->vbar : d->hbar;
+            d->setScrollBarTransient(sibling, e->type() == QEvent::HoverLeave);
+        }
+    }
+    return QFrame::eventFilter(o, e);
 }
 
 /*!
@@ -1421,12 +1443,26 @@ bool QAbstractScrollAreaPrivate::canStartScrollingAt( const QPoint &startPos )
     return true;
 }
 
+void QAbstractScrollAreaPrivate::flashScrollBars()
+{
+    if (hbarpolicy == Qt::ScrollBarAsNeeded)
+        hbar->d_func()->flash();
+    if (vbarpolicy == Qt::ScrollBarAsNeeded)
+        vbar->d_func()->flash();
+}
+
+void QAbstractScrollAreaPrivate::setScrollBarTransient(QScrollBar *scrollBar, bool transient)
+{
+    scrollBar->d_func()->setTransient(transient);
+}
+
 void QAbstractScrollAreaPrivate::_q_hslide(int x)
 {
     Q_Q(QAbstractScrollArea);
     int dx = xoffset - x;
     xoffset = x;
     q->scrollContentsBy(dx, 0);
+    flashScrollBars();
 }
 
 void QAbstractScrollAreaPrivate::_q_vslide(int y)
@@ -1435,6 +1471,7 @@ void QAbstractScrollAreaPrivate::_q_vslide(int y)
     int dy = yoffset - y;
     yoffset = y;
     q->scrollContentsBy(0, dy);
+    flashScrollBars();
 }
 
 void QAbstractScrollAreaPrivate::_q_showOrHideScrollBars()

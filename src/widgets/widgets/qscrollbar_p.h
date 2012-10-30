@@ -39,61 +39,51 @@
 **
 ****************************************************************************/
 
-#ifndef QSCROLLBAR_H
-#define QSCROLLBAR_H
+#ifndef QSCROLLBAR_P_H
+#define QSCROLLBAR_P_H
 
-#include <QtWidgets/qwidget.h>
-#include <QtWidgets/qabstractslider.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "private/qabstractslider_p.h"
+#include "qstyle.h"
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_SCROLLBAR
-
-class QScrollBarPrivate;
-class QStyleOptionSlider;
-
-class Q_WIDGETS_EXPORT QScrollBar : public QAbstractSlider
+class QScrollBarPrivate : public QAbstractSliderPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QScrollBar)
 public:
-    explicit QScrollBar(QWidget *parent=0);
-    explicit QScrollBar(Qt::Orientation, QWidget *parent=0);
-    ~QScrollBar();
+    QStyle::SubControl pressedControl;
+    bool pointerOutsidePressedControl;
 
-    QSize sizeHint() const;
-    bool event(QEvent *event);
+    int clickOffset, snapBackPosition;
 
-protected:
-#ifndef QT_NO_WHEELEVENT
-    void wheelEvent(QWheelEvent *);
-#endif
-    void paintEvent(QPaintEvent *);
-    void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
-    void hideEvent(QHideEvent*);
-    void sliderChange(SliderChange change);
-#ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *);
-#endif
-    void initStyleOption(QStyleOptionSlider *option) const;
+    void activateControl(uint control, int threshold = 500);
+    void stopRepeatAction();
+    int pixelPosToRangeValue(int pos) const;
+    void init();
+    bool updateHoverControl(const QPoint &pos);
+    QStyle::SubControl newHoverControl(const QPoint &pos);
 
+    QStyle::SubControl hoverControl;
+    QRect hoverRect;
 
-private:
-    friend class QAbstractScrollAreaPrivate;
-    friend Q_WIDGETS_EXPORT QStyleOptionSlider qt_qscrollbarStyleOption(QScrollBar *scrollBar);
+    bool transient;
+    void setTransient(bool value);
 
-    Q_DISABLE_COPY(QScrollBar)
-    Q_DECLARE_PRIVATE(QScrollBar)
+    bool flashed;
+    void flash();
 };
-
-#endif // QT_NO_SCROLLBAR
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QSCROLLBAR_H
+#endif // QSCROLLBAR_P_H

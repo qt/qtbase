@@ -158,9 +158,6 @@ public:
     static const qreal ScrollBarFadeOutDuration;
     static const qreal ScrollBarFadeOutDelay;
 
-    // Stuff from QAquaAnimate:
-    bool addWidget(QWidget *);
-
     enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
     static ThemeDrawState getDrawState(QStyle::State flags);
     QAquaWidgetSize aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
@@ -201,29 +198,6 @@ public:
     mutable QPointer<QObject> defaultButton;
     mutable QPointer<QObject> autoDefaultButton;
 
-    struct OverlayScrollBarInfo {
-        OverlayScrollBarInfo()
-            : lastValue(-1),
-              lastMinimum(-1),
-              lastMaximum(-1),
-              lastUpdate(QDateTime::currentMSecsSinceEpoch()),
-              hovered(false),
-              lastHovered(0),
-              cleared(false),
-              animating(false)
-        {}
-        int lastValue;
-        int lastMinimum;
-        int lastMaximum;
-        QSize lastSize;
-        qint64 lastUpdate;
-        bool hovered;
-        qint64 lastHovered;
-        bool cleared;
-        bool animating;
-    };
-    mutable QMap<const QWidget*, OverlayScrollBarInfo> scrollBarInfos;
-
     struct ButtonState {
         int frame;
         enum { ButtonDark, ButtonLight } dir;
@@ -235,6 +209,34 @@ public:
     void* receiver;
     void *nsscroller;
 #endif
+};
+
+class QFadeOutAnimation : public QNumberStyleAnimation
+{
+    Q_OBJECT
+
+public:
+    QFadeOutAnimation(QObject *target) : QNumberStyleAnimation(target), _active(false)
+    {
+        setDuration(QMacStylePrivate::ScrollBarFadeOutDelay + QMacStylePrivate::ScrollBarFadeOutDuration);
+        setDelay(QMacStylePrivate::ScrollBarFadeOutDelay);
+        setStartValue(1.0);
+        setEndValue(0.0);
+    }
+
+    bool wasActive() const { return _active; }
+    void setActive(bool active) { _active = active; }
+
+private slots:
+    void updateCurrentTime(int time)
+    {
+        QNumberStyleAnimation::updateCurrentTime(time);
+        if (qFuzzyIsNull(currentValue()))
+            target()->setProperty("visible", false);
+    }
+
+private:
+    bool _active;
 };
 
 QT_END_NAMESPACE

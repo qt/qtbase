@@ -127,9 +127,9 @@ QMacStylePrivate *mPrivate;
 {
     Q_UNUSED(notification);
     QEvent event(QEvent::StyleChange);
-    Q_FOREACH (const QObject* target, mPrivate->animationTargets()) {
-        if (target)
-            QCoreApplication::sendEvent(const_cast<QObject*>(target), &event);
+    foreach (QWidget *widget, QApplication::allWidgets()) {
+        if (QScrollBar *scrollBar = qobject_cast<QScrollBar *>(widget))
+            QCoreApplication::sendEvent(scrollBar, &event);
     }
 }
 @end
@@ -177,38 +177,6 @@ static bool isVerticalTabs(const QTabBar::Shape shape) {
                 || shape == QTabBar::RoundedWest
                 || shape == QTabBar::TriangularWest);
 }
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-/*!
- Returns the QAbstractScrollArea the scroll bar \a sb is in. If \a sb is not
- inside of a QAbstractScrollArea, this returns 0.
- \internal
- */
-static const QAbstractScrollArea *scrollBarsScrollArea(const QScrollBar *sb)
-{
-    const QWidget *w = sb;
-    const QAbstractScrollArea *sa = 0;
-    while (w != 0 && sa == 0) {
-        sa = qobject_cast<const QAbstractScrollArea *>(w);
-        w = w->parentWidget();
-    }
-    return sa;
-}
-
-/*!
- For a scroll bar \a sb within a scroll area, this function returns all other scroll
- bars within the same scroll area.
- \internal
- */
-static QList<const QScrollBar *> scrollBarsSiblings(const QScrollBar *sb)
-{
-    const QAbstractScrollArea *sa = scrollBarsScrollArea(sb);
-    Q_ASSERT(sa != 0);
-    QList<const QScrollBar *> list = sa->findChildren<const QScrollBar *>();
-    list.removeOne(sb);
-    return list;
-}
-#endif
 
 void drawTabCloseButton(QPainter *p, bool hover, bool active, bool selected)
 {
@@ -1678,24 +1646,6 @@ QMacStylePrivate::QMacStylePrivate()
 
 }
 
-bool QMacStylePrivate::addWidget(QWidget *w)
-{
-    //already knew of it
-    if (w == defaultButton || animation(w))
-        return false;
-
-    Q_Q(QMacStyle);
-    if (qobject_cast<QScrollBar *>(w)) {
-        w->installEventFilter(q);
-        return true;
-    }
-    if (w->isWindow()) {
-        w->installEventFilter(q);
-        return true;
-    }
-    return false;
-}
-
 ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
 {
     ThemeDrawState tds = kThemeStateActive;
@@ -1711,73 +1661,6 @@ ThemeDrawState QMacStylePrivate::getDrawState(QStyle::State flags)
             tds = kThemeStateUnavailableInactive;
     }
     return tds;
-}
-
-/*! \reimp */
-bool QMacStyle::eventFilter(QObject *o, QEvent *e)
-{
-    //animate
-    Q_D(QMacStyle);
-    if (QScrollBar *sb = qobject_cast<QScrollBar *>(o)) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-        // take care of fading out overlaying scrollbars (and only those!) when inactive
-        const QAbstractScrollArea *scrollArea = scrollBarsScrollArea(sb);
-        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
-                [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay && scrollArea) {
-            QMacStylePrivate::OverlayScrollBarInfo& info = d->scrollBarInfos[sb];
-            const qint64 dt = QDateTime::currentMSecsSinceEpoch();
-            const qreal elapsed = dt - info.lastUpdate;
-            const CGFloat opacity = 1.0 - qMax(0.0, (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay)
-                                                          / QMacStylePrivate::ScrollBarFadeOutDuration);
-            switch (e->type()) {
-            case QEvent::MouseMove:
-                // whenever the mouse moves on a not 100% transparent scroll bar,
-                // the fade out is stopped and it's set to 100% opaque
-                if (opacity > 0.0) {
-                    info.hovered = true;
-                    info.lastUpdate = dt;
-                    info.lastHovered = info.lastUpdate;
-                    sb->update();
-                    break;
-                }
-
-                // fall through
-            case QEvent::MouseButtonPress:
-            case QEvent::MouseButtonRelease:
-            case QEvent::MouseButtonDblClick:
-                // all mouse events which happens on a transparent scroll bar are
-                // translated and passed to the scroll area's viewport
-                if (opacity <= 0.0) {
-                    QMouseEvent* mouse = static_cast<QMouseEvent *>(e);
-                    QWidget* viewport = scrollArea->viewport();
-                    const QPoint scrollAreaPos = sb->mapTo(scrollArea, mouse->pos());
-                    const QPoint viewportPos = viewport->mapFromParent(scrollAreaPos);
-                    QMouseEvent me(mouse->type(), viewportPos, mouse->windowPos(),
-                                   mouse->globalPos(), mouse->button(), mouse->buttons(),
-                                   mouse->modifiers());
-                    QCoreApplication::sendEvent(viewport, &me);
-                    mouse->setAccepted(me.isAccepted());
-                    return true;
-                }
-                break;
-            case QEvent::Leave:
-            case QEvent::WindowDeactivate:
-                // mouse leave and window deactivate sets the scrollbar to not-hovered
-                // -> triggers fade out
-                info.hovered = false;
-                break;
-                if (!info.hovered) {
-                    e->setAccepted(false);
-                    return true;
-                }
-                break;
-            default:
-                break;
-            }
-        }
-#endif
-    }
-    return false;
 }
 
 void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
@@ -2006,8 +1889,6 @@ void QMacStyle::unpolish(QApplication *)
 
 void QMacStyle::polish(QWidget* w)
 {
-    Q_D(QMacStyle);
-    d->addWidget(w);
     if (qt_mac_is_metal(w) && !w->testAttribute(Qt::WA_SetPalette)) {
         // Set a clear brush so that the metal shines through.
         QPalette pal = w->palette();
@@ -2059,13 +1940,13 @@ void QMacStyle::polish(QWidget* w)
 
     if (qobject_cast<QScrollBar*>(w)) {
         w->setAttribute(Qt::WA_OpaquePaintEvent, false);
+        w->setAttribute(Qt::WA_Hover, true);
         w->setMouseTracking(true);
     }
 }
 
 void QMacStyle::unpolish(QWidget* w)
 {
-    Q_D(QMacStyle);
     if ((qobject_cast<QMenu*>(w) || qt_mac_is_metal(w)) && !w->testAttribute(Qt::WA_SetPalette)) {
         QPalette pal = qApp->palette(w);
         w->setPalette(pal);
@@ -2093,8 +1974,8 @@ void QMacStyle::unpolish(QWidget* w)
 
     if (qobject_cast<QScrollBar*>(w)) {
         w->setAttribute(Qt::WA_OpaquePaintEvent, true);
+        w->setAttribute(Qt::WA_Hover, false);
         w->setMouseTracking(false);
-        d->scrollBarInfos.remove(w);
     }
 }
 
@@ -2303,8 +2184,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_ScrollBarExtent: {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
-           [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay &&
-           scrollBarsScrollArea(qobject_cast<const QScrollBar *>(widget))) {
+           [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay) {
             switch (d->aquaSizeConstrain(opt, widget)) {
             case QAquaSizeUnknown:
             case QAquaSizeLarge:
@@ -2830,6 +2710,12 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         break;
     case SH_DockWidget_ButtonsHaveFrame:
         ret = false;
+        break;
+    case SH_ScrollBar_Transient:
+        ret = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        ret &= [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay;
+#endif
         break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
@@ -5023,58 +4909,64 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-            const qint64 dt = QDateTime::currentMSecsSinceEpoch();
-            if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7 &&
-                [NSScroller preferredScrollerStyle] == NSScrollerStyleOverlay &&
-                scrollBarsScrollArea(qobject_cast<const QScrollBar *>(widget)) &&
-                cc == CC_ScrollBar) {
-                QMacStylePrivate::OverlayScrollBarInfo& info = d->scrollBarInfos[widget];
-                bool showSiblings = false;
-                if (info.lastValue != slider->sliderPosition ||
-                        info.lastMinimum != slider->minimum ||
-                        info.lastMaximum != slider->maximum ||
-                        info.lastSize != slider->rect.size()) {
-                    info.lastValue = slider->sliderPosition;
-                    info.lastMinimum = slider->minimum;
-                    info.lastSize = slider->rect.size();
-                    info.lastMaximum = slider->maximum;
-                    info.lastUpdate = dt;
-                    showSiblings = true;
-                }
+            if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient)) {
+                QObject *styleObject = opt->styleObject;
+                int oldPos = styleObject->property("_q_stylepos").toInt();
+                int oldMin = styleObject->property("_q_stylemin").toInt();
+                int oldMax = styleObject->property("_q_stylemax").toInt();
+                QRect oldRect = styleObject->property("_q_stylerect").toRect();
+                int oldState = styleObject->property("_q_stylestate").toInt();
+                uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
-                const QList<const QScrollBar *> siblings =
-                    scrollBarsSiblings(qobject_cast<const QScrollBar *>(widget));
-                // keep last update (last change of value) time of all siblings in sync
-                Q_FOREACH (const QScrollBar *sibling, siblings) {
-                    info.lastUpdate = qMax(info.lastUpdate,
-                                           d->scrollBarInfos.value(sibling).lastUpdate);
-                    info.cleared = false;
-                    if (d->scrollBarInfos.value(sibling).hovered)
-                        info.lastUpdate = dt;
-                }
+                // a scrollbar is transient when the the scrollbar itself and
+                // its sibling are both inactive (ie. not pressed/hovered/moved)
+                bool transient = !opt->activeSubControls && !(slider->state & State_On);
 
-                qreal elapsed = dt - info.lastHovered;
-                CGFloat opacity = 1.0 - qMax(0.0,
-                    (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay) /
-                    QMacStylePrivate::ScrollBarFadeOutDuration);
-                const bool isHorizontal = slider->orientation == Qt::Horizontal;
+                CGFloat opacity = 0.0;
+                if (!transient ||
+                        oldPos != slider->sliderPosition ||
+                        oldMin != slider->minimum ||
+                        oldMax != slider->maximum ||
+                        oldRect != slider->rect ||
+                        oldState != slider->state ||
+                        oldActiveControls != slider->activeSubControls) {
 
-                if (info.hovered) {
-                    info.lastHovered = dt;
-                    info.lastUpdate = dt;
+                    // if the scrollbar is transient or its attributes, geometry or
+                    // state has changed, the opacity is reset back to 100% opaque
                     opacity = 1.0;
-                    // if the current scroll bar is hovered, none of the others might fade out
-                    Q_FOREACH (const QScrollBar *sibling, siblings) {
-                        d->scrollBarInfos[sibling].lastUpdate = info.lastUpdate;
+
+                    styleObject->setProperty("_q_stylepos", slider->sliderPosition);
+                    styleObject->setProperty("_q_stylemin", slider->minimum);
+                    styleObject->setProperty("_q_stylemax", slider->maximum);
+                    styleObject->setProperty("_q_stylerect", slider->rect);
+                    styleObject->setProperty("_q_stylestate", static_cast<int>(slider->state));
+                    styleObject->setProperty("_q_stylecontrols", static_cast<uint>(slider->activeSubControls));
+
+                    if (transient) {
+                        QFadeOutAnimation *anim  = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
+                        if (!anim) {
+                            anim = new QFadeOutAnimation(styleObject);
+                            d->startAnimation(anim);
+                        } else {
+                            // the scrollbar was already fading out while the
+                            // state changed -> restart the fade out animation
+                            anim->setCurrentTime(0);
+                        }
+                    } else {
+                        d->stopAnimation(styleObject);
                     }
                 }
 
-                // when one scroll bar was changed, all its siblings need a redraw as well, since
-                // either both scroll bars within a scroll area shall be visible or none
-                if (showSiblings) {
-                    Q_FOREACH (const QScrollBar *sibling, siblings)
-                        const_cast<QScrollBar *>(sibling)->update();
+                QFadeOutAnimation *anim = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
+                if (anim) {
+                    // once a scrollbar was active (hovered/pressed), it retains
+                    // the active look even if it's no longer active while fading out
+                    if (oldActiveControls)
+                        anim->setActive(true);
+                    opacity = anim->currentValue();
                 }
+
+                const bool isHorizontal = slider->orientation == Qt::Horizontal;
 
                 CGContextSaveGState(cg);
                 [NSGraphicsContext saveGraphicsState];
@@ -5085,7 +4977,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 [scroller initWithFrame:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
                 // mac os behaviour: as soon as one color channel is >= 128,
                 // the bg is considered bright, scroller is dark
-                const QColor bgColor = widget->palette().color(QPalette::Base);
+                const QColor bgColor = opt->palette.color(QPalette::Base);
                 const bool isDarkBg = bgColor.red() < 128 && bgColor.green() < 128 &&
                                       bgColor.blue() < 128;
                 if (isDarkBg)
@@ -5102,7 +4994,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 [scroller setScrollerStyle:NSScrollerStyleOverlay];
 
                 // first we draw only the track, by using a disabled scroller
-                if (opacity > 0.0) {
+                if (opt->activeSubControls || (anim && anim->wasActive())) {
                     CGContextBeginTransparencyLayerWithRect(cg, qt_hirectForQRect(slider->rect),
                                                             NULL);
                     CGContextSetAlpha(cg, opacity);
@@ -5113,21 +5005,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                                inContext:[NSGraphicsContext currentContext]];
 
                     CGContextEndTransparencyLayer(cg);
-                }
-
-                // afterwards we draw the knob, since we cannot drow the know w/o the track,
-                // we simulate a scrollbar with a knob from 0.0 to 1.0
-                elapsed = dt - info.lastUpdate;
-                opacity = 1.0 - qMax(0.0, (elapsed - QMacStylePrivate::ScrollBarFadeOutDelay) /
-                                          QMacStylePrivate::ScrollBarFadeOutDuration);
-                info.cleared = opacity <= 0.0;
-
-                if (info.animating && info.cleared) {
-                    d->stopAnimation(slider->styleObject);
-                    info.animating = false;
-                } else if (!info.animating && !info.cleared) {
-                    d->startAnimation(new QStyleAnimation(slider->styleObject));
-                    info.animating = true;
                 }
 
                 CGContextBeginTransparencyLayerWithRect(cg, qt_hirectForQRect(slider->rect), NULL);
@@ -5170,6 +5047,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             } else
 #endif
             {
+                d->stopAnimation(opt->styleObject);
+
                 HIThemeDrawTrack(&tdi, tracking ? 0 : &macRect, cg,
                                  kHIThemeOrientationNormal);
                 if (cc == CC_Slider && slider->subControls & SC_SliderTickmarks) {

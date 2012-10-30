@@ -2105,40 +2105,40 @@ void tst_QMdiArea::updateScrollBars()
 
     QScrollBar *hbar = mdiArea.horizontalScrollBar();
     QVERIFY(hbar);
-    QVERIFY(!hbar->isVisible());
+    QVERIFY(hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || !hbar->isVisible());
 
     QScrollBar *vbar = mdiArea.verticalScrollBar();
     QVERIFY(vbar);
-    QVERIFY(!vbar->isVisible());
+    QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || !vbar->isVisible());
 
     // Move sub-window 2 away.
     subWindow2->move(10000, 10000);
     qApp->processEvents();
-    QVERIFY(hbar->isVisible());
-    QVERIFY(vbar->isVisible());
+    QVERIFY(hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || hbar->isVisible());
+    QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || vbar->isVisible());
 
     for (int i = 0; i < 2; ++i) {
     // Maximize sub-window 1 and make sure we don't have any scroll bars.
     subWindow1->showMaximized();
     qApp->processEvents();
     QVERIFY(subWindow1->isMaximized());
-    QVERIFY(!hbar->isVisible());
-    QVERIFY(!vbar->isVisible());
+    QVERIFY(hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || !hbar->isVisible());
+    QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || !vbar->isVisible());
 
     // We still shouldn't get any scroll bars.
     mdiArea.resize(mdiArea.size() - QSize(20, 20));
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
     qApp->processEvents();
     QVERIFY(subWindow1->isMaximized());
-    QVERIFY(!hbar->isVisible());
-    QVERIFY(!vbar->isVisible());
+    QVERIFY(hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || !hbar->isVisible());
+    QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || !vbar->isVisible());
 
     // Restore sub-window 1 and make sure we have scroll bars again.
     subWindow1->showNormal();
     qApp->processEvents();
     QVERIFY(!subWindow1->isMaximized());
-    QVERIFY(hbar->isVisible());
-    QVERIFY(vbar->isVisible());
+    QVERIFY(hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || hbar->isVisible());
+    QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || vbar->isVisible());
         if (i == 0) {
             // Now, do the same when the viewport is scrolled.
             hbar->setValue(1000);

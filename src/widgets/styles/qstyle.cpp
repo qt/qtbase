@@ -1887,6 +1887,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_RequestSoftwareInputPanel Determines when a software input panel should
            be requested by input widgets. Returns an enum of type QStyle::RequestSoftwareInputPanel.
 
+    \value SH_ScrollBar_Transient Determines if the style supports transient scroll bars. Transient
+           scroll bars appear when the content is scrolled and disappear when they are no longer needed.
+
     \sa styleHint()
 */
 

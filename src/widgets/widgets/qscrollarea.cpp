@@ -331,7 +331,7 @@ bool QScrollArea::eventFilter(QObject *o, QEvent *e)
     if (o == d->widget && e->type() == QEvent::Resize)
         d->updateScrollBars();
 
-    return false;
+    return QAbstractScrollArea::eventFilter(o, e);
 }
 
 /*!

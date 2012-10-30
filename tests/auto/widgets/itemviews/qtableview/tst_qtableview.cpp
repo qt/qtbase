@@ -2696,7 +2696,7 @@ void tst_QTableView::indexAt_data()
       << 0 << 0;   // expected
 
     QTest::newRow("no hidden, no span, scroll (5,0), at (20,20)")
-      << 10 << 10  // dim
+      << 20 << 20  // dim
       << 40 << 40  // size
       << -1 << -1  // hide
       << -1 << -1  // pos
@@ -2706,7 +2706,7 @@ void tst_QTableView::indexAt_data()
       << 0 << 5;   // expected
 
     QTest::newRow("no hidden, no span, scroll (0,5), at (20,20)")
-      << 10 << 10  // dim
+      << 20 << 20  // dim
       << 40 << 40  // size
       << -1 << -1  // hide
       << -1 << -1  // pos
@@ -2716,7 +2716,7 @@ void tst_QTableView::indexAt_data()
       << 5 << 0;   // expected
 
     QTest::newRow("no hidden, no span, scroll (5,5), at (20,20)")
-      << 10 << 10  // dim
+      << 20 << 20  // dim
       << 40 << 40  // size
       << -1 << -1  // hide
       << -1 << -1  // pos

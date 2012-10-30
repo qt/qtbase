@@ -5016,6 +5016,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_RequestSoftwareInputPanel:
         ret = RSIP_OnMouseClickAndAlreadyFocused;
         break;
+    case SH_ScrollBar_Transient:
+        ret = false;
+        break;
     default:
         ret = 0;
         break;

@@ -46,6 +46,7 @@ HEADERS += \
         widgets/qradiobutton.h \
         widgets/qrubberband.h \
         widgets/qscrollbar.h \
+        widgets/qscrollbar_p.h \
         widgets/qscrollarea_p.h \
         widgets/qsizegrip.h \
         widgets/qslider.h \

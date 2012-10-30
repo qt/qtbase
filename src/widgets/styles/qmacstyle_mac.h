@@ -125,9 +125,6 @@ public:
                       Qt::Orientation orientation, const QStyleOption *option = 0,
                       const QWidget *widget = 0) const;
 
-protected:
-    bool eventFilter(QObject *, QEvent *);
-
 private:
     Q_DISABLE_COPY(QMacStyle)
     Q_DECLARE_PRIVATE(QMacStyle)

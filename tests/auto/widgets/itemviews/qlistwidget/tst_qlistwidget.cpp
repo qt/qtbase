@@ -1585,12 +1585,15 @@ void tst_QListWidget::task217070_scrollbarsAdjusted()
     v.setUniformItemSizes(true);
     v.resize(160,100);
     QTest::qWait(50);
+    QScrollBar *hbar = v.horizontalScrollBar();
+    QScrollBar *vbar = v.verticalScrollBar();
+    QVERIFY(hbar && vbar);
     for(int f=150; f>90 ; f--) {
         v.resize(f,100);
         QTest::qWait(30);
-        QVERIFY(v.verticalScrollBar()->isVisible());
-        //the vertical scrollbar must not be visible.
-        QVERIFY(!v.horizontalScrollBar()->isVisible());
+        QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient) || vbar->isVisible());
+        //the horizontal scrollbar must not be visible.
+        QVERIFY(!hbar->isVisible());
     }
 }
 

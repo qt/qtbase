@@ -96,6 +96,7 @@ protected:
     void setViewportMargins(int left, int top, int right, int bottom);
     void setViewportMargins(const QMargins &margins);
 
+    bool eventFilter(QObject *, QEvent *);
     bool event(QEvent *);
     virtual bool viewportEvent(QEvent *);
 

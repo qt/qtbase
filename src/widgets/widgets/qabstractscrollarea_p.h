@@ -92,6 +92,9 @@ public:
     virtual void scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy) {}
     bool canStartScrollingAt( const QPoint &startPos );
 
+    void flashScrollBars();
+    void setScrollBarTransient(QScrollBar *scrollBar, bool transient);
+
     void _q_hslide(int);
     void _q_vslide(int);
     void _q_showOrHideScrollBars();
