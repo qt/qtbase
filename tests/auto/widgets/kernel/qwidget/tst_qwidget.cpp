@@ -354,6 +354,7 @@ private slots:
     void syntheticEnterLeave();
     void taskQTBUG_4055_sendSyntheticEnterLeave();
     void underMouse();
+    void taskQTBUG_27643_enterEvents();
 #endif
     void windowFlags();
     void initialPosForDontShowOnScreenWidgets();
@@ -9853,6 +9854,99 @@ void tst_QWidget::underMouse()
     QCOMPARE(childWidget1.leaves, 0);
     QCOMPARE(childWidget2.enters, 0);
     QCOMPARE(childWidget2.leaves, 0);
+}
+
+class EnterTestModalDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    EnterTestModalDialog() : QDialog(), button(0)
+    {
+        setGeometry(100, 300, 150, 100);
+        button = new QPushButton(this);
+        button->setGeometry(10, 10, 50, 30);
+    }
+
+    QPushButton *button;
+};
+
+class EnterTestMainDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    EnterTestMainDialog() : QDialog(), modal(0), enters(0) {}
+
+public slots:
+    void buttonPressed()
+    {
+        qApp->installEventFilter(this);
+        modal = new EnterTestModalDialog();
+        QTimer::singleShot(2000, modal, SLOT(close())); // Failsafe
+        QTimer::singleShot(100, this, SLOT(doMouseMoves()));
+        modal->exec();
+        delete modal;
+    }
+
+    void doMouseMoves()
+    {
+        QPoint point1(15, 15);
+        QPoint point2(15, 20);
+        QPoint point3(20, 20);
+        QWindow *window = modal->windowHandle();
+        QWindowSystemInterface::handleEnterEvent(window);
+        QTest::mouseMove(window, point1);
+        QTest::mouseMove(window, point2);
+        QTest::mouseMove(window, point3);
+        modal->close();
+    }
+
+    bool eventFilter(QObject *o, QEvent *e)
+    {
+        if (modal && modal->button && o == modal->button) {
+            switch (e->type()) {
+            case QEvent::Enter:
+                enters++;
+                break;
+            default:
+                break;
+            }
+        }
+        return QDialog::eventFilter(o, e);
+    }
+
+public:
+    EnterTestModalDialog *modal;
+    int enters;
+};
+
+// A modal dialog launched by clicking a button should not trigger excess enter events
+// when mousing over it.
+void tst_QWidget::taskQTBUG_27643_enterEvents()
+{
+    // Move the mouse cursor to a safe location so it won't interfere
+    QCursor::setPos(0,0);
+
+    EnterTestMainDialog dialog;
+    QPushButton button(&dialog);
+
+    connect(&button, SIGNAL(clicked()), &dialog, SLOT(buttonPressed()));
+
+    dialog.setGeometry(100, 100, 150, 100);
+    button.setGeometry(10, 10, 100, 50);
+    dialog.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&dialog));
+
+    QWindow *window = dialog.windowHandle();
+    QPoint overButton(25, 25);
+
+    QWindowSystemInterface::handleEnterEvent(window);
+    QTest::mouseMove(window, overButton);
+    QTest::mouseClick(window, Qt::LeftButton, 0, overButton, 0);
+
+    // Modal dialog opened in EnterTestMainDialog::buttonPressed()...
+
+    // Must only register only single enter on modal dialog's button after all said and done
+    QCOMPARE(dialog.enters, 1);
 }
 #endif // QTEST_NO_CURSOR
 
