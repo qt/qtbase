@@ -543,6 +543,16 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
 {
     Q_Q(QMenu);
     tearoffHighlighted = 0;
+    // Reselect the currently active action in case mouse moved over other menu items when
+    // moving from sub menu action to sub menu (QTBUG-20094).
+    if (reason != SelectedFromKeyboard && action == currentAction && !(action && action->menu() && action->menu() != activeMenu)) {
+        if (QMenu *menu = qobject_cast<QMenu*>(causedPopup.widget)) {
+            if (causedPopup.action && menu->d_func()->activeMenu == q)
+                menu->d_func()->setCurrentAction(causedPopup.action, 0, reason, false);
+        }
+        return;
+    }
+
     if (currentAction)
         q->update(actionRect(currentAction));
 
