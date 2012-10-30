@@ -105,6 +105,7 @@ QPointF QGuiApplicationPrivate::lastCursorPosition(0.0, 0.0);
 
 bool QGuiApplicationPrivate::tabletState = false;
 QWindow *QGuiApplicationPrivate::tabletPressTarget = 0;
+QWindow *QGuiApplicationPrivate::currentMouseWindow = 0;
 
 QPlatformIntegration *QGuiApplicationPrivate::platform_integration = 0;
 QPlatformTheme *QGuiApplicationPrivate::platform_theme = 0;
@@ -454,6 +455,19 @@ void QGuiApplicationPrivate::updateBlockedStatus(QWindow *window)
 void QGuiApplicationPrivate::showModalWindow(QWindow *modal)
 {
     self->modalWindowList.prepend(modal);
+
+    // Send leave for currently entered window if it should be blocked
+    if (currentMouseWindow && (currentMouseWindow->windowType() & Qt::Popup) != Qt::Popup) {
+        bool shouldBeBlocked = self->isWindowBlocked(currentMouseWindow);
+        if (shouldBeBlocked) {
+            // Remove the new window from modalWindowList temporarily so leave can go through
+            self->modalWindowList.removeFirst();
+            QEvent e(QEvent::Leave);
+            QGuiApplication::sendEvent(currentMouseWindow, &e);
+            currentMouseWindow = 0;
+            self->modalWindowList.prepend(modal);
+        }
+    }
 
     QEvent e(QEvent::WindowBlocked);
     QWindowList windows = QGuiApplication::topLevelWindows();
@@ -1410,6 +1424,8 @@ void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::En
         return;
     }
 
+    currentMouseWindow = e->enter;
+
     QEvent event(QEvent::Enter);
     QCoreApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
@@ -1422,6 +1438,8 @@ void QGuiApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Le
         // a modal window is blocking this window, don't allow leave events through
         return;
     }
+
+    currentMouseWindow = 0;
 
     QEvent event(QEvent::Leave);
     QCoreApplication::sendSpontaneousEvent(e->leave.data(), &event);

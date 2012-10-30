@@ -189,6 +189,7 @@ public:
     static QPointF lastCursorPosition;
     static bool tabletState;
     static QWindow *tabletPressTarget;
+    static QWindow *currentMouseWindow;
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;

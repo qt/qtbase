@@ -214,6 +214,8 @@ QWindow::~QWindow()
 {
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = 0;
+    if (QGuiApplicationPrivate::currentMouseWindow == this)
+        QGuiApplicationPrivate::currentMouseWindow = 0;
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
 }
@@ -1445,6 +1447,8 @@ bool QWindow::close()
 
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = 0;
+    if (QGuiApplicationPrivate::currentMouseWindow == this)
+        QGuiApplicationPrivate::currentMouseWindow = 0;
 
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();

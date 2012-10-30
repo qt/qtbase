@@ -234,6 +234,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
                 while (enterParent->parent())
                     enterParent = enterParent->parent();
                 if (thisParent == enterParent) {
+                    QGuiApplicationPrivate::currentMouseWindow = enterWindow;
                     enter = enterWindow->widget();
                     QWindowSystemInterfacePrivate::removeWindowSystemEvent(systemEvent);
                 }
