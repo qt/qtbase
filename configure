@@ -2623,20 +2623,6 @@ else
     MAC_SDK_FLAG=
 fi
 
-# find the default framework value
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    if [ "$CFG_FRAMEWORK" = "auto" ]; then
-        CFG_FRAMEWORK="$CFG_SHARED"
-    elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
-	echo
-	echo "WARNING: Using static linking will disable the use of Mac frameworks."
-	echo
-        CFG_FRAMEWORK="no"
-    fi
-else
-    CFG_FRAMEWORK=no
-fi
-
 # disable GTK style support auto-detection on Mac
 if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
     CFG_QGTKSTYLE=no
