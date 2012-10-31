@@ -55,6 +55,9 @@
 #include <qdatetime.h>
 #include <qlineedit.h>
 #include <qspinbox.h>
+#include <qtreeview.h>
+#include <qtableview.h>
+#include <qheaderview.h>
 #include <qstyleditemdelegate.h>
 #include <private/qabstractitemview_p.h>
 #include <private/qabstractitemmodel_p.h>
@@ -3748,6 +3751,22 @@ void QAbstractItemView::doAutoScroll()
     Q_D(QAbstractItemView);
     QScrollBar *verticalScroll = verticalScrollBar();
     QScrollBar *horizontalScroll = horizontalScrollBar();
+
+    // QHeaderView does not (normally) have scrollbars
+    // It needs to use its parents scroll instead
+    QHeaderView *hv = qobject_cast<QHeaderView*>(this);
+    if (hv) {
+        QAbstractScrollArea *parent = qobject_cast<QAbstractScrollArea*>(parentWidget());
+        if (parent) {
+            if (hv->orientation() == Qt::Horizontal) {
+                if (!hv->horizontalScrollBar() || !hv->horizontalScrollBar()->isVisible())
+                    horizontalScroll = parent->horizontalScrollBar();
+            } else {
+                if (!hv->verticalScrollBar() || !hv->verticalScrollBar()->isVisible())
+                    verticalScroll = parent->verticalScrollBar();
+            }
+        }
+    }
 
     int verticalStep = verticalScroll->pageStep();
     int horizontalStep = horizontalScroll->pageStep();

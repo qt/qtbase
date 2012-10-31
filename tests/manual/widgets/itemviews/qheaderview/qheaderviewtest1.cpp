@@ -97,14 +97,14 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QTableView tv;
     QStandardItemModel m;
-    m.setRowCount(10);
-    m.setColumnCount(36);
+    m.setRowCount(500);
+    m.setColumnCount(250);
     tv.setModel(&m);
     SomeHandler handler(tv.horizontalHeader(), &tv);
-    tv.horizontalHeader()->setDefaultSectionSize(50);
+    tv.horizontalHeader()->setDefaultSectionSize(30);
+    tv.show();
     tv.horizontalHeader()->setSectionsMovable(true);
-    tv.showMaximized();
+    tv.verticalHeader()->setSectionsMovable(true);
     app.exec();
 }
-
 #include "qheaderviewtest1.moc"

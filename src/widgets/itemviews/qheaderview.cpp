@@ -2333,6 +2333,8 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             return;
         }
         case QHeaderViewPrivate::MoveSection: {
+            if (d->shouldAutoScroll(e->pos()))
+                d->startAutoScroll();
             if (qAbs(pos - d->firstPos) >= QApplication::startDragDistance()
                 || !d->sectionIndicator->isHidden()) {
                 int visual = visualIndexAt(pos);
