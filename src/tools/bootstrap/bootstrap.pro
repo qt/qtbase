@@ -29,7 +29,10 @@ MODULE_PRIVATE_INCLUDES = \
     \$\$QT_MODULE_INCLUDE_BASE \
     \$\$QT_MODULE_INCLUDE_BASE/QtCore \
     \$\$QT_MODULE_INCLUDE_BASE/QtCore/$$QT_VERSION \
-    \$\$QT_MODULE_INCLUDE_BASE/QtCore/$$QT_VERSION/QtCore
+    \$\$QT_MODULE_INCLUDE_BASE/QtCore/$$QT_VERSION/QtCore \
+    \$\$QT_MODULE_INCLUDE_BASE/QtXml \
+    \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION \
+    \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION/QtXml
 
 qtProcessModuleFlags(CONFIG, MODULE_CONFIG)
 
@@ -43,7 +46,9 @@ DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/tools \
               ../../corelib/io \
               ../../corelib/codecs \
-              ../../corelib/json
+              ../../corelib/json \
+              ../../xml/dom \
+              ../../xml/sax
 
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
@@ -102,7 +107,9 @@ SOURCES += \
            ../../corelib/json/qjsonarray.cpp \
            ../../corelib/json/qjsonvalue.cpp \
            ../../corelib/json/qjsonparser.cpp \
-           ../../corelib/json/qjsonwriter.cpp
+           ../../corelib/json/qjsonwriter.cpp \
+           ../../xml/dom/qdom.cpp \
+           ../../xml/sax/qxml.cpp
 
 unix:SOURCES += ../../corelib/io/qfilesystemengine_unix.cpp \
                 ../../corelib/io/qfilesystemiterator_unix.cpp \
