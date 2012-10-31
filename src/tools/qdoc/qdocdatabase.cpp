@@ -415,7 +415,7 @@ void QDocDatabase::findAllNamespaces(const InnerNode* node)
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
-            if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
+            if ((*c)->isInnerNode()) {
                 findAllNamespaces(static_cast<const InnerNode *>(*c));
                 if ((*c)->type() == Node::Namespace) {
                     const NamespaceNode* nspace = static_cast<const NamespaceNode *>(*c);
