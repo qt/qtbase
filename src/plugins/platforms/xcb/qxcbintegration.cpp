@@ -216,6 +216,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 #endif
     case ThreadedOpenGL: return false;
     case WindowMasks: return true;
+    case MultipleWindows: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

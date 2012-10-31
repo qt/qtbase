@@ -338,6 +338,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 #endif // !QT_NO_OPENGL
     case WindowMasks:
         return true;
+    case MultipleWindows:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }

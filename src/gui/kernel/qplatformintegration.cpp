@@ -195,6 +195,10 @@ QPlatformServices *QPlatformIntegration::services() const
     \value BufferQueueingOpenGL The OpenGL implementation on the platform will queue
     up buffers when swapBuffers() is called and block only when its buffer pipeline
     is full, rather than block immediately.
+
+    \value MultipleWindows The platform supports multiple QWindows, i.e. does some kind
+    of compositing either client or server side. Some platforms might only support a
+    single fullscreen window.
  */
 
 
