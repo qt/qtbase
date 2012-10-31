@@ -3725,6 +3725,20 @@ else
 fi
 
 #-------------------------------------------------------------------------------
+# Verify makespec
+#-------------------------------------------------------------------------------
+QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" /dev/null 2>&1 >/dev/null`
+if [ $? != "0" ]; then
+    echo "Failed to process makespec for platform '$XPLATFORM'"
+    if [ "$OPT_VERBOSE" = "yes" ]; then
+        echo "$QMAKE_OUTPUT"
+    else
+        echo "Turn on verbose messaging (-v) to see the final report."
+    fi
+    exit 101
+fi
+
+#-------------------------------------------------------------------------------
 # Detect pkg-config
 #-------------------------------------------------------------------------------
 if [ -z "$PKG_CONFIG" ]; then
