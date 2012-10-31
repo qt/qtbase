@@ -3746,30 +3746,33 @@ void QAbstractItemView::doAutoScroll()
 {
     // find how much we should scroll with
     Q_D(QAbstractItemView);
-    int verticalStep = verticalScrollBar()->pageStep();
-    int horizontalStep = horizontalScrollBar()->pageStep();
+    QScrollBar *verticalScroll = verticalScrollBar();
+    QScrollBar *horizontalScroll = horizontalScrollBar();
+
+    int verticalStep = verticalScroll->pageStep();
+    int horizontalStep = horizontalScroll->pageStep();
     if (d->autoScrollCount < qMax(verticalStep, horizontalStep))
         ++d->autoScrollCount;
 
     int margin = d->autoScrollMargin;
-    int verticalValue = verticalScrollBar()->value();
-    int horizontalValue = horizontalScrollBar()->value();
+    int verticalValue = verticalScroll->value();
+    int horizontalValue = horizontalScroll->value();
 
     QPoint pos = d->viewport->mapFromGlobal(QCursor::pos());
     QRect area = static_cast<QAbstractItemView*>(d->viewport)->d_func()->clipRect(); // access QWidget private by bending C++ rules
 
     // do the scrolling if we are in the scroll margins
     if (pos.y() - area.top() < margin)
-        verticalScrollBar()->setValue(verticalValue - d->autoScrollCount);
+        verticalScroll->setValue(verticalValue - d->autoScrollCount);
     else if (area.bottom() - pos.y() < margin)
-        verticalScrollBar()->setValue(verticalValue + d->autoScrollCount);
+        verticalScroll->setValue(verticalValue + d->autoScrollCount);
     if (pos.x() - area.left() < margin)
-        horizontalScrollBar()->setValue(horizontalValue - d->autoScrollCount);
+        horizontalScroll->setValue(horizontalValue - d->autoScrollCount);
     else if (area.right() - pos.x() < margin)
-        horizontalScrollBar()->setValue(horizontalValue + d->autoScrollCount);
+        horizontalScroll->setValue(horizontalValue + d->autoScrollCount);
     // if nothing changed, stop scrolling
-    bool verticalUnchanged = (verticalValue == verticalScrollBar()->value());
-    bool horizontalUnchanged = (horizontalValue == horizontalScrollBar()->value());
+    bool verticalUnchanged = (verticalValue == verticalScroll->value());
+    bool horizontalUnchanged = (horizontalValue == horizontalScroll->value());
     if (verticalUnchanged && horizontalUnchanged) {
         stopAutoScroll();
     } else {
