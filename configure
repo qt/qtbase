@@ -1283,6 +1283,7 @@ while [ "$#" -gt 0 ]; do
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             CFG_SDK="$VAL"
+            DeviceVar set QMAKE_MAC_SDK "$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -6090,11 +6091,6 @@ if [ '!' -z "$OPENSSL_LIBS" ]; then
     echo "OPENSSL_LIBS = $OPENSSL_LIBS" >> "$QTMODULE.tmp"
 elif [ "$CFG_OPENSSL" = "linked" ]; then
     echo "OPENSSL_LIBS = -lssl -lcrypto" >> "$QTMODULE.tmp"
-fi
-
-#dump in the SDK info
-if [ '!' -z "$CFG_SDK" ]; then
-   echo "QMAKE_MAC_SDK = $CFG_SDK" >> "$QTMODULE.tmp"
 fi
 
 # cmdline args
