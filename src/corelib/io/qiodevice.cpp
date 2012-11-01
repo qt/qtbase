@@ -46,6 +46,8 @@
 #include "qiodevice_p.h"
 #include "qfile.h"
 #include "qstringlist.h"
+
+#include <algorithm>
 #include <limits.h>
 
 #ifdef QIODEVICE_DEBUG
@@ -1686,7 +1688,7 @@ QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
         if (modes & QIODevice::Unbuffered)
             modeList << QLatin1String("Unbuffered");
     }
-    qSort(modeList);
+    std::sort(modeList.begin(), modeList.end());
     debug << modeList.join(QLatin1Char('|'));
     debug << ')';
     return debug;
