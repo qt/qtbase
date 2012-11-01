@@ -620,7 +620,7 @@ void QVariantAnimation::setKeyValues(const KeyValues &keyValues)
 {
     Q_D(QVariantAnimation);
     d->keyValues = keyValues;
-    qSort(d->keyValues.begin(), d->keyValues.end(), animationValueLessThan);
+    std::sort(d->keyValues.begin(), d->keyValues.end(), animationValueLessThan);
     d->recalculateCurrentInterval(/*force=*/true);
 }
 
