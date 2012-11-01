@@ -161,12 +161,20 @@ private:
     QMutex mutex;
 };
 
-Q_GLOBAL_STATIC(QWinIoCompletionPort, iocp)
+QWinIoCompletionPort *QWinOverlappedIoNotifier::iocp = 0;
+HANDLE QWinOverlappedIoNotifier::iocpInstanceLock = CreateMutex(NULL, FALSE, NULL);
+unsigned int QWinOverlappedIoNotifier::iocpInstanceRefCount = 0;
 
 QWinOverlappedIoNotifier::QWinOverlappedIoNotifier(QObject *parent)
     : QObject(parent),
       hHandle(INVALID_HANDLE_VALUE)
 {
+    WaitForSingleObject(iocpInstanceLock, INFINITE);
+    if (!iocp)
+        iocp = new QWinIoCompletionPort;
+    iocpInstanceRefCount++;
+    ReleaseMutex(iocpInstanceLock);
+
     hSemaphore = CreateSemaphore(NULL, 0, 255, NULL);
     hResultsMutex = CreateMutex(NULL, FALSE, NULL);
     connect(this, &QWinOverlappedIoNotifier::_q_notify,
@@ -178,6 +186,13 @@ QWinOverlappedIoNotifier::~QWinOverlappedIoNotifier()
     setEnabled(false);
     CloseHandle(hResultsMutex);
     CloseHandle(hSemaphore);
+
+    WaitForSingleObject(iocpInstanceLock, INFINITE);
+    if (!--iocpInstanceRefCount) {
+        delete iocp;
+        iocp = 0;
+    }
+    ReleaseMutex(iocpInstanceLock);
 }
 
 void QWinOverlappedIoNotifier::setHandle(HANDLE h)
@@ -188,9 +203,9 @@ void QWinOverlappedIoNotifier::setHandle(HANDLE h)
 void QWinOverlappedIoNotifier::setEnabled(bool enabled)
 {
     if (enabled)
-        iocp()->registerNotifier(this);
+        iocp->registerNotifier(this);
     else
-        iocp()->unregisterNotifier(this);
+        iocp->unregisterNotifier(this);
 }
 
 /*!

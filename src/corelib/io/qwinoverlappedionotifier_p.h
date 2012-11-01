@@ -61,6 +61,8 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QWinIoCompletionPort;
+
 class Q_CORE_EXPORT QWinOverlappedIoNotifier : public QObject
 {
     Q_OBJECT
@@ -85,6 +87,9 @@ private:
     void notify(DWORD numberOfBytes, DWORD errorCode, OVERLAPPED *overlapped);
 
 private:
+    static QWinIoCompletionPort *iocp;
+    static HANDLE iocpInstanceLock;
+    static unsigned int iocpInstanceRefCount;
     HANDLE hHandle;
     HANDLE hSemaphore;
     HANDLE hResultsMutex;
