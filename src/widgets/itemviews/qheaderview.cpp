@@ -3230,6 +3230,7 @@ void QHeaderViewPrivate::clear()
     sectionHidden.clear();
     hiddenSectionSize.clear();
     sectionItems.clear();
+    invalidateCachedSizeHint();
     }
 }
 
