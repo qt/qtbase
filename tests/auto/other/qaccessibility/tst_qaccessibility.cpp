@@ -52,6 +52,8 @@
 #  include <AccessibleComponent.h>
 #  include <AccessibleEditableText.h>
 #  include <AccessibleText.h>
+#  include <AccessibleTable2.h>
+#  include <AccessibleTableCell.h>
 # endif
 #endif
 #include <QtTest/QtTest>
@@ -3033,8 +3035,29 @@ void tst_QAccessibility::bridgeTest()
     QPushButton *button = new QPushButton(tr("Push me"), window);
     QTextEdit *te = new QTextEdit(window);
     te->setText(QLatin1String("hello world\nhow are you today?\n"));
+
+    // Add QTableWidget
+    QTableWidget *tableWidget = new QTableWidget(3, 3, window);
+    tableWidget->setColumnCount(3);
+    QStringList hHeader;
+    hHeader << "h1" << "h2" << "h3";
+    tableWidget->setHorizontalHeaderLabels(hHeader);
+
+    QStringList vHeader;
+    vHeader << "v1" << "v2" << "v3";
+    tableWidget->setVerticalHeaderLabels(vHeader);
+
+    for (int i = 0; i<9; ++i) {
+        QTableWidgetItem *item = new QTableWidgetItem;
+        item->setText(QString::number(i/3) + QString(".") + QString::number(i%3));
+        tableWidget->setItem(i/3, i%3, item);
+    }
+
+    tableWidget->setFixedSize(600, 600);
+
     lay->addWidget(button);
     lay->addWidget(te);
+    lay->addWidget(tableWidget);
 
     window->show();
     QVERIFY(QTest::qWaitForWindowExposed(window));
@@ -3130,7 +3153,7 @@ void tst_QAccessibility::bridgeTest()
     long nChildren;
     hr = iaccWindow->get_accChildCount(&nChildren);
     QVERIFY(SUCCEEDED(hr));
-    QCOMPARE(nChildren, (long)2);
+    QCOMPARE(nChildren, (long)3);
 
     /**************************************************
      *   QTextEdit
@@ -3169,6 +3192,63 @@ void tst_QAccessibility::bridgeTest()
 #endif
     iaccTextEdit->Release();
 
+
+    /**************************************************
+     *   QTableWidget
+     **************************************************/
+    {
+        // Get the second child (the accessible interface for the table widget)
+        varChild.vt = VT_I4;
+        varChild.lVal = 3;
+        QVERIFY(iaccWindow);
+        IAccessible *iaccTable = 0;
+        hr = iaccWindow->get_accChild(varChild, (IDispatch**)&iaccTable);
+        QVERIFY(SUCCEEDED(hr));
+        QVERIFY(iaccTable);
+        hr = iaccTable->get_accRole(varSELF, &varRole);
+        QVERIFY(SUCCEEDED(hr));
+
+        QCOMPARE(varRole.vt, (VARTYPE)VT_I4);
+        QCOMPARE(varRole.lVal, (LONG)ROLE_SYSTEM_TABLE);
+
+
+#ifdef QT_SUPPORTS_IACCESSIBLE2
+        IAccessibleTable2 *ia2Table = (IAccessibleTable2*)queryIA2(iaccTable, IID_IAccessibleTable2);
+        QVERIFY(ia2Table);
+        BSTR bstrDescription;
+        hr = ia2Table->get_columnDescription(0, &bstrDescription);
+        QVERIFY(SUCCEEDED(hr));
+        const QString description((QChar*)bstrDescription);
+        QCOMPARE(description, QLatin1String("h1"));
+
+        IAccessible *accTableCell = 0;
+        hr = ia2Table->get_cellAt(1, 2, (IUnknown**)&accTableCell);
+        IAccessibleTableCell *ia2TableCell = (IAccessibleTableCell *)queryIA2(accTableCell, IID_IAccessibleTableCell);
+        QVERIFY(SUCCEEDED(hr));
+        QVERIFY(ia2TableCell);
+        LONG index;
+        ia2TableCell->get_rowIndex(&index);
+        QCOMPARE(index, (LONG)1);
+        ia2TableCell->get_columnIndex(&index);
+        QCOMPARE(index, (LONG)2);
+
+        IAccessible *iaccTableCell = 0;
+        hr = ia2TableCell->QueryInterface(IID_IAccessible, (void**)&iaccTableCell);
+        QVERIFY(SUCCEEDED(hr));
+        QVERIFY(iaccTableCell);
+        BSTR bstrCellName;
+        hr = iaccTableCell->get_accName(varSELF, &bstrCellName);
+        QVERIFY(SUCCEEDED(hr));
+        QString cellName((QChar*)bstrCellName);
+        QCOMPARE(cellName, QLatin1String("1.2"));
+
+        accTableCell->Release();
+        iaccTableCell->Release();
+        ia2TableCell->Release();
+        ia2Table->Release();
+#endif
+        iaccTextEdit->Release();
+    }
 
     iaccWindow->Release();
     QTestAccessibility::clearEvents();
