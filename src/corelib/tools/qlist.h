@@ -48,6 +48,7 @@
 
 #include <iterator>
 #include <list>
+#include <algorithm>
 #ifdef Q_COMPILER_INITIALIZER_LISTS
 #include <initializer_list>
 #endif
@@ -123,7 +124,7 @@ public:
 #ifdef Q_COMPILER_INITIALIZER_LISTS
     inline QList(std::initializer_list<T> args)
         : d(const_cast<QListData::Data *>(&QListData::shared_null))
-    { qCopy(args.begin(), args.end(), std::back_inserter(*this)); }
+    { std::copy(args.begin(), args.end(), std::back_inserter(*this)); }
 #endif
     bool operator==(const QList<T> &l) const;
     inline bool operator!=(const QList<T> &l) const { return !(*this == l); }
@@ -332,9 +333,9 @@ public:
     static QList<T> fromSet(const QSet<T> &set);
 
     static inline QList<T> fromStdList(const std::list<T> &list)
-    { QList<T> tmp; qCopy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
+    { QList<T> tmp; std::copy(list.begin(), list.end(), std::back_inserter(tmp)); return tmp; }
     inline std::list<T> toStdList() const
-    { std::list<T> tmp; qCopy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
+    { std::list<T> tmp; std::copy(constBegin(), constEnd(), std::back_inserter(tmp)); return tmp; }
 
 private:
     Node *detach_helper_grow(int i, int n);
