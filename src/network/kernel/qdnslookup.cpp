@@ -47,6 +47,8 @@
 #include <qthreadstorage.h>
 #include <qurl.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QDnsLookupThreadPool, theDnsLookupThreadPool);
@@ -69,7 +71,7 @@ static void qt_qdnsmailexchangerecord_sort(QList<QDnsMailExchangeRecord> &record
         return;
 
     // Order the records by preference.
-    qSort(records.begin(), records.end(), qt_qdnsmailexchangerecord_less_than);
+    std::sort(records.begin(), records.end(), qt_qdnsmailexchangerecord_less_than);
 
     int i = 0;
     while (i < records.size()) {
@@ -112,7 +114,7 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 
     // Order the records by priority, and for records with an equal
     // priority, put records with a zero weight first.
-    qSort(records.begin(), records.end(), qt_qdnsservicerecord_less_than);
+    std::sort(records.begin(), records.end(), qt_qdnsservicerecord_less_than);
 
     int i = 0;
     while (i < records.size()) {
