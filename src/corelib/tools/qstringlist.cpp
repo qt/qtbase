@@ -43,6 +43,8 @@
 #include <qset.h>
 #include <qregularexpression.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*! \typedef QStringListIterator
@@ -222,8 +224,8 @@ QT_BEGIN_NAMESPACE
     If \a cs is \l Qt::CaseSensitive (the default), the string comparison
     is case sensitive; otherwise the comparison is case insensitive.
 
-    Sorting is performed using Qt's qSort() algorithm,
-    which operates in \l{linear-logarithmic time}, i.e. O(\e{n} log \e{n}).
+    Sorting is performed using the STL's std::sort() algorithm,
+    which averages \l{linear-logarithmic time}, i.e. O(\e{n} log \e{n}).
 
     If you want to sort your strings in an arbitrary order, consider
     using the QMap class. For example, you could use a QMap<QString,
@@ -231,8 +233,6 @@ QT_BEGIN_NAMESPACE
     being lower-case versions of the strings, and the values being the
     strings), or a QMap<int, QString> to sort the strings by some
     integer index.
-
-    \sa qSort()
 */
 
 static inline bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
@@ -243,9 +243,9 @@ static inline bool caseInsensitiveLessThan(const QString &s1, const QString &s2)
 void QtPrivate::QStringList_sort(QStringList *that, Qt::CaseSensitivity cs)
 {
     if (cs == Qt::CaseSensitive)
-        qSort(that->begin(), that->end());
+        std::sort(that->begin(), that->end());
     else
-        qSort(that->begin(), that->end(), caseInsensitiveLessThan);
+        std::sort(that->begin(), that->end(), caseInsensitiveLessThan);
 }
 
 
