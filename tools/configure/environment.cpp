@@ -47,6 +47,7 @@
 #include <qdir.h>
 #include <qfile.h>
 #include <qfileinfo.h>
+#include <qstandardpaths.h>
 
 #include <process.h>
 #include <errno.h>
@@ -141,6 +142,27 @@ QString Environment::detectQMakeSpec()
     return spec;
 }
 
+Compiler Environment::compilerFromQMakeSpec(const QString &qmakeSpec)
+{
+    if (qmakeSpec == QLatin1String("win32-msvc2012"))
+        return CC_NET2012;
+    if (qmakeSpec == QLatin1String("win32-msvc2012"))
+        return CC_NET2010;
+    if (qmakeSpec == QLatin1String("win32-msvc2008"))
+        return CC_NET2008;
+    if (qmakeSpec == QLatin1String("win32-msvc2005"))
+        return CC_NET2005;
+    if (qmakeSpec == QLatin1String("win32-msvc2003"))
+        return CC_NET2003;
+    if (qmakeSpec == QLatin1String("win32-icc"))
+        return CC_INTEL;
+    if (qmakeSpec == QLatin1String("win32-g++"))
+        return CC_MINGW;
+    if (qmakeSpec == QLatin1String("win32-borland"))
+        return CC_BORLAND;
+    return CC_UNKNOWN;
+}
+
 /*!
     Returns the enum of the compiler which was detected on the system.
     The compilers are detected in the order as entered into the
@@ -189,7 +211,7 @@ Compiler Environment::detectCompiler()
     if (!installed) {
         for(int i = 0; compiler_info[i].compiler; ++i) {
             QString executable = QString(compiler_info[i].executable).toLower();
-            if (executable.length() && Environment::detectExecutable(executable)) {
+            if (executable.length() && !QStandardPaths::findExecutable(executable).isEmpty()) {
                 if (detectedCompiler != compiler_info[i].compiler) {
                     ++installed;
                     detectedCompiler = compiler_info[i].compiler;
@@ -214,33 +236,6 @@ Compiler Environment::detectCompiler()
     return detectedCompiler;
 #endif
 };
-
-/*!
-    Returns true if the \a executable could be loaded, else false.
-    This means that the executable either is in the current directory
-    or in the PATH.
-*/
-bool Environment::detectExecutable(const QString &executable)
-{
-    PROCESS_INFORMATION procInfo;
-    memset(&procInfo, 0, sizeof(procInfo));
-
-    STARTUPINFO startInfo;
-    memset(&startInfo, 0, sizeof(startInfo));
-    startInfo.cb = sizeof(startInfo);
-
-    bool couldExecute = CreateProcess(0, (wchar_t*)executable.utf16(),
-                                      0, 0, false,
-                                      CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                                      0, 0, &startInfo, &procInfo);
-
-    if (couldExecute) {
-        CloseHandle(procInfo.hThread);
-        TerminateProcess(procInfo.hProcess, 0);
-        CloseHandle(procInfo.hProcess);
-    }
-    return couldExecute;
-}
 
 /*!
     Creates a commandling from \a program and it \a arguments,
@@ -512,6 +507,126 @@ bool Environment::rmdir(const QString &name)
     }
     result &= dir.rmdir(cleanName);
     return result;
+}
+
+static QStringList splitPathList(const QString &path)
+{
+#if defined(Q_OS_WIN)
+    QRegExp splitReg(QStringLiteral("[;,]"));
+#else
+    QRegExp splitReg(QStringLiteral("[:]"));
+#endif
+    QStringList result = path.split(splitReg, QString::SkipEmptyParts);
+    const QChar separator = QDir::separator();
+    const QStringList::iterator end = result.end();
+    for (QStringList::iterator it = result.begin(); it != end; ++it) {
+        // Remove any leading or trailing ", this is commonly used in the environment
+        // variables
+        if (it->startsWith('"'))
+            it->remove(0, 1);
+        if (it->endsWith('"'))
+            it->chop(1);
+        if (it->endsWith(separator))
+            it->chop(1);
+    }
+    return result;
+}
+
+QString Environment::findFileInPaths(const QString &fileName, const QStringList &paths)
+{
+    if (!paths.isEmpty()) {
+        QDir d;
+        const QChar separator = QDir::separator();
+        foreach (const QString &path, paths)
+            if (d.exists(path + separator + fileName))
+                    return path;
+    }
+    return QString();
+}
+
+QStringList Environment::path()
+{
+    return splitPathList(QString::fromLocal8Bit(qgetenv("PATH")));
+}
+
+static QStringList mingwPaths(const QString &mingwPath, const QString &pathName)
+{
+    QStringList ret;
+    QDir mingwDir(mingwPath);
+    const QFileInfoList subdirs = mingwDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (int i = 0 ;i < subdirs.length(); ++i) {
+        const QFileInfo &fi = subdirs.at(i);
+        const QString name = fi.fileName();
+        if (name == pathName)
+            ret += fi.absoluteFilePath();
+        else if (name.contains(QLatin1String("mingw"))) {
+            ret += fi.absoluteFilePath() + QLatin1Char('/') + pathName;
+        }
+    }
+    return ret;
+}
+
+// Return MinGW location from "c:\mingw\bin" -> "c:\mingw"
+static inline QString detectMinGW()
+{
+    const QString gcc = QStandardPaths::findExecutable(QLatin1String("g++.exe"));
+    return gcc.isEmpty() ?
+           gcc : QFileInfo(QFileInfo(gcc).absolutePath()).absolutePath();
+}
+
+// Detect Direct X SDK up tp June 2010. Included in Windows Kit 8.
+QString Environment::detectDirectXSdk()
+{
+    const QByteArray directXSdkEnv = qgetenv("DXSDK_DIR");
+    if (directXSdkEnv.isEmpty())
+        return QString();
+    QString directXSdk = QDir::cleanPath(QString::fromLocal8Bit(directXSdkEnv));
+    if (directXSdk.endsWith(QLatin1Char('/')))
+        directXSdk.truncate(directXSdk.size() - 1);
+    return directXSdk;
+}
+
+QStringList Environment::headerPaths(Compiler compiler)
+{
+    QStringList headerPaths;
+    if (compiler == CC_MINGW) {
+        const QString mingwPath = detectMinGW();
+        headerPaths = mingwPaths(mingwPath, QLatin1String("include"));
+        // Additional compiler paths
+        const QFileInfoList mingwConfigs = QDir(mingwPath + QLatin1String("/lib/gcc")).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (int i = 0; i < mingwConfigs.length(); ++i) {
+            const QDir mingwLibDir = mingwConfigs.at(i).absoluteFilePath();
+            foreach (const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+                headerPaths += version.absoluteFilePath() + QLatin1String("/include");
+        }
+    } else {
+        headerPaths = splitPathList(QString::fromLocal8Bit(getenv("INCLUDE")));
+    }
+    // Add Direct X SDK for ANGLE
+    const QString directXSdk = detectDirectXSdk();
+    if (!directXSdk.isEmpty()) // Add Direct X SDK for ANGLE
+        headerPaths += directXSdk + QLatin1String("/include");
+    return headerPaths;
+}
+
+QStringList Environment::libraryPaths(Compiler compiler)
+{
+    QStringList libraryPaths;
+    if (compiler == CC_MINGW) {
+        libraryPaths = mingwPaths(detectMinGW(), "lib");
+    } else {
+        libraryPaths = splitPathList(QString::fromLocal8Bit(qgetenv("LIB")));
+    }
+    // Add Direct X SDK for ANGLE
+    const QString directXSdk = detectDirectXSdk();
+    if (!directXSdk.isEmpty()) {
+#ifdef Q_OS_WIN64
+        libraryPaths += directXSdk + QLatin1String("/lib/x64");
+#else
+        libraryPaths += directXSdk + QLatin1String("/lib/x86");
+#endif
+    }
+    return libraryPaths;
 }
 
 QT_END_NAMESPACE

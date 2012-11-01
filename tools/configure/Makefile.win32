@@ -50,6 +50,8 @@ OBJECTS = \
     qtextstream.obj \
     qlogging.obj \
     qtemporaryfile.obj \
+    qstandardpaths.obj \
+    qstandardpaths_win.obj \
     qsystemlibrary.obj \
     qbitarray.obj \
     qdatetime.obj \
@@ -119,6 +121,8 @@ qfsfileengine_iterator.obj: $(CORESRC)\io\qfsfileengine_iterator.cpp $(PCH)
 qiodevice.obj: $(CORESRC)\io\qiodevice.cpp $(PCH)
 qtextstream.obj: $(CORESRC)\io\qtextstream.cpp $(PCH)
 qtemporaryfile.obj: $(CORESRC)\io\qtemporaryfile.cpp $(PCH)
+qstandardpaths.obj: $(CORESRC)\io\qstandardpaths.cpp $(PCH)
+qstandardpaths_win.obj: $(CORESRC)\io\qstandardpaths_win.cpp $(PCH)
 qsystemlibrary.obj: $(CORESRC)\plugin\qsystemlibrary.cpp $(PCH)
 qbitarray.obj: $(CORESRC)\tools\qbitarray.cpp $(PCH)
 qdatetime.obj: $(CORESRC)\tools\qdatetime.cpp $(PCH)

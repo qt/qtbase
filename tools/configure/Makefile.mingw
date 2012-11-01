@@ -52,6 +52,8 @@ OBJECTS = \
     qtextstream.o \
     qlogging.o \
     qtemporaryfile.o \
+    qstandardpaths.o \
+    qstandardpaths_win.o \
     qsystemlibrary.o \
     qbitarray.o \
     qdatetime.o \

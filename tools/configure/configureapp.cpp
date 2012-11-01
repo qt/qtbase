@@ -49,6 +49,7 @@
 #include <qdir.h>
 #include <qdiriterator.h>
 #include <qtemporaryfile.h>
+#include <qstandardpaths.h>
 #include <qstack.h>
 #include <qdebug.h>
 #include <qfileinfo.h>
@@ -142,7 +143,7 @@ Configure::Configure(int& argc, char** argv)
     const QString installPath = buildPath;
 #endif
     if (sourceDir != buildDir) { //shadow builds!
-        if (!findFile("perl") && !findFile("perl.exe")) {
+        if (QStandardPaths::findExecutable(QStringLiteral("perl.exe")).isEmpty()) {
             cout << "Error: Creating a shadow build of Qt requires" << endl
                  << "perl to be in the PATH environment";
             exit(0); // Exit cleanly for Ctrl+C
@@ -1521,42 +1522,6 @@ void Configure::applySpecSpecifics()
     }
 }
 
-QString Configure::locateFileInPaths(const QString &fileName, const QStringList &paths)
-{
-    QDir d;
-    for (QStringList::ConstIterator it = paths.begin(); it != paths.end(); ++it) {
-        // Remove any leading or trailing ", this is commonly used in the environment
-        // variables
-        QString path = (*it);
-        if (path.startsWith("\""))
-            path = path.right(path.length() - 1);
-        if (path.endsWith("\""))
-            path = path.left(path.length() - 1);
-        if (d.exists(path + QDir::separator() + fileName)) {
-            return (path);
-        }
-    }
-    return QString();
-}
-
-QString Configure::locateFile(const QString &fileName)
-{
-    QString file = fileName.toLower();
-    QStringList paths;
-#if defined(Q_OS_WIN32)
-    QRegExp splitReg("[;,]");
-#else
-    QRegExp splitReg("[:]");
-#endif
-    if (file.endsWith(".h"))
-        paths = QString::fromLocal8Bit(getenv("INCLUDE")).split(splitReg, QString::SkipEmptyParts);
-    else if (file.endsWith(".lib"))
-        paths = QString::fromLocal8Bit(getenv("LIB")).split(splitReg, QString::SkipEmptyParts);
-    else
-        paths = QString::fromLocal8Bit(getenv("PATH")).split(splitReg, QString::SkipEmptyParts);
-    return locateFileInPaths(file, paths);
-}
-
 // Output helper functions ---------------------------------[ Stop ]-
 
 
@@ -1830,80 +1795,25 @@ bool Configure::displayHelp()
     return false;
 }
 
-QString Configure::findFileInPaths(const QString &fileName, const QString &paths)
-{
-#if defined(Q_OS_WIN32)
-    QRegExp splitReg("[;,]");
-#else
-    QRegExp splitReg("[:]");
-#endif
-    QStringList pathList = paths.split(splitReg, QString::SkipEmptyParts);
-    QDir d;
-    for (QStringList::ConstIterator it = pathList.begin(); it != pathList.end(); ++it) {
-        // Remove any leading or trailing ", this is commonly used in the environment
-        // variables
-        QString path = (*it);
-        if (path.startsWith('\"'))
-            path = path.right(path.length() - 1);
-        if (path.endsWith('\"'))
-            path = path.left(path.length() - 1);
-        if (d.exists(path + QDir::separator() + fileName))
-            return path;
-    }
-    return QString();
-}
-
-static QString mingwPaths(const QString &mingwPath, const QString &pathName)
-{
-    QString ret;
-    QDir mingwDir = QFileInfo(mingwPath).dir();
-    const QFileInfoList subdirs = mingwDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (int i = 0 ;i < subdirs.length(); ++i) {
-        const QFileInfo &fi = subdirs.at(i);
-        const QString name = fi.fileName();
-        if (name == pathName)
-            ret += fi.absoluteFilePath() + ';';
-        else if (name.contains("mingw"))
-            ret += fi.absoluteFilePath() + QDir::separator() + pathName + ';';
-    }
-    return ret;
-}
-
-bool Configure::findFile(const QString &fileName)
+// Locate a file and return its containing directory.
+QString Configure::locateFile(const QString &fileName) const
 {
     const QString file = fileName.toLower();
-    const QString pathEnvVar = QString::fromLocal8Bit(getenv("PATH"));
-    const QString mingwPath = dictionary["QMAKESPEC"].endsWith("-g++") ?
-        findFileInPaths("g++.exe", pathEnvVar) : QString();
-
-    QString paths;
+    QStringList pathList;
     if (file.endsWith(".h")) {
-        if (!mingwPath.isNull()) {
-            if (!findFileInPaths(file, mingwPaths(mingwPath, "include")).isNull())
-                return true;
-            //now let's try the additional compiler path
-
-            const QFileInfoList mingwConfigs = QDir(mingwPath + QLatin1String("/../lib/gcc")).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-            for (int i = 0; i < mingwConfigs.length(); ++i) {
-                const QDir mingwLibDir = mingwConfigs.at(i).absoluteFilePath();
-                foreach(const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-                    if (!findFileInPaths(file, version.absoluteFilePath() + QLatin1String("/include")).isNull())
-                        return true;
-                }
-            }
-        }
-        paths = QString::fromLocal8Bit(getenv("INCLUDE"));
-        const QByteArray directXSdk = qgetenv("DXSDK_DIR");
-        if (!directXSdk.isEmpty()) // Add Direct X SDK for ANGLE
-            paths += QLatin1Char(';') + QString::fromLocal8Bit(directXSdk) + QLatin1String("/include");
+        static const QStringList headerPaths =
+            Environment::headerPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
+        pathList = headerPaths;
     } else if (file.endsWith(".lib") ||  file.endsWith(".a")) {
-        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPaths(mingwPath, "lib")).isNull())
-            return true;
-        paths = QString::fromLocal8Bit(getenv("LIB"));
+        static const QStringList libPaths =
+            Environment::libraryPaths(Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]));
+        pathList = libPaths;
     } else {
-        paths = pathEnvVar;
+         // Fallback for .exe and .dll (latter are not covered by QStandardPaths).
+        static const QStringList exePaths = Environment::path();
+        pathList = exePaths;
     }
-    return !findFileInPaths(file, paths).isNull();
+    return Environment::findFileInPaths(file, pathList);
 }
 
 /*!
@@ -2058,7 +1968,8 @@ bool Configure::checkAvailability(const QString &part)
             dictionary[ "DONE" ] = "error";
         }
     } else if (part == "INCREDIBUILD_XGE") {
-        available = findFile("BuildConsole.exe") && findFile("xgConsole.exe");
+        available = !QStandardPaths::findExecutable(QStringLiteral("BuildConsole.exe")).isEmpty()
+                    && !QStandardPaths::findExecutable(QStringLiteral("xgConsole.exe")).isEmpty();
     } else if (part == "WMSDK") {
         available = findFile("wmsdk.h");
     } else if (part == "V8SNAPSHOT") {
@@ -2673,7 +2584,7 @@ void Configure::generateOutputVars()
 
     if (dictionary["QMAKESPEC"].endsWith("-g++")) {
         QString includepath = qgetenv("INCLUDE");
-        bool hasSh = Environment::detectExecutable("sh.exe");
+        const bool hasSh = !QStandardPaths::findExecutable(QStringLiteral("sh.exe")).isEmpty();
         QChar separator = (!includepath.contains(":\\") && hasSh ? QChar(':') : QChar(';'));
         qmakeVars += QString("TMPPATH            = $$quote($$(INCLUDE))");
         qmakeVars += QString("QMAKE_INCDIR_POST += $$split(TMPPATH,\"%1\")").arg(separator);
@@ -3461,7 +3372,7 @@ void Configure::generateHeaders()
         dictionary["SYNCQT"] = defaultTo("SYNCQT");
 
     if (dictionary["SYNCQT"] == "yes") {
-        if (findFile("perl.exe")) {
+        if (!QStandardPaths::findExecutable(QStringLiteral("perl.exe")).isEmpty()) {
             cout << "Running syncqt..." << endl;
             QStringList args;
             args += buildPath + "/bin/syncqt.bat";

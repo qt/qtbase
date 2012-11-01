@@ -167,8 +167,9 @@ private:
     QString formatPaths(const QStringList &paths);
     bool filesDiffer(const QString &file1, const QString &file2);
 
-    bool findFile(const QString &fileName);
-    static QString findFileInPaths(const QString &fileName, const QString &paths);
+    QString locateFile(const QString &fileName) const;
+    bool findFile(const QString &fileName) const { return !locateFile(fileName).isEmpty(); }
+    static QString findFileInPaths(const QString &fileName, const QStringList &paths);
 #if !defined(EVAL)
     void reloadCmdLine();
     void saveCmdLine();
@@ -181,8 +182,6 @@ private:
     void desc(const char *option, const char *description, bool skipIndent = false, char fillChar = '.');
     void desc(const char *mark_option, const char *mark, const char *option, const char *description, char fillChar = '.');
     void applySpecSpecifics();
-    static QString locateFile(const QString &fileName);
-    static QString locateFileInPaths(const QString &fileName, const QStringList &paths);
 };
 
 class MakeItem
