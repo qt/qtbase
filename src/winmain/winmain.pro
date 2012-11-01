@@ -6,7 +6,7 @@ TARGET = qtmain
 DESTDIR = $$QT.core.libs
 
 CONFIG += static warn_on depend_includepath
-QT =   # qt.prf is still needed for some DEFINES, etc.
+QT = core
 
 contains(QT_CONFIG, build_all):CONFIG += build_all
 
@@ -15,8 +15,6 @@ win32-msvc*:QMAKE_CXXFLAGS_DEBUG -= -Zi
 win32-msvc*:QMAKE_CFLAGS_DEBUG *= -Z7
 win32-msvc*:QMAKE_CXXFLAGS_DEBUG *= -Z7
 win32-g++*: DEFINES += QT_NEEDS_QMAIN
-
-INCLUDEPATH += $$QT.core.includes
 
 SOURCES = qtmain_win.cpp
 
