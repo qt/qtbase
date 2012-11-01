@@ -104,6 +104,10 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(QPoint pos READ pos WRITE setPos)
     Q_PROPERTY(QSize size READ size WRITE resize)
     Q_PROPERTY(QRect geometry READ geometry WRITE setGeometry)
+    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged)
+    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged)
+    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
+    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
 #ifndef QT_NO_CURSOR
@@ -169,6 +173,11 @@ public:
     bool isAncestorOf(const QWindow *child, AncestorMode mode = IncludeTransients) const;
 
     bool isExposed() const;
+
+    int minimumWidth() const { return minimumSize().width(); }
+    int minimumHeight() const { return minimumSize().height(); }
+    int maximumWidth() const { return maximumSize().width(); }
+    int maximumHeight() const { return maximumSize().height(); }
 
     QSize minimumSize() const;
     QSize maximumSize() const;
@@ -273,6 +282,11 @@ public Q_SLOTS:
             setGeometry(QRect(x(), y(), width(), arg));
     }
 
+    void setMinimumWidth(int w);
+    void setMinimumHeight(int h);
+    void setMaximumWidth(int w);
+    void setMaximumHeight(int h);
+
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
     void windowModalityChanged(Qt::WindowModality windowModality);
@@ -282,6 +296,11 @@ Q_SIGNALS:
 
     void widthChanged(int arg);
     void heightChanged(int arg);
+
+    void minimumWidthChanged(int arg);
+    void minimumHeightChanged(int arg);
+    void maximumWidthChanged(int arg);
+    void maximumHeightChanged(int arg);
 
     void visibleChanged(bool arg);
     void contentOrientationChanged(Qt::ScreenOrientation orientation);
