@@ -86,6 +86,7 @@ static Window createDummyWindow(QXcbScreen *screen, XVisualInfo *visualInfo)
                                   0, 0, 100, 100,
                                   0, visualInfo->depth, InputOutput, visualInfo->visual,
                                   CWBackPixel|CWBorderPixel|CWColormap, &a);
+    XFreeColormap(DISPLAY_FROM_XCB(screen), cmap);
     return window;
 }
 
