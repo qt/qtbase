@@ -283,6 +283,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     m_reader = new QXcbEventReader(this);
 #ifdef XCB_POLL_FOR_QUEUED_EVENT
     connect(m_reader, SIGNAL(eventPending()), this, SLOT(processXcbEvents()), Qt::QueuedConnection);
+    connect(m_reader, SIGNAL(finished()), this, SLOT(processXcbEvents()));
     m_reader->start();
 #else
     QSocketNotifier *notifier = new QSocketNotifier(xcb_get_file_descriptor(xcb_connection()), QSocketNotifier::Read, this);
@@ -919,6 +920,12 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
 
 void QXcbConnection::processXcbEvents()
 {
+    int connection_error = xcb_connection_has_error(xcb_connection());
+    if (connection_error) {
+        qWarning("The X11 connection broke (error %d). Did the X11 server die?", connection_error);
+        exit(1);
+    }
+
     QXcbEventArray *eventqueue = m_reader->lock();
 
     for(int i = 0; i < eventqueue->size(); ++i) {
