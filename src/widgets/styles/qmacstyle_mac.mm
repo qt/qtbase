@@ -5434,7 +5434,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_ToolButton:
         if (const QStyleOptionToolButton *tb
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
-            if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
+
+            if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
                 if (tb->subControls & SC_ToolButtonMenu) {
                     QStyleOption arrowOpt(0);
                     arrowOpt.rect = proxy()->subControlRect(cc, tb, SC_ToolButtonMenu, widget);
@@ -6030,7 +6031,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
         break;
     case CC_ToolButton:
         ret = QCommonStyle::subControlRect(cc, opt, sc, widget);
-        if (sc == SC_ToolButtonMenu && widget && !qobject_cast<QToolBar*>(widget->parentWidget())) {
+        if (sc == SC_ToolButtonMenu && !QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
             ret.adjust(-1, 0, 0, 0);
         }
         break;

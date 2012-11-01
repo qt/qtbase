@@ -86,6 +86,23 @@ qreal dpiScaled(qreal value)
 #endif
 }
 
+// Searches for an ancestor of a particular accessible role
+bool hasAncestor(QObject *obj, QAccessible::Role role)
+{
+    bool found = false;
+#ifndef QT_NO_ACCESSIBILITY
+    QObject *parent = obj ? obj->parent() : 0;
+    while (parent && !found) {
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(parent);
+        if (iface && iface->role() == role)
+            found = true;
+        delete iface;
+        parent = parent->parent();
+    }
+#endif // QT_NO_ACCESSIBILITY
+    return found;
+}
+
 
 #ifndef QT_NO_DIAL
 
