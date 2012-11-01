@@ -2332,7 +2332,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
                 int visual = visualIndexAt(pos);
                 if (visual == -1)
                     return;
-                int posThreshold = d->headerSectionPosition(visual) + d->headerSectionSize(visual) / 2;
+                int posThreshold = d->headerSectionPosition(visual) - d->offset + d->headerSectionSize(visual) / 2;
                 int moving = visualIndex(d->section);
                 if (visual < moving) {
                     if (pos < posThreshold)
