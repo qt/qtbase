@@ -341,7 +341,7 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
                 if(vpath.isEmpty()) {
                     if(!vpath_var.isEmpty())
                         vpath = v[ProKey(vpath_var)];
-                    vpath += v["VPATH"] + v["QMAKE_ABSOLUTE_SOURCE_PATH"] + v["DEPENDPATH"];
+                    vpath += v["VPATH"] + v["QMAKE_ABSOLUTE_SOURCE_PATH"];
                     if(Option::output_dir != qmake_getpwd())
                         vpath << Option::output_dir;
                 }
