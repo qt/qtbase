@@ -5399,7 +5399,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             QStyleOptionGroupBox groupBox(*gb);
             groupBox.state |= QStyle::State_Mini; // Force mini-sized checkbox to go with small-sized label
             bool didModifySubControls = false;
-            if ((widget && !widget->testAttribute(Qt::WA_SetFont))
+            if ((!widget || !widget->testAttribute(Qt::WA_SetFont))
                     && QApplication::desktopSettingsAware()) {
                 groupBox.subControls = groupBox.subControls & ~SC_GroupBoxLabel;
                 didModifySubControls = true;
