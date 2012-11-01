@@ -283,7 +283,8 @@ void Win32MakefileGenerator::processVars()
     }
 
     // TARGET_VERSION_EXT will be used to add a version number onto the target name
-    if (project->values("TARGET_VERSION_EXT").isEmpty()
+    if (!project->isActiveConfig("skip_target_version_ext")
+        && project->values("TARGET_VERSION_EXT").isEmpty()
         && !project->values("VER_MAJ").isEmpty())
         project->values("TARGET_VERSION_EXT").append(project->values("VER_MAJ").first());
 
