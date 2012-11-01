@@ -1630,9 +1630,11 @@ bool QCoreApplication::removeTranslator(QTranslator *translationFile)
     if (!QCoreApplicationPrivate::checkInstance("removeTranslator"))
         return false;
     QCoreApplicationPrivate *d = self->d_func();
-    if (d->translators.removeAll(translationFile) && !self->closingDown()) {
-        QEvent ev(QEvent::LanguageChange);
-        QCoreApplication::sendEvent(self, &ev);
+    if (d->translators.removeAll(translationFile)) {
+        if (!self->closingDown()) {
+            QEvent ev(QEvent::LanguageChange);
+            QCoreApplication::sendEvent(self, &ev);
+        }
         return true;
     }
     return false;
