@@ -102,5 +102,3 @@ qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
 wince*:static:gui {
    QTLIB += qmenu_wce.res
 }
-
-!isEmpty(QT_NAMESPACE):DEFINES *= QT_NAMESPACE=$$QT_NAMESPACE
