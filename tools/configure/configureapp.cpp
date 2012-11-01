@@ -83,6 +83,12 @@ using namespace std;
 // Macros to simplify options marking
 #define MARK_OPTION(x,y) ( dictionary[ #x ] == #y ? "*" : " " )
 
+static inline void promptKeyPress()
+{
+    cout << "(Press any key to continue...)";
+    if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
+        exit(0);      // Exit cleanly for Ctrl+C
+}
 
 bool writeToFile(const char* text, const QString &filename)
 {
@@ -2121,6 +2127,7 @@ void Configure::autoDetection()
 
 bool Configure::verifyConfiguration()
 {
+    bool prompt = false;
     if (dictionary["C++11"] != "auto"
             && dictionary["QMAKESPEC"].contains("msvc")) {
         cout << "WARNING: Qt does not support disabling or enabling any existing C++11 support "
@@ -2135,28 +2142,21 @@ bool Configure::verifyConfiguration()
 
     if (dictionary["SQL_SQLITE_LIB"] == "no" && dictionary["SQL_SQLITE"] != "no") {
         cout << "WARNING: Configure could not detect the presence of a system SQLite3 lib." << endl
-             << "Configure will therefore continue with the SQLite3 lib bundled with Qt." << endl
-             << "(Press any key to continue..)";
-        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
-            exit(0);      // Exit cleanly for Ctrl+C
-
+             << "Configure will therefore continue with the SQLite3 lib bundled with Qt." << endl;
         dictionary["SQL_SQLITE_LIB"] = "qt"; // Set to Qt's bundled lib an continue
+        prompt = true;
     }
     if (dictionary["QMAKESPEC"].endsWith("-g++")
         && dictionary["SQL_OCI"] != "no") {
         cout << "WARNING: Qt does not support compiling the Oracle database driver with" << endl
              << "MinGW, due to lack of such support from Oracle. Consider disabling the" << endl
              << "Oracle driver, as the current build will most likely fail." << endl;
-        cout << "(Press any key to continue..)";
-        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
-            exit(0);      // Exit cleanly for Ctrl+C
+        prompt = true;
     }
     if (dictionary["QMAKESPEC"].endsWith("win32-msvc.net")) {
         cout << "WARNING: The makespec win32-msvc.net is deprecated. Consider using" << endl
              << "win32-msvc2002 or win32-msvc2003 instead." << endl;
-        cout << "(Press any key to continue..)";
-        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
-            exit(0);      // Exit cleanly for Ctrl+C
+        prompt = true;
     }
     if (0 != dictionary["ARM_FPU_TYPE"].size()) {
             QStringList l= QStringList()
@@ -2169,11 +2169,12 @@ bool Configure::verifyConfiguration()
     if (dictionary["DIRECTWRITE"] == "yes" && !checkAvailability("DIRECTWRITE")) {
         cout << "WARNING: To be able to compile the DirectWrite font engine you will" << endl
              << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
-             << "files such as headers and libraries." << endl
-             << "(Press any key to continue..)";
-        if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
-            exit(0);      // Exit cleanly for Ctrl+C
+             << "files such as headers and libraries." << endl;
+        prompt = true;
     }
+
+    if (prompt)
+        promptKeyPress();
 
     return true;
 }
@@ -3846,9 +3847,7 @@ bool Configure::showLicense(QString orgLicenseFile)
             while (i < licenseContent.size()) {
                 cout << licenseContent.at(i) << endl;
                 if (++i % screenHeight == 0) {
-                    cout << "(Press any key for more..)";
-                    if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
-                        exit(0);      // Exit cleanly for Ctrl+C
+                    promptKeyPress();
                     cout << "\r";     // Overwrite text above
                 }
             }
