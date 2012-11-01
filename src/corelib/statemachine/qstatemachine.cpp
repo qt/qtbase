@@ -73,6 +73,8 @@
 #include <QtCore/qmetaobject.h>
 #include <qdebug.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -438,7 +440,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeStatesToExit(const QList<QAb
         }
     }
     QList<QAbstractState*> statesToExit_sorted = statesToExit.toList();
-    qSort(statesToExit_sorted.begin(), statesToExit_sorted.end(), stateExitLessThan);
+    std::sort(statesToExit_sorted.begin(), statesToExit_sorted.end(), stateExitLessThan);
     return statesToExit_sorted;
 }
 
@@ -541,7 +543,7 @@ QList<QAbstractState*> QStateMachinePrivate::computeStatesToEnter(const QList<QA
     }
 
     QList<QAbstractState*> statesToEnter_sorted = statesToEnter.toList();
-    qSort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
+    std::sort(statesToEnter_sorted.begin(), statesToEnter_sorted.end(), stateEntryLessThan);
     return statesToEnter_sorted;
 }
 
