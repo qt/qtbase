@@ -57,6 +57,8 @@
 #include <link.h>
 #endif
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -410,7 +412,7 @@ static QStringList findAllLibSsl()
         QDir dir(path);
         QStringList entryList = dir.entryList(QStringList() << QLatin1String("libssl.*"), QDir::Files);
 
-        qSort(entryList.begin(), entryList.end(), libGreaterThan);
+        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
         foreach (const QString &entry, entryList)
             foundSsls << path + QLatin1Char('/') + entry;
     }
@@ -427,7 +429,7 @@ static QStringList findAllLibCrypto()
         QDir dir(path);
         QStringList entryList = dir.entryList(QStringList() << QLatin1String("libcrypto.*"), QDir::Files);
 
-        qSort(entryList.begin(), entryList.end(), libGreaterThan);
+        std::sort(entryList.begin(), entryList.end(), libGreaterThan);
         foreach (const QString &entry, entryList)
             foundCryptos << path + QLatin1Char('/') + entry;
     }
