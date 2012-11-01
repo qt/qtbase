@@ -1,7 +1,5 @@
 contains(QT_CONFIG, dbus):contains(QT_CONFIG, xcb):contains(QT_CONFIG, accessibility) {
 
-    PKGCONFIG += atspi-2
-    CONFIG += link_pkgconfig
     QT += dbus
     include(../../3rdparty/atspi2/atspi2.pri)
 

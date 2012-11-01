@@ -54,10 +54,10 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 
-#include <atspi/atspi-constants.h>
+#include "atspi/atspi-constants.h"
 
-#include "../../../../src/platformsupport/linuxaccessibility/dbusconnection_p.h"
-#include "../../../../src/platformsupport/linuxaccessibility/struct_marshallers_p.h"
+#include "dbusconnection_p.h"
+#include "struct_marshallers_p.h"
 
 #define COMPARE3(v1, v2, v3) QCOMPARE(v1, v3); QCOMPARE(v2, v3);
 

@@ -4982,14 +4982,14 @@ if [ "$CFG_ACCESSIBILITY" != "no" ]; then
     if [ "$CFG_XCB" = "no" ]; then
         CFG_ACCESSIBILITY=yes
     else
-        # linux/xcb accessibility needs dbus and atspi-2
-        if [ "$CFG_DBUS" != "no" ] && [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "atspi-2" 2>/dev/null; then
+        # linux/xcb accessibility needs dbus
+        if [ "$CFG_DBUS" != "no" ] && [ -n "$PKG_CONFIG" ]; then
             CFG_ACCESSIBILITY=yes
         else
             if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
                 CFG_ACCESSIBILITY=no
             else
-                echo "Accessibility support needs pkg-config and libatspi2."
+                echo "Accessibility support needs DBus."
                 exit 101
             fi
         fi
