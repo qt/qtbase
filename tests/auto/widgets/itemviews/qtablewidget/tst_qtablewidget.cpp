@@ -130,7 +130,7 @@ void tst_QTableWidget::getSetCheck()
 //    QCOMPARE(INT_MAX, obj1.rowCount());
     obj1.setRowCount(100);
     QCOMPARE(100, obj1.rowCount());
-    
+
 
     // int QTableWidget::columnCount()
     // void QTableWidget::setColumnCount(int)
@@ -584,7 +584,7 @@ void tst_QTableWidget::selectedItems()
         }
         if (hidden)
             continue;
-        
+
         for (int column = 0; column<testWidget->columnCount(); ++column) {
             foreach (int hiddenColumn, hiddenColumns){
                 if(hiddenColumn == column){
@@ -594,7 +594,7 @@ void tst_QTableWidget::selectedItems()
             }
             if (hidden)
                 continue;
-            
+
             QTableWidgetItem *item = testWidget->item(row, column);
             if (item && testWidget->isItemSelected(item))
                 QVERIFY(selectedItems.contains(item));
@@ -1321,7 +1321,7 @@ void tst_QTableWidget::setItemWithSorting()
 
         QAbstractItemModel *model = w.model();
         QList<QPersistentModelIndex> persistent;
-        
+
         int ti = 0;
         for (int r = 0; r < rowCount; ++r) {
             for (int c = 0; c < columnCount; ++c) {
@@ -1330,10 +1330,10 @@ void tst_QTableWidget::setItemWithSorting()
             }
             persistent << model->index(r, sortColumn);
         }
-        
+
         w.sortItems(sortColumn, static_cast<Qt::SortOrder>(sortOrder));
         w.setSortingEnabled(true);
-        
+
         QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
         QSignalSpy layoutChangedSpy(model, SIGNAL(layoutChanged()));
 
@@ -1354,7 +1354,7 @@ void tst_QTableWidget::setItemWithSorting()
                 QCOMPARE(w.item(r, c)->text(), str);
             }
         }
-        
+
         for (int k = 0; k < persistent.count(); ++k) {
             QCOMPARE(persistent.at(k).row(), expectedRows.at(k));
             int i = (persistent.at(k).row() * columnCount) + sortColumn;

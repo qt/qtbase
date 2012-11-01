@@ -1716,7 +1716,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
         // we have to split the focus rect into two rects
         if (allColumnsShowFocus && !option.showDecorationSelected
             && header->sectionsMoved() && (header->visualIndex(0) != 0)) {
-	    QRect sectionRect(0, y, header->sectionPosition(0), height); 
+	    QRect sectionRect(0, y, header->sectionPosition(0), height);
             o.rect = style()->visualRect(layoutDirection(), d->viewport->rect(), sectionRect);
             style()->drawPrimitive(QStyle::PE_FrameFocusRect, &o, painter);
         }

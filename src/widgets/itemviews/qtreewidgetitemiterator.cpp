@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
   \class QTreeWidgetItemIterator
   \ingroup model-view
   \inmodule QtWidgets
- 
+
   \brief The QTreeWidgetItemIterator class provides a way to iterate over the
   items in a QTreeWidget instance.
 

@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
   \class QFileIconProvider
 
   \inmodule QtWidgets
- 
+
   \brief The QFileIconProvider class provides file icons for the QDirModel and the QFileSystemModel classes.
 */
 

@@ -2935,7 +2935,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
         return data;
     QByteArray encoded;
     QDataStream stream(&encoded, QIODevice::WriteOnly);
-    
+
     QSet<QStandardItem*> itemsSet;
     QStack<QStandardItem*> stack;
     itemsSet.reserve(indexes.count());
@@ -2945,7 +2945,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
         itemsSet << item;
         stack.push(item);
     }
-    
+
     //remove duplicates childrens
     {
         QSet<QStandardItem *> seen;
@@ -2954,7 +2954,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
             if (seen.contains(itm))
                 continue;
             seen.insert(itm);
-            
+
             const QVector<QStandardItem*> &childList = itm->d_func()->children;
             for (int i = 0; i < childList.count(); ++i) {
                 QStandardItem *chi = childList.at(i);
@@ -2968,17 +2968,17 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
             }
         }
     }
-    
+
     stack.reserve(itemsSet.count());
     foreach (QStandardItem *item, itemsSet) {
         stack.push(item);
     }
-    
+
     //stream everything recursively
     while (!stack.isEmpty()) {
         QStandardItem *item = stack.pop();
         if(itemsSet.contains(item)) { //if the item is selection 'top-level', strem its position
-            stream << item->row() << item->column(); 
+            stream << item->row() << item->column();
         }
         if(item) {
             stream << *item << item->columnCount() << item->d_ptr->children.count();
@@ -2996,7 +2996,7 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
 
 /* \internal
     Used by QStandardItemModel::dropMimeData
-    stream out an item and his children 
+    stream out an item and his children
  */
 void QStandardItemModelPrivate::decodeDataRecursive(QDataStream &stream, QStandardItem *item)
 {
@@ -3004,9 +3004,9 @@ void QStandardItemModelPrivate::decodeDataRecursive(QDataStream &stream, QStanda
     stream >> *item;
     stream >> colCount >> childCount;
     item->setColumnCount(colCount);
-    
+
     int childPos = childCount;
-    
+
     while(childPos > 0) {
         childPos--;
         QStandardItem *child = createItem();
