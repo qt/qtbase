@@ -53,6 +53,7 @@
 #include "qcocoatheme.h"
 #include "qcocoainputcontext.h"
 #include "qmacmime.h"
+#include "qcocoaaccessibility.h"
 
 #include <qpa/qplatformaccessibility.h>
 #include <QtCore/qcoreapplication.h>
@@ -180,7 +181,7 @@ QCocoaIntegration::QCocoaIntegration()
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mInputContext(new QCocoaInputContext)
 #ifndef QT_NO_ACCESSIBILITY
-    , mAccessibility(new QPlatformAccessibility)
+    , mAccessibility(new QCococaAccessibility)
 #endif
     , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)
