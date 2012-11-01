@@ -53,7 +53,6 @@ win32 {
     }
 }
 
-unset(TARGET_VERSION_EXT)
 unset(TARGET_EXT)
 unset(LIBPREFIX)
 unset(TEMP_VERSION)
