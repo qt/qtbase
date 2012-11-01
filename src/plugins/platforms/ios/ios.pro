@@ -5,7 +5,7 @@ DESTDIR = $$QT.gui.plugins/platforms
 
 QT += opengl
 QT += core-private gui-private platformsupport-private opengl-private widgets-private
-LIBS += -framework Cocoa -framework UIKit
+LIBS += -framework UIKit
 
 OBJECTIVE_SOURCES = main.mm \
     qiosintegration.mm \
