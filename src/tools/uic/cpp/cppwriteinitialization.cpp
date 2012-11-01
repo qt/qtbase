@@ -51,6 +51,8 @@
 #include <qtextstream.h>
 #include <qdebug.h>
 
+#include <algorithm>
+
 #include <ctype.h>
 
 QT_BEGIN_NAMESPACE
@@ -362,8 +364,8 @@ int SizePolicyHandle::compare(const SizePolicyHandle &rhs) const
 
 WriteInitialization::LayoutDefaultHandler::LayoutDefaultHandler()
 {
-    qFill(m_state, m_state + NumProperties, 0u);
-    qFill(m_defaultValues, m_defaultValues + NumProperties, 0);
+    std::fill_n(m_state, int(NumProperties), 0u);
+    std::fill_n(m_defaultValues, int(NumProperties), 0);
 }
 
 
