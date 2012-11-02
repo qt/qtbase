@@ -6252,6 +6252,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         return sz;
     case CT_ComboBox:
         sz.rwidth() += 50;
+        sz.rheight() += 2;
         break;
     case CT_Menu: {
         QStyleHintReturnMask menuMask;
