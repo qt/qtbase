@@ -110,6 +110,8 @@ public:
     QString qpaPlatformName() const;
 
 private:
+    bool checkAngleAvailability(QString *errorMessage = 0) const;
+
     // Our variable dictionaries
     QMap<QString,QString> dictionary;
     QStringList defaultBuildParts;

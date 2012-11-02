@@ -7,6 +7,7 @@ include(../common/common.pri)
 
 INCLUDEPATH += $$OUT_PWD/..
 
+# Remember to adapt tools/configure/configureapp.cpp if the Direct X version changes.
 LIBS += -ld3d9 -ld3dcompiler
 STATICLIBS = translator_common translator_hlsl preprocessor
 

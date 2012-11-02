@@ -558,8 +558,10 @@ void Configure::parseCmdLine()
 
         else if (configCmdLine.at(i) == "-angle") {
             dictionary[ "ANGLE" ] = "yes";
+            dictionary[ "ANGLE_FROM" ] = "commandline";
         } else if (configCmdLine.at(i) == "-no-angle") {
             dictionary[ "ANGLE" ] = "no";
+            dictionary[ "ANGLE_FROM" ] = "commandline";
         }
 
         // Image formats --------------------------------------------
@@ -1878,10 +1880,59 @@ QString Configure::defaultTo(const QString &option)
     return "yes";
 }
 
+bool Configure::checkAngleAvailability(QString *errorMessage /* = 0 */) const
+{
+    // Check for Direct X SDK (include lib and direct shader compiler 'fxc').
+    // Up to Direct X SDK June 2010 and for MinGW, this is pointed to by the
+    // DXSDK_DIR variable. Starting with Windows Kit 8, it is included
+    // in the Windows SDK. Checking for the header is not sufficient since
+    // it is also  present in MinGW.
+    const QString directXSdk = Environment::detectDirectXSdk();
+    const Compiler compiler = Environment::compilerFromQMakeSpec(dictionary[QStringLiteral("QMAKESPEC")]);
+    if (compiler < CC_NET2012 && directXSdk.isEmpty()) {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("There is no Direct X SDK installed or the environment variable \"DXSDK_DIR\" is not set.");
+        return false;
+    }
+    const QString compilerHeader = QStringLiteral("d3dcompiler.h");
+    if (!findFile(compilerHeader)) {
+        if (errorMessage)
+            *errorMessage = QString::fromLatin1("The header '%1' could not be found.").arg(compilerHeader);
+        return false;
+    }
+    if (dictionary["SSE2"] != "no") {
+        const QString intrinHeader = QStringLiteral("intrin.h"); // Not present on MinGW-32
+        if (!findFile(intrinHeader)) {
+            if (errorMessage)
+                *errorMessage = QString::fromLatin1("The header '%1' required for SSE2 could not be found.").arg(intrinHeader);
+            return false;
+        }
+    }
+
+    const QString directXLibrary = QStringLiteral("d3d9.lib");
+    if (!findFile(directXLibrary)) {
+        if (errorMessage)
+            *errorMessage = QString::fromLatin1("The library '%1' could not be found.").arg(directXLibrary);
+        return false;
+    }
+    const QString fxcBinary = QStringLiteral("fxc.exe");
+    QStringList additionalPaths;
+    if (!directXSdk.isEmpty())
+        additionalPaths.push_back(directXSdk + QStringLiteral("/Utilities/bin/x86"));
+    QString fxcPath = QStandardPaths::findExecutable(fxcBinary, additionalPaths);
+    if (fxcPath.isEmpty()) {
+        if (errorMessage)
+            *errorMessage = QString::fromLatin1("The shader compiler '%1' could not be found.").arg(fxcBinary);
+        return false;
+    }
+    return true;
+}
+
 /*!
     Checks the system for the availability of a feature.
     Returns true if the feature is available, else false.
 */
+
 bool Configure::checkAvailability(const QString &part)
 {
     bool available = false;
@@ -1898,8 +1949,9 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h")
                         && (findFile("icuin.lib") || findFile("libicuin.lib")); // libicun.lib if compiled with mingw
 
-    else if (part == "ANGLE")
-        available = findFile("d3dcompiler.h");
+    else if (part == "ANGLE") {
+        available = checkAngleAvailability();
+    }
 
     else if (part == "LIBJPEG")
         available = findFile("jpeglib.h");
@@ -2027,8 +2079,12 @@ void Configure::autoDetection()
 
     // ANGLE detection
     if (dictionary["ANGLE"] == "auto") {
-        bool gles2 = (dictionary["OPENGL_ES_2"] == "yes");
-        dictionary["ANGLE"] = (gles2 && checkAvailability("ANGLE")) ? "yes" : "no";
+        if (dictionary["OPENGL_ES_2"] == "yes") {
+            dictionary["ANGLE"] = checkAngleAvailability() ? "yes" : "no";
+            dictionary["ANGLE_FROM"] = "detected";
+        } else {
+            dictionary["ANGLE"] = "no";
+        }
     }
 
     // Image format detection
@@ -2171,6 +2227,32 @@ bool Configure::verifyConfiguration()
              << "need the Microsoft DirectWrite and Microsoft Direct2D development" << endl
              << "files such as headers and libraries." << endl;
         prompt = true;
+    }
+
+    // -angle given on command line, but Direct X cannot be found.
+    if (dictionary["ANGLE"] == "yes") {
+        QString errorMessage;
+        if (!checkAngleAvailability(&errorMessage)) {
+            cout << "WARNING: ANGLE specified, but the DirectX SDK could not be detected:" << endl
+                 << "  " << qPrintable(errorMessage) << endl
+                 <<  "The build will most likely fail." << endl;
+            prompt = true;
+        }
+    } else if (dictionary["ANGLE"] == "no") {
+        if (dictionary["ANGLE_FROM"] == "detected") {
+            QString errorMessage;
+            checkAngleAvailability(&errorMessage);
+            cout << "WARNING: The DirectX SDK could not be detected:" << endl
+                 << "  " << qPrintable(errorMessage) << endl
+                 << "Disabling the ANGLE backend." << endl;
+            prompt = true;
+        }
+        if (dictionary["OPENGL_ES_2"] == "yes") {
+            cout << endl << "WARNING: Using OpenGL ES 2.0 without ANGLE." << endl
+                 << "Specify -opengl desktop to use Open GL." << endl
+                 <<  "The build will most likely fail." << endl;
+            prompt = true;
+        }
     }
 
     if (prompt)
