@@ -344,12 +344,6 @@ static void cleanupCocoaApplicationDelegate()
 */
 }
 
-- (void)applicationDidChangeScreenParameters:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-    ((QCocoaIntegration*)QGuiApplicationPrivate::platformIntegration())->updateScreens();
-}
-
 - (void)setReflectionDelegate:(NSObject <NSApplicationDelegate> *)oldDelegate
 {
     [oldDelegate retain];
