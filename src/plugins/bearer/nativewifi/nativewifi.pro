@@ -1,4 +1,6 @@
 TARGET = qnativewifibearer
+
+PLUGIN_TYPE = bearer
 load(qt_plugin)
 
 QT = core-private network-private
@@ -13,7 +15,3 @@ SOURCES += main.cpp \
            ../qnetworksession_impl.cpp
 
 OTHER_FILES += nativewifi.json
-
-DESTDIR = $$QT.network.plugins/bearer
-target.path += $$[QT_INSTALL_PLUGINS]/bearer
-INSTALLS += target

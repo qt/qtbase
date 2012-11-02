@@ -1,0 +1,14 @@
+# Find the module's source root dir.
+isEmpty(_QMAKE_CONF_): error("Project has no top-level .qmake.conf file.")
+MODULE_PROFILE_DIR = $$dirname(_QMAKE_CONF_)
+isEmpty(MODULE_BASE_DIR): MODULE_BASE_DIR = $$MODULE_PROFILE_DIR
+isEmpty(MODULE_BASE_OUTDIR): MODULE_BASE_OUTDIR = $$shadowed($$MODULE_BASE_DIR)
+isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$MODULE_BASE_OUTDIR
+
+QTDIR = $$[QT_HOST_PREFIX]
+exists($$QTDIR/.qmake.cache) {
+    # Permit modules to enforce being built outside QTDIR ...
+    !force_independent: MODULE_BASE_OUTDIR = $$QTDIR
+    # ... though this sort of breaks the idea.
+    MODULE_QMAKE_OUTDIR = $$QTDIR
+}

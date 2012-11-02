@@ -43,6 +43,7 @@
 
 #include <qdebug.h>
 #include <QThread>
+#include <QMutex>
 
 #include <QtTest/QtTest>
 
@@ -75,6 +76,7 @@ private slots:
     void stlContainers();
     void qFutureAssignmentLeak();
     void stressTest();
+    void persistentResultTest();
 public slots:
     void throttling();
 };
@@ -2393,6 +2395,47 @@ void tst_QtConcurrentMap::stressTest()
         for (int j = 0; j < listSize; ++j)
             QCOMPARE(list.at(j), i + j + 1);
     }
+}
+
+struct LockedCounter
+{
+    LockedCounter(QMutex *mutex, QAtomicInt *ai)
+        : mtx(mutex),
+          ref(ai) {}
+
+    typedef int result_type;
+    int operator()(int x)
+    {
+        QMutexLocker locker(mtx);
+        ref->ref();
+        return ++x;
+    }
+
+    QMutex *mtx;
+    QAtomicInt *ref;
+};
+
+// The Thread engine holds the last reference
+// to the QFuture, so this should not leak
+// or fail.
+void tst_QtConcurrentMap::persistentResultTest()
+{
+    QFuture<void> voidFuture;
+    QMutex mtx;
+    QAtomicInt ref;
+    LockedCounter lc(&mtx, &ref);
+    QList<int> list;
+    {
+        list << 1 << 2 << 3;
+        mtx.lock();
+        QFuture<int> future = QtConcurrent::mapped(list
+                                                   ,lc);
+        voidFuture = future;
+    }
+    QCOMPARE(ref.loadAcquire(), 0);
+    mtx.unlock(); // Unblock
+    voidFuture.waitForFinished();
+    QCOMPARE(ref.loadAcquire(), 3);
 }
 
 QTEST_MAIN(tst_QtConcurrentMap)

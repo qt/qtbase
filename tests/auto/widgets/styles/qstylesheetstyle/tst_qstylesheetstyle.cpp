@@ -1589,7 +1589,7 @@ class ChangeEventWidget : public QWidget
             static bool recurse = false;
             if (!recurse) {
                 recurse = true;
-                QStyle *style = new QFusionStyle
+                QStyle *style = new QFusionStyle;
                 style->setParent(this);
                 setStyle(style);
                 recurse = false;

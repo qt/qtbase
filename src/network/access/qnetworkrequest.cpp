@@ -979,53 +979,41 @@ static int name_to_month(const char* month_str)
         switch (month_str[1]) {
         case 'a':
             return 1;
-            break;
         case 'u':
             switch (month_str[2] ) {
             case 'n':
                 return 6;
-                break;
             case 'l':
                 return 7;
-                break;
             }
         }
         break;
     case 'F':
         return 2;
-        break;
     case 'M':
         switch (month_str[2] ) {
         case 'r':
             return 3;
-            break;
         case 'y':
             return 5;
-            break;
         }
         break;
     case 'A':
         switch (month_str[1]) {
         case 'p':
             return 4;
-            break;
         case 'u':
             return 8;
-            break;
         }
         break;
     case 'O':
         return 10;
-        break;
     case 'S':
         return 9;
-        break;
     case 'N':
         return 11;
-        break;
     case 'D':
         return 12;
-        break;
     }
 
     return 0;

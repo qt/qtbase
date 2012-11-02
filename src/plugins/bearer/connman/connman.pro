@@ -1,4 +1,6 @@
 TARGET = qconnmanbearer
+
+PLUGIN_TYPE = bearer
 load(qt_plugin)
 
 QT = core network-private dbus
@@ -16,8 +18,4 @@ SOURCES += main.cpp \
            ../qnetworksession_impl.cpp
 
 OTHER_FILES += connman.json
-
-DESTDIR = $$QT.network.plugins/bearer
-target.path += $$[QT_INSTALL_PLUGINS]/bearer
-INSTALLS += target
 

@@ -1477,7 +1477,7 @@ QTreeWidgetItem::QTreeWidgetItem(QTreeWidgetItem *parent, QTreeWidgetItem *after
 
 /*!
   Destroys this tree widget item.
-  
+
   The item will be removed from \l{QTreeWidget}s to which it has
   been added. This makes it safe to delete an item at any time.
 

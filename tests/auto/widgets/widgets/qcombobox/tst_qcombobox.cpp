@@ -116,11 +116,15 @@ private slots:
     void insertOnCurrentIndex();
     void textpixmapdata_data();
     void textpixmapdata();
+    void currentTextChanged_data();
+    void currentTextChanged();
     void editTextChanged();
     void setModel();
     void modelDeleted();
     void setMaxCount();
     void setCurrentIndex();
+    void setCurrentText_data();
+    void setCurrentText();
     void convenienceViews();
     void findText_data();
     void findText();
@@ -1353,6 +1357,110 @@ void tst_QComboBox::setCurrentIndex()
 
     testWidget->setCurrentIndex(0);
     QCOMPARE(testWidget->currentText(), QString("foo"));
+}
+
+void tst_QComboBox::setCurrentText_data()
+{
+    QTest::addColumn<bool>("editable");
+    QTest::newRow("editable") << true;
+    QTest::newRow("not editable") << false;
+}
+
+void tst_QComboBox::setCurrentText()
+{
+    QFETCH(bool, editable);
+
+    QCOMPARE(testWidget->count(), 0);
+    testWidget->addItems(QStringList() << "foo" << "bar");
+    QCOMPARE(testWidget->count(), 2);
+
+    testWidget->setEditable(editable);
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(testWidget->currentIndex(), 0);
+
+    // effect on currentText and currentIndex
+    // currentIndex not changed if editable
+    QCOMPARE(testWidget->currentText(), QString("foo"));
+    testWidget->setCurrentText(QString("bar"));
+    QCOMPARE(testWidget->currentText(), QString("bar"));
+    if (editable)
+        QCOMPARE(testWidget->currentIndex(), 0);
+    else
+        QCOMPARE(testWidget->currentIndex(), 1);
+
+    testWidget->setCurrentText(QString("foo"));
+    QCOMPARE(testWidget->currentIndex(), 0);
+    QCOMPARE(testWidget->currentText(), QString("foo"));
+
+    // effect of text not found in list
+    testWidget->setCurrentText(QString("qt"));
+    QCOMPARE(testWidget->currentIndex(), 0);
+    if (editable)
+        QCOMPARE(testWidget->currentText(), QString("qt"));
+    else
+        QCOMPARE(testWidget->currentText(), QString("foo"));
+
+#ifndef QT_NO_PROPERTIES
+    // verify WRITE for currentText property
+    testWidget->setCurrentIndex(0);
+    const QByteArray n("currentText");
+    QCOMPARE(testWidget->property(n).toString(), QString("foo"));
+    testWidget->setProperty(n, QString("bar"));
+    QCOMPARE(testWidget->property(n).toString(), QString("bar"));
+#endif
+}
+
+void tst_QComboBox::currentTextChanged_data()
+{
+    QTest::addColumn<bool>("editable");
+    QTest::newRow("editable") << true;
+    QTest::newRow("not editable") << false;
+}
+
+void tst_QComboBox::currentTextChanged()
+{
+    QFETCH(bool, editable);
+
+    QCOMPARE(testWidget->count(), 0);
+    testWidget->addItems(QStringList() << "foo" << "bar");
+    QCOMPARE(testWidget->count(), 2);
+
+    QSignalSpy spy(testWidget, SIGNAL(currentTextChanged(QString)));
+
+    testWidget->setEditable(editable);
+
+    // set text in list
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(testWidget->currentIndex(), 0);
+    spy.clear();
+    testWidget->setCurrentText(QString("bar"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("bar"));
+
+    // set text not in list
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(testWidget->currentIndex(), 0);
+    spy.clear();
+    testWidget->setCurrentText(QString("qt"));
+    if (editable) {
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("qt"));
+    } else {
+        QCOMPARE(spy.count(), 0);
+    }
+
+    // item changed
+    testWidget->setCurrentIndex(0);
+    QCOMPARE(testWidget->currentIndex(), 0);
+    spy.clear();
+    testWidget->setItemText(0, QString("ape"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("ape"));
+    // change it back
+    spy.clear();
+    testWidget->setItemText(0, QString("foo"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<QString>(spy.at(0).at(0)), QString("foo"));
 }
 
 void tst_QComboBox::editTextChanged()

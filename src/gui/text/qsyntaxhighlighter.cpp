@@ -119,18 +119,14 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
         formatsChanged = true;
     }
 
-    QTextCharFormat emptyFormat;
-
-    QTextLayout::FormatRange r;
-    r.start = -1;
-
     int i = 0;
     while (i < formatChanges.count()) {
+        QTextLayout::FormatRange r;
 
-        while (i < formatChanges.count() && formatChanges.at(i) == emptyFormat)
+        while (i < formatChanges.count() && formatChanges.at(i) == r.format)
             ++i;
 
-        if (i >= formatChanges.count())
+        if (i == formatChanges.count())
             break;
 
         r.start = i;
@@ -139,25 +135,8 @@ void QSyntaxHighlighterPrivate::applyFormatChanges()
         while (i < formatChanges.count() && formatChanges.at(i) == r.format)
             ++i;
 
-        if (i >= formatChanges.count())
-            break;
-
+        Q_ASSERT(i <= formatChanges.count());
         r.length = i - r.start;
-
-        if (preeditAreaLength != 0) {
-            if (r.start >= preeditAreaStart)
-                r.start += preeditAreaLength;
-            else if (r.start + r.length >= preeditAreaStart)
-                r.length += preeditAreaLength;
-        }
-
-        ranges << r;
-        formatsChanged = true;
-        r.start = -1;
-    }
-
-    if (r.start != -1) {
-        r.length = formatChanges.count() - r.start;
 
         if (preeditAreaLength != 0) {
             if (r.start >= preeditAreaStart)

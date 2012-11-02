@@ -13,7 +13,7 @@ isEmpty(ANGLE_DIR) {
 }
 
 win32 {
-    GNUTOOLS_DIR=$$[QT_HOST_DATA]/../gnuwin32/bin
+    GNUTOOLS_DIR=$$PWD/../../../../gnuwin32/bin
     exists($$GNUTOOLS_DIR/gperf.exe) {
         GNUTOOLS = "(set $$escape_expand(\\\")PATH=$$replace(GNUTOOLS_DIR, [/\\\\], $${QMAKE_DIR_SEP});%PATH%$$escape_expand(\\\"))"
     }

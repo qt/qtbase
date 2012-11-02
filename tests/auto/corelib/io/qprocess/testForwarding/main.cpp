@@ -43,6 +43,7 @@
 
 int main()
 {
+#ifndef QT_NO_PROCESS
     QProcess process;
     process.setProcessChannelMode(QProcess::ForwardedChannels);
     if (process.processChannelMode() != QProcess::ForwardedChannels)
@@ -62,6 +63,6 @@ int main()
 
     process.closeWriteChannel();
     process.waitForFinished(5000);
-
+#endif
     return 0;
 }

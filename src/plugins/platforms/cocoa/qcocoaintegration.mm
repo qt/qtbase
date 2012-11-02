@@ -180,7 +180,9 @@ QCocoaIntegration::QCocoaIntegration()
     : mFontDb(new QCoreTextFontDatabase())
     , mEventDispatcher(new QCocoaEventDispatcher())
     , mInputContext(new QCocoaInputContext)
+#ifndef QT_NO_ACCESSIBILITY
     , mAccessibility(new QPlatformAccessibility)
+#endif
     , mCocoaClipboard(new QCocoaClipboard)
     , mCocoaDrag(new QCocoaDrag)
     , mNativeInterface(new QCocoaNativeInterface)
@@ -302,11 +304,15 @@ void QCocoaIntegration::updateScreens()
 bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     switch (cap) {
-    case ThreadedPixmaps: return true;
-    case OpenGL : return true;
-    case ThreadedOpenGL : return true;
-    case BufferQueueingOpenGL: return true;
-    default: return QPlatformIntegration::hasCapability(cap);
+    case ThreadedPixmaps:
+    case OpenGL:
+    case ThreadedOpenGL:
+    case BufferQueueingOpenGL:
+    case WindowMasks:
+    case MultipleWindows:
+        return true;
+    default:
+        return QPlatformIntegration::hasCapability(cap);
     }
 }
 
@@ -349,7 +355,11 @@ QPlatformInputContext *QCocoaIntegration::inputContext() const
 
 QPlatformAccessibility *QCocoaIntegration::accessibility() const
 {
+#ifndef QT_NO_ACCESSIBILITY
     return mAccessibility.data();
+#else
+    return 0;
+#endif
 }
 
 QPlatformClipboard *QCocoaIntegration::clipboard() const

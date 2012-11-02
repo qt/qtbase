@@ -252,7 +252,7 @@ void QVector<T>::defaultConstruct(T *from, T *to)
             new (from++) T();
         }
     } else {
-        ::memset(from, 0, (to - from) * sizeof(T));
+        ::memset(static_cast<void *>(from), 0, (to - from) * sizeof(T));
     }
 }
 
@@ -267,7 +267,7 @@ void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
         while (srcFrom != srcTo)
             new (dstFrom++) T(*srcFrom++);
     } else {
-        ::memcpy(dstFrom, srcFrom, (srcTo - srcFrom) * sizeof(T));
+        ::memcpy(static_cast<void *>(dstFrom), static_cast<const void *>(srcFrom), (srcTo - srcFrom) * sizeof(T));
     }
 }
 
@@ -467,7 +467,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
                         new (dst++) T(*srcBegin++);
                     }
                 } else {
-                    ::memcpy(static_cast<void *>(dst), srcBegin, (srcEnd - srcBegin) * sizeof(T));
+                    ::memcpy(static_cast<void *>(dst), static_cast<void *>(srcBegin), (srcEnd - srcBegin) * sizeof(T));
                     dst += srcEnd - srcBegin;
 
                     // destruct unused / not moved data

@@ -1,8 +1,9 @@
 # Version: 1
 # CheckVsReference: 5%
 
-
 setRenderHint LineAntialiasing
+
+setPen green 0
 
 translate 20 20
 path_moveTo fullSize 0 0

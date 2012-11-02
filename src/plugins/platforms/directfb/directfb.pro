@@ -1,6 +1,7 @@
 TARGET = qdirectfb
+
+PLUGIN_TYPE = platforms
 load(qt_plugin)
-DESTDIR = $$QT.gui.plugins/platforms
 
 QT += core-private gui-private platformsupport-private
 
@@ -46,7 +47,5 @@ contains(QT_CONFIG, directfb_egl) {
 
 
 CONFIG += qpa/genericunixfontdatabase
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target
 
 OTHER_FILES += directfb.json

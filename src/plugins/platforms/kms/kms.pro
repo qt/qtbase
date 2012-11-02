@@ -1,8 +1,9 @@
 TARGET = qkms
+
+PLUGIN_TYPE = platforms
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private opengl-private
-DESTDIR = $$QT.gui.plugins/platforms
 
 DEFINES += MESA_EGL_NO_X11_HEADERS
 
@@ -35,9 +36,6 @@ HEADERS =   qkmsintegration.h \
             qkmsudevhandler.h \
             qkmsudevdrmhandler.h \
             qkmsvthandler.h
-
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target
 
 OTHER_FILES += \
     kms.json

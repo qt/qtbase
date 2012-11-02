@@ -75,6 +75,8 @@ class tst_QProcess : public QObject
 
 public slots:
     void initTestCase();
+    void cleanupTestCase();
+
 #ifndef QT_NO_PROCESS
 private slots:
     void getSetCheck();
@@ -84,27 +86,23 @@ private slots:
     void startDetached();
     void crashTest();
     void crashTest2();
+#ifndef Q_OS_WINCE
     void echoTest_data();
     void echoTest();
     void echoTest2();
-#if defined Q_OS_WIN
+#ifdef Q_OS_WIN
     void echoTestGui();
     void batFiles_data();
     void batFiles();
 #endif
-    void exitStatus_data();
-    void exitStatus();
     void loopBackTest();
     void readTimeoutAndThenCrash();
-    void waitForFinished();
     void deadWhileReading();
     void restartProcessDeadlock();
     void closeWriteChannel();
     void closeReadChannel();
     void openModes();
     void emitReadyReadOnlyWhenNewDataArrives();
-    void hardExit();
-    void softExit();
     void softExitInSlots_data();
     void softExitInSlots();
     void mergedChannels();
@@ -112,25 +110,14 @@ private slots:
     void forwardedChannelsOutput();
     void atEnd();
     void atEnd2();
-    void processInAThread();
-    void processesInMultipleThreads();
     void waitForFinishedWithTimeout();
     void waitForReadyReadInAReadyReadSlot();
     void waitForBytesWrittenInABytesWrittenSlot();
-    void spaceArgsTest_data();
-    void spaceArgsTest();
-#if defined(Q_OS_WIN)
-    void nativeArguments();
-#endif
-    void exitCodeTest();
     void setEnvironment_data();
     void setEnvironment();
     void setProcessEnvironment_data();
     void setProcessEnvironment();
-    void systemEnvironment();
     void spaceInName();
-    void lockupsInStartDetached();
-    void waitForReadyReadForNonexistantProcess();
     void setStandardInputFile();
     void setStandardOutputFile_data();
     void setStandardOutputFile();
@@ -138,9 +125,29 @@ private slots:
     void setStandardOutputProcess();
     void removeFileWhileProcessIsRunning();
     void fileWriterProcess();
-    void detachedWorkingDirectoryAndPid();
     void switchReadChannels();
+#ifdef Q_OS_WIN
     void setWorkingDirectory();
+#endif // Q_OS_WIN
+#endif // not Q_OS_WINCE
+
+    void exitStatus_data();
+    void exitStatus();
+    void waitForFinished();
+    void hardExit();
+    void softExit();
+    void processInAThread();
+    void processesInMultipleThreads();
+    void spaceArgsTest_data();
+    void spaceArgsTest();
+#if defined(Q_OS_WIN)
+    void nativeArguments();
+#endif
+    void exitCodeTest();
+    void systemEnvironment();
+    void lockupsInStartDetached();
+    void waitForReadyReadForNonexistantProcess();
+    void detachedWorkingDirectoryAndPid();
     void startFinishStartFinish();
     void invalidProgramString_data();
     void invalidProgramString();
@@ -155,14 +162,16 @@ private slots:
 protected slots:
     void readFromProcess();
     void exitLoopSlot();
+#ifndef Q_OS_WINCE
     void restartProcess();
     void waitForReadyReadInAReadyReadSlotSlot();
     void waitForBytesWrittenInABytesWrittenSlotSlot();
+#endif
 
 private:
     QProcess *process;
     qint64 bytesAvailable;
-#endif
+#endif //QT_NO_PROCESS
 };
 
 void tst_QProcess::initTestCase()
@@ -173,6 +182,13 @@ void tst_QProcess::initTestCase()
     // chdir to our testdata path and execute helper apps relative to that.
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessNormal")).absolutePath();
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
+#endif
+}
+
+void tst_QProcess::cleanupTestCase()
+{
+#ifdef QT_NO_PROCESS
+    QSKIP("This test requires QProcess support");
 #endif
 }
 
@@ -299,9 +315,6 @@ void tst_QProcess::readFromProcess()
 void tst_QProcess::crashTest()
 {
     qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
-#ifdef Q_OS_WIN
-    QSKIP("This test opens a crash dialog on Windows");
-#endif
     process = new QProcess;
     QSignalSpy stateSpy(process, SIGNAL(stateChanged(QProcess::ProcessState)));
     QVERIFY(stateSpy.isValid());
@@ -339,9 +352,6 @@ void tst_QProcess::crashTest()
 //-----------------------------------------------------------------------------
 void tst_QProcess::crashTest2()
 {
-#ifdef Q_OS_WIN
-    QSKIP("This test opens a crash dialog on Windows");
-#endif
     process = new QProcess;
     process->start("testProcessCrash/testProcessCrash");
     QVERIFY(process->waitForStarted(5000));
@@ -373,6 +383,8 @@ void tst_QProcess::crashTest2()
     process = 0;
 }
 
+#ifndef Q_OS_WINCE
+//Reading and writing to a process is not supported on Qt/CE
 //-----------------------------------------------------------------------------
 void tst_QProcess::echoTest_data()
 {
@@ -389,12 +401,9 @@ void tst_QProcess::echoTest_data()
 }
 
 //-----------------------------------------------------------------------------
+
 void tst_QProcess::echoTest()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     QFETCH(QByteArray, input);
 
     process = new QProcess;
@@ -435,6 +444,7 @@ void tst_QProcess::echoTest()
     delete process;
     process = 0;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::exitLoopSlot()
@@ -443,11 +453,11 @@ void tst_QProcess::exitLoopSlot()
 }
 
 //-----------------------------------------------------------------------------
+
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::echoTest2()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
 
     process = new QProcess;
     connect(process, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
@@ -491,15 +501,14 @@ void tst_QProcess::echoTest2()
     delete process;
     process = 0;
 }
+#endif
 
-#if defined Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+//Batch files are not supported on Winfows CE
+// Reading and writing to a process is not supported on Qt/CE
 //-----------------------------------------------------------------------------
 void tst_QProcess::echoTestGui()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     QProcess process;
 
     process.start("testProcessEchoGui/testProcessEchoGui");
@@ -513,22 +522,22 @@ void tst_QProcess::echoTestGui()
     QCOMPARE(process.readAllStandardOutput(), QByteArray("Hello"));
     QCOMPARE(process.readAllStandardError(), QByteArray("Hello"));
 }
+#endif // !Q_OS_WINCE && Q_OS_WIN
 
 //-----------------------------------------------------------------------------
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+//Batch files are not supported on Winfows CE
 void tst_QProcess::batFiles_data()
 {
     QTest::addColumn<QString>("batFile");
     QTest::addColumn<QByteArray>("output");
 
-    QTest::newRow("simple") << QString::fromLatin1("testBatFiles/simple.bat") << QByteArray("Hello");
-    QTest::newRow("with space") << QString::fromLatin1("testBatFiles/with space.bat") << QByteArray("Hello");
+    QTest::newRow("simple") << QFINDTESTDATA("testBatFiles/simple.bat") << QByteArray("Hello");
+    QTest::newRow("with space") << QFINDTESTDATA("testBatFiles/with space.bat") << QByteArray("Hello");
 }
 
 void tst_QProcess::batFiles()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Batch files are not supported on Windows CE");
-#endif
     QFETCH(QString, batFile);
     QFETCH(QByteArray, output);
 
@@ -542,8 +551,7 @@ void tst_QProcess::batFiles()
 
     QVERIFY(proc.readAll().startsWith(output));
 }
-
-#endif
+#endif // !Q_OS_WINCE && Q_OS_WIN
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::exitStatus_data()
@@ -576,11 +584,6 @@ void tst_QProcess::exitStatus()
     QFETCH(QStringList, processList);
     QFETCH(QList<QProcess::ExitStatus>, exitStatus);
 
-#ifdef Q_OS_WIN
-    if (exitStatus.contains(QProcess::CrashExit))
-        QSKIP("This test opens a crash dialog on Windows");
-#endif
-
     QCOMPARE(exitStatus.count(), processList.count());
     for (int i = 0; i < processList.count(); ++i) {
         process->start(processList.at(i));
@@ -594,11 +597,10 @@ void tst_QProcess::exitStatus()
     process = 0;
 }
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::loopBackTest()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
 
     process = new QProcess;
     process->start("testProcessEcho/testProcessEcho");
@@ -618,13 +620,13 @@ void tst_QProcess::loopBackTest()
     delete process;
     process = 0;
 }
+#endif
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::readTimeoutAndThenCrash()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
 
     process = new QProcess;
     process->start("testProcessEcho/testProcessEcho");
@@ -652,6 +654,7 @@ void tst_QProcess::readTimeoutAndThenCrash()
     delete process;
     process = 0;
 }
+#endif
 
 void tst_QProcess::waitForFinished()
 {
@@ -677,12 +680,10 @@ void tst_QProcess::waitForFinished()
     QCOMPARE(process.error(), QProcess::FailedToStart);
 }
 
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::deadWhileReading()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     QProcess process;
 
     process.start("testProcessDeadWhileReading/testProcessDeadWhileReading");
@@ -696,13 +697,13 @@ void tst_QProcess::deadWhileReading()
     QCOMPARE(output.count("\n"), 10*1024);
     process.waitForFinished();
 }
+#endif
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::restartProcessDeadlock()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
 
     // The purpose of this test is to detect whether restarting a
     // process in the finished() connected slot causes a deadlock
@@ -726,14 +727,13 @@ void tst_QProcess::restartProcess()
 {
     process->start("testProcessEcho/testProcessEcho");
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::closeWriteChannel()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::closeWriteChannel()
+{
     QProcess more;
     more.start("testProcessEOF/testProcessEOF");
 
@@ -755,14 +755,13 @@ void tst_QProcess::closeWriteChannel()
         more.write("q");
     QVERIFY(more.waitForFinished(5000));
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::closeReadChannel()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE"
+void tst_QProcess::closeReadChannel()
+{
     for (int i = 0; i < 10; ++i) {
         QProcess::ProcessChannel channel1 = QProcess::StandardOutput;
         QProcess::ProcessChannel channel2 = QProcess::StandardError;
@@ -788,14 +787,13 @@ void tst_QProcess::closeReadChannel()
         QVERIFY(proc.waitForFinished(5000));
     }
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::openModes()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::openModes()
+{
     QProcess proc;
     QVERIFY(!proc.isOpen());
     QVERIFY(proc.openMode() == QProcess::NotOpen);
@@ -834,13 +832,13 @@ void tst_QProcess::openModes()
     QVERIFY(!proc.isWritable());
     QCOMPARE(proc.state(), QProcess::NotRunning);
 }
+#endif
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
 
     QProcess proc;
     connect(&proc, SIGNAL(readyRead()), this, SLOT(exitLoopSlot()));
@@ -870,6 +868,7 @@ void tst_QProcess::emitReadyReadOnlyWhenNewDataArrives()
     proc.write("", 1);
     QVERIFY(proc.waitForFinished(5000));
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::hardExit()
@@ -914,6 +913,8 @@ void tst_QProcess::softExit()
     QCOMPARE(int(proc.error()), int(QProcess::UnknownError));
 }
 
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 class SoftExitProcess : public QProcess
 {
     Q_OBJECT
@@ -1011,14 +1012,10 @@ void tst_QProcess::softExitInSlots_data()
 #endif
     QTest::newRow("console app") << "testProcessEcho2/testProcessEcho2";
 }
-
 //-----------------------------------------------------------------------------
+
 void tst_QProcess::softExitInSlots()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     QFETCH(QString, appName);
 
     for (int i = 0; i < 5; ++i) {
@@ -1029,14 +1026,13 @@ void tst_QProcess::softExitInSlots()
         QCOMPARE(proc.state(), QProcess::NotRunning);
     }
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::mergedChannels()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::mergedChannels()
+{
     QProcess process;
     process.setReadChannelMode(QProcess::MergedChannels);
     QCOMPARE(process.readChannelMode(), QProcess::MergedChannels);
@@ -1055,14 +1051,13 @@ void tst_QProcess::mergedChannels()
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::forwardedChannels()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::forwardedChannels()
+{
     QProcess process;
     process.setReadChannelMode(QProcess::ForwardedChannels);
     QCOMPARE(process.readChannelMode(), QProcess::ForwardedChannels);
@@ -1077,13 +1072,12 @@ void tst_QProcess::forwardedChannels()
     process.closeWriteChannel();
     QVERIFY(process.waitForFinished(5000));
 }
-
-void tst_QProcess::forwardedChannelsOutput()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::forwardedChannelsOutput()
+{
     QProcess process;
     process.start("testForwarding/testForwarding");
     QVERIFY(process.waitForStarted(5000));
@@ -1093,14 +1087,13 @@ void tst_QProcess::forwardedChannelsOutput()
     QVERIFY(!data.isEmpty());
     QVERIFY(data.contains("forwarded"));
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::atEnd()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::atEnd()
+{
     QProcess process;
 
     process.start("testProcessEcho/testProcessEcho");
@@ -1118,6 +1111,7 @@ void tst_QProcess::atEnd()
     process.write("", 1);
     QVERIFY(process.waitForFinished(5000));
 }
+#endif
 
 class TestThread : public QThread
 {
@@ -1190,12 +1184,10 @@ void tst_QProcess::processesInMultipleThreads()
 }
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::waitForFinishedWithTimeout()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     process = new QProcess(this);
 
     process->start("testProcessEcho/testProcessEcho");
@@ -1210,14 +1202,13 @@ void tst_QProcess::waitForFinishedWithTimeout()
     delete process;
     process = 0;
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::waitForReadyReadInAReadyReadSlot()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::waitForReadyReadInAReadyReadSlot()
+{
     process = new QProcess(this);
     connect(process, SIGNAL(readyRead()), this, SLOT(waitForReadyReadInAReadyReadSlotSlot()));
     connect(process, SIGNAL(finished(int)), this, SLOT(exitLoopSlot()));
@@ -1240,27 +1231,25 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlot()
     delete process;
     process = 0;
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::waitForReadyReadInAReadyReadSlotSlot()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::waitForReadyReadInAReadyReadSlotSlot()
+{
     bytesAvailable = process->bytesAvailable();
     process->write("bar", 4);
     QVERIFY(process->waitForReadyRead(5000));
     QTestEventLoop::instance().exitLoop();
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
+{
     process = new QProcess(this);
     connect(process, SIGNAL(bytesWritten(qint64)), this, SLOT(waitForBytesWrittenInABytesWrittenSlotSlot()));
     bytesAvailable = 0;
@@ -1282,19 +1271,18 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     delete process;
     process = 0;
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::waitForBytesWrittenInABytesWrittenSlotSlot()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::waitForBytesWrittenInABytesWrittenSlotSlot()
+{
     process->write("b");
     QVERIFY(process->waitForBytesWritten(5000));
     QTestEventLoop::instance().exitLoop();
 }
-
+#endif
 //-----------------------------------------------------------------------------
 void tst_QProcess::spaceArgsTest_data()
 {
@@ -1604,12 +1592,10 @@ void tst_QProcess::failToStartWithEventLoop()
 }
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::removeFileWhileProcessIsRunning()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     QFile file("removeFile.txt");
     QVERIFY(file.open(QFile::WriteOnly));
 
@@ -1623,8 +1609,10 @@ void tst_QProcess::removeFileWhileProcessIsRunning()
     process.write("", 1);
     QVERIFY(process.waitForFinished(5000));
 }
-
+#endif
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// OS doesn't support environment variables
 void tst_QProcess::setEnvironment_data()
 {
     QTest::addColumn<QString>("name");
@@ -1644,10 +1632,6 @@ void tst_QProcess::setEnvironment_data()
 
 void tst_QProcess::setEnvironment()
 {
-#if defined (Q_OS_WINCE)
-    QSKIP("OS doesn't support environment variables");
-#endif
-
     // make sure our environment variables are correct
     QVERIFY(qgetenv("tst_QProcess").isEmpty());
     QVERIFY(!qgetenv("PATH").isEmpty());
@@ -1703,8 +1687,10 @@ void tst_QProcess::setEnvironment()
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
 }
-
+#endif
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// OS doesn't support environment variables
 void tst_QProcess::setProcessEnvironment_data()
 {
     setEnvironment_data();
@@ -1712,10 +1698,6 @@ void tst_QProcess::setProcessEnvironment_data()
 
 void tst_QProcess::setProcessEnvironment()
 {
-#if defined (Q_OS_WINCE)
-    QSKIP("OS doesn't support environment variables");
-#endif
-
     // make sure our environment variables are correct
     QVERIFY(qgetenv("tst_QProcess").isEmpty());
     QVERIFY(!qgetenv("PATH").isEmpty());
@@ -1746,6 +1728,7 @@ void tst_QProcess::setProcessEnvironment()
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
 }
+#endif
 //-----------------------------------------------------------------------------
 void tst_QProcess::systemEnvironment()
 {
@@ -1763,17 +1746,17 @@ void tst_QProcess::systemEnvironment()
 }
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::spaceInName()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
     QProcess process;
     process.start("test Space In Name/testSpaceInName", QStringList());
     QVERIFY(process.waitForStarted());
     process.write("", 1);
     QVERIFY(process.waitForFinished());
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::lockupsInStartDetached()
@@ -1790,12 +1773,10 @@ void tst_QProcess::lockupsInStartDetached()
 }
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::atEnd2()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     QProcess process;
 
     process.start("testProcessEcho/testProcessEcho");
@@ -1808,6 +1789,7 @@ void tst_QProcess::atEnd2()
     }
     QCOMPARE(lines.size(), 7);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::waitForReadyReadForNonexistantProcess()
@@ -1835,12 +1817,10 @@ void tst_QProcess::waitForReadyReadForNonexistantProcess()
 }
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::setStandardInputFile()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     static const char data[] = "A bunch\1of\2data\3\4\5\6\7...";
     QProcess process;
     QFile file("data");
@@ -1857,8 +1837,11 @@ void tst_QProcess::setStandardInputFile()
     QCOMPARE(all.size(), int(sizeof data) - 1); // testProcessEcho drops the ending \0
     QVERIFY(all == data);
 }
+#endif
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::setStandardOutputFile_data()
 {
     QTest::addColumn<int>("channelToTest");
@@ -1889,10 +1872,6 @@ void tst_QProcess::setStandardOutputFile_data()
 
 void tst_QProcess::setStandardOutputFile()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
-
     static const char data[] = "Original data. ";
     static const char testdata[] = "Test data.";
 
@@ -1939,8 +1918,11 @@ void tst_QProcess::setStandardOutputFile()
 
     QCOMPARE(all.size(), expectedsize);
 }
+#endif
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::setStandardOutputProcess_data()
 {
     QTest::addColumn<bool>("merged");
@@ -1950,9 +1932,6 @@ void tst_QProcess::setStandardOutputProcess_data()
 
 void tst_QProcess::setStandardOutputProcess()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
 
     QProcess source;
     QProcess sink;
@@ -1976,14 +1955,13 @@ void tst_QProcess::setStandardOutputProcess()
     else
         QCOMPARE(all, QByteArray("HHeelllloo,,  WWoorrlldd"));
 }
-
-//-----------------------------------------------------------------------------
-void tst_QProcess::fileWriterProcess()
-{
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
 #endif
 
+//-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
+void tst_QProcess::fileWriterProcess()
+{
     QString stdinStr;
     for (int i = 0; i < 5000; ++i)
         stdinStr += QString::fromLatin1("%1 -- testing testing 1 2 3\n").arg(i);
@@ -2005,6 +1983,7 @@ void tst_QProcess::fileWriterProcess()
         QCOMPARE(QFile("fileWriterProcess.txt").size(), qint64(stdinStr.size()));
     } while (stopWatch.elapsed() < 3000);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::detachedWorkingDirectoryAndPid()
@@ -2051,11 +2030,10 @@ void tst_QProcess::detachedWorkingDirectoryAndPid()
 }
 
 //-----------------------------------------------------------------------------
+#ifndef Q_OS_WINCE
+// Reading and writing to a process is not supported on Qt/CE
 void tst_QProcess::switchReadChannels()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Reading and writing to a process is not supported on Qt/CE");
-#endif
     const char data[] = "ABCD";
 
     QProcess process;
@@ -2080,16 +2058,14 @@ void tst_QProcess::switchReadChannels()
     process.setReadChannel(QProcess::StandardOutput);
     QCOMPARE(process.read(1), QByteArray("D"));
 }
+#endif
 
 //-----------------------------------------------------------------------------
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+// Q_OS_WIN - setWorkingDirectory will chdir before starting the process on unices
+// Windows CE does not support working directory logic
 void tst_QProcess::setWorkingDirectory()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Windows CE does not support working directory logic");
-#endif
-#ifndef Q_OS_WIN
-    QSKIP("setWorkingDirectory will chdir before starting the process on unices");
-#endif
     process = new QProcess;
     process->setWorkingDirectory("test");
     process->start("testSetWorkingDirectory/testSetWorkingDirectory");
@@ -2101,6 +2077,7 @@ void tst_QProcess::setWorkingDirectory()
     delete process;
     process = 0;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void tst_QProcess::startFinishStartFinish()
@@ -2173,7 +2150,7 @@ void tst_QProcess::onlyOneStartedSignal()
     QCOMPARE(spyFinished.count(), 1);
 }
 
-#endif
+#endif //QT_NO_PROCESS
 
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"

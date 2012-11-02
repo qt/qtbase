@@ -243,17 +243,9 @@ void tst_QMenu::onStatusMessageChanged(const QString &s)
 
 void tst_QMenu::addActionsAndClear()
 {
-#ifdef QT_SOFTKEYS_ENABLED
-    // Softkeys add extra "Select" and "Back" actions to menu by default.
-    // Two first actions will be Select and Back when softkeys are enabled
-    int numSoftkeyActions = 2;
-#else
-    int numSoftkeyActions = 0;
-#endif
-
-    QCOMPARE(menus[0]->actions().count(), 0 + numSoftkeyActions);
+    QCOMPARE(menus[0]->actions().count(), 0);
     createActions();
-    QCOMPARE(menus[0]->actions().count(), 8 + numSoftkeyActions);
+    QCOMPARE(menus[0]->actions().count(), 8);
     menus[0]->clear();
     QCOMPARE(menus[0]->actions().count(), 0);
 }
@@ -730,11 +722,6 @@ void tst_QMenu::menuSizeHint()
     int maxWidth =0;
     QRect result;
     foreach (QAction *action, menu.actions()) {
-#ifdef QT_SOFTKEYS_ENABLED
-        // Softkey actions are not widgets and have no geometry.
-        if (menu.actionGeometry(action).topLeft() == QPoint(0,0))
-            continue;
-#endif
         maxWidth = qMax(maxWidth, menu.actionGeometry(action).width());
         result |= menu.actionGeometry(action);
         QCOMPARE(result.x(), left + hmargin + panelWidth);

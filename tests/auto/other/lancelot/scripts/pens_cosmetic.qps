@@ -6,6 +6,9 @@ path_addRect path 25 5 4 4
 
 translate 20 20
 
+setPen black 0
+pen_setCosmetic false
+
 begin_block lines
   save
     drawLine 0 0 10 10
@@ -58,6 +61,7 @@ drawText 580 15 "non-cosmetic, 0-width"
 translate 0 50
 
 setPen black 2
+pen_setCosmetic false
 repeat_block lines
 drawText 580 15 "non-cosmetic, 2-width"
 
@@ -80,12 +84,14 @@ translate 0 20
 
 translate 0 50
 setPen black 0
+pen_setCosmetic false
 repeat_block lines
 drawText 580 15 "non-cosmetic, 0-width"
 
 translate 0 50
 
 setPen black 2
+pen_setCosmetic false
 repeat_block lines
 drawText 580 15 "non-cosmetic, 2-width"
 

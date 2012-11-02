@@ -1160,17 +1160,6 @@
     \value WA_TouchPadAcceptSingleTouchEvents Allows touchpad single
     touch events to be sent to the widget.
 
-    \value WA_MergeSoftkeys Allows widget to merge softkeys with parent widget,
-    i.e. widget can set only one softkeys and request softkey implementation
-    to take rest of the softkeys from the parent. Note parents are traversed until
-    WA_MergeSoftkeys is not set. See also Qt::WA_MergeSoftkeysRecursively
-    This attribute currently has effect only on Symbian platforms
-
-    \value WA_MergeSoftkeysRecursively Allows widget to merge softkeys recursively
-    with all parents. If this attribute is set, the widget parents are traversed until
-    window boundary (widget without parent or dialog) is found.
-    This attribute currently has effect only on Symbian platforms
-
     \value WA_X11DoNotAcceptFocus Asks the window manager to not give focus
     to this top level window. This attribute has no effect on non-X11
     platforms.
@@ -2030,14 +2019,6 @@
 
     \value WindowCancelButtonHint Adds a Cancel button to the window decoration of a dialog.
            Only supported for Windows CE.
-
-    \value WindowSoftkeysVisibleHint Makes softkeys visible when widget is fullscreen.
-           Only supported for Symbian.
-
-    \value WindowSoftkeysRespondHint Makes softkeys to receive key events even
-           when invisible. With this hint the softkey actions are triggered
-           even the softkeys are invisible i.e. the window is displayed with
-           \c showFullscreen(). Only supported for Symbian.
 
     \value WindowTransparentForInput Informs the window system that this window
            is used only for output (displaying something) and does not take input.

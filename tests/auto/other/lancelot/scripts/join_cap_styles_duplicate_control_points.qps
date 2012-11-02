@@ -16,53 +16,53 @@ scale 2 2
 
 setPen black 10 solidline roundcap roundjoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate 100 0
 setPen black 10 solidline roundcap miterjoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate 100 0
 setPen black 10 solidline roundcap beveljoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate -200 100
 setPen black 10 solidline squarecap roundjoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate 100 0
 setPen black 10 solidline squarecap miterjoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate 100 0
 setPen black 10 solidline squarecap beveljoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate -200 100
 setPen black 10 solidline flatcap roundjoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate 100 0
 setPen black 10 solidline flatcap miterjoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p
 
 translate 100 0
 setPen black 10 solidline flatcap beveljoin
 drawPath p
-setPen red
+setPen red 0
 drawPath p

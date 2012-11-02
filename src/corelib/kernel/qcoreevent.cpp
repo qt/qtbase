@@ -270,7 +270,6 @@ QT_BEGIN_NAMESPACE
     \omitvalue MacGLClearDrawable
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
-    \omitvalue UpdateSoftKeys
     \omitvalue NativeGesture
 */
 

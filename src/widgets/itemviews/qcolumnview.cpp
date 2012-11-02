@@ -365,14 +365,12 @@ QModelIndex QColumnView::moveCursor(CursorAction cursorAction, Qt::KeyboardModif
             return (current.parent());
         else
             return current;
-        break;
 
     case MoveRight:
         if (model()->hasChildren(current))
             return model()->index(0, 0, current);
         else
             return current.sibling(current.row() + 1, current.column());
-        break;
 
     default:
         break;

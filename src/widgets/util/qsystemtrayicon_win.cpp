@@ -42,12 +42,18 @@
 #include "qsystemtrayicon_p.h"
 #ifndef QT_NO_SYSTEMTRAYICON
 
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
+#  undef _WIN32_WINNT
+#endif
+#if !defined(_WIN32_WINNT)
+#  define _WIN32_WINNT 0x0600
 #endif
 
-#ifndef _WIN32_IE
-#define _WIN32_IE 0x600
+#if defined(_WIN32_IE) && _WIN32_IE < 0x0600
+#  undef _WIN32_IE
+#endif
+#if !defined(_WIN32_IE)
+#  define _WIN32_IE 0x0600 //required for NOTIFYICONDATA_V2_SIZE
 #endif
 
 #include <private/qsystemlibrary_p.h>

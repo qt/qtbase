@@ -60,3 +60,7 @@ integrity: {
 
     DEFINES += QT_LOCALSOCKET_TCP
 }
+
+contains(QT_CONFIG, system-proxies) {
+    DEFINES += QT_USE_SYSTEM_PROXIES
+}

@@ -79,8 +79,8 @@ static const char *languageForWritingSystem[] = {
     "my",  // Myanmar
     "ka",  // Georgian
     "km",  // Khmer
-    "zh-cn", // SimplifiedChinese
-    "zh-tw", // TraditionalChinese
+    "zh-Hans", // SimplifiedChinese
+    "zh-Hant", // TraditionalChinese
     "ja",  // Japanese
     "ko",  // Korean
     "vi",  // Vietnamese

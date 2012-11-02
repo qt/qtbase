@@ -1,4 +1,6 @@
 TARGET = qgenericbearer
+
+PLUGIN_TYPE = bearer
 load(qt_plugin)
 
 QT = core-private network-private
@@ -12,7 +14,3 @@ SOURCES += qgenericengine.cpp \
            main.cpp
 
 OTHER_FILES += generic.json
-
-DESTDIR = $$QT.network.plugins/bearer
-target.path += $$[QT_INSTALL_PLUGINS]/bearer
-INSTALLS += target

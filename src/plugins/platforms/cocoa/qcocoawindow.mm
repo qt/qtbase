@@ -509,6 +509,16 @@ void QCocoaWindow::setOpacity(qreal level)
         [m_nsWindow setAlphaValue:level];
 }
 
+void QCocoaWindow::setMask(const QRegion &region)
+{
+    if (m_nsWindow) {
+        [m_nsWindow setOpaque:NO];
+        [m_nsWindow setBackgroundColor:[NSColor clearColor]];
+    }
+
+    [m_contentView setMaskRegion:&region];
+}
+
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
 {
     if (!m_nsWindow)
@@ -702,11 +712,6 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
                                           selector:@selector(windowNotification:)
                                           name:nil // Get all notifications
                                           object:m_nsWindow];
-
-    // ### Accept touch events by default.
-    // Beware that enabling touch events has a negative impact on the overall performance.
-    // We probably need a QWindowSystemInterface API to enable/disable touch events.
-    [m_contentView setAcceptsTouchEvents:YES];
 
     [window setContentView:m_contentView];
 }

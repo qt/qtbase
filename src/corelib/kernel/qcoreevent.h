@@ -256,8 +256,6 @@ public:
         RequestSoftwareInputPanel = 199,
         CloseSoftwareInputPanel = 200,
 
-        UpdateSoftKeys = 201,                   // Internal for compressing soft key updates
-
         WinIdChange = 203,
 #ifndef QT_NO_GESTURES
         Gesture = 198,

@@ -1202,12 +1202,15 @@ Q_TESTLIB_EXPORT bool printAvailableFunctions = false;
 Q_TESTLIB_EXPORT QStringList testFunctions;
 Q_TESTLIB_EXPORT QStringList testTags;
 
-static void qPrintTestSlots(FILE *stream)
+static void qPrintTestSlots(FILE *stream, const char *filter = 0)
 {
     for (int i = 0; i < QTest::currentTestObject->metaObject()->methodCount(); ++i) {
         QMetaMethod sl = QTest::currentTestObject->metaObject()->method(i);
-        if (isValidSlot(sl))
-            fprintf(stream, "%s\n", sl.methodSignature().constData());
+        if (isValidSlot(sl)) {
+            const QByteArray signature = sl.methodSignature();
+            if (!filter || QString::fromLatin1(signature).contains(QLatin1String(filter), Qt::CaseInsensitive))
+                fprintf(stream, "%s\n", signature.constData());
+        }
     }
 }
 
@@ -1569,9 +1572,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             qsnprintf(buf + off, qMin(512 - off, 3), "()");    // append "()"
             int idx = QTest::currentTestObject->metaObject()->indexOfMethod(buf);
             if (idx < 0 || !isValidSlot(QTest::currentTestObject->metaObject()->method(idx))) {
-                fprintf(stderr, "Unknown testfunction: '%s'\n", buf);
-                fprintf(stderr, "Available testfunctions:\n");
-                qPrintTestSlots(stderr);
+                fprintf(stderr, "Unknown test function: '%s'. Possible matches:\n", buf);
+                buf[off] = 0;
+                qPrintTestSlots(stderr, buf);
+                fprintf(stderr, "\n%s -functions\nlists all available test functions.\n", argv[0]);
                 exit(1);
             }
             testFuncs[testFuncCount].set(idx, data);

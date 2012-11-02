@@ -1,0 +1,171 @@
+
+clearRenderHint
+setPen black 0 solidline squarecap
+
+save
+translate 20 20
+
+begin_block lines
+
+# 0 -> 45 degress
+drawLine 100 100 200 90
+drawLine 100 100 200 80
+drawLine 100 100 200 70
+drawLine 100 100 200 60
+drawLine 100 100 200 50
+drawLine 100 100 200 40
+drawLine 100 100 200 30
+drawLine 100 100 200 20
+drawLine 100 100 200 10
+
+# 45
+drawLine 100 100 200 0
+
+# 45 -> 90
+drawLine 100 100 190 0
+drawLine 100 100 180 0
+drawLine 100 100 170 0
+drawLine 100 100 160 0
+drawLine 100 100 150 0
+drawLine 100 100 140 0
+drawLine 100 100 130 0
+drawLine 100 100 120 0
+drawLine 100 100 110 0
+
+# 90
+drawLine 100 100 100 0
+
+# 90 -> 135
+drawLine 100 100 90 0
+drawLine 100 100 80 0
+drawLine 100 100 70 0
+drawLine 100 100 60 0
+drawLine 100 100 50 0
+drawLine 100 100 40 0
+drawLine 100 100 30 0
+drawLine 100 100 20 0
+drawLine 100 100 10 0
+
+# 135
+drawLine 100 100 0 0
+
+# 135 -> 180 degress
+drawLine 100 100 0 10
+drawLine 100 100 0 20
+drawLine 100 100 0 30
+drawLine 100 100 0 40
+drawLine 100 100 0 50
+drawLine 100 100 0 60
+drawLine 100 100 0 70
+drawLine 100 100 0 80
+drawLine 100 100 0 90
+
+# 180
+drawLine 100 100 0 100
+
+# 180 -> 225
+drawLine 100 100 0 110
+drawLine 100 100 0 120
+drawLine 100 100 0 130
+drawLine 100 100 0 140
+drawLine 100 100 0 150
+drawLine 100 100 0 160
+drawLine 100 100 0 170
+drawLine 100 100 0 180
+drawLine 100 100 0 190
+
+# 225
+drawLine 100 100 0 200
+
+# 225 -> 270
+drawLine 100 100 10 200
+drawLine 100 100 20 200
+drawLine 100 100 30 200
+drawLine 100 100 40 200
+drawLine 100 100 50 200
+drawLine 100 100 60 200
+drawLine 100 100 70 200
+drawLine 100 100 80 200
+drawLine 100 100 90 200
+
+# 270
+drawLine 100 100 100 200
+
+# 270 -> 315 degrees
+drawLine 100 100 110 200
+drawLine 100 100 120 200
+drawLine 100 100 130 200
+drawLine 100 100 140 200
+drawLine 100 100 150 200
+drawLine 100 100 160 200
+drawLine 100 100 170 200
+drawLine 100 100 180 200
+drawLine 100 100 190 200
+
+# 315
+drawLine 100 100 200 200
+
+# 315 -> 360 degress
+drawLine 100 100 200 100
+drawLine 100 100 200 110
+drawLine 100 100 200 120
+drawLine 100 100 200 130
+drawLine 100 100 200 140
+drawLine 100 100 200 150
+drawLine 100 100 200 160
+drawLine 100 100 200 170
+drawLine 100 100 200 180
+drawLine 100 100 200 190
+
+end_block
+
+setRenderHint Antialiasing
+setPen 0x7fff0000 0 solidline squarecap
+repeat_block lines
+
+translate 250.5 0.5
+clearRenderHint
+setPen black 0 solidline squarecap
+repeat_block lines
+setRenderHint Antialiasing
+setPen 0x7fff0000 0 solidline squarecap
+repeat_block lines
+
+restore
+
+save
+
+translate 20 250
+clearRenderHint
+setPen black 1 solidline squarecap
+repeat_block lines
+setRenderHint Antialiasing
+setPen 0x7fff0000 1 solidline squarecap
+repeat_block lines
+
+translate 250.5 0.5
+clearRenderHint
+setPen black 1 soslidline squarecap
+repeat_block lines
+setRenderHint Antialiasing
+setPen 0x7fff0000 0 solidline squarecap
+repeat_block lines
+
+restore
+
+translate 20 500
+scale 1.5 1.5
+clearRenderHint
+setPen black 1 solidline squarecap
+repeat_block lines
+setRenderHint Antialiasing
+setPen 0x7fff0000 1 solidline squarecap
+repeat_block lines
+
+translate 250.5 0.5
+clearRenderHint
+setPen black 1 soslidline squarecap
+repeat_block lines
+setRenderHint Antialiasing
+setPen 0x7fff0000 0 solidline squarecap
+repeat_block lines

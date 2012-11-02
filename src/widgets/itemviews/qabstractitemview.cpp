@@ -62,7 +62,6 @@
 #include <qaccessible.h>
 #include <qaccessible2.h>
 #endif
-#include <private/qsoftkeymanager_p.h>
 #ifndef QT_NO_GESTURE
 #  include <qscroller.h>
 #endif
@@ -94,9 +93,6 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         overwrite(false),
         dropIndicatorPosition(QAbstractItemView::OnItem),
         defaultDropAction(Qt::IgnoreAction),
-#endif
-#ifdef QT_SOFTKEYS_ENABLED
-        doneSoftKey(0),
 #endif
         autoScroll(true),
         autoScrollMargin(16),
@@ -139,10 +135,6 @@ void QAbstractItemViewPrivate::init()
     viewport->setBackgroundRole(QPalette::Base);
 
     q->setAttribute(Qt::WA_InputMethodEnabled);
-
-#ifdef QT_SOFTKEYS_ENABLED
-    doneSoftKey = QSoftKeyManager::createKeyedAction(QSoftKeyManager::DoneSoftKey, Qt::Key_Back, q);
-#endif
 }
 
 void QAbstractItemViewPrivate::setHoverIndex(const QPersistentModelIndex &index)
@@ -1611,11 +1603,6 @@ bool QAbstractItemView::event(QEvent *event)
     case QEvent::FontChange:
         d->doDelayedItemsLayout(); // the size of the items will change
         break;
-#ifdef QT_SOFTKEYS_ENABLED
-    case QEvent::LanguageChange:
-        d->doneSoftKey->setText(QSoftKeyManager::standardSoftKeyText(QSoftKeyManager::DoneSoftKey));
-        break;
-#endif
     default:
         break;
     }
@@ -2197,11 +2184,6 @@ void QAbstractItemView::focusOutEvent(QFocusEvent *event)
     Q_D(QAbstractItemView);
     QAbstractScrollArea::focusOutEvent(event);
     d->viewport->update();
-
-#ifdef QT_SOFTKEYS_ENABLED
-    if(!hasEditFocus())
-        removeAction(d->doneSoftKey);
-#endif
 }
 
 /*!
@@ -2226,23 +2208,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
-#ifdef QT_SOFTKEYS_ENABLED
-                // If we can't keypad navigate to any direction, there is no sense to add
-                // "Done" softkey, since it basically does nothing when there is
-                // only one widget in screen
-                if(QWidgetPrivate::canKeypadNavigate(Qt::Horizontal)
-                        || QWidgetPrivate::canKeypadNavigate(Qt::Vertical))
-                    addAction(d->doneSoftKey);
-#endif
                 return;
             }
         }
         break;
     case Qt::Key_Back:
         if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
-#ifdef QT_SOFTKEYS_ENABLED
-            removeAction(d->doneSoftKey);
-#endif
             setEditFocus(false);
         } else {
             event->ignore();

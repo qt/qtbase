@@ -171,14 +171,6 @@ void tst_QActionGroup::separators()
 
     mw.show();
 
-#ifdef QT_SOFTKEYS_ENABLED
-    // Softkeys add extra "Select" and "Back" actions to menu by default.
-    // Two first actions will be Select and Back when softkeys are enabled
-    int numSoftkeyActions = 2;
-#else
-    int numSoftkeyActions = 0;
-#endif
-
     QAction *action = new QAction(&actGroup);
     action->setText("test one");
 
@@ -190,13 +182,13 @@ void tst_QActionGroup::separators()
     while (it.hasNext())
         menu.addAction(it.next());
 
-    QCOMPARE((int)menu.actions().size(), 2 + numSoftkeyActions);
+    QCOMPARE((int)menu.actions().size(), 2);
 
     it = QListIterator<QAction*>(actGroup.actions());
     while (it.hasNext())
         menu.removeAction(it.next());
 
-    QCOMPARE((int)menu.actions().size(), 0 + numSoftkeyActions);
+    QCOMPARE((int)menu.actions().size(), 0);
 
     action = new QAction(&actGroup);
     action->setText("test two");
@@ -205,7 +197,7 @@ void tst_QActionGroup::separators()
     while (it.hasNext())
         menu.addAction(it.next());
 
-    QCOMPARE((int)menu.actions().size(), 3 + numSoftkeyActions);
+    QCOMPARE((int)menu.actions().size(), 3);
 }
 
 void tst_QActionGroup::testActionInTwoQActionGroup()

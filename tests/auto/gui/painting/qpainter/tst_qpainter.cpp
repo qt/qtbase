@@ -231,7 +231,9 @@ private slots:
     void drawRect_task215378();
     void drawRect_task247505();
 
+#if defined(Q_OS_MAC)
     void drawText_subPixelPositionsInRaster_qtbug5053();
+#endif
 
     void drawImage_data();
     void drawImage();
@@ -4178,11 +4180,10 @@ void tst_QPainter::clipBoundingRect()
 
 }
 
+#if defined(Q_OS_MAC)
+// Only Mac supports sub pixel positions in raster engine currently
 void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 {
-#if !defined(Q_OS_MAC)
-    QSKIP("Only Mac supports sub pixel positions in raster engine currently");
-#endif
     QFontMetricsF fm(qApp->font());
 
     QImage baseLine(fm.width(QChar::fromLatin1('e')), fm.height(), QImage::Format_RGB32);
@@ -4212,6 +4213,7 @@ void tst_QPainter::drawText_subPixelPositionsInRaster_qtbug5053()
 
     QVERIFY(foundDifferentRasterization);
 }
+#endif
 
 void tst_QPainter::drawPointScaled()
 {

@@ -1027,14 +1027,44 @@ void tst_QFile::ungetChar()
     QCOMPARE(buf[2], '4');
 }
 
+#ifdef Q_OS_WIN
+QString driveLetters()
+{
+    wchar_t volumeName[MAX_PATH];
+    wchar_t path[MAX_PATH];
+    const HANDLE h = FindFirstVolumeW(volumeName, MAX_PATH);
+    if (h == INVALID_HANDLE_VALUE)
+        return QString();
+    QString result;
+    do {
+        if (GetVolumePathNamesForVolumeNameW(volumeName, path, MAX_PATH, NULL)) {
+            if (path[1] == L':')
+                result.append(QChar(path[0]));
+        }
+    } while (FindNextVolumeW(h, volumeName, MAX_PATH));
+    FindVolumeClose(h);
+    return result;
+}
+
+static inline QChar invalidDriveLetter()
+{
+    const QString drives = driveLetters().toLower();
+    for (char c = 'a'; c <= 'z'; ++c)
+        if (!drives.contains(QLatin1Char(c)))
+            return QLatin1Char(c);
+    Q_ASSERT(false); // All drive letters used?!
+    return QChar();
+}
+
+#endif // Q_OS_WIN
+
 void tst_QFile::invalidFile_data()
 {
     QTest::addColumn<QString>("fileName");
 #if !defined(Q_OS_WIN)
     QTest::newRow( "x11" ) << QString( "qwe//" );
 #else
-    QTest::newRow( "colon1" ) << QString( "fail:invalid" );
-    QTest::newRow( "colon2" ) << QString( "f:ail:invalid" );
+    QTest::newRow( "colon2" ) << invalidDriveLetter() + QString::fromLatin1(":ail:invalid");
     QTest::newRow( "colon3" ) << QString( ":failinvalid" );
     QTest::newRow( "forwardslash" ) << QString( "fail/invalid" );
     QTest::newRow( "asterisk" ) << QString( "fail*invalid" );
@@ -1050,8 +1080,7 @@ void tst_QFile::invalidFile()
 {
     QFETCH( QString, fileName );
     QFile f( fileName );
-    QEXPECT_FAIL("colon1", "QTBUG-27306", Continue);
-    QVERIFY( !f.open( QIODevice::ReadWrite ) );
+    QVERIFY2( !f.open( QIODevice::ReadWrite ), qPrintable(fileName) );
 }
 
 void tst_QFile::createFile()

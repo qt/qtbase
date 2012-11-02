@@ -67,6 +67,7 @@ private slots:
     void touchCancel();
     void touchCancelWithTouchToMouse();
     void orientation();
+    void sizes();
     void close();
     void activateAndClose();
     void mouseEventSequence();
@@ -737,6 +738,58 @@ void tst_QWindow::orientation()
     QSignalSpy spy(&window, SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)));
     window.reportContentOrientationChange(Qt::LandscapeOrientation);
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QWindow::sizes()
+{
+    QWindow window;
+
+    QSignalSpy minimumWidthSpy(&window, SIGNAL(minimumWidthChanged(int)));
+    QSignalSpy minimumHeightSpy(&window, SIGNAL(minimumHeightChanged(int)));
+    QSignalSpy maximumWidthSpy(&window, SIGNAL(maximumWidthChanged(int)));
+    QSignalSpy maximumHeightSpy(&window, SIGNAL(maximumHeightChanged(int)));
+
+    QSize oldMaximum = window.maximumSize();
+
+    window.setMinimumWidth(10);
+    QCOMPARE(window.minimumWidth(), 10);
+    QCOMPARE(window.minimumHeight(), 0);
+    QCOMPARE(window.minimumSize(), QSize(10, 0));
+    QCOMPARE(window.maximumSize(), oldMaximum);
+    QCOMPARE(minimumWidthSpy.count(), 1);
+    QCOMPARE(minimumHeightSpy.count(), 0);
+    QCOMPARE(maximumWidthSpy.count(), 0);
+    QCOMPARE(maximumHeightSpy.count(), 0);
+
+    window.setMinimumHeight(10);
+    QCOMPARE(window.minimumWidth(), 10);
+    QCOMPARE(window.minimumHeight(), 10);
+    QCOMPARE(window.minimumSize(), QSize(10, 10));
+    QCOMPARE(window.maximumSize(), oldMaximum);
+    QCOMPARE(minimumWidthSpy.count(), 1);
+    QCOMPARE(minimumHeightSpy.count(), 1);
+    QCOMPARE(maximumWidthSpy.count(), 0);
+    QCOMPARE(maximumHeightSpy.count(), 0);
+
+    window.setMaximumWidth(100);
+    QCOMPARE(window.maximumWidth(), 100);
+    QCOMPARE(window.maximumHeight(), oldMaximum.height());
+    QCOMPARE(window.minimumSize(), QSize(10, 10));
+    QCOMPARE(window.maximumSize(), QSize(100, oldMaximum.height()));
+    QCOMPARE(minimumWidthSpy.count(), 1);
+    QCOMPARE(minimumHeightSpy.count(), 1);
+    QCOMPARE(maximumWidthSpy.count(), 1);
+    QCOMPARE(maximumHeightSpy.count(), 0);
+
+    window.setMaximumHeight(100);
+    QCOMPARE(window.maximumWidth(), 100);
+    QCOMPARE(window.maximumHeight(), 100);
+    QCOMPARE(window.minimumSize(), QSize(10, 10));
+    QCOMPARE(window.maximumSize(), QSize(100, 100));
+    QCOMPARE(minimumWidthSpy.count(), 1);
+    QCOMPARE(minimumHeightSpy.count(), 1);
+    QCOMPARE(maximumWidthSpy.count(), 1);
+    QCOMPARE(maximumHeightSpy.count(), 1);
 }
 
 void tst_QWindow::close()

@@ -279,6 +279,12 @@ static inline unsigned parseOptions(const QStringList &paramList)
             } else if (param.endsWith(QLatin1String("native"))) {
                 options |= QWindowsIntegration::FontDatabaseNative;
             }
+        } else if (param.startsWith(QLatin1String("dialogs="))) {
+            if (param.endsWith(QLatin1String("xp"))) {
+                options |= QWindowsIntegration::XpNativeDialogs;
+            } else if (param.endsWith(QLatin1String("none"))) {
+                options |= QWindowsIntegration::NoNativeDialogs;
+            }
         } else if (param == QLatin1String("gl=gdi")) {
             options |= QWindowsIntegration::DisableArb;
         }
@@ -331,6 +337,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
 #  endif // QT_OPENGL_ES_2
 #endif // !QT_NO_OPENGL
     case WindowMasks:
+        return true;
+    case MultipleWindows:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);

@@ -1493,13 +1493,26 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::QueryService(REFGUID guidServic
     *iface = 0;
     accessibleDebug("QWindowsIA2Accessible::QS(): %s", IIDToString(riid).constData());
 
-    if (guidService == IID_IAccessible && riid == IID_IAccessible2) {
-        // The conditions for entering here should be ok (from _dicoveringInterfaces in IAccessible2.idl)
-        *iface = static_cast<IAccessible2*>(this);
-    } else if (guidService == IID_IAccessible && (riid == IID_IAccessible || riid == IID_IUnknown || riid == IID_IDispatch)) {
-        // The above conditions works with AccProbe and NVDA.
-        *iface = static_cast<IAccessible*>(this);
-    } else if (riid == IID_IAccessibleApplication) {
+
+    if (guidService == IID_IAccessible) {
+        if (riid == IID_IServiceProvider) {
+            // do not end up calling QueryInterface for IID_IServiceProvider
+            *iface = 0;
+        } else if (riid == IID_IAccessible || riid == IID_IUnknown || riid == IID_IDispatch) {
+            // The above conditions works with AccProbe and NVDA.
+            *iface = static_cast<IAccessible*>(this);
+        } else {
+            // According to _dicoveringInterfaces Discovery of Interfaces, we should really only
+            // enter here if riid == IID_IAccessible2, but some screen readers does not like that,
+            // and other servers seems to have realized that. (Chrome and Mozilla for instance,
+            // calls QueryInterface more or less in the same way)
+
+            // For instance, accProbe discovers IID_IAccessibleTable2 by a QueryService only.
+            return QueryInterface(riid, iface);
+        }
+    }
+
+    if (riid == IID_IAccessibleApplication) {
         *iface = new AccessibleApplication;
         return S_OK;
     }

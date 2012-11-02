@@ -214,6 +214,8 @@ QWindow::~QWindow()
 {
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = 0;
+    if (QGuiApplicationPrivate::currentMouseWindow == this)
+        QGuiApplicationPrivate::currentMouseWindow = 0;
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();
 }
@@ -939,9 +941,24 @@ void QWindow::setMinimumSize(const QSize &size)
     QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
     if (d->minimumSize == adjustedSize)
         return;
+    QSize oldSize = d->minimumSize;
     d->minimumSize = adjustedSize;
     if (d->platformWindow && isTopLevel())
         d->platformWindow->propagateSizeHints();
+    if (d->minimumSize.width() != oldSize.width())
+        emit minimumWidthChanged(d->minimumSize.width());
+    if (d->minimumSize.height() != oldSize.height())
+        emit minimumHeightChanged(d->minimumSize.height());
+}
+
+void QWindow::setMinimumWidth(int w)
+{
+    setMinimumSize(QSize(w, minimumHeight()));
+}
+
+void QWindow::setMinimumHeight(int h)
+{
+    setMinimumSize(QSize(minimumWidth(), h));
 }
 
 /*!
@@ -957,9 +974,24 @@ void QWindow::setMaximumSize(const QSize &size)
     QSize adjustedSize = QSize(qBound(0, size.width(), QWINDOWSIZE_MAX), qBound(0, size.height(), QWINDOWSIZE_MAX));
     if (d->maximumSize == adjustedSize)
         return;
+    QSize oldSize = d->maximumSize;
     d->maximumSize = adjustedSize;
     if (d->platformWindow && isTopLevel())
         d->platformWindow->propagateSizeHints();
+    if (d->maximumSize.width() != oldSize.width())
+        emit maximumWidthChanged(d->maximumSize.width());
+    if (d->maximumSize.height() != oldSize.height())
+        emit maximumHeightChanged(d->maximumSize.height());
+}
+
+void QWindow::setMaximumWidth(int w)
+{
+    setMaximumSize(QSize(w, maximumHeight()));
+}
+
+void QWindow::setMaximumHeight(int h)
+{
+    setMaximumSize(QSize(maximumWidth(), h));
 }
 
 /*!
@@ -1055,6 +1087,26 @@ void QWindow::setGeometry(const QRect &rect)
 /*!
     \property QWindow::height
     \brief the height of the window's geometry
+*/
+
+/*!
+    \property QWindow::minimumWidth
+    \brief the minimum width of the window's geometry
+*/
+
+/*!
+    \property QWindow::minimumHeight
+    \brief the minimum height of the window's geometry
+*/
+
+/*!
+    \property QWindow::maximumWidth
+    \brief the maximum width of the window's geometry
+*/
+
+/*!
+    \property QWindow::maximumHeight
+    \brief the maximum height of the window's geometry
 */
 
 /*!
@@ -1445,6 +1497,8 @@ bool QWindow::close()
 
     if (QGuiApplicationPrivate::focus_window == this)
         QGuiApplicationPrivate::focus_window = 0;
+    if (QGuiApplicationPrivate::currentMouseWindow == this)
+        QGuiApplicationPrivate::currentMouseWindow = 0;
 
     QGuiApplicationPrivate::window_list.removeAll(this);
     destroy();

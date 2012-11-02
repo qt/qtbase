@@ -1,20 +1,6 @@
 load(exclusive_builds)
 CONFIG = lex yacc warn_on debug exceptions depend_includepath $$CONFIG
 
-!build_pass:exists($$_PRO_FILE_PWD_/sync.profile) {
-    !exists($$[QT_HOST_DATA]/.qmake.cache) {
-        !isEmpty(_QMAKE_SUPER_CACHE_) {
-            # When doing a -prefix build of top-level qt5/qt.pro, we need to announce
-            # this repo's module pris' location to the other repos.
-            isEmpty(MODULE_QMAKE_OUTDIR): MODULE_QMAKE_OUTDIR = $$OUT_PWD
-            modpath = $$MODULE_QMAKE_OUTDIR/mkspecs/modules
-            !contains(QMAKEMODULES, $$modpath): \
-                cache(QMAKEMODULES, add super, modpath)
-            unset(modpath)
-        }
-    }
-}
-
 # Populate the installdir which will be passed to qdoc in the default_post.prf
 # This allows a project to remove the installdir if need be, to trigger building online docs,
 # which Qt Creator does.

@@ -31,10 +31,10 @@
     \ingroup groups
     \brief Codec support in Qt.
 
-    These codecs provide facilities for conversion between Unicode and
-    specific text encodings.
+    These \l{Qt Core} codecs classes provide facilities for conversion between
+    Unicode and specific text encodings.
 
-    \generatelist{related}
+    \annotatedlist codecs
 */
 
 /*!

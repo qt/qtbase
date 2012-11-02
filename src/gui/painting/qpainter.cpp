@@ -7498,8 +7498,11 @@ start_lengthVariant:
 
             l.setLineWidth(lineWidth);
             height += leading;
+
+            // Make sure lines are positioned on whole pixels
+            height = qCeil(height);
             l.setPosition(QPointF(0., height));
-            height += l.height();
+            height += textLayout.engine()->lines[l.lineNumber()].height().toReal();
             width = qMax(width, l.naturalTextWidth());
             if (!dontclip && !brect && height >= r.height())
                 break;

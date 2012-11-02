@@ -150,59 +150,59 @@ void tst_QStandardItem::getSetData()
             QString text = QString("text %0").arg(i);
             item.setText(text);
             QCOMPARE(item.text(), text);
-            
+
             QPixmap pixmap(32, 32);
             pixmap.fill((i == 1) ? Qt::red : Qt::green);
             QIcon icon(pixmap);
             item.setIcon(icon);
             QCOMPARE(item.icon(), icon);
-            
+
             QString toolTip = QString("toolTip %0").arg(i);
             item.setToolTip(toolTip);
             QCOMPARE(item.toolTip(), toolTip);
-            
+
             QString statusTip = QString("statusTip %0").arg(i);
             item.setStatusTip(statusTip);
             QCOMPARE(item.statusTip(), statusTip);
-        
+
             QString whatsThis = QString("whatsThis %0").arg(i);
             item.setWhatsThis(whatsThis);
             QCOMPARE(item.whatsThis(), whatsThis);
-            
+
             QSize sizeHint(64*i, 48*i);
             item.setSizeHint(sizeHint);
             QCOMPARE(item.sizeHint(), sizeHint);
-            
+
             QFont font;
             item.setFont(font);
             QCOMPARE(item.font(), font);
-        
+
             Qt::Alignment textAlignment((i == 1)
                                         ? Qt::AlignLeft|Qt::AlignVCenter
                                         : Qt::AlignRight);
             item.setTextAlignment(textAlignment);
             QCOMPARE(item.textAlignment(), textAlignment);
-            
+
             QColor backgroundColor((i == 1) ? Qt::blue : Qt::yellow);
             item.setBackground(backgroundColor);
             QCOMPARE(item.background().color(), backgroundColor);
-            
+
             QColor textColor((i == i) ? Qt::green : Qt::cyan);
             item.setForeground(textColor);
             QCOMPARE(item.foreground().color(), textColor);
-            
+
             Qt::CheckState checkState((i == 1) ? Qt::PartiallyChecked : Qt::Checked);
             item.setCheckState(checkState);
             QCOMPARE(item.checkState(), checkState);
-            
+
             QString accessibleText = QString("accessibleText %0").arg(i);
             item.setAccessibleText(accessibleText);
             QCOMPARE(item.accessibleText(), accessibleText);
-            
+
             QString accessibleDescription = QString("accessibleDescription %0").arg(i);
             item.setAccessibleDescription(accessibleDescription);
             QCOMPARE(item.accessibleDescription(), accessibleDescription);
-            
+
             QCOMPARE(item.text(), text);
             QCOMPARE(item.icon(), icon);
             QCOMPARE(item.toolTip(), toolTip);
@@ -216,7 +216,7 @@ void tst_QStandardItem::getSetData()
             QCOMPARE(item.checkState(), checkState);
             QCOMPARE(item.accessibleText(), accessibleText);
             QCOMPARE(item.accessibleDescription(), accessibleDescription);
-            
+
             QCOMPARE(qvariant_cast<QString>(item.data(Qt::DisplayRole)), text);
             QCOMPARE(qvariant_cast<QIcon>(item.data(Qt::DecorationRole)), icon);
             QCOMPARE(qvariant_cast<QString>(item.data(Qt::ToolTipRole)), toolTip);
@@ -250,7 +250,7 @@ void tst_QStandardItem::getSetData()
         item.setData(QVariant(), Qt::CheckStateRole);
         item.setData(QVariant(), Qt::AccessibleTextRole);
         item.setData(QVariant(), Qt::AccessibleDescriptionRole);
-        
+
         QCOMPARE(item.data(Qt::DisplayRole), QVariant());
         QCOMPARE(item.data(Qt::DecorationRole), QVariant());
         QCOMPARE(item.data(Qt::ToolTipRole), QVariant());
@@ -296,7 +296,7 @@ void tst_QStandardItem::getSetFlags()
     QVERIFY(item.isDropEnabled());
     QVERIFY(item.flags() & Qt::ItemIsDropEnabled);
 #endif
-    
+
     QVERIFY(item.isEnabled());
     item.setEnabled(false);
     QVERIFY(!item.isEnabled());
@@ -332,7 +332,7 @@ void tst_QStandardItem::getSetFlags()
     item.setCheckState(Qt::Checked);
     item.setCheckable(true);
     QCOMPARE(item.checkState(), Qt::Checked);
-}    
+}
 
 void tst_QStandardItem::getSetRowAndColumnCount()
 {
@@ -427,7 +427,7 @@ void tst_QStandardItem::parent()
         QCOMPARE(child->parent(), static_cast<QStandardItem*>(0));
         item.setChild(0, 0, child);
         QCOMPARE(child->parent(), &item);
-        
+
         QStandardItem *childOfChild = new QStandardItem;
         child->setChild(0, 0, childOfChild);
         QCOMPARE(childOfChild->parent(), child);
@@ -897,7 +897,7 @@ void tst_QStandardItem::takeRow()
 void tst_QStandardItem::streamItem()
 {
     QStandardItem item;
-    
+
     item.setText(QLatin1String("text"));
     item.setToolTip(QLatin1String("toolTip"));
     item.setStatusTip(QLatin1String("statusTip"));
@@ -1006,7 +1006,7 @@ void tst_QStandardItem::sortChildren()
         two->appendRow(new QStandardItem(QLatin1String("e")));
         item->appendRow(one);
         item->appendRow(two);
-        
+
         QSignalSpy layoutAboutToBeChangedSpy(
             model, SIGNAL(layoutAboutToBeChanged()));
         QSignalSpy layoutChangedSpy(
@@ -1021,7 +1021,7 @@ void tst_QStandardItem::sortChildren()
         QCOMPARE(two->child(0)->text(), QLatin1String("f"));
         QCOMPARE(two->child(1)->text(), QLatin1String("d"));
         QCOMPARE(two->child(2)->text(), QLatin1String("e"));
-        
+
         two->sortChildren(0, Qt::AscendingOrder);
         // verify sorted
         QCOMPARE(two->child(0)->text(), QLatin1String("d"));
@@ -1031,7 +1031,7 @@ void tst_QStandardItem::sortChildren()
         QCOMPARE(one->child(0)->text(), QLatin1String("c"));
         QCOMPARE(one->child(1)->text(), QLatin1String("b"));
         QCOMPARE(one->child(2)->text(), QLatin1String("a"));
-        
+
         item->sortChildren(0, Qt::AscendingOrder);
         // verify everything sorted
         QCOMPARE(one->child(0)->text(), QLatin1String("a"));

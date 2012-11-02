@@ -1,7 +1,7 @@
 CONFIG += testcase
 
 # This is temporary to start running the test as part of normal CI.
-CONFIG += insignificant_test
+CONFIG += insignificant_test # QTBUG-27732
 
 
 TARGET = tst_qaccessibilitylinux

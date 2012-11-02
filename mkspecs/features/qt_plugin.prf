@@ -1,12 +1,17 @@
-TEMPLATE = lib
-isEmpty(VERSION):VERSION = $$QT_VERSION
-CONFIG += qt plugin
+load(qt_build_paths)
 
-if(win32|mac):!macx-xcode {
+isEmpty(PLUGIN_TYPE): error("PLUGIN_TYPE (plugins/ subdirectory) needs to be defined.")
+
+TEMPLATE = lib
+CONFIG += plugin
+DESTDIR = $$MODULE_BASE_OUTDIR/plugins/$$PLUGIN_TYPE
+
+tool_plugin {
+    !build_pass:contains(QT_CONFIG, build_all): CONFIG += release
+} else:if(win32|mac):!macx-xcode {
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
-TARGET = $$qtLibraryTarget($$TARGET)
 contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
 contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
 contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
@@ -14,6 +19,25 @@ contains(QT_CONFIG, c++11):CONFIG += c++11
 
 contains(QT_CONFIG, static):CONFIG += static
 else:CONFIG += shared
+
+!build_pass:static {
+    isEmpty(MODULE): MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
+
+    MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_plugin_$${MODULE}.pri
+
+    MODULE_PRI_CONT = \
+        "QT_PLUGIN.$${MODULE}.TYPE = $$PLUGIN_TYPE"
+    write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
+
+    pritarget.path = $$[QT_HOST_DATA]/mkspecs/modules
+    pritarget.files = $$MODULE_PRI
+    INSTALLS += pritarget
+}
+
+target.path = $$[QT_INSTALL_PLUGINS]/$$PLUGIN_TYPE
+INSTALLS += target
+
+TARGET = $$qtLibraryTarget($$TARGET)
 
 load(qt_targets)
 

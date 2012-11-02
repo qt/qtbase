@@ -1,4 +1,6 @@
 TARGET = qbbbearer
+
+PLUGIN_TYPE = bearer
 load(qt_plugin)
 
 QT = core-private network-private
@@ -15,7 +17,3 @@ SOURCES += qbbengine.cpp \
            main.cpp
 
 OTHER_FILES += blackberry.json
-
-DESTDIR = $$QT.network.plugins/bearer
-target.path += $$[QT_INSTALL_PLUGINS]/bearer
-INSTALLS += target

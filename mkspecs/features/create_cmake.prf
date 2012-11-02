@@ -60,7 +60,7 @@ static|staticlib:CMAKE_STATIC_TYPE = true
 
 contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
-CMAKE_MKSPEC = $$relative_path($$QMAKESPEC, $$[QT_HOST_DATA/get]/mkspecs)
+CMAKE_MKSPEC = $$[QMAKE_XSPEC]
 
 macx {
     !isEmpty(CMAKE_STATIC_TYPE) {

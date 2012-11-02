@@ -255,31 +255,6 @@ static const uint layouts[2][5][14] =
     }
 };
 
-#if defined(QT_SOFTKEYS_ENABLED) && !defined(QT_NO_ACTION)
-class QDialogButtonEnabledProxy : public QObject
-{
-public:
-    QDialogButtonEnabledProxy(QObject *parent, QWidget *src, QAction *trg) : QObject(parent), source(src), target(trg)
-    {
-        source->installEventFilter(this);
-        target->setEnabled(source->isEnabled());
-    }
-    ~QDialogButtonEnabledProxy()
-    {
-        source->removeEventFilter(this);
-    }
-    bool eventFilter(QObject *object, QEvent *event)
-    {
-        if (object == source && event->type() == QEvent::EnabledChange) {
-            target->setEnabled(source->isEnabled());
-        }
-        return false;
-    };
-private:
-    QWidget *source;
-    QAction *target;
-};
-#endif
 
 class QDialogButtonBoxPrivate : public QWidgetPrivate
 {
@@ -290,9 +265,6 @@ public:
 
     QList<QAbstractButton *> buttonLists[QDialogButtonBox::NRoles];
     QHash<QPushButton *, QDialogButtonBox::StandardButton> standardButtonHash;
-#ifdef QT_SOFTKEYS_ENABLED
-    QHash<QAbstractButton *, QAction *> softKeyActions;
-#endif
 
     Qt::Orientation orientation;
     QDialogButtonBox::ButtonLayout layoutPolicy;
@@ -312,9 +284,6 @@ public:
     void addButtonsToLayout(const QList<QAbstractButton *> &buttonList, bool reverse);
     void retranslateStrings();
     const char *standardButtonText(QDialogButtonBox::StandardButton sbutton) const;
-#if defined(QT_SOFTKEYS_ENABLED) && !defined(QT_NO_ACTION)
-    QAction *createSoftKey(QAbstractButton *button, QDialogButtonBox::ButtonRole role);
-#endif
 };
 
 QDialogButtonBoxPrivate::QDialogButtonBoxPrivate(Qt::Orientation orient)
@@ -577,61 +546,9 @@ void QDialogButtonBoxPrivate::addButton(QAbstractButton *button, QDialogButtonBo
     QObject::connect(button, SIGNAL(clicked()), q, SLOT(_q_handleButtonClicked()));
     QObject::connect(button, SIGNAL(destroyed()), q, SLOT(_q_handleButtonDestroyed()));
     buttonLists[role].append(button);
-#if defined(QT_SOFTKEYS_ENABLED) && !defined(QT_NO_ACTION)
-    QAction *action = createSoftKey(button, role);
-    softKeyActions.insert(button, action);
-    new QDialogButtonEnabledProxy(action, button, action);
-#endif
     if (doLayout)
         layoutButtons();
 }
-
-#if defined(QT_SOFTKEYS_ENABLED) && !defined(QT_NO_ACTION)
-QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialogButtonBox::ButtonRole role)
-{
-    Q_Q(QDialogButtonBox);
-    QAction::SoftKeyRole softkeyRole;
-
-    QAction *action = new QAction(button->text(), button);
-
-    switch (role) {
-    case ApplyRole:
-    case AcceptRole:
-    case YesRole:
-    case ActionRole:
-    case HelpRole:
-        softkeyRole = QAction::PositiveSoftKey;
-        break;
-    case RejectRole:
-    case DestructiveRole:
-    case NoRole:
-    case ResetRole:
-        softkeyRole = QAction::NegativeSoftKey;
-        break;
-    default:
-        break;
-    }
-    QObject::connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
-    action->setSoftKeyRole(softkeyRole);
-
-
-    QWidget *dialog = 0;
-    QWidget *p = q;
-    while (p && !p->isWindow()) {
-        p = p->parentWidget();
-        if ((dialog = qobject_cast<QDialog *>(p)))
-            break;
-    }
-
-    if (dialog) {
-        dialog->addAction(action);
-    } else {
-        q->addAction(action);
-    }
-
-    return action;
-}
-#endif
 
 void QDialogButtonBoxPrivate::createStandardButtons(QDialogButtonBox::StandardButtons buttons)
 {
@@ -724,11 +641,6 @@ void QDialogButtonBoxPrivate::retranslateStrings()
         if (buttonText) {
             QPushButton *button = it.key();
             button->setText(QDialogButtonBox::tr(buttonText));
-#if defined(QT_SOFTKEYS_ENABLED) && !defined(QT_NO_ACTION)
-            QAction *action = softKeyActions.value(button, 0);
-            if (action)
-                action->setText(button->text());
-#endif
         }
         ++it;
     }
@@ -921,11 +833,6 @@ void QDialogButtonBox::setOrientation(Qt::Orientation orientation)
 void QDialogButtonBox::clear()
 {
     Q_D(QDialogButtonBox);
-#ifdef QT_SOFTKEYS_ENABLED
-    // Delete softkey actions as they have the buttons as parents
-    qDeleteAll(d->softKeyActions.values());
-    d->softKeyActions.clear();
-#endif
     // Remove the created standard buttons, they should be in the other lists, which will
     // do the deletion
     d->standardButtonHash.clear();
@@ -1003,13 +910,6 @@ void QDialogButtonBox::removeButton(QAbstractButton *button)
             }
         }
     }
-#if defined(QT_SOFTKEYS_ENABLED) && !defined(QT_NO_ACTION)
-    QAction *action = d->softKeyActions.value(button, 0);
-    if (action) {
-        d->softKeyActions.remove(button);
-        delete action;
-    }
-#endif
     if (!d->internalRemove)
         button->setParent(0);
 }
@@ -1080,11 +980,6 @@ QPushButton *QDialogButtonBox::addButton(StandardButton button)
 void QDialogButtonBox::setStandardButtons(StandardButtons buttons)
 {
     Q_D(QDialogButtonBox);
-#ifdef QT_SOFTKEYS_ENABLED
-    // Delete softkey actions since they have the buttons as parents
-    qDeleteAll(d->softKeyActions.values());
-    d->softKeyActions.clear();
-#endif
     // Clear out all the old standard buttons, then recreate them.
     qDeleteAll(d->standardButtonHash.keys());
     d->standardButtonHash.clear();
@@ -1242,38 +1137,9 @@ bool QDialogButtonBox::event(QEvent *event)
         }
         if (!hasDefault && firstAcceptButton)
             firstAcceptButton->setDefault(true);
-#ifdef QT_SOFTKEYS_ENABLED
-        if (dialog)
-            setFixedSize(0,0);
-#endif
     }else if (event->type() == QEvent::LanguageChange) {
         d->retranslateStrings();
     }
-#if defined(QT_SOFTKEYS_ENABLED) && !defined(QT_NO_ACTION)
-    else if (event->type() == QEvent::ParentChange) {
-        QWidget *dialog = 0;
-        QWidget *p = this;
-        while (p && !p->isWindow()) {
-            p = p->parentWidget();
-            if ((dialog = qobject_cast<QDialog *>(p)))
-                break;
-        }
-
-        // If the parent changes, then move the softkeys
-        for (QHash<QAbstractButton *, QAction *>::const_iterator it = d->softKeyActions.constBegin();
-            it != d->softKeyActions.constEnd(); ++it) {
-            QAction *current = it.value();
-            QList<QWidget *> widgets = current->associatedWidgets();
-            foreach (QWidget *w, widgets)
-                w->removeAction(current);
-            if (dialog)
-                dialog->addAction(current);
-            else
-                addAction(current);
-        }
-    }
-#endif
-
     return QWidget::event(event);
 }
 

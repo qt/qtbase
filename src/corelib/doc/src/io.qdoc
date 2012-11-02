@@ -33,7 +33,9 @@
     \brief Classes providing file input and output along with directory and
     network handling.
 
-    These classes are used to handle input and output to and from external
-    devices, processes, files etc. as well as manipulating files and directories.
-*/
+    These \l{Qt Core} classes are used to handle input and output to and from
+    external devices, processes, files etc. as well as manipulating files and
+    directories.
 
+    \annotatedlist io
+*/

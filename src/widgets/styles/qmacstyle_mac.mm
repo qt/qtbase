@@ -5399,7 +5399,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             QStyleOptionGroupBox groupBox(*gb);
             groupBox.state |= QStyle::State_Mini; // Force mini-sized checkbox to go with small-sized label
             bool didModifySubControls = false;
-            if ((widget && !widget->testAttribute(Qt::WA_SetFont))
+            if ((!widget || !widget->testAttribute(Qt::WA_SetFont))
                     && QApplication::desktopSettingsAware()) {
                 groupBox.subControls = groupBox.subControls & ~SC_GroupBoxLabel;
                 didModifySubControls = true;
@@ -5434,7 +5434,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
     case CC_ToolButton:
         if (const QStyleOptionToolButton *tb
                 = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
-            if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
+
+            if (QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
                 if (tb->subControls & SC_ToolButtonMenu) {
                     QStyleOption arrowOpt(0);
                     arrowOpt.rect = proxy()->subControlRect(cc, tb, SC_ToolButtonMenu, widget);
@@ -6030,7 +6031,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
         break;
     case CC_ToolButton:
         ret = QCommonStyle::subControlRect(cc, opt, sc, widget);
-        if (sc == SC_ToolButtonMenu && widget && !qobject_cast<QToolBar*>(widget->parentWidget())) {
+        if (sc == SC_ToolButtonMenu && !QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ToolBar)) {
             ret.adjust(-1, 0, 0, 0);
         }
         break;
@@ -6176,7 +6177,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         // Do this by add enough space around the contents so that rounded
         // borders (including highlighting when active) will show.
         sz.rwidth() += QMacStylePrivate::PushButtonLeftOffset + QMacStylePrivate::PushButtonRightOffset + 12;
-        sz.rheight() += QMacStylePrivate::PushButtonTopOffset + QMacStylePrivate::PushButtonBottomOffset;
+        sz.rheight() += 4;
         break;
     case QStyle::CT_MenuItem:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {

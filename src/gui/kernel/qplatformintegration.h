@@ -83,11 +83,12 @@ class Q_GUI_EXPORT QPlatformIntegration
 public:
     enum Capability {
         ThreadedPixmaps = 1,
-        OpenGL = 2,
-        ThreadedOpenGL = 3,
-        SharedGraphicsCache = 4,
-        BufferQueueingOpenGL = 5,
-        WindowMasks = 6
+        OpenGL,
+        ThreadedOpenGL,
+        SharedGraphicsCache,
+        BufferQueueingOpenGL,
+        WindowMasks,
+        MultipleWindows
     };
 
     virtual ~QPlatformIntegration() { }

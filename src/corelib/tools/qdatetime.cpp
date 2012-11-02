@@ -93,47 +93,67 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
-static inline qint64 julianDayFromDate(qint64 year, int month, int day)
+static inline qint64 floordiv(qint64 a, qint64 b)
 {
-    // Gregorian calendar
-    // Algorithm from Henry F. Fliegel and Thomas C. Van Flandern
+    return (a - (a < 0 ? b-1 : 0)) / b;
+}
 
+static inline qint64 floordiv(qint64 a, int b)
+{
+    return (a - (a < 0 ? b-1 : 0)) / b;
+}
+
+static inline int floordiv(int a, int b)
+{
+    return (a - (a < 0 ? b-1 : 0)) / b;
+}
+
+static inline qint64 julianDayFromDate(int year, int month, int day)
+{
+    // Adjust for no year 0
     if (year < 0)
         ++year;
 
-    return (1461 * (year + 4800 + (month - 14) / 12)) / 4
-           + (367 * (month - 2 - 12 * ((month - 14) / 12))) / 12
-           - (3 * ((year + 4900 + (month - 14) / 12) / 100)) / 4
-           + day - 32075;
+/*
+ * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
+ * This formula is correct for all julian days, when using mathematical integer
+ * division (round to negative infinity), not c++11 integer division (round to zero)
+ */
+    int    a = floordiv(14 - month, 12);
+    qint64 y = (qint64)year + 4800 - a;
+    int    m = month + 12 * a - 3;
+    return day + floordiv(153 * m + 2, 5) + 365 * y + floordiv(y, 4) - floordiv(y, 100) + floordiv(y, 400) - 32045;
 }
 
-static void getDateFromJulianDay(qint64 julianDay, int *year, int *month, int *day)
+static void getDateFromJulianDay(qint64 julianDay, int *yearp, int *monthp, int *dayp)
 {
-    int y, m, d;
+/*
+ * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
+ * This formula is correct for all julian days, when using mathematical integer
+ * division (round to negative infinity), not c++11 integer division (round to zero)
+ */
+    qint64 a = julianDay + 32044;
+    qint64 b = floordiv(4 * a + 3, 146097);
+    int    c = a - floordiv(146097 * b, 4);
 
-    // Gregorian calendar
-    // This algorithm is from Henry F. Fliegel and Thomas C. Van Flandern
-    qint64 ell, n, i, j;  //TODO These will need to be bigger to prevent overflow!!!
-    ell = julianDay + 68569;
-    n = (4 * ell) / 146097;
-    ell = ell - (146097 * n + 3) / 4;
-    i = (4000 * (ell + 1)) / 1461001;
-    ell = ell - (1461 * i) / 4 + 31;
-    j = (80 * ell) / 2447;
-    d = ell - (2447 * j) / 80;
-    ell = j / 11;
-    m = j + 2 - (12 * ell);
-    y = 100 * (n - 49) + i + ell;
+    int    d = floordiv(4 * c + 3, 1461);
+    int    e = c - floordiv(1461 * d, 4);
+    int    m = floordiv(5 * e + 2, 153);
 
-    if (y<= 0)
-        --y;
+    int    day = e - floordiv(153 * m + 2, 5) + 1;
+    int    month = m + 3 - 12 * floordiv(m, 10);
+    int    year = 100 * b + d - 4800 + floordiv(m, 10);
 
-    if (year)
-        *year = y;
-    if (month)
-        *month = m;
-    if (day)
-        *day = d;
+    // Adjust for no year 0
+    if (year <= 0)
+        --year ;
+
+    if (yearp)
+        *yearp = year;
+    if (monthp)
+        *monthp = month;
+    if (dayp)
+        *dayp = day;
 }
 
 
@@ -225,14 +245,8 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
     QDate::toJulianDay() and can be set using QDate::fromJulianDay().
 
     The range of dates able to be stored by QDate as a Julian Day number is
-    limited for convenience from std::numeric_limits<qint64>::min() / 2 to
-    std::numeric_limits<qint64>::max() / 2, which on most platforms means
-    from around 2.5 quadrillion BCE to around 2.5 quadrillion CE, effectively
-    covering the full range of astronomical time. The range of Julian Days
-    able to be accurately converted to and from valid YMD form Dates is
-    restricted to 1 January 4800 BCE to 31 December 1400000 CE due to
-    shortcomings in the available conversion formulas. Conversions outside this
-    range are not guaranteed to be correct. This may change in the future.
+    for technical reasons limited to between -784350574879 and 784354017364,
+    which means from before 2 billion BCE to after 2 billion CE.
 
     \sa QTime, QDateTime, QDateEdit, QDateTimeEdit, QCalendarWidget
 */
@@ -859,9 +873,6 @@ QString QDate::toString(const QString& format) const
     If the specified date is invalid, the QDate object is set to be
     invalid.
 
-    Note that any date before 4800 BCE or after about 1.4 million CE
-    may not be accurately stored.
-
     \sa isValid()
 */
 bool QDate::setDate(int year, int month, int day)
@@ -881,9 +892,6 @@ bool QDate::setDate(int year, int month, int day)
     *\a year, *\a month, and *\a day. The pointers may be null.
 
     Returns 0 if the date is invalid.
-
-    Note that any date before 4800 BCE or after about 1.4 million CE
-    may not be accurately stored.
 
     \sa year(), month(), day(), isValid()
 */
@@ -2100,14 +2108,8 @@ int QTime::elapsed() const
     QDate::toJulianDay() and can be set using QDate::fromJulianDay().
 
     The range of dates able to be stored by QDate as a Julian Day number is
-    limited for convenience from std::numeric_limits<qint64>::min() / 2 to
-    std::numeric_limits<qint64>::max() / 2, which on most platforms means
-    from around 2.5 quadrillion BCE to around 2.5 quadrillion CE, effectively
-    covering the full range of astronomical time. The range of Julian Days
-    able to be accurately converted to and from valid YMD form Dates is
-    restricted to 1 January 4800 BCE to 31 December 1400000 CE due to
-    shortcomings in the available conversion formulas. Conversions outside this
-    range are not guaranteed to be correct. This may change in the future.
+    for technical reasons limited to between -784350574879 and 784354017364,
+    which means from before 2 billion BCE to after 2 billion CE.
 
     \section2
     Use of System Timezone
@@ -2418,7 +2420,7 @@ void QDateTime::setMSecsSinceEpoch(qint64 msecs)
 
     QDateTimePrivate::Spec oldSpec = d->spec;
 
-    int ddays = msecs / MSECS_PER_DAY;
+    qint64 ddays = msecs / MSECS_PER_DAY;
     msecs %= MSECS_PER_DAY;
     if (msecs < 0) {
         // negative
@@ -3391,10 +3393,11 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
         int year;
         QStringList timeParts = parts.at(3).split(QLatin1Char(':'));
         if ((timeParts.count() == 3) || (timeParts.count() == 2)) {
+            // Year is after time, e.g. "Sun Dec 1 13:02:00 1974"
             year = parts.at(4).toInt(&ok);
             if (!ok)
                 return QDateTime();
-        } else {
+        } else { // Year is before time, e.g. "Sun Dec 1 1974 13:02:00"
             timeParts = parts.at(4).split(QLatin1Char(':'));
             if ((timeParts.count() != 3) && (timeParts.count() != 2))
                 return QDateTime();
@@ -3743,7 +3746,8 @@ static bool hasUnquotedAP(const QString &f)
     for (int i=0; i<max; ++i) {
         if (f.at(i) == quote) {
             inquote = !inquote;
-        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')) {
+        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')
+            && i + 1 < max && f.at(i + 1).toUpper() == QLatin1Char('P')) {
             return true;
         }
     }

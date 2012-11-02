@@ -115,7 +115,7 @@ private slots:
     void setPath();
     void setDefaultFormat();
     void dontCreateNeedlessPaths();
-#if !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN) && !defined(QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER)
     void dontReorderIniKeysNeedlessly();
 #endif
 #if defined(Q_OS_WIN)
@@ -3017,12 +3017,10 @@ void tst_QSettings::dontCreateNeedlessPaths()
     QVERIFY(!fileInfo.dir().exists());
 }
 
-#if !defined(Q_OS_WIN)
+#if !defined(Q_OS_WIN) && !defined(QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER)
+// This Qt build does not preserve ordering, as a code size optimization.
 void tst_QSettings::dontReorderIniKeysNeedlessly()
 {
-#ifdef  QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER
-    QSKIP("This Qt build does not preserve ordering, as a code size optimization.");
-#endif
 
     /*
         This is a very strong test. It asserts that modifying

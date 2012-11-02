@@ -276,6 +276,8 @@ static const struct {
     { "HostPrefix", "" },
     { "HostBinaries", "bin" },
     { "HostData", "." },
+    { "TargetSpec", "" },
+    { "HostSpec", "" },
 #endif
 };
 
@@ -377,6 +379,12 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         }
 #endif // QT_NO_SETTINGS
     }
+
+#ifdef QT_BOOTSTRAPPED
+    // The specs need to be returned verbatim.
+    if (loc == TargetSpecPath || loc == HostSpecPath)
+        return ret;
+#endif
 
     if (!ret.isEmpty() && QDir::isRelativePath(ret)) {
         QString baseDir;

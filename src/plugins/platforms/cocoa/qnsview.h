@@ -54,6 +54,8 @@ QT_END_NAMESPACE
 
 @interface QNSView : NSView <NSTextInputClient> {
     CGImageRef m_cgImage;
+    CGImageRef m_maskImage;
+    uchar *m_maskData;
     QWindow *m_window;
     QCocoaWindow *m_platformWindow;
     Qt::MouseButtons m_buttons;
@@ -68,6 +70,7 @@ QT_END_NAMESPACE
 - (id)initWithQWindow:(QWindow *)window platformWindow:(QCocoaWindow *) platformWindow;
 
 - (void)setImage:(QImage *)image;
+- (void)setMaskRegion:(const QRegion *)region;
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)updateGeometry;
 - (void)windowNotification : (NSNotification *) windowNotification;

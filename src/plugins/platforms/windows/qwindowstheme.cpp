@@ -509,6 +509,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
     case TrashIcon:
         resourceId = 191;
         break;
+#ifndef Q_OS_WINCE
     case MessageBoxInformation:
         iconName = IDI_INFORMATION;
         break;
@@ -538,6 +539,7 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &size) con
             }
         }
         break;
+#endif
     default:
         break;
     }

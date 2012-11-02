@@ -80,6 +80,7 @@ public:
         , positionPolicy(WindowFrameExclusive)
         , contentOrientation(Qt::PrimaryOrientation)
         , windowOrientation(Qt::PrimaryOrientation)
+        , minimumSize(0, 0)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
         , blockedByModalWindow(false)

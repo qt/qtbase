@@ -1,11 +1,12 @@
-TARGET = windows
+TARGET = windowsprintersupport
+
+PLUGIN_TYPE = printsupport
 load(qt_plugin)
 
 QT *= core-private
 QT *= gui-private
 QT *= printsupport-private
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/printsupport
 INCLUDEPATH *= $$QT_SOURCE_TREE/src/printsupport/kernel
 
 SOURCES += \
@@ -17,6 +18,4 @@ HEADERS += \
 
 OTHER_FILES += windows.json
 
-target.path += $$[QT_INSTALL_PLUGINS]/printsupport
-INSTALLS += target
 LIBS += -lwinspool -lcomdlg32

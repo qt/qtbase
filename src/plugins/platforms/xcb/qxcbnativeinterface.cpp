@@ -53,6 +53,8 @@
 
 #if defined(XCB_USE_EGL)
 #include "QtPlatformSupport/private/qeglplatformcontext_p.h"
+#elif defined (XCB_USE_GLX)
+#include "qglxintegration.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -68,6 +70,7 @@ public:
         insert("connection",QXcbNativeInterface::Connection);
         insert("screen",QXcbNativeInterface::Screen);
         insert("eglcontext",QXcbNativeInterface::EglContext);
+        insert("glxcontext",QXcbNativeInterface::GLXContext);
     }
 };
 
@@ -90,6 +93,9 @@ void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceSt
     switch(resource) {
     case EglContext:
         result = eglContextForContext(context);
+        break;
+    case GLXContext:
+        result = glxContextForContext(context);
         break;
     default:
         break;
@@ -189,6 +195,19 @@ void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
 #else
     return 0;
 #endif
+}
+
+void *QXcbNativeInterface::glxContextForContext(QOpenGLContext *context)
+{
+    Q_ASSERT(context);
+#if defined(XCB_USE_GLX)
+    QGLXContext *glxPlatformContext = static_cast<QGLXContext *>(context->handle());
+    return glxPlatformContext->glxContext();
+#else
+    Q_UNUSED(context);
+    return 0;
+#endif
+
 }
 
 QT_END_NAMESPACE

@@ -74,7 +74,6 @@ if (NOT WIN32)
     expect_pass(test_add_resources_delayed_file)
 endif()
 expect_pass(test_private_includes)
-expect_pass(test_modules)
 expect_pass(test_testlib_definitions)
 expect_pass(test_json_plugin_includes)
 
@@ -89,3 +88,26 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_widgets/test_testlib_no_link_widgets/"
 )
+
+set(qt_module_includes
+  Core QObject
+  Gui QImage
+  Widgets QWidget
+  Network QHostInfo
+  OpenGL QGLBuffer
+  Sql QSqlError
+  Test QTestEventList
+  Xml QDomDocument
+  PrintSupport QPrintDialog
+)
+
+if (UNIX AND NOT APPLE AND NOT QNXNTO)
+  list(APPEND qt_module_includes
+    DBus QDBusMessage
+  )
+endif()
+
+test_module_includes(
+  ${qt_module_includes}
+)
+expect_pass(test_concurrent_module)

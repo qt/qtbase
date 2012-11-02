@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,74 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QSOFTKEYMANAGER_P_H
-#define QSOFTKEYMANAGER_P_H
+#include "filedialogpanel.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QMainWindow>
+#include <QApplication>
+#include <QMenuBar>
+#include <QTabWidget>
+#include <QMenu>
+#include <QAction>
+#include <QKeySequence>
 
-#include <QtCore/qobject.h>
-#include "QtWidgets/qaction.h"
+// Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
+// Currently, only QFileDialog is implemented.
+// Compiles with Qt 4.8 and Qt 5.
 
-QT_BEGIN_HEADER
-
-#ifndef QT_NO_SOFTKEYMANAGER
-QT_BEGIN_NAMESPACE
-
-class QSoftKeyManagerPrivate;
-
-class Q_AUTOTEST_EXPORT QSoftKeyManager : public QObject
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QSoftKeyManager)
-
 public:
-
-    enum StandardSoftKey {
-        OkSoftKey,
-        SelectSoftKey,
-        DoneSoftKey,
-        MenuSoftKey,
-        CancelSoftKey
-    };
-
-    static void updateSoftKeys();
-
-    static QAction *createAction(StandardSoftKey standardKey, QWidget *actionWidget);
-    static QAction *createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget);
-    static QString standardSoftKeyText(StandardSoftKey standardKey);
-    static void setForceEnabledInSoftkeys(QAction *action);
-    static bool isForceEnabledInSofkeys(QAction *action);
-
-protected:
-    bool event(QEvent *e);
-
-private:
-    QSoftKeyManager();
-    static QSoftKeyManager *instance();
-    bool appendSoftkeys(const QWidget &source, int level);
-    QWidget *softkeySource(QWidget *previousSource, bool& recursiveMerging);
-    bool handleUpdateSoftKeys();
-
-private Q_SLOTS:
-    void cleanupHash(QObject* obj);
-    void sendKeyEvent();
-
-private:
-    Q_DISABLE_COPY(QSoftKeyManager)
+    explicit MainWindow(QWidget *parent = 0);
 };
 
-QT_END_NAMESPACE
-#endif //QT_NO_SOFTKEYMANAGER
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+{
+    setWindowTitle(tr("Dialogs Qt %1").arg(QLatin1String(QT_VERSION_STR)));
+    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
+    QAction *quitAction = fileMenu->addAction(tr("Quit"));
+    quitAction->setShortcut(QKeySequence(QKeySequence::Quit));
+    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+    QTabWidget *tabWidget = new QTabWidget;
+    tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
+    setCentralWidget(tabWidget);
+}
 
-QT_END_HEADER
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    MainWindow w;
+    w.move(500, 200);
+    w.show();
+    return a.exec();
+}
 
-#endif //QSOFTKEYMANAGER_P_H
+#include "main.moc"

@@ -263,7 +263,7 @@ NSMenuItem *QCocoaMenuItem::sync()
 //  [m_native setHidden:YES];
 //  [m_native setHidden:NO];
    [m_native setHidden: !m_isVisible];
-
+    [m_native setEnabled: m_enabled];
     QString text = m_text;
     QKeySequence accel = m_shortcut;
 

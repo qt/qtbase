@@ -79,10 +79,33 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
 
     netstatus_proxy_details_t details;
     memset(&details, 0, sizeof(netstatus_proxy_details_t));
+
+#if BPS_VERSION >= 3001001
+
+    QByteArray bUrl(url.toEncoded());
+    QString sInterface(query.networkConfiguration().name());
+    QByteArray bInterface;
+    if (!sInterface.isEmpty()) {
+        if (query.networkConfiguration().type() != QNetworkConfiguration::InternetAccessPoint) {
+            qWarning("Unsupported configuration type: %d", query.networkConfiguration().type());
+            return QList<QNetworkProxy>() << QNetworkProxy(QNetworkProxy::NoProxy);
+        }
+        bInterface = sInterface.toUtf8();
+    }
+
+    if (netstatus_get_proxy_details_for_url(bUrl.constData(), (bInterface.isEmpty() ? NULL : bInterface.constData()), &details) != BPS_SUCCESS) {
+        qWarning("netstatus_get_proxy_details_for_url failed! errno: %d", errno);
+        return QList<QNetworkProxy>() << QNetworkProxy(QNetworkProxy::NoProxy);
+    }
+
+#else
+
     if (netstatus_get_proxy_details(&details) != BPS_SUCCESS) {
         qWarning("netstatus_get_proxy_details failed! errno: %d", errno);
         return QList<QNetworkProxy>() << QNetworkProxy(QNetworkProxy::NoProxy);
     }
+
+#endif
 
     if (details.http_proxy_host == NULL) { // No proxy
         netstatus_free_proxy_details(&details);

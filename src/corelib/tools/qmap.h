@@ -173,11 +173,13 @@ struct Q_CORE_EXPORT QMapDataBase
     QtPrivate::RefCount ref;
     int size;
     QMapNodeBase header;
+    QMapNodeBase *mostLeftNode;
 
     void rotateLeft(QMapNodeBase *x);
     void rotateRight(QMapNodeBase *x);
     void rebalance(QMapNodeBase *x);
     void freeNodeAndRebalance(QMapNodeBase *z);
+    void recalcMostLeftNode();
 
     QMapNodeBase *createNode(int size, int alignment, QMapNodeBase *parent, bool left);
     void freeTree(QMapNodeBase *root, int alignment);
@@ -197,8 +199,8 @@ struct QMapData : public QMapDataBase
 
     const Node *end() const { return static_cast<const Node *>(&header); }
     Node *end() { return static_cast<Node *>(&header); }
-    const Node *begin() const { if (root()) return root()->minimumNode(); return end(); }
-    Node *begin() { if (root()) return root()->minimumNode(); return end(); }
+    const Node *begin() const { if (root()) return static_cast<const Node*>(mostLeftNode); return end(); }
+    Node *begin() { if (root()) return static_cast<Node*>(mostLeftNode); return end(); }
 
     void deleteNode(Node *z);
     Node *findNode(const Key &akey) const;
@@ -555,6 +557,7 @@ inline QMap<Key, T>::QMap(const QMap<Key, T> &other)
         if (other.d->header.left) {
             d->header.left = static_cast<Node *>(other.d->header.left)->copy(d);
             d->header.left->setParent(&d->header);
+            d->recalcMostLeftNode();
         }
     }
 }
@@ -780,6 +783,7 @@ Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::detach_helper()
     if (!d->ref.deref())
         d->destroy();
     d = x;
+    d->recalcMostLeftNode();
 }
 
 template <class Key, class T>
@@ -935,7 +939,7 @@ Q_OUTOFLINE_TEMPLATE QMap<Key, T>::QMap(const std::map<Key, T> &other)
     typename std::map<Key,T>::const_iterator it = other.end();
     while (it != other.begin()) {
         --it;
-        insert((*it).first, (*it).second);
+        d->createNode((*it).first, (*it).second, d->begin(), true); // insert on most left node.
     }
 }
 
@@ -946,7 +950,7 @@ Q_OUTOFLINE_TEMPLATE std::map<Key, T> QMap<Key, T>::toStdMap() const
     const_iterator it = end();
     while (it != begin()) {
         --it;
-        map.insert(std::pair<Key, T>(it.key(), it.value()));
+        map.insert(map.begin(), std::pair<Key, T>(it.key(), it.value()));
     }
     return map;
 }

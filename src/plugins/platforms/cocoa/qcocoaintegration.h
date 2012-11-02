@@ -128,7 +128,9 @@ private:
     QAbstractEventDispatcher *mEventDispatcher;
 
     QScopedPointer<QPlatformInputContext> mInputContext;
+#ifndef QT_NO_ACCESSIBILITY
     QScopedPointer<QPlatformAccessibility> mAccessibility;
+#endif
     QScopedPointer<QPlatformTheme> mPlatformTheme;
     QList<QCocoaScreen *> mScreens;
     QCocoaClipboard  *mCocoaClipboard;

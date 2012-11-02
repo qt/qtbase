@@ -192,13 +192,16 @@ defineTest(qtAddToolEnv) {
             equals(QMAKE_DIR_SEP, /) {
                 contains($${env}.CONFIG, prepend): infix = \${$$name:+:\$$$name}
                 else: infix =
-                $$1 = "$$name=$$join(value, :)$$infix $$eval($$1)"
+                val = "$$name=$$join(value, :)$$infix"
             } else {
                 # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
                 contains($${env}.CONFIG, prepend): infix = ;%$$name:)=^)%
                 else: infix =
-                $$1 = "(set $$name=$$join(value, ;)$$infix) & $$eval($$1)"
+                val = "(set $$name=$$join(value, ;)$$infix) &"
             }
+            contains(MAKEFILE_GENERATOR, MS.*): val ~= s,%,%%,g
+            else: val ~= s,\\\$,\$\$,g
+            $$1 = "$$val $$eval($$1)"
         }
     }
     export($$1)
@@ -207,29 +210,33 @@ defineTest(qtAddToolEnv) {
 defineTest(qtAddTargetEnv) {
     deps = $$resolve_depends(QT, "QT.")
     !isEmpty(deps) {
-        plugin_paths =
         for(dep, deps) {
             deppath += $$shell_path($$eval(QT.$${dep}.libs))
             for(rpath, QT.$${dep}.rpath_link): \
                 deppath += $$shell_path($$rpath)
-            plugin_paths += $$eval(QT.$${dep}.plugin_path) $$eval(QT.$${dep}.plugins)
         }
-        equals(QMAKE_HOST.os, Windows): \
+        equals(QMAKE_HOST.os, Windows) {
             deppath.name = PATH
-        else:contains(QMAKE_HOST.os, Linux|FreeBSD): \
+        } else:contains(QMAKE_HOST.os, Linux|FreeBSD) {
             deppath.name = LD_LIBRARY_PATH
-        else:equals(QMAKE_HOST.os, Darwin): \
-            deppath.name = DYLD_LIBRARY_PATH
-        else: \
+        } else:equals(QMAKE_HOST.os, Darwin) {
+            contains(QT_CONFIG, qt_framework): \
+                deppath.name = DYLD_FRAMEWORK_PATH
+            else: \
+                deppath.name = DYLD_LIBRARY_PATH
+        } else {
             error("Operating system not supported.")
+        }
         deppath.value = $$unique(deppath)
         deppath.CONFIG = prepend
-        pluginpath.name = QT_PLUGIN_PATH
+
         pluginpath.value =
-        plugin_paths = $$unique(plugin_paths)
-        for(ppath, plugin_paths): \
-            exists($$ppath): \
-                pluginpath.value += $$shell_path($$ppath)
+        for(qmod, QMAKEMODULES) {
+            qmod = $$section(qmod, /, 0, -3)/plugins
+            exists($$qmod): pluginpath.value += $$shell_path($$qmod)
+        }
+        pluginpath.name = QT_PLUGIN_PATH
+
         QT_TOOL_ENV += deppath pluginpath
     }
     qtAddToolEnv($$1, $$QT_TOOL_ENV)

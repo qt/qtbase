@@ -1,19 +1,10 @@
 !build_pass {
 
-    QTDIR = $$[QT_HOST_PREFIX]
-    exists($$QTDIR/.qmake.cache) {
-        mod_component_base = $$QTDIR
-        mod_qmake_base = $$QTDIR
-    } else {
-        mod_component_base = $$MODULE_BASE_OUTDIR
-        mod_qmake_base = $$MODULE_QMAKE_OUTDIR
-    }
-    # Permit modules to enforce being built outside QTDIR.
-    force_independent: mod_component_base = $$MODULE_BASE_OUTDIR
+    load(qt_build_paths)
 
     isEmpty(MODULE_INSTALL_LIBS): MODULE_INSTALL_LIBS = $$[QT_INSTALL_LIBS/raw]
 
-    MODULE_FWD_PRI = $$mod_qmake_base/mkspecs/modules/qt_$${MODULE}.pri
+    MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
 
     # -rpath-link is used by the linker to find depedencies of dynamic
     # libraries which were NOT specified on the command line.
@@ -32,11 +23,9 @@
     privqt = $$replace(QT_PRIVATE, -private$, )
     privdep = $$resolve_depends(privqt, "QT.")
     rpaths =
-    pluginpath =
     alldep = $$pubdep $$privdep
     for(dep, alldep) {   # Inherit link-rpaths from all our dependencies
         rpaths += $$eval(QT.$${dep}.rpath_link) $$eval(QT.$${dep}.rpath_link_private)
-        pluginpath += $$eval(QT.$${dep}.plugin_path) $$eval(QT.$${dep}.plugins)
     }
     privdep -= $$pubdep
     for(dep, privdep): \   # Add our private dependencies' lib paths as new link-rpaths
@@ -58,20 +47,18 @@
     } else {
         module_rpathlink_priv =
     }
-    pluginpath = $$unique(pluginpath)
 
     # Create a forwarding module .pri file
     MODULE_FWD_PRI_CONT = \
         "QT_MODULE_BASE = $$MODULE_BASE_DIR" \
-        "QT_MODULE_BIN_BASE = $$mod_component_base/bin" \
-        "QT_MODULE_INCLUDE_BASE = $$mod_component_base/include" \
-        "QT_MODULE_IMPORT_BASE = $$mod_component_base/imports" \
-        "QT_MODULE_LIB_BASE = $$mod_component_base/lib" \
-        "QT_MODULE_PLUGIN_BASE = $$mod_component_base/plugins" \
+        "QT_MODULE_BIN_BASE = $$MODULE_BASE_OUTDIR/bin" \
+        "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
+        "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
+        "QT_MODULE_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
+        "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
         $$module_rpathlink \
         $$module_rpathlink_priv \
         "QT.$${MODULE}.rpath = $$MODULE_INSTALL_LIBS" \
-        "QT.$${MODULE}.plugin_path = $$val_escape(pluginpath)" \
         "include($$MODULE_PRI)"
     write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
     touch($$MODULE_FWD_PRI, $$MODULE_PRI)

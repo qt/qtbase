@@ -592,11 +592,6 @@ int QAccessibleDockWidget::indexOfChild(const QAccessibleInterface *child) const
     return -1;
 }
 
-QAccessible::Role QAccessibleDockWidget::role() const
-{
-    return QAccessible::Window;
-}
-
 QRect QAccessibleDockWidget::rect() const
 {
     QRect rect;

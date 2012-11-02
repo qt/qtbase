@@ -538,9 +538,9 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
 
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
-    // let the editor take up all available space 
+    // let the editor take up all available space
     //if the editor is not a QLineEdit
-    //or it is in a QTableView 
+    //or it is in a QTableView
 #if !defined(QT_NO_TABLEVIEW) && !defined(QT_NO_LINEEDIT)
     if (qobject_cast<QExpandingLineEdit*>(editor) && !qobject_cast<const QTableView*>(widget))
         opt.showDecorationSelected = editor->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, editor);

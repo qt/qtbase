@@ -78,6 +78,10 @@ int runConfigure( int argc, char** argv )
     if (!app.isOk())
         return 3;
 
+    app.generateSystemVars();
+    if (!app.isOk())
+        return 3;
+
     // Auto-detect modules and settings.
     app.autoDetection();
 

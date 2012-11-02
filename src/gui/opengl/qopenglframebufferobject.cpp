@@ -349,7 +349,6 @@ bool QOpenGLFramebufferObjectPrivate::checkFramebufferStatus(QOpenGLContext *ctx
     case GL_NO_ERROR:
     case GL_FRAMEBUFFER_COMPLETE:
         return true;
-        break;
     case GL_FRAMEBUFFER_UNSUPPORTED:
         qDebug("QOpenGLFramebufferObject: Unsupported framebuffer format.");
         break;

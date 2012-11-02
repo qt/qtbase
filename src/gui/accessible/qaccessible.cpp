@@ -41,8 +41,6 @@
 
 #include "qaccessible.h"
 
-#ifndef QT_NO_ACCESSIBILITY
-
 #include "qaccessibleplugin.h"
 #include "qaccessibleobject.h"
 #include "qaccessiblebridge.h"
@@ -1265,4 +1263,3 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 
 QT_END_NAMESPACE
 
-#endif

@@ -253,6 +253,9 @@ public:
         , httpSocketEngineHandler(0)
 #endif
     {
+#ifdef QT_USE_SYSTEM_PROXIES
+        setApplicationProxyFactory(new QSystemConfigurationProxyFactory);
+#endif
 #ifndef QT_NO_SOCKS5
         socks5SocketEngineHandler = new QSocks5SocketEngineHandler();
 #endif
@@ -1557,10 +1560,9 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     \li On Windows platforms, this function may take several seconds to
     execute depending on the configuration of the user's system.
 
-    \li On BlackBerry, this function ignores network configuration specified
-    in \a query. Only UrlRequest quieries are supported. SOCKS is not supported.
-    The proxy information is retrieved only for the default configuration.
-    Also, PAC and exclusion lists are currently not supported.
+    \li On BlackBerry, only UrlRequest queries are supported. SOCKS is
+    not supported. The proxy credentials are only retrieved for the
+    default configuration.
     \endlist
 */
 

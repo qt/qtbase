@@ -238,6 +238,12 @@ namespace QTest {
         return false;
     }
 
+// don't warn about qInstallMsgHandler
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
     static void messageHandler(QtMsgType type, const char *msg)
     {
         static QBasicAtomicInt counter = Q_BASIC_ATOMIC_INITIALIZER(QTest::maxWarnings);
@@ -287,6 +293,10 @@ namespace QTest {
             break;
         }
     }
+
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && !defined(Q_CC_INTEL)
+# pragma GCC diagnostic pop
+#endif
 }
 
 void QTestLog::enterTestFunction(const char* function)

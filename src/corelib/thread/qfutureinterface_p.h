@@ -129,7 +129,31 @@ class QFutureInterfaceBasePrivate
 public:
     QFutureInterfaceBasePrivate(QFutureInterfaceBase::State initialState);
 
-    QAtomicInt refCount;
+    // When the last QFuture<T> reference is removed, we need to make
+    // sure that data stored in the ResultStore is cleaned out.
+    // Since QFutureInterfaceBasePrivate can be shared between QFuture<T>
+    // and QFuture<void> objects, we use a separate ref. counter
+    // to keep track of QFuture<T> objects.
+    class RefCount
+    {
+    public:
+        inline RefCount(int r = 0, int rt = 0)
+            : m_refCount(r), m_refCountT(rt) {}
+        // Default ref counter for QFIBP
+        inline bool ref() { return m_refCount.ref(); }
+        inline bool deref() { return m_refCount.deref(); }
+        inline int load() const { return m_refCount.load(); }
+        // Ref counter for type T
+        inline bool refT() { return m_refCountT.ref(); }
+        inline bool derefT() { return m_refCountT.deref(); }
+        inline int loadT() const { return m_refCountT.load(); }
+
+    private:
+        QAtomicInt m_refCount;
+        QAtomicInt m_refCountT;
+    };
+
+    RefCount refCount;
     mutable QMutex m_mutex;
     QWaitCondition waitCondition;
     QList<QFutureCallOutInterface *> outputConnections;

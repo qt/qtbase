@@ -326,11 +326,6 @@
 #define QT_NO_SOCKS5
 #endif
 
-// QSoftKeyManager
-#if !defined(QT_NO_SOFTKEYMANAGER) && (defined(QT_NO_ACTION))
-#define QT_NO_SOFTKEYMANAGER
-#endif
-
 // QSplitter
 #if !defined(QT_NO_SPLITTER) && (defined(QT_NO_RUBBERBAND))
 #define QT_NO_SPLITTER

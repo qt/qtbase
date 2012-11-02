@@ -118,15 +118,13 @@ win32 {
             } else {
                 SOURCES += io/qstandardpaths_unix.cpp
             }
-        } else:standardpathsjson {
-            SOURCES += io/qstandardpaths_json.cpp
         } else:blackberry {
             SOURCES += io/qstandardpaths_blackberry.cpp
         } else {
             SOURCES += io/qstandardpaths_unix.cpp
         }
 
-        linux-* {
+        linux-*|if(qnx:contains(QT_CONFIG, inotify)) {
             SOURCES += io/qfilesystemwatcher_inotify.cpp
             HEADERS += io/qfilesystemwatcher_inotify_p.h
         }

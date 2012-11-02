@@ -56,7 +56,7 @@ public:
     QPoint pos() const;
     void setPos(const QPoint &pos);
 
-    static void queryPointer(xcb_connection_t *conn, xcb_window_t *rootWin, QPoint *pos, int *keybMask = 0);
+    static void queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *pos, int *keybMask = 0);
 
 private:
     xcb_cursor_t createFontCursor(int cshape);

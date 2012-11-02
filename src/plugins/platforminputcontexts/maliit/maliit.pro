@@ -1,7 +1,7 @@
 TARGET = maliitplatforminputcontextplugin
-load(qt_plugin)
 
-QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforminputcontexts
+PLUGIN_TYPE = platforminputcontexts
+load(qt_plugin)
 
 QT += dbus gui-private
 SOURCES += $$PWD/qmaliitplatforminputcontext.cpp \
@@ -16,6 +16,3 @@ HEADERS += $$PWD/qmaliitplatforminputcontext.h \
            $$PWD/contextadaptor.h
 
 OTHER_FILES += $$PWD/maliit.json
-
-target.path += $$[QT_INSTALL_PLUGINS]/platforminputcontexts
-INSTALLS += target

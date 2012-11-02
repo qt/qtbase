@@ -213,7 +213,8 @@ void QWindowsPipeReader::startAsyncRead()
         // We get notified by the QWinOverlappedIoNotifier - even in the synchronous case.
         return;
     } else {
-        switch (GetLastError()) {
+        const DWORD dwError = GetLastError();
+        switch (dwError) {
         case ERROR_IO_PENDING:
             // This is not an error. We're getting notified, when data arrives.
             return;
@@ -223,16 +224,19 @@ void QWindowsPipeReader::startAsyncRead()
             // didn't fit into the pipe's system buffer.
             // We're getting notified by the QWinOverlappedIoNotifier.
             break;
+        case ERROR_BROKEN_PIPE:
         case ERROR_PIPE_NOT_CONNECTED:
             {
                 // It may happen, that the other side closes the connection directly
                 // after writing data. Then we must set the appropriate socket state.
+                readSequenceStarted = false;
                 pipeBroken = true;
                 emit pipeClosed();
                 return;
             }
         default:
-            emit winError(GetLastError(), QLatin1String("QWindowsPipeReader::startAsyncRead"));
+            readSequenceStarted = false;
+            emit winError(dwError, QLatin1String("QWindowsPipeReader::startAsyncRead"));
             return;
         }
     }

@@ -854,16 +854,25 @@ void tst_QSslCertificate::toText()
     QCOMPARE(certList.size(), 1);
     const QSslCertificate &cert = certList.at(0);
 
-    // Openssl's cert dump method changed slightly between 0.9.8 and 1.0.0 versions, so we want it to match any output
+    // Openssl's cert dump method changed slightly between 0.9.8, 1.0.0 and 1.01 versions, so we want it to match any output
 
-    QFile fOld(testDataDir + "/more-certificates/cert-large-expiration-date.txt.0.9.8");
-    QVERIFY(fOld.open(QIODevice::ReadOnly | QFile::Text));
-    QByteArray txtOld = fOld.readAll();
+    QFile f098(testDataDir + "/more-certificates/cert-large-expiration-date.txt.0.9.8");
+    QVERIFY(f098.open(QIODevice::ReadOnly | QFile::Text));
+    QByteArray txt098 = f098.readAll();
 
-    QFile fNew(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.0");
-    QVERIFY(fNew.open(QIODevice::ReadOnly | QFile::Text));
-    QByteArray txtNew = fNew.readAll();
-    QVERIFY(QString::fromLatin1(txtOld) == cert.toText() || QString::fromLatin1(txtNew) == cert.toText());
+    QFile f100(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.0");
+    QVERIFY(f100.open(QIODevice::ReadOnly | QFile::Text));
+    QByteArray txt100 = f100.readAll();
+
+    QFile f101(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.1");
+    QVERIFY(f101.open(QIODevice::ReadOnly | QFile::Text));
+    QByteArray txt101 = f101.readAll();
+
+    QString txtcert = cert.toText();
+
+    QVERIFY(QString::fromLatin1(txt098) == txtcert ||
+            QString::fromLatin1(txt100) == txtcert ||
+            QString::fromLatin1(txt101) == txtcert );
 }
 
 void tst_QSslCertificate::multipleCommonNames()

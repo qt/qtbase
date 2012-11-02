@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
 //! [2]
     QStringList arguments;
-    arguments << "-style" << "motif";
+    arguments << "-style" << "fusion";
 
     QProcess *myProcess = new QProcess(parent);
     myProcess->start(program, arguments);

@@ -1023,7 +1023,11 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::TextCaretMoved: {
         if (sendObject || sendObject_text_caret_moved) {
             QAIPointer iface = QAIPointer(event->accessibleInterface());
-            Q_ASSERT(iface->textInterface());
+            if (!iface->textInterface()) {
+                qWarning() << "Sending TextCaretMoved from object that does not implement text interface: " << iface << iface->object();
+                return;
+            }
+
             QString path = pathForInterface(iface);
             QDBusVariant cursorData;
             int pos = iface->textInterface()->cursorPosition();
@@ -1503,7 +1507,7 @@ QString AtSpiAdaptor::pathForObject(QObject *object) const
         qAtspiDebug() << "AtSpiAdaptor::pathForObject: warning: creating path with QAction as object.";
     }
     quintptr uintptr = reinterpret_cast<quintptr>(object);
-    if (!m_handledObjects.contains(uintptr))
+    if (!m_handledObjects.contains(uintptr) || m_handledObjects.value(uintptr) == 0)
         m_handledObjects[uintptr] = QPointer<QObject>(object);
     return QLatin1String(QSPI_OBJECT_PATH_PREFIX) + QString::number(uintptr);
 }

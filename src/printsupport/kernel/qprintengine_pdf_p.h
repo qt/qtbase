@@ -151,7 +151,7 @@ private:
 
     QPrinter::PaperSize printerPaperSize;
     QSizeF customPaperSize; // in postscript points
-
+    bool pageMarginsSet;
     int fd;
 };
 

@@ -83,31 +83,22 @@ QByteArray QHttpNetworkRequestPrivate::methodName() const
     switch (operation) {
     case QHttpNetworkRequest::Get:
         return "GET";
-        break;
     case QHttpNetworkRequest::Head:
         return "HEAD";
-        break;
     case QHttpNetworkRequest::Post:
         return "POST";
-        break;
     case QHttpNetworkRequest::Options:
         return "OPTIONS";
-        break;
     case QHttpNetworkRequest::Put:
         return "PUT";
-        break;
     case QHttpNetworkRequest::Delete:
         return "DELETE";
-        break;
     case QHttpNetworkRequest::Trace:
         return "TRACE";
-        break;
     case QHttpNetworkRequest::Connect:
         return "CONNECT";
-        break;
     case QHttpNetworkRequest::Custom:
         return customVerb;
-        break;
     default:
         break;
     }

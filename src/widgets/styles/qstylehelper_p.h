@@ -44,6 +44,7 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qpolygon.h>
 #include <QtCore/qstringbuilder.h>
+#include <QtGui/qaccessible.h>
 
 #ifndef QSTYLEHELPER_P_H
 #define QSTYLEHELPER_P_H
@@ -81,6 +82,7 @@ namespace QStyleHelper
     void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
                      int left = 0, int top = 0, int right = 0,
                      int bottom = 0);
+    bool hasAncestor(QObject *obj, QAccessible::Role role);
 }
 
 

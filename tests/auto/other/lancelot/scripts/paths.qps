@@ -1,7 +1,11 @@
 # Version: 1
 
-setPen black
+setPen black 1
 setBrush 7f7fff
+
+setFont "arial" 12
+drawText 10 330 "Non-Cosmetic"
+drawText 10 730 "Cosmetic"
 
 path_moveTo star 50 0
 path_lineTo star 30 90
@@ -29,6 +33,17 @@ translate -200 100
 drawPath text
 end_block
 
-translate 50 100
+begin_block xform
+save
+translate 50 60
 rotate 10
+scale 1.0 0.7
 repeat_block drawing
+restore
+end_block xform
+
+setPen black 0
+setBrush ff7f7f
+translate 0 300
+repeat_block drawing
+repeat_block xform

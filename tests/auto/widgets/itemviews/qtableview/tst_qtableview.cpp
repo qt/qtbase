@@ -4065,9 +4065,9 @@ void tst_QTableView::taskQTBUG_8777_scrollToSpans()
 }
 
 void tst_QTableView::taskQTBUG_10169_sizeHintForRow()
-{ 
-    QtTestTableView tableView; 
-    QStandardItemModel model(1, 3); 
+{
+    QtTestTableView tableView;
+    QStandardItemModel model(1, 3);
     model.setData(model.index(0, 0), "Word wrapping text goes here.");
     tableView.setModel(&model);
     tableView.verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);

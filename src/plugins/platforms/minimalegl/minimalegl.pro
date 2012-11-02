@@ -1,9 +1,9 @@
 TARGET = qminimalegl
+
+PLUGIN_TYPE = platforms
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
-
-DESTDIR = $$QT.gui.plugins/platforms
 
 #DEFINES += QEGL_EXTRA_DEBUG
 
@@ -24,9 +24,6 @@ HEADERS =   qminimaleglintegration.h \
             qminimaleglscreen.h
 
 CONFIG += egl qpa/genericunixfontdatabase
-
-target.path += $$[QT_INSTALL_PLUGINS]/platforms
-INSTALLS += target
 
 OTHER_FILES += \
     minimalegl.json

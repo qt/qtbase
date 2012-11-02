@@ -70,7 +70,6 @@ private slots:
     void mimeTypeForFileAndContent_data();
     void mimeTypeForFileAndContent();
     void allMimeTypes();
-    void inheritsPerformance();
     void suffixes_data();
     void suffixes();
     void knownSuffix();

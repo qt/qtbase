@@ -1,9 +1,9 @@
 TARGET  = qtaccessiblewidgets
+
+PLUGIN_TYPE = accessible
 load(qt_plugin)
-include (../qaccessiblebase.pri)
 
 QT += core-private gui-private widgets-private
-DESTDIR = $$QT.gui.plugins/accessible
 
 QTDIR_build:REQUIRES += "contains(QT_CONFIG, accessibility)"
 

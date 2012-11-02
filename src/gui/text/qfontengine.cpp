@@ -1370,7 +1370,9 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
         bool surrogate = (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate());
         uint ucs4 = surrogate ? QChar::surrogateToUcs4(str[i], str[i+1]) : str[i].unicode();
         if (glyphs->glyphs[glyph_pos] == 0 && str[i].category() != QChar::Separator_Line) {
-            QGlyphLayoutInstance tmp = glyphs->instance(glyph_pos);
+            QGlyphLayoutInstance tmp;
+            if (!(flags & GlyphIndicesOnly))
+                tmp = glyphs->instance(glyph_pos);
             for (int x=1; x < engines.size(); ++x) {
                 if (engines.at(x) == 0 && !shouldLoadFontEngineForCharacter(x, ucs4))
                     continue;
@@ -1400,9 +1402,8 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
             }
 
             // ensure we use metrics from the 1st font when we use the fallback image.
-            if (!glyphs->glyphs[glyph_pos]) {
+            if (!(flags & GlyphIndicesOnly) && !glyphs->glyphs[glyph_pos])
                 glyphs->setInstance(glyph_pos, tmp);
-            }
         }
 
         if (surrogate)

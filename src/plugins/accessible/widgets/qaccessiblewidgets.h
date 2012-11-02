@@ -275,7 +275,6 @@ public:
     int indexOfChild(const QAccessibleInterface *child) const;
     int childCount() const;
     QRect rect () const;
-    QAccessible::Role role() const;
 
     QDockWidget *dockWidget() const;
 };

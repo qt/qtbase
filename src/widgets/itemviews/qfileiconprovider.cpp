@@ -53,10 +53,6 @@
 #include <qpa/qplatformtheme.h>
 
 #if defined(Q_OS_WIN)
-#if defined(_WIN32_IE)
-#  undef _WIN32_IE
-#endif
-#  define _WIN32_IE 0x0500
 #  include <qt_windows.h>
 #  include <commctrl.h>
 #  include <objbase.h>
@@ -72,7 +68,7 @@ QT_BEGIN_NAMESPACE
   \class QFileIconProvider
 
   \inmodule QtWidgets
- 
+
   \brief The QFileIconProvider class provides file icons for the QDirModel and the QFileSystemModel classes.
 */
 

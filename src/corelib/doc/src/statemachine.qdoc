@@ -28,6 +28,11 @@
 /*!
     \group statemachine
     \title State Machine Classes
+
+    These \l{Qt Core} classes are part of the \l{The State Machine Framework}{
+    State Machine Framework}.
+
+    \annotatedlist statemachine
 */
 
 /*!
@@ -69,7 +74,7 @@
   \section1 Classes in the State Machine Framework
 
   These classes are provided by qt for creating event-driven state machines.
-  
+
   \annotatedlist statemachine
 
   \section1 A Simple State Machine

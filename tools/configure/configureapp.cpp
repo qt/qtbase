@@ -236,6 +236,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
+    dictionary[ "SYSTEM_PROXIES" ]  = "no";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -877,6 +878,10 @@ void Configure::parseCmdLine()
             dictionary[ "SLOG2" ] = "no";
         } else if (configCmdLine.at(i) == "-slog2") {
             dictionary[ "SLOG2" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-system-proxies") {
+            dictionary[ "SYSTEM_PROXIES" ] = "no";
+        } else if (configCmdLine.at(i) == "-system-proxies") {
+            dictionary[ "SYSTEM_PROXIES" ] = "yes";
         }
 
         // Work around compiler nesting limitation
@@ -1682,6 +1687,10 @@ bool Configure::displayHelp()
 
         desc("QT_INSTALL_SETTINGS", "auto", "-sysconfdir <dir>", "Settings used by Qt programs will be looked for in\n<dir>.\n");
 
+        desc("SYSTEM_PROXIES", "yes",  "-system-proxies",    "Use system network proxies by default.");
+        desc("SYSTEM_PROXIES", "no",   "-no-system-proxies", "Do not use system network proxies by default.\n");
+
+
 #if !defined(EVAL)
         desc(                   "-qtnamespace <name>", "Wraps all Qt library code in 'namespace name {...}'.");
         desc(                   "-qtlibinfix <infix>",  "Renames all Qt* libs to Qt*<infix>.\n");
@@ -2303,6 +2312,25 @@ void Configure::generateBuildKey()
     build_defines.sort();
 }
 
+void Configure::generateSystemVars()
+{
+    // Generate an empty .qmake.cache file for config.tests
+    QDir buildDir(buildPath);
+    bool success = true;
+    if (!buildDir.exists("config.tests"))
+        success = buildDir.mkdir("config.tests");
+
+    QString fileName(buildPath + "/config.tests/.qmake.cache");
+    QFile cacheFile(fileName);
+    success &= cacheFile.open(QIODevice::WriteOnly);
+    cacheFile.close();
+
+    if (!success) {
+        cout << "Failed to create file " << qPrintable(QDir::toNativeSeparators(fileName)) << endl;
+        dictionary[ "DONE" ] = "error";
+    }
+}
+
 void Configure::generateOutputVars()
 {
     // Generate variables for output
@@ -2560,6 +2588,9 @@ void Configure::generateOutputVars()
     if (dictionary[ "V8SNAPSHOT" ] == "yes")
         qtConfig += "v8snapshot";
 
+    if (dictionary[ "SYSTEM_PROXIES" ] == "yes")
+        qtConfig += "system-proxies";
+
     // Add config levels --------------------------------------------
     QStringList possible_configs = QStringList()
         << "minimal"
@@ -2680,7 +2711,6 @@ void Configure::generateCachefile()
         for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
             cacheStream << (*var) << endl;
         }
-        cacheStream << "CONFIG         += " << qmakeConfig.join(' ') << "no_private_qt_headers_warning QTDIR_build" << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2720,7 +2750,8 @@ void Configure::generateCachefile()
         if (!dictionary["DECORATIONS"].isEmpty())
             moduleStream << "decorations += "<<dictionary["DECORATIONS"]<<endl;
 
-        moduleStream << "CONFIG += create_prl link_prl prepare_docs";
+        moduleStream << "CONFIG += " << qmakeConfig.join(' ')
+                     << " create_prl link_prl prepare_docs no_private_qt_headers_warning QTDIR_build";
         if (dictionary[ "SSE2" ] == "yes")
             moduleStream << " sse2";
         if (dictionary[ "SSE3" ] == "yes")
@@ -3043,37 +3074,6 @@ QString Configure::addDefine(QString def)
 }
 
 #if !defined(EVAL)
-bool Configure::copySpec(const char *name, const char *pfx, const QString &spec)
-{
-    // "Link" configured mkspec to default directory, but remove the old one first, if there is any
-    QString defSpec = buildPath + "/mkspecs/" + name;
-    QFileInfo defSpecInfo(defSpec);
-    if (defSpecInfo.exists()) {
-        if (!Environment::rmdir(defSpec)) {
-            cout << "Couldn't update default " << pfx << "mkspec! Are files in " << qPrintable(defSpec) << " read-only?" << endl;
-            dictionary["DONE"] = "error";
-            return false;
-        }
-    }
-
-    QDir::current().mkpath(defSpec);
-    QFile qfile(defSpec + "/qmake.conf");
-    if (qfile.open(QFile::WriteOnly | QFile::Text)) {
-        QTextStream fileStream;
-        fileStream.setDevice(&qfile);
-        QString srcSpec = buildPath + "/mkspecs/" + spec; // We copied it to the build dir
-        fileStream << "QMAKESPEC_ORIGINAL = " << formatPath(srcSpec) << endl;
-        fileStream << "include($$QMAKESPEC_ORIGINAL/qmake.conf)" << endl;
-        qfile.close();
-    }
-    if (qfile.error() != QFile::NoError) {
-        cout << "Couldn't update default " << pfx << "mkspec: " << qPrintable(qfile.errorString()) << endl;
-        dictionary["DONE"] = "error";
-        return false;
-    }
-    return true;
-}
-
 void Configure::generateConfigfiles()
 {
     QDir(buildPath).mkpath("src/corelib/global");
@@ -3328,7 +3328,8 @@ void Configure::displayConfig()
     sout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     sout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
-    sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl << endl;
+    sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
+    sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl << endl;
 
     sout << "Third Party Libraries:" << endl;
     sout << "    ZLIB support............" << dictionary[ "ZLIB" ] << endl;
@@ -3478,6 +3479,11 @@ void Configure::generateHeaders()
     }
 }
 
+static QString stripPrefix(const QString &str, const QString &pfx)
+{
+    return str.startsWith(pfx) ? str.mid(pfx.length()) : str;
+}
+
 void Configure::generateQConfigCpp()
 {
     // if QT_INSTALL_* have not been specified on commandline, define them now from QT_INSTALL_PREFIX
@@ -3521,6 +3527,10 @@ void Configure::generateQConfigCpp()
     QDir(buildPath).mkpath("src/corelib/global");
     const QString outName(buildPath + "/src/corelib/global/qconfig.cpp");
 
+    QString specPfx = dictionary["QT_HOST_DATA"] + "/mkspecs/";
+    QString hostSpec = stripPrefix(dictionary["QMAKESPEC"], specPfx);
+    QString targSpec = dictionary.contains("XQMAKESPEC") ? stripPrefix(dictionary["XQMAKESPEC"], specPfx) : hostSpec;
+
     QTemporaryFile tmpFile;
     if (tmpFile.open()) {
         QTextStream tmpStream(&tmpFile);
@@ -3548,6 +3558,8 @@ void Configure::generateQConfigCpp()
                   << "    \"qt_hpfxpath=" << formatPath(dictionary["QT_HOST_PREFIX"]) << "\"," << endl
                   << "    \"qt_hbinpath=" << formatPath(dictionary["QT_HOST_BINS"]) << "\"," << endl
                   << "    \"qt_hdatpath=" << formatPath(dictionary["QT_HOST_DATA"]) << "\"," << endl
+                  << "    \"qt_targspec=" << targSpec << "\"," << endl
+                  << "    \"qt_hostspec=" << hostSpec << "\"," << endl
                   << "#endif" << endl
                   << "};" << endl;
 
@@ -3658,14 +3670,6 @@ void Configure::buildQmake()
 
         confStream.flush();
         confFile.close();
-    }
-
-    //create default mkspecs
-    QString spec = dictionary.contains("XQMAKESPEC") ? dictionary["XQMAKESPEC"] : dictionary["QMAKESPEC"];
-    if (!copySpec("default", "", spec)
-        || !copySpec("default-host", "host ", dictionary["QMAKESPEC"])) {
-        cout << "Error installing default mkspecs" << endl << endl;
-        exit(EXIT_FAILURE);
     }
 
 }

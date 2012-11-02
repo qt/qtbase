@@ -56,7 +56,9 @@ public:
     enum Options { // Options to be passed on command line.
         FontDatabaseFreeType = 0x1,
         FontDatabaseNative = 0x2,
-        DisableArb = 0x4
+        DisableArb = 0x4,
+        NoNativeDialogs = 0x8,
+        XpNativeDialogs = 0x10
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

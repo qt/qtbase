@@ -785,6 +785,7 @@ CFG_JAVASCRIPTCORE_JIT=auto
 CFG_PKGCONFIG=auto
 CFG_STACK_PROTECTOR_STRONG=auto
 CFG_SLOG2=auto
+CFG_SYSTEM_PROXIES=no
 
 # Target architecture
 CFG_ARCH=
@@ -1002,6 +1003,14 @@ while [ "$#" -gt 0 ]; do
     -enable-*|-disable-*)
         VAR=`echo $1 | sed "s,^-\([^-]*\)-.*,\1,"`
         VAL=`echo $1 | sed "s,^-[^-]*-\(.*\),\1,"`
+        ;;
+    -system-proxies)
+        VAR=system-proxies
+        VAL=yes
+        ;;
+    -no-system-proxies)
+        VAR=system-proxies
+        VAL=no
         ;;
     #Qt Builtin/System style options
     -no-*|-system-*|-qt-*)
@@ -1890,7 +1899,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     javascript-jit)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then 
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
             CFG_JAVASCRIPTCORE_JIT="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -2090,6 +2099,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    system-proxies)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_SYSTEM_PROXIES="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2227,7 +2243,6 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     mkdir -p "$outpath/mkspecs"
     rm -rf "$outpath"/mkspecs/*
     ln -s "$relpath"/mkspecs/* "$outpath/mkspecs"
-    rm -f "$outpath/mkspecs/default"
 
     ShadowMkspecs()
     {
@@ -3291,6 +3306,9 @@ Additional options:
                           OpenGL ES 2, or regular desktop OpenGL.
                           Use es2 for <api> to override auto-detection.
 
+ *  -no-system-proxies .. Do not use system network proxies by default.
+    -system-proxies ..... Use system network proxies by default.
+
  $GBN  -no-glib ........... Do not compile Glib support.
  $GBY  -glib .............. Compile Glib support.
 EOF
@@ -3508,6 +3526,9 @@ esac
 #-------------------------------------------------------------------------------
 [ -d "$outpath/src/corelib/global" ] || mkdir -p "$outpath/src/corelib/global"
 
+shortxspec=`echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
+shortspec=`echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"`
+
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* License Info */
 static const char qt_configure_licensee_str          [256 + 12] = "qt_lcnsuser=$Licensee";
@@ -3534,6 +3555,8 @@ static const char qt_configure_prefix_path_strs[][256 + 12] = {
     "qt_hpfxpath=$QT_HOST_PREFIX",
     "qt_hbinpath=$QT_HOST_BINS",
     "qt_hdatpath=$QT_HOST_DATA",
+    "qt_targspec=$shortxspec",
+    "qt_hostspec=$shortspec",
 #endif
 };
 static const char qt_configure_settings_path_str[256 + 12] = "qt_stngpath=$QT_INSTALL_SETTINGS";
@@ -3597,10 +3620,6 @@ setBootstrapVariable()
 if true; then ###[ '!' -f "$outpath/bin/qmake" ];
     echo "Creating qmake. Please wait..."
 
-    #mkspecs/default is used as a (gasp!) default mkspec so QMAKESPEC needn't be set once configured
-    rm -rf mkspecs/default mkspecs/default-host
-    ln -s `echo $XQMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default
-    ln -s `echo $QMAKESPEC | sed "s,^${relpath}/mkspecs/,,"` mkspecs/default-host
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
     for mkfile in GNUmakefile Makefile; do
@@ -5211,7 +5230,7 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
+if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
     if [ "$CFG_ARCH" = "arm" ]; then
        compileTest unix/javascriptcore-jit "javascriptcore-jit"
         if [ $? != "0" ]; then
@@ -5454,6 +5473,7 @@ fi
 [ "$CFG_MAC_HARFBUZZ" = "yes" ] && QT_CONFIG="$QT_CONFIG harfbuzz"
 [ "$CFG_XCB" = "yes" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
+[ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
 
 [ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
@@ -6054,7 +6074,7 @@ fi
 #-------------------------------------------------------------------------------
 QTMODULE="$outpath/mkspecs/qmodule.pri"
 
-echo "CONFIG += $QMAKE_CONFIG create_prl link_prl prepare_docs" >> "$QTMODULE.tmp"
+echo "CONFIG += $QMAKE_CONFIG create_prl link_prl prepare_docs fix_output_dirs no_private_qt_headers_warning QTDIR_build" >> "$QTMODULE.tmp"
 echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
@@ -6119,9 +6139,6 @@ cat >>"$CACHEFILE.tmp" <<EOF
 #paths
 QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
-
-CONFIG += fix_output_dirs no_private_qt_headers_warning QTDIR_build
-
 EOF
 
 # replace .qmake.cache if it differs from the newly created temp file
@@ -6235,6 +6252,7 @@ echo "libudev support ........ $CFG_LIBUDEV"
 if [ "$XPLATFORM_QNX" = "yes" ]; then
     echo "SLOG2 support .......... $CFG_SLOG2"
 fi
+echo "Use system proxies ..... $CFG_SYSTEM_PROXIES"
 
 if [ "$CFG_OPENGL" = "desktop" ]; then
     echo "OpenGL support ......... yes (Desktop OpenGL)"

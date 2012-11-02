@@ -542,16 +542,18 @@ void QXcbWindow::show()
         propagateSizeHints();
 
         // update WM_TRANSIENT_FOR
-        if (window()->transientParent() && isTransient(window())) {
-            QXcbWindow *transientXcbParent = static_cast<QXcbWindow *>(window()->transientParent()->handle());
-            if (transientXcbParent) {
-                // ICCCM 4.1.2.6
-                xcb_window_t parentWindow = transientXcbParent->xcb_window();
-
-                // todo: set transient for group (wm_client_leader) if no parent, a la qwidget_x11.cpp
+        if (isTransient(window())) {
+            xcb_window_t transientXcbParent = 0;
+            if (const QWindow *tp = window()->transientParent())
+                transientXcbParent = static_cast<const QXcbWindow *>(tp->handle())->winId();
+            // Default to client leader if there is no transient parent, else modal dialogs can
+            // be hidden by their parents.
+            if (!transientXcbParent)
+                transientXcbParent = static_cast<QXcbScreen *>(screen())->clientLeader();
+            if (transientXcbParent) { // ICCCM 4.1.2.6
                 Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                                XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
-                                               1, &parentWindow));
+                                               1, &transientXcbParent));
             }
         }
 

@@ -110,6 +110,30 @@ private:
     mutable int _step;
 };
 
+class QNumberStyleAnimation : public QStyleAnimation
+{
+    Q_OBJECT
+
+public:
+    QNumberStyleAnimation(QObject *target);
+
+    qreal startValue() const;
+    void setStartValue(qreal value);
+
+    qreal endValue() const;
+    void setEndValue(qreal value);
+
+    qreal currentValue() const;
+
+protected:
+    bool isUpdateNeeded() const;
+
+private:
+    qreal _start;
+    qreal _end;
+    mutable qreal _prev;
+};
+
 QT_END_NAMESPACE
 
 #endif // QSTYLEANIMATION_P_H

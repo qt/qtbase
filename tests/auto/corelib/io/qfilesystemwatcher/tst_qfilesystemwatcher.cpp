@@ -183,12 +183,17 @@ void tst_QFileSystemWatcher::basicTest()
     // change the permissions, should get a signal from the watcher
     testFile.setPermissions(QFile::ReadOwner);
 
+    // IN_ATTRIB doesn't work on QNX, so skip this test
+#if !defined(Q_OS_QNX)
+
     // waiting max 5 seconds for notification for file permission modification to trigger
     QTRY_COMPARE(changedSpy.count(), 1);
     QCOMPARE(changedSpy.at(0).count(), 1);
 
     fileName = changedSpy.at(0).at(0).toString();
     QCOMPARE(fileName, testFile.fileName());
+
+#endif
 
     changedSpy.clear();
 

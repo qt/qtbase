@@ -49,9 +49,13 @@
 class tst_QMap : public QObject
 {
     Q_OBJECT
+protected:
+    template <class KEY, class VALUE>
+    void sanityCheckTree(const QMap<KEY, VALUE> &m, int calledFromLine);
 public slots:
     void init();
 private slots:
+    void ctor();
     void count();
     void clear();
     void beginEnd();
@@ -79,6 +83,7 @@ private slots:
     void setSharable();
 
     void insert();
+    void checkMostLeftNode();
 };
 
 typedef QMap<QString, QString> StringMap;
@@ -115,10 +120,56 @@ QDebug operator << (QDebug d, const MyClass &c) {
     return d;
 }
 
+template <class KEY, class VALUE>
+void tst_QMap::sanityCheckTree(const QMap<KEY, VALUE> &m, int calledFromLine)
+{
+    QString possibleFrom;
+    possibleFrom.setNum(calledFromLine);
+    possibleFrom = "Called from line: " + possibleFrom;
+    int count = 0;
+    typename QMap<KEY, VALUE>::const_iterator oldite = m.constBegin();
+    for (typename QMap<KEY, VALUE>::const_iterator i = m.constBegin(); i != m.constEnd(); ++i) {
+        count++;
+        bool oldIteratorIsLarger = i.key() < oldite.key();
+        QVERIFY2(!oldIteratorIsLarger, possibleFrom.toUtf8());
+        oldite = i;
+    }
+    if (m.size() != count) { // Fail
+        qDebug() << possibleFrom;
+        QCOMPARE(m.size(), count);
+    }
+    if (m.size() == 0)
+        QVERIFY(m.constBegin() == m.constEnd());
+}
+
 void tst_QMap::init()
 {
     MyClass::count = 0;
 }
+
+void tst_QMap::ctor()
+{
+    std::map<int, int> map;
+    for (int i = 0; i < 100000; ++i)
+        map.insert(std::pair<int, int>(i * 3, i * 7));
+
+    QMap<int, int> qmap(map); // ctor.
+
+    // Check that we have the same
+    std::map<int, int>::iterator j = map.begin();
+    QMap<int, int>::const_iterator i = qmap.constBegin();
+
+    while (i != qmap.constEnd()) {
+        QCOMPARE( (*j).first, i.key());
+        QCOMPARE( (*j).second, i.value());
+        ++i;
+        ++j;
+    }
+
+    QCOMPARE( (int) map.size(), qmap.size());
+}
+
+
 
 void tst_QMap::count()
 {
@@ -280,6 +331,7 @@ void tst_QMap::clear()
         map.insert( "key0", MyClass( "value1" ) );
         map.insert( "key1", MyClass( "value2" ) );
         map.clear();
+        sanityCheckTree(map, __LINE__);
         QVERIFY( map.isEmpty() );
     }
     QCOMPARE( MyClass::count, int(0) );
@@ -400,6 +452,8 @@ void tst_QMap::swap()
     m1.swap(m2);
     QCOMPARE(m1.value(1),QLatin1String("m2[1]"));
     QCOMPARE(m2.value(0),QLatin1String("m1[0]"));
+    sanityCheckTree(m1, __LINE__);
+    sanityCheckTree(m2, __LINE__);
 }
 
 void tst_QMap::operator_eq()
@@ -631,7 +685,7 @@ void tst_QMap::lowerUpperBound()
 
 void tst_QMap::mergeCompare()
 {
-    QMap<int, QString> map1, map2, map3;
+    QMap<int, QString> map1, map2, map3, map1b, map2b;
 
     map1.insert(1,"ett");
     map1.insert(3,"tre");
@@ -641,6 +695,13 @@ void tst_QMap::mergeCompare()
     map2.insert(4,"fyra");
 
     map1.unite(map2);
+    sanityCheckTree(map1, __LINE__);
+
+    map1b = map1;
+    map2b = map2;
+    map2b.insert(0, "nul");
+    map1b.unite(map2b);
+    sanityCheckTree(map1b, __LINE__);
 
     QVERIFY(map1.value(1) == "ett");
     QVERIFY(map1.value(2) == "tvo");
@@ -958,9 +1019,11 @@ void tst_QMap::setSharable()
 
         QVERIFY(!map.isDetached());
         QVERIFY(copy.isSharedWith(map));
+        sanityCheckTree(copy, __LINE__);
     }
 
     map.setSharable(false);
+    sanityCheckTree(map, __LINE__);
     QVERIFY(map.isDetached());
     QCOMPARE(map.size(), 4);
     QCOMPARE(const_(map)[4], QString("quatro"));
@@ -975,6 +1038,8 @@ void tst_QMap::setSharable()
         QCOMPARE(const_(copy)[4], QString("quatro"));
 
         QCOMPARE(map, copy);
+        sanityCheckTree(map, __LINE__);
+        sanityCheckTree(copy, __LINE__);
     }
 
     map.setSharable(true);
@@ -1010,6 +1075,58 @@ void tst_QMap::insert()
         QCOMPARE(intMap.size(), 1000);
         QCOMPARE(intMap.value(i), -1);
     }
+}
+
+void tst_QMap::checkMostLeftNode()
+{
+    QMap<int, int> map;
+
+    map.insert(100, 1);
+    sanityCheckTree(map, __LINE__);
+
+    // insert
+    map.insert(99, 1);
+    sanityCheckTree(map, __LINE__);
+    map.insert(98, 1);
+    sanityCheckTree(map, __LINE__);
+    map.insert(97, 1);
+    sanityCheckTree(map, __LINE__);
+    map.insert(96, 1);
+    sanityCheckTree(map, __LINE__);
+    map.insert(95, 1);
+
+    // remove
+    sanityCheckTree(map, __LINE__);
+    map.take(95);
+    sanityCheckTree(map, __LINE__);
+    map.remove(96);
+    sanityCheckTree(map, __LINE__);
+    map.erase(map.begin());
+    sanityCheckTree(map, __LINE__);
+    map.remove(97);
+    sanityCheckTree(map, __LINE__);
+    map.remove(98);
+    sanityCheckTree(map, __LINE__);
+    map.remove(99);
+    sanityCheckTree(map, __LINE__);
+    map.remove(100);
+    sanityCheckTree(map, __LINE__);
+    map.insert(200, 1);
+    QCOMPARE(map.constBegin().key(), 200);
+    sanityCheckTree(map, __LINE__);
+    // remove the non left most node
+    map.insert(202, 2);
+    map.insert(203, 3);
+    map.insert(204, 4);
+    map.remove(202);
+    sanityCheckTree(map, __LINE__);
+    map.remove(203);
+    sanityCheckTree(map, __LINE__);
+    map.remove(204);
+    sanityCheckTree(map, __LINE__);
+    // erase last item
+    map.erase(map.begin());
+    sanityCheckTree(map, __LINE__);
 }
 
 QTEST_APPLESS_MAIN(tst_QMap)

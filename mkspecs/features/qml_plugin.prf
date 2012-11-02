@@ -24,7 +24,12 @@ exists($$QMLTYPEFILE): QML_FILES += $$QMLTYPEFILE
 
 # Install rules
 
-target.path = $$[QT_INSTALL_IMPORTS]/$$TARGETPATH
+qml1_target: \
+    instbase = $$[QT_INSTALL_IMPORTS]/QtDeclarative
+else: \
+    instbase = $$[QT_INSTALL_IMPORTS]
+
+target.path = $$instbase/$$TARGETPATH
 INSTALLS += target
 
 # Some final setup
@@ -42,13 +47,31 @@ load(qt_targets)
 # directory.  Then review and commit the changes made to plugins.qmltypes.
 #
 !cross_compile {
-    isEmpty(IMPORT_VERSION): IMPORT_VERSION = $$eval(QT.$${CXX_MODULE}.MAJOR_VERSION).$$eval(QT.$${CXX_MODULE}.MINOR_VERSION)
+    build_pass|!debug_and_release {
+        isEmpty(IMPORT_VERSION): IMPORT_VERSION = $$eval(QT.$${CXX_MODULE}.MAJOR_VERSION).$$eval(QT.$${CXX_MODULE}.MINOR_VERSION)
 
-    load(resolve_target)
-    qtPrepareTool(QMLPLUGINDUMP, qmlplugindump)
-    qmltypes.target = qmltypes
-    qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATH, /, .) $$IMPORT_VERSION $$QMAKE_RESOLVED_TARGET > $$QMLTYPEFILE
-    qmltypes.depends = $$QMAKE_RESOLVED_TARGET
+        load(resolve_target)
+        qml1_target: \
+            qmlplugindump = qml1plugindump
+        else: \
+            qmlplugindump = qmlplugindump
+        qtPrepareTool(QMLPLUGINDUMP, $$qmlplugindump)
+        importpath.value =
+        for(qmod, QMAKEMODULES) {
+            qmod = $$section(qmod, /, 0, -3)/imports
+            qml1_target: qmod = $$qmod/QtDeclarative
+            exists($$qmod): importpath.value += $$shell_path($$qmod)
+        }
+        importpath.name = QML_IMPORT_PATH
+        importpath.value = $$unique(importpath.value)
+        qtAddToolEnv(QMLPLUGINDUMP, importpath)
+        TARGETPATHBASE = $$replace(TARGETPATH, \\.\\d+\$, )
+        qmltypes.target = qmltypes
+        qmltypes.commands = $$QMLPLUGINDUMP $$replace(TARGETPATHBASE, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
+        qmltypes.depends = $$QMAKE_RESOLVED_TARGET
+    } else {
+        qmltypes.CONFIG += recursive
+    }
     QMAKE_EXTRA_TARGETS += qmltypes
 }
 

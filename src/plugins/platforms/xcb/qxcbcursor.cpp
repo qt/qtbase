@@ -508,16 +508,16 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
     return c;
 }
 
-void QXcbCursor::queryPointer(xcb_connection_t *conn, xcb_window_t *rootWin, QPoint *pos, int *keybMask)
+void QXcbCursor::queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *pos, int *keybMask)
 {
     if (pos)
         *pos = QPoint();
-    xcb_screen_iterator_t it = xcb_setup_roots_iterator(xcb_get_setup(conn));
+    xcb_screen_iterator_t it = xcb_setup_roots_iterator(c->setup());
     while (it.rem) {
         xcb_window_t root = it.data->root;
-        xcb_query_pointer_cookie_t cookie = xcb_query_pointer(conn, root);
+        xcb_query_pointer_cookie_t cookie = xcb_query_pointer(c->xcb_connection(), root);
         xcb_generic_error_t *err = 0;
-        xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(conn, cookie, &err);
+        xcb_query_pointer_reply_t *reply = xcb_query_pointer_reply(c->xcb_connection(), cookie, &err);
         if (!err && reply) {
             if (pos)
                 *pos = QPoint(reply->root_x, reply->root_y);
@@ -537,17 +537,16 @@ void QXcbCursor::queryPointer(xcb_connection_t *conn, xcb_window_t *rootWin, QPo
 QPoint QXcbCursor::pos() const
 {
     QPoint p;
-    queryPointer(xcb_connection(), 0, &p);
+    queryPointer(connection(), 0, &p);
     return p;
 }
 
 void QXcbCursor::setPos(const QPoint &pos)
 {
-    xcb_connection_t *conn = xcb_connection();
     xcb_window_t root;
-    queryPointer(conn, &root, 0);
-    xcb_warp_pointer(conn, XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
-    xcb_flush(conn);
+    queryPointer(connection(), &root, 0);
+    xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
+    xcb_flush(xcb_connection());
 }
 
 QT_END_NAMESPACE

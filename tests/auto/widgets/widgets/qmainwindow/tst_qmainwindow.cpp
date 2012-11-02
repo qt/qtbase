@@ -1322,26 +1322,18 @@ void tst_QMainWindow::createPopupMenu()
         mainwindow.addDockWidget(Qt::LeftDockWidgetArea, &dockwidget4);
 
 
-#ifdef QT_SOFTKEYS_ENABLED
-        // Softkeys add extra "Select" and "Back" actions to menu by default.
-        // Two first actions will be Select and Back when softkeys are enabled
-        int numSoftkeyActions = 2;
-#else
-        int numSoftkeyActions = 0;
-#endif
-
         QMenu *menu = mainwindow.createPopupMenu();
         QVERIFY(menu != 0);
         QList<QAction *> actions = menu->actions();
-        QCOMPARE(actions.size(), 7 + numSoftkeyActions);
+        QCOMPARE(actions.size(), 7);
 
-        QCOMPARE(actions.at(0 + numSoftkeyActions), dockwidget1.toggleViewAction());
-        QCOMPARE(actions.at(1 + numSoftkeyActions), dockwidget2.toggleViewAction());
-        QCOMPARE(actions.at(2 + numSoftkeyActions), dockwidget3.toggleViewAction());
-        QCOMPARE(actions.at(3 + numSoftkeyActions), dockwidget4.toggleViewAction());
-        QVERIFY(actions.at(4 + numSoftkeyActions)->isSeparator());
-        QCOMPARE(actions.at(5 + numSoftkeyActions), toolbar1.toggleViewAction());
-        QCOMPARE(actions.at(6 + numSoftkeyActions), toolbar2.toggleViewAction());
+        QCOMPARE(actions.at(0), dockwidget1.toggleViewAction());
+        QCOMPARE(actions.at(1), dockwidget2.toggleViewAction());
+        QCOMPARE(actions.at(2), dockwidget3.toggleViewAction());
+        QCOMPARE(actions.at(3), dockwidget4.toggleViewAction());
+        QVERIFY(actions.at(4)->isSeparator());
+        QCOMPARE(actions.at(5), toolbar1.toggleViewAction());
+        QCOMPARE(actions.at(6), toolbar2.toggleViewAction());
 
         delete menu;
 
@@ -1352,12 +1344,12 @@ void tst_QMainWindow::createPopupMenu()
         menu = mainwindow.createPopupMenu();
         QVERIFY(menu != 0);
         actions = menu->actions();
-        QCOMPARE(actions.size(), 4 + numSoftkeyActions);
+        QCOMPARE(actions.size(), 4);
 
-        QCOMPARE(actions.at(0 + numSoftkeyActions), dockwidget2.toggleViewAction());
-        QCOMPARE(actions.at(1 + numSoftkeyActions), dockwidget3.toggleViewAction());
-        QVERIFY(actions.at(2 + numSoftkeyActions)->isSeparator());
-        QCOMPARE(actions.at(3 + numSoftkeyActions), toolbar2.toggleViewAction());
+        QCOMPARE(actions.at(0), dockwidget2.toggleViewAction());
+        QCOMPARE(actions.at(1), dockwidget3.toggleViewAction());
+        QVERIFY(actions.at(2)->isSeparator());
+        QCOMPARE(actions.at(3), toolbar2.toggleViewAction());
 
         delete menu;
     }
