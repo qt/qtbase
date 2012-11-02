@@ -917,6 +917,10 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     When you hide() a child its space will be distributed among the
     other children. It will be reinstated when you show() it again.
 
+    \note Adding a QLayout to a QSplitter is not supported (either through
+    setLayout() or making the QSplitter a parent of the QLayout); use addWidget()
+    instead (see example above).
+
     \sa QSplitterHandle, QHBoxLayout, QVBoxLayout, QTabWidget
 */
 
@@ -1207,8 +1211,11 @@ int QSplitter::count() const
 void QSplitter::childEvent(QChildEvent *c)
 {
     Q_D(QSplitter);
-    if (!c->child()->isWidgetType())
+    if (!c->child()->isWidgetType()) {
+        if (c->type() == QEvent::ChildAdded && qobject_cast<QLayout *>(c->child()))
+            qWarning("Adding a QLayout to a QSplitter is not supported.");
         return;
+    }
     QWidget *w = static_cast<QWidget*>(c->child());
     if (c->added() && !d->blockChildAdd && !w->isWindow() && !d->findWidget(w)) {
         d->insertWidget_helper(d->list.count(), w, false);

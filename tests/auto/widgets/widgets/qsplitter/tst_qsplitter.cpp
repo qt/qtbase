@@ -93,7 +93,7 @@ private slots:
     void task169702_sizes();
     void taskQTBUG_4101_ensureOneNonCollapsedWidget_data();
     void taskQTBUG_4101_ensureOneNonCollapsedWidget();
-
+    void setLayout();
 private:
     void removeThirdWidget();
     void addThirdWidget();
@@ -768,6 +768,16 @@ void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget()
         delete l;
     QTest::qWait(100);
     QVERIFY(s.sizes().at(0) > 0);
+}
+
+void tst_QSplitter::setLayout()
+{
+    QSplitter splitter;
+    QVBoxLayout layout;
+    QTest::ignoreMessage(QtWarningMsg, "Adding a QLayout to a QSplitter is not supported.");
+    splitter.setLayout(&layout);
+    // It will work, but we don't recommend it...
+    QCOMPARE(splitter.layout(), &layout);
 }
 
 QTEST_MAIN(tst_QSplitter)
