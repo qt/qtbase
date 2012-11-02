@@ -14,7 +14,7 @@ OBJECTIVE_SOURCES = main.mm \
     qioseventdispatcher.mm \
     qiosbackingstore.mm
 
-OBJECTIVE_HEADERS = qiosintegration.h \
+HEADERS = qiosintegration.h \
     qioswindow.h \
     qiosscreen.h \
     qioseventdispatcher.h \
