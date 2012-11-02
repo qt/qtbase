@@ -128,7 +128,7 @@ static const char * const collationStrings[collationStringsCount] = {
     initialize the collator with the specified values. The collator can then be used to compare
     and sort strings in a locale dependent fashion.
 
-    A QCollator object can be used together with template based sorting algorithms such as qSort
+    A QCollator object can be used together with template based sorting algorithms such as std::sort
     to sort a list of QStrings.
 
     In addition to the locale and collation strategy, several optional flags can be set that influence
