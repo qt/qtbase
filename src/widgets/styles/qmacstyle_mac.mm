@@ -430,18 +430,13 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBaseV2 *tbb, const QWidget
 
 static int getControlSize(const QStyleOption *option, const QWidget *widget)
 {
-    if (option) {
-        if (option->state & (QStyle::State_Small | QStyle::State_Mini))
-            return (option->state & QStyle::State_Mini) ? QAquaSizeMini : QAquaSizeSmall;
-    } else if (widget) {
-        switch (QMacStyle::widgetSizePolicy(widget)) {
-        case QMacStyle::SizeSmall:
-            return QAquaSizeSmall;
-        case QMacStyle::SizeMini:
-            return QAquaSizeMini;
-        default:
-            break;
-        }
+    switch (QMacStyle::widgetSizePolicy(widget, option)) {
+    case QMacStyle::SizeSmall:
+        return QAquaSizeSmall;
+    case QMacStyle::SizeMini:
+        return QAquaSizeMini;
+    default:
+        break;
     }
     return QAquaSizeLarge;
 }
@@ -1607,7 +1602,7 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
     tdi->reserved = 0;
     tdi->filler1 = 0;
     bool isScrollbar = (cc == QStyle::CC_ScrollBar);
-    switch (aquaSizeConstrain(0, needToRemoveMe)) {
+    switch (aquaSizeConstrain(slider, needToRemoveMe)) {
     case QAquaSizeUnknown:
     case QAquaSizeLarge:
         if (isScrollbar)
@@ -2924,7 +2919,7 @@ void QMacStyle::setWidgetSizePolicy(const QWidget *widget, WidgetSizePolicy poli
     wadget->setAttribute(Qt::WA_MacMiniSize, policy == SizeMini);
 }
 
-QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget)
+QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget, const QStyleOption *opt)
 {
     while (widget) {
         if (widget->testAttribute(Qt::WA_MacMiniSize)) {
@@ -2936,6 +2931,12 @@ QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget)
         }
         widget = widget->parentWidget();
     }
+
+    if (opt && opt->state & State_Mini)
+        return SizeMini;
+    else if (opt && opt->state & State_Small)
+        return SizeSmall;
+
     return SizeDefault;
 }
 
@@ -5007,7 +5008,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             if (cc == CC_ScrollBar) {
                 const int scrollBarLength = (slider->orientation == Qt::Horizontal)
                     ? slider->rect.width() : slider->rect.height();
-                const QMacStyle::WidgetSizePolicy sizePolicy = widgetSizePolicy(widget);
+                const QMacStyle::WidgetSizePolicy sizePolicy = widgetSizePolicy(widget, opt);
                 if (scrollBarLength < scrollButtonsCutoffSize(thumbIndicatorCutoff, sizePolicy))
                     tdi.attributes &= ~kThemeTrackShowThumb;
                 if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, sizePolicy))
@@ -5615,7 +5616,7 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
             // exclude them from the hit test.
             const int scrollBarLength = (sb->orientation == Qt::Horizontal)
                 ? sb->rect.width() : sb->rect.height();
-            if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, widgetSizePolicy(widget)))
+            if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, widgetSizePolicy(widget, opt)))
                 sbi.enableState = kThemeTrackNothingToScroll;
 
             sbi.viewsize = sb->pageStep;
@@ -6272,7 +6273,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     case CT_ScrollBar :
         // Make sure that the scroll bar is large enough to display the thumb indicator.
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            const int minimumSize = scrollButtonsCutoffSize(thumbIndicatorCutoff, widgetSizePolicy(widget));
+            const int minimumSize = scrollButtonsCutoffSize(thumbIndicatorCutoff, widgetSizePolicy(widget, opt));
             if (slider->orientation == Qt::Horizontal)
                 sz = sz.expandedTo(QSize(minimumSize, sz.height()));
             else
