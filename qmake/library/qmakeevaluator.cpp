@@ -1195,7 +1195,7 @@ bool QMakeEvaluator::loadSpec()
 #ifndef QT_BUILD_QMAKE
     // Legacy support for Qt4 qmake in Qt Creator, etc.
     if (qmakespec.isEmpty())
-        qmakespec = QLatin1String("default-host") : QLatin1String("default");
+        qmakespec = m_hostBuild ? QLatin1String("default-host") : QLatin1String("default");
 #endif
     if (IoUtils::isRelativePath(qmakespec)) {
         foreach (const QString &root, m_mkspecPaths) {
