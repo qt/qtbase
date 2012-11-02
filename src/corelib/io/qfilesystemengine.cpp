@@ -315,7 +315,7 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
             if (S_ISLNK(extra_stat->d_stat.st_mode) && extra->d_type == _DTYPE_LSTAT)
                 continue;
 
-#if defined(__EXT_LF64SRC)
+#if defined(QT_USE_XOPEN_LFS_EXTENSIONS) && defined(QT_LARGEFILE_SUPPORT)
             // Even with large file support, d_stat is always of type struct stat, not struct stat64,
             // so it needs to be converted
             struct stat64 statBuf;
