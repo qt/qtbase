@@ -350,6 +350,11 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_currentSlot = data->value;
         }
 
+    } else if (data->type == EV_KEY && !m_typeB) {
+        if (data->code == BTN_TOUCH && data->value == 0)
+          {
+            m_contacts[m_currentSlot].state = Qt::TouchPointReleased;
+          }
     } else if (data->type == EV_SYN && data->code == SYN_MT_REPORT && m_lastEventType != EV_SYN) {
 
         // If there is no tracking id, one will be generated later.
