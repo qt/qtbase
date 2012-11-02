@@ -53,6 +53,7 @@
 
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformcursor.h>
 
 #ifndef XK_ISO_Left_Tab
 #define XK_ISO_Left_Tab         0xFE20
@@ -1106,9 +1107,15 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         filtered = inputContext->filterEvent(&event);
     }
 
-    if (!filtered)
+    if (!filtered) {
+        if (type == QEvent::KeyPress && qtcode == Qt::Key_Menu) {
+            const QPoint globalPos = window->screen()->handle()->cursor()->pos();
+            const QPoint pos = window->mapFromGlobal(globalPos);
+            QWindowSystemInterface::handleContextMenuEvent(window, false, pos, globalPos, modifiers);
+        }
         QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
                                                        code, sym, state, string.left(count), isAutoRepeat);
+    }
 
     if (isAutoRepeat && type == QEvent::KeyRelease) {
         // since we removed it from the event queue using checkEvent we need to send the key press here
