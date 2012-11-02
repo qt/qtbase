@@ -803,7 +803,6 @@ CFG_XINPUT=runtime
 CFG_XKB=auto
 CFG_XCB=auto
 CFG_XCB_GLX=no
-CFG_XCB_LIMITED=yes
 CFG_EGLFS=auto
 CFG_DIRECTFB=auto
 CFG_LINUXFB=auto
@@ -4815,11 +4814,6 @@ if [ "$CFG_XCB" != "no" ]; then
             QT_CONFIG="$QT_CONFIG xcb-glx"
         fi
 
-        if compileTest qpa/xcb-poll-for-queued-event "xcb-poll-for-queued-event" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
-            CFG_XCB_LIMITED=no
-            QT_CONFIG="$QT_CONFIG xcb-poll-for-queued-event"
-        fi
-
         if compileTest qpa/xcb-xlib "xcb-xlib" $QMAKE_CFLAGS_XCB $QMAKE_LIBS_XCB; then
             QT_CONFIG="$QT_CONFIG xcb-xlib"
         fi
@@ -6308,11 +6302,7 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
 fi
 echo "libICU support ......... $CFG_ICU"
 echo "PCRE support ........... $CFG_PCRE"
-if [ "$CFG_XCB_LIMITED" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
-    echo "Xcb support ............ limited (old version)"
-else
-    echo "Xcb support ............ $CFG_XCB"
-fi
+echo "Xcb support ............ $CFG_XCB"
 echo "Xrender support ........ $CFG_XRENDER"
 if [ "$XPLATFORM_MAEMO" = "yes" ] && [ "$CFG_XCB" = "yes" ]; then
     echo "XInput2 support ........ $CFG_XINPUT2"

@@ -278,17 +278,14 @@ class QXcbEventReader : public QThread
 {
     Q_OBJECT
 public:
-    QXcbEventReader(QXcbConnection *connection)
-        : m_connection(connection)
-    {
-    }
+    QXcbEventReader(QXcbConnection *connection);
 
-#ifdef XCB_POLL_FOR_QUEUED_EVENT
     void run();
-#endif
 
     QXcbEventArray *lock();
     void unlock();
+
+    bool startThread();
 
 signals:
     void eventPending();
@@ -299,6 +296,9 @@ private:
     QMutex m_mutex;
     QXcbEventArray m_events;
     QXcbConnection *m_connection;
+
+    typedef xcb_generic_event_t * (*XcbPollForQueuedEventFunctionPointer)(xcb_connection_t *c);
+    XcbPollForQueuedEventFunctionPointer m_xcb_poll_for_queued_event;
 };
 
 class QAbstractEventDispatcher;
