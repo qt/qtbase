@@ -555,7 +555,16 @@ void tst_QLocalSocket::readBufferOverflow()
     char buffer[dataBufferSize];
     memset(buffer, 0, dataBufferSize);
     serverSocket->write(buffer, dataBufferSize);
+#ifndef Q_OS_WIN
+    // The data is not immediately sent, but buffered.
+    // On Windows, the flushing is done asynchronously by a separate thread.
+    // However, this operation will never complete as long as the data is not
+    // read by the other end, so the call below always times out.
+    // On Unix, the flushing is synchronous and thus needs to be done before
+    // attempting to read the data in the same thread. Buffering by the OS
+    // prevents the deadlock seen on Windows.
     serverSocket->waitForBytesWritten();
+#endif
 
     // wait until the first 128 bytes are ready to read
     QVERIFY(client.waitForReadyRead());
