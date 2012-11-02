@@ -1,5 +1,5 @@
 TARGET = windowsprintersupport
-
+MODULE = windowsprintersupport
 PLUGIN_TYPE = printsupport
 load(qt_plugin)
 

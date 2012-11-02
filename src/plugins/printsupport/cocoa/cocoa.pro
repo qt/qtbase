@@ -1,5 +1,5 @@
 TARGET = cocoaprintersupport
-
+MODULE = cocoaprintersupport
 PLUGIN_TYPE = printsupport
 load(qt_plugin)
 

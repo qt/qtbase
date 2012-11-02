@@ -1,5 +1,5 @@
 TARGET = cupsprintersupport
-
+MODULE = cupsprintersupport
 PLUGIN_TYPE = printsupport
 load(qt_plugin)
 
