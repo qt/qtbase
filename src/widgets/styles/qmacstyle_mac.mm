@@ -4357,7 +4357,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             tdi.min = pb->minimum;
             tdi.value = pb->progress;
             tdi.attributes = vertical ? 0 : kThemeTrackHorizontal;
-            if (isIndeterminate) {
+
+            if (isIndeterminate || tdi.value < tdi.max) {
                 if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
                     tdi.trackInfo.progress.phase = animation->animationStep();
                 else

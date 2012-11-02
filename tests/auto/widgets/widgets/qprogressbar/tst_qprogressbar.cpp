@@ -58,7 +58,9 @@ private slots:
     void text();
     void format();
     void setValueRepaint();
+#ifndef Q_OS_MAC
     void setMinMaxRepaint();
+#endif
     void sizeHint();
     void formatedText_data();
     void formatedText();
@@ -212,6 +214,10 @@ void tst_QProgressBar::setValueRepaint()
     }
 }
 
+// This test is invalid on Mac, since progressbars
+// are animated there
+
+#ifndef Q_OS_MAC
 void tst_QProgressBar::setMinMaxRepaint()
 {
     ProgressBar pbar;
@@ -247,6 +253,7 @@ void tst_QProgressBar::setMinMaxRepaint()
         QTRY_VERIFY(pbar.repainted);
     }
 }
+#endif //Q_OS_MAC
 
 void tst_QProgressBar::sizeHint()
 {
