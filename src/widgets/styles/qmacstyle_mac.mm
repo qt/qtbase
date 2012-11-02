@@ -3451,6 +3451,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         break;
     case CE_HeaderLabel:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
+            p->save();
             QRect textr = header->rect;
             if (!header->icon.isNull()) {
                 QIcon::Mode mode = QIcon::Disabled;
@@ -3464,8 +3465,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 textr.translate(pixmap.width() + 2, 0);
             }
 
+            p->setFont(qt_app_fonts_hash()->value("QSmallFont", QFont()));
             proxy()->drawItemText(p, textr, header->textAlignment | Qt::AlignVCenter, header->palette,
                                        header->state & State_Enabled, header->text, QPalette::ButtonText);
+            p->restore();
         }
         break;
     case CE_ToolButtonLabel:
@@ -4558,17 +4561,22 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             rect = qt_qrectForHIRect(contentRect);
         }
         break;
-    case SE_HeaderLabel:
-        if (qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-            rect = QCommonStyle::subElementRect(sr, opt, widget);
-            if (widget && widget->height() <= 22){
-                // We need to allow the text a bit more space when the header is
-                // small, otherwise it gets clipped:
-                rect.setY(0);
-                rect.setHeight(widget->height());
+    case SE_HeaderLabel: {
+        int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
+        rect.setRect(opt->rect.x() + margin, opt->rect.y(),
+                  opt->rect.width() - margin * 2, opt->rect.height() - 2);
+        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
+            // Subtract width needed for arrow, if there is one
+            if (header->sortIndicator != QStyleOptionHeader::None) {
+                if (opt->state & State_Horizontal)
+                    rect.setWidth(rect.width() - (opt->rect.height() / 2) - (margin * 2));
+                else
+                    rect.setHeight(rect.height() - (opt->rect.width() / 2) - (margin * 2));
             }
         }
+        rect = visualRect(opt->direction, opt->rect, rect);
         break;
+    }
     case SE_ProgressBarGroove:
     case SE_ProgressBarLabel:
         break;
