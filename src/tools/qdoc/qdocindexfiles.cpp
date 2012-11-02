@@ -50,13 +50,6 @@
 #include "generator.h"
 #include <qdebug.h>
 
-//include "doc.h"
-//include "htmlgenerator.h"
-//include "node.h"
-//include "text.h"
-//include <limits.h>
-//include <qdebug.h>
-
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -447,6 +440,11 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         section->setUrl(indexUrl + QLatin1Char('/') + href);
     }
 
+    QString since = element.attribute("since");
+    if (!since.isEmpty()) {
+        section->setSince(since);
+    }
+
     // Create some content for the node.
     QSet<QString> emptySet;
     Doc doc(location, location, " ", emptySet); // placeholder
@@ -506,7 +504,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                                           Node* node,
                                           bool generateInternalNodes)
 {
-    if (!node->url().isEmpty() || node->subType() == Node::DitaMap)
+    if (node->subType() == Node::DitaMap)
         return false;
 
     QString nodeName;
@@ -645,6 +643,10 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     writer.writeAttribute("href", href);
     if ((node->type() != Node::Document) && (!node->isQmlNode()))
         writer.writeAttribute("location", node->location().fileName());
+
+    if (!node->since().isEmpty()) {
+        writer.writeAttribute("since", node->since());
+    }
 
     switch (node->type()) {
     case Node::Class:

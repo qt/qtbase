@@ -467,12 +467,11 @@ void QDocDatabase::findAllSince(const InnerNode* node)
                     nsmap.value().insert(func->name(),(*child));
                 }
             }
-            else if ((*child)->url().isEmpty()) {
-                if ((*child)->type() == Node::Class && !(*child)->doc().isEmpty()) {
+            else {
+                if ((*child)->type() == Node::Class) {
                     // Insert classes into the since and class maps.
                     QString className = (*child)->name();
-                    if ((*child)->parent() && (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty()) {
+                    if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
                         className = (*child)->parent()->name()+"::"+className;
                     }
                     nsmap.value().insert(className,(*child));
@@ -481,8 +480,7 @@ void QDocDatabase::findAllSince(const InnerNode* node)
                 else if ((*child)->subType() == Node::QmlClass) {
                     // Insert QML elements into the since and element maps.
                     QString className = (*child)->name();
-                    if ((*child)->parent() && (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty()) {
+                    if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
                         className = (*child)->parent()->name()+"::"+className;
                     }
                     nsmap.value().insert(className,(*child));
@@ -493,17 +491,15 @@ void QDocDatabase::findAllSince(const InnerNode* node)
                     QString propertyName = (*child)->name();
                     nsmap.value().insert(propertyName,(*child));
                 }
-            }
-            else {
-                // Insert external documents into the general since map.
-                QString name = (*child)->name();
-                if ((*child)->parent() && (*child)->parent()->type() == Node::Namespace &&
-                    !(*child)->parent()->name().isEmpty()) {
-                    name = (*child)->parent()->name()+"::"+name;
+                else {
+                    // Insert external documents into the general since map.
+                    QString name = (*child)->name();
+                    if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
+                        name = (*child)->parent()->name()+"::"+name;
+                    }
+                    nsmap.value().insert(name,(*child));
                 }
-                nsmap.value().insert(name,(*child));
             }
-
             // Recursively find child nodes with since commands.
             if ((*child)->isInnerNode()) {
                 findAllSince(static_cast<InnerNode *>(*child));
