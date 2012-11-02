@@ -174,7 +174,7 @@ QModelIndex QIdentityProxyModel::index(int row, int column, const QModelIndex& p
 QModelIndex QIdentityProxyModel::sibling(int row, int column, const QModelIndex &idx) const
 {
     Q_D(const QIdentityProxyModel);
-    return d->model->sibling(row, column, mapToSource(idx));
+    return mapFromSource(d->model->sibling(row, column, mapToSource(idx)));
 }
 
 /*!
