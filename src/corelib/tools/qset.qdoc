@@ -906,7 +906,7 @@
 
     \snippet code/doc_src_qset.cpp 13
 
-    \sa fromList(), QList::fromSet(), qSort()
+    \sa fromList(), QList::fromSet()
 */
 
 /*! \fn QList<T> QSet<T>::values() const
@@ -916,7 +916,7 @@
 
     This is the same as toList().
 
-    \sa fromList(), QList::fromSet(), qSort()
+    \sa fromList(), QList::fromSet()
 */
 
 

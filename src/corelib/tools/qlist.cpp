@@ -1772,7 +1772,7 @@ void **QListData::erase(void **xi)
 
     \snippet code/src_corelib_tools_qlistdata.cpp 23
 
-    \sa fromVector(), toSet(), QSet::toList(), qSort()
+    \sa fromVector(), toSet(), QSet::toList()
 */
 
 /*! \fn QSet<T> QList<T>::toSet() const
