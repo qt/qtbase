@@ -179,7 +179,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QAccessible::State::State()
 
-    Creates a new QAccessible::State with all states set to false.
+    Constructs a new QAccessible::State with all states set to false.
 */
 
 /*!
@@ -187,6 +187,7 @@ QT_BEGIN_NAMESPACE
 
     This enum type defines accessible event types.
 
+    \omitvalue InvalidEvent                 Internal: Used when creating subclasses of QAccessibleEvent.
     \value AcceleratorChanged               The keyboard accelerator for an action has been changed.
     \value ActionChanged                    An action has been changed.
     \value ActiveDescendantChanged
@@ -263,7 +264,7 @@ QT_BEGIN_NAMESPACE
     \value TableColumnDescriptionChanged    The description of a table column, typically found in
                                             the column's header, has been changed.
     \value TableColumnHeaderChanged         A table column header has been changed.
-    \value TableModelChanged                The model providing data for a table has been changed.
+    \omitvalue TableModelChanged                The model providing data for a table has been changed.
     \value TableRowDescriptionChanged       The description of a table row, typically found in the
                                             row's header, has been changed.
     \value TableRowHeaderChanged            A table row header has been changed.
@@ -658,7 +659,7 @@ void QAccessible::setRootObject(QObject *object)
   If there are no accessibility tools listening to this event, the
   performance penalty for calling this function is small, but if
   determining the parameters of the call is expensive you can test
-  isActive() to avoid unnecessary computation.
+  QAccessible::isActive() to avoid unnecessary computation.
 */
 void QAccessible::updateAccessibility(QAccessibleEvent *event)
 {
@@ -675,6 +676,15 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
         pfAccessibility->notifyAccessibilityUpdate(event);
 #endif
 }
+
+#if QT_DEPRECATED_SINCE(5, 0)
+/*!
+    \obsolete
+    \fn void QAccessible::updateAccessibility(QObject *object, int child, Event reason);
+
+    \brief Use QAccessible::updateAccessibility(QAccessibleEvent*) instead.
+*/
+#endif
 
 /*!
     \class QAccessibleInterface
@@ -817,6 +827,8 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
     Returns the meaningful relations to other widgets. Usually this will not return parent/child
     relations, unless they are handled in a specific way such as in tree views.
     It will typically return the labelled-by and label relations.
+
+    It is possible to filter the relations by using \a match.
     It should never return itself.
 
     \sa parent(), child()
@@ -1025,8 +1037,10 @@ QColor QAccessibleInterface::backgroundColor() const
 /*!
     \class QAccessibleEvent
     \internal
+    \ingroup accessibility
+    \inmodule QtGui
 
-    \brief The QAccessibleEvent class provides detailed updates to the
+    \brief The QAccessibleEvent class contains parameters that describe updates in the
     accessibility framework.
 
     This class is used with \l QAccessible::updateAccessibility().
@@ -1034,13 +1048,13 @@ QColor QAccessibleInterface::backgroundColor() const
     The event type is one of the values of \l QAccessible::Event, which
     determines the subclass of QAccessibleEvent that applies.
 
-    \ingroup accessibility
-    \inmodule QtGui
+    To enable in process screen readers, all events must be sent after the change has happened.
 */
 
-/*! \fn QAccessibleEvent::QAccessibleEvent(QObject *obj, QAccessible::Event type)
-  Constructs a QAccessibleEvent of the specified \a type. It also
-  expects an \a object, which is the source of the event.
+/*! \fn QAccessibleEvent::QAccessibleEvent(QObject *object, QAccessible::Event type)
+
+    Constructs a QAccessibleEvent to notify that \a object has changed.
+    The event \a type explains what changed.
  */
 
 /*! \fn QAccessibleEvent::~QAccessibleEvent()
@@ -1062,6 +1076,247 @@ QColor QAccessibleInterface::backgroundColor() const
 /*! \fn int QAccessibleEvent::child() const
   Returns the child index.
 */
+
+
+/*!
+    \class QAccessibleValueChangeEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleValueChangeEvent describes a change in value for an accessible object.
+
+    It contains the new value.
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+
+/*! \fn QAccessibleValueChangeEvent::QAccessibleValueChangeEvent(QObject *object, const QVariant &value)
+    Constructs a new QAccessibleValueChangeEvent for \a object.
+    The event contains the new \a value.
+*/
+/*! \fn void QAccessibleValueChangeEvent::setValue(const QVariant & value)
+    Sets the new \a value for this event.
+*/
+/*!
+    \fn QVariant QAccessibleValueChangeEvent::value() const
+
+    Returns the new value of the accessible object of this event.
+*/
+
+/*!
+    \class QAccessibleStateChangeEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleStateChangeEvent notfies the accessibility framework
+    that the state of an object has changed.
+
+    This class is used with \l QAccessible::updateAccessibility().
+
+    \sa QAccessibleInterface::state()
+*/
+/*! \fn QAccessibleStateChangeEvent::QAccessibleStateChangeEvent(QObject *object, QAccessible::State state)
+    Constructs a new QAccessibleStateChangeEvent for \a object.
+    The difference to the object's previous state is in \a state.
+*/
+/*!
+    \fn QAccessible::State QAccessibleStateChangeEvent::changedStates() const
+    \internal
+
+    \brief Returns the states that have been changed.
+
+    Be aware that the returned states are the ones that have changed,
+    to find out about the state of an object, use QAccessibleInterface::state().
+
+    For example, if an object used to have the focus but loses it,
+    the object's state will have focused set to \c false. This event on the
+    other hand tells about the change and has focused set to \c true since
+    the focus state is changed from \c true to \c false.
+*/
+
+
+/*!
+    \class QAccessibleTableModelChangeEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleTableModelChangeEvent signifies a change in a table, list, or tree where cells
+    are added or removed.
+    If the change affected a number of rows, firstColumn and lastColumn will return \c -1.
+    Likewise for columns, the row functions may return \c -1.
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+
+/*! \enum QAccessibleTableModelChangeEvent::ModelChangeType
+    This enum describes different types of changes in the table model.
+    \value ModelReset      The model has been reset, all previous knowledge about the model is now invalid.
+    \value DataChanged     No cells have been added or removed, but the data of the specified cell range is invalid.
+    \value RowsInserted    New rows have been inserted.
+    \value ColumnsInserted New columns have been inserted.
+    \value RowsRemoved     Rows have been removed.
+    \value ColumnsRemoved  Columns have been removed.
+*/
+/*! \fn QAccessibleTableModelChangeEvent::QAccessibleTableModelChangeEvent(QObject *object, ModelChangeType changeType)
+    Constructs a new QAccessibleTableModelChangeEvent for \a object of with \a changeType.
+*/
+/*! \fn int QAccessibleTableModelChangeEvent::firstColumn() const
+    Returns the first changed column.
+*/
+/*! \fn int QAccessibleTableModelChangeEvent::firstRow() const
+    Returns the first changed row.
+*/
+/*! \fn int QAccessibleTableModelChangeEvent::lastColumn() const
+    Returns the last changed column.
+*/
+/*! \fn int QAccessibleTableModelChangeEvent::lastRow() const
+    Returns the last changed row.
+*/
+/*! \fn QAccessibleTableModelChangeEvent::ModelChangeType QAccessibleTableModelChangeEvent::modelChangeType() const
+    Returns the type of change.
+*/
+/*! \fn void QAccessibleTableModelChangeEvent::setFirstColumn(int column)
+    Sets the first changed \a column.
+*/
+/*! \fn void QAccessibleTableModelChangeEvent::setFirstRow(int row)
+    Sets the first changed \a row.
+*/
+/*! \fn void QAccessibleTableModelChangeEvent::setLastColumn(int column)
+    Sets the last changed \a column.
+*/
+/*! \fn void QAccessibleTableModelChangeEvent::setLastRow(int row)
+    Sets the last changed \a row.
+*/
+/*! \fn void QAccessibleTableModelChangeEvent::setModelChangeType(ModelChangeType changeType)
+    Sets the type of change to \a changeType.
+*/
+
+
+/*!
+    \class QAccessibleTextCursorEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleEvent class
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+/*! \fn QAccessibleTextCursorEvent::QAccessibleTextCursorEvent(QObject *object, int cursorPosition)
+    Create a new QAccessibleTextCursorEvent for \a object.
+    The \a cursorPosition is the new cursor position.
+*/
+/*! \fn int QAccessibleTextCursorEvent::cursorPosition() const
+    Returns the cursor position.
+*/
+/*! \fn void QAccessibleTextCursorEvent::setCursorPosition(int position)
+    Sets the cursor \a position for this event.
+*/
+
+/*!
+    \class QAccessibleTextInsertEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleEvent class
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+/*! \fn QAccessibleTextInsertEvent::QAccessibleTextInsertEvent(QObject *object, int position, const QString &text)
+    Constructs a new QAccessibleTextInsertEvent event for \a object.
+    The \a text has been inserted at \a position.
+    By default, it is assumed that the cursor has moved to the end
+    of the selection. If that is not the case, one needs to manually
+    set it with \l QAccessibleTextCursorEvent::setCursorPosition for this event.
+*/
+/*! \fn int QAccessibleTextInsertEvent::changePosition() const
+    Returns the position where the text was inserted.
+*/
+/*! \fn QString QAccessibleTextInsertEvent::textInserted() const
+    Returns the text that has been inserted.
+*/
+
+/*!
+    \class QAccessibleTextRemoveEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleEvent class
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+/*! \fn QAccessibleTextRemoveEvent::QAccessibleTextRemoveEvent(QObject *object, int position, const QString &text)
+    Constructs a new QAccessibleTextRemoveEvent event for \a object.
+    The \a text has been removed at \a position.
+    By default it is assumed that the cursor has moved to \a position.
+    If that is not the case, one needs to manually
+    set it with \l QAccessibleTextCursorEvent::setCursorPosition for this event.
+*/
+
+/*! \fn int QAccessibleTextRemoveEvent::changePosition() const
+    Returns the position where the text was removed.
+*/
+/*! \fn QString QAccessibleTextRemoveEvent::textRemoved() const
+    Returns the text that has been removed.
+*/
+
+/*!
+    \class QAccessibleTextUpdateEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleEvent class notifies about text changes.
+    This is for accessibles that support editable text such as line edits.
+    This event occurs for example when a portion of selected text
+    gets replaced by pasting a new text or in override mode of editors.
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+/*! \fn QAccessibleTextUpdateEvent::QAccessibleTextUpdateEvent(QObject *object, int position, const QString &oldText, const QString &text)
+    Constructs a new QAccessibleTextUpdateEvent for \a object.
+    The text change takes place at \a position where the \a oldText was removed and \a text inserted instead.
+*/
+/*! \fn int QAccessibleTextUpdateEvent::changePosition() const
+    Returns where the change took place.
+*/
+/*! \fn QString QAccessibleTextUpdateEvent::textInserted() const
+    Returns the inserted text.
+*/
+/*! \fn QString QAccessibleTextUpdateEvent::textRemoved() const
+    Returns the removed text.
+*/
+
+/*!
+    \class QAccessibleTextSelectionEvent
+    \internal
+    \ingroup accessibility
+    \inmodule QtGui
+
+    \brief The QAccessibleEvent class
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+/*! \fn QAccessibleTextSelectionEvent::QAccessibleTextSelectionEvent(QObject *object, int start, int end)
+    Constructs a new QAccessibleTextSelectionEvent for \a object.
+    The new selection this event notifies about is from position \a start to \a end.
+*/
+/*! \fn int QAccessibleTextSelectionEvent::selectionEnd() const
+    Returns the position of the last selected character.
+*/
+/*! \fn int QAccessibleTextSelectionEvent::selectionStart() const
+    Returns the position of the first selected character.
+*/
+/*! \fn void QAccessibleTextSelectionEvent::setSelection(int start, int end)
+    Sets the selection for this event from position \a start to \a end.
+*/
+
+
 
 /*!
     Returns the QAccessibleInterface associated with the event.
@@ -1099,7 +1354,7 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     return a valid QWindow pointer).
 
     The default implementation of this returns 0.
-    \preliminary
+    \internal
   */
 QWindow *QAccessibleInterface::window() const
 {
