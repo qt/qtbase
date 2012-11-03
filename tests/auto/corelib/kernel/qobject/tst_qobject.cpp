@@ -140,6 +140,7 @@ private slots:
     void returnValue2_data();
     void returnValue2();
     void connectVirtualSlots();
+    void connectFunctorArgDifference();
 };
 
 class SenderObject : public QObject
@@ -5482,6 +5483,41 @@ void tst_QObject::connectVirtualSlots()
     QVERIFY( QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObjectBase::slot1, Qt::UniqueConnection));
     QVERIFY(!QObject::connect(&obj, &VirtualSlotsObjectBase::signal1, &obj, &VirtualSlotsObject::slot1, Qt::UniqueConnection));
     */
+}
+
+struct SlotFunctor
+{
+    void operator()() {}
+};
+
+struct SlotFunctorString
+{
+    void operator()(const QString &) {}
+};
+
+void tst_QObject::connectFunctorArgDifference()
+{
+    QTimer timer;
+    // Compile-time tests that the connection is successful.
+    connect(&timer, &QTimer::timeout, SlotFunctor());
+    connect(&timer, &QTimer::objectNameChanged, SlotFunctorString());
+    connect(qApp, &QCoreApplication::aboutToQuit, SlotFunctor());
+
+    connect(&timer, &QTimer::objectNameChanged, SlotFunctor());
+    QStringListModel model;
+    connect(&model, &QStringListModel::rowsInserted, SlotFunctor());
+
+#if defined(Q_COMPILER_LAMBDA)
+    connect(&timer, &QTimer::timeout, [=](){});
+    connect(&timer, &QTimer::objectNameChanged, [=](const QString &){});
+    connect(qApp, &QCoreApplication::aboutToQuit, [=](){});
+
+    connect(&timer, &QTimer::objectNameChanged, [=](){});
+    connect(&model, &QStringListModel::rowsInserted, [=](){});
+    connect(&model, &QStringListModel::rowsInserted, [=](const QModelIndex &){});
+#endif
+
+    QVERIFY(true);
 }
 
 QTEST_MAIN(tst_QObject)
