@@ -117,6 +117,7 @@ public:
     virtual void setCurrentValue(const QVariant &value) = 0;
     virtual QVariant maximumValue() const = 0;
     virtual QVariant minimumValue() const = 0;
+    virtual QVariant minimumStepSize() const = 0;
 };
 
 class Q_GUI_EXPORT QAccessibleTableCellInterface

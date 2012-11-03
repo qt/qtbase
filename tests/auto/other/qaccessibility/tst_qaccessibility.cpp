@@ -453,6 +453,7 @@ void tst_QAccessibility::sliderTest()
     QVERIFY(valueIface != 0);
     QCOMPARE(valueIface->minimumValue().toInt(), slider->minimum());
     QCOMPARE(valueIface->maximumValue().toInt(), slider->maximum());
+    QCOMPARE(valueIface->minimumStepSize().toInt(), slider->singleStep());
     slider->setValue(50);
     QCOMPARE(valueIface->currentValue().toInt(), slider->value());
     slider->setValue(0);
@@ -461,6 +462,8 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(valueIface->currentValue().toInt(), slider->value());
     valueIface->setCurrentValue(77);
     QCOMPARE(77, slider->value());
+    slider->setSingleStep(2);
+    QCOMPARE(valueIface->minimumStepSize().toInt(), 2);
 
     delete slider;
     }

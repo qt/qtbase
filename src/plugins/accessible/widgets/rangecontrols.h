@@ -71,6 +71,7 @@ public:
     void setCurrentValue(const QVariant &value);
     QVariant maximumValue() const;
     QVariant minimumValue() const;
+    QVariant minimumStepSize() const;
 
     // FIXME Action interface
 
@@ -110,6 +111,7 @@ public:
     void setCurrentValue(const QVariant &value);
     QVariant maximumValue() const;
     QVariant minimumValue() const;
+    QVariant minimumStepSize() const;
 
 protected:
     QAbstractSlider *abstractSlider() const;

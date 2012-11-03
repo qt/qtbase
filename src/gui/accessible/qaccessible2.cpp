@@ -439,6 +439,19 @@ QString QAccessibleTextInterface::textAtOffset(int offset, QAccessible2::Boundar
 */
 
 /*!
+    \fn QVariant QAccessibleValueInterface::minimumStepSize() const
+
+    Returns the minimum step size for the accessible.
+    This is the smalles increment that makes sense when changing the value.
+    When programatically changing the value it should always be a multiple
+    of the minimum step size.
+
+    Some tools use this value even when the setCurrentValue does not
+    perform any action. Progress bars for example are read-only but
+    should return their range divided by 100.
+*/
+
+/*!
     \class QAccessibleImageInterface
     \inmodule QtGui
     \ingroup accessibility

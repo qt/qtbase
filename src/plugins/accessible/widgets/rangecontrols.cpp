@@ -122,6 +122,11 @@ QVariant QAccessibleAbstractSpinBox::minimumValue() const
     return abstractSpinBox()->property("minimum");
 }
 
+QVariant QAccessibleAbstractSpinBox::minimumStepSize() const
+{
+    return abstractSpinBox()->property("stepSize");
+}
+
 /*!
   \class QAccessibleSpinBox
   \brief The QAccessibleSpinBox class implements the QAccessibleInterface for spinbox widgets.
@@ -276,6 +281,11 @@ QVariant QAccessibleAbstractSlider::maximumValue() const
 QVariant QAccessibleAbstractSlider::minimumValue() const
 {
     return abstractSlider()->minimum();
+}
+
+QVariant QAccessibleAbstractSlider::minimumStepSize() const
+{
+    return abstractSlider()->singleStep();
 }
 
 QAbstractSlider *QAccessibleAbstractSlider::abstractSlider() const

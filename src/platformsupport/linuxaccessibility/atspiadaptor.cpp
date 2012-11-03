@@ -1049,7 +1049,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         break;
     }
     case QAccessible::ValueChanged: {
-        if (sendObject || sendObject_value_changed) {
+        if (sendObject || sendObject_value_changed || sendObject_property_change_accessible_value) {
             QAIPointer iface = QAIPointer(event->accessibleInterface());
             Q_ASSERT(iface->valueInterface());
             QString path = pathForInterface(iface);
@@ -2093,44 +2093,34 @@ bool AtSpiAdaptor::editableTextInterface(const QAIPointer &interface, const QStr
 // Value interface
 bool AtSpiAdaptor::valueInterface(const QAIPointer &interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
-    if (0) {
-    } else if (function == QLatin1String("SetCurrentValue")) {
+    if (function == QLatin1String("SetCurrentValue")) {
         QDBusVariant v = message.arguments().at(2).value<QDBusVariant>();
         double value = v.variant().toDouble();
         //Temporary fix
         //See https://bugzilla.gnome.org/show_bug.cgi?id=652596
         interface->valueInterface()->setCurrentValue(value);
         connection.send(message.createReply()); // FIXME is the reply needed?
-    } else if (function == QLatin1String("GetCurrentValue")) {
-        bool success;
-        double val = interface->valueInterface()->currentValue().toDouble(&success);
-        if (!success) {
-            qAtspiDebug ("AtSpiAdaptor::valueInterface: Could not convert current value to double.");
-        }
-        connection.send(message.createReply(
-                            QVariant::fromValue(QDBusVariant(QVariant::fromValue(val)))));
-    } else if (function == QLatin1String("GetMaximumValue")) {
-        bool success;
-        double val = interface->valueInterface()->maximumValue().toDouble(&success);
-        if (!success) {
-            qAtspiDebug ("AtSpiAdaptor::valueInterface: Could not convert current value to double.");
-        }
-        connection.send(message.createReply(
-                            QVariant::fromValue(QDBusVariant(QVariant::fromValue(val)))));
-    } else if (function == QLatin1String("GetMinimumIncrement")) {
-        connection.send(message.createReply(
-                            QVariant::fromValue(QDBusVariant(QVariant::fromValue(0.0)))));
-    } else if (function == QLatin1String("GetMinimumValue")) {
-        bool success;
-        double val = interface->valueInterface()->minimumValue().toDouble(&success);
-        if (!success) {
-            qAtspiDebug ("AtSpiAdaptor::valueInterface: Could not convert current value to double.");
-        }
-        connection.send(message.createReply(
-                            QVariant::fromValue(QDBusVariant(QVariant::fromValue(val)))));
     } else {
-        qAtspiDebug() << "WARNING: AtSpiAdaptor::valueInterface does not implement " << function << message.path();
-        return false;
+        QVariant value;
+        if (function == QLatin1String("GetCurrentValue"))
+            value = interface->valueInterface()->currentValue();
+        else if (function == QLatin1String("GetMaximumValue"))
+            value = interface->valueInterface()->maximumValue();
+        else if (function == QLatin1String("GetMinimumIncrement"))
+            value = interface->valueInterface()->minimumStepSize();
+        else if (function == QLatin1String("GetMinimumValue"))
+            value = interface->valueInterface()->minimumValue();
+        else {
+            qAtspiDebug() << "WARNING: AtSpiAdaptor::valueInterface does not implement " << function << message.path();
+            return false;
+        }
+        if (!value.canConvert(QVariant::Double))
+            qAtspiDebug() << "AtSpiAdaptor::valueInterface: Could not convert to double: " << function;
+
+        // explicitly convert to dbus-variant containing one double since atspi expects that
+        // everything else might fail to convert back on the other end
+        connection.send(message.createReply(
+                            QVariant::fromValue(QDBusVariant(QVariant::fromValue(value.toDouble())))));
     }
     return true;
 }
