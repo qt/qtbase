@@ -1172,6 +1172,7 @@ if($check_includes) {
                             if(open(F, "<$iheader")) {
                                 my $qt_begin_namespace_found = 0;
                                 my $qt_end_namespace_found = 0;
+                                my $qt_namespace_suffix = "";
                                 my $line;
                                 my $stop_processing = 0;
                                 while($line = <F>) {
@@ -1196,9 +1197,10 @@ if($check_includes) {
                                                 }
                                             }
                                         }
-                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE\s*$/) {
+                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE(_[A-Z_]+)?\s*$/) {
+                                        $qt_namespace_suffix = $1 // "";
                                         $qt_begin_namespace_found = 1;
-                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE\s*$/) {
+                                    } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE$qt_namespace_suffix\s*$/) {
                                         $qt_end_namespace_found = 1;
                                     }
                                 }
@@ -1209,7 +1211,7 @@ if($check_includes) {
                                     }
 
                                     if ($qt_begin_namespace_found && $qt_end_namespace_found == 0) {
-                                        print "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE but no QT_END_NAMESPACE\n";
+                                        print "$lib: WARNING: $iheader has QT_BEGIN_NAMESPACE$qt_namespace_suffix but no QT_END_NAMESPACE$qt_namespace_suffix\n";
                                     }
                                 }
 
