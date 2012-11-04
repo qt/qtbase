@@ -227,6 +227,7 @@ private slots:
     void testDelegateDestroyEditor();
     void testClickedSignal();
     void testChangeEditorState();
+    void deselectInSingleSelection();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1589,6 +1590,48 @@ void tst_QAbstractItemView::testChangeEditorState()
 
     model.emitDataChanged();
     // No segfault - the test passes.
+}
+
+void tst_QAbstractItemView::deselectInSingleSelection()
+{
+    QTableView view;
+    QStandardItemModel s;
+    s.setRowCount(10);
+    s.setColumnCount(10);
+    view.setModel(&s);
+    view.show();
+    view.setSelectionMode(QAbstractItemView::SingleSelection);
+    view.setEditTriggers(QAbstractItemView::NoEditTriggers);
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    // mouse
+    QModelIndex index22 = s.index(2, 2);
+    QRect rect22 = view.visualRect(index22);
+    QPoint clickpos = rect22.center();
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, clickpos);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+
+    // second click with modifier however does select
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, clickpos);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+
+    // keyboard
+    QTest::keyClick(&view, Qt::Key_Space, Qt::NoModifier);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QTest::keyClick(&view, Qt::Key_Space, Qt::ControlModifier);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+
+    // second keypress with modifier however does select
+    QTest::keyClick(&view, Qt::Key_Space, Qt::ControlModifier);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

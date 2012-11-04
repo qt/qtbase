@@ -34,7 +34,10 @@ Third party components
 *                   Important Behavior Changes                             *
 ****************************************************************************
 
+- QtWidgets
 
+  * [QTBUG-8836] QAbstractItemView now allows manual deselect in
+    SingleSelection mode (with control modifier)
 
 ****************************************************************************
 *                          Library                                         *

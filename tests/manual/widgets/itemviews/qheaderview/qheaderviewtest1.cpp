@@ -99,6 +99,9 @@ int main(int argc, char *argv[])
     m.setRowCount(500);
     m.setColumnCount(250);
     tv.setModel(&m);
+    tv.setSelectionMode(QAbstractItemView::SingleSelection);
+    // Comment in the line below to test selection with keyboard (space)
+    // tv.setEditTriggers(QAbstractItemView::NoEditTriggers);
     SomeHandler handler(tv.horizontalHeader(), &tv);
     tv.horizontalHeader()->setDefaultSectionSize(30);
     tv.show();
