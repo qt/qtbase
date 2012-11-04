@@ -51,8 +51,10 @@ QT_BEGIN_NAMESPACE
 class QIOSScreen : public QPlatformScreen
 {
 public:
-    QIOSScreen(int screenIndex);
+    QIOSScreen(unsigned int screenIndex);
     ~QIOSScreen();
+
+    enum ScreenIndex { MainScreen = 0 };
 
     QRect geometry() const { return m_geometry; }
     int depth() const { return m_depth; }
@@ -63,14 +65,13 @@ public:
 
     void updateInterfaceOrientation();
 private:
+    UIScreen *m_uiScreen;
     QRect m_geometry;
     int m_depth;
     QImage::Format m_format;
     QSize m_physicalSize;
-    int m_index;
 };
 
 QT_END_NAMESPACE
-
 
 #endif

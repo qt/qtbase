@@ -48,13 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QIOSScreen::QIOSScreen(int screenIndex)
-    : QPlatformScreen(),
-      m_index(screenIndex)
+QIOSScreen::QIOSScreen(unsigned int screenIndex)
+    : QPlatformScreen()
+    , m_uiScreen([[UIScreen screens] objectAtIndex:qMin(screenIndex, [[UIScreen screens] count] - 1)])
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    CGRect bounds = [uiScreen() bounds];
-    CGFloat scale = [uiScreen() scale];
+    CGRect bounds = [m_uiScreen bounds];
+    CGFloat scale = [m_uiScreen scale];
     updateInterfaceOrientation();
 
     m_format = QImage::Format_ARGB32_Premultiplied;
@@ -87,7 +87,7 @@ QIOSScreen::~QIOSScreen()
 
 UIScreen *QIOSScreen::uiScreen() const
 {
-    return [[UIScreen screens] objectAtIndex:m_index];
+    return m_uiScreen;
 }
 
 void QIOSScreen::updateInterfaceOrientation()

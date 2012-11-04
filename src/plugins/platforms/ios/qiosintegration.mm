@@ -52,7 +52,7 @@
 QT_BEGIN_NAMESPACE
 
 QIOSIntegration::QIOSIntegration()
-    :m_fontDb(new QCoreTextFontDatabase), m_screen(new QIOSScreen(0))
+    :m_fontDb(new QCoreTextFontDatabase), m_screen(new QIOSScreen(QIOSScreen::MainScreen))
 {
     screenAdded(m_screen);
 }
