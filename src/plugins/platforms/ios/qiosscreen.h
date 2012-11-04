@@ -52,24 +52,21 @@ class QIOSScreen : public QPlatformScreen
 {
 public:
     QIOSScreen(unsigned int screenIndex);
-    ~QIOSScreen();
 
     enum ScreenIndex { MainScreen = 0 };
 
-    QRect geometry() const { return m_geometry; }
-    int depth() const { return m_depth; }
-    QImage::Format format() const { return m_format; }
-    QSizeF physicalSize() const { return m_physicalSize; }
+    QRect geometry() const;
+    int depth() const;
+    QImage::Format format() const;
+    QSizeF physicalSize() const;
 
     UIScreen *uiScreen() const;
 
-    void updateInterfaceOrientation();
 private:
     UIScreen *m_uiScreen;
     QRect m_geometry;
     int m_depth;
-    QImage::Format m_format;
-    QSize m_physicalSize;
+    QSizeF m_physicalSize;
 };
 
 QT_END_NAMESPACE

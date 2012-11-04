@@ -42,79 +42,86 @@
 #include "qiosscreen.h"
 #include "qioswindow.h"
 
-#include <QtGui/QGuiApplication>
-
-#include <QtDebug>
+#include <sys/sysctl.h>
 
 QT_BEGIN_NAMESPACE
+
+/*!
+    Returns the model identifier of the device.
+
+    When running under the simulator, the identifier will not
+    match the simulated device, but will be x86_64 or i386.
+*/
+static QString deviceModelIdentifier()
+{
+    static const char key[] = "hw.machine";
+
+    size_t size;
+    sysctlbyname(key, NULL, &size, NULL, 0);
+
+    char value[size];
+    sysctlbyname(key, &value, &size, NULL, 0);
+
+    return QString::fromLatin1(value);
+}
 
 QIOSScreen::QIOSScreen(unsigned int screenIndex)
     : QPlatformScreen()
     , m_uiScreen([[UIScreen screens] objectAtIndex:qMin(screenIndex, [[UIScreen screens] count] - 1)])
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    CGRect bounds = [m_uiScreen bounds];
-    CGFloat scale = [m_uiScreen scale];
-    updateInterfaceOrientation();
 
-    m_format = QImage::Format_ARGB32_Premultiplied;
+    QString deviceIdentifier = deviceModelIdentifier();
 
-    m_depth = 24;
-
-    const qreal inch = 25.4;
-    qreal unscaledDpi = 160.;
-    int dragDistance = 12 * scale;
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-        unscaledDpi = 132.;
-        dragDistance = 10 * scale;
+    if (deviceIdentifier == QStringLiteral("iPhone2,1") /* iPhone 3GS */
+        || deviceIdentifier == QStringLiteral("iPod3,1") /* iPod touch 3G */) {
+        m_depth = 18;
+    } else {
+        m_depth = 24;
     }
-    m_physicalSize = QSize(qRound(bounds.size.width * inch / unscaledDpi), qRound(bounds.size.height * inch / unscaledDpi));
 
-    //qApp->setStartDragDistance(dragDistance);
+    int unscaledDpi = 163; // Regular iPhone DPI
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad
+        && deviceIdentifier != QStringLiteral("iPad2,5") /* iPad Mini */) {
+        unscaledDpi = 132;
+    };
 
-    /*
-    QFont font; // system font is helvetica, so that is fine already
-    font.setPixelSize([UIFont systemFontSize] * scale);
-    qApp->setFont(font);
-     */
+    // UIScreen does not report different bounds for different orientations. We
+    // match this behavior by staying with a fixed QScreen geometry.
+    CGRect bounds = [m_uiScreen bounds];
+    m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+
+    const qreal millimetersPerInch = 25.4;
+    m_physicalSize = QSizeF(m_geometry.size()) / unscaledDpi * millimetersPerInch;
 
     [pool release];
 }
 
-QIOSScreen::~QIOSScreen()
+QRect QIOSScreen::geometry() const
 {
+    // FIXME: Do we need to reimplement availableGeometry() to take the
+    // system statusbar into account?
+    return m_geometry;
+}
+
+int QIOSScreen::depth() const
+{
+    return m_depth;
+}
+
+QImage::Format QIOSScreen::format() const
+{
+    return QImage::Format_ARGB32_Premultiplied;
+}
+
+QSizeF QIOSScreen::physicalSize() const
+{
+    return m_physicalSize;
 }
 
 UIScreen *QIOSScreen::uiScreen() const
 {
     return m_uiScreen;
-}
-
-void QIOSScreen::updateInterfaceOrientation()
-{
-    qDebug() << __FUNCTION__ << "not implemented";
-    /*
-    CGRect bounds = [uiScreen() bounds];
-    CGFloat scale = [uiScreen() scale];
-    switch ([[UIApplication sharedApplication] statusBarOrientation]) {
-    case UIInterfaceOrientationPortrait:
-    case UIInterfaceOrientationPortraitUpsideDown:
-        m_geometry = QRect(bounds.origin.x * scale, bounds.origin.y * scale,
-                           bounds.size.width * scale, bounds.size.height * scale);;
-        break;
-    case UIInterfaceOrientationLandscapeLeft:
-    case UIInterfaceOrientationLandscapeRight:
-        m_geometry = QRect(bounds.origin.x * scale, bounds.origin.y * scale,
-                           bounds.size.height * scale, bounds.size.width * scale);
-        break;
-    }
-    foreach (QWidget *widget, qApp->topLevelWidgets()) {
-        QIOSWindow *platformWindow = static_cast<QIOSWindow *>(widget->platformWindow());
-        if (platformWindow && platformWindow->platformScreen() == this) {
-            platformWindow->updateGeometryAndOrientation();
-        }
-    }
-    */
 }
 
 QT_END_NAMESPACE
