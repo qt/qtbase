@@ -51,18 +51,9 @@
 
 QT_BEGIN_NAMESPACE
 
-static QIOSIntegration *m_instance = 0;
-
-QIOSIntegration * QIOSIntegration::instance()
-{
-    return m_instance;
-}
-
 QIOSIntegration::QIOSIntegration()
     :m_fontDb(new QCoreTextFontDatabase)
 {
-    if (!m_instance)
-        m_instance = this;
     m_screens << new QIOSScreen(0);
 }
 
