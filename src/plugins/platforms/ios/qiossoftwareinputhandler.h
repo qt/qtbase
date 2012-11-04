@@ -55,7 +55,7 @@ class QIOSSoftwareInputHandler : public QObject
     Q_OBJECT
 
 public:
-    QIOSSoftwareInputHandler() : mCurrentFocusWidget(0), mCurrentFocusObject(0) {}
+    QIOSSoftwareInputHandler() : m_CurrentFocusWidget(0), m_CurrentFocusObject(0) {}
     bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
@@ -64,8 +64,8 @@ private slots:
 private:
     bool closeSoftwareInputPanel(QWidget *widget);
 
-    QPointer<QWidget> mCurrentFocusWidget;
-    QPointer<QObject> mCurrentFocusObject;
+    QPointer<QWidget> m_currentFocusWidget;
+    QPointer<QObject> m_currentFocusObject;
 };
 
 QT_END_NAMESPACE

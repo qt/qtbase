@@ -65,8 +65,8 @@ public:
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
 private:
-    QList<QPlatformScreen *> mScreens;
-    QPlatformFontDatabase *mFontDb;
+    QList<QPlatformScreen *> m_screens;
+    QPlatformFontDatabase *m_fontDb;
 };
 
 QT_END_NAMESPACE

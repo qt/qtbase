@@ -53,13 +53,13 @@
 
 @interface EAGLView : UIView <UIKeyInput>
 {
-    QPlatformWindow *mWindow;
-    EAGLContext *mContext;
+    QPlatformWindow *m_window;
+    EAGLContext *m_context;
 
-    GLint mFramebufferWidth;
-    GLint mFramebufferHeight;
+    GLint m_framebufferWidth;
+    GLint m_framebufferHeight;
 
-    GLuint mFramebuffer, mColorRenderbuffer, mDepthRenderbuffer;
+    GLuint m_framebuffer, m_colorRenderbuffer, m_depthRenderbuffer;
 
     id delegate;
     // ------- Text Input ----------
@@ -111,23 +111,23 @@ public:
     explicit QIOSWindow(QWindow *window);
     ~QIOSWindow();
 
-    UIWindow *nativeWindow() const { return mWindow; }
-    EAGLView *nativeView() const { return mView; }
+    UIWindow *nativeWindow() const { return m_window; }
+    EAGLView *nativeView() const { return m_view; }
     void setGeometry(const QRect &rect);
 
     UIWindow *ensureNativeWindow();
 
     QPlatformOpenGLContext *glContext() const;
 
-    QIOSScreen *platformScreen() const { return mScreen; }
+    QIOSScreen *platformScreen() const { return m_screen; }
 
     void updateGeometryAndOrientation();
 private:
-    QIOSScreen *mScreen;
-    UIWindow *mWindow;
-    CGRect mFrame;
-    EAGLView *mView;
-    mutable EAGLPlatformContext *mContext;
+    QIOSScreen *m_screen;
+    UIWindow *m_window;
+    CGRect m_frame;
+    EAGLView *m_view;
+    mutable EAGLPlatformContext *m_context;
 };
 
 QT_END_NAMESPACE

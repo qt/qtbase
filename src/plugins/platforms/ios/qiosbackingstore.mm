@@ -63,7 +63,7 @@ class EAGLPaintDevice : public QGLPaintDevice
 {
 public:
     EAGLPaintDevice(QWindow *window)
-        :QGLPaintDevice(), mWindow(window)
+        :QGLPaintDevice(), m_window(window)
     {
 #if defined(QT_OPENGL_ES_2)
         helper = [[PaintDeviceHelper alloc] init];
@@ -83,17 +83,17 @@ public:
 
     void setFramebuffer(GLuint buffer) { m_thisFBO = buffer; }
     int devType() const { return QInternal::OpenGL; }
-    QSize size() const { return mWindow->geometry().size(); }
+    QSize size() const { return m_window->geometry().size(); }
     QGLContext* context() const {
         // Todo: siplify this:
         return QGLContext::fromOpenGLContext(
-            static_cast<QIOSWindow *>(mWindow->handle())->glContext()->context());
+            static_cast<QIOSWindow *>(m_window->handle())->glContext()->context());
     }
 
     QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
 
 private:
-    QWindow *mWindow;
+    QWindow *m_window;
     PaintDeviceHelper *helper;
 };
 
@@ -112,13 +112,13 @@ private:
 QT_BEGIN_NAMESPACE
 
 QIOSBackingStore::QIOSBackingStore(QWindow *window)
-    : QPlatformBackingStore(window), mPaintDevice(new EAGLPaintDevice(window))
+    : QPlatformBackingStore(window), m_paintDevice(new EAGLPaintDevice(window))
 {
 }
 
 QPaintDevice *QIOSBackingStore::paintDevice()
 {
-    return mPaintDevice;
+    return m_paintDevice;
 }
 
 void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)

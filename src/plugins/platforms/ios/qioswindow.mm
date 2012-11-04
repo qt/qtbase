@@ -75,7 +75,7 @@ class EAGLPlatformContext : public QPlatformOpenGLContext
 {
 public:
     EAGLPlatformContext(EAGLView *view)
-        : mView(view)
+        : m_view(view)
     {
         /*
         mFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
@@ -103,7 +103,7 @@ public:
 #else
         EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
 #endif
-        [mView setContext:aContext];
+        [m_view setContext:aContext];
     }
 
     ~EAGLPlatformContext() { }
@@ -113,7 +113,7 @@ public:
         Q_UNUSED(surface);
         qDebug() << __FUNCTION__ << "not implemented";
         //QPlatformOpenGLContext::makeCurrent();
-        //[mView makeCurrent];
+        //[m_view makeCurrent];
         return false;
     }
 
@@ -127,7 +127,7 @@ public:
     {
         Q_UNUSED(surface);
         qDebug() << __FUNCTION__ << "not implemented";
-        //[mView presentFramebuffer];
+        //[m_view presentFramebuffer];
     }
 
     QFunctionPointer getProcAddress(const QByteArray& ) { return 0; }
@@ -138,7 +138,7 @@ public:
     }
 
 private:
-    EAGLView *mView;
+    EAGLView *m_view;
 
     QSurfaceFormat mFormat;
 };
@@ -174,97 +174,97 @@ private:
 
 - (void)setContext:(EAGLContext *)newContext
 {
-    if (mContext != newContext)
+    if (m_context != newContext)
     {
         [self deleteFramebuffer];
-        [mContext release];
-        mContext = [newContext retain];
+        [m_context release];
+        m_context = [newContext retain];
         [EAGLContext setCurrentContext:nil];
     }
 }
 
 - (void)presentFramebuffer
 {
-    if (mContext) {
-        [EAGLContext setCurrentContext:mContext];
-        glBindRenderbuffer(GL_RENDERBUFFER, mColorRenderbuffer);
-        [mContext presentRenderbuffer:GL_RENDERBUFFER];
+    if (m_context) {
+        [EAGLContext setCurrentContext:m_context];
+        glBindRenderbuffer(GL_RENDERBUFFER, m_colorRenderbuffer);
+        [m_context presentRenderbuffer:GL_RENDERBUFFER];
     }
 }
 
 - (void)deleteFramebuffer
 {
-    if (mContext)
+    if (m_context)
     {
-        [EAGLContext setCurrentContext:mContext];
-        if (mFramebuffer) {
-            glDeleteFramebuffers(1, &mFramebuffer);
-            mFramebuffer = 0;
+        [EAGLContext setCurrentContext:m_context];
+        if (m_framebuffer) {
+            glDeleteFramebuffers(1, &m_framebuffer);
+            m_framebuffer = 0;
         }
-        if (mColorRenderbuffer) {
-            glDeleteRenderbuffers(1, &mColorRenderbuffer);
-            mColorRenderbuffer = 0;
+        if (m_colorRenderbuffer) {
+            glDeleteRenderbuffers(1, &m_colorRenderbuffer);
+            m_colorRenderbuffer = 0;
         }
-        if (mDepthRenderbuffer) {
-            glDeleteRenderbuffers(1, &mDepthRenderbuffer);
-            mDepthRenderbuffer = 0;
+        if (m_depthRenderbuffer) {
+            glDeleteRenderbuffers(1, &m_depthRenderbuffer);
+            m_depthRenderbuffer = 0;
         }
     }
 }
 
 - (void)createFramebuffer
 {
-    if (mContext && !mFramebuffer)
+    if (m_context && !m_framebuffer)
     {
-        [EAGLContext setCurrentContext:mContext];
-        glGenFramebuffers(1, &mFramebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
+        [EAGLContext setCurrentContext:m_context];
+        glGenFramebuffers(1, &m_framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
 
-        glGenRenderbuffers(1, &mColorRenderbuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, mColorRenderbuffer);
-        [mContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &mFramebufferWidth);
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &mFramebufferHeight);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, mColorRenderbuffer);
+        glGenRenderbuffers(1, &m_colorRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, m_colorRenderbuffer);
+        [m_context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &m_framebufferWidth);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &m_framebufferHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_colorRenderbuffer);
 
-        glGenRenderbuffers(1, &mDepthRenderbuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, mDepthRenderbuffer);
+        glGenRenderbuffers(1, &m_depthRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, m_depthRenderbuffer);
         if (stencilBits() > 0) {
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, mFramebufferWidth, mFramebufferHeight);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderbuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, m_framebufferWidth, m_framebufferHeight);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthRenderbuffer);
         } else {
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, mFramebufferWidth, mFramebufferHeight);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_framebufferWidth, m_framebufferHeight);
         }
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthRenderbuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthRenderbuffer);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
         if (delegate && [delegate respondsToSelector:@selector(eaglView:usesFramebuffer:)]) {
-            [delegate eaglView:self usesFramebuffer:mFramebuffer];
+            [delegate eaglView:self usesFramebuffer:m_framebuffer];
         }
     }
 }
 
 - (void)makeCurrent
 {
-    if (mContext)
+    if (m_context)
     {
-        [EAGLContext setCurrentContext:mContext];
-        if (!mFramebuffer)
+        [EAGLContext setCurrentContext:m_context];
+        if (!m_framebuffer)
             [self createFramebuffer];
-        glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
-        glViewport(0, 0, mFramebufferWidth, mFramebufferHeight);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+        glViewport(0, 0, m_framebufferWidth, m_framebufferHeight);
     }
 }
 
 - (GLint)fbo
 {
-    return mFramebuffer;
+    return m_framebuffer;
 }
 
 - (void)setWindow:(QPlatformWindow *)window
 {
-    mWindow = window;
+    m_window = window;
 }
 
 - (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons
@@ -274,7 +274,7 @@ private:
     CGFloat scaleFactor = [self contentScaleFactor];
     QPoint p(locationInView.x * scaleFactor, locationInView.y * scaleFactor);
     // TODO handle global touch point? for status bar?
-    QWindowSystemInterface::handleMouseEvent(mWindow->window(), (ulong)(event.timestamp*1000),
+    QWindowSystemInterface::handleMouseEvent(m_window->window(), (ulong)(event.timestamp*1000),
         p, p, buttons);
 }
 
@@ -347,18 +347,18 @@ QT_BEGIN_NAMESPACE
 
 QIOSWindow::QIOSWindow(QWindow *window) :
     QPlatformWindow(window),
-    mWindow(nil),
-    mContext(0)
+    m_window(nil),
+    m_context(0)
 {
-    mScreen = static_cast<QIOSScreen *>(QPlatformScreen::platformScreenForWindow(window));
-    mView = [[EAGLView alloc] init];
+    m_screen = static_cast<QIOSScreen *>(QPlatformScreen::platformScreenForWindow(window));
+    m_view = [[EAGLView alloc] init];
 }
 
 QIOSWindow::~QIOSWindow()
 {
-    delete mContext; mContext = 0;
-    [mView release];
-    [mWindow release];
+    delete m_context; m_context = 0;
+    [m_view release];
+    [m_window release];
 }
 
 void QIOSWindow::setGeometry(const QRect &rect)
@@ -369,81 +369,81 @@ void QIOSWindow::setGeometry(const QRect &rect)
 
 UIWindow *QIOSWindow::ensureNativeWindow()
 {
-    if (!mWindow) {
-        mWindow = [[UIWindow alloc] init];
+    if (!m_window) {
+        m_window = [[UIWindow alloc] init];
         updateGeometryAndOrientation();
         // window
-        mWindow.screen = mScreen->uiScreen();
+        m_window.screen = m_screen->uiScreen();
         // for some reason setting the screen resets frame.origin, so we need to set the frame afterwards
-        mWindow.frame = mFrame;
+        m_window.frame = m_frame;
 
         // view
-        [mView deleteFramebuffer];
-        mView.frame = CGRectMake(0, 0, mWindow.bounds.size.width, mWindow.bounds.size.height); // fill
-        [mView setContentScaleFactor:[mWindow.screen scale]];
-        [mView setMultipleTouchEnabled:YES];
-        [mView setWindow:this];
-        [mWindow addSubview:mView];
-        [mWindow setNeedsDisplay];
-        [mWindow makeKeyAndVisible];
+        [m_view deleteFramebuffer];
+        m_view.frame = CGRectMake(0, 0, m_window.bounds.size.width, m_window.bounds.size.height); // fill
+        [m_view setContentScaleFactor:[m_window.screen scale]];
+        [m_view setMultipleTouchEnabled:YES];
+        [m_view setWindow:this];
+        [m_window addSubview:m_view];
+        [m_window setNeedsDisplay];
+        [m_window makeKeyAndVisible];
     }
-    return mWindow;
+    return m_window;
 }
 
 void QIOSWindow::updateGeometryAndOrientation()
 {
-    if (!mWindow)
+    if (!m_window)
         return;
-    mFrame = [mScreen->uiScreen() applicationFrame];
-    CGRect screen = [mScreen->uiScreen() bounds];
+    m_frame = [m_screen->uiScreen() applicationFrame];
+    CGRect screen = [m_screen->uiScreen() bounds];
     QRect geom;
     CGFloat angle = 0;
     switch ([[UIApplication sharedApplication] statusBarOrientation]) {
     case UIInterfaceOrientationPortrait:
-        geom = QRect(mFrame.origin.x, mFrame.origin.y, mFrame.size.width, mFrame.size.height);
+        geom = QRect(m_frame.origin.x, m_frame.origin.y, m_frame.size.width, m_frame.size.height);
         break;
     case UIInterfaceOrientationPortraitUpsideDown:
-        geom = QRect(screen.size.width - mFrame.origin.x - mFrame.size.width,
-                     screen.size.height - mFrame.origin.y - mFrame.size.height,
-                     mFrame.size.width,
-                     mFrame.size.height);
+        geom = QRect(screen.size.width - m_frame.origin.x - m_frame.size.width,
+                     screen.size.height - m_frame.origin.y - m_frame.size.height,
+                     m_frame.size.width,
+                     m_frame.size.height);
         angle = M_PI;
         break;
     case UIInterfaceOrientationLandscapeLeft:
-        geom = QRect(screen.size.height - mFrame.origin.y - mFrame.size.height,
-                     mFrame.origin.x,
-                     mFrame.size.height,
-                     mFrame.size.width);
+        geom = QRect(screen.size.height - m_frame.origin.y - m_frame.size.height,
+                     m_frame.origin.x,
+                     m_frame.size.height,
+                     m_frame.size.width);
         angle = -M_PI/2.;
         break;
     case UIInterfaceOrientationLandscapeRight:
-        geom = QRect(mFrame.origin.y,
-                     screen.size.width - mFrame.origin.x - mFrame.size.width,
-                     mFrame.size.height,
-                     mFrame.size.width);
+        geom = QRect(m_frame.origin.y,
+                     screen.size.width - m_frame.origin.x - m_frame.size.width,
+                     m_frame.size.height,
+                     m_frame.size.width);
         angle = +M_PI/2.;
         break;
     }
 
-    CGFloat scale = [mScreen->uiScreen() scale];
+    CGFloat scale = [m_screen->uiScreen() scale];
     geom = QRect(geom.x() * scale, geom.y() * scale,
                  geom.width() * scale, geom.height() * scale);
 
     if (angle != 0) {
-        [mView layer].transform = CATransform3DMakeRotation(angle, 0, 0, 1.);
+        [m_view layer].transform = CATransform3DMakeRotation(angle, 0, 0, 1.);
     } else {
-        [mView layer].transform = CATransform3DIdentity;
+        [m_view layer].transform = CATransform3DIdentity;
     }
-    [mView setNeedsDisplay];
+    [m_view setNeedsDisplay];
     window()->setGeometry(geom);
 }
 
 QPlatformOpenGLContext *QIOSWindow::glContext() const
 {
-    if (!mContext) {
-        mContext = new EAGLPlatformContext(mView);
+    if (!m_context) {
+        m_context = new EAGLPlatformContext(m_view);
     }
-    return mContext;
+    return m_context;
 }
 
 QT_END_NAMESPACE

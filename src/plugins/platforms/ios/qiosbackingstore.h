@@ -57,7 +57,7 @@ public:
     void resize(const QSize &size, const QRegion &staticContents);
 
 private:
-    QPaintDevice *mPaintDevice;
+    QPaintDevice *m_paintDevice;
 };
 
 QT_END_NAMESPACE

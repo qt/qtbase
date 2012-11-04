@@ -59,11 +59,11 @@ QIOSIntegration * QIOSIntegration::instance()
 }
 
 QIOSIntegration::QIOSIntegration()
-    :mFontDb(new QCoreTextFontDatabase)
+    :m_fontDb(new QCoreTextFontDatabase)
 {
     if (!m_instance)
         m_instance = this;
-    mScreens << new QIOSScreen(0);
+    m_screens << new QIOSScreen(0);
 }
 
 QIOSIntegration::~QIOSIntegration()
@@ -85,7 +85,7 @@ QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 
 QList<QPlatformScreen *> QIOSIntegration::screens() const
 {
-    return mScreens;
+    return m_screens;
 }
 
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const
@@ -100,7 +100,7 @@ QAbstractEventDispatcher *QIOSIntegration::guiThreadEventDispatcher() const
 
 QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
 {
-    return mFontDb;
+    return m_fontDb;
 }
 
 QT_END_NAMESPACE
