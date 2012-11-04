@@ -52,7 +52,8 @@
 QT_BEGIN_NAMESPACE
 
 QIOSIntegration::QIOSIntegration()
-    :m_fontDb(new QCoreTextFontDatabase), m_screen(new QIOSScreen(QIOSScreen::MainScreen))
+    : m_fontDatabase(new QCoreTextFontDatabase)
+    , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
 {
     screenAdded(m_screen);
 }
@@ -86,7 +87,7 @@ QAbstractEventDispatcher *QIOSIntegration::guiThreadEventDispatcher() const
 
 QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
 {
-    return m_fontDb;
+    return m_fontDatabase;
 }
 
 QT_END_NAMESPACE

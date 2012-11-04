@@ -61,7 +61,7 @@ public:
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
 private:
-    QPlatformFontDatabase *m_fontDb;
+    QPlatformFontDatabase *m_fontDatabase;
     QPlatformScreen *m_screen;
 };
 
