@@ -52,9 +52,9 @@
 QT_BEGIN_NAMESPACE
 
 QIOSIntegration::QIOSIntegration()
-    :m_fontDb(new QCoreTextFontDatabase)
+    :m_fontDb(new QCoreTextFontDatabase), m_screen(new QIOSScreen(0))
 {
-    m_screens << new QIOSScreen(0);
+    screenAdded(m_screen);
 }
 
 QIOSIntegration::~QIOSIntegration()
@@ -72,11 +72,6 @@ QPlatformPixmap *QIOSIntegration::createPlatformPixmap(QPlatformPixmap::PixelTyp
 QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 {
     return new QIOSWindow(window);
-}
-
-QList<QPlatformScreen *> QIOSIntegration::screens() const
-{
-    return m_screens;
 }
 
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const

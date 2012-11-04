@@ -56,15 +56,13 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
-    QList<QPlatformScreen *> screens() const;
-
     QPlatformFontDatabase *fontDatabase() const;
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
 private:
-    QList<QPlatformScreen *> m_screens;
     QPlatformFontDatabase *m_fontDb;
+    QPlatformScreen *m_screen;
 };
 
 QT_END_NAMESPACE
