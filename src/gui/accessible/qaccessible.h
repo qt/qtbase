@@ -462,7 +462,7 @@ public:
     void setChild(int chld) { m_child = chld; }
     int child() const { return m_child; }
 
-    QAccessibleInterface *accessibleInterface() const;
+    virtual QAccessibleInterface *accessibleInterface() const;
 
 protected:
     QAccessible::Event m_type;
