@@ -43,10 +43,11 @@
 #define QPLATFORMINTEGRATION_UIKIT_H
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
 
-class QIOSIntegration : public QPlatformIntegration
+class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
 {
 public:
     QIOSIntegration();
@@ -59,6 +60,9 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
+    QPlatformNativeInterface *nativeInterface() const;
+
+    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
 
 private:
     QPlatformFontDatabase *m_fontDatabase;

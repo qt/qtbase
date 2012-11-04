@@ -90,4 +90,24 @@ QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
     return m_fontDatabase;
 }
 
+QPlatformNativeInterface *QIOSIntegration::nativeInterface() const
+{
+    return const_cast<QIOSIntegration *>(this);
+}
+
+void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
+{
+    if (!window || !window->handle())
+        return 0;
+
+    QByteArray lowerCaseResource = resource.toLower();
+
+    QIOSWindow *platformWindow = static_cast<QIOSWindow *>(window->handle());
+
+    if (lowerCaseResource == "uiview")
+        return platformWindow->nativeView();
+
+    return 0;
+}
+
 QT_END_NAMESPACE
