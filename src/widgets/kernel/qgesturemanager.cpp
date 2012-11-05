@@ -46,6 +46,7 @@
 #include "private/qgraphicsitem_p.h"
 #include "private/qevent_p.h"
 #include "private/qapplication_p.h"
+#include "private/qwidgetwindow_qpa_p.h"
 #include "qgesture.h"
 #include "qevent.h"
 #include "qgraphicsitem.h"
@@ -531,6 +532,13 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
 
 bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
 {
+    // if the receiver is actually a widget, we need to call the correct event
+    // filter method.
+    QWidgetWindow *widgetWindow = qobject_cast<QWidgetWindow *>(receiver);
+
+    if (widgetWindow)
+        return filterEvent(widgetWindow->widget(), event);
+
     if (!m_gestureToRecognizer.contains(static_cast<QGesture *>(receiver)))
         return false;
     QGesture *state = static_cast<QGesture *>(receiver);
