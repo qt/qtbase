@@ -47,22 +47,28 @@ set_property(TARGET Qt5::Core APPEND PROPERTY
 )
 
 !!IF isEmpty(CMAKE_ARCHDATA_DIR_IS_ABSOLUTE)
-list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5Core_install_prefix}/$${CMAKE_ARCHDATA_DIR}/mkspecs/$${CMAKE_MKSPEC}\")
+set(_qt5_corelib_extra_includes \"${_qt5Core_install_prefix}/$${CMAKE_ARCHDATA_DIR}/mkspecs/$${CMAKE_MKSPEC}\")
 !!ELSE
-list(APPEND Qt5Core_INCLUDE_DIRS \"$${CMAKE_ARCHDATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
+set(_qt5_corelib_extra_includes \"$${CMAKE_ARCHDATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
 !!ENDIF
+
+list(APPEND Qt5Core_INCLUDE_DIRS ${_qt5_corelib_extra_includes})
+set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${_qt5_corelib_extra_includes})
+set(_qt5_corelib_extra_includes)
 
 !!IF !isEmpty(CMAKE_ADD_FPIE_FLAGS)
 # Targets using Qt need to use the POSITION_INDEPENDENT_CODE property. The
 # Qt5_POSITION_INDEPENDENT_CODE variable is used in the # qt5_use_module
 # macro to add it.
 set(Qt5_POSITION_INDEPENDENT_CODE True)
+set_property(TARGET Qt5::Core PROPERTY INTERFACE_POSITION_INDEPENDENT_CODE \"ON\")
 set(Qt5Core_EXECUTABLE_COMPILE_FLAGS \"-fPIE\")
 !!ENDIF
 
 !!IF !isEmpty(QT_NAMESPACE)
 list(APPEND Qt5Core_DEFINITIONS -DQT_NAMESPACE=$$QT_NAMESPACE)
 list(APPEND Qt5Core_COMPILE_DEFINITIONS QT_NAMESPACE=$$QT_NAMESPACE)
+set_property(TARGET Qt5::Core APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS QT_NAMESPACE=$$QT_NAMESPACE)
 !!ENDIF
 
 !!IF contains(QT_CONFIG, reduce_exports)
@@ -100,6 +106,25 @@ if (NOT TARGET Qt5::WinMain)
 !!ENDIF
     )
 !!ENDIF
+
+    if (NOT CMAKE_VERSION VERSION_LESS 2.8.11 AND NOT Qt5_NO_LINK_QTMAIN)
+        set(_isExe $<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>)
+        set(_isWin32 $<BOOL:$<TARGET_PROPERTY:WIN32_EXECUTABLE>>)
+        set(_isNotExcluded $<NOT:$<BOOL:$<TARGET_PROPERTY:Qt5_NO_LINK_QTMAIN>>>)
+        set(_isPolicyNEW $<TARGET_POLICY:CMP0020>)
+        get_target_property(_configs Qt5::Core IMPORTED_CONFIGURATIONS)
+        foreach(_config ${_configs})
+            set_property(TARGET Qt5::Core APPEND PROPERTY
+                IMPORTED_LINK_INTERFACE_LIBRARIES_${_config}
+                    $<$<AND:${_isExe},${_isWin32},${_isNotExcluded},${_isPolicyNEW}>:Qt5::WinMain>
+            )
+        endforeach()
+        unset(_configs)
+        unset(_isExe)
+        unset(_isWin32)
+        unset(_isNotExcluded)
+        unset(_isPolicyNEW)
+    endif()
 endif()
 !!ENDIF
 

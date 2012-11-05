@@ -121,3 +121,7 @@ test_module_includes(
 )
 expect_pass(test_concurrent_module)
 expect_pass(test_openglextensions_module)
+
+if (NOT CMAKE_VERSION VERSION_LESS 2.8.11)
+    expect_pass(test_interface)
+endif()
