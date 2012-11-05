@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qiosIntegration.h"
+#include "qiosintegration.h"
 #include "qioswindow.h"
 #include "qiosbackingstore.h"
 #include "qiosscreen.h"
