@@ -1955,8 +1955,8 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "DBUS")
         available = findFile("dbus\\dbus.h");
     else if (part == "CETEST") {
-        QString rapiHeader = locateFile("rapi.h");
-        QString rapiLib = locateFile("rapi.lib");
+        const QString rapiHeader = QDir::toNativeSeparators(locateFile("rapi.h"));
+        const QString rapiLib = QDir::toNativeSeparators(locateFile("rapi.lib"));
         available = (dictionary.value("XQMAKESPEC").startsWith("wince")) && !rapiHeader.isEmpty() && !rapiLib.isEmpty();
         if (available) {
             dictionary[ "QT_CE_RAPI_INC" ] += QLatin1String("\"") + rapiHeader + QLatin1String("\"");

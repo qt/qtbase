@@ -517,7 +517,6 @@ static QStringList splitPathList(const QString &path)
     QRegExp splitReg(QStringLiteral("[:]"));
 #endif
     QStringList result = path.split(splitReg, QString::SkipEmptyParts);
-    const QChar separator = QDir::separator();
     const QStringList::iterator end = result.end();
     for (QStringList::iterator it = result.begin(); it != end; ++it) {
         // Remove any leading or trailing ", this is commonly used in the environment
@@ -526,7 +525,8 @@ static QStringList splitPathList(const QString &path)
             it->remove(0, 1);
         if (it->endsWith('"'))
             it->chop(1);
-        if (it->endsWith(separator))
+        *it = QDir::cleanPath(*it);
+        if (it->endsWith(QLatin1Char('/')))
             it->chop(1);
     }
     return result;
