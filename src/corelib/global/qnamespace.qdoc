@@ -1991,6 +1991,8 @@
     \value MacWindowToolBarButtonHint On Mac OS X adds a tool bar button (i.e.,
            the oblong button that is on the top right of windows that have toolbars).
 
+    \value WindowFullscreenButtonHint On Mac OS X adds a fullscreen button.
+
     \value BypassGraphicsProxyWidget Prevents the window and its children from
            automatically embedding themselves into a QGraphicsProxyWidget if the
            parent widget is already embedded. You can set this flag if you

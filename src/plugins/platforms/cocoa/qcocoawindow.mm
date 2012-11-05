@@ -684,11 +684,10 @@ NSWindow * QCocoaWindow::createNSWindow()
         setWindowShadow(flags);
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        // All windows with the WindowMaximizeButtonHint set also get a full-screen button.
-        if (flags & Qt::WindowMaximizeButtonHint)
-            [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-    }
+        if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+            if (flags & Qt::WindowFullscreenButtonHint)
+                [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+        }
 #endif
 
         createdWindow = window;

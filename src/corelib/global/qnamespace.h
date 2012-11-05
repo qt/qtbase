@@ -311,7 +311,8 @@ public:
         BypassGraphicsProxyWidget = 0x20000000,
         WindowOkButtonHint = 0x00080000,
         WindowCancelButtonHint = 0x00100000,
-        NoDropShadowWindowHint = 0x40000000
+        NoDropShadowWindowHint = 0x40000000,
+        WindowFullscreenButtonHint = 0x80000000
     };
 
     Q_DECLARE_FLAGS(WindowFlags, WindowType)
