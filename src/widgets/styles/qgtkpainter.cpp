@@ -183,7 +183,7 @@ GtkStyle* QGtkPainter::getStyle(GtkWidget *gtkWidget)
 
 {
     Q_ASSERT(gtkWidget);
-    GtkStyle* style = gtkWidget->style;
+    GtkStyle* style = QGtkStylePrivate::gtk_widget_get_style(gtkWidget);
     Q_ASSERT(style);
     return style;
 }
