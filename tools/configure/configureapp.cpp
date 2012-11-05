@@ -661,6 +661,7 @@ void Configure::parseCmdLine()
         // OpenGL Support -------------------------------------------
         else if (configCmdLine.at(i) == "-no-opengl") {
             dictionary[ "OPENGL" ]    = "no";
+            dictionary[ "OPENGL_ES_2" ]     = "no";
         } else if (configCmdLine.at(i) == "-opengl-es-cm") {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_CM" ]    = "yes";
