@@ -75,42 +75,80 @@
 
 #include "qioseventdispatcher.h"
 #include <qdebug.h>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 QT_USE_NAMESPACE
 
-QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
+static Boolean runLoopSourceEqualCallback(const void *info1, const void *info2)
 {
-    Q_UNUSED(parent);
-    qDebug() << __FUNCTION__ << "eventdispatcher not implemented";
+    return info1 == info2;
+}
+
+void QIOSEventDispatcher::postedEventsSourceCallback(void *info)
+{
+    QIOSEventDispatcher *self = static_cast<QIOSEventDispatcher *>(info);
+    self->processPostedEvents();
+}
+
+void QIOSEventDispatcher::processPostedEvents()
+{
+    qDebug() << __FUNCTION__ << "called";
+    QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
+}
+
+QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
+    : QAbstractEventDispatcher(parent)
+{
+    CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
+
+    CFRunLoopSourceContext context;
+    bzero(&context, sizeof(CFRunLoopSourceContext));
+    context.equal = runLoopSourceEqualCallback;
+    context.info = this;
+
+    // source used to send posted events:
+    context.perform = QIOSEventDispatcher::postedEventsSourceCallback;
+    m_postedEventsSource = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
+    Q_ASSERT(m_postedEventsSource);
+    CFRunLoopAddSource(mainRunLoop, m_postedEventsSource, kCFRunLoopCommonModes);
 }
 
 QIOSEventDispatcher::~QIOSEventDispatcher()
-{}
+{
+    CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
+    CFRunLoopRemoveSource(mainRunLoop, m_postedEventsSource, kCFRunLoopCommonModes);
+    CFRelease(m_postedEventsSource);
+}
 
 bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_UNUSED(flags);
+    qDebug() << __FUNCTION__ << "not implemented";
     return false;
 }
 
 bool QIOSEventDispatcher::hasPendingEvents()
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     return false;
 }
 
 void QIOSEventDispatcher::registerSocketNotifier(QSocketNotifier *notifier)
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     Q_UNUSED(notifier);
 }
 
 void QIOSEventDispatcher::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     Q_UNUSED(notifier);
 }
 
 void QIOSEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *object)
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     Q_UNUSED(timerId);
     Q_UNUSED(interval);
     Q_UNUSED(timerType);
@@ -119,36 +157,47 @@ void QIOSEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType
 
 bool QIOSEventDispatcher::unregisterTimer(int timerId)
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     Q_UNUSED(timerId);
     return false;
 }
 
 bool QIOSEventDispatcher::unregisterTimers(QObject *object)
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     Q_UNUSED(object);
     return false;
 }
 
 QList<QAbstractEventDispatcher::TimerInfo> QIOSEventDispatcher::registeredTimers(QObject *object) const
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     Q_UNUSED(object);
     return QList<TimerInfo>();
 }
 
 int QIOSEventDispatcher::remainingTime(int timerId)
 {
+    qDebug() << __FUNCTION__ << "not implemented";
     Q_UNUSED(timerId);
     return 0;
 }
 
 void QIOSEventDispatcher::wakeUp()
-{}
+{
+    CFRunLoopSourceSignal(m_postedEventsSource);
+    CFRunLoopWakeUp(CFRunLoopGetMain());
+}
 
 void QIOSEventDispatcher::interrupt()
-{}
+{
+    qDebug() << __FUNCTION__ << "not implemented";
+}
 
 void QIOSEventDispatcher::flush()
-{}
+{
+    qDebug() << __FUNCTION__ << "not implemented";
+}
 
 QT_END_NAMESPACE
 

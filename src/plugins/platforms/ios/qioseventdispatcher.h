@@ -77,6 +77,7 @@
 #define QEVENTDISPATCHER_IOS_P_H
 
 #include <QtCore/qabstracteventdispatcher.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -85,7 +86,8 @@ class QIOSEventDispatcher : public QAbstractEventDispatcher
     Q_OBJECT
 
 public:
-    explicit QIOSEventDispatcher(QObject *parent = 0); ~QIOSEventDispatcher();
+    explicit QIOSEventDispatcher(QObject *parent = 0);
+    ~QIOSEventDispatcher();
 
     bool processEvents(QEventLoop::ProcessEventsFlags flags);
     bool hasPendingEvents();
@@ -103,6 +105,11 @@ public:
     void wakeUp();
     void interrupt();
     void flush();
+
+private:
+    CFRunLoopSourceRef m_postedEventsSource;
+    static void postedEventsSourceCallback(void *info);
+    void processPostedEvents();
 };
 
 QT_END_NAMESPACE
