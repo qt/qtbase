@@ -1110,7 +1110,7 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
 
         SetGraphicsMode(hdc, GM_COMPATIBLE);
         SelectObject(hdc, old_font);
-        ReleaseDC(0, hdc);
+        DeleteDC(hdc);
     }
 #else // else wince
     unsigned int options = 0;
@@ -1166,8 +1166,11 @@ QImage QWindowsFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &xfo
     mask_format = QImage::Format_RGB32;
 
     QWindowsNativeImage *mask = drawGDIGlyph(font, glyph, 0, xform, mask_format);
-    if (mask == 0)
+    if (mask == 0) {
+        if (m_fontEngineData->clearTypeEnabled)
+            DeleteObject(font);
         return QImage();
+    }
 
     QImage indexed(mask->width(), mask->height(), QImage::Format_Indexed8);
 

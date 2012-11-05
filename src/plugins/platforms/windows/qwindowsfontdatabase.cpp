@@ -533,7 +533,7 @@ QWindowsFontEngineData::QWindowsFontEngineData()
 QWindowsFontEngineData::~QWindowsFontEngineData()
 {
     if (hdc)
-        ReleaseDC(0, hdc);
+        DeleteDC(hdc);
 #if !defined(QT_NO_DIRECTWRITE)
     if (directWriteGdiInterop)
         directWriteGdiInterop->Release();
