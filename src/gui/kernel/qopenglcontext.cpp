@@ -62,6 +62,10 @@ QT_BEGIN_NAMESPACE
 class QGuiGLThreadContext
 {
 public:
+    QGuiGLThreadContext()
+        : context(0)
+    {
+    }
     ~QGuiGLThreadContext() {
         if (context)
             context->doneCurrent();
@@ -151,18 +155,25 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     \sa QOpenGLFunctions, QOpenGLBuffer, QOpenGLShaderProgram, QOpenGLFramebufferObject
 */
 
-void QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
+/*!
+    \internal
+
+    Set the current context. Returns the previously current context.
+*/
+QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context)
 {
     QGuiGLThreadContext *threadContext = qwindow_context_storage.localData();
     if (!threadContext) {
         if (!QThread::currentThread()) {
             qWarning("No QTLS available. currentContext wont work");
-            return;
+            return 0;
         }
         threadContext = new QGuiGLThreadContext;
         qwindow_context_storage.setLocalData(threadContext);
     }
+    QOpenGLContext *previous = threadContext->context;
     threadContext->context = context;
+    return previous;
 }
 
 int QOpenGLContextPrivate::maxTextureSize()
@@ -505,9 +516,9 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
         return false;
     }
 
+    QOpenGLContext *previous = QOpenGLContextPrivate::setCurrentContext(this);
 
     if (d->platformGLContext->makeCurrent(surface->surfaceHandle())) {
-        QOpenGLContextPrivate::setCurrentContext(this);
         d->surface = surface;
 
         d->shareGroup->d_func()->deletePendingResources(this);
@@ -518,6 +529,8 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
 
         return true;
     }
+
+    QOpenGLContextPrivate::setCurrentContext(previous);
 
     return false;
 }

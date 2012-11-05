@@ -224,7 +224,7 @@ public:
 
     QPaintEngineEx *active_engine;
 
-    static void setCurrentContext(QOpenGLContext *context);
+    static QOpenGLContext *setCurrentContext(QOpenGLContext *context);
 
     int maxTextureSize();
 
