@@ -715,8 +715,10 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
                 QPixmap pixmap;
 
                 if (vopt->backgroundBrush.style() != Qt::NoBrush) {
+                    const QPointF oldBrushOrigin = painter->brushOrigin();
                     painter->setBrushOrigin(vopt->rect.topLeft());
                     painter->fillRect(vopt->rect, vopt->backgroundBrush);
+                    painter->setBrushOrigin(oldBrushOrigin);
                 }
 
                 if (hover || selected) {
