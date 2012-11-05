@@ -60,8 +60,7 @@ Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *scree
 }
 
 HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer)
-    : m_colorIndex(0)
-    , m_renderer(renderer)
+    : m_colorIndex(0), m_renderer(renderer), m_timer(0)
 {
     setSurfaceType(QWindow::OpenGLSurface);
     setWindowFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
@@ -84,9 +83,11 @@ void HelloWindow::exposeEvent(QExposeEvent *event)
 
     render();
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(render()));
-    timer->start(10);
+    if (!m_timer) {
+        m_timer = new QTimer(this);
+        connect(m_timer, SIGNAL(timeout()), this, SLOT(render()));
+        m_timer->start(10);
+    }
 }
 
 void HelloWindow::mousePressEvent(QMouseEvent *)

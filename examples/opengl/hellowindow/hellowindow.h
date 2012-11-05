@@ -49,6 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 class QOpenGLContext;
+class QTimer;
 QT_END_NAMESPACE
 
 class Renderer : public QObject
@@ -107,4 +108,5 @@ private:
     int m_colorIndex;
     QColor m_color;
     const QSharedPointer<Renderer> m_renderer;
+    QTimer *m_timer;
 };
