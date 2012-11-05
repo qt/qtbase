@@ -77,6 +77,7 @@
 #define QEVENTDISPATCHER_IOS_P_H
 
 #include <QtCore/qabstracteventdispatcher.h>
+#include <QtCore/private/qtimerinfo_unix_p.h>
 #include <CoreFoundation/CoreFoundation.h>
 
 QT_BEGIN_NAMESPACE
@@ -107,9 +108,19 @@ public:
     void flush();
 
 private:
-    CFRunLoopSourceRef m_postedEventsSource;
-    static void postedEventsSourceCallback(void *info);
+    CFRunLoopSourceRef m_postedEventsRunLoopSource;
+    CFRunLoopSourceRef m_blockingTimerRunLoopSource;
+
+    QTimerInfoList m_timerInfoList;
+    CFRunLoopTimerRef m_runLoopTimerRef;
+
     void processPostedEvents();
+    void maybeStartCFRunLoopTimer();
+    void maybeStopCFRunLoopTimer();
+
+    static void postedEventsRunLoopCallback(void *info);
+    static void nonBlockingTimerRunLoopCallback(CFRunLoopTimerRef, void *info);
+    static void blockingTimerRunLoopCallback(void *info);
 };
 
 QT_END_NAMESPACE
