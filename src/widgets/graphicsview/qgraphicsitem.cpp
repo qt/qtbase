@@ -2405,7 +2405,7 @@ void QGraphicsItem::setVisible(bool visible)
 /*!
     \fn void QGraphicsItem::hide()
 
-    Hides the item. (Items are visible by default.)
+    Hides the item (items are visible by default).
 
     This convenience function is equivalent to calling \c setVisible(false).
 
@@ -2415,7 +2415,7 @@ void QGraphicsItem::setVisible(bool visible)
 /*!
     \fn void QGraphicsItem::show()
 
-    Shows the item. (Items are visible by default.)
+    Shows the item (items are visible by default).
 
     This convenience function is equivalent to calling \c setVisible(true).
 
@@ -3742,7 +3742,7 @@ void QGraphicsItem::ensureVisible(const QRectF &rect, int xmargin, int ymargin)
     int xmargin = 50, int ymargin = 50)
 
     This convenience function is equivalent to calling
-    ensureVisible(QRectF(\a x, \a y, \a w, \a h), \a xmargin, \a ymargin):
+    ensureVisible(QRectF(\a x, \a y, \a w, \a h), \a xmargin, \a ymargin).
 */
 
 /*!
@@ -4709,9 +4709,9 @@ QRectF QGraphicsItem::childrenBoundingRect() const
 
     If you want to change the item's bounding rectangle, you must first call
     prepareGeometryChange(). This notifies the scene of the imminent change,
-    so that its can update its item geometry index; otherwise, the scene will
+    so that it can update its item geometry index; otherwise, the scene will
     be unaware of the item's new geometry, and the results are undefined
-    (typically, rendering artifacts are left around in the view).
+    (typically, rendering artifacts are left within the view).
 
     Reimplement this function to let QGraphicsView determine what
     parts of the widget, if any, need to be redrawn.
@@ -4810,8 +4810,8 @@ bool QGraphicsItem::isClipped() const
 
     Returns this item's clip path, or an empty QPainterPath if this item is
     not clipped. The clip path constrains the item's appearance and
-    interaction (i.e., restricts the area the item can draw, and it also
-    restricts the area that the item receives events).
+    interaction (i.e., restricts the area the item can draw within and receive
+    events for).
 
     You can enable clipping by setting the ItemClipsToShape or
     ItemClipsChildrenToShape flags. The item's clip path is calculated by
@@ -6716,9 +6716,9 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
     menu events. The \a event parameter contains details about the event to
     be handled.
 
-    If you ignore the event, (i.e., by calling QEvent::ignore(),) \a event
+    If you ignore the event (i.e., by calling QEvent::ignore()), \a event
     will propagate to any item beneath this item. If no items accept the
-    event, it will be ignored by the scene, and propagate to the view.
+    event, it will be ignored by the scene and propagate to the view.
 
     It's common to open a QMenu in response to receiving a context menu
     event. Example:
@@ -6739,7 +6739,7 @@ void QGraphicsItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     drag enter events for this item. Drag enter events are generated as the
     cursor enters the item's area.
 
-    By accepting the event, (i.e., by calling QEvent::accept(),) the item will
+    By accepting the event (i.e., by calling QEvent::accept()), the item will
     accept drop events, in addition to receiving drag move and drag
     leave. Otherwise, the event will be ignored and propagate to the item
     beneath. If the event is accepted, the item will receive a drag move event
