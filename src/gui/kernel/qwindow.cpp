@@ -52,7 +52,9 @@
 
 #include "qwindow_p.h"
 #include "qguiapplication_p.h"
-#include "qaccessible.h"
+#ifndef QT_NO_ACCESSIBILITY
+#  include "qaccessible.h"
+#endif
 
 #include <private/qevent_p.h>
 
