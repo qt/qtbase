@@ -3194,8 +3194,8 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
             item->total = 0;
             item->hasMoreSiblings = false;
             if ((recursiveExpanding && !(current.flags() & Qt::ItemNeverHasChildren)) || isIndexExpanded(current)) {
-                if (recursiveExpanding)
-                    expandedIndexes.insert(current);
+                if (recursiveExpanding && storeExpanded(current))
+                    emit q->expanded(current);
                 item->expanded = true;
                 layout(last, recursiveExpanding, afterIsUninitialized);
                 item = &viewItems[last];

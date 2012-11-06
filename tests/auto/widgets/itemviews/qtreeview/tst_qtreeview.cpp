@@ -257,6 +257,7 @@ private slots:
     void taskQTBUG_13567_removeLastItemRegression();
     void taskQTBUG_25333_adjustViewOptionsForIndex();
     void taskQTBUG_18539_emitLayoutChanged();
+    void taskQTBUG_8176_emitOnExpandAll();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -1621,12 +1622,9 @@ void tst_QTreeView::expandAndCollapseAll()
         for (int r = 0; r < rows; ++r)
             parents.push(model.index(r, 0, p));
     }
-// ### why is expanded() signal not emitted?
-//    QCOMPARE(expandedSpy.count(), count);
+    QCOMPARE(expandedSpy.count(), 12); // == (3+1)*(2+1) from QtTestModel model(3, 2);
 
     view.collapseAll();
-
-    QCOMPARE(expandedSpy.count(), 0);
 
     parents.push(QModelIndex());
     count = 0;
@@ -4196,6 +4194,27 @@ void tst_QTreeView::taskQTBUG_18539_emitLayoutChanged()
 
     QCOMPARE(beforeRISpy.size(), 0);
     QCOMPARE(afterRISpy.size(), 0);
+}
+
+void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
+{
+    QTreeWidget tw;
+    QTreeWidgetItem *item = new QTreeWidgetItem(&tw, QStringList(QString("item 1")));
+    QTreeWidgetItem *item2 = new QTreeWidgetItem(item, QStringList(QString("item 2")));
+    new QTreeWidgetItem(item2, QStringList(QString("item 3")));
+    new QTreeWidgetItem(item2, QStringList(QString("item 4")));
+    QTreeWidgetItem *item5 = new QTreeWidgetItem(&tw, QStringList(QString("item 5")));
+    new QTreeWidgetItem(item5, QStringList(QString("item 6")));
+    QSignalSpy spy(&tw, SIGNAL(expanded(const QModelIndex&)));
+    // expand all
+    tw.expandAll();
+    QCOMPARE(spy.size(), 6);
+    spy.clear();
+    tw.collapseAll();
+    item2->setExpanded(true);
+    spy.clear();
+    tw.expandAll();
+    QCOMPARE(spy.size(), 5);
 }
 
 #ifndef QT_NO_ANIMATION
