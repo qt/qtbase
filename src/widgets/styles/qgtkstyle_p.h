@@ -177,7 +177,6 @@ typedef GtkWidget* (*Ptr_gtk_statusbar_new)(void);
 typedef GtkSettings* (*Ptr_gtk_settings_get_default)(void);
 typedef GtkAdjustment* (*Ptr_gtk_range_get_adjustment)(GtkRange *);
 typedef void (*Ptr_gtk_range_set_adjustment)(GtkRange *, GtkAdjustment *);
-typedef void (*Ptr_gtk_progress_configure)(GtkProgress *, double, double, double);
 typedef void (*Ptr_gtk_range_set_inverted)(GtkRange*, bool);
 typedef void (*Ptr_gtk_container_add)(GtkContainer *container, GtkWidget *widget);
 typedef GtkIconSet* (*Ptr_gtk_icon_factory_lookup_default) (const gchar*);
@@ -414,7 +413,6 @@ public:
     static Ptr_gtk_progress_bar_new gtk_progress_bar_new;
     static Ptr_gtk_container_add gtk_container_add;
     static Ptr_gtk_menu_shell_append gtk_menu_shell_append;
-    static Ptr_gtk_progress_configure gtk_progress_configure;
     static Ptr_gtk_range_get_adjustment gtk_range_get_adjustment;
     static Ptr_gtk_range_set_adjustment gtk_range_set_adjustment;
     static Ptr_gtk_range_set_inverted gtk_range_set_inverted;

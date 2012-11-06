@@ -3480,8 +3480,6 @@ void QGtkStyle::drawControl(ControlElement element,
             else if (bar->progress > bar->minimum)
                 fakePos = maximum - 1;
 
-            d->gtk_progress_configure((GtkProgress*)gtkProgressBar, fakePos, 0, maximum);
-
             QRect progressBar;
 
             if (!indeterminate) {

@@ -134,7 +134,6 @@ Ptr_gtk_combo_box_new_with_entry QGtkStylePrivate::gtk_combo_box_new_with_entry 
 Ptr_gtk_progress_bar_new QGtkStylePrivate::gtk_progress_bar_new = 0;
 Ptr_gtk_container_add QGtkStylePrivate::gtk_container_add = 0;
 Ptr_gtk_menu_shell_append QGtkStylePrivate::gtk_menu_shell_append = 0;
-Ptr_gtk_progress_configure QGtkStylePrivate::gtk_progress_configure = 0;
 Ptr_gtk_range_get_adjustment QGtkStylePrivate::gtk_range_get_adjustment = 0;
 Ptr_gtk_range_set_adjustment QGtkStylePrivate::gtk_range_set_adjustment = 0;
 Ptr_gtk_range_set_inverted QGtkStylePrivate::gtk_range_set_inverted = 0;
@@ -423,7 +422,6 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_combo_box_new = (Ptr_gtk_combo_box_new)libgtk.resolve("gtk_combo_box_new");
     gtk_combo_box_entry_new = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_entry_new");
     gtk_combo_box_new_with_entry = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_new_with_entry");
-    gtk_progress_configure = (Ptr_gtk_progress_configure)libgtk.resolve("gtk_progress_configure");
     gtk_range_get_adjustment = (Ptr_gtk_range_get_adjustment)libgtk.resolve("gtk_range_get_adjustment");
     gtk_range_set_adjustment = (Ptr_gtk_range_set_adjustment)libgtk.resolve("gtk_range_set_adjustment");
     gtk_range_set_inverted = (Ptr_gtk_range_set_inverted)libgtk.resolve("gtk_range_set_inverted");
