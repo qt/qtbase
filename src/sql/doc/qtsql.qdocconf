@@ -2,32 +2,26 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtSql
 description             = Qt SQL Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtsql
+url                     = http://qt-project.org/doc/qtsql
 version                 = 5.0.0
 
 qhp.projects            = QtSql
 
 qhp.QtSql.file            = qtsql.qhp
 qhp.QtSql.namespace           = org.qt-project.qtsql.500
-qhp.QtSql.virtualFolder       = qdoc
-qhp.QtSql.indexTitle          = Qt SQL Reference Documentation
+qhp.QtSql.virtualFolder       = qtsql
+qhp.QtSql.indexTitle          = Qt SQL
 qhp.QtSql.indexRoot           =
 
 qhp.QtSql.filterAttributes    = qtsql 5.0.0 qtrefdoc
 qhp.QtSql.customFilters.Qt.name = QtSql 5.0.0
 qhp.QtSql.customFilters.Qt.filterAttributes = qtsql 5.0.0
-qhp.QtSql.subprojects         = classes overviews examples
-qhp.QtSql.subprojects.classes.title = Classes
-qhp.QtSql.subprojects.classes.indexTitle = Qt SQL's Classes
+
+qhp.QtSql.subprojects         = classes
+qhp.QtSql.subprojects.classes.title = C++ Classes
+qhp.QtSql.subprojects.classes.indexTitle = Qt SQL C++ Classes
 qhp.QtSql.subprojects.classes.selectors = class fake:headerfile
 qhp.QtSql.subprojects.classes.sortPages = true
-qhp.QtSql.subprojects.overviews.title = Overviews
-qhp.QtSql.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtSql.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtSql.subprojects.examples.title = Qt SQL Examples
-qhp.QtSql.subprojects.examples.indexTitle = Qt SQL Examples
-qhp.QtSql.subprojects.examples.selectors = fake:example
-
 tagfile                 = ../../../doc/qtsql/qtsql.tags
 
 depends                 += qtcore qtwidgets qtdoc

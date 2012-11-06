@@ -2,31 +2,26 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtWidgets
 description             = Qt Widgets Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtwidgets
+url                     = http://qt-project.org/doc/qtwidgets
 version                 = 5.0.0
 
 qhp.projects            = QtWidgets
 
 qhp.QtWidgets.file         = qtwidgets.qhp
 qhp.QtWidgets.namespace           = org.qt-project.qtwidgets.500
-qhp.QtWidgets.virtualFolder       = qdoc
-qhp.QtWidgets.indexTitle          = Qt Widgets Reference Documentation
+qhp.QtWidgets.virtualFolder       = qtwidgets
+qhp.QtWidgets.indexTitle          = Qt Widgets
 qhp.QtWidgets.indexRoot           =
 
 qhp.QtWidgets.filterAttributes    = qtwidgets 5.0.0 qtrefdoc
 qhp.QtWidgets.customFilters.Qt.name = QtWidgets 5.0.0
 qhp.QtWidgets.customFilters.Qt.filterAttributes = qtwidgets 5.0.0
-qhp.QtWidgets.subprojects         = classes overviews examples
-qhp.QtWidgets.subprojects.classes.title = Classes
-qhp.QtWidgets.subprojects.classes.indexTitle = Qt Widgets' Classes
+
+qhp.QtWidgets.subprojects         = classes
+qhp.QtWidgets.subprojects.classes.title = C++ Classes
+qhp.QtWidgets.subprojects.classes.indexTitle = Qt Widgets C++ Classes
 qhp.QtWidgets.subprojects.classes.selectors = class fake:headerfile
 qhp.QtWidgets.subprojects.classes.sortPages = true
-qhp.QtWidgets.subprojects.overviews.title = Overviews
-qhp.QtWidgets.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtWidgets.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtWidgets.subprojects.examples.title = Qt Widgets Examples
-qhp.QtWidgets.subprojects.examples.indexTitle = Qt Widgets Examples
-qhp.QtWidgets.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtwidgets/qtwidgets.tags
 

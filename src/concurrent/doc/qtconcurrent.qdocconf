@@ -2,31 +2,26 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtConcurrent
 description             = Qt Concurrent Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtconcurrent
+url                     = http://qt-project.org/doc/qtconcurrent
 version                 = 5.0.0
 
 qhp.projects            = QtConcurrent
 
 qhp.QtConcurrent.file         = qtconcurrent.qhp
 qhp.QtConcurrent.namespace           = org.qt-project.qtconcurrent.500
-qhp.QtConcurrent.virtualFolder       = qdoc
-qhp.QtConcurrent.indexTitle          = Qt Concurrent Reference Documentation
+qhp.QtConcurrent.virtualFolder       = qtconcurrent
+qhp.QtConcurrent.indexTitle          = Qt Concurrent
 qhp.QtConcurrent.indexRoot           =
 
 qhp.QtConcurrent.filterAttributes    = qtconcurrent 5.0.0 qtrefdoc
 qhp.QtConcurrent.customFilters.Qt.name = QtConcurrent 5.0.0
 qhp.QtConcurrent.customFilters.Qt.filterAttributes = qtconcurrent 5.0.0
-qhp.QtConcurrent.subprojects         = classes overviews examples
-qhp.QtConcurrent.subprojects.classes.title = Classes
-qhp.QtConcurrent.subprojects.classes.indexTitle = Qt Concurrent's Classes
+
+qhp.QtConcurrent.subprojects         = classes
+qhp.QtConcurrent.subprojects.classes.title = C++ Classes
+qhp.QtConcurrent.subprojects.classes.indexTitle = Qt Concurrent C++ Classes
 qhp.QtConcurrent.subprojects.classes.selectors = class fake:headerfile
 qhp.QtConcurrent.subprojects.classes.sortPages = true
-qhp.QtConcurrent.subprojects.overviews.title = Overviews
-qhp.QtConcurrent.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtConcurrent.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtConcurrent.subprojects.examples.title = Qt Concurrent Examples
-qhp.QtConcurrent.subprojects.examples.indexTitle = Qt Concurrent Examples
-qhp.QtConcurrent.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtconcurrent/qtconcurrent.tags
 

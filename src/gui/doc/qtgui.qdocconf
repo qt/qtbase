@@ -2,31 +2,26 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtGui
 description             = Qt GUI Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtgui
+url                     = http://qt-project.org/doc/qtgui
 version                 = 5.0.0
 
 qhp.projects            = QtGui
 
 qhp.QtGui.file         = qtgui.qhp
 qhp.QtGui.namespace           = org.qt-project.qtgui.500
-qhp.QtGui.virtualFolder       = qdoc
-qhp.QtGui.indexTitle          = Qt GUI Reference Documentation
+qhp.QtGui.virtualFolder       = qtgui
+qhp.QtGui.indexTitle          = Qt GUI
 qhp.QtGui.indexRoot           =
 
 qhp.QtGui.filterAttributes    = qtgui 5.0.0 qtrefdoc
 qhp.QtGui.customFilters.Qt.name = Qtgui 5.0.0
 qhp.QtGui.customFilters.Qt.filterAttributes = qtgui 5.0.0
-qhp.QtGui.subprojects         = classes overviews examples
-qhp.QtGui.subprojects.classes.title = Classes
-qhp.QtGui.subprojects.classes.indexTitle = Qt GUI's Classes
+
+qhp.QtGui.subprojects         = classes
+qhp.QtGui.subprojects.classes.title = C++ Classes
+qhp.QtGui.subprojects.classes.indexTitle = Qt GUI C++ Classes
 qhp.QtGui.subprojects.classes.selectors = class fake:headerfile
 qhp.QtGui.subprojects.classes.sortPages = true
-qhp.QtGui.subprojects.overviews.title = Overviews
-qhp.QtGui.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtGui.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtGui.subprojects.examples.title = Qt GUI Examples
-qhp.QtGui.subprojects.examples.indexTitle = Qt GUI Examples
-qhp.QtGui.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtgui/qtgui.tags
 

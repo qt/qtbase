@@ -2,31 +2,26 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtDBus
 description             = Qt DBus Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtdbus
+url                     = http://qt-project.org/doc/qtdbus
 version                 = 5.0.0
 
 qhp.projects            = QtDBus
 
 qhp.QtDBus.file         = qtdbus.qhp
 qhp.QtDBus.namespace           = org.qt-project.qtdbus.500
-qhp.QtDBus.virtualFolder       = qdoc
-qhp.QtDBus.indexTitle          = Qt DBus Reference Documentation
+qhp.QtDBus.virtualFolder       = qtdbus
+qhp.QtDBus.indexTitle          = Qt D-Bus
 qhp.QtDBus.indexRoot           =
 
 qhp.QtDBus.filterAttributes    = qtdbus 5.0.0 qtrefdoc
 qhp.QtDBus.customFilters.Qt.name = QtDBus 5.0.0
 qhp.QtDBus.customFilters.Qt.filterAttributes = qtdbus 5.0.0
-qhp.QtDBus.subprojects         = classes overviews examples
-qhp.QtDBus.subprojects.classes.title = Classes
-qhp.QtDBus.subprojects.classes.indexTitle = Qt DBus' Classes
+
+qhp.QtDBus.subprojects         = classes
+qhp.QtDBus.subprojects.classes.title = C++ Classes
+qhp.QtDBus.subprojects.classes.indexTitle = Qt D-Bus C++ Classes
 qhp.QtDBus.subprojects.classes.selectors = class fake:headerfile
 qhp.QtDBus.subprojects.classes.sortPages = true
-qhp.QtDBus.subprojects.overviews.title = Overviews
-qhp.QtDBus.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtDBus.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtDBus.subprojects.examples.title = Qt DBus Examples
-qhp.QtDBus.subprojects.examples.indexTitle = Qt DBus Examples
-qhp.QtDBus.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtdbus/qtdbus.tags
 

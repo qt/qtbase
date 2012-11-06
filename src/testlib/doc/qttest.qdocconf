@@ -2,31 +2,26 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtTest
 description             = Qt Test Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qttest
+url                     = http://qt-project.org/doc/qttest
 version                 = 5.0.0
 
 qhp.projects            = QtTest
 
 qhp.QtTest.file                = qttest.qhp
 qhp.QtTest.namespace           = org.qt-project.qttest.500
-qhp.QtTest.virtualFolder       = qdoc
-qhp.QtTest.indexTitle          = Qt Test Reference Documentation
+qhp.QtTest.virtualFolder       = qttest
+qhp.QtTest.indexTitle          = Qt Test
 qhp.QtTest.indexRoot           =
 
 qhp.QtTest.filterAttributes    = qttest 5.0.0 qtrefdoc
 qhp.QtTest.customFilters.Qt.name = QtTest 5.0.0
 qhp.QtTest.customFilters.Qt.filterAttributes = qttest 5.0.0
-qhp.QtTest.subprojects         = classes overviews examples
-qhp.QtTest.subprojects.classes.title = Classes
-qhp.QtTest.subprojects.classes.indexTitle = Qt Test's Classes
+
+qhp.QtTest.subprojects         = classes
+qhp.QtTest.subprojects.classes.title = C++ Classes
+qhp.QtTest.subprojects.classes.indexTitle = Qt Test C++ Classes
 qhp.QtTest.subprojects.classes.selectors = class fake:headerfile
 qhp.QtTest.subprojects.classes.sortPages = true
-qhp.QtTest.subprojects.overviews.title = Overviews
-qhp.QtTest.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtTest.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtTest.subprojects.examples.title = Qt Test Examples
-qhp.QtTest.subprojects.examples.indexTitle = Qt Test Examples
-qhp.QtTest.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qttest/qttest.tags
 

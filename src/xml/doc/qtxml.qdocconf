@@ -2,31 +2,26 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtXml
 description             = Qt XML Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtxml
+url                     = http://qt-project.org/doc/qtxml
 version                 = 5.0.0
 
 qhp.projects            = QtXml
 
 qhp.QtXml.file            = qtxml.qhp
 qhp.QtXml.namespace           = org.qt-project.qtxml.500
-qhp.QtXml.virtualFolder       = qdoc
-qhp.QtXml.indexTitle          = Qt XML Reference Documentation
+qhp.QtXml.virtualFolder       = qtxml
+qhp.QtXml.indexTitle          = Qt XML
 qhp.QtXml.indexRoot           =
 
 qhp.QtXml.filterAttributes    = qtxml 5.0.0 qtrefdoc
 qhp.QtXml.customFilters.Qt.name = QtXml 5.0.0
 qhp.QtXml.customFilters.Qt.filterAttributes = qtxml 5.0.0
-qhp.QtXml.subprojects         = classes overviews examples
-qhp.QtXml.subprojects.classes.title = Classes
-qhp.QtXml.subprojects.classes.indexTitle = Qt XML's Classes
+
+qhp.QtXml.subprojects         = classes
+qhp.QtXml.subprojects.classes.title = C++ Classes
+qhp.QtXml.subprojects.classes.indexTitle = Qt XML C++ Classes
 qhp.QtXml.subprojects.classes.selectors = class fake:headerfile
 qhp.QtXml.subprojects.classes.sortPages = true
-qhp.QtXml.subprojects.overviews.title = Overviews
-qhp.QtXml.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtXml.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtXml.subprojects.examples.title = Qt XML Examples
-qhp.QtXml.subprojects.examples.indexTitle = Qt XML Examples
-qhp.QtXml.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtxml/qtxml.tags
 
