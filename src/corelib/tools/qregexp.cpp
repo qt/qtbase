@@ -3812,7 +3812,7 @@ struct QRegExpPrivate
 };
 
 #if !defined(QT_NO_REGEXP_OPTIM)
-uint qHash(const QRegExpEngineKey &key, uint seed)
+uint qHash(const QRegExpEngineKey &key, uint seed = 0) Q_DECL_NOTHROW
 {
     return qHash(key.pattern, seed);
 }
