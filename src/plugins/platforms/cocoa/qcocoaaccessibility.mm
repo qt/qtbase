@@ -65,12 +65,14 @@ void QCococaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         return;
 
     switch (event->type()) {
+        case QAccessible::ValueChanged:
         case QAccessible::TextInserted :
         case QAccessible::TextRemoved :
         case QAccessible::TextUpdated : {
             QCocoaAccessibleElement *element = [QCocoaAccessibleElement elementWithInterface : interface parent : nil];
             NSAccessibilityPostNotification(element, NSAccessibilityValueChangedNotification);
         break; }
+
         default:
             delete interface;
         break;
@@ -273,7 +275,8 @@ QString translateAction(NSString *nsAction)
 bool hasValueAttribute(QAccessibleInterface *interface)
 {
     const QAccessible::Role qtrole = interface->role();
-    if (qtrole == QAccessible::EditableText) {
+    if (qtrole == QAccessible::EditableText
+            || interface->valueInterface()) {
         return true;
     }
 
@@ -299,6 +302,10 @@ id getValueAttribute(QAccessibleInterface *interface)
             //qDebug() << "text" << begin << end << text;
             return QCFString::toNSString(text);
         }
+    }
+
+    if (QAccessibleValueInterface *valueInterface = interface->valueInterface()) {
+        return QCFString::toNSString(QString::number(valueInterface->currentValue().toDouble()));
     }
 
     return nil;
