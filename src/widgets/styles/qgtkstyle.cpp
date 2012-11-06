@@ -1835,7 +1835,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             GtkShadowType shadow = (option->state & State_Sunken || option->state & State_On ) ?
                                    GTK_SHADOW_IN : GTK_SHADOW_OUT;
-            const QHashableLatin1Literal comboBoxPath = comboBox->editable ? QHashableLatin1Literal("GtkComboBoxEntry") : QHashableLatin1Literal("GtkComboBox");
+            const QHashableLatin1Literal comboBoxPath = comboBox->editable && QGtkStylePrivate::gtk_combo_box_entry_new ?
+                        QHashableLatin1Literal("GtkComboBoxEntry") : QHashableLatin1Literal("GtkComboBox");
 
             // We use the gtk widget to position arrows and separators for us
             GtkWidget *gtkCombo = d->gtkWidget(comboBoxPath);
@@ -1843,8 +1844,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             d->gtk_widget_set_direction(gtkCombo, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             d->gtk_widget_size_allocate(gtkCombo, &geometry);
 
-            QHashableLatin1Literal buttonPath = comboBox->editable ? QHashableLatin1Literal("GtkComboBoxEntry.GtkToggleButton")
-                                : QHashableLatin1Literal("GtkComboBox.GtkToggleButton");
+            QHashableLatin1Literal buttonPath = comboBox->editable && QGtkStylePrivate::gtk_combo_box_entry_new ?
+                        QHashableLatin1Literal("GtkComboBoxEntry.GtkToggleButton") : QHashableLatin1Literal("GtkComboBox.GtkToggleButton");
             GtkWidget *gtkToggleButton = d->gtkWidget(buttonPath);
             d->gtk_widget_set_direction(gtkToggleButton, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             if (gtkToggleButton && (appears_as_list || comboBox->editable)) {
@@ -1853,7 +1854,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 // Draw the combo box as a line edit with a button next to it
                 if (comboBox->editable || appears_as_list) {
                     GtkStateType frameState = (state == GTK_STATE_PRELIGHT) ? GTK_STATE_NORMAL : state;
-                    QHashableLatin1Literal entryPath = comboBox->editable ? QHashableLatin1Literal("GtkComboBoxEntry.GtkEntry") : QHashableLatin1Literal("GtkComboBox.GtkFrame");
+                    QHashableLatin1Literal entryPath = comboBox->editable && QGtkStylePrivate::gtk_combo_box_entry_new ? QHashableLatin1Literal("GtkComboBoxEntry.GtkEntry")
+                            : comboBox->editable ? QHashableLatin1Literal("GtkComboBox.GtkEntry") : QHashableLatin1Literal("GtkComboBox.GtkFrame");
                     GtkWidget *gtkEntry = d->gtkWidget(entryPath);
                     d->gtk_widget_set_direction(gtkEntry, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
                     QRect frameRect = option->rect;
@@ -1921,7 +1923,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
 
                 // Draw the separator between label and arrows
-                QHashableLatin1Literal vSeparatorPath = comboBox->editable
+                QHashableLatin1Literal vSeparatorPath = comboBox->editable && QGtkStylePrivate::gtk_combo_box_entry_new
                     ? QHashableLatin1Literal("GtkComboBoxEntry.GtkToggleButton.GtkHBox.GtkVSeparator")
                     : QHashableLatin1Literal("GtkComboBox.GtkToggleButton.GtkHBox.GtkVSeparator");
 
@@ -1958,7 +1960,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     state = GTK_STATE_NORMAL;
 
                 QHashableLatin1Literal arrowPath("");
-                if (comboBox->editable) {
+                if (comboBox->editable && QGtkStylePrivate::gtk_combo_box_entry_new) {
                     if (appears_as_list)
                         arrowPath = QHashableLatin1Literal("GtkComboBoxEntry.GtkToggleButton.GtkArrow");
                     else
@@ -1996,7 +1998,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
                 if (sunken) {
                     int xoff, yoff;
-                    const QHashableLatin1Literal toggleButtonPath = comboBox->editable
+                    const QHashableLatin1Literal toggleButtonPath = comboBox->editable && QGtkStylePrivate::gtk_combo_box_entry_new
                             ? QHashableLatin1Literal("GtkComboBoxEntry.GtkToggleButton")
                             : QHashableLatin1Literal("GtkComboBox.GtkToggleButton");
 
@@ -3763,19 +3765,15 @@ QRect QGtkStyle::subControlRect(ComplexControl control, const QStyleOptionComple
     case CC_ComboBox:
         if (const QStyleOptionComboBox *box = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             // We employ the gtk widget to position arrows and separators for us
-            GtkWidget *gtkCombo = box->editable ? d->gtkWidget("GtkComboBoxEntry")
-                                                : d->gtkWidget("GtkComboBox");
+            GtkWidget *gtkCombo = box->editable && QGtkStylePrivate::gtk_combo_box_entry_new ?
+                        d->gtkWidget("GtkComboBoxEntry") : d->gtkWidget("GtkComboBox");
             d->gtk_widget_set_direction(gtkCombo, (option->direction == Qt::RightToLeft) ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             GtkAllocation geometry = {0, 0, qMax(0, option->rect.width()), qMax(0, option->rect.height())};
             d->gtk_widget_size_allocate(gtkCombo, &geometry);
             int appears_as_list = !proxy()->styleHint(QStyle::SH_ComboBox_Popup, option, widget);
-            QHashableLatin1Literal arrowPath("GtkComboBoxEntry.GtkToggleButton");
-            if (!box->editable) {
-                if (appears_as_list)
-                    arrowPath = "GtkComboBox.GtkToggleButton";
-                else
-                    arrowPath = "GtkComboBox.GtkToggleButton.GtkHBox.GtkArrow";
-            }
+            QHashableLatin1Literal arrowPath = box->editable && QGtkStylePrivate::gtk_combo_box_entry_new ?
+                        QHashableLatin1Literal("GtkComboBoxEntry.GtkToggleButton") : box->editable || appears_as_list ?
+                            QHashableLatin1Literal("GtkComboBox.GtkToggleButton") : QHashableLatin1Literal("GtkComboBox.GtkToggleButton.GtkHBox.GtkArrow");
 
             GtkWidget *arrowWidget = d->gtkWidget(arrowPath);
             if (!arrowWidget)

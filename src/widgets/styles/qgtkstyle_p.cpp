@@ -130,6 +130,7 @@ Ptr_gtk_separator_tool_item_new QGtkStylePrivate::gtk_separator_tool_item_new = 
 Ptr_gtk_tree_view_new QGtkStylePrivate::gtk_tree_view_new = 0;
 Ptr_gtk_combo_box_new QGtkStylePrivate::gtk_combo_box_new = 0;
 Ptr_gtk_combo_box_entry_new QGtkStylePrivate::gtk_combo_box_entry_new = 0;
+Ptr_gtk_combo_box_new_with_entry QGtkStylePrivate::gtk_combo_box_new_with_entry = 0;
 Ptr_gtk_progress_bar_new QGtkStylePrivate::gtk_progress_bar_new = 0;
 Ptr_gtk_container_add QGtkStylePrivate::gtk_container_add = 0;
 Ptr_gtk_menu_shell_append QGtkStylePrivate::gtk_menu_shell_append = 0;
@@ -420,6 +421,8 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_entry_new = (Ptr_gtk_entry_new)libgtk.resolve("gtk_entry_new");
     gtk_tree_view_new = (Ptr_gtk_tree_view_new)libgtk.resolve("gtk_tree_view_new");
     gtk_combo_box_new = (Ptr_gtk_combo_box_new)libgtk.resolve("gtk_combo_box_new");
+    gtk_combo_box_entry_new = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_entry_new");
+    gtk_combo_box_new_with_entry = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_new_with_entry");
     gtk_progress_configure = (Ptr_gtk_progress_configure)libgtk.resolve("gtk_progress_configure");
     gtk_range_get_adjustment = (Ptr_gtk_range_get_adjustment)libgtk.resolve("gtk_range_get_adjustment");
     gtk_range_set_adjustment = (Ptr_gtk_range_set_adjustment)libgtk.resolve("gtk_range_set_adjustment");
@@ -459,7 +462,6 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_frame_new = (Ptr_gtk_frame_new)libgtk.resolve("gtk_frame_new");
     gtk_expander_new = (Ptr_gtk_expander_new)libgtk.resolve("gtk_expander_new");
     gtk_statusbar_new = (Ptr_gtk_statusbar_new)libgtk.resolve("gtk_statusbar_new");
-    gtk_combo_box_entry_new = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_entry_new");
     gtk_container_forall = (Ptr_gtk_container_forall)libgtk.resolve("gtk_container_forall");
     gtk_widget_size_allocate =(Ptr_gtk_widget_size_allocate)libgtk.resolve("gtk_widget_size_allocate");
     gtk_widget_size_request =(Ptr_gtk_widget_size_request)libgtk.resolve("gtk_widget_size_request");
@@ -598,7 +600,10 @@ void QGtkStylePrivate::initGtkWidgets() const
             addWidget(QGtkStylePrivate::gtk_check_button_new());
             addWidget(QGtkStylePrivate::gtk_radio_button_new(NULL));
             addWidget(QGtkStylePrivate::gtk_combo_box_new());
-            addWidget(QGtkStylePrivate::gtk_combo_box_entry_new());
+            if (gtk_combo_box_entry_new)
+                addWidget(QGtkStylePrivate::gtk_combo_box_entry_new());
+            if (gtk_combo_box_new_with_entry)
+                addWidget(QGtkStylePrivate::gtk_combo_box_new_with_entry());
             addWidget(QGtkStylePrivate::gtk_entry_new());
             addWidget(QGtkStylePrivate::gtk_frame_new(NULL));
             addWidget(QGtkStylePrivate::gtk_expander_new(""));
