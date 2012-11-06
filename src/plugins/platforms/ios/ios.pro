@@ -3,8 +3,7 @@ TARGET = qios
 load(qt_plugin)
 DESTDIR = $$QT.gui.plugins/platforms
 
-QT += opengl
-QT += core-private gui-private platformsupport-private opengl-private widgets-private
+QT += core-private gui-private platformsupport-private
 LIBS += -framework UIKit -framework QuartzCore
 
 OBJECTIVE_SOURCES = main.mm \

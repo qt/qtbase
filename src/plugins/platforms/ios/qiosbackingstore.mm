@@ -1,38 +1,38 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
-** GNU Lesser General Public License Usage
-** This file may be used under the terms of the GNU Lesser General Public
-** License version 2.1 as published by the Free Software Foundation and
-** appearing in the file LICENSE.LGPL included in the packaging of this
-** file. Please review the following information to ensure the GNU Lesser
-** General Public License version 2.1 requirements will be met:
-** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
 **
-** In addition, as a special exception, Nokia gives you certain additional
-** rights. These rights are described in the Nokia Qt LGPL Exception
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Digia gives you certain additional
+** rights.  These rights are described in the Digia Qt LGPL Exception
 ** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU General
-** Public License version 3.0 as published by the Free Software Foundation
-** and appearing in the file LICENSE.GPL included in the packaging of this
-** file. Please review the following information to ensure the GNU General
-** Public License version 3.0 requirements will be met:
-** http://www.gnu.org/copyleft/gpl.html.
-**
-** Other Usage
-** Alternatively, this file may be used in accordance with the terms and
-** conditions contained in a signed written agreement between you and Nokia.
-**
-**
-**
-**
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
 **
 **
 ** $QT_END_LICENSE$
@@ -42,91 +42,54 @@
 #include "qiosbackingstore.h"
 #include "qioswindow.h"
 
-#include <QtOpenGL/private/qgl_p.h>
-#include <QtOpenGL/private/qglpaintdevice_p.h>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLPaintDevice>
 
 #include <QtDebug>
 
-class EAGLPaintDevice;
-
-@interface PaintDeviceHelper : NSObject {
-    EAGLPaintDevice *device;
-}
-
-@property (nonatomic, assign) EAGLPaintDevice *device;
-
-- (void)eaglView:(EAGLView *)view usesFramebuffer:(GLuint)buffer;
-
-@end
-
-class EAGLPaintDevice : public QGLPaintDevice
-{
-public:
-    EAGLPaintDevice(QWindow *window)
-        :QGLPaintDevice(), m_window(window)
-    {
-#if defined(QT_OPENGL_ES_2)
-        helper = [[PaintDeviceHelper alloc] init];
-        helper.device = this;
-        EAGLView *view = static_cast<QIOSWindow *>(window->handle())->nativeView();
-        view.delegate = helper;
-        m_thisFBO = view.fbo;
-#endif
-    }
-
-    ~EAGLPaintDevice()
-    {
-#if defined(QT_OPENGL_ES_2)
-        [helper release];
-#endif
-    }
-
-    void setFramebuffer(GLuint buffer) { m_thisFBO = buffer; }
-    int devType() const { return QInternal::OpenGL; }
-    QSize size() const { return m_window->geometry().size(); }
-    QGLContext* context() const {
-        // Todo: siplify this:
-        return QGLContext::fromOpenGLContext(
-            static_cast<QIOSWindow *>(m_window->handle())->glContext()->context());
-    }
-
-    QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
-
-private:
-    QWindow *m_window;
-    PaintDeviceHelper *helper;
-};
-
-@implementation PaintDeviceHelper
-@synthesize device;
-
-- (void)eaglView:(EAGLView *)view usesFramebuffer:(GLuint)buffer
-{
-    Q_UNUSED(view)
-    if (device)
-        device->setFramebuffer(buffer);
-}
-
-@end
-
-QT_BEGIN_NAMESPACE
-
 QIOSBackingStore::QIOSBackingStore(QWindow *window)
-    : QPlatformBackingStore(window), m_paintDevice(new EAGLPaintDevice(window))
+    : QPlatformBackingStore(window)
+    , m_context(new QOpenGLContext)
+    , m_device(0)
 {
+    m_context->setFormat(window->requestedFormat());
+    m_context->setScreen(window->screen());
+    m_context->create();
+}
+
+QIOSBackingStore::~QIOSBackingStore()
+{
+    delete m_context;
+}
+
+void QIOSBackingStore::beginPaint(const QRegion &)
+{
+    // Needed to prevent QOpenGLContext::makeCurrent() from failing
+    window()->setSurfaceType(QSurface::OpenGLSurface);
+
+    m_context->makeCurrent(window());
+    m_device = new QOpenGLPaintDevice(window()->size());
 }
 
 QPaintDevice *QIOSBackingStore::paintDevice()
 {
-    return m_paintDevice;
+    return m_device;
 }
 
 void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(region);
     Q_UNUSED(offset);
-    qDebug() << __FUNCTION__ << "not implemented";
-    //static_cast<QIOSWindow *>(window->handle())->glContext()->swapBuffers();
+
+    m_context->swapBuffers(window);
+}
+
+void QIOSBackingStore::endPaint()
+{
+    delete m_device;
+
+    // Calling makeDone() on the context here would be an option,
+    // but is not needed, and would actually add some overhead.
 }
 
 void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
@@ -134,7 +97,9 @@ void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
     Q_UNUSED(size);
     Q_UNUSED(staticContents);
 
-    qDebug() << __FUNCTION__ << "not implemented";
+    // We don't need to resize the QOpenGLPaintDevice, as it's just a thin wrapper
+    // around the OpenGL paint-engine, and the real geometry is handled by the
+    // context and window.
 }
 
 QT_END_NAMESPACE
