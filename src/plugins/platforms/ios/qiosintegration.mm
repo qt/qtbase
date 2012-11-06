@@ -44,6 +44,7 @@
 #include "qiosbackingstore.h"
 #include "qiosscreen.h"
 #include "qioseventdispatcher.h"
+#include "qioscontext.h"
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 
@@ -65,19 +66,29 @@ QIOSIntegration::~QIOSIntegration()
 QPlatformPixmap *QIOSIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
 {
     Q_UNUSED(type);
+
     qDebug() << __FUNCTION__ << "not yet implemented";
     return 0;
-    //return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 {
+    qDebug() <<  __FUNCTION__ << "Creating platform window";
     return new QIOSWindow(window);
 }
 
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const
 {
+    qDebug() <<  __FUNCTION__ << "Creating platform backingstore";
     return new QIOSBackingStore(window);
+}
+
+// Used when the QWindow's surface type is set by the client to QSurface::OpenGLSurface
+QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
+{
+    Q_UNUSED(context);
+    qDebug() <<  __FUNCTION__ << "Creating platform opengl context";
+    return new QIOSContext(context);
 }
 
 QAbstractEventDispatcher *QIOSIntegration::guiThreadEventDispatcher() const

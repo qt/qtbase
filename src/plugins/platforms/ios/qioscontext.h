@@ -39,56 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef QIOSWINDOW_H
-#define QIOSWINDOW_H
+#ifndef QIOSCONTEXT_H
+#define QIOSCONTEXT_H
 
-#include <qpa/qplatformwindow.h>
+#include <qpa/qplatformopenglcontext.h>
 
-#import <UIKit/UIKit.h>
-
-class QIOSContext;
-
-@interface EAGLView : UIView <UIKeyInput>
-{
-    UITextAutocapitalizationType autocapitalizationType;
-    UITextAutocorrectionType autocorrectionType;
-    BOOL enablesReturnKeyAutomatically;
-    UIKeyboardAppearance keyboardAppearance;
-    UIKeyboardType keyboardType;
-    UIReturnKeyType returnKeyType;
-    BOOL secureTextEntry;
-}
-
-- (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons;
-
-@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
-@property(nonatomic) UITextAutocorrectionType autocorrectionType;
-@property(nonatomic) BOOL enablesReturnKeyAutomatically;
-@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
-@property(nonatomic) UIKeyboardType keyboardType;
-@property(nonatomic) UIReturnKeyType returnKeyType;
-@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
-
-@end
+@class EAGLContext;
 
 QT_BEGIN_NAMESPACE
 
-class QIOSWindow : public QPlatformWindow
+class QIOSContext : public QPlatformOpenGLContext
 {
 public:
-    explicit QIOSWindow(QWindow *window);
-    ~QIOSWindow();
+    QIOSContext(QOpenGLContext *context);
+    ~QIOSContext();
 
-    void setGeometry(const QRect &rect);
+    QSurfaceFormat format() const;
 
-    GLuint framebufferObject(const QIOSContext &context) const;
+    void swapBuffers(QPlatformSurface *surface);
 
-    EAGLView *nativeView() const { return m_view; }
+    bool makeCurrent(QPlatformSurface *surface);
+    void doneCurrent();
+
+    GLuint defaultFramebufferObject(QPlatformSurface *) const;
+    QFunctionPointer getProcAddress(const QByteArray &procName);
+
+    EAGLContext *nativeContext() const;
 
 private:
-    EAGLView *m_view;
+    EAGLContext *m_eaglContext;
+    QSurfaceFormat m_format;
 };
 
 QT_END_NAMESPACE
 
-#endif // QIOSWINDOW_H
+#endif // QIOSCONTEXT_H

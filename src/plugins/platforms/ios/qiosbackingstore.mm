@@ -133,6 +133,7 @@ void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
     Q_UNUSED(size);
     Q_UNUSED(staticContents);
+
     qDebug() << __FUNCTION__ << "not implemented";
 }
 
