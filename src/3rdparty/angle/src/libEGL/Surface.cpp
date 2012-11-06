@@ -73,6 +73,9 @@ Surface::~Surface()
 
 bool Surface::initialize()
 {
+    typedef HRESULT (STDAPICALLTYPE *PtrDwmIsCompositionEnabled)(BOOL*);
+    typedef HRESULT (STDAPICALLTYPE *PtrDwmSetPresentParameters)(HWND, DWM_PRESENT_PARAMETERS *);
+
     ASSERT(!mSwapChain && !mOffscreenTexture && !mDepthStencil);
 
     if (!resetSwapChain())
@@ -82,17 +85,31 @@ bool Surface::initialize()
     // to minimize the amount of queuing done by DWM between our calls to
     // present and the actual screen.
     if (mWindow && (getComparableOSVersion() >= versionWindowsVista)) {
-      BOOL isComposited;
-      HRESULT result = DwmIsCompositionEnabled(&isComposited);
-      if (SUCCEEDED(result) && isComposited) {
-        DWM_PRESENT_PARAMETERS presentParams;
-        memset(&presentParams, 0, sizeof(presentParams));
-        presentParams.cbSize = sizeof(DWM_PRESENT_PARAMETERS);
-        presentParams.cBuffer = 2;
+      // Resolve dwmapi.dll functions dynamically as the Library is
+      // not present on Windows XP. Alternatively, /DELAYLOAD could be used.
+      static PtrDwmIsCompositionEnabled dwmIsCompositionEnabled = 0;
+      static PtrDwmSetPresentParameters dwmSetPresentParameters = 0;
+      if (!dwmIsCompositionEnabled) {
+        if (const HMODULE dwmLibrary = LoadLibraryW(L"dwmapi.dll")) {
+          dwmIsCompositionEnabled =
+            (PtrDwmIsCompositionEnabled)GetProcAddress(dwmLibrary, "DwmIsCompositionEnabled");
+          dwmSetPresentParameters =
+            (PtrDwmSetPresentParameters)GetProcAddress(dwmLibrary, "DwmSetPresentParameters");
+        }
+      }
+      if (dwmIsCompositionEnabled && dwmSetPresentParameters) {
+        BOOL isComposited;
+        HRESULT result = dwmIsCompositionEnabled(&isComposited);
+        if (SUCCEEDED(result) && isComposited) {
+          DWM_PRESENT_PARAMETERS presentParams;
+          memset(&presentParams, 0, sizeof(presentParams));
+          presentParams.cbSize = sizeof(DWM_PRESENT_PARAMETERS);
+          presentParams.cBuffer = 2;
 
-        result = DwmSetPresentParameters(mWindow, &presentParams);
-        if (FAILED(result))
-          ERR("Unable to set present parameters: 0x%08X", result);
+          result = dwmSetPresentParameters(mWindow, &presentParams);
+          if (FAILED(result))
+            ERR("Unable to set present parameters: 0x%08X", result);
+        }
       }
     }
 

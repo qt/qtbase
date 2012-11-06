@@ -1,0 +1,75 @@
+From a5ed22f7c9aa51eebbd3ec48904a4c0999dcced6 Mon Sep 17 00:00:00 2001
+From: Friedemann Kleint <Friedemann.Kleint@digia.com>
+Date: Tue, 6 Nov 2012 09:22:18 +0100
+Subject: [PATCH] Dynamically resolve functions of dwmapi.dll.
+
+The library is not present on Windows XP, for which /DELAYLOAD
+is used in ANGLE. However, as this causes problems with MinGW,
+use dynamic resolution.
+
+Task-number: QTBUG-27741
+Change-Id: I16214d6f98a184d89858c50ee5306371ea25469e
+---
+ src/3rdparty/angle/src/libEGL/Surface.cpp |   39 +++++++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 11 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
+index 732c404..34df14c 100644
+--- a/src/3rdparty/angle/src/libEGL/Surface.cpp
++++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
+@@ -73,6 +73,9 @@ Surface::~Surface()
+ 
+ bool Surface::initialize()
+ {
++    typedef HRESULT (STDAPICALLTYPE *PtrDwmIsCompositionEnabled)(BOOL*);
++    typedef HRESULT (STDAPICALLTYPE *PtrDwmSetPresentParameters)(HWND, DWM_PRESENT_PARAMETERS *);
++
+     ASSERT(!mSwapChain && !mOffscreenTexture && !mDepthStencil);
+ 
+     if (!resetSwapChain())
+@@ -82,17 +85,31 @@ bool Surface::initialize()
+     // to minimize the amount of queuing done by DWM between our calls to
+     // present and the actual screen.
+     if (mWindow && (getComparableOSVersion() >= versionWindowsVista)) {
+-      BOOL isComposited;
+-      HRESULT result = DwmIsCompositionEnabled(&isComposited);
+-      if (SUCCEEDED(result) && isComposited) {
+-        DWM_PRESENT_PARAMETERS presentParams;
+-        memset(&presentParams, 0, sizeof(presentParams));
+-        presentParams.cbSize = sizeof(DWM_PRESENT_PARAMETERS);
+-        presentParams.cBuffer = 2;
+-
+-        result = DwmSetPresentParameters(mWindow, &presentParams);
+-        if (FAILED(result))
+-          ERR("Unable to set present parameters: 0x%08X", result);
++      // Resolve dwmapi.dll functions dynamically as the Library is
++      // not present on Windows XP. Alternatively, /DELAYLOAD could be used.
++      static PtrDwmIsCompositionEnabled dwmIsCompositionEnabled = 0;
++      static PtrDwmSetPresentParameters dwmSetPresentParameters = 0;
++      if (!dwmIsCompositionEnabled) {
++        if (const HMODULE dwmLibrary = LoadLibraryW(L"dwmapi.dll")) {
++          dwmIsCompositionEnabled =
++            (PtrDwmIsCompositionEnabled)GetProcAddress(dwmLibrary, "DwmIsCompositionEnabled");
++          dwmSetPresentParameters =
++            (PtrDwmSetPresentParameters)GetProcAddress(dwmLibrary, "DwmSetPresentParameters");
++        }
++      }
++      if (dwmIsCompositionEnabled && dwmSetPresentParameters) {
++        BOOL isComposited;
++        HRESULT result = dwmIsCompositionEnabled(&isComposited);
++        if (SUCCEEDED(result) && isComposited) {
++          DWM_PRESENT_PARAMETERS presentParams;
++          memset(&presentParams, 0, sizeof(presentParams));
++          presentParams.cbSize = sizeof(DWM_PRESENT_PARAMETERS);
++          presentParams.cBuffer = 2;
++
++          result = dwmSetPresentParameters(mWindow, &presentParams);
++          if (FAILED(result))
++            ERR("Unable to set present parameters: 0x%08X", result);
++        }
+       }
+     }
+ 
+-- 
+1.7.10.msysgit.1
+
