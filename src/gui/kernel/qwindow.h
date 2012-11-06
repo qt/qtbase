@@ -116,6 +116,35 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
 
+    // ------------------------------------------------------------------------
+    // Temporary backwards-compatibility properties to be removed ASAP
+    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
+    Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath)
+    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon)
+    Q_PROPERTY(Qt::WindowModality windowModality READ windowModality WRITE setWindowModality NOTIFY windowModalityChanged)
+
+public:
+
+    Qt::WindowModality windowModality() const { return modality(); }
+    void setWindowModality(Qt::WindowModality wm) { setModality(wm); }
+    void setWindowFlags(Qt::WindowFlags f) { setFlags(f); }
+    Qt::WindowFlags windowFlags() const { return flags(); }
+    Qt::WindowType windowType() const { return type(); }
+    QString windowTitle() const { return title(); }
+    void requestActivateWindow() { requestActivate(); }
+    bool requestWindowOrientation(Qt::ScreenOrientation o) { return requestOrientation(o); }
+    Qt::ScreenOrientation windowOrientation() const { return orientation(); }
+    void setWindowFilePath(const QString &fp) { setFilePath(fp); }
+    QString windowFilePath() const { return filePath(); }
+    void setWindowIcon(const QIcon &i) { setIcon(i); }
+    QIcon windowIcon() const { return icon(); }
+    void setWindowTitle(const QString &t) { setTitle(t); }
+
+Q_SIGNALS:
+    void windowModalityChanged(Qt::WindowModality windowModality);
+    // End of temporary backwards-compatibility properties
+    // ------------------------------------------------------------------------
+
 public:
 
     explicit QWindow(QScreen *screen = 0);
