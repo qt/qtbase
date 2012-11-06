@@ -245,30 +245,60 @@ void QIOSEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType
 
 bool QIOSEventDispatcher::unregisterTimer(int timerId)
 {
-    qDebug() << __FUNCTION__ << "not implemented";
-    Q_UNUSED(timerId);
-    return false;
+#ifndef QT_NO_DEBUG
+    if (timerId < 1) {
+        qWarning("QIOSEventDispatcher::unregisterTimer: invalid argument");
+        return false;
+    } else if (thread() != QThread::currentThread()) {
+        qWarning("QObject::killTimer: timers cannot be stopped from another thread");
+        return false;
+    }
+#endif
+
+    bool returnValue = m_timerInfoList.unregisterTimer(timerId);
+    m_timerInfoList.isEmpty() ? maybeStopCFRunLoopTimer() : maybeStartCFRunLoopTimer();
+    return returnValue;
 }
 
 bool QIOSEventDispatcher::unregisterTimers(QObject *object)
 {
-    qDebug() << __FUNCTION__ << "not implemented";
-    Q_UNUSED(object);
-    return false;
+#ifndef QT_NO_DEBUG
+    if (!object) {
+        qWarning("QIOSEventDispatcher::unregisterTimers: invalid argument");
+        return false;
+    } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
+        qWarning("QObject::killTimers: timers cannot be stopped from another thread");
+        return false;
+    }
+#endif
+
+    bool returnValue = m_timerInfoList.unregisterTimers(object);
+    m_timerInfoList.isEmpty() ? maybeStopCFRunLoopTimer() : maybeStartCFRunLoopTimer();
+    return returnValue;
 }
 
 QList<QAbstractEventDispatcher::TimerInfo> QIOSEventDispatcher::registeredTimers(QObject *object) const
 {
-    qDebug() << __FUNCTION__ << "not implemented";
-    Q_UNUSED(object);
-    return QList<TimerInfo>();
+#ifndef QT_NO_DEBUG
+    if (!object) {
+        qWarning("QIOSEventDispatcher:registeredTimers: invalid argument");
+        return QList<TimerInfo>();
+    }
+#endif
+
+    return m_timerInfoList.registeredTimers(object);
 }
 
 int QIOSEventDispatcher::remainingTime(int timerId)
 {
-    qDebug() << __FUNCTION__ << "not implemented";
-    Q_UNUSED(timerId);
-    return 0;
+#ifndef QT_NO_DEBUG
+    if (timerId < 1) {
+        qWarning("QIOSEventDispatcher::remainingTime: invalid argument");
+        return -1;
+    }
+#endif
+
+    return m_timerInfoList.timerRemainingTime(timerId);
 }
 
 void QIOSEventDispatcher::wakeUp()
