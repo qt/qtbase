@@ -72,7 +72,7 @@ typedef unsigned long XID;
 
 #undef GTK_OBJECT_FLAGS
 #define GTK_OBJECT_FLAGS(obj)(((GtkObject*)(obj))->flags)
-#define Q_GTK_IS_WIDGET(widget) widget && GTK_CHECK_TYPE ((widget), QGtkStylePrivate::gtk_widget_get_type())
+#define Q_GTK_IS_WIDGET(widget) widget && G_TYPE_CHECK_INSTANCE_TYPE ((widget), QGtkStylePrivate::gtk_widget_get_type())
 
 #define QLS(x) QLatin1String(x)
 
@@ -213,9 +213,9 @@ typedef void (*Ptr_gtk_widget_path) (GtkWidget *, guint *, gchar **, gchar**);
 
 typedef void (*Ptr_gtk_toolbar_insert) (GtkToolbar *toolbar, GtkToolItem *item, int pos);
 typedef void (*Ptr_gtk_menu_shell_append)(GtkMenuShell *, GtkWidget *);
-typedef GtkType (*Ptr_gtk_container_get_type) (void);
-typedef GtkType (*Ptr_gtk_window_get_type) (void);
-typedef GtkType (*Ptr_gtk_widget_get_type) (void);
+typedef GType (*Ptr_gtk_container_get_type) (void);
+typedef GType (*Ptr_gtk_window_get_type) (void);
+typedef GType (*Ptr_gtk_widget_get_type) (void);
 typedef GtkWidget* (*Ptr_gtk_widget_get_parent) (GtkWidget *);
 typedef gboolean (*Ptr_gtk_widget_is_toplevel) (GtkWidget *);
 typedef GtkWidget* (*Ptr_gtk_widget_get_toplevel) (GtkWidget *);

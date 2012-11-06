@@ -829,7 +829,7 @@ void QGtkStylePrivate::addAllSubWidgets(GtkWidget *widget, gpointer v)
 {
     Q_UNUSED(v);
     addWidgetToMap(widget);
-    if (GTK_CHECK_TYPE ((widget), gtk_container_get_type()))
+    if (G_TYPE_CHECK_INSTANCE_TYPE ((widget), gtk_container_get_type()))
         gtk_container_forall((GtkContainer*)widget, addAllSubWidgets, NULL);
 }
 
