@@ -129,7 +129,8 @@ static inline void compressMouseMove(MSG *msg)
 QWindowsMouseHandler::QWindowsMouseHandler() :
     m_windowUnderMouse(0),
     m_trackedWindow(0),
-    m_touchDevice(0)
+    m_touchDevice(0),
+    m_leftButtonDown(false)
 {
 }
 
@@ -164,7 +165,6 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         return false; // Allow further event processing (dragging of windows).
     }
 
-
     *result = 0;
     if (msg.message == WM_MOUSELEAVE) {
         if (QWindowsContext::verboseEvents)
@@ -185,6 +185,34 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+
+    // If the window was recently resized via mouse doubleclick on the frame or title bar,
+    // we don't get WM_LBUTTONDOWN or WM_LBUTTONDBLCLK for the second click,
+    // but we will get at least one WM_MOUSEMOVE with left button down and the WM_LBUTTONUP,
+    // which will result undesired mouse press and release events.
+    // To avoid those, we ignore any events with left button down if we didn't
+    // get the original WM_LBUTTONDOWN/WM_LBUTTONDBLCLK.
+    if (msg.message == WM_LBUTTONDOWN || msg.message == WM_LBUTTONDBLCLK) {
+        m_leftButtonDown = true;
+    } else {
+        const bool actualLeftDown = keyStateToMouseButtons((int)msg.wParam) & Qt::LeftButton;
+        if (!m_leftButtonDown && actualLeftDown) {
+            // Autocapture the mouse for current window to and ignore further events until release.
+            // Capture is necessary so we don't get WM_MOUSELEAVEs to confuse matters.
+            // This autocapture is released normally when button is released.
+            if (!platformWindow->hasMouseCapture()) {
+                QWindowsWindow::baseWindowOf(window)->applyCursor();
+                platformWindow->setMouseGrabEnabled(true);
+                platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
+                if (QWindowsContext::verboseEvents)
+                    qDebug() << "Automatic mouse capture for missing buttondown event" << window;
+            }
+            return true;
+        } else if (m_leftButtonDown && !actualLeftDown) {
+            m_leftButtonDown = false;
+        }
+    }
+
     const QPoint globalPosition = QWindowsGeometryHint::mapToGlobal(hwnd, winEventPosition);
     QWindow *currentWindowUnderMouse = platformWindow->hasMouseCapture() ?
         QWindowsScreen::windowAt(globalPosition) : window;
