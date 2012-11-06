@@ -344,6 +344,10 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::ElementIndexUint;
     if (extensionMatcher.match("GL_OES_depth24"))
         extensions |= QOpenGLExtensions::Depth24;
+
+    if (extensionMatcher.match("GL_EXT_bgra"))
+        extensions |= QOpenGLExtensions::BGRATextureFormat;
+
 #else
     extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 

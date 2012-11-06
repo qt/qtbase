@@ -42,6 +42,7 @@
 #include "qopengltextureglyphcache_p.h"
 #include "qopenglpaintengine_p.h"
 #include "private/qopenglengineshadersource_p.h"
+#include "qopenglextensions_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -301,6 +302,11 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
     const int maskWidth = mask.width();
     const int maskHeight = mask.height();
 
+#if defined(QT_OPENGL_ES_2)
+    QOpenGLExtensions extensions(ctx);
+    bool hasBGRA = extensions.hasOpenGLExtension(QOpenGLExtensions::BGRATextureFormat);
+#endif
+
     if (mask.format() == QImage::Format_Mono) {
         mask = mask.convertToFormat(QImage::Format_Indexed8);
         for (int y = 0; y < maskHeight; ++y) {
@@ -318,7 +324,14 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
                 uchar g = src[x] >> 8;
                 uchar b = src[x];
                 quint32 avg = (quint32(r) + quint32(g) + quint32(b) + 1) / 3; // "+1" for rounding.
-                src[x] = (src[x] & 0x00ffffff) | (avg << 24);
+
+#if defined(QT_OPENGL_ES_2)
+                if (!hasBGRA) {
+                    // Reverse bytes to match GL_RGBA
+                    src[x] = (avg << 24) | (quint32(r) << 0) | (quint32(g) << 8) | (quint32(b) << 16);
+                } else
+#endif
+                    src[x] = (src[x] & 0x00ffffff) | (avg << 24);
             }
         }
     }
@@ -326,8 +339,7 @@ void QOpenGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed
     glBindTexture(GL_TEXTURE_2D, m_textureResource->m_texture);
     if (mask.format() == QImage::Format_RGB32) {
 #if defined(QT_OPENGL_ES_2)
-        // ###TODO Ensure extension is actually present on ES2
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA_EXT, GL_UNSIGNED_BYTE, mask.bits());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, hasBGRA ? GL_BGRA_EXT : GL_RGBA, GL_UNSIGNED_BYTE, mask.bits());
 #else
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
 #endif
