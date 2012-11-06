@@ -435,7 +435,9 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
     else
         section->setStatus(Node::Commendable);
 
-    section->setModuleName(element.attribute("module"));
+    QString moduleName = element.attribute("module");
+    if (!moduleName.isEmpty())
+        section->setModuleName(moduleName);
     if (!indexUrl.isEmpty()) {
         section->setUrl(indexUrl + QLatin1Char('/') + href);
     }
@@ -660,11 +662,13 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                 baseStrings.insert(baseClassNode->name());
             }
             writer.writeAttribute("bases", QStringList(baseStrings.toList()).join(","));
-            writer.writeAttribute("module", node->moduleName());
+            if (!node->moduleName().isEmpty())
+                writer.writeAttribute("module", node->moduleName());
         }
         break;
     case Node::Namespace:
-        writer.writeAttribute("module", node->moduleName());
+            if (!node->moduleName().isEmpty())
+                writer.writeAttribute("module", node->moduleName());
         break;
     case Node::Document:
         {
@@ -672,25 +676,30 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
               Document nodes (such as manual pages) contain subtypes,
               titles and other attributes.
             */
+            bool writeModuleName = false;
             const DocNode* docNode = static_cast<const DocNode*>(node);
             switch (docNode->subType()) {
             case Node::Example:
                 writer.writeAttribute("subtype", "example");
+                writeModuleName = true;
                 break;
             case Node::HeaderFile:
                 writer.writeAttribute("subtype", "header");
+                writeModuleName = true;
                 break;
             case Node::File:
                 writer.writeAttribute("subtype", "file");
                 break;
             case Node::Group:
                 writer.writeAttribute("subtype", "group");
+                writeModuleName = true;
                 break;
             case Node::Module:
                 writer.writeAttribute("subtype", "module");
                 break;
             case Node::Page:
                 writer.writeAttribute("subtype", "page");
+                writeModuleName = true;
                 break;
             case Node::ExternalPage:
                 writer.writeAttribute("subtype", "externalpage");
@@ -708,6 +717,9 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             writer.writeAttribute("fulltitle", docNode->fullTitle());
             writer.writeAttribute("subtitle", docNode->subTitle());
             writer.writeAttribute("location", docNode->doc().location().fileName());
+            if (!node->moduleName().isEmpty() && writeModuleName) {
+                writer.writeAttribute("module", node->moduleName());
+            }
         }
         break;
     case Node::Function:

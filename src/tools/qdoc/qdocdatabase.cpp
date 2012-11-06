@@ -344,8 +344,9 @@ void QDocDatabase::findAllClasses(const InnerNode* node)
                 }
 
                 QString serviceName = (static_cast<const ClassNode *>(*c))->serviceName();
-                if (!serviceName.isEmpty())
+                if (!serviceName.isEmpty()) {
                     serviceClasses_.insert(serviceName, *c);
+                }
             }
             else if ((*c)->type() == Node::Document &&
                      (*c)->subType() == Node::QmlClass &&
@@ -418,12 +419,10 @@ void QDocDatabase::findAllNamespaces(const InnerNode* node)
             if ((*c)->isInnerNode()) {
                 findAllNamespaces(static_cast<const InnerNode *>(*c));
                 if ((*c)->type() == Node::Namespace) {
-                    const NamespaceNode* nspace = static_cast<const NamespaceNode *>(*c);
                     // Ensure that the namespace's name is not empty (the root
                     // namespace has no name).
-                    if (!nspace->name().isEmpty()) {
-                        namespaceIndex_.insert(nspace->name(), *c);
-                    }
+                    if (!(*c)->name().isEmpty())
+                        namespaceIndex_.insert((*c)->name(), *c);
                 }
             }
         }

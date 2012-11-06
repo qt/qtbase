@@ -387,4 +387,80 @@ bool CodeParser::isParsingQdoc() const
     return currentFile_.endsWith(".qdoc");
 }
 
+/*!
+  For each node that will produce a documentation page, this function
+  ensures that the node belongs to a module. Normally, the qdoc comment
+  for an entity that will produce a documentation page will contain an
+  \inmodule command to tell qdoc which module the entity belongs to.
+
+  But now that we normally run qdoc on each module in two passes. The
+  first produces an index file; the second pass generates the docs
+  after reading all the index files it needs.
+
+  This means that all the pages generated during each pass 2 run of
+  qdoc almost certainly belong to a single module, and the name of
+  that module is, as a rule, used as the project name in the qdocconf
+  file used when running qdoc on the module.
+
+  So this function first asks if the node \a n has a non-empty module
+  name. If it it does not have a non-empty module name, it sets the
+  module name to be the project name.
+
+  In some cases it prints a qdoc warning that it has done this. Namely,
+  for C++ classes and namespaces.
+ */
+void CodeParser::checkModuleInclusion(Node* n)
+{
+    if (n->moduleName().isEmpty()) {
+        switch (n->type()) {
+        case Node::Class:
+            if (n->access() != Node::Private && !n->doc().isEmpty()) {
+                n->setModuleName(Generator::defaultModuleName());
+                n->doc().location().warning(tr("Class %1 has no \\inmodule command; "
+                                               "using project name by default: %2")
+                                            .arg(n->name()).arg(Generator::defaultModuleName()));
+            }
+            break;
+        case Node::Namespace:
+            if (n->access() != Node::Private && !n->name().isEmpty() && !n->doc().isEmpty()) {
+                n->setModuleName(Generator::defaultModuleName());
+                n->doc().location().warning(tr("Namespace %1 has no \\inmodule command; "
+                                               "using project name by default: %2")
+                                            .arg(n->name()).arg(Generator::defaultModuleName()));
+            }
+            break;
+        case Node::Document:
+            if (n->access() != Node::Private && !n->doc().isEmpty()) {
+                if (n->subType() == Node::HeaderFile) {
+                    n->setModuleName(Generator::defaultModuleName());
+#if 0
+                    n->doc().location().warning(tr("Header file with title \"%1\" has no \\inmodule command; "
+                                                   "using project name by default: %2")
+                                                .arg(n->title()).arg(Generator::defaultModuleName()));
+#endif
+                }
+                else if (n->subType() == Node::Page) {
+                    n->setModuleName(Generator::defaultModuleName());
+#if 0
+                    n->doc().location().warning(tr("Page with title \"%1\" has no \\inmodule command; "
+                                                   "using project name by default: %2")
+                                                .arg(n->title()).arg(Generator::defaultModuleName()));
+#endif
+                }
+                else if (n->subType() == Node::Example) {
+                    n->setModuleName(Generator::defaultModuleName());
+#if 0
+                    n->doc().location().warning(tr("Example with title \"%1\" has no \\inmodule command; "
+                                                   "using project name by default: %2")
+                                                .arg(n->title()).arg(Generator::defaultModuleName()));
+#endif
+                }
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 QT_END_NAMESPACE
