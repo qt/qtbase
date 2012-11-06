@@ -409,7 +409,7 @@ QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData
             }
         } else {
             CFErrorRef error;
-            QCFType<CFURLRef> fontURL = CFURLCreateWithFileSystemPath(NULL, QCFString(fileName), 0, false);
+            QCFType<CFURLRef> fontURL = CFURLCreateWithFileSystemPath(NULL, QCFString(fileName), kCFURLPOSIXPathStyle, false);
             bool success = CTFontManagerRegisterFontsForURL(fontURL, kCTFontManagerScopeProcess, &error);
             if (success) {
                 const void *keys[] = { fontURL };
