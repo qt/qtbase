@@ -144,6 +144,10 @@ Qt::MouseButtons QWindowsMouseHandler::queryMouseButtons()
         result |= mouseSwapped ? Qt::LeftButton : Qt::RightButton;
     if (GetAsyncKeyState(VK_MBUTTON) < 0)
         result |= Qt::MidButton;
+    if (GetAsyncKeyState(VK_XBUTTON1) < 0)
+        result |= Qt::XButton1;
+    if (GetAsyncKeyState(VK_XBUTTON2) < 0)
+        result |= Qt::XButton2;
     return result;
 }
 
@@ -222,8 +226,9 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     // any button press until release.
     if (!platformWindow->hasMouseCapture()
         && (msg.message == WM_LBUTTONDOWN || msg.message == WM_MBUTTONDOWN
-            || msg.message == WM_RBUTTONDOWN || msg.message == WM_LBUTTONDBLCLK
-            || msg.message == WM_MBUTTONDBLCLK || msg.message == WM_RBUTTONDBLCLK )) {
+            || msg.message == WM_RBUTTONDOWN || msg.message == WM_XBUTTONDOWN
+            || msg.message == WM_LBUTTONDBLCLK || msg.message == WM_MBUTTONDBLCLK
+            || msg.message == WM_RBUTTONDBLCLK || msg.message == WM_XBUTTONDBLCLK)) {
         platformWindow->setMouseGrabEnabled(true);
         platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
         if (QWindowsContext::verboseEvents)
@@ -231,7 +236,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     } else if (platformWindow->hasMouseCapture()
                && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)
                && (msg.message == WM_LBUTTONUP || msg.message == WM_MBUTTONUP
-                   || msg.message == WM_RBUTTONUP)) {
+                   || msg.message == WM_RBUTTONUP || msg.message == WM_XBUTTONUP)) {
         platformWindow->setMouseGrabEnabled(false);
         if (QWindowsContext::verboseEvents)
             qDebug() << "Releasing automatic mouse capture " << window;
