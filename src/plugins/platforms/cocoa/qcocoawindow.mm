@@ -717,7 +717,9 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
                                           name:nil // Get all notifications
                                           object:m_nsWindow];
 
+    [m_contentView setPostsFrameChangedNotifications: NO];
     [window setContentView:m_contentView];
+    [m_contentView setPostsFrameChangedNotifications: YES];
 }
 
 void QCocoaWindow::clearNSWindow(NSWindow *window)
