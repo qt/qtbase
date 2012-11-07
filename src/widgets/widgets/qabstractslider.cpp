@@ -205,7 +205,7 @@ QT_BEGIN_NAMESPACE
 
 QAbstractSliderPrivate::QAbstractSliderPrivate()
     : minimum(0), maximum(99), pageStep(10), value(0), position(0), pressValue(-1),
-      singleStep(1), offset_accumulated(0), tracking(true),
+      singleStep(1), singleStepFromItemView(-1), viewMayChangeSingleStep(true), offset_accumulated(0), tracking(true),
       blocktracking(false), pressed(false),
       invertedAppearance(false), invertedControls(false),
       orientation(Qt::Horizontal), repeatAction(QAbstractSlider::SliderNoAction)
@@ -378,6 +378,11 @@ int QAbstractSlider::maximum() const
 void QAbstractSlider::setSingleStep(int step)
 {
     Q_D(QAbstractSlider);
+
+    d->viewMayChangeSingleStep = (step < 0);
+    if (step < 0 && d->singleStepFromItemView > 0)
+        step = d->singleStepFromItemView;
+
     if (step != d->singleStep)
         d->setSteps(step, d->pageStep);
 }
@@ -934,6 +939,18 @@ bool QAbstractSlider::event(QEvent *e)
 #endif
 
     return QWidget::event(e);
+}
+
+// This function is called from itemviews when doing scroll per pixel (on updateGeometries())
+// It will not have any effect if there has been a call to setSingleStep with
+// a 'reasonable' value (since viewMayChangeSingleStep will be set to false).
+// (If setSingleStep is called with -1 it will however allow the views to change singleStep.)
+
+void QAbstractSliderPrivate::itemviewChangeSingleStep(int step)
+{
+    singleStepFromItemView = step;
+    if (viewMayChangeSingleStep && singleStep != step)
+        setSteps(step, pageStep);
 }
 
 QT_END_NAMESPACE

@@ -67,6 +67,8 @@ public:
      * Call effectiveSingleStep() when changing the slider value.
      */
     int singleStep;
+    int singleStepFromItemView; // If we have itemViews we track the views preferred singleStep value.
+    bool viewMayChangeSingleStep;
 
     float offset_accumulated;
     uint tracking : 1;
@@ -108,6 +110,7 @@ public:
 #endif
         ;
     }
+    void itemviewChangeSingleStep(int step);
 
     virtual int bound(int val) const { return qMax(minimum, qMin(maximum, val)); }
     inline int overflowSafeAdd(int add) const

@@ -161,6 +161,7 @@ private slots:
     void taskQTBUG_39902_mutualScrollBars_data();
     void taskQTBUG_39902_mutualScrollBars();
     void horizontalScrollingByVerticalWheelEvents();
+    void taskQTBUG_7232_AllowUserToControlSingleStep();
 };
 
 // Testing get/set functions
@@ -2467,6 +2468,44 @@ void tst_QListView::horizontalScrollingByVerticalWheelEvents()
     int vValue = lv.verticalScrollBar()->value();
     QApplication::sendEvent(lv.viewport(), &wheelDownEvent);
     QVERIFY(lv.verticalScrollBar()->value() > vValue);
+}
+
+void tst_QListView::taskQTBUG_7232_AllowUserToControlSingleStep()
+{
+    // When we set the scrollMode to ScrollPerPixel it will adjust the scrollbars singleStep automatically
+    // Setting a singlestep on a scrollbar should however imply that the user takes control.
+    // Setting a singlestep to -1 return to an automatic control of the singleStep.
+    QListView lv;
+    lv.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    lv.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    QStandardItemModel model(1000, 100);
+    QString str = QString::fromLatin1("This is a long string made to ensure that we get some horizontal scroll (and we want scroll)");
+    model.setData(model.index(0, 0), str);
+    lv.setModel(&model);
+    lv.setGeometry(150, 150, 150, 150);
+    lv.show();
+    lv.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    lv.setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    QVERIFY(QTest::qWaitForWindowExposed(&lv));
+
+    int vStep1 = lv.verticalScrollBar()->singleStep();
+    int hStep1 = lv.horizontalScrollBar()->singleStep();
+    QVERIFY(lv.verticalScrollBar()->singleStep() > 1);
+    QVERIFY(lv.horizontalScrollBar()->singleStep() > 1);
+
+    lv.verticalScrollBar()->setSingleStep(1);
+    lv.setGeometry(200, 200, 200, 200);
+    QCOMPARE(lv.verticalScrollBar()->singleStep(), 1);
+
+    lv.horizontalScrollBar()->setSingleStep(1);
+    lv.setGeometry(150, 150, 150, 150);
+    QCOMPARE(lv.horizontalScrollBar()->singleStep(), 1);
+
+    lv.verticalScrollBar()->setSingleStep(-1);
+    lv.horizontalScrollBar()->setSingleStep(-1);
+    QCOMPARE(vStep1, lv.verticalScrollBar()->singleStep());
+    QCOMPARE(hStep1, lv.horizontalScrollBar()->singleStep());
 }
 
 QTEST_MAIN(tst_QListView)

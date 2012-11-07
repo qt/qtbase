@@ -214,6 +214,8 @@ private slots:
 
     void changeHeaderData();
     void viewOptions();
+
+    void taskQTBUG_7232_AllowUserToControlSingleStep();
 };
 
 // Testing get/set functions
@@ -4481,6 +4483,42 @@ void tst_QTableView::taskQTBUG_30653_doItemsLayout()
     int doItemsLayoutOffset = view.verticalHeader()->offset();
 
     QCOMPARE(scrollToBottomOffset, doItemsLayoutOffset);
+}
+
+void tst_QTableView::taskQTBUG_7232_AllowUserToControlSingleStep()
+{
+    // When we set the scrollMode to ScrollPerPixel it will adjust the scrollbars singleStep automatically
+    // Setting a singlestep on a scrollbar should however imply that the user takes control (and it is not changed by geometry updates).
+    // Setting a singlestep to -1 return to an automatic control of the singleStep.
+    QTableView t;
+    t.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    t.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    QStandardItemModel model(200, 200);
+    t.setModel(&model);
+    t.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&t));
+    t.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    t.setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+
+    t.setGeometry(200, 200, 200, 200);
+    int vStep1 = t.verticalScrollBar()->singleStep();
+    int hStep1 = t.horizontalScrollBar()->singleStep();
+    QVERIFY(vStep1 > 1);
+    QVERIFY(hStep1 > 1);
+
+    t.verticalScrollBar()->setSingleStep(1);
+    t.setGeometry(300, 300, 300, 300);
+    QCOMPARE(t.verticalScrollBar()->singleStep(), 1);
+
+    t.horizontalScrollBar()->setSingleStep(1);
+    t.setGeometry(400, 400, 400, 400);
+    QCOMPARE(t.horizontalScrollBar()->singleStep(), 1);
+
+    t.setGeometry(200, 200, 200, 200);
+    t.verticalScrollBar()->setSingleStep(-1);
+    t.horizontalScrollBar()->setSingleStep(-1);
+    QCOMPARE(vStep1, t.verticalScrollBar()->singleStep());
+    QCOMPARE(hStep1, t.horizontalScrollBar()->singleStep());
 }
 
 QTEST_MAIN(tst_QTableView)

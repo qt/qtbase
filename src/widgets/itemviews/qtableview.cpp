@@ -46,6 +46,7 @@
 #include <qabstractbutton.h>
 #include <private/qtableview_p.h>
 #include <private/qheaderview_p.h>
+#include <private/qscrollbar_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
@@ -2166,7 +2167,7 @@ void QTableView::updateGeometries()
     } else { // ScrollPerPixel
         horizontalScrollBar()->setPageStep(vsize.width());
         horizontalScrollBar()->setRange(0, horizontalLength - vsize.width());
-        horizontalScrollBar()->setSingleStep(qMax(vsize.width() / (columnsInViewport + 1), 2));
+        horizontalScrollBar()->d_func()->itemviewChangeSingleStep(qMax(vsize.width() / (columnsInViewport + 1), 2));
     }
 
     // vertical scroll bar
@@ -2194,7 +2195,7 @@ void QTableView::updateGeometries()
     } else { // ScrollPerPixel
         verticalScrollBar()->setPageStep(vsize.height());
         verticalScrollBar()->setRange(0, verticalLength - vsize.height());
-        verticalScrollBar()->setSingleStep(qMax(vsize.height() / (rowsInViewport + 1), 2));
+        verticalScrollBar()->d_func()->itemviewChangeSingleStep(qMax(vsize.height() / (rowsInViewport + 1), 2));
     }
 
     d->geometryRecursionBlock = false;

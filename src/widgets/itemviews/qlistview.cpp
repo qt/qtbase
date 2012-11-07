@@ -46,6 +46,7 @@
 #include <qscrollbar.h>
 #include <qrubberband.h>
 #include <private/qlistview_p.h>
+#include <private/qscrollbar_p.h>
 #include <qdebug.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
@@ -1868,7 +1869,7 @@ void QCommonListViewBase::paintDragDrop(QPainter *painter)
 
 void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 {
-    horizontalScrollBar()->setSingleStep(step.width() + spacing());
+    horizontalScrollBar()->d_func()->itemviewChangeSingleStep(step.width() + spacing());
     horizontalScrollBar()->setPageStep(viewport()->width());
 
     // If both scroll bars are set to auto, we might end up in a situation with enough space
@@ -1898,7 +1899,7 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 
 void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
 {
-    verticalScrollBar()->setSingleStep(step.height() + spacing());
+    verticalScrollBar()->d_func()->itemviewChangeSingleStep(step.height() + spacing());
     verticalScrollBar()->setPageStep(viewport()->height());
 
     // If both scroll bars are set to auto, we might end up in a situation with enough space

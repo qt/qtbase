@@ -78,6 +78,13 @@ private:
 
     Q_DISABLE_COPY(QScrollBar)
     Q_DECLARE_PRIVATE(QScrollBar)
+#ifndef QT_NO_ITEMVIEWS
+    friend class QTableView;
+    friend class QTreeViewPrivate;
+    friend class QCommonListViewBase;
+    friend class QListModeViewBase;
+    friend class QAbstractItemView;
+#endif
 };
 
 #endif // QT_NO_SCROLLBAR

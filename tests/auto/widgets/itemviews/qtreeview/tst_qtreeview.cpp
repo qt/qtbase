@@ -255,6 +255,7 @@ private slots:
     void taskQTBUG_8176_emitOnExpandAll();
     void taskQTBUG_37813_crash();
     void taskQTBUG_45697_crash();
+    void taskQTBUG_7232_AllowUserToControlSingleStep();
     void testInitialFocus();
 };
 
@@ -4445,6 +4446,48 @@ void tst_QTreeView::taskQTBUG_45697_crash()
     testWidget.resize(400, 400);
     testWidget.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(100, 100));
     QTRY_VERIFY(testWidget.timerTick() >= 2);
+}
+
+void tst_QTreeView::taskQTBUG_7232_AllowUserToControlSingleStep()
+{
+    // When we set the scrollMode to ScrollPerPixel it will adjust the scrollbars singleStep automatically
+    // Setting a singlestep on a scrollbar should however imply that the user takes control.
+    // Setting a singlestep to -1 return to an automatic control of the singleStep.
+    QTreeWidget t;
+    t.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    t.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    t.setColumnCount(2);
+    QTreeWidgetItem *mainItem = new QTreeWidgetItem(&t, QStringList() << "Root");
+    for (int i = 0; i < 200; ++i) {
+        QTreeWidgetItem *item = new QTreeWidgetItem(mainItem, QStringList(QString("Item")));
+        new QTreeWidgetItem(item, QStringList() << "Child" << "1");
+        new QTreeWidgetItem(item, QStringList() << "Child" << "2");
+        new QTreeWidgetItem(item, QStringList() << "Child" << "3");
+    }
+    t.expandAll();
+
+    t.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    t.setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+
+    t.setGeometry(200, 200, 200, 200);
+    int vStep1 = t.verticalScrollBar()->singleStep();
+    int hStep1 = t.horizontalScrollBar()->singleStep();
+    QVERIFY(vStep1 > 1);
+    QVERIFY(hStep1 > 1);
+
+    t.verticalScrollBar()->setSingleStep(1);
+    t.setGeometry(300, 300, 300, 300);
+    QCOMPARE(t.verticalScrollBar()->singleStep(), 1);
+
+    t.horizontalScrollBar()->setSingleStep(1);
+    t.setGeometry(400, 400, 400, 400);
+    QCOMPARE(t.horizontalScrollBar()->singleStep(), 1);
+
+    t.setGeometry(200, 200, 200, 200);
+    t.verticalScrollBar()->setSingleStep(-1);
+    t.horizontalScrollBar()->setSingleStep(-1);
+    QCOMPARE(vStep1, t.verticalScrollBar()->singleStep());
+    QCOMPARE(hStep1, t.horizontalScrollBar()->singleStep());
 }
 
 QTEST_MAIN(tst_QTreeView)

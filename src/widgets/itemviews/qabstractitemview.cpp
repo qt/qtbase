@@ -54,6 +54,7 @@
 #include <private/qabstractitemview_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qguiapplication_p.h>
+#include <private/qscrollbar_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
@@ -426,6 +427,11 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 /*!
     \since 4.2
     \enum QAbstractItemView::ScrollMode
+
+    Describes how the scrollbar should behave. When setting the scroll mode
+    to ScrollPerPixel the single step size will adjust automatically unless
+    it was set explicitly using \l{QAbstractSlider::}{setSingleStep()}.
+    The automatic adjustment can be restored by setting the single step size to -1.
 
     \value ScrollPerItem    The view will scroll the contents one item at a time.
     \value ScrollPerPixel   The view will scroll the contents one pixel at a time.
@@ -1235,6 +1241,10 @@ void QAbstractItemView::setVerticalScrollMode(ScrollMode mode)
         return;
     QModelIndex topLeft = indexAt(QPoint(0, 0));
     d->verticalScrollMode = mode;
+    if (mode == ScrollPerItem)
+        verticalScrollBar()->d_func()->itemviewChangeSingleStep(1); // setSingleStep(-1) => step with 1
+    else
+        verticalScrollBar()->setSingleStep(-1); // Ensure that the view can update single step
     updateGeometries(); // update the scroll bars
     scrollTo(topLeft, QAbstractItemView::PositionAtTop);
 }
@@ -1257,7 +1267,13 @@ QAbstractItemView::ScrollMode QAbstractItemView::verticalScrollMode() const
 void QAbstractItemView::setHorizontalScrollMode(ScrollMode mode)
 {
     Q_D(QAbstractItemView);
+    if (mode == d->horizontalScrollMode)
+        return;
     d->horizontalScrollMode = mode;
+    if (mode == ScrollPerItem)
+        horizontalScrollBar()->d_func()->itemviewChangeSingleStep(1); // setSingleStep(-1) => step with 1
+    else
+        horizontalScrollBar()->setSingleStep(-1); // Ensure that the view can update single step
     updateGeometries(); // update the scroll bars
 }
 

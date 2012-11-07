@@ -45,6 +45,7 @@
 #include <qpen.h>
 #include <qdebug.h>
 #include <QMetaMethod>
+#include <private/qscrollbar_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
@@ -3698,7 +3699,7 @@ void QTreeViewPrivate::updateScrollBars()
         }
         vbar->setRange(0, contentsHeight - viewportSize.height());
         vbar->setPageStep(viewportSize.height());
-        vbar->setSingleStep(qMax(viewportSize.height() / (itemsInViewport + 1), 2));
+        vbar->d_func()->itemviewChangeSingleStep(qMax(viewportSize.height() / (itemsInViewport + 1), 2));
     }
 
     const int columnCount = header->count();
@@ -3724,7 +3725,7 @@ void QTreeViewPrivate::updateScrollBars()
             viewportSize = maxSize;
         hbar->setPageStep(viewportSize.width());
         hbar->setRange(0, qMax(horizontalLength - viewportSize.width(), 0));
-        hbar->setSingleStep(qMax(viewportSize.width() / (columnsInViewport + 1), 2));
+        hbar->d_func()->itemviewChangeSingleStep(qMax(viewportSize.width() / (columnsInViewport + 1), 2));
     }
 }
 
