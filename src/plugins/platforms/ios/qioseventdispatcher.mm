@@ -189,6 +189,7 @@ QIOSEventDispatcher::~QIOSEventDispatcher()
 bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     m_interrupted = false;
+    bool eventsProcessed = false;
 
     UIApplication *uiApplication = [UIApplication sharedApplication];
     bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
@@ -207,10 +208,13 @@ bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
             while ([runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]] && !m_interrupted);
         }
+        eventsProcessed = true;
     } else {
-        // todo: manual processEvents...
+        if (!(flags & QEventLoop::WaitForMoreEvents))
+            wakeUp();
+        eventsProcessed = [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
     }
-    return false;
+    return eventsProcessed;
 }
 
 bool QIOSEventDispatcher::hasPendingEvents()
@@ -313,6 +317,7 @@ void QIOSEventDispatcher::wakeUp()
 
 void QIOSEventDispatcher::interrupt()
 {
+    wakeUp();
     m_interrupted = true;
 }
 
