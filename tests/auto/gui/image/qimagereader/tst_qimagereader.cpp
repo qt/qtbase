@@ -756,6 +756,15 @@ void tst_QImageReader::gifHandlerBugs()
         QVERIFY(io.canRead());
         QCOMPARE(io.loopCount(), -1);
     }
+
+    // Check that pixels with the transparent color are transparent but not zeroed
+    {
+        QImageReader io(prefix + "trans.gif");
+        QVERIFY(io.canRead());
+        QImage im = io.read();
+        QCOMPARE(im.pixel(0,0), qRgba(0x3f, 0xff, 0x7f, 0x00));
+        QCOMPARE(im.pixel(10,10), qRgba(0x3f, 0xff, 0x7f, 0x00));
+    }
 }
 
 void tst_QImageReader::animatedGif()

@@ -488,7 +488,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                 } else {
                     if (needfirst) {
                         firstcode=oldcode=code;
-                        if (!out_of_bounds && image->height() > y && firstcode!=trans_index)
+                        if (!out_of_bounds && image->height() > y && ((frame == 0) || (firstcode != trans_index)))
                             ((QRgb*)FAST_SCAN_LINE(bits, bpl, y))[x] = color(firstcode);
                         x++;
                         if (x>=swidth) out_of_bounds = true;
@@ -540,17 +540,13 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         }
                         oldcode=incode;
                         const int h = image->height();
-                        const QRgb *map = lcmap ? localcmap : globalcmap;
                         QRgb *line = 0;
                         if (!out_of_bounds && h > y)
                             line = (QRgb*)FAST_SCAN_LINE(bits, bpl, y);
                         while (sp>stack) {
                             const uchar index = *(--sp);
-                            if (!out_of_bounds && h > y && index!=trans_index) {
-                                if (index > ncols)
-                                    line[x] = Q_TRANSPARENT;
-                                else
-                                    line[x] = map ? map[index] : 0;
+                            if (!out_of_bounds && h > y && ((frame == 0) || (index != trans_index))) {
+                                line[x] = color(index);
                             }
                             x++;
                             if (x>=swidth) out_of_bounds = true;
@@ -1031,11 +1027,12 @@ void QGIFFormat::nextY(unsigned char *bits, int bpl)
 
 inline QRgb QGIFFormat::color(uchar index) const
 {
-    if (index == trans_index || index > ncols)
+    if (index > ncols)
         return Q_TRANSPARENT;
 
     QRgb *map = lcmap ? localcmap : globalcmap;
-    return map ? map[index] : 0;
+    QRgb col = map ? map[index] : 0;
+    return index == trans_index ? col & Q_TRANSPARENT : col;
 }
 
 //-------------------------------------------------------------------------
