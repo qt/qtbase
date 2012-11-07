@@ -35,7 +35,7 @@ Cpp.ignoretokens        += \
                           Q_INTERNAL_WIN_NO_THROW \
                           Q_INVOKABLE \
                           Q_LOCATION_EXPORT \
-                          Q_MULTIMEDIA_EXPORT
+                          Q_MULTIMEDIA_EXPORT \
                           Q_NETWORK_EXPORT \
                           Q_OPENGL_EXPORT \
                           Q_OPENVG_EXPORT \
@@ -96,7 +96,7 @@ Cpp.ignoredirectives    = \
                           K_DECLARE_PRIVATE \
                           PHONON_HEIR \
                           PHONON_OBJECT \
-                          Q_CLASSINFO
+                          Q_CLASSINFO \
                           Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \
                           Q_DECLARE_OPERATORS_FOR_FLAGS \
@@ -113,4 +113,4 @@ Cpp.ignoredirectives    = \
                           Q_INTERFACES \
                           Q_PRIVATE_PROPERTY \
                           QT_FORWARD_DECLARE_CLASS \
-                          Q_DECLARE_HANDLE \
+                          Q_DECLARE_HANDLE
