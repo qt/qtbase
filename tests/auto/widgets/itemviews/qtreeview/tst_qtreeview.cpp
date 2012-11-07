@@ -4225,6 +4225,15 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
     spy2.clear();
     tw.collapseAll();
     QCOMPARE(spy2.size(), 5);
+
+    // expand to depth
+    item2->setExpanded(true);
+    spy.clear();
+    spy2.clear();
+    tw.expandToDepth(0);
+
+    QCOMPARE(spy.size(), 2); // item and item5 are expanded
+    QCOMPARE(spy2.size(), 1); // item2 is collapsed
 }
 
 #ifndef QT_NO_ANIMATION

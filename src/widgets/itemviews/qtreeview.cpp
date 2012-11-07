@@ -2668,6 +2668,8 @@ void QTreeView::expandToDepth(int depth)
 {
     Q_D(QTreeView);
     d->viewItems.clear();
+    QSet<QPersistentModelIndex> old_expandedIndexes;
+    old_expandedIndexes = d->expandedIndexes;
     d->expandedIndexes.clear();
     d->interruptDelayedItemsLayout();
     d->layout(-1);
@@ -2678,6 +2680,24 @@ void QTreeView::expandToDepth(int depth)
             d->storeExpanded(d->viewItems.at(i).index);
         }
     }
+
+    // emit signals
+    QSet<QPersistentModelIndex> collapsedIndexes = old_expandedIndexes - d->expandedIndexes;
+    QSet<QPersistentModelIndex>::const_iterator i = collapsedIndexes.constBegin();
+    for (; i != collapsedIndexes.constEnd(); ++i) {
+        const QPersistentModelIndex &mi = (*i);
+        if (mi.isValid() && !(mi.flags() & Qt::ItemNeverHasChildren))
+            emit collapsed(mi);
+    }
+
+    QSet<QPersistentModelIndex> expandedIndexs = d->expandedIndexes - old_expandedIndexes;
+    i = expandedIndexs.constBegin();
+    for (; i != expandedIndexs.constEnd(); ++i) {
+        const QPersistentModelIndex &mi = (*i);
+        if (mi.isValid() && !(mi.flags() & Qt::ItemNeverHasChildren))
+            emit expanded(mi);
+    }
+
     updateGeometries();
     d->viewport->update();
 }
