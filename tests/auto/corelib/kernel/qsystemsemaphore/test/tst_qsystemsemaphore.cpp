@@ -264,11 +264,11 @@ void tst_QSystemSemaphore::initialValue()
 
 QString tst_QSystemSemaphore::helperBinary()
 {
-    QString binary = QStringLiteral("systemsemaphorehelper/systemsemaphorehelper");
+    QString binary = QStringLiteral("helperbinary");
 #ifdef Q_OS_WIN
     binary += QStringLiteral(".exe");
 #endif
-    return binary;
+    return QFINDTESTDATA(binary);
 }
 QTEST_MAIN(tst_QSystemSemaphore)
 #include "tst_qsystemsemaphore.moc"
