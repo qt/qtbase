@@ -2090,8 +2090,6 @@ void tst_QWidget::resizeEvent()
     {
         ResizeWidget wTopLevel;
         wTopLevel.show();
-        if (m_platform == QStringLiteral("windows"))
-            QSKIP("QTBUG-26424");
         QCOMPARE (wTopLevel.m_resizeEventCount, 1); // initial resize event before paint for toplevels
         wTopLevel.hide();
         QSize safeSize(640,480);
@@ -4784,9 +4782,6 @@ public:
 
 void tst_QWidget::popupEnterLeave()
 {
-    if (m_platform == QStringLiteral("windows"))
-        QSKIP("QTBUG-26424");
-
     QWidget parent;
     parent.setWindowFlags(Qt::FramelessWindowHint);
     parent.setGeometry(10, 10, 200, 100);
@@ -4892,9 +4887,6 @@ void tst_QWidget::moveChild()
 
 void tst_QWidget::showAndMoveChild()
 {
-    if (m_platform == QStringLiteral("windows"))
-        QSKIP("QTBUG-26424");
-
     QWidget parent(0, Qt::FramelessWindowHint);
     // prevent custom styles
     parent.setStyle(new QWindowsStyle);
