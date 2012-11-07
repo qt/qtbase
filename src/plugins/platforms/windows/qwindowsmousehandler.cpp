@@ -222,7 +222,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     // any button press until release.
     if (!platformWindow->hasMouseCapture()
         && (msg.message == WM_LBUTTONDOWN || msg.message == WM_MBUTTONDOWN
-            || msg.message == WM_RBUTTONDOWN)) {
+            || msg.message == WM_RBUTTONDOWN || msg.message == WM_LBUTTONDBLCLK
+            || msg.message == WM_MBUTTONDBLCLK || msg.message == WM_RBUTTONDBLCLK )) {
         platformWindow->setMouseGrabEnabled(true);
         platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
         if (QWindowsContext::verboseEvents)
