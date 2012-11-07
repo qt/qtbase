@@ -113,6 +113,7 @@ private slots:
     void drawBorderPixmap();
 #endif
     void drawPixmapFragments();
+    void drawPixmapNegativeScale();
 
     void drawLine_data();
     void drawLine();
@@ -801,6 +802,40 @@ void tst_QPainter::drawPixmapFragments()
     QVERIFY(fragment.scaleY == 1);
     QVERIFY(fragment.rotation == 0);
     QVERIFY(fragment.opacity == 1);
+}
+
+void tst_QPainter::drawPixmapNegativeScale()
+{
+    // basePixmap is a 16x16 opaque white square ...
+    QPixmap basePixmap(16, 16);
+    basePixmap.fill(QColor(255, 255, 255, 255));
+    // ... with an opaque black 8x16 left strip
+    QPainter p(&basePixmap);
+    p.setCompositionMode(QPainter::CompositionMode_Source);
+    p.fillRect(QRect(0, 0, 8, 16), QColor(0, 0, 0, 255));
+    p.end();
+
+    // verify one pixel value for each strip
+    QImage baseImage = basePixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    QVERIFY(baseImage.pixel(4, 8) == qRgba(0, 0, 0, 255));
+    QVERIFY(baseImage.pixel(12, 8) == qRgba(255, 255, 255, 255));
+
+    // resultPixmap is a 16x16 square
+    QPixmap resultPixmap(16, 16);
+
+    // draw basePixmap over resultPixmap using x=-1.0 y=-1.0
+    // scaling factors (i.e. 180° rotation)
+    QPainter p2(&resultPixmap);
+    p2.setCompositionMode(QPainter::CompositionMode_Source);
+    p2.scale(qreal(-1.0), qreal(-1.0));
+    p2.translate(-resultPixmap.width(), -resultPixmap.height());
+    p2.drawPixmap(resultPixmap.rect(), basePixmap);
+    p2.end();
+
+    // check result
+    QImage resultImage = resultPixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    QVERIFY(resultImage.pixel(4, 8) == qRgba(255, 255, 255, 255)); // left strip is now white
+    QVERIFY(resultImage.pixel(12, 8) == qRgba(0, 0, 0, 255)); // and right strip is now black
 }
 
 void tst_QPainter::drawLine_data()

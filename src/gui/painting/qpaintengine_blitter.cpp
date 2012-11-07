@@ -330,7 +330,11 @@ void QBlitterPaintEnginePrivate::updateTransformState(QPainterState *s)
 {
     QTransform::TransformationType type = s->matrix.type();
 
-    caps.updateState(STATE_XFORM_COMPLEX, type > QTransform::TxScale);
+    // consider scaling operations with a negative factor as "complex" for now.
+    // as some blitters could handle axisymmetrical operations, we should improve blitter
+    // paint engine to handle them as a capability
+    caps.updateState(STATE_XFORM_COMPLEX, (type > QTransform::TxScale) ||
+        ((type == QTransform::TxScale) && ((s->matrix.m11() < 0.0) || (s->matrix.m22() < 0.0))));
     caps.updateState(STATE_XFORM_SCALE, type > QTransform::TxTranslate);
 
     hasXForm = type >= QTransform::TxTranslate;
