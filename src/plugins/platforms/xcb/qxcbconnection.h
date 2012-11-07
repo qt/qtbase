@@ -376,6 +376,8 @@ public:
     bool hasXRandr() const { return has_randr_extension; }
     bool hasInputShape() const { return has_input_shape; }
 
+    bool supportsThreadedRendering() const { return m_reader->isRunning(); }
+
     xcb_timestamp_t getTimestamp();
 
 private slots:
