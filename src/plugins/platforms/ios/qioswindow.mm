@@ -42,6 +42,7 @@
 #include "qioswindow.h"
 #include "qioscontext.h"
 #include "qiosscreen.h"
+#include "qiosapplicationdelegate.h"
 
 #import <QuartzCore/CAEAGLLayer.h>
 
@@ -170,6 +171,11 @@ QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] init])
 {
+    UIApplication *uiApplication = [UIApplication sharedApplication];
+    if (uiApplication) {
+        if ([uiApplication.delegate isMemberOfClass:[QIOSApplicationDelegate class]])
+            [uiApplication.delegate.window.rootViewController.view addSubview:m_view];
+    }
 }
 
 QIOSWindow::~QIOSWindow()

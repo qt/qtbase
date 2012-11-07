@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #import "qiosapplicationdelegate.h"
+#include "qioswindow.h"
 #include <QtCore/QtCore>
 
 @implementation QIOSApplicationDelegate
@@ -48,7 +49,24 @@
 {
     Q_UNUSED(application)
     Q_UNUSED(launchOptions)
+
+    // If this application delegate is instanciated, it means that
+    // this plugin also created UIApplication. We then also create a
+    // window with a view controller, and set all QWindow views
+    // as children of the controller view:
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    UIViewController *controller = [[UIViewController alloc] init];
+    self.window.rootViewController = controller;
+    controller.view = [[UIView alloc] init];
+
+    QWindowList windows = QGuiApplication::topLevelWindows();
+    for (int i=0; i<windows.size(); ++i) {
+        if (QIOSWindow *w = static_cast<QIOSWindow *>(windows[i]->handle())) {
+            UIView *winView = w->nativeView();
+            if (winView && !winView.superview)
+                [controller.view addSubview:winView];
+        }
+    }
 
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
