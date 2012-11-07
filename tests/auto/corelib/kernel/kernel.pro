@@ -15,6 +15,7 @@ SUBDIRS=\
     qsharedmemory \
     qsignalmapper \
     qsocketnotifier \
+    qsystemsemaphore \
     qtimer \
     qtranslator \
     qvariant \
