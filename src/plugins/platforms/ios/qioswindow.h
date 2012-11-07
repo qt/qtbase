@@ -47,6 +47,7 @@
 #import <UIKit/UIKit.h>
 
 class QIOSContext;
+class QIOSWindow;
 
 @interface EAGLView : UIView <UIKeyInput>
 {
@@ -57,8 +58,10 @@ class QIOSContext;
     UIKeyboardType keyboardType;
     UIReturnKeyType returnKeyType;
     BOOL secureTextEntry;
+    QIOSWindow *m_qioswindow;
 }
 
+- (id)initWithQIOSWindow:(QIOSWindow *)qioswindow;
 - (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons;
 
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType;

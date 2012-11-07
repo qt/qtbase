@@ -58,6 +58,14 @@
     return [CAEAGLLayer class];
 }
 
+-(id)initWithQIOSWindow:(QIOSWindow *)qioswindow
+{
+    if (self = [super init]) {
+        m_qioswindow = qioswindow;
+    }
+    return self;
+}
+
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) {
@@ -83,22 +91,13 @@
 
 - (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons
 {
-    Q_UNUSED(touches);
-    Q_UNUSED(event);
-    Q_UNUSED(buttons);
-
-    // FIXME: Reintroduce relation to UIWindow
-    qDebug() <<  __FUNCTION__ << "not implemented";
-
-#if 0
     UITouch *touch = [touches anyObject];
     CGPoint locationInView = [touch locationInView:self];
     CGFloat scaleFactor = [self contentScaleFactor];
     QPoint p(locationInView.x * scaleFactor, locationInView.y * scaleFactor);
 
     // TODO handle global touch point? for status bar?
-    QWindowSystemInterface::handleMouseEvent(m_window->window(), (ulong)(event.timestamp*1000), p, p, buttons);
-#endif
+    QWindowSystemInterface::handleMouseEvent(m_qioswindow->window(), (ulong)(event.timestamp*1000), p, p, buttons);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -169,7 +168,7 @@ QT_BEGIN_NAMESPACE
 
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
-    , m_view([[EAGLView alloc] init])
+    , m_view([[EAGLView alloc] initWithQIOSWindow:this])
 {
     UIApplication *uiApplication = [UIApplication sharedApplication];
     if (uiApplication) {
