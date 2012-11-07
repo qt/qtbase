@@ -1637,8 +1637,7 @@ void tst_QTreeView::expandAndCollapseAll()
         for (int r = 0; r < rows; ++r)
             parents.push(model.index(r, 0, p));
     }
-// ### why is collapsed() signal not emitted?
-//    QCOMPARE(collapsedSpy.count(), count);
+    QCOMPARE(collapsedSpy.count(), 12);
 }
 
 void tst_QTreeView::expandWithNoChildren()
@@ -4206,6 +4205,7 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
     QTreeWidgetItem *item5 = new QTreeWidgetItem(&tw, QStringList(QString("item 5")));
     new QTreeWidgetItem(item5, QStringList(QString("item 6")));
     QSignalSpy spy(&tw, SIGNAL(expanded(const QModelIndex&)));
+
     // expand all
     tw.expandAll();
     QCOMPARE(spy.size(), 6);
@@ -4215,6 +4215,16 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
     spy.clear();
     tw.expandAll();
     QCOMPARE(spy.size(), 5);
+
+    // collapse all
+    QSignalSpy spy2(&tw, SIGNAL(collapsed(const QModelIndex&)));
+    tw.collapseAll();
+    QCOMPARE(spy2.size(), 6);
+    tw.expandAll();
+    item2->setExpanded(false);
+    spy2.clear();
+    tw.collapseAll();
+    QCOMPARE(spy2.size(), 5);
 }
 
 #ifndef QT_NO_ANIMATION

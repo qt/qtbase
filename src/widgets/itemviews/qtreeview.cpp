@@ -2646,7 +2646,15 @@ void QTreeView::expandAll()
 void QTreeView::collapseAll()
 {
     Q_D(QTreeView);
+    QSet<QPersistentModelIndex> old_expandedIndexes;
+    old_expandedIndexes = d->expandedIndexes;
     d->expandedIndexes.clear();
+    QSet<QPersistentModelIndex>::const_iterator i = old_expandedIndexes.constBegin();
+    for (; i != old_expandedIndexes.constEnd(); ++i) {
+        const QPersistentModelIndex &mi = (*i);
+        if (mi.isValid() && !(mi.flags() & Qt::ItemNeverHasChildren))
+            emit collapsed(mi);
+    }
     doItemsLayout();
 }
 
