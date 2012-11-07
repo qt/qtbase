@@ -1741,25 +1741,25 @@ struct RegisterMetaTypeStructDefaultTemplateValue
 
 void tst_QMetaType::constexprMetaTypeIds()
 {
+#if defined(Q_COMPILER_CONSTEXPR)
     int id = 0;
     int metaType;
 
     switch(id) {
-#if defined(Q_COMPILER_CONSTEXPR)
       QT_FOR_EACH_STATIC_TYPE(METATYPE_ID_FUNCTION)
       metaType = MetaTypeIdStructDefaultTemplateValue<>::Value;
-#endif
     default:;
     }
 
     switch (id) {
-#if defined(Q_COMPILER_CONSTEXPR)
       QT_FOR_EACH_STATIC_TYPE(REGISTER_METATYPE_FUNCTION)
       metaType = RegisterMetaTypeStructDefaultTemplateValue<>::Value;
-#endif
     default:;
     }
     Q_UNUSED(metaType);
+#else
+    QSKIP("The test needs a compiler supporting constexpr");
+#endif
 }
 
 // Compile-time test, it should be possible to register function pointer types
