@@ -109,11 +109,7 @@ defineTest(qtAddModule) {
        isEmpty(lib): lib = -l$${MODULE_NAME}$${QT_LIBINFIX}
        LINKAGE += $$lib
 
-       contains(QT_CONFIG, rpath) {
-           rpath = $$eval(QT.$${1}.rpath)
-           isEmpty(rpath): rpath = $$MODULE_LIBS
-           QMAKE_RPATHDIR *= $$rpath
-       }
+       contains(QT_CONFIG, rpath): QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
 
        # Make sure we can link to uninstalled libraries
        unix:!mac:!isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works

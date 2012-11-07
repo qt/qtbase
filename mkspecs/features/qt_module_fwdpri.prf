@@ -2,8 +2,6 @@
 
     load(qt_build_paths)
 
-    isEmpty(MODULE_INSTALL_LIBS): MODULE_INSTALL_LIBS = $$[QT_INSTALL_LIBS/raw]
-
     MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
 
     # -rpath-link is used by the linker to find depedencies of dynamic
@@ -58,7 +56,6 @@
         "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
         $$module_rpathlink \
         $$module_rpathlink_priv \
-        "QT.$${MODULE}.rpath = $$MODULE_INSTALL_LIBS" \
         "include($$MODULE_PRI)"
     write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
     touch($$MODULE_FWD_PRI, $$MODULE_PRI)
