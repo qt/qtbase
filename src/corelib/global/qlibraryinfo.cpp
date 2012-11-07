@@ -358,9 +358,13 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             ret = config->value(key, defaultValue).toString();
 
 #ifdef QT_BOOTSTRAPPED
-            if (ret.isEmpty() && loc == HostPrefixPath)
-                ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
-                                    QLatin1String(qtConfEntries[PrefixPath].value)).toString();
+            if (ret.isEmpty()) {
+                if (loc == HostPrefixPath)
+                    ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
+                                        QLatin1String(qtConfEntries[PrefixPath].value)).toString();
+                else if (loc == TargetSpecPath || loc == HostSpecPath)
+                    ret = QString::fromLocal8Bit(qt_configure_prefix_path_strs[loc] + 12);
+            }
 #endif
 
             // expand environment variables in the form $(ENVVAR)
