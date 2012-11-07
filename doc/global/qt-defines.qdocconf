@@ -1,13 +1,12 @@
 versionsym              = QT_VERSION_STR
 
-codeindent              = 1
-
 defines                 += Q_QDOC \
                           QT_.*_SUPPORT \
                           QT_.*_LIB \
                           QT_COMPAT \
                           QT_KEYPAD_NAVIGATION \
                           QT_NO_EGL \
+                          QT3_SUPPORT \
                           Q_WS_.* \
                           Q_OS_.* \
                           Q_BYTE_ORDER \
