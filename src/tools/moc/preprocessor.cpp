@@ -567,7 +567,7 @@ void Preprocessor::macroExpandIdentifier(int lineNum, Symbols &preprocessed, Mac
 
     // don't expand macros with arguments for now
     if (macro.isFunction) {
-        while (test(PP_WHITESPACE));
+        while (test(PP_WHITESPACE)) {}
         if (!test(PP_LPAREN)) {
             preprocessed += s;
             return;
@@ -576,7 +576,7 @@ void Preprocessor::macroExpandIdentifier(int lineNum, Symbols &preprocessed, Mac
         while (hasNext()) {
             Symbols argument;
             // strip leading space
-            while (test(PP_WHITESPACE));
+            while (test(PP_WHITESPACE)) {}
             int nesting = 0;
             bool vararg = macro.isVariadic && (arguments.size() == macro.arguments.size() - 1);
             while (hasNext()) {
@@ -1173,7 +1173,7 @@ void Preprocessor::parseDefineArguments(Macro *m)
 {
     Symbols arguments;
     while (hasNext()) {
-        while (test(PP_WHITESPACE));
+        while (test(PP_WHITESPACE)) {}
         Token t = next();
         if (t == PP_RPAREN)
             break;
@@ -1182,7 +1182,7 @@ void Preprocessor::parseDefineArguments(Macro *m)
             if (l == "...") {
                 m->isVariadic = true;
                 arguments += Symbol(symbol().lineNum, PP_IDENTIFIER, "__VA_ARGS__");
-                while (test(PP_WHITESPACE));
+                while (test(PP_WHITESPACE)) {}
                 if (!test(PP_RPAREN))
                     error("missing ')' in macro argument list");
                 break;
@@ -1197,7 +1197,7 @@ void Preprocessor::parseDefineArguments(Macro *m)
             error("Duplicate macro parameter.");
         arguments += symbol();
 
-        while (test(PP_WHITESPACE));
+        while (test(PP_WHITESPACE)) {}
         t = next();
         if (t == PP_RPAREN)
             break;
@@ -1207,7 +1207,7 @@ void Preprocessor::parseDefineArguments(Macro *m)
             //GCC extension:    #define FOO(x, y...) x(y)
             // The last argument was already parsed. Just mark the macro as variadic.
             m->isVariadic = true;
-            while (test(PP_WHITESPACE));
+            while (test(PP_WHITESPACE)) {}
             if (!test(PP_RPAREN))
                 error("missing ')' in macro argument list");
             break;
@@ -1215,7 +1215,7 @@ void Preprocessor::parseDefineArguments(Macro *m)
         error("Unexpected character in macro argument list.");
     }
     m->arguments = arguments;
-    while (test(PP_WHITESPACE));
+    while (test(PP_WHITESPACE)) {}
 }
 
 void Preprocessor::until(Token t)
