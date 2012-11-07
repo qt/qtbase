@@ -73,17 +73,20 @@ private slots:
     void delayedMouseWindowGrab();
     void keyboardGrabToggled(bool);
     void grabKeyboardWindowToggled(bool);
+    void forceNativeWidgets();
 
 private:
     void toggleMouseWidgetGrab(QWidget *w, bool on);
     void toggleKeyboardWidgetGrab(QWidget *w, bool on);
 
     int m_mouseEventCount;
+    int m_enterLeaveEventCount;
     QPlainTextEdit *m_logEdit;
     QCheckBox *m_grabMouseCheckBox;
     QCheckBox *m_grabMouseWindowCheckBox;
     QCheckBox *m_grabKeyboardCheckBox;
     QCheckBox *m_grabKeyboardWindowCheckBox;
+    QPushButton *m_forceNativeButton;
 
     QString m_lastMouseMoveEvent;
 };
@@ -119,11 +122,13 @@ static const char testCasesC[] =
 
 MainWindow::MainWindow()
     : m_mouseEventCount(0)
+    , m_enterLeaveEventCount(0)
     , m_logEdit(new QPlainTextEdit(this))
     , m_grabMouseCheckBox(new QCheckBox(QLatin1String("Grab Mouse")))
     , m_grabMouseWindowCheckBox(new QCheckBox(QLatin1String("Grab Mouse Window Ctrl+W")))
     , m_grabKeyboardCheckBox(new QCheckBox(QLatin1String("Grab Keyboard")))
     , m_grabKeyboardWindowCheckBox(new QCheckBox(QLatin1String("Grab Keyboard Window")))
+    , m_forceNativeButton(new QPushButton(QLatin1String("Force native widgets")))
 {
     setObjectName(QLatin1String("MainWindow"));
     setMinimumWidth(800);
@@ -141,6 +146,7 @@ MainWindow::MainWindow()
     connect(clearLog, SIGNAL(triggered()), m_logEdit, SLOT(clear()));
 
     QWidget *w = new QWidget(this);
+    w->setObjectName(QLatin1String("CentralWidget"));
     QVBoxLayout *layout = new QVBoxLayout(w);
     QPlainTextEdit *instructions = new QPlainTextEdit(this);
     instructions->setObjectName(QLatin1String("InstructionsEdit"));
@@ -205,6 +211,11 @@ MainWindow::MainWindow()
     controlLayout->addWidget(popupMenuButton, row, 1);
 
     row++;
+    m_forceNativeButton->setObjectName("ForceNativeWidgetsButton");
+    controlLayout->addWidget(m_forceNativeButton, row, 0);
+    connect(m_forceNativeButton, SIGNAL(clicked()), this, SLOT(forceNativeWidgets()));
+
+    row++;
     QLineEdit *lineEdit = new QLineEdit(this);
     lineEdit->setObjectName(QLatin1String("LineEdit"));
     controlLayout->addWidget(lineEdit, row, 0, 1, 2);
@@ -221,13 +232,37 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
 {
     if (o->isWidgetType()) {
         switch (e->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease: {
+        case QEvent::Enter: {
             QString message;
             QDebug debug(&message);
-            debug.nospace()  << '#' << m_mouseEventCount++ << " on " << o->objectName()
-                             << " type " << e->type() << " Mousegrabber "
-                             << QWidget::mouseGrabber();
+            debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Enter for " << o->objectName();
+            m_logEdit->appendPlainText(message);
+        }
+            break;
+        case QEvent::Leave: {
+            QString message;
+            QDebug debug(&message);
+            debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Leave for " << o->objectName();
+            m_logEdit->appendPlainText(message);
+        }
+            break;
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease: {
+            const QMouseEvent *me = static_cast<QMouseEvent *>(e);
+            QString message;
+            QDebug debug = QDebug(&message).nospace();
+            debug << '#' << m_mouseEventCount++ << ' ';
+            if (e->type() == QEvent::MouseButtonPress) {
+                if (me->buttons() & Qt::LeftButton)
+                    debug << "Left button press";
+                if (me->buttons() & Qt::MiddleButton)
+                    debug << "Middle button press";
+                if (me->buttons() & Qt::RightButton)
+                    debug << "Right button press";
+            } else {
+                debug << "Button release";
+            }
+            debug << " on " << o->objectName() << " Mousegrabber " << QWidget::mouseGrabber();
             m_logEdit->appendPlainText(message);
         }
             break;
@@ -322,6 +357,14 @@ void MainWindow::keyboardGrabToggled(bool g)
 void MainWindow::grabKeyboardWindowToggled(bool g)
 {
     toggleKeyboardWidgetGrab(this, g);
+}
+
+void MainWindow::forceNativeWidgets()
+{
+    m_logEdit->appendPlainText(QString::fromLatin1("Created native widget %1").
+                               arg(m_forceNativeButton->winId()));
+    m_forceNativeButton->setEnabled(false);
+    m_forceNativeButton->setText(QLatin1String("Native widgets created"));
 }
 
 int main(int argc, char *argv[])
