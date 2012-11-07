@@ -108,6 +108,8 @@ public:
     void flush();
 
 private:
+    bool m_interrupted;
+
     CFRunLoopSourceRef m_postedEventsRunLoopSource;
     CFRunLoopSourceRef m_blockingTimerRunLoopSource;
 

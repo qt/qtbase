@@ -152,6 +152,7 @@ void QIOSEventDispatcher::processPostedEvents()
 
 QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     : QAbstractEventDispatcher(parent)
+    , m_interrupted(false)
     , m_runLoopTimerRef(0)
 {
     CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
@@ -187,6 +188,8 @@ QIOSEventDispatcher::~QIOSEventDispatcher()
 
 bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
+    m_interrupted = false;
+
     UIApplication *uiApplication = [UIApplication sharedApplication];
     bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
     bool execFlagSet = (flags & QEventLoop::DialogExec) || (flags & QEventLoop::EventLoopExec);
@@ -201,7 +204,8 @@ bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                 return UIApplicationMain(qAppPriv->argc, qAppPriv->argv, nil, NSStringFromClass([QIOSApplicationDelegate class]));
             }
         } else {
-            // todo: start NSRunLoop...
+            NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+            while ([runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]] && !m_interrupted);
         }
     } else {
         // todo: manual processEvents...
@@ -309,7 +313,7 @@ void QIOSEventDispatcher::wakeUp()
 
 void QIOSEventDispatcher::interrupt()
 {
-    qDebug() << __FUNCTION__ << "not implemented";
+    m_interrupted = true;
 }
 
 void QIOSEventDispatcher::flush()
