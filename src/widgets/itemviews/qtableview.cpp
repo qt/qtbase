@@ -2176,7 +2176,7 @@ void QTableView::updateGeometries()
     } else { // ScrollPerPixel
         horizontalScrollBar()->setPageStep(vsize.width());
         horizontalScrollBar()->setRange(0, horizontalLength - vsize.width());
-        horizontalScrollBar()->setSingleStep(qMax(vsize.width() / (columnsInViewport + 1), 2));
+        // here we do not want to overwrite (a possible user set) single step
     }
 
     // vertical scroll bar
@@ -2204,7 +2204,7 @@ void QTableView::updateGeometries()
     } else { // ScrollPerPixel
         verticalScrollBar()->setPageStep(vsize.height());
         verticalScrollBar()->setRange(0, verticalLength - vsize.height());
-        verticalScrollBar()->setSingleStep(qMax(vsize.height() / (rowsInViewport + 1), 2));
+        // here we do not want to overwrite (a possible user set) single step
     }
 
     d->geometryRecursionBlock = false;

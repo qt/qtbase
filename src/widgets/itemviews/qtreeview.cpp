@@ -3666,7 +3666,7 @@ void QTreeViewPrivate::updateScrollBars()
         }
         vbar->setRange(0, contentsHeight - viewportSize.height());
         vbar->setPageStep(viewportSize.height());
-        vbar->setSingleStep(qMax(viewportSize.height() / (itemsInViewport + 1), 2));
+        // here we do not want to overwrite (a possible user set) single step
     }
 
     const int columnCount = header->count();
@@ -3692,7 +3692,7 @@ void QTreeViewPrivate::updateScrollBars()
             viewportSize = maxSize;
         hbar->setPageStep(viewportSize.width());
         hbar->setRange(0, qMax(horizontalLength - viewportSize.width(), 0));
-        hbar->setSingleStep(qMax(viewportSize.width() / (columnsInViewport + 1), 2));
+        // here we do not want to overwrite (a possible user set) single step
     }
 }
 

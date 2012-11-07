@@ -3702,7 +3702,7 @@ void tst_QTableView::mouseWheel_data()
             << 10 + qApp->wheelScrollLines() << 10 + qApp->wheelScrollLines();
     QTest::newRow("scroll down per pixel")
             << int(QAbstractItemView::ScrollPerPixel) << -120
-            << 10 + qApp->wheelScrollLines() * 89 << 10 + qApp->wheelScrollLines() * 28;
+            << 10 + qApp->wheelScrollLines() << 10 + qApp->wheelScrollLines();
 }
 
 void tst_QTableView::mouseWheel()

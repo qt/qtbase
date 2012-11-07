@@ -1835,16 +1835,16 @@ void QCommonListViewBase::removeHiddenRow(int row)
 
 void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 {
-    horizontalScrollBar()->setSingleStep(step.width() + spacing());
     horizontalScrollBar()->setPageStep(viewport()->width());
     horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width());
+    // we do not want to overwrite (a possible user set) single step
 }
 
-void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
+void QCommonListViewBase::updateVerticalScrollBar(const QSize & /*step*/)
 {
-    verticalScrollBar()->setSingleStep(step.height() + spacing());
     verticalScrollBar()->setPageStep(viewport()->height());
     verticalScrollBar()->setRange(0, contentsSize.height() - viewport()->height());
+    // we do not want to overwrite (a possible user set) single step
 }
 
 void QCommonListViewBase::scrollContentsBy(int dx, int dy, bool /*scrollElasticBand*/)
