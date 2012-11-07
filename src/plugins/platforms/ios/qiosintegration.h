@@ -53,7 +53,6 @@ public:
     QIOSIntegration();
     ~QIOSIntegration();
 
-    QPlatformPixmap *createPlatformPixmap(QPlatformPixmap::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 

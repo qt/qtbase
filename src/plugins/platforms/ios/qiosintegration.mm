@@ -63,14 +63,6 @@ QIOSIntegration::~QIOSIntegration()
 {
 }
 
-QPlatformPixmap *QIOSIntegration::createPlatformPixmap(QPlatformPixmap::PixelType type) const
-{
-    Q_UNUSED(type);
-
-    qDebug() << __FUNCTION__ << "not yet implemented";
-    return 0;
-}
-
 QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 {
     qDebug() <<  __FUNCTION__ << "Creating platform window";
