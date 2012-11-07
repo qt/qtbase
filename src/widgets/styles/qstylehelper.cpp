@@ -99,6 +99,9 @@ bool hasAncestor(QObject *obj, QAccessible::Role role)
         delete iface;
         parent = parent->parent();
     }
+#else
+    Q_UNUSED(obj)
+    Q_UNUSED(role)
 #endif // QT_NO_ACCESSIBILITY
     return found;
 }
