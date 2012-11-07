@@ -325,7 +325,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #endif
     {
         const char *path = 0;
-        if (loc >= 0 && loc < sizeof(qt_configure_prefix_path_strs)/sizeof(qt_configure_prefix_path_strs[0]))
+        if (unsigned(loc) < sizeof(qt_configure_prefix_path_strs)/sizeof(qt_configure_prefix_path_strs[0]))
             path = qt_configure_prefix_path_strs[loc] + 12;
 #ifndef Q_OS_WIN // On Windows we use the registry
         else if (loc == SettingsPath)
@@ -338,7 +338,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     } else {
         QString key;
         QString defaultValue;
-        if (loc >= 0 && loc < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
+        if (unsigned(loc) < sizeof(qtConfEntries)/sizeof(qtConfEntries[0])) {
             key = QLatin1String(qtConfEntries[loc].key);
             defaultValue = QLatin1String(qtConfEntries[loc].value);
         }
