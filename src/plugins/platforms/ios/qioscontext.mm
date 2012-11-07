@@ -70,6 +70,9 @@ QIOSContext::QIOSContext(QOpenGLContext *context)
 
 QIOSContext::~QIOSContext()
 {
+    if ([EAGLContext currentContext] == m_eaglContext)
+        doneCurrent();
+
     [m_eaglContext release];
 }
 
