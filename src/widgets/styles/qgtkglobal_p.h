@@ -39,45 +39,52 @@
 **
 ****************************************************************************/
 
-#include "qgtkpainter_p.h"
+#ifndef QGTKGLOBAL_P_H
+#define QGTKGLOBAL_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qglobal.h>
 #if !defined(QT_NO_STYLE_GTK)
 
-#include <private/qhexstring_p.h>
+#undef signals // Collides with GTK symbols
+#include <gtk/gtk.h>
+
+typedef unsigned long XID;
+
+#undef GTK_OBJECT_FLAGS
+#define GTK_OBJECT_FLAGS(obj)(((GtkObject*)(obj))->flags)
+
+#define QLS(x) QLatin1String(x)
 
 QT_BEGIN_NAMESPACE
 
-QGtkPainter::QGtkPainter()
-{
-    reset(0);
-}
-
-QGtkPainter::~QGtkPainter()
-{
-}
-
-void QGtkPainter::reset(QPainter *painter)
-{
-    m_painter = painter;
-    m_alpha = true;
-    m_hflipped = false;
-    m_vflipped = false;
-    m_usePixmapCache = true;
-}
-
-QString QGtkPainter::uniqueName(const QString &key, GtkStateType state, GtkShadowType shadow,
-                                const QSize &size, GtkWidget *widget)
-{
-    // Note the widget arg should ideally use the widget path, though would compromise performance
-    QString tmp = key
-                  % HexString<uint>(state)
-                  % HexString<uint>(shadow)
-                  % HexString<uint>(size.width())
-                  % HexString<uint>(size.height())
-                  % HexString<quint64>(quint64(widget));
-    return tmp;
-}
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+#   define QT_RED 3
+#   define QT_GREEN 2
+#   define QT_BLUE 1
+#   define QT_ALPHA 0
+#else
+#   define QT_RED 0
+#   define QT_GREEN 1
+#   define QT_BLUE 2
+#   define QT_ALPHA 3
+#endif
+#   define GTK_RED 2
+#   define GTK_GREEN 1
+#   define GTK_BLUE 0
+#   define GTK_ALPHA 3
 
 QT_END_NAMESPACE
 
-#endif //!defined(QT_NO_STYLE_GTK)
+#endif // !QT_NO_STYLE_GTK
+#endif // QGTKGLOBAL_P_H

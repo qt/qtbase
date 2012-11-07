@@ -64,19 +64,9 @@
 
 #include <QtWidgets/QGtkStyle>
 #include <private/qcommonstyle_p.h>
+#include <private/qgtkglobal_p.h>
 
-#undef signals // Collides with GTK symbols
-#include <gtk/gtk.h>
-
-typedef unsigned long XID;
-
-#undef GTK_OBJECT_FLAGS
-#define GTK_OBJECT_FLAGS(obj)(((GtkObject*)(obj))->flags)
 #define Q_GTK_IS_WIDGET(widget) widget && G_TYPE_CHECK_INSTANCE_TYPE ((widget), QGtkStylePrivate::gtk_widget_get_type())
-
-#define QLS(x) QLatin1String(x)
-
-QT_BEGIN_NAMESPACE
 
 class QHashableLatin1Literal
 {
@@ -187,23 +177,8 @@ typedef GtkTreeViewColumn* (*Ptr_gtk_tree_view_column_new)(void);
 typedef GtkWidget* (*Ptr_gtk_fixed_new)(void);
 typedef GdkPixbuf* (*Ptr_gtk_icon_set_render_icon)(GtkIconSet *, GtkStyle *, GtkTextDirection, GtkStateType, GtkIconSize, GtkWidget *,const char *);
 typedef void (*Ptr_gtk_tree_view_append_column) (GtkTreeView*, GtkTreeViewColumn*);
-typedef void  (*Ptr_gtk_paint_check) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint);
-typedef void  (*Ptr_gtk_paint_box) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint);
-typedef void  (*Ptr_gtk_paint_box_gap) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint, gint, gint , gint, GtkPositionType, gint gap_x, gint gap_width);
-typedef void  (*Ptr_gtk_paint_resize_grip) (GtkStyle*,GdkWindow*, GtkStateType, const GdkRectangle *, GtkWidget *, const gchar *, GdkWindowEdge, gint , gint , gint , gint);
-typedef void  (*Ptr_gtk_paint_focus) (GtkStyle*,GdkWindow*, GtkStateType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint);
-typedef void  (*Ptr_gtk_paint_shadow) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint);
-typedef void  (*Ptr_gtk_paint_slider) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint, GtkOrientation);
-typedef void  (*Ptr_gtk_paint_expander) (GtkStyle*,GdkWindow*, GtkStateType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , GtkExpanderStyle );
-typedef void  (*Ptr_gtk_paint_handle) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint, GtkOrientation);
-typedef void  (*Ptr_gtk_paint_arrow) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, GtkArrowType, gboolean, gint , gint , gint , gint);
-typedef void  (*Ptr_gtk_paint_option) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint);
-typedef void  (*Ptr_gtk_paint_flat_box) (GtkStyle*,GdkWindow*, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint , gint , gint , gint);
-typedef void (*Ptr_gtk_paint_extension) (GtkStyle *, GdkWindow *, GtkStateType, GtkShadowType, const GdkRectangle *, GtkWidget *, const gchar *, gint, gint, gint, gint, GtkPositionType);
 typedef void (*Ptr_gtk_adjustment_configure) (GtkAdjustment *, double, double, double, double, double, double);
 typedef GtkAdjustment* (*Ptr_gtk_adjustment_new) (double, double, double, double, double, double);
-typedef void   (*Ptr_gtk_paint_hline) (GtkStyle *, GdkWindow *, GtkStateType, const GdkRectangle *, GtkWidget *, const gchar *, gint, gint, gint y);
-typedef void   (*Ptr_gtk_paint_vline) (GtkStyle *, GdkWindow *, GtkStateType, const GdkRectangle *, GtkWidget *, const gchar *, gint, gint, gint);
 typedef void (*Ptr_gtk_menu_item_set_submenu) (GtkMenuItem *, GtkWidget *);
 typedef void (*Ptr_gtk_container_forall) (GtkContainer *, GtkCallback, gpointer);
 typedef void (*Ptr_gtk_widget_size_allocate) (GtkWidget *, GtkAllocation*);
@@ -256,17 +231,9 @@ typedef guchar* (*Ptr_gdk_pixbuf_get_pixels) (const GdkPixbuf *pixbuf);
 typedef int (*Ptr_gdk_pixbuf_get_width) (const GdkPixbuf *pixbuf);
 typedef void (*Ptr_gdk_color_free) (const GdkColor *);
 typedef int (*Ptr_gdk_pixbuf_get_height) (const GdkPixbuf *pixbuf);
-typedef GdkPixbuf* (*Ptr_gdk_pixbuf_get_from_drawable) (GdkPixbuf *dest, GdkDrawable *src,
-                                                         GdkColormap *cmap, int src_x,
-                                                         int src_y, int dest_x, int dest_y,
-                                                         int width, int height);
-typedef GdkPixmap* (*Ptr_gdk_pixmap_new) (GdkDrawable *drawable, gint width, gint height, gint depth);
 typedef GdkPixbuf* (*Ptr_gdk_pixbuf_new) (GdkColorspace colorspace, gboolean has_alpha,
-                                         int bits_per_sample, int width, int height);
-typedef void (*Ptr_gdk_draw_rectangle) (GdkDrawable *drawable, GdkGC *gc,
-                                        gboolean filled, gint x, gint y, gint width, gint height);
+                                    int bits_per_sample, int width, int height);
 typedef void (*Ptr_gdk_pixbuf_unref)(GdkPixbuf *);
-typedef void (*Ptr_gdk_drawable_unref)(GdkDrawable *);
 typedef void (*Ptr_gdk_x11_window_set_user_time) (GdkWindow *window, guint32);
 typedef XID  (*Ptr_gdk_x11_drawable_get_xid) (GdkDrawable *);
 typedef Display* (*Ptr_gdk_x11_drawable_get_xdisplay) ( GdkDrawable *);
@@ -290,6 +257,7 @@ extern Q_WIDGETS_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_fil
 extern Q_WIDGETS_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook;
 #endif //!QT_NO_FILEDIALOG
 
+class QGtkPainter;
 class QGtkStylePrivate;
 
 class QGtkStyleFilter : public QObject
@@ -334,6 +302,7 @@ public:
 
     QGtkStyleFilter filter;
 
+    static QGtkPainter* gtkPainter(QPainter *painter = 0);
     static GtkWidget* gtkWidget(const QHashableLatin1Literal &path);
     static GtkStyle* gtkStyle(const QHashableLatin1Literal &path = QHashableLatin1Literal("GtkWindow"));
     static void gtkWidgetSetFocus(GtkWidget *widget, bool focus);
@@ -424,23 +393,8 @@ public:
     static Ptr_gtk_fixed_new gtk_fixed_new;
     static Ptr_gtk_tree_view_column_new gtk_tree_view_column_new;
     static Ptr_gtk_tree_view_append_column gtk_tree_view_append_column;
-    static Ptr_gtk_paint_check gtk_paint_check;
-    static Ptr_gtk_paint_box gtk_paint_box;
-    static Ptr_gtk_paint_box_gap gtk_paint_box_gap;
-    static Ptr_gtk_paint_flat_box gtk_paint_flat_box;
-    static Ptr_gtk_paint_option gtk_paint_option;
-    static Ptr_gtk_paint_extension gtk_paint_extension;
-    static Ptr_gtk_paint_slider gtk_paint_slider;
-    static Ptr_gtk_paint_shadow gtk_paint_shadow;
-    static Ptr_gtk_paint_resize_grip gtk_paint_resize_grip;
-    static Ptr_gtk_paint_focus gtk_paint_focus;
-    static Ptr_gtk_paint_arrow gtk_paint_arrow;
-    static Ptr_gtk_paint_handle gtk_paint_handle;
-    static Ptr_gtk_paint_expander gtk_paint_expander;
     static Ptr_gtk_adjustment_configure gtk_adjustment_configure;
     static Ptr_gtk_adjustment_new gtk_adjustment_new;
-    static Ptr_gtk_paint_vline gtk_paint_vline;
-    static Ptr_gtk_paint_hline gtk_paint_hline;
     static Ptr_gtk_menu_item_set_submenu gtk_menu_item_set_submenu;
     static Ptr_gtk_settings_get_default gtk_settings_get_default;
     static Ptr_gtk_separator_menu_item_new gtk_separator_menu_item_new;
@@ -488,12 +442,8 @@ public:
     static Ptr_gdk_pixbuf_get_pixels gdk_pixbuf_get_pixels;
     static Ptr_gdk_pixbuf_get_width gdk_pixbuf_get_width;
     static Ptr_gdk_pixbuf_get_height gdk_pixbuf_get_height;
-    static Ptr_gdk_pixmap_new gdk_pixmap_new;
     static Ptr_gdk_pixbuf_new gdk_pixbuf_new;
-    static Ptr_gdk_pixbuf_get_from_drawable gdk_pixbuf_get_from_drawable;
-    static Ptr_gdk_draw_rectangle gdk_draw_rectangle;
     static Ptr_gdk_pixbuf_unref gdk_pixbuf_unref;
-    static Ptr_gdk_drawable_unref gdk_drawable_unref;
     static Ptr_gdk_color_free gdk_color_free;
     static Ptr_gdk_x11_window_set_user_time gdk_x11_window_set_user_time;
     static Ptr_gdk_x11_drawable_get_xid gdk_x11_drawable_get_xid;
