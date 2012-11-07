@@ -230,6 +230,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         QWindowSystemInterfacePrivate::EnterEvent *systemEvent =
             static_cast<QWindowSystemInterfacePrivate::EnterEvent *>
             (QWindowSystemInterfacePrivate::peekWindowSystemEvent(QWindowSystemInterfacePrivate::Enter));
+        const QPointF globalPosF = systemEvent ? systemEvent->globalPos : QGuiApplicationPrivate::lastCursorPosition;
         if (systemEvent) {
             if (QWidgetWindow *enterWindow = qobject_cast<QWidgetWindow *>(systemEvent->enter))
             {
@@ -255,11 +256,12 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
             QWidget *leave = m_widget;
             if (qt_last_mouse_receiver && !qt_last_mouse_receiver->internalWinId())
                 leave = qt_last_mouse_receiver.data();
-            QApplicationPrivate::dispatchEnterLeave(enter, leave);
+            QApplicationPrivate::dispatchEnterLeave(enter, leave, globalPosF);
             qt_last_mouse_receiver = enter;
         }
     } else {
-        QApplicationPrivate::dispatchEnterLeave(m_widget, 0);
+        const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
+        QApplicationPrivate::dispatchEnterLeave(m_widget, 0, ee->screenPos());
         qt_last_mouse_receiver = m_widget;
     }
 }

@@ -267,7 +267,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
     }
 
     if (!lastWidgetUnderMouse) {
-        QApplicationPrivate::dispatchEnterLeave(embeddedMouseGrabber ? embeddedMouseGrabber : receiver, 0);
+        QApplicationPrivate::dispatchEnterLeave(embeddedMouseGrabber ? embeddedMouseGrabber : receiver, 0, event->screenPos());
         lastWidgetUnderMouse = receiver;
     }
 
@@ -293,7 +293,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneMouseEvent 
         else // released on the frame our outside the item, or doesn't accept hover events.
             lastWidgetUnderMouse = 0;
 
-        QApplicationPrivate::dispatchEnterLeave(lastWidgetUnderMouse, embeddedMouseGrabber);
+        QApplicationPrivate::dispatchEnterLeave(lastWidgetUnderMouse, embeddedMouseGrabber, event->screenPos());
         embeddedMouseGrabber = 0;
 
 #ifndef QT_NO_CURSOR
@@ -1142,7 +1142,7 @@ void QGraphicsProxyWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     Q_D(QGraphicsProxyWidget);
     // If hoverMove was compressed away, make sure we update properly here.
     if (d->lastWidgetUnderMouse) {
-        QApplicationPrivate::dispatchEnterLeave(0, d->lastWidgetUnderMouse);
+        QApplicationPrivate::dispatchEnterLeave(0, d->lastWidgetUnderMouse, event->screenPos());
         d->lastWidgetUnderMouse = 0;
     }
 }
@@ -1159,7 +1159,7 @@ void QGraphicsProxyWidget::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     // Ignore events on the window frame.
     if (!d->widget || !rect().contains(event->pos())) {
         if (d->lastWidgetUnderMouse) {
-            QApplicationPrivate::dispatchEnterLeave(0, d->lastWidgetUnderMouse);
+            QApplicationPrivate::dispatchEnterLeave(0, d->lastWidgetUnderMouse, event->screenPos());
             d->lastWidgetUnderMouse = 0;
         }
         return;

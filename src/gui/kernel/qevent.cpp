@@ -56,6 +56,40 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \class QEnterEvent
+    \ingroup events
+
+    \brief The QEnterEvent class contains parameters that describe an enter event.
+
+    Enter events occur when the mouse cursor enters a window or a widget.
+
+    \since 5.0
+*/
+
+/*!
+    Constructs an enter event object.
+
+    The points \a localPos, \a windowPos and \a screenPos specify the
+    mouse cursor's position relative to the receiving widget or item,
+    window, and screen, respectively.
+*/
+
+QEnterEvent::QEnterEvent(const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos)
+    : QEvent(QEvent::Enter)
+    , l(localPos)
+    , w(windowPos)
+    , s(screenPos)
+{
+}
+
+/*!
+    \internal
+*/
+QEnterEvent::~QEnterEvent()
+{
+}
+
+/*!
     \class QInputEvent
     \ingroup events
     \inmodule QtGui

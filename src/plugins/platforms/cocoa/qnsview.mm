@@ -340,7 +340,7 @@ static CGImageRef qt_mac_toCGImage(QImage *qImage, bool isMask, uchar **dataCopy
     return YES;
 }
 
-- (void)handleMouseEvent:(NSEvent *)theEvent
+- (void)convertFromEvent:(NSEvent *)event toWindowPoint:(QPoint *)qtWindowPoint andScreenPoint:(QPoint *)qtScreenPoint
 {
     // Calculate the mouse position in the QWindow and Qt screen coordinate system,
     // starting from coordinates in the NSWindow coordinate system.
@@ -360,25 +360,29 @@ static CGImageRef qt_mac_toCGImage(QImage *qImage, bool isMask, uchar **dataCopy
     // NSView and QWindow are equal coordinate systems: the QWindow covers the
     // entire NSView, and we've set the NSView's isFlipped property to true.
 
-    NSPoint nsWindowPoint = [theEvent locationInWindow];                    // NSWindow coordinates
+    NSPoint nsWindowPoint = [event locationInWindow];                    // NSWindow coordinates
 
     NSPoint nsViewPoint = [self convertPoint: nsWindowPoint fromView: nil]; // NSView/QWindow coordinates
-    QPoint qtWindowPoint(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
-
-    QPoint qtScreenPoint;
+    *qtWindowPoint = QPoint(nsViewPoint.x, nsViewPoint.y);                     // NSView/QWindow coordinates
 
     NSWindow *window = [self window];
     // Use convertRectToScreen if available (added in 10.7).
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if ([window respondsToSelector:@selector(convertRectToScreen:)]) {
         NSRect screenRect = [window convertRectToScreen : NSMakeRect(nsWindowPoint.x, nsWindowPoint.y, 0, 0)]; // OS X screen coordinates
-        qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));              // Qt screen coordinates
+        *qtScreenPoint = QPoint(screenRect.origin.x, qt_mac_flipYCoordinate(screenRect.origin.y));              // Qt screen coordinates
     } else
 #endif
     {
         NSPoint screenPoint = [window convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
-        qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
+        *qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
     }
+}
+
+- (void)handleMouseEvent:(NSEvent *)theEvent
+{
+    QPoint qtWindowPoint, qtScreenPoint;
+    [self convertFromEvent:theEvent toWindowPoint:&qtWindowPoint andScreenPoint:&qtScreenPoint];
     ulong timestamp = [theEvent timestamp] * 1000;
 
     QCocoaDrag* nativeDrag = static_cast<QCocoaDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
@@ -463,8 +467,9 @@ static CGImageRef qt_mac_toCGImage(QImage *qImage, bool isMask, uchar **dataCopy
 
 - (void)mouseEntered:(NSEvent *)theEvent
 {
-    Q_UNUSED(theEvent);
-    QWindowSystemInterface::handleEnterEvent(m_window);
+    QPoint windowPoint, screenPoint;
+    [self convertFromEvent:theEvent toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindowSystemInterface::handleEnterEvent(m_window, windowPoint, screenPoint);
 }
 
 - (void)mouseExited:(NSEvent *)theEvent

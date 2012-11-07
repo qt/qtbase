@@ -83,6 +83,28 @@ protected:
     ulong ts;
 };
 
+class Q_GUI_EXPORT QEnterEvent : public QEvent
+{
+public:
+    QEnterEvent(const QPointF &localPos, const QPointF &windowPos, const QPointF &screenPos);
+    ~QEnterEvent();
+
+#ifndef QT_NO_INTEGER_EVENT_COORDINATES
+    inline QPoint pos() const { return l.toPoint(); }
+    inline QPoint globalPos() const { return s.toPoint(); }
+    inline int x() const { return qRound(l.x()); }
+    inline int y() const { return qRound(l.y()); }
+    inline int globalX() const { return qRound(s.x()); }
+    inline int globalY() const { return qRound(s.y()); }
+#endif
+    const QPointF &localPos() const { return l; }
+    const QPointF &windowPos() const { return w; }
+    const QPointF &screenPos() const { return s; }
+
+protected:
+    QPointF l, w, s;
+};
+
 class Q_GUI_EXPORT QMouseEvent : public QInputEvent
 {
 public:

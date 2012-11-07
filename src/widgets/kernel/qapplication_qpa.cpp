@@ -253,7 +253,8 @@ void QApplicationPrivate::openPopup(QWidget *popup)
 
     // Dispatch leave for last mouse receiver to update undermouse states
     if (qt_last_mouse_receiver && !QWidget::mouseGrabber()) {
-        QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver.data());
+        QApplicationPrivate::dispatchEnterLeave(0, qt_last_mouse_receiver.data(),
+                                                QGuiApplicationPrivate::lastCursorPosition);
         qt_last_mouse_receiver = 0;
     }
 }

@@ -119,10 +119,12 @@ public:
 
     class EnterEvent : public WindowSystemEvent {
     public:
-        explicit EnterEvent(QWindow *enter)
-            : WindowSystemEvent(Enter), enter(enter)
+        explicit EnterEvent(QWindow *enter, const QPointF &local, const QPointF &global)
+            : WindowSystemEvent(Enter), enter(enter), localPos(local), globalPos(global)
         { }
         QPointer<QWindow> enter;
+        const QPointF localPos;
+        const QPointF globalPos;
     };
 
     class LeaveEvent : public WindowSystemEvent {

@@ -1424,7 +1424,7 @@ void QGuiApplicationPrivate::processEnterEvent(QWindowSystemInterfacePrivate::En
 
     currentMouseWindow = e->enter;
 
-    QEvent event(QEvent::Enter);
+    QEnterEvent event(e->localPos, e->localPos, e->globalPos);
     QCoreApplication::sendSpontaneousEvent(e->enter.data(), &event);
 }
 

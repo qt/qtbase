@@ -291,7 +291,9 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
                 if (QWindowsContext::verboseEvents)
                     qDebug() << "Entering " << currentWindowUnderMouse;
                 QWindowsWindow::baseWindowOf(currentWindowUnderMouse)->applyCursor();
-                QWindowSystemInterface::handleEnterEvent(currentWindowUnderMouse);
+                QWindowSystemInterface::handleEnterEvent(currentWindowUnderMouse,
+                                                         currentWindowUnderMouse->mapFromGlobal(globalPosition),
+                                                         globalPosition);
             }
         }
         m_windowUnderMouse = currentWindowUnderMouse;

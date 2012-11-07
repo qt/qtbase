@@ -135,7 +135,7 @@ public:
 
 
     void createEventDispatcher();
-    static void dispatchEnterLeave(QWidget *enter, QWidget *leave);
+    static void dispatchEnterLeave(QWidget *enter, QWidget *leave, const QPointF &globalPosF);
 
     //modality
     bool isWindowBlocked(QWindow *window, QWindow **blockingWindow = 0) const Q_DECL_OVERRIDE;

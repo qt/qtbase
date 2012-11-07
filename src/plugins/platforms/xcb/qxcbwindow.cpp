@@ -1529,7 +1529,9 @@ void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
         return;
     }
 
-    QWindowSystemInterface::handleEnterEvent(window());
+    const QPoint local(event->event_x, event->event_y);
+    const QPoint global(event->root_x, event->root_y);
+    QWindowSystemInterface::handleEnterEvent(window(), local, global);
 }
 
 void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)

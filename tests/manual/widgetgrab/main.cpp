@@ -233,9 +233,11 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
     if (o->isWidgetType()) {
         switch (e->type()) {
         case QEvent::Enter: {
+            const QEnterEvent *ee = static_cast<QEnterEvent *>(e);
             QString message;
             QDebug debug(&message);
-            debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Enter for " << o->objectName();
+            debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Enter for " << o->objectName()
+                             << " at " << ee->localPos() << " global: " << ee->globalPos();
             m_logEdit->appendPlainText(message);
         }
             break;

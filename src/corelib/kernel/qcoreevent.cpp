@@ -121,7 +121,7 @@ QT_BEGIN_NAMESPACE
     \value Drop                             A drag and drop operation is completed (QDropEvent).
     \value DynamicPropertyChange            A dynamic property was added, changed, or removed from the object.
     \value EnabledChange                    Widget's enabled state has changed.
-    \value Enter                            Mouse enters widget's boundaries.
+    \value Enter                            Mouse enters widget's boundaries (QEnterEvent).
     \value EnterEditFocus                   An editor widget gains focus for editing. QT_KEYPAD_NAVIGATION must be defined.
     \value EnterWhatsThisMode               Send to toplevel widgets when the application enters "What's This?" mode.
     \value Expose                           Sent to a window when its on-screen contents are invalidated and need to be flushed from the backing store.
