@@ -7,8 +7,12 @@ HTML.headerstyles = \
 
 HTML.endheader = \
     "</head>\n" \
+    "<body>\n" \
+    "<div class=\"content\"></div class=\"content\">\n" \
+    "<div class=\"content mainContent\">\n" \
 
 HTML.footer = \
+    "</div>\n" \
     "<div class=\"footer\">\n" \
     "    <p>\n" \
     "      <acronym title=\"Copyright\">&copy;</acronym> 2012 Digia Plc and/or its\n" \
@@ -29,4 +33,3 @@ HTML.footer = \
     "      of their respective owners. <a title=\"Privacy Policy\"\n" \
     "      href=\"http://en.gitorious.org/privacy_policy/\">Privacy Policy</a></p>\n" \
     "</div>\n" \
-
