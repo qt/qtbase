@@ -129,7 +129,6 @@ public:
     QFutureInterfaceBase &operator=(const QFutureInterfaceBase &other);
 
 protected:
-    bool referenceCountIsOne() const;
     bool refT() const;
     bool derefT() const;
 public:
