@@ -2321,19 +2321,6 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
     mainThread->setEventDispatcher(eventDispatcher);
 }
 
-/*
-    \fn void QCoreApplication::watchUnixSignal(int signal, bool watch)
-    \internal
-*/
-
-/*!
-    \fn void QCoreApplication::unixSignal(int number)
-    \internal
-
-    This signal is emitted whenever a Unix signal is received by the
-    application. The Unix signal received is specified by its \a number.
-*/
-
 /*!
     \fn void qAddPostRoutine(QtCleanUpFunction ptr)
     \relates QCoreApplication
