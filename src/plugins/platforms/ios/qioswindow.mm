@@ -51,6 +51,11 @@
 
 #include <QtDebug>
 
+static CGRect toCGRect(const QRect &rect)
+{
+    return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
 @implementation EAGLView
 
 + (Class)layerClass
@@ -58,11 +63,11 @@
     return [CAEAGLLayer class];
 }
 
--(id)initWithQIOSWindow:(QIOSWindow *)qioswindow
+-(id)initWithQIOSWindow:(QIOSWindow *)window
 {
-    if (self = [super init]) {
-        m_qioswindow = qioswindow;
-    }
+    if (self = [super initWithFrame:toCGRect(window->geometry())])
+        m_qioswindow = window;
+
     return self;
 }
 
