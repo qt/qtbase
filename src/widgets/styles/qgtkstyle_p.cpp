@@ -606,21 +606,20 @@ void QGtkStylePrivate::initGtkWidgets() const
             addWidget(QGtkStylePrivate::gtk_frame_new(NULL));
             addWidget(QGtkStylePrivate::gtk_expander_new(""));
             addWidget(QGtkStylePrivate::gtk_statusbar_new());
-            addWidget(QGtkStylePrivate::gtk_hscale_new((GtkAdjustment*)(QGtkStylePrivate::gtk_adjustment_new(1, 0, 1, 0, 0, 0))));
+            addWidget(QGtkStylePrivate::gtk_hscale_new((QGtkStylePrivate::gtk_adjustment_new(1, 0, 1, 0, 0, 0))));
             addWidget(QGtkStylePrivate::gtk_hscrollbar_new(NULL));
             addWidget(QGtkStylePrivate::gtk_scrolled_window_new(NULL, NULL));
 
             initGtkMenu();
             addWidget(QGtkStylePrivate::gtk_notebook_new());
             addWidget(QGtkStylePrivate::gtk_progress_bar_new());
-            addWidget(QGtkStylePrivate::gtk_spin_button_new((GtkAdjustment*)
-                                             (QGtkStylePrivate::gtk_adjustment_new(1, 0, 1, 0, 0, 0)), 0.1, 3));
+            addWidget(QGtkStylePrivate::gtk_spin_button_new((QGtkStylePrivate::gtk_adjustment_new(1, 0, 1, 0, 0, 0)), 0.1, 3));
             GtkWidget *toolbar = gtk_toolbar_new();
             g_signal_connect (toolbar, "notify::toolbar-style", G_CALLBACK (update_toolbar_style), toolbar);
             gtk_toolbar_insert((GtkToolbar*)toolbar, gtk_separator_tool_item_new(), -1);
             addWidget(toolbar);
             initGtkTreeview();
-            addWidget(gtk_vscale_new((GtkAdjustment*)(QGtkStylePrivate::gtk_adjustment_new(1, 0, 1, 0, 0, 0))));
+            addWidget(gtk_vscale_new((QGtkStylePrivate::gtk_adjustment_new(1, 0, 1, 0, 0, 0))));
             addWidget(gtk_vscrollbar_new(NULL));
         }
         else // Rebuild map
