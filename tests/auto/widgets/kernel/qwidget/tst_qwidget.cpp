@@ -8547,6 +8547,7 @@ void tst_QWidget::syntheticEnterLeave()
 
     MyWidget window;
     window.setWindowFlags(Qt::WindowStaysOnTopHint);
+    window.move(200, 200);
     window.resize(200, 200);
 
     MyWidget *child1 = new MyWidget(&window);
@@ -8636,8 +8637,6 @@ void tst_QWidget::syntheticEnterLeave()
 #ifndef QTEST_NO_CURSOR
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
-    if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb"))
-        QSKIP("QTBUG-26424");
     class SELParent : public QWidget
     {
     public:
@@ -8665,6 +8664,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
     QCursor::setPos(QPoint(0,0));
 
      SELParent parent;
+     parent.move(200, 200);
      parent.resize(200, 200);
      SELChild child(&parent);
      child.resize(200, 200);

@@ -261,8 +261,10 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         }
     } else {
         const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
-        QApplicationPrivate::dispatchEnterLeave(m_widget, 0, ee->screenPos());
-        qt_last_mouse_receiver = m_widget;
+        QWidget *child = m_widget->childAt(ee->pos());
+        QWidget *receiver = child ? child : m_widget;
+        QApplicationPrivate::dispatchEnterLeave(receiver, 0, ee->screenPos());
+        qt_last_mouse_receiver = receiver;
     }
 }
 
