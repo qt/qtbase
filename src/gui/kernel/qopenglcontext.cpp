@@ -561,11 +561,6 @@ QSurface *QOpenGLContext::surface() const
 
     Call this to finish a frame of OpenGL rendering, and make sure to
     call makeCurrent() again before you begin a new frame.
-
-    If you have bound a non-default framebuffer object, you need to
-    use bindDefaultFramebufferObject() to make sure that the default
-    framebuffer object is bound before calling swapBuffers(), as
-    some Qt platforms assume that the default framebuffer object is bound.
 */
 void QOpenGLContext::swapBuffers(QSurface *surface)
 {
@@ -594,17 +589,8 @@ void QOpenGLContext::swapBuffers(QSurface *surface)
         return;
 
 #if !defined(QT_NO_DEBUG)
-    if (currentContext() != this)
-        qWarning() << "QOpenGLContext::swapBuffers() called with non-current surface";
-    else if (!QOpenGLContextPrivate::toggleMakeCurrentTracker(this, false))
+    if (!QOpenGLContextPrivate::toggleMakeCurrentTracker(this, false))
         qWarning() << "QOpenGLContext::swapBuffers() called without corresponding makeCurrent()";
-
-    GLint framebufferBinding = 0;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebufferBinding);
-
-    GLint platformFramebuffer = GLint(d->platformGLContext->defaultFramebufferObject(surfaceHandle));
-    if (framebufferBinding != platformFramebuffer)
-        qWarning() << "QOpenGLContext::swapBuffers() called with non-default framebuffer object bound";
 #endif
     if (surface->format().swapBehavior() == QSurfaceFormat::SingleBuffer)
         glFlush();
