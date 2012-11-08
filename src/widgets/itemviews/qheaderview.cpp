@@ -350,6 +350,7 @@ void QHeaderView::setModel(QAbstractItemModel *model)
     if (model == this->model())
         return;
     Q_D(QHeaderView);
+    d->persistentHiddenSections.clear();
     if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
     if (d->orientation == Qt::Horizontal) {
         QObject::disconnect(d->model, SIGNAL(columnsInserted(QModelIndex,int,int)),
