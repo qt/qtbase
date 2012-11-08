@@ -138,10 +138,11 @@ QSqlError qMakeError(const QString& err, QSqlError::ErrorType type, int errNo = 
 class QTDSDriverPrivate
 {
 public:
-    QTDSDriverPrivate(): login(0) {}
+    QTDSDriverPrivate(): login(0), initialized(false) {}
     LOGINREC* login;  // login information
     QString hostName;
     QString db;
+    bool initialized;
 };
 
 
@@ -537,6 +538,7 @@ QVariant QTDSDriver::handle() const
 void QTDSDriver::init()
 {
     d = new QTDSDriverPrivate();
+    d->initialized = (dbinit() == SUCCEED);
     // the following two code-lines will fail compilation on some FreeTDS versions
     // just comment them out if you have FreeTDS (you won't get any errors and warnings then)
     dberrhandle((QERRHANDLE)qTdsErrHandler);
@@ -578,7 +580,7 @@ bool QTDSDriver::open(const QString & db,
 {
     if (isOpen())
         close();
-    if (!dbinit()) {
+    if (!d->initialized) {
         setOpenError(true);
         return false;
     }

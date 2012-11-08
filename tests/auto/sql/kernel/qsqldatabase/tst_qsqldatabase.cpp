@@ -86,6 +86,8 @@ private slots:
     void eventNotification_data() { generic_data(); }
     void eventNotification();
     void addDatabase();
+    void errorReporting_data();
+    void errorReporting();
 
     //database specific tests
     void recordMySQL_data() { generic_data("QMYSQL"); }
@@ -440,6 +442,36 @@ void tst_QSqlDatabase::addDatabase()
     QVERIFY(QSqlDatabase::contains("INVALID_CONNECTION"));
     QSqlDatabase::removeDatabase("INVALID_CONNECTION");
     QVERIFY(!QSqlDatabase::contains("INVALID_CONNECTION"));
+}
+
+void tst_QSqlDatabase::errorReporting_data()
+{
+    QTest::addColumn<QString>("driver");
+
+    QTest::newRow("QTDS") << QString::fromLatin1("QTDS");
+    QTest::newRow("QTDS7") << QString::fromLatin1("QTDS7");
+}
+
+void tst_QSqlDatabase::errorReporting()
+{
+    QFETCH(QString, driver);
+
+    if (!QSqlDatabase::drivers().contains(driver))
+        QSKIP(QString::fromLatin1("Database driver %1 not available").arg(driver).toLocal8Bit().constData());
+
+    const QString dbName = QLatin1String("errorReportingDb-") + driver;
+    QSqlDatabase db = QSqlDatabase::addDatabase(driver, dbName);
+
+    db.setHostName(QLatin1String("127.0.0.1"));
+    db.setDatabaseName(QLatin1String("NonExistantDatabase"));
+    db.setUserName(QLatin1String("InvalidUser"));
+    db.setPassword(QLatin1String("IncorrectPassword"));
+
+    QVERIFY(!db.open());
+
+    db = QSqlDatabase();
+
+    QSqlDatabase::removeDatabase(dbName);
 }
 
 void tst_QSqlDatabase::open()
