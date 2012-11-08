@@ -238,6 +238,12 @@ public:
     inline void setPosition(const QPoint &pt) { setGeometry(QRect(pt, size())); }
     inline void setPosition(int posx, int posy) { setPosition(QPoint(posx, posy)); }
 
+// Temporary backwards-compatible accessors for the benefit of Declarative
+// to be removed ASAP
+    inline void setPos(const QPoint &pt) { setPosition(pt); }
+    inline void setPos(int posx, int posy) { setPosition(posx, posy); }
+// end of temporary accessors
+
     void resize(const QSize &newSize);
     inline void resize(int w, int h) { resize(QSize(w, h)); }
 
