@@ -56,6 +56,7 @@ public:
     enum ScreenIndex { MainScreen = 0 };
 
     QRect geometry() const;
+    QRect availableGeometry() const;
     int depth() const;
     QImage::Format format() const;
     QSizeF physicalSize() const;

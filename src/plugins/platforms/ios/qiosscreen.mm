@@ -99,9 +99,13 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
 
 QRect QIOSScreen::geometry() const
 {
-    // FIXME: Do we need to reimplement availableGeometry() to take the
-    // system statusbar into account?
     return m_geometry;
+}
+
+QRect QIOSScreen::availableGeometry() const
+{
+    CGRect frame = m_uiScreen.applicationFrame;
+    return QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
 }
 
 int QIOSScreen::depth() const
