@@ -68,8 +68,10 @@
         }
     }
 
-    // Override point for customization after application launch.
-    self.window.backgroundColor = [UIColor whiteColor];
+    // Aid debugging during development
+    self.window.backgroundColor = [UIColor cyanColor];
+    controller.view.backgroundColor = [UIColor magentaColor];
+
     [self.window makeKeyAndVisible];
     return YES;
 }
