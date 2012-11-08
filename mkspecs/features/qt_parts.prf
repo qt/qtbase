@@ -2,6 +2,9 @@ load(qt_build_config)
 
 TEMPLATE = subdirs
 
+bp = $$eval($$upper($$TARGET)_BUILD_PARTS)
+!isEmpty(bp): QT_BUILD_PARTS = $$bp
+
 sub_src.subdir = src
 sub_src.target = sub-src
 SUBDIRS = sub_src
