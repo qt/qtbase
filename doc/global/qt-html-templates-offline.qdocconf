@@ -1,6 +1,7 @@
 HTML.nobreadcrumbs      = "true"
 
-HTML.stylesheets = global/style/offline.css
+HTML.templatedir = template
+HTML.stylesheets = style/offline.css
 
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/offline.css\" />\n"
