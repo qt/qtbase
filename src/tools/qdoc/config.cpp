@@ -50,6 +50,7 @@
 #include <qtextstream.h>
 #include <qdebug.h>
 #include "config.h"
+#include "generator.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -148,6 +149,7 @@ QStringList MetaStack::getExpanded(const Location& location)
 }
 
 QT_STATIC_CONST_IMPL QString Config::dot = QLatin1String(".");
+bool Config::debug = false;
 bool Config::generateExamples = true;
 QString Config::overrideOutputDir;
 QString Config::installDir;
@@ -548,6 +550,10 @@ QString Config::findFile(const Location& location,
                          const QString& fileName,
                          QString& userFriendlyFilePath)
 {
+    if (debug)
+        qDebug() << "FILES:" << files
+                 << "DIRS:" << dirs
+                 << "FILENAME:" << fileName;
     if (fileName.isEmpty() || fileName.startsWith(QLatin1Char('/'))) {
         userFriendlyFilePath = fileName;
         return fileName;
@@ -572,6 +578,8 @@ QString Config::findFile(const Location& location,
     if (fileInfo.fileName().isEmpty()) {
         QStringList::ConstIterator d = dirs.constBegin();
         while (d != dirs.constEnd()) {
+            if (debug)
+                qDebug() << "TEST:" << QDir(*d).absolutePath() << firstComponent;
             fileInfo.setFile(QDir(*d), firstComponent);
             if (fileInfo.exists()) {
                 break;
@@ -853,9 +861,7 @@ void Config::load(Location location, const QString& fileName)
                 /*
                   Here is the recursive call.
                  */
-                load(location,
-                     QFileInfo(QFileInfo(fileName).dir(), includeFile)
-                     .filePath());
+                load(location, QFileInfo(QFileInfo(fileName).dir(), includeFile).filePath());
             }
             else {
                 /*

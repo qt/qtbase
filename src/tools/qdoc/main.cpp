@@ -261,11 +261,16 @@ static void processQdocconfFile(const QString &fileName)
     config.setStringList(CONFIG_NOLINKERRORS, QStringList(noLinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS, QStringList(obsoleteLinks ? "true" : "false"));
 
-    documentationPath = QLibraryInfo::rawLocation(QLibraryInfo::DocumentationPath,
-                                                  QLibraryInfo::EffectivePaths);
-
-    // Set a few environment variables that can be used from the qdocconf file
-    qputenv("QT_INSTALL_DOCS", documentationPath.toLatin1());
+    /*
+      If QT_INSTALL_DOCS is not set, set it here so it can be used from
+      the qdocconf files.
+    */
+    QString qt_install_docs = qgetenv("QT_INSTALL_DOCS");
+    if (qt_install_docs.isEmpty()) {
+        documentationPath = QLibraryInfo::rawLocation(QLibraryInfo::DocumentationPath,
+                                                      QLibraryInfo::EffectivePaths);
+        qputenv("QT_INSTALL_DOCS", documentationPath.toLatin1());
+    }
 
     /*
       With the default configuration values in place, load

@@ -1548,10 +1548,10 @@ void Generator::initialize(const Config &config)
             // Documentation template handling
             QStringList searchDirs;
             QString templateDir = config.getString((*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
+            qDebug() << "TEMPLATEDIR:" << templateDir << (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR;
             if (templateDir.isEmpty())
                 templateDir = ".";
             searchDirs.append(templateDir);
-
             QStringList noExts;
             QStringList scripts = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
             e = scripts.constBegin();
@@ -1573,6 +1573,10 @@ void Generator::initialize(const Config &config)
             }
 
             QStringList styles = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+            qDebug() << "STYLES:" << styles;
+            qDebug() << "SEARCHDIRS:" << searchDirs;
+            qDebug() << "STYLEFILES:" << styleFiles;
+            Config::debug = true;
             e = styles.constBegin();
             while (e != styles.constEnd()) {
                 QString userFriendlyFilePath;
@@ -1582,6 +1586,7 @@ void Generator::initialize(const Config &config)
                                                     *e,
                                                     noExts,
                                                     userFriendlyFilePath);
+                qDebug() << "FILEPATH:" << filePath;
                 if (!filePath.isEmpty())
                     Config::copyFile(config.lastLocation(),
                                      filePath,
@@ -1590,6 +1595,7 @@ void Generator::initialize(const Config &config)
                                      "/style");
                 ++e;
             }
+            Config::debug = false;
         }
         ++g;
     }
