@@ -474,11 +474,28 @@
  *  N2544           Q_COMPILER_UNRESTRICTED_UNIONS
  *  N1653           Q_COMPILER_VARIADIC_MACROS
  *  N2242 N2555     Q_COMPILER_VARIADIC_TEMPLATES
+ *
+ * C++1y proposed features
+ *
+ *  N3472           Q_COMPILER_BINARY_LITERALS
+ *  N3649           Q_COMPILER_GENERIC_LAMBDA
+ *  N3638           Q_COMPILER_LAMBDA_CAPTURES
+ *  N3652           Q_COMPILER_RELAXED_CONSTEXPR_FUNCTIONS
+ *  N3386 N3638     Q_COMPILER_RETURN_TYPE_DEDUCTION
+ *  N3651           Q_COMPILER_VARIABLE_TEMPLATES
+ *  N3639           Q_COMPILER_VLA  (see also Q_COMPILER_RESTRICTED_VLA)
+ *
  */
 
 #ifdef Q_CC_INTEL
+#  define Q_COMPILER_RESTRICTED_VLA
 #  if __INTEL_COMPILER < 1200
 #    define Q_NO_TEMPLATE_FRIENDS
+#  endif
+#  if __INTEL_COMPILER >= 1310 && !defined(_WIN32)
+//    ICC supports C++14 binary literals in C, C++98, and C++11 modes
+//    at least since 13.1, but I can't test further back
+#     define Q_COMPILER_BINARY_LITERALS
 #  endif
 #  if __cplusplus >= 201103L
 #    define Q_COMPILER_VARIADIC_MACROS
@@ -525,6 +542,7 @@
 
 #ifdef Q_CC_CLANG
 /* General C++ features */
+#  define Q_COMPILER_RESTRICTED_VLA
 #  if !__has_feature(cxx_exceptions)
 #    ifndef QT_NO_EXCEPTIONS
 #      define QT_NO_EXCEPTIONS
@@ -535,6 +553,12 @@
 #  endif
 #  if __has_feature(attribute_deprecated_with_message)
 #    define Q_DECL_DEPRECATED_X(text) __attribute__ ((__deprecated__(text)))
+#  endif
+
+// Clang supports binary literals in C, C++98 and C++11 modes
+// It's been supported "since the dawn of time itself" (cf. commit 179883)
+#  if __has_extension(cxx_binary_literals)
+#    define Q_COMPILER_BINARY_LITERALS
 #  endif
 
 /* C++11 features, see http://clang.llvm.org/cxx_status.html */
@@ -636,9 +660,40 @@
 #      define Q_COMPILER_VARIADIC_MACROS
 #    endif
 #  endif
+
+/* C++1y features, see http://clang.llvm.org/cxx_status.html and
+ * http://clang.llvm.org/docs/LanguageExtensions.html#checks-for-standard-language-features */
+#  if __cplusplus > 201103L
+//#    if __has_feature(cxx_binary_literals)
+//#      define Q_COMPILER_BINARY_LITERALS  // see above
+//#    endif
+#    if __has_feature(cxx_generic_lambda)
+#      define Q_COMPILER_GENERIC_LAMBDA
+#    endif
+#    if __has_feature(cxx_init_capture)
+#      define Q_COMPILER_LAMBDA_CAPTURES
+#    endif
+#    if __has_feature(cxx_relaxed_constexpr)
+#      define Q_COMPILER_RELAXED_CONSTEXPR_FUNCTIONS
+#    endif
+#    if __has_feature(cxx_decltype_auto) && __has_feature(cxx_return_type_deduction)
+#      define Q_COMPILER_RETURN_TYPE_DEDUCTION
+#    endif
+#    if __has_feature(cxx_variable_templates)
+#      define Q_COMPILER_VARIABLE_TEMPLATES
+#    endif
+#    if __has_feature(cxx_runtime_array)
+#      define Q_COMPILER_VLA
+#    endif
+#  endif
 #endif // Q_CC_CLANG
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
+#  define Q_COMPILER_RESTRICTED_VLA
+#  if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
+//   GCC supports binary literals in C, C++98 and C++11 modes
+#    define Q_COMPILER_BINARY_LITERALS
+#  endif
 #  if defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 403
        /* C++11 features supported in GCC 4.3: */
@@ -700,6 +755,15 @@
 #      endif
 #    endif
      /* C++11 features are complete as of GCC 4.8.1 */
+#  endif
+#  if __cplusplus > 201103L
+#    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 409
+     /* C++1y features in GCC 4.9 */
+//#    define Q_COMPILER_BINARY_LITERALS   // already supported since GCC 4.3 as an extension
+#      define Q_COMPILER_LAMBDA_CAPTURES
+#      define Q_COMPILER_RETURN_TYPE_DEDUCTION
+#      define Q_COMPILER_VLA
+#    endif
 #  endif
 #endif
 
