@@ -56,6 +56,11 @@ static CGRect toCGRect(const QRect &rect)
     return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
+static QRect fromCGRect(const CGRect &rect)
+{
+    return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+}
+
 @implementation EAGLView
 
 + (Class)layerClass
@@ -92,6 +97,24 @@ static CGRect toCGRect(const QRect &rect)
     }
 
     return self;
+}
+
+- (void)layoutSubviews
+{
+    // This method is the de facto way to know that view has been resized,
+    // or otherwise needs invalidation of its buffers. Note though that we
+    // do not get this callback when the view just changes its position, so
+    // the position of our QWindow (and platform window) will only get updated
+    // when the size is also changed.
+
+    if (CGAffineTransformIsIdentity(self.transform)) {
+        // Reflect the new size (and possibly also position) in the QWindow
+        m_qioswindow->updateGeometry(fromCGRect(self.frame));
+    } else {
+        qWarning() << "QIOSPlatformWindow's UIView has transform set, ignoring geometry updates";
+    }
+
+    [super layoutSubviews];
 }
 
 - (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons
@@ -189,9 +212,27 @@ QIOSWindow::~QIOSWindow()
 
 void QIOSWindow::setGeometry(const QRect &rect)
 {
+    if (!CGAffineTransformIsIdentity(m_view.transform)) {
+        qWarning() << "Setting the geometry of a QWindow with a transform set on the UIView is not supported";
+        return;
+    }
+
+    // Since we don't support transformations on the UIView, we can set the frame
+    // directly and let UIKit deal with translating that into bounds and center.
+    m_view.frame = toCGRect(rect);
+
+    updateGeometry(rect);
+}
+
+void QIOSWindow::updateGeometry(const QRect &rect)
+{
+    // The baseclass implementation will store the geometry, and allows use to
+    // re-use the baseclass geometry() implementation, which just returns rect.
     QPlatformWindow::setGeometry(rect);
 
-    qDebug() <<  __FUNCTION__ << "not implemented";
+    // We inform Qt about new geometry, which will trigger resize and
+    // expose events for the application.
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
 }
 
 GLuint QIOSWindow::framebufferObject(const QIOSContext &context) const

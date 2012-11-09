@@ -83,6 +83,7 @@ public:
     ~QIOSWindow();
 
     void setGeometry(const QRect &rect);
+    void updateGeometry(const QRect &rect);
 
     GLuint framebufferObject(const QIOSContext &context) const;
 
