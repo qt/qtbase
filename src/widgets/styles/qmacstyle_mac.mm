@@ -2585,10 +2585,11 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
                 srow = sptr+((y*sbpl)/4);
                 drow = dptr+((y*dbpl)/4);
                 for (int x = 0; x < w; ++x) {
-                    const int diff = (((qRed(*srow)-fillR)*(qRed(*srow)-fillR)) +
-                                      ((qGreen(*srow)-fillG)*((qGreen(*srow)-fillG))) +
-                                      ((qBlue(*srow)-fillB)*((qBlue(*srow)-fillB))));
-                    (*drow++) = (diff < 100) ? 0xffffffff : 0xff000000;
+                    const int redDiff = qRed(*srow) - fillR;
+                    const int greenDiff = qGreen(*srow) - fillG;
+                    const int blueDiff = qBlue(*srow) - fillB;
+                    const int diff = (redDiff * redDiff) + (greenDiff * greenDiff) + (blueDiff * blueDiff);
+                    (*drow++) = (diff < 10) ? 0xffffffff : 0xff000000;
                     ++srow;
                 }
             }
