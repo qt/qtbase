@@ -961,6 +961,14 @@ void QXcbConnection::processXcbEvents()
         if (!response_type) {
             handleXcbError((xcb_generic_error_t *)event);
         } else {
+            if (response_type == XCB_MOTION_NOTIFY) {
+                // compress multiple motion notify events in a row
+                // to avoid swamping the event queue
+                xcb_generic_event_t *next = eventqueue->value(i+1, 0);
+                if (next && (next->response_type & ~0x80) == XCB_MOTION_NOTIFY)
+                    continue;
+            }
+
             QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
             while (it != m_peekFuncs.end()) {
                 // These callbacks return true if the event is what they were
