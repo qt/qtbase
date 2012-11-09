@@ -130,6 +130,7 @@ QQnxIntegration::QQnxIntegration()
 #if !defined(QT_NO_CLIPBOARD)
     , m_clipboard(0)
 #endif
+    , m_navigator(0)
 #if !defined(QT_NO_DRAGANDDROP)
     , m_drag(new QSimpleDrag())
 #endif
