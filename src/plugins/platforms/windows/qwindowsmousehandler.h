@@ -82,6 +82,7 @@ private:
     QHash<DWORD, int> m_touchInputIDToTouchPointID;
     QTouchDevice *m_touchDevice;
     bool m_leftButtonDown;
+    QWindow *m_previousCaptureWindow;
 };
 
 Qt::MouseButtons QWindowsMouseHandler::keyStateToMouseButtons(int wParam)

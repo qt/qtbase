@@ -9665,6 +9665,11 @@ void tst_QWidget::underMouse()
     QVERIFY(popupWindow);
     QVERIFY(QApplication::activePopupWidget() == &popupWidget);
 
+    // Send an artificial leave event for window, as it won't get generated automatically
+    // due to cursor not actually being over the window.
+    QWindowSystemInterface::handleLeaveEvent(window);
+    QApplication::processEvents();
+
     // If there is an active popup, undermouse should not be reported (QTBUG-27478),
     // but opening a popup causes leave for widgets under mouse.
     QVERIFY(!topLevelWidget.underMouse());
@@ -9682,13 +9687,8 @@ void tst_QWidget::underMouse()
     topLevelWidget.resetCounts();
     childWidget2.resetCounts();
 
-    // Note about commented out compares below:
-    // Widgets are not receiving enter/leave events properly when there is a popup up,
-    // so all enter and leave counts are not correct yet.
-    // Fix this test when QTBUG-27800 is fixed (i.e. uncomment commented out compares).
-
-    // Moving around while popup active should not change undermouse either,
-    // but should send enter and leave events for widgets
+    // Moving around while popup active should not change undermouse or cause
+    // enter and leave events for widgets.
     QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(child2PointB)));
     QVERIFY(!topLevelWidget.underMouse());
     QVERIFY(!childWidget1.underMouse());
@@ -9696,14 +9696,12 @@ void tst_QWidget::underMouse()
     QVERIFY(!popupWidget.underMouse());
     QCOMPARE(popupWidget.enters, 0);
     QCOMPARE(popupWidget.leaves, 0);
-    //QCOMPARE(topLevelWidget.enters, 1); // QTBUG-27800
+    QCOMPARE(topLevelWidget.enters, 0);
     QCOMPARE(topLevelWidget.leaves, 0);
     QCOMPARE(childWidget1.enters, 0);
     QCOMPARE(childWidget1.leaves, 0);
-    //QCOMPARE(childWidget2.enters, 1); // QTBUG-27800
+    QCOMPARE(childWidget2.enters, 0);
     QCOMPARE(childWidget2.leaves, 0);
-    topLevelWidget.resetCounts();
-    childWidget2.resetCounts();
 
     QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(inWindowPoint)));
     QVERIFY(!topLevelWidget.underMouse());
@@ -9717,8 +9715,7 @@ void tst_QWidget::underMouse()
     QCOMPARE(childWidget1.enters, 0);
     QCOMPARE(childWidget1.leaves, 0);
     QCOMPARE(childWidget2.enters, 0);
-    //QCOMPARE(childWidget2.leaves, 1); // QTBUG-27800
-    childWidget2.resetCounts();
+    QCOMPARE(childWidget2.leaves, 0);
 
     QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(child1Point)));
     QVERIFY(!topLevelWidget.underMouse());
@@ -9729,68 +9726,19 @@ void tst_QWidget::underMouse()
     QCOMPARE(popupWidget.leaves, 0);
     QCOMPARE(topLevelWidget.enters, 0);
     QCOMPARE(topLevelWidget.leaves, 0);
-    //QCOMPARE(childWidget1.enters, 1); // QTBUG-27800
-    QCOMPARE(childWidget1.leaves, 0);
-    QCOMPARE(childWidget2.enters, 0);
-    QCOMPARE(childWidget2.leaves, 0);
-    childWidget1.resetCounts();
-
-    // Mouse moves off-application, should cause leaves for currently entered widgets
-    QWindowSystemInterface::handleLeaveEvent(window);
-    QApplication::processEvents();
-    QVERIFY(!topLevelWidget.underMouse());
-    QVERIFY(!childWidget1.underMouse());
-    QVERIFY(!childWidget2.underMouse());
-    QVERIFY(!popupWidget.underMouse());
-    QCOMPARE(popupWidget.enters, 0);
-    QCOMPARE(popupWidget.leaves, 0);
-    QCOMPARE(topLevelWidget.enters, 0);
-    QCOMPARE(topLevelWidget.leaves, 1);
-    QCOMPARE(childWidget1.enters, 0);
-    //QCOMPARE(childWidget1.leaves, 1); // QTBUG-27800
-    QCOMPARE(childWidget2.enters, 0);
-    QCOMPARE(childWidget2.leaves, 0);
-    topLevelWidget.resetCounts();
-    childWidget1.resetCounts();
-
-    // Mouse enters back in, should cause enter to topLevelWidget
-    QWindowSystemInterface::handleEnterEvent(window, inWindowPoint, window->mapToGlobal(inWindowPoint));
-    QApplication::processEvents();
-    QVERIFY(!topLevelWidget.underMouse());
-    QVERIFY(!childWidget1.underMouse());
-    QVERIFY(!childWidget2.underMouse());
-    QVERIFY(!popupWidget.underMouse());
-    QCOMPARE(popupWidget.enters, 0);
-    QCOMPARE(popupWidget.leaves, 0);
-    QCOMPARE(topLevelWidget.enters, 1);
-    QCOMPARE(topLevelWidget.leaves, 0);
     QCOMPARE(childWidget1.enters, 0);
     QCOMPARE(childWidget1.leaves, 0);
     QCOMPARE(childWidget2.enters, 0);
     QCOMPARE(childWidget2.leaves, 0);
-    topLevelWidget.resetCounts();
 
-    // Mouse moves to child widget, should cause enter to child
-    QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(child2PointB)));
-    QVERIFY(!topLevelWidget.underMouse());
-    QVERIFY(!childWidget1.underMouse());
-    QVERIFY(!childWidget2.underMouse());
-    QVERIFY(!popupWidget.underMouse());
-    QCOMPARE(popupWidget.enters, 0);
-    QCOMPARE(popupWidget.leaves, 0);
-    QCOMPARE(topLevelWidget.enters, 0);
-    QCOMPARE(topLevelWidget.leaves, 0);
-    QCOMPARE(childWidget1.enters, 0);
-    QCOMPARE(childWidget1.leaves, 0);
-    //QCOMPARE(childWidget2.enters, 1); // QTBUG-27800
-    QCOMPARE(childWidget2.leaves, 0);
-    childWidget2.resetCounts();
+    // Note: Mouse moving off-application while there is an active popup cannot be simulated
+    // without actually moving the cursor so it is not tested.
 
-    // Mouse enters popup, should cause enter to popup and leave to current widgets under mouse
-    QWindowSystemInterface::handleLeaveEvent(window);
+    // Mouse enters popup, should cause enter to popup.
+    // Once again, need to create artificial enter event.
     const QPoint popupCenter = popupWindow->geometry().center();
     QWindowSystemInterface::handleEnterEvent(popupWindow, popupWindow->mapFromGlobal(popupCenter), popupCenter);
-    QApplication::processEvents();
+    QTest::mouseMove(popupWindow, popupCenter);
     QVERIFY(!topLevelWidget.underMouse());
     QVERIFY(!childWidget1.underMouse());
     QVERIFY(!childWidget2.underMouse());
@@ -9798,14 +9746,12 @@ void tst_QWidget::underMouse()
     QCOMPARE(popupWidget.enters, 1);
     QCOMPARE(popupWidget.leaves, 0);
     QCOMPARE(topLevelWidget.enters, 0);
-    QCOMPARE(topLevelWidget.leaves, 1);
+    QCOMPARE(topLevelWidget.leaves, 0);
     QCOMPARE(childWidget1.enters, 0);
     QCOMPARE(childWidget1.leaves, 0);
     QCOMPARE(childWidget2.enters, 0);
-    //QCOMPARE(childWidget2.leaves, 1); // QTBUG-27800
+    QCOMPARE(childWidget2.leaves, 0);
     popupWidget.resetCounts();
-    topLevelWidget.resetCounts();
-    childWidget2.resetCounts();
 
     // Mouse moves around inside popup, no changes
     QTest::mouseMove(popupWindow, QPoint(5, 5));
@@ -9822,9 +9768,10 @@ void tst_QWidget::underMouse()
     QCOMPARE(childWidget2.enters, 0);
     QCOMPARE(childWidget2.leaves, 0);
 
-    // Mouse leaves popup and enters topLevelWidget, should cause enter to topLevelWidget and leave for popup
+    // Mouse leaves popup and enters topLevelWidget, should cause leave for popup
+    // but no enter to topLevelWidget. Again, artificial leave event needed.
     QWindowSystemInterface::handleLeaveEvent(popupWindow);
-    QWindowSystemInterface::handleEnterEvent(window, inWindowPoint, window->mapToGlobal(inWindowPoint));
+    QTest::mouseMove(popupWindow, popupWindow->mapFromGlobal(window->mapToGlobal(inWindowPoint)));
     QApplication::processEvents();
     QVERIFY(!topLevelWidget.underMouse());
     QVERIFY(!childWidget1.underMouse());
@@ -9832,7 +9779,7 @@ void tst_QWidget::underMouse()
     QVERIFY(!popupWidget.underMouse());
     QCOMPARE(popupWidget.enters, 0);
     QCOMPARE(popupWidget.leaves, 1);
-    QCOMPARE(topLevelWidget.enters, 1);
+    QCOMPARE(topLevelWidget.enters, 0);
     QCOMPARE(topLevelWidget.leaves, 0);
     QCOMPARE(childWidget1.enters, 0);
     QCOMPARE(childWidget1.leaves, 0);
