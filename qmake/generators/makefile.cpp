@@ -437,6 +437,9 @@ MakefileGenerator::init()
 
     ProValueMap &v = project->variables();
 
+    if (v["TARGET"].isEmpty())
+        warn_msg(WarnLogic, "TARGET is empty");
+
     chkdir = v["QMAKE_CHK_DIR_EXISTS"].join(' ');
     chkfile = v["QMAKE_CHK_FILE_EXISTS"].join(' ');
     if (chkfile.isEmpty()) // Backwards compat with Qt4 specs
