@@ -203,6 +203,8 @@ QIOSWindow::QIOSWindow(QWindow *window)
         if ([uiApplication.delegate isMemberOfClass:[QIOSApplicationDelegate class]])
             [uiApplication.delegate.window.rootViewController.view addSubview:m_view];
     }
+
+    setWindowState(window->windowState());
 }
 
 QIOSWindow::~QIOSWindow()
@@ -233,6 +235,22 @@ void QIOSWindow::updateGeometry(const QRect &rect)
     // We inform Qt about new geometry, which will trigger resize and
     // expose events for the application.
     QWindowSystemInterface::handleGeometryChange(window(), rect);
+}
+
+void QIOSWindow::setWindowState(Qt::WindowState state)
+{
+    // FIXME: Figure out where or how we should disable/enable the statusbar.
+    // Perhaps setting QWindow to maximized should also mean that we'll show
+    // the statusbar, and vice versa for fullscreen?
+
+    switch (state) {
+    case Qt::WindowMaximized:
+    case Qt::WindowFullScreen:
+        setGeometry(QRect(QPoint(0, 0), window()->screen()->availableSize()));
+        break;
+    default:
+        break;
+    }
 }
 
 GLuint QIOSWindow::framebufferObject(const QIOSContext &context) const

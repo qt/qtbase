@@ -85,6 +85,8 @@ public:
     void setGeometry(const QRect &rect);
     void updateGeometry(const QRect &rect);
 
+    void setWindowState(Qt::WindowState state);
+
     GLuint framebufferObject(const QIOSContext &context) const;
 
     EAGLView *nativeView() const { return m_view; }
