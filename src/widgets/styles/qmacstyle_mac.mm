@@ -5289,7 +5289,12 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 = qstyleoption_cast<const QStyleOptionGroupBox *>(opt)) {
 
             QStyleOptionGroupBox groupBox(*gb);
-            groupBox.state |= QStyle::State_Mini; // Force mini-sized checkbox to go with small-sized label
+            bool flat = (groupBox.features & QStyleOptionFrameV2::Flat);
+            if (!flat)
+                groupBox.state |= QStyle::State_Mini; // Force mini-sized checkbox to go with small-sized label
+            else
+                groupBox.subControls = groupBox.subControls & ~SC_GroupBoxFrame; // We don't like frames and ugly lines
+
             bool didModifySubControls = false;
             if ((!widget || !widget->testAttribute(Qt::WA_SetFont))
                     && QApplication::desktopSettingsAware()) {
@@ -5309,7 +5314,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                       textColor.blueF(), textColor.alphaF() };
                 CGContextSetFillColorSpace(cg, qt_mac_genericColorSpace());
                 CGContextSetFillColor(cg, colorComp);
-                tti.fontID = kThemeSmallSystemFont;
+                tti.fontID = flat ? kThemeSystemFont : kThemeSmallSystemFont;
                 tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
                 tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
                 tti.options = kHIThemeTextBoxOptionNone;
@@ -5751,7 +5756,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                     HIThemeTextInfo tti;
                     tti.version = qt_mac_hitheme_version;
                     tti.state = kThemeStateActive;
-                    tti.fontID = kThemeSmallSystemFont;
+                    tti.fontID = flat ? kThemeSystemFont : kThemeSmallSystemFont;
                     tti.horizontalFlushness = kHIThemeTextHorizontalFlushCenter;
                     tti.verticalFlushness = kHIThemeTextVerticalFlushCenter;
                     tti.options = kHIThemeTextBoxOptionNone;
@@ -5772,6 +5777,8 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
 
                 QRect labelRect = alignedRect(groupBox->direction, groupBox->textAlignment,
                                               QSize(tw, h), ret);
+                if (flat && checkable)
+                    labelRect.moveLeft(labelRect.left() + 4);
                 int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, opt, widget);
                 bool rtl = groupBox->direction == Qt::RightToLeft;
                 if (sc == SC_GroupBoxLabel) {
@@ -5779,7 +5786,10 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                         int newSum = indicatorWidth + 1;
                         int newLeft = labelRect.left() + (rtl ? -newSum : newSum);
                         labelRect.moveLeft(newLeft);
-                        labelRect.moveTop(labelRect.top() + 5);
+                        if (flat)
+                            labelRect.moveTop(labelRect.top() + 3);
+                        else
+                            labelRect.moveTop(labelRect.top() + 4);
                     } else if (flat) {
                         int newLeft = labelRect.left() - (rtl ? 3 : -3);
                         labelRect.moveLeft(newLeft);
@@ -5794,32 +5804,32 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
 
                 if (sc == SC_GroupBoxCheckBox) {
                     int left = rtl ? labelRect.right() - indicatorWidth : labelRect.left() - 1;
-                    ret.setRect(left, ret.top() + 6,
+                    int top = flat ? ret.top() + 1 : ret.top() + 5;
+                    ret.setRect(left, top,
                                 indicatorWidth, proxy()->pixelMetric(PM_IndicatorHeight, opt, widget));
                 }
                 break;
             }
             case SC_GroupBoxContents:
             case SC_GroupBoxFrame: {
-                if (flat) {
-                    ret = QCommonStyle::subControlRect(cc, groupBox, sc, widget);
-                    break;
-                }
                 QFontMetrics fm = groupBox->fontMetrics;
-                bool checkable = groupBox->subControls & SC_GroupBoxCheckBox;
                 int yOffset = 3;
-                if (!checkable) {
+                if (!flat) {
                     if (widget && !widget->testAttribute(Qt::WA_SetFont)
                             && QApplication::desktopSettingsAware())
                         fm = QFontMetrics(qt_app_fonts_hash()->value("QSmallFont", QFont()));
                     yOffset = 5;
-                    if (hasNoText)
-                        yOffset = -qCeil(QFontMetricsF(fm).height());
                 }
 
+                if (hasNoText)
+                    yOffset = -qCeil(QFontMetricsF(fm).height());
                 ret = opt->rect.adjusted(0, qCeil(QFontMetricsF(fm).height()) + yOffset, 0, 0);
-                if (sc == SC_GroupBoxContents)
-                    ret.adjust(3, 3, -3, -4);    // guess
+                if (sc == SC_GroupBoxContents) {
+                    if (flat)
+                        ret.adjust(3, -5, -3, -4);   // guess too
+                    else
+                        ret.adjust(3, 3, -3, -4);    // guess
+                }
             }
                 break;
             default:
