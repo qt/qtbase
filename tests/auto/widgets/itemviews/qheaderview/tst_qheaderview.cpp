@@ -1637,9 +1637,15 @@ void tst_QHeaderView::defaultSectionSizeTest()
 {
     // Setup
     QTableView qtv;
+    QHeaderView *hv = qtv.verticalHeader();
+    hv->setDefaultSectionSize(99); // Set it to a value different from defaultSize.
     QStandardItemModel amodel(4, 4);
     qtv.setModel(&amodel);
-    QHeaderView *hv = qtv.verticalHeader();
+    QCOMPARE(hv->sectionSize(0), 99);
+    QCOMPARE(hv->visualIndexAt(50), 0); // <= also make sure that indexes are calculated
+    hv->setDefaultSectionSize(40); // Set it to a value different from defaultSize.
+    QCOMPARE(hv->visualIndexAt(50), 1);
+
     const int defaultSize = 26;
     hv->setDefaultSectionSize(defaultSize + 1); // Set it to a value different from defaultSize.
 

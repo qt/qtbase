@@ -3382,6 +3382,7 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
             }
         }
     }
+    sectionStartposRecalc = true;
 }
 
 void QHeaderViewPrivate::recalcSectionStartPos() const // linear (but fast)
