@@ -42,6 +42,17 @@
 #ifndef QWINDOW_P_H
 #define QWINDOW_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtGui/qwindow.h>
 #include <qpa/qplatformwindow.h>
 
@@ -51,7 +62,6 @@
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
 
 #define QWINDOWSIZE_MAX ((1<<24)-1)
 
