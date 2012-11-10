@@ -203,21 +203,21 @@ template <class Key, class T>
 struct QHashNode
 {
     QHashNode *next;
-    uint h;
-    Key key;
+    const uint h;
+    const Key key;
     T value;
 
     inline QHashNode(const Key &key0, const T &value0, uint hash, QHashNode *n)
         : next(n), h(hash), key(key0), value(value0) {}
-    inline bool same_key(uint h0, const Key &key0) { return h0 == h && key0 == key; }
+    inline bool same_key(uint h0, const Key &key0) const { return h0 == h && key0 == key; }
 };
 
 template <class Key, class T>
 struct QHashDummyNode
 {
     QHashNode<Key, T> *next;
-    uint h;
-    Key key;
+    const uint h;
+    const Key key;
 
     inline QHashDummyNode(const Key &key0, uint hash, QHashNode<Key, T> *n) : next(n), h(hash), key(key0) {}
 };
@@ -253,7 +253,7 @@ struct QHashDummyNode
 \
         inline QHashNode(key_type /* key0 */) {} \
         inline QHashNode(key_type /* key0 */, const T &value0) : value(value0) {} \
-        inline bool same_key(uint h0, key_type) { return h0 == h; } \
+        inline bool same_key(uint h0, key_type) const { return h0 == h; } \
     }
 
 #if defined(Q_BYTE_ORDER) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
