@@ -1,4 +1,11 @@
 
+# This file is not part of the Qt API.  It exists purely as an
+# implementation detail.  This file, and its contents may change from version to
+# version without notice, or even be removed.
+#
+# We mean it.
+
+
 set(BUILD_OPTIONS_LIST)
 
 if (CMAKE_BUILD_TYPE)
