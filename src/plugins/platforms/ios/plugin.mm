@@ -64,6 +64,6 @@ QPlatformIntegration * QIOSIntegrationPlugin::create(const QString& system, cons
 
 QT_END_NAMESPACE
 
-#include "main.moc"
+#include "plugin.moc"
 
 Q_IMPORT_PLUGIN(QIOSIntegrationPlugin)

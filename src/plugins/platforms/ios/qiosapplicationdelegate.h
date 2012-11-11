@@ -48,3 +48,6 @@
 
 @end
 
+@interface QIOSMainWrapperApplicationDelegate : QIOSApplicationDelegate
+@end
+

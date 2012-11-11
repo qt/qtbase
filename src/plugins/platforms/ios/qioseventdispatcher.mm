@@ -191,23 +191,13 @@ bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     m_interrupted = false;
     bool eventsProcessed = false;
 
-    UIApplication *uiApplication = [UIApplication sharedApplication];
     bool excludeUserEvents = flags & QEventLoop::ExcludeUserInputEvents;
     bool execFlagSet = (flags & QEventLoop::DialogExec) || (flags & QEventLoop::EventLoopExec);
     bool useExecMode = execFlagSet && !excludeUserEvents;
 
     if (useExecMode) {
-        if (!uiApplication) {
-            // No UIApplication has been started yet. We therefore start it now. Note that application
-            // developers are free to call UIApplicationMain themselves instead of QApplication::exec()
-            @autoreleasepool {
-                QCoreApplicationPrivate *qAppPriv = static_cast<QCoreApplicationPrivate *>(QObjectPrivate::get(qApp));
-                return UIApplicationMain(qAppPriv->argc, qAppPriv->argv, nil, NSStringFromClass([QIOSApplicationDelegate class]));
-            }
-        } else {
-            NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
-            while ([runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]] && !m_interrupted);
-        }
+        NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+        while ([runLoop runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]] && !m_interrupted);
         eventsProcessed = true;
     } else {
         if (!(flags & QEventLoop::WaitForMoreEvents))

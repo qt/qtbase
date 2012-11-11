@@ -56,6 +56,18 @@ QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
     , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
 {
+    if (![UIApplication sharedApplication]) {
+        qWarning()
+            << "Error: You are creating QApplication before calling UIApplicationMain.\n"
+            << "If you are writing a native iOS application, and only want to use Qt for\n"
+            << "parts of the application, a good place to create QApplication is from within\n"
+            << "'applicationDidFinishLaunching' inside your UIApplication delegate.\n"
+            << "If you instead create a cross-platform Qt application and do not intend to call\n"
+            << "UIApplicationMain, you need to link in libqtmain.a, and substitute main with qt_main.\n"
+            << "This is normally done automatically by qmake.\n";
+        exit(-1);
+    }
+
     screenAdded(m_screen);
 }
 

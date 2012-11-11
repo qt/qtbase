@@ -45,34 +45,13 @@
 
 @implementation QIOSApplicationDelegate
 
+@synthesize window;
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     Q_UNUSED(application)
     Q_UNUSED(launchOptions)
 
-    // If this application delegate is instanciated, it means that
-    // this plugin also created UIApplication. We then also create a
-    // window with a view controller, and set all QWindow views
-    // as children of the controller view:
-    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    UIViewController *controller = [[UIViewController alloc] init];
-    self.window.rootViewController = controller;
-    controller.view = [[UIView alloc] init];
-
-    QWindowList windows = QGuiApplication::topLevelWindows();
-    for (int i=0; i<windows.size(); ++i) {
-        if (QIOSWindow *w = static_cast<QIOSWindow *>(windows[i]->handle())) {
-            UIView *winView = w->nativeView();
-            if (winView && !winView.superview)
-                [controller.view addSubview:winView];
-        }
-    }
-
-    // Aid debugging during development
-    self.window.backgroundColor = [UIColor cyanColor];
-    controller.view.backgroundColor = [UIColor magentaColor];
-
-    [self.window makeKeyAndVisible];
     return YES;
 }
 
@@ -102,6 +81,12 @@
 {
     Q_UNUSED(application)
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (void)dealloc
+{
+    [window release];
+    [super dealloc];
 }
 
 @end

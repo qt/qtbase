@@ -198,13 +198,8 @@ QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
 {
-    UIApplication *uiApplication = [UIApplication sharedApplication];
-    if (uiApplication) {
-        if ([uiApplication.delegate isMemberOfClass:[QIOSApplicationDelegate class]])
-            [uiApplication.delegate.window.rootViewController.view addSubview:m_view];
-    }
-
-    setWindowState(window->windowState());
+    if ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]])
+        [[UIApplication sharedApplication].delegate.window.rootViewController.view addSubview:m_view];
 }
 
 QIOSWindow::~QIOSWindow()
