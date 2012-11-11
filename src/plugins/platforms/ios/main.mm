@@ -66,4 +66,4 @@ QT_END_NAMESPACE
 
 #include "main.moc"
 
-
+Q_IMPORT_PLUGIN(QIOSIntegrationPlugin)
