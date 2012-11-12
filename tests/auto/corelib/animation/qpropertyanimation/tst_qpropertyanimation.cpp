@@ -113,6 +113,7 @@ private slots:
     void setStartEndValues_data();
     void setStartEndValues();
     void zeroDurationStart();
+    void zeroDurationForwardBackward();
     void operationsInStates_data();
     void operationsInStates();
     void oneKeyValue();
@@ -871,6 +872,50 @@ void tst_QPropertyAnimation::zeroDurationStart()
     QCOMPARE(qvariant_cast<QAbstractAnimation::State>(secondChange.last()), QAbstractAnimation::Running);
     //new state
     QCOMPARE(qvariant_cast<QAbstractAnimation::State>(secondChange.first()), QAbstractAnimation::Stopped);
+}
+
+void tst_QPropertyAnimation::zeroDurationForwardBackward()
+{
+    QObject o; o.setProperty("test", 1);
+    QObject o2; o2.setProperty("test", 2);
+    QObject o3; o3.setProperty("test", 3);
+    QObject o4; o4.setProperty("test", 4);
+    QPropertyAnimation prop(&o, "test"); prop.setDuration(0); prop.setStartValue(1); prop.setEndValue(2);
+
+    prop.start();
+    QCOMPARE(o.property("test").toInt(), 2);
+    prop.setDirection(QAbstractAnimation::Backward);
+    prop.start();
+    QCOMPARE(o.property("test").toInt(), 1);
+
+    prop.setDirection(QAbstractAnimation::Forward);
+    QPropertyAnimation prop2(&o2, "test"); prop2.setDuration(0); prop2.setStartValue(2); prop2.setEndValue(3);
+    QPropertyAnimation prop3(&o3, "test"); prop3.setDuration(0); prop3.setStartValue(3); prop3.setEndValue(4);
+    QPropertyAnimation prop4(&o4, "test"); prop4.setDuration(0); prop4.setStartValue(4); prop4.setEndValue(5);
+    QSequentialAnimationGroup group;
+    group.addAnimation(&prop);
+    group.addAnimation(&prop2);
+    group.addAnimation(&prop3);
+    group.addAnimation(&prop4);
+    group.start();
+
+    QCOMPARE(o.property("test").toInt(), 2);
+    QCOMPARE(o2.property("test").toInt(), 3);
+    QCOMPARE(o3.property("test").toInt(), 4);
+    QCOMPARE(o4.property("test").toInt(), 5);
+
+    group.setDirection(QAbstractAnimation::Backward);
+    group.start();
+
+    QCOMPARE(o.property("test").toInt(), 1);
+    QCOMPARE(o2.property("test").toInt(), 2);
+    QCOMPARE(o3.property("test").toInt(), 3);
+    QCOMPARE(o4.property("test").toInt(), 4);
+
+    group.removeAnimation(&prop);
+    group.removeAnimation(&prop2);
+    group.removeAnimation(&prop3);
+    group.removeAnimation(&prop4);
 }
 
 #define Pause 1

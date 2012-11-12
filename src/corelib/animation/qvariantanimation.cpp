@@ -240,7 +240,8 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
     if ((keyValues.count() + (defaultStartEndValue.isValid() ? 1 : 0)) < 2)
         return;
 
-    const qreal progress = easing.valueForProgress(((duration == 0) ? qreal(1) : qreal(currentTime) / qreal(duration)));
+    const qreal endProgress = (direction == QAbstractAnimation::Forward) ? qreal(1) : qreal(0);
+    const qreal progress = easing.valueForProgress(((duration == 0) ? endProgress : qreal(currentTime) / qreal(duration)));
 
     //0 and 1 are still the boundaries
     if (force || (currentInterval.start.first > 0 && progress < currentInterval.start.first)
