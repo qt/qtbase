@@ -3370,6 +3370,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
 void QHeaderViewPrivate::setDefaultSectionSize(int size)
 {
     Q_Q(QHeaderView);
+    invalidateCachedSizeHint();
     defaultSectionSize = size;
     for (int i = 0; i < sectionItems.count(); ++i) {
         QHeaderViewPrivate::SectionItem &section = sectionItems[i];
