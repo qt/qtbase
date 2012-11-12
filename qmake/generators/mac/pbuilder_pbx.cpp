@@ -451,18 +451,17 @@ public:
 ProjectBuilderSources::ProjectBuilderSources(const QString &k, bool b,
                                              const QString &g, const QString &c, bool o) : buildable(b), object_output(o), key(k), group(g), compiler(c)
 {
-    if(group.isNull()) {
-        if(k == "SOURCES")
-            group = "Sources";
-        else if(k == "HEADERS")
-            group = "Headers";
-        else if(k == "QMAKE_INTERNAL_INCLUDED_FILES")
-            group = "Sources [qmake]";
-        else if(k == "GENERATED_SOURCES" || k == "GENERATED_FILES")
-            group = "Temporary Sources";
-        else
-            fprintf(stderr, "No group available for %s!\n", k.toLatin1().constData());
-    }
+    // Override group name for a few common keys
+    if (k == "SOURCES" || k == "OBJECTIVE_SOURCES" || k == "HEADERS")
+        group = "Sources";
+    else if (k == "QMAKE_INTERNAL_INCLUDED_FILES")
+        group = "Supporting Files";
+    else if (k == "GENERATED_SOURCES" || k == "GENERATED_FILES")
+        group = "Generated Sources";
+    else if (k == "RESOURCES")
+        group = "Resources";
+    else if (group.isNull())
+        group = QString("Sources [") + c + "]";
 }
 
 QStringList
@@ -545,10 +544,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
             if (project->isEmpty(ProKey(*it + ".output")))
                 continue;
-            ProString name = *it;
-            const ProKey nkey(*it + ".name");
-            if (!project->isEmpty(nkey))
-                name = project->first(nkey);
             const ProStringList &inputs = project->values(ProKey(*it + ".input"));
             for(int input = 0; input < inputs.size(); ++input) {
                 if (project->isEmpty(inputs.at(input).toKey()))
@@ -572,7 +567,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         }
                     }
                     sources.append(ProjectBuilderSources(inputs.at(input).toQString(), true,
-                            QString("Sources [") + name + "]", (*it).toQString(), isObj));
+                            QString(), (*it).toQString(), isObj));
                 }
             }
         }
@@ -618,12 +613,17 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                         }
                         last_grp = new_grp;
                     }
+                    if (groups[last_grp].contains(src_key))
+                        continue;
                     groups[last_grp] += src_key;
                     in_root = false;
                 }
             }
-            if(in_root)
+            if (in_root) {
+                if (src_list.contains(src_key))
+                    continue;
                 src_list.append(src_key);
+            }
             //source reference
             t << "\t\t" << src_key << " = {" << "\n"
               << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
