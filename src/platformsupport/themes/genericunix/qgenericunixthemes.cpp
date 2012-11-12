@@ -427,9 +427,9 @@ QStringList QGenericUnixTheme::themeNames()
         } else if (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment() == QByteArray("GNOME")) {
             result.push_back(QLatin1String(QGnomeTheme::name));
         }
-        const QByteArray session = qgetenv("DESKTOP_SESSION");
-        if (!session.isEmpty() && session != "default")
-            result.push_back(QString::fromLocal8Bit(session));
+        const QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
+        if (!session.isEmpty() && session != QStringLiteral("default") && !result.contains(session))
+            result.push_back(session);
     } // desktopSettingsAware
     if (result.isEmpty())
         result.push_back(QLatin1String(QGenericUnixTheme::name));
