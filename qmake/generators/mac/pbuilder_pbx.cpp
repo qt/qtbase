@@ -786,7 +786,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 
     //SOURCE BUILDPHASE
     if(!project->isEmpty("QMAKE_PBX_OBJ")) {
-        QString grp = "Build Sources", key = keyFor(grp);
+        QString grp = "Compile Sources", key = keyFor(grp);
         project->values("QMAKE_PBX_BUILDPHASES").append(key);
         t << "\t\t" << key << " = {" << "\n"
           << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";" << "\n"
@@ -967,7 +967,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     if(!project->isEmpty("QMAKE_PBX_LIBRARIES")) {
         tmp = project->values("QMAKE_PBX_LIBRARIES");
         if(!tmp.isEmpty()) {
-            QString grp("External Frameworks and Libraries"), key = keyFor(grp);
+            QString grp("Frameworks"), key = keyFor(grp);
             project->values("QMAKE_PBX_GROUPS").append(key);
             t << "\t\t" << key << " = {" << "\n"
               << "\t\t\t" << writeSettings("children", project->values("QMAKE_PBX_LIBRARIES"), SettingsAsList, 4) << ";" << "\n"
@@ -980,7 +980,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         }
     }
     {
-        QString grp("Frameworks & Libraries"), key = keyFor(grp);
+        QString grp("Link Binary With Libraries"), key = keyFor(grp);
         project->values("QMAKE_PBX_BUILDPHASES").append(key);
         t << "\t\t" << key << " = {" << "\n"
           << "\t\t\t" << writeSettings("buildActionMask", "2147483647", SettingsNoQuote) << ";" << "\n"
