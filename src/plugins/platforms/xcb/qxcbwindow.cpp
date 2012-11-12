@@ -1303,6 +1303,42 @@ QXcbEGLSurface *QXcbWindow::eglSurface() const
 }
 #endif
 
+class ExposeCompressor
+{
+public:
+    ExposeCompressor(xcb_window_t window, QRegion *region)
+        : m_window(window)
+        , m_region(region)
+        , m_pending(true)
+    {
+    }
+
+    bool checkEvent(xcb_generic_event_t *event)
+    {
+        if (!event)
+            return false;
+        if ((event->response_type & ~0x80) != XCB_EXPOSE)
+            return false;
+        xcb_expose_event_t *expose = (xcb_expose_event_t *)event;
+        if (expose->window != m_window)
+            return false;
+        if (expose->count == 0)
+            m_pending = false;
+        *m_region |= QRect(expose->x, expose->y, expose->width, expose->height);
+        return true;
+    }
+
+    bool pending() const
+    {
+        return m_pending;
+    }
+
+private:
+    xcb_window_t m_window;
+    QRegion *m_region;
+    bool m_pending;
+};
+
 void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
 {
     QRect rect(event->x, event->y, event->width, event->height);
@@ -1312,8 +1348,15 @@ void QXcbWindow::handleExposeEvent(const xcb_expose_event_t *event)
     else
         m_exposeRegion |= rect;
 
+    ExposeCompressor compressor(m_window, &m_exposeRegion);
+    xcb_generic_event_t *filter = 0;
+    do {
+        filter = connection()->checkEvent(compressor);
+        free(filter);
+    } while (filter);
+
     // if count is non-zero there are more expose events pending
-    if (event->count == 0) {
+    if (event->count == 0 || !compressor.pending()) {
         QWindowSystemInterface::handleExposeEvent(window(), m_exposeRegion);
         m_exposeRegion = QRegion();
     }
