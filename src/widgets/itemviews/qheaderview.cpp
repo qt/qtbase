@@ -3370,6 +3370,7 @@ void QHeaderViewPrivate::cascadingResize(int visual, int newSize)
 void QHeaderViewPrivate::setDefaultSectionSize(int size)
 {
     Q_Q(QHeaderView);
+    executePostedLayout();
     invalidateCachedSizeHint();
     defaultSectionSize = size;
     for (int i = 0; i < sectionItems.count(); ++i) {
@@ -3385,6 +3386,8 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
         }
     }
     sectionStartposRecalc = true;
+    if (hasAutoResizeSections())
+        doDelayedResizeSections();
 }
 
 void QHeaderViewPrivate::recalcSectionStartPos() const // linear (but fast)
