@@ -7907,8 +7907,8 @@ bool QWidget::event(QEvent *event)
                 }
             }
             query->accept();
-            break;
         }
+        break;
 
     case QEvent::PolishRequest:
         ensurePolished();
