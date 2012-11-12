@@ -3388,6 +3388,7 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
     sectionStartposRecalc = true;
     if (hasAutoResizeSections())
         doDelayedResizeSections();
+    viewport->update();
 }
 
 void QHeaderViewPrivate::recalcSectionStartPos() const // linear (but fast)
