@@ -264,7 +264,7 @@ static int openTtyDevice(const QString &device)
 
 static bool switchToGraphicsMode(int ttyfd, int *oldMode)
 {
-    ioctl(ttyfd, KDGETMODE, &oldMode);
+    ioctl(ttyfd, KDGETMODE, oldMode);
     if (*oldMode != KD_GRAPHICS) {
        if (ioctl(ttyfd, KDSETMODE, KD_GRAPHICS) != 0)
             return false;
