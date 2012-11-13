@@ -100,6 +100,7 @@ public:
     QCursor separatorCursor(const QList<int> &path) const;
     void adjustCursor(const QPoint &pos);
     QCursor oldCursor;
+    QCursor adjustedCursor;
     uint hasOldCursor : 1;
     uint cursorAdjusted : 1;
 #endif
@@ -1300,7 +1301,7 @@ void QMainWindowPrivate::adjustCursor(const QPoint &pos)
             else
                 q->unsetCursor();
         }
-    } else {
+    } else if (layout->movingSeparator.isEmpty()) { // Don't change cursor when moving separator
         QList<int> pathToSeparator
             = layout->layoutState.dockAreaLayout.findSeparator(pos);
 
@@ -1324,9 +1325,8 @@ void QMainWindowPrivate::adjustCursor(const QPoint &pos)
                     oldCursor = q->cursor();
                     hasOldCursor = q->testAttribute(Qt::WA_SetCursor);
                 }
-                QCursor cursor = separatorCursor(hoverSeparator);
-                cursorAdjusted = false; //to not reset the oldCursor in event(CursorChange)
-                q->setCursor(cursor);
+                adjustedCursor = separatorCursor(hoverSeparator);
+                q->setCursor(adjustedCursor);
                 cursorAdjusted = true;
             }
         }
@@ -1452,9 +1452,15 @@ bool QMainWindow::event(QEvent *event)
 #endif // Q_WS_MAC
 #if !defined(QT_NO_DOCKWIDGET) && !defined(QT_NO_CURSOR)
        case QEvent::CursorChange:
-           if (d->cursorAdjusted) {
+           // CursorChange events are triggered as mouse moves to new widgets even
+           // if the cursor doesn't actually change, so do not change oldCursor if
+           // the "changed" cursor has same shape as adjusted cursor.
+           if (d->cursorAdjusted && d->adjustedCursor.shape() != cursor().shape()) {
                d->oldCursor = cursor();
                d->hasOldCursor = testAttribute(Qt::WA_SetCursor);
+
+               // Ensure our adjusted cursor stays visible
+               setCursor(d->adjustedCursor);
            }
            break;
 #endif
