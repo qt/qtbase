@@ -481,6 +481,14 @@ static inline int toKeyOrUnicode(int vk, int scancode, unsigned char *kbdBuffer,
     int code = 0;
     QChar unicodeBuffer[5];
     int res = ToUnicode(vk, scancode, kbdBuffer, reinterpret_cast<LPWSTR>(unicodeBuffer), 5, 0);
+    // When Ctrl modifier is used ToUnicode does not return correct values. In order to assign the
+    // right key the control modifier is removed for just that function if the previous call failed.
+    if (res == 0 && kbdBuffer[VK_CONTROL]) {
+        const unsigned char controlState = kbdBuffer[VK_CONTROL];
+        kbdBuffer[VK_CONTROL] = 0;
+        res = ToUnicode(vk, scancode, kbdBuffer, reinterpret_cast<LPWSTR>(unicodeBuffer), 5, 0);
+        kbdBuffer[VK_CONTROL] = controlState;
+    }
     if (res)
         code = unicodeBuffer[0].toUpper().unicode();
 
