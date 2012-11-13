@@ -27,3 +27,6 @@ macro.raisedaster.HTML  = "<sup>*</sup>"
 
 #for including files into the qch file
 qhp.extraFiles += style/offline.css
+
+#include the external websites
+sourcedirs += $QT_INSTALL_DOCS/global/externalsites
