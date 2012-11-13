@@ -103,13 +103,16 @@ defineTest(qtAddModule) {
        !isEmpty(MODULE_LIBS): LINKAGE = -L$$MODULE_LIBS
        lib =
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
-           win32: lib = -l$${MODULE_NAME}$${QT_LIBINFIX}d
-           mac: lib = -l$${MODULE_NAME}$${QT_LIBINFIX}_debug
+           win32: lib = $${MODULE_NAME}$${QT_LIBINFIX}d
+           mac: lib = $${MODULE_NAME}$${QT_LIBINFIX}_debug
        }
-       isEmpty(lib): lib = -l$${MODULE_NAME}$${QT_LIBINFIX}
-       LINKAGE += $$lib
+       isEmpty(lib): lib = $${MODULE_NAME}$${QT_LIBINFIX}
+       LINKAGE += -l$$lib
 
        contains(QT_CONFIG, rpath): QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
+
+       contains(MODULE_CONFIG, staticlib): \
+           PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
 
        # Make sure we can link to uninstalled libraries
        unix:!mac:!isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
@@ -136,6 +139,7 @@ defineTest(qtAddModule) {
     export(QMAKE_LFLAGS)
     export(QMAKE_LIBDIR)
     export(QMAKE_RPATHDIR)
+    export(PRE_TARGETDEPS)
     return(true)
 }
 
