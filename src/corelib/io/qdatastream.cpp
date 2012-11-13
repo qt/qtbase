@@ -1046,8 +1046,12 @@ QDataStream &QDataStream::operator<<(float f)
         } x;
         x.val1 = g;
         x.val2 = qbswap(x.val2);
-        g = x.val1;
+
+        if (dev->write((char *)&x.val2, sizeof(float)) != sizeof(float))
+            q_status = WriteFailed;
+        return *this;
     }
+
     if (dev->write((char *)&g, sizeof(float)) != sizeof(float))
         q_status = WriteFailed;
     return *this;

@@ -195,6 +195,8 @@ private slots:
     void compatibility_Qt3();
     void compatibility_Qt2();
 
+    void floatingPointNaN();
+
 private:
     void writebool(QDataStream *s);
     void writeQBitArray(QDataStream *s);
@@ -3100,6 +3102,48 @@ void tst_QDataStream::compatibility_Qt2()
     QVERIFY(in_brush.style() == Qt::NoBrush);
     QVERIFY(in_palette.brush(QPalette::Button).style() == Qt::NoBrush);
     QVERIFY(in_palette.color(QPalette::Light) == Qt::green);
+}
+
+void tst_QDataStream::floatingPointNaN()
+{
+    QDataStream::ByteOrder bo = QSysInfo::ByteOrder == QSysInfo::BigEndian
+                                ? QDataStream::LittleEndian
+                                : QDataStream::BigEndian;
+
+    // Test and verify that values that become (s)nan's after swapping endianness
+    // don't change in the process.
+    // When compiling with e.g., MSVC (32bit) and when the fpu is used (fp:precise)
+    // all snan's will be converted to qnan's (default behavior).
+    // IF we get a snan after swapping endianness we can not copy the value to another
+    // float as this will cause the value to differ from the original value.
+    QByteArray ba;
+
+    union {
+       float f;
+       quint32 i;
+    } xs[2];
+
+    xs[0].i = qbswap<quint32>(0xff800001);
+    xs[1].i = qbswap<quint32>(0x7f800001);
+
+    {
+        QDataStream stream(&ba, QIODevice::WriteOnly);
+        stream.setByteOrder(bo);
+        stream.setFloatingPointPrecision(QDataStream::SinglePrecision);
+        stream << xs[0].f;
+        stream << xs[1].f;
+    }
+
+    {
+        QDataStream stream(ba);
+        stream.setByteOrder(bo);
+        stream.setFloatingPointPrecision(QDataStream::SinglePrecision);
+        float fr = 0.0f;
+        stream >> fr;
+        QCOMPARE(fr, xs[0].f);
+        stream >> fr;
+        QCOMPARE(fr, xs[1].f);
+    }
 }
 
 void tst_QDataStream::floatingPointPrecision()
