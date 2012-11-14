@@ -259,7 +259,8 @@ language_list = {
     211 : [ "Chiga",              "cgg" ],
     212 : [ "Central Morocco Tamazight", "tzm" ],
     213 : [ "Koyraboro Senni",    "ses" ],
-    214 : [ "Shambala",           "ksb" ]
+    214 : [ "Shambala",           "ksb" ],
+    215 : [ "Bodo",               "brx" ]
 }
 
 country_list = {

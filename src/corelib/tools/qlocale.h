@@ -293,9 +293,10 @@ public:
         CentralMoroccoTamazight = 212,
         KoyraboroSenni = 213,
         Shambala = 214,
+        Bodo = 215,
         NorwegianBokmal = Norwegian,
         NorwegianNynorsk = Nynorsk,
-        LastLanguage = Shambala
+        LastLanguage = Bodo
     };
 
     enum Script {
