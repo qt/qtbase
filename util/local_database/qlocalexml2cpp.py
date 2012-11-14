@@ -52,14 +52,6 @@ class Error:
     def __str__(self):
         return self.msg
 
-def check_static_char_array_length(name, array):
-    # some compilers like VC6 doesn't allow static arrays more than 64K bytes size.
-    size = reduce(lambda x, y: x+len(escapedString(y)), array, 0)
-    if size > 65535:
-        print "\n\n\n#error Array %s is too long! " % name
-        sys.stderr.write("\n\n\nERROR: the content of the array '%s' is too long: %d > 65535 " % (name, size))
-        sys.exit(1)
-
 def wrap_list(lst):
     def split(lst, size):
         for i in range(len(lst)/size+1):
@@ -580,7 +572,6 @@ def main():
     data_temp_file.write("\n")
 
     # List patterns data
-    #check_static_char_array_length("list_pattern_part", list_pattern_part_data.data)
     data_temp_file.write("static const ushort list_pattern_part_data[] = {\n")
     data_temp_file.write(wrap_list(list_pattern_part_data.data))
     data_temp_file.write("\n};\n")
@@ -588,7 +579,6 @@ def main():
     data_temp_file.write("\n")
 
     # Date format data
-    #check_static_char_array_length("date_format", date_format_data.data)
     data_temp_file.write("static const ushort date_format_data[] = {\n")
     data_temp_file.write(wrap_list(date_format_data.data))
     data_temp_file.write("\n};\n")
@@ -596,7 +586,6 @@ def main():
     data_temp_file.write("\n")
 
     # Time format data
-    #check_static_char_array_length("time_format", time_format_data.data)
     data_temp_file.write("static const ushort time_format_data[] = {\n")
     data_temp_file.write(wrap_list(time_format_data.data))
     data_temp_file.write("\n};\n")
@@ -604,7 +593,6 @@ def main():
     data_temp_file.write("\n")
 
     # Months data
-    #check_static_char_array_length("months", months_data.data)
     data_temp_file.write("static const ushort months_data[] = {\n")
     data_temp_file.write(wrap_list(months_data.data))
     data_temp_file.write("\n};\n")
@@ -612,7 +600,6 @@ def main():
     data_temp_file.write("\n")
 
     # Days data
-    #check_static_char_array_length("days", days_data.data)
     data_temp_file.write("static const ushort days_data[] = {\n")
     data_temp_file.write(wrap_list(days_data.data))
     data_temp_file.write("\n};\n")
@@ -620,7 +607,6 @@ def main():
     data_temp_file.write("\n")
 
     # AM data
-    #check_static_char_array_length("am", am_data.data)
     data_temp_file.write("static const ushort am_data[] = {\n")
     data_temp_file.write(wrap_list(am_data.data))
     data_temp_file.write("\n};\n")
@@ -628,7 +614,6 @@ def main():
     data_temp_file.write("\n")
 
     # PM data
-    #check_static_char_array_length("pm", am_data.data)
     data_temp_file.write("static const ushort pm_data[] = {\n")
     data_temp_file.write(wrap_list(pm_data.data))
     data_temp_file.write("\n};\n")
@@ -636,7 +621,6 @@ def main():
     data_temp_file.write("\n")
 
     # Currency symbol data
-    #check_static_char_array_length("currency_symbol", currency_symbol_data.data)
     data_temp_file.write("static const ushort currency_symbol_data[] = {\n")
     data_temp_file.write(wrap_list(currency_symbol_data.data))
     data_temp_file.write("\n};\n")
@@ -644,7 +628,6 @@ def main():
     data_temp_file.write("\n")
 
     # Currency display name data
-    #check_static_char_array_length("currency_display_name", currency_display_name_data.data)
     data_temp_file.write("static const ushort currency_display_name_data[] = {\n")
     data_temp_file.write(wrap_list(currency_display_name_data.data))
     data_temp_file.write("\n};\n")
@@ -652,13 +635,11 @@ def main():
     data_temp_file.write("\n")
 
     # Currency format data
-    #check_static_char_array_length("currency_format", currency_format_data.data)
     data_temp_file.write("static const ushort currency_format_data[] = {\n")
     data_temp_file.write(wrap_list(currency_format_data.data))
     data_temp_file.write("\n};\n")
 
     # Endonyms data
-    #check_static_char_array_length("endonyms", endonyms_data.data)
     data_temp_file.write("static const ushort endonyms_data[] = {\n")
     data_temp_file.write(wrap_list(endonyms_data.data))
     data_temp_file.write("\n};\n")
@@ -783,6 +764,7 @@ def main():
     data_temp_file.close()
     qlocaledata_file.close()
 
+    os.remove(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h")
     os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale_data_p.h")
 
     # qlocale.h
@@ -844,6 +826,7 @@ def main():
     qlocaleh_temp_file.close()
     qlocaleh_file.close()
 
+    os.remove(qtsrcdir + "/src/corelib/tools/qlocale.h")
     os.rename(qlocaleh_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.h")
 
     # qlocale.qdoc
@@ -862,6 +845,7 @@ def main():
     qlocaleqdoc_temp_file.close()
     qlocaleqdoc_file.close()
 
+    os.remove(qtsrcdir + "/src/corelib/tools/qlocale.qdoc")
     os.rename(qlocaleqdoc_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.qdoc")
 
 if __name__ == "__main__":

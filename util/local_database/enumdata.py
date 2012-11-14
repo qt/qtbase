@@ -40,7 +40,7 @@
 ##
 #############################################################################
 
-# langugae_list and country_list reflect the current values of enums in qlocale.h
+# language_list and country_list reflect the current values of enums in qlocale.h
 # If new xml language files are available in CLDR, these languages and countries
 # need to be *appended* to this list.
 
@@ -126,7 +126,7 @@ language_list = {
     78 : [ "Maltese",             "mt" ],
     79 : [ "Maori",               "mi" ],
     80 : [ "Marathi",             "mr" ],
-    81 : [ "Moldavian",           "mo" ],
+    81 : [ "Moldavian",           "mo" ], # deprecated (alias to "ro_MD")
     82 : [ "Mongolian",           "mn" ],
     83 : [ "Nauru",       "na" ],
     84 : [ "Nepali",              "ne" ],
@@ -146,7 +146,7 @@ language_list = {
     98 : [ "Sangho",              "sg" ],
     99 : [ "Sanskrit",            "sa" ],
     100 : [ "Serbian",            "sr" ],
-    101 : [ "SerboCroatian",      "sh" ],
+    101 : [ "SerboCroatian",      "sh" ], # legacy (alias to "sr_Latn")
     102 : [ "Sesotho",            "st" ],
     103 : [ "Setswana",           "tn" ],
     104 : [ "Shona",              "sn" ],
@@ -160,7 +160,7 @@ language_list = {
     112 : [ "Sundanese",          "su" ],
     113 : [ "Swahili",            "sw" ],
     114 : [ "Swedish",            "sv" ],
-    115 : [ "Tagalog",            "tl" ],
+    115 : [ "Tagalog",            "tl" ], # legacy (alias to "fil")
     116 : [ "Tajik",              "tg" ],
     117 : [ "Tamil",              "ta" ],
     118 : [ "Tatar",              "tt" ],
@@ -172,7 +172,7 @@ language_list = {
     124 : [ "Tsonga",             "ts" ],
     125 : [ "Turkish",            "tr" ],
     126 : [ "Turkmen",            "tk" ],
-    127 : [ "Twi",                "tw" ],
+    127 : [ "Twi",                "tw" ], # should be an alias to Akan
     128 : [ "Uigur",              "ug" ],
     129 : [ "Ukrainian",          "uk" ],
     130 : [ "Urdu",               "ur" ],

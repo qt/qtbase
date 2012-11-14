@@ -181,9 +181,13 @@ def _findEntryInFile(file, path, draft=None, attribute=None):
     return (elt.firstChild.nodeValue, None)
 
 def findAlias(file):
-    if not doc_cache.has_key(file):
-        return False
-    doc = doc_cache[file]
+    doc = False
+    if doc_cache.has_key(file):
+        doc = doc_cache[file]
+    else:
+        doc = xml.dom.minidom.parse(file)
+        doc_cache[file] = doc
+
     alias_elt = findChild(doc.documentElement, "alias")
     if not alias_elt:
         return False
@@ -242,7 +246,7 @@ def findEntry(base, path, draft=None, attribute=None):
         if result:
             return result
         if not aliaspath:
-            raise Error("findEntry: fatal error: %s: did not found key %s" % (filename, path))
+            raise Error("findEntry: fatal error: %s: can not find key %s" % (filename, path))
         path = aliaspath
 
     return result

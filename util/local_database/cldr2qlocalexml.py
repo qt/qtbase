@@ -136,13 +136,13 @@ def generateLocaleInfo(path):
 
     language_id = enumdata.languageCodeToId(language_code)
     if language_id == -1:
-        sys.stderr.write("unnknown language code \"" + language_code + "\"\n")
+        sys.stderr.write("unknown language code \"" + language_code + "\"\n")
         return {}
     language = enumdata.language_list[language_id][0]
 
     script_id = enumdata.scriptCodeToId(script_code)
     if script_code == -1:
-        sys.stderr.write("unnknown script code \"" + script_code + "\"\n")
+        sys.stderr.write("unknown script code \"" + script_code + "\"\n")
         return {}
     script = "AnyScript"
     if script_id != -1:
@@ -153,7 +153,7 @@ def generateLocaleInfo(path):
     if country_id != -1:
         country = enumdata.country_list[country_id][0]
     if country == "":
-        sys.stderr.write("unnknown country code \"" + country_code + "\"\n")
+        sys.stderr.write("unknown country code \"" + country_code + "\"\n")
         return {}
 
     # So we say we accept only those values that have "contributed" or
