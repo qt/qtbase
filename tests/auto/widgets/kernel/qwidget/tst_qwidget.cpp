@@ -3550,9 +3550,7 @@ void tst_QWidget::optimizedResizeMove()
 
 void tst_QWidget::optimizedResize_topLevel()
 {
-#if defined(Q_OS_MAC)
-    QSKIP("We do not yet have static contents support for *top-levels* on this platform");
-#endif
+    QSKIP("We do not yet have static contents support, see QTBUG-28012");
 
     StaticWidget topLevel;
     topLevel.gotPaintEvent = false;
