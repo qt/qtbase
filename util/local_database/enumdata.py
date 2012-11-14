@@ -523,7 +523,32 @@ script_list = {
     6   : [ "Traditional Han",   "Hant" ],
     7   : [ "Latin",             "Latn" ],
     8   : [ "Mongolian",         "Mong" ],
-    9   : [ "Tifinagh",          "Tfng" ]
+    9   : [ "Tifinagh",          "Tfng" ],
+    10  : [ "Armenian",          "Armn" ],
+    11  : [ "Bengali",           "Beng" ],
+    12  : [ "Cherokee",          "Cher" ],
+    13  : [ "Devanagari",        "Deva" ],
+    14  : [ "Ethiopic",          "Ethi" ],
+    15  : [ "Georgian",          "Geor" ],
+    16  : [ "Greek",             "Grek" ],
+    17  : [ "Gujarati",          "Gujr" ],
+    18  : [ "Hebrew",            "Hebr" ],
+    19  : [ "Japanese",          "Jpan" ],
+    20  : [ "Khmer",             "Khmr" ],
+    21  : [ "Kannada",           "Knda" ],
+    22  : [ "Korean",            "Kore" ],
+    23  : [ "Lao",               "Laoo" ],
+    24  : [ "Malayalam",         "Mlym" ],
+    25  : [ "Myanmar",           "Mymr" ],
+    26  : [ "Oriya",             "Orya" ],
+    27  : [ "Tamil",             "Taml" ],
+    28  : [ "Telugu",            "Telu" ],
+    29  : [ "Thaana",            "Thaa" ],
+    30  : [ "Thai",              "Thai" ],
+    31  : [ "Tibetan",           "Tibt" ],
+    32  : [ "Sinhala",           "Sinh" ],
+    33  : [ "Syriac",            "Syri" ],
+    34  : [ "Yi",                "Yiii" ]
 }
 
 def countryCodeToId(code):

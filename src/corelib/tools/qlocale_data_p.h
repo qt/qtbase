@@ -4306,6 +4306,31 @@ static const char script_name_list[] =
 "Latin\0"
 "Mongolian\0"
 "Tifinagh\0"
+"Armenian\0"
+"Bengali\0"
+"Cherokee\0"
+"Devanagari\0"
+"Ethiopic\0"
+"Georgian\0"
+"Greek\0"
+"Gujarati\0"
+"Hebrew\0"
+"Japanese\0"
+"Khmer\0"
+"Kannada\0"
+"Korean\0"
+"Lao\0"
+"Malayalam\0"
+"Myanmar\0"
+"Oriya\0"
+"Tamil\0"
+"Telugu\0"
+"Thaana\0"
+"Thai\0"
+"Tibetan\0"
+"Sinhala\0"
+"Syriac\0"
+"Yi\0"
 ;
 
 static const quint16 script_name_index[] = {
@@ -4319,6 +4344,31 @@ static const quint16 script_name_index[] = {
     72, // Latin
     78, // Mongolian
     88, // Tifinagh
+    97, // Armenian
+   106, // Bengali
+   114, // Cherokee
+   123, // Devanagari
+   134, // Ethiopic
+   143, // Georgian
+   152, // Greek
+   158, // Gujarati
+   167, // Hebrew
+   174, // Japanese
+   183, // Khmer
+   189, // Kannada
+   197, // Korean
+   204, // Lao
+   208, // Malayalam
+   218, // Myanmar
+   226, // Oriya
+   232, // Tamil
+   238, // Telugu
+   245, // Thaana
+   252, // Thai
+   257, // Tibetan
+   265, // Sinhala
+   273, // Syriac
+   280, // Yi
 };
 
 static const char country_name_list[] =
@@ -5051,6 +5101,31 @@ static const unsigned char script_code_list[] =
 "Latn" // Latin
 "Mong" // Mongolian
 "Tfng" // Tifinagh
+"Armn" // Armenian
+"Beng" // Bengali
+"Cher" // Cherokee
+"Deva" // Devanagari
+"Ethi" // Ethiopic
+"Geor" // Georgian
+"Grek" // Greek
+"Gujr" // Gujarati
+"Hebr" // Hebrew
+"Jpan" // Japanese
+"Khmr" // Khmer
+"Knda" // Kannada
+"Kore" // Korean
+"Laoo" // Lao
+"Mlym" // Malayalam
+"Mymr" // Myanmar
+"Orya" // Oriya
+"Taml" // Tamil
+"Telu" // Telugu
+"Thaa" // Thaana
+"Thai" // Thai
+"Tibt" // Tibetan
+"Sinh" // Sinhala
+"Syri" // Syriac
+"Yiii" // Yi
 ;
 static const unsigned char country_code_list[] =
 "  \0" // AnyCountry
