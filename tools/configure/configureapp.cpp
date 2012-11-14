@@ -240,6 +240,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "POSIX_IPC" ]       = "no";
     dictionary[ "QT_GLIB" ]         = "no";
     dictionary[ "QT_ICONV" ]        = "auto";
+    dictionary[ "QT_INOTIFY" ]      = "auto";
     dictionary[ "QT_CUPS" ]         = "auto";
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
@@ -1182,6 +1183,12 @@ void Configure::parseCmdLine()
             dictionary["QT_ICONV"] = "gnu";
         }
 
+        else if (configCmdLine.at(i) == "-inotify") {
+            dictionary["QT_INOTIFY"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-inotify") {
+            dictionary["QT_INOTIFY"] = "no";
+        }
+
         else if (configCmdLine.at(i) == "-neon") {
             dictionary["NEON"] = "yes";
         } else if (configCmdLine.at(i) == "-no-neon") {
@@ -1684,6 +1691,9 @@ bool Configure::displayHelp()
         desc("QT_ICONV",    "yes",     "-sun-iconv",    "Enable support for iconv(3) using sun-iconv.");
         desc("QT_ICONV",    "yes",     "-gnu-iconv",    "Enable support for iconv(3) using gnu-libiconv.\n");
 
+        desc("QT_INOTIFY",  "yes",     "-inotify",      "Explicitly enable Qt inotify(7) support.");
+        desc("QT_INOTIFY",  "no",      "-no-inotify",   "Explicitly disable Qt inotify(7) support.\n");
+
         desc("LARGE_FILE",  "yes",     "-largefile",    "Enables Qt to access files larger than 4 GB.\n");
 
         desc("FONT_CONFIG", "yes",     "-fontconfig",   "Build with FontConfig support.");
@@ -2072,6 +2082,8 @@ bool Configure::checkAvailability(const QString &part)
         available = findFile("dwrite.h") && findFile("d2d1.h") && findFile("dwrite.lib");
     } else if (part == "ICONV") {
         available = tryCompileProject("unix/iconv") || tryCompileProject("unix/gnu-libiconv");
+    } else if (part == "INOTIFY") {
+        available = tryCompileProject("unix/inotify");
     } else if (part == "CUPS") {
         available = (platform() != WINDOWS) && (platform() != WINDOWS_CE) && tryCompileProject("unix/cups");
     } else if (part == "STACK_PROTECTOR_STRONG") {
@@ -2195,6 +2207,10 @@ void Configure::autoDetection()
     // Detection of iconv support
     if (dictionary["QT_ICONV"] == "auto")
         dictionary["QT_ICONV"] = checkAvailability("ICONV") ? "yes" : "no";
+
+    // Detection of inotify
+    if (dictionary["QT_INOTIFY"] == "auto")
+        dictionary["QT_INOTIFY"] = checkAvailability("INOTIFY") ? "yes" : "no";
 
     // Detection of cups support
     if (dictionary["QT_CUPS"] == "auto")
@@ -3349,6 +3365,7 @@ void Configure::displayConfig()
     sout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;
     sout << "NIS support................." << dictionary[ "NIS" ] << endl;
     sout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
+    sout << "Inotify support............." << dictionary[ "QT_INOTIFY" ] << endl;
     sout << "Glib support................" << dictionary[ "QT_GLIB" ] << endl;
     sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
