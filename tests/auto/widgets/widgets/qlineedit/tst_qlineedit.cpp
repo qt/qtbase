@@ -189,6 +189,8 @@ private slots:
 
     void isReadOnly();
 
+    void noCursorBlinkWhenReadOnly();
+
     void cursorPosition();
 
     void cursorPositionChanged_data();
@@ -1826,6 +1828,42 @@ void tst_QLineEdit::isReadOnly()
     testWidget->cursorForward(false, 10);
     QTest::keyClicks(testWidget, "this should not have any effect!! ");
     QCOMPARE(testWidget->text(), QString("the quick dark brown fox"));
+}
+
+class BlinkTestLineEdit : public QLineEdit
+{
+public:
+    void paintEvent(QPaintEvent *e)
+    {
+        ++updates;
+        QLineEdit::paintEvent(e);
+    }
+
+    int updates;
+};
+
+void tst_QLineEdit::noCursorBlinkWhenReadOnly()
+{
+    int cursorFlashTime = QApplication::cursorFlashTime();
+    if (cursorFlashTime == 0)
+        return;
+    BlinkTestLineEdit le;
+    le.show();
+    le.setFocus();
+    QTest::qWaitForWindowActive(&le);
+    le.updates = 0;
+    QTest::qWait(cursorFlashTime);
+    QVERIFY(le.updates > 0);
+    le.setReadOnly(true);
+    QTest::qWait(10);
+    le.updates = 0;
+    QTest::qWait(cursorFlashTime);
+    QCOMPARE(le.updates, 0);
+    le.setReadOnly(false);
+    QTest::qWait(10);
+    le.updates = 0;
+    QTest::qWait(cursorFlashTime);
+    QVERIFY(le.updates > 0);
 }
 
 static void figureOutProperKey(Qt::Key &key, Qt::KeyboardModifiers &pressState)

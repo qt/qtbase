@@ -213,7 +213,7 @@ public:
     }
 
     bool isReadOnly() const { return m_readOnly; }
-    void setReadOnly(bool enable) { m_readOnly = enable; }
+    void setReadOnly(bool enable);
 
     QString text() const
     {
@@ -338,7 +338,6 @@ public:
 
     int cursorBlinkPeriod() const { return m_blinkPeriod; }
     void setCursorBlinkPeriod(int msec);
-    void resetCursorBlinkTimer();
 
     bool cursorBlinkStatus() const { return m_blinkStatus; }
 

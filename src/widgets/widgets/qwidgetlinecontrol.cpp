@@ -1456,6 +1456,15 @@ void QWidgetLineControl::complete(int key)
 }
 #endif
 
+void QWidgetLineControl::setReadOnly(bool enable)
+{
+    m_readOnly = enable;
+    if (enable)
+        setCursorBlinkPeriod(0);
+    else
+        setCursorBlinkPeriod(QApplication::cursorFlashTime());
+}
+
 void QWidgetLineControl::setCursorBlinkPeriod(int msec)
 {
     if (msec == m_blinkPeriod)
@@ -1463,7 +1472,7 @@ void QWidgetLineControl::setCursorBlinkPeriod(int msec)
     if (m_blinkTimer) {
         killTimer(m_blinkTimer);
     }
-    if (msec) {
+    if (msec && !m_readOnly) {
         m_blinkTimer = startTimer(msec / 2);
         m_blinkStatus = 1;
     } else {
@@ -1472,15 +1481,6 @@ void QWidgetLineControl::setCursorBlinkPeriod(int msec)
             emit updateNeeded(inputMask().isEmpty() ? cursorRect() : QRect());
     }
     m_blinkPeriod = msec;
-}
-
-void QWidgetLineControl::resetCursorBlinkTimer()
-{
-    if (m_blinkPeriod == 0 || m_blinkTimer == 0)
-        return;
-    killTimer(m_blinkTimer);
-    m_blinkTimer = startTimer(m_blinkPeriod / 2);
-    m_blinkStatus = 1;
 }
 
 void QWidgetLineControl::timerEvent(QTimerEvent *event)
