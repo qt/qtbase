@@ -3672,13 +3672,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
             EXTRA_OBJS="qsettings_mac.o qcore_mac.o"
             EXTRA_SRCS="\"$relpath/src/corelib/io/qsettings_mac.cpp\" \"$relpath/src/corelib/kernel/qcore_mac.cpp\""
-	    if [ '!' -z "$CFG_SDK" ]; then
-		echo "SDK_LFLAGS =-Wl,-syslibroot,$CFG_SDK" >>"$mkfile"
-		echo "SDK_CFLAGS =-isysroot $CFG_SDK" >>"$mkfile"
-		EXTRA_CFLAGS="$EXTRA_CFLAGS \$(SDK_CFLAGS)"
-		EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(SDK_CFLAGS)"
-		EXTRA_LFLAGS="$EXTRA_LFLAGS \$(SDK_LFLAGS)"
-            fi
         fi
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
@@ -3830,7 +3823,7 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST" $MAC_SDK_FLAG
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST"
     if [ $? -eq 0 ]; then
         eval `cat "$OUTFILE"`
     else
