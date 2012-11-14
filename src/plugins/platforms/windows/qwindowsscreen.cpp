@@ -125,11 +125,19 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
                        Qt::PortraitOrientation : Qt::LandscapeOrientation;
     // EnumDisplayMonitors (as opposed to EnumDisplayDevices) enumerates only
     // virtual desktop screens.
-    data.flags = QWindowsScreenData::VirtualDesktop;
-    if (info.dwFlags & MONITORINFOF_PRIMARY)
-        data.flags |= QWindowsScreenData::PrimaryScreen;
     data.name = QString::fromWCharArray(info.szDevice);
-    result->append(data);
+    data.flags = QWindowsScreenData::VirtualDesktop;
+    if (info.dwFlags & MONITORINFOF_PRIMARY) {
+        data.flags |= QWindowsScreenData::PrimaryScreen;
+        // QPlatformIntegration::screenAdded() documentation specifies that first
+        // added screen will be the primary screen, so order accordingly.
+        // Note that the side effect of this policy is that there is no way to change primary
+        // screen reported by Qt, unless we want to delete all existing screens and add them
+        // again whenever primary screen changes.
+        result->prepend(data);
+    } else {
+        result->append(data);
+    }
     return TRUE;
 }
 
