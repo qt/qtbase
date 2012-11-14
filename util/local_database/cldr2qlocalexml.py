@@ -135,26 +135,22 @@ def generateLocaleInfo(path):
         return {}
 
     language_id = enumdata.languageCodeToId(language_code)
-    if language_id == -1:
+    if language_id <= 0:
         sys.stderr.write("unknown language code \"" + language_code + "\"\n")
         return {}
     language = enumdata.language_list[language_id][0]
 
     script_id = enumdata.scriptCodeToId(script_code)
-    if script_code == -1:
+    if script_id == -1:
         sys.stderr.write("unknown script code \"" + script_code + "\"\n")
         return {}
-    script = "AnyScript"
-    if script_id != -1:
-        script = enumdata.script_list[script_id][0]
+    script = enumdata.script_list[script_id][0]
 
     country_id = enumdata.countryCodeToId(country_code)
-    country = ""
-    if country_id != -1:
-        country = enumdata.country_list[country_id][0]
-    if country == "":
+    if country_id <= 0:
         sys.stderr.write("unknown country code \"" + country_code + "\"\n")
         return {}
+    country = enumdata.country_list[country_id][0]
 
     # So we say we accept only those values that have "contributed" or
     # "approved" resolution. see http://www.unicode.org/cldr/process.html

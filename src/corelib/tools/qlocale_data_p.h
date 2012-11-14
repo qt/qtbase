@@ -5091,7 +5091,7 @@ static const unsigned char language_code_list[] =
 ;
 
 static const unsigned char script_code_list[] =
-"\0\0\0\0" // AnyScript
+"Zzzz" // AnyScript
 "Arab" // Arabic
 "Cyrl" // Cyrillic
 "Dsrt" // Deseret
@@ -5128,7 +5128,7 @@ static const unsigned char script_code_list[] =
 "Yiii" // Yi
 ;
 static const unsigned char country_code_list[] =
-"  \0" // AnyCountry
+"ZZ\0" // AnyCountry
 "AF\0" // Afghanistan
 "AL\0" // Albania
 "DZ\0" // Algeria

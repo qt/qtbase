@@ -264,7 +264,7 @@ language_list = {
 }
 
 country_list = {
-    0 : [ "AnyCountry",                                 "  "  ],
+    0 : [ "AnyCountry",                                 "ZZ"  ],
     1 : [ "Afghanistan",                                "AF"  ],
     2 : [ "Albania",                                    "AL"  ],
     3 : [ "Algeria",                                    "DZ"  ],
@@ -514,7 +514,7 @@ country_list = {
 }
 
 script_list = {
-    0   : [ "AnyScript",         "" ],
+    0   : [ "AnyScript",         "Zzzz" ],
     1   : [ "Arabic",            "Arab" ],
     2   : [ "Cyrillic",          "Cyrl" ],
     3   : [ "Deseret",           "Dsrt" ],
@@ -552,18 +552,24 @@ script_list = {
 }
 
 def countryCodeToId(code):
+    if not code:
+        return 0
     for country_id in country_list:
         if country_list[country_id][1] == code:
             return country_id
     return -1
 
 def languageCodeToId(code):
+    if not code:
+        return 0
     for language_id in language_list:
         if language_list[language_id][1] == code:
             return language_id
     return -1
 
 def scriptCodeToId(code):
+    if not code:
+        return 0
     for script_id in script_list:
         if script_list[script_id][1] == code:
             return script_id
