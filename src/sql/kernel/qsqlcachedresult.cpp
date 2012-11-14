@@ -304,10 +304,7 @@ QSqlCachedResult::ValueCache &QSqlCachedResult::cache()
 
 void QSqlCachedResult::virtual_hook(int id, void *data)
 {
-    switch (id) {
-    default:
-        QSqlResult::virtual_hook(id, data);
-    }
+    QSqlResult::virtual_hook(id, data);
 }
 
 void QSqlCachedResult::detachFromResultSet()

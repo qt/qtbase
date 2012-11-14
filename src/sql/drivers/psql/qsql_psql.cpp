@@ -512,10 +512,7 @@ void QPSQLResult::virtual_hook(int id, void *data)
 {
     Q_ASSERT(data);
 
-    switch (id) {
-    default:
-        QSqlResult::virtual_hook(id, data);
-    }
+    QSqlResult::virtual_hook(id, data);
 }
 
 static QString qReplacePlaceholderMarkers(const QString &query)

@@ -266,10 +266,7 @@ QSQLite2Result::~QSQLite2Result()
 
 void QSQLite2Result::virtual_hook(int id, void *data)
 {
-    switch (id) {
-    default:
-        QSqlCachedResult::virtual_hook(id, data);
-    }
+    QSqlCachedResult::virtual_hook(id, data);
 }
 
 /*

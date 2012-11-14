@@ -2048,10 +2048,7 @@ void QOCIResult::virtual_hook(int id, void *data)
 {
     Q_ASSERT(data);
 
-    switch (id) {
-    default:
-        QSqlCachedResult::virtual_hook(id, data);
-    }
+    QSqlCachedResult::virtual_hook(id, data);
 }
 
 ////////////////////////////////////////////////////////////////////////////
