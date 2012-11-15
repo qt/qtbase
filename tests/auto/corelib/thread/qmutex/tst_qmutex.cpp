@@ -132,6 +132,14 @@ void tst_QMutex::tryLock()
                 normalMutex.unlock();
                 testsTurn.release();
 
+                // TEST 7 overflow: thread can acquire lock, timeout = 3000 (QTBUG-24795)
+                threadsTurn.acquire();
+                timer.start();
+                QVERIFY(normalMutex.tryLock(3000));
+                QVERIFY(timer.elapsed() < 3000);
+                normalMutex.unlock();
+                testsTurn.release();
+
                 threadsTurn.acquire();
             }
         };
@@ -174,6 +182,13 @@ void tst_QMutex::tryLock()
         QVERIFY(lockCount.testAndSetRelaxed(1, 0));
         normalMutex.unlock();
         threadsTurn.release();
+
+        // TEST 7: thread can acquire lock, timeout = 3000   (QTBUG-24795)
+        testsTurn.acquire();
+        normalMutex.lock();
+        threadsTurn.release();
+        QThread::msleep(100);
+        normalMutex.unlock();
 
         // wait for thread to finish
         testsTurn.acquire();

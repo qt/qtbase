@@ -188,8 +188,8 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
     QElapsedTimer elapsedTimer;
     checkElapsedTimerIsTrivial();
     if (IsTimed) {
-        ts.tv_sec = timeout / Q_INT64_C(1000) / 1000 / 1000;
-        ts.tv_nsec = timeout % Q_INT64_C(1000) * 1000 * 1000;
+        ts.tv_sec = timeout / 1000;
+        ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
         elapsedTimer.start();
     }
 
