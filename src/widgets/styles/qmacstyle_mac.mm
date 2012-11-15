@@ -3118,7 +3118,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 fdi.state = tds;
                 SInt32 frame_size;
                 if (pe == PE_FrameLineEdit) {
-                    fdi.kind = kHIThemeFrameTextFieldSquare;
+                    fdi.kind = frame->features & QStyleOptionFrame::Rounded ? kHIThemeFrameTextFieldRound :
+                                                                              kHIThemeFrameTextFieldSquare;
                     GetThemeMetric(kThemeMetricEditTextFrameOutset, &frame_size);
                     if ((frame->state & State_ReadOnly) || !(frame->state & State_Enabled))
                         fdi.state = kThemeStateInactive;

@@ -120,8 +120,7 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     if (hasEditFocus())
         option->state |= QStyle::State_HasEditFocus;
 #endif
-    if (QStyleOptionFrameV2 *optionV2 = qstyleoption_cast<QStyleOptionFrameV2 *>(option))
-        optionV2->features = QStyleOptionFrameV2::None;
+    option->features = QStyleOptionFrame::None;
 }
 
 /*!

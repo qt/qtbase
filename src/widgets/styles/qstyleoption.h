@@ -125,7 +125,8 @@ public:
     int midLineWidth;
     enum FrameFeature {
         None = 0x00,
-        Flat = 0x01
+        Flat = 0x01,
+        Rounded = 0x02
     };
     Q_DECLARE_FLAGS(FrameFeatures, FrameFeature)
     FrameFeatures features;
