@@ -1483,6 +1483,15 @@ void QWidgetLineControl::setCursorBlinkPeriod(int msec)
     m_blinkPeriod = msec;
 }
 
+void QWidgetLineControl::resetCursorBlinkTimer()
+{
+    if (m_blinkPeriod == 0 || m_blinkTimer == 0)
+        return;
+    killTimer(m_blinkTimer);
+    m_blinkTimer = startTimer(m_blinkPeriod / 2);
+    m_blinkStatus = 1;
+}
+
 void QWidgetLineControl::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == m_blinkTimer) {

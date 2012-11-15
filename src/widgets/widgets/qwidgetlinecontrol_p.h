@@ -338,6 +338,7 @@ public:
 
     int cursorBlinkPeriod() const { return m_blinkPeriod; }
     void setCursorBlinkPeriod(int msec);
+    void resetCursorBlinkTimer();
 
     bool cursorBlinkStatus() const { return m_blinkStatus; }
 
