@@ -76,6 +76,8 @@ class QAccessibleTextWidget : public QAccessibleWidget,
 public:
     QAccessibleTextWidget(QWidget *o, QAccessible::Role r = QAccessible::EditableText, const QString &name = QString());
 
+    QAccessible::State state() const;
+
     // QAccessibleTextInterface
     //  selection
     void selection(int selectionIndex, int *startOffset, int *endOffset) const;

@@ -134,7 +134,7 @@ void QAccessiblePlainTextEdit::setText(QAccessible::Text t, const QString &text)
 
 QAccessible::State QAccessiblePlainTextEdit::state() const
 {
-    QAccessible::State st = QAccessibleWidget::state();
+    QAccessible::State st = QAccessibleTextWidget::state();
     if (plainTextEdit()->isReadOnly())
         st.readOnly = true;
     else
@@ -258,7 +258,7 @@ void QAccessibleTextEdit::setText(QAccessible::Text t, const QString &text)
 
 QAccessible::State QAccessibleTextEdit::state() const
 {
-    QAccessible::State st = QAccessibleWidget::state();
+    QAccessible::State st = QAccessibleTextWidget::state();
     if (textEdit()->isReadOnly())
         st.readOnly = true;
     else
@@ -804,6 +804,13 @@ QAccessibleTextWidget::QAccessibleTextWidget(QWidget *o, QAccessible::Role r, co
     QAccessibleWidget(o, r, name)
 {
 
+}
+
+QAccessible::State QAccessibleTextWidget::state() const
+{
+    QAccessible::State s = QAccessibleWidget::state();
+    s.multiLine = true;
+    return s;
 }
 
 QRect QAccessibleTextWidget::characterRect(int offset) const
