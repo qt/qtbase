@@ -1483,6 +1483,7 @@ void QWidgetLineControl::setCursorBlinkPeriod(int msec)
     m_blinkPeriod = msec;
 }
 
+// This is still used by QDeclarativeTextInput in the qtquick1 repo
 void QWidgetLineControl::resetCursorBlinkTimer()
 {
     if (m_blinkPeriod == 0 || m_blinkTimer == 0)
