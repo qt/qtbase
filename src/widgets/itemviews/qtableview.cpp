@@ -3133,12 +3133,14 @@ void QTableViewPrivate::selectRow(int row, bool anchor)
                 command |= QItemSelectionModel::Current;
         }
 
-        QModelIndex tl = model->index(qMin(rowSectionAnchor, row), 0, root);
-        QModelIndex br = model->index(qMax(rowSectionAnchor, row), model->columnCount(root) - 1, root);
-        if (verticalHeader->sectionsMoved() && tl.row() != br.row())
+        QModelIndex tl = model->index(qMin(rowSectionAnchor, row), logicalColumn(0), root);
+        QModelIndex br = model->index(qMax(rowSectionAnchor, row), logicalColumn(model->columnCount(root) - 1), root);
+        if ((verticalHeader->sectionsMoved() && tl.row() != br.row())
+            || horizontalHeader->sectionsMoved()) {
             q->setSelection(q->visualRect(tl)|q->visualRect(br), command);
-        else
+        } else {
             selectionModel->select(QItemSelection(tl, br), command);
+        }
     }
 }
 
@@ -3171,13 +3173,15 @@ void QTableViewPrivate::selectColumn(int column, bool anchor)
                 command |= QItemSelectionModel::Current;
         }
 
-        QModelIndex tl = model->index(0, qMin(columnSectionAnchor, column), root);
-        QModelIndex br = model->index(model->rowCount(root) - 1,
+        QModelIndex tl = model->index(logicalRow(0), qMin(columnSectionAnchor, column), root);
+        QModelIndex br = model->index(logicalRow(model->rowCount(root) - 1),
                                       qMax(columnSectionAnchor, column), root);
-        if (horizontalHeader->sectionsMoved() && tl.column() != br.column())
+        if ((horizontalHeader->sectionsMoved() && tl.column() != br.column())
+            || verticalHeader->sectionsMoved()) {
             q->setSelection(q->visualRect(tl)|q->visualRect(br), command);
-        else
+        } else {
             selectionModel->select(QItemSelection(tl, br), command);
+        }
     }
 }
 
