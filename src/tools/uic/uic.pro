@@ -1,8 +1,5 @@
 option(host_build)
-TEMPLATE = app
-QT = bootstrap-private
 
-DESTDIR = ../../../bin
 DEFINES += QT_UIC QT_NO_CAST_FROM_ASCII
 
 include(uic.pri)
@@ -19,6 +16,4 @@ SOURCES += main.cpp \
     QMAKE_CXXFLAGS_RELEASE -= -O2
 }
 
-target.path = $$[QT_HOST_BINS]
-INSTALLS += target
-load(qt_targets)
+load(qt_tool)

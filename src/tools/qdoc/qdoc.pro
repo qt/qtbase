@@ -1,8 +1,5 @@
 option(host_build)
-TEMPLATE = app
-QT = bootstrap-private
 
-DESTDIR = ../../../bin
 DEFINES += QDOC2_COMPAT
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
@@ -111,7 +108,4 @@ qch-docs.CONFIG += no_check_exist directory
 
 QMAKE_EXTRA_TARGETS += html-docs qch-docs
 
-target.path = $$[QT_HOST_BINS]
-INSTALLS += target
-
-load(qt_targets)
+load(qt_tool)

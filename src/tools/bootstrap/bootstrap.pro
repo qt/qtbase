@@ -24,7 +24,6 @@ DEFINES += \
     $$MODULE_DEFINES \
     QT_NO_CAST_FROM_ASCII
 
-MODULE_CONFIG = console -app_bundle release
 MODULE_PRIVATE_INCLUDES = \
     \$\$QT_MODULE_INCLUDE_BASE \
     \$\$QT_MODULE_INCLUDE_BASE/QtCore \
@@ -34,7 +33,7 @@ MODULE_PRIVATE_INCLUDES = \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION/QtXml
 
-qtProcessModuleFlags(CONFIG, MODULE_CONFIG)
+CONFIG += release
 
 load(qt_module)
 
