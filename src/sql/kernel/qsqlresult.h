@@ -132,10 +132,10 @@ protected:
     virtual void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
     virtual bool nextResult();
+    void resetBindCount(); // HACK
 
 private:
     QSqlResultPrivate* d;
-    void resetBindCount(); // HACK
 
 private:
     Q_DISABLE_COPY(QSqlResult)
