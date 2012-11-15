@@ -59,7 +59,7 @@ static QAccessibleInterface *acast(void *ptr)
     self = [super init];
     if (self) {
         accessibleInterface = anQAccessibleInterface;
-        role = QCocoaAccessible::macRole(acast(accessibleInterface)->role());
+        role = QCocoaAccessible::macRole(acast(accessibleInterface));
         parent = aParent;
     }
 

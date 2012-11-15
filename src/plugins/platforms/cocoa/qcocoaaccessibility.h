@@ -77,7 +77,7 @@ namespace QCocoaAccessible {
     demand.
 */
 
-NSString *macRole(QAccessible::Role);
+NSString *macRole(QAccessibleInterface *interface);
 bool shouldBeIgnrored(QAccessibleInterface *interface);
 NSString *getTranslatedAction(const QString &qtAction);
 NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);

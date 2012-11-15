@@ -149,8 +149,9 @@ static void populateRoleMap()
     Returns a Mac accessibility role for the given interface, or
     NSAccessibilityUnknownRole if no role mapping is found.
 */
-NSString *macRole(QAccessible::Role qtRole)
+NSString *macRole(QAccessibleInterface *interface)
 {
+    QAccessible::Role qtRole = interface->role();
     QMacAccessibiltyRoleMap &roleMap = *qMacAccessibiltyRoleMap();
 
     if (roleMap.isEmpty())
@@ -160,6 +161,8 @@ NSString *macRole(QAccessible::Role qtRole)
 
     if (roleMap.contains(qtRole)) {
        // MAC_ACCESSIBILTY_DEBUG() << "return" <<  roleMap[qtRole];
+        if (roleMap[qtRole] == NSAccessibilityTextFieldRole && interface->state().multiLine)
+            return NSAccessibilityTextAreaRole;
         return roleMap[qtRole];
     }
 
@@ -190,7 +193,7 @@ bool shouldBeIgnrored(QAccessibleInterface *interface)
         role == QAccessible::ToolBar)       // Access the tool buttons directly.
         return true;
 
-    NSString *mac_role = macRole(interface->role());
+    NSString *mac_role = macRole(interface);
     if (mac_role == NSAccessibilityWindowRole || // We use the system-provided window elements.
         mac_role == NSAccessibilityGroupRole ||
         mac_role == NSAccessibilityUnknownRole)
