@@ -1417,7 +1417,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             QRect leftRect;
             QRect rect = bar->rect;
             QColor textColor = option->palette.text().color();
-            QColor alternateTextColor = option->palette.highlightedText().color();
+            QColor alternateTextColor = d->highlightedText(option->palette);
 
             painter->save();
             bool vertical = false, inverted = false;
