@@ -1707,6 +1707,7 @@ bool QWindow::event(QEvent *ev)
     case QEvent::WindowStateChange: {
         Q_D(QWindow);
         emit windowStateChanged(d->windowState);
+        break;
     }
 
 #ifndef QT_NO_TABLETEVENT
