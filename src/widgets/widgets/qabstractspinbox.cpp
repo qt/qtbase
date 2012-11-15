@@ -825,7 +825,7 @@ QSize QAbstractSpinBox::sizeHint() const
         ensurePolished();
 
         const QFontMetrics fm(fontMetrics());
-        int h = d->edit->sizeHint().height();
+        int h = d->edit->sizeHint().height() + 4;
         int w = 0;
         QString s;
         s = d->prefix + d->textFromValue(d->minimum) + d->suffix + QLatin1Char(' ');
@@ -843,17 +843,6 @@ QSize QAbstractSpinBox::sizeHint() const
         QStyleOptionSpinBox opt;
         initStyleOption(&opt);
         QSize hint(w, h);
-        QSize extra(35, 6);
-        opt.rect.setSize(hint + extra);
-        extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
-                                                QStyle::SC_SpinBoxEditField, this).size();
-        // get closer to final result by repeating the calculation
-        opt.rect.setSize(hint + extra);
-        extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
-                                                QStyle::SC_SpinBoxEditField, this).size();
-        hint += extra;
-
-        opt.rect = rect();
         d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this)
                             .expandedTo(QApplication::globalStrut());
     }
