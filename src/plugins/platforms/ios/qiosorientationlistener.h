@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QIOSScreen;
 Qt::ScreenOrientation convertToQtOrientation(UIDeviceOrientation uiDeviceOrientation);
+UIDeviceOrientation convertToUIOrientation(Qt::ScreenOrientation qtOrientation);
 
 QT_END_NAMESPACE
 

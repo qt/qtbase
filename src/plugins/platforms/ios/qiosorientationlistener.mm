@@ -69,6 +69,28 @@ Qt::ScreenOrientation convertToQtOrientation(UIDeviceOrientation uiDeviceOrienta
     return qtOrientation;
 }
 
+UIDeviceOrientation convertToUIOrientation(Qt::ScreenOrientation qtOrientation)
+{
+    UIDeviceOrientation uiOrientation;
+    switch (qtOrientation) {
+        case Qt::LandscapeOrientation:
+            uiOrientation = UIDeviceOrientationLandscapeRight;
+            break;
+        case Qt::InvertedLandscapeOrientation:
+            uiOrientation = UIDeviceOrientationLandscapeLeft;
+            break;
+        case Qt::InvertedPortraitOrientation:
+            uiOrientation = UIDeviceOrientationPortraitUpsideDown;
+            break;
+        case Qt::PrimaryOrientation:
+        case Qt::PortraitOrientation:
+        default:
+            uiOrientation = UIDeviceOrientationPortrait;
+            break;
+    }
+    return uiOrientation;
+}
+
 QT_END_NAMESPACE
 
 @implementation QIOSOrientationListener
