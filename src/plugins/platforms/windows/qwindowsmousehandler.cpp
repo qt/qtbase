@@ -245,15 +245,6 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         if (QWindowsContext::verboseEvents)
             qDebug() << "Releasing automatic mouse capture " << window;
     }
-    // Eat mouse move after size grip drag.
-    if (msg.message == WM_MOUSEMOVE) {
-        if (platformWindow->testFlag(QWindowsWindow::SizeGripOperation)) {
-            MSG mouseMsg;
-            while (PeekMessage(&mouseMsg, platformWindow->handle(), WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) ;
-            platformWindow->clearFlag(QWindowsWindow::SizeGripOperation);
-            return true;
-        }
-    }
 
     const bool hasCapture = platformWindow->hasMouseCapture();
     const bool currentNotCapturing = hasCapture && currentWindowUnderMouse != window;
