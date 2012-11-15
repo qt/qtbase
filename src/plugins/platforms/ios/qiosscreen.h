@@ -45,6 +45,7 @@
 #include <UIKit/UIKit.h>
 
 #include <qpa/qplatformscreen.h>
+#include <qiosorientationlistener.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -52,6 +53,7 @@ class QIOSScreen : public QPlatformScreen
 {
 public:
     QIOSScreen(unsigned int screenIndex);
+    ~QIOSScreen();
 
     enum ScreenIndex { MainScreen = 0 };
 
@@ -61,6 +63,10 @@ public:
     QImage::Format format() const;
     QSizeF physicalSize() const;
 
+    Qt::ScreenOrientation nativeOrientation() const;
+    Qt::ScreenOrientation orientation() const;
+    void setOrientationUpdateMask(Qt::ScreenOrientations mask);
+
     UIScreen *uiScreen() const;
 
 private:
@@ -68,6 +74,7 @@ private:
     QRect m_geometry;
     int m_depth;
     QSizeF m_physicalSize;
+    QIOSOrientationListener *m_orientationListener;
 };
 
 QT_END_NAMESPACE

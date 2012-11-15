@@ -41,6 +41,7 @@
 
 #include "qiosscreen.h"
 #include "qioswindow.h"
+#include <qpa/qwindowsysteminterface.h>
 
 #include <sys/sysctl.h>
 
@@ -68,6 +69,7 @@ static QString deviceModelIdentifier()
 QIOSScreen::QIOSScreen(unsigned int screenIndex)
     : QPlatformScreen()
     , m_uiScreen([[UIScreen screens] objectAtIndex:qMin(screenIndex, [[UIScreen screens] count] - 1)])
+    , m_orientationListener(0)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
@@ -97,6 +99,11 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
     [pool release];
 }
 
+QIOSScreen::~QIOSScreen()
+{
+    [m_orientationListener release];
+}
+
 QRect QIOSScreen::geometry() const
 {
     return m_geometry;
@@ -121,6 +128,26 @@ QImage::Format QIOSScreen::format() const
 QSizeF QIOSScreen::physicalSize() const
 {
     return m_physicalSize;
+}
+
+Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
+{
+    return Qt::PortraitOrientation;
+}
+
+Qt::ScreenOrientation QIOSScreen::orientation() const
+{
+    return m_orientationListener ? m_orientationListener->m_orientation : nativeOrientation();
+}
+
+void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
+{
+    if (m_orientationListener && mask == Qt::PrimaryOrientation) {
+        [m_orientationListener release];
+        m_orientationListener = 0;
+    } else if (!m_orientationListener) {
+        m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
+    }
 }
 
 UIScreen *QIOSScreen::uiScreen() const
