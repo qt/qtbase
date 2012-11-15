@@ -189,6 +189,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     QWindowsWindow *platformWindow = static_cast<QWindowsWindow *>(window->handle());
+    const Qt::MouseButtons buttons = keyStateToMouseButtons((int)msg.wParam);
 
     // If the window was recently resized via mouse doubleclick on the frame or title bar,
     // we don't get WM_LBUTTONDOWN or WM_LBUTTONDBLCLK for the second click,
@@ -199,7 +200,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     if (msg.message == WM_LBUTTONDOWN || msg.message == WM_LBUTTONDBLCLK) {
         m_leftButtonDown = true;
     } else {
-        const bool actualLeftDown = keyStateToMouseButtons((int)msg.wParam) & Qt::LeftButton;
+        const bool actualLeftDown = buttons & Qt::LeftButton;
         if (!m_leftButtonDown && actualLeftDown) {
             // Autocapture the mouse for current window to and ignore further events until release.
             // Capture is necessary so we don't get WM_MOUSELEAVEs to confuse matters.
@@ -236,7 +237,8 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     } else if (platformWindow->hasMouseCapture()
                && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)
                && (msg.message == WM_LBUTTONUP || msg.message == WM_MBUTTONUP
-                   || msg.message == WM_RBUTTONUP || msg.message == WM_XBUTTONUP)) {
+                   || msg.message == WM_RBUTTONUP || msg.message == WM_XBUTTONUP)
+               && !buttons) {
         platformWindow->setMouseGrabEnabled(false);
         if (QWindowsContext::verboseEvents)
             qDebug() << "Releasing automatic mouse capture " << window;
@@ -299,8 +301,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         m_windowUnderMouse = currentWindowUnderMouse;
     }
 
-    QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition,
-                                             keyStateToMouseButtons((int)msg.wParam),
+    QWindowSystemInterface::handleMouseEvent(window, winEventPosition, globalPosition, buttons,
                                              QWindowsKeyMapper::queryKeyboardModifiers());
     return true;
 }
