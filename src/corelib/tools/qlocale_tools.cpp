@@ -2254,6 +2254,15 @@ Q_CORE_EXPORT char *qdtoa ( double d, int mode, int ndigits, int *decpt, int *si
 #ifndef _M_X64
     _control87(oldbits, 0xFFFFF);
 #else
+#  ifndef _MCW_EM // Potentially missing on MinGW
+#    define _MCW_EM         0x0008001f
+#  endif
+#  ifndef _MCW_RC
+#    define _MCW_RC         0x00000300
+#  endif
+#  ifndef _MCW_DN
+#    define _MCW_DN         0x03000000
+#  endif
     _control87(oldbits, _MCW_EM|_MCW_DN|_MCW_RC);
 #endif //_M_X64
 #endif //Q_OS_WIN
