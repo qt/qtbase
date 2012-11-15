@@ -1,6 +1,5 @@
 option(host_build)
 TEMPLATE = app
-TARGET = moc
 QT = bootstrap-private
 
 DEFINES += QT_MOC QT_NO_CAST_FROM_ASCII QT_NO_CAST_FROM_BYTEARRAY QT_NO_COMPRESS

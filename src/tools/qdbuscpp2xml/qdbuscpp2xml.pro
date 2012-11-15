@@ -1,6 +1,5 @@
 option(host_build)
 TEMPLATE = app
-TARGET = qdbuscpp2xml
 QT = bootstrap-private
 
 DESTDIR = ../../../bin

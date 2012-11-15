@@ -1,6 +1,5 @@
 option(host_build)
 TEMPLATE = app
-TARGET = qdoc
 QT = bootstrap-private
 
 DESTDIR = ../../../bin

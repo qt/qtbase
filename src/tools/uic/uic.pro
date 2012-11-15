@@ -1,6 +1,5 @@
 option(host_build)
 TEMPLATE = app
-TARGET = uic
 QT = bootstrap-private
 
 DESTDIR = ../../../bin
