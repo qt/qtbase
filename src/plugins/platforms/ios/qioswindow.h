@@ -86,6 +86,7 @@ public:
     void updateGeometry(const QRect &rect);
 
     void setWindowState(Qt::WindowState state);
+    void handleContentOrientationChange(Qt::ScreenOrientation orientation);
 
     GLuint framebufferObject(const QIOSContext &context) const;
 
