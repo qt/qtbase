@@ -75,10 +75,6 @@
 #include <QMacStyle>
 #endif
 
-#ifdef Q_OS_WIN
-#include <QWindowsXPStyle>
-#endif
-
 #ifdef Q_OS_WINCE
 #include <QWindowsCEStyle>
 #endif
@@ -392,9 +388,10 @@ void tst_QStyle::testWindowsStyle()
 // WindowsXP style
 void tst_QStyle::testWindowsXPStyle()
 {
-    QWindowsXPStyle xpstyle;
-    QVERIFY(testAllFunctions(&xpstyle));
-    lineUpLayoutTest(&xpstyle);
+    QStyle *xpstyle = QStyleFactory::create("WindowsXP");
+    QVERIFY(testAllFunctions(xpstyle));
+    lineUpLayoutTest(xpstyle);
+    delete xpstyle;
 }
 #endif
 

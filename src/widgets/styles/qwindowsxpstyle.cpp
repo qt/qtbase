@@ -38,8 +38,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qwindowsxpstyle.h"
 #include "qwindowsxpstyle_p.h"
+#include "qwindowsxpstyle_p_p.h"
 
 #if !defined(QT_NO_STYLE_WINDOWSXP) || defined(QT_PLUGIN)
 
@@ -1159,6 +1159,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
 
     \ingroup appearance
     \inmodule QtWidgets
+    \internal
 
     \warning This style is only available on the Windows XP platform
     because it makes use of Windows XP's style engine.

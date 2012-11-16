@@ -56,7 +56,7 @@
 #include "qwindowsvistastyle_p.h"
 
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
-#include <private/qwindowsxpstyle_p.h>
+#include <private/qwindowsxpstyle_p_p.h>
 #include <private/qstyleanimation_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <qlibrary.h>

@@ -53,7 +53,7 @@
 #include "qgtkstyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSXP
-#include "qwindowsxpstyle.h"
+#include "qwindowsxpstyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSVISTA
 #include "qwindowsvistastyle_p.h"
