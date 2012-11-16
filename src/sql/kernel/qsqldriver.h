@@ -71,7 +71,7 @@ public:
     enum DriverFeature { Transactions, QuerySize, BLOB, Unicode, PreparedQueries,
                          NamedPlaceholders, PositionalPlaceholders, LastInsertId,
                          BatchOperations, SimpleLocking, LowPrecisionNumbers,
-                         EventNotifications, FinishQuery, MultipleResultSets };
+                         EventNotifications, FinishQuery, MultipleResultSets, CancelQuery };
 
     enum StatementType { WhereStatement, SelectStatement, UpdateStatement,
                          InsertStatement, DeleteStatement };
@@ -119,6 +119,9 @@ public:
 
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
+
+public Q_SLOTS:
+    virtual bool cancelQuery();
 
 Q_SIGNALS:
     void notification(const QString &name);
