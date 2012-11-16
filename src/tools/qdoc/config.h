@@ -132,7 +132,6 @@ public:
 
     QT_STATIC_CONST QString dot;
 
-    static bool debug;
     static bool generateExamples;
     static QString installDir;
     static QString overrideOutputDir;

@@ -1550,8 +1550,6 @@ void Generator::initialize(const Config &config)
             // Documentation template handling
             QStringList searchDirs;
             QString templateDir = config.getPath((*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
-            qDebug() << "TEMPLATEDIR:" << templateDir
-                     << (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR;
             if (templateDir.isEmpty())
                 templateDir = ".";
             searchDirs.append(templateDir);
@@ -1574,13 +1572,10 @@ void Generator::initialize(const Config &config)
                 ++e;
             }
 
-            //QStringList styles = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
             QStringList styles = config.getPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
-            qDebug() << "STYLES:" << styles;
             e = styles.constBegin();
             while (e != styles.constEnd()) {
                 QString filePath = *e;
-                qDebug() << "FILEPATH:" << filePath;
                 if (!filePath.isEmpty())
                     Config::copyFile(config.lastLocation(),
                                      filePath,

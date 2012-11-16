@@ -149,7 +149,6 @@ QStringList MetaStack::getExpanded(const Location& location)
 }
 
 QT_STATIC_CONST_IMPL QString Config::dot = QLatin1String(".");
-bool Config::debug = false;
 bool Config::generateExamples = true;
 QString Config::overrideOutputDir;
 QString Config::installDir;
@@ -615,10 +614,6 @@ QString Config::findFile(const Location& location,
                          const QString& fileName,
                          QString& userFriendlyFilePath)
 {
-    if (debug) {
-        qDebug() << "FINDFILE DIRS:" << dirs;
-        qDebug() << "FINDFILE FILENAME:" << fileName;
-    }
     if (fileName.isEmpty() || fileName.startsWith(QLatin1Char('/'))) {
         userFriendlyFilePath = fileName;
         return fileName;
@@ -643,8 +638,6 @@ QString Config::findFile(const Location& location,
     if (fileInfo.fileName().isEmpty()) {
         QStringList::ConstIterator d = dirs.constBegin();
         while (d != dirs.constEnd()) {
-            if (debug)
-                qDebug() << "TEST:" << QDir(*d).absolutePath() << firstComponent;
             fileInfo.setFile(QDir(*d), firstComponent);
             if (fileInfo.exists()) {
                 break;
