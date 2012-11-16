@@ -60,6 +60,7 @@ QIOSBackingStore::QIOSBackingStore(QWindow *window)
 QIOSBackingStore::~QIOSBackingStore()
 {
     delete m_context;
+    delete m_device;
 }
 
 void QIOSBackingStore::beginPaint(const QRegion &)
@@ -68,7 +69,8 @@ void QIOSBackingStore::beginPaint(const QRegion &)
     window()->setSurfaceType(QSurface::OpenGLSurface);
 
     m_context->makeCurrent(window());
-    m_device = new QOpenGLPaintDevice(window()->size());
+    if (!m_device)
+        m_device = new QOpenGLPaintDevice(window()->size());
 }
 
 QPaintDevice *QIOSBackingStore::paintDevice()
@@ -86,8 +88,6 @@ void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
 void QIOSBackingStore::endPaint()
 {
-    delete m_device;
-
     // Calling makeDone() on the context here would be an option,
     // but is not needed, and would actually add some overhead.
 }
