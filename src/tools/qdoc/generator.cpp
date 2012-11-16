@@ -1528,21 +1528,14 @@ void Generator::initialize(const Config &config)
         if (outputFormats.contains((*g)->format())) {
             currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
-            QStringList extraImages =
-                config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
+            QStringList extraImages = config.getCleanPathList((*g)->format() +
+                                                              Config::dot +
+                                                              CONFIG_EXTRAIMAGES);
             QStringList::ConstIterator e = extraImages.constBegin();
             while (e != extraImages.constEnd()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    imageFiles,
-                                                    imageDirs,
-                                                    *e,
-                                                    imgFileExts[(*g)->format()],
-                                                    userFriendlyFilePath);
+                QString filePath = *e;
                 if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
+                    Config::copyFile(config.lastLocation(), filePath, filePath,
                                      (*g)->outputDir() + "/images");
                 ++e;
             }
@@ -1553,9 +1546,7 @@ void Generator::initialize(const Config &config)
             while (e != scripts.constEnd()) {
                 QString filePath = *e;
                 if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     filePath,
+                    Config::copyFile(config.lastLocation(), filePath, filePath,
                                      (*g)->outputDir() + "/scripts");
                 ++e;
             }
@@ -1565,9 +1556,7 @@ void Generator::initialize(const Config &config)
             while (e != styles.constEnd()) {
                 QString filePath = *e;
                 if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     filePath,
+                    Config::copyFile(config.lastLocation(), filePath, filePath,
                                      (*g)->outputDir() + "/style");
                 ++e;
             }
