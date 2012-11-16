@@ -736,14 +736,19 @@ static bool imageHasNarrowOutlines(const QImage &im)
 bool qt_fontHasNarrowOutlines(QFontEngine *fontEngine)
 {
     QFontEngine *fe = fontEngine->cloneWithSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
+    if (!fe)
+        return false;
 
     QGlyphLayout glyphs;
     glyph_t glyph;
     glyphs.glyphs = &glyph;
-    int numGlyphs;
-    QChar *chars = QString(QLatin1String("O")).data();
-    fe->stringToCMap(chars, 1, &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly);
+    glyphs.numGlyphs = 1;
+    int numGlyphs = 1;
+    QChar uc = QLatin1Char('O');
+    fe->stringToCMap(&uc, 1, &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly);
     QImage im = fe->alphaMapForGlyph(glyph, QFixed(), QTransform());
+
+    Q_ASSERT(fe->ref.load() == 0);
     delete fe;
 
     return imageHasNarrowOutlines(im);
@@ -753,7 +758,8 @@ bool qt_fontHasNarrowOutlines(const QRawFont &f)
 {
     QRawFont font = f;
     font.setPixelSize(QT_DISTANCEFIELD_DEFAULT_BASEFONTSIZE);
-    Q_ASSERT(font.isValid());
+    if (!font.isValid())
+        return false;
 
     QVector<quint32> glyphIndices = font.glyphIndexesForString(QLatin1String("O"));
     if (glyphIndices.size() < 1)
