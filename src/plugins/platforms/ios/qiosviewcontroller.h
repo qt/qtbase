@@ -40,7 +40,13 @@
 ****************************************************************************/
 
 #import <UIKit/UIKit.h>
+#import <QtCore/qnamespace.h>
 
-@interface QIOSViewController : UIViewController
+@interface QIOSViewController : UIViewController {
+@public
+    bool m_shouldAutorotate;
+}
+
+-(bool)rotateToDeviceOrientation;
 @end
 

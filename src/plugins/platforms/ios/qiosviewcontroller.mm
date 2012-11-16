@@ -43,12 +43,32 @@
 
 @implementation QIOSViewController
 
-- (BOOL)shouldAutorotate
+-(id)init
 {
-    return NO;
+    self = [super init];
+    if (self) {
+        m_shouldAutorotate = NO;
+    }
+    return self;
 }
 
-- (NSUInteger)supportedInterfaceOrientations
+-(bool)rotateToDeviceOrientation
+{
+    if ([UIViewController respondsToSelector:@selector(attemptRotationToDeviceOrientation)]) {
+        m_shouldAutorotate = YES;
+        [UIViewController attemptRotationToDeviceOrientation];
+        m_shouldAutorotate = NO;
+        return true;
+    }
+    return false;
+}
+
+-(BOOL)shouldAutorotate
+{
+    return m_shouldAutorotate;
+}
+
+-(NSUInteger)supportedInterfaceOrientations
 {
     // We need to tell iOS that we support all orientations in order to set
     // status bar orientation when application content orientation changes.

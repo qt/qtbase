@@ -44,6 +44,7 @@
 #include "qiosscreen.h"
 #include "qiosapplicationdelegate.h"
 #include "qiosorientationlistener.h"
+#include "qiosviewcontroller.h"
 
 #import <QuartzCore/CAEAGLLayer.h>
 
@@ -255,6 +256,22 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
     // that the task bar (and associated gestures) are aligned correctly:
     UIDeviceOrientation uiOrientation = convertToUIOrientation(orientation);
     [[UIApplication sharedApplication] setStatusBarOrientation:uiOrientation animated:NO];
+}
+
+Qt::ScreenOrientation QIOSWindow::requestWindowOrientation(Qt::ScreenOrientation orientation)
+{
+    if (!m_view.window)
+        return Qt::PortraitOrientation;
+    UIViewController *viewController = m_view.window.rootViewController;
+    if (!viewController || [viewController isKindOfClass:[QIOSViewController class]] == false) {
+        return convertToQtOrientation(viewController.interfaceOrientation);
+    } else {
+        QIOSViewController *qiosViewController = static_cast<QIOSViewController *>(viewController);
+        if ([qiosViewController rotateToDeviceOrientation])
+            return orientation;
+        else
+            return convertToQtOrientation(viewController.interfaceOrientation);
+    }
 }
 
 GLuint QIOSWindow::framebufferObject(const QIOSContext &context) const
