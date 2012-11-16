@@ -1548,26 +1548,14 @@ void Generator::initialize(const Config &config)
             }
 
             // Documentation template handling
-            QStringList searchDirs;
-            QString templateDir = config.getPath((*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
-            if (templateDir.isEmpty())
-                templateDir = ".";
-            searchDirs.append(templateDir);
-            QStringList noExts;
-            QStringList scripts = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
+            QStringList scripts = config.getPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
             e = scripts.constBegin();
             while (e != scripts.constEnd()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    scriptFiles,
-                                                    searchDirs,
-                                                    *e,
-                                                    noExts,
-                                                    userFriendlyFilePath);
+                QString filePath = *e;
                 if (!filePath.isEmpty())
                     Config::copyFile(config.lastLocation(),
                                      filePath,
-                                     userFriendlyFilePath,
+                                     filePath,
                                      (*g)->outputDir() + "/scripts");
                 ++e;
             }
