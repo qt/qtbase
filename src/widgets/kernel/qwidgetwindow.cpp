@@ -499,6 +499,10 @@ void QWidgetWindow::handleDragEnterMoveEvent(QDragMoveEvent *event)
         const QPoint mapped = widget->mapFromGlobal(m_widget->mapToGlobal(event->pos()));
         QDragMoveEvent translated(mapped, event->possibleActions(), event->mimeData(), event->mouseButtons(), event->keyboardModifiers());
         translated.setDropAction(event->dropAction());
+        if (event->isAccepted()) { // Handling 'DragEnter' should suffice for the application.
+            translated.accept();
+            translated.setDropAction(event->dropAction());
+        }
         QGuiApplication::sendSpontaneousEvent(widget, &translated);
         if (translated.isAccepted()) {
             event->accept();
