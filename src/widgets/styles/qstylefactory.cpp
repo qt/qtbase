@@ -47,7 +47,7 @@
 #include "qapplication.h"
 #include "qwindowsstyle.h"
 #ifndef QT_NO_STYLE_FUSION
-#include "qfusionstyle.h"
+#include "qfusionstyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_GTK
 #include "qgtkstyle_p.h"

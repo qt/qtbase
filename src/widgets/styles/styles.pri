@@ -112,8 +112,8 @@ contains( styles, gtk ) {
     DEFINES += QT_NO_STYLE_GTK
 }
 contains( styles, fusion ) {
-        HEADERS += styles/qfusionstyle.h
         HEADERS += styles/qfusionstyle_p.h
+        HEADERS += styles/qfusionstyle_p_p.h
         SOURCES += styles/qfusionstyle.cpp
 } else {
     DEFINES += QT_NO_STYLE_FUSION

@@ -42,112 +42,70 @@
 #ifndef QFUSIONSTYLE_P_H
 #define QFUSIONSTYLE_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtWidgets/qcommonstyle.h>
 
-#include "qcommonstyle.h"
-#include "qcommonstyle_p.h"
-#include <qpa/qplatformtheme.h>
-#include "private/qguiapplication_p.h"
-
-#ifndef QT_NO_STYLE_FUSION
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QFusionStylePrivate : public QCommonStylePrivate
+
+#if !defined(QT_NO_STYLE_FUSION)
+
+class QFusionStylePrivate;
+class QFusionStyle : public QCommonStyle
 {
-    Q_DECLARE_PUBLIC(QFusionStyle)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QFusionStyle)
 
 public:
-    QFusionStylePrivate();
+    QFusionStyle();
+    ~QFusionStyle();
 
-    // Used for grip handles
-    QColor lightShade() const {
-        return QColor(255, 255, 255, 90);
-    }
-    QColor darkShade() const {
-        return QColor(0, 0, 0, 60);
-    }
+    QPalette standardPalette () const;
+    void drawPrimitive(PrimitiveElement elem,
+                       const QStyleOption *option,
+                       QPainter *painter, const QWidget *widget = 0) const;
+    void drawControl(ControlElement ce, const QStyleOption *option, QPainter *painter,
+                     const QWidget *widget) const;
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const;
+    void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
+                            QPainter *painter, const QWidget *widget) const;
+    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const;
+    QSize sizeFromContents(ContentsType type, const QStyleOption *option,
+                           const QSize &size, const QWidget *widget) const;
+    SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
+                                     const QPoint &pt, const QWidget *w = 0) const;
+    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
+                         SubControl sc, const QWidget *widget) const;
+    QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
+                                const QStyleOption *opt) const;
+    int styleHint(StyleHint hint, const QStyleOption *option = 0, const QWidget *widget = 0,
+                  QStyleHintReturn *returnData = 0) const;
+    QRect itemPixmapRect(const QRect &r, int flags, const QPixmap &pixmap) const;
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
+    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
+                           const QWidget *widget = 0) const;
+    void drawItemPixmap(QPainter *painter, const QRect &rect,
+                        int alignment, const QPixmap &pixmap) const;
+    void drawItemText(QPainter *painter, const QRect &rect,
+                      int flags, const QPalette &pal, bool enabled,
+                      const QString &text, QPalette::ColorRole textRole = QPalette::NoRole) const;
+    void polish(QWidget *widget);
+    void polish(QApplication *app);
+    void polish(QPalette &pal);
+    void unpolish(QWidget *widget);
+    void unpolish(QApplication *app);
 
-    QColor topShadow() const {
-        return QColor(0, 0, 0, 18);
-    }
+protected:
+    QFusionStyle(QFusionStylePrivate &dd);
 
-    QColor innerContrastLine() const {
-        return QColor(255, 255, 255, 30);
-    }
-
-    // On mac we want a standard blue color used when the system palette is used
-    bool isMacSystemPalette(const QPalette &pal) const {
-        Q_UNUSED(pal);
-#ifdef Q_OS_MAC
-        const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette();
-        if (themePalette->color(QPalette::Normal, QPalette::Highlight) ==
-                pal.color(QPalette::Normal, QPalette::Highlight) &&
-            themePalette->color(QPalette::Normal, QPalette::HighlightedText) ==
-                pal.color(QPalette::Normal, QPalette::HighlightedText))
-            return true;
-#endif
-        return false;
-    }
-
-    QColor highlight(const QPalette &pal) const {
-        if (isMacSystemPalette(pal))
-            return QColor(60, 140, 230);
-        return pal.color(QPalette::Active, QPalette::Highlight);
-    }
-
-    QColor highlightedText(const QPalette &pal) const {
-        if (isMacSystemPalette(pal))
-            return Qt::white;
-        return pal.color(QPalette::Active, QPalette::HighlightedText);
-    }
-
-    QColor outline(const QPalette &pal) const {
-        if (!pal.window().texture().isNull())
-            return QColor(0, 0, 0, 160);
-        return pal.background().color().darker(140);
-    }
-
-    QColor highlightedOutline(const QPalette &pal) const {
-        QColor highlightedOutline = highlight(pal).darker(125);
-        if (highlightedOutline.value() > 160)
-            highlightedOutline.setHsl(highlightedOutline.hue(), highlightedOutline.saturation(), 160);
-        return highlightedOutline;
-    }
-
-    QColor tabFrameColor(const QPalette &pal) const {
-        if (!pal.button().texture().isNull())
-            return QColor(255, 255, 255, 8);
-        return buttonColor(pal).lighter(104);
-    }
-
-    QColor buttonColor(const QPalette &pal) const {
-        QColor buttonColor = pal.button().color();
-        int val = qGray(buttonColor.rgb());
-        buttonColor = buttonColor.lighter(100 + qMax(1, (180 - val)/6));
-        buttonColor.setHsv(buttonColor.hue(), buttonColor.saturation() * 0.75, buttonColor.value());
-        return buttonColor;
-    }
-
-    enum {
-        menuItemHMargin      =  3, // menu item hor text margin
-        menuArrowHMargin     =  6, // menu arrow horizontal margin
-        menuRightBorder      = 15, // right border on menus
-        menuCheckMarkWidth   = 12  // checkmarks width on menus
-    };
 };
+
+#endif // QT_NO_STYLE_FUSION
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_STYLE_FUSION
+QT_END_HEADER
 
 #endif //QFUSIONSTYLE_P_H

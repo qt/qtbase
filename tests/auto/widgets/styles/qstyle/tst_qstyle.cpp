@@ -71,10 +71,6 @@
 #include <qmdiarea.h>
 #include <qscrollarea.h>
 
-#ifndef Q_NO_STYLE_FUSION
-#include <qfusionstyle.h>
-#endif
-
 #ifdef Q_OS_MAC
 #include <QMacStyle>
 #endif
@@ -372,9 +368,10 @@ bool tst_QStyle::testScrollBarSubControls(QStyle* style)
 #ifndef QT_NO_STYLE_FUSION
 void tst_QStyle::testFusionStyle()
 {
-    QFusionStyle fstyle;
-    QVERIFY(testAllFunctions(&fstyle));
-    lineUpLayoutTest(&fstyle);
+    QStyle *fstyle = QStyleFactory::create("Fusion");
+    QVERIFY(testAllFunctions(fstyle));
+    lineUpLayoutTest(fstyle);
+    delete fstyle;
 }
 #endif
 
@@ -649,14 +646,14 @@ void tst_QStyle::progressBarChangeStyle()
     //where changing the styles and deleting a progressbar would crash
 
     QWindowsStyle style1;
-    QFusionStyle style2;
+    QStyle *style2 = QStyleFactory::create("Fusion");
 
     QProgressBar *progress=new QProgressBar;
     progress->setStyle(&style1);
 
     progress->show();
 
-    progress->setStyle(&style2);
+    progress->setStyle(style2);
 
     QTest::qWait(100);
     delete progress;
@@ -664,6 +661,7 @@ void tst_QStyle::progressBarChangeStyle()
     QTest::qWait(100);
 
     //before the correction, there would be a crash here
+    delete style2;
 }
 #endif
 

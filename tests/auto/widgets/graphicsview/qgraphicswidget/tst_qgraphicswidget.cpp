@@ -51,9 +51,8 @@
 #include <qboxlayout.h>
 #include <qaction.h>
 #include <qwidgetaction.h>
-#ifndef Q_NO_STYLE_FUSION
-#include <qfusionstyle.h>
-#endif
+#include <qcommonstyle.h>
+#include <qstylefactory.h>
 
 #include "../../../qtest-config.h"
 
@@ -1399,7 +1398,7 @@ void tst_QGraphicsWidget::setStyle_data()
 {
     QTest::addColumn<QString>("style");
     QTest::newRow("null") << "";
-    QTest::newRow("fusion") << "QFusionStyle";
+    QTest::newRow("fusion") << "Fusion";
 }
 
 // void setStyle(QStyle* style) public
@@ -1407,14 +1406,14 @@ void tst_QGraphicsWidget::setStyle()
 {
 #ifndef Q_NO_STYLE_FUSION
     SubQGraphicsWidget widget;
-    QFusionStyle fusionStyle;
 
     int oldEventCounts = widget.eventCount;
 
     QFETCH(QString, style);
-    if (style == "QFusionStyle") {
-        widget.setStyle(&fusionStyle);
-        QCOMPARE(widget.style(), static_cast<QStyle*>(&fusionStyle));
+    if (!style.isEmpty()) {
+        QStyle *fstyle = QStyleFactory::create(style);
+        widget.setStyle(fstyle);
+        QCOMPARE(widget.style(), static_cast<QStyle*>(fstyle));
     } else {
         widget.setStyle(0);
         QVERIFY(widget.style() != (QStyle *)0);

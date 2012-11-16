@@ -434,8 +434,7 @@ void tst_QGraphicsProxyWidget::setWidget()
 #endif
     widget->setPalette(QPalette(Qt::magenta));
     widget->setLayoutDirection(Qt::RightToLeft);
-    QFusionStyle fusionStyle;
-    widget->setStyle(&fusionStyle);
+    widget->setStyle(QStyleFactory::create(QLatin1String("Fusion")));
     widget->setFont(QFont("Times"));
     widget->setVisible(true);
     QApplication::setActiveWindow(widget);

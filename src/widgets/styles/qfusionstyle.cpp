@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qfusionstyle.h"
 #include "qfusionstyle_p.h"
+#include "qfusionstyle_p_p.h"
 
 #if !defined(QT_NO_STYLE_FUSION) || defined(QT_PLUGIN)
 #include "qcommonstyle_p.h"
@@ -346,6 +346,7 @@ QFusionStylePrivate::QFusionStylePrivate()
     \brief The QFusionStyle class provides a custom widget style
 
     \inmodule QtWidgets
+    \internal
 
     The Fusion style provides a custom look and feel that is not
     tied to a particular platform.

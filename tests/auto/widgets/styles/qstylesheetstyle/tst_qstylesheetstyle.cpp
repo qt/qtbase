@@ -44,7 +44,6 @@
 #include <QtTest/QtTest>
 #include <QtDebug>
 #include <QMetaObject>
-#include <QFusionStyle>
 
 #include <private/qstylesheetstyle_p.h>
 
@@ -1589,7 +1588,7 @@ class ChangeEventWidget : public QWidget
             static bool recurse = false;
             if (!recurse) {
                 recurse = true;
-                QStyle *style = new QFusionStyle;
+                QStyle *style = QStyleFactory::create(QLatin1String("Fusion"));
                 style->setParent(this);
                 setStyle(style);
                 recurse = false;

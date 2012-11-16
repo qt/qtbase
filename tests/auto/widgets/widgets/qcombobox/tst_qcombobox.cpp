@@ -72,9 +72,7 @@
 #include <qstringlist.h>
 #include <qvalidator.h>
 #include <qcompleter.h>
-#ifndef QT_NO_STYLE_FUSION
-#include <qfusionstyle.h>
-#endif
+#include <qstylefactory.h>
 #include <qabstractitemview.h>
 #include <qstyleditemdelegate.h>
 #ifndef QT_NO_STYLE_WINDOWS
@@ -2055,7 +2053,7 @@ void tst_QComboBox::separatorItem()
 void tst_QComboBox::task190351_layout()
 {
     const QString oldStyle = QApplication::style()->objectName();
-    QApplication::setStyle(new QFusionStyle);
+    QApplication::setStyle(QStyleFactory::create(QLatin1String("Fusion")));
 
     QComboBox listCombo;
     QListWidget *list = new QListWidget();
@@ -2120,7 +2118,7 @@ void tst_QComboBox::task166349_setEditableOnReturn()
 void tst_QComboBox::task191329_size()
 {
     const QString oldStyle = QApplication::style()->objectName();
-    QApplication::setStyle(new QFusionStyle);
+    QApplication::setStyle(QStyleFactory::create(QLatin1String("Fusion")));
 
     QComboBox tableCombo;
     int rows;
