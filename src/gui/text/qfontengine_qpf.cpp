@@ -666,9 +666,7 @@ void QFontEngineQPF::draw(QPaintEngine *p, qreal _x, qreal _y, const QTextItemIn
 
 void QFontEngineQPF::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
 {
-    if (renderingFontEngine &&
-        (renderingFontEngine->type() != QFontEngine::Proxy
-         || static_cast<QProxyFontEngine *>(renderingFontEngine)->capabilities() & QAbstractFontEngine::CanOutlineGlyphs)) {
+    if (renderingFontEngine && renderingFontEngine->type() != QFontEngine::Proxy) {
         renderingFontEngine->addOutlineToPath(x, y, glyphs, path, flags);
         return;
     }
