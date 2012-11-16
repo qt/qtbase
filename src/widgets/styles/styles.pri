@@ -74,8 +74,8 @@ contains( styles, windows ) {
 }
 
 contains( styles, windowsvista ) {
-    HEADERS += styles/qwindowsvistastyle.h
     HEADERS += styles/qwindowsvistastyle_p.h
+    HEADERS += styles/qwindowsvistastyle_p_p.h
     SOURCES += styles/qwindowsvistastyle.cpp
     !contains( styles, windowsxp ) {
         message( windowsvista requires windowsxp )

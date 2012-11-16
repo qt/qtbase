@@ -56,7 +56,7 @@
 #include "qwindowsxpstyle.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSVISTA
-#include "qwindowsvistastyle.h"
+#include "qwindowsvistastyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSCE
 #include "qwindowscestyle.h"

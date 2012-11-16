@@ -77,7 +77,6 @@
 
 #ifdef Q_OS_WIN
 #include <QWindowsXPStyle>
-#include <QWindowsVistaStyle>
 #endif
 
 #ifdef Q_OS_WINCE
@@ -416,13 +415,14 @@ QImage readImage(const QString &fileName)
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
 void tst_QStyle::testWindowsVistaStyle()
 {
-    QWindowsVistaStyle vistastyle;
-    QVERIFY(testAllFunctions(&vistastyle));
+    QStyle *vistastyle = QStyleFactory::create("WindowsVista");
+    QVERIFY(testAllFunctions(vistastyle));
 
     if (QSysInfo::WindowsVersion == QSysInfo::WV_VISTA)
-        testPainting(&vistastyle, "vista");
+        testPainting(vistastyle, "vista");
     else if (QSysInfo::WindowsVersion == QSysInfo::WV_XP)
-        testPainting(&vistastyle, "xp");
+        testPainting(vistastyle, "xp");
+    delete vistastyle;
 }
 #endif
 

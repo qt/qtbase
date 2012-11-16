@@ -42,148 +42,63 @@
 #ifndef QWINDOWSVISTASTYLE_P_H
 #define QWINDOWSVISTASTYLE_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtWidgets/qwindowsxpstyle.h>
 
-#include "qwindowsvistastyle.h"
-
-#if !defined(QT_NO_STYLE_WINDOWSVISTA)
-#include <private/qwindowsxpstyle_p.h>
-#include <private/qstyleanimation_p.h>
-#include <private/qpaintengine_raster_p.h>
-#include <qlibrary.h>
-#include <qpaintengine.h>
-#include <qwidget.h>
-#include <qapplication.h>
-#include <qpixmapcache.h>
-#include <qstyleoption.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qcheckbox.h>
-#include <qlineedit.h>
-#include <qgroupbox.h>
-#include <qtoolbutton.h>
-#include <qspinbox.h>
-#include <qtoolbar.h>
-#include <qcombobox.h>
-#include <qscrollbar.h>
-#include <qprogressbar.h>
-#include <qdockwidget.h>
-#include <qlistview.h>
-#include <qtreeview.h>
-#include <qtextedit.h>
-#include <qmessagebox.h>
-#include <qdialogbuttonbox.h>
-#include <qinputdialog.h>
-#include <qtableview.h>
-#include <qdatetime.h>
-#include <qcommandlinkbutton.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(SCHEMA_VERIFY_VSSYM32)
-#define TMT_ANIMATIONDURATION       5006
-#define TMT_TRANSITIONDURATIONS     6000
-#define EP_EDITBORDER_NOSCROLL      6
-#define EP_EDITBORDER_HVSCROLL      9
-#define EP_BACKGROUND               3
-#define EBS_NORMAL                  1
-#define EBS_HOT                     2
-#define EBS_DISABLED                3
-#define EBS_READONLY                5
-#define PBS_DEFAULTED_ANIMATING     6
-#define MBI_NORMAL                  1
-#define MBI_HOT                     2
-#define MBI_PUSHED                  3
-#define MBI_DISABLED                4
-#define MB_ACTIVE                   1
-#define MB_INACTIVE                 2
-#define PP_FILL                     5
-#define PP_FILLVERT                 6
-#define PP_MOVEOVERLAY              8
-#define PP_MOVEOVERLAYVERT          10
-#define MENU_BARBACKGROUND          7
-#define MENU_BARITEM                8
-#define MENU_POPUPCHECK             11
-#define MENU_POPUPCHECKBACKGROUND   12
-#define MENU_POPUPGUTTER            13
-#define MENU_POPUPITEM              14
-#define MENU_POPUPBORDERS           10
-#define MENU_POPUPSEPARATOR         15
-#define MC_CHECKMARKNORMAL          1
-#define MC_CHECKMARKDISABLED        2
-#define MC_BULLETNORMAL             3
-#define MC_BULLETDISABLED           4
-#define ABS_UPHOVER                 17
-#define ABS_DOWNHOVER               18
-#define ABS_LEFTHOVER               19
-#define ABS_RIGHTHOVER              20
-#define CP_DROPDOWNBUTTONRIGHT      6
-#define CP_DROPDOWNBUTTONLEFT       7
-#define SCRBS_HOVER                 5
-#define TVP_HOTGLYPH                4
-#define SPI_GETCLIENTAREAANIMATION  0x1042
-#define TDLG_PRIMARYPANEL           1
-#define TDLG_SECONDARYPANEL         8
-#endif
 
-class QWindowsVistaAnimation : public QBlendStyleAnimation
+#if !defined(QT_NO_STYLE_WINDOWSVISTA)
+
+class QWindowsVistaStylePrivate;
+class QWindowsVistaStyle : public QWindowsXPStyle
 {
     Q_OBJECT
 public:
-    QWindowsVistaAnimation(Type type, QObject *target) : QBlendStyleAnimation(type, target) { }
+    QWindowsVistaStyle();
+    ~QWindowsVistaStyle();
 
-    virtual bool isUpdateNeeded() const;
-    void paint(QPainter *painter, const QStyleOption *option);
-};
+    void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
+                       QPainter *painter, const QWidget *widget = 0) const;
+    void drawControl(ControlElement element, const QStyleOption *option,
+                     QPainter *painter, const QWidget *widget) const;
+    void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
+                            QPainter *painter, const QWidget *widget) const;
+    QSize sizeFromContents(ContentsType type, const QStyleOption *option,
+                           const QSize &size, const QWidget *widget) const;
 
+    QRect subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const;
+    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
+                         SubControl sc, const QWidget *widget) const;
 
-// Handles state transition animations
-class QWindowsVistaTransition : public QWindowsVistaAnimation
-{
-    Q_OBJECT
-public:
-    QWindowsVistaTransition(QObject *target) : QWindowsVistaAnimation(Transition, target) {}
-};
+    SubControl hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option,
+                                     const QPoint &pos, const QWidget *widget = 0) const;
 
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
+    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
+                           const QWidget *widget = 0) const;
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const;
+    int styleHint(StyleHint hint, const QStyleOption *opt = 0, const QWidget *widget = 0,
+                  QStyleHintReturn *returnData = 0) const;
 
-// Handles pulse animations (default buttons)
-class QWindowsVistaPulse: public QWindowsVistaAnimation
-{
-    Q_OBJECT
-public:
-    QWindowsVistaPulse(QObject *target) : QWindowsVistaAnimation(Pulse, target) {}
-};
-
-
-class QWindowsVistaStylePrivate :  public QWindowsXPStylePrivate
-{
-    Q_DECLARE_PUBLIC(QWindowsVistaStyle)
-
-public:
-    QWindowsVistaStylePrivate();
-    ~QWindowsVistaStylePrivate();
-    static bool resolveSymbols();
-    static inline bool useVista();
-    bool transitionsEnabled() const;
+    void polish(QWidget *widget);
+    void unpolish(QWidget *widget);
+    void polish(QPalette &pal);
+    void polish(QApplication *app);
+    void unpolish(QApplication *app);
+    QPalette standardPalette() const;
 
 private:
-    bool initTreeViewTheming();
-    void cleanupTreeViewTheming();
-
-    HWND m_treeViewHelper;
+    Q_DISABLE_COPY(QWindowsVistaStyle)
+    Q_DECLARE_PRIVATE(QWindowsVistaStyle)
+    friend class QStyleFactory;
 };
+#endif //QT_NO_STYLE_WINDOWSVISTA
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_STYLE_WINDOWSVISTA
+QT_END_HEADER
 
 #endif // QWINDOWSVISTASTYLE_P_H
