@@ -68,6 +68,8 @@
 
 #define Q_GTK_IS_WIDGET(widget) widget && G_TYPE_CHECK_INSTANCE_TYPE ((widget), QGtkStylePrivate::gtk_widget_get_type())
 
+QT_BEGIN_NAMESPACE
+
 class QHashableLatin1Literal
 {
 public:
