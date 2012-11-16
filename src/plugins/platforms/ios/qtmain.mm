@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qiosapplicationdelegate.h"
+#include "qiosviewcontroller.h"
 
 int main(int argc, char *argv[])
 {
@@ -58,7 +59,7 @@ extern int qt_main(int argc, char *argv[]);
     if (!self.window) {
         // If not, we create one ourselves
         self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        UIViewController *controller = [[UIViewController alloc] init];
+        QIOSViewController *controller = [[QIOSViewController alloc] init];
         self.window.rootViewController = controller;
         controller.view = [[UIView alloc] init];
 
