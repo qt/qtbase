@@ -697,12 +697,14 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                         if (!best.isEmpty() && !documentedItems.contains(best))
                             details = tr("Maybe you meant '%1'?").arg(best);
 
-                        node->doc().location().warning(tr("No such enum item '%1' in %2").arg(*a).arg(node->plainFullName()), details);
+                        node->doc().location().warning(tr("No such enum item '%1' in %2")
+                                                       .arg(*a).arg(node->plainFullName()), details);
                         if (*a == "Void")
                             qDebug() << "VOID:" << node->name() << definedItems;
                     }
                     else if (!documentedItems.contains(*a)) {
-                        node->doc().location().warning(tr("Undocumented enum item '%1' in %2").arg(*a).arg(node->plainFullName()));
+                        node->doc().location().warning(tr("Undocumented enum item '%1' in %2")
+                                                       .arg(*a).arg(node->plainFullName()));
                     }
                     ++a;
                 }
@@ -1526,7 +1528,8 @@ void Generator::initialize(const Config &config)
         if (outputFormats.contains((*g)->format())) {
             currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
-            QStringList extraImages = config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
+            QStringList extraImages =
+                config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
             QStringList::ConstIterator e = extraImages.constBegin();
             while (e != extraImages.constEnd()) {
                 QString userFriendlyFilePath;
@@ -1540,15 +1543,15 @@ void Generator::initialize(const Config &config)
                     Config::copyFile(config.lastLocation(),
                                      filePath,
                                      userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/images");
+                                     (*g)->outputDir() + "/images");
                 ++e;
             }
 
             // Documentation template handling
             QStringList searchDirs;
-            QString templateDir = config.getString((*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
-            qDebug() << "TEMPLATEDIR:" << templateDir << (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR;
+            QString templateDir = config.getPath((*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
+            qDebug() << "TEMPLATEDIR:" << templateDir
+                     << (*g)->format() + Config::dot + CONFIG_TEMPLATEDIR;
             if (templateDir.isEmpty())
                 templateDir = ".";
             searchDirs.append(templateDir);
@@ -1567,35 +1570,24 @@ void Generator::initialize(const Config &config)
                     Config::copyFile(config.lastLocation(),
                                      filePath,
                                      userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/scripts");
+                                     (*g)->outputDir() + "/scripts");
                 ++e;
             }
 
-            QStringList styles = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+            //QStringList styles = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+            QStringList styles = config.getPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
             qDebug() << "STYLES:" << styles;
-            qDebug() << "SEARCHDIRS:" << searchDirs;
-            qDebug() << "STYLEFILES:" << styleFiles;
-            Config::debug = true;
             e = styles.constBegin();
             while (e != styles.constEnd()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    styleFiles,
-                                                    searchDirs,
-                                                    *e,
-                                                    noExts,
-                                                    userFriendlyFilePath);
+                QString filePath = *e;
                 qDebug() << "FILEPATH:" << filePath;
                 if (!filePath.isEmpty())
                     Config::copyFile(config.lastLocation(),
                                      filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/style");
+                                     filePath,
+                                     (*g)->outputDir() + "/style");
                 ++e;
             }
-            Config::debug = false;
         }
         ++g;
     }

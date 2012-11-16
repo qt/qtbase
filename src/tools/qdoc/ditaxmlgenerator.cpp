@@ -5884,7 +5884,7 @@ QStringList DitaXmlGenerator::getMetadataElements(const InnerNode* inner,
  */
 QString DitaXmlGenerator::metadataDefault(DitaTag t) const
 {
-    return metadataDefaults.value(ditaTags[t]);
+    return metadataDefaults.value(ditaTags[t]).second;
 }
 
 /*!

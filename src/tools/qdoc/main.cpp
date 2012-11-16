@@ -281,6 +281,7 @@ static void processQdocconfFile(const QString &fileName)
       in the file being processed, mainly for error reporting
       purposes.
      */
+    currentDir = QFileInfo(fileName).path();
     Location::initialize(config);
     config.load(fileName);
 
