@@ -8,3 +8,4 @@ SUBDIRS=\
    qsqlrecord \
    qsqlthread \
    qsql \
+   qsqlresult \
