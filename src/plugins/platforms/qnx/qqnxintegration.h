@@ -98,6 +98,8 @@ public:
 
     void moveToScreen(QWindow *window, int screen);
 
+    bool supportsNavigatorEvents() const;
+
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
     QPlatformFontDatabase *fontDatabase() const { return m_fontDatabase; }

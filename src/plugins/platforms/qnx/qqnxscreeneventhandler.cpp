@@ -276,6 +276,11 @@ void QQnxScreenEventHandler::handlePointerEvent(screen_event_t event)
             qScreenEventDebug() << Q_FUNC_INFO << "Qt enter, w=" << w;
         }
     }
+
+    // If we don't have a navigator, we don't get activation events.
+    if (buttonState && w && w != QGuiApplication::focusWindow() && !m_qnxIntegration->supportsNavigatorEvents())
+        QWindowSystemInterface::handleWindowActivated(w);
+
     m_lastMouseWindow = qnxWindow;
 
     // Apply scaling to wheel delta and invert value for Qt. We'll probably want to scale

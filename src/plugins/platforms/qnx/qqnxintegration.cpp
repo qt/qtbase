@@ -518,4 +518,10 @@ QQnxScreen *QQnxIntegration::primaryDisplay() const
     return m_screens.first();
 }
 
+bool QQnxIntegration::supportsNavigatorEvents() const
+{
+    // If QQNX_PPS or Q_OS_BLACKBERRY is defined then we have navigator
+    return m_navigator != 0;
+}
+
 QT_END_NAMESPACE
