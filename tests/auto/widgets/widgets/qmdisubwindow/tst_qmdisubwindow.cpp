@@ -59,9 +59,6 @@
 #include <QStyleOptionTitleBar>
 #include <QPushButton>
 #include <QSizeGrip>
-#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
-#include <QMacStyle>
-#endif
 
 #include "../../../qtest-config.h"
 
@@ -598,7 +595,7 @@ void tst_QMdiSubWindow::showShaded()
     QPoint mousePosition(window->width() - qMax(offset, 2), window->height() - qMax(offset, 2));
     QWidget *mouseReceiver = 0;
 #ifdef Q_OS_MAC
-    if (qobject_cast<QMacStyle*>(window->style()))
+    if (window->style()->inherits("QMacStyle"))
         mouseReceiver = qFindChild<QSizeGrip *>(window);
     else
 #endif
@@ -1704,7 +1701,7 @@ void tst_QMdiSubWindow::fixedMinMaxSize()
     int minimizedHeight = subWindow->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
 #if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
     // ### Remove this after mac style has been fixed
-    if (qobject_cast<QMacStyle *>(subWindow->style()))
+    if (subWindow->style()->inherits("QMacStyle"))
         minimizedHeight -= 4;
 #endif
     if (!subWindow->style()->styleHint(QStyle::SH_TitleBar_NoBorder, &options, subWindow))

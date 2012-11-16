@@ -43,8 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtWidgets>
 
-#include <qmacstyle_mac.h>
-
 const int N = 1;
 
 enum Size { Normal, Small, Mini };
@@ -322,13 +320,13 @@ void tst_QMacStyle::setSize(QWidget *widget, Size size)
 {
     switch (size) {
     case Normal:
-        QMacStyle::setWidgetSizePolicy(widget, QMacStyle::SizeDefault);
+        widget->setAttribute(Qt::WA_MacNormalSize, true);
         break;
     case Small:
-        QMacStyle::setWidgetSizePolicy(widget, QMacStyle::SizeSmall);
+        widget->setAttribute(Qt::WA_MacSmallSize, true);
         break;
     case Mini:
-        QMacStyle::setWidgetSizePolicy(widget, QMacStyle::SizeMini);
+        widget->setAttribute(Qt::WA_MacMiniSize, true);
     }
 }
 

@@ -55,7 +55,7 @@
 #include <QtWidgets/QStyleOptionTitleBar>
 #include <QtWidgets/QGraphicsSceneMouseEvent>
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
-# include <QMacStyle>
+# include <private/qmacstyle_mac_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -46,8 +46,8 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "qmacstyle_mac.h"
 #include "qmacstyle_mac_p.h"
+#include "qmacstyle_mac_p_p.h"
 #include "qmacstylepixmaps_mac_p.h"
 
 #define QMAC_QAQUASTYLE_SIZE_CONSTRAIN

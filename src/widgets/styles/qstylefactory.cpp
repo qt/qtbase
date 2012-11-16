@@ -66,7 +66,7 @@
 #endif
 
 #if !defined(QT_NO_STYLE_MAC) && defined(Q_OS_MAC)
-#  include "qmacstyle_mac.h"
+#  include "qmacstyle_mac_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE

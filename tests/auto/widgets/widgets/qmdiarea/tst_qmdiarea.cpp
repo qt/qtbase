@@ -60,7 +60,6 @@
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
 #endif
-#include <QMacStyle>
 #include <QStyleHints>
 
 static const Qt::WindowFlags DefaultWindowFlags
@@ -195,7 +194,7 @@ static bool verifyArrangement(QMdiArea *mdiArea, Arrangement arrangement, const 
         int titleBarHeight = firstSubWindow->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
 #ifdef Q_OS_MAC
         // ### Remove this after the mac style has been fixed
-        if (qobject_cast<QMacStyle *>(firstSubWindow->style()))
+        if (firstSubWindow->style()->inherits("QMacStyle"))
             titleBarHeight -= 4;
 #endif
         const QFontMetrics fontMetrics = QFontMetrics(QApplication::font("QMdiSubWindowTitleBar"));

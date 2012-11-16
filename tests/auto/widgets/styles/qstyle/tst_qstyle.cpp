@@ -71,10 +71,6 @@
 #include <qmdiarea.h>
 #include <qscrollarea.h>
 
-#ifdef Q_OS_MAC
-#include <QMacStyle>
-#endif
-
 #ifdef Q_OS_WINCE_WM
 #include <windows.h>
 
@@ -527,8 +523,9 @@ qDebug("TEST PAINTING");
 #ifdef Q_OS_MAC
 void tst_QStyle::testMacStyle()
 {
-    QMacStyle mstyle;
-    QVERIFY(testAllFunctions(&mstyle));
+    QStyle *mstyle = QStyleFactory::create("Macintosh");
+    QVERIFY(testAllFunctions(mstyle));
+    delete mstyle;
 }
 #endif
 

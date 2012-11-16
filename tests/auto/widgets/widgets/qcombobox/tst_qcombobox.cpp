@@ -60,9 +60,6 @@
 #include <qtablewidget.h>
 #include <qscrollbar.h>
 #include <qboxlayout.h>
-#ifdef Q_OS_MAC
-#include <qmacstyle_mac.h>
-#endif
 
 #include <qstandarditemmodel.h>
 #include <qstringlistmodel.h>
@@ -450,7 +447,7 @@ void tst_QComboBox::setEditable()
 void tst_QComboBox::setPalette()
 {
 #ifdef Q_OS_MAC
-    if (qobject_cast<QMacStyle *>(testWidget->style())) {
+    if (testWidget->style()->inherits("QMacStyle")) {
         QSKIP("This test doesn't make sense for pixmap-based styles");
     }
 #endif

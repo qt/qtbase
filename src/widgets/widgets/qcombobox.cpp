@@ -67,7 +67,7 @@
 #include <qdebug.h>
 #if defined(Q_WS_MAC) && !defined(QT_NO_EFFECTS) && !defined(QT_NO_STYLE_MAC)
 #include <private/qcore_mac_p.h>
-#include <QMacStyle>
+#include <private/qmacstyle_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 #ifndef QT_NO_EFFECTS

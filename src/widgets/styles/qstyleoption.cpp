@@ -42,7 +42,7 @@
 #include "qstyleoption.h"
 #include "qapplication.h"
 #ifdef Q_OS_MAC
-# include "qmacstyle_mac.h"
+# include "qmacstyle_mac_p.h"
 #endif
 #include <qdebug.h>
 #include <QtCore/qmath.h>

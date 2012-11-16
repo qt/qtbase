@@ -39,206 +39,97 @@
 **
 ****************************************************************************/
 
-
 #ifndef QMACSTYLE_MAC_P_H
 #define QMACSTYLE_MAC_P_H
 
-#include <Carbon/Carbon.h>
-#undef check
+#include <QtWidgets/qcommonstyle.h>
 
-#include "qmacstyle_mac.h"
-#include "qcommonstyle_p.h"
-#include <private/qapplication_p.h>
-#include <private/qcombobox_p.h>
-#include <private/qpainter_p.h>
-#include <private/qstylehelper_p.h>
-#include <qapplication.h>
-#include <qbitmap.h>
-#include <qcheckbox.h>
-#include <qcombobox.h>
-#include <qdialogbuttonbox.h>
-#include <qdockwidget.h>
-#include <qevent.h>
-#include <qfocusframe.h>
-#include <qformlayout.h>
-#include <qgroupbox.h>
-#include <qhash.h>
-#include <qheaderview.h>
-#include <qlayout.h>
-#include <qlineedit.h>
-#include <qlistview.h>
-#include <qmainwindow.h>
-#include <qmap.h>
-#include <qmenubar.h>
-#include <qpaintdevice.h>
-#include <qpainter.h>
-#include <qpixmapcache.h>
-#include <qpointer.h>
-#include <qprogressbar.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qrubberband.h>
-#include <qsizegrip.h>
-#include <qspinbox.h>
-#include <qsplitter.h>
-#include <qstyleoption.h>
-#include <qtextedit.h>
-#include <qtextstream.h>
-#include <qtoolbar.h>
-#include <qtoolbutton.h>
-#include <qtreeview.h>
-#include <qtableview.h>
-#include <qwizard.h>
-#include <qdebug.h>
-#include <qlibrary.h>
-#include <qdatetimeedit.h>
-#include <qmath.h>
-#include <QtWidgets/qgraphicsproxywidget.h>
-#include <QtWidgets/qgraphicsview.h>
-
-
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-/*
-    AHIG:
-        Apple Human Interface Guidelines
-        http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/
 
-    Builder:
-        Apple Interface Builder v. 3.1.1
-*/
+#if defined(Q_OS_MAC) && !defined(QT_NO_STYLE_MAC)
 
-// this works as long as we have at most 16 different control types
-#define CT1(c) CT2(c, c)
-#define CT2(c1, c2) ((uint(c1) << 16) | uint(c2))
+class QPalette;
 
-enum QAquaWidgetSize { QAquaSizeLarge = 0, QAquaSizeSmall = 1, QAquaSizeMini = 2,
-                       QAquaSizeUnknown = -1 };
-
-#define SIZE(large, small, mini) \
-    (controlSize == QAquaSizeLarge ? (large) : controlSize == QAquaSizeSmall ? (small) : (mini))
-
-// same as return SIZE(...) but optimized
-#define return_SIZE(large, small, mini) \
-    do { \
-        static const int sizes[] = { (large), (small), (mini) }; \
-        return sizes[controlSize]; \
-    } while (0)
-
-bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
-
-class QMacStylePrivate : public QCommonStylePrivate
-{
-    Q_DECLARE_PUBLIC(QMacStyle)
-public:
-    QMacStylePrivate();
-
-    // Ideally these wouldn't exist, but since they already exist we need some accessors.
-    static const int PushButtonLeftOffset;
-    static const int PushButtonTopOffset;
-    static const int PushButtonRightOffset;
-    static const int PushButtonBottomOffset;
-    static const int MiniButtonH;
-    static const int SmallButtonH;
-    static const int BevelButtonW;
-    static const int BevelButtonH;
-    static const int PushButtonContentPadding;
-    static const qreal ScrollBarFadeOutDuration;
-    static const qreal ScrollBarFadeOutDelay;
-
-    enum Animates { AquaPushButton, AquaProgressBar, AquaListViewItemOpen, AquaScrollBar };
-    static ThemeDrawState getDrawState(QStyle::State flags);
-    QAquaWidgetSize aquaSizeConstrain(const QStyleOption *option, const QWidget *widg,
-                             QStyle::ContentsType ct = QStyle::CT_CustomBase,
-                             QSize szHint=QSize(-1, -1), QSize *insz = 0) const;
-    void getSliderInfo(QStyle::ComplexControl cc, const QStyleOptionSlider *slider,
-                          HIThemeTrackDrawInfo *tdi, const QWidget *needToRemoveMe) const;
-    inline int animateSpeed(Animates) const { return 33; }
-
-    // Utility functions
-    void drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
-                             QPainter *p, const QStyleOption *opt) const;
-
-    QSize pushButtonSizeFromContents(const QStyleOptionButton *btn) const;
-
-    HIRect pushButtonContentBounds(const QStyleOptionButton *btn,
-                                   const HIThemeButtonDrawInfo *bdi) const;
-
-    void initComboboxBdi(const QStyleOptionComboBox *combo, HIThemeButtonDrawInfo *bdi,
-                        const QWidget *widget, const ThemeDrawState &tds) const;
-
-    static HIRect comboboxInnerBounds(const HIRect &outerBounds, int buttonKind);
-
-    static QRect comboboxEditBounds(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi);
-
-    static void drawCombobox(const HIRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p);
-    static void drawTableHeader(const HIRect &outerBounds, bool drawTopBorder, bool drawLeftBorder,
-                                     const HIThemeButtonDrawInfo &bdi, QPainter *p);
-    bool contentFitsInPushButton(const QStyleOptionButton *btn, HIThemeButtonDrawInfo *bdi,
-                                 ThemeButtonKind buttonKindToCheck) const;
-    void initHIThemePushButton(const QStyleOptionButton *btn, const QWidget *widget,
-                               const ThemeDrawState tds,
-                               HIThemeButtonDrawInfo *bdi) const;
-    QPixmap generateBackgroundPattern() const;
-
-public:
-    mutable QPointer<QObject> pressedButton;
-    mutable QPointer<QObject> defaultButton;
-    mutable QPointer<QObject> autoDefaultButton;
-
-    struct ButtonState {
-        int frame;
-        enum { ButtonDark, ButtonLight } dir;
-    } buttonState;
-    mutable QPointer<QFocusFrame> focusWidget;
-    CFAbsoluteTime defaultButtonStart;
-    bool mouseDown;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-    void* receiver;
-    void *nsscroller;
-#endif
-};
-
-class QFadeOutAnimation : public QNumberStyleAnimation
+class QPushButton;
+class QStyleOptionButton;
+class QMacStylePrivate;
+class QMacStyle : public QCommonStyle
 {
     Q_OBJECT
-
 public:
-    QFadeOutAnimation(QObject *target) : QNumberStyleAnimation(target), _active(false)
-    {
-        setDuration(QMacStylePrivate::ScrollBarFadeOutDelay + QMacStylePrivate::ScrollBarFadeOutDuration);
-        setDelay(QMacStylePrivate::ScrollBarFadeOutDelay);
-        setStartValue(1.0);
-        setEndValue(0.0);
-    }
+    QMacStyle();
+    virtual ~QMacStyle();
 
-    bool wasActive() const { return _active; }
-    void setActive(bool active) { _active = active; }
+    void polish(QWidget *w);
+    void unpolish(QWidget *w);
 
-private slots:
-    void updateCurrentTime(int time)
-    {
-        QNumberStyleAnimation::updateCurrentTime(time);
-        if (qFuzzyIsNull(currentValue()))
-            target()->setProperty("visible", false);
-    }
+    void polish(QApplication*);
+    void unpolish(QApplication*);
+
+    void polish(QPalette &pal);
+
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
+                       const QWidget *w = 0) const;
+    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
+                     const QWidget *w = 0) const;
+    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const;
+    void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
+                            const QWidget *w = 0) const;
+    SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
+                               const QPoint &pt, const QWidget *w = 0) const;
+    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc,
+                         const QWidget *w = 0) const;
+    QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
+                           const QSize &contentsSize, const QWidget *w = 0) const;
+
+    int pixelMetric(PixelMetric pm, const QStyleOption *opt = 0, const QWidget *widget = 0) const;
+
+    QPalette standardPalette() const;
+
+    virtual int styleHint(StyleHint sh, const QStyleOption *opt = 0, const QWidget *w = 0,
+                          QStyleHintReturn *shret = 0) const;
+
+    enum FocusRectPolicy { FocusEnabled, FocusDisabled, FocusDefault };
+    static void setFocusRectPolicy(QWidget *w, FocusRectPolicy policy);
+    static FocusRectPolicy focusRectPolicy(const QWidget *w);
+
+    enum WidgetSizePolicy { SizeSmall, SizeLarge, SizeMini, SizeDefault
+    };
+
+    static void setWidgetSizePolicy(const QWidget *w, WidgetSizePolicy policy);
+    static WidgetSizePolicy widgetSizePolicy(const QWidget *w, const QStyleOption *opt = 0);
+
+    QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *opt,
+                           const QWidget *widget = 0) const;
+
+    QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
+                                const QStyleOption *opt) const;
+
+    virtual void drawItemText(QPainter *p, const QRect &r, int flags, const QPalette &pal,
+                              bool enabled, const QString &text, QPalette::ColorRole textRole  = QPalette::NoRole) const;
+
+    bool event(QEvent *e);
+
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = 0,
+                       const QWidget *widget = 0) const;
+    int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
+                      Qt::Orientation orientation, const QStyleOption *option = 0,
+                      const QWidget *widget = 0) const;
 
 private:
-    bool _active;
+    Q_DISABLE_COPY(QMacStyle)
+    Q_DECLARE_PRIVATE(QMacStyle)
+
+    friend bool qt_mac_buttonIsRenderedFlat(const QPushButton *pushButton, const QStyleOptionButton *option);
 };
 
+#endif // Q_WS_MAC
+
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QMACSTYLE_MAC_P_H
