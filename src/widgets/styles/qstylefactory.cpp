@@ -50,7 +50,7 @@
 #include "qfusionstyle.h"
 #endif
 #ifndef QT_NO_STYLE_GTK
-#include "qgtkstyle.h"
+#include "qgtkstyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSXP
 #include "qwindowsxpstyle.h"

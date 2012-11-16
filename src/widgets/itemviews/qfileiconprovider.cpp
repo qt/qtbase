@@ -59,7 +59,7 @@
 #endif
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
-#  include <private/qgtkstyle_p.h>
+#  include <private/qgtkstyle_p_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE

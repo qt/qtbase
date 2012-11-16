@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "qgtkstyle.h"
+#include "qgtkstyle_p.h"
 
 #if !defined(QT_NO_STYLE_GTK)
 
@@ -75,7 +75,7 @@
 #undef signals // Collides with GTK stymbols
 #include <private/qgtkpainter_p.h>
 #include <private/qstylehelper_p.h>
-#include <private/qgtkstyle_p.h>
+#include <private/qgtkstyle_p_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -308,6 +308,7 @@ static GdkColor fromQColor(const QColor &color)
     \brief The QGtkStyle class provides a widget style rendered by GTK+
     \since 4.5
 
+    \internal
     \inmodule QtWidgets
 
     The QGtkStyle style provides a look and feel that integrates well

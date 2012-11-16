@@ -100,10 +100,10 @@ contains( styles, windowsxp ) {
 
 contains( styles, gtk ) {
         HEADERS += styles/qgtkglobal_p.h
-        HEADERS += styles/qgtkstyle.h
+        HEADERS += styles/qgtkstyle_p.h
         HEADERS += styles/qgtkpainter_p.h
         HEADERS += styles/qgtk2painter_p.h
-        HEADERS += styles/qgtkstyle_p.h
+        HEADERS += styles/qgtkstyle_p_p.h
         SOURCES += styles/qgtkstyle.cpp
         SOURCES += styles/qgtkpainter.cpp
         SOURCES += styles/qgtk2painter.cpp

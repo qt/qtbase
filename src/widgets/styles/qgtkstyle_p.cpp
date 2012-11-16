@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgtkstyle_p.h"
+#include "qgtkstyle_p_p.h"
 
 // This file is responsible for resolving all GTK functions we use
 // dynamically. This is done to avoid link-time dependancy on GTK

@@ -47,7 +47,7 @@
 // This class is primarily a wrapper around the gtk painter functions
 // and takes care of converting all such calls into cached Qt pixmaps.
 
-#include <private/qgtkstyle_p.h>
+#include <private/qgtkstyle_p_p.h>
 #include <private/qhexstring_p.h>
 #include <QtWidgets/QWidget>
 #include <QtGui/QPixmapCache>
