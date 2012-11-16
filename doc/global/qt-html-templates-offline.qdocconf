@@ -8,7 +8,7 @@ HTML.headerstyles = \
 HTML.endheader = \
     "</head>\n" \
     "<body>\n" \
-    "<div class=\"content\"></div class=\"content\">\n" \
+    "<div class=\"content\"></div>\n" \
     "<div class=\"content mainContent\">\n" \
 
 HTML.footer = \
