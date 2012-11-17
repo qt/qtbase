@@ -211,8 +211,10 @@ QGLBuffer &QGLBuffer::operator=(const QGLBuffer &other)
 {
     if (d_ptr != other.d_ptr) {
         other.d_ptr->ref.ref();
-        if (!d_ptr->ref.deref())
+        if (!d_ptr->ref.deref()) {
             destroy();
+            delete d_ptr;
+        }
         d_ptr = other.d_ptr;
     }
     return *this;
