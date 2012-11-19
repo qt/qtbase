@@ -2159,6 +2159,12 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
 
         const DomPropertyMap properties = propertyMap(column->elementProperty());
         addCommonInitializers(&item, properties, i);
+
+        if (const DomProperty *p = properties.value(QLatin1String("text"))) {
+            DomString *str = p->elementString();
+            if (str && str->text().isEmpty())
+                m_output << m_indent << varName << "->headerItem()->setText(" << i << ", QString());\n";
+        }
     }
     const QString itemName = item.writeSetupUi(QString(), Item::DontConstruct);
     item.writeRetranslateUi(varName + QLatin1String("->headerItem()"));
