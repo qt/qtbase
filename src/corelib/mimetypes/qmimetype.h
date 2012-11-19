@@ -90,6 +90,7 @@ public:
     QStringList globPatterns() const;
     QStringList parentMimeTypes() const;
     QStringList allAncestors() const;
+    QStringList aliases() const;
     QStringList suffixes() const;
     QString preferredSuffix() const;
 

@@ -62,6 +62,8 @@ private slots:
     void mimeTypesForFileName();
     void inheritance();
     void aliases();
+    void listAliases_data();
+    void listAliases();
     void icons();
     void mimeTypeForFileWithContent();
     void mimeTypeForUrl();

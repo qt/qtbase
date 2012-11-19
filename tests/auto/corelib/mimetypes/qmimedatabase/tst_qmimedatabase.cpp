@@ -355,6 +355,31 @@ void tst_QMimeDatabase::aliases()
     QVERIFY(!mustWriteMimeType);
 }
 
+void tst_QMimeDatabase::listAliases_data()
+{
+    QTest::addColumn<QString>("inputMime");
+    QTest::addColumn<QString>("expectedAliases");
+
+    QTest::newRow("csv") << "text/csv" << "text/x-csv,text/x-comma-separated-values";
+    QTest::newRow("xml") << "application/xml" << "text/xml";
+    QTest::newRow("xml2") << "text/xml" /* gets resolved to application/xml */ << "text/xml";
+    QTest::newRow("no_mime") << "message/news" << "";
+}
+
+void tst_QMimeDatabase::listAliases()
+{
+    QFETCH(QString, inputMime);
+    QFETCH(QString, expectedAliases);
+    QMimeDatabase db;
+    QStringList expectedAliasesList = expectedAliases.split(',', QString::SkipEmptyParts);
+    expectedAliasesList.sort();
+    QMimeType mime = db.mimeTypeForName(inputMime);
+    QVERIFY(mime.isValid());
+    QStringList aliasList = mime.aliases();
+    aliasList.sort();
+    QCOMPARE(aliasList, expectedAliasesList);
+}
+
 void tst_QMimeDatabase::icons()
 {
     QMimeDatabase db;

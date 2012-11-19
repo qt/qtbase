@@ -61,6 +61,7 @@ public:
     virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix) = 0;
     virtual QStringList parents(const QString &mime) = 0;
     virtual QString resolveAlias(const QString &name) = 0;
+    virtual QStringList listAliases(const QString &name) = 0;
     virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr) = 0;
     virtual QList<QMimeType> allMimeTypes() = 0;
     virtual void loadMimeTypePrivate(QMimeTypePrivate &) {}
@@ -87,6 +88,7 @@ public:
     virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix);
     virtual QStringList parents(const QString &mime);
     virtual QString resolveAlias(const QString &name);
+    virtual QStringList listAliases(const QString &name);
     virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr);
     virtual QList<QMimeType> allMimeTypes();
     virtual void loadMimeTypePrivate(QMimeTypePrivate &);
@@ -128,6 +130,7 @@ public:
     virtual QStringList findByFileName(const QString &fileName, QString *foundSuffix);
     virtual QStringList parents(const QString &mime);
     virtual QString resolveAlias(const QString &name);
+    virtual QStringList listAliases(const QString &name);
     virtual QMimeType findByMagic(const QByteArray &data, int *accuracyPtr);
     virtual QList<QMimeType> allMimeTypes();
 

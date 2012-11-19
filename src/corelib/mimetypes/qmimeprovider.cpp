@@ -494,6 +494,29 @@ QString QMimeBinaryProvider::resolveAlias(const QString &name)
     return name;
 }
 
+QStringList QMimeBinaryProvider::listAliases(const QString &name)
+{
+    checkCache();
+    QStringList result;
+    const QByteArray input = name.toLatin1();
+    foreach (CacheFile *cacheFile, m_cacheFiles) {
+        const int aliasListOffset = cacheFile->getUint32(PosAliasListOffset);
+        const int numEntries = cacheFile->getUint32(aliasListOffset);
+        for (int pos = 0; pos < numEntries; ++pos) {
+            const int off = aliasListOffset + 4 + 8 * pos;
+            const int mimeOffset = cacheFile->getUint32(off + 4);
+            const char *mimeType = cacheFile->getCharStar(mimeOffset);
+
+            if (input == mimeType) {
+                const int aliasOffset = cacheFile->getUint32(off);
+                const char *alias = cacheFile->getCharStar(aliasOffset);
+                result.append(QString::fromLatin1(alias));
+            }
+        }
+    }
+    return result;
+}
+
 void QMimeBinaryProvider::loadMimeTypeList()
 {
     if (!m_mimetypeListLoaded) {
@@ -813,6 +836,13 @@ QStringList QMimeXMLProvider::parents(const QString &mime)
 void QMimeXMLProvider::addParent(const QString &child, const QString &parent)
 {
     m_parents[child].append(parent);
+}
+
+QStringList QMimeXMLProvider::listAliases(const QString &name)
+{
+    ensureLoaded();
+    // Iterate through the whole hash. This method is rarely used.
+    return m_aliases.keys(name);
 }
 
 QString QMimeXMLProvider::resolveAlias(const QString &name)
