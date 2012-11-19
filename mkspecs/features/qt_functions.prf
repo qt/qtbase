@@ -280,10 +280,11 @@ defineReplace(pkgConfigExecutable) {
 }
 
 defineTest(packagesExist) {
+    contains(QT_CONFIG, no-pkg-config):return(false)
+
     # this can't be done in global scope here because qt_functions is loaded
     # before the .pro is parsed, so if the .pro set PKG_CONFIG, we wouldn't know it
     # yet. oops.
-
     pkg_config = $$pkgConfigExecutable()
 
     for(package, ARGS) {
