@@ -2381,15 +2381,16 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     can be connected to one slot.
 
     If a signal is connected to several slots, the slots are activated
-    in the same order as the order the connection was made, when the
+    in the same order in which the connections were made, when the
     signal is emitted.
 
-    The function returns a handle to a connection if it successfully
-    connects the signal to the slot. The Connection handle will be invalid
+    The function returns a QMetaObject::Connection that represents
+    a handle to a connection if it successfully
+    connects the signal to the slot. The connection handle will be invalid
     if it cannot create the connection, for example, if QObject is unable
     to verify the existence of either \a signal or \a method, or if their
     signatures aren't compatible.
-    You can check if the QMetaObject::Connection is valid by casting it to a bool.
+    You can check if the handle is valid by casting it to a bool.
 
     By default, a signal is emitted for every connection you make;
     two signals are emitted for duplicate connections. You can break
