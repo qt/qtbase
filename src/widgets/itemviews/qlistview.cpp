@@ -2546,6 +2546,7 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
     if (index < 0)
         return scrollValue;
 
+    itemExtent += spacing();
     QVector<int> visibleFlowPositions;
     visibleFlowPositions.reserve(flowPositions.count() - 1);
     for (int i = 0; i < flowPositions.count() - 1; i++) { // flowPositions count is +1 larger than actual row count
