@@ -72,7 +72,7 @@ static QRect fromCGRect(const CGRect &rect)
 
 -(id)initWithQIOSWindow:(QIOSWindow *)window
 {
-    if (self = [super initWithFrame:toCGRect(window->geometry())])
+    if (self = [self initWithFrame:toCGRect(window->geometry())])
         m_qioswindow = window;
 
     return self;
