@@ -134,7 +134,10 @@ font-weight:bold;
 margin-right: 20px;
 display:inline-block;
 }
-
+.nav-subtitle{
+color: #869CD1;
+margin-left: 220px;
+}
 .header{
 height:1px;
 padding:0px;
@@ -173,16 +176,11 @@ float:right;
 
 .naviNextPrevious{
 display: block;
-position: relative;
 text-align: right;
-top: -53px;
 float:right;
-height:20px;
 z-index:1;
 padding-right:10px;
-padding-top:2px;
 vertical-align:top;
-margin:0px;
 }
 
 
@@ -664,3 +662,88 @@ border:none;}
 
 .clearfix{
 clear:both;}
+
+/* start index box */
+.indexbox
+{
+width: 100%;
+display:inline-block;
+}
+
+.indexboxcont
+{
+display: block;
+
+}
+
+.indexboxcont .section
+{
+display: inline-block;
+width: 49%;
+*width:42%;
+_width:42%;
+padding:0 2% 0 1%;
+vertical-align:top;
+}
+
+.indexboxcont .indexIcon
+{
+width: 11%;
+*width:18%;
+_width:18%;
+overflow:hidden;
+}
+
+.indexboxcont .section {
+  float: left;
+}
+
+.indexboxcont .section p
+{
+padding-top: 20px;
+padding-bottom: 20px;
+}
+.indexboxcont .sectionlist
+{
+display: inline-block;
+vertical-align:top;
+width: 32.5%;
+padding: 0;
+}
+.indexboxcont .sectionlist ul
+{
+margin-bottom: 20px;
+}
+
+.indexboxcont .sectionlist ul li
+{
+line-height: 12px;
+}
+
+.content .indexboxcont li
+{
+font: normal bold 13px/1 Verdana;
+}
+
+.content .normallist li
+{
+font: normal 13px/1 Verdana;
+}
+
+.indexbox .indexIcon {
+width: 11%;
+}
+
+.indexbox .indexIcon span
+{
+display: block;
+}
+
+.indexboxcont:after
+{
+content: ".";
+display: block;
+height: 0;
+clear: both;
+visibility: hidden;
+}

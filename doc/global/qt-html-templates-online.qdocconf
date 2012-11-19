@@ -1,35 +1,35 @@
 HTML.nobreadcrumbs      = "true"
 
 HTML.stylesheets =  template/style/online.css
-extraimages.HTML =  images/btn_next_green.png \
-                    images/box_bg.png \
-                    images/page.png \
-                    images/arrow_down.png \
-                    images/btn_prev.png \
-                    images/blu_dot.png \
-                    images/ico_note_attention.png \
-                    images/btn_prev_green.png \
-                    images/bg_ll_blank.png \
-                    images/btn_next.png \
-                    images/bg_l_blank.png \
-                    images/ico_note.png \
-                    images/home.png \
-                    images/ico_out.png \
-                    images/header_bg.png \
-                    images/page_bg.png \
-                    images/bg_l.png \
-                    images/bg_r.png \
-                    images/breadcrumb.png \
-                    images/bullet_dn.png \
-                    images/feedbackground.png \
-                    images/bullet_gt.png \
-                    images/arrow.png \
-                    images/bullet_sq.png \
-                    images/bullet_up.png \
-                    images/sprites-combined.png \
-                    images/horBar.png \
-                    images/bg_ul_blank.png \
-                    images/bgrContent.png \
+HTML.extraimages =  template/images/btn_next_green.png \
+                    template/images/box_bg.png \
+                    template/images/page.png \
+                    template/images/arrow_down.png \
+                    template/images/btn_prev.png \
+                    template/images/blu_dot.png \
+                    template/images/ico_note_attention.png \
+                    template/images/btn_prev_green.png \
+                    template/images/bg_ll_blank.png \
+                    template/images/btn_next.png \
+                    template/images/bg_l_blank.png \
+                    template/images/ico_note.png \
+                    template/images/home.png \
+                    template/images/ico_out.png \
+                    template/images/header_bg.png \
+                    template/images/page_bg.png \
+                    template/images/bg_l.png \
+                    template/images/bg_r.png \
+                    template/images/breadcrumb.png \
+                    template/images/bullet_dn.png \
+                    template/images/feedbackground.png \
+                    template/images/bullet_gt.png \
+                    template/images/arrow.png \
+                    template/images/bullet_sq.png \
+                    template/images/bullet_up.png \
+                    template/images/sprites-combined.png \
+                    template/images/horBar.png \
+                    template/images/bg_ul_blank.png \
+                    template/images/bgrContent.png \
 
 
 HTML.headerstyles = \
@@ -47,7 +47,12 @@ HTML.endheader = \
     "    <a href=\"http://qt-project.org/\">\n" \
     "        <img src=\"http://doc-snapshot.qt-project.org/images/logo.png\" alt=\"Qt\"></img>\n" \
     "    </a>\n" \
-    "    <h1 >Reference Documentation Snapshots</h1>\n" \
+    "   <div class=\"nav-title\">\n" \
+    "    <h1 >Qt Documentation Snapshots</h1>\n" \
+    "       <div class=\"nav-subtitle\">\n" \
+    "       --snapshots of unreleased Qt documentation\n" \
+    "       </div>\n" \
+    "   </div>\n" \
     "    <div class=\"nav-main\">\n" \
     "        <div class=\"nav-main-content\">\n" \
     "            <a href=\"http://qt-project.org/doc\">Qt Releases</a>\n" \
