@@ -65,6 +65,7 @@ public:
     QXcbNativeInterface();
 
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
+    void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
     NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);

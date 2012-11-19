@@ -102,20 +102,13 @@ QX11SystemTrayContext::QX11SystemTrayContext() : m_display(0), m_screenNumber(0)
         qWarning("%s: No screen.", Q_FUNC_INFO);
         return;
     }
-    // Open display using screen name and retrieve screen number from "hostname:0.0"
-    const QByteArray name = screen->name().toLocal8Bit();
-    const int dotPos = name.lastIndexOf('.');
-    if (dotPos != -1) {
-        bool ok;
-        const int n = name.mid(dotPos + 1).toInt(&ok);
-        if (ok)
-            m_screenNumber = n;
-    }
-    m_display = XOpenDisplay(name.constData());
-    if (!m_display) {
-        qWarning("%s: Cannot open display '%s'.", Q_FUNC_INFO, name.constData());
+    void *displayV = QGuiApplication::platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), screen);
+    if (!displayV) {
+        qWarning("%s: Unable to obtain X11 display of primary screen.", Q_FUNC_INFO);
         return;
     }
+
+    m_display = static_cast<Display *>(displayV);
 
     const QByteArray netSysTray = "_NET_SYSTEM_TRAY_S" + QByteArray::number(m_screenNumber);
     m_systemTraySelection = XInternAtom(m_display, netSysTray.constData(), False);
@@ -134,8 +127,6 @@ Window QX11SystemTrayContext::locateSystemTray() const
 
 QX11SystemTrayContext::~QX11SystemTrayContext()
 {
-    if (m_display)
-        XCloseDisplay(m_display);
 }
 
 Q_GLOBAL_STATIC(QX11SystemTrayContext, qX11SystemTrayContext)

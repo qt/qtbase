@@ -104,6 +104,25 @@ void *QXcbNativeInterface::nativeResourceForContext(const QByteArray &resourceSt
     return result;
 }
 
+void *QXcbNativeInterface::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    const QXcbResourceMap::const_iterator it = qXcbResourceMap()->constFind(resource.toLower());
+    if (it == qXcbResourceMap()->constEnd() || !screen->handle())
+        return  0;
+    const QXcbScreen *xcbScreen = static_cast<QXcbScreen *>(screen->handle());
+    switch (it.value()) {
+    case Display:
+#ifdef XCB_USE_XLIB
+        return xcbScreen->connection()->xlib_display();
+#else
+        break;
+#endif
+    default:
+        break;
+    }
+    return 0;
+}
+
 void *QXcbNativeInterface::nativeResourceForWindow(const QByteArray &resourceString, QWindow *window)
 {
     QByteArray lowerCaseResource = resourceString.toLower();
