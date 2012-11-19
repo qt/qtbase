@@ -84,11 +84,11 @@ static inline bool scriptRequiresOpenType(int script)
 static int getFCWeight(int fc_weight)
 {
     int qtweight = QFont::Black;
-    if (fc_weight <= (FC_WEIGHT_LIGHT + FC_WEIGHT_MEDIUM) / 2)
+    if (fc_weight <= (FC_WEIGHT_LIGHT + FC_WEIGHT_REGULAR) / 2)
         qtweight = QFont::Light;
-    else if (fc_weight <= (FC_WEIGHT_MEDIUM + FC_WEIGHT_DEMIBOLD) / 2)
+    else if (fc_weight <= (FC_WEIGHT_REGULAR + FC_WEIGHT_MEDIUM) / 2)
         qtweight = QFont::Normal;
-    else if (fc_weight <= (FC_WEIGHT_DEMIBOLD + FC_WEIGHT_BOLD) / 2)
+    else if (fc_weight <= (FC_WEIGHT_MEDIUM + FC_WEIGHT_BOLD) / 2)
         qtweight = QFont::DemiBold;
     else if (fc_weight <= (FC_WEIGHT_BOLD + FC_WEIGHT_BLACK) / 2)
         qtweight = QFont::Bold;
@@ -350,7 +350,7 @@ void QFontconfigDatabase::populateFontDatabase()
         //         capitalize(value);
         familyName = QString::fromUtf8((const char *)value);
         slant_value = FC_SLANT_ROMAN;
-        weight_value = FC_WEIGHT_MEDIUM;
+        weight_value = FC_WEIGHT_REGULAR;
         spacing_value = FC_PROPORTIONAL;
         file_value = 0;
         indexValue = 0;
@@ -360,7 +360,7 @@ void QFontconfigDatabase::populateFontDatabase()
         if (FcPatternGetInteger (fonts->fonts[i], FC_SLANT, 0, &slant_value) != FcResultMatch)
             slant_value = FC_SLANT_ROMAN;
         if (FcPatternGetInteger (fonts->fonts[i], FC_WEIGHT, 0, &weight_value) != FcResultMatch)
-            weight_value = FC_WEIGHT_MEDIUM;
+            weight_value = FC_WEIGHT_REGULAR;
         if (FcPatternGetInteger (fonts->fonts[i], FC_SPACING, 0, &spacing_value) != FcResultMatch)
             spacing_value = FC_PROPORTIONAL;
         if (FcPatternGetString (fonts->fonts[i], FC_FILE, 0, &file_value) != FcResultMatch)
