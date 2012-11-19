@@ -55,10 +55,10 @@ HTML.endheader = \
     "   </div>\n" \
     "    <div class=\"nav-main\">\n" \
     "        <div class=\"nav-main-content\">\n" \
-    "            <a href=\"http://qt-project.org/doc\">Qt Releases</a>\n" \
+    "            <a href=\"http://doc-snapshot.qt-project.org\">All Modules</a>\n" \
     "        </div>\n" \
     "        <div class=\"nav-main-content\">\n" \
-    "            <a href=\"http://doc-snapshot.qt-project.org\">Snapshots</a>\n" \
+    "            <a href=\"http://qt-project.org/doc\">Qt Releases</a>\n" \
     "        </div>\n" \
     "        <div class=\"nav-main-content\">\n" \
     "            <a href=\"http://doc.qt.digia.com\">Archives</a>\n" \
