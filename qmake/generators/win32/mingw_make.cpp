@@ -89,7 +89,7 @@ bool MingwMakefileGenerator::findLibraries()
             for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
                 QString extension;
                 int ver = findHighestVersion((*dir_it).local(), steam, "dll.a|a");
-                if (ver != -1)
+                if (ver > 0)
                     extension += QString::number(ver);
                 extension += suffix;
                 if(QMakeMetaInfo::libExists((*dir_it).local() + Option::dir_sep + steam) ||
