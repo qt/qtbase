@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QOpenGLContext;
+class QScreen;
 class QWindow;
 class QPlatformWindow;
 class QBackingStore;
@@ -71,6 +72,7 @@ class Q_GUI_EXPORT QPlatformNativeInterface : public QObject
 public:
     virtual void *nativeResourceForIntegration(const QByteArray &resource);
     virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
+    virtual void *nativeResourceForScreen(const QByteArray &resource, QScreen *screen);
     virtual void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
     virtual void *nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore);
 

@@ -59,6 +59,14 @@ void *QPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &r
     Q_UNUSED(resource);
     return 0;
 }
+
+void *QPlatformNativeInterface::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(screen);
+    return 0;
+}
+
 void *QPlatformNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
     Q_UNUSED(resource);
