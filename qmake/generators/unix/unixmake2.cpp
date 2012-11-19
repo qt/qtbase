@@ -1218,7 +1218,7 @@ void UnixMakefileGenerator::init2()
     }
 
     if(!project->isEmpty("QMAKE_BUNDLE")) {
-        QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString());
+        QString plist = fileFixify(project->first("QMAKE_INFO_PLIST").toQString(), qmake_getpwd());
         if(plist.isEmpty())
             plist = specdir() + QDir::separator() + "Info.plist." + project->first("TEMPLATE");
         if(exists(Option::fixPathToLocalOS(plist))) {
