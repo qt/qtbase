@@ -1,7 +1,7 @@
 include(macros.qdocconf)
 include(qt-cpp-ignore.qdocconf)
 include(qt-defines.qdocconf)
-include(qt-html-templates-offline.qdocconf)
+include(qt-html-templates-online.qdocconf)
 include(compat.qdocconf)
 
 dita.metadata.default.author      = Qt Project
@@ -26,7 +26,7 @@ versionsym              = QT_VERSION_STR
 macro.raisedaster.HTML  = "<sup>*</sup>"
 
 #for including files into the qch file
-qhp.extraFiles += template/style/offline.css
+qhp.extraFiles += template/style/online.css
 
 #include the external websites
 sourcedirs += externalsites
