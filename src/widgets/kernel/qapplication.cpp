@@ -1512,6 +1512,14 @@ QFont QApplication::font(const QWidget *widget)
     FontHash *hash = app_fonts();
 
     if (widget && hash  && hash->size()) {
+#ifdef Q_OS_MAC
+        // short circuit for small and mini controls
+        if (widget->testAttribute(Qt::WA_MacSmallSize)) {
+            return hash->value(QByteArrayLiteral("QSmallFont"));
+        } else if (widget->testAttribute(Qt::WA_MacMiniSize)) {
+            return hash->value(QByteArrayLiteral("QMiniFont"));
+        }
+#endif
         QHash<QByteArray, QFont>::ConstIterator it =
                 hash->constFind(widget->metaObject()->className());
         if (it != hash->constEnd())
