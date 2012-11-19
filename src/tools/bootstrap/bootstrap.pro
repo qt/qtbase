@@ -3,6 +3,7 @@ option(host_build)
 TARGET = QtBootstrap
 QT =
 CONFIG += no_module_headers internal_module
+!build_pass: CONFIG += release
 
 MODULE_DEFINES = \
         QT_BOOTSTRAPPED \
@@ -32,8 +33,6 @@ MODULE_PRIVATE_INCLUDES = \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION/QtXml
-
-CONFIG += release
 
 load(qt_module)
 
