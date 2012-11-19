@@ -16,4 +16,6 @@ SOURCES += $$PWD/libpng/png.c \
   $$PWD/libpng/pngwtran.c \
   $$PWD/libpng/pngwutil.c
 
+TR_EXCLUDE += $$PWD/*
+
 include($$PWD/zlib_dependency.pri)

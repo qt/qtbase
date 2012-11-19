@@ -16,3 +16,5 @@ SOURCES+= \
     $$PWD/zlib/trees.c \
     $$PWD/zlib/uncompr.c \
     $$PWD/zlib/zutil.c
+
+TR_EXCLUDE += $$PWD/*

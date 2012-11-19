@@ -68,3 +68,5 @@ SOURCES += \
     $$XCB_WM_DIR/icccm.c
 
 OTHER_FILES = $$XCB_DIR/README
+
+TR_EXCLUDE += $$XCB_DIR/*

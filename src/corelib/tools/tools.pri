@@ -149,3 +149,4 @@ INCLUDEPATH += ../3rdparty/md5 \
 # Note: libm should be present by default becaue this is C++
 !macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm
 
+TR_EXCLUDE += ../3rdparty/*

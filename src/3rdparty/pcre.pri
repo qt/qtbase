@@ -27,3 +27,4 @@ SOURCES += \
     $$PWD/pcre/pcre16_version.c \
     $$PWD/pcre/pcre16_xclass.c
 
+TR_EXCLUDE += $$PWD/*

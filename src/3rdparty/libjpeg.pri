@@ -58,3 +58,5 @@ SOURCES += \
     $$PWD/libjpeg/jutils.c \
     $$PWD/libjpeg/jmemmgr.c \
     $$PWD/libjpeg/jmemnobs.c
+
+TR_EXCLUDE += $$PWD/*

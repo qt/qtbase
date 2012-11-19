@@ -86,3 +86,5 @@ OTHER_FILES = \
     $$PWD/idl/IA2TypeLibrary.idl
 
 LIBS += -lrpcrt4
+
+TR_EXCLUDE += $$PWD/*
