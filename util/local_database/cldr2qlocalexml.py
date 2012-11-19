@@ -607,109 +607,78 @@ for id in enumdata.country_list:
     print "        </country>"
 print "    </countryList>"
 
-print \
-"    <defaultCountryList>\n\
-        <defaultCountry>\n\
-            <language>Afrikaans</language>\n\
-            <country>SouthAfrica</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Afan</language>\n\
-            <country>Ethiopia</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Afar</language>\n\
-            <country>Djibouti</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Arabic</language>\n\
-            <country>SaudiArabia</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Chinese</language>\n\
-            <country>China</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Dutch</language>\n\
-            <country>Netherlands</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>English</language>\n\
-            <country>UnitedStates</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>French</language>\n\
-            <country>France</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>German</language>\n\
-            <country>Germany</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Greek</language>\n\
-            <country>Greece</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Italian</language>\n\
-            <country>Italy</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Malay</language>\n\
-            <country>Malaysia</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Portuguese</language>\n\
-            <country>Portugal</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Russian</language>\n\
-            <country>RussianFederation</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Serbian</language>\n\
-            <country>SerbiaAndMontenegro</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>SerboCroatian</language>\n\
-            <country>SerbiaAndMontenegro</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Somali</language>\n\
-            <country>Somalia</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Spanish</language>\n\
-            <country>Spain</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Swahili</language>\n\
-            <country>Kenya</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Swedish</language>\n\
-            <country>Sweden</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Tigrinya</language>\n\
-            <country>Eritrea</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Uzbek</language>\n\
-            <country>Uzbekistan</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Persian</language>\n\
-            <country>Iran</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Mongolian</language>\n\
-            <country>Mongolia</country>\n\
-        </defaultCountry>\n\
-        <defaultCountry>\n\
-            <language>Nepali</language>\n\
-            <country>Nepal</country>\n\
-        </defaultCountry>\n\
-    </defaultCountryList>"
+def _parseLocale(l):
+    language = "AnyLanguage"
+    script = "AnyScript"
+    country = "AnyCountry"
+
+    if l == "und": # we are treating unknown locale like C
+        return (None, None, None)
+
+    items = l.split("_")
+    language_code = items[0]
+    if language_code != "und":
+        language_id = enumdata.languageCodeToId(language_code)
+        if language_id == -1:
+            sys.stderr.write("unknown language code \"" + language_code + "\"\n")
+            return (None, None, None)
+        language = enumdata.language_list[language_id][0]
+
+    if len(items) > 1:
+        script_code = items[1]
+        country_code = ""
+        if len(items) > 2:
+            country_code = items[2]
+        if len(script_code) == 4:
+            script_id = enumdata.scriptCodeToId(script_code)
+            if script_id == -1:
+                sys.stderr.write("unknown script code \"" + script_code + "\"\n")
+                return (None, None, None)
+            script = enumdata.script_list[script_id][0]
+        else:
+            country_code = script_code
+        if country_code:
+            country_id = enumdata.countryCodeToId(country_code)
+            if country_id == -1:
+                sys.stderr.write("unknown country code \"" + country_code + "\"\n")
+                return (None, None, None)
+            country = enumdata.country_list[country_id][0]
+
+    return (language, script, country)
+
+print "    <likelySubtags>"
+for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likelySubtags"):
+    tmp = {}
+    for data in ns[1:][0]: # ns looks like this: [u'likelySubtag', [(u'from', u'aa'), (u'to', u'aa_Latn_ET')]]
+        tmp[data[0]] = data[1]
+
+    (from_language, from_script, from_country) = _parseLocale(tmp[u"from"])
+    if not from_language:
+        sys.stderr.write("skipping likelySubtag " + tmp[u"from"] + " -> " + tmp[u"to"] + "\n")
+        continue
+    (to_language, to_script, to_country) = _parseLocale(tmp[u"to"])
+    if not to_language:
+        sys.stderr.write("skipping likelySubtag " + tmp[u"from"] + " -> " + tmp[u"to"] + "\n")
+        continue
+    # substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
+    if to_country == "AnyCountry" and from_country != to_country:
+        to_country = from_country
+    if to_script == "AnyScript" and from_script != to_script:
+        to_script = from_script
+
+    print "        <likelySubtag>"
+    print "            <from>"
+    print "                <language>" + from_language + "</language>"
+    print "                <script>" + from_script + "</script>"
+    print "                <country>" + from_country + "</country>"
+    print "            </from>"
+    print "            <to>"
+    print "                <language>" + to_language + "</language>"
+    print "                <script>" + to_script + "</script>"
+    print "                <country>" + to_country + "</country>"
+    print "            </to>"
+    print "        </likelySubtag>"
+print "    </likelySubtags>"
 
 print "    <localeList>"
 print \

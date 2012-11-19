@@ -129,16 +129,29 @@ def loadCountryMap(doc):
 
     return result
 
-def loadDefaultMap(doc):
+def loadLikelySubtagsMap(doc):
     result = {}
 
-    list_elt = firstChildElt(doc.documentElement, "defaultCountryList")
-    elt = firstChildElt(list_elt, "defaultCountry")
+    i = 0
+    list_elt = firstChildElt(doc.documentElement, "likelySubtags")
+    elt = firstChildElt(list_elt, "likelySubtag")
     while elt:
-        country = eltText(firstChildElt(elt, "country"));
-        language = eltText(firstChildElt(elt, "language"));
-        result[language] = country;
-        elt = nextSiblingElt(elt, "defaultCountry");
+        elt_from = firstChildElt(elt, "from")
+        from_language = eltText(firstChildElt(elt_from, "language"));
+        from_script = eltText(firstChildElt(elt_from, "script"));
+        from_country = eltText(firstChildElt(elt_from, "country"));
+
+        elt_to = firstChildElt(elt, "to")
+        to_language = eltText(firstChildElt(elt_to, "language"));
+        to_script = eltText(firstChildElt(elt_to, "script"));
+        to_country = eltText(firstChildElt(elt_to, "country"));
+
+        tmp = {}
+        tmp["from"] = (from_language, from_script, from_country)
+        tmp["to"] = (to_language, to_script, to_country)
+        result[i] = tmp;
+        i += 1
+        elt = nextSiblingElt(elt, "likelySubtag");
     return result
 
 def fixedScriptName(name, dupes):
@@ -459,7 +472,12 @@ def main():
     language_map = loadLanguageMap(doc)
     script_map = loadScriptMap(doc)
     country_map = loadCountryMap(doc)
-    default_map = loadDefaultMap(doc)
+    likely_subtags_map = loadLikelySubtagsMap(doc)
+    default_map = {}
+    for key in likely_subtags_map.keys():
+        tmp = likely_subtags_map[key]
+        if tmp["from"][2] == "AnyCountry" and tmp["to"][2] != "AnyCountry" and tmp["from"][1] == "AnyScript":
+            default_map[tmp["to"][0]] = tmp["to"][2]
     locale_map = loadLocaleMap(doc, language_map, script_map, country_map)
     dupes = findDupes(language_map, country_map)
 
