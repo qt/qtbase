@@ -340,8 +340,7 @@ void MainWindow::createToolBox()
     QToolButton *textButton = new QToolButton;
     textButton->setCheckable(true);
     buttonGroup->addButton(textButton, InsertTextButton);
-    textButton->setIcon(QIcon(QPixmap(":/images/textpointer.png")
-                        .scaled(30, 30)));
+    textButton->setIcon(QIcon(QPixmap(":/images/textpointer.png")));
     textButton->setIconSize(QSize(50, 50));
     QGridLayout *textLayout = new QGridLayout;
     textLayout->addWidget(textButton, 0, 0, Qt::AlignHCenter);
@@ -639,8 +638,9 @@ QIcon MainWindow::createColorToolButtonIcon(const QString &imageFile,
     pixmap.fill(Qt::transparent);
     QPainter painter(&pixmap);
     QPixmap image(imageFile);
-    QRect target(0, 0, 50, 60);
-    QRect source(0, 0, 42, 42);
+    // Draw icon centred horizontally on button.
+    QRect target(4, 0, 42, 43);
+    QRect source(0, 0, 42, 43);
     painter.fillRect(QRect(0, 60, 50, 80), color);
     painter.drawPixmap(target, image, source);
 
