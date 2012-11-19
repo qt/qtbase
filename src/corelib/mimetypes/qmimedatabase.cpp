@@ -289,7 +289,12 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
 
 /*!
     \fn QMimeDatabase::QMimeDatabase();
-    Constructs this QMimeDatabase object.
+    Constructs a QMimeDatabase object.
+
+    It is perfectly OK to create an instance of QMimeDatabase every time you need to
+    perform a lookup.
+    The parsing of mimetypes is done on demand (when shared-mime-info is installed)
+    or when the very first instance is constructed (when parsing XML files directly).
  */
 QMimeDatabase::QMimeDatabase() :
         d(staticQMimeDatabase())
