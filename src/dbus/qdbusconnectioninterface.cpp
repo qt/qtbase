@@ -399,6 +399,9 @@ void QDBusConnectionInterface::disconnectNotify(const QMetaMethod &signal)
 
 /*!
     \fn QDBusConnectionInterface::serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)
+    \deprecated
+
+    Use QDBusServiceWatcher instead.
 
     This signal is emitted by the D-Bus server whenever a service
     ownership change happens in the bus, including apparition and
