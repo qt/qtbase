@@ -244,7 +244,7 @@ static QTouchDevice *touchDevice = 0;
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
     m_backingStore = backingStore;
-    m_backingStoreOffset = offset;
+    m_backingStoreOffset = offset * m_backingStore->getBackingStoreDevicePixelRatio();
     QRect br = region.boundingRect();
     [self setNeedsDisplayInRect:NSMakeRect(br.x(), br.y(), br.width(), br.height())];
 }
@@ -275,33 +275,44 @@ static QTouchDevice *touchDevice = 0;
     if (!m_backingStore)
         return;
 
-    CGRect dirtyCGRect = NSRectToCGRect(dirtyRect);
+    // Calculate source and target rects. The target rect is the dirtyRect:
+    CGRect dirtyWindowRect = NSRectToCGRect(dirtyRect);
+
+    // The backing store source rect will be larger on retina displays.
+    // Scale dirtyRect by the device pixel ratio:
+    const qreal devicePixelRatio = m_backingStore->getBackingStoreDevicePixelRatio();
+    CGRect dirtyBackingRect = CGRectMake(dirtyRect.origin.x * devicePixelRatio,
+                                         dirtyRect.origin.y * devicePixelRatio,
+                                         dirtyRect.size.width * devicePixelRatio,
+                                         dirtyRect.size.height * devicePixelRatio);
+
     NSGraphicsContext *nsGraphicsContext = [NSGraphicsContext currentContext];
     CGContextRef cgContext = (CGContextRef) [nsGraphicsContext graphicsPort];
 
     // Translate coordiate system from CoreGraphics (bottom-left) to NSView (top-left):
     CGContextSaveGState(cgContext);
-    int dy = dirtyCGRect.origin.y + CGRectGetMaxY(dirtyCGRect);
+    int dy = dirtyWindowRect.origin.y + CGRectGetMaxY(dirtyWindowRect);
+
     CGContextTranslateCTM(cgContext, 0, dy);
     CGContextScaleCTM(cgContext, 1, -1);
 
     // If a mask is set, modify the sub image accordingly:
     CGImageRef subMask = 0;
     if (m_maskImage) {
-        subMask = CGImageCreateWithImageInRect(m_maskImage, dirtyCGRect);
-        CGContextClipToMask(cgContext, dirtyCGRect, subMask);
+        subMask = CGImageCreateWithImageInRect(m_maskImage, dirtyWindowRect);
+        CGContextClipToMask(cgContext, dirtyWindowRect, subMask);
     }
 
     // Clip out and draw the correct sub image from the (shared) backingstore:
     CGRect backingStoreRect = CGRectMake(
-        dirtyRect.origin.x + m_backingStoreOffset.x(),
-        dirtyRect.origin.y + m_backingStoreOffset.y(),
-        dirtyRect.size.width,
-        dirtyRect.size.height
+        dirtyBackingRect.origin.x + m_backingStoreOffset.x(),
+        dirtyBackingRect.origin.y + m_backingStoreOffset.y(),
+        dirtyBackingRect.size.width,
+        dirtyBackingRect.size.height
     );
     CGImageRef bsCGImage = m_backingStore->getBackingStoreCGImage();
     CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
-    CGContextDrawImage(cgContext, dirtyCGRect, cleanImg);
+    CGContextDrawImage(cgContext, dirtyWindowRect, cleanImg);
 
     // Clean-up:
     CGContextRestoreGState(cgContext);

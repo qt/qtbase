@@ -402,6 +402,7 @@ public:
 
     QRect clipRect() const;
     QRegion clipRegion() const;
+    void setSystemClip(QPaintDevice *paintDevice, const QRegion &region);
     void subtractOpaqueChildren(QRegion &rgn, const QRect &clipRect) const;
     void subtractOpaqueSiblings(QRegion &source, bool *hasDirtySiblingsAbove = 0,
                                 bool alsoNonOpaque = false) const;

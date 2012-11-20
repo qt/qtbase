@@ -1060,10 +1060,12 @@ QRect QItemDelegate::rect(const QStyleOptionViewItem &option,
         switch (value.type()) {
         case QVariant::Invalid:
             break;
-        case QVariant::Pixmap:
-            return QRect(QPoint(0, 0), qvariant_cast<QPixmap>(value).size());
-        case QVariant::Image:
-            return QRect(QPoint(0, 0), qvariant_cast<QImage>(value).size());
+        case QVariant::Pixmap: {
+            const QPixmap &pixmap = qvariant_cast<QPixmap>(value);
+            return QRect(QPoint(0, 0), pixmap.size() / pixmap.devicePixelRatio() ); }
+        case QVariant::Image: {
+            const QImage &image = qvariant_cast<QImage>(value);
+            return QRect(QPoint(0, 0), image.size() /  image.devicePixelRatio() ); }
         case QVariant::Icon: {
             QIcon::Mode mode = d->iconMode(option.state);
             QIcon::State state = d->iconState(option.state);

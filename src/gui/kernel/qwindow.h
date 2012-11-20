@@ -184,6 +184,8 @@ public:
     void reportContentOrientationChange(Qt::ScreenOrientation orientation);
     Qt::ScreenOrientation contentOrientation() const;
 
+    qreal devicePixelRatio() const;
+
     bool requestOrientation(Qt::ScreenOrientation orientation);
     Qt::ScreenOrientation orientation() const;
 

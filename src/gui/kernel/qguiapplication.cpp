@@ -703,7 +703,34 @@ QList<QScreen *> QGuiApplication::screens()
 
 
 /*!
-    Returns the top level window at the given position \a pos, if any.
+    Returns the highest screen device pixel ratio found on
+    the system. This is the ratio between physical pixels and
+    device-independent pixels.
+
+    Use this function only when you don't know which window you are targeting.
+    If you do know the target window use QWindow::devicePixelRatio() instead.
+
+    \sa QWindow::devicePixelRatio();
+    \sa QGuiApplicaiton::devicePixelRatio();
+*/
+qreal QGuiApplication::devicePixelRatio() const
+{
+    // Cache topDevicePixelRatio, iterate through the screen list once only.
+    static qreal topDevicePixelRatio = 0.0;
+    if (!qFuzzyIsNull(topDevicePixelRatio)) {
+        return topDevicePixelRatio;
+    }
+
+    topDevicePixelRatio = 1.0; // make sure we never return 0.
+    foreach (QScreen *screen, QGuiApplicationPrivate::screen_list) {
+        topDevicePixelRatio = qMax(topDevicePixelRatio, screen->devicePixelRatio());
+    }
+
+    return topDevicePixelRatio;
+}
+
+/*!
+    Returns the top level window at the given position, if any.
 */
 QWindow *QGuiApplication::topLevelAt(const QPoint &pos)
 {

@@ -95,10 +95,12 @@ static QImage rotated270(const QImage &src);
 QBasicAtomicInt qimage_serial_number = Q_BASIC_ATOMIC_INITIALIZER(1);
 
 QImageData::QImageData()
-    : ref(0), width(0), height(0), depth(0), nbytes(0), data(0),
+    : ref(0), width(0), height(0), depth(0), nbytes(0), devicePixelRatio(1.0), data(0),
       format(QImage::Format_ARGB32), bytes_per_line(0),
       ser_no(qimage_serial_number.fetchAndAddRelaxed(1)),
       detach_no(0),
+      ldpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
+      ldpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
       dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
@@ -1216,6 +1218,7 @@ QImage QImage::copy(const QRect& r) const
 
     image.d->dpmx = dotsPerMeterX();
     image.d->dpmy = dotsPerMeterY();
+    image.d->devicePixelRatio = devicePixelRatio();
     image.d->offset = offset();
     image.d->has_alpha_clut = d->has_alpha_clut;
     image.d->text = d->text;
@@ -1367,6 +1370,52 @@ void QImage::setColorTable(const QVector<QRgb> colors)
 QVector<QRgb> QImage::colorTable() const
 {
     return d ? d->colortable : QVector<QRgb>();
+}
+
+/*!
+    Returns the device pixel ratio for the image. This is the
+    ratio between image pixels and device-independent pixels.
+
+    Use this function when calculating layout geometry based on
+    the image size: QSize layoutSize = image.size() / image.devicePixelRatio()
+
+    The default value is 1.0.
+
+    \sa setDevicePixelRatio()
+*/
+qreal QImage::devicePixelRatio() const
+{
+    if (!d)
+        return 1.0;
+    return d->devicePixelRatio;
+}
+
+/*!
+    Sets the the device pixel ratio for the image. This is the
+    ratio between image pixels and device-independent pixels.
+
+    The default value is 1.0. Setting it to something else has
+    two effects:
+
+    QPainters that are opened on the image will be scaled. For
+    example, painting on a 200x200 image if with a ratio of 2.0
+    will result in effective (device-independent) painting bounds
+    of 100x100.
+
+    Code paths in Qt that calculate layout geometry based on the
+    image size will take the ratio into account:
+    QSize layoutSize = image.size() / image.devicePixelRatio()
+    The net effect of this is that the image is displayed as
+    high-dpi image rather than a large image.
+
+    \sa devicePixelRatio()
+*/
+void QImage::setDevicePixelRatio(qreal scaleFactor)
+{
+    if (!d)
+        return;
+    detach();
+    d->devicePixelRatio = scaleFactor;
 }
 
 /*!
@@ -3359,6 +3408,7 @@ QImage QImage::convertToFormat(Format format, Qt::ImageConversionFlags flags) co
 
         image.setDotsPerMeterY(dotsPerMeterY());
         image.setDotsPerMeterX(dotsPerMeterX());
+        image.setDevicePixelRatio(devicePixelRatio());
 
         image.d->text = d->text;
 
@@ -3479,6 +3529,7 @@ QImage QImage::convertToFormat(Format format, const QVector<QRgb> &colorTable, Q
 
     QImage image(d->width, d->height, format);
     QIMAGE_SANITYCHECK_MEMORY(image);
+    image.setDevicePixelRatio(devicePixelRatio());
 
     image.d->text = d->text;
 
@@ -4932,17 +4983,20 @@ int QImage::metric(PaintDeviceMetric metric) const
         return d->depth;
 
     case PdmDpiX:
-        return qRound(d->dpmx * 0.0254);
+        return qRound(d->ldpmx * 0.0254);
+        break;
 
     case PdmDpiY:
-        return qRound(d->dpmy * 0.0254);
+        return qRound(d->ldpmy * 0.0254);
+        break;
 
     case PdmPhysicalDpiX:
-        return qRound(d->dpmx * 0.0254);
+        return qRound(d->dpmx * 0.0254 * d->devicePixelRatio);
+        break;
 
     case PdmPhysicalDpiY:
-        return qRound(d->dpmy * 0.0254);
-
+        return qRound(d->dpmy * 0.0254 * d->devicePixelRatio);
+        break;
     default:
         qWarning("QImage::metric(): Unhandled metric type %d", metric);
         break;
@@ -5641,6 +5695,7 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
 
     dImage.d->dpmx = dotsPerMeterX();
     dImage.d->dpmy = dotsPerMeterY();
+    dImage.d->devicePixelRatio = devicePixelRatio();
 
     switch (bpp) {
         // initizialize the data

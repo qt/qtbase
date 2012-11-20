@@ -115,6 +115,18 @@ void QCocoaScreen::updateGeometry()
     QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), availableGeometry());
 }
 
+qreal QCocoaScreen::devicePixelRatio() const
+{
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        return qreal([m_screen backingScaleFactor]);
+    } else
+#endif
+    {
+        return 1.0;
+    }
+}
+
 extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
 
 QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height) const

@@ -225,6 +225,18 @@ QTransform QPainterPrivate::viewTransform() const
     return QTransform();
 }
 
+QTransform QPainterPrivate::hidpiScaleTransform() const
+{
+#ifdef Q_OS_MAC
+    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
+    if (device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
+        return QTransform();
+    const qreal deviceScale = (device->physicalDpiX() / device->logicalDpiX());
+    if (deviceScale > 1.0)
+        return QTransform::fromScale(deviceScale, deviceScale);
+#endif
+    return QTransform();
+}
 
 /*
    \internal
@@ -640,6 +652,8 @@ void QPainterPrivate::updateMatrix()
         extended->transformChanged();
     else
         state->dirtyFlags |= QPaintEngine::DirtyTransform;
+
+    state->matrix *= hidpiScaleTransform();
 
 //     printf("VxF=%d, WxF=%d\n", state->VxF, state->WxF);
 //     qDebug() << " --- using matrix" << state->matrix << redirection_offset;
@@ -1827,7 +1841,14 @@ bool QPainter::begin(QPaintDevice *pd)
 
     Q_ASSERT(d->engine->isActive());
 
-    if (!d->state->redirectionMatrix.isIdentity())
+#ifdef Q_OS_MAC
+    // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
+    const bool isHighDpi = (d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
+                           false : (d->device->physicalDpiX() / d->device->logicalDpiX() > 1);
+#else
+    const bool isHighDpi = false;
+#endif
+    if (!d->state->redirectionMatrix.isIdentity() || isHighDpi)
         d->updateMatrix();
 
     Q_ASSERT(d->engine->isActive());
@@ -5092,7 +5113,8 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
             x += d->state->matrix.dx();
             y += d->state->matrix.dy();
         }
-        d->engine->drawPixmap(QRectF(x, y, w, h), pm, QRectF(0, 0, w, h));
+        int scale = pm.devicePixelRatio();
+        d->engine->drawPixmap(QRectF(x, y, w / scale, h / scale), pm, QRectF(0, 0, w, h));
     }
 }
 
@@ -5122,6 +5144,11 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
     qreal sw = sr.width();
     qreal sh = sr.height();
 
+    // Get pixmap scale. Use it when calculating the target
+    // rect size from pixmap size. For example, a 2X 64x64 pixel
+    // pixmap should result in a 32x32 point target rect.
+    const qreal pmscale = pm.devicePixelRatio();
+
     // Sanity-check clipping
     if (sw <= 0)
         sw = pm.width() - sx;
@@ -5130,9 +5157,9 @@ void QPainter::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
         sh = pm.height() - sy;
 
     if (w < 0)
-        w = sw;
+        w = sw / pmscale;
     if (h < 0)
-        h = sh;
+        h = sh / pmscale;
 
     if (sx < 0) {
         qreal w_ratio = sx * w/sw;
@@ -5345,6 +5372,7 @@ void QPainter::drawImage(const QPointF &p, const QImage &image)
 
     int w = image.width();
     int h = image.height();
+    qreal scale = image.devicePixelRatio();
 
     d->updateState(d->state);
 
@@ -5368,8 +5396,7 @@ void QPainter::drawImage(const QPointF &p, const QImage &image)
         setBrush(brush);
         setPen(Qt::NoPen);
         setBrushOrigin(QPointF(0, 0));
-
-        drawRect(image.rect());
+        drawRect(QRect(QPoint(0, 0), image.size() / scale));
         restore();
         return;
     }
@@ -5380,7 +5407,7 @@ void QPainter::drawImage(const QPointF &p, const QImage &image)
         y += d->state->matrix.dy();
     }
 
-    d->engine->drawImage(QRectF(x, y, w, h), image, QRectF(0, 0, w, h), Qt::AutoColor);
+    d->engine->drawImage(QRectF(x, y, w / scale, h / scale), image, QRectF(0, 0, w, h), Qt::AutoColor);
 }
 
 void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QRectF &sourceRect,
@@ -5399,6 +5426,7 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
     qreal sy = sourceRect.y();
     qreal sw = sourceRect.width();
     qreal sh = sourceRect.height();
+    qreal imageScale = image.devicePixelRatio();
 
     // Sanity-check clipping
     if (sw <= 0)
@@ -5408,9 +5436,9 @@ void QPainter::drawImage(const QRectF &targetRect, const QImage &image, const QR
         sh = image.height() - sy;
 
     if (w < 0)
-        w = sw;
+        w = sw / imageScale;
     if (h < 0)
-        h = sh;
+        h = sh / imageScale;
 
     if (sx < 0) {
         qreal w_ratio = sx * w/sw;
@@ -8235,7 +8263,7 @@ QTransform QPainter::combinedTransform() const
         qWarning("QPainter::combinedTransform: Painter not active");
         return QTransform();
     }
-    return d->state->worldMatrix * d->viewTransform();
+    return d->state->worldMatrix * d->viewTransform() * d->hidpiScaleTransform();
 }
 
 /*!

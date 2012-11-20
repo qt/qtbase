@@ -140,6 +140,8 @@ public:
 
     void setMenubar(QCocoaMenuBar *mb);
     QCocoaMenuBar *menubar() const;
+
+    qreal devicePixelRatio() const;
 protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
     // in an existing NSWindow or in one created by Qt.

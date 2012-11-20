@@ -66,6 +66,8 @@ public:
     QImage toImage() const;
     bool hasAlphaChannel() const;
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+    qreal devicePixelRatio() const;
+    void setDevicePixelRatio(qreal scaleFactor);
 
     QPaintEngine *paintEngine() const;
 
@@ -89,6 +91,7 @@ protected:
     QScopedPointer<QBlitterPaintEngine> m_engine;
     QScopedPointer<QBlittable> m_blittable;
     bool m_alpha;
+    qreal m_devicePixelRatio;
 
 #ifdef QT_BLITTER_RASTEROVERLAY
     QImage *m_rasterOverlay;

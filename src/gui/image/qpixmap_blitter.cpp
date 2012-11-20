@@ -195,6 +195,16 @@ void QBlittablePlatformPixmap::fromImage(const QImage &image,
     }
 }
 
+qreal QBlittablePlatformPixmap::devicePixelRatio() const
+{
+    return m_devicePixelRatio;
+}
+
+void QBlittablePlatformPixmap::setDevicePixelRatio(qreal scaleFactor)
+{
+    m_devicePixelRatio = scaleFactor;
+}
+
 QPaintEngine *QBlittablePlatformPixmap::paintEngine() const
 {
     if (!m_engine) {

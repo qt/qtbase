@@ -618,10 +618,11 @@ void QStyle::drawItemText(QPainter *painter, const QRect &rect, int alignment, c
 void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
                             const QPixmap &pixmap) const
 {
-    QRect aligned = alignedRect(QApplication::layoutDirection(), QFlag(alignment), pixmap.size(), rect);
+    int scale = pixmap.devicePixelRatio();
+    QRect aligned = alignedRect(QApplication::layoutDirection(), QFlag(alignment), pixmap.size() / scale, rect);
     QRect inter = aligned.intersected(rect);
 
-    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width(), inter.height());
+    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), inter.width() * scale, inter.height() *scale);
 }
 
 /*!

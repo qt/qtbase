@@ -43,6 +43,7 @@
 #define QSTYLE_P_H
 
 #include "private/qobject_p.h"
+#include <QtGui/qguiapplication.h>
 #include <QtWidgets/qstyle.h>
 
 QT_BEGIN_NAMESPACE
@@ -74,12 +75,18 @@ public:
 
 inline QImage styleCacheImage(const QSize &size)
 {
-    return QImage(size, QImage::Format_ARGB32_Premultiplied);
+    const qreal pixelRatio = qApp->devicePixelRatio();
+    QImage cacheImage = QImage(size * pixelRatio, QImage::Format_ARGB32_Premultiplied);
+    cacheImage.setDevicePixelRatio(pixelRatio);
+    return cacheImage;
 }
 
 inline QPixmap styleCachePixmap(const QSize &size)
 {
-    return QPixmap(size);
+    const qreal pixelRatio = qApp->devicePixelRatio();
+    QPixmap cachePixmap = QPixmap(size * pixelRatio);
+    cachePixmap.setDevicePixelRatio(pixelRatio);
+    return cachePixmap;
 }
 
 #define BEGIN_STYLE_PIXMAPCACHE(a) \

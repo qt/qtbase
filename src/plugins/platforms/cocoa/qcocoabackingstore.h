@@ -62,6 +62,7 @@ public:
     void resize (const QSize &size, const QRegion &);
     bool scroll(const QRegion &area, int dx, int dy);
     CGImageRef getBackingStoreCGImage();
+    qreal getBackingStoreDevicePixelRatio();
 
 private:
     QImage m_qImage;

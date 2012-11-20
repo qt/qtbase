@@ -161,6 +161,18 @@ QDpi QPlatformScreen::logicalDpi() const
 }
 
 /*!
+    Reimplement this function in subclass to return the device pixel
+    ratio for the screen. This is the ratio between physical pixels
+    and device-independent pixels.
+
+    \sa QPlatformWindow::devicePixelRatio();
+*/
+qreal QPlatformScreen::devicePixelRatio() const
+{
+    return 1.0;
+}
+
+/*!
     Reimplement this function in subclass to return the vertical refresh rate
     of the screen, in Hz.
 

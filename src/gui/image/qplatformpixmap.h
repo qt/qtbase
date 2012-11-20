@@ -108,6 +108,9 @@ public:
     inline PixelType pixelType() const { return type; }
     inline ClassId classId() const { return static_cast<ClassId>(id); }
 
+    virtual qreal devicePixelRatio() const = 0;
+    virtual void setDevicePixelRatio(qreal scaleFactor) = 0;
+
     virtual QImage* buffer();
 
     inline int width() const { return w; }

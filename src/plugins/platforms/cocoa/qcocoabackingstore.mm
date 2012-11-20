@@ -59,10 +59,22 @@ QCocoaBackingStore::~QCocoaBackingStore()
 
 QPaintDevice *QCocoaBackingStore::paintDevice()
 {
-    if (m_qImage.size() != m_requestedSize) {
+    if (m_qImage.size() / m_qImage.devicePixelRatio() != m_requestedSize) {
         CGImageRelease(m_cgImage);
         m_cgImage = 0;
-        m_qImage = QImage(m_requestedSize, QImage::Format_ARGB32_Premultiplied);
+
+        int scaleFactor = 1;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+            QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
+            if (cocoaWindow && cocoaWindow->m_contentView) {
+                scaleFactor = int([[cocoaWindow->m_contentView window] backingScaleFactor]);
+            }
+        }
+#endif
+
+        m_qImage = QImage(m_requestedSize * scaleFactor, QImage::Format_ARGB32_Premultiplied);
+        m_qImage.setDevicePixelRatio(scaleFactor);
     }
     return &m_qImage;
 }
@@ -90,10 +102,11 @@ void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
 {
     extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
-    QPoint qpoint(dx, dy);
+    const qreal devicePixelRatio = m_qImage.devicePixelRatio();
+    QPoint qpoint(dx * devicePixelRatio, dy * devicePixelRatio);
     const QVector<QRect> qrects = area.rects();
     for (int i = 0; i < qrects.count(); ++i) {
-        const QRect &qrect = qrects.at(i);
+        const QRect &qrect = QRect(qrects.at(i).topLeft() * devicePixelRatio, qrects.at(i).size() * devicePixelRatio);
         qt_scrollRectInImage(m_qImage, qrect, qpoint);
     }
     return true;
@@ -108,6 +121,11 @@ CGImageRef QCocoaBackingStore::getBackingStoreCGImage()
     // outside the backingstore since it shares data with a QImage and
     // needs special memory considerations.
     return m_cgImage;
+}
+
+qreal QCocoaBackingStore::getBackingStoreDevicePixelRatio()
+{
+    return m_qImage.devicePixelRatio();
 }
 
 QT_END_NAMESPACE

@@ -562,17 +562,18 @@ QSize QLabelPrivate::sizeForWidth(int w) const
     int vextra = hextra;
     QFontMetrics fm = q->fontMetrics();
 
-    if (pixmap && !pixmap->isNull())
+    if (pixmap && !pixmap->isNull()) {
         br = pixmap->rect();
+        br.setSize(br.size() / pixmap->devicePixelRatio());
 #ifndef QT_NO_PICTURE
-    else if (picture && !picture->isNull())
+    } else if (picture && !picture->isNull()) {
         br = picture->boundingRect();
 #endif
 #ifndef QT_NO_MOVIE
-    else if (movie && !movie->currentPixmap().isNull())
+    } else if (movie && !movie->currentPixmap().isNull()) {
         br = movie->currentPixmap().rect();
 #endif
-    else if (isTextLabel) {
+    } else if (isTextLabel) {
         int align = QStyle::visualAlignment(textDirection(), QFlag(this->align));
         // Add indentation
         int m = indent;

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include "qcocoawindow.h"
+#include "qcocoaintegration.h"
 #include "qnswindowdelegate.h"
 #include "qcocoaautoreleasepool.h"
 #include "qcocoaeventdispatcher.h"
@@ -818,6 +819,20 @@ void QCocoaWindow::setMenubar(QCocoaMenuBar *mb)
 QCocoaMenuBar *QCocoaWindow::menubar() const
 {
     return m_menubar;
+}
+
+qreal QCocoaWindow::devicePixelRatio() const
+{
+    if (!m_nsWindow)
+        return 1.0;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
+        return qreal([m_nsWindow backingScaleFactor]);
+    } else
+#endif
+    {
+        return 1.0;
+    }
 }
 
 QMargins QCocoaWindow::frameMargins() const

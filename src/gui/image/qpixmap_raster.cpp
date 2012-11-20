@@ -272,12 +272,14 @@ int QRasterPlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) const
         return d->colortable.size();
     case QPaintDevice::PdmDepth:
         return this->d;
-    case QPaintDevice::PdmDpiX: // fall-through
-    case QPaintDevice::PdmPhysicalDpiX:
+    case QPaintDevice::PdmDpiX:
         return qt_defaultDpiX();
-    case QPaintDevice::PdmDpiY: // fall-through
+    case QPaintDevice::PdmPhysicalDpiX:
+        return qt_defaultDpiX() * image.devicePixelRatio();
+    case QPaintDevice::PdmDpiY:
+        return qt_defaultDpiX();
     case QPaintDevice::PdmPhysicalDpiY:
-        return qt_defaultDpiY();
+        return qt_defaultDpiY() * image.devicePixelRatio();
     default:
         qWarning("QRasterPlatformPixmap::metric(): Unhandled metric type %d", metric);
         break;
@@ -350,12 +352,23 @@ void QRasterPlatformPixmap::createPixmapForImage(QImage &sourceImage, Qt::ImageC
     }
     is_null = (w <= 0 || h <= 0);
 
+    image.d->devicePixelRatio = sourceImage.devicePixelRatio();
     setSerialNumber(image.cacheKey() >> 32);
 }
 
 QImage* QRasterPlatformPixmap::buffer()
 {
     return &image;
+}
+
+qreal QRasterPlatformPixmap::devicePixelRatio() const
+{
+    return image.devicePixelRatio();
+}
+
+void QRasterPlatformPixmap::setDevicePixelRatio(qreal scaleFactor)
+{
+    image.setDevicePixelRatio(scaleFactor);
 }
 
 QT_END_NAMESPACE

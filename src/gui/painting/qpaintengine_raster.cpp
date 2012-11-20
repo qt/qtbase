@@ -1072,9 +1072,11 @@ void QRasterPaintEnginePrivate::systemStateChanged()
     exDeviceRect = deviceRect;
 
     Q_Q(QRasterPaintEngine);
-    q->state()->strokeFlags |= QPaintEngine::DirtyClipRegion;
-    q->state()->fillFlags |= QPaintEngine::DirtyClipRegion;
-    q->state()->pixmapFlags |= QPaintEngine::DirtyClipRegion;
+    if (q->state()) {
+        q->state()->strokeFlags |= QPaintEngine::DirtyClipRegion;
+        q->state()->fillFlags |= QPaintEngine::DirtyClipRegion;
+        q->state()->pixmapFlags |= QPaintEngine::DirtyClipRegion;
+    }
 }
 
 void QRasterPaintEnginePrivate::updateMatrixData(QSpanData *spanData, const QBrush &b, const QTransform &m)
@@ -2143,9 +2145,10 @@ void QRasterPaintEngine::drawImage(const QPointF &p, const QImage &img)
 
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
+    qreal scale = img.devicePixelRatio();
 
-    if (s->matrix.type() > QTransform::TxTranslate) {
-        drawImage(QRectF(p.x(), p.y(), img.width(), img.height()),
+    if (scale > 1.0 ||  s->matrix.type() > QTransform::TxTranslate) {
+        drawImage(QRectF(p.x(), p.y(), img.width() / scale, img.height() / scale),
                   img,
                   QRectF(0, 0, img.width(), img.height()));
     } else {
@@ -2349,6 +2352,22 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
                     return;
                 }
             } else {
+                // Test for optimized high-dpi case: 2x source on 2x target. (Could be generalized to nX.)
+                bool sourceRect2x = r.width() * 2 == sr.width() && r.height() * 2 == sr.height();
+                bool scale2x = (s->matrix.m11() == qreal(2)) && (s->matrix.m22() == qreal(2));
+                if (s->matrix.type() == QTransform::TxScale && sourceRect2x && scale2x) {
+                    SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
+                    if (func) {
+                        QPointF pt(r.x() * 2 + s->matrix.dx(), r.y() * 2 + s->matrix.dy());
+                        if (!clip) {
+                            d->drawImage(pt, img, func, d->deviceRect, s->intOpacity, sr.toRect());
+                            return;
+                        } else if (clip->hasRectClip) {
+                            d->drawImage(pt, img, func, clip->clipRect, s->intOpacity, sr.toRect());
+                            return;
+                        }
+                    }
+                }
                 SrcOverScaleFunc func = qScaleFunctions[d->rasterBuffer->format][img.format()];
                 if (func && (!clip || clip->hasRectClip)) {
                     func(d->rasterBuffer->buffer(), d->rasterBuffer->bytesPerLine(),

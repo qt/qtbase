@@ -249,6 +249,7 @@ public:
     }
 
     QTransform viewTransform() const;
+    QTransform hidpiScaleTransform() const;
     static bool attachPainterPrivate(QPainter *q, QPaintDevice *pdev);
     void detachPainterPrivate(QPainter *q);
 

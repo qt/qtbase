@@ -806,6 +806,24 @@ Qt::ScreenOrientation QWindow::orientation() const
 }
 
 /*!
+    Returns the ratio between physical pixels and device-independent pixels
+    for the window. This value is dependent on the screen the window is on,
+    and may change when the window is moved.
+
+    Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
+
+    \sa QWindow::devicePixelRatio();
+    \sa QGuiApplicaiton::devicePixelRatio();
+*/
+qreal QWindow::devicePixelRatio() const
+{
+    Q_D(const QWindow);
+    if (!d->platformWindow)
+        return 1.0;
+    return d->platformWindow->devicePixelRatio();
+}
+
+/*!
     \brief set the screen-occupation state of the window
 
     The window \a state represents whether the window appears in the

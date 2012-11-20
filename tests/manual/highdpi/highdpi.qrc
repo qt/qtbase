@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qticon.png</file>
+        <file>qticon@2x.png</file>
+        <file>qticon_large.png</file>
+    </qresource>
+</RCC>

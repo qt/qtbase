@@ -355,6 +355,18 @@ Qt::ScreenOrientation QPlatformWindow::requestWindowOrientation(Qt::ScreenOrient
     return Qt::PrimaryOrientation;
 }
 
+/*!
+    Reimplement this function in subclass to return the device pixel ratio
+    for the window. This is the ratio between physical pixels
+    and device-independent pixels.
+
+    \sa QPlatformWindow::devicePixelRatio();
+*/
+qreal QPlatformWindow::devicePixelRatio() const
+{
+    return 1.0;
+}
+
 bool QPlatformWindow::setKeyboardGrabEnabled(bool grab)
 {
     Q_UNUSED(grab);

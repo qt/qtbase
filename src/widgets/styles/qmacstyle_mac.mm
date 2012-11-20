@@ -462,7 +462,7 @@ class QMacCGContext
 {
     CGContextRef context;
 public:
-    QMacCGContext(QPainter *p); //qpaintengine_mac.cpp
+    QMacCGContext(QPainter *p);
     inline QMacCGContext() { context = 0; }
     inline QMacCGContext(const QPaintDevice *pdev) {
         extern CGContextRef qt_mac_cg_context(const QPaintDevice *);
@@ -6476,6 +6476,18 @@ void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig
     }
 }
 
+// move to QRegion?
+void qt_mac_scale_region(QRegion *region, qreal scaleFactor)
+{
+    QVector<QRect> scaledRects;
+    scaledRects.reserve(region->rects().count());
+
+    foreach (const QRect &rect, region->rects()) {
+        scaledRects.append(QRect(rect.topLeft(), rect.size() * scaleFactor));
+    }
+    region->setRects(&scaledRects[0], scaledRects.count());
+}
+
 QMacCGContext::QMacCGContext(QPainter *p)
 {
     QPaintEngine *pe = p->paintEngine();
@@ -6502,20 +6514,28 @@ QMacCGContext::QMacCGContext(QPainter *p)
         CGContextScaleCTM(context, 1, -1);
 
         if (devType == QInternal::Widget) {
-            QRegion clip = p->paintEngine()->systemClip();
-            QTransform native = p->deviceTransform();
+            // Set the clip rect which is an intersection of the system clip
+            // and the painter clip. To make matters more interesting these
+            // are in device pixels and device-independent pixels, respectively.
+            const qreal devicePixelRatio =  image->devicePixelRatio();
+
+            QRegion clip = p->paintEngine()->systemClip(); // get system clip in device pixels
+            QTransform native = p->deviceTransform();      // get device transform. dx/dy is in device pixels
 
             if (p->hasClipping()) {
-                QRegion r = p->clipRegion();
+                QRegion r = p->clipRegion();               // get painter clip, which is in device-independent pixels
+                qt_mac_scale_region(&r, devicePixelRatio); // scale painter clip to device pixels
                 r.translate(native.dx(), native.dy());
                 if (clip.isEmpty())
                     clip = r;
                 else
                     clip &= r;
             }
-            qt_mac_clip_cg(context, clip, 0);
+            qt_mac_clip_cg(context, clip, 0); // clip in device pixels
 
-            CGContextTranslateCTM(context, native.dx(), native.dy());
+            // Scale the context so that painting happens in device-independet pixels.
+            CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
+            CGContextTranslateCTM(context, native.dx() / devicePixelRatio, native.dy() / devicePixelRatio);
         }
     } else {
         qDebug() << "QMacCGContext:: Unsupported painter devtype type" << devType;

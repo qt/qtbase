@@ -370,7 +370,10 @@ void QGLWidget::resizeEvent(QResizeEvent *e)
     makeCurrent();
     if (!d->glcx->initialized())
         glInit();
-    resizeGL(width(), height());
+    const qreal scaleFactor = (window() && window()->windowHandle()) ?
+        window()->windowHandle()->devicePixelRatio() : 1.0;
+
+    resizeGL(width() * scaleFactor, height() * scaleFactor);
 }
 
 

@@ -68,6 +68,7 @@ public:
     QRect availableGeometry() const { return m_availableGeometry; }
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
+    qreal devicePixelRatio() const;
     QSizeF physicalSize() const { return m_physicalSize; }
     QDpi logicalDpi() const { return m_logicalDpi; }
     qreal refreshRate() const { return m_refreshRate; }
