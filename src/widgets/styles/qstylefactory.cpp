@@ -62,7 +62,7 @@
 #include "qwindowscestyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSMOBILE
-#include "qwindowsmobilestyle.h"
+#include "qwindowsmobilestyle_p.h"
 #endif
 
 #if !defined(QT_NO_STYLE_MAC) && defined(Q_OS_MAC)

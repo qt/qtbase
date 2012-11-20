@@ -76,7 +76,6 @@
 #endif
 
 #ifdef Q_OS_WINCE_WM
-#include <QWindowsMobileStyle>
 #include <windows.h>
 
 static bool qt_wince_is_smartphone() {
@@ -336,7 +335,7 @@ bool tst_QStyle::testScrollBarSubControls(QStyle* style)
 {
     // WinCE SmartPhone doesn't have scrollbar subcontrols, so skip the rest of the test.
 #ifdef Q_OS_WINCE_WM
-    if (qobject_cast<QWindowsMobileStyle*>(style) && qt_wince_is_smartphone())
+    if (style->inherits("QWindowsMobileStyle") && qt_wince_is_smartphone())
         return true;
 #else
     Q_UNUSED(style);
@@ -547,8 +546,9 @@ void tst_QStyle::testWindowsCEStyle()
 // WindowsMobileStyle style
 void tst_QStyle::testWindowsMobileStyle()
 {
-    QWindowsMobileStyle cstyle;
+    QStyle *cstyle = QStyleFactory::create("WindowsMobile");
     QVERIFY(testAllFunctions(&cstyle));
+    delete cstyle;
 }
 #endif
 

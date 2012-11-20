@@ -129,7 +129,8 @@ contains( styles, windowsce ) {
 }
 
 contains( styles, windowsmobile ) {
-    HEADERS += styles/qwindowsmobilestyle.h
+    HEADERS += styles/qwindowsmobilestyle_p.h
+    HEADERS += styles/qwindowsmobilestyle_p_p.h
     SOURCES += styles/qwindowsmobilestyle.cpp
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSMOBILE

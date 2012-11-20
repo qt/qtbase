@@ -42,94 +42,75 @@
 #ifndef QWINDOWSMOBILESTYLE_P_H
 #define QWINDOWSMOBILESTYLE_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtWidgets/qwindowsstyle.h>
 
-#include "qwindowsmobilestyle.h"
-#include "qwindowsstyle_p.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_STYLE_WINDOWSMOBILE
 
-class QStyleOptionTab;
-class QStyleOptionSlider;
+#if !defined(QT_NO_STYLE_WINDOWSMOBILE)
 
-class QWindowsMobileStylePrivate : public QWindowsStylePrivate
+class QWindowsMobileStylePrivate;
+
+class QWindowsMobileStyle : public QWindowsStyle
 {
-    Q_DECLARE_PUBLIC(QWindowsMobileStyle)
+    Q_OBJECT
 public:
-    QWindowsMobileStylePrivate();
-    bool doubleControls;
-    bool smartphone;
-#ifdef Q_OS_WINCE_WM
-    bool wm65;
-#endif
+    QWindowsMobileStyle();
+    ~QWindowsMobileStyle();
 
-    QImage imageRadioButton;
-    QImage imageRadioButtonChecked;
-    QImage imageRadioButtonHighlighted;
-    QImage imageChecked;
-    QImage imageCheckedBold;
-    QImage imageArrowDown;
-    QImage imageArrowUp;
-    QImage imageArrowLeft;
-    QImage imageArrowRight;
-    QImage imageArrowDownBig;
-    QImage imageArrowUpBig;
-    QImage imageArrowLeftBig;
-    QImage imageArrowRightBig;
-    QImage imageClose;
-    QImage imageMaximize;
-    QImage imageNormalize;
-    QImage imageMinimize;
+    void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
+                       QPainter *painter, const QWidget *widget = 0) const;
 
-    void setupWindowsMobileStyle65();
+    void drawControl(ControlElement element, const QStyleOption *option,
+                     QPainter *painter, const QWidget *widget) const;
 
-#ifdef Q_OS_WINCE_WM
-    //Windows Mobile 6.5 images
-    QImage imageScrollbarHandleUp;
-    QImage imageScrollbarHandleDown;
-    QImage imageScrollbarHandleUpHigh;
-    QImage imageScrollbarHandleDownHigh;
-    QImage imageScrollbarGripUp;
-    QImage imageScrollbarGripDown;
-    QImage imageScrollbarGripMiddle;
-    QImage imageListViewHighlightCornerLeft;
-    QImage imageListViewHighlightCornerRight;
-    QImage imageListViewHighlightMiddle;
-    QImage imageTabEnd;
-    QImage imageTabSelectedEnd;
-    QImage imageTabSelectedBegin;
-    QImage imageTabMiddle;
+    void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
+                            QPainter *painter, const QWidget *widget) const;
 
-    QColor currentTintHigh;
-    QColor currentTintButton;
+    QSize sizeFromContents(ContentsType type, const QStyleOption *option,
+                           const QSize &size, const QWidget *widget) const;
 
-    void tintImagesHigh(QColor color);
-    void tintImagesButton(QColor color);
-    void tintListViewHighlight(QColor color);
+    QRect subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const;
 
-#endif //Q_OS_WINCE_WM
+    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
+                         SubControl sc, const QWidget *widget) const;
 
-    void drawScrollbarHandleUp(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);
-    void drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);
-    void drawScrollbarGroove(QPainter *p, const QStyleOptionSlider *opt);
-    void drawScrollbarGrip(QPainter *p, QStyleOptionSlider *newScrollbar, const QStyleOptionComplex *option, bool drawCompleteFrame);
-    void drawTabBarTab(QPainter *p, const QStyleOptionTab *tab);
-    void drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItem *option, QRect rect = QRect());
+    QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
+                                const QStyleOption *option) const;
 
+    QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *option,
+                                const QWidget *widget) const;
+
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const;
+
+    int styleHint(StyleHint hint, const QStyleOption *opt = 0, const QWidget *widget = 0,
+                  QStyleHintReturn *returnData = 0) const;
+
+    void polish(QApplication*);
+    void unpolish(QApplication*);
+    void polish(QWidget *widget);
+    void unpolish(QWidget *widget);
+    void polish(QPalette &);
+
+    QPalette standardPalette() const;
+
+    bool doubleControls() const;
+
+    void setDoubleControls(bool);
+
+protected:
+    QWindowsMobileStyle(QWindowsMobileStylePrivate &dd);
+
+private:
+    Q_DECLARE_PRIVATE(QWindowsMobileStyle)
 };
+
+#endif // QT_NO_STYLE_WINDOWSMOBILE
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_STYLE_WINDOWSMOBILE
+QT_END_HEADER
+
 #endif //QWINDOWSMOBILESTYLE_P_H

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qwindowsmobilestyle.h"
 #include "qwindowsmobilestyle_p.h"
+#include "qwindowsmobilestyle_p_p.h"
 
 #if !defined(QT_NO_STYLE_WINDOWSMOBILE) || defined(QT_PLUGIN)
 
