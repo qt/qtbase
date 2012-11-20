@@ -1443,10 +1443,11 @@ QString Generator::imageFileName(const Node *relative, const QString& fileBase)
                                     filePath,
                                     userFriendlyFilePath,
                                     outputDir() + QLatin1String("/images"));
-    QString images = "images";
-    if (path[0] != '/')
-        images.append(QLatin1Char('/'));
-    return images + path;
+    int images_slash = path.lastIndexOf("images/");
+    QString relImagePath;
+    if (images_slash != -1)
+        relImagePath = path.mid(images_slash);
+    return relImagePath;
 }
 
 QString Generator::indent(int level, const QString& markedCode)
