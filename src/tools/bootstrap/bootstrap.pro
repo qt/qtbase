@@ -5,6 +5,9 @@ QT =
 CONFIG += no_module_headers internal_module
 !build_pass: CONFIG += release
 
+# otherwise mingw headers do not declare common functions like putenv
+win32-g++*:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
+
 MODULE_DEFINES = \
         QT_BOOTSTRAPPED \
         QT_LITE_UNICODE \
