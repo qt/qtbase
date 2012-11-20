@@ -340,7 +340,7 @@ public:
     int enters;
 
     inline BlockableWindow()
-        : QWindow(), blocked(false), enters(0), leaves(0) {}
+        : QWindow(), blocked(false), leaves(0), enters(0) {}
 
     bool event(QEvent *e)
     {

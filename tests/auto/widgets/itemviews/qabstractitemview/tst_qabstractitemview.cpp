@@ -1544,6 +1544,7 @@ public:
   {}
 
   void setEditorData(QWidget *editor, const QModelIndex &index) const Q_DECL_OVERRIDE {
+      Q_UNUSED(index);
       static bool w = true;
       editor->setEnabled(w);
       w = !w;

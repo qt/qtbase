@@ -569,6 +569,7 @@ public:
     SetRecordReimplModel(QObject *parent, QSqlDatabase db):QSqlTableModel(parent, db) {}
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)
     {
+        Q_UNUSED(value);
         return QSqlTableModel::setData(index, QString("Qt"), role);
     }
 };

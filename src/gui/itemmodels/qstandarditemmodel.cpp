@@ -2714,7 +2714,6 @@ bool QStandardItemModel::hasChildren(const QModelIndex &parent) const
 */
 QModelIndex QStandardItemModel::sibling(int row, int column, const QModelIndex &idx) const
 {
-    Q_D(const QStandardItemModel);
     return createIndex(row, column, idx.internalPointer());
 }
 

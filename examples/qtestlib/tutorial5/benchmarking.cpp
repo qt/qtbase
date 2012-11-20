@@ -92,6 +92,7 @@ void TestBenchmark::multiple()
             result = (str1 == str2);
         }
     }
+    Q_UNUSED(result);
 }
 //! [2]
 
@@ -127,6 +128,7 @@ void TestBenchmark::series()
             result = (str1 == str2);
         }
     }
+    Q_UNUSED(result);
 }
 //! [5]
 

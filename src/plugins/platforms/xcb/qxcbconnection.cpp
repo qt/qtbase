@@ -927,7 +927,7 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
     // to add the new set of events to its event queue
     while (true) {
         connection()->sync();
-        if (event = checkEvent(checker))
+        if ((event = checkEvent(checker)))
             break;
     }
 
