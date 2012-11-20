@@ -396,6 +396,8 @@ private slots:
     void touchEventSynthesizedMouseEvent();
 
     void styleSheetPropagation();
+
+    void destroyedSignal();
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -9590,6 +9592,104 @@ void tst_QWidget::styleSheetPropagation()
         if (QWidget *w = qobject_cast<QWidget *>(child))
             QCOMPARE(w->style(), tw.style());
     }
+}
+
+class DestroyTester : public QObject
+{
+    Q_OBJECT
+public:
+    DestroyTester(QObject *parent) : QObject(parent) { parentDestroyed = 0; }
+    static int parentDestroyed;
+public slots:
+    void parentDestroyedSlot() {
+        ++parentDestroyed;
+    }
+};
+
+int DestroyTester::parentDestroyed = 0;
+
+void tst_QWidget::destroyedSignal()
+{
+    {
+        QWidget *w = new QWidget;
+        DestroyTester *t = new DestroyTester(w);
+        connect(w, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete w;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+    }
+
+    {
+        QWidget *w = new QWidget;
+        DestroyTester *t = new DestroyTester(w);
+        connect(w, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        w->blockSignals(true);
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete w;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+    }
+
+    {
+        QObject *o = new QWidget;
+        DestroyTester *t = new DestroyTester(o);
+        connect(o, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete o;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+    }
+
+    {
+        QObject *o = new QWidget;
+        DestroyTester *t = new DestroyTester(o);
+        connect(o, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        o->blockSignals(true);
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete o;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+    }
+
+    {
+        QWidget *w = new QWidget;
+        DestroyTester *t = new DestroyTester(0);
+        connect(w, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete w;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+        delete t;
+    }
+
+    {
+        QWidget *w = new QWidget;
+        DestroyTester *t = new DestroyTester(0);
+        connect(w, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        w->blockSignals(true);
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete w;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+        delete t;
+    }
+
+    {
+        QObject *o = new QWidget;
+        DestroyTester *t = new DestroyTester(0);
+        connect(o, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete o;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+        delete t;
+    }
+
+    {
+        QObject *o = new QWidget;
+        DestroyTester *t = new DestroyTester(0);
+        connect(o, SIGNAL(destroyed()), t, SLOT(parentDestroyedSlot()));
+        o->blockSignals(true);
+        QCOMPARE(DestroyTester::parentDestroyed, 0);
+        delete o;
+        QCOMPARE(DestroyTester::parentDestroyed, 1);
+        delete t;
+    }
+
 }
 
 #ifndef QTEST_NO_CURSOR

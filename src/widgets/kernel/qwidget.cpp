@@ -1429,10 +1429,28 @@ QWidget::~QWidget()
     delete d->needsFlush;
     d->needsFlush = 0;
 
+    // The next 20 lines are duplicated from QObject, but required here
+    // since QWidget deletes is children itself
+    bool blocked = d->blockSig;
+    d->blockSig = 0; // unblock signals so we always emit destroyed()
+
+    if (d->isSignalConnected(0)) {
+        QT_TRY {
+            emit destroyed(this);
+        } QT_CATCH(...) {
+            // all the signal/slots connections are still in place - if we don't
+            // quit now, we will crash pretty soon.
+            qWarning("Detected an unexpected exception in ~QWidget while emitting destroyed().");
+            QT_RETHROW;
+        }
+    }
+
     if (d->declarativeData) {
         QAbstractDeclarativeData::destroyed(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
     }
+
+    d->blockSig = blocked;
 
 #ifdef Q_WS_MAC
     // QCocoaView holds a pointer back to this widget. Clear it now

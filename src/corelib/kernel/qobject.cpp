@@ -766,7 +766,7 @@ QObject::~QObject()
             delete sharedRefcount;
     }
 
-    if (d->isSignalConnected(0)) {
+    if (!d->isWidget && d->isSignalConnected(0)) {
         QT_TRY {
             emit destroyed(this);
         } QT_CATCH(...) {
