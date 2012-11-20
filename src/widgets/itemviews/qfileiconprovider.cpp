@@ -275,7 +275,8 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
     Q_D(const QFileIconProvider);
 
 #if defined(Q_OS_UNIX) && !defined(QT_NO_STYLE_GTK)
-    if (QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment() == QByteArray("GNOME")) {
+    const QByteArray desktopEnvironment = QGuiApplicationPrivate::platformIntegration()->services()->desktopEnvironment();
+    if (desktopEnvironment != QByteArrayLiteral("KDE")) {
         QIcon gtkIcon = QGtkStylePrivate::getFilesystemIcon(info);
         if (!gtkIcon.isNull())
             return gtkIcon;

@@ -56,6 +56,10 @@ static inline QByteArray detectDesktopEnvironment()
 {
     if (!qEnvironmentVariableIsEmpty("KDE_FULL_SESSION"))
         return QByteArray("KDE");
+    // Check Unity first, whose older versions also have "GNOME_DESKTOP_SESSION_ID" set.
+    const QByteArray xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP");
+    if (xdgCurrentDesktop == "Unity")
+        return QByteArrayLiteral("UNITY");
     // GNOME_DESKTOP_SESSION_ID is deprecated for some reason, but still check it
     if (qgetenv("DESKTOP_SESSION") == "gnome" || !qEnvironmentVariableIsEmpty("GNOME_DESKTOP_SESSION_ID"))
         return QByteArray("GNOME");
