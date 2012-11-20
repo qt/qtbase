@@ -71,9 +71,11 @@ static gboolean userEventSourceCheck(GSource *source)
     return userEventSourcePrepare(source, 0);
 }
 
-static gboolean userEventSourceDispatch(GSource *, GSourceFunc, gpointer)
+static gboolean userEventSourceDispatch(GSource *source, GSourceFunc, gpointer)
 {
-    QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
+    GUserEventSource *userEventSource = reinterpret_cast<GUserEventSource *>(source);
+    QPAEventDispatcherGlib *dispatcher = userEventSource->q;
+    QWindowSystemInterface::sendWindowSystemEvents(dispatcher->m_flags);
     return true;
 }
 
@@ -89,9 +91,10 @@ static GSourceFuncs userEventSourceFuncs = {
 QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *context)
     : QEventDispatcherGlibPrivate(context)
 {
+    Q_Q(QPAEventDispatcherGlib);
     userEventSource = reinterpret_cast<GUserEventSource *>(g_source_new(&userEventSourceFuncs,
                                                                        sizeof(GUserEventSource)));
-    userEventSource->q = 0;
+    userEventSource->q = q;
     g_source_set_can_recurse(&userEventSource->source, true);
     g_source_attach(&userEventSource->source, mainContext);
 }
@@ -99,6 +102,7 @@ QPAEventDispatcherGlibPrivate::QPAEventDispatcherGlibPrivate(GMainContext *conte
 
 QPAEventDispatcherGlib::QPAEventDispatcherGlib(QObject *parent)
     : QEventDispatcherGlib(*new QPAEventDispatcherGlibPrivate, parent)
+    , m_flags(QEventLoop::AllEvents)
 {
     Q_D(QPAEventDispatcherGlib);
     d->userEventSource->q = this;
@@ -111,6 +115,14 @@ QPAEventDispatcherGlib::~QPAEventDispatcherGlib()
     g_source_destroy(&d->userEventSource->source);
     g_source_unref(&d->userEventSource->source);
     d->userEventSource = 0;
+}
+
+bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
+{
+    Q_D(QPAEventDispatcherGlib);
+
+    m_flags = flags;
+    QEventDispatcherGlib::processEvents(m_flags);
 }
 
 QT_END_NAMESPACE
