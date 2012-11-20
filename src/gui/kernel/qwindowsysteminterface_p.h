@@ -66,30 +66,31 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QWindowSystemInterfacePrivate {
 public:
     enum EventType {
-        Close,
-        GeometryChange,
-        Enter,
-        Leave,
-        ActivatedWindow,
-        WindowStateChanged,
-        Mouse,
-        FrameStrutMouse,
-        Wheel,
-        Key,
-        Touch,
-        ScreenOrientation,
-        ScreenGeometry,
-        ScreenAvailableGeometry,
-        ScreenLogicalDotsPerInch,
-        ScreenRefreshRate,
-        ThemeChange,
-        Expose,
-        FileOpen,
-        Tablet,
-        TabletEnterProximity,
-        TabletLeaveProximity,
-        PlatformPanel,
-        ContextMenu
+        UserInputEvent = 0x100,
+        Close = UserInputEvent | 0x01,
+        GeometryChange = 0x02,
+        Enter = UserInputEvent | 0x03,
+        Leave = UserInputEvent | 0x04,
+        ActivatedWindow = 0x05,
+        WindowStateChanged = 0x06,
+        Mouse = UserInputEvent | 0x07,
+        FrameStrutMouse = UserInputEvent | 0x08,
+        Wheel = UserInputEvent | 0x09,
+        Key = UserInputEvent | 0x0a,
+        Touch = UserInputEvent | 0x0b,
+        ScreenOrientation = 0x0c,
+        ScreenGeometry = 0x0d,
+        ScreenAvailableGeometry = 0x0e,
+        ScreenLogicalDotsPerInch = 0x0f,
+        ScreenRefreshRate = 0x10,
+        ThemeChange = 0x11,
+        Expose = 0x12,
+        FileOpen = UserInputEvent | 0x13,
+        Tablet = UserInputEvent | 0x14,
+        TabletEnterProximity = UserInputEvent | 0x15,
+        TabletLeaveProximity = UserInputEvent | 0x16,
+        PlatformPanel = UserInputEvent | 0x17,
+        ContextMenu = UserInputEvent | 0x18
     };
 
     class WindowSystemEvent {
@@ -374,6 +375,14 @@ public:
         { const QMutexLocker locker(&mutex); impl.prepend(e); }
         WindowSystemEvent *takeFirstOrReturnNull()
         { const QMutexLocker locker(&mutex); return impl.empty() ? 0 : impl.takeFirst(); }
+        WindowSystemEvent *takeFirstNonUserInputOrReturnNull()
+        {
+            const QMutexLocker locker(&mutex);
+            for (int i = 0; i < impl.size(); ++i)
+                if (!(impl.at(i)->type & QWindowSystemInterfacePrivate::UserInputEvent))
+                    return impl.takeAt(i);
+            return 0;
+        }
         void append(WindowSystemEvent *e)
         { const QMutexLocker locker(&mutex); impl.append(e); }
         int count() const
@@ -405,6 +414,7 @@ public:
 
     static int windowSystemEventsQueued();
     static WindowSystemEvent *getWindowSystemEvent();
+    static WindowSystemEvent *getNonUserInputWindowSystemEvent();
     static WindowSystemEvent *peekWindowSystemEvent(EventType t);
     static void removeWindowSystemEvent(WindowSystemEvent *event);
     static void handleWindowSystemEvent(WindowSystemEvent *ev);

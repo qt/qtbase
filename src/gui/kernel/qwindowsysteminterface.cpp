@@ -344,6 +344,11 @@ QWindowSystemInterfacePrivate::WindowSystemEvent * QWindowSystemInterfacePrivate
     return windowSystemEventQueue.takeFirstOrReturnNull();
 }
 
+QWindowSystemInterfacePrivate::WindowSystemEvent *QWindowSystemInterfacePrivate::getNonUserInputWindowSystemEvent()
+{
+    return windowSystemEventQueue.takeFirstNonUserInputOrReturnNull();
+}
+
 QWindowSystemInterfacePrivate::WindowSystemEvent *QWindowSystemInterfacePrivate::peekWindowSystemEvent(EventType t)
 {
     return windowSystemEventQueue.peekAtFirstOfType(t);
@@ -520,20 +525,14 @@ bool QWindowSystemInterface::sendWindowSystemEventsImplementation(QEventLoop::Pr
 {
     int nevents = 0;
 
-    while (true) {
-        QWindowSystemInterfacePrivate::WindowSystemEvent *event;
-        if (!(flags & QEventLoop::ExcludeUserInputEvents)
-            && QWindowSystemInterfacePrivate::windowSystemEventsQueued() > 0) {
-            // process a pending user input event
-            event = QWindowSystemInterfacePrivate::getWindowSystemEvent();
-            if (!event)
-                break;
-        } else {
+    while (QWindowSystemInterfacePrivate::windowSystemEventsQueued()) {
+        QWindowSystemInterfacePrivate::WindowSystemEvent *event =
+            (flags & QEventLoop::ExcludeUserInputEvents) ?
+                QWindowSystemInterfacePrivate::getNonUserInputWindowSystemEvent() :
+                QWindowSystemInterfacePrivate::getWindowSystemEvent();
+        if (!event)
             break;
-        }
-
         nevents++;
-
         QGuiApplicationPrivate::processWindowSystemEvent(event);
         delete event;
     }
