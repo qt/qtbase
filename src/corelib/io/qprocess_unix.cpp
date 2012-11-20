@@ -107,6 +107,8 @@ QT_END_NAMESPACE
 #include <stdlib.h>
 #include <string.h>
 #ifdef Q_OS_QNX
+#include "qvarlengtharray.h"
+
 #include <spawn.h>
 #include <sys/neutrino.h>
 #endif
@@ -779,8 +781,21 @@ static pid_t doSpawn(int fd_count, int fd_map[], char **argv, char **envp,
 
 pid_t QProcessPrivate::spawnChild(const char *workingDir, char **argv, char **envp)
 {
-    const int fd_count = 3;
-    int fd_map[fd_count];
+    // we need to manually fill in fd_map
+    // to inherit the file descriptors from
+    // the parent
+    const int fd_count = sysconf(_SC_OPEN_MAX);
+    QVarLengthArray<int, 1024> fd_map(fd_count);
+
+    for (int i = 3; i < fd_count; ++i) {
+        // here we rely that fcntl returns -1 and
+        // sets errno to EBADF
+        const int flags = ::fcntl(i, F_GETFD);
+
+        fd_map[i] = ((flags >= 0) && !(flags & FD_CLOEXEC))
+                  ? i : SPAWN_FDCLOSED;
+    }
+
     switch (processChannelMode) {
     case QProcess::ForwardedChannels:
         fd_map[0] = stdinChannel.pipe[0];
@@ -799,7 +814,7 @@ pid_t QProcessPrivate::spawnChild(const char *workingDir, char **argv, char **en
         break;
     }
 
-    pid_t childPid = doSpawn(fd_count, fd_map, argv, envp, workingDir, false);
+    pid_t childPid = doSpawn(fd_count, fd_map.data(), argv, envp, workingDir, false);
 
     if (childPid == -1) {
         QString error = qt_error_string(errno);
