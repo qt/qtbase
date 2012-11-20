@@ -120,9 +120,9 @@ QProxyStyle::QProxyStyle(QStyle *style) :
 {
     Q_D(QProxyStyle);
     if (style) {
+        d->baseStyle = style;
         style->setProxy(this);
         style->setParent(this); // Take ownership
-        d->baseStyle = style;
     }
 }
 
