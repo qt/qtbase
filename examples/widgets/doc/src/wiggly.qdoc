@@ -28,8 +28,8 @@
 /*!
     \example widgets/wiggly
     \title Wiggly Example
-
-    The Wiggly example shows how to animate a widget using
+    \ingroup examples-widgets
+    \brief The Wiggly example shows how to animate a widget using
     QBasicTimer and \l{QObject::timerEvent()}{timerEvent()}. In
     addition, the example demonstrates how to use QFontMetrics to
     determine the size of text on screen.

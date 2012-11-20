@@ -573,7 +573,8 @@ void DitaXmlGenerator::initializeGenerator(const Config &config)
     customHeadElements = config.getStringList(DitaXmlGenerator::format() +
                                               Config::dot +
                                               DITAXMLGENERATOR_CUSTOMHEADELEMENTS);
-    codeIndent = config.getInt(CONFIG_CODEINDENT);
+    // The following line was changed to fix QTBUG-27798
+    //codeIndent = config.getInt(CONFIG_CODEINDENT);
     version = config.getString(CONFIG_VERSION);
     vrm = version.split(QLatin1Char('.'));
 }
@@ -5883,7 +5884,7 @@ QStringList DitaXmlGenerator::getMetadataElements(const InnerNode* inner,
  */
 QString DitaXmlGenerator::metadataDefault(DitaTag t) const
 {
-    return metadataDefaults.value(ditaTags[t]);
+    return metadataDefaults.value(ditaTags[t]).second;
 }
 
 /*!

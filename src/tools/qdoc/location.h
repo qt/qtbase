@@ -96,6 +96,9 @@ public:
     static void terminate();
     static void information(const QString& message);
     static void internalError(const QString& hint);
+    static void logToStdErr(const QString& message);
+    static void startLoggingProgress() { logProgress_ = true; }
+    static void stopLoggingProgress() { logProgress_ = false; }
 
 private:
     enum MessageType { Warning, Error };
@@ -123,6 +126,7 @@ private:
     static int tabSize;
     static QString programName;
     static QRegExp *spuriousRegExp;
+    static bool logProgress_;
 };
 
 QT_END_NAMESPACE

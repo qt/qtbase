@@ -50,6 +50,7 @@
 #include <qtextstream.h>
 #include <qdebug.h>
 #include "config.h"
+#include "generator.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -154,6 +155,7 @@ QString Config::installDir;
 QSet<QString> Config::overrideOutputFormats;
 QMap<QString, QString> Config::extractedDirs;
 int Config::numInstances;
+QStack<QString> Config::workingDirs_;
 
 /*!
   \class Config
@@ -171,10 +173,10 @@ Config::Config(const QString& programName)
     : prog(programName)
 {
     loc = Location::null;
-    lastLoc = Location::null;
+    lastLocation_ = Location::null;
     locMap.clear();
-    stringValueMap.clear();
-    stringListValueMap.clear();
+    stringPairMap.clear();
+    stringListPairMap.clear();
     numInstances++;
 }
 
@@ -203,7 +205,7 @@ void Config::load(const QString& fileName)
     else {
         loc.setEtc(true);
     }
-    lastLoc = Location::null;
+    lastLocation_ = Location::null;
 }
 
 /*!
@@ -212,9 +214,9 @@ void Config::load(const QString& fileName)
  */
 void Config::unload(const QString& fileName)
 {
-    QStringMultiMap::ConstIterator v = stringValueMap.constBegin();
-    while (v != stringValueMap.constEnd()) {
-        qDebug() << v.key() << " = " << v.value();
+    QStringPairMap::ConstIterator v = stringPairMap.constBegin();
+    while (v != stringPairMap.constEnd()) {
+        qDebug() << v.key() << " = " << v.value().second;
         ++v;
     }
     qDebug() << "fileName:" << fileName;
@@ -229,8 +231,10 @@ void Config::unload(const QString& fileName)
  */
 void Config::setStringList(const QString& var, const QStringList& values)
 {
-    stringValueMap[var] = values.join(QLatin1Char(' '));
-    stringListValueMap[var] = values;
+    stringPairMap[var].first = QDir::currentPath();
+    stringPairMap[var].second = values.join(QLatin1Char(' '));
+    stringListPairMap[var].first = QDir::currentPath();
+    stringListPairMap[var].second = values;
 }
 
 /*!
@@ -290,16 +294,37 @@ QSet<QString> Config::getOutputFormats() const
 /*!
   First, this function looks up the configuration variable \a var
   in the location map and, if found, sets the internal variable
-  \c{lastLoc} to the Location that \a var maps to.
+  \c{lastLocation_} to the Location that \a var maps to.
 
   Then it looks up the configuration variable \a var in the string
-  map, and returns the string that \a var maps to.
+  map and returns the string that \a var maps to.
  */
 QString Config::getString(const QString& var) const
 {
     if (!locMap[var].isEmpty())
-        (Location&) lastLoc = locMap[var];
-    return stringValueMap[var];
+        (Location&) lastLocation_ = locMap[var];
+    return stringPairMap[var].second;
+}
+
+/*!
+  This function looks up the variable \a var in the location map
+  and, if found, sets the internal variable \c{lastLocation_} to the
+  location that \a var maps to.
+
+  Then it looks up \a var in the configuration variable map and,
+  if found, constructs a path from the pair value, which consists
+  of the directory path of the configuration file where the value
+  came from, and the value itself. The constructed path is returned.
+ */
+QString Config::getPath(const QString& var) const
+{
+    if (!locMap[var].isEmpty())
+        (Location&) lastLocation_ = locMap[var];
+    QString path;
+    if (stringPairMap.contains(var)) {
+        path = QDir(stringPairMap[var].first + "/" + stringPairMap[var].second).absolutePath();
+    }
+    return path;
 }
 
 /*!
@@ -315,7 +340,7 @@ QSet<QString> Config::getStringSet(const QString& var) const
 /*!
   First, this function looks up the configuration variable \a var
   in the location map and, if found, sets the internal variable
-  \c{lastLoc} to the Location that \a var maps to.
+  \c{lastLocation_} to the Location that \a var maps to.
 
   Then it looks up the configuration variable \a var in the string
   list map, and returns the string list that \a var maps to.
@@ -323,8 +348,8 @@ QSet<QString> Config::getStringSet(const QString& var) const
 QStringList Config::getStringList(const QString& var) const
 {
     if (!locMap[var].isEmpty())
-        (Location&) lastLoc = locMap[var];
-    return stringListValueMap[var];
+        (Location&) lastLocation_ = locMap[var];
+    return stringListPairMap[var].second;
 }
 
 
@@ -337,11 +362,11 @@ QStringList Config::getStringList(const QString& var) const
 QStringList Config::getCanonicalRelativePathList(const QString& var) const
 {
     if (!locMap[var].isEmpty())
-        (Location&) lastLoc = locMap[var];
+        (Location&) lastLocation_ = locMap[var];
     QStringList t;
-    QMap<QString,QStringList>::const_iterator it = stringListValueMap.constFind(var);
-    if (it != stringListValueMap.constEnd()) {
-        const QStringList& sl = it.value();
+    QStringListPairMap::const_iterator it = stringListPairMap.constFind(var);
+    if (it != stringListPairMap.constEnd()) {
+        const QStringList& sl = it.value().second;
         if (!sl.isEmpty()) {
             t.reserve(sl.size());
             for (int i=0; i<sl.size(); ++i) {
@@ -361,7 +386,7 @@ QStringList Config::getCanonicalRelativePathList(const QString& var) const
 
   First, this function looks up the configuration variable \a var
   in the location map and, if found, sets the internal variable
-  \c{lastLoc} the Location that \a var maps to.
+  \c{lastLocation_} the Location that \a var maps to.
 
   Then it looks up the configuration variable \a var in the string
   list map, which maps to a string list that contains file paths.
@@ -371,11 +396,11 @@ QStringList Config::getCanonicalRelativePathList(const QString& var) const
 QStringList Config::getCleanPathList(const QString& var) const
 {
     if (!locMap[var].isEmpty())
-        (Location&) lastLoc = locMap[var];
+        (Location&) lastLocation_ = locMap[var];
     QStringList t;
-    QMap<QString,QStringList>::const_iterator it = stringListValueMap.constFind(var);
-    if (it != stringListValueMap.constEnd()) {
-        const QStringList& sl = it.value();
+    QStringListPairMap::const_iterator it = stringListPairMap.constFind(var);
+    if (it != stringListPairMap.constEnd()) {
+        const QStringList& sl = it.value().second;
         if (!sl.isEmpty()) {
             t.reserve(sl.size());
             for (int i=0; i<sl.size(); ++i) {
@@ -385,6 +410,47 @@ QStringList Config::getCleanPathList(const QString& var) const
     }
     return t;
 }
+
+/*!
+  This function should only be called when the configuration
+  variable \a var maps to a string list that contains file paths.
+  It cleans the paths with QDir::cleanPath() before returning
+  them.
+
+  First, this function looks up the configuration variable \a var
+  in the location map and, if found, sets the internal variable
+  \c{lastLocation_} the Location that \a var maps to.
+
+  Then it looks up the configuration variable \a var in the string
+  list map, which maps to a string list that contains file paths.
+  These paths might not be clean, so QDir::cleanPath() is called
+  for each one. The string list returned contains cleaned paths.
+ */
+QStringList Config::getPathList(const QString& var) const
+{
+    if (!locMap[var].isEmpty())
+        (Location&) lastLocation_ = locMap[var];
+    QStringList t;
+    QStringListPairMap::const_iterator it = stringListPairMap.constFind(var);
+    if (it != stringListPairMap.constEnd()) {
+        const QStringList& sl = it.value().second;
+        const QString d = it.value().first;
+        if (!sl.isEmpty()) {
+            t.reserve(sl.size());
+            for (int i=0; i<sl.size(); ++i) {
+                QFileInfo fileInfo;
+                QString path = d + "/" + QDir::cleanPath(sl[i]);
+                fileInfo.setFile(path);
+                if (!fileInfo.exists())
+                    lastLocation_.warning(tr("File '%1' does not exist").arg(path));
+                else
+                    t.append(path);
+            }
+        }
+    }
+    return t;
+}
+
 
 /*!
   Calls getRegExpList() with the control variable \a var and
@@ -441,8 +507,8 @@ QSet<QString> Config::subVars(const QString& var) const
 {
     QSet<QString> result;
     QString varDot = var + QLatin1Char('.');
-    QStringMultiMap::ConstIterator v = stringValueMap.constBegin();
-    while (v != stringValueMap.constEnd()) {
+    QStringPairMap::ConstIterator v = stringPairMap.constBegin();
+    while (v != stringPairMap.constEnd()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());
             int dot = subVar.indexOf(QLatin1Char('.'));
@@ -460,11 +526,11 @@ QSet<QString> Config::subVars(const QString& var) const
   with the matching keys (stripped of the prefix \a var and
   mapped to their values. The pairs are inserted into \a t
  */
-void Config::subVarsAndValues(const QString& var, QStringMultiMap& t) const
+void Config::subVarsAndValues(const QString& var, QStringPairMap& t) const
 {
     QString varDot = var + QLatin1Char('.');
-    QStringMultiMap::ConstIterator v = stringValueMap.constBegin();
-    while (v != stringValueMap.constEnd()) {
+    QStringPairMap::ConstIterator v = stringPairMap.constBegin();
+    while (v != stringPairMap.constEnd()) {
         if (v.key().startsWith(varDot)) {
             QString subVar = v.key().mid(varDot.length());
             int dot = subVar.indexOf(QLatin1Char('.'));
@@ -629,10 +695,10 @@ QString Config::findFile(const Location& location,
 
 /*!
   Copies the \a sourceFilePath to the file name constructed by
-  concatenating \a targetDirPath and \a userFriendlySourceFilePath.
-  \a location is for identifying the file and line number where
-  a qdoc error occurred. The constructed output file name is
-  returned.
+  concatenating \a targetDirPath and the file name from the
+  \a userFriendlySourceFilePath. \a location is for identifying
+  the file and line number where a qdoc error occurred. The
+  constructed output file name is returned.
  */
 QString Config::copyFile(const Location& location,
                          const QString& sourceFilePath,
@@ -641,8 +707,8 @@ QString Config::copyFile(const Location& location,
 {
     QFile inFile(sourceFilePath);
     if (!inFile.open(QFile::ReadOnly)) {
-        location.fatal(tr("Cannot open input file '%1': %2")
-                       .arg(sourceFilePath).arg(inFile.errorString()));
+        location.warning(tr("Cannot open input file for copy: '%1': %2")
+                         .arg(sourceFilePath).arg(inFile.errorString()));
         return QString();
     }
 
@@ -650,11 +716,14 @@ QString Config::copyFile(const Location& location,
     int slash = outFileName.lastIndexOf(QLatin1Char('/'));
     if (slash != -1)
         outFileName = outFileName.mid(slash);
-
-    QFile outFile(targetDirPath + QLatin1Char('/') + outFileName);
+    if ((outFileName.size()) > 0 && (outFileName[0] != '/'))
+        outFileName = targetDirPath + QLatin1Char('/') + outFileName;
+    else
+        outFileName = targetDirPath + outFileName;
+    QFile outFile(outFileName);
     if (!outFile.open(QFile::WriteOnly)) {
-        location.fatal(tr("Cannot open output file '%1': %2")
-                       .arg(outFile.fileName()).arg(outFile.errorString()));
+        location.warning(tr("Cannot open output file for copy: '%1': %2")
+                         .arg(outFileName).arg(outFile.errorString()));
         return QString();
     }
 
@@ -737,6 +806,8 @@ bool Config::isMetaKeyChar(QChar ch)
  */
 void Config::load(Location location, const QString& fileName)
 {
+    pushWorkingDir(QFileInfo(fileName).path());
+    QDir::setCurrent(QFileInfo(fileName).path());
     QRegExp keySyntax(QLatin1String("\\w+(?:\\.\\w+)*"));
 
 #define SKIP_CHAR() \
@@ -853,9 +924,7 @@ void Config::load(Location location, const QString& fileName)
                 /*
                   Here is the recursive call.
                  */
-                load(location,
-                     QFileInfo(QFileInfo(fileName).dir(), includeFile)
-                     .filePath());
+                load(location, QFileInfo(QFileInfo(fileName).dir(), includeFile).filePath());
             }
             else {
                 /*
@@ -961,29 +1030,34 @@ void Config::load(Location location, const QString& fileName)
                         else {
                             locMap[*key].setEtc(true);
                         }
-                        if (stringValueMap[*key].isEmpty()) {
-                            stringValueMap[*key] = stringValue;
+                        if (stringPairMap[*key].second.isEmpty()) {
+                            stringPairMap[*key].first = QDir::currentPath();
+                            stringPairMap[*key].second = stringValue;
                         }
                         else {
-                            stringValueMap[*key] +=
-                                    QLatin1Char(' ') + stringValue;
+                            stringPairMap[*key].second += QLatin1Char(' ') + stringValue;
                         }
-                        stringListValueMap[*key] += stringListValue;
+                        stringListPairMap[*key].first = QDir::currentPath();
+                        stringListPairMap[*key].second += stringListValue;
                     }
                     else {
                         locMap[*key] = keyLoc;
-                        stringValueMap[*key] = stringValue;
-                        stringListValueMap[*key] = stringListValue;
+                        stringPairMap[*key].first = QDir::currentPath();
+                        stringPairMap[*key].second = stringValue;
+                        stringListPairMap[*key].first = QDir::currentPath();
+                        stringListPairMap[*key].second = stringListValue;
                     }
                     ++key;
                 }
             }
         }
         else {
-            location.fatal(tr("Unexpected character '%1' at beginning of line")
-                           .arg(c));
+            location.fatal(tr("Unexpected character '%1' at beginning of line").arg(c));
         }
     }
+    popWorkingDir();
+    if (!workingDirs_.isEmpty())
+        QDir::setCurrent(QFileInfo(workingDirs_.top()).path());
 }
 
 QStringList Config::getFilesHere(const QString& uncleanDir,
@@ -1027,6 +1101,27 @@ QStringList Config::getFilesHere(const QString& uncleanDir,
         ++fn;
     }
     return result;
+}
+
+/*!
+  Push \a dir onto the stack of working directories.
+ */
+void Config::pushWorkingDir(const QString& dir)
+{
+    workingDirs_.push(dir);
+}
+
+/*!
+  If the stack of working directories is not empty, pop the
+  top entry and return it. Otherwise return an empty string.
+ */
+QString Config::popWorkingDir()
+{
+    if (!workingDirs_.isEmpty()) {
+        return workingDirs_.pop();
+    }
+    qDebug() << "RETURNED EMPTY WORKING DIR";
+    return QString();
 }
 
 QT_END_NAMESPACE

@@ -94,7 +94,8 @@ static void addLink(const QString &linkTarget,
   Constructs the HTML output generator.
  */
 HtmlGenerator::HtmlGenerator()
-    : helpProjectWriter(0),
+    : codeIndent(0),
+      helpProjectWriter(0),
       inObsoleteLink(false),
       funcLeftParen("\\S(\\()"),
       obsoleteLinks(false)
@@ -210,7 +211,8 @@ void HtmlGenerator::initializeGenerator(const Config &config)
         ++edition;
     }
 
-    codeIndent = config.getInt(CONFIG_CODEINDENT);
+    // The following line was changed to fix QTBUG-27798
+    //codeIndent = config.getInt(CONFIG_CODEINDENT);
 
     helpProjectWriter = new HelpProjectWriter(config, project.toLower() + ".qhp", this);
 

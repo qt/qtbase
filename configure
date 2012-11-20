@@ -1901,7 +1901,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     javascript-jit)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then 
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ] || [ "$VAL" = "no" ]; then
             CFG_JAVASCRIPTCORE_JIT="$VAL"
         else
             UNKNOWN_OPT=yes
@@ -5209,7 +5209,7 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
-if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
+if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
     if [ "$CFG_ARCH" = "arm" ]; then
        compileTest unix/javascriptcore-jit "javascriptcore-jit"
         if [ $? != "0" ]; then

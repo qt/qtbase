@@ -28,8 +28,8 @@
 /*!
     \example widgets/calculator
     \title Calculator Example
-
-    The example shows how to use signals and slots to implement the
+    \ingroup examples-widgets
+    \brief The example shows how to use signals and slots to implement the
     functionality of a calculator widget, and how to use QGridLayout
     to place child widgets in a grid.
 

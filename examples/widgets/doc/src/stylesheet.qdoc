@@ -28,8 +28,8 @@
 /*!
     \example widgets/stylesheet
     \title Style Sheet Example
-
-    The Style Sheet Example shows how to use style sheets.
+    \ingroup examples-widgets
+    \brief The Style Sheet Example shows how to use style sheets.
     
     \image stylesheet-pagefold.png Screen Shot of the Pagefold style sheet
 */

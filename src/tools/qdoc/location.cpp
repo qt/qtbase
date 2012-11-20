@@ -42,7 +42,7 @@
 #include <qdebug.h>
 #include "config.h"
 #include "location.h"
-
+#include "generator.h"
 #include <qdir.h>
 #include <qregexp.h>
 #include <stdlib.h>
@@ -57,6 +57,7 @@ QT_STATIC_CONST_IMPL Location Location::null;
 int Location::tabSize;
 QString Location::programName;
 QRegExp *Location::spuriousRegExp = 0;
+bool Location::logProgress_ = false;
 
 /*!
   \class Location
@@ -260,25 +261,30 @@ QString Location::canonicalRelativePath(const QString &path) const
 
 /*!
   Writes \a message and \a detals to stderr as a formatted
-  warning message.
+  warning message. Does not write the message if qdoc is in
+  the Prepare phase.
  */
 void Location::warning(const QString& message, const QString& details) const
 {
-    emitMessage(Warning, message, details);
+    if (!Generator::runPrepareOnly())
+        emitMessage(Warning, message, details);
 }
 
 /*!
   Writes \a message and \a detals to stderr as a formatted
-  error message.
+  error message. Does not write the message if qdoc is in
+  the Prepare phase.
  */
 void Location::error(const QString& message, const QString& details) const
 {
-    emitMessage(Error, message, details);
+    if (!Generator::runPrepareOnly())
+        emitMessage(Error, message, details);
 }
 
 /*!
   Writes \a message and \a detals to stderr as a formatted
-  error message and then exits the program.
+  error message and then exits the program. qdoc prints fatal
+  errors in either phase (Prepare or Generate).
  */
 void Location::fatal(const QString& message, const QString& details) const
 {
@@ -328,6 +334,18 @@ void Location::information(const QString& message)
 {
     printf("%s\n", message.toLatin1().data());
     fflush(stdout);
+}
+
+/*!
+  Prints \a message to \c stderr followed by a \c{'\n'},
+  but only if the -log-progress option is set.
+ */
+void Location::logToStdErr(const QString& message)
+{
+    if (logProgress_) {
+        fprintf(stderr, "LOG: %s\n", message.toLatin1().data());
+        fflush(stderr);
+    }
 }
 
 /*!

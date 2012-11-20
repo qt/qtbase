@@ -28,10 +28,11 @@
 /*!
     \example widgets/lineedits
     \title Line Edits Example
+    \ingroup examples-widgets
+    \brief The Line Edits example demonstrates the many ways that QLineEdit
+    can be used, and shows the effects of various properties and validators
+    on the input and output supplied by the user.
 
-    The Line Edits example demonstrates the many ways that QLineEdit can be used, and
-    shows the effects of various properties and validators on the input and output
-    supplied by the user.
 
     \image lineedits-example.png
 

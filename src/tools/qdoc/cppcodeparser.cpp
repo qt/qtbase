@@ -2156,8 +2156,8 @@ bool CppCodeParser::matchDocsAndStuff()
             while (n != nodes.end()) {
                 processOtherMetaCommands(*d, *n);
                 (*n)->setDoc(*d);
-                if ((*n)->isInnerNode() &&
-                        ((InnerNode *)*n)->includes().isEmpty()) {
+                checkModuleInclusion(*n);
+                if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
                     InnerNode *m = static_cast<InnerNode *>(*n);
                     while (m->parent() != qdb_->treeRoot())
                         m = m->parent();

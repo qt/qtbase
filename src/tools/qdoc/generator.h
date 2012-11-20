@@ -95,6 +95,7 @@ public:
     static void setQDocPass(Passes pass) { qdocPass_ = pass; }
     static bool runPrepareOnly() { return (qdocPass_ == Prepare); }
     static bool runGenerateOnly() { return (qdocPass_ == Generate); }
+    static QString defaultModuleName() { return project; }
 
 protected:
     virtual void beginSubPage(const InnerNode* node, const QString& fileName);

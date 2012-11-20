@@ -513,7 +513,7 @@ private:
     static QString ditaTags[];
     QStack<QXmlStreamWriter*> xmlWriterStack;
     QStack<DitaTag> tagStack;
-    QStringMultiMap metadataDefaults;
+    QStringPairMap metadataDefaults;
     QVector<NodeMultiMap*> nodeTypeMaps;
     QVector<NodeMultiMap*> nodeSubtypeMaps;
     QVector<NodeMultiMap*> pageTypeMaps;

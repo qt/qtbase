@@ -1,0 +1,95 @@
+HTML.nobreadcrumbs      = "true"
+
+HTML.stylesheets =  template/style/online.css
+HTML.extraimages =  template/images/btn_next_green.png \
+                    template/images/box_bg.png \
+                    template/images/page.png \
+                    template/images/arrow_down.png \
+                    template/images/btn_prev.png \
+                    template/images/blu_dot.png \
+                    template/images/ico_note_attention.png \
+                    template/images/btn_prev_green.png \
+                    template/images/bg_ll_blank.png \
+                    template/images/btn_next.png \
+                    template/images/bg_l_blank.png \
+                    template/images/ico_note.png \
+                    template/images/home.png \
+                    template/images/ico_out.png \
+                    template/images/header_bg.png \
+                    template/images/page_bg.png \
+                    template/images/bg_l.png \
+                    template/images/bg_r.png \
+                    template/images/breadcrumb.png \
+                    template/images/bullet_dn.png \
+                    template/images/feedbackground.png \
+                    template/images/bullet_gt.png \
+                    template/images/arrow.png \
+                    template/images/bullet_sq.png \
+                    template/images/bullet_up.png \
+                    template/images/sprites-combined.png \
+                    template/images/horBar.png \
+                    template/images/bg_ul_blank.png \
+                    template/images/bgrContent.png \
+
+
+HTML.headerstyles = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/online.css\" />\n"
+
+HTML.endheader = \
+    "</head>\n" \
+    "<body>\n" \
+    "    <header>\n" \
+    "    <div class=\"nav\">\n" \
+    "        <a href=\"http://qt-project.org/\">Qt Home</a>\n" \
+    "        <a href=\"https://bugreports.qt-project.org/\">Bug Tracker</a>\n" \
+    "        <a href=\"https://codereview.qt-project.org/\">Code Review</a>\n" \
+    "    </div>\n" \
+    "    <a href=\"http://qt-project.org/\">\n" \
+    "        <img src=\"http://doc-snapshot.qt-project.org/images/logo.png\" alt=\"Qt\"></img>\n" \
+    "    </a>\n" \
+    "   <div class=\"nav-title\">\n" \
+    "    <h1 >Qt Documentation Snapshots</h1>\n" \
+    "       <div class=\"nav-subtitle\">\n" \
+    "       --snapshots of unreleased Qt documentation\n" \
+    "       </div>\n" \
+    "   </div>\n" \
+    "    <div class=\"nav-main\">\n" \
+    "        <div class=\"nav-main-content\">\n" \
+    "            <a href=\"http://doc-snapshot.qt-project.org\">All Modules</a>\n" \
+    "        </div>\n" \
+    "        <div class=\"nav-main-content\">\n" \
+    "            <a href=\"http://qt-project.org/doc\">Qt Releases</a>\n" \
+    "        </div>\n" \
+    "        <div class=\"nav-main-content\">\n" \
+    "            <a href=\"http://doc.qt.digia.com\">Archives</a>\n" \
+    "        </div>\n" \
+    "    </div>\n" \
+    "</header>\n" \
+    "<div class=\"content\">\n" \
+    "    <div class=\"line\">\n" \
+    "        <div class=\"content mainContent\">\n" \
+
+HTML.footer = \
+    "       </div>\n" \
+    "   </div>\n" \
+    "</div>\n" \
+    "<div class=\"footer\">\n" \
+    "    <p>\n" \
+    "      <acronym title=\"Copyright\">&copy;</acronym> 2012 Digia Plc and/or its\n" \
+    "      subsidiaries. Documentation contributions included herein are the copyrights of\n" \
+    "      their respective owners.</p>\n" \
+    "    <br />\n" \
+    "    <p>\n" \
+    "      The documentation provided herein is licensed under the terms of the\n" \
+    "      <a href=\"http://www.gnu.org/licenses/fdl.html\">GNU Free Documentation\n" \
+    "      License version 1.3</a> as published by the Free Software Foundation.</p>\n" \
+    "    <p>\n" \
+    "      Documentation sources may be obtained from <a href=\"http://www.qt-project.org\">\n" \
+    "      www.qt-project.org</a>.</p>\n" \
+    "    <br />\n" \
+    "    <p>\n" \
+    "      Digia, Qt and their respective logos are trademarks of Digia Plc \n" \
+    "      in Finland and/or other countries worldwide. All other trademarks are property\n" \
+    "      of their respective owners. <a title=\"Privacy Policy\"\n" \
+    "      href=\"http://en.gitorious.org/privacy_policy/\">Privacy Policy</a></p>\n" \
+    "</div>\n" \

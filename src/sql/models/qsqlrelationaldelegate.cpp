@@ -53,9 +53,9 @@ QT_BEGIN_NAMESPACE
     use the class, simply call QAbstractItemView::setItemDelegate()
     on the view with an instance of QSqlRelationalDelegate:
 
-    \snippet sql/relationaltablemodel/relationaltablemodel.cpp 4
+    \snippet relationaltablemodel/relationaltablemodel.cpp 4
 
-    The \l{sql/relationaltablemodel}{Relational Table Model} example
+    The \l{relationaltablemodel}{Relational Table Model} example
     (shown below) illustrates how to use QSqlRelationalDelegate in
     conjunction with QSqlRelationalTableModel to provide tables with
     foreign key support.

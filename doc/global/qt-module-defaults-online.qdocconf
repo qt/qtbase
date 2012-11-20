@@ -1,0 +1,32 @@
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-defines.qdocconf)
+include(qt-html-templates-online.qdocconf)
+include(compat.qdocconf)
+
+dita.metadata.default.author      = Qt Project
+dita.metadata.default.permissions = all
+dita.metadata.default.publisher   = Qt Project
+dita.metadata.default.copyryear = 2012
+dita.metadata.default.copyrholder = Digia Plc
+dita.metadata.default.audience = programmer
+
+naturallanguage         = en_US
+outputencoding          = UTF-8
+sourceencoding          = UTF-8
+
+examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css"
+examples.imageextensions = "*.png *.jpg *.gif"
+
+headers.fileextensions  = "*.ch *.h *.h++ *.hh *.hpp *.hxx"
+sources.fileextensions  = "*.c++ *.cc *.cpp *.cxx *.mm *.qml *.qdoc"
+
+versionsym              = QT_VERSION_STR
+
+macro.raisedaster.HTML  = "<sup>*</sup>"
+
+#for including files into the qch file
+qhp.extraFiles += template/style/online.css
+
+#include the external websites
+sourcedirs += externalsites

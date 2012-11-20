@@ -1,37 +1,31 @@
-include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtOpenGL
 description             = Qt OpenGL Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtopengl
+url                     = http://qt-project.org/doc/qtopengl
 version                 = 5.0.0
 
 qhp.projects            = QtOpenGL
 
 qhp.QtOpenGL.file         = qtopengl.qhp
 qhp.QtOpenGL.namespace           = org.qt-project.qtopengl.500
-qhp.QtOpenGL.virtualFolder       = qdoc
-qhp.QtOpenGL.indexTitle          = Qt OpenGL Reference Documentation
+qhp.QtOpenGL.virtualFolder       = qtopengl
+qhp.QtOpenGL.indexTitle          = Qt OpenGL
 qhp.QtOpenGL.indexRoot           =
 
 qhp.QtOpenGL.filterAttributes    = qtopengl 5.0.0 qtrefdoc
 qhp.QtOpenGL.customFilters.Qt.name = QtOpenGL 5.0.0
 qhp.QtOpenGL.customFilters.Qt.filterAttributes = qtopengl 5.0.0
-qhp.QtOpenGL.subprojects         = classes overviews examples
-qhp.QtOpenGL.subprojects.classes.title = Classes
-qhp.QtOpenGL.subprojects.classes.indexTitle = Qt OpenGL's Classes
+
+qhp.QtOpenGL.subprojects         = classes
+qhp.QtOpenGL.subprojects.classes.title = C++ Classes
+qhp.QtOpenGL.subprojects.classes.indexTitle = Qt OpenGL C++ Classes
 qhp.QtOpenGL.subprojects.classes.selectors = class fake:headerfile
 qhp.QtOpenGL.subprojects.classes.sortPages = true
-qhp.QtOpenGL.subprojects.overviews.title = Overviews
-qhp.QtOpenGL.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtOpenGL.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtOpenGL.subprojects.examples.title = Qt OpenGL Examples
-qhp.QtOpenGL.subprojects.examples.indexTitle = Qt OpenGL Examples
-qhp.QtOpenGL.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtopengl/qtopengl.tags
 
-depends                 += qtcore qtgui qtwidgets
+depends                 += qtcore qtgui qtwidgets qtdoc
 
 headerdirs  += ..
 

@@ -195,6 +195,7 @@ bool PureDocParser::processQdocComments()
             while (n != nodes.end()) {
                 processOtherMetaCommands(*d, *n);
                 (*n)->setDoc(*d);
+                checkModuleInclusion(*n);
                 if ((*n)->isInnerNode() && ((InnerNode *)*n)->includes().isEmpty()) {
                     InnerNode *m = static_cast<InnerNode *>(*n);
                     while (m->parent() && m->parent() != treeRoot)

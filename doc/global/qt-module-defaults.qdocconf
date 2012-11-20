@@ -1,80 +1,8 @@
-codeindent              = 1
-
-Cpp.ignoretokens        = \
-                          QDBUS_EXPORT \
-                          QT_ASCII_CAST_WARN \
-                          QT_ASCII_CAST_WARN_CONSTRUCTOR \
-                          QT_BEGIN_HEADER \
-                          QT_BEGIN_INCLUDE_NAMESPACE \
-                          QT_BEGIN_NAMESPACE \
-                          QT_BOOTSTRAPPED \
-                          QT_DESIGNER_STATIC \
-                          QT_END_HEADER \
-                          QT_END_INCLUDE_NAMESPACE \
-                          QT_END_NAMESPACE \
-                          QT_FASTCALL \
-                          Q_AUTOTEST_EXPORT \
-                          Q_COMPAT_EXPORT \
-                          Q_CORE_EXPORT \
-                          Q_CORE_EXPORT_INLINE \
-                          Q_DBUS_EXPORT \
-                          Q_DECL_CONSTEXPR \
-                          Q_DECL_NOEXCEPT \
-                          Q_DECL_NOTHROW \
-                          Q_EXPORT \
-                          Q_EXPORT_PLUGIN \
-                          Q_EXPORT_PLUGIN2 \
-                          Q_GADGET \
-                          Q_GUI_EXPORT \
-                          Q_GUI_EXPORT_INLINE \
-                          Q_INLINE_TEMPLATE \
-                          Q_INVOKABLE \
-                          Q_NETWORK_EXPORT \
-                          Q_OPENGL_EXPORT \
-                          Q_OPENVG_EXPORT \
-                          Q_OUTOFLINE_TEMPLATE \
-                          Q_PRINTSUPPORT_EXPORT \
-                          Q_SQL_EXPORT \
-                          Q_SVG_EXPORT \
-                          Q_SCRIPT_EXPORT \
-                          Q_SCRIPTTOOLS_EXPORT \
-                          Q_WIDGETS_EXPORT \
-                          Q_XML_EXPORT \
-                          Q_XMLPATTERNS_EXPORT
-
-Cpp.ignoredirectives    = \
-                          __attribute__ \
-                          QT_FORWARD_DECLARE_CLASS \
-                          Q_CLASSINFO \
-                          Q_DECLARE_INTERFACE \
-                          Q_DECLARE_METATYPE \
-                          Q_DECLARE_OPERATORS_FOR_FLAGS \
-                          Q_DECLARE_PRIVATE \
-                          Q_DECLARE_PUBLIC \
-                          Q_DECLARE_PRIVATE_D \
-                          Q_DECLARE_SHARED \
-                          Q_DECLARE_TR_FUNCTIONS \
-                          Q_DECLARE_TYPEINFO \
-                          Q_DISABLE_COPY \
-                          Q_DUMMY_COMPARISON_OPERATOR \
-                          Q_ENUMS \
-                          Q_FLAGS \
-                          Q_INTERFACES \
-                          Q_PRIVATE_PROPERTY
-
-defines                 = Q_QDOC \
-                          QT_.*_SUPPORT \
-                          QT_.*_LIB \
-                          QT_COMPAT \
-                          QT_KEYPAD_NAVIGATION \
-                          QT_NO_EGL \
-                          Q_OS_.* \
-                          Q_BYTE_ORDER \
-                          QT_DEPRECATED \
-                          QT_DEPRECATED_* \
-                          Q_NO_USING_KEYWORD \
-                          __cplusplus \
-                          Q_COMPILER_INITIALIZER_LISTS
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-defines.qdocconf)
+include(qt-html-templates-offline.qdocconf)
+include(compat.qdocconf)
 
 dita.metadata.default.author      = Qt Project
 dita.metadata.default.permissions = all
@@ -95,3 +23,10 @@ sources.fileextensions  = "*.c++ *.cc *.cpp *.cxx *.mm *.qml *.qdoc"
 
 versionsym              = QT_VERSION_STR
 
+macro.raisedaster.HTML  = "<sup>*</sup>"
+
+#for including files into the qch file
+qhp.extraFiles += template/style/offline.css
+
+#include the external websites
+sourcedirs += externalsites
