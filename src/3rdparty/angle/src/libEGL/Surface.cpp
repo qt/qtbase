@@ -224,6 +224,22 @@ bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
         pShareHandle = &mShareHandle;
     }
 
+    // CreateTexture will fail on zero dimensions, so just release old target
+    if (!backbufferWidth || !backbufferHeight)
+    {
+        if (mRenderTarget)
+        {
+            mRenderTarget->Release();
+            mRenderTarget = NULL;
+        }
+
+        mWidth = backbufferWidth;
+        mHeight = backbufferHeight;
+        mPresentIntervalDirty = false;
+
+        return true;
+    }
+
     result = device->CreateTexture(backbufferWidth, backbufferHeight, 1, D3DUSAGE_RENDERTARGET,
                                    mConfig->mRenderTargetFormat, D3DPOOL_DEFAULT, &mOffscreenTexture, pShareHandle);
     if (FAILED(result))
