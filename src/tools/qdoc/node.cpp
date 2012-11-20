@@ -462,7 +462,7 @@ void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 */
 void Node::setSince(const QString &since)
 {
-    sinc = since.simplified();
+    since_ = since.simplified();
 }
 
 /*!

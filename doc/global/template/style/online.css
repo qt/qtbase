@@ -1,11 +1,11 @@
 body{
 font: normal 400 14px/1.2 Arial;
-margin-top:85px;
 font-family: Arial, Helvetica;
 color:#313131;
 text-align:justify;
 margin-left:5px;
 margin-right:5px;
+background: none repeat scroll 0% 0% rgb(230,231,232);
 }
 
 img{
@@ -29,7 +29,6 @@ margin-top:35px;
 /*max-width: 75%;*/
 margin-left:5px;
 text-align:justify;
-min-height:700px;
 vertical-align:top;
 }
 
@@ -67,16 +66,6 @@ text-align:left;
 
 a:visited:hover{
 text-decoration:underline;
-text-align:left;
-}
-
-a[href*="http://"], a[href*="ftp://"],a[href*="https://"]
-{
-text-decoration: none;
-background-image:url(../images/ico_out.png);
-background-repeat:no-repeat;
-background-position:left;
-padding-left:20px;
 text-align:left;
 }
 
@@ -128,13 +117,52 @@ Top navigation
 -------------------------------
 */
 
+.nav{
+text-align:right;
+margin-right:9px;
+}
+.nav img{
+    box-shadow: none;
+}
+.nav-main{
+margin-top:22px;
+margin-left: 20px;
+text-align:left
+}
+.nav-main-content{
+font-weight:bold;
+margin-right: 20px;
+display:inline-block;
+}
+.nav-subtitle{
+color: #869CD1;
+margin-left: 220px;
+}
 .header{
-
 height:1px;
 padding:0px;
 margin:0px;
 }
 
+header{
+background: none repeat scroll 0% 0% rgb(255,255,255);
+border-radius: 10px 10px 10px 10px;
+padding: 10px;
+box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+header h1{
+display:block;
+line-height: 70px;
+font-size: 30px;
+margin-left: 223px;
+}
+header img{
+box-shadow: none;
+border: 0;
+position: absolute;
+left: 30px;
+}
 .qtref{
 display: block;
 position: relative;
@@ -148,20 +176,15 @@ float:right;
 
 .naviNextPrevious{
 display: block;
-position: relative;
 text-align: right;
-top: -53px;
 float:right;
-height:20px;
 z-index:1;
 padding-right:10px;
-padding-top:2px;
 vertical-align:top;
-margin:0px;
 }
 
 
-.naviNextPrevious > a:first-child{
+.naviNextPrevious > a.prevPage {
 background-image:url(../images/btn_prev.png);
 background-repeat:no-repeat;
 background-position:left;
@@ -170,7 +193,7 @@ height:20px;
 padding-left:20px;
 }
 
-.naviNextPrevious > a:last-child{
+.naviNextPrevious > a.nextPage {
 background-image:url(../images/btn_next.png);
 background-repeat:no-repeat;
 background-position:right;
@@ -243,6 +266,30 @@ padding-right:20px;
 padding-left:10px;
 }
 
+/*
+-----------
+footer and license
+-----------
+*/
+.footer{
+text-align:center
+}
+/*
+-----------
+main content
+-----------
+*/
+.line{
+text-align: left;
+background: none repeat scroll 0% 0% rgb(255,255,255);
+border-radius: 10px 10px 10px 10px;
+padding-left: 14px;
+padding-right: 14px;
+box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+margin-top: 10px;
+padding-bottom: 35px;
+}
+
 
 /* table of content
 no display
@@ -264,12 +311,7 @@ left: 0;
 padding-bottom: 20px;
 padding-left: 10px;
 padding-top: 20px;
-position: absolute;
-right: 0;
-top: 0;
-background-color:#E6E6E6;
-border-bottom: 1px #CCC solid;
-border-top: 2px #CCC solid;
+border-bottom: 1px #CCC solid ;
 font-weight:bold;
 margin-left:0px;
 margin-right:0px;
@@ -285,11 +327,13 @@ font: 500 16px/1.2 Arial;
 font-weight:100;
 background-color:#F2F3F4;
 padding:4px;
+padding-left:14px;
 margin-bottom:30px;
 margin-top:30px;
+margin-left:-10px;
+margin-right:-5px;
 border-top:#E0E0DE 1px solid;
 border-bottom: #E0E0DE 1px solid;
-max-width: 99%;
 }
 
 h3{
@@ -564,7 +608,7 @@ text-align:left;
 z-index:2;
 margin-left:20px;
 margin-right:20px;
-margin-top:0px;
+margin-top:85px;
 padding-top:0px;
 }
 }
@@ -586,7 +630,6 @@ padding-left:5px;
 width:160px;
 padding-left:10px;
 padding-right:5px;
-padding-bottom:10px;
 padding-top:10px;
 }
 
@@ -620,3 +663,87 @@ border:none;}
 .clearfix{
 clear:both;}
 
+/* start index box */
+.indexbox
+{
+width: 100%;
+display:inline-block;
+}
+
+.indexboxcont
+{
+display: block;
+
+}
+
+.indexboxcont .section
+{
+display: inline-block;
+width: 49%;
+*width:42%;
+_width:42%;
+padding:0 2% 0 1%;
+vertical-align:top;
+}
+
+.indexboxcont .indexIcon
+{
+width: 11%;
+*width:18%;
+_width:18%;
+overflow:hidden;
+}
+
+.indexboxcont .section {
+  float: left;
+}
+
+.indexboxcont .section p
+{
+padding-top: 20px;
+padding-bottom: 20px;
+}
+.indexboxcont .sectionlist
+{
+display: inline-block;
+vertical-align:top;
+width: 32.5%;
+padding: 0;
+}
+.indexboxcont .sectionlist ul
+{
+margin-bottom: 20px;
+}
+
+.indexboxcont .sectionlist ul li
+{
+line-height: 12px;
+}
+
+.content .indexboxcont li
+{
+font: normal bold 13px/1 Verdana;
+}
+
+.content .normallist li
+{
+font: normal 13px/1 Verdana;
+}
+
+.indexbox .indexIcon {
+width: 11%;
+}
+
+.indexbox .indexIcon span
+{
+display: block;
+}
+
+.indexboxcont:after
+{
+content: ".";
+display: block;
+height: 0;
+clear: both;
+visibility: hidden;
+}

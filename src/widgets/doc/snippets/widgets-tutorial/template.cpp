@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 //! [main.cpp body]
-#include <QtGui>
+#include <QtWidgets>
 
 // Include header files for application components.
 // ...

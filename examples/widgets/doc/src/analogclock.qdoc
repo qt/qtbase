@@ -28,9 +28,9 @@
 /*!
     \example widgets/analogclock
     \title Analog Clock Example
-
-    The Analog Clock example shows how to draw the contents of a custom
-    widget.
+    \ingroup examples-widgets
+    \brief The Analog Clock example shows how to draw the contents of a
+    custom widget.
 
     \image analogclock-example.png Screenshot of the Analog Clock example
 

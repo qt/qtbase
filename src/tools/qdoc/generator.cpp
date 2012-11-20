@@ -697,12 +697,14 @@ void Generator::generateBody(const Node *node, CodeMarker *marker)
                         if (!best.isEmpty() && !documentedItems.contains(best))
                             details = tr("Maybe you meant '%1'?").arg(best);
 
-                        node->doc().location().warning(tr("No such enum item '%1' in %2").arg(*a).arg(node->plainFullName()), details);
+                        node->doc().location().warning(tr("No such enum item '%1' in %2")
+                                                       .arg(*a).arg(node->plainFullName()), details);
                         if (*a == "Void")
                             qDebug() << "VOID:" << node->name() << definedItems;
                     }
                     else if (!documentedItems.contains(*a)) {
-                        node->doc().location().warning(tr("Undocumented enum item '%1' in %2").arg(*a).arg(node->plainFullName()));
+                        node->doc().location().warning(tr("Undocumented enum item '%1' in %2")
+                                                       .arg(*a).arg(node->plainFullName()));
                     }
                     ++a;
                 }
@@ -1484,22 +1486,24 @@ void Generator::initialize(const Config &config)
 
         QDir dirInfo;
         if (dirInfo.exists(outDir_)) {
-            if (!Config::removeDirContents(outDir_))
-                config.lastLocation().error(tr("Cannot empty output directory '%1'").arg(outDir_));
+            if (!runGenerateOnly()) {
+                if (!Config::removeDirContents(outDir_))
+                    config.lastLocation().error(tr("Cannot empty output directory '%1'").arg(outDir_));
+            }
         }
         else {
             if (!dirInfo.mkpath(outDir_))
                 config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_));
         }
 
-        if (!dirInfo.mkdir(outDir_ + "/images"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/images"));
-        if (!dirInfo.mkdir(outDir_ + "/images/used-in-examples"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/images/used-in-examples"));
-        if (!dirInfo.mkdir(outDir_ + "/scripts"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/scripts"));
-        if (!dirInfo.mkdir(outDir_ + "/style"))
-            config.lastLocation().fatal(tr("Cannot create output directory '%1'").arg(outDir_ + "/style"));
+        if (!dirInfo.exists(outDir_ + "/images") && !dirInfo.mkdir(outDir_ + "/images"))
+            config.lastLocation().fatal(tr("Cannot create images directory '%1'").arg(outDir_ + "/images"));
+        if (!dirInfo.exists(outDir_ + "/images/used-in-examples") && !dirInfo.mkdir(outDir_ + "/images/used-in-examples"))
+            config.lastLocation().fatal(tr("Cannot create images used in examples directory '%1'").arg(outDir_ + "/images/used-in-examples"));
+        if (!dirInfo.exists(outDir_ + "/scripts") && !dirInfo.mkdir(outDir_ + "/scripts"))
+            config.lastLocation().fatal(tr("Cannot create scripts directory '%1'").arg(outDir_ + "/scripts"));
+        if (!dirInfo.exists(outDir_ + "/style") && !dirInfo.mkdir(outDir_ + "/style"))
+            config.lastLocation().fatal(tr("Cannot create style directory '%1'").arg(outDir_ + "/style"));
     }
 
     imageFiles = config.getCleanPathList(CONFIG_IMAGES);
@@ -1524,75 +1528,37 @@ void Generator::initialize(const Config &config)
         if (outputFormats.contains((*g)->format())) {
             currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
-            QStringList extraImages = config.getCleanPathList(CONFIG_EXTRAIMAGES+Config::dot+(*g)->format());
+            QStringList extraImages = config.getCleanPathList((*g)->format() +
+                                                              Config::dot +
+                                                              CONFIG_EXTRAIMAGES);
             QStringList::ConstIterator e = extraImages.constBegin();
             while (e != extraImages.constEnd()) {
-                QString userFriendlyFilePath;
-                QString filePath = Config::findFile(config.lastLocation(),
-                                                    imageFiles,
-                                                    imageDirs,
-                                                    *e,
-                                                    imgFileExts[(*g)->format()],
-                                                    userFriendlyFilePath);
+                QString filePath = *e;
                 if (!filePath.isEmpty())
-                    Config::copyFile(config.lastLocation(),
-                                     filePath,
-                                     userFriendlyFilePath,
-                                     (*g)->outputDir() +
-                                     "/images");
+                    Config::copyFile(config.lastLocation(), filePath, filePath,
+                                     (*g)->outputDir() + "/images");
                 ++e;
             }
 
             // Documentation template handling
-            QString templateDir = config.getString((*g)->format() + Config::dot + CONFIG_TEMPLATEDIR);
-
-            QStringList searchDirs;
-            if (!templateDir.isEmpty()) {
-                searchDirs.append(templateDir);
+            QStringList scripts = config.getPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
+            e = scripts.constBegin();
+            while (e != scripts.constEnd()) {
+                QString filePath = *e;
+                if (!filePath.isEmpty())
+                    Config::copyFile(config.lastLocation(), filePath, filePath,
+                                     (*g)->outputDir() + "/scripts");
+                ++e;
             }
-            if (!Config::installDir.isEmpty()) {
-                searchDirs.append(Config::installDir);
-            }
 
-            if (!searchDirs.isEmpty()) {
-                QStringList noExts;
-                QStringList scripts = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_SCRIPTS);
-                e = scripts.constBegin();
-                while (e != scripts.constEnd()) {
-                    QString userFriendlyFilePath;
-                    QString filePath = Config::findFile(config.lastLocation(),
-                                                        scriptFiles,
-                                                        searchDirs,
-                                                        *e,
-                                                        noExts,
-                                                        userFriendlyFilePath);
-                    if (!filePath.isEmpty())
-                        Config::copyFile(config.lastLocation(),
-                                         filePath,
-                                         userFriendlyFilePath,
-                                         (*g)->outputDir() +
-                                         "/scripts");
-                    ++e;
-                }
-
-                QStringList styles = config.getCleanPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
-                e = styles.constBegin();
-                while (e != styles.constEnd()) {
-                    QString userFriendlyFilePath;
-                    QString filePath = Config::findFile(config.lastLocation(),
-                                                        styleFiles,
-                                                        searchDirs,
-                                                        *e,
-                                                        noExts,
-                                                        userFriendlyFilePath);
-                    if (!filePath.isEmpty())
-                        Config::copyFile(config.lastLocation(),
-                                         filePath,
-                                         userFriendlyFilePath,
-                                         (*g)->outputDir() +
-                                         "/style");
-                    ++e;
-                }
+            QStringList styles = config.getPathList((*g)->format()+Config::dot+CONFIG_STYLESHEETS);
+            e = styles.constBegin();
+            while (e != styles.constEnd()) {
+                QString filePath = *e;
+                if (!filePath.isEmpty())
+                    Config::copyFile(config.lastLocation(), filePath, filePath,
+                                     (*g)->outputDir() + "/style");
+                ++e;
             }
         }
         ++g;

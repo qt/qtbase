@@ -28,8 +28,8 @@
 /*!
 \example widgets/charactermap
 \title Character Map Example
-
-The Character Map example shows how to create a custom widget that can
+\ingroup examples-widgets
+\brief The Character Map example shows how to create a custom widget that can
 both display its own content and respond to user input.
 
 The example displays an array of characters which the user can click on

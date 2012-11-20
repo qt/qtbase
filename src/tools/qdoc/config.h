@@ -49,12 +49,26 @@
 #include <qmap.h>
 #include <qset.h>
 #include <qstringlist.h>
-
+#include <qstack.h>
+#include <qpair.h>
 #include "location.h"
 
 QT_BEGIN_NAMESPACE
 
-typedef QMultiMap<QString, QString> QStringMultiMap;
+/*
+  In QStringPair, the first string is the path to a directory;
+  the second string is some value.
+ */
+typedef QPair<QString, QString> QStringPair;
+
+/*
+  In QStringListPair, the first string is the path to a directory;
+  the string list is a list of string values.
+ */
+typedef QPair<QString, QStringList> QStringListPair;
+typedef QMultiMap<QString, QStringPair> QStringPairMultiMap;
+typedef QMap<QString, QStringPair> QStringPairMap;
+typedef QMap<QString, QStringListPair> QStringListPairMap;
 
 class Config
 {
@@ -68,20 +82,22 @@ public:
 
     const QString& programName() const { return prog; }
     const Location& location() const { return loc; }
-    const Location& lastLocation() const { return lastLoc; }
+    const Location& lastLocation() const { return lastLocation_; }
     bool getBool(const QString& var) const;
     int getInt(const QString& var) const;
     QString getOutputDir() const;
     QSet<QString> getOutputFormats() const;
     QString getString(const QString& var) const;
+    QString getPath(const QString& var) const;
     QSet<QString> getStringSet(const QString& var) const;
     QStringList getStringList(const QString& var) const;
     QStringList getCanonicalRelativePathList(const QString& var) const;
     QStringList getCleanPathList(const QString& var) const;
+    QStringList getPathList(const QString& var) const;
     QRegExp getRegExp(const QString& var) const;
     QList<QRegExp> getRegExpList(const QString& var) const;
     QSet<QString> subVars(const QString& var) const;
-    void subVarsAndValues(const QString& var, QStringMultiMap& t) const;
+    void subVarsAndValues(const QString& var, QStringPairMap& t) const;
     QStringList getAllFiles(const QString& filesVar,
                             const QString& dirsVar,
                             const QSet<QString> &excludedDirs = QSet<QString>(),
@@ -111,6 +127,8 @@ public:
                             const QString& targetDirPath);
     static int numParams(const QString& value);
     static bool removeDirContents(const QString& dir);
+    static void pushWorkingDir(const QString& dir);
+    static QString popWorkingDir();
 
     QT_STATIC_CONST QString dot;
 
@@ -125,14 +143,18 @@ private:
 
     QString prog;
     Location loc;
-    Location lastLoc;
+    Location lastLocation_;
     QMap<QString, Location> locMap;
-    QMap<QString, QStringList> stringListValueMap;
     QMap<QString, QString> stringValueMap;
+    QMap<QString, QStringList> stringListValueMap;
+
+    QStringPairMap      stringPairMap;
+    QStringListPairMap  stringListPairMap;
 
     static QMap<QString, QString> uncompressedFiles;
     static QMap<QString, QString> extractedDirs;
     static int numInstances;
+    static QStack<QString> workingDirs_;
 };
 
 #define CONFIG_ALIAS                    "alias"

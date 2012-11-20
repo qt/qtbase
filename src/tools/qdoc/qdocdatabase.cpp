@@ -321,7 +321,7 @@ void QDocDatabase::findAllClasses(const InnerNode* node)
 {
     NodeList::const_iterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
-        if ((*c)->access() != Node::Private && (*c)->url().isEmpty()) {
+        if ((*c)->access() != Node::Private) {
             if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
                 QString className = (*c)->name();
                 if ((*c)->parent() &&
@@ -344,8 +344,9 @@ void QDocDatabase::findAllClasses(const InnerNode* node)
                 }
 
                 QString serviceName = (static_cast<const ClassNode *>(*c))->serviceName();
-                if (!serviceName.isEmpty())
+                if (!serviceName.isEmpty()) {
                     serviceClasses_.insert(serviceName, *c);
+                }
             }
             else if ((*c)->type() == Node::Document &&
                      (*c)->subType() == Node::QmlClass &&
@@ -372,7 +373,7 @@ void QDocDatabase::findAllFunctions(const InnerNode* node)
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
-            if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
+            if ((*c)->isInnerNode()) {
                 findAllFunctions(static_cast<const InnerNode*>(*c));
             }
             else if ((*c)->type() == Node::Function) {
@@ -415,15 +416,13 @@ void QDocDatabase::findAllNamespaces(const InnerNode* node)
     NodeList::ConstIterator c = node->childNodes().constBegin();
     while (c != node->childNodes().constEnd()) {
         if ((*c)->access() != Node::Private) {
-            if ((*c)->isInnerNode() && (*c)->url().isEmpty()) {
+            if ((*c)->isInnerNode()) {
                 findAllNamespaces(static_cast<const InnerNode *>(*c));
                 if ((*c)->type() == Node::Namespace) {
-                    const NamespaceNode* nspace = static_cast<const NamespaceNode *>(*c);
                     // Ensure that the namespace's name is not empty (the root
                     // namespace has no name).
-                    if (!nspace->name().isEmpty()) {
-                        namespaceIndex_.insert(nspace->name(), *c);
-                    }
+                    if (!(*c)->name().isEmpty())
+                        namespaceIndex_.insert((*c)->name(), *c);
                 }
             }
         }
@@ -467,12 +466,11 @@ void QDocDatabase::findAllSince(const InnerNode* node)
                     nsmap.value().insert(func->name(),(*child));
                 }
             }
-            else if ((*child)->url().isEmpty()) {
-                if ((*child)->type() == Node::Class && !(*child)->doc().isEmpty()) {
+            else {
+                if ((*child)->type() == Node::Class) {
                     // Insert classes into the since and class maps.
                     QString className = (*child)->name();
-                    if ((*child)->parent() && (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty()) {
+                    if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
                         className = (*child)->parent()->name()+"::"+className;
                     }
                     nsmap.value().insert(className,(*child));
@@ -481,8 +479,7 @@ void QDocDatabase::findAllSince(const InnerNode* node)
                 else if ((*child)->subType() == Node::QmlClass) {
                     // Insert QML elements into the since and element maps.
                     QString className = (*child)->name();
-                    if ((*child)->parent() && (*child)->parent()->type() == Node::Namespace &&
-                        !(*child)->parent()->name().isEmpty()) {
+                    if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
                         className = (*child)->parent()->name()+"::"+className;
                     }
                     nsmap.value().insert(className,(*child));
@@ -493,17 +490,15 @@ void QDocDatabase::findAllSince(const InnerNode* node)
                     QString propertyName = (*child)->name();
                     nsmap.value().insert(propertyName,(*child));
                 }
-            }
-            else {
-                // Insert external documents into the general since map.
-                QString name = (*child)->name();
-                if ((*child)->parent() && (*child)->parent()->type() == Node::Namespace &&
-                    !(*child)->parent()->name().isEmpty()) {
-                    name = (*child)->parent()->name()+"::"+name;
+                else {
+                    // Insert external documents into the general since map.
+                    QString name = (*child)->name();
+                    if ((*child)->parent() && !(*child)->parent()->name().isEmpty()) {
+                        name = (*child)->parent()->name()+"::"+name;
+                    }
+                    nsmap.value().insert(name,(*child));
                 }
-                nsmap.value().insert(name,(*child));
             }
-
             // Recursively find child nodes with since commands.
             if ((*child)->isInnerNode()) {
                 findAllSince(static_cast<InnerNode *>(*child));

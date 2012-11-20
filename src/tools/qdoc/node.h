@@ -222,7 +222,7 @@ public:
     Status inheritedStatus() const;
     ThreadSafeness threadSafeness() const;
     ThreadSafeness inheritedThreadSafeness() const;
-    QString since() const { return sinc; }
+    QString since() const { return since_; }
     QString templateStuff() const { return templateStuff_; }
     PageType pageType() const { return pageType_; }
     QString pageTypeString() const;
@@ -280,7 +280,7 @@ private:
     QMap<LinkType, QPair<QString, QString> > linkMap_;
     QString moduleName_;
     QString url_;
-    QString sinc;
+    QString since_;
     QString templateStuff_;
     mutable QString uuid_;
     QString outSubDir_;

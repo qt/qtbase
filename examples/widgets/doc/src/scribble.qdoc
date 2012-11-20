@@ -28,8 +28,8 @@
 /*!
     \example widgets/scribble
     \title Scribble Example
-
-    The Scribble example shows how to reimplement some of QWidget's
+    \ingroup examples-widgets
+    \brief The Scribble example shows how to reimplement some of QWidget's
     event handlers to receive the events generated for the
     application's widgets.
 

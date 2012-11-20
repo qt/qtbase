@@ -28,8 +28,8 @@
 /*!
     \example widgets/windowflags
     \title Window Flags Example
-
-    The Window Flags example shows how to use the window flags
+    \ingroup examples-widgets
+    \brief The Window Flags example shows how to use the window flags
     available in Qt.
 
     A window flag is either a type or a hint. A type is used to

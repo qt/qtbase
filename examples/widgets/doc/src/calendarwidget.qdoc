@@ -28,8 +28,8 @@
 /*!
     \title Calendar Widget Example
     \example widgets/calendarwidget
-
-    The Calendar Widget example shows use of \c QCalendarWidget.
+    \ingroup examples-widgets
+    \brief The Calendar Widget example shows use of \c QCalendarWidget.
 
     \image calendarwidgetexample.png
 

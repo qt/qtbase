@@ -83,6 +83,7 @@ HelpProjectWriter::HelpProjectWriter(const Config &config,
         if (project.fileName.isEmpty())
             project.fileName = defaultFileName;
         project.extraFiles = config.getStringSet(prefix + "extraFiles");
+        project.extraFiles += config.getStringSet(CONFIG_QHP + Config::dot + "extraFiles");
         project.indexTitle = config.getString(prefix + "indexTitle");
         project.indexRoot = config.getString(prefix + "indexRoot");
         project.filterAttributes = config.getStringList(prefix + "filterAttributes").toSet();

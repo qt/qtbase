@@ -28,9 +28,11 @@
 /*!
     \example widgets/movie
     \title Movie Example
+    \ingroup examples-widgets
+    \brief The Movie example demonstrates how to use QMovie and QLabel to
+    display animations.
 
-    The Movie example demonstrates how to use QMovie and QLabel to
-    display animations. QMovie is mostly useful if one wants to play
+    QMovie is mostly useful if one wants to play
     a simple animation without the added complexity of a multimedia
     framework to install and deploy.
 

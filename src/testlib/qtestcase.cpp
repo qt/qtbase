@@ -93,10 +93,9 @@ QT_BEGIN_NAMESPACE
    \inmodule QtTest
 
    \brief The QTest namespace contains all the functions and
-   declarations that are related to the QTestLib tool.
+   declarations that are related to Qt Test.
 
-   Please refer to the \l{QTestLib Manual} documentation for information on
-   how to write unit tests.
+   See the \l{Qt Test Overview} for information about how to write unit tests.
 */
 
 /*! \macro QVERIFY(condition)
@@ -486,7 +485,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet qtestlib/tutorial5/benchmarking.cpp 0
 
-    \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
+    \sa {Qt Test Overview#Creating a Benchmark}{Creating a Benchmark},
         {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
 */
 
@@ -507,7 +506,7 @@ QT_BEGIN_NAMESPACE
     once. The elapsed time will be reported as "0" if it's to short to
     be measured by the selected backend. (Use)
 
-    \sa {QTestLib Manual#Creating a Benchmark}{Creating a Benchmark},
+    \sa {Qt Test Overview#Creating a Benchmark}{Creating a Benchmark},
     {Chapter 5: Writing a Benchmark}{Writing a Benchmark}
 */
 

@@ -28,8 +28,8 @@
 /*!
     \example widgets/codeeditor
     \title Code Editor Example
-
-    The Code Editor example shows how to create a simple editor that
+    \ingroup examples-widgets
+    \brief The Code Editor example shows how to create a simple editor that
     has line numbers and that highlights the current line.
 
     \image codeeditor-example.png

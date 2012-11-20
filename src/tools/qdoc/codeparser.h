@@ -72,6 +72,7 @@ public:
     bool isParsingCpp() const;
     bool isParsingQdoc() const;
     const QString& currentFile() const { return currentFile_; }
+    void checkModuleInclusion(Node* n);
 
     static void initialize(const Config& config);
     static void terminate();

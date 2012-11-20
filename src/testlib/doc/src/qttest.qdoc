@@ -27,15 +27,15 @@
 
 /*!
     \module QtTest
-    \title QtTest Module
+    \title Qt Test C++ Classes
     \ingroup modules
 
     \keyword QtTest
 
-    \brief The QtTest module provides classes for unit testing Qt applications and libraries.
+    \brief Provides classes for unit testing Qt applications and libraries.
 
     Applications that use Qt's unit testing classes need to
-    be configured to be built against the QtTest module.
+    be configured to be built against the Qt Test module.
     To include the definitions of the module's classes, use the
     following directive:
 
@@ -46,9 +46,8 @@
 
     \snippet code/doc_src_qttest.pro 1
 
-    See the \l{QTestLib Manual} for a detailed introduction on how to use
+    See \l{Qt Test Overview} for an introduction on how to use
     Qt's unit testing features with your applications.
 
-    The QtTest module is part of all \l{Qt editions}.
 */
 

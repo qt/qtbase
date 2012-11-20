@@ -59,7 +59,13 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
 
 !contains(QMAKE_EXTRA_TARGETS, docs) {
     contains(TEMPLATE, subdirs) {
-        prepareRecursiveTarget(docs)
+        prepare_docs {
+            prepareRecursiveTarget(prepare_docs)
+            prepareRecursiveTarget(generate_docs)
+            docs.commands = $(MAKE) -f $(MAKEFILE) prepare_docs && $(MAKE) -f $(MAKEFILE) generate_docs
+        } else {
+            prepareRecursiveTarget(docs)
+        }
     } else {
         # apps and libs only generate docs if QMAKE_DOCS is set
         !isEmpty(QMAKE_DOCS) {
@@ -68,10 +74,19 @@ QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
             for(index, QMAKE_DOCS_INDEX):QDOC_INDEX += -indexdir $$index
             !isEmpty(QMAKE_DOCS_OUTPUTDIR):QMAKE_DOCS_OPTIONS += -outputdir $$QMAKE_DOCS_OUTPUTDIR
             !isEmpty(QMAKE_DOCS_INSTALLDIR):QMAKE_DOCS_OPTIONS += -installdir $$QMAKE_DOCS_INSTALLDIR
-            docs.commands += $$QDOC $$QMAKE_DOCS_OPTIONS $$QDOC_INDEX $$QMAKE_DOCS
+            doc_command = $$QDOC $$QMAKE_DOCS_OPTIONS $$QDOC_INDEX $$QMAKE_DOCS
+
+            prepare_docs {
+                prepare_docs.commands += $$doc_command -prepare -no-link-errors
+                generate_docs.commands += $$doc_command -generate
+                docs.depends += generate_docs
+            } else {
+                docs.commands += $$doc_command
+            }
         }
     }
     QMAKE_EXTRA_TARGETS += docs
+    prepare_docs: QMAKE_EXTRA_TARGETS += prepare_docs generate_docs
 }
 
 !contains(QMAKE_EXTRA_TARGETS, install_docs) {

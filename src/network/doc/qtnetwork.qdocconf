@@ -1,37 +1,31 @@
-include($QT_INSTALL_DOCS/global/qt-html-templates-offline.qdocconf)
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtNetwork
 description             = Qt Network Reference Documentation
-url                     = http://qt-project.org/doc/qt-5.0/qtnetwork
+url                     = http://qt-project.org/doc/qtnetwork
 version                 = 5.0.0
 
 qhp.projects            = QtNetwork
 
 qhp.QtNetwork.file         = qtnetwork.qhp
 qhp.QtNetwork.namespace           = org.qt-project.qtnetwork.500
-qhp.QtNetwork.virtualFolder       = qdoc
-qhp.QtNetwork.indexTitle          = Qt Network Reference Documentation
+qhp.QtNetwork.virtualFolder       = qtnetwork
+qhp.QtNetwork.indexTitle          = Qt Network
 qhp.QtNetwork.indexRoot           =
 
 qhp.QtNetwork.filterAttributes    = qtnetwork 5.0.0 qtrefdoc
 qhp.QtNetwork.customFilters.Qt.name = QtNetwork 5.0.0
 qhp.QtNetwork.customFilters.Qt.filterAttributes = qtnetwork 5.0.0
-qhp.QtNetwork.subprojects         = classes overviews examples
-qhp.QtNetwork.subprojects.classes.title = Classes
-qhp.QtNetwork.subprojects.classes.indexTitle = Qt Network's Classes
+
+qhp.QtNetwork.subprojects         = classes
+qhp.QtNetwork.subprojects.classes.title = C++ Classes
+qhp.QtNetwork.subprojects.classes.indexTitle = Qt Network C++ Classes
 qhp.QtNetwork.subprojects.classes.selectors = class fake:headerfile
 qhp.QtNetwork.subprojects.classes.sortPages = true
-qhp.QtNetwork.subprojects.overviews.title = Overviews
-qhp.QtNetwork.subprojects.overviews.indexTitle = All Overviews and HOWTOs
-qhp.QtNetwork.subprojects.overviews.selectors = fake:page,group,module
-qhp.QtNetwork.subprojects.examples.title = Qt Network Examples
-qhp.QtNetwork.subprojects.examples.indexTitle = Qt Network Examples
-qhp.QtNetwork.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtnetwork/qtnetwork.tags
 
-depends                 += qtcore
+depends                 += qtcore qtgui qtdoc
 
 headerdirs  += ..
 

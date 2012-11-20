@@ -28,9 +28,11 @@
 /*!
     \example widgets/imageviewer
     \title Image Viewer Example
+    \ingroup examples-widgets
+    \brief The example shows how to combine QLabel and QScrollArea to
+    display an image.
 
-    The example shows how to combine QLabel and QScrollArea to
-    display an image. QLabel is typically used for displaying text,
+    QLabel is typically used for displaying text,
     but it can also display an image. QScrollArea provides a
     scrolling view around another widget. If the child widget exceeds
     the size of the frame, QScrollArea automatically provides scroll
