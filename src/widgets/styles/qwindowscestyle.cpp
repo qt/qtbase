@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qwindowscestyle.h"
+#include "qwindowscestyle_p.h"
 
 #if !defined(QT_NO_STYLE_WINDOWSCE) || defined(QT_PLUGIN)
 
@@ -50,7 +50,7 @@
 #include "qpaintengine.h"
 #include "qpainter.h"
 #include "qstyleoption.h"
-#include "qwindowscestyle_p.h"
+#include "qwindowscestyle_p_p.h"
 #include "qdebug.h"
 #include "qdrawutil.h"
 

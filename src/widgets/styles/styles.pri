@@ -121,7 +121,8 @@ contains( styles, fusion ) {
 }
 
 contains( styles, windowsce ) {
-    HEADERS += styles/qwindowscestyle.h
+    HEADERS += styles/qwindowscestyle_p.h
+    HEADERS += styles/qwindowscestyle_p_p.h
     SOURCES += styles/qwindowscestyle.cpp
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSCE

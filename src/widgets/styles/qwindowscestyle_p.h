@@ -39,80 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSCE_P_H
-#define QWINDOWSCE_P_H
+#ifndef QWINDOWSCESTYLE_P_H
+#define QWINDOWSCESTYLE_P_H
 
-#include "qwindowscestyle.h"
-#include <private/qwindowsstyle_p.h>
+#include <QtWidgets/qwindowsstyle.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QPainter;
-class QPalette;
-class QPoint;
-class QColor;
-class QBrush;
-class QRect;
 
-// Private class
-class QWindowsCEStylePrivate : public QWindowsStylePrivate
-{   
-    Q_DECLARE_PUBLIC(QWindowsCEStyle)
+#if !defined(QT_NO_STYLE_WINDOWSCE)
+
+class QWindowsCEStyle : public QWindowsStyle
+{
+   Q_OBJECT
 public:
-    inline QWindowsCEStylePrivate()
-    { }
+    QWindowsCEStyle();
+    ~QWindowsCEStyle();
 
-    
-static void drawWinCEButton(QPainter *p, int x, int y, int w, int h,
-                            const QPalette &pal, bool sunken = false,
-                            const QBrush *fill = 0);
+    void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
+                       QPainter *painter, const QWidget *widget = 0) const;
 
-static void drawWinCEButton(QPainter *p, const QRect &r,
-                            const QPalette &pal, bool sunken = false,
-                            const QBrush *fill = 0);
+    void drawControl(ControlElement element, const QStyleOption *option,
+                     QPainter *painter, const QWidget *widget) const;
 
-static void drawWinCEPanel(QPainter *p, int x, int y, int w, int h,
-                           const QPalette &pal, bool sunken = false,
-                           const QBrush *fill = 0);
+    void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
+                            QPainter *painter, const QWidget *widget) const;
 
-static void drawWinCEPanel(QPainter *p, const QRect &r,
-                           const QPalette &pal, bool sunken = false,
-                           const QBrush *fill = 0);
+    virtual void drawItemText(QPainter *painter, const QRect &rect,
+                              int flags, const QPalette &pal, bool enabled,
+                              const QString &text, QPalette::ColorRole textRole = QPalette::NoRole) const;
 
-static void drawWinShades(QPainter *p,
-                          int x, int y, int w, int h,
-                          const QColor &c1, const QColor &c2,
-                          const QColor &c3, const QColor &c4,
-                          const QBrush *fill);
+    QSize sizeFromContents(ContentsType type, const QStyleOption *option,
+                           const QSize &size, const QWidget *widget) const;
 
-static void drawWinCEShades(QPainter *p,
-                            int x, int y, int w, int h,
-                            const QColor &c1, const QColor &c2,
-                            const QColor &c3, const QColor &c4,
-                            const QBrush *fill);
+    QRect subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const;
+    QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt,
+                         SubControl sc, const QWidget *widget) const;
 
-static void drawWinCEShadesSunken(QPainter *p,
-                                  int x, int y, int w, int h,
-                                  const QColor &c1, const QColor &c2,
-                                  const QColor &c3, const QColor &c4,
-                                  const QBrush *fill);
+    SubControl hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option,
+                                     const QPoint &pos, const QWidget *widget = 0) const;
 
+    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
+                           const QWidget *widget = 0) const;
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const;
 
+    int styleHint(StyleHint hint, const QStyleOption *opt = 0, const QWidget *widget = 0,
+                  QStyleHintReturn *returnData = 0) const;
 
-
+    void polish(QWidget *widget);
+    void polish(QPalette &palette);
+    void polish(QApplication *app);
+    QPalette standardPalette() const;
 };
+
+#endif // QT_NO_STYLE_WINDOWSCE
 
 QT_END_NAMESPACE
 
-#endif //QWINDOWSCE_P_H
+QT_END_HEADER
+
+#endif // QWINDOWSCESTYLE_P_H

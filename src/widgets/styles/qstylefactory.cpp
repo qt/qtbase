@@ -59,7 +59,7 @@
 #include "qwindowsvistastyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSCE
-#include "qwindowscestyle.h"
+#include "qwindowscestyle_p.h"
 #endif
 #ifndef QT_NO_STYLE_WINDOWSMOBILE
 #include "qwindowsmobilestyle.h"

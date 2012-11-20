@@ -75,10 +75,6 @@
 #include <QMacStyle>
 #endif
 
-#ifdef Q_OS_WINCE
-#include <QWindowsCEStyle>
-#endif
-
 #ifdef Q_OS_WINCE_WM
 #include <QWindowsMobileStyle>
 #include <windows.h>
@@ -541,8 +537,9 @@ void tst_QStyle::testMacStyle()
 // WindowsCEStyle style
 void tst_QStyle::testWindowsCEStyle()
 {
-    QWindowsCEStyle cstyle;
+    QStyle *cstyle = QStyleFactory::create("WindowsCE");
     QVERIFY(testAllFunctions(&cstyle));
+    delete cstyle;
 }
 #endif
 
