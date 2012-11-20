@@ -18,10 +18,6 @@ max-width: 800px;
 height: auto
 }
 
-b{
-font-weight:600;
-}
-
 .content{}
 
 .descr{
@@ -29,7 +25,6 @@ margin-top:35px;
 /*max-width: 75%;*/
 margin-left:5px;
 text-align:justify;
-min-height:700px;
 vertical-align:top;
 }
 
@@ -48,25 +43,23 @@ links
 */
 
 a:link{
-color: #2C418D;
+color: #007330;
 text-decoration: none;
 text-align:left;
 }
 
 a:hover{
-color: #869CD1;
-text-decoration:underline;
+color: #44a51c;
 text-align:left;
 }
 
 a:visited{
-color: #869CD1;
-text-decoration: none;
+color: #007330;
 text-align:left;
 }
 
 a:visited:hover{
-text-decoration:underline;
+color: #44a51c;
 text-align:left;
 }
 
@@ -129,7 +122,6 @@ Top navigation
 */
 
 .header{
-
 height:1px;
 padding:0px;
 margin:0px;
@@ -290,6 +282,7 @@ margin-top:30px;
 border-top:#E0E0DE 1px solid;
 border-bottom: #E0E0DE 1px solid;
 max-width: 99%;
+overflow: hidden;
 }
 
 h3{
@@ -316,7 +309,7 @@ font-weight:bold;
 max-width:75%;
 font-size:14px;
 margin:0px;
-margin-top:30px;
+margin-top:45px;
 
 }
 
@@ -473,7 +466,7 @@ margin: 10;
 overflow: hidden;
 overflow-x: hidden;
 overflow-y: hidden;
-padding: 20px 0 20px 0;
+padding: 20px 20px 20px 20px;
 }
 
 .footer{
@@ -583,39 +576,31 @@ padding-left:5px;
 
 
 .toc ul{
-width:160px;
 padding-left:10px;
 padding-right:5px;
-padding-bottom:10px;
-padding-top:10px;
 }
 
 .toc ul li{
-margin-left:20px;
+margin-left:15px;
 list-style-image:url(../images/blu_dot.png);
 list-style:outside;
-
+marker-offset: 0px;
+margin-bottom:8px;
+padding-left:0px;
 }
 
-
-.toc ul li a:link{
-color: #2C418D;
-text-decoration: none;
-}
-
-.toc ul li a:hover{
-color: #869CD1;
-text-decoration:underline;
-
-}
-
-.toc ul li a:visited{
-color: #869CD1;
-font-weight: bold;
-}
-
-.level1{
+.toc .level1{
 border:none;}
+
+.toc .level2{
+border:none;
+margin-left: 25px;
+}
+
+.level3{
+border:none;
+margin-left: 30px;
+}
 
 .clearfix{
 clear:both;}
