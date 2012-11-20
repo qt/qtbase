@@ -1307,7 +1307,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
                               && (p->transform().type() > QTransform::TxTranslate);
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing);
-    p->fillRect(QRectF(x, y, qreal(width), (base + descent + 1).toReal()), p->pen().brush());
+    p->fillRect(QRectF(x, y, qreal(width), (base + descent).toReal()), p->pen().brush());
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing, false);
     if (d->layoutData->hasBidi) {
