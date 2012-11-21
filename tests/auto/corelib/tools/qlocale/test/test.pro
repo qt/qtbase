@@ -1,7 +1,7 @@
 CONFIG += console testcase
 CONFIG += parallel_test
 CONFIG -= app_bundle
-QT = core testlib
+QT = core testlib core-private
 embedded: QT += gui
 SOURCES = ../tst_qlocale.cpp
 

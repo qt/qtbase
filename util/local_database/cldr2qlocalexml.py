@@ -48,6 +48,7 @@ from  xpathlite import DraftResolution
 from dateconverter import convert_date
 import re
 
+findAlias = xpathlite.findAlias
 findEntry = xpathlite.findEntry
 findEntryInFile = xpathlite._findEntryInFile
 findTagsInFile = xpathlite.findTagsInFile
@@ -116,6 +117,12 @@ def generateLocaleInfo(path):
 
     if not path.endswith(".xml"):
         return {}
+
+    # skip legacy/compatibility ones
+    alias = findAlias(path)
+    if alias:
+        raise xpathlite.Error("alias to \"%s\"" % alias)
+
     language_code = findEntryInFile(path, "identity/language", attribute="type")[0]
     if language_code == 'root':
         # just skip it
@@ -128,18 +135,16 @@ def generateLocaleInfo(path):
     # ### actually there is only one locale with variant: en_US_POSIX
     #     does anybody care about it at all?
     if variant_code:
-        return {}
+        raise xpathlite.Error("we do not support variants (\"%s\")" % variant_code)
 
     language_id = enumdata.languageCodeToId(language_code)
     if language_id <= 0:
-        sys.stderr.write("unknown language code \"" + language_code + "\"\n")
-        return {}
+        raise xpathlite.Error("unknown language code \"%s\"" % language_code)
     language = enumdata.language_list[language_id][0]
 
     script_id = enumdata.scriptCodeToId(script_code)
     if script_id == -1:
-        sys.stderr.write("unknown script code \"" + script_code + "\"\n")
-        return {}
+        raise xpathlite.Error("unknown script code \"%s\"" % script_code)
     script = enumdata.script_list[script_id][0]
 
     # we should handle fully qualified names with the territory
@@ -147,8 +152,7 @@ def generateLocaleInfo(path):
         return {}
     country_id = enumdata.countryCodeToId(country_code)
     if country_id <= 0:
-        sys.stderr.write("unknown country code \"" + country_code + "\"\n")
-        return {}
+        raise xpathlite.Error("unknown country code \"%s\"" % country_code)
     country = enumdata.country_list[country_id][0]
 
     # So we say we accept only those values that have "contributed" or
@@ -557,9 +561,13 @@ cldr_files = os.listdir(cldr_dir)
 
 locale_database = {}
 for file in cldr_files:
-    l = generateLocaleInfo(cldr_dir + "/" + file)
-    if not l:
-        sys.stderr.write("skipping file \"" + file + "\"\n")
+    try:
+        l = generateLocaleInfo(cldr_dir + "/" + file)
+        if not l:
+            sys.stderr.write("skipping file \"" + file + "\"\n")
+            continue
+    except xpathlite.Error as e:
+        sys.stderr.write("skipping file \"%s\" (%s)\n" % (file, str(e)))
         continue
 
     locale_database[(l['language_id'], l['script_id'], l['country_id'], l['variant_code'])] = l
@@ -611,16 +619,15 @@ def _parseLocale(l):
     script = "AnyScript"
     country = "AnyCountry"
 
-    if l == "und": # we are treating unknown locale like C
-        return (None, None, None)
+    if l == "und":
+        raise xpathlite.Error("we are treating unknown locale like C")
 
     items = l.split("_")
     language_code = items[0]
     if language_code != "und":
         language_id = enumdata.languageCodeToId(language_code)
         if language_id == -1:
-            sys.stderr.write("unknown language code \"" + language_code + "\"\n")
-            return (None, None, None)
+            raise xpathlite.Error("unknown language code \"%s\"" % language_code)
         language = enumdata.language_list[language_id][0]
 
     if len(items) > 1:
@@ -631,16 +638,14 @@ def _parseLocale(l):
         if len(script_code) == 4:
             script_id = enumdata.scriptCodeToId(script_code)
             if script_id == -1:
-                sys.stderr.write("unknown script code \"" + script_code + "\"\n")
-                return (None, None, None)
+                raise xpathlite.Error("unknown script code \"%s\"" % script_code)
             script = enumdata.script_list[script_id][0]
         else:
             country_code = script_code
         if country_code:
             country_id = enumdata.countryCodeToId(country_code)
             if country_id == -1:
-                sys.stderr.write("unknown country code \"" + country_code + "\"\n")
-                return (None, None, None)
+                raise xpathlite.Error("unknown country code \"%s\"" % country_code)
             country = enumdata.country_list[country_id][0]
 
     return (language, script, country)
@@ -651,13 +656,15 @@ for ns in findTagsInFile(cldr_dir + "/../supplemental/likelySubtags.xml", "likel
     for data in ns[1:][0]: # ns looks like this: [u'likelySubtag', [(u'from', u'aa'), (u'to', u'aa_Latn_ET')]]
         tmp[data[0]] = data[1]
 
-    (from_language, from_script, from_country) = _parseLocale(tmp[u"from"])
-    if not from_language:
-        sys.stderr.write("skipping likelySubtag " + tmp[u"from"] + " -> " + tmp[u"to"] + "\n")
+    try:
+        (from_language, from_script, from_country) = _parseLocale(tmp[u"from"])
+    except xpathlite.Error as e:
+        sys.stderr.write("skipping likelySubtag \"%s\" -> \"%s\" (%s)\n" % (tmp[u"from"], tmp[u"to"], str(e)))
         continue
-    (to_language, to_script, to_country) = _parseLocale(tmp[u"to"])
-    if not to_language:
-        sys.stderr.write("skipping likelySubtag " + tmp[u"from"] + " -> " + tmp[u"to"] + "\n")
+    try:
+        (to_language, to_script, to_country) = _parseLocale(tmp[u"to"])
+    except xpathlite.Error as e:
+        sys.stderr.write("skipping likelySubtag \"%s\" -> \"%s\" (%s)\n" % (tmp[u"from"], tmp[u"to"], str(e)))
         continue
     # substitute according to http://www.unicode.org/reports/tr35/#Likely_Subtags
     if to_country == "AnyCountry" and from_country != to_country:

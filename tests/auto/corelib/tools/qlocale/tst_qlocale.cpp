@@ -120,6 +120,7 @@ private slots:
     void toDateTime();
     void negativeNumbers();
     void numberOptions();
+    void testNames_data();
     void testNames();
     void dayName_data();
     void dayName();
@@ -364,15 +365,18 @@ void tst_QLocale::ctor()
         + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
     }
 
-    TEST_CTOR("zh_CN", Chinese, AnyScript, China)
+    TEST_CTOR("zh_CN", Chinese, SimplifiedHanScript, China)
     TEST_CTOR("zh_Hans_CN", Chinese, SimplifiedHanScript, China)
     TEST_CTOR("zh_Hans", Chinese, SimplifiedHanScript, China)
-    TEST_CTOR("zh_Hant", Chinese, TraditionalHanScript, HongKong)
+    TEST_CTOR("zh_Hant", Chinese, TraditionalHanScript, Taiwan)
     TEST_CTOR("zh_Hans_MO", Chinese, SimplifiedHanScript, Macau)
     TEST_CTOR("zh_Hant_MO", Chinese, TraditionalHanScript, Macau)
     TEST_CTOR("az_Latn_AZ", Azerbaijani, LatinScript, Azerbaijan)
     TEST_CTOR("ha_Arab_NG", Hausa, ArabicScript, Nigeria)
     TEST_CTOR("ha_Latn_NG", Hausa, LatinScript, Nigeria)
+
+    TEST_CTOR("ru", Russian, CyrillicScript, RussianFederation)
+    TEST_CTOR("ru_Cyrl", Russian, CyrillicScript, RussianFederation)
 
 #undef TEST_CTOR
 }
@@ -1410,370 +1414,62 @@ void tst_QLocale::negativeNumbers()
     QCOMPARE(i, -1000000);
 }
 
-struct LocaleListItem
+#include <private/qlocale_p.h>
+#include <private/qlocale_data_p.h>
+
+static const int locale_data_count = sizeof(locale_data)/sizeof(locale_data[0]);
+
+void tst_QLocale::testNames_data()
 {
-    int language;
-    int country;
-};
+    QTest::addColumn<int>("language");
+    QTest::addColumn<int>("country");
 
-// first two rows of locale_data[] in qlocale_data_p.h
-static const LocaleListItem g_locale_list[] = {
-    {      1,     0}, // C/AnyCountry
-    {      3,    69}, // Afan/Ethiopia
-    {      3,   111}, // Afan/Kenya
-    {      4,    59}, // Afar/Djibouti
-    {      4,    67}, // Afar/Eritrea
-    {      4,    69}, // Afar/Ethiopia
-    {      5,   195}, // Afrikaans/SouthAfrica
-    {      5,   148}, // Afrikaans/Namibia
-    {      6,     2}, // Albanian/Albania
-    {      7,    69}, // Amharic/Ethiopia
-    {      8,   186}, // Arabic/SaudiArabia
-    {      8,     3}, // Arabic/Algeria
-    {      8,    17}, // Arabic/Bahrain
-    {      8,    64}, // Arabic/Egypt
-    {      8,   103}, // Arabic/Iraq
-    {      8,   109}, // Arabic/Jordan
-    {      8,   115}, // Arabic/Kuwait
-    {      8,   119}, // Arabic/Lebanon
-    {      8,   122}, // Arabic/LibyanArabJamahiriya
-    {      8,   145}, // Arabic/Morocco
-    {      8,   162}, // Arabic/Oman
-    {      8,   175}, // Arabic/Qatar
-    {      8,   201}, // Arabic/Sudan
-    {      8,   207}, // Arabic/SyrianArabRepublic
-    {      8,   216}, // Arabic/Tunisia
-    {      8,   223}, // Arabic/UnitedArabEmirates
-    {      8,   237}, // Arabic/Yemen
-    {      9,    11}, // Armenian/Armenia
-    {     10,   100}, // Assamese/India
-    {     12,    15}, // Azerbaijani/Azerbaijan
-    {     12,   102}, // Azerbaijani/Iran
-    {     14,   197}, // Basque/Spain
-    {     15,    18}, // Bengali/Bangladesh
-    {     15,   100}, // Bengali/India
-    {     16,    25}, // Bhutani/Bhutan
-    {     19,    74}, // Breton/France
-    {     20,    33}, // Bulgarian/Bulgaria
-    {     21,   147}, // Burmese/Myanmar
-    {     22,    20}, // Byelorussian/Belarus
-    {     23,    36}, // Cambodian/Cambodia
-    {     24,   197}, // Catalan/Spain
-    {     25,    44}, // Chinese/China
-    {     25,    97}, // Chinese/HongKong
-    {     25,   126}, // Chinese/Macau
-    {     25,   190}, // Chinese/Singapore
-    {     25,   208}, // Chinese/Taiwan
-    {     27,    54}, // Croatian/Croatia
-    {     28,    57}, // Czech/CzechRepublic
-    {     29,    58}, // Danish/Denmark
-    {     30,   151}, // Dutch/Netherlands
-    {     30,    21}, // Dutch/Belgium
-    {     31,   225}, // English/UnitedStates
-    {     31,     4}, // English/AmericanSamoa
-    {     31,    13}, // English/Australia
-    {     31,    21}, // English/Belgium
-    {     31,    22}, // English/Belize
-    {     31,    28}, // English/Botswana
-    {     31,    38}, // English/Canada
-    {     31,    89}, // English/Guam
-    {     31,    97}, // English/HongKong
-    {     31,   100}, // English/India
-    {     31,   104}, // English/Ireland
-    {     31,   107}, // English/Jamaica
-    {     31,   133}, // English/Malta
-    {     31,   134}, // English/MarshallIslands
-    {     31,   137}, // English/Mauritius
-    {     31,   148}, // English/Namibia
-    {     31,   154}, // English/NewZealand
-    {     31,   160}, // English/NorthernMarianaIslands
-    {     31,   163}, // English/Pakistan
-    {     31,   170}, // English/Philippines
-    {     31,   190}, // English/Singapore
-    {     31,   195}, // English/SouthAfrica
-    {     31,   215}, // English/TrinidadAndTobago
-    {     31,   224}, // English/UnitedKingdom
-    {     31,   226}, // English/UnitedStatesMinorOutlyingIslands
-    {     31,   234}, // English/USVirginIslands
-    {     31,   240}, // English/Zimbabwe
-    {     33,    68}, // Estonian/Estonia
-    {     34,    71}, // Faroese/FaroeIslands
-    {     36,    73}, // Finnish/Finland
-    {     37,    74}, // French/France
-    {     37,    21}, // French/Belgium
-    {     37,    37}, // French/Cameroon
-    {     37,    38}, // French/Canada
-    {     37,    41}, // French/CentralAfricanRepublic
-    {     37,    53}, // French/IvoryCoast
-    {     37,    88}, // French/Guadeloupe
-    {     37,    91}, // French/Guinea
-    {     37,   125}, // French/Luxembourg
-    {     37,   128}, // French/Madagascar
-    {     37,   132}, // French/Mali
-    {     37,   135}, // French/Martinique
-    {     37,   142}, // French/Monaco
-    {     37,   156}, // French/Niger
-    {     37,   176}, // French/Reunion
-    {     37,   187}, // French/Senegal
-    {     37,   206}, // French/Switzerland
-    {     37,   244}, // French/Saint Barthelemy
-    {     37,   245}, // French/Saint Martin
-    {     40,   197}, // Galician/Spain
-    {     41,    81}, // Georgian/Georgia
-    {     42,    82}, // German/Germany
-    {     42,    14}, // German/Austria
-    {     42,    21}, // German/Belgium
-    {     42,   123}, // German/Liechtenstein
-    {     42,   125}, // German/Luxembourg
-    {     42,   206}, // German/Switzerland
-    {     43,    85}, // Greek/Greece
-    {     43,    56}, // Greek/Cyprus
-    {     44,    86}, // Greenlandic/Greenland
-    {     46,   100}, // Gujarati/India
-    {     47,    83}, // Hausa/Ghana
-    {     47,   156}, // Hausa/Niger
-    {     47,   157}, // Hausa/Nigeria
-    {     47,   201}, // Hausa/Sudan
-    {     48,   105}, // Hebrew/Israel
-    {     49,   100}, // Hindi/India
-    {     50,    98}, // Hungarian/Hungary
-    {     51,    99}, // Icelandic/Iceland
-    {     52,   101}, // Indonesian/Indonesia
-    {     57,   104}, // Irish/Ireland
-    {     58,   106}, // Italian/Italy
-    {     58,   206}, // Italian/Switzerland
-    {     59,   108}, // Japanese/Japan
-    {     61,   100}, // Kannada/India
-    {     63,   110}, // Kazakh/Kazakhstan
-    {     64,   179}, // Kinyarwanda/Rwanda
-    {     65,   116}, // Kirghiz/Kyrgyzstan
-    {     66,   114}, // Korean/RepublicOfKorea
-    {     67,   102}, // Kurdish/Iran
-    {     67,   103}, // Kurdish/Iraq
-    {     67,   207}, // Kurdish/SyrianArabRepublic
-    {     67,   217}, // Kurdish/Turkey
-    {     69,   117}, // Laothian/Lao
-    {     71,   118}, // Latvian/Latvia
-    {     72,    49}, // Lingala/DemocraticRepublicOfCongo
-    {     72,    50}, // Lingala/PeoplesRepublicOfCongo
-    {     73,   124}, // Lithuanian/Lithuania
-    {     74,   127}, // Macedonian/Macedonia
-    {     75,   128}, // Malagasy/Madagascar
-    {     76,   130}, // Malay/Malaysia
-    {     76,    32}, // Malay/BruneiDarussalam
-    {     77,   100}, // Malayalam/India
-    {     78,   133}, // Maltese/Malta
-    {     79,   154}, // Maori/NewZealand
-    {     80,   100}, // Marathi/India
-    {     82,    44}, // Mongolian/China
-    {     82,   143}, // Mongolian/Mongolia
-    {     84,   100}, // Nepali/India
-    {     84,   150}, // Nepali/Nepal
-    {     85,   161}, // Norwegian/Norway
-    {     86,    74}, // Occitan/France
-    {     87,   100}, // Oriya/India
-    {     88,     1}, // Pashto/Afghanistan
-    {     89,   102}, // Persian/Iran
-    {     89,     1}, // Persian/Afghanistan
-    {     90,   172}, // Polish/Poland
-    {     91,   173}, // Portuguese/Portugal
-    {     91,    30}, // Portuguese/Brazil
-    {     91,    92}, // Portuguese/GuineaBissau
-    {     91,   146}, // Portuguese/Mozambique
-    {     92,   100}, // Punjabi/India
-    {     92,   163}, // Punjabi/Pakistan
-    {     94,   206}, // RhaetoRomance/Switzerland
-    {     95,   141}, // Romanian/Moldova
-    {     95,   177}, // Romanian/Romania
-    {     96,   178}, // Russian/RussianFederation
-    {     96,   141}, // Russian/Moldova
-    {     96,   222}, // Russian/Ukraine
-    {     98,    41}, // Sangho/CentralAfricanRepublic
-    {     99,   100}, // Sanskrit/India
-    {    100,    27}, // Serbian/BosniaAndHerzegowina
-    {    100,   242}, // Serbian/Montenegro
-    {    100,   243}, // Serbian/Serbia
-    {    102,   120}, // Sesotho/Lesotho
-    {    102,   195}, // Sesotho/SouthAfrica
-    {    103,   195}, // Setswana/SouthAfrica
-    {    104,   240}, // Shona/Zimbabwe
-    {    106,   198}, // Singhalese/SriLanka
-    {    107,   195}, // Siswati/SouthAfrica
-    {    107,   204}, // Siswati/Swaziland
-    {    108,   191}, // Slovak/Slovakia
-    {    109,   192}, // Slovenian/Slovenia
-    {    110,   194}, // Somali/Somalia
-    {    110,    59}, // Somali/Djibouti
-    {    110,    69}, // Somali/Ethiopia
-    {    110,   111}, // Somali/Kenya
-    {    111,   197}, // Spanish/Spain
-    {    111,    10}, // Spanish/Argentina
-    {    111,    26}, // Spanish/Bolivia
-    {    111,    43}, // Spanish/Chile
-    {    111,    47}, // Spanish/Colombia
-    {    111,    52}, // Spanish/CostaRica
-    {    111,    61}, // Spanish/DominicanRepublic
-    {    111,    63}, // Spanish/Ecuador
-    {    111,    65}, // Spanish/ElSalvador
-    {    111,    66}, // Spanish/EquatorialGuinea
-    {    111,    90}, // Spanish/Guatemala
-    {    111,    96}, // Spanish/Honduras
-    {    111,   139}, // Spanish/Mexico
-    {    111,   155}, // Spanish/Nicaragua
-    {    111,   166}, // Spanish/Panama
-    {    111,   168}, // Spanish/Paraguay
-    {    111,   169}, // Spanish/Peru
-    {    111,   174}, // Spanish/PuertoRico
-    {    111,   225}, // Spanish/UnitedStates
-    {    111,   227}, // Spanish/Uruguay
-    {    111,   231}, // Spanish/Venezuela
-    {    113,   111}, // Swahili/Kenya
-    {    113,   210}, // Swahili/Tanzania
-    {    114,   205}, // Swedish/Sweden
-    {    114,    73}, // Swedish/Finland
-    {    116,   209}, // Tajik/Tajikistan
-    {    117,   100}, // Tamil/India
-    {    117,   198}, // Tamil/SriLanka
-    {    118,   178}, // Tatar/RussianFederation
-    {    119,   100}, // Telugu/India
-    {    120,   211}, // Thai/Thailand
-    {    121,    44}, // Tibetan/China
-    {    121,   100}, // Tibetan/India
-    {    122,    67}, // Tigrinya/Eritrea
-    {    122,    69}, // Tigrinya/Ethiopia
-    {    123,   214}, // Tonga/Tonga
-    {    124,   195}, // Tsonga/SouthAfrica
-    {    125,   217}, // Turkish/Turkey
-    {    128,    44}, // Uigur/China
-    {    129,   222}, // Ukrainian/Ukraine
-    {    130,   100}, // Urdu/India
-    {    130,   163}, // Urdu/Pakistan
-    {    131,   228}, // Uzbek/Uzbekistan
-    {    131,     1}, // Uzbek/Afghanistan
-    {    132,   232}, // Vietnamese/VietNam
-    {    134,   224}, // Welsh/UnitedKingdom
-    {    135,   187}, // Wolof/Senegal
-    {    136,   195}, // Xhosa/SouthAfrica
-    {    138,   157}, // Yoruba/Nigeria
-    {    140,   195}, // Zulu/SouthAfrica
-    {    141,   161}, // Nynorsk/Norway
-    {    142,    27}, // Bosnian/BosniaAndHerzegowina
-    {    143,   131}, // Divehi/Maldives
-    {    144,   224}, // Manx/UnitedKingdom
-    {    145,   224}, // Cornish/UnitedKingdom
-    {    146,    83}, // Akan/Ghana
-    {    147,   100}, // Konkani/India
-    {    148,    83}, // Ga/Ghana
-    {    149,   157}, // Igbo/Nigeria
-    {    150,   111}, // Kamba/Kenya
-    {    151,   207}, // Syriac/SyrianArabRepublic
-    {    152,    67}, // Blin/Eritrea
-    {    153,    67}, // Geez/Eritrea
-    {    153,    69}, // Geez/Ethiopia
-    {    154,    53}, // Koro/IvoryCoast
-    {    155,    69}, // Sidamo/Ethiopia
-    {    156,   157}, // Atsam/Nigeria
-    {    157,    67}, // Tigre/Eritrea
-    {    158,   157}, // Jju/Nigeria
-    {    159,   106}, // Friulian/Italy
-    {    160,   195}, // Venda/SouthAfrica
-    {    161,    83}, // Ewe/Ghana
-    {    161,   212}, // Ewe/Togo
-    {    162,    69}, // Walamo/Ethiopia
-    {    163,   225}, // Hawaiian/UnitedStates
-    {    164,   157}, // Tyap/Nigeria
-    {    165,   129}, // Chewa/Malawi
-    {    166,   170}, // Filipino/Philippines
-    {    167,   206}, // Swiss German/Switzerland
-    {    168,    44}, // Sichuan Yi/China
-    {    169,    91}, // Kpelle/Guinea
-    {    169,   121}, // Kpelle/Liberia
-    {    170,    82}, // Low German/Germany
-    {    171,   195}, // South Ndebele/SouthAfrica
-    {    172,   195}, // Northern Sotho/SouthAfrica
-    {    173,    73}, // Northern Sami/Finland
-    {    173,   161}, // Northern Sami/Norway
-    {    174,   208}, // Taroko/Taiwan
-    {    175,   111}, // Gusii/Kenya
-    {    176,   111}, // Taita/Kenya
-    {    177,   187}, // Fulah/Senegal
-    {    178,   111}, // Kikuyu/Kenya
-    {    179,   111}, // Samburu/Kenya
-    {    180,   146}, // Sena/Mozambique
-    {    181,   240}, // North Ndebele/Zimbabwe
-    {    182,   210}, // Rombo/Tanzania
-    {    183,   145}, // Tachelhit/Morocco
-    {    184,     3}, // Kabyle/Algeria
-    {    185,   221}, // Nyankole/Uganda
-    {    186,   210}, // Bena/Tanzania
-    {    187,   210}, // Vunjo/Tanzania
-    {    188,   132}, // Bambara/Mali
-    {    189,   111}, // Embu/Kenya
-    {    190,   225}, // Cherokee/UnitedStates
-    {    191,   137}, // Morisyen/Mauritius
-    {    192,   210}, // Makonde/Tanzania
-    {    193,   210}, // Langi/Tanzania
-    {    194,   221}, // Ganda/Uganda
-    {    195,   239}, // Bemba/Zambia
-    {    196,    39}, // Kabuverdianu/CapeVerde
-    {    197,   111}, // Meru/Kenya
-    {    198,   111}, // Kalenjin/Kenya
-    {    199,   148}, // Nama/Namibia
-    {    200,   210}, // Machame/Tanzania
-    {    201,    82}, // Colognian/Germany
-    {    202,   111}, // Masai/Kenya
-    {    202,   210}, // Masai/Tanzania
-    {    203,   221}, // Soga/Uganda
-    {    204,   111}, // Luyia/Kenya
-    {    205,   210}, // Asu/Tanzania
-    {    206,   111}, // Teso/Kenya
-    {    206,   221}, // Teso/Uganda
-    {    207,    67}, // Saho/Eritrea
-    {    208,   132}, // Koyra Chiini/Mali
-    {    209,   210}, // Rwa/Tanzania
-    {    210,   111}, // Luo/Kenya
-    {    211,   221}, // Chiga/Uganda
-    {    212,   145}, // Central Morocco Tamazight/Morocco
-    {    213,   132}, // Koyraboro Senni/Mali
-    {    214,   210}  // Shambala/Tanzania
-};
-static const int g_locale_list_count = sizeof(g_locale_list)/sizeof(g_locale_list[0]);
+    for (int i = 0; i < locale_data_count; ++i) {
+        const QLocaleData &item = locale_data[i];
 
+        const QString testName = QString::fromLatin1("data_%1 (%2/%3)").arg(i)
+                .arg(QLocale::languageToString((QLocale::Language)item.m_language_id))
+                .arg(QLocale::countryToString((QLocale::Country)item.m_country_id));
+        QTest::newRow(testName.toLatin1().constData()) << (int)item.m_language_id << (int)item.m_country_id;
+    }
+}
 
 void tst_QLocale::testNames()
 {
-    for (int i = 0; i < g_locale_list_count; ++i) {
-        const LocaleListItem &item = g_locale_list[i];
-        QLocale l1((QLocale::Language)item.language, (QLocale::Country)item.country);
-        QCOMPARE((int)l1.language(), item.language);
-        QCOMPARE((int)l1.country(), item.country);
+    QFETCH(int, language);
+    QFETCH(int, country);
 
-        QString name = l1.name();
+    QLocale l1((QLocale::Language)language, (QLocale::Country)country);
+    if (language == QLocale::AnyLanguage && country == QLocale::AnyCountry)
+        language = QLocale::C;
+    QCOMPARE((int)l1.language(), language);
+    QCOMPARE((int)l1.country(), country);
 
-        QLocale l2(name);
-        QCOMPARE((int)l2.language(), item.language);
-        QCOMPARE((int)l2.country(), item.country);
-        QCOMPARE(l2.name(), name);
+    QString name = l1.name();
 
-        QLocale l3(name + QLatin1String("@foo"));
-        QCOMPARE((int)l3.language(), item.language);
-        QCOMPARE((int)l3.country(), item.country);
-        QCOMPARE(l3.name(), name);
+    QLocale l2(name);
+    QCOMPARE((int)l2.language(), language);
+    QCOMPARE((int)l2.country(), country);
+    QCOMPARE(l2.name(), name);
 
-        QLocale l4(name + QLatin1String(".foo"));
-        QCOMPARE((int)l4.language(), item.language);
-        QCOMPARE((int)l4.country(), item.country);
-        QCOMPARE(l4.name(), name);
+    QLocale l3(name + QLatin1String("@foo"));
+    QCOMPARE((int)l3.language(), language);
+    QCOMPARE((int)l3.country(), country);
+    QCOMPARE(l3.name(), name);
 
-        if (item.language != QLocale::C) {
-            int idx = name.indexOf(QLatin1Char('_'));
-            QVERIFY(idx != -1);
-            QString lang = name.left(idx);
+    QLocale l4(name + QLatin1String(".foo"));
+    QCOMPARE((int)l4.language(), language);
+    QCOMPARE((int)l4.country(), country);
+    QCOMPARE(l4.name(), name);
 
-            QCOMPARE((int)QLocale(lang).language(), item.language);
-            QCOMPARE((int)QLocale(lang + QLatin1String("@foo")).language(), item.language);
-            QCOMPARE((int)QLocale(lang + QLatin1String(".foo")).language(), item.language);
-        }
+    if (language != QLocale::C) {
+        int idx = name.indexOf(QLatin1Char('_'));
+        QVERIFY(idx != -1);
+        QString lang = name.left(idx);
+
+        QCOMPARE((int)QLocale(lang).language(), language);
+        QCOMPARE((int)QLocale(lang + QLatin1String("@foo")).language(), language);
+        QCOMPARE((int)QLocale(lang + QLatin1String(".foo")).language(), language);
     }
 }
 
@@ -2028,12 +1724,37 @@ void tst_QLocale::uiLanguages()
     QCOMPARE(c.uiLanguages().at(0), QLatin1String("C"));
 
     const QLocale en_US("en_US");
-    QCOMPARE(en_US.uiLanguages().size(), 1);
-    QCOMPARE(en_US.uiLanguages().at(0), QLatin1String("en-US"));
+    QCOMPARE(en_US.uiLanguages().size(), 3);
+    QCOMPARE(en_US.uiLanguages().at(0), QLatin1String("en"));
+    QCOMPARE(en_US.uiLanguages().at(1), QLatin1String("en-US"));
+    QCOMPARE(en_US.uiLanguages().at(2), QLatin1String("en-Latn-US"));
+
+    const QLocale en_Latn_US("en_Latn_US");
+    QCOMPARE(en_Latn_US.uiLanguages().size(), 3);
+    QCOMPARE(en_Latn_US.uiLanguages().at(0), QLatin1String("en"));
+    QCOMPARE(en_Latn_US.uiLanguages().at(1), QLatin1String("en-US"));
+    QCOMPARE(en_Latn_US.uiLanguages().at(2), QLatin1String("en-Latn-US"));
+
+    const QLocale en_GB("en_GB");
+    QCOMPARE(en_GB.uiLanguages().size(), 2);
+    QCOMPARE(en_GB.uiLanguages().at(0), QLatin1String("en-GB"));
+    QCOMPARE(en_GB.uiLanguages().at(1), QLatin1String("en-Latn-GB"));
+
+    const QLocale en_Dsrt_US("en_Dsrt_US");
+    QCOMPARE(en_Dsrt_US.uiLanguages().size(), 2);
+    QCOMPARE(en_Dsrt_US.uiLanguages().at(0), QLatin1String("en-Dsrt"));
+    QCOMPARE(en_Dsrt_US.uiLanguages().at(1), QLatin1String("en-Dsrt-US"));
 
     const QLocale ru_RU("ru_RU");
-    QCOMPARE(ru_RU.uiLanguages().size(), 1);
-    QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru-RU"));
+    QCOMPARE(ru_RU.uiLanguages().size(), 3);
+    QCOMPARE(ru_RU.uiLanguages().at(0), QLatin1String("ru"));
+    QCOMPARE(ru_RU.uiLanguages().at(1), QLatin1String("ru-RU"));
+    QCOMPARE(ru_RU.uiLanguages().at(2), QLatin1String("ru-Cyrl-RU"));
+
+    const QLocale zh_Hant("zh_Hant");
+    QCOMPARE(zh_Hant.uiLanguages().size(), 2);
+    QCOMPARE(zh_Hant.uiLanguages().at(0), QLatin1String("zh-TW"));
+    QCOMPARE(zh_Hant.uiLanguages().at(1), QLatin1String("zh-Hant-TW"));
 }
 
 void tst_QLocale::weekendDays()

@@ -291,7 +291,7 @@ class Locale:
         self.currencyFormat = eltText(firstChildElt(elt, "currencyFormat"))
         self.currencyNegativeFormat = eltText(firstChildElt(elt, "currencyNegativeFormat"))
 
-def loadLocaleMap(doc, language_map, script_map, country_map):
+def loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map):
     result = {}
 
     locale_list_elt = firstChildElt(doc.documentElement, "localeList")
@@ -307,6 +307,28 @@ def loadLocaleMap(doc, language_map, script_map, country_map):
         country_id = countryNameToId(locale.country, country_map)
         if country_id == -1:
             sys.stderr.write("Cannot find a country id for '%s'\n" % locale.country)
+
+        if language_id != 1: # C
+            if country_id == 0:
+                sys.stderr.write("loadLocaleMap: No country id for '%s'\n" % locale.language)
+
+            if script_id == 0:
+                # find default script for a given language and country (see http://www.unicode.org/reports/tr35/#Likely_Subtags)
+                for key in likely_subtags_map.keys():
+                    tmp = likely_subtags_map[key]
+                    if tmp["from"][0] == locale.language and tmp["from"][1] == "AnyScript" and tmp["from"][2] == locale.country:
+                        locale.script = tmp["to"][1]
+                        script_id = scriptNameToId(locale.script, script_map)
+                        break
+            if script_id == 0 and country_id != 0:
+                # try with no country
+                for key in likely_subtags_map.keys():
+                    tmp = likely_subtags_map[key]
+                    if tmp["from"][0] == locale.language and tmp["from"][1] == "AnyScript" and tmp["from"][2] == "AnyCountry":
+                        locale.script = tmp["to"][1]
+                        script_id = scriptNameToId(locale.script, script_map)
+                        break
+
         result[(language_id, script_id, country_id)] = locale
 
         locale_elt = nextSiblingElt(locale_elt, "locale")
@@ -321,12 +343,20 @@ def compareLocaleKeys(key1, key2):
         l1 = compareLocaleKeys.locale_map[key1]
         l2 = compareLocaleKeys.locale_map[key2]
 
-        if l1.language in compareLocaleKeys.default_map:
-            default = compareLocaleKeys.default_map[l1.language]
-            if l1.country == default and key1[1] == 0:
+        if (l1.language, l1.script) in compareLocaleKeys.default_map.keys():
+            default = compareLocaleKeys.default_map[(l1.language, l1.script)]
+            if l1.country == default:
                 return -1
-            if l2.country == default and key2[1] == 0:
+            if l2.country == default:
                 return 1
+
+        if key1[1] != key2[1]:
+            if (l2.language, l2.script) in compareLocaleKeys.default_map.keys():
+                default = compareLocaleKeys.default_map[(l2.language, l2.script)]
+                if l2.country == default:
+                    return 1
+                if l1.country == default:
+                    return -1
 
         if key1[1] != key2[1]:
             return key1[1] - key2[1]
@@ -476,9 +506,9 @@ def main():
     default_map = {}
     for key in likely_subtags_map.keys():
         tmp = likely_subtags_map[key]
-        if tmp["from"][2] == "AnyCountry" and tmp["to"][2] != "AnyCountry" and tmp["from"][1] == "AnyScript":
-            default_map[tmp["to"][0]] = tmp["to"][2]
-    locale_map = loadLocaleMap(doc, language_map, script_map, country_map)
+        if tmp["from"][1] == "AnyScript" and tmp["from"][2] == "AnyCountry" and tmp["to"][2] != "AnyCountry":
+            default_map[(tmp["to"][0], tmp["to"][1])] = tmp["to"][2]
+    locale_map = loadLocaleMap(doc, language_map, script_map, country_map, likely_subtags_map)
     dupes = findDupes(language_map, country_map)
 
     cldr_version = eltText(firstChildElt(doc.documentElement, "version"))
@@ -494,6 +524,57 @@ def main():
     cldr2qlocalexml.py and qlocalexml2cpp.py.\n\
 */\n\n\n\
 " % (str(datetime.date.today()), cldr_version) )
+
+    # Likely subtags map
+    data_temp_file.write("static const QLocaleId likely_subtags[] = {\n")
+    index = 0
+    for key in likely_subtags_map.keys():
+        tmp = likely_subtags_map[key]
+        from_language = languageNameToId(tmp["from"][0], language_map)
+        from_script = scriptNameToId(tmp["from"][1], script_map)
+        from_country = countryNameToId(tmp["from"][2], country_map)
+        to_language = languageNameToId(tmp["to"][0], language_map)
+        to_script = scriptNameToId(tmp["to"][1], script_map)
+        to_country = countryNameToId(tmp["to"][2], country_map)
+
+        cmnt_from = ""
+        if from_language != 0:
+            cmnt_from = cmnt_from + language_map[from_language][1]
+        else:
+            cmnt_from = cmnt_from + "und"
+        if from_script != 0:
+            if cmnt_from:
+                cmnt_from = cmnt_from + "_"
+            cmnt_from = cmnt_from + script_map[from_script][1]
+        if from_country != 0:
+            if cmnt_from:
+                cmnt_from = cmnt_from + "_"
+            cmnt_from = cmnt_from + country_map[from_country][1]
+        cmnt_to = ""
+        if to_language != 0:
+            cmnt_to = cmnt_to + language_map[to_language][1]
+        else:
+            cmnt_from = cmnt_from + "und"
+        if to_script != 0:
+            if cmnt_to:
+                cmnt_to = cmnt_to + "_"
+            cmnt_to = cmnt_to + script_map[to_script][1]
+        if to_country != 0:
+            if cmnt_to:
+                cmnt_to = cmnt_to + "_"
+            cmnt_to = cmnt_to + country_map[to_country][1]
+
+        data_temp_file.write("    ")
+        data_temp_file.write("{ %3d, %2d, %3d }, { %3d, %2d, %3d }" % (from_language, from_script, from_country, to_language, to_script, to_country))
+        index += 1
+        if index != len(likely_subtags_map):
+            data_temp_file.write(",")
+        else:
+            data_temp_file.write(" ")
+        data_temp_file.write(" // %s -> %s\n" % (cmnt_from, cmnt_to))
+    data_temp_file.write("};\n")
+
+    data_temp_file.write("\n")
 
     # Locale index
     data_temp_file.write("static const quint16 locale_index[] = {\n")

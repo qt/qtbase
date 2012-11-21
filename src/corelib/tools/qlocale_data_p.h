@@ -77,7 +77,7 @@ static const int ImperialMeasurementSystemsCount =
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2012-11-20 from the
+    This part of the file was generated on 2012-11-21 from the
     Common Locale Data Repository v1.9.1
 
     http://www.unicode.org/cldr/
@@ -86,6 +86,464 @@ static const int ImperialMeasurementSystemsCount =
     cldr2qlocalexml.py and qlocalexml2cpp.py.
 */
 
+
+static const QLocaleId likely_subtags[] = {
+    {   4,  0,   0 }, {   4,  7,  69 }, // aa -> aa_Latn_ET
+    {   2,  0,   0 }, {   2,  2,  81 }, // ab -> ab_Cyrl_GE
+    {   5,  0,   0 }, {   5,  7, 195 }, // af -> af_Latn_ZA
+    { 146,  0,   0 }, { 146,  7,  83 }, // ak -> ak_Latn_GH
+    {   7,  0,   0 }, {   7, 14,  69 }, // am -> am_Ethi_ET
+    {   8,  0,   0 }, {   8,  1,  64 }, // ar -> ar_Arab_EG
+    {  10,  0,   0 }, {  10, 11, 100 }, // as -> as_Beng_IN
+    { 205,  0,   0 }, { 205,  7, 210 }, // asa -> asa_Latn_TZ
+    { 216,  0,   0 }, { 216,  2, 178 }, // av -> av_Cyrl_RU
+    {  11,  0,   0 }, {  11,  7,  26 }, // ay -> ay_Latn_BO
+    {  12,  0,   0 }, {  12,  7,  15 }, // az -> az_Latn_AZ
+    {  12,  1,   0 }, {  12,  1, 102 }, // az_Arab -> az_Arab_IR
+    {  12,  0, 102 }, {  12,  1, 102 }, // az_IR -> az_Arab_IR
+    {  13,  0,   0 }, {  13,  2, 178 }, // ba -> ba_Cyrl_RU
+    {  22,  0,   0 }, {  22,  2,  20 }, // be -> be_Cyrl_BY
+    { 195,  0,   0 }, { 195,  7, 239 }, // bem -> bem_Latn_ZM
+    { 186,  0,   0 }, { 186,  7, 210 }, // bez -> bez_Latn_TZ
+    {  20,  0,   0 }, {  20,  2,  33 }, // bg -> bg_Cyrl_BG
+    {  18,  0,   0 }, {  18,  7, 229 }, // bi -> bi_Latn_VU
+    { 188,  0,   0 }, { 188,  7, 132 }, // bm -> bm_Latn_ML
+    {  15,  0,   0 }, {  15, 11,  18 }, // bn -> bn_Beng_BD
+    { 121,  0,   0 }, { 121, 31,  44 }, // bo -> bo_Tibt_CN
+    {  19,  0,   0 }, {  19,  7,  74 }, // br -> br_Latn_FR
+    { 215,  0,   0 }, { 215, 13, 100 }, // brx -> brx_Deva_IN
+    { 142,  0,   0 }, { 142,  7,  27 }, // bs -> bs_Latn_BA
+    { 152,  0,   0 }, { 152, 14,  67 }, // byn -> byn_Ethi_ER
+    {  24,  0,   0 }, {  24,  7, 197 }, // ca -> ca_Latn_ES
+    { 156,  0,   0 }, { 156,  7, 157 }, // cch -> cch_Latn_NG
+    { 218,  0,   0 }, { 218,  2, 178 }, // ce -> ce_Cyrl_RU
+    { 211,  0,   0 }, { 211,  7, 221 }, // cgg -> cgg_Latn_UG
+    { 217,  0,   0 }, { 217,  7,  89 }, // ch -> ch_Latn_GU
+    { 190,  0,   0 }, { 190, 12, 225 }, // chr -> chr_Cher_US
+    {  28,  0,   0 }, {  28,  7,  57 }, // cs -> cs_Latn_CZ
+    { 134,  0,   0 }, { 134,  7, 224 }, // cy -> cy_Latn_GB
+    {  29,  0,   0 }, {  29,  7,  58 }, // da -> da_Latn_DK
+    { 176,  0,   0 }, { 176,  7, 111 }, // dav -> dav_Latn_KE
+    {  42,  0,   0 }, {  42,  7,  82 }, // de -> de_Latn_DE
+    { 143,  0,   0 }, { 143, 29, 131 }, // dv -> dv_Thaa_MV
+    {  16,  0,   0 }, {  16, 31,  25 }, // dz -> dz_Tibt_BT
+    { 189,  0,   0 }, { 189,  7, 111 }, // ebu -> ebu_Latn_KE
+    { 161,  0,   0 }, { 161,  7,  83 }, // ee -> ee_Latn_GH
+    {  43,  0,   0 }, {  43, 16,  85 }, // el -> el_Grek_GR
+    {  31,  0,   0 }, {  31,  7, 225 }, // en -> en_Latn_US
+    { 111,  0,   0 }, { 111,  7, 197 }, // es -> es_Latn_ES
+    {  33,  0,   0 }, {  33,  7,  68 }, // et -> et_Latn_EE
+    {  14,  0,   0 }, {  14,  7, 197 }, // eu -> eu_Latn_ES
+    {  89,  0,   0 }, {  89,  1, 102 }, // fa -> fa_Arab_IR
+    { 177,  0,   0 }, { 177,  7, 187 }, // ff -> ff_Latn_SN
+    {  36,  0,   0 }, {  36,  7,  73 }, // fi -> fi_Latn_FI
+    { 166,  0,   0 }, { 166,  7, 170 }, // fil -> fil_Latn_PH
+    {  35,  0,   0 }, {  35,  7,  72 }, // fj -> fj_Latn_FJ
+    {  34,  0,   0 }, {  34,  7,  71 }, // fo -> fo_Latn_FO
+    {  37,  0,   0 }, {  37,  7,  74 }, // fr -> fr_Latn_FR
+    { 159,  0,   0 }, { 159,  7, 106 }, // fur -> fur_Latn_IT
+    {  38,  0,   0 }, {  38,  7, 151 }, // fy -> fy_Latn_NL
+    {  57,  0,   0 }, {  57,  7, 104 }, // ga -> ga_Latn_IE
+    { 148,  0,   0 }, { 148,  7,  83 }, // gaa -> gaa_Latn_GH
+    {  39,  0,   0 }, {  39,  7, 224 }, // gd -> gd_Latn_GB
+    { 153,  0,   0 }, { 153, 14,  69 }, // gez -> gez_Ethi_ET
+    {  40,  0,   0 }, {  40,  7, 197 }, // gl -> gl_Latn_ES
+    {  45,  0,   0 }, {  45,  7, 168 }, // gn -> gn_Latn_PY
+    { 167,  0,   0 }, { 167,  7, 206 }, // gsw -> gsw_Latn_CH
+    {  46,  0,   0 }, {  46, 17, 100 }, // gu -> gu_Gujr_IN
+    { 175,  0,   0 }, { 175,  7, 111 }, // guz -> guz_Latn_KE
+    { 144,  0,   0 }, { 144,  7, 224 }, // gv -> gv_Latn_GB
+    {  47,  0,   0 }, {  47,  7, 157 }, // ha -> ha_Latn_NG
+    {  47,  1,   0 }, {  47,  1, 201 }, // ha_Arab -> ha_Arab_SD
+    {  47,  0, 201 }, {  47,  1, 201 }, // ha_SD -> ha_Arab_SD
+    { 163,  0,   0 }, { 163,  7, 225 }, // haw -> haw_Latn_US
+    {  48,  0,   0 }, {  48, 18, 105 }, // he -> he_Hebr_IL
+    {  49,  0,   0 }, {  49, 13, 100 }, // hi -> hi_Deva_IN
+    { 224,  0,   0 }, { 224,  7, 167 }, // ho -> ho_Latn_PG
+    {  27,  0,   0 }, {  27,  7,  54 }, // hr -> hr_Latn_HR
+    { 222,  0,   0 }, { 222,  7,  94 }, // ht -> ht_Latn_HT
+    {  50,  0,   0 }, {  50,  7,  98 }, // hu -> hu_Latn_HU
+    {   9,  0,   0 }, {   9, 10,  11 }, // hy -> hy_Armn_AM
+    {  52,  0,   0 }, {  52,  7, 101 }, // id -> id_Latn_ID
+    { 149,  0,   0 }, { 149,  7, 157 }, // ig -> ig_Latn_NG
+    { 168,  0,   0 }, { 168, 34,  44 }, // ii -> ii_Yiii_CN
+    {  51,  0,   0 }, {  51,  7,  99 }, // is -> is_Latn_IS
+    {  58,  0,   0 }, {  58,  7, 106 }, // it -> it_Latn_IT
+    {  59,  0,   0 }, {  59, 19, 108 }, // ja -> ja_Jpan_JP
+    { 200,  0,   0 }, { 200,  7, 210 }, // jmc -> jmc_Latn_TZ
+    {  60,  0,   0 }, {  60,  7, 101 }, // jv -> jv_Latn_ID
+    {  41,  0,   0 }, {  41, 15,  81 }, // ka -> ka_Geor_GE
+    { 184,  0,   0 }, { 184,  7,   3 }, // kab -> kab_Latn_DZ
+    { 158,  0,   0 }, { 158,  7, 157 }, // kaj -> kaj_Latn_NG
+    { 150,  0,   0 }, { 150,  7, 111 }, // kam -> kam_Latn_KE
+    { 164,  0,   0 }, { 164,  7, 157 }, // kcg -> kcg_Latn_NG
+    { 192,  0,   0 }, { 192,  7, 210 }, // kde -> kde_Latn_TZ
+    { 196,  0,   0 }, { 196,  7,  39 }, // kea -> kea_Latn_CV
+    { 154,  0,   0 }, { 154,  7,  53 }, // kfo -> kfo_Latn_CI
+    { 227,  0,   0 }, { 227,  7,  49 }, // kg -> kg_Latn_CD
+    { 208,  0,   0 }, { 208,  7, 132 }, // khq -> khq_Latn_ML
+    { 178,  0,   0 }, { 178,  7, 111 }, // ki -> ki_Latn_KE
+    { 228,  0,   0 }, { 228,  7, 148 }, // kj -> kj_Latn_NA
+    {  63,  0,   0 }, {  63,  2, 110 }, // kk -> kk_Cyrl_KZ
+    {  44,  0,   0 }, {  44,  7,  86 }, // kl -> kl_Latn_GL
+    { 198,  0,   0 }, { 198,  7, 111 }, // kln -> kln_Latn_KE
+    {  23,  0,   0 }, {  23, 20,  36 }, // km -> km_Khmr_KH
+    {  61,  0,   0 }, {  61, 21, 100 }, // kn -> kn_Knda_IN
+    {  66,  0,   0 }, {  66, 22, 114 }, // ko -> ko_Kore_KR
+    { 147,  0,   0 }, { 147, 13, 100 }, // kok -> kok_Deva_IN
+    { 169,  0,   0 }, { 169,  7, 121 }, // kpe -> kpe_Latn_LR
+    {  62,  0,   0 }, {  62,  1, 100 }, // ks -> ks_Arab_IN
+    { 214,  0,   0 }, { 214,  7, 210 }, // ksb -> ksb_Latn_TZ
+    { 201,  0,   0 }, { 201,  7,  82 }, // ksh -> ksh_Latn_DE
+    {  67,  0,   0 }, {  67,  1, 103 }, // ku -> ku_Arab_IQ
+    {  67,  7,   0 }, {  67,  7, 217 }, // ku_Latn -> ku_Latn_TR
+    {  67,  0, 217 }, {  67,  7, 217 }, // ku_TR -> ku_Latn_TR
+    {  67,  0, 207 }, {  67,  7, 207 }, // ku_SY -> ku_Latn_SY
+    { 145,  0,   0 }, { 145,  7, 224 }, // kw -> kw_Latn_GB
+    {  65,  0,   0 }, {  65,  2, 116 }, // ky -> ky_Cyrl_KG
+    {  70,  0,   0 }, {  70,  7, 230 }, // la -> la_Latn_VA
+    { 193,  0,   0 }, { 193,  7, 210 }, // lag -> lag_Latn_TZ
+    { 231,  0,   0 }, { 231,  7, 125 }, // lb -> lb_Latn_LU
+    { 194,  0,   0 }, { 194,  7, 221 }, // lg -> lg_Latn_UG
+    {  72,  0,   0 }, {  72,  7,  49 }, // ln -> ln_Latn_CD
+    {  69,  0,   0 }, {  69, 23, 117 }, // lo -> lo_Laoo_LA
+    {  73,  0,   0 }, {  73,  7, 124 }, // lt -> lt_Latn_LT
+    { 210,  0,   0 }, { 210,  7, 111 }, // luo -> luo_Latn_KE
+    { 204,  0,   0 }, { 204,  7, 111 }, // luy -> luy_Latn_KE
+    {  71,  0,   0 }, {  71,  7, 118 }, // lv -> lv_Latn_LV
+    { 202,  0,   0 }, { 202,  7, 111 }, // mas -> mas_Latn_KE
+    { 197,  0,   0 }, { 197,  7, 111 }, // mer -> mer_Latn_KE
+    { 191,  0,   0 }, { 191,  7, 137 }, // mfe -> mfe_Latn_MU
+    {  75,  0,   0 }, {  75,  7, 128 }, // mg -> mg_Latn_MG
+    {  81,  0,   0 }, {  81,  7, 134 }, // mh -> mh_Latn_MH
+    {  79,  0,   0 }, {  79,  7, 154 }, // mi -> mi_Latn_NZ
+    {  74,  0,   0 }, {  74,  2, 127 }, // mk -> mk_Cyrl_MK
+    {  77,  0,   0 }, {  77, 24, 100 }, // ml -> ml_Mlym_IN
+    {  82,  0,   0 }, {  82,  2, 143 }, // mn -> mn_Cyrl_MN
+    {  82,  0,  44 }, {  82,  8,  44 }, // mn_CN -> mn_Mong_CN
+    {  82,  8,   0 }, {  82,  8,  44 }, // mn_Mong -> mn_Mong_CN
+    {  80,  0,   0 }, {  80, 13, 100 }, // mr -> mr_Deva_IN
+    {  76,  0,   0 }, {  76,  7, 130 }, // ms -> ms_Latn_MY
+    {  78,  0,   0 }, {  78,  7, 133 }, // mt -> mt_Latn_MT
+    {  21,  0,   0 }, {  21, 25, 147 }, // my -> my_Mymr_MM
+    {  83,  0,   0 }, {  83,  7, 149 }, // na -> na_Latn_NR
+    { 199,  0,   0 }, { 199,  7, 148 }, // naq -> naq_Latn_NA
+    {  85,  0,   0 }, {  85,  7, 161 }, // nb -> nb_Latn_NO
+    { 181,  0,   0 }, { 181,  7, 240 }, // nd -> nd_Latn_ZW
+    { 170,  0,   0 }, { 170,  7,  82 }, // nds -> nds_Latn_DE
+    {  84,  0,   0 }, {  84, 13, 150 }, // ne -> ne_Deva_NP
+    {  30,  0,   0 }, {  30,  7, 151 }, // nl -> nl_Latn_NL
+    { 141,  0,   0 }, { 141,  7, 161 }, // nn -> nn_Latn_NO
+    { 171,  0,   0 }, { 171,  7, 195 }, // nr -> nr_Latn_ZA
+    { 172,  0,   0 }, { 172,  7, 195 }, // nso -> nso_Latn_ZA
+    { 165,  0,   0 }, { 165,  7, 129 }, // ny -> ny_Latn_MW
+    { 185,  0,   0 }, { 185,  7, 221 }, // nyn -> nyn_Latn_UG
+    {  86,  0,   0 }, {  86,  7,  74 }, // oc -> oc_Latn_FR
+    {   3,  0,   0 }, {   3,  7,  69 }, // om -> om_Latn_ET
+    {  87,  0,   0 }, {  87, 26, 100 }, // or -> or_Orya_IN
+    { 101,  0,   0 }, { 101,  2,  81 }, // os -> os_Cyrl_GE
+    {  92,  0,   0 }, {  92,  4, 100 }, // pa -> pa_Guru_IN
+    {  92,  1,   0 }, {  92,  1, 163 }, // pa_Arab -> pa_Arab_PK
+    {  92,  0, 163 }, {  92,  1, 163 }, // pa_PK -> pa_Arab_PK
+    {  90,  0,   0 }, {  90,  7, 172 }, // pl -> pl_Latn_PL
+    {  88,  0,   0 }, {  88,  1,   1 }, // ps -> ps_Arab_AF
+    {  91,  0,   0 }, {  91,  7,  30 }, // pt -> pt_Latn_BR
+    {  93,  0,   0 }, {  93,  7, 169 }, // qu -> qu_Latn_PE
+    {  94,  0,   0 }, {  94,  7, 206 }, // rm -> rm_Latn_CH
+    {  68,  0,   0 }, {  68,  7,  35 }, // rn -> rn_Latn_BI
+    {  95,  0,   0 }, {  95,  7, 177 }, // ro -> ro_Latn_RO
+    { 182,  0,   0 }, { 182,  7, 210 }, // rof -> rof_Latn_TZ
+    {  96,  0,   0 }, {  96,  2, 178 }, // ru -> ru_Cyrl_RU
+    {  64,  0,   0 }, {  64,  7, 179 }, // rw -> rw_Latn_RW
+    { 209,  0,   0 }, { 209,  7, 210 }, // rwk -> rwk_Latn_TZ
+    {  99,  0,   0 }, {  99, 13, 100 }, // sa -> sa_Deva_IN
+    { 179,  0,   0 }, { 179,  7, 111 }, // saq -> saq_Latn_KE
+    { 105,  0,   0 }, { 105,  1, 100 }, // sd -> sd_Arab_IN
+    { 173,  0,   0 }, { 173,  7, 161 }, // se -> se_Latn_NO
+    { 180,  0,   0 }, { 180,  7, 146 }, // seh -> seh_Latn_MZ
+    { 213,  0,   0 }, { 213,  7, 132 }, // ses -> ses_Latn_ML
+    {  98,  0,   0 }, {  98,  7,  41 }, // sg -> sg_Latn_CF
+    { 183,  0,   0 }, { 183,  7, 145 }, // shi -> shi_Latn_MA
+    { 106,  0,   0 }, { 106, 32, 198 }, // si -> si_Sinh_LK
+    { 155,  0,   0 }, { 155,  7,  69 }, // sid -> sid_Latn_ET
+    { 108,  0,   0 }, { 108,  7, 191 }, // sk -> sk_Latn_SK
+    { 109,  0,   0 }, { 109,  7, 192 }, // sl -> sl_Latn_SI
+    {  97,  0,   0 }, {  97,  7, 183 }, // sm -> sm_Latn_WS
+    { 104,  0,   0 }, { 104,  7, 240 }, // sn -> sn_Latn_ZW
+    { 110,  0,   0 }, { 110,  7, 194 }, // so -> so_Latn_SO
+    {   6,  0,   0 }, {   6,  7,   2 }, // sq -> sq_Latn_AL
+    { 100,  0,   0 }, { 100,  2, 243 }, // sr -> sr_Cyrl_RS
+    { 100,  0, 242 }, { 100,  7, 242 }, // sr_ME -> sr_Latn_ME
+    { 107,  0,   0 }, { 107,  7, 195 }, // ss -> ss_Latn_ZA
+    { 207,  0,   0 }, { 207,  7,  67 }, // ssy -> ssy_Latn_ER
+    { 102,  0,   0 }, { 102,  7, 195 }, // st -> st_Latn_ZA
+    { 112,  0,   0 }, { 112,  7, 101 }, // su -> su_Latn_ID
+    { 114,  0,   0 }, { 114,  7, 205 }, // sv -> sv_Latn_SE
+    { 113,  0,   0 }, { 113,  7, 210 }, // sw -> sw_Latn_TZ
+    { 151,  0,   0 }, { 151, 33, 207 }, // syr -> syr_Syri_SY
+    { 117,  0,   0 }, { 117, 27, 100 }, // ta -> ta_Taml_IN
+    { 119,  0,   0 }, { 119, 28, 100 }, // te -> te_Telu_IN
+    { 206,  0,   0 }, { 206,  7, 221 }, // teo -> teo_Latn_UG
+    { 116,  0,   0 }, { 116,  2, 209 }, // tg -> tg_Cyrl_TJ
+    { 120,  0,   0 }, { 120, 30, 211 }, // th -> th_Thai_TH
+    { 122,  0,   0 }, { 122, 14,  69 }, // ti -> ti_Ethi_ET
+    { 157,  0,   0 }, { 157, 14,  67 }, // tig -> tig_Ethi_ER
+    { 126,  0,   0 }, { 126,  7, 218 }, // tk -> tk_Latn_TM
+    { 103,  0,   0 }, { 103,  7, 195 }, // tn -> tn_Latn_ZA
+    { 123,  0,   0 }, { 123,  7, 214 }, // to -> to_Latn_TO
+    { 125,  0,   0 }, { 125,  7, 217 }, // tr -> tr_Latn_TR
+    { 174,  0,   0 }, { 174,  7, 208 }, // trv -> trv_Latn_TW
+    { 124,  0,   0 }, { 124,  7, 195 }, // ts -> ts_Latn_ZA
+    { 118,  0,   0 }, { 118,  2, 178 }, // tt -> tt_Cyrl_RU
+    { 127,  0,   0 }, { 127,  7,  77 }, // ty -> ty_Latn_PF
+    { 212,  0,   0 }, { 212,  7, 145 }, // tzm -> tzm_Latn_MA
+    { 128,  0,   0 }, { 128,  1,  44 }, // ug -> ug_Arab_CN
+    { 129,  0,   0 }, { 129,  2, 222 }, // uk -> uk_Cyrl_UA
+    {   0,  0,   5 }, {  24,  7,   5 }, // und_AD -> ca_Latn_AD
+    {   0,  0, 223 }, {   8,  1, 223 }, // und_AE -> ar_Arab_AE
+    {   0,  0,   1 }, {  89,  1,   1 }, // und_AF -> fa_Arab_AF
+    {   0,  0,   2 }, {   6,  7,   2 }, // und_AL -> sq_Latn_AL
+    {   0,  0,  11 }, {   9, 10,  11 }, // und_AM -> hy_Armn_AM
+    {   0,  0,   6 }, {  91,  7,   6 }, // und_AO -> pt_Latn_AO
+    {   0,  0,  10 }, { 111,  7,  10 }, // und_AR -> es_Latn_AR
+    {   0,  0,   4 }, {  97,  7,   4 }, // und_AS -> sm_Latn_AS
+    {   0,  0,  14 }, {  42,  7,  14 }, // und_AT -> de_Latn_AT
+    {   0,  0,  12 }, {  30,  7,  12 }, // und_AW -> nl_Latn_AW
+    {   0,  0, 248 }, { 114,  7, 248 }, // und_AX -> sv_Latn_AX
+    {   0,  0,  15 }, {  12,  7,  15 }, // und_AZ -> az_Latn_AZ
+    {   0,  1,   0 }, {   8,  1,  64 }, // und_Arab -> ar_Arab_EG
+    {   0,  1,  44 }, { 128,  1,  44 }, // und_Arab_CN -> ug_Arab_CN
+    {   0,  1, 100 }, { 130,  1, 100 }, // und_Arab_IN -> ur_Arab_IN
+    {   0,  1, 157 }, {  47,  1, 157 }, // und_Arab_NG -> ha_Arab_NG
+    {   0,  1, 163 }, { 130,  1, 163 }, // und_Arab_PK -> ur_Arab_PK
+    {   0, 10,   0 }, {   9, 10,  11 }, // und_Armn -> hy_Armn_AM
+    {   0,  0,  27 }, { 142,  7,  27 }, // und_BA -> bs_Latn_BA
+    {   0,  0,  18 }, {  15, 11,  18 }, // und_BD -> bn_Beng_BD
+    {   0,  0,  21 }, {  30,  7,  21 }, // und_BE -> nl_Latn_BE
+    {   0,  0,  34 }, {  37,  7,  34 }, // und_BF -> fr_Latn_BF
+    {   0,  0,  33 }, {  20,  2,  33 }, // und_BG -> bg_Cyrl_BG
+    {   0,  0,  17 }, {   8,  1,  17 }, // und_BH -> ar_Arab_BH
+    {   0,  0,  35 }, {  68,  7,  35 }, // und_BI -> rn_Latn_BI
+    {   0,  0,  23 }, {  37,  7,  23 }, // und_BJ -> fr_Latn_BJ
+    {   0,  0, 244 }, {  37,  7, 244 }, // und_BL -> fr_Latn_BL
+    {   0,  0,  32 }, {  76,  7,  32 }, // und_BN -> ms_Latn_BN
+    {   0,  0,  26 }, { 111,  7,  26 }, // und_BO -> es_Latn_BO
+    {   0,  0,  30 }, {  91,  7,  30 }, // und_BR -> pt_Latn_BR
+    {   0,  0,  25 }, {  16, 31,  25 }, // und_BT -> dz_Tibt_BT
+    {   0,  0,  20 }, {  22,  2,  20 }, // und_BY -> be_Cyrl_BY
+    {   0, 11,   0 }, {  15, 11,  18 }, // und_Beng -> bn_Beng_BD
+    {   0,  0,  49 }, { 113,  7,  49 }, // und_CD -> sw_Latn_CD
+    {   0,  0,  41 }, {  37,  7,  41 }, // und_CF -> fr_Latn_CF
+    {   0,  0,  50 }, {  37,  7,  50 }, // und_CG -> fr_Latn_CG
+    {   0,  0, 206 }, {  42,  7, 206 }, // und_CH -> de_Latn_CH
+    {   0,  0,  53 }, {  37,  7,  53 }, // und_CI -> fr_Latn_CI
+    {   0,  0,  43 }, { 111,  7,  43 }, // und_CL -> es_Latn_CL
+    {   0,  0,  37 }, {  37,  7,  37 }, // und_CM -> fr_Latn_CM
+    {   0,  0,  44 }, {  25,  5,  44 }, // und_CN -> zh_Hans_CN
+    {   0,  0,  47 }, { 111,  7,  47 }, // und_CO -> es_Latn_CO
+    {   0,  0, 241 }, {  37,  7, 241 }, // und_CP -> fr_Latn_CP
+    {   0,  0,  52 }, { 111,  7,  52 }, // und_CR -> es_Latn_CR
+    {   0,  0,  55 }, { 111,  7,  55 }, // und_CU -> es_Latn_CU
+    {   0,  0,  39 }, {  91,  7,  39 }, // und_CV -> pt_Latn_CV
+    {   0,  0,  56 }, {  43, 16,  56 }, // und_CY -> el_Grek_CY
+    {   0,  0,  57 }, {  28,  7,  57 }, // und_CZ -> cs_Latn_CZ
+    {   0, 12,   0 }, { 190, 12, 225 }, // und_Cher -> chr_Cher_US
+    {   0,  2,   0 }, {  96,  2, 178 }, // und_Cyrl -> ru_Cyrl_RU
+    {   0,  2,  27 }, { 100,  2,  27 }, // und_Cyrl_BA -> sr_Cyrl_BA
+    {   0,  2,  81 }, {   2,  2,  81 }, // und_Cyrl_GE -> ab_Cyrl_GE
+    {   0,  0,  82 }, {  42,  7,  82 }, // und_DE -> de_Latn_DE
+    {   0,  0,  59 }, {   4,  7,  59 }, // und_DJ -> aa_Latn_DJ
+    {   0,  0,  58 }, {  29,  7,  58 }, // und_DK -> da_Latn_DK
+    {   0,  0,  61 }, { 111,  7,  61 }, // und_DO -> es_Latn_DO
+    {   0,  0,   3 }, {   8,  1,   3 }, // und_DZ -> ar_Arab_DZ
+    {   0, 13,   0 }, {  49, 13, 100 }, // und_Deva -> hi_Deva_IN
+    {   0,  0, 250 }, { 111,  7, 250 }, // und_EA -> es_Latn_EA
+    {   0,  0,  63 }, { 111,  7,  63 }, // und_EC -> es_Latn_EC
+    {   0,  0,  68 }, {  33,  7,  68 }, // und_EE -> et_Latn_EE
+    {   0,  0,  64 }, {   8,  1,  64 }, // und_EG -> ar_Arab_EG
+    {   0,  0, 236 }, {   8,  1, 236 }, // und_EH -> ar_Arab_EH
+    {   0,  0,  67 }, { 122, 14,  67 }, // und_ER -> ti_Ethi_ER
+    {   0,  0, 197 }, { 111,  7, 197 }, // und_ES -> es_Latn_ES
+    {   0, 14,   0 }, {   7, 14,  69 }, // und_Ethi -> am_Ethi_ET
+    {   0,  0,  73 }, {  36,  7,  73 }, // und_FI -> fi_Latn_FI
+    {   0,  0,  71 }, {  34,  7,  71 }, // und_FO -> fo_Latn_FO
+    {   0,  0,  74 }, {  37,  7,  74 }, // und_FR -> fr_Latn_FR
+    {   0,  0,  79 }, {  37,  7,  79 }, // und_GA -> fr_Latn_GA
+    {   0,  0,  81 }, {  41, 15,  81 }, // und_GE -> ka_Geor_GE
+    {   0,  0,  76 }, {  37,  7,  76 }, // und_GF -> fr_Latn_GF
+    {   0,  0,  83 }, { 146,  7,  83 }, // und_GH -> ak_Latn_GH
+    {   0,  0,  86 }, {  44,  7,  86 }, // und_GL -> kl_Latn_GL
+    {   0,  0,  91 }, {  37,  7,  91 }, // und_GN -> fr_Latn_GN
+    {   0,  0,  88 }, {  37,  7,  88 }, // und_GP -> fr_Latn_GP
+    {   0,  0,  66 }, { 111,  7,  66 }, // und_GQ -> es_Latn_GQ
+    {   0,  0,  85 }, {  43, 16,  85 }, // und_GR -> el_Grek_GR
+    {   0,  0,  90 }, { 111,  7,  90 }, // und_GT -> es_Latn_GT
+    {   0,  0,  92 }, {  91,  7,  92 }, // und_GW -> pt_Latn_GW
+    {   0, 15,   0 }, {  41, 15,  81 }, // und_Geor -> ka_Geor_GE
+    {   0, 16,   0 }, {  43, 16,  85 }, // und_Grek -> el_Grek_GR
+    {   0, 17,   0 }, {  46, 17, 100 }, // und_Gujr -> gu_Gujr_IN
+    {   0,  4,   0 }, {  92,  4, 100 }, // und_Guru -> pa_Guru_IN
+    {   0,  0,  97 }, {  25,  6,  97 }, // und_HK -> zh_Hant_HK
+    {   0,  0,  96 }, { 111,  7,  96 }, // und_HN -> es_Latn_HN
+    {   0,  0,  54 }, {  27,  7,  54 }, // und_HR -> hr_Latn_HR
+    {   0,  0,  94 }, { 222,  7,  94 }, // und_HT -> ht_Latn_HT
+    {   0,  0,  98 }, {  50,  7,  98 }, // und_HU -> hu_Latn_HU
+    {   0,  5,   0 }, {  25,  5,  44 }, // und_Hans -> zh_Hans_CN
+    {   0,  6,   0 }, {  25,  6, 208 }, // und_Hant -> zh_Hant_TW
+    {   0, 18,   0 }, {  48, 18, 105 }, // und_Hebr -> he_Hebr_IL
+    {   0,  0, 238 }, { 111,  7, 238 }, // und_IC -> es_Latn_IC
+    {   0,  0, 101 }, {  52,  7, 101 }, // und_ID -> id_Latn_ID
+    {   0,  0, 105 }, {  48, 18, 105 }, // und_IL -> he_Hebr_IL
+    {   0,  0, 100 }, {  49, 13, 100 }, // und_IN -> hi_Deva_IN
+    {   0,  0, 103 }, {   8,  1, 103 }, // und_IQ -> ar_Arab_IQ
+    {   0,  0, 102 }, {  89,  1, 102 }, // und_IR -> fa_Arab_IR
+    {   0,  0,  99 }, {  51,  7,  99 }, // und_IS -> is_Latn_IS
+    {   0,  0, 106 }, {  58,  7, 106 }, // und_IT -> it_Latn_IT
+    {   0,  0, 109 }, {   8,  1, 109 }, // und_JO -> ar_Arab_JO
+    {   0,  0, 108 }, {  59, 19, 108 }, // und_JP -> ja_Jpan_JP
+    {   0, 19,   0 }, {  59, 19, 108 }, // und_Jpan -> ja_Jpan_JP
+    {   0,  0, 116 }, {  65,  2, 116 }, // und_KG -> ky_Cyrl_KG
+    {   0,  0,  36 }, {  23, 20,  36 }, // und_KH -> km_Khmr_KH
+    {   0,  0,  48 }, {   8,  1,  48 }, // und_KM -> ar_Arab_KM
+    {   0,  0, 113 }, {  66, 22, 113 }, // und_KP -> ko_Kore_KP
+    {   0,  0, 114 }, {  66, 22, 114 }, // und_KR -> ko_Kore_KR
+    {   0,  0, 115 }, {   8,  1, 115 }, // und_KW -> ar_Arab_KW
+    {   0,  0, 110 }, {  96,  2, 110 }, // und_KZ -> ru_Cyrl_KZ
+    {   0, 20,   0 }, {  23, 20,  36 }, // und_Khmr -> km_Khmr_KH
+    {   0, 21,   0 }, {  61, 21, 100 }, // und_Knda -> kn_Knda_IN
+    {   0, 22,   0 }, {  66, 22, 114 }, // und_Kore -> ko_Kore_KR
+    {   0,  0, 117 }, {  69, 23, 117 }, // und_LA -> lo_Laoo_LA
+    {   0,  0, 119 }, {   8,  1, 119 }, // und_LB -> ar_Arab_LB
+    {   0,  0, 123 }, {  42,  7, 123 }, // und_LI -> de_Latn_LI
+    {   0,  0, 198 }, { 106, 32, 198 }, // und_LK -> si_Sinh_LK
+    {   0,  0, 120 }, { 102,  7, 120 }, // und_LS -> st_Latn_LS
+    {   0,  0, 124 }, {  73,  7, 124 }, // und_LT -> lt_Latn_LT
+    {   0,  0, 125 }, {  37,  7, 125 }, // und_LU -> fr_Latn_LU
+    {   0,  0, 118 }, {  71,  7, 118 }, // und_LV -> lv_Latn_LV
+    {   0,  0, 122 }, {   8,  1, 122 }, // und_LY -> ar_Arab_LY
+    {   0, 23,   0 }, {  69, 23, 117 }, // und_Laoo -> lo_Laoo_LA
+    {   0,  7,  44 }, { 139,  7,  44 }, // und_Latn_CN -> za_Latn_CN
+    {   0,  7,  56 }, { 125,  7,  56 }, // und_Latn_CY -> tr_Latn_CY
+    {   0,  7,   3 }, {  37,  7,   3 }, // und_Latn_DZ -> fr_Latn_DZ
+    {   0,  7,  67 }, {   4,  7,  67 }, // und_Latn_ER -> aa_Latn_ER
+    {   0,  7,  48 }, {  37,  7,  48 }, // und_Latn_KM -> fr_Latn_KM
+    {   0,  7, 145 }, {  37,  7, 145 }, // und_Latn_MA -> fr_Latn_MA
+    {   0,  7, 127 }, {   6,  7, 127 }, // und_Latn_MK -> sq_Latn_MK
+    {   0,  7, 207 }, {  37,  7, 207 }, // und_Latn_SY -> fr_Latn_SY
+    {   0,  7, 216 }, {  37,  7, 216 }, // und_Latn_TN -> fr_Latn_TN
+    {   0,  0, 145 }, {   8,  1, 145 }, // und_MA -> ar_Arab_MA
+    {   0,  0, 142 }, {  37,  7, 142 }, // und_MC -> fr_Latn_MC
+    {   0,  0, 141 }, {  95,  7, 141 }, // und_MD -> ro_Latn_MD
+    {   0,  0, 242 }, { 100,  7, 242 }, // und_ME -> sr_Latn_ME
+    {   0,  0, 245 }, {  37,  7, 245 }, // und_MF -> fr_Latn_MF
+    {   0,  0, 128 }, {  75,  7, 128 }, // und_MG -> mg_Latn_MG
+    {   0,  0, 127 }, {  74,  2, 127 }, // und_MK -> mk_Cyrl_MK
+    {   0,  0, 132 }, { 188,  7, 132 }, // und_ML -> bm_Latn_ML
+    {   0,  0, 147 }, {  21, 25, 147 }, // und_MM -> my_Mymr_MM
+    {   0,  0, 143 }, {  82,  2, 143 }, // und_MN -> mn_Cyrl_MN
+    {   0,  0, 126 }, {  25,  6, 126 }, // und_MO -> zh_Hant_MO
+    {   0,  0, 135 }, {  37,  7, 135 }, // und_MQ -> fr_Latn_MQ
+    {   0,  0, 136 }, {   8,  1, 136 }, // und_MR -> ar_Arab_MR
+    {   0,  0, 133 }, {  78,  7, 133 }, // und_MT -> mt_Latn_MT
+    {   0,  0, 137 }, { 191,  7, 137 }, // und_MU -> mfe_Latn_MU
+    {   0,  0, 131 }, { 143, 29, 131 }, // und_MV -> dv_Thaa_MV
+    {   0,  0, 139 }, { 111,  7, 139 }, // und_MX -> es_Latn_MX
+    {   0,  0, 130 }, {  76,  7, 130 }, // und_MY -> ms_Latn_MY
+    {   0,  0, 146 }, {  91,  7, 146 }, // und_MZ -> pt_Latn_MZ
+    {   0, 24,   0 }, {  77, 24, 100 }, // und_Mlym -> ml_Mlym_IN
+    {   0,  8,   0 }, {  82,  8,  44 }, // und_Mong -> mn_Mong_CN
+    {   0, 25,   0 }, {  21, 25, 147 }, // und_Mymr -> my_Mymr_MM
+    {   0,  0, 148 }, { 228,  7, 148 }, // und_NA -> kj_Latn_NA
+    {   0,  0, 153 }, {  37,  7, 153 }, // und_NC -> fr_Latn_NC
+    {   0,  0, 156 }, {  47,  7, 156 }, // und_NE -> ha_Latn_NE
+    {   0,  0, 155 }, { 111,  7, 155 }, // und_NI -> es_Latn_NI
+    {   0,  0, 151 }, {  30,  7, 151 }, // und_NL -> nl_Latn_NL
+    {   0,  0, 161 }, {  85,  7, 161 }, // und_NO -> nb_Latn_NO
+    {   0,  0, 150 }, {  84, 13, 150 }, // und_NP -> ne_Deva_NP
+    {   0,  0, 162 }, {   8,  1, 162 }, // und_OM -> ar_Arab_OM
+    {   0, 26,   0 }, {  87, 26, 100 }, // und_Orya -> or_Orya_IN
+    {   0,  0, 166 }, { 111,  7, 166 }, // und_PA -> es_Latn_PA
+    {   0,  0, 169 }, { 111,  7, 169 }, // und_PE -> es_Latn_PE
+    {   0,  0,  77 }, {  37,  7,  77 }, // und_PF -> fr_Latn_PF
+    {   0,  0, 170 }, { 166,  7, 170 }, // und_PH -> fil_Latn_PH
+    {   0,  0, 163 }, { 130,  1, 163 }, // und_PK -> ur_Arab_PK
+    {   0,  0, 172 }, {  90,  7, 172 }, // und_PL -> pl_Latn_PL
+    {   0,  0, 200 }, {  37,  7, 200 }, // und_PM -> fr_Latn_PM
+    {   0,  0, 174 }, { 111,  7, 174 }, // und_PR -> es_Latn_PR
+    {   0,  0, 165 }, {   8,  1, 165 }, // und_PS -> ar_Arab_PS
+    {   0,  0, 173 }, {  91,  7, 173 }, // und_PT -> pt_Latn_PT
+    {   0,  0, 168 }, {  45,  7, 168 }, // und_PY -> gn_Latn_PY
+    {   0,  0, 175 }, {   8,  1, 175 }, // und_QA -> ar_Arab_QA
+    {   0,  0, 176 }, {  37,  7, 176 }, // und_RE -> fr_Latn_RE
+    {   0,  0, 177 }, {  95,  7, 177 }, // und_RO -> ro_Latn_RO
+    {   0,  0, 243 }, { 100,  2, 243 }, // und_RS -> sr_Cyrl_RS
+    {   0,  0, 178 }, {  96,  2, 178 }, // und_RU -> ru_Cyrl_RU
+    {   0,  0, 179 }, {  64,  7, 179 }, // und_RW -> rw_Latn_RW
+    {   0,  0, 186 }, {   8,  1, 186 }, // und_SA -> ar_Arab_SA
+    {   0,  0, 188 }, {  37,  7, 188 }, // und_SC -> fr_Latn_SC
+    {   0,  0, 201 }, {   8,  1, 201 }, // und_SD -> ar_Arab_SD
+    {   0,  0, 205 }, { 114,  7, 205 }, // und_SE -> sv_Latn_SE
+    {   0,  0, 192 }, { 109,  7, 192 }, // und_SI -> sl_Latn_SI
+    {   0,  0, 203 }, {  85,  7, 203 }, // und_SJ -> nb_Latn_SJ
+    {   0,  0, 191 }, { 108,  7, 191 }, // und_SK -> sk_Latn_SK
+    {   0,  0, 184 }, {  58,  7, 184 }, // und_SM -> it_Latn_SM
+    {   0,  0, 187 }, {  37,  7, 187 }, // und_SN -> fr_Latn_SN
+    {   0,  0, 194 }, { 110,  7, 194 }, // und_SO -> so_Latn_SO
+    {   0,  0, 202 }, {  30,  7, 202 }, // und_SR -> nl_Latn_SR
+    {   0,  0, 185 }, {  91,  7, 185 }, // und_ST -> pt_Latn_ST
+    {   0,  0,  65 }, { 111,  7,  65 }, // und_SV -> es_Latn_SV
+    {   0,  0, 207 }, {   8,  1, 207 }, // und_SY -> ar_Arab_SY
+    {   0, 32,   0 }, { 106, 32, 198 }, // und_Sinh -> si_Sinh_LK
+    {   0,  0,  42 }, {  37,  7,  42 }, // und_TD -> fr_Latn_TD
+    {   0,  0, 212 }, {  37,  7, 212 }, // und_TG -> fr_Latn_TG
+    {   0,  0, 211 }, { 120, 30, 211 }, // und_TH -> th_Thai_TH
+    {   0,  0, 209 }, { 116,  2, 209 }, // und_TJ -> tg_Cyrl_TJ
+    {   0,  0,  62 }, {  91,  7,  62 }, // und_TL -> pt_Latn_TL
+    {   0,  0, 218 }, { 126,  7, 218 }, // und_TM -> tk_Latn_TM
+    {   0,  0, 216 }, {   8,  1, 216 }, // und_TN -> ar_Arab_TN
+    {   0,  0, 214 }, { 123,  7, 214 }, // und_TO -> to_Latn_TO
+    {   0,  0, 217 }, { 125,  7, 217 }, // und_TR -> tr_Latn_TR
+    {   0,  0, 208 }, {  25,  6, 208 }, // und_TW -> zh_Hant_TW
+    {   0,  0, 210 }, { 113,  7, 210 }, // und_TZ -> sw_Latn_TZ
+    {   0, 27,   0 }, { 117, 27, 100 }, // und_Taml -> ta_Taml_IN
+    {   0, 28,   0 }, { 119, 28, 100 }, // und_Telu -> te_Telu_IN
+    {   0,  9,   0 }, { 183,  9, 145 }, // und_Tfng -> shi_Tfng_MA
+    {   0, 29,   0 }, { 143, 29, 131 }, // und_Thaa -> dv_Thaa_MV
+    {   0, 30,   0 }, { 120, 30, 211 }, // und_Thai -> th_Thai_TH
+    {   0, 31,   0 }, { 121, 31,  44 }, // und_Tibt -> bo_Tibt_CN
+    {   0,  0, 222 }, { 129,  2, 222 }, // und_UA -> uk_Cyrl_UA
+    {   0,  0, 221 }, { 113,  7, 221 }, // und_UG -> sw_Latn_UG
+    {   0,  0, 227 }, { 111,  7, 227 }, // und_UY -> es_Latn_UY
+    {   0,  0, 228 }, { 131,  2, 228 }, // und_UZ -> uz_Cyrl_UZ
+    {   0,  0, 230 }, {  70,  7, 230 }, // und_VA -> la_Latn_VA
+    {   0,  0, 231 }, { 111,  7, 231 }, // und_VE -> es_Latn_VE
+    {   0,  0, 232 }, { 132,  7, 232 }, // und_VN -> vi_Latn_VN
+    {   0,  0, 229 }, {  37,  7, 229 }, // und_VU -> fr_Latn_VU
+    {   0,  0, 235 }, {  37,  7, 235 }, // und_WF -> fr_Latn_WF
+    {   0,  0, 183 }, {  97,  7, 183 }, // und_WS -> sm_Latn_WS
+    {   0,  0, 237 }, {   8,  1, 237 }, // und_YE -> ar_Arab_YE
+    {   0,  0, 138 }, {  37,  7, 138 }, // und_YT -> fr_Latn_YT
+    {   0, 34,   0 }, { 168, 34,  44 }, // und_Yiii -> ii_Yiii_CN
+    { 130,  0,   0 }, { 130,  1, 163 }, // ur -> ur_Arab_PK
+    { 131,  0,   0 }, { 131,  2, 228 }, // uz -> uz_Cyrl_UZ
+    { 131,  0,   1 }, { 131,  1,   1 }, // uz_AF -> uz_Arab_AF
+    { 131,  1,   0 }, { 131,  1,   1 }, // uz_Arab -> uz_Arab_AF
+    { 160,  0,   0 }, { 160,  7, 195 }, // ve -> ve_Latn_ZA
+    { 132,  0,   0 }, { 132,  7, 232 }, // vi -> vi_Latn_VN
+    { 187,  0,   0 }, { 187,  7, 210 }, // vun -> vun_Latn_TZ
+    { 162,  0,   0 }, { 162, 14,  69 }, // wal -> wal_Ethi_ET
+    { 135,  0,   0 }, { 135,  7, 187 }, // wo -> wo_Latn_SN
+    { 136,  0,   0 }, { 136,  7, 195 }, // xh -> xh_Latn_ZA
+    { 203,  0,   0 }, { 203,  7, 221 }, // xog -> xog_Latn_UG
+    { 138,  0,   0 }, { 138,  7, 157 }, // yo -> yo_Latn_NG
+    { 139,  0,   0 }, { 139,  7,  44 }, // za -> za_Latn_CN
+    {  25,  0,   0 }, {  25,  5,  44 }, // zh -> zh_Hans_CN
+    {  25,  0,  97 }, {  25,  6,  97 }, // zh_HK -> zh_Hant_HK
+    {  25,  6,   0 }, {  25,  6, 208 }, // zh_Hant -> zh_Hant_TW
+    {  25,  0, 126 }, {  25,  6, 126 }, // zh_MO -> zh_Hant_MO
+    {  25,  0, 208 }, {  25,  6, 208 }, // zh_TW -> zh_Hant_TW
+    { 140,  0,   0 }, { 140,  7, 195 }  // zu -> zu_Latn_ZA
+};
 
 static const quint16 locale_index[] = {
      0, // AnyLanguage
@@ -102,208 +560,208 @@ static const quint16 locale_index[] = {
      0, // Aymara
     29, // Azerbaijani
      0, // Bashkir
-    34, // Basque
-    35, // Bengali
-    37, // Dzongkha
+    32, // Basque
+    33, // Bengali
+    35, // Dzongkha
      0, // Bihari
      0, // Bislama
-    38, // Breton
-    39, // Bulgarian
-    40, // Burmese
-    41, // Belarusian
-    42, // Khmer
-    43, // Catalan
-    44, // Chinese
+    36, // Breton
+    37, // Bulgarian
+    38, // Burmese
+    39, // Belarusian
+    40, // Khmer
+    41, // Catalan
+    42, // Chinese
      0, // Corsican
-    56, // Croatian
-    57, // Czech
-    58, // Danish
-    59, // Dutch
-    61, // English
+    49, // Croatian
+    50, // Czech
+    51, // Danish
+    52, // Dutch
+    54, // English
      0, // Esperanto
-    89, // Estonian
-    90, // Faroese
+    82, // Estonian
+    83, // Faroese
      0, // Fijian
-    91, // Finnish
-    92, // French
+    84, // Finnish
+    85, // French
      0, // Frisian
      0, // Gaelic
-   123, // Galician
-   124, // Georgian
-   125, // German
-   131, // Greek
-   133, // Greenlandic
+   116, // Galician
+   117, // Georgian
+   118, // German
+   124, // Greek
+   126, // Greenlandic
      0, // Guarani
-   134, // Gujarati
-   135, // Hausa
-   144, // Hebrew
-   145, // Hindi
-   146, // Hungarian
-   147, // Icelandic
-   148, // Indonesian
+   127, // Gujarati
+   128, // Hausa
+   133, // Hebrew
+   134, // Hindi
+   135, // Hungarian
+   136, // Icelandic
+   137, // Indonesian
      0, // Interlingua
      0, // Interlingue
      0, // Inuktitut
      0, // Inupiak
-   149, // Irish
-   150, // Italian
-   152, // Japanese
+   138, // Irish
+   139, // Italian
+   141, // Japanese
      0, // Javanese
-   153, // Kannada
+   142, // Kannada
      0, // Kashmiri
-   154, // Kazakh
-   156, // Kinyarwanda
-   157, // Kirghiz
-   158, // Korean
-   159, // Kurdish
+   143, // Kazakh
+   144, // Kinyarwanda
+   145, // Kirghiz
+   146, // Korean
+   147, // Kurdish
      0, // Rundi
-   167, // Lao
+   151, // Lao
      0, // Latin
-   168, // Latvian
-   169, // Lingala
-   171, // Lithuanian
-   172, // Macedonian
-   173, // Malagasy
-   174, // Malay
-   176, // Malayalam
-   177, // Maltese
-   178, // Maori
-   179, // Marathi
+   152, // Latvian
+   153, // Lingala
+   155, // Lithuanian
+   156, // Macedonian
+   157, // Malagasy
+   158, // Malay
+   160, // Malayalam
+   161, // Maltese
+   162, // Maori
+   163, // Marathi
      0, // Marshallese
-   180, // Mongolian
+   164, // Mongolian
      0, // Nauru
-   184, // Nepali
-   186, // NorwegianBokmal
-   187, // Occitan
-   188, // Oriya
-   189, // Pashto
-   190, // Persian
-   192, // Polish
-   193, // Portuguese
-   198, // Punjabi
+   166, // Nepali
+   168, // NorwegianBokmal
+   169, // Occitan
+   170, // Oriya
+   171, // Pashto
+   172, // Persian
+   174, // Polish
+   175, // Portuguese
+   180, // Punjabi
      0, // Quechua
-   202, // Romansh
-   203, // Romanian
-   205, // Russian
+   182, // Romansh
+   183, // Romanian
+   185, // Russian
      0, // Samoan
-   208, // Sangho
-   209, // Sanskrit
-   210, // Serbian
+   188, // Sangho
+   189, // Sanskrit
+   190, // Serbian
      0, // Ossetic
-   219, // Sesotho
-   221, // Setswana
-   222, // Shona
+   196, // Sesotho
+   198, // Setswana
+   199, // Shona
      0, // Sindhi
-   223, // Singhalese
-   224, // Siswati
-   226, // Slovak
-   227, // Slovenian
-   228, // Somali
-   232, // Spanish
+   200, // Singhalese
+   201, // Siswati
+   203, // Slovak
+   204, // Slovenian
+   205, // Somali
+   209, // Spanish
      0, // Sundanese
-   254, // Swahili
-   256, // Swedish
+   231, // Swahili
+   233, // Swedish
      0, // Sardinian
-   258, // Tajik
-   260, // Tamil
-   262, // Tatar
-   263, // Telugu
-   264, // Thai
-   265, // Tibetan
-   267, // Tigrinya
-   269, // Tonga
-   270, // Tsonga
-   271, // Turkish
+   235, // Tajik
+   236, // Tamil
+   238, // Tatar
+   239, // Telugu
+   240, // Thai
+   241, // Tibetan
+   243, // Tigrinya
+   245, // Tonga
+   246, // Tsonga
+   247, // Turkish
      0, // Turkmen
      0, // Tahitian
-   272, // Uigur
-   274, // Ukrainian
-   275, // Urdu
-   277, // Uzbek
-   282, // Vietnamese
+   248, // Uigur
+   249, // Ukrainian
+   250, // Urdu
+   252, // Uzbek
+   255, // Vietnamese
      0, // Volapuk
-   283, // Welsh
-   284, // Wolof
-   286, // Xhosa
+   256, // Welsh
+   257, // Wolof
+   258, // Xhosa
      0, // Yiddish
-   287, // Yoruba
+   259, // Yoruba
      0, // Zhuang
-   288, // Zulu
-   289, // NorwegianNynorsk
-   290, // Bosnian
-   291, // Divehi
-   292, // Manx
-   293, // Cornish
-   294, // Akan
-   295, // Konkani
-   296, // Ga
-   297, // Igbo
-   298, // Kamba
-   299, // Syriac
-   300, // Blin
-   301, // Geez
-   303, // Koro
-   304, // Sidamo
-   305, // Atsam
-   306, // Tigre
-   307, // Jju
-   308, // Friulian
-   309, // Venda
-   310, // Ewe
-   312, // Walamo
-   313, // Hawaiian
-   314, // Tyap
-   315, // Chewa
-   316, // Filipino
-   317, // Swiss German
-   318, // Sichuan Yi
-   319, // Kpelle
-   321, // Low German
-   322, // South Ndebele
-   323, // Northern Sotho
-   324, // Northern Sami
-   326, // Taroko
-   327, // Gusii
-   328, // Taita
-   329, // Fulah
-   330, // Kikuyu
-   331, // Samburu
-   332, // Sena
-   333, // North Ndebele
-   334, // Rombo
-   335, // Tachelhit
-   338, // Kabyle
-   339, // Nyankole
-   340, // Bena
-   341, // Vunjo
-   342, // Bambara
-   343, // Embu
-   344, // Cherokee
-   345, // Morisyen
-   346, // Makonde
-   347, // Langi
-   348, // Ganda
-   349, // Bemba
-   350, // Kabuverdianu
-   351, // Meru
-   352, // Kalenjin
-   353, // Nama
-   354, // Machame
-   355, // Colognian
-   356, // Masai
-   358, // Soga
-   359, // Luyia
-   360, // Asu
-   361, // Teso
-   363, // Saho
-   364, // Koyra Chiini
-   365, // Rwa
-   366, // Luo
-   367, // Chiga
-   368, // Central Morocco Tamazight
-   370, // Koyraboro Senni
-   371, // Shambala
-   372, // Bodo
+   260, // Zulu
+   261, // NorwegianNynorsk
+   262, // Bosnian
+   263, // Divehi
+   264, // Manx
+   265, // Cornish
+   266, // Akan
+   267, // Konkani
+   268, // Ga
+   269, // Igbo
+   270, // Kamba
+   271, // Syriac
+   272, // Blin
+   273, // Geez
+   275, // Koro
+   276, // Sidamo
+   277, // Atsam
+   278, // Tigre
+   279, // Jju
+   280, // Friulian
+   281, // Venda
+   282, // Ewe
+   284, // Walamo
+   285, // Hawaiian
+   286, // Tyap
+   287, // Chewa
+   288, // Filipino
+   289, // Swiss German
+   290, // Sichuan Yi
+   291, // Kpelle
+   293, // Low German
+   294, // South Ndebele
+   295, // Northern Sotho
+   296, // Northern Sami
+   298, // Taroko
+   299, // Gusii
+   300, // Taita
+   301, // Fulah
+   302, // Kikuyu
+   303, // Samburu
+   304, // Sena
+   305, // North Ndebele
+   306, // Rombo
+   307, // Tachelhit
+   309, // Kabyle
+   310, // Nyankole
+   311, // Bena
+   312, // Vunjo
+   313, // Bambara
+   314, // Embu
+   315, // Cherokee
+   316, // Morisyen
+   317, // Makonde
+   318, // Langi
+   319, // Ganda
+   320, // Bemba
+   321, // Kabuverdianu
+   322, // Meru
+   323, // Kalenjin
+   324, // Nama
+   325, // Machame
+   326, // Colognian
+   327, // Masai
+   329, // Soga
+   330, // Luyia
+   331, // Asu
+   332, // Teso
+   334, // Saho
+   335, // Koyra Chiini
+   336, // Rwa
+   337, // Luo
+   338, // Chiga
+   339, // Central Morocco Tamazight
+   340, // Koyraboro Senni
+   341, // Shambala
+   342, // Bodo
      0, // Avaric
      0, // Chamorro
      0, // Chechen
@@ -331,378 +789,348 @@ static const quint16 locale_index[] = {
 static const QLocaleData locale_data[] = {
 //      lang   script terr    dec  group   list  prcnt   zero  minus  plus    exp quotStart quotEnd altQuotStart altQuotEnd lpStart lpMid lpEnd lpTwo sDtFmt lDtFmt sTmFmt lTmFmt ssMonth slMonth  sMonth lMonth  sDays  lDays  am,len      pm,len
     {      1,     0,     0,    46,    44,    59,    37,    48,    45,    43,   101,    34,    34,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 0,10 , 10,17 , 0,8 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 158,27 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 99,14 , 0,2 , 0,2 , {0,0,0},  0,0 , 0,7 , 0,4 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // C/AnyScript/AnyCountry
-    {      3,     0,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 35,18 , 18,7 , 25,12 , 185,48 , 233,111 , 134,24 , 185,48 , 233,111 , 134,24 , 113,28 , 141,55 , 85,14 , 113,28 , 141,55 , 85,14 , 2,2 , 2,2 , {69,84,66},  0,2 , 7,24 , 4,4 , 4,0 , 0,6 , 6,10 ,     2,     1,     6,     6,     7 }, // Oromo/AnyScript/Ethiopia
-    {      3,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 35,18 , 18,7 , 25,12 , 185,48 , 233,111 , 134,24 , 185,48 , 233,111 , 134,24 , 113,28 , 141,55 , 85,14 , 113,28 , 141,55 , 85,14 , 2,2 , 2,2 , {75,69,83},  2,3 , 0,7 , 4,4 , 4,0 , 0,6 , 16,8 ,     2,     1,     6,     6,     7 }, // Oromo/AnyScript/Kenya
-    {      4,     0,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 392,118 , 510,24 , 344,48 , 392,118 , 510,24 , 196,28 , 224,52 , 276,14 , 196,28 , 224,52 , 276,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 0,7 , 4,4 , 4,0 , 24,5 , 29,7 ,     2,     1,     6,     6,     7 }, // Afar/AnyScript/Ethiopia
-    {      4,     0,    59,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 534,129 , 510,24 , 344,48 , 534,129 , 510,24 , 196,28 , 224,52 , 276,14 , 196,28 , 224,52 , 276,14 , 0,2 , 0,2 , {68,74,70},  5,3 , 0,7 , 4,4 , 4,0 , 24,5 , 36,7 ,     0,     0,     6,     6,     7 }, // Afar/AnyScript/Djibouti
-    {      4,     0,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 392,118 , 510,24 , 344,48 , 392,118 , 510,24 , 196,28 , 224,52 , 276,14 , 196,28 , 224,52 , 276,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 24,5 , 43,7 ,     2,     1,     6,     6,     7 }, // Afar/AnyScript/Eritrea
-    {      5,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 72,10 , 82,17 , 18,7 , 25,12 , 663,48 , 711,92 , 134,24 , 663,48 , 711,92 , 134,24 , 290,21 , 311,58 , 369,14 , 290,21 , 311,58 , 369,14 , 4,3 , 4,3 , {90,65,82},  11,1 , 31,27 , 4,4 , 4,0 , 50,9 , 59,11 ,     2,     1,     1,     6,     7 }, // Afrikaans/AnyScript/SouthAfrica
-    {      5,     0,   148,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 72,10 , 99,16 , 37,5 , 8,10 , 663,48 , 711,92 , 134,24 , 663,48 , 711,92 , 134,24 , 290,21 , 311,58 , 369,14 , 290,21 , 311,58 , 369,14 , 4,3 , 4,3 , {78,65,68},  12,2 , 58,23 , 8,5 , 4,0 , 50,9 , 70,7 ,     2,     1,     1,     6,     7 }, // Afrikaans/AnyScript/Namibia
-    {      6,     0,     2,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 115,8 , 123,18 , 42,7 , 49,12 , 803,48 , 851,78 , 929,24 , 803,48 , 851,78 , 929,24 , 383,28 , 411,58 , 469,14 , 383,28 , 411,58 , 469,14 , 7,2 , 7,2 , {65,76,76},  14,3 , 0,7 , 4,4 , 4,0 , 77,6 , 83,9 ,     0,     0,     1,     6,     7 }, // Albanian/AnyScript/Albania
-    {      7,     0,    69,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 483,27 , 510,28 , 538,14 , 483,27 , 510,28 , 538,14 , 9,3 , 9,4 , {69,84,66},  17,2 , 81,16 , 4,4 , 13,6 , 92,4 , 96,5 ,     2,     1,     6,     6,     7 }, // Amharic/AnyScript/Ethiopia
-    {      8,     0,    64,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {69,71,80},  19,5 , 97,70 , 8,5 , 19,6 , 101,7 , 108,3 ,     2,     1,     6,     5,     6 }, // Arabic/AnyScript/Egypt
-    {      8,     0,     3,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 179,8 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {68,90,68},  24,5 , 167,91 , 8,5 , 19,6 , 101,7 , 111,7 ,     2,     1,     6,     4,     5 }, // Arabic/AnyScript/Algeria
-    {      8,     0,    17,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {66,72,68},  29,5 , 258,91 , 8,5 , 19,6 , 101,7 , 118,7 ,     3,     0,     6,     5,     6 }, // Arabic/AnyScript/Bahrain
-    {      8,     0,   103,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {73,81,68},  34,5 , 349,84 , 8,5 , 19,6 , 101,7 , 125,6 ,     0,     0,     6,     5,     6 }, // Arabic/AnyScript/Iraq
-    {      8,     0,   109,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1184,92 , 1184,92 , 1160,24 , 1184,92 , 1184,92 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {74,79,68},  39,5 , 433,84 , 8,5 , 19,6 , 101,7 , 131,6 ,     3,     0,     6,     5,     6 }, // Arabic/AnyScript/Jordan
-    {      8,     0,   115,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {75,87,68},  44,5 , 517,84 , 8,5 , 19,6 , 101,7 , 137,6 ,     3,     0,     6,     5,     6 }, // Arabic/AnyScript/Kuwait
-    {      8,     0,   119,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1184,92 , 1184,92 , 1160,24 , 1184,92 , 1184,92 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {76,66,80},  49,5 , 601,84 , 8,5 , 19,6 , 101,7 , 143,5 ,     0,     0,     1,     6,     7 }, // Arabic/AnyScript/Lebanon
-    {      8,     0,   122,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {76,89,68},  54,5 , 685,77 , 8,5 , 19,6 , 101,7 , 148,5 ,     3,     0,     6,     5,     6 }, // Arabic/AnyScript/Libya
-    {      8,     0,   145,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 179,8 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {77,65,68},  59,5 , 762,77 , 8,5 , 19,6 , 101,7 , 153,6 ,     2,     1,     6,     5,     6 }, // Arabic/AnyScript/Morocco
-    {      8,     0,   162,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {79,77,82},  64,5 , 839,77 , 8,5 , 19,6 , 101,7 , 159,5 ,     3,     0,     6,     4,     5 }, // Arabic/AnyScript/Oman
-    {      8,     0,   175,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {81,65,82},  69,5 , 916,70 , 4,4 , 4,0 , 101,7 , 164,3 ,     2,     1,     6,     5,     6 }, // Arabic/AnyScript/Qatar
-    {      8,     0,   186,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {83,65,82},  74,5 , 986,77 , 4,4 , 4,0 , 101,7 , 167,24 ,     2,     1,     6,     4,     5 }, // Arabic/AnyScript/SaudiArabia
-    {      8,     0,   201,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {83,68,71},  0,0 , 1063,18 , 8,5 , 19,6 , 101,7 , 191,7 ,     2,     1,     6,     5,     6 }, // Arabic/AnyScript/Sudan
-    {      8,     0,   207,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1184,92 , 1184,92 , 1160,24 , 1184,92 , 1184,92 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {83,89,80},  79,5 , 1081,70 , 4,4 , 4,0 , 101,7 , 198,5 ,     0,     0,     6,     5,     6 }, // Arabic/AnyScript/Syria
-    {      8,     0,   216,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 179,8 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {84,78,68},  84,5 , 1151,77 , 4,4 , 4,0 , 101,7 , 203,4 ,     3,     0,     6,     5,     6 }, // Arabic/AnyScript/Tunisia
-    {      8,     0,   223,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {65,69,68},  89,5 , 1228,91 , 8,5 , 19,6 , 101,7 , 207,24 ,     2,     1,     6,     5,     6 }, // Arabic/AnyScript/UnitedArabEmirates
-    {      8,     0,   237,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {89,69,82},  94,5 , 1319,70 , 4,4 , 4,0 , 101,7 , 231,5 ,     0,     0,     6,     4,     5 }, // Arabic/AnyScript/Yemen
-    {      9,     0,    11,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 187,8 , 35,18 , 37,5 , 8,10 , 1276,48 , 1324,94 , 158,27 , 1276,48 , 1324,94 , 158,27 , 708,28 , 736,62 , 798,14 , 708,28 , 736,62 , 798,14 , 13,3 , 14,3 , {65,77,68},  99,3 , 0,7 , 25,5 , 4,0 , 236,7 , 243,24 ,     0,     0,     1,     6,     7 }, // Armenian/AnyScript/Armenia
-    {     10,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 195,8 , 203,18 , 73,8 , 81,12 , 1418,62 , 1480,88 , 158,27 , 1418,62 , 1480,88 , 158,27 , 812,37 , 849,58 , 798,14 , 812,37 , 849,58 , 798,14 , 16,9 , 17,7 , {73,78,82},  102,3 , 0,7 , 8,5 , 4,0 , 267,6 , 273,4 ,     2,     1,     7,     7,     7 }, // Assamese/AnyScript/India
-    {     12,     0,    15,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 229,19 , 37,5 , 8,10 , 1568,48 , 1616,77 , 158,27 , 1568,48 , 1616,77 , 158,27 , 907,26 , 933,67 , 99,14 , 907,26 , 933,67 , 99,14 , 0,2 , 0,2 , {65,90,78},  105,4 , 1389,41 , 8,5 , 4,0 , 277,12 , 289,10 ,     2,     1,     7,     6,     7 }, // Azerbaijani/AnyScript/Azerbaijan
-    {     12,     0,   102,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 229,19 , 37,5 , 8,10 , 1568,48 , 1616,77 , 158,27 , 1568,48 , 1616,77 , 158,27 , 907,26 , 933,67 , 99,14 , 907,26 , 933,67 , 99,14 , 0,2 , 0,2 , {73,82,82},  0,0 , 1430,27 , 8,5 , 4,0 , 277,12 , 299,4 ,     0,     0,     6,     4,     5 }, // Azerbaijani/AnyScript/Iran
+    {      3,     7,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 35,18 , 18,7 , 25,12 , 185,48 , 233,111 , 134,24 , 185,48 , 233,111 , 134,24 , 113,28 , 141,55 , 85,14 , 113,28 , 141,55 , 85,14 , 2,2 , 2,2 , {69,84,66},  0,2 , 7,24 , 4,4 , 4,0 , 0,6 , 6,10 ,     2,     1,     6,     6,     7 }, // Oromo/Latin/Ethiopia
+    {      3,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 35,18 , 18,7 , 25,12 , 185,48 , 233,111 , 134,24 , 185,48 , 233,111 , 134,24 , 113,28 , 141,55 , 85,14 , 113,28 , 141,55 , 85,14 , 2,2 , 2,2 , {75,69,83},  2,3 , 0,7 , 4,4 , 4,0 , 0,6 , 16,8 ,     2,     1,     6,     6,     7 }, // Oromo/Latin/Kenya
+    {      4,     7,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 392,118 , 510,24 , 344,48 , 392,118 , 510,24 , 196,28 , 224,52 , 276,14 , 196,28 , 224,52 , 276,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 0,7 , 4,4 , 4,0 , 24,5 , 29,7 ,     2,     1,     6,     6,     7 }, // Afar/Latin/Ethiopia
+    {      4,     7,    59,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 534,129 , 510,24 , 344,48 , 534,129 , 510,24 , 196,28 , 224,52 , 276,14 , 196,28 , 224,52 , 276,14 , 0,2 , 0,2 , {68,74,70},  5,3 , 0,7 , 4,4 , 4,0 , 24,5 , 36,7 ,     0,     0,     6,     6,     7 }, // Afar/Latin/Djibouti
+    {      4,     7,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 392,118 , 510,24 , 344,48 , 392,118 , 510,24 , 196,28 , 224,52 , 276,14 , 196,28 , 224,52 , 276,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 24,5 , 43,7 ,     2,     1,     6,     6,     7 }, // Afar/Latin/Eritrea
+    {      5,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 72,10 , 82,17 , 18,7 , 25,12 , 663,48 , 711,92 , 134,24 , 663,48 , 711,92 , 134,24 , 290,21 , 311,58 , 369,14 , 290,21 , 311,58 , 369,14 , 4,3 , 4,3 , {90,65,82},  11,1 , 31,27 , 4,4 , 4,0 , 50,9 , 59,11 ,     2,     1,     1,     6,     7 }, // Afrikaans/Latin/SouthAfrica
+    {      5,     7,   148,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 72,10 , 99,16 , 37,5 , 8,10 , 663,48 , 711,92 , 134,24 , 663,48 , 711,92 , 134,24 , 290,21 , 311,58 , 369,14 , 290,21 , 311,58 , 369,14 , 4,3 , 4,3 , {78,65,68},  12,2 , 58,23 , 8,5 , 4,0 , 50,9 , 70,7 ,     2,     1,     1,     6,     7 }, // Afrikaans/Latin/Namibia
+    {      6,     7,     2,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 115,8 , 123,18 , 42,7 , 49,12 , 803,48 , 851,78 , 929,24 , 803,48 , 851,78 , 929,24 , 383,28 , 411,58 , 469,14 , 383,28 , 411,58 , 469,14 , 7,2 , 7,2 , {65,76,76},  14,3 , 0,7 , 4,4 , 4,0 , 77,6 , 83,9 ,     0,     0,     1,     6,     7 }, // Albanian/Latin/Albania
+    {      7,    14,    69,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 483,27 , 510,28 , 538,14 , 483,27 , 510,28 , 538,14 , 9,3 , 9,4 , {69,84,66},  17,2 , 81,16 , 4,4 , 13,6 , 92,4 , 96,5 ,     2,     1,     6,     6,     7 }, // Amharic/Ethiopic/Ethiopia
+    {      8,     1,    64,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {69,71,80},  19,5 , 97,70 , 8,5 , 19,6 , 101,7 , 108,3 ,     2,     1,     6,     5,     6 }, // Arabic/Arabic/Egypt
+    {      8,     1,     3,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 179,8 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {68,90,68},  24,5 , 167,91 , 8,5 , 19,6 , 101,7 , 111,7 ,     2,     1,     6,     4,     5 }, // Arabic/Arabic/Algeria
+    {      8,     1,    17,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {66,72,68},  29,5 , 258,91 , 8,5 , 19,6 , 101,7 , 118,7 ,     3,     0,     6,     5,     6 }, // Arabic/Arabic/Bahrain
+    {      8,     1,   103,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {73,81,68},  34,5 , 349,84 , 8,5 , 19,6 , 101,7 , 125,6 ,     0,     0,     6,     5,     6 }, // Arabic/Arabic/Iraq
+    {      8,     1,   109,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1184,92 , 1184,92 , 1160,24 , 1184,92 , 1184,92 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {74,79,68},  39,5 , 433,84 , 8,5 , 19,6 , 101,7 , 131,6 ,     3,     0,     6,     5,     6 }, // Arabic/Arabic/Jordan
+    {      8,     1,   115,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {75,87,68},  44,5 , 517,84 , 8,5 , 19,6 , 101,7 , 137,6 ,     3,     0,     6,     5,     6 }, // Arabic/Arabic/Kuwait
+    {      8,     1,   119,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1184,92 , 1184,92 , 1160,24 , 1184,92 , 1184,92 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {76,66,80},  49,5 , 601,84 , 8,5 , 19,6 , 101,7 , 143,5 ,     0,     0,     1,     6,     7 }, // Arabic/Arabic/Lebanon
+    {      8,     1,   122,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {76,89,68},  54,5 , 685,77 , 8,5 , 19,6 , 101,7 , 148,5 ,     3,     0,     6,     5,     6 }, // Arabic/Arabic/Libya
+    {      8,     1,   145,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 179,8 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {77,65,68},  59,5 , 762,77 , 8,5 , 19,6 , 101,7 , 153,6 ,     2,     1,     6,     5,     6 }, // Arabic/Arabic/Morocco
+    {      8,     1,   162,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {79,77,82},  64,5 , 839,77 , 8,5 , 19,6 , 101,7 , 159,5 ,     3,     0,     6,     4,     5 }, // Arabic/Arabic/Oman
+    {      8,     1,   175,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {81,65,82},  69,5 , 916,70 , 4,4 , 4,0 , 101,7 , 164,3 ,     2,     1,     6,     5,     6 }, // Arabic/Arabic/Qatar
+    {      8,     1,   186,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {83,65,82},  74,5 , 986,77 , 4,4 , 4,0 , 101,7 , 167,24 ,     2,     1,     6,     4,     5 }, // Arabic/Arabic/SaudiArabia
+    {      8,     1,   201,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {83,68,71},  0,0 , 1063,18 , 8,5 , 19,6 , 101,7 , 191,7 ,     2,     1,     6,     5,     6 }, // Arabic/Arabic/Sudan
+    {      8,     1,   207,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1184,92 , 1184,92 , 1160,24 , 1184,92 , 1184,92 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {83,89,80},  79,5 , 1081,70 , 4,4 , 4,0 , 101,7 , 198,5 ,     0,     0,     6,     5,     6 }, // Arabic/Arabic/Syria
+    {      8,     1,   216,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 179,8 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {84,78,68},  84,5 , 1151,77 , 4,4 , 4,0 , 101,7 , 203,4 ,     3,     0,     6,     5,     6 }, // Arabic/Arabic/Tunisia
+    {      8,     1,   223,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 552,38 , 590,52 , 642,14 , 552,38 , 590,52 , 642,14 , 12,1 , 13,1 , {65,69,68},  89,5 , 1228,91 , 8,5 , 19,6 , 101,7 , 207,24 ,     2,     1,     6,     5,     6 }, // Arabic/Arabic/UnitedArabEmirates
+    {      8,     1,   237,  1643,  1644,  1563,  1642,  1632,    45,    43,   101,  8220,  8221,  8216,  8217, 14,6 , 14,6 , 20,8 , 28,7 , 151,10 , 161,18 , 18,7 , 61,12 , 1085,75 , 1085,75 , 1160,24 , 1085,75 , 1085,75 , 1160,24 , 656,52 , 590,52 , 642,14 , 656,52 , 590,52 , 642,14 , 12,1 , 13,1 , {89,69,82},  94,5 , 1319,70 , 4,4 , 4,0 , 101,7 , 231,5 ,     0,     0,     6,     4,     5 }, // Arabic/Arabic/Yemen
+    {      9,    10,    11,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 187,8 , 35,18 , 37,5 , 8,10 , 1276,48 , 1324,94 , 158,27 , 1276,48 , 1324,94 , 158,27 , 708,28 , 736,62 , 798,14 , 708,28 , 736,62 , 798,14 , 13,3 , 14,3 , {65,77,68},  99,3 , 0,7 , 25,5 , 4,0 , 236,7 , 243,24 ,     0,     0,     1,     6,     7 }, // Armenian/Armenian/Armenia
+    {     10,    11,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 195,8 , 203,18 , 73,8 , 81,12 , 1418,62 , 1480,88 , 158,27 , 1418,62 , 1480,88 , 158,27 , 812,37 , 849,58 , 798,14 , 812,37 , 849,58 , 798,14 , 16,9 , 17,7 , {73,78,82},  102,3 , 0,7 , 8,5 , 4,0 , 267,6 , 273,4 ,     2,     1,     7,     7,     7 }, // Assamese/Bengali/India
+    {     12,     7,    15,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 229,19 , 37,5 , 8,10 , 1568,48 , 1616,77 , 158,27 , 1568,48 , 1616,77 , 158,27 , 907,26 , 933,67 , 99,14 , 907,26 , 933,67 , 99,14 , 0,2 , 0,2 , {65,90,78},  105,4 , 1389,41 , 8,5 , 4,0 , 277,12 , 289,10 ,     2,     1,     7,     6,     7 }, // Azerbaijani/Latin/Azerbaijan
     {     12,     1,   102,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 229,19 , 37,5 , 8,10 , 1568,48 , 1616,77 , 158,27 , 1568,48 , 1616,77 , 158,27 , 907,26 , 933,67 , 99,14 , 907,26 , 933,67 , 99,14 , 0,2 , 0,2 , {73,82,82},  0,0 , 1430,27 , 8,5 , 4,0 , 277,12 , 299,4 ,     0,     0,     6,     4,     5 }, // Azerbaijani/Arabic/Iran
     {     12,     2,    15,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 229,19 , 37,5 , 8,10 , 1568,48 , 1693,77 , 158,27 , 1568,48 , 1693,77 , 158,27 , 907,26 , 1000,67 , 99,14 , 907,26 , 1000,67 , 99,14 , 0,2 , 0,2 , {65,90,78},  109,4 , 1457,29 , 8,5 , 4,0 , 303,10 , 303,10 ,     2,     1,     7,     6,     7 }, // Azerbaijani/Cyrillic/Azerbaijan
-    {     12,     7,    15,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 229,19 , 37,5 , 8,10 , 1568,48 , 1616,77 , 158,27 , 1568,48 , 1616,77 , 158,27 , 907,26 , 933,67 , 99,14 , 907,26 , 933,67 , 99,14 , 0,2 , 0,2 , {65,90,78},  105,4 , 1389,41 , 8,5 , 4,0 , 277,12 , 289,10 ,     2,     1,     7,     6,     7 }, // Azerbaijani/Latin/Azerbaijan
-    {     14,     0,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 248,31 , 37,5 , 8,10 , 1770,48 , 1818,93 , 1911,24 , 1770,48 , 1818,93 , 1911,24 , 1067,21 , 1088,68 , 798,14 , 1067,21 , 1088,68 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 0,7 , 25,5 , 4,0 , 313,7 , 320,8 ,     2,     1,     1,     6,     7 }, // Basque/AnyScript/Spain
-    {     15,     0,    18,    46,    44,    59,    37,  2534,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 35,10 , 45,9 , 279,6 , 203,18 , 18,7 , 25,12 , 1935,90 , 1935,90 , 2025,33 , 1935,90 , 1935,90 , 2025,33 , 1156,37 , 1193,58 , 1251,18 , 1156,37 , 1193,58 , 1251,18 , 25,9 , 24,7 , {66,68,84},  114,1 , 1486,21 , 0,4 , 30,6 , 328,5 , 333,8 ,     2,     1,     1,     6,     7 }, // Bengali/AnyScript/Bangladesh
-    {     15,     0,   100,    46,    44,    59,    37,  2534,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 35,10 , 45,9 , 279,6 , 203,18 , 18,7 , 25,12 , 1935,90 , 1935,90 , 2025,33 , 1935,90 , 1935,90 , 2025,33 , 1156,37 , 1193,58 , 1251,18 , 1156,37 , 1193,58 , 1251,18 , 25,9 , 24,7 , {73,78,82},  115,4 , 1507,19 , 0,4 , 30,6 , 328,5 , 341,4 ,     2,     1,     7,     7,     7 }, // Bengali/AnyScript/India
-    {     16,     0,    25,    46,    44,    59,    37,    48,    45,    43,   101,    34,    34,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 285,29 , 93,22 , 115,35 , 2058,75 , 2133,205 , 158,27 , 2058,75 , 2133,205 , 158,27 , 1269,34 , 1303,79 , 798,14 , 1269,34 , 1303,79 , 798,14 , 0,2 , 0,2 , {66,84,78},  119,3 , 1526,16 , 4,4 , 4,0 , 345,6 , 351,5 ,     2,     1,     1,     6,     7 }, // Dzongkha/AnyScript/Bhutan
-    {     19,     0,    74,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1542,11 , 8,5 , 4,0 , 0,0 , 356,5 ,     2,     1,     1,     6,     7 }, // Breton/AnyScript/France
-    {     20,     0,    33,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8220,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 340,18 , 37,5 , 8,10 , 2338,59 , 2397,82 , 2479,24 , 2338,59 , 2397,82 , 2479,24 , 1382,21 , 1403,55 , 1458,14 , 1382,21 , 1403,55 , 1458,14 , 34,7 , 31,7 , {66,71,78},  122,3 , 1553,47 , 25,5 , 4,0 , 361,9 , 370,8 ,     2,     1,     1,     6,     7 }, // Bulgarian/AnyScript/Bulgaria
-    {     21,     0,   147,    46,    44,  4170,    37,  4160,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 2503,43 , 2546,88 , 2634,24 , 2503,43 , 2546,88 , 2634,24 , 1472,25 , 1497,54 , 1551,14 , 1472,25 , 1497,54 , 1551,14 , 41,5 , 38,3 , {77,77,75},  125,1 , 1600,18 , 8,5 , 4,0 , 378,3 , 381,6 ,     0,     0,     1,     6,     7 }, // Burmese/AnyScript/Myanmar
-    {     22,     0,    20,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 358,6 , 10,17 , 150,5 , 155,10 , 2658,48 , 2706,99 , 2805,24 , 2829,48 , 2877,95 , 2972,24 , 1565,21 , 1586,56 , 1642,14 , 1565,21 , 1586,56 , 1642,14 , 46,10 , 41,13 , {66,89,82},  0,0 , 1618,23 , 4,4 , 4,0 , 387,10 , 397,8 ,     0,     0,     1,     6,     7 }, // Belarusian/AnyScript/Belarus
-    {     23,     0,    36,    44,    46,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 372,30 , 165,4 , 169,26 , 2996,27 , 3023,71 , 158,27 , 2996,27 , 3023,71 , 158,27 , 1656,19 , 1675,76 , 798,14 , 1656,19 , 1675,76 , 798,14 , 56,5 , 54,5 , {75,72,82},  126,1 , 1641,11 , 0,4 , 4,0 , 405,9 , 414,7 ,     2,     1,     1,     6,     7 }, // Khmer/AnyScript/Cambodia
-    {     24,     0,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 61,7 , 61,7 , 27,8 , 402,21 , 165,4 , 195,9 , 3094,60 , 3154,82 , 3236,24 , 3260,93 , 3353,115 , 3468,24 , 1751,21 , 1772,60 , 1832,14 , 1846,28 , 1874,60 , 1934,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 421,6 , 427,7 ,     2,     1,     1,     6,     7 }, // Catalan/AnyScript/Spain
-    {     25,     0,    44,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 423,6 , 429,13 , 204,6 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {67,78,89},  127,1 , 1672,10 , 4,4 , 4,0 , 434,2 , 436,2 ,     2,     1,     7,     6,     7 }, // Chinese/AnyScript/China
-    {     25,     0,    97,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 442,7 , 429,13 , 204,6 , 221,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {72,75,68},  128,1 , 1682,9 , 4,4 , 13,6 , 434,2 , 438,14 ,     2,     1,     7,     6,     7 }, // Chinese/AnyScript/HongKong
-    {     25,     0,   126,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 442,7 , 449,15 , 204,6 , 221,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {77,79,80},  129,4 , 1691,10 , 4,4 , 4,0 , 434,2 , 452,14 ,     2,     1,     7,     6,     7 }, // Chinese/AnyScript/Macau
-    {     25,     0,   190,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 27,8 , 429,13 , 232,7 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {83,71,68},  133,2 , 1701,11 , 4,4 , 4,0 , 434,2 , 466,3 ,     2,     1,     7,     6,     7 }, // Chinese/AnyScript/Singapore
-    {     25,     0,   208,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 464,6 , 429,13 , 204,6 , 221,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {84,87,68},  135,3 , 1712,10 , 4,4 , 4,0 , 434,2 , 469,2 ,     2,     1,     7,     6,     7 }, // Chinese/AnyScript/Taiwan
-    {     25,     5,    44,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 423,6 , 429,13 , 204,6 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {67,78,89},  127,1 , 1672,10 , 4,4 , 4,0 , 471,6 , 436,2 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/China
-    {     25,     5,    97,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 423,6 , 429,13 , 204,6 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {72,75,68},  128,1 , 1682,9 , 4,4 , 4,0 , 471,6 , 477,9 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/HongKong
-    {     25,     5,   126,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 423,6 , 429,13 , 204,6 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {77,79,80},  129,4 , 1722,10 , 4,4 , 4,0 , 471,6 , 486,9 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/Macau
-    {     25,     5,   190,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 27,8 , 429,13 , 232,7 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {83,71,68},  133,2 , 1701,11 , 4,4 , 4,0 , 471,6 , 466,3 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/Singapore
-    {     25,     6,    97,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 442,7 , 429,13 , 204,6 , 221,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {72,75,68},  128,1 , 1682,9 , 4,4 , 13,6 , 495,4 , 438,14 ,     2,     1,     7,     6,     7 }, // Chinese/Traditional Han/HongKong
-    {     25,     6,   126,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 442,7 , 449,15 , 204,6 , 221,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {77,79,80},  129,4 , 1691,10 , 4,4 , 4,0 , 495,4 , 452,14 ,     2,     1,     7,     6,     7 }, // Chinese/Traditional Han/Macau
-    {     25,     6,   208,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 464,6 , 429,13 , 204,6 , 221,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {84,87,68},  135,3 , 1712,10 , 4,4 , 4,0 , 495,4 , 469,2 ,     2,     1,     7,     6,     7 }, // Chinese/Traditional Han/Taiwan
-    {     27,     0,    54,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 61,7 , 61,7 , 470,13 , 483,19 , 37,5 , 8,10 , 3569,49 , 3618,94 , 3712,39 , 3569,49 , 3751,98 , 3712,39 , 2032,28 , 2060,58 , 2118,14 , 2032,28 , 2060,58 , 2118,14 , 0,2 , 0,2 , {72,82,75},  138,2 , 1732,27 , 25,5 , 4,0 , 499,8 , 507,8 ,     2,     1,     1,     6,     7 }, // Croatian/AnyScript/Croatia
-    {     28,     0,    57,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 78,7 , 78,7 , 358,6 , 502,18 , 165,4 , 195,9 , 3712,39 , 3849,82 , 3931,24 , 158,27 , 3955,84 , 3931,24 , 2132,21 , 2153,49 , 2202,14 , 2132,21 , 2153,49 , 2202,14 , 67,4 , 65,4 , {67,90,75},  140,2 , 1759,19 , 25,5 , 4,0 , 515,7 , 522,15 ,     2,     1,     1,     6,     7 }, // Czech/AnyScript/CzechRepublic
-    {     29,     0,    58,    44,    46,    44,    37,    48,    45,    43,   101,  8221,  8221,  8221,  8221, 0,6 , 0,6 , 85,8 , 85,8 , 27,8 , 520,23 , 150,5 , 155,10 , 4039,48 , 4087,84 , 134,24 , 4171,59 , 4087,84 , 134,24 , 2216,28 , 2244,51 , 2295,14 , 2216,28 , 2244,51 , 2295,14 , 71,4 , 69,4 , {68,75,75},  142,2 , 1778,42 , 25,5 , 4,0 , 537,5 , 542,7 ,     2,     1,     1,     6,     7 }, // Danish/AnyScript/Denmark
-    {     30,     0,   151,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 543,8 , 99,16 , 37,5 , 8,10 , 4230,48 , 4278,88 , 134,24 , 4366,59 , 4278,88 , 134,24 , 2309,21 , 2330,59 , 2389,14 , 2309,21 , 2330,59 , 2389,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1820,19 , 8,5 , 19,6 , 549,10 , 559,9 ,     2,     1,     1,     6,     7 }, // Dutch/AnyScript/Netherlands
-    {     30,     0,    21,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 551,7 , 99,16 , 37,5 , 8,10 , 4230,48 , 4278,88 , 134,24 , 4366,59 , 4278,88 , 134,24 , 2309,21 , 2330,59 , 2389,14 , 2309,21 , 2330,59 , 2389,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1820,19 , 25,5 , 4,0 , 568,6 , 574,6 ,     2,     1,     1,     6,     7 }, // Dutch/AnyScript/Belgium
-    {     31,     0,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 580,12 , 592,13 ,     2,     1,     7,     6,     7 }, // English/AnyScript/UnitedStates
-    {     31,     0,     4,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 605,7 , 612,14 ,     2,     1,     7,     6,     7 }, // English/AnyScript/AmericanSamoa
-    {     31,     0,    13,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 551,7 , 10,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {65,85,68},  128,1 , 1874,59 , 4,4 , 4,0 , 626,18 , 644,9 ,     2,     1,     1,     6,     7 }, // English/AnyScript/Australia
-    {     31,     0,    21,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 99,16 , 37,5 , 239,24 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1933,20 , 25,5 , 4,0 , 605,7 , 653,7 ,     2,     1,     1,     6,     7 }, // English/AnyScript/Belgium
-    {     31,     0,    22,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 564,12 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {66,90,68},  128,1 , 1953,47 , 4,4 , 4,0 , 605,7 , 660,6 ,     2,     1,     1,     6,     7 }, // English/AnyScript/Belize
-    {     31,     0,    28,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 82,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {66,87,80},  144,1 , 2000,50 , 4,4 , 4,0 , 605,7 , 666,8 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Botswana
-    {     31,     0,    38,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 115,8 , 203,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {67,65,68},  128,1 , 2050,53 , 4,4 , 13,6 , 674,16 , 690,6 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Canada
-    {     31,     0,    89,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 605,7 , 696,4 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Guam
-    {     31,     0,    97,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 279,6 , 203,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {72,75,68},  128,1 , 2103,56 , 4,4 , 13,6 , 605,7 , 700,19 ,     2,     1,     7,     6,     7 }, // English/AnyScript/HongKong
-    {     31,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 99,16 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {73,78,82},  145,2 , 2159,44 , 8,5 , 4,0 , 605,7 , 719,5 ,     2,     1,     7,     7,     7 }, // English/AnyScript/India
-    {     31,     0,   104,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 141,10 , 99,16 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 1933,20 , 4,4 , 4,0 , 605,7 , 724,7 ,     2,     1,     1,     6,     7 }, // English/AnyScript/Ireland
-    {     31,     0,   107,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 279,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {74,77,68},  128,1 , 2203,53 , 4,4 , 4,0 , 605,7 , 731,7 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Jamaica
-    {     31,     0,   133,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 141,10 , 10,17 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1933,20 , 4,4 , 4,0 , 605,7 , 738,5 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Malta
-    {     31,     0,   134,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 605,7 , 743,16 ,     2,     1,     7,     6,     7 }, // English/AnyScript/MarshallIslands
-    {     31,     0,   137,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {77,85,82},  147,4 , 2256,53 , 4,4 , 13,6 , 605,7 , 759,9 ,     0,     0,     1,     6,     7 }, // English/AnyScript/Mauritius
-    {     31,     0,   148,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {78,65,68},  128,1 , 2309,53 , 4,4 , 4,0 , 605,7 , 768,7 ,     2,     1,     1,     6,     7 }, // English/AnyScript/Namibia
-    {     31,     0,   154,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 551,7 , 10,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {78,90,68},  128,1 , 2362,62 , 4,4 , 4,0 , 605,7 , 775,11 ,     2,     1,     7,     6,     7 }, // English/AnyScript/NewZealand
-    {     31,     0,   160,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 605,7 , 786,24 ,     2,     1,     7,     6,     7 }, // English/AnyScript/NorthernMarianaIslands
-    {     31,     0,   163,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 99,16 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {80,75,82},  151,1 , 2424,53 , 8,5 , 4,0 , 605,7 , 810,8 ,     0,     0,     7,     6,     7 }, // English/AnyScript/Pakistan
-    {     31,     0,   170,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {80,72,80},  152,1 , 2477,42 , 4,4 , 13,6 , 605,7 , 818,11 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Philippines
-    {     31,     0,   190,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 279,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {83,71,68},  128,1 , 2519,56 , 4,4 , 13,6 , 605,7 , 829,9 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Singapore
-    {     31,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 576,10 , 82,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 2575,61 , 4,4 , 4,0 , 605,7 , 838,12 ,     2,     1,     1,     6,     7 }, // English/AnyScript/SouthAfrica
-    {     31,     0,   215,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {84,84,68},  128,1 , 2636,86 , 4,4 , 4,0 , 605,7 , 850,19 ,     2,     1,     7,     6,     7 }, // English/AnyScript/TrinidadAndTobago
-    {     31,     0,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 93,10 , 103,9 , 141,10 , 10,17 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {71,66,80},  153,1 , 2722,74 , 4,4 , 4,0 , 869,15 , 884,14 ,     2,     1,     1,     6,     7 }, // English/AnyScript/UnitedKingdom
-    {     31,     0,   226,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 605,7 , 898,27 ,     2,     1,     7,     6,     7 }, // English/AnyScript/UnitedStatesMinorOutlyingIslands
-    {     31,     0,   234,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 605,7 , 925,19 ,     2,     1,     7,     6,     7 }, // English/AnyScript/UnitedStatesVirginIslands
-    {     31,     0,   240,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 364,8 , 82,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 4,0 , 605,7 , 944,8 ,     2,     1,     7,     6,     7 }, // English/AnyScript/Zimbabwe
-    {     31,     3,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 4425,80 , 4505,154 , 4659,36 , 4425,80 , 4505,154 , 4659,36 , 2403,49 , 2452,85 , 2537,21 , 2403,49 , 2452,85 , 2537,21 , 75,4 , 73,4 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 580,12 , 952,25 ,     2,     1,     7,     6,     7 }, // English/Deseret/UnitedStates
-    {     33,     0,    68,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8220,  8222,  8220, 0,6 , 0,6 , 112,8 , 112,8 , 332,8 , 502,18 , 165,4 , 263,9 , 4695,59 , 4754,91 , 4845,24 , 4695,59 , 4754,91 , 4845,24 , 2558,14 , 2572,63 , 2558,14 , 2558,14 , 2572,63 , 2558,14 , 79,14 , 77,16 , {69,69,75},  142,2 , 2796,41 , 25,5 , 4,0 , 977,5 , 982,5 ,     2,     1,     1,     6,     7 }, // Estonian/AnyScript/Estonia
-    {     34,     0,    71,    44,    46,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 85,8 , 85,8 , 543,8 , 82,17 , 37,5 , 8,10 , 4869,48 , 4917,83 , 134,24 , 4869,48 , 4917,83 , 134,24 , 2635,28 , 2663,74 , 2737,14 , 2635,28 , 2663,74 , 2737,14 , 0,2 , 0,2 , {68,75,75},  142,2 , 2837,42 , 4,4 , 36,5 , 987,8 , 995,7 ,     2,     1,     7,     6,     7 }, // Faroese/AnyScript/FaroeIslands
-    {     36,     0,    73,    44,   160,    59,    37,    48,    45,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 112,8 , 112,8 , 586,8 , 594,17 , 272,4 , 276,9 , 5000,69 , 5069,105 , 5174,24 , 5198,129 , 5198,129 , 5174,24 , 2751,21 , 2772,67 , 2839,14 , 2751,21 , 2853,81 , 2839,14 , 93,3 , 93,3 , {69,85,82},  113,1 , 2879,20 , 25,5 , 4,0 , 1002,5 , 1007,5 ,     2,     1,     1,     6,     7 }, // Finnish/AnyScript/Finland
-    {     37,     0,    74,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1020,6 ,     2,     1,     1,     6,     7 }, // French/AnyScript/France
-    {     37,     0,    21,    44,    46,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 551,7 , 99,16 , 37,5 , 285,23 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1026,8 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Belgium
-    {     37,     0,    23,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1012,8 , 1034,5 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Benin
-    {     37,     0,    34,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1012,8 , 1039,12 ,     0,     0,     1,     6,     7 }, // French/AnyScript/BurkinaFaso
-    {     37,     0,    35,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {66,73,70},  157,3 , 2958,53 , 25,5 , 4,0 , 1012,8 , 1051,7 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Burundi
-    {     37,     0,    37,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1012,8 , 1058,8 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Cameroon
-    {     37,     0,    38,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 115,8 , 99,16 , 37,5 , 239,24 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {67,65,68},  128,1 , 3067,54 , 25,5 , 41,7 , 1066,17 , 690,6 ,     2,     1,     7,     6,     7 }, // French/AnyScript/Canada
-    {     37,     0,    41,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1012,8 , 1083,25 ,     0,     0,     1,     6,     7 }, // French/AnyScript/CentralAfricanRepublic
-    {     37,     0,    42,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1012,8 , 1108,5 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Chad
-    {     37,     0,    48,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {75,77,70},  163,2 , 3121,51 , 25,5 , 4,0 , 1012,8 , 1113,7 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Comoros
-    {     37,     0,    49,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {67,68,70},  165,4 , 3172,53 , 25,5 , 4,0 , 1012,8 , 1120,32 ,     2,     1,     1,     6,     7 }, // French/AnyScript/CongoKinshasa
-    {     37,     0,    50,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1012,8 , 1152,17 ,     0,     0,     1,     6,     7 }, // French/AnyScript/CongoBrazzaville
-    {     37,     0,    53,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1012,8 , 1169,13 ,     0,     0,     1,     6,     7 }, // French/AnyScript/IvoryCoast
-    {     37,     0,    59,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {68,74,70},  169,3 , 3225,57 , 25,5 , 4,0 , 1012,8 , 1182,8 ,     0,     0,     6,     6,     7 }, // French/AnyScript/Djibouti
-    {     37,     0,    66,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1012,8 , 1190,18 ,     0,     0,     1,     6,     7 }, // French/AnyScript/EquatorialGuinea
-    {     37,     0,    79,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1012,8 , 1208,5 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Gabon
-    {     37,     0,    88,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1213,10 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Guadeloupe
-    {     37,     0,    91,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {71,78,70},  172,3 , 3282,48 , 25,5 , 4,0 , 1012,8 , 1223,6 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Guinea
-    {     37,     0,   125,    44,    46,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1229,10 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Luxembourg
-    {     37,     0,   128,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {77,71,65},  0,0 , 3330,54 , 25,5 , 4,0 , 1012,8 , 1239,10 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Madagascar
-    {     37,     0,   132,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1012,8 , 1249,4 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Mali
-    {     37,     0,   135,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1253,10 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Martinique
-    {     37,     0,   142,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1263,6 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Monaco
-    {     37,     0,   156,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1012,8 , 1269,5 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Niger
-    {     37,     0,   176,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1274,7 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Reunion
-    {     37,     0,   179,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {82,87,70},  175,2 , 3384,50 , 25,5 , 4,0 , 1012,8 , 1281,6 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Rwanda
-    {     37,     0,   187,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1012,8 , 1287,7 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Senegal
-    {     37,     0,   206,    46,    39,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 120,8 , 120,8 , 332,8 , 10,17 , 37,5 , 308,14 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {67,72,70},  177,3 , 3434,45 , 8,5 , 48,5 , 1294,15 , 1309,6 ,     2,     5,     1,     6,     7 }, // French/AnyScript/Switzerland
-    {     37,     0,   212,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1012,8 , 1315,4 ,     0,     0,     1,     6,     7 }, // French/AnyScript/Togo
-    {     37,     0,   244,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1319,16 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Saint Barthelemy
-    {     37,     0,   245,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1012,8 , 1335,12 ,     2,     1,     1,     6,     7 }, // French/AnyScript/Saint Martin
-    {     40,     0,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 82,17 , 37,5 , 8,10 , 5475,48 , 5523,87 , 5610,24 , 5475,48 , 5523,87 , 5610,24 , 3035,28 , 3063,49 , 3112,14 , 3035,28 , 3063,49 , 3112,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1933,20 , 25,5 , 4,0 , 1347,6 , 1353,6 ,     2,     1,     1,     6,     7 }, // Galician/AnyScript/Spain
-    {     41,     0,    81,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 5634,48 , 5682,99 , 5781,24 , 5634,48 , 5682,99 , 5781,24 , 3126,28 , 3154,62 , 3216,14 , 3126,28 , 3154,62 , 3216,14 , 0,2 , 0,2 , {71,69,76},  0,0 , 3479,19 , 8,5 , 4,0 , 1359,7 , 1366,10 ,     2,     1,     7,     6,     7 }, // Georgian/AnyScript/Georgia
-    {     42,     0,    82,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 25,5 , 4,0 , 1376,7 , 1383,11 ,     2,     1,     1,     6,     7 }, // German/AnyScript/Germany
-    {     42,     0,    14,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 611,19 , 37,5 , 8,10 , 5805,52 , 5988,83 , 134,24 , 6071,48 , 5988,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 8,5 , 4,0 , 1394,24 , 1418,10 ,     2,     1,     1,     6,     7 }, // German/AnyScript/Austria
-    {     42,     0,    21,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 551,7 , 99,16 , 37,5 , 239,24 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3353,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 25,5 , 4,0 , 1376,7 , 1428,7 ,     2,     1,     1,     6,     7 }, // German/AnyScript/Belgium
-    {     42,     0,   123,    46,    39,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {67,72,70},  0,0 , 3517,41 , 8,5 , 4,0 , 1376,7 , 1435,13 ,     2,     5,     1,     6,     7 }, // German/AnyScript/Liechtenstein
-    {     42,     0,   125,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 25,5 , 4,0 , 1376,7 , 1448,9 ,     2,     1,     1,     6,     7 }, // German/AnyScript/Luxembourg
-    {     42,     0,   206,    46,    39,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {67,72,70},  0,0 , 3517,41 , 8,5 , 48,5 , 1457,21 , 1478,7 ,     2,     5,     1,     6,     7 }, // German/AnyScript/Switzerland
-    {     43,     0,    85,    44,    46,    44,    37,    48,    45,    43,   101,   171,   187,  8216,  8217, 0,6 , 0,6 , 137,9 , 137,9 , 279,6 , 10,17 , 18,7 , 25,12 , 6119,50 , 6169,115 , 6284,24 , 6119,50 , 6308,115 , 6284,24 , 3381,28 , 3409,55 , 3464,14 , 3381,28 , 3409,55 , 3464,14 , 101,4 , 102,4 , {69,85,82},  113,1 , 3558,19 , 25,5 , 4,0 , 1485,8 , 1493,6 ,     2,     1,     1,     6,     7 }, // Greek/AnyScript/Greece
-    {     43,     0,    56,    44,    46,    44,    37,    48,    45,    43,   101,   171,   187,  8216,  8217, 0,6 , 0,6 , 137,9 , 137,9 , 279,6 , 10,17 , 18,7 , 25,12 , 6119,50 , 6169,115 , 6284,24 , 6119,50 , 6308,115 , 6284,24 , 3381,28 , 3409,55 , 3464,14 , 3381,28 , 3409,55 , 3464,14 , 101,4 , 102,4 , {69,85,82},  113,1 , 3558,19 , 4,4 , 4,0 , 1485,8 , 1499,6 ,     2,     1,     1,     6,     7 }, // Greek/AnyScript/Cyprus
-    {     44,     0,    86,    44,    46,    59,    37,    48,  8722,    43,   101,   187,   171,  8250,  8249, 146,11 , 0,6 , 0,6 , 146,11 , 72,10 , 82,17 , 18,7 , 25,12 , 4039,48 , 6423,96 , 134,24 , 4039,48 , 6423,96 , 134,24 , 3478,28 , 3506,98 , 3604,14 , 3478,28 , 3506,98 , 3604,14 , 0,2 , 0,2 , {68,75,75},  142,2 , 3577,24 , 4,4 , 36,5 , 1505,11 , 1516,16 ,     2,     1,     7,     6,     7 }, // Greenlandic/AnyScript/Greenland
-    {     46,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 157,9 , 157,9 , 630,7 , 203,18 , 322,8 , 330,13 , 6519,67 , 6586,87 , 6673,31 , 6519,67 , 6586,87 , 6673,31 , 3618,32 , 3650,53 , 3703,19 , 3618,32 , 3650,53 , 3703,19 , 105,14 , 106,14 , {73,78,82},  180,2 , 0,7 , 8,5 , 4,0 , 1532,7 , 1539,4 ,     2,     1,     7,     7,     7 }, // Gujarati/AnyScript/India
-    {     47,     0,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 3601,12 , 8,5 , 4,0 , 1543,5 , 1548,8 ,     2,     1,     1,     6,     7 }, // Hausa/AnyScript/Nigeria
-    {     47,     0,    83,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {71,72,83},  183,3 , 0,7 , 8,5 , 4,0 , 1543,5 , 1556,4 ,     2,     1,     1,     6,     7 }, // Hausa/AnyScript/Ghana
-    {     47,     0,   156,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 3613,36 , 8,5 , 4,0 , 1543,5 , 1560,5 ,     0,     0,     1,     6,     7 }, // Hausa/AnyScript/Niger
-    {     47,     0,   201,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6861,55 , 6916,99 , 6837,24 , 6861,55 , 6916,99 , 6837,24 , 3809,31 , 3840,57 , 3795,14 , 3809,31 , 3840,57 , 3795,14 , 0,2 , 0,2 , {83,68,71},  0,0 , 3649,20 , 8,5 , 4,0 , 1543,5 , 1565,5 ,     2,     1,     6,     5,     6 }, // Hausa/AnyScript/Sudan
-    {     47,     1,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6861,55 , 6916,99 , 6837,24 , 6861,55 , 6916,99 , 6837,24 , 3809,31 , 3840,57 , 3795,14 , 3809,31 , 3840,57 , 3795,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 3669,13 , 8,5 , 4,0 , 1543,5 , 1548,8 ,     2,     1,     1,     6,     7 }, // Hausa/Arabic/Nigeria
-    {     47,     1,   201,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6861,55 , 6916,99 , 6837,24 , 6861,55 , 6916,99 , 6837,24 , 3809,31 , 3840,57 , 3795,14 , 3809,31 , 3840,57 , 3795,14 , 0,2 , 0,2 , {83,68,71},  0,0 , 3649,20 , 8,5 , 4,0 , 1543,5 , 1565,5 ,     2,     1,     6,     5,     6 }, // Hausa/Arabic/Sudan
-    {     47,     7,    83,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {71,72,83},  183,3 , 0,7 , 8,5 , 4,0 , 1543,5 , 1556,4 ,     2,     1,     1,     6,     7 }, // Hausa/Latin/Ghana
-    {     47,     7,   156,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 3613,36 , 8,5 , 4,0 , 1543,5 , 1560,5 ,     0,     0,     1,     6,     7 }, // Hausa/Latin/Niger
-    {     47,     7,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 3601,12 , 8,5 , 4,0 , 1543,5 , 1548,8 ,     2,     1,     1,     6,     7 }, // Hausa/Latin/Nigeria
-    {     48,     0,   105,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 637,18 , 37,5 , 8,10 , 7015,58 , 7073,72 , 158,27 , 7145,48 , 7073,72 , 158,27 , 3897,46 , 3943,65 , 4008,14 , 3897,46 , 3943,65 , 4008,14 , 119,6 , 120,5 , {73,76,83},  186,1 , 3682,21 , 25,5 , 4,0 , 1570,5 , 1575,5 ,     2,     1,     7,     5,     6 }, // Hebrew/AnyScript/Israel
-    {     49,     0,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 166,8 , 166,8 , 655,6 , 10,17 , 18,7 , 25,12 , 7193,75 , 7193,75 , 7268,30 , 7193,75 , 7193,75 , 7268,30 , 4022,38 , 4060,57 , 4117,19 , 4022,38 , 4060,57 , 4117,19 , 125,9 , 125,7 , {73,78,82},  187,3 , 3703,19 , 8,5 , 4,0 , 1580,6 , 1586,4 ,     2,     1,     7,     7,     7 }, // Hindi/AnyScript/India
-    {     50,     0,    98,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8221,  8222,  8221, 0,6 , 0,6 , 174,8 , 174,8 , 661,11 , 672,19 , 165,4 , 195,9 , 7298,64 , 7362,98 , 7460,25 , 7298,64 , 7362,98 , 7460,25 , 4136,19 , 4155,52 , 4207,17 , 4136,19 , 4155,52 , 4207,17 , 134,3 , 132,3 , {72,85,70},  190,2 , 3722,20 , 25,5 , 4,0 , 1590,6 , 1596,12 ,     0,     0,     1,     6,     7 }, // Hungarian/AnyScript/Hungary
-    {     51,     0,    99,    44,    46,    59,    37,    48,  8722,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 85,8 , 85,8 , 586,8 , 502,18 , 37,5 , 8,10 , 7485,48 , 7533,82 , 7615,24 , 7485,48 , 7533,82 , 7639,24 , 4224,28 , 4252,81 , 4333,14 , 4224,28 , 4252,81 , 4347,14 , 137,4 , 135,4 , {73,83,75},  142,2 , 3742,48 , 25,5 , 4,0 , 1608,8 , 1616,6 ,     0,     0,     1,     6,     7 }, // Icelandic/AnyScript/Iceland
-    {     52,     0,   101,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 182,11 , 193,9 , 27,8 , 123,18 , 37,5 , 195,9 , 7663,48 , 7711,87 , 134,24 , 7663,48 , 7711,87 , 134,24 , 4361,28 , 4389,43 , 4432,14 , 4361,28 , 4389,43 , 4432,14 , 141,4 , 139,5 , {73,68,82},  192,2 , 3790,23 , 4,4 , 4,0 , 1622,16 , 1638,9 ,     0,     0,     1,     6,     7 }, // Indonesian/AnyScript/Indonesia
-    {     57,     0,   104,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 99,16 , 37,5 , 8,10 , 7798,62 , 7860,107 , 7967,24 , 7798,62 , 7860,107 , 7967,24 , 4446,37 , 4483,75 , 4558,14 , 4446,37 , 4483,75 , 4558,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 3813,11 , 4,4 , 4,0 , 1647,7 , 1654,4 ,     2,     1,     1,     6,     7 }, // Irish/AnyScript/Ireland
-    {     58,     0,   106,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 202,8 , 210,7 , 27,8 , 99,16 , 37,5 , 8,10 , 7991,48 , 8039,94 , 8133,24 , 7991,48 , 8157,94 , 8133,24 , 4572,28 , 4600,57 , 4657,14 , 4572,28 , 4671,57 , 4657,14 , 145,2 , 144,2 , {69,85,82},  113,1 , 3813,11 , 8,5 , 4,0 , 1658,8 , 1666,6 ,     2,     1,     1,     6,     7 }, // Italian/AnyScript/Italy
-    {     58,     0,   206,    46,    39,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 202,8 , 210,7 , 332,8 , 10,17 , 37,5 , 308,14 , 7991,48 , 8039,94 , 8133,24 , 7991,48 , 8157,94 , 8133,24 , 4572,28 , 4600,57 , 4657,14 , 4572,28 , 4671,57 , 4657,14 , 145,2 , 144,2 , {67,72,70},  0,0 , 3824,22 , 8,5 , 48,5 , 1658,8 , 1672,8 ,     2,     5,     1,     6,     7 }, // Italian/AnyScript/Switzerland
-    {     59,     0,   108,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 68,5 , 68,5 , 221,8 , 429,13 , 165,4 , 343,10 , 3530,39 , 3530,39 , 158,27 , 3530,39 , 3530,39 , 158,27 , 4728,14 , 4742,28 , 4728,14 , 4728,14 , 4742,28 , 4728,14 , 147,2 , 146,2 , {74,80,89},  127,1 , 3846,10 , 4,4 , 4,0 , 1680,3 , 1683,2 ,     0,     0,     7,     6,     7 }, // Japanese/AnyScript/Japan
-    {     61,     0,   100,    46,    44,    59,    37,  3302,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 217,11 , 217,11 , 655,6 , 99,16 , 322,8 , 330,13 , 8251,86 , 8251,86 , 8337,31 , 8251,86 , 8251,86 , 8337,31 , 4770,28 , 4798,53 , 4851,19 , 4770,28 , 4798,53 , 4851,19 , 149,2 , 148,2 , {73,78,82},  194,2 , 0,7 , 8,5 , 4,0 , 1685,5 , 1690,4 ,     2,     1,     7,     7,     7 }, // Kannada/AnyScript/India
-    {     63,     0,   110,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 332,8 , 691,22 , 37,5 , 8,10 , 8368,61 , 8429,83 , 158,27 , 8368,61 , 8429,83 , 158,27 , 4870,28 , 4898,54 , 798,14 , 4870,28 , 4898,54 , 798,14 , 0,2 , 0,2 , {75,90,84},  196,4 , 0,7 , 25,5 , 4,0 , 1694,5 , 1699,9 ,     2,     1,     1,     6,     7 }, // Kazakh/AnyScript/Kazakhstan
-    {     63,     2,   110,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 332,8 , 691,22 , 37,5 , 8,10 , 8368,61 , 8429,83 , 158,27 , 8368,61 , 8429,83 , 158,27 , 4870,28 , 4898,54 , 798,14 , 4870,28 , 4898,54 , 798,14 , 0,2 , 0,2 , {75,90,84},  196,4 , 0,7 , 25,5 , 4,0 , 1694,5 , 1699,9 ,     2,     1,     1,     6,     7 }, // Kazakh/Cyrillic/Kazakhstan
-    {     64,     0,   179,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 8512,60 , 8572,101 , 158,27 , 8512,60 , 8572,101 , 158,27 , 4952,35 , 4987,84 , 798,14 , 4952,35 , 4987,84 , 798,14 , 0,2 , 0,2 , {82,87,70},  200,2 , 0,7 , 8,5 , 4,0 , 1708,11 , 1281,6 ,     0,     0,     1,     6,     7 }, // Kinyarwanda/AnyScript/Rwanda
-    {     65,     0,   116,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {75,71,83},  202,3 , 0,7 , 8,5 , 4,0 , 1719,6 , 1725,10 ,     2,     1,     7,     6,     7 }, // Kirghiz/AnyScript/Kyrgyzstan
-    {     66,     0,   114,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 713,9 , 722,16 , 353,7 , 360,13 , 8673,39 , 8673,39 , 8673,39 , 8673,39 , 8673,39 , 8673,39 , 5071,14 , 5085,28 , 5071,14 , 5071,14 , 5085,28 , 5071,14 , 151,2 , 150,2 , {75,82,87},  205,1 , 3856,13 , 4,4 , 4,0 , 1735,3 , 1738,4 ,     0,     0,     7,     6,     7 }, // Korean/AnyScript/SouthKorea
-    {     67,     0,   103,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 5113,42 , 5113,42 , 5155,14 , 5113,42 , 5113,42 , 5155,14 , 0,2 , 0,2 , {73,81,68},  0,0 , 0,7 , 8,5 , 4,0 , 1742,5 , 1747,5 ,     0,     0,     6,     5,     6 }, // Kurdish/AnyScript/Iraq
-    {     67,     0,   102,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 5113,42 , 5113,42 , 5155,14 , 5113,42 , 5113,42 , 5155,14 , 0,2 , 0,2 , {73,82,82},  0,0 , 0,7 , 8,5 , 4,0 , 1742,5 , 0,0 ,     0,     0,     6,     4,     5 }, // Kurdish/AnyScript/Iran
-    {     67,     0,   207,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 8712,41 , 8753,51 , 8804,27 , 8712,41 , 8753,51 , 8804,27 , 5169,20 , 5189,39 , 5228,14 , 5169,20 , 5189,39 , 5228,14 , 0,2 , 0,2 , {83,89,80},  206,3 , 0,7 , 8,5 , 4,0 , 1752,5 , 0,0 ,     0,     0,     6,     5,     6 }, // Kurdish/AnyScript/Syria
-    {     67,     0,   217,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 8712,41 , 8753,51 , 8804,27 , 8712,41 , 8753,51 , 8804,27 , 5169,20 , 5189,39 , 5228,14 , 5169,20 , 5189,39 , 5228,14 , 0,2 , 0,2 , {84,82,89},  209,2 , 0,7 , 8,5 , 4,0 , 1752,5 , 1757,7 ,     2,     1,     1,     6,     7 }, // Kurdish/AnyScript/Turkey
-    {     67,     1,   102,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 5113,42 , 5113,42 , 5155,14 , 5113,42 , 5113,42 , 5155,14 , 0,2 , 0,2 , {73,82,82},  0,0 , 0,7 , 8,5 , 4,0 , 1742,5 , 0,0 ,     0,     0,     6,     4,     5 }, // Kurdish/Arabic/Iran
-    {     67,     1,   103,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 5113,42 , 5113,42 , 5155,14 , 5113,42 , 5113,42 , 5155,14 , 0,2 , 0,2 , {73,81,68},  0,0 , 0,7 , 8,5 , 4,0 , 1742,5 , 1747,5 ,     0,     0,     6,     5,     6 }, // Kurdish/Arabic/Iraq
-    {     67,     7,   207,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 8712,41 , 8753,51 , 8804,27 , 8712,41 , 8753,51 , 8804,27 , 5169,20 , 5189,39 , 5228,14 , 5169,20 , 5189,39 , 5228,14 , 0,2 , 0,2 , {83,89,80},  206,3 , 0,7 , 8,5 , 4,0 , 1752,5 , 0,0 ,     0,     0,     6,     5,     6 }, // Kurdish/Latin/Syria
-    {     67,     7,   217,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 8712,41 , 8753,51 , 8804,27 , 8712,41 , 8753,51 , 8804,27 , 5169,20 , 5189,39 , 5228,14 , 5169,20 , 5189,39 , 5228,14 , 0,2 , 0,2 , {84,82,89},  209,2 , 0,7 , 8,5 , 4,0 , 1752,5 , 1757,7 ,     2,     1,     1,     6,     7 }, // Kurdish/Latin/Turkey
-    {     69,     0,   117,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 738,18 , 165,4 , 373,21 , 8831,63 , 8894,75 , 158,27 , 8831,63 , 8894,75 , 158,27 , 5242,24 , 5266,57 , 798,14 , 5242,24 , 5266,57 , 798,14 , 0,2 , 0,2 , {76,65,75},  211,1 , 3869,10 , 4,4 , 48,5 , 1764,3 , 1764,3 ,     0,     0,     7,     6,     7 }, // Lao/AnyScript/Laos
-    {     71,     0,   118,    44,   160,    59,    37,    48,  8722,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 228,8 , 228,8 , 332,8 , 756,26 , 37,5 , 8,10 , 8969,65 , 9034,101 , 134,24 , 8969,65 , 9034,101 , 134,24 , 5323,21 , 5344,72 , 5416,14 , 5323,21 , 5344,72 , 5416,14 , 153,14 , 152,11 , {76,86,76},  212,2 , 3879,20 , 25,5 , 4,0 , 1767,8 , 1775,7 ,     2,     1,     1,     6,     7 }, // Latvian/AnyScript/Latvia
-    {     72,     0,    49,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 9135,39 , 9174,203 , 158,27 , 9135,39 , 9174,203 , 158,27 , 5430,23 , 5453,98 , 798,14 , 5430,23 , 5453,98 , 798,14 , 0,2 , 0,2 , {67,68,70},  214,1 , 3899,22 , 8,5 , 4,0 , 1782,7 , 1789,13 ,     2,     1,     1,     6,     7 }, // Lingala/AnyScript/CongoKinshasa
-    {     72,     0,    50,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 9135,39 , 9174,203 , 158,27 , 9135,39 , 9174,203 , 158,27 , 5430,23 , 5453,98 , 798,14 , 5430,23 , 5453,98 , 798,14 , 0,2 , 0,2 , {88,65,70},  215,4 , 0,7 , 8,5 , 4,0 , 1782,7 , 1802,17 ,     0,     0,     1,     6,     7 }, // Lingala/AnyScript/CongoBrazzaville
-    {     73,     0,   124,    44,    46,    59,    37,    48,  8722,    43,   101,  8222,  8220,  8222,  8220, 0,6 , 0,6 , 236,8 , 236,8 , 72,10 , 782,26 , 37,5 , 8,10 , 9377,69 , 9446,96 , 9542,24 , 9566,48 , 9614,96 , 9542,24 , 5551,17 , 5568,89 , 5657,14 , 5671,21 , 5568,89 , 5657,14 , 167,9 , 163,6 , {76,84,76},  219,2 , 3921,54 , 25,5 , 4,0 , 1819,8 , 1827,7 ,     2,     1,     1,     6,     7 }, // Lithuanian/AnyScript/Lithuania
-    {     74,     0,   127,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 808,7 , 123,18 , 37,5 , 8,10 , 9710,63 , 9773,85 , 9858,24 , 9710,63 , 9773,85 , 9858,24 , 5692,34 , 5726,54 , 1458,14 , 5692,34 , 5726,54 , 1458,14 , 176,10 , 169,8 , {77,75,68},  0,0 , 3975,23 , 8,5 , 4,0 , 1834,10 , 1844,10 ,     2,     1,     1,     6,     7 }, // Macedonian/AnyScript/Macedonia
-    {     75,     0,   128,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 9882,48 , 9930,92 , 134,24 , 9882,48 , 9930,92 , 134,24 , 5780,34 , 5814,60 , 5874,14 , 5780,34 , 5814,60 , 5874,14 , 0,2 , 0,2 , {77,71,65},  0,0 , 3998,13 , 4,4 , 4,0 , 1854,8 , 1862,12 ,     0,     0,     1,     6,     7 }, // Malagasy/AnyScript/Madagascar
-    {     76,     0,   130,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 551,7 , 10,17 , 18,7 , 25,12 , 10022,49 , 10071,82 , 158,27 , 10022,49 , 10071,82 , 158,27 , 5888,28 , 5916,43 , 798,14 , 5888,28 , 5916,43 , 798,14 , 0,2 , 0,2 , {77,89,82},  221,2 , 4011,23 , 4,4 , 13,6 , 1874,13 , 1887,8 ,     2,     1,     1,     6,     7 }, // Malay/AnyScript/Malaysia
-    {     76,     0,    32,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 551,7 , 564,12 , 18,7 , 25,12 , 10022,49 , 10071,82 , 158,27 , 10022,49 , 10071,82 , 158,27 , 5888,28 , 5916,43 , 798,14 , 5888,28 , 5916,43 , 798,14 , 0,2 , 0,2 , {66,78,68},  128,1 , 0,7 , 8,5 , 4,0 , 1874,13 , 1895,6 ,     2,     1,     1,     6,     7 }, // Malay/AnyScript/Brunei
-    {     77,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 244,12 , 244,12 , 27,8 , 815,18 , 18,7 , 25,12 , 10153,66 , 10219,101 , 10320,31 , 10153,66 , 10219,101 , 10320,31 , 5959,47 , 6006,70 , 6076,22 , 5959,47 , 6006,70 , 6076,22 , 186,6 , 177,10 , {73,78,82},  223,2 , 4034,46 , 0,4 , 4,0 , 1901,6 , 1907,6 ,     2,     1,     7,     7,     7 }, // Malayalam/AnyScript/India
-    {     78,     0,   133,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 833,23 , 37,5 , 8,10 , 10351,48 , 10399,86 , 10485,24 , 10351,48 , 10399,86 , 10485,24 , 6098,28 , 6126,63 , 6189,14 , 6098,28 , 6126,63 , 6189,14 , 192,2 , 187,2 , {69,85,82},  113,1 , 4080,11 , 4,4 , 4,0 , 1913,5 , 738,5 ,     2,     1,     7,     6,     7 }, // Maltese/AnyScript/Malta
-    {     79,     0,   154,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10509,83 , 10509,83 , 158,27 , 10509,83 , 10509,83 , 158,27 , 6203,48 , 6203,48 , 798,14 , 6203,48 , 6203,48 , 798,14 , 0,2 , 0,2 , {78,90,68},  225,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     7,     6,     7 }, // Maori/AnyScript/NewZealand
-    {     80,     0,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 256,11 , 267,9 , 655,6 , 99,16 , 394,7 , 401,12 , 10592,86 , 10592,86 , 10678,32 , 10592,86 , 10592,86 , 10678,32 , 6251,32 , 6283,53 , 4117,19 , 6251,32 , 6283,53 , 4117,19 , 149,2 , 148,2 , {73,78,82},  194,2 , 0,7 , 8,5 , 4,0 , 1918,5 , 1586,4 ,     2,     1,     7,     7,     7 }, // Marathi/AnyScript/India
-    {     82,     0,   143,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10710,48 , 10758,66 , 158,27 , 10710,48 , 10758,66 , 158,27 , 6336,21 , 6357,43 , 798,14 , 6336,21 , 6357,43 , 798,14 , 0,2 , 0,2 , {77,78,84},  228,1 , 0,7 , 8,5 , 4,0 , 1923,6 , 1929,10 ,     0,     0,     7,     6,     7 }, // Mongolian/AnyScript/Mongolia
-    {     82,     0,    44,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10710,48 , 10758,66 , 158,27 , 10710,48 , 10758,66 , 158,27 , 6336,21 , 6357,43 , 798,14 , 6336,21 , 6357,43 , 798,14 , 0,2 , 0,2 , {67,78,89},  229,3 , 0,7 , 8,5 , 4,0 , 1923,6 , 0,0 ,     2,     1,     7,     6,     7 }, // Mongolian/AnyScript/China
-    {     82,     2,   143,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10710,48 , 10758,66 , 158,27 , 10710,48 , 10758,66 , 158,27 , 6336,21 , 6357,43 , 798,14 , 6336,21 , 6357,43 , 798,14 , 0,2 , 0,2 , {77,78,84},  228,1 , 0,7 , 8,5 , 4,0 , 1923,6 , 1929,10 ,     0,     0,     7,     6,     7 }, // Mongolian/Cyrillic/Mongolia
-    {     82,     8,    44,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10710,48 , 10758,66 , 158,27 , 10710,48 , 10758,66 , 158,27 , 6336,21 , 6357,43 , 798,14 , 6336,21 , 6357,43 , 798,14 , 0,2 , 0,2 , {67,78,89},  229,3 , 0,7 , 8,5 , 4,0 , 1923,6 , 0,0 ,     2,     1,     7,     6,     7 }, // Mongolian/Mongolian/China
-    {     84,     0,   150,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10824,56 , 10880,85 , 10965,27 , 10824,56 , 10880,85 , 10965,27 , 6400,33 , 6433,54 , 6487,14 , 6400,33 , 6433,54 , 6487,14 , 194,14 , 189,14 , {78,80,82},  232,4 , 0,7 , 8,5 , 4,0 , 1939,6 , 1945,5 ,     2,     1,     1,     6,     7 }, // Nepali/AnyScript/Nepal
-    {     84,     0,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10824,56 , 10992,80 , 10965,27 , 10824,56 , 10992,80 , 10965,27 , 6400,33 , 6501,54 , 6487,14 , 6400,33 , 6501,54 , 6487,14 , 125,9 , 125,7 , {73,78,82},  145,2 , 4091,49 , 8,5 , 4,0 , 1939,6 , 1586,4 ,     2,     1,     7,     7,     7 }, // Nepali/AnyScript/India
-    {     85,     0,   161,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 85,8 , 85,8 , 332,8 , 594,17 , 37,5 , 413,16 , 11072,59 , 11131,83 , 134,24 , 11072,59 , 11131,83 , 134,24 , 6555,28 , 2244,51 , 2295,14 , 6583,35 , 2244,51 , 2295,14 , 0,2 , 0,2 , {78,79,75},  142,2 , 4140,44 , 8,5 , 4,0 , 1950,12 , 1962,5 ,     2,     1,     1,     6,     7 }, // NorwegianBokmal/AnyScript/Norway
-    {     86,     0,    74,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 11214,83 , 11214,83 , 158,27 , 11214,83 , 11214,83 , 158,27 , 6618,57 , 6618,57 , 798,14 , 6618,57 , 6618,57 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1542,11 , 8,5 , 4,0 , 1967,7 , 1974,6 ,     2,     1,     1,     6,     7 }, // Occitan/AnyScript/France
-    {     87,     0,   100,    46,    44,    59,    37,  2918,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 655,6 , 10,17 , 18,7 , 25,12 , 11297,89 , 11297,89 , 11386,32 , 11297,89 , 11297,89 , 11386,32 , 6675,33 , 6708,54 , 6762,18 , 6675,33 , 6708,54 , 6762,18 , 149,2 , 148,2 , {73,78,82},  145,2 , 4184,11 , 8,5 , 4,0 , 1980,5 , 1985,4 ,     2,     1,     7,     7,     7 }, // Oriya/AnyScript/India
-    {     88,     0,     1,  1643,  1644,    59,  1642,  1776,  8722,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 179,8 , 856,20 , 165,4 , 429,11 , 11418,68 , 11418,68 , 158,27 , 11418,68 , 11418,68 , 158,27 , 6780,49 , 6780,49 , 798,14 , 6780,49 , 6780,49 , 798,14 , 208,4 , 203,4 , {65,70,78},  236,1 , 4195,13 , 25,5 , 4,0 , 1989,4 , 1993,9 ,     0,     0,     6,     4,     5 }, // Pashto/AnyScript/Afghanistan
-    {     89,     0,   102,  1643,  1644,  1563,  1642,  1776,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 165,4 , 429,11 , 11486,71 , 11557,70 , 11627,25 , 11486,71 , 11652,73 , 11627,25 , 6780,49 , 6780,49 , 6829,14 , 6780,49 , 6780,49 , 6829,14 , 212,10 , 207,10 , {73,82,82},  237,1 , 4208,17 , 25,5 , 53,8 , 2002,5 , 2007,5 ,     0,     0,     6,     4,     5 }, // Persian/AnyScript/Iran
-    {     89,     0,     1,  1643,  1644,  1563,  1642,  1776,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 165,4 , 429,11 , 11725,63 , 11557,70 , 11788,24 , 11725,63 , 11812,68 , 11788,24 , 6780,49 , 6780,49 , 6829,14 , 6780,49 , 6780,49 , 6829,14 , 212,10 , 207,10 , {65,70,78},  236,1 , 4225,23 , 25,5 , 53,8 , 2012,3 , 1993,9 ,     0,     0,     6,     4,     5 }, // Persian/AnyScript/Afghanistan
-    {     90,     0,   172,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8222,  8221, 0,6 , 0,6 , 61,7 , 61,7 , 876,10 , 10,17 , 37,5 , 8,10 , 11880,48 , 11928,97 , 12025,24 , 11880,48 , 12049,99 , 12025,24 , 6843,34 , 6877,59 , 6936,14 , 6843,34 , 6877,59 , 6936,14 , 0,2 , 0,2 , {80,76,78},  238,2 , 4248,60 , 25,5 , 4,0 , 2015,6 , 2021,6 ,     2,     1,     1,     6,     7 }, // Polish/AnyScript/Poland
-    {     91,     0,    30,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {66,82,76},  240,2 , 4308,54 , 4,4 , 13,6 , 2027,19 , 2046,6 ,     2,     1,     1,     6,     7 }, // Portuguese/AnyScript/Brazil
-    {     91,     0,     6,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {65,79,65},  242,2 , 4362,54 , 4,4 , 13,6 , 2052,9 , 2061,6 ,     2,     1,     1,     6,     7 }, // Portuguese/AnyScript/Angola
-    {     91,     0,    92,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 4416,62 , 4,4 , 13,6 , 2052,9 , 2067,12 ,     0,     0,     1,     6,     7 }, // Portuguese/AnyScript/GuineaBissau
-    {     91,     0,   146,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {77,90,78},  244,3 , 4478,72 , 4,4 , 13,6 , 2052,9 , 2079,10 ,     2,     1,     1,     6,     7 }, // Portuguese/AnyScript/Mozambique
-    {     91,     0,   173,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 202,8 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12285,48 , 12333,89 , 134,24 , 12285,48 , 12333,89 , 134,24 , 6950,28 , 7071,79 , 7057,14 , 6950,28 , 7071,79 , 7057,14 , 222,17 , 217,18 , {69,85,82},  113,1 , 1933,20 , 25,5 , 4,0 , 2089,17 , 2106,8 ,     2,     1,     1,     6,     7 }, // Portuguese/AnyScript/Portugal
-    {     92,     0,   100,    46,    44,    59,    37,  2662,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 123,18 , 18,7 , 25,12 , 12422,68 , 12422,68 , 12490,27 , 12422,68 , 12422,68 , 12490,27 , 7150,38 , 7188,55 , 7243,23 , 7150,38 , 7188,55 , 7243,23 , 239,5 , 235,4 , {73,78,82},  247,3 , 4550,12 , 8,5 , 4,0 , 2114,6 , 2120,4 ,     2,     1,     7,     7,     7 }, // Punjabi/AnyScript/India
-    {     92,     0,   163,    46,    44,    59,    37,  1632,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 123,18 , 18,7 , 25,12 , 12517,67 , 12517,67 , 12490,27 , 12517,67 , 12517,67 , 12490,27 , 7150,38 , 7266,37 , 7243,23 , 7150,38 , 7266,37 , 7243,23 , 239,5 , 235,4 , {80,75,82},  250,1 , 4562,13 , 8,5 , 4,0 , 2124,5 , 2129,6 ,     0,     0,     7,     6,     7 }, // Punjabi/AnyScript/Pakistan
-    {     92,     1,   163,    46,    44,    59,    37,  1632,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 123,18 , 18,7 , 25,12 , 12517,67 , 12517,67 , 12490,27 , 12517,67 , 12517,67 , 12490,27 , 7150,38 , 7266,37 , 7243,23 , 7150,38 , 7266,37 , 7243,23 , 239,5 , 235,4 , {80,75,82},  250,1 , 4562,13 , 8,5 , 4,0 , 2124,5 , 2129,6 ,     0,     0,     7,     6,     7 }, // Punjabi/Arabic/Pakistan
-    {     92,     4,   100,    46,    44,    59,    37,  2662,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 123,18 , 18,7 , 25,12 , 12422,68 , 12422,68 , 12490,27 , 12422,68 , 12422,68 , 12490,27 , 7150,38 , 7188,55 , 7243,23 , 7150,38 , 7188,55 , 7243,23 , 239,5 , 235,4 , {73,78,82},  247,3 , 4550,12 , 8,5 , 4,0 , 2114,6 , 2120,4 ,     2,     1,     7,     7,     7 }, // Punjabi/Gurmukhi/India
-    {     94,     0,   206,    46,  8217,    59,    37,    48,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 332,8 , 502,18 , 37,5 , 8,10 , 12584,67 , 12651,92 , 12743,24 , 12584,67 , 12651,92 , 12743,24 , 7303,23 , 7326,56 , 7382,14 , 7303,23 , 7326,56 , 7382,14 , 149,2 , 239,2 , {67,72,70},  0,0 , 4575,20 , 25,5 , 4,0 , 2135,9 , 2144,6 ,     2,     5,     1,     6,     7 }, // Romansh/AnyScript/Switzerland
-    {     95,     0,   177,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 876,10 , 10,17 , 37,5 , 8,10 , 12767,60 , 12827,98 , 12925,24 , 12767,60 , 12827,98 , 12925,24 , 7396,21 , 7417,48 , 3021,14 , 7396,21 , 7417,48 , 3021,14 , 0,2 , 0,2 , {82,79,78},  251,3 , 4595,16 , 25,5 , 4,0 , 2150,6 , 2156,7 ,     2,     1,     1,     6,     7 }, // Romanian/AnyScript/Romania
-    {     95,     0,   141,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 876,10 , 10,17 , 37,5 , 8,10 , 12767,60 , 12827,98 , 12925,24 , 12767,60 , 12827,98 , 12925,24 , 7396,21 , 7417,48 , 3021,14 , 7396,21 , 7417,48 , 3021,14 , 0,2 , 0,2 , {77,68,76},  0,0 , 4611,54 , 25,5 , 4,0 , 2150,6 , 2163,17 ,     2,     1,     1,     6,     7 }, // Romanian/AnyScript/Moldova
-    {     96,     0,   178,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 913,22 , 165,4 , 195,9 , 12949,62 , 13011,80 , 13091,24 , 13115,63 , 13178,82 , 13091,24 , 7465,21 , 7486,62 , 7548,14 , 7562,21 , 7583,62 , 7548,14 , 0,2 , 0,2 , {82,85,66},  254,4 , 4665,89 , 25,5 , 4,0 , 2180,7 , 2187,6 ,     2,     1,     1,     6,     7 }, // Russian/AnyScript/Russia
-    {     96,     0,   141,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 913,22 , 165,4 , 195,9 , 12949,62 , 13011,80 , 13091,24 , 13115,63 , 13178,82 , 13091,24 , 7465,21 , 7486,62 , 7548,14 , 7562,21 , 7583,62 , 7548,14 , 0,2 , 0,2 , {77,68,76},  0,0 , 4754,21 , 25,5 , 4,0 , 2180,7 , 2193,7 ,     2,     1,     1,     6,     7 }, // Russian/AnyScript/Moldova
-    {     96,     0,   222,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 913,22 , 37,5 , 8,10 , 12949,62 , 13011,80 , 13091,24 , 13115,63 , 13178,82 , 13091,24 , 7465,21 , 7486,62 , 7548,14 , 7562,21 , 7583,62 , 7548,14 , 0,2 , 0,2 , {85,65,72},  258,1 , 4775,24 , 25,5 , 4,0 , 2180,7 , 2200,7 ,     2,     1,     1,     6,     7 }, // Russian/AnyScript/Ukraine
-    {     98,     0,    41,    44,    46,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 13260,48 , 13308,91 , 13399,24 , 13260,48 , 13308,91 , 13399,24 , 7645,28 , 7673,66 , 7739,14 , 7645,28 , 7673,66 , 7739,14 , 244,2 , 241,2 , {88,65,70},  215,4 , 4799,25 , 4,4 , 48,5 , 2207,5 , 2212,22 ,     0,     0,     1,     6,     7 }, // Sangho/AnyScript/CentralAfricanRepublic
-    {     99,     0,   100,    46,    44,    59,    37,  2406,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 630,7 , 99,16 , 322,8 , 330,13 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {73,78,82},  194,2 , 0,7 , 4,4 , 4,0 , 2234,12 , 2246,6 ,     2,     1,     7,     7,     7 }, // Sanskrit/AnyScript/India
-    {    100,     0,   243,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13423,48 , 13471,81 , 9858,24 , 13423,48 , 13471,81 , 9858,24 , 7753,28 , 7781,52 , 7833,14 , 7753,28 , 7781,52 , 7833,14 , 246,9 , 243,7 , {82,83,68},  259,4 , 4824,71 , 25,5 , 4,0 , 2252,6 , 2258,6 ,     0,     0,     1,     6,     7 }, // Serbian/AnyScript/Serbia
-    {    100,     0,    27,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 115,8 , 942,20 , 37,5 , 459,40 , 13423,48 , 13552,83 , 9858,24 , 13423,48 , 13552,83 , 9858,24 , 7847,28 , 7875,54 , 7833,14 , 7847,28 , 7875,54 , 7833,14 , 246,9 , 243,7 , {66,65,77},  263,3 , 4895,195 , 25,5 , 4,0 , 2264,6 , 2270,19 ,     2,     1,     1,     6,     7 }, // Serbian/AnyScript/BosniaAndHerzegowina
-    {    100,     0,   242,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 61,7 , 61,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13635,48 , 13683,81 , 13764,24 , 13635,48 , 13683,81 , 13764,24 , 7929,28 , 7957,54 , 2118,14 , 7929,28 , 7957,54 , 2118,14 , 255,9 , 250,7 , {69,85,82},  113,1 , 5090,27 , 8,5 , 4,0 , 2289,6 , 2295,9 ,     2,     1,     1,     6,     7 }, // Serbian/AnyScript/Montenegro
-    {    100,     2,    27,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 115,8 , 942,20 , 37,5 , 459,40 , 13423,48 , 13552,83 , 9858,24 , 13423,48 , 13552,83 , 9858,24 , 7847,28 , 7875,54 , 7833,14 , 7847,28 , 7875,54 , 7833,14 , 246,9 , 243,7 , {66,65,77},  263,3 , 4895,195 , 25,5 , 4,0 , 2264,6 , 2270,19 ,     2,     1,     1,     6,     7 }, // Serbian/Cyrillic/BosniaAndHerzegowina
-    {    100,     2,   242,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13423,48 , 13471,81 , 9858,24 , 13423,48 , 13471,81 , 9858,24 , 7753,28 , 7781,52 , 7833,14 , 7753,28 , 7781,52 , 7833,14 , 246,9 , 243,7 , {69,85,82},  113,1 , 5117,27 , 25,5 , 4,0 , 2252,6 , 2304,9 ,     2,     1,     1,     6,     7 }, // Serbian/Cyrillic/Montenegro
-    {    100,     2,   243,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13423,48 , 13471,81 , 9858,24 , 13423,48 , 13471,81 , 9858,24 , 7753,28 , 7781,52 , 7833,14 , 7753,28 , 7781,52 , 7833,14 , 246,9 , 243,7 , {82,83,68},  259,4 , 4824,71 , 25,5 , 4,0 , 2252,6 , 2258,6 ,     0,     0,     1,     6,     7 }, // Serbian/Cyrillic/Serbia
-    {    100,     7,    27,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 61,7 , 61,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13635,48 , 13683,81 , 13764,24 , 13635,48 , 13683,81 , 13764,24 , 7929,28 , 7957,54 , 2118,14 , 7929,28 , 7957,54 , 2118,14 , 255,9 , 250,7 , {66,65,77},  266,2 , 5144,218 , 25,5 , 4,0 , 2289,6 , 2313,19 ,     2,     1,     1,     6,     7 }, // Serbian/Latin/BosniaAndHerzegowina
-    {    100,     7,   242,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 61,7 , 61,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13635,48 , 13683,81 , 13764,24 , 13635,48 , 13683,81 , 13764,24 , 7929,28 , 7957,54 , 2118,14 , 7929,28 , 7957,54 , 2118,14 , 255,9 , 250,7 , {69,85,82},  113,1 , 5090,27 , 8,5 , 4,0 , 2289,6 , 2295,9 ,     2,     1,     1,     6,     7 }, // Serbian/Latin/Montenegro
-    {    100,     7,   243,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 61,7 , 61,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13635,48 , 13683,81 , 13764,24 , 13635,48 , 13683,81 , 13764,24 , 7929,28 , 7957,54 , 2118,14 , 7929,28 , 7957,54 , 2118,14 , 255,9 , 250,7 , {82,83,68},  268,4 , 5362,71 , 25,5 , 4,0 , 2289,6 , 2332,6 ,     0,     0,     1,     6,     7 }, // Serbian/Latin/Serbia
-    {    102,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 13788,48 , 13836,105 , 158,27 , 13788,48 , 13836,105 , 158,27 , 8011,27 , 8038,61 , 798,14 , 8011,27 , 8038,61 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2338,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Sesotho/AnyScript/SouthAfrica
-    {    102,     0,   120,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 13788,48 , 13836,105 , 158,27 , 13788,48 , 13836,105 , 158,27 , 8011,27 , 8038,61 , 798,14 , 8011,27 , 8038,61 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2338,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Sesotho/AnyScript/Lesotho
-    {    103,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 13941,48 , 13989,117 , 158,27 , 13941,48 , 13989,117 , 158,27 , 8099,27 , 8126,64 , 798,14 , 8099,27 , 8126,64 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2345,8 , 0,0 ,     2,     1,     1,     6,     7 }, // Setswana/AnyScript/SouthAfrica
-    {    104,     0,   240,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8221,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 14106,47 , 14153,100 , 14253,24 , 14106,47 , 14153,100 , 14253,24 , 8190,32 , 8222,55 , 8277,14 , 8190,32 , 8222,55 , 8277,14 , 0,2 , 0,2 , {85,83,68},  272,3 , 5433,22 , 4,4 , 13,6 , 2353,8 , 944,8 ,     2,     1,     7,     6,     7 }, // Shona/AnyScript/Zimbabwe
-    {    106,     0,   198,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 576,10 , 962,17 , 18,7 , 25,12 , 14277,54 , 14331,92 , 14423,32 , 14277,54 , 14331,92 , 14423,32 , 8291,30 , 8321,62 , 8383,19 , 8291,30 , 8321,62 , 8383,19 , 264,5 , 257,4 , {76,75,82},  275,5 , 5455,19 , 4,4 , 13,6 , 2361,5 , 2366,11 ,     2,     1,     1,     6,     7 }, // Singhalese/AnyScript/SriLanka
-    {    107,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 14455,48 , 14503,114 , 158,27 , 14455,48 , 14503,114 , 158,27 , 8402,27 , 8429,68 , 798,14 , 8402,27 , 8429,68 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2377,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Siswati/AnyScript/SouthAfrica
-    {    107,     0,   204,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 14455,48 , 14503,114 , 158,27 , 14455,48 , 14503,114 , 158,27 , 8402,27 , 8429,68 , 798,14 , 8402,27 , 8429,68 , 798,14 , 0,2 , 0,2 , {83,90,76},  280,1 , 0,7 , 4,4 , 4,0 , 2377,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Siswati/AnyScript/Swaziland
-    {    108,     0,   191,    44,   160,    59,    37,    48,    45,    43,   101,  8218,  8216,  8222,  8220, 0,6 , 0,6 , 78,7 , 78,7 , 586,8 , 502,18 , 165,4 , 195,9 , 14617,48 , 14665,82 , 13764,24 , 14617,48 , 14747,89 , 13764,24 , 8497,21 , 8518,52 , 8570,14 , 8497,21 , 8518,52 , 8570,14 , 269,10 , 261,9 , {69,85,82},  113,1 , 3813,11 , 25,5 , 4,0 , 2384,10 , 2394,19 ,     2,     1,     1,     6,     7 }, // Slovak/AnyScript/Slovakia
-    {    109,     0,   192,    44,    46,    59,    37,    48,    45,    43,   101,   187,   171,  8222,  8220, 0,6 , 0,6 , 276,8 , 276,8 , 979,9 , 611,19 , 37,5 , 8,10 , 13635,48 , 14836,86 , 13764,24 , 14922,59 , 14836,86 , 13764,24 , 8584,28 , 8612,52 , 8664,14 , 8584,28 , 8612,52 , 8664,14 , 67,4 , 270,4 , {69,85,82},  113,1 , 5474,28 , 25,5 , 4,0 , 2413,11 , 2424,9 ,     2,     1,     1,     6,     7 }, // Slovenian/AnyScript/Slovenia
-    {    110,     0,   194,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {83,79,83},  281,3 , 5502,22 , 4,4 , 4,0 , 2433,8 , 2441,10 ,     0,     0,     6,     6,     7 }, // Somali/AnyScript/Somalia
-    {    110,     0,    59,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {68,74,70},  5,3 , 5524,21 , 4,4 , 4,0 , 2433,8 , 2451,7 ,     0,     0,     6,     6,     7 }, // Somali/AnyScript/Djibouti
-    {    110,     0,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {69,84,66},  0,2 , 5545,22 , 4,4 , 4,0 , 2433,8 , 2458,8 ,     2,     1,     6,     6,     7 }, // Somali/AnyScript/Ethiopia
-    {    110,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {75,69,83},  2,3 , 0,7 , 4,4 , 4,0 , 2433,8 , 2466,7 ,     2,     1,     6,     6,     7 }, // Somali/AnyScript/Kenya
-    {    111,     0,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 1652,20 , 8,5 , 4,0 , 2473,17 , 1353,6 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Spain
-    {    111,     0,    10,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 499,14 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {65,82,83},  128,1 , 5567,51 , 8,5 , 4,0 , 2490,7 , 2497,9 ,     2,     1,     7,     6,     7 }, // Spanish/AnyScript/Argentina
-    {    111,     0,    26,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {66,79,66},  284,2 , 5618,35 , 8,5 , 4,0 , 2490,7 , 2506,7 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Bolivia
-    {    111,     0,    43,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 543,8 , 988,26 , 165,4 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {67,76,80},  128,1 , 5653,45 , 4,4 , 48,5 , 2490,7 , 2513,5 ,     0,     0,     1,     6,     7 }, // Spanish/AnyScript/Chile
-    {    111,     0,    47,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 551,7 , 988,26 , 165,4 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {67,79,80},  128,1 , 5698,54 , 8,5 , 4,0 , 2490,7 , 2518,8 ,     0,     0,     1,     6,     7 }, // Spanish/AnyScript/Colombia
-    {    111,     0,    52,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {67,82,67},  286,1 , 5752,67 , 8,5 , 4,0 , 2490,7 , 2526,10 ,     0,     0,     1,     6,     7 }, // Spanish/AnyScript/CostaRica
-    {    111,     0,    61,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {68,79,80},  287,3 , 5819,54 , 8,5 , 4,0 , 2490,7 , 2536,20 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/DominicanRepublic
-    {    111,     0,    63,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 165,4 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  128,1 , 5873,70 , 4,4 , 48,5 , 2490,7 , 2556,7 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Ecuador
-    {    111,     0,    65,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  272,3 , 5873,70 , 8,5 , 4,0 , 2490,7 , 2563,11 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/ElSalvador
-    {    111,     0,    66,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {88,65,70},  215,4 , 5943,22 , 8,5 , 4,0 , 2490,7 , 2574,17 ,     0,     0,     1,     6,     7 }, // Spanish/AnyScript/EquatorialGuinea
-    {    111,     0,    90,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 551,7 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {71,84,81},  290,1 , 5965,70 , 8,5 , 4,0 , 2490,7 , 2591,9 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Guatemala
-    {    111,     0,    96,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 1014,27 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {72,78,76},  291,1 , 6035,60 , 8,5 , 4,0 , 2490,7 , 2600,8 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Honduras
-    {    111,     0,   139,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {77,88,78},  128,1 , 6095,48 , 8,5 , 4,0 , 2490,7 , 2608,6 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Mexico
-    {    111,     0,   155,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {78,73,79},  292,2 , 6143,81 , 8,5 , 4,0 , 2490,7 , 2614,9 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Nicaragua
-    {    111,     0,   166,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 187,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {80,65,66},  294,3 , 6224,54 , 8,5 , 4,0 , 2490,7 , 2623,6 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Panama
-    {    111,     0,   168,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {80,89,71},  297,1 , 6278,61 , 8,5 , 61,6 , 2490,7 , 2629,8 ,     0,     0,     1,     6,     7 }, // Spanish/AnyScript/Paraguay
-    {    111,     0,   169,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 551,7 , 988,26 , 37,5 , 513,15 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {80,69,78},  298,3 , 6339,62 , 8,5 , 4,0 , 2490,7 , 2637,4 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Peru
-    {    111,     0,   174,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 187,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  128,1 , 5873,70 , 8,5 , 4,0 , 2490,7 , 2641,11 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/PuertoRico
-    {    111,     0,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 558,6 , 988,26 , 18,7 , 25,12 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  128,1 , 5873,70 , 8,5 , 4,0 , 2490,7 , 2652,14 ,     2,     1,     7,     6,     7 }, // Spanish/AnyScript/UnitedStates
-    {    111,     0,   227,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,89,85},  128,1 , 6401,48 , 8,5 , 67,7 , 2490,7 , 2666,7 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Uruguay
-    {    111,     0,   231,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {86,69,70},  301,5 , 6449,86 , 4,4 , 48,5 , 2490,7 , 2673,9 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/Venezuela
-    {    111,     0,   246,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {0,0,0},  0,0 , 6535,0 , 8,5 , 4,0 , 2682,23 , 2705,25 ,     2,     1,     1,     6,     7 }, // Spanish/AnyScript/LatinAmericaAndTheCaribbean
-    {    113,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 15451,84 , 134,24 , 15403,48 , 15451,84 , 134,24 , 8848,22 , 8870,60 , 8930,14 , 8848,22 , 8870,60 , 8930,14 , 282,7 , 277,7 , {84,90,83},  306,3 , 6535,27 , 25,5 , 4,0 , 2730,9 , 2739,8 ,     0,     0,     1,     6,     7 }, // Swahili/AnyScript/Tanzania
-    {    113,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 15451,84 , 134,24 , 15403,48 , 15451,84 , 134,24 , 8848,22 , 8870,60 , 8930,14 , 8848,22 , 8870,60 , 8930,14 , 282,7 , 277,7 , {75,69,83},  2,3 , 6562,24 , 4,4 , 4,0 , 2730,9 , 2747,5 ,     2,     1,     6,     6,     7 }, // Swahili/AnyScript/Kenya
-    {    114,     0,   205,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 291,9 , 291,9 , 72,10 , 1041,30 , 37,5 , 413,16 , 4039,48 , 15535,86 , 134,24 , 4039,48 , 15535,86 , 134,24 , 8944,29 , 8973,50 , 2295,14 , 8944,29 , 8973,50 , 2295,14 , 289,2 , 284,2 , {83,69,75},  142,2 , 6586,45 , 25,5 , 4,0 , 2752,7 , 2759,7 ,     2,     1,     1,     6,     7 }, // Swedish/AnyScript/Sweden
-    {    114,     0,    73,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 291,9 , 291,9 , 72,10 , 1041,30 , 37,5 , 413,16 , 4039,48 , 15535,86 , 134,24 , 4039,48 , 15535,86 , 134,24 , 8944,29 , 8973,50 , 2295,14 , 8944,29 , 8973,50 , 2295,14 , 289,2 , 284,2 , {69,85,82},  113,1 , 6631,19 , 25,5 , 4,0 , 2752,7 , 2766,7 ,     2,     1,     1,     6,     7 }, // Swedish/AnyScript/Finland
-    {    116,     0,   209,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,   171,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 15621,48 , 15669,71 , 158,27 , 15621,48 , 15669,71 , 158,27 , 9023,28 , 9051,55 , 798,14 , 9023,28 , 9051,55 , 798,14 , 0,2 , 0,2 , {84,74,83},  202,3 , 6650,13 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Tajik/AnyScript/Tajikistan
+    {     14,     7,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 248,31 , 37,5 , 8,10 , 1770,48 , 1818,93 , 1911,24 , 1770,48 , 1818,93 , 1911,24 , 1067,21 , 1088,68 , 798,14 , 1067,21 , 1088,68 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 0,7 , 25,5 , 4,0 , 313,7 , 320,8 ,     2,     1,     1,     6,     7 }, // Basque/Latin/Spain
+    {     15,    11,    18,    46,    44,    59,    37,  2534,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 35,10 , 45,9 , 279,6 , 203,18 , 18,7 , 25,12 , 1935,90 , 1935,90 , 2025,33 , 1935,90 , 1935,90 , 2025,33 , 1156,37 , 1193,58 , 1251,18 , 1156,37 , 1193,58 , 1251,18 , 25,9 , 24,7 , {66,68,84},  114,1 , 1486,21 , 0,4 , 30,6 , 328,5 , 333,8 ,     2,     1,     1,     6,     7 }, // Bengali/Bengali/Bangladesh
+    {     15,    11,   100,    46,    44,    59,    37,  2534,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 35,10 , 45,9 , 279,6 , 203,18 , 18,7 , 25,12 , 1935,90 , 1935,90 , 2025,33 , 1935,90 , 1935,90 , 2025,33 , 1156,37 , 1193,58 , 1251,18 , 1156,37 , 1193,58 , 1251,18 , 25,9 , 24,7 , {73,78,82},  115,4 , 1507,19 , 0,4 , 30,6 , 328,5 , 341,4 ,     2,     1,     7,     7,     7 }, // Bengali/Bengali/India
+    {     16,    31,    25,    46,    44,    59,    37,    48,    45,    43,   101,    34,    34,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 285,29 , 93,22 , 115,35 , 2058,75 , 2133,205 , 158,27 , 2058,75 , 2133,205 , 158,27 , 1269,34 , 1303,79 , 798,14 , 1269,34 , 1303,79 , 798,14 , 0,2 , 0,2 , {66,84,78},  119,3 , 1526,16 , 4,4 , 4,0 , 345,6 , 351,5 ,     2,     1,     1,     6,     7 }, // Dzongkha/Tibetan/Bhutan
+    {     19,     7,    74,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1542,11 , 8,5 , 4,0 , 0,0 , 356,5 ,     2,     1,     1,     6,     7 }, // Breton/Latin/France
+    {     20,     2,    33,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8220,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 340,18 , 37,5 , 8,10 , 2338,59 , 2397,82 , 2479,24 , 2338,59 , 2397,82 , 2479,24 , 1382,21 , 1403,55 , 1458,14 , 1382,21 , 1403,55 , 1458,14 , 34,7 , 31,7 , {66,71,78},  122,3 , 1553,47 , 25,5 , 4,0 , 361,9 , 370,8 ,     2,     1,     1,     6,     7 }, // Bulgarian/Cyrillic/Bulgaria
+    {     21,    25,   147,    46,    44,  4170,    37,  4160,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 2503,43 , 2546,88 , 2634,24 , 2503,43 , 2546,88 , 2634,24 , 1472,25 , 1497,54 , 1551,14 , 1472,25 , 1497,54 , 1551,14 , 41,5 , 38,3 , {77,77,75},  125,1 , 1600,18 , 8,5 , 4,0 , 378,3 , 381,6 ,     0,     0,     1,     6,     7 }, // Burmese/Myanmar/Myanmar
+    {     22,     2,    20,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 358,6 , 10,17 , 150,5 , 155,10 , 2658,48 , 2706,99 , 2805,24 , 2829,48 , 2877,95 , 2972,24 , 1565,21 , 1586,56 , 1642,14 , 1565,21 , 1586,56 , 1642,14 , 46,10 , 41,13 , {66,89,82},  0,0 , 1618,23 , 4,4 , 4,0 , 387,10 , 397,8 ,     0,     0,     1,     6,     7 }, // Belarusian/Cyrillic/Belarus
+    {     23,    20,    36,    44,    46,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 372,30 , 165,4 , 169,26 , 2996,27 , 3023,71 , 158,27 , 2996,27 , 3023,71 , 158,27 , 1656,19 , 1675,76 , 798,14 , 1656,19 , 1675,76 , 798,14 , 56,5 , 54,5 , {75,72,82},  126,1 , 1641,11 , 0,4 , 4,0 , 405,9 , 414,7 ,     2,     1,     1,     6,     7 }, // Khmer/Khmer/Cambodia
+    {     24,     7,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 61,7 , 61,7 , 27,8 , 402,21 , 165,4 , 195,9 , 3094,60 , 3154,82 , 3236,24 , 3260,93 , 3353,115 , 3468,24 , 1751,21 , 1772,60 , 1832,14 , 1846,28 , 1874,60 , 1934,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 421,6 , 427,7 ,     2,     1,     1,     6,     7 }, // Catalan/Latin/Spain
+    {     25,     5,    44,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 423,6 , 429,13 , 204,6 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {67,78,89},  127,1 , 1672,10 , 4,4 , 4,0 , 434,6 , 440,2 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/China
+    {     25,     5,    97,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 423,6 , 429,13 , 204,6 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {72,75,68},  128,1 , 1682,9 , 4,4 , 4,0 , 434,6 , 442,9 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/HongKong
+    {     25,     5,   126,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 423,6 , 429,13 , 204,6 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {77,79,80},  129,4 , 1691,10 , 4,4 , 4,0 , 434,6 , 451,9 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/Macau
+    {     25,     5,   190,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 68,5 , 68,5 , 73,5 , 73,5 , 27,8 , 429,13 , 221,7 , 210,11 , 3492,38 , 3492,38 , 3530,39 , 3530,39 , 3530,39 , 3530,39 , 1948,21 , 1969,28 , 1997,14 , 1948,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {83,71,68},  133,2 , 1701,11 , 4,4 , 4,0 , 434,6 , 460,3 ,     2,     1,     7,     6,     7 }, // Chinese/Simplified Han/Singapore
+    {     25,     6,    97,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 442,7 , 429,13 , 204,6 , 228,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {72,75,68},  128,1 , 1682,9 , 4,4 , 13,6 , 463,4 , 467,14 ,     2,     1,     7,     6,     7 }, // Chinese/Traditional Han/HongKong
+    {     25,     6,   126,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 442,7 , 449,15 , 204,6 , 228,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {77,79,80},  129,4 , 1712,10 , 4,4 , 4,0 , 463,4 , 481,14 ,     2,     1,     7,     6,     7 }, // Chinese/Traditional Han/Macau
+    {     25,     6,   208,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 73,5 , 73,5 , 464,6 , 429,13 , 204,6 , 228,11 , 3492,38 , 3492,38 , 158,27 , 3530,39 , 3530,39 , 158,27 , 2011,21 , 1969,28 , 1997,14 , 2011,21 , 1969,28 , 1997,14 , 65,2 , 63,2 , {84,87,68},  135,3 , 1722,10 , 4,4 , 4,0 , 463,4 , 495,2 ,     2,     1,     7,     6,     7 }, // Chinese/Traditional Han/Taiwan
+    {     27,     7,    54,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 61,7 , 61,7 , 470,13 , 483,19 , 37,5 , 8,10 , 3569,49 , 3618,94 , 3712,39 , 3569,49 , 3751,98 , 3712,39 , 2032,28 , 2060,58 , 2118,14 , 2032,28 , 2060,58 , 2118,14 , 0,2 , 0,2 , {72,82,75},  138,2 , 1732,27 , 25,5 , 4,0 , 497,8 , 505,8 ,     2,     1,     1,     6,     7 }, // Croatian/Latin/Croatia
+    {     28,     7,    57,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 78,7 , 78,7 , 358,6 , 502,18 , 165,4 , 195,9 , 3712,39 , 3849,82 , 3931,24 , 158,27 , 3955,84 , 3931,24 , 2132,21 , 2153,49 , 2202,14 , 2132,21 , 2153,49 , 2202,14 , 67,4 , 65,4 , {67,90,75},  140,2 , 1759,19 , 25,5 , 4,0 , 513,7 , 520,15 ,     2,     1,     1,     6,     7 }, // Czech/Latin/CzechRepublic
+    {     29,     7,    58,    44,    46,    44,    37,    48,    45,    43,   101,  8221,  8221,  8221,  8221, 0,6 , 0,6 , 85,8 , 85,8 , 27,8 , 520,23 , 150,5 , 155,10 , 4039,48 , 4087,84 , 134,24 , 4171,59 , 4087,84 , 134,24 , 2216,28 , 2244,51 , 2295,14 , 2216,28 , 2244,51 , 2295,14 , 71,4 , 69,4 , {68,75,75},  142,2 , 1778,42 , 25,5 , 4,0 , 535,5 , 540,7 ,     2,     1,     1,     6,     7 }, // Danish/Latin/Denmark
+    {     30,     7,   151,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 543,8 , 99,16 , 37,5 , 8,10 , 4230,48 , 4278,88 , 134,24 , 4366,59 , 4278,88 , 134,24 , 2309,21 , 2330,59 , 2389,14 , 2309,21 , 2330,59 , 2389,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1820,19 , 8,5 , 19,6 , 547,10 , 557,9 ,     2,     1,     1,     6,     7 }, // Dutch/Latin/Netherlands
+    {     30,     7,    21,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 6,8 , 6,8 , 551,7 , 99,16 , 37,5 , 8,10 , 4230,48 , 4278,88 , 134,24 , 4366,59 , 4278,88 , 134,24 , 2309,21 , 2330,59 , 2389,14 , 2309,21 , 2330,59 , 2389,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1820,19 , 25,5 , 4,0 , 566,6 , 572,6 ,     2,     1,     1,     6,     7 }, // Dutch/Latin/Belgium
+    {     31,     7,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 578,12 , 590,13 ,     2,     1,     7,     6,     7 }, // English/Latin/UnitedStates
+    {     31,     3,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 4425,80 , 4505,154 , 4659,36 , 4425,80 , 4505,154 , 4659,36 , 2403,49 , 2452,85 , 2537,21 , 2403,49 , 2452,85 , 2537,21 , 75,4 , 73,4 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 578,12 , 603,25 ,     2,     1,     7,     6,     7 }, // English/Deseret/UnitedStates
+    {     31,     7,     4,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 628,7 , 635,14 ,     2,     1,     7,     6,     7 }, // English/Latin/AmericanSamoa
+    {     31,     7,    13,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 551,7 , 10,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {65,85,68},  128,1 , 1874,59 , 4,4 , 4,0 , 649,18 , 667,9 ,     2,     1,     1,     6,     7 }, // English/Latin/Australia
+    {     31,     7,    21,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 99,16 , 37,5 , 239,24 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1933,20 , 25,5 , 4,0 , 628,7 , 676,7 ,     2,     1,     1,     6,     7 }, // English/Latin/Belgium
+    {     31,     7,    22,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 564,12 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {66,90,68},  128,1 , 1953,47 , 4,4 , 4,0 , 628,7 , 683,6 ,     2,     1,     1,     6,     7 }, // English/Latin/Belize
+    {     31,     7,    28,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 82,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {66,87,80},  144,1 , 2000,50 , 4,4 , 4,0 , 628,7 , 689,8 ,     2,     1,     7,     6,     7 }, // English/Latin/Botswana
+    {     31,     7,    38,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 115,8 , 203,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {67,65,68},  128,1 , 2050,53 , 4,4 , 13,6 , 697,16 , 713,6 ,     2,     1,     7,     6,     7 }, // English/Latin/Canada
+    {     31,     7,    89,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 628,7 , 719,4 ,     2,     1,     7,     6,     7 }, // English/Latin/Guam
+    {     31,     7,    97,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 279,6 , 203,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {72,75,68},  128,1 , 2103,56 , 4,4 , 13,6 , 628,7 , 723,19 ,     2,     1,     7,     6,     7 }, // English/Latin/HongKong
+    {     31,     7,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 99,16 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {73,78,82},  145,2 , 2159,44 , 8,5 , 4,0 , 628,7 , 742,5 ,     2,     1,     7,     7,     7 }, // English/Latin/India
+    {     31,     7,   104,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 141,10 , 99,16 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 1933,20 , 4,4 , 4,0 , 628,7 , 747,7 ,     2,     1,     1,     6,     7 }, // English/Latin/Ireland
+    {     31,     7,   107,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 279,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {74,77,68},  128,1 , 2203,53 , 4,4 , 4,0 , 628,7 , 754,7 ,     2,     1,     7,     6,     7 }, // English/Latin/Jamaica
+    {     31,     7,   133,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 141,10 , 10,17 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1933,20 , 4,4 , 4,0 , 628,7 , 761,5 ,     2,     1,     7,     6,     7 }, // English/Latin/Malta
+    {     31,     7,   134,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 628,7 , 766,16 ,     2,     1,     7,     6,     7 }, // English/Latin/MarshallIslands
+    {     31,     7,   137,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {77,85,82},  147,4 , 2256,53 , 4,4 , 13,6 , 628,7 , 782,9 ,     0,     0,     1,     6,     7 }, // English/Latin/Mauritius
+    {     31,     7,   148,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {78,65,68},  128,1 , 2309,53 , 4,4 , 4,0 , 628,7 , 791,7 ,     2,     1,     1,     6,     7 }, // English/Latin/Namibia
+    {     31,     7,   154,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 551,7 , 10,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {78,90,68},  128,1 , 2362,62 , 4,4 , 4,0 , 628,7 , 798,11 ,     2,     1,     7,     6,     7 }, // English/Latin/NewZealand
+    {     31,     7,   160,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 628,7 , 809,24 ,     2,     1,     7,     6,     7 }, // English/Latin/NorthernMarianaIslands
+    {     31,     7,   163,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 27,8 , 99,16 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {80,75,82},  151,1 , 2424,53 , 8,5 , 4,0 , 628,7 , 833,8 ,     0,     0,     7,     6,     7 }, // English/Latin/Pakistan
+    {     31,     7,   170,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {80,72,80},  152,1 , 2477,42 , 4,4 , 13,6 , 628,7 , 841,11 ,     2,     1,     7,     6,     7 }, // English/Latin/Philippines
+    {     31,     7,   190,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 279,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {83,71,68},  128,1 , 2519,56 , 4,4 , 13,6 , 628,7 , 852,9 ,     2,     1,     7,     6,     7 }, // English/Latin/Singapore
+    {     31,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 576,10 , 82,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 2575,61 , 4,4 , 4,0 , 628,7 , 861,12 ,     2,     1,     1,     6,     7 }, // English/Latin/SouthAfrica
+    {     31,     7,   215,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {84,84,68},  128,1 , 2636,86 , 4,4 , 4,0 , 628,7 , 873,19 ,     2,     1,     7,     6,     7 }, // English/Latin/TrinidadAndTobago
+    {     31,     7,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 93,10 , 103,9 , 141,10 , 10,17 , 37,5 , 8,10 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {71,66,80},  153,1 , 2722,74 , 4,4 , 4,0 , 892,15 , 907,14 ,     2,     1,     1,     6,     7 }, // English/Latin/UnitedKingdom
+    {     31,     7,   226,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 628,7 , 921,27 ,     2,     1,     7,     6,     7 }, // English/Latin/UnitedStatesMinorOutlyingIslands
+    {     31,     7,   234,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 558,6 , 35,18 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 13,6 , 628,7 , 948,19 ,     2,     1,     7,     6,     7 }, // English/Latin/UnitedStatesVirginIslands
+    {     31,     7,   240,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 93,10 , 103,9 , 364,8 , 82,17 , 18,7 , 25,12 , 0,48 , 48,86 , 134,24 , 0,48 , 48,86 , 134,24 , 0,28 , 28,57 , 85,14 , 0,28 , 28,57 , 85,14 , 0,2 , 0,2 , {85,83,68},  128,1 , 1839,35 , 4,4 , 4,0 , 628,7 , 967,8 ,     2,     1,     7,     6,     7 }, // English/Latin/Zimbabwe
+    {     33,     7,    68,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8220,  8222,  8220, 0,6 , 0,6 , 112,8 , 112,8 , 332,8 , 502,18 , 165,4 , 263,9 , 4695,59 , 4754,91 , 4845,24 , 4695,59 , 4754,91 , 4845,24 , 2558,14 , 2572,63 , 2558,14 , 2558,14 , 2572,63 , 2558,14 , 79,14 , 77,16 , {69,69,75},  142,2 , 2796,41 , 25,5 , 4,0 , 975,5 , 980,5 ,     2,     1,     1,     6,     7 }, // Estonian/Latin/Estonia
+    {     34,     7,    71,    44,    46,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 85,8 , 85,8 , 543,8 , 82,17 , 37,5 , 8,10 , 4869,48 , 4917,83 , 134,24 , 4869,48 , 4917,83 , 134,24 , 2635,28 , 2663,74 , 2737,14 , 2635,28 , 2663,74 , 2737,14 , 0,2 , 0,2 , {68,75,75},  142,2 , 2837,42 , 4,4 , 36,5 , 985,8 , 993,7 ,     2,     1,     7,     6,     7 }, // Faroese/Latin/FaroeIslands
+    {     36,     7,    73,    44,   160,    59,    37,    48,    45,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 112,8 , 112,8 , 586,8 , 594,17 , 272,4 , 276,9 , 5000,69 , 5069,105 , 5174,24 , 5198,129 , 5198,129 , 5174,24 , 2751,21 , 2772,67 , 2839,14 , 2751,21 , 2853,81 , 2839,14 , 93,3 , 93,3 , {69,85,82},  113,1 , 2879,20 , 25,5 , 4,0 , 1000,5 , 1005,5 ,     2,     1,     1,     6,     7 }, // Finnish/Latin/Finland
+    {     37,     7,    74,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1018,6 ,     2,     1,     1,     6,     7 }, // French/Latin/France
+    {     37,     7,    21,    44,    46,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 551,7 , 99,16 , 37,5 , 285,23 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1024,8 ,     2,     1,     1,     6,     7 }, // French/Latin/Belgium
+    {     37,     7,    23,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1010,8 , 1032,5 ,     0,     0,     1,     6,     7 }, // French/Latin/Benin
+    {     37,     7,    34,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1010,8 , 1037,12 ,     0,     0,     1,     6,     7 }, // French/Latin/BurkinaFaso
+    {     37,     7,    35,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {66,73,70},  157,3 , 2958,53 , 25,5 , 4,0 , 1010,8 , 1049,7 ,     0,     0,     1,     6,     7 }, // French/Latin/Burundi
+    {     37,     7,    37,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1010,8 , 1056,8 ,     0,     0,     1,     6,     7 }, // French/Latin/Cameroon
+    {     37,     7,    38,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 115,8 , 99,16 , 37,5 , 239,24 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {67,65,68},  128,1 , 3067,54 , 25,5 , 41,7 , 1064,17 , 713,6 ,     2,     1,     7,     6,     7 }, // French/Latin/Canada
+    {     37,     7,    41,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1010,8 , 1081,25 ,     0,     0,     1,     6,     7 }, // French/Latin/CentralAfricanRepublic
+    {     37,     7,    42,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1010,8 , 1106,5 ,     0,     0,     1,     6,     7 }, // French/Latin/Chad
+    {     37,     7,    48,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {75,77,70},  163,2 , 3121,51 , 25,5 , 4,0 , 1010,8 , 1111,7 ,     0,     0,     1,     6,     7 }, // French/Latin/Comoros
+    {     37,     7,    49,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {67,68,70},  165,4 , 3172,53 , 25,5 , 4,0 , 1010,8 , 1118,32 ,     2,     1,     1,     6,     7 }, // French/Latin/CongoKinshasa
+    {     37,     7,    50,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1010,8 , 1150,17 ,     0,     0,     1,     6,     7 }, // French/Latin/CongoBrazzaville
+    {     37,     7,    53,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1010,8 , 1167,13 ,     0,     0,     1,     6,     7 }, // French/Latin/IvoryCoast
+    {     37,     7,    59,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {68,74,70},  169,3 , 3225,57 , 25,5 , 4,0 , 1010,8 , 1180,8 ,     0,     0,     6,     6,     7 }, // French/Latin/Djibouti
+    {     37,     7,    66,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1010,8 , 1188,18 ,     0,     0,     1,     6,     7 }, // French/Latin/EquatorialGuinea
+    {     37,     7,    79,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,65,70},  160,3 , 3011,56 , 25,5 , 4,0 , 1010,8 , 1206,5 ,     0,     0,     1,     6,     7 }, // French/Latin/Gabon
+    {     37,     7,    88,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1211,10 ,     2,     1,     1,     6,     7 }, // French/Latin/Guadeloupe
+    {     37,     7,    91,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {71,78,70},  172,3 , 3282,48 , 25,5 , 4,0 , 1010,8 , 1221,6 ,     0,     0,     1,     6,     7 }, // French/Latin/Guinea
+    {     37,     7,   125,    44,    46,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1227,10 ,     2,     1,     1,     6,     7 }, // French/Latin/Luxembourg
+    {     37,     7,   128,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {77,71,65},  0,0 , 3330,54 , 25,5 , 4,0 , 1010,8 , 1237,10 ,     0,     0,     1,     6,     7 }, // French/Latin/Madagascar
+    {     37,     7,   132,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1010,8 , 1247,4 ,     0,     0,     1,     6,     7 }, // French/Latin/Mali
+    {     37,     7,   135,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1251,10 ,     2,     1,     1,     6,     7 }, // French/Latin/Martinique
+    {     37,     7,   142,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1261,6 ,     2,     1,     1,     6,     7 }, // French/Latin/Monaco
+    {     37,     7,   156,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1010,8 , 1267,5 ,     0,     0,     1,     6,     7 }, // French/Latin/Niger
+    {     37,     7,   176,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1272,7 ,     2,     1,     1,     6,     7 }, // French/Latin/Reunion
+    {     37,     7,   179,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {82,87,70},  175,2 , 3384,50 , 25,5 , 4,0 , 1010,8 , 1279,6 ,     0,     0,     1,     6,     7 }, // French/Latin/Rwanda
+    {     37,     7,   187,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1010,8 , 1285,7 ,     0,     0,     1,     6,     7 }, // French/Latin/Senegal
+    {     37,     7,   206,    46,    39,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 120,8 , 120,8 , 332,8 , 10,17 , 37,5 , 308,14 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {67,72,70},  177,3 , 3434,45 , 8,5 , 48,5 , 1292,15 , 1307,6 ,     2,     5,     1,     6,     7 }, // French/Latin/Switzerland
+    {     37,     7,   212,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 2899,59 , 25,5 , 4,0 , 1010,8 , 1313,4 ,     0,     0,     1,     6,     7 }, // French/Latin/Togo
+    {     37,     7,   244,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1317,16 ,     2,     1,     1,     6,     7 }, // French/Latin/Saint Barthelemy
+    {     37,     7,   245,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 120,8 , 120,8 , 27,8 , 99,16 , 37,5 , 8,10 , 5327,63 , 5390,85 , 134,24 , 5327,63 , 5390,85 , 134,24 , 2934,35 , 2969,52 , 3021,14 , 2934,35 , 2969,52 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1652,20 , 25,5 , 4,0 , 1010,8 , 1333,12 ,     2,     1,     1,     6,     7 }, // French/Latin/Saint Martin
+    {     40,     7,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 82,17 , 37,5 , 8,10 , 5475,48 , 5523,87 , 5610,24 , 5475,48 , 5523,87 , 5610,24 , 3035,28 , 3063,49 , 3112,14 , 3035,28 , 3063,49 , 3112,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1933,20 , 25,5 , 4,0 , 1345,6 , 1351,6 ,     2,     1,     1,     6,     7 }, // Galician/Latin/Spain
+    {     41,    15,    81,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 5634,48 , 5682,99 , 5781,24 , 5634,48 , 5682,99 , 5781,24 , 3126,28 , 3154,62 , 3216,14 , 3126,28 , 3154,62 , 3216,14 , 0,2 , 0,2 , {71,69,76},  0,0 , 3479,19 , 8,5 , 4,0 , 1357,7 , 1364,10 ,     2,     1,     7,     6,     7 }, // Georgian/Georgian/Georgia
+    {     42,     7,    82,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 25,5 , 4,0 , 1374,7 , 1381,11 ,     2,     1,     1,     6,     7 }, // German/Latin/Germany
+    {     42,     7,    14,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 611,19 , 37,5 , 8,10 , 5805,52 , 5988,83 , 134,24 , 6071,48 , 5988,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 8,5 , 4,0 , 1392,24 , 1416,10 ,     2,     1,     1,     6,     7 }, // German/Latin/Austria
+    {     42,     7,    21,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 551,7 , 99,16 , 37,5 , 239,24 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3353,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 25,5 , 4,0 , 1374,7 , 1426,7 ,     2,     1,     1,     6,     7 }, // German/Latin/Belgium
+    {     42,     7,   123,    46,    39,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {67,72,70},  0,0 , 3517,41 , 8,5 , 4,0 , 1374,7 , 1433,13 ,     2,     5,     1,     6,     7 }, // German/Latin/Liechtenstein
+    {     42,     7,   125,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {69,85,82},  113,1 , 3498,19 , 25,5 , 4,0 , 1374,7 , 1446,9 ,     2,     1,     1,     6,     7 }, // German/Latin/Luxembourg
+    {     42,     7,   206,    46,    39,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5805,52 , 5857,83 , 134,24 , 5940,48 , 5857,83 , 134,24 , 3230,21 , 3251,60 , 3311,14 , 3325,28 , 3251,60 , 3311,14 , 96,5 , 96,6 , {67,72,70},  0,0 , 3517,41 , 8,5 , 48,5 , 1455,21 , 1476,7 ,     2,     5,     1,     6,     7 }, // German/Latin/Switzerland
+    {     43,    16,    85,    44,    46,    44,    37,    48,    45,    43,   101,   171,   187,  8216,  8217, 0,6 , 0,6 , 137,9 , 137,9 , 279,6 , 10,17 , 18,7 , 25,12 , 6119,50 , 6169,115 , 6284,24 , 6119,50 , 6308,115 , 6284,24 , 3381,28 , 3409,55 , 3464,14 , 3381,28 , 3409,55 , 3464,14 , 101,4 , 102,4 , {69,85,82},  113,1 , 3558,19 , 25,5 , 4,0 , 1483,8 , 1491,6 ,     2,     1,     1,     6,     7 }, // Greek/Greek/Greece
+    {     43,    16,    56,    44,    46,    44,    37,    48,    45,    43,   101,   171,   187,  8216,  8217, 0,6 , 0,6 , 137,9 , 137,9 , 279,6 , 10,17 , 18,7 , 25,12 , 6119,50 , 6169,115 , 6284,24 , 6119,50 , 6308,115 , 6284,24 , 3381,28 , 3409,55 , 3464,14 , 3381,28 , 3409,55 , 3464,14 , 101,4 , 102,4 , {69,85,82},  113,1 , 3558,19 , 4,4 , 4,0 , 1483,8 , 1497,6 ,     2,     1,     1,     6,     7 }, // Greek/Greek/Cyprus
+    {     44,     7,    86,    44,    46,    59,    37,    48,  8722,    43,   101,   187,   171,  8250,  8249, 146,11 , 0,6 , 0,6 , 146,11 , 72,10 , 82,17 , 18,7 , 25,12 , 4039,48 , 6423,96 , 134,24 , 4039,48 , 6423,96 , 134,24 , 3478,28 , 3506,98 , 3604,14 , 3478,28 , 3506,98 , 3604,14 , 0,2 , 0,2 , {68,75,75},  142,2 , 3577,24 , 4,4 , 36,5 , 1503,11 , 1514,16 ,     2,     1,     7,     6,     7 }, // Greenlandic/Latin/Greenland
+    {     46,    17,   100,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 157,9 , 157,9 , 630,7 , 203,18 , 322,8 , 330,13 , 6519,67 , 6586,87 , 6673,31 , 6519,67 , 6586,87 , 6673,31 , 3618,32 , 3650,53 , 3703,19 , 3618,32 , 3650,53 , 3703,19 , 105,14 , 106,14 , {73,78,82},  180,2 , 0,7 , 8,5 , 4,0 , 1530,7 , 1537,4 ,     2,     1,     7,     7,     7 }, // Gujarati/Gujarati/India
+    {     47,     7,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 3601,12 , 8,5 , 4,0 , 1541,5 , 1546,8 ,     2,     1,     1,     6,     7 }, // Hausa/Latin/Nigeria
+    {     47,     1,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6861,55 , 6916,99 , 6837,24 , 6861,55 , 6916,99 , 6837,24 , 3809,31 , 3840,57 , 3795,14 , 3809,31 , 3840,57 , 3795,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 3613,13 , 8,5 , 4,0 , 1541,5 , 1546,8 ,     2,     1,     1,     6,     7 }, // Hausa/Arabic/Nigeria
+    {     47,     1,   201,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6861,55 , 6916,99 , 6837,24 , 6861,55 , 6916,99 , 6837,24 , 3809,31 , 3840,57 , 3795,14 , 3809,31 , 3840,57 , 3795,14 , 0,2 , 0,2 , {83,68,71},  0,0 , 3626,20 , 8,5 , 4,0 , 1541,5 , 1554,5 ,     2,     1,     6,     5,     6 }, // Hausa/Arabic/Sudan
+    {     47,     7,    83,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {71,72,83},  183,3 , 0,7 , 8,5 , 4,0 , 1541,5 , 1559,4 ,     2,     1,     1,     6,     7 }, // Hausa/Latin/Ghana
+    {     47,     7,   156,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 203,18 , 37,5 , 8,10 , 6704,48 , 6752,85 , 6837,24 , 6704,48 , 6752,85 , 6837,24 , 3722,21 , 3743,52 , 3795,14 , 3722,21 , 3743,52 , 3795,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 3646,36 , 8,5 , 4,0 , 1541,5 , 1563,5 ,     0,     0,     1,     6,     7 }, // Hausa/Latin/Niger
+    {     48,    18,   105,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 637,18 , 37,5 , 8,10 , 7015,58 , 7073,72 , 158,27 , 7145,48 , 7073,72 , 158,27 , 3897,46 , 3943,65 , 4008,14 , 3897,46 , 3943,65 , 4008,14 , 119,6 , 120,5 , {73,76,83},  186,1 , 3682,21 , 25,5 , 4,0 , 1568,5 , 1573,5 ,     2,     1,     7,     5,     6 }, // Hebrew/Hebrew/Israel
+    {     49,    13,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 166,8 , 166,8 , 655,6 , 10,17 , 18,7 , 25,12 , 7193,75 , 7193,75 , 7268,30 , 7193,75 , 7193,75 , 7268,30 , 4022,38 , 4060,57 , 4117,19 , 4022,38 , 4060,57 , 4117,19 , 125,9 , 125,7 , {73,78,82},  187,3 , 3703,19 , 8,5 , 4,0 , 1578,6 , 1584,4 ,     2,     1,     7,     7,     7 }, // Hindi/Devanagari/India
+    {     50,     7,    98,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8221,  8222,  8221, 0,6 , 0,6 , 174,8 , 174,8 , 661,11 , 672,19 , 165,4 , 195,9 , 7298,64 , 7362,98 , 7460,25 , 7298,64 , 7362,98 , 7460,25 , 4136,19 , 4155,52 , 4207,17 , 4136,19 , 4155,52 , 4207,17 , 134,3 , 132,3 , {72,85,70},  190,2 , 3722,20 , 25,5 , 4,0 , 1588,6 , 1594,12 ,     0,     0,     1,     6,     7 }, // Hungarian/Latin/Hungary
+    {     51,     7,    99,    44,    46,    59,    37,    48,  8722,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 85,8 , 85,8 , 586,8 , 502,18 , 37,5 , 8,10 , 7485,48 , 7533,82 , 7615,24 , 7485,48 , 7533,82 , 7639,24 , 4224,28 , 4252,81 , 4333,14 , 4224,28 , 4252,81 , 4347,14 , 137,4 , 135,4 , {73,83,75},  142,2 , 3742,48 , 25,5 , 4,0 , 1606,8 , 1614,6 ,     0,     0,     1,     6,     7 }, // Icelandic/Latin/Iceland
+    {     52,     7,   101,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 182,11 , 193,9 , 27,8 , 123,18 , 37,5 , 195,9 , 7663,48 , 7711,87 , 134,24 , 7663,48 , 7711,87 , 134,24 , 4361,28 , 4389,43 , 4432,14 , 4361,28 , 4389,43 , 4432,14 , 141,4 , 139,5 , {73,68,82},  192,2 , 3790,23 , 4,4 , 4,0 , 1620,16 , 1636,9 ,     0,     0,     1,     6,     7 }, // Indonesian/Latin/Indonesia
+    {     57,     7,   104,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 99,16 , 37,5 , 8,10 , 7798,62 , 7860,107 , 7967,24 , 7798,62 , 7860,107 , 7967,24 , 4446,37 , 4483,75 , 4558,14 , 4446,37 , 4483,75 , 4558,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 3813,11 , 4,4 , 4,0 , 1645,7 , 1652,4 ,     2,     1,     1,     6,     7 }, // Irish/Latin/Ireland
+    {     58,     7,   106,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 202,8 , 210,7 , 27,8 , 99,16 , 37,5 , 8,10 , 7991,48 , 8039,94 , 8133,24 , 7991,48 , 8157,94 , 8133,24 , 4572,28 , 4600,57 , 4657,14 , 4572,28 , 4671,57 , 4657,14 , 145,2 , 144,2 , {69,85,82},  113,1 , 3813,11 , 8,5 , 4,0 , 1656,8 , 1664,6 ,     2,     1,     1,     6,     7 }, // Italian/Latin/Italy
+    {     58,     7,   206,    46,    39,    59,    37,    48,    45,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 202,8 , 210,7 , 332,8 , 10,17 , 37,5 , 308,14 , 7991,48 , 8039,94 , 8133,24 , 7991,48 , 8157,94 , 8133,24 , 4572,28 , 4600,57 , 4657,14 , 4572,28 , 4671,57 , 4657,14 , 145,2 , 144,2 , {67,72,70},  0,0 , 3824,22 , 8,5 , 48,5 , 1656,8 , 1670,8 ,     2,     5,     1,     6,     7 }, // Italian/Latin/Switzerland
+    {     59,    19,   108,    46,    44,    59,    37,    48,    45,    43,   101, 12300, 12301, 12302, 12303, 68,5 , 68,5 , 68,5 , 68,5 , 221,8 , 429,13 , 165,4 , 343,10 , 3530,39 , 3530,39 , 158,27 , 3530,39 , 3530,39 , 158,27 , 4728,14 , 4742,28 , 4728,14 , 4728,14 , 4742,28 , 4728,14 , 147,2 , 146,2 , {74,80,89},  127,1 , 3846,10 , 4,4 , 4,0 , 1678,3 , 1681,2 ,     0,     0,     7,     6,     7 }, // Japanese/Japanese/Japan
+    {     61,    21,   100,    46,    44,    59,    37,  3302,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 217,11 , 217,11 , 655,6 , 99,16 , 322,8 , 330,13 , 8251,86 , 8251,86 , 8337,31 , 8251,86 , 8251,86 , 8337,31 , 4770,28 , 4798,53 , 4851,19 , 4770,28 , 4798,53 , 4851,19 , 149,2 , 148,2 , {73,78,82},  194,2 , 0,7 , 8,5 , 4,0 , 1683,5 , 1688,4 ,     2,     1,     7,     7,     7 }, // Kannada/Kannada/India
+    {     63,     2,   110,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 332,8 , 691,22 , 37,5 , 8,10 , 8368,61 , 8429,83 , 158,27 , 8368,61 , 8429,83 , 158,27 , 4870,28 , 4898,54 , 798,14 , 4870,28 , 4898,54 , 798,14 , 0,2 , 0,2 , {75,90,84},  196,4 , 0,7 , 25,5 , 4,0 , 1692,5 , 1697,9 ,     2,     1,     1,     6,     7 }, // Kazakh/Cyrillic/Kazakhstan
+    {     64,     7,   179,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 8512,60 , 8572,101 , 158,27 , 8512,60 , 8572,101 , 158,27 , 4952,35 , 4987,84 , 798,14 , 4952,35 , 4987,84 , 798,14 , 0,2 , 0,2 , {82,87,70},  200,2 , 0,7 , 8,5 , 4,0 , 1706,11 , 1279,6 ,     0,     0,     1,     6,     7 }, // Kinyarwanda/Latin/Rwanda
+    {     65,     2,   116,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {75,71,83},  202,3 , 0,7 , 8,5 , 4,0 , 1717,6 , 1723,10 ,     2,     1,     7,     6,     7 }, // Kirghiz/Cyrillic/Kyrgyzstan
+    {     66,    22,   114,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 713,9 , 722,16 , 353,7 , 360,13 , 8673,39 , 8673,39 , 8673,39 , 8673,39 , 8673,39 , 8673,39 , 5071,14 , 5085,28 , 5071,14 , 5071,14 , 5085,28 , 5071,14 , 151,2 , 150,2 , {75,82,87},  205,1 , 3856,13 , 4,4 , 4,0 , 1733,3 , 1736,4 ,     0,     0,     7,     6,     7 }, // Korean/Korean/SouthKorea
+    {     67,     1,   103,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 5113,42 , 5113,42 , 5155,14 , 5113,42 , 5113,42 , 5155,14 , 0,2 , 0,2 , {73,81,68},  0,0 , 0,7 , 8,5 , 4,0 , 1740,5 , 1745,5 ,     0,     0,     6,     5,     6 }, // Kurdish/Arabic/Iraq
+    {     67,     1,   102,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 5113,42 , 5113,42 , 5155,14 , 5113,42 , 5113,42 , 5155,14 , 0,2 , 0,2 , {73,82,82},  0,0 , 0,7 , 8,5 , 4,0 , 1740,5 , 0,0 ,     0,     0,     6,     4,     5 }, // Kurdish/Arabic/Iran
+    {     67,     7,   207,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 8712,41 , 8753,51 , 8804,27 , 8712,41 , 8753,51 , 8804,27 , 5169,20 , 5189,39 , 5228,14 , 5169,20 , 5189,39 , 5228,14 , 0,2 , 0,2 , {83,89,80},  206,3 , 0,7 , 8,5 , 4,0 , 1750,5 , 0,0 ,     0,     0,     6,     5,     6 }, // Kurdish/Latin/Syria
+    {     67,     7,   217,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 8712,41 , 8753,51 , 8804,27 , 8712,41 , 8753,51 , 8804,27 , 5169,20 , 5189,39 , 5228,14 , 5169,20 , 5189,39 , 5228,14 , 0,2 , 0,2 , {84,82,89},  209,2 , 0,7 , 8,5 , 4,0 , 1750,5 , 1755,7 ,     2,     1,     1,     6,     7 }, // Kurdish/Latin/Turkey
+    {     69,    23,   117,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 738,18 , 165,4 , 373,21 , 8831,63 , 8894,75 , 158,27 , 8831,63 , 8894,75 , 158,27 , 5242,24 , 5266,57 , 798,14 , 5242,24 , 5266,57 , 798,14 , 0,2 , 0,2 , {76,65,75},  211,1 , 3869,10 , 4,4 , 48,5 , 1762,3 , 1762,3 ,     0,     0,     7,     6,     7 }, // Lao/Lao/Laos
+    {     71,     7,   118,    44,   160,    59,    37,    48,  8722,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 228,8 , 228,8 , 332,8 , 756,26 , 37,5 , 8,10 , 8969,65 , 9034,101 , 134,24 , 8969,65 , 9034,101 , 134,24 , 5323,21 , 5344,72 , 5416,14 , 5323,21 , 5344,72 , 5416,14 , 153,14 , 152,11 , {76,86,76},  212,2 , 3879,20 , 25,5 , 4,0 , 1765,8 , 1773,7 ,     2,     1,     1,     6,     7 }, // Latvian/Latin/Latvia
+    {     72,     7,    49,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 9135,39 , 9174,203 , 158,27 , 9135,39 , 9174,203 , 158,27 , 5430,23 , 5453,98 , 798,14 , 5430,23 , 5453,98 , 798,14 , 0,2 , 0,2 , {67,68,70},  214,1 , 3899,22 , 8,5 , 4,0 , 1780,7 , 1787,13 ,     2,     1,     1,     6,     7 }, // Lingala/Latin/CongoKinshasa
+    {     72,     7,    50,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 9135,39 , 9174,203 , 158,27 , 9135,39 , 9174,203 , 158,27 , 5430,23 , 5453,98 , 798,14 , 5430,23 , 5453,98 , 798,14 , 0,2 , 0,2 , {88,65,70},  215,4 , 0,7 , 8,5 , 4,0 , 1780,7 , 1800,17 ,     0,     0,     1,     6,     7 }, // Lingala/Latin/CongoBrazzaville
+    {     73,     7,   124,    44,    46,    59,    37,    48,  8722,    43,   101,  8222,  8220,  8222,  8220, 0,6 , 0,6 , 236,8 , 236,8 , 72,10 , 782,26 , 37,5 , 8,10 , 9377,69 , 9446,96 , 9542,24 , 9566,48 , 9614,96 , 9542,24 , 5551,17 , 5568,89 , 5657,14 , 5671,21 , 5568,89 , 5657,14 , 167,9 , 163,6 , {76,84,76},  219,2 , 3921,54 , 25,5 , 4,0 , 1817,8 , 1825,7 ,     2,     1,     1,     6,     7 }, // Lithuanian/Latin/Lithuania
+    {     74,     2,   127,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 808,7 , 123,18 , 37,5 , 8,10 , 9710,63 , 9773,85 , 9858,24 , 9710,63 , 9773,85 , 9858,24 , 5692,34 , 5726,54 , 1458,14 , 5692,34 , 5726,54 , 1458,14 , 176,10 , 169,8 , {77,75,68},  0,0 , 3975,23 , 8,5 , 4,0 , 1832,10 , 1842,10 ,     2,     1,     1,     6,     7 }, // Macedonian/Cyrillic/Macedonia
+    {     75,     7,   128,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 9882,48 , 9930,92 , 134,24 , 9882,48 , 9930,92 , 134,24 , 5780,34 , 5814,60 , 5874,14 , 5780,34 , 5814,60 , 5874,14 , 0,2 , 0,2 , {77,71,65},  0,0 , 3998,13 , 4,4 , 4,0 , 1852,8 , 1860,12 ,     0,     0,     1,     6,     7 }, // Malagasy/Latin/Madagascar
+    {     76,     7,   130,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 551,7 , 10,17 , 18,7 , 25,12 , 10022,49 , 10071,82 , 158,27 , 10022,49 , 10071,82 , 158,27 , 5888,28 , 5916,43 , 798,14 , 5888,28 , 5916,43 , 798,14 , 0,2 , 0,2 , {77,89,82},  221,2 , 4011,23 , 4,4 , 13,6 , 1872,13 , 1885,8 ,     2,     1,     1,     6,     7 }, // Malay/Latin/Malaysia
+    {     76,     7,    32,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 551,7 , 564,12 , 18,7 , 25,12 , 10022,49 , 10071,82 , 158,27 , 10022,49 , 10071,82 , 158,27 , 5888,28 , 5916,43 , 798,14 , 5888,28 , 5916,43 , 798,14 , 0,2 , 0,2 , {66,78,68},  128,1 , 0,7 , 8,5 , 4,0 , 1872,13 , 1893,6 ,     2,     1,     1,     6,     7 }, // Malay/Latin/Brunei
+    {     77,    24,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 244,12 , 244,12 , 27,8 , 815,18 , 18,7 , 25,12 , 10153,66 , 10219,101 , 10320,31 , 10153,66 , 10219,101 , 10320,31 , 5959,47 , 6006,70 , 6076,22 , 5959,47 , 6006,70 , 6076,22 , 186,6 , 177,10 , {73,78,82},  223,2 , 4034,46 , 0,4 , 4,0 , 1899,6 , 1905,6 ,     2,     1,     7,     7,     7 }, // Malayalam/Malayalam/India
+    {     78,     7,   133,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 833,23 , 37,5 , 8,10 , 10351,48 , 10399,86 , 10485,24 , 10351,48 , 10399,86 , 10485,24 , 6098,28 , 6126,63 , 6189,14 , 6098,28 , 6126,63 , 6189,14 , 192,2 , 187,2 , {69,85,82},  113,1 , 4080,11 , 4,4 , 4,0 , 1911,5 , 761,5 ,     2,     1,     7,     6,     7 }, // Maltese/Latin/Malta
+    {     79,     7,   154,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10509,83 , 10509,83 , 158,27 , 10509,83 , 10509,83 , 158,27 , 6203,48 , 6203,48 , 798,14 , 6203,48 , 6203,48 , 798,14 , 0,2 , 0,2 , {78,90,68},  225,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     7,     6,     7 }, // Maori/Latin/NewZealand
+    {     80,    13,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 256,11 , 267,9 , 655,6 , 99,16 , 394,7 , 401,12 , 10592,86 , 10592,86 , 10678,32 , 10592,86 , 10592,86 , 10678,32 , 6251,32 , 6283,53 , 4117,19 , 6251,32 , 6283,53 , 4117,19 , 149,2 , 148,2 , {73,78,82},  194,2 , 0,7 , 8,5 , 4,0 , 1916,5 , 1584,4 ,     2,     1,     7,     7,     7 }, // Marathi/Devanagari/India
+    {     82,     2,   143,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10710,48 , 10758,66 , 158,27 , 10710,48 , 10758,66 , 158,27 , 6336,21 , 6357,43 , 798,14 , 6336,21 , 6357,43 , 798,14 , 0,2 , 0,2 , {77,78,84},  228,1 , 0,7 , 8,5 , 4,0 , 1921,6 , 1927,10 ,     0,     0,     7,     6,     7 }, // Mongolian/Cyrillic/Mongolia
+    {     82,     8,    44,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10710,48 , 10758,66 , 158,27 , 10710,48 , 10758,66 , 158,27 , 6336,21 , 6357,43 , 798,14 , 6336,21 , 6357,43 , 798,14 , 0,2 , 0,2 , {67,78,89},  229,3 , 0,7 , 8,5 , 4,0 , 1921,6 , 0,0 ,     2,     1,     7,     6,     7 }, // Mongolian/Mongolian/China
+    {     84,    13,   150,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10824,56 , 10880,85 , 10965,27 , 10824,56 , 10880,85 , 10965,27 , 6400,33 , 6433,54 , 6487,14 , 6400,33 , 6433,54 , 6487,14 , 194,14 , 189,14 , {78,80,82},  232,4 , 0,7 , 8,5 , 4,0 , 1937,6 , 1943,5 ,     2,     1,     1,     6,     7 }, // Nepali/Devanagari/Nepal
+    {     84,    13,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 10824,56 , 10992,80 , 10965,27 , 10824,56 , 10992,80 , 10965,27 , 6400,33 , 6501,54 , 6487,14 , 6400,33 , 6501,54 , 6487,14 , 125,9 , 125,7 , {73,78,82},  145,2 , 4091,49 , 8,5 , 4,0 , 1937,6 , 1584,4 ,     2,     1,     7,     7,     7 }, // Nepali/Devanagari/India
+    {     85,     7,   161,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 85,8 , 85,8 , 332,8 , 594,17 , 37,5 , 413,16 , 11072,59 , 11131,83 , 134,24 , 11072,59 , 11131,83 , 134,24 , 6555,28 , 2244,51 , 2295,14 , 6583,35 , 2244,51 , 2295,14 , 0,2 , 0,2 , {78,79,75},  142,2 , 4140,44 , 8,5 , 4,0 , 1948,12 , 1960,5 ,     2,     1,     1,     6,     7 }, // NorwegianBokmal/Latin/Norway
+    {     86,     7,    74,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 11214,83 , 11214,83 , 158,27 , 11214,83 , 11214,83 , 158,27 , 6618,57 , 6618,57 , 798,14 , 6618,57 , 6618,57 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 1542,11 , 8,5 , 4,0 , 1965,7 , 1972,6 ,     2,     1,     1,     6,     7 }, // Occitan/Latin/France
+    {     87,    26,   100,    46,    44,    59,    37,  2918,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 655,6 , 10,17 , 18,7 , 25,12 , 11297,89 , 11297,89 , 11386,32 , 11297,89 , 11297,89 , 11386,32 , 6675,33 , 6708,54 , 6762,18 , 6675,33 , 6708,54 , 6762,18 , 149,2 , 148,2 , {73,78,82},  145,2 , 4184,11 , 8,5 , 4,0 , 1978,5 , 1983,4 ,     2,     1,     7,     7,     7 }, // Oriya/Oriya/India
+    {     88,     1,     1,  1643,  1644,    59,  1642,  1776,  8722,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 179,8 , 856,20 , 165,4 , 429,11 , 11418,68 , 11418,68 , 158,27 , 11418,68 , 11418,68 , 158,27 , 6780,49 , 6780,49 , 798,14 , 6780,49 , 6780,49 , 798,14 , 208,4 , 203,4 , {65,70,78},  236,1 , 4195,13 , 25,5 , 4,0 , 1987,4 , 1991,9 ,     0,     0,     6,     4,     5 }, // Pashto/Arabic/Afghanistan
+    {     89,     1,   102,  1643,  1644,  1563,  1642,  1776,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 165,4 , 429,11 , 11486,71 , 11557,70 , 11627,25 , 11486,71 , 11652,73 , 11627,25 , 6780,49 , 6780,49 , 6829,14 , 6780,49 , 6780,49 , 6829,14 , 212,10 , 207,10 , {73,82,82},  237,1 , 4208,17 , 25,5 , 53,8 , 2000,5 , 2005,5 ,     0,     0,     6,     4,     5 }, // Persian/Arabic/Iran
+    {     89,     1,     1,  1643,  1644,  1563,  1642,  1776,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 165,4 , 429,11 , 11725,63 , 11557,70 , 11788,24 , 11725,63 , 11812,68 , 11788,24 , 6780,49 , 6780,49 , 6829,14 , 6780,49 , 6780,49 , 6829,14 , 212,10 , 207,10 , {65,70,78},  236,1 , 4225,23 , 25,5 , 53,8 , 2010,3 , 1991,9 ,     0,     0,     6,     4,     5 }, // Persian/Arabic/Afghanistan
+    {     90,     7,   172,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8222,  8221, 0,6 , 0,6 , 61,7 , 61,7 , 876,10 , 10,17 , 37,5 , 8,10 , 11880,48 , 11928,97 , 12025,24 , 11880,48 , 12049,99 , 12025,24 , 6843,34 , 6877,59 , 6936,14 , 6843,34 , 6877,59 , 6936,14 , 0,2 , 0,2 , {80,76,78},  238,2 , 4248,60 , 25,5 , 4,0 , 2013,6 , 2019,6 ,     2,     1,     1,     6,     7 }, // Polish/Latin/Poland
+    {     91,     7,    30,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {66,82,76},  240,2 , 4308,54 , 4,4 , 13,6 , 2025,19 , 2044,6 ,     2,     1,     1,     6,     7 }, // Portuguese/Latin/Brazil
+    {     91,     7,     6,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {65,79,65},  242,2 , 4362,54 , 4,4 , 13,6 , 2050,9 , 2059,6 ,     2,     1,     1,     6,     7 }, // Portuguese/Latin/Angola
+    {     91,     7,    92,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 4416,62 , 4,4 , 13,6 , 2050,9 , 2065,12 ,     0,     0,     1,     6,     7 }, // Portuguese/Latin/GuineaBissau
+    {     91,     7,   146,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 210,7 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12148,48 , 12196,89 , 134,24 , 12148,48 , 12196,89 , 134,24 , 6950,28 , 6978,79 , 7057,14 , 6950,28 , 6978,79 , 7057,14 , 0,2 , 0,2 , {77,90,78},  244,3 , 4478,72 , 4,4 , 13,6 , 2050,9 , 2077,10 ,     2,     1,     1,     6,     7 }, // Portuguese/Latin/Mozambique
+    {     91,     7,   173,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 202,8 , 210,7 , 27,8 , 886,27 , 37,5 , 440,19 , 12285,48 , 12333,89 , 134,24 , 12285,48 , 12333,89 , 134,24 , 6950,28 , 7071,79 , 7057,14 , 6950,28 , 7071,79 , 7057,14 , 222,17 , 217,18 , {69,85,82},  113,1 , 1933,20 , 25,5 , 4,0 , 2087,17 , 2104,8 ,     2,     1,     1,     6,     7 }, // Portuguese/Latin/Portugal
+    {     92,     4,   100,    46,    44,    59,    37,  2662,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 123,18 , 18,7 , 25,12 , 12422,68 , 12422,68 , 12490,27 , 12422,68 , 12422,68 , 12490,27 , 7150,38 , 7188,55 , 7243,23 , 7150,38 , 7188,55 , 7243,23 , 239,5 , 235,4 , {73,78,82},  247,3 , 4550,12 , 8,5 , 4,0 , 2112,6 , 2118,4 ,     2,     1,     7,     7,     7 }, // Punjabi/Gurmukhi/India
+    {     92,     1,   163,    46,    44,    59,    37,  1632,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 123,18 , 18,7 , 25,12 , 12517,67 , 12517,67 , 12490,27 , 12517,67 , 12517,67 , 12490,27 , 7150,38 , 7266,37 , 7243,23 , 7150,38 , 7266,37 , 7243,23 , 239,5 , 235,4 , {80,75,82},  250,1 , 4562,13 , 8,5 , 4,0 , 2122,5 , 2127,6 ,     0,     0,     7,     6,     7 }, // Punjabi/Arabic/Pakistan
+    {     94,     7,   206,    46,  8217,    59,    37,    48,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 0,6 , 0,6 , 332,8 , 502,18 , 37,5 , 8,10 , 12584,67 , 12651,92 , 12743,24 , 12584,67 , 12651,92 , 12743,24 , 7303,23 , 7326,56 , 7382,14 , 7303,23 , 7326,56 , 7382,14 , 149,2 , 239,2 , {67,72,70},  0,0 , 4575,20 , 25,5 , 4,0 , 2133,9 , 2142,6 ,     2,     5,     1,     6,     7 }, // Romansh/Latin/Switzerland
+    {     95,     7,   177,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 876,10 , 10,17 , 37,5 , 8,10 , 12767,60 , 12827,98 , 12925,24 , 12767,60 , 12827,98 , 12925,24 , 7396,21 , 7417,48 , 3021,14 , 7396,21 , 7417,48 , 3021,14 , 0,2 , 0,2 , {82,79,78},  251,3 , 4595,16 , 25,5 , 4,0 , 2148,6 , 2154,7 ,     2,     1,     1,     6,     7 }, // Romanian/Latin/Romania
+    {     95,     7,   141,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 876,10 , 10,17 , 37,5 , 8,10 , 12767,60 , 12827,98 , 12925,24 , 12767,60 , 12827,98 , 12925,24 , 7396,21 , 7417,48 , 3021,14 , 7396,21 , 7417,48 , 3021,14 , 0,2 , 0,2 , {77,68,76},  0,0 , 4611,54 , 25,5 , 4,0 , 2148,6 , 2161,17 ,     2,     1,     1,     6,     7 }, // Romanian/Latin/Moldova
+    {     96,     2,   178,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 913,22 , 165,4 , 195,9 , 12949,62 , 13011,80 , 13091,24 , 13115,63 , 13178,82 , 13091,24 , 7465,21 , 7486,62 , 7548,14 , 7562,21 , 7583,62 , 7548,14 , 0,2 , 0,2 , {82,85,66},  254,4 , 4665,89 , 25,5 , 4,0 , 2178,7 , 2185,6 ,     2,     1,     1,     6,     7 }, // Russian/Cyrillic/Russia
+    {     96,     2,   141,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 913,22 , 165,4 , 195,9 , 12949,62 , 13011,80 , 13091,24 , 13115,63 , 13178,82 , 13091,24 , 7465,21 , 7486,62 , 7548,14 , 7562,21 , 7583,62 , 7548,14 , 0,2 , 0,2 , {77,68,76},  0,0 , 4754,21 , 25,5 , 4,0 , 2178,7 , 2191,7 ,     2,     1,     1,     6,     7 }, // Russian/Cyrillic/Moldova
+    {     96,     2,   222,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 54,7 , 54,7 , 332,8 , 913,22 , 37,5 , 8,10 , 12949,62 , 13011,80 , 13091,24 , 13115,63 , 13178,82 , 13091,24 , 7465,21 , 7486,62 , 7548,14 , 7562,21 , 7583,62 , 7548,14 , 0,2 , 0,2 , {85,65,72},  258,1 , 4775,24 , 25,5 , 4,0 , 2178,7 , 2198,7 ,     2,     1,     1,     6,     7 }, // Russian/Cyrillic/Ukraine
+    {     98,     7,    41,    44,    46,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 13260,48 , 13308,91 , 13399,24 , 13260,48 , 13308,91 , 13399,24 , 7645,28 , 7673,66 , 7739,14 , 7645,28 , 7673,66 , 7739,14 , 244,2 , 241,2 , {88,65,70},  215,4 , 4799,25 , 4,4 , 48,5 , 2205,5 , 2210,22 ,     0,     0,     1,     6,     7 }, // Sangho/Latin/CentralAfricanRepublic
+    {     99,    13,   100,    46,    44,    59,    37,  2406,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 630,7 , 99,16 , 322,8 , 330,13 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {73,78,82},  194,2 , 0,7 , 4,4 , 4,0 , 2232,12 , 2244,6 ,     2,     1,     7,     7,     7 }, // Sanskrit/Devanagari/India
+    {    100,     2,   243,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13423,48 , 13471,81 , 9858,24 , 13423,48 , 13471,81 , 9858,24 , 7753,28 , 7781,52 , 7833,14 , 7753,28 , 7781,52 , 7833,14 , 246,9 , 243,7 , {82,83,68},  259,4 , 4824,71 , 25,5 , 4,0 , 2250,6 , 2256,6 ,     0,     0,     1,     6,     7 }, // Serbian/Cyrillic/Serbia
+    {    100,     2,    27,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 115,8 , 942,20 , 37,5 , 459,40 , 13423,48 , 13552,83 , 9858,24 , 13423,48 , 13552,83 , 9858,24 , 7847,28 , 7875,54 , 7833,14 , 7847,28 , 7875,54 , 7833,14 , 246,9 , 243,7 , {66,65,77},  263,3 , 4895,195 , 25,5 , 4,0 , 2262,6 , 2268,19 ,     2,     1,     1,     6,     7 }, // Serbian/Cyrillic/BosniaAndHerzegowina
+    {    100,     2,   242,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 54,7 , 54,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13423,48 , 13471,81 , 9858,24 , 13423,48 , 13471,81 , 9858,24 , 7753,28 , 7781,52 , 7833,14 , 7753,28 , 7781,52 , 7833,14 , 246,9 , 243,7 , {69,85,82},  113,1 , 5090,27 , 25,5 , 4,0 , 2250,6 , 2287,9 ,     2,     1,     1,     6,     7 }, // Serbian/Cyrillic/Montenegro
+    {    100,     7,    27,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 61,7 , 61,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13635,48 , 13683,81 , 13764,24 , 13635,48 , 13683,81 , 13764,24 , 7929,28 , 7957,54 , 2118,14 , 7929,28 , 7957,54 , 2118,14 , 255,9 , 250,7 , {66,65,77},  266,2 , 5117,218 , 25,5 , 4,0 , 2296,6 , 2302,19 ,     2,     1,     1,     6,     7 }, // Serbian/Latin/BosniaAndHerzegowina
+    {    100,     7,   242,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 61,7 , 61,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13635,48 , 13683,81 , 13764,24 , 13635,48 , 13683,81 , 13764,24 , 7929,28 , 7957,54 , 2118,14 , 7929,28 , 7957,54 , 2118,14 , 255,9 , 250,7 , {69,85,82},  113,1 , 5335,27 , 8,5 , 4,0 , 2296,6 , 2321,9 ,     2,     1,     1,     6,     7 }, // Serbian/Latin/Montenegro
+    {    100,     7,   243,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 61,7 , 61,7 , 935,7 , 942,20 , 150,5 , 155,10 , 13635,48 , 13683,81 , 13764,24 , 13635,48 , 13683,81 , 13764,24 , 7929,28 , 7957,54 , 2118,14 , 7929,28 , 7957,54 , 2118,14 , 255,9 , 250,7 , {82,83,68},  268,4 , 5362,71 , 25,5 , 4,0 , 2296,6 , 2330,6 ,     0,     0,     1,     6,     7 }, // Serbian/Latin/Serbia
+    {    102,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 13788,48 , 13836,105 , 158,27 , 13788,48 , 13836,105 , 158,27 , 8011,27 , 8038,61 , 798,14 , 8011,27 , 8038,61 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2336,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Sesotho/Latin/SouthAfrica
+    {    102,     7,   120,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 13788,48 , 13836,105 , 158,27 , 13788,48 , 13836,105 , 158,27 , 8011,27 , 8038,61 , 798,14 , 8011,27 , 8038,61 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2336,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Sesotho/Latin/Lesotho
+    {    103,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 13941,48 , 13989,117 , 158,27 , 13941,48 , 13989,117 , 158,27 , 8099,27 , 8126,64 , 798,14 , 8099,27 , 8126,64 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2343,8 , 0,0 ,     2,     1,     1,     6,     7 }, // Setswana/Latin/SouthAfrica
+    {    104,     7,   240,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8221,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 14106,47 , 14153,100 , 14253,24 , 14106,47 , 14153,100 , 14253,24 , 8190,32 , 8222,55 , 8277,14 , 8190,32 , 8222,55 , 8277,14 , 0,2 , 0,2 , {85,83,68},  272,3 , 5433,22 , 4,4 , 13,6 , 2351,8 , 967,8 ,     2,     1,     7,     6,     7 }, // Shona/Latin/Zimbabwe
+    {    106,    32,   198,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 576,10 , 962,17 , 18,7 , 25,12 , 14277,54 , 14331,92 , 14423,32 , 14277,54 , 14331,92 , 14423,32 , 8291,30 , 8321,62 , 8383,19 , 8291,30 , 8321,62 , 8383,19 , 264,5 , 257,4 , {76,75,82},  275,5 , 5455,19 , 4,4 , 13,6 , 2359,5 , 2364,11 ,     2,     1,     1,     6,     7 }, // Singhalese/Sinhala/SriLanka
+    {    107,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 14455,48 , 14503,114 , 158,27 , 14455,48 , 14503,114 , 158,27 , 8402,27 , 8429,68 , 798,14 , 8402,27 , 8429,68 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2375,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Siswati/Latin/SouthAfrica
+    {    107,     7,   204,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 14455,48 , 14503,114 , 158,27 , 14455,48 , 14503,114 , 158,27 , 8402,27 , 8429,68 , 798,14 , 8402,27 , 8429,68 , 798,14 , 0,2 , 0,2 , {83,90,76},  280,1 , 0,7 , 4,4 , 4,0 , 2375,7 , 0,0 ,     2,     1,     1,     6,     7 }, // Siswati/Latin/Swaziland
+    {    108,     7,   191,    44,   160,    59,    37,    48,    45,    43,   101,  8218,  8216,  8222,  8220, 0,6 , 0,6 , 78,7 , 78,7 , 586,8 , 502,18 , 165,4 , 195,9 , 14617,48 , 14665,82 , 13764,24 , 14617,48 , 14747,89 , 13764,24 , 8497,21 , 8518,52 , 8570,14 , 8497,21 , 8518,52 , 8570,14 , 269,10 , 261,9 , {69,85,82},  113,1 , 3813,11 , 25,5 , 4,0 , 2382,10 , 2392,19 ,     2,     1,     1,     6,     7 }, // Slovak/Latin/Slovakia
+    {    109,     7,   192,    44,    46,    59,    37,    48,    45,    43,   101,   187,   171,  8222,  8220, 0,6 , 0,6 , 276,8 , 276,8 , 979,9 , 611,19 , 37,5 , 8,10 , 13635,48 , 14836,86 , 13764,24 , 14922,59 , 14836,86 , 13764,24 , 8584,28 , 8612,52 , 8664,14 , 8584,28 , 8612,52 , 8664,14 , 67,4 , 270,4 , {69,85,82},  113,1 , 5474,28 , 25,5 , 4,0 , 2411,11 , 2422,9 ,     2,     1,     1,     6,     7 }, // Slovenian/Latin/Slovenia
+    {    110,     7,   194,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {83,79,83},  281,3 , 5502,22 , 4,4 , 4,0 , 2431,8 , 2439,10 ,     0,     0,     6,     6,     7 }, // Somali/Latin/Somalia
+    {    110,     7,    59,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {68,74,70},  5,3 , 5524,21 , 4,4 , 4,0 , 2431,8 , 2449,7 ,     0,     0,     6,     6,     7 }, // Somali/Latin/Djibouti
+    {    110,     7,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {69,84,66},  0,2 , 5545,22 , 4,4 , 4,0 , 2431,8 , 2456,8 ,     2,     1,     6,     6,     7 }, // Somali/Latin/Ethiopia
+    {    110,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 14981,48 , 15029,189 , 15218,24 , 14981,48 , 15029,189 , 15218,24 , 8678,28 , 8706,47 , 8753,14 , 8678,28 , 8706,47 , 8753,14 , 279,3 , 274,3 , {75,69,83},  2,3 , 0,7 , 4,4 , 4,0 , 2431,8 , 2464,7 ,     2,     1,     6,     6,     7 }, // Somali/Latin/Kenya
+    {    111,     7,   197,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {69,85,82},  113,1 , 1652,20 , 8,5 , 4,0 , 2471,17 , 1351,6 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Spain
+    {    111,     7,    10,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 499,14 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {65,82,83},  128,1 , 5567,51 , 8,5 , 4,0 , 2488,7 , 2495,9 ,     2,     1,     7,     6,     7 }, // Spanish/Latin/Argentina
+    {    111,     7,    26,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {66,79,66},  284,2 , 5618,35 , 8,5 , 4,0 , 2488,7 , 2504,7 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Bolivia
+    {    111,     7,    43,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 543,8 , 988,26 , 165,4 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {67,76,80},  128,1 , 5653,45 , 4,4 , 48,5 , 2488,7 , 2511,5 ,     0,     0,     1,     6,     7 }, // Spanish/Latin/Chile
+    {    111,     7,    47,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 551,7 , 988,26 , 165,4 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {67,79,80},  128,1 , 5698,54 , 8,5 , 4,0 , 2488,7 , 2516,8 ,     0,     0,     1,     6,     7 }, // Spanish/Latin/Colombia
+    {    111,     7,    52,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {67,82,67},  286,1 , 5752,67 , 8,5 , 4,0 , 2488,7 , 2524,10 ,     0,     0,     1,     6,     7 }, // Spanish/Latin/CostaRica
+    {    111,     7,    61,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {68,79,80},  287,3 , 5819,54 , 8,5 , 4,0 , 2488,7 , 2534,20 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/DominicanRepublic
+    {    111,     7,    63,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 165,4 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  128,1 , 5873,70 , 4,4 , 48,5 , 2488,7 , 2554,7 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Ecuador
+    {    111,     7,    65,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  272,3 , 5873,70 , 8,5 , 4,0 , 2488,7 , 2561,11 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/ElSalvador
+    {    111,     7,    66,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {88,65,70},  215,4 , 5943,22 , 8,5 , 4,0 , 2488,7 , 2572,17 ,     0,     0,     1,     6,     7 }, // Spanish/Latin/EquatorialGuinea
+    {    111,     7,    90,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 551,7 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {71,84,81},  290,1 , 5965,70 , 8,5 , 4,0 , 2488,7 , 2589,9 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Guatemala
+    {    111,     7,    96,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 1014,27 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {72,78,76},  291,1 , 6035,60 , 8,5 , 4,0 , 2488,7 , 2598,8 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Honduras
+    {    111,     7,   139,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {77,88,78},  128,1 , 6095,48 , 8,5 , 4,0 , 2488,7 , 2606,6 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Mexico
+    {    111,     7,   155,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {78,73,79},  292,2 , 6143,81 , 8,5 , 4,0 , 2488,7 , 2612,9 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Nicaragua
+    {    111,     7,   166,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 187,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {80,65,66},  294,3 , 6224,54 , 8,5 , 4,0 , 2488,7 , 2621,6 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Panama
+    {    111,     7,   168,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {80,89,71},  297,1 , 6278,61 , 8,5 , 61,6 , 2488,7 , 2627,8 ,     0,     0,     1,     6,     7 }, // Spanish/Latin/Paraguay
+    {    111,     7,   169,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 551,7 , 988,26 , 37,5 , 513,15 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {80,69,78},  298,3 , 6339,62 , 8,5 , 4,0 , 2488,7 , 2635,4 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Peru
+    {    111,     7,   174,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 187,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  128,1 , 5873,70 , 8,5 , 4,0 , 2488,7 , 2639,11 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/PuertoRico
+    {    111,     7,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 558,6 , 988,26 , 18,7 , 25,12 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,83,68},  128,1 , 5873,70 , 8,5 , 4,0 , 2488,7 , 2650,14 ,     2,     1,     7,     6,     7 }, // Spanish/Latin/UnitedStates
+    {    111,     7,   227,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {85,89,85},  128,1 , 6401,48 , 8,5 , 67,7 , 2488,7 , 2664,7 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Uruguay
+    {    111,     7,   231,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {86,69,70},  301,5 , 6449,86 , 4,4 , 48,5 , 2488,7 , 2671,9 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/Venezuela
+    {    111,     7,   246,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 284,7 , 284,7 , 27,8 , 988,26 , 37,5 , 8,10 , 15242,48 , 15290,89 , 15379,24 , 15242,48 , 15290,89 , 15379,24 , 8767,28 , 8795,53 , 3021,14 , 8767,28 , 8795,53 , 3021,14 , 61,4 , 59,4 , {0,0,0},  0,0 , 6535,0 , 8,5 , 4,0 , 2680,23 , 2703,25 ,     2,     1,     1,     6,     7 }, // Spanish/Latin/LatinAmericaAndTheCaribbean
+    {    113,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 15451,84 , 134,24 , 15403,48 , 15451,84 , 134,24 , 8848,22 , 8870,60 , 8930,14 , 8848,22 , 8870,60 , 8930,14 , 282,7 , 277,7 , {84,90,83},  306,3 , 6535,27 , 25,5 , 4,0 , 2728,9 , 2737,8 ,     0,     0,     1,     6,     7 }, // Swahili/Latin/Tanzania
+    {    113,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 15451,84 , 134,24 , 15403,48 , 15451,84 , 134,24 , 8848,22 , 8870,60 , 8930,14 , 8848,22 , 8870,60 , 8930,14 , 282,7 , 277,7 , {75,69,83},  2,3 , 6562,24 , 4,4 , 4,0 , 2728,9 , 2745,5 ,     2,     1,     6,     6,     7 }, // Swahili/Latin/Kenya
+    {    114,     7,   205,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 291,9 , 291,9 , 72,10 , 1041,30 , 37,5 , 413,16 , 4039,48 , 15535,86 , 134,24 , 4039,48 , 15535,86 , 134,24 , 8944,29 , 8973,50 , 2295,14 , 8944,29 , 8973,50 , 2295,14 , 289,2 , 284,2 , {83,69,75},  142,2 , 6586,45 , 25,5 , 4,0 , 2750,7 , 2757,7 ,     2,     1,     1,     6,     7 }, // Swedish/Latin/Sweden
+    {    114,     7,    73,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 291,9 , 291,9 , 72,10 , 1041,30 , 37,5 , 413,16 , 4039,48 , 15535,86 , 134,24 , 4039,48 , 15535,86 , 134,24 , 8944,29 , 8973,50 , 2295,14 , 8944,29 , 8973,50 , 2295,14 , 289,2 , 284,2 , {69,85,82},  113,1 , 6631,19 , 25,5 , 4,0 , 2750,7 , 2764,7 ,     2,     1,     1,     6,     7 }, // Swedish/Latin/Finland
     {    116,     2,   209,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,   171,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 15621,48 , 15669,71 , 158,27 , 15621,48 , 15669,71 , 158,27 , 9023,28 , 9051,55 , 798,14 , 9023,28 , 9051,55 , 798,14 , 0,2 , 0,2 , {84,74,83},  202,3 , 6650,13 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Tajik/Cyrillic/Tajikistan
-    {    117,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 300,13 , 300,13 , 655,6 , 203,18 , 18,7 , 25,12 , 15740,58 , 15798,88 , 15886,31 , 15740,58 , 15798,88 , 15886,31 , 9106,20 , 9126,49 , 9106,20 , 9106,20 , 9126,49 , 9106,20 , 149,2 , 148,2 , {73,78,82},  309,2 , 6663,13 , 8,5 , 4,0 , 2773,5 , 2778,7 ,     2,     1,     7,     7,     7 }, // Tamil/AnyScript/India
-    {    117,     0,   198,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 300,13 , 300,13 , 655,6 , 203,18 , 18,7 , 25,12 , 15740,58 , 15798,88 , 15886,31 , 15740,58 , 15798,88 , 15886,31 , 9106,20 , 9126,49 , 9106,20 , 9106,20 , 9126,49 , 9106,20 , 149,2 , 148,2 , {76,75,82},  311,4 , 0,7 , 8,5 , 4,0 , 2773,5 , 2785,6 ,     2,     1,     1,     6,     7 }, // Tamil/AnyScript/SriLanka
-    {    118,     0,   178,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 876,10 , 1071,11 , 165,4 , 25,12 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {82,85,66},  0,0 , 0,7 , 0,4 , 4,0 , 2791,5 , 2187,6 ,     2,     1,     1,     6,     7 }, // Tatar/AnyScript/Russia
-    {    119,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 313,12 , 325,11 , 543,8 , 99,16 , 18,7 , 25,12 , 15917,86 , 15917,86 , 16003,30 , 15917,86 , 15917,86 , 16003,30 , 9175,32 , 9207,60 , 9267,18 , 9175,32 , 9207,60 , 9267,18 , 291,1 , 286,2 , {73,78,82},  315,3 , 6676,13 , 8,5 , 4,0 , 2796,6 , 2802,9 ,     2,     1,     7,     7,     7 }, // Telugu/AnyScript/India
-    {    120,     0,   211,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 336,5 , 336,5 , 341,8 , 349,7 , 364,8 , 1082,19 , 165,4 , 528,27 , 16033,63 , 16096,98 , 16033,63 , 16033,63 , 16096,98 , 16194,24 , 9285,23 , 9308,68 , 9376,14 , 9285,23 , 9308,68 , 9376,14 , 292,10 , 288,10 , {84,72,66},  318,1 , 6689,13 , 4,4 , 48,5 , 2811,3 , 2811,3 ,     2,     1,     7,     6,     7 }, // Thai/AnyScript/Thailand
-    {    121,     0,    44,    46,    44,    59,    37,  3872,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 16218,63 , 16281,158 , 158,27 , 16218,63 , 16281,158 , 158,27 , 9390,49 , 9439,77 , 9516,21 , 9390,49 , 9439,77 , 9516,21 , 302,7 , 298,8 , {67,78,89},  229,3 , 6702,13 , 8,5 , 4,0 , 2814,8 , 2822,6 ,     2,     1,     7,     6,     7 }, // Tibetan/AnyScript/China
-    {    121,     0,   100,    46,    44,    59,    37,  3872,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 16218,63 , 16281,158 , 158,27 , 16218,63 , 16281,158 , 158,27 , 9390,49 , 9439,77 , 9516,21 , 9390,49 , 9439,77 , 9516,21 , 302,7 , 298,8 , {73,78,82},  145,2 , 6715,22 , 8,5 , 4,0 , 2814,8 , 2828,7 ,     2,     1,     7,     7,     7 }, // Tibetan/AnyScript/India
-    {    122,     0,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1101,23 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 9537,29 , 9537,29 , 9566,14 , 9537,29 , 9537,29 , 9566,14 , 309,7 , 306,7 , {69,84,66},  0,2 , 81,16 , 4,4 , 4,0 , 2835,4 , 96,5 ,     2,     1,     6,     6,     7 }, // Tigrinya/AnyScript/Ethiopia
-    {    122,     0,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1124,23 , 18,7 , 25,12 , 16439,46 , 16485,54 , 1061,24 , 16439,46 , 16485,54 , 1061,24 , 9580,29 , 9580,29 , 9566,14 , 9580,29 , 9580,29 , 9566,14 , 309,7 , 306,7 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 2835,4 , 2839,4 ,     2,     1,     6,     6,     7 }, // Tigrinya/AnyScript/Eritrea
-    {    123,     0,   214,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 99,16 , 37,5 , 8,10 , 16539,51 , 16590,87 , 16677,24 , 16539,51 , 16590,87 , 16677,24 , 9609,29 , 9638,60 , 9698,14 , 9609,29 , 9638,60 , 9698,14 , 0,2 , 0,2 , {84,79,80},  319,2 , 0,7 , 8,5 , 4,0 , 2843,13 , 2856,5 ,     2,     1,     1,     6,     7 }, // Tonga/AnyScript/Tonga
-    {    124,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 16701,48 , 16749,122 , 158,27 , 16701,48 , 16749,122 , 158,27 , 9712,27 , 9739,72 , 798,14 , 9712,27 , 9739,72 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2861,8 , 0,0 ,     2,     1,     1,     6,     7 }, // Tsonga/AnyScript/SouthAfrica
-    {    125,     0,   217,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 356,8 , 356,8 , 876,10 , 1147,17 , 37,5 , 8,10 , 16871,48 , 16919,75 , 16994,24 , 16871,48 , 16919,75 , 16994,24 , 9811,28 , 9839,54 , 9893,14 , 9811,28 , 9839,54 , 9893,14 , 0,2 , 0,2 , {84,82,89},  209,2 , 6737,18 , 25,5 , 4,0 , 2869,6 , 2875,7 ,     2,     1,     1,     6,     7 }, // Turkish/AnyScript/Turkey
-    {    128,     0,    44,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {67,78,89},  229,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     7,     6,     7 }, // Uigur/AnyScript/China
+    {    117,    27,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 300,13 , 300,13 , 655,6 , 203,18 , 18,7 , 25,12 , 15740,58 , 15798,88 , 15886,31 , 15740,58 , 15798,88 , 15886,31 , 9106,20 , 9126,49 , 9106,20 , 9106,20 , 9126,49 , 9106,20 , 149,2 , 148,2 , {73,78,82},  309,2 , 6663,13 , 8,5 , 4,0 , 2771,5 , 2776,7 ,     2,     1,     7,     7,     7 }, // Tamil/Tamil/India
+    {    117,    27,   198,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 300,13 , 300,13 , 655,6 , 203,18 , 18,7 , 25,12 , 15740,58 , 15798,88 , 15886,31 , 15740,58 , 15798,88 , 15886,31 , 9106,20 , 9126,49 , 9106,20 , 9106,20 , 9126,49 , 9106,20 , 149,2 , 148,2 , {76,75,82},  311,4 , 0,7 , 8,5 , 4,0 , 2771,5 , 2783,6 ,     2,     1,     1,     6,     7 }, // Tamil/Tamil/SriLanka
+    {    118,     2,   178,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 876,10 , 1071,11 , 165,4 , 25,12 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {82,85,66},  0,0 , 0,7 , 0,4 , 4,0 , 2789,5 , 2185,6 ,     2,     1,     1,     6,     7 }, // Tatar/Cyrillic/Russia
+    {    119,    28,   100,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 313,12 , 325,11 , 543,8 , 99,16 , 18,7 , 25,12 , 15917,86 , 15917,86 , 16003,30 , 15917,86 , 15917,86 , 16003,30 , 9175,32 , 9207,60 , 9267,18 , 9175,32 , 9207,60 , 9267,18 , 291,1 , 286,2 , {73,78,82},  315,3 , 6676,13 , 8,5 , 4,0 , 2794,6 , 2800,9 ,     2,     1,     7,     7,     7 }, // Telugu/Telugu/India
+    {    120,    30,   211,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 336,5 , 336,5 , 341,8 , 349,7 , 364,8 , 1082,19 , 165,4 , 528,27 , 16033,63 , 16096,98 , 16033,63 , 16033,63 , 16096,98 , 16194,24 , 9285,23 , 9308,68 , 9376,14 , 9285,23 , 9308,68 , 9376,14 , 292,10 , 288,10 , {84,72,66},  318,1 , 6689,13 , 4,4 , 48,5 , 2809,3 , 2809,3 ,     2,     1,     7,     6,     7 }, // Thai/Thai/Thailand
+    {    121,    31,    44,    46,    44,    59,    37,  3872,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 16218,63 , 16281,158 , 158,27 , 16218,63 , 16281,158 , 158,27 , 9390,49 , 9439,77 , 9516,21 , 9390,49 , 9439,77 , 9516,21 , 302,7 , 298,8 , {67,78,89},  229,3 , 6702,13 , 8,5 , 4,0 , 2812,8 , 2820,6 ,     2,     1,     7,     6,     7 }, // Tibetan/Tibetan/China
+    {    121,    31,   100,    46,    44,    59,    37,  3872,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 16218,63 , 16281,158 , 158,27 , 16218,63 , 16281,158 , 158,27 , 9390,49 , 9439,77 , 9516,21 , 9390,49 , 9439,77 , 9516,21 , 302,7 , 298,8 , {73,78,82},  145,2 , 6715,22 , 8,5 , 4,0 , 2812,8 , 2826,7 ,     2,     1,     7,     7,     7 }, // Tibetan/Tibetan/India
+    {    122,    14,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1101,23 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 9537,29 , 9537,29 , 9566,14 , 9537,29 , 9537,29 , 9566,14 , 309,7 , 306,7 , {69,84,66},  0,2 , 81,16 , 4,4 , 4,0 , 2833,4 , 96,5 ,     2,     1,     6,     6,     7 }, // Tigrinya/Ethiopic/Ethiopia
+    {    122,    14,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1124,23 , 18,7 , 25,12 , 16439,46 , 16485,54 , 1061,24 , 16439,46 , 16485,54 , 1061,24 , 9580,29 , 9580,29 , 9566,14 , 9580,29 , 9580,29 , 9566,14 , 309,7 , 306,7 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 2833,4 , 2837,4 ,     2,     1,     6,     6,     7 }, // Tigrinya/Ethiopic/Eritrea
+    {    123,     7,   214,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 99,16 , 37,5 , 8,10 , 16539,51 , 16590,87 , 16677,24 , 16539,51 , 16590,87 , 16677,24 , 9609,29 , 9638,60 , 9698,14 , 9609,29 , 9638,60 , 9698,14 , 0,2 , 0,2 , {84,79,80},  319,2 , 0,7 , 8,5 , 4,0 , 2841,13 , 2854,5 ,     2,     1,     1,     6,     7 }, // Tonga/Latin/Tonga
+    {    124,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 16701,48 , 16749,122 , 158,27 , 16701,48 , 16749,122 , 158,27 , 9712,27 , 9739,72 , 798,14 , 9712,27 , 9739,72 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2859,8 , 0,0 ,     2,     1,     1,     6,     7 }, // Tsonga/Latin/SouthAfrica
+    {    125,     7,   217,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 356,8 , 356,8 , 876,10 , 1147,17 , 37,5 , 8,10 , 16871,48 , 16919,75 , 16994,24 , 16871,48 , 16919,75 , 16994,24 , 9811,28 , 9839,54 , 9893,14 , 9811,28 , 9839,54 , 9893,14 , 0,2 , 0,2 , {84,82,89},  209,2 , 6737,18 , 25,5 , 4,0 , 2867,6 , 2873,7 ,     2,     1,     1,     6,     7 }, // Turkish/Latin/Turkey
     {    128,     1,    44,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {67,78,89},  229,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     7,     6,     7 }, // Uigur/Arabic/China
-    {    129,     0,   222,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 364,8 , 364,8 , 332,8 , 1164,22 , 37,5 , 8,10 , 17018,48 , 17066,95 , 17161,24 , 17185,67 , 17252,87 , 17161,24 , 9907,21 , 9928,56 , 9984,14 , 9907,21 , 9928,56 , 9984,14 , 316,2 , 313,2 , {85,65,72},  258,1 , 6755,49 , 25,5 , 4,0 , 2882,10 , 2892,7 ,     2,     1,     1,     6,     7 }, // Ukrainian/AnyScript/Ukraine
-    {    130,     0,   163,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 1186,18 , 18,7 , 25,12 , 17339,67 , 17339,67 , 11788,24 , 17339,67 , 17339,67 , 11788,24 , 9998,36 , 9998,36 , 10034,14 , 9998,36 , 9998,36 , 10034,14 , 0,2 , 0,2 , {80,75,82},  321,4 , 6804,21 , 4,4 , 4,0 , 2899,4 , 2903,7 ,     0,     0,     7,     6,     7 }, // Urdu/AnyScript/Pakistan
-    {    130,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 1186,18 , 18,7 , 25,12 , 17339,67 , 17339,67 , 11788,24 , 17339,67 , 17339,67 , 11788,24 , 9998,36 , 9998,36 , 10034,14 , 9998,36 , 9998,36 , 10034,14 , 0,2 , 0,2 , {73,78,82},  145,2 , 6825,18 , 8,5 , 4,0 , 2899,4 , 2910,5 ,     2,     1,     7,     7,     7 }, // Urdu/AnyScript/India
-    {    131,     0,   228,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 15621,48 , 17406,115 , 13091,24 , 15621,48 , 17406,115 , 13091,24 , 10048,28 , 10076,53 , 10129,14 , 10048,28 , 10076,53 , 10129,14 , 0,2 , 0,2 , {85,90,83},  325,3 , 6843,21 , 8,5 , 4,0 , 2915,5 , 2920,10 ,     0,     0,     7,     6,     7 }, // Uzbek/AnyScript/Uzbekistan
-    {    131,     0,     1,  1643,  1644,    59,  1642,  1776,  8722,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 179,8 , 1204,33 , 165,4 , 429,11 , 17521,48 , 11812,68 , 13091,24 , 17521,48 , 11812,68 , 13091,24 , 10143,21 , 6780,49 , 10129,14 , 10143,21 , 6780,49 , 10129,14 , 0,2 , 0,2 , {65,70,78},  328,2 , 6864,13 , 25,5 , 4,0 , 2930,6 , 1993,9 ,     0,     0,     6,     4,     5 }, // Uzbek/AnyScript/Afghanistan
-    {    131,     1,     1,  1643,  1644,    59,  1642,  1776,  8722,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 179,8 , 1204,33 , 165,4 , 429,11 , 17521,48 , 11812,68 , 13091,24 , 17521,48 , 11812,68 , 13091,24 , 10143,21 , 6780,49 , 10129,14 , 10143,21 , 6780,49 , 10129,14 , 0,2 , 0,2 , {65,70,78},  328,2 , 6864,13 , 25,5 , 4,0 , 2930,6 , 1993,9 ,     0,     0,     6,     4,     5 }, // Uzbek/Arabic/Afghanistan
-    {    131,     2,   228,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 15621,48 , 17406,115 , 13091,24 , 15621,48 , 17406,115 , 13091,24 , 10048,28 , 10076,53 , 10129,14 , 10048,28 , 10076,53 , 10129,14 , 0,2 , 0,2 , {85,90,83},  325,3 , 6843,21 , 8,5 , 4,0 , 2915,5 , 2920,10 ,     0,     0,     7,     6,     7 }, // Uzbek/Cyrillic/Uzbekistan
-    {    131,     7,   228,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 17569,52 , 17406,115 , 17621,24 , 17569,52 , 17406,115 , 17621,24 , 10164,34 , 10198,61 , 10259,14 , 10164,34 , 10198,61 , 10259,14 , 0,2 , 0,2 , {85,90,83},  330,4 , 6877,23 , 8,5 , 4,0 , 2936,9 , 2945,11 ,     0,     0,     7,     6,     7 }, // Uzbek/Latin/Uzbekistan
-    {    132,     0,   232,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 372,8 , 372,8 , 141,10 , 1237,31 , 37,5 , 8,10 , 17645,75 , 17720,130 , 158,27 , 17645,75 , 17720,130 , 158,27 , 10273,33 , 10306,55 , 10361,21 , 10273,33 , 10306,55 , 10361,21 , 318,2 , 315,2 , {86,78,68},  334,1 , 6900,11 , 25,5 , 4,0 , 2956,10 , 2966,8 ,     0,     0,     1,     6,     7 }, // Vietnamese/AnyScript/Vietnam
-    {    134,     0,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 37,5 , 8,10 , 17850,53 , 17903,87 , 17990,24 , 18014,62 , 18076,86 , 17990,24 , 10382,29 , 10411,77 , 10488,14 , 10502,30 , 10411,77 , 10488,14 , 0,2 , 0,2 , {71,66,80},  153,1 , 6911,28 , 4,4 , 4,0 , 2974,7 , 2981,12 ,     2,     1,     1,     6,     7 }, // Welsh/AnyScript/UnitedKingdom
-    {    135,     0,   187,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     0,     0,     1,     6,     7 }, // Wolof/AnyScript/Senegal
+    {    129,     2,   222,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8220, 0,6 , 0,6 , 364,8 , 364,8 , 332,8 , 1164,22 , 37,5 , 8,10 , 17018,48 , 17066,95 , 17161,24 , 17185,67 , 17252,87 , 17161,24 , 9907,21 , 9928,56 , 9984,14 , 9907,21 , 9928,56 , 9984,14 , 316,2 , 313,2 , {85,65,72},  258,1 , 6755,49 , 25,5 , 4,0 , 2880,10 , 2890,7 ,     2,     1,     1,     6,     7 }, // Ukrainian/Cyrillic/Ukraine
+    {    130,     1,   163,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 1186,18 , 18,7 , 25,12 , 17339,67 , 17339,67 , 11788,24 , 17339,67 , 17339,67 , 11788,24 , 9998,36 , 9998,36 , 10034,14 , 9998,36 , 9998,36 , 10034,14 , 0,2 , 0,2 , {80,75,82},  321,4 , 6804,21 , 4,4 , 4,0 , 2897,4 , 2901,7 ,     0,     0,     7,     6,     7 }, // Urdu/Arabic/Pakistan
+    {    130,     1,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 1186,18 , 18,7 , 25,12 , 17339,67 , 17339,67 , 11788,24 , 17339,67 , 17339,67 , 11788,24 , 9998,36 , 9998,36 , 10034,14 , 9998,36 , 9998,36 , 10034,14 , 0,2 , 0,2 , {73,78,82},  145,2 , 6825,18 , 8,5 , 4,0 , 2897,4 , 2908,5 ,     2,     1,     7,     7,     7 }, // Urdu/Arabic/India
+    {    131,     2,   228,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 15621,48 , 17406,115 , 13091,24 , 15621,48 , 17406,115 , 13091,24 , 10048,28 , 10076,53 , 10129,14 , 10048,28 , 10076,53 , 10129,14 , 0,2 , 0,2 , {85,90,83},  325,3 , 6843,21 , 8,5 , 4,0 , 2913,5 , 2918,10 ,     0,     0,     7,     6,     7 }, // Uzbek/Cyrillic/Uzbekistan
+    {    131,     1,     1,  1643,  1644,    59,  1642,  1776,  8722,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 179,8 , 1204,33 , 165,4 , 429,11 , 17521,48 , 11812,68 , 13091,24 , 17521,48 , 11812,68 , 13091,24 , 10143,21 , 6780,49 , 10129,14 , 10143,21 , 6780,49 , 10129,14 , 0,2 , 0,2 , {65,70,78},  328,2 , 6864,13 , 25,5 , 4,0 , 2928,6 , 1991,9 ,     0,     0,     6,     4,     5 }, // Uzbek/Arabic/Afghanistan
+    {    131,     7,   228,    44,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 17569,52 , 17406,115 , 17621,24 , 17569,52 , 17406,115 , 17621,24 , 10164,34 , 10198,61 , 10259,14 , 10164,34 , 10198,61 , 10259,14 , 0,2 , 0,2 , {85,90,83},  330,4 , 6877,23 , 8,5 , 4,0 , 2934,9 , 2943,11 ,     0,     0,     7,     6,     7 }, // Uzbek/Latin/Uzbekistan
+    {    132,     7,   232,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 372,8 , 372,8 , 141,10 , 1237,31 , 37,5 , 8,10 , 17645,75 , 17720,130 , 158,27 , 17645,75 , 17720,130 , 158,27 , 10273,33 , 10306,55 , 10361,21 , 10273,33 , 10306,55 , 10361,21 , 318,2 , 315,2 , {86,78,68},  334,1 , 6900,11 , 25,5 , 4,0 , 2954,10 , 2964,8 ,     0,     0,     1,     6,     7 }, // Vietnamese/Latin/Vietnam
+    {    134,     7,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 37,5 , 8,10 , 17850,53 , 17903,87 , 17990,24 , 18014,62 , 18076,86 , 17990,24 , 10382,29 , 10411,77 , 10488,14 , 10502,30 , 10411,77 , 10488,14 , 0,2 , 0,2 , {71,66,80},  153,1 , 6911,28 , 4,4 , 4,0 , 2972,7 , 2979,12 ,     2,     1,     1,     6,     7 }, // Welsh/Latin/UnitedKingdom
     {    135,     7,   187,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     0,     0,     1,     6,     7 }, // Wolof/Latin/Senegal
-    {    136,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 18162,48 , 18210,91 , 158,27 , 18162,48 , 18210,91 , 158,27 , 10532,28 , 10560,61 , 798,14 , 10532,28 , 10560,61 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2993,8 , 0,0 ,     2,     1,     1,     6,     7 }, // Xhosa/AnyScript/SouthAfrica
-    {    138,     0,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 18301,73 , 18374,121 , 158,27 , 18301,73 , 18374,121 , 158,27 , 10621,44 , 10665,69 , 798,14 , 10621,44 , 10665,69 , 798,14 , 320,5 , 317,5 , {78,71,78},  182,1 , 6939,34 , 4,4 , 13,6 , 3001,10 , 3011,18 ,     2,     1,     1,     6,     7 }, // Yoruba/AnyScript/Nigeria
-    {    140,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 82,17 , 18,7 , 25,12 , 18495,48 , 18543,104 , 134,24 , 18495,48 , 18647,90 , 134,24 , 10734,28 , 10762,68 , 10830,14 , 10734,28 , 10762,68 , 10830,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3029,7 , 3036,17 ,     2,     1,     1,     6,     7 }, // Zulu/AnyScript/SouthAfrica
-    {    141,     0,   161,    44,   160,    59,    37,    48,  8722,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 85,8 , 85,8 , 332,8 , 594,17 , 37,5 , 413,16 , 4869,48 , 11131,83 , 134,24 , 4869,48 , 11131,83 , 134,24 , 10844,28 , 10872,51 , 2295,14 , 10844,28 , 10872,51 , 2295,14 , 325,9 , 322,11 , {78,79,75},  142,2 , 6973,42 , 25,5 , 4,0 , 3053,7 , 3060,5 ,     2,     1,     1,     6,     7 }, // NorwegianNynorsk/AnyScript/Norway
-    {    142,     0,    27,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 1268,9 , 942,20 , 37,5 , 8,10 , 13635,48 , 18737,83 , 13764,24 , 13635,48 , 18737,83 , 13764,24 , 2032,28 , 2060,58 , 798,14 , 2032,28 , 2060,58 , 798,14 , 0,2 , 0,2 , {66,65,77},  266,2 , 5144,218 , 8,5 , 4,0 , 3065,8 , 2313,19 ,     2,     1,     1,     6,     7 }, // Bosnian/AnyScript/BosniaAndHerzegowina
-    {    143,     0,   131,    46,    44,    44,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 655,6 , 99,16 , 322,8 , 330,13 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {77,86,82},  335,2 , 0,7 , 8,5 , 4,0 , 3073,10 , 3083,13 ,     2,     1,     5,     6,     7 }, // Divehi/AnyScript/Maldives
-    {    144,     0,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 82,17 , 37,5 , 8,10 , 18820,102 , 18922,140 , 158,27 , 18820,102 , 18922,140 , 158,27 , 10923,30 , 10953,57 , 798,14 , 10923,30 , 10953,57 , 798,14 , 61,4 , 59,4 , {71,66,80},  153,1 , 0,7 , 4,4 , 4,0 , 3096,5 , 3101,14 ,     2,     1,     1,     6,     7 }, // Manx/AnyScript/UnitedKingdom
-    {    145,     0,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 99,16 , 37,5 , 8,10 , 19062,46 , 19108,124 , 158,27 , 19062,46 , 19108,124 , 158,27 , 11010,28 , 11038,60 , 798,14 , 11010,28 , 11038,60 , 798,14 , 61,4 , 59,4 , {71,66,80},  153,1 , 0,7 , 4,4 , 4,0 , 3115,8 , 3101,14 ,     2,     1,     1,     6,     7 }, // Cornish/AnyScript/UnitedKingdom
-    {    146,     0,    83,    46,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 19232,48 , 19280,192 , 158,27 , 19232,48 , 19280,192 , 158,27 , 11098,28 , 11126,49 , 11175,14 , 11098,28 , 11126,49 , 11175,14 , 334,2 , 333,2 , {71,72,83},  183,3 , 0,7 , 4,4 , 4,0 , 3123,4 , 3127,5 ,     2,     1,     1,     6,     7 }, // Akan/AnyScript/Ghana
-    {    147,     0,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 655,6 , 99,16 , 18,7 , 25,12 , 19472,87 , 19472,87 , 158,27 , 19472,87 , 19472,87 , 158,27 , 6251,32 , 11189,55 , 798,14 , 6251,32 , 11189,55 , 798,14 , 336,5 , 335,5 , {73,78,82},  194,2 , 0,7 , 8,5 , 4,0 , 3132,6 , 1586,4 ,     2,     1,     7,     7,     7 }, // Konkani/AnyScript/India
-    {    148,     0,    83,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 19559,48 , 19607,94 , 158,27 , 19559,48 , 19607,94 , 158,27 , 11244,26 , 11270,34 , 798,14 , 11244,26 , 11270,34 , 798,14 , 0,2 , 0,2 , {71,72,83},  183,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Ga/AnyScript/Ghana
-    {    149,     0,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 19701,48 , 19749,86 , 158,27 , 19701,48 , 19749,86 , 158,27 , 11304,29 , 11333,57 , 798,14 , 11304,29 , 11333,57 , 798,14 , 341,4 , 340,4 , {78,71,78},  182,1 , 7015,12 , 4,4 , 13,6 , 3138,4 , 3142,7 ,     2,     1,     1,     6,     7 }, // Igbo/AnyScript/Nigeria
-    {    150,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 19835,48 , 19883,189 , 20072,24 , 19835,48 , 19883,189 , 20072,24 , 11390,28 , 11418,74 , 11492,14 , 11390,28 , 11418,74 , 11492,14 , 345,9 , 344,7 , {75,69,83},  2,3 , 7027,23 , 4,4 , 13,6 , 3149,7 , 2747,5 ,     2,     1,     6,     6,     7 }, // Kamba/AnyScript/Kenya
-    {    151,     0,   207,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 1277,13 , 18,7 , 25,12 , 20096,65 , 20096,65 , 158,27 , 20096,65 , 20096,65 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {83,89,80},  79,5 , 0,7 , 8,5 , 19,6 , 3156,6 , 3156,6 ,     0,     0,     6,     5,     6 }, // Syriac/AnyScript/Syria
-    {    152,     0,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1290,22 , 18,7 , 25,12 , 20161,47 , 20208,77 , 20285,24 , 20161,47 , 20208,77 , 20285,24 , 11506,26 , 11532,43 , 11575,14 , 11506,26 , 11532,43 , 11575,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 3162,3 , 2839,4 ,     2,     1,     6,     6,     7 }, // Blin/AnyScript/Eritrea
-    {    153,     0,    69,    46,  4808,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1312,23 , 18,7 , 25,12 , 20309,49 , 20309,49 , 20358,24 , 20309,49 , 20309,49 , 20358,24 , 11589,29 , 11589,29 , 11618,14 , 11589,29 , 11589,29 , 11618,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 81,16 , 4,4 , 4,0 , 3165,4 , 96,5 ,     2,     1,     6,     6,     7 }, // Geez/AnyScript/Ethiopia
-    {    153,     0,    67,    46,  4808,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1312,23 , 18,7 , 25,12 , 20309,49 , 20309,49 , 20358,24 , 20309,49 , 20309,49 , 20358,24 , 11589,29 , 11589,29 , 11618,14 , 11589,29 , 11589,29 , 11618,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 3165,4 , 2839,4 ,     2,     1,     6,     6,     7 }, // Geez/AnyScript/Eritrea
-    {    154,     0,    53,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 20382,48 , 20430,124 , 158,27 , 20382,48 , 20430,124 , 158,27 , 11632,28 , 11660,54 , 798,14 , 11632,28 , 11660,54 , 798,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     0,     0,     1,     6,     7 }, // Koro/AnyScript/IvoryCoast
-    {    155,     0,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 11714,28 , 11742,51 , 11793,14 , 11714,28 , 11742,51 , 11793,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 0,7 , 4,4 , 4,0 , 3169,11 , 3180,11 ,     2,     1,     6,     6,     7 }, // Sidamo/AnyScript/Ethiopia
-    {    156,     0,   157,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 20554,59 , 20613,129 , 158,27 , 20554,59 , 20613,129 , 158,27 , 11807,35 , 11842,87 , 798,14 , 11807,35 , 11842,87 , 798,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 7050,11 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Atsam/AnyScript/Nigeria
-    {    157,     0,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1335,21 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 11929,27 , 11956,41 , 11997,14 , 11929,27 , 11956,41 , 11997,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 3191,3 , 2839,4 ,     2,     1,     6,     6,     7 }, // Tigre/AnyScript/Eritrea
-    {    158,     0,   157,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 20742,57 , 20799,178 , 158,27 , 20742,57 , 20799,178 , 158,27 , 12011,28 , 12039,44 , 798,14 , 12011,28 , 12039,44 , 798,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 7061,14 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Jju/AnyScript/Nigeria
-    {    159,     0,   106,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1356,27 , 37,5 , 8,10 , 20977,48 , 21025,77 , 21102,24 , 20977,48 , 21025,77 , 21102,24 , 12083,28 , 12111,50 , 3021,14 , 12083,28 , 12111,50 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 3813,11 , 8,5 , 4,0 , 3194,6 , 3200,6 ,     2,     1,     1,     6,     7 }, // Friulian/AnyScript/Italy
-    {    160,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 21126,48 , 21174,111 , 158,27 , 21126,48 , 21174,111 , 158,27 , 12161,27 , 12188,70 , 798,14 , 12161,27 , 12188,70 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3206,9 , 0,0 ,     2,     1,     1,     6,     7 }, // Venda/AnyScript/SouthAfrica
-    {    161,     0,    83,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 21285,48 , 21333,87 , 21420,24 , 21285,48 , 21333,87 , 21420,24 , 12258,32 , 12290,44 , 12334,14 , 12258,32 , 12290,44 , 12334,14 , 334,2 , 333,2 , {71,72,83},  183,3 , 0,7 , 4,4 , 13,6 , 3215,6 , 3221,7 ,     2,     1,     1,     6,     7 }, // Ewe/AnyScript/Ghana
-    {    161,     0,   212,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 21285,48 , 21333,87 , 21420,24 , 21285,48 , 21333,87 , 21420,24 , 12258,32 , 12290,44 , 12334,14 , 12258,32 , 12290,44 , 12334,14 , 334,2 , 333,2 , {88,79,70},  154,3 , 7075,11 , 4,4 , 13,6 , 3215,6 , 3228,6 ,     0,     0,     1,     6,     7 }, // Ewe/AnyScript/Togo
-    {    162,     0,    69,    46,  8217,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1383,22 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 12348,27 , 12348,27 , 12375,14 , 12348,27 , 12348,27 , 12375,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 81,16 , 4,4 , 4,0 , 3234,5 , 96,5 ,     2,     1,     6,     6,     7 }, // Walamo/AnyScript/Ethiopia
-    {    163,     0,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 10,17 , 18,7 , 25,12 , 21444,59 , 21503,95 , 158,27 , 21444,59 , 21503,95 , 158,27 , 12389,21 , 12410,57 , 798,14 , 12389,21 , 12410,57 , 798,14 , 0,2 , 0,2 , {85,83,68},  272,3 , 0,7 , 4,4 , 13,6 , 3239,14 , 3253,19 ,     2,     1,     7,     6,     7 }, // Hawaiian/AnyScript/UnitedStates
-    {    164,     0,   157,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 21598,48 , 21646,153 , 158,27 , 21598,48 , 21646,153 , 158,27 , 12467,28 , 12495,42 , 798,14 , 12467,28 , 12495,42 , 798,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 7086,11 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Tyap/AnyScript/Nigeria
-    {    165,     0,   129,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 21799,48 , 21847,91 , 158,27 , 21799,48 , 21847,91 , 158,27 , 12537,28 , 12565,67 , 798,14 , 12537,28 , 12565,67 , 798,14 , 0,2 , 0,2 , {77,87,75},  0,0 , 7097,22 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Chewa/AnyScript/Malawi
-    {    166,     0,   170,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 380,8 , 380,8 , 558,6 , 1405,18 , 37,5 , 8,10 , 21938,48 , 21986,88 , 22074,24 , 21938,48 , 21986,88 , 22074,24 , 12632,28 , 12660,55 , 12715,14 , 12729,28 , 12660,55 , 12715,14 , 0,2 , 0,2 , {80,72,80},  152,1 , 7119,22 , 8,5 , 4,0 , 3272,8 , 3280,9 ,     2,     1,     7,     6,     7 }, // Filipino/AnyScript/Philippines
-    {    167,     0,   206,    46,  8217,    59,    37,    48,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5940,48 , 22098,86 , 134,24 , 5940,48 , 22098,86 , 134,24 , 12757,28 , 12785,63 , 3311,14 , 12757,28 , 12785,63 , 3311,14 , 96,5 , 351,4 , {67,72,70},  0,0 , 7141,39 , 25,5 , 4,0 , 3289,16 , 3305,7 ,     2,     5,     1,     6,     7 }, // Swiss German/AnyScript/Switzerland
-    {    168,     0,    44,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 22184,38 , 158,27 , 158,27 , 22184,38 , 158,27 , 12848,21 , 12869,28 , 12897,14 , 12848,21 , 12869,28 , 12897,14 , 354,2 , 355,2 , {67,78,89},  229,3 , 0,7 , 8,5 , 4,0 , 3312,3 , 3315,2 ,     2,     1,     7,     6,     7 }, // Sichuan Yi/AnyScript/China
-    {    169,     0,   121,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {76,82,68},  128,1 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Kpelle/AnyScript/Liberia
-    {    169,     0,    91,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {71,78,70},  337,2 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     0,     0,     1,     6,     7 }, // Kpelle/AnyScript/Guinea
-    {    170,     0,    82,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 0,7 , 25,5 , 4,0 , 3317,12 , 3329,11 ,     2,     1,     1,     6,     7 }, // Low German/AnyScript/Germany
-    {    171,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 22222,48 , 22270,100 , 158,27 , 22222,48 , 22270,100 , 158,27 , 12911,27 , 12938,66 , 798,14 , 12911,27 , 12938,66 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3340,10 , 0,0 ,     2,     1,     1,     6,     7 }, // South Ndebele/AnyScript/SouthAfrica
-    {    172,     0,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 22370,48 , 22418,94 , 158,27 , 22370,48 , 22418,94 , 158,27 , 13004,27 , 13031,63 , 798,14 , 13004,27 , 13031,63 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3350,16 , 0,0 ,     2,     1,     1,     6,     7 }, // Northern Sotho/AnyScript/SouthAfrica
-    {    173,     0,   161,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 112,8 , 112,8 , 72,10 , 314,18 , 37,5 , 8,10 , 22512,59 , 22571,145 , 22716,24 , 22512,59 , 22571,145 , 22716,24 , 13094,33 , 13127,75 , 13202,14 , 13094,33 , 13127,75 , 13202,14 , 0,2 , 0,2 , {78,79,75},  339,3 , 7180,21 , 25,5 , 4,0 , 3366,15 , 3381,5 ,     2,     1,     1,     6,     7 }, // Northern Sami/AnyScript/Norway
-    {    173,     0,    73,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 112,8 , 112,8 , 72,10 , 314,18 , 37,5 , 8,10 , 22740,85 , 22571,145 , 22716,24 , 22740,85 , 22571,145 , 22716,24 , 13094,33 , 13216,65 , 13281,14 , 13094,33 , 13216,65 , 13281,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 7201,23 , 25,5 , 4,0 , 3366,15 , 3386,6 ,     2,     1,     1,     6,     7 }, // Northern Sami/AnyScript/Finland
-    {    174,     0,   208,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 22825,48 , 22873,142 , 23015,24 , 22825,48 , 22873,142 , 23015,24 , 13295,28 , 13323,172 , 13495,14 , 13295,28 , 13323,172 , 13495,14 , 0,2 , 0,2 , {84,87,68},  135,3 , 7224,18 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     7,     6,     7 }, // Taroko/AnyScript/Taiwan
-    {    175,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,  8216,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23039,48 , 23087,88 , 23175,24 , 23039,48 , 23087,88 , 23175,24 , 13509,28 , 13537,62 , 13599,14 , 13509,28 , 13537,62 , 13599,14 , 356,5 , 357,10 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3392,8 , 2747,5 ,     2,     1,     6,     6,     7 }, // Gusii/AnyScript/Kenya
-    {    176,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23199,48 , 23247,221 , 23468,24 , 23199,48 , 23247,221 , 23468,24 , 13613,28 , 13641,106 , 13747,14 , 13613,28 , 13641,106 , 13747,14 , 361,10 , 367,10 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3400,7 , 2747,5 ,     2,     1,     6,     6,     7 }, // Taita/AnyScript/Kenya
-    {    177,     0,   187,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8221,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 23492,48 , 23540,77 , 23617,24 , 23492,48 , 23540,77 , 23617,24 , 13761,28 , 13789,59 , 13848,14 , 13761,28 , 13789,59 , 13848,14 , 371,6 , 377,7 , {88,79,70},  154,3 , 7266,26 , 25,5 , 4,0 , 3407,6 , 3413,8 ,     0,     0,     1,     6,     7 }, // Fulah/AnyScript/Senegal
-    {    178,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23641,48 , 23689,185 , 23874,24 , 23641,48 , 23689,185 , 23874,24 , 13862,28 , 13890,63 , 13953,14 , 13862,28 , 13890,63 , 13953,14 , 377,6 , 384,8 , {75,69,83},  2,3 , 7292,23 , 4,4 , 13,6 , 3421,6 , 2747,5 ,     2,     1,     6,     6,     7 }, // Kikuyu/AnyScript/Kenya
-    {    179,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23898,48 , 23946,173 , 24119,24 , 23898,48 , 23946,173 , 24119,24 , 13967,28 , 13995,105 , 14100,14 , 13967,28 , 13995,105 , 14100,14 , 383,7 , 392,5 , {75,69,83},  2,3 , 7315,25 , 4,4 , 13,6 , 3427,8 , 2747,5 ,     2,     1,     6,     6,     7 }, // Samburu/AnyScript/Kenya
-    {    180,     0,   146,    44,    46,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 886,27 , 37,5 , 8,10 , 24143,48 , 24191,88 , 134,24 , 24143,48 , 24191,88 , 134,24 , 14114,28 , 14142,55 , 14197,14 , 14114,28 , 14142,55 , 14197,14 , 0,2 , 0,2 , {77,90,78},  244,3 , 0,7 , 0,4 , 4,0 , 3435,4 , 2079,10 ,     2,     1,     1,     6,     7 }, // Sena/AnyScript/Mozambique
-    {    181,     0,   240,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 24279,48 , 24327,112 , 24439,24 , 24279,48 , 24327,112 , 24439,24 , 14211,28 , 14239,50 , 14289,14 , 14211,28 , 14239,50 , 14289,14 , 0,2 , 0,2 , {85,83,68},  272,3 , 7340,24 , 4,4 , 13,6 , 3340,10 , 944,8 ,     2,     1,     7,     6,     7 }, // North Ndebele/AnyScript/Zimbabwe
-    {    182,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 24463,39 , 24502,194 , 24696,24 , 24463,39 , 24502,194 , 24696,24 , 14303,28 , 14331,65 , 14396,14 , 14303,28 , 14331,65 , 14396,14 , 390,8 , 397,7 , {84,90,83},  306,3 , 7364,25 , 4,4 , 4,0 , 3439,9 , 2739,8 ,     0,     0,     1,     6,     7 }, // Rombo/AnyScript/Tanzania
-    {    183,     0,   145,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 24720,48 , 24768,81 , 24849,24 , 24720,48 , 24768,81 , 24849,24 , 14410,30 , 14440,48 , 798,14 , 14410,30 , 14440,48 , 798,14 , 398,6 , 404,8 , {77,65,68},  0,0 , 7389,21 , 0,4 , 4,0 , 3448,9 , 3457,6 ,     2,     1,     6,     5,     6 }, // Tachelhit/AnyScript/Morocco
-    {    183,     7,   145,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 24720,48 , 24768,81 , 24849,24 , 24720,48 , 24768,81 , 24849,24 , 14410,30 , 14440,48 , 798,14 , 14410,30 , 14440,48 , 798,14 , 398,6 , 404,8 , {77,65,68},  0,0 , 7389,21 , 0,4 , 4,0 , 3448,9 , 3457,6 ,     2,     1,     6,     5,     6 }, // Tachelhit/Latin/Morocco
-    {    183,     9,   145,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 24873,48 , 24921,81 , 25002,24 , 24873,48 , 24921,81 , 25002,24 , 14488,30 , 14518,47 , 798,14 , 14488,30 , 14518,47 , 798,14 , 404,6 , 412,8 , {77,65,68},  0,0 , 7410,21 , 0,4 , 4,0 , 3463,8 , 3471,6 ,     2,     1,     6,     5,     6 }, // Tachelhit/Tifinagh/Morocco
-    {    184,     0,     3,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 25026,48 , 25074,84 , 25158,24 , 25026,48 , 25074,84 , 25158,24 , 14565,30 , 14595,51 , 14646,14 , 14565,30 , 14595,51 , 14646,14 , 410,7 , 420,9 , {68,90,68},  342,2 , 7431,21 , 0,4 , 4,0 , 3477,9 , 3486,8 ,     2,     1,     6,     4,     5 }, // Kabyle/AnyScript/Algeria
-    {    185,     0,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25182,48 , 25230,152 , 134,24 , 25182,48 , 25230,152 , 134,24 , 14660,28 , 14688,74 , 14762,14 , 14660,28 , 14688,74 , 14762,14 , 0,2 , 0,2 , {85,71,88},  344,3 , 7452,26 , 4,4 , 74,5 , 3494,10 , 3504,6 ,     0,     0,     1,     6,     7 }, // Nyankole/AnyScript/Uganda
-    {    186,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25382,48 , 25430,254 , 25684,24 , 25382,48 , 25430,254 , 25684,24 , 14776,28 , 14804,82 , 14886,14 , 14776,28 , 14804,82 , 14886,14 , 417,7 , 429,7 , {84,90,83},  306,3 , 7478,29 , 0,4 , 4,0 , 3510,6 , 3516,10 ,     0,     0,     1,     6,     7 }, // Bena/AnyScript/Tanzania
-    {    187,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 25708,87 , 134,24 , 15403,48 , 25708,87 , 134,24 , 14900,28 , 14928,62 , 14990,14 , 14900,28 , 14928,62 , 14990,14 , 424,5 , 436,9 , {84,90,83},  306,3 , 7507,27 , 4,4 , 4,0 , 3526,8 , 2739,8 ,     0,     0,     1,     6,     7 }, // Vunjo/AnyScript/Tanzania
-    {    188,     0,   132,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 25795,47 , 25842,92 , 25934,24 , 25795,47 , 25842,92 , 25934,24 , 15004,28 , 15032,44 , 15076,14 , 15004,28 , 15032,44 , 15076,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 7534,24 , 4,4 , 13,6 , 3534,9 , 1249,4 ,     0,     0,     1,     6,     7 }, // Bambara/AnyScript/Mali
-    {    189,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25958,48 , 26006,207 , 26213,24 , 25958,48 , 26006,207 , 26213,24 , 15090,28 , 15118,64 , 15182,14 , 15090,28 , 15118,64 , 15182,14 , 429,2 , 445,2 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3543,6 , 2747,5 ,     2,     1,     6,     6,     7 }, // Embu/AnyScript/Kenya
-    {    190,     0,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 18,7 , 25,12 , 26237,36 , 26273,58 , 26331,24 , 26237,36 , 26273,58 , 26331,24 , 15196,28 , 15224,49 , 15273,14 , 15196,28 , 15224,49 , 15273,14 , 431,3 , 447,6 , {85,83,68},  128,1 , 7558,19 , 4,4 , 13,6 , 3549,3 , 3552,4 ,     2,     1,     7,     6,     7 }, // Cherokee/AnyScript/UnitedStates
-    {    191,     0,   137,    46,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 26355,47 , 26402,68 , 26470,24 , 26355,47 , 26402,68 , 26470,24 , 15287,27 , 15314,48 , 15362,14 , 15287,27 , 15314,48 , 15362,14 , 0,2 , 0,2 , {77,85,82},  147,4 , 7577,21 , 8,5 , 4,0 , 3556,14 , 3570,5 ,     0,     0,     1,     6,     7 }, // Morisyen/AnyScript/Mauritius
-    {    192,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 26494,264 , 134,24 , 15403,48 , 26494,264 , 134,24 , 15376,28 , 15404,133 , 14396,14 , 15376,28 , 15404,133 , 14396,14 , 434,4 , 453,5 , {84,90,83},  306,3 , 7507,27 , 4,4 , 13,6 , 3575,10 , 2739,8 ,     0,     0,     1,     6,     7 }, // Makonde/AnyScript/Tanzania
-    {    193,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,  8221,  8221,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 26758,83 , 26841,111 , 26952,24 , 26758,83 , 26841,111 , 26952,24 , 15537,36 , 15573,63 , 15636,14 , 15537,36 , 15573,63 , 15636,14 , 438,3 , 458,3 , {84,90,83},  306,3 , 7598,29 , 8,5 , 4,0 , 3585,8 , 3593,9 ,     0,     0,     1,     6,     7 }, // Langi/AnyScript/Tanzania
-    {    194,     0,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 26976,48 , 27024,97 , 134,24 , 26976,48 , 27024,97 , 134,24 , 15650,28 , 15678,66 , 15744,14 , 15650,28 , 15678,66 , 15744,14 , 0,2 , 0,2 , {85,71,88},  344,3 , 7627,26 , 0,4 , 4,0 , 3602,7 , 3609,7 ,     0,     0,     1,     6,     7 }, // Ganda/AnyScript/Uganda
-    {    195,     0,   239,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 27121,48 , 27169,83 , 27252,24 , 27121,48 , 27169,83 , 27252,24 , 15758,80 , 15758,80 , 798,14 , 15758,80 , 15758,80 , 798,14 , 441,8 , 461,7 , {90,77,75},  347,2 , 0,7 , 4,4 , 13,6 , 3616,9 , 3625,6 ,     0,     0,     1,     6,     7 }, // Bemba/AnyScript/Zambia
-    {    196,     0,    39,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 886,27 , 37,5 , 8,10 , 27276,48 , 27324,86 , 134,24 , 27276,48 , 27324,86 , 134,24 , 15838,28 , 15866,73 , 15939,14 , 15838,28 , 15866,73 , 15939,14 , 149,2 , 148,2 , {67,86,69},  349,3 , 7653,25 , 0,4 , 4,0 , 3631,12 , 3643,10 ,     2,     1,     1,     6,     7 }, // Kabuverdianu/AnyScript/CapeVerde
-    {    197,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 27410,48 , 27458,86 , 27544,24 , 27410,48 , 27458,86 , 27544,24 , 15953,28 , 15981,51 , 16032,14 , 15953,28 , 15981,51 , 16032,14 , 449,2 , 468,2 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3653,6 , 2747,5 ,     2,     1,     6,     6,     7 }, // Meru/AnyScript/Kenya
-    {    198,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 27568,48 , 27616,111 , 27727,24 , 27568,48 , 27616,111 , 27727,24 , 16046,28 , 16074,93 , 16167,14 , 16046,28 , 16074,93 , 16167,14 , 451,4 , 470,4 , {75,69,83},  2,3 , 7678,26 , 4,4 , 13,6 , 3659,8 , 3667,12 ,     2,     1,     6,     6,     7 }, // Kalenjin/AnyScript/Kenya
-    {    199,     0,   148,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 0,48 , 27751,136 , 134,24 , 0,48 , 27751,136 , 134,24 , 16181,23 , 16204,92 , 16296,14 , 16181,23 , 16204,92 , 16296,14 , 455,7 , 474,5 , {78,65,68},  12,2 , 7704,22 , 4,4 , 4,0 , 3679,13 , 3692,8 ,     2,     1,     1,     6,     7 }, // Nama/AnyScript/Namibia
-    {    200,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 25708,87 , 134,24 , 15403,48 , 25708,87 , 134,24 , 14900,28 , 14928,62 , 14990,14 , 14900,28 , 14928,62 , 14990,14 , 424,5 , 436,9 , {84,90,83},  306,3 , 7507,27 , 4,4 , 4,0 , 3700,9 , 2739,8 ,     0,     0,     1,     6,     7 }, // Machame/AnyScript/Tanzania
-    {    201,     0,    82,    44,   160,    59,    37,    48,  8722,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 228,8 , 228,8 , 1423,10 , 1433,23 , 37,5 , 8,10 , 27887,59 , 27946,87 , 134,24 , 27887,59 , 27946,87 , 134,24 , 16310,28 , 16338,72 , 3311,14 , 16310,28 , 16338,72 , 3311,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 3813,11 , 25,5 , 4,0 , 0,0 , 3709,11 ,     2,     1,     1,     6,     7 }, // Colognian/AnyScript/Germany
-    {    202,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8221,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28033,51 , 28084,132 , 158,27 , 28033,51 , 28084,132 , 158,27 , 14900,28 , 16410,58 , 14396,14 , 14900,28 , 16410,58 , 14396,14 , 462,9 , 479,6 , {75,69,83},  2,3 , 7726,25 , 4,4 , 13,6 , 3720,3 , 2747,5 ,     2,     1,     6,     6,     7 }, // Masai/AnyScript/Kenya
-    {    202,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8221,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28033,51 , 28084,132 , 158,27 , 28033,51 , 28084,132 , 158,27 , 14900,28 , 16410,58 , 14396,14 , 14900,28 , 16410,58 , 14396,14 , 462,9 , 479,6 , {84,90,83},  306,3 , 7751,28 , 4,4 , 13,6 , 3720,3 , 3723,8 ,     0,     0,     1,     6,     7 }, // Masai/AnyScript/Tanzania
-    {    203,     0,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 26976,48 , 27024,97 , 134,24 , 26976,48 , 27024,97 , 134,24 , 16468,35 , 16503,65 , 16568,14 , 16468,35 , 16503,65 , 16568,14 , 471,6 , 485,6 , {85,71,88},  344,3 , 7627,26 , 25,5 , 4,0 , 3731,7 , 3609,7 ,     0,     0,     1,     6,     7 }, // Soga/AnyScript/Uganda
-    {    204,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8222,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28216,48 , 15451,84 , 134,24 , 28216,48 , 15451,84 , 134,24 , 16582,21 , 16603,75 , 85,14 , 16582,21 , 16603,75 , 85,14 , 61,4 , 59,4 , {75,69,83},  2,3 , 7779,23 , 4,4 , 79,6 , 3738,7 , 2747,5 ,     2,     1,     6,     6,     7 }, // Luyia/AnyScript/Kenya
-    {    205,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28264,48 , 15451,84 , 134,24 , 28264,48 , 15451,84 , 134,24 , 16678,28 , 8870,60 , 14990,14 , 16678,28 , 8870,60 , 14990,14 , 477,9 , 491,8 , {84,90,83},  306,3 , 7802,28 , 25,5 , 4,0 , 3745,6 , 3751,8 ,     0,     0,     1,     6,     7 }, // Asu/AnyScript/Tanzania
-    {    206,     0,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28312,48 , 28360,94 , 28454,24 , 28312,48 , 28360,94 , 28454,24 , 16706,28 , 16734,69 , 16803,14 , 16706,28 , 16734,69 , 16803,14 , 486,9 , 499,6 , {85,71,88},  344,3 , 7830,28 , 4,4 , 13,6 , 3759,6 , 3504,6 ,     0,     0,     1,     6,     7 }, // Teso/AnyScript/Uganda
-    {    206,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28312,48 , 28360,94 , 28454,24 , 28312,48 , 28360,94 , 28454,24 , 16706,28 , 16734,69 , 16803,14 , 16706,28 , 16734,69 , 16803,14 , 486,9 , 499,6 , {75,69,83},  2,3 , 7858,27 , 4,4 , 13,6 , 3759,6 , 3765,5 ,     2,     1,     6,     6,     7 }, // Teso/AnyScript/Kenya
-    {    207,     0,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 392,118 , 510,24 , 344,48 , 392,118 , 510,24 , 16817,28 , 16845,56 , 16901,14 , 16817,28 , 16845,56 , 16901,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 0,0 , 43,7 ,     2,     1,     6,     6,     7 }, // Saho/AnyScript/Eritrea
-    {    208,     0,   132,    46,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 28478,46 , 28524,88 , 28612,24 , 28478,46 , 28524,88 , 28612,24 , 16915,28 , 16943,53 , 16996,14 , 16915,28 , 16943,53 , 16996,14 , 495,6 , 505,6 , {88,79,70},  154,3 , 7885,23 , 0,4 , 4,0 , 3770,11 , 3781,5 ,     0,     0,     1,     6,     7 }, // Koyra Chiini/AnyScript/Mali
-    {    209,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 25708,87 , 134,24 , 15403,48 , 25708,87 , 134,24 , 14900,28 , 14928,62 , 14990,14 , 14900,28 , 14928,62 , 14990,14 , 424,5 , 436,9 , {84,90,83},  306,3 , 7507,27 , 0,4 , 4,0 , 3786,6 , 2739,8 ,     0,     0,     1,     6,     7 }, // Rwa/AnyScript/Tanzania
-    {    210,     0,   111,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28636,48 , 28684,186 , 28870,24 , 28636,48 , 28684,186 , 28870,24 , 17010,28 , 17038,69 , 17107,14 , 17010,28 , 17038,69 , 17107,14 , 501,2 , 511,2 , {75,69,83},  2,3 , 7908,23 , 0,4 , 4,0 , 3792,6 , 2747,5 ,     2,     1,     6,     6,     7 }, // Luo/AnyScript/Kenya
-    {    211,     0,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25182,48 , 25230,152 , 134,24 , 25182,48 , 25230,152 , 134,24 , 14660,28 , 14688,74 , 14762,14 , 14660,28 , 14688,74 , 14762,14 , 0,2 , 0,2 , {85,71,88},  344,3 , 7452,26 , 4,4 , 74,5 , 3798,6 , 3504,6 ,     0,     0,     1,     6,     7 }, // Chiga/AnyScript/Uganda
-    {    212,     0,   145,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28894,48 , 28942,86 , 29028,24 , 28894,48 , 28942,86 , 29028,24 , 17121,28 , 17149,48 , 17197,14 , 17121,28 , 17149,48 , 17197,14 , 503,9 , 513,10 , {77,65,68},  0,0 , 7931,22 , 25,5 , 4,0 , 3804,8 , 3812,6 ,     2,     1,     6,     5,     6 }, // Central Morocco Tamazight/AnyScript/Morocco
-    {    212,     7,   145,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28894,48 , 28942,86 , 29028,24 , 28894,48 , 28942,86 , 29028,24 , 17121,28 , 17149,48 , 17197,14 , 17121,28 , 17149,48 , 17197,14 , 503,9 , 513,10 , {77,65,68},  0,0 , 7931,22 , 25,5 , 4,0 , 3804,8 , 3812,6 ,     2,     1,     6,     5,     6 }, // Central Morocco Tamazight/Latin/Morocco
-    {    213,     0,   132,    46,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 28478,46 , 28524,88 , 28612,24 , 28478,46 , 28524,88 , 28612,24 , 17211,28 , 17239,54 , 16996,14 , 17211,28 , 17239,54 , 16996,14 , 495,6 , 505,6 , {88,79,70},  154,3 , 7885,23 , 0,4 , 4,0 , 3818,15 , 3781,5 ,     0,     0,     1,     6,     7 }, // Koyraboro Senni/AnyScript/Mali
-    {    214,     0,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 29052,84 , 134,24 , 15403,48 , 29052,84 , 134,24 , 17293,28 , 17321,63 , 8930,14 , 17293,28 , 17321,63 , 8930,14 , 512,5 , 523,8 , {84,90,83},  306,3 , 6535,27 , 0,4 , 4,0 , 3833,9 , 2739,8 ,     0,     0,     1,     6,     7 }, // Shambala/AnyScript/Tanzania
-    {    215,     0,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 18,7 , 25,12 , 29136,88 , 29136,88 , 29224,31 , 29136,88 , 29136,88 , 29224,31 , 17384,33 , 17417,54 , 17471,19 , 17384,33 , 17417,54 , 17471,19 , 517,3 , 531,6 , {73,78,82},  145,2 , 7953,10 , 8,5 , 4,0 , 0,0 , 1586,4 ,     2,     1,     7,     7,     7 }, // Bodo/AnyScript/India
+    {    136,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 18162,48 , 18210,91 , 158,27 , 18162,48 , 18210,91 , 158,27 , 10532,28 , 10560,61 , 798,14 , 10532,28 , 10560,61 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 2991,8 , 0,0 ,     2,     1,     1,     6,     7 }, // Xhosa/Latin/SouthAfrica
+    {    138,     7,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 18301,73 , 18374,121 , 158,27 , 18301,73 , 18374,121 , 158,27 , 10621,44 , 10665,69 , 798,14 , 10621,44 , 10665,69 , 798,14 , 320,5 , 317,5 , {78,71,78},  182,1 , 6939,34 , 4,4 , 13,6 , 2999,10 , 3009,18 ,     2,     1,     1,     6,     7 }, // Yoruba/Latin/Nigeria
+    {    140,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 82,17 , 18,7 , 25,12 , 18495,48 , 18543,104 , 134,24 , 18495,48 , 18647,90 , 134,24 , 10734,28 , 10762,68 , 10830,14 , 10734,28 , 10762,68 , 10830,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3027,7 , 3034,17 ,     2,     1,     1,     6,     7 }, // Zulu/Latin/SouthAfrica
+    {    141,     7,   161,    44,   160,    59,    37,    48,  8722,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 85,8 , 85,8 , 332,8 , 594,17 , 37,5 , 413,16 , 4869,48 , 11131,83 , 134,24 , 4869,48 , 11131,83 , 134,24 , 10844,28 , 10872,51 , 2295,14 , 10844,28 , 10872,51 , 2295,14 , 325,9 , 322,11 , {78,79,75},  142,2 , 6973,42 , 25,5 , 4,0 , 3051,7 , 3058,5 ,     2,     1,     1,     6,     7 }, // NorwegianNynorsk/Latin/Norway
+    {    142,     7,    27,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 1268,9 , 942,20 , 37,5 , 8,10 , 13635,48 , 18737,83 , 13764,24 , 13635,48 , 18737,83 , 13764,24 , 2032,28 , 2060,58 , 798,14 , 2032,28 , 2060,58 , 798,14 , 0,2 , 0,2 , {66,65,77},  266,2 , 5117,218 , 8,5 , 4,0 , 3063,8 , 2302,19 ,     2,     1,     1,     6,     7 }, // Bosnian/Latin/BosniaAndHerzegowina
+    {    143,    29,   131,    46,    44,    44,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 655,6 , 99,16 , 322,8 , 330,13 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {77,86,82},  335,2 , 0,7 , 8,5 , 4,0 , 3071,10 , 3081,13 ,     2,     1,     5,     6,     7 }, // Divehi/Thaana/Maldives
+    {    144,     7,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 82,17 , 37,5 , 8,10 , 18820,102 , 18922,140 , 158,27 , 18820,102 , 18922,140 , 158,27 , 10923,30 , 10953,57 , 798,14 , 10923,30 , 10953,57 , 798,14 , 61,4 , 59,4 , {71,66,80},  153,1 , 0,7 , 4,4 , 4,0 , 3094,5 , 3099,14 ,     2,     1,     1,     6,     7 }, // Manx/Latin/UnitedKingdom
+    {    145,     7,   224,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 99,16 , 37,5 , 8,10 , 19062,46 , 19108,124 , 158,27 , 19062,46 , 19108,124 , 158,27 , 11010,28 , 11038,60 , 798,14 , 11010,28 , 11038,60 , 798,14 , 61,4 , 59,4 , {71,66,80},  153,1 , 0,7 , 4,4 , 4,0 , 3113,8 , 3099,14 ,     2,     1,     1,     6,     7 }, // Cornish/Latin/UnitedKingdom
+    {    146,     7,    83,    46,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 19232,48 , 19280,192 , 158,27 , 19232,48 , 19280,192 , 158,27 , 11098,28 , 11126,49 , 11175,14 , 11098,28 , 11126,49 , 11175,14 , 334,2 , 333,2 , {71,72,83},  183,3 , 0,7 , 4,4 , 4,0 , 3121,4 , 3125,5 ,     2,     1,     1,     6,     7 }, // Akan/Latin/Ghana
+    {    147,    13,   100,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 655,6 , 99,16 , 18,7 , 25,12 , 19472,87 , 19472,87 , 158,27 , 19472,87 , 19472,87 , 158,27 , 6251,32 , 11189,55 , 798,14 , 6251,32 , 11189,55 , 798,14 , 336,5 , 335,5 , {73,78,82},  194,2 , 0,7 , 8,5 , 4,0 , 3130,6 , 1584,4 ,     2,     1,     7,     7,     7 }, // Konkani/Devanagari/India
+    {    148,     7,    83,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 19559,48 , 19607,94 , 158,27 , 19559,48 , 19607,94 , 158,27 , 11244,26 , 11270,34 , 798,14 , 11244,26 , 11270,34 , 798,14 , 0,2 , 0,2 , {71,72,83},  183,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Ga/Latin/Ghana
+    {    149,     7,   157,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 19701,48 , 19749,86 , 158,27 , 19701,48 , 19749,86 , 158,27 , 11304,29 , 11333,57 , 798,14 , 11304,29 , 11333,57 , 798,14 , 341,4 , 340,4 , {78,71,78},  182,1 , 7015,12 , 4,4 , 13,6 , 3136,4 , 3140,7 ,     2,     1,     1,     6,     7 }, // Igbo/Latin/Nigeria
+    {    150,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 19835,48 , 19883,189 , 20072,24 , 19835,48 , 19883,189 , 20072,24 , 11390,28 , 11418,74 , 11492,14 , 11390,28 , 11418,74 , 11492,14 , 345,9 , 344,7 , {75,69,83},  2,3 , 7027,23 , 4,4 , 13,6 , 3147,7 , 2745,5 ,     2,     1,     6,     6,     7 }, // Kamba/Latin/Kenya
+    {    151,    33,   207,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 1277,13 , 18,7 , 25,12 , 20096,65 , 20096,65 , 158,27 , 20096,65 , 20096,65 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {83,89,80},  79,5 , 0,7 , 8,5 , 19,6 , 3154,6 , 3154,6 ,     0,     0,     6,     5,     6 }, // Syriac/Syriac/Syria
+    {    152,    14,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1290,22 , 18,7 , 25,12 , 20161,47 , 20208,77 , 20285,24 , 20161,47 , 20208,77 , 20285,24 , 11506,26 , 11532,43 , 11575,14 , 11506,26 , 11532,43 , 11575,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 3160,3 , 2837,4 ,     2,     1,     6,     6,     7 }, // Blin/Ethiopic/Eritrea
+    {    153,    14,    69,    46,  4808,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1312,23 , 18,7 , 25,12 , 20309,49 , 20309,49 , 20358,24 , 20309,49 , 20309,49 , 20358,24 , 11589,29 , 11589,29 , 11618,14 , 11589,29 , 11589,29 , 11618,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 81,16 , 4,4 , 4,0 , 3163,4 , 96,5 ,     2,     1,     6,     6,     7 }, // Geez/Ethiopic/Ethiopia
+    {    153,    14,    67,    46,  4808,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1312,23 , 18,7 , 25,12 , 20309,49 , 20309,49 , 20358,24 , 20309,49 , 20309,49 , 20358,24 , 11589,29 , 11589,29 , 11618,14 , 11589,29 , 11589,29 , 11618,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 3163,4 , 2837,4 ,     2,     1,     6,     6,     7 }, // Geez/Ethiopic/Eritrea
+    {    154,     7,    53,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 20382,48 , 20430,124 , 158,27 , 20382,48 , 20430,124 , 158,27 , 11632,28 , 11660,54 , 798,14 , 11632,28 , 11660,54 , 798,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     0,     0,     1,     6,     7 }, // Koro/Latin/IvoryCoast
+    {    155,     7,    69,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 11714,28 , 11742,51 , 11793,14 , 11714,28 , 11742,51 , 11793,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 0,7 , 4,4 , 4,0 , 3167,11 , 3178,11 ,     2,     1,     6,     6,     7 }, // Sidamo/Latin/Ethiopia
+    {    156,     7,   157,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 20554,59 , 20613,129 , 158,27 , 20554,59 , 20613,129 , 158,27 , 11807,35 , 11842,87 , 798,14 , 11807,35 , 11842,87 , 798,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 7050,11 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Atsam/Latin/Nigeria
+    {    157,    14,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1335,21 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 11929,27 , 11956,41 , 11997,14 , 11929,27 , 11956,41 , 11997,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 3189,3 , 2837,4 ,     2,     1,     6,     6,     7 }, // Tigre/Ethiopic/Eritrea
+    {    158,     7,   157,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 20742,57 , 20799,178 , 158,27 , 20742,57 , 20799,178 , 158,27 , 12011,28 , 12039,44 , 798,14 , 12011,28 , 12039,44 , 798,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 7061,14 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Jju/Latin/Nigeria
+    {    159,     7,   106,    44,    46,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1356,27 , 37,5 , 8,10 , 20977,48 , 21025,77 , 21102,24 , 20977,48 , 21025,77 , 21102,24 , 12083,28 , 12111,50 , 3021,14 , 12083,28 , 12111,50 , 3021,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 3813,11 , 8,5 , 4,0 , 3192,6 , 3198,6 ,     2,     1,     1,     6,     7 }, // Friulian/Latin/Italy
+    {    160,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 21126,48 , 21174,111 , 158,27 , 21126,48 , 21174,111 , 158,27 , 12161,27 , 12188,70 , 798,14 , 12161,27 , 12188,70 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3204,9 , 0,0 ,     2,     1,     1,     6,     7 }, // Venda/Latin/SouthAfrica
+    {    161,     7,    83,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 21285,48 , 21333,87 , 21420,24 , 21285,48 , 21333,87 , 21420,24 , 12258,32 , 12290,44 , 12334,14 , 12258,32 , 12290,44 , 12334,14 , 334,2 , 333,2 , {71,72,83},  183,3 , 0,7 , 4,4 , 13,6 , 3213,6 , 3219,7 ,     2,     1,     1,     6,     7 }, // Ewe/Latin/Ghana
+    {    161,     7,   212,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 21285,48 , 21333,87 , 21420,24 , 21285,48 , 21333,87 , 21420,24 , 12258,32 , 12290,44 , 12334,14 , 12258,32 , 12290,44 , 12334,14 , 334,2 , 333,2 , {88,79,70},  154,3 , 7075,11 , 4,4 , 13,6 , 3213,6 , 3226,6 ,     0,     0,     1,     6,     7 }, // Ewe/Latin/Togo
+    {    162,    14,    69,    46,  8217,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 1383,22 , 18,7 , 25,12 , 953,46 , 999,62 , 1061,24 , 953,46 , 999,62 , 1061,24 , 12348,27 , 12348,27 , 12375,14 , 12348,27 , 12348,27 , 12375,14 , 0,2 , 0,2 , {69,84,66},  0,2 , 81,16 , 4,4 , 4,0 , 3232,5 , 96,5 ,     2,     1,     6,     6,     7 }, // Walamo/Ethiopic/Ethiopia
+    {    163,     7,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 279,6 , 10,17 , 18,7 , 25,12 , 21444,59 , 21503,95 , 158,27 , 21444,59 , 21503,95 , 158,27 , 12389,21 , 12410,57 , 798,14 , 12389,21 , 12410,57 , 798,14 , 0,2 , 0,2 , {85,83,68},  272,3 , 0,7 , 4,4 , 13,6 , 3237,14 , 3251,19 ,     2,     1,     7,     6,     7 }, // Hawaiian/Latin/UnitedStates
+    {    164,     7,   157,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 221,8 , 314,18 , 37,5 , 8,10 , 21598,48 , 21646,153 , 158,27 , 21598,48 , 21646,153 , 158,27 , 12467,28 , 12495,42 , 798,14 , 12467,28 , 12495,42 , 798,14 , 0,2 , 0,2 , {78,71,78},  182,1 , 7086,11 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Tyap/Latin/Nigeria
+    {    165,     7,   129,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 21799,48 , 21847,91 , 158,27 , 21799,48 , 21847,91 , 158,27 , 12537,28 , 12565,67 , 798,14 , 12537,28 , 12565,67 , 798,14 , 0,2 , 0,2 , {77,87,75},  0,0 , 7097,22 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Chewa/Latin/Malawi
+    {    166,     7,   170,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 380,8 , 380,8 , 558,6 , 1405,18 , 37,5 , 8,10 , 21938,48 , 21986,88 , 22074,24 , 21938,48 , 21986,88 , 22074,24 , 12632,28 , 12660,55 , 12715,14 , 12729,28 , 12660,55 , 12715,14 , 0,2 , 0,2 , {80,72,80},  152,1 , 7119,22 , 8,5 , 4,0 , 3270,8 , 3278,9 ,     2,     1,     7,     6,     7 }, // Filipino/Latin/Philippines
+    {    167,     7,   206,    46,  8217,    59,    37,    48,  8722,    43,   101,   171,   187,  8249,  8250, 0,6 , 0,6 , 128,9 , 128,9 , 332,8 , 502,18 , 37,5 , 8,10 , 5940,48 , 22098,86 , 134,24 , 5940,48 , 22098,86 , 134,24 , 12757,28 , 12785,63 , 3311,14 , 12757,28 , 12785,63 , 3311,14 , 96,5 , 351,4 , {67,72,70},  0,0 , 7141,39 , 25,5 , 4,0 , 3287,16 , 3303,7 ,     2,     5,     1,     6,     7 }, // Swiss German/Latin/Switzerland
+    {    168,    34,    44,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 22184,38 , 158,27 , 158,27 , 22184,38 , 158,27 , 12848,21 , 12869,28 , 12897,14 , 12848,21 , 12869,28 , 12897,14 , 354,2 , 355,2 , {67,78,89},  229,3 , 0,7 , 8,5 , 4,0 , 3310,3 , 3313,2 ,     2,     1,     7,     6,     7 }, // Sichuan Yi/Yi/China
+    {    169,     7,   121,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {76,82,68},  128,1 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     1,     6,     7 }, // Kpelle/Latin/Liberia
+    {    169,     7,    91,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {71,78,70},  337,2 , 0,7 , 8,5 , 4,0 , 0,0 , 0,0 ,     0,     0,     1,     6,     7 }, // Kpelle/Latin/Guinea
+    {    170,     7,    82,    44,    46,    59,    37,    48,    45,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 158,27 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 798,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 0,7 , 25,5 , 4,0 , 3315,12 , 3327,11 ,     2,     1,     1,     6,     7 }, // Low German/Latin/Germany
+    {    171,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 22222,48 , 22270,100 , 158,27 , 22222,48 , 22270,100 , 158,27 , 12911,27 , 12938,66 , 798,14 , 12911,27 , 12938,66 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3338,10 , 0,0 ,     2,     1,     1,     6,     7 }, // South Ndebele/Latin/SouthAfrica
+    {    172,     7,   195,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 22370,48 , 22418,94 , 158,27 , 22370,48 , 22418,94 , 158,27 , 13004,27 , 13031,63 , 798,14 , 13004,27 , 13031,63 , 798,14 , 0,2 , 0,2 , {90,65,82},  11,1 , 0,7 , 4,4 , 4,0 , 3348,16 , 0,0 ,     2,     1,     1,     6,     7 }, // Northern Sotho/Latin/SouthAfrica
+    {    173,     7,   161,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 112,8 , 112,8 , 72,10 , 314,18 , 37,5 , 8,10 , 22512,59 , 22571,145 , 22716,24 , 22512,59 , 22571,145 , 22716,24 , 13094,33 , 13127,75 , 13202,14 , 13094,33 , 13127,75 , 13202,14 , 0,2 , 0,2 , {78,79,75},  339,3 , 7180,21 , 25,5 , 4,0 , 3364,15 , 3379,5 ,     2,     1,     1,     6,     7 }, // Northern Sami/Latin/Norway
+    {    173,     7,    73,    44,   160,    59,    37,    48,  8722,    43,   101,  8221,  8221,  8217,  8217, 0,6 , 0,6 , 112,8 , 112,8 , 72,10 , 314,18 , 37,5 , 8,10 , 22740,85 , 22571,145 , 22716,24 , 22740,85 , 22571,145 , 22716,24 , 13094,33 , 13216,65 , 13281,14 , 13094,33 , 13216,65 , 13281,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 7201,23 , 25,5 , 4,0 , 3364,15 , 3384,6 ,     2,     1,     1,     6,     7 }, // Northern Sami/Latin/Finland
+    {    174,     7,   208,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 72,10 , 314,18 , 37,5 , 8,10 , 22825,48 , 22873,142 , 23015,24 , 22825,48 , 22873,142 , 23015,24 , 13295,28 , 13323,172 , 13495,14 , 13295,28 , 13323,172 , 13495,14 , 0,2 , 0,2 , {84,87,68},  135,3 , 7224,18 , 8,5 , 4,0 , 0,0 , 0,0 ,     2,     1,     7,     6,     7 }, // Taroko/Latin/Taiwan
+    {    175,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,  8216,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23039,48 , 23087,88 , 23175,24 , 23039,48 , 23087,88 , 23175,24 , 13509,28 , 13537,62 , 13599,14 , 13509,28 , 13537,62 , 13599,14 , 356,5 , 357,10 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3390,8 , 2745,5 ,     2,     1,     6,     6,     7 }, // Gusii/Latin/Kenya
+    {    176,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23199,48 , 23247,221 , 23468,24 , 23199,48 , 23247,221 , 23468,24 , 13613,28 , 13641,106 , 13747,14 , 13613,28 , 13641,106 , 13747,14 , 361,10 , 367,10 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3398,7 , 2745,5 ,     2,     1,     6,     6,     7 }, // Taita/Latin/Kenya
+    {    177,     7,   187,    44,   160,    59,    37,    48,    45,    43,   101,  8222,  8221,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 23492,48 , 23540,77 , 23617,24 , 23492,48 , 23540,77 , 23617,24 , 13761,28 , 13789,59 , 13848,14 , 13761,28 , 13789,59 , 13848,14 , 371,6 , 377,7 , {88,79,70},  154,3 , 7266,26 , 25,5 , 4,0 , 3405,6 , 3411,8 ,     0,     0,     1,     6,     7 }, // Fulah/Latin/Senegal
+    {    178,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23641,48 , 23689,185 , 23874,24 , 23641,48 , 23689,185 , 23874,24 , 13862,28 , 13890,63 , 13953,14 , 13862,28 , 13890,63 , 13953,14 , 377,6 , 384,8 , {75,69,83},  2,3 , 7292,23 , 4,4 , 13,6 , 3419,6 , 2745,5 ,     2,     1,     6,     6,     7 }, // Kikuyu/Latin/Kenya
+    {    179,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 23898,48 , 23946,173 , 24119,24 , 23898,48 , 23946,173 , 24119,24 , 13967,28 , 13995,105 , 14100,14 , 13967,28 , 13995,105 , 14100,14 , 383,7 , 392,5 , {75,69,83},  2,3 , 7315,25 , 4,4 , 13,6 , 3425,8 , 2745,5 ,     2,     1,     6,     6,     7 }, // Samburu/Latin/Kenya
+    {    180,     7,   146,    44,    46,    59,    37,    48,    45,    43,   101,    39,    39,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 886,27 , 37,5 , 8,10 , 24143,48 , 24191,88 , 134,24 , 24143,48 , 24191,88 , 134,24 , 14114,28 , 14142,55 , 14197,14 , 14114,28 , 14142,55 , 14197,14 , 0,2 , 0,2 , {77,90,78},  244,3 , 0,7 , 0,4 , 4,0 , 3433,4 , 2077,10 ,     2,     1,     1,     6,     7 }, // Sena/Latin/Mozambique
+    {    181,     7,   240,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 24279,48 , 24327,112 , 24439,24 , 24279,48 , 24327,112 , 24439,24 , 14211,28 , 14239,50 , 14289,14 , 14211,28 , 14239,50 , 14289,14 , 0,2 , 0,2 , {85,83,68},  272,3 , 7340,24 , 4,4 , 13,6 , 3338,10 , 967,8 ,     2,     1,     7,     6,     7 }, // North Ndebele/Latin/Zimbabwe
+    {    182,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 24463,39 , 24502,194 , 24696,24 , 24463,39 , 24502,194 , 24696,24 , 14303,28 , 14331,65 , 14396,14 , 14303,28 , 14331,65 , 14396,14 , 390,8 , 397,7 , {84,90,83},  306,3 , 7364,25 , 4,4 , 4,0 , 3437,9 , 2737,8 ,     0,     0,     1,     6,     7 }, // Rombo/Latin/Tanzania
+    {    183,     7,   145,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 24720,48 , 24768,81 , 24849,24 , 24720,48 , 24768,81 , 24849,24 , 14410,30 , 14440,48 , 798,14 , 14410,30 , 14440,48 , 798,14 , 398,6 , 404,8 , {77,65,68},  0,0 , 7389,21 , 0,4 , 4,0 , 3446,9 , 3455,6 ,     2,     1,     6,     5,     6 }, // Tachelhit/Latin/Morocco
+    {    183,     9,   145,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8222,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 24873,48 , 24921,81 , 25002,24 , 24873,48 , 24921,81 , 25002,24 , 14488,30 , 14518,47 , 798,14 , 14488,30 , 14518,47 , 798,14 , 404,6 , 412,8 , {77,65,68},  0,0 , 7410,21 , 0,4 , 4,0 , 3461,8 , 3469,6 ,     2,     1,     6,     5,     6 }, // Tachelhit/Tifinagh/Morocco
+    {    184,     7,     3,    44,   160,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 25026,48 , 25074,84 , 25158,24 , 25026,48 , 25074,84 , 25158,24 , 14565,30 , 14595,51 , 14646,14 , 14565,30 , 14595,51 , 14646,14 , 410,7 , 420,9 , {68,90,68},  342,2 , 7431,21 , 0,4 , 4,0 , 3475,9 , 3484,8 ,     2,     1,     6,     4,     5 }, // Kabyle/Latin/Algeria
+    {    185,     7,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25182,48 , 25230,152 , 134,24 , 25182,48 , 25230,152 , 134,24 , 14660,28 , 14688,74 , 14762,14 , 14660,28 , 14688,74 , 14762,14 , 0,2 , 0,2 , {85,71,88},  344,3 , 7452,26 , 4,4 , 74,5 , 3492,10 , 3502,6 ,     0,     0,     1,     6,     7 }, // Nyankole/Latin/Uganda
+    {    186,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25382,48 , 25430,254 , 25684,24 , 25382,48 , 25430,254 , 25684,24 , 14776,28 , 14804,82 , 14886,14 , 14776,28 , 14804,82 , 14886,14 , 417,7 , 429,7 , {84,90,83},  306,3 , 7478,29 , 0,4 , 4,0 , 3508,6 , 3514,10 ,     0,     0,     1,     6,     7 }, // Bena/Latin/Tanzania
+    {    187,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 25708,87 , 134,24 , 15403,48 , 25708,87 , 134,24 , 14900,28 , 14928,62 , 14990,14 , 14900,28 , 14928,62 , 14990,14 , 424,5 , 436,9 , {84,90,83},  306,3 , 7507,27 , 4,4 , 4,0 , 3524,8 , 2737,8 ,     0,     0,     1,     6,     7 }, // Vunjo/Latin/Tanzania
+    {    188,     7,   132,    46,    44,    59,    37,    48,    45,    43,   101,   171,   187,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 25795,47 , 25842,92 , 25934,24 , 25795,47 , 25842,92 , 25934,24 , 15004,28 , 15032,44 , 15076,14 , 15004,28 , 15032,44 , 15076,14 , 0,2 , 0,2 , {88,79,70},  154,3 , 7534,24 , 4,4 , 13,6 , 3532,9 , 1247,4 ,     0,     0,     1,     6,     7 }, // Bambara/Latin/Mali
+    {    189,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25958,48 , 26006,207 , 26213,24 , 25958,48 , 26006,207 , 26213,24 , 15090,28 , 15118,64 , 15182,14 , 15090,28 , 15118,64 , 15182,14 , 429,2 , 445,2 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3541,6 , 2745,5 ,     2,     1,     6,     6,     7 }, // Embu/Latin/Kenya
+    {    190,    12,   225,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 18,7 , 25,12 , 26237,36 , 26273,58 , 26331,24 , 26237,36 , 26273,58 , 26331,24 , 15196,28 , 15224,49 , 15273,14 , 15196,28 , 15224,49 , 15273,14 , 431,3 , 447,6 , {85,83,68},  128,1 , 7558,19 , 4,4 , 13,6 , 3547,3 , 3550,4 ,     2,     1,     7,     6,     7 }, // Cherokee/Cherokee/UnitedStates
+    {    191,     7,   137,    46,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 26355,47 , 26402,68 , 26470,24 , 26355,47 , 26402,68 , 26470,24 , 15287,27 , 15314,48 , 15362,14 , 15287,27 , 15314,48 , 15362,14 , 0,2 , 0,2 , {77,85,82},  147,4 , 7577,21 , 8,5 , 4,0 , 3554,14 , 3568,5 ,     0,     0,     1,     6,     7 }, // Morisyen/Latin/Mauritius
+    {    192,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 26494,264 , 134,24 , 15403,48 , 26494,264 , 134,24 , 15376,28 , 15404,133 , 14396,14 , 15376,28 , 15404,133 , 14396,14 , 434,4 , 453,5 , {84,90,83},  306,3 , 7507,27 , 4,4 , 13,6 , 3573,10 , 2737,8 ,     0,     0,     1,     6,     7 }, // Makonde/Latin/Tanzania
+    {    193,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,  8221,  8221,    39,    39, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 26758,83 , 26841,111 , 26952,24 , 26758,83 , 26841,111 , 26952,24 , 15537,36 , 15573,63 , 15636,14 , 15537,36 , 15573,63 , 15636,14 , 438,3 , 458,3 , {84,90,83},  306,3 , 7598,29 , 8,5 , 4,0 , 3583,8 , 3591,9 ,     0,     0,     1,     6,     7 }, // Langi/Latin/Tanzania
+    {    194,     7,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 26976,48 , 27024,97 , 134,24 , 26976,48 , 27024,97 , 134,24 , 15650,28 , 15678,66 , 15744,14 , 15650,28 , 15678,66 , 15744,14 , 0,2 , 0,2 , {85,71,88},  344,3 , 7627,26 , 0,4 , 4,0 , 3600,7 , 3607,7 ,     0,     0,     1,     6,     7 }, // Ganda/Latin/Uganda
+    {    195,     7,   239,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 27121,48 , 27169,83 , 27252,24 , 27121,48 , 27169,83 , 27252,24 , 15758,80 , 15758,80 , 798,14 , 15758,80 , 15758,80 , 798,14 , 441,8 , 461,7 , {90,77,75},  347,2 , 0,7 , 4,4 , 13,6 , 3614,9 , 3623,6 ,     0,     0,     1,     6,     7 }, // Bemba/Latin/Zambia
+    {    196,     7,    39,    44,    46,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 886,27 , 37,5 , 8,10 , 27276,48 , 27324,86 , 134,24 , 27276,48 , 27324,86 , 134,24 , 15838,28 , 15866,73 , 15939,14 , 15838,28 , 15866,73 , 15939,14 , 149,2 , 148,2 , {67,86,69},  349,3 , 7653,25 , 0,4 , 4,0 , 3629,12 , 3641,10 ,     2,     1,     1,     6,     7 }, // Kabuverdianu/Latin/CapeVerde
+    {    197,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 27410,48 , 27458,86 , 27544,24 , 27410,48 , 27458,86 , 27544,24 , 15953,28 , 15981,51 , 16032,14 , 15953,28 , 15981,51 , 16032,14 , 449,2 , 468,2 , {75,69,83},  2,3 , 7242,24 , 4,4 , 13,6 , 3651,6 , 2745,5 ,     2,     1,     6,     6,     7 }, // Meru/Latin/Kenya
+    {    198,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 27568,48 , 27616,111 , 27727,24 , 27568,48 , 27616,111 , 27727,24 , 16046,28 , 16074,93 , 16167,14 , 16046,28 , 16074,93 , 16167,14 , 451,4 , 470,4 , {75,69,83},  2,3 , 7678,26 , 4,4 , 13,6 , 3657,8 , 3665,12 ,     2,     1,     6,     6,     7 }, // Kalenjin/Latin/Kenya
+    {    199,     7,   148,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 0,48 , 27751,136 , 134,24 , 0,48 , 27751,136 , 134,24 , 16181,23 , 16204,92 , 16296,14 , 16181,23 , 16204,92 , 16296,14 , 455,7 , 474,5 , {78,65,68},  12,2 , 7704,22 , 4,4 , 4,0 , 3677,13 , 3690,8 ,     2,     1,     1,     6,     7 }, // Nama/Latin/Namibia
+    {    200,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 25708,87 , 134,24 , 15403,48 , 25708,87 , 134,24 , 14900,28 , 14928,62 , 14990,14 , 14900,28 , 14928,62 , 14990,14 , 424,5 , 436,9 , {84,90,83},  306,3 , 7507,27 , 4,4 , 4,0 , 3698,9 , 2737,8 ,     0,     0,     1,     6,     7 }, // Machame/Latin/Tanzania
+    {    201,     7,    82,    44,   160,    59,    37,    48,  8722,    43,   101,  8222,  8220,  8218,  8216, 0,6 , 0,6 , 228,8 , 228,8 , 1423,10 , 1433,23 , 37,5 , 8,10 , 27887,59 , 27946,87 , 134,24 , 27887,59 , 27946,87 , 134,24 , 16310,28 , 16338,72 , 3311,14 , 16310,28 , 16338,72 , 3311,14 , 0,2 , 0,2 , {69,85,82},  113,1 , 3813,11 , 25,5 , 4,0 , 0,0 , 3707,11 ,     2,     1,     1,     6,     7 }, // Colognian/Latin/Germany
+    {    202,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8221,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28033,51 , 28084,132 , 158,27 , 28033,51 , 28084,132 , 158,27 , 14900,28 , 16410,58 , 14396,14 , 14900,28 , 16410,58 , 14396,14 , 462,9 , 479,6 , {75,69,83},  2,3 , 7726,25 , 4,4 , 13,6 , 3718,3 , 2745,5 ,     2,     1,     6,     6,     7 }, // Masai/Latin/Kenya
+    {    202,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8221,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28033,51 , 28084,132 , 158,27 , 28033,51 , 28084,132 , 158,27 , 14900,28 , 16410,58 , 14396,14 , 14900,28 , 16410,58 , 14396,14 , 462,9 , 479,6 , {84,90,83},  306,3 , 7751,28 , 4,4 , 13,6 , 3718,3 , 3721,8 ,     0,     0,     1,     6,     7 }, // Masai/Latin/Tanzania
+    {    203,     7,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 26976,48 , 27024,97 , 134,24 , 26976,48 , 27024,97 , 134,24 , 16468,35 , 16503,65 , 16568,14 , 16468,35 , 16503,65 , 16568,14 , 471,6 , 485,6 , {85,71,88},  344,3 , 7627,26 , 25,5 , 4,0 , 3729,7 , 3607,7 ,     0,     0,     1,     6,     7 }, // Soga/Latin/Uganda
+    {    204,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8222,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28216,48 , 15451,84 , 134,24 , 28216,48 , 15451,84 , 134,24 , 16582,21 , 16603,75 , 85,14 , 16582,21 , 16603,75 , 85,14 , 61,4 , 59,4 , {75,69,83},  2,3 , 7779,23 , 4,4 , 79,6 , 3736,7 , 2745,5 ,     2,     1,     6,     6,     7 }, // Luyia/Latin/Kenya
+    {    205,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28264,48 , 15451,84 , 134,24 , 28264,48 , 15451,84 , 134,24 , 16678,28 , 8870,60 , 14990,14 , 16678,28 , 8870,60 , 14990,14 , 477,9 , 491,8 , {84,90,83},  306,3 , 7802,28 , 25,5 , 4,0 , 3743,6 , 3749,8 ,     0,     0,     1,     6,     7 }, // Asu/Latin/Tanzania
+    {    206,     7,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28312,48 , 28360,94 , 28454,24 , 28312,48 , 28360,94 , 28454,24 , 16706,28 , 16734,69 , 16803,14 , 16706,28 , 16734,69 , 16803,14 , 486,9 , 499,6 , {85,71,88},  344,3 , 7830,28 , 4,4 , 13,6 , 3757,6 , 3502,6 ,     0,     0,     1,     6,     7 }, // Teso/Latin/Uganda
+    {    206,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,    39,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28312,48 , 28360,94 , 28454,24 , 28312,48 , 28360,94 , 28454,24 , 16706,28 , 16734,69 , 16803,14 , 16706,28 , 16734,69 , 16803,14 , 486,9 , 499,6 , {75,69,83},  2,3 , 7858,27 , 4,4 , 13,6 , 3757,6 , 3763,5 ,     2,     1,     6,     6,     7 }, // Teso/Latin/Kenya
+    {    207,     7,    67,    46,    44,    59,    37,    48,    45,    43,   101,  8220,  8221,  8216,  8217, 0,6 , 0,6 , 0,6 , 0,6 , 27,8 , 53,19 , 18,7 , 25,12 , 344,48 , 392,118 , 510,24 , 344,48 , 392,118 , 510,24 , 16817,28 , 16845,56 , 16901,14 , 16817,28 , 16845,56 , 16901,14 , 0,2 , 0,2 , {69,82,78},  8,3 , 0,7 , 4,4 , 4,0 , 0,0 , 43,7 ,     2,     1,     6,     6,     7 }, // Saho/Latin/Eritrea
+    {    208,     7,   132,    46,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 28478,46 , 28524,88 , 28612,24 , 28478,46 , 28524,88 , 28612,24 , 16915,28 , 16943,53 , 16996,14 , 16915,28 , 16943,53 , 16996,14 , 495,6 , 505,6 , {88,79,70},  154,3 , 7885,23 , 0,4 , 4,0 , 3768,11 , 3779,5 ,     0,     0,     1,     6,     7 }, // Koyra Chiini/Latin/Mali
+    {    209,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8220, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 25708,87 , 134,24 , 15403,48 , 25708,87 , 134,24 , 14900,28 , 14928,62 , 14990,14 , 14900,28 , 14928,62 , 14990,14 , 424,5 , 436,9 , {84,90,83},  306,3 , 7507,27 , 0,4 , 4,0 , 3784,6 , 2737,8 ,     0,     0,     1,     6,     7 }, // Rwa/Latin/Tanzania
+    {    210,     7,   111,    46,    44,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28636,48 , 28684,186 , 28870,24 , 28636,48 , 28684,186 , 28870,24 , 17010,28 , 17038,69 , 17107,14 , 17010,28 , 17038,69 , 17107,14 , 501,2 , 511,2 , {75,69,83},  2,3 , 7908,23 , 0,4 , 4,0 , 3790,6 , 2745,5 ,     2,     1,     6,     6,     7 }, // Luo/Latin/Kenya
+    {    211,     7,   221,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8222, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 25182,48 , 25230,152 , 134,24 , 25182,48 , 25230,152 , 134,24 , 14660,28 , 14688,74 , 14762,14 , 14660,28 , 14688,74 , 14762,14 , 0,2 , 0,2 , {85,71,88},  344,3 , 7452,26 , 4,4 , 74,5 , 3796,6 , 3502,6 ,     0,     0,     1,     6,     7 }, // Chiga/Latin/Uganda
+    {    212,     7,   145,    44,   160,    59,    37,    48,    45,    43,   101,  8216,  8217,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 28894,48 , 28942,86 , 29028,24 , 28894,48 , 28942,86 , 29028,24 , 17121,28 , 17149,48 , 17197,14 , 17121,28 , 17149,48 , 17197,14 , 503,9 , 513,10 , {77,65,68},  0,0 , 7931,22 , 25,5 , 4,0 , 3802,8 , 3810,6 ,     2,     1,     6,     5,     6 }, // Central Morocco Tamazight/Latin/Morocco
+    {    213,     7,   132,    46,   160,    59,    37,    48,    45,    43,   101,  8220,  8221,   171,   187, 0,6 , 0,6 , 0,6 , 0,6 , 364,8 , 99,16 , 37,5 , 8,10 , 28478,46 , 28524,88 , 28612,24 , 28478,46 , 28524,88 , 28612,24 , 17211,28 , 17239,54 , 16996,14 , 17211,28 , 17239,54 , 16996,14 , 495,6 , 505,6 , {88,79,70},  154,3 , 7885,23 , 0,4 , 4,0 , 3816,15 , 3779,5 ,     0,     0,     1,     6,     7 }, // Koyraboro Senni/Latin/Mali
+    {    214,     7,   210,    46,    44,    59,    37,    48,    45,    43,   101,    39,    39,  8220,  8221, 0,6 , 0,6 , 0,6 , 0,6 , 141,10 , 10,17 , 18,7 , 25,12 , 15403,48 , 29052,84 , 134,24 , 15403,48 , 29052,84 , 134,24 , 17293,28 , 17321,63 , 8930,14 , 17293,28 , 17321,63 , 8930,14 , 512,5 , 523,8 , {84,90,83},  306,3 , 6535,27 , 0,4 , 4,0 , 3831,9 , 2737,8 ,     0,     0,     1,     6,     7 }, // Shambala/Latin/Tanzania
+    {    215,    13,   100,    46,    44,    59,    37,  2406,    45,    43,   101,    39,    39,    34,    34, 0,6 , 0,6 , 0,6 , 0,6 , 558,6 , 35,18 , 18,7 , 25,12 , 29136,88 , 29136,88 , 29224,31 , 29136,88 , 29136,88 , 29224,31 , 17384,33 , 17417,54 , 17471,19 , 17384,33 , 17417,54 , 17471,19 , 517,3 , 531,6 , {73,78,82},  145,2 , 7953,10 , 8,5 , 4,0 , 0,0 , 1584,4 ,     2,     1,     7,     7,     7 }, // Bodo/Devanagari/India
     {      0,      0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,    0,0,    0,0,    0,0,   0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,     0,0,    0,0,    0,0,    0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0,   0,0, {0,0,0}, 0,0, 0,0, 0,0, 0,0, 0, 0, 0, 0, 0, 0,0, 0,0 }  // trailing 0s
 };
 
@@ -817,7 +1245,7 @@ static const ushort time_format_data[] = {
 0x2e, 0x73, 0x73, 0x20, 0x74, 0x48, 0x3a, 0x6d, 0x6d, 0x48, 0x20, 0x1798, 0x17c9, 0x17c4, 0x1784, 0x20, 0x6d, 0x20, 0x1793, 0x17b6,
 0x1791, 0x17b8, 0x20, 0x73, 0x73, 0x20, 0x179c, 0x17b7, 0x1793, 0x17b6, 0x1791, 0x17b8, 0x200b, 0x20, 0x74, 0x48, 0x3a, 0x6d, 0x6d, 0x3a,
 0x73, 0x73, 0x20, 0x74, 0x41, 0x50, 0x68, 0x3a, 0x6d, 0x6d, 0x74, 0x41, 0x50, 0x68, 0x65f6, 0x6d, 0x6d, 0x5206, 0x73, 0x73,
-0x79d2, 0x74, 0x41, 0x50, 0x68, 0x6642, 0x6d, 0x6d, 0x5206, 0x73, 0x73, 0x79d2, 0x41, 0x50, 0x68, 0x68, 0x3a, 0x6d, 0x6d, 0x48,
+0x79d2, 0x41, 0x50, 0x68, 0x68, 0x3a, 0x6d, 0x6d, 0x74, 0x41, 0x50, 0x68, 0x6642, 0x6d, 0x6d, 0x5206, 0x73, 0x73, 0x79d2, 0x48,
 0x48, 0x20, 0x27, 0x68, 0x27, 0x20, 0x6d, 0x6d, 0x20, 0x27, 0x6d, 0x69, 0x6e, 0x27, 0x20, 0x73, 0x73, 0x20, 0x27, 0x73,
 0x27, 0x20, 0x74, 0x48, 0x3a, 0x6d, 0x6d, 0x2e, 0x73, 0x73, 0x20, 0x74, 0x48, 0x2e, 0x6d, 0x6d, 0x48, 0x2e, 0x6d, 0x6d,
 0x2e, 0x73, 0x73, 0x20, 0x74, 0x48, 0x20, 0x27, 0x68, 0x27, 0x20, 0x6d, 0x6d, 0x20, 0x27, 0x6d, 0x69, 0x6e, 0x27, 0x20,
@@ -3346,9 +3774,9 @@ static const ushort currency_display_name_data[] = {
 0x43b, 0x430, 0x440, 0x443, 0x441, 0x43a, 0x456, 0x20, 0x440, 0x443, 0x431, 0x435, 0x43b, 0x44c, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
 0x3b, 0x52, 0x69, 0x65, 0x6c, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x65, 0x75, 0x72, 0x6f, 0x3b, 0x3b, 0x65, 0x75,
 0x72, 0x6f, 0x3b, 0x3b, 0x3b, 0x3b, 0x65, 0x75, 0x72, 0x6f, 0x73, 0x3b, 0x4eba, 0x6c11, 0x5e01, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
-0x3b, 0x3b, 0x6e2f, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x6fb3, 0x9580, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
-0x3b, 0x65b0, 0x52a0, 0x5761, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x65b0, 0x81fa, 0x5e63, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
-0x3b, 0x3b, 0x6fb3, 0x95e8, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x6b, 0x75, 0x6e, 0x61, 0x3b, 0x3b, 0x6b, 0x75,
+0x3b, 0x3b, 0x6e2f, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x6fb3, 0x95e8, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
+0x3b, 0x65b0, 0x52a0, 0x5761, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x6fb3, 0x9580, 0x5143, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
+0x3b, 0x3b, 0x65b0, 0x81fa, 0x5e63, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x6b, 0x75, 0x6e, 0x61, 0x3b, 0x3b, 0x6b, 0x75,
 0x6e, 0x61, 0x3b, 0x3b, 0x6b, 0x75, 0x6e, 0x65, 0x3b, 0x6b, 0x75, 0x6e, 0x61, 0x3b, 0x6b, 0x75, 0x6e, 0x61, 0x3b, 0x4b,
 0x6f, 0x72, 0x75, 0x6e, 0x61, 0x20, 0x10d, 0x65, 0x73, 0x6b, 0xe1, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x44, 0x61,
 0x6e, 0x73, 0x6b, 0x20, 0x6b, 0x72, 0x6f, 0x6e, 0x65, 0x3b, 0x3b, 0x44, 0x61, 0x6e, 0x73, 0x6b, 0x20, 0x6b, 0x72, 0x6f,
@@ -3442,10 +3870,10 @@ static const ushort currency_display_name_data[] = {
 0x53, 0x63, 0x68, 0x77, 0x65, 0x69, 0x7a, 0x65, 0x72, 0x20, 0x46, 0x72, 0x61, 0x6e, 0x6b, 0x65, 0x6e, 0x3b, 0x395, 0x3c5,
 0x3c1, 0x3ce, 0x3b, 0x3b, 0x3b5, 0x3c5, 0x3c1, 0x3ce, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b5, 0x3c5, 0x3c1, 0x3ce, 0x3b, 0x64, 0x61, 0x6e,
 0x73, 0x6b, 0x69, 0x6e, 0x75, 0x74, 0x20, 0x6b, 0x6f, 0x72, 0x75, 0x75, 0x6e, 0x69, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
-0x3b, 0x4e, 0x61, 0x69, 0x72, 0x61, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x4b, 0x75, 0x257, 0x69, 0x6e, 0x20, 0x53,
-0x65, 0x66, 0x61, 0x20, 0x6e, 0x61, 0x20, 0x41, 0x66, 0x69, 0x72, 0x6b, 0x61, 0x20, 0x54, 0x61, 0x20, 0x59, 0x61, 0x6d,
-0x6d, 0x61, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x46, 0x61, 0x6d, 0x20, 0x6b, 0x69, 0x6e, 0x20, 0x53, 0x75, 0x64,
-0x61, 0x6e, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x646, 0x64e, 0x64a, 0x652, 0x631, 0x64e, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
+0x3b, 0x4e, 0x61, 0x69, 0x72, 0x61, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x646, 0x64e, 0x64a, 0x652, 0x631, 0x64e, 0x3b,
+0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x46, 0x61, 0x6d, 0x20, 0x6b, 0x69, 0x6e, 0x20, 0x53, 0x75, 0x64, 0x61, 0x6e, 0x3b,
+0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x4b, 0x75, 0x257, 0x69, 0x6e, 0x20, 0x53, 0x65, 0x66, 0x61, 0x20, 0x6e, 0x61, 0x20,
+0x41, 0x66, 0x69, 0x72, 0x6b, 0x61, 0x20, 0x54, 0x61, 0x20, 0x59, 0x61, 0x6d, 0x6d, 0x61, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
 0x3b, 0x3b, 0x5e9, 0x5f4, 0x5d7, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b, 0x5e9, 0x5e7, 0x5dc, 0x5d9, 0x5dd, 0x20, 0x5d7, 0x5d3, 0x5e9,
 0x5d9, 0x5dd, 0x3b, 0x92d, 0x93e, 0x930, 0x924, 0x940, 0x92f, 0x20, 0x930, 0x942, 0x92a, 0x92f, 0x93e, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
 0x3b, 0x3b, 0x4d, 0x61, 0x67, 0x79, 0x61, 0x72, 0x20, 0x66, 0x6f, 0x72, 0x69, 0x6e, 0x74, 0x3b, 0x3b, 0x3b, 0x3b, 0x3b,
@@ -3516,20 +3944,20 @@ static const ushort currency_display_name_data[] = {
 0x438, 0x445, 0x20, 0x43a, 0x43e, 0x43d, 0x432, 0x435, 0x440, 0x442, 0x430, 0x431, 0x438, 0x43b, 0x43d, 0x438, 0x445, 0x20, 0x43c, 0x430,
 0x440, 0x430, 0x43a, 0x430, 0x3b, 0x431, 0x43e, 0x441, 0x430, 0x43d, 0x441, 0x43a, 0x43e, 0x2d, 0x445, 0x435, 0x440, 0x446, 0x435, 0x433,
 0x43e, 0x432, 0x430, 0x447, 0x43a, 0x438, 0x445, 0x20, 0x43a, 0x43e, 0x43d, 0x432, 0x435, 0x440, 0x442, 0x438, 0x431, 0x438, 0x43b, 0x43d,
-0x438, 0x445, 0x20, 0x43c, 0x430, 0x440, 0x430, 0x43a, 0x430, 0x3b, 0x45, 0x76, 0x72, 0x6f, 0x3b, 0x3b, 0x65, 0x76, 0x72, 0x6f,
-0x3b, 0x3b, 0x65, 0x76, 0x72, 0x61, 0x3b, 0x65, 0x76, 0x72, 0x61, 0x3b, 0x65, 0x76, 0x72, 0x61, 0x3b, 0x415, 0x432, 0x440,
-0x43e, 0x3b, 0x3b, 0x435, 0x432, 0x440, 0x43e, 0x3b, 0x3b, 0x435, 0x432, 0x440, 0x430, 0x3b, 0x435, 0x432, 0x440, 0x430, 0x3b, 0x435,
-0x432, 0x440, 0x430, 0x3b, 0x42, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x48, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f,
-0x76, 0x61, 0x10d, 0x6b, 0x61, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69, 0x62, 0x69, 0x6c, 0x6e, 0x61, 0x20,
-0x6d, 0x61, 0x72, 0x6b, 0x61, 0x3b, 0x3b, 0x62, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x68, 0x65, 0x72, 0x63,
-0x65, 0x67, 0x6f, 0x76, 0x61, 0x10d, 0x6b, 0x61, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69, 0x62, 0x69, 0x6c,
-0x6e, 0x61, 0x20, 0x6d, 0x61, 0x72, 0x6b, 0x61, 0x3b, 0x3b, 0x42, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x48,
-0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x61, 0x10d, 0x6b, 0x65, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69,
-0x62, 0x69, 0x6c, 0x6e, 0x65, 0x20, 0x6d, 0x61, 0x72, 0x6b, 0x65, 0x3b, 0x42, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f,
-0x2d, 0x48, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x61, 0x10d, 0x6b, 0x69, 0x68, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65,
-0x72, 0x74, 0x69, 0x62, 0x69, 0x6c, 0x6e, 0x69, 0x68, 0x20, 0x6d, 0x61, 0x72, 0x61, 0x6b, 0x61, 0x3b, 0x62, 0x6f, 0x73,
-0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x68, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x61, 0x10d, 0x6b, 0x69, 0x68, 0x20,
-0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69, 0x62, 0x69, 0x6c, 0x6e, 0x69, 0x68, 0x20, 0x6d, 0x61, 0x72, 0x61, 0x6b,
+0x438, 0x445, 0x20, 0x43c, 0x430, 0x440, 0x430, 0x43a, 0x430, 0x3b, 0x415, 0x432, 0x440, 0x43e, 0x3b, 0x3b, 0x435, 0x432, 0x440, 0x43e,
+0x3b, 0x3b, 0x435, 0x432, 0x440, 0x430, 0x3b, 0x435, 0x432, 0x440, 0x430, 0x3b, 0x435, 0x432, 0x440, 0x430, 0x3b, 0x42, 0x6f, 0x73,
+0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x48, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x61, 0x10d, 0x6b, 0x61, 0x20, 0x6b,
+0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69, 0x62, 0x69, 0x6c, 0x6e, 0x61, 0x20, 0x6d, 0x61, 0x72, 0x6b, 0x61, 0x3b, 0x3b,
+0x62, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x68, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x61, 0x10d, 0x6b,
+0x61, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69, 0x62, 0x69, 0x6c, 0x6e, 0x61, 0x20, 0x6d, 0x61, 0x72, 0x6b,
+0x61, 0x3b, 0x3b, 0x42, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x48, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76,
+0x61, 0x10d, 0x6b, 0x65, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69, 0x62, 0x69, 0x6c, 0x6e, 0x65, 0x20, 0x6d,
+0x61, 0x72, 0x6b, 0x65, 0x3b, 0x42, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x48, 0x65, 0x72, 0x63, 0x65, 0x67,
+0x6f, 0x76, 0x61, 0x10d, 0x6b, 0x69, 0x68, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74, 0x69, 0x62, 0x69, 0x6c, 0x6e,
+0x69, 0x68, 0x20, 0x6d, 0x61, 0x72, 0x61, 0x6b, 0x61, 0x3b, 0x62, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x6f, 0x2d, 0x68,
+0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x61, 0x10d, 0x6b, 0x69, 0x68, 0x20, 0x6b, 0x6f, 0x6e, 0x76, 0x65, 0x72, 0x74,
+0x69, 0x62, 0x69, 0x6c, 0x6e, 0x69, 0x68, 0x20, 0x6d, 0x61, 0x72, 0x61, 0x6b, 0x61, 0x3b, 0x45, 0x76, 0x72, 0x6f, 0x3b,
+0x3b, 0x65, 0x76, 0x72, 0x6f, 0x3b, 0x3b, 0x65, 0x76, 0x72, 0x61, 0x3b, 0x65, 0x76, 0x72, 0x61, 0x3b, 0x65, 0x76, 0x72,
 0x61, 0x3b, 0x53, 0x72, 0x70, 0x73, 0x6b, 0x69, 0x20, 0x64, 0x69, 0x6e, 0x61, 0x72, 0x3b, 0x3b, 0x73, 0x72, 0x70, 0x73,
 0x6b, 0x69, 0x20, 0x64, 0x69, 0x6e, 0x61, 0x72, 0x3b, 0x3b, 0x73, 0x72, 0x70, 0x73, 0x6b, 0x61, 0x20, 0x64, 0x69, 0x6e,
 0x61, 0x72, 0x61, 0x3b, 0x73, 0x72, 0x70, 0x73, 0x6b, 0x69, 0x68, 0x20, 0x64, 0x69, 0x6e, 0x61, 0x72, 0x61, 0x3b, 0x73,
@@ -3692,178 +4120,178 @@ static const ushort endonyms_data[] = {
 0x73, 0x431, 0x44a, 0x43b, 0x433, 0x430, 0x440, 0x441, 0x43a, 0x438, 0x411, 0x44a, 0x43b, 0x433, 0x430, 0x440, 0x438, 0x44f, 0x1017, 0x1019,
 0x102c, 0x1019, 0x103c, 0x1014, 0x103a, 0x1019, 0x102c, 0x431, 0x435, 0x43b, 0x430, 0x440, 0x443, 0x441, 0x43a, 0x430, 0x44f, 0x411, 0x435, 0x43b,
 0x430, 0x440, 0x443, 0x441, 0x44c, 0x1797, 0x17b6, 0x179f, 0x17b6, 0x1781, 0x17d2, 0x1798, 0x17c2, 0x179a, 0x1780, 0x1798, 0x17d2, 0x1796, 0x17bb, 0x1787,
-0x17b6, 0x63, 0x61, 0x74, 0x61, 0x6c, 0xe0, 0x45, 0x73, 0x70, 0x61, 0x6e, 0x79, 0x61, 0x4e2d, 0x6587, 0x4e2d, 0x56fd, 0x4e2d, 0x83ef,
-0x4eba, 0x6c11, 0x5171, 0x548c, 0x570b, 0x9999, 0x6e2f, 0x7279, 0x5225, 0x884c, 0x653f, 0x5340, 0x4e2d, 0x83ef, 0x4eba, 0x6c11, 0x5171, 0x548c, 0x570b, 0x6fb3,
-0x9580, 0x7279, 0x5225, 0x884c, 0x653f, 0x5340, 0x65b0, 0x52a0, 0x5761, 0x53f0, 0x7063, 0x4e2d, 0x6587, 0xff08, 0x7b80, 0x4f53, 0xff09, 0x4e2d, 0x56fd, 0x9999,
-0x6e2f, 0x7279, 0x522b, 0x884c, 0x653f, 0x533a, 0x4e2d, 0x56fd, 0x6fb3, 0x95e8, 0x7279, 0x522b, 0x884c, 0x653f, 0x533a, 0x7e41, 0x9ad4, 0x4e2d, 0x6587, 0x68,
-0x72, 0x76, 0x61, 0x74, 0x73, 0x6b, 0x69, 0x48, 0x72, 0x76, 0x61, 0x74, 0x73, 0x6b, 0x61, 0x10d, 0x65, 0x161, 0x74, 0x69,
-0x6e, 0x61, 0x10c, 0x65, 0x73, 0x6b, 0xe1, 0x20, 0x72, 0x65, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x6b, 0x61, 0x64, 0x61, 0x6e,
-0x73, 0x6b, 0x44, 0x61, 0x6e, 0x6d, 0x61, 0x72, 0x6b, 0x4e, 0x65, 0x64, 0x65, 0x72, 0x6c, 0x61, 0x6e, 0x64, 0x73, 0x4e,
-0x65, 0x64, 0x65, 0x72, 0x6c, 0x61, 0x6e, 0x64, 0x56, 0x6c, 0x61, 0x61, 0x6d, 0x73, 0x42, 0x65, 0x6c, 0x67, 0x69, 0xeb,
-0x55, 0x2e, 0x53, 0x2e, 0x20, 0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x55, 0x6e, 0x69, 0x74, 0x65, 0x64, 0x20, 0x53,
-0x74, 0x61, 0x74, 0x65, 0x73, 0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x41, 0x6d, 0x65, 0x72, 0x69, 0x63, 0x61, 0x6e,
-0x20, 0x53, 0x61, 0x6d, 0x6f, 0x61, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x6e, 0x20, 0x45, 0x6e, 0x67,
-0x6c, 0x69, 0x73, 0x68, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x42, 0x65, 0x6c, 0x67, 0x69, 0x75, 0x6d,
-0x42, 0x65, 0x6c, 0x69, 0x7a, 0x65, 0x42, 0x6f, 0x74, 0x73, 0x77, 0x61, 0x6e, 0x61, 0x43, 0x61, 0x6e, 0x61, 0x64, 0x69,
-0x61, 0x6e, 0x20, 0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x43, 0x61, 0x6e, 0x61, 0x64, 0x61, 0x47, 0x75, 0x61, 0x6d,
-0x48, 0x6f, 0x6e, 0x67, 0x20, 0x4b, 0x6f, 0x6e, 0x67, 0x20, 0x53, 0x41, 0x52, 0x20, 0x43, 0x68, 0x69, 0x6e, 0x61, 0x49,
-0x6e, 0x64, 0x69, 0x61, 0x49, 0x72, 0x65, 0x6c, 0x61, 0x6e, 0x64, 0x4a, 0x61, 0x6d, 0x61, 0x69, 0x63, 0x61, 0x4d, 0x61,
-0x6c, 0x74, 0x61, 0x4d, 0x61, 0x72, 0x73, 0x68, 0x61, 0x6c, 0x6c, 0x20, 0x49, 0x73, 0x6c, 0x61, 0x6e, 0x64, 0x73, 0x4d,
-0x61, 0x75, 0x72, 0x69, 0x74, 0x69, 0x75, 0x73, 0x4e, 0x61, 0x6d, 0x69, 0x62, 0x69, 0x61, 0x4e, 0x65, 0x77, 0x20, 0x5a,
-0x65, 0x61, 0x6c, 0x61, 0x6e, 0x64, 0x4e, 0x6f, 0x72, 0x74, 0x68, 0x65, 0x72, 0x6e, 0x20, 0x4d, 0x61, 0x72, 0x69, 0x61,
-0x6e, 0x61, 0x20, 0x49, 0x73, 0x6c, 0x61, 0x6e, 0x64, 0x73, 0x50, 0x61, 0x6b, 0x69, 0x73, 0x74, 0x61, 0x6e, 0x50, 0x68,
-0x69, 0x6c, 0x69, 0x70, 0x70, 0x69, 0x6e, 0x65, 0x73, 0x53, 0x69, 0x6e, 0x67, 0x61, 0x70, 0x6f, 0x72, 0x65, 0x53, 0x6f,
-0x75, 0x74, 0x68, 0x20, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x54, 0x72, 0x69, 0x6e, 0x69, 0x64, 0x61, 0x64, 0x20, 0x61,
-0x6e, 0x64, 0x20, 0x54, 0x6f, 0x62, 0x61, 0x67, 0x6f, 0x42, 0x72, 0x69, 0x74, 0x69, 0x73, 0x68, 0x20, 0x45, 0x6e, 0x67,
-0x6c, 0x69, 0x73, 0x68, 0x55, 0x6e, 0x69, 0x74, 0x65, 0x64, 0x20, 0x4b, 0x69, 0x6e, 0x67, 0x64, 0x6f, 0x6d, 0x55, 0x2e,
-0x53, 0x2e, 0x20, 0x4d, 0x69, 0x6e, 0x6f, 0x72, 0x20, 0x4f, 0x75, 0x74, 0x6c, 0x79, 0x69, 0x6e, 0x67, 0x20, 0x49, 0x73,
-0x6c, 0x61, 0x6e, 0x64, 0x73, 0x55, 0x2e, 0x53, 0x2e, 0x20, 0x56, 0x69, 0x72, 0x67, 0x69, 0x6e, 0x20, 0x49, 0x73, 0x6c,
-0x61, 0x6e, 0x64, 0x73, 0x5a, 0x69, 0x6d, 0x62, 0x61, 0x62, 0x77, 0x65, 0xd801, 0xdc0f, 0xd801, 0xdc2d, 0xd801, 0xdc4c, 0xd801, 0xdc34,
-0xd801, 0xdc3b, 0xd801, 0xdc32, 0xd801, 0xdc3c, 0x20, 0xd801, 0xdc1d, 0xd801, 0xdc3b, 0xd801, 0xdc29, 0xd801, 0xdc3b, 0xd801, 0xdc45, 0x65, 0x65, 0x73,
-0x74, 0x69, 0x45, 0x65, 0x73, 0x74, 0x69, 0x66, 0xf8, 0x72, 0x6f, 0x79, 0x73, 0x6b, 0x74, 0x46, 0xf8, 0x72, 0x6f, 0x79,
-0x61, 0x72, 0x73, 0x75, 0x6f, 0x6d, 0x69, 0x53, 0x75, 0x6f, 0x6d, 0x69, 0x66, 0x72, 0x61, 0x6e, 0xe7, 0x61, 0x69, 0x73,
-0x46, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x42, 0x65, 0x6c, 0x67, 0x69, 0x71, 0x75, 0x65, 0x42, 0xe9, 0x6e, 0x69, 0x6e, 0x42,
-0x75, 0x72, 0x6b, 0x69, 0x6e, 0x61, 0x20, 0x46, 0x61, 0x73, 0x6f, 0x42, 0x75, 0x72, 0x75, 0x6e, 0x64, 0x69, 0x43, 0x61,
-0x6d, 0x65, 0x72, 0x6f, 0x75, 0x6e, 0x66, 0x72, 0x61, 0x6e, 0xe7, 0x61, 0x69, 0x73, 0x20, 0x63, 0x61, 0x6e, 0x61, 0x64,
-0x69, 0x65, 0x6e, 0x52, 0xe9, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x71, 0x75, 0x65, 0x20, 0x63, 0x65, 0x6e, 0x74, 0x72, 0x61,
-0x66, 0x72, 0x69, 0x63, 0x61, 0x69, 0x6e, 0x65, 0x54, 0x63, 0x68, 0x61, 0x64, 0x43, 0x6f, 0x6d, 0x6f, 0x72, 0x65, 0x73,
-0x52, 0xe9, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x71, 0x75, 0x65, 0x20, 0x64, 0xe9, 0x6d, 0x6f, 0x63, 0x72, 0x61, 0x74, 0x69,
-0x71, 0x75, 0x65, 0x20, 0x64, 0x75, 0x20, 0x43, 0x6f, 0x6e, 0x67, 0x6f, 0x43, 0x6f, 0x6e, 0x67, 0x6f, 0x2d, 0x42, 0x72,
-0x61, 0x7a, 0x7a, 0x61, 0x76, 0x69, 0x6c, 0x6c, 0x65, 0x43, 0xf4, 0x74, 0x65, 0x20, 0x64, 0x2019, 0x49, 0x76, 0x6f, 0x69,
-0x72, 0x65, 0x44, 0x6a, 0x69, 0x62, 0x6f, 0x75, 0x74, 0x69, 0x47, 0x75, 0x69, 0x6e, 0xe9, 0x65, 0x20, 0xe9, 0x71, 0x75,
-0x61, 0x74, 0x6f, 0x72, 0x69, 0x61, 0x6c, 0x65, 0x47, 0x61, 0x62, 0x6f, 0x6e, 0x47, 0x75, 0x61, 0x64, 0x65, 0x6c, 0x6f,
-0x75, 0x70, 0x65, 0x47, 0x75, 0x69, 0x6e, 0xe9, 0x65, 0x4c, 0x75, 0x78, 0x65, 0x6d, 0x62, 0x6f, 0x75, 0x72, 0x67, 0x4d,
-0x61, 0x64, 0x61, 0x67, 0x61, 0x73, 0x63, 0x61, 0x72, 0x4d, 0x61, 0x6c, 0x69, 0x4d, 0x61, 0x72, 0x74, 0x69, 0x6e, 0x69,
-0x71, 0x75, 0x65, 0x4d, 0x6f, 0x6e, 0x61, 0x63, 0x6f, 0x4e, 0x69, 0x67, 0x65, 0x72, 0x52, 0xe9, 0x75, 0x6e, 0x69, 0x6f,
-0x6e, 0x52, 0x77, 0x61, 0x6e, 0x64, 0x61, 0x53, 0xe9, 0x6e, 0xe9, 0x67, 0x61, 0x6c, 0x66, 0x72, 0x61, 0x6e, 0xe7, 0x61,
-0x69, 0x73, 0x20, 0x73, 0x75, 0x69, 0x73, 0x73, 0x65, 0x53, 0x75, 0x69, 0x73, 0x73, 0x65, 0x54, 0x6f, 0x67, 0x6f, 0x53,
-0x61, 0x69, 0x6e, 0x74, 0x2d, 0x42, 0x61, 0x72, 0x74, 0x68, 0xe9, 0x6c, 0xe9, 0x6d, 0x79, 0x53, 0x61, 0x69, 0x6e, 0x74,
-0x2d, 0x4d, 0x61, 0x72, 0x74, 0x69, 0x6e, 0x67, 0x61, 0x6c, 0x65, 0x67, 0x6f, 0x45, 0x73, 0x70, 0x61, 0xf1, 0x61, 0x10e5,
-0x10d0, 0x10e0, 0x10d7, 0x10e3, 0x10da, 0x10d8, 0x10e1, 0x10d0, 0x10e5, 0x10d0, 0x10e0, 0x10d7, 0x10d5, 0x10d4, 0x10da, 0x10dd, 0x44, 0x65, 0x75, 0x74,
-0x73, 0x63, 0x68, 0x44, 0x65, 0x75, 0x74, 0x73, 0x63, 0x68, 0x6c, 0x61, 0x6e, 0x64, 0xd6, 0x73, 0x74, 0x65, 0x72, 0x72,
-0x65, 0x69, 0x63, 0x68, 0x69, 0x73, 0x63, 0x68, 0x65, 0x73, 0x20, 0x44, 0x65, 0x75, 0x74, 0x73, 0x63, 0x68, 0xd6, 0x73,
-0x74, 0x65, 0x72, 0x72, 0x65, 0x69, 0x63, 0x68, 0x42, 0x65, 0x6c, 0x67, 0x69, 0x65, 0x6e, 0x4c, 0x69, 0x65, 0x63, 0x68,
-0x74, 0x65, 0x6e, 0x73, 0x74, 0x65, 0x69, 0x6e, 0x4c, 0x75, 0x78, 0x65, 0x6d, 0x62, 0x75, 0x72, 0x67, 0x53, 0x63, 0x68,
-0x77, 0x65, 0x69, 0x7a, 0x65, 0x72, 0x20, 0x48, 0x6f, 0x63, 0x68, 0x64, 0x65, 0x75, 0x74, 0x73, 0x63, 0x68, 0x53, 0x63,
-0x68, 0x77, 0x65, 0x69, 0x7a, 0x395, 0x3bb, 0x3bb, 0x3b7, 0x3bd, 0x3b9, 0x3ba, 0x3ac, 0x395, 0x3bb, 0x3bb, 0x3ac, 0x3b4, 0x3b1, 0x39a,
-0x3cd, 0x3c0, 0x3c1, 0x3bf, 0x3c2, 0x6b, 0x61, 0x6c, 0x61, 0x61, 0x6c, 0x6c, 0x69, 0x73, 0x75, 0x74, 0x4b, 0x61, 0x6c, 0x61,
-0x61, 0x6c, 0x6c, 0x69, 0x74, 0x20, 0x4e, 0x75, 0x6e, 0x61, 0x61, 0x74, 0xa97, 0xac1, 0xa9c, 0xab0, 0xabe, 0xaa4, 0xac0, 0xaad,
-0xabe, 0xab0, 0xaa4, 0x48, 0x61, 0x75, 0x73, 0x61, 0x4e, 0x61, 0x6a, 0x65, 0x72, 0x69, 0x79, 0x61, 0x47, 0x61, 0x6e, 0x61,
-0x4e, 0x69, 0x6a, 0x61, 0x72, 0x53, 0x75, 0x64, 0x61, 0x6e, 0x5e2, 0x5d1, 0x5e8, 0x5d9, 0x5ea, 0x5d9, 0x5e9, 0x5e8, 0x5d0, 0x5dc,
-0x939, 0x93f, 0x928, 0x94d, 0x926, 0x940, 0x92d, 0x93e, 0x930, 0x924, 0x6d, 0x61, 0x67, 0x79, 0x61, 0x72, 0x4d, 0x61, 0x67, 0x79,
-0x61, 0x72, 0x6f, 0x72, 0x73, 0x7a, 0xe1, 0x67, 0xed, 0x73, 0x6c, 0x65, 0x6e, 0x73, 0x6b, 0x61, 0xcd, 0x73, 0x6c, 0x61,
-0x6e, 0x64, 0x42, 0x61, 0x68, 0x61, 0x73, 0x61, 0x20, 0x49, 0x6e, 0x64, 0x6f, 0x6e, 0x65, 0x73, 0x69, 0x61, 0x49, 0x6e,
-0x64, 0x6f, 0x6e, 0x65, 0x73, 0x69, 0x61, 0x47, 0x61, 0x65, 0x69, 0x6c, 0x67, 0x65, 0xc9, 0x69, 0x72, 0x65, 0x69, 0x74,
-0x61, 0x6c, 0x69, 0x61, 0x6e, 0x6f, 0x49, 0x74, 0x61, 0x6c, 0x69, 0x61, 0x53, 0x76, 0x69, 0x7a, 0x7a, 0x65, 0x72, 0x61,
-0x65e5, 0x672c, 0x8a9e, 0x65e5, 0x672c, 0xc95, 0xca8, 0xccd, 0xca8, 0xca1, 0xcad, 0xcbe, 0xcb0, 0xca4, 0x49a, 0x430, 0x437, 0x430, 0x49b, 0x49a,
-0x430, 0x437, 0x430, 0x49b, 0x441, 0x442, 0x430, 0x43d, 0x4b, 0x69, 0x6e, 0x79, 0x61, 0x72, 0x77, 0x61, 0x6e, 0x64, 0x61, 0x41a,
-0x44b, 0x440, 0x433, 0x44b, 0x437, 0x41a, 0x44b, 0x440, 0x433, 0x44b, 0x437, 0x441, 0x442, 0x430, 0x43d, 0xd55c, 0xad6d, 0xc5b4, 0xb300, 0xd55c,
-0xbbfc, 0xad6d, 0x643, 0x648, 0x631, 0x62f, 0x6cc, 0x639, 0x6ce, 0x631, 0x627, 0x642, 0x6b, 0x75, 0x72, 0x64, 0xee, 0x54, 0x69, 0x72,
-0x6b, 0x69, 0x79, 0x65, 0xea5, 0xeb2, 0xea7, 0x6c, 0x61, 0x74, 0x76, 0x69, 0x65, 0x161, 0x75, 0x4c, 0x61, 0x74, 0x76, 0x69,
-0x6a, 0x61, 0x6c, 0x69, 0x6e, 0x67, 0xe1, 0x6c, 0x61, 0x4b, 0x6f, 0x6e, 0x67, 0xf3, 0x2d, 0x4b, 0x69, 0x6e, 0x73, 0xe1,
-0x73, 0xe1, 0x4b, 0x6f, 0x6e, 0x67, 0xf3, 0x2d, 0x42, 0x72, 0x61, 0x7a, 0x7a, 0x61, 0x76, 0x69, 0x6c, 0x6c, 0x65, 0x6c,
-0x69, 0x65, 0x74, 0x75, 0x76, 0x69, 0x173, 0x4c, 0x69, 0x65, 0x74, 0x75, 0x76, 0x61, 0x43c, 0x430, 0x43a, 0x435, 0x434, 0x43e,
-0x43d, 0x441, 0x43a, 0x438, 0x41c, 0x430, 0x43a, 0x435, 0x434, 0x43e, 0x43d, 0x438, 0x458, 0x430, 0x4d, 0x61, 0x6c, 0x61, 0x67, 0x61,
-0x73, 0x79, 0x4d, 0x61, 0x64, 0x61, 0x67, 0x61, 0x73, 0x69, 0x6b, 0x61, 0x72, 0x61, 0x42, 0x61, 0x68, 0x61, 0x73, 0x61,
-0x20, 0x4d, 0x65, 0x6c, 0x61, 0x79, 0x75, 0x4d, 0x61, 0x6c, 0x61, 0x79, 0x73, 0x69, 0x61, 0x42, 0x72, 0x75, 0x6e, 0x65,
-0x69, 0xd2e, 0xd32, 0xd2f, 0xd3e, 0xd33, 0xd02, 0xd07, 0xd28, 0xd4d, 0xd24, 0xd4d, 0xd2f, 0x4d, 0x61, 0x6c, 0x74, 0x69, 0x92e, 0x930,
-0x93e, 0x920, 0x940, 0x43c, 0x43e, 0x43d, 0x433, 0x43e, 0x43b, 0x41c, 0x43e, 0x43d, 0x433, 0x43e, 0x43b, 0x20, 0x443, 0x43b, 0x441, 0x928,
-0x947, 0x92a, 0x93e, 0x932, 0x940, 0x928, 0x947, 0x92a, 0x93e, 0x932, 0x6e, 0x6f, 0x72, 0x73, 0x6b, 0x20, 0x62, 0x6f, 0x6b, 0x6d,
-0xe5, 0x6c, 0x4e, 0x6f, 0x72, 0x67, 0x65, 0x6f, 0x63, 0x63, 0x69, 0x74, 0x61, 0x6e, 0x46, 0x72, 0x61, 0x6e, 0xe7, 0x61,
-0xb13, 0xb21, 0xb3c, 0xb3f, 0xb06, 0xb2d, 0xb3e, 0xb30, 0xb24, 0x67e, 0x69a, 0x62a, 0x648, 0x627, 0x641, 0x63a, 0x627, 0x646, 0x633, 0x62a,
-0x627, 0x646, 0x641, 0x627, 0x631, 0x633, 0x6cc, 0x627, 0x6cc, 0x631, 0x627, 0x646, 0x62f, 0x631, 0x6cc, 0x70, 0x6f, 0x6c, 0x73, 0x6b,
-0x69, 0x50, 0x6f, 0x6c, 0x73, 0x6b, 0x61, 0x70, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x75, 0xea, 0x73, 0x20, 0x64, 0x6f, 0x20,
-0x42, 0x72, 0x61, 0x73, 0x69, 0x6c, 0x42, 0x72, 0x61, 0x73, 0x69, 0x6c, 0x70, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x75, 0xea,
-0x73, 0x41, 0x6e, 0x67, 0x6f, 0x6c, 0x61, 0x47, 0x75, 0x69, 0x6e, 0xe9, 0x20, 0x42, 0x69, 0x73, 0x73, 0x61, 0x75, 0x4d,
-0x6f, 0xe7, 0x61, 0x6d, 0x62, 0x69, 0x71, 0x75, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x75, 0xea, 0x73, 0x20, 0x65,
-0x75, 0x72, 0x6f, 0x70, 0x65, 0x75, 0x50, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x61, 0x6c, 0xa2a, 0xa70, 0xa1c, 0xa3e, 0xa2c, 0xa40,
-0xa2d, 0xa3e, 0xa30, 0xa24, 0x67e, 0x646, 0x62c, 0x627, 0x628, 0x67e, 0x6a9, 0x633, 0x62a, 0x627, 0x646, 0x72, 0x75, 0x6d, 0x61, 0x6e,
-0x74, 0x73, 0x63, 0x68, 0x53, 0x76, 0x69, 0x7a, 0x72, 0x61, 0x72, 0x6f, 0x6d, 0xe2, 0x6e, 0x103, 0x52, 0x6f, 0x6d, 0xe2,
-0x6e, 0x69, 0x61, 0x52, 0x65, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x20, 0x4d, 0x6f, 0x6c, 0x64, 0x6f, 0x76, 0x61,
-0x440, 0x443, 0x441, 0x441, 0x43a, 0x438, 0x439, 0x420, 0x43e, 0x441, 0x441, 0x438, 0x44f, 0x41c, 0x43e, 0x43b, 0x434, 0x43e, 0x432, 0x430,
-0x423, 0x43a, 0x440, 0x430, 0x438, 0x43d, 0x430, 0x53, 0xe4, 0x6e, 0x67, 0xf6, 0x4b, 0xf6, 0x64, 0xf6, 0x72, 0xf6, 0x73, 0xea,
-0x73, 0x65, 0x20, 0x74, 0xee, 0x20, 0x42, 0xea, 0x61, 0x66, 0x72, 0xee, 0x6b, 0x61, 0x938, 0x902, 0x938, 0x94d, 0x915, 0x943,
-0x924, 0x20, 0x92d, 0x93e, 0x937, 0x93e, 0x92d, 0x93e, 0x930, 0x924, 0x92e, 0x94d, 0x421, 0x440, 0x43f, 0x441, 0x43a, 0x438, 0x421, 0x440,
-0x431, 0x438, 0x458, 0x430, 0x441, 0x440, 0x43f, 0x441, 0x43a, 0x438, 0x411, 0x43e, 0x441, 0x43d, 0x430, 0x20, 0x438, 0x20, 0x425, 0x435,
-0x440, 0x446, 0x435, 0x433, 0x43e, 0x432, 0x438, 0x43d, 0x430, 0x53, 0x72, 0x70, 0x73, 0x6b, 0x69, 0x43, 0x72, 0x6e, 0x61, 0x20,
-0x47, 0x6f, 0x72, 0x61, 0x426, 0x440, 0x43d, 0x430, 0x20, 0x413, 0x43e, 0x440, 0x430, 0x42, 0x6f, 0x73, 0x6e, 0x61, 0x20, 0x69,
-0x20, 0x48, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x69, 0x6e, 0x61, 0x53, 0x72, 0x62, 0x69, 0x6a, 0x61, 0x53, 0x65,
-0x73, 0x6f, 0x74, 0x68, 0x6f, 0x53, 0x65, 0x74, 0x73, 0x77, 0x61, 0x6e, 0x61, 0x63, 0x68, 0x69, 0x53, 0x68, 0x6f, 0x6e,
-0x61, 0xdc3, 0xdd2, 0xd82, 0xdc4, 0xdbd, 0xdc1, 0xdca, 0x200d, 0xdbb, 0xdd3, 0x20, 0xdbd, 0xd82, 0xd9a, 0xdcf, 0xdc0, 0x53, 0x69, 0x73,
-0x77, 0x61, 0x74, 0x69, 0x73, 0x6c, 0x6f, 0x76, 0x65, 0x6e, 0x10d, 0x69, 0x6e, 0x61, 0x53, 0x6c, 0x6f, 0x76, 0x65, 0x6e,
-0x73, 0x6b, 0xe1, 0x20, 0x72, 0x65, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x6b, 0x61, 0x73, 0x6c, 0x6f, 0x76, 0x65, 0x6e, 0x161,
-0x10d, 0x69, 0x6e, 0x61, 0x53, 0x6c, 0x6f, 0x76, 0x65, 0x6e, 0x69, 0x6a, 0x61, 0x53, 0x6f, 0x6f, 0x6d, 0x61, 0x61, 0x6c,
-0x69, 0x53, 0x6f, 0x6f, 0x6d, 0x61, 0x61, 0x6c, 0x69, 0x79, 0x61, 0x4a, 0x61, 0x62, 0x75, 0x75, 0x74, 0x69, 0x49, 0x74,
-0x6f, 0x6f, 0x62, 0x69, 0x79, 0x61, 0x4b, 0x69, 0x69, 0x6e, 0x69, 0x79, 0x61, 0x65, 0x73, 0x70, 0x61, 0xf1, 0x6f, 0x6c,
-0x20, 0x64, 0x65, 0x20, 0x45, 0x73, 0x70, 0x61, 0xf1, 0x61, 0x65, 0x73, 0x70, 0x61, 0xf1, 0x6f, 0x6c, 0x41, 0x72, 0x67,
-0x65, 0x6e, 0x74, 0x69, 0x6e, 0x61, 0x42, 0x6f, 0x6c, 0x69, 0x76, 0x69, 0x61, 0x43, 0x68, 0x69, 0x6c, 0x65, 0x43, 0x6f,
-0x6c, 0x6f, 0x6d, 0x62, 0x69, 0x61, 0x43, 0x6f, 0x73, 0x74, 0x61, 0x20, 0x52, 0x69, 0x63, 0x61, 0x52, 0x65, 0x70, 0xfa,
-0x62, 0x6c, 0x69, 0x63, 0x61, 0x20, 0x44, 0x6f, 0x6d, 0x69, 0x6e, 0x69, 0x63, 0x61, 0x6e, 0x61, 0x45, 0x63, 0x75, 0x61,
-0x64, 0x6f, 0x72, 0x45, 0x6c, 0x20, 0x53, 0x61, 0x6c, 0x76, 0x61, 0x64, 0x6f, 0x72, 0x47, 0x75, 0x69, 0x6e, 0x65, 0x61,
-0x20, 0x45, 0x63, 0x75, 0x61, 0x74, 0x6f, 0x72, 0x69, 0x61, 0x6c, 0x47, 0x75, 0x61, 0x74, 0x65, 0x6d, 0x61, 0x6c, 0x61,
-0x48, 0x6f, 0x6e, 0x64, 0x75, 0x72, 0x61, 0x73, 0x4d, 0xe9, 0x78, 0x69, 0x63, 0x6f, 0x4e, 0x69, 0x63, 0x61, 0x72, 0x61,
-0x67, 0x75, 0x61, 0x50, 0x61, 0x6e, 0x61, 0x6d, 0xe1, 0x50, 0x61, 0x72, 0x61, 0x67, 0x75, 0x61, 0x79, 0x50, 0x65, 0x72,
-0xfa, 0x50, 0x75, 0x65, 0x72, 0x74, 0x6f, 0x20, 0x52, 0x69, 0x63, 0x6f, 0x45, 0x73, 0x74, 0x61, 0x64, 0x6f, 0x73, 0x20,
-0x55, 0x6e, 0x69, 0x64, 0x6f, 0x73, 0x55, 0x72, 0x75, 0x67, 0x75, 0x61, 0x79, 0x56, 0x65, 0x6e, 0x65, 0x7a, 0x75, 0x65,
-0x6c, 0x61, 0x65, 0x73, 0x70, 0x61, 0xf1, 0x6f, 0x6c, 0x20, 0x6c, 0x61, 0x74, 0x69, 0x6e, 0x6f, 0x61, 0x6d, 0x65, 0x72,
-0x69, 0x63, 0x61, 0x6e, 0x6f, 0x4c, 0x61, 0x74, 0x69, 0x6e, 0x6f, 0x61, 0x6d, 0xe9, 0x72, 0x69, 0x63, 0x61, 0x20, 0x79,
-0x20, 0x65, 0x6c, 0x20, 0x43, 0x61, 0x72, 0x69, 0x62, 0x65, 0x4b, 0x69, 0x73, 0x77, 0x61, 0x68, 0x69, 0x6c, 0x69, 0x54,
-0x61, 0x6e, 0x7a, 0x61, 0x6e, 0x69, 0x61, 0x4b, 0x65, 0x6e, 0x79, 0x61, 0x73, 0x76, 0x65, 0x6e, 0x73, 0x6b, 0x61, 0x53,
-0x76, 0x65, 0x72, 0x69, 0x67, 0x65, 0x46, 0x69, 0x6e, 0x6c, 0x61, 0x6e, 0x64, 0xba4, 0xbae, 0xbbf, 0xbb4, 0xbcd, 0xb87, 0xba8,
-0xbcd, 0xba4, 0xbbf, 0xbaf, 0xbbe, 0xb87, 0xbb2, 0xb99, 0xbcd, 0xb95, 0xbc8, 0x422, 0x430, 0x442, 0x430, 0x440, 0xc24, 0xc46, 0xc32, 0xc41,
-0xc17, 0xc41, 0xc2d, 0xc3e, 0xc30, 0xc24, 0x20, 0xc26, 0xc47, 0xc36, 0xc02, 0xe44, 0xe17, 0xe22, 0xf54, 0xf7c, 0xf51, 0xf0b, 0xf66, 0xf90,
-0xf51, 0xf0b, 0xf62, 0xf92, 0xfb1, 0xf0b, 0xf53, 0xf42, 0xf62, 0xf92, 0xfb1, 0xf0b, 0xf42, 0xf62, 0xf0b, 0x1275, 0x130d, 0x122d, 0x129b, 0x12a4,
-0x122d, 0x1275, 0x122b, 0x6c, 0x65, 0x61, 0x20, 0x66, 0x61, 0x6b, 0x61, 0x74, 0x6f, 0x6e, 0x67, 0x61, 0x54, 0x6f, 0x6e, 0x67,
-0x61, 0x58, 0x69, 0x74, 0x73, 0x6f, 0x6e, 0x67, 0x61, 0x54, 0xfc, 0x72, 0x6b, 0xe7, 0x65, 0x54, 0xfc, 0x72, 0x6b, 0x69,
-0x79, 0x65, 0x443, 0x43a, 0x440, 0x430, 0x457, 0x43d, 0x441, 0x44c, 0x43a, 0x430, 0x423, 0x43a, 0x440, 0x430, 0x457, 0x43d, 0x430, 0x627,
-0x631, 0x62f, 0x648, 0x67e, 0x627, 0x6a9, 0x633, 0x62a, 0x627, 0x646, 0x628, 0x6be, 0x627, 0x631, 0x62a, 0x40e, 0x437, 0x431, 0x435, 0x43a,
-0x40e, 0x437, 0x431, 0x435, 0x43a, 0x438, 0x441, 0x442, 0x43e, 0x43d, 0x627, 0x6c9, 0x632, 0x628, 0x6d0, 0x6a9, 0x6f, 0x27, 0x7a, 0x62,
-0x65, 0x6b, 0x63, 0x68, 0x61, 0x4f, 0x2bf, 0x7a, 0x62, 0x65, 0x6b, 0x69, 0x73, 0x74, 0x6f, 0x6e, 0x54, 0x69, 0x1ebf, 0x6e,
-0x67, 0x20, 0x56, 0x69, 0x1ec7, 0x74, 0x56, 0x69, 0x1ec7, 0x74, 0x20, 0x4e, 0x61, 0x6d, 0x43, 0x79, 0x6d, 0x72, 0x61, 0x65,
-0x67, 0x50, 0x72, 0x79, 0x64, 0x61, 0x69, 0x6e, 0x20, 0x46, 0x61, 0x77, 0x72, 0x69, 0x73, 0x69, 0x58, 0x68, 0x6f, 0x73,
-0x61, 0xc8, 0x64, 0xe8, 0x20, 0x59, 0x6f, 0x72, 0xf9, 0x62, 0xe1, 0x4f, 0x72, 0xed, 0x6c, 0x1eb9, 0x301, 0xe8, 0x64, 0x65,
-0x20, 0x4e, 0xe0, 0xec, 0x6a, 0xed, 0x72, 0xed, 0xe0, 0x69, 0x73, 0x69, 0x5a, 0x75, 0x6c, 0x75, 0x69, 0x4e, 0x69, 0x6e,
-0x67, 0x69, 0x7a, 0x69, 0x6d, 0x75, 0x20, 0x41, 0x66, 0x72, 0x69, 0x6b, 0x61, 0x6e, 0x79, 0x6e, 0x6f, 0x72, 0x73, 0x6b,
-0x4e, 0x6f, 0x72, 0x65, 0x67, 0x62, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x69, 0x78b, 0x7a8, 0x788, 0x7ac, 0x780, 0x7a8, 0x784,
-0x7a6, 0x790, 0x7b0, 0x78b, 0x7a8, 0x788, 0x7ac, 0x780, 0x7a8, 0x20, 0x783, 0x7a7, 0x787, 0x7b0, 0x796, 0x7ac, 0x47, 0x61, 0x65, 0x6c,
-0x67, 0x52, 0x79, 0x77, 0x76, 0x61, 0x6e, 0x65, 0x74, 0x68, 0x20, 0x55, 0x6e, 0x79, 0x73, 0x6b, 0x65, 0x72, 0x6e, 0x65,
-0x77, 0x65, 0x6b, 0x41, 0x6b, 0x61, 0x6e, 0x47, 0x61, 0x61, 0x6e, 0x61, 0x915, 0x94b, 0x902, 0x915, 0x923, 0x940, 0x49, 0x67,
-0x62, 0x6f, 0x4e, 0x69, 0x67, 0x65, 0x72, 0x69, 0x61, 0x4b, 0x69, 0x6b, 0x61, 0x6d, 0x62, 0x61, 0x723, 0x718, 0x72a, 0x71d,
-0x71d, 0x710, 0x1265, 0x120a, 0x1295, 0x130d, 0x12d5, 0x12dd, 0x129b, 0x53, 0x69, 0x64, 0x61, 0x61, 0x6d, 0x75, 0x20, 0x41, 0x66, 0x6f,
-0x49, 0x74, 0x69, 0x79, 0x6f, 0x6f, 0x70, 0x68, 0x69, 0x79, 0x61, 0x1275, 0x130d, 0x1228, 0x66, 0x75, 0x72, 0x6c, 0x61, 0x6e,
-0x49, 0x74, 0x61, 0x6c, 0x69, 0x65, 0x54, 0x73, 0x68, 0x69, 0x76, 0x65, 0x6e, 0x1e13, 0x61, 0x45, 0x28b, 0x65, 0x67, 0x62,
-0x65, 0x47, 0x68, 0x61, 0x6e, 0x61, 0x64, 0x75, 0x54, 0x6f, 0x67, 0x6f, 0x64, 0x75, 0x12c8, 0x120b, 0x12ed, 0x1273, 0x1271, 0x2bb,
-0x14d, 0x6c, 0x65, 0x6c, 0x6f, 0x20, 0x48, 0x61, 0x77, 0x61, 0x69, 0x2bb, 0x69, 0x2bb, 0x41, 0x6d, 0x65, 0x6c, 0x69, 0x6b,
-0x61, 0x20, 0x48, 0x75, 0x69, 0x20, 0x50, 0x16b, 0x20, 0x2bb, 0x49, 0x61, 0x46, 0x69, 0x6c, 0x69, 0x70, 0x69, 0x6e, 0x6f,
-0x50, 0x69, 0x6c, 0x69, 0x70, 0x69, 0x6e, 0x61, 0x73, 0x53, 0x63, 0x68, 0x77, 0x69, 0x69, 0x7a, 0x65, 0x72, 0x74, 0xfc,
-0xfc, 0x74, 0x73, 0x63, 0x68, 0x53, 0x63, 0x68, 0x77, 0x69, 0x69, 0x7a, 0xa188, 0xa320, 0xa259, 0xa34f, 0xa1e9, 0x50, 0x6c, 0x61,
-0x74, 0x74, 0x64, 0xfc, 0xfc, 0x74, 0x73, 0x63, 0x68, 0x44, 0xfc, 0xfc, 0x74, 0x73, 0x63, 0x68, 0x6c, 0x61, 0x6e, 0x64,
-0x69, 0x73, 0x69, 0x4e, 0x64, 0x65, 0x62, 0x65, 0x6c, 0x65, 0x53, 0x65, 0x73, 0x6f, 0x74, 0x68, 0x6f, 0x20, 0x73, 0x61,
-0x20, 0x4c, 0x65, 0x62, 0x6f, 0x61, 0x64, 0x61, 0x76, 0x76, 0x69, 0x73, 0xe1, 0x6d, 0x65, 0x67, 0x69, 0x65, 0x6c, 0x6c,
-0x61, 0x4e, 0x6f, 0x72, 0x67, 0x61, 0x53, 0x75, 0x6f, 0x70, 0x6d, 0x61, 0x45, 0x6b, 0x65, 0x67, 0x75, 0x73, 0x69, 0x69,
-0x4b, 0x69, 0x74, 0x61, 0x69, 0x74, 0x61, 0x50, 0x75, 0x6c, 0x61, 0x61, 0x72, 0x53, 0x65, 0x6e, 0x65, 0x67, 0x61, 0x61,
-0x6c, 0x47, 0x69, 0x6b, 0x75, 0x79, 0x75, 0x4b, 0x69, 0x73, 0x61, 0x6d, 0x70, 0x75, 0x72, 0x73, 0x65, 0x6e, 0x61, 0x4b,
-0x69, 0x68, 0x6f, 0x72, 0x6f, 0x6d, 0x62, 0x6f, 0x74, 0x61, 0x6d, 0x61, 0x7a, 0x69, 0x67, 0x68, 0x74, 0x6c, 0x6d, 0x263,
-0x72, 0x69, 0x62, 0x2d5c, 0x2d30, 0x2d4e, 0x2d30, 0x2d63, 0x2d49, 0x2d56, 0x2d5c, 0x2d4d, 0x2d4e, 0x2d56, 0x2d54, 0x2d49, 0x2d31, 0x54, 0x61, 0x71,
-0x62, 0x61, 0x79, 0x6c, 0x69, 0x74, 0x4c, 0x65, 0x7a, 0x7a, 0x61, 0x79, 0x65, 0x72, 0x52, 0x75, 0x6e, 0x79, 0x61, 0x6e,
-0x6b, 0x6f, 0x72, 0x65, 0x55, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x48, 0x69, 0x62, 0x65, 0x6e, 0x61, 0x48, 0x75, 0x74, 0x61,
-0x6e, 0x7a, 0x61, 0x6e, 0x69, 0x61, 0x4b, 0x79, 0x69, 0x76, 0x75, 0x6e, 0x6a, 0x6f, 0x62, 0x61, 0x6d, 0x61, 0x6e, 0x61,
-0x6b, 0x61, 0x6e, 0x4b, 0x129, 0x65, 0x6d, 0x62, 0x75, 0x13e3, 0x13b3, 0x13a9, 0x13a0, 0x13b9, 0x13f0, 0x13df, 0x6b, 0x72, 0x65, 0x6f,
-0x6c, 0x20, 0x6d, 0x6f, 0x72, 0x69, 0x73, 0x69, 0x65, 0x6e, 0x4d, 0x6f, 0x72, 0x69, 0x73, 0x43, 0x68, 0x69, 0x6d, 0x61,
-0x6b, 0x6f, 0x6e, 0x64, 0x65, 0x4b, 0x268, 0x6c, 0x61, 0x61, 0x6e, 0x67, 0x69, 0x54, 0x61, 0x61, 0x6e, 0x73, 0x61, 0x6e,
-0xed, 0x61, 0x4c, 0x75, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x59, 0x75, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x49, 0x63, 0x68, 0x69,
-0x62, 0x65, 0x6d, 0x62, 0x61, 0x5a, 0x61, 0x6d, 0x62, 0x69, 0x61, 0x6b, 0x61, 0x62, 0x75, 0x76, 0x65, 0x72, 0x64, 0x69,
-0x61, 0x6e, 0x75, 0x4b, 0x61, 0x62, 0x75, 0x20, 0x56, 0x65, 0x72, 0x64, 0x69, 0x4b, 0x129, 0x6d, 0x129, 0x72, 0x169, 0x4b,
-0x61, 0x6c, 0x65, 0x6e, 0x6a, 0x69, 0x6e, 0x45, 0x6d, 0x65, 0x74, 0x61, 0x62, 0x20, 0x4b, 0x65, 0x6e, 0x79, 0x61, 0x4b,
-0x68, 0x6f, 0x65, 0x6b, 0x68, 0x6f, 0x65, 0x67, 0x6f, 0x77, 0x61, 0x62, 0x4e, 0x61, 0x6d, 0x69, 0x62, 0x69, 0x61, 0x62,
-0x4b, 0x69, 0x6d, 0x61, 0x63, 0x68, 0x61, 0x6d, 0x65, 0x44, 0x6f, 0xfc, 0x74, 0x73, 0x63, 0x68, 0x6c, 0x61, 0x6e, 0x64,
-0x4d, 0x61, 0x61, 0x54, 0x61, 0x6e, 0x73, 0x61, 0x6e, 0x69, 0x61, 0x4f, 0x6c, 0x75, 0x73, 0x6f, 0x67, 0x61, 0x4c, 0x75,
-0x6c, 0x75, 0x68, 0x69, 0x61, 0x4b, 0x69, 0x70, 0x61, 0x72, 0x65, 0x54, 0x61, 0x64, 0x68, 0x61, 0x6e, 0x69, 0x61, 0x4b,
-0x69, 0x74, 0x65, 0x73, 0x6f, 0x4b, 0x65, 0x6e, 0x69, 0x61, 0x4b, 0x6f, 0x79, 0x72, 0x61, 0x20, 0x63, 0x69, 0x69, 0x6e,
-0x69, 0x4d, 0x61, 0x61, 0x6c, 0x69, 0x4b, 0x69, 0x72, 0x75, 0x77, 0x61, 0x44, 0x68, 0x6f, 0x6c, 0x75, 0x6f, 0x52, 0x75,
-0x6b, 0x69, 0x67, 0x61, 0x54, 0x61, 0x6d, 0x61, 0x7a, 0x69, 0x263, 0x74, 0x4d, 0x65, 0x1e5b, 0x1e5b, 0x75, 0x6b, 0x4b, 0x6f,
-0x79, 0x72, 0x61, 0x62, 0x6f, 0x72, 0x6f, 0x20, 0x73, 0x65, 0x6e, 0x6e, 0x69, 0x4b, 0x69, 0x73, 0x68, 0x61, 0x6d, 0x62,
-0x61, 0x61
+0x17b6, 0x63, 0x61, 0x74, 0x61, 0x6c, 0xe0, 0x45, 0x73, 0x70, 0x61, 0x6e, 0x79, 0x61, 0x4e2d, 0x6587, 0xff08, 0x7b80, 0x4f53, 0xff09,
+0x4e2d, 0x56fd, 0x4e2d, 0x56fd, 0x9999, 0x6e2f, 0x7279, 0x522b, 0x884c, 0x653f, 0x533a, 0x4e2d, 0x56fd, 0x6fb3, 0x95e8, 0x7279, 0x522b, 0x884c, 0x653f, 0x533a,
+0x65b0, 0x52a0, 0x5761, 0x7e41, 0x9ad4, 0x4e2d, 0x6587, 0x4e2d, 0x83ef, 0x4eba, 0x6c11, 0x5171, 0x548c, 0x570b, 0x9999, 0x6e2f, 0x7279, 0x5225, 0x884c, 0x653f,
+0x5340, 0x4e2d, 0x83ef, 0x4eba, 0x6c11, 0x5171, 0x548c, 0x570b, 0x6fb3, 0x9580, 0x7279, 0x5225, 0x884c, 0x653f, 0x5340, 0x53f0, 0x7063, 0x68, 0x72, 0x76,
+0x61, 0x74, 0x73, 0x6b, 0x69, 0x48, 0x72, 0x76, 0x61, 0x74, 0x73, 0x6b, 0x61, 0x10d, 0x65, 0x161, 0x74, 0x69, 0x6e, 0x61,
+0x10c, 0x65, 0x73, 0x6b, 0xe1, 0x20, 0x72, 0x65, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x6b, 0x61, 0x64, 0x61, 0x6e, 0x73, 0x6b,
+0x44, 0x61, 0x6e, 0x6d, 0x61, 0x72, 0x6b, 0x4e, 0x65, 0x64, 0x65, 0x72, 0x6c, 0x61, 0x6e, 0x64, 0x73, 0x4e, 0x65, 0x64,
+0x65, 0x72, 0x6c, 0x61, 0x6e, 0x64, 0x56, 0x6c, 0x61, 0x61, 0x6d, 0x73, 0x42, 0x65, 0x6c, 0x67, 0x69, 0xeb, 0x55, 0x2e,
+0x53, 0x2e, 0x20, 0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x55, 0x6e, 0x69, 0x74, 0x65, 0x64, 0x20, 0x53, 0x74, 0x61,
+0x74, 0x65, 0x73, 0xd801, 0xdc0f, 0xd801, 0xdc2d, 0xd801, 0xdc4c, 0xd801, 0xdc34, 0xd801, 0xdc3b, 0xd801, 0xdc32, 0xd801, 0xdc3c, 0x20, 0xd801, 0xdc1d,
+0xd801, 0xdc3b, 0xd801, 0xdc29, 0xd801, 0xdc3b, 0xd801, 0xdc45, 0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x41, 0x6d, 0x65, 0x72, 0x69,
+0x63, 0x61, 0x6e, 0x20, 0x53, 0x61, 0x6d, 0x6f, 0x61, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x6e, 0x20,
+0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x41, 0x75, 0x73, 0x74, 0x72, 0x61, 0x6c, 0x69, 0x61, 0x42, 0x65, 0x6c, 0x67,
+0x69, 0x75, 0x6d, 0x42, 0x65, 0x6c, 0x69, 0x7a, 0x65, 0x42, 0x6f, 0x74, 0x73, 0x77, 0x61, 0x6e, 0x61, 0x43, 0x61, 0x6e,
+0x61, 0x64, 0x69, 0x61, 0x6e, 0x20, 0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x43, 0x61, 0x6e, 0x61, 0x64, 0x61, 0x47,
+0x75, 0x61, 0x6d, 0x48, 0x6f, 0x6e, 0x67, 0x20, 0x4b, 0x6f, 0x6e, 0x67, 0x20, 0x53, 0x41, 0x52, 0x20, 0x43, 0x68, 0x69,
+0x6e, 0x61, 0x49, 0x6e, 0x64, 0x69, 0x61, 0x49, 0x72, 0x65, 0x6c, 0x61, 0x6e, 0x64, 0x4a, 0x61, 0x6d, 0x61, 0x69, 0x63,
+0x61, 0x4d, 0x61, 0x6c, 0x74, 0x61, 0x4d, 0x61, 0x72, 0x73, 0x68, 0x61, 0x6c, 0x6c, 0x20, 0x49, 0x73, 0x6c, 0x61, 0x6e,
+0x64, 0x73, 0x4d, 0x61, 0x75, 0x72, 0x69, 0x74, 0x69, 0x75, 0x73, 0x4e, 0x61, 0x6d, 0x69, 0x62, 0x69, 0x61, 0x4e, 0x65,
+0x77, 0x20, 0x5a, 0x65, 0x61, 0x6c, 0x61, 0x6e, 0x64, 0x4e, 0x6f, 0x72, 0x74, 0x68, 0x65, 0x72, 0x6e, 0x20, 0x4d, 0x61,
+0x72, 0x69, 0x61, 0x6e, 0x61, 0x20, 0x49, 0x73, 0x6c, 0x61, 0x6e, 0x64, 0x73, 0x50, 0x61, 0x6b, 0x69, 0x73, 0x74, 0x61,
+0x6e, 0x50, 0x68, 0x69, 0x6c, 0x69, 0x70, 0x70, 0x69, 0x6e, 0x65, 0x73, 0x53, 0x69, 0x6e, 0x67, 0x61, 0x70, 0x6f, 0x72,
+0x65, 0x53, 0x6f, 0x75, 0x74, 0x68, 0x20, 0x41, 0x66, 0x72, 0x69, 0x63, 0x61, 0x54, 0x72, 0x69, 0x6e, 0x69, 0x64, 0x61,
+0x64, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x54, 0x6f, 0x62, 0x61, 0x67, 0x6f, 0x42, 0x72, 0x69, 0x74, 0x69, 0x73, 0x68, 0x20,
+0x45, 0x6e, 0x67, 0x6c, 0x69, 0x73, 0x68, 0x55, 0x6e, 0x69, 0x74, 0x65, 0x64, 0x20, 0x4b, 0x69, 0x6e, 0x67, 0x64, 0x6f,
+0x6d, 0x55, 0x2e, 0x53, 0x2e, 0x20, 0x4d, 0x69, 0x6e, 0x6f, 0x72, 0x20, 0x4f, 0x75, 0x74, 0x6c, 0x79, 0x69, 0x6e, 0x67,
+0x20, 0x49, 0x73, 0x6c, 0x61, 0x6e, 0x64, 0x73, 0x55, 0x2e, 0x53, 0x2e, 0x20, 0x56, 0x69, 0x72, 0x67, 0x69, 0x6e, 0x20,
+0x49, 0x73, 0x6c, 0x61, 0x6e, 0x64, 0x73, 0x5a, 0x69, 0x6d, 0x62, 0x61, 0x62, 0x77, 0x65, 0x65, 0x65, 0x73, 0x74, 0x69,
+0x45, 0x65, 0x73, 0x74, 0x69, 0x66, 0xf8, 0x72, 0x6f, 0x79, 0x73, 0x6b, 0x74, 0x46, 0xf8, 0x72, 0x6f, 0x79, 0x61, 0x72,
+0x73, 0x75, 0x6f, 0x6d, 0x69, 0x53, 0x75, 0x6f, 0x6d, 0x69, 0x66, 0x72, 0x61, 0x6e, 0xe7, 0x61, 0x69, 0x73, 0x46, 0x72,
+0x61, 0x6e, 0x63, 0x65, 0x42, 0x65, 0x6c, 0x67, 0x69, 0x71, 0x75, 0x65, 0x42, 0xe9, 0x6e, 0x69, 0x6e, 0x42, 0x75, 0x72,
+0x6b, 0x69, 0x6e, 0x61, 0x20, 0x46, 0x61, 0x73, 0x6f, 0x42, 0x75, 0x72, 0x75, 0x6e, 0x64, 0x69, 0x43, 0x61, 0x6d, 0x65,
+0x72, 0x6f, 0x75, 0x6e, 0x66, 0x72, 0x61, 0x6e, 0xe7, 0x61, 0x69, 0x73, 0x20, 0x63, 0x61, 0x6e, 0x61, 0x64, 0x69, 0x65,
+0x6e, 0x52, 0xe9, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x71, 0x75, 0x65, 0x20, 0x63, 0x65, 0x6e, 0x74, 0x72, 0x61, 0x66, 0x72,
+0x69, 0x63, 0x61, 0x69, 0x6e, 0x65, 0x54, 0x63, 0x68, 0x61, 0x64, 0x43, 0x6f, 0x6d, 0x6f, 0x72, 0x65, 0x73, 0x52, 0xe9,
+0x70, 0x75, 0x62, 0x6c, 0x69, 0x71, 0x75, 0x65, 0x20, 0x64, 0xe9, 0x6d, 0x6f, 0x63, 0x72, 0x61, 0x74, 0x69, 0x71, 0x75,
+0x65, 0x20, 0x64, 0x75, 0x20, 0x43, 0x6f, 0x6e, 0x67, 0x6f, 0x43, 0x6f, 0x6e, 0x67, 0x6f, 0x2d, 0x42, 0x72, 0x61, 0x7a,
+0x7a, 0x61, 0x76, 0x69, 0x6c, 0x6c, 0x65, 0x43, 0xf4, 0x74, 0x65, 0x20, 0x64, 0x2019, 0x49, 0x76, 0x6f, 0x69, 0x72, 0x65,
+0x44, 0x6a, 0x69, 0x62, 0x6f, 0x75, 0x74, 0x69, 0x47, 0x75, 0x69, 0x6e, 0xe9, 0x65, 0x20, 0xe9, 0x71, 0x75, 0x61, 0x74,
+0x6f, 0x72, 0x69, 0x61, 0x6c, 0x65, 0x47, 0x61, 0x62, 0x6f, 0x6e, 0x47, 0x75, 0x61, 0x64, 0x65, 0x6c, 0x6f, 0x75, 0x70,
+0x65, 0x47, 0x75, 0x69, 0x6e, 0xe9, 0x65, 0x4c, 0x75, 0x78, 0x65, 0x6d, 0x62, 0x6f, 0x75, 0x72, 0x67, 0x4d, 0x61, 0x64,
+0x61, 0x67, 0x61, 0x73, 0x63, 0x61, 0x72, 0x4d, 0x61, 0x6c, 0x69, 0x4d, 0x61, 0x72, 0x74, 0x69, 0x6e, 0x69, 0x71, 0x75,
+0x65, 0x4d, 0x6f, 0x6e, 0x61, 0x63, 0x6f, 0x4e, 0x69, 0x67, 0x65, 0x72, 0x52, 0xe9, 0x75, 0x6e, 0x69, 0x6f, 0x6e, 0x52,
+0x77, 0x61, 0x6e, 0x64, 0x61, 0x53, 0xe9, 0x6e, 0xe9, 0x67, 0x61, 0x6c, 0x66, 0x72, 0x61, 0x6e, 0xe7, 0x61, 0x69, 0x73,
+0x20, 0x73, 0x75, 0x69, 0x73, 0x73, 0x65, 0x53, 0x75, 0x69, 0x73, 0x73, 0x65, 0x54, 0x6f, 0x67, 0x6f, 0x53, 0x61, 0x69,
+0x6e, 0x74, 0x2d, 0x42, 0x61, 0x72, 0x74, 0x68, 0xe9, 0x6c, 0xe9, 0x6d, 0x79, 0x53, 0x61, 0x69, 0x6e, 0x74, 0x2d, 0x4d,
+0x61, 0x72, 0x74, 0x69, 0x6e, 0x67, 0x61, 0x6c, 0x65, 0x67, 0x6f, 0x45, 0x73, 0x70, 0x61, 0xf1, 0x61, 0x10e5, 0x10d0, 0x10e0,
+0x10d7, 0x10e3, 0x10da, 0x10d8, 0x10e1, 0x10d0, 0x10e5, 0x10d0, 0x10e0, 0x10d7, 0x10d5, 0x10d4, 0x10da, 0x10dd, 0x44, 0x65, 0x75, 0x74, 0x73, 0x63,
+0x68, 0x44, 0x65, 0x75, 0x74, 0x73, 0x63, 0x68, 0x6c, 0x61, 0x6e, 0x64, 0xd6, 0x73, 0x74, 0x65, 0x72, 0x72, 0x65, 0x69,
+0x63, 0x68, 0x69, 0x73, 0x63, 0x68, 0x65, 0x73, 0x20, 0x44, 0x65, 0x75, 0x74, 0x73, 0x63, 0x68, 0xd6, 0x73, 0x74, 0x65,
+0x72, 0x72, 0x65, 0x69, 0x63, 0x68, 0x42, 0x65, 0x6c, 0x67, 0x69, 0x65, 0x6e, 0x4c, 0x69, 0x65, 0x63, 0x68, 0x74, 0x65,
+0x6e, 0x73, 0x74, 0x65, 0x69, 0x6e, 0x4c, 0x75, 0x78, 0x65, 0x6d, 0x62, 0x75, 0x72, 0x67, 0x53, 0x63, 0x68, 0x77, 0x65,
+0x69, 0x7a, 0x65, 0x72, 0x20, 0x48, 0x6f, 0x63, 0x68, 0x64, 0x65, 0x75, 0x74, 0x73, 0x63, 0x68, 0x53, 0x63, 0x68, 0x77,
+0x65, 0x69, 0x7a, 0x395, 0x3bb, 0x3bb, 0x3b7, 0x3bd, 0x3b9, 0x3ba, 0x3ac, 0x395, 0x3bb, 0x3bb, 0x3ac, 0x3b4, 0x3b1, 0x39a, 0x3cd, 0x3c0,
+0x3c1, 0x3bf, 0x3c2, 0x6b, 0x61, 0x6c, 0x61, 0x61, 0x6c, 0x6c, 0x69, 0x73, 0x75, 0x74, 0x4b, 0x61, 0x6c, 0x61, 0x61, 0x6c,
+0x6c, 0x69, 0x74, 0x20, 0x4e, 0x75, 0x6e, 0x61, 0x61, 0x74, 0xa97, 0xac1, 0xa9c, 0xab0, 0xabe, 0xaa4, 0xac0, 0xaad, 0xabe, 0xab0,
+0xaa4, 0x48, 0x61, 0x75, 0x73, 0x61, 0x4e, 0x61, 0x6a, 0x65, 0x72, 0x69, 0x79, 0x61, 0x53, 0x75, 0x64, 0x61, 0x6e, 0x47,
+0x61, 0x6e, 0x61, 0x4e, 0x69, 0x6a, 0x61, 0x72, 0x5e2, 0x5d1, 0x5e8, 0x5d9, 0x5ea, 0x5d9, 0x5e9, 0x5e8, 0x5d0, 0x5dc, 0x939, 0x93f,
+0x928, 0x94d, 0x926, 0x940, 0x92d, 0x93e, 0x930, 0x924, 0x6d, 0x61, 0x67, 0x79, 0x61, 0x72, 0x4d, 0x61, 0x67, 0x79, 0x61, 0x72,
+0x6f, 0x72, 0x73, 0x7a, 0xe1, 0x67, 0xed, 0x73, 0x6c, 0x65, 0x6e, 0x73, 0x6b, 0x61, 0xcd, 0x73, 0x6c, 0x61, 0x6e, 0x64,
+0x42, 0x61, 0x68, 0x61, 0x73, 0x61, 0x20, 0x49, 0x6e, 0x64, 0x6f, 0x6e, 0x65, 0x73, 0x69, 0x61, 0x49, 0x6e, 0x64, 0x6f,
+0x6e, 0x65, 0x73, 0x69, 0x61, 0x47, 0x61, 0x65, 0x69, 0x6c, 0x67, 0x65, 0xc9, 0x69, 0x72, 0x65, 0x69, 0x74, 0x61, 0x6c,
+0x69, 0x61, 0x6e, 0x6f, 0x49, 0x74, 0x61, 0x6c, 0x69, 0x61, 0x53, 0x76, 0x69, 0x7a, 0x7a, 0x65, 0x72, 0x61, 0x65e5, 0x672c,
+0x8a9e, 0x65e5, 0x672c, 0xc95, 0xca8, 0xccd, 0xca8, 0xca1, 0xcad, 0xcbe, 0xcb0, 0xca4, 0x49a, 0x430, 0x437, 0x430, 0x49b, 0x49a, 0x430, 0x437,
+0x430, 0x49b, 0x441, 0x442, 0x430, 0x43d, 0x4b, 0x69, 0x6e, 0x79, 0x61, 0x72, 0x77, 0x61, 0x6e, 0x64, 0x61, 0x41a, 0x44b, 0x440,
+0x433, 0x44b, 0x437, 0x41a, 0x44b, 0x440, 0x433, 0x44b, 0x437, 0x441, 0x442, 0x430, 0x43d, 0xd55c, 0xad6d, 0xc5b4, 0xb300, 0xd55c, 0xbbfc, 0xad6d,
+0x643, 0x648, 0x631, 0x62f, 0x6cc, 0x639, 0x6ce, 0x631, 0x627, 0x642, 0x6b, 0x75, 0x72, 0x64, 0xee, 0x54, 0x69, 0x72, 0x6b, 0x69,
+0x79, 0x65, 0xea5, 0xeb2, 0xea7, 0x6c, 0x61, 0x74, 0x76, 0x69, 0x65, 0x161, 0x75, 0x4c, 0x61, 0x74, 0x76, 0x69, 0x6a, 0x61,
+0x6c, 0x69, 0x6e, 0x67, 0xe1, 0x6c, 0x61, 0x4b, 0x6f, 0x6e, 0x67, 0xf3, 0x2d, 0x4b, 0x69, 0x6e, 0x73, 0xe1, 0x73, 0xe1,
+0x4b, 0x6f, 0x6e, 0x67, 0xf3, 0x2d, 0x42, 0x72, 0x61, 0x7a, 0x7a, 0x61, 0x76, 0x69, 0x6c, 0x6c, 0x65, 0x6c, 0x69, 0x65,
+0x74, 0x75, 0x76, 0x69, 0x173, 0x4c, 0x69, 0x65, 0x74, 0x75, 0x76, 0x61, 0x43c, 0x430, 0x43a, 0x435, 0x434, 0x43e, 0x43d, 0x441,
+0x43a, 0x438, 0x41c, 0x430, 0x43a, 0x435, 0x434, 0x43e, 0x43d, 0x438, 0x458, 0x430, 0x4d, 0x61, 0x6c, 0x61, 0x67, 0x61, 0x73, 0x79,
+0x4d, 0x61, 0x64, 0x61, 0x67, 0x61, 0x73, 0x69, 0x6b, 0x61, 0x72, 0x61, 0x42, 0x61, 0x68, 0x61, 0x73, 0x61, 0x20, 0x4d,
+0x65, 0x6c, 0x61, 0x79, 0x75, 0x4d, 0x61, 0x6c, 0x61, 0x79, 0x73, 0x69, 0x61, 0x42, 0x72, 0x75, 0x6e, 0x65, 0x69, 0xd2e,
+0xd32, 0xd2f, 0xd3e, 0xd33, 0xd02, 0xd07, 0xd28, 0xd4d, 0xd24, 0xd4d, 0xd2f, 0x4d, 0x61, 0x6c, 0x74, 0x69, 0x92e, 0x930, 0x93e, 0x920,
+0x940, 0x43c, 0x43e, 0x43d, 0x433, 0x43e, 0x43b, 0x41c, 0x43e, 0x43d, 0x433, 0x43e, 0x43b, 0x20, 0x443, 0x43b, 0x441, 0x928, 0x947, 0x92a,
+0x93e, 0x932, 0x940, 0x928, 0x947, 0x92a, 0x93e, 0x932, 0x6e, 0x6f, 0x72, 0x73, 0x6b, 0x20, 0x62, 0x6f, 0x6b, 0x6d, 0xe5, 0x6c,
+0x4e, 0x6f, 0x72, 0x67, 0x65, 0x6f, 0x63, 0x63, 0x69, 0x74, 0x61, 0x6e, 0x46, 0x72, 0x61, 0x6e, 0xe7, 0x61, 0xb13, 0xb21,
+0xb3c, 0xb3f, 0xb06, 0xb2d, 0xb3e, 0xb30, 0xb24, 0x67e, 0x69a, 0x62a, 0x648, 0x627, 0x641, 0x63a, 0x627, 0x646, 0x633, 0x62a, 0x627, 0x646,
+0x641, 0x627, 0x631, 0x633, 0x6cc, 0x627, 0x6cc, 0x631, 0x627, 0x646, 0x62f, 0x631, 0x6cc, 0x70, 0x6f, 0x6c, 0x73, 0x6b, 0x69, 0x50,
+0x6f, 0x6c, 0x73, 0x6b, 0x61, 0x70, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x75, 0xea, 0x73, 0x20, 0x64, 0x6f, 0x20, 0x42, 0x72,
+0x61, 0x73, 0x69, 0x6c, 0x42, 0x72, 0x61, 0x73, 0x69, 0x6c, 0x70, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x75, 0xea, 0x73, 0x41,
+0x6e, 0x67, 0x6f, 0x6c, 0x61, 0x47, 0x75, 0x69, 0x6e, 0xe9, 0x20, 0x42, 0x69, 0x73, 0x73, 0x61, 0x75, 0x4d, 0x6f, 0xe7,
+0x61, 0x6d, 0x62, 0x69, 0x71, 0x75, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x75, 0xea, 0x73, 0x20, 0x65, 0x75, 0x72,
+0x6f, 0x70, 0x65, 0x75, 0x50, 0x6f, 0x72, 0x74, 0x75, 0x67, 0x61, 0x6c, 0xa2a, 0xa70, 0xa1c, 0xa3e, 0xa2c, 0xa40, 0xa2d, 0xa3e,
+0xa30, 0xa24, 0x67e, 0x646, 0x62c, 0x627, 0x628, 0x67e, 0x6a9, 0x633, 0x62a, 0x627, 0x646, 0x72, 0x75, 0x6d, 0x61, 0x6e, 0x74, 0x73,
+0x63, 0x68, 0x53, 0x76, 0x69, 0x7a, 0x72, 0x61, 0x72, 0x6f, 0x6d, 0xe2, 0x6e, 0x103, 0x52, 0x6f, 0x6d, 0xe2, 0x6e, 0x69,
+0x61, 0x52, 0x65, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x20, 0x4d, 0x6f, 0x6c, 0x64, 0x6f, 0x76, 0x61, 0x440, 0x443,
+0x441, 0x441, 0x43a, 0x438, 0x439, 0x420, 0x43e, 0x441, 0x441, 0x438, 0x44f, 0x41c, 0x43e, 0x43b, 0x434, 0x43e, 0x432, 0x430, 0x423, 0x43a,
+0x440, 0x430, 0x438, 0x43d, 0x430, 0x53, 0xe4, 0x6e, 0x67, 0xf6, 0x4b, 0xf6, 0x64, 0xf6, 0x72, 0xf6, 0x73, 0xea, 0x73, 0x65,
+0x20, 0x74, 0xee, 0x20, 0x42, 0xea, 0x61, 0x66, 0x72, 0xee, 0x6b, 0x61, 0x938, 0x902, 0x938, 0x94d, 0x915, 0x943, 0x924, 0x20,
+0x92d, 0x93e, 0x937, 0x93e, 0x92d, 0x93e, 0x930, 0x924, 0x92e, 0x94d, 0x421, 0x440, 0x43f, 0x441, 0x43a, 0x438, 0x421, 0x440, 0x431, 0x438,
+0x458, 0x430, 0x441, 0x440, 0x43f, 0x441, 0x43a, 0x438, 0x411, 0x43e, 0x441, 0x43d, 0x430, 0x20, 0x438, 0x20, 0x425, 0x435, 0x440, 0x446,
+0x435, 0x433, 0x43e, 0x432, 0x438, 0x43d, 0x430, 0x426, 0x440, 0x43d, 0x430, 0x20, 0x413, 0x43e, 0x440, 0x430, 0x53, 0x72, 0x70, 0x73,
+0x6b, 0x69, 0x42, 0x6f, 0x73, 0x6e, 0x61, 0x20, 0x69, 0x20, 0x48, 0x65, 0x72, 0x63, 0x65, 0x67, 0x6f, 0x76, 0x69, 0x6e,
+0x61, 0x43, 0x72, 0x6e, 0x61, 0x20, 0x47, 0x6f, 0x72, 0x61, 0x53, 0x72, 0x62, 0x69, 0x6a, 0x61, 0x53, 0x65, 0x73, 0x6f,
+0x74, 0x68, 0x6f, 0x53, 0x65, 0x74, 0x73, 0x77, 0x61, 0x6e, 0x61, 0x63, 0x68, 0x69, 0x53, 0x68, 0x6f, 0x6e, 0x61, 0xdc3,
+0xdd2, 0xd82, 0xdc4, 0xdbd, 0xdc1, 0xdca, 0x200d, 0xdbb, 0xdd3, 0x20, 0xdbd, 0xd82, 0xd9a, 0xdcf, 0xdc0, 0x53, 0x69, 0x73, 0x77, 0x61,
+0x74, 0x69, 0x73, 0x6c, 0x6f, 0x76, 0x65, 0x6e, 0x10d, 0x69, 0x6e, 0x61, 0x53, 0x6c, 0x6f, 0x76, 0x65, 0x6e, 0x73, 0x6b,
+0xe1, 0x20, 0x72, 0x65, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x6b, 0x61, 0x73, 0x6c, 0x6f, 0x76, 0x65, 0x6e, 0x161, 0x10d, 0x69,
+0x6e, 0x61, 0x53, 0x6c, 0x6f, 0x76, 0x65, 0x6e, 0x69, 0x6a, 0x61, 0x53, 0x6f, 0x6f, 0x6d, 0x61, 0x61, 0x6c, 0x69, 0x53,
+0x6f, 0x6f, 0x6d, 0x61, 0x61, 0x6c, 0x69, 0x79, 0x61, 0x4a, 0x61, 0x62, 0x75, 0x75, 0x74, 0x69, 0x49, 0x74, 0x6f, 0x6f,
+0x62, 0x69, 0x79, 0x61, 0x4b, 0x69, 0x69, 0x6e, 0x69, 0x79, 0x61, 0x65, 0x73, 0x70, 0x61, 0xf1, 0x6f, 0x6c, 0x20, 0x64,
+0x65, 0x20, 0x45, 0x73, 0x70, 0x61, 0xf1, 0x61, 0x65, 0x73, 0x70, 0x61, 0xf1, 0x6f, 0x6c, 0x41, 0x72, 0x67, 0x65, 0x6e,
+0x74, 0x69, 0x6e, 0x61, 0x42, 0x6f, 0x6c, 0x69, 0x76, 0x69, 0x61, 0x43, 0x68, 0x69, 0x6c, 0x65, 0x43, 0x6f, 0x6c, 0x6f,
+0x6d, 0x62, 0x69, 0x61, 0x43, 0x6f, 0x73, 0x74, 0x61, 0x20, 0x52, 0x69, 0x63, 0x61, 0x52, 0x65, 0x70, 0xfa, 0x62, 0x6c,
+0x69, 0x63, 0x61, 0x20, 0x44, 0x6f, 0x6d, 0x69, 0x6e, 0x69, 0x63, 0x61, 0x6e, 0x61, 0x45, 0x63, 0x75, 0x61, 0x64, 0x6f,
+0x72, 0x45, 0x6c, 0x20, 0x53, 0x61, 0x6c, 0x76, 0x61, 0x64, 0x6f, 0x72, 0x47, 0x75, 0x69, 0x6e, 0x65, 0x61, 0x20, 0x45,
+0x63, 0x75, 0x61, 0x74, 0x6f, 0x72, 0x69, 0x61, 0x6c, 0x47, 0x75, 0x61, 0x74, 0x65, 0x6d, 0x61, 0x6c, 0x61, 0x48, 0x6f,
+0x6e, 0x64, 0x75, 0x72, 0x61, 0x73, 0x4d, 0xe9, 0x78, 0x69, 0x63, 0x6f, 0x4e, 0x69, 0x63, 0x61, 0x72, 0x61, 0x67, 0x75,
+0x61, 0x50, 0x61, 0x6e, 0x61, 0x6d, 0xe1, 0x50, 0x61, 0x72, 0x61, 0x67, 0x75, 0x61, 0x79, 0x50, 0x65, 0x72, 0xfa, 0x50,
+0x75, 0x65, 0x72, 0x74, 0x6f, 0x20, 0x52, 0x69, 0x63, 0x6f, 0x45, 0x73, 0x74, 0x61, 0x64, 0x6f, 0x73, 0x20, 0x55, 0x6e,
+0x69, 0x64, 0x6f, 0x73, 0x55, 0x72, 0x75, 0x67, 0x75, 0x61, 0x79, 0x56, 0x65, 0x6e, 0x65, 0x7a, 0x75, 0x65, 0x6c, 0x61,
+0x65, 0x73, 0x70, 0x61, 0xf1, 0x6f, 0x6c, 0x20, 0x6c, 0x61, 0x74, 0x69, 0x6e, 0x6f, 0x61, 0x6d, 0x65, 0x72, 0x69, 0x63,
+0x61, 0x6e, 0x6f, 0x4c, 0x61, 0x74, 0x69, 0x6e, 0x6f, 0x61, 0x6d, 0xe9, 0x72, 0x69, 0x63, 0x61, 0x20, 0x79, 0x20, 0x65,
+0x6c, 0x20, 0x43, 0x61, 0x72, 0x69, 0x62, 0x65, 0x4b, 0x69, 0x73, 0x77, 0x61, 0x68, 0x69, 0x6c, 0x69, 0x54, 0x61, 0x6e,
+0x7a, 0x61, 0x6e, 0x69, 0x61, 0x4b, 0x65, 0x6e, 0x79, 0x61, 0x73, 0x76, 0x65, 0x6e, 0x73, 0x6b, 0x61, 0x53, 0x76, 0x65,
+0x72, 0x69, 0x67, 0x65, 0x46, 0x69, 0x6e, 0x6c, 0x61, 0x6e, 0x64, 0xba4, 0xbae, 0xbbf, 0xbb4, 0xbcd, 0xb87, 0xba8, 0xbcd, 0xba4,
+0xbbf, 0xbaf, 0xbbe, 0xb87, 0xbb2, 0xb99, 0xbcd, 0xb95, 0xbc8, 0x422, 0x430, 0x442, 0x430, 0x440, 0xc24, 0xc46, 0xc32, 0xc41, 0xc17, 0xc41,
+0xc2d, 0xc3e, 0xc30, 0xc24, 0x20, 0xc26, 0xc47, 0xc36, 0xc02, 0xe44, 0xe17, 0xe22, 0xf54, 0xf7c, 0xf51, 0xf0b, 0xf66, 0xf90, 0xf51, 0xf0b,
+0xf62, 0xf92, 0xfb1, 0xf0b, 0xf53, 0xf42, 0xf62, 0xf92, 0xfb1, 0xf0b, 0xf42, 0xf62, 0xf0b, 0x1275, 0x130d, 0x122d, 0x129b, 0x12a4, 0x122d, 0x1275,
+0x122b, 0x6c, 0x65, 0x61, 0x20, 0x66, 0x61, 0x6b, 0x61, 0x74, 0x6f, 0x6e, 0x67, 0x61, 0x54, 0x6f, 0x6e, 0x67, 0x61, 0x58,
+0x69, 0x74, 0x73, 0x6f, 0x6e, 0x67, 0x61, 0x54, 0xfc, 0x72, 0x6b, 0xe7, 0x65, 0x54, 0xfc, 0x72, 0x6b, 0x69, 0x79, 0x65,
+0x443, 0x43a, 0x440, 0x430, 0x457, 0x43d, 0x441, 0x44c, 0x43a, 0x430, 0x423, 0x43a, 0x440, 0x430, 0x457, 0x43d, 0x430, 0x627, 0x631, 0x62f,
+0x648, 0x67e, 0x627, 0x6a9, 0x633, 0x62a, 0x627, 0x646, 0x628, 0x6be, 0x627, 0x631, 0x62a, 0x40e, 0x437, 0x431, 0x435, 0x43a, 0x40e, 0x437,
+0x431, 0x435, 0x43a, 0x438, 0x441, 0x442, 0x43e, 0x43d, 0x627, 0x6c9, 0x632, 0x628, 0x6d0, 0x6a9, 0x6f, 0x27, 0x7a, 0x62, 0x65, 0x6b,
+0x63, 0x68, 0x61, 0x4f, 0x2bf, 0x7a, 0x62, 0x65, 0x6b, 0x69, 0x73, 0x74, 0x6f, 0x6e, 0x54, 0x69, 0x1ebf, 0x6e, 0x67, 0x20,
+0x56, 0x69, 0x1ec7, 0x74, 0x56, 0x69, 0x1ec7, 0x74, 0x20, 0x4e, 0x61, 0x6d, 0x43, 0x79, 0x6d, 0x72, 0x61, 0x65, 0x67, 0x50,
+0x72, 0x79, 0x64, 0x61, 0x69, 0x6e, 0x20, 0x46, 0x61, 0x77, 0x72, 0x69, 0x73, 0x69, 0x58, 0x68, 0x6f, 0x73, 0x61, 0xc8,
+0x64, 0xe8, 0x20, 0x59, 0x6f, 0x72, 0xf9, 0x62, 0xe1, 0x4f, 0x72, 0xed, 0x6c, 0x1eb9, 0x301, 0xe8, 0x64, 0x65, 0x20, 0x4e,
+0xe0, 0xec, 0x6a, 0xed, 0x72, 0xed, 0xe0, 0x69, 0x73, 0x69, 0x5a, 0x75, 0x6c, 0x75, 0x69, 0x4e, 0x69, 0x6e, 0x67, 0x69,
+0x7a, 0x69, 0x6d, 0x75, 0x20, 0x41, 0x66, 0x72, 0x69, 0x6b, 0x61, 0x6e, 0x79, 0x6e, 0x6f, 0x72, 0x73, 0x6b, 0x4e, 0x6f,
+0x72, 0x65, 0x67, 0x62, 0x6f, 0x73, 0x61, 0x6e, 0x73, 0x6b, 0x69, 0x78b, 0x7a8, 0x788, 0x7ac, 0x780, 0x7a8, 0x784, 0x7a6, 0x790,
+0x7b0, 0x78b, 0x7a8, 0x788, 0x7ac, 0x780, 0x7a8, 0x20, 0x783, 0x7a7, 0x787, 0x7b0, 0x796, 0x7ac, 0x47, 0x61, 0x65, 0x6c, 0x67, 0x52,
+0x79, 0x77, 0x76, 0x61, 0x6e, 0x65, 0x74, 0x68, 0x20, 0x55, 0x6e, 0x79, 0x73, 0x6b, 0x65, 0x72, 0x6e, 0x65, 0x77, 0x65,
+0x6b, 0x41, 0x6b, 0x61, 0x6e, 0x47, 0x61, 0x61, 0x6e, 0x61, 0x915, 0x94b, 0x902, 0x915, 0x923, 0x940, 0x49, 0x67, 0x62, 0x6f,
+0x4e, 0x69, 0x67, 0x65, 0x72, 0x69, 0x61, 0x4b, 0x69, 0x6b, 0x61, 0x6d, 0x62, 0x61, 0x723, 0x718, 0x72a, 0x71d, 0x71d, 0x710,
+0x1265, 0x120a, 0x1295, 0x130d, 0x12d5, 0x12dd, 0x129b, 0x53, 0x69, 0x64, 0x61, 0x61, 0x6d, 0x75, 0x20, 0x41, 0x66, 0x6f, 0x49, 0x74,
+0x69, 0x79, 0x6f, 0x6f, 0x70, 0x68, 0x69, 0x79, 0x61, 0x1275, 0x130d, 0x1228, 0x66, 0x75, 0x72, 0x6c, 0x61, 0x6e, 0x49, 0x74,
+0x61, 0x6c, 0x69, 0x65, 0x54, 0x73, 0x68, 0x69, 0x76, 0x65, 0x6e, 0x1e13, 0x61, 0x45, 0x28b, 0x65, 0x67, 0x62, 0x65, 0x47,
+0x68, 0x61, 0x6e, 0x61, 0x64, 0x75, 0x54, 0x6f, 0x67, 0x6f, 0x64, 0x75, 0x12c8, 0x120b, 0x12ed, 0x1273, 0x1271, 0x2bb, 0x14d, 0x6c,
+0x65, 0x6c, 0x6f, 0x20, 0x48, 0x61, 0x77, 0x61, 0x69, 0x2bb, 0x69, 0x2bb, 0x41, 0x6d, 0x65, 0x6c, 0x69, 0x6b, 0x61, 0x20,
+0x48, 0x75, 0x69, 0x20, 0x50, 0x16b, 0x20, 0x2bb, 0x49, 0x61, 0x46, 0x69, 0x6c, 0x69, 0x70, 0x69, 0x6e, 0x6f, 0x50, 0x69,
+0x6c, 0x69, 0x70, 0x69, 0x6e, 0x61, 0x73, 0x53, 0x63, 0x68, 0x77, 0x69, 0x69, 0x7a, 0x65, 0x72, 0x74, 0xfc, 0xfc, 0x74,
+0x73, 0x63, 0x68, 0x53, 0x63, 0x68, 0x77, 0x69, 0x69, 0x7a, 0xa188, 0xa320, 0xa259, 0xa34f, 0xa1e9, 0x50, 0x6c, 0x61, 0x74, 0x74,
+0x64, 0xfc, 0xfc, 0x74, 0x73, 0x63, 0x68, 0x44, 0xfc, 0xfc, 0x74, 0x73, 0x63, 0x68, 0x6c, 0x61, 0x6e, 0x64, 0x69, 0x73,
+0x69, 0x4e, 0x64, 0x65, 0x62, 0x65, 0x6c, 0x65, 0x53, 0x65, 0x73, 0x6f, 0x74, 0x68, 0x6f, 0x20, 0x73, 0x61, 0x20, 0x4c,
+0x65, 0x62, 0x6f, 0x61, 0x64, 0x61, 0x76, 0x76, 0x69, 0x73, 0xe1, 0x6d, 0x65, 0x67, 0x69, 0x65, 0x6c, 0x6c, 0x61, 0x4e,
+0x6f, 0x72, 0x67, 0x61, 0x53, 0x75, 0x6f, 0x70, 0x6d, 0x61, 0x45, 0x6b, 0x65, 0x67, 0x75, 0x73, 0x69, 0x69, 0x4b, 0x69,
+0x74, 0x61, 0x69, 0x74, 0x61, 0x50, 0x75, 0x6c, 0x61, 0x61, 0x72, 0x53, 0x65, 0x6e, 0x65, 0x67, 0x61, 0x61, 0x6c, 0x47,
+0x69, 0x6b, 0x75, 0x79, 0x75, 0x4b, 0x69, 0x73, 0x61, 0x6d, 0x70, 0x75, 0x72, 0x73, 0x65, 0x6e, 0x61, 0x4b, 0x69, 0x68,
+0x6f, 0x72, 0x6f, 0x6d, 0x62, 0x6f, 0x74, 0x61, 0x6d, 0x61, 0x7a, 0x69, 0x67, 0x68, 0x74, 0x6c, 0x6d, 0x263, 0x72, 0x69,
+0x62, 0x2d5c, 0x2d30, 0x2d4e, 0x2d30, 0x2d63, 0x2d49, 0x2d56, 0x2d5c, 0x2d4d, 0x2d4e, 0x2d56, 0x2d54, 0x2d49, 0x2d31, 0x54, 0x61, 0x71, 0x62, 0x61,
+0x79, 0x6c, 0x69, 0x74, 0x4c, 0x65, 0x7a, 0x7a, 0x61, 0x79, 0x65, 0x72, 0x52, 0x75, 0x6e, 0x79, 0x61, 0x6e, 0x6b, 0x6f,
+0x72, 0x65, 0x55, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x48, 0x69, 0x62, 0x65, 0x6e, 0x61, 0x48, 0x75, 0x74, 0x61, 0x6e, 0x7a,
+0x61, 0x6e, 0x69, 0x61, 0x4b, 0x79, 0x69, 0x76, 0x75, 0x6e, 0x6a, 0x6f, 0x62, 0x61, 0x6d, 0x61, 0x6e, 0x61, 0x6b, 0x61,
+0x6e, 0x4b, 0x129, 0x65, 0x6d, 0x62, 0x75, 0x13e3, 0x13b3, 0x13a9, 0x13a0, 0x13b9, 0x13f0, 0x13df, 0x6b, 0x72, 0x65, 0x6f, 0x6c, 0x20,
+0x6d, 0x6f, 0x72, 0x69, 0x73, 0x69, 0x65, 0x6e, 0x4d, 0x6f, 0x72, 0x69, 0x73, 0x43, 0x68, 0x69, 0x6d, 0x61, 0x6b, 0x6f,
+0x6e, 0x64, 0x65, 0x4b, 0x268, 0x6c, 0x61, 0x61, 0x6e, 0x67, 0x69, 0x54, 0x61, 0x61, 0x6e, 0x73, 0x61, 0x6e, 0xed, 0x61,
+0x4c, 0x75, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x59, 0x75, 0x67, 0x61, 0x6e, 0x64, 0x61, 0x49, 0x63, 0x68, 0x69, 0x62, 0x65,
+0x6d, 0x62, 0x61, 0x5a, 0x61, 0x6d, 0x62, 0x69, 0x61, 0x6b, 0x61, 0x62, 0x75, 0x76, 0x65, 0x72, 0x64, 0x69, 0x61, 0x6e,
+0x75, 0x4b, 0x61, 0x62, 0x75, 0x20, 0x56, 0x65, 0x72, 0x64, 0x69, 0x4b, 0x129, 0x6d, 0x129, 0x72, 0x169, 0x4b, 0x61, 0x6c,
+0x65, 0x6e, 0x6a, 0x69, 0x6e, 0x45, 0x6d, 0x65, 0x74, 0x61, 0x62, 0x20, 0x4b, 0x65, 0x6e, 0x79, 0x61, 0x4b, 0x68, 0x6f,
+0x65, 0x6b, 0x68, 0x6f, 0x65, 0x67, 0x6f, 0x77, 0x61, 0x62, 0x4e, 0x61, 0x6d, 0x69, 0x62, 0x69, 0x61, 0x62, 0x4b, 0x69,
+0x6d, 0x61, 0x63, 0x68, 0x61, 0x6d, 0x65, 0x44, 0x6f, 0xfc, 0x74, 0x73, 0x63, 0x68, 0x6c, 0x61, 0x6e, 0x64, 0x4d, 0x61,
+0x61, 0x54, 0x61, 0x6e, 0x73, 0x61, 0x6e, 0x69, 0x61, 0x4f, 0x6c, 0x75, 0x73, 0x6f, 0x67, 0x61, 0x4c, 0x75, 0x6c, 0x75,
+0x68, 0x69, 0x61, 0x4b, 0x69, 0x70, 0x61, 0x72, 0x65, 0x54, 0x61, 0x64, 0x68, 0x61, 0x6e, 0x69, 0x61, 0x4b, 0x69, 0x74,
+0x65, 0x73, 0x6f, 0x4b, 0x65, 0x6e, 0x69, 0x61, 0x4b, 0x6f, 0x79, 0x72, 0x61, 0x20, 0x63, 0x69, 0x69, 0x6e, 0x69, 0x4d,
+0x61, 0x61, 0x6c, 0x69, 0x4b, 0x69, 0x72, 0x75, 0x77, 0x61, 0x44, 0x68, 0x6f, 0x6c, 0x75, 0x6f, 0x52, 0x75, 0x6b, 0x69,
+0x67, 0x61, 0x54, 0x61, 0x6d, 0x61, 0x7a, 0x69, 0x263, 0x74, 0x4d, 0x65, 0x1e5b, 0x1e5b, 0x75, 0x6b, 0x4b, 0x6f, 0x79, 0x72,
+0x61, 0x62, 0x6f, 0x72, 0x6f, 0x20, 0x73, 0x65, 0x6e, 0x6e, 0x69, 0x4b, 0x69, 0x73, 0x68, 0x61, 0x6d, 0x62, 0x61, 0x61,
+
 };
 
 static const char language_name_list[] =
