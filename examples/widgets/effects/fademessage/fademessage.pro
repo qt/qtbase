@@ -4,14 +4,14 @@ RESOURCES += fademessage.qrc
 INSTALLS += target sources
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/effects/fademessage
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/effects/fademessage
 sources.files = $$SOURCES \
     $$HEADERS \
     $$RESOURCES \
     $$FORMS \
     fademessage.pro \
     background.jpg
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/effects/fademessage
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/effects/fademessage
 
 
 QT += widgets

@@ -26,9 +26,9 @@ HEADERS += \
 RESOURCES += shared.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/shared
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/shared
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.pri images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/shared
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/shared
 INSTALLS += sources
 
 !cross_compile:INSTALLS += target

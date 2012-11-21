@@ -12,7 +12,7 @@ SUBDIRS       = \
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/statemachine
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/statemachine
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS statemachine.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/statemachine
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/statemachine
 INSTALLS += target sources

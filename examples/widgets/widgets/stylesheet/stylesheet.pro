@@ -8,9 +8,9 @@ SOURCES       = main.cpp \
                 stylesheeteditor.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/stylesheet
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/stylesheet
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro images layouts qss
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/stylesheet
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/stylesheet
 INSTALLS += target sources
 
 QT += widgets

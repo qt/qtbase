@@ -2,8 +2,8 @@ TEMPLATE  = subdirs
 SUBDIRS   = toplevel childwidget windowlayout nestedlayouts
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/widgets
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/widgets
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS widgets.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/widgets
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/widgets
 INSTALLS += target sources
 QT += widgets

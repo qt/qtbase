@@ -13,7 +13,7 @@ wince*: SUBDIRS += sipdialog
 
 # install
 sources.files = README *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/dialogs
 INSTALLS += sources
 
 QT += widgets

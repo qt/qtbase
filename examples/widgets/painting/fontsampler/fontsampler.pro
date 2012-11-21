@@ -4,9 +4,9 @@ SOURCES   = main.cpp \
             mainwindow.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/fontsampler
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/fontsampler
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS fontsampler.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/fontsampler
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/fontsampler
 INSTALLS += target sources
 
 QT += widgets

@@ -13,8 +13,8 @@ contains(QT_CONFIG, opengl) {
 QT += widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/gradients
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/gradients
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/gradients
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/gradients
 INSTALLS += target sources
 

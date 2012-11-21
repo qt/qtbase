@@ -4,9 +4,9 @@ SOURCES       = classwizard.cpp \
 RESOURCES     = classwizard.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/classwizard
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/dialogs/classwizard
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/classwizard
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/dialogs/classwizard
 INSTALLS += target sources
 
 QT += widgets

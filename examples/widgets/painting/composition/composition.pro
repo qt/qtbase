@@ -13,9 +13,9 @@ contains(QT_CONFIG, opengl) {
 QT += widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/composition
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/composition
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.jpg *.pro *.html
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/composition
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/composition
 INSTALLS += target sources
 
 

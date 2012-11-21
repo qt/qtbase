@@ -5,9 +5,9 @@ SOURCES         = highlighter.cpp \
                   main.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/syntaxhighlighter
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/richtext/syntaxhighlighter
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS syntaxhighlighter.pro examples
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/richtext/syntaxhighlighter
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/richtext/syntaxhighlighter
 INSTALLS += target sources
 
 

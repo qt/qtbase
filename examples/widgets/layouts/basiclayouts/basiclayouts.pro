@@ -3,9 +3,9 @@ SOURCES     = dialog.cpp \
               main.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/layouts/basiclayouts
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/layouts/basiclayouts
 sources.files = $$SOURCES $$HEADERS *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/layouts/basiclayouts
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/layouts/basiclayouts
 INSTALLS += target sources
 
 QT += widgets

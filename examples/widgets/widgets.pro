@@ -21,6 +21,6 @@ SUBDIRS       = \
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
 
 # install
-sources.files = README *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]
+sources.files = *.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets
 INSTALLS += sources

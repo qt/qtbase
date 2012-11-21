@@ -8,9 +8,9 @@ SOURCES     = imagemodel.cpp \
 RESOURCES   += images.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/pixelator
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/pixelator
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/pixelator
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/pixelator
 INSTALLS += target sources
 
 QT += widgets

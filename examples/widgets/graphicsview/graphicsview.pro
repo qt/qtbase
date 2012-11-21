@@ -20,9 +20,9 @@ contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG,
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS graphicsview.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview
 INSTALLS += target sources
 
 QT += widgets

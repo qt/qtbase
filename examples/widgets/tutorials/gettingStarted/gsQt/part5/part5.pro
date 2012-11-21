@@ -3,8 +3,8 @@ QT += widgets
 SOURCES = main.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tutorials/gettingStarted/gsQt/part5
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/gettingStarted/gsQt/part5
 sources.files = $$SOURCES *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/tutorial/gettingStarted/gsQt/part5
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/gettingStarted/gsQt/part5
 INSTALLS += target sources
 

@@ -14,7 +14,7 @@ contains(QT_CONFIG, opengl) {
 QT += widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/deform
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/deform
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/painting/deform
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/deform
 INSTALLS += target sources

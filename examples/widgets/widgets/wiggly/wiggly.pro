@@ -7,7 +7,7 @@ SOURCES       = wigglywidget.cpp \
                 main.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/wiggly
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/wiggly
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS wiggly.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/wiggly
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/wiggly
 INSTALLS += target sources

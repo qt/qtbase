@@ -1,9 +1,9 @@
 SOURCES       = trivialwizard.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/trivialwizard
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/dialogs/trivialwizard
 sources.files = $$SOURCES $$HEADERS *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dialogs/trivialwizard
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/dialogs/trivialwizard
 INSTALLS += target sources
 
 QT += widgets

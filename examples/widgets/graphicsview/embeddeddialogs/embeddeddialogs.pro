@@ -11,9 +11,9 @@ build_all:!build_pass {
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/embeddeddialogs
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/embeddeddialogs
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.png *.jpg *.plist *.icns *.ico *.rc *.pro *.html *.doc images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/graphicsview/embeddeddialogs
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/embeddeddialogs
 INSTALLS += target sources
 
 QT += widgets

@@ -6,9 +6,9 @@ SOURCES       = main.cpp \
 RESOURCES     = tooltips.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tooltips
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/tooltips
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS tooltips.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tooltips
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/tooltips
 INSTALLS += target sources
 
 QT += widgets

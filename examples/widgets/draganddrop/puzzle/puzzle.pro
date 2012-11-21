@@ -10,9 +10,9 @@ SOURCES     = main.cpp \
 QMAKE_PROJECT_NAME = dndpuzzle
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/draganddrop/puzzle
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/draganddrop/puzzle
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/draganddrop/puzzle
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/draganddrop/puzzle
 INSTALLS += target sources
 
 wince*: {

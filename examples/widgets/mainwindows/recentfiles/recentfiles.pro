@@ -3,9 +3,9 @@ SOURCES       = main.cpp \
                 mainwindow.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/recentfiles
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows/recentfiles
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS recentfiles.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows/recentfiles
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows/recentfiles
 INSTALLS += target sources
 
 QT += widgets

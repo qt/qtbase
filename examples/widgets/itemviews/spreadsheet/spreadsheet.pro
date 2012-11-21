@@ -16,8 +16,8 @@ build_all:!build_pass {
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/spreadsheet
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/spreadsheet
 sources.files = $$SOURCES $$RESOURCES *.pro images $$HEADERS
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/itemviews/spreadsheet
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/spreadsheet
 INSTALLS += target sources
 

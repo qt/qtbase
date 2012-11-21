@@ -5,9 +5,9 @@ SOURCES += main.cpp \
 HEADERS += mainwindow.h
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/modelview/6_treeview
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/modelview/6_treeview
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS 6_treeview.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tutorials/modelview/6_treeview
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/modelview/6_treeview
 INSTALLS += target sources
 
 QT += widgets

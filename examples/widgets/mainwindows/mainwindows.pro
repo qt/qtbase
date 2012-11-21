@@ -8,9 +8,9 @@ SUBDIRS       = application \
                 sdi
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows
+target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mainwindows.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/mainwindows
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows
 INSTALLS += target sources
 
 QT += widgets
