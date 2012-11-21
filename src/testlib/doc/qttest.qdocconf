@@ -1,6 +1,6 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
-project                 = QtTest
+project                 = qttestlib
 description             = Qt Test Reference Documentation
 url                     = http://qt-project.org/doc/qttest
 version                 = 5.0.0
