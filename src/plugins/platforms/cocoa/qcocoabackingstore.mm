@@ -40,54 +40,51 @@
 ****************************************************************************/
 
 #include "qcocoabackingstore.h"
-#include "qcocoaautoreleasepool.h"
-
-#include <QtCore/qdebug.h>
 #include <QtGui/QPainter>
+#include "qcocoahelpers.h"
 
 QT_BEGIN_NAMESPACE
 
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QPlatformBackingStore(window)
+    , m_cgImage(0)
 {
-    m_image = new QImage(window->geometry().size(),QImage::Format_ARGB32_Premultiplied);
 }
 
 QCocoaBackingStore::~QCocoaBackingStore()
 {
-    delete m_image;
+    CGImageRelease(m_cgImage);
+    m_cgImage = 0;
 }
 
 QPaintDevice *QCocoaBackingStore::paintDevice()
 {
-    return m_image;
+    if (m_qImage.size() != m_requestedSize) {
+        CGImageRelease(m_cgImage);
+        m_cgImage = 0;
+        m_qImage = QImage(m_requestedSize, QImage::Format_ARGB32_Premultiplied);
+    }
+    return &m_qImage;
 }
 
-void QCocoaBackingStore::flush(QWindow *widget, const QRegion &region, const QPoint &offset)
+void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
-    Q_UNUSED(offset);
-    QCocoaAutoReleasePool pool;
-
-    QRect geo = region.boundingRect();
-    NSRect rect = NSMakeRect(geo.x(), geo.y(), geo.width(), geo.height());
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
-    if (cocoaWindow) {
-        // setImage call is needed here to make the displayRect call
-        // have effect - even if the image has not changed.
-        [cocoaWindow->m_contentView setImage:m_image];
-        [cocoaWindow->m_contentView displayRect:rect];
-   }
+    // A flush means that qImage has changed. Since CGImages are seen as
+    // immutable, CoreImage fails to pick up this change for m_cgImage
+    // (since it usually cached), so we must recreate it. We await doing this
+    // until one of the views needs it, since, together with calling
+    // "setNeedsDisplayInRect" instead of "displayRect" we will, in most
+    // cases, get away with doing this once for every repaint. Also note that
+    // m_cgImage is only a reference to the data inside m_qImage, it is not a copy.
+    CGImageRelease(m_cgImage);
+    m_cgImage = 0;
+    if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle()))
+        [cocoaWindow->m_contentView flushBackingStore:this region:region offset:offset];
 }
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
 {
-    delete m_image;
-    m_image = new QImage(size, QImage::Format_ARGB32_Premultiplied);
-
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
-    if (cocoaWindow)
-        [static_cast<QNSView *>(cocoaWindow->m_contentView) setImage:m_image];
+    m_requestedSize = size;
 }
 
 bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
@@ -97,9 +94,20 @@ bool QCocoaBackingStore::scroll(const QRegion &area, int dx, int dy)
     const QVector<QRect> qrects = area.rects();
     for (int i = 0; i < qrects.count(); ++i) {
         const QRect &qrect = qrects.at(i);
-        qt_scrollRectInImage(*m_image, qrect, qpoint);
+        qt_scrollRectInImage(m_qImage, qrect, qpoint);
     }
     return true;
+}
+
+CGImageRef QCocoaBackingStore::getBackingStoreCGImage()
+{
+    if (!m_cgImage)
+        m_cgImage = qt_mac_toCGImage(m_qImage, false, 0);
+
+    // Warning: do not retain/release/cache the returned image from
+    // outside the backingstore since it shares data with a QImage and
+    // needs special memory considerations.
+    return m_cgImage;
 }
 
 QT_END_NAMESPACE

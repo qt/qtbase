@@ -751,4 +751,60 @@ CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
     return 0;
 }
 
+CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
+{
+    int width = qImage.width();
+    int height = qImage.height();
+
+    if (width <= 0 || height <= 0) {
+        qWarning() << Q_FUNC_INFO <<
+            "setting invalid size" << width << "x" << height << "for qnsview image";
+        return 0;
+    }
+
+    const uchar *imageData = qImage.bits();
+    if (dataCopy) {
+        delete[] *dataCopy;
+        *dataCopy = new uchar[qImage.byteCount()];
+        memcpy(*dataCopy, imageData, qImage.byteCount());
+    }
+    int bitDepth = qImage.depth();
+    int colorBufferSize = 8;
+    int bytesPrLine = qImage.bytesPerLine();
+
+    CGDataProviderRef cgDataProviderRef = CGDataProviderCreateWithData(
+                NULL,
+                dataCopy ? *dataCopy : imageData,
+                qImage.byteCount(),
+                NULL);
+
+    CGImageRef cgImage = 0;
+    if (isMask) {
+        cgImage = CGImageMaskCreate(width,
+                                    height,
+                                    colorBufferSize,
+                                    bitDepth,
+                                    bytesPrLine,
+                                    cgDataProviderRef,
+                                    NULL,
+                                    false);
+    } else {
+        CGColorSpaceRef cgColourSpaceRef = CGColorSpaceCreateDeviceRGB();
+        cgImage = CGImageCreate(width,
+                                height,
+                                colorBufferSize,
+                                bitDepth,
+                                bytesPrLine,
+                                cgColourSpaceRef,
+                                kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
+                                cgDataProviderRef,
+                                NULL,
+                                false,
+                                kCGRenderingIntentDefault);
+        CGColorSpaceRelease(cgColourSpaceRef);
+    }
+    CGDataProviderRelease(cgDataProviderRef);
+    return cgImage;
+}
+
 QT_END_NAMESPACE

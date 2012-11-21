@@ -159,6 +159,7 @@ public:
 };
 
 CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
+CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy);
 
 QT_END_NAMESPACE
 

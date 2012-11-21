@@ -61,9 +61,12 @@ public:
     void flush(QWindow *widget, const QRegion &region, const QPoint &offset);
     void resize (const QSize &size, const QRegion &);
     bool scroll(const QRegion &area, int dx, int dy);
+    CGImageRef getBackingStoreCGImage();
 
 private:
-    QImage *m_image;
+    QImage m_qImage;
+    CGImageRef m_cgImage;
+    QSize m_requestedSize;
 };
 
 QT_END_NAMESPACE
