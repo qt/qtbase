@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QPushButton>
 
 #include "flowlayout.h"
 #include "window.h"

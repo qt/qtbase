@@ -58,4 +58,4 @@ private:
     QLabel *createLabel(const QString &text);
 };
 
-#endif
+#endif // WINDOW_H

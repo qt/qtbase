@@ -87,4 +87,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // DIALOG_H

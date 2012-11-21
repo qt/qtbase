@@ -43,7 +43,6 @@
 
 #include <QLayout>
 #include <QRect>
-#include <QWidgetItem>
 
 class BorderLayout : public QLayout
 {
@@ -85,4 +84,4 @@ private:
     QList<ItemWrapper *> list;
 };
 
-#endif
+#endif // BORDERLAYOUT_H

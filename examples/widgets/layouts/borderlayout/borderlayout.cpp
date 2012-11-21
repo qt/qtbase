@@ -38,8 +38,6 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "borderlayout.h"
 
 BorderLayout::BorderLayout(QWidget *parent, int margin, int spacing)

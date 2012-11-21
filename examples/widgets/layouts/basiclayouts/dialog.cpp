@@ -116,10 +116,10 @@ void Dialog::createGridGroupBox()
 
 //! [9]
     for (int i = 0; i < NumGridRows; ++i) {
-	labels[i] = new QLabel(tr("Line %1:").arg(i + 1));
-	lineEdits[i] = new QLineEdit;
-	layout->addWidget(labels[i], i + 1, 0);
-	layout->addWidget(lineEdits[i], i + 1, 1);
+        labels[i] = new QLabel(tr("Line %1:").arg(i + 1));
+        lineEdits[i] = new QLineEdit;
+        layout->addWidget(labels[i], i + 1, 0);
+        layout->addWidget(lineEdits[i], i + 1, 1);
     }
 
 //! [9] //! [10]

@@ -43,7 +43,7 @@
 
 #include <QLayout>
 #include <QRect>
-#include <QWidgetItem>
+#include <QStyle>
 //! [0]
 class FlowLayout : public QLayout
 {
@@ -75,4 +75,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // FLOWLAYOUT_H

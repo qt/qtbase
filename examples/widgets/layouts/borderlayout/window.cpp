@@ -38,10 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "borderlayout.h"
 #include "window.h"
+#include <QTextBrowser>
+#include <QLabel>
 
 Window::Window()
 {

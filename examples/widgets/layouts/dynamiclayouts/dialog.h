@@ -41,7 +41,6 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QMainWindow>
 #include <QDialog>
 #include <QQueue>
 
@@ -88,4 +87,4 @@ private:
     QGridLayout *optionsLayout;
 };
 
-#endif
+#endif // DIALOG_H
