@@ -220,6 +220,7 @@ bool QGLPixelBuffer::makeCurrent()
             format.setSamples(d->req_format.samples());
         d->fbo = new QOpenGLFramebufferObject(d->req_size, format);
         d->fbo->bind();
+        glViewport(0, 0, d->req_size.width(), d->req_size.height());
     }
     return true;
 }
