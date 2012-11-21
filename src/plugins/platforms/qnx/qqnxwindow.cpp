@@ -179,9 +179,13 @@ void QQnxWindow::setGeometry(const QRect &rect)
             m_platformOpenGLContext->requestSurfaceChange();
     }
 
-    // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget)
+    // Send a geometry change event to Qt (triggers resizeEvent() in QWindow/QWidget).
+
+    // Calling flushWindowSystemEvents() here would flush input events which
+    // could result in re-entering QQnxWindow::setGeometry() again.
+    QWindowSystemInterface::setSynchronousWindowsSystemEvents(true);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
-    QWindowSystemInterface::flushWindowSystemEvents();
+    QWindowSystemInterface::setSynchronousWindowsSystemEvents(false);
 
     // Now move all children.
     if (!oldGeometry.isEmpty()) {
