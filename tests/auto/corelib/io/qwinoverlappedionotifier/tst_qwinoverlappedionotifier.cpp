@@ -43,6 +43,10 @@
 #include <private/qwinoverlappedionotifier_p.h>
 #include <qbytearray.h>
 
+#ifndef PIPE_REJECT_REMOTE_CLIENTS
+#define PIPE_REJECT_REMOTE_CLIENTS 0x08
+#endif
+
 class tst_QWinOverlappedIoNotifier : public QObject
 {
     Q_OBJECT
@@ -141,7 +145,8 @@ void tst_QWinOverlappedIoNotifier::readFile()
     notifier.setHandle(hFile);
     notifier.setEnabled(true);
 
-    OVERLAPPED overlapped = {0};
+    OVERLAPPED overlapped;
+    ZeroMemory(&overlapped, sizeof(OVERLAPPED));
     QByteArray buffer(readBufferSize, 0);
     BOOL readSuccess = ReadFile(hFile, buffer.data(), buffer.size(), NULL, &overlapped);
     QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
@@ -175,7 +180,8 @@ void tst_QWinOverlappedIoNotifier::waitForNotified()
     notifier.setEnabled(true);
     QCOMPARE(notifier.waitForNotified(100, 0), false);
 
-    OVERLAPPED overlapped = {0};
+    OVERLAPPED overlapped;
+    ZeroMemory(&overlapped, sizeof(OVERLAPPED));
     QByteArray buffer(readBufferSize, 0);
     BOOL readSuccess = ReadFile(hFile, buffer.data(), buffer.size(), NULL, &overlapped);
     QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
@@ -206,7 +212,8 @@ void tst_QWinOverlappedIoNotifier::brokenPipe()
     notifier.setHandle(hReadEnd);
     notifier.setEnabled(true);
 
-    OVERLAPPED overlapped = {0};
+    OVERLAPPED overlapped;
+    ZeroMemory(&overlapped, sizeof(OVERLAPPED));
     QByteArray buffer(1024, 0);
     BOOL readSuccess = ReadFile(hReadEnd, buffer.data(), buffer.size(), NULL, &overlapped);
     QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
