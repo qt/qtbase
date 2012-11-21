@@ -214,6 +214,8 @@ QCocoaWindow::~QCocoaWindow()
 
     QCocoaAutoReleasePool pool;
     clearNSWindow(m_nsWindow);
+    if (parent())
+        [m_contentView removeFromSuperview];
     [m_contentView release];
     [m_nsWindow release];
     [m_nsWindowDelegate release];
