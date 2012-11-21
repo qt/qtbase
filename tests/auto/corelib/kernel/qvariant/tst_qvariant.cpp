@@ -234,6 +234,9 @@ private slots:
     void loadQt5Stream();
     void saveQt5Stream_data();
     void saveQt5Stream();
+    void saveInvalid_data();
+    void saveInvalid();
+    void saveNewBuiltinWithOldStream();
 
     void implicitConstruction();
 private:
@@ -3308,6 +3311,43 @@ void tst_QVariant::implicitConstruction()
 
 #undef CONSTRUCT
 #undef FOR_EACH_CORE_CLASS
+}
+
+void tst_QVariant::saveInvalid_data()
+{
+    QTest::addColumn<unsigned>("version");
+    for (unsigned version = QDataStream::Qt_5_0; version > QDataStream::Qt_1_0; --version)
+        QTest::newRow(QString::number(version).toUtf8()) << version;
+}
+
+void tst_QVariant::saveInvalid()
+{
+    QFETCH(unsigned, version);
+
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(version);
+    stream << QVariant();
+    QVERIFY(stream.status() == QDataStream::Ok);
+    QVERIFY(data.size() >= 4);
+    QCOMPARE(int(data.constData()[0]), 0);
+    QCOMPARE(int(data.constData()[1]), 0);
+    QCOMPARE(int(data.constData()[2]), 0);
+    QCOMPARE(int(data.constData()[3]), 0);
+}
+
+void tst_QVariant::saveNewBuiltinWithOldStream()
+{
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_3_1);
+    stream << QVariant::fromValue<QJsonValue>(123); // QJsonValue class was introduced in Qt5
+    QVERIFY(stream.status() == QDataStream::Ok);
+    QVERIFY(data.size() >= 4);
+    QCOMPARE(int(data.constData()[0]), 0);
+    QCOMPARE(int(data.constData()[1]), 0);
+    QCOMPARE(int(data.constData()[2]), 0);
+    QCOMPARE(int(data.constData()[3]), 0);
 }
 
 QTEST_MAIN(tst_QVariant)

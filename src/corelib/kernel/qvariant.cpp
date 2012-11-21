@@ -1736,7 +1736,7 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
     QVariant::UInt,
     QVariant::Bool,
     QVariant::Double,
-    QVariant::ByteArray,
+    0, // Buggy ByteArray, QByteArray never had id == 20
     QVariant::Polygon,
     QVariant::Region,
     QVariant::Bitmap,
@@ -1829,13 +1829,13 @@ void QVariant::save(QDataStream &s) const
     quint32 typeId = type();
     if (s.version() < QDataStream::Qt_4_0) {
         int i;
-        for (i = MapFromThreeCount - 1; i >= 0; i--) {
+        for (i = 0; i <= MapFromThreeCount - 1; ++i) {
             if (mapIdFromQt3ToCurrent[i] == typeId) {
                 typeId = i;
                 break;
             }
         }
-        if (i == -1) {
+        if (i >= MapFromThreeCount) {
             s << QVariant();
             return;
         }
