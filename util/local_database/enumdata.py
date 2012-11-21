@@ -299,7 +299,13 @@ language_list = {
     251 : [ "Tasawaq",            "twq" ],
     252 : [ "Vai",                "vai" ],
     253 : [ "Walser",             "wae" ],
-    254 : [ "Yangben",            "yav" ]
+    254 : [ "Yangben",            "yav" ],
+    255 : [ "Avestan",            "ae" ],
+    256 : [ "Asturian",           "ast" ],
+    257 : [ "Ngomba",             "jgo" ],
+    258 : [ "Kako",               "kkj" ],
+    259 : [ "Meta",               "mgo" ],
+    260 : [ "Ngiemboon",          "nnh" ]
 }
 
 country_list = {
@@ -455,7 +461,7 @@ country_list = {
     149 : [ "Nauru",                                    "NR"  ],
     150 : [ "Nepal",                                    "NP"  ],
     151 : [ "Netherlands",                              "NL"  ],
-    152 : [ "NetherlandsAntilles",                      "AN"  ],
+    152 : [ "CuraSao",                                  "CW"  ],
     153 : [ "NewCaledonia",                             "NC"  ],
     154 : [ "NewZealand",                               "NZ"  ],
     155 : [ "Nicaragua",                                "NI"  ],
@@ -556,7 +562,10 @@ country_list = {
     250 : [ "CeutaAndMelilla",                          "EA"  ],
     251 : [ "IsleOfMan",                                "IM"  ],
     252 : [ "Jersey",                                   "JE"  ],
-    253 : [ "TristanDaCunha",                           "TA"  ]
+    253 : [ "TristanDaCunha",                           "TA"  ],
+    254 : [ "SouthSudan",                               "SS"  ],
+    255 : [ "Bonaire",                                  "BQ"  ],
+    256 : [ "SintMaarten",                              "SX"  ]
 }
 
 script_list = {
@@ -594,7 +603,8 @@ script_list = {
     31  : [ "Tibetan",           "Tibt" ],
     32  : [ "Sinhala",           "Sinh" ],
     33  : [ "Syriac",            "Syri" ],
-    34  : [ "Yi",                "Yiii" ]
+    34  : [ "Yi",                "Yiii" ],
+    35  : [ "Vai",               "Vaii" ]
 }
 
 def countryCodeToId(code):

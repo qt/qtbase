@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v2.0.1.
+    QLocale's data is based on Common Locale Data Repository v22.1.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -393,6 +393,12 @@
     \value Vai
     \value Walser
     \value Yangben
+    \value Avestan
+    \value Asturian
+    \value Ngomba
+    \value Kako
+    \value Meta
+    \value Ngiemboon
     \omitvalue LastLanguage
 
     \sa language(), languageToString()
@@ -558,7 +564,6 @@
     \value NauruCountry
     \value Nepal
     \value Netherlands
-    \value NetherlandsAntilles
     \value NewCaledonia
     \value NewZealand
     \value Nicaragua
@@ -660,6 +665,10 @@
     \value IsleOfMan
     \value Jersey
     \value TristanDaCunha
+    \value SouthSudan
+    \value CuraSao
+    \value Bonaire
+    \value SintMaarten
     \omitvalue LastCountry
 
     \sa country(), countryToString()
@@ -707,6 +716,7 @@
     \value SinhalaScript
     \value SyriacScript
     \value YiScript
+    \value VaiiScript
     \omitvalue LastScript
 
     \sa script(), scriptToString(), languageToString()

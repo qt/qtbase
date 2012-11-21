@@ -150,7 +150,7 @@ def _findEntryInFile(file, path, draft=None, attribute=None):
             tag_name = tag_spec[:left_bracket]
             arg_value = tag_spec[left_bracket+1:-1].split("=")
             if len(arg_value) == 2:
-                arg_name = arg_value[0]
+                arg_name = arg_value[0].replace("@", "").replace("'", "")
                 arg_value = arg_value[1]
             else:
                 arg_value = arg_value[0]

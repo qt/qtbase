@@ -349,7 +349,6 @@ void tst_QLocale::ctor()
     // test default countries for languages
     TEST_CTOR("zh", Chinese, China)
     TEST_CTOR("zh-Hans", Chinese, China)
-    TEST_CTOR("mn", Mongolian, Mongolia)
     TEST_CTOR("ne", Nepali, Nepal)
 
 #undef TEST_CTOR
@@ -1489,7 +1488,7 @@ void tst_QLocale::dayName_data()
 
     QTest::newRow("ru_RU long")  << QString("ru_RU") << QString::fromUtf8("\320\262\320\276\321\201\320\272\321\200\320\265\321\201\320\265\320\275\321\214\320\265") << 7 << QLocale::LongFormat;
     QTest::newRow("ru_RU short")  << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
-    QTest::newRow("ru_RU narrow")  << QString("ru_RU") << QString::fromUtf8("\320\222") << 7 << QLocale::NarrowFormat;
+    QTest::newRow("ru_RU narrow")  << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::dayName()
@@ -1635,13 +1634,13 @@ void tst_QLocale::monthName()
 
     const QLocale de("de_DE");
     QCOMPARE(de.monthName(12, QLocale::LongFormat), QLatin1String("Dezember"));
-    QCOMPARE(de.monthName(12, QLocale::ShortFormat), QLatin1String("Dez"));
+    QCOMPARE(de.monthName(12, QLocale::ShortFormat), QLatin1String("Dez."));
     // 'de' locale doesn't have narrow month name
     QCOMPARE(de.monthName(12, QLocale::NarrowFormat), QLatin1String("D"));
 
     QLocale ru("ru_RU");
     QCOMPARE(ru.monthName(1, QLocale::LongFormat), QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
-    QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262"));
+    QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
 
     // check that our CLDR scripts handle surrogate pairs correctly

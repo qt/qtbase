@@ -333,6 +333,12 @@ public:
         Vai = 252,
         Walser = 253,
         Yangben = 254,
+        Avestan = 255,
+        Asturian = 256,
+        Ngomba = 257,
+        Kako = 258,
+        Meta = 259,
+        Ngiemboon = 260,
         Norwegian = NorwegianBokmal,
         Moldavian = Romanian,
         SerboCroatian = Serbian,
@@ -344,7 +350,7 @@ public:
         Cambodian = Khmer,
         Kurundi = Rundi,
         RhaetoRomance = Romansh,
-        LastLanguage = Yangben
+        LastLanguage = Ngiemboon
     };
 
     enum Script {
@@ -383,9 +389,10 @@ public:
         SinhalaScript = 32,
         SyriacScript = 33,
         YiScript = 34,
+        VaiScript = 35,
         SimplifiedChineseScript = SimplifiedHanScript,
         TraditionalChineseScript = TraditionalHanScript,
-        LastScript = YiScript
+        LastScript = VaiScript
     };
     enum Country {
         AnyCountry = 0,
@@ -540,7 +547,7 @@ public:
         NauruCountry = 149,
         Nepal = 150,
         Netherlands = 151,
-        NetherlandsAntilles = 152,
+        CuraSao = 152,
         NewCaledonia = 153,
         NewZealand = 154,
         Nicaragua = 155,
@@ -642,13 +649,16 @@ public:
         IsleOfMan = 251,
         Jersey = 252,
         TristanDaCunha = 253,
+        SouthSudan = 254,
+        Bonaire = 255,
+        SintMaarten = 256,
         DemocraticRepublicOfCongo = CongoKinshasa,
         PeoplesRepublicOfCongo = CongoBrazzaville,
         DemocraticRepublicOfKorea = NorthKorea,
         RepublicOfKorea = SouthKorea,
         RussianFederation = Russia,
         SyrianArabRepublic = Syria,
-        LastCountry = TristanDaCunha
+        LastCountry = SintMaarten
     };
 // GENERATED PART ENDS HERE
 

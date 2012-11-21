@@ -347,6 +347,9 @@ General Improvements
 - The Unicode Data and Algorithms has been updated to match the
   Unicode Standard of version 6.2. For more information see http://www.unicode.org/
 
+- The QLocale data has been updated to CLDR 22.1.
+  For more information see http://cldr.unicode.org/
+
 Third party components
 ----------------------
 
