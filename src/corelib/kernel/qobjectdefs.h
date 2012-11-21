@@ -209,10 +209,8 @@ private:
 Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 
 #ifndef QT_NO_META_MACROS
-#define QTOSTRING_HELPER(s) #s
-#define QTOSTRING(s) QTOSTRING_HELPER(s)
 #ifndef QT_NO_DEBUG
-# define QLOCATION "\0" __FILE__ ":" QTOSTRING(__LINE__)
+# define QLOCATION "\0" __FILE__ ":" QT_STRINGIFY(__LINE__)
 # ifndef QT_NO_KEYWORDS
 #  define METHOD(a)   qFlagLocation("0"#a QLOCATION)
 # endif
