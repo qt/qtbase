@@ -47,7 +47,7 @@
 #include "qvariant.h"
 #include "qreadwritelock.h"
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
 #include <QtCore/private/qcore_unix_p.h>
 
 #include <unistd.h>
@@ -57,24 +57,24 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
 static const char ppsServicePath[] = "/pps/services/locale/uom";
 static const size_t ppsBufferSize = 256;
 
-QBBLocaleData::QBBLocaleData()
+QQNXLocaleData::QQNXLocaleData()
     :ppsNotifier(0)
     ,ppsFd(-1)
 {
     readPPSLocale();
 }
 
-QBBLocaleData::~QBBLocaleData()
+QQNXLocaleData::~QQNXLocaleData()
 {
     if (ppsFd != -1)
         qt_safe_close(ppsFd);
 }
 
-void QBBLocaleData::updateMesurementSystem()
+void QQNXLocaleData::updateMeasurementSystem()
 {
     char buffer[ppsBufferSize];
 
@@ -105,7 +105,7 @@ void QBBLocaleData::updateMesurementSystem()
     ppsMeasurement = QLocale::MetricSystem;
 }
 
-void QBBLocaleData::readPPSLocale()
+void QQNXLocaleData::readPPSLocale()
 {
     errno = 0;
     ppsFd = qt_safe_open(ppsServicePath, O_RDONLY);
@@ -115,8 +115,8 @@ void QBBLocaleData::readPPSLocale()
     }
 
     ppsNotifier = new QSocketNotifier(ppsFd, QSocketNotifier::Read, this);
-    updateMesurementSystem();
-    QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMesurementSystem()));
+    updateMeasurementSystem();
+    QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMeasurementSystem()));
 }
 #endif
 
@@ -176,8 +176,8 @@ void QSystemLocaleData::readEnvironment()
 
 
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
-#if defined(Q_OS_QNX)
-    Q_GLOBAL_STATIC(QBBLocaleData, qbbLocaleData)
+#if defined(Q_OS_BLACKBERRY)
+    Q_GLOBAL_STATIC(QQNXLocaleData, qqnxLocaleData)
 #endif
 
 #endif
@@ -210,8 +210,8 @@ QLocale QSystemLocale::fallbackUiLocale() const
 QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QSystemLocaleData *d = qSystemLocaleData();
-#if defined(Q_OS_QNX)
-    QBBLocaleData *bbd = qbbLocaleData();
+#if defined(Q_OS_BLACKBERRY)
+    QQNXLocaleData *qnxd = qqnxLocaleData();
 #endif
 
     if (type == LocaleChanged) {
@@ -300,8 +300,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
             return QLocale::MetricSystem;
         if (meas_locale.compare(QLatin1String("Other"), Qt::CaseInsensitive) == 0)
             return QLocale::MetricSystem;
-#if defined(Q_OS_QNX)
-        return bbd->ppsMeasurement;
+#if defined(Q_OS_BLACKBERRY)
+        return qnxd->ppsMeasurement;
 #endif
         return QVariant((int)QLocale(meas_locale).measurementSystem());
     }

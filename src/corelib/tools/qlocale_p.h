@@ -59,7 +59,7 @@
 
 #include "qlocale.h"
 
-#if defined(Q_OS_QNX)
+#if defined(Q_OS_BLACKBERRY)
 #include "qsocketnotifier.h"
 #endif
 
@@ -373,17 +373,17 @@ inline char QLocalePrivate::digitToCLocale(QChar in) const
     return 0;
 }
 
-#if defined(Q_OS_QNX)
-class QBBLocaleData: public QObject
+#if defined(Q_OS_BLACKBERRY)
+class QQNXLocaleData: public QObject
 {
     Q_OBJECT
 public:
-    QBBLocaleData();
-    virtual ~QBBLocaleData();
+    QQNXLocaleData();
+    virtual ~QQNXLocaleData();
     void readPPSLocale();
 
 public Q_SLOTS:
-    void updateMesurementSystem();
+    void updateMeasurementSystem();
 
 public:
     uint ppsMeasurement;
