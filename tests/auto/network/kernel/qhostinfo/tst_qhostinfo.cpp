@@ -44,16 +44,10 @@
 // (except qglobal.h), or else you'll get tons of compile errors
 #include <qglobal.h>
 
-// MinGW doesn't provide getaddrinfo(), so we test for Q_OS_WIN
-// and Q_CC_GNU, which indirectly tells us whether we're using MinGW.
-#if defined(Q_OS_WIN) && defined(Q_CC_GNU)
-# define QT_NO_GETADDRINFO
-#endif
-
 // To prevent windows system header files from re-defining min/max
 #define NOMINMAX 1
 
-#if defined(Q_OS_WIN) && !defined(QT_NO_GETADDRINFO)
+#if defined(Q_OS_WIN)
 # include <winsock2.h>
 # include <ws2tcpip.h>
 #endif
@@ -216,7 +210,7 @@ void tst_QHostInfo::initTestCase()
     }
 
 // HP-UX 11i does not support IPv6 reverse lookups.
-#if !defined(QT_NO_GETADDRINFO) || !(defined(Q_OS_HPUX) && defined(__ia64))
+#if !defined(QT_NO_GETADDRINFO) && !(defined(Q_OS_HPUX) && defined(__ia64))
     // check if the system getaddrinfo can do IPv6 lookups
     struct addrinfo hint, *result = 0;
     memset(&hint, 0, sizeof hint);
