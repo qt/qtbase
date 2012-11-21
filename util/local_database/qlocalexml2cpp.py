@@ -803,9 +803,19 @@ def main():
     for key in language_map.keys():
         language = fixedLanguageName(language_map[key][0], dupes)
         qlocaleh_temp_file.write("        " + language + " = " + str(key) + ",\n")
-    # special cases for norwegian. we really need to make it right at some point.
-    qlocaleh_temp_file.write("        NorwegianBokmal = Norwegian,\n")
-    qlocaleh_temp_file.write("        NorwegianNynorsk = Nynorsk,\n")
+    # legacy. should disappear at some point
+    qlocaleh_temp_file.write("        Norwegian = NorwegianBokmal,\n")
+    qlocaleh_temp_file.write("        Moldavian = Romanian,\n")
+    qlocaleh_temp_file.write("        SerboCroatian = Serbian,\n")
+    qlocaleh_temp_file.write("        Tagalog = Filipino,\n")
+    qlocaleh_temp_file.write("        Twi = Akan,\n")
+    # renamings
+    qlocaleh_temp_file.write("        Afan = Oromo,\n")
+    qlocaleh_temp_file.write("        Byelorussian = Belarusian,\n")
+    qlocaleh_temp_file.write("        Bhutani = Dzongkha,\n")
+    qlocaleh_temp_file.write("        Cambodian = Khmer,\n")
+    qlocaleh_temp_file.write("        Kurundi = Rundi,\n")
+    qlocaleh_temp_file.write("        RhaetoRomance = Romansh,\n")
     qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
     qlocaleh_temp_file.write("    };\n")
 
@@ -817,6 +827,7 @@ def main():
     for key in script_map.keys():
         script = fixedScriptName(script_map[key][0], dupes)
         qlocaleh_temp_file.write("        " + script + " = " + str(key) + ",\n")
+    # renamings
     qlocaleh_temp_file.write("        SimplifiedChineseScript = SimplifiedHanScript,\n")
     qlocaleh_temp_file.write("        TraditionalChineseScript = TraditionalHanScript,\n")
     qlocaleh_temp_file.write("        LastScript = " + script + "\n")
@@ -828,6 +839,13 @@ def main():
     for key in country_map.keys():
         country = fixedCountryName(country_map[key][0], dupes)
         qlocaleh_temp_file.write("        " + country + " = " + str(key) + ",\n")
+    # renamings
+    qlocaleh_temp_file.write("        DemocraticRepublicOfCongo = CongoKinshasa,\n")
+    qlocaleh_temp_file.write("        PeoplesRepublicOfCongo = CongoBrazzaville,\n")
+    qlocaleh_temp_file.write("        DemocraticRepublicOfKorea = NorthKorea,\n")
+    qlocaleh_temp_file.write("        RepublicOfKorea = SouthKorea,\n")
+    qlocaleh_temp_file.write("        RussianFederation = Russia,\n")
+    qlocaleh_temp_file.write("        SyrianArabRepublic = Syria,\n")
     qlocaleh_temp_file.write("        LastCountry = " + country + "\n")
     qlocaleh_temp_file.write("    };\n")
 

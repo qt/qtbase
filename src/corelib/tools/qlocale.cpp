@@ -99,13 +99,28 @@ QLocale::Language QLocalePrivate::codeToLanguage(const QString &code)
     ushort uc2 = len-- > 0 ? code[1].toLower().unicode() : 0;
     ushort uc3 = len-- > 0 ? code[2].toLower().unicode() : 0;
 
-    if (uc1 == 'n' && uc2 == 'o' && uc3 == 0)
-        uc2 = 'b';
-
     const unsigned char *c = language_code_list;
     for (; *c != 0; c += 3) {
         if (uc1 == c[0] && uc2 == c[1] && uc3 == c[2])
             return QLocale::Language((c - language_code_list)/3);
+    }
+
+    // legacy codes
+    if (uc1 == 'n' && uc2 == 'o' && uc3 == 0) { // no -> nb
+        Q_STATIC_ASSERT(QLocale::Norwegian == QLocale::NorwegianBokmal);
+        return QLocale::Norwegian;
+    }
+    if (uc1 == 't' && uc2 == 'l' && uc3 == 0) { // tl -> fil
+        Q_STATIC_ASSERT(QLocale::Tagalog == QLocale::Filipino);
+        return QLocale::Tagalog;
+    }
+    if (uc1 == 's' && uc2 == 'h' && uc3 == 0) { // sh -> sr[_Latn]
+        Q_STATIC_ASSERT(QLocale::SerboCroatian == QLocale::Serbian);
+        return QLocale::SerboCroatian;
+    }
+    if (uc1 == 'm' && uc2 == 'o' && uc3 == 0) { // mo -> ro
+        Q_STATIC_ASSERT(QLocale::Moldavian == QLocale::Romanian);
+        return QLocale::Moldavian;
     }
 
     return QLocale::C;

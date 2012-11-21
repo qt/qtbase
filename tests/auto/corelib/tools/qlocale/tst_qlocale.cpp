@@ -98,6 +98,7 @@ private slots:
 #if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
     void emptyCtor();
 #endif
+    void legacyNames();
     void unixLocaleName();
     void double_conversion_data();
     void double_conversion();
@@ -186,8 +187,8 @@ void tst_QLocale::ctor()
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     { \
         QLocale l(QLocale::req_lang, QLocale::req_country); \
-        QCOMPARE(l.language(), exp_lang); \
-        QCOMPARE(l.country(), exp_country); \
+        QCOMPARE((int)l.language(), (int)exp_lang); \
+        QCOMPARE((int)l.country(), (int)exp_country); \
     }
     {
         QLocale l(QLocale::C, QLocale::AnyCountry);
@@ -494,6 +495,42 @@ void tst_QLocale::emptyCtor()
 #undef TEST_CTOR
 }
 #endif
+
+void tst_QLocale::legacyNames()
+{
+    QLocale::setDefault(QLocale(QLocale::C));
+
+#define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
+    { \
+        QLocale l(QLocale::req_lang, QLocale::req_country); \
+        QCOMPARE((int)l.language(), (int)QLocale::exp_lang); \
+        QCOMPARE((int)l.country(), (int)QLocale::exp_country); \
+    }
+
+    TEST_CTOR(Moldavian, Moldova, Romanian, Moldova)
+    TEST_CTOR(Norwegian, AnyCountry, Norwegian, Norway)
+    TEST_CTOR(SerboCroatian, Montenegro, Serbian, Montenegro)
+    TEST_CTOR(Tagalog, AnyCountry, Filipino, Philippines)
+
+#undef TEST_CTOR
+
+#define TEST_CTOR(req_lc, exp_lang, exp_country) \
+    { \
+        QLocale l(req_lc); \
+        QVERIFY2(l.language() == QLocale::exp_lang \
+                && l.country() == QLocale::exp_country, \
+                QString("requested: \"" + QString(req_lc) + "\", got: " \
+                + QLocale::languageToString(l.language()) \
+                + "/" + QLocale::countryToString(l.country())).toLatin1().constData()); \
+    }
+
+    TEST_CTOR("mo_MD", Romanian, Moldova)
+    TEST_CTOR("no", Norwegian, Norway)
+    TEST_CTOR("sh_ME", Serbian, Montenegro)
+    TEST_CTOR("tl", Filipino, Philippines)
+
+#undef TEST_CTOR
+}
 
 void tst_QLocale::unixLocaleName()
 {
@@ -1553,14 +1590,9 @@ static const LocaleListItem g_locale_list[] = {
     {     96,   222}, // Russian/Ukraine
     {     98,    41}, // Sangho/CentralAfricanRepublic
     {     99,   100}, // Sanskrit/India
-    {    100,   241}, // Serbian/SerbiaAndMontenegro
     {    100,    27}, // Serbian/BosniaAndHerzegowina
-    {    100,   238}, // Serbian/Yugoslavia
     {    100,   242}, // Serbian/Montenegro
     {    100,   243}, // Serbian/Serbia
-    {    101,   241}, // SerboCroatian/SerbiaAndMontenegro
-    {    101,    27}, // SerboCroatian/BosniaAndHerzegowina
-    {    101,   238}, // SerboCroatian/Yugoslavia
     {    102,   120}, // Sesotho/Lesotho
     {    102,   195}, // Sesotho/SouthAfrica
     {    103,   195}, // Setswana/SouthAfrica

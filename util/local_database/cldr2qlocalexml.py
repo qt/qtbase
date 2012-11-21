@@ -124,10 +124,6 @@ def generateLocaleInfo(path):
     script_code = findEntryInFile(path, "identity/script", attribute="type")[0]
     variant_code = findEntryInFile(path, "identity/variant", attribute="type")[0]
 
-    # we should handle fully qualified names with the territory
-    if not country_code:
-        return {}
-
     # we do not support variants
     # ### actually there is only one locale with variant: en_US_POSIX
     #     does anybody care about it at all?
@@ -146,6 +142,9 @@ def generateLocaleInfo(path):
         return {}
     script = enumdata.script_list[script_id][0]
 
+    # we should handle fully qualified names with the territory
+    if not country_code:
+        return {}
     country_id = enumdata.countryCodeToId(country_code)
     if country_id <= 0:
         sys.stderr.write("unknown country code \"" + country_code + "\"\n")
