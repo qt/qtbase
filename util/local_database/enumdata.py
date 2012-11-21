@@ -281,7 +281,25 @@ language_list = {
     233 : [ "Ndonga",             "ng" ],
     234 : [ "Ojibwa",             "oj" ], # macrolanguage
     235 : [ "Pali",               "pi" ], # macrolanguage
-    236 : [ "Walloon",            "wa" ]
+    236 : [ "Walloon",            "wa" ],
+    237 : [ "Aghem",              "agq" ],
+    238 : [ "Basaa",              "bas" ],
+    239 : [ "Zarma",              "dje" ],
+    240 : [ "Duala",              "dua" ],
+    241 : [ "JolaFonyi",          "dyo" ],
+    242 : [ "Ewondo",             "ewo" ],
+    243 : [ "Bafia",              "ksf" ],
+    244 : [ "MakhuwaMeetto",      "mgh" ],
+    245 : [ "Mundang",            "mua" ],
+    246 : [ "Kwasio",             "nmg" ],
+    247 : [ "Nuer",               "nus" ],
+    248 : [ "Sakha",              "sah" ],
+    249 : [ "Sangu",              "sbp" ],
+    250 : [ "Congo Swahili",      "swc" ],
+    251 : [ "Tasawaq",            "twq" ],
+    252 : [ "Vai",                "vai" ],
+    253 : [ "Walser",             "wae" ],
+    254 : [ "Yangben",            "yav" ]
 }
 
 country_list = {

@@ -372,8 +372,7 @@ void tst_QLocale::ctor()
     TEST_CTOR("zh_Hans_MO", Chinese, SimplifiedHanScript, Macau)
     TEST_CTOR("zh_Hant_MO", Chinese, TraditionalHanScript, Macau)
     TEST_CTOR("az_Latn_AZ", Azerbaijani, LatinScript, Azerbaijan)
-    TEST_CTOR("ha_Arab_NG", Hausa, ArabicScript, Nigeria)
-    TEST_CTOR("ha_Latn_NG", Hausa, LatinScript, Nigeria)
+    TEST_CTOR("ha_NG", Hausa, LatinScript, Nigeria)
 
     TEST_CTOR("ru", Russian, CyrillicScript, RussianFederation)
     TEST_CTOR("ru_Cyrl", Russian, CyrillicScript, RussianFederation)
@@ -1642,7 +1641,7 @@ void tst_QLocale::monthName()
 
     QLocale ru("ru_RU");
     QCOMPARE(ru.monthName(1, QLocale::LongFormat), QString::fromUtf8("\321\217\320\275\320\262\320\260\321\200\321\217"));
-    QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
+    QCOMPARE(ru.monthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262"));
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
 
     // check that our CLDR scripts handle surrogate pairs correctly
@@ -1673,7 +1672,7 @@ void tst_QLocale::standaloneMonthName()
 
     QLocale ru("ru_RU");
     QCOMPARE(ru.standaloneMonthName(1, QLocale::LongFormat), QString::fromUtf8("\320\257\320\275\320\262\320\260\321\200\321\214"));
-    QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
+    QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat), QString::fromUtf8("\320\257\320\275\320\262\56"));
     QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
 }
 

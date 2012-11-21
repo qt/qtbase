@@ -315,6 +315,24 @@ public:
         Ojibwa = 234,
         Pali = 235,
         Walloon = 236,
+        Aghem = 237,
+        Basaa = 238,
+        Zarma = 239,
+        Duala = 240,
+        JolaFonyi = 241,
+        Ewondo = 242,
+        Bafia = 243,
+        MakhuwaMeetto = 244,
+        Mundang = 245,
+        Kwasio = 246,
+        Nuer = 247,
+        Sakha = 248,
+        Sangu = 249,
+        CongoSwahili = 250,
+        Tasawaq = 251,
+        Vai = 252,
+        Walser = 253,
+        Yangben = 254,
         Norwegian = NorwegianBokmal,
         Moldavian = Romanian,
         SerboCroatian = Serbian,
@@ -326,7 +344,7 @@ public:
         Cambodian = Khmer,
         Kurundi = Rundi,
         RhaetoRomance = Romansh,
-        LastLanguage = Walloon
+        LastLanguage = Yangben
     };
 
     enum Script {

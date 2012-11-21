@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v1.9.1.
+    QLocale's data is based on Common Locale Data Repository v2.0.1.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -375,6 +375,24 @@
     \value CentralMoroccoTamazight
     \value KoyraboroSenni
     \value Shambala
+    \value Aghem
+    \value Basaa
+    \value Zarma
+    \value Duala
+    \value JolaFonyi
+    \value Ewondo
+    \value Bafia
+    \value MakhuwaMeetto
+    \value Mundang
+    \value Kwasio
+    \value Nuer
+    \value Sakha
+    \value Sangu
+    \value CongoSwahili
+    \value Tasawaq
+    \value Vai
+    \value Walser
+    \value Yangben
     \omitvalue LastLanguage
 
     \sa language(), languageToString()
