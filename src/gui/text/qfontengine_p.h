@@ -241,6 +241,8 @@ public:
         return canRender(utf16, utf16len);
     }
 
+    virtual bool supportsTransformations(const QTransform &transform) const;
+
     virtual Type type() const = 0;
 
     virtual int glyphCount() const;

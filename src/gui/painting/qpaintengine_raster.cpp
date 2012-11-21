@@ -2992,7 +2992,7 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensureRasterState();
 
     QFontEngine *fontEngine = textItem->fontEngine();
-    if (shouldDrawCachedGlyphs(fontEngine, state()->matrix)) {
+    if (!supportsTransformations(fontEngine)) {
         drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
                          fontEngine);
     } else if (state()->matrix.type() < QTransform::TxProject) {
@@ -3291,7 +3291,7 @@ bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine) const
 */
 bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const
 {
-    if (m.type() >= QTransform::TxProject)
+    if (fontEngine->supportsTransformations(m))
         return true;
 
     return !shouldDrawCachedGlyphs(fontEngine, m);

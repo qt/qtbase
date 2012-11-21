@@ -600,6 +600,11 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
     return new QCoreTextFontEngine(cgFont, newFontDef);
 }
 
+bool QCoreTextFontEngine::supportsTransformations(const QTransform &transform) const
+{
+    return transform.type() > QTransform::TxTranslate;
+}
+
 QT_END_NAMESPACE
 
 #endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
