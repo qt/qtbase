@@ -46,10 +46,10 @@ TableModel::TableModel(QObject *parent)
 {
 }
 
-TableModel::TableModel(QList< QPair<QString, QString> > pairs, QObject *parent)
+TableModel::TableModel(QList<QPair<QString, QString> > pairs, QObject *parent)
     : QAbstractTableModel(parent)
 {
-    listOfPairs=pairs;
+    listOfPairs = pairs;
 }
 //! [0]
 
@@ -114,9 +114,9 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation, int ro
 bool TableModel::insertRows(int position, int rows, const QModelIndex &index)
 {
     Q_UNUSED(index);
-    beginInsertRows(QModelIndex(), position, position+rows-1);
+    beginInsertRows(QModelIndex(), position, position + rows - 1);
 
-    for (int row=0; row < rows; row++) {
+    for (int row = 0; row < rows; ++row) {
         QPair<QString, QString> pair(" ", " ");
         listOfPairs.insert(position, pair);
     }
@@ -130,9 +130,9 @@ bool TableModel::insertRows(int position, int rows, const QModelIndex &index)
 bool TableModel::removeRows(int position, int rows, const QModelIndex &index)
 {
     Q_UNUSED(index);
-    beginRemoveRows(QModelIndex(), position, position+rows-1);
+    beginRemoveRows(QModelIndex(), position, position + rows - 1);
 
-    for (int row=0; row < rows; ++row) {
+    for (int row = 0; row < rows; ++row) {
         listOfPairs.removeAt(position);
     }
 

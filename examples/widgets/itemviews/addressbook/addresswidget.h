@@ -41,10 +41,11 @@
 #ifndef ADDRESSWIDGET_H
 #define ADDRESSWIDGET_H
 
-#include <QTabWidget>
-#include <QItemSelection>
-#include "tablemodel.h"
 #include "newaddresstab.h"
+#include "tablemodel.h"
+
+#include <QItemSelection>
+#include <QTabWidget>
 
 QT_BEGIN_NAMESPACE
 class QSortFilterProxyModel;
@@ -57,9 +58,9 @@ class AddressWidget : public QTabWidget
     Q_OBJECT
 
 public:
-    AddressWidget(QWidget *parent=0);
-    void readFromFile(QString fileName);
-    void writeToFile(QString fileName);
+    AddressWidget(QWidget *parent = 0);
+    void readFromFile(const QString &fileName);
+    void writeToFile(const QString &fileName);
 
 public slots:
     void addEntry();
@@ -79,4 +80,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // ADDRESSWIDGET_H

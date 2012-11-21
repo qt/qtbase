@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include "addresswidget.h"
 #include "adddialog.h"
+#include "addresswidget.h"
+
+#include <QtWidgets>
 
 //! [0]
 AddressWidget::AddressWidget(QWidget *parent)
@@ -48,8 +49,8 @@ AddressWidget::AddressWidget(QWidget *parent)
 {
     table = new TableModel(this);
     newAddressTab = new NewAddressTab(this);
-    connect(newAddressTab, SIGNAL(sendDetails(QString,QString)),
-        this, SLOT(addEntry(QString,QString))); 
+    connect(newAddressTab, SIGNAL(sendDetails(QString, QString)),
+        this, SLOT(addEntry(QString, QString)));
 
     addTab(newAddressTab, "Address Book");    
 
@@ -74,7 +75,7 @@ void AddressWidget::addEntry()
 //! [3]
 void AddressWidget::addEntry(QString name, QString address)
 {    
-    QList< QPair<QString, QString> >list = table->getList();
+    QList<QPair<QString, QString> >list = table->getList();
     QPair<QString, QString> pair(name, address);
 
     if (!list.contains(pair)) {
@@ -100,19 +101,18 @@ void AddressWidget::editEntry()
     QItemSelectionModel *selectionModel = temp->selectionModel();
 
     QModelIndexList indexes = selectionModel->selectedRows();
-    QModelIndex index, i;        
     QString name;
     QString address;
     int row = -1;
 
-    foreach (index, indexes) {
+    foreach (QModelIndex index, indexes) {
         row = proxy->mapToSource(index).row();
-        i = table->index(row, 0, QModelIndex());
-        QVariant varName = table->data(i, Qt::DisplayRole);
+        QModelIndex nameIndex = table->index(row, 0, QModelIndex());
+        QVariant varName = table->data(nameIndex, Qt::DisplayRole);
         name = varName.toString();
     
-        i = table->index(row, 1, QModelIndex());
-        QVariant varAddr = table->data(i, Qt::DisplayRole);
+        QModelIndex addressIndex = table->index(row, 1, QModelIndex());
+        QVariant varAddr = table->data(addressIndex, Qt::DisplayRole);
         address = varAddr.toString();
     }
 //! [4a]
@@ -128,8 +128,8 @@ void AddressWidget::editEntry()
     if (aDialog.exec()) {
         QString newAddress = aDialog.addressText->toPlainText();
         if (newAddress != address) {
-            i = table->index(row, 1, QModelIndex());
-            table->setData(i, newAddress, Qt::EditRole);
+            QModelIndex index = table->index(row, 1, QModelIndex());
+            table->setData(index, newAddress, Qt::EditRole);
         }
     }
 }
@@ -143,9 +143,8 @@ void AddressWidget::removeEntry()
     QItemSelectionModel *selectionModel = temp->selectionModel();
     
     QModelIndexList indexes = selectionModel->selectedRows();
-    QModelIndex index;
 
-    foreach (index, indexes) {
+    foreach (QModelIndex index, indexes) {
         int row = proxy->mapToSource(index).row();
         table->removeRows(row, 1, QModelIndex());
     }
@@ -193,7 +192,7 @@ void AddressWidget::setupTabs()
 //! [1]
 
 //! [7]
-void AddressWidget::readFromFile(QString fileName)
+void AddressWidget::readFromFile(const QString &fileName)
 {
     QFile file(fileName);
 
@@ -203,13 +202,13 @@ void AddressWidget::readFromFile(QString fileName)
         return;
     }
 
-    QList< QPair<QString, QString> > pairs = table->getList();    
+    QList<QPair<QString, QString> > pairs = table->getList();
     QDataStream in(&file);
     in >> pairs;
 
     if (pairs.isEmpty()) {
         QMessageBox::information(this, tr("No contacts in file"),
-            tr("The file you are attempting to open contains no contacts."));  
+                                 tr("The file you are attempting to open contains no contacts."));
     } else {
         for (int i=0; i<pairs.size(); ++i) {
             QPair<QString, QString> p = pairs.at(i);
@@ -220,7 +219,7 @@ void AddressWidget::readFromFile(QString fileName)
 //! [7]
 
 //! [6]
-void AddressWidget::writeToFile(QString fileName)
+void AddressWidget::writeToFile(const QString &fileName)
 {
     QFile file(fileName);
 
@@ -229,7 +228,7 @@ void AddressWidget::writeToFile(QString fileName)
         return;
     }
 
-    QList< QPair<QString, QString> > pairs = table->getList();
+    QList<QPair<QString, QString> > pairs = table->getList();
     QDataStream out(&file);
     out << pairs;
 }

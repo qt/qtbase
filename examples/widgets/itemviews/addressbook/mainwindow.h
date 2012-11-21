@@ -41,8 +41,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtWidgets>
 #include "addresswidget.h"
+
+#include <QMainWindow>
 
 //! [0]
 class MainWindow : public QMainWindow
@@ -72,4 +73,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // MAINWINDOW_H

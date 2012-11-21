@@ -38,8 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "mainwindow.h"
+
+#include <QApplication>
 
 //! [0]
 int main(int argc, char *argv[])

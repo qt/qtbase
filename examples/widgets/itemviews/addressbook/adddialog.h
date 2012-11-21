@@ -56,7 +56,7 @@ class AddDialog : public QDialog
     Q_OBJECT
     
 public:
-    AddDialog(QWidget *parent=0);
+    AddDialog(QWidget *parent = 0);
     QLineEdit *nameText;
     QTextEdit *addressText;
 
@@ -68,4 +68,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // ADDDIALOG_H

@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include "newaddresstab.h"
 #include "adddialog.h"
+#include "newaddresstab.h"
+
+#include <QtWidgets>
 
 //! [0]
 NewAddressTab::NewAddressTab(QWidget *parent)

@@ -38,8 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "adddialog.h"
+
+#include <QtWidgets>
 
 //! [0]
 AddDialog::AddDialog(QWidget *parent)
@@ -71,11 +72,8 @@ AddDialog::AddDialog(QWidget *parent)
     mainLayout->addLayout(gLayout);
     setLayout(mainLayout);
     
-    connect(okButton, SIGNAL(clicked()),
-            this, SLOT(accept()));
-            
-    connect(cancelButton, SIGNAL(clicked()),
-            this, SLOT(reject()));
+    connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
             
     setWindowTitle(tr("Add a Contact"));
 }
