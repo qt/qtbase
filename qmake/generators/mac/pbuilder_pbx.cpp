@@ -1355,6 +1355,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!project->isEmpty("QMAKE_IOS_DEPLOYMENT_TARGET"))
                     t << "\t\t\t\t" << writeSettings("IPHONEOS_DEPLOYMENT_TARGET", project->first("QMAKE_IOS_DEPLOYMENT_TARGET")) << ";" << "\n";
 
+                if (!project->isEmpty("QMAKE_XCODE_CODE_SIGN_IDENTITY"))
+                    t << "\t\t\t\t" << writeSettings("CODE_SIGN_IDENTITY", project->first("QMAKE_XCODE_CODE_SIGN_IDENTITY")) << ";" << "\n";
+
                 tmp = project->values("QMAKE_PBX_VARS");
                 for (int i = 0; i < tmp.count(); i++) {
                     QString var = tmp[i].toQString(), val = QString::fromLocal8Bit(qgetenv(var.toLatin1().constData()));
