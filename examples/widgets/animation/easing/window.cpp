@@ -75,6 +75,23 @@ Window::Window(QWidget *parent)
     startAnimation();
 }
 
+QEasingCurve createEasingCurve(QEasingCurve::Type curveType)
+{
+    QEasingCurve curve(curveType);
+
+    if (curveType == QEasingCurve::BezierSpline) {
+        curve.addCubicBezierSegment(QPointF(0.4, 0.1), QPointF(0.6, 0.9), QPointF(1.0, 1.0));
+
+    } else if (curveType == QEasingCurve::TCBSpline) {
+        curve.addTCBSegment(QPointF(0.0, 0.0), 0, 0, 0);
+        curve.addTCBSegment(QPointF(0.3, 0.4), 0.2, 1, -0.2);
+        curve.addTCBSegment(QPointF(0.7, 0.6), -0.2, 1, 0.2);
+        curve.addTCBSegment(QPointF(1.0, 1.0), 0, 0, 0);
+    }
+
+    return curve;
+}
+
 void Window::createCurveIcons()
 {
     QPixmap pix(m_iconSize);
@@ -88,7 +105,7 @@ void Window::createCurveIcons()
     // Skip QEasingCurve::Custom
     for (int i = 0; i < QEasingCurve::NCurveTypes - 1; ++i) {
         painter.fillRect(QRect(QPoint(0, 0), m_iconSize), brush);
-        QEasingCurve curve((QEasingCurve::Type)i);
+        QEasingCurve curve = createEasingCurve((QEasingCurve::Type) i);
         painter.setPen(QColor(0, 0, 255, 64));
         qreal xAxis = m_iconSize.height()/1.5;
         qreal yAxis = m_iconSize.width()/3;
@@ -139,7 +156,7 @@ void Window::startAnimation()
 void Window::curveChanged(int row)
 {
     QEasingCurve::Type curveType = (QEasingCurve::Type)row;
-    m_anim->setEasingCurve(curveType);
+    m_anim->setEasingCurve(createEasingCurve(curveType));
     m_anim->setCurrentTime(0);
 
     bool isElastic = curveType >= QEasingCurve::InElastic && curveType <= QEasingCurve::OutInElastic;
