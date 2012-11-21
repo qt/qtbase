@@ -1,0 +1,45 @@
+From 85e9ba49580e307e1213c87cdbfdc301848f497f Mon Sep 17 00:00:00 2001
+From: Miikka Heikkinen <miikka.heikkinen@digia.com>
+Date: Tue, 20 Nov 2012 13:23:27 +0200
+Subject: [PATCH] Fix black screen after minimizing OpenGL window with ANGLE
+
+CreateTexture will fail on zero dimensions, so just release old target
+and reset dimensions when resetSwapChain is called with zero size area.
+
+Task-number: QTBUG-27994
+Change-Id: I1e500c4fd4b92f7d9ea2a49a44f3fb930b575cd1
+Reviewed-by: Friedemann Kleint <Friedemann.Kleint@digia.com>
+---
+ src/3rdparty/angle/src/libEGL/Surface.cpp |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
+index 8e920ab..174b403 100644
+--- a/src/3rdparty/angle/src/libEGL/Surface.cpp
++++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
+@@ -224,6 +224,22 @@ bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
+         pShareHandle = &mShareHandle;
+     }
+ 
++    // CreateTexture will fail on zero dimensions, so just release old target
++    if (!backbufferWidth || !backbufferHeight)
++    {
++        if (mRenderTarget)
++        {
++            mRenderTarget->Release();
++            mRenderTarget = NULL;
++        }
++
++        mWidth = backbufferWidth;
++        mHeight = backbufferHeight;
++        mPresentIntervalDirty = false;
++
++        return true;
++    }
++
+     result = device->CreateTexture(backbufferWidth, backbufferHeight, 1, D3DUSAGE_RENDERTARGET,
+                                    mConfig->mRenderTargetFormat, D3DPOOL_DEFAULT, &mOffscreenTexture, pShareHandle);
+     if (FAILED(result))
+-- 
+1.7.4.msysgit.0
+
