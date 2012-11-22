@@ -30,7 +30,7 @@ load(qt_targets)
 
     load(resolve_target)
     cmd = $$shell_path($$QMAKE_RESOLVED_TARGET)
-    qtAddTargetEnv(cmd)
+    !host_build: qtAddTargetEnv(cmd)
 
     TOOL_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_tool_$${MODULE}.pri
 
