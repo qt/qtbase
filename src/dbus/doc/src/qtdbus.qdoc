@@ -27,7 +27,7 @@
 
 /*!
     \module QtDBus
-    \title QtDBus module
+    \title Qt D-Bus C++ Classes
     \ingroup modules
 
     \keyword QtDBus

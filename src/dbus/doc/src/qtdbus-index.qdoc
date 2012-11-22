@@ -211,5 +211,8 @@
     \li \l{Using QtDBus Adaptors}
     \li \l{The QtDBus Type System}
     \li \l{QtDBus XML compiler (qdbusxml2cpp)}
+    \li \l{Qt D-Bus C++ Classes}
+    \endlist
+
     \endlist
 */
