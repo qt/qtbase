@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 QHash <QAccessible::Role, RoleNames> qSpiRoleMapping;
 
 quint64 spiStatesFromQState(QAccessible::State state)
@@ -153,5 +155,7 @@ AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relat
     }
     return ATSPI_RELATION_NULL;
 }
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

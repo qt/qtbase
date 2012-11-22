@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 /*!
     \class QAccessible
     \brief The QAccessible class provides enums and static functions
@@ -437,23 +439,19 @@ QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
 static bool accessibility_active = false;
 static bool cleanupAdded = false;
 
-#ifndef QT_NO_ACCESSIBILITY
 static QPlatformAccessibility *platformAccessibility()
 {
     QPlatformIntegration *pfIntegration = QGuiApplicationPrivate::platformIntegration();
     return pfIntegration ? pfIntegration->accessibility() : 0;
 }
-#endif
 
 /*!
     \internal
 */
 void QAccessible::cleanup()
 {
-#ifndef QT_NO_ACCESSIBILITY
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->cleanup();
-#endif
 }
 
 static void qAccessibleCleanup()
@@ -597,10 +595,8 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         mo = mo->superClass();
     }
 
-#ifndef QT_NO_ACCESSIBILITY
     if (object == qApp)
         return new QAccessibleApplication;
-#endif
 
     return 0;
 }
@@ -640,10 +636,8 @@ void QAccessible::setRootObject(QObject *object)
         return;
     }
 
-#ifndef QT_NO_ACCESSIBILITY
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->setRootObject(object);
-#endif
 }
 
 /*!
@@ -675,10 +669,8 @@ void QAccessible::updateAccessibility(QAccessibleEvent *event)
     if (!isActive())
         return;
 
-#ifndef QT_NO_ACCESSIBILITY
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->notifyAccessibilityUpdate(event);
-#endif
 }
 
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -1531,6 +1523,8 @@ QDebug operator<<(QDebug d, const QAccessibleEvent &ev)
 }
 
 #endif
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 

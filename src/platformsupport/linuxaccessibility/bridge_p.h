@@ -51,6 +51,8 @@ class DeviceEventControllerAdaptor;
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 class DBusConnection;
 class QSpiDBusCache;
 class AtSpiAdaptor;
@@ -78,6 +80,8 @@ private:
     DBusConnection* dbusConnection;
     bool initialized;
 };
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 QT_END_HEADER

@@ -56,6 +56,8 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 class QAccessibleInterface;
 class QSpiAccessibleInterface;
 class QSpiApplicationAdaptor;
@@ -215,6 +217,8 @@ private:
     uint sendWindow_shade : 1;
     uint sendWindow_unshade : 1;
 };
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 QT_END_HEADER

@@ -49,6 +49,8 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 class QSpiDBusCache : public QObject
 {
     Q_OBJECT
@@ -65,6 +67,8 @@ Q_SIGNALS:
 public Q_SLOTS:
     QSpiAccessibleCacheArray GetItems();
 };
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 QT_END_HEADER

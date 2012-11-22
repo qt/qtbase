@@ -56,6 +56,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 /*!
     \class QSpiAccessibleBridge
     \internal
@@ -181,5 +183,7 @@ void QSpiAccessibleBridge::initializeConstantMappings()
     for (uint i = 0; i < sizeof(map) / sizeof(RoleMapping); ++i)
         qSpiRoleMapping.insert(map[i].role, RoleNames(map[i].spiRole, QLatin1String(map[i].name), tr(map[i].name)));
 }
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
