@@ -100,13 +100,18 @@
 
     The QPaintDevice class is the base class of objects that can be
     painted, i.e. QPainter can draw on any QPaintDevice
-    subclass. QPaintDevice's drawing capabilities are currently
-    implemented by the QImage, QPixmap, QGLPixelBuffer, QPicture and
-    QPrinter subclasses.
-
-    \image paintsystem-devices.png
+    subclass. QPaintDevice's drawing capabilities are among others
+    implemented by QWidget, QImage, QPixmap, QPicture, QPrinter, and
+    QOpenGLPaintDevice.
 
     \table 100%
+
+    \row \li \b Widget
+
+    The QWidget class is the base class of user interface
+    elements in the \l {Qt Widgets} module. It receives mouse, keyboard
+    and other events from the window system, and paints a
+    representation of itself on the screen.
 
     \row \li \b Image
 
