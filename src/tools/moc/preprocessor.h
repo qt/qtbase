@@ -64,7 +64,6 @@ typedef QByteArray MacroName;
 typedef SubArray MacroName;
 #endif
 typedef QHash<MacroName, Macro> Macros;
-typedef QVector<MacroName> MacroSafeSet;
 
 class QIODevice;
 
@@ -84,10 +83,9 @@ public:
     void skipUntilEndif();
     bool skipBranch();
 
-    void substituteMacro(const MacroName &macro, Symbols &substituted, MacroSafeSet safeset = MacroSafeSet());
-    void substituteUntilNewline(Symbols &substituted, MacroSafeSet safeset = MacroSafeSet());
-    void macroExpandIdentifier(int lineNum, Symbols &preprocessed, MacroSafeSet safeset = MacroSafeSet());
-    void macroExpandSymbols(int lineNum, const Symbols &symbols, Symbols &expanded, MacroSafeSet safeset);
+    void substituteUntilNewline(Symbols &substituted);
+    static Symbols macroExpandIdentifier(Preprocessor *that, SymbolStack &symbols, int lineNum, QByteArray *macroName);
+    static Symbols macroExpand(Preprocessor *that, Symbols &toExpand, int &index, int lineNum, bool one);
 
     int evaluateCondition();
 

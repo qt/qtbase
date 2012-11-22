@@ -46,6 +46,7 @@
 #include <qstring.h>
 #include <qhash.h>
 #include <qvector.h>
+#include <qstack.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -128,8 +129,60 @@ struct Symbol
 };
 Q_DECLARE_TYPEINFO(Symbol, Q_MOVABLE_TYPE);
 
-
 typedef QVector<Symbol> Symbols;
+
+struct SafeSymbols {
+    Symbols symbols;
+    QByteArray expandedMacro;
+    int index;
+};
+
+class SymbolStack : public QStack<SafeSymbols>
+{
+public:
+    inline bool hasNext() {
+        while (!isEmpty() && top().index >= top().symbols.size())
+            pop();
+        return !isEmpty();
+    }
+    inline Token next() {
+        while (!isEmpty() && top().index >= top().symbols.size())
+            pop();
+        if (isEmpty())
+            return NOTOKEN;
+        return top().symbols.at(top().index++).token;
+    }
+    bool test(Token);
+    inline const Symbol &symbol() const { return top().symbols.at(top().index-1); }
+    inline Token token() { return symbol().token; }
+    inline QByteArray lexem() const { return symbol().lexem(); }
+    inline QByteArray unquotedLexem() { return symbol().unquotedLexem(); }
+
+    bool dontReplaceSymbol(const QByteArray &name);
+};
+
+inline bool SymbolStack::test(Token token)
+{
+    int stackPos = size() - 1;
+    while (stackPos >= 0 && at(stackPos).index >= at(stackPos).symbols.size())
+        --stackPos;
+    if (stackPos < 0)
+        return false;
+    if (at(stackPos).symbols.at(at(stackPos).index).token == token) {
+        next();
+        return true;
+    }
+    return false;
+}
+
+inline bool SymbolStack::dontReplaceSymbol(const QByteArray &name)
+{
+    for (int i = 0; i < size(); ++i) {
+        if (name == at(i).expandedMacro)
+            return true;
+    }
+    return false;
+}
 
 QT_END_NAMESPACE
 

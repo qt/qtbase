@@ -2752,19 +2752,34 @@ void tst_Moc::parseDefines()
     QVERIFY(index != -1);
 #endif
 
+    index = mo->indexOfSlot("INNERFUNCTION(int)");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("inner_expanded(int)");
+    QVERIFY(index != -1);
+    index = mo->indexOfSlot("expanded_method(int)");
+    QVERIFY(index != -1);
+
+    index = mo->indexOfSlot("conditionSlot()");
+    QVERIFY(index != -1);
+
     int count = 0;
     for (int i = 0; i < mo->classInfoCount(); ++i) {
         QMetaClassInfo mci = mo->classInfo(i);
         if (!qstrcmp(mci.name(), "TestString")) {
             ++count;
-            QVERIFY(!qstrcmp(mci.value(), "ParseDefine"));
+            QVERIFY(!qstrcmp(mci.value(), "PD_CLASSNAME"));
         }
         if (!qstrcmp(mci.name(), "TestString2")) {
+            ++count;
+            qDebug() << mci.value();
+            QVERIFY(!qstrcmp(mci.value(), "ParseDefine"));
+        }
+        if (!qstrcmp(mci.name(), "TestString3")) {
             ++count;
             QVERIFY(!qstrcmp(mci.value(), "TestValue"));
         }
     }
-    QVERIFY(count == 2);
+    QVERIFY(count == 3);
 }
 
 void tst_Moc::preprocessorOnly()

@@ -52,6 +52,7 @@
 #define PD_CLASSNAME ParseDefine
 
 #define PD_STRINGIFY(a) #a
+#define PD_XSTRINGIFY(a) PD_STRINGIFY(a)
 #define PD_SCOPED_STRING(a, b) PD_STRINGIFY(a) "::" PD_STRINGIFY(b)
 #define PD_DEFINE1(a,b) a##b
 #define PD_DEFINE2(a,b) a comb##b
@@ -81,7 +82,8 @@ class PD_CLASSNAME : public QObject
 {
     Q_OBJECT
     Q_CLASSINFO("TestString", PD_STRINGIFY(PD_CLASSNAME))
-    PD_CLASSINFO("TestString2", "TestValue")
+    Q_CLASSINFO("TestString2", PD_XSTRINGIFY(PD_CLASSNAME))
+    PD_CLASSINFO("TestString3", "TestValue")
 public:
     PD_CLASSNAME() {}
 
@@ -108,6 +110,24 @@ public slots:
     PD_VARARGEXT(void vararg5, int) {}
     PD_VARARGEXT(void vararg6, int, int) {}
 #endif
+
+#define OUTERFUNCTION(x) x
+#define INNERFUNCTION(x) OUTERFUNCTION(x)
+#define INNER INNERFUNCTION
+
+    void INNERFUNCTION(INNERFUNCTION)(int) {}
+    void OUTERFUNCTION(INNERFUNCTION)(inner_expanded(int)) {}
+    void expanded_method OUTERFUNCTION(INNER)((int)) {}
+
+#undef INNERFUNCTION
+
+#define cond1() 0x1
+#define cond2() 0x2
+
+#if !(cond1() & cond2())
+    void conditionSlot() {}
+#endif
+
 };
 
 #undef QString
