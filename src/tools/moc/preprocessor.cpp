@@ -1067,8 +1067,30 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
             int start = index;
             until(PP_NEWLINE);
             macro.symbols.reserve(index - start - 1);
-            for (int i = start; i < index - 1; ++i)
-                macro.symbols += symbols.at(i);
+
+            // remove whitespace where there shouldn't be any:
+            // Before and after the macro, after a # and around ##
+            Token lastToken = HASH; // skip shitespace at the beginning
+            for (int i = start; i < index - 1; ++i) {
+                Token token = symbols.at(i).token;
+                if (token ==  PP_WHITESPACE || token == WHITESPACE) {
+                    if (lastToken == PP_HASH || lastToken == HASH ||
+                        lastToken == PP_HASHHASH ||
+                        lastToken == PP_WHITESPACE || lastToken == WHITESPACE)
+                        continue;
+                } else if (token == PP_HASHHASH) {
+                    if (!macro.symbols.isEmpty() &&
+                        (lastToken ==  PP_WHITESPACE || lastToken == WHITESPACE))
+                        macro.symbols.pop_back();
+                }
+                macro.symbols.append(symbols.at(i));
+                lastToken = token;
+            }
+            // remove trailing whitespace
+            while (!macro.symbols.isEmpty() &&
+                   (macro.symbols.last().token == PP_WHITESPACE || macro.symbols.last().token == WHITESPACE))
+                macro.symbols.pop_back();
+
             macros.insert(name, macro);
             continue;
         }
