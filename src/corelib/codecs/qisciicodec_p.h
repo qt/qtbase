@@ -76,7 +76,7 @@ private:
     int idx;
 };
 
-#endif // QT_NO_BIG_CODECS
+#endif // QT_NO_CODECS
 
 QT_END_NAMESPACE
 
