@@ -155,10 +155,10 @@ bool QApplicationPrivate::autoSipEnabled = false;
 bool QApplicationPrivate::autoSipEnabled = true;
 #endif
 
-QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type, int flags)
+QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, int flags)
     : QApplicationPrivateBase(argc, argv, flags)
 {
-    application_type = type;
+    application_type = QApplicationPrivate::Gui;
 
 #ifndef QT_NO_SESSIONMANAGER
     is_session_restored = false;
@@ -560,44 +560,7 @@ QApplication::QApplication(int &argc, char **argv)
 #else
 QApplication::QApplication(int &argc, char **argv, int _internal)
 #endif
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GuiClient, _internal))
-{ Q_D(QApplication); d->construct(); }
-
-
-/*!
-    Constructs an application object with \a argc command line arguments in
-    \a argv.
-
-    \warning The data referred to by \a argc and \a argv must stay valid for
-    the entire lifetime of the QApplication object. In addition, \a argc must
-    be greater than zero and \a argv must contain at least one valid character
-    string.
-
-    The following example shows how to create an application that uses a
-    graphical interface when available.
-
-    \obsolete
-
-    \snippet code/src_gui_kernel_qapplication.cpp 0
-*/
-
-QApplication::QApplication(int &argc, char **argv, bool GUIenabled , int _internal)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, GUIenabled ? GuiClient : Tty, _internal))
-{ Q_D(QApplication); d->construct();}
-
-
-
-/*!
-    Constructs an application object with \a argc command line arguments in
-    \a argv.
-
-    \warning The data referred to by \a argc and \a argv must stay valid for
-    the entire lifetime of the QApplication object. In addition, \a argc must
-    be greater than zero and \a argv must contain at least one valid character
-    string.
-*/
-QApplication::QApplication(int &argc, char **argv, Type type , int _internal)
-    : QGuiApplication(*new QApplicationPrivate(argc, argv, type, _internal))
+    : QGuiApplication(*new QApplicationPrivate(argc, argv, _internal))
 { Q_D(QApplication); d->construct(); }
 
 /*!
@@ -607,7 +570,7 @@ void QApplicationPrivate::construct()
 {
     initResources();
 
-    qt_is_gui_used = (application_type != QApplication::Tty);
+    qt_is_gui_used = (application_type != QApplicationPrivate::Tty);
     process_cmdline();
 
     // Must be called before initialize()
@@ -653,7 +616,7 @@ void QApplicationPrivate::initialize()
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
 
-    if (application_type != QApplication::Tty)
+    if (application_type != QApplicationPrivate::Tty)
         (void) QApplication::style();  // trigger creation of application style
 #ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
@@ -692,18 +655,6 @@ void QApplicationPrivate::initialize()
     if (QApplication::desktopSettingsAware())
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
             QApplicationPrivate::enabledAnimations = theme->themeHint(QPlatformTheme::UiEffects).toInt();
-}
-
-/*!
-    Returns the type of application (\l Tty, GuiClient, or
-    GuiServer). The type is set when constructing the QApplication
-    object.
-*/
-QApplication::Type QApplication::type()
-{
-    if (QApplicationPrivate::instance())
-        return (QCoreApplication::Type)QApplicationPrivate::instance()->application_type;
-    return Tty;
 }
 
 /*****************************************************************************
@@ -1037,8 +988,8 @@ QStyle *QApplication::style()
 {
     if (QApplicationPrivate::app_style)
         return QApplicationPrivate::app_style;
-    if (qApp->type() == QApplication::Tty) {
-        Q_ASSERT(!"No style available in non-gui applications!");
+    if (!qobject_cast<QApplication *>(QCoreApplication::instance())) {
+        Q_ASSERT(!"No style available without QApplication!");
         return 0;
     }
 

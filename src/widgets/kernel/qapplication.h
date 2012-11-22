@@ -95,15 +95,12 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
     Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 
 public:
-
+#ifdef Q_QDOC
+    QApplication(int &argc, char **argv);
+#else
     QApplication(int &argc, char **argv, int = ApplicationFlags);
-#ifdef QT_DEPRECATED
-    QT_DEPRECATED QApplication(int &argc, char **argv, bool GUIenabled, int = ApplicationFlags);
 #endif
-    QApplication(int &argc, char **argv, Type, int = ApplicationFlags);
     virtual ~QApplication();
-
-    static Type type();
 
     static QStyle *style();
     static void setStyle(QStyle*);

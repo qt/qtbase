@@ -113,7 +113,7 @@ class Q_WIDGETS_EXPORT QApplicationPrivate : public QApplicationPrivateBase
 {
     Q_DECLARE_PUBLIC(QApplication)
 public:
-    QApplicationPrivate(int &argc, char **argv, QApplication::Type type, int flags);
+    QApplicationPrivate(int &argc, char **argv, int flags);
     ~QApplicationPrivate();
 
     virtual void notifyLayoutDirectionChange();

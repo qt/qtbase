@@ -69,6 +69,11 @@ class Q_CORE_EXPORT QCoreApplicationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QCoreApplication)
 
 public:
+    enum Type {
+        Tty,
+        Gui
+    };
+
     QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
     ~QCoreApplicationPrivate();
 

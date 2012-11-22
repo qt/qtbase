@@ -327,6 +327,11 @@ information about a particular change.
 
 - QPrintEngine - Removed the PPK_SuppressSystemPrintStatus key as no longer used.
 
+- QCoreApplication::Type and QApplication::type() have been removed. These
+  Qt3 legacy application types did not match the application types
+  available in Qt5. Use for example qobject_cast instead to dynamically
+  find out the exact application type.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************

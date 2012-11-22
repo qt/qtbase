@@ -391,7 +391,7 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
       lastTouchType(QEvent::TouchEnd)
 {
     self = this;
-    application_type = QCoreApplication::GuiClient;
+    application_type = QCoreApplicationPrivate::Gui;
 }
 
 /*!
