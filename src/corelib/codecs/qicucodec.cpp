@@ -369,10 +369,12 @@ static QTextCodec *loadQtCodec(const char *name)
         return new QUtf32BECodec;
     if (!strcmp(name, "UTF-32LE"))
         return new QUtf32LECodec;
+#ifndef QT_NO_CODECS
     if (!strcmp(name, "TSCII"))
         return new QTsciiCodec;
     if (!qstrnicmp(name, "iscii", 5))
         return QIsciiCodec::create(name);
+#endif
 
     return 0;
 }
