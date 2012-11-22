@@ -31,7 +31,7 @@ depends += \
     qtopengl \
     qtsvg \
     qtqml \
-    qtquickt \
+    qtquick \
     qtwidgets \
     qtdoc
 
