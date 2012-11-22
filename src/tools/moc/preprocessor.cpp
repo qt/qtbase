@@ -565,7 +565,6 @@ void Preprocessor::macroExpandIdentifier(int lineNum, Symbols &preprocessed, Mac
     const Macro &macro = macros.value(s);
     safeset += s;
 
-    // don't expand macros with arguments for now
     if (macro.isFunction) {
         while (test(PP_WHITESPACE)) {}
         if (!test(PP_LPAREN)) {
@@ -593,11 +592,7 @@ void Preprocessor::macroExpandIdentifier(int lineNum, Symbols &preprocessed, Mac
                 }
                 argument += symbol();
             }
-
-            // each argument undoergoes macro expansion
-            Symbols expanded;
-            macroExpandSymbols(lineNum, argument, expanded, safeset);
-            arguments += expanded;
+            arguments += argument;
 
             if (nesting < 0)
                 break;
@@ -630,13 +625,19 @@ void Preprocessor::macroExpandIdentifier(int lineNum, Symbols &preprocessed, Mac
             }
             int index = macro.arguments.indexOf(s);
             if (mode == Normal) {
-                if (index >= 0)
-                    expansion += arguments.at(index);
-                else
+                if (index >= 0) {
+                    // each argument undoergoes macro expansion if it's not used as part of a # or ##
+                    if (i < macro.symbols.size() - 1 && macro.symbols.at(i + 1).token != PP_HASHHASH) {
+                        Symbols expanded;
+                        macroExpandSymbols(lineNum, arguments.at(index), expanded, safeset);
+                        expansion += expanded;
+                    } else {
+                        expansion += arguments.at(index);
+                    }
+               } else {
                     expansion += s;
+                }
             } else if (mode == Hash) {
-                if (s.token == WHITESPACE)
-                    continue;
                 if (index < 0)
                     error("'#' is not followed by a macro parameter");
 
