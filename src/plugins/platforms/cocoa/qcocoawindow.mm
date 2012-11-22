@@ -637,6 +637,9 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         // Child windows have no NSWindow, link the NSViews instead.
         const QCocoaWindow *parentCococaWindow = static_cast<const QCocoaWindow *>(parentWindow);
         [parentCococaWindow->m_contentView addSubview : m_contentView];
+        QRect rect = window()->geometry();
+        NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
+        [m_contentView setFrame:frame];
     }
 }
 
