@@ -4379,10 +4379,7 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
 
    \note This function can only be used inside a
    QPainter::beginNativePainting()/QPainter::endNativePainting() block
-   if the default OpenGL paint engine is QPaintEngine::OpenGL. To make
-   QPaintEngine::OpenGL the default GL engine, call
-   QGL::setPreferredPaintEngine(QPaintEngine::OpenGL) before the
-   QApplication constructor.
+   if a painter is active on the QGLWidget.
 
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
@@ -4403,18 +4400,14 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     bool auto_swap = autoBufferSwap();
 
     QPaintEngine *engine = paintEngine();
-    if (engine && engine->isActive()) {
-        qWarning("QGLWidget::renderText(): Calling renderText() while a GL 2 paint engine is"
-                 " active on the same device is not allowed.");
-        return;
-    }
+
+    qt_save_gl_state();
 
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
         reuse_painter = true;
         p = engine->painter();
-        qt_save_gl_state();
 
         glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, width, height);
@@ -4444,14 +4437,15 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
 
     qt_gl_draw_text(p, x, y, str, font);
 
-    if (reuse_painter) {
-        qt_restore_gl_state();
-    } else {
+    if (!reuse_painter) {
         p->end();
         delete p;
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
     }
+
+    qt_restore_gl_state();
+
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
@@ -4475,6 +4469,10 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     have already been drawn in the scene.  Use \c{glDisable(GL_DEPTH_TEST)}
     before calling this function to annotate the models without
     depth-testing the text.
+
+    \note This function can only be used inside a
+    QPainter::beginNativePainting()/QPainter::endNativePainting() block
+    if a painter is active on the QGLWidget.
 
     \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
@@ -4501,21 +4499,16 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
 
     QPaintEngine *engine = paintEngine();
 
-    if (engine && engine->isActive()) {
-        qWarning("QGLWidget::renderText(): Calling renderText() while a GL 2 paint engine is"
-                 " active on the same device is not allowed.");
-        return;
-    }
-
     QPainter *p;
     bool reuse_painter = false;
     bool use_depth_testing = glIsEnabled(GL_DEPTH_TEST);
     bool use_scissor_testing = glIsEnabled(GL_SCISSOR_TEST);
 
+    qt_save_gl_state();
+
     if (engine->isActive()) {
         reuse_painter = true;
         p = engine->painter();
-        qt_save_gl_state();
     } else {
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
@@ -4543,14 +4536,15 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     glTranslated(0, 0, -win_z);
     qt_gl_draw_text(p, qRound(win_x), qRound(win_y), str, font);
 
-    if (reuse_painter) {
-        qt_restore_gl_state();
-    } else {
+    if (!reuse_painter) {
         p->end();
         delete p;
         setAutoBufferSwap(auto_swap);
         d->disable_clear_on_painter_begin = false;
     }
+
+    qt_restore_gl_state();
+
 #else // QT_OPENGL_ES
     Q_UNUSED(x);
     Q_UNUSED(y);
