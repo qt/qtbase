@@ -220,7 +220,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     headerScripts = config.getString(HtmlGenerator::format() + Config::dot + CONFIG_HEADERSCRIPTS);
     headerStyles = config.getString(HtmlGenerator::format() + Config::dot + CONFIG_HEADERSTYLES);
 
-    QString prefix = CONFIG_QHP + Config::dot + "Qt" + Config::dot;
+    QString prefix = CONFIG_QHP + Config::dot + project + Config::dot;
     manifestDir = "qthelp://" + config.getString(prefix + "namespace");
     manifestDir += QLatin1Char('/') + config.getString(prefix + "virtualFolder") + QLatin1Char('/');
 
