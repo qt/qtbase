@@ -3375,6 +3375,8 @@ void QHeaderViewPrivate::setDefaultSectionSize(int size)
     executePostedLayout();
     invalidateCachedSizeHint();
     defaultSectionSize = size;
+    if (state == QHeaderViewPrivate::ResizeSection)
+        preventCursorChangeInSetOffset = true;
     for (int i = 0; i < sectionItems.count(); ++i) {
         QHeaderViewPrivate::SectionItem &section = sectionItems[i];
         if (sectionHidden.isEmpty() || !sectionHidden.testBit(i)) { // resize on not hidden.

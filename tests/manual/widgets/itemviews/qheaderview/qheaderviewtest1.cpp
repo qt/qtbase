@@ -65,8 +65,7 @@ void SomeHandler::slotSectionResized(int logsection, int oldsize, int newsize)
     m_tv->setUpdatesEnabled(false);
     // Do some manual resizing - lets make every section having the new size.
     m_hv->blockSignals(true);
-    for (int u = 0; u < m_hv->count(); ++u)
-        m_hv->resizeSection(u, newsize);
+    m_hv->setDefaultSectionSize(newsize);
     m_hv->blockSignals(false);
 
     // Adjust offset and scrollbar. Maybe it isn't 100% perfect
