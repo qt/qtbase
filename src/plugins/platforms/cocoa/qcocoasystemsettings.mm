@@ -90,7 +90,6 @@ QColor qt_mac_colorForThemeTextColor(ThemeTextColor themeColor)
     case kThemeTextColorAlertInactive:
     case kThemeTextColorDialogInactive:
     case kThemeTextColorPlacardInactive:
-        return QColor(69, 69, 69, 255);
     case kThemeTextColorPopupButtonInactive:
     case kThemeTextColorPopupLabelInactive:
     case kThemeTextColorPushButtonInactive:
