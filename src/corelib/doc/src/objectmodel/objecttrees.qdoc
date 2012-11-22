@@ -40,9 +40,15 @@
     is deleted when the parent is. It turns out that this approach fits
     the needs of GUI objects very well. For example, a \l QShortcut
     (keyboard shortcut) is a child of the relevant window, so when the
-    user closes that window, the shorcut is deleted too.
+    user closes that window, the shortcut is deleted too.
 
-    \l QWidget, the base class of everything that appears on the screen,
+    \l QQuickItem, the basic visual element of the QtQuick module, inherits
+    from QObject, but has a concept of the \e {visual parent} which
+    differs from that of the \e {QObject parent}. An item's visual parent
+    may not necessarily be the same as its object parent. See
+    \l {Concepts - Visual Parent in Qt Quick} for more details.
+
+    \l QWidget, the fundamental class of the QtWidgets module,
     extends the parent-child relationship. A child normally also becomes a
     child widget, i.e. it is displayed in its parent's coordinate system
     and is graphically clipped by its parent's boundaries. For example,

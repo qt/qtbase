@@ -24,7 +24,7 @@ qhp.QtCore.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtcore/qtcore.tags
 
-depends                 += qtgui qtwidgets qtnetwork qtdoc
+depends                 += qtgui qtwidgets qtnetwork qtdoc qtquick
 
 headerdirs  += ..
 
