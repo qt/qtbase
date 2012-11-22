@@ -67,6 +67,7 @@ class Q_CORE_EXPORT QLocale
     Q_GADGET
     Q_ENUMS(Language)
     Q_ENUMS(Country)
+    Q_ENUMS(MeasurementSystem)
     friend class QString;
     friend class QByteArray;
     friend class QIntValidator;
