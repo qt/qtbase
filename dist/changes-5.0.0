@@ -653,6 +653,11 @@ QtOpenGL
 * The default major version of QGLFormat has been changed to 2 to be aligned
   with QSurfaceFormat. Applications that want to use a different version should
   explicitly request it using QGLFormat::setVersion().
+* void QGLContext::generateFontDisplayLists(const QFont& font, int listBase)
+  and int QGLWidget::fontDisplayListBase(const QFont & fnt, int listBase)
+  which were deprecated in Qt 4 have been removed.
+* Previously deprecated default value listBase parameter has been removed from
+  both QGLWidget::renderText() functions.
 
 QtScript
 --------

@@ -3226,17 +3226,6 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     \sa QGLContext::QGLContext()
 */
 
-/*!
-    \obsolete
-    \fn void QGLContext::generateFontDisplayLists(const QFont& font, int listBase)
-
-    Generates a set of 256 display lists for the 256 first characters
-    in the font \a font. The first list will start at index \a listBase.
-
-    \sa QGLWidget::renderText()
-*/
-
-
 
 /*****************************************************************************
   QGLWidget implementation
@@ -4240,67 +4229,6 @@ QImage QGLWidget::convertToGLFormat(const QImage& img)
     \sa colormap()
 */
 
-
-/*!
-    \obsolete
-
-    Returns the value of the first display list that is generated for
-    the characters in the given \a font. \a listBase indicates the base
-    value used when generating the display lists for the font. The
-    default value is 2000.
-
-    \note This function is not supported on OpenGL/ES systems.
-*/
-int QGLWidget::fontDisplayListBase(const QFont & font, int listBase)
-{
-#ifndef QT_OPENGL_ES
-    Q_D(QGLWidget);
-    int base;
-
-    if (!d->glcx) { // this can't happen unless we run out of mem
-        return 0;
-    }
-
-    // always regenerate font disp. lists for pixmaps - hw accelerated
-    // contexts can't handle this otherwise
-    bool regenerate = d->glcx->deviceIsPixmap();
-#ifndef QT_NO_FONTCONFIG
-    // font color needs to be part of the font cache key when using
-    // antialiased fonts since one set of glyphs needs to be generated
-    // for each font color
-    QString color_key;
-    if (font.styleStrategy() != QFont::NoAntialias) {
-        GLfloat color[4];
-        glGetFloatv(GL_CURRENT_COLOR, color);
-        color_key.sprintf("%f_%f_%f",color[0], color[1], color[2]);
-    }
-    QString key = font.key() + color_key + QString::number((int) regenerate);
-#else
-    QString key = font.key() + QString::number((int) regenerate);
-#endif
-    if (!regenerate && (d->displayListCache.find(key) != d->displayListCache.end())) {
-        base = d->displayListCache[key];
-    } else {
-        int maxBase = listBase - 256;
-        QMap<QString,int>::ConstIterator it;
-        for (it = d->displayListCache.constBegin(); it != d->displayListCache.constEnd(); ++it) {
-            if (maxBase < it.value()) {
-                maxBase = it.value();
-            }
-        }
-        maxBase += 256;
-        d->glcx->generateFontDisplayLists(font, maxBase);
-        d->displayListCache[key] = maxBase;
-        base = maxBase;
-    }
-    return base;
-#else // QT_OPENGL_ES
-    Q_UNUSED(font);
-    Q_UNUSED(listBase);
-    return 0;
-#endif
-}
-
 #ifndef QT_OPENGL_ES
 
 static void qt_save_gl_state()
@@ -4367,9 +4295,6 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    use the glColor() call (or the qglColor() convenience function),
    just before the renderText() call.
 
-   The \a listBase parameter is obsolete and will be removed in a
-   future version of Qt.
-
    \note This function clears the stencil buffer.
 
    \note This function is not supported on OpenGL/ES systems.
@@ -4384,7 +4309,7 @@ static void qt_gl_draw_text(QPainter *p, int x, int y, const QString &str,
    \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
 
-void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, int)
+void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font)
 {
 #ifndef QT_OPENGL_ES
     Q_D(QGLWidget);
@@ -4476,7 +4401,7 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
 
     \l{Overpainting Example}{Overpaint} with QPainter::drawText() instead.
 */
-void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font, int)
+void QGLWidget::renderText(double x, double y, double z, const QString &str, const QFont &font)
 {
 #ifndef QT_OPENGL_ES
     Q_D(QGLWidget);

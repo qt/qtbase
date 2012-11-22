@@ -284,12 +284,6 @@ uint QGLContext::colorIndex(const QColor&) const
     return 0;
 }
 
-void QGLContext::generateFontDisplayLists(const QFont & fnt, int listBase)
-{
-    Q_UNUSED(fnt);
-    Q_UNUSED(listBase);
-}
-
 /*
     QGLTemporaryContext implementation
 */
