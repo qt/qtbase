@@ -140,6 +140,7 @@ QMimeType &QMimeType::operator=(const QMimeType &other)
 /*!
     \fn QMimeType::QMimeType(const QMimeTypePrivate &dd);
     Assigns the data of the QMimeTypePrivate \a dd to this QMimeType object, and returns a reference to this object.
+    \internal
  */
 QMimeType::QMimeType(const QMimeTypePrivate &dd) :
         d(new QMimeTypePrivate(dd))
