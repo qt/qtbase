@@ -42,9 +42,9 @@
 #ifndef SPREADSHEETITEM_H
 #define SPREADSHEETITEM_H
 
-#include <QTableWidgetItem>
-#include <QtWidgets>
 #include "spreadsheet.h"
+
+#include <QTableWidgetItem>
 
 class SpreadSheetItem : public QTableWidgetItem
 {
@@ -59,7 +59,9 @@ public:
     QVariant display() const;
 
     inline QString formula() const
-    { return QTableWidgetItem::data(Qt::DisplayRole).toString(); }
+    {
+        return QTableWidgetItem::data(Qt::DisplayRole).toString();
+    }
 
     static QVariant computeFormula(const QString &formula,
                                    const QTableWidget *widget,

@@ -67,4 +67,4 @@ private:
     QTreeView *view;
 };
 
-#endif
+#endif // MAINWINDOW_H

@@ -42,7 +42,6 @@
 #define PIXELDELEGATE_H
 
 #include <QAbstractItemDelegate>
-#include <QFontMetrics>
 #include <QModelIndex>
 #include <QSize>
 
@@ -76,4 +75,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // PIXELDELEGATE_H

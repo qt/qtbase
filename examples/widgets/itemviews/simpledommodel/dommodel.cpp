@@ -38,11 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtXml>
-
 #include "domitem.h"
 #include "dommodel.h"
+
+#include <QtXml>
 
 //! [0]
 DomModel::DomModel(QDomDocument document, QObject *parent)

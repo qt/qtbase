@@ -103,42 +103,41 @@ void MainWindow::openFile(const QString &path)
 {
     QString fileName;
     if (path.isNull())
-        fileName = QFileDialog::getOpenFileName(this, tr("Choose a data file"),
-                                                "", "*.cht");
+        fileName = QFileDialog::getOpenFileName(this, tr("Choose a data file"), "", "*.cht");
     else
         fileName = path;
 
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
+    if (fileName.isEmpty())
+        return;
 
-        if (file.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream stream(&file);
-            QString line;
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+        return;
 
-            model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
+    QTextStream stream(&file);
+    QString line;
 
-            int row = 0;
-            do {
-                line = stream.readLine();
-                if (!line.isEmpty()) {
+    model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
 
-                    model->insertRows(row, 1, QModelIndex());
+    int row = 0;
+    do {
+        line = stream.readLine();
+        if (!line.isEmpty()) {
+            model->insertRows(row, 1, QModelIndex());
 
-                    QStringList pieces = line.split(",", QString::SkipEmptyParts);
-                    model->setData(model->index(row, 0, QModelIndex()),
-                                   pieces.value(0));
-                    model->setData(model->index(row, 1, QModelIndex()),
-                                   pieces.value(1));
-                    model->setData(model->index(row, 0, QModelIndex()),
-                                   QColor(pieces.value(2)), Qt::DecorationRole);
-                    row++;
-                }
-            } while (!line.isEmpty());
-
-            file.close();
-            statusBar()->showMessage(tr("Loaded %1").arg(fileName), 2000);
+            QStringList pieces = line.split(",", QString::SkipEmptyParts);
+            model->setData(model->index(row, 0, QModelIndex()),
+                           pieces.value(0));
+            model->setData(model->index(row, 1, QModelIndex()),
+                           pieces.value(1));
+            model->setData(model->index(row, 0, QModelIndex()),
+                           QColor(pieces.value(2)), Qt::DecorationRole);
+            row++;
         }
-    }
+    } while (!line.isEmpty());
+
+    file.close();
+    statusBar()->showMessage(tr("Loaded %1").arg(fileName), 2000);
 }
 
 void MainWindow::saveFile()
@@ -146,27 +145,28 @@ void MainWindow::saveFile()
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save file as"), "", "*.cht");
 
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
-        QTextStream stream(&file);
+    if (fileName.isEmpty())
+        return;
 
-        if (file.open(QFile::WriteOnly | QFile::Text)) {
-            for (int row = 0; row < model->rowCount(QModelIndex()); ++row) {
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text))
+        return;
 
-                QStringList pieces;
+    QTextStream stream(&file);
+    for (int row = 0; row < model->rowCount(QModelIndex()); ++row) {
 
-                pieces.append(model->data(model->index(row, 0, QModelIndex()),
-                                          Qt::DisplayRole).toString());
-                pieces.append(model->data(model->index(row, 1, QModelIndex()),
-                                          Qt::DisplayRole).toString());
-                pieces.append(model->data(model->index(row, 0, QModelIndex()),
-                                          Qt::DecorationRole).toString());
+        QStringList pieces;
 
-                stream << pieces.join(',') << "\n";
-            }
-        }
+        pieces.append(model->data(model->index(row, 0, QModelIndex()),
+                                  Qt::DisplayRole).toString());
+        pieces.append(model->data(model->index(row, 1, QModelIndex()),
+                                  Qt::DisplayRole).toString());
+        pieces.append(model->data(model->index(row, 0, QModelIndex()),
+                                  Qt::DecorationRole).toString());
 
-        file.close();
-        statusBar()->showMessage(tr("Saved %1").arg(fileName), 2000);
+        stream << pieces.join(',') << "\n";
     }
+
+    file.close();
+    statusBar()->showMessage(tr("Saved %1").arg(fileName), 2000);
 }

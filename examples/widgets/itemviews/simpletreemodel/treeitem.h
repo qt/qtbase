@@ -67,4 +67,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // TREEITEM_H

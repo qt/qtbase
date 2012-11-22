@@ -38,9 +38,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QApplication>
+#include <QStandardItemModel>
+#include <QTime>
 
 void addMail(QAbstractItemModel *model, const QString &subject,
              const QString &sender, const QDateTime &date)

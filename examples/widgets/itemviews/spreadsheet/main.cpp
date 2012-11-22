@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QApplication>
 #include "spreadsheet.h"
+
+#include <QApplication>
 
 int main(int argc, char** argv) {
     Q_INIT_RESOURCE(spreadsheet);

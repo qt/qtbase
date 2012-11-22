@@ -44,8 +44,7 @@
 #include "treemodel.h"
 
 //! [0]
-TreeModel::TreeModel(const QStringList &headers, const QString &data,
-                     QObject *parent)
+TreeModel::TreeModel(const QStringList &headers, const QString &data, QObject *parent)
     : QAbstractItemModel(parent)
 {
     QVector<QVariant> rootData;
@@ -99,7 +98,8 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
 {
     if (index.isValid()) {
         TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-        if (item) return item;
+        if (item)
+            return item;
     }
     return rootItem;
 }
@@ -206,8 +206,7 @@ int TreeModel::rowCount(const QModelIndex &parent) const
 }
 //! [8]
 
-bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
-                        int role)
+bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (role != Qt::EditRole)
         return false;
@@ -249,7 +248,7 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
         while (position < lines[number].length()) {
             if (lines[number].mid(position, 1) != " ")
                 break;
-            position++;
+            ++position;
         }
 
         QString lineData = lines[number].mid(position).trimmed();
@@ -283,6 +282,6 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
                 parent->child(parent->childCount() - 1)->setData(column, columnData[column]);
         }
 
-        number++;
+        ++number;
     }
 }

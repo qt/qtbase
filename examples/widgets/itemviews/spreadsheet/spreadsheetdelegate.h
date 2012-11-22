@@ -42,8 +42,9 @@
 #ifndef SPREADSHEETDELEGATE_H
 #define SPREADSHEETDELEGATE_H
 
-#include <QItemDelegate>
 #include "spreadsheet.h"
+
+#include <QItemDelegate>
 
 class SpreadSheetDelegate : public QItemDelegate
 {

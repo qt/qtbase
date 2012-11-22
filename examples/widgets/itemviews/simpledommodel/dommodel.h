@@ -44,7 +44,6 @@
 #include <QAbstractItemModel>
 #include <QDomDocument>
 #include <QModelIndex>
-#include <QVariant>
 
 class DomItem;
 
@@ -73,4 +72,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // DOMMODEL_H

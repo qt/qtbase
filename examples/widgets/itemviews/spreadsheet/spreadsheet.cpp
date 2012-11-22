@@ -69,7 +69,7 @@ SpreadSheet::SpreadSheet(int rows, int cols, QWidget *parent)
         table->setHorizontalHeaderItem(c, new QTableWidgetItem(character));
     }
 
-    table->setItemPrototype(table->item(rows -1, cols - 1));
+    table->setItemPrototype(table->item(rows - 1, cols - 1));
     table->setItemDelegate(new SpreadSheetDelegate());
 
     createActions();
@@ -168,10 +168,8 @@ void SpreadSheet::setupMenuBar()
 void SpreadSheet::updateStatus(QTableWidgetItem *item)
 {
     if (item && item == table->currentItem()) {
-        statusBar()->showMessage(item->data(Qt::StatusTipRole).toString(),
-                                 1000);
-        cellLabel->setText(tr("Cell: (%1)").arg(encode_pos(table->row(item),
-                                                           table->column(item))));
+        statusBar()->showMessage(item->data(Qt::StatusTipRole).toString(), 1000);
+        cellLabel->setText(tr("Cell: (%1)").arg(encode_pos(table->row(item), table->column(item))));
     }
 }
 
@@ -236,9 +234,10 @@ void SpreadSheet::selectColor()
     if (selected.count() == 0)
         return;
 
-    foreach(QTableWidgetItem *i, selected)
+    foreach (QTableWidgetItem *i, selected) {
         if (i)
             i->setBackgroundColor(col);
+    }
 
     updateColor(table->currentItem());
 }
@@ -254,9 +253,10 @@ void SpreadSheet::selectFont()
 
     if (!ok)
         return;
-    foreach(QTableWidgetItem *i, selected)
+    foreach (QTableWidgetItem *i, selected) {
         if (i)
             i->setFont(fnt);
+    }
 }
 
 bool SpreadSheet::runInputDialog(const QString &title,
@@ -407,7 +407,8 @@ void SpreadSheet::actionSum()
     if (runInputDialog(tr("Sum cells"), tr("First cell:"), tr("Last cell:"),
                        QString("%1").arg(QChar(0x03a3)), tr("Output to:"),
                        &cell1, &cell2, &out)) {
-        int row, col;
+        int row;
+        int col;
         decode_pos(out, &row, &col);
         table->item(row, col)->setText(tr("sum %1 %2").arg(cell1, cell2));
     }
@@ -631,8 +632,7 @@ void SpreadSheet::print()
     QPrintPreviewDialog dlg(&printer);
     PrintView view;
     view.setModel(table->model());
-    connect(&dlg, SIGNAL(paintRequested(QPrinter*)),
-            &view, SLOT(print(QPrinter*)));
+    connect(&dlg, SIGNAL(paintRequested(QPrinter*)), &view, SLOT(print(QPrinter*)));
     dlg.exec();
 #endif
 }

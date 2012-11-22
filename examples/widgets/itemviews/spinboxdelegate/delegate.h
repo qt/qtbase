@@ -42,10 +42,6 @@
 #define DELEGATE_H
 
 #include <QStyledItemDelegate>
-#include <QModelIndex>
-#include <QObject>
-#include <QSize>
-#include <QSpinBox>
 
 //! [0]
 class SpinBoxDelegate : public QStyledItemDelegate

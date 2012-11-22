@@ -41,8 +41,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QPixmap>
 #include <QMainWindow>
+#include <QPixmap>
 
 class PuzzleWidget;
 class PiecesModel;
@@ -74,4 +74,4 @@ private:
     PiecesModel *model;
 };
 
-#endif
+#endif // MAINWINDOW_H

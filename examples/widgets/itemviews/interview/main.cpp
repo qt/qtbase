@@ -42,11 +42,11 @@
 #include "model.h"
 
 #include <QApplication>
-#include <QTableView>
-#include <QTreeView>
+#include <QHeaderView>
 #include <QListView>
 #include <QSplitter>
-#include <QHeaderView>
+#include <QTableView>
+#include <QTreeView>
 
 int main(int argc, char *argv[])
 {

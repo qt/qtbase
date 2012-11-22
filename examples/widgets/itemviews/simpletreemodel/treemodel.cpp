@@ -45,10 +45,10 @@
     models.
 */
 
-#include <QtWidgets>
-
 #include "treeitem.h"
 #include "treemodel.h"
+
+#include <QStringList>
 
 //! [0]
 TreeModel::TreeModel(const QString &data, QObject *parent)
@@ -213,6 +213,6 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
             parents.last()->appendChild(new TreeItem(columnData, parents.last()));
         }
 
-        number++;
+        ++number;
     }
 }

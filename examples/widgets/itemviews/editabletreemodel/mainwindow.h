@@ -41,14 +41,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QModelIndex>
-
 #include "ui_mainwindow.h"
 
-class QAction;
-class QTreeView;
-class QWidget;
+#include <QMainWindow>
+#include <QModelIndex>
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -68,4 +64,4 @@ private slots:
     void removeRow();
 };
 
-#endif
+#endif // MAINWINDOW_H

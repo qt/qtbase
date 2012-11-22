@@ -94,4 +94,4 @@ private:
 };
 //! [2]
 
-#endif
+#endif // TREEMODEL_H

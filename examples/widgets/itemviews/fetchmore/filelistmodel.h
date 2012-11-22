@@ -72,4 +72,4 @@ private:
 };
 //![0]
 
-#endif
+#endif // FILELISTMODEL_H

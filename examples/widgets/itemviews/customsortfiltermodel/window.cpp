@@ -150,7 +150,7 @@ void Window::textFilterChanged()
                     filterSyntaxComboBox->currentIndex()).toInt());
     Qt::CaseSensitivity caseSensitivity =
             filterCaseSensitivityCheckBox->isChecked() ? Qt::CaseSensitive
-                : Qt::CaseInsensitive;
+                                                       : Qt::CaseInsensitive;
 
     QRegExp regExp(filterPatternLineEdit->text(), caseSensitivity, syntax);
     proxyModel->setFilterRegExp(regExp);

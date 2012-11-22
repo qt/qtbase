@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QtWidgets>
 
 //! [Set up widgets]
 Window::Window(QWidget *parent)
@@ -69,12 +69,9 @@ Window::Window(QWidget *parent)
     mapper->addMapping(addressEdit, 1);
     mapper->addMapping(ageSpinBox, 2);
 
-    connect(previousButton, SIGNAL(clicked()),
-            mapper, SLOT(toPrevious()));
-    connect(nextButton, SIGNAL(clicked()),
-            mapper, SLOT(toNext()));
-    connect(mapper, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(updateButtons(int)));
+    connect(previousButton, SIGNAL(clicked()), mapper, SLOT(toPrevious()));
+    connect(nextButton, SIGNAL(clicked()), mapper, SLOT(toNext()));
+    connect(mapper, SIGNAL(currentIndexChanged(int)), this, SLOT(updateButtons(int)));
 //! [Set up the mapper]
 
 //! [Set up the layout]

@@ -75,7 +75,7 @@ bool MySortFilterProxyModel::filterAcceptsRow(int sourceRow,
 
     return (sourceModel()->data(index0).toString().contains(filterRegExp())
             || sourceModel()->data(index1).toString().contains(filterRegExp()))
-           && dateInRange(sourceModel()->data(index2).toDate());
+            && dateInRange(sourceModel()->data(index2).toDate());
 }
 //! [3]
 
@@ -110,6 +110,6 @@ bool MySortFilterProxyModel::lessThan(const QModelIndex &left,
 bool MySortFilterProxyModel::dateInRange(const QDate &date) const
 {
     return (!minDate.isValid() || date > minDate)
-           && (!maxDate.isValid() || date < maxDate);
+            && (!maxDate.isValid() || date < maxDate);
 }
 //! [7]

@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtXml>
-
 #include "domitem.h"
+
+#include <QtXml>
 
 //! [0]
 DomItem::DomItem(QDomNode &node, int row, DomItem *parent)

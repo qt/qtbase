@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "filelistmodel.h"
 #include "window.h"
+
+#include <QtWidgets>
 
 Window::Window(QWidget *parent)
     : QWidget(parent)

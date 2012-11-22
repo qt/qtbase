@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "pixeldelegate.h"
+
+#include <QPainter>
 
 //! [0]
 PixelDelegate::PixelDelegate(QObject *parent)
@@ -63,7 +63,7 @@ void PixelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
     int size = qMin(option.rect.width(), option.rect.height());
 //! [3] //! [4]
     int brightness = index.model()->data(index, Qt::DisplayRole).toInt();
-    double radius = (size/2.0) - (brightness/255.0 * size/2.0);
+    double radius = (size / 2.0) - (brightness / 255.0 * size / 2.0);
     if (radius == 0.0)
         return;
 //! [4]
@@ -84,9 +84,9 @@ void PixelDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 //! [9]
 
 //! [10]
-    painter->drawEllipse(QRectF(option.rect.x() + option.rect.width()/2 - radius,
-                                option.rect.y() + option.rect.height()/2 - radius,
-                                2*radius, 2*radius));
+    painter->drawEllipse(QRectF(option.rect.x() + option.rect.width() / 2 - radius,
+                                option.rect.y() + option.rect.height() / 2 - radius,
+                                2 * radius, 2 * radius));
     painter->restore();
 }
 //! [10]

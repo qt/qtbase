@@ -39,10 +39,11 @@
 ****************************************************************************/
 
 #include "filelistmodel.h"
+
 #include <QApplication>
-#include <QPalette>
 #include <QBrush>
 #include <QDir>
+#include <QPalette>
 
 FileListModel::FileListModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -63,9 +64,9 @@ QVariant FileListModel::data(const QModelIndex &index, int role) const
     if (index.row() >= fileList.size() || index.row() < 0)
         return QVariant();
     
-    if (role == Qt::DisplayRole)
+    if (role == Qt::DisplayRole) {
         return fileList.at(index.row());
-    else if (role == Qt::BackgroundRole) {
+    } else if (role == Qt::BackgroundRole) {
         int batch = (index.row() / 100) % 2;
         if (batch == 0)
             return qApp->palette().base();

@@ -38,9 +38,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "treemodel.h"
+
+#include <QApplication>
+#include <QFile>
+#include <QTreeView>
 
 int main(int argc, char *argv[])
 {

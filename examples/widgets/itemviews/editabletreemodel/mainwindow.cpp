@@ -38,16 +38,15 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "treemodel.h"
+
+#include <QFile>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi(this);
-
 
     QStringList headers;
     headers << tr("Title") << tr("Description");
@@ -95,8 +94,7 @@ void MainWindow::insertChild()
         QModelIndex child = model->index(0, column, index);
         model->setData(child, QVariant("[No data]"), Qt::EditRole);
         if (!model->headerData(column, Qt::Horizontal).isValid())
-            model->setHeaderData(column, Qt::Horizontal, QVariant("[No header]"),
-                                 Qt::EditRole);
+            model->setHeaderData(column, Qt::Horizontal, QVariant("[No header]"), Qt::EditRole);
     }
 
     view->selectionModel()->setCurrentIndex(model->index(0, 0, index),
@@ -112,8 +110,7 @@ bool MainWindow::insertColumn(const QModelIndex &parent)
     // Insert a column in the parent item.
     bool changed = model->insertColumn(column + 1, parent);
     if (changed)
-        model->setHeaderData(column + 1, Qt::Horizontal, QVariant("[No header]"),
-                             Qt::EditRole);
+        model->setHeaderData(column + 1, Qt::Horizontal, QVariant("[No header]"), Qt::EditRole);
 
     updateActions();
 

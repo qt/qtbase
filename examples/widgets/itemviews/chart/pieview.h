@@ -42,18 +42,6 @@
 #define PIEVIEW_H
 
 #include <QAbstractItemView>
-#include <QFont>
-#include <QItemSelection>
-#include <QItemSelectionModel>
-#include <QModelIndex>
-#include <QRect>
-#include <QSize>
-#include <QPoint>
-#include <QWidget>
-
-QT_BEGIN_NAMESPACE
-class QRubberBand;
-QT_END_NAMESPACE
 
 //! [0]
 class PieView : public QAbstractItemView
@@ -68,7 +56,8 @@ public:
     QModelIndex indexAt(const QPoint &point) const;
 
 protected slots:
-    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> & = QVector<int>());
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                     const QVector<int> &roles = QVector<int>());
     void rowsInserted(const QModelIndex &parent, int start, int end);
     void rowsAboutToBeRemoved(const QModelIndex &parent, int start, int end);
 
@@ -111,4 +100,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // PIEVIEW_H

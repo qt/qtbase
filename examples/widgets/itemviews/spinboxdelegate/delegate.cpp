@@ -45,10 +45,9 @@
     using a spin box widget.
 */
 
-#include <QtWidgets>
-
 #include "delegate.h"
 
+#include <QSpinBox>
 
 //! [0]
 SpinBoxDelegate::SpinBoxDelegate(QObject *parent)

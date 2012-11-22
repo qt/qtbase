@@ -38,20 +38,19 @@
 **
 ****************************************************************************/
 
-#include <QDomDocument>
-#include <QFile>
-#include <QtWidgets>
-
 #include "dommodel.h"
 #include "mainwindow.h"
+
+#include <QDomDocument>
+#include <QTreeView>
+#include <QMenuBar>
+#include <QFileDialog>
 
 MainWindow::MainWindow() : QMainWindow(), model(0)
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()),
-                        QKeySequence::Open);
-    fileMenu->addAction(tr("E&xit"), this, SLOT(close()),
-                        QKeySequence::Quit);
+    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()), QKeySequence::Open);
+    fileMenu->addAction(tr("E&xit"), this, SLOT(close()), QKeySequence::Quit);
 
     model = new DomModel(QDomDocument(), this);
     view = new QTreeView(this);

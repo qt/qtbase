@@ -73,4 +73,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // TREEMODEL_H

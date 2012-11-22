@@ -69,4 +69,4 @@ private:
     QItemSelectionModel *selectionModel;
 };
 
-#endif
+#endif // MAINWINDOW_H

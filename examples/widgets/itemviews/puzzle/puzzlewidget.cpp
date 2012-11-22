@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "puzzlewidget.h"
+
+#include <QtWidgets>
 
 PuzzleWidget::PuzzleWidget(int imageSize, QWidget *parent)
     : QWidget(parent), m_ImageSize(imageSize)
@@ -130,9 +130,8 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
 int PuzzleWidget::findPiece(const QRect &pieceRect) const
 {
     for (int i = 0; i < pieceRects.size(); ++i) {
-        if (pieceRect == pieceRects[i]) {
+        if (pieceRect == pieceRects[i])
             return i;
-        }
     }
     return -1;
 }

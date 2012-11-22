@@ -71,4 +71,4 @@ private:
     QTableView *view;
 };
 
-#endif
+#endif // MAINWINDOW_H

@@ -71,10 +71,10 @@ private:
 
     struct Node
     {
-	Node(Node *parent = 0) : parent(parent), children(0) {}
-	~Node() { delete children; }
-	Node *parent;
-	QVector<Node> *children;
+        Node(Node *parent = 0) : parent(parent), children(0) {}
+        ~Node() { delete children; }
+        Node *parent;
+        QVector<Node> *children;
     };
 
     Node *node(int row, Node *parent) const;
@@ -82,9 +82,10 @@ private:
     int row(Node *node) const;
 
     QIcon services;
-    int rc, cc;
+    int rc;
+    int cc;
     QVector<Node> *tree;
     QFileIconProvider iconProvider;
 };
 
-#endif
+#endif // MODEL_H

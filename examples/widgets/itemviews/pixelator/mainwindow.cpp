@@ -38,15 +38,15 @@
 **
 ****************************************************************************/
 
+#include "imagemodel.h"
+#include "mainwindow.h"
+#include "pixeldelegate.h"
+
 #include <QtWidgets>
 #ifndef QT_NO_PRINTER
 #include <QPrinter>
 #include <QPrintDialog>
 #endif
-
-#include "imagemodel.h"
-#include "mainwindow.h"
-#include "pixeldelegate.h"
 
 //! [0]
 MainWindow::MainWindow()
@@ -155,8 +155,7 @@ void MainWindow::openImage(const QString &fileName)
 void MainWindow::printImage()
 {
 #ifndef QT_NO_PRINTER
-    if (model->rowCount(QModelIndex())*model->columnCount(QModelIndex())
-        > 90000) {
+    if (model->rowCount(QModelIndex())*model->columnCount(QModelIndex()) > 90000) {
 	    QMessageBox::StandardButton answer;
 	    answer = QMessageBox::question(this, tr("Large Image Size"),
             tr("The printed image may be very large. Are you sure that "
@@ -179,26 +178,26 @@ void MainWindow::printImage()
 
     int rows = model->rowCount(QModelIndex());
     int columns = model->columnCount(QModelIndex());
-    int sourceWidth = (columns+1) * ItemSize;
-    int sourceHeight = (rows+1) * ItemSize;
+    int sourceWidth = (columns + 1) * ItemSize;
+    int sourceHeight = (rows + 1) * ItemSize;
 
     painter.save();
 
-    double xscale = printer.pageRect().width()/double(sourceWidth);
-    double yscale = printer.pageRect().height()/double(sourceHeight);
+    double xscale = printer.pageRect().width() / double(sourceWidth);
+    double yscale = printer.pageRect().height() / double(sourceHeight);
     double scale = qMin(xscale, yscale);
 
-    painter.translate(printer.paperRect().x() + printer.pageRect().width()/2,
-                      printer.paperRect().y() + printer.pageRect().height()/2);
+    painter.translate(printer.paperRect().x() + printer.pageRect().width() / 2,
+                      printer.paperRect().y() + printer.pageRect().height() / 2);
     painter.scale(scale, scale);
-    painter.translate(-sourceWidth/2, -sourceHeight/2);
+    painter.translate(-sourceWidth / 2, -sourceHeight / 2);
 
     QStyleOptionViewItem option;
     QModelIndex parent = QModelIndex();
 
     QProgressDialog progress(tr("Printing..."), tr("Cancel"), 0, rows, this);
     progress.setWindowModality(Qt::ApplicationModal);
-    float y = ItemSize/2;
+    float y = ItemSize / 2;
 
     for (int row = 0; row < rows; ++row) {
         progress.setValue(row);
@@ -206,7 +205,7 @@ void MainWindow::printImage()
         if (progress.wasCanceled())
             break;
 
-        float x = ItemSize/2;
+        float x = ItemSize / 2;
 
         for (int column = 0; column < columns; ++column) {
             option.rect = QRect(int(x), int(y), ItemSize, ItemSize);

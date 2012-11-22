@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "freezetablewidget.h"
+
+#include <QScrollBar>
+#include <QHeaderView>
 
 //! [constructor]
 FreezeTableWidget::FreezeTableWidget(QAbstractItemModel * model)
@@ -86,7 +87,7 @@ void FreezeTableWidget::init()
                                      "background-color: #8EDE21;"
                                      "selection-background-color: #999}"); //for demo purposes
       frozenTableView->setSelectionModel(selectionModel());
-      for(int col=1; col<model()->columnCount(); col++)
+      for (int col = 1; col < model()->columnCount(); ++col)
             frozenTableView->setColumnHidden(col, true);
 
       frozenTableView->setColumnWidth(0, columnWidth(0) );
@@ -105,15 +106,15 @@ void FreezeTableWidget::init()
 
 
 //! [sections]
-void FreezeTableWidget::updateSectionWidth(int logicalIndex, int, int newSize)
+void FreezeTableWidget::updateSectionWidth(int logicalIndex, int /* oldSize */, int newSize)
 {
-      if(logicalIndex==0){
-            frozenTableView->setColumnWidth(0,newSize);
+      if (logicalIndex == 0){
+            frozenTableView->setColumnWidth(0, newSize);
             updateFrozenTableGeometry();
       }
 }
 
-void FreezeTableWidget::updateSectionHeight(int logicalIndex, int, int newSize)
+void FreezeTableWidget::updateSectionHeight(int logicalIndex, int /* oldSize */, int newSize)
 {
       frozenTableView->setRowHeight(logicalIndex, newSize);
 }
@@ -135,9 +136,8 @@ QModelIndex FreezeTableWidget::moveCursor(CursorAction cursorAction,
 {
       QModelIndex current = QTableView::moveCursor(cursorAction, modifiers);
 
-      if(cursorAction == MoveLeft && current.column()>0
-         && visualRect(current).topLeft().x() < frozenTableView->columnWidth(0) ){
-
+      if (cursorAction == MoveLeft && current.column() > 0
+              && visualRect(current).topLeft().x() < frozenTableView->columnWidth(0) ){
             const int newValue = horizontalScrollBar()->value() + visualRect(current).topLeft().x()
                                  - frozenTableView->columnWidth(0);
             horizontalScrollBar()->setValue(newValue);
@@ -147,18 +147,16 @@ QModelIndex FreezeTableWidget::moveCursor(CursorAction cursorAction,
 //! [navigate]
 
 void FreezeTableWidget::scrollTo (const QModelIndex & index, ScrollHint hint){
-    if(index.column()>0)
+    if (index.column() > 0)
         QTableView::scrollTo(index, hint);
 }
-
-
 
 //! [geometry]
 void FreezeTableWidget::updateFrozenTableGeometry()
 {
-      frozenTableView->setGeometry( verticalHeader()->width()+frameWidth(),
-                                    frameWidth(), columnWidth(0),
-                                    viewport()->height()+horizontalHeader()->height());
+      frozenTableView->setGeometry(verticalHeader()->width() + frameWidth(),
+                                   frameWidth(), columnWidth(0),
+                                   viewport()->height()+horizontalHeader()->height());
 }
 //! [geometry]
 

@@ -61,4 +61,4 @@ private:
     QTextBrowser *logViewer;
 };
 
-#endif
+#endif // WINDOW_H

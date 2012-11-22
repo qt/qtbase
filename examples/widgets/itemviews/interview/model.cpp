@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "model.h"
+
 #include <QIcon>
 #include <QPixmap>
 
@@ -60,10 +61,10 @@ Model::~Model()
 QModelIndex Model::index(int row, int column, const QModelIndex &parent) const
 {
     if (row < rc && row >= 0 && column < cc && column >= 0) {
-        Node *p = static_cast<Node*>(parent.internalPointer());
-        Node *n = node(row, p);
-	if (n)
-	    return createIndex(row, column, n);
+        Node *parentNode = static_cast<Node*>(parent.internalPointer());
+        Node *childNode = node(row, parentNode);
+        if (childNode)
+            return createIndex(row, column, childNode);
     }
     return QModelIndex();
 }
@@ -71,10 +72,10 @@ QModelIndex Model::index(int row, int column, const QModelIndex &parent) const
 QModelIndex Model::parent(const QModelIndex &child) const
 {
     if (child.isValid()) {
-        Node *n = static_cast<Node*>(child.internalPointer());
-        Node *p = parent(n);
-        if (p)
-            return createIndex(row(p), 0, p);
+        Node *childNode = static_cast<Node*>(child.internalPointer());
+        Node *parentNode = parent(childNode);
+        if (parentNode)
+            return createIndex(row(parentNode), 0, parentNode);
     }
     return QModelIndex();
 }
@@ -130,7 +131,7 @@ Qt::ItemFlags Model::flags(const QModelIndex &index) const
 Model::Node *Model::node(int row, Node *parent) const
 {
     if (parent && !parent->children)
-	parent->children = new QVector<Node>(rc, Node(parent));
+        parent->children = new QVector<Node>(rc, Node(parent));
     QVector<Node> *v = parent ? parent->children : tree;
     return const_cast<Node*>(&(v->at(row)));
 }
@@ -142,6 +143,6 @@ Model::Node *Model::parent(Node *child) const
 
 int Model::row(Node *node) const
 {
-     const Node *first = node->parent ? &(node->parent->children->at(0)) : &(tree->at(0));
-     return (node - first);
+    const Node *first = node->parent ? &(node->parent->children->at(0)) : &(tree->at(0));
+    return node - first;
 }

@@ -63,4 +63,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // DOMITEM_H

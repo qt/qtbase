@@ -38,12 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <stdlib.h>
-
 #include "mainwindow.h"
 #include "piecesmodel.h"
 #include "puzzlewidget.h"
+
+#include <QtWidgets>
+#include <stdlib.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -61,9 +61,10 @@ void MainWindow::openImage(const QString &path)
 {
     QString fileName = path;
 
-    if (fileName.isNull())
+    if (fileName.isNull()) {
         fileName = QFileDialog::getOpenFileName(this,
             tr("Open Image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+    }
 
     if (!fileName.isEmpty()) {
         QPixmap newImage;
@@ -81,9 +82,9 @@ void MainWindow::openImage(const QString &path)
 void MainWindow::setCompleted()
 {
     QMessageBox::information(this, tr("Puzzle Completed"),
-        tr("Congratulations! You have completed the puzzle!\n"
-           "Click OK to start again."),
-        QMessageBox::Ok);
+                             tr("Congratulations! You have completed the puzzle!\n"
+                                "Click OK to start again."),
+                             QMessageBox::Ok);
 
     setupPuzzle();
 }
@@ -91,8 +92,8 @@ void MainWindow::setCompleted()
 void MainWindow::setupPuzzle()
 {
     int size = qMin(puzzleImage.width(), puzzleImage.height());
-    puzzleImage = puzzleImage.copy((puzzleImage.width() - size)/2,
-        (puzzleImage.height() - size)/2, size, size).scaled(puzzleWidget->imageSize(),
+    puzzleImage = puzzleImage.copy((puzzleImage.width() - size) / 2,
+        (puzzleImage.height() - size) / 2, size, size).scaled(puzzleWidget->imageSize(),
             puzzleWidget->imageSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     qsrand(QCursor::pos().x() ^ QCursor::pos().y());

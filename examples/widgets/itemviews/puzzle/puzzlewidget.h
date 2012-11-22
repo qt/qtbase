@@ -42,8 +42,8 @@
 #define PUZZLEWIDGET_H
 
 #include <QList>
-#include <QPoint>
 #include <QPixmap>
+#include <QPoint>
 #include <QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -86,4 +86,4 @@ private:
     int m_ImageSize;
 };
 
-#endif
+#endif // PUZZLEWIDGET_H

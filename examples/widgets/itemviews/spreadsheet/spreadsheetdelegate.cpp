@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "spreadsheetdelegate.h"
+
 #include <QtWidgets>
 
 SpreadSheetDelegate::SpreadSheetDelegate(QObject *parent)
@@ -70,8 +71,7 @@ QWidget *SpreadSheetDelegate::createEditor(QWidget *parent,
 
     QCompleter *autoComplete = new QCompleter(allStrings);
     editor->setCompleter(autoComplete);
-    connect(editor, SIGNAL(editingFinished()),
-        this, SLOT(commitAndCloseEditor()));
+    connect(editor, SIGNAL(editingFinished()), this, SLOT(commitAndCloseEditor()));
     return editor;
 }
 
@@ -88,13 +88,14 @@ void SpreadSheetDelegate::setEditorData(QWidget *editor,
     QLineEdit *edit = qobject_cast<QLineEdit*>(editor);
     if (edit) {
         edit->setText(index.model()->data(index, Qt::EditRole).toString());
-    } else {
-        QDateTimeEdit *dateEditor = qobject_cast<QDateTimeEdit *>(editor);
-        if (dateEditor) {
-            dateEditor->setDate(QDate::fromString(
-            index.model()->data(index, Qt::EditRole).toString(),
-            "d/M/yyyy"));
-        }
+        return;
+    }
+
+    QDateTimeEdit *dateEditor = qobject_cast<QDateTimeEdit *>(editor);
+    if (dateEditor) {
+        dateEditor->setDate(QDate::fromString(
+                                index.model()->data(index, Qt::EditRole).toString(),
+                                "d/M/yyyy"));
     }
 }
 
@@ -104,11 +105,10 @@ void SpreadSheetDelegate::setModelData(QWidget *editor,
     QLineEdit *edit = qobject_cast<QLineEdit *>(editor);
     if (edit) {
         model->setData(index, edit->text());
-    } else {
-        QDateTimeEdit *dateEditor = qobject_cast<QDateTimeEdit *>(editor);
-        if (dateEditor) {
-            model->setData(index, dateEditor->date().toString("dd/M/yyyy"));
-        }
+        return;
     }
-}
 
+    QDateTimeEdit *dateEditor = qobject_cast<QDateTimeEdit *>(editor);
+    if (dateEditor)
+        model->setData(index, dateEditor->date().toString("dd/M/yyyy"));
+}

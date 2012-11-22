@@ -65,4 +65,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // IMAGEMODEL_H

@@ -85,4 +85,4 @@ private:
     QComboBox *filterColumnComboBox;
 };
 
-#endif
+#endif // WINDOW_H

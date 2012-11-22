@@ -83,4 +83,4 @@ private:
 };
 //! [Window definition]
 
-#endif
+#endif // WINDOW_H

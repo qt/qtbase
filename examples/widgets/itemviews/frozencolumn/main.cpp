@@ -44,45 +44,40 @@
 
 #include "freezetablewidget.h"
 
-int main( int argc, char** argv )
+int main(int argc, char* argv[])
 {
+    Q_INIT_RESOURCE(grades);
 
-      Q_INIT_RESOURCE(grades);
+    QApplication app( argc, argv );
+    QStandardItemModel *model=new QStandardItemModel();
 
+    QFile file(":/grades.txt");
+    if (file.open(QFile::ReadOnly)) {
+        QString line = file.readLine(200);
+        QStringList list = line.simplified().split(",");
+        model->setHorizontalHeaderLabels(list);
 
-      QApplication app( argc, argv );
-      QStandardItemModel *model=new QStandardItemModel();
-
-
-      QFile file(":/grades.txt");
-      QString line;
-      QStringList list;
-      if (file.open(QFile::ReadOnly)) {
+        int row = 0;
+        QStandardItem *newItem = 0;
+        while (file.canReadLine()) {
             line = file.readLine(200);
-            list= line.simplified().split(",");
-            model->setHorizontalHeaderLabels(list);
-
-            int row=0;
-            QStandardItem *newItem=0;
-            while(file.canReadLine()){
-                  line = file.readLine(200);
-                  if(!line.startsWith("#") && line.contains(",")){
-                        list= line.simplified().split(",");
-                        for(int col=0; col<list.length(); col++){
-                              newItem = new QStandardItem(list.at(col));
-                              model->setItem(row ,col, newItem);
-                        }
-                        row++;
-                  }
+            if (!line.startsWith("#") && line.contains(",")) {
+                list= line.simplified().split(",");
+                for (int col = 0; col < list.length(); ++col){
+                    newItem = new QStandardItem(list.at(col));
+                    model->setItem(row, col, newItem);
+                }
+                ++row;
             }
-      }
-      file.close();
+        }
+    }
+    file.close();
 
-      FreezeTableWidget *tableView = new FreezeTableWidget(model);
+    FreezeTableWidget *tableView = new FreezeTableWidget(model);
 
-      tableView->setWindowTitle(QObject::tr("Frozen Column Example"));
-      tableView->resize(560,680);
-      tableView->show();
-      return app.exec();
+    tableView->setWindowTitle(QObject::tr("Frozen Column Example"));
+    tableView->resize(560, 680);
+    tableView->show();
+    return app.exec();
 }
 

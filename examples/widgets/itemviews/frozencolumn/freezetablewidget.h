@@ -64,9 +64,9 @@ private:
 
 
 private slots:
-      void updateSectionWidth(int logicalIndex,int, int newSize);
-      void updateSectionHeight(int logicalIndex, int, int newSize);
+      void updateSectionWidth(int logicalIndex, int oldSize, int newSize);
+      void updateSectionHeight(int logicalIndex, int oldSize, int newSize);
 
 };
 //! [Widget definition]
-#endif
+#endif // FREEZETABLEWIDGET_H
