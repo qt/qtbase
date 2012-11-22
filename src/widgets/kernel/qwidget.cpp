@@ -1088,8 +1088,8 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
 void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
-    if (QApplication::type() == QApplication::Tty)
-        qFatal("QWidget: Cannot create a QWidget when no GUI is being used");
+    if (!qobject_cast<QApplication *>(QCoreApplication::instance()))
+        qFatal("QWidget: Cannot create a QWidget without QApplication");
 
     Q_ASSERT(allWidgets);
     if (allWidgets)
