@@ -710,7 +710,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     bool needsShow = false;
 
-    if (w == 0 || h == 0) {
+    if (!(data.window_state & Qt::WindowFullScreen) && (w == 0 || h == 0)) {
         q->setAttribute(Qt::WA_OutsideWSRange, true);
         if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
             hide_sys();
