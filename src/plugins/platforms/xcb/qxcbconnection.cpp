@@ -71,6 +71,11 @@
 #include <X11/Xlibint.h>
 #endif
 
+#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/XI2proto.h>
+#endif
+
 #ifdef XCB_USE_RENDER
 #include <xcb/render.h>
 #endif
@@ -81,11 +86,6 @@
 
 #ifdef XCB_USE_EGL //don't pull in eglext prototypes
 #include <EGL/egl.h>
-#endif
-
-#if defined(XCB_USE_XINPUT2) || defined(XCB_USE_XINPUT2_MAEMO)
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/XI2proto.h>
 #endif
 
 QT_BEGIN_NAMESPACE
