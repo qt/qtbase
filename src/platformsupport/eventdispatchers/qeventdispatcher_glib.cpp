@@ -122,7 +122,7 @@ bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
     Q_D(QPAEventDispatcherGlib);
 
     m_flags = flags;
-    QEventDispatcherGlib::processEvents(m_flags);
+    return QEventDispatcherGlib::processEvents(m_flags);
 }
 
 QT_END_NAMESPACE
