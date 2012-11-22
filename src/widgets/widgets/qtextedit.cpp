@@ -358,8 +358,9 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
 
     QTextEdit can display images, lists and tables. If the text is
     too large to view within the text edit's viewport, scroll bars will
-    appear. The text edit can load both plain text and HTML files (a
-    subset of HTML 3.2 and 4).
+    appear. The text edit can load both plain text and rich text files.
+    Rich text is described using a subset of HTML 4 markup, refer to the
+    \l {Supported HTML Subset} page for more information.
 
     If you just need to display a small piece of rich text use QLabel.
 

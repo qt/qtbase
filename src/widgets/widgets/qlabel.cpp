@@ -95,7 +95,8 @@ QT_BEGIN_NAMESPACE
 
     \warning When passing a QString to the constructor or calling setText(),
     make sure to sanitize your input, as QLabel tries to guess whether it
-    displays the text as plain text or as rich text. You may want to call
+    displays the text as plain text or as rich text, a subset of HTML 4
+    markup. You may want to call
     setTextFormat() explicitly, e.g. in case you expect the text to be in
     plain format but cannot control the text source (for instance when
     displaying data loaded from the Web).
@@ -259,6 +260,7 @@ void QLabelPrivate::init()
     text, depending on the text format setting; see setTextFormat().
     The default setting is Qt::AutoText; i.e. QLabel will try to
     auto-detect the format of the text set.
+    See \l {Supported HTML Subset} for the definition of rich text.
 
     If a buddy has been set, the buddy mnemonic key is updated
     from the new text.

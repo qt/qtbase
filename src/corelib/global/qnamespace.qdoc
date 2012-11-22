@@ -2156,7 +2156,8 @@
         string.
 
     \value RichText The text string is interpreted as a rich text
-        string.
+        string. See \l {Supported HTML Subset} for the definition
+        of rich text.
 
     \value AutoText The text string is interpreted as for
         Qt::RichText if Qt::mightBeRichText() returns true, otherwise
