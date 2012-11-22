@@ -303,6 +303,8 @@ void QCocoaWindow::setVisible(bool visible)
                 if (window()->type() == Qt::Popup)
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
             }
+        } else {
+            [m_contentView setHidden:NO];
         }
     } else {
         // qDebug() << "close" << this;
@@ -318,6 +320,8 @@ void QCocoaWindow::setVisible(bool visible)
                     [NSApp endSheet:m_nsWindow];
             }
             [m_nsWindow orderOut:m_nsWindow];
+        } else {
+            [m_contentView setHidden:YES];
         }
         if (!QCoreApplication::closingDown())
             QWindowSystemInterface::handleExposeEvent(window(), QRegion());
