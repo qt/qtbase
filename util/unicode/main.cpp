@@ -1572,6 +1572,15 @@ static void readWordBreak()
             qFatal("unassigned word break class: %s", l[1].constData());
 
         for (int codepoint = from; codepoint <= to; ++codepoint) {
+            // ### [
+            // as of Unicode 5.1, some punctuation marks were mapped to MidLetter and MidNumLet
+            // which caused "hi.there" to be treated like if it were just a single word;
+            // until we have a tailoring mechanism, retain the old behavior by remapping those characters here.
+            if (codepoint == 0x002E) // FULL STOP
+                brk = WordBreak_MidNum;
+            else if (codepoint == 0x003A) // COLON
+                brk = WordBreak_Other;
+            // ] ###
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.wordBreakClass = brk;
         }

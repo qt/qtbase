@@ -330,8 +330,40 @@ void tst_QTextBoundaryFinder::wordBoundaries_manual_data()
         expectedStartPositions << 0 << 4 << 8  << 14 << 18 << 22;
         expectedEndPositions   << 3 << 7 << 11 << 17 << 21 << 25;
 
-        QTest::newRow("data1") << testString << expectedBreakPositions
-                               << expectedStartPositions << expectedEndPositions;
+        QTest::newRow("words1") << testString << expectedBreakPositions
+                                << expectedStartPositions << expectedEndPositions;
+    }
+    {
+        QString testString(QString::fromUtf8("Hello (sad) world !"));
+        QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
+        expectedBreakPositions << 0 << 5 << 6 << 7 << 10 << 11 << 12 << 17 << 18 << 19;
+        expectedStartPositions << 0 << 7  << 12;
+        expectedEndPositions   << 5 << 10 << 17;
+
+        QTest::newRow("words2") << testString << expectedBreakPositions
+                                << expectedStartPositions << expectedEndPositions;
+    }
+    {
+        QString testString(QString::fromUtf8("mr.Hamster"));
+        QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
+        expectedBreakPositions << 0 << 2 << 3 << 10;
+        expectedStartPositions << 0 << 3;
+        expectedEndPositions   << 2 << 10;
+
+        QTest::newRow("words3") << testString << expectedBreakPositions
+                                << expectedStartPositions << expectedEndPositions;
+    }
+    {
+        QString testString(QString::fromUtf8("This is     a sample buffer.Please test me .     He's don't Le'Clerk."));
+        QList<int> expectedBreakPositions, expectedStartPositions, expectedEndPositions;
+        expectedBreakPositions << 0 << 4 << 5 << 7 << 8 << 9 << 10 << 11 << 12 << 13 << 14 << 20 << 21 << 27
+                               << 28 << 34 << 35 << 39 << 40 << 42 << 43 << 44 << 45 << 46 << 47 << 48
+                               << 49 << 53 << 54 << 59 << 60 << 68 << 69;
+        expectedStartPositions << 0 << 5 << 12 << 14 << 21 << 28 << 35 << 40 << 49 << 54 << 60;
+        expectedEndPositions   << 4 << 7 << 13 << 20 << 27 << 34 << 39 << 42 << 53 << 59 << 68;
+
+        QTest::newRow("words4") << testString << expectedBreakPositions
+                                << expectedStartPositions << expectedEndPositions;
     }
     {
         // text with trailing space
@@ -511,6 +543,13 @@ void tst_QTextBoundaryFinder::sentenceBoundaries_manual_data()
         expectedBreakPositions << 0 << 28;
 
         QTest::newRow("data2") << testString << expectedBreakPositions;
+    }
+    {
+        QString testString(QString::fromUtf8("mr.Hamster"));
+        QList<int> expectedBreakPositions;
+        expectedBreakPositions << 0 << 3 << 10;
+
+        QTest::newRow("data3") << testString << expectedBreakPositions;
     }
 }
 

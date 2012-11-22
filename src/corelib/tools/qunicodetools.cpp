@@ -156,6 +156,18 @@ static void getWordBreaks(const ushort *string, quint32 len, QCharAttributes *at
 
         const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
         QUnicodeTables::WordBreakClass ncls = (QUnicodeTables::WordBreakClass) prop->wordBreakClass;
+#ifdef QT_BUILD_INTERNAL
+        if (qt_initcharattributes_default_algorithm_only) {
+            // as of Unicode 5.1, some punctuation marks were mapped to MidLetter and MidNumLet
+            // which caused "hi.there" to be treated like if it were just a single word;
+            // by remapping those characters in the Unicode tables generator.
+            // this code is needed to pass the coverage tests; remove once the issue is fixed.
+            if (ucs4 == 0x002E) // FULL STOP
+                ncls = QUnicodeTables::WordBreak_MidNumLet;
+            else if (ucs4 == 0x003A) // COLON
+                ncls = QUnicodeTables::WordBreak_MidLetter;
+        }
+#endif
 
         uchar action = WB::breakTable[cls][ncls];
         if (Q_UNLIKELY(action == WB::Lookup)) {
