@@ -68,11 +68,8 @@
 #include <qgroupbox.h>
 #include <qhash.h>
 #include <qheaderview.h>
-#include <qlayout.h>
 #include <qlineedit.h>
-#include <qlistview.h>
 #include <qmainwindow.h>
-#include <qmap.h>
 #include <qmenubar.h>
 #include <qpaintdevice.h>
 #include <qpainter.h>
@@ -84,11 +81,7 @@
 #include <qrubberband.h>
 #include <qscrollbar.h>
 #include <qsizegrip.h>
-#include <qspinbox.h>
-#include <qsplitter.h>
 #include <qstyleoption.h>
-#include <qtextedit.h>
-#include <qtextstream.h>
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qtreeview.h>
