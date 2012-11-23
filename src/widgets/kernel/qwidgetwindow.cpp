@@ -414,6 +414,8 @@ void QWidgetWindow::handleKeyEvent(QKeyEvent *event)
         receiver = popupFocusWidget ? popupFocusWidget : popup;
     }
     if (!receiver)
+        receiver = QWidget::keyboardGrabber();
+    if (!receiver)
         receiver = focusObject();
     QGuiApplication::sendSpontaneousEvent(receiver, event);
 }

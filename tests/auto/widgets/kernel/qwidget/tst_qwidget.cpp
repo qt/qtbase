@@ -392,6 +392,7 @@ private slots:
     void nativeChildFocus();
     void grab();
     void grabMouse();
+    void grabKeyboard();
 
     void touchEventSynthesizedMouseEvent();
 
@@ -9410,6 +9411,27 @@ void tst_QWidget::grabMouse()
     }
     grabber->releaseMouse();
     QCOMPARE(log, expectedLog);
+}
+
+void tst_QWidget::grabKeyboard()
+{
+    QWidget w;
+    w.setObjectName(QLatin1String("tst_qwidget_grabKeyboard"));
+    w.setWindowTitle(w.objectName());
+    QLayout *layout = new QVBoxLayout(&w);
+    QLineEdit *grabber = new QLineEdit(&w);
+    layout->addWidget(grabber);
+    QLineEdit *nonGrabber = new QLineEdit(&w);
+    layout->addWidget(nonGrabber);
+    w.show();
+    qApp->setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    nonGrabber->setFocus();
+    grabber->grabKeyboard();
+    QTest::keyClick(w.windowHandle(), Qt::Key_A);
+    grabber->releaseKeyboard();
+    QCOMPARE(grabber->text().toLower(), QStringLiteral("a"));
+    QVERIFY(nonGrabber->text().isEmpty());
 }
 
 class TouchMouseWidget : public QWidget {
