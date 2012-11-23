@@ -56,10 +56,6 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QStyledItemDelegate>
 
-#if !defined(QT_NO_STYLE_WINDOWS)
-#include <qwindowsstyle.h>
-#endif // QT_NO_STYLE_WINDOWS
-
 #if defined(Q_OS_WIN) || defined(Q_OS_WINCE)
 #  include <windows.h>
 #  include <QtGui/QGuiApplication>
