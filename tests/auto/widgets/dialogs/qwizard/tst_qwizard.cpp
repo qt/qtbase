@@ -50,7 +50,6 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWizard>
-#include <QWindowsStyle>
 #include <QTreeWidget>
 
 static QImage grabWidget(QWidget *window)
