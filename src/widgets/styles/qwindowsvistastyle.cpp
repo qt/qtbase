@@ -1256,7 +1256,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                                           menuitem->rect.y(), checkcol - 6, menuitem->rect.height()));
 
             if (act) {
-                stateId = MBI_HOT;
+                stateId = dis ? MBI_DISABLED : MBI_HOT;
                 XPThemeData theme2(widget, painter,
                                    QWindowsXPStylePrivate::MenuTheme,
                                    MENU_POPUPITEM, stateId, option->rect);
