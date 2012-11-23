@@ -95,9 +95,8 @@ public:
     void requestPhase2();
 
 private:
-    friend class QApplication;
-    friend class QApplicationPrivate;
-    friend class QBaseApplication;
+    friend class QGuiApplication;
+    friend class QGuiApplicationPrivate;
 };
 
 QT_END_NAMESPACE

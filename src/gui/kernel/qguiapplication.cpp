@@ -62,6 +62,7 @@
 #include <QtDebug>
 #include <qpalette.h>
 #include <qscreen.h>
+#include "qsessionmanager.h"
 #include <private/qscreen_p.h>
 #include <private/qdrawhelper_p.h>
 
@@ -211,8 +212,9 @@ static inline void clearFontUnlocked()
 
     QGuiApplication contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also handles the
-    application's initialization and finalization. In addition, QGuiApplication handles
-    most of the system-wide and application-wide settings.
+    application's initialization and finalization, and provides session management.
+    In addition, QGuiApplication handles most of the system-wide and application-wide
+    settings.
 
     For any GUI application using Qt, there is precisely \b one QGuiApplication
     object no matter whether the application has 0, 1, 2 or more windows at
@@ -251,6 +253,14 @@ static inline void clearFontUnlocked()
 
             \li  It manages the application's mouse cursor handling, see
                 setOverrideCursor()
+
+            \li  It provides support for sophisticated \l{Session Management}
+                {session management}. This makes it possible for applications
+                to terminate gracefully when the user logs out, to cancel a
+                shutdown process if termination isn't possible and even to
+                preserve the entire application's state for a future session.
+                See isSessionRestored(), sessionId() and commitDataRequest() and
+                saveStateRequest() for details.
         \endlist
 
     Since the QGuiApplication object does so much initialization, it \e{must} be
@@ -301,6 +311,13 @@ static inline void clearFontUnlocked()
             restoreOverrideCursor().
 
         \row
+        \li  Session management
+        \li  isSessionRestored(),
+            sessionId(),
+            commitDataRequest(),
+            saveStateRequest().
+
+        \row
         \li  Miscellaneous
         \li  startingUp(),
             closingDown(),
@@ -335,6 +352,8 @@ static inline void clearFontUnlocked()
         \li  -qmljsdebugger=, activates the QML/JS debugger with a specified port.
             The value must be of format port:1234[,block], where block is optional
             and will make the application wait until a debugger connects to it.
+        \li  -session \e session, restores the application from an earlier
+            \l{Session Management}{session}.
     \endlist
 
     \sa arguments()
@@ -374,6 +393,11 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::qt_clipboard = 0;
 #endif
 
+#ifndef QT_NO_SESSIONMANAGER
+    delete d->session_manager;
+    d->session_manager = 0;
+#endif //QT_NO_SESSIONMANAGER
+
     clearPalette();
 
 #ifndef QT_NO_CURSOR
@@ -394,6 +418,10 @@ QGuiApplicationPrivate::QGuiApplicationPrivate(int &argc, char **argv, int flags
 {
     self = this;
     application_type = QCoreApplicationPrivate::Gui;
+#ifndef QT_NO_SESSIONMANAGER
+    is_session_restored = false;
+    is_saving_session = false;
+#endif
 }
 
 /*!
@@ -911,6 +939,19 @@ void QGuiApplicationPrivate::init()
             QGuiApplicationPrivate::noGrab = true;
         } else if (arg == "-dograb") {
             doGrabUnderDebugger = true;
+#ifndef QT_NO_SESSIONMANAGER
+        } else if (arg == "-session" && i < argc-1) {
+            ++i;
+            if (argv[i] && *argv[i]) {
+                session_id = QString::fromLatin1(argv[i]);
+                int p = session_id.indexOf(QLatin1Char('_'));
+                if (p >= 0) {
+                    session_key = session_id.mid(p +1);
+                    session_id = session_id.left(p);
+                }
+                is_session_restored = true;
+            }
+#endif
         } else {
             argv[j++] = argv[i];
         }
@@ -957,6 +998,14 @@ void QGuiApplicationPrivate::init()
     is_app_running = true;
     init_plugins(pluginList);
     QWindowSystemInterface::flushWindowSystemEvents();
+
+    Q_Q(QGuiApplication);
+
+#ifndef QT_NO_SESSIONMANAGER
+    // connect to the session manager
+    session_manager = new QSessionManager(q, session_id, session_key);
+#endif
+
 }
 
 extern void qt_cleanupFontDatabase();
@@ -2314,6 +2363,169 @@ bool QGuiApplicationPrivate::shouldQuit()
     }
     return true;
 }
+
+/*!
+    \since 4.2
+    \fn void QGuiApplication::commitDataRequest(QSessionManager &manager)
+
+    This signal deals with \l{Session Management}{session management}. It is
+    emitted when the QSessionManager wants the application to commit all its
+    data.
+
+    Usually this means saving all open files, after getting permission from
+    the user. Furthermore you may want to provide a means by which the user
+    can cancel the shutdown.
+
+    You should not exit the application within this signal. Instead,
+    the session manager may or may not do this afterwards, depending on the
+    context.
+
+    \warning Within this signal, no user interaction is possible, \e
+    unless you ask the \a manager for explicit permission. See
+    QSessionManager::allowsInteraction() and
+    QSessionManager::allowsErrorInteraction() for details and example
+    usage.
+
+    \note You should use Qt::DirectConnection when connecting to this signal.
+
+    \sa isSessionRestored(), sessionId(), saveStateRequest(), {Session Management}
+*/
+
+/*!
+    \since 4.2
+    \fn void QGuiApplication::saveStateRequest(QSessionManager &manager)
+
+    This signal deals with \l{Session Management}{session management}. It is
+    invoked when the \l{QSessionManager}{session manager} wants the application
+    to preserve its state for a future session.
+
+    For example, a text editor would create a temporary file that includes the
+    current contents of its edit buffers, the location of the cursor and other
+    aspects of the current editing session.
+
+    You should never exit the application within this signal. Instead, the
+    session manager may or may not do this afterwards, depending on the
+    context. Futhermore, most session managers will very likely request a saved
+    state immediately after the application has been started. This permits the
+    session manager to learn about the application's restart policy.
+
+    \warning Within this signal, no user interaction is possible, \e
+    unless you ask the \a manager for explicit permission. See
+    QSessionManager::allowsInteraction() and
+    QSessionManager::allowsErrorInteraction() for details.
+
+    \note You should use Qt::DirectConnection when connecting to this signal.
+
+    \sa isSessionRestored(), sessionId(), commitDataRequest(), {Session Management}
+*/
+
+/*!
+    \fn bool QGuiApplication::isSessionRestored() const
+
+    Returns true if the application has been restored from an earlier
+    \l{Session Management}{session}; otherwise returns false.
+
+    \sa sessionId(), commitDataRequest(), saveStateRequest()
+*/
+
+/*!
+    \since 5.0
+    \fn bool QGuiApplication::isSavingSession() const
+
+    Returns true if the application is currently saving the
+    \l{Session Management}{session}; otherwise returns false.
+
+    This is true when commitDataRequest() and saveStateRequest() are emitted,
+    but also when the windows are closed afterwards by session management.
+
+    \sa sessionId(), commitDataRequest(), saveStateRequest()
+*/
+
+/*!
+    \fn QString QGuiApplication::sessionId() const
+
+    Returns the current \l{Session Management}{session's} identifier.
+
+    If the application has been restored from an earlier session, this
+    identifier is the same as it was in that previous session. The session
+    identifier is guaranteed to be unique both for different applications
+    and for different instances of the same application.
+
+    \sa isSessionRestored(), sessionKey(), commitDataRequest(), saveStateRequest()
+*/
+
+/*!
+    \fn QString QGuiApplication::sessionKey() const
+
+    Returns the session key in the current \l{Session Management}{session}.
+
+    If the application has been restored from an earlier session, this key is
+    the same as it was when the previous session ended.
+
+    The session key changes every time the session is saved. If the shutdown process
+    is cancelled, another session key will be used when shutting down again.
+
+    \sa isSessionRestored(), sessionId(), commitDataRequest(), saveStateRequest()
+*/
+#ifndef QT_NO_SESSIONMANAGER
+bool QGuiApplication::isSessionRestored() const
+{
+    Q_D(const QGuiApplication);
+    return d->is_session_restored;
+}
+
+QString QGuiApplication::sessionId() const
+{
+    Q_D(const QGuiApplication);
+    return d->session_id;
+}
+
+QString QGuiApplication::sessionKey() const
+{
+    Q_D(const QGuiApplication);
+    return d->session_key;
+}
+
+bool QGuiApplication::isSavingSession() const
+{
+    Q_D(const QGuiApplication);
+    return d->is_saving_session;
+}
+
+void QGuiApplicationPrivate::commitData(QSessionManager& manager)
+{
+    Q_Q(QGuiApplication);
+    is_saving_session = true;
+    emit q->commitDataRequest(manager);
+    if (manager.allowsInteraction()) {
+        QWindowList done;
+        QWindowList list = QGuiApplication::topLevelWindows();
+        bool cancelled = false;
+        for (int i = 0; !cancelled && i < list.size(); ++i) {
+            QWindow* w = list.at(i);
+            if (w->isVisible() && !done.contains(w)) {
+                cancelled = !w->close();
+                if (!cancelled)
+                    done.append(w);
+                list = QGuiApplication::topLevelWindows();
+                i = -1;
+            }
+        }
+        if (cancelled)
+            manager.cancel();
+    }
+    is_saving_session = false;
+}
+
+
+void QGuiApplicationPrivate::saveState(QSessionManager &manager)
+{
+    Q_Q(QGuiApplication);
+    is_saving_session = true;
+    emit q->saveStateRequest(manager);
+    is_saving_session = false;
+}
+#endif //QT_NO_SESSIONMANAGER
 
 /*!
     \property QGuiApplication::layoutDirection

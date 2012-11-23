@@ -54,6 +54,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
+class QSessionManager;
 class QGuiApplicationPrivate;
 class QPlatformNativeInterface;
 class QPlatformIntegration;
@@ -145,12 +146,24 @@ public:
     static int exec();
     bool notify(QObject *, QEvent *);
 
+#ifndef QT_NO_SESSIONMANAGER
+    // session management
+    bool isSessionRestored() const;
+    QString sessionId() const;
+    QString sessionKey() const;
+    bool isSavingSession() const;
+#endif
+
 Q_SIGNALS:
     void fontDatabaseChanged();
     void screenAdded(QScreen *screen);
     void lastWindowClosed();
     void focusObjectChanged(QObject *focusObject);
     void focusWindowChanged(QWindow *focusWindow);
+#ifndef QT_NO_SESSIONMANAGER
+    void commitDataRequest(QSessionManager &sessionManager);
+    void saveStateRequest(QSessionManager &sessionManager);
+#endif
 
 protected:
     bool event(QEvent *);

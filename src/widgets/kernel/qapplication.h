@@ -57,7 +57,6 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-class QSessionManager;
 class QDesktopWidget;
 class QStyle;
 class QEventLoop;
@@ -178,15 +177,6 @@ public:
     static bool isEffectEnabled(Qt::UIEffect);
     static void setEffectEnabled(Qt::UIEffect, bool enable = true);
 
-#ifndef QT_NO_SESSIONMANAGER
-    // session management
-    bool isSessionRestored() const;
-    QString sessionId() const;
-    QString sessionKey() const;
-    virtual void commitData(QSessionManager& sm);
-    virtual void saveState(QSessionManager& sm);
-#endif
-
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED static QLocale keyboardInputLocale()
     { return qApp ? qApp->inputMethod()->locale() : QLocale::c(); }
@@ -206,10 +196,6 @@ public:
 
 Q_SIGNALS:
     void focusChanged(QWidget *old, QWidget *now);
-#ifndef QT_NO_SESSIONMANAGER
-    void commitDataRequest(QSessionManager &sessionManager);
-    void saveStateRequest(QSessionManager &sessionManager);
-#endif
 
 public:
     QString styleSheet() const;

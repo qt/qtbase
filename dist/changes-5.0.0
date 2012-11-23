@@ -611,6 +611,12 @@ QtWidgets
   by QAbstractProxyModel and related classes. A copy of QProxyModel is available
   in the UiHelpers library.
 
+* The virtual methods QApplication::commitData and QApplication::saveState, used for session
+  management, no longer exist.
+  Connect to the commitDataRequest and saveStateRequest signals instead.
+  The new isSessionSaving() method can be used in the cases where the closeEvent of your
+  window needs to know whether it is being called during shutdown.
+
 * [QTBUG-20503] QFileSystemModel no longer masks out write permissions from the permissions
   returned from permissions() or data(FilePermissions), even if in read-only mode
   (QFileSystemModel::isReadOnly()).
