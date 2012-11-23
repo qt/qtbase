@@ -54,7 +54,7 @@
 //
 
 #include "qwindowsmobilestyle_p.h"
-#include "qwindowsstyle_p.h"
+#include "qwindowsstyle_p_p.h"
 
 QT_BEGIN_NAMESPACE
 

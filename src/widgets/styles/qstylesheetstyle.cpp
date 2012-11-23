@@ -52,9 +52,8 @@
 #include <qpainter.h>
 #include <qstyleoption.h>
 #include <qlineedit.h>
-#include <qwindowsstyle.h>
+#include <private/qwindowsstyle_p.h>
 #include <qcombobox.h>
-#include <qwindowsstyle.h>
 #include "private/qcssparser_p.h"
 #include "private/qmath_p.h"
 #include <qabstractscrollarea.h>
@@ -69,7 +68,7 @@
 #include <qcheckbox.h>
 #include <qstatusbar.h>
 #include <qheaderview.h>
-#include <private/qwindowsstyle_p.h>
+#include <private/qwindowsstyle_p_p.h>
 #include <private/qstyleanimation_p.h>
 #include <qtabbar.h>
 #include <QMetaProperty>

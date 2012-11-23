@@ -42,7 +42,7 @@
 #ifndef QGTKSTYLE_P_H
 #define QGTKSTYLE_P_H
 
-#include <QtWidgets/QWindowsStyle>
+#include <private/qwindowsstyle_p.h>
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
 #include <QtWidgets/QFileDialog>

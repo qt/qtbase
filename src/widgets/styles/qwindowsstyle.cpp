@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qwindowsstyle.h"
 #include "qwindowsstyle_p.h"
+#include "qwindowsstyle_p_p.h"
 
 #if !defined(QT_NO_STYLE_WINDOWS) || defined(QT_PLUGIN)
 
@@ -200,6 +200,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
 
     \ingroup appearance
     \inmodule QtWidgets
+    \internal
 
     This style is Qt's default GUI style on Windows.
 

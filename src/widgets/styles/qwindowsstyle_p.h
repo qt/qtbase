@@ -42,58 +42,67 @@
 #ifndef QWINDOWSSTYLE_P_H
 #define QWINDOWSSTYLE_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtWidgets/qcommonstyle.h>
 
-#include "qwindowsstyle.h"
-#include "qcommonstyle_p.h"
-
-#ifndef QT_NO_STYLE_WINDOWS
-#include <qlist.h>
-#include <qhash.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTime;
 
-class QWindowsStylePrivate : public QCommonStylePrivate
+#if !defined(QT_NO_STYLE_WINDOWS)
+
+class QWindowsStylePrivate;
+
+class QWindowsStyle : public QCommonStyle
 {
-    Q_DECLARE_PUBLIC(QWindowsStyle)
+    Q_OBJECT
 public:
-    QWindowsStylePrivate();
-    bool hasSeenAlt(const QWidget *widget) const;
-    bool altDown() const { return alt_down; }
-    bool alt_down;
-    QList<const QWidget *> seenAlt;
-    int menuBarTimer;
+    QWindowsStyle();
+    ~QWindowsStyle();
 
-    QColor inactiveCaptionText;
-    QColor activeCaptionColor;
-    QColor activeGradientCaptionColor;
-    QColor inactiveCaptionColor;
-    QColor inactiveGradientCaptionColor;
+    void polish(QApplication*);
+    void unpolish(QApplication*);
 
-    enum {
-        windowsItemFrame        =  2, // menu item frame width
-        windowsSepHeight        =  9, // separator item height
-        windowsItemHMargin      =  3, // menu item hor text margin
-        windowsItemVMargin      =  2, // menu item ver text margin
-        windowsArrowHMargin     =  6, // arrow horizontal margin
-        windowsRightBorder      = 15, // right border on windows
-        windowsCheckMarkWidth   = 12  // checkmarks width on windows
-    };
+    void polish(QWidget*);
+    void unpolish(QWidget*);
+
+    void polish(QPalette &);
+
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
+                       const QWidget *w = 0) const;
+    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
+                     const QWidget *w = 0) const;
+    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = 0) const;
+    void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
+                            const QWidget *w = 0) const;
+    QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
+                           const QSize &contentsSize, const QWidget *widget = 0) const;
+
+    int pixelMetric(PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0) const;
+
+    int styleHint(StyleHint hint, const QStyleOption *opt = 0, const QWidget *widget = 0,
+                  QStyleHintReturn *returnData = 0) const;
+
+    QPixmap standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
+                           const QWidget *widget = 0) const;
+
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const;
+
+protected:
+    bool eventFilter(QObject *o, QEvent *e);
+    QWindowsStyle(QWindowsStylePrivate &dd);
+
+private:
+    Q_DISABLE_COPY(QWindowsStyle)
+    Q_DECLARE_PRIVATE(QWindowsStyle)
+    void *reserved;
 };
-
-QT_END_NAMESPACE
 
 #endif // QT_NO_STYLE_WINDOWS
 
-#endif //QWINDOWSSTYLE_P_H
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QWINDOWSSTYLE_P_H

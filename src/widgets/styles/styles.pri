@@ -66,7 +66,8 @@ contains( styles, mac ) {
 }
 
 contains( styles, windows ) {
-    HEADERS += styles/qwindowsstyle.h
+    HEADERS += styles/qwindowsstyle_p.h
+    HEADERS += styles/qwindowsstyle_p_p.h
     SOURCES += styles/qwindowsstyle.cpp
     DEFINES += QT_STYLE_WINDOWS
 } else {

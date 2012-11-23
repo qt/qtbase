@@ -45,7 +45,7 @@
 #include "qmutex.h"
 
 #include "qapplication.h"
-#include "qwindowsstyle.h"
+#include "qwindowsstyle_p.h"
 #ifndef QT_NO_STYLE_FUSION
 #include "qfusionstyle_p.h"
 #endif

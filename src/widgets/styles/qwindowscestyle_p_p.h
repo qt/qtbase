@@ -43,7 +43,7 @@
 #define QWINDOWSCESTYLE_P_P_H
 
 #include "qwindowscestyle_p.h"
-#include <private/qwindowsstyle_p.h>
+#include <private/qwindowsstyle_p_p.h>
 
 //
 //  W A R N I N G

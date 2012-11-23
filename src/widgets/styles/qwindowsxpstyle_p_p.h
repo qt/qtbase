@@ -54,7 +54,7 @@
 //
 
 #include "qwindowsxpstyle_p.h"
-#include "qwindowsstyle_p.h"
+#include "qwindowsstyle_p_p.h"
 #include <qmap.h>
 #include <qt_windows.h>
 
