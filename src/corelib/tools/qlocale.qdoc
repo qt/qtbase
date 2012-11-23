@@ -175,7 +175,8 @@
     \value Fijian
     \value Finnish
     \value French
-    \value Frisian
+    \value WesternFrisian same as Frisian
+    \value Frisian same as WesternFrisian
     \value Gaelic
     \value Galician
     \value Georgian
@@ -256,17 +257,17 @@
     \value Romanian
     \value Russian
     \value Samoan
-    \value Sangho
+    \value Sango
     \value Sanskrit
     \value Sardinian
     \value Serbian
     \value SerboCroatian Obsolete, please use Serbian
-    \value Sesotho
-    \value Setswana
+    \value SouthernSotho
+    \value Tswana
     \value Shona
     \value Sindhi
-    \value Singhalese
-    \value Siswati
+    \value Sinhala
+    \value Swati
     \value Slovak
     \value Slovenian
     \value Somali
@@ -283,7 +284,7 @@
     \value Thai
     \value Tibetan
     \value Tigrinya
-    \value TongaLanguage
+    \value Tongan
     \value Tsonga
     \value Turkish
     \value Turkmen
@@ -325,7 +326,8 @@
     \value Walamo
     \value Hawaiian
     \value Tyap
-    \value Chewa
+    \value Nyanja
+    \value Chewa Obsolete, please use Nyanja
     \value Filipino
     \value SwissGerman
     \value SichuanYi
@@ -627,7 +629,7 @@
     \value Thailand
     \value Togo
     \value Tokelau
-    \value TongaCountry
+    \value Tonga
     \value TrinidadAndTobago
     \value Tunisia
     \value Turkey

@@ -727,9 +727,9 @@ QLocale::QLocale(QLocalePrivate &dd)
     "language[_script][_country][.codeset][@modifier]" or "C", where:
 
     \list
-    \li language is a lowercase, two-letter, ISO 639 language code,
+    \li language is a lowercase, two-letter, ISO 639 language code (also some three-letter codes),
     \li script is a titlecase, four-letter, ISO 15924 script code,
-    \li country is an uppercase, two- or three-letter, ISO 3166 country code (also "419" as defined by United Nations),
+    \li country is an uppercase, two-letter, ISO 3166 country code (also "419" as defined by United Nations),
     \li and codeset and modifier are ignored.
     \endlist
 

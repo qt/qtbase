@@ -97,6 +97,10 @@ information about a particular change.
     or use static_cast<int>(Qt::SolidLine) to create a QVariant of type int with
     the same value as the enum.
 
+- QLocale:
+  * The historical language and country names were updated to their modern values,
+    some deprecated names were dropped or mapped to their modern alternatives.
+
 - QTestLib:
   * The plain-text, xml and lightxml test output formats have been changed to
     show a test result for every row of test data in data-driven tests.  In
@@ -500,6 +504,9 @@ QtCore
   - Qt::WA_MergeSoftkeysRecursively
   - Qt::WindowSoftkeysVisibleHint
   - Qt::WindowSoftkeysRespondHint
+
+* QLocale
+  - [QTBUG-27987] Constructing a QLocale object with the short locale id has been improved.
 
 QtGui
 -----
