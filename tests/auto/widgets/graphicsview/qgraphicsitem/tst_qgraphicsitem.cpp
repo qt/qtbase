@@ -424,7 +424,7 @@ private slots:
     void setGraphicsEffect();
     void panel();
     void addPanelToActiveScene();
-    void panelWithFocusItem();
+    void panelWithFocusItems();
     void activate();
     void setActivePanelOnInactiveScene();
     void activationOnShowHide();
@@ -8721,52 +8721,97 @@ void tst_QGraphicsItem::panel()
     QVERIFY(!panel1->isActive());
 }
 
-void tst_QGraphicsItem::panelWithFocusItem()
+void tst_QGraphicsItem::panelWithFocusItems()
 {
-    QGraphicsScene scene;
-    QEvent activate(QEvent::WindowActivate);
-    QApplication::sendEvent(&scene, &activate);
+    for (int i = 0; i < 2; ++i)
+    {
+        QGraphicsScene scene;
+        QEvent activate(QEvent::WindowActivate);
+        QApplication::sendEvent(&scene, &activate);
 
-    QGraphicsRectItem *parentPanel = new QGraphicsRectItem;
-    QGraphicsRectItem *parentPanelFocusItem = new QGraphicsRectItem(parentPanel);
-    parentPanel->setFlag(QGraphicsItem::ItemIsPanel);
-    parentPanelFocusItem->setFlag(QGraphicsItem::ItemIsFocusable);
-    parentPanelFocusItem->setFocus();
-    scene.addItem(parentPanel);
+        bool widget = (i == 1);
+        QGraphicsItem *parentPanel = widget ? (QGraphicsItem *)new QGraphicsWidget : (QGraphicsItem *)new QGraphicsRectItem;
+        QGraphicsItem *parentPanelFocusItem = widget ? (QGraphicsItem *)new QGraphicsWidget : (QGraphicsItem *)new QGraphicsRectItem;
+        QGraphicsItem *parentPanelFocusItemSibling = widget ? (QGraphicsItem *)new QGraphicsWidget : (QGraphicsItem *)new QGraphicsRectItem;
+        parentPanel->setFlag(QGraphicsItem::ItemIsPanel);
+        parentPanelFocusItem->setFlag(QGraphicsItem::ItemIsFocusable);
+        parentPanelFocusItemSibling->setFlag(QGraphicsItem::ItemIsFocusable);
+        if (widget) {
+            static_cast<QGraphicsWidget *>(parentPanelFocusItem)->setFocusPolicy(Qt::StrongFocus);
+            static_cast<QGraphicsWidget *>(parentPanelFocusItemSibling)->setFocusPolicy(Qt::StrongFocus);
+        }
+        parentPanelFocusItem->setParentItem(parentPanel);
+        parentPanelFocusItemSibling->setParentItem(parentPanel);
+        parentPanelFocusItem->setFocus();
+        scene.addItem(parentPanel);
 
-    QVERIFY(parentPanel->isActive());
-    QVERIFY(parentPanelFocusItem->hasFocus());
-    QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
-    QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QVERIFY(parentPanel->isActive());
+        QVERIFY(parentPanelFocusItem->hasFocus());
+        QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
 
-    QGraphicsRectItem *childPanel = new QGraphicsRectItem;
-    QGraphicsRectItem *childPanelFocusItem = new QGraphicsRectItem(childPanel);
-    childPanel->setFlag(QGraphicsItem::ItemIsPanel);
-    childPanelFocusItem->setFlag(QGraphicsItem::ItemIsFocusable);
-    childPanelFocusItem->setFocus();
+        QGraphicsItem *childPanel = widget ? (QGraphicsItem *)new QGraphicsWidget : (QGraphicsItem *)new QGraphicsRectItem;
+        QGraphicsItem *childPanelFocusItem = widget ? (QGraphicsItem *)new QGraphicsWidget : (QGraphicsItem *)new QGraphicsRectItem;
+        QGraphicsItem *grandChildPanelFocusItem = widget ? (QGraphicsItem *)new QGraphicsWidget : (QGraphicsItem *)new QGraphicsRectItem;
+        QGraphicsItem *grandChildPanelFocusItem2 = widget ? (QGraphicsItem *)new QGraphicsWidget : (QGraphicsItem *)new QGraphicsRectItem;
 
-    QVERIFY(!childPanelFocusItem->hasFocus());
-    QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)childPanelFocusItem);
-    QCOMPARE(childPanelFocusItem->focusItem(), (QGraphicsItem *)childPanelFocusItem);
+        childPanel->setFlag(QGraphicsItem::ItemIsPanel);
+        childPanelFocusItem->setFlag(QGraphicsItem::ItemIsFocusable);
+        grandChildPanelFocusItem->setFlag(QGraphicsItem::ItemIsFocusable);
+        grandChildPanelFocusItem2->setFlag(QGraphicsItem::ItemIsFocusable);
 
-    childPanel->setParentItem(parentPanel);
+        if (widget)
+        {
+            static_cast<QGraphicsWidget *>(childPanelFocusItem)->setFocusPolicy(Qt::StrongFocus);
+            static_cast<QGraphicsWidget *>(grandChildPanelFocusItem)->setFocusPolicy(Qt::StrongFocus);
+            static_cast<QGraphicsWidget *>(grandChildPanelFocusItem2)->setFocusPolicy(Qt::StrongFocus);
+        }
+        grandChildPanelFocusItem->setParentItem(childPanelFocusItem);
+        grandChildPanelFocusItem2->setParentItem(childPanelFocusItem);
+        childPanelFocusItem->setParentItem(childPanel);
+        grandChildPanelFocusItem->setFocus();
 
-    QVERIFY(!parentPanel->isActive());
-    QVERIFY(!parentPanelFocusItem->hasFocus());
-    QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
-    QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QVERIFY(!grandChildPanelFocusItem->hasFocus());
+        QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+        QCOMPARE(childPanelFocusItem->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+        QCOMPARE(grandChildPanelFocusItem->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
 
-    QVERIFY(childPanel->isActive());
-    QVERIFY(childPanelFocusItem->hasFocus());
-    QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)childPanelFocusItem);
-    QCOMPARE(childPanelFocusItem->focusItem(), (QGraphicsItem *)childPanelFocusItem);
+        childPanel->setParentItem(parentPanel);
 
-    childPanel->hide();
+        QVERIFY(!parentPanel->isActive());
+        QVERIFY(!parentPanelFocusItem->hasFocus());
+        QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
 
-    QVERIFY(parentPanel->isActive());
-    QVERIFY(parentPanelFocusItem->hasFocus());
-    QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
-    QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QVERIFY(childPanel->isActive());
+        QVERIFY(!childPanelFocusItem->hasFocus());
+        QVERIFY(grandChildPanelFocusItem->hasFocus());
+        QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+        QCOMPARE(childPanelFocusItem->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+
+        childPanel->hide();
+        QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+        QVERIFY(!childPanel->focusItem()->hasFocus());
+        QVERIFY(parentPanel->isActive());
+        QVERIFY(parentPanelFocusItem->hasFocus());
+        QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QCOMPARE(grandChildPanelFocusItem->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+
+        childPanel->show();
+        QVERIFY(childPanel->isActive());
+        QVERIFY(grandChildPanelFocusItem->hasFocus());
+        QCOMPARE(childPanel->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+        QCOMPARE(childPanelFocusItem->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+        QCOMPARE(grandChildPanelFocusItem->focusItem(), (QGraphicsItem *)grandChildPanelFocusItem);
+
+        childPanel->hide();
+
+        QVERIFY(parentPanel->isActive());
+        QVERIFY(parentPanelFocusItem->hasFocus());
+        QCOMPARE(parentPanel->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+        QCOMPARE(parentPanelFocusItem->focusItem(), (QGraphicsItem *)parentPanelFocusItem);
+    }
 }
 
 void tst_QGraphicsItem::addPanelToActiveScene()

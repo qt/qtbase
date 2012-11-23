@@ -279,7 +279,8 @@ public:
     void setTransformHelper(const QTransform &transform);
     void prependGraphicsTransform(QGraphicsTransform *t);
     void appendGraphicsTransform(QGraphicsTransform *t);
-    void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
+    void setVisibleHelper(bool newVisible, bool explicitly, bool update = true,
+                          bool hiddenByPanel = false);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
@@ -476,7 +477,7 @@ public:
     inline void markParentDirty(bool updateBoundingRect = false);
 
     void setFocusHelper(Qt::FocusReason focusReason, bool climb, bool focusFromHide);
-    void clearFocusHelper(bool giveFocusToParent);
+    void clearFocusHelper(bool giveFocusToParent, bool hiddenByParentPanel);
     void setSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
     void clearSubFocus(QGraphicsItem *rootItem = 0, QGraphicsItem *stopItem = 0);
     void resetFocusProxy();
