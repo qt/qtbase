@@ -45,7 +45,8 @@
 #include <qmainwindow.h>
 #include <qmenubar.h>
 #include <qstyle.h>
-#include <qwindowsstyle.h>
+#include <qproxystyle.h>
+#include <qstylefactory.h>
 #include <qdesktopwidget.h>
 #include <qaction.h>
 #include <qstyleoption.h>
@@ -1158,8 +1159,10 @@ void tst_QMenuBar::task256322_highlight()
 
 void tst_QMenuBar::menubarSizeHint()
 {
-    struct MyStyle : public QWindowsStyle
+    struct MyStyle : public QProxyStyle
     {
+        MyStyle() : QProxyStyle(QStyleFactory::create("windows")) { }
+
         virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0, const QWidget * widget = 0 ) const
         {
             // I chose strange values (prime numbers to be more sure that the size of the menubar is correct)
@@ -1174,7 +1177,7 @@ void tst_QMenuBar::menubarSizeHint()
             case PM_MenuBarPanelWidth:
                 return 1;
             default:
-              return QWindowsStyle::pixelMetric(metric, option, widget);
+              return QProxyStyle::pixelMetric(metric, option, widget);
             }
         }
     } style;
