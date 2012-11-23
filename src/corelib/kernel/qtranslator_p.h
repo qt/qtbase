@@ -47,8 +47,8 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of qfontencodings_x11.cpp and qfont_x11.cpp.  This header file may
-// change from version to version without notice, or even be removed.
+// of the Qt translation tools.  This header file may change from version
+// to version without notice, or even be removed.
 //
 // We mean it.
 //
