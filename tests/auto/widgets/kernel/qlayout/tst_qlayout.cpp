@@ -50,7 +50,7 @@
 #include <qsizegrip.h>
 #include <qlabel.h>
 #include <QtWidgets/QFrame>
-#include <QtWidgets/QWindowsStyle>
+#include <QtWidgets/QStyleFactory>
 #include <QtWidgets/QSizePolicy>
 #include <QtWidgets/QComboBox>
 #include <QPushButton>
@@ -124,7 +124,7 @@ void tst_QLayout::geometry()
 {
     // For QWindowsStyle we know that QWidgetItem::geometry() and QWidget::geometry()
     // should be the same.
-    QApplication::setStyle(new QWindowsStyle);
+    QApplication::setStyle(QStyleFactory::create(QLatin1String("Windows")));
     QWidget topLevel;
     QWidget w(&topLevel);
     QVBoxLayout layout(&w);
