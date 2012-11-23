@@ -50,7 +50,6 @@
 #endif
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_QUUID_STRING
 template <class Char, class Integral>
 void _q_toHex(Char *&dst, Integral value)
 {
@@ -134,7 +133,6 @@ bool _q_uuidFromHex(const Char *&src, uint &d1, ushort &d2, ushort &d3, uchar (&
 
     return true;
 }
-#endif
 
 #ifndef QT_BOOTSTRAPPED
 static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
@@ -341,7 +339,6 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
     \snippet code/src_corelib_plugin_quuid.cpp 0
 */
 
-#ifndef QT_NO_QUUID_STRING
 /*!
   Creates a QUuid object from the string \a text, which must be
   formatted as five hex fields separated by '-', e.g.,
@@ -421,8 +418,6 @@ QUuid::QUuid(const QByteArray &text)
         return;
     }
 }
-
-#endif
 
 /*!
   \since 5.0
@@ -527,7 +522,7 @@ QUuid QUuid::fromRfc4122(const QByteArray &bytes)
     Returns true if this QUuid and the \a other QUuid are different;
     otherwise returns false.
 */
-#ifndef QT_NO_QUUID_STRING
+
 /*!
     Returns the string representation of this QUuid. The string is
     formatted as five hex fields separated by '-' and enclosed in
@@ -617,7 +612,6 @@ QByteArray QUuid::toByteArray() const
 
     return result;
 }
-#endif
 
 /*!
     Returns the binary representation of this QUuid. The byte array is in big
@@ -1016,12 +1010,7 @@ QUuid QUuid::createUuid()
 */
 QDebug operator<<(QDebug dbg, const QUuid &id)
 {
-#ifndef QT_NO_QUUID_STRING
     dbg.nospace() << "QUuid(" << id.toString() << ')';
-#else
-    Q_UNUSED(id)
-    dbg.nospace() << "QUuid(QT_NO_QUUID_STRING)";
-#endif
     return dbg.space();
 }
 #endif

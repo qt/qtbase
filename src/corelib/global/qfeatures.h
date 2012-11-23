@@ -157,9 +157,6 @@
 // Properties
 //#define QT_NO_PROPERTIES
 
-//  Universally Unique Identifier Convertion
-//#define QT_NO_QUUID_STRING
-
 // Resize Handler
 //#define QT_NO_RESIZEHANDLER
 
