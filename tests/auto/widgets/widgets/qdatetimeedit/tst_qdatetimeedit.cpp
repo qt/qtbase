@@ -44,7 +44,6 @@
 #include <qapplication.h>
 #include <qgroupbox.h>
 #include <qlineedit.h>
-#include <qwindowsstyle.h>
 
 
 
