@@ -68,11 +68,11 @@ private slots:
     void taskQTBUG_7103_minMaxWidthNotRespected();
 };
 
-class CustomLayoutStyle : public QWindowsStyle
+class CustomLayoutStyle : public QProxyStyle
 {
     Q_OBJECT
 public:
-    CustomLayoutStyle() : QWindowsStyle()
+    CustomLayoutStyle() : QProxyStyle(QStyleFactory::create("windows"))
     {
         hspacing = 5;
         vspacing = 10;
@@ -109,7 +109,7 @@ int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * opti
         default:
             break;
     }
-    return QWindowsStyle::pixelMetric(metric, option, widget);
+    return QProxyStyle::pixelMetric(metric, option, widget);
 }
 
 
