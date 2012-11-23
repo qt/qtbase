@@ -169,15 +169,6 @@ void QDBusSignature::doCheck()
 */
 
 /*!
-    \fn QDBusObjectPath &QDBusObjectPath::operator=(const QDBusObjectPath &path)
-
-    Assigns the value of the given \a path to this object path.
-
-    \sa setPath()
-*/
-
-
-/*!
     \class QDBusSignature
     \inmodule QtDBus
     \since 4.2
@@ -227,14 +218,6 @@ void QDBusSignature::doCheck()
 
     Assigns the value of the given \a signature to this signature.
     \sa signature()
-*/
-
-/*!
-    \fn QDBusSignature &QDBusSignature::operator=(const QDBusSignature &signature)
-
-    Assigns the value of the given \a signature to this signature.
-
-    \sa setSignature()
 */
 
 QT_END_NAMESPACE
