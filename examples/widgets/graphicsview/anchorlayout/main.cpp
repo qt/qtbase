@@ -38,15 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QGraphicsWidget>
-#include <QGraphicsProxyWidget>
-#include <QGraphicsAnchorLayout>
 #include <QtWidgets>
 
 static QGraphicsProxyWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 100.0),
-                                   const QSizeF &preferred = QSize(150.0, 100.0),
-                                   const QSizeF &maximum = QSizeF(200.0, 100.0),
-                                   const QString &name = "0")
+                                        const QSizeF &preferred = QSize(150.0, 100.0),
+                                        const QSizeF &maximum = QSizeF(200.0, 100.0),
+                                        const QString &name = "0")
 {
     QGraphicsProxyWidget *w = new QGraphicsProxyWidget;
     w->setWidget(new QPushButton(name));

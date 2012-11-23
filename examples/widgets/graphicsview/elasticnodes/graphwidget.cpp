@@ -42,9 +42,9 @@
 #include "edge.h"
 #include "node.h"
 
-#include <QtWidgets>
-
 #include <math.h>
+
+#include <QKeyEvent>
 
 //! [0]
 GraphWidget::GraphWidget(QWidget *parent)

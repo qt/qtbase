@@ -41,6 +41,9 @@
 #include "window.h"
 #include "layoutitem.h"
 
+#include <QGraphicsLinearLayout>
+#include <QGraphicsGridLayout>
+
 Window::Window(QGraphicsWidget *parent) : QGraphicsWidget(parent, Qt::Window)
 {
 //! [0]
@@ -85,6 +88,3 @@ Window::Window(QGraphicsWidget *parent) : QGraphicsWidget(parent, Qt::Window)
 //! [3]
 
 }
-
-
-

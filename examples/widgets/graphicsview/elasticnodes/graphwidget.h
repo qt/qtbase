@@ -41,7 +41,7 @@
 #ifndef GRAPHWIDGET_H
 #define GRAPHWIDGET_H
 
-#include <QtWidgets/QGraphicsView>
+#include <QGraphicsView>
 
 class Node;
 
@@ -74,4 +74,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // GRAPHWIDGET_H

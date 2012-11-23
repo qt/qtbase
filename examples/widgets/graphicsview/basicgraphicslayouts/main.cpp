@@ -38,11 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
 
-int main(int argc, char **argv)
+#include <QApplication>
+#include <QGraphicsView>
+
+int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 

@@ -45,11 +45,8 @@
 #include "ui_form.h"
 
 QT_BEGIN_NAMESPACE
-
 class QState;
 class QStateMachine;
-class Ui_Form;
-
 QT_END_NAMESPACE
 
 //! [0]
@@ -63,7 +60,7 @@ protected:
     void resizeEvent(QResizeEvent *event);
 
 private:
-    Ui_Form form;
+    Ui::Form form;
 };
 //! [0]
 

@@ -42,12 +42,12 @@
 #include "embeddeddialog.h"
 #include "ui_embeddeddialog.h"
 
-#include <QtWidgets>
+#include <QStyleFactory>
 
 EmbeddedDialog::EmbeddedDialog(QWidget *parent)
     : QDialog(parent)
+    , ui(new Ui::EmbeddedDialog)
 {
-    ui = new Ui_embeddedDialog;
     ui->setupUi(this);
     ui->layoutDirection->setCurrentIndex(layoutDirection() != Qt::LeftToRight);
 

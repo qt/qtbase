@@ -38,10 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/qgraphicswidget.h>
+#include <QGraphicsWidget>
 
-class Window : public QGraphicsWidget {
+class Window : public QGraphicsWidget
+{
     Q_OBJECT
+
 public:
     Window();
 };

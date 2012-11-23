@@ -42,8 +42,8 @@
 #ifndef CHIP_H
 #define CHIP_H
 
-#include <QtGui/QColor>
-#include <QtWidgets/QGraphicsItem>
+#include <QColor>
+#include <QGraphicsItem>
 
 class Chip : public QGraphicsItem
 {
@@ -60,9 +60,10 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
 private:
-    int x, y;
+    int x;
+    int y;
     QColor color;
     QVector<QPointF> stuff;
 };
 
-#endif
+#endif // CHIP_H

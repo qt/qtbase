@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
+#include "chip.h"
 #include "mainwindow.h"
 #include "view.h"
-#include "chip.h"
 
-#include <QtWidgets>
+#include <QHBoxLayout>
+#include <QSplitter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)

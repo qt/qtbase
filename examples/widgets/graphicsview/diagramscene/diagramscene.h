@@ -41,9 +41,10 @@
 #ifndef DIAGRAMSCENE_H
 #define DIAGRAMSCENE_H
 
-#include <QGraphicsScene>
 #include "diagramitem.h"
 #include "diagramtextitem.h"
+
+#include <QGraphicsScene>
 
 QT_BEGIN_NAMESPACE
 class QGraphicsSceneMouseEvent;
@@ -64,14 +65,10 @@ public:
     enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
     explicit DiagramScene(QMenu *itemMenu, QObject *parent = 0);
-    QFont font() const
-        { return myFont; }
-    QColor textColor() const
-        { return myTextColor; }
-    QColor itemColor() const
-        { return myItemColor; }
-    QColor lineColor() const
-        { return myLineColor; }
+    QFont font() const { return myFont; }
+    QColor textColor() const { return myTextColor; }
+    QColor itemColor() const { return myItemColor; }
+    QColor lineColor() const { return myLineColor; }
     void setLineColor(const QColor &color);
     void setTextColor(const QColor &color);
     void setItemColor(const QColor &color);
@@ -109,4 +106,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // DIAGRAMSCENE_H

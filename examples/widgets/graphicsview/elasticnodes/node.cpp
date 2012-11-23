@@ -38,14 +38,14 @@
 **
 ****************************************************************************/
 
+#include "edge.h"
+#include "node.h"
+#include "graphwidget.h"
+
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStyleOption>
-
-#include "edge.h"
-#include "node.h"
-#include "graphwidget.h"
 
 //! [0]
 Node::Node(GraphWidget *graphWidget)
@@ -142,8 +142,7 @@ bool Node::advance()
 QRectF Node::boundingRect() const
 {
     qreal adjust = 2;
-    return QRectF( -10 - adjust, -10 - adjust,
-                  23 + adjust, 23 + adjust);
+    return QRectF( -10 - adjust, -10 - adjust, 23 + adjust, 23 + adjust);
 }
 //! [8]
 

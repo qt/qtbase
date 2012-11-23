@@ -40,7 +40,9 @@
 
 #ifndef LAYOUTITEM_H
 #define LAYOUTITEM_H
-#include <QtWidgets>
+
+#include <QGraphicsLayoutItem>
+#include <QGraphicsItem>
 
 //! [0]
 class LayoutItem : public QGraphicsLayoutItem, public QGraphicsItem
@@ -54,12 +56,11 @@ public:
 
     // Inherited from QGraphicsItem
     QRectF boundingRect() const;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-        QWidget *widget = 0);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 private:
     QPixmap *m_pix;
 };
 //! [0]
 
-#endif
+#endif // LAYOUTITEM_H

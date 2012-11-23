@@ -82,4 +82,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // NODE_H

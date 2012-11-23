@@ -38,10 +38,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "diagramscene.h"
 #include "arrow.h"
+
+#include <QTextCursor>
+#include <QGraphicsSceneMouseEvent>
 
 //! [0]
 DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
@@ -63,8 +64,7 @@ void DiagramScene::setLineColor(const QColor &color)
 {
     myLineColor = color;
     if (isItemChange(Arrow::Type)) {
-        Arrow *item =
-            qgraphicsitem_cast<Arrow *>(selectedItems().first());
+        Arrow *item = qgraphicsitem_cast<Arrow *>(selectedItems().first());
         item->setColor(myLineColor);
         update();
     }
@@ -76,8 +76,7 @@ void DiagramScene::setTextColor(const QColor &color)
 {
     myTextColor = color;
     if (isItemChange(DiagramTextItem::Type)) {
-        DiagramTextItem *item =
-            qgraphicsitem_cast<DiagramTextItem *>(selectedItems().first());
+        DiagramTextItem *item = qgraphicsitem_cast<DiagramTextItem *>(selectedItems().first());
         item->setDefaultTextColor(myTextColor);
     }
 }
@@ -88,8 +87,7 @@ void DiagramScene::setItemColor(const QColor &color)
 {
     myItemColor = color;
     if (isItemChange(DiagramItem::Type)) {
-        DiagramItem *item =
-            qgraphicsitem_cast<DiagramItem *>(selectedItems().first());
+        DiagramItem *item = qgraphicsitem_cast<DiagramItem *>(selectedItems().first());
         item->setBrush(myItemColor);
     }
 }
@@ -101,8 +99,7 @@ void DiagramScene::setFont(const QFont &font)
     myFont = font;
 
     if (isItemChange(DiagramTextItem::Type)) {
-        QGraphicsTextItem *item =
-            qgraphicsitem_cast<DiagramTextItem *>(selectedItems().first());
+        QGraphicsTextItem *item = qgraphicsitem_cast<DiagramTextItem *>(selectedItems().first());
         //At this point the selection can change so the first selected item might not be a DiagramTextItem
         if (item)
             item->setFont(myFont);
@@ -209,10 +206,8 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
             startItems.first()->type() == DiagramItem::Type &&
             endItems.first()->type() == DiagramItem::Type &&
             startItems.first() != endItems.first()) {
-            DiagramItem *startItem =
-                qgraphicsitem_cast<DiagramItem *>(startItems.first());
-            DiagramItem *endItem =
-                qgraphicsitem_cast<DiagramItem *>(endItems.first());
+            DiagramItem *startItem = qgraphicsitem_cast<DiagramItem *>(startItems.first());
+            DiagramItem *endItem = qgraphicsitem_cast<DiagramItem *>(endItems.first());
             Arrow *arrow = new Arrow(startItem, endItem);
             arrow->setColor(myLineColor);
             startItem->addArrow(arrow);

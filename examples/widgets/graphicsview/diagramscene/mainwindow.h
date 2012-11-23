@@ -41,9 +41,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-
 #include "diagramitem.h"
+
+#include <QMainWindow>
 
 class DiagramScene;
 
@@ -147,4 +147,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // MAINWINDOW_H

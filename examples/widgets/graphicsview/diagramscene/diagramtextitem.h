@@ -61,8 +61,7 @@ public:
 
     DiagramTextItem(QGraphicsItem *parent = 0);
 
-    int type() const
-        { return Type; }
+    int type() const { return Type; }
 
 signals:
     void lostFocus(DiagramTextItem *item);
@@ -75,4 +74,4 @@ protected:
 };
 //! [0]
 
-#endif
+#endif // DIAGRAMTEXTITEM_H

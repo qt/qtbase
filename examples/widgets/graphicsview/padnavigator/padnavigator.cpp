@@ -42,9 +42,8 @@
 #include "padnavigator.h"
 #include "splashitem.h"
 
-#include <QtWidgets/QtWidgets>
 #ifndef QT_NO_OPENGL
-#include <QtOpenGL/QtOpenGL>
+#include <QtOpenGL>
 #endif
 
 //! [0]
@@ -90,8 +89,7 @@ PadNavigator::PadNavigator(const QSize &size, QWidget *parent)
 
 //! [4]
     // Selection item
-    RoundRectItem *selectionItem = new RoundRectItem(QRectF(-60, -60, 120, 120),
-                                                     Qt::gray, pad);
+    RoundRectItem *selectionItem = new RoundRectItem(QRectF(-60, -60, 120, 120), Qt::gray, pad);
     selectionItem->setZValue(0.5);
 //! [4]
 
@@ -288,7 +286,9 @@ PadNavigator::PadNavigator(const QSize &size, QWidget *parent)
     setMinimumSize(50, 50);
     setViewportUpdateMode(FullViewportUpdate);
     setCacheMode(CacheBackground);
-    setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
+    setRenderHints(QPainter::Antialiasing
+                   | QPainter::SmoothPixmapTransform
+                   | QPainter::TextAntialiasing);
 #ifndef QT_NO_OPENGL
     setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
 #endif

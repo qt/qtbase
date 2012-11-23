@@ -40,6 +40,10 @@
 
 #include "layoutitem.h"
 
+#include <QGradient>
+#include <QGraphicsLinearLayout>
+#include <QPainter>
+
 //! [0]
 LayoutItem::LayoutItem(QGraphicsItem *parent/* = 0*/)
     : QGraphicsLayoutItem(), QGraphicsItem(parent)
@@ -71,7 +75,7 @@ void LayoutItem::paint(QPainter *painter,
     // paint a background rect (with gradient)
     QLinearGradient gradient(frame.topLeft(), frame.topLeft() + QPointF(200,200));
     stops << QGradientStop(0.0, QColor(60, 60,  60));
-    stops << QGradientStop(frame.height()/2/frame.height(), QColor(102, 176, 54));
+    stops << QGradientStop(frame.height() / 2 / frame.height(), QColor(102, 176, 54));
 
     //stops << QGradientStop(((frame.height() + h)/2 )/frame.height(), QColor(157, 195,  55));
     stops << QGradientStop(1.0, QColor(215, 215, 215));
@@ -80,9 +84,9 @@ void LayoutItem::paint(QPainter *painter,
     painter->drawRoundedRect(frame, 10.0, 10.0);
 
     // paint a rect around the pixmap (with gradient)
-    QPointF pixpos = frame.center() - (QPointF(w, h)/2);
+    QPointF pixpos = frame.center() - (QPointF(w, h) / 2);
     QRectF innerFrame(pixpos, QSizeF(w, h));
-    innerFrame.adjust(-4, -4, +4, +4);
+    innerFrame.adjust(-4, -4, 4, 4);
     gradient.setStart(innerFrame.topLeft());
     gradient.setFinalStop(innerFrame.bottomRight());
     stops.clear();

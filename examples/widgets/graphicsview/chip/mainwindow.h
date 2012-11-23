@@ -42,13 +42,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtWidgets/qwidget.h>
+#include <QWidget>
 
-QT_FORWARD_DECLARE_CLASS(QGraphicsScene)
-QT_FORWARD_DECLARE_CLASS(QGraphicsView)
-QT_FORWARD_DECLARE_CLASS(QLabel)
-QT_FORWARD_DECLARE_CLASS(QSlider)
-QT_FORWARD_DECLARE_CLASS(QSplitter)
+QT_BEGIN_NAMESPACE
+class QGraphicsScene;
+class QSplitter;
+QT_END_NAMESPACE
 
 class MainWindow : public QWidget
 {
@@ -65,4 +64,4 @@ private:
     QSplitter *h2Splitter;
 };
 
-#endif
+#endif // MAINWINDOW_H

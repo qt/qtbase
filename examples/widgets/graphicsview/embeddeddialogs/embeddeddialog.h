@@ -42,13 +42,18 @@
 #ifndef EMBEDDEDDIALOG_H
 #define EMBEDDEDDIALOG_H
 
-#include <QtWidgets/qdialog.h>
+#include <QDialog>
 
-QT_FORWARD_DECLARE_CLASS(Ui_embeddedDialog);
+QT_BEGIN_NAMESPACE
+namespace Ui {
+class EmbeddedDialog;
+}
+QT_END_NAMESPACE
 
 class EmbeddedDialog : public QDialog
 {
     Q_OBJECT
+
 public:
     EmbeddedDialog(QWidget *parent = 0);
     ~EmbeddedDialog();
@@ -60,7 +65,7 @@ private slots:
     void styleChanged(const QString &styleName);
 
 private:
-    Ui_embeddedDialog *ui;
+    Ui::EmbeddedDialog *ui;
 };
 
-#endif
+#endif // EMBEDDEDDIALOG_H

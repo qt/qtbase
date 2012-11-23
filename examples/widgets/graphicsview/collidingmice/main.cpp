@@ -38,11 +38,11 @@
 **
 ****************************************************************************/
 
-#include "mouse.h"
-
 #include <QtWidgets>
 
 #include <math.h>
+
+#include "mouse.h"
 
 static const int MouseCount = 7;
 
@@ -50,7 +50,7 @@ static const int MouseCount = 7;
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+    qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
 //! [0]
 
 //! [1]

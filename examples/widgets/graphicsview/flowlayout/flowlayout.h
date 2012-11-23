@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/qgraphicslayout.h>
+#include <QGraphicsLayout>
 
 class FlowLayout : public QGraphicsLayout
 {

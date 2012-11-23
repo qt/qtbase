@@ -45,7 +45,10 @@ class Widget : public QGraphicsWidget
 public:
     Widget(const QColor &color, const QColor &textColor, const QString &caption,
            QGraphicsItem *parent = 0)
-        : QGraphicsWidget(parent), caption(caption), color(color), textColor(textColor)
+        : QGraphicsWidget(parent)
+        , caption(caption)
+        , color(color)
+        , textColor(textColor)
     {
     }
 

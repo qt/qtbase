@@ -67,19 +67,15 @@ public:
     enum { Type = UserType + 15 };
     enum DiagramType { Step, Conditional, StartEnd, Io };
 
-    DiagramItem(DiagramType diagramType, QMenu *contextMenu,
-        QGraphicsItem *parent = 0);
+    DiagramItem(DiagramType diagramType, QMenu *contextMenu, QGraphicsItem *parent = 0);
 
     void removeArrow(Arrow *arrow);
     void removeArrows();
-    DiagramType diagramType() const
-        { return myDiagramType; }
-    QPolygonF polygon() const
-        { return myPolygon; }
+    DiagramType diagramType() const { return myDiagramType; }
+    QPolygonF polygon() const { return myPolygon; }
     void addArrow(Arrow *arrow);
     QPixmap image() const;
-    int type() const
-        { return Type;}
+    int type() const { return Type;}
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
@@ -93,4 +89,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // DIAGRAMITEM_H

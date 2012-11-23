@@ -38,9 +38,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "graphwidget.h"
+
+#include <QApplication>
+#include <QTime>
+#include <QMainWindow>
 
 int main(int argc, char **argv)
 {

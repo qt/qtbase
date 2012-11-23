@@ -38,10 +38,13 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "diagramitem.h"
 #include "arrow.h"
+
+#include <QGraphicsScene>
+#include <QGraphicsSceneContextMenuEvent>
+#include <QMenu>
+#include <QPainter>
 
 //! [0]
 DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
@@ -138,8 +141,7 @@ void DiagramItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 //! [5]
 
 //! [6]
-QVariant DiagramItem::itemChange(GraphicsItemChange change,
-                     const QVariant &value)
+QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == QGraphicsItem::ItemPositionChange) {
         foreach (Arrow *arrow, arrows) {

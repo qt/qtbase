@@ -38,23 +38,24 @@
 **
 ****************************************************************************/
 
+#include <QApplication>
 #include <QLabel>
 #include <QPainter>
 #include <QPushButton>
-#include <QApplication>
 
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <QGraphicsWidget>
-#include <QGraphicsProxyWidget>
 #include <QGraphicsAnchorLayout>
+#include <QGraphicsProxyWidget>
+#include <QGraphicsScene>
 #include <QGraphicsSceneResizeEvent>
+#include <QGraphicsView>
+#include <QGraphicsWidget>
 
 
 class GraphicsView : public QGraphicsView
 {
 public:
-    GraphicsView(QGraphicsScene *scene, QGraphicsWidget *widget) : QGraphicsView(scene), w(widget)
+    GraphicsView(QGraphicsScene *scene, QGraphicsWidget *widget)
+        : QGraphicsView(scene), w(widget)
     {
     }
 
@@ -70,7 +71,8 @@ class PixmapWidget : public QGraphicsLayoutItem
 {
 
 public:
-    PixmapWidget(const QPixmap &pix) : QGraphicsLayoutItem()
+    PixmapWidget(const QPixmap &pix)
+        : QGraphicsLayoutItem()
     {
         original = new QGraphicsPixmapItem(pix);
         setGraphicsItem(original);
@@ -91,7 +93,8 @@ public:
 
     void setGeometry (const QRectF &rect)
     {
-        original->setTransform(QTransform::fromScale(rect.width() / r.width(), rect.height() / r.height()), true);
+        original->setTransform(QTransform::fromScale(rect.width() / r.width(),
+                                                     rect.height() / r.height()), true);
         original->setPos(rect.x(), rect.y());
         r = rect;
     }
@@ -114,7 +117,7 @@ protected:
             default:
                 break;
         }
-         return sh;
+        return sh;
     }
 
 private:
@@ -128,7 +131,10 @@ class PlaceWidget : public QGraphicsWidget
     Q_OBJECT
 
 public:
-    PlaceWidget(const QPixmap &pix) : QGraphicsWidget(), original(pix), scaled(pix)
+    PlaceWidget(const QPixmap &pix)
+        : QGraphicsWidget()
+        , original(pix)
+        , scaled(pix)
     {
     }
 
@@ -183,7 +189,7 @@ private:
 };
 
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(weatheranchorlayout);
 
@@ -219,51 +225,51 @@ int main(int argc, char **argv)
     sunnyWeather->setZValue(9999);
 
     // start anchor layout
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
-    l->setSpacing(0);
+    QGraphicsAnchorLayout *layout = new QGraphicsAnchorLayout;
+    layout->setSpacing(0);
 
     // setup the main widget
-    QGraphicsWidget *w = new QGraphicsWidget(0, Qt::Window);
+    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
     QPalette p;
     p.setColor(QPalette::Window, Qt::black);
-    w->setPalette(p);
-    w->setPos(20, 20);
-    w->setLayout(l);
+    widget->setPalette(p);
+    widget->setPos(20, 20);
+    widget->setLayout(layout);
 
     // vertical anchors
-    QGraphicsAnchor *anchor = l->addAnchor(title, Qt::AnchorTop, l, Qt::AnchorTop);
-    anchor = l->addAnchor(place, Qt::AnchorTop, title, Qt::AnchorBottom);
+    QGraphicsAnchor *anchor = layout->addAnchor(title, Qt::AnchorTop, layout, Qt::AnchorTop);
+    anchor = layout->addAnchor(place, Qt::AnchorTop, title, Qt::AnchorBottom);
     anchor->setSpacing(12);
-    anchor = l->addAnchor(place, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    anchor = layout->addAnchor(place, Qt::AnchorBottom, layout, Qt::AnchorBottom);
     anchor->setSpacing(12);
 
-    anchor = l->addAnchor(sunnyWeather, Qt::AnchorTop, title, Qt::AnchorTop);
-    anchor = l->addAnchor(sunnyWeather, Qt::AnchorBottom, l, Qt::AnchorVerticalCenter);
+    anchor = layout->addAnchor(sunnyWeather, Qt::AnchorTop, title, Qt::AnchorTop);
+    anchor = layout->addAnchor(sunnyWeather, Qt::AnchorBottom, layout, Qt::AnchorVerticalCenter);
 
-    anchor = l->addAnchor(tabbar, Qt::AnchorTop, title, Qt::AnchorBottom);
+    anchor = layout->addAnchor(tabbar, Qt::AnchorTop, title, Qt::AnchorBottom);
     anchor->setSpacing(5);
-    anchor = l->addAnchor(details, Qt::AnchorTop, tabbar, Qt::AnchorBottom);
+    anchor = layout->addAnchor(details, Qt::AnchorTop, tabbar, Qt::AnchorBottom);
     anchor->setSpacing(2);
-    anchor = l->addAnchor(details, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    anchor = layout->addAnchor(details, Qt::AnchorBottom, layout, Qt::AnchorBottom);
     anchor->setSpacing(12);
 
     // horizontal anchors
-    anchor = l->addAnchor(l, Qt::AnchorLeft, title, Qt::AnchorLeft);
-    anchor = l->addAnchor(title, Qt::AnchorRight, l, Qt::AnchorRight);
+    anchor = layout->addAnchor(layout, Qt::AnchorLeft, title, Qt::AnchorLeft);
+    anchor = layout->addAnchor(title, Qt::AnchorRight, layout, Qt::AnchorRight);
 
-    anchor = l->addAnchor(place, Qt::AnchorLeft, l, Qt::AnchorLeft);
+    anchor = layout->addAnchor(place, Qt::AnchorLeft, layout, Qt::AnchorLeft);
     anchor->setSpacing(15);
-    anchor = l->addAnchor(place, Qt::AnchorRight, details, Qt::AnchorLeft);
+    anchor = layout->addAnchor(place, Qt::AnchorRight, details, Qt::AnchorLeft);
     anchor->setSpacing(35);
 
-    anchor = l->addAnchor(sunnyWeather, Qt::AnchorLeft, place, Qt::AnchorHorizontalCenter);
-    anchor = l->addAnchor(sunnyWeather, Qt::AnchorRight, l, Qt::AnchorHorizontalCenter);
+    anchor = layout->addAnchor(sunnyWeather, Qt::AnchorLeft, place, Qt::AnchorHorizontalCenter);
+    anchor = layout->addAnchor(sunnyWeather, Qt::AnchorRight, layout, Qt::AnchorHorizontalCenter);
 
-    anchor = l->addAnchor(tabbar, Qt::AnchorHorizontalCenter, details, Qt::AnchorHorizontalCenter);
-    anchor = l->addAnchor(details, Qt::AnchorRight, l, Qt::AnchorRight);
+    anchor = layout->addAnchor(tabbar, Qt::AnchorHorizontalCenter, details, Qt::AnchorHorizontalCenter);
+    anchor = layout->addAnchor(details, Qt::AnchorRight, layout, Qt::AnchorRight);
 
     // QGV setup
-    scene.addItem(w);
+    scene.addItem(widget);
     scene.setBackgroundBrush(Qt::white);
     QGraphicsView *view = new QGraphicsView(&scene);
     view->show();

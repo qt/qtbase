@@ -38,17 +38,18 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/qgraphicsproxywidget.h>
-#include <QtWidgets/qlabel.h>
 #include "flowlayout.h"
 #include "window.h"
+
+#include <QGraphicsProxyWidget>
+#include <QLabel>
 
 Window::Window()
 : QGraphicsWidget(0, Qt::Window)
 {
     FlowLayout *lay = new FlowLayout;
     QLatin1String wiseWords("I am not bothered by the fact that I am unknown."
-    " I am bothered when I do not know others. (Confucius)");
+                            " I am bothered when I do not know others. (Confucius)");
     QString sentence(wiseWords);
     QStringList words = sentence.split(QLatin1Char(' '), QString::SkipEmptyParts);
     for (int i = 0; i < words.count(); ++i) {

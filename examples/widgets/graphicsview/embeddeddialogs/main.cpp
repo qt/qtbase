@@ -42,7 +42,9 @@
 #include "customproxy.h"
 #include "embeddeddialog.h"
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 
 int main(int argc, char *argv[])
 {

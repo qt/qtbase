@@ -41,7 +41,9 @@
 
 #include "customproxy.h"
 
-#include <QtWidgets>
+#include <QStyleOptionGraphicsItem>
+#include <QPainter>
+#include <QGraphicsScene>
 
 CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
     : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(0)
@@ -95,13 +97,16 @@ void CustomProxy::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void CustomProxy::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsProxyWidget::hoverLeaveEvent(event);
-    if (!popupShown && (timeLine->direction() != QTimeLine::Backward || timeLine->currentValue() != 0))
+    if (!popupShown
+            && (timeLine->direction() != QTimeLine::Backward || timeLine->currentValue() != 0)) {
         zoomOut();
+    }
 }
 
 bool CustomProxy::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 {
-    if (watched->isWindow() && (event->type() == QEvent::UngrabMouse || event->type() == QEvent::GrabMouse)) {
+    if (watched->isWindow()
+            && (event->type() == QEvent::UngrabMouse || event->type() == QEvent::GrabMouse)) {
         popupShown = watched->isVisible();
         if (!popupShown && !isUnderMouse())
             zoomOut();
@@ -142,10 +147,10 @@ void CustomProxy::updateStep(qreal step)
 void CustomProxy::stateChanged(QTimeLine::State state)
 {
     if (state == QTimeLine::Running) {
-	if (timeLine->direction() == QTimeLine::Forward)
+        if (timeLine->direction() == QTimeLine::Forward)
             setCacheMode(ItemCoordinateCache);
     } else if (state == QTimeLine::NotRunning) {
-	if (timeLine->direction() == QTimeLine::Backward)
+        if (timeLine->direction() == QTimeLine::Backward)
             setCacheMode(DeviceCoordinateCache);
     }
 }

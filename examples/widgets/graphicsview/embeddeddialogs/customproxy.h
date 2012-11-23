@@ -42,12 +42,13 @@
 #ifndef CUSTOMPROXY_H
 #define CUSTOMPROXY_H
 
-#include <QtCore/qtimeline.h>
-#include <QtWidgets/qgraphicsproxywidget.h>
+#include <QTimeLine>
+#include <QGraphicsProxyWidget>
 
 class CustomProxy : public QGraphicsProxyWidget
 {
     Q_OBJECT
+
 public:
     explicit CustomProxy(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
 
@@ -73,4 +74,4 @@ private:
     QGraphicsItem *currentPopup;
 };
 
-#endif
+#endif // CUSTOMPROXY_H

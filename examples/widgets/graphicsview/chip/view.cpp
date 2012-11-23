@@ -41,7 +41,6 @@
 
 #include "view.h"
 
-#include <QtWidgets>
 #ifndef QT_NO_PRINTER
 #include <QPrinter>
 #include <QPrintDialog>
@@ -178,8 +177,10 @@ View::View(const QString &name, QWidget *parent)
     connect(resetButton, SIGNAL(clicked()), this, SLOT(resetView()));
     connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setupMatrix()));
     connect(rotateSlider, SIGNAL(valueChanged(int)), this, SLOT(setupMatrix()));
-    connect(graphicsView->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(setResetButtonEnabled()));
-    connect(graphicsView->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(setResetButtonEnabled()));
+    connect(graphicsView->verticalScrollBar(), SIGNAL(valueChanged(int)),
+            this, SLOT(setResetButtonEnabled()));
+    connect(graphicsView->horizontalScrollBar(), SIGNAL(valueChanged(int)),
+            this, SLOT(setResetButtonEnabled()));
     connect(selectModeButton, SIGNAL(toggled(bool)), this, SLOT(togglePointerMode()));
     connect(dragModeButton, SIGNAL(toggled(bool)), this, SLOT(togglePointerMode()));
     connect(antialiasButton, SIGNAL(toggled(bool)), this, SLOT(toggleAntialiasing()));
@@ -276,4 +277,3 @@ void View::rotateRight()
 {
     rotateSlider->setValue(rotateSlider->value() + 10);
 }
-
