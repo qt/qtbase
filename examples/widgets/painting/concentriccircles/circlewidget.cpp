@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "circlewidget.h"
+
+#include <QPainter>
 
 #include <stdlib.h>
 
@@ -111,13 +111,10 @@ void CircleWidget::paintEvent(QPaintEvent *)
         if (alpha > 0) {
             painter.setPen(QPen(QColor(0, diameter / 2, 127, alpha), 3));
 
-            if (floatBased) {
-                painter.drawEllipse(QRectF(-diameter / 2.0, -diameter / 2.0,
-                                           diameter, diameter));
-            } else {
-                painter.drawEllipse(QRect(-diameter / 2, -diameter / 2,
-                                          diameter, diameter));
-            }
+            if (floatBased)
+                painter.drawEllipse(QRectF(-diameter / 2.0, -diameter / 2.0, diameter, diameter));
+            else
+                painter.drawEllipse(QRect(-diameter / 2, -diameter / 2, diameter, diameter));
         }
     }
 }

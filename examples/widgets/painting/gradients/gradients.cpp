@@ -62,7 +62,6 @@ ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
 
     } else {
         setAttribute(Qt::WA_NoBackground);
-
     }
 
     QPolygonF points;
@@ -81,12 +80,10 @@ ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
     connect(m_hoverPoints, SIGNAL(pointsChanged(QPolygonF)), this, SIGNAL(colorsChanged()));
 }
 
-
 QPolygonF ShadeWidget::points() const
 {
     return m_hoverPoints->points();
 }
-
 
 uint ShadeWidget::colorAt(int x)
 {
@@ -104,7 +101,6 @@ uint ShadeWidget::colorAt(int x)
     return 0;
 }
 
-
 void ShadeWidget::setGradientStops(const QGradientStops &stops)
 {
     if (m_shade_type == ARGBShade) {
@@ -121,7 +117,6 @@ void ShadeWidget::setGradientStops(const QGradientStops &stops)
     }
 }
 
-
 void ShadeWidget::paintEvent(QPaintEvent *)
 {
     generateShade();
@@ -132,7 +127,6 @@ void ShadeWidget::paintEvent(QPaintEvent *)
     p.setPen(QColor(146, 146, 146));
     p.drawRect(0, 0, width() - 1, height() - 1);
 }
-
 
 void ShadeWidget::generateShade()
 {
@@ -167,10 +161,7 @@ void ShadeWidget::generateShade()
             p.fillRect(rect(), shade);
         }
     }
-
-
 }
-
 
 GradientEditor::GradientEditor(QWidget *parent)
     : QWidget(parent)
@@ -195,12 +186,10 @@ GradientEditor::GradientEditor(QWidget *parent)
     connect(m_alpha_shade, SIGNAL(colorsChanged()), this, SLOT(pointsUpdated()));
 }
 
-
 inline static bool x_less_than(const QPointF &p1, const QPointF &p2)
 {
     return p1.x() < p2.x();
 }
-
 
 void GradientEditor::pointsUpdated()
 {
@@ -217,9 +206,9 @@ void GradientEditor::pointsUpdated()
 
     qSort(points.begin(), points.end(), x_less_than);
 
-    for (int i=0; i<points.size(); ++i) {
+    for (int i = 0; i < points.size(); ++i) {
         qreal x = int(points.at(i).x());
-        if (i+1 < points.size() && x == points.at(i+1).x())
+        if (i + 1 < points.size() && x == points.at(i + 1).x())
             continue;
         QColor color((0x00ff0000 & m_red_shade->colorAt(int(x))) >> 16,
                      (0x0000ff00 & m_green_shade->colorAt(int(x))) >> 8,
@@ -236,7 +225,6 @@ void GradientEditor::pointsUpdated()
 
     emit gradientStopsChanged(stops);
 }
-
 
 static void set_shade_points(const QPolygonF &points, ShadeWidget *shade)
 {
@@ -255,7 +243,7 @@ void GradientEditor::setGradientStops(const QGradientStops &stops)
     qreal h_blue = m_blue_shade->height();
     qreal h_alpha = m_alpha_shade->height();
 
-    for (int i=0; i<stops.size(); ++i) {
+    for (int i = 0; i < stops.size(); ++i) {
         qreal pos = stops.at(i).first;
         QRgb color = stops.at(i).second.rgba();
         pts_red << QPointF(pos * m_red_shade->width(), h_red - qRed(color) * h_red / 255);
@@ -454,7 +442,6 @@ void GradientWidget::setDefault(int config)
     m_renderer->setGradientStops(stops);
 }
 
-
 GradientRenderer::GradientRenderer(QWidget *parent)
     : ArthurFrame(parent)
 {
@@ -476,7 +463,6 @@ void GradientRenderer::setGradientStops(const QGradientStops &stops)
     m_stops = stops;
     update();
 }
-
 
 void GradientRenderer::mousePressEvent(QMouseEvent *)
 {
@@ -503,7 +489,7 @@ void GradientRenderer::paint(QPainter *p)
         g = QConicalGradient(pts.at(0), angle);
     }
 
-    for (int i=0; i<m_stops.size(); ++i)
+    for (int i = 0; i < m_stops.size(); ++i)
         g.setColorAt(m_stops.at(i).first, m_stops.at(i).second);
 
     g.setSpread(m_spread);

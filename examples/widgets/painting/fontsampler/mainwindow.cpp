@@ -52,7 +52,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
 
-
     sampleSizes << 32 << 24 << 16 << 14 << 12 << 8 << 4 << 2 << 1;
     markedCount = 0;
     setupFontTree();
@@ -86,10 +85,8 @@ void MainWindow::setupFontTree()
             QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
             styleItem->setText(0, style);
             styleItem->setCheckState(0, Qt::Unchecked);
-            styleItem->setData(0, Qt::UserRole,
-                QVariant(database.weight(family, style)));
-            styleItem->setData(0, Qt::UserRole + 1,
-                QVariant(database.italic(family, style)));
+            styleItem->setData(0, Qt::UserRole, QVariant(database.weight(family, style)));
+            styleItem->setData(0, Qt::UserRole + 1, QVariant(database.italic(family, style)));
         }
     }
 }
@@ -177,13 +174,11 @@ void MainWindow::updateStyles(QTreeWidgetItem *item, int column)
         else
             --markedCount;
 
-        if (state == Qt::Checked &&
-            parent->checkState(0) == Qt::Unchecked) {
+        if (state == Qt::Checked && parent->checkState(0) == Qt::Unchecked) {
             // Mark parent items when child items are checked.
             parent->setCheckState(0, Qt::Checked);
 
-        } else if (state == Qt::Unchecked &&
-                   parent->checkState(0) == Qt::Checked) {
+        } else if (state == Qt::Unchecked && parent->checkState(0) == Qt::Checked) {
 
             bool marked = false;
             for (int row = 0; row < parent->childCount(); ++row) {
@@ -343,16 +338,16 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
     qreal scale = qMin(xScale, yScale);
 
     qreal remainingHeight = printer->pageRect().height()/scale - height;
-    qreal spaceHeight = (remainingHeight/4.0) / (items.count() + 1);
-    qreal interLineHeight = (remainingHeight/4.0) / (sampleSizes.count() * items.count());
+    qreal spaceHeight = (remainingHeight / 4.0) / (items.count() + 1);
+    qreal interLineHeight = (remainingHeight / 4.0) / (sampleSizes.count() * items.count());
 
     painter->save();
-    painter->translate(printer->pageRect().width()/2.0, printer->pageRect().height()/2.0);
+    painter->translate(printer->pageRect().width() / 2.0, printer->pageRect().height() / 2.0);
     painter->scale(scale, scale);
     painter->setBrush(QBrush(Qt::black));
 
-    qreal x = -width/2.0;
-    qreal y = -height/2.0 - remainingHeight/4.0 + spaceHeight;
+    qreal x = -width / 2.0;
+    qreal y = -height / 2.0 - remainingHeight / 4.0 + spaceHeight;
 
     foreach (QTreeWidgetItem *item, items) {
         QString style = item->text(0);
@@ -368,8 +363,7 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
                           font.family()).arg(style));
             y += rect.height();
             painter->setFont(font);
-            painter->drawText(QPointF(x, y),
-                             QString("%1 %2").arg(family).arg(style));
+            painter->drawText(QPointF(x, y), QString("%1 %2").arg(family).arg(style));
             y += interLineHeight;
         }
         y += spaceHeight;
@@ -377,4 +371,4 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 
     painter->restore();
 }
-#endif
+#endif // QT_NO_PRINTER

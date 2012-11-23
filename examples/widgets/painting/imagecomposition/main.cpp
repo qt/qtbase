@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-
 #include "imagecomposer.h"
+
+#include <QApplication>
 
 //! [0]
 int main(int argc, char *argv[])

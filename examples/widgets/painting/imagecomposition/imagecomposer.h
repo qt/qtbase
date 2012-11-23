@@ -84,4 +84,4 @@ private:
 };
 //! [1]
 
-#endif
+#endif // IMAGECOMPOSER_H

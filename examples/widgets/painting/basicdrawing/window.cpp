@@ -38,10 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "renderarea.h"
 #include "window.h"
+
+#include <QtWidgets>
 
 //! [0]
 const int IdRole = Qt::UserRole;

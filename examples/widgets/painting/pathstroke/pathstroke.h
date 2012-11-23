@@ -43,6 +43,7 @@
 #define PATHSTROKE_H
 
 #include "arthurwidgets.h"
+
 #include <QtWidgets>
 
 class PathStrokeRenderer : public ArthurFrame
@@ -126,6 +127,7 @@ private:
 class PathStrokeControls : public QWidget
 {
     Q_OBJECT
+
 public:
     PathStrokeControls(QWidget* parent, PathStrokeRenderer* renderer, bool smallScreen);
 
@@ -154,6 +156,7 @@ private slots:
 class PathStrokeWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     PathStrokeWidget(bool smallScreen);
     void setStyle ( QStyle * style );
@@ -165,7 +168,6 @@ private:
 private slots:
     void showControls();
     void hideControls();
-
 };
 
 #endif // PATHSTROKE_H

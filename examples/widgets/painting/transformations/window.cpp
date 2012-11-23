@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QComboBox>
+#include <QGridLayout>
 
 //! [0]
 Window::Window()
@@ -148,8 +149,7 @@ void Window::setupShapes()
     shapes.append(text);
     shapes.append(truck);
 
-    connect(shapeComboBox, SIGNAL(activated(int)),
-            this, SLOT(shapeSelected(int)));
+    connect(shapeComboBox, SIGNAL(activated(int)), this, SLOT(shapeSelected(int)));
 }
 //! [7]
 

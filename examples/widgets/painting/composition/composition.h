@@ -47,8 +47,10 @@
 #include <QPainter>
 #include <QEvent>
 
-QT_FORWARD_DECLARE_CLASS(QPushButton)
-QT_FORWARD_DECLARE_CLASS(QRadioButton)
+QT_BEGIN_NAMESPACE
+class QPushButton;
+class QRadioButton;
+QT_END_NAMESPACE
 
 #ifdef QT_OPENGL_SUPPORT
 #include <QtOpenGL>

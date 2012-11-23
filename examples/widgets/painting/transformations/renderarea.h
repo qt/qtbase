@@ -41,7 +41,6 @@
 #ifndef RENDERAREA_H
 #define RENDERAREA_H
 
-#include <QFont>
 #include <QList>
 #include <QPainterPath>
 #include <QRect>
@@ -87,4 +86,4 @@ private:
 };
 //! [2]
 
-#endif
+#endif // RENDERAREA_H

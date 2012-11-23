@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "imagecomposer.h"
+
+#include <QtWidgets>
 
 //! [0]
 static const QSize resultSize(200, 200);
@@ -91,10 +91,8 @@ ImageComposer::ImageComposer()
 
 //! [3]
     connect(sourceButton, SIGNAL(clicked()), this, SLOT(chooseSource()));
-    connect(operatorComboBox, SIGNAL(activated(int)),
-            this, SLOT(recalculateResult()));
-    connect(destinationButton, SIGNAL(clicked()),
-            this, SLOT(chooseDestination()));
+    connect(operatorComboBox, SIGNAL(activated(int)), this, SLOT(recalculateResult()));
+    connect(destinationButton, SIGNAL(clicked()), this, SLOT(chooseDestination()));
 //! [3]
 
 //! [4]
@@ -128,8 +126,7 @@ void ImageComposer::chooseSource()
 //! [7]
 void ImageComposer::chooseDestination()
 {
-    chooseImage(tr("Choose Destination Image"), &destinationImage,
-                destinationButton);
+    chooseImage(tr("Choose Destination Image"), &destinationImage, destinationButton);
 }
 //! [7]
 

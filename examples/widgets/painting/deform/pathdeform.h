@@ -44,9 +44,9 @@
 
 #include "arthurwidgets.h"
 
-#include <QPainterPath>
 #include <QBasicTimer>
 #include <QDateTime>
+#include <QPainterPath>
 
 class PathDeformRenderer : public ArthurFrame
 {
@@ -113,8 +113,8 @@ private:
     QPointF m_offset;
     QPointF m_direction;
     QPointF m_mousePress;
-    bool    m_mouseDrag;
-    bool    m_smallScreen;
+    bool m_mouseDrag;
+    bool m_smallScreen;
 };
 
 class PathDeformControls : public QWidget
@@ -129,9 +129,6 @@ private:
     PathDeformRenderer* m_renderer;
     void layoutForDesktop();
     void layoutForSmallScreen();
-private slots:
-    void emitQuitSignal();
-    void emitOkSignal();
 };
 
 class PathDeformWidget : public QWidget
@@ -139,7 +136,7 @@ class PathDeformWidget : public QWidget
     Q_OBJECT
 public:
     PathDeformWidget(QWidget *parent, bool smallScreen);
-    void setStyle ( QStyle * style );
+    void setStyle (QStyle * style );
 
 private:
     PathDeformRenderer *m_renderer;

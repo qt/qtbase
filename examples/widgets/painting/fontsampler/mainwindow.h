@@ -84,4 +84,4 @@ private:
     int markedCount;
 };
 
-#endif
+#endif // MAINWINDOW_H

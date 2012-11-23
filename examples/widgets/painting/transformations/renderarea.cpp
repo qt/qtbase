@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "renderarea.h"
+
+#include <QPainter>
+#include <QPaintEvent>
 
 //! [0]
 RenderArea::RenderArea(QWidget *parent)

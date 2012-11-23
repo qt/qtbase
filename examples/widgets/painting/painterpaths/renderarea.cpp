@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "renderarea.h"
+
+#include <QPainter>
 
 //! [0]
 RenderArea::RenderArea(const QPainterPath &path, QWidget *parent)
@@ -119,8 +119,7 @@ void RenderArea::paintEvent(QPaintEvent *)
     painter.translate(-50.0, -50.0);
 
 //! [9] //! [10]
-    painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap,
-                        Qt::RoundJoin));
+    painter.setPen(QPen(penColor, penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     QLinearGradient gradient(0, 0, 0, 100);
     gradient.setColorAt(0.0, fillColor1);
     gradient.setColorAt(1.0, fillColor2);

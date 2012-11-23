@@ -48,7 +48,10 @@
 #include <QPolygonF>
 
 class HoverPoints;
-QT_FORWARD_DECLARE_CLASS(QLineEdit)
+
+QT_BEGIN_NAMESPACE
+class QLineEdit;
+QT_END_NAMESPACE
 
 class XFormView : public ArthurFrame
 {

@@ -80,4 +80,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // RENDERAREA_H

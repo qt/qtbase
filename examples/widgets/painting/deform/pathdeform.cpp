@@ -53,7 +53,8 @@
 #include <QDesktopWidget>
 #include <qmath.h>
 
-PathDeformControls::PathDeformControls(QWidget *parent, PathDeformRenderer* renderer, bool smallScreen)
+PathDeformControls::PathDeformControls(QWidget *parent,
+                                       PathDeformRenderer* renderer, bool smallScreen)
       : QWidget(parent)
 {
     m_renderer = renderer;
@@ -63,7 +64,6 @@ PathDeformControls::PathDeformControls(QWidget *parent, PathDeformRenderer* rend
     else
         layoutForDesktop();
 }
-
 
 void PathDeformControls::layoutForDesktop()
 {
@@ -223,8 +223,8 @@ void PathDeformControls::layoutForSmallScreen()
     mainLayout->addWidget(okButton);
     mainLayout->addWidget(quitButton);
 
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(emitQuitSignal()));
-    connect(okButton, SIGNAL(clicked()), this, SLOT(emitOkSignal()));
+    connect(quitButton, SIGNAL(clicked()), this, SIGNAL(quitPressed()));
+    connect(okButton, SIGNAL(clicked()), this, SIGNAL(okPressed()));
     connect(radiusSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setRadius(int)));
     connect(deformSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setIntensity(int)));
     connect(fontSizeSlider, SIGNAL(valueChanged(int)), m_renderer, SLOT(setFontSize(int)));
@@ -243,14 +243,6 @@ void PathDeformControls::layoutForSmallScreen()
 
     m_renderer->setText(tr("Qt"));
 }
-
-
-void PathDeformControls::emitQuitSignal()
-{   emit quitPressed();  }
-
-void PathDeformControls::emitOkSignal()
-{   emit okPressed();   }
-
 
 PathDeformWidget::PathDeformWidget(QWidget *parent, bool smallScreen)
     : QWidget(parent)
@@ -293,14 +285,14 @@ void PathDeformWidget::hideControls()
 void PathDeformWidget::setStyle( QStyle * style )
 {
     QWidget::setStyle(style);
-    if (m_controls != 0)
-    {
-        m_controls->setStyle(style);
+    if (m_controls == 0)
+        return;
+
+    m_controls->setStyle(style);
         
-        QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
-        foreach (QWidget *w, widgets)
-            w->setStyle(style);
-    }
+    QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
+    foreach (QWidget *w, widgets)
+        w->setStyle(style);
 }
 
 static inline QRect circle_bounds(const QPointF &center, qreal radius, qreal compensation)
@@ -445,8 +437,6 @@ void PathDeformRenderer::timerEvent(QTimerEvent *e)
 
         m_pos += QPointF(dx, dy);
 
-
-
         if (m_pos.x() - m_radius < 0) {
             m_direction.setX(-m_direction.x());
             m_pos.setX(m_radius);
@@ -565,7 +555,6 @@ QPainterPath PathDeformRenderer::lensDeform(const QPainterPath &source, const QP
     return path;
 }
 
-
 void PathDeformRenderer::paint(QPainter *painter)
 {
     int pad_x = 5;
@@ -611,8 +600,6 @@ void PathDeformRenderer::paint(QPainter *painter)
     }
 }
 
-
-
 void PathDeformRenderer::setRadius(int radius)
 {
     qreal max = qMax(m_radius, (qreal)radius);
@@ -620,13 +607,12 @@ void PathDeformRenderer::setRadius(int radius)
     generateLensPixmap();
     if (!m_animated || m_radius < max) {
 #ifdef QT_OPENGL_SUPPORT
-        if (usesOpenGL()) {
+        if (usesOpenGL()){
             update();
-        } else
-#endif
-        {
-            update(circle_bounds(m_pos, max, m_fontSize));
+            return;
         }
+#endif
+        update(circle_bounds(m_pos, max, m_fontSize));
     }
 }
 
@@ -637,10 +623,9 @@ void PathDeformRenderer::setIntensity(int intensity)
 #ifdef QT_OPENGL_SUPPORT
         if (usesOpenGL()) {
             update();
-        } else
-#endif
-        {
-            update(circle_bounds(m_pos, m_radius, m_fontSize));
+            return;
         }
+#endif
+        update(circle_bounds(m_pos, m_radius, m_fontSize));
     }
 }

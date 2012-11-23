@@ -162,31 +162,31 @@ CompositionWidget::CompositionWidget(QWidget *parent)
 #endif
 
     QGridLayout *modesLayout = new QGridLayout(modesGroup);
-    modesLayout->addWidget(rbClear,             0,      0);
-    modesLayout->addWidget(rbSource,            1,      0);
-    modesLayout->addWidget(rbDest,              2,      0);
-    modesLayout->addWidget(rbSourceOver,        3,      0);
-    modesLayout->addWidget(rbDestOver,          4,      0);
-    modesLayout->addWidget(rbSourceIn,          5,      0);
-    modesLayout->addWidget(rbDestIn,            6,      0);
-    modesLayout->addWidget(rbSourceOut,         7,      0);
-    modesLayout->addWidget(rbDestOut,           8,      0);
-    modesLayout->addWidget(rbSourceAtop,        9,      0);
-    modesLayout->addWidget(rbDestAtop,         10,      0);
-    modesLayout->addWidget(rbXor,              11,      0);
+    modesLayout->addWidget(rbClear, 0, 0);
+    modesLayout->addWidget(rbSource, 1, 0);
+    modesLayout->addWidget(rbDest, 2, 0);
+    modesLayout->addWidget(rbSourceOver, 3, 0);
+    modesLayout->addWidget(rbDestOver, 4, 0);
+    modesLayout->addWidget(rbSourceIn, 5, 0);
+    modesLayout->addWidget(rbDestIn, 6, 0);
+    modesLayout->addWidget(rbSourceOut, 7, 0);
+    modesLayout->addWidget(rbDestOut, 8, 0);
+    modesLayout->addWidget(rbSourceAtop, 9, 0);
+    modesLayout->addWidget(rbDestAtop, 10, 0);
+    modesLayout->addWidget(rbXor, 11, 0);
 
-    modesLayout->addWidget(rbPlus,              0,      1);
-    modesLayout->addWidget(rbMultiply,          1,      1);
-    modesLayout->addWidget(rbScreen,            2,      1);
-    modesLayout->addWidget(rbOverlay,           3,      1);
-    modesLayout->addWidget(rbDarken,            4,      1);
-    modesLayout->addWidget(rbLighten,           5,      1);
-    modesLayout->addWidget(rbColorDodge,        6,      1);
-    modesLayout->addWidget(rbColorBurn,         7,      1);
-    modesLayout->addWidget(rbHardLight,         8,      1);
-    modesLayout->addWidget(rbSoftLight,         9,      1);
-    modesLayout->addWidget(rbDifference,       10,      1);
-    modesLayout->addWidget(rbExclusion,        11,      1);
+    modesLayout->addWidget(rbPlus, 0, 1);
+    modesLayout->addWidget(rbMultiply, 1, 1);
+    modesLayout->addWidget(rbScreen, 2, 1);
+    modesLayout->addWidget(rbOverlay, 3, 1);
+    modesLayout->addWidget(rbDarken, 4, 1);
+    modesLayout->addWidget(rbLighten, 5, 1);
+    modesLayout->addWidget(rbColorDodge, 6, 1);
+    modesLayout->addWidget(rbColorBurn, 7, 1);
+    modesLayout->addWidget(rbHardLight, 8, 1);
+    modesLayout->addWidget(rbSoftLight, 9, 1);
+    modesLayout->addWidget(rbDifference, 10, 1);
+    modesLayout->addWidget(rbExclusion, 11, 1);
 
 
     QVBoxLayout *circleColorLayout = new QVBoxLayout(circleColorGroup);
@@ -345,12 +345,10 @@ void CompositionRenderer::paint(QPainter *painter)
     if (usesOpenGL()) {
 
         int new_pbuf_size = m_pbuffer_size;
-        if (size().width() > m_pbuffer_size ||
-            size().height() > m_pbuffer_size)
+        if (size().width() > m_pbuffer_size || size().height() > m_pbuffer_size)
             new_pbuf_size *= 2;
 
-        if (size().width() < m_pbuffer_size/2 &&
-            size().height() < m_pbuffer_size/2)
+        if (size().width() < m_pbuffer_size/2 && size().height() < m_pbuffer_size/2)
             new_pbuf_size /= 2;
 
         if (!m_pbuffer || new_pbuf_size != m_pbuffer_size) {
@@ -488,7 +486,8 @@ void CompositionRenderer::mousePressEvent(QMouseEvent *e)
 
 void CompositionRenderer::mouseMoveEvent(QMouseEvent *e)
 {
-    if (m_current_object == Circle) setCirclePos(e->pos() + m_offset);
+    if (m_current_object == Circle)
+        setCirclePos(e->pos() + m_offset);
 }
 
 void CompositionRenderer::mouseReleaseEvent(QMouseEvent *)
@@ -513,10 +512,11 @@ void CompositionRenderer::setCirclePos(const QPointF &pos)
     m_circle_pos = pos;
     const QRect newRect = rectangle_around(m_circle_pos).toAlignedRect();
 #if defined(QT_OPENGL_SUPPORT) && !defined(QT_OPENGL_ES)
-    if (usesOpenGL())
+    if (usesOpenGL()) {
         update();
-    else
+        return;
+    }
 #endif
-        update(oldRect | newRect);
+    update(oldRect | newRect);
 }
 

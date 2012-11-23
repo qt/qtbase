@@ -38,12 +38,12 @@
 **
 ****************************************************************************/
 
+#include "renderarea.h"
+#include "window.h"
+
 #include <QtWidgets>
 
 #include <math.h>
-
-#include "renderarea.h"
-#include "window.h"
 
 //! [0]
 const float Pi = 3.14159f;
@@ -153,13 +153,11 @@ Window::Window()
 //! [12]
     fillColor1ComboBox = new QComboBox;
     populateWithColors(fillColor1ComboBox);
-    fillColor1ComboBox->setCurrentIndex(
-            fillColor1ComboBox->findText("mediumslateblue"));
+    fillColor1ComboBox->setCurrentIndex(fillColor1ComboBox->findText("mediumslateblue"));
 
     fillColor2ComboBox = new QComboBox;
     populateWithColors(fillColor2ComboBox);
-    fillColor2ComboBox->setCurrentIndex(
-            fillColor2ComboBox->findText("cornsilk"));
+    fillColor2ComboBox->setCurrentIndex(fillColor2ComboBox->findText("cornsilk"));
 
     fillGradientLabel = new QLabel(tr("&Fill Gradient:"));
     fillGradientLabel->setBuddy(fillColor1ComboBox);
@@ -175,8 +173,7 @@ Window::Window()
 
     penColorComboBox = new QComboBox;
     populateWithColors(penColorComboBox);
-    penColorComboBox->setCurrentIndex(
-            penColorComboBox->findText("darkslateblue"));
+    penColorComboBox->setCurrentIndex(penColorComboBox->findText("darkslateblue"));
 
     penColorLabel = new QLabel(tr("Pen &Color:"));
     penColorLabel->setBuddy(penColorComboBox);
@@ -191,20 +188,14 @@ Window::Window()
 //! [12]
 
 //! [16]
-    connect(fillRuleComboBox, SIGNAL(activated(int)),
-            this, SLOT(fillRuleChanged()));
-    connect(fillColor1ComboBox, SIGNAL(activated(int)),
-            this, SLOT(fillGradientChanged()));
-    connect(fillColor2ComboBox, SIGNAL(activated(int)),
-            this, SLOT(fillGradientChanged()));
-    connect(penColorComboBox, SIGNAL(activated(int)),
-            this, SLOT(penColorChanged()));
+    connect(fillRuleComboBox, SIGNAL(activated(int)), this, SLOT(fillRuleChanged()));
+    connect(fillColor1ComboBox, SIGNAL(activated(int)), this, SLOT(fillGradientChanged()));
+    connect(fillColor2ComboBox, SIGNAL(activated(int)), this, SLOT(fillGradientChanged()));
+    connect(penColorComboBox, SIGNAL(activated(int)), this, SLOT(penColorChanged()));
 
     for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++) {
-        connect(penWidthSpinBox, SIGNAL(valueChanged(int)),
-                *it, SLOT(setPenWidth(int)));
-        connect(rotationAngleSpinBox, SIGNAL(valueChanged(int)),
-                *it, SLOT(setRotationAngle(int)));
+        connect(penWidthSpinBox, SIGNAL(valueChanged(int)), *it, SLOT(setPenWidth(int)));
+        connect(rotationAngleSpinBox, SIGNAL(valueChanged(int)), *it, SLOT(setRotationAngle(int)));
     }
 
 //! [16] //! [17]
@@ -246,7 +237,7 @@ void Window::fillRuleChanged()
 {
     Qt::FillRule rule = (Qt::FillRule)currentItemData(fillRuleComboBox).toInt();
 
-    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++)
+    for (QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); ++it)
         (*it)->setFillRule(rule);
 }
 //! [19]
@@ -257,7 +248,7 @@ void Window::fillGradientChanged()
     QColor color1 = qvariant_cast<QColor>(currentItemData(fillColor1ComboBox));
     QColor color2 = qvariant_cast<QColor>(currentItemData(fillColor2ComboBox));
 
-    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++)
+    for (QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); ++it)
         (*it)->setFillGradient(color1, color2);
 }
 //! [20]
@@ -267,7 +258,7 @@ void Window::penColorChanged()
 {
     QColor color = qvariant_cast<QColor>(currentItemData(penColorComboBox));
 
-    for(QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); it++)
+    for (QList<RenderArea*>::iterator it = renderAreas.begin(); it != renderAreas.end(); ++it)
         (*it)->setPenColor(color);
 }
 //! [21]

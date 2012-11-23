@@ -38,10 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "circlewidget.h"
 #include "window.h"
+
+#include <QtWidgets>
 
 //! [0]
 Window::Window()

@@ -77,4 +77,4 @@ private:
 };
 //! [1]
 
-#endif
+#endif // RENDERAREA_H

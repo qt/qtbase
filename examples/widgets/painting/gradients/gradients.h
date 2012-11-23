@@ -44,7 +44,9 @@
 
 #include "arthurwidgets.h"
 
-#include <QtWidgets>
+QT_BEGIN_NAMESPACE
+class QRadioButton;
+QT_END_NAMESPACE
 
 class HoverPoints;
 
@@ -52,6 +54,7 @@ class HoverPoints;
 class ShadeWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     enum ShadeType {
         RedShade,
@@ -88,6 +91,7 @@ private:
 class GradientEditor : public QWidget
 {
     Q_OBJECT
+
 public:
     GradientEditor(QWidget *parent);
 
@@ -106,10 +110,10 @@ private:
     ShadeWidget *m_alpha_shade;
 };
 
-
 class GradientRenderer : public ArthurFrame
 {
     Q_OBJECT
+
 public:
     GradientRenderer(QWidget *parent);
     void paint(QPainter *p);
@@ -139,10 +143,10 @@ private:
     Qt::BrushStyle m_gradientType;
 };
 
-
 class GradientWidget : public QWidget
 {
     Q_OBJECT
+
 public:
     GradientWidget(QWidget *parent);
 

@@ -67,4 +67,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // WINDOW_H

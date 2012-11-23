@@ -70,4 +70,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // CIRCLEWIDGET_H
