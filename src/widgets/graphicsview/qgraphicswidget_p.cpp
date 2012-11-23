@@ -764,73 +764,59 @@ bool QGraphicsWidgetPrivate::hasDecoration() const
 void QGraphicsWidgetPrivate::fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *oldScene, QGraphicsScene *newScene)
 {
     Q_Q(QGraphicsWidget);
-
     Q_ASSERT(focusNext && focusPrev);
 
-    QGraphicsWidget *n = q;     //last one in 'new' list
-    QGraphicsWidget *o = 0;     //last one in 'old' list
-
-    QGraphicsWidget *w = focusNext;
-
-    QGraphicsWidget *firstOld = 0;
-    bool wasPreviousNew = true;
-
-    while (w != q) {
-        bool isCurrentNew = q->isAncestorOf(w);
-        if (isCurrentNew) {
-            if (!wasPreviousNew) {
-                n->d_func()->focusNext = w;
-                w->d_func()->focusPrev = n;
-            }
-            n = w;
-        } else /*if (!isCurrentNew)*/ {
-            if (wasPreviousNew) {
-                if (o) {
-                    o->d_func()->focusNext = w;
-                    w->d_func()->focusPrev = o;
-                } else {
-                    firstOld = w;
-                }
-            }
-            o = w;
-        }
-        w = w->d_func()->focusNext;
-        wasPreviousNew = isCurrentNew;
+    if (q_ptr->isPanel()) {
+        // panels are never a part of their parent's or ancestors' focus
+        // chains. so reparenting a panel is easy; there's nothing to
+        // do.
+        return;
     }
 
-    // repair the 'old' chain
-    if (firstOld) {
-        o->d_func()->focusNext = firstOld;
-        firstOld->d_func()->focusPrev = o;
+    // we're not a panel, so find the first widget in the focus chain
+    // (this), and the last (this, or the last widget that is still
+    // a descendent of this). also find the widgets that currently /
+    // before reparenting point to this widgets' focus chain.
+    QGraphicsWidget *focusFirst = q;
+    QGraphicsWidget *focusBefore = focusPrev;
+    QGraphicsWidget *focusLast = focusFirst;
+    QGraphicsWidget *focusAfter = focusNext;
+    do {
+        if (!q->isAncestorOf(focusAfter))
+            break;
+        focusLast = focusAfter;
+    } while ((focusAfter = focusAfter->d_func()->focusNext));
+
+    if (!parent && oldScene && oldScene != newScene && oldScene->d_func()->tabFocusFirst == q) {
+        // detach from old scene's top level focus chain.
+        oldScene->d_func()->tabFocusFirst = (focusAfter != q) ? focusAfter : 0;
     }
 
-    // update tabFocusFirst for oldScene if the item is going to be removed from oldScene
-    if (newParent)
-        newScene = newParent->scene();
+    // detach from current focus chain; skip this widget subtree.
+    focusBefore->d_func()->focusNext = focusAfter;
+    focusAfter->d_func()->focusPrev = focusBefore;
 
-    if (oldScene && newScene != oldScene)
-        oldScene->d_func()->tabFocusFirst = (firstOld && firstOld->scene() == oldScene) ? firstOld : 0;
+    if (newParent) {
+        // attach to new parent's focus chain as the last element
+        // in its chain.
+        QGraphicsWidget *newFocusFirst = newParent;
+        QGraphicsWidget *newFocusLast = newFocusFirst;
+        QGraphicsWidget *newFocusAfter = newFocusFirst->d_func()->focusNext;
+        do {
+            if (!newParent->isAncestorOf(newFocusAfter))
+                break;
+            newFocusLast = newFocusAfter;
+        } while ((newFocusAfter = newFocusAfter->d_func()->focusNext));
 
-    QGraphicsItem *topLevelItem = newParent ? newParent->topLevelItem() : 0;
-    QGraphicsWidget *topLevel = 0;
-    if (topLevelItem && topLevelItem->isWidget())
-        topLevel = static_cast<QGraphicsWidget *>(topLevelItem);
-
-    if (topLevel && newParent) {
-        QGraphicsWidget *last = topLevel->d_func()->focusPrev;
-        // link last with new chain
-        last->d_func()->focusNext = q;
-        focusPrev = last;
-
-        // link last in chain with
-        topLevel->d_func()->focusPrev = n;
-        n->d_func()->focusNext = topLevel;
+        newFocusLast->d_func()->focusNext = q;
+        focusLast->d_func()->focusNext = newFocusAfter;
+        newFocusAfter->d_func()->focusPrev = focusLast;
+        focusPrev = newFocusLast;
     } else {
-        // q is the start of the focus chain
-        n->d_func()->focusNext = q;
-        focusPrev = n;
+        // no new parent, so just link up our own prev->last widgets.
+        focusPrev = focusLast;
+        focusLast->d_func()->focusNext = q;
     }
-
 }
 
 void QGraphicsWidgetPrivate::setLayout_helper(QGraphicsLayout *l)

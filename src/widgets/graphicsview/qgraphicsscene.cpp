@@ -607,7 +607,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             q->removeItem(item->d_ptr->children.at(i));
     }
 
-    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
+    if (!item->d_ptr->inDestructor && !item->parentItem() && item->isWidget()) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
         widget->d_func()->fixFocusChainBeforeReparenting(0, oldScene, 0);
     }
@@ -2528,14 +2528,13 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
             // No first tab focus widget - make this the first tab focus
             // widget.
             d->tabFocusFirst = widget;
-        } else if (!widget->parentWidget()) {
+        } else if (!widget->parentWidget() && !widget->isPanel()) {
             // Adding a widget that is not part of a tab focus chain.
-            QGraphicsWidget *last = d->tabFocusFirst->d_func()->focusPrev;
-            QGraphicsWidget *lastNew = widget->d_func()->focusPrev;
-            last->d_func()->focusNext = widget;
-            widget->d_func()->focusPrev = last;
-            d->tabFocusFirst->d_func()->focusPrev = lastNew;
-            lastNew->d_func()->focusNext = d->tabFocusFirst;
+            QGraphicsWidget *myNewPrev = d->tabFocusFirst->d_func()->focusPrev;
+            myNewPrev->d_func()->focusNext = widget;
+            widget->d_func()->focusPrev->d_func()->focusNext = d->tabFocusFirst;
+            d->tabFocusFirst->d_func()->focusPrev = widget->d_func()->focusPrev;
+            widget->d_func()->focusPrev = myNewPrev;
         }
     }
 
@@ -5330,7 +5329,7 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
             return true;
         }
     }
-    if (!d->tabFocusFirst) {
+    if (!item && !d->tabFocusFirst) {
         // No widgets...
         return false;
     }
@@ -5342,8 +5341,10 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
     } else {
         QGraphicsWidget *test = static_cast<QGraphicsWidget *>(item);
         widget = next ? test->d_func()->focusNext : test->d_func()->focusPrev;
-        if ((next && widget == d->tabFocusFirst) || (!next && widget == d->tabFocusFirst->d_func()->focusPrev))
+        if (!widget->panel() && ((next && widget == d->tabFocusFirst) || (!next && widget == d->tabFocusFirst->d_func()->focusPrev))) {
+            // Tab out of the scene.
             return false;
+        }
     }
     QGraphicsWidget *widgetThatHadFocus = widget;
 

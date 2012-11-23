@@ -172,12 +172,12 @@ private slots:
     void initialShow2();
     void itemChangeEvents();
     void itemSendGeometryPosChangesDeactivated();
-
     void fontPropagatesResolveToChildren();
     void fontPropagatesResolveToGrandChildren();
     void fontPropagatesResolveInParentChange();
     void fontPropagatesResolveViaNonWidget();
     void fontPropagatesResolveFromScene();
+    void tabFocus();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -3301,6 +3301,107 @@ void tst_QGraphicsWidget::itemSendGeometryPosChangesDeactivated()
     item->setPos(QPointF(10, 10));
     QCOMPARE(item->pos(), QPointF(10, 10));
     QCOMPARE(item->geometry(), QRectF(10, 10, 60, 60));
+}
+
+class TabFocusWidget : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    TabFocusWidget(const QString &name, QGraphicsItem *parent = 0)
+        : QGraphicsWidget(parent)
+    { setFocusPolicy(Qt::TabFocus); setData(0, name); }
+};
+
+void verifyTabFocus(QGraphicsScene *scene, const QList<QGraphicsWidget *> &chain, bool wrapsAround)
+{
+    QKeyEvent tabEvent(QEvent::KeyPress, Qt::Key_Tab, 0);
+    QKeyEvent backtabEvent(QEvent::KeyPress, Qt::Key_Backtab, 0);
+
+    for (int i = 0; i < chain.size(); ++i)
+        chain.at(i)->clearFocus();
+
+    int n = chain.size() * (wrapsAround ? 3 : 1);
+    for (int i = 0; i < n; ++i)
+    {
+        if (i == 0)
+            chain.at(0)->setFocus();
+        else
+            qApp->sendEvent(scene, &tabEvent);
+        QVERIFY(chain.at(i % chain.size())->hasFocus());
+        QCOMPARE(scene->focusItem(), chain.at(i % chain.size()));
+    }
+    for (int i = n - 2; i >= 0; --i)
+    {
+        qApp->sendEvent(scene, &backtabEvent);
+        QVERIFY(chain.at(i % chain.size())->hasFocus());
+        QCOMPARE(scene->focusItem(), chain.at(i % chain.size()));
+    }
+}
+
+void tst_QGraphicsWidget::tabFocus()
+{
+    QGraphicsScene scene;
+    scene.setFocus();
+
+    QEvent activate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &activate);
+
+    TabFocusWidget *widget = new TabFocusWidget("1");
+    scene.addItem(widget);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget, false);
+
+    TabFocusWidget *widget2 = new TabFocusWidget("2");
+    scene.addItem(widget2);
+    scene.setFocusItem(0);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget << widget2, false);
+
+    TabFocusWidget *widget3 = new TabFocusWidget("3");
+    widget3->setFlag(QGraphicsItem::ItemIsPanel);
+    scene.addItem(widget3);
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)widget3);
+    scene.setActivePanel(0);
+    scene.setFocusItem(0);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget << widget2, false);
+
+    scene.setActivePanel(widget3);
+    widget3->setFocus();
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *)widget3);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3, true);
+
+    TabFocusWidget *widget4 = new TabFocusWidget("4");
+    widget4->setParentItem(widget3);
+    QVERIFY(widget3->hasFocus());
+    widget3->clearFocus();
+    QVERIFY(!widget3->focusItem());
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)widget3);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4, true);
+
+    QGraphicsWidget *widget5 = new QGraphicsWidget; widget5->setData(0, QLatin1String("5"));
+    widget5->setParentItem(widget3);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4, true);
+
+    widget5->setFocusPolicy(Qt::TabFocus);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget5, true);
+
+    TabFocusWidget *widget6 = new TabFocusWidget("6");
+    widget6->setParentItem(widget4);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget6 << widget5, true);
+
+    TabFocusWidget *widget7 = new TabFocusWidget("7", widget6);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget6 << widget7 << widget5, true);
+
+    TabFocusWidget *widget8 = new TabFocusWidget("8", widget6);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget6 << widget7 << widget8 << widget5, true);
+    widget6->setFlag(QGraphicsItem::ItemIsPanel);
+    widget6->setActive(true);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget6 << widget7 << widget8, true);
+    widget3->setActive(true);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget5, true);
+    widget6->setFlag(QGraphicsItem::ItemIsPanel, false);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget6 << widget7 << widget8 << widget5, true);
+    scene.removeItem(widget6);
+    verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3 << widget4 << widget5, true);
+    delete widget6;
 }
 
 void tst_QGraphicsWidget::QT_BUG_6544_tabFocusFirstUnsetWhenRemovingItems()
