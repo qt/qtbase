@@ -723,7 +723,7 @@ SeeAlso: ???
 Feature: STYLE_FUSION
 Description: Supports a modern platform independent widget style.
 Section: Styles
-Requires: STYLE_WINDOWS IMAGEFORMAT_XPM
+Requires: IMAGEFORMAT_XPM
 Name: QFusionStyle
 SeeAlso: ???
 
