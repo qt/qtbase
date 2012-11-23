@@ -1000,7 +1000,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     QByteDataBuffer pendingDownloadDataCopy = pendingDownloadData;
     pendingDownloadData.clear();
 
-    if (cacheEnabled && !cacheSaveDevice) {
+    if (cacheEnabled && isCachingAllowed() && !cacheSaveDevice) {
         initCacheSaveDevice();
     }
 
@@ -1170,7 +1170,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceive
     if (!q->isOpen())
         return;
 
-    if (cacheEnabled && bytesReceived == bytesTotal) {
+    if (cacheEnabled && isCachingAllowed() && bytesReceived == bytesTotal) {
         // Write everything in one go if we use a download buffer. might be more performant.
         initCacheSaveDevice();
         // need to check again if cache enabled and device exists
@@ -2025,6 +2025,11 @@ void QNetworkReplyHttpImplPrivate::setCachingEnabled(bool enable)
         cacheSaveDevice = 0;
         cacheEnabled = false;
     }
+}
+
+bool QNetworkReplyHttpImplPrivate::isCachingAllowed() const
+{
+    return operation == QNetworkAccessManager::GetOperation || operation == QNetworkAccessManager::HeadOperation;
 }
 
 void QNetworkReplyHttpImplPrivate::completeCacheSave()

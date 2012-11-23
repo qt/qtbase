@@ -214,6 +214,7 @@ public:
     void completeCacheSave();
     void setCachingEnabled(bool enable);
     bool isCachingEnabled() const;
+    bool isCachingAllowed() const;
     void initCacheSaveDevice();
     QIODevice *cacheLoadDevice;
     bool loadingFromCache;
