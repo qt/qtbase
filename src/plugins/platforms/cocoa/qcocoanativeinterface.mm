@@ -69,7 +69,8 @@ void *QCocoaNativeInterface::nativeResourceForContext(const QByteArray &resource
 {
     if (!context)
         return 0;
-
+    if (resourceString.toLower() == "nsopenglcontext")
+        return nsOpenGLContextForContext(context);
     if (resourceString.toLower() == "cglcontextobj")
         return cglContextForContext(context);
 
@@ -122,12 +123,18 @@ void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
 
 void *QCocoaNativeInterface::cglContextForContext(QOpenGLContext* context)
 {
+    NSOpenGLContext *nsOpenGLContext = static_cast<NSOpenGLContext*>(nsOpenGLContextForContext(context));
+    if (nsOpenGLContext)
+        return [nsOpenGLContext CGLContextObj];
+    return 0;
+}
+
+void *QCocoaNativeInterface::nsOpenGLContextForContext(QOpenGLContext* context)
+{
     if (context) {
         QCocoaGLContext *cocoaGLContext = static_cast<QCocoaGLContext *>(context->handle());
         if (cocoaGLContext) {
-            NSOpenGLContext *nsOpenGLContext = cocoaGLContext->nsOpenGLContext();
-            if (nsOpenGLContext)
-                return [nsOpenGLContext CGLContextObj];
+            return cocoaGLContext->nsOpenGLContext();
         }
     }
     return 0;

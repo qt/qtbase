@@ -60,6 +60,7 @@ public:
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
     static void *cglContextForContext(QOpenGLContext *context);
+    static void *nsOpenGLContextForContext(QOpenGLContext* context);
 
 public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);
