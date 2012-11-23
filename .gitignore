@@ -161,6 +161,9 @@ tests/auto/cmake/build
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.exe.embed.manifest
+*.exe_manifest.rc
+*.exe_manifest.res
 
 # MinGW generated files
 *.Debug
