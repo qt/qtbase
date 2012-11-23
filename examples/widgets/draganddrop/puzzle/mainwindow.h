@@ -73,4 +73,4 @@ private:
     PuzzleWidget *puzzleWidget;
 };
 
-#endif
+#endif // MAINWINDOW_H

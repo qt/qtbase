@@ -147,8 +147,7 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     QMimeData *mimeData = new QMimeData;
     mimeData->setText(child->text());
     mimeData->setData("application/x-hotspot",
-                      QByteArray::number(hotSpot.x())
-                      + " " + QByteArray::number(hotSpot.y()));
+                      QByteArray::number(hotSpot.x()) + " " + QByteArray::number(hotSpot.y()));
 
     QPixmap pixmap(child->size());
     child->render(&pixmap);

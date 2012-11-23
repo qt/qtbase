@@ -61,4 +61,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // DRAGLABEL_H

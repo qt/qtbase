@@ -38,10 +38,10 @@
 **
 ****************************************************************************/
 
-#include "chat.h"
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
+#include <QApplication>
+#include <QMessageBox>
 
+#include "chat.h"
 #include "chat_adaptor.h"
 #include "chat_interface.h"
 

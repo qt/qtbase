@@ -46,8 +46,7 @@
 Screenshot::Screenshot()
 {
     screenshotLabel = new QLabel;
-    screenshotLabel->setSizePolicy(QSizePolicy::Expanding,
-                                   QSizePolicy::Expanding);
+    screenshotLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     screenshotLabel->setAlignment(Qt::AlignCenter);
     screenshotLabel->setMinimumSize(240, 160);
 
@@ -73,8 +72,7 @@ void Screenshot::resizeEvent(QResizeEvent * /* event */)
 {
     QSize scaledSize = originalPixmap.size();
     scaledSize.scale(screenshotLabel->size(), Qt::KeepAspectRatio);
-    if (!screenshotLabel->pixmap()
-            || scaledSize != screenshotLabel->pixmap()->size())
+    if (!screenshotLabel->pixmap() || scaledSize != screenshotLabel->pixmap()->size())
         updateScreenshotLabel();
 }
 //! [1]
@@ -96,11 +94,10 @@ void Screenshot::saveScreenshot()
     QString format = "png";
     QString initialPath = QDir::currentPath() + tr("/untitled.") + format;
 
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
-                               initialPath,
-                               tr("%1 Files (*.%2);;All Files (*)")
-                               .arg(format.toUpper())
-                               .arg(format));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), initialPath,
+                                                    tr("%1 Files (*.%2);;All Files (*)")
+                                                    .arg(format.toUpper())
+                                                    .arg(format));
     if (!fileName.isEmpty())
         originalPixmap.save(fileName, format.toLatin1().constData());
 }
@@ -132,9 +129,9 @@ void Screenshot::updateCheckBox()
     if (delaySpinBox->value() == 0) {
         hideThisWindowCheckBox->setDisabled(true);
         hideThisWindowCheckBox->setChecked(false);
-    }
-    else
+    } else {
         hideThisWindowCheckBox->setDisabled(false);
+    }
 }
 //! [6]
 
@@ -163,12 +160,8 @@ void Screenshot::createOptionsGroupBox()
 //! [8]
 void Screenshot::createButtonsLayout()
 {
-    newScreenshotButton = createButton(tr("New Screenshot"),
-                                       this, SLOT(newScreenshot()));
-
-    saveScreenshotButton = createButton(tr("Save Screenshot"),
-                                        this, SLOT(saveScreenshot()));
-
+    newScreenshotButton = createButton(tr("New Screenshot"), this, SLOT(newScreenshot()));
+    saveScreenshotButton = createButton(tr("Save Screenshot"), this, SLOT(saveScreenshot()));
     quitScreenshotButton = createButton(tr("Quit"), this, SLOT(close()));
 
     buttonsLayout = new QHBoxLayout;

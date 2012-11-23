@@ -38,11 +38,11 @@
 **
 ****************************************************************************/
 
+#include "renderthread.h"
+
 #include <QtWidgets>
 
 #include <math.h>
-
-#include "renderthread.h"
 
 //! [0]
 RenderThread::RenderThread(QObject *parent)

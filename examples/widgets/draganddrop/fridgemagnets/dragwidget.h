@@ -62,4 +62,4 @@ protected:
 };
 //! [0]
 
-#endif
+#endif // DRAGWIDGET_H

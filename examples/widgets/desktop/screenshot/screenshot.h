@@ -75,8 +75,7 @@ private slots:
 private:
     void createOptionsGroupBox();
     void createButtonsLayout();
-    QPushButton *createButton(const QString &text, QWidget *receiver,
-                              const char *member);
+    QPushButton *createButton(const QString &text, QWidget *receiver, const char *member);
     void updateScreenshotLabel();
 
     QPixmap originalPixmap;
@@ -96,4 +95,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // SCREENSHOT_H

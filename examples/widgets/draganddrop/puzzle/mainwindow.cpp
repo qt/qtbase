@@ -38,12 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <stdlib.h>
-
 #include "mainwindow.h"
 #include "pieceslist.h"
 #include "puzzlewidget.h"
+
+#include <QtWidgets>
+#include <stdlib.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -59,9 +59,10 @@ void MainWindow::openImage(const QString &path)
 {
     QString fileName = path;
 
-    if (fileName.isNull())
+    if (fileName.isNull()) {
         fileName = QFileDialog::getOpenFileName(this,
             tr("Open Image"), "", "Image Files (*.png *.jpg *.bmp)");
+    }
 
     if (!fileName.isEmpty()) {
         QPixmap newImage;
@@ -79,9 +80,9 @@ void MainWindow::openImage(const QString &path)
 void MainWindow::setCompleted()
 {
     QMessageBox::information(this, tr("Puzzle Completed"),
-        tr("Congratulations! You have completed the puzzle!\n"
-           "Click OK to start again."),
-        QMessageBox::Ok);
+                             tr("Congratulations! You have completed the puzzle!\n"
+                                "Click OK to start again."),
+                             QMessageBox::Ok);
 
     setupPuzzle();
 }

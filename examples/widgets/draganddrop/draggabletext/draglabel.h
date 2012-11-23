@@ -55,4 +55,4 @@ public:
     DragLabel(const QString &text, QWidget *parent);
 };
 
-#endif
+#endif // DRAGLABEL_H

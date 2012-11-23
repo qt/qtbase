@@ -38,7 +38,8 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QPainter>
+#include <QKeyEvent>
 
 #include <math.h>
 
@@ -65,8 +66,7 @@ MandelbrotWidget::MandelbrotWidget(QWidget *parent)
     curScale = DefaultScale;
 
     qRegisterMetaType<QImage>("QImage");
-    connect(&thread, SIGNAL(renderedImage(QImage,double)),
-            this, SLOT(updatePixmap(QImage,double)));
+    connect(&thread, SIGNAL(renderedImage(QImage,double)), this, SLOT(updatePixmap(QImage,double)));
 
     setWindowTitle(tr("Mandelbrot"));
 #ifndef QT_NO_CURSOR
@@ -85,8 +85,7 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
 
     if (pixmap.isNull()) {
         painter.setPen(Qt::white);
-        painter.drawText(rect(), Qt::AlignCenter,
-                         tr("Rendering initial image, please wait..."));
+        painter.drawText(rect(), Qt::AlignCenter, tr("Rendering initial image, please wait..."));
 //! [2] //! [3]
         return;
 //! [3] //! [4]
@@ -122,11 +121,9 @@ void MandelbrotWidget::paintEvent(QPaintEvent * /* event */)
 
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(0, 0, 0, 127));
-    painter.drawRect((width() - textWidth) / 2 - 5, 0, textWidth + 10,
-                     metrics.lineSpacing() + 5);
+    painter.drawRect((width() - textWidth) / 2 - 5, 0, textWidth + 10, metrics.lineSpacing() + 5);
     painter.setPen(Qt::white);
-    painter.drawText((width() - textWidth) / 2,
-                     metrics.leading() + metrics.ascent(), text);
+    painter.drawText((width() - textWidth) / 2, metrics.leading() + metrics.ascent(), text);
 }
 //! [9]
 

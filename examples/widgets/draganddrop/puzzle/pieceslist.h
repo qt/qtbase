@@ -60,4 +60,4 @@ protected:
     int m_PieceSize;
 };
 
-#endif
+#endif // PIECESLIST_H

@@ -41,8 +41,8 @@
 #ifndef CHAT_H
 #define CHAT_H
 
-#include <QtCore/QStringList>
-#include <QtDBus/QtDBus>
+#include <QStringList>
+
 #include "ui_chatmainwindow.h"
 #include "ui_chatsetnickname.h"
 
@@ -78,4 +78,4 @@ public:
     NicknameDialog(QWidget *parent = 0);
 };
 
-#endif
+#endif // CHAT_H

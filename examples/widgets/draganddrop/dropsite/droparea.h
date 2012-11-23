@@ -74,4 +74,4 @@ private:
 };
 //! [DropArea header part2]
 
-#endif
+#endif // DROPAREA_H

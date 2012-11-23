@@ -38,9 +38,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "pieceslist.h"
+
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QMimeData>
 
 PiecesList::PiecesList(int pieceSize, QWidget *parent)
     : QListWidget(parent), m_PieceSize(pieceSize)
@@ -66,8 +68,9 @@ void PiecesList::dragMoveEvent(QDragMoveEvent *event)
     if (event->mimeData()->hasFormat("image/x-puzzle-piece")) {
         event->setDropAction(Qt::MoveAction);
         event->accept();
-    } else
+    } else {
         event->ignore();
+    }
 }
 
 void PiecesList::dropEvent(QDropEvent *event)
@@ -83,8 +86,9 @@ void PiecesList::dropEvent(QDropEvent *event)
 
         event->setDropAction(Qt::MoveAction);
         event->accept();
-    } else
+    } else {
         event->ignore();
+    }
 }
 
 void PiecesList::addPiece(QPixmap pixmap, QPoint location)
@@ -93,8 +97,7 @@ void PiecesList::addPiece(QPixmap pixmap, QPoint location)
     pieceItem->setIcon(QIcon(pixmap));
     pieceItem->setData(Qt::UserRole, QVariant(pixmap));
     pieceItem->setData(Qt::UserRole+1, location);
-    pieceItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable
-                        | Qt::ItemIsDragEnabled);
+    pieceItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
 }
 
 void PiecesList::startDrag(Qt::DropActions /*supportedActions*/)

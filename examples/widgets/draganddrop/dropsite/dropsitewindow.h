@@ -74,4 +74,4 @@ private:
 };
 //! [DropSiteWindow header]
 
-#endif
+#endif // DROPSITEWINDOW_H

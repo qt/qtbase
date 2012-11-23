@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "droparea.h"
+
+#include <QDragEnterEvent>
+#include <QMimeData>
 
 //! [DropArea constructor]
 DropArea::DropArea(QWidget *parent)

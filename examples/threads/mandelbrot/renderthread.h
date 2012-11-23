@@ -59,8 +59,7 @@ public:
     RenderThread(QObject *parent = 0);
     ~RenderThread();
 
-    void render(double centerX, double centerY, double scaleFactor,
-                QSize resultSize);
+    void render(double centerX, double centerY, double scaleFactor, QSize resultSize);
 
 signals:
     void renderedImage(const QImage &image, double scaleFactor);
@@ -85,4 +84,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // RENDERTHREAD_H

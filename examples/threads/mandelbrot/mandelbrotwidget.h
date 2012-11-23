@@ -81,4 +81,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // MANDELBROTWIDGET_H

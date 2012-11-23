@@ -38,9 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "puzzlewidget.h"
+
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QMimeData>
+#include <QPainter>
 
 PuzzleWidget::PuzzleWidget(int imageSize, QWidget *parent)
     : QWidget(parent), m_ImageSize(imageSize)
@@ -130,9 +133,8 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
 int PuzzleWidget::findPiece(const QRect &pieceRect) const
 {
     for (int i = 0; i < pieceRects.size(); ++i) {
-        if (pieceRect == pieceRects[i]) {
+        if (pieceRect == pieceRects[i])
             return i;
-        }
     }
     return -1;
 }
@@ -192,9 +194,8 @@ void PuzzleWidget::paintEvent(QPaintEvent *event)
         painter.drawRect(highlightedRect.adjusted(0, 0, -1, -1));
     }
 
-    for (int i = 0; i < pieceRects.size(); ++i) {
+    for (int i = 0; i < pieceRects.size(); ++i)
         painter.drawPixmap(pieceRects[i], piecePixmaps[i]);
-    }
     painter.end();
 }
 

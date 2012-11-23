@@ -86,4 +86,4 @@ private:
     int m_ImageSize;
 };
 
-#endif
+#endif // PUZZLEWIDGET_H

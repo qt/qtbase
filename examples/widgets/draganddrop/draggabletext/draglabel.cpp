@@ -38,8 +38,6 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "draglabel.h"
 
 DragLabel::DragLabel(const QString &text, QWidget *parent)

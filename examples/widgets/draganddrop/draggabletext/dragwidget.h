@@ -59,4 +59,4 @@ protected:
     void mousePressEvent(QMouseEvent *event);
 };
 
-#endif
+#endif // DRAGWIDGET_H

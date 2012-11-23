@@ -52,7 +52,7 @@ QT_END_NAMESPACE
 class DragWidget : public QFrame
 {
 public:
-    DragWidget(QWidget *parent=0);
+    DragWidget(QWidget *parent = 0);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event);
@@ -62,4 +62,4 @@ protected:
 };
 //! [0]
 
-#endif
+#endif // DRAGWIDGET_H
