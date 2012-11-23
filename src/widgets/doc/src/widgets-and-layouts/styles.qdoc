@@ -24,13 +24,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-/*!
-    \group appearance
-    \title Widget Appearance and Style-Related Classes
-    \brief Classes used for customizing UI appearance and style.
-*/
-
 /*!
     \page style-reference.html
     \title Styles and Style Aware Widgets

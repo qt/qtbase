@@ -24,12 +24,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-/*!
-    \group model-view
-    \title Model/View Classes
-*/
-
 /*!
     \page model-view-programming.html
     \ingroup qt-basic-concepts

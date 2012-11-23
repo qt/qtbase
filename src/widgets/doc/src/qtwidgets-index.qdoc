@@ -141,7 +141,10 @@ interfaces
     \list
         \li \l{Qt Widgets C++ Classes}
         \list
+            \li \l{Basic Widget Classes}
+            \li \l{Advanced Widget Classes}
             \li \l{Abstract Widget Classes}
+            \li \l{Organizer Widget Classes}
             \li \l{Graphics View Classes}
             \li \l{Model/View Classes}
             \li \l{Main Window and Related Classes}
@@ -151,25 +154,4 @@ interfaces
         \li \l{Qt Style Sheets Reference}
     \endlist
 
-
 */
-
-    /*!
-    \group advanced
-    \title Advanced Widgets
-    */
-
-    /*!
-    \group abstractwidgets
-    \title Abstract Widget Classes
-    */
-
-    /*!
-    \group basicwidgets
-    \title Basic Widgets
-    */
-
-    /*!
-    \group organizers
-    \title Organizers
-    */

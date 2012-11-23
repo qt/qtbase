@@ -26,11 +26,6 @@
 ****************************************************************************/
 
 /*!
-    \group graphicsview-api
-    \title Graphics View Classes
-*/
-
-/*!
     \page graphicsview.html
     \title Graphics View Framework
     \ingroup qt-graphics

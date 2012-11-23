@@ -24,12 +24,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-/*!
-    \group mainwindow-classes
-    \title Main Window and Related Classes
-*/
-
 /*!
     \page application-windows.html
     \title Window and Dialog Widgets
