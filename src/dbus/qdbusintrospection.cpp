@@ -264,14 +264,14 @@ QT_BEGIN_NAMESPACE
     \variable QDBusIntrospection::Object::service
     The object's service name.
 
-    \sa parseObject(), parseObjectTree()
+    \sa parseObject()
 */
 
 /*!
     \variable QDBusIntrospection::Object::path
     The object's path on the service. This is an absolute path.
 
-    \sa parseObject(), parseObjectTree()
+    \sa parseObject()
 */
 
 /*!
@@ -292,29 +292,6 @@ QT_BEGIN_NAMESPACE
     The list of child object names in this object. Note that this is a relative name, not an
     absolute path. To obtain the absolute path, concatenate with \l
     {QDBusIntrospection::Object::path}{path}.
-*/
-
-/*!
-    \class QDBusIntrospection::ObjectTree
-    \inmodule QtDBus
-    \brief Complete information about one object node and its descendency.
-    
-    This struct contains the same data as QDBusIntrospection::Object, plus the actual data for the
-    interfaces and child (sub) objects that was available in the XML document.
-*/
-
-/*!
-    \variable QDBusIntrospection::ObjectTree::interfaceData
-    A map of interfaces and their names.
-*/
-
-/*!
-    \variable QDBusIntrospection::ObjectTree::childObjectData
-    A map of object paths and their data. The map key contains the relative path to the object.
-
-    Note this map contains only the child notes that do have information about the sub-object's
-    contents. If the XML data did not contain the information, only the object name will be listed
-    in childObjects, but not in childObjectData.
 */
 
 /*!
@@ -355,8 +332,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \typedef QDBusIntrospection::Objects
     Contains a QMap of objects and their paths relative to their immediate parent.
-
-    \sa parseObjectTree()
 */
 
 /*!
@@ -403,7 +378,7 @@ QDBusIntrospection::parseInterfaces(const QString &xml)
     object node.
 
     This function does not parse the interfaces contained in the node, nor sub-object's contents.
-    It will only list their names. If you need to know their contents, use parseObjectTree.
+    It will only list their names.
 */
 QDBusIntrospection::Object
 QDBusIntrospection::parseObject(const QString &xml, const QString &service, const QString &path)
