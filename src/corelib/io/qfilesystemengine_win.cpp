@@ -822,6 +822,8 @@ bool QFileSystemEngine::fillMetaData(HANDLE fHandle, QFileSystemMetaData &data,
     return data.hasFlags(what);
 }
 
+static bool isDirPath(const QString &dirPath, bool *existed);
+
 //static
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                      QFileSystemMetaData::MetaDataFlags what)
@@ -831,7 +833,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
 
     QFileSystemEntry fname;
     data.knownFlagsMask |= QFileSystemMetaData::WinLnkType;
-    if(entry.filePath().endsWith(QLatin1String(".lnk"))) {
+    // Check for ".lnk": Directories named ".lnk" should be skipped, corrupted
+    // link files should still be detected as links.
+    const QString origFilePath = entry.filePath();
+    if (origFilePath.endsWith(QLatin1String(".lnk")) && !isDirPath(origFilePath, 0)) {
         data.entryFlags |= QFileSystemMetaData::WinLnkType;
         fname = QFileSystemEntry(readLink(entry));
     } else {

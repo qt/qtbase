@@ -1467,6 +1467,13 @@ void tst_QFileInfo::brokenShortcut()
     QVERIFY(info.isSymLink());
     QVERIFY(!info.exists());
     QFile::remove(linkName);
+
+    QDir current; // QTBUG-21863
+    QVERIFY(current.mkdir(linkName));
+    QFileInfo dirInfo(linkName);
+    QVERIFY(!dirInfo.isSymLink());
+    QVERIFY(dirInfo.isDir());
+    current.rmdir(linkName);
 }
 #endif
 
