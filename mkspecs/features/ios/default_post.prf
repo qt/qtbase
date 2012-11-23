@@ -1,0 +1,13 @@
+
+CONFIG(qt):contains(QT, gui):equals(TEMPLATE, app): CONFIG += gui_app
+
+isEmpty(MAKEFILE_GENERATOR) {
+    gui_app:app_bundle: \
+        # For applications we want Xcode project files
+        MAKEFILE_GENERATOR = XCODE
+    else: \
+        # For libs, etc we still want regular Makefiles
+        MAKEFILE_GENERATOR = UNIX
+}
+
+load(default_post)
