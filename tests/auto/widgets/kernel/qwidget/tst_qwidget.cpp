@@ -55,7 +55,7 @@
 #include <qpushbutton.h>
 #include <qstyle.h>
 #include <qwidget.h>
-#include <qwindowsstyle.h>
+#include <qstylefactory.h>
 #include <qdesktopwidget.h>
 #include <private/qwidget_p.h>
 #include <private/qapplication_p.h>
@@ -420,7 +420,7 @@ void tst_QWidget::getSetCheck()
     QWidget child1(&obj1);
     // QStyle * QWidget::style()
     // void QWidget::setStyle(QStyle *)
-    QScopedPointer<QWindowsStyle> var1(new QWindowsStyle);
+    QScopedPointer<QStyle> var1(QStyleFactory::create(QLatin1String("Windows")));
     obj1.setStyle(var1.data());
     QCOMPARE(static_cast<QStyle *>(var1.data()), obj1.style());
     obj1.setStyle((QStyle *)0);
@@ -4833,7 +4833,7 @@ void tst_QWidget::moveChild()
 
     ColorWidget parent;
     // prevent custom styles
-    parent.setStyle(new QWindowsStyle);
+    parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
     ColorWidget child(&parent, Qt::blue);
 
 #ifndef Q_OS_WINCE
@@ -4881,7 +4881,7 @@ void tst_QWidget::showAndMoveChild()
 {
     QWidget parent(0, Qt::FramelessWindowHint);
     // prevent custom styles
-    parent.setStyle(new QWindowsStyle);
+    parent.setStyle(QStyleFactory::create(QLatin1String("Windows")));
 
     QDesktopWidget desktop;
     QRect desktopDimensions = desktop.availableGeometry(&parent);
@@ -4951,7 +4951,7 @@ void tst_QWidget::subtractOpaqueSiblings()
 void tst_QWidget::deleteStyle()
 {
     QWidget widget;
-    widget.setStyle(new QWindowsStyle);
+    widget.setStyle(QStyleFactory::create(QLatin1String("Windows")));
     widget.show();
     delete widget.style();
     qApp->processEvents();
@@ -6043,7 +6043,7 @@ void tst_QWidget::render()
         QWidget window;
         window.resize(100, 100);
         // prevent custom styles
-        window.setStyle(new QWindowsStyle);
+        window.setStyle(QStyleFactory::create(QLatin1String("Windows")));
         window.show();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         QWidget child(&window);
@@ -6062,7 +6062,7 @@ void tst_QWidget::render()
         widget.setAutoFillBackground(true);
         widget.setPalette(Qt::red);
         // prevent custom styles
-        widget.setStyle(new QWindowsStyle);
+        widget.setStyle(QStyleFactory::create(QLatin1String("Windows")));
         widget.show();
         QVERIFY(QTest::qWaitForWindowExposed(&widget));
         QImage image(widget.size(), QImage::Format_RGB32);
@@ -6314,7 +6314,7 @@ void tst_QWidget::renderWithPainter()
 {
     QWidget widget(0, Qt::Tool);
     // prevent custom styles
-    widget.setStyle(new QWindowsStyle);
+    widget.setStyle(QStyleFactory::create(QLatin1String("Windows")));
     widget.show();
     widget.resize(70, 50);
     widget.setAutoFillBackground(true);
