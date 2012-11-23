@@ -131,11 +131,6 @@ display:inline-block;
 .nav-subtitle{
 margin-left: 220px;
 }
-.header{
-height:1px;
-padding:0px;
-margin:0px;
-}
 
 header{
 background: none repeat scroll 0% 0% rgb(255,255,255);
