@@ -42,8 +42,6 @@
 #define HIGHLIGHTER_H
 
 #include <QSyntaxHighlighter>
-
-#include <QHash>
 #include <QTextCharFormat>
 
 QT_BEGIN_NAMESPACE
@@ -81,4 +79,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // HIGHLIGHTER_H

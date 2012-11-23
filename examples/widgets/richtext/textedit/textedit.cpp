@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#include "textedit.h"
-
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -68,6 +66,8 @@
 #include <QPrinter>
 #include <QPrintPreviewDialog>
 #endif
+
+#include "textedit.h"
 
 #ifdef Q_OS_MAC
 const QString rsrcPath = ":/images/mac";
@@ -209,7 +209,7 @@ void TextEdit::setupFileActions()
     menu->addAction(a);
 
     a = new QAction(QIcon::fromTheme("exportpdf", QIcon(rsrcPath + "/exportpdf.png")),
-    tr("&Export PDF..."), this);
+                    tr("&Export PDF..."), this);
     a->setPriority(QAction::LowPriority);
     a->setShortcut(Qt::CTRL + Qt::Key_D);
     connect(a, SIGNAL(triggered()), this, SLOT(filePrintPdf()));
@@ -291,7 +291,8 @@ void TextEdit::setupTextActions()
     menu->addAction(actionTextBold);
     actionTextBold->setCheckable(true);
 
-    actionTextItalic = new QAction(QIcon::fromTheme("format-text-italic", QIcon(rsrcPath + "/textitalic.png")),
+    actionTextItalic = new QAction(QIcon::fromTheme("format-text-italic",
+                                                    QIcon(rsrcPath + "/textitalic.png")),
                                    tr("&Italic"), this);
     actionTextItalic->setPriority(QAction::LowPriority);
     actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
@@ -303,7 +304,8 @@ void TextEdit::setupTextActions()
     menu->addAction(actionTextItalic);
     actionTextItalic->setCheckable(true);
 
-    actionTextUnderline = new QAction(QIcon::fromTheme("format-text-underline", QIcon(rsrcPath + "/textunder.png")),
+    actionTextUnderline = new QAction(QIcon::fromTheme("format-text-underline",
+                                                       QIcon(rsrcPath + "/textunder.png")),
                                       tr("&Underline"), this);
     actionTextUnderline->setShortcut(Qt::CTRL + Qt::Key_U);
     actionTextUnderline->setPriority(QAction::LowPriority);
@@ -322,16 +324,29 @@ void TextEdit::setupTextActions()
 
     // Make sure the alignLeft  is always left of the alignRight
     if (QApplication::isLeftToRight()) {
-        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/textleft.png")),
+        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left",
+                                                       QIcon(rsrcPath + "/textleft.png")),
                                       tr("&Left"), grp);
-        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/textcenter.png")), tr("C&enter"), grp);
-        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/textright.png")), tr("&Right"), grp);
+        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center",
+                                                         QIcon(rsrcPath + "/textcenter.png")),
+                                        tr("C&enter"), grp);
+        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right",
+                                                        QIcon(rsrcPath + "/textright.png")),
+                                       tr("&Right"), grp);
     } else {
-        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right", QIcon(rsrcPath + "/textright.png")), tr("&Right"), grp);
-        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center", QIcon(rsrcPath + "/textcenter.png")), tr("C&enter"), grp);
-        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left", QIcon(rsrcPath + "/textleft.png")), tr("&Left"), grp);
+        actionAlignRight = new QAction(QIcon::fromTheme("format-justify-right",
+                                                        QIcon(rsrcPath + "/textright.png")),
+                                       tr("&Right"), grp);
+        actionAlignCenter = new QAction(QIcon::fromTheme("format-justify-center",
+                                                         QIcon(rsrcPath + "/textcenter.png")),
+                                        tr("C&enter"), grp);
+        actionAlignLeft = new QAction(QIcon::fromTheme("format-justify-left",
+                                                       QIcon(rsrcPath + "/textleft.png")),
+                                      tr("&Left"), grp);
     }
-    actionAlignJustify = new QAction(QIcon::fromTheme("format-justify-fill", QIcon(rsrcPath + "/textjustify.png")), tr("&Justify"), grp);
+    actionAlignJustify = new QAction(QIcon::fromTheme("format-justify-fill",
+                                                      QIcon(rsrcPath + "/textjustify.png")),
+                                     tr("&Justify"), grp);
 
     actionAlignLeft->setShortcut(Qt::CTRL + Qt::Key_L);
     actionAlignLeft->setCheckable(true);
@@ -358,7 +373,6 @@ void TextEdit::setupTextActions()
     tb->addAction(actionTextColor);
     menu->addAction(actionTextColor);
 
-
     tb = new QToolBar(this);
     tb->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
     tb->setWindowTitle(tr("Format Actions"));
@@ -376,13 +390,11 @@ void TextEdit::setupTextActions()
     comboStyle->addItem("Ordered List (Alpha upper)");
     comboStyle->addItem("Ordered List (Roman lower)");
     comboStyle->addItem("Ordered List (Roman upper)");
-    connect(comboStyle, SIGNAL(activated(int)),
-            this, SLOT(textStyle(int)));
+    connect(comboStyle, SIGNAL(activated(int)), this, SLOT(textStyle(int)));
 
     comboFont = new QFontComboBox(tb);
     tb->addWidget(comboFont);
-    connect(comboFont, SIGNAL(activated(QString)),
-            this, SLOT(textFamily(QString)));
+    connect(comboFont, SIGNAL(activated(QString)), this, SLOT(textFamily(QString)));
 
     comboSize = new QComboBox(tb);
     comboSize->setObjectName("comboSize");
@@ -393,8 +405,7 @@ void TextEdit::setupTextActions()
     foreach(int size, db.standardSizes())
         comboSize->addItem(QString::number(size));
 
-    connect(comboSize, SIGNAL(activated(QString)),
-            this, SLOT(textSize(QString)));
+    connect(comboSize, SIGNAL(activated(QString)), this, SLOT(textSize(QString)));
     comboSize->setCurrentIndex(comboSize->findText(QString::number(QApplication::font()
                                                                    .pointSize())));
 }
@@ -431,8 +442,7 @@ bool TextEdit::maybeSave()
     ret = QMessageBox::warning(this, tr("Application"),
                                tr("The document has been modified.\n"
                                   "Do you want to save your changes?"),
-                               QMessageBox::Save | QMessageBox::Discard
-                               | QMessageBox::Cancel);
+                               QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
     if (ret == QMessageBox::Save)
         return fileSave();
     else if (ret == QMessageBox::Cancel)
@@ -485,12 +495,16 @@ bool TextEdit::fileSave()
 
 bool TextEdit::fileSaveAs()
 {
-    QString fn = QFileDialog::getSaveFileName(this, tr("Save as..."),
-                                              QString(), tr("ODF files (*.odt);;HTML-Files (*.htm *.html);;All Files (*)"));
+    QString fn = QFileDialog::getSaveFileName(this, tr("Save as..."), QString(),
+                                              tr("ODF files (*.odt);;HTML-Files "
+                                                 "(*.htm *.html);;All Files (*)"));
     if (fn.isEmpty())
         return false;
-    if (! (fn.endsWith(".odt", Qt::CaseInsensitive) || fn.endsWith(".htm", Qt::CaseInsensitive) || fn.endsWith(".html", Qt::CaseInsensitive)) )
+    if (!(fn.endsWith(".odt", Qt::CaseInsensitive)
+          || fn.endsWith(".htm", Qt::CaseInsensitive)
+          || fn.endsWith(".html", Qt::CaseInsensitive))) {
         fn += ".odt"; // default
+    }
     setCurrentFileName(fn);
     return fileSave();
 }
@@ -503,9 +517,8 @@ void TextEdit::filePrint()
     if (textEdit->textCursor().hasSelection())
         dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
     dlg->setWindowTitle(tr("Print Document"));
-    if (dlg->exec() == QDialog::Accepted) {
+    if (dlg->exec() == QDialog::Accepted)
         textEdit->print(&printer);
-    }
     delete dlg;
 #endif
 }
@@ -724,14 +737,13 @@ void TextEdit::colorChanged(const QColor &c)
 
 void TextEdit::alignmentChanged(Qt::Alignment a)
 {
-    if (a & Qt::AlignLeft) {
+    if (a & Qt::AlignLeft)
         actionAlignLeft->setChecked(true);
-    } else if (a & Qt::AlignHCenter) {
+    else if (a & Qt::AlignHCenter)
         actionAlignCenter->setChecked(true);
-    } else if (a & Qt::AlignRight) {
+    else if (a & Qt::AlignRight)
         actionAlignRight->setChecked(true);
-    } else if (a & Qt::AlignJustify) {
+    else if (a & Qt::AlignJustify)
         actionAlignJustify->setChecked(true);
-    }
 }
 

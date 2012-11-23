@@ -41,9 +41,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-
 #include "highlighter.h"
+
+#include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
 class QTextEdit;
@@ -72,4 +72,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // MAINWINDOW_H

@@ -44,7 +44,6 @@
 #include <QDialog>
 #include <QList>
 #include <QPair>
-#include <QString>
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -87,4 +86,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // DETAILSDIALOG_H

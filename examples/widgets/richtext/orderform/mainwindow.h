@@ -73,4 +73,4 @@ private:
 };
 //! [0]
 
-#endif
+#endif // MAINWINDOW_H

@@ -74,8 +74,7 @@ void MainWindow::openFile(const QString &path)
     QString fileName = path;
 
     if (fileName.isNull())
-        fileName = QFileDialog::getOpenFileName(this,
-            tr("Open File"), "", "C++ Files (*.cpp *.h)");
+        fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", "C++ Files (*.cpp *.h)");
 
     if (!fileName.isEmpty()) {
         QFile file(fileName);
@@ -108,14 +107,9 @@ void MainWindow::setupFileMenu()
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     menuBar()->addMenu(fileMenu);
 
-    fileMenu->addAction(tr("&New"), this, SLOT(newFile()),
-                        QKeySequence::New);
-
-    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()),
-                        QKeySequence::Open);
-                        
-    fileMenu->addAction(tr("E&xit"), qApp, SLOT(quit()),
-                        QKeySequence::Quit);
+    fileMenu->addAction(tr("&New"), this, SLOT(newFile()), QKeySequence::New);
+    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()), QKeySequence::Open);
+    fileMenu->addAction(tr("E&xit"), qApp, SLOT(quit()), QKeySequence::Quit);
 }
 
 void MainWindow::setupHelpMenu()

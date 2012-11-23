@@ -46,13 +46,15 @@
 #include <QMap>
 #include <QPointer>
 
-QT_FORWARD_DECLARE_CLASS(QAction)
-QT_FORWARD_DECLARE_CLASS(QComboBox)
-QT_FORWARD_DECLARE_CLASS(QFontComboBox)
-QT_FORWARD_DECLARE_CLASS(QTextEdit)
-QT_FORWARD_DECLARE_CLASS(QTextCharFormat)
-QT_FORWARD_DECLARE_CLASS(QMenu)
-QT_FORWARD_DECLARE_CLASS(QPrinter)
+QT_BEGIN_NAMESPACE
+class QAction;
+class QComboBox;
+class QFontComboBox;
+class QTextEdit;
+class QTextCharFormat;
+class QMenu;
+class QPrinter;
+QT_END_NAMESPACE
 
 class TextEdit : public QMainWindow
 {
@@ -103,20 +105,20 @@ private:
     void colorChanged(const QColor &c);
     void alignmentChanged(Qt::Alignment a);
 
-    QAction *actionSave,
-        *actionTextBold,
-        *actionTextUnderline,
-        *actionTextItalic,
-        *actionTextColor,
-        *actionAlignLeft,
-        *actionAlignCenter,
-        *actionAlignRight,
-        *actionAlignJustify,
-        *actionUndo,
-        *actionRedo,
-        *actionCut,
-        *actionCopy,
-        *actionPaste;
+    QAction *actionSave;
+    QAction *actionTextBold;
+    QAction *actionTextUnderline;
+    QAction *actionTextItalic;
+    QAction *actionTextColor;
+    QAction *actionAlignLeft;
+    QAction *actionAlignCenter;
+    QAction *actionAlignRight;
+    QAction *actionAlignJustify;
+    QAction *actionUndo;
+    QAction *actionRedo;
+    QAction *actionCut;
+    QAction *actionCopy;
+    QAction *actionPaste;
 
     QComboBox *comboStyle;
     QFontComboBox *comboFont;
@@ -127,4 +129,4 @@ private:
     QTextEdit *textEdit;
 };
 
-#endif
+#endif // TEXTEDIT_H

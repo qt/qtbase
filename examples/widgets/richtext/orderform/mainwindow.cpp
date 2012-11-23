@@ -225,9 +225,10 @@ void MainWindow::openDialog()
 {
     DetailsDialog dialog(tr("Enter Customer Details"), this);
 
-    if (dialog.exec() == QDialog::Accepted)
+    if (dialog.exec() == QDialog::Accepted) {
         createLetter(dialog.senderName(), dialog.senderAddress(),
                      dialog.orderItems(), dialog.sendOffers());
+    }
 }
 //! [16]
 

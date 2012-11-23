@@ -38,9 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
+
+#include <QtWidgets>
 
 //! [0]
 MainWindow::MainWindow()
@@ -158,8 +158,7 @@ void MainWindow::insertCalendar()
         QTextTableCell cell = table->cellAt(0, weekDay-1);
 //! [11] //! [12]
         QTextCursor cellCursor = cell.firstCursorPosition();
-        cellCursor.insertText(QString("%1").arg(QDate::longDayName(weekDay)),
-                              boldFormat);
+        cellCursor.insertText(QString("%1").arg(QDate::longDayName(weekDay)), boldFormat);
     }
 //! [12]
 
