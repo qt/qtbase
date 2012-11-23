@@ -57,6 +57,8 @@
 #include <QTimer>
 #include <QLineEdit>
 
+// Compiles with Qt 4.8 and Qt 5.
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -233,11 +235,15 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
     if (o->isWidgetType()) {
         switch (e->type()) {
         case QEvent::Enter: {
-            const QEnterEvent *ee = static_cast<QEnterEvent *>(e);
             QString message;
             QDebug debug(&message);
+#if QT_VERSION >= 0x050000
+            const QEnterEvent *ee = static_cast<QEnterEvent *>(e);
             debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Enter for " << o->objectName()
                              << " at " << ee->localPos() << " global: " << ee->globalPos();
+#else
+            debug.nospace()  << '#' << m_enterLeaveEventCount++ << " Enter for " << o->objectName();
+#endif
             m_logEdit->appendPlainText(message);
         }
             break;
@@ -363,8 +369,13 @@ void MainWindow::grabKeyboardWindowToggled(bool g)
 
 void MainWindow::forceNativeWidgets()
 {
-    m_logEdit->appendPlainText(QString::fromLatin1("Created native widget %1").
-                               arg(m_forceNativeButton->winId()));
+    const WId platformWid = m_forceNativeButton->winId();
+#if QT_VERSION < 0x050000 && defined(Q_OS_WIN)
+    const quintptr wid = quintptr(platformWid); // HWND on Qt 4.8/Windows.
+#else
+    const WId wid = platformWid;
+#endif
+    m_logEdit->appendPlainText(QString::fromLatin1("Created native widget %1").arg(wid));
     m_forceNativeButton->setEnabled(false);
     m_forceNativeButton->setText(QLatin1String("Native widgets created"));
 }
