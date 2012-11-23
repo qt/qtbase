@@ -47,7 +47,6 @@
 #include <qtoolbutton.h>
 #include <qmenu.h>
 #include <qaction.h>
-#include <qwindowsstyle.h>
 #include <qstyleoption.h>
 
 class tst_QToolButton : public QObject
