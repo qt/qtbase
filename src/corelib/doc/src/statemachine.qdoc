@@ -32,7 +32,6 @@
     These \l{Qt Core} classes are part of the \l{The State Machine Framework}{
     State Machine Framework}.
 
-    \annotatedlist statemachine
 */
 
 /*!

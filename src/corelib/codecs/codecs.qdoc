@@ -34,7 +34,6 @@
     These \l{Qt Core} codecs classes provide facilities for conversion between
     Unicode and specific text encodings.
 
-    \annotatedlist codecs
 */
 
 /*!

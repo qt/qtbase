@@ -31,7 +31,6 @@
 
     These \l{Qt Core} classes provide threading support to applications.
     The \l{Thread Support in Qt} page covers how to use these classes.
-    \annotatedlist thread
 */
 
 /*!
