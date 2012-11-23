@@ -63,7 +63,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/private/qapplication_p.h>
-#include <QtWidgets/private/qstylesheetstyle_p.h>
+#include <QtWidgets/QStyle>
 
 #ifdef Q_OS_WINCE
 #include <windows.h>
@@ -203,7 +203,7 @@ void tst_QApplication::initTestCase()
 void tst_QApplication::sendEventsOnProcessEvents()
 {
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
 
     EventSpy spy;
     app.installEventFilter(&spy);
@@ -274,7 +274,7 @@ void tst_QApplication::staticSetup()
     QApplication::setFont(font);*/
 
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
 }
 
 
@@ -283,7 +283,7 @@ class TestApplication : public QApplication
 {
 public:
     TestApplication( int &argc, char **argv )
-	: QApplication( argc, argv, QApplication::GuiServer )
+    : QApplication( argc, argv)
     {
 	startTimer( 150 );
     }
@@ -297,7 +297,7 @@ public:
 void tst_QApplication::alert()
 {
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
     app.alert(0, 0);
 
     QWidget widget;
@@ -376,7 +376,7 @@ void tst_QApplication::setFont_data()
     QTest::addColumn<bool>("beforeAppConstructor");
 
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer); // Needed for QFontDatabase
+    QApplication app(argc, 0); // Needed for QFontDatabase
 
     int cnt = 0;
     QFontDatabase fdb;
@@ -432,7 +432,7 @@ void tst_QApplication::setFont()
     }
 
     int argc = 0;
-    QApplication app( argc, 0, QApplication::GuiServer );
+    QApplication app(argc, 0);
     if (!beforeAppConstructor)
         QApplication::setFont( font );
 
@@ -456,7 +456,7 @@ void tst_QApplication::args_data()
 void tst_QApplication::task109149()
 {
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
     QApplication::setFont(QFont("helvetica", 100));
 
     QWidget w;
@@ -510,7 +510,7 @@ void tst_QApplication::args()
 
     char **argv = QString2cstrings( args_in );
 
-    QApplication app( argc_in, argv, QApplication::GuiServer );
+    QApplication app( argc_in, argv);
     QString argv_out = cstrings2QString(argv);
 
     QCOMPARE( argc_in, argc_out );
@@ -551,7 +551,7 @@ protected:
 void tst_QApplication::lastWindowClosed()
 {
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
 
     QSignalSpy spy(&app, SIGNAL(lastWindowClosed()));
 
@@ -649,7 +649,7 @@ void tst_QApplication::quitOnLastWindowClosed()
 {
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
 
         QuitOnLastWindowClosedDialog d;
         d.show();
@@ -663,7 +663,7 @@ void tst_QApplication::quitOnLastWindowClosed()
     }
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QSignalSpy appSpy(&app, SIGNAL(lastWindowClosed()));
 
         QDialog dialog;
@@ -688,7 +688,7 @@ void tst_QApplication::quitOnLastWindowClosed()
     }
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QTimer timer;
         timer.setInterval(100);
 
@@ -716,7 +716,7 @@ void tst_QApplication::quitOnLastWindowClosed()
     }
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QTimer timer;
         timer.setInterval(100);
 
@@ -741,7 +741,7 @@ void tst_QApplication::quitOnLastWindowClosed()
     }
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QSignalSpy appSpy(&app, SIGNAL(lastWindowClosed()));
 
         // exec a dialog for 1 second, then show the window
@@ -762,7 +762,7 @@ void tst_QApplication::quitOnLastWindowClosed()
     }
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QVERIFY(app.quitOnLastWindowClosed());
 
         QTimer timer;
@@ -820,7 +820,7 @@ public:
 void tst_QApplication::closeAllWindows()
 {
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
 
     // create some windows
     new QWidget;
@@ -904,7 +904,7 @@ void tst_QApplication::libraryPaths()
 
         // creating QApplication adds the applicationDirPath to the libraryPath
         int argc = 1;
-        QApplication app(argc, &argv0, QApplication::GuiServer);
+        QApplication app(argc, &argv0);
         QString appDirPath = QDir(app.applicationDirPath()).canonicalPath();
 
         QStringList actual = QApplication::libraryPaths();
@@ -919,7 +919,7 @@ void tst_QApplication::libraryPaths()
     {
         // creating QApplication adds the applicationDirPath and plugin install path to the libraryPath
         int argc = 1;
-        QApplication app(argc, &argv0, QApplication::GuiServer);
+        QApplication app(argc, &argv0);
         QString appDirPath = app.applicationDirPath();
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 
@@ -963,7 +963,7 @@ void tst_QApplication::libraryPaths()
 
         // creating QApplication adds the applicationDirPath to the libraryPath
         int argc = 1;
-        QApplication app(argc, &argv0, QApplication::GuiServer);
+        QApplication app(argc, &argv0);
         QString appDirPath = app.applicationDirPath();
         qDebug() << QApplication::libraryPaths();
         // On Windows CE these are identical and might also be the case for other
@@ -973,7 +973,7 @@ void tst_QApplication::libraryPaths()
     }
     {
         int argc = 1;
-        QApplication app(argc, &argv0, QApplication::GuiServer);
+        QApplication app(argc, &argv0);
 
 #ifdef QT_TST_QAPP_DEBUG
         qDebug() << "Initial library path:" << app.libraryPaths();
@@ -1016,7 +1016,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path()
 {
     int argc = 1;
 
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
     QString appDirPath = app.applicationDirPath();
 
     // Our hook into libraryPaths() initialization: Set the QT_PLUGIN_PATH environment variable
@@ -1051,7 +1051,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
 
         int argc = 1;
 
-        QApplication app(argc, &argv0, QApplication::GuiServer);
+        QApplication app(argc, &argv0);
 
         // library path list should contain the default plus the one valid path
         QStringList expected =
@@ -1070,7 +1070,7 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
     {
         int argc = 1;
 
-        QApplication app(argc, &argv0, QApplication::GuiServer);
+        QApplication app(argc, &argv0);
 
         // library paths are initialized by the QApplication, setting
         // the environment variable here doesn't work
@@ -1127,7 +1127,7 @@ void SendPostedEventsTester::doTest()
 void tst_QApplication::sendPostedEvents()
 {
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
     SendPostedEventsTester *tester = new SendPostedEventsTester;
     QMetaObject::invokeMethod(tester, "doTest", Qt::QueuedConnection);
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
@@ -1156,7 +1156,7 @@ void tst_QApplication::thread()
 
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
 
         // current thread still valid
         QVERIFY(QThread::currentThread() != 0);
@@ -1189,7 +1189,7 @@ void tst_QApplication::thread()
     // before
     {
         int argc = 0;
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
 
         // current thread still valid
         QVERIFY(QThread::currentThread() != 0);
@@ -1278,7 +1278,7 @@ void tst_QApplication::testDeleteLater()
     QSKIP("This test fails and then hangs on Mac OS X, see QTBUG-24318");
 #endif
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
     connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
     DeleteLaterWidget *wgt = new DeleteLaterWidget(&app);
@@ -1383,7 +1383,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
     delete object;
 
     {
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         // If you call processEvents() with an event dispatcher present, but
         // outside any event loops, deferred deletes are not processed unless
         // sendPostedEvents(0, DeferredDelete) is called.
@@ -1410,7 +1410,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         // When an object is in an event loop, then calls deleteLater() and enters
         // an event loop recursively, it should not die until the parent event
         // loop continues.
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QEventLoop loop;
         EventLoopNester *nester = new EventLoopNester;
         p = nester;
@@ -1425,7 +1425,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         // When the event loop that calls deleteLater() is exited
         // immediately, the object should die when returning to the
         // parent event loop
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QEventLoop loop;
         EventLoopNester *nester = new EventLoopNester;
         p = nester;
@@ -1440,7 +1440,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         // when the event loop that calls deleteLater() also calls
         // processEvents() immediately afterwards, the object should
         // not die until the parent loop continues
-        QApplication app(argc, 0, QApplication::GuiServer);
+        QApplication app(argc, 0);
         QEventLoop loop;
         EventLoopNester *nester = new EventLoopNester();
         p = nester;
@@ -1470,7 +1470,7 @@ void tst_QApplication::desktopSettingsAware()
     path += "desktopsettingsaware";
 #ifdef Q_OS_WINCE
     int argc = 0;
-    QApplication tmpApp(argc, 0, QApplication::GuiServer);
+    QApplication tmpApp(argc, 0);
 #endif
     QProcess testProcess;
     testProcess.start(path);
@@ -1485,7 +1485,7 @@ void tst_QApplication::desktopSettingsAware()
 void tst_QApplication::setActiveWindow()
 {
     int argc = 0;
-    QApplication MyApp(argc, 0, QApplication::GuiServer);
+    QApplication MyApp(argc, 0);
 
     QWidget* w = new QWidget;
     QVBoxLayout* layout = new QVBoxLayout(w);
@@ -1511,7 +1511,7 @@ void tst_QApplication::setActiveWindow()
 void tst_QApplication::focusChanged()
 {
     int argc = 0;
-    QApplication app(argc, 0, QApplication::GuiServer);
+    QApplication app(argc, 0);
 
     QSignalSpy spy(&app, SIGNAL(focusChanged(QWidget*,QWidget*)));
     QWidget *now = 0;
@@ -1723,7 +1723,7 @@ protected:
 void tst_QApplication::focusOut()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
 
     // Tests the case where the style pointer changes when on focus in/out
     // (the above is the case when the stylesheet changes)
@@ -1747,7 +1747,7 @@ void tst_QApplication::focusOut()
 void tst_QApplication::execAfterExit()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
     // this should be ignored, as exec() will reset the exitCode
     QApplication::exit(1);
@@ -1765,7 +1765,7 @@ void tst_QApplication::execAfterExit()
 void tst_QApplication::wheelScrollLines()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
     // If wheelScrollLines returns 0, the mose wheel will be disabled.
     QVERIFY(app.wheelScrollLines() > 0);
 }
@@ -1775,13 +1775,13 @@ void tst_QApplication::style()
     int argc = 1;
 
     {
-        QApplication app(argc, &argv0, QApplication::GuiServer);
+        QApplication app(argc, &argv0);
         QPointer<QStyle> style = app.style();
-        app.setStyle(new QWindowsStyle);
+        app.setStyle(QStyleFactory::create(QLatin1String("Windows")));
         QVERIFY(style.isNull());
     }
 
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
 
     // qApp style can never be 0
     QVERIFY(QApplication::style() != 0);
@@ -1790,7 +1790,7 @@ void tst_QApplication::style()
 void tst_QApplication::allWidgets()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
     QWidget *w = new QWidget;
     QVERIFY(app.allWidgets().contains(w)); // uncreate widget test
     QVERIFY(app.allWidgets().contains(w)); // created widget test
@@ -1802,7 +1802,7 @@ void tst_QApplication::allWidgets()
 void tst_QApplication::topLevelWidgets()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
     QWidget *w = new QWidget;
     w->show();
 #ifndef QT_NO_CLIPBOARD
@@ -1824,7 +1824,7 @@ void tst_QApplication::topLevelWidgets()
 void tst_QApplication::setAttribute()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
     QVERIFY(!QApplication::testAttribute(Qt::AA_ImmediateWidgetCreation));
     QWidget  *w = new QWidget;
     QVERIFY(!w->testAttribute(Qt::WA_WState_Created));
@@ -1923,7 +1923,7 @@ public:
 void tst_QApplication::touchEventPropagation()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
 
     const bool mouseEventSynthesizing = QGuiApplicationPrivate::platformIntegration()
         ->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool();
@@ -2239,7 +2239,7 @@ Q_GLOBAL_STATIC(QCursor, tst_qapp_cursor);
 void tst_QApplication::globalStaticObjectDestruction()
 {
     int argc = 1;
-    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QApplication app(argc, &argv0);
     QVERIFY(tst_qapp_locale());
     QVERIFY(tst_qapp_process());
     QVERIFY(tst_qapp_fileSystemWatcher());
