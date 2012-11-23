@@ -44,13 +44,12 @@
 #include <qlayout.h>
 #include <qapplication.h>
 #include <qwidget.h>
-#include <qwindowsstyle.h>
+#include <qproxystyle.h>
 #include <qsizepolicy.h>
 
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QWindowsStyle>
 #include <QStyleFactory>
 
 #include <qformlayout.h>
@@ -268,11 +267,11 @@ void tst_QFormLayout::wrapping()
     delete w;
 }
 
-class CustomLayoutStyle : public QWindowsStyle
+class CustomLayoutStyle : public QProxyStyle
 {
     Q_OBJECT
 public:
-    CustomLayoutStyle()
+    CustomLayoutStyle() : QProxyStyle(QStyleFactory::create("windows"))
     {
         hspacing = 5;
         vspacing = 10;
@@ -297,7 +296,7 @@ int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * opti
         default:
             break;
     }
-    return QWindowsStyle::pixelMetric(metric, option, widget);
+    return QProxyStyle::pixelMetric(metric, option, widget);
 }
 
 void tst_QFormLayout::spacing()
@@ -411,7 +410,7 @@ void tst_QFormLayout::setFormStyle()
     QVERIFY(layout.rowWrapPolicy() == QFormLayout::DontWrapRows);
 #endif
 
-    widget.setStyle(new QWindowsStyle());
+    widget.setStyle(QStyleFactory::create("windows"));
 
     QVERIFY(layout.labelAlignment() == Qt::AlignLeft);
     QVERIFY(layout.formAlignment() == (Qt::AlignLeft | Qt::AlignTop));
