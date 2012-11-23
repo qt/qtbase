@@ -3272,6 +3272,17 @@ bool QAbstractTableModel::hasChildren(const QModelIndex &parent) const
 }
 
 /*!
+    \reimp
+ */
+Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags f = QAbstractItemModel::flags(index);
+    if (index.isValid())
+        f |= Qt::ItemNeverHasChildren;
+    return f;
+}
+
+/*!
     \class QAbstractListModel
     \inmodule QtCore
     \brief The QAbstractListModel class provides an abstract model that can be
@@ -3389,6 +3400,17 @@ QModelIndex QAbstractListModel::index(int row, int column, const QModelIndex &pa
 QModelIndex QAbstractListModel::parent(const QModelIndex & /* index */) const
 {
     return QModelIndex();
+}
+
+/*!
+    \reimp
+ */
+Qt::ItemFlags QAbstractListModel::flags(const QModelIndex &index) const
+{
+    Qt::ItemFlags f = QAbstractItemModel::flags(index);
+    if (index.isValid())
+        f |= Qt::ItemNeverHasChildren;
+    return f;
 }
 
 /*!

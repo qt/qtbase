@@ -177,6 +177,7 @@ private slots:
     void emptyModel();
     void removeRows();
     void removeCols();
+    void limitedExpand();
     void expandAndCollapse_data();
     void expandAndCollapse();
     void expandAndCollapseAll();
@@ -1412,6 +1413,45 @@ void tst_QTreeView::removeCols()
     model.removeAllColumns();
     QVERIFY(!model.wrongIndex);
     QCOMPARE(view.header()->count(), model.cols);
+}
+
+void tst_QTreeView::limitedExpand()
+{
+    {
+        QStandardItemModel model;
+        QStandardItem *parentItem = model.invisibleRootItem();
+        parentItem->appendRow(new QStandardItem);
+        parentItem->appendRow(new QStandardItem);
+        parentItem->appendRow(new QStandardItem);
+
+        QStandardItem *firstItem = model.item(0, 0);
+        firstItem->setFlags(firstItem->flags() | Qt::ItemNeverHasChildren);
+
+        QTreeView view;
+        view.setModel(&model);
+
+        QSignalSpy spy(&view, SIGNAL(expanded(QModelIndex)));
+        QVERIFY(spy.isValid());
+
+        view.expand(model.index(0, 0));
+        QCOMPARE(spy.count(), 0);
+
+        view.expand(model.index(1, 0));
+        QCOMPARE(spy.count(), 1);
+    }
+    {
+        QStringListModel model(QStringList() << "one" << "two");
+        QTreeView view;
+        view.setModel(&model);
+
+        QSignalSpy spy(&view, SIGNAL(expanded(QModelIndex)));
+        QVERIFY(spy.isValid());
+
+        view.expand(model.index(0, 0));
+        QCOMPARE(spy.count(), 0);
+        view.expandAll();
+        QCOMPARE(spy.count(), 0);
+    }
 }
 
 void tst_QTreeView::expandAndCollapse_data()

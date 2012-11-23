@@ -964,6 +964,8 @@ Qt::ItemFlags QFileSystemModel::flags(const QModelIndex &index) const
         flags |= Qt::ItemIsEditable;
         if (indexNode->isDir())
             flags |= Qt::ItemIsDropEnabled;
+        else
+            flags |= Qt::ItemNeverHasChildren;
     }
     return flags;
 }

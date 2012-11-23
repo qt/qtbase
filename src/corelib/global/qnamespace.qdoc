@@ -2441,6 +2441,7 @@
     \value ItemIsUserCheckable It can be checked or unchecked by the user.
     \value ItemIsEnabled The user can interact with the item.
     \value ItemIsTristate The item is checkable with three separate states.
+    \value ItemNeverHasChildren The item never has child items.
 
     Note that checkable items need to be given both a suitable set of flags
     and an initial state, indicating whether the item is checked or not.

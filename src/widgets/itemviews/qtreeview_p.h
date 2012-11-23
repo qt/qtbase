@@ -203,7 +203,7 @@ public:
 
     inline bool isIndexExpanded(const QModelIndex &idx) const {
         //We first check if the idx is a QPersistentModelIndex, because creating QPersistentModelIndex is slow
-        return isPersistent(idx) && expandedIndexes.contains(idx);
+        return !(idx.flags() & Qt::ItemNeverHasChildren) && isPersistent(idx) && expandedIndexes.contains(idx);
     }
 
     // used when hiding and showing items
