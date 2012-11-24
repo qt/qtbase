@@ -100,6 +100,7 @@ private slots:
 #endif
     void legacyNames();
     void unixLocaleName();
+    void matchingLocales();
     void double_conversion_data();
     void double_conversion();
     void long_long_conversion_data();
@@ -532,6 +533,35 @@ void tst_QLocale::legacyNames()
     TEST_CTOR("tl", Filipino, Philippines)
 
 #undef TEST_CTOR
+}
+
+void tst_QLocale::matchingLocales()
+{
+    const QLocale c(QLocale::C);
+    const QLocale ru_RU(QLocale::Russian, QLocale::Russia);
+
+    QList<QLocale> locales = QLocale::matchingLocales(QLocale::C, QLocale::AnyScript, QLocale::AnyCountry);
+    QCOMPARE(locales.size(), 1);
+    QVERIFY(locales.contains(c));
+
+    locales = QLocale::matchingLocales(QLocale::Russian, QLocale::CyrillicScript, QLocale::Russia);
+    QCOMPARE(locales.size(), 1);
+    QVERIFY(locales.contains(ru_RU));
+
+    locales = QLocale::matchingLocales(QLocale::Russian, QLocale::AnyScript, QLocale::AnyCountry);
+    QVERIFY(!locales.isEmpty());
+    QVERIFY(!locales.contains(c));
+    QVERIFY(locales.contains(ru_RU));
+
+    locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::CyrillicScript, QLocale::AnyCountry);
+    QVERIFY(!locales.isEmpty());
+    QVERIFY(!locales.contains(c));
+    QVERIFY(locales.contains(ru_RU));
+
+    locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::Russia);
+    QVERIFY(!locales.isEmpty());
+    QVERIFY(!locales.contains(c));
+    QVERIFY(locales.contains(ru_RU));
 }
 
 void tst_QLocale::unixLocaleName()

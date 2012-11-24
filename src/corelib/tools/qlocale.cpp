@@ -1911,6 +1911,9 @@ QLocale QLocale::system()
 
     Getting a list of all locales:
     QList<QLocale> allLocales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
+
+    Getting a list of locales suitable for Russia:
+    QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript, QLocale::Russia);
 */
 QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
                                         QLocale::Script script,
@@ -1920,16 +1923,20 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
             uint(country) > QLocale::LastCountry)
         return QList<QLocale>();
 
+    if (language == QLocale::C)
+        return QList<QLocale>() << QLocale(QLocale::C);
+
     QList<QLocale> result;
-    const QLocaleData *data = locale_data;
     if (language == QLocale::AnyLanguage && script == QLocale::AnyScript && country == QLocale::AnyCountry)
         result.reserve(locale_data_size);
-    if (language != QLocale::C)
-        data += locale_index[language];
+    const QLocaleData *data = locale_data + locale_index[language];
     while ( (data != locale_data + locale_data_size)
             && (language == QLocale::AnyLanguage || data->m_language_id == uint(language))) {
-        QLocale locale(*new QLocalePrivate(localeDataIndex(data)));
-        result.append(locale);
+        if ((script == QLocale::AnyScript || data->m_script_id == uint(script))
+            && (country == QLocale::AnyCountry || data->m_country_id == uint(country))) {
+            QLocale locale(*new QLocalePrivate(localeDataIndex(data)));
+            result.append(locale);
+        }
         ++data;
     }
     return result;
@@ -1939,7 +1946,7 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
     \obsolete
     \since 4.3
 
-    Returns the list of countries that have entires for \a language in Qt's locale
+    Returns the list of countries that have entries for \a language in Qt's locale
     database. If the result is an empty list, then \a language is not represented in
     Qt's locale database.
 
@@ -1948,19 +1955,17 @@ QList<QLocale> QLocale::matchingLocales(QLocale::Language language,
 QList<QLocale::Country> QLocale::countriesForLanguage(Language language)
 {
     QList<Country> result;
-
-    unsigned language_id = language;
-    uint idx = locale_index[language_id];
-
     if (language == C) {
         result << AnyCountry;
         return result;
     }
 
-    const QLocaleData *data = locale_data + idx;
-
+    unsigned language_id = language;
+    const QLocaleData *data = locale_data + locale_index[language_id];
     while (data->m_language_id == language_id) {
-        result << static_cast<Country>(data->m_country_id);
+        const QLocale::Country country = static_cast<Country>(data->m_country_id);
+        if (!result.contains(country))
+            result.append(country);
         ++data;
     }
 
