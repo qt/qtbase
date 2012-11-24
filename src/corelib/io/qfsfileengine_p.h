@@ -104,8 +104,10 @@ public:
     void setFileName(const QString &file);
     int handle() const;
 
+#ifndef QT_NO_FILESYSTEMITERATOR
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames);
     Iterator *endEntryList();
+#endif
 
     qint64 read(char *data, qint64 maxlen);
     qint64 readLine(char *data, qint64 maxlen);

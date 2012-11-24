@@ -43,7 +43,7 @@
 #include "qfileinfo_p.h"
 #include "qvariant.h"
 
-#ifndef QT_NO_FSFILEENGINE
+#ifndef QT_NO_FILESYSTEMITERATOR
 
 QT_BEGIN_NAMESPACE
 
@@ -103,4 +103,4 @@ QFileInfo QFSFileEngineIterator::currentFileInfo() const
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_FSFILEENGINE
+#endif // QT_NO_FILESYSTEMITERATOR

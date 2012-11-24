@@ -57,7 +57,7 @@
 #include "qfilesystemiterator_p.h"
 #include "qdir.h"
 
-#ifndef QT_NO_FSFILEENGINE
+#ifndef QT_NO_FILESYSTEMITERATOR
 
 QT_BEGIN_NAMESPACE
 
@@ -86,6 +86,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_FSFILEENGINE
+#endif // QT_NO_FILESYSTEMITERATOR
 
 #endif // QFSFILEENGINE_ITERATOR_P_H

@@ -736,6 +736,7 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
     return writtenBytes;
 }
 
+#ifndef QT_NO_FILESYSTEMITERATOR
 /*!
     \internal
 */
@@ -751,6 +752,7 @@ QAbstractFileEngine::Iterator *QFSFileEngine::endEntryList()
 {
     return 0;
 }
+#endif // QT_NO_FILESYSTEMITERATOR
 
 /*!
     \internal
