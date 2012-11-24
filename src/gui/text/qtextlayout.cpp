@@ -449,7 +449,7 @@ void QTextLayout::setTextOption(const QTextOption &option)
 
     \sa setTextOption()
 */
-QTextOption QTextLayout::textOption() const
+const QTextOption &QTextLayout::textOption() const
 {
     return d->option;
 }

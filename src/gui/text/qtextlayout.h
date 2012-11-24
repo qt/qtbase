@@ -125,7 +125,7 @@ public:
     QString text() const;
 
     void setTextOption(const QTextOption &option);
-    QTextOption textOption() const;
+    const QTextOption &textOption() const;
 
     void setPreeditArea(int position, const QString &text);
     int preeditAreaPosition() const;
