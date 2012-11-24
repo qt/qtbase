@@ -797,7 +797,6 @@ CFG_HOST_CPUFEATURES=
 OPT_OBSOLETE_HOST_ARG=no
 
 CFG_USE_GNUMAKE=no
-CFG_IM=yes
 CFG_XINPUT2=auto
 CFG_XINPUT=runtime
 CFG_XKB=auto
@@ -6257,7 +6256,6 @@ echo "Xi2 support ............ $CFG_XINPUT2"
 echo "MIT-SHM support ........ $CFG_MITSHM"
 echo "FontConfig support ..... $CFG_FONTCONFIG"
 echo "XKB Support ............ $CFG_XKB"
-echo "immodule support ....... $CFG_IM"
 echo "GTK theme support ...... $CFG_QGTKSTYLE"
 
 [ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support .......... $CFG_SQL_mysql"
