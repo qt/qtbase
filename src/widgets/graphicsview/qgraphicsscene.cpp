@@ -771,9 +771,23 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         QEvent event(QEvent::WindowActivate);
         q->sendEvent(panel, &event);
 
-        // Set focus on the panel's focus item.
-        if (QGraphicsItem *focusItem = panel->focusItem())
+        // Set focus on the panel's focus item, or itself if it's
+        // focusable, or on the first focusable item in the panel's
+        // focus chain as a last resort.
+        if (QGraphicsItem *focusItem = panel->focusItem()) {
             focusItem->setFocus(Qt::ActiveWindowFocusReason);
+        } else if (panel->flags() & QGraphicsItem::ItemIsFocusable) {
+            panel->setFocus(Qt::ActiveWindowFocusReason);
+        } else if (panel->isWidget()) {
+            QGraphicsWidget *fw = static_cast<QGraphicsWidget *>(panel)->d_func()->focusNext;
+            do {
+                if (fw->focusPolicy() & Qt::TabFocus) {
+                    fw->setFocus(Qt::ActiveWindowFocusReason);
+                    break;
+                }
+                fw = fw->d_func()->focusNext;
+            } while (fw != panel);
+        }
     } else if (q->isActive()) {
         // Activate the scene
         QEvent event(QEvent::WindowActivate);
@@ -5327,6 +5341,21 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
             // focus.
             setFocusItem(d->lastFocusItem, next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
             return true;
+        }
+        if (d->activePanel) {
+            if (d->activePanel->flags() & QGraphicsItem::ItemIsFocusable) {
+                setFocusItem(d->activePanel, next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
+                return true;
+            }
+            if (d->activePanel->isWidget()) {
+                QGraphicsWidget *fw = static_cast<QGraphicsWidget *>(d->activePanel)->d_func()->focusNext;
+                do {
+                    if (fw->focusPolicy() & Qt::TabFocus) {
+                        setFocusItem(fw, next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
+                        return true;
+                    }
+                } while (fw != d->activePanel);
+            }
         }
     }
     if (!item && !d->tabFocusFirst) {

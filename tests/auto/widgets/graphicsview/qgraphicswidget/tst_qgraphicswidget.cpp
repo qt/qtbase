@@ -3323,10 +3323,7 @@ void verifyTabFocus(QGraphicsScene *scene, const QList<QGraphicsWidget *> &chain
     int n = chain.size() * (wrapsAround ? 3 : 1);
     for (int i = 0; i < n; ++i)
     {
-        if (i == 0)
-            chain.at(0)->setFocus();
-        else
-            qApp->sendEvent(scene, &tabEvent);
+        qApp->sendEvent(scene, &tabEvent);
         QVERIFY(chain.at(i % chain.size())->hasFocus());
         QCOMPARE(scene->focusItem(), chain.at(i % chain.size()));
     }
@@ -3364,7 +3361,6 @@ void tst_QGraphicsWidget::tabFocus()
     verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget << widget2, false);
 
     scene.setActivePanel(widget3);
-    widget3->setFocus();
     QCOMPARE(scene.focusItem(), (QGraphicsItem *)widget3);
     verifyTabFocus(&scene, QList<QGraphicsWidget *>() << widget3, true);
 

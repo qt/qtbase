@@ -3887,11 +3887,11 @@ void tst_QGraphicsScene::initialFocus_data()
     QTest::addColumn<bool>("shouldHaveFocus");
 
     QTest::newRow("inactive scene, normal item") << false << false << false << false;
-    QTest::newRow("inactive scene, panel item") << false << false << true << false;
+    QTest::newRow("inactive scene, panel item") << false << false << true << true;
     QTest::newRow("inactive scene, normal item, explicit focus") << false << true << false << true;
     QTest::newRow("inactive scene, panel, explicit focus") << false << true << true << true;
     QTest::newRow("active scene, normal item") << true << false << false << false;
-    QTest::newRow("active scene, panel item") << true << false << true << false;
+    QTest::newRow("active scene, panel item") << true << false << true << true;
     QTest::newRow("active scene, normal item, explicit focus") << true << true << false << true;
     QTest::newRow("active scene, panel, explicit focus") << true << true << true << true;
 }
