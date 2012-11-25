@@ -1099,12 +1099,16 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                    (macro.symbols.last().token == PP_WHITESPACE || macro.symbols.last().token == WHITESPACE))
                 macro.symbols.pop_back();
 
-            if (macro.symbols.first().token == PP_HASHHASH ||
-                macro.symbols.last().token == PP_HASHHASH)
-                error("'##' cannot appear at either end of a macro expansion");
-            if (macro.symbols.last().token == HASH ||
-                macro.symbols.last().token == PP_HASH)
-                error("'#' is not followed by a macro parameter");
+            if (!macro.symbols.isEmpty()) {
+                if (macro.symbols.first().token == PP_HASHHASH ||
+                    macro.symbols.last().token == PP_HASHHASH) {
+                    error("'##' cannot appear at either end of a macro expansion");
+                }
+                if (macro.symbols.last().token == HASH ||
+                    macro.symbols.last().token == PP_HASH) {
+                    error("'#' is not followed by a macro parameter");
+                }
+            }
             macros.insert(name, macro);
             continue;
         }
