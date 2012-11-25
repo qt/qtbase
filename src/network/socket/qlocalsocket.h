@@ -84,9 +84,11 @@ public:
     QLocalSocket(QObject *parent = 0);
     ~QLocalSocket();
 
+    void connectToServer(OpenMode openMode = ReadWrite);
     void connectToServer(const QString &name, OpenMode openMode = ReadWrite);
     void disconnectFromServer();
 
+    void setServerName(const QString &name);
     QString serverName() const;
     QString fullServerName() const;
 
@@ -95,6 +97,7 @@ public:
     virtual qint64 bytesAvailable() const;
     virtual qint64 bytesToWrite() const;
     virtual bool canReadLine() const;
+    virtual bool open(OpenMode openMode = ReadWrite) Q_DECL_OVERRIDE;
     virtual void close();
     LocalSocketError error() const;
     bool flush();
