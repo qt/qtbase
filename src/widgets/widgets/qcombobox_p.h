@@ -254,6 +254,10 @@ private:
     QAbstractItemView *view;
     QComboBoxPrivateScroller *top;
     QComboBoxPrivateScroller *bottom;
+    bool maybeIgnoreMouseButtonRelease;
+    QElapsedTimer popupTimer;
+
+    friend class QComboBox;
 };
 
 class QComboMenuDelegate : public QAbstractItemDelegate

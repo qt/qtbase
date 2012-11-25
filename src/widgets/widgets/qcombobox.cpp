@@ -407,7 +407,7 @@ void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 }
 
 QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView, QComboBox *parent)
-    : QFrame(parent, Qt::Popup), combo(parent), view(0), top(0), bottom(0)
+    : QFrame(parent, Qt::Popup), combo(parent), view(0), top(0), bottom(0), maybeIgnoreMouseButtonRelease(false)
 {
     // we need the combobox and itemview
     Q_ASSERT(parent);
@@ -667,10 +667,15 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             }
         }
         break;
+    case QEvent::MouseButtonPress:
+        maybeIgnoreMouseButtonRelease = false;
+        break;
     case QEvent::MouseButtonRelease: {
+        bool ignoreEvent = maybeIgnoreMouseButtonRelease && popupTimer.elapsed() < QApplication::doubleClickInterval();
+
         QMouseEvent *m = static_cast<QMouseEvent *>(e);
         if (isVisible() && view->rect().contains(m->pos()) && view->currentIndex().isValid()
-            && !blockMouseReleaseTimer.isActive()
+            && !blockMouseReleaseTimer.isActive() && !ignoreEvent
             && (view->currentIndex().flags() & Qt::ItemIsEnabled)
             && (view->currentIndex().flags() & Qt::ItemIsSelectable)) {
             combo->hidePopup();
@@ -2562,6 +2567,7 @@ void QComboBox::showPopup()
     container->setUpdatesEnabled(false);
 #endif
 
+    bool startTimer = !container->isVisible();
     container->raise();
     container->show();
     container->updateScrollers();
@@ -2581,6 +2587,10 @@ void QComboBox::showPopup()
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
 #endif
+    if (startTimer) {
+        container->popupTimer.start();
+        container->maybeIgnoreMouseButtonRelease = true;
+    }
 }
 
 /*!
@@ -2876,6 +2886,11 @@ void QComboBox::mousePressEvent(QMouseEvent *e)
         }
 #endif
         showPopup();
+        // The code below ensures that regular mousepress and pick item still works
+        // If it was not called the viewContainer would ignore event since it didn't have
+        // a mousePressEvent first.
+        if (d->viewContainer())
+            d->viewContainer()->maybeIgnoreMouseButtonRelease = false;
     } else {
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && d->lineEdit) {
