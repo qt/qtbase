@@ -2696,7 +2696,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
             bool ticksBelow = slider->tickPosition & QSlider::TicksBelow;
-            QColor activeHighlight = option->palette.color(QPalette::Normal, QPalette::Highlight);
+            QColor activeHighlight = d->highlight(option->palette);
             QPixmap cache;
             QBrush oldBrush = painter->brush();
             QPen oldPen = painter->pen();
