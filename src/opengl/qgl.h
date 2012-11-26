@@ -281,6 +281,8 @@ public:
     QGLFormat requestedFormat() const;
     void setFormat(const QGLFormat& format);
 
+    void moveToThread(QThread *thread);
+
     virtual void makeCurrent();
     virtual void doneCurrent();
 
@@ -413,7 +415,7 @@ public:
     QGLFormat format() const;
     void setFormat(const QGLFormat& format);
 
-    const QGLContext* context() const;
+    QGLContext* context() const;
     void setContext(QGLContext* context, const QGLContext* shareContext = 0,
                     bool deleteOldContext = true);
 

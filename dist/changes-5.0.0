@@ -676,6 +676,15 @@ QtOpenGL
   which were deprecated in Qt 4 have been removed.
 * Previously deprecated default value listBase parameter has been removed from
   both QGLWidget::renderText() functions.
+* In order to ensure support on more platforms, stricter requirements have been
+  introduced for doing threaded OpenGL. First, you must call makeCurrent() at
+  least once per swapBuffers() call, so that the platform has a chance to
+  synchronize resizes to the OpenGL surface. Second, before doing makeCurrent()
+  or swapBuffers() in a separate thread, you must call
+  QGLContext::moveToThread(QThread *) to explicitly let Qt know in which thread
+  a QGLContext is currently being used. You also need to make sure that the
+  context is not current in the current thread before moving it to a different
+  thread.
 
 QtScript
 --------

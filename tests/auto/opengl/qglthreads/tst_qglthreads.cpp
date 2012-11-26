@@ -42,6 +42,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #include <QtWidgets/QApplication>
 #include <QtOpenGL/QtOpenGL>
 #include "tst_qglthreads.h"
@@ -74,7 +76,8 @@ class SwapThread : public QThread
     Q_OBJECT
 public:
     SwapThread(QGLWidget *widget)
-        : m_widget(widget)
+        : m_context(widget->context())
+        , m_swapTriggered(false)
     {
         moveToThread(this);
     }
@@ -84,25 +87,48 @@ public:
         time.start();
         while (time.elapsed() < RUNNING_TIME) {
             lock();
-            wait();
+            waitForReadyToSwap();
 
-            m_widget->makeCurrent();
-            m_widget->swapBuffers();
-            m_widget->doneCurrent();
+            m_context->makeCurrent();
+            m_context->swapBuffers();
+            m_context->doneCurrent();
+
+            m_context->moveToThread(qApp->thread());
+
+            signalSwapDone();
             unlock();
         }
+
+        m_swapTriggered = false;
     }
 
     void lock() { m_mutex.lock(); }
     void unlock() { m_mutex.unlock(); }
 
-    void wait() { m_wait_condition.wait(&m_mutex); }
-    void notify() { m_wait_condition.wakeAll(); }
+    void waitForSwapDone() { if (m_swapTriggered) m_swapDone.wait(&m_mutex); }
+    void waitForReadyToSwap() { if (!m_swapTriggered) m_readyToSwap.wait(&m_mutex); }
+
+    void signalReadyToSwap()
+    {
+        if (!isRunning())
+            return;
+        m_readyToSwap.wakeAll();
+        m_swapTriggered = true;
+    }
+
+    void signalSwapDone()
+    {
+        m_swapTriggered = false;
+        m_swapDone.wakeAll();
+    }
 
 private:
-    QGLWidget *m_widget;
+    QGLContext *m_context;
     QMutex m_mutex;
-    QWaitCondition m_wait_condition;
+    QWaitCondition m_readyToSwap;
+    QWaitCondition m_swapDone;
+
+    bool m_swapTriggered;
 };
 
 class ForegroundWidget : public QGLWidget
@@ -117,6 +143,8 @@ public:
     void paintEvent(QPaintEvent *)
     {
         m_thread->lock();
+        m_thread->waitForSwapDone();
+
         makeCurrent();
         QPainter p(this);
         p.fillRect(rect(), QColor(rand() % 256, rand() % 256, rand() % 256));
@@ -125,7 +153,12 @@ public:
         p.drawText(rect(), Qt::AlignCenter, "This is an autotest");
         p.end();
         doneCurrent();
-        m_thread->notify();
+
+        if (m_thread->isRunning()) {
+            context()->moveToThread(m_thread);
+            m_thread->signalReadyToSwap();
+        }
+
         m_thread->unlock();
 
         update();
@@ -140,6 +173,8 @@ public:
 
 void tst_QGLThreads::swapInThread()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
+        QSKIP("No platformsupport for ThreadedOpenGL");
     QGLFormat format;
     format.setSwapInterval(1);
     ForegroundWidget widget(format);
@@ -176,10 +211,12 @@ class CreateAndUploadThread : public QThread
 {
     Q_OBJECT
 public:
-    CreateAndUploadThread(QGLWidget *shareWidget)
+    CreateAndUploadThread(QGLWidget *shareWidget, QSemaphore *semaphore)
+        : m_semaphore(semaphore)
     {
         m_gl = new QGLWidget(0, shareWidget);
         moveToThread(this);
+        m_gl->context()->moveToThread(this);
     }
 
     ~CreateAndUploadThread()
@@ -203,6 +240,8 @@ public:
             p.end();
             m_gl->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
 
+            m_semaphore->acquire(1);
+
             createdAndUploaded(image);
         }
     }
@@ -212,12 +251,18 @@ signals:
 
 private:
     QGLWidget *m_gl;
+    QSemaphore *m_semaphore;
 };
 
 class TextureDisplay : public QGLWidget
 {
     Q_OBJECT
 public:
+    TextureDisplay(QSemaphore *semaphore)
+        : m_semaphore(semaphore)
+    {
+    }
+
     void paintEvent(QPaintEvent *) {
         QPainter p(this);
         for (int i=0; i<m_images.size(); ++i) {
@@ -232,6 +277,8 @@ public slots:
         m_images << image;
         m_positions << QPoint(-rand() % width() / 2, -rand() % height() / 2);
 
+        m_semaphore->release(1);
+
         if (m_images.size() > 100) {
             m_images.takeFirst();
             m_positions.takeFirst();
@@ -241,12 +288,19 @@ public slots:
 private:
     QList <QImage> m_images;
     QList <QPoint> m_positions;
+
+    QSemaphore *m_semaphore;
 };
 
 void tst_QGLThreads::textureUploadInThread()
 {
-    TextureDisplay display;
-    CreateAndUploadThread thread(&display);
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
+        QSKIP("No platformsupport for ThreadedOpenGL");
+
+    // prevent producer thread from queuing up too many images
+    QSemaphore semaphore(100);
+    TextureDisplay display(&semaphore);
+    CreateAndUploadThread thread(&display, &semaphore);
 
     connect(&thread, SIGNAL(createdAndUploaded(QImage)), &display, SLOT(receiveImage(QImage)));
 
@@ -362,10 +416,9 @@ public:
         time.start();
         failure = false;
 
-        m_widget->makeCurrent();
-
         while (time.elapsed() < RUNNING_TIME && !failure) {
 
+            m_widget->makeCurrent();
 
             m_widget->mutex.lock();
             QSize s = m_widget->newSize;
@@ -416,6 +469,8 @@ void tst_QGLThreads::renderInThread_data()
 
 void tst_QGLThreads::renderInThread()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
+        QSKIP("No platformsupport for ThreadedOpenGL");
 
     QFETCH(bool, resize);
     QFETCH(bool, update);
@@ -427,6 +482,8 @@ void tst_QGLThreads::renderInThread()
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     widget.doneCurrent();
+
+    widget.context()->moveToThread(&thread);
 
     thread.start();
 
@@ -451,6 +508,7 @@ public:
     virtual ~Device() {}
     virtual QPaintDevice *realPaintDevice() = 0;
     virtual void prepareDevice() {}
+    virtual void moveToThread(QThread *) {}
 };
 
 class GLWidgetWrapper : public Device
@@ -463,6 +521,7 @@ public:
         widget.doneCurrent();
     }
     QPaintDevice *realPaintDevice() { return &widget; }
+    void moveToThread(QThread *thread) { widget.context()->moveToThread(thread); }
 
     ThreadSafeGLWidget widget;
 };
@@ -483,6 +542,7 @@ public:
     PixelBufferWrapper() { pbuffer = new QGLPixelBuffer(512, 512); }
     ~PixelBufferWrapper() { delete pbuffer; }
     QPaintDevice *realPaintDevice() { return pbuffer; }
+    void moveToThread(QThread *thread) { pbuffer->context()->moveToThread(thread); }
 
     QGLPixelBuffer *pbuffer;
 };
@@ -499,6 +559,7 @@ public:
     ~FrameBufferObjectWrapper() { delete fbo; }
     QPaintDevice *realPaintDevice() { return fbo; }
     void prepareDevice() { widget.makeCurrent(); }
+    void moveToThread(QThread *thread) { widget.context()->moveToThread(thread); }
 
     ThreadSafeGLWidget widget;
     QGLFramebufferObject *fbo;
@@ -545,6 +606,8 @@ public slots:
             QThread::msleep(20);
         }
 
+        device->moveToThread(qApp->thread());
+
         fail = beginFailed;
         QThread::currentThread()->quit();
     }
@@ -569,6 +632,7 @@ public:
             painters.append(new ThreadPainter(devices.at(i)));
             painters.at(i)->moveToThread(threads.at(i));
             painters.at(i)->connect(threads.at(i), SIGNAL(started()), painters.at(i), SLOT(draw()));
+            devices.at(i)->moveToThread(threads.at(i));
         }
     }
 
@@ -621,6 +685,8 @@ private:
 */
 void tst_QGLThreads::painterOnGLWidgetInThread()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
+        QSKIP("No platformsupport for ThreadedOpenGL");
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
           (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
         QSKIP("The OpenGL based threaded QPainter tests requires OpenGL/ES 2.0.");
@@ -642,6 +708,9 @@ void tst_QGLThreads::painterOnGLWidgetInThread()
 */
 void tst_QGLThreads::painterOnPixmapInThread()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL)
+        || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps))
+        QSKIP("No platformsupport for ThreadedOpenGL or ThreadedPixmaps");
 #ifdef Q_WS_X11
     QSKIP("Drawing text in threads onto X11 drawables currently crashes on some X11 servers.");
 #endif
@@ -660,6 +729,8 @@ void tst_QGLThreads::painterOnPixmapInThread()
 */
 void tst_QGLThreads::painterOnPboInThread()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
+        QSKIP("No platformsupport for ThreadedOpenGL");
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
           (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
         QSKIP("The OpenGL based threaded QPainter tests requires OpenGL/ES 2.0.");
@@ -685,6 +756,8 @@ void tst_QGLThreads::painterOnPboInThread()
 */
 void tst_QGLThreads::painterOnFboInThread()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL))
+        QSKIP("No platformsupport for ThreadedOpenGL");
     if (!((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) ||
           (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0))) {
         QSKIP("The OpenGL based threaded QPainter tests requires OpenGL/ES 2.0.");

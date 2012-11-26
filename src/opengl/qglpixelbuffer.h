@@ -66,6 +66,8 @@ public:
     bool makeCurrent();
     bool doneCurrent();
 
+    QGLContext *context() const;
+
     GLuint generateDynamicTexture() const;
     bool bindToDynamicTexture(GLuint texture);
     void releaseFromDynamicTexture();

@@ -186,9 +186,14 @@ void QGLContext::reset()
     d->initDone = false;
     QGLContextGroup::removeShare(this);
     if (d->guiGlContext) {
-        if (d->ownContext)
-            delete d->guiGlContext;
-        else
+        if (QOpenGLContext::currentContext() == d->guiGlContext)
+            doneCurrent();
+        if (d->ownContext) {
+            if (d->guiGlContext->thread() == QThread::currentThread())
+                delete d->guiGlContext;
+            else
+                d->guiGlContext->deleteLater();
+        } else
             d->guiGlContext->setQGLContextHandle(0,0);
         d->guiGlContext = 0;
     }

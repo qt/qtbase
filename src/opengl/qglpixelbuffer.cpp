@@ -100,6 +100,7 @@
 
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
 
+#include <qglframebufferobject.h>
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qfont_p.h>
@@ -115,9 +116,21 @@ QGLContext* QGLPBufferGLPaintDevice::context() const
     return pbuf->d_func()->qctx;
 }
 
-void QGLPBufferGLPaintDevice::endPaint() {
+void QGLPBufferGLPaintDevice::beginPaint()
+{
+    pbuf->makeCurrent();
+    QGLPaintDevice::beginPaint();
+}
+
+void QGLPBufferGLPaintDevice::endPaint()
+{
     glFlush();
     QGLPaintDevice::endPaint();
+}
+
+void QGLPBufferGLPaintDevice::setFbo(GLuint fbo)
+{
+    m_thisFBO = fbo;
 }
 
 void QGLPBufferGLPaintDevice::setPBuffer(QGLPixelBuffer* pb)
@@ -221,6 +234,7 @@ bool QGLPixelBuffer::makeCurrent()
             format.setSamples(d->req_format.samples());
         d->fbo = new QOpenGLFramebufferObject(d->req_size, format);
         d->fbo->bind();
+        d->glDevice.setFbo(d->fbo->handle());
         glViewport(0, 0, d->req_size.width(), d->req_size.height());
     }
     return true;
@@ -239,6 +253,15 @@ bool QGLPixelBuffer::doneCurrent()
         return false;
     d->qctx->doneCurrent();
     return true;
+}
+
+/*!
+    Returns the context of this pixelbuffer.
+*/
+QGLContext *QGLPixelBuffer::context() const
+{
+    Q_D(const QGLPixelBuffer);
+    return d->qctx;
 }
 
 /*!
@@ -366,6 +389,8 @@ QImage QGLPixelBuffer::toImage() const
         return QImage();
 
     const_cast<QGLPixelBuffer *>(this)->makeCurrent();
+    if (d->fbo)
+        d->fbo->bind();
     return qt_gl_read_framebuffer(d->req_size, d->format.alpha(), true);
 }
 
@@ -615,7 +640,7 @@ GLuint QGLPixelBuffer::generateDynamicTexture() const
 
 bool QGLPixelBuffer::hasOpenGLPbuffers()
 {
-    return QOpenGLFramebufferObject::hasOpenGLFramebufferObjects();
+    return QGLFramebufferObject::hasOpenGLFramebufferObjects();
 }
 
 QT_END_NAMESPACE

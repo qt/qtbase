@@ -3127,6 +3127,19 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 }
 
 /*!
+    Moves the QGLContext to the given \a thread.
+
+    Enables calling swapBuffers() and makeCurrent() on the context in
+    the given thread.
+*/
+void QGLContext::moveToThread(QThread *thread)
+{
+    Q_D(QGLContext);
+    if (d->guiGlContext)
+        d->guiGlContext->moveToThread(thread);
+}
+
+/*!
     \fn bool QGLContext::chooseContext(const QGLContext* shareContext = 0)
 
     This semi-internal function is called by create(). It creates a
@@ -3195,16 +3208,18 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
     In some very rare cases the underlying call may fail. If this
     occurs an error message is output to stderr.
+
+    If you call this from a thread other than the main UI thread,
+    make sure you've first pushed the context to the relevant thread
+    from the UI thread using moveToThread().
 */
 
 
 /*!
     \fn void QGLContext::swapBuffers() const
 
-    Swaps the screen contents with an off-screen buffer. Only works if
-    the context is in double buffer mode.
-
-    \sa QGLFormat::setDoubleBuffer()
+    Call this to finish a frame of OpenGL rendering, and make sure to
+    call makeCurrent() again before you begin a new frame.
 */
 
 
@@ -3362,13 +3377,18 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     1. Call doneCurrent() in the main thread when the rendering is
     finished.
 
-    2. Notify the swapping thread that it can grab the context.
+    2. Call QGLContext::moveToThread(swapThread) to transfer ownership
+    of the context to the swapping thread.
 
-    3. Make the rendering context current in the swapping thread with
+    3. Notify the swapping thread that it can grab the context.
+
+    4. Make the rendering context current in the swapping thread with
     makeCurrent() and then call swapBuffers().
 
-    4. Call doneCurrent() in the swapping thread and notify the main
-    thread that swapping is done.
+    5. Call doneCurrent() in the swapping thread.
+
+    6. Call QGLContext::moveToThread(qApp->thread()) and notify the
+    main thread that swapping is done.
 
     Doing this will free up the main thread so that it can continue
     with, for example, handling UI events or network requests. Even if
@@ -3400,7 +3420,10 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     QGLWidgets can only be created in the main GUI thread. This means
     a call to doneCurrent() is necessary to release the GL context
     from the main thread, before the widget can be drawn into by
-    another thread. Also, the main GUI thread will dispatch resize and
+    another thread. You then need to call QGLContext::moveToThread()
+    to transfer ownership of the context to the thread in which you
+    want to make it current.
+    Also, the main GUI thread will dispatch resize and
     paint events to a QGLWidget when the widget is resized, or parts
     of it becomes exposed or needs redrawing. It is therefore
     necessary to handle those events because the default
@@ -3749,7 +3772,7 @@ void QGLWidget::setFormat(const QGLFormat &format)
 
 
 /*!
-    \fn const QGLContext *QGLWidget::context() const
+    \fn QGLContext *QGLWidget::context() const
 
     Returns the context of this widget.
 
@@ -4483,7 +4506,7 @@ QGLFormat QGLWidget::format() const
     return d->glcx->format();
 }
 
-const QGLContext *QGLWidget::context() const
+QGLContext *QGLWidget::context() const
 {
     Q_D(const QGLWidget);
     return d->glcx;

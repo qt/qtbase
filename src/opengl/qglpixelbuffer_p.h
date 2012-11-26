@@ -68,8 +68,10 @@ public:
     virtual QPaintEngine* paintEngine() const {return pbuf->paintEngine();}
     virtual QSize size() const {return pbuf->size();}
     virtual QGLContext* context() const;
+    virtual void beginPaint();
     virtual void endPaint();
     void setPBuffer(QGLPixelBuffer* pb);
+    void setFbo(GLuint fbo);
 private:
     QGLPixelBuffer* pbuf;
 };
