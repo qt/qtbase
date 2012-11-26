@@ -113,8 +113,7 @@ void QCocoaGLContext::setActiveWindow(QWindow *window)
     QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
     cocoaWindow->setCurrentContext(this);
 
-    NSView *view = cocoaWindow->contentView();
-    [m_context setView:view];
+    [(QNSView *) cocoaWindow->contentView() setQCocoaGLContext:this];
 }
 
 void QCocoaGLContext::doneCurrent()

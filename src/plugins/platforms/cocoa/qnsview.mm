@@ -56,6 +56,7 @@
 #include <QtCore/QDebug>
 #include <private/qguiapplication_p.h>
 #include "qcocoabackingstore.h"
+#include "qcocoaglcontext.h"
 
 #ifdef QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
 #include <accessibilityinspector.h>
@@ -81,7 +82,9 @@ static QTouchDevice *touchDevice = 0;
         m_window = 0;
         m_buttons = Qt::NoButton;
         m_sendKeyEvent = false;
+        m_subscribesForGlobalFrameNotifications = false;
         currentCustomDragTypes = 0;
+
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
             touchDevice->setType(QTouchDevice::TouchPad);
@@ -99,6 +102,12 @@ static QTouchDevice *touchDevice = 0;
     delete[] m_maskData;
     m_maskData = 0;
     m_window = 0;
+    if (m_subscribesForGlobalFrameNotifications) {
+        m_subscribesForGlobalFrameNotifications = false;
+        [[NSNotificationCenter defaultCenter] removeObserver:self
+             name:NSViewGlobalFrameDidChangeNotification
+             object:self];
+}
     [super dealloc];
 }
 
@@ -138,6 +147,28 @@ static QTouchDevice *touchDevice = 0;
                                           object:self];
 
     return self;
+}
+
+- (void) setQCocoaGLContext:(QCocoaGLContext *)context
+{
+    [context->nsOpenGLContext() setView:self];
+    if (!m_subscribesForGlobalFrameNotifications) {
+        // NSOpenGLContext expects us to repaint (or update) the view when
+        // it changes position on screen. Since this happens unnoticed for
+        // the view when the parent view moves, we need to register a special
+        // notification that lets us handle this case:
+        m_subscribesForGlobalFrameNotifications = true;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+            selector:@selector(globalFrameChanged:)
+            name:NSViewGlobalFrameDidChangeNotification
+            object:self];
+    }
+}
+
+- (void) globalFrameChanged:(NSNotification*)notification
+{
+    Q_UNUSED(notification);
+    QWindowSystemInterface::handleExposeEvent(m_window, m_window->geometry());
 }
 
 - (void)updateGeometry
