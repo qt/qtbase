@@ -865,7 +865,7 @@ void QSslSocketBackendPrivate::startClientEncryption()
 {
     Q_Q(QSslSocket);
     if (!initSslContext()) {
-        q->setErrorString(QSslSocket::tr("Unable to init Ssl Context: %1").arg(getErrorsFromOpenSsl()));
+        q->setErrorString(QSslSocket::tr("Unable to init SSL Context: %1").arg(getErrorsFromOpenSsl()));
         q->setSocketError(QAbstractSocket::SslInternalError);
         emit q->error(QAbstractSocket::SslInternalError);
         return;
@@ -881,7 +881,7 @@ void QSslSocketBackendPrivate::startServerEncryption()
 {
     Q_Q(QSslSocket);
     if (!initSslContext()) {
-        q->setErrorString(QSslSocket::tr("Unable to init Ssl Context: %1").arg(getErrorsFromOpenSsl()));
+        q->setErrorString(QSslSocket::tr("Unable to init SSL Context: %1").arg(getErrorsFromOpenSsl()));
         q->setSocketError(QAbstractSocket::SslInternalError);
         emit q->error(QAbstractSocket::SslInternalError);
         return;
