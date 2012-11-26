@@ -6,9 +6,6 @@ build_pass:console: {
 ACTIVEQT_VERSION = $$VERSION
 isEmpty(ACTIVEQT_VERSION):ACTIVEQT_VERSION = 1.0
 
-DEFINES += QAXSERVER
-INCLUDEPATH += $$QT.activeqt.includes
-
 qtPrepareTool(QMAKE_IDC, idc)
 contains(TEMPLATE, "vc.*") {
     ACTIVEQT_IDC = $${QMAKE_IDC}
@@ -50,13 +47,3 @@ contains(TEMPLATE, "vc.*") {
     QMAKE_CLEAN += $${ACTIVEQT_OUTPUT}.idl $${ACTIVEQT_OUTPUT}.tlb
 }
 
-qt:!target_qt {
-   CONFIG(debug, debug|release) {
-      QMAKE_LIBS_QT_ENTRY = -lQAxServerd
-   } else { 
-      QMAKE_LIBS_QT_ENTRY = -lQAxServer
-   }
-   dll:QMAKE_LIBS += $$QMAKE_LIBS_QT_ENTRY
-   QMAKE_LIBDIR += $$QT.activeqt.libs
-   QMAKE_LIBS += $$QMAKE_LIBS_GUI
-}

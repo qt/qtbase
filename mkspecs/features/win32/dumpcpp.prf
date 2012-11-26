@@ -1,17 +1,3 @@
-!debug_and_release|build_pass {
-   CONFIG(debug, debug|release) {
-      LIBS += -lQAxContainerd
-   } else { 
-      LIBS += -lQAxContainer
-   }
-} else {
-   LIBS += -lQAxContainer
-}
-
-QMAKE_LIBDIR += $$QT.activeqt.libs
-INCLUDEPATH += $$QT.activeqt.includes
-QMAKE_LIBS += $$QMAKE_LIBS_GUI
-
 qtPrepareTool(QMAKE_DUMPCPP, dumpcpp)
 
 dumpcpp_decl.commands = $$QMAKE_DUMPCPP ${QMAKE_FILE_IN} -o ${QMAKE_FILE_BASE}

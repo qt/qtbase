@@ -89,6 +89,14 @@ uitools {
     warning("CONFIG+=uitools is deprecated. Use QT+=uitools instead.")
     QT += uitools
 }
+qaxcontainer {
+    warning("CONFIG+=qaxcontainer is deprecated. Use QT+=axcontainer instead.")
+    QT += axcontainer
+}
+qaxserver {
+    warning("CONFIG+=qaxserver is deprecated. Use QT+=axserver instead.")
+    QT += axserver
+}
 
 unset(using_privates)
 qtAddModules(QT, LIBS)
