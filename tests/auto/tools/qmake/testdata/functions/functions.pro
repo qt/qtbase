@@ -88,6 +88,20 @@ myTestFunction("oink baa moo")
      message("FAILED: myTestFunction: $$RESULT")
 }
 
+#recursive
+defineReplace(myRecursiveReplaceFunction) {
+    RESULT =
+    list = $$1
+    RESULT += $$member(list, 0)
+    list -= $$RESULT
+    !isEmpty(list):RESULT += $$myRecursiveReplaceFunction($$list)
+    return($$RESULT)
+}
+RESULT = $$myRecursiveReplaceFunction(oink baa moo)
+!isEqual(RESULT, "oink baa moo") {
+    message( "FAILED: myRecursiveReplaceFunction [$$RESULT] != oink baa moo" )
+}
+
 moo = "this is a test" "for real"
 fn = $$OUT_PWD/testdir/afile
 write_file($$fn, moo)|message("FAILED: write_file() failed")
