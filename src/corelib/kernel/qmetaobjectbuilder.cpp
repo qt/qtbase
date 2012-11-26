@@ -79,13 +79,15 @@ QT_BEGIN_NAMESPACE
 */
 
 // copied from moc's generator.cpp
-bool isBuiltinType(const QByteArray &type)
+namespace QtPrivate {
+Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type)
 {
     int id = QMetaType::type(type);
     if (!id && !type.isEmpty() && type != "void")
         return false;
     return (id < QMetaType::User);
 }
+} // namespace QtPrivate
 
 // copied from qmetaobject.cpp
 static inline const QMetaObjectPrivate *priv(const uint* data)
@@ -1324,7 +1326,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             for (int i = -1; i < paramCount; ++i) {
                 const QByteArray &typeName = (i < 0) ? method->returnType : paramTypeNames.at(i);
                 int typeInfo;
-                if (isBuiltinType(typeName))
+                if (QtPrivate::isBuiltinType(typeName))
                     typeInfo = QMetaType::type(typeName);
                 else
                     typeInfo = IsUnresolvedType | strings.enter(typeName);
@@ -1352,14 +1354,14 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         int name = strings.enter(prop->name);
 
         int typeInfo;
-        if (isBuiltinType(prop->type))
+        if (QtPrivate::isBuiltinType(prop->type))
             typeInfo = QMetaType::type(prop->type);
         else
             typeInfo = IsUnresolvedType | strings.enter(prop->type);
 
         int flags = prop->flags;
 
-        if (!isBuiltinType(prop->type))
+        if (!QtPrivate::isBuiltinType(prop->type))
             flags |= EnumOrFlag;
 
         if (buf) {

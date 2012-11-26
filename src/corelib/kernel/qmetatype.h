@@ -509,7 +509,9 @@ namespace QtPrivate
     {
         enum { Value = true };
     };
-}
+
+    Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
+} // namespace QtPrivate
 
 template <typename T, bool = QtPrivate::IsPointerToTypeDerivedFromQObject<T>::Value>
 struct QMetaTypeIdQObject
