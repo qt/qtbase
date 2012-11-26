@@ -32,6 +32,7 @@
 
     \ingroup appearance
     \inmodule QtWidgets
+    \internal
 
     This class is implemented as a wrapper to the HITheme
     APIs, allowing applications to be styled according to the current
