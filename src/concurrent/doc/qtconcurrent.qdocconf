@@ -5,6 +5,8 @@ description             = Qt Concurrent Reference Documentation
 url                     = http://qt-project.org/doc/qtconcurrent
 version                 = 5.0.0
 
+examplesinstallpath     = qtconcurrent
+
 qhp.projects            = QtConcurrent
 
 qhp.QtConcurrent.file         = qtconcurrent.qhp

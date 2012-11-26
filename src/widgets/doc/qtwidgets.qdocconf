@@ -5,6 +5,8 @@ description             = Qt Widgets Reference Documentation
 url                     = http://qt-project.org/doc/qtwidgets
 version                 = 5.0.0
 
+examplesinstallpath     = widgets
+
 qhp.projects            = QtWidgets
 
 qhp.QtWidgets.file         = qtwidgets.qhp

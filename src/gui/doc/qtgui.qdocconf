@@ -5,6 +5,8 @@ description             = Qt GUI Reference Documentation
 url                     = http://qt-project.org/doc/qtgui
 version                 = 5.0.0
 
+examplesinstallpath     = gui
+
 qhp.projects            = QtGui
 
 qhp.QtGui.file         = qtgui.qhp

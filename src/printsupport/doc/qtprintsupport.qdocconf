@@ -5,6 +5,8 @@ description             = Qt Print Support Reference Documentation
 url                     = http://qt-project.org/doc/qtprintsupport
 version                 = 5.0.0
 
+examplesinstallpath     = printsupport
+
 qhp.projects            = QtPrintSupport
 
 qhp.QtPrintSupport.file         = qtprintsupport.qhp

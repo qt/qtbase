@@ -5,6 +5,8 @@ description             = Qt Test Reference Documentation
 url                     = http://qt-project.org/doc/qttest
 version                 = 5.0.0
 
+examplesinstallpath     = qtestlib
+
 qhp.projects            = QtTest
 
 qhp.QtTest.file                = qttest.qhp

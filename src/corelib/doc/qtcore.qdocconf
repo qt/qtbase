@@ -5,6 +5,8 @@ description             = Qt Core Reference Documentation
 url                     = http://qt-project.org/doc/qtcore
 version                 = 5.0.0
 
+examplesinstallpath     = core
+
 qhp.projects            = QtCore
 
 qhp.QtCore.file                = qtcore.qhp

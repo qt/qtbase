@@ -5,6 +5,8 @@ description             = Qt SQL Reference Documentation
 url                     = http://qt-project.org/doc/qtsql
 version                 = 5.0.0
 
+examplesinstallpath     = sql
+
 qhp.projects            = QtSql
 
 qhp.QtSql.file            = qtsql.qhp

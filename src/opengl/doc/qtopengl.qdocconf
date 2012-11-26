@@ -5,6 +5,8 @@ description             = Qt OpenGL Reference Documentation
 url                     = http://qt-project.org/doc/qtopengl
 version                 = 5.0.0
 
+examplesinstallpath     = opengl
+
 qhp.projects            = QtOpenGL
 
 qhp.QtOpenGL.file         = qtopengl.qhp

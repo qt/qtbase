@@ -5,6 +5,8 @@ description             = Qt DBus Reference Documentation
 url                     = http://qt-project.org/doc/qtdbus
 version                 = 5.0.0
 
+examplesinstallpath     = dbus
+
 qhp.projects            = QtDBus
 
 qhp.QtDBus.file         = qtdbus.qhp

@@ -5,6 +5,8 @@ description             = Qt XML Reference Documentation
 url                     = http://qt-project.org/doc/qtxml
 version                 = 5.0.0
 
+examplesinstallpath     = xml
+
 qhp.projects            = QtXml
 
 qhp.QtXml.file            = qtxml.qhp

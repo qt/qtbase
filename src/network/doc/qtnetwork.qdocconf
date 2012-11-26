@@ -5,6 +5,8 @@ description             = Qt Network Reference Documentation
 url                     = http://qt-project.org/doc/qtnetwork
 version                 = 5.0.0
 
+examplesinstallpath     = network
+
 qhp.projects            = QtNetwork
 
 qhp.QtNetwork.file         = qtnetwork.qhp
