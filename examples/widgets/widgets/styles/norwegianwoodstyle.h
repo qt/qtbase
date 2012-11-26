@@ -41,7 +41,7 @@
 #ifndef NORWEGIANWOODSTYLE_H
 #define NORWEGIANWOODSTYLE_H
 
-#include <QWindowsStyle>
+#include <QProxyStyle>
 #include <QPalette>
 
 QT_BEGIN_NAMESPACE
@@ -49,12 +49,12 @@ class QPainterPath;
 QT_END_NAMESPACE
 
 //! [0]
-class NorwegianWoodStyle : public QWindowsStyle
+class NorwegianWoodStyle : public QProxyStyle
 {
     Q_OBJECT
 
 public:
-    NorwegianWoodStyle() {}
+    NorwegianWoodStyle();
 
     void polish(QPalette &palette);
     void polish(QWidget *widget);

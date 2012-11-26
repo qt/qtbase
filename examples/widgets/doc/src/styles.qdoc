@@ -37,12 +37,15 @@
     A style in Qt is a subclass of QStyle or of one of its
     subclasses. Styles perform drawing on behalf of widgets. Qt
     provides a whole range of predefined styles, either built into
-    the \l QtGui library or found in plugins. Custom styles are
-    usually created by subclassing one of Qt's existing style and
-    reimplementing a few virtual functions.
+    the \l QtWidgets library or found in plugins. Styles are usually
+    customized by subclassing QProxyStyle and reimplementing a few
+    virtual functions. While QProxyStyle provides a transparent way
+    to customize either a specific style or the appropriate platform's
+    default style, Qt also provides QCommonStyle as a convenient base
+    for full custom style implementations.
 
     In this example, the custom style is called \c NorwegianWoodStyle
-    and derives from QWindowsStyle. Its main features are the wooden
+    and derives from QProxyStyle. Its main features are the wooden
     textures used for filling most of the widgets and its round
     buttons and comboboxes.
 
@@ -56,7 +59,7 @@
     The example consists of the following classes:
 
     \list
-    \li \c NorwegianWoodStyle inherits from QWindowsStyle and implements
+    \li \c NorwegianWoodStyle inherits from QProxyStyle and implements
         the Norwegian Wood style.
     \li \c WidgetGallery is a \c QDialog subclass that shows the most
        common widgets and allows the user to switch style
@@ -69,7 +72,7 @@
 
     \snippet widgets/styles/norwegianwoodstyle.h 0
 
-    The public functions are all declared in QStyle (QWindowsStyle's
+    The public functions are all declared in QStyle (QProxyStyle's
     grandparent class) and reimplemented here to override the Windows
     look and feel. The private functions are helper functions.
 
@@ -154,7 +157,7 @@
     \image styles-disabledwood.png The Norwegian Wood style with disabled widgets
 
     Let's move on to the other functions reimplemented from
-    QWindowsStyle:
+    QProxyStyle:
 
     \snippet widgets/styles/norwegianwoodstyle.cpp 3
     \snippet widgets/styles/norwegianwoodstyle.cpp 4
@@ -201,13 +204,13 @@
     \snippet widgets/styles/norwegianwoodstyle.cpp 10
 
     The \l{QStyle::styleHint()}{styleHint()} function returns some
-    hints to widgets or to the base style (in our case QWindowsStyle)
+    hints to widgets or to the base style (in our case QProxyStyle)
     about how to draw the widgets. The Windows style returns \c true
     for the QStyle::SH_DitherDisabledText hint, resulting in a most
     unpleasing visual effect. We override this behavior and return \c
     false instead. We also return \c true for the
     QStyle::SH_EtchDisabledText hint, meaning that disabled text is
-    rendered with an embossed look (as QWindowsStyle does).
+    rendered with an embossed look.
 
     \snippet widgets/styles/norwegianwoodstyle.cpp 11
     \snippet widgets/styles/norwegianwoodstyle.cpp 12

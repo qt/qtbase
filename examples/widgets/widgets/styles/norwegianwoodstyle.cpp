@@ -42,6 +42,11 @@
 
 #include "norwegianwoodstyle.h"
 
+NorwegianWoodStyle::NorwegianWoodStyle() :
+    QProxyStyle(QStyleFactory::create("windows"))
+{
+}
+
 //! [0]
 void NorwegianWoodStyle::polish(QPalette &palette)
 {
@@ -112,9 +117,9 @@ int NorwegianWoodStyle::pixelMetric(PixelMetric metric,
     case PM_ComboBoxFrameWidth:
         return 8;
     case PM_ScrollBarExtent:
-        return QWindowsStyle::pixelMetric(metric, option, widget) + 4;
+        return QProxyStyle::pixelMetric(metric, option, widget) + 4;
     default:
-        return QWindowsStyle::pixelMetric(metric, option, widget);
+        return QProxyStyle::pixelMetric(metric, option, widget);
     }
 }
 //! [8]
@@ -131,7 +136,7 @@ int NorwegianWoodStyle::styleHint(StyleHint hint, const QStyleOption *option,
     case SH_EtchDisabledText:
         return int(true);
     default:
-        return QWindowsStyle::styleHint(hint, option, widget, returnData);
+        return QProxyStyle::styleHint(hint, option, widget, returnData);
     }
 }
 //! [10]
@@ -256,7 +261,7 @@ void NorwegianWoodStyle::drawPrimitive(PrimitiveElement element,
 //! [32] //! [33]
     default:
 //! [33] //! [34]
-        QWindowsStyle::drawPrimitive(element, option, painter, widget);
+        QProxyStyle::drawPrimitive(element, option, painter, widget);
     }
 }
 //! [34]
@@ -284,11 +289,11 @@ void NorwegianWoodStyle::drawControl(ControlElement element,
                     }
                 }
             }
-            QWindowsStyle::drawControl(element, &myButtonOption, painter, widget);
+            QProxyStyle::drawControl(element, &myButtonOption, painter, widget);
         }
         break;
     default:
-        QWindowsStyle::drawControl(element, option, painter, widget);
+        QProxyStyle::drawControl(element, option, painter, widget);
     }
 }
 //! [36]
