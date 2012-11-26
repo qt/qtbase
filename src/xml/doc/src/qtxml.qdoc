@@ -31,8 +31,10 @@
     \ingroup modules
     \ingroup technology-apis
 
-    \brief The QtXml module provides a stream reader and writer for
-    XML documents, and C++ implementations of SAX and DOM.
+    \brief The QtXml module provides C++ implementations of the SAX and DOM standards for XML.
+
+    The module is not actively maintained anymore. Please use
+    the QXmlStreamReader and QXmlStreamwriter classes in Qt Core instead.
 
     To include the definitions of the module's classes, use the
     following directive:
