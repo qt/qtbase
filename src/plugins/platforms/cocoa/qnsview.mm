@@ -665,12 +665,12 @@ static QTouchDevice *touchDevice = 0;
         if (phase == NSEventPhaseEnded || phase == NSEventPhaseCancelled) {
             currentWheelModifiers = Qt::NoModifier;
         }
-    }
-#else
-    QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta,
-                                             [self convertKeyModifiers:[theEvent modifierFlags]]);
+    } else
 #endif
-
+    {
+        QWindowSystemInterface::handleWheelEvent(m_window, qt_timestamp, qt_windowPoint, qt_windowPoint, pixelDelta, angleDelta,
+                                                 [self convertKeyModifiers:[theEvent modifierFlags]]);
+    }
 }
 #endif //QT_NO_WHEELEVENT
 
