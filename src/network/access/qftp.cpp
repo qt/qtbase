@@ -1254,7 +1254,7 @@ void QFtpPI::dtpConnectState(int s)
         case QFtpDTP::CsHostNotFound:
         case QFtpDTP::CsConnectionRefused:
             emit error(QFtp::ConnectionRefused,
-                        QFtp::tr("Connection refused for data connection"));
+                        QFtp::tr("Data Connection refused"));
             startNextCmd();
             return;
         default:
