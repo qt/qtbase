@@ -187,7 +187,11 @@ QMakeMetaInfo::readLibtoolFile(const QString &f)
                         (*lit) = conf->first("QMAKE_LFLAGS_RPATH") + (*lit).mid(2);
                 }
             }
-            vars["QMAKE_PRL_LIBS"] += lst;
+            ProStringList &prlLibs = vars["QMAKE_PRL_LIBS"];
+            foreach (const ProString &s, lst) {
+                prlLibs.removeAll(s);
+                prlLibs.append(s);
+            }
         }
     }
     return true;
