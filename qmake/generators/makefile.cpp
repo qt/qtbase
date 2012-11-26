@@ -2192,6 +2192,11 @@ MakefileGenerator::writeStubMakefile(QTextStream &t)
 bool
 MakefileGenerator::writeMakefile(QTextStream &t)
 {
+    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
+    if (ofile.lastIndexOf(Option::dir_sep) != -1)
+        ofile.remove(0, ofile.lastIndexOf(Option::dir_sep) +1);
+    t << "MAKEFILE      = " << ofile << endl << endl;
+
     t << "####### Compile" << endl << endl;
     writeObj(t, "SOURCES");
     writeObj(t, "GENERATED_SOURCES");
