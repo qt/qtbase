@@ -42,11 +42,11 @@
 #ifndef ARTHURSTYLE_H
 #define ARTHURSTYLE_H
 
-#include <QWindowsStyle>
+#include <QCommonStyle>
 
 QT_USE_NAMESPACE
 
-class ArthurStyle : public QWindowsStyle
+class ArthurStyle : public QCommonStyle
 {
 public:
     ArthurStyle();

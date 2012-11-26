@@ -66,7 +66,7 @@ QPixmap cached(const QString &img)
 
 
 ArthurStyle::ArthurStyle()
-    : QWindowsStyle()
+    : QCommonStyle()
 {
     Q_INIT_RESOURCE(shared);
 }
@@ -235,7 +235,7 @@ void ArthurStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
         break;
 
     default:
-        QWindowsStyle::drawPrimitive(element, option, painter, widget);
+        QCommonStyle::drawPrimitive(element, option, painter, widget);
         break;
     }
     return;
@@ -278,7 +278,7 @@ void ArthurStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
                 = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             QStyleOptionGroupBox groupBoxCopy(*groupBox);
             groupBoxCopy.subControls &= ~SC_GroupBoxLabel;
-            QWindowsStyle::drawComplexControl(control, &groupBoxCopy, painter, widget);
+            QCommonStyle::drawComplexControl(control, &groupBoxCopy, painter, widget);
 
             if (groupBox->subControls & SC_GroupBoxLabel) {
                 const QRect &r = groupBox->rect;
@@ -305,7 +305,7 @@ void ArthurStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
         }
         break;
     default:
-        QWindowsStyle::drawComplexControl(control, option, painter, widget);
+        QCommonStyle::drawComplexControl(control, option, painter, widget);
         break;
     }
     return;
@@ -318,17 +318,17 @@ QRect ArthurStyle::subControlRect(ComplexControl control, const QStyleOptionComp
 
     switch (control) {
     default:
-        rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
+        rect = QCommonStyle::subControlRect(control, option, subControl, widget);
         break;
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *group
                 = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             switch (subControl) {
             default:
-                rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
+                rect = QCommonStyle::subControlRect(control, option, subControl, widget);
                 break;
             case SC_GroupBoxContents:
-                rect = QWindowsStyle::subControlRect(control, option, subControl, widget);
+                rect = QCommonStyle::subControlRect(control, option, subControl, widget);
                 rect.adjust(0, -8, 0, 0);
                 break;
             case SC_GroupBoxFrame:
@@ -361,7 +361,7 @@ QRect ArthurStyle::subControlRect(ComplexControl control, const QStyleOptionComp
 QSize ArthurStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
                                     const QSize &size, const QWidget *widget) const
 {
-    QSize newSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
+    QSize newSize = QCommonStyle::sizeFromContents(type, option, size, widget);
 
 
     switch (type) {
@@ -388,7 +388,7 @@ int ArthurStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QWid
 {
     if (pm == PM_SliderLength)
         return 13;
-    return QWindowsStyle::pixelMetric(pm, opt, widget);
+    return QCommonStyle::pixelMetric(pm, opt, widget);
 }
 
 void ArthurStyle::polish(QWidget *widget)
@@ -441,7 +441,7 @@ QRect ArthurStyle::subElementRect(SubElement element, const QStyleOption *option
         r = widget->rect().adjusted(20, 0, 0, 0);
         break;
     default:
-        r = QWindowsStyle::subElementRect(element, option, widget);
+        r = QCommonStyle::subElementRect(element, option, widget);
         break;
     }
 
