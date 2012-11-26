@@ -55,7 +55,8 @@ class Q_WIDGETS_EXPORT QProxyStyle : public QCommonStyle
     Q_OBJECT
 
 public:
-    QProxyStyle(QStyle *baseStyle = 0);
+    QProxyStyle(QStyle *style = 0);
+    QProxyStyle(const QString &key);
     ~QProxyStyle();
 
     QStyle *baseStyle() const;

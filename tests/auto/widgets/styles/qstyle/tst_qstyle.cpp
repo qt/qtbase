@@ -234,7 +234,10 @@ void tst_QStyle::testProxyStyle()
     QVERIFY(proxyStyle->baseStyle());
     qApp->setStyle(proxyStyle);
 
-    QProxyStyle doubleProxy(new QProxyStyle(QStyleFactory::create("Windows")));
+    QProxyStyle* baseStyle = new QProxyStyle("Windows");
+    QCOMPARE(baseStyle->baseStyle()->objectName(), style->objectName());
+
+    QProxyStyle doubleProxy(baseStyle);
     QVERIFY(testAllFunctions(&doubleProxy));
 
     CustomProxy customStyle;
@@ -775,7 +778,7 @@ void tst_QStyle::testDrawingShortcuts()
 
 class FrameTestStyle : public QProxyStyle {
 public:
-    FrameTestStyle() : QProxyStyle(QStyleFactory::create("Windows")) { }
+    FrameTestStyle() : QProxyStyle("Windows") { }
     int styleHint(StyleHint hint, const QStyleOption *opt, const QWidget *widget, QStyleHintReturn *returnData) const {
         if (hint == QStyle::SH_ScrollView_FrameOnlyAroundContents)
             return 1;
