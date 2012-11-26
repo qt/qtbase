@@ -14,6 +14,7 @@
     "KHR" => "$basedir/src/3rdparty/angle/include/KHR",
     "GLES2" => "$basedir/src/3rdparty/angle/include/GLES2",
     "EGL" => "$basedir/src/3rdparty/angle/include/EGL",
+    "QtZlib" => "$basedir/src/3rdparty/zlib",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
 );
@@ -71,9 +72,12 @@
 
 @qpa_headers = ( qr/^qplatform/, qr/^qwindowsystem/ );
 my @angle_headers = ('egl.h', 'eglext.h', 'eglplatform.h', 'gl2.h', 'gl2ext.h', 'gl2platform.h', 'ShaderLang.h', 'khrplatform.h');
-@ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h", @angle_headers);
-@ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h", @angle_headers);
-@ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h",  @angle_headers);
+my @internal_zlib_headers = ( "crc32.h", "deflate.h", "gzguts.h", "inffast.h", "inffixed.h", "inflate.h", "inftrees.h", "trees.h", "zutil.h" );
+my @zlib_headers = ( "zconf.h", "zlib.h" );
+@ignore_headers = ( @internal_zlib_headers );
+@ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h", @zlib_headers, @angle_headers);
+@ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h", @zlib_headers, @angle_headers);
+@ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h", @zlib_headers, @angle_headers);
 @ignore_for_qt_module_check = ( "$modules{QtCore}/arch", "$modules{QtCore}/global", "$modules{QtTest}", "$modules{QtDBus}" );
 %inject_headers = ( "$basedir/src/corelib/global" => [ "qconfig.h" ] );
 # Module dependencies.

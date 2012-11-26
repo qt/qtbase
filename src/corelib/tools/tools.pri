@@ -109,8 +109,15 @@ else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
 else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
-contains(QT_CONFIG, zlib):include($$PWD/../../3rdparty/zlib.pri)
-else:include($$PWD/../../3rdparty/zlib_dependency.pri)
+contains(QT_CONFIG, zlib) {
+    include($$PWD/../../3rdparty/zlib.pri)
+    corelib_zlib_headers.files = $$PWD/../../3rdparty/zlib/zconf.h\
+                                 $$PWD/../../3rdparty/zlib/zlib.h
+    corelib_zlib_headers.path = $$[QT_INSTALL_HEADERS]/QtZlib
+    INSTALLS += corelib_zlib_headers
+} else {
+    include($$PWD/../../3rdparty/zlib_dependency.pri)
+}
 
 contains(QT_CONFIG,icu) {
     SOURCES += tools/qlocale_icu.cpp
