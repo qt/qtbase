@@ -382,8 +382,8 @@ QQuaternion QQuaternion::fromAxisAndAngle
         z /= length;
     }
     float a = (angle / 2.0f) * M_PI / 180.0f;
-    float s = qSin(a);
-    float c = qCos(a);
+    float s = sinf(a);
+    float c = cosf(a);
     return QQuaternion(c, x * s, y * s, z * s).normalized();
 }
 
@@ -519,11 +519,11 @@ QQuaternion QQuaternion::slerp
     float factor1 = 1.0f - t;
     float factor2 = t;
     if ((1.0f - dot) > 0.0000001) {
-        float angle = float(qAcos(dot));
-        float sinOfAngle = float(qSin(angle));
+        float angle = acosf(dot);
+        float sinOfAngle = sinf(angle);
         if (sinOfAngle > 0.0000001) {
-            factor1 = float(qSin((1.0f - t) * angle)) / sinOfAngle;
-            factor2 = float(qSin(t * angle)) / sinOfAngle;
+            factor1 = sinf((1.0f - t) * angle) / sinOfAngle;
+            factor2 = sinf(t * angle) / sinOfAngle;
         }
     }
 
