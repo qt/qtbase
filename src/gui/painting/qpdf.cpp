@@ -1634,7 +1634,7 @@ void QPdfEnginePrivate::writeInfo()
     xprintf("\n/Creator ");
     printString(creator);
     xprintf("\n/Producer ");
-    printString(QString::fromLatin1("Qt " QT_VERSION_STR " (C) 2011 Nokia Corporation and/or its subsidiary(-ies)"));
+    printString(QString::fromLatin1("Qt " QT_VERSION_STR " (C) 2012 Digia Plc and/or its subsidiary(-ies)"));
     QDateTime now = QDateTime::currentDateTime().toUTC();
     QTime t = now.time();
     QDate d = now.date();
