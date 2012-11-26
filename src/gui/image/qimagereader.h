@@ -133,6 +133,7 @@ public:
     static QByteArray imageFormat(const QString &fileName);
     static QByteArray imageFormat(QIODevice *device);
     static QList<QByteArray> supportedImageFormats();
+    static QList<QByteArray> supportedMimeTypes();
 
 private:
     Q_DISABLE_COPY(QImageReader)

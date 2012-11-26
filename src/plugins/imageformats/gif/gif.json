@@ -1,3 +1,4 @@
 {
-    "Keys": [ "gif" ]
+    "Keys": [ "gif" ],
+    "MimeTypes": [ "image/gif" ]
 }
