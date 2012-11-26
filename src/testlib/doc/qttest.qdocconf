@@ -9,7 +9,7 @@ examplesinstallpath     = qtestlib
 
 qhp.projects            = QtTest
 
-qhp.QtTest.file                = qttest.qhp
+qhp.QtTest.file                = qttestlib.qhp
 qhp.QtTest.namespace           = org.qt-project.qttest.500
 qhp.QtTest.virtualFolder       = qttest
 qhp.QtTest.indexTitle          = Qt Test
