@@ -114,7 +114,9 @@ CONFIG          += qmake_cache target_qt
     doc_subdir = doc
 
     unset(QMAKE_DOCS_INDEX)
-    QMAKE_DOCS_OUTPUTDIR = $$MODULE_BASE_OUTDIR/$$doc_subdir/qt$${MODULE}
+    QMAKE_DOCS_BASE_OUTDIR = $$MODULE_BASE_OUTDIR/$$doc_subdir
+    QMAKE_DOCS_OUTPUTDIR = $$QMAKE_DOCS_BASE_OUTDIR/qt$${MODULE}
+    QMAKE_DOCS_TARGET = $$replace(QMAKE_DOCS, ^(.*/)?(.*)\\.qdocconf$, \\2)
     for(qmod, QMAKEMODULES): \
         QMAKE_DOCS_INDEX += $$section(qmod, /, 0, -3)/$$doc_subdir
 
