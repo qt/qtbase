@@ -34,10 +34,6 @@
 
     \image stylepluginexample.png
 
-    On some platforms, the native style will prevent the button
-    from having a red background. In this case, try to run the example
-    in another style (e.g., plastique).
-
     A plugin in Qt is a class stored in a shared library that can be
     loaded by a QPluginLoader at run-time. When you create plugins in
     Qt, they either extend a Qt application or Qt itself. Writing a
@@ -52,14 +48,22 @@
     class. Style plugins are loaded by Qt and made available through
     QStyleFactory; we will look at this later. We have implemented \c
     SimpleStylePlugin, which provides \c SimpleStyle. The new style
-    inherits QWindowsStyle and contributes to widget styling by
-    drawing button backgrounds in red - not a major contribution, but
-    it still makes a new style. We test the plugin with \c
-    StyleWindow, in which we display a QPushButton.
+    contributes to widget styling by drawing button backgrounds in
+    red - not a major contribution, but it still makes a new style.
 
-    The \c SimpleStyle and \c StyleWindow classes do not contain any
-    plugin specific functionality and their implementations are
-    trivial; we will therefore leap past them and head on to the \c
+    The new style is platform agnostic in the sense that it is not
+    based on any specific style implementation, but uses QProxyStyle
+    to merely tweak the looks in the current application style that
+    defaults to the native system style.
+
+    \note On some platforms, the native style will prevent the button
+    from having a red background. In this case, try to run the example
+    in another style (e.g., fusion).
+
+    We test the plugin with \c StyleWindow, in which we display a
+    QPushButton. The \c SimpleStyle and \c StyleWindow classes do not
+    contain any plugin specific functionality and their implementations
+    are trivial; we will therefore leap past them and head on to the \c
     SimpleStylePlugin and the \c main() function. After we have looked
     at that, we examine the plugin's profile.
 

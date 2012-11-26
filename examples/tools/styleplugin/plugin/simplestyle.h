@@ -41,13 +41,13 @@
 #ifndef SIMPLESTYLE_H
 #define SIMPLESTYLE_H
 
-#include <QWindowsStyle>
+#include <QProxyStyle>
 
 QT_BEGIN_NAMESPACE
 class QPalette;
 QT_END_NAMESPACE
 
-class SimpleStyle : public QWindowsStyle
+class SimpleStyle : public QProxyStyle
 {
     Q_OBJECT
 
