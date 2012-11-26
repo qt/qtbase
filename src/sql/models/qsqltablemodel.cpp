@@ -1307,9 +1307,9 @@ Qt::ItemFlags QSqlTableModel::flags(const QModelIndex &index) const
     }
 
     if (!editable)
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+        return QSqlQueryModel::flags(index);
     else
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable;
+        return QSqlQueryModel::flags(index) | Qt::ItemIsEditable;
 }
 
 QSqlRecord QSqlTableModel::record() const

@@ -125,7 +125,7 @@ Qt::ItemFlags Model::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return 0;
-    return (Qt::ItemIsDragEnabled|Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    return Qt::ItemIsDragEnabled|QAbstractItemModel::flags(index);
 }
 
 Model::Node *Model::node(int row, Node *parent) const

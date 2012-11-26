@@ -441,8 +441,8 @@ Qt::ItemFlags LocaleModel::flags(const QModelIndex &index) const
     if (index.row() == 0 && index.column() == g_model_cols - 1)
         return 0;
     if (index.row() == 0)
-        return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
-    return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+        return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+    return QAbstractItemModel::flags(index);
 }
 
 bool LocaleModel::setData(const QModelIndex &index, const QVariant &value, int role)

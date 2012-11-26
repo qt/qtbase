@@ -99,7 +99,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return 0;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return QAbstractItemModel::flags(index);
 }
 //! [4]
 

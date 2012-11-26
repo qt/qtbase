@@ -94,8 +94,8 @@ bool MyModel::setData(const QModelIndex & index, const QVariant & value, int rol
 
 //-----------------------------------------------------------------
 //! [quoting mymodel_f]
-Qt::ItemFlags MyModel::flags(const QModelIndex & /*index*/) const
+Qt::ItemFlags MyModel::flags(const QModelIndex &index) const
 {
-    return Qt::ItemIsSelectable |  Qt::ItemIsEditable | Qt::ItemIsEnabled ;
+    return Qt::ItemIsEditable | QAbstractTableModel::flags(index);
 }
 //! [quoting mymodel_f]
