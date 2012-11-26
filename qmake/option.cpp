@@ -225,7 +225,7 @@ Option::parseCommandLine(QStringList &args)
                             QMAKE_VERSION_STR, QT_VERSION_STR,
                             QLibraryInfo::location(QLibraryInfo::LibrariesPath).toLatin1().constData());
 #ifdef QMAKE_OPENSOURCE_VERSION
-                    fprintf(stdout, "QMake is Open Source software from Nokia Corporation and/or its subsidiary(-ies).\n");
+                    fprintf(stdout, "QMake is Open Source software from Digia Plc and/or its subsidiary(-ies).\n");
 #endif
                     return Option::QMAKE_CMDLINE_BAIL;
                 } else if (arg == "-h" || arg == "-help" || arg == "--help") {
