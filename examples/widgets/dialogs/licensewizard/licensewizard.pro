@@ -4,9 +4,9 @@ SOURCES       = licensewizard.cpp \
 RESOURCES     = licensewizard.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/dialogs/licensewizard
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/dialogs/licensewizard
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/dialogs/licensewizard
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/dialogs/licensewizard
 INSTALLS += target sources
 
 QT += widgets printsupport

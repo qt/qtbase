@@ -19,7 +19,7 @@ SUBDIRS       = addressbook \
 
 # install
 sources.files = README *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews
 INSTALLS += sources
 
 QT += widgets

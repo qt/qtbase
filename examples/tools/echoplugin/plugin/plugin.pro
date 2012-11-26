@@ -10,9 +10,9 @@ DESTDIR         = ../plugins
 #! [0]
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/echoplugin/plugin
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin/plugin
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS plugin.pro echoplugin.json
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/echoplugin/plugin
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin/plugin
 INSTALLS += target sources
 
 QT += widgets

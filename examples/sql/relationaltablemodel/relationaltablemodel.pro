@@ -3,8 +3,8 @@ SOURCES       = relationaltablemodel.cpp
 QT           += sql widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/relationaltablemodel
+target.path = $$[QT_INSTALL_EXAMPLES]/sql/relationaltablemodel
 sources.files = $$SOURCES *.h $$RESOURCES $$FORMS relationaltablemodel.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/relationaltablemodel
+sources.path = $$[QT_INSTALL_EXAMPLES]/sql/relationaltablemodel
 INSTALLS += target sources
 

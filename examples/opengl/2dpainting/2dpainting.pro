@@ -11,9 +11,9 @@ SOURCES     = glwidget.cpp \
               window.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/2dpainting
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/2dpainting
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS 2dpainting.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/2dpainting
+sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/2dpainting
 INSTALLS += target sources
 
 

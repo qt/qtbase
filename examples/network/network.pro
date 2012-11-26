@@ -30,5 +30,5 @@ SUBDIRS       = \
 
 # install
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network
+sources.path = $$[QT_INSTALL_EXAMPLES]/network
 INSTALLS += sources

@@ -5,9 +5,9 @@ SOURCES += main.cpp \
 HEADERS += clockthread.h
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/threads/clock
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/threads/clock
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS clock.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/threads/clock
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/threads/clock
 INSTALLS += target sources
 
 

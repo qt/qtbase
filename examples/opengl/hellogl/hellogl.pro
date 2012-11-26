@@ -11,9 +11,9 @@ SOURCES       = glwidget.cpp \
 QT           += opengl widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/hellogl
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellogl.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/hellogl
+sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl
 INSTALLS += target sources
 
 

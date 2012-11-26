@@ -17,7 +17,7 @@ contains(QT_CONFIG, no-widgets) {
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtconcurrent
+target.path = $$[QT_INSTALL_EXAMPLES]/qtconcurrent
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS qtconcurrent.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtconcurrent
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtconcurrent
 INSTALLS += target sources

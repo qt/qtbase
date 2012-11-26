@@ -14,8 +14,8 @@ build_all:!build_pass {
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/chip
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/chip
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.pro *.html *.doc images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/chip
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/chip
 INSTALLS += target sources
 

@@ -8,9 +8,9 @@ RESOURCES     = styles.qrc
 REQUIRES += "contains(styles, windows)"
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/styles
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/styles
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS styles.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/styles
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/styles
 INSTALLS += target sources
 
 QT += widgets

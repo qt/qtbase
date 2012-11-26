@@ -4,9 +4,9 @@ SOURCES         = main.cpp \
 RESOURCES       = dockwidgets.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows/dockwidgets
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/dockwidgets
 sources.files = $$SOURCES $$HEADERS $$RESOURCES dockwidgets.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows/dockwidgets
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/dockwidgets
 INSTALLS += target sources
 
 QT += widgets

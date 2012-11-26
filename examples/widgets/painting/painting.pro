@@ -13,9 +13,9 @@ SUBDIRS       = basicdrawing \
                 fontsampler
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS painting.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting
 INSTALLS += target sources
 
 QT += widgets

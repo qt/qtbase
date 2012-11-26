@@ -9,9 +9,9 @@ unix:!mac:!vxworks:!integrity:LIBS+= -lm
 TARGET.EPOCHEAPSIZE = 0x200000 0x800000
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/chart
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/chart
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.cht
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/chart
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/chart
 INSTALLS += target sources
 
 QT += widgets

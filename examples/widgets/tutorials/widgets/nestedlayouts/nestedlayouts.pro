@@ -1,9 +1,9 @@
 SOURCES = main.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/widgets/nestedlayouts
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/widgets/nestedlayouts
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS nestedlayouts.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/widgets/nestedlayouts
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/widgets/nestedlayouts
 INSTALLS += target sources
 QT += widgets
 

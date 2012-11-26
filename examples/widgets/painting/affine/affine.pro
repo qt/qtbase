@@ -14,9 +14,9 @@ include($$SHARED_FOLDER/shared.pri)
 RESOURCES += affine.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/affine
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/affine
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.jpg
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/painting/affine
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/affine
 INSTALLS += target sources
 
 wince*: {

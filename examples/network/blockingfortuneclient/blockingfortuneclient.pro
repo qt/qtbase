@@ -8,8 +8,8 @@ SOURCES       = blockingclient.cpp \
 QT           += network
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/blockingfortuneclient
+target.path = $$[QT_INSTALL_EXAMPLES]/network/blockingfortuneclient
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS blockingfortuneclient.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/blockingfortuneclient
+sources.path = $$[QT_INSTALL_EXAMPLES]/network/blockingfortuneclient
 INSTALLS += target sources
 

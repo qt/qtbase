@@ -20,11 +20,11 @@ SOURCES += 3rdparty/fbm.c \
 RESOURCES += boxes.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/boxes
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/boxes
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.jpg *.png *.fsh *.vsh *.par
 sources.files -= 3rdparty/fbm.h 3rdparty/fbm.c
 sources.files += 3rdparty
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/boxes
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/boxes
 INSTALLS += target sources
 
 wince*: {

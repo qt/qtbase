@@ -6,8 +6,8 @@ SOURCES       = receiver.cpp \
 QT           += network
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/multicastreceiver
+target.path = $$[QT_INSTALL_EXAMPLES]/network/multicastreceiver
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS multicastreceiver.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/multicastreceiver
+sources.path = $$[QT_INSTALL_EXAMPLES]/network/multicastreceiver
 INSTALLS += target sources
 

@@ -20,9 +20,9 @@ TRANSLATIONS += translations/i18n_ar.ts \
                 translations/i18n_zh.ts
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/i18n
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/i18n
 sources.files = $$SOURCES $$HEADERS $$RESOURCES translations i18n.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/i18n
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/i18n
 INSTALLS += target sources
 
 QT += widgets

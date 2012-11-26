@@ -6,9 +6,9 @@ SOURCES   = fsmodel.cpp \
 RESOURCES = completer.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/completer
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/completer
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS completer.pro resources
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/completer
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/completer
 INSTALLS += target sources
 
 QT += widgets

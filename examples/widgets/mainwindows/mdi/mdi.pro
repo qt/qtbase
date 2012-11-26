@@ -6,9 +6,9 @@ SOURCES       = main.cpp \
 RESOURCES     = mdi.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows/mdi
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/mdi
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mdi.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/mainwindows/mdi
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/mdi
 INSTALLS += target sources
 
 QT += widgets

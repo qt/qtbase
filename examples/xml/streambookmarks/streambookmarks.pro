@@ -8,7 +8,7 @@ SOURCES       = main.cpp \
 QT           += xml widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml/streambookmarks
+target.path = $$[QT_INSTALL_EXAMPLES]/xml/streambookmarks
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS streambookmarks.pro *.xbel
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/xml/streambookmarks
+sources.path = $$[QT_INSTALL_EXAMPLES]/xml/streambookmarks
 INSTALLS += target sources

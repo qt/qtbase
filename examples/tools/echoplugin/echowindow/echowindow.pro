@@ -13,9 +13,9 @@ win32 {
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/echoplugin
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS echowindow.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/echoplugin/echowindow
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin/echowindow
 INSTALLS += target sources
 
 QT += widgets

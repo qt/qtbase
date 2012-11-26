@@ -5,9 +5,9 @@ SOURCES       = main.cpp \
                 scribblearea.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/touch/fingerpaint
+target.path = $$[QT_INSTALL_EXAMPLES]/touch/fingerpaint
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS fingerpaint.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/touch/fingerpaint
+sources.path = $$[QT_INSTALL_EXAMPLES]/touch/fingerpaint
 INSTALLS += target sources
 
 QT += widgets

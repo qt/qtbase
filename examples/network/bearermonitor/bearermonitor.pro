@@ -18,7 +18,7 @@ wince*:LIBS += -lws2
 CONFIG += console
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/bearermonitor
+target.path = $$[QT_INSTALL_EXAMPLES]/network/bearermonitor
 sources.files = $$SOURCES $$HEADERS *.ui *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/bearermonitor
+sources.path = $$[QT_INSTALL_EXAMPLES]/network/bearermonitor
 INSTALLS += target sources

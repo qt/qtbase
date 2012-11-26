@@ -10,9 +10,9 @@ DESTDIR       = ../../plugandpaint/plugins
 
 #! [0]
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/plugandpaint/plugins
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint/plugins
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS extrafilters.pro extrafilters.json
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/plugandpaintplugins/extrafilters
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaintplugins/extrafilters
 INSTALLS += target sources
 
 

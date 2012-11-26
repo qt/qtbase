@@ -9,9 +9,9 @@ SOURCES       = locationdialog.cpp \
                 variantdelegate.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/settingseditor
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/settingseditor
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS settingseditor.pro inifiles
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/settingseditor
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/settingseditor
 INSTALLS += target sources
 
 QT += widgets

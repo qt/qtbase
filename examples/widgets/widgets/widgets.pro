@@ -30,5 +30,5 @@ contains(styles, windows): SUBDIRS += styles
 
 # install
 sources.files = widgets.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets
 INSTALLS += sources

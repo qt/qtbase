@@ -23,9 +23,9 @@ RESOURCES += \
     images.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/orientation
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/orientation
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.png *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/orientation
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/orientation
 INSTALLS += target sources
 
 simulator: warning(This example might not fully work on Simulator platform)

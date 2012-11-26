@@ -11,8 +11,8 @@ HEADERS += \
     buttontester.h \
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/mousebuttons
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/mousebuttons
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mousebuttons.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/mousebuttons
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/mousebuttons
 INSTALLS += target sources
 QT += core widgets

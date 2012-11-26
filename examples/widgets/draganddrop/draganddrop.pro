@@ -8,6 +8,6 @@ SUBDIRS     = draggableicons \
 wince*: SUBDIRS -= dropsite
 # install
 sources.files = README *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/draganddrop
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop
 INSTALLS += sources
 QT += widgets

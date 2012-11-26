@@ -10,7 +10,7 @@ QT += sql widgets
 QT += xml widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/masterdetail
+target.path = $$[QT_INSTALL_EXAMPLES]/sql/masterdetail
 sources.files = $$SOURCES *.h $$RESOURCES $$FORMS masterdetail.pro *.xml images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/masterdetail
+sources.path = $$[QT_INSTALL_EXAMPLES]/sql/masterdetail
 INSTALLS += target sources

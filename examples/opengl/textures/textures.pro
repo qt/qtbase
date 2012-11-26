@@ -7,9 +7,9 @@ RESOURCES     = textures.qrc
 QT           += opengl widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/textures
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/textures
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS textures.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/textures
+sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/textures
 INSTALLS += target sources
 
 

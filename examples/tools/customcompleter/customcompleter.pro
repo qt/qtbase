@@ -6,9 +6,9 @@ SOURCES   = main.cpp \
 RESOURCES = customcompleter.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/customcompleter
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/customcompleter
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS customcompleter.pro resources
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/customcompleter
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/customcompleter
 INSTALLS += target sources
 
 QT += widgets

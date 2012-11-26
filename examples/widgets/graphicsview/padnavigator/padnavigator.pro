@@ -20,9 +20,9 @@ QT += widgets
 contains(QT_CONFIG, opengl):QT += opengl
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/padnavigator
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/padnavigator
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS padnavigator.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/graphicsview/padnavigator
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/padnavigator
 INSTALLS += target sources
 
 CONFIG += console

@@ -11,7 +11,7 @@ OTHER_FILES += applicationicon.svg \
                applicationicon.desktop
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/applicationicon
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/applicationicon
 sources.files = $$SOURCES $$HEADERS applicationicon.svg applicationicon.png *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/applicationicon
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/applicationicon
 INSTALLS += target sources

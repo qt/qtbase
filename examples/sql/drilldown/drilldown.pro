@@ -10,7 +10,7 @@ SOURCES = imageitem.cpp \
 QT += sql widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/drilldown
+target.path = $$[QT_INSTALL_EXAMPLES]/sql/drilldown
 sources.files = $$SOURCES *.h $$RESOURCES $$FORMS drilldown.pro *.png *.jpg images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql/drilldown
+sources.path = $$[QT_INSTALL_EXAMPLES]/sql/drilldown
 INSTALLS += target sources

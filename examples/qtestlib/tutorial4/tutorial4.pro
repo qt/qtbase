@@ -2,9 +2,9 @@ SOURCES = testgui.cpp
 QT += testlib
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtestlib/tutorial4
+target.path = $$[QT_INSTALL_EXAMPLES]/qtestlib/tutorial4
 sources.files = $$SOURCES *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/qtestlib/tutorial4
+sources.path = $$[QT_INSTALL_EXAMPLES]/qtestlib/tutorial4
 INSTALLS += target sources
 
 QT += widgets

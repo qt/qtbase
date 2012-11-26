@@ -8,7 +8,7 @@ SOURCES   = lightmaps.cpp \
             slippymap.cpp
 QT += network widgets
 
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/embedded/lightmaps
+target.path = $$[QT_INSTALL_EXAMPLES]/embedded/lightmaps
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/embedded/lightmaps
+sources.path = $$[QT_INSTALL_EXAMPLES]/embedded/lightmaps
 INSTALLS += target sources

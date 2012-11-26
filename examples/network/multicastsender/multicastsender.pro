@@ -4,8 +4,8 @@ SOURCES       = sender.cpp \
 QT           += network widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/multicastsender
+target.path = $$[QT_INSTALL_EXAMPLES]/network/multicastsender
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS multicastsender.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/network/multicastsender
+sources.path = $$[QT_INSTALL_EXAMPLES]/network/multicastsender
 INSTALLS += target sources
 

@@ -20,5 +20,5 @@ SUBDIRS             =   books \
 
 # install
 sources.files = connection.h sql.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/sql
+sources.path = $$[QT_INSTALL_EXAMPLES]/sql
 INSTALLS += sources

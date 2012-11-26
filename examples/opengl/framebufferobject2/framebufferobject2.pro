@@ -5,9 +5,9 @@ RESOURCES += framebufferobject2.qrc
 QT += opengl widgets
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/framebufferobject2
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/framebufferobject2
 sources.files = $$SOURCES $$HEADERS $$RESOURCES framebufferobject2.pro *.png
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/framebufferobject2
+sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/framebufferobject2
 INSTALLS += target sources
 
 

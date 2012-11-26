@@ -17,9 +17,9 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
 #! [0]
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/plugandpaint
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS plugandpaint.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/plugandpaint
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint
 INSTALLS += target sources
 
 QT += widgets

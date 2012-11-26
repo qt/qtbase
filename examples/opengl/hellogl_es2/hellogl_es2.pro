@@ -12,9 +12,9 @@ HEADERS += bubble.h
 RESOURCES += texture.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/hellogl_es2
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl_es2
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellogl_es2.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/hellogl_es2
+sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl_es2
 INSTALLS += target sources
 
 maemo5 {

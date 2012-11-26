@@ -11,9 +11,9 @@ HEADERS   = adddialog.h \
             tablemodel.h
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/addressbook
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/addressbook
 sources.files = $$SOURCES $$HEADERS $$RESOURCES addressbook.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/itemviews/addressbook
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/addressbook
 INSTALLS += target sources
 QT += widgets
 

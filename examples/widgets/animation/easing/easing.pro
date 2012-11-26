@@ -8,9 +8,9 @@ FORMS   = form.ui
 RESOURCES = easing.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/animation/easing
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/animation/easing
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS easing.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/animation/easing
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/animation/easing
 INSTALLS += target sources
 
 QT += widgets

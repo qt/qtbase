@@ -3,9 +3,9 @@ SOURCES     = main.cpp \
               movieplayer.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/movie
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/movie
 sources.files = $$SOURCES $$HEADERS $$RESOURCES movie.pro animation.gif
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/widgets/movie
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/movie
 INSTALLS += target sources
 
 

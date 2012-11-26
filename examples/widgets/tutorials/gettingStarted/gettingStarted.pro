@@ -6,5 +6,5 @@ dir_gsqt.file = gsQt/gsqt.pro
 
 # install
 sources.files = gettingStarted.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/widgets/tutorials/gettingStarted
+sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/gettingStarted
 INSTALLS += sources

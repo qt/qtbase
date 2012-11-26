@@ -10,9 +10,9 @@ DESTDIR       = ../../plugandpaint/plugins
 #! [0]
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/plugandpaint/plugins
+target.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint/plugins
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS basictools.pro basictools.json
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/tools/plugandpaintplugins/basictools
+sources.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaintplugins/basictools
 INSTALLS += target sources
 
 QT += widgets

@@ -25,9 +25,9 @@ contains(QT_CONFIG, opengl) {
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/cube
+target.path = $$[QT_INSTALL_EXAMPLES]/opengl/cube
 sources.files = $$SOURCES $$HEADERS $$RESOURCES cube.png *.glsl *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/opengl/cube
+sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/cube
 INSTALLS += target sources
 
 simulator: warning(This example might not fully work on Simulator platform)

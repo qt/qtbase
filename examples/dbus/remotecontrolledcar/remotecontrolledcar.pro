@@ -4,7 +4,7 @@ SUBDIRS = car \
 
 # install
 sources.files = *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/qtbase/dbus/remotecontrolledcar
+sources.path = $$[QT_INSTALL_EXAMPLES]/dbus/remotecontrolledcar
 INSTALLS += sources
 
 QT += widgets
