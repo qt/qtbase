@@ -223,7 +223,9 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     QString prefix = CONFIG_QHP + Config::dot + project + Config::dot;
     manifestDir = "qthelp://" + config.getString(prefix + "namespace");
     manifestDir += QLatin1Char('/') + config.getString(prefix + "virtualFolder") + QLatin1Char('/');
-
+    examplesPath = config.getString(CONFIG_EXAMPLESINSTALLPATH);
+    if (!examplesPath.isEmpty())
+        examplesPath += QLatin1Char('/');
 }
 
 /*!
@@ -4094,7 +4096,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         }
         if (!proFiles.isEmpty()) {
             if (proFiles.size() == 1) {
-                writer.writeAttribute("projectPath", proFiles[0]);
+                writer.writeAttribute("projectPath", examplesPath + proFiles[0]);
             }
             else {
                 QString exampleName = en->name().split('/').last();
@@ -4103,13 +4105,13 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                 {
                     if (proFiles[j].endsWith(QStringLiteral("%1/%1.pro").arg(exampleName))
                             || proFiles[j].endsWith(QStringLiteral("%1/%1.qmlproject").arg(exampleName))) {
-                        writer.writeAttribute("projectPath", proFiles[j]);
+                        writer.writeAttribute("projectPath", examplesPath + proFiles[j]);
                         proWithExampleNameFound = true;
                         break;
                     }
                 }
                 if (!proWithExampleNameFound)
-                    writer.writeAttribute("projectPath", proFiles[0]);
+                    writer.writeAttribute("projectPath", examplesPath + proFiles[0]);
             }
         }
         if (!en->imageFileName().isEmpty())

@@ -168,6 +168,7 @@ private:
 #define CONFIG_ENDHEADER                "endheader"
 #define CONFIG_EXAMPLEDIRS              "exampledirs"
 #define CONFIG_EXAMPLES                 "examples"
+#define CONFIG_EXAMPLESINSTALLPATH      "examplesinstallpath"
 #define CONFIG_EXCLUDEDIRS              "excludedirs"
 #define CONFIG_EXCLUDEFILES             "excludefiles"
 #define CONFIG_EXTRAIMAGES              "extraimages"

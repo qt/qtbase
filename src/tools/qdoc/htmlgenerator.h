@@ -236,6 +236,7 @@ private:
     QString projectUrl;
     QString navigationLinks;
     QString manifestDir;
+    QString examplesPath;
     QStringList stylesheets;
     QStringList customHeadElements;
     bool obsoleteLinks;
