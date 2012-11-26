@@ -2771,9 +2771,7 @@ void Configure::generateCachefile()
     if (cacheFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream cacheStream(&cacheFile);
 
-        for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var) {
-            cacheStream << (*var) << endl;
-        }
+        // nothing left here
 
         cacheStream.flush();
         cacheFile.close();
@@ -2837,6 +2835,9 @@ void Configure::generateCachefile()
         if (dictionary[ "STRIP" ] == "no")
             moduleStream << " nostrip";
         moduleStream << endl;
+
+        for (QStringList::Iterator var = qmakeVars.begin(); var != qmakeVars.end(); ++var)
+            moduleStream << (*var) << endl;
 
         moduleStream.flush();
         moduleFile.close();
