@@ -386,23 +386,21 @@ namespace QTest {
                 "    QCoreApplication app(argc, argv);\n";
             break;
 
-        case QExternalTest::QApplicationTty:
-            sourceCode +=
-                "    QApplication app(argc, argv, QApplication::Tty);\n";
-            break;
-
         guiapplication:
-        case QExternalTest::QApplicationGuiClient:
+        case QExternalTest::QGuiApplication:
             sourceCode +=
-                "    QApplication app(argc, argv, QApplication::GuiClient);\n";
+                "    QGuiApplication app(argc, argv);\n";
             break;
 
-        case QExternalTest::QApplicationGuiServer:
+        widgetsapplication:
+        case QExternalTest::QApplication:
             sourceCode +=
-                "    QApplication app(argc, argv, QApplication::GuiServer);\n";
+                "    QApplication app(argc, argv);\n";
             break;
 
         case QExternalTest::AutoApplication:
+            if (qtModules & QExternalTest::QtWidgets)
+                goto widgetsapplication;
             if (qtModules & QExternalTest::QtGui)
                 goto guiapplication;
             if (qtModules == 0)

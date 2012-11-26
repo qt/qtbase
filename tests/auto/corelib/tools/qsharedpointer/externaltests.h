@@ -77,7 +77,8 @@ namespace QTest {
             QtTest      = 0x0200,
             QtDBus      = 0x0400,
             QtWebKit    = 0x0800,
-            Phonon      = 0x1000 // odd man out
+            QtWidgets   = 0x1000,
+            Phonon      = 0x2000 // odd man out
         };
         Q_DECLARE_FLAGS(QtModules, QtModule)
 
@@ -85,9 +86,8 @@ namespace QTest {
             AutoApplication,
             Applicationless,
             QCoreApplication,
-            QApplicationTty,
-            QApplicationGuiClient,
-            QApplicationGuiServer
+            QGuiApplication,
+            QApplication
         };
 
         QList<QByteArray> qmakeSettings() const;
