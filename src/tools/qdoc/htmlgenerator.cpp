@@ -4122,7 +4122,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                         writer.writeStartElement("fileToOpen");
                         if (file.startsWith("demos/"))
                             file = file.mid(6);
-                        writer.writeCharacters(file);
+                        writer.writeCharacters(examplesPath + file);
                         writer.writeEndElement(); // fileToOpen
                         usedNames.insert(fileName);
                     }
@@ -4133,7 +4133,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                         writer.writeStartElement("fileToOpen");
                         if (file.startsWith("demos/"))
                             file = file.mid(6);
-                        writer.writeCharacters(file);
+                        writer.writeCharacters(examplesPath + file);
                         writer.writeEndElement(); // fileToOpen
                         usedNames.insert(fileName);
                     }
