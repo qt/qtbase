@@ -126,7 +126,7 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
     after creating a QGLFramebufferObject to find the exact format that was
     used to create the frame buffer object.
 
-    \note This class has been deprecated in favor of QOpenGLFramebufferObject.
+    \note This class has been deprecated in favor of QOpenGLFramebufferObjectFormat.
 
     \sa QGLFramebufferObject
 */
@@ -703,6 +703,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     \brief The QGLFramebufferObject class encapsulates an OpenGL framebuffer object.
     \since 4.2
 
+    \obsolete
+
     \ingroup painting-3D
 
     The QGLFramebufferObject class encapsulates an OpenGL framebuffer
@@ -773,6 +775,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     As of Qt 4.8, it's possible to draw into a QGLFramebufferObject
     using a QPainter in a separate thread. Note that OpenGL 2.0 or
     OpenGL ES 2.0 is required for this to work.
+
+    \note This class has been deprecated in favor of QOpenGLFramebufferObject.
 
     \sa {Framebuffer Object Example}
 */
