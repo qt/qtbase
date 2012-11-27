@@ -311,6 +311,44 @@ void ArthurStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
     return;
 }
 
+void ArthurStyle::drawControl(QStyle::ControlElement element, const QStyleOption *option,
+                              QPainter *painter, const QWidget *widget) const
+{
+    switch (element) {
+    case CE_RadioButtonLabel:
+        if (const QStyleOptionButton *button
+                = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+
+            if (button->text.isEmpty()) {
+                QCommonStyle::drawControl(element, option, painter, widget);
+            } else {
+                painter->save();
+                painter->setPen(Qt::black);
+                painter->drawText(button->rect, Qt::AlignVCenter, button->text);
+                painter->restore();
+            }
+        }
+        break;
+    case CE_PushButtonLabel:
+        if (const QStyleOptionButton *button
+                = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+
+            if (button->text.isEmpty()) {
+                QCommonStyle::drawControl(element, option, painter, widget);
+            } else {
+                painter->save();
+                painter->setPen(Qt::black);
+                painter->drawText(button->rect, Qt::AlignVCenter | Qt::AlignHCenter, button->text);
+                painter->restore();
+            }
+        }
+        break;
+    default:
+        QCommonStyle::drawControl(element, option, painter, widget);
+        break;
+    }
+}
+
 QRect ArthurStyle::subControlRect(ComplexControl control, const QStyleOptionComplex *option,
                                   SubControl subControl, const QWidget *widget) const
 {
