@@ -52,9 +52,8 @@
 #include <math.h>
 
 #include <QtWidgets/QLabel>
-#if !defined(QT_NO_STYLE_WINDOWS)
-#include <QtWidgets/QWindowsStyle>
-#endif
+#include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QCommonStyle>
 #include <QtGui/QPainterPath>
 #include <QtWidgets/QRubberBand>
 #include <QtWidgets/QScrollBar>
@@ -2770,7 +2769,7 @@ void tst_QGraphicsView::scrollBarRanges()
         view.setStyle(new FauxMotifStyle);
     } else {
 #if !defined(QT_NO_STYLE_WINDOWS)
-        view.setStyle(new QWindowsStyle);
+        view.setStyle(QStyleFactory::create("windows"));
 #endif
     }
     view.setStyleSheet(" "); // enables style propagation ;-)
@@ -3282,15 +3281,11 @@ void tst_QGraphicsView::scrollAfterResize_data()
     QTest::addColumn<QTransform>("x2");
     QTest::addColumn<QTransform>("x3");
 
-#if !defined(QT_NO_STYLE_WINDOWS)
-    QWindowsStyle style;
-#else
-    QCommonStyle style;
-#endif
+    QStyle *style = QStyleFactory::create("windows");
 
-    int frameWidth = style.pixelMetric(QStyle::PM_DefaultFrameWidth);
-    int extent = style.pixelMetric(QStyle::PM_ScrollBarExtent);
-    int inside = style.styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents);
+    int frameWidth = style->pixelMetric(QStyle::PM_DefaultFrameWidth);
+    int extent = style->pixelMetric(QStyle::PM_ScrollBarExtent);
+    int inside = style->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents);
     int viewportWidth = 300;
     int scrollBarIndent = viewportWidth - extent - (inside ? 4 : 2)*frameWidth;
 
@@ -3302,6 +3297,7 @@ void tst_QGraphicsView::scrollAfterResize_data()
                              << QTransform().translate(scrollBarIndent, 0)
                              << QTransform().translate(scrollBarIndent + 100, 0)
                              << QTransform().translate(scrollBarIndent + 110, 0);
+    delete style;
 }
 
 void tst_QGraphicsView::scrollAfterResize()
@@ -3311,15 +3307,11 @@ void tst_QGraphicsView::scrollAfterResize()
     QFETCH(QTransform, x2);
     QFETCH(QTransform, x3);
 
-#if !defined(QT_NO_STYLE_WINDOWS)
-    QWindowsStyle style;
-#else
-    QCommonStyle style;
-#endif
+    QStyle *style = QStyleFactory::create("windows");
     QWidget toplevel;
 
     QGraphicsView view(&toplevel);
-    view.setStyle(&style);
+    view.setStyle(style);
     if (reverse)
         view.setLayoutDirection(Qt::RightToLeft);
 
@@ -3334,6 +3326,7 @@ void tst_QGraphicsView::scrollAfterResize()
     QCOMPARE(view.viewportTransform(), x2);
     view.horizontalScrollBar()->setValue(10);
     QCOMPARE(view.viewportTransform(), x3);
+    delete style;
 }
 
 void tst_QGraphicsView::moveItemWhileScrolling_data()

@@ -3406,7 +3406,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
 
 void tst_QGraphicsScene::style()
 {
-    QPointer<QWindowsStyle> windowsStyle = new QWindowsStyle;
+    QPointer<QStyle> windowsStyle = QStyleFactory::create("windows");
 
     QGraphicsScene scene;
     QLineEdit *edit = new QLineEdit;

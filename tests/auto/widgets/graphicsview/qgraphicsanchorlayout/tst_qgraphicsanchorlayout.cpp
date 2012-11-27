@@ -45,7 +45,8 @@
 #include <QtWidgets/qgraphicswidget.h>
 #include <QtWidgets/qgraphicsproxywidget.h>
 #include <QtWidgets/qgraphicsview.h>
-#include <QtWidgets/qwindowsstyle.h>
+#include <QtWidgets/qstylefactory.h>
+#include <QtWidgets/qproxystyle.h>
 
 
 class tst_QGraphicsAnchorLayout : public QObject {
@@ -1119,11 +1120,11 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     delete view;
 }
 
-class CustomLayoutStyle : public QWindowsStyle
+class CustomLayoutStyle : public QProxyStyle
 {
     Q_OBJECT
 public:
-    CustomLayoutStyle() : QWindowsStyle()
+    CustomLayoutStyle() : QProxyStyle(QStyleFactory::create("windows"))
     {
         hspacing = 5;
         vspacing = 10;
@@ -1194,7 +1195,7 @@ int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * opti
         default:
             break;
     }
-    return QWindowsStyle::pixelMetric(metric, option, widget);
+    return QProxyStyle::pixelMetric(metric, option, widget);
 }
 
 void tst_QGraphicsAnchorLayout::styleDefaults()

@@ -47,7 +47,6 @@
 #include <qgraphicsscene.h>
 #include <qgraphicsview.h>
 #include <qapplication.h>
-#include <qwindowsstyle.h>
 
 class tst_QGraphicsLinearLayout : public QObject {
 Q_OBJECT
@@ -152,7 +151,7 @@ void tst_QGraphicsLinearLayout::initTestCase()
 {
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
-    QApplication::setStyle(new QWindowsStyle);
+    QApplication::setStyle("windows");
 }
 
 // This will be called after the last test function is executed.

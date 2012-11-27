@@ -2793,7 +2793,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
 
 void tst_QGraphicsProxyWidget::stylePropagation()
 {
-    QPointer<QWindowsStyle> windowsStyle = new QWindowsStyle;
+    QPointer<QStyle> windowsStyle = QStyleFactory::create("windows");
 
     QLineEdit *edit = new QLineEdit;
     QGraphicsProxyWidget proxy;
