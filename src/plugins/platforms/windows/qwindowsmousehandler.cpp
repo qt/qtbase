@@ -395,33 +395,39 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     QWindowsContext::user32dll.getTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchPointCount; ++i) {
         const TOUCHINPUT &winTouchInput = winTouchInputs[i];
+        int id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
+        if (id == -1) {
+            id = m_touchInputIDToTouchPointID.size();
+            m_touchInputIDToTouchPointID.insert(winTouchInput.dwID, id);
+        }
         QTouchPoint touchPoint;
         touchPoint.pressure = 1.0;
-        touchPoint.id = m_touchInputIDToTouchPointID.value(winTouchInput.dwID, -1);
-        if (touchPoint.id == -1) {
-            touchPoint.id = m_touchInputIDToTouchPointID.size();
-            m_touchInputIDToTouchPointID.insert(winTouchInput.dwID, touchPoint.id);
-        }
+        touchPoint.id = id;
+        if (m_lastTouchPositions.contains(id))
+            touchPoint.normalPosition = m_lastTouchPositions.value(id);
 
         QPointF screenPos = QPointF(qreal(winTouchInput.x) / qreal(100.), qreal(winTouchInput.y) / qreal(100.));
         if (winTouchInput.dwMask & TOUCHINPUTMASKF_CONTACTAREA)
             touchPoint.area.setSize(QSizeF(qreal(winTouchInput.cxContact) / qreal(100.),
                                            qreal(winTouchInput.cyContact) / qreal(100.)));
         touchPoint.area.moveCenter(screenPos);
+        QPointF normalPosition = QPointF(screenPos.x() / screenGeometry.width(),
+                                         screenPos.y() / screenGeometry.height());
+        const bool stationaryTouchPoint = (normalPosition == touchPoint.normalPosition);
+        touchPoint.normalPosition = normalPosition;
 
         if (winTouchInput.dwFlags & TOUCHEVENTF_DOWN) {
             touchPoint.state = Qt::TouchPointPressed;
+            m_lastTouchPositions.insert(id, touchPoint.normalPosition);
         } else if (winTouchInput.dwFlags & TOUCHEVENTF_UP) {
             touchPoint.state = Qt::TouchPointReleased;
+            m_lastTouchPositions.remove(id);
         } else {
-            // TODO: Previous code checked"
-            // screenPos == touchPoint.normalPosition -> Qt::TouchPointStationary, but
-            // but touchPoint.normalPosition was never initialized?
-            touchPoint.state = touchPoint.state;
+            touchPoint.state = (stationaryTouchPoint
+                     ? Qt::TouchPointStationary
+                     : Qt::TouchPointMoved);
+            m_lastTouchPositions.insert(id, touchPoint.normalPosition);
         }
-
-        touchPoint.normalPosition = QPointF(screenPos.x() / screenGeometry.width(),
-                                 screenPos.y() / screenGeometry.height());
 
         allStates |= touchPoint.state;
 

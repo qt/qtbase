@@ -728,11 +728,15 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
             break;
         }
     }
+    if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
+        QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0);
     setWindowState(aWindow->windowState());
 }
 
 QWindowsWindow::~QWindowsWindow()
 {
+    if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
+        QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
     destroyWindow();
     destroyIcon();
 }

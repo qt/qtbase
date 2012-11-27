@@ -171,7 +171,8 @@ QWindowsUser32DLL::QWindowsUser32DLL() :
     setLayeredWindowAttributes(0), updateLayeredWindow(0),
     updateLayeredWindowIndirect(0),
     isHungAppWindow(0),
-    registerTouchWindow(0), getTouchInputInfo(0), closeTouchInputHandle(0)
+    registerTouchWindow(0), unregisterTouchWindow(0),
+    getTouchInputInfo(0), closeTouchInputHandle(0)
 {
 }
 
@@ -192,9 +193,10 @@ bool QWindowsUser32DLL::initTouch()
 {
     QSystemLibrary library(QStringLiteral("user32"));
     registerTouchWindow = (RegisterTouchWindow)(library.resolve("RegisterTouchWindow"));
+    unregisterTouchWindow = (UnregisterTouchWindow)(library.resolve("UnregisterTouchWindow"));
     getTouchInputInfo = (GetTouchInputInfo)(library.resolve("GetTouchInputInfo"));
     closeTouchInputHandle = (CloseTouchInputHandle)(library.resolve("CloseTouchInputHandle"));
-    return registerTouchWindow && getTouchInputInfo && getTouchInputInfo;
+    return registerTouchWindow && unregisterTouchWindow && getTouchInputInfo && getTouchInputInfo;
 }
 
 /*!
