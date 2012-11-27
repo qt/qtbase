@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QGLFunctions
+    \inmodule QtOpenGL
     \brief The QGLFunctions class provides cross-platform access to the OpenGL/ES 2.0 API.
     \since 4.8
     \obsolete

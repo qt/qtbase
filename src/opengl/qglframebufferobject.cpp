@@ -104,6 +104,7 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
 /*!
     \class QGLFramebufferObjectFormat
+    \inmodule QtOpenGL
     \brief The QGLFramebufferObjectFormat class specifies the format of an OpenGL
     framebuffer object.
 
@@ -698,6 +699,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 
 /*!
     \class QGLFramebufferObject
+    \inmodule QtOpenGL
     \brief The QGLFramebufferObject class encapsulates an OpenGL framebuffer object.
     \since 4.2
 

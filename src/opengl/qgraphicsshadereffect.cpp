@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 /*#
     \class QGraphicsShaderEffect
+    \inmodule QtOpenGL
     \brief The QGraphicsShaderEffect class is the base class for creating
     custom GLSL shader effects in a QGraphicsScene.
     \since 4.6

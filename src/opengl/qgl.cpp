@@ -162,6 +162,8 @@ QGLSignalProxy *QGLSignalProxy::instance()
 
 /*!
     \class QGLFormat
+    \inmodule QtOpenGL
+
     \brief The QGLFormat class specifies the display format of an OpenGL
     rendering context.
 
@@ -1809,6 +1811,8 @@ struct DDSFormat {
 
 /*!
     \class QGLContext
+    \inmodule QtOpenGL
+
     \brief The QGLContext class encapsulates an OpenGL rendering context.
 
     \ingroup painting-3D
@@ -3234,10 +3238,11 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
 
 /*!
     \class QGLWidget
+    \inmodule QtOpenGL
+
     \brief The QGLWidget class is a widget for rendering OpenGL graphics.
 
     \ingroup painting-3D
-
 
     QGLWidget provides functionality for displaying OpenGL graphics
     integrated into a Qt application. It is very simple to use. You

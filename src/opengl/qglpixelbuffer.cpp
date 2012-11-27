@@ -41,6 +41,7 @@
 
 /*!
     \class QGLPixelBuffer
+    \inmodule QtOpenGL
     \brief The QGLPixelBuffer class encapsulates an OpenGL pbuffer.
     \since 4.1
     \obsolete

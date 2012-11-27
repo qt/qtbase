@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QGLShaderProgram
+    \inmodule QtOpenGL
     \brief The QGLShaderProgram class allows OpenGL shader programs to be linked and used.
     \since 4.6
     \obsolete
@@ -125,6 +126,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QGLShader
+    \inmodule QtOpenGL
     \brief The QGLShader class allows OpenGL shaders to be compiled.
     \since 4.6
     \obsolete

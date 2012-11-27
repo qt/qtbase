@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QGLBuffer
+    \inmodule QtOpenGL
     \brief The QGLBuffer class provides functions for creating and managing GL buffer objects.
     \since 4.7
     \obsolete
