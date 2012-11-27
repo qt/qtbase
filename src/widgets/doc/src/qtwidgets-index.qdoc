@@ -135,7 +135,8 @@ interfaces
     \list
         \li \l{Qt Widgets Examples}
     \endlist
-    \section2 API Reference
+
+    \section1 API Reference
     These are links to the API reference materials.
 
     \list
