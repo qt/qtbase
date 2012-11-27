@@ -65,9 +65,16 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
         [m_context initWithFormat:pixelFormat shareContext:nil];
     }
 
+    [pixelFormat release];
+
     const GLint interval = 1;
     [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
+}
+
+QCocoaGLContext::~QCocoaGLContext()
+{
+    [m_context release];
 }
 
 // Match up with createNSOpenGLPixelFormat!

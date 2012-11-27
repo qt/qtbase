@@ -56,6 +56,7 @@ class QCocoaGLContext : public QPlatformOpenGLContext
 {
 public:
     QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
+    ~QCocoaGLContext();
 
     QSurfaceFormat format() const;
 
