@@ -2,6 +2,7 @@ TEMPLATE      = subdirs
 SUBDIRS       = addressbook \
                 basicsortfiltermodel \
                 chart \
+                coloreditorfactory \
                 combowidgetmapper \
                 customsortfiltermodel \
                 dirview \
@@ -15,7 +16,8 @@ SUBDIRS       = addressbook \
                 simpletreemodel \
                 simplewidgetmapper \
                 spinboxdelegate \
-                spreadsheet
+                spreadsheet \
+                stardelegate
 
 # install
 sources.files = README *.pro
