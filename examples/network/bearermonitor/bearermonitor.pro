@@ -12,6 +12,8 @@ FORMS = bearermonitor_240_320.ui \
         bearermonitor_640_480.ui \
         sessionwidget.ui
 
+EXAMPLE_FILES = bearermonitor_maemo.ui sessionwidget_maemo.ui  # not used
+
 win32:!wince*:LIBS += -lws2_32
 wince*:LIBS += -lws2
 
@@ -19,6 +21,4 @@ CONFIG += console
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/network/bearermonitor
-sources.files = $$SOURCES $$HEADERS *.ui *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/network/bearermonitor
-INSTALLS += target sources
+INSTALLS += target

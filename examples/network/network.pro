@@ -26,9 +26,3 @@ SUBDIRS       = \
     contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient
     contains(QT_CONFIG, openssl-linked):SUBDIRS += securesocketclient
 }
-
-
-# install
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/network
-INSTALLS += sources

@@ -6,9 +6,7 @@ SOURCES = droparea.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/dropsite
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/dropsite
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 simulator: warning(This example might not fully work on Simulator platform)

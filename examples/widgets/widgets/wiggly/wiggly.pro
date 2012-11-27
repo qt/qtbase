@@ -8,6 +8,4 @@ SOURCES       = wigglywidget.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/wiggly
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS wiggly.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/wiggly
-INSTALLS += target sources
+INSTALLS += target

@@ -7,9 +7,7 @@ RESOURCES     = mdi.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/mdi
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mdi.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/mdi
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

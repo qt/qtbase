@@ -16,8 +16,6 @@ RESOURCES += stickman.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/animation/stickman
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS stickman.pro animations
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/animation/stickman
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

@@ -15,6 +15,4 @@ QT += widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/deform
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/deform
-INSTALLS += target sources
+INSTALLS += target

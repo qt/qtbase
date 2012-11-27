@@ -5,9 +5,7 @@ RESOURCES       = dockwidgets.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/dockwidgets
-sources.files = $$SOURCES $$HEADERS $$RESOURCES dockwidgets.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/dockwidgets
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 !isEmpty(QT.printsupport.name): QT += printsupport

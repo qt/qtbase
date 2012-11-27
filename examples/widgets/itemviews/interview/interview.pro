@@ -12,8 +12,6 @@ build_all:!build_pass {
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/interview
-sources.files = $$SOURCES $$HEADERS $$RESOURCES README *.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/interview
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

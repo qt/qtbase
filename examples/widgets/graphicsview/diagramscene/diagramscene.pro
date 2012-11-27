@@ -14,9 +14,7 @@ RESOURCES   =	diagramscene.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/diagramscene
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS diagramscene.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/diagramscene
-INSTALLS += target sources
+INSTALLS += target
 
 
 QT += widgets

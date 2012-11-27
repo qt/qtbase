@@ -13,9 +13,7 @@ RESOURCES += \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/dragdroprobot
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS dragdroprobot.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/dragdroprobot
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

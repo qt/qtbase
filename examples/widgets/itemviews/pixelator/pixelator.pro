@@ -9,9 +9,7 @@ RESOURCES   += images.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/pixelator
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/pixelator
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 !isEmpty(QT.printsupport.name): QT += printsupport

@@ -8,9 +8,7 @@ SOURCES	    =	mainwindow.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/tablet
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS tablet.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/tablet
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

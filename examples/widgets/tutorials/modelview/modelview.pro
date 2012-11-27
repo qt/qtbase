@@ -9,8 +9,6 @@ SUBDIRS = 1_readonly \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/modelview
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS modelview.pro 
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/modelview
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

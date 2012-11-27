@@ -33,10 +33,7 @@ QT += network
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/network/torrent
-sources.files = $$SOURCES $$HEADERS $$RESOURCES torrent.pro *.torrent
-sources.files += icons forms 3rdparty
-sources.path = $$[QT_INSTALL_EXAMPLES]/network/torrent
-INSTALLS += target sources
+INSTALLS += target
 
 
 simulator: warning(This example might not fully work on Simulator platform)

@@ -4,8 +4,6 @@ SOURCES =   main.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/calendarwidget
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS calendarwidget.pro resources
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/calendarwidget
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

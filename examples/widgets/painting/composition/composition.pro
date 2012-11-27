@@ -14,9 +14,7 @@ QT += widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/composition
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.png *.jpg *.pro *.html
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/composition
-INSTALLS += target sources
+INSTALLS += target
 
 
 win32-msvc* {

@@ -6,9 +6,7 @@ SOURCES	    = colorlisteditor.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/coloreditorfactory
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/coloreditorfactory
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

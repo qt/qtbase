@@ -7,9 +7,7 @@ SOURCES     = draglabel.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/fridgemagnets
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.txt
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/fridgemagnets
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

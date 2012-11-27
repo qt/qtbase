@@ -11,8 +11,6 @@ HEADERS += \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/threads/movedobject
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS movedobject.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/threads/movedobject
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

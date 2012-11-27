@@ -16,6 +16,4 @@ HEADERS += \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/elidedlabel
-sources.files = $$SOURCES $$HEADERS *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/elidedlabel
-INSTALLS += target sources
+INSTALLS += target

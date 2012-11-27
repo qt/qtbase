@@ -9,6 +9,4 @@ SOURCES   = lightmaps.cpp \
 QT += network widgets
 
 target.path = $$[QT_INSTALL_EXAMPLES]/embedded/lightmaps
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/embedded/lightmaps
-INSTALLS += target sources
+INSTALLS += target

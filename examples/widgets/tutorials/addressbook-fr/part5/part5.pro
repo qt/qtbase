@@ -8,9 +8,7 @@ QMAKE_PROJECT_NAME = abfr_part5
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/addressbook-fr/part5
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part5.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/addressbook-fr/part5
-INSTALLS += target sources
+INSTALLS += target
 QT += widgets
 
 

@@ -17,7 +17,5 @@ build_all:!build_pass {
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/spreadsheet
-sources.files = $$SOURCES $$RESOURCES *.pro images $$HEADERS
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/spreadsheet
-INSTALLS += target sources
+INSTALLS += target
 

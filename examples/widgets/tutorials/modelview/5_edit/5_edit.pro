@@ -11,9 +11,7 @@ HEADERS += mainwindow.h \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/modelview/5_edit
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS 5_edit.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/modelview/5_edit
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

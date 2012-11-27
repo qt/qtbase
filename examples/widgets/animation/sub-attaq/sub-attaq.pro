@@ -31,13 +31,4 @@ RESOURCES += subattaq.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/animation/sub-attaq
-sources.files = $$SOURCES \
-    $$HEADERS \
-    $$RESOURCES \
-    $$FORMS \
-    sub-attaq.pro \
-    pics \
-    data.xml
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/animation/sub-attaq
-INSTALLS += target \
-    sources
+INSTALLS += target

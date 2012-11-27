@@ -13,11 +13,11 @@ build_all:!build_pass {
     CONFIG += release
 }
 
+EXAMPLE_FILES = textedit.qdoc
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/richtext/textedit
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.doc images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/richtext/textedit
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 !isEmpty(QT.printsupport.name): QT += printsupport

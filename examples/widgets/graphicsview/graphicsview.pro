@@ -19,10 +19,4 @@ contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG,
     SUBDIRS += boxes
 }
 
-# install
-target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS graphicsview.pro README
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview
-INSTALLS += target sources
-
 QT += widgets

@@ -2,9 +2,7 @@ SOURCES = main.cpp
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/statemachine/eventtransitions
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS eventtransitions.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/statemachine/eventtransitions
-INSTALLS += target sources
+INSTALLS += target
 QT += widgets
 
 

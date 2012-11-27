@@ -6,9 +6,7 @@ SOURCES       = main.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/scribble
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS scribble.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/scribble
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 !isEmpty(QT.printsupport.name): QT += printsupport

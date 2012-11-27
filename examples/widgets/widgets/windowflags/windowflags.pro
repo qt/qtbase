@@ -6,9 +6,7 @@ SOURCES       = controllerwindow.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/windowflags
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS windowflags.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/windowflags
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

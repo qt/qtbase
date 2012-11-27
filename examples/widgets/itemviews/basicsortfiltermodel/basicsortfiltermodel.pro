@@ -5,8 +5,6 @@ CONFIG     += qt
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/basicsortfiltermodel
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/basicsortfiltermodel
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

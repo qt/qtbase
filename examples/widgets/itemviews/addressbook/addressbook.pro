@@ -12,8 +12,6 @@ HEADERS   = adddialog.h \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/addressbook
-sources.files = $$SOURCES $$HEADERS $$RESOURCES addressbook.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/addressbook
-INSTALLS += target sources
+INSTALLS += target
 QT += widgets
 

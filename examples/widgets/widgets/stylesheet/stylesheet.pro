@@ -9,9 +9,7 @@ SOURCES       = main.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/stylesheet
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro images layouts qss
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/stylesheet
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

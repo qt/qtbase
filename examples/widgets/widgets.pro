@@ -20,8 +20,3 @@ SUBDIRS       = \
                 widgets
 
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
-
-# install
-sources.files = *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets
-INSTALLS += sources

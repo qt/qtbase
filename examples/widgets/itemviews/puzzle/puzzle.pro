@@ -9,9 +9,7 @@ SOURCES     = main.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/puzzle
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/puzzle
-INSTALLS += target sources
+INSTALLS += target
 
 
 wince* {

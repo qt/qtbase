@@ -9,9 +9,7 @@ RESOURCES += \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/collidingmice
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS collidingmice.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/collidingmice
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

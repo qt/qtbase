@@ -4,8 +4,6 @@ SOURCES   = main.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/simplewidgetmapper
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/simplewidgetmapper
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

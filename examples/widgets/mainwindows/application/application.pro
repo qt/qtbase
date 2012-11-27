@@ -7,9 +7,7 @@ RESOURCES     = application.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/application
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS application.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/application
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

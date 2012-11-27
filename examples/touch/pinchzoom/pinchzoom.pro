@@ -11,9 +11,7 @@ RESOURCES += \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/touch/pinchzoom
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS pinchzoom.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/touch/pinchzoom
-INSTALLS += target sources
+INSTALLS += target
 QT += widgets
 
 

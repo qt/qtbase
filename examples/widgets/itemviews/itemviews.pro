@@ -19,9 +19,4 @@ SUBDIRS       = addressbook \
                 spreadsheet \
                 stardelegate
 
-# install
-sources.files = README *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews
-INSTALLS += sources
-
 QT += widgets

@@ -4,15 +4,14 @@ CONFIG         += plugin
 INCLUDEPATH    += ../echowindow
 HEADERS         = echoplugin.h
 SOURCES         = echoplugin.cpp
-OTHER_FILES    += echoplugin.json
 TARGET          = $$qtLibraryTarget(echoplugin)
 DESTDIR         = ../plugins
 #! [0]
 
+EXAMPLE_FILES = echoplugin.json
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin/plugin
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS plugin.pro echoplugin.json
-sources.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin/plugin
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

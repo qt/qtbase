@@ -4,9 +4,7 @@ SOURCES       = window.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/groupbox
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS groupbox.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/groupbox
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

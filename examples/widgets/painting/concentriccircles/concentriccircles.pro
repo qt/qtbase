@@ -6,9 +6,7 @@ SOURCES       = circlewidget.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/concentriccircles
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS concentriccircles.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/concentriccircles
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

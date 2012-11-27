@@ -8,9 +8,7 @@ QMAKE_PROJECT_NAME = ab_part6
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/addressbook/part6
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part6.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/addressbook/part6
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

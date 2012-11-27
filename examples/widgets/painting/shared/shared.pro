@@ -24,11 +24,3 @@ HEADERS += \
 	hoverpoints.h
 
 RESOURCES += shared.qrc
-
-# install
-target.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/shared
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.pri images
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/painting/shared
-INSTALLS += sources
-
-!cross_compile:INSTALLS += target

@@ -8,9 +8,7 @@ unix:!mac:!vxworks:!integrity:LIBS+= -lm
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/chart
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.cht
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/chart
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

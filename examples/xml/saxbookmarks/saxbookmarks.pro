@@ -7,11 +7,11 @@ SOURCES       = main.cpp \
                 xbelhandler.cpp
 QT           += xml widgets
 
+EXAMPLE_FILES = frank.xbel jennifer.xbel
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/xml/saxbookmarks
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS saxbookmarks.pro *.xbel
-sources.path = $$[QT_INSTALL_EXAMPLES]/xml/saxbookmarks
-INSTALLS += target sources
+INSTALLS += target
 
 wince*: {
      addFiles.files = frank.xbel jennifer.xbel

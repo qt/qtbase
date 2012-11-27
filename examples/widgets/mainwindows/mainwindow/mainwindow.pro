@@ -10,8 +10,6 @@ RESOURCES += mainwindow.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/mainwindow
-sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.png *.jpg *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/mainwindows/mainwindow
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets

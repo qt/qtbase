@@ -12,9 +12,7 @@ QT           += opengl widgets
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellogl.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl
-INSTALLS += target sources
+INSTALLS += target
 
 
 simulator: warning(This example might not fully work on Simulator platform)

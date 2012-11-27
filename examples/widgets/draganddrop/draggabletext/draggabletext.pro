@@ -7,9 +7,7 @@ SOURCES     = draglabel.cpp \
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/draggabletext
-sources.files = $$SOURCES $$HEADERS $$RESOURCES *.txt *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/draggabletext
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets
 

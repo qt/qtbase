@@ -13,9 +13,7 @@ RESOURCES += texture.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl_es2
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellogl_es2.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl_es2
-INSTALLS += target sources
+INSTALLS += target
 
 maemo5 {
     # Debian package name may not contain numbers or special characters

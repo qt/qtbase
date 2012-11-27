@@ -11,8 +11,6 @@ RESOURCES += undo.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/undo
-sources.files = $$SOURCES $$HEADERS *.pro icons $$RESOURCES $$FORMS
-sources.path = $$[QT_INSTALL_EXAMPLES]/tools/undo
-INSTALLS += target sources
+INSTALLS += target
 
 QT += widgets 
