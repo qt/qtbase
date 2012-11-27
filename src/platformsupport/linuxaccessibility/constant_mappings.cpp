@@ -69,8 +69,6 @@ quint64 spiStatesFromQState(QAccessible::State state)
 
     if (state.disabled) {
         unsetSpiStateBit(&spiState, ATSPI_STATE_ENABLED);
-        unsetSpiStateBit(&spiState, ATSPI_STATE_SHOWING);
-        unsetSpiStateBit(&spiState, ATSPI_STATE_VISIBLE);
         unsetSpiStateBit(&spiState, ATSPI_STATE_SENSITIVE);
     }
 
