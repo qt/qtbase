@@ -6,8 +6,6 @@ SOURCES     = main.cpp \
               pieview.cpp
 unix:!mac:!vxworks:!integrity:LIBS+= -lm
 
-TARGET.EPOCHEAPSIZE = 0x200000 0x800000
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/chart
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.cht

@@ -9,8 +9,6 @@ SOURCES += \
         node.cpp \
         graphwidget.cpp
 
-TARGET.EPOCHEAPSIZE = 0x200000 0xA00000
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/elasticnodes
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS elasticnodes.pro 
