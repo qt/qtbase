@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example echoplugin
+    \example tools/echoplugin
     \title Echo Plugin Example
 
     This example shows how to create a Qt plugin.
@@ -64,7 +64,7 @@
     The \c EchoWindow class lets us test the \c EchoPlugin through a
     GUI.
 
-    \snippet echoplugin/echowindow/echowindow.h 0
+    \snippet tools/echoplugin/echowindow/echowindow.h 0
 
     We load the plugin in \c loadPlugin() and cast it to \c
     EchoInterface. When the user clicks the \c button we take the 
@@ -75,7 +75,7 @@
 
     We start with a look at the constructor:
 
-    \snippet echoplugin/echowindow/echowindow.cpp 0
+    \snippet tools/echoplugin/echowindow/echowindow.cpp 0
 
     We create the widgets and set a title for the window. We then load
     the plugin. \c loadPlugin() returns false if the plugin could not
@@ -86,7 +86,7 @@
 
     Here is the implementation of \c sendEcho():
 
-    \snippet echoplugin/echowindow/echowindow.cpp 1
+    \snippet tools/echoplugin/echowindow/echowindow.cpp 1
 
     This slot is called when the user pushes \c button or presses
     enter in \c lineEdit. We call \c echo() of the echo interface. In
@@ -96,14 +96,14 @@
 
     Here is the implementation of \c createGUI():
 
-    \snippet echoplugin/echowindow/echowindow.cpp 2
+    \snippet tools/echoplugin/echowindow/echowindow.cpp 2
 
     We create the widgets and lay them out in a grid layout. We
     connect the label and line edit to our \c sendEcho() slot.
 
     Here is the \c loadPlugin() function:
 
-    \snippet echoplugin/echowindow/echowindow.cpp 3
+    \snippet tools/echoplugin/echowindow/echowindow.cpp 3
 
     Access to plugins at run-time is provided by QPluginLoader. You
     supply it with the filename of the shared library the plugin is
@@ -126,7 +126,7 @@
     virtual functions. If non virtual functions were present in the
     class you would get misleading compile errors in the moc files.
 
-    \snippet echoplugin/echowindow/echointerface.h 0
+    \snippet tools/echoplugin/echowindow/echointerface.h 0
 
     We declare \c echo(). In our \c EchoPlugin we use this method to
     return, or echo, \a message.
@@ -146,18 +146,18 @@
     If a class implements more than one interface, they are given as 
     a comma separated list.
 
-    \snippet echoplugin/plugin/echoplugin.h 0
+    \snippet tools/echoplugin/plugin/echoplugin.h 0
 
 
     \section1 EchoPlugin Class Implementation
 
     Here is the implementation of \c echo():
 
-    \snippet echoplugin/plugin/echoplugin.cpp 0
+    \snippet tools/echoplugin/plugin/echoplugin.cpp 0
 
     We simply return the functions parameter. 
 
-    \snippet echoplugin/plugin/echoplugin.cpp 1
+    \snippet tools/echoplugin/plugin/echoplugin.cpp 1
 
     We use the Q_EXPORT_PLUGIN2 macro to let Qt know that the \c
     EchoPlugin class is a plugin. The first parameter is the name of
@@ -166,7 +166,7 @@
 
     \section1 The \c main() function
 
-    \snippet echoplugin/echowindow/main.cpp 0
+    \snippet tools/echoplugin/echowindow/main.cpp 0
 
     We create an \c EchoWindow and display it as a top-level window.
 
@@ -179,12 +179,12 @@
     template and simply includes includes to directories in which
     the echo window and echo plugin lives:
 
-    \snippet echoplugin/echoplugin.pro 0
+    \snippet tools/echoplugin/echoplugin.pro 0
 
     The profile for the echo window does not need any plugin specific
     settings. We move on to the plugin profile:
 
-    \snippet echoplugin/plugin/plugin.pro 0
+    \snippet tools/echoplugin/plugin/plugin.pro 0
 
     We need to set the TEMPLATE as we now want to make a library
     instead of an executable. We also need to tell qmake that we are

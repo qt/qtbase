@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example completer
+    \example tools/completer
     \title Completer Example
 
     The Completer example shows how to provide string-completion facilities
@@ -45,14 +45,14 @@
     \e{countries.txt} and \e{words.txt}. The resource file contains the
     following code:
 
-    \quotefile completer/completer.qrc
+    \quotefile tools/completer/completer.qrc
 
     \section1 FileSystemModel Class Definition
 
     The \c FileSystemModel class is a subclass of QFileSystemModel, which provides a data
     model for the local filesystem.
 
-    \snippet completer/fsmodel.h 0
+    \snippet tools/completer/fsmodel.h 0
 
     This class only has a constructor and a \c data() function as it is only
     created to enable \c data() to return the entire file path for the
@@ -65,14 +65,14 @@
     The constructor for the \c FileSystemModel class is used to pass \a parent to
     QFileSystemModel.
 
-    \snippet completer/fsmodel.cpp 0
+    \snippet tools/completer/fsmodel.cpp 0
 
     As mentioned earlier, the \c data() function is reimplemented in order to
     get it to return the entire file parth for the display role. For example,
     with a QFileSystemModel, you will see "Program Files" in the view. However, with
     \c FileSystemModel, you will see "C:\\Program Files".
 
-    \snippet completer/fsmodel.cpp 1
+    \snippet tools/completer/fsmodel.cpp 1
 
     The screenshots below illustrate this difference:
 
@@ -90,14 +90,14 @@
     private slots - \c about(), \c changeCase(), \c changeMode(), \c changeModel(),
     and \c changeMaxVisible().
 
-    \snippet completer/mainwindow.h 0
+    \snippet tools/completer/mainwindow.h 0
 
     Within the \c MainWindow class, we have two private functions:
     \c createMenu() and \c modelFromFile(). We also declare the private widgets
     needed - three QComboBox objects, a QCheckBox, a QCompleter, a QLabel, and
     a QLineEdit.
 
-    \snippet completer/mainwindow.h 1
+    \snippet tools/completer/mainwindow.h 1
 
     \section1 MainWindow Class Implementation
 
@@ -110,7 +110,7 @@
     the \c modeCombo is set to "Filtered Popup" and the \c caseCombo is set
     to "Case Insensitive".
 
-    \snippet completer/mainwindow.cpp 0
+    \snippet tools/completer/mainwindow.cpp 0
 
     The \c maxVisibleSpinBox is created and determines the number of visible
     item in the completer
@@ -119,26 +119,26 @@
     \c{completer}'s \l{QCompleter::setWrapAround()}{setWrapAround()} property
     is enabled or disabled.
 
-    \snippet completer/mainwindow.cpp 1
+    \snippet tools/completer/mainwindow.cpp 1
 
     We instantiate \c contentsLabel and set its size policy to
     \l{QSizePolicy::Fixed}{fixed}. The combo boxes' \l{QComboBox::activated()}
     {activated()} signals are then connected to their respective slots.
 
-    \snippet completer/mainwindow.cpp 2
+    \snippet tools/completer/mainwindow.cpp 2
 
     The \c lineEdit is set up and then we arrange all the widgets using a
     QGridLayout. The \c changeModel() function is called, to initialize the
     \c completer.
 
-    \snippet completer/mainwindow.cpp 3
+    \snippet tools/completer/mainwindow.cpp 3
 
     The \c createMenu() function is used to instantiate the QAction objects
     needed to fill the \c fileMenu and \c helpMenu. The actions'
     \l{QAction::triggered()}{triggered()} signals are connected to their
     respective slots.
 
-    \snippet completer/mainwindow.cpp 4
+    \snippet tools/completer/mainwindow.cpp 4
 
     The \c modelFromFile() function accepts the \a fileName of a file and
     processes it depending on its contents.
@@ -147,26 +147,26 @@
     QFile::ReadOnly mode. If this is unsuccessful, the function returns an
     empty QStringListModel.
 
-    \snippet completer/mainwindow.cpp 5
+    \snippet tools/completer/mainwindow.cpp 5
 
     The mouse cursor is then overridden with Qt::WaitCursor before we fill
     a QStringList object, \c words, with the contents of \c file. Once this
     is done, we restore the mouse cursor.
 
-    \snippet completer/mainwindow.cpp 6
+    \snippet tools/completer/mainwindow.cpp 6
 
     As mentioned earlier, the resources file contains two files -
     \e{countries.txt} and \e{words.txt}. If the \c file read is \e{words.txt},
     we return a QStringListModel with \c words as its QStringList and
     \c completer as its parent.
 
-    \snippet completer/mainwindow.cpp 7
+    \snippet tools/completer/mainwindow.cpp 7
 
     If the \c file read is \e{countries.txt}, then we require a
     QStandardItemModel with \c words.count() rows, 2 columns, and \c completer
     as its parent.
 
-    \snippet completer/mainwindow.cpp 8
+    \snippet tools/completer/mainwindow.cpp 8
 
     A standard line in \e{countries.txt} is:
     \quotation
@@ -177,12 +177,12 @@
     split the country name and its symbol. Once this is done, we return
     \c m.
 
-    \snippet completer/mainwindow.cpp 9
+    \snippet tools/completer/mainwindow.cpp 9
 
     The \c changeMode() function sets the \c{completer}'s mode, depending on
     the value of \c index.
 
-    \snippet completer/mainwindow.cpp 10
+    \snippet tools/completer/mainwindow.cpp 10
 
     The \c changeModel() function changes the item model used based on the
     model selected by the user.
@@ -191,7 +191,7 @@
     of \c modelCombo. If \c case is 0, we use an unsorted QFileSystemModel, providing
     us with a file path excluding the drive label.
 
-    \snippet completer/mainwindow.cpp 11
+    \snippet tools/completer/mainwindow.cpp 11
 
     Note that we create the model with \c completer as the parent as this
     allows us to replace the model with a new model. The \c completer will
@@ -201,14 +201,14 @@
     If \c case is 1, we use the \c DirModel we defined earlier, resulting in
     full paths for the files.
 
-    \snippet completer/mainwindow.cpp 12
+    \snippet tools/completer/mainwindow.cpp 12
 
     When \c case is 2, we attempt to complete names of countries. This requires
     a QTreeView object, \c treeView. The country names are extracted from
     \e{countries.txt} and set the popup used to display completions to
     \c treeView.
 
-    \snippet completer/mainwindow.cpp 13
+    \snippet tools/completer/mainwindow.cpp 13
 
     The screenshot below shows the Completer with the country list model.
 
@@ -229,21 +229,21 @@
     to the \c{completer}'s \l{QCompleter::setWrapAround()}{setWrapAround()}
     slot.
 
-    \snippet completer/mainwindow.cpp 14
+    \snippet tools/completer/mainwindow.cpp 14
 
     The \c changeMaxVisible() update the maximum number of visible items in
     the completer.
 
-    \snippet completer/mainwindow.cpp 15
+    \snippet tools/completer/mainwindow.cpp 15
 
     The \c about() function provides a brief description about the example.
 
-    \snippet completer/mainwindow.cpp 16
+    \snippet tools/completer/mainwindow.cpp 16
 
     \section1 \c main() Function
 
     The \c main() function instantiates QApplication and \c MainWindow and
     invokes the \l{QWidget::show()}{show()} function.
 
-    \snippet completer/main.cpp 0
+    \snippet tools/completer/main.cpp 0
     */

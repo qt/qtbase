@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example i18n
+    \example tools/i18n
     \title I18N Example
 
     The Internationalization (I18N) example demonstrates Qt's support for translated

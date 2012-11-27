@@ -44,7 +44,7 @@
 #include <QWidget>
 #include "message.h"
 
-class QTextEdit;
+QT_FORWARD_DECLARE_CLASS(QTextEdit)
 
 //! [Window class definition]
 class Window : public QWidget

@@ -15,6 +15,7 @@ SUBDIRS       = \
                 richtext \
                 scroller \
                 statemachine \
+                tools \
                 tutorials \
                 widgets
 

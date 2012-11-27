@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example undoframework
+    \example tools/undoframework
     \title Undo Framework Example
 
     This example shows how to implement undo/redo functionality 
@@ -78,7 +78,7 @@
 
     \section1 MainWindow Class Definition
 
-    \snippet undoframework/mainwindow.h 0
+    \snippet tools/undoframework/mainwindow.h 0
 
     The \c MainWindow class maintains the undo stack, i.e., it creates
     \l{QUndoCommand}s and pushes and pops them from the stack when it
@@ -89,13 +89,13 @@
 
     We will start with a look at the constructor:    
 
-    \snippet undoframework/mainwindow.cpp 0
+    \snippet tools/undoframework/mainwindow.cpp 0
 
     In the constructor, we set up the DiagramScene and QGraphicsView. 
 
     Here is the \c createUndoView() function:    
 
-    \snippet undoframework/mainwindow.cpp 1
+    \snippet tools/undoframework/mainwindow.cpp 1
 
     The QUndoView is a widget that display the text, which is set with
     the \l{QUndoCommand::}{setText()} function, for each QUndoCommand
@@ -103,11 +103,11 @@
     
     Here is the \c createActions() function:
 
-    \snippet undoframework/mainwindow.cpp 2
+    \snippet tools/undoframework/mainwindow.cpp 2
     \codeline
-    \snippet undoframework/mainwindow.cpp 3
+    \snippet tools/undoframework/mainwindow.cpp 3
     \dots
-    \snippet undoframework/mainwindow.cpp 5
+    \snippet tools/undoframework/mainwindow.cpp 5
 
     The \c createActions() function sets up all the examples actions
     in the manner shown above. The
@@ -120,12 +120,12 @@
 
     Here is the \c createMenus() function:
 
-    \snippet undoframework/mainwindow.cpp 6
+    \snippet tools/undoframework/mainwindow.cpp 6
 
     \dots
-    \snippet undoframework/mainwindow.cpp 7
+    \snippet tools/undoframework/mainwindow.cpp 7
     \dots
-    \snippet undoframework/mainwindow.cpp 8
+    \snippet tools/undoframework/mainwindow.cpp 8
 
     We have to use the QMenu \c aboutToShow() and \c aboutToHide()
     signals since we only want \c deleteAction to be enabled when we
@@ -133,14 +133,14 @@
 
     Here is the \c itemMoved() slot:
 
-    \snippet undoframework/mainwindow.cpp 9
+    \snippet tools/undoframework/mainwindow.cpp 9
 
     We simply push a MoveCommand on the stack, which calls \c redo()
     on it.
 
     Here is the \c deleteItem() slot:
 
-    \snippet undoframework/mainwindow.cpp 10
+    \snippet tools/undoframework/mainwindow.cpp 10
 
     An item must be selected to be deleted.  We need to check if it is
     selected as the \c deleteAction may be enabled even if an item is
@@ -149,9 +149,9 @@
 
     Here is the \c itemMenuAboutToShow() and itemMenuAboutToHide() slots:
 
-    \snippet undoframework/mainwindow.cpp 11
+    \snippet tools/undoframework/mainwindow.cpp 11
     \codeline
-    \snippet undoframework/mainwindow.cpp 12
+    \snippet tools/undoframework/mainwindow.cpp 12
 
     We implement \c itemMenuAboutToShow() and \c itemMenuAboutToHide()
     to get a dynamic item menu. These slots are connected to the 
@@ -160,28 +160,28 @@
 
     Here is the \c addBox() slot:
 
-    \snippet undoframework/mainwindow.cpp 13
+    \snippet tools/undoframework/mainwindow.cpp 13
 
     The \c addBox() function creates an AddCommand and pushes it on
     the undo stack.
 
     Here is the \c addTriangle() sot:
 
-    \snippet undoframework/mainwindow.cpp 14
+    \snippet tools/undoframework/mainwindow.cpp 14
 
     The \c addTriangle() function creates an AddCommand and pushes it
     on the undo stack.    
 
     Here is the implementation of \c about():
 
-    \snippet undoframework/mainwindow.cpp 15
+    \snippet tools/undoframework/mainwindow.cpp 15
     
     The about slot is triggered by the \c aboutAction and displays an
     about box for the example.
 
     \section1 AddCommand Class Definition
     
-    \snippet undoframework/commands.h 2
+    \snippet tools/undoframework/commands.h 2
 
     The \c AddCommand class adds DiagramItem graphics items to the
     DiagramScene.  
@@ -190,32 +190,32 @@
 
     We start with the constructor:
 
-    \snippet undoframework/commands.cpp 7
+    \snippet tools/undoframework/commands.cpp 7
 
     We first create the DiagramItem to add to the DiagramScene.  The
     \l{QUndoCommand::}{setText()} function let us set a QString that
     describes the command. We use this to get custom messages in the
     QUndoView and in the menu of the main window.
 
-    \snippet undoframework/commands.cpp 8
+    \snippet tools/undoframework/commands.cpp 8
 
     \c undo() removes the item from the scene.
 
-    \snippet undoframework/commands.cpp 9
+    \snippet tools/undoframework/commands.cpp 9
 
     We set the position of the item as we do not do this in the
     constructor.
 
     \section1 DeleteCommand Class Definition
     
-    \snippet undoframework/commands.h 1
+    \snippet tools/undoframework/commands.h 1
 
     The DeleteCommand class implements the functionality to remove an
     item from the scene.
     
     \section1 DeleteCommand Class Implementation
 
-    \snippet undoframework/commands.cpp 4
+    \snippet tools/undoframework/commands.cpp 4
 
     We know that there must be one selected item as it is not possible
     to create a DeleteCommand unless the item to be deleted is
@@ -223,17 +223,17 @@
     The item must be unselected if it is inserted back into the 
     scene.
 
-    \snippet undoframework/commands.cpp 5
+    \snippet tools/undoframework/commands.cpp 5
 
     The item is simply reinserted into the scene.
 
-    \snippet undoframework/commands.cpp 6
+    \snippet tools/undoframework/commands.cpp 6
 
     The item is removed from the scene.
 
     \section1 MoveCommand Class Definition
 
-    \snippet undoframework/commands.h 0
+    \snippet tools/undoframework/commands.h 0
 
     The \l{QUndoCommand::}{mergeWith()} is reimplemented to make
     consecutive moves of an item one MoveCommand, i.e, the item will
@@ -244,20 +244,20 @@
     
     The constructor of MoveCommand looks like this:
 
-    \snippet undoframework/commands.cpp 0
+    \snippet tools/undoframework/commands.cpp 0
 
     We save both the old and new positions for undo and redo
     respectively.
 
-    \snippet undoframework/commands.cpp 2
+    \snippet tools/undoframework/commands.cpp 2
 
     We simply set the items old position and update the scene.    
 
-    \snippet undoframework/commands.cpp 3
+    \snippet tools/undoframework/commands.cpp 3
 
     We set the item to its new position.
     
-    \snippet undoframework/commands.cpp 1
+    \snippet tools/undoframework/commands.cpp 1
 
     Whenever a MoveCommand is created, this function is called to
     check if it should be merged with the previous command. It is the
@@ -271,7 +271,7 @@
 
     \section1 DiagramScene Class Definition
 
-    \snippet undoframework/diagramscene.h 0
+    \snippet tools/undoframework/diagramscene.h 0
 
     The DiagramScene implements the functionality to move a
     DiagramItem with the mouse. It emits a signal when a move is
@@ -283,7 +283,7 @@
     
     The \c main() function of the program looks like this:
 
-    \snippet undoframework/main.cpp 0
+    \snippet tools/undoframework/main.cpp 0
 
     We draw a grid in the background of the DiagramScene, so we use a
     resource file. The rest of the function creates the \c MainWindow and

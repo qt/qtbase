@@ -1,21 +1,8 @@
 TEMPLATE      = subdirs
 CONFIG       += ordered
-SUBDIRS       = codecs \
-                completer \
-                customcompleter \
-                echoplugin \
-                i18n \
-                contiguouscache \
-                plugandpaintplugins \
-                plugandpaint \
-                regexp \
-                settingseditor \
-                styleplugin \
-                treemodelcompleter \
-                undo \
-                undoframework
-
-plugandpaint.depends = plugandpaintplugins
+SUBDIRS       = contiguouscache \
+                customtype \
+                customtypesending
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools

@@ -43,7 +43,8 @@
 #include <QContiguousCache>
 #include <QAbstractListModel>
 
-class QTimer;
+QT_FORWARD_DECLARE_CLASS(QTimer)
+
 class RandomListModel : public QAbstractListModel
 {
     Q_OBJECT

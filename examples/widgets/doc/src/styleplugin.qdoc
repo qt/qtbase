@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example styleplugin
+    \example tools/styleplugin
     \title Style Plugin Example
 
     This example shows how to create a plugin that extends Qt with a new 
@@ -73,7 +73,7 @@
     \c SimpleStylePlugin inherits QStylePlugin and is the plugin
     class. 
 
-    \snippet styleplugin/plugin/simplestyleplugin.h 0
+    \snippet tools/styleplugin/plugin/simplestyleplugin.h 0
 
     \c keys() returns a list of style names that this plugin can
     create, while \c create() takes such a string and returns the
@@ -87,14 +87,14 @@
 
     Here is the implementation of \c keys():
 
-    \snippet styleplugin/plugin/simplestyleplugin.cpp 0
+    \snippet tools/styleplugin/plugin/simplestyleplugin.cpp 0
 
     Since this plugin only supports one style, we return a QStringList
     with the class name of that style.
 
     Here is the \c create() function:
 
-    \snippet styleplugin/plugin/simplestyleplugin.cpp 1
+    \snippet tools/styleplugin/plugin/simplestyleplugin.cpp 1
 
     Note that the key for style plugins are case insensitive.
     The case sensitivity varies from plugin to plugin, so you need to
@@ -102,7 +102,7 @@
 
     \section1 The \c main() function
 
-    \snippet styleplugin/stylewindow/main.cpp 0
+    \snippet tools/styleplugin/stylewindow/main.cpp 0
 
     Qt loads the available style plugins when the QApplication object
     is initialized. The QStyleFactory class knows about all styles and
@@ -114,7 +114,7 @@
     The \c SimpleStylePlugin lives in its own directory and have
     its own profile:
 
-    \snippet styleplugin/plugin/plugin.pro 0
+    \snippet tools/styleplugin/plugin/plugin.pro 0
 
     In the plugin profile we need to set the lib template as we are
     building a shared library instead of an executable. We must also

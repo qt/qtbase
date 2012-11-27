@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*! 
-    \example regexp
+    \example tools/regexp
     \title Regular Expressions Example
 
     The Regular Expressions (RegExp) example shows how regular expressions in Qt are

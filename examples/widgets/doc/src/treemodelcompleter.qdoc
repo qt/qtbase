@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example treemodelcompleter
+    \example tools/treemodelcompleter
     \title Tree Model Completer Example
 
     The Tree Model Completer example shows how to provide completion
@@ -45,7 +45,7 @@
     This file is embedded within the \e treemodelcompleter.qrc resource file,
     which contains the following:
 
-    \quotefile treemodelcompleter/treemodelcompleter.qrc
+    \quotefile tools/treemodelcompleter/treemodelcompleter.qrc
 
     \section1 TreeModelCompleter Class Definition
 
@@ -53,7 +53,7 @@
     constructors - one with \a parent as an argument and another with
     \a parent and \a model as arguments.
 
-    \snippet treemodelcompleter/treemodelcompleter.h 0
+    \snippet tools/treemodelcompleter/treemodelcompleter.h 0
 
     The class reimplements the protected functions
     \l{QCompleter::splitPath()}{splitPath()}  and
@@ -72,14 +72,14 @@
     parent while the second constructor constructs an object with a parent
     and a QAbstractItemModel, \a model.
 
-    \snippet treemodelcompleter/treemodelcompleter.cpp 0
+    \snippet tools/treemodelcompleter/treemodelcompleter.cpp 0
     \codeline
-    \snippet treemodelcompleter/treemodelcompleter.cpp 1
+    \snippet tools/treemodelcompleter/treemodelcompleter.cpp 1
 
     The \c separator() function is a getter function that returns the
     separator string.
 
-    \snippet treemodelcompleter/treemodelcompleter.cpp 2
+    \snippet tools/treemodelcompleter/treemodelcompleter.cpp 2
 
     As mentioned earlier, the \c splitPath() function is reimplemented because
     the default implementation is more suited to QDirModel or list models. In
@@ -87,7 +87,7 @@
     matched at each level, we split it using QString::split() with \c sep as its
     separator.
 
-    \snippet treemodelcompleter/treemodelcompleter.cpp 3
+    \snippet tools/treemodelcompleter/treemodelcompleter.cpp 3
 
     The \c pathFromIndex() function returns data for the completionRole() for a
     tree model. This function is reimplemented as its default implementation is
@@ -97,7 +97,7 @@
     accumulate the data. The function then returns a QStringList, \c dataList,
     using a separator to join objects of different levels.
 
-    \snippet treemodelcompleter/treemodelcompleter.cpp 4
+    \snippet tools/treemodelcompleter/treemodelcompleter.cpp 4
 
     \section1 MainWindow Class Definition
 
@@ -105,13 +105,13 @@
     custom slots: \c about(), \c changeCase(), \c changeMode(),
     \c highlight(), and \c updateContentsLabel().
 
-    \snippet treemodelcompleter/mainwindow.h 0
+    \snippet tools/treemodelcompleter/mainwindow.h 0
 
     In addition, the class has two private functions, \c createMenu() and
     \c modelFromFile(), as well as private instances of QTreeView, QComboBox,
     QLabel, \c TreeModelCompleter and QLineEdit.
 
-    \snippet treemodelcompleter/mainwindow.h 1
+    \snippet tools/treemodelcompleter/mainwindow.h 1
 
     \section1 MainWindow Class Implementation
 
@@ -123,49 +123,49 @@
     {highlighted()} signal is connected to \c{MainWindow}'s \c highlight()
     slot.
 
-    \snippet treemodelcompleter/mainwindow.cpp 0
+    \snippet tools/treemodelcompleter/mainwindow.cpp 0
 
     The QLabel objects \c modelLabel, \c modeLabel and \c caseLabel are
     instantiated. Also, the QComboBox objects, \c modeCombo and \c caseCombo,
     are instantiated and populated. By default, the \c{completer}'s mode is
     "Filtered Popup" and the case is insensitive.
 
-    \snippet treemodelcompleter/mainwindow.cpp 1
+    \snippet tools/treemodelcompleter/mainwindow.cpp 1
     \codeline
-    \snippet treemodelcompleter/mainwindow.cpp 2
+    \snippet tools/treemodelcompleter/mainwindow.cpp 2
 
     We use a QGridLayout to place all the objects in the \c MainWindow.
 
-    \snippet treemodelcompleter/mainwindow.cpp 3
+    \snippet tools/treemodelcompleter/mainwindow.cpp 3
 
     The \c createMenu() function sets up the QAction objects required and
     adds them to the "File" menu and "Help" menu. The
     \l{QAction::triggered()}{triggered()} signals from these actions are
     connected to their respective slots.
 
-    \snippet treemodelcompleter/mainwindow.cpp 4
+    \snippet tools/treemodelcompleter/mainwindow.cpp 4
 
     The \c changeMode() function accepts an \a index corresponding to the
     user's choice of completion mode and changes the \c{completer}'s mode
     accordingly.
 
-    \snippet treemodelcompleter/mainwindow.cpp 5
+    \snippet tools/treemodelcompleter/mainwindow.cpp 5
 
     The \c about() function provides a brief description on the Tree Model
     Completer example.
 
-    \snippet treemodelcompleter/mainwindow.cpp 6
+    \snippet tools/treemodelcompleter/mainwindow.cpp 6
 
     The \c changeCase() function alternates between \l{Qt::CaseSensitive}
     {Case Sensitive} and \l{Qt::CaseInsensitive}{Case Insensitive} modes,
     depending on the value of \a cs.
 
-    \snippet treemodelcompleter/mainwindow.cpp 7
+    \snippet tools/treemodelcompleter/mainwindow.cpp 7
 
     \section1 \c main() Function
 
     The \c main() function instantiates \c MainWindow and invokes the
     \l{QWidget::show()}{show()} function to display it.
 
-    \snippet treemodelcompleter/main.cpp 0
+    \snippet tools/treemodelcompleter/main.cpp 0
 */
