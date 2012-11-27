@@ -85,14 +85,23 @@ class QDocDatabase
     static void destroyQdocDB();
     ~QDocDatabase();
 
+    const DocNodeMap& groups() const { return groups_; }
     const DocNodeMap& modules() const { return modules_; }
     const DocNodeMap& qmlModules() const { return qmlModules_; }
+
+    DocNode* getGroup(const QString& name);
+    DocNode* findGroup(const QString& name);
+    DocNode* findModule(const QString& name);
+    DocNode* findQmlModule(const QString& name);
+
+    DocNode* addGroup(const QString& name);
     DocNode* addModule(const QString& name);
     DocNode* addQmlModule(const QString& name);
+
+    DocNode* addToGroup(const QString& name, Node* node);
     DocNode* addToModule(const QString& name, Node* node);
-    DocNode* addToQmlModule(const QString& moduleName, Node* node);
-    DocNode* findModule(const QString& qmlModuleName, bool addIfNotFound = false);
-    DocNode* findQmlModule(const QString& name, bool addIfNotFound = false);
+    DocNode* addToQmlModule(const QString& name, Node* node);
+
     QmlClassNode* findQmlType(const QString& qmid, const QString& name) const;
 
     void findAllClasses(const InnerNode *node);
@@ -112,9 +121,6 @@ class QDocDatabase
     NodeMap& getQmlTypes() { return qmlClasses_; }
     NodeMapMap& getFunctionIndex() { return funcIndex_; }
     TextToNodeMap& getLegaleseTexts() { return legaleseTexts_; }
-    const NodeMultiMap& groups() const { return tree_->groups(); }
-    const NodeList getGroup(const QString& name) const { return tree_->groups().values(name); }
-    void getGroup(const QString& name, NodeMap& group) const;
     const NodeMap& getClassMap(const QString& key) const;
     const NodeMap& getQmlTypeMap(const QString& key) const;
     const NodeMultiMap& getSinceMap(const QString& key) const;
@@ -131,8 +137,6 @@ class QDocDatabase
     NamespaceNode* treeRoot() { return tree_->root(); }
     void resolveInheritance() { tree_->resolveInheritance(); }
     void resolveIssues();
-    void addToGroup(Node* node, const QString& group) { tree_->addToGroup(node, group); }
-    void addToPublicGroup(Node* node, const QString& group) { tree_->addToPublicGroup(node, group); }
     void fixInheritance() { tree_->fixInheritance(); }
     void resolveProperties() { tree_->resolveProperties(); }
 
@@ -140,7 +144,6 @@ class QDocDatabase
     ClassNode* findClassNode(const QStringList& path) { return tree_->findClassNode(path); }
     NamespaceNode* findNamespaceNode(const QStringList& path) { return tree_->findNamespaceNode(path); }
 
-    DocNode* findGroupNode(const QStringList& path) { return tree_->findGroupNode(path); }
     NameCollisionNode* findCollisionNode(const QString& name) const {
         return tree_->findCollisionNode(name);
     }
@@ -205,6 +208,7 @@ class QDocDatabase
     QString                 version_;
     QDocMultiMap            masterMap_;
     Tree*                   tree_;
+    DocNodeMap              groups_;
     DocNodeMap              modules_;
     DocNodeMap              qmlModules_;
     QmlTypeMap              qmlTypeMap_;

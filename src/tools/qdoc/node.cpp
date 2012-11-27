@@ -170,6 +170,7 @@ Node::Node(Type type, InnerNode *parent, const QString& name)
       pageType_(NoPageType),
       status_(Commendable),
       indexNodeFlag_(false),
+      seen_(true),
       parent_(parent),
       relatesTo_(0),
       name_(name)

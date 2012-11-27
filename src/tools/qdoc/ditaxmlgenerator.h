@@ -378,10 +378,9 @@ private:
     QString generateLowStatusMemberFile(const InnerNode* inner,
                                         CodeMarker* marker,
                                         CodeMarker::Status status);
-    void generateClassHierarchy(const Node* relative, const NodeMap& classMap);
-    void generateAnnotatedList(const Node* relative,
-                               CodeMarker* marker,
-                               const NodeMap& nodeMap);
+    void generateClassHierarchy(const Node* relative, NodeMap& classMap);
+    void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeMap& nodeMap);
+    void generateAnnotatedList(const Node* relative, CodeMarker* marker, const NodeList& nodes);
     void generateCompactList(const Node* relative,
                              const NodeMap& classMap,
                              bool includeAlphabet,

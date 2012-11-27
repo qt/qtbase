@@ -77,7 +77,6 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLDEFAULT              Doc::alias(QLatin1String("default"))
 #define COMMAND_QMLREADONLY             Doc::alias(QLatin1String("readonly"))
 #define COMMAND_QMLBASICTYPE            Doc::alias(QLatin1String("qmlbasictype"))
-#define COMMAND_QMLMODULE               Doc::alias(QLatin1String("qmlmodule"))
 
 /*!
   The constructor stores all the parameters in local data members.
@@ -345,7 +344,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if ((command == COMMAND_INGROUP) && !args.isEmpty()) {
                 ArgList::ConstIterator argsIter = args.constBegin();
                 while (argsIter != args.constEnd()) {
-                    QDocDatabase::qdocDB()->addToGroup(node, argsIter->first);
+                    QDocDatabase::qdocDB()->addToGroup(argsIter->first, node);
                     ++argsIter;
                 }
             }

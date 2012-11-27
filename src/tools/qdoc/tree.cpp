@@ -398,41 +398,6 @@ void Tree::addPropertyFunction(PropertyNode* property,
 }
 
 /*!
-  This function adds the \a node to the \a group. The group
-  can be listed anywhere using the \e{annotated list} command.
- */
-void Tree::addToGroup(Node* node, const QString& group)
-{
-    groupMap.insert(group, node);
-}
-
-/*!
-  Returns the group map.
- */
-const NodeMultiMap& Tree::groups() const
-{
-    return groupMap;
-}
-
-/*!
-  This function adds the \a group name to the list of groups
-  for the \a node name. It also adds the \a node to the \a group.
- */
-void Tree::addToPublicGroup(Node* node, const QString& group)
-{
-    publicGroupMap.insert(node->name(), group);
-    addToGroup(node, group);
-}
-
-/*!
-  Returns the public group map.
- */
-QMultiMap<QString, QString> Tree::publicGroups() const
-{
-    return publicGroupMap;
-}
-
-/*!
  */
 void Tree::resolveInheritance(NamespaceNode* rootNode)
 {
@@ -544,23 +509,6 @@ void Tree::resolveInheritance(int pass, ClassNode* classe)
             }
             ++c;
         }
-    }
-}
-
-/*!
-  For each node in the group map, add the node to the appropriate
-  group node.
- */
-void Tree::resolveGroups()
-{
-    NodeMultiMap::const_iterator i;
-    for (i = groupMap.constBegin(); i != groupMap.constEnd(); ++i) {
-        if (i.value()->access() == Node::Private)
-            continue;
-
-        DocNode* n = findGroupNode(QStringList(i.key()));
-        if (n)
-            n->addMember(i.value());
     }
 }
 
@@ -784,19 +732,6 @@ NamespaceNode* Tree::findNamespaceNode(const QStringList& path)
 {
     Node* start = const_cast<NamespaceNode*>(root());
     return static_cast<NamespaceNode*>(findNodeRecursive(path, 0, start, Node::Namespace, Node::NoSubType));
-}
-
-/*!
-  Find the Group node named \a path. Begin the search at the
-  \a start node. If the \a start node is 0, begin the search
-  at the root of the tree. Only a Group node named \a path is
-  acceptible. If one is not found, 0 is returned.
- */
-DocNode* Tree::findGroupNode(const QStringList& path, Node* start)
-{
-    if (!start)
-        start = const_cast<NamespaceNode*>(root());
-    return static_cast<DocNode*>(findNodeRecursive(path, 0, start, Node::Document, Node::Group));
 }
 
 /*!

@@ -56,7 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QMap<QString, const Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMap<Node*, NodeMultiMap> ParentMaps;
 

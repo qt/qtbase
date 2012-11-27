@@ -106,6 +106,12 @@ void QDocDatabase::destroyQdocDB()
 }
 
 /*!
+  \fn const DocNodeMap& QDocDatabase::groups() const
+  Returns a const reference to the collection of all
+  group nodes.
+*/
+
+/*!
   \fn const DocNodeMap& QDocDatabase::modules() const
   Returns a const reference to the collection of all
   module nodes.
@@ -118,104 +124,68 @@ void QDocDatabase::destroyQdocDB()
 */
 
 /*!
-  Looks up the module node named \a name in the collection
-  of all module nodes. If a match is found, a pointer to the
-  node is returned. Otherwise, a new module node named \a name
-  is created and inserted into the collection, and the pointer
-  to that node is returned.
+  Find the group node named \a name and return a pointer
+  to it. If a matching node is not found, return 0.
  */
-DocNode* QDocDatabase::addModule(const QString& name)
+DocNode* QDocDatabase::getGroup(const QString& name)
 {
-    return findModule(name,true);
+    DocNodeMap::const_iterator i = groups_.find(name);
+    if (i != groups_.end())
+        return i.value();
+    return 0;
 }
 
 /*!
-  Looks up the QML module node named \a name in the collection
-  of all QML module nodes. If a match is found, a pointer to the
-  node is returned. Otherwise, a new QML module node named \a name
-  is created and inserted into the collection, and the pointer
-  to that node is returned.
- */
-DocNode* QDocDatabase::addQmlModule(const QString& name)
-{
-    return findQmlModule(name,true);
-}
+  Find the group node named \a name and return a pointer
+  to it. If a matching node is not found, add a new group
+  node named \a name and return a pointer to that one.
 
-/*!
-  Looks up the C++ module named \a moduleName. If it isn't
-  there, create it. Then append \a node to the module's child
-  list. The parent of \a node is not changed by this function.
-  Returns the module node.
+  If a new group node is added, its parent is the tree root,
+  and the new group node is marked \e{not seen}.
  */
-DocNode* QDocDatabase::addToModule(const QString& moduleName, Node* node)
+DocNode* QDocDatabase::findGroup(const QString& name)
 {
-    DocNode* dn = findModule(moduleName,true);
-    dn->addMember(node);
-    node->setModuleName(moduleName);
-    return dn;
-}
-
-/*!
-  Looks up the QML module named \a qmlModuleName. If it isn't
-  there, create it. Then append \a node to the module's child
-  list. The parent of \a node is not changed by this function.
-  Returns a pointer to the QML module node.
- */
-DocNode* QDocDatabase::addToQmlModule(const QString& qmlModuleName, Node* node)
-{
-    DocNode* dn = findQmlModule(qmlModuleName,true);
-    dn->addMember(node);
-    node->setQmlModuleInfo(qmlModuleName);
-    if (node->subType() == Node::QmlClass) {
-        QString t = node->qmlModuleIdentifier() + "::" + node->name();
-        QmlClassNode* n = static_cast<QmlClassNode*>(node);
-        if (!qmlTypeMap_.contains(t))
-            qmlTypeMap_.insert(t,n);
-        if (!masterMap_.contains(t))
-            masterMap_.insert(t,node);
-        if (!masterMap_.contains(node->name(),node))
-            masterMap_.insert(node->name(),node);
-    }
+    DocNodeMap::const_iterator i = groups_.find(name);
+    if (i != groups_.end())
+        return i.value();
+    DocNode* dn = new DocNode(tree_->root(), name, Node::Group, Node::OverviewPage);
+    dn->markNotSeen();
+    groups_.insert(name,dn);
+    if (!masterMap_.contains(name,dn))
+        masterMap_.insert(name,dn);
     return dn;
 }
 
 /*!
   Find the module node named \a name and return a pointer
-  to it. If a matching node is not found and \a addIfNotFound
-  is true, add a new module node named \a name and return
-  a pointer to that one. Otherwise, return 0.
+  to it. If a matching node is not found, add a new module
+  node named \a name and return a pointer to that one.
 
   If a new module node is added, its parent is the tree root,
-  but the new module node is not added to the child list of the
-  tree root.
+  and the new module node is marked \e{not seen}.
  */
-DocNode* QDocDatabase::findModule(const QString& name, bool addIfNotFound)
+DocNode* QDocDatabase::findModule(const QString& name)
 {
     DocNodeMap::const_iterator i = modules_.find(name);
-    if (i != modules_.end()) {
+    if (i != modules_.end())
         return i.value();
-    }
-    if (addIfNotFound) {
-        DocNode* dn = new DocNode(tree_->root(), name, Node::Module, Node::OverviewPage);
-        modules_.insert(name,dn);
-        if (!masterMap_.contains(name,dn))
-            masterMap_.insert(name,dn);
-        return dn;
-    }
-    return 0;
+    DocNode* dn = new DocNode(tree_->root(), name, Node::Module, Node::OverviewPage);
+    dn->markNotSeen();
+    modules_.insert(name,dn);
+    if (!masterMap_.contains(name,dn))
+        masterMap_.insert(name,dn);
+    return dn;
 }
 
 /*!
   Find the QML module node named \a name and return a pointer
-  to it. If a matching node is not found and \a addIfNotFound
-  is true, add a new QML module node named \a name and return
-  a pointer to that one. Otherwise, return 0.
+  to it. If a matching node is not found, add a new QML module
+  node named \a name and return a pointer to that one.
 
   If a new QML module node is added, its parent is the tree root,
-  but the new QML module node is not added to the child list of
-  the tree root.
+  and the new QML module node is marked \e{not seen}.
  */
-DocNode* QDocDatabase::findQmlModule(const QString& name, bool addIfNotFound)
+DocNode* QDocDatabase::findQmlModule(const QString& name)
 {
     QStringList dotSplit;
     QStringList blankSplit = name.split(QLatin1Char(' '));
@@ -226,13 +196,113 @@ DocNode* QDocDatabase::findQmlModule(const QString& name, bool addIfNotFound)
     }
     DocNode* dn = 0;
     if (qmlModules_.contains(qmid))
-        dn = qmlModules_.value(qmid);
-    else if (addIfNotFound) {
-        dn = new DocNode(tree_->root(), name, Node::QmlModule, Node::OverviewPage);
-        dn->setQmlModuleInfo(name);
-        qmlModules_.insert(qmid,dn);
-        masterMap_.insert(qmid,dn);
-        masterMap_.insert(dn->name(),dn);
+        return qmlModules_.value(qmid);
+    dn = new DocNode(tree_->root(), name, Node::QmlModule, Node::OverviewPage);
+    dn->markNotSeen();
+    dn->setQmlModuleInfo(name);
+    qmlModules_.insert(qmid,dn);
+    masterMap_.insert(qmid,dn);
+    masterMap_.insert(dn->name(),dn);
+    return dn;
+}
+
+/*!
+  Looks up the group node named \a name in the collection
+  of all group nodes. If a match is found, a pointer to the
+  node is returned. Otherwise, a new group node named \a name
+  is created and inserted into the collection, and the pointer
+  to that node is returned. The group node is marked \e{seen}
+  in either case.
+ */
+DocNode* QDocDatabase::addGroup(const QString& name)
+{
+    DocNode* group = findGroup(name);
+    group->markSeen();
+    return group;
+}
+
+/*!
+  Looks up the module node named \a name in the collection
+  of all module nodes. If a match is found, a pointer to the
+  node is returned. Otherwise, a new module node named \a name
+  is created and inserted into the collection, and the pointer
+  to that node is returned. The module node is marked \e{seen}
+  in either case.
+ */
+DocNode* QDocDatabase::addModule(const QString& name)
+{
+    DocNode* module = findModule(name);
+    module->markSeen();
+    return module;
+}
+
+/*!
+  Looks up the QML module node named \a name in the collection
+  of all QML module nodes. If a match is found, a pointer to the
+  node is returned. Otherwise, a new QML module node named \a name
+  is created and inserted into the collection, and the pointer
+  to that node is returned. The QML module node is marked \e{seen}
+  in either case.
+ */
+DocNode* QDocDatabase::addQmlModule(const QString& name)
+{
+    DocNode* qmlModule = findQmlModule(name);
+    qmlModule->markSeen();
+    return qmlModule;
+}
+
+/*!
+  Looks up the group node named \a name in the collection
+  of all group nodes. If a match is not found, a new group
+  node named \a name is created and inserted into the collection.
+  Then append \a node to the group's members list, and append the
+  group node to the member list of the \a node. The parent of the
+  \a node is not changed by this function. Returns a pointer to
+  the group node.
+ */
+DocNode* QDocDatabase::addToGroup(const QString& name, Node* node)
+{
+    DocNode* dn = findGroup(name);
+    dn->addMember(node);
+    node->addMember(dn);
+    return dn;
+}
+
+/*!
+  Looks up the module node named \a name in the collection
+  of all module nodes. If a match is not found, a new module
+  node named \a name is created and inserted into the collection.
+  Then append \a node to the module's members list. The parent of
+  \a node is not changed by this function. Returns the module node.
+ */
+DocNode* QDocDatabase::addToModule(const QString& name, Node* node)
+{
+    DocNode* dn = findModule(name);
+    dn->addMember(node);
+    node->setModuleName(name);
+    return dn;
+}
+
+/*!
+  Looks up the QML module named \a name. If it isn't there,
+  create it. Then append \a node to the QML module's member
+  list. The parent of \a node is not changed by this function.
+  Returns a pointer to the QML module node.
+ */
+DocNode* QDocDatabase::addToQmlModule(const QString& name, Node* node)
+{
+    DocNode* dn = findQmlModule(name);
+    dn->addMember(node);
+    node->setQmlModuleInfo(name);
+    if (node->subType() == Node::QmlClass) {
+        QString t = node->qmlModuleIdentifier() + "::" + node->name();
+        QmlClassNode* n = static_cast<QmlClassNode*>(node);
+        if (!qmlTypeMap_.contains(t))
+            qmlTypeMap_.insert(t,n);
+        if (!masterMap_.contains(t))
+            masterMap_.insert(t,node);
+        if (!masterMap_.contains(node->name(),node))
+            masterMap_.insert(node->name(),node);
     }
     return dn;
 }
@@ -553,26 +623,8 @@ const NodeMultiMap& QDocDatabase::getSinceMap(const QString& key) const
   to generating documentation.
  */
 void QDocDatabase::resolveIssues() {
-    tree_->resolveGroups();
     resolveTargets(treeRoot());
     tree_->resolveCppToQmlLinks();
-}
-
-/*!
-  Look up group \a name in the map of groups. If found, populate
-  the node map \a group with the classes in the group that are
-  not marked internal or private.
- */
-void QDocDatabase::getGroup(const QString& name, NodeMap& group) const
-{
-    group.clear();
-    NodeList values = tree_->groups().values(name);
-    for (int i=0; i<values.size(); ++i) {
-        const Node* n = values.at(i);
-        if ((n->status() != Node::Internal) && (n->access() != Node::Private)) {
-            group.insert(n->nameForLists(),n);
-        }
-    }
 }
 
 /*!

@@ -85,7 +85,6 @@ class Tree
     ClassNode* findClassNode(const QStringList& path, Node* start = 0);
     QmlClassNode* findQmlTypeNode(const QStringList& path);
     NamespaceNode* findNamespaceNode(const QStringList& path);
-    DocNode* findGroupNode(const QStringList& path, Node* start = 0);
     DocNode* findQmlModuleNode(const QStringList& path, Node* start = 0);
 
     Node* findNodeByNameAndType(const QStringList& path,
@@ -129,14 +128,9 @@ class Tree
     void addPropertyFunction(PropertyNode *property,
                              const QString &funcName,
                              PropertyNode::FunctionRole funcRole);
-    void addToGroup(Node *node, const QString &group);
-    void addToPublicGroup(Node *node, const QString &group);
     void addToQmlModule(Node* node);
-    const NodeMultiMap& groups() const;
-    QMultiMap<QString,QString> publicGroups() const;
     void resolveInheritance(NamespaceNode *rootNode = 0);
     void resolveProperties();
-    void resolveGroups();
     void resolveCppToQmlLinks();
     void fixInheritance(NamespaceNode *rootNode = 0);
     NamespaceNode *root() { return &root_; }
@@ -161,8 +155,6 @@ private:
     NamespaceNode root_;
     QMap<ClassNode* , QList<InheritanceBound> > unresolvedInheritanceMap;
     PropertyMap unresolvedPropertyMap;
-    NodeMultiMap groupMap;
-    QMultiMap<QString, QString> publicGroupMap;
 };
 
 QT_END_NAMESPACE

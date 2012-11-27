@@ -239,11 +239,10 @@ void CodeParser::processCommonMetaCommand(const Location& location,
     else if (command == COMMAND_DEPRECATED) {
         node->setStatus(Node::Deprecated);
     }
-    else if (command == COMMAND_INGROUP) {
-        qdb_->addToGroup(node, arg.first);
-    }
-    else if (command == COMMAND_INPUBLICGROUP) {
-        qdb_->addToPublicGroup(node, arg.first);
+    else if ((command == COMMAND_INGROUP) || (command == COMMAND_INPUBLICGROUP)) {
+        // Note: \ingroup and \inpublicgroup are now the same.
+        // Not that they were ever different.
+        DocNode* dn = qdb_->addToGroup(arg.first, node);
     }
     else if (command == COMMAND_INMODULE) {
         qdb_->addToModule(arg.first,node);

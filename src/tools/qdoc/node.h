@@ -62,7 +62,7 @@ class QmlClassNode;
 class QDocDatabase;
 
 typedef QList<Node*> NodeList;
-typedef QMap<QString, const Node*> NodeMap;
+typedef QMap<QString, Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
 typedef QList<QPair<QString,QString> > ImportList;
@@ -180,6 +180,8 @@ public:
     void setParent(InnerNode* n) { parent_ = n; }
     void setIndexNodeFlag() { indexNodeFlag_ = true; }
     virtual void setOutputFileName(const QString& ) { }
+    void markSeen() { seen_ = true; }
+    void markNotSeen() { seen_ = false; }
 
     virtual bool isInnerNode() const = 0;
     virtual bool isLeaf() const { return false; }
@@ -193,6 +195,8 @@ public:
     virtual bool isQmlPropertyGroup() const { return false; }
     virtual bool isCollisionNode() const { return false; }
     virtual bool isAttached() const { return false; }
+    virtual bool isGroup() const { return false; }
+    virtual void addMember(Node* ) { }
     virtual bool hasMembers() const { return false; }
     virtual bool hasNamespaces() const { return false; }
     virtual bool hasClasses() const { return false; }
@@ -203,6 +207,7 @@ public:
     virtual void getMemberClasses(NodeMap& ) { }
     bool isInternal() const;
     bool isIndexNode() const { return indexNodeFlag_; }
+    bool wasSeen() const { return seen_; }
     Type type() const { return nodeType_; }
     virtual SubType subType() const { return NoSubType; }
     InnerNode* parent() const { return parent_; }
@@ -271,6 +276,7 @@ private:
     PageType pageType_;
     Status status_;
     bool indexNodeFlag_;
+    bool seen_;
 
     InnerNode* parent_;
     InnerNode* relatesTo_;
@@ -326,7 +332,7 @@ public:
     const NodeList & childNodes() const { return children_; }
     const NodeList & relatedNodes() const { return related_; }
 
-    void addMember(Node* node) { members_.append(node); }
+    virtual void addMember(Node* node) { members_.append(node); }
     const NodeList& members() const { return members_; }
     virtual bool hasMembers() const;
     virtual bool hasNamespaces() const;
@@ -475,6 +481,7 @@ public:
     virtual QString imageFileName() const { return QString(); }
     virtual QString nameForLists() const { return title(); }
     virtual void setImageFileName(const QString& ) { }
+    virtual bool isGroup() const { return (subType() == Node::Group); }
     virtual bool isQmlPropertyGroup() const { return (nodeSubtype_ == QmlPropertyGroup); }
     virtual bool hasProperty(const QString& ) const;
 
