@@ -4,7 +4,7 @@ SUBDIRS = listnames \
 	  complexpingpong
 
 !contains(QT_CONFIG, no-widgets) {
-    SUBDIRS += dbus-chat \
+    SUBDIRS += chat \
                remotecontrolledcar
 }
 
