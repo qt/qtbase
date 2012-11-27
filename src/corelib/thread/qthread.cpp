@@ -235,6 +235,14 @@ QThreadPrivate::~QThreadPrivate()
     returns a platform specific ID for the thread; the latter returns
     a QThread pointer.
 
+    To choose the name that your thread will be given (as identified
+    by the command \c{ps -L} on Linux, for example), you can call
+    \l{QObject::setObjectName()}{setObjectName()} before starting the thread.
+    If you don't call \l{QObject::setObjectName()}{setObjectName()},
+    the name given to your thread will be the class name of the runtime
+    type of your thread object (for example, \c "RenderThread" in the case of the
+    \l{Mandelbrot Example}, as that is the name of the QThread subclass).
+    Note that this is currently not available with release builds on Windows.
 
     \section1 Subclassing QThread
 
