@@ -224,8 +224,8 @@ public:
     QMargins frameMargins() const;
     QRect frameGeometry() const;
 
-    QPoint framePos() const;
-    void setFramePos(const QPoint &point);
+    QPoint framePosition() const;
+    void setFramePosition(const QPoint &point);
 
     inline int width() const { return geometry().width(); }
     inline int height() const { return geometry().height(); }
@@ -240,6 +240,7 @@ public:
 
 // Temporary backwards-compatible accessors for the benefit of Declarative
 // to be removed ASAP
+    inline void setFramePos(const QPoint &pt) { setFramePosition(pt); }
     inline void setPos(const QPoint &pt) { setPosition(pt); }
     inline void setPos(int posx, int posy) { setPosition(posx, posy); }
 // end of temporary accessors

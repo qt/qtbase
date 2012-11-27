@@ -1176,7 +1176,7 @@ QRect QWindow::frameGeometry() const
 
     \sa geometry(), frameGeometry()
 */
-QPoint QWindow::framePos() const
+QPoint QWindow::framePosition() const
 {
     Q_D(const QWindow);
     if (d->platformWindow) {
@@ -1191,7 +1191,7 @@ QPoint QWindow::framePos() const
 
     \sa setGeometry(), frameGeometry()
 */
-void QWindow::setFramePos(const QPoint &point)
+void QWindow::setFramePosition(const QPoint &point)
 {
     Q_D(QWindow);
     d->positionPolicy = QWindowPrivate::WindowFrameInclusive;

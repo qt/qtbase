@@ -478,7 +478,7 @@ bool QPlatformWindow::frameStrutEventsEnabled() const
             it is the grabbing window.
             When any grab ends, the window under cursor will receive an enter event unless it
             was the grabbing window.
-        \li Window positioning: When calling \c{QWindow::setFramePos()}, the flag
+        \li Window positioning: When calling \c{QWindow::setFramePosition()}, the flag
             \c{QWindowPrivate::positionPolicy} is set to \c{QWindowPrivate::WindowFrameInclusive}.
             This means the position includes the window frame, whose size is at this point
             unknown and the geometry's topleft point is the position of the window frame.

@@ -52,13 +52,13 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
 
     Window a;
-    a.setFramePos(QPoint(10, 10));
+    a.setFramePosition(QPoint(10, 10));
     a.setTitle(QStringLiteral("Window A"));
     a.setObjectName(a.title());
     a.setVisible(true);
 
     Window b;
-    b.setFramePos(QPoint(100, 100));
+    b.setFramePosition(QPoint(100, 100));
     b.setTitle(QStringLiteral("Window B"));
     b.setObjectName(b.title());
     b.setVisible(true);

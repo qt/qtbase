@@ -997,7 +997,7 @@ void QWindowsWindow::handleHidden()
 void QWindowsWindow::setGeometry(const QRect &rectIn)
 {
     QRect rect = rectIn;
-    // This means it is a call from QWindow::setFramePos() and
+    // This means it is a call from QWindow::setFramePosition() and
     // the coordinates include the frame (size is still the contents rectangle).
     if (QWindowsGeometryHint::positionIncludesFrame(window())) {
         const QMargins margins = frameMargins();

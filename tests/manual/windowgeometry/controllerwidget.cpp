@@ -357,9 +357,9 @@ private:
     virtual void setObjectGeometry(QObject *o, const QRect &r) const
         { static_cast<QWindow *>(o)->setGeometry(r); }
     virtual QPoint objectFramePosition(const QObject *o) const
-        { return static_cast<const QWindow *>(o)->framePos(); }
+        { return static_cast<const QWindow *>(o)->framePosition(); }
     virtual void setObjectFramePosition(QObject *o, const QPoint &p) const
-        { static_cast<QWindow *>(o)->setFramePos(p); }
+        { static_cast<QWindow *>(o)->setFramePosition(p); }
     virtual QPoint objectMapToGlobal(const QObject *o, const QPoint &p) const
         { return static_cast<const QWindow *>(o)->mapToGlobal(p); }
     virtual Qt::WindowFlags objectWindowFlags(const QObject *o) const
@@ -457,7 +457,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     m_testWindow->setWindowFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint
                                  | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint
                                  | Qt::WindowTitleHint);
-    m_testWindow->setFramePos(QPoint(x, y));
+    m_testWindow->setFramePosition(QPoint(x, y));
     m_testWindow->resize(200, 200);
     if (args.contains(QLatin1String("-windowminimized"), Qt::CaseInsensitive))
         m_testWindow->showMinimized();
