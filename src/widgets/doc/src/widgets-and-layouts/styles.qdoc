@@ -37,19 +37,32 @@
     drawing, ensuring that they look exactly like the equivalent
     native widgets.
 
-    Several styles are built into Qt (e.g., Windows style and motif style).
-    Other styles are only available on specific platforms (such as
-    the Windows XP style). Custom styles are made available as plugins
-    or by creating an instance of the style class in an application and
-    setting it with QApplication::setStyle().
+    Qt comes with a selection of built-in styles. Some styles are only
+    available on specific platforms (such as the Mac, GTK+ and Windows
+    Vista styles). Custom styles are made available as plugins or by
+    creating an instance of a specific style class with
+    QStyleFactory::create() and setting it with QApplication::setStyle().
 
-    To implement a new style, you inherit one of Qt's existing styles
-    - the one most resembling the style you want to create - and
-    reimplement a few virtual functions. This process is somewhat
-    involved, and we therefore provide this overview. We give a
-    step-by-step walkthrough of how to style individual Qt widgets.
-    We will examine the QStyle virtual functions, member variables,
-    and enumerations.
+    \section1 Customizing a Style
+
+    In order to customize an existing style, inherit QProxyStyle and
+    reimplement the desired virtual methods. QProxyStyle allows one
+    to specify a certain base style, or it will automatically use the
+    application style when the base style is left unspecified. The
+    former gives a full control on the base style and works best if
+    the customization expects a certain style behavior, whereas the
+    latter provides a platform agnostic way to customize the application
+    style that defaults to the native platform style.
+
+    \section1 Implementing a Custom Style
+
+    QCommonStyle provides a convenient base for full custom style
+    implementations. The approach is same than with QProxyStyle, but
+    inherit QCommonStyle instead and reimplement the appropriate virtual
+    methods. Implementing a full custom style is somewhat involved, and
+    we therefore provide this overview. We give a step-by-step walkthrough
+    of how to style individual Qt widgets. We will examine the QStyle
+    virtual functions, member variables, and enumerations.
 
     The part of this document that does not concern the styling of
     individual widgets is meant to be read sequentially because later
@@ -453,11 +466,9 @@
     \section2 Design and Implementation
 
     The first step in designing the style was to select the base
-    class. We chose to subclass QWindowsStyle. This class implements
+    class. We chose to subclass QCommonStyle. This class implements
     most of the functionality we need, other than performing the actual
-    drawing. Also, Windows and Java share the layout of sub controls for
-    several of the complex controls (which reduces the amount of code
-    required considerably).
+    drawing.
 
     The style is implemented in one class. We have done this
     because we find it convenient to keep all code in one file. Also,
@@ -503,7 +514,7 @@
     which Java's JTree does not have a header.
 
     The style does not handle reverse layouts. We assume that the
-    layout direction is left to right. QWindowsStyle handles reverse
+    layout direction is left to right. QCommonStyle handles reverse
     widgets; if we implemented reverse layouts, widgets that we change
     the position of sub elements, or handle text alignment in labels
     ourselves would need to be updated.
@@ -636,10 +647,10 @@
 
     The drawing of labels often gets somewhat involved. Luckily, it
     can usually be handled by the base class. The Java style
-    implements its own push button label, since Java - contrary to
-    Windows - centers button contents also when the button has an icon.
-    You can examine that implementation if you need an example of
-    reimplementing label drawing.
+    implements its own push button label, since Java centers button
+    contents also when the button has an icon. You can examine that
+    implementation if you need an example of reimplementing label
+    drawing.
 
     We'll now take a look at the Java implementation
     of CE_CheckBoxIndicator in \c drawControl():
@@ -647,7 +658,7 @@
     \snippet javastyle.cpp 0
 
     We first save the state of the painter. This is not always
-    necessary, but in this case the QWindowsStyle needs the painter in
+    necessary, but in this case the QCommonStyle needs the painter in
     the same state as it was when PE_IndicatorCheckBox was called (We
     could also set the state with function calls, of course). We then
     use \c drawButtonBackground() to draw the background of the check
@@ -690,7 +701,7 @@
     not visible for that widget in the Java style. We still make sure
     that all elements are implemented in a way that conforms with the
     Java style, as custom widgets might need them (this does not
-    exclude leaving implementations to QWindowsStyle though).
+    exclude leaving implementations to QCommonStyle though).
 
     The following is given for each widget:
 
@@ -738,7 +749,7 @@
     element rectangles, and sub control rectangles should be used when
     examining the trees. If you are in doubt after reading the QStyle
     enum descriptions, we suggest that you examine the QCommonStyle
-    and QWindowsStyle implementations.
+    implementation.
 
     Some of the bounding rectangles that we outline in the widget
     images are equal. Reasons for this are that some elements draw
@@ -842,9 +853,8 @@
     QCommonStyle to draw the elements that it contains:
     \c PE_FrameDefaultButton, \c PE_FrameButtonBevel, and
     \c PE_PanelButtonCommand, all of which have the same bounds in common
-    and Windows style. \c PE_PushButtonBevel is also responsible for
-    drawing the menu indicator (QCommonStyle draws
-    \c PE_IndicatorArrowDown).
+    style. \c PE_PushButtonBevel is also responsible for drawing the menu
+    indicator (QCommonStyle draws \c PE_IndicatorArrowDown).
 
     An image of a push button in the Java style that shows the bounding
     rectangles of the elements is given below. Colors are used to
@@ -971,10 +981,10 @@
 
     \image javastyle/tabwidget.png
 
-    In the Java style (and also Windows), the tab bar shape and label
-    have the same bounding rectangle as \c CE_TabBarTab. Notice that the
-    tabs overlap with the tab widget frame. The base of the tab bar
-    (if drawn) is the area where the tabs and frame overlap.
+    In the Java style, the tab bar shape and label have the same bounding
+    rectangle as \c CE_TabBarTab. Notice that the tabs overlap with the
+    tab widget frame. The base of the tab bar (if drawn) is the area where
+    the tabs and frame overlap.
 
     The style option for tabs (QStyleOptionTab) contains the necessary
     information for drawing tabs. The option contains the position of
@@ -984,7 +994,7 @@
     icon's size.
 
     As the Java style tabs don't overlap, we also present an image of
-    a tab widget in the Windows style. Note that if you want the tabs
+    a tab widget in the common style. Note that if you want the tabs
     to overlap horizontally, you do that when drawing the tabs in
     \c CE_TabBarTabShape; the tabs bounding rectangles will not be
     altered by the tab bar. The tabs are drawn from left to right in a
@@ -1103,8 +1113,8 @@
     Java's, as it has two line up indicators. We have done this to show
     that you can have two separate bounding rectangles for a
     single sub control. The scroll bar is an example of a widget that
-    is entirely implemented by the Java style - neither QWindowsStyle
-    nor QCommonStyle are involved in the drawing.
+    is entirely implemented by the Java style - QCommonStyle is not
+    involved in the drawing.
 
     We have a look at the different states a scroll bar can set on
     the style option:
@@ -1486,7 +1496,7 @@
 
     \image javastyle/progressbar.png
 
-    Here is a progress bar in the Windows style (the Java style
+    Here is a progress bar in the common style (the Java style
     bounding rectangles are equal):
 
     \image javastyle/progressbarimage.png
@@ -1543,7 +1553,7 @@
     Note that \c PE_FrameButtonTool and \c PE_IndicatorArrowDown are
     included in the tree as the Java style draws them, but they can
     safely be omitted if you prefer it. The structure may also be
-    different. QWindowsStyle, for instance, draws both
+    different. QCommonStyle, for instance, draws both
     \c PE_IndicatorButtonDropDown and \c PE_IndicatorArrowDown in
     \c CE_ToolButton.
 

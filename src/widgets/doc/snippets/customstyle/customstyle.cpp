@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "customstyle.h"
 
@@ -84,7 +84,7 @@ void CustomStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
 	}
 	painter->drawPolygon(points);
     } else {
-	QWindowsStyle::drawPrimitive(element, option, painter, widget);
+    QProxyStyle::drawPrimitive(element, option, painter, widget);
 //! [2] //! [3]
     }
 //! [3] //! [4]

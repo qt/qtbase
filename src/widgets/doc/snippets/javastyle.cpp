@@ -77,7 +77,7 @@ inline QPoint JavaStyle::adjustScrollPoint(const QPoint &point,
 
 QPalette JavaStyle::standardPalette() const
 {
-    QPalette palette = QWindowsStyle::standardPalette();
+    QPalette palette = QCommonStyle::standardPalette();
 
     palette.setBrush(QPalette::Active, QPalette::Button,
                      QColor(184, 207, 229));
@@ -877,8 +877,8 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
             if (copy.state & State_HasFocus)
                 copy.state ^= State_HasFocus;
                 painter->setBrush(Qt::NoBrush);
-                QWindowsStyle::drawControl(CE_TabBarTabLabel, &copy, painter,
-                                           widget);
+                QCommonStyle::drawControl(CE_TabBarTabLabel, &copy, painter,
+                                          widget);
             break;
         }
         case CE_TabBarTabShape: {
@@ -1048,7 +1048,7 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
             break;
 
         default:
-            QWindowsStyle::drawControl(control, option, painter, widget);
+            QCommonStyle::drawControl(control, option, painter, widget);
     }
     painter->restore();
 }
@@ -1079,8 +1079,8 @@ QRect JavaStyle::subControlRect(ComplexControl control,
                                 SubControl subControl,
                                 const QWidget *widget) const
 {
-    QRect rect = QWindowsStyle::subControlRect(control, option, subControl,
-                                               widget);
+    QRect rect = QCommonStyle::subControlRect(control, option, subControl,
+                                              widget);
 
     switch (control) {
         case CC_TitleBar: {
@@ -1335,8 +1335,8 @@ QRect JavaStyle::subControlRect(ComplexControl control,
                     }
                     break;
                 default:
-                    return QWindowsStyle::subControlRect(control, option,
-                                                         subControl, widget);
+                    return QCommonStyle::subControlRect(control, option,
+                                                        subControl, widget);
             }
             break;
         }
@@ -1433,8 +1433,8 @@ QRect JavaStyle::subControlRect(ComplexControl control,
             break;
         }
         default:
-            return QWindowsStyle::subControlRect(control, option, subControl,
-                                                 widget);
+            return QCommonStyle::subControlRect(control, option, subControl,
+                                                widget);
     }
     return rect;
 }
@@ -1892,7 +1892,7 @@ void JavaStyle::drawComplexControl(ComplexControl control,
             break;
         }
         default:
-            QWindowsStyle::drawComplexControl(control, option, painter, widget);
+            QCommonStyle::drawComplexControl(control, option, painter, widget);
     }
     painter->restore();
 }
@@ -2014,8 +2014,8 @@ QStyle::SubControl JavaStyle::hitTestComplexControl(ComplexControl control,
             break;
 
         default:
-            ret = QWindowsStyle::hitTestComplexControl(control, option, pos,
-                                                       widget);
+            ret = QCommonStyle::hitTestComplexControl(control, option, pos,
+                                                      widget);
     }
     return ret;
 }
@@ -2391,7 +2391,7 @@ void JavaStyle::drawPrimitive(PrimitiveElement element,
             break;
         }
         default:
-            QWindowsStyle::drawPrimitive(element, option, painter, widget);
+            QCommonStyle::drawPrimitive(element, option, painter, widget);
     }
     painter->restore();
 }
@@ -2482,7 +2482,7 @@ QRect JavaStyle::subElementRect(SubElement element,
             break;
         }
         default:
-            rect = QWindowsStyle::subElementRect(element, option, widget);
+            rect = QCommonStyle::subElementRect(element, option, widget);
     }
     return rect;
 }
@@ -2573,7 +2573,7 @@ int JavaStyle::pixelMetric(PixelMetric metric,
             break;
         }
         default:
-            value = QWindowsStyle::pixelMetric(metric);
+            value = QCommonStyle::pixelMetric(metric);
     }
     return value;
 }
@@ -2594,7 +2594,7 @@ int JavaStyle::styleHint(StyleHint hint, const QStyleOption *option,
             ret = 1; 
             break;
         default:
-            ret = QWindowsStyle::styleHint(hint, option, widget, returnData);
+            ret = QCommonStyle::styleHint(hint, option, widget, returnData);
     }
     return ret;
 }
@@ -2603,8 +2603,8 @@ QPixmap JavaStyle::standardPixmap(StandardPixmap standardPixmap,
                   const QStyleOption *option,
                   const QWidget *widget) const
 {
-    QPixmap pixmap = QWindowsStyle::standardPixmap(standardPixmap, option,
-                                                   widget);
+    QPixmap pixmap = QCommonStyle::standardPixmap(standardPixmap, option,
+                                                  widget);
 
     QPixmap maximizePixmap(":/images/internalmaximize.png");
     QPixmap minimizePixmap(":/images/internalminimize.png");
@@ -2709,7 +2709,7 @@ QSize JavaStyle::sizeFromContents(ContentsType type,
         case CT_MenuItem: {
             const QStyleOptionMenuItem *menuItem =
                 qstyleoption_cast<const QStyleOptionMenuItem *>(option);
-            QSize defaultSize =  QWindowsStyle::sizeFromContents(type, option,
+            QSize defaultSize =  QCommonStyle::sizeFromContents(type, option,
                 contentsSize, widget);
 
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator)
@@ -2739,7 +2739,7 @@ QSize JavaStyle::sizeFromContents(ContentsType type,
             return QSize(width, height);
         }
         default:
-            return QWindowsStyle::sizeFromContents(type, option, contentsSize,
-                                                   widget);
+            return QCommonStyle::sizeFromContents(type, option, contentsSize,
+                                                  widget);
     }
 }

@@ -63,7 +63,7 @@ void CustomViewStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
         }    
         default:
-            QWindowsStyle::drawPrimitive(element, option, painter, widget);
+            QProxyStyle::drawPrimitive(element, option, painter, widget);
     }
 //![0]
 }

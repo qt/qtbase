@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
 
 //! [1]
-QApplication::setStyle(new QWindowsStyle);
+QApplication::setStyle(QStyleFactory::create("Fusion"));
 //! [1]
 
 

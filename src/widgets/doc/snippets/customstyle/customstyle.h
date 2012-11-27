@@ -41,10 +41,10 @@
 #ifndef CUSTOMSTYLE_H
 #define CUSTOMSTYLE_H
 
-#include <QWindowsStyle>
+#include <QProxyStyle>
 
 //! [0]
-class CustomStyle : public QWindowsStyle
+class CustomStyle : public QProxyStyle
 {
     Q_OBJECT
 
