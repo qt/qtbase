@@ -29,7 +29,7 @@
     \group all-examples
     \title Application Icon Example
 
-    The example shows how to add an application icon to a mobile application.
+    \brief The example shows how to add an application icon to a mobile application.
 
     \image appicon_screenshot.png The icon on a Nokia XPressMusic 5800
 

@@ -29,7 +29,7 @@
     \example richtext/textedit
     \title Text Edit
 
-    The Text Edit example shows Qt's rich text editing facilities in action,
+    \brief The Text Edit example shows Qt's rich text editing facilities in action,
     providing an example document for you to experiment with.
 
     \image textedit-demo.png

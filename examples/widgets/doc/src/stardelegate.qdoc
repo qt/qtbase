@@ -29,7 +29,7 @@
     \example itemviews/stardelegate
     \title Star Delegate Example
 
-    The Star Delegate example shows how to create a delegate that
+    \brief The Star Delegate example shows how to create a delegate that
     can paint itself and that supports editing.
 
     \image stardelegate.png The Star Delegate Example

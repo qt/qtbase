@@ -29,7 +29,7 @@
     \example mainwindows/dockwidgets
     \title Dock Widgets Example
 
-    The Dock Widgets example shows how to add dock windows to an
+    \brief The Dock Widgets example shows how to add dock windows to an
     application. It also shows how to use Qt's rich text engine.
 
     \image dockwidgets-example.png Screenshot of the Dock Widgets example

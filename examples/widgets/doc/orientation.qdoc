@@ -29,7 +29,7 @@
     \group all-examples
     \title Orientation Example
 
-    The example shows a simple way to use different UIs depending on the screen
+    \brief The example shows a simple way to use different UIs depending on the screen
     orientation of a mobile device.
 
     \image orientation-landscape.png The UI in landscape mode

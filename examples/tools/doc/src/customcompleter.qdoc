@@ -29,7 +29,7 @@
     \example customcompleter
     \title Custom Completer Example
 
-    The Custom Completer example shows how to provide string-completion
+    \brief The Custom Completer example shows how to provide string-completion
     facilities for an input widget based on data provided by a model. The
     completer pops up suggestions for possible words based on the first three
     characters input by the user and the user's choice of word is inserted

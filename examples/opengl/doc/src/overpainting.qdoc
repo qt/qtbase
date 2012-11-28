@@ -29,7 +29,7 @@
     \example overpainting
     \title Overpainting Example
 
-    The Overpainting example shows how QPainter can be used
+    \brief The Overpainting example shows how QPainter can be used
     to overpaint a scene rendered using OpenGL in a QGLWidget.
 
     \image overpainting-example.png

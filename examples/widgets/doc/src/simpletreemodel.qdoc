@@ -29,7 +29,7 @@
     \example itemviews/simpletreemodel
     \title Simple Tree Model Example
 
-    The Simple Tree Model example shows how to create a basic, read-only
+    \brief The Simple Tree Model example shows how to create a basic, read-only
     hierarchical model to use with Qt's standard view classes. For a
     description of simple non-hierarchical list and table models, see the
     \l{Model/View Programming} overview.

@@ -29,7 +29,7 @@
     \example statemachine/factorial
     \title Factorial States Example
 
-    The Factorial States example shows how to use \l{The State Machine
+    \brief The Factorial States example shows how to use \l{The State Machine
     Framework} to calculate the factorial of an integer.
 
     The statechart for calculating the factorial looks as follows:

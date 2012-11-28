@@ -30,7 +30,7 @@
   \ingroup examples
   \title Text Edit Example
 
-  This example displays a text editor with the user interface written
+  \brief This example displays a text editor with the user interface written
   in pure C++. 
   
   A similar example which uses \link designer-manual.book Qt

@@ -29,7 +29,7 @@
     \example querymodel
     \title Query Model Example
 
-    The Query Model example shows how to make customized versions of
+    \brief The Query Model example shows how to make customized versions of
     data obtained from a SQL query, using a model that encapsulates
     the query and table views to display the results. 
 

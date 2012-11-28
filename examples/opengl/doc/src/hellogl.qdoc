@@ -29,7 +29,7 @@
     \example hellogl
     \title Hello GL Example
 
-    The Hello GL example demonstrates the basic use of the OpenGL-related classes
+    \brief The Hello GL example demonstrates the basic use of the OpenGL-related classes
     provided with Qt.
 
     \image hellogl-example.png

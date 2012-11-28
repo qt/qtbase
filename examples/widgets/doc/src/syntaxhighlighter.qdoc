@@ -29,7 +29,7 @@
     \example richtext/syntaxhighlighter
     \title Syntax Highlighter Example
 
-    The Syntax Highlighter example shows how to perform simple syntax
+    \brief The Syntax Highlighter example shows how to perform simple syntax
     highlighting by subclassing the QSyntaxHighlighter class.
 
     \image syntaxhighlighter-example.png

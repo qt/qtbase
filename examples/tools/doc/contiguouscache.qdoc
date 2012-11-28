@@ -29,7 +29,7 @@
     \example contiguouscache
     \title Contiguous Cache Example
 
-    The Contiguous Cache example shows how to use QContiguousCache to manage memory usage for
+    \brief The Contiguous Cache example shows how to use QContiguousCache to manage memory usage for
     very large models.  In some environments memory is limited and, even when it
     isn't, users still dislike an application using excessive memory.
     Using QContiguousCache to manage a list, rather than loading

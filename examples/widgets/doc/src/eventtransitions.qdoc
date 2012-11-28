@@ -29,7 +29,7 @@
     \example statemachine/eventtransitions
     \title Event Transitions Example
 
-    The Event Transitions example shows how to use event transitions, a
+    \brief The Event Transitions example shows how to use event transitions, a
     feature of \l{The State Machine Framework}.
 
     \snippet statemachine/eventtransitions/main.cpp 0

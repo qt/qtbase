@@ -29,7 +29,7 @@
     \example multicastsender
     \title Multicast Sender Example
 
-    The Multicast Sender example shows how to send information to multiple
+    \brief The Multicast Sender example shows how to send information to multiple
     clients in a multicast group.
 
     \image multicastsender-example.png

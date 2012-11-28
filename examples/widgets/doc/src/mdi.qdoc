@@ -29,7 +29,7 @@
     \example mainwindows/mdi
     \title MDI Example
 
-    The MDI example shows how to implement a Multiple Document Interface using Qt's
+    \brief The MDI example shows how to implement a Multiple Document Interface using Qt's
     QMdiArea class.
 
     \image mdi-example.png

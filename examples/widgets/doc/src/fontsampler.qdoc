@@ -29,7 +29,7 @@
   \example painting/fontsampler
   \title Font Sampler Example
 
-  The Font Sampler example shows how to preview and print multi-page documents.
+  \brief The Font Sampler example shows how to preview and print multi-page documents.
 
   \image fontsampler-example.png
 */

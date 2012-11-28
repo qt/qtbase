@@ -29,7 +29,7 @@
     \example itemviews/dirview
     \title Dir View Example
 
-    The Dir View example shows a tree view onto the local filing system. It uses the
+    \brief The Dir View example shows a tree view onto the local filing system. It uses the
     QDirModel class to provide file and directory information.
 
     \image dirview-example.png

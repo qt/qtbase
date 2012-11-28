@@ -29,7 +29,7 @@
     \example loopback
     \title Loopback Example
 
-    The Loopback example shows how to communicate between simple clients and servers on a local
+    \brief The Loopback example shows how to communicate between simple clients and servers on a local
     host.
 
     \image loopback-example.png

@@ -29,7 +29,7 @@
     \example statemachine/twowaybutton
     \title Two-way Button Example
 
-    The Two-way button example shows how to use \l{The State Machine
+    \brief The Two-way button example shows how to use \l{The State Machine
     Framework} to implement a simple state machine that toggles the current
     state when a button is clicked.
 

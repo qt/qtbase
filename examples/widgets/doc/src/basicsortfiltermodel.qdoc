@@ -29,7 +29,7 @@
     \example itemviews/basicsortfiltermodel
     \title Basic Sort/Filter Model Example
 
-    The Basic Sort/Filter Model example illustrates how to use
+    \brief The Basic Sort/Filter Model example illustrates how to use
     QSortFilterProxyModel to perform basic sorting and filtering.
 
     \image basicsortfiltermodel-example.png Screenshot of the Basic Sort/Filter Model Example

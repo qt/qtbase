@@ -29,7 +29,7 @@
     \example draganddrop/dropsite
     \title Drop Site Example
 
-    The example shows how to distinguish the various MIME formats available
+    \brief The example shows how to distinguish the various MIME formats available
     in a drag and drop operation.
 
     \image dropsite-example.png Screenshot of the Drop Site example

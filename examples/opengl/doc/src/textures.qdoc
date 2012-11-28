@@ -29,7 +29,7 @@
     \example textures
     \title Textures Example
 
-    The Textures example demonstrates the use of Qt's image classes as textures in
+    \brief The Textures example demonstrates the use of Qt's image classes as textures in
     applications that use both OpenGL and Qt to display graphics.
 
     \image textures-example.png

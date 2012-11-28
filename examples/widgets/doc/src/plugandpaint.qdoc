@@ -29,7 +29,7 @@
     \example tools/plugandpaint
     \title Plug & Paint Example
 
-    The Plug & Paint example demonstrates how to write Qt
+    \brief The Plug & Paint example demonstrates how to write Qt
     applications that can be extended through plugins.
 
     \image plugandpaint.png Screenshot of the Plug & Paint example

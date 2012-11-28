@@ -29,7 +29,7 @@
     \example painting/pathstroke
     \title Path Stroking
 
-    In this example we show some of the various types of pens that can be
+    \brief In this example we show some of the various types of pens that can be
     used in Qt.
 
     \image pathstroke-demo.png

@@ -29,7 +29,7 @@
     \example animation/states
     \title States Example
 
-    The States example shows how to use the Qt state machine to play
+    \brief The States example shows how to use the Qt state machine to play
     animations.
 
     \image states-example.png

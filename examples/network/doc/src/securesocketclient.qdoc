@@ -29,7 +29,7 @@
     \example securesocketclient
     \title Secure Socket Client Example
 
-    The Secure Socket Client example shows how to use QSslSocket to
+    \brief The Secure Socket Client example shows how to use QSslSocket to
     communicate over an encrypted (SSL) connection. It also demonstrates how
     to deal with authenticity problems, and how to display security and
     certificate information.

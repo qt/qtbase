@@ -29,7 +29,7 @@
     \example painting/concentriccircles
     \title Concentric Circles Example
 
-    The Concentric Circles example shows the improved rendering
+    \brief The Concentric Circles example shows the improved rendering
     quality that can be obtained using floating point precision and
     anti-aliasing when drawing custom widgets. The example also shows
     how to do simple animations.

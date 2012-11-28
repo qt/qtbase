@@ -29,7 +29,7 @@
     \example layouts/basiclayouts
     \title Basic Layouts Example
 
-    The Basic Layouts example shows how to use the standard layout
+    \brief The Basic Layouts example shows how to use the standard layout
     managers that are available in Qt: QBoxLayout, QGridLayout and
     QFormLayout.
 

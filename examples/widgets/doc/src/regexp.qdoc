@@ -29,7 +29,7 @@
     \example tools/regexp
     \title Regular Expressions Example
 
-    The Regular Expressions (RegExp) example shows how regular expressions in Qt are
+    \brief The Regular Expressions (RegExp) example shows how regular expressions in Qt are
     applied to text by providing an environment in which new regular expressions can be
     created and tested on custom text strings.
 

@@ -29,7 +29,7 @@
     \example pbuffers
     \title Pixel Buffers Example
 
-    The Pixel Buffers example demonstrates how to use the
+    \brief The Pixel Buffers example demonstrates how to use the
     QGLPixelBuffer class to render into an off-screen buffer and use
     the contents as a dynamic texture in a QGLWidget.
 

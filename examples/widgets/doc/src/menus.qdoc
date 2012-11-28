@@ -29,7 +29,7 @@
     \example mainwindows/menus
     \title Menus Example
 
-    The Menus example demonstrates how menus can be used in a main
+    \brief The Menus example demonstrates how menus can be used in a main
     window application.
 
     A menu widget can be either a pull-down menu in a menu bar or a

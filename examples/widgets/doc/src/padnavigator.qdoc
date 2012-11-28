@@ -29,7 +29,7 @@
     \example graphicsview/padnavigator
     \title Pad Navigator Example
 
-    The Pad Navigator Example shows how you can use Graphics View together with
+    \brief The Pad Navigator Example shows how you can use Graphics View together with
     embedded widgets and Qt's \l{State Machine Framework} to create a simple
     but useful, dynamic, animated user interface.
 

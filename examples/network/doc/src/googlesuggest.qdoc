@@ -29,7 +29,7 @@
     \example googlesuggest
     \title Google Suggest Example
 
-    The Google Suggest example demonstrates how to use the QNetworkAccessManager
+    \brief The Google Suggest example demonstrates how to use the QNetworkAccessManager
     class to obtain a list of suggestions from the Google search engine as the 
     user types into a QLineEdit.
 

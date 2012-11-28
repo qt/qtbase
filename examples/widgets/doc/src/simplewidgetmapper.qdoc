@@ -29,7 +29,7 @@
     \example itemviews/simplewidgetmapper
     \title Simple Widget Mapper Example
 
-    The Simple Widget Mapper example shows how to use a widget mapper to display
+    \brief The Simple Widget Mapper example shows how to use a widget mapper to display
     data from a model in a collection of widgets.
 
     \image simplewidgetmapper-example.png

@@ -29,7 +29,7 @@
     \example itemviews/spinboxdelegate
     \title Spin Box Delegate Example
 
-    The Spin Box Delegate example shows how to create an editor for a custom delegate in
+    \brief The Spin Box Delegate example shows how to create an editor for a custom delegate in
     the model/view framework by reusing a standard Qt editor widget.
 
     The model/view framework provides a standard delegate that is used by default

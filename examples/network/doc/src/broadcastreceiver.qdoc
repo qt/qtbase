@@ -29,7 +29,7 @@
     \example broadcastreceiver
     \title Broadcast Receiver Example
 
-    The Broadcast Receiver example shows how to receive information that is broadcasted
+    \brief The Broadcast Receiver example shows how to receive information that is broadcasted
     over a local network.
 
     \image broadcastreceiver-example.png

@@ -29,8 +29,8 @@
     \example animation/stickman
     \title Stickman Example
 
-    The Stickman example shows how to animate transitions in a state machine to implement key frame 
-    animations.
+    \brief The Stickman example shows how to animate transitions in a state
+    machine to implement key frame animations.
 
     \image stickman-example.png
     

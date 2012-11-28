@@ -29,7 +29,7 @@
     \example graphicsview/basicgraphicslayouts
     \title Basic Graphics Layouts Example
 
-    The Basic Graphics Layouts example shows how to use the layout classes
+    \brief The Basic Graphics Layouts example shows how to use the layout classes
     in QGraphicsView: QGraphicsLinearLayout and QGraphicsGridLayout.
     In addition to that it shows how to write your own custom layout item.
 

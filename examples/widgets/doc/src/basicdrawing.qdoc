@@ -29,7 +29,7 @@
     \example painting/basicdrawing
     \title Basic Drawing Example
 
-    The Basic Drawing example shows how to display basic graphics
+    \brief The Basic Drawing example shows how to display basic graphics
     primitives in a variety of styles using the QPainter class.
 
     QPainter performs low-level painting on widgets and other paint

@@ -30,7 +30,7 @@
     \title SIP Dialog Example
     \ingroup qtce
 
-    The SIP Dialog example shows how to create a dialog that is aware of 
+    \brief The SIP Dialog example shows how to create a dialog that is aware of
     the Windows Mobile SIP (Software Input Panel) and reacts to it.
 
     \table

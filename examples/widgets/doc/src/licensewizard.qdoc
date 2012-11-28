@@ -29,7 +29,7 @@
     \example dialogs/licensewizard
     \title License Wizard Example
 
-    The License Wizard example shows how to implement complex wizards in
+    \brief The License Wizard example shows how to implement complex wizards in
     Qt.
 
     \image licensewizard-example.png Screenshot of the License Wizard example

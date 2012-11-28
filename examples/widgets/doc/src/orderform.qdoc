@@ -29,7 +29,7 @@
     \example richtext/orderform
     \title Order Form Example
 
-    The Order Form example shows how to generate rich text documents by
+    \brief The Order Form example shows how to generate rich text documents by
     combining a simple template with data input by the user in a dialog. Data
     is extracted from a \c DetailsDialog object and displayed on a QTextEdit
     with a QTextCursor, using various formats. Each form generated is added

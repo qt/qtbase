@@ -29,7 +29,7 @@
     \example tools/customtype
     \title Custom Type Example
 
-    The Custom Type example shows how to integrate a custom type into Qt's
+    \brief The Custom Type example shows how to integrate a custom type into Qt's
     meta-object system.
 
     Contents:

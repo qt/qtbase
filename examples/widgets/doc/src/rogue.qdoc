@@ -29,7 +29,7 @@
     \example statemachine/rogue
     \title Rogue Example
 
-    The Rogue example shows how to use the Qt state machine for event
+    \brief The Rogue example shows how to use the Qt state machine for event
     handling.
 
     \image rogue-example.png

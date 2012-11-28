@@ -29,7 +29,7 @@
     \example itemviews/combowidgetmapper
     \title Combo Widget Mapper Example
 
-    The Combo Widget Mapper example shows how to use a custom delegate to
+    \brief The Combo Widget Mapper example shows how to use a custom delegate to
     map information from a model to specific widgets on a form.
 
     \image combowidgetmapper-example.png

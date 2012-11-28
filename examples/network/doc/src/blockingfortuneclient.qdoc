@@ -29,7 +29,7 @@
     \example blockingfortuneclient
     \title Blocking Fortune Client Example
 
-    The Blocking Fortune Client example shows how to create a client for a
+    \brief The Blocking Fortune Client example shows how to create a client for a
     network service using QTcpSocket's synchronous API in a non-GUI thread.
 
     \image blockingfortuneclient-example.png

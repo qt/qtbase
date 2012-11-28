@@ -29,7 +29,7 @@
     \example dialogs/tabdialog
     \title Tab Dialog Example
 
-    The Tab Dialog example shows how to construct a tab dialog using the
+    \brief The Tab Dialog example shows how to construct a tab dialog using the
     QTabWidget class.
 
     Dialogs provide an efficient way for the application to communicate

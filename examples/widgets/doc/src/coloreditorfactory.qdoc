@@ -29,7 +29,7 @@
     \example itemviews/coloreditorfactory
     \title Color Editor Factory Example
 
-    This example shows how to create an editor that can be used by
+    \brief This example shows how to create an editor that can be used by
     a QItemDelegate.
 
     \image coloreditorfactoryimage.png

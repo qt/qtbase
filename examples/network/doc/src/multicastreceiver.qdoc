@@ -29,7 +29,7 @@
     \example multicastreceiver
     \title Multicast Receiver Example
 
-    The Multicast Receiever example shows how to receive information that is
+    \brief The Multicast Receiever example shows how to receive information that is
     sent to a multicast group.
 
     \image multicastreceiver-example.png

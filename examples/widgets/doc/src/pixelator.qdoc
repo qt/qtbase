@@ -29,7 +29,7 @@
     \example itemviews/pixelator
     \title Pixelator Example
 
-    The Pixelator example shows how delegates can be used to customize the way that
+    \brief The Pixelator example shows how delegates can be used to customize the way that
     items are rendered in standard item views.
 
     \image pixelator-example.png

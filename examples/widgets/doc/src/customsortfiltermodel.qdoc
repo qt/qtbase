@@ -29,7 +29,7 @@
     \example itemviews/customsortfiltermodel
     \title Custom Sort/Filter Model Example
 
-    The Custom Sort/Filter Model example illustrates how to subclass
+    \brief The Custom Sort/Filter Model example illustrates how to subclass
     QSortFilterProxyModel to perform advanced sorting and filtering.
 
     \image customsortfiltermodel-example.png Screenshot of the Custom Sort/Filter Model Example

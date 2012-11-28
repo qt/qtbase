@@ -29,7 +29,7 @@
     \example statemachine/pingpong
     \title Ping Pong States Example
 
-    The Ping Pong States example shows how to use parallel states together
+    \brief The Ping Pong States example shows how to use parallel states together
     with custom events and transitions in \l{The State Machine Framework}.
 
     This example implements a statechart where two states communicate by

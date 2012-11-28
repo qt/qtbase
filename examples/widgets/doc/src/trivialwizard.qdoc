@@ -29,7 +29,7 @@
     \example dialogs/trivialwizard
     \title Trivial Wizard Example
 
-    The Trivial Wizard example illustrates how to create a linear three-page
+    \brief The Trivial Wizard example illustrates how to create a linear three-page
     registration wizard using three instances of QWizardPage and one instance
     of QWizard.
 

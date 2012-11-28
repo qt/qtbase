@@ -29,7 +29,7 @@
     \example itemviews/interview
     \title Interview
 
-    The Interview example explores the flexibility and scalability of the
+    \brief The Interview example explores the flexibility and scalability of the
     model/view framework by presenting an infinitely deep data structure using a model
     and three different types of view.
 

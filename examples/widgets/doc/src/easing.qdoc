@@ -29,7 +29,7 @@
     \example animation/easing
     \title Easing Curves Example
 
-    The Easing Curves example shows how to use easing curves to
+    \brief The Easing Curves example shows how to use easing curves to
     control the speed of an animation.
     
     \image easing-example.png

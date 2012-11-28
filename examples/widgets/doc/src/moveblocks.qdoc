@@ -29,7 +29,7 @@
     \example animation/moveblocks
     \title Move Blocks Example
 
-    The Move Blocks example shows how to animate items in a
+    \brief The Move Blocks example shows how to animate items in a
     QGraphicsScene using a QStateMachine with a custom transition.
 
     \image moveblocks-example.png

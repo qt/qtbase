@@ -29,7 +29,7 @@
     \example graphicsview/chip
     \title 40000 Chips
 
-    This demo shows how to visualize a huge scene with 40000 chip items
+    \brief This demo shows how to visualize a huge scene with 40000 chip items
     using Graphics View. It also shows Graphics View's powerful navigation
     and interaction features, allowing you to zoom and rotate each of four
     views independently, and you can select and move items around the scene.

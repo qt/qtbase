@@ -29,7 +29,7 @@
     \example dialogs/findfiles
     \title Find Files Example
 
-    The Find Files example shows how to use QProgressDialog to provide
+    \brief The Find Files example shows how to use QProgressDialog to provide
     feedback on the progress of a slow operation. The example also
     shows how to use QFileDialog to facilitate browsing, how to use
     QTextStream's streaming operators to read a file, and how to use

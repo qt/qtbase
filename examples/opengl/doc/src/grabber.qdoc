@@ -29,7 +29,7 @@
     \example grabber
     \title Grabber Example
 
-    The Grabber examples shows how to retrieve the contents of an OpenGL framebuffer.
+    \brief The Grabber examples shows how to retrieve the contents of an OpenGL framebuffer.
 
     \image grabber-example.png
 */

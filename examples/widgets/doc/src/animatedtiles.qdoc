@@ -29,7 +29,7 @@
     \example animation/animatedtiles
     \title Animated Tiles Example
 
-    The Animated Tiles example animates items in a graphics scene.
+    \brief The Animated Tiles example animates items in a graphics scene.
 
     \image animatedtiles-example.png
 */

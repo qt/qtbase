@@ -29,8 +29,8 @@
     \example tools/styleplugin
     \title Style Plugin Example
 
-    This example shows how to create a plugin that extends Qt with a new 
-    GUI look and feel. 
+    \brief This example shows how to create a plugin that extends Qt with a new
+    GUI look and feel.
 
     \image stylepluginexample.png
 

@@ -29,7 +29,7 @@
     \example 2dpainting
     \title 2D Painting Example
 
-    The 2D Painting example shows how QPainter and QGLWidget can be used
+    \brief The 2D Painting example shows how QPainter and QGLWidget can be used
     together to display accelerated 2D graphics on supported hardware.
 
     \image 2dpainting-example.png

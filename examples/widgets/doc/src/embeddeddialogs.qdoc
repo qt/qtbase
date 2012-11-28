@@ -29,7 +29,7 @@
     \example graphicsview/embeddeddialogs
     \title Embedded Dialogs
 
-    This example shows how to embed standard dialogs into
+    \brief This example shows how to embed standard dialogs into
     Graphics View. It also shows how you can customize the
     proxy class and add window shadows.
 

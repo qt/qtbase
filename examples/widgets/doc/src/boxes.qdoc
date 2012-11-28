@@ -29,7 +29,7 @@
     \example graphicsview/boxes
     \title Boxes
 
-    This demo shows Qt's ability to combine advanced OpenGL rendering with the
+    \brief This demo shows Qt's ability to combine advanced OpenGL rendering with the
     the \l{Graphics View Framework}.
 
     \image boxes-demo.png

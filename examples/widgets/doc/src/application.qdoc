@@ -29,7 +29,7 @@
     \example mainwindows/application
     \title Application Example
 
-    The Application example shows how to implement a standard GUI
+    \brief The Application example shows how to implement a standard GUI
     application with menus, toolbars, and a status bar. The example
     itself is a simple text editor program built around QPlainTextEdit.
 

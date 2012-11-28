@@ -29,7 +29,7 @@
     \example threadedfortuneserver
     \title Threaded Fortune Server Example
 
-    The Threaded Fortune Server example shows how to create a server for a
+    \brief The Threaded Fortune Server example shows how to create a server for a
     simple network service that uses threads to handle requests from different
     clients. It is intended to be run alongside the Fortune Client example.
 

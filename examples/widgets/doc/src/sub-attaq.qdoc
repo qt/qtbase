@@ -29,7 +29,7 @@
     \example animation/sub-attaq
     \title Sub-Attaq
 
-    This example shows Qt's ability to combine \l{The Animation Framework}{the animation framework}
+    \brief This example shows Qt's ability to combine \l{The Animation Framework}{the animation framework}
     and \l{The State Machine Framework}{the state machine framework} to create a game.
     
     \image sub-attaq-demo.png

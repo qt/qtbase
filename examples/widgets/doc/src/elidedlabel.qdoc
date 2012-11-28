@@ -30,7 +30,7 @@
     \group all-examples
     \title Elided Label Example
 
-    This example creates a widget similar to QLabel, that elides the last
+    \brief This example creates a widget similar to QLabel, that elides the last
     visible line, if the text is too long to fit the widget's geometry.
 
     \image elidedlabel-example.png Elided Label example on XPressMusic 5800

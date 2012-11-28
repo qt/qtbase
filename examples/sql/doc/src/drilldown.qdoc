@@ -29,7 +29,7 @@
     \example drilldown
     \title Drill Down Example
 
-    The Drill Down example shows how to read data from a database as
+    \brief The Drill Down example shows how to read data from a database as
     well as submit changes, using the QSqlRelationalTableModel and
     QDataWidgetMapper classes.
 

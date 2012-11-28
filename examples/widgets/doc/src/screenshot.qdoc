@@ -29,7 +29,7 @@
     \example desktop/screenshot
     \title Screenshot Example
 
-    The Screenshot example shows how to take a screenshot of the
+    \brief The Screenshot example shows how to take a screenshot of the
     desktop using QApplication and QDesktopWidget. It also shows how
     to use QTimer to provide a single-shot timer, and how to
     reimplement the QWidget::resizeEvent() event handler to make sure

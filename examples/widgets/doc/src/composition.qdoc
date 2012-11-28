@@ -29,7 +29,7 @@
     \example painting/composition
     \title Composition Modes
 
-    This demo shows some of the more advanced composition modes supported by Qt.
+    \brief This demo shows some of the more advanced composition modes supported by Qt.
 
     \image composition-demo.png
 

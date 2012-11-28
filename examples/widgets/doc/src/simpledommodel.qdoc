@@ -29,7 +29,7 @@
     \example itemviews/simpledommodel
     \title Simple DOM Model Example
 
-    The Simple DOM Model example shows how an existing class can be adapted for use with
+    \brief The Simple DOM Model example shows how an existing class can be adapted for use with
     the model/view framework.
 
     \image simpledommodel-example.png

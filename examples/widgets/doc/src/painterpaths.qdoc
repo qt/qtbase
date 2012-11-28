@@ -29,7 +29,7 @@
     \example painting/painterpaths
     \title Painter Paths Example
 
-    The Painter Paths example shows how painter paths can be used to
+    \brief The Painter Paths example shows how painter paths can be used to
     build complex shapes for rendering.
 
     \image painterpaths-example.png

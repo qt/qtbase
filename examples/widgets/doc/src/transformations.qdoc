@@ -29,7 +29,7 @@
     \example painting/transformations
     \title Transformations Example
 
-    The Transformations example shows how transformations influence
+    \brief The Transformations example shows how transformations influence
     the way that QPainter renders graphics primitives. In particular
     it shows how the order of transformations affect the result.
 

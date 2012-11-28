@@ -29,7 +29,7 @@
     \example itemviews/frozencolumn
     \title Frozen Column Example
 
-    This example demonstrates how to freeze a column within a QTableView.
+    \brief This example demonstrates how to freeze a column within a QTableView.
 
     \image frozencolumn-example.png "Screenshot of the example"
 

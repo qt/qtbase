@@ -29,7 +29,7 @@
     \example hellogl_es
     \title Hello GL ES Example
 
-    The Hello GL ES example is the \l{Hello GL Example} ported to OpenGL ES.
+    \brief The Hello GL ES example is the \l{Hello GL Example} ported to OpenGL ES.
     It also included some effects from the OpenGL \l{Overpainting Example}.
 
     \image hellogl-es-example.png

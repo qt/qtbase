@@ -29,7 +29,7 @@
     \example layouts/flowlayout
     \title Flow Layout Example
 
-    The Flow Layout example demonstrates a custom layout that arranges child 
+    \brief The Flow Layout example demonstrates a custom layout that arranges child
     widgets from left to right and top to bottom in a top-level widget.
 
     \image flowlayout-example.png Screenshot of the Flow Layout example

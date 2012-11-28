@@ -29,7 +29,7 @@
     \example richtext/calendar
     \title Calendar Example
 
-    The Calendar example shows how to create rich text content and display it using
+    \brief The Calendar example shows how to create rich text content and display it using
     a rich text editor.
 
     \image calendar-example.png

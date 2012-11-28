@@ -29,7 +29,7 @@
     \example dialogs/extension
     \title Extension Example
 
-    The Extension example shows how to add an extension to a QDialog
+    \brief The Extension example shows how to add an extension to a QDialog
     using the QAbstractButton::toggled() signal and the
     QWidget::setVisible() slot.
 

@@ -29,7 +29,7 @@
     \example masterdetail
     \title Master Detail Example
 
-    The Master Detail Example shows how to present data from different
+    \brief The Master Detail Example shows how to present data from different
     data sources in the same application. The album titles, and the
     corresponding artists and release dates, are kept in a
     database, while each album's tracks are stored in an XML

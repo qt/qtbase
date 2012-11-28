@@ -29,7 +29,7 @@
     \example painting/deform
     \title Vector Deformation
 
-    This example shows how to use advanced vector techniques to draw text
+    \brief This example shows how to use advanced vector techniques to draw text
     using a \c QPainterPath.
 
     \image deform-demo.png

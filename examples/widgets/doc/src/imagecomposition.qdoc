@@ -29,7 +29,7 @@
     \example painting/imagecomposition
     \title Image Composition Example
 
-    The Image Composition example lets the user combine images
+    \brief The Image Composition example lets the user combine images
     together using any composition mode supported by QPainter, described
     in detail in \l{QPainter#Composition Modes}{Composition Modes}.
 

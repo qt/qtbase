@@ -29,7 +29,7 @@
     \example gui/analogclock
     \title Analog Clock Window Example
 
-    The Analog Clock Window example shows how to draw the contents of
+    \brief The Analog Clock Window example shows how to draw the contents of
     a custom window.
 
     \image analogclock-window-example.png Screenshot of the Analog
