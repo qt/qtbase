@@ -45,11 +45,14 @@
 
     \keyword Animation
 
-    The animation framework is part of the Kinetic project, and aims
-    to provide an easy way for creating animated and smooth GUI's.  By
-    animating Qt properties, the framework provides great freedom for
-    animating widgets and other \l{QObject}s. The framework can also
-    be used with the Graphics View framework.
+    The animation framework aims to provide an easy way for creating animated
+    and smooth GUI's. By animating Qt properties, the framework provides great
+    freedom for animating widgets and other \l{QObject}s. The framework can
+    also be used with the Graphics View framework. Many of the concepts
+    available in the animation framework are also available in \l{Qt Quick},
+    where it offers a declarative way of defining animations. Much of the
+    knowledge acquired about the animation framework can be applied to
+    \l{Qt Quick}.
 
     In this overview, we explain the basics of its architecture. We
     also show examples of the most common techniques that the

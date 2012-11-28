@@ -50,7 +50,7 @@
     QPropertyAnimation interpolates over \l{Qt's Property System}{Qt
     properties}. As property values are stored in \l{QVariant}s, the
     class inherits QVariantAnimation, and supports animation of the
-    same \l{QVariant::Type}{variant types} as its super class.
+    same \l{QMetaType::Type}{meta types} as its super class.
 
     A class declaring properties must be a QObject. To make it
     possible to animate a property, it must provide a setter (so that
