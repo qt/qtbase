@@ -31,6 +31,10 @@
 \brief A module which provides a set of C++ technologies for building user
 interfaces
 
+    The \l {Qt Widgets C++ Classes}{Qt Widgets Module} provides a set of UI
+    elements to create classic desktop-style user interfaces. See the
+    \l {User Interfaces} overview for more information on using widgets.
+
 \section1 Getting Started
 
     To include the definitions of the module's classes, use the
