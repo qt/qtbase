@@ -239,6 +239,10 @@ static QAccessibleInterface *acast(void *ptr)
 
     if (!accessibleInterface)
         return NSAccessibilityUnignoredAncestor(self);
+
+    if (!acast(accessibleInterface)->isValid())
+        return NSAccessibilityUnignoredAncestor(self);
+
     QAccessibleInterface *childInterface = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
 
     // No child found, meaning we hit this element.
