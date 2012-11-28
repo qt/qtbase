@@ -33,7 +33,7 @@
 
     \section1 Introduction to Model/View Programming
 
-    Qt 4 introduced a new set of item view classes that use a model/view
+    Qt contains a set of item view classes that use a model/view
     architecture to manage the relationship between data and the way it
     is presented to the user. The separation of functionality introduced by
     this architecture gives developers greater flexibility to customize the
@@ -163,7 +163,7 @@
     \section3 Delegates
 
     QAbstractItemDelegate is the abstract base class for delegates in the
-    model/view framework. Since Qt 4.4, the default delegate implementation is
+    model/view framework. The default delegate implementation is
     provided by QStyledItemDelegate, and this is used as the default delegate
     by Qt's standard views. However, QStyledItemDelegate and QItemDelegate are
     independent alternatives to painting and providing editors for items in
@@ -199,12 +199,10 @@
 
     A number of \e convenience classes are derived from the standard view
     classes for the benefit of applications that rely on Qt's item-based
-    item view and table classes. They are not intended to be subclassed,
-    but simply exist to provide a familiar interface to the equivalent classes
-    in Qt 3.
+    item view and table classes. They are not intended to be subclassed.
+
     Examples of such classes include \l QListWidget, \l QTreeWidget, and
-    \l QTableWidget; these provide similar behavior to the \c QListBox,
-    \c QListView, and \c QTable classes in Qt 3.
+    \l QTableWidget.
 
     These classes are less flexible than the view classes, and cannot be
     used with arbitrary models. We recommend that you use a model/view
@@ -869,8 +867,7 @@
 
     \section2 Concepts
 
-    The selection model used in the item view classes offers many improvements
-    over the selection model used in Qt 3. It provides a more general
+    The selection model used in the item view classes provides a general
     description of selections based on the facilities of the model/view
     architecture. Although the standard classes for manipulating selections are
     sufficient for the item views provided, the selection model allows you to
@@ -1410,13 +1407,7 @@
 
     \section1 Item view convenience classes
 
-    Qt 4 introduced some standard widgets to provide classic
-    item-based container widgets. These behave in a similar way to the
-    item view classes in Qt 3, but have been rewritten to use the
-    underlying model/view framework for performance and
-    maintainability.
-
-    The item-based widgets have been given names which reflect their uses:
+    The item-based widgets have names which reflect their uses:
     \c QListWidget provides a list of items, \c QTreeWidget displays a
     multi-level tree structure, and \c QTableWidget provides a table of cell
     items. Each class inherits the behavior of the \c QAbstractItemView
