@@ -25,7 +25,7 @@
 **
 ****************************************************************************/
 /*!
-    \page qttest-index.html
+    \page qttestlib-index.html
     \title Qt Test
     \brief Provides classes for unit testing Qt applications and libraries.
 
@@ -59,4 +59,3 @@
     \endlist
 
 */
-
