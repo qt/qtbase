@@ -1964,7 +1964,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \ingroup advanced
     \inmodule QtWidgets
 
-    \image cleanlooks-calendarwidget.png
+    \image fusion-calendarwidget.png
 
     The widget is initialized with the current month and year, but
     QCalendarWidget provides several public slots to change the year

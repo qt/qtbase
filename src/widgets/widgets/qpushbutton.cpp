@@ -170,8 +170,8 @@ QT_BEGIN_NAMESPACE
 
     \row \li \inlineimage windowsxp-pushbutton.png Screenshot of a Windows XP style push button
          \li A push button shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \li \inlineimage plastique-pushbutton.png Screenshot of a Plastique style push button
-         \li A push button shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage fusion-pushbutton.png Screenshot of a Fusion style push button
+         \li A push button shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \endtable
 
     In Qt, the QAbstractButton base class provides most of the modes
@@ -519,13 +519,8 @@ void QPushButton::focusOutEvent(QFocusEvent *e)
 
     Ownership of the menu is \e not transferred to the push button.
 
-    \table 100%
-    \row
-    \li \inlineimage plastique-pushbutton-menu.png Screenshot of a Plastique style push button with popup menu.
-    \li \inlineimage cleanlooks-pushbutton-menu.png Screenshot of a Cleanlooks style push button with popup menu.
-    \li Push buttons with popup menus shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}
-    (left) and \l{Cleanlooks Style Widget Gallery}{Cleanlooks widget style} (right).
-    \endtable
+    \image fusion-pushbutton-menu.png Screenshot of a Fusion style push button with popup menu.
+    A push button with popup menus shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
 
     \sa menu()
 */
