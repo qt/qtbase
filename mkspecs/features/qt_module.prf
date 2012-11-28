@@ -66,8 +66,8 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
         module_config =
     !no_module_headers {
         MODULE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME"
-        MODULE_PRIVATE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/\$\$QT.$${MODULE}.VERSION \
-                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/\$\$QT.$${MODULE}.VERSION/$$MODULE_INCNAME"
+        MODULE_PRIVATE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
+                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME"
     }
     MODULE_PRI_CONT = \
         "QT.$${MODULE}.VERSION = $${VERSION}" \
