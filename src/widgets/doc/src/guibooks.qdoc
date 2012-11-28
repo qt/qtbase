@@ -43,6 +43,7 @@
     \l{http://www.qtrac.eu/C++-GUI-Programming-with-Qt-4-1st-ed.zip}{available for free online}.
     The second edition, based on Qt 4.3, is
     \l{http://www.informit.com/store/product.aspx?isbn=0132354160}{available for purchase as an eBook}.
+    The book predates QML and only covers widget based user interfaces.
 
     \b{\l{http://www.amazon.com/exec/obidos/ASIN/0385267746/trolltech/t}{The Design of Everyday Things}}
     by Donald Norman, ISBN 0-38526774-6, is one of the classics of human
