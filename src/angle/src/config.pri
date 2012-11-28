@@ -82,16 +82,23 @@ msvc {
     #   4245: 'conversion' : conversion from 'type1' to 'type2', signed/unsigned mismatch
     #   4512: 'class' : assignment operator could not be generated
     #   4702: unreachable code
-    QMAKE_CFLAGS_WARN_ON    = -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4512" -wd"4702"
-    QMAKE_CFLAGS_RELEASE    = -O2 -Oy- -MT  -Gy -GS -Gm-
-    QMAKE_CFLAGS_DEBUG      = -Od -Oy- -MTd -Gy -GS -Gm- -RTC1
+    QMAKE_CFLAGS_WARN_ON    -= -W3
+    QMAKE_CFLAGS_WARN_ON    += -W4 -wd"4100" -wd"4127" -wd"4189" -wd"4239" -wd"4244" -wd"4245" -wd"4512" -wd"4702"
+    # Optimizations
+    #   /Oy:   Omits frame pointer (x86 only).
+    #   /Gy:   Enables function-level linking.
+    #   /GS:   Buffers security check.
+    #   /Gm-:  Disable minimal rebuild.
+    #   /RTC1: Run time error checking
+    QMAKE_CFLAGS_RELEASE    += -Oy- -Gy -GS -Gm-
+    QMAKE_CFLAGS_DEBUG      += -Oy- -Gy -GS -Gm- -RTC1
     QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO = -Zi $$QMAKE_CFLAGS_RELEASE
 
     QMAKE_CXXFLAGS_WARN_ON = $$QMAKE_CFLAGS_WARN_ON
 }
 
 gcc {
-    QMAKE_CFLAGS_WARN_ON =  -Wall -Wno-unknown-pragmas -Wno-comment -Wno-missing-field-initializers \
+    QMAKE_CFLAGS_WARN_ON += -Wno-unknown-pragmas -Wno-comment -Wno-missing-field-initializers \
                             -Wno-switch -Wno-unused-parameter -Wno-write-strings -Wno-sign-compare -Wno-missing-braces \
                             -Wno-unused-but-set-variable -Wno-unused-variable -Wno-narrowing -Wno-maybe-uninitialized \
                             -Wno-strict-aliasing -Wno-type-limits
