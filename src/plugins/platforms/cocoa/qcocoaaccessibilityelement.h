@@ -45,6 +45,8 @@
 #import <Cocoa/Cocoa.h>
 #import <AppKit/NSAccessibility.h>
 
+#ifndef QT_NO_COCOA_ACCESSIBILITY
+
 @class QCocoaAccessibleElement;
 
 @interface QCocoaAccessibleElement : NSObject {
@@ -57,6 +59,8 @@
 + (QCocoaAccessibleElement *)elementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
 
 @end
+
+#endif // QT_NO_COCOA_ACCESSIBILITY
 
 #endif
 

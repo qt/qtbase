@@ -51,6 +51,8 @@
 
 #import <AppKit/NSAccessibility.h>
 
+#ifndef QT_NO_COCOA_ACCESSIBILITY
+
 @implementation QNSView (QNSViewAccessibility)
 
 // The QNSView is a container that the user does not interact directly with:
@@ -101,3 +103,5 @@
 }
 
 @end
+
+#endif // QT_NO_COCOA_ACCESSIBILITY

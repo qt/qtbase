@@ -44,6 +44,8 @@
 #include <qaccessible2.h>
 #include <private/qcore_mac_p.h>
 
+#ifndef QT_NO_COCOA_ACCESSIBILITY
+
 QCococaAccessibility::QCococaAccessibility()
 {
 
@@ -315,3 +317,5 @@ id getValueAttribute(QAccessibleInterface *interface)
 }
 
 } // namespace QCocoaAccessible
+
+#endif // QT_NO_COCOA_ACCESSIBILITY

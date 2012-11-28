@@ -106,5 +106,8 @@ contains(QT_CONFIG,build_all):CONFIG -= build_all
 # DEFINES += QT_COCOA_ENABLE_ACCESSIBILITY_INSPECTOR
 # include ($$PWD/../../../../util/accessibilityinspector/accessibilityinspector.pri)
 
+# Accessibility is currently unstable and disabled.
+DEFINES += QT_NO_COCOA_ACCESSIBILITY
+
 # Window debug support
 #DEFINES += QT_COCOA_ENABLE_WINDOW_DEBUG
