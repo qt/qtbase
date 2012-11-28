@@ -48,9 +48,7 @@
   \caption \l{Windows Vista Style Widget Gallery}
 
   The Windows Vista style is provided by QWindowsVistaStyle.
-  \endtable
 
-  \table
   \row
   \li \image macintosh-tabwidget.png Macintosh Style Widget Gallery
   \caption \l{Macintosh Style Widget Gallery}
@@ -60,7 +58,9 @@
   \caption \l{GTK Style Widget Gallery}
 
   The GTK style is provided by QGtkStyle.
-  \endtable
+  \li \image fusion-tabwidget.png Fusion Style Widget Gallery
+  \caption \l{Fusion Style Widget Gallery}
 
+  The Fusion style is provided by QFusionStyle.
   \endtable
 */
