@@ -232,6 +232,10 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             subtype = Node::Module;
             ptype = Node::OverviewPage;
         }
+        else if (element.attribute("subtype") == "qmlmodule") {
+            subtype = Node::QmlModule;
+            ptype = Node::OverviewPage;
+        }
         else if (element.attribute("subtype") == "page") {
             subtype = Node::Page;
             ptype = Node::ArticlePage;
@@ -449,11 +453,12 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
 
     QString groupsAttr = element.attribute("groups");
     if (!groupsAttr.isEmpty()) {
-        QStringList groupNames = groupsAttr.split(" ");
+        QStringList groupNames = groupsAttr.split(",");
         for (int i=0; i<groupNames.size(); ++i) {
             DocNode* dn = qdb_->findGroup(groupNames[i]);
-            if (dn)
+            if (dn) {
                 dn->addMember(node);
+            }
             else {
                 qDebug() << "NODE:" << node->name() << "GROUPS:" << groupNames;
                 qDebug() << "DID NOT FIND GROUP:" << dn->name() << "for:" << node->name();
@@ -537,7 +542,7 @@ void QDocIndexFiles::writeMembersAttribute(QXmlStreamWriter& writer,
             ++i;
         }
         if (!names.isEmpty())
-            writer.writeAttribute(attr, names.join(" "));
+            writer.writeAttribute(attr, names.join(","));
     }
 }
 
@@ -749,12 +754,15 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                     foreach (const Node* member, members) {
                         names.append(member->name());
                     }
-                    writer.writeAttribute("members", names.join(" "));
+                    writer.writeAttribute("members", names.join(","));
                     writeModuleName = true;
                 }
                 break;
             case Node::Module:
                 writer.writeAttribute("subtype", "module");
+                break;
+            case Node::QmlModule:
+                writer.writeAttribute("subtype", "qmlmodule");
                 break;
             case Node::Page:
                 writer.writeAttribute("subtype", "page");
