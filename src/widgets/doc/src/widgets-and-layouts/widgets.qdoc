@@ -43,13 +43,13 @@
 
     \table
     \row
-    \li \image windows-label.png
+    \li \image gtk-label.png
     \li \image windowsvista-pushbutton.png
-    \li \image gtk-progressbar.png
+    \li \image macintosh-progressbar.png
     \row
-    \li \image plastique-combobox.png
-    \li \image macintosh-radiobutton.png
-    \li \image cde-lineedit.png
+    \li \image gtk-combobox.png
+    \li \image windowsvista-radiobutton.png
+    \li \image macintosh-lineedit.png
     \endtable
 
     \annotatedlist basicwidgets
