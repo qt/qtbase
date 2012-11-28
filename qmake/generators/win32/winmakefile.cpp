@@ -245,6 +245,23 @@ Win32MakefileGenerator::processPrlFiles()
                 l.insert(lit + prl + 1, prl_libs.at(prl));
             prl_libs.clear();
         }
+
+        // Merge them into a logical order
+        if (!project->isActiveConfig("no_smart_library_merge") && !project->isActiveConfig("no_lflags_merge")) {
+            ProStringList lflags;
+            for (int lit = 0; lit < l.size(); ++lit) {
+                ProString opt = l.at(lit).trimmed();
+                if (opt.startsWith(libArg)) {
+                    if (!lflags.contains(opt))
+                        lflags.append(opt);
+                } else {
+                    // Make sure we keep the dependency-order of libraries
+                    lflags.removeAll(opt);
+                    lflags.append(opt);
+                }
+            }
+            l = lflags;
+        }
     }
 }
 
