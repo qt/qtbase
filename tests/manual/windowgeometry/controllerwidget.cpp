@@ -456,7 +456,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     x += 300;
     m_testWindow->setWindowFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint
                                  | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint
-                                 | Qt::WindowTitleHint);
+                                 | Qt::WindowTitleHint | Qt::WindowFullscreenButtonHint);
     m_testWindow->setFramePosition(QPoint(x, y));
     m_testWindow->resize(200, 200);
     if (args.contains(QLatin1String("-windowminimized"), Qt::CaseInsensitive))

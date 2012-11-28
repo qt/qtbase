@@ -76,6 +76,7 @@ private:
     QCheckBox *windowSystemMenuCheckBox;
     QCheckBox *windowMinimizeButtonCheckBox;
     QCheckBox *windowMaximizeButtonCheckBox;
+    QCheckBox *windowFullscreenButtonCheckBox;
     QCheckBox *windowCloseButtonCheckBox;
     QCheckBox *windowContextHelpButtonCheckBox;
     QCheckBox *windowShadeButtonCheckBox;

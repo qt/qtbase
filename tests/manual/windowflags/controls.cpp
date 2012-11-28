@@ -59,6 +59,7 @@ HintControl::HintControl(QWidget *parent)
     , windowSystemMenuCheckBox(new QCheckBox(tr("Window system menu")))
     , windowMinimizeButtonCheckBox(new QCheckBox(tr("Window minimize button")))
     , windowMaximizeButtonCheckBox(new QCheckBox(tr("Window maximize button")))
+    , windowFullscreenButtonCheckBox(new QCheckBox(tr("Window fullscreen button")))
     , windowCloseButtonCheckBox(new QCheckBox(tr("Window close button")))
     , windowContextHelpButtonCheckBox(new QCheckBox(tr("Window context help button")))
     , windowShadeButtonCheckBox(new QCheckBox(tr("Window shade button")))
@@ -74,6 +75,7 @@ HintControl::HintControl(QWidget *parent)
     connect(windowSystemMenuCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowMinimizeButtonCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowMaximizeButtonCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
+    connect(windowFullscreenButtonCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowCloseButtonCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowContextHelpButtonCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
     connect(windowShadeButtonCheckBox, SIGNAL(clicked()), this, SLOT(slotCheckBoxChanged()));
@@ -91,11 +93,12 @@ HintControl::HintControl(QWidget *parent)
     layout->addWidget(windowSystemMenuCheckBox, 4, 0);
     layout->addWidget(windowMinimizeButtonCheckBox, 0, 1);
     layout->addWidget(windowMaximizeButtonCheckBox, 1, 1);
-    layout->addWidget(windowCloseButtonCheckBox, 2, 1);
-    layout->addWidget(windowContextHelpButtonCheckBox, 3, 1);
-    layout->addWidget(windowShadeButtonCheckBox, 4, 1);
-    layout->addWidget(windowStaysOnTopCheckBox, 5, 1);
-    layout->addWidget(windowStaysOnBottomCheckBox, 6, 1);
+    layout->addWidget(windowFullscreenButtonCheckBox, 2, 1);
+    layout->addWidget(windowCloseButtonCheckBox, 3, 1);
+    layout->addWidget(windowContextHelpButtonCheckBox, 4, 1);
+    layout->addWidget(windowShadeButtonCheckBox, 5, 1);
+    layout->addWidget(windowStaysOnTopCheckBox, 6, 1);
+    layout->addWidget(windowStaysOnBottomCheckBox, 7, 1);
     layout->addWidget(customizeWindowHintCheckBox, 5, 0);
     layout->addWidget(transparentForInputCheckBox, 6, 0);
 #if QT_VERSION < 0x050000
@@ -120,6 +123,8 @@ Qt::WindowFlags HintControl::hints() const
         flags |= Qt::WindowMinimizeButtonHint;
     if (windowMaximizeButtonCheckBox->isChecked())
         flags |= Qt::WindowMaximizeButtonHint;
+    if (windowFullscreenButtonCheckBox->isChecked())
+        flags |= Qt::WindowFullscreenButtonHint;
     if (windowCloseButtonCheckBox->isChecked())
         flags |= Qt::WindowCloseButtonHint;
     if (windowContextHelpButtonCheckBox->isChecked())
@@ -148,6 +153,7 @@ void HintControl::setHints(Qt::WindowFlags flags)
     windowSystemMenuCheckBox->setChecked(flags & Qt::WindowSystemMenuHint);
     windowMinimizeButtonCheckBox->setChecked(flags & Qt::WindowMinimizeButtonHint);
     windowMaximizeButtonCheckBox->setChecked(flags & Qt::WindowMaximizeButtonHint);
+    windowFullscreenButtonCheckBox->setChecked(flags & Qt::WindowFullscreenButtonHint);
     windowCloseButtonCheckBox->setChecked(flags & Qt::WindowCloseButtonHint);
     windowContextHelpButtonCheckBox->setChecked(flags & Qt::WindowContextHelpButtonHint);
     windowShadeButtonCheckBox->setChecked(flags & Qt::WindowShadeButtonHint);

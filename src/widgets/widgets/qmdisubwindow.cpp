@@ -2092,6 +2092,7 @@ void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
         windowFlags = Qt::FramelessWindowHint;
 
     windowFlags &= ~windowType;
+    windowFlags &= ~Qt::WindowFullscreenButtonHint;
     windowFlags |= Qt::SubWindow;
 
 #ifndef QT_NO_ACTION

@@ -384,6 +384,9 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
         }
     }
 
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug("windowStyleMask of '%s': flags %X -> styleMask %lX", qPrintable(window()->title()), (int)flags, styleMask);
+#endif
     return styleMask;
 }
 
