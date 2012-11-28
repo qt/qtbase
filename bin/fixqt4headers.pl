@@ -145,13 +145,13 @@ findQtHeaders('QtConcurrent', $qtdir);
 findQtHeaders('QtWidgets', $qtdir);
 findQtHeaders('QtPrintSupport', $qtdir);
 
-if (-d $qtdir . '/include/QtQuick1') {
-    findQtHeaders('QtQuick1', $qtdir);
-} elsif (-d $qtdir . '/../qtdeclarative' ) {
+if (-d $qtdir . '/include/QtMultiMedia') {
+    findQtHeaders('QtMultiMedia', $qtdir);
+    findQtHeaders('QtMultiMediaWidgets', $qtdir);
+} elsif (-d $qtdir . '/../qtmultimedia' ) {
     # This is the case if QTDIR points to a source tree instead of an installed Qt
-    findQtHeaders('QtQuick1', $qtdir . '/../qtdeclarative');
-} else {
-    print "Warning - cannot find QtQuick1 headers\n";
+    findQtHeaders('QtMultiMedia', $qtdir . '/../qtmultimedia');
+    findQtHeaders('QtMultiMediaWidgets', $qtdir . '/../qtmultimedia');
 }
 
 # Support porting from "Qt 4.99" QtDeclarative to QtQuick (QQuickItem et al)
