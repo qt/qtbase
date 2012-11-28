@@ -9,7 +9,7 @@ unix:!embedded:QMAKE_PKGCONFIG_DESCRIPTION = Qt \
     Testing \
     Library
 
-QMAKE_DOCS = $$PWD/doc/qttest.qdocconf
+QMAKE_DOCS = $$PWD/doc/qttestlib.qdocconf
 
 HEADERS = qbenchmark.h \
     qbenchmark_p.h \
