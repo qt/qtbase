@@ -122,10 +122,10 @@ QT_BEGIN_NAMESPACE
     \table 100%
     \row \li \inlineimage windowsxp-tabwidget.png Screenshot of a Windows XP style tab widget
          \li \inlineimage macintosh-tabwidget.png Screenshot of a Macintosh style tab widget
-         \li \inlineimage plastique-tabwidget.png Screenshot of a Plastique style tab widget
+         \li \inlineimage fusion-tabwidget.png Screenshot of a Fusion style tab widget
     \row \li A Windows XP style tab widget.
          \li A Macintosh style tab widget.
-         \li A Plastique style tab widget.
+         \li A Fusion style tab widget.
     \endtable
 
     \sa QTabBar, QStackedWidget, QToolBox, {Tab Dialog Example}

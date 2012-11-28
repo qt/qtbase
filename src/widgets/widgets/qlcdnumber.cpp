@@ -110,10 +110,10 @@ public:
     \inlineimage windows-lcdnumber.png Screenshot of a Windows style LCD number widget
     \inlineimage windowsxp-lcdnumber.png Screenshot of a Windows XP style LCD number widget
     \inlineimage macintosh-lcdnumber.png Screenshot of a Macintosh style LCD number widget
-    \inlineimage plastique-lcdnumber.png Screenshot of a Plastique style LCD number widget
+    \inlineimage fusion-lcdnumber.png Screenshot of a Fusion style LCD number widget
     \row \li LCD number widgets shown in various widget styles (from left to right):
     \l{Windows Style Widget Gallery}{Windows}, \l{Windows XP Style Widget Gallery}{Windows XP},
-    \l{Macintosh Style Widget Gallery}{Macintosh}, \l{Plastique Style Widget Gallery}{Plastique}.
+    \l{Macintosh Style Widget Gallery}{Macintosh}, \l{Fusion Style Widget Gallery}{Fusion}.
     \endtable
 
     \sa QLabel, QFrame, {Digital Clock Example}, {Tetrix Example}

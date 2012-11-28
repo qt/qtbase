@@ -194,8 +194,8 @@ QT_BEGIN_NAMESPACE
          \li A scroll bar shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
     \row \li \inlineimage windowsxp-horizontalscrollbar.png Screenshot of a Windows XP style scroll bar
          \li A scroll bar shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \li \inlineimage plastique-horizontalscrollbar.png Screenshot of a Plastique style scroll bar
-         \li A scroll bar shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage fusion-horizontalscrollbar.png Screenshot of a Fusion style scroll bar
+         \li A scroll bar shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \endtable
 
     \sa QScrollArea, QSlider, QDial, QSpinBox, {fowler}{GUI Design Handbook: Scroll Bar}, {Sliders Example}

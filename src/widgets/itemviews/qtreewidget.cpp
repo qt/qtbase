@@ -2381,10 +2381,10 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
   \table 100%
   \row \li \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree widget
        \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree widget
-       \li \inlineimage plastique-treeview.png Screenshot of a Plastique style tree widget
+       \li \inlineimage fusion-treeview.png Screenshot of a Fusion style tree widget
   \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} tree widget.
        \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree widget.
-       \li A \l{Plastique Style Widget Gallery}{Plastique style} tree widget.
+       \li A \l{Fusion Style Widget Gallery}{Fusion style} tree widget.
   \endtable
 
   \sa QTreeWidgetItem, QTreeWidgetItemIterator, QTreeView,

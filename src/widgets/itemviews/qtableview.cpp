@@ -1013,10 +1013,10 @@ void QTableViewPrivate::drawCell(QPainter *painter, const QStyleOptionViewItem &
     \table 100%
     \row \li \inlineimage windowsxp-tableview.png Screenshot of a Windows XP style table view
          \li \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table view
-         \li \inlineimage plastique-tableview.png Screenshot of a Plastique style table view
+         \li \inlineimage fusion-tableview.png Screenshot of a Fusion style table view
     \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} table view.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} table view.
-         \li A \l{Plastique Style Widget Gallery}{Plastique style} table view.
+         \li A \l{Fusion Style Widget Gallery}{Fusion style} table view.
     \endtable
 
     \sa QTableWidget, {View Classes}, QAbstractItemModel, QAbstractItemView,

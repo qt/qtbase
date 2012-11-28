@@ -200,8 +200,8 @@ bool QProgressBarPrivate::repaintRequired() const
          \li A progress bar shown in the Macintosh widget style.
     \row \li \inlineimage windowsxp-progressbar.png Screenshot of a Windows XP style progress bar
          \li A progress bar shown in the Windows XP widget style.
-    \row \li \inlineimage plastique-progressbar.png Screenshot of a Plastique style progress bar
-         \li A progress bar shown in the Plastique widget style.
+    \row \li \inlineimage fusion-progressbar.png Screenshot of a Fusion style progress bar
+         \li A progress bar shown in the Fusion widget style.
     \endtable
 
     \sa QProgressDialog, {fowler}{GUI Design Handbook: Progress Indicator}

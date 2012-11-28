@@ -127,8 +127,8 @@ public:
         \li \inlineimage windows-checkbox.png Screenshot of a Windows XP style checkbox
         \li A checkbox shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
     \row
-        \li \inlineimage plastique-checkbox.png Screenshot of a Plastique style checkbox
-        \li A checkbox shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+        \li \inlineimage fusion-checkbox.png Screenshot of a Fusion style checkbox
+        \li A checkbox shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \endtable
 
     \sa QAbstractButton, QRadioButton, {fowler}{GUI Design Handbook: Check Box}

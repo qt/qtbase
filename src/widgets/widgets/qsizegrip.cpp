@@ -194,9 +194,9 @@ Qt::Corner QSizeGripPrivate::corner() const
     window is shown full screen or maximised.
 
     \table 50%
-    \row \li \inlineimage plastique-sizegrip.png Screenshot of a Plastique style size grip
+    \row \li \inlineimage fusion-statusbar-sizegrip.png Screenshot of a Fusion style size grip
     \li A size grip widget at the bottom-right corner of a main window, shown in the
-    \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \endtable
 
     The QSizeGrip class inherits QWidget and reimplements the \l

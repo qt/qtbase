@@ -173,10 +173,10 @@ void QGroupBoxPrivate::click()
     \table 100%
     \row \li \inlineimage windowsxp-groupbox.png Screenshot of a Windows XP style group box
          \li \inlineimage macintosh-groupbox.png Screenshot of a Macintosh style group box
-         \li \inlineimage plastique-groupbox.png Screenshot of a Plastique style group box
+         \li \inlineimage fusion-groupbox.png Screenshot of a Fusion style group box
     \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} group box.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} group box.
-         \li A \l{Plastique Style Widget Gallery}{Plastique style} group box.
+         \li A \l{Fusion Style Widget Gallery}{Fusion style} group box.
     \endtable
 
     \sa QButtonGroup, {Group Box Example}

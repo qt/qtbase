@@ -109,8 +109,8 @@ QT_BEGIN_NAMESPACE
        \li A date time editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
   \row \li \inlineimage macintosh-datetimeedit.png Screenshot of a Macintosh style date time editing widget
        \li A date time editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-  \row \li \inlineimage plastique-datetimeedit.png Screenshot of a Plastique style date time editing widget
-       \li A date time editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+  \row \li \inlineimage fusion-datetimeedit.png Screenshot of a Fusion style date time editing widget
+       \li A date time editing widget shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
   \endtable
 
   \sa QDateEdit, QTimeEdit, QDate, QTime
@@ -1540,8 +1540,8 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
        \li A time editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
   \row \li \inlineimage macintosh-timeedit.png Screenshot of a Macintosh style time editing widget
        \li A time editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-  \row \li \inlineimage plastique-timeedit.png Screenshot of a Plastique style time editing widget
-       \li A time editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+  \row \li \inlineimage fusion-timeedit.png Screenshot of a Fusion style time editing widget
+       \li A time editing widget shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
   \endtable
 
   \sa QDateEdit, QDateTimeEdit
@@ -1617,8 +1617,8 @@ QTimeEdit::~QTimeEdit()
        \li A date editing widget shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
   \row \li \inlineimage macintosh-dateedit.png Screenshot of a Macintosh style date editing widget
        \li A date editing widget shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-  \row \li \inlineimage plastique-dateedit.png Screenshot of a Plastique style date editing widget
-       \li A date editing widget shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+  \row \li \inlineimage fusion-dateedit.png Screenshot of a Fusion style date editing widget
+       \li A date editing widget shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
   \endtable
 
   \sa QTimeEdit, QDateTimeEdit

@@ -148,10 +148,10 @@ QT_BEGIN_NAMESPACE
     \table 100%
     \row \li \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree view
          \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree view
-         \li \inlineimage plastique-treeview.png Screenshot of a Plastique style tree view
+         \li \inlineimage fusion-treeview.png Screenshot of a Fusion style tree view
     \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} tree view.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree view.
-         \li A \l{Plastique Style Widget Gallery}{Plastique style} tree view.
+         \li A \l{Fusion Style Widget Gallery}{Fusion style} tree view.
     \endtable
 
     \section1 Improving Performance

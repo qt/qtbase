@@ -216,7 +216,7 @@ QRect QStatusBarPrivate::messageRect() const
     function. Use the isSizeGripEnabled() function to determine the
     current status of the size grip.
 
-    \image plastique-statusbar.png A status bar shown in the Plastique widget style
+    \image fusion-statusbar-sizegrip.png A status bar shown in the Fusion widget style
 
     \sa QMainWindow, QStatusTipEvent, {fowler}{GUI Design Handbook:
     Status Bar}, {Application Example}

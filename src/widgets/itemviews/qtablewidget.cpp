@@ -1541,10 +1541,10 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     \table 100%
     \row \li \inlineimage windowsxp-tableview.png Screenshot of a Windows XP style table widget
          \li \inlineimage macintosh-tableview.png Screenshot of a Macintosh style table widget
-         \li \inlineimage plastique-tableview.png Screenshot of a Plastique style table widget
+         \li \inlineimage fusion-tableview.png Screenshot of a Fusion style table widget
     \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} table widget.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} table widget.
-         \li A \l{Plastique Style Widget Gallery}{Plastique style} table widget.
+         \li A \l{Fusion Style Widget Gallery}{Fusion style} table widget.
     \endtable
 
     \sa QTableWidgetItem, QTableView, {Model/View Programming}

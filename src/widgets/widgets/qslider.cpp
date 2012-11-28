@@ -259,8 +259,8 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
          \li A slider shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
     \row \li \inlineimage windows-slider.png Screenshot of a Windows XP slider
          \li A slider shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
-    \row \li \inlineimage plastique-slider.png Screenshot of a Plastique slider
-         \li A slider shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage fusion-slider.png Screenshot of a Fusion slider
+         \li A slider shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \endtable
 
     \sa QScrollBar, QSpinBox, QDial, {fowler}{GUI Design Handbook: Slider}, {Sliders Example}

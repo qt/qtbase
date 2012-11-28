@@ -1191,10 +1191,10 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \table 100%
     \row \li \inlineimage windowsxp-listview.png Screenshot of a Windows XP style list widget
          \li \inlineimage macintosh-listview.png Screenshot of a Macintosh style table widget
-         \li \inlineimage plastique-listview.png Screenshot of a Plastique style table widget
+         \li \inlineimage fusion-listview.png Screenshot of a Fusion style table widget
     \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} list widget.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} list widget.
-         \li A \l{Plastique Style Widget Gallery}{Plastique style} list widget.
+         \li A \l{Fusion Style Widget Gallery}{Fusion style} list widget.
     \endtable
 
     \sa QListWidgetItem, QListView, QTreeView, {Model/View Programming},

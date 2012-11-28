@@ -116,8 +116,8 @@ void QRadioButtonPrivate::init()
     toggle(), pressed(), released(), clicked(), and toggled().
 
     \table 100%
-    \row \li \inlineimage plastique-radiobutton.png Screenshot of a Plastique radio button
-         \li A radio button shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \row \li \inlineimage fusion-radiobutton.png Screenshot of a Fusion radio button
+         \li A radio button shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \row \li \inlineimage windows-radiobutton.png Screenshot of a Windows XP radio button
          \li A radio button shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
     \row \li \inlineimage macintosh-radiobutton.png Screenshot of a Macintosh radio button

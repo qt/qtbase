@@ -259,7 +259,7 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
   The functions setLabelText() and setCancelButtonText()
   set the texts shown.
 
-  \image plastique-progressdialog.png A progress dialog shown in the Plastique widget style.
+  \image fusion-progressdialog.png A progress dialog shown in the Fusion widget style.
 
   \sa QDialog, QProgressBar, {fowler}{GUI Design Handbook: Progress Indicator},
       {Find Files Example}, {Pixelator Example}

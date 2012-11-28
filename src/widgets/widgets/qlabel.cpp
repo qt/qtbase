@@ -138,8 +138,8 @@ QT_BEGIN_NAMESPACE
     \li \inlineimage macintosh-label.png Screenshot of a Macintosh style label
     \li A label shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
     \row
-    \li \inlineimage plastique-label.png Screenshot of a Plastique style label
-    \li A label shown in the \l{Plastique Style Widget Gallery}{Plastique widget style}.
+    \li \inlineimage fusion-label.png Screenshot of a Fusion style label
+    \li A label shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \row
     \li \inlineimage windowsxp-label.png Screenshot of a Windows XP style label
     \li A label shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.

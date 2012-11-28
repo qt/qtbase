@@ -1661,7 +1661,7 @@ static const Qt::WindowFlags DefaultWindowFlags =
     The \l{dialogs/standarddialogs}{Standard Dialogs} example shows
     how to use QColorDialog as well as other built-in Qt dialogs.
 
-    \image plastique-colordialog.png A color dialog in the Plastique widget style.
+    \image fusion-colordialog.png A color dialog in the Fusion widget style.
 
     \sa QColor, QFileDialog, QFontDialog, {Standard Dialogs Example}
 */

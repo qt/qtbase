@@ -129,7 +129,7 @@ static const Qt::WindowFlags DefaultWindowFlags =
   If the user clicks OK the font they chose will be used for myWidget,
   and if they click Cancel the original font is used.
 
-  \image plastique-fontdialog.png A font dialog in the Plastique widget style.
+  \image fusion-fontdialog.png A font dialog in the Fusion widget style.
 
   \sa QFont, QFontInfo, QFontMetrics, QColorDialog, QFileDialog,
       {Standard Dialogs Example}
