@@ -815,7 +815,7 @@
     \section1 External Tools
 
     Tools for handling and visualizing test data are available as part of
-    the \l {qtestlib-tools} project in the \l{Qt Labs} web site.
+    the \l {qtestlib-tools} project.
     These include a tool for comparing performance data obtained from test
     runs and a utility to generate Web-based graphs of performance data.
 
