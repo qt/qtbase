@@ -1,0 +1,52 @@
+!contains(QMAKE_EXTRA_TARGETS, docs) {
+    contains(TEMPLATE, subdirs) {
+        prepare_docs {
+            prepareRecursiveTarget(prepare_docs)
+            prepareRecursiveTarget(generate_docs)
+            html_docs.commands = $(MAKE) -f $(MAKEFILE) prepare_docs && $(MAKE) -f $(MAKEFILE) generate_docs
+        } else {
+            prepareRecursiveTarget(html_docs)
+        }
+        prepareRecursiveTarget(qch_docs)
+        prepareRecursiveTarget(docs)
+    } else {
+        # apps and libs only generate docs if QMAKE_DOCS is set
+        !isEmpty(QMAKE_DOCS) {
+            !exists($$QMAKE_DOCS):error("Cannot find documentation specification file $$QMAKE_DOCS")
+            qtPrepareTool(QDOC, qdoc)
+            for(index, QMAKE_DOCS_INDEX):QDOC_INDEX += -indexdir $$index
+            !isEmpty(QMAKE_DOCS_OUTPUTDIR):QMAKE_DOCS_OPTIONS += -outputdir $$QMAKE_DOCS_OUTPUTDIR
+            !isEmpty(QMAKE_DOCS_INSTALLDIR):QMAKE_DOCS_OPTIONS += -installdir $$QMAKE_DOCS_INSTALLDIR
+            doc_command = $$QDOC $$QMAKE_DOCS_OPTIONS $$QDOC_INDEX $$QMAKE_DOCS
+            prepare_docs {
+                prepare_docs.commands += $$doc_command -prepare -no-link-errors
+                generate_docs.commands += $$doc_command -generate
+                html_docs.depends += generate_docs
+            } else {
+                html_docs.commands += $$doc_command
+            }
+
+            qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
+            isEmpty(QMAKE_DOCS_TARGET): QMAKE_DOCS_TARGET = $$basename(QMAKE_DOCS_OUTPUTDIR)
+            qch_docs.commands = $$QHELPGENERATOR $$QMAKE_DOCS_OUTPUTDIR/$${QMAKE_DOCS_TARGET}.qhp -o $$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch
+        }
+    }
+    docs.commands = $(MAKE) -f $(MAKEFILE) html_docs && $(MAKE) -f $(MAKEFILE) qch_docs
+    QMAKE_EXTRA_TARGETS += html_docs qch_docs docs
+    prepare_docs: QMAKE_EXTRA_TARGETS += prepare_docs generate_docs
+}
+
+!contains(QMAKE_EXTRA_TARGETS, install_docs) {
+    contains(TEMPLATE, subdirs) {
+        prepareRecursiveTarget(install_html_docs)
+        prepareRecursiveTarget(uninstall_html_docs)
+        prepareRecursiveTarget(install_qch_docs)
+        prepareRecursiveTarget(uninstall_qch_docs)
+        prepareRecursiveTarget(install_docs)
+        prepareRecursiveTarget(uninstall_docs)
+    }
+    QMAKE_EXTRA_TARGETS += \
+        install_html_docs uninstall_html_docs \
+        install_qch_docs uninstall_qch_docs \
+        install_docs uninstall_docs
+}
