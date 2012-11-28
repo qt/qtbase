@@ -378,11 +378,13 @@ void Image::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei height
     switch (mInternalFormat)
     {
       case GL_ALPHA8_EXT:
+#if defined(__SSE2__)
         if (supportsSSE2())
         {
             loadAlphaDataSSE2(width, height, inputPitch, input, locked.Pitch, locked.pBits);
         }
         else
+#endif
         {
             loadAlphaData(width, height, inputPitch, input, locked.Pitch, locked.pBits);
         }
@@ -418,11 +420,13 @@ void Image::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei height
         loadRGB565Data(width, height, inputPitch, input, locked.Pitch, locked.pBits);
         break;
       case GL_RGBA8_OES:
+#if defined(__SSE2__)
         if (supportsSSE2())
         {
             loadRGBAUByteDataSSE2(width, height, inputPitch, input, locked.Pitch, locked.pBits);
         }
         else
+#endif
         {
             loadRGBAUByteData(width, height, inputPitch, input, locked.Pitch, locked.pBits);
         }

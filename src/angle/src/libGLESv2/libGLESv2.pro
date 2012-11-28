@@ -62,9 +62,10 @@ SOURCES += \
     $$ANGLE_DIR/src/libGLESv2/ResourceManager.cpp \
     $$ANGLE_DIR/src/libGLESv2/Shader.cpp \
     $$ANGLE_DIR/src/libGLESv2/Texture.cpp \
-    $$ANGLE_DIR/src/libGLESv2/TextureSSE2.cpp \
     $$ANGLE_DIR/src/libGLESv2/utilities.cpp \
     $$ANGLE_DIR/src/libGLESv2/VertexDataManager.cpp
+
+SSE2_SOURCES += $$ANGLE_DIR/src/libGLESv2/TextureSSE2.cpp
 
 float_converter.target = float_converter
 float_converter.commands = python $$ANGLE_DIR/src/libGLESv2/Float16ToFloat32.py \

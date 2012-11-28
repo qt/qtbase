@@ -1,0 +1,49 @@
+From 45a06cc846dbe451bf42c5b3f617729f208743b1 Mon Sep 17 00:00:00 2001
+From: Andy Shaw <andy.shaw@digia.com>
+Date: Wed, 28 Nov 2012 15:38:58 +0100
+Subject: [PATCH] Fix build when SSE2 is not available.
+
+Although SSE2 support is detected at runtime it still may not be
+available at build time, so we have to ensure it only uses SSE2
+when it is available at build time too.
+
+Change-Id: I86c45a6466ab4cec79aa0f62b0d5230a78ad825a
+---
+ src/3rdparty/angle/src/libGLESv2/Texture.cpp |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/src/3rdparty/angle/src/libGLESv2/Texture.cpp b/src/3rdparty/angle/src/libGLESv2/Texture.cpp
+index af430bf..0ea475d 100644
+--- a/src/3rdparty/angle/src/libGLESv2/Texture.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/Texture.cpp
+@@ -378,11 +378,13 @@ void Image::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei height
+     switch (mInternalFormat)
+     {
+       case GL_ALPHA8_EXT:
++#if defined(__SSE2__)
+         if (supportsSSE2())
+         {
+             loadAlphaDataSSE2(width, height, inputPitch, input, locked.Pitch, locked.pBits);
+         }
+         else
++#endif
+         {
+             loadAlphaData(width, height, inputPitch, input, locked.Pitch, locked.pBits);
+         }
+@@ -418,11 +420,13 @@ void Image::loadData(GLint xoffset, GLint yoffset, GLsizei width, GLsizei height
+         loadRGB565Data(width, height, inputPitch, input, locked.Pitch, locked.pBits);
+         break;
+       case GL_RGBA8_OES:
++#if defined(__SSE2__)
+         if (supportsSSE2())
+         {
+             loadRGBAUByteDataSSE2(width, height, inputPitch, input, locked.Pitch, locked.pBits);
+         }
+         else
++#endif
+         {
+             loadRGBAUByteData(width, height, inputPitch, input, locked.Pitch, locked.pBits);
+         }
+--
+1.7.9.msysgit.0
+
