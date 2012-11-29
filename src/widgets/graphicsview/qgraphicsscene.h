@@ -292,6 +292,7 @@ Q_SIGNALS:
     void changed(const QList<QRectF> &region);
     void sceneRectChanged(const QRectF &rect);
     void selectionChanged();
+    void focusItemChanged(QGraphicsItem *newFocus, QGraphicsItem *oldFocus, Qt::FocusReason reason);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsScene)

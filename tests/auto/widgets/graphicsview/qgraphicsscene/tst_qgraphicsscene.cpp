@@ -63,6 +63,7 @@
 #define Q_CHECK_PAINTEVENTS
 #endif
 
+Q_DECLARE_METATYPE(Qt::FocusReason)
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
 Q_DECLARE_METATYPE(QMatrix)
@@ -270,6 +271,7 @@ private slots:
     void siblingIndexAlwaysValid();
     void removeFullyTransparentItem();
     void zeroScale();
+    void focusItemChangedSignal();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -4563,6 +4565,119 @@ void tst_QGraphicsScene::zeroScale()
     rect1->setPos(20,20);
     QApplication::processEvents();
     QTRY_COMPARE(cl.changes.count(), 2);
+}
+
+void tst_QGraphicsScene::focusItemChangedSignal()
+{
+    qRegisterMetaType<QGraphicsItem *>("QGraphicsItem *");
+    qRegisterMetaType<Qt::FocusReason>("Qt::FocusReason");
+
+    QGraphicsScene scene;
+    QSignalSpy spy(&scene, SIGNAL(focusItemChanged(QGraphicsItem *, QGraphicsItem *, Qt::FocusReason)));
+    QVERIFY(spy.isValid());
+    QCOMPARE(spy.count(), 0);
+    scene.setFocus();
+    QCOMPARE(spy.count(), 0);
+    QEvent activateEvent(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &activateEvent);
+    QCOMPARE(spy.count(), 0);
+
+    QGraphicsRectItem *topLevelItem1 = new QGraphicsRectItem;
+    topLevelItem1->setFlag(QGraphicsItem::ItemIsFocusable);
+    scene.addItem(topLevelItem1);
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(!topLevelItem1->hasFocus());
+
+    QGraphicsRectItem *topLevelItem2 = new QGraphicsRectItem;
+    topLevelItem2->setFlag(QGraphicsItem::ItemIsFocusable);
+    topLevelItem2->setFocus();
+    QVERIFY(!topLevelItem2->hasFocus());
+    scene.addItem(topLevelItem2);
+    QCOMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.takeFirst();
+    QCOMPARE(arguments.size(), 3);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)topLevelItem2);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)0);
+    QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::OtherFocusReason);
+    QVERIFY(topLevelItem2->hasFocus());
+
+    scene.clearFocus();
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.size(), 3);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)0);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)topLevelItem2);
+    QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::OtherFocusReason);
+
+    scene.setFocus(Qt::MenuBarFocusReason);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.size(), 3);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)topLevelItem2);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)0);
+    QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::MenuBarFocusReason);
+
+    for (int i = 0; i < 3; ++i) {
+        topLevelItem1->setFocus(Qt::TabFocusReason);
+        arguments = spy.takeFirst();
+        QCOMPARE(arguments.size(), 3);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)topLevelItem1);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)topLevelItem2);
+        QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::TabFocusReason);
+
+        topLevelItem2->setFocus(Qt::TabFocusReason);
+        arguments = spy.takeFirst();
+        QCOMPARE(arguments.size(), 3);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)topLevelItem2);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)topLevelItem1);
+        QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::TabFocusReason);
+    }
+
+    // The following two are unexpected, but fixing this (i.e., losing and gaining focus
+    // when the scene activation changes) breaks quite a few tests so leave this fix
+    // for some future release. See QTBUG-28346.
+    QEvent deactivateEvent(QEvent::WindowDeactivate);
+    qApp->sendEvent(&scene, &deactivateEvent);
+    QEXPECT_FAIL("", "QTBUG-28346", Continue);
+    QCOMPARE(spy.count(), 1);
+    qApp->sendEvent(&scene, &activateEvent);
+    QEXPECT_FAIL("", "QTBUG-28346", Continue);
+    QCOMPARE(spy.count(), 1);
+
+    QGraphicsRectItem *panel1 = new QGraphicsRectItem;
+    panel1->setFlags(QGraphicsItem::ItemIsPanel | QGraphicsItem::ItemIsFocusable);
+    panel1->setFocus();
+    scene.addItem(panel1);
+    QCOMPARE(spy.count(), 1);
+    arguments = spy.takeFirst();
+    QCOMPARE(arguments.size(), 3);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)panel1);
+    QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)topLevelItem2);
+    QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::ActiveWindowFocusReason);
+
+    QGraphicsRectItem *panel2 = new QGraphicsRectItem;
+    panel2->setFlags(QGraphicsItem::ItemIsPanel | QGraphicsItem::ItemIsFocusable);
+    scene.addItem(panel2);
+    QCOMPARE(spy.count(), 0);
+
+    for (int i = 0; i < 3; ++i) {
+        scene.setActivePanel(panel2);
+        QCOMPARE(spy.count(), 1);
+        arguments = spy.takeFirst();
+        QCOMPARE(arguments.size(), 3);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)panel2);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)panel1);
+        QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::ActiveWindowFocusReason);
+
+        scene.setActivePanel(panel1);
+        QCOMPARE(spy.count(), 1);
+        arguments = spy.takeFirst();
+        QCOMPARE(arguments.size(), 3);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(0)), (QGraphicsItem *)panel1);
+        QCOMPARE(qVariantValue<QGraphicsItem *>(arguments.at(1)), (QGraphicsItem *)panel2);
+        QCOMPARE(qVariantValue<Qt::FocusReason>(arguments.at(2)), Qt::ActiveWindowFocusReason);
+    }
+
 }
 
 void tst_QGraphicsScene::taskQTBUG_15977_renderWithDeviceCoordinateCache()

@@ -742,12 +742,14 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
     if (panel == activePanel || (!q->isActive() && !duringActivationEvent))
         return;
 
+    QGraphicsItem *oldFocusItem = focusItem;
+
     // Deactivate the last active panel.
     if (activePanel) {
         if (QGraphicsItem *fi = activePanel->focusItem()) {
             // Remove focus from the current focus item.
             if (fi == q->focusItem())
-                q->setFocusItem(0, Qt::ActiveWindowFocusReason);
+                setFocusItemHelper(0, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
         }
 
         QEvent event(QEvent::WindowDeactivate);
@@ -775,14 +777,14 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
         // focusable, or on the first focusable item in the panel's
         // focus chain as a last resort.
         if (QGraphicsItem *focusItem = panel->focusItem()) {
-            focusItem->setFocus(Qt::ActiveWindowFocusReason);
+            setFocusItemHelper(focusItem, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
         } else if (panel->flags() & QGraphicsItem::ItemIsFocusable) {
-            panel->setFocus(Qt::ActiveWindowFocusReason);
+            setFocusItemHelper(panel, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
         } else if (panel->isWidget()) {
             QGraphicsWidget *fw = static_cast<QGraphicsWidget *>(panel)->d_func()->focusNext;
             do {
                 if (fw->focusPolicy() & Qt::TabFocus) {
-                    fw->setFocus(Qt::ActiveWindowFocusReason);
+                    setFocusItemHelper(fw, Qt::ActiveWindowFocusReason, /* emitFocusChanged = */ false);
                     break;
                 }
                 fw = fw->d_func()->focusNext;
@@ -796,13 +798,23 @@ void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool durin
                 q->sendEvent(item, &event);
         }
     }
+
+    emit q->focusItemChanged(focusItem, oldFocusItem, Qt::ActiveWindowFocusReason);
 }
 
 /*!
     \internal
+
+    \a emitFocusChanged needs to be false when focus passes from one
+    item to another through setActivePanel(); i.e. when activation
+    passes from one panel to another, to avoid getting two focusChanged()
+    emissions; one focusChanged(0, lastFocus), then one
+    focusChanged(newFocus, 0). Instead setActivePanel() emits the signal
+    once itself: focusChanged(newFocus, oldFocus).
 */
 void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
-                                               Qt::FocusReason focusReason)
+                                               Qt::FocusReason focusReason,
+                                               bool emitFocusChanged)
 {
     Q_Q(QGraphicsScene);
     if (item == focusItem)
@@ -818,10 +830,14 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
     // Set focus on the scene if an item requests focus.
     if (item) {
         q->setFocus(focusReason);
-        if (item == focusItem)
+        if (item == focusItem) {
+            if (emitFocusChanged)
+                emit q->focusItemChanged(focusItem, (QGraphicsItem *)0, focusReason);
             return;
+        }
     }
 
+    QGraphicsItem *oldFocusItem = focusItem;
     if (focusItem) {
         lastFocusItem = focusItem;
 
@@ -862,6 +878,9 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
     }
+
+    if (emitFocusChanged)
+        emit q->focusItemChanged(focusItem, oldFocusItem, focusReason);
 }
 
 /*!
@@ -5434,6 +5453,25 @@ bool QGraphicsScene::focusNextPrevChild(bool next)
     once after the operation has completed (instead of once for each item).
 
     \sa setSelectionArea(), selectedItems(), QGraphicsItem::setSelected()
+*/
+
+/*!
+    \fn QGraphicsScene::focusChanged(QGraphicsItem *newFocusItem, QGraphicsItem *oldFocusItem, Qt::FocusReason reason)
+
+    This signal is emitted by QGraphicsScene whenever focus changes in the
+    scene (i.e., when an item gains or loses input focus, or when focus
+    passes from one item to another). You can connect to this signal if you
+    need to keep track of when other items gain input focus. It is
+    particularily useful for implementing virtual keyboards, input methods,
+    and cursor items.
+
+    \a oldFocusItem is a pointer to the item that previously had focus, or
+    0 if no item had focus before the signal was emitted. \a newFocusItem
+    is a pointer to the item that gained input focus, or 0 if focus was lost.
+    \a reason is the reason for the focus change (e.g., if the scene was
+    deactivated while an input field had focus, \a oldFocusItem would point
+    to the input field item, \a newFocusItem would be 0, and \a reason would be
+    Qt::ActiveWindowFocusReason.
 */
 
 /*!
