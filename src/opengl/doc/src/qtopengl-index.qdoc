@@ -26,13 +26,14 @@
 ****************************************************************************/
 
 /*!
-    \module QtOpenGL
-    \title QtOpenGL Module
-    \ingroup modules
-    \ingroup technology-apis
-
+    \page qtopengl-index.html
+    \title Qt OpenGL
     \brief The QtOpenGL module offers classes that make it easy to
     use OpenGL in Qt applications.
+
+    \warning Apart from the \l{QGLWidget} class, this module should not be used
+    anymore for new code. Please use the corresponding OpenGL classes in
+    \l{Qt Gui}.
 
     OpenGL is a standard API for rendering 3D graphics. OpenGL only
     deals with 3D rendering and provides little or no support for GUI
@@ -65,6 +66,7 @@
     similar to Mark Kilgard's GLUT library, applications using the Qt
     OpenGL module can take advantage of the whole Qt API for
     non-OpenGL-specific GUI functionality.
+
+    The \l{Qt OpenGL C++ classes} page gives an overview over the available classes
+    int this module.
 */
-
-

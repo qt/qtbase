@@ -1,42 +1,51 @@
 include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
-project                 = QtOpenGL
-description             = Qt OpenGL Reference Documentation
-url                     = http://qt-project.org/doc/qtopengl
-version                 = 5.0.0
+# Name of the project which must match the outputdir. Determines the .index file
+project = qtopengl
 
-examplesinstallpath     = opengl
+# Directories in which to search for files to document and images.
+# By default set to the root directory of the project for sources
+# and headers and qdoc will therefore generate output for each file.
+# Images should be placed in <rootdir>/dic/images and examples in
+# <rootdir>/examples.
+# Paths are relative to the  location of this file.
+exampledirs += ../../../examples/dbus \
+               snippets
 
-qhp.projects            = QtOpenGL
-
-qhp.QtOpenGL.file         = qtopengl.qhp
-qhp.QtOpenGL.namespace           = org.qt-project.qtopengl.500
-qhp.QtOpenGL.virtualFolder       = qtopengl
-qhp.QtOpenGL.indexTitle          = Qt OpenGL
-qhp.QtOpenGL.indexRoot           =
-
-qhp.QtOpenGL.filterAttributes    = qtopengl 5.0.0 qtrefdoc
-qhp.QtOpenGL.customFilters.Qt.name = QtOpenGL 5.0.0
-qhp.QtOpenGL.customFilters.Qt.filterAttributes = qtopengl 5.0.0
-
-qhp.QtOpenGL.subprojects         = classes
-qhp.QtOpenGL.subprojects.classes.title = C++ Classes
-qhp.QtOpenGL.subprojects.classes.indexTitle = Qt OpenGL C++ Classes
-qhp.QtOpenGL.subprojects.classes.selectors = class fake:headerfile
-qhp.QtOpenGL.subprojects.classes.sortPages = true
-
-tagfile                 = ../../../doc/qtopengl/qtopengl.tags
-
-depends                 += qtcore qtgui qtwidgets qtdoc
-
-headerdirs  += ..
-
+headerdirs += ..
 sourcedirs  += .. \
                ../../../examples/opengl/doc/src
-
 exampledirs += ../../../examples/opengl \
                ../ \
                snippets
-
 imagedirs   += images \
                ../../../examples/opengl/doc/images
+
+depends += qtcore qtgui qtwidgets
+
+# The following parameters are for creating a qhp file, the qhelpgenerator
+# program can convert the qhp file into a qch file which can be opened in
+# Qt Assistant and/or Qt Creator.
+
+# Defines the name of the project. You cannot use operators (+, =, -) in
+# the name. Properties for this project are set using a qhp.<projectname>.property
+# format.
+qhp.projects = qtopengl
+
+# Sets the name of the output qhp file.
+qhp.qtopengl.file = qtopengl.qhp
+
+# Namespace for the output file. This namespace is used to distinguish between
+# different documentation files in Creator/Assistant.
+qhp.qtopengl.namespace = org.qt-project.qtopengl.500
+
+# Title for the package, will be the main title for the package in
+# Assistant/Creator.
+qhp.qtopengl.indexTitle = Qt Script Documentation
+
+# Only update the name of the project for the next variables.
+qhp.qtopengl.virtualFolder  = qtopengl
+qhp.qtopengl.subprojects = classes
+qhp.qtopengl.subprojects.classes.title = Qt D-Bus C++ Classes
+qhp.qtopengl.subprojects.classes.selectors = class fake:headerfile
+qhp.qtopengl.subprojects.classes.sortPages = true
