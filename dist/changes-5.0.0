@@ -380,6 +380,10 @@ Third party components
 flags are now enabled by default on all platforms, for the sqlite3 copy under
 the 3rdparty directory.
 
+Legal
+-----
+
+ - Copyright of Qt has been transferred to Digia Plc.
 
 ****************************************************************************
 *                          Library                                         *
