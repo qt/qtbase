@@ -578,6 +578,7 @@ QStyleOptionFrame::QStyleOptionFrame(int version)
 
     \value None Indicates a normal frame.
     \value Flat Indicates a flat frame.
+    \value Rounded Indicates a rounded frame.
 */
 
 /*!

@@ -138,8 +138,8 @@
 
 /*!
     \page stylesheet-syntax.html
-    \contentspage {Qt Style Sheet}{Contents}
-    \previouspage Qt Style Sheet
+    \contentspage {Qt Style Sheets}{Contents}
+    \previouspage Qt Style Sheets
     \nextpage Qt Designer Integration
     \title The Style Sheet Syntax
 
@@ -543,7 +543,7 @@
 
 /*!
     \page stylesheet-designer.html
-    \contentspage {Qt Style Sheet}{Contents}
+    \contentspage {Qt Style Sheets}{Contents}
     \previouspage The Style Sheet Syntax
     \nextpage Customizing Qt Widgets Using Style Sheets
     \title Qt Designer Integration
@@ -569,7 +569,7 @@
 
 /*!
     \page stylesheet-customizing.html
-    \contentspage {Qt Style Sheet}{Contents}
+    \contentspage {Qt Style Sheets}{Contents}
     \previouspage Qt Designer Integration
     \nextpage Qt Style Sheets Reference
     \title Customizing Qt Widgets Using Style Sheets
@@ -673,7 +673,7 @@
 
 /*!
     \page stylesheet-reference.html
-    \contentspage {Qt Style Sheet}{Contents}
+    \contentspage {Qt Style Sheets}{Contents}
     \previouspage Customizing Qt Widgets Using Style Sheets
     \nextpage Qt Style Sheets Examples
     \title Qt Style Sheets Reference
@@ -1754,7 +1754,7 @@
         \li \b{\c bottom} \target bottom-prop
         \li \l{#Length}{Length}
         \li If \l{#position-prop}{position} is \c relative (the
-           default), moves a \l{subcontrol} by a certain offset up;
+           default), moves a subcontrol by a certain offset up;
            specifying \tt{bottom: \e{y}} is then equivalent to
            specifying \tt{\l{Qt Style Sheets Reference#top-prop}{top}: -\e{y}}.
 
@@ -1906,7 +1906,7 @@
     \row
         \li \b{\c height} \target height-prop
         \li \l{#Length}{Length}
-        \li The height of a \l{subcontrol} (or in some case, a widget).
+        \li The height of a subcontrol (or in some case, a widget).
 
            If this property is not specified, it defaults to a value
            that depends on the subcontrol/widget and on the current style.
@@ -1944,7 +1944,7 @@
         \li \b{\c image}* \target image-prop
         \li \l{#Url}{Url}+
         \li The image that is drawn in the contents rectangle of a
-           \l{subcontrol}.
+           subcontrol.
 
            The image property accepts a list of \l{#Url}{Url}s or
            an \c{svg}. The actual image that is drawn is determined
@@ -1959,7 +1959,7 @@
            image within the rectangle can be specified using
            \l{image-position-prop}{image-position}.
 
-           This property is for \l{subcontrol}s only--we don't support it for
+           This property is for subcontrols only--we don't support it for
            other elements.
 
            \warning The QIcon SVG plugin is needed to render SVG images.
@@ -1978,7 +1978,7 @@
         \li \b{\c left} \target left-prop
         \li \l{#Length}{Length}
         \li If \l{#position-prop}{position} is \c relative (the
-           default), moves a \l{subcontrol} by a certain offset to
+           default), moves a subcontrol by a certain offset to
            the right.
 
            If \l{#position-prop}{position} is \c absolute, the \c
@@ -2232,7 +2232,7 @@
         \li \b{\c right} \target right-prop
         \li \l{#Length}{Length}
         \li If \l{#position-prop}{position} is \c relative (the
-           default), moves a \l{subcontrol} by a certain offset to
+           default), moves a subcontrol by a certain offset to
            the left; specifying \tt{right: \e{x}} is then equivalent
            to specifying \tt{\l{Qt Style Sheets Reference#left-prop}{left}: -\e{x}}.
 
@@ -2323,7 +2323,7 @@
     \row
         \li \b{\c subcontrol-origin*} \target subcontrol-origin-prop
         \li \l{#Origin}{Origin}
-        \li The origin rectangle of the \l subcontrol within the
+        \li The origin rectangle of the subcontrol within the
            parent element.
 
            If this property is not specified, the default is \c
@@ -2339,7 +2339,7 @@
     \row
         \li \b{\c subcontrol-position*} \target subcontrol-position-prop
         \li \l{#Alignment}{Alignment}
-        \li The alignment of the \l subcontrol within the origin
+        \li The alignment of the subcontrol within the origin
            rectangle specified by \l{Qt Style Sheets Reference#subcontrol-origin-prop}
            {subcontrol-origin}.
 
@@ -2380,7 +2380,7 @@
         \li \b{\c top} \target top-prop
         \li \l{#Length}{Length}
         \li If \l{#position-prop}{position} is \c relative (the
-           default), moves a \l{subcontrol} by a certain offset
+           default), moves a subcontrol by a certain offset
            down.
 
            If \l{#position-prop}{position} is \c absolute, the \c top
@@ -2400,7 +2400,7 @@
     \row
         \li \b{\c width} \target width-prop
         \li \l{#Length}{Length}
-        \li The width of a \l{subcontrol} (or a widget in some cases).
+        \li The width of a subcontrol (or a widget in some cases).
 
            If this property is not specified, it defaults to a value
            that depends on the subcontrol/widget and on the current style.
@@ -3358,7 +3358,7 @@
 
 /*!
     \page stylesheet-examples.html
-    \contentspage {Qt Style Sheet}{Contents}
+    \contentspage {Qt Style Sheets}{Contents}
     \previouspage Qt Style Sheets Reference
     \title Qt Style Sheets Examples
 

@@ -190,7 +190,7 @@
     or Qt::WA_MacNormalSize instead.
 */
 
-/*! \fn QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget)
+/*! \fn QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget, const QStyleOption *opt = 0)
     \obsolete
 
     Call QWidget::testAttribute() with Qt::WA_MacMiniSize, Qt::WA_MacSmallSize,

@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
     subElementRect() are documented here.
     \endomit
 
-    \sa QStyle, QWindowsStyle
+    \sa QStyle, QProxyStyle
 */
 
 /*!

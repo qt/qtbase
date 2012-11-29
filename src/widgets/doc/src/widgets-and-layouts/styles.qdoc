@@ -1632,7 +1632,7 @@
     toolbars with equal orientation (vertical or horizontal) placed
     next to each other.
 
-    \l{QToolbar}{QToolbar}s in Qt consist of three elements:
+    \l{QToolBar}{Toolbars} in Qt consist of three elements:
     \c CE_ToolBar, \c PE_IndicatorToolBarHandle, and
     \c PE_IndicatorToolBarSeparator. It is QMainWindowLayout that
     calculates the bounding rectangles (i.e., position and size of the
@@ -1647,7 +1647,7 @@
     The dotted lines indicate that the QToolBar keeps an instance of
     QToolBarLayout and that QToolBarSeparators are kept by
     QToolBarLayout. When the toolbar is floating (i.e., has its own
-    window) the \c PE_FrameMenu element is drawn, else QToolbar draws
+    window) the \c PE_FrameMenu element is drawn, else QToolBar draws
     \c CE_ToolBar.
 
     Here is an image of a toolbar in the Java style:
