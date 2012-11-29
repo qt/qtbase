@@ -14,6 +14,7 @@ PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 SOURCES += \
         qtconcurrentfilter.cpp \
         qtconcurrentmap.cpp \
+        qtconcurrentrun.cpp \
         qtconcurrentthreadengine.cpp \
         qtconcurrentiteratekernel.cpp \
 
