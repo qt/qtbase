@@ -1128,7 +1128,7 @@ Qt::MouseButtons QGuiApplication::mouseButtons()
 QPlatformNativeInterface *QGuiApplication::platformNativeInterface()
 {
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
-    return pi->nativeInterface();
+    return pi ? pi->nativeInterface() : 0;
 }
 
 /*!
