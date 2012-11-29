@@ -2212,10 +2212,18 @@ void HtmlGenerator::generateAnnotatedList(const Node *relative,
                                           CodeMarker *marker,
                                           const NodeList& nodes)
 {
+    bool allInternal = true;
+    foreach (const Node* node, nodes) {
+        if (!node->isInternal() && node->status() != Node::Obsolete) {
+            allInternal = false;
+        }
+    }
+    if (allInternal)
+        return;
     out() << "<table class=\"annotated\">\n";
     int row = 0;
     foreach (const Node* node, nodes) {
-        if (node->status() == Node::Obsolete)
+        if (node->isInternal() || node->status() == Node::Obsolete)
             continue;
 
         if (++row % 2 == 1)

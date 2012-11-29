@@ -2720,6 +2720,15 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
 {
     if (nodes.isEmpty())
         return;
+    bool allInternal = true;
+    foreach (const Node* node, nodes) {
+        if (!node->isInternal() && node->status() != Node::Obsolete) {
+            allInternal = false;
+        }
+    }
+    if (allInternal)
+        return;
+
     writeStartTag(DT_table);
     xmlWriter().writeAttribute("outputclass","annotated");
     writeStartTag(DT_tgroup);
@@ -2727,7 +2736,7 @@ void DitaXmlGenerator::generateAnnotatedList(const Node* relative,
     writeStartTag(DT_tbody);
 
     foreach (const Node* node, nodes) {
-        if (node->status() == Node::Obsolete)
+        if (node->isInternal() || node->status() == Node::Obsolete)
             continue;
 
         writeStartTag(DT_row);
