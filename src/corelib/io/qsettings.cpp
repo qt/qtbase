@@ -2438,14 +2438,14 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
        running. Also, the locking isn't performed when accessing \c .plist
        files.
 
-    \o On the BlackBerry platform, applications run in a sandbox. They are not
+    \li On the BlackBerry platform, applications run in a sandbox. They are not
        allowed to read or write outside of this sandbox. This involves the
        following limitations:
        \list
-       \o As there is only a single scope the scope is simply ignored.
-       \o The \l{Fallback Mechanism} is not applied, i.e. only a single
+       \li As there is only a single scope the scope is simply ignored.
+       \li The \l{Fallback Mechanism} is not applied, i.e. only a single
           location is considered.
-       \o It is advised against setting and using custom file paths.
+       \li It is advised against setting and using custom file paths.
        \endlist
 
     \endlist
