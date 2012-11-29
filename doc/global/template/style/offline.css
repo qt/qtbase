@@ -689,3 +689,36 @@ height: 0;
 clear: both;
 visibility: hidden;
 }
+
+/*
+-----------
+Landing page
+-----------
+*/
+.col-group {
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.col-1 {
+    display: inline-block;
+    white-space: normal;
+    width: 70%;
+    height: 100%;
+    float: left;
+}
+
+.col-1 h1 {
+    margin: 20px 0 0 0;
+}
+
+.col-2 {
+    display: inline-block;
+    white-space: normal;
+    width: 25%;
+    margin: 0 0 0 50px;
+}
+
+.sectionlist {
+    width: 100% !important;
+}
