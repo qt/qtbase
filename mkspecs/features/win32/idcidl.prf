@@ -3,6 +3,9 @@ build_pass:console: {
     warning("Remove 'console' from your CONFIG.")
 }
 
+# Do not link qtmain.lib
+QMAKE_LIBS_QT_ENTRY =
+
 ACTIVEQT_VERSION = $$VERSION
 isEmpty(ACTIVEQT_VERSION):ACTIVEQT_VERSION = 1.0
 
