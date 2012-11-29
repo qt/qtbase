@@ -54,7 +54,7 @@ public:
 QDebug operator<<(QDebug dbg, const Coordinate &c)
 {
     dbg.nospace() << "(" << c.x() << ", " << c.y() << ")";
-    
+
     return dbg.space();
 }
 //! [0]
