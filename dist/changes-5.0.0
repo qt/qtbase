@@ -508,6 +508,10 @@ QtCore
 * QLocale
   - [QTBUG-27987] Constructing a QLocale object with the short locale id has been improved.
 
+* QObject
+  - Added overloads of connect() to connect using pointers to member function
+  - Added QObject::isSignalConnected()
+
 QtGui
 -----
 * Accessibility has been refactored. The hierachy of accessible objects is implemented via
@@ -868,7 +872,7 @@ Qt for Windows CE
 
 * [QTBUG-20785] The moc now has a -b<file> option to #include an additional
   file at the beginning of the generated file.
-
+* moc is now able to fully understand and expands preprocessor macros.
 
 - uic
 
