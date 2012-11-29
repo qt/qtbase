@@ -4907,6 +4907,16 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
             if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient)) {
                 QObject *styleObject = opt->styleObject;
+
+                // Qt generally excepts styleObject to be set during draw calls, but
+                // this is not always done. Create a temprary object in that case to
+                // prevent crashing. This will disable scroll bar animations.
+                bool deleteStyleObject = false;
+                if (!styleObject) {
+                    deleteStyleObject = true;
+                    styleObject = new QObject;
+                }
+
                 int oldPos = styleObject->property("_q_stylepos").toInt();
                 int oldMin = styleObject->property("_q_stylemin").toInt();
                 int oldMax = styleObject->property("_q_stylemax").toInt();
@@ -5040,6 +5050,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 [NSGraphicsContext restoreGraphicsState];
                 CGContextRestoreGState(cg);
+
+                if (deleteStyleObject) {
+                    delete styleObject;
+                }
             } else
 #endif
             {
