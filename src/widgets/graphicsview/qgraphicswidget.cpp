@@ -734,6 +734,7 @@ void QGraphicsWidget::initStyleOption(QStyleOption *option) const
         option->palette.setCurrentColorGroup(QPalette::Inactive);
     }
     option->fontMetrics = QFontMetrics(font());
+    option->styleObject = const_cast<QGraphicsWidget *>(this);
 }
 
 /*!

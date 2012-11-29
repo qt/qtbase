@@ -1315,6 +1315,14 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
     option->rect = brect.toRect();
     option->levelOfDetail = 1;
     option->exposedRect = brect;
+
+    // Style animations require a QObject-based animation target.
+    // If a plain QGraphicsItem is used to draw animated controls,
+    // QStyle is let to send animation updates to the whole scene.
+    option->styleObject = q_ptr->toGraphicsObject();
+    if (!option->styleObject)
+        option->styleObject = scene;
+
     if (selected)
         option->state |= QStyle::State_Selected;
     if (enabled)
