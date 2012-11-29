@@ -27,11 +27,11 @@
 
 /*!
     \module QtPrintSupport
-    \title QtPrintSupport Module
-    \ingroup modules
+    \title Qt Print Support Module
+    \brief The Qt PrintSupport module provides classes to make printing easier and portable.
 
-    \brief The QtPrintSupport module provides classes to make printing
-    easier and portable.
+    \ingroup modules
+    \ingroup technology-apis
 
     To include the definitions of the module's classes, use the
     following directive:

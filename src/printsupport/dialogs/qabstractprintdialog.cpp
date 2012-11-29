@@ -66,7 +66,7 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     customize settings shown in print dialogs, but it is not used directly.
     Use QPrintDialog to display a print dialog in your application.
 
-    \sa QPrintDialog, QPrinter, {Printing with Qt}
+    \sa QPrintDialog, QPrinter
 */
 
 /*!

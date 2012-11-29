@@ -268,7 +268,7 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
   extend printing support to cover new types of printing subsystem by
   subclassing QPrintEngine and reimplementing its interface.
 
-  \sa QPrintDialog, {Printing with Qt}
+  \sa QPrintDialog, {Qt Print Support}
 */
 
 /*!
@@ -1263,7 +1263,7 @@ void QPrinter::setCollateCopies(bool collate)
   printer's margins, so the application must account for the margins
   itself.
 
-  \sa fullPage(), setPaperSize(), width(), height(), {Printing with Qt}
+  \sa fullPage(), setPaperSize(), width(), height()
 */
 
 void QPrinter::setFullPage(bool fp)

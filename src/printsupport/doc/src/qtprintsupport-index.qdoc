@@ -26,16 +26,8 @@
 ****************************************************************************/
 
 /*!
-  \group printing
-  \title Printer and Printing APIs
-  \brief Classes for producing printed output
-  \ingroup groups
-*/
-
-
-/*!
-  \page printing.html
-  \title Printing with Qt
+  \page qtprintsupport-index.html
+  \title Qt Print Support
   \ingroup qt-graphics
 
   \brief A guide to producing printed output with Qt's paint system and widgets.
@@ -184,4 +176,11 @@
   Please note that Adobe\reg places restrictions on the use of its trademarks
   (including logos) in conjunction with PDF; e.g. "Adobe PDF". Please refer
   to \l{http://www.adobe.com}{www.adobe.com} for guidelines.
+*/
+
+/*!
+  \group printing
+  \title Printer and Printing APIs
+  \brief Classes for producing printed output
+  \ingroup groups
 */
