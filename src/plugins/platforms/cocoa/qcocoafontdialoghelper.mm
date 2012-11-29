@@ -301,6 +301,10 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
 {
     mDialogIsExecuting = true;
     [mFontPanel setDelegate:self];
+    // Call processEvents in case the event dispatcher has been interrupted, and needs to do
+    // cleanup of modal sessions. Do this before showing the native dialog, otherwise it will
+    // close down during the cleanup.
+    qApp->processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
     [NSApp runModalForWindow:mFontPanel];
     return (mResultCode == NSOKButton);
 }
