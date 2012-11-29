@@ -1388,8 +1388,16 @@ void QWindow::setScreen(QScreen *newScreen)
 void QWindow::screenDestroyed(QObject *object)
 {
     Q_D(QWindow);
-    if (object == static_cast<QObject *>(d->screen))
+    if (object == static_cast<QObject *>(d->screen)) {
+        const bool wasVisible = isVisible();
         setScreen(0);
+        // destroy() might have hidden our window, show it again.
+        // This might not be the best behavior if the new screen isn't a virtual sibling
+        // of the old one. This can be removed once platform plugins have the power to
+        // update the QScreen of its QWindows itself.
+        if (wasVisible && d->platformWindow)
+            setVisible(true);
+    }
 }
 
 /*!
