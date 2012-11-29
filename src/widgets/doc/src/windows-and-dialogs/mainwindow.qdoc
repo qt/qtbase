@@ -159,14 +159,13 @@
 
     \section1 The Main Window Classes
 
-    Qt 4 provides the following classes for managing main windows and
+    Qt provides the following classes for managing main windows and
     associated user interface components:
 
     \list
-    \li QMainWindow remains the central class around which applications
-       can be built. The interface to this class has been simplified, and
-       much of the functionality previously included in this class is now
-       present in the companion QDockWidget and QToolBar classes.
+    \li QMainWindow is the central class around which applications
+       can be built. Along with the companion QDockWidget and QToolBar
+       classes, it represents the top-level user interface of the application.
 
     \li QDockWidget provides a widget that can be used to create
        detachable tool palettes or helper windows. Dock widgets keep track
@@ -176,7 +175,7 @@
     \li QToolBar provides a generic toolbar widget that can hold a
        number of different action-related widgets, such as buttons,
        drop-down menus, comboboxes, and spin boxes. The emphasis on a
-       unified action model in Qt 4 means that toolbars cooperate well
+       unified action model in Qt means that toolbars cooperate well
        with menus and keyboard shortcuts.
     \endlist
 
