@@ -47,6 +47,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QTemporaryDir>
 
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>
@@ -108,6 +109,8 @@ Q_DECLARE_METATYPE(QFile::FileError)
 class tst_QFile : public QObject
 {
     Q_OBJECT
+public:
+    tst_QFile();
 
 private slots:
     void init();
@@ -323,7 +326,23 @@ private:
 
     int fd_;
     FILE *stream_;
+
+    QTemporaryDir m_temporaryDir;
+    const QString m_oldDir;
+    QString m_stdinProcessDir;
+    QString m_testSourceFile;
+    QString m_testLogFile;
+    QString m_dosFile;
+    QString m_forCopyingFile;
+    QString m_forRenamingFile;
+    QString m_twoDotsFile;
+    QString m_testFile;
+    QString m_resourcesDir;
+    QString m_noEndOfLineFile;
 };
+
+static const char noReadFile[] = "noreadfile";
+static const char readOnlyFile[] = "readonlyfile";
 
 void tst_QFile::init()
 {
@@ -333,83 +352,88 @@ void tst_QFile::init()
 
 void tst_QFile::cleanup()
 {
-    // for copyFallback()
-    if (QFile::exists("file-copy-destination.txt")) {
-        QFile::setPermissions("file-copy-destination.txt",
-                QFile::ReadOwner | QFile::WriteOwner);
-        QFile::remove("file-copy-destination.txt");
-    }
-
-    // for renameFallback()
-    QFile::remove("file-rename-destination.txt");
-
-    // for copyAfterFail()
-    QFile::remove("file-to-be-copied.txt");
-    QFile::remove("existing-file.txt");
-    QFile::remove("copied-file-1.txt");
-    QFile::remove("copied-file-2.txt");
-
-    // for renameMultiple()
-    QFile::remove("file-to-be-renamed.txt");
-    QFile::remove("existing-file.txt");
-    QFile::remove("file-renamed-once.txt");
-    QFile::remove("file-renamed-twice.txt");
-
     if (-1 != fd_)
         QT_CLOSE(fd_);
+    fd_ = -1;
     if (stream_)
         ::fclose(stream_);
+    stream_ = 0;
+
+    // Windows UNC tests set a different working directory which might not be restored on failures.
+    if (QDir::currentPath() != m_temporaryDir.path())
+        QVERIFY(QDir::setCurrent(m_temporaryDir.path()));
+
+    // Clean out everything except the readonly-files.
+    const QDir dir(m_temporaryDir.path());
+    foreach (const QFileInfo &fi, dir.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot)) {
+        const QString fileName = fi.fileName();
+        if (fileName != QLatin1String(noReadFile) && fileName != QLatin1String(readOnlyFile)) {
+            const QString absoluteFilePath = fi.absoluteFilePath();
+            if (fi.isDir() && !fi.isSymLink()) {
+                QDir remainingDir(absoluteFilePath);
+                QVERIFY2(remainingDir.removeRecursively(), qPrintable(absoluteFilePath));
+            } else {
+                QVERIFY2(QFile::remove(absoluteFilePath), qPrintable(absoluteFilePath));
+            }
+        }
+    }
+}
+
+tst_QFile::tst_QFile() : m_oldDir(QDir::currentPath())
+{
 }
 
 void tst_QFile::initTestCase()
 {
-    QString workingDir = QFileInfo(QFINDTESTDATA("stdinprocess")).absolutePath();
-    QVERIFY2(!workingDir.isEmpty(), qPrintable("Could not find working directory!"));
-    QVERIFY2(QDir::setCurrent(workingDir), qPrintable("Could not chdir to " + workingDir));
+    QVERIFY(m_temporaryDir.isValid());
+    m_stdinProcessDir = QFINDTESTDATA("stdinprocess");
+    QVERIFY(!m_stdinProcessDir.isEmpty());
+    m_testSourceFile = QFINDTESTDATA("tst_qfile.cpp");
+    QVERIFY(!m_testSourceFile.isEmpty());
+    m_testLogFile = QFINDTESTDATA("testlog.txt");
+    QVERIFY(!m_testLogFile.isEmpty());
+    m_dosFile = QFINDTESTDATA("dosfile.txt");
+    QVERIFY(!m_dosFile.isEmpty());
+    m_forCopyingFile = QFINDTESTDATA("forCopying.txt");
+    QVERIFY(!m_forCopyingFile .isEmpty());
+    m_forRenamingFile = QFINDTESTDATA("forRenaming.txt");
+    QVERIFY(!m_forRenamingFile.isEmpty());
+    m_twoDotsFile = QFINDTESTDATA("two.dots.file");
+    QVERIFY(!m_twoDotsFile.isEmpty());
+    m_testFile = QFINDTESTDATA("testfile.txt");
+    QVERIFY(!m_testFile.isEmpty());
+    m_resourcesDir = QFINDTESTDATA("resources");
+    QVERIFY(!m_resourcesDir.isEmpty());
+    m_noEndOfLineFile = QFINDTESTDATA("noendofline.txt");
+    QVERIFY(!m_noEndOfLineFile.isEmpty());
 
-    QFile::remove("noreadfile");
+    QVERIFY(QDir::setCurrent(m_temporaryDir.path()));
 
     // create a file and make it read-only
-    QFile file("readonlyfile");
-    file.open(QFile::WriteOnly);
+    QFile file(QString::fromLatin1(readOnlyFile));
+    QVERIFY2(file.open(QFile::WriteOnly), qPrintable(file.errorString()));
     file.write("a", 1);
     file.close();
-    file.setPermissions(QFile::ReadOwner);
-
+    QVERIFY2(file.setPermissions(QFile::ReadOwner), qPrintable(file.errorString()));
     // create another file and make it not readable
-    file.setFileName("noreadfile");
-    file.open(QFile::WriteOnly);
+    file.setFileName(QString::fromLatin1(noReadFile));
+    QVERIFY2(file.open(QFile::WriteOnly), qPrintable(file.errorString()));
     file.write("b", 1);
     file.close();
-    file.setPermissions(0);
+#ifndef Q_OS_WIN // Not supported on Windows.
+    QVERIFY2(file.setPermissions(0), qPrintable(file.errorString()));
+#else
+    QVERIFY2(file.open(QFile::WriteOnly), qPrintable(file.errorString()));
+#endif
 }
 
 void tst_QFile::cleanupTestCase()
 {
-    // clean up the files we created
-    QFile::remove("readonlyfile");
-    QFile::remove("noreadfile");
-    QFile::remove("myLink.lnk");
-    QFile::remove("appendme.txt");
-    QFile::remove("createme.txt");
-    QFile::remove("file.txt");
-    QFile::remove("genfile.txt");
-    QFile::remove("seekToPos.txt");
-    QFile::remove("setsizeseek.txt");
-    QFile::remove("stdfile.txt");
-    QFile::remove("textfile.txt");
-    QFile::remove("truncate.txt");
-    QFile::remove("winfile.txt");
-    QFile::remove("writeonlyfile");
-    QFile::remove("largeblockfile.txt");
-    QFile::remove("tst_qfile_copy.cpp");
-    QFile::remove("nullinline.txt");
-    QFile::remove("myLink2.lnk");
-    QFile::remove("resources");
-    QFile::remove("qfile_map_testfile");
-    QFile::remove("readAllBuffer.txt");
-    QFile::remove("qt_file.tmp");
-    QFile::remove("File.txt");
+    QFile file(QString::fromLatin1(readOnlyFile));
+    QVERIFY(file.setPermissions(QFile::ReadOwner | QFile::WriteOwner));
+    file.setFileName(QString::fromLatin1(noReadFile));
+    QVERIFY(file.setPermissions(QFile::ReadOwner | QFile::WriteOwner));
+    QVERIFY(QDir::setCurrent(m_oldDir)); //release test directory for removal
 }
 
 //------------------------------------------
@@ -423,7 +447,7 @@ void tst_QFile::cleanupTestCase()
 
 void tst_QFile::exists()
 {
-    QFile f( QFINDTESTDATA("testfile.txt") );
+    QFile f( m_testFile );
     QVERIFY(f.exists());
 
     QFile file("nobodyhassuchafile");
@@ -462,17 +486,17 @@ void tst_QFile::open_data()
     static const QString denied("Permission denied");
 #endif
     QTest::newRow( "exist_readOnly"  )
-        << QString(QFINDTESTDATA("testfile.txt")) << int(QIODevice::ReadOnly)
+        << m_testFile << int(QIODevice::ReadOnly)
         << true << QFile::NoError;
 
     QTest::newRow( "exist_writeOnly" )
-        << QString("readonlyfile")
+        << QString::fromLatin1(readOnlyFile)
         << int(QIODevice::WriteOnly)
         << false
         << QFile::OpenError;
 
     QTest::newRow( "exist_append"    )
-        << QString("readonlyfile") << int(QIODevice::Append)
+        << QString::fromLatin1(readOnlyFile) << int(QIODevice::Append)
         << false << QFile::OpenError;
 
     QTest::newRow( "nonexist_readOnly"  )
@@ -488,12 +512,12 @@ void tst_QFile::open_data()
     QTest::newRow("nullfile") << QString() << int(QIODevice::ReadOnly) << false
         << QFile::OpenError;
 
-    QTest::newRow("two-dots") << QString(QFINDTESTDATA("two.dots.file")) << int(QIODevice::ReadOnly) << true
+    QTest::newRow("two-dots") << m_twoDotsFile << int(QIODevice::ReadOnly) << true
         << QFile::NoError;
 
-    QTest::newRow("readonlyfile") << QString("readonlyfile") << int(QIODevice::WriteOnly)
+    QTest::newRow("readonlyfile") << QString::fromLatin1(readOnlyFile) << int(QIODevice::WriteOnly)
                                   << false << QFile::OpenError;
-    QTest::newRow("noreadfile") << QString("noreadfile") << int(QIODevice::ReadOnly)
+    QTest::newRow("noreadfile") << QString::fromLatin1(noReadFile) << int(QIODevice::ReadOnly)
                                 << false << QFile::OpenError;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     //opening devices requires administrative privileges (and elevation).
@@ -539,7 +563,7 @@ void tst_QFile::open()
 
 void tst_QFile::openUnbuffered()
 {
-    QFile file(QFINDTESTDATA("testfile.txt"));
+    QFile file(m_testFile);
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Unbuffered));
     char c = '\0';
     QVERIFY(file.seek(1));
@@ -572,7 +596,7 @@ void tst_QFile::size_data()
     QTest::addColumn<QString>("filename");
     QTest::addColumn<qint64>("size");
 
-    QTest::newRow( "exist01" ) << QString(QFINDTESTDATA("testfile.txt")) << (qint64)245;
+    QTest::newRow( "exist01" ) << m_testFile << (qint64)245;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Only test UNC on Windows./
     QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testshare/test.pri") << (qint64)34;
@@ -635,7 +659,6 @@ void tst_QFile::sizeNoExist()
 
 void tst_QFile::seek()
 {
-    QFile::remove("newfile.txt");
     QFile file("newfile.txt");
     file.open(QIODevice::WriteOnly);
     QCOMPARE(file.size(), qint64(0));
@@ -644,15 +667,10 @@ void tst_QFile::seek()
     QCOMPARE(file.pos(), qint64(10));
     QCOMPARE(file.size(), qint64(0));
     file.close();
-    QFile::remove("newfile.txt");
 }
 
 void tst_QFile::setSize()
 {
-    if ( QFile::exists( "createme.txt" ) )
-        QFile::remove( "createme.txt" );
-    QVERIFY( !QFile::exists( "createme.txt" ) );
-
     QFile f("createme.txt");
     QVERIFY(f.open(QIODevice::Truncate | QIODevice::ReadWrite));
     f.putChar('a');
@@ -691,7 +709,6 @@ void tst_QFile::setSize()
 
 void tst_QFile::setSizeSeek()
 {
-    QFile::remove("setsizeseek.txt");
     QFile f("setsizeseek.txt");
     QVERIFY(f.open(QFile::WriteOnly));
     f.write("ABCD");
@@ -714,7 +731,7 @@ void tst_QFile::setSizeSeek()
 
 void tst_QFile::atEnd()
 {
-    QFile f( QFINDTESTDATA("testfile.txt") );
+    QFile f( m_testFile );
     QVERIFY(f.open( QIODevice::ReadOnly ));
 
     int size = f.size();
@@ -727,7 +744,7 @@ void tst_QFile::atEnd()
 
 void tst_QFile::readLine()
 {
-    QFile f( QFINDTESTDATA("testfile.txt") );
+    QFile f( m_testFile );
     QVERIFY(f.open( QIODevice::ReadOnly ));
 
     int i = 0;
@@ -747,7 +764,7 @@ void tst_QFile::readLine()
 
 void tst_QFile::readLine2()
 {
-    QFile f( QFINDTESTDATA("testfile.txt") );
+    QFile f( m_testFile );
     f.open( QIODevice::ReadOnly );
 
     char p[128];
@@ -782,13 +799,13 @@ void tst_QFile::readAll_data()
 {
     QTest::addColumn<bool>("textMode");
     QTest::addColumn<QString>("fileName");
-    QTest::newRow( "TextMode unixfile" ) <<  true << QFINDTESTDATA("testfile.txt");
-    QTest::newRow( "BinaryMode unixfile" ) <<  false << QFINDTESTDATA("testfile.txt");
-    QTest::newRow( "TextMode dosfile" ) <<  true << QFINDTESTDATA("dosfile.txt");
-    QTest::newRow( "BinaryMode dosfile" ) <<  false << QFINDTESTDATA("dosfile.txt");
-    QTest::newRow( "TextMode bigfile" ) <<  true << QFINDTESTDATA("tst_qfile.cpp");
-    QTest::newRow( "BinaryMode  bigfile" ) <<  false << QFINDTESTDATA("tst_qfile.cpp");
-    QVERIFY(QFile(QFINDTESTDATA("tst_qfile.cpp")).size() > 64*1024);
+    QTest::newRow( "TextMode unixfile" ) <<  true << m_testFile;
+    QTest::newRow( "BinaryMode unixfile" ) <<  false << m_testFile;
+    QTest::newRow( "TextMode dosfile" ) <<  true << m_dosFile;
+    QTest::newRow( "BinaryMode dosfile" ) <<  false << m_dosFile;
+    QTest::newRow( "TextMode bigfile" ) <<  true << m_testSourceFile;
+    QTest::newRow( "BinaryMode  bigfile" ) <<  false << m_testSourceFile;
+    QVERIFY(QFile(m_testSourceFile).size() > 64*1024);
 }
 
 void tst_QFile::readAll()
@@ -855,8 +872,8 @@ void tst_QFile::readAllStdin()
     QByteArray lotsOfData(1024, '@'); // 10 megs
 
     QProcess process;
-    process.start("stdinprocess/stdinprocess all");
-    QVERIFY( process.waitForStarted() );
+    process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"), QStringList(QStringLiteral("all")));
+    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
         process.write(lotsOfData);
@@ -883,7 +900,10 @@ void tst_QFile::readLineStdin()
 
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start((QString("stdinprocess/stdinprocess line %1").arg(i)), QIODevice::Text | QIODevice::ReadWrite);
+        process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"),
+                      QStringList() << QStringLiteral("line") << QString::number(i),
+                      QIODevice::Text | QIODevice::ReadWrite);
+        QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
         for (int i = 0; i < 5; ++i) {
             QTest::qWait(1000);
             process.write(lotsOfData);
@@ -910,8 +930,10 @@ void tst_QFile::readLineStdin_lineByLine()
 {
     for (int i = 0; i < 2; ++i) {
         QProcess process;
-        process.start(QString("stdinprocess/stdinprocess line %1").arg(i), QIODevice::Text | QIODevice::ReadWrite);
-        QVERIFY(process.waitForStarted());
+        process.start(m_stdinProcessDir + QStringLiteral("/stdinprocess"),
+                      QStringList() << QStringLiteral("line") << QString::number(i),
+                      QIODevice::Text | QIODevice::ReadWrite);
+        QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
 
         for (int j = 0; j < 3; ++j) {
             QByteArray line = "line " + QByteArray::number(j) + "\n";
@@ -931,7 +953,7 @@ void tst_QFile::readLineStdin_lineByLine()
 void tst_QFile::text()
 {
     // dosfile.txt is a binary CRLF file
-    QFile file(QFINDTESTDATA("dosfile.txt"));
+    QFile file(m_dosFile);
     QVERIFY(file.open(QFile::Text | QFile::ReadOnly));
     QCOMPARE(file.readLine(),
             QByteArray("/dev/system/root     /                    reiserfs   acl,user_xattr        1 1\n"));
@@ -944,7 +966,7 @@ void tst_QFile::text()
 
 void tst_QFile::missingEndOfLine()
 {
-    QFile file(QFINDTESTDATA("noendofline.txt"));
+    QFile file(m_noEndOfLineFile);
     QVERIFY(file.open(QFile::ReadOnly));
 
     int nlines = 0;
@@ -958,7 +980,7 @@ void tst_QFile::missingEndOfLine()
 
 void tst_QFile::readBlock()
 {
-    QFile f( QFINDTESTDATA("testfile.txt") );
+    QFile f( m_testFile );
     f.open( QIODevice::ReadOnly );
 
     int length = 0;
@@ -973,7 +995,7 @@ void tst_QFile::readBlock()
 
 void tst_QFile::getch()
 {
-    QFile f( QFINDTESTDATA("testfile.txt") );
+    QFile f( m_testFile );
     f.open( QIODevice::ReadOnly );
 
     char c;
@@ -990,7 +1012,7 @@ void tst_QFile::getch()
 
 void tst_QFile::ungetChar()
 {
-    QFile f(QFINDTESTDATA("testfile.txt"));
+    QFile f(m_testFile);
     QVERIFY(f.open(QIODevice::ReadOnly));
 
     QByteArray array = f.readLine();
@@ -1122,8 +1144,8 @@ void tst_QFile::permissions_data()
     QTest::addColumn<bool>("create");
 
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << uint(QFile::ExeUser) << true << false;
-    QTest::newRow("data1") << QFINDTESTDATA("tst_qfile.cpp") << uint(QFile::ReadUser) << true << false;
-    QTest::newRow("readonly") << QFINDTESTDATA("readonlyfile") << uint(QFile::WriteUser) << false << false;
+    QTest::newRow("data1") << m_testSourceFile << uint(QFile::ReadUser) << true << false;
+    QTest::newRow("readonly") << QString::fromLatin1("readonlyfile") << uint(QFile::WriteUser) << false << false;
 #ifndef Q_OS_WINCE
     QTest::newRow("longfile") << QString::fromLatin1("longFileNamelongFileNamelongFileNamelongFileName"
                                                     "longFileNamelongFileNamelongFileNamelongFileName"
@@ -1201,8 +1223,8 @@ void tst_QFile::copy()
     QFile::setPermissions("tst_qfile_copy.cpp", QFile::WriteUser);
     QFile::remove("tst_qfile_copy.cpp");
     QFile::remove("test2");
-    QVERIFY(QFile::copy(QFINDTESTDATA("tst_qfile.cpp"), "tst_qfile_copy.cpp"));
-    QFile in1(QFINDTESTDATA("tst_qfile.cpp")), in2("tst_qfile_copy.cpp");
+    QVERIFY(QFile::copy(m_testSourceFile, "tst_qfile_copy.cpp"));
+    QFile in1(m_testSourceFile), in2("tst_qfile_copy.cpp");
     QVERIFY(in1.open(QFile::ReadOnly));
     QVERIFY(in2.open(QFile::ReadOnly));
     QByteArray data1 = in1.readAll(), data2 = in2.readAll();
@@ -1239,33 +1261,26 @@ void tst_QFile::copyAfterFail()
 
     QVERIFY(QFile::exists("copied-file-1.txt"));
     QVERIFY(QFile::exists("copied-file-2.txt"));
-
-    QVERIFY(QFile::remove("file-to-be-copied.txt") && "(test-cleanup)");
-    QVERIFY(QFile::remove("existing-file.txt") && "(test-cleanup)");
-    QVERIFY(QFile::remove("copied-file-1.txt") && "(test-cleanup)");
-    QVERIFY(QFile::remove("copied-file-2.txt") && "(test-cleanup)");
 }
 
 void tst_QFile::copyRemovesTemporaryFile() const
 {
     const QString newName(QLatin1String("copyRemovesTemporaryFile"));
-    QVERIFY(QFile::copy(QFINDTESTDATA("forCopying.txt"), newName));
+    QVERIFY(QFile::copy(m_forCopyingFile, newName));
 
-    QVERIFY(!QFile::exists(QFINDTESTDATA("qt_temp.XXXXXX")));
-    QVERIFY(QFile::remove(newName));
+    QVERIFY(!QFile::exists(QStringLiteral("qt_temp.XXXXXX")));
 }
 
 void tst_QFile::copyShouldntOverwrite()
 {
     // Copy should not overwrite existing files.
     QFile::remove("tst_qfile.cpy");
-    QFile file(QFINDTESTDATA("tst_qfile.cpp"));
+    QFile file(m_testSourceFile);
     QVERIFY(file.copy("tst_qfile.cpy"));
 
     bool ok = QFile::setPermissions("tst_qfile.cpy", QFile::WriteOther);
     QVERIFY(ok);
     QVERIFY(!file.copy("tst_qfile.cpy"));
-    QFile::remove("tst_qfile.cpy");
 }
 
 void tst_QFile::copyFallback()
@@ -1300,7 +1315,8 @@ void tst_QFile::copyFallback()
     QVERIFY(!file.isOpen());
 
     file.close(); 
-    QFile::remove("file-copy-destination.txt");
+    QFile::setPermissions("file-copy-destination.txt",
+            QFile::ReadOwner | QFile::WriteOwner);
 }
 
 #ifdef Q_OS_WIN
@@ -1351,10 +1367,10 @@ void tst_QFile::link()
 {
     QFile::remove("myLink.lnk");
 
-    QFileInfo info1(QFINDTESTDATA("tst_qfile.cpp"));
+    QFileInfo info1(m_testSourceFile);
     QString referenceTarget = QDir::cleanPath(info1.absoluteFilePath());
 
-    QVERIFY(QFile::link(QFINDTESTDATA("tst_qfile.cpp"), "myLink.lnk"));
+    QVERIFY(QFile::link(m_testSourceFile, "myLink.lnk"));
 
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
@@ -1371,8 +1387,6 @@ void tst_QFile::link()
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
     QCOMPARE(QDir::fromNativeSeparators(wd), QDir::cleanPath(info1.absolutePath()));
 #endif
-
-    QVERIFY(QFile::remove(info2.absoluteFilePath()));
 }
 
 void tst_QFile::linkToDir()
@@ -1391,8 +1405,6 @@ void tst_QFile::linkToDir()
 #endif
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
-    QFile::remove("myLinkToDir.lnk");
-    dir.rmdir("myDir");
 }
 
 void tst_QFile::absolutePathLinkToRelativePath()
@@ -1411,10 +1423,6 @@ void tst_QFile::absolutePathLinkToRelativePath()
     QEXPECT_FAIL("", "Symlinking using relative paths is currently different on Windows and Unix", Continue);
     QCOMPARE(QFileInfo(QFile(QFileInfo("myDir/myLink.lnk").absoluteFilePath()).symLinkTarget()).absoluteFilePath(),
              QFileInfo("myDir/test.txt").absoluteFilePath());
-
-    QFile::remove("myDir/test.txt");
-    QFile::remove("myDir/myLink.lnk");
-    dir.rmdir("myDir");
 }
 
 void tst_QFile::readBrokenLink()
@@ -1466,13 +1474,13 @@ void tst_QFile::readTextFile()
 void tst_QFile::readTextFile2()
 {
     {
-        QFile file(QFINDTESTDATA("testlog.txt"));
+        QFile file(m_testLogFile);
         QVERIFY(file.open(QIODevice::ReadOnly));
         file.read(4097);
     }
 
     {
-        QFile file(QFINDTESTDATA("testlog.txt"));
+        QFile file(m_testLogFile);
         QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
         file.read(4097);
     }
@@ -1578,8 +1586,6 @@ void tst_QFile::flush()
         QVERIFY(file.open(QFile::ReadOnly));
         QCOMPARE(file.readAll(), QByteArray("abcdef"));
     }
-
-    QFile::remove(fileName);
 }
 
 void tst_QFile::bufferedRead()
@@ -1699,7 +1705,6 @@ void tst_QFile::seekAfterEndOfFile()
     //bytes 12-15 are uninitialised so we don't care what they read as.
     QCOMPARE(contents.mid(16), QByteArray("----", 4));
     file.close();
-    QFile::remove(filename);
 }
 
 void tst_QFile::FILEReadWrite()
@@ -1814,8 +1819,6 @@ void tst_QFile::FILEReadWrite()
         QCOMPARE(c, (qint8)16);
         f.close();
     }
-
-    QFile::remove("FILEReadWrite.txt");
 }
 
 
@@ -1914,7 +1917,6 @@ void tst_QFile::i18nFileName()
         QString line = ts.readLine();
         QCOMPARE(line, fileName);
      }
-     QVERIFY(QFile::remove(fileName));
 }
 
 
@@ -1988,7 +1990,6 @@ void tst_QFile::longFileName()
         QCOMPARE(line, fileName);
     }
     QVERIFY(QFile::exists(newName));
-    QVERIFY(QFile::remove(newName));
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -2077,6 +2078,7 @@ public:
     {
         if (fileName.startsWith(":!")) {
             QDir dir;
+
             QString realFile = QFINDTESTDATA(fileName.mid(2));
             if (dir.exists(realFile))
                 return new QFSFileEngine(realFile);
@@ -2397,8 +2399,9 @@ void tst_QFile::textFile()
 #endif
     QCOMPARE(data, expected);
     file.close();
-    file.remove();
 }
+
+static const char renameSourceFile[] = "renamefile";
 
 void tst_QFile::rename_data()
 {
@@ -2408,13 +2411,13 @@ void tst_QFile::rename_data()
 
     QTest::newRow("a -> b") << QString("a") << QString("b") << false;
     QTest::newRow("a -> .") << QString("a") << QString(".") << false;
-    QTest::newRow("renamefile -> renamefile") << QString("renamefile") << QString("renamefile") << false;
-    QTest::newRow("renamefile -> noreadfile") << QString("renamefile") << QString("noreadfile") << false;
+    QTest::newRow("renamefile -> renamefile") << QString::fromLatin1(renameSourceFile) << QString::fromLatin1(renameSourceFile) << false;
+    QTest::newRow("renamefile -> noreadfile") << QString::fromLatin1(renameSourceFile) << QString::fromLatin1(noReadFile) << false;
 #if defined(Q_OS_UNIX)
-    QTest::newRow("renamefile -> /etc/renamefile") << QString("renamefile") << QString("/etc/renamefile") << false;
+    QTest::newRow("renamefile -> /etc/renamefile") << QString::fromLatin1(renameSourceFile) << QString("/etc/renamefile") << false;
 #endif
-    QTest::newRow("renamefile -> renamedfile") << QString("renamefile") << QString("renamedfile") << true;
-    QTest::newRow("renamefile -> ..") << QString("renamefile") << QString("..") << false;
+    QTest::newRow("renamefile -> renamedfile") << QString::fromLatin1(renameSourceFile) << QString("renamedfile") << true;
+    QTest::newRow("renamefile -> ..") << QString::fromLatin1(renameSourceFile) << QString("..") << false;
 }
 
 void tst_QFile::rename()
@@ -2423,6 +2426,8 @@ void tst_QFile::rename()
     QFETCH(QString, destination);
     QFETCH(bool, result);
 
+    const QByteArray content = QByteArrayLiteral("testdatacontent") + QTime::currentTime().toString().toLatin1();
+
 #if defined(Q_OS_UNIX)
     if (strcmp(QTest::currentDataTag(), "renamefile -> /etc/renamefile") == 0) {
         if (::getuid() == 0)
@@ -2430,20 +2435,25 @@ void tst_QFile::rename()
     }
 #endif
 
-    QFile::remove("renamedfile");
-    QFile f("renamefile");
-    f.open(QFile::WriteOnly);
-    f.close();
+    QFile sourceFile(QString::fromLatin1(renameSourceFile));
+    QVERIFY2(sourceFile.open(QFile::WriteOnly | QFile::Text), qPrintable(sourceFile.errorString()));
+    QVERIFY2(sourceFile.write(content), qPrintable(sourceFile.errorString()));
+    sourceFile.close();
 
     QFile file(source);
-    QCOMPARE(file.rename(destination), result);
-
-    if (result)
+    const bool success = file.rename(destination);
+    if (result) {
+        QVERIFY2(success, qPrintable(file.errorString()));
         QCOMPARE(file.error(), QFile::NoError);
-    else
+        QVERIFY(!sourceFile.exists());
+        QFile destinationFile(destination);
+        QVERIFY2(destinationFile.open(QFile::ReadOnly | QFile::Text), qPrintable(destinationFile.errorString()));
+        QCOMPARE(destinationFile.readAll(), content);
+        destinationFile.close();
+    } else {
+        QVERIFY(!success);
         QCOMPARE(file.error(), QFile::RenameError);
-
-    QFile::remove("renamefile");
+    }
 }
 
 /*!
@@ -2470,18 +2480,18 @@ void tst_QFile::renameWithAtEndSpecialFile() const
     /* Cleanup, so we're a bit more robust. */
     QFile::remove(newName);
 
-    const QString originalName(QString(QFINDTESTDATA("forRenaming.txt")));
+    const QString originalName = QStringLiteral("forRenaming.txt");
+    // Copy from source tree
+    if (!QFile::exists(originalName))
+        QVERIFY(QFile::copy(m_forRenamingFile, originalName));
 
     PeculiarAtEnd file;
     file.setFileName(originalName);
-    QVERIFY(file.open(QIODevice::ReadOnly));
+    QVERIFY2(file.open(QIODevice::ReadOnly), qPrintable(file.errorString()));
 
     QVERIFY(file.rename(newName));
 
     file.close();
-    /* Guess what, we have to rename it back, otherwise we'll fail on second
-     * invocation. */
-    QVERIFY(QFile::rename(newName, originalName));
 }
 
 void tst_QFile::renameFallback()
@@ -2565,7 +2575,6 @@ void tst_QFile::appendAndRead()
     }
 
     readFile.close();
-    QFile::remove(QLatin1String("appendfile.txt"));
 }
 
 void tst_QFile::miscWithUncPathAsCurrentDir()
@@ -2593,7 +2602,7 @@ void tst_QFile::handle()
 {
     int fd;
 #if !defined(Q_OS_WINCE)
-    QFile file(QFINDTESTDATA("tst_qfile.cpp"));
+    QFile file(m_testSourceFile);
     QVERIFY(file.open(QIODevice::ReadOnly));
     fd = int(file.handle());
     QVERIFY(fd > 2);
@@ -2624,7 +2633,7 @@ void tst_QFile::handle()
 
     //test round trip of adopted stdio file handle
     QFile file2;
-    FILE *fp = fopen(qPrintable(QFINDTESTDATA("tst_qfile.cpp")), "r");
+    FILE *fp = fopen(qPrintable(m_testSourceFile), "r");
     file2.open(fp, QIODevice::ReadOnly);
     QCOMPARE(int(file2.handle()), int(fileno(fp)));
     QCOMPARE(int(file2.handle()), int(fileno(fp)));
@@ -2633,7 +2642,7 @@ void tst_QFile::handle()
     //test round trip of adopted posix file handle
 #ifdef Q_OS_UNIX
     QFile file3;
-    fd = QT_OPEN(qPrintable(QFINDTESTDATA("tst_qfile.cpp")), QT_OPEN_RDONLY);
+    fd = QT_OPEN(qPrintable(m_testSourceFile), QT_OPEN_RDONLY);
     file3.open(fd, QIODevice::ReadOnly);
     QCOMPARE(int(file3.handle()), fd);
     QT_CLOSE(fd);
@@ -2690,8 +2699,8 @@ void tst_QFile::readEof_data()
     QTest::addColumn<QString>("filename");
     QTest::addColumn<int>("imode");
 
-    QTest::newRow("buffered") << QFINDTESTDATA("testfile.txt") << 0;
-    QTest::newRow("unbuffered") << QFINDTESTDATA("testfile.txt") << int(QIODevice::Unbuffered);
+    QTest::newRow("buffered") << m_testFile << 0;
+    QTest::newRow("unbuffered") << m_testFile << int(QIODevice::Unbuffered);
 
 #if defined(Q_OS_UNIX)
     QTest::newRow("sequential,buffered") << "/dev/null" << 0;
@@ -3036,7 +3045,7 @@ void tst_QFile::mapOpenMode()
 
 void tst_QFile::openDirectory()
 {
-    QFile f1(QFINDTESTDATA("resources"));
+    QFile f1(m_resourcesDir);
     // it's a directory, it must exist
     QVERIFY(f1.exists());
 
@@ -3207,13 +3216,12 @@ void tst_QFile::resize()
     closeFile(file);
     QFile::resize(filename, 4);
     QCOMPARE(QFileInfo(filename).size(), qint64(4));
-    QVERIFY(QFile::remove(filename));
 }
 
 void tst_QFile::objectConstructors()
 {
     QObject ob;
-    QFile* file1 = new QFile(QFINDTESTDATA("testfile.txt"), &ob);
+    QFile* file1 = new QFile(m_testFile, &ob);
     QFile* file2 = new QFile(&ob);
     QVERIFY(file1->exists());
     QVERIFY(!file2->exists());
