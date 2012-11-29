@@ -5081,6 +5081,51 @@ namespace ManyArgumentNamespace {
         MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e); MANYARGUMENT_COMPARE(f);
         count++;
     }
+
+    struct Funct1 {
+        void operator()(const QString &a) {
+            MANYARGUMENT_COMPARE(a);
+            count++;
+        }
+    };
+
+    struct Funct2 {
+        void operator()(const QString &a, const QString &b) {
+            MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b);
+            count++;
+        }
+    };
+
+    struct Funct3 {
+        void operator()(const QString &a, const QString &b, const QString &c) {
+            MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+            count++;
+        }
+    };
+
+    struct Funct4 {
+        void operator()(const QString &a, const QString &b, const QString &c, const QString&d) {
+            MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+            MANYARGUMENT_COMPARE(d);
+            count++;
+        }
+    };
+
+    struct Funct5 {
+        void operator()(const QString &a, const QString &b, const QString &c, const QString&d, const QString&e) {
+            MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+            MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e);
+            count++;
+        }
+    };
+
+    struct Funct6 {
+        void operator()(const QString &a, const QString &b, const QString &c, const QString&d, const QString&e, const QString&f) {
+            MANYARGUMENT_COMPARE(a); MANYARGUMENT_COMPARE(b); MANYARGUMENT_COMPARE(c);
+            MANYARGUMENT_COMPARE(d); MANYARGUMENT_COMPARE(e); MANYARGUMENT_COMPARE(f);
+            count++;
+        }
+    };
 }
 
 void tst_QObject::connectManyArguments()
@@ -5128,10 +5173,16 @@ void tst_QObject::connectManyArguments()
     connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot4);
     connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot5);
     connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::slot6);
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::Funct1());
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::Funct2());
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::Funct3());
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::Funct4());
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::Funct5());
+    connect(&ob2, &ManyArgumentObject::signal6, ManyArgumentNamespace::Funct6());
 
     emit ob2.signal6("a", "b", "c", "d", "e", "f");
     QCOMPARE(ob2.count, 6);
-    QCOMPARE(ManyArgumentNamespace::count, 6);
+    QCOMPARE(ManyArgumentNamespace::count, 12);
 }
 
 class ReturnValue : public QObject {
