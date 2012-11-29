@@ -26,15 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \module QtXml
-    \title Qt Xml C++ classes
-    \ingroup modules
-    \ingroup technology-apis
-
+    \page qtxml-index.html
+    \title Qt Xml
     \brief The QtXml module provides C++ implementations of the SAX and DOM standards for XML.
 
     The module is not actively maintained anymore. Please use
-    the \l{QXmlStreamReader} and \l{QXmlStreamWriter} classes in \l{Qt Core} instead.
+    the QXmlStreamReader and QXmlStreamwriter classes in Qt Core instead.
 
     To include the definitions of the module's classes, use the
     following directive:
@@ -45,4 +42,7 @@
     .pro file:
 
     \snippet code/doc_src_qtxml.pro 1
+
+    The \l{Qt Xml C++ classes} page gives an overview over the available classes
+    int this module.
 */
