@@ -483,7 +483,7 @@ QT_BEGIN_NAMESPACE
 
     For example:
 
-    \snippet qtestlib/tutorial5/benchmarking.cpp 0
+    \snippet code/src_qtestlib_qtestcase.cpp 27
 
     \sa {Qt Test Overview#Creating a Benchmark}{Creating a Benchmark},
         {Chapter 5: Writing a Benchmark}{Writing a Benchmark}

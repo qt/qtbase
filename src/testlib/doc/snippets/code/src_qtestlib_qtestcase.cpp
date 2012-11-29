@@ -246,5 +246,19 @@ void tst_MyXmlParser::parse()
 }
 //! [26]
 
+//! [27]
+void TestBenchmark::simple()
+{
+    QString str1 = QLatin1String("This is a test string");
+    QString str2 = QLatin1String("This is a test string");
+
+    QCOMPARE(str1.localeAwareCompare(str2), 0);
+
+    QBENCHMARK {
+        str1.localeAwareCompare(str2);
+    }
+}
+//! [27]
+
 }
 
