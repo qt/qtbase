@@ -6114,7 +6114,7 @@ fi
 
 # cmdline args
 cat "$QMAKE_VARS_FILE" >> "$QTMODULE.tmp"
-rm -f "$QMAKE_VARS_FILE" 2>/dev/null
+# QMAKE_VARS_FILE will be still needed for a status message.
 
 # replace qmodule.pri if it differs from the newly created temp file
 if cmp -s "$QTMODULE.tmp" "$QTMODULE"; then
@@ -6343,6 +6343,7 @@ sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
 PROCS=1
 EXEC=""
 
+rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 
 #-------------------------------------------------------------------------------
 # build makefiles based on the configuration
