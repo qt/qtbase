@@ -32,7 +32,11 @@
   \ingroup gallery
 
   This page shows some of the widgets available in Qt
-  when configured to use the "macintosh" style.
+  when configured to use the "macintosh" style. This
+  style is only available on Mac OSX, and provides
+  native look'n'feel by integrating to the Mac OSX
+  platform theme. Thus, the final appearance varies
+  depending on the active Mac OSX theme.
 
 \section2 Buttons
 
