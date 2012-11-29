@@ -4906,70 +4906,60 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
             if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient)) {
-                QObject *styleObject = opt->styleObject;
+                bool wasActive = false;
+                CGFloat opacity = 1.0;
+                if (QObject *styleObject = opt->styleObject) {
+                    int oldPos = styleObject->property("_q_stylepos").toInt();
+                    int oldMin = styleObject->property("_q_stylemin").toInt();
+                    int oldMax = styleObject->property("_q_stylemax").toInt();
+                    QRect oldRect = styleObject->property("_q_stylerect").toRect();
+                    int oldState = styleObject->property("_q_stylestate").toInt();
+                    uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
-                // Qt generally excepts styleObject to be set during draw calls, but
-                // this is not always done. Create a temprary object in that case to
-                // prevent crashing. This will disable scroll bar animations.
-                bool deleteStyleObject = false;
-                if (!styleObject) {
-                    deleteStyleObject = true;
-                    styleObject = new QObject;
-                }
+                    // a scrollbar is transient when the the scrollbar itself and
+                    // its sibling are both inactive (ie. not pressed/hovered/moved)
+                    bool transient = !opt->activeSubControls && !(slider->state & State_On);
 
-                int oldPos = styleObject->property("_q_stylepos").toInt();
-                int oldMin = styleObject->property("_q_stylemin").toInt();
-                int oldMax = styleObject->property("_q_stylemax").toInt();
-                QRect oldRect = styleObject->property("_q_stylerect").toRect();
-                int oldState = styleObject->property("_q_stylestate").toInt();
-                uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
+                    if (!transient ||
+                            oldPos != slider->sliderPosition ||
+                            oldMin != slider->minimum ||
+                            oldMax != slider->maximum ||
+                            oldRect != slider->rect ||
+                            oldState != slider->state ||
+                            oldActiveControls != slider->activeSubControls) {
 
-                // a scrollbar is transient when the the scrollbar itself and
-                // its sibling are both inactive (ie. not pressed/hovered/moved)
-                bool transient = !opt->activeSubControls && !(slider->state & State_On);
+                        styleObject->setProperty("_q_stylepos", slider->sliderPosition);
+                        styleObject->setProperty("_q_stylemin", slider->minimum);
+                        styleObject->setProperty("_q_stylemax", slider->maximum);
+                        styleObject->setProperty("_q_stylerect", slider->rect);
+                        styleObject->setProperty("_q_stylestate", static_cast<int>(slider->state));
+                        styleObject->setProperty("_q_stylecontrols", static_cast<uint>(slider->activeSubControls));
 
-                CGFloat opacity = 0.0;
-                if (!transient ||
-                        oldPos != slider->sliderPosition ||
-                        oldMin != slider->minimum ||
-                        oldMax != slider->maximum ||
-                        oldRect != slider->rect ||
-                        oldState != slider->state ||
-                        oldActiveControls != slider->activeSubControls) {
-
-                    // if the scrollbar is transient or its attributes, geometry or
-                    // state has changed, the opacity is reset back to 100% opaque
-                    opacity = 1.0;
-
-                    styleObject->setProperty("_q_stylepos", slider->sliderPosition);
-                    styleObject->setProperty("_q_stylemin", slider->minimum);
-                    styleObject->setProperty("_q_stylemax", slider->maximum);
-                    styleObject->setProperty("_q_stylerect", slider->rect);
-                    styleObject->setProperty("_q_stylestate", static_cast<int>(slider->state));
-                    styleObject->setProperty("_q_stylecontrols", static_cast<uint>(slider->activeSubControls));
-
-                    if (transient) {
-                        QFadeOutAnimation *anim  = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
-                        if (!anim) {
-                            anim = new QFadeOutAnimation(styleObject);
-                            d->startAnimation(anim);
+                        if (transient) {
+                            QFadeOutAnimation *anim  = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
+                            if (!anim) {
+                                anim = new QFadeOutAnimation(styleObject);
+                                d->startAnimation(anim);
+                            } else {
+                                // the scrollbar was already fading out while the
+                                // state changed -> restart the fade out animation
+                                anim->setCurrentTime(0);
+                            }
                         } else {
-                            // the scrollbar was already fading out while the
-                            // state changed -> restart the fade out animation
-                            anim->setCurrentTime(0);
+                            d->stopAnimation(styleObject);
                         }
-                    } else {
-                        d->stopAnimation(styleObject);
                     }
-                }
 
-                QFadeOutAnimation *anim = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
-                if (anim) {
-                    // once a scrollbar was active (hovered/pressed), it retains
-                    // the active look even if it's no longer active while fading out
-                    if (oldActiveControls)
-                        anim->setActive(true);
-                    opacity = anim->currentValue();
+                    QFadeOutAnimation *anim = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
+                    if (anim) {
+                        // once a scrollbar was active (hovered/pressed), it retains
+                        // the active look even if it's no longer active while fading out
+                        if (oldActiveControls)
+                            anim->setActive(true);
+
+                        wasActive = anim->wasActive();
+                        opacity = anim->currentValue();
+                    }
                 }
 
                 const bool isHorizontal = slider->orientation == Qt::Horizontal;
@@ -5000,7 +4990,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 [scroller setScrollerStyle:NSScrollerStyleOverlay];
 
                 // first we draw only the track, by using a disabled scroller
-                if (opt->activeSubControls || (anim && anim->wasActive())) {
+                if (opt->activeSubControls || wasActive) {
                     CGContextBeginTransparencyLayerWithRect(cg, qt_hirectForQRect(slider->rect),
                                                             NULL);
                     CGContextSetAlpha(cg, opacity);
@@ -5050,10 +5040,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 [NSGraphicsContext restoreGraphicsState];
                 CGContextRestoreGState(cg);
-
-                if (deleteStyleObject) {
-                    delete styleObject;
-                }
             } else
 #endif
             {
