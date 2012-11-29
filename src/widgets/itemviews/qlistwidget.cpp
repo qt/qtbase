@@ -1189,10 +1189,10 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     new current item and the item that was previously current.
 
     \table 100%
-    \row \li \inlineimage windowsxp-listview.png Screenshot of a Windows XP style list widget
+    \row \li \inlineimage windowsvista-listview.png Screenshot of a Windows Vista style list widget
          \li \inlineimage macintosh-listview.png Screenshot of a Macintosh style table widget
          \li \inlineimage fusion-listview.png Screenshot of a Fusion style table widget
-    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} list widget.
+    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} list widget.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} list widget.
          \li A \l{Fusion Style Widget Gallery}{Fusion style} list widget.
     \endtable

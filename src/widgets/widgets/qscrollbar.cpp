@@ -192,8 +192,8 @@ QT_BEGIN_NAMESPACE
     \table 100%
     \row \li \inlineimage macintosh-horizontalscrollbar.png Screenshot of a Macintosh style scroll bar
          \li A scroll bar shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
-    \row \li \inlineimage windowsxp-horizontalscrollbar.png Screenshot of a Windows XP style scroll bar
-         \li A scroll bar shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \row \li \inlineimage windowsvista-horizontalscrollbar.png Screenshot of a Windows Vista style scroll bar
+         \li A scroll bar shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
     \row \li \inlineimage fusion-horizontalscrollbar.png Screenshot of a Fusion style scroll bar
          \li A scroll bar shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \endtable

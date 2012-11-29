@@ -108,10 +108,10 @@ QT_BEGIN_NAMESPACE
     be rendered as large or small icons depending on their iconSize().
 
     \table 100%
-    \row \li \inlineimage windowsxp-listview.png Screenshot of a Windows XP style list view
+    \row \li \inlineimage windowsvista-listview.png Screenshot of a Windows Vista style list view
          \li \inlineimage macintosh-listview.png Screenshot of a Macintosh style table view
          \li \inlineimage fusion-listview.png Screenshot of a Fusion style table view
-    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} list view.
+    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} list view.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} list view.
          \li A \l{Fusion Style Widget Gallery}{Fusion style} list view.
     \endtable

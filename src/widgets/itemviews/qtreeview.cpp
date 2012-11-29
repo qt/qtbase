@@ -146,10 +146,10 @@ QT_BEGIN_NAMESPACE
     \endomit
 
     \table 100%
-    \row \li \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree view
+    \row \li \inlineimage windowsvista-treeview.png Screenshot of a Windows Vista style tree view
          \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree view
          \li \inlineimage fusion-treeview.png Screenshot of a Fusion style tree view
-    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} tree view.
+    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} tree view.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree view.
          \li A \l{Fusion Style Widget Gallery}{Fusion style} tree view.
     \endtable
