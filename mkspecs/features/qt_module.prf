@@ -23,6 +23,8 @@ host_build|staticlib: CONFIG += static
 
 ucmodule = $$upper($$MODULE)
 
+isEmpty(MODULE_INCNAME): MODULE_INCNAME = $$TARGET
+
 MODULE_DEPENDS = $$replace(QT, -private$, )
 MODULE_DEPENDS = $$unique(MODULE_DEPENDS)
 
@@ -63,9 +65,9 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
     else: \
         module_config =
     !no_module_headers {
-        MODULE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$TARGET"
-        MODULE_PRIVATE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION \
-                                   \$\$QT_MODULE_INCLUDE_BASE/$$TARGET/\$\$QT.$${MODULE}.VERSION/$$TARGET"
+        MODULE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME"
+        MODULE_PRIVATE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/\$\$QT.$${MODULE}.VERSION \
+                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/\$\$QT.$${MODULE}.VERSION/$$MODULE_INCNAME"
     }
     MODULE_PRI_CONT = \
         "QT.$${MODULE}.VERSION = $${VERSION}" \
@@ -190,7 +192,7 @@ load(qt_installs)
 unix|win32-g++* {
    CONFIG += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS/raw]
-   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]/$$TARGET
+   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]/$$MODULE_INCNAME
    QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS/raw]
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
    include_replace.match = $$[QT_INSTALL_HEADERS/get]

@@ -11,19 +11,19 @@
 #headers
 qt_install_headers {
     class_headers.files = $$SYNCQT.HEADER_CLASSES
-    class_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
+    class_headers.path = $$[QT_INSTALL_HEADERS]/$$MODULE_INCNAME
     INSTALLS += class_headers
 
     targ_headers.files = $$SYNCQT.HEADER_FILES
-    targ_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET
+    targ_headers.path = $$[QT_INSTALL_HEADERS]/$$MODULE_INCNAME
     INSTALLS += targ_headers
 
     private_headers.files = $$SYNCQT.PRIVATE_HEADER_FILES
-    private_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET/$$eval(QT.$${MODULE}.VERSION)/$$TARGET/private
+    private_headers.path = $$[QT_INSTALL_HEADERS]/$$MODULE_INCNAME/$$eval(QT.$${MODULE}.VERSION)/$$MODULE_INCNAME/private
     INSTALLS += private_headers
 
     qpa_headers.files = $$SYNCQT.QPA_HEADER_FILES
-    qpa_headers.path = $$[QT_INSTALL_HEADERS]/$$TARGET/$$eval(QT.$${MODULE}.VERSION)/$$TARGET/qpa
+    qpa_headers.path = $$[QT_INSTALL_HEADERS]/$$MODULE_INCNAME/$$eval(QT.$${MODULE}.VERSION)/$$MODULE_INCNAME/qpa
     INSTALLS += qpa_headers
 }
 
