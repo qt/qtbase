@@ -28,9 +28,10 @@
 /*!
   \page qtprintsupport-index.html
   \title Qt Print Support
-  \ingroup qt-graphics
-
   \brief A guide to producing printed output with Qt's paint system and widgets.
+  \ingroup qt-graphics
+  \ingroup technology-apis
+
 
   Qt provides extensive cross-platform support for printing. Using the printing
   systems on each platform, Qt applications can print to attached printers and

@@ -28,13 +28,14 @@
 /*!
     \module QtDBus
     \title Qt D-Bus C++ Classes
-    \ingroup modules
-
-    \keyword QtDBus
-    \target The QDBus compiler
-
     \brief The QtDBus module is a Unix-only library that you can use
     to perform Inter-Process Communication using the \l{D-Bus} protocol.
+
+    \ingroup modules
+    \ingroup technology-apis
+
+    \target The QDBus compiler
+
 
     Applications using the QtDBus module can provide services to
     other, remote applications by exporting objects, as well as use
