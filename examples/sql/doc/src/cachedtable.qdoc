@@ -28,6 +28,7 @@
 /*!
     \example cachedtable
     \title Cached Table Example
+    \ingroup sql_examples
 
     \brief The Cached Table example shows how a table view can be used to access a database,
     caching any changes to the data until the user explicitly submits them using a

@@ -28,6 +28,7 @@
 /*! 
     \example tablemodel
     \title Table Model Example
+    \ingroup sql_examples
 
     \brief The Table Model example shows how to use a specialized SQL table model with table
     views to edit information in a database.
