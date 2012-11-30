@@ -28,6 +28,9 @@
 /*!
     \example richtext/syntaxhighlighter
     \title Syntax Highlighter Example
+    \group examples-richtext
+    \brief The Syntax Highligher example shows how to perform
+    simple syntax highlighing.
 
     \brief The Syntax Highlighter example shows how to perform simple syntax
     highlighting by subclassing the QSyntaxHighlighter class.

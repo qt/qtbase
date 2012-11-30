@@ -29,7 +29,7 @@
     \title Calendar Widget Example
     \example widgets/calendarwidget
     \ingroup examples-widgets
-    \brief The Calendar Widget example shows use of \c QCalendarWidget.
+    \brief The Calendar Widget example shows use of QCalendarWidget.
 
     \image calendarwidgetexample.png
 

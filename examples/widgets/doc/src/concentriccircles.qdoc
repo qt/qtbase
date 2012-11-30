@@ -28,6 +28,8 @@
 /*!
     \example painting/concentriccircles
     \title Concentric Circles Example
+    \ingroup examples-painting
+    \brief Demonstrates the improved quality that antialiasing and floating point precision gives.
 
     \brief The Concentric Circles example shows the improved rendering
     quality that can be obtained using floating point precision and

@@ -28,6 +28,9 @@
 /*!
     \example painting/painterpaths
     \title Painter Paths Example
+    \ingroup examples-painting
+    \brief The Painter Paths example shows how painter paths can be
+    used to beuild complex shapes for rendering.
 
     \brief The Painter Paths example shows how painter paths can be used to
     build complex shapes for rendering.

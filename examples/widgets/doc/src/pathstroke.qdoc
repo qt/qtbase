@@ -28,6 +28,9 @@
 /*!
     \example painting/pathstroke
     \title Path Stroking
+    \ingroup examples-painting
+    \brief The Path Stroking example shows various types of pens that
+    can be used with QPainter.
 
     \brief In this example we show some of the various types of pens that can be
     used in Qt.

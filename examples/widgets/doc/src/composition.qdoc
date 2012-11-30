@@ -28,6 +28,8 @@
 /*!
     \example painting/composition
     \title Composition Modes
+    \ingroup examples-painting
+    \brief Demonstrates how Composition Modes work in QPainter.
 
     \brief This demo shows some of the more advanced composition modes supported by Qt.
 

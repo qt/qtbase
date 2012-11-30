@@ -28,6 +28,8 @@
 /*!
     \example painting/gradients
     \title Gradients
+    \ingroup examples-painting
+    \brief Shows how gradients can be used with QPainter.
 
     \brief In this example we show the various types of gradients that can
     be used in Qt.

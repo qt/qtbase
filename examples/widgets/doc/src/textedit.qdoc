@@ -28,6 +28,9 @@
 /*!
     \example richtext/textedit
     \title Text Edit
+    \ingroup examples-richtext
+    \brief The Text Edit example shows Qt's rich text editing facilities
+    in action.
 
     \brief The Text Edit example shows Qt's rich text editing facilities in action,
     providing an example document for you to experiment with.

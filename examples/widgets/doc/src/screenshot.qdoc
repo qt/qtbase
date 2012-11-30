@@ -28,6 +28,9 @@
 /*!
     \example desktop/screenshot
     \title Screenshot Example
+    \ingroup examples-desktop
+    \brief The Screenshot example shows how to take a screenshot of the
+    desktop.
 
     \brief The Screenshot example shows how to take a screenshot of the
     desktop using QApplication and QDesktopWidget. It also shows how
