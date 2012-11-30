@@ -1281,6 +1281,7 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
     \inmodule QtGui
 
     \ingroup richtext-processing
+    \ingroup shared
 
     The character format of text in a document specifies the visual properties
     of the text, as well as information about its role in a hypertext document.
@@ -1917,6 +1918,7 @@ QFont QTextCharFormat::font() const
     \inmodule QtGui
 
     \ingroup richtext-processing
+    \ingroup shared
 
     A document is composed of a list of blocks, represented by QTextBlock
     objects. Each block can contain an item of some kind, such as a
@@ -2280,6 +2282,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \inmodule QtGui
 
     \ingroup richtext-processing
+    \ingroup shared
 
     A list is composed of one or more items, represented as text blocks.
     The list's format specifies the appearance of items in the list.
@@ -2441,6 +2444,7 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \inmodule QtGui
 
     \ingroup richtext-processing
+    \ingroup shared
 
     A text frame groups together one or more blocks of text, providing a layer
     of structure larger than the paragraph. The format of a frame specifies
@@ -2768,6 +2772,7 @@ qreal QTextFrameFormat::rightMargin() const
     \inmodule QtGui
 
     \ingroup richtext-processing
+    \ingroup shared
 
     A table is a group of cells ordered into rows and columns. Each table
     contains at least one row and one column. Each cell contains a block.
@@ -2975,6 +2980,7 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
     \inmodule QtGui
 
     \ingroup richtext-processing
+    \ingroup shared
 
     Inline images are represented by an object replacement character
     (0xFFFC in Unicode) which has an associated QTextImageFormat. The
@@ -3294,6 +3300,7 @@ QTextTableCellFormat::QTextTableCellFormat(const QTextFormat &fmt)
     \inmodule QtGui
 
     \ingroup richtext-processing
+    \ingroup shared
 
     The table cell format of a table cell in a document specifies the visual
     properties of the table cell.
