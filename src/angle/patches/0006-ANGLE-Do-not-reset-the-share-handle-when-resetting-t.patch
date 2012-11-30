@@ -1,0 +1,32 @@
+From 7a2483c26eebf1c06924143108186eae59d85d98 Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno@webkit.org>
+Date: Fri, 30 Nov 2012 13:20:44 +0100
+Subject: [PATCH] ANGLE: Do not reset the share handle when resetting the swap
+ chain.
+
+This change only affects the ANGLE_surface_d3d_texture_2d_share_handle
+extension. The patch is necessary to have WebGL running in Qt/WebKit2.
+
+If the share handle is reset, we are loosing the reference to the
+EGLSurface and cannot actually reuse it in a different context anymore.
+
+Change-Id: I0138432dd8ff60ea57e7e591cfa2f8db1d324f53
+---
+ src/3rdparty/angle/src/libEGL/Surface.cpp |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/3rdparty/angle/src/libEGL/Surface.cpp b/src/3rdparty/angle/src/libEGL/Surface.cpp
+index 174b403..d9e1887 100644
+--- a/src/3rdparty/angle/src/libEGL/Surface.cpp
++++ b/src/3rdparty/angle/src/libEGL/Surface.cpp
+@@ -217,7 +217,6 @@ bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
+         mDepthStencil = NULL;
+     }
+ 
+-    mShareHandle = NULL;
+     HANDLE *pShareHandle = NULL;
+     if (!mWindow && mDisplay->shareHandleSupported())
+     {
+-- 
+1.7.9.5
+
