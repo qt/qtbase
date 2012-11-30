@@ -28,6 +28,8 @@
 /*!
     \example touch/fingerpaint
     \title Finger Paint Example
+    \ingroup touchinputexamples
+    \brief Shows the use of a touchscreen to make a simple painting application
 
     The Finger Paint example shows the use of a touchscreen with a custom widget
     to create a simple painting application.

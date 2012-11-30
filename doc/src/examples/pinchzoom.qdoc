@@ -28,6 +28,8 @@
 /*!
     \example touch/pinchzoom
     \title Pinch Zoom Example
+    \ingroup touchinputexamples
+    \brief Shows how to recognize a gesture
 
     The Pinch Zoom example shows how to use low-level touch information
     to recognize a gesture.
