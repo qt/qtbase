@@ -422,9 +422,11 @@ QT_BEGIN_NAMESPACE
 
 
 /* accessible widgets plugin discovery stuff */
+#ifndef QT_NO_ACCESSIBILITY
 #ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     (QAccessibleFactoryInterface_iid, QLatin1String("/accessible")))
+#endif
 #endif
 
 Q_GLOBAL_STATIC(QList<QAccessible::InterfaceFactory>, qAccessibleFactories)
@@ -586,9 +588,11 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
             if (QAccessibleInterface *iface = factory(cn, object))
                 return iface;
         }
+#ifndef QT_NO_ACCESSIBILITY
 #ifndef QT_NO_LIBRARY
         if (QAccessibleInterface * iface = qLoadPlugin1<QAccessibleInterface, QAccessiblePlugin>(loader(), cn, object))
             return iface;
+#endif
 #endif
         mo = mo->superClass();
     }
