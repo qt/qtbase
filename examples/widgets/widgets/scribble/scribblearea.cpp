@@ -203,9 +203,9 @@ void ScribbleArea::print()
 #ifndef QT_NO_PRINTER
     QPrinter printer(QPrinter::HighResolution);
  
-    QPrintDialog *printDialog = new QPrintDialog(&printer, this);
+    QPrintDialog printDialog(&printer, this);
 //! [21] //! [22]
-    if (printDialog->exec() == QDialog::Accepted) {
+    if (printDialog.exec() == QDialog::Accepted) {
         QPainter painter(&printer);
         QRect rect = painter.viewport();
         QSize size = image.size();

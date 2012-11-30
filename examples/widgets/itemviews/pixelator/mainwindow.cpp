@@ -167,11 +167,12 @@ void MainWindow::printImage()
 
     QPrinter printer(QPrinter::HighResolution);
 
-    QPrintDialog *dlg = new QPrintDialog(&printer, this);
-    dlg->setWindowTitle(tr("Print Image"));
+    QPrintDialog dlg(&printer, this);
+    dlg.setWindowTitle(tr("Print Image"));
 
-    if (dlg->exec() != QDialog::Accepted)
+    if (dlg.exec() != QDialog::Accepted) {
         return;
+    }
 
     QPainter painter;
     painter.begin(&printer);

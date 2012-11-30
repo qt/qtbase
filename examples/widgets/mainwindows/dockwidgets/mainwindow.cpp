@@ -121,12 +121,12 @@ void MainWindow::print()
     QTextDocument *document = textEdit->document();
     QPrinter printer;
 
-    QPrintDialog *dlg = new QPrintDialog(&printer, this);
-    if (dlg->exec() != QDialog::Accepted)
+    QPrintDialog dlg(&printer, this);
+    if (dlg.exec() != QDialog::Accepted) {
         return;
+    }
 
     document->print(&printer);
-
     statusBar()->showMessage(tr("Ready"), 2000);
 #endif
 }

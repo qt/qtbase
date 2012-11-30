@@ -240,12 +240,13 @@ void MainWindow::printFile()
 //! [18]
     QPrinter printer;
 
-    QPrintDialog *dialog = new QPrintDialog(&printer, this);
-    dialog->setWindowTitle(tr("Print Document"));
+    QPrintDialog dialog(&printer, this);
+    dialog.setWindowTitle(tr("Print Document"));
     if (editor->textCursor().hasSelection())
-        dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
-    if (dialog->exec() != QDialog::Accepted)
+        dialog.addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    if (dialog.exec() != QDialog::Accepted) {
         return;
+    }
 //! [18]
 
     editor->print(&printer);
