@@ -59,7 +59,7 @@
     Let's start by reviewing the circular buffer and the associated
     semaphores:
 
-    \snippet examples/threads/semaphores/semaphores.cpp 0
+    \snippet semaphores/semaphores.cpp 0
 
     \c DataSize is the amout of data that the producer will generate.
     To keep the example as simple as possible, we make it a constant.
@@ -87,8 +87,8 @@
 
     Let's review the code for the \c Producer class:
 
-    \snippet examples/threads/semaphores/semaphores.cpp 1
-    \snippet examples/threads/semaphores/semaphores.cpp 2
+    \snippet semaphores/semaphores.cpp 1
+    \snippet semaphores/semaphores.cpp 2
 
     The producer generates \c DataSize bytes of data. Before it
     writes a byte to the circular buffer, it must acquire a "free"
@@ -104,8 +104,8 @@
 
     Let's now turn to the \c Consumer class:
 
-    \snippet examples/threads/semaphores/semaphores.cpp 3
-    \snippet examples/threads/semaphores/semaphores.cpp 4
+    \snippet semaphores/semaphores.cpp 3
+    \snippet semaphores/semaphores.cpp 4
 
     The code is very similar to the producer, except that this time
     we acquire a "used" byte and release a "free" byte, instead of
@@ -116,8 +116,8 @@
     In \c main(), we create the two threads and call QThread::wait()
     to ensure that both threads get time to finish before we exit:
 
-    \snippet examples/threads/semaphores/semaphores.cpp 5
-    \snippet examples/threads/semaphores/semaphores.cpp 6
+    \snippet semaphores/semaphores.cpp 5
+    \snippet semaphores/semaphores.cpp 6
 
     So what happens when we run the program? Initially, the producer
     thread is the only one that can do anything; the consumer is

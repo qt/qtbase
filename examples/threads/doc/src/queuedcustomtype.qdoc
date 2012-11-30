@@ -54,7 +54,7 @@
     constructor and destructor in the public section of the class that the
     meta-object system requires. It describes a colored rectangle.
 
-    \snippet examples/threads/queuedcustomtype/block.h custom type definition and meta-type declaration
+    \snippet queuedcustomtype/block.h custom type definition and meta-type declaration
 
     We will still need to register it with the meta-object system at
     run-time by calling the qRegisterMetaType() template function before
@@ -71,7 +71,7 @@
     \c Block object. The rest of the class is concerned with managing the
     user interface and handling images.
 
-    \snippet examples/threads/queuedcustomtype/window.h Window class definition
+    \snippet queuedcustomtype/window.h Window class definition
 
     The \c Window class also contains a worker thread, provided by a
     \c RenderThread object. This will emit signals to send \c Block objects
@@ -84,22 +84,22 @@
     interface containing a label and two push buttons that are connected to
     slots in the same class.
 
-    \snippet examples/threads/queuedcustomtype/window.cpp Window constructor start
-    \snippet examples/threads/queuedcustomtype/window.cpp set up widgets and connections
-    \snippet examples/threads/queuedcustomtype/window.cpp connecting signal with custom type
+    \snippet queuedcustomtype/window.cpp Window constructor start
+    \snippet queuedcustomtype/window.cpp set up widgets and connections
+    \snippet queuedcustomtype/window.cpp connecting signal with custom type
 
     In the last of these connections, we connect a signal in the
     \c RenderThread object to the \c addBlock(Block) slot in the window.
 
     \dots
-    \snippet examples/threads/queuedcustomtype/window.cpp Window constructor finish
+    \snippet queuedcustomtype/window.cpp Window constructor finish
 
     The rest of the constructor simply sets up the layout of the window.
 
     The \c addBlock(Block) slot receives blocks from the rendering thread via
     the signal-slot connection set up in the constructor:
 
-    \snippet examples/threads/queuedcustomtype/window.cpp Adding blocks to the display
+    \snippet queuedcustomtype/window.cpp Adding blocks to the display
 
     We simply paint these onto the label as they arrive.
 
@@ -109,7 +109,7 @@
     and using the \c sendBlock(Block) signal to send them to other components
     in the example.
 
-    \snippet examples/threads/queuedcustomtype/renderthread.h RenderThread class definition
+    \snippet queuedcustomtype/renderthread.h RenderThread class definition
 
     The constructor and destructor are not quoted here. These take care of
     setting up the thread's internal state and cleaning up when it is destroyed.
@@ -117,13 +117,13 @@
     Processing is started with the \c processImage() function, which calls the
     \c RenderThread class's reimplementation of the QThread::run() function:
 
-    \snippet examples/threads/queuedcustomtype/renderthread.cpp processing the image (start)
+    \snippet queuedcustomtype/renderthread.cpp processing the image (start)
 
     Ignoring the details of the way the image is processed, we see that the
     signal containing a block is emitted in the usual way:
 
     \dots
-    \snippet examples/threads/queuedcustomtype/renderthread.cpp processing the image (finish)
+    \snippet queuedcustomtype/renderthread.cpp processing the image (finish)
 
     Each signal that is emitted will be queued and delivered later to the
     window's \c addBlock(Block) slot.
@@ -134,7 +134,7 @@
     \c Block class as a custom type with the meta-object system by calling the
     qRegisterMetaType() template function:
 
-    \snippet examples/threads/queuedcustomtype/main.cpp main function
+    \snippet queuedcustomtype/main.cpp main function
 
     This call is placed here to ensure that the type is registered before any
     signal-slot connections are made that use it.

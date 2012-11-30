@@ -59,7 +59,7 @@
     Let's start by reviewing the circular buffer and the associated
     synchronization tools:
 
-    \snippet examples/threads/waitconditions/waitconditions.cpp 0
+    \snippet waitconditions/waitconditions.cpp 0
 
     \c DataSize is the amount of data that the producer will generate.
     To keep the example as simple as possible, we make it a constant.
@@ -84,8 +84,8 @@
 
     Let's review the code for the \c Producer class:
 
-    \snippet examples/threads/waitconditions/waitconditions.cpp 1
-    \snippet examples/threads/waitconditions/waitconditions.cpp 2
+    \snippet waitconditions/waitconditions.cpp 1
+    \snippet waitconditions/waitconditions.cpp 2
 
     The producer generates \c DataSize bytes of data. Before it
     writes a byte to the circular buffer, it must first check whether
@@ -108,8 +108,8 @@
 
     Let's turn to the \c Consumer class:
 
-    \snippet examples/threads/waitconditions/waitconditions.cpp 3
-    \snippet examples/threads/waitconditions/waitconditions.cpp 4
+    \snippet waitconditions/waitconditions.cpp 3
+    \snippet waitconditions/waitconditions.cpp 4
 
     The code is very similar to the producer. Before we read the
     byte, we check whether the buffer is empty (\c numUsedBytes is 0)
@@ -124,8 +124,8 @@
     In \c main(), we create the two threads and call QThread::wait()
     to ensure that both threads get time to finish before we exit:
 
-    \snippet examples/threads/waitconditions/waitconditions.cpp 5
-    \snippet examples/threads/waitconditions/waitconditions.cpp 6
+    \snippet waitconditions/waitconditions.cpp 5
+    \snippet waitconditions/waitconditions.cpp 6
 
     So what happens when we run the program? Initially, the producer
     thread is the only one that can do anything; the consumer is
