@@ -149,8 +149,8 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (BOOL)canBecomeKeyWindow
 {
-    // Only tool windows should become key for popup types:
-    if (m_cocoaPlatformWindow->window()->type() == Qt::Tool)
+    // Only tool or dialog windows should become key:
+    if (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog)
         return YES;
     return NO;
 }
@@ -300,8 +300,8 @@ void QCocoaWindow::setVisible(bool visible)
                     [m_nsWindow orderFront: nil];
                 }
 
-                // We want the events to properly reach the popup
-                if (window()->type() == Qt::Popup)
+                // We want the events to properly reach the popup and dialog
+                if (window()->type() == Qt::Popup || window()->type() == Qt::Dialog)
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
             }
         } else {
@@ -666,14 +666,18 @@ NSWindow * QCocoaWindow::createNSWindow()
     NSWindow *createdWindow = 0;
 
     // Use NSPanel for popup-type windows. (Popup, Tool, ToolTip, SplashScreen)
-    if ((type & Qt::Popup) == Qt::Popup) {
+    // and dialogs
+    if ((type & Qt::Popup) == Qt::Popup || (type & Qt::Dialog) == Qt::Dialog) {
         QNSPanel *window;
         window  = [[QNSPanel alloc] initWithContentRect:frame
                                          styleMask: styleMask
                                          backing:NSBackingStoreBuffered
                                          defer:NO]; // Deferring window creation breaks OpenGL (the GL context is set up
                                                     // before the window is shown and needs a proper window.).
-        [window setHasShadow:YES];
+        if ((type & Qt::Popup) == Qt::Popup)
+            [window setHasShadow:YES];
+        else
+             setWindowShadow(flags);
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
