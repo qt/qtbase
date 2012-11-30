@@ -28,6 +28,8 @@
 /*!
     \example ipc/localfortuneserver
     \title Local Fortune Server Example
+    \ingroup examples-ipc
+    \brief Demonstrates using QLocalServer and QLocalSocket for serving a simple local service.
 
     The Local Fortune Server example shows how to create a server for a simple
     local service. It is intended to be run alongside the
