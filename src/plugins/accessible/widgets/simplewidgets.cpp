@@ -433,8 +433,8 @@ QAccessibleDisplay::relations(QAccessible::Relation match /*= QAccessible::AllRe
 #ifndef QT_NO_SHORTCUT
         if (QLabel *label = qobject_cast<QLabel*>(object())) {
             relatedObjects.append(label->buddy());
-#endif
         }
+#endif
         for (int i = 0; i < relatedObjects.count(); ++i) {
             const QAccessible::Relation rel = QAccessible::Labelled;
             QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(relatedObjects.at(i));
