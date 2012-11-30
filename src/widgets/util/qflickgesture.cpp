@@ -328,7 +328,7 @@ private:
     to decide if it is triggered.
     This gesture is reacting on touch event as compared to the QMouseFlickGesture.
 
-    \sa {Gestures Programming}, QScroller, QScrollerProperties, QMouseFlickGesture
+    \sa {Gestures in Widgets and Graphics View}, QScroller, QScrollerProperties, QMouseFlickGesture
 */
 
 /*!

@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
    framework.
 
    For an overview of gesture handling in Qt and information on using gestures
-   in your applications, see the \l{Gestures Programming} document.
+   in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
    \section1 Recognizing Gestures
 

@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     QGestureRecognizer::registerRecognizer().
 
     For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
+    in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
     \section1 Gesture Properties
 
@@ -226,7 +226,7 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
     \image pangesture.png
 
     For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
+    in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
     \sa QPinchGesture, QSwipeGesture
 */
@@ -352,7 +352,7 @@ void QPanGesture::setAcceleration(qreal value)
     of detail of the user interface.
 
     For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
+    in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
     \image pinchgesture.png
 
@@ -621,7 +621,7 @@ void QPinchGesture::setRotationAngle(qreal value)
     \image swipegesture.png
 
     For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
+    in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
     \sa QPanGesture, QPinchGesture
 */
@@ -733,7 +733,7 @@ void QSwipeGesture::setSwipeAngle(qreal value)
     \inmodule QtWidgets
 
     For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
+    in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
     \sa QPanGesture, QPinchGesture
 */
@@ -777,7 +777,7 @@ void QTapGesture::setPosition(const QPointF &value)
     \inmodule QtWidgets
 
     For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
+    in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
     \sa QPanGesture, QPinchGesture
 */
@@ -870,7 +870,7 @@ int QTapAndHoldGesturePrivate::Timeout = 700; // in ms
     \section1 Further Reading
 
     For an overview of gesture handling in Qt and information on using gestures
-    in your applications, see the \l{Gestures Programming} document.
+    in your applications, see the \l{Gestures in Widgets and Graphics View} document.
 
     \sa QGesture, QGestureRecognizer,
         QWidget::grabGesture(), QGraphicsObject::grabGesture()
