@@ -227,7 +227,8 @@ defineTest(qtAddToolEnv) {
 }
 
 defineTest(qtAddTargetEnv) {
-    deps = $$resolve_depends(QT, "QT.")
+    deps = $$replace(QT, -private$, )
+    deps = $$resolve_depends(deps, "QT.")
     !isEmpty(deps) {
         for(dep, deps) {
             deppath += $$shell_path($$eval(QT.$${dep}.libs))
