@@ -477,6 +477,7 @@ void QDnsLookup::lookup()
 
     \inmodule QtNetwork
     \ingroup network
+    \ingroup shared
 
     When performing a name server lookup, zero or more records will be returned.
     Each record is represented by a QDnsDomainNameRecord instance.
@@ -561,6 +562,7 @@ QDnsDomainNameRecord &QDnsDomainNameRecord::operator=(const QDnsDomainNameRecord
 
     \inmodule QtNetwork
     \ingroup network
+    \ingroup shared
 
     When performing an address lookup, zero or more records will be
     returned. Each record is represented by a QDnsHostAddressRecord instance.
@@ -644,6 +646,7 @@ QDnsHostAddressRecord &QDnsHostAddressRecord::operator=(const QDnsHostAddressRec
 
     \inmodule QtNetwork
     \ingroup network
+    \ingroup shared
 
     When performing a lookup on a service, zero or more records will be
     returned. Each record is represented by a QDnsMailExchangeRecord instance.
@@ -739,6 +742,7 @@ QDnsMailExchangeRecord &QDnsMailExchangeRecord::operator=(const QDnsMailExchange
 
     \inmodule QtNetwork
     \ingroup network
+    \ingroup shared
 
     When performing a lookup on a service, zero or more records will be
     returned. Each record is represented by a QDnsServiceRecord instance.
@@ -859,6 +863,7 @@ QDnsServiceRecord &QDnsServiceRecord::operator=(const QDnsServiceRecord &other)
 
     \inmodule QtNetwork
     \ingroup network
+    \ingroup shared
 
     When performing a text lookup, zero or more records will be
     returned. Each record is represented by a QDnsTextRecord instance.
