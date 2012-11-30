@@ -84,6 +84,7 @@ Q_GLOBAL_STATIC(QNetworkCacheMetaDataPrivate, metadata_shared_invalid)
 /*!
     \class QNetworkCacheMetaData
     \since 4.5
+    \ingroup shared
     \inmodule QtNetwork
 
     \brief The QNetworkCacheMetaData class provides cache information.

@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
     \class QNetworkRequest
     \since 4.4
     \ingroup network
+    \ingroup shared
     \inmodule QtNetwork
 
     \brief The QNetworkRequest class holds a request to be sent with QNetworkAccessManager.

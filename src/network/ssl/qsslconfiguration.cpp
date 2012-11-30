@@ -60,6 +60,7 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
     \inmodule QtNetwork
     \ingroup network
     \ingroup ssl
+    \ingroup shared
 
     QSslConfiguration is used by Qt networking classes to relay
     information about an open SSL connection and to allow the

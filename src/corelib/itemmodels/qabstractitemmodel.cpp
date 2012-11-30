@@ -88,6 +88,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 /*!
   \class QPersistentModelIndex
   \inmodule QtCore
+  \ingroup shared
 
   \brief The QPersistentModelIndex class is used to locate data in a data model.
 

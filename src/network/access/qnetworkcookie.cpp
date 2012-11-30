@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QNetworkCookie
     \since 4.4
+    \ingroup shared
     \inmodule QtNetwork
 
     \brief The QNetworkCookie class holds one network cookie.

@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QDBusUnixFileDescriptor
     \inmodule QtDBus
+    \ingroup shared
     \since 4.8
 
     \brief The QDBusUnixFileDescriptor class holds one Unix file descriptor.

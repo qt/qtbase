@@ -48,6 +48,7 @@
     \reentrant
     \ingroup network
     \ingroup ssl
+    \ingroup shared
     \inmodule QtNetwork
 
     QSslKey provides a simple API for managing keys.

@@ -2045,6 +2045,7 @@ int QTime::elapsed() const
 /*!
     \class QDateTime
     \inmodule QtCore
+    \ingroup shared
     \reentrant
     \brief The QDateTime class provides date and time functions.
 

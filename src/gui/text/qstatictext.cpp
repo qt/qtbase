@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup multimedia
     \ingroup text
+    \ingroup shared
     \mainclass
 
     QStaticText provides a way to cache layout data for a block of text so that it can be drawn

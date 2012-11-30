@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QDBusPendingCall
     \inmodule QtDBus
+    \ingroup shared
     \since 4.5
 
     \brief The QDBusPendingCall class refers to one pending asynchronous call

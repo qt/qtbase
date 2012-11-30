@@ -48,6 +48,7 @@
     \reentrant
     \ingroup network
     \ingroup ssl
+    \ingroup shared
     \inmodule QtNetwork
 
     QSslCertificate stores an X509 certificate, and is commonly used

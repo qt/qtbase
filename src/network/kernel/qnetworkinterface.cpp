@@ -149,6 +149,7 @@ QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
     \since 4.2
     \reentrant
     \ingroup network
+    \ingroup shared
     \inmodule QtNetwork
 
     Each network interface can contain zero or more IP addresses, which
@@ -342,6 +343,7 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
     \since 4.2
     \reentrant
     \ingroup network
+    \ingroup shared
     \inmodule QtNetwork
 
     QNetworkInterface represents one network interface attached to the

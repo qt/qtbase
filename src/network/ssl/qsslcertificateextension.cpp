@@ -48,6 +48,7 @@
     \reentrant
     \ingroup network
     \ingroup ssl
+    \ingroup shared
     \inmodule QtNetwork
 
     QSslCertificateExtension provides access to an extension stored in

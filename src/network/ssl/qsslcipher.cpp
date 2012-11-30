@@ -48,6 +48,7 @@
     \reentrant
     \ingroup network
     \ingroup ssl
+    \ingroup shared
     \inmodule QtNetwork
 
     QSslCipher stores information about one cryptographic cipher. It

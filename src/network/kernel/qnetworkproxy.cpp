@@ -49,6 +49,7 @@
 
     \reentrant
     \ingroup network
+    \ingroup shared
     \inmodule QtNetwork
 
     QNetworkProxy provides the method for configuring network layer
@@ -893,6 +894,7 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
 /*!
     \class QNetworkProxyQuery
     \since 4.5
+    \ingroup shared
     \inmodule QtNetwork
     \brief The QNetworkProxyQuery class is used to query the proxy
     settings for a socket.

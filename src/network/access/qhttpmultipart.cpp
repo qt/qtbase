@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
     \since 4.8
 
     \ingroup network
+    \ingroup shared
     \inmodule QtNetwork
 
     The QHttpPart class holds a body part to be used inside a HTTP

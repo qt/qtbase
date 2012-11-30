@@ -48,6 +48,7 @@
     \reentrant
     \ingroup network
     \ingroup ssl
+    \ingroup shared
     \inmodule QtNetwork
 
     QSslError provides a simple API for managing errors during QSslSocket's

@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
     \inmodule QtNetwork
     \ingroup network
+    \ingroup shared
 
     QNetworkConfiguration encapsulates a single access point or service network.
     In most cases a single access point configuration can be mapped to one network
