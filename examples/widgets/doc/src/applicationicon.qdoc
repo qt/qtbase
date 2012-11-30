@@ -33,26 +33,12 @@
 
     \image appicon_screenshot.png The icon on a Nokia XPressMusic 5800
 
-    \section1 Creating an icon for Maemo
-
-    Maemo expects the icon of an application to be a 64x64 PNG image file. The
-    file name of the icon should be the same as the executable with a \c .png
-    extension. You also need a \c .desktop file that gives the window manager
-    hints about the application, such as name, type and icon.
-
-    \quotefile applicationicon/applicationicon.desktop
-
-    The \c Icon field should also contain the name of the executable. On the
-    device, application icons are stored in the
-    \c /usr/share/icons/hicolor/64x64/apps directory
-    and desktop files in the \c /usr/share/applications/hildon directory.
-
     \section1 Adding the icons to the project
 
     For Maemo, we need to add that the \c .desktop and icon file should be
     installed.
 
-    \quotefile applicationicon/applicationicon.pro
+    \quotefile widgets/applicationicon/applicationicon.pro
 
     Currently, Qt Creator doesn't include the icon and desktop files in the
     application package for Maemo, merely the executable file is included. As a
