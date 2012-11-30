@@ -28,6 +28,7 @@
 /*!
     \example tools/styleplugin
     \title Style Plugin Example
+    \ingroup examples-widgets-tools
 
     \brief This example shows how to create a plugin that extends Qt with a new
     GUI look and feel.

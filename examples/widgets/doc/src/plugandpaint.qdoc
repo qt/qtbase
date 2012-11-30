@@ -28,6 +28,7 @@
 /*!
     \example tools/plugandpaint
     \title Plug & Paint Example
+    \ingroup examples-widgets-tools
 
     \brief The Plug & Paint example demonstrates how to write Qt
     applications that can be extended through plugins.

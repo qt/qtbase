@@ -28,6 +28,7 @@
 /*!
     \example textures
     \title Textures Example
+    \ingroup examples-widgets-opengl
 
     \brief The Textures example demonstrates the use of Qt's image classes as textures in
     applications that use both OpenGL and Qt to display graphics.

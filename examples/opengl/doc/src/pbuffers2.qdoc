@@ -29,6 +29,7 @@
     \example pbuffers2
     \title Pixel Buffers 2 Example
 
+    \ingroup examples-widgets-opengl
     \brief The Pixel Buffers 2 example demonstrates how to use the
     QGLPixelBuffer class to render into an off-screen buffer and use
     the contents as a dynamic texture in a QGLWidget.

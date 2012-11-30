@@ -1,4 +1,4 @@
-/****************************************************************************
+	/****************************************************************************
 **
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
@@ -28,6 +28,7 @@
 /*!
     \example tools/treemodelcompleter
     \title Tree Model Completer Example
+    \ingroup examples-widgets-tools
 
     \brief The Tree Model Completer example shows how to provide completion
     facilities for a hierarchical model, using a period as the separator

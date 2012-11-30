@@ -28,6 +28,7 @@
 /*! 
     \example tools/settingseditor
     \title Settings Editor Example
+    \ingroup examples-widgets-tools
 
     \brief The Settings Editor example shows how Qt's standard settings support is used in an
     application by providing an editor that enables the user to view the settings for

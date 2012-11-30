@@ -27,7 +27,7 @@
 
 /*!
     \example cube
-    \group all-examples
+    \ingroup examples-widgets-opengl
     \title Cube OpenGL ES 2.0 example
 
     \brief The Cube OpenGL ES 2.0 example shows how to write mouse rotateable

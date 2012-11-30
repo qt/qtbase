@@ -26,10 +26,10 @@
 ****************************************************************************/
 
 /*!
-    \page qtwidgets-examples.html
     \title Qt Widgets Examples
     \brief Lots of examples of how to use different kinds of widgets.
     \ingroup all-examples
+    \group examples-widgets
 
     \image widget-examples.png
 
@@ -43,12 +43,9 @@
     be used to change the appearance of standard widgets and appropriately
     written custom widgets.
 
-    \annotatedlist examples-widgets
-
 */
 
 /*!
-    \page examples-painting.html
     \ingroup all-examples
     \title Painting Examples
     \brief How to use the Qt painting system.
@@ -56,19 +53,17 @@
 
     \image painting-examples.png
 
-    Qt's painting system is able to render vector graphics, images, and outline
-    font-based text with sub-pixel accuracy accuracy using anti-aliasing to
-    improve rendering quality.
+    Qt's painting system is able to render vector graphics, images,
+    and outline font-based text with sub-pixel accuracy using
+    anti-aliasing to improve rendering quality.
 
     These examples show the most common techniques that are used when painting
     with Qt, from basic concepts such as drawing simple primitives to the use of
     transformations.
 
-    \annotatedlist{painting-examples}
 */
 
 /*!
-    \page examples-richtext.html
     \ingroup all-examples
     \title Rich Text Examples
     \brief Using the document-oriented rich text engine.
@@ -84,7 +79,6 @@
  */
 
 /*!
-    \page examples-desktop.html
     \ingroup all-examples
     \title Desktop Examples
     \brief Integrating your Qt application with your favorite desktop.

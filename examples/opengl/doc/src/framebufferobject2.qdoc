@@ -29,6 +29,7 @@
     \example framebufferobject2
     \title Framebuffer Object 2 Example
 
+    \ingroup examples-widgets-opengl
     \brief The Framebuffer Object 2 example demonstrates how to use the
     QGLFramebufferObject class to render into an off-screen buffer and
     use the contents as a texture in a QGLWidget.

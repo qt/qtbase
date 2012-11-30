@@ -28,6 +28,7 @@
 /*!
     \example tools/i18n
     \title I18N Example
+    \ingroup examples-widgets-tools
 
     \brief The Internationalization (I18N) example demonstrates Qt's support for translated
     text. Developers can write the initial application text in one language, and

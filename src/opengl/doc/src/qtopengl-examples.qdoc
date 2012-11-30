@@ -25,14 +25,22 @@
 **
 ****************************************************************************/
 
-/*! 
-    \example tools/regexp
-    \title Regular Expressions Example
-    \ingroup example-widgets-tools
+/*!
+    \ingroup all-examples
+    \title OpenGL Examples from the Qt OpenGL module
+    \brief Accessing OpenGL from Qt.
+    \group examples-widgets-opengl
 
-    \brief The Regular Expressions (RegExp) example shows how regular expressions in Qt are
-    applied to text by providing an environment in which new regular expressions can be
-    created and tested on custom text strings.
+    \image opengl-examples.png
 
-    \image regexp-example.png
+    These examples describe how to use the Qt OpenGL Module. For new code,
+    please use the OpenGL classes in the \l {Qt GUI Module}.
+   
+
+    Qt provides support for integration with OpenGL implementations on all
+    platforms, giving developers the opportunity to display hardware accelerated
+    3D graphics alongside a more conventional user interface.
+
+    These examples demonstrate the basic techniques used to take advantage of
+    OpenGL in Qt applications.
 */
