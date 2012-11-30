@@ -499,7 +499,9 @@ void QApplicationPrivate::process_cmdline()
         \li  -style= \e style, sets the application GUI style. Possible values
             depend on your system configuration. If you compiled Qt with
             additional styles or have additional styles as plugins these will
-            be available to the \c -style command line option.
+            be available to the \c -style command line option.  You can also
+            set the style for all Qt applications by setting the
+            \c QT_STYLE_OVERRIDE environment variable.
         \li  -style \e style, is the same as listed above.
         \li  -stylesheet= \e stylesheet, sets the application \l styleSheet. The
             value must be a path to a file that contains the Style Sheet.
