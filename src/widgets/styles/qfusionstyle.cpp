@@ -3488,10 +3488,10 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
 
     case SH_MessageBox_TextInteractionFlags:
         return Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;
-
+#ifndef QT_NO_WIZARD
     case SH_WizardStyle:
         return QWizard::ClassicStyle;
-
+#endif
     case SH_Menu_SubMenuPopupDelay:
         return 225; // default from GtkMenu
 

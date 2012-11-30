@@ -9,6 +9,7 @@ SUBDIRS       = classwizard \
                     extension \
                     findfiles
 
+contains(DEFINES, QT_NO_WIZARD): SUBDIRS -= trivialwizard licensewizard classwizard
 wince*: SUBDIRS += sipdialog
 
 QT += widgets

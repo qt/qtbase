@@ -794,8 +794,10 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
         return Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;
     case SH_MessageBox_CenterButtons:
         return false;
+#ifndef QT_NO_WIZARD
     case SH_WizardStyle:
         return  QWizard::ClassicStyle;
+#endif
     case SH_ItemView_ArrowKeysNavigateIntoChildren:
         return false;
     case SH_DialogButtonLayout: {
