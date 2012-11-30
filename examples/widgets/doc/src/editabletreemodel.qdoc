@@ -28,7 +28,7 @@
 /*!
     \example itemviews/editabletreemodel
     \title Editable Tree Model Example
-
+    \ingroup examples-itemviews
     \brief This example shows how to implement a simple item-based tree model that can
     be used with other classes the model/view framework.
 

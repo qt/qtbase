@@ -95,7 +95,6 @@
 
 */
 
-
 /*!
     \group examples-dialogs
     \ingroup all-examples
@@ -111,4 +110,32 @@
     interactions with users.
 */
 
+/*!
+    \ingroup all-examples
+    \title Itemview Examples
+    \brief Using the model/view framework.
+    \group examples-itemviews
+
+    \image itemviews-examples.png
+
+    Qt provides a lot of capabalities to display pre- and user-defined item models
+    in different ways.
+    The separation of functionality introduced by the model/view architecture gives
+    developers greater flexibility to customize the presentation of items.
+
+*/
+
+/*!
+    \ingroup all-examples
+    \title Graphicsview Examples
+    \brief Using the Graphics View framework.
+    \group examples-graphicsview
+
+    \image graphicsview-examples.png
+
+    Qt provides powerful graphics engine that supports easy visualization of items, with
+    support for rotation and zooming.
+    Additionally it provides an event propagation architecture for interaction.
+
+*/
 

@@ -28,7 +28,7 @@
 /*!
     \example itemviews/addressbook
     \title Address Book Example
-
+    \ingroup examples-itemviews
     \brief The address book example shows how to use proxy models to display
     different views onto data from a single model.
 

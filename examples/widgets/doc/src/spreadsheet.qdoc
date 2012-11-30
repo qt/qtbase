@@ -28,6 +28,8 @@
 /*!
     \example itemviews/spreadsheet
     \title Spreadsheet
+    \ingroup examples-itemviews
+    \brief The Spreadsheet example shows how to create a simple spreadsheet application.
 
     \brief The Spreadsheet example shows how a table view can be used to create a
     simple spreadsheet application. Custom delegates are used to render different
