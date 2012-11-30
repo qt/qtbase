@@ -108,7 +108,7 @@ class Q_CORE_EXPORT ExceptionStore
 {
 public:
     ExceptionStore() { }
-    inline void throwPossibleException() const {}
+    inline void throwPossibleException() {}
 };
 
 } // namespace QtPrivate
