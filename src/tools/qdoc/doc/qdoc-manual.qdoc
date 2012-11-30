@@ -3544,9 +3544,7 @@
                \title All Classes
 
                For a shorter list that only includes the most
-               frequently used classes, see \l{Qt's Main Classes}. For
-               a list of Qt 3 support classes, see \l{Qt3Support
-               Classes}.
+               frequently used classes, see \l{Qt's Main Classes}.
 
                \generatelist classes
            * /
