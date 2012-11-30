@@ -238,10 +238,10 @@
     The constructor takes \a treeWidget as a parameter and the class has Xbel
     specific functions:
 
-    \snippet xml/streambookmarks/xbelreader.h 1
+    \snippet streambookmarks/xbelreader.h 1
 
     \dots
-    \snippet xml/streambookmarks/xbelreader.h 2
+    \snippet streambookmarks/xbelreader.h 2
     \dots
 
     The \c read() function accepts a QIODevice and sets it with
@@ -250,7 +250,7 @@
     display a custom error message, inidicating that the file's version
     is incorrect.
 
-    \snippet xml/streambookmarks/xbelreader.cpp 1
+    \snippet streambookmarks/xbelreader.cpp 1
 
     The pendent to QXmlStreamReader is QXmlStreamWriter, which provides an XML
     writer with a simple streaming API. QXmlStreamWriter operates on a
@@ -283,7 +283,7 @@
     of QXmlStreamWriter. Its \c writeFile() function illustrates the core
     functions of QXmlStreamWriter mentioned above:
 
-    \snippet xml/streambookmarks/xbelwriter.cpp 1
+    \snippet streambookmarks/xbelwriter.cpp 1
 */
 
 /*!
