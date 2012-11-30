@@ -46,17 +46,6 @@ DEFINES +=  ANGLE_DISABLE_TRACE \
             ANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL0 \
             ANGLE_USE_NEW_PREPROCESSOR=1
 
-# Force release builds for now. Debug builds of ANGLE will generate libraries with
-# the 'd' library suffix, but this means that the library name no longer matches that
-# listed in the DEF file which causes errors at runtime. Using the DEF is mandatory
-# to generate the import library because the symbols are not marked with __declspec
-# and therefore not exported by default. With the import library, the debug build is
-# useless, so just disable until we can find another solution.
-CONFIG -= debug
-CONFIG += release
-
-TARGET = $$qtLibraryTarget($$TARGET)
-
 CONFIG(debug, debug|release) {
     DEFINES += _DEBUG
 } else {
@@ -66,6 +55,9 @@ CONFIG(debug, debug|release) {
 # c++11 is needed by MinGW to get support for unordered_map.
 CONFIG -= qt
 CONFIG += stl rtti_off exceptions c++11
+
+contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
+contains(QT_CONFIG, build_all):CONFIG += build_all
 
 INCLUDEPATH += . .. $$PWD/../include
 

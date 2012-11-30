@@ -19,6 +19,15 @@ Qt should be kept. If there are new source/header files in ANGLE
 (git status -u) then they should be added to the relevant .pro
 file before committing.
 
+The patches in src/angle/patches should be applied on top.
+
+ANGLE ships with .def files for exporting functions in
+3rdparty/angle/src/libEGL/libEGL.def and
+3rdparty/angle/src/libGLESv2/libGLESv2.def.
+Since we build debug and release versions
+(libbEGL.dll/libEGLd.dll, respectively), debug versions of
+the .def files (libEGLd.def) must be created as copies
+with the LIBRARY name entry adapted.
 
 Using a custom ANGLE
 -------------------------------------------------------------

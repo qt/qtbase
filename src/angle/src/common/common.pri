@@ -40,11 +40,6 @@ win32-msvc2012 {
     }
 }
 
-# Use the DEF files in release mode
-msvc:CONFIG(release, debug|release) {
-    QMAKE_LFLAGS += /DEF:$$ANGLE_DIR/src/$${TARGET}/$${TARGET}.def
-}
-
 HEADERS +=  \
     $$ANGLE_DIR/src/common/angleutils.h \
     $$ANGLE_DIR/src/common/debug.h \

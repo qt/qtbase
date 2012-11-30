@@ -1,6 +1,6 @@
 TEMPLATE = lib
 CONFIG += static
-TARGET = translator_common
+TARGET = $$qtLibraryTarget(translator_common)
 
 include(../config.pri)
 

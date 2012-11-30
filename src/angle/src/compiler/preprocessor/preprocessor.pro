@@ -1,6 +1,6 @@
 TEMPLATE = lib
 CONFIG += static
-TARGET = preprocessor
+TARGET = $$qtLibraryTarget(preprocessor)
 
 include(../../config.pri)
 

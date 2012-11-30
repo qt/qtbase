@@ -1,5 +1,5 @@
 TEMPLATE = lib
-TARGET = libEGL
+TARGET = $$qtLibraryTarget(libEGL)
 
 include(../common/common.pri)
 
@@ -7,7 +7,7 @@ include(../common/common.pri)
 # in Surface.cpp, which would otherwise require -ldwmapi, which does not exist on Windows XP
 # (QTBUG-27741).
 LIBS += -ld3d9 -ldxguid \
-        -L$$QT_BUILD_TREE/lib -llibGLESv2
+        -L$$QT_BUILD_TREE/lib -l$$qtLibraryTarget(libGLESv2)
 
 HEADERS += \
     $$ANGLE_DIR/src/libEGL/Config.h \
@@ -23,6 +23,8 @@ SOURCES += \
     $$ANGLE_DIR/src/libEGL/libEGL.cpp \
     $$ANGLE_DIR/src/libEGL/main.cpp \
     $$ANGLE_DIR/src/libEGL/Surface.cpp
+
+msvc:DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}.def
 
 load(qt_installs)
 
