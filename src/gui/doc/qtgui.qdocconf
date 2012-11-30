@@ -43,7 +43,6 @@ sourcedirs  += .. \
                ../../../examples/gui/doc
 
 exampledirs += ../../../examples/gui \
-               ../../../examples/widgets \
                snippets
 
 imagedirs   += images

@@ -43,4 +43,5 @@ excludedirs += snippets
 
 imagedirs   += images \
                ../../../doc/src/images \
-               ../../../examples/widgets/doc/images
+               ../../../examples/widgets/doc/images \
+               ../../../examples/widgets
