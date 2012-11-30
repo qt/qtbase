@@ -3553,8 +3553,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (btn->features & QStyleOptionButton::HasMenu) {
                 int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
                 QRect ir = btn->rect;
+                int arrowYOffset = bdi.kind == kThemePushButton ? 4 : 2;
                 HIRect arrowRect = CGRectMake(ir.right() - mbi - QMacStylePrivate::PushButtonRightOffset,
-                                              ir.height() / 2 - 4, mbi, ir.height() / 2);
+                                              ir.height() / 2 - arrowYOffset, mbi, ir.height() / 2);
                 bool drawColorless = btn->palette.currentColorGroup() == QPalette::Active;
                 if (drawColorless && tds == kThemeStateInactive)
                     tds = kThemeStateActive;
@@ -6072,7 +6073,10 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         // Do this by add enough space around the contents so that rounded
         // borders (including highlighting when active) will show.
         sz.rwidth() += QMacStylePrivate::PushButtonLeftOffset + QMacStylePrivate::PushButtonRightOffset + 12;
-        sz.rheight() += 4;
+        if (opt->state & QStyle::State_Small)
+            sz.rheight() += 14;
+        else
+            sz.rheight() += 4;
         break;
     case QStyle::CT_MenuItem:
         if (const QStyleOptionMenuItem *mi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
