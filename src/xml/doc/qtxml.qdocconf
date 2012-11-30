@@ -32,7 +32,7 @@ depends                 += qtcore qtnetwork
 headerdirs  += ..
 
 sourcedirs  += .. \
-               ../../../examples/xml/src
+               ../../../examples/xml/doc/src
 
 exampledirs += ../../../examples/xml \
                ../ \
