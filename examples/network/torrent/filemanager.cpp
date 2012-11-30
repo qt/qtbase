@@ -233,6 +233,7 @@ bool FileManager::generateFiles()
             errString = tr("Failed to open/create file %1: %2")
                         .arg(file->fileName()).arg(file->errorString());
             emit error();
+            delete file;
             return false;
         }
 
@@ -241,6 +242,7 @@ bool FileManager::generateFiles()
             if (!file->resize(singleFile.length)) {
                 errString = tr("Failed to resize file %1: %2")
                             .arg(file->fileName()).arg(file->errorString());
+                delete file;
                 emit error();
                 return false;
             }
@@ -288,6 +290,7 @@ bool FileManager::generateFiles()
                 errString = tr("Failed to open/create file %1: %2")
                             .arg(file->fileName()).arg(file->errorString());
                 emit error();
+                delete file;
                 return false;
             }
 
@@ -297,6 +300,7 @@ bool FileManager::generateFiles()
                     errString = tr("Failed to resize file %1: %2")
                                 .arg(file->fileName()).arg(file->errorString());
                     emit error();
+                    delete file;
                     return false;
                 }
             }
