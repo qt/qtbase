@@ -347,7 +347,7 @@ static void ensureInitialized()
     \note To have the request not send credentials you must not call
     setUser() or setPassword() on the \a authenticator object. This
     will result in the \l finished() signal being emitted with a
-    \l QNetworkReply with error \l AuthenticationRequiredError.
+    \l QNetworkReply with error \l {QNetworkReply::} {AuthenticationRequiredError}.
 
     \note It is not possible to use a QueuedConnection to connect to
     this signal, as the connection will fail if the authenticator has

@@ -131,7 +131,7 @@ Q_SIGNALS:
     void error(QNetworkSession::SessionError);
     void preferredConfigurationChanged(const QNetworkConfiguration &config, bool isSeamless);
     void newConfigurationActivated();
-    void usagePoliciesChanged(QNetworkSession::UsagePolicies);
+    void usagePoliciesChanged(QNetworkSession::UsagePolicies usagePolicies);
 
 protected:
     virtual void connectNotify(const QMetaMethod &signal);
