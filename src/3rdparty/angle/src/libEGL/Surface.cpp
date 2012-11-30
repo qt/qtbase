@@ -217,7 +217,6 @@ bool Surface::resetSwapChain(int backbufferWidth, int backbufferHeight)
         mDepthStencil = NULL;
     }
 
-    mShareHandle = NULL;
     HANDLE *pShareHandle = NULL;
     if (!mWindow && mDisplay->shareHandleSupported())
     {
