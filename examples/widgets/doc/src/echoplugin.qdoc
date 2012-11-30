@@ -145,10 +145,12 @@
     plugin. The Q_INTERFACES macro tells Qt which interfaces the class
     implements. In our case we only implement the \c EchoInterface. 
     If a class implements more than one interface, they are given as 
-    a comma separated list.
+    a comma separated list. The Q_PLUGIN_METADATA macro is included next
+    to the Q_OBJECT macro. It contains the plugins IID and a filename
+    pointing to a json file containing the metadata for the plugin.
+    The json file is compiled into the plugin and does not need to be installed.
 
     \snippet tools/echoplugin/plugin/echoplugin.h 0
-
 
     \section1 EchoPlugin Class Implementation
 
@@ -157,13 +159,6 @@
     \snippet tools/echoplugin/plugin/echoplugin.cpp 0
 
     We simply return the functions parameter. 
-
-    \snippet tools/echoplugin/plugin/echoplugin.cpp 1
-
-    We use the Q_EXPORT_PLUGIN2 macro to let Qt know that the \c
-    EchoPlugin class is a plugin. The first parameter is the name of
-    the plugin; it is usual to give the plugin and the library file it
-    is stored in the same name.
 
     \section1 The \c main() function
 
