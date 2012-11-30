@@ -39,29 +39,31 @@
 ****************************************************************************/
 
 //! [0]
-int main(int argc, char **argv)
+QCoreApplication* createApplication(int &argc, char *argv[])
 {
-#ifdef Q_WS_X11
-    bool useGUI = getenv("DISPLAY") != 0;
-#else
-    bool useGUI = true;
-#endif
-    QApplication app(argc, argv, useGUI);
+    for (int i = 1; i < argc; ++i)
+        if (!qstrcmp(argv[i], "-no-gui"))
+            return new QCoreApplication(argc, argv);
+    return new QApplication(argc, argv);
+}
 
-    if (useGUI) {
-       // start GUI version
-       ...
+int main(int argc, char* argv[])
+{
+    QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
+
+    if (qobject_cast<QApplication *>(app.data())) {
+       // start GUI version...
     } else {
-       // start non-GUI version
-       ...
+       // start non-GUI version...
     }
-    return app.exec();
+
+    return app->exec();
 }
 //! [0]
 
 
 //! [1]
-QApplication::setStyle(new QWindowsStyle);
+QApplication::setStyle(QStyleFactory::create("fusion"));
 //! [1]
 
 
