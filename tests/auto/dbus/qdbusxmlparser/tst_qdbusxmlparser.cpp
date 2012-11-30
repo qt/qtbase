@@ -44,6 +44,7 @@
 #include <qmetatype.h>
 #include <QtTest/QtTest>
 #include <QtDBus/QtDBus>
+#include <QtXml/QDomDocument>
 
 #define USE_PRIVATE_CODE
 #include "../qdbusmarshall/common.h"
@@ -54,6 +55,7 @@ class tst_QDBusXmlParser: public QObject
 
 private:
     void parsing_common(const QString&);
+    QString clean_xml(const QString&);
 
 private slots:
     void parsing_data();
@@ -75,36 +77,58 @@ void tst_QDBusXmlParser::parsing_data()
     QTest::addColumn<int>("interfaceCount");
     QTest::addColumn<int>("objectCount");
     QTest::addColumn<int>("annotationCount");
+    QTest::addColumn<QStringList>("introspection");
 
-    QTest::newRow("null") << QString() << 0 << 0 << 0;
-    QTest::newRow("empty") << QString("") << 0 << 0 << 0;
+    QStringList introspection;
+
+    QTest::newRow("null") << QString() << 0 << 0 << 0 << introspection;
+    QTest::newRow("empty") << QString("") << 0 << 0 << 0 << introspection;
     
-    QTest::newRow("junk") << "<junk/>" << 0 << 0 << 0;
+    QTest::newRow("junk") << "<junk/>" << 0 << 0 << 0 << introspection;
     QTest::newRow("interface-inside-junk") << "<junk><interface name=\"iface.iface1\" /></junk>"
-                                           << 0 << 0 << 0;
+                                           << 0 << 0 << 0 << introspection;
     QTest::newRow("object-inside-junk") << "<junk><node name=\"obj1\" /></junk>"
-                                        << 0 << 0 << 0;
+                                        << 0 << 0 << 0 << introspection;
 
-    QTest::newRow("zero-interfaces") << "<node/>" << 0 << 0 << 0;
-    QTest::newRow("one-interface") << "<node><interface name=\"iface.iface1\" /></node>" << 1 << 0 << 0;
+    QTest::newRow("zero-interfaces") << "<node/>" << 0 << 0 << 0 << introspection;
 
-    
+    introspection << "<interface name=\"iface.iface1\"/>";
+    QTest::newRow("one-interface") << "<node><interface name=\"iface.iface1\" /></node>"
+                                   << 1 << 0 << 0 << introspection;
+    introspection.clear();
+
+    introspection << "<interface name=\"iface.iface1\"/>"
+                  << "<interface name=\"iface.iface2\"/>";
     QTest::newRow("two-interfaces") << "<node><interface name=\"iface.iface1\" />"
                                        "<interface name=\"iface.iface2\" /></node>"
-                                    << 2 << 0 << 0;
+                                    << 2 << 0 << 0 << introspection;
+    introspection.clear();
 
 
-    QTest::newRow("one-object") << "<node><node name=\"obj1\"/></node>" << 0 << 1 << 0;
-    QTest::newRow("two-objects") << "<node><node name=\"obj1\"/><node name=\"obj2\"/></node>" << 0 << 2 << 0;
+    QTest::newRow("one-object") << "<node><node name=\"obj1\"/></node>"
+                                << 0 << 1 << 0 << introspection;
+    QTest::newRow("two-objects") << "<node><node name=\"obj1\"/><node name=\"obj2\"/></node>"
+                                 << 0 << 2 << 0 << introspection;
 
-    QTest::newRow("i1o1") << "<node><interface name=\"iface.iface1\"/><node name=\"obj1\"/></node>" << 1 << 1 << 0;
+    introspection << "<interface name=\"iface.iface1\"/>";
+    QTest::newRow("i1o1") << "<node><interface name=\"iface.iface1\"/><node name=\"obj1\"/></node>"
+                          << 1 << 1 << 0 << introspection;
+    introspection.clear();
 
+    introspection << "<interface name=\"iface.iface1\">"
+                     "  <annotation name=\"foo.testing\" value=\"nothing to see here\"/>"
+                     "</interface>";
     QTest::newRow("one-interface-annotated") << "<node><interface name=\"iface.iface1\">"
                                                 "<annotation name=\"foo.testing\" value=\"nothing to see here\" />"
-                                                "</interface></node>" << 1 << 0 << 1;
+                                                "</interface></node>" << 1 << 0 << 1 << introspection;
+    introspection.clear();
+
+
+    introspection << "<interface name=\"iface.iface1\"/>";
     QTest::newRow("one-interface-docnamespace") << "<?xml version=\"1.0\" xmlns:doc=\"foo\" ?><node>"
                                                    "<interface name=\"iface.iface1\"><doc:something />"
-                                                   "</interface></node>" << 1 << 0 << 0;
+                                                   "</interface></node>" << 1 << 0 << 0 << introspection;
+    introspection.clear();
 }
 
 void tst_QDBusXmlParser::parsing_common(const QString &xmlData)
@@ -114,18 +138,34 @@ void tst_QDBusXmlParser::parsing_common(const QString &xmlData)
     QFETCH(int, interfaceCount);
     QFETCH(int, objectCount);
     QFETCH(int, annotationCount);
+    QFETCH(QStringList, introspection);
     QCOMPARE(obj.interfaces.count(), interfaceCount);
     QCOMPARE(obj.childObjects.count(), objectCount);
     QCOMPARE(QDBusIntrospection::parseInterface(xmlData).annotations.count(), annotationCount);
 
+    QDBusIntrospection::Interfaces ifaces = QDBusIntrospection::parseInterfaces(xmlData);
+
     // also verify the naming
     int i = 0;
-    foreach (QString name, obj.interfaces)
-        QCOMPARE(name, QString("iface.iface%1").arg(++i));
+    foreach (QString name, obj.interfaces) {
+        const QString expectedName = QString("iface.iface%1").arg(i+1);
+        QCOMPARE(name, expectedName);
+
+        const QString expectedIntrospection = clean_xml(introspection.at(i++));
+        const QString resultIntrospection = clean_xml(ifaces.value(expectedName)->introspection);
+        QCOMPARE(resultIntrospection, expectedIntrospection);
+    }
 
     i = 0;
     foreach (QString name, obj.childObjects)
         QCOMPARE(name, QString("obj%1").arg(++i));
+}
+
+QString tst_QDBusXmlParser::clean_xml(const QString &xmlData)
+{
+    QDomDocument dom;
+    dom.setContent(xmlData);
+    return dom.toString();
 }
 
 void tst_QDBusXmlParser::parsing()
@@ -304,10 +344,10 @@ void tst_QDBusXmlParser::methods_data()
 
 void tst_QDBusXmlParser::methods()
 {
-    QString xmlHeader = "<node>"
-                        "<interface name=\"iface.iface1\">",
-            xmlFooter = "</interface>"
-                        "</node>";
+    QString intHeader = "<interface name=\"iface.iface1\">",
+            intFooter = "</interface>",
+            xmlHeader = "<node>" + intHeader,
+            xmlFooter = intFooter + "</node>";
 
     QFETCH(QString, xmlDataFragment);
 
@@ -315,6 +355,7 @@ void tst_QDBusXmlParser::methods()
         QDBusIntrospection::parseInterface(xmlHeader + xmlDataFragment + xmlFooter);
 
     QCOMPARE(iface.name, QString("iface.iface1"));
+    QCOMPARE(clean_xml(iface.introspection), clean_xml(intHeader + xmlDataFragment + intFooter));
 
     QFETCH(MethodMap, methodMap);
     MethodMap parsedMap = iface.methods;
@@ -417,10 +458,10 @@ void tst_QDBusXmlParser::signals__data()
 
 void tst_QDBusXmlParser::signals_()
 {
-    QString xmlHeader = "<node>"
-                        "<interface name=\"iface.iface1\">",
-            xmlFooter = "</interface>"
-                        "</node>";
+    QString intHeader = "<interface name=\"iface.iface1\">",
+            intFooter = "</interface>",
+            xmlHeader = "<node>" + intHeader,
+            xmlFooter = intFooter + "</node>";
 
     QFETCH(QString, xmlDataFragment);
 
@@ -428,6 +469,7 @@ void tst_QDBusXmlParser::signals_()
         QDBusIntrospection::parseInterface(xmlHeader + xmlDataFragment + xmlFooter);
 
     QCOMPARE(iface.name, QString("iface.iface1"));
+    QCOMPARE(clean_xml(iface.introspection), clean_xml(intHeader + xmlDataFragment + intFooter));
 
     QFETCH(SignalMap, signalMap);
     SignalMap parsedMap = iface.signals_;
@@ -506,10 +548,10 @@ void tst_QDBusXmlParser::properties_data()
 
 void tst_QDBusXmlParser::properties()
 {
-    QString xmlHeader = "<node>"
-                        "<interface name=\"iface.iface1\">",
-            xmlFooter = "</interface>"
-                        "</node>";
+    QString intHeader = "<interface name=\"iface.iface1\">",
+            intFooter = "</interface>",
+            xmlHeader = "<node>" + intHeader,
+            xmlFooter = intFooter + "</node>";
 
     QFETCH(QString, xmlDataFragment);
 
@@ -517,6 +559,7 @@ void tst_QDBusXmlParser::properties()
         QDBusIntrospection::parseInterface(xmlHeader + xmlDataFragment + xmlFooter);
 
     QCOMPARE(iface.name, QString("iface.iface1"));
+    QCOMPARE(clean_xml(iface.introspection), clean_xml(intHeader + xmlDataFragment + intFooter));
 
     QFETCH(PropertyMap, propertyMap);
     PropertyMap parsedMap = iface.properties;
