@@ -372,9 +372,9 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
         if (flags == Qt::Window) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
         } else if ((flags & Qt::Dialog) && (window()->modality() != Qt::NonModal)) {
-            styleMask = NSTitledWindowMask;
+            styleMask = NSResizableWindowMask | NSTitledWindowMask;
         } else if (!(flags & Qt::FramelessWindowHint)) {
-            if (flags & Qt::WindowMaximizeButtonHint)
+            if ((flags & Qt::Dialog) || (flags & Qt::WindowMaximizeButtonHint))
                 styleMask |= NSResizableWindowMask;
             if (flags & Qt::WindowTitleHint)
                 styleMask |= NSTitledWindowMask;
