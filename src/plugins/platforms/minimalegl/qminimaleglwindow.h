@@ -46,7 +46,6 @@
 #include "qminimaleglscreen.h"
 
 #include <qpa/qplatformwindow.h>
-#include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
 
