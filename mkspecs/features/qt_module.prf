@@ -35,14 +35,6 @@ else: \
 MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
 load(qt_build_paths)
-
-# This check will be removed soon. Weird indentation to avoid reindenting the code later.
-!isEmpty(MODULE_PRI) {
-    !build_pass:warning("$$_PRO_FILE_ still sets MODULE_PRI. Not auto-generating module .pri file.")
-    MODULE_PRI = $$absolute_path($$MODULE_PRI, $$_PRO_FILE_PWD_)
-    exists($$MODULE_PRI)|error("Specified module pri file $$MODULE_PRI does not exist.")
-} else {
-
 MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
 
 !build_pass {
@@ -96,8 +88,6 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
 
 } # !build_pass
-
-} # isEmpty(MODULE_PRI)
 
 load(qt_module_fwdpri)
 
