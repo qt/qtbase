@@ -303,9 +303,8 @@ void QTextOdfWriter::writeBlock(QXmlStreamWriter &writer, const QTextBlock &bloc
         int precedingSpaces = 0;
         int exportedIndex = 0;
         for (int i=0; i <= fragmentText.count(); ++i) {
-            bool isSpace = false;
-                QChar character = fragmentText[i];
-                isSpace = character.unicode() == ' ';
+            QChar character = fragmentText[i];
+            bool isSpace = character.unicode() == ' ';
 
             // find more than one space. -> <text:s text:c="2" />
             if (!isSpace && escapeNextSpace && precedingSpaces > 1) {
