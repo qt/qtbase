@@ -37,22 +37,3 @@ qt_install_module {
         warning("Project $$basename(_PRO_FILE_) is a module, but has not defined MODULE_PRI, which is required for Qt to expose the module to other projects.")
     }
 }
-
-qt_install_module_docs {
-    inst_html_docs.files = $$QMAKE_DOCS_OUTPUTDIR
-    inst_html_docs.path = $$[QT_INSTALL_DOCS]
-    inst_html_docs.CONFIG += no_check_exist directory no_default_install
-    INSTALLS += inst_html_docs
-
-    inst_qch_docs.files = $$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch
-    inst_qch_docs.path = $$[QT_INSTALL_DOCS]
-    inst_qch_docs.CONFIG += no_check_exist no_default_install
-    INSTALLS += inst_qch_docs
-
-    install_html_docs.depends = install_inst_html_docs
-    uninstall_html_docs.depends = uninstall_inst_html_docs
-    install_qch_docs.depends = install_inst_qch_docs
-    uninstall_qch_docs.depends = uninstall_inst_qch_docs
-    install_docs.depends = install_html_docs install_qch_docs
-    uninstall_docs.depends = uninstall_html_docs uninstall_qch_docs
-}

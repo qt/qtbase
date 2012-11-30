@@ -1,7 +1,2 @@
 load(exclusive_builds)
 CONFIG = lex yacc warn_on debug exceptions depend_includepath $$CONFIG
-
-# Populate the installdir which will be passed to qdoc in the default_post.prf
-# This allows a project to remove the installdir if need be, to trigger building online docs,
-# which Qt Creator does.
-QMAKE_DOCS_INSTALLDIR = $$[QT_INSTALL_DOCS]

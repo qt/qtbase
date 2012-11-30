@@ -113,18 +113,7 @@ win32:!wince*:exists($$[QT_INSTALL_PREFIX]/.qmake.cache): DLLDESTDIR = $$eval(QT
 CONFIG          += qt warn_on depend_includepath
 CONFIG          += qmake_cache target_qt
 
-!isEmpty(QMAKE_DOCS) {
-    doc_subdir = doc
-
-    unset(QMAKE_DOCS_INDEX)
-    QMAKE_DOCS_BASE_OUTDIR = $$MODULE_BASE_OUTDIR/$$doc_subdir
-    QMAKE_DOCS_OUTPUTDIR = $$QMAKE_DOCS_BASE_OUTDIR/qt$${MODULE}
-    QMAKE_DOCS_TARGET = $$replace(QMAKE_DOCS, ^(.*/)?(.*)\\.qdocconf$, \\2)
-    for(qmod, QMAKEMODULES): \
-        QMAKE_DOCS_INDEX += $$section(qmod, /, 0, -3)/$$doc_subdir
-
-    CONFIG += qt_install_module_docs
-}
+QMAKE_DOCS_TARGETDIR = qt$${MODULE}
 
 # If Qt was configured with -debug-and-release then build the module the same way
 # - unless this is a host library

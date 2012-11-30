@@ -1,0 +1,45 @@
+!exists($$QMAKE_DOCS): error("Cannot find documentation specification file $$QMAKE_DOCS")
+
+load(qt_build_paths)
+QMAKE_DOCS_BASE_OUTDIR = $$MODULE_BASE_OUTDIR/doc
+
+QMAKE_DOCS_TARGET = $$replace(QMAKE_DOCS, ^(.*/)?(.*)\\.qdocconf$, \\2)
+isEmpty(QMAKE_DOCS_TARGETDIR): QMAKE_DOCS_TARGETDIR = $$QMAKE_DOCS_TARGET
+QMAKE_DOCS_OUTPUTDIR = $$QMAKE_DOCS_BASE_OUTDIR/$$QMAKE_DOCS_TARGETDIR
+
+qtPrepareTool(QDOC, qdoc)
+for(qmod, QMAKEMODULES): \
+    QDOC += -indexdir $$section(qmod, /, 0, -3)/doc
+QDOC += -outputdir $$QMAKE_DOCS_OUTPUTDIR
+!build_online_docs: \
+    QDOC += -installdir $$[QT_INSTALL_DOCS]
+doc_command = $$QDOC $$QMAKE_DOCS
+prepare_docs {
+    prepare_docs.commands += $$doc_command -prepare -no-link-errors
+    generate_docs.commands += $$doc_command -generate
+    html_docs.depends += generate_docs
+} else {
+    html_docs.commands += $$doc_command
+}
+
+!build_online_docs {
+    qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
+    qch_docs.commands = $$QHELPGENERATOR $$QMAKE_DOCS_OUTPUTDIR/$${QMAKE_DOCS_TARGET}.qhp -o $$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch
+
+    inst_html_docs.files = $$QMAKE_DOCS_OUTPUTDIR
+    inst_html_docs.path = $$[QT_INSTALL_DOCS]
+    inst_html_docs.CONFIG += no_check_exist directory no_default_install
+    INSTALLS += inst_html_docs
+
+    inst_qch_docs.files = $$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch
+    inst_qch_docs.path = $$[QT_INSTALL_DOCS]
+    inst_qch_docs.CONFIG += no_check_exist no_default_install
+    INSTALLS += inst_qch_docs
+
+    install_html_docs.depends = install_inst_html_docs
+    uninstall_html_docs.depends = uninstall_inst_html_docs
+    install_qch_docs.depends = install_inst_qch_docs
+    uninstall_qch_docs.depends = uninstall_inst_qch_docs
+    install_docs.depends = install_html_docs install_qch_docs
+    uninstall_docs.depends = uninstall_html_docs uninstall_qch_docs
+}

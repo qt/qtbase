@@ -12,23 +12,8 @@
     } else {
         # apps and libs only generate docs if QMAKE_DOCS is set
         !isEmpty(QMAKE_DOCS) {
-            !exists($$QMAKE_DOCS):error("Cannot find documentation specification file $$QMAKE_DOCS")
-            qtPrepareTool(QDOC, qdoc)
-            for(index, QMAKE_DOCS_INDEX):QDOC_INDEX += -indexdir $$index
-            !isEmpty(QMAKE_DOCS_OUTPUTDIR):QMAKE_DOCS_OPTIONS += -outputdir $$QMAKE_DOCS_OUTPUTDIR
-            !isEmpty(QMAKE_DOCS_INSTALLDIR):QMAKE_DOCS_OPTIONS += -installdir $$QMAKE_DOCS_INSTALLDIR
-            doc_command = $$QDOC $$QMAKE_DOCS_OPTIONS $$QDOC_INDEX $$QMAKE_DOCS
-            prepare_docs {
-                prepare_docs.commands += $$doc_command -prepare -no-link-errors
-                generate_docs.commands += $$doc_command -generate
-                html_docs.depends += generate_docs
-            } else {
-                html_docs.commands += $$doc_command
-            }
-
-            qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
-            isEmpty(QMAKE_DOCS_TARGET): QMAKE_DOCS_TARGET = $$basename(QMAKE_DOCS_OUTPUTDIR)
-            qch_docs.commands = $$QHELPGENERATOR $$QMAKE_DOCS_OUTPUTDIR/$${QMAKE_DOCS_TARGET}.qhp -o $$QMAKE_DOCS_BASE_OUTDIR/$${QMAKE_DOCS_TARGET}.qch
+            # backwards compat hack
+            load(qt_docs)
         }
     }
     docs.commands = $(MAKE) -f $(MAKEFILE) html_docs && $(MAKE) -f $(MAKEFILE) qch_docs
