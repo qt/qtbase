@@ -5474,18 +5474,6 @@ void QWidget::unsetLocale()
     d->resolveLocale();
 }
 
-static QString constructWindowTitleFromFilePath(const QString &filePath)
-{
-    QFileInfo fi(filePath);
-    QString windowTitle = fi.fileName() + QLatin1String("[*]");
-#ifndef Q_WS_MAC
-    QString appName = QApplication::applicationName();
-    if (!appName.isEmpty())
-        windowTitle += QLatin1Char(' ') + QChar(0x2014) + QLatin1Char(' ') + appName;
-#endif
-    return windowTitle;
-}
-
 /*!
     \property QWidget::windowTitle
     \brief the window title (caption)
@@ -5502,6 +5490,11 @@ static QString constructWindowTitleFromFilePath(const QString &filePath)
     windowModified property is false (the default), the placeholder
     is simply removed.
 
+    On some desktop platforms (including Windows and Unix), the application name
+    (from QGuiApplication::applicationDisplayName) is added at the end of the
+    window title, if set. This is done by the QPA plugin, so it is shown to the
+    user, but isn't part of the \l windowTitle string.
+
     \sa windowIcon, windowIconText, windowModified, windowFilePath
 */
 QString QWidget::windowTitle() const
@@ -5511,7 +5504,7 @@ QString QWidget::windowTitle() const
         if (!d->extra->topextra->caption.isEmpty())
             return d->extra->topextra->caption;
         if (!d->extra->topextra->filePath.isEmpty())
-            return constructWindowTitleFromFilePath(d->extra->topextra->filePath);
+            return QFileInfo(d->extra->topextra->filePath).fileName() + QLatin1String("[*]");
     }
     return QString();
 }
@@ -5683,24 +5676,8 @@ QString QWidget::windowIconText() const
 
     This property only makes sense for windows. It associates a file path with
     a window. If you set the file path, but have not set the window title, Qt
-    sets the window title to contain a string created using the following
-    components.
-
-    On Mac OS X:
-
-    \list
-    \li The file name of the specified path, obtained using QFileInfo::fileName().
-    \endlist
-
-    On Windows and X11:
-
-    \list
-    \li The file name of the specified path, obtained using QFileInfo::fileName().
-    \li An optional \c{*} character, if the \l windowModified property is set.
-    \li The \c{0x2014} unicode character, padded either side by spaces.
-    \li The application name, obtained from the application's
-    \l{QCoreApplication::}{applicationName} property.
-    \endlist
+    sets the window title to the file name of the specified path, obtained using
+    QFileInfo::fileName().
 
     If the window title is set at any point, then the window title takes precedence and
     will be shown instead of the file path string.

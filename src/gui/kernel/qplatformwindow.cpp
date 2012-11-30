@@ -247,7 +247,12 @@ void QPlatformWindow::setParent(const QPlatformWindow *parent)
 }
 
 /*!
-  Reimplement to set the window title to \a title
+  Reimplement to set the window title to \a title.
+
+  The implementation might want to append the application display name to
+  the window title, like Windows and Linux do.
+
+  \sa QGuiApplication::applicationDisplayName()
 */
 void QPlatformWindow::setWindowTitle(const QString &title) { Q_UNUSED(title); }
 

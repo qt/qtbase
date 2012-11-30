@@ -985,6 +985,11 @@ Qt for Windows CE
     Please, notice that QMetaType::UnknownType has value 0, which previously was
     reserved for QMetaType::Void.
 
+- QWidget
+
+  * No need to set the application name in setWindowTitle() anymore, this is done
+    automatically, on Windows and Unix/X11, provided that the (possibly translated)
+    application display name is set with QGuiApplication::setApplicationDisplayName().
 
 - QMessageBox
 

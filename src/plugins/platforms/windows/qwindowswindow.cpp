@@ -55,6 +55,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QRegion>
 #include <private/qwindow_p.h>
+#include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
@@ -1188,8 +1189,21 @@ void QWindowsWindow::setWindowTitle(const QString &title)
 {
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() <<title;
-    if (m_data.hwnd)
-        SetWindowText(m_data.hwnd, (const wchar_t*)title.utf16());
+    if (m_data.hwnd) {
+
+        QString fullTitle = title;
+        if (QGuiApplicationPrivate::displayName) {
+            // Append display name, if set.
+            if (!fullTitle.isEmpty())
+                fullTitle += QStringLiteral(" - ");
+            fullTitle += *QGuiApplicationPrivate::displayName;
+        } else if (fullTitle.isEmpty()) {
+            // Don't let the window title be completely empty, use the app name as fallback.
+            fullTitle = QCoreApplication::applicationName();
+        }
+
+        SetWindowText(m_data.hwnd, (const wchar_t*)fullTitle.utf16());
+    }
 }
 
 void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
