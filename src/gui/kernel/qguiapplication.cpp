@@ -2293,6 +2293,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
 */
 QFont QGuiApplication::font()
 {
+    Q_ASSERT_X(QGuiApplicationPrivate::self, "QGuiApplication::font()", "no QGuiApplication instance");
     QMutexLocker locker(&applicationFontMutex);
     initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;
