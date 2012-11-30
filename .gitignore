@@ -4,6 +4,8 @@
 examples/*/*/*
 !examples/*/*/*[.]*
 !examples/*/*/README
+!examples/*/doc/*
+!examples/*/doc/*/*
 examples/*/*/*[.]app
 !examples/declarative/*
 examples/tutorials/*/*/*
