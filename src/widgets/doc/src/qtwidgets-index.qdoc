@@ -71,6 +71,7 @@ interfaces
     \li \l{Window and Dialog Widgets}
     \li \l{Application Main Window}
     \li \l{Dialog Windows}
+    \li \l{Keyboard Focus in Widgets}
     \endlist
 
     \section1 Styles

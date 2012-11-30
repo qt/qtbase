@@ -1075,7 +1075,7 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     QWidget::focusOutEvent(), QGraphicsItem::focusInEvent and
     QGraphicsItem::focusOutEvent() receive focus events.
 
-    \sa QWidget::setFocus(), QWidget::setFocusPolicy(), {Keyboard Focus}
+    \sa QWidget::setFocus(), QWidget::setFocusPolicy(), {Keyboard Focus in Widgets}
 */
 
 /*!
