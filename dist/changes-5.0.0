@@ -336,6 +336,20 @@ information about a particular change.
   available in Qt5. Use for example qobject_cast instead to dynamically
   find out the exact application type.
 
+- The following QStyle implementations have been made internal:
+  * QFusionStyle
+  * QGtkStyle
+  * QMacStyle
+  * QWindowsCEStyle
+  * QWindowsMobileStyle
+  * QWindowsStyle
+  * QWindowsVistaStyle
+  * QWindowsXPStyle
+  Instead of creating instances or inheriting these classes directly, use:
+  * QStyleFactory for creating instances of specific styles
+  * QProxyStyle for customizing existing style implementations
+  * QCommonStyle as a base for implementing full custom styles.
+
 ****************************************************************************
 *                           General                                        *
 ****************************************************************************
