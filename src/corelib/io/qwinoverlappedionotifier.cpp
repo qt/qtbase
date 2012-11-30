@@ -211,8 +211,8 @@ void QWinOverlappedIoNotifier::setEnabled(bool enabled)
 /*!
  * Wait synchronously for the notified signal.
  *
- * \returns true, if the notified signal was emitted for the I/O operation
- *          that corresponds to the OVERLAPPED object.
+ * The function returns true if the notified signal was emitted for
+ * the I/O operation that corresponds to the OVERLAPPED object.
  */
 bool QWinOverlappedIoNotifier::waitForNotified(int msecs, OVERLAPPED *overlapped)
 {
