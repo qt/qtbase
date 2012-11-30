@@ -21,6 +21,7 @@ exists($$_PRO_FILE_PWD_/examples/examples.pro) {
     sub_examples.subdir = examples
     sub_examples.target = sub-examples
     sub_examples.depends = sub_src
+    examples_need_tools: sub_examples.depends += sub_tools
     !contains(QT_BUILD_PARTS, examples): sub_examples.CONFIG = no_default_target no_default_install
     SUBDIRS += sub_examples
 }
@@ -30,6 +31,7 @@ exists($$_PRO_FILE_PWD_/demos/demos.pro) {
     sub_demos.subdir = demos
     sub_demos.target = sub-demos
     sub_demos.depends = sub_src
+    examples_need_tools: sub_demos.depends += sub_tools
     !contains(QT_BUILD_PARTS, examples): sub_demos.CONFIG = no_default_target no_default_install
     SUBDIRS += sub_demos
 }
@@ -38,6 +40,7 @@ exists($$_PRO_FILE_PWD_/tests/tests.pro) {
     sub_tests.subdir = tests
     sub_tests.target = sub-tests
     sub_tests.depends = sub_src   # The tests may have a run-time only dependency on other parts
+    tests_need_tools: sub_tests.depends += sub_tools
     sub_tests.CONFIG = no_default_install
     !contains(QT_BUILD_PARTS, tests) {
         sub_tests.CONFIG += no_default_target
