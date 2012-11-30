@@ -1559,6 +1559,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "yes";
         dictionary[ "LARGE_FILE" ]          = "no";
+        dictionary[ "ANGLE" ]               = "no";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
@@ -2314,7 +2315,7 @@ bool Configure::verifyConfiguration()
                  << "Disabling the ANGLE backend." << endl;
             prompt = true;
         }
-        if (dictionary["OPENGL_ES_2"] == "yes") {
+        if ((dictionary["OPENGL_ES_2"] == "yes") && (dictionary.value("XQMAKESPEC").isEmpty())) {
             cout << endl << "WARNING: Using OpenGL ES 2.0 without ANGLE." << endl
                  << "Specify -opengl desktop to use Open GL." << endl
                  <<  "The build will most likely fail." << endl;
