@@ -142,7 +142,7 @@ static const int errorMessages_indices[] = {
 };
 
 static const int errorMessages_count = sizeof errorMessages_indices /
-                                       sizeof errorMessages_indices[0];
+                                       sizeof errorMessages_indices[0] - 1;
 
 static inline const char *get(QDBusError::ErrorType code)
 {
