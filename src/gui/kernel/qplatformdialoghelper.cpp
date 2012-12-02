@@ -205,7 +205,7 @@ QColorDialogStaticData::QColorDialogStaticData() : customSet(false)
 void QColorDialogStaticData::readSettings()
 {
 #ifndef QT_NO_SETTINGS
-    const QSettings settings(QSettings::UserScope, QStringLiteral("Trolltech"));
+    const QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
     for (int i = 0; i < int(CustomColorCount); ++i) {
         const QVariant v = settings.value(QStringLiteral("Qt/customColors/") + QString::number(i));
         if (v.isValid())
@@ -218,7 +218,7 @@ void QColorDialogStaticData::writeSettings() const
 {
 #ifndef QT_NO_SETTINGS
     if (!customSet) {
-        QSettings settings(QSettings::UserScope, QStringLiteral("Trolltech"));
+        QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
         for (int i = 0; i < int(CustomColorCount); ++i)
             settings.setValue(QStringLiteral("Qt/customColors/") + QString::number(i), customRgb[i]);
     }

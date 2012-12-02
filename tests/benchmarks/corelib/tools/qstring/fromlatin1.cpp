@@ -629,7 +629,7 @@ static const char charData[] __attribute__((aligned(64))) = {
 
     // #126
     "\377\376"
-        "Trolltech"
+        "QtProject"
     "\377\376\375\374\373" // 3328
 
     // #127
@@ -827,7 +827,7 @@ static const char charData[] __attribute__((aligned(64))) = {
     "\377\376\375\374\373\372\371\370\367\366\365\364\363\362\361\360" // 4544
 
     // #166
-        "Trolltech"
+        "QtProject"
     "\377\376\375\374\373\372\371" // 4560
 
     // #167
@@ -980,7 +980,7 @@ static const char charData[] __attribute__((aligned(64))) = {
     "\377\376\375\374\373" // 5488
 
     // #197
-        "Trolltech"
+        "QtProject"
     "\377\376\375\374\373\372\371" // 5504
 
     // #198
@@ -6955,7 +6955,7 @@ static const char charData[] __attribute__((aligned(64))) = {
     "\377\376\375" // 58688
 
     // #1425
-        "Trolltech"
+        "QtProject"
     "\377\376\375\374\373\372\371" // 58704
 
     // #1426
@@ -28453,7 +28453,7 @@ static const char charData[] __attribute__((aligned(64))) = {
     "\377\376" // 268688
 
     // #5853
-        "Trolltech"
+        "QtProject"
     "\377\376\375\374\373\372\371" // 268704
 
     // #5854

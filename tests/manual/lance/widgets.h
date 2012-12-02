@@ -99,7 +99,7 @@ public:
           m_filename(file),
           m_view_mode(RenderView)
     {
-        QSettings settings("Trolltech", "lance");
+        QSettings settings("QtProject", "lance");
         for (int i=0; i<10; ++i) {
             QPointF suggestion(100 + i * 40, 100 + 100 * qSin(i * 3.1415 / 10.0));
             m_controlPoints << settings.value("cp" + QString::number(i), suggestion).toPointF();
@@ -154,7 +154,7 @@ public:
 
     ~OnScreenWidget()
     {
-        QSettings settings("Trolltech", "lance");
+        QSettings settings("QtProject", "lance");
         for (int i=0; i<10; ++i) {
             settings.setValue("cp" + QString::number(i), m_controlPoints.at(i));
         }
