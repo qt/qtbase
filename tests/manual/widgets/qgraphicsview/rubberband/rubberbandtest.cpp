@@ -69,11 +69,17 @@ public:
 protected:
     void mouseMoveEvent(QMouseEvent *event)
     {
+        QGraphicsView::mouseMoveEvent(event);
+
         int rightmostInView = viewport()->mapToGlobal(viewport()->geometry().topRight()).x();
         int xglobal = event->globalX();
         if (xglobal > rightmostInView)
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() + 10);
-        QGraphicsView::mouseMoveEvent(event);
+
+        int bottomPos = viewport()->mapToGlobal(viewport()->geometry().bottomRight()).y();
+        int yglobal = event->globalY();
+        if (yglobal > bottomPos)
+            verticalScrollBar()->setValue(verticalScrollBar()->value() + 10);
     }
 };
 
@@ -82,17 +88,18 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     MyGraphicsView v;
 
-    QGraphicsScene s(0.0, 0.0, 10000.0, 100.0);
+    QGraphicsScene s(0.0, 0.0, 5000.0, 5000.0);
     v.setScene(&s);
     v.setInteractive(true);
     v.setRubberBandSelectionMode(Qt::IntersectsItemBoundingRect);
     s.addRect( (qreal) 0.0, 0.0, 1000.0, 50.0, QPen(),QBrush(QColor(0,0,255)));
 
-    for (int u = 0; u < 100; ++u) {
-        MyGraphicsItem *item = new MyGraphicsItem();
-        item->setRect(QRectF(u * 100, 50.0, 50.0, 20.0));
-        s.addItem(item);
-    }
+    for (int u = 0; u < 100; ++u)
+        for (int v = 0; v < 100; ++v) {
+            MyGraphicsItem *item = new MyGraphicsItem();
+            item->setRect(QRectF(v * 80.0, u * 80.0, 50.0, 20.0));
+            s.addItem(item);
+        }
     v.show();
     app.exec();
     return 0;

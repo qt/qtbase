@@ -616,6 +616,10 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
 {
     Q_Q(QGraphicsView);
 
+#ifndef QT_NO_RUBBERBAND
+    updateRubberBand(event);
+#endif
+
     storeMouseEvent(event);
     lastMouseEvent.setAccepted(false);
 
@@ -3262,10 +3266,6 @@ void QGraphicsView::mousePressEvent(QMouseEvent *event)
 void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
     Q_D(QGraphicsView);
-
-#ifndef QT_NO_RUBBERBAND
-    d->updateRubberBand(event);
-#endif
 
     if (d->dragMode == QGraphicsView::ScrollHandDrag) {
         if (d->handScrolling) {
