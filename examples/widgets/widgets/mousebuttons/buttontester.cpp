@@ -68,6 +68,7 @@ void ButtonTester::mouseDoubleClickEvent(QMouseEvent *e)
     this->setText(result);
 }
 
+#ifndef QT_NO_WHEELEVENT
 void ButtonTester::wheelEvent (QWheelEvent *e)
 {
     QString result;
@@ -88,6 +89,7 @@ void ButtonTester::wheelEvent (QWheelEvent *e)
     qDebug() << result;
     this->setText(result);
 }
+#endif
 
 int ButtonTester::buttonByNumber(const Qt::MouseButton button)
 {

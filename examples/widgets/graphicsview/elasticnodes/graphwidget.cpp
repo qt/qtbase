@@ -174,12 +174,14 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 }
 //! [4]
 
+#ifndef QT_NO_WHEELEVENT
 //! [5]
 void GraphWidget::wheelEvent(QWheelEvent *event)
 {
     scaleView(pow((double)2, -event->delta() / 240.0));
 }
 //! [5]
+#endif
 
 //! [6]
 void GraphWidget::drawBackground(QPainter *painter, const QRectF &rect)

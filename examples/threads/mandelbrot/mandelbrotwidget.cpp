@@ -162,6 +162,7 @@ void MandelbrotWidget::keyPressEvent(QKeyEvent *event)
 }
 //! [11]
 
+#ifndef QT_NO_WHEELEVENT
 //! [12]
 void MandelbrotWidget::wheelEvent(QWheelEvent *event)
 {
@@ -170,6 +171,7 @@ void MandelbrotWidget::wheelEvent(QWheelEvent *event)
     zoom(pow(ZoomInFactor, numSteps));
 }
 //! [12]
+#endif
 
 //! [13]
 void MandelbrotWidget::mousePressEvent(QMouseEvent *event)

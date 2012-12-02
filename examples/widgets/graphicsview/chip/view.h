@@ -60,7 +60,9 @@ public:
     GraphicsView(View *v) : QGraphicsView(), view(v) { }
 
 protected:
+#ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *);
+#endif
 
 private:
     View *view;
