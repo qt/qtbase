@@ -593,6 +593,8 @@ public:
 
     QWindow *windowHandle() const;
 
+    static QWidget *createWindowContainer(QWindow *window, QWidget *parent=0, Qt::WindowFlags flags=0);
+
     friend class QDesktopScreenWidget;
 
 Q_SIGNALS:
