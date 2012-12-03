@@ -2181,11 +2181,11 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
             switch (d->aquaSizeConstrain(opt, widget)) {
             case QAquaSizeUnknown:
             case QAquaSizeLarge:
-                ret = 9;
+                ret = QSysInfo::macVersion() >= QSysInfo::MV_10_8 ? 16 : 9;
                 break;
             case QAquaSizeMini:
             case QAquaSizeSmall:
-                ret = 7;
+                ret =  QSysInfo::macVersion() >= QSysInfo::MV_10_8 ? 14 : 7;
                 break;
             }
             break;
@@ -4909,6 +4909,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient)) {
                 bool wasActive = false;
                 CGFloat opacity = 1.0;
+                CGFloat expandScale = 1.0;
+                CGFloat expandOffset = -1.0;
+                bool shouldExpand = false;
+                const CGFloat maxExpandScale = tdi.kind == kThemeSmallScrollBar ? 11.0 / 7.0 : 13.0 / 9.0;
+
                 if (QObject *styleObject = opt->styleObject) {
                     int oldPos = styleObject->property("_q_stylepos").toInt();
                     int oldMin = styleObject->property("_q_stylemin").toInt();
@@ -4936,23 +4941,24 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         styleObject->setProperty("_q_stylestate", static_cast<int>(slider->state));
                         styleObject->setProperty("_q_stylecontrols", static_cast<uint>(slider->activeSubControls));
 
+                        QScrollbarAnimation *anim  = qobject_cast<QScrollbarAnimation *>(d->animation(styleObject));
                         if (transient) {
-                            QFadeOutAnimation *anim  = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
                             if (!anim) {
-                                anim = new QFadeOutAnimation(styleObject);
+                                anim = new QScrollbarAnimation(styleObject);
+                                anim->setFadingOut();
                                 d->startAnimation(anim);
-                            } else {
+                            } else if (anim->isFadingOut()) {
                                 // the scrollbar was already fading out while the
                                 // state changed -> restart the fade out animation
                                 anim->setCurrentTime(0);
                             }
-                        } else {
+                        } else if (anim && anim->isFadingOut()) {
                             d->stopAnimation(styleObject);
                         }
                     }
 
-                    QFadeOutAnimation *anim = qobject_cast<QFadeOutAnimation *>(d->animation(styleObject));
-                    if (anim) {
+                    QScrollbarAnimation *anim = qobject_cast<QScrollbarAnimation *>(d->animation(styleObject));
+                    if (anim && anim->isFadingOut()) {
                         // once a scrollbar was active (hovered/pressed), it retains
                         // the active look even if it's no longer active while fading out
                         if (oldActiveControls)
@@ -4960,6 +4966,24 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                         wasActive = anim->wasActive();
                         opacity = anim->currentValue();
+                    }
+
+                    shouldExpand = (opt->activeSubControls || wasActive) && QSysInfo::macVersion() >= QSysInfo::MV_10_8;
+                    if (shouldExpand) {
+                        if (!anim && !oldActiveControls) {
+                            // Start expand animation only once and when entering
+                            anim = new QScrollbarAnimation(styleObject);
+                            anim->setExpanding();
+                            d->startAnimation(anim);
+                        }
+                        if (anim && !anim->isFadingOut()) {
+                            expandScale = 1.0 + (maxExpandScale - 1.0) * anim->currentValue();
+                            expandOffset = 5.5 * anim->currentValue() - 1;
+                        } else {
+                            // Keep expanded state after the animation ends, and when fading out
+                            expandScale = maxExpandScale;
+                            expandOffset = 4.5;
+                        }
                     }
                 }
 
@@ -4985,21 +5009,20 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 [scroller setBounds:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
                 [scroller setScrollerStyle:NSScrollerStyleOverlay];
 
-                // first we draw only the track, by using a disabled scroller
-                if (opt->activeSubControls || wasActive) {
-                    CGContextBeginTransparencyLayerWithRect(cg, qt_hirectForQRect(slider->rect),
-                                                            NULL);
-                    CGContextSetAlpha(cg, opacity);
-
-                    [scroller setFrame:[scroller bounds]];
-                    [scroller setEnabled:(slider->state & State_Enabled) ? YES : NO];
-                    [scroller drawKnobSlotInRect:[scroller bounds] highlight:NO];
-
-                    CGContextEndTransparencyLayer(cg);
-                }
-
-                CGContextBeginTransparencyLayerWithRect(cg, qt_hirectForQRect(slider->rect), NULL);
+                CGContextBeginTransparencyLayer(cg, NULL);
                 CGContextSetAlpha(cg, opacity);
+
+                // Draw the track when hovering
+                if (opt->activeSubControls || wasActive) {
+                    CGRect rect = [scroller bounds];
+                    if (shouldExpand) {
+                        if (isHorizontal)
+                            rect.origin.y += 4.5 - expandOffset;
+                        else
+                            rect.origin.x += 4.5 - expandOffset;
+                    }
+                    [scroller drawKnobSlotInRect:rect highlight:YES];
+                }
 
                 const qreal length = slider->maximum - slider->minimum + slider->pageStep;
                 const qreal proportion = slider->pageStep / length;
@@ -5007,7 +5030,6 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 if (isHorizontal && slider->direction == Qt::RightToLeft)
                     value = 1.0 - value - proportion;
 
-                [scroller setEnabled:(slider->state & State_Enabled) ? YES : NO];
                 [scroller setKnobProportion:1.0];
 
                 const int minKnobWidth = 26;
@@ -5017,13 +5039,23 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     const qreal width = qMax<qreal>(minKnobWidth, plannedWidth);
                     const qreal totalWidth = slider->rect.width() + plannedWidth - width;
                     [scroller setFrame:NSMakeRect(0, 0, width, slider->rect.height())];
-                    CGContextTranslateCTM(cg, value * totalWidth, 1);
+                    if (shouldExpand) {
+                        CGContextScaleCTM(cg, 1, expandScale);
+                        CGContextTranslateCTM(cg, value * totalWidth, -expandOffset);
+                    } else {
+                        CGContextTranslateCTM(cg, value * totalWidth, 1);
+                    }
                 } else {
                     const qreal plannedHeight = proportion * slider->rect.height();
                     const qreal height = qMax<qreal>(minKnobWidth, plannedHeight);
                     const qreal totalHeight = slider->rect.height() + plannedHeight - height;
                     [scroller setFrame:NSMakeRect(0, 0, slider->rect.width(), height)];
-                    CGContextTranslateCTM(cg, 1, value * totalHeight);
+                    if (shouldExpand) {
+                        CGContextScaleCTM(cg, expandScale, 1);
+                        CGContextTranslateCTM(cg, -expandOffset, value * totalHeight);
+                    } else {
+                        CGContextTranslateCTM(cg, 1, value * totalHeight);
+                    }
                 }
                 if (length > 0.0) {
                     [scroller layout];
