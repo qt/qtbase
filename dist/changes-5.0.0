@@ -846,6 +846,18 @@ appended in parantheses.
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
+The Qt platform implementations have been rewritten as plugins for the Qt
+Platform Abstraction (QPA):
+
+* The platform plugin(s) needs to be bundled when applications are deployed.
+* The platform implementations are in large parts rewrites.
+* Q_WS_* defines are no longer defined. Q_OS_* is.
+* Some platform specific functionality and API is missing from the 5.0
+  release and will be added later.
+* Platform spesific functionality will be added in separate modules:
+  QtMacExtras: http://qt.gitorious.org/qtplayground/qtmacextras
+
+
 Qt for Linux/X11
 ----------------
 
@@ -857,6 +869,35 @@ Qt for Windows
 
 Qt for Mac OS X
 ---------------
+* Qt now uses Cocoa, the Carbon port has been removed.
+* The minimum supported OS X version is 10.6. PPC is not supported.
+* Qt generally supports cross OS X version build and deployment (build
+  on any supported version and deploy to any other). One exception is
+  QtWebkit, which should be built using the 10.6 SDK if you want to target
+  that platform.
+* The Qt binary installer has been changed to use the Qt installer framework.
+  Qt is now installed into one location instead of being spread out over multiple
+  directories.
+* The Qt binary installer is built against the 10.7 SDK and does not
+  run on 10.6.
+* The Clang compiler is used by default. Gcc is available trough the
+  macx-g++* mkspecs.
+* Build-system support for universal binaries has been removed. The "lipo"
+  command-line tool can be used as a workaround.
+* Qt now use the raster paint engine on all platforms for drawing widgets.
+  CoreGraphics is still used for printing on Mac.
+* Support for high-dpi "retina" displays has been added for widgets,
+  OpenGL and QtQuick.
+* The unified toolbar implementation from Qt 4 has not and will not be ported
+  to Qt 5. This means calling QMainWindow::setUnifiedTitleAndToolBarOnMac has
+  no effect on Qt 5. A replacement API which wraps NSToolbar is available in
+  QtMacExtras.
+* MacDeployQt plugin deployment has been improved. It will no longer try to
+  deploy all plugins with all dependencies.
+* Qt has been updated to be in compliance with the Mac App Store sandbox, and
+  will for example no longer try to write settings to files outside the sandbox.
+* The "qt_menu.nib" issue preventing static/non-framework builds from working
+  has been fixed.
 
 
 Qt for Embedded Linux
