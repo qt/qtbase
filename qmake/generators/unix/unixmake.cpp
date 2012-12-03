@@ -170,6 +170,13 @@ UnixMakefileGenerator::init()
                 project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATH") + escapeFilePath(QFileInfo(rpathdirs[i].toQString()).absoluteFilePath());
         }
     }
+    if (!project->isEmpty("QMAKE_RPATHLINKDIR")) {
+        const ProStringList &rpathdirs = project->values("QMAKE_RPATHLINKDIR");
+        for (int i = 0; i < rpathdirs.size(); ++i) {
+            if (!project->isEmpty("QMAKE_LFLAGS_RPATHLINK"))
+                project->values("QMAKE_LFLAGS") += var("QMAKE_LFLAGS_RPATHLINK") + escapeFilePath(QFileInfo(rpathdirs[i].toQString()).absoluteFilePath());
+        }
+    }
 
     if(project->isActiveConfig("GNUmake") && !project->isEmpty("QMAKE_CFLAGS_DEPS"))
         include_deps = true; //do not generate deps

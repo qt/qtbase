@@ -115,12 +115,12 @@ defineTest(qtAddModule) {
            PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
 
        # Make sure we can link to uninstalled libraries
-       unix:!mac:!isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
+       !isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
             for(rpl, QT.$${1}.rpath_link): \
-                QMAKE_LFLAGS *= -Wl,-rpath-link,$$rpl
+                QMAKE_RPATHLINKDIR *= $$rpl
             !auto_use_privates:!isEqual(2, UsePrivate): \
                 for(rpl, QT.$${1}.rpath_link_private): \
-                    QMAKE_LFLAGS *= -Wl,-rpath-link,$$rpl
+                    QMAKE_RPATHLINKDIR *= $$rpl
        }
     }
     # Only link to this module if a libs directory is set, else this is just a module
@@ -139,6 +139,7 @@ defineTest(qtAddModule) {
     export(QMAKE_LFLAGS)
     export(QMAKE_LIBDIR)
     export(QMAKE_RPATHDIR)
+    export(QMAKE_RPATHLINKDIR)
     export(PRE_TARGETDEPS)
     return(true)
 }
