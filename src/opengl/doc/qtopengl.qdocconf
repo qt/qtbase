@@ -41,11 +41,12 @@ qhp.qtopengl.namespace = org.qt-project.qtopengl.500
 
 # Title for the package, will be the main title for the package in
 # Assistant/Creator.
-qhp.qtopengl.indexTitle = Qt Script Documentation
+qhp.qtopengl.indexTitle = Qt OpenGL
 
 # Only update the name of the project for the next variables.
 qhp.qtopengl.virtualFolder  = qtopengl
 qhp.qtopengl.subprojects = classes
-qhp.qtopengl.subprojects.classes.title = Qt D-Bus C++ Classes
+qhp.qtopengl.subprojects.classes.title = C++ Classes
+qhp.qtopengl.subprojects.classes.indexTitle = Qt OpenGL C++ Classes
 qhp.qtopengl.subprojects.classes.selectors = class fake:headerfile
 qhp.qtopengl.subprojects.classes.sortPages = true
