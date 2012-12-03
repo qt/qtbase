@@ -54,7 +54,7 @@
 #define QHARFBUZZ_P_H
 
 #include <QtCore/qglobal.h>
-#include <harfbuzz-shaper.h>
+#include <private/harfbuzz-shaper.h>
 
 QT_BEGIN_NAMESPACE
 

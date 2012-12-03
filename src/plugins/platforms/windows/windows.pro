@@ -7,8 +7,6 @@ QT *= core-private
 QT *= gui-private
 QT *= platformsupport-private
 
-INCLUDEPATH += ../../../3rdparty/harfbuzz/src
-
 # Note: OpenGL32 must precede Gdi32 as it overwrites some functions.
 LIBS *= -lole32
 !wince*:LIBS *= -lgdi32 -luser32 -lwinspool -limm32 -lwinmm  -loleaut32

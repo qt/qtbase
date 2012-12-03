@@ -41,8 +41,6 @@ testcocoon {
     load(testcocoon)
 }
 
-INCLUDEPATH += ../3rdparty/harfbuzz/src
-
 win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE
 }

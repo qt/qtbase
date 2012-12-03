@@ -85,5 +85,3 @@ SOURCES += \
 
 HEADERS += \
       text/qplatformfontdatabase.h
-
-INCLUDEPATH += ../3rdparty/harfbuzz/src
