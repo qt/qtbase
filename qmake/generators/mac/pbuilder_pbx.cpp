@@ -1270,6 +1270,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                             } else {
                                 plist_in_text = plist_in_text.replace("@LIBRARY@", project->first("QMAKE_ORIG_TARGET").toQString());
                             }
+                            plist_in_text = plist_in_text.replace("@BUNDLEIDENTIFIER@", QLatin1String("${PRODUCT_NAME:rfc1034identifier}"));
                             if (!project->values("VERSION").isEmpty()) {
                                 plist_in_text = plist_in_text.replace("@SHORT_VERSION@", project->first("VER_MAJ") + "." +
                                                                       project->first("VER_MIN"));
