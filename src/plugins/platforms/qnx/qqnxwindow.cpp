@@ -269,7 +269,7 @@ void QQnxWindow::setVisible(bool visible)
 
     root->updateVisibility(root->m_visible);
 
-    window()->requestActivateWindow();
+    window()->requestActivate();
 
     if (window()->isTopLevel() && visible)
         QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
