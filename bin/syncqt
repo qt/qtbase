@@ -872,6 +872,8 @@ foreach my $lib (@modules_to_sync) {
 
     #create the new ones
     foreach my $current_dir (@dirs) {
+        my $thisprivate = 0;
+        ($current_dir =~ s/^\^//) and $thisprivate = 1;
         my @headers_paths = split(/;/, $pathtoheaders);
         if (@headers_paths) {
             @headers_paths = map { "$current_dir/$_" } @headers_paths;
@@ -907,7 +909,7 @@ foreach my $lib (@modules_to_sync) {
                         if(isQpaHeader($public_header)) {
                             $public_header = 0;
                             $qpa_header = 1;
-                        } elsif($allheadersprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                        } elsif($allheadersprivate || $thisprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
                             $public_header = 0;
                         } else {
                             foreach (@ignore_for_master_contents) {
@@ -1146,7 +1148,7 @@ unless($showonly || !$create_uic_class_map) {
 if($check_includes) {
     for my $lib (keys(%modules)) {
             #calc subdirs
-            my @subdirs = listSubdirs(split(/;/, $modules{$lib}));
+            my @subdirs = listSubdirs(map { s/^\^//; $_ } split(/;/, $modules{$lib}));
 
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
