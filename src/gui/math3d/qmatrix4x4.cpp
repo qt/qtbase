@@ -45,6 +45,8 @@
 #include <QtGui/qmatrix.h>
 #include <QtGui/qtransform.h>
 
+#include <cmath>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MATRIX4X4

@@ -21,6 +21,7 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
     extras = \
         $$_PRO_FILE_PWD_/README \
         $$files($$_PRO_FILE_PWD_/*.pri) \
+        $$replace(_PRO_FILE_, \\.pro$, .qmlproject) \
         $$replace(_PRO_FILE_, \\.pro$, .json) \
         $$replace(_PRO_FILE_, \\.pro$, .inf)
     for(extra, extras): \
@@ -30,6 +31,10 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
     # Just for Qt Creator
     OTHER_FILES += $$sourcefiles
 
+    for(inst, INSTALLS): \
+        !equals(inst, target):!contains($${inst}.CONFIG, no_check_exist): \
+            for(file, $${inst}.files): \
+                sourcefiles += $$files($$absolute_path($$file, $$_PRO_FILE_PWD_))
     sourcefiles += \
         $$_PRO_FILE_ $$RC_FILE $$DEF_FILE \
         $$SOURCES $$HEADERS $$FORMS $$RESOURCES $$TRANSLATIONS \

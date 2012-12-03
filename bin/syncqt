@@ -87,7 +87,7 @@ my $mkspecsdir = dirname(dirname($0));
 normalizePath(\$mkspecsdir) if (defined $mkspecsdir);
 
 # will be defined based on the modules sync.profile
-our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %modulepris, %explicitheaders, %deprecatedheaders);
+our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %explicitheaders, %deprecatedheaders);
 our @qpa_headers = ();
 
 # global variables (modified by options)
@@ -809,19 +809,6 @@ foreach my $lib (@modules_to_sync) {
     $project =~ s,/([^/]+)$,/$1/$1.pro,;
     my $module_version = fileContents($project);
     $module_version = $qt_version unless ($module_version =~ s,.*^VERSION[ \t]*=[ \t]*(\S+).*,$1,sm);
-
-    # Backwards compatibility for modules with checked in .pri files.
-    if (defined $modulepris{$lib} and -e "$modulepris{$lib}") {
-        my $content = fileContents($modulepris{$lib});
-        my @version_rows = grep(/QT\..*\.VERSION/, split('\n', $content));
-        if(@version_rows) {
-            # We only pick the first one, since each module need a separate .pri file
-            $module_version = $version_rows[0];
-            chomp $module_version;
-            $module_version =~ s/^\s*QT\..*\.VERSION\s*=\s*([^#]+).*$/$1/;
-            $module_version =~ s/\s+$//;
-        }
-    }
 
     my $pathtoheaders = "";
     $pathtoheaders = $moduleheaders{$lib} if ($moduleheaders{$lib});

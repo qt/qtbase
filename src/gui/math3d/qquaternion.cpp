@@ -45,6 +45,8 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qdebug.h>
 
+#include <cmath>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_QUATERNION

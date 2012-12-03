@@ -67,8 +67,10 @@ static inline int themeDialogType(const QDialog *dialog)
     if (qobject_cast<const QFileDialog *>(dialog))
         return QPlatformTheme::FileDialog;
 #endif
+#ifndef QT_NO_COLORDIALOG
     if (qobject_cast<const QColorDialog *>(dialog))
         return QPlatformTheme::ColorDialog;
+#endif
 #ifndef QT_NO_FONTDIALOG
     if (qobject_cast<const QFontDialog *>(dialog))
         return QPlatformTheme::FontDialog;

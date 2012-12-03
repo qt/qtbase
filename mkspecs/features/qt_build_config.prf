@@ -27,8 +27,8 @@ mac {
 
 CONFIG += \
     create_prl link_prl \
+    testcase_targets \
     prepare_docs qt_docs_targets \
-    qt_example_installs \
     no_private_qt_headers_warning QTDIR_build \
     # Qt modules get compiled without exceptions enabled by default.
     # However, testcases should be still built with exceptions.
