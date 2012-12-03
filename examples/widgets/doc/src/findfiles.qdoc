@@ -28,6 +28,7 @@
 /*!
     \example dialogs/findfiles
     \title Find Files Example
+    \ingroup examples-dialogs
 
     \brief The Find Files example shows how to use QProgressDialog to provide
     feedback on the progress of a slow operation. The example also

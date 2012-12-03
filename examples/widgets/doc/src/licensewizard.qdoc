@@ -28,6 +28,7 @@
 /*!
     \example dialogs/licensewizard
     \title License Wizard Example
+    \ingroup examples-dialogs
 
     \brief The License Wizard example shows how to implement complex wizards in
     Qt.

@@ -28,6 +28,7 @@
 /*!
     \example dialogs/tabdialog
     \title Tab Dialog Example
+    \ingroup examples-dialogs
 
     \brief The Tab Dialog example shows how to construct a tab dialog using the
     QTabWidget class.

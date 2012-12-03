@@ -28,6 +28,7 @@
 /*!
     \example dialogs/classwizard
     \title Class Wizard Example
+    \ingroup examples-dialogs
 
     \brief The License Wizard example shows how to implement linear
     wizards using QWizard.
