@@ -1148,12 +1148,6 @@ if($check_includes) {
             my @subdirs = listSubdirs($modules{$lib});
 
             foreach my $subdir (@subdirs) {
-                my $header_skip_qt_module_test = 0;
-                foreach(@ignore_for_qt_module_check) {
-                    foreach (split(/;/, $_)) {
-                        $header_skip_qt_module_test = 1 if ($subdir =~ /^$_/);
-                    }
-                }
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
                 foreach my $header (@headers) {
                     my $header_skip_qt_begin_header_test = 0;
