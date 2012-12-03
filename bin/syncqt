@@ -803,7 +803,8 @@ foreach my $lib (@modules_to_sync) {
     die "No such module: $lib" unless(defined $modules{$lib});
 
     #iteration info
-    my $dir = $modules{$lib};
+    my @dirs = split(/;/, $modules{$lib});
+    my $dir = $dirs[0];
 
     my $project = $dir;
     $project =~ s,/([^/]+)$,/$1/$1.pro,;
@@ -870,7 +871,7 @@ foreach my $lib (@modules_to_sync) {
     }
 
     #create the new ones
-    foreach my $current_dir (split(/;/, $dir)) {
+    foreach my $current_dir (@dirs) {
         my @headers_paths = split(/;/, $pathtoheaders);
         if (@headers_paths) {
             @headers_paths = map { "$current_dir/$_" } @headers_paths;
@@ -1145,7 +1146,7 @@ unless($showonly || !$create_uic_class_map) {
 if($check_includes) {
     for my $lib (keys(%modules)) {
             #calc subdirs
-            my @subdirs = listSubdirs($modules{$lib});
+            my @subdirs = listSubdirs(split(/;/, $modules{$lib}));
 
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
