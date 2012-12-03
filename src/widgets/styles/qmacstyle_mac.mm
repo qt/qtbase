@@ -4982,12 +4982,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 [scroller setControlSize:(tdi.kind == kThemeSmallScrollBar ? NSMiniControlSize
                                                                            : NSRegularControlSize)];
-                if (isHorizontal)
-                    [scroller setBounds:NSMakeRect(0, -1,
-                                                   slider->rect.width(), slider->rect.height())];
-                else
-                    [scroller setBounds:NSMakeRect(-1, 0,
-                                                   slider->rect.width(), slider->rect.height())];
+                [scroller setBounds:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
                 [scroller setScrollerStyle:NSScrollerStyleOverlay];
 
                 // first we draw only the track, by using a disabled scroller
@@ -4996,10 +4991,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                                             NULL);
                     CGContextSetAlpha(cg, opacity);
 
-                    [scroller setFrame:NSMakeRect(0, 0, slider->rect.width(), slider->rect.height())];
-                    [scroller setEnabled:NO];
-                    [scroller displayRectIgnoringOpacity:[scroller bounds]
-                                               inContext:[NSGraphicsContext currentContext]];
+                    [scroller setFrame:[scroller bounds]];
+                    [scroller setEnabled:(slider->state & State_Enabled) ? YES : NO];
+                    [scroller drawKnobSlotInRect:[scroller bounds] highlight:NO];
 
                     CGContextEndTransparencyLayer(cg);
                 }
@@ -5023,18 +5017,17 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     const qreal width = qMax<qreal>(minKnobWidth, plannedWidth);
                     const qreal totalWidth = slider->rect.width() + plannedWidth - width;
                     [scroller setFrame:NSMakeRect(0, 0, width, slider->rect.height())];
-                    CGContextTranslateCTM(cg, value * totalWidth, 0);
+                    CGContextTranslateCTM(cg, value * totalWidth, 1);
                 } else {
                     const qreal plannedHeight = proportion * slider->rect.height();
                     const qreal height = qMax<qreal>(minKnobWidth, plannedHeight);
                     const qreal totalHeight = slider->rect.height() + plannedHeight - height;
                     [scroller setFrame:NSMakeRect(0, 0, slider->rect.width(), height)];
-                    CGContextTranslateCTM(cg, 0, value * totalHeight);
+                    CGContextTranslateCTM(cg, 1, value * totalHeight);
                 }
                 if (length > 0.0) {
                     [scroller layout];
-                    [scroller displayRectIgnoringOpacity:[scroller bounds]
-                                               inContext:[NSGraphicsContext currentContext]];
+                    [scroller drawKnob];
                 }
 
                 CGContextEndTransparencyLayer(cg);
