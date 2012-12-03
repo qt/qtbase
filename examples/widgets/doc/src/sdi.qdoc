@@ -28,6 +28,7 @@
 /*! 
     \example mainwindows/sdi
     \title SDI Example
+    \ingroup examples-mainwindow
 
     \brief The SDI example shows how to create a Single Document Interface. It uses a number of
     top-level windows to display the contents of different text files.

@@ -139,3 +139,18 @@
 
 */
 
+/*!
+    \group examples-mainwindow
+    \ingroup all-examples
+    \title Main Window Examples
+    \brief Building applications around a main window.
+
+    \image mainwindow-examples.png
+
+    All the standard features of application main windows are provided by Qt.
+
+    Main windows can have pull down menus, tool bars, and dock windows. These
+    separate forms of user input are unified in an integrated action system that
+    also supports keyboard shortcuts and accelerator keys in menu items.
+
+*/

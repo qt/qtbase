@@ -28,6 +28,7 @@
 /*!
     \example mainwindows/menus
     \title Menus Example
+    \ingroup examples-mainwindow
 
     \brief The Menus example demonstrates how menus can be used in a main
     window application.

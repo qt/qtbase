@@ -28,6 +28,7 @@
 /*! 
     \example mainwindows/mdi
     \title MDI Example
+    \ingroup examples-mainwindow
 
     \brief The MDI example shows how to implement a Multiple Document Interface using Qt's
     QMdiArea class.
