@@ -38,7 +38,7 @@ HTML.headerstyles = \
 HTML.endheader = \
     "</head>\n" \
     "<body>\n" \
-    "<div class=\"header\" id=\"qtdocheader\"></div>\n"
+    "<div class=\"header\" id=\"qtdocheader\"></div>\n" \
     "    <header>\n" \
     "    <div class=\"nav\">\n" \
     "        <a href=\"http://qt-project.org/\">Qt Home</a>\n" \
