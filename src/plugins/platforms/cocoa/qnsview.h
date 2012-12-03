@@ -66,6 +66,7 @@ QT_END_NAMESPACE
     QString m_composingText;
     bool m_sendKeyEvent;
     QStringList *currentCustomDragTypes;
+    bool m_sendUpAsRightButton;
     Qt::KeyboardModifiers currentWheelModifiers;
     bool m_subscribesForGlobalFrameNotifications;
 }

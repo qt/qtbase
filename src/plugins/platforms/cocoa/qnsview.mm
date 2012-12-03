@@ -84,6 +84,7 @@ static QTouchDevice *touchDevice = 0;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
         currentCustomDragTypes = 0;
+        m_sendUpAsRightButton = false;
 
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -427,6 +428,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    m_sendUpAsRightButton = false;
     if (m_platformWindow->m_activePopupWindow) {
         QWindowSystemInterface::handleCloseEvent(m_platformWindow->m_activePopupWindow);
         QWindowSystemInterface::flushWindowSystemEvents();
@@ -438,7 +440,12 @@ static QTouchDevice *touchDevice = 0;
             [inputManager handleMouseEvent:theEvent];
         }
     } else {
-        m_buttons |= Qt::LeftButton;
+        if ([self convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+            m_buttons |= Qt::RightButton;
+            m_sendUpAsRightButton = true;
+        } else {
+            m_buttons |= Qt::LeftButton;
+        }
         [self handleMouseEvent:theEvent];
     }
 }
@@ -452,7 +459,12 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    m_buttons &= QFlag(~int(Qt::LeftButton));
+    if (m_sendUpAsRightButton) {
+        m_buttons &= QFlag(~int(Qt::RightButton));
+        m_sendUpAsRightButton = false;
+    } else {
+        m_buttons &= QFlag(~int(Qt::LeftButton));
+    }
     [self handleMouseEvent:theEvent];
 }
 
