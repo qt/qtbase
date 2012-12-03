@@ -42,6 +42,7 @@
 #include "qplatformdefs.h"
 
 #include "qplugin.h"
+#include "qcoreapplication.h"
 #include "qpluginloader.h"
 #include <qfileinfo.h>
 #include "qlibrary_p.h"
@@ -250,14 +251,52 @@ bool QPluginLoader::isLoaded() const
     return d && d->pHnd && d->instance;
 }
 
+static QString locatePlugin(const QString& fileName)
+{
+    QStringList prefixes = QLibraryPrivate::prefixes_sys();
+    prefixes.prepend(QString());
+    QStringList suffixes = QLibraryPrivate::suffixes_sys(QString());
+    suffixes.prepend(QString());
+
+    // Split up "subdir/filename"
+    const int slash = fileName.lastIndexOf('/');
+    const QString baseName = fileName.mid(slash + 1);
+    const QString basePath = fileName.left(slash + 1); // keep the '/'
+
+    const bool debug = qt_debug_component();
+
+    QStringList paths = QCoreApplication::libraryPaths();
+    paths.prepend(QStringLiteral("./")); // search in current dir first
+    foreach (const QString &path, paths) {
+        foreach (const QString &prefix, prefixes) {
+            foreach (const QString &suffix, suffixes) {
+                const QString fn = path + QLatin1Char('/') + basePath + prefix + baseName + suffix;
+                if (debug)
+                    qDebug() << "Trying..." << fn;
+                if (QFileInfo(fn).isFile())
+                    return fn;
+            }
+        }
+    }
+    if (debug)
+        qDebug() << fileName << "not found";
+    return QString();
+}
+
 /*!
     \property QPluginLoader::fileName
     \brief the file name of the plugin
 
-    To be loadable, the file's suffix must be a valid suffix for a
-    loadable library in accordance with the platform, e.g. \c .so on
-    Unix, \c .dylib on Mac OS X, and \c .dll on Windows. The suffix
-    can be verified with QLibrary::isLibrary().
+    We recommend omitting the file's suffix in the file name, since
+    QPluginLoader will automatically look for the file with the appropriate
+    suffix (see QLibrary::isLibrary()).
+
+    When loading the plugin, QPluginLoader searches in the current directory and
+    in all plugin locations specified by QCoreApplication::libraryPaths(),
+    unless the file name has an absolute path. After loading the plugin
+    successfully, fileName() returns the fully-qualified file name of
+    the plugin, including the full path to the plugin if one was given
+    in the constructor or passed to setFileName().
 
     If the file name does not exist, it will not be set. This property
     will then contain an empty string.
@@ -277,7 +316,12 @@ void QPluginLoader::setFileName(const QString &fileName)
         did_load = false;
     }
 
-    QString fn = QFileInfo(fileName).canonicalFilePath();
+    QFileInfo fi(fileName);
+    QString fn;
+    if (fi.isAbsolute())
+        fn = fi.canonicalFilePath();
+    else
+        fn = locatePlugin(fileName);
 
     d = QLibraryPrivate::findOrCreate(fn);
     d->loadHints = lh;

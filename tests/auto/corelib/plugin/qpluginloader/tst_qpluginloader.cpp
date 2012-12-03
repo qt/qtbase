@@ -59,7 +59,11 @@
 # define bundle_VALID   true
 # define dylib_VALID    true
 # define so_VALID       true
-# define SUFFIX         ".dylib"
+//# ifdef QT_NO_DEBUG
+#  define SUFFIX         ".dylib"
+//# else
+//#  define SUFFIX         "_debug.dylib"
+//#endif
 # define PREFIX         "lib"
 
 #elif defined(Q_OS_HPUX) && !defined(__ia64)
@@ -79,11 +83,11 @@
 #elif defined(Q_OS_WIN)
 # undef dll_VALID
 # define dll_VALID      true
-# ifdef QT_NO_DEBUG
+//# ifdef QT_NO_DEBUG
 #  define SUFFIX         ".dll"
-# else
-#  define SUFFIX         "d.dll"
-# endif
+//# else
+//#  define SUFFIX         "d.dll"
+//# endif
 # define PREFIX         ""
 
 #else  // all other Unix
@@ -111,6 +115,7 @@ private slots:
 #if defined (Q_OS_UNIX)
     void loadGarbage();
 #endif
+    void relativePath();
     void reloadPlugin();
 };
 
@@ -293,6 +298,20 @@ void tst_QPluginLoader::loadGarbage()
     }
 }
 #endif
+
+void tst_QPluginLoader::relativePath()
+{
+    // Windows binaries run from release and debug subdirs, so we can't rely on the current dir.
+    const QString binDir = QFINDTESTDATA("bin");
+    QVERIFY(!binDir.isEmpty());
+    QCoreApplication::addLibraryPath(binDir);
+    QPluginLoader loader("theplugin");
+    loader.load(); // not recommended, instance() should do the job.
+    PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
+    QVERIFY(instance);
+    QCOMPARE(instance->pluginName(), QLatin1String("Plugin ok"));
+    QVERIFY(loader.unload());
+}
 
 void tst_QPluginLoader::reloadPlugin()
 {
