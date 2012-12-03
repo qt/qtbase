@@ -706,11 +706,10 @@ QRegion QGraphicsViewPrivate::rubberBandRegion(const QWidget *widget, const QRec
     return tmp;
 }
 
-void QGraphicsViewPrivate::updateRubberBand(QMouseEvent *event)
+void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
 {
     Q_Q(QGraphicsView);
     if (dragMode == QGraphicsView::RubberBandDrag && sceneInteractionAllowed) {
-        storeMouseEvent(event);
         if (rubberBanding) {
             // Check for enough drag distance
             if ((mousePressViewPoint - event->pos()).manhattanLength()

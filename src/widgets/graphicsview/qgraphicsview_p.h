@@ -138,7 +138,7 @@ public:
 #ifndef QT_NO_RUBBERBAND
     QRect rubberBandRect;
     QRegion rubberBandRegion(const QWidget *widget, const QRect &rect) const;
-    void updateRubberBand(QMouseEvent *event);
+    void updateRubberBand(const QMouseEvent *event);
     bool rubberBanding;
     Qt::ItemSelectionMode rubberBandSelectionMode;
 #endif
