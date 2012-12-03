@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = tst_bench_qregexp
 QT = core testlib
-CONFIG += release
+CONFIG += release exceptions
 
 SOURCES += main.cpp
 RESOURCES += qregexp.qrc
