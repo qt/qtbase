@@ -28,6 +28,7 @@
 /*!
     \example http
     \title HTTP Example
+    \ingroup examples-network
 
     \brief The HTTP example demonstrates a simple HTTP client that shows how to fetch files
     specified by URLs from remote hosts.

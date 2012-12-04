@@ -28,6 +28,7 @@
 /*!
     \example threadedfortuneserver
     \title Threaded Fortune Server Example
+    \ingroup examples-network
 
     \brief The Threaded Fortune Server example shows how to create a server for a
     simple network service that uses threads to handle requests from different

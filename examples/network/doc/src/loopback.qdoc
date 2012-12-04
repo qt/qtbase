@@ -28,6 +28,7 @@
 /*!
     \example loopback
     \title Loopback Example
+    \ingroup examples-network
 
     \brief The Loopback example shows how to communicate between simple clients and servers on a local
     host.

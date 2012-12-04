@@ -28,6 +28,7 @@
 /*!
     \example fortuneserver
     \title Fortune Server Example
+    \ingroup examples-network
 
     \brief The Fortune Server example shows how to create a server for a simple
     network service. It is intended to be run alongside the

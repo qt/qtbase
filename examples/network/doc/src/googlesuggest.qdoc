@@ -28,6 +28,7 @@
 /*!
     \example googlesuggest
     \title Google Suggest Example
+    \ingroup examples-network
 
     \brief The Google Suggest example demonstrates how to use the QNetworkAccessManager
     class to obtain a list of suggestions from the Google search engine as the 

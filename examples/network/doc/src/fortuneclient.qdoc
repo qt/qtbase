@@ -28,6 +28,7 @@
 /*!
     \example fortuneclient
     \title Fortune Client Example
+    \ingroup examples-network
 
     \brief The Fortune Client example shows how to create a client for a simple
     network service using QTcpSocket. It is intended to be run alongside the

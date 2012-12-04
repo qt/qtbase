@@ -28,6 +28,7 @@
 /*!
     \example broadcastreceiver
     \title Broadcast Receiver Example
+    \ingroup examples-network
 
     \brief The Broadcast Receiver example shows how to receive information that is broadcasted
     over a local network.

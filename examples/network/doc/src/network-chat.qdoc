@@ -28,6 +28,7 @@
 /*!
     \example network-chat
     \title Network Chat Example
+    \ingroup examples-network
 
     \brief The Network Chat example demonstrates a stateful peer-to-peer Chat client
     that uses broadcasting with QUdpSocket and QNetworkInterface to discover

@@ -28,6 +28,7 @@
 /*!
     \example torrent
     \title Torrent Example
+    \ingroup examples-network
 
     \brief The Torrent example is a functional BitTorrent client that
     illustrates how to write a complex TCP/IP application using Qt.
