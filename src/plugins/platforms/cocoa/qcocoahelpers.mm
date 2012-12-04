@@ -789,7 +789,21 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
                                     NULL,
                                     false);
     } else {
-        CGColorSpaceRef cgColourSpaceRef = CGColorSpaceCreateDeviceRGB();
+        // Try get a device color space. Using the device color space means
+        // that the CGImage can be drawn to screen without per-pixel color
+        // space conversion, at the cost of less color accuracy.
+        CGColorSpaceRef cgColourSpaceRef = 0;
+        CMProfileRef sysProfile;
+        if (CMGetSystemProfile(&sysProfile) == noErr)
+        {
+            cgColourSpaceRef = CGColorSpaceCreateWithPlatformColorSpace(sysProfile);
+            CMCloseProfile(sysProfile);
+        }
+
+        // Fall back to Generic RGB if a profile was not found.
+        if (!cgColourSpaceRef)
+            cgColourSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+
         cgImage = CGImageCreate(width,
                                 height,
                                 colorBufferSize,
