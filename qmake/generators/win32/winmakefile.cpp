@@ -744,7 +744,7 @@ void Win32MakefileGenerator::writeLibsPart(QTextStream &t)
         t << "LIBAPP        = " << var("QMAKE_LIB") << endl;
         t << "LIBFLAGS      = " << var("QMAKE_LIBFLAGS") << endl;
     } else {
-        t << "LINK          = " << var("QMAKE_LINK") << endl;
+        t << "LINKER        = " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
         t << "LIBS          = " << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
     }

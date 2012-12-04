@@ -462,7 +462,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 
 void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &extraFlags, const QString &extraInlineFileContent)
 {
-    t << "$(LINK) $(LFLAGS)";
+    t << "$(LINKER) $(LFLAGS)";
     if (!extraFlags.isEmpty())
         t << ' ' << extraFlags;
     t << " /OUT:$(DESTDIR_TARGET) @<<\n"

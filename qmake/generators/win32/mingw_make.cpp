@@ -343,7 +343,7 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
         t << "LIB        =        " << var("QMAKE_LIB") << endl;
     } else {
-        t << "LINK        =        " << var("QMAKE_LINK") << endl;
+        t << "LINKER      =        " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        =        " << var("QMAKE_LFLAGS") << endl;
         t << "LIBS        =        "
           << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
@@ -405,7 +405,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             t << "\n\t" << objectsLinkLine << " " ;
         }
     } else if (project->first("TEMPLATE") != "aux") {
-        t << "\n\t" << "$(LINK) $(LFLAGS) -o $(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
+        t << "\n\t" << "$(LINKER) $(LFLAGS) -o $(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))
         t << "\n\t" <<var("QMAKE_POST_LINK");
