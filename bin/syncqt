@@ -1146,7 +1146,7 @@ unless($showonly || !$create_uic_class_map) {
 }
 
 if($check_includes) {
-    for my $lib (keys(%modules)) {
+    foreach my $lib (@modules_to_sync) {
             #calc subdirs
             my @subdirs = listSubdirs(map { s/^\^//; $_ } split(/;/, $modules{$lib}));
 
