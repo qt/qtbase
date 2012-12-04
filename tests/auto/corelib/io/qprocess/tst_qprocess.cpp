@@ -322,7 +322,7 @@ void tst_QProcess::crashTest()
     QVERIFY(process->waitForStarted(5000));
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
-    qRegisterMetaType<QProcess::ProcessError>("QProcess::ExitStatus");
+    qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
     QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
     QSignalSpy spy2(process, SIGNAL(finished(int,QProcess::ExitStatus)));
@@ -357,7 +357,7 @@ void tst_QProcess::crashTest2()
     QVERIFY(process->waitForStarted(5000));
 
     qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
-    qRegisterMetaType<QProcess::ProcessError>("QProcess::ExitStatus");
+    qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 
     QSignalSpy spy(process, SIGNAL(error(QProcess::ProcessError)));
     QSignalSpy spy2(process, SIGNAL(finished(int,QProcess::ExitStatus)));
