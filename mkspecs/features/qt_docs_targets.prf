@@ -1,4 +1,3 @@
-!contains(QMAKE_EXTRA_TARGETS, docs) {
     contains(TEMPLATE, subdirs) {
         prepare_docs {
             prepareRecursiveTarget(prepare_docs)
@@ -19,9 +18,7 @@
     docs.commands = $(MAKE) -f $(MAKEFILE) html_docs && $(MAKE) -f $(MAKEFILE) qch_docs
     QMAKE_EXTRA_TARGETS += html_docs qch_docs docs
     prepare_docs: QMAKE_EXTRA_TARGETS += prepare_docs generate_docs
-}
 
-!contains(QMAKE_EXTRA_TARGETS, install_docs) {
     contains(TEMPLATE, subdirs) {
         prepareRecursiveTarget(install_html_docs)
         prepareRecursiveTarget(uninstall_html_docs)
@@ -34,4 +31,3 @@
         install_html_docs uninstall_html_docs \
         install_qch_docs uninstall_qch_docs \
         install_docs uninstall_docs
-}
