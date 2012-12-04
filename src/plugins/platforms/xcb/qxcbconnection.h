@@ -370,6 +370,9 @@ public:
     inline xcb_timestamp_t time() const { return m_time; }
     inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
 
+    inline xcb_timestamp_t netWmUserTime() const { return m_netWmUserTime; }
+    inline void setNetWmUserTime(xcb_timestamp_t t) { if (t > m_netWmUserTime) m_netWmUserTime = t; }
+
     bool hasGLX() const { return has_glx_extension; }
     bool hasXFixes() const { return xfixes_first_event > 0; }
     bool hasXShape() const { return has_shape_extension; }
@@ -452,6 +455,7 @@ private:
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     xcb_timestamp_t m_time;
+    xcb_timestamp_t m_netWmUserTime;
 
     QByteArray m_displayName;
 

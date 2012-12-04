@@ -138,7 +138,6 @@ public:
 
     void updateSyncRequestCounter();
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
-    void netWmUserTime() const;
 
 #if defined(XCB_USE_EGL)
     QXcbEGLSurface *eglSurface() const;

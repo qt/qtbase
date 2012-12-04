@@ -313,6 +313,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     initializeAllAtoms();
 
     m_time = XCB_CURRENT_TIME;
+    m_netWmUserTime = XCB_CURRENT_TIME;
 
     initializeXRandr();
     updateScreens();

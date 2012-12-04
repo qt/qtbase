@@ -1028,6 +1028,7 @@ void QXcbWindow::updateNetWmStateBeforeMap()
 void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
 {
     xcb_window_t wid = m_window;
+    connection()->setNetWmUserTime(timestamp);
 
     const bool isSupportedByWM = connection()->wmSupport()->isSupportedByWM(atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW));
     if (m_netWmUserTimeWindow || isSupportedByWM) {

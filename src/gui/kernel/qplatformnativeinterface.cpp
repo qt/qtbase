@@ -100,6 +100,12 @@ QPlatformNativeInterface::NativeResourceForContextFunction QPlatformNativeInterf
     return 0;
 }
 
+QPlatformNativeInterface::NativeResourceForScreenFunction QPlatformNativeInterface::nativeResourceFunctionForScreen(const QByteArray &resource)
+{
+    Q_UNUSED(resource);
+    return 0;
+}
+
 QPlatformNativeInterface::NativeResourceForWindowFunction QPlatformNativeInterface::nativeResourceFunctionForWindow(const QByteArray &resource)
 {
     Q_UNUSED(resource);
