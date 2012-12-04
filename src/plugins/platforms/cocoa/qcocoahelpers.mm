@@ -804,13 +804,34 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
         if (!cgColourSpaceRef)
             cgColourSpaceRef = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
 
+        // Create a CGBitmapInfo contiaining the image format.
+        // Support the 8-bit per component (A)RGB formats.
+        CGBitmapInfo bitmapInfo = kCGBitmapByteOrder32Little;
+        switch (qImage.format()) {
+            case QImage::Format_ARGB32_Premultiplied :
+                bitmapInfo |= kCGImageAlphaPremultipliedFirst;
+            break;
+            case QImage::Format_ARGB32 :
+                bitmapInfo |= kCGImageAlphaFirst;
+            break;
+            case QImage::Format_RGB32 :
+                bitmapInfo |= kCGImageAlphaNoneSkipFirst;
+            break;
+            case QImage::Format_RGB888 :
+                bitmapInfo |= kCGImageAlphaNone;
+            break;
+            default:
+                qWarning() << "qt_mac_toCGImage: Unsupported image format" << qImage.format();
+            break;
+        }
+
         cgImage = CGImageCreate(width,
                                 height,
                                 colorBufferSize,
                                 bitDepth,
                                 bytesPrLine,
                                 cgColourSpaceRef,
-                                kCGBitmapByteOrder32Little | kCGImageAlphaNoneSkipFirst,
+                                bitmapInfo,
                                 cgDataProviderRef,
                                 NULL,
                                 false,
