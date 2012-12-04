@@ -6126,7 +6126,6 @@ fi
 CACHEFILE="$outpath/.qmake.cache"
 [ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
 cat >>"$CACHEFILE.tmp" <<EOF
-#paths
 QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
 EOF
