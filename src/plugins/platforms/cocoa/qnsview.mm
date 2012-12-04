@@ -316,6 +316,7 @@ static QTouchDevice *touchDevice = 0;
     );
     CGImageRef bsCGImage = m_backingStore->getBackingStoreCGImage();
     CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
+    CGContextSetBlendMode(cgContext, kCGBlendModeCopy);
     CGContextDrawImage(cgContext, dirtyWindowRect, cleanImg);
 
     // Clean-up:
