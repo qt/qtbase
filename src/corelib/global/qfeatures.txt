@@ -760,7 +760,7 @@ SeeAlso: ???
 Feature: IMAGEFORMATPLUGIN
 Description: Supports writing an image format plugin.
 Section: Images
-Requires:
+Requires: LIBRARY
 Name: QImageIOPlugin
 SeeAlso: ???
 

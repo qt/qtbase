@@ -91,9 +91,6 @@
 // QHostInfo
 //#define QT_NO_HOSTINFO
 
-// QImageIOPlugin
-//#define QT_NO_IMAGEFORMATPLUGIN
-
 // BMP Image Format
 //#define QT_NO_IMAGEFORMAT_BMP
 

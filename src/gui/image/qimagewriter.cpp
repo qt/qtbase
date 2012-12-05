@@ -124,7 +124,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QImageIOHandlerFactoryInterface_iid, QLatin1String("/imageformats")))
 #endif
@@ -136,7 +136,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
     QByteArray suffix;
     QImageIOHandler *handler = 0;
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     typedef QMultiMap<int, QString> PluginKeyMap;
 
     // check if any plugins can write the image
@@ -151,7 +151,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
         // this allows plugins to override our built-in handlers.
         if (QFile *file = qobject_cast<QFile *>(device)) {
             if (!(suffix = QFileInfo(file->fileName()).suffix().toLower().toLatin1()).isEmpty()) {
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
                 const int index = keyMap.key(QString::fromLatin1(suffix), -1);
                 if (index != -1)
                     suffixPluginIndex = index;
@@ -162,7 +162,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
 
     QByteArray testFormat = !form.isEmpty() ? form : suffix;
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     if (suffixPluginIndex != -1) {
         // when format is missing, check if we can find a plugin for the
         // suffix.
@@ -173,7 +173,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
                 handler = plugin->create(device, suffix);
         }
     }
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     // check if any built-in handlers can write the image
     if (!handler && !testFormat.isEmpty()) {
@@ -214,7 +214,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
         }
     }
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     if (!testFormat.isEmpty()) {
         const int keyCount = keyMap.keys().size();
         for (int i = 0; i < keyCount; ++i) {
@@ -226,7 +226,7 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
             }
         }
     }
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     if (!handler)
         return 0;
@@ -655,7 +655,7 @@ bool QImageWriter::supportsOption(QImageIOHandler::ImageOption option) const
 }
 
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
 void supportedImageHandlerFormats(QFactoryLoader *loader,
                                   QImageIOPlugin::Capability cap,
                                   QSet<QByteArray> *result)
@@ -677,7 +677,7 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
             result->insert(key);
     }
 }
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
 /*!
     Returns the list of image formats supported by QImageWriter.
@@ -729,9 +729,9 @@ QList<QByteArray> QImageWriter::supportedImageFormats()
     formats << "gif";
 #endif
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     supportedImageHandlerFormats(loader(), QImageIOPlugin::CanWrite, &formats);
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     QList<QByteArray> sortedFormats;
     for (QSet<QByteArray>::ConstIterator it = formats.constBegin(); it != formats.constEnd(); ++it)

@@ -114,6 +114,8 @@ private:
     Q_DISABLE_COPY(QImageIOHandler)
 };
 
+#ifndef QT_NO_IMAGEFORMATPLUGIN
+
 #define QImageIOHandlerFactoryInterface_iid "org.qt-project.Qt.QImageIOHandlerFactoryInterface"
 
 class Q_GUI_EXPORT QImageIOPlugin : public QObject
@@ -135,6 +137,8 @@ public:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QImageIOPlugin::Capabilities)
+
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
 QT_END_NAMESPACE
 
