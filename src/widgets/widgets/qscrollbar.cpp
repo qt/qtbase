@@ -234,10 +234,10 @@ void QScrollBarPrivate::setTransient(bool value)
     Q_Q(QScrollBar);
     if (transient != value) {
         transient = value;
-        if (transient) {
-            if (q->isVisible() && q->style()->styleHint(QStyle::SH_ScrollBar_Transient))
+        if (q->isVisible()) {
+            if (q->style()->styleHint(QStyle::SH_ScrollBar_Transient))
                 q->update();
-        } else if (!q->isVisible()) {
+        } else if (!transient) {
             q->show();
         }
     }
