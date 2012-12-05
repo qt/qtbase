@@ -2632,6 +2632,9 @@ void Configure::generateOutputVars()
     else if (dictionary["QT_ICONV"] == "gnu")
         qtConfig += "gnu-libiconv";
 
+    if (dictionary["QT_INOTIFY"] == "yes")
+        qtConfig += "inotify";
+
     if (dictionary["FONT_CONFIG"] == "yes") {
         qtConfig += "fontconfig";
         qmakeVars += "QMAKE_CFLAGS_FONTCONFIG =";
