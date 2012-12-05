@@ -174,9 +174,13 @@ unix|win32-g++* {
    QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
    QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-   include_replace.match = $$[QT_INSTALL_HEADERS/get]
+   !isEmpty(_QMAKE_SUPER_CACHE_): \
+      rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
+   else: \
+      rplbase = $$[QT_INSTALL_PREFIX/get]
+   include_replace.match = $$rplbase/include
    include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
-   lib_replace.match = $$[QT_INSTALL_LIBS/get]
+   lib_replace.match = $$rplbase/lib
    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace
 }
