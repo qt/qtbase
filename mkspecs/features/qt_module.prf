@@ -178,9 +178,7 @@ unix|win32-g++* {
    include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
    lib_replace.match = $$[QT_INSTALL_LIBS/get]
    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
-   prefix_replace.match = $$QT_BUILD_TREE
-   prefix_replace.replace = $$[QT_INSTALL_PREFIX/raw]
-   QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace prefix_replace
+   QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace
 }
 
 unix {
