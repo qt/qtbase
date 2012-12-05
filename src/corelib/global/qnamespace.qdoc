@@ -1721,7 +1721,9 @@
 
     \value ScrollBarAlwaysOff QAbstractScrollArea never shows a scroll bar.
 
-    \value ScrollBarAlwaysOn  QAbstractScrollArea always shows a scroll bar.
+    \value ScrollBarAlwaysOn  QAbstractScrollArea always shows a scroll bar. This
+    property is ignored on systems with transient scroll bars (e.g., on Mac from
+    version 10.7).
 
     (The modes for the horizontal and vertical scroll bars are
     independent.)
