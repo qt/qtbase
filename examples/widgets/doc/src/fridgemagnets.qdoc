@@ -176,7 +176,7 @@
     handler, where drag and drop operations begin:
 
     \snippet draganddrop/fridgemagnets/dragwidget.cpp 13
-    \snippet examples/draganddrop/fridgemagnets/dragwidget.cpp 14
+    \snippet draganddrop/fridgemagnets/dragwidget.cpp 14
 
     Mouse events occur when a mouse button is pressed or released
     inside a widget, or when the mouse cursor is moved. By
