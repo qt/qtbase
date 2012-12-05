@@ -59,7 +59,9 @@ public:
 
     // input methods
     virtual void pointerEvent(const QMouseEvent &event);
+#ifndef QT_NO_CURSOR
     virtual void changeCursor(QCursor *widgetCursor, QWindow *window);
+#endif
 
     virtual void setDirty() { mDirty = true; /* screen->setDirty(QRect()); */ }
     virtual bool isDirty() const { return mDirty; }

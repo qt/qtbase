@@ -52,20 +52,26 @@ class QXcbCursor : public QXcbObject, public QPlatformCursor
 public:
     QXcbCursor(QXcbConnection *conn, QXcbScreen *screen);
     ~QXcbCursor();
+#ifndef QT_NO_CURSOR
     void changeCursor(QCursor *cursor, QWindow *widget);
+#endif
     QPoint pos() const;
     void setPos(const QPoint &pos);
 
     static void queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *pos, int *keybMask = 0);
 
 private:
+#ifndef QT_NO_CURSOR
     xcb_cursor_t createFontCursor(int cshape);
     xcb_cursor_t createBitmapCursor(QCursor *cursor);
     xcb_cursor_t createNonStandardCursor(int cshape);
+#endif
 
     QXcbScreen *m_screen;
+#ifndef QT_NO_CURSOR
     QMap<int, xcb_cursor_t> m_shapeCursorMap;
     QMap<qint64, xcb_cursor_t> m_bitmapCursorMap;
+#endif
 };
 
 QT_END_NAMESPACE

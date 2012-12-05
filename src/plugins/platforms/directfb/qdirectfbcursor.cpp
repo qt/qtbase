@@ -47,9 +47,12 @@ QT_BEGIN_NAMESPACE
 QDirectFBCursor::QDirectFBCursor(QPlatformScreen *screen)
     : m_screen(screen)
 {
+#ifndef QT_NO_CURSOR
     m_image.reset(new QPlatformCursorImage(0, 0, 0, 0, 0, 0));
+#endif
 }
 
+#ifndef QT_NO_CURSOR
 void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
 {
     int xSpot;
@@ -82,5 +85,6 @@ void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
     layer->SetCursorShape(layer, surface, xSpot, ySpot);
     layer->SetCooperativeLevel(layer, DLSCL_SHARED);
 }
+#endif
 
 QT_END_NAMESPACE

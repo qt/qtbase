@@ -122,7 +122,6 @@ protected:
     virtual QTextDocument *textDocument() const = 0;
     virtual QWidget *viewport() const = 0;
 };
-#endif  //QT_NO_CURSOR
 
 #ifndef QT_NO_TEXTEDIT
 class QAccessiblePlainTextEdit : public QAccessibleTextWidget
@@ -177,6 +176,7 @@ protected:
     QWidget *viewport() const;
 };
 #endif // QT_NO_TEXTEDIT
+#endif  //QT_NO_CURSOR
 
 class QAccessibleStackedWidget : public QAccessibleWidget
 {
@@ -245,7 +245,7 @@ public:
     explicit QAccessibleDialogButtonBox(QWidget *widget);
 };
 
-#ifndef QT_NO_TEXTBROWSER
+#if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
 class QAccessibleTextBrowser : public QAccessibleTextEdit
 {
 public:
@@ -253,7 +253,7 @@ public:
 
     QAccessible::Role role() const;
 };
-#endif // QT_NO_TEXTBROWSER
+#endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
 
 #ifndef QT_NO_CALENDARWIDGET
 class QAccessibleCalendarWidget : public QAccessibleWidget

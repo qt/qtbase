@@ -99,7 +99,7 @@ QList<QWidget*> childWidgets(const QWidget *widget, bool includeTopLevel)
     return widgets;
 }
 
-#ifndef QT_NO_TEXTEDIT
+#if !defined(QT_NO_TEXTEDIT) && !defined(QT_NO_CURSOR)
 
 QAccessiblePlainTextEdit::QAccessiblePlainTextEdit(QWidget* o)
   :QAccessibleTextWidget(o)
@@ -292,7 +292,7 @@ void QAccessibleTextEdit::scrollToSubstring(int startIndex, int endIndex)
         qWarning("AccessibleTextEdit::scrollToSubstring failed!");
 }
 
-#endif // QT_NO_TEXTEDIT
+#endif // QT_NO_TEXTEDIT && QT_NO_CURSOR
 
 #ifndef QT_NO_STACKEDWIDGET
 // ======================= QAccessibleStackedWidget ======================
@@ -488,7 +488,7 @@ QAccessibleDialogButtonBox::QAccessibleDialogButtonBox(QWidget *widget)
 
 #endif // QT_NO_DIALOGBUTTONBOX
 
-#ifndef QT_NO_TEXTBROWSER
+#if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
 QAccessibleTextBrowser::QAccessibleTextBrowser(QWidget *widget)
     : QAccessibleTextEdit(widget)
 {
@@ -499,7 +499,7 @@ QAccessible::Role QAccessibleTextBrowser::role() const
 {
     return QAccessible::StaticText;
 }
-#endif // QT_NO_TEXTBROWSER
+#endif // QT_NO_TEXTBROWSER && QT_NO_CURSOR
 
 #ifndef QT_NO_CALENDARWIDGET
 // ===================== QAccessibleCalendarWidget ========================

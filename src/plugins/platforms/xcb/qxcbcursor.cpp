@@ -291,6 +291,7 @@ QXcbCursor::~QXcbCursor()
         xcb_close_font(xcb_connection(), cursorFont);
 }
 
+#ifndef QT_NO_CURSOR
 void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
 {
     QXcbWindow *w = 0;
@@ -507,6 +508,7 @@ xcb_cursor_t QXcbCursor::createBitmapCursor(QCursor *cursor)
     }
     return c;
 }
+#endif
 
 void QXcbCursor::queryPointer(QXcbConnection *c, xcb_window_t *rootWin, QPoint *pos, int *keybMask)
 {

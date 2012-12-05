@@ -237,6 +237,7 @@ void  QBasicDrag::exitDndEventLoop()
 
 void QBasicDrag::updateCursor(Qt::DropAction action)
 {
+#ifndef QT_NO_CURSOR
     Qt::CursorShape cursorShape = Qt::ForbiddenCursor;
     if (canDrop()) {
         switch (action) {
@@ -267,6 +268,7 @@ void QBasicDrag::updateCursor(Qt::DropAction action)
             }
         }
     }
+#endif
     updateAction(action);
 }
 

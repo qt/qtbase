@@ -57,7 +57,9 @@ public:
     QEglFSCursor(QEglFSScreen *screen);
     ~QEglFSCursor();
 
+#ifndef QT_NO_CURSOR
     void changeCursor(QCursor *cursor, QWindow *widget) Q_DECL_OVERRIDE;
+#endif
     void pointerEvent(const QMouseEvent &event) Q_DECL_OVERRIDE;
 
     QPoint pos() const Q_DECL_OVERRIDE;
@@ -68,7 +70,9 @@ public:
     virtual void paintOnScreen();
 
 protected:
+#ifndef QT_NO_CURSOR
     bool setCurrentCursor(QCursor *cursor);
+#endif
     void draw(const QRectF &rect);
     void update(const QRegion &region);
 
