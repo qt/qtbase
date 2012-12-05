@@ -1065,7 +1065,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     QPixmapCache::clear();
 
-    delete  platform_theme;
+    delete platform_theme;
+    platform_theme = 0;
     delete platform_integration;
     platform_integration = 0;
     delete m_gammaTables.load();
