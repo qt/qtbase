@@ -709,52 +709,47 @@ QRegion QGraphicsViewPrivate::rubberBandRegion(const QWidget *widget, const QRec
 void QGraphicsViewPrivate::updateRubberBand(const QMouseEvent *event)
 {
     Q_Q(QGraphicsView);
-    if (dragMode == QGraphicsView::RubberBandDrag && sceneInteractionAllowed) {
-        if (rubberBanding) {
-            // Check for enough drag distance
-            if ((mousePressViewPoint - event->pos()).manhattanLength()
-                < QApplication::startDragDistance()) {
-                return;
-            }
+    if (dragMode != QGraphicsView::RubberBandDrag || !sceneInteractionAllowed || !rubberBanding)
+        return;
+    // Check for enough drag distance
+    if ((mousePressViewPoint - event->pos()).manhattanLength() < QApplication::startDragDistance())
+        return;
 
-            // Update old rubberband
-            if (viewportUpdateMode != QGraphicsView::NoViewportUpdate && !rubberBandRect.isEmpty()) {
-                if (viewportUpdateMode != QGraphicsView::FullViewportUpdate)
-                    q->viewport()->update(rubberBandRegion(q->viewport(), rubberBandRect));
-                else
-                    updateAll();
-            }
-
-            // Stop rubber banding if the user has let go of all buttons (even
-            // if we didn't get the release events).
-            if (!event->buttons()) {
-                rubberBanding = false;
-                rubberBandRect = QRect();
-                return;
-            }
-
-            // Update rubberband position
-            const QPoint mp = q->mapFromScene(mousePressScenePoint);
-            const QPoint ep = event->pos();
-            rubberBandRect = QRect(qMin(mp.x(), ep.x()), qMin(mp.y(), ep.y()),
-                                      qAbs(mp.x() - ep.x()) + 1, qAbs(mp.y() - ep.y()) + 1);
-
-            // Update new rubberband
-            if (viewportUpdateMode != QGraphicsView::NoViewportUpdate){
-                if (viewportUpdateMode != QGraphicsView::FullViewportUpdate)
-                    q->viewport()->update(rubberBandRegion(q->viewport(), rubberBandRect));
-                else
-                    updateAll();
-            }
-            // Set the new selection area
-            QPainterPath selectionArea;
-            selectionArea.addPolygon(mapToScene(rubberBandRect));
-            selectionArea.closeSubpath();
-            if (scene)
-                scene->setSelectionArea(selectionArea, rubberBandSelectionMode,
-                                           q->viewportTransform());
-        }
+    // Update old rubberband
+    if (viewportUpdateMode != QGraphicsView::NoViewportUpdate && !rubberBandRect.isEmpty()) {
+        if (viewportUpdateMode != QGraphicsView::FullViewportUpdate)
+            q->viewport()->update(rubberBandRegion(q->viewport(), rubberBandRect));
+        else
+            updateAll();
     }
+
+    // Stop rubber banding if the user has let go of all buttons (even
+    // if we didn't get the release events).
+    if (!event->buttons()) {
+        rubberBanding = false;
+        rubberBandRect = QRect();
+        return;
+    }
+
+    // Update rubberband position
+    const QPoint mp = q->mapFromScene(mousePressScenePoint);
+    const QPoint ep = event->pos();
+    rubberBandRect = QRect(qMin(mp.x(), ep.x()), qMin(mp.y(), ep.y()),
+                           qAbs(mp.x() - ep.x()) + 1, qAbs(mp.y() - ep.y()) + 1);
+
+    // Update new rubberband
+    if (viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
+        if (viewportUpdateMode != QGraphicsView::FullViewportUpdate)
+            q->viewport()->update(rubberBandRegion(q->viewport(), rubberBandRect));
+        else
+            updateAll();
+    }
+            // Set the new selection area
+    QPainterPath selectionArea;
+    selectionArea.addPolygon(mapToScene(rubberBandRect));
+    selectionArea.closeSubpath();
+    if (scene)
+        scene->setSelectionArea(selectionArea, rubberBandSelectionMode, q->viewportTransform());
 }
 #endif
 
