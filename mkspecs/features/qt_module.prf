@@ -185,7 +185,6 @@ unix|win32-g++* {
 
 unix {
    CONFIG += create_libtool explicitlib
-   QMAKE_PRL_LIBDIR = $$[QT_INSTALL_LIBS/raw] ### XXX
    QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
    QMAKE_LIBTOOL_LIBDIR = $$[QT_INSTALL_LIBS/raw]
    QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
