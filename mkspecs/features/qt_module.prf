@@ -171,8 +171,8 @@ load(qt_installs)
 unix|win32-g++* {
    CONFIG += create_pc
    QMAKE_PKGCONFIG_LIBDIR = $$[QT_INSTALL_LIBS/raw]
-   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]/$$MODULE_INCNAME
-   QMAKE_PKGCONFIG_CFLAGS = -I$$[QT_INSTALL_HEADERS/raw]
+   QMAKE_PKGCONFIG_INCDIR = $$[QT_INSTALL_HEADERS/raw]
+   QMAKE_PKGCONFIG_CFLAGS = -I${includedir}/$$MODULE_INCNAME
    QMAKE_PKGCONFIG_DESTDIR = pkgconfig
    include_replace.match = $$[QT_INSTALL_HEADERS/get]
    include_replace.replace = $$[QT_INSTALL_HEADERS/raw]
