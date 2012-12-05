@@ -1529,9 +1529,9 @@ void Generator::initialize(const Config &config)
         if (outputFormats.contains((*g)->format())) {
             currentGenerator_ = (*g);
             (*g)->initializeGenerator(config);
-            QStringList extraImages = config.getCleanPathList((*g)->format() +
-                                                              Config::dot +
-                                                              CONFIG_EXTRAIMAGES);
+            QStringList extraImages = config.getPathList((*g)->format() +
+                                                         Config::dot +
+                                                         CONFIG_EXTRAIMAGES);
             QStringList::ConstIterator e = extraImages.constBegin();
             while (e != extraImages.constEnd()) {
                 QString filePath = *e;
