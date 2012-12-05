@@ -489,12 +489,20 @@ void QAbstractScrollAreaPrivate::layoutChildren()
         if (hasMacReverseSizeGrip)
             horizontalScrollBarRect.adjust(vsbExt, 0, 0, 0);
 #endif
+#ifdef Q_OS_MAC
+        if (!hasCornerWidget && QSysInfo::macVersion() >= QSysInfo::MV_10_8 && q->style()->styleHint(QStyle::SH_ScrollBar_Transient))
+            horizontalScrollBarRect.adjust(0, 0, cornerOffset.x(), 0);
+#endif
         scrollBarContainers[Qt::Horizontal]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, horizontalScrollBarRect));
         scrollBarContainers[Qt::Horizontal]->raise();
     }
 
     if (needv) {
-        const QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top() + hHeaderBottom),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
+        QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top() + hHeaderBottom),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
+#ifdef Q_OS_MAC
+        if (!hasCornerWidget && QSysInfo::macVersion() >= QSysInfo::MV_10_8 && q->style()->styleHint(QStyle::SH_ScrollBar_Transient))
+            verticalScrollBarRect.adjust(0, 0, 0, cornerOffset.y());
+#endif
         scrollBarContainers[Qt::Vertical]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, verticalScrollBarRect));
         scrollBarContainers[Qt::Vertical]->raise();
     }
