@@ -20,3 +20,4 @@ SUBDIRS       = \
                 widgets
 
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
+contains(DEFINES, QT_NO_DRAGANDDROP): SUBDIRS -= draganddrop

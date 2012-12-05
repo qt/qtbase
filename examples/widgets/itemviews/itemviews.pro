@@ -20,3 +20,4 @@ SUBDIRS       = addressbook \
                 stardelegate
 
 QT += widgets
+contains(DEFINES, QT_NO_DRAGANDDROP): SUBDIRS -= puzzle
