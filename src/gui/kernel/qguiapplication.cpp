@@ -1070,6 +1070,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
     delete platform_integration;
     platform_integration = 0;
     delete m_gammaTables.load();
+
+    window_list.clear();
 }
 
 #if 0

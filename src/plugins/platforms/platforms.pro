@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-SUBDIRS += minimal
+SUBDIRS += minimal offscreen
 
 contains(QT_CONFIG, xcb) {
     SUBDIRS += xcb
