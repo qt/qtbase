@@ -331,31 +331,6 @@ void QPlatformWindow::handleContentOrientationChange(Qt::ScreenOrientation orien
 }
 
 /*!
-  Request a different orientation of the platform window.
-
-  This tells the window manager how the window wants to be rotated in order
-  to be displayed, and how input events should be translated.
-
-  As an example, a portrait compositor might rotate the window by 90 degrees,
-  if the window is in landscape. It will also rotate input coordinates from
-  portrait to landscape such that top right in portrait gets mapped to top
-  left in landscape.
-
-  If the implementation doesn't support the requested orientation it should
-  signal this by returning an actual supported orientation.
-
-  If the implementation doesn't support rotating the window at all it should
-  return Qt::PrimaryOrientation, this is also the default value.
-
-  \sa QWindow::requestWindowOrientation()
-*/
-Qt::ScreenOrientation QPlatformWindow::requestWindowOrientation(Qt::ScreenOrientation orientation)
-{
-    Q_UNUSED(orientation);
-    return Qt::PrimaryOrientation;
-}
-
-/*!
     Reimplement this function in subclass to return the device pixel ratio
     for the window. This is the ratio between physical pixels
     and device-independent pixels.

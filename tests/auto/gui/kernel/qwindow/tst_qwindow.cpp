@@ -731,10 +731,6 @@ void tst_QWindow::orientation()
     window.reportContentOrientationChange(Qt::PrimaryOrientation);
     QCOMPARE(window.contentOrientation(), Qt::PrimaryOrientation);
 
-    QVERIFY(!window.requestOrientation(Qt::LandscapeOrientation) || window.orientation() == Qt::LandscapeOrientation);
-    QVERIFY(!window.requestOrientation(Qt::PortraitOrientation) || window.orientation() == Qt::PortraitOrientation);
-    QVERIFY(!window.requestOrientation(Qt::PrimaryOrientation) || window.orientation() == Qt::PrimaryOrientation);
-
     QSignalSpy spy(&window, SIGNAL(contentOrientationChanged(Qt::ScreenOrientation)));
     window.reportContentOrientationChange(Qt::LandscapeOrientation);
     QCOMPARE(spy.count(), 1);

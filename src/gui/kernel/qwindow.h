@@ -157,9 +157,6 @@ public:
 
     qreal devicePixelRatio() const;
 
-    bool requestOrientation(Qt::ScreenOrientation orientation);
-    Qt::ScreenOrientation orientation() const;
-
     Qt::WindowState windowState() const;
     void setWindowState(Qt::WindowState state);
 
