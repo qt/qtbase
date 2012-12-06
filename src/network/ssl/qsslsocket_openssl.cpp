@@ -229,12 +229,12 @@ static int q_X509Callback(int ok, X509_STORE_CTX *ctx)
 {
     if (!ok) {
         // Store the error and at which depth the error was detected.
-        _q_sslErrorList()->errors << qMakePair<int, int>(ctx->error, ctx->error_depth);
+        _q_sslErrorList()->errors << qMakePair<int, int>(q_X509_STORE_CTX_get_error(ctx), q_X509_STORE_CTX_get_error_depth(ctx));
 #ifdef QSSLSOCKET_DEBUG
         qDebug() << "verification error: dumping bad certificate";
-        qDebug() << QSslCertificatePrivate::QSslCertificate_from_X509(ctx->current_cert).toPem();
+        qDebug() << QSslCertificatePrivate::QSslCertificate_from_X509(q_X509_STORE_CTX_get_current_cert(ctx)).toPem();
         qDebug() << "dumping chain";
-        foreach (QSslCertificate cert, QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(ctx->chain)) {
+        foreach (QSslCertificate cert, QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(q_X509_STORE_CTX_get_chain(ctx))) {
             QString certFormat(QStringLiteral("O=%1 CN=%2 L=%3 OU=%4 C=%5 ST=%6"));
             qDebug() << "Issuer:" << "O=" << cert.issuerInfo(QSslCertificate::Organization)
                 << "CN=" << cert.issuerInfo(QSslCertificate::CommonName)
