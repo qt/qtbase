@@ -25,8 +25,5 @@ versionsym              = QT_VERSION_STR
 
 macro.raisedaster.HTML  = "<sup>*</sup>"
 
-#for including files into the qch file
-qhp.extraFiles += style/offline.css
-
 #include the external websites
 sourcedirs += externalsites
