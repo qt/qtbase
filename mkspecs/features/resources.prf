@@ -1,7 +1,6 @@
 qtPrepareTool(QMAKE_RCC, rcc)
 
 isEmpty(RCC_DIR):RCC_DIR = .
-isEmpty(QMAKE_RESOURCE_PREFIX):QMAKE_RESOURCE_PREFIX = /tmp/
 isEmpty(QMAKE_MOD_RCC):QMAKE_MOD_RCC = qrc
 
 resource_combine {
