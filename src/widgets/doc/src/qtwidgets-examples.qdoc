@@ -129,7 +129,7 @@
     \ingroup all-examples
     \title Graphicsview Examples
     \brief Using the Graphics View framework.
-    \group examples-graphicsview
+    \page examples-graphicsview.html
 
     \image graphicsview-examples.png
 
@@ -137,6 +137,17 @@
     support for rotation and zooming.
     Additionally it provides an event propagation architecture for interaction.
 
+    These examples demonstrate the fundamental aspects of canvas programming with Qt.
+
+    \annotatedlist{examples-graphicsview}
+
+    These examples show the use of graphics widgets and layouts.
+
+    \annotatedlist{examples-graphicsview-layout}
+
+    Some examples demonstrate the use of graphics effects with canvas items.
+
+    \annotatedlist{examples-graphicsview-graphicseffects}
 */
 
 /*!

@@ -26,14 +26,11 @@
 ****************************************************************************/
 
 /*!
-    \example graphicsview/embeddeddialogs
-    \title Embedded Dialogs
+    \example graphicsview/weatheranchorlayout
+    \title Weather Anchor Layout Example
     \ingroup examples-graphicsview-layout
-    \brief This example shows how to embed standard dialogs into
-    Graphics View.
+    \brief This example shows advanced use of QGraphicsAnchorLayout.
 
-    It also shows how you can customize the
-    proxy class and add window shadows.
-
-    \image embeddeddialogs-demo.png
+    The Weather Anchor Layout example shows more complex use of the
+    QGraphicsAnchorLayout class to create a real-world window layout.
 */

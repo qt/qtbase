@@ -28,7 +28,7 @@
 /*!
     \example graphicsview/basicgraphicslayouts
     \title Basic Graphics Layouts Example
-    \ingroup examples-graphicsview
+    \ingroup examples-graphicsview-layout
     \brief This example shows how to use some basic layouts.
 
     \brief The Basic Graphics Layouts example shows how to use the layout classes

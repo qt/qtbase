@@ -28,6 +28,8 @@
 /*!
     \example effects/lighting
     \title Lighting Effect Example
+    \ingroup examples-graphicsview-graphicseffects
+    \brief This example shows the use of QGraphicsDropShadowEffect.
 
     \image lightingeffect-example.png
 */

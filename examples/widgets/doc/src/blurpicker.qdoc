@@ -28,6 +28,8 @@
 /*!
     \example effects/blurpicker
     \title Blur Picker Effect Example
+    \ingroup examples-graphicsview-graphicseffects
+    \brief This example shows the use of QGraphicsBlurEffect.
 
     \image blurpickereffect-example.png
 */

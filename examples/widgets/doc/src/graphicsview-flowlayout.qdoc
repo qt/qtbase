@@ -26,14 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \example graphicsview/embeddeddialogs
-    \title Embedded Dialogs
+    \example graphicsview/flowlayout
+    \title Graphics View Flow Layout Example
     \ingroup examples-graphicsview-layout
-    \brief This example shows how to embed standard dialogs into
-    Graphics View.
+    \brief This example shows how to make a flow layout in Graphics View.
 
-    It also shows how you can customize the
-    proxy class and add window shadows.
+    The Graphics View Flow Layout example shows the use of a flow layout
+    in a Graphics View widget.
 
-    \image embeddeddialogs-demo.png
+    See the \l{Flow Layout Example} for a corresponding widget-based example.
 */
