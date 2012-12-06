@@ -811,7 +811,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn QMap::iterator QMap::begin()
 
-    Returns an \l{STL-style iterator} pointing to the first item in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the map.
 
     \sa constBegin(), end()
@@ -825,7 +825,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \fn QMap::const_iterator QMap::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the map.
 
     \sa begin(), cend()
@@ -833,7 +833,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn QMap::const_iterator QMap::constBegin() const
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the map.
 
     \sa begin(), constEnd()
@@ -841,7 +841,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn QMap::iterator QMap::end()
 
-    Returns an \l{STL-style iterator} pointing to the imaginary item
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the map.
 
     \sa begin(), constEnd()
@@ -855,7 +855,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \fn QMap::const_iterator QMap::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the map.
 
     \sa cbegin(), end()
@@ -863,7 +863,7 @@ void QMapDataBase::freeData(QMapDataBase *d)
 
 /*! \fn QMap::const_iterator QMap::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the map.
 
     \sa constBegin(), end()

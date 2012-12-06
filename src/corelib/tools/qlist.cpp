@@ -915,7 +915,7 @@ void **QListData::erase(void **xi)
 
 /*! \fn QList::iterator QList::begin()
 
-    Returns an \l{STL-style iterator} pointing to the first item in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the list.
 
     \sa constBegin(), end()
@@ -929,7 +929,7 @@ void **QListData::erase(void **xi)
 /*! \fn QList::const_iterator QList::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the list.
 
     \sa begin(), cend()
@@ -937,7 +937,7 @@ void **QListData::erase(void **xi)
 
 /*! \fn QList::const_iterator QList::constBegin() const
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the list.
 
     \sa begin(), constEnd()
@@ -945,7 +945,7 @@ void **QListData::erase(void **xi)
 
 /*! \fn QList::iterator QList::end()
 
-    Returns an \l{STL-style iterator} pointing to the imaginary item
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the list.
 
     \sa begin(), constEnd()
@@ -959,7 +959,7 @@ void **QListData::erase(void **xi)
 /*! \fn QList::const_iterator QList::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
 
     \sa cbegin(), end()
@@ -967,7 +967,7 @@ void **QListData::erase(void **xi)
 
 /*! \fn QList::const_iterator QList::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
 
     \sa constBegin(), end()

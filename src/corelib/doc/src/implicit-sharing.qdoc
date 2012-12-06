@@ -135,7 +135,7 @@
 
     \warning Do not copy an implicitly shared container (QMap,
     QVector, etc.) while you are iterating over it using an non-const
-    \l{STL-style iterator}.
+    \l{STL-style iterators}{STL-style iterator}.
 
     \keyword implicitly shared classes
     \annotatedlist shared

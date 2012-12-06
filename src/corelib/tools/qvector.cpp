@@ -636,7 +636,7 @@
 
 /*! \fn QVector::iterator QVector::begin()
 
-    Returns an \l{STL-style iterator} pointing to the first item in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the vector.
 
     \sa constBegin(), end()
@@ -650,7 +650,7 @@
 /*! \fn QVector::const_iterator QVector::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the vector.
 
     \sa begin(), cend()
@@ -658,7 +658,7 @@
 
 /*! \fn QVector::const_iterator QVector::constBegin() const
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the vector.
 
     \sa begin(), constEnd()
@@ -666,7 +666,7 @@
 
 /*! \fn QVector::iterator QVector::end()
 
-    Returns an \l{STL-style iterator} pointing to the imaginary item
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the vector.
 
     \sa begin(), constEnd()
@@ -680,7 +680,7 @@
 /*! \fn QVector::const_iterator QVector::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the vector.
 
     \sa cbegin(), end()
@@ -688,7 +688,7 @@
 
 /*! \fn QVector::const_iterator QVector::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the vector.
 
     \sa constBegin(), end()

@@ -535,7 +535,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \fn QJsonArray::iterator QJsonArray::begin()
 
-    Returns an \l{STL-style iterator} pointing to the first item in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the array.
 
     \sa constBegin(), end()
@@ -548,7 +548,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \fn QJsonArray::const_iterator QJsonArray::constBegin() const
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the array.
 
     \sa begin(), constEnd()
@@ -556,7 +556,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \fn QJsonArray::iterator QJsonArray::end()
 
-    Returns an \l{STL-style iterator} pointing to the imaginary item
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the array.
 
     \sa begin(), constEnd()
@@ -569,7 +569,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
 
 /*! \fn QJsonArray::const_iterator QJsonArray::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the array.
 
     \sa constBegin(), end()

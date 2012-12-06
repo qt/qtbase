@@ -525,7 +525,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \fn QJsonObject::iterator QJsonObject::begin()
 
-    Returns an \l{STL-style iterator} pointing to the first item in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the object.
 
     \sa constBegin(), end()
@@ -538,7 +538,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \fn QJsonObject::const_iterator QJsonObject::constBegin() const
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the object.
 
     \sa begin(), constEnd()
@@ -546,7 +546,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \fn QJsonObject::iterator QJsonObject::end()
 
-    Returns an \l{STL-style iterator} pointing to the imaginary item
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the object.
 
     \sa begin(), constEnd()
@@ -559,7 +559,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 
 /*! \fn QJsonObject::const_iterator QJsonObject::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the object.
 
     \sa constBegin(), end()

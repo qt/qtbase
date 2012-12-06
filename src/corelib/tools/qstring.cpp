@@ -840,7 +840,7 @@ const QString::Null QString::null = { };
 
 /*! \fn QString::iterator QString::begin()
 
-    Returns an \l{STL-style iterator} pointing to the first character in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first character in
     the string.
 
     \sa constBegin(), end()
@@ -854,7 +854,7 @@ const QString::Null QString::null = { };
 /*! \fn QString::const_iterator QString::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the first character
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
     in the string.
 
     \sa begin(), cend()
@@ -862,7 +862,7 @@ const QString::Null QString::null = { };
 
 /*! \fn QString::const_iterator QString::constBegin() const
 
-    Returns a const \l{STL-style iterator} pointing to the first character
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first character
     in the string.
 
     \sa begin(), constEnd()
@@ -870,7 +870,7 @@ const QString::Null QString::null = { };
 
 /*! \fn QString::iterator QString::end()
 
-    Returns an \l{STL-style iterator} pointing to the imaginary character
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary character
     after the last character in the string.
 
     \sa begin(), constEnd()
@@ -884,7 +884,7 @@ const QString::Null QString::null = { };
 /*! \fn QString::const_iterator QString::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
 
     \sa cbegin(), end()
@@ -892,7 +892,7 @@ const QString::Null QString::null = { };
 
 /*! \fn QString::const_iterator QString::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
 
     \sa constBegin(), end()
