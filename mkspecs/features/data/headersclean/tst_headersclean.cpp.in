@@ -45,11 +45,11 @@
 #define foreach public:;
 #define forever public:;
 
-#include <qt_headersclean_headers.h>
+$${includes}
 #include <QtCore/qglobal.h>
 
 int main()
 {
-    qWarning("This is a compile test only");
+    qWarning(\"This is a compile test only\");
     return 0;
 }

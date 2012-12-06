@@ -1,9 +1,9 @@
 # The headersclean test attempts to ensure all public Qt headers
 # abide by various rules.
 #
-# To reuse this test outside of the qtbase module,
-# include this .pri and create a qt_headersclean_headers.h which includes
-# the headers you'd like to test.
+# To use this test, create a project which contains nothing else than a
+# QT= line with the modules you want to test (no presence conditionals needed),
+# followed by load(qt_headersclean).
 
 *-g++*: QMAKE_CXXFLAGS += -W -Wall -Wextra -Werror
 
@@ -33,7 +33,19 @@ QMAKE_CXXFLAGS += -DQT_NO_CAST_TO_ASCII \
                   -DQT_USE_FAST_OPERATOR_PLUS
 
 TARGET = tst_headersclean
-SOURCES += $$PWD/tst_headersclean.cpp
 
-# qt_headersclean_headers.h should be alongside the .pro file
-INCLUDEPATH += $$_PRO_FILE_PWD_
+includes =
+for(q, QT) {
+    qn = $$eval(QT.$${q}.name)
+    isEmpty(qn): \
+        QT -= $$q
+    else: \
+        includes += "$${LITERAL_HASH}include <$$qn/$$qn>"
+}
+includes = $$join(includes, $$escape_expand(\\n))
+
+testfile.input = $$PWD/data/headersclean/tst_headersclean.cpp.in
+testfile.output = $$OUT_PWD/tst_headersclean.cpp
+QMAKE_SUBSTITUTES += testfile
+
+SOURCES += $$testfile.output
