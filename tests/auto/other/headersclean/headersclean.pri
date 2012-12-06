@@ -34,7 +34,6 @@ QMAKE_CXXFLAGS += -DQT_NO_CAST_TO_ASCII \
 
 TARGET = tst_headersclean
 SOURCES += $$PWD/tst_headersclean.cpp
-HEADERS += $$PWD/tst_headersclean.h
 
 # qt_headersclean_headers.h should be alongside the .pro file
 INCLUDEPATH += $$_PRO_FILE_PWD_
