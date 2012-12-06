@@ -106,6 +106,16 @@ QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
     return m_fontDatabase;
 }
 
+QVariant QIOSIntegration::styleHint(StyleHint hint) const
+{
+    switch (hint) {
+    case ShowIsFullScreen:
+        return true;
+    default:
+        return QPlatformIntegration::styleHint(hint);
+    }
+}
+
 QPlatformNativeInterface *QIOSIntegration::nativeInterface() const
 {
     return const_cast<QIOSIntegration *>(this);

@@ -60,6 +60,8 @@ public:
 
     QPlatformFontDatabase *fontDatabase() const;
 
+    QVariant styleHint(StyleHint hint) const;
+
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
     QPlatformNativeInterface *nativeInterface() const;
 
