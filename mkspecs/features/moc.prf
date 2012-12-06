@@ -79,10 +79,7 @@ QMAKE_EXTRA_COMPILERS += moc_source
 INCREDIBUILD_XGE += moc_source
 
 #make sure we can include these files
-moc_dir_short = $$MOC_DIR
-contains(QMAKE_HOST.os,Windows):moc_dir_short ~= s,^.:,/,
-contains(moc_dir_short, ^[/\\\\].*):INCLUDEPATH += $$MOC_DIR
-else:INCLUDEPATH += $$OUT_PWD/$$MOC_DIR
+INCLUDEPATH += $$absolute_path($$MOC_DIR, $$OUT_PWD)
 
 #auto depend on moc
 unix:!no_mocdepend {

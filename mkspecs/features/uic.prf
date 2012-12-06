@@ -15,8 +15,5 @@ QMAKE_EXTRA_COMPILERS += uic
 INCREDIBUILD_XGE += uic
 
 !isEmpty(FORMS) {
-    ui_dir_short = $$UI_DIR
-    contains(QMAKE_HOST.os,Windows):ui_dir_short ~= s,^.:,/,
-    contains(ui_dir_short, ^[/\\\\].*):INCLUDEPATH += $$UI_DIR
-    else:INCLUDEPATH += $$OUT_PWD/$$UI_DIR
+    INCLUDEPATH += $$absolute_path($$UI_DIR, $$OUT_PWD)
 }
