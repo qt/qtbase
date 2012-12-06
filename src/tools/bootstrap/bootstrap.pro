@@ -73,6 +73,7 @@ SOURCES += \
            ../../corelib/io/qsettings.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
+           ../../corelib/io/qstandardpaths.cpp \
            ../../corelib/kernel/qcoreapplication.cpp \
            ../../corelib/kernel/qcoreglobaldata.cpp \
            ../../corelib/kernel/qmetatype.cpp \
@@ -128,6 +129,18 @@ mac {
               ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
 }
+
+macx {
+    SOURCES += \
+        ../../corelib/io/qstandardpaths_mac.cpp
+} else:unix {
+    SOURCES += \
+        ../../corelib/io/qstandardpaths_unix.cpp
+} else {
+    SOURCES += \
+        ../../corelib/io/qstandardpaths_win.cpp
+}
+
 *-g++*: QMAKE_CXXFLAGS += -ffunction-sections
 
 if(contains(QT_CONFIG, zlib)|cross_compile):include(../../3rdparty/zlib.pri)
