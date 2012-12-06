@@ -202,6 +202,8 @@ QIOSWindow::QIOSWindow(QWindow *window)
 {
     if ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]])
         [[UIApplication sharedApplication].delegate.window.rootViewController.view addSubview:m_view];
+
+    setWindowState(window->windowState());
 }
 
 QIOSWindow::~QIOSWindow()
