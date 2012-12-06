@@ -60,6 +60,8 @@ information about a particular change.
   in Qt4, so these methods return a bool now. If your code used the undocumented
   QBool, simply replace it with bool.
 
+- The old macros TRUE and FALSE have been removed, use true and false instead.
+
 - qIsDetached<> has been removed without replacement.
 
 - The return type of QFlags<Enum>::operator int() now matches the Enum's underlying

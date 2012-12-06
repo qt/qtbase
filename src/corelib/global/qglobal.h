@@ -436,17 +436,6 @@ typedef QIntegerForSizeof<void*>::Unsigned quintptr;
 typedef QIntegerForSizeof<void*>::Signed qptrdiff;
 typedef qptrdiff qintptr;
 
-/*
-   Constant bool values
-*/
-
-#ifndef QT_LINUXBASE /* the LSB defines TRUE and FALSE for us */
-#  ifndef TRUE
-#   define TRUE true
-#   define FALSE false
-#  endif
-#endif
-
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT
 #  define QT_MOC_COMPAT
