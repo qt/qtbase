@@ -118,7 +118,6 @@ win32 {
                 io/qfilesystemiterator_unix.cpp \
 
         !nacl:mac: {
-            SOURCES += io/qfilesystemengine_mac.cpp
             SOURCES += io/qsettings_mac.cpp
         }
         mac {

@@ -48,7 +48,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp \
@@ -300,9 +299,6 @@ qfilesystemengine.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp
 
 qfilesystemengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp
-
-qfilesystemengine_mac.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp
 
 qfilesystemengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp

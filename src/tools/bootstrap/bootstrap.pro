@@ -121,8 +121,7 @@ win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 mac {
-   SOURCES += ../../corelib/io/qfilesystemengine_mac.cpp \
-              ../../corelib/io/qsettings_mac.cpp \
+   SOURCES += ../../corelib/io/qsettings_mac.cpp \
               ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
 }
