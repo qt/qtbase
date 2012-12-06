@@ -2408,6 +2408,16 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     outputFilter(tempProj, xml, "TranslationFiles");
     outputFilter(tempProj, xml, "FormFiles");
     outputFilter(tempProj, xml, "ResourceFiles");
+
+    QSet<QString> extraCompilersInProject;
+    for (int i = 0; i < tool.ExtraCompilersFiles.count(); ++i) {
+        const QString &compilerName = tool.ExtraCompilersFiles.at(i).Name;
+        if (!extraCompilersInProject.contains(compilerName)) {
+            extraCompilersInProject += compilerName;
+            tempProj.ExtraCompilers += compilerName;
+        }
+    }
+
     for (int x = 0; x < tempProj.ExtraCompilers.count(); ++x) {
         outputFilter(tempProj, xml, tempProj.ExtraCompilers.at(x));
     }
