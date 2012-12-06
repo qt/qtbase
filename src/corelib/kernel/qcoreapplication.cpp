@@ -1781,6 +1781,19 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
            && QCoreApplication::self->d_func()->translators.contains(translator);
 }
 
+#else
+
+QString QCoreApplication::translate(const char *context, const char *sourceText,
+                                    const char *disambiguation, int n)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(disambiguation)
+    QString ret = QString::fromUtf8(sourceText);
+    if (n >= 0)
+        ret.replace(QLatin1String("%n"), QString::number(n));
+    return ret;
+}
+
 #endif //QT_NO_TRANSLATE
 
 /*!

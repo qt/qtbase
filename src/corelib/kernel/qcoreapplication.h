@@ -208,13 +208,6 @@ inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 { if (event) event->spont = true; return self ? self->notifyInternal(receiver, event) : false; }
 
-#ifdef QT_NO_TRANSLATION
-inline QString QCoreApplication::translate(const char *, const char *sourceText, const char *, int)
-{
-    return QString::fromUtf8(sourceText);
-}
-#endif
-
 #ifdef QT_NO_DEPRECATED
 #  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
 #else
