@@ -604,18 +604,4 @@ QList<QMimeType> QMimeDatabase::allMimeTypes() const
     \value MatchContent The file content is used to look for a match
 */
 
-/*!
-    \fn QMimeType QMimeDatabase::mimeTypeForNameAndData(const QString &fileName, QIODevice *device) const
-    \obsolete
-
-    This function is replaced by \l mimeTypeForFileNameAndData()
-*/
-
-/*!
-    \fn QMimeType QMimeDatabase::mimeTypeForNameAndData(const QString &fileName, const QByteArray &data) const
-    \obsolete
-
-    This function is replaced by \l mimeTypeForFileNameAndData()
-*/
-
 QT_END_NAMESPACE
