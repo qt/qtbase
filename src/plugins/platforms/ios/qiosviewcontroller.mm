@@ -43,29 +43,9 @@
 
 @implementation QIOSViewController
 
--(id)init
-{
-    self = [super init];
-    if (self) {
-        m_shouldAutorotate = NO;
-    }
-    return self;
-}
-
--(bool)rotateToDeviceOrientation
-{
-    if ([UIViewController respondsToSelector:@selector(attemptRotationToDeviceOrientation)]) {
-        m_shouldAutorotate = YES;
-        [UIViewController attemptRotationToDeviceOrientation];
-        m_shouldAutorotate = NO;
-        return true;
-    }
-    return false;
-}
-
 -(BOOL)shouldAutorotate
 {
-    return m_shouldAutorotate;
+    return NO;
 }
 
 -(NSUInteger)supportedInterfaceOrientations

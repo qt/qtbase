@@ -87,7 +87,6 @@ public:
 
     void setWindowState(Qt::WindowState state);
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
-    Qt::ScreenOrientation requestWindowOrientation(Qt::ScreenOrientation orientation);
 
     GLuint framebufferObject(const QIOSContext &context) const;
 
