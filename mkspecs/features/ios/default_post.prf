@@ -10,4 +10,26 @@ isEmpty(MAKEFILE_GENERATOR) {
         MAKEFILE_GENERATOR = UNIX
 }
 
+gui_app {
+    # We have to do the link and dependency resolution for the platform plugin
+    # manually, since QTPLUGIN and the prl lookup logic does not support
+    # the -force_load link style. The -force_load option ensures that all
+    # symbols from the static library are included, not just the ones the
+    # linker have seen a use for so far. We need this because we load the platform
+    # plugin from the platform plugin itself, using Q_IMPORT_PLUGIN.
+    lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/libqios$$qtPlatformTargetSuffix()
+    LIBS += "-force_load $${lib_path_and_base}.$${QMAKE_EXTENSION_STATICLIB}"
+    LIBS += $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
+
+    # Which means we don't want the auto-generated import for the platform plugin
+    CONFIG -= import_qpa_plugin
+
+    # We link the iosmain library manually as well, since it's not really a plugin
+    lib_name = qiosmain
+    lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/lib$${lib_name}$$qtPlatformTargetSuffix()
+    LIBS += -L$$[QT_INSTALL_PLUGINS/get]/platforms -l$${lib_name}$$qtPlatformTargetSuffix()
+    LIBS += $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
+    DEFINES += main=qt_main
+}
+
 load(default_post)
