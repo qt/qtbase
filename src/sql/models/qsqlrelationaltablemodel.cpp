@@ -67,6 +67,7 @@ typedef QSqlRelationalTableModelSql Sql;
 
 /*!
     \class QSqlRelation
+    \inmodule QtSql
     \brief The QSqlRelation class stores information about an SQL foreign key.
 
     QSqlRelation is a helper class for QSqlRelationalTableModel. See
