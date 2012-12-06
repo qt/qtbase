@@ -185,6 +185,9 @@ static QTouchDevice *touchDevice = 0;
         geometry = qt_mac_toQRect([self frame]);
     }
 
+    if (geometry == m_platformWindow->geometry())
+        return;
+
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QNSView::udpateGeometry" << m_platformWindow << geometry;
 #endif

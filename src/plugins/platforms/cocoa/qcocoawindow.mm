@@ -590,9 +590,7 @@ void QCocoaWindow::windowDidResize()
     if (!m_nsWindow)
         return;
 
-    NSRect rect = [[m_nsWindow contentView]frame];
-    // Call setFrameSize which will trigger a frameDidChangeNotification on QNSView.
-    [[m_nsWindow contentView] setFrameSize:rect.size];
+    [m_contentView updateGeometry];
 }
 
 void QCocoaWindow::windowWillClose()
