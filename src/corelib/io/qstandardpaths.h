@@ -83,7 +83,9 @@ public:
 
     static QString locate(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
     static QStringList locateAll(StandardLocation type, const QString &fileName, LocateOptions options = LocateFile);
+#ifndef QT_BOOTSTRAPPED
     static QString displayName(StandardLocation type);
+#endif
 
     static QString findExecutable(const QString &executableName, const QStringList &paths = QStringList());
 
