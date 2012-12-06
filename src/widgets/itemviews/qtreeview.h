@@ -128,6 +128,9 @@ public:
     void setWordWrap(bool on);
     bool wordWrap() const;
 
+    void setTreePosition(int logicalIndex);
+    int treePosition() const;
+
     void keyboardSearch(const QString &search);
 
     QRect visualRect(const QModelIndex &index) const;

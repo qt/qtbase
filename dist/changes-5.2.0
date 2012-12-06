@@ -26,6 +26,9 @@ QtWidgets
   it will make use of the new protected viewportSizeHint() (binary compatible since it
   was reserved in Qt5). This function returns a suggested size based on contents.
 
+- QTreeView now has setTreePosition to allow the treestructure to show data from other
+  columns than logicalindex zero.
+
 - [QTBUG-4206] QTableView resizeToContents will now adjust to actual contents
   and not just visible area. QHeaderView::setAutoResizePrecision() has been
   introduced to control how precise the autoResize should be.

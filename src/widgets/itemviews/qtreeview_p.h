@@ -91,10 +91,16 @@ public:
           expandsOnDoubleClick(true),
           allColumnsShowFocus(false), current(0), spanning(false),
           animationsEnabled(false), columnResizeTimerID(0),
-          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false), hasRemovedItems(false) {}
+          autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false), hasRemovedItems(false),
+          treePosition(0) {}
 
     ~QTreeViewPrivate() {}
     void initialize();
+    int logicalIndexForTree() const;
+    inline bool isTreePosition(int logicalIndex) const
+    {
+        return logicalIndex == logicalIndexForTree();
+    }
 
     QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
     void adjustViewOptionsForIndex(QStyleOptionViewItem *option, const QModelIndex &current) const;
@@ -252,6 +258,9 @@ public:
 
     // If we should clean the set
     bool hasRemovedItems;
+
+    // tree position
+    int treePosition;
 };
 
 QT_END_NAMESPACE

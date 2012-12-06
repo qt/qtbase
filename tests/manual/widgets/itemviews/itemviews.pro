@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = delegate qheaderview qtreeview
+SUBDIRS = delegate qheaderview qtreeview qtreewidget

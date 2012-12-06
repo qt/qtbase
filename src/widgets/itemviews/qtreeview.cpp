@@ -953,6 +953,36 @@ bool QTreeView::wordWrap() const
     return d->wrapItemText;
 }
 
+/*!
+    \since 5.2
+
+    This specifies that the tree structure should be placed at logical index \a index.
+    If \index is set to -1 then the tree will always follow visual index 0.
+
+    \sa treePosition(), QHeaderView::swapSections(), QHeaderView::moveSection()
+*/
+
+void QTreeView::setTreePosition(int index)
+{
+    Q_D(QTreeView);
+    d->treePosition = index;
+    update();
+}
+
+/*!
+    \since 5.2
+
+    Return the logical index the tree is set on. If the return value is -1 then the
+    tree is placed on the visual index 0.
+
+    \sa setTreePosition()
+*/
+
+int QTreeView::treePosition() const
+{
+    Q_D(const QTreeView);
+    return d->treePosition;
+}
 
 /*!
   \reimp
@@ -1068,7 +1098,7 @@ QRect QTreeView::visualRect(const QModelIndex &index) const
     int x = (spanning ? 0 : columnViewportPosition(index.column()));
     int w = (spanning ? d->header->length() : columnWidth(index.column()));
     // handle indentation
-    if (index.column() == 0) {
+    if (d->isTreePosition(index.column())) {
         int i = d->indentationForItem(vi);
         w -= i;
         if (!isRightToLeft())
@@ -1283,6 +1313,14 @@ void QTreeView::paintEvent(QPaintEvent *event)
         d->paintDropIndicator(&painter);
 #endif
     }
+}
+
+int QTreeViewPrivate::logicalIndexForTree() const
+{
+    int index = treePosition;
+    if (index < 0)
+        index = header->logicalIndex(0);
+    return index;
 }
 
 void QTreeViewPrivate::paintAlternatingRowColors(QPainter *painter, QStyleOptionViewItem *option, int y, int bottom) const
@@ -1517,7 +1555,7 @@ void QTreeViewPrivate::calcLogicalIndices(QVector<int> *logicalIndices, QVector<
         if (columnCount == 1 || (nextLogicalSection == 0 && prevLogicalSection == -1)
             || (headerSection == 0 && nextLogicalSection == -1) || spanning)
             pos = QStyleOptionViewItem::OnlyOne;
-        else if (headerSection == 0 || (nextLogicalSection != 0 && prevLogicalSection == -1))
+        else if (isTreePosition(headerSection) || (nextLogicalSection != 0 && prevLogicalSection == -1))
             pos = QStyleOptionViewItem::Beginning;
         else if (nextLogicalSection == 0 || nextLogicalSection == -1)
             pos = QStyleOptionViewItem::End;
@@ -1541,7 +1579,7 @@ int QTreeViewPrivate::widthHintForIndex(const QModelIndex &index, int hint, cons
         hint = qBound(min, hint, max);
     }
     int xhint = delegateForIndex(index)->sizeHint(option, index).width();
-    hint = qMax(hint, xhint + (index.column() == 0 ? indentationForItem(i) : 0));
+    hint = qMax(hint, xhint + (isTreePosition(index.column()) ? indentationForItem(i) : 0));
     return hint;
 }
 
@@ -1686,7 +1724,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
            alternate row color was provided by the view. For backward compatibility,
            this is now delegated to the style using PE_PanelViewItemRow which
            does the appropriate fill */
-        if (headerSection == 0) {
+        if (d->isTreePosition(headerSection)) {
             const int i = d->indentationForItem(d->current);
             QRect branches(reverse ? position + width - i : position, y, i, height);
             const bool setClipRect = branches.width() > width;
@@ -3663,7 +3701,7 @@ int QTreeViewPrivate::itemDecorationAt(const QPoint &pos) const
     executePostedLayout();
     int x = pos.x();
     int column = header->logicalIndexAt(x);
-    if (column != 0)
+    if (!isTreePosition(column))
         return -1; // no logical index at x
 
     int viewItemIndex = itemAtCoordinate(pos.y());
@@ -3685,8 +3723,8 @@ QRect QTreeViewPrivate::itemDecorationRect(const QModelIndex &index) const
         return QRect();
 
     int itemIndentation = indentationForItem(viewItemIndex);
-    int position = header->sectionViewportPosition(0);
-    int size = header->sectionSize(0);
+    int position = header->sectionViewportPosition(logicalIndexForTree());
+    int size = header->sectionSize(logicalIndexForTree());
 
     QRect rect;
     if (q->isRightToLeft())
