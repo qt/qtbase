@@ -26,10 +26,14 @@
 ****************************************************************************/
 
 /*!
-    \example effects/blurpicker
-    \title Blur Picker Effect Example
-    \ingroup examples-graphicsview-graphicseffects
-    \brief Demonstrates how to apply graphical effects on items in the view
+    \example qtconcurrent/runfunction
+    \title Run Function Example
+    \brief Demonstrates how to run standard functions concurrently.
+    \ingroup qtconcurrentexamples
 
-    \image blurpickereffect-example.png
+    The QtConcurrent Run Function example shows how to apply concurrency to
+    a standard function, using QFuture instances to retrieve return values
+    at a later time.
+
+    This is a command-line application.
 */

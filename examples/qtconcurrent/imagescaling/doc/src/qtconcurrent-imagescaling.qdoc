@@ -26,10 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \example effects/blurpicker
-    \title Blur Picker Effect Example
-    \ingroup examples-graphicsview-graphicseffects
-    \brief Demonstrates how to apply graphical effects on items in the view
+    \example qtconcurrent/imagescaling
+    \title Image Scaling Example
+    \bried Demonstrates how to asynchronously scale images.
+    \ingroup qtconcurrentexamples
 
-    \image blurpickereffect-example.png
+    The QtConcurrent Map example shows how to use the asynchronous
+    QtConcurrent API to load and scale a collection of images.
+
+    \image imagescaling_example.png
 */

@@ -26,10 +26,16 @@
 ****************************************************************************/
 
 /*!
-    \example effects/blurpicker
-    \title Blur Picker Effect Example
-    \ingroup examples-graphicsview-graphicseffects
-    \brief Demonstrates how to apply graphical effects on items in the view
+    \example network/download
+    \title Network Download Example
+    \brief Demonstrates how to use networking APIs for multiple downloads
+    \ingroup examples-network
 
-    \image blurpickereffect-example.png
+    The Network Download example shows how to perform multiple downloads in
+    parallel using the QNetworkAccessManager class.
+
+    This example is designed to be run from the command-line.
+
+    The \l{Network Download Manager Example} implements a more complex system
+    that places files in a queue for sequential downloading.
 */

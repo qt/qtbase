@@ -26,10 +26,14 @@
 ****************************************************************************/
 
 /*!
-    \example effects/blurpicker
-    \title Blur Picker Effect Example
-    \ingroup examples-graphicsview-graphicseffects
-    \brief Demonstrates how to apply graphical effects on items in the view
+    \example qtconcurrent/wordcount
+    \title QtConcurrent Word Count Example
+    \brief Demonstrates how to use the map-reduce algorithm
+    \ingroup qtconcurrentexamples
 
-    \image blurpickereffect-example.png
+    The QtConcurrent Word Count example demonstrates the use of the map-reduce
+    algorithm when applied to the problem of counting words in a collection
+    of files.
+
+    This is a command-line application.
 */

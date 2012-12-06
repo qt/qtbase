@@ -29,9 +29,10 @@
     \example torrent
     \title Torrent Example
     \ingroup examples-network
+    \brief Demonstrates complex TCP/IP operations
 
-    \brief The Torrent example is a functional BitTorrent client that
-    illustrates how to write a complex TCP/IP application using Qt.
+    This example demonstrates some of the complex TCP/IP operations
+    supported by the Qt Network APIs.
 
     \image torrent-example.png
 

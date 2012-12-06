@@ -29,8 +29,10 @@
     \example graphicsview/simpleanchorlayout
     \title Simple Anchor Layout Example
     \ingroup examples-graphicsview-layout
-    \brief This example shows how basic use of QGraphicsAnchorLayout.
+    \brief Demonstrates anchor layout on a graphics view scene
 
     The Simple Anchor Layout example shows the basic use of the
     QGraphicsAnchorLayout class.
+
+    \image graphicssimpleanchorlayout-example.png
 */

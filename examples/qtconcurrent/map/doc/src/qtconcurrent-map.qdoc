@@ -26,10 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \example effects/blurpicker
-    \title Blur Picker Effect Example
-    \ingroup examples-graphicsview-graphicseffects
-    \brief Demonstrates how to apply graphical effects on items in the view
+    \example qtconcurrent/map
+    \title Map Example
+    \brief Demonstrates how to scale images synchronously.
+    \ingroup qtconcurrentexamples
 
-    \image blurpickereffect-example.png
+    The QtConcurrent Map example shows how to use the synchronous (blocking)
+    QtConcurrent API to scale a collection of images.
+
+    This is a command-line application.
 */

@@ -26,10 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \example effects/blurpicker
-    \title Blur Picker Effect Example
-    \ingroup examples-graphicsview-graphicseffects
-    \brief Demonstrates how to apply graphical effects on items in the view
+    \example qtconcurrent/progressdialog
+    \title QtConcurrent Progress Dialog Example
+    \brief Demonstrates how to monitor the progress of the active processes.
+    \ingroup qtconcurrentexamples
 
-    \image blurpickereffect-example.png
+    The QtConcurrent Progress Dialog example shows how to use the
+    QFutureWatcher class to monitor the progress of a long-running operation.
+
+    \image qtconcurrent-progressdialog.png
 */

@@ -29,10 +29,12 @@
     \example graphicsview/flowlayout
     \title Graphics View Flow Layout Example
     \ingroup examples-graphicsview-layout
-    \brief This example shows how to make a flow layout in Graphics View.
+    \brief Demonstrates flow layout on a graphics view scene.
 
     The Graphics View Flow Layout example shows the use of a flow layout
     in a Graphics View widget.
+
+    \image graphicsflowlayout-example.png
 
     See the \l{Flow Layout Example} for a corresponding widget-based example.
 */

@@ -29,10 +29,10 @@
     \example graphicsview/elasticnodes
     \title Elastic Nodes Example
     \ingroup examples-graphicsview
-    \brief The Elastic Nodes example shows how to implement edges between nodes in a
-    graph, with basic interaction.
+    \brief Demonstrates how to interact with graphical items in a scene
 
-    You can click to drag a node around, and
+    The Elastic Nodes example shows how to implement edges between nodes in a
+    graph, with basic interaction. You can click to drag a node around, and
     zoom in and out using the mouse wheel or the keyboard. Hitting the space
     bar will randomize the nodes. The example is also resolution independent;
     as you zoom in, the graphics remain crisp.

@@ -28,6 +28,8 @@
 /*!
     \example waitconditions
     \title Wait Conditions Example
+    \brief Demonstrates multi-thread programming using Qt
+    \ingroup qtconcurrent-mtexamples
 
     \brief The Wait Conditions example shows how to use QWaitCondition and
     QMutex to control access to a circular buffer shared by a

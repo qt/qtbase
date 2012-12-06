@@ -28,6 +28,8 @@
 /*!
     \example semaphores
     \title Semaphores Example
+    \brief Demonstrates multi-thread programming using Qt
+    \ingroup qtconcurrent-mtexamples
 
     \brief The Semaphores example shows how to use QSemaphore to control
     access to a circular buffer shared by a producer thread and a

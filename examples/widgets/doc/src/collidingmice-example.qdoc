@@ -28,6 +28,8 @@
 /*!
     \example graphicsview/collidingmice
     \title Colliding Mice Example
+    \brief Demonstrates how to animate items on a graphics view
+    \ingroup examples-graphicsview
 
     The Colliding Mice example shows how to use the Graphics View
     framework to implement animated items and detect collision between
