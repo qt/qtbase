@@ -42,12 +42,20 @@
 #ifndef QCOREAPPLICATION_H
 #define QCOREAPPLICATION_H
 
+#include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
+#ifndef QT_NO_QOBJECT
 #include <QtCore/qobject.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qeventloop.h>
+#else
+#include <QtCore/qscopedpointer.h>
+#endif
 
+#ifndef QT_NO_QOBJECT
 #if defined(Q_OS_WIN) && !defined(tagMSG)
 typedef struct tagMSG MSG;
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -63,14 +71,19 @@ class QAbstractNativeEventFilter;
 
 #define qApp QCoreApplication::instance()
 
-class Q_CORE_EXPORT QCoreApplication : public QObject
+class Q_CORE_EXPORT QCoreApplication
+#ifndef QT_NO_QOBJECT
+    : public QObject
+#endif
 {
+#ifndef QT_NO_QOBJECT
     Q_OBJECT
     Q_PROPERTY(QString applicationName READ applicationName WRITE setApplicationName NOTIFY applicationNameChanged)
     Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion NOTIFY applicationVersionChanged)
     Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName NOTIFY organizationNameChanged)
     Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain NOTIFY organizationDomainChanged)
     Q_PROPERTY(bool quitLockEnabled READ isQuitLockEnabled WRITE setQuitLockEnabled)
+#endif
 
     Q_DECLARE_PRIVATE(QCoreApplication)
 public:
@@ -101,6 +114,7 @@ public:
 
     static QCoreApplication *instance() { return self; }
 
+#ifndef QT_NO_QOBJECT
     static int exec();
     static void processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime);
@@ -118,6 +132,7 @@ public:
 
     static bool startingUp();
     static bool closingDown();
+#endif
 
     static QString applicationDirPath();
     static QString applicationFilePath();
@@ -146,6 +161,7 @@ public:
         { return translate(context, key, disambiguation, n); }
 #endif
 
+#ifndef QT_NO_QOBJECT
     static void flush();
 
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
@@ -173,13 +189,20 @@ protected:
     bool event(QEvent *);
 
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
+#endif // QT_NO_QOBJECT
 
 protected:
     QCoreApplication(QCoreApplicationPrivate &p);
 
+#ifdef QT_NO_QOBJECT
+    QScopedPointer<QCoreApplicationPrivate> d_ptr;
+#endif
+
 private:
+#ifndef QT_NO_QOBJECT
     static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
     bool notifyInternal(QObject *receiver, QEvent *event);
+#endif
 
     void init();
 
@@ -187,7 +210,6 @@ private:
 
     Q_DISABLE_COPY(QCoreApplication)
 
-    friend class QEventDispatcherUNIXPrivate;
     friend class QApplication;
     friend class QApplicationPrivate;
     friend class QGuiApplication;
@@ -196,17 +218,22 @@ private:
     friend class QWidget;
     friend class QWidgetWindow;
     friend class QWidgetPrivate;
+#ifndef QT_NO_QOBJECT
+    friend class QEventDispatcherUNIXPrivate;
     friend class QCocoaEventDispatcherPrivate;
     friend bool qt_sendSpontaneousEvent(QObject*, QEvent*);
+#endif
     friend Q_CORE_EXPORT QString qAppName();
     friend class QClassFactory;
 };
 
+#ifndef QT_NO_QOBJECT
 inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 {  if (event) event->spont = false; return self ? self->notifyInternal(receiver, event) : false; }
 
 inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 { if (event) event->spont = true; return self ? self->notifyInternal(receiver, event) : false; }
+#endif
 
 #ifdef QT_NO_DEPRECATED
 #  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
@@ -237,9 +264,11 @@ Q_CORE_EXPORT QString qAppName();                // get application name
     }                                 \
     Q_CONSTRUCTOR_FUNCTION(AFUNC ## _ctor_function)
 
+#ifndef QT_NO_QOBJECT
 #if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QString decodeMSG(const MSG &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const MSG &);
+#endif
 #endif
 
 QT_END_NAMESPACE

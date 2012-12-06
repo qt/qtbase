@@ -56,7 +56,9 @@
 #include "QtCore/qcoreapplication.h"
 #include "QtCore/qtranslator.h"
 #include "QtCore/qsettings.h"
+#ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +66,10 @@ typedef QList<QTranslator*> QTranslatorList;
 
 class QAbstractEventDispatcher;
 
-class Q_CORE_EXPORT QCoreApplicationPrivate : public QObjectPrivate
+class Q_CORE_EXPORT QCoreApplicationPrivate
+#ifndef QT_NO_QOBJECT
+    : public QObjectPrivate
+#endif
 {
     Q_DECLARE_PUBLIC(QCoreApplication)
 
@@ -77,22 +82,26 @@ public:
     QCoreApplicationPrivate(int &aargc,  char **aargv, uint flags);
     ~QCoreApplicationPrivate();
 
-    bool sendThroughApplicationEventFilters(QObject *, QEvent *);
-    bool sendThroughObjectEventFilters(QObject *, QEvent *);
-    bool notify_helper(QObject *, QEvent *);
-
     QString appName() const;
-    virtual void createEventDispatcher();
-    static void removePostedEvent(QEvent *);
-#ifdef Q_OS_WIN
-    static void removePostedTimerEvent(QObject *object, int timerId);
-#endif
 
 #ifdef Q_OS_MAC
     static QString macMenuBarName();
 #endif
 
     static void initLocale();
+
+    static bool checkInstance(const char *method);
+
+#ifndef QT_NO_QOBJECT
+    bool sendThroughApplicationEventFilters(QObject *, QEvent *);
+    bool sendThroughObjectEventFilters(QObject *, QEvent *);
+    bool notify_helper(QObject *, QEvent *);
+
+    virtual void createEventDispatcher();
+    static void removePostedEvent(QEvent *);
+#ifdef Q_OS_WIN
+    static void removePostedTimerEvent(QObject *object, int timerId);
+#endif
 
     QAtomicInt quitLockRef;
     void ref();
@@ -104,12 +113,14 @@ public:
 
     static QThread *theMainThread;
     static QThread *mainThread();
-    static bool checkInstance(const char *method);
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
 #if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD)
     void checkReceiverThread(QObject *receiver);
 #endif
+    void cleanupThreadData();
+#endif // QT_NO_QOBJECT
+
     int &argc;
     char **argv;
 #ifdef Q_OS_WIN
@@ -117,24 +128,27 @@ public:
     char **origArgv; // store unmodified arguments for QCoreApplication::arguments()
 #endif
     void appendApplicationPathToLibraryPaths(void);
-    void cleanupThreadData();
 
 #ifndef QT_NO_TRANSLATION
     QTranslatorList translators;
+
+    static bool isTranslatorInstalled(QTranslator *translator);
 #endif
+
     uint application_type;
 
-    bool in_exec;
-    bool aboutToQuitEmitted;
-    bool threadData_clean;
     QString cachedApplicationDirPath;
     QString cachedApplicationFilePath;
 
-    static bool isTranslatorInstalled(QTranslator *translator);
+#ifndef QT_NO_QOBJECT
+    bool in_exec;
+    bool aboutToQuitEmitted;
+    bool threadData_clean;
 
     static QAbstractEventDispatcher *eventDispatcher;
     static bool is_app_running;
     static bool is_app_closing;
+#endif
 
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
@@ -143,6 +157,10 @@ public:
     void processCommandLineArguments();
     QString qmljs_debug_arguments; // a string containing arguments for js/qml debugging.
     inline QString qmljsDebugArgumentsString() { return qmljs_debug_arguments; }
+
+#ifdef QT_NO_QOBJECT
+    QCoreApplication *q_ptr;
+#endif
 };
 
 QT_END_NAMESPACE

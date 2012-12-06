@@ -73,6 +73,7 @@ SOURCES += \
            ../../corelib/io/qsettings.cpp \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
+           ../../corelib/kernel/qcoreapplication.cpp \
            ../../corelib/kernel/qcoreglobaldata.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
@@ -118,10 +119,12 @@ win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qfilesystemiterator_win.cpp \
                  ../../corelib/io/qfsfileengine_win.cpp \
                  ../../corelib/io/qsettings_win.cpp \
+                 ../../corelib/kernel/qcoreapplication_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
 mac {
    SOURCES += ../../corelib/io/qsettings_mac.cpp \
+              ../../corelib/kernel/qcoreapplication_mac.cpp \
               ../../corelib/kernel/qcore_mac.cpp
    LIBS += -framework CoreServices
 }
