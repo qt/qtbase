@@ -45,9 +45,6 @@
     \value BeforeFirstRow Before the first record.
     \value AfterLastRow After the last record.
 
-    \omitvalue BeforeFirst
-    \omitvalue AfterLast
-
     \sa QSqlQuery::at()
 */
 
