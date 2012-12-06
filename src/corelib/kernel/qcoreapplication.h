@@ -215,12 +215,19 @@ inline QString QCoreApplication::translate(const char *, const char *sourceText,
 }
 #endif
 
+#ifdef QT_NO_DEPRECATED
+#  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
+#else
+#  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context) \
+    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
+        { return QCoreApplication::translate(#context, sourceText, disambiguation, n); }
+#endif
+
 #define Q_DECLARE_TR_FUNCTIONS(context) \
 public: \
     static inline QString tr(const char *sourceText, const char *disambiguation = 0, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
-    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
-        { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
+    QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context) \
 private:
 
 typedef void (*QtStartUpFunction)();
