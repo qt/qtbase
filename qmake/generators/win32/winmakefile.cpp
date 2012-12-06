@@ -783,8 +783,20 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
         // use these defines in the .rc file itself. Also, we need to add the _DEBUG define manually
         // since the compiler defines this symbol by itself, and we use it in the automatically
         // created rc file when VERSION is define the .pro file.
+
+        const ProStringList rcIncPaths = project->values("RC_INCLUDEPATH");
+        QString incPathStr;
+        for (int i = 0; i < rcIncPaths.count(); ++i) {
+            const ProString &path = rcIncPaths.at(i);
+            if (path.isEmpty())
+                continue;
+            incPathStr += QStringLiteral(" /i ");
+            incPathStr += escapeFilePath(path);
+        }
+
         t << res_file << ": " << rc_file << "\n\t"
-          << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "") << " $(DEFINES) -fo " << res_file << " " << rc_file;
+          << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "")
+          << " $(DEFINES)" << incPathStr << " -fo " << res_file << " " << rc_file;
         t << endl << endl;
     }
 }

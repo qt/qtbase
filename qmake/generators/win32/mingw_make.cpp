@@ -416,14 +416,23 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
 {
     const QString rc_file = fileFixify(project->first("RC_FILE").toQString());
 
-    QString incPathStr = fileInfo(rc_file).path();
-    if (incPathStr != "." && QDir::isRelativePath(incPathStr))
-        incPathStr.prepend("./");
+    ProStringList rcIncPaths = project->values("RC_INCLUDEPATH");
+    rcIncPaths.prepend(fileInfo(rc_file).path());
+    QString incPathStr;
+    for (int i = 0; i < rcIncPaths.count(); ++i) {
+        const ProString &path = rcIncPaths.at(i);
+        if (path.isEmpty())
+            continue;
+        incPathStr += QStringLiteral(" --include-dir=");
+        if (path != "." && QDir::isRelativePath(path.toQString()))
+            incPathStr += "./";
+        incPathStr += escapeFilePath(path);
+    }
 
     if (!rc_file.isEmpty()) {
         t << escapeDependencyPath(var("RES_FILE")) << ": " << rc_file << "\n\t"
           << var("QMAKE_RC") << " -i " << rc_file << " -o " << var("RES_FILE") 
-          << " --include-dir=" << incPathStr << " $(DEFINES)" << endl << endl;
+          << incPathStr << " $(DEFINES)" << endl << endl;
     }
 }
 
