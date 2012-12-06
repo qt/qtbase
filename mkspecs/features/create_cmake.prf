@@ -155,12 +155,12 @@ if (build_all|CONFIG(release, debug|release)):CMAKE_RELEASE_TYPE = release
 
 INSTALLS += cmake_qt5_module_files
 
-cmake_config_file.input = $$PWD/../cmake/Qt5BasicConfig.cmake.in
+cmake_config_file.input = $$PWD/data/cmake/Qt5BasicConfig.cmake.in
 cmake_config_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Config.cmake
 
 CMAKE_PACKAGE_VERSION = $$eval(QT.$${MODULE}.VERSION)
 
-cmake_config_version_file.input = $$PWD/../cmake/Qt5ConfigVersion.cmake.in
+cmake_config_version_file.input = $$PWD/data/cmake/Qt5ConfigVersion.cmake.in
 cmake_config_version_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake
 
 !build_pass:QMAKE_SUBSTITUTES += \
