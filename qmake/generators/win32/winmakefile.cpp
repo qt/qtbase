@@ -453,6 +453,7 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "\t\t\t\tVALUE \"LegalCopyright\", \"" << copyright << "\\0\"" << endl;
         ts << "\t\t\t\tVALUE \"OriginalFilename\", \"" << originalName << "\\0\"" << endl;
         ts << "\t\t\t\tVALUE \"ProductName\", \"" << productName << "\\0\"" << endl;
+        ts << "\t\t\t\tVALUE \"ProductVersion\", \"" << versionString << "\\0\"" << endl;
         ts << "\t\t\tEND" << endl;
         ts << "\t\tEND" << endl;
         ts << "\t\tBLOCK \"VarFileInfo\"" << endl;
