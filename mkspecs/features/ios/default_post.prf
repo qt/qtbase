@@ -34,4 +34,10 @@ gui_app {
     }
 }
 
+contains(MAKEFILE_GENERATOR, XCODE) {
+    ios_device_family.name = TARGETED_DEVICE_FAMILY
+    ios_device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
+    QMAKE_MAC_XCODE_SETTINGS += ios_device_family
+}
+
 load(default_post)
