@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example threads/queuedcustomtype
+    \example queuedcustomtype
     \title Queued Custom Type Example
 
     The Queued Custom Type example shows how to send custom types between

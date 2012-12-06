@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example threads/semaphores
+    \example semaphores
     \title Semaphores Example
 
     The Semaphores example shows how to use QSemaphore to control

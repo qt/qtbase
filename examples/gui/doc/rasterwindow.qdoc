@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example gui/rasterwindow
+    \example rasterwindow
     \title Raster Window Example
 
     \brief This example shows how to create a minimal QWindow based

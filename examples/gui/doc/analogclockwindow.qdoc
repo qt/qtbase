@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example gui/analogclock
+    \example analogclock
     \title Analog Clock Window Example
 
     \brief The Analog Clock Window example shows how to draw the contents of

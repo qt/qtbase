@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example gui/openglwindow
+    \example openglwindow
     \title OpenGL Window Example
 
     \brief This example shows how to create a minimal QWindow based application
