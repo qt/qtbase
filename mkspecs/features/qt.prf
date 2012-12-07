@@ -2,17 +2,12 @@ CONFIG *= thread
 
 #handle defines
 win32 {
-   # ### QT_NODLL and QT_DLL are compatibility, remove before the Qt 5.0 release
    contains(QT_CONFIG, shared) {
-      DEFINES += QT_DLL
-
       # this variable is read by qmake in qmake/generators/win32/msvc_vcproj.cpp
       # function VcprojGenerator::initDeploymentTool(), which contains some hardcoded
       # library names (the ones that were static in Qt 4)
       # it probably doesn't work anymore and should not be in this file
       QMAKE_QT_DLL = 1
-   } else {
-      DEFINES += QT_NODLL
    }
 }
 CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG
