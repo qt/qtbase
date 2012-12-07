@@ -234,9 +234,11 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
     case Qt::WindowMaximized:
     case Qt::WindowFullScreen:
         m_view.frame = toCGRect(QRect(QPoint(0, 0), window()->screen()->availableSize()));
+        m_view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         break;
     default:
         m_view.frame = toCGRect(geometry());
+        m_view.autoresizingMask = UIViewAutoresizingNone;
         break;
     }
 }
