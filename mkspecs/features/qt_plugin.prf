@@ -21,7 +21,7 @@ contains(QT_CONFIG, static):CONFIG += static
 else:CONFIG += shared
 
 !build_pass:static {
-    isEmpty(MODULE): MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
+    isEmpty(MODULE): MODULE = $$basename(TARGET)
 
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_plugin_$${MODULE}.pri
 
