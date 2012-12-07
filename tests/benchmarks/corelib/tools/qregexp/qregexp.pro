@@ -6,8 +6,7 @@ CONFIG += release exceptions
 SOURCES += main.cpp
 RESOURCES += qregexp.qrc
 
-!isEmpty(QT.webkit.sources):exists($${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri) {
-    include( $${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri )
+!isEmpty(QT.script.name) {
     DEFINES += HAVE_JSC
     QT += script
 }
