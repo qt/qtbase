@@ -211,11 +211,6 @@ QIOSWindow::~QIOSWindow()
 
 void QIOSWindow::setGeometry(const QRect &rect)
 {
-    if (!CGAffineTransformIsIdentity(m_view.transform)) {
-        qWarning() << "Setting the geometry of a QWindow with a transform set on the UIView is not supported";
-        return;
-    }
-
     // If the window is in fullscreen, just bookkeep the requested
     // geometry in case the window goes into Qt::WindowNoState later:
     QPlatformWindow::setGeometry(rect);
