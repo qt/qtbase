@@ -43,6 +43,7 @@
 
 #include "qqnxbpseventfilter.h"
 #include "qqnxscreen.h"
+#include "qqnxintegration.h"
 
 #include <QDebug>
 #include <QEventLoop>
@@ -58,9 +59,9 @@
 
 QT_BEGIN_NAMESPACE
 
-QQnxFileDialogHelper::QQnxFileDialogHelper(QQnxBpsEventFilter *eventFilter)
+QQnxFileDialogHelper::QQnxFileDialogHelper(const QQnxIntegration *integration)
     : QPlatformFileDialogHelper(),
-      m_eventFilter(eventFilter),
+      m_integration(integration),
       m_dialog(0),
       m_acceptMode(QFileDialogOptions::AcceptOpen),
       m_selectedFilter(),
@@ -144,8 +145,9 @@ bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modali
     Q_UNUSED(flags);
     qFileDialogHelperDebug() << Q_FUNC_INFO;
 
+    QQnxBpsEventFilter *eventFilter = m_integration->bpsEventFilter();
     // We *really* need the bps event filter ;)
-    if (!m_eventFilter)
+    if (!eventFilter)
         return false;
 
     // Native dialogs can only handle application modal use cases so far
@@ -208,12 +210,15 @@ bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modali
     m_acceptMode = opts->acceptMode();
 
     // Set the libscreen window group and common properties
-    QQnxScreen *nativeScreen = static_cast<QQnxScreen *>(parent->screen()->handle());
+
+    QQnxScreen *nativeScreen = parent ? static_cast<QQnxScreen *>(parent->screen()->handle()) :
+                                        m_integration->primaryDisplay();
+    Q_ASSERT(nativeScreen);
     dialog_set_group_id(m_dialog, nativeScreen->windowGroupName());
     dialog_set_title_text(m_dialog, opts->windowTitle().toLocal8Bit().constData());
 
     // Register ourselves for dialog domain events from bps
-    m_eventFilter->registerForDialogEvents(this);
+    eventFilter->registerForDialogEvents(this);
 
     // Show the dialog
     dialog_show(m_dialog);

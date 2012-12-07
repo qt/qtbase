@@ -43,13 +43,11 @@
 
 #include "qqnxfiledialoghelper.h"
 #include "qqnxsystemsettings.h"
+#include "qqnxintegration.h"
 
 QT_BEGIN_NAMESPACE
 
-QQnxTheme::QQnxTheme(QPlatformFontDatabase *fontDatabase,
-                     QQnxBpsEventFilter *eventFilter)
-    : m_fontDatabase(fontDatabase),
-      m_eventFilter(eventFilter)
+QQnxTheme::QQnxTheme(const QQnxIntegration *integration) : m_integration(integration)
 {
 }
 
@@ -77,7 +75,7 @@ QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) co
 {
     switch (type) {
     case QPlatformTheme::FileDialog:
-        return new QQnxFileDialogHelper(m_eventFilter);
+        return new QQnxFileDialogHelper(m_integration);
 #ifndef QT_NO_COLORDIALOG
     case QPlatformTheme::ColorDialog:
 #endif
@@ -91,8 +89,10 @@ QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) co
 
 const QFont *QQnxTheme::font(Font type) const
 {
-    if (m_fonts.isEmpty() && m_fontDatabase)
-        m_fonts = qt_qnx_createRoleFonts(m_fontDatabase);
+    QPlatformFontDatabase *fontDatabase = m_integration->fontDatabase();
+
+    if (fontDatabase && m_fonts.isEmpty())
+        m_fonts = qt_qnx_createRoleFonts(fontDatabase);
     return m_fonts.value(type, 0);
 }
 
