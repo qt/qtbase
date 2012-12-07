@@ -35,7 +35,8 @@ plugin { #Qt plugins
    }
 }
 
-QT_PLUGIN_VERIFY = QTPLUGIN DEPLOYMENT_PLUGIN
+QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
+contains(QT_CONFIG, static): QT_PLUGIN_VERIFY += QTPLUGIN
 for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
     for(QTPLUG, $$list($$lower($$unique($$QT_CURRENT_VERIFY)))) {
        # Check if the plugin is known to Qt. We can use this to determine
