@@ -76,7 +76,7 @@
 
     \section2 Driver Layer
 
-    This comprises the classes QSqlDriver, QSqlDriverCreator<T>,
+    This comprises the classes QSqlDriver, QSqlDriverCreator,
     QSqlDriverCreatorBase, QSqlDriverPlugin, and QSqlResult.
 
     This layer provides the low-level bridge between the specific databases
@@ -98,8 +98,8 @@
     These classes are designed to work with Qt's
     \l{Model/View Programming}{model/view framework}.
 
-    Note that to use any of these classes, a QCoreApplication object
-    must have been instantiated first.
+    Note that a QCoreApplication object must be instantiated before
+    using any of these classes.
 */
 
 /*!
