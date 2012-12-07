@@ -89,8 +89,8 @@
 
     \li The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,
-    \l {Qt Designer}). Most properties are \c DESIGNABLE (default
-    true). Instead of true or false, you can specify a boolean
+    \l {Qt Designer Manual}{Qt Designer}). Most properties are \c DESIGNABLE
+    (default true). Instead of true or false, you can specify a boolean
     member function.
 
     \li The \c SCRIPTABLE attribute indicates whether this property

@@ -33,9 +33,8 @@
   \brief This example displays a text editor with the user interface written
   in pure C++. 
   
-  A similar example which uses \link designer-manual.book Qt
-  Designer\endlink to produce the user interface is in the \link
-  designer-manual.book Qt Designer manual\endlink.
+  A similar example which uses Qt Designer to produce the user
+  interface is in the \l {Qt Designer Manual}.
 
 
   See \c{$QTDIR/examples/textedit} for the source code.
