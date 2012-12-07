@@ -58,7 +58,7 @@ contains(CMAKE_DATA_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
 
 static|staticlib:CMAKE_STATIC_TYPE = true
 
-contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
+unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
 
