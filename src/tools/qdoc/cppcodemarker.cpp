@@ -484,7 +484,7 @@ QList<Section> CppCodeMarker::sections(const InnerNode *inner,
                                         QString(),
                                         "public function",
                                         "public functions");
-            FastSection publicSignals(classNode, "Signals", QString(), "signal", "signal");
+            FastSection publicSignals(classNode, "Signals", QString(), "signal", "signals");
             FastSection publicSlots(classNode, "Public Slots", QString(), "public slot", "public slots");
             FastSection publicTypes(classNode, "Public Types", QString(), "public type", "public types");
             FastSection publicVariables(classNode,
