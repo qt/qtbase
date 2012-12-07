@@ -48,7 +48,6 @@
 
     # Create a forwarding module .pri file
     MODULE_FWD_PRI_CONT = \
-        "QT_MODULE_BASE = $$MODULE_BASE_DIR" \
         "QT_MODULE_BIN_BASE = $$MODULE_BASE_OUTDIR/bin" \
         "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
         "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
