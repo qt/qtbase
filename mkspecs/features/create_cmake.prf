@@ -17,7 +17,7 @@ defineReplace(cmakeModuleList) {
 
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
-CMAKE_MODULE_DEPS = $$cmakeModuleList($$eval(QT.$${MODULE}.depends))
+CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
 CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
 !isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
 
