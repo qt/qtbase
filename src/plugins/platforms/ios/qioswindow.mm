@@ -232,10 +232,13 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
 
     switch (state) {
     case Qt::WindowMaximized:
-    case Qt::WindowFullScreen:
-        m_view.frame = toCGRect(QRect(QPoint(0, 0), window()->screen()->availableSize()));
+    case Qt::WindowFullScreen: {
+        // Since UIScreen does not take orientation into account when
+        // reporting geometry, we need to look at the top view instead:
+        CGSize fullscreenSize = m_view.window.rootViewController.view.bounds.size;
+        m_view.frame = CGRectMake(0, 0, fullscreenSize.width, fullscreenSize.height);
         m_view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        break;
+        break; }
     default:
         m_view.frame = toCGRect(geometry());
         m_view.autoresizingMask = UIViewAutoresizingNone;
