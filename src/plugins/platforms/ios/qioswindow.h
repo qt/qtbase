@@ -83,7 +83,6 @@ public:
     ~QIOSWindow();
 
     void setGeometry(const QRect &rect);
-    void updateGeometry(const QRect &rect);
 
     void setWindowState(Qt::WindowState state);
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);

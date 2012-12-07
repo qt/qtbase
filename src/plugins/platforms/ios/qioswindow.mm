@@ -109,13 +109,11 @@ static QRect fromCGRect(const CGRect &rect)
     // the position of our QWindow (and platform window) will only get updated
     // when the size is also changed.
 
-    if (CGAffineTransformIsIdentity(self.transform)) {
-        // Reflect the new size (and possibly also position) in the QWindow
-        m_qioswindow->updateGeometry(fromCGRect(self.frame));
-    } else {
-        qWarning() << "QIOSPlatformWindow's UIView has transform set, ignoring geometry updates";
-    }
+    if (!CGAffineTransformIsIdentity(self.transform))
+        qWarning() << m_qioswindow->window()
+            << "is backed by a UIView that has a transform set. This is not supported.";
 
+    QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), fromCGRect(self.frame));
     [super layoutSubviews];
 }
 
@@ -218,22 +216,17 @@ void QIOSWindow::setGeometry(const QRect &rect)
         return;
     }
 
+    // If the window is in fullscreen, just bookkeep the requested
+    // geometry in case the window goes into Qt::WindowNoState later:
+    QPlatformWindow::setGeometry(rect);
+    if (window()->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
+        return;
+
     // Since we don't support transformations on the UIView, we can set the frame
     // directly and let UIKit deal with translating that into bounds and center.
+    // Changing the size of the view will end up in a call to -[EAGLView layoutSubviews]
+    // which will update QWindowSystemInterface with the new size.
     m_view.frame = toCGRect(rect);
-
-    updateGeometry(rect);
-}
-
-void QIOSWindow::updateGeometry(const QRect &rect)
-{
-    // The baseclass implementation will store the geometry, and allows use to
-    // re-use the baseclass geometry() implementation, which just returns rect.
-    QPlatformWindow::setGeometry(rect);
-
-    // We inform Qt about new geometry, which will trigger resize and
-    // expose events for the application.
-    QWindowSystemInterface::handleGeometryChange(window(), rect);
 }
 
 void QIOSWindow::setWindowState(Qt::WindowState state)
@@ -245,9 +238,10 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
     switch (state) {
     case Qt::WindowMaximized:
     case Qt::WindowFullScreen:
-        setGeometry(QRect(QPoint(0, 0), window()->screen()->availableSize()));
+        m_view.frame = toCGRect(QRect(QPoint(0, 0), window()->screen()->availableSize()));
         break;
     default:
+        m_view.frame = toCGRect(geometry());
         break;
     }
 }
