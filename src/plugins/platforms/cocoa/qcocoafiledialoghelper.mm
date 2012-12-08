@@ -223,7 +223,7 @@ static QString strippedText(QString s)
 - (void)showModelessPanel
 {
     if (mOpenPanel){
-        QFileInfo info(*mCurrentSelection);
+        QFileInfo info(!mCurrentSelection->isEmpty() ? *mCurrentSelection : QT_PREPEND_NAMESPACE(QCFString::toQString)(mCurrentDir));
         NSString *filepath = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath());
         bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
             || [self panel:nil shouldShowFilename:filepath];
@@ -241,7 +241,7 @@ static QString strippedText(QString s)
 
 - (BOOL)runApplicationModalPanel
 {
-    QFileInfo info(*mCurrentSelection);
+    QFileInfo info(!mCurrentSelection->isEmpty() ? *mCurrentSelection : QT_PREPEND_NAMESPACE(QCFString::toQString)(mCurrentDir));
     NSString *filepath = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath());
     bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:nil shouldShowFilename:filepath];
@@ -266,7 +266,7 @@ static QString strippedText(QString s)
 
 - (void)showWindowModalSheet:(QWindow *)parent
 {
-    QFileInfo info(*mCurrentSelection);
+    QFileInfo info(!mCurrentSelection->isEmpty() ? *mCurrentSelection : QT_PREPEND_NAMESPACE(QCFString::toQString)(mCurrentDir));
     NSString *filepath = QT_PREPEND_NAMESPACE(QCFString::toNSString)(info.filePath());
     bool selectable = (mOptions->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:nil shouldShowFilename:filepath];
