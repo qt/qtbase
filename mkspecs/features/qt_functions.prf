@@ -63,7 +63,8 @@ defineTest(qtAddModule) {
     qtProcessModuleFlags(DEFINES, QT.$${1}.DEFINES)
 
     MODULE_INCLUDES -= $$QMAKE_DEFAULT_INCDIRS
-    MODULE_LIBS -= $$QMAKE_DEFAULT_LIBDIRS
+    MODULE_LIBS_ADD = $$MODULE_LIBS
+    MODULE_LIBS_ADD -= $$QMAKE_DEFAULT_LIBDIRS
 
     INCLUDEPATH *= $$MODULE_INCLUDES
     auto_use_privates|isEqual(2, UsePrivate) { # Tests function parameter 2 ($$2) being equal to 'UsePrivate'
@@ -100,7 +101,7 @@ defineTest(qtAddModule) {
     }
 
     isEmpty(LINKAGE) {
-       !isEmpty(MODULE_LIBS): LINKAGE = -L$$MODULE_LIBS
+       !isEmpty(MODULE_LIBS_ADD): LINKAGE = -L$$MODULE_LIBS_ADD
        lib =
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
            win32: lib = $${MODULE_NAME}$${QT_LIBINFIX}d
@@ -115,7 +116,7 @@ defineTest(qtAddModule) {
            PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
 
        # Make sure we can link to uninstalled libraries
-       !isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
+       !isEmpty(MODULE_LIBS) {
             for(rpl, QT.$${1}.rpath_link): \
                 QMAKE_RPATHLINKDIR *= $$rpl
             !auto_use_privates:!isEqual(2, UsePrivate): \
@@ -125,9 +126,9 @@ defineTest(qtAddModule) {
     }
     # Only link to this module if a libs directory is set, else this is just a module
     # to give access to sources or include files, and not for linking.
-    !isEmpty(QT.$${1}.libs) { # Use unmodified path, so /usr/lib also works
+    !isEmpty(MODULE_LIBS) {
         !isEmpty(QMAKE_LSB) {
-            !isEmpty(MODULE_LIBS): QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS
+            !isEmpty(MODULE_LIBS_ADD): QMAKE_LFLAGS *= --lsb-libpath=$$MODULE_LIBS_ADD
             QMAKE_LIBDIR *= /opt/lsb/lib
             QMAKE_LFLAGS *= --lsb-shared-libs=$${MODULE_NAME}$${QT_LIBINFIX}
         }
