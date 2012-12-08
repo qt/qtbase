@@ -137,6 +137,130 @@ public:
         Symbol_Other              //   So
     };
 
+    enum Script
+    {
+        Script_Unknown,
+        Script_Inherited,
+        Script_Common,
+
+        Script_Latin,
+        Script_Greek,
+        Script_Cyrillic,
+        Script_Armenian,
+        Script_Hebrew,
+        Script_Arabic,
+        Script_Syriac,
+        Script_Thaana,
+        Script_Devanagari,
+        Script_Bengali,
+        Script_Gurmukhi,
+        Script_Gujarati,
+        Script_Oriya,
+        Script_Tamil,
+        Script_Telugu,
+        Script_Kannada,
+        Script_Malayalam,
+        Script_Sinhala,
+        Script_Thai,
+        Script_Lao,
+        Script_Tibetan,
+        Script_Myanmar,
+        Script_Georgian,
+        Script_Hangul,
+        Script_Ethiopic,
+        Script_Cherokee,
+        Script_CanadianAboriginal,
+        Script_Ogham,
+        Script_Runic,
+        Script_Khmer,
+        Script_Mongolian,
+        Script_Hiragana,
+        Script_Katakana,
+        Script_Bopomofo,
+        Script_Han,
+        Script_Yi,
+        Script_OldItalic,
+        Script_Gothic,
+        Script_Deseret,
+        Script_Tagalog,
+        Script_Hanunoo,
+        Script_Buhid,
+        Script_Tagbanwa,
+        Script_Coptic,
+
+        // Unicode 4.0 additions
+        Script_Limbu,
+        Script_TaiLe,
+        Script_LinearB,
+        Script_Ugaritic,
+        Script_Shavian,
+        Script_Osmanya,
+        Script_Cypriot,
+        Script_Braille,
+
+        // Unicode 4.1 additions
+        Script_Buginese,
+        Script_NewTaiLue,
+        Script_Glagolitic,
+        Script_Tifinagh,
+        Script_SylotiNagri,
+        Script_OldPersian,
+        Script_Kharoshthi,
+
+        // Unicode 5.0 additions
+        Script_Balinese,
+        Script_Cuneiform,
+        Script_Phoenician,
+        Script_PhagsPa,
+        Script_Nko,
+
+        // Unicode 5.1 additions
+        Script_Sundanese,
+        Script_Lepcha,
+        Script_OlChiki,
+        Script_Vai,
+        Script_Saurashtra,
+        Script_KayahLi,
+        Script_Rejang,
+        Script_Lycian,
+        Script_Carian,
+        Script_Lydian,
+        Script_Cham,
+
+        // Unicode 5.2 additions
+        Script_TaiTham,
+        Script_TaiViet,
+        Script_Avestan,
+        Script_EgyptianHieroglyphs,
+        Script_Samaritan,
+        Script_Lisu,
+        Script_Bamum,
+        Script_Javanese,
+        Script_MeeteiMayek,
+        Script_ImperialAramaic,
+        Script_OldSouthArabian,
+        Script_InscriptionalParthian,
+        Script_InscriptionalPahlavi,
+        Script_OldTurkic,
+        Script_Kaithi,
+
+        // Unicode 6.0 additions
+        Script_Batak,
+        Script_Brahmi,
+        Script_Mandaic,
+
+        // Unicode 6.1 additions
+        Script_Chakma,
+        Script_MeroiticCursive,
+        Script_MeroiticHieroglyphs,
+        Script_Miao,
+        Script_Sharada,
+        Script_SoraSompeng,
+        Script_Takri,
+
+        ScriptCount
+    };
+
     enum Direction
     {
         DirL, DirR, DirEN, DirES, DirET, DirAN, DirCS, DirB, DirS, DirWS, DirON,
@@ -231,6 +355,8 @@ public:
     inline QChar toTitleCase() const { return QChar::toTitleCase(ucs); }
     inline QChar toCaseFolded() const { return QChar::toCaseFolded(ucs); }
 
+    inline Script script() const { return QChar::script(ucs); }
+
     inline UnicodeVersion unicodeVersion() const { return QChar::unicodeVersion(ucs); }
 
 #if QT_DEPRECATED_SINCE(5, 0)
@@ -315,6 +441,8 @@ public:
     static uint QT_FASTCALL toUpper(uint ucs4);
     static uint QT_FASTCALL toTitleCase(uint ucs4);
     static uint QT_FASTCALL toCaseFolded(uint ucs4);
+
+    static Script QT_FASTCALL script(uint ucs4);
 
     static UnicodeVersion QT_FASTCALL unicodeVersion(uint ucs4);
 

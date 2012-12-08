@@ -884,6 +884,8 @@ public:
     QChar::Decomposition decompositionTag() const { return QChar(*this).decompositionTag(); }
     uchar combiningClass() const { return QChar(*this).combiningClass(); }
 
+    inline QChar::Script script() const { return QChar(*this).script(); }
+
     QChar::UnicodeVersion unicodeVersion() const { return QChar(*this).unicodeVersion(); }
 
     inline uchar cell() const { return QChar(*this).cell(); }

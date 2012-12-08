@@ -83,7 +83,7 @@ struct Properties {
     ushort wordBreakClass      : 8; /* 4 used */
     ushort sentenceBreakClass  : 8; /* 4 used */
     ushort lineBreakClass      : 8; /* 6 used */
-    ushort script              : 8; /* 5 used */
+    ushort script              : 8; /* 7 used */
 };
 
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);
