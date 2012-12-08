@@ -132,6 +132,7 @@ public:
 protected:
 
     void setSerialNumber(int serNo);
+    void setDetachNumber(int detNo);
     int w;
     int h;
     int d;

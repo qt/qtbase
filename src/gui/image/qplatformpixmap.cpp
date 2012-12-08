@@ -173,6 +173,11 @@ void QPlatformPixmap::setSerialNumber(int serNo)
     ser_no = serNo;
 }
 
+void QPlatformPixmap::setDetachNumber(int detNo)
+{
+    detach_no = detNo;
+}
+
 QImage QPlatformPixmap::toImage(const QRect &rect) const
 {
     if (rect.contains(QRect(0, 0, w, h)))
