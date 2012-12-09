@@ -1250,8 +1250,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t\t\t\t" << writeSettings("DYLIB_COMPATIBILITY_VERSION", project->first("COMPAT_VERSION")) << ";" << "\n";
     if(!project->isEmpty("QMAKE_MACOSX_DEPLOYMENT_TARGET"))
         t << "\t\t\t\t" << writeSettings("MACOSX_DEPLOYMENT_TARGET", project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET")) << ";" << "\n";
-    if (!project->isEmpty("OBJECTS_DIR"))
-        t << "\t\t\t\t" << writeSettings("OBJROOT", fixForOutput(project->first("OBJECTS_DIR").toQString())) << ";" << "\n";
     if(project->first("TEMPLATE") == "app") {
         t << "\t\t\t\t" << writeSettings("PRODUCT_NAME", fixForOutput(project->first("QMAKE_ORIG_TARGET").toQString())) << ";" << "\n";
     } else {
@@ -1429,6 +1427,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 const ProStringList &archs = project->values("QT_ARCH");
                 if (!archs.isEmpty())
                     t << "\t\t\t\t" << writeSettings("ARCHS", archs) << ";" << "\n";
+                if (!project->isEmpty("OBJECTS_DIR"))
+                    t << "\t\t\t\t" << writeSettings("OBJROOT", escapeFilePath(project->first("OBJECTS_DIR").toQString())) << ";" << "\n";
             } else {
                 if (project->first("TEMPLATE") == "app") {
                     t << "\t\t\t\t" << writeSettings("PRODUCT_NAME", fixForOutput(project->first("QMAKE_ORIG_TARGET").toQString())) << ";" << "\n";
