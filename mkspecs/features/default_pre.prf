@@ -1,2 +1,2 @@
 load(exclusive_builds)
-CONFIG = lex yacc warn_on debug exceptions depend_includepath $$CONFIG
+CONFIG = lex yacc warn_on debug exceptions testcase_targets depend_includepath $$CONFIG
