@@ -108,12 +108,12 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
 
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
 {
-    return static_cast<QIOSWindow *>(surface)->framebufferObject(*const_cast<const QIOSContext*>(this));
+    return static_cast<QIOSWindow *>(surface)->framebufferObject(*this);
 }
 
 GLuint QIOSContext::defaultColorRenderbuffer(QPlatformSurface *surface) const
 {
-    return static_cast<QIOSWindow *>(surface)->colorRenderbuffer(*const_cast<const QIOSContext*>(this));
+    return static_cast<QIOSWindow *>(surface)->colorRenderbuffer(*this);
 }
 
 QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)
