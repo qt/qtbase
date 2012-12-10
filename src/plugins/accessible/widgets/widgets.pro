@@ -1,6 +1,7 @@
 TARGET  = qtaccessiblewidgets
 
 PLUGIN_TYPE = accessible
+PLUGIN_CLASS_NAME = AccessibleFactory
 load(qt_plugin)
 
 QT += core-private gui-private widgets-private

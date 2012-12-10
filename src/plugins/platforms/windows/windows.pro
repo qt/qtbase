@@ -1,6 +1,7 @@
 TARGET = windows
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QWindowsIntegrationPlugin
 load(qt_plugin)
 
 QT *= core-private

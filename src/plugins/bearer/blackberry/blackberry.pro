@@ -1,6 +1,7 @@
 TARGET = qbbbearer
 
 PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QBBEnginePlugin
 load(qt_plugin)
 
 QT = core-private network-private

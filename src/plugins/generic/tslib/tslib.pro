@@ -1,6 +1,7 @@
 TARGET = qtslibplugin
 
 PLUGIN_TYPE = generic
+PLUGIN_CLASS_NAME = QTsLibPlugin
 load(qt_plugin)
 
 HEADERS	= qtslib.h

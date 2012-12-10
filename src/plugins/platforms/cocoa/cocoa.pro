@@ -1,6 +1,7 @@
 TARGET = qcocoa
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QCocoaIntegrationPlugin
 load(qt_plugin)
 
 OBJECTIVE_SOURCES += main.mm \

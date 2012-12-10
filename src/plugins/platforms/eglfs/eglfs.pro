@@ -1,6 +1,7 @@
 TARGET = qeglfs
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QEglFSIntegrationPlugin
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private

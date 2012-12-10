@@ -1,6 +1,7 @@
 TARGET = qconnmanbearer
 
 PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QConnmanEnginePlugin
 load(qt_plugin)
 
 QT = core network-private dbus

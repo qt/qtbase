@@ -1,6 +1,7 @@
 TARGET = windowsprintersupport
 MODULE = windowsprintersupport
 PLUGIN_TYPE = printsupport
+PLUGIN_CLASS_NAME = QWindowsPrinterSupportPlugin
 load(qt_plugin)
 
 QT *= core-private
