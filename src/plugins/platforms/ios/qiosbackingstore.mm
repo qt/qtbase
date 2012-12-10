@@ -69,12 +69,13 @@ void QIOSBackingStore::beginPaint(const QRegion &)
     window()->setSurfaceType(QSurface::OpenGLSurface);
 
     m_context->makeCurrent(window());
-    if (!m_device)
-        m_device = new QOpenGLPaintDevice(window()->size());
 }
 
 QPaintDevice *QIOSBackingStore::paintDevice()
 {
+    if (!m_device)
+        m_device = new QOpenGLPaintDevice(window()->size());
+
     return m_device;
 }
 
