@@ -93,6 +93,7 @@ public:
 
 private:
     EAGLView *m_view;
+    QRect m_requestedGeometry;
 };
 
 QT_END_NAMESPACE

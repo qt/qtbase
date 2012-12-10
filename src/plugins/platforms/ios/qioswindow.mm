@@ -113,7 +113,9 @@ static QRect fromCGRect(const CGRect &rect)
         qWarning() << m_qioswindow->window()
             << "is backed by a UIView that has a transform set. This is not supported.";
 
-    QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), fromCGRect(self.frame));
+    QRect geometry = fromCGRect(self.frame);
+    m_qioswindow->QPlatformWindow::setGeometry(geometry);
+    QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), geometry);
     [super layoutSubviews];
 }
 
@@ -197,6 +199,7 @@ QT_BEGIN_NAMESPACE
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
+    , m_requestedGeometry(QPlatformWindow::geometry())
 {
     if ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]])
         [[UIApplication sharedApplication].delegate.window.rootViewController.view addSubview:m_view];
@@ -213,7 +216,7 @@ void QIOSWindow::setGeometry(const QRect &rect)
 {
     // If the window is in fullscreen, just bookkeep the requested
     // geometry in case the window goes into Qt::WindowNoState later:
-    QPlatformWindow::setGeometry(rect);
+    m_requestedGeometry = rect;
     if (window()->windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
         return;
 
@@ -240,7 +243,7 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
         m_view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         break; }
     default:
-        m_view.frame = toCGRect(geometry());
+        m_view.frame = toCGRect(m_requestedGeometry);
         m_view.autoresizingMask = UIViewAutoresizingNone;
         break;
     }
