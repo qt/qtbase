@@ -1,4 +1,3 @@
-CONFIG += testcase
 TEMPLATE = app
 TARGET = tst_qhttpnetworkconnection
 
