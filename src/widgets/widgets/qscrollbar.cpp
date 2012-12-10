@@ -325,7 +325,7 @@ void QScrollBar::initStyleOption(QStyleOptionSlider *option) const
     option->upsideDown = d->invertedAppearance;
     if (d->orientation == Qt::Horizontal)
         option->state |= QStyle::State_Horizontal;
-    if (d->flashed || !d->transient)
+    if ((d->flashed || !d->transient) && style()->styleHint(QStyle::SH_ScrollBar_Transient))
         option->state |= QStyle::State_On;
 }
 
