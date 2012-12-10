@@ -88,7 +88,8 @@ bool QIOSContext::makeCurrent(QPlatformSurface *surface)
     [EAGLContext setCurrentContext:m_eaglContext];
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject(surface));
 
-    return true;
+    // Ensures render buffers are set up and match the size of the window
+    return defaultColorRenderbuffer(surface) != 0;
 }
 
 void QIOSContext::doneCurrent()
@@ -101,19 +102,18 @@ void QIOSContext::swapBuffers(QPlatformSurface *surface)
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
     [EAGLContext setCurrentContext:m_eaglContext];
-
-    GLint renderbuffer;
-    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject(surface));
-    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &renderbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
-
+    glBindRenderbuffer(GL_RENDERBUFFER, defaultColorRenderbuffer(surface));
     [m_eaglContext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
 {
     return static_cast<QIOSWindow *>(surface)->framebufferObject(*const_cast<const QIOSContext*>(this));
+}
+
+GLuint QIOSContext::defaultColorRenderbuffer(QPlatformSurface *surface) const
+{
+    return static_cast<QIOSWindow *>(surface)->colorRenderbuffer(*const_cast<const QIOSContext*>(this));
 }
 
 QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)

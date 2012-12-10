@@ -88,12 +88,21 @@ public:
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
 
     GLuint framebufferObject(const QIOSContext &context) const;
+    GLuint colorRenderbuffer(const QIOSContext &context) const;
 
     EAGLView *nativeView() const { return m_view; }
 
 private:
     EAGLView *m_view;
     QRect m_requestedGeometry;
+
+    mutable struct GLData {
+        GLuint framebufferObject;
+        GLuint colorRenderbuffer;
+        GLuint depthRenderbuffer;
+        GLint renderbufferWidth;
+        GLint renderbufferHeight;
+    } m_glData;
 };
 
 QT_END_NAMESPACE

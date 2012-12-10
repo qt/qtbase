@@ -62,6 +62,8 @@ public:
     void doneCurrent();
 
     GLuint defaultFramebufferObject(QPlatformSurface *) const;
+    GLuint defaultColorRenderbuffer(QPlatformSurface *) const;
+
     QFunctionPointer getProcAddress(const QByteArray &procName);
 
     EAGLContext *nativeContext() const;

@@ -116,6 +116,10 @@ static QRect fromCGRect(const CGRect &rect)
     QRect geometry = fromCGRect(self.frame);
     m_qioswindow->QPlatformWindow::setGeometry(geometry);
     QWindowSystemInterface::handleGeometryChange(m_qioswindow->window(), geometry);
+
+    // If we have a new size here we need to resize the FBO's corresponding buffers,
+    // but we defer that to when the application calls makeCurrent.
+
     [super layoutSubviews];
 }
 
@@ -200,6 +204,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
     , m_requestedGeometry(QPlatformWindow::geometry())
+    , m_glData()
 {
     if ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]])
         [[UIApplication sharedApplication].delegate.window.rootViewController.view addSubview:m_view];
@@ -209,6 +214,13 @@ QIOSWindow::QIOSWindow(QWindow *window)
 
 QIOSWindow::~QIOSWindow()
 {
+    if (m_glData.framebufferObject)
+        glDeleteFramebuffers(1, &m_glData.framebufferObject);
+    if (m_glData.colorRenderbuffer)
+        glDeleteRenderbuffers(1, &m_glData.colorRenderbuffer);
+    if (m_glData.depthRenderbuffer)
+        glDeleteRenderbuffers(1, &m_glData.depthRenderbuffer);
+
     [m_view release];
 }
 
@@ -259,56 +271,56 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
 
 GLuint QIOSWindow::framebufferObject(const QIOSContext &context) const
 {
-    static GLuint framebuffer = 0;
+    if (!m_glData.framebufferObject) {
+        [EAGLContext setCurrentContext:context.nativeContext()];
 
-    // FIXME: Cache context and recreate framebuffer if window
-    // is used with a different context then last time.
+        glGenFramebuffers(1, &m_glData.framebufferObject);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_glData.framebufferObject);
 
-    if (!framebuffer) {
-        EAGLContext* eaglContext = context.nativeContext();
-
-        [EAGLContext setCurrentContext:eaglContext];
-
-        // Create the framebuffer and bind it
-        glGenFramebuffers(1, &framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-        GLint width;
-        GLint height;
-
-        // Create a color renderbuffer, allocate storage for it,
-        // and attach it to the framebuffer’s color attachment point.
-        GLuint colorRenderbuffer;
-        glGenRenderbuffers(1, &colorRenderbuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
-        [eaglContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:static_cast<CAEAGLLayer *>(m_view.layer)];
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &width);
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer);
+        glGenRenderbuffers(1, &m_glData.colorRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, m_glData.colorRenderbuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_glData.colorRenderbuffer);
 
         QSurfaceFormat requestedFormat = context.format();
         if (requestedFormat.depthBufferSize() > 0 || requestedFormat.stencilBufferSize() > 0) {
-            // Create a depth or depth/stencil renderbuffer, allocate storage for it,
-            // and attach it to the framebuffer’s depth attachment point.
-            GLuint depthRenderbuffer;
-            glGenRenderbuffers(1, &depthRenderbuffer);
-            glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+            glGenRenderbuffers(1, &m_glData.depthRenderbuffer);
+            glBindRenderbuffer(GL_RENDERBUFFER, m_glData.depthRenderbuffer);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_glData.depthRenderbuffer);
+
+            if (requestedFormat.stencilBufferSize() > 0)
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_glData.depthRenderbuffer);
+        }
+    }
+
+    return m_glData.framebufferObject;
+}
+
+GLuint QIOSWindow::colorRenderbuffer(const QIOSContext &context) const
+{
+    if (!m_glData.colorRenderbuffer ||
+        m_glData.renderbufferWidth != geometry().width() || m_glData.renderbufferHeight != geometry().height()) {
+
+        glBindRenderbuffer(GL_RENDERBUFFER, m_glData.colorRenderbuffer);
+        [context.nativeContext() renderbufferStorage:GL_RENDERBUFFER fromDrawable:static_cast<CAEAGLLayer *>(m_view.layer)];
+
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &m_glData.renderbufferWidth);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &m_glData.renderbufferHeight);
+
+        if (m_glData.depthRenderbuffer) {
+            glBindRenderbuffer(GL_RENDERBUFFER, m_glData.depthRenderbuffer);
 
             // FIXME: Support more fine grained control over depth/stencil buffer sizes
-            if (requestedFormat.stencilBufferSize() > 0) {
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, width, height);
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
-            } else {
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-            }
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
+            if (context.format().stencilBufferSize() > 0)
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, m_glData.renderbufferWidth, m_glData.renderbufferHeight);
+            else
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_glData.renderbufferWidth, m_glData.renderbufferHeight);
         }
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
     }
 
-    return framebuffer;
+    return m_glData.colorRenderbuffer;
 }
 
 QT_END_NAMESPACE
