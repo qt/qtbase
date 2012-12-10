@@ -710,6 +710,11 @@ NSWindow * QCocoaWindow::createNSWindow()
         createdWindow = window;
     }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if ([createdWindow respondsToSelector:@selector(setRestorable:)])
+        [createdWindow setRestorable: NO];
+#endif
+
     NSInteger level = windowLevel(flags);
     [createdWindow setLevel:level];
     m_windowModality = window()->modality();
