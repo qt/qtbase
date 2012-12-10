@@ -29,7 +29,7 @@
     \example mandelbrot
     \title Mandelbrot Example
 
-    The Mandelbrot example shows how to use a worker thread to
+    \brief The Mandelbrot example shows how to use a worker thread to
     perform heavy computations without blocking the main thread's
     event loop.
 

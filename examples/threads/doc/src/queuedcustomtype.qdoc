@@ -29,7 +29,7 @@
     \example queuedcustomtype
     \title Queued Custom Type Example
 
-    The Queued Custom Type example shows how to send custom types between
+    \brief The Queued Custom Type example shows how to send custom types between
     threads with queued signals and slots.
 
     \image queuedcustomtype-example.png
