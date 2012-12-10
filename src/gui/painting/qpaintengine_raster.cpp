@@ -4588,7 +4588,7 @@ void QSpanData::setupMatrix(const QTransform &matrix, int bilin)
     txop = inv.type();
     bilinear = bilin;
 
-    const bool affine = !m13 && !m23;
+    const bool affine = inv.isAffine();
     fast_matrix = affine
         && m11 * m11 + m21 * m21 < 1e4
         && m12 * m12 + m22 * m22 < 1e4
