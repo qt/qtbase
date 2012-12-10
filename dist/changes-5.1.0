@@ -86,7 +86,7 @@ QtWidgets
 ---------
 
 - QGraphicsView:
-  * Added function rubberBandRect()
+  * Added function rubberBandRect() and signal rubberBandChanged.
 
 ****************************************************************************
 *                          Database Drivers                                *

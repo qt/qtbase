@@ -110,6 +110,7 @@ public:
     QPoint mousePressViewPoint;
     QPoint mousePressScreenPoint;
     QPointF lastMouseMoveScenePoint;
+    QPointF lastRubberbandScenePoint;
     QPoint lastMouseMoveScreenPoint;
     QPoint dirtyScrollOffset;
     Qt::MouseButton mousePressButton;

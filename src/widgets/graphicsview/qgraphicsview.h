@@ -227,6 +227,11 @@ public Q_SLOTS:
     void invalidateScene(const QRectF &rect = QRectF(), QGraphicsScene::SceneLayers layers = QGraphicsScene::AllLayers);
     void updateSceneRect(const QRectF &rect);
 
+#ifndef QT_NO_RUBBERBAND
+Q_SIGNALS:
+    void rubberBandChanged(QRect viewportRect, QPointF fromScenePoint, QPointF toScenePoint);
+#endif
+
 protected Q_SLOTS:
     void setupViewport(QWidget *widget);
 

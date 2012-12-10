@@ -60,11 +60,12 @@ public:
 
 class MyGraphicsView : public QGraphicsView
 {
-
+    Q_OBJECT
 public:
     MyGraphicsView(QWidget *w, QLabel *l) : QGraphicsView(w), rubberbandLabel(l)
     {
         setDragMode(QGraphicsView::RubberBandDrag);
+        connect(this, SIGNAL(rubberBandChanged(QRect, QPointF, QPointF)), this, SLOT(updateRubberbandInfo(QRect, QPointF, QPointF)));
     }
 protected:
     void mouseMoveEvent(QMouseEvent *event)
@@ -80,29 +81,17 @@ protected:
         int yglobal = event->globalY();
         if (yglobal > bottomPos)
             verticalScrollBar()->setValue(verticalScrollBar()->value() + 10);
-        updateRubberbandInfo();
     }
 
-    void mouseReleaseEvent(QMouseEvent *event)
-    {
-        QGraphicsView::mouseReleaseEvent(event);
-        updateRubberbandInfo();
-    }
-
-    void wheelEvent (QWheelEvent *event)
-    {
-        QGraphicsView::wheelEvent(event);
-        updateRubberbandInfo();
-    }
-
-    void updateRubberbandInfo()
+protected slots:
+    void updateRubberbandInfo(QRect r, QPointF from, QPointF to)
     {
         QString textToShow;
         QDebug s(&textToShow);
-        s << rubberBandRect();
-        if (rubberbandLabel->text() != textToShow)
-            rubberbandLabel->setText(textToShow);
+        s << r << from << to;
+        rubberbandLabel->setText(textToShow);
     }
+protected:
     QLabel *rubberbandLabel;
 };
 
@@ -135,3 +124,5 @@ int main(int argc, char *argv[])
     app.exec();
     return 0;
 }
+
+#include "rubberbandtest.moc"
