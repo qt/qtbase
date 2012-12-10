@@ -851,7 +851,7 @@
     \contentspage richtext.html Contents
     \previouspage Common Rich Text Editing Tasks
 
-    Qt's text widgets are able to display rich text, specified using a subset of \l{HTML 4}
+    Qt's text widgets are able to display rich text, specified using a subset of \l {http://www.w3.org/TR/html401/}{HTML 4}
     markup. Widgets that use QTextDocument, such as QLabel and QTextEdit, are able to display
     rich text specified in this way.
 
@@ -863,7 +863,7 @@
     setting a label's \l{QLabel::}{text} property with the string \c{"<b>Hello</b> <i>Qt!</i>"}
     will result in the label displaying text like this: \b{Hello} \e{Qt!}
 
-    When HTML markup is used for text, Qt follows the rules defined by the \l{HTML 4}
+    When HTML markup is used for text, Qt follows the rules defined by the \l{http://www.w3.org/TR/html401/}{HTML 4}
     specification. This includes default properties for text layout, such as the
     direction of the text flow (left-to-right) which can be changed by applying the
     \l{#Block Attributes}{\c dir} attribute to blocks of text.
