@@ -874,6 +874,7 @@ CFG_FORCE_ASSERTS=no
 CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
+CFG_DIRECTWRITE=no
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -2112,6 +2113,17 @@ while [ "$#" -gt 0 ]; do
     system-proxies)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SYSTEM_PROXIES="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    directwrite)
+        if [ "$XPLATFORM_MINGW" = "yes" ] ; then
+            if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+                CFG_DIRECTWRITE="$VAL"
+            else
+                UNKNOWN_OPT=yes
+            fi
         else
             UNKNOWN_OPT=yes
         fi
@@ -5468,6 +5480,7 @@ fi
 [ "$CFG_XCB" != "no" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 [ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
+[ "$CFG_DIRECTWRITE" = "yes" ] && QT_CONFIG="$QT_CONFIG directwrite"
 
 [ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
@@ -6276,6 +6289,10 @@ echo "MIT-SHM support ........ $CFG_MITSHM"
 echo "FontConfig support ..... $CFG_FONTCONFIG"
 echo "XKB Support ............ $CFG_XKB"
 echo "GTK theme support ...... $CFG_QGTKSTYLE"
+
+if [ "$XPLATFORM_MINGW" = "yes" ] ; then
+    echo "DirectWrite support .... $CFG_DIRECTWRITE"
+fi
 
 [ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support .......... $CFG_SQL_mysql"
 [ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support ..... $CFG_SQL_psql"
