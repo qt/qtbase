@@ -50,6 +50,7 @@ class tst_QMargins : public QObject
 private slots:
     void getSetCheck();
     void dataStreamCheck();
+    void operators();
 };
 
 // Testing get/set functions
@@ -74,6 +75,49 @@ void tst_QMargins::getSetCheck()
     QVERIFY(!margins.isNull());
     QCOMPARE(margins, QMargins(5, 0, 5, 0));
 } 
+
+void tst_QMargins::operators()
+{
+    const QMargins m1(12, 14, 16, 18);
+    const QMargins m2(2, 3, 4, 5);
+
+    const QMargins added = m1 + m2;
+    QCOMPARE(added, QMargins(14, 17, 20, 23));
+    QMargins a = m1;
+    a += m2;
+    QCOMPARE(a, added);
+
+    const QMargins subtracted = m1 - m2;
+    QCOMPARE(subtracted, QMargins(10, 11, 12, 13));
+    a = m1;
+    a -= m2;
+    QCOMPARE(a, subtracted);
+
+    const QMargins doubled = m1 * 2;
+    QCOMPARE(doubled, QMargins(24, 28, 32, 36));
+    QCOMPARE(2 * m1, doubled);
+    QCOMPARE(qreal(2) * m1, doubled);
+    QCOMPARE(m1 * qreal(2), doubled);
+
+    a = m1;
+    a *= 2;
+    QCOMPARE(a, doubled);
+    a = m1;
+    a *= qreal(2);
+    QCOMPARE(a, doubled);
+
+    const QMargins halved = m1 / 2;
+    QCOMPARE(halved, QMargins(6, 7, 8, 9));
+
+    a = m1;
+    a /= 2;
+    QCOMPARE(a, halved);
+    a = m1;
+    a /= qreal(2);
+    QCOMPARE(a, halved);
+
+    QCOMPARE(m1 + (-m1), QMargins());
+}
 
 // Testing QDataStream operators
 void tst_QMargins::dataStreamCheck()

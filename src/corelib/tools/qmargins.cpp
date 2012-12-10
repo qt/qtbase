@@ -216,6 +216,181 @@ QT_BEGIN_NAMESPACE
     \since 5.1
 */
 
+/*!
+    \fn const QMargins operator+(const QMargins &m1, const QMargins &m2)
+    \relates QMargins
+
+    Returns a QMargins object that is the sum of the given margins, \a m1
+    and \a m2; each component is added separately.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator-(const QMargins &m1, const QMargins &m2)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by subtracting \a m2 from
+    \a m1; each component is subtracted separately.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(const QMargins &margins, int factor)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(int factor, const QMargins &margins)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(const QMargins &margins, qreal factor)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(qreal factor, const QMargins &margins)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator/(const QMargins &margins, int divisor)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by dividing the components of
+    the given \a margins by the given \a divisor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator/(const QMargins &, qreal)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by dividing the components of
+    the given \a margins by the given \a divisor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins operator-(const QMargins &margins)
+    \relates QMargins
+
+    Returns a QMargin object that is formed by negating all components of \a margins.
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator+=(const QMargins &margins)
+
+    Add each component of \a margins to the respective component of this object
+    and returns a reference to it.
+
+    \sa operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator-=(const QMargins &margins)
+
+    Subtract each component of \a margins from the respective component of this object
+    and returns a reference to it.
+
+    \sa operator+=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator*=(int factor)
+
+    Multiplies each component of this object by \a factor
+    and returns a reference to it.
+
+    \sa operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator*=(qreal factor)
+    \overload
+
+    Multiplies each component of this object by \a factor
+    and returns a reference to it.
+
+    \sa operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator/=(int divisor)
+
+    Divides each component of this object by \a divisor
+    and returns a reference to it.
+
+    \sa operator*=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator/=(qreal divisor)
+
+    \overload
+
+    \sa operator*=()
+
+    \since 5.1
+*/
+
 /*****************************************************************************
   QMargins stream functions
  *****************************************************************************/

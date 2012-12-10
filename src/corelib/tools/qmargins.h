@@ -67,6 +67,15 @@ public:
     void setRight(int right);
     void setBottom(int bottom);
 
+    QMargins &operator+=(const QMargins &margins);
+    QMargins &operator-=(const QMargins &margins);
+    QMargins &operator+=(int);
+    QMargins &operator-=(int);
+    QMargins &operator*=(int);
+    QMargins &operator/=(int);
+    QMargins &operator*=(qreal);
+    QMargins &operator/=(qreal);
+
 private:
     int m_left;
     int m_top;
@@ -175,6 +184,89 @@ inline QRect &QRect::operator-=(const QMargins &margins)
 {
     *this = marginsRemoved(margins);
     return *this;
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator+(const QMargins &m1, const QMargins &m2)
+{
+    return QMargins(m1.left() + m2.left(), m1.top() + m2.top(),
+                    m1.right() + m2.right(), m1.bottom() + m2.bottom());
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator-(const QMargins &m1, const QMargins &m2)
+{
+    return QMargins(m1.left() - m2.left(), m1.top() - m2.top(),
+                    m1.right() - m2.right(), m1.bottom() - m2.bottom());
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator*(const QMargins &margins, int factor)
+{
+    return QMargins(margins.left() * factor, margins.top() * factor,
+                    margins.right() * factor, margins.bottom() * factor);
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator*(int factor, const QMargins &margins)
+{
+    return QMargins(margins.left() * factor, margins.top() * factor,
+                    margins.right() * factor, margins.bottom() * factor);
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator*(const QMargins &margins, qreal factor)
+{
+    return QMargins(qRound(margins.left() * factor), qRound(margins.top() * factor),
+                    qRound(margins.right() * factor), qRound(margins.bottom() * factor));
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator*(qreal factor, const QMargins &margins)
+{
+    return QMargins(qRound(margins.left() * factor), qRound(margins.top() * factor),
+                    qRound(margins.right() * factor), qRound(margins.bottom() * factor));
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator/(const QMargins &margins, int divisor)
+{
+    return QMargins(margins.left() / divisor, margins.top() / divisor,
+                    margins.right() / divisor, margins.bottom() / divisor);
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator/(const QMargins &margins, qreal divisor)
+{
+    return QMargins(qRound(margins.left() / divisor), qRound(margins.top() / divisor),
+                    qRound(margins.right() / divisor), qRound(margins.bottom() / divisor));
+}
+
+inline QMargins &QMargins::operator+=(const QMargins &margins)
+{
+    return *this = *this + margins;
+}
+
+inline QMargins &QMargins::operator-=(const QMargins &margins)
+{
+    return *this = *this - margins;
+}
+
+inline QMargins &QMargins::operator*=(int factor)
+{
+    return *this = *this * factor;
+}
+
+inline QMargins &QMargins::operator/=(int divisor)
+{
+    return *this = *this / divisor;
+}
+
+inline QMargins &QMargins::operator*=(qreal factor)
+{
+    return *this = *this * factor;
+}
+
+inline QMargins &QMargins::operator/=(qreal divisor)
+{
+    return *this = *this / divisor;
+}
+
+Q_DECL_CONSTEXPR inline QMargins operator-(const QMargins &margins)
+{
+    return QMargins(-margins.left(), -margins.top(), -margins.right(), -margins.bottom());
 }
 
 #ifndef QT_NO_DEBUG_STREAM

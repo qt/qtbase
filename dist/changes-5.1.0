@@ -50,6 +50,9 @@ QtCore
    * Added marginsAdded(), marginsRemoved() and operators +, -, +=, -=
      taking a QMargins object allowing for conveniently adding or removing
      margins.
+ - QMargins:
+   * Added operators for adding and subtracting QMargins objects,
+     multiplication and division for int/qreal and unary minus.
 
  -
 
