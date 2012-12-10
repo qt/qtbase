@@ -2240,16 +2240,23 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 */
 Qt::LayoutDirection QLocale::textDirection() const
 {
-    Language lang = language();
-    if (lang == QLocale::Arabic ||
-        lang == QLocale::Hebrew ||
-        lang == QLocale::Persian ||
-        lang == QLocale::Pashto ||
-        lang == QLocale::Urdu ||
-        lang == QLocale::Syriac ||
-        lang == QLocale::Divehi)
+    switch (language()) {
+    case QLocale::Arabic:
+    case QLocale::Hebrew:
+    case QLocale::Persian:
+    case QLocale::Pashto:
+    case QLocale::Urdu:
+    case QLocale::Syriac:
+    case QLocale::Divehi:
         return Qt::RightToLeft;
-
+    case QLocale::Punjabi:
+    case QLocale::Uzbek:
+        if (script() == QLocale::ArabicScript)
+            return Qt::RightToLeft;
+        // fall through
+    default:
+        break;
+    }
     return Qt::LeftToRight;
 }
 
