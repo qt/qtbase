@@ -33,7 +33,7 @@
     \keyword SSL
 
     The classes below provide support for secure network communication using
-    the Secure Sockets Layer (SSL) protocol, using the \l{OpenSSL Toolkit} to
+    the Secure Sockets Layer (SSL) protocol, using the \l{www.openssl.org}{OpenSSL Toolkit} to
     perform encryption and protocol handling.
 
     See the \l{General Qt Requirements} page for information about the
