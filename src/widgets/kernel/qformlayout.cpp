@@ -1022,7 +1022,7 @@ QStyle* QFormLayoutPrivate::getStyle() const
     \li \b{Adherence to the different platform's look and feel guidelines.}
 
         For example, the
-        \l{Mac OS X Aqua} and KDE guidelines specify that the
+        \l{https://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Intro/Intro.html}{Mac OS X Aqua} and KDE guidelines specify that the
         labels should be right-aligned, whereas Windows and GNOME
         applications normally use left-alignment.
 
@@ -1065,7 +1065,7 @@ QStyle* QFormLayoutPrivate::getStyle() const
            corresponds to what we would get using a two-column
            QGridLayout.)
         \li Style based on the
-           \l{Mac OS X Aqua} guidelines. Labels are right-aligned,
+           \l{https://developer.apple.com/library/mac/#documentation/UserExperience/Conceptual/AppleHIGuidelines/Intro/Intro.html}{Mac OS X Aqua} guidelines. Labels are right-aligned,
            the fields don't grow beyond their size hint, and the
            form is horizontally centered.
         \li Recommended style for
