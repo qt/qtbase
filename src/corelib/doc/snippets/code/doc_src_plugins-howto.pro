@@ -42,6 +42,9 @@
 CONFIG += release
 #! [3]
 
+#! [4]
+CONFIG += qpa_default_plugin import_plugins
+#! [4]
 
 #! [5]
 QTPLUGIN     += qjpeg \

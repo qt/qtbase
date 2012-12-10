@@ -6026,6 +6026,11 @@ QT_NAMESPACE = $QT_NAMESPACE
 
 EOF
 
+if [ "$CFG_SHARED" = "no" ]; then
+    echo "QT_DEFAULT_QPA_PLUGIN = $QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
+    echo >> "$QTCONFIG.tmp"
+fi
+
 if [ -n "$PKG_CONFIG_SYSROOT_DIR" ] || [ -n "$PKG_CONFIG_LIBDIR" ]; then
     echo "# pkgconfig" >> "$QTCONFIG.tmp"
     echo "PKG_CONFIG_SYSROOT_DIR = $PKG_CONFIG_SYSROOT_DIR" >> "$QTCONFIG.tmp"

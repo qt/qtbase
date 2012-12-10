@@ -296,6 +296,16 @@
     to make sure that the \c{QT_STATICPLUGIN} preprocessor macro is
     defined.
 
+    Qt platform adaptation plugins are not automatically linked in static
+    builds. To add default QPA plugin to \c QTPLUGIN variable and automatically
+    generate Q_IMPORT_PLUGIN statements for your application, add the following
+    to \c CONFIG:
+
+    \snippet code/doc_src_plugins-howto.pro 4
+
+    If the minimal QPA plugin is required, use \c qpa_minimal_plugin instead of
+    \c qpa_default_plugin.
+
     \section1 Deploying and Debugging Plugins
 
     The \l{Deploying Plugins} document covers the process of deploying
