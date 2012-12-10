@@ -105,8 +105,8 @@
     QOpenGLContext::functions(). QOpenGLFunctions gives access to all the
     OpenGL ES 2.0 level OpenGL calls that are not already standard in both
     OpenGL ES 2.0 and desktop OpenGL. For more information about the OpenGL and
-    OpenGL ES APIs, refer to the official \l{OpenGL Registry} and
-    \l{Khronos OpenGL ES API Registry}.
+    OpenGL ES APIs, refer to the official \l{http://www.opengl.org/registry/}{OpenGL Registry} and
+    \l {http://www.khronos.org/registry/gles/}{Khronos OpenGL ES API Registry}.
 
     If animation has been enabled with OpenGLWindow::setAnimating(true), we
     call renderLater() to put another update request on the event loop.
