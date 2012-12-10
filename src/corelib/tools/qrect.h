@@ -53,6 +53,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+class QMargins;
 
 class Q_CORE_EXPORT QRect
 {
@@ -138,6 +139,11 @@ public:
     inline QRect united(const QRect &other) const;
     inline QRect intersected(const QRect &other) const;
     bool intersects(const QRect &r) const;
+
+    inline QRect marginsAdded(const QMargins &margins) const;
+    inline QRect marginsRemoved(const QMargins &margins) const;
+    inline QRect &operator+=(const QMargins &margins);
+    inline QRect &operator-=(const QMargins &margins);
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED QRect unite(const QRect &r) const { return united(r); }

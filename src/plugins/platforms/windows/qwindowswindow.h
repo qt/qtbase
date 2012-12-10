@@ -283,17 +283,6 @@ private:
     HICON m_iconBig;
 };
 
-// Conveniences for window frames.
-inline QRect operator+(const QRect &r, const QMargins &m)
-{
-    return r.adjusted(-m.left(), -m.top(), m.right(), m.bottom());
-}
-
-inline QRect operator-(const QRect &r, const QMargins &m)
-{
-    return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom());
-}
-
 // Debug
 QDebug operator<<(QDebug d, const RECT &r);
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO/WM_NCCALCSIZE

@@ -157,6 +157,65 @@ QT_BEGIN_NAMESPACE
     Returns true if \a m1 and \a m2 are different; otherwise returns false.
 */
 
+/*!
+    \fn QRect operator+(const QRect &rectangle, const QMargins &margins)
+    \relates QRect
+
+    Returns the \a rectangle grown by the \a margins.
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect operator+(const QMargins &margins, const QRect &rectangle)
+    \relates QRect
+    \overload
+
+    Returns the \a rectangle grown by the \a margins.
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::marginsAdded(const QMargins &margins) const
+
+    Returns a rectangle grown by the \a margins.
+
+    \sa operator+=(), marginsRemoved(), operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::operator+=(const QMargins &margins) const
+
+    Adds the \a margins to the rectangle, growing it.
+
+    \sa marginsAdded(), marginsRemoved(), operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::marginsRemoved(const QMargins &margins) const
+
+    Removes the \a margins from the rectangle, shrinking it.
+
+    \sa marginsAdded(), operator+=(), operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::operator -=(const QMargins &margins) const
+
+    Returns a rectangle shrunk by the \a margins.
+
+    \sa marginsRemoved(), operator+=(), marginsAdded()
+
+    \since 5.1
+*/
+
 /*****************************************************************************
   QMargins stream functions
  *****************************************************************************/

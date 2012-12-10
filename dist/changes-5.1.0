@@ -46,6 +46,11 @@ Third party components
 QtCore
 ------
 
+ - QRect:
+   * Added marginsAdded(), marginsRemoved() and operators +, -, +=, -=
+     taking a QMargins object allowing for conveniently adding or removing
+     margins.
+
  -
 
 QtGui

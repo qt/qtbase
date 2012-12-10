@@ -1118,7 +1118,7 @@ QRect QWindowsWindow::frameGeometry_sys() const
 
 QRect QWindowsWindow::geometry_sys() const
 {
-    return frameGeometry_sys() - frameMargins();
+    return frameGeometry_sys().marginsRemoved(frameMargins());
 }
 
 /*!
