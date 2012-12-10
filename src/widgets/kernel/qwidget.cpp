@@ -8259,7 +8259,7 @@ bool QWidget::event(QEvent *event)
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
-        if (!qstrncmp(propName, "_q_customDpi", 12) && propName.length() == 13) {
+        if (propName.length() == 13 && !qstrncmp(propName, "_q_customDpi", 12)) {
             uint value = property(propName.constData()).toUInt();
             if (!d->extra)
                 d->createExtra();
