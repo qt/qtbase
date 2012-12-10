@@ -69,12 +69,14 @@ void QIOSBackingStore::beginPaint(const QRegion &)
     window()->setSurfaceType(QSurface::OpenGLSurface);
 
     m_context->makeCurrent(window());
+
+    static_cast<QOpenGLPaintDevice *>(paintDevice())->setSize(window()->size());
 }
 
 QPaintDevice *QIOSBackingStore::paintDevice()
 {
     if (!m_device)
-        m_device = new QOpenGLPaintDevice(window()->size());
+        m_device = new QOpenGLPaintDevice;
 
     return m_device;
 }
@@ -95,12 +97,16 @@ void QIOSBackingStore::endPaint()
 
 void QIOSBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
-    Q_UNUSED(size);
     Q_UNUSED(staticContents);
 
-    // We don't need to resize the QOpenGLPaintDevice, as it's just a thin wrapper
-    // around the OpenGL paint-engine, and the real geometry is handled by the
-    // context and window.
+    // Resizing the backing store would in our case mean resizing the QWindow,
+    // as we cheat and use an QOpenGLPaintDevice that we target at the window.
+    // That's probably not what the user intended, so we ignore resizes of the
+    // backing store and always keep the paint device's size in sync with the
+    // window size in beginPaint().
+
+    if (size != window()->size())
+        qWarning() << "QIOSBackingStore needs to have the same size as its window";
 }
 
 QT_END_NAMESPACE
