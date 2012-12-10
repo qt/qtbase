@@ -41,18 +41,27 @@
 
 #import "qiosviewcontroller.h"
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
+
 @implementation QIOSViewController
 
 -(BOOL)shouldAutorotate
 {
-    return NO;
+    // For now we assume that if the application doesn't listen to orientation
+    // updates it means it would like to enable auto-rotation, and vice versa.
+    if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
+        return !guiApp->primaryScreen()->orientationUpdateMask();
+    else
+        return NO;
+
+    // FIXME: Investigate a proper Qt API for auto-rotation and orientation locking
 }
 
 -(NSUInteger)supportedInterfaceOrientations
 {
     // We need to tell iOS that we support all orientations in order to set
     // status bar orientation when application content orientation changes.
-    // But we return 'NO' above when asked if we 'shouldAutorotate':
     return UIInterfaceOrientationMaskAll;
 }
 
