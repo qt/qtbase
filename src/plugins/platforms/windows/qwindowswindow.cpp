@@ -64,6 +64,11 @@
 
 QT_BEGIN_NAMESPACE
 
+enum {
+    defaultWindowWidth = 160,
+    defaultWindowHeight = 160
+};
+
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
 
 static QByteArray debugWinStyle(DWORD style)
@@ -468,6 +473,8 @@ QWindowsWindow::WindowData
 
     const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w, isGL);
 
+    QRect rect = QPlatformWindow::initialGeometry(w, geometry, defaultWindowWidth, defaultWindowHeight);
+
     if (title.isEmpty() && (result.flags & Qt::WindowTitleHint))
         title = topLevel ? qAppName() : w->objectName();
 
@@ -475,14 +482,14 @@ QWindowsWindow::WindowData
     const wchar_t *classNameUtf16 = reinterpret_cast<const wchar_t *>(windowClassName.utf16());
 
     // Capture events before CreateWindowEx() returns.
-    const QWindowCreationContextPtr context(new QWindowCreationContext(w, geometry, style, exStyle));
+    const QWindowCreationContextPtr context(new QWindowCreationContext(w, rect, style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
                 << "CreateWindowEx: " << w << *this
                 << " class=" <<windowClassName << " title=" << title
-                << "\nrequested: " << geometry << ": "
+                << "\nrequested: " << rect << ": "
                 << context->frameWidth << 'x' <<  context->frameHeight
                 << '+' << context->frameX << '+' << context->frameY;
 
@@ -775,6 +782,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 QWindowsWindow::~QWindowsWindow()
 {
 #ifndef Q_OS_WINCE
+    QWindowSystemInterface::flushWindowSystemEvents();
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
 #endif // !Q_OS_WINCE

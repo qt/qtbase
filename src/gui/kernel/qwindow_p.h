@@ -88,6 +88,7 @@ public:
         , resizeEventPending(true)
         , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
+        , positionAutomatic(true)
         , contentOrientation(Qt::PrimaryOrientation)
         , opacity(qreal(1.0))
         , minimumSize(0, 0)
@@ -137,6 +138,7 @@ public:
     bool resizeEventPending;
     bool receivedExpose;
     PositionPolicy positionPolicy;
+    bool positionAutomatic;
     Qt::ScreenOrientation contentOrientation;
     qreal opacity;
 

@@ -3902,6 +3902,11 @@ void tst_QLineEdit::inputMethod()
     // removing focus allows input method to commit preedit
     testWidget->setText("");
     testWidget->activateWindow();
+    // TODO setFocus should not be necessary here, because activateWindow
+    // should focus it, and the window is the QLineEdit. But the test can fail
+    // on Windows if we don't do this. If each test had a unique QLineEdit
+    // instance, maybe such problems would go away.
+    testWidget->setFocus();
     QTRY_VERIFY(testWidget->hasFocus());
     QTRY_COMPARE(qApp->focusObject(), testWidget);
 

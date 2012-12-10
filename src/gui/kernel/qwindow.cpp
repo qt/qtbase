@@ -126,6 +126,18 @@ QT_BEGIN_NAMESPACE
     and can keep rendering until it isExposed() returns false. To find out when
     isExposed() changes, reimplement exposeEvent(). The window will always get
     a resize event before the first expose event.
+
+    \section1 Initial geometry
+
+    If the window's width and height are left uninitialized, the window will
+    get a reasonable default geometry from the platform window. If the position
+    is left uninitialized, then the platform window will allow the windowing
+    system to position the window. For example on X11, the window manager
+    usually does some kind of smart positioning to try to avoid having new
+    windows completely obscure existing windows. However setGeometry()
+    initializes both the position and the size, so if you want a fixed size but
+    an automatic position, you should call resize() or setWidth() and
+    setHeight() instead.
 */
 
 /*!
@@ -962,7 +974,7 @@ void QWindow::setY(int arg)
 void QWindow::setWidth(int arg)
 {
     if (width() != arg)
-        setGeometry(QRect(x(), y(), arg, height()));
+        resize(arg, height());
 }
 
 /*!
@@ -972,7 +984,7 @@ void QWindow::setWidth(int arg)
 void QWindow::setHeight(int arg)
 {
     if (height() != arg)
-        setGeometry(QRect(x(), y(), width(), arg));
+        resize(width(), arg);
 }
 
 /*!
@@ -1095,6 +1107,7 @@ void QWindow::setGeometry(int posx, int posy, int w, int h)
 void QWindow::setGeometry(const QRect &rect)
 {
     Q_D(QWindow);
+    d->positionAutomatic = false;
     if (rect == geometry())
         return;
     QRect oldRect = geometry();

@@ -113,6 +113,10 @@
 #endif
 
 #define XCOORD_MAX 16383
+enum {
+    defaultWindowWidth = 160,
+    defaultWindowHeight = 160
+};
 
 //#ifdef NET_WM_STATE_DEBUG
 
@@ -219,8 +223,16 @@ void QXcbWindow::create()
     QRect rect = window()->geometry();
     QPlatformWindow::setGeometry(rect);
 
-    rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
-    rect.setHeight(qBound(1, rect.height(), XCOORD_MAX));
+    QSize minimumSize = window()->minimumSize();
+    if (rect.width() > 0 || rect.height() > 0) {
+        rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
+        rect.setHeight(qBound(1, rect.height(), XCOORD_MAX));
+    } else if (minimumSize.width() > 0 || minimumSize.height() > 0) {
+        rect.setSize(minimumSize);
+    } else {
+        rect.setWidth(defaultWindowWidth);
+        rect.setHeight(defaultWindowHeight);
+    }
 
     xcb_window_t xcb_parent_id = m_screen->root();
     if (parent())
@@ -436,15 +448,23 @@ void QXcbWindow::setGeometry(const QRect &rect)
     propagateSizeHints();
     const QRect wmGeometry = windowToWmGeometry(rect);
 
-    const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
-    const qint32 values[] = {
-        qBound<qint32>(-XCOORD_MAX, wmGeometry.x(),      XCOORD_MAX),
-        qBound<qint32>(-XCOORD_MAX, wmGeometry.y(),      XCOORD_MAX),
-        qBound<qint32>(1,           wmGeometry.width(),  XCOORD_MAX),
-        qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
-    };
-
-    Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values)));
+    if (qt_window_private(window())->positionAutomatic) {
+        const quint32 mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+        const qint32 values[] = {
+            qBound<qint32>(1,           wmGeometry.width(),  XCOORD_MAX),
+            qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
+        };
+        Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values)));
+    } else {
+        const quint32 mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
+        const qint32 values[] = {
+            qBound<qint32>(-XCOORD_MAX, wmGeometry.x(),      XCOORD_MAX),
+            qBound<qint32>(-XCOORD_MAX, wmGeometry.y(),      XCOORD_MAX),
+            qBound<qint32>(1,           wmGeometry.width(),  XCOORD_MAX),
+            qBound<qint32>(1,           wmGeometry.height(), XCOORD_MAX),
+        };
+        Q_XCB_CALL(xcb_configure_window(xcb_connection(), m_window, mask, reinterpret_cast<const quint32*>(values)));
+    }
 
     xcb_flush(xcb_connection());
 }
@@ -563,6 +583,7 @@ void QXcbWindow::show()
             if (!transientXcbParent)
                 transientXcbParent = static_cast<QXcbScreen *>(screen())->clientLeader();
             if (transientXcbParent) { // ICCCM 4.1.2.6
+                m_gravity = XCB_GRAVITY_CENTER;
                 Q_XCB_CALL(xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window,
                                                XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 32,
                                                1, &transientXcbParent));
@@ -1221,8 +1242,10 @@ void QXcbWindow::propagateSizeHints()
 
     QWindow *win = window();
 
-    xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
-    xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
+    if (!qt_window_private(win)->positionAutomatic)
+        xcb_size_hints_set_position(&hints, true, rect.x(), rect.y());
+    if (rect.width() < QWINDOWSIZE_MAX || rect.height() < QWINDOWSIZE_MAX)
+        xcb_size_hints_set_size(&hints, true, rect.width(), rect.height());
     xcb_size_hints_set_win_gravity(&hints, m_gravity);
 
     QSize minimumSize = win->minimumSize();

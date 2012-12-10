@@ -58,6 +58,11 @@
 
 #include <QDebug>
 
+enum {
+    defaultWindowWidth = 160,
+    defaultWindowHeight = 160
+};
+
 static bool isMouseEvent(NSEvent *ev)
 {
     switch ([ev type]) {
@@ -683,7 +688,8 @@ NSWindow * QCocoaWindow::createNSWindow()
 {
     QCocoaAutoReleasePool pool;
 
-    NSRect frame = qt_mac_flipRect(window()->geometry(), window());
+    QRect rect = initialGeometry(window(), window()->geometry(), defaultWindowWidth, defaultWindowHeight);
+    NSRect frame = qt_mac_flipRect(rect, window());
 
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();

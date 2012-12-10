@@ -1559,6 +1559,8 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     }
 
     QGuiApplicationPrivate::focus_window = newFocus;
+    if (!qApp)
+        return;
 
     if (previous) {
         QFocusEvent focusOut(QEvent::FocusOut);

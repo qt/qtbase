@@ -41,11 +41,13 @@
 
 #include "qplatformwindow.h"
 #include "qplatformwindow_p.h"
+#include "qplatformscreen.h"
 
 #include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
+#include <private/qwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -446,6 +448,43 @@ QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &
         fullTitle = QCoreApplication::applicationName();
     }
     return fullTitle;
+}
+
+/*!
+    Helper function to get initial geometry on windowing systems which do not
+    do smart positioning and also do not provide a means of centering a
+    transient window w.r.t. its parent. For example this is useful on Windows
+    and MacOS but not X11, because an X11 window manager typically tries to
+    layout new windows to optimize usage of the available desktop space.
+    However if the given window already has geometry which the application has
+    initialized, it takes priority.
+*/
+QRect QPlatformWindow::initialGeometry(const QWindow *w,
+    const QRect &initialGeometry, int defaultWidth, int defaultHeight)
+{
+    QRect rect(initialGeometry);
+    if (rect.isNull()) {
+        QSize minimumSize = w->minimumSize();
+        if (minimumSize.width() > 0 || minimumSize.height() > 0) {
+            rect.setSize(minimumSize);
+        } else {
+            rect.setWidth(defaultWidth);
+            rect.setHeight(defaultHeight);
+        }
+    }
+    if (w->isTopLevel() && qt_window_private(const_cast<QWindow*>(w))->positionAutomatic) {
+        const QWindow *tp = w->transientParent();
+        if (tp) {
+            // A transient window should be centered w.r.t. its transient parent.
+            rect.moveCenter(tp->geometry().center());
+        } else {
+            // Center the window on the screen.  (Only applicable on platforms
+            // which do not provide a better way.)
+            QPlatformScreen *scr = QPlatformScreen::platformScreenForWindow(w);
+            rect.moveCenter(scr->availableGeometry().center());
+        }
+    }
+    return rect;
 }
 
 /*!

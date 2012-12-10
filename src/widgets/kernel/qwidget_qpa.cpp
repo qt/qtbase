@@ -109,7 +109,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     win->setFlags(data.window_flags);
     fixPosIncludesFrame();
-    win->setGeometry(q->geometry());
+    if (q->testAttribute(Qt::WA_Moved))
+        win->setGeometry(q->geometry());
+    else
+        win->resize(q->size());
     win->setScreen(QGuiApplication::screens().value(topData()->screenIndex, 0));
 
     if (q->testAttribute(Qt::WA_TranslucentBackground)) {
@@ -466,19 +469,6 @@ void QWidget::activateWindow()
         wnd->requestActivate();
 }
 
-// Position top level windows at the center, avoid showing
-// Windows at the default 0,0 position excluding the frame.
-static inline QRect positionTopLevelWindow(QRect geometry, const QScreen *screen)
-{
-    if (screen && geometry.x() == 0 && geometry.y() == 0) {
-       const QRect availableGeometry = screen->availableGeometry();
-        if (availableGeometry.width() > geometry.width()
-            && availableGeometry.height() > geometry.height())
-            geometry.moveCenter(availableGeometry.center());
-    }
-    return geometry;
-}
-
 // move() was invoked with Qt::WA_WState_Created not set (frame geometry
 // unknown), that is, crect has a position including the frame.
 // If we can determine the frame strut, fix that and clear the flag.
@@ -529,16 +519,16 @@ void QWidgetPrivate::show_sys()
         if (q->isWindow())
             fixPosIncludesFrame();
         QRect geomRect = q->geometry();
-        if (q->isWindow()) {
-            if (!q->testAttribute(Qt::WA_Moved))
-                geomRect = positionTopLevelWindow(geomRect, window->screen());
-        } else {
+        if (!q->isWindow()) {
             QPoint topLeftOfWindow = q->mapTo(q->nativeParentWidget(),QPoint());
             geomRect.moveTopLeft(topLeftOfWindow);
         }
         const QRect windowRect = window->geometry();
         if (windowRect != geomRect) {
-            window->setGeometry(geomRect);
+            if (q->testAttribute(Qt::WA_Moved))
+                window->setGeometry(geomRect);
+            else
+                window->resize(geomRect.size());
         }
 
         if (QBackingStore *store = q->backingStore()) {
