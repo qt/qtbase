@@ -82,7 +82,11 @@ QtNetwork
 
  -
 
+QtWidgets
+---------
 
+- QGraphicsView:
+  * Added function rubberBandRect()
 
 ****************************************************************************
 *                          Database Drivers                                *

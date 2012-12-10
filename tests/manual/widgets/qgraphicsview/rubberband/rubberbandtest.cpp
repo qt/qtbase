@@ -62,7 +62,7 @@ class MyGraphicsView : public QGraphicsView
 {
 
 public:
-    MyGraphicsView() : QGraphicsView()
+    MyGraphicsView(QWidget *w, QLabel *l) : QGraphicsView(w), rubberbandLabel(l)
     {
         setDragMode(QGraphicsView::RubberBandDrag);
     }
@@ -80,13 +80,43 @@ protected:
         int yglobal = event->globalY();
         if (yglobal > bottomPos)
             verticalScrollBar()->setValue(verticalScrollBar()->value() + 10);
+        updateRubberbandInfo();
     }
+
+    void mouseReleaseEvent(QMouseEvent *event)
+    {
+        QGraphicsView::mouseReleaseEvent(event);
+        updateRubberbandInfo();
+    }
+
+    void wheelEvent (QWheelEvent *event)
+    {
+        QGraphicsView::wheelEvent(event);
+        updateRubberbandInfo();
+    }
+
+    void updateRubberbandInfo()
+    {
+        QString textToShow;
+        QDebug s(&textToShow);
+        s << rubberBandRect();
+        if (rubberbandLabel->text() != textToShow)
+            rubberbandLabel->setText(textToShow);
+    }
+    QLabel *rubberbandLabel;
 };
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    MyGraphicsView v;
+
+    QWidget w;
+    w.setLayout(new QVBoxLayout);
+    QLabel *l = new QLabel(&w);
+    MyGraphicsView &v = *(new MyGraphicsView(&w, l));
+
+    w.layout()->addWidget(&v);
+    w.layout()->addWidget(l);
 
     QGraphicsScene s(0.0, 0.0, 5000.0, 5000.0);
     v.setScene(&s);
@@ -100,7 +130,8 @@ int main(int argc, char *argv[])
             item->setRect(QRectF(v * 80.0, u * 80.0, 50.0, 20.0));
             s.addItem(item);
         }
-    v.show();
+
+    w.show();
     app.exec();
     return 0;
 }

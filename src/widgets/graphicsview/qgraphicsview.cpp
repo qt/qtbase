@@ -1496,7 +1496,7 @@ void QGraphicsView::setDragMode(DragMode mode)
     The default value is Qt::IntersectsItemShape; all items whose shape
     intersects with or is contained by the rubber band are selected.
 
-    \sa dragMode, items()
+    \sa dragMode, items(), rubberBandRect()
 */
 Qt::ItemSelectionMode QGraphicsView::rubberBandSelectionMode() const
 {
@@ -1507,6 +1507,27 @@ void QGraphicsView::setRubberBandSelectionMode(Qt::ItemSelectionMode mode)
 {
     Q_D(QGraphicsView);
     d->rubberBandSelectionMode = mode;
+}
+
+/*!
+   \since 5.1
+   This functions returns the current rubber band area (in viewport coordinates) if the user
+   is currently doing an itemselection with rubber band. When the user is not using the
+   rubber band this functions returns (a null) QRectF().
+
+   Notice that part of this QRect can be outise the visual viewport. It can e.g
+   contain negative values.
+
+   \sa rubberBandSelectionMode
+*/
+
+QRect QGraphicsView::rubberBandRect() const
+{
+    Q_D(const QGraphicsView);
+    if (d->dragMode != QGraphicsView::RubberBandDrag || !d->sceneInteractionAllowed || !d->rubberBanding)
+        return QRect();
+
+    return d->rubberBandRect;
 }
 #endif
 

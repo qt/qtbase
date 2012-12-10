@@ -146,6 +146,7 @@ public:
 #ifndef QT_NO_RUBBERBAND
     Qt::ItemSelectionMode rubberBandSelectionMode() const;
     void setRubberBandSelectionMode(Qt::ItemSelectionMode mode);
+    QRect rubberBandRect() const;
 #endif
 
     CacheMode cacheMode() const;
