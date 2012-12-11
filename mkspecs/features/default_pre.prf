@@ -1,3 +1,7 @@
+# This file is loaded by qmake right before each actual project file.
+# Note that evaluating variable assignments from the command line
+# still happens in between these two steps.
+
 load(exclusive_builds)
 CONFIG = \
     lex yacc warn_on debug exceptions depend_includepath \

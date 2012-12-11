@@ -1,3 +1,5 @@
+# This file is loaded by qmake right after loading the actual project file.
+
 contains(TEMPLATE, ".*(lib|app)"):CONFIG += have_target
 
 !have_target:!force_qt: CONFIG -= qt

@@ -1,3 +1,9 @@
+# This file is loaded by qmake right after loading the qmakespec.
+# Afterwards, the project's .qmake.conf and .qmake.cache are loaded
+# (if present).
+# Note that up to this point, nothing specific to a particular SUBDIRS
+# project or build pass can be done.
+
 isEmpty(MAKEFILE_GENERATOR):error("Qmake spec does not set MAKEFILE_GENERATOR.")
 isEmpty(QMAKE_PLATFORM) {
     isEmpty(TARGET_PLATFORM) {
