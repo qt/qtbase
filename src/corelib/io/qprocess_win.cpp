@@ -82,7 +82,7 @@ static void qt_create_pipe(Q_PIPE *pipe, bool isInputPipe)
     forever {
         // ### The user must make sure to call qsrand() to make the pipe names less predictable.
         // ### Replace the call to qrand() with a secure version, once we have it in Qt.
-        swprintf(pipeName, sizeof(pipeName) / sizeof(pipeName[0]),
+        _snwprintf(pipeName, sizeof(pipeName) / sizeof(pipeName[0]),
                 L"\\\\.\\pipe\\qt-%X", qrand());
 
         DWORD dwPipeFlags = PIPE_TYPE_BYTE | PIPE_WAIT;
