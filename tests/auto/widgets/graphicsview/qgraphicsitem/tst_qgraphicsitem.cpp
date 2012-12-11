@@ -428,6 +428,7 @@ private slots:
     void activate();
     void setActivePanelOnInactiveScene();
     void activationOnShowHide();
+    void deactivateInactivePanel();
     void moveWhileDeleting();
     void ensureDirtySceneTransform();
     void focusScope();
@@ -9029,6 +9030,40 @@ public:
         if (QGraphicsItem *p = parentItem()) { p->moveBy(10, 10); }
     }
 };
+
+void tst_QGraphicsItem::deactivateInactivePanel()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *panel1 = scene.addRect(QRectF(0, 0, 10, 10));
+    panel1->setFlag(QGraphicsItem::ItemIsPanel);
+
+    QGraphicsItem *panel2 = scene.addRect(QRectF(0, 0, 10, 10));
+    panel2->setFlag(QGraphicsItem::ItemIsPanel);
+
+    QEvent event(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &event);
+
+    panel1->setActive(true);
+    QVERIFY(scene.isActive());
+    QVERIFY(panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QCOMPARE(scene.activePanel(), panel1);
+
+    panel2->setActive(true);
+    QVERIFY(panel2->isActive());
+    QVERIFY(!panel1->isActive());
+    QCOMPARE(scene.activePanel(), panel2);
+
+    panel2->setActive(false);
+    QVERIFY(panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QCOMPARE(scene.activePanel(), panel1);
+
+    panel2->setActive(false);
+    QVERIFY(panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QCOMPARE(scene.activePanel(), panel1);
+}
 
 void tst_QGraphicsItem::moveWhileDeleting()
 {
