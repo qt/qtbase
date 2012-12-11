@@ -2706,6 +2706,10 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = false;
         break;
     case SH_ScrollBar_Transient:
+        if (!qobject_cast<const QScrollBar*>(w)) {
+            ret = false;
+            break;
+        }
         ret = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7)
@@ -4906,7 +4910,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-            if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient)) {
+            if (cc == CC_ScrollBar && proxy()->styleHint(SH_ScrollBar_Transient, 0, widget)) {
                 bool wasActive = false;
                 CGFloat opacity = 1.0;
                 CGFloat expandScale = 1.0;
