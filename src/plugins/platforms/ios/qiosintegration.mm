@@ -45,6 +45,7 @@
 #include "qiosscreen.h"
 #include "qioseventdispatcher.h"
 #include "qioscontext.h"
+#include "qiosinputcontext.h"
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 
@@ -54,6 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QIOSIntegration::QIOSIntegration()
     : m_fontDatabase(new QCoreTextFontDatabase)
+    , m_inputContext(new QIOSInputContext)
     , m_screen(new QIOSScreen(QIOSScreen::MainScreen))
 {
     if (![UIApplication sharedApplication]) {
@@ -104,6 +106,11 @@ QAbstractEventDispatcher *QIOSIntegration::guiThreadEventDispatcher() const
 QPlatformFontDatabase * QIOSIntegration::fontDatabase() const
 {
     return m_fontDatabase;
+}
+
+QPlatformInputContext *QIOSIntegration::inputContext() const
+{
+    return m_inputContext;
 }
 
 QVariant QIOSIntegration::styleHint(StyleHint hint) const

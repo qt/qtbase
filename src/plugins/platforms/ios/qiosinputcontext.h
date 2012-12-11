@@ -39,42 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_UIKIT_H
-#define QPLATFORMINTEGRATION_UIKIT_H
+#ifndef QIOSINPUTCONTEXT_H
+#define QIOSINPUTCONTEXT_H
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <UIKit/UIKit.h>
+
+#include <qpa/qplatforminputcontext.h>
 
 QT_BEGIN_NAMESPACE
 
-class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+@class QIOSKeyboardListener;
+
+class QIOSInputContext : public QPlatformInputContext
 {
 public:
-    QIOSIntegration();
-    ~QIOSIntegration();
+    QIOSInputContext();
+    ~QIOSInputContext();
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
-
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformInputContext *inputContext() const;
-
-    QVariant styleHint(StyleHint hint) const;
-
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
+    void showInputPanel();
+    void hideInputPanel();
+    bool isInputPanelVisible() const;
 
 private:
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformInputContext *m_inputContext;
-    QPlatformScreen *m_screen;
+    QIOSKeyboardListener *m_keyboardListener;
 };
 
 QT_END_NAMESPACE
 
 #endif
-
