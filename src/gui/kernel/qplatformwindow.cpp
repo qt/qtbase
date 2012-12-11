@@ -444,9 +444,6 @@ bool QPlatformWindow::frameStrutEventsEnabled() const
     QPlatformWindow is also the way QPA defines how native child windows should be supported
     through the setParent function.
 
-    The only way to retrieve a QPlatformOpenGLContext in QPA is by calling the glContext() function
-    on QPlatformWindow.
-
     \section1 Implementation Aspects
 
     \list 1
