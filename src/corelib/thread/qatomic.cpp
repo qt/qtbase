@@ -216,6 +216,44 @@
     this QAtomicInt.
 */
 
+/*!
+    \fn int QAtomicInt::load() const
+
+    Atomically loads the value of this QAtomicInt using relaxed memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), loadAcquire()
+*/
+
+/*!
+    \fn int QAtomicInt::loadAcquire() const
+
+    Atomically loads the value of this QAtomicInt using the "Acquire" memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), load()
+*/
+
+/*!
+    \fn void QAtomicInt::store(int newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    relaxed memory ordering.
+
+    \sa storeRelease(), load()
+*/
+
+/*!
+    \fn void QAtomicInt::storeRelease(int newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    the "Release" memory ordering.
+
+    \sa store(), load()
+*/
+
 /*! \fn bool QAtomicInt::isReferenceCountingNative()
 
     Returns true if reference counting is implemented using atomic
@@ -748,6 +786,44 @@
 
     Assigns \a other to this QAtomicPointer and returns a reference to
     this QAtomicPointer.
+*/
+
+/*!
+    \fn T *QAtomicPointer::load() const
+
+    Atomically loads the value of this QAtomicPointer using relaxed memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), loadAcquire()
+*/
+
+/*!
+    \fn T *QAtomicPointer::loadAcquire() const
+
+    Atomically loads the value of this QAtomicPointerusing the "Acquire" memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), load()
+*/
+
+/*!
+    \fn void QAtomicPointer::store(T *newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    relaxed memory ordering.
+
+    \sa storeRelease(), load()
+*/
+
+/*!
+    \fn void QAtomicPointer::storeRelease(T *newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    the "Release" memory ordering.
+
+    \sa store(), load()
 */
 
 /*! \fn bool QAtomicPointer::isTestAndSetNative()
