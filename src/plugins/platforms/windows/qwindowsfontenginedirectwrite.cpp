@@ -41,6 +41,11 @@
 
 #ifndef QT_NO_DIRECTWRITE
 
+#if _WIN32_WINNT < 0x0600
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+
 #include "qwindowsfontenginedirectwrite.h"
 #include "qwindowsfontdatabase.h"
 #include "qwindowscontext.h"
