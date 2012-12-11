@@ -49,7 +49,7 @@ extern void qt_mac_set_menubar_merge(bool merge);
 QT_END_NAMESPACE
 #endif
 
-LanguageChooser::LanguageChooser(QWidget *parent)
+LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
     : QDialog(parent, Qt::WindowStaysOnTopHint)
 {
     groupBox = new QGroupBox("Languages");
@@ -61,6 +61,8 @@ LanguageChooser::LanguageChooser(QWidget *parent)
         QCheckBox *checkBox = new QCheckBox(languageName(qmFiles[i]));
         qmFileForCheckBoxMap.insert(checkBox, qmFiles[i]);
         connect(checkBox, SIGNAL(toggled(bool)), this, SLOT(checkBoxToggled()));
+        if (languageMatch(defaultLang, qmFiles[i]))
+                checkBox->setCheckState(Qt::Checked);
         groupBoxLayout->addWidget(checkBox, i / 2, i % 2);
     }
     groupBox->setLayout(groupBoxLayout);
@@ -85,6 +87,14 @@ LanguageChooser::LanguageChooser(QWidget *parent)
 #endif
 
     setWindowTitle("I18N");
+}
+
+bool LanguageChooser::languageMatch(const QString& lang, const QString& qmFile)
+{
+    //qmFile: i18n_xx.qm
+    const QString prefix = "i18n_";
+    const int langTokenLength = 2; /*FIXME: is checking two chars enough?*/
+    return qmFile.midRef(qmFile.indexOf(prefix) + prefix.length(), langTokenLength) == lang.leftRef(langTokenLength);
 }
 
 bool LanguageChooser::eventFilter(QObject *object, QEvent *event)
