@@ -8,6 +8,9 @@ margin-left:5px;
 margin-right:5px;
 }
 
+p {
+line-height: 20px;
+}
 img{
 -moz-box-shadow: 3px 3px 3px #ccc;
 -webkit-box-shadow: 3px 3px 3px #ccc;
@@ -587,7 +590,7 @@ margin-bottom: 20px;
 
 .indexboxcont .sectionlist ul li
 {
-line-height: 12px;
+line-height: 1.5;
 }
 
 .content .indexboxcont li
