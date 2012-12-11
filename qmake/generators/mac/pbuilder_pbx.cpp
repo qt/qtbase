@@ -453,7 +453,6 @@ ProjectBuilderSources::files(QMakeProject *project) const
 {
     QStringList ret = project->values(ProKey(key)).toQStringList();
     if(key == "QMAKE_INTERNAL_INCLUDED_FILES") {
-        ret.prepend(project->projectFile());
         for(int i = 0; i < ret.size(); ++i) {
             QStringList newret;
             if(!ret.at(i).endsWith(Option::prf_ext))
@@ -500,6 +499,14 @@ static QString xcodeFiletypeForFilename(const QString &filename)
 bool
 ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 {
+    // The code in this function assumes that the current directory matches
+    // the output directory, which is not actually the case when we are called
+    // from the generic generator code. Instead of changing every single
+    // assumption and fileFixify we cheat by moving into the output directory
+    // for the duration of this function.
+    QString input_dir = qmake_getpwd();
+    qmake_setpwd(Option::output_dir);
+
     ProStringList tmp;
     bool did_preprocess = false;
 
@@ -521,6 +528,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         QFile mkf(mkfile);
         if(mkf.open(QIODevice::WriteOnly | QIODevice::Text)) {
             writingUnixMakefileGenerator = true;
+            qmake_setpwd(input_dir); // Makefile generation assumes input_dir as pwd
             debug_msg(1, "pbuilder: Creating file: %s", mkfile.toLatin1().constData());
             QTextStream mkt(&mkf);
             writeHeader(mkt);
@@ -529,6 +537,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             mkt.flush();
             mkf.close();
             writingUnixMakefileGenerator = false;
+            qmake_setpwd(Option::output_dir);
         }
         QString phase_key = keyFor("QMAKE_PBX_MAKEQMAKE_BUILDPHASE");
         mkfile = fileFixify(mkfile, qmake_getpwd());
@@ -543,6 +552,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
           << "\t\t\t" << writeSettings("shellScript", "make -C " + IoUtils::shellQuoteUnix(qmake_getpwd()) + " -f " + IoUtils::shellQuoteUnix(mkfile)) << ";" << "\n"
           << "\t\t" << "};" << "\n";
     }
+
+    // FIXME: Move all file resolving logic out of ProjectBuilderSources::files(), as it
+    // doesn't have access to any of the information it needs to resolve relative paths.
+    project->values("QMAKE_INTERNAL_INCLUDED_FILES").prepend(fileFixify(project->projectFile(), qmake_getpwd(), input_dir));
 
     //DUMP SOURCES
     QMap<QString, ProStringList> groups;
@@ -1463,6 +1476,9 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
             writingUnixMakefileGenerator = false;
         }
     }
+
+    qmake_setpwd(input_dir);
+
     return true;
 }
 
@@ -1676,10 +1692,9 @@ ProjectBuilderMakefileGenerator::reftypeForFile(const QString &where)
 
 QString ProjectBuilderMakefileGenerator::sourceTreeForFile(const QString &where)
 {
-    QString ret = "<absolute>";
-    if (QDir::isRelativePath(unescapeFilePath(where)))
-        ret = "SOURCE_ROOT"; //relative
-    return ret;
+    // We always use absolute paths, instead of maintaining the SRCROOT
+    // build variable and making files relative to that.
+    return QLatin1String("<absolute>");
 }
 
 QString
