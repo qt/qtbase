@@ -43,7 +43,7 @@ CONFIG += release
 #! [3]
 
 #! [4]
-CONFIG += qpa_default_plugin import_plugins
+CONFIG += qpa_minimal_plugin
 #! [4]
 
 #! [5]
@@ -51,3 +51,11 @@ QTPLUGIN     += qjpeg \
                 qgif \
                 qkrcodecs
 #! [5]
+
+#! [6]
+CONFIG -= import_qpa_plugin
+#! [6]
+
+#! [7]
+CONFIG -= import_plugins
+#! [7]

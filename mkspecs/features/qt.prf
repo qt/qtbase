@@ -35,9 +35,11 @@ QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
 contains(QT_CONFIG, static) {
     QT_PLUGIN_VERIFY += QTPLUGIN
     contains(TEMPLATE, .*app) {
-        contains(QT, gui) {
-            qpa_minimal_plugin: QTPLUGIN += qminimal
-            qpa_default_plugin: QTPLUGIN += $$QT_DEFAULT_QPA_PLUGIN
+        contains(QT, gui):import_qpa_plugin {
+            qpa_minimal_plugin: \
+                QTPLUGIN += qminimal
+            else: \
+                QTPLUGIN += $$QT_DEFAULT_QPA_PLUGIN
         }
         import_plugins:!isEmpty(QTPLUGIN) {
             IMPORT_FILE_CONT = \
