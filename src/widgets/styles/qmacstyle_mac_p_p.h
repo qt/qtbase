@@ -209,6 +209,7 @@ public:
     void* receiver;
     void *nsscroller;
 #endif
+    void *indicatorBranchButtonCell;
 };
 
 class QScrollbarAnimation : public QNumberStyleAnimation

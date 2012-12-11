@@ -1764,8 +1764,8 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
 QMacStyle::QMacStyle()
     : QCommonStyle(*new QMacStylePrivate)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     Q_D(QMacStyle);
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
         d->receiver = [[NotificationReceiver alloc] initWithPrivate:d];
         NotificationReceiver *receiver = static_cast<NotificationReceiver *>(d->receiver);
@@ -1778,6 +1778,7 @@ QMacStyle::QMacStyle()
         d->nsscroller = [[NSScroller alloc] init];
     }
 #endif
+    d->indicatorBranchButtonCell = nil;
 }
 
 QMacStyle::~QMacStyle()
@@ -3080,21 +3081,30 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorBranch: {
         if (!(opt->state & State_Children))
             break;
-        HIThemeButtonDrawInfo bi;
-        bi.version = qt_mac_hitheme_version;
-        bi.state = tds;
-        if (tds == kThemeStateInactive && opt->palette.currentColorGroup() == QPalette::Active)
-            bi.state = kThemeStateActive;
-        if (opt->state & State_Sunken)
-            bi.state |= kThemeStatePressed;
-        bi.kind = kThemeDisclosureButton;
-        if (opt->state & State_Open)
-            bi.value = kThemeDisclosureDown;
-        else
-            bi.value = opt->direction == Qt::LeftToRight ? kThemeDisclosureRight : kThemeDisclosureLeft;
-        bi.adornment = kThemeAdornmentNone;
-        HIRect hirect = qt_hirectForQRect(opt->rect.adjusted(DisclosureOffset,0,-DisclosureOffset,0));
-        HIThemeDrawButton(&hirect, &bi, cg, kHIThemeOrientationNormal, 0);
+        if (!d->indicatorBranchButtonCell)
+            const_cast<QMacStylePrivate *>(d)->indicatorBranchButtonCell = (void *)[[NSButtonCell alloc] init];
+        NSButtonCell *triangleCell = (NSButtonCell *)d->indicatorBranchButtonCell;
+        [triangleCell setButtonType:NSOnOffButton];
+        [triangleCell setState:(opt->state & State_Open) ? NSOnState : NSOffState];
+        [triangleCell setBezelStyle:NSDisclosureBezelStyle];
+        [triangleCell setBackgroundStyle:((opt->state & State_Selected) && w->hasFocus()) ? NSBackgroundStyleDark : NSBackgroundStyleLight];
+
+        CGContextSaveGState(cg);
+        [NSGraphicsContext saveGraphicsState];
+
+        [NSGraphicsContext setCurrentContext:[NSGraphicsContext
+                                              graphicsContextWithGraphicsPort:(CGContextRef)cg flipped:NO]];
+
+        QRect qtRect = opt->rect.adjusted(DisclosureOffset, 0, -DisclosureOffset, 0);
+        CGRect rect = CGRectMake(qtRect.x() + 1, qtRect.y(), qtRect.width(), qtRect.height());
+        CGContextTranslateCTM(cg, rect.origin.x, rect.origin.y + rect.size.height);
+        CGContextScaleCTM(cg, 1, -1);
+        CGContextTranslateCTM(cg, -rect.origin.x, -rect.origin.y);
+
+        [triangleCell drawBezelWithFrame:rect inView:[triangleCell controlView]];
+
+        [NSGraphicsContext restoreGraphicsState];
+        CGContextRestoreGState(cg);
         break; }
 
     case PE_Frame: {
