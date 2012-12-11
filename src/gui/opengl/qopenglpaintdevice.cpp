@@ -63,11 +63,47 @@ QT_BEGIN_NAMESPACE
 
     \ingroup painting-3D
 
+    The QOpenGLPaintDevice uses the current QOpenGL context to render
+    QPainter draw commands. It requires OpenGL (ES) 2.0 support or
+    higher.
+
+    \section1 Performance
+
+    The QOpenGLPaintDevice is almost always hardware accelerated and
+    has the potential of being much faster than software
+    rasterization. However, it is more sensitive to state changes, and
+    therefore requires the drawing commands to be carefully ordered to
+    achieve optimal performance.
+
+    \section1 Antialiasing and Quality
+
+    Antialiasing in the OpenGL paint engine is done using
+    multisampling. Most hardware require significantly more memory to
+    do multisampling and the resulting quality is not on par with the
+    quality of the software paint engine. The OpenGL paint engine's
+    strenght lies in its performance, not its visual rendering
+    quality.
+
+    \section1 State Changes
+
     When painting to a QOpenGLPaintDevice using QPainter, the state of
-    the current OpenGL context will be altered by the paint engine to reflect
-    its needs.  Applications should not rely upon the OpenGL state being reset
-    to its original conditions, particularly the current shader program,
-    OpenGL viewport, texture units, and drawing modes.
+    the current OpenGL context will be altered by the paint engine to
+    reflect its needs.  Applications should not rely upon the OpenGL
+    state being reset to its original conditions, particularly the
+    current shader program, OpenGL viewport, texture units, and
+    drawing modes.
+
+    \section1 Mixing QPainter and OpenGL
+
+    When intermixing QPainter and OpenGL, it is important to notify
+    QPainter that the OpenGL state may have been cluttered so it can
+    restore its internal state. This is acheived by calling \l
+    QPainter::beginNativePainting() before starting the OpenGL
+    rendering and calling \l QPainter::endNativePainting() after
+    finishing.
+
+    \sa {OpenGL Window Example}
+
 */
 
 class QOpenGLPaintDevicePrivate
