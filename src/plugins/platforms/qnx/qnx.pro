@@ -1,4 +1,4 @@
-TARGET = qnx
+TARGET = qqnx
 
 QT += platformsupport platformsupport-private
 

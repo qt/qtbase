@@ -6027,7 +6027,7 @@ QT_NAMESPACE = $QT_NAMESPACE
 EOF
 
 if [ "$CFG_SHARED" = "no" ]; then
-    echo "QT_DEFAULT_QPA_PLUGIN = $QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
+    echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
     echo >> "$QTCONFIG.tmp"
 fi
 

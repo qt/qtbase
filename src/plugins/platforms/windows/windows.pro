@@ -1,4 +1,4 @@
-TARGET = windows
+TARGET = qwindows
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QWindowsIntegrationPlugin

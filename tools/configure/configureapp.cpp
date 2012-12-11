@@ -3100,7 +3100,7 @@ void Configure::generateQConfigPri()
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
 
         if (dictionary[ "SHARED" ] == "no")
-            configStream << "QT_DEFAULT_QPA_PLUGIN = " << qpaPlatformName() << endl;
+            configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl;
 
         configStream.flush();
         configFile.close();

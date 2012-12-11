@@ -1,4 +1,4 @@
-TARGET = xcb
+TARGET = qxcb
 
 PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QXcbIntegrationPlugin
