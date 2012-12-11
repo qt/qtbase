@@ -221,6 +221,7 @@ QIOSWindow::~QIOSWindow()
     if (m_glData.depthRenderbuffer)
         glDeleteRenderbuffers(1, &m_glData.depthRenderbuffer);
 
+    [m_view removeFromSuperview];
     [m_view release];
 }
 
