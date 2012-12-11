@@ -381,15 +381,15 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
             location = Location(parent->name().toLower() + ".html");
     }
     else if (element.nodeName() == "keyword") {
-        qdb_->insertTarget(name, parent,1);
+        qdb_->insertTarget(name, TargetRec::Keyword, parent, 1);
         return;
     }
     else if (element.nodeName() == "target") {
-        qdb_->insertTarget(name, parent,2);
+        qdb_->insertTarget(name, TargetRec::Target, parent, 2);
         return;
     }
     else if (element.nodeName() == "contents") {
-        qdb_->insertTarget(name, parent,3);
+        qdb_->insertTarget(name, TargetRec::Contents, parent, 3);
         return;
     }
     else

@@ -65,21 +65,23 @@ enum FindFlag {
     NonFunction = 0x4
 };
 
+struct TargetRec
+{
+  public:
+    enum Type { Unknown, Target, Keyword, Contents, Class, Function, Page, Subtitle };
+    TargetRec() : node_(0), priority_(INT_MAX), type_(Unknown) { }
+    bool isEmpty() const { return ref_.isEmpty(); }
+    //void debug(int idx, const QString& key);
+    Node* node_;
+    QString ref_;
+    int priority_;
+    Type type_;
+};
+typedef QMultiMap<QString, TargetRec> TargetRecMultiMap;
+
+
 class QDocDatabase
 {
-
-    struct Target
-    {
-      public:
-        Target() : node_(0), priority_(INT_MAX) { }
-        bool isEmpty() const { return ref_.isEmpty(); }
-        //void debug(int idx, const QString& key);
-        Node* node_;
-        QString ref_;
-        int priority_;
-    };
-    typedef QMultiMap<QString, Target> TargetMultiMap;
-
   public:
     static QDocDatabase* qdocDB();
     static void destroyQdocDB();
@@ -127,7 +129,7 @@ class QDocDatabase
 
     const Node* resolveTarget(const QString& target, const Node* relative, const Node* self=0);
     const Node* findNodeForTarget(const QString& target, const Node* relative);
-    void insertTarget(const QString& name, Node* node, int priority);
+    void insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority);
 
     /* convenience functions
        Many of these will be either eliminated or replaced.
@@ -226,7 +228,7 @@ class QDocDatabase
     NodeMapMap              funcIndex_;
     TextToNodeMap           legaleseTexts_;
     DocNodeMultiMap         docNodesByTitle_;
-    TargetMultiMap          targetMultiMap_;
+    TargetRecMultiMap       targetRecMultiMap_;
 };
 
 QT_END_NAMESPACE
