@@ -86,6 +86,7 @@ public:
 
     void setWindowState(Qt::WindowState state);
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
+    void setVisible(bool visible);
 
     GLuint framebufferObject(const QIOSContext &context) const;
     GLuint colorRenderbuffer(const QIOSContext &context) const;

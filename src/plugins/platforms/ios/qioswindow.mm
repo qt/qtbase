@@ -225,6 +225,12 @@ QIOSWindow::~QIOSWindow()
     [m_view release];
 }
 
+void QIOSWindow::setVisible(bool visible)
+{
+    QPlatformWindow::setVisible(visible);
+    [m_view setHidden:!visible];
+}
+
 void QIOSWindow::setGeometry(const QRect &rect)
 {
     // If the window is in fullscreen, just bookkeep the requested
