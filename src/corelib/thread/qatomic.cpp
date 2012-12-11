@@ -53,12 +53,6 @@
     The QAtomicInt class provides atomic reference counting, test-and-set, fetch-and-store,
     and fetch-and-add for integers.
 
-    \section1 Non-atomic convenience operators
-
-    For convenience, QAtomicInt provides integer comparison, cast, and
-    assignment operators. Note that a combination of these operators
-    is \e not an atomic operation.
-
     \section1 The Atomic API
 
     \section2 Reference counting
@@ -609,12 +603,6 @@
 
     An \e atomic operation is a complex operation that completes without interruption.
     The QAtomicPointer class provides atomic test-and-set, fetch-and-store, and fetch-and-add for pointers.
-
-    \section1 Non-atomic convenience operators
-
-    For convenience, QAtomicPointer provides pointer comparison, cast,
-    dereference, and assignment operators. Note that these operators
-    are \e not atomic.
 
     \section1 The Atomic API
 
