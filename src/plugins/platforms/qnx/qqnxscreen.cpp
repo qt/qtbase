@@ -41,6 +41,7 @@
 
 #include "qqnxscreen.h"
 #include "qqnxwindow.h"
+#include "qqnxcursor.h"
 
 #include <QtCore/QThread>
 #include <QtCore/QDebug>
@@ -111,7 +112,8 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
       m_posted(false),
       m_keyboardHeight(0),
       m_nativeOrientation(Qt::PrimaryOrientation),
-      m_platformContext(0)
+      m_platformContext(0),
+      m_cursor(new QQnxCursor())
 {
     qScreenDebug() << Q_FUNC_INFO;
     // Cache initial orientation of this display
@@ -154,6 +156,8 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 QQnxScreen::~QQnxScreen()
 {
     qScreenDebug() << Q_FUNC_INFO;
+
+    delete m_cursor;
 }
 
 static int defaultDepth()
@@ -495,6 +499,11 @@ void QQnxScreen::onWindowPost(QQnxWindow *window)
         m_rootWindow->post();
         m_posted = true;
     }
+}
+
+QPlatformCursor * QQnxScreen::cursor() const
+{
+    return m_cursor;
 }
 
 void QQnxScreen::keyboardHeightChanged(int height)

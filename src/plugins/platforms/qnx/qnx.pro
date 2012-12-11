@@ -39,6 +39,7 @@ CONFIG(blackberry) {
 #DEFINES += QQNXSCREEN_DEBUG
 #DEFINES += QQNXVIRTUALKEYBOARD_DEBUG
 #DEFINES += QQNXWINDOW_DEBUG
+#DEFINES += QQNXCURSOR_DEBUG
 
 
 SOURCES =   main.cpp \
@@ -54,7 +55,8 @@ SOURCES =   main.cpp \
             qqnxnavigatoreventhandler.cpp \
             qqnxabstractnavigator.cpp \
             qqnxabstractvirtualkeyboard.cpp \
-            qqnxservices.cpp
+            qqnxservices.cpp \
+            qqnxcursor.cpp
 
 HEADERS =   main.h \
             qqnxbuffer.h \
@@ -70,7 +72,8 @@ HEADERS =   main.h \
             qqnxnavigatoreventhandler.h \
             qqnxabstractnavigator.h \
             qqnxabstractvirtualkeyboard.h \
-            qqnxservices.h
+            qqnxservices.h \
+            qqnxcursor.h
 
 LIBS += -lscreen
 

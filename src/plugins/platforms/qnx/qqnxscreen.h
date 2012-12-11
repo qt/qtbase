@@ -95,6 +95,8 @@ public:
 
     QSharedPointer<QQnxRootWindow> rootWindow() const { return m_rootWindow; }
 
+    QPlatformCursor *cursor() const;
+
 public Q_SLOTS:
     void setRotation(int rotation);
     void newWindowCreated(void *window);
@@ -130,6 +132,8 @@ private:
 
     QList<QQnxWindow *> m_childWindows;
     QList<screen_window_t> m_overlays;
+
+    QPlatformCursor *m_cursor;
 };
 
 QT_END_NAMESPACE
