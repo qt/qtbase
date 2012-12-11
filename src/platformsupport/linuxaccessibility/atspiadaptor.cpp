@@ -971,7 +971,10 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::TextUpdated: {
         if (sendObject || sendObject_text_changed) {
             QAIPointer iface = QAIPointer(event->accessibleInterface());
-            Q_ASSERT(iface->textInterface());
+            if (!iface || !iface->textInterface()) {
+                qAtspiDebug() << "Received text event for invalid interface.";
+                return;
+            }
             QString path = pathForInterface(iface);
 
             int changePosition = 0;
@@ -1026,8 +1029,8 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::TextCaretMoved: {
         if (sendObject || sendObject_text_caret_moved) {
             QAIPointer iface = QAIPointer(event->accessibleInterface());
-            if (!iface->textInterface()) {
-                qWarning() << "Sending TextCaretMoved from object that does not implement text interface: " << iface << iface->object();
+            if (!iface || !iface->textInterface()) {
+                qWarning() << "Sending TextCaretMoved from object that does not implement text interface: " << iface;
                 return;
             }
 
@@ -1054,7 +1057,11 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::ValueChanged: {
         if (sendObject || sendObject_value_changed || sendObject_property_change_accessible_value) {
             QAIPointer iface = QAIPointer(event->accessibleInterface());
-            Q_ASSERT(iface->valueInterface());
+            if (!iface || !iface->valueInterface()) {
+                qWarning() << "ValueChanged event from invalid accessible: " << iface;
+                return;
+            }
+
             QString path = pathForInterface(iface);
             QVariantList args = packDBusSignalArguments(QLatin1String("accessible-value"), 0, 0, variantForPath(path));
             sendDBusSignal(path, QLatin1String(ATSPI_DBUS_INTERFACE_EVENT_OBJECT),
@@ -1064,6 +1071,10 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     }
     case QAccessible::Selection: {
         QAIPointer iface = QAIPointer(event->accessibleInterface());
+        if (!iface) {
+            qWarning() << "Selection event from invalid accessible.";
+            return;
+        }
         QString path = pathForInterface(iface);
         int selected = iface->state().selected ? 1 : 0;
         QVariantList stateArgs = packDBusSignalArguments(QLatin1String("selected"), selected, 0, variantForPath(path));
@@ -1077,11 +1088,15 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
             QAccessible::State stateChange = static_cast<QAccessibleStateChangeEvent*>(event)->changedStates();
             if (stateChange.checked) {
                 QAIPointer iface = QAIPointer(event->accessibleInterface());
+                if (!iface) {
+                    qWarning() << "StateChanged event from invalid accessible.";
+                    return;
+                }
                 int checked = iface->state().checked;
                 notifyStateChange(iface, QLatin1String("checked"), checked);
             } else if (stateChange.active) {
                 QAIPointer iface = QAIPointer(event->accessibleInterface());
-                if (!(iface->role() == QAccessible::Window && (sendWindow || sendWindow_activate)))
+                if (!iface || !(iface->role() == QAccessible::Window && (sendWindow || sendWindow_activate)))
                     return;
                 QString windowTitle = iface->text(QAccessible::Name);
                 QDBusVariant data;
