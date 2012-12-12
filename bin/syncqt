@@ -964,7 +964,7 @@ foreach my $lib (@modules_to_sync) {
                             if($public_header) {
                                 #deal with the install directives
                                 if($public_header) {
-                                    my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                                    my $pri_install_iheader = fixPaths($iheader, $dir);
                                     foreach my $class (@classes) {
                                         # Strip namespaces:
                                         $class =~ s/^.*:://;
@@ -972,23 +972,24 @@ foreach my $lib (@modules_to_sync) {
     #                                       $class =~ s,::,/,g;
     #                                   }
                                         my $class_header = fixPaths("$out_basedir/include/$lib/$class",
-                                                                    $current_dir) . " ";
+                                                                    $dir) . " ";
                                         $pri_install_classes .= $class_header
                                                                     unless($pri_install_classes =~ $class_header);
                                     }
                                     if ($explicitheaders{$lib}{basename($iheader)}) {
-                                        my $compat_header = fixPaths("$out_basedir/include/$lib/$explicitheaders{$lib}{basename($iheader)}", $current_dir) . " ";
+                                        my $compat_header = fixPaths("$out_basedir/include/$lib/$explicitheaders{$lib}{basename($iheader)}",
+                                                                     $dir) . " ";
                                         $pri_install_files .= $compat_header unless($pri_install_files =~ $compat_header);
                                     }
                                     $pri_install_files.= "$pri_install_iheader ";;
                                 }
                             }
                             elsif ($qpa_header) {
-                                my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
                             }
                             else {
-                                my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
                         }
