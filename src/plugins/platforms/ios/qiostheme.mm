@@ -39,45 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMINTEGRATION_UIKIT_H
-#define QPLATFORMINTEGRATION_UIKIT_H
+#include "qiostheme.h"
 
-#include <qpa/qplatformintegration.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <QtCore/QStringList>
+#include <QtCore/QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class QIOSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
+const char *QIOSTheme::name = "ios";
+
+QIOSTheme::QIOSTheme()
 {
-public:
-    QIOSIntegration();
-    ~QIOSIntegration();
+}
 
-    QPlatformWindow *createPlatformWindow(QWindow *window) const;
-    QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
+QIOSTheme::~QIOSTheme()
+{
+}
 
-    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
-
-    QPlatformFontDatabase *fontDatabase() const;
-    QPlatformInputContext *inputContext() const;
-
-    QVariant styleHint(StyleHint hint) const;
-
-    QStringList themeNames() const;
-    QPlatformTheme *createPlatformTheme(const QString &name) const;
-
-    QAbstractEventDispatcher *guiThreadEventDispatcher() const;
-    QPlatformNativeInterface *nativeInterface() const;
-
-    void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
-
-private:
-    QPlatformFontDatabase *m_fontDatabase;
-    QPlatformInputContext *m_inputContext;
-    QPlatformScreen *m_screen;
-};
+QVariant QIOSTheme::themeHint(ThemeHint hint) const
+{
+    switch (hint) {
+    case QPlatformTheme::StyleNames:
+        return QStringList(QStringLiteral("fusion"));
+    default:
+        return QPlatformTheme::themeHint(hint);
+    }
+}
 
 QT_END_NAMESPACE
-
-#endif
-

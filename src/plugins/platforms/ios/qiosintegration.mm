@@ -46,6 +46,7 @@
 #include "qioseventdispatcher.h"
 #include "qioscontext.h"
 #include "qiosinputcontext.h"
+#include "qiostheme.h"
 
 #include <QtPlatformSupport/private/qcoretextfontdatabase_p.h>
 
@@ -121,6 +122,19 @@ QVariant QIOSIntegration::styleHint(StyleHint hint) const
     default:
         return QPlatformIntegration::styleHint(hint);
     }
+}
+
+QStringList QIOSIntegration::themeNames() const
+{
+    return QStringList(QLatin1String(QIOSTheme::name));
+}
+
+QPlatformTheme *QIOSIntegration::createPlatformTheme(const QString &name) const
+{
+    if (name == QLatin1String(QIOSTheme::name))
+        return new QIOSTheme;
+
+    return QPlatformIntegration::createPlatformTheme(name);
 }
 
 QPlatformNativeInterface *QIOSIntegration::nativeInterface() const
