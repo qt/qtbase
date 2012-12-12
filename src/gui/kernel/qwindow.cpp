@@ -934,11 +934,59 @@ void QWindow::setMinimumSize(const QSize &size)
         emit minimumHeightChanged(d->minimumSize.height());
 }
 
+/*!
+    \property QWindow::x
+    \brief the x position of the window's geometry
+*/
+void QWindow::setX(int arg)
+{
+    if (x() != arg)
+        setGeometry(QRect(arg, y(), width(), height()));
+}
+
+/*!
+    \property QWindow::y
+    \brief the y position of the window's geometry
+*/
+void QWindow::setY(int arg)
+{
+    if (y() != arg)
+        setGeometry(QRect(x(), arg, width(), height()));
+}
+
+/*!
+    \property QWindow::width
+    \brief the width of the window's geometry
+*/
+void QWindow::setWidth(int arg)
+{
+    if (width() != arg)
+        setGeometry(QRect(x(), y(), arg, height()));
+}
+
+/*!
+    \property QWindow::height
+    \brief the height of the window's geometry
+*/
+void QWindow::setHeight(int arg)
+{
+    if (height() != arg)
+        setGeometry(QRect(x(), y(), width(), arg));
+}
+
+/*!
+    \property QWindow::minimumWidth
+    \brief the minimum width of the window's geometry
+*/
 void QWindow::setMinimumWidth(int w)
 {
     setMinimumSize(QSize(w, minimumHeight()));
 }
 
+/*!
+    \property QWindow::minimumHeight
+    \brief the minimum height of the window's geometry
+*/
 void QWindow::setMinimumHeight(int h)
 {
     setMinimumSize(QSize(minimumWidth(), h));
@@ -967,11 +1015,19 @@ void QWindow::setMaximumSize(const QSize &size)
         emit maximumHeightChanged(d->maximumSize.height());
 }
 
+/*!
+    \property QWindow::maximumWidth
+    \brief the maximum width of the window's geometry
+*/
 void QWindow::setMaximumWidth(int w)
 {
     setMaximumSize(QSize(w, maximumHeight()));
 }
 
+/*!
+    \property QWindow::maximumHeight
+    \brief the maximum height of the window's geometry
+*/
 void QWindow::setMaximumHeight(int h)
 {
     setMaximumSize(QSize(maximumWidth(), h));
@@ -1020,13 +1076,15 @@ void QWindow::setSizeIncrement(const QSize &size)
 }
 
 /*!
-    \fn void QWindow::setGeometry(int posx, int posy, int w, int h)
-
     Sets the geometry of the window, excluding its window frame, to a
     rectangle constructed from \a posx, \a posy, \a w and \a h.
 
     \sa geometry()
 */
+void QWindow::setGeometry(int posx, int posy, int w, int h)
+{
+    setGeometry(QRect(posx, posy, w, h));
+}
 
 /*!
     \brief Sets the geometry of the window, excluding its window frame, to \a rect.
@@ -1056,46 +1114,6 @@ void QWindow::setGeometry(const QRect &rect)
     if (rect.height() != oldRect.height())
         emit heightChanged(rect.height());
 }
-
-/*!
-    \property QWindow::x
-    \brief the x position of the window's geometry
-*/
-
-/*!
-    \property QWindow::y
-    \brief the y position of the window's geometry
-*/
-
-/*!
-    \property QWindow::width
-    \brief the width of the window's geometry
-*/
-
-/*!
-    \property QWindow::height
-    \brief the height of the window's geometry
-*/
-
-/*!
-    \property QWindow::minimumWidth
-    \brief the minimum width of the window's geometry
-*/
-
-/*!
-    \property QWindow::minimumHeight
-    \brief the minimum height of the window's geometry
-*/
-
-/*!
-    \property QWindow::maximumWidth
-    \brief the maximum width of the window's geometry
-*/
-
-/*!
-    \property QWindow::maximumHeight
-    \brief the maximum height of the window's geometry
-*/
 
 /*!
     Returns the geometry of the window, excluding its window frame.
@@ -1172,18 +1190,24 @@ void QWindow::setFramePosition(const QPoint &point)
 }
 
 /*!
-    \fn void QWindow::setPosition(const QPoint &pt)
     \brief set the position of the window on the desktop to \a pt
 
     \sa position()
 */
+void QWindow::setPosition(const QPoint &pt)
+{
+    setGeometry(QRect(pt, size()));
+}
 
 /*!
-    \fn void QWindow::setPosition(int posx, int posy)
     \brief set the position of the window on the desktop to \a posx, \a posy
 
     \sa position()
 */
+void QWindow::setPosition(int posx, int posy)
+{
+    setPosition(QPoint(posx, posy));
+}
 
 /*!
     \fn QPoint QWindow::position() const
@@ -1200,13 +1224,15 @@ void QWindow::setFramePosition(const QPoint &point)
 */
 
 /*!
-    \fn void QWindow::resize(int w, int h)
-
     set the size of the window, excluding any window frame, to a QSize
     constructed from width \a w and height \a h
 
     \sa size(), geometry()
 */
+void QWindow::resize(int w, int h)
+{
+    resize(QSize(w, h));
+}
 
 /*!
     \brief set the size of the window, excluding any window frame, to \a newSize

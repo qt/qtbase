@@ -172,10 +172,10 @@ public:
 
     bool isExposed() const;
 
-    int minimumWidth() const { return minimumSize().width(); }
-    int minimumHeight() const { return minimumSize().height(); }
-    int maximumWidth() const { return maximumSize().width(); }
-    int maximumHeight() const { return maximumSize().height(); }
+    inline int minimumWidth() const { return minimumSize().width(); }
+    inline int minimumHeight() const { return minimumSize().height(); }
+    inline int maximumWidth() const { return maximumSize().width(); }
+    inline int maximumHeight() const { return maximumSize().height(); }
 
     QSize minimumSize() const;
     QSize maximumSize() const;
@@ -187,7 +187,7 @@ public:
     void setBaseSize(const QSize &size);
     void setSizeIncrement(const QSize &size);
 
-    void setGeometry(int posx, int posy, int w, int h) { setGeometry(QRect(posx, posy, w, h)); }
+    void setGeometry(int posx, int posy, int w, int h);
     void setGeometry(const QRect &rect);
     QRect geometry() const;
 
@@ -205,11 +205,11 @@ public:
     inline QSize size() const { return geometry().size(); }
     inline QPoint position() const { return geometry().topLeft(); }
 
-    inline void setPosition(const QPoint &pt) { setGeometry(QRect(pt, size())); }
-    inline void setPosition(int posx, int posy) { setPosition(QPoint(posx, posy)); }
+    void setPosition(const QPoint &pt);
+    void setPosition(int posx, int posy);
 
     void resize(const QSize &newSize);
-    inline void resize(int w, int h) { resize(QSize(w, h)); }
+    void resize(int w, int h);
 
     void setFilePath(const QString &filePath);
     QString filePath() const;
@@ -256,29 +256,10 @@ public Q_SLOTS:
 
     void setTitle(const QString &);
 
-    void setX(int arg)
-    {
-        if (x() != arg)
-            setGeometry(QRect(arg, y(), width(), height()));
-    }
-
-    void setY(int arg)
-    {
-        if (y() != arg)
-            setGeometry(QRect(x(), arg, width(), height()));
-    }
-
-    void setWidth(int arg)
-    {
-        if (width() != arg)
-            setGeometry(QRect(x(), y(), arg, height()));
-    }
-
-    void setHeight(int arg)
-    {
-        if (height() != arg)
-            setGeometry(QRect(x(), y(), width(), arg));
-    }
+    void setX(int arg);
+    void setY(int arg);
+    void setWidth(int arg);
+    void setHeight(int arg);
 
     void setMinimumWidth(int w);
     void setMinimumHeight(int h);
