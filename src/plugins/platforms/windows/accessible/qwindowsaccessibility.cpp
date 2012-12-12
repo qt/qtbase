@@ -162,21 +162,10 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         }
     }
 
-    typedef void (WINAPI *PtrNotifyWinEvent)(DWORD, HWND, LONG, LONG);
-
 #if defined(Q_OS_WINCE) // ### TODO: check for NotifyWinEvent in CE 6.0
     // There is no user32.lib nor NotifyWinEvent for CE
     return;
 #else
-    static PtrNotifyWinEvent ptrNotifyWinEvent = 0;
-    static bool resolvedNWE = false;
-    if (!resolvedNWE) {
-        resolvedNWE = true;
-        ptrNotifyWinEvent = (PtrNotifyWinEvent)QSystemLibrary::resolve(QLatin1String("user32"), "NotifyWinEvent");
-    }
-    if (!ptrNotifyWinEvent)
-        return;
-
     // An event has to be associated with a window,
     // so find the first parent that is a widget and that has a WId
     QAccessibleInterface *iface = event->accessibleInterface();
@@ -199,7 +188,7 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         int eventId = - (eventNum - 1);
 
         qAccessibleRecentSentEvents()->insert(eventId, qMakePair(event->object(), event->child()));
-        ptrNotifyWinEvent(event->type(), hWnd, OBJID_CLIENT, eventId );
+        ::NotifyWinEvent(event->type(), hWnd, OBJID_CLIENT, eventId );
 
         ++eventNum;
     }
