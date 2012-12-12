@@ -380,6 +380,8 @@ public:
 
     xcb_timestamp_t getTimestamp();
 
+    Qt::MouseButtons buttons() const { return m_buttons; }
+
 private slots:
     void processXcbEvents();
 
@@ -400,6 +402,8 @@ private:
     QXcbScreen* findOrCreateScreen(QList<QXcbScreen *>& newScreens, int screenNumber,
         xcb_screen_t* xcbScreen, xcb_randr_get_output_info_reply_t *output = NULL);
     void updateScreens();
+    void handleButtonPress(xcb_generic_event_t *event);
+    void handleButtonRelease(xcb_generic_event_t *event);
 
     bool m_xi2Enabled;
     int m_xi2Minor;
@@ -501,6 +505,8 @@ private:
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;
+
+    Qt::MouseButtons m_buttons;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

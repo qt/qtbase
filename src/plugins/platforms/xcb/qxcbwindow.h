@@ -134,7 +134,7 @@ public:
     void handleFocusOutEvent(const xcb_focus_out_event_t *event);
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event);
 
-    void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
+    void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
 
     void updateSyncRequestCounter();
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
