@@ -3920,7 +3920,7 @@ static void invalidateEngine(QRegExpPrivate *priv)
 
     \value Wildcard This provides a simple pattern matching syntax
     similar to that used by shells (command interpreters) for "file
-    globbing". See \l{Wildcard Matching}.
+    globbing". See \l{QRegExp wildcard matching}.
 
     \value WildcardUnix This is similar to Wildcard but with the
     behavior of a Unix shell. The wildcard characters can be escaped
@@ -4150,7 +4150,7 @@ QRegExp::PatternSyntax QRegExp::patternSyntax() const
     QRegExp::RegExp.
 
     Setting \a syntax to QRegExp::Wildcard enables simple shell-like
-    \l{wildcard matching}. For example, \b{r*.txt} matches the
+    \l{QRegExp wildcard matching}. For example, \b{r*.txt} matches the
     string \c{readme.txt} in wildcard mode, but does not match
     \c{readme}.
 

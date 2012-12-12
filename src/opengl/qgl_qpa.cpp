@@ -421,7 +421,8 @@ QOpenGLContext *QGLContext::contextHandle() const
 }
 
 /*!
-    Returns a OpenGL context for the window context specified by \a windowContext
+    Returns a OpenGL context for the window context specified by the \a context
+    parameter.
 */
 QGLContext *QGLContext::fromOpenGLContext(QOpenGLContext *context)
 {

@@ -48,7 +48,7 @@
     through plugins, we recommend that you start by reading this
     overview, which explains how to make an application use plugins.
     Afterward, you can read the
-    \l{plugandpaintplugins/basictools}{Basic Tools} and
+    \l{tools/plugandpaintplugins/basictools}{Basic Tools} and
     \l{plugandpaintplugins/extrafilters}{Extra Filters}
     overviews, which show how to implement static and dynamic
     plugins, respectively.

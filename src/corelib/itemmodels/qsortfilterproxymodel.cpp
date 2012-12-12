@@ -1616,7 +1616,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     QSortFilterProxyModel and reimplementing lessThan(), which is
     used to compare items. For example:
 
-    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 5
+    \snippet ../widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 5
 
     (This code snippet comes from the
     \l{itemviews/customsortfiltermodel}{Custom Sort/Filter Model}
@@ -1659,7 +1659,7 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     the \l{QSortFilterProxyModel::filterKeyColumn}{filterKeyColumn} property
     and performs filtering on columns 0, 1, and 2:
 
-    \snippet itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 3
+    \snippet ../widgets/itemviews/customsortfiltermodel/mysortfilterproxymodel.cpp 3
 
     (This code snippet comes from the
     \l{itemviews/customsortfiltermodel}{Custom Sort/Filter Model}

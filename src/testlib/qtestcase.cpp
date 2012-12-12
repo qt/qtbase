@@ -185,7 +185,7 @@ QT_BEGIN_NAMESPACE
 
    \relates QTest
 
-   Invokes QTRY_VERIFY_WITH_TIMEOUT() with a timeout of five seconds.
+   Checks the \a condition by invoking QTRY_VERIFY_WITH_TIMEOUT() with a timeout of five seconds.
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
@@ -215,7 +215,8 @@ QT_BEGIN_NAMESPACE
 
    \relates QTest
 
-   Invokes QTRY_COMPARE_WITH_TIMEOUT() with a timeout of five seconds.
+   Performs a comparison of the \a actual and \a expected values by
+   invoking QTRY_COMPARE_WITH_TIMEOUT() with a timeout of five seconds.
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.

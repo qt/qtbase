@@ -62,9 +62,9 @@ QT_BEGIN_NAMESPACE
     Example for a one second (1000 millisecond) timer (from the
     \l{widgets/analogclock}{Analog Clock} example):
 
-    \snippet widgets/analogclock/analogclock.cpp 4
-    \snippet widgets/analogclock/analogclock.cpp 5
-    \snippet widgets/analogclock/analogclock.cpp 6
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 4
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 5
+    \snippet ../widgets/widgets/analogclock/analogclock.cpp 6
 
     From then on, the \c update() slot is called every second.
 
