@@ -14,8 +14,11 @@ exampledirs += ../../../examples/dbus \
 
 headerdirs += ..
 imagedirs += images
-sourcedirs += ..
+sourcedirs += .. \
+              ../../../examples/dbus/doc/src
 excludedirs += ../../../examples/widgets/doc
+
+examplesinstallpath     = dbus
 
 depends += qtcore
 
