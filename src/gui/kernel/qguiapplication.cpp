@@ -60,6 +60,7 @@
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qdir.h>
 #include <QtDebug>
+#include "qaccessible.h"
 #include <qpalette.h>
 #include <qscreen.h>
 #include "qsessionmanager.h"
@@ -1184,6 +1185,9 @@ QPlatformNativeInterface *QGuiApplication::platformNativeInterface()
 */
 int QGuiApplication::exec()
 {
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::setRootObject(qApp);
+#endif
     return QCoreApplication::exec();
 }
 
