@@ -28,11 +28,10 @@
 /*!
     \example qtconcurrent/imagescaling
     \title Image Scaling Example
-    \bried Demonstrates how to asynchronously scale images.
+    \brief Demonstrates how to asynchronously scale images.
     \ingroup qtconcurrentexamples
+    \image imagescaling_example.png
 
     The QtConcurrent Map example shows how to use the asynchronous
     QtConcurrent API to load and scale a collection of images.
-
-    \image imagescaling_example.png
 */
