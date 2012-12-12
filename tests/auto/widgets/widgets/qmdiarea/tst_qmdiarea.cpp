@@ -2594,7 +2594,10 @@ void tst_QMdiArea::nativeSubWindows()
     const QString platformName = QGuiApplication::platformName();
     if (platformName != QLatin1String("xcb") && platformName != QLatin1String("windows"))
         QSKIP(qPrintable(QString::fromLatin1("nativeSubWindows() does not work on this platform (%1).").arg(platformName)));
-
+#ifdef QT_OPENGL_ES_2_ANGLE
+    if (platformName == QLatin1String("windows"))
+        QSKIP("nativeSubWindows() does not work with ANGLE on Windows, QTBUG-28545.");
+#endif
     { // Add native widgets after show.
     QMdiArea mdiArea;
     mdiArea.addSubWindow(new QWidget);
