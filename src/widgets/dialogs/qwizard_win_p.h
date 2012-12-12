@@ -105,10 +105,8 @@ public:
         return int(QStyleHelper::dpiScaled(
                 QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ? 4 : 6));
     }
-    static int topOffset() {
-        static int aeroOffset = QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ?
-                                QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
-        return (titleBarSize() + (vistaState() == VistaAero ? aeroOffset : 3)); }
+    static int topOffset();
+
 private:
     static HFONT getCaptionFont(HANDLE hTheme);
     bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);

@@ -271,6 +271,8 @@ QVistaHelper::~QVistaHelper()
 
 void QVistaHelper::updateCustomMargins()
 {
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS8)
+        return; // Negative margins are not supported on Windows 8.
     if (QWindow *window = wizard->windowHandle()) {
         // Reduce top frame to zero since we paint it ourselves.
         const QMargins customMargins = vistaState() == VistaAero ?
@@ -766,6 +768,19 @@ int QVistaHelper::titleOffset()
 {
     int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + textSpacing;
     return leftMargin() + iconOffset;
+}
+
+int QVistaHelper::topOffset()
+{
+    if (vistaState() != VistaAero)
+        return titleBarSize() + 3;
+    static const int aeroOffset =
+        QSysInfo::WindowsVersion == QSysInfo::WV_WINDOWS7 ?
+        QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
+    int result = aeroOffset;
+    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8)
+        result += titleBarSize();
+    return result;
 }
 
 QT_END_NAMESPACE
