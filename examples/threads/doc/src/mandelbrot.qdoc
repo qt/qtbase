@@ -37,7 +37,7 @@
 
     The heavy computation here is the Mandelbrot set, probably the
     world's most famous fractal. These days, while sophisticated
-    programs such as \l{XaoS} that provide real-time zooming in the
+    programs such as \l{http://xaos.sourceforge.net/}{XaoS} that provide real-time zooming in the
     Mandelbrot set, the standard Mandelbrot algorithm is just slow
     enough for our purposes.
 
