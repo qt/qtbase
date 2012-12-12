@@ -23,6 +23,8 @@ imagedirs   += images \
 
 depends += qtcore qtgui qtwidgets
 
+examplesinstallpath     = opengl
+
 # The following parameters are for creating a qhp file, the qhelpgenerator
 # program can convert the qhp file into a qch file which can be opened in
 # Qt Assistant and/or Qt Creator.
