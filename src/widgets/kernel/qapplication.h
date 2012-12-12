@@ -50,6 +50,9 @@
 #ifdef QT_INCLUDE_COMPAT
 # include <QtWidgets/qdesktopwidget.h>
 #endif
+#ifdef Q_NO_USING_KEYWORD
+#include <QtGui/qpalette.h>
+#endif
 #include <QtGui/qguiapplication.h>
 
 QT_BEGIN_HEADER
