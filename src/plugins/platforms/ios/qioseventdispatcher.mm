@@ -313,7 +313,7 @@ void QIOSEventDispatcher::interrupt()
 
 void QIOSEventDispatcher::flush()
 {
-    qDebug() << __FUNCTION__ << "not implemented";
+    // X11 only.
 }
 
 QT_END_NAMESPACE
