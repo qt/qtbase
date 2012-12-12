@@ -49,6 +49,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
+#include <private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
 
@@ -649,6 +650,10 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
         [m_contentView setFrame:frame];
     }
+
+    const qreal opacity = qt_window_private(window())->opacity;
+    if (!qFuzzyCompare(opacity, qreal(1.0)))
+        setOpacity(opacity);
 }
 
 NSWindow * QCocoaWindow::createNSWindow()

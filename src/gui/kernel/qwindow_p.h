@@ -89,6 +89,7 @@ public:
         , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
         , contentOrientation(Qt::PrimaryOrientation)
+        , opacity(qreal(1.0))
         , minimumSize(0, 0)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
@@ -135,6 +136,7 @@ public:
     bool receivedExpose;
     PositionPolicy positionPolicy;
     Qt::ScreenOrientation contentOrientation;
+    qreal opacity;
 
     QSize minimumSize;
     QSize maximumSize;

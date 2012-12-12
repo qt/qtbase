@@ -654,9 +654,11 @@ void QWindow::lower()
 void QWindow::setOpacity(qreal level)
 {
     Q_D(QWindow);
-    if (d->platformWindow) {
+    if (level == d->opacity) // #fixme: Add property for 5.1
+        return;
+    d->opacity = level;
+    if (d->platformWindow)
         d->platformWindow->setOpacity(level);
-    }
 }
 
 /*!

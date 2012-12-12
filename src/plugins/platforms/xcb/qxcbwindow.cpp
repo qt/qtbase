@@ -385,6 +385,10 @@ void QXcbWindow::create()
 #ifndef QT_NO_DRAGANDDROP
     connection()->drag()->dndEnable(this, true);
 #endif
+
+    const qreal opacity = qt_window_private(window())->opacity;
+    if (!qFuzzyCompare(opacity, qreal(1.0)))
+        setOpacity(opacity);
 }
 
 QXcbWindow::~QXcbWindow()

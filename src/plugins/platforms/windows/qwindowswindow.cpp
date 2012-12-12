@@ -731,6 +731,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0);
     setWindowState(aWindow->windowState());
+    const qreal opacity = qt_window_private(aWindow)->opacity;
+    if (!qFuzzyCompare(opacity, qreal(1.0)))
+        setOpacity(opacity);
 }
 
 QWindowsWindow::~QWindowsWindow()

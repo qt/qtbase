@@ -10266,6 +10266,7 @@ void QWidget::setWindowOpacity(qreal opacity)
     QTLWExtra *extra = d->topData();
     extra->opacity = uint(opacity * 255);
     setAttribute(Qt::WA_WState_WindowOpacitySet);
+    d->setWindowOpacity_sys(opacity);
 
     if (!testAttribute(Qt::WA_WState_Created))
         return;
@@ -10280,8 +10281,6 @@ void QWidget::setWindowOpacity(qreal opacity)
         return;
     }
 #endif
-
-    d->setWindowOpacity_sys(opacity);
 }
 
 /*!
