@@ -1786,6 +1786,23 @@ static inline xcb_rectangle_t qRectToXCBRectangle(const QRect &r)
     return result;
 }
 
+void QXcbWindow::setOpacity(qreal level)
+{
+    if (!m_window)
+        return;
+
+    quint32 value = qRound64(qBound(qreal(0), level, qreal(1)) * 0xffffffff);
+
+    Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                   XCB_PROP_MODE_REPLACE,
+                                   m_window,
+                                   atom(QXcbAtom::_NET_WM_WINDOW_OPACITY),
+                                   XCB_ATOM_CARDINAL,
+                                   32,
+                                   1,
+                                   (uchar *)&value));
+}
+
 void QXcbWindow::setMask(const QRegion &region)
 {
     if (!connection()->hasXShape())
