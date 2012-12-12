@@ -135,7 +135,8 @@ public:
     static void handleEnterEvent(QWindow *w, const QPointF &local = QPointF(), const QPointF& global = QPointF());
     static void handleLeaveEvent(QWindow *w);
     static void handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local = QPointF(), const QPointF& global = QPointF());
-    static void handleWindowActivated(QWindow *w);
+    static void handleWindowActivated(QWindow *w, Qt::FocusReason r = Qt::OtherFocusReason);
+
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 
     static void handleApplicationStateChanged(Qt::ApplicationState newState);

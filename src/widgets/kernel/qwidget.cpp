@@ -6138,10 +6138,34 @@ bool QWidget::focusNextPrevChild(bool next)
     if (d->extra && d->extra->proxyWidget)
         return d->extra->proxyWidget->focusNextPrevChild(next);
 #endif
-    QWidget *w = QApplicationPrivate::focusNextPrevChild_helper(this, next);
+
+    bool wrappingOccurred = false;
+    QWidget *w = QApplicationPrivate::focusNextPrevChild_helper(this, next,
+                                                                &wrappingOccurred);
     if (!w) return false;
 
-    w->setFocus(next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
+    Qt::FocusReason reason = next ? Qt::TabFocusReason : Qt::BacktabFocusReason;
+
+    /* If we are about to wrap the focus chain, give the platform
+     * implementation a chance to alter the wrapping behavior.  This is
+     * especially needed when the window is embedded in a window created by
+     * another process.
+     */
+    if (wrappingOccurred) {
+        QWindow *window = windowHandle();
+        if (window != 0) {
+            QWindowPrivate *winp = qt_window_private(window);
+
+            if (winp->platformWindow != 0) {
+                QFocusEvent event(QEvent::FocusIn, reason);
+                event.ignore();
+                winp->platformWindow->windowEvent(&event);
+                if (event.isAccepted()) return true;
+            }
+        }
+    }
+
+    w->setFocus(reason);
     return true;
 }
 

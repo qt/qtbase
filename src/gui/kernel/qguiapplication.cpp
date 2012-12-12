@@ -1605,7 +1605,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     }
 
     if (QGuiApplicationPrivate::focus_window) {
-        QFocusEvent focusIn(QEvent::FocusIn);
+        QFocusEvent focusIn(QEvent::FocusIn, e->reason);
         QCoreApplication::sendSpontaneousEvent(QGuiApplicationPrivate::focus_window, &focusIn);
         QObject::connect(QGuiApplicationPrivate::focus_window, SIGNAL(focusObjectChanged(QObject*)),
                          qApp, SLOT(_q_updateFocusObject(QObject*)));

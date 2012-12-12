@@ -1966,6 +1966,10 @@
     \value SubWindow  Indicates that this widget is a sub-window, such
                       as a QMdiSubWindow widget.
 
+    \value ForeignWindow Indicates that this window object is a handle
+                         representing a native platform window created by
+                         another process or by manually using native code.
+
     There are also a number of flags which you can use to customize
     the appearance of top-level windows. These have no effect on other
     windows:

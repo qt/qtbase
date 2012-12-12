@@ -474,6 +474,10 @@ void QWindow::create()
 WId QWindow::winId() const
 {
     Q_D(const QWindow);
+
+    if (type() == Qt::ForeignWindow)
+        return WId(property("_q_foreignWinId").value<WId>());
+
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
 
@@ -499,8 +503,11 @@ QWindow *QWindow::parent() const
     the clip of the window, so it will be clipped to the \a parent window.
 
     Setting \a parent to be 0 will make the window become a top level window.
-*/
 
+    If \a parent is a window created by fromWinId(), then the current window
+    will be embedded inside \a parent, if the platform supports it. Window
+    embedding is currently supported only by the X11 platform plugin.
+*/
 void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
@@ -2102,6 +2109,34 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
         }
     }
 
+}
+
+/*!
+    Creates a local representation of a window created by another process or by
+    using native libraries below Qt.
+
+    Given the handle \a id to a native window, this method creates a QWindow
+    object which can be used to represent the window when invoking methods like
+    setParent() and setTransientParent().
+    This can be used, on platforms which support it, to embed a window inside a
+    container or to make a window stick on top of a window created by another
+    process.
+
+    \sa setParent()
+    \sa setTransientParent()
+*/
+QWindow *QWindow::fromWinId(WId id)
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ForeignWindows)) {
+        qWarning() << "QWindow::fromWinId(): platform plugin does not support foreign windows.";
+        return 0;
+    }
+
+    QWindow *window = new QWindow;
+    window->setFlags(Qt::ForeignWindow);
+    window->setProperty("_q_foreignWinId", QVariant::fromValue(id));
+    window->create();
+    return window;
 }
 
 #ifndef QT_NO_CURSOR

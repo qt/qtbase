@@ -228,6 +228,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case ThreadedOpenGL: return m_connections.at(0)->supportsThreadedRendering();
     case WindowMasks: return true;
     case MultipleWindows: return true;
+    case ForeignWindows: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

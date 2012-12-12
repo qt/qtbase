@@ -257,6 +257,8 @@ public:
     void unsetCursor();
 #endif
 
+    static QWindow *fromWinId(WId id);
+
 public Q_SLOTS:
     void setVisible(bool visible);
 

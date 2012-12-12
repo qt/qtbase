@@ -112,9 +112,10 @@ void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leav
     }
 }
 
-void QWindowSystemInterface::handleWindowActivated(QWindow *tlw)
+void QWindowSystemInterface::handleWindowActivated(QWindow *tlw, Qt::FocusReason r)
 {
-    QWindowSystemInterfacePrivate::ActivatedWindowEvent *e = new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw);
+    QWindowSystemInterfacePrivate::ActivatedWindowEvent *e =
+        new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw, r);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

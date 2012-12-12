@@ -70,6 +70,7 @@ protected:
 
     void handleCloseEvent(QCloseEvent *);
     void handleEnterLeaveEvent(QEvent *);
+    void handleFocusInEvent(QFocusEvent *);
     void handleKeyEvent(QKeyEvent *);
     void handleMouseEvent(QMouseEvent *);
     void handleNonClientAreaMouseEvent(QMouseEvent *);
@@ -99,6 +100,12 @@ private slots:
 
 private:
     void updateGeometry();
+
+    enum FocusWidgets {
+        FirstFocusWidget,
+        LastFocusWidget
+    };
+    QWidget *getFocusWidget(FocusWidgets fw);
 
     QWidget *m_widget;
     QPointer<QWidget> m_implicit_mouse_grabber;

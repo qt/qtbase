@@ -206,6 +206,10 @@ QPlatformServices *QPlatformIntegration::services() const
     state explicitly by using QWindowSystemInterface::handleApplicationStateChanged().
     If not set, application state will follow window activation, which is the normal
     behavior for desktop platforms.
+
+    \value ForeignWindows The platform allows creating QWindows which represent
+    native windows created by other processes or anyway created by using native
+    libraries.
  */
 
 

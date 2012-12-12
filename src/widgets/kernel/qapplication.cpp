@@ -2010,7 +2010,8 @@ void QApplication::setActiveWindow(QWidget* act)
  * Returns 0 if a new focus widget could not be found.
  * Shared with QGraphicsProxyWidgetPrivate::findFocusChild()
 */
-QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
+QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next,
+                                                        bool *wrappingOccurred)
 {
     uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
 
@@ -2020,18 +2021,29 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
 
     QWidget *w = f;
     QWidget *test = f->d_func()->focus_next;
+    bool seenWindow = false;
+    bool focusWidgetAfterWindow = false;
     while (test && test != f) {
+        if (test->isWindow())
+            seenWindow = true;
+
         if ((test->focusPolicy() & focus_flag) == focus_flag
             && !(test->d_func()->extra && test->d_func()->extra->focus_proxy)
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
             && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
             w = test;
+            if (seenWindow)
+                focusWidgetAfterWindow = true;
             if (next)
                 break;
         }
         test = test->d_func()->focus_next;
     }
+
+    if (wrappingOccurred != 0)
+        *wrappingOccurred = next ? focusWidgetAfterWindow : !focusWidgetAfterWindow;
+
     if (w == f) {
         if (qt_in_tab_key_event) {
             w->window()->setAttribute(Qt::WA_KeyboardFocusChange);

@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_WIDGETS_EXPORT extern bool qt_tab_all_widgets();
+
 QWidget *qt_button_down = 0; // widget got last button-down
 static QWidget *qt_tablet_target = 0;
 
@@ -123,6 +125,8 @@ bool QWidgetWindow::event(QEvent *event)
     // these should not be sent to QWidget, the corresponding events
     // are sent by QApplicationPrivate::notifyActiveWindowChange()
     case QEvent::FocusIn:
+        handleFocusInEvent(static_cast<QFocusEvent *>(event));
+        // Fallthrough
     case QEvent::FocusOut: {
 #ifndef QT_NO_ACCESSIBILITY
         QAccessible::State state;
@@ -282,6 +286,42 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         QApplicationPrivate::dispatchEnterLeave(receiver, 0, ee->screenPos());
         qt_last_mouse_receiver = receiver;
     }
+}
+
+QWidget *QWidgetWindow::getFocusWidget(FocusWidgets fw)
+{
+    QWidget *tlw = m_widget;
+    QWidget *w = tlw->nextInFocusChain();
+
+    QWidget *last = tlw;
+
+    uint focus_flag = qt_tab_all_widgets() ? Qt::TabFocus : Qt::StrongFocus;
+
+    while (w != tlw)
+    {
+        if (((w->focusPolicy() & focus_flag) == focus_flag)
+            && w->isVisibleTo(m_widget) && w->isEnabled())
+        {
+            last = w;
+            if (fw == FirstFocusWidget)
+                break;
+        }
+        w = w->nextInFocusChain();
+    }
+
+    return last;
+}
+
+void QWidgetWindow::handleFocusInEvent(QFocusEvent *e)
+{
+    QWidget *focusWidget = 0;
+    if (e->reason() == Qt::BacktabFocusReason)
+        focusWidget = getFocusWidget(LastFocusWidget);
+    else if (e->reason() == Qt::TabFocusReason)
+        focusWidget = getFocusWidget(FirstFocusWidget);
+
+    if (focusWidget != 0)
+        focusWidget->setFocus();
 }
 
 void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)

@@ -139,10 +139,11 @@ public:
 
     class ActivatedWindowEvent : public WindowSystemEvent {
     public:
-        explicit ActivatedWindowEvent(QWindow *activatedWindow)
-            : WindowSystemEvent(ActivatedWindow), activated(activatedWindow)
+        explicit ActivatedWindowEvent(QWindow *activatedWindow, Qt::FocusReason r)
+            : WindowSystemEvent(ActivatedWindow), activated(activatedWindow), reason(r)
         { }
         QPointer<QWindow> activated;
+        Qt::FocusReason reason;
     };
 
     class WindowStateChangedEvent : public WindowSystemEvent {

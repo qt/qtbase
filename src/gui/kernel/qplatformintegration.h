@@ -89,7 +89,8 @@ public:
         BufferQueueingOpenGL,
         WindowMasks,
         MultipleWindows,
-        ApplicationState
+        ApplicationState,
+        ForeignWindows
     };
 
     virtual ~QPlatformIntegration() { }
