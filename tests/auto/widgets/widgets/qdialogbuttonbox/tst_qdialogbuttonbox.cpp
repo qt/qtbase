@@ -72,6 +72,8 @@ private slots:
     void testConstructor2_data();
     void testConstructor3();
     void testConstructor3_data();
+    void testConstructor4();
+    void testConstructor4_data();
     void setOrientation_data();
     void setOrientation();
     void addButton1_data();
@@ -198,6 +200,41 @@ void tst_QDialogButtonBox::testConstructor3()
 
     QDialogButtonBox buttonBox(buttons, (Qt::Orientation)orientation);
     QCOMPARE(int(buttonBox.orientation()), orientation);
+    QTEST(buttonBox.buttons().count(), "buttonCount");
+}
+
+void tst_QDialogButtonBox::testConstructor4_data()
+{
+    QTest::addColumn<QDialogButtonBox::StandardButtons>("buttons");
+    QTest::addColumn<int>("buttonCount");
+
+    QTest::newRow("nothing") << (QDialogButtonBox::StandardButtons)0 << 0;
+    QTest::newRow("only 1") << QDialogButtonBox::StandardButtons(QDialogButtonBox::Ok) << 1;
+    QTest::newRow("only 1.. twice")
+                        << (QDialogButtonBox::Ok | QDialogButtonBox::Ok)
+                        << 1;
+    QTest::newRow("only 2")
+            << (QDialogButtonBox::Ok | QDialogButtonBox::Cancel)
+            << 2;
+    QTest::newRow("two different things")
+            << (QDialogButtonBox::Save | QDialogButtonBox::Close)
+            << 2;
+    QTest::newRow("three")
+            << (QDialogButtonBox::Ok
+                    | QDialogButtonBox::Cancel
+                    | QDialogButtonBox::Help)
+            << 3;
+    QTest::newRow("everything")
+            << (QDialogButtonBox::StandardButtons)UINT_MAX
+            << 18;
+}
+
+void tst_QDialogButtonBox::testConstructor4()
+{
+    QFETCH(QDialogButtonBox::StandardButtons, buttons);
+
+    QDialogButtonBox buttonBox(buttons);
+    QCOMPARE(buttonBox.orientation(), Qt::Horizontal);
     QTEST(buttonBox.buttons().count(), "buttonCount");
 }
 

@@ -669,6 +669,21 @@ QDialogButtonBox::QDialogButtonBox(Qt::Orientation orientation, QWidget *parent)
 }
 
 /*!
+    \since 5.2
+
+    Constructs a horizontal button box with the given \a parent, containing
+    the standard buttons specified by \a buttons.
+
+    \sa orientation, addButton()
+*/
+QDialogButtonBox::QDialogButtonBox(StandardButtons buttons, QWidget *parent)
+    : QWidget(*new QDialogButtonBoxPrivate(Qt::Horizontal), parent, 0)
+{
+    d_func()->initLayout();
+    d_func()->createStandardButtons(buttons);
+}
+
+/*!
     Constructs a button box with the given \a orientation and \a parent, containing
     the standard buttons specified by \a buttons.
 

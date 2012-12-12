@@ -115,7 +115,8 @@ public:
 
     QDialogButtonBox(QWidget *parent = 0);
     QDialogButtonBox(Qt::Orientation orientation, QWidget *parent = 0);
-    QDialogButtonBox(StandardButtons buttons, Qt::Orientation orientation = Qt::Horizontal,
+    explicit QDialogButtonBox(StandardButtons buttons, QWidget *parent = 0);
+    QDialogButtonBox(StandardButtons buttons, Qt::Orientation orientation,
                      QWidget *parent = 0);
     ~QDialogButtonBox();
 
