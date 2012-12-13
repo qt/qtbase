@@ -54,6 +54,8 @@ public:
 
     QVariant themeHint(ThemeHint hint) const;
 
+    const QFont *font(Font type = SystemFont) const;
+
     static const char *name;
 };
 
