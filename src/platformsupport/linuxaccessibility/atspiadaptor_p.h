@@ -75,8 +75,8 @@ public:
     bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection);
     void notify(QAccessibleEvent *event);
 
-    void setInitialized(bool init);
-
+    void init();
+    void checkInitializedAndEnabled();
 public Q_SLOTS:
     void eventListenerRegistered(const QString &bus, const QString &path);
     void eventListenerDeregistered(const QString &bus, const QString &path);
@@ -140,7 +140,6 @@ private:
 
     /// Assigned from the accessibility registry.
     int m_applicationId;
-    bool initialized;
 
     mutable QHash<quintptr, QPointer<QObject> > m_handledObjects;
 

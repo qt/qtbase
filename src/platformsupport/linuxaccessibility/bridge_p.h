@@ -62,21 +62,22 @@ public:
     QSpiAccessibleBridge();
 
     virtual ~QSpiAccessibleBridge();
-    virtual void setRootObject(QObject *obj);
 
     virtual void notifyAccessibilityUpdate(QAccessibleEvent *event);
     QDBusConnection dBusConnection() const;
 
+public Q_SLOTS:
+    void enabledChanged(bool enabled);
+
 private:
     void initializeConstantMappings();
+    void updateStatus();
 
     QSpiDBusCache *cache;
     DeviceEventControllerAdaptor *dec;
-
     AtSpiAdaptor *dbusAdaptor;
-
     DBusConnection* dbusConnection;
-    bool initialized;
+    bool m_enabled;
 };
 
 QT_END_NAMESPACE
