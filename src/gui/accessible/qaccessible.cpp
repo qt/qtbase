@@ -51,6 +51,7 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
+#include <QtCore/qhash.h>
 #include <private/qfactoryloader_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -430,6 +431,8 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 #endif
 
 Q_GLOBAL_STATIC(QList<QAccessible::InterfaceFactory>, qAccessibleFactories)
+typedef QHash<QString, QAccessiblePlugin*> QAccessiblePluginsHash;
+Q_GLOBAL_STATIC(QAccessiblePluginsHash, qAccessiblePlugins);
 
 QAccessible::UpdateHandler QAccessible::updateHandler = 0;
 QAccessible::RootObjectHandler QAccessible::rootObjectHandler = 0;
@@ -580,9 +583,13 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
     if (!object)
         return 0;
 
+    // Create a QAccessibleInterface for the object class. Start by the most
+    // derived class and walk up the class hierarchy.
     const QMetaObject *mo = object->metaObject();
     while (mo) {
         const QString cn = QLatin1String(mo->className());
+
+        // Check if the class has a InterfaceFactory installed.
         for (int i = qAccessibleFactories()->count(); i > 0; --i) {
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
             if (QAccessibleInterface *iface = factory(cn, object))
@@ -590,8 +597,21 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         }
 #ifndef QT_NO_ACCESSIBILITY
 #ifndef QT_NO_LIBRARY
-        if (QAccessibleInterface * iface = qLoadPlugin1<QAccessibleInterface, QAccessiblePlugin>(loader(), cn, object))
-            return iface;
+        // Find a QAccessiblePlugin (factory) for the class name. If there's
+        // no entry in the cache try to create it using the plugin loader.
+        if (!qAccessiblePlugins()->contains(cn)) {
+            QAccessiblePlugin *factory = 0; // 0 means "no plugin found". This is cached as well.
+            const int index = loader()->indexOf(cn);
+            if (index != -1)
+                factory = qobject_cast<QAccessiblePlugin *>(loader()->instance(index));
+            qAccessiblePlugins()->insert(cn, factory);
+        }
+
+        // At this point the cache should contain a valid factory pointer or 0:
+        Q_ASSERT(qAccessiblePlugins()->contains(cn));
+        QAccessiblePlugin *factory = qAccessiblePlugins()->value(cn);
+        if (factory)
+            return factory->create(cn, object);
 #endif
 #endif
         mo = mo->superClass();
