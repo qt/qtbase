@@ -162,7 +162,6 @@ public:
     QAccessible::Role role;
     QString name;
     QStringList primarySignals;
-    const QAccessibleInterface *asking;
 };
 
 /*!
@@ -201,7 +200,6 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const Q
     d = new QAccessibleWidgetPrivate();
     d->role = role;
     d->name = name;
-    d->asking = 0;
 }
 
 /*! \reimp */
