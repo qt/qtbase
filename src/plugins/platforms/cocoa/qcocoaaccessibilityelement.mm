@@ -122,7 +122,7 @@ static QAccessibleInterface *acast(void *ptr)
         [attributes addObject : NSAccessibilityValueAttribute];
     }
 
-    return attributes;
+    return [attributes autorelease];
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
