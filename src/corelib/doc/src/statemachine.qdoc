@@ -45,7 +45,7 @@
 
   The State Machine framework provides classes for creating and executing
   state graphs. The concepts and notation are based on those from Harel's
-  \l{Statecharts: A visual formalism for complex systems}{Statecharts}, which
+  \l{http://www.wisdom.weizmann.ac.il/~dharel/SCANNED.PAPERS/Statecharts.pdf}{Statecharts: A visual formalism for complex systems}, which
   is also the basis of UML state diagrams. The semantics of state machine
   execution are based on \l{State Chart XML: State Machine Notation for
   Control Abstraction}{State Chart XML (SCXML)}.
