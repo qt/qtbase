@@ -61,6 +61,7 @@ protected:
 #endif
     int     buttonByNumber(const Qt::MouseButton button);
     QString enumNameFromValue(const Qt::MouseButton button);
+    QString enumNamesFromMouseButtons(const Qt::MouseButtons buttons);
 };
 
 #endif // BUTTONTESTER_H
