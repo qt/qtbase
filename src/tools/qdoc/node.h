@@ -822,13 +822,8 @@ private:
 
     QString     rt;
     QStringList pp;
-#ifdef Q_WS_WIN
     Metaness    met;
     Virtualness vir;
-#else
-    Metaness met : 4;
-    Virtualness vir : 2;
-#endif
     bool con : 1;
     bool sta : 1;
     bool ove : 1;
