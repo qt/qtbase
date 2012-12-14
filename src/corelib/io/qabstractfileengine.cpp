@@ -155,7 +155,7 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 }
 
 /*
-   \ìnternal
+   \internal
 
    Handles calls to custom file engine handlers.
 */
