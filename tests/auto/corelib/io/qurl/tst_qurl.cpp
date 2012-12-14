@@ -149,6 +149,8 @@ private slots:
     void toEncoded();
     void setAuthority_data();
     void setAuthority();
+    void setEmptyAuthority_data();
+    void setEmptyAuthority();
     void clear();
     void resolvedWithAbsoluteSchemes() const;
     void resolvedWithAbsoluteSchemes_data() const;
@@ -2496,6 +2498,28 @@ void tst_QUrl::setAuthority()
     QFETCH(QString, url);
     u.setAuthority(authority);
     QCOMPARE(u.toString(), url);
+}
+
+void tst_QUrl::setEmptyAuthority_data()
+{
+    QTest::addColumn<QString>("host");
+    QTest::addColumn<QString>("authority");
+    QTest::addColumn<QString>("expectedUrlString");
+
+    QTest::newRow("null host and authority") << QString() << QString() << QString("");
+    QTest::newRow("empty host and authority") << QString("") << QString("") << QString("//");
+}
+
+void tst_QUrl::setEmptyAuthority()
+{
+    QFETCH(QString, host);
+    QFETCH(QString, authority);
+    QFETCH(QString, expectedUrlString);
+    QUrl u;
+    u.setHost(host);
+    QCOMPARE(u.toString(), expectedUrlString);
+    u.setAuthority(authority);
+    QCOMPARE(u.toString(), expectedUrlString);
 }
 
 void tst_QUrl::clear()
