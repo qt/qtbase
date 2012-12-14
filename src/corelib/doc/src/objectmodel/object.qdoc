@@ -47,7 +47,7 @@
        properties}
     \li powerful \l{The Event System}{events and event filters}
     \li contextual \l{i18n}{string translation for internationalization}
-    \li sophisticated interval driven \l timers that make it possible
+    \li sophisticated interval driven \l {Timers}{timers} that make it possible
        to elegantly integrate many tasks in an event-driven GUI
     \li hierarchical and queryable \l{Object Trees & Ownership}{object
        trees} that organize object ownership in a natural way
@@ -56,6 +56,7 @@
        pointers which become dangling pointers when their objects are destroyed
     \li a \l{metaobjects.html#qobjectcast}{dynamic cast} that works across
        library boundaries.
+    \li support for \l{Creating Custom Qt Types}{custom type} creation.
     \endlist
 
     Many of these Qt features are implemented with standard C++
