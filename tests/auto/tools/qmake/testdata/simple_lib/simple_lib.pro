@@ -1,5 +1,5 @@
 TEMPLATE	= lib
-CONFIG += qt warn_on release staticlib
+CONFIG += release staticlib
 CONFIG -= dll
 
 HEADERS	= simple.h

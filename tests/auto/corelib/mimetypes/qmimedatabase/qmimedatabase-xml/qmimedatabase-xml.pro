@@ -4,8 +4,6 @@ TARGET = tst_qmimedatabase-xml
 
 QT = core testlib concurrent
 
-CONFIG += depend_includepath
-
 SOURCES += tst_qmimedatabase-xml.cpp
 HEADERS += ../tst_qmimedatabase.h
 

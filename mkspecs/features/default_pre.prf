@@ -4,6 +4,6 @@
 
 load(exclusive_builds)
 CONFIG = \
-    lex yacc warn_on debug exceptions depend_includepath \
+    lex yacc debug exceptions depend_includepath \
     testcase_targets import_plugins import_qpa_plugin \
     $$CONFIG

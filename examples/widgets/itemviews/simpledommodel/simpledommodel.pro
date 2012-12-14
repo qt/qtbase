@@ -5,7 +5,6 @@ SOURCES     = domitem.cpp \
               dommodel.cpp \
               main.cpp \
               mainwindow.cpp
-CONFIG  += qt
 QT      += xml widgets
 
 # install

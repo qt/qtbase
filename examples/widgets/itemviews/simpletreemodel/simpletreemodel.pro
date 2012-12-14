@@ -4,7 +4,6 @@ RESOURCES   = simpletreemodel.qrc
 SOURCES     = treeitem.cpp \
               treemodel.cpp \
               main.cpp
-CONFIG  += qt
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/simpletreemodel

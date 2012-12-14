@@ -5,7 +5,7 @@ TEMPLATE = lib
 TARGET = qtmain
 DESTDIR = $$QT.core.libs
 
-CONFIG += static warn_on depend_includepath
+CONFIG += static
 QT = core
 
 contains(QT_CONFIG, build_all):CONFIG += build_all
