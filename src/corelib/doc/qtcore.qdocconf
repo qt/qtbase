@@ -35,6 +35,8 @@ sourcedirs  += ..
 exampledirs += \
                ../ \
                snippets \
-               ../../../examples/threads
+               ../../../examples/threads/ \
+               ../../../examples/tools/ \
+               ../../../examples/widgets/widgets/analogclock
 
 imagedirs   += images
