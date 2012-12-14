@@ -1,6 +1,5 @@
 CONFIG += testcase
 TARGET = tst_qxmlsimplereader
-DEPENDPATH += parser
 INCLUDEPATH += parser
 
 HEADERS +=  parser/parser.h

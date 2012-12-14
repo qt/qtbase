@@ -1,6 +1,5 @@
 TEMPLATE = lib
 TARGET = $$qtLibraryTarget(libGLESv2)
-DEPENDPATH += . shaders
 CONFIG += simd
 
 include(../common/common.pri)

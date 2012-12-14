@@ -41,16 +41,6 @@ load(qt_module)
 
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 
-DEPENDPATH += $$INCLUDEPATH \
-              ../../corelib/global \
-              ../../corelib/kernel \
-              ../../corelib/tools \
-              ../../corelib/io \
-              ../../corelib/codecs \
-              ../../corelib/json \
-              ../../xml/dom \
-              ../../xml/sax
-
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \

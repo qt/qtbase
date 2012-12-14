@@ -1,6 +1,5 @@
 TEMPLATE = app
 TARGET = highdpi
-DEPENDPATH += .
 INCLUDEPATH += .
 QT += widgets
 

@@ -5,9 +5,6 @@ DEFINES += QDOC2_COMPAT
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
                $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser
 
-DEPENDPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
-              $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser
-
 # Increase the stack size on MSVC to 4M to avoid a stack overflow
 win32-msvc*:{
     QMAKE_LFLAGS += /STACK:4194304

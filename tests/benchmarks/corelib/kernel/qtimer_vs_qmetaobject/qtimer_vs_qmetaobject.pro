@@ -1,6 +1,5 @@
 TEMPLATE = app
 TARGET = qtimer_vs_qmetaobject
-DEPENDPATH += .
 INCLUDEPATH += .
 
 CONFIG += release
