@@ -129,16 +129,6 @@ win32:LIBS += -luser32 -lole32 -ladvapi32
 lib.CONFIG = dummy_install
 INSTALLS += lib
 
-# Make dummy "sis" and "freeze" target to keep recursive "make sis/freeze" working.
-sis_target.target = sis
-sis_target.commands =
-sis_target.depends = first
-QMAKE_EXTRA_TARGETS += sis_target
-freeze_target.target = freeze
-freeze_target.commands =
-freeze_target.depends = first
-QMAKE_EXTRA_TARGETS += freeze_target
-
 !build_pass {
     # We need the forwarding headers before their respective modules are built,
     # so do a minimal syncqt run.
