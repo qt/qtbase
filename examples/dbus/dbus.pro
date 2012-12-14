@@ -7,5 +7,3 @@ SUBDIRS = listnames \
     SUBDIRS += chat \
                remotecontrolledcar
 }
-
-QT += widgets

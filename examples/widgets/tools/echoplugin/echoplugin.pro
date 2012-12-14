@@ -7,5 +7,3 @@ SUBDIRS	    = echowindow \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin
 INSTALLS += target
-
-QT += widgets

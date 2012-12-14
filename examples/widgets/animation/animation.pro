@@ -8,5 +8,3 @@ SUBDIRS          += \
                  states \
                  stickman \
                  sub-attaq \
-
-QT += widgets

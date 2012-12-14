@@ -6,5 +6,3 @@ SUBDIRS = hellothread \
           movedobject 
 
 contains(QT_CONFIG, concurrent): SUBDIRS += helloconcurrent
-
-QT += widgets

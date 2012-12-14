@@ -5,5 +5,3 @@ SUBDIRS		= stylewindow \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/styleplugin
 INSTALLS += target
-
-QT += widgets

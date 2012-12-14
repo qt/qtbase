@@ -12,8 +12,6 @@ SUBDIRS       = basicdrawing \
                 transformations \
                 fontsampler
 
-QT += widgets
-
 examples_affine.subdir = affine
 examples_composition.subdir = composition
 examples_deform.subdir = deform

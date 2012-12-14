@@ -6,4 +6,3 @@ SUBDIRS     = draggableicons \
               puzzle
 
 wince*: SUBDIRS -= dropsite
-QT += widgets
