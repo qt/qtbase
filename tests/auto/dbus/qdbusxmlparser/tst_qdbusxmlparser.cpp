@@ -58,6 +58,7 @@ private:
     QString clean_xml(const QString&);
 
 private slots:
+    void initTestCase();
     void parsing_data();
     void parsing();
     void parsingWithDoctype_data();
@@ -70,6 +71,12 @@ private slots:
     void properties_data();
     void properties();
 };
+
+void tst_QDBusXmlParser::initTestCase()
+{
+    // Avoid QHash randomization so that the order of the XML attributes is stable
+    qputenv("QT_HASH_SEED", "123");
+}
 
 void tst_QDBusXmlParser::parsing_data()
 {
