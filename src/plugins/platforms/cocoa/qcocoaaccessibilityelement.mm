@@ -139,7 +139,7 @@ static QAccessibleInterface *acast(void *ptr)
             [kids addObject:[QCocoaAccessibleElement elementWithInterface:(void*)childInterface parent:self]];
         }
 
-        return NSAccessibilityUnignoredChildren(kids);
+        return kids;
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         // Just check if the app thinks we're focused.
         id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];

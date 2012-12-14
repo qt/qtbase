@@ -80,7 +80,7 @@
             [kids addObject:[QCocoaAccessibleElement elementWithInterface: m_accessibleRoot->child(i) parent:self ]];
         }
 
-        return NSAccessibilityUnignoredChildren(kids);
+        return kids;
     } else {
         return [super accessibilityAttributeValue:attribute];
     }
