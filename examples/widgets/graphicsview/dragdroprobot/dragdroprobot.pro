@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS += \
 	coloritem.h \
 	robot.h
@@ -14,7 +16,5 @@ RESOURCES += \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/dragdroprobot
 INSTALLS += target
-
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

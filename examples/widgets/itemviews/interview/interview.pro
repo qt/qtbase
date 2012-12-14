@@ -1,4 +1,5 @@
 TEMPLATE = app
+QT += widgets
 
 HEADERS += model.h
 SOURCES += model.cpp main.cpp
@@ -12,5 +13,3 @@ build_all:!build_pass {
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/interview
 INSTALLS += target
-
-QT += widgets

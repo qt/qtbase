@@ -1,3 +1,5 @@
+QT += widgets
+
 SOURCES += main.cpp
 SOURCES += customproxy.cpp embeddeddialog.cpp
 HEADERS += customproxy.h embeddeddialog.h
@@ -13,5 +15,3 @@ build_all:!build_pass {
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/embeddeddialogs
 INSTALLS += target
-
-QT += widgets

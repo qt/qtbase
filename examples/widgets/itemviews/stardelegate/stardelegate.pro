@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = stardelegate.h \
                 stareditor.h \
                 starrating.h
@@ -10,6 +12,4 @@ SOURCES       = main.cpp \
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/stardelegate
 INSTALLS += target
 
-
-QT += widgets
 simulator: warning(This example might not fully work on Simulator platform)

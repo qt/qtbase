@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS += \
         edge.h \
         node.h \
@@ -12,5 +14,3 @@ SOURCES += \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/elasticnodes
 INSTALLS += target
-
-QT += widgets

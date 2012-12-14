@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = norwegianwoodstyle.h \
                 widgetgallery.h
 SOURCES       = main.cpp \
@@ -10,7 +12,5 @@ REQUIRES += "contains(styles, windows)"
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/styles
 INSTALLS += target
-
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

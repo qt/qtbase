@@ -1,6 +1,7 @@
 #! [0]
 TEMPLATE      = lib
 CONFIG       += plugin
+QT           += widgets
 INCLUDEPATH  += ../..
 HEADERS       = extrafiltersplugin.h
 SOURCES       = extrafiltersplugin.cpp
@@ -11,5 +12,3 @@ DESTDIR       = ../../plugandpaint/plugins
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint/plugins
 INSTALLS += target
-
-QT += widgets

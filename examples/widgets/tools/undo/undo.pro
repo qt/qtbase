@@ -1,3 +1,5 @@
+QT += widgets
+
 SOURCES += main.cpp mainwindow.cpp commands.cpp document.cpp
 HEADERS += mainwindow.h commands.h document.h
 FORMS += mainwindow.ui
@@ -12,5 +14,3 @@ RESOURCES += undo.qrc
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/undo
 INSTALLS += target
-
-QT += widgets 

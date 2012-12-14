@@ -1,4 +1,4 @@
-QT += widgets widgets
+QT += widgets
 
 HEADERS       = wigglywidget.h \
                 dialog.h

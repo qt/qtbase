@@ -1,3 +1,6 @@
+QT += widgets
+!isEmpty(QT.printsupport.name): QT += printsupport
+
 TEMPLATE        = app
 TARGET          = textedit
 
@@ -16,6 +19,3 @@ EXAMPLE_FILES = textedit.qdoc
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/richtext/textedit
 INSTALLS += target
-
-QT += widgets
-!isEmpty(QT.printsupport.name): QT += printsupport

@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS     = characterwidget.h \
               mainwindow.h
 SOURCES     = characterwidget.cpp \
@@ -7,7 +9,5 @@ SOURCES     = characterwidget.cpp \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/charactermap
 INSTALLS += target
-
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

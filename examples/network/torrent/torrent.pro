@@ -1,4 +1,4 @@
-QT += widgets
+QT += network widgets
 
 HEADERS += addtorrentdialog.h \
            bencodeparser.h \
@@ -28,8 +28,6 @@ SOURCES += main.cpp \
 # Forms and resources
 FORMS += forms/addtorrentform.ui
 RESOURCES += icons.qrc
-
-QT += network
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/network/torrent

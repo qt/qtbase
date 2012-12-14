@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS     = movieplayer.h
 SOURCES     = main.cpp \
               movieplayer.cpp
@@ -14,7 +16,5 @@ wince*: {
    addFiles.path = .
    DEPLOYMENT += addFiles
 }
-
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

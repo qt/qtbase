@@ -8,6 +8,7 @@ TEMPLATE  = app
 LANGUAGE  = C++
 CONFIG	 += console precompile_header
 CONFIG   -= app_bundle
+QT += widgets
 
 # Use Precompiled headers (PCH)
 PRECOMPILED_HEADER  = stable.h
@@ -21,4 +22,3 @@ SOURCES	  = main.cpp \
             util.cpp
 FORMS     = mydialog.ui
 #! [0]
-QT += widgets

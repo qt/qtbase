@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS     = mainwindow.h \
               pieceslist.h \
               puzzlewidget.h
@@ -18,4 +20,3 @@ wince*: {
    addFile.path = .
    DEPLOYMENT += addFile
 }
-QT += widgets

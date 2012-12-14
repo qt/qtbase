@@ -1,3 +1,5 @@
+QT += widgets
+
 FORMS       = mainwindow.ui
 HEADERS     = mainwindow.h \
               treeitem.h \
@@ -11,5 +13,3 @@ SOURCES     = mainwindow.cpp \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/editabletreemodel
 INSTALLS += target
-
-QT += widgets
