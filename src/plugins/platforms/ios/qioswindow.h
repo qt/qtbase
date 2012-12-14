@@ -90,6 +90,7 @@ public:
 
     GLuint framebufferObject(const QIOSContext &context) const;
     GLuint colorRenderbuffer(const QIOSContext &context) const;
+    qreal devicePixelRatio() const;
 
     EAGLView *nativeView() const { return m_view; }
 
@@ -104,6 +105,7 @@ private:
         GLint renderbufferWidth;
         GLint renderbufferHeight;
     } m_glData;
+    qreal m_devicePixelRatio;
 };
 
 QT_END_NAMESPACE

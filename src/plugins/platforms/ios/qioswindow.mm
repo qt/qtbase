@@ -126,8 +126,7 @@ static QRect fromCGRect(const CGRect &rect)
 {
     UITouch *touch = [touches anyObject];
     CGPoint locationInView = [touch locationInView:self];
-    CGFloat scaleFactor = [self contentScaleFactor];
-    QPoint p(locationInView.x * scaleFactor, locationInView.y * scaleFactor);
+    QPoint p(locationInView.x , locationInView.y);
 
     // TODO handle global touch point? for status bar?
     QWindowSystemInterface::handleMouseEvent(m_qioswindow->window(), (ulong)(event.timestamp*1000), p, p, buttons);
@@ -204,11 +203,21 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
     , m_requestedGeometry(QPlatformWindow::geometry())
     , m_glData()
+    , m_devicePixelRatio(1.0)
 {
     if ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]])
         [[UIApplication sharedApplication].delegate.window.rootViewController.view addSubview:m_view];
 
     setWindowState(window->windowState());
+
+    // Retina support: get screen scale factor and set it in the content view.
+    // This will make framebufferObject() create a 2x frame buffer on retina
+    // displays. Also set m_devicePixelRatio which is used for scaling the
+    // paint device.
+    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES) {
+        m_devicePixelRatio = [[UIScreen mainScreen] scale];
+        [m_view setContentScaleFactor : m_devicePixelRatio];
+    }
 }
 
 QIOSWindow::~QIOSWindow()
@@ -304,7 +313,8 @@ GLuint QIOSWindow::framebufferObject(const QIOSContext &context) const
 GLuint QIOSWindow::colorRenderbuffer(const QIOSContext &context) const
 {
     if (!m_glData.colorRenderbuffer ||
-        m_glData.renderbufferWidth != geometry().width() || m_glData.renderbufferHeight != geometry().height()) {
+        m_glData.renderbufferWidth != geometry().width() * m_devicePixelRatio ||
+        m_glData.renderbufferHeight != geometry().height() *m_devicePixelRatio) {
 
         glBindRenderbuffer(GL_RENDERBUFFER, m_glData.colorRenderbuffer);
         [context.nativeContext() renderbufferStorage:GL_RENDERBUFFER fromDrawable:static_cast<CAEAGLLayer *>(m_view.layer)];
@@ -327,6 +337,11 @@ GLuint QIOSWindow::colorRenderbuffer(const QIOSContext &context) const
     }
 
     return m_glData.colorRenderbuffer;
+}
+
+qreal QIOSWindow::devicePixelRatio() const
+{
+    return m_devicePixelRatio;
 }
 
 QT_END_NAMESPACE

@@ -116,6 +116,7 @@ public:
 
     qreal dpmx;
     qreal dpmy;
+    qreal devicePixelRatio;
 
     bool flipped;
 
@@ -178,6 +179,7 @@ QOpenGLPaintDevicePrivate::QOpenGLPaintDevicePrivate(const QSize &sz)
     , ctx(QOpenGLContext::currentContext())
     , dpmx(qt_defaultDpiX() * 100. / 2.54)
     , dpmy(qt_defaultDpiY() * 100. / 2.54)
+    , devicePixelRatio(1.0)
     , flipped(false)
     , engine(0)
 {
@@ -249,6 +251,14 @@ void QOpenGLPaintDevice::setSize(const QSize &size)
 }
 
 /*!
+    Sets the device pixel ratio for the paint device to \a devicePixelRatio.
+*/
+void QOpenGLPaintDevice::setDevicePixelRatio(qreal devicePixelRatio)
+{
+    d_ptr->devicePixelRatio = devicePixelRatio;
+}
+
+/*!
     \reimp
 */
 
@@ -272,9 +282,9 @@ int QOpenGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     case PdmDpiY:
         return qRound(d_ptr->dpmy * 0.0254);
     case PdmPhysicalDpiX:
-        return qRound(d_ptr->dpmx * 0.0254);
+        return qRound(d_ptr->dpmx * 0.0254 * d_ptr->devicePixelRatio);
     case PdmPhysicalDpiY:
-        return qRound(d_ptr->dpmy * 0.0254);
+        return qRound(d_ptr->dpmy * 0.0254 * d_ptr->devicePixelRatio);
     default:
         qWarning("QOpenGLPaintDevice::metric() - metric %d not known", metric);
         return 0;
