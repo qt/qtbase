@@ -131,6 +131,8 @@ public:
     virtual bool frameStrutEventsEnabled() const;
 
 protected:
+    static QString formatWindowTitle(const QString &title, const QString &separator);
+
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:
     Q_DISABLE_COPY(QPlatformWindow)

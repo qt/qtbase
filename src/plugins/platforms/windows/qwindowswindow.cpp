@@ -1216,18 +1216,7 @@ void QWindowsWindow::setWindowTitle(const QString &title)
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() <<title;
     if (m_data.hwnd) {
-
-        QString fullTitle = title;
-        if (QGuiApplicationPrivate::displayName) {
-            // Append display name, if set.
-            if (!fullTitle.isEmpty())
-                fullTitle += QStringLiteral(" - ");
-            fullTitle += *QGuiApplicationPrivate::displayName;
-        } else if (fullTitle.isEmpty()) {
-            // Don't let the window title be completely empty, use the app name as fallback.
-            fullTitle = QCoreApplication::applicationName();
-        }
-
+        const QString fullTitle = formatWindowTitle(title, QStringLiteral(" - "));
         SetWindowText(m_data.hwnd, (const wchar_t*)fullTitle.utf16());
     }
 }
