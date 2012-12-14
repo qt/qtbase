@@ -363,7 +363,6 @@ ProjectGenerator::writeMakefile(QTextStream &t)
         t << getWritableVar("TARGET_ASSIGN")
           << getWritableVar("CONFIG", false)
           << getWritableVar("CONFIG_REMOVE", false)
-          << getWritableVar("DEPENDPATH")
           << getWritableVar("INCLUDEPATH") << endl;
 
         t << "# Input" << "\n";
