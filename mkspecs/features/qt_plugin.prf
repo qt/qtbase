@@ -31,16 +31,18 @@ contains(QT_CONFIG, c++11):CONFIG += c++11
 contains(QT_CONFIG, static):CONFIG += static
 else:CONFIG += shared
 
-!build_pass:static {
+static {
     isEmpty(MODULE): MODULE = $$basename(TARGET)
 
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_plugin_$${MODULE}.pri
 
-    MODULE_PRI_CONT = \
-        "QT_PLUGIN.$${MODULE}.TYPE = $$PLUGIN_TYPE" \
-        "QT_PLUGIN.$${MODULE}.CLASS_NAME = $$PLUGIN_CLASS_NAME"
+    !build_pass {
+        MODULE_PRI_CONT = \
+            "QT_PLUGIN.$${MODULE}.TYPE = $$PLUGIN_TYPE" \
+            "QT_PLUGIN.$${MODULE}.CLASS_NAME = $$PLUGIN_CLASS_NAME"
 
-    write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
+        write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
+    }
 
     pritarget.path = $$[QT_HOST_DATA]/mkspecs/modules
     pritarget.files = $$MODULE_PRI
