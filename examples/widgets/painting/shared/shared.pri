@@ -1,20 +1,19 @@
-INCLUDEPATH += $$SHARED_FOLDER
+INCLUDEPATH += $$PWD
 
-build_all:!build_pass {
-    CONFIG -= build_all
-    CONFIG += release
-}
-contains(CONFIG, debug_and_release_target) {    
-    CONFIG(debug, debug|release) { 
-        QMAKE_LIBDIR += $$SHARED_FOLDER/debug
-    } else {
-        QMAKE_LIBDIR += $$SHARED_FOLDER/release
-    }
-} else {
-    QMAKE_LIBDIR += $$SHARED_FOLDER
+contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2) {
+    DEFINES += QT_OPENGL_SUPPORT
+    QT += opengl widgets
 }
 
-hpux-acc*:LIBS += $$SHARED_FOLDER/libdemo_shared.a
-hpuxi-acc*:LIBS += $$SHARED_FOLDER/libdemo_shared.a
-!hpuxi-acc*:!hpux-acc*:LIBS += -ldemo_shared
+SOURCES += \
+    $$PWD/arthurstyle.cpp\
+    $$PWD/arthurwidgets.cpp \
+    $$PWD/hoverpoints.cpp
+
+HEADERS += \
+    $$PWD/arthurstyle.h \
+    $$PWD/arthurwidgets.h \
+    $$PWD/hoverpoints.h
+
+RESOURCES += $$PWD/shared.qrc
 
