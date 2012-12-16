@@ -51,6 +51,7 @@ class tst_QRegularExpression : public QObject
     Q_OBJECT
 
 private slots:
+    void defaultConstructors();
     void gettersSetters_data();
     void gettersSetters();
     void escape_data();

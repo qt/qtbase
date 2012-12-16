@@ -1658,6 +1658,26 @@ QString QRegularExpression::escape(const QString &str)
 }
 
 /*!
+    \since 5.1
+
+    Constructs a valid, empty QRegularExpressionMatch object. The regular
+    expression is set to a default-constructed one; the match type to
+    QRegularExpression::NoMatch and the match options to
+    QRegularExpression::NoMatchOption.
+
+    The object will report no match through the hasMatch() and the
+    hasPartialMatch() member functions.
+*/
+QRegularExpressionMatch::QRegularExpressionMatch()
+    : d(new QRegularExpressionMatchPrivate(QRegularExpression(),
+                                           QString(),
+                                           QRegularExpression::NoMatch,
+                                           QRegularExpression::NoMatchOption))
+{
+    d->isValid = true;
+}
+
+/*!
     Destroys the match result.
 */
 QRegularExpressionMatch::~QRegularExpressionMatch()
@@ -1997,6 +2017,26 @@ bool QRegularExpressionMatch::isValid() const
 */
 QRegularExpressionMatchIterator::QRegularExpressionMatchIterator(QRegularExpressionMatchIteratorPrivate &dd)
     : d(&dd)
+{
+}
+
+/*!
+    \since 5.1
+
+    Constructs an empty, valid QRegularExpressionMatchIterator object. The
+    regular expression is set to a default-constructed one; the match type to
+    QRegularExpression::NoMatch and the match options to
+    QRegularExpression::NoMatchOption.
+
+    Invoking the hasNext() member function on the constructed object will
+    return false, as the iterator is not iterating on a valid sequence of
+    matches.
+*/
+QRegularExpressionMatchIterator::QRegularExpressionMatchIterator()
+    : d(new QRegularExpressionMatchIteratorPrivate(QRegularExpression(),
+                                                   QRegularExpression::NoMatch,
+                                                   QRegularExpression::NoMatchOption,
+                                                   QRegularExpressionMatch()))
 {
 }
 

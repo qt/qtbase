@@ -154,6 +154,7 @@ struct QRegularExpressionMatchPrivate;
 class Q_CORE_EXPORT QRegularExpressionMatch
 {
 public:
+    QRegularExpressionMatch();
     ~QRegularExpressionMatch();
     QRegularExpressionMatch(const QRegularExpressionMatch &match);
     QRegularExpressionMatch &operator=(const QRegularExpressionMatch &match);
@@ -211,6 +212,7 @@ struct QRegularExpressionMatchIteratorPrivate;
 class Q_CORE_EXPORT QRegularExpressionMatchIterator
 {
 public:
+    QRegularExpressionMatchIterator();
     ~QRegularExpressionMatchIterator();
     QRegularExpressionMatchIterator(const QRegularExpressionMatchIterator &iterator);
     QRegularExpressionMatchIterator &operator=(const QRegularExpressionMatchIterator &iterator);

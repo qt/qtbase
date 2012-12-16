@@ -291,6 +291,31 @@ void tst_QRegularExpression::provideRegularExpressions()
                                                                      | QRegularExpression::InvertedGreedinessOption);
 }
 
+void tst_QRegularExpression::defaultConstructors()
+{
+    QRegularExpression re;
+    QCOMPARE(re.pattern(), QString());
+    QCOMPARE(re.patternOptions(), QRegularExpression::NoPatternOption);
+
+    QRegularExpressionMatch match;
+    QCOMPARE(match.regularExpression(), QRegularExpression());
+    QCOMPARE(match.regularExpression(), re);
+    QCOMPARE(match.matchType(), QRegularExpression::NoMatch);
+    QCOMPARE(match.matchOptions(), QRegularExpression::NoMatchOption);
+    QCOMPARE(match.hasMatch(), false);
+    QCOMPARE(match.hasPartialMatch(), false);
+    QCOMPARE(match.isValid(), true);
+    QCOMPARE(match.lastCapturedIndex(), -1);
+
+    QRegularExpressionMatchIterator iterator;
+    QCOMPARE(iterator.regularExpression(), QRegularExpression());
+    QCOMPARE(iterator.regularExpression(), re);
+    QCOMPARE(iterator.matchType(), QRegularExpression::NoMatch);
+    QCOMPARE(iterator.matchOptions(), QRegularExpression::NoMatchOption);
+    QCOMPARE(iterator.isValid(), true);
+    QCOMPARE(iterator.hasNext(), false);
+}
+
 void tst_QRegularExpression::gettersSetters_data()
 {
     provideRegularExpressions();
