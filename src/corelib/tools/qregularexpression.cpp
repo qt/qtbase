@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -725,6 +726,13 @@ QT_BEGIN_NAMESPACE
         that (in this text) there are other characters beyond the end of the
         subject string. This can lead to surprising results; see the discussion
         in the \l{partial matching} section for more details.
+
+    \value NoMatch
+        No matching is done. This value is returned as the match type by a
+        default constructed QRegularExpressionMatch or
+        QRegularExpressionMatchIterator. Using this match type is not very
+        useful for the user, as no matching ever happens. This enum value
+        has been introduced in Qt 5.1.
 */
 
 /*!
@@ -1198,6 +1206,15 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     if (!compiledPattern) {
         qWarning("QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
         return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions, 0);
+    }
+
+    // skip optimizing and doing the actual matching if NoMatch type was requested
+    if (matchType == QRegularExpression::NoMatch) {
+        QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
+                                                                                  matchType, matchOptions,
+                                                                                  0);
+        priv->isValid = true;
+        return priv;
     }
 
     QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
