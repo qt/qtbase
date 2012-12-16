@@ -4293,6 +4293,10 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     if (c->next)
         c->next->prev = c->prev;
     c->receiver = 0;
+
+    const_cast<QMetaObject::Connection &>(connection).d_ptr = 0;
+    c->deref(); // has been removed from the QMetaObject::Connection object
+
     // disconnectNotify() not called (the signal index is unknown).
 
     return true;

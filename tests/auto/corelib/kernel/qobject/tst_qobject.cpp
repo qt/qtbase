@@ -141,6 +141,7 @@ private slots:
     void returnValue2();
     void connectVirtualSlots();
     void connectFunctorArgDifference();
+    void disconnectDoesNotLeakFunctor();
 };
 
 class SenderObject : public QObject
@@ -5567,6 +5568,61 @@ void tst_QObject::connectFunctorArgDifference()
 #endif
 
     QVERIFY(true);
+}
+
+static int countedStructObjectsCount = 0;
+struct CountedStruct
+{
+    CountedStruct() { ++countedStructObjectsCount; }
+    CountedStruct(const CountedStruct &) { ++countedStructObjectsCount; }
+    CountedStruct &operator=(const CountedStruct &) { return *this; }
+    ~CountedStruct() { --countedStructObjectsCount; }
+    void operator()() const {}
+};
+
+void tst_QObject::disconnectDoesNotLeakFunctor()
+{
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        QMetaObject::Connection c;
+        {
+            CountedStruct s;
+            QCOMPARE(countedStructObjectsCount, 1);
+            QTimer timer;
+
+            c = connect(&timer, &QTimer::timeout, s);
+            QVERIFY(c);
+            QCOMPARE(countedStructObjectsCount, 2);
+            QVERIFY(QObject::disconnect(c));
+            // the connection list has been marked dirty, but not cleaned yet.
+            QCOMPARE(countedStructObjectsCount, 2);
+        }
+        // disconnect() dropped the reference that c had to the functor;
+        // the sender has been destroyed. Therefore, the QObjectPrivate::Connection
+        // refcount dropped to zero and destroyed the functor.
+        QCOMPARE(countedStructObjectsCount, 0);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        QMetaObject::Connection c1, c2;
+        {
+            CountedStruct s;
+            QCOMPARE(countedStructObjectsCount, 1);
+            QTimer timer;
+
+            c1 = connect(&timer, &QTimer::timeout, s);
+            QVERIFY(c1);
+            c2 = c1;
+            QVERIFY(c2);
+            QCOMPARE(countedStructObjectsCount, 2);
+            QVERIFY(QObject::disconnect(c1));
+            // the connection list has been marked dirty, but not cleaned yet.
+            QCOMPARE(countedStructObjectsCount, 2);
+        }
+        // c2 still holds a reference; c1 has been cleaned up
+        QCOMPARE(countedStructObjectsCount, 1);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
 }
 
 QTEST_MAIN(tst_QObject)
