@@ -697,6 +697,9 @@ void tst_QRegularExpression::normalMatch()
     QRegularExpressionMatch m = regexp.match(subject, offset, QRegularExpression::NormalMatch, matchOptions);
     consistencyCheck(m);
     QVERIFY(m == match);
+    QCOMPARE(m.regularExpression(), regexp);
+    QCOMPARE(m.matchType(), QRegularExpression::NormalMatch);
+    QCOMPARE(m.matchOptions(), matchOptions);
 }
 
 
@@ -956,6 +959,9 @@ void tst_QRegularExpression::partialMatch()
     QRegularExpressionMatch m = regexp.match(subject, offset, matchType, matchOptions);
     consistencyCheck(m);
     QVERIFY(m == match);
+    QCOMPARE(m.regularExpression(), regexp);
+    QCOMPARE(m.matchType(), matchType);
+    QCOMPARE(m.matchOptions(), matchOptions);
 }
 
 void tst_QRegularExpression::globalMatch_data()
@@ -1228,6 +1234,9 @@ void tst_QRegularExpression::globalMatch()
     QRegularExpressionMatchIterator iterator = regexp.globalMatch(subject, offset, matchType, matchOptions);
     consistencyCheck(iterator);
     QVERIFY(iterator == matchList);
+    QCOMPARE(iterator.regularExpression(), regexp);
+    QCOMPARE(iterator.matchType(), matchType);
+    QCOMPARE(iterator.matchOptions(), matchOptions);
 }
 
 void tst_QRegularExpression::serialize_data()
