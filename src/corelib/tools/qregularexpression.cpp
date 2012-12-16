@@ -842,7 +842,7 @@ struct QRegularExpressionMatchPrivate : QSharedData
                                    const QString &subject,
                                    QRegularExpression::MatchType matchType,
                                    QRegularExpression::MatchOptions matchOptions,
-                                   int capturingCount);
+                                   int capturingCount = 0);
 
     QRegularExpressionMatch nextMatch() const;
 
@@ -1201,25 +1201,25 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     QRegularExpression re(*const_cast<QRegularExpressionPrivate *>(this));
 
     if (offset < 0 || offset > subject.length())
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions, 0);
+        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
 
     if (!compiledPattern) {
         qWarning("QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions, 0);
+        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
     }
 
     // skip optimizing and doing the actual matching if NoMatch type was requested
     if (matchType == QRegularExpression::NoMatch) {
         QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
-                                                                                  matchType, matchOptions,
-                                                                                  0);
+                                                                                  matchType, matchOptions);
         priv->isValid = true;
         return priv;
     }
 
+    // capturingCount doesn't include the implicit "0" capturing group
     QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
                                                                               matchType, matchOptions,
-                                                                              capturingCount);
+                                                                              capturingCount + 1);
 
     // this is mutex protected
     const pcre16_extra *currentStudyData = const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
@@ -1328,8 +1328,10 @@ QRegularExpressionMatchPrivate::QRegularExpressionMatchPrivate(const QRegularExp
       hasMatch(false), hasPartialMatch(false), isValid(false)
 {
     Q_ASSERT(capturingCount >= 0);
-    const int captureOffsetsCount = (capturingCount + 1) * 3;
-    capturedOffsets.resize(captureOffsetsCount);
+    if (capturingCount > 0) {
+        const int captureOffsetsCount = capturingCount * 3;
+        capturedOffsets.resize(captureOffsetsCount);
+    }
 }
 
 
