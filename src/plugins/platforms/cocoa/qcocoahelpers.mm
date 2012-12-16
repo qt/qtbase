@@ -614,11 +614,6 @@ InvalidContext:
         return err;
 }
 
-CGFloat qt_mac_get_scalefactor()
-{
-    return [[NSScreen mainScreen] userSpaceScaleFactor];
-}
-
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 {
     switch (buttonNum) {
