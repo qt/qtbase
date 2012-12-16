@@ -5594,12 +5594,8 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
             QVERIFY(c);
             QCOMPARE(countedStructObjectsCount, 2);
             QVERIFY(QObject::disconnect(c));
-            // the connection list has been marked dirty, but not cleaned yet.
-            QCOMPARE(countedStructObjectsCount, 2);
+            QCOMPARE(countedStructObjectsCount, 1);
         }
-        // disconnect() dropped the reference that c had to the functor;
-        // the sender has been destroyed. Therefore, the QObjectPrivate::Connection
-        // refcount dropped to zero and destroyed the functor.
         QCOMPARE(countedStructObjectsCount, 0);
     }
     QCOMPARE(countedStructObjectsCount, 0);
@@ -5616,11 +5612,46 @@ void tst_QObject::disconnectDoesNotLeakFunctor()
             QVERIFY(c2);
             QCOMPARE(countedStructObjectsCount, 2);
             QVERIFY(QObject::disconnect(c1));
-            // the connection list has been marked dirty, but not cleaned yet.
-            QCOMPARE(countedStructObjectsCount, 2);
+            // functor object has been destroyed
+            QCOMPARE(countedStructObjectsCount, 1);
         }
-        // c2 still holds a reference; c1 has been cleaned up
+        QCOMPARE(countedStructObjectsCount, 0);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        CountedStruct s;
         QCOMPARE(countedStructObjectsCount, 1);
+        QTimer timer;
+
+        QMetaObject::Connection c = connect(&timer, &QTimer::timeout, s);
+        QVERIFY(c);
+        QCOMPARE(countedStructObjectsCount, 2);
+        QVERIFY(QObject::disconnect(c));
+        QCOMPARE(countedStructObjectsCount, 1);
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+        QTimer timer;
+
+        QMetaObject::Connection c = connect(&timer, &QTimer::timeout, CountedStruct());
+        QVERIFY(c);
+        QCOMPARE(countedStructObjectsCount, 1); // only one instance, in Qt internals
+        QVERIFY(QObject::disconnect(c));
+        QCOMPARE(countedStructObjectsCount, 0); // functor being destroyed
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+    {
+#if defined(Q_COMPILER_LAMBDA)
+        CountedStruct s;
+        QCOMPARE(countedStructObjectsCount, 1);
+        QTimer timer;
+
+        QMetaObject::Connection c = connect(&timer, &QTimer::timeout, [s](){});
+        QVERIFY(c);
+        QCOMPARE(countedStructObjectsCount, 2);
+        QVERIFY(QObject::disconnect(c));
+        QCOMPARE(countedStructObjectsCount, 1);
+#endif // Q_COMPILER_LAMBDA
     }
     QCOMPARE(countedStructObjectsCount, 0);
 }

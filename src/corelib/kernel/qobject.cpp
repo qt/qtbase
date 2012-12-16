@@ -4294,6 +4294,12 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
         c->next->prev = c->prev;
     c->receiver = 0;
 
+    // destroy the QSlotObject, if possible
+    if (c->isSlotObject) {
+        c->slotObj->destroyIfLastRef();
+        c->isSlotObject = false;
+    }
+
     const_cast<QMetaObject::Connection &>(connection).d_ptr = 0;
     c->deref(); // has been removed from the QMetaObject::Connection object
 
