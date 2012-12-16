@@ -322,7 +322,6 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     topLevel = ((creationFlags & ForceChild) || embedded) ? false : w->isTopLevel();
 
     if (topLevel && flags == 1) {
-        qWarning("Remove me: fixing toplevel window flags");
         flags |= Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint
                 |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
     }
