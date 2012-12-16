@@ -4892,8 +4892,6 @@ void tst_QObject::connectCxx0xTypeMatching()
     QVERIFY(QObject::connect(&obj, &Foo::const_signal_vi, &obj, &Foo::slot_vi));
     QVERIFY(QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::const_slot_vi));
     QVERIFY(QObject::connect(&obj, &Foo::signal_vi, &obj, &Foo::const_slot_v));
-
-    QVERIFY(true); //compilation only test
 }
 
 class StringVariant : public QObject
