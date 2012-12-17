@@ -107,8 +107,10 @@ QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
 void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine)
 {
 #ifndef QT_NO_WIDGETS
-    QMacPrintEngine *macPrintEngine = static_cast<QMacPrintEngine *>(printEngine);
-    return macPrintEngine->d_func()->printInfo;
+    QMacPrintEnginePrivate *macPrintEnginePriv = static_cast<QMacPrintEngine *>(printEngine)->d_func();
+    if (macPrintEnginePriv->state == QPrinter::Idle && !macPrintEnginePriv->isPrintSessionInitialized())
+        macPrintEnginePriv->initialize();
+    return macPrintEnginePriv->printInfo;
 #else
     qFatal("Printing is not supported when Qt is configured with -no-widgets");
     return 0;
