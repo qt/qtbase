@@ -45,9 +45,13 @@
 #include <UIKit/UIKit.h>
 
 #include <qpa/qplatformscreen.h>
-#include <qiosorientationlistener.h>
+
+@class QIOSOrientationListener;
 
 QT_BEGIN_NAMESPACE
+
+Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
+UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
 
 class QIOSScreen : public QPlatformScreen
 {

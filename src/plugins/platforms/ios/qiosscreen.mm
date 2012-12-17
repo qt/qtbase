@@ -45,7 +45,95 @@
 
 #include <sys/sysctl.h>
 
+@interface QIOSOrientationListener : NSObject {
+    @public
+    QIOSScreen *m_screen;
+}
+- (id) initWithQIOSScreen:(QIOSScreen *)screen;
+@end
+
+@implementation QIOSOrientationListener
+
+- (id) initWithQIOSScreen:(QIOSScreen *)screen
+{
+    self = [super init];
+    if (self) {
+        m_screen = screen;
+        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+        [[NSNotificationCenter defaultCenter]
+            addObserver:self
+            selector:@selector(orientationChanged:)
+            name:@"UIDeviceOrientationDidChangeNotification" object:nil];
+    }
+    return self;
+}
+
+- (void) dealloc
+{
+    [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:self
+        name:@"UIDeviceOrientationDidChangeNotification" object:nil];
+    [super dealloc];
+}
+
+- (void) orientationChanged:(NSNotification *)notification
+{
+    Q_UNUSED(notification);
+    Qt::ScreenOrientation orientation = toQtScreenOrientation([UIDevice currentDevice].orientation);
+    if (orientation != -1)
+        QWindowSystemInterface::handleScreenOrientationChange(m_screen->screen(), orientation);
+}
+
+@end
+
 QT_BEGIN_NAMESPACE
+
+Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)
+{
+    Qt::ScreenOrientation qtOrientation;
+    switch (uiDeviceOrientation) {
+        case UIDeviceOrientationPortraitUpsideDown:
+            qtOrientation = Qt::InvertedPortraitOrientation;
+            break;
+        case UIDeviceOrientationLandscapeLeft:
+           qtOrientation = Qt::InvertedLandscapeOrientation;
+            break;
+        case UIDeviceOrientationLandscapeRight:
+            qtOrientation = Qt::LandscapeOrientation;
+            break;
+        case UIDeviceOrientationFaceUp:
+        case UIDeviceOrientationFaceDown:
+            qtOrientation = static_cast<Qt::ScreenOrientation>(-1); // not supported ATM.
+            break;
+        default:
+            qtOrientation = Qt::PortraitOrientation;
+            break;
+    }
+    return qtOrientation;
+}
+
+UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation)
+{
+    UIDeviceOrientation uiOrientation;
+    switch (qtOrientation) {
+        case Qt::LandscapeOrientation:
+            uiOrientation = UIDeviceOrientationLandscapeRight;
+            break;
+        case Qt::InvertedLandscapeOrientation:
+            uiOrientation = UIDeviceOrientationLandscapeLeft;
+            break;
+        case Qt::InvertedPortraitOrientation:
+            uiOrientation = UIDeviceOrientationPortraitUpsideDown;
+            break;
+        case Qt::PrimaryOrientation:
+        case Qt::PortraitOrientation:
+        default:
+            uiOrientation = UIDeviceOrientationPortrait;
+            break;
+    }
+    return uiOrientation;
+}
 
 /*!
     Returns the model identifier of the device.
@@ -137,7 +225,7 @@ Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
 {
-    return m_orientationListener ? m_orientationListener->m_orientation : nativeOrientation();
+    return toQtScreenOrientation([UIDevice currentDevice].orientation);
 }
 
 void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)

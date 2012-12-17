@@ -69,7 +69,7 @@
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     Q_UNUSED(fromInterfaceOrientation);
-    Qt::ScreenOrientation orientation = convertToQtOrientation(self.interfaceOrientation);
+    Qt::ScreenOrientation orientation = toQtScreenOrientation(self.interfaceOrientation);
     if (orientation == -1)
         return;
 

@@ -43,7 +43,6 @@
 #include "qioscontext.h"
 #include "qiosscreen.h"
 #include "qiosapplicationdelegate.h"
-#include "qiosorientationlistener.h"
 #include "qiosviewcontroller.h"
 
 #import <QuartzCore/CAEAGLLayer.h>
@@ -272,7 +271,7 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
 {
     // Keep the status bar in sync with content orientation. This will ensure
     // that the task bar (and associated gestures) are aligned correctly:
-    UIDeviceOrientation uiOrientation = convertToUIOrientation(orientation);
+    UIDeviceOrientation uiOrientation = fromQtScreenOrientation(orientation);
     [[UIApplication sharedApplication] setStatusBarOrientation:uiOrientation animated:NO];
 }
 

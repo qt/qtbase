@@ -14,7 +14,6 @@ OBJECTIVE_SOURCES = \
     qioseventdispatcher.mm \
     qiosbackingstore.mm \
     qiosapplicationdelegate.mm \
-    qiosorientationlistener.mm \
     qiosviewcontroller.mm \
     qioscontext.mm \
     qiosinputcontext.mm \
@@ -27,7 +26,6 @@ HEADERS = \
     qioseventdispatcher.h \
     qiosbackingstore.h \
     qiosapplicationdelegate.h \
-    qiosorientationlistener.h \
     qiosviewcontroller.h \
     qioscontext.h \
     qiosinputcontext.h \
