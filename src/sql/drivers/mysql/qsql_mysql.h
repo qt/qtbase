@@ -61,6 +61,11 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+#if 0
+#pragma qt_no_master_include
+#pragma qt_sync_stop_processing
+#endif
+
 class QMYSQLDriverPrivate;
 class QMYSQLResultPrivate;
 class QMYSQLDriver;
