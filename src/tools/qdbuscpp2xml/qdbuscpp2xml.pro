@@ -19,7 +19,6 @@ SOURCES += qdbuscpp2xml.cpp \
           $$QT_SOURCE_TREE/src/dbus/qdbusutil.cpp \
           $$QT_SOURCE_TREE/src/dbus/qdbusmisc.cpp \
           $$QT_SOURCE_TREE/src/dbus/qdbusargument.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbusmarshaller.cpp \
           $$QT_SOURCE_TREE/src/dbus/qdbusextratypes.cpp \
           $$QT_SOURCE_TREE/src/dbus/qdbus_symbols.cpp \
           $$QT_SOURCE_TREE/src/dbus/qdbusunixfiledescriptor.cpp
