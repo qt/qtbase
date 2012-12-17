@@ -66,6 +66,7 @@ class Q_WIDGETS_EXPORT QComboBox : public QWidget
     Q_PROPERTY(int count READ count)
     Q_PROPERTY(QString currentText READ currentText WRITE setCurrentText NOTIFY currentTextChanged USER true)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
+    Q_PROPERTY(QVariant currentData READ currentData)
     Q_PROPERTY(int maxVisibleItems READ maxVisibleItems WRITE setMaxVisibleItems)
     Q_PROPERTY(int maxCount READ maxCount WRITE setMaxCount)
     Q_PROPERTY(InsertPolicy insertPolicy READ insertPolicy WRITE setInsertPolicy)
@@ -167,8 +168,8 @@ public:
     void setModelColumn(int visibleColumn);
 
     int currentIndex() const;
-
     QString currentText() const;
+    QVariant currentData(int role = Qt::UserRole) const;
 
     QString itemText(int index) const;
     QIcon itemIcon(int index) const;

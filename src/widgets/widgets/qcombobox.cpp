@@ -2066,6 +2066,20 @@ QString QComboBox::currentText() const
 }
 
 /*!
+    \property QComboBox::currentData
+    \brief the data for the current item
+    \since 5.2
+
+    By default, for an empty combo box or a combo box in which no current
+    item is set, this property contains an invalid QVariant.
+*/
+QVariant QComboBox::currentData(int role) const
+{
+    Q_D(const QComboBox);
+    return d->currentIndex.data(role);
+}
+
+/*!
     Returns the text for the given \a index in the combobox.
 */
 QString QComboBox::itemText(int index) const
