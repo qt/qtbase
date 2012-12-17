@@ -1425,7 +1425,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_currentValue(VARIANT *curre
         return E_FAIL;
     if (QAccessibleValueInterface *valueIface = valueInterface()) {
         const QVariant var = valueIface->currentValue();
-        if (QVariantToVARIANT(var, *currentValue, QByteArray(), false))
+        if (QVariant2VARIANT(var, *currentValue, QByteArray(), false))
             return S_OK;
 
     }
@@ -1456,7 +1456,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_maximumValue(VARIANT *maxim
         return E_FAIL;
     if (QAccessibleValueInterface *valueIface = valueInterface()) {
         const QVariant var = valueIface->maximumValue();
-        if (QVariantToVARIANT(var, *maximumValue, QByteArray(), false))
+        if (QVariant2VARIANT(var, *maximumValue, QByteArray(), false))
             return S_OK;
     }
     maximumValue->vt = VT_EMPTY;
@@ -1470,7 +1470,7 @@ HRESULT STDMETHODCALLTYPE QWindowsIA2Accessible::get_minimumValue(VARIANT *minim
         return E_FAIL;
     if (QAccessibleValueInterface *valueIface = valueInterface()) {
         const QVariant var = valueIface->minimumValue();
-        if (QVariantToVARIANT(var, *minimumValue, QByteArray(), false))
+        if (QVariant2VARIANT(var, *minimumValue, QByteArray(), false))
             return S_OK;
     }
     minimumValue->vt = VT_EMPTY;

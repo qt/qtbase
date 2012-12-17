@@ -52,7 +52,8 @@ QT_BEGIN_NAMESPACE
 
 class QVariant;
 
-bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out);
+// Originally QVariantToVARIANT copied from ActiveQt - renamed to avoid conflicts in static builds.
+bool QVariant2VARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out);
 
 inline QString BSTRToQString(const BSTR &bstr)
 {
