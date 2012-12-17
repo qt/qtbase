@@ -586,8 +586,8 @@ public:
 
 };
 
-int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0*/,
-                                   const QWidget * widget /*= 0*/ ) const
+int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * /* option = 0*/,
+                                   const QWidget * /* widget = 0*/ ) const
 {
     switch (metric) {
         case QStyle::PM_DefaultTopLevelMargin:
