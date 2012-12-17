@@ -72,10 +72,16 @@ private slots:
     void properties();
 };
 
+QT_BEGIN_NAMESPACE
+// Avoid QHash randomization so that the order of the XML attributes is stable
+extern Q_CORE_EXPORT QBasicAtomicInt qt_qhash_seed; // from qhash.cpp
+QT_END_NAMESPACE
+
 void tst_QDBusXmlParser::initTestCase()
 {
-    // Avoid QHash randomization so that the order of the XML attributes is stable
-    qputenv("QT_HASH_SEED", "123");
+    // If the seed not initialized yet (-1), set it to 0
+    // otherwise abort, so we don't get unexplained test failures later.
+    QVERIFY(qt_qhash_seed.testAndSetRelaxed(-1, 0));
 }
 
 void tst_QDBusXmlParser::parsing_data()
