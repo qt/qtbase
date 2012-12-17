@@ -138,6 +138,8 @@ NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
 
 NSImage *qt_mac_create_nsimage(const QPixmap &pm)
 {
+    if (pm.isNull())
+        return 0;
     QImage image = pm.toImage();
     CGImageRef cgImage = qt_mac_image_to_cgimage(image);
     NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
