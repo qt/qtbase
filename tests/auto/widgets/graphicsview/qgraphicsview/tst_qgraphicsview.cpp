@@ -68,9 +68,15 @@
 #include <private/qinputmethod_p.h>
 
 #include "../../../qtest-config.h"
+#include "tst_qgraphicsview.h"
 
+Q_DECLARE_METATYPE(ExpectedValueDescription)
+Q_DECLARE_METATYPE(QList<int>)
+Q_DECLARE_METATYPE(QList<QRectF>)
+Q_DECLARE_METATYPE(QMatrix)
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
+Q_DECLARE_METATYPE(ScrollBarCount)
 
 #ifdef Q_OS_MAC
 //On mac we get full update. So check that the expected region is contained inside the actual
@@ -2756,32 +2762,32 @@ public:
 
 void tst_QGraphicsView::scrollBarRanges()
 {
+    QFETCH(QString, style);
     QFETCH(QSize, viewportSize);
     QFETCH(QRectF, sceneRect);
+    QFETCH(ScrollBarCount, sceneRectOffsetFactors);
     QFETCH(QTransform, transform);
     QFETCH(Qt::ScrollBarPolicy, hbarpolicy);
     QFETCH(Qt::ScrollBarPolicy, vbarpolicy);
-    QFETCH(int, hmin);
-    QFETCH(int, hmax);
-    QFETCH(int, vmin);
-    QFETCH(int, vmax);
-    QFETCH(bool, useMotif);
+    QFETCH(ExpectedValueDescription, hmin);
+    QFETCH(ExpectedValueDescription, hmax);
+    QFETCH(ExpectedValueDescription, vmin);
+    QFETCH(ExpectedValueDescription, vmax);
     QFETCH(bool, useStyledPanel);
 
-    QGraphicsScene scene(sceneRect);
-    scene.addRect(sceneRect, QPen(Qt::blue), QBrush(QColor(Qt::green)));
+    if (style == QLatin1String("GTK+") && useStyledPanel)
+        QSKIP("GTK + style test skipped, see QTBUG-29002");
+
+    QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setRenderHint(QPainter::Antialiasing);
     view.setTransform(transform);
     view.setFrameStyle(useStyledPanel ? QFrame::StyledPanel : QFrame::NoFrame);
 
-    if (useMotif) {
+    if (style == QString("motif"))
         view.setStyle(new FauxMotifStyle);
-    } else {
-#if !defined(QT_NO_STYLE_WINDOWS)
-        view.setStyle(QStyleFactory::create("windows"));
-#endif
-    }
+    else
+        view.setStyle(QStyleFactory::create(style));
     view.setStyleSheet(" "); // enables style propagation ;-)
 
     int adjust = 0;
@@ -2795,10 +2801,31 @@ void tst_QGraphicsView::scrollBarRanges()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QCOMPARE(view.horizontalScrollBar()->minimum(), hmin);
-    QCOMPARE(view.verticalScrollBar()->minimum(), vmin);
-    QCOMPARE(view.horizontalScrollBar()->maximum(), hmax);
-    QCOMPARE(view.verticalScrollBar()->maximum(), vmax);
+    const int offset = view.style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, 0);
+
+    QRectF actualSceneRect;
+    actualSceneRect.setLeft(sceneRect.left() + sceneRectOffsetFactors.left * offset);
+    actualSceneRect.setWidth(sceneRect.width() + sceneRectOffsetFactors.right * offset);
+    actualSceneRect.setTop(sceneRect.top() + sceneRectOffsetFactors.top * offset);
+    actualSceneRect.setHeight(sceneRect.height() + sceneRectOffsetFactors.bottom * offset);
+    scene.setSceneRect(actualSceneRect);
+    scene.addRect(actualSceneRect, QPen(Qt::blue), QBrush(QColor(Qt::green)));
+
+    int expectedHmin = hmin.value + hmin.scrollBarExtentsToAdd * offset;
+    int expectedVmin = vmin.value + vmin.scrollBarExtentsToAdd * offset;
+    int expectedHmax = hmax.value + hmax.scrollBarExtentsToAdd * offset;
+    int expectedVmax = vmax.value + vmax.scrollBarExtentsToAdd* offset;
+    if (useStyledPanel && view.style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents)) {
+        int spacing = view.style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing);
+        expectedHmin += hmin.spacingsToAdd * spacing;
+        expectedVmin += vmin.spacingsToAdd * spacing;
+        expectedHmax += hmax.spacingsToAdd * spacing;
+        expectedVmax += vmax.spacingsToAdd * spacing;
+    }
+    QCOMPARE(view.horizontalScrollBar()->minimum(), expectedHmin);
+    QCOMPARE(view.verticalScrollBar()->minimum(), expectedVmin);
+    QCOMPARE(view.horizontalScrollBar()->maximum(), expectedHmax);
+    QCOMPARE(view.verticalScrollBar()->maximum(), expectedVmax);
 }
 
 class TestView : public QGraphicsView
