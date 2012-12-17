@@ -40,8 +40,12 @@ SOURCES +=  $${MIDL_GENERATED}/Accessible2_i.c \
             $${MIDL_GENERATED}/AccessibleText_i.c \
             $${MIDL_GENERATED}/AccessibleValue_i.c
 
-SOURCES +=  $${MIDL_GENERATED}/IA2TypeLibrary_i.c \
-            $${MIDL_GENERATED}/dlldata.c
+SOURCES +=  $${MIDL_GENERATED}/IA2TypeLibrary_i.c
+
+# Do not add dlldata.c when building accessibility into a static library, as the COM entry points
+# defined there can cause duplicate symbol errors when linking into a binary that also defines
+# such entry points, e.g. anything linked against QtAxServer.
+!static: SOURCES += $${MIDL_GENERATED}/dlldata.c
 
 HEADERS +=  $${MIDL_GENERATED}/Accessible2.h \
             $${MIDL_GENERATED}/AccessibleAction.h \
