@@ -8485,7 +8485,9 @@ void tst_QGraphicsItem::focusProxyDeletion()
 
     rect2 = new QGraphicsRectItem;
     rect->setFocusProxy(rect2);
+    QGraphicsItem **danglingFocusProxyRef = &rect->d_ptr->focusProxy;
     delete rect; // don't crash
+    QVERIFY(!rect2->d_ptr->focusProxyRefs.contains(danglingFocusProxyRef));
 
     rect = new QGraphicsRectItem;
     rect->setFocusProxy(rect2);
