@@ -69,6 +69,7 @@ struct QWindowsGeometryHint
     QWindowsGeometryHint() {}
     explicit QWindowsGeometryHint(const QWindow *w);
     static QMargins frame(DWORD style, DWORD exStyle);
+    static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
 #ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXINFO *mmi) const;
     void applyToMinMaxInfo(HWND hwnd, MINMAXINFO *mmi) const;
@@ -89,6 +90,7 @@ struct QWindowsGeometryHint
 struct QWindowCreationContext
 {
     QWindowCreationContext(const QWindow *w, const QRect &r,
+                           const QMargins &customMargins,
                            DWORD style, DWORD exStyle);
 #ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(MINMAXINFO *mmi) const
@@ -101,6 +103,7 @@ struct QWindowCreationContext
     QRect requestedGeometry;
     QRect obtainedGeometry;
     QMargins margins;
+    QMargins customMargins;  // User-defined, additional frame for WM_NCCALCSIZE
     int frameX; // Passed on to CreateWindowEx(), including frame.
     int frameY;
     int frameWidth;
@@ -137,6 +140,7 @@ public:
         Qt::WindowFlags flags;
         QRect geometry;
         QMargins frame; // Do not use directly for windows, see FrameDirty.
+        QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
         HWND hwnd;
         bool embedded;
 
@@ -189,6 +193,9 @@ public:
 
     void setFrameStrutEventsEnabled(bool enabled);
     bool frameStrutEventsEnabled() const { return testFlag(FrameStrutEventsEnabled); }
+
+    QMargins customMargins() const { return m_data.customMargins; }
+    void setCustomMargins(const QMargins &m);
 
 #ifdef QT_OPENGL_ES_2
     EGLSurface eglSurfaceHandle() const { return m_eglSurface;}
@@ -352,5 +359,7 @@ inline void QWindowsWindow::destroyIcon()
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QMargins)
 
 #endif // QWINDOWSWINDOW_H

@@ -1557,7 +1557,7 @@ void QWizardPrivate::handleAeroStyleChange()
     _q_updateButtonStates();
 
     if (q->isVisible())
-        vistaHelper->setWindowPosHack();
+        vistaHelper->updateCustomMargins();
 
     inHandleAeroStyleChange = false;
 }
@@ -2922,6 +2922,10 @@ QWidget *QWizard::sideWidget() const
 void QWizard::setVisible(bool visible)
 {
     Q_D(QWizard);
+#if !defined(QT_NO_STYLE_WINDOWSVISTA)
+    if (visible)
+        d->vistaHelper->updateCustomMargins();
+#endif
     if (visible) {
         if (d->current == -1)
             restart();

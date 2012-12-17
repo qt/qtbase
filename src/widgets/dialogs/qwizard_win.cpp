@@ -49,7 +49,9 @@
 #include "qwizard.h"
 #include "qpaintengine.h"
 #include "qapplication.h"
+#include <QtCore/QVariant>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QWindow>
 #include <QtWidgets/QDesktopWidget>
 
 // Note, these tests are duplicates in qwindowsxpstyle_p.h.
@@ -65,6 +67,8 @@
 #endif
 
 #include <uxtheme.h>
+
+Q_DECLARE_METATYPE(QMargins)
 
 QT_BEGIN_NAMESPACE
 
@@ -265,6 +269,24 @@ QVistaHelper::~QVistaHelper()
     --instanceCount;
 }
 
+void QVistaHelper::updateCustomMargins()
+{
+    if (QWindow *window = wizard->windowHandle()) {
+        // Reduce top frame to zero since we paint it ourselves.
+        const QMargins customMargins = vistaState() == VistaAero ?
+                       QMargins(0, -titleBarSize(), 0, 0) : QMargins();
+        const QVariant customMarginsV = qVariantFromValue(customMargins);
+        // The dynamic property takes effect when creating the platform window.
+        window->setProperty("_q_windowsCustomMargins", customMarginsV);
+        // If a platform window exists, change via native interface.
+        if (QPlatformWindow *platformWindow = window->handle()) {
+            QGuiApplication::platformNativeInterface()->
+                setWindowProperty(platformWindow, QStringLiteral("WindowsCustomMargins"),
+                                  customMarginsV);
+        }
+    }
+}
+
 bool QVistaHelper::isCompositionEnabled()
 {
     bool value = is_vista;
@@ -402,13 +424,6 @@ bool QVistaHelper::winEvent(MSG* msg, long* result)
         }
         break;
     }
-//    case WM_NCCALCSIZE: { #fixme: If the frame size is changed, it needs to be communicated to the QWindow.
-//        NCCALCSIZE_PARAMS* lpncsp = (NCCALCSIZE_PARAMS*)msg->lParam;
-//        *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-//        lpncsp->rgrc[0].top -= (vistaState() == VistaAero ? titleBarSize() : 0);
-//
-//        break;
-//    }
     default:
         LRESULT lResult;
         // Pass to DWM to handle
@@ -449,38 +464,6 @@ void QVistaHelper::mouseEvent(QEvent *event)
     }
 }
 
-// The following hack ensures that the titlebar is updated correctly
-// when the wizard style changes to and from AeroStyle. Specifically,
-// this function causes a Windows message of type WM_NCCALCSIZE to
-// be triggered.
-void QVistaHelper::setWindowPosHack()
-{
-    const int x = wizard->geometry().x(); // ignored by SWP_NOMOVE
-    const int y = wizard->geometry().y(); // ignored by SWP_NOMOVE
-    const int w = wizard->width();
-    const int h = wizard->height();
-    HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-    SetWindowPos(handle, 0, x, y, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
-}
-
-// The following hack allows any QWidget subclass to access
-// QWidgetPrivate::topData() without being declared as a
-// friend by QWidget.
-class QHackWidget : public QWidget
-{
-public:
-    Q_DECLARE_PRIVATE(QWidget)
-    QTLWExtra* topData() { return d_func()->topData(); }
-};
-
-void QVistaHelper::collapseTopFrameStrut()
-{
-    QTLWExtra *top = ((QHackWidget *)wizard)->d_func()->topData();
-    int x1, y1, x2, y2;
-    top->frameStrut.getCoords(&x1, &y1, &x2, &y2);
-    top->frameStrut.setCoords(x1, 0, x2, y2);
-}
-
 bool QVistaHelper::handleWinEvent(MSG *message, long *result)
 {
     if (message->message == WIZ_WM_THEMECHANGED || message->message == WIZ_WM_DWMCOMPOSITIONCHANGED)
@@ -489,12 +472,8 @@ bool QVistaHelper::handleWinEvent(MSG *message, long *result)
     bool status = false;
     if (wizard->wizardStyle() == QWizard::AeroStyle && vistaState() == VistaAero) {
         status = winEvent(message, result);
-        if (message->message == WM_NCCALCSIZE) {
-//          if (status) #fixme
-//                collapseTopFrameStrut();
-        } else if (message->message == WM_NCPAINT) {
+        if (message->message == WM_NCPAINT)
             wizard->update();
-        }
     }
     return status;
 }

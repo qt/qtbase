@@ -87,6 +87,7 @@ public:
     QVistaHelper(QWizard *wizard);
     ~QVistaHelper();
     enum TitleBarChangeType { NormalTitleBar, ExtendedTitleBar };
+    void updateCustomMargins();
     bool setDWMTitleBar(TitleBarChangeType type);
     void setTitleBarIconAndCaptionVisible(bool visible);
     void mouseEvent(QEvent *event);
@@ -96,7 +97,6 @@ public:
     QVistaBackButton *backButton() const { return backButton_; }
     void disconnectBackButton() { if (backButton_) backButton_->disconnect(); }
     void hideBackButton() { if (backButton_) backButton_->hide(); }
-    void setWindowPosHack();
     QColor basicWindowFrameColor();
     enum VistaState { VistaAero, VistaBasic, Classic, Dirty };
     static VistaState vistaState();

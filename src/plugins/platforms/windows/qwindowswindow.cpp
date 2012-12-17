@@ -274,7 +274,7 @@ struct WindowCreationData
         tool(false), embedded(false) {}
 
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
-    inline WindowData create(const QWindow *w, const QRect &geometry, QString title) const;
+    inline WindowData create(const QWindow *w, const WindowData &data, QString title) const;
     inline void applyWindowFlags(HWND hwnd) const;
     void initialize(HWND h, bool frameChange, qreal opacityLevel) const;
 
@@ -416,7 +416,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 }
 
 QWindowsWindow::WindowData
-    WindowCreationData::create(const QWindow *w, const QRect &geometry, QString title) const
+    WindowCreationData::create(const QWindow *w, const WindowData &data, QString title) const
 {
     typedef QSharedPointer<QWindowCreationContext> QWindowCreationContextPtr;
 
@@ -442,24 +442,25 @@ QWindowsWindow::WindowData
     const wchar_t *titleUtf16 = reinterpret_cast<const wchar_t *>(title.utf16());
     const wchar_t *classNameUtf16 = reinterpret_cast<const wchar_t *>(windowClassName.utf16());
 
-    // Capture events before CreateWindowEx() returns.
-    const QWindowCreationContextPtr context(new QWindowCreationContext(w, geometry, style, exStyle));
+    // Capture events before CreateWindowEx() returns. The context is cleared in
+    // the QWindowsWindow constructor.
+    const QWindowCreationContextPtr context(new QWindowCreationContext(w, data.geometry, data.customMargins, style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
                 << "CreateWindowEx: " << w << *this
                 << " class=" <<windowClassName << " title=" << title
-                << "\nrequested: " << geometry << ": "
+                << "\nrequested: " << data.geometry << ": "
                 << context->frameWidth << 'x' <<  context->frameHeight
-                << '+' << context->frameX << '+' << context->frameY;
+                << '+' << context->frameX << '+' << context->frameY
+                << " custom margins: " << context->customMargins;
 
     result.hwnd = CreateWindowEx(exStyle, classNameUtf16, titleUtf16,
                                  style,
                                  context->frameX, context->frameY,
                                  context->frameWidth, context->frameHeight,
                                  parentHandle, NULL, appinst, NULL);
-    QWindowsContext::instance()->setWindowCreationContext(QWindowCreationContextPtr());
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
                 << "CreateWindowEx: returns " << w << ' ' << result.hwnd << " obtained geometry: "
@@ -473,6 +474,7 @@ QWindowsWindow::WindowData
     result.geometry = context->obtainedGeometry;
     result.frame = context->margins;
     result.embedded = embedded;
+    result.customMargins = context->customMargins;
     return result;
 }
 
@@ -511,6 +513,8 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
                 qWarning() << "QWidget: Incompatible window flags: the window can't be on top and on bottom at the same time";
         } else if (flags & Qt::WindowStaysOnBottomHint) {
             SetWindowPos(hwnd, HWND_BOTTOM, 0, 0, 0, 0, swpFlags);
+        } else if (frameChange) { // Force WM_NCCALCSIZE with wParam=1 in case of custom margins.
+            SetWindowPos(hwnd, 0, 0, 0, 0, 0, swpFlags);
         }
         if (flags & (Qt::CustomizeWindowHint|Qt::WindowTitleHint)) {
             HMENU systemMenu = GetSystemMenu(hwnd, FALSE);
@@ -569,6 +573,33 @@ QMargins QWindowsGeometryHint::frame(DWORD style, DWORD exStyle)
                  << " exStyle=0x" << QString::number(exStyle, 16) << ' ' << rect << ' ' << result;
 
     return result;
+}
+
+bool QWindowsGeometryHint::handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result)
+{
+#ifndef Q_OS_WINCE
+    // NCCALCSIZE_PARAMS structure if wParam==TRUE
+    if (!msg.wParam || customMargins.isNull())
+        return false;
+    *result = DefWindowProc(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+    NCCALCSIZE_PARAMS *ncp = reinterpret_cast<NCCALCSIZE_PARAMS *>(msg.lParam);
+    const RECT oldClientArea = ncp->rgrc[0];
+    ncp->rgrc[0].left += customMargins.left();
+    ncp->rgrc[0].top += customMargins.top();
+    ncp->rgrc[0].right -= customMargins.right();
+    ncp->rgrc[0].bottom -= customMargins.bottom();
+    result = 0;
+    if (QWindowsContext::verboseWindows)
+        qDebug() << __FUNCTION__ << oldClientArea << '+' << customMargins << "-->"
+                 << ncp->rgrc[0] << ' ' << ncp->rgrc[1] << ' ' << ncp->rgrc[2]
+                 << ' ' << ncp->lppos->cx << ',' << ncp->lppos->cy;
+    return true;
+#else
+    Q_UNUSED(customMargins)
+    Q_UNUSED(msg)
+    Q_UNUSED(result)
+    return false;
+#endif
 }
 
 #ifndef Q_OS_WINCE
@@ -637,10 +668,11 @@ bool QWindowsGeometryHint::positionIncludesFrame(const QWindow *w)
 
 QWindowCreationContext::QWindowCreationContext(const QWindow *w,
                                                const QRect &geometry,
+                                               const QMargins &cm,
                                                DWORD style_, DWORD exStyle_) :
     geometryHint(w), style(style_), exStyle(exStyle_),
     requestedGeometry(geometry), obtainedGeometry(geometry),
-    margins(QWindowsGeometryHint::frame(style, exStyle)),
+    margins(QWindowsGeometryHint::frame(style, exStyle)), customMargins(cm),
     frameX(CW_USEDEFAULT), frameY(CW_USEDEFAULT),
     frameWidth(CW_USEDEFAULT), frameHeight(CW_USEDEFAULT)
 {
@@ -651,14 +683,16 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
     if (geometry.isValid()) {
         frameX = geometry.x();
         frameY = geometry.y();
-        frameWidth = margins.left() + geometry.width() + margins.right();
-        frameHeight = margins.top() + geometry.height() + margins.bottom();
+        const QMargins effectiveMargins = margins + customMargins;
+        frameWidth = effectiveMargins.left() + geometry.width() + effectiveMargins.right();
+        frameHeight = effectiveMargins.top() + geometry.height() + effectiveMargins.bottom();
         const bool isDefaultPosition = !frameX && !frameY && w->isTopLevel();
         if (!QWindowsGeometryHint::positionIncludesFrame(w) && !isDefaultPosition) {
-            frameX -= margins.left();
-            frameY -= margins.top();
+            frameX -= effectiveMargins.left();
+            frameY -= effectiveMargins.top();
         }
     }
+
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
                 << __FUNCTION__ << ' ' << w << geometry
@@ -666,7 +700,8 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
                 << " frame: " << frameWidth << 'x' << frameHeight << '+'
                 << frameX << '+' << frameY
                 << " min" << geometryHint.minimumSize
-                << " max" << geometryHint.maximumSize;
+                << " max" << geometryHint.maximumSize
+                << " custom margins " << customMargins;
 }
 
 /*!
@@ -713,6 +748,8 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 {
     if (aWindow->surfaceType() == QWindow::OpenGLSurface)
         setFlag(OpenGLSurface);
+    // Clear the creation context as the window can be found in QWindowsContext's map.
+    QWindowsContext::instance()->setWindowCreationContext(QSharedPointer<QWindowCreationContext>());
     QWindowsContext::instance()->addWindow(m_data.hwnd, this);
     if (aWindow->isTopLevel()) {
         switch (aWindow->type()) {
@@ -826,8 +863,9 @@ QWindowsWindow::WindowData
 {
     WindowCreationData creationData;
     creationData.fromWindow(w, parameters.flags);
-    WindowData result = creationData.create(w, parameters.geometry, title);
-    creationData.initialize(result.hwnd, false, 1);
+    WindowData result = creationData.create(w, parameters, title);
+    // Force WM_NCCALCSIZE (with wParam=1) via SWP_FRAMECHANGED for custom margin.
+    creationData.initialize(result.hwnd, !parameters.customMargins.isNull(), 1);
     return result;
 }
 
@@ -1452,7 +1490,7 @@ QMargins QWindowsWindow::frameMargins() const
         m_data.frame = QWindowsGeometryHint::frame(style(), exStyle());
         clearFlag(FrameDirty);
     }
-    return m_data.frame;
+    return m_data.frame + m_data.customMargins;
 }
 
 void QWindowsWindow::setOpacity(qreal level)
@@ -1805,6 +1843,34 @@ void QWindowsWindow::setWindowIcon(const QIcon &icon)
             SendMessage(m_data.hwnd, WM_SETICON, 0 /* ICON_SMALL */, (LPARAM)m_iconSmall);
             SendMessage(m_data.hwnd, WM_SETICON, 1 /* ICON_BIG */, (LPARAM)m_iconSmall);
         }
+    }
+}
+
+/*!
+    \brief Sets custom margins to be added to the default margins determined by
+    the windows style in the handling of the WM_NCCALCSIZE message.
+
+    This is currently used to give the Aero-style QWizard a smaller top margin.
+    The property can be set using QPlatformNativeInterface::setWindowProperty() or,
+    before platform window creation, by setting a dynamic property
+    on the QWindow (see QWindowsIntegration::createPlatformWindow()).
+*/
+
+void QWindowsWindow::setCustomMargins(const QMargins &newCustomMargins)
+{
+    if (newCustomMargins != m_data.customMargins) {
+        const QMargins oldCustomMargins = m_data.customMargins;
+        m_data.customMargins = newCustomMargins;
+         // Re-trigger WM_NCALCSIZE with wParam=1 by passing SWP_FRAMECHANGED
+        const QRect currentFrameGeometry = frameGeometry_sys();
+        const QPoint topLeft = currentFrameGeometry.topLeft();
+        QRect newFrame = currentFrameGeometry.marginsRemoved(oldCustomMargins) + m_data.customMargins;
+        newFrame.moveTo(topLeft);
+        setFlag(FrameDirty);
+        if (QWindowsContext::verboseWindows)
+            qDebug() << __FUNCTION__ << oldCustomMargins << "->" << newCustomMargins
+                     << currentFrameGeometry << "->" << newFrame;
+        SetWindowPos(m_data.hwnd, 0, newFrame.x(), newFrame.y(), newFrame.width(), newFrame.height(), SWP_NOZORDER | SWP_FRAMECHANGED);
     }
 }
 
