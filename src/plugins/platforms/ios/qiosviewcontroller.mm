@@ -67,10 +67,10 @@
     return UIInterfaceOrientationMaskAll;
 }
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    Q_UNUSED(fromInterfaceOrientation);
-    Qt::ScreenOrientation orientation = toQtScreenOrientation(self.interfaceOrientation);
+    Q_UNUSED(duration);
+    Qt::ScreenOrientation orientation = toQtScreenOrientation(toInterfaceOrientation);
     if (orientation == -1)
         return;
 
