@@ -1054,6 +1054,7 @@ Qt for Windows CE
     Whether code should be compiled with exception support enabled or disabled can be
     controlled by a CONFIG += exceptions/exceptions_off setting in the .pro file.
   * The -no/-stl configure options are gone. Qt always uses the STL now.
+  * The -no/-fast configure options are gone.
   * The -prefix-install configure option is gone. Use -prefix, etc. instead.
   * The -make option of the Windows configure was renamed to -make-tool.
     -make now complements -no-make, like in the Unix version.
