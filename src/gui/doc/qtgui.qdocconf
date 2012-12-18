@@ -40,9 +40,10 @@ depends += \
 headerdirs  += ..
 
 sourcedirs  += .. \
-               ../../../examples/gui/doc
+               ../../../examples/gui/doc/src
 
 exampledirs += ../../../examples/gui \
                snippets
 
-imagedirs   += images
+imagedirs   += images \
+               ../../../examples/gui/doc/images
