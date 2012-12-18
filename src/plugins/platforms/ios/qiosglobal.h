@@ -49,6 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
+bool isQtApplication();
 CGRect toCGRect(const QRect &rect);
 QRect fromCGRect(const CGRect &rect);
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);

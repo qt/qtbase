@@ -196,7 +196,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_glData()
     , m_devicePixelRatio(1.0)
 {
-    if ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]])
+    if (isQtApplication())
         [[UIApplication sharedApplication].delegate.window.rootViewController.view addSubview:m_view];
 
     setWindowState(window->windowState());

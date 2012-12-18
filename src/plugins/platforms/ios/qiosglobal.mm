@@ -40,9 +40,22 @@
 ****************************************************************************/
 
 #include "qiosglobal.h"
+#include "qiosapplicationdelegate.h"
 #include <QtGui/qscreen.h>
 
 QT_BEGIN_NAMESPACE
+
+bool isQtApplication()
+{
+    // Returns true if the plugin is in full control of the whole application. This means
+    // that we control the application delegate and the top view controller, and can take
+    // actions that impacts all parts of the application. The opposite means that we are
+    // embedded inside a native iOS application, and should be more focused on playing along
+    // with native UIControls, and less inclined to change structures that lies outside the
+    // scope of our QWindows/UIViews.
+    static bool isQt = ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]]);
+    return isQt;
+}
 
 CGRect toCGRect(const QRect &rect)
 {
