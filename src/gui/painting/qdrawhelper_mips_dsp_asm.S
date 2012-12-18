@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qt_mips_asm_dsp.h"
+#include "qt_mips_asm_dsp_p.h"
 
 LEAF_MIPS_DSP(destfetchARGB32_asm_mips_dsp)
 /*
