@@ -891,6 +891,11 @@ Qt for Windows CE
 
 - Linguist
 
+  * The integration with Mac OS' document handling was improved
+  * lupdate can now treat other .ts files as sources
+  * lupdate's CODECFORTR is deprecated and will be removed soon. All source code
+    written with Qt is expected to use UTF-8 encoding.
+
 - rcc
 
 
