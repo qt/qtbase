@@ -42,24 +42,6 @@
     "QtGui" =>  {
         "QGenericPlugin" => "QtGui/QGenericPlugin",
         "QGenericPluginFactory" => "QtGui/QGenericPluginFactory"
-    },
-    "QtWidgets" => {
-        "qplatformmenu_qpa.h" => "qpa/qplatformmenu.h",
-        "QPlatformMenu" => "qpa/qplatformmenu.h",
-        "QPlatformMenuAction" => "qpa/qplatformmenu.h",
-        "QPlatformMenuBar" => "qpa/qplatformmenu.h"
-    },
-    "QtPrintSupport" => {
-        "qplatformprintersupport_qpa.h" => "qpa/qplatformprintersupport.h",
-        "QPlatformPrinterSupport" => "qpa/qplatformprintersupport.h",
-        "QPlatformPrinterSupportPlugin" => "XXXXXXXXXXXXXXXXXXXX",
-        "qplatformprintplugin_qpa.h" => "qpa/qplatformprintplugin.h",
-        "QPlatformPrintPlugin" => "qpa/qplatformprintplugin.h"
-    },
-    "QtPlatformSupport" => {
-        "qplatforminputcontextfactory_qpa_p.h" => "qpa/qplatforminputcontextfactory_p.h",
-        "qplatforminputcontextplugin_qpa_p.h" => "qpa/qplatforminputcontextplugin_p.h",
-        "QPlatformInputContextPlugin" => "qpa/qplatforminputcontextplugin_p.h"
     }
 );
 %explicitheaders = (
