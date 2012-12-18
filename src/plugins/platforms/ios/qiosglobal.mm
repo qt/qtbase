@@ -39,44 +39,66 @@
 **
 ****************************************************************************/
 
-#import "qiosviewcontroller.h"
-
-#include <QtGui/QGuiApplication>
-#include <QtGui/QScreen>
-#include "qiosscreen.h"
 #include "qiosglobal.h"
+#include <QtGui/qscreen.h>
 
-@implementation QIOSViewController
+QT_BEGIN_NAMESPACE
 
--(BOOL)shouldAutorotate
+CGRect toCGRect(const QRect &rect)
 {
-    // For now we assume that if the application doesn't listen to orientation
-    // updates it means it would like to enable auto-rotation, and vice versa.
-    if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
-        return !guiApp->primaryScreen()->orientationUpdateMask();
-    else
-        return NO;
-
-    // FIXME: Investigate a proper Qt API for auto-rotation and orientation locking
+    return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
--(NSUInteger)supportedInterfaceOrientations
+QRect fromCGRect(const CGRect &rect)
 {
-    // We need to tell iOS that we support all orientations in order to set
-    // status bar orientation when application content orientation changes.
-    return UIInterfaceOrientationMaskAll;
+    return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)
 {
-    Q_UNUSED(fromInterfaceOrientation);
-    Qt::ScreenOrientation orientation = toQtScreenOrientation(self.interfaceOrientation);
-    if (orientation == -1)
-        return;
-
-    QIOSScreen *qiosScreen = static_cast<QIOSScreen *>(QGuiApplication::primaryScreen()->handle());
-    qiosScreen->setPrimaryOrientation(orientation);
+    Qt::ScreenOrientation qtOrientation;
+    switch (uiDeviceOrientation) {
+    case UIDeviceOrientationPortraitUpsideDown:
+        qtOrientation = Qt::InvertedPortraitOrientation;
+        break;
+    case UIDeviceOrientationLandscapeLeft:
+        qtOrientation = Qt::InvertedLandscapeOrientation;
+        break;
+    case UIDeviceOrientationLandscapeRight:
+        qtOrientation = Qt::LandscapeOrientation;
+        break;
+    case UIDeviceOrientationFaceUp:
+    case UIDeviceOrientationFaceDown:
+        qtOrientation = static_cast<Qt::ScreenOrientation>(-1); // not supported ATM.
+        break;
+    default:
+        qtOrientation = Qt::PortraitOrientation;
+        break;
+    }
+    return qtOrientation;
 }
 
-@end
+UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation)
+{
+    UIDeviceOrientation uiOrientation;
+    switch (qtOrientation) {
+    case Qt::LandscapeOrientation:
+        uiOrientation = UIDeviceOrientationLandscapeRight;
+        break;
+    case Qt::InvertedLandscapeOrientation:
+        uiOrientation = UIDeviceOrientationLandscapeLeft;
+        break;
+    case Qt::InvertedPortraitOrientation:
+        uiOrientation = UIDeviceOrientationPortraitUpsideDown;
+        break;
+    case Qt::PrimaryOrientation:
+    case Qt::PortraitOrientation:
+    default:
+        uiOrientation = UIDeviceOrientationPortrait;
+        break;
+    }
+    return uiOrientation;
+}
+
+QT_END_NAMESPACE
 

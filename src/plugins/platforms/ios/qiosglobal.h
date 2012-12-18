@@ -39,44 +39,21 @@
 **
 ****************************************************************************/
 
-#import "qiosviewcontroller.h"
+#ifndef QIOSGLOBAL_H
+#define QIOSGLOBAL_H
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QScreen>
-#include "qiosscreen.h"
-#include "qiosglobal.h"
+#import <UIKit/UIKit.h>
+#import <QtCore/qglobal.h>
+#import <QtGui/qguiapplication.h>
+#import "qiosscreen.h"
 
-@implementation QIOSViewController
+QT_BEGIN_NAMESPACE
 
--(BOOL)shouldAutorotate
-{
-    // For now we assume that if the application doesn't listen to orientation
-    // updates it means it would like to enable auto-rotation, and vice versa.
-    if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
-        return !guiApp->primaryScreen()->orientationUpdateMask();
-    else
-        return NO;
+CGRect toCGRect(const QRect &rect);
+QRect fromCGRect(const CGRect &rect);
+Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
+UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
 
-    // FIXME: Investigate a proper Qt API for auto-rotation and orientation locking
-}
+QT_END_NAMESPACE
 
--(NSUInteger)supportedInterfaceOrientations
-{
-    // We need to tell iOS that we support all orientations in order to set
-    // status bar orientation when application content orientation changes.
-    return UIInterfaceOrientationMaskAll;
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-    Q_UNUSED(fromInterfaceOrientation);
-    Qt::ScreenOrientation orientation = toQtScreenOrientation(self.interfaceOrientation);
-    if (orientation == -1)
-        return;
-
-    QIOSScreen *qiosScreen = static_cast<QIOSScreen *>(QGuiApplication::primaryScreen()->handle());
-    qiosScreen->setPrimaryOrientation(orientation);
-}
-
-@end
-
+#endif // QIOSGLOBAL_H

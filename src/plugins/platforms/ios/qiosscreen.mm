@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qiosglobal.h"
 #include "qiosscreen.h"
 #include "qioswindow.h"
 #include <qpa/qwindowsysteminterface.h>
@@ -87,54 +88,6 @@
 }
 
 @end
-
-QT_BEGIN_NAMESPACE
-
-Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)
-{
-    Qt::ScreenOrientation qtOrientation;
-    switch (uiDeviceOrientation) {
-        case UIDeviceOrientationPortraitUpsideDown:
-            qtOrientation = Qt::InvertedPortraitOrientation;
-            break;
-        case UIDeviceOrientationLandscapeLeft:
-           qtOrientation = Qt::InvertedLandscapeOrientation;
-            break;
-        case UIDeviceOrientationLandscapeRight:
-            qtOrientation = Qt::LandscapeOrientation;
-            break;
-        case UIDeviceOrientationFaceUp:
-        case UIDeviceOrientationFaceDown:
-            qtOrientation = static_cast<Qt::ScreenOrientation>(-1); // not supported ATM.
-            break;
-        default:
-            qtOrientation = Qt::PortraitOrientation;
-            break;
-    }
-    return qtOrientation;
-}
-
-UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation)
-{
-    UIDeviceOrientation uiOrientation;
-    switch (qtOrientation) {
-        case Qt::LandscapeOrientation:
-            uiOrientation = UIDeviceOrientationLandscapeRight;
-            break;
-        case Qt::InvertedLandscapeOrientation:
-            uiOrientation = UIDeviceOrientationLandscapeLeft;
-            break;
-        case Qt::InvertedPortraitOrientation:
-            uiOrientation = UIDeviceOrientationPortraitUpsideDown;
-            break;
-        case Qt::PrimaryOrientation:
-        case Qt::PortraitOrientation:
-        default:
-            uiOrientation = UIDeviceOrientationPortrait;
-            break;
-    }
-    return uiOrientation;
-}
 
 /*!
     Returns the model identifier of the device.

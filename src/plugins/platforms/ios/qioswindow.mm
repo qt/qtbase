@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qiosglobal.h"
 #include "qioswindow.h"
 #include "qioscontext.h"
 #include "qiosscreen.h"
@@ -51,16 +52,6 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtDebug>
-
-static CGRect toCGRect(const QRect &rect)
-{
-    return CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
-static QRect fromCGRect(const CGRect &rect)
-{
-    return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-}
 
 @implementation EAGLView
 

@@ -50,9 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
-UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
-
 class QIOSScreen : public QPlatformScreen
 {
 public:
