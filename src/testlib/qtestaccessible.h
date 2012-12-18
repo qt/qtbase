@@ -56,6 +56,8 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qguiapplication.h>
+#include <QtTest/qtest_global.h>
+#include <QtTest/qtestsystem.h>
 
 QT_BEGIN_HEADER
 
