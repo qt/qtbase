@@ -344,7 +344,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if ((command == COMMAND_INGROUP) && !args.isEmpty()) {
                 ArgList::ConstIterator argsIter = args.constBegin();
                 while (argsIter != args.constEnd()) {
-                    DocNode* dn = QDocDatabase::qdocDB()->addToGroup(argsIter->first, node);
+                    QDocDatabase::qdocDB()->addToGroup(argsIter->first, node);
                     ++argsIter;
                 }
             }
