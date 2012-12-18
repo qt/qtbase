@@ -251,7 +251,7 @@ ba.lastIndexOf("X");        // returns -1
 
 
 //! [25]
-QByteArray url("ftp://ftp.qt.nokia.com/");
+QByteArray url("ftp://ftp.qt-project.org/");
 if (url.startsWith("ftp:"))
     ...
 //! [25]

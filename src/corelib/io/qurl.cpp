@@ -3812,7 +3812,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     \list
     \li qt.nokia.com becomes http://qt.nokia.com
-    \li ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
+    \li ftp.qt-project.org becomes ftp://ftp.qt-project.org
     \li hostname becomes http://hostname
     \li /home/user/test.html becomes file:///home/user/test.html
     \endlist

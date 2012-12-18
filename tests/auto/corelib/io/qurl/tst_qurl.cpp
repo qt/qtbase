@@ -1164,8 +1164,8 @@ void tst_QUrl::compat_constructor_01_data()
     //next we fill it with data
     QTest::newRow( "data0" )  << QString("Makefile") << QString("Makefile"); // nolonger add file by default
     QTest::newRow( "data1" )  << QString("Makefile") << QString("Makefile");
-    QTest::newRow( "data2" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
-    QTest::newRow( "data3" )  << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
+    QTest::newRow( "data2" )  << QString("ftp://ftp.qt-project.org/qt/INSTALL") << QString("ftp://ftp.qt-project.org/qt/INSTALL");
+    QTest::newRow( "data3" )  << QString("ftp://ftp.qt-project.org/qt/INSTALL") << QString("ftp://ftp.qt-project.org/qt/INSTALL");
 }
 
 void tst_QUrl::compat_constructor_01()
@@ -1180,7 +1180,7 @@ void tst_QUrl::compat_constructor_01()
      * as well as the following:
      *
      * QUrlOperator op;
-     * op.copy(QString("ftp://ftp.qt.nokia.com/qt/INSTALL"), ".");
+     * op.copy(QString("ftp://ftp.qt-project.org/qt/INSTALL"), ".");
      */
     QFETCH( QString, urlStr );
 
@@ -1205,15 +1205,15 @@ void tst_QUrl::compat_constructor_02_data()
     QTest::addColumn<QString>("res");
 
     //next we fill it with data
-    QTest::newRow( "data0" )  << QString("ftp://ftp.qt.nokia.com/qt") << QString("INSTALL") << QString("ftp://ftp.qt.nokia.com/INSTALL");
-    QTest::newRow( "data1" )  << QString("ftp://ftp.qt.nokia.com/qt/") << QString("INSTALL") << QString("ftp://ftp.qt.nokia.com/qt/INSTALL");
+    QTest::newRow( "data0" )  << QString("ftp://ftp.qt-project.org/qt") << QString("INSTALL") << QString("ftp://ftp.qt-project.org/INSTALL");
+    QTest::newRow( "data1" )  << QString("ftp://ftp.qt-project.org/qt/") << QString("INSTALL") << QString("ftp://ftp.qt-project.org/qt/INSTALL");
 }
 
 void tst_QUrl::compat_constructor_02()
 {
     /* The following should work as expected:
      *
-     * QUrlOperator op( "ftp://ftp.qt.nokia.com/qt" );
+     * QUrlOperator op( "ftp://ftp.qt-project.org/qt" );
      * op.copy(QString("INSTALL"), ".");
      */
     QFETCH( QString, urlStr );
@@ -1236,7 +1236,7 @@ void tst_QUrl::compat_constructor_03_data()
     QTest::newRow( "protocol02" )  << QString( "http://qt.nokia.com/" ) << QString( "http://qt.nokia.com/" );
     QTest::newRow( "protocol03" )  << QString( "http://qt.nokia.com/foo" ) << QString( "http://qt.nokia.com/foo" );
     QTest::newRow( "protocol04" )  << QString( "http://qt.nokia.com/foo/" ) << QString( "http://qt.nokia.com/foo/" );
-    QTest::newRow( "protocol05" )  << QString( "ftp://ftp.qt.nokia.com/foo/index.txt" ) << QString( "ftp://ftp.qt.nokia.com/foo/index.txt" );
+    QTest::newRow( "protocol05" )  << QString( "ftp://ftp.qt-project.org/foo/index.txt" ) << QString( "ftp://ftp.qt-project.org/foo/index.txt" );
 
     QTest::newRow( "local00" )  << QString( "/foo" ) << QString( "/foo" );
     QTest::newRow( "local01" )  << QString( "/foo/" ) << QString( "/foo/" );
@@ -1278,11 +1278,11 @@ void tst_QUrl::compat_isValid_01_data()
     QTest::addColumn<QString>("urlStr");
     QTest::addColumn<bool>("res");
 
-    QTest::newRow( "ok_01" ) << QString("ftp://ftp.qt.nokia.com/qt/INSTALL") << (bool)true;
+    QTest::newRow( "ok_01" ) << QString("ftp://ftp.qt-project.org/qt/INSTALL") << (bool)true;
     QTest::newRow( "ok_02" ) << QString( "file:/foo") << (bool)true;
     QTest::newRow( "ok_03" ) << QString( "file:foo") << (bool)true;
 
-    QTest::newRow( "err_01" ) << QString("#ftp://ftp.qt.nokia.com/qt/INSTALL") << (bool)true;
+    QTest::newRow( "err_01" ) << QString("#ftp://ftp.qt-project.org/qt/INSTALL") << (bool)true;
     QTest::newRow( "err_02" ) << QString( "file:/::foo") << (bool)true;
 }
 
@@ -1310,18 +1310,18 @@ void tst_QUrl::compat_isValid_02_data()
     QString n = "";
 
     QTest::newRow( "ok_01" ) << n     << n     << n     << n                   << -1 << QString("path") << (bool)true;
-    QTest::newRow( "ok_02" ) << QString("ftp") << n     << n     << QString("ftp.qt.nokia.com") << -1 << n      << (bool)true;
-    QTest::newRow( "ok_03" ) << QString("ftp") << QString("foo") << n     << QString("ftp.qt.nokia.com") << -1 << n      << (bool)true;
-    QTest::newRow( "ok_04" ) << QString("ftp") << QString("foo") << QString("bar") << QString("ftp.qt.nokia.com") << -1 << n      << (bool)true;
-    QTest::newRow( "ok_05" ) << QString("ftp") << n     << n     << QString("ftp.qt.nokia.com") << -1 << QString("/path")<< (bool)true;
-    QTest::newRow( "ok_06" ) << QString("ftp") << QString("foo") << n     << QString("ftp.qt.nokia.com") << -1 << QString("/path") << (bool)true;
-    QTest::newRow( "ok_07" ) << QString("ftp") << QString("foo") << QString("bar") << QString("ftp.qt.nokia.com") << -1 << QString("/path")<< (bool)true;
+    QTest::newRow( "ok_02" ) << QString("ftp") << n     << n     << QString("ftp.qt-project.org") << -1 << n      << (bool)true;
+    QTest::newRow( "ok_03" ) << QString("ftp") << QString("foo") << n     << QString("ftp.qt-project.org") << -1 << n      << (bool)true;
+    QTest::newRow( "ok_04" ) << QString("ftp") << QString("foo") << QString("bar") << QString("ftp.qt-project.org") << -1 << n      << (bool)true;
+    QTest::newRow( "ok_05" ) << QString("ftp") << n     << n     << QString("ftp.qt-project.org") << -1 << QString("/path")<< (bool)true;
+    QTest::newRow( "ok_06" ) << QString("ftp") << QString("foo") << n     << QString("ftp.qt-project.org") << -1 << QString("/path") << (bool)true;
+    QTest::newRow( "ok_07" ) << QString("ftp") << QString("foo") << QString("bar") << QString("ftp.qt-project.org") << -1 << QString("/path")<< (bool)true;
 
     QTest::newRow( "err_01" ) << n     << n     << n     << n                   << -1 << n << (bool)false;
     QTest::newRow( "err_02" ) << QString("ftp") << n     << n     << n                   << -1 << n << (bool)true;
     QTest::newRow( "err_03" ) << n     << QString("foo") << n     << n                   << -1 << n << (bool)true;
     QTest::newRow( "err_04" ) << n     << n     << QString("bar") << n                   << -1 << n << (bool)true;
-    QTest::newRow( "err_05" ) << n     << n     << n     << QString("ftp.qt.nokia.com") << -1 << n << (bool)true;
+    QTest::newRow( "err_05" ) << n     << n     << n     << QString("ftp.qt-project.org") << -1 << n << (bool)true;
     QTest::newRow( "err_06" ) << n     << n     << n     << n                   << 80 << n << (bool)true;
     QTest::newRow( "err_07" ) << QString("ftp") << QString("foo") << n     << n                   << -1 << n << (bool)true;
     QTest::newRow( "err_08" ) << QString("ftp") << n     << QString("bar") << n                   << -1 << n << (bool)true;
@@ -1811,12 +1811,12 @@ void tst_QUrl::schemeValidator_data()
 
     // ftp
     QTest::newRow("ftp:") << QByteArray("ftp:") << true << QString("ftp:");
-    QTest::newRow("ftp://ftp.qt.nokia.com")
-        << QByteArray("ftp://ftp.qt.nokia.com")
-        << true << QString("ftp://ftp.qt.nokia.com");
-    QTest::newRow("ftp://ftp.qt.nokia.com/")
-        << QByteArray("ftp://ftp.qt.nokia.com/")
-        << true << QString("ftp://ftp.qt.nokia.com/");
+    QTest::newRow("ftp://ftp.qt-project.org")
+        << QByteArray("ftp://ftp.qt-project.org")
+        << true << QString("ftp://ftp.qt-project.org");
+    QTest::newRow("ftp://ftp.qt-project.org/")
+        << QByteArray("ftp://ftp.qt-project.org/")
+        << true << QString("ftp://ftp.qt-project.org/");
     QTest::newRow("ftp:/index.html")
         << QByteArray("ftp:/index.html")
         << false << QString();
