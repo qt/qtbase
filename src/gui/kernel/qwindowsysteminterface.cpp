@@ -647,6 +647,13 @@ void QWindowSystemInterface::handleContextMenuEvent(QWindow *w, bool mouseTrigge
 }
 #endif
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPoint &p) {
+    dbg.nospace() << "TouchPoint(" << p.id << " @" << p.normalPosition << " press " << p.pressure << " vel " << p.velocity << " state " << (int)p.state;
+    return dbg.space();
+}
+#endif
+
 Q_GUI_EXPORT void qt_handleMouseEvent(QWindow *w, const QPointF & local, const QPointF & global, Qt::MouseButtons b, Qt::KeyboardModifiers mods = Qt::NoModifier) {
     QWindowSystemInterface::handleMouseEvent(w, local, global,  b,  mods);
 }
