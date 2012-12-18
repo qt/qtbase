@@ -284,23 +284,6 @@ information about a particular change.
 - QIconEngineV2 was merged into QIconEngine
   You might need to adjust your code if it used a QIconEngine.
 
-- qmake
-  * Projects which explicitly set an empty TARGET are considered broken now.
-  * The makespec and .qmake.cache do not see build pass specific variables any more.
-  * load()/include() with a target namespace and infile()/$$fromfile() now start with
-    an entirely pristine context.
-  * Configure's -sysroot and -hostprefix are now handled slightly differently.
-    The QT_INSTALL_... properties are now automatically prefixed with the sysroot;
-    the raw values are available as QT_INSTALL_.../raw and the sysroot as QT_SYSROOT.
-    The new QT_HOST_... properties can be used to refer to the Qt host tools.
-  * Several functions and built-in variables were modified to return normalized paths.
-  * The -(no-)exception flags in configure have been removed. Qt modules are now compiled
-    without exceptions by default, as they do not use them and can neither handle them
-    properly. Qt Core still has exceptions enabled to correctly throw bad_alloc exceptions
-    in our tool classes.
-    Whether code should be compiled with exception support enabled or disabled can be
-    controlled by a CONFIG += exceptions/exceptions_off setting in the .pro file.
-
 - QTextCodecPlugin has been removed since it is no longer used. All text codecs
   are now built into QtCore.
 
@@ -880,9 +863,66 @@ Qt for Windows CE
 
 - Build System
 
-  * Remove qttest_p4.prf file. From now on we should explicitly enable the
-    things from it which we want. Autotest .pro files should stop using
-    'load(qttest_p4)' and start using 'CONFIG+=testcase' instead.
+  * Qt has been split into numerous repositories. Configure covers mostly only qtbase's options.
+  * Qt will now install CMake configuration files for all its libraries.
+
+- configure
+
+  * The Mac OS X -dwarf2 configure argument has been removed. DWARF2 is always
+    used on Mac OS X now.
+  * The following options have been added: (-no)-force-asserts, (-no)-strip, (-no)-gui &
+    (-no)-widgets, -device & -device-option, -archdatadir, -libexecdir & -qmldir,
+    and numerous changes relating to specific Qt features and dependencies.
+  * Configure will no longer call "qmake -recursive" by default, as the subsequent
+    build invokes qmake as needed. Use -fully-process to restore the old behavior.
+
+- qmake
+
+  * default_pre.prf is now evaluated per subproject & build pass, symmetrically
+    to default_post.prf.
+  * .qmake.conf files (.qmake.cache equivalent in source tree) are read now.
+  * Project-specific mkspecs/ and features/ directories are supported now.
+    QMAKEPATH and QMAKEFEATURES can be set in .qmake.{config,cache} to specifiy their
+    location, and qmake will find them in the project's top-level directory automatically.
+  * Mixing host and target subprojects is now supported. "default-host" makespec
+    was added; option(host_build) enables its use.
+  * QMAKE_MOC_OPTIONS variable is now available for passing additional parameters
+    to the moc.
+  * The CROSS_COMPILE variable and property can be used to parametrize the device
+    and mingw makespecs.
+  * QMAKE_RPATHLINKDIR (complementary to QMAKE_RPATHDIR) is now understood.
+  * The "aux" TEMPLATE was added. Does not work with vcproj and xcode output files.
+  * The properties QT_INSTALL_ARCHDATA, QT_INSTALL_LIBEXECS, QT_INSTALL_QML,
+    QMAKE_SPEC & QMAKE_XSPEC were added. QT_INSTALL_DEMOS is obsolete.
+  * The following functions have been added: $$sort_depends, $$resolve_depends,
+    $$enumerate_vars, $$reverse, $$val_escape, $$format_number, $$shadowed,
+    $$clean_path, $$system_path, $$shell_path, $$absolute_path, $$relative_path,
+    $$system_quote, $$shell_quote, cache, write_file, touch, mkpath & log.
+    defined can now query variables; $$cat and $$system support more splitting modes.
+    qtCompileTest (available from configure.prf) was added.
+  * Removed qttest_p4.prf. Use CONFIG+=testcase and other flags instead.
+  * QMAKE_SUBSTITUTES can now copy files verbatim.
+  * MSVC desktop builds now use -Zc:wchar_t.
+  * The following variables were added: QMAKESPEC, _QMAKE_CONF_ & _QMAKE_SUPER_CACHE_.
+  * QDBUSXML2CPP_{INTERFACES,ADAPTORS}_{HEADER,SOURCE}_FLAGS are now understood,
+    and DBUS_{INTERFACES,ADAPTORS} support file groups with individual flags now.
+  * QT_PRIVATE and PKGCONFIG_PRIVATE (analogous to LIBS_PRIVATE resp. PKGCONFIG) are now understood.
+  * INSTALLS entries now support copying with subdirectory (e.g., entry.base = $$dirname(PWD)).
+  * Defining QTPLUGIN in dynamically linked projects does not hurt any more.
+  * CONFIG+=import_plugins will now cause plugin imports for QTPLUGIN being auto-generated.
+  * Debug info generation can now be enabled also for release builds (CONFIG+=force_debug_info).
+  * The following CONFIG flags have been deprecated in favor of QT module entries:
+    qtestlib, qdbus, help, designer, uitools, qaxserver & qaxcontainer (the leading 'q'
+    was stripped from the affected modules).
+  * The IN_PWD alias for PWD was deprecated.
+  * QMAKE_{DIST,}CLEAN support normalized path separators now.
+  * CONFIG+=depend_includepath is on by default now. DEPENDPATH is unnecessary in most projects.
+  * Makespecs should be adjusted in the following ways:
+    * The QMAKE_INCDIR_QT, QMAKE_LIBDIR_QT, QMAKE_MOC, QMAKE_UIC, QMAKE_IDC, TEMPLATE & QT
+      variables should not be defined any more. Furthermore, QMAKE_LIBS_X11SM is obsolete.
+    * The qt, warn_on, release, & link_prl CONFIG flags should not be set any more.
+    * The QMAKE_PLATFORM & QMAKE_COMPILER variables should be defined now.
+      Several other variables should be defined by including files from mkspecs/common/.
 
 - Assistant
 
@@ -909,17 +949,6 @@ Qt for Windows CE
 
 - uic
 
-
-- qmake
-
-* QMAKE_MOC_OPTIONS variable is now available for passing additional parameters
-  to the moc.
-
-
-- configure
-
-  * The Mac OS X -dwarf2 configure argument has been removed. DWARF2 is always
-    used on Mac OS X now.
 
 - qtconfig
 
@@ -969,6 +998,10 @@ Qt for Windows CE
     in the URL by themselves. Now, it will return "%25", like
     QUrl::toEncoded().
 
+- QLibraryInfo
+
+  * location() always returns paths with normalized separators now.
+
 - QVariant
 
   * Definition of QVariant::UserType changed. Currently it is the same as
@@ -995,3 +1028,47 @@ Qt for Windows CE
      * The static function QMessageBox::question has changed the default argument
      for buttons. Before the default was to have an Ok button. That is changed
      to having a yes and a no button.
+
+- qmake & configure
+
+  * The project file parser has been rewritten from scratch. Invalid syntax will be
+    rejected more aggressively, and interpretation may have changed in some corner cases.
+  * Projects which explicitly set an empty TARGET are considered broken now.
+  * The makespec and .qmake.cache do not see build pass specific variables any more.
+  * load()/include() with a target namespace and infile()/$$fromfile() now start with
+    an entirely pristine context.
+  * Configure's -sysroot and -hostprefix are now handled slightly differently.
+    The QT_INSTALL_... properties are now automatically prefixed with the sysroot;
+    the raw values are available as QT_INSTALL_.../raw and the sysroot as QT_SYSROOT.
+    The new QT_HOST_... properties can be used to refer to the Qt host tools.
+    -no-gcc-sysroot can be used for non-standard sysroot configurations.
+  * The QMAKE_MKSPECS property became unavailable at the command line. Query QT_HOST_DATA instead.
+  * The TEMPLATE_PREFIX variable is gone. Use contains(TEMPLATE, vc.*) instead.
+  * The "default" makespec symlink/directory is gone. Use qmake -query QMAKE_XSPEC instead.
+  * DEPENDPATH does not end up in VPATH any more. Some SOURCES may not be found any more.
+  * Several functions and built-in variables were modified to return normalized paths.
+  * The -(no-)exception flags in configure have been removed. Qt modules are now compiled
+    without exceptions by default, as they do not use them and can neither handle them
+    properly. Qt Core still has exceptions enabled to correctly throw bad_alloc exceptions
+    in our tool classes.
+    Whether code should be compiled with exception support enabled or disabled can be
+    controlled by a CONFIG += exceptions/exceptions_off setting in the .pro file.
+  * The -no/-stl configure options are gone. Qt always uses the STL now.
+  * The -prefix-install configure option is gone. Use -prefix, etc. instead.
+  * The -make option of the Windows configure was renamed to -make-tool.
+    -make now complements -no-make, like in the Unix version.
+  * The object_with_source CONFIG flag was removed. Use object_parallel_to_source instead.
+  * Support for universal binaries on Mac OS has been removed.
+  * The processor architecture handling changed significantly. This affects the -arch & -*-endian
+    configure options, the QT_ARCH qmake variable, and more.
+  * No "make_default" make targets will be generated any more. Use "make_first" instead.
+  * The "qmake" make targets are non-recursive now. Use "qmake_all" to recurse.
+  * load() with paths relative to the current project is not supported any more.
+    Use include() instead.
+  * Persistent qmake properties are not versioned any more. Also, the vendor changed to
+    "QtProject", so old settings are lost.
+  * Support for the Borland toolchain was removed. Numerous obsolete makespecs were culled.
+  * setcepaths.bat is gone. QMake-generated Makefiles are self-contained now.
+  * moc_dir, rcc_dir and some other tool variables are not defined in Qt's .pc files any more;
+    the generic host_bins is defined instead.
+
