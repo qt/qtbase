@@ -11,6 +11,8 @@ information about a particular change.
 *                       Source incompatible changes                        *
 ****************************************************************************
 
+- The Qt 3 support module and all related code was removed.
+
 - QAtomicInt's and QAtomicPointer's non-atomic convenience methods
   (i.e., operator=, operator int / operator T*, operator!, operator==,
   operator!= and operator->) have been removed as they did implicit
@@ -906,9 +908,6 @@ Qt for Windows CE
 * moc is now able to fully understand and expands preprocessor macros.
 
 - uic
-
-
-- uic3
 
 
 - qmake
