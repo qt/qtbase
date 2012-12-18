@@ -56,6 +56,7 @@ public:
     QIOSInputContext();
     ~QIOSInputContext();
 
+    QRectF keyboardRect() const;
     void showInputPanel();
     void hideInputPanel();
     bool isInputPanelVisible() const;

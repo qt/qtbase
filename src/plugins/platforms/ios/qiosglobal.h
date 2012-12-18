@@ -54,6 +54,7 @@ CGRect toCGRect(const QRect &rect);
 QRect fromCGRect(const CGRect &rect);
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
 UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
+QRect fromPortraitToPrimary(const QRect &rect);
 
 QT_END_NAMESPACE
 

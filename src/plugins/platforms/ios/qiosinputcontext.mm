@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qiosglobal.h"
 #include "qiosinputcontext.h"
 #include "qioswindow.h"
 #include <QGuiApplication>
@@ -47,6 +48,7 @@
 @public
     QIOSInputContext *m_context;
     BOOL m_keyboardVisible;
+    QRectF m_keyboardRect;
 }
 @end
 
@@ -80,6 +82,10 @@
 {
     CGRect frame;
     [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&frame];
+
+    m_keyboardRect = fromPortraitToPrimary(fromCGRect(frame));
+    m_context->emitKeyboardRectChanged();
+
     BOOL visible = CGRectIntersectsRect(frame, [UIScreen mainScreen].bounds);
     if (m_keyboardVisible != visible) {
         m_keyboardVisible = visible;
@@ -90,14 +96,19 @@
 @end
 
 QIOSInputContext::QIOSInputContext()
-    : QPlatformInputContext(),
-    m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
+    : QPlatformInputContext()
+    , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
 {
 }
 
 QIOSInputContext::~QIOSInputContext()
 {
     [m_keyboardListener release];
+}
+
+QRectF QIOSInputContext::keyboardRect() const
+{
+    return m_keyboardListener->m_keyboardRect;
 }
 
 void QIOSInputContext::showInputPanel()
