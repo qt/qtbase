@@ -117,9 +117,9 @@ QRect fromPortraitToPrimary(const QRect &rect)
 {
     // UIScreen is always in portrait. Use this function to convert CGRects
     // aligned with UIScreen into whatever is the current orientation of QScreen.
-    QScreen *screen = QGuiApplication::primaryScreen();
-    return screen->isPortrait(screen->primaryOrientation()) ? rect
-        : QRect(rect.y(), screen->geometry().width() - rect.width() - rect.x(), rect.height(), rect.width());
+    QRect geometry = QGuiApplication::primaryScreen()->handle()->geometry();
+    return geometry.width() < geometry.height() ? rect
+        : QRect(rect.y(), geometry.width() - rect.width() - rect.x(), rect.height(), rect.width());
 }
 
 QT_END_NAMESPACE
