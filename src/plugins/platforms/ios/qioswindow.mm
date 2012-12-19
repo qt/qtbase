@@ -209,6 +209,17 @@
 
 @end
 
+@implementation UIView (QIOS)
+
+- (QWindow *)qwindow
+{
+    if ([self isKindOfClass:[EAGLView class]])
+        return static_cast<EAGLView *>(self)->m_qioswindow->window();
+    return nil;
+}
+
+@end
+
 QT_BEGIN_NAMESPACE
 
 QIOSWindow::QIOSWindow(QWindow *window)

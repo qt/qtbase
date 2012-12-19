@@ -49,6 +49,10 @@
 class QIOSContext;
 class QIOSWindow;
 
+@interface UIView (QIOS)
+@property(readonly) QWindow *qwindow;
+@end
+
 QT_BEGIN_NAMESPACE
 
 class QIOSWindow : public QPlatformWindow
