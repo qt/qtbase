@@ -51,6 +51,10 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
 !build_pass {
 
     # Create a module .pri file
+    unix:!static: \
+        module_rpath = "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]"
+    else: \
+        module_rpath =
     !isEmpty(QT_FOR_PRIVATE) {
         contains(QT_FOR_PRIVATE, .*-private$):error("QT_FOR_PRIVATE may not contain *-private.")
         module_privdep = "QT.$${MODULE}.private_depends = $$QT_FOR_PRIVATE"
@@ -82,10 +86,9 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
         "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
         "QT.$${MODULE}.includes = $$MODULE_INCLUDES" \
         "QT.$${MODULE}.private_includes = $$MODULE_PRIVATE_INCLUDES" \
-        "QT.$${MODULE}.sources = $$val_escape(_PRO_FILE_PWD_)" \
         "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
         "QT.$${MODULE}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
-        "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]" \
+        $$module_rpath \
         "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
         "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \
         "QT.$${MODULE}.qml = \$\$QT_MODULE_QML_BASE" \

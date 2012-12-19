@@ -96,6 +96,7 @@ public:
     void updateGeometry(xcb_timestamp_t timestamp);
     void updateRefreshRate();
 
+    void readXResources();
 private:
     xcb_screen_t *m_screen;
     xcb_randr_crtc_t m_crtc;
@@ -114,6 +115,7 @@ private:
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QXcbCursor *m_cursor;
     int m_refreshRate;
+    int m_forcedDpi;
 };
 
 QT_END_NAMESPACE
