@@ -260,7 +260,21 @@ QIOSWindow::~QIOSWindow()
 void QIOSWindow::setVisible(bool visible)
 {
     QPlatformWindow::setVisible(visible);
-    [m_view setHidden:!visible];
+    m_view.hidden = !visible;
+
+    if (isQtApplication() && !visible) {
+        // Activate top-most visible QWindow:
+        NSArray *subviews = rootViewController().view.subviews;
+        for (int i = int(subviews.count) - 1; i >= 0; --i) {
+            UIView *view = [subviews objectAtIndex:i];
+            if (!view.hidden) {
+                if (QWindow *window = view.qwindow) {
+                    QWindowSystemInterface::handleWindowActivated(window);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void QIOSWindow::setGeometry(const QRect &rect)
