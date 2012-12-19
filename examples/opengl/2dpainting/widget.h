@@ -45,9 +45,6 @@
 
 //! [0]
 class Helper;
-QT_BEGIN_NAMESPACE
-class QPaintEvent;
-QT_END_NAMESPACE
 
 class Widget : public QWidget
 {

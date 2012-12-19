@@ -94,4 +94,4 @@ private:
     QPoint lastPos;
 };
 
-#endif
+#endif // GLWIDGET_H

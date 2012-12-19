@@ -38,11 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtOpenGL>
-
 #include "glwidget.h"
 #include "mainwindow.h"
+
+#include <QtWidgets>
 
 MainWindow::MainWindow()
 {

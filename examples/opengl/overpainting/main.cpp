@@ -38,8 +38,9 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
 #include "glwidget.h"
+
+#include <QApplication>
 
 int main(int argc, char *argv[])
 {

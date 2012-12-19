@@ -38,12 +38,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtOpenGL>
+#include "glwidget.h"
+
+#include <QMouseEvent>
+#include <QTimer>
 
 #include <math.h>
-
-#include "glwidget.h"
 
 GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent)
@@ -191,57 +191,52 @@ GLuint GLWidget::makeGear(const GLfloat *reflectance, GLdouble innerRadius,
     GLdouble r2 = outerRadius + toothSize / 2.0;
     GLdouble delta = (2.0 * Pi / toothCount) / 4.0;
     GLdouble z = thickness / 2.0;
-    int i, j;
 
     glShadeModel(GL_FLAT);
 
-    for (i = 0; i < 2; ++i) {
+    for (int i = 0; i < 2; ++i) {
         GLdouble sign = (i == 0) ? +1.0 : -1.0;
 
         glNormal3d(0.0, 0.0, sign);
 
         glBegin(GL_QUAD_STRIP);
-        for (j = 0; j <= toothCount; ++j) {
+        for (int j = 0; j <= toothCount; ++j) {
             GLdouble angle = 2.0 * Pi * j / toothCount;
-	    glVertex3d(r0 * cos(angle), r0 * sin(angle), sign * z);
-	    glVertex3d(r1 * cos(angle), r1 * sin(angle), sign * z);
-	    glVertex3d(r0 * cos(angle), r0 * sin(angle), sign * z);
-	    glVertex3d(r1 * cos(angle + 3 * delta), r1 * sin(angle + 3 * delta),
-                       sign * z);
+            glVertex3d(r0 * cos(angle), r0 * sin(angle), sign * z);
+            glVertex3d(r1 * cos(angle), r1 * sin(angle), sign * z);
+            glVertex3d(r0 * cos(angle), r0 * sin(angle), sign * z);
+            glVertex3d(r1 * cos(angle + 3 * delta), r1 * sin(angle + 3 * delta), sign * z);
         }
         glEnd();
 
         glBegin(GL_QUADS);
-        for (j = 0; j < toothCount; ++j) {
+        for (int j = 0; j < toothCount; ++j) {
             GLdouble angle = 2.0 * Pi * j / toothCount;
-	    glVertex3d(r1 * cos(angle), r1 * sin(angle), sign * z);
-	    glVertex3d(r2 * cos(angle + delta), r2 * sin(angle + delta),
-                       sign * z);
-	    glVertex3d(r2 * cos(angle + 2 * delta), r2 * sin(angle + 2 * delta),
-                       sign * z);
-	    glVertex3d(r1 * cos(angle + 3 * delta), r1 * sin(angle + 3 * delta),
-                       sign * z);
+            glVertex3d(r1 * cos(angle), r1 * sin(angle), sign * z);
+            glVertex3d(r2 * cos(angle + delta), r2 * sin(angle + delta), sign * z);
+            glVertex3d(r2 * cos(angle + 2 * delta), r2 * sin(angle + 2 * delta), sign * z);
+            glVertex3d(r1 * cos(angle + 3 * delta), r1 * sin(angle + 3 * delta), sign * z);
         }
         glEnd();
     }
 
     glBegin(GL_QUAD_STRIP);
-    for (i = 0; i < toothCount; ++i) {
-        for (j = 0; j < 2; ++j) {
-            GLdouble angle = 2.0 * Pi * (i + (j / 2.0)) / toothCount;
+    for (int i = 0; i < toothCount; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            GLdouble angle = 2.0 * Pi * (i + j / 2.0) / toothCount;
             GLdouble s1 = r1;
             GLdouble s2 = r2;
             if (j == 1)
                 qSwap(s1, s2);
 
-	    glNormal3d(cos(angle), sin(angle), 0.0);
-	    glVertex3d(s1 * cos(angle), s1 * sin(angle), +z);
-	    glVertex3d(s1 * cos(angle), s1 * sin(angle), -z);
+            glNormal3d(cos(angle), sin(angle), 0.0);
+            glVertex3d(s1 * cos(angle), s1 * sin(angle), +z);
+            glVertex3d(s1 * cos(angle), s1 * sin(angle), -z);
 
-	    glNormal3d(s2 * sin(angle + delta) - s1 * sin(angle),
+            glNormal3d(s2 * sin(angle + delta) - s1 * sin(angle),
                        s1 * cos(angle) - s2 * cos(angle + delta), 0.0);
-	    glVertex3d(s2 * cos(angle + delta), s2 * sin(angle + delta), +z);
-	    glVertex3d(s2 * cos(angle + delta), s2 * sin(angle + delta), -z);
+            glVertex3d(s2 * cos(angle + delta), s2 * sin(angle + delta), +z);
+            glVertex3d(s2 * cos(angle + delta), s2 * sin(angle + delta), -z);
         }
     }
     glVertex3d(r1, 0.0, +z);
@@ -251,11 +246,11 @@ GLuint GLWidget::makeGear(const GLfloat *reflectance, GLdouble innerRadius,
     glShadeModel(GL_SMOOTH);
 
     glBegin(GL_QUAD_STRIP);
-    for (i = 0; i <= toothCount; ++i) {
-	GLdouble angle = i * 2.0 * Pi / toothCount;
-	glNormal3d(-cos(angle), -sin(angle), 0.0);
-	glVertex3d(r0 * cos(angle), r0 * sin(angle), +z);
-	glVertex3d(r0 * cos(angle), r0 * sin(angle), -z);
+    for (int i = 0; i <= toothCount; ++i) {
+        GLdouble angle = i * 2.0 * Pi / toothCount;
+        glNormal3d(-cos(angle), -sin(angle), 0.0);
+        glVertex3d(r0 * cos(angle), r0 * sin(angle), +z);
+        glVertex3d(r0 * cos(angle), r0 * sin(angle), -z);
     }
     glEnd();
 

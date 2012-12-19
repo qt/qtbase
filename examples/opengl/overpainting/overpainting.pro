@@ -1,10 +1,12 @@
+QT += opengl widgets
+
 VPATH += ../shared
 INCLUDEPATH += ../shared
 
-QT += opengl widgets
 HEADERS = bubble.h \
     glwidget.h \
     qtlogo.h
+
 SOURCES = bubble.cpp \
     glwidget.cpp \
     main.cpp \

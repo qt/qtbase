@@ -41,15 +41,7 @@
 #ifndef BUBBLE_H
 #define BUBBLE_H
 
-#include <QBrush>
-#include <QColor>
-#include <QPointF>
-#include <QRect>
-#include <QRectF>
-
-QT_BEGIN_NAMESPACE
-class QPainter;
-QT_END_NAMESPACE
+#include <QPainter>
 
 class Bubble
 {
@@ -72,4 +64,4 @@ private:
     QColor outerColor;
 };
 
-#endif
+#endif // BUBBLE_H

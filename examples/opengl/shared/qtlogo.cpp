@@ -38,13 +38,13 @@
 **
 ****************************************************************************/
 
+#include "qtlogo.h"
+
 #include <QGLWidget>
 #include <QMatrix4x4>
 #include <QVector3D>
 
 #include <qmath.h>
-
-#include "qtlogo.h"
 
 static const qreal tee_height = 0.311126;
 static const qreal cross_width = 0.25;
@@ -117,7 +117,7 @@ void Geometry::finalize()
 
 void Geometry::appendSmooth(const QVector3D &a, const QVector3D &n, int from)
 {
-    // Smooth normals are acheived by averaging the normals for faces meeting
+    // Smooth normals are achieved by averaging the normals for faces meeting
     // at a point.  First find the point in geometry already generated
     // (working backwards, since most often the points shared are between faces
     // recently added).
@@ -125,28 +125,27 @@ void Geometry::appendSmooth(const QVector3D &a, const QVector3D &n, int from)
     for ( ; v >= from; --v)
         if (qFuzzyCompare(vertices[v], a))
             break;
-    if (v < from)
-    {
-        // The vert was not found so add it as a new one, and initialize
+
+    if (v < from) {
+        // The vertex was not found so add it as a new one, and initialize
         // its corresponding normal
         v = vertices.count();
         vertices.append(a);
         normals.append(n);
-    }
-    else
-    {
+    } else {
         // Vert found, accumulate normals into corresponding normal slot.
         // Must call finalize once finished accumulating normals
         normals[v] += n;
     }
-    // In both cases (found or not) reference the vert via its index
+
+    // In both cases (found or not) reference the vertex via its index
     faces.append(v);
 }
 
 void Geometry::appendFaceted(const QVector3D &a, const QVector3D &n)
 {
-    // Faceted normals are achieved by duplicating the vert for every
-    // normal, so that faces meeting at a vert get a sharp edge.
+    // Faceted normals are achieved by duplicating the vertex for every
+    // normal, so that faces meeting at a vertex get a sharp edge.
     int v = vertices.count();
     vertices.append(a);
     normals.append(n);
@@ -189,32 +188,29 @@ void Patch::draw() const
 void Patch::addTri(const QVector3D &a, const QVector3D &b, const QVector3D &c, const QVector3D &n)
 {
     QVector3D norm = n.isNull() ? QVector3D::normal(a, b, c) : n;
-    if (sm == Smooth)
-    {
+
+    if (sm == Smooth) {
         geom->appendSmooth(a, norm, initv);
         geom->appendSmooth(b, norm, initv);
         geom->appendSmooth(c, norm, initv);
-    }
-    else
-    {
+    } else {
         geom->appendFaceted(a, norm);
         geom->appendFaceted(b, norm);
         geom->appendFaceted(c, norm);
     }
+
     count += 3;
 }
 
 void Patch::addQuad(const QVector3D &a, const QVector3D &b,  const QVector3D &c, const QVector3D &d)
 {
     QVector3D norm = QVector3D::normal(a, b, c);
-    if (sm == Smooth)
-    {
+
+    if (sm == Smooth) {
         addTri(a, b, c, norm);
         addTri(a, c, d, norm);
-    }
-    else
-    {
-        // If faceted share the two common verts
+    } else {
+        // If faceted share the two common vertices
         addTri(a, b, c, norm);
         int k = geom->vertices.count();
         geom->appendSmooth(a, norm, k);
@@ -224,9 +220,9 @@ void Patch::addQuad(const QVector3D &a, const QVector3D &b,  const QVector3D &c,
     }
 }
 
-static inline QVector<QVector3D> extrude(const QVector<QVector3D> &verts, qreal depth)
+static inline QVector<QVector3D> extrude(const QVector<QVector3D> &vertices, qreal depth)
 {
-    QVector<QVector3D> extr = verts;
+    QVector<QVector3D> extr = vertices;
     for (int v = 0; v < extr.count(); ++v)
         extr[v].setZ(extr[v].z() - depth);
     return extr;
@@ -240,6 +236,7 @@ public:
         for (int i = 0; i < parts.count(); ++i)
             parts[i]->translate(t);
     }
+
     void rotate(qreal deg, QVector3D axis)
     {
         for (int i = 0; i < parts.count(); ++i)
@@ -248,7 +245,7 @@ public:
 
     // No special Rectoid destructor - the parts are fetched out of this member
     // variable, and destroyed by the new owner
-    QList<Patch*> parts;
+    QList<Patch *> parts;
 };
 
 class RectPrism : public Rectoid

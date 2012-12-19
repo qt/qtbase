@@ -44,11 +44,7 @@
 #include <QBrush>
 #include <QFont>
 #include <QPen>
-
-QT_BEGIN_NAMESPACE
-class QPainter;
-class QPaintEvent;
-QT_END_NAMESPACE
+#include <QWidget>
 
 //! [0]
 class Helper

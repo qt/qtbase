@@ -49,14 +49,13 @@ struct VertexData
     QVector2D texCoord;
 };
 
-GeometryEngine::GeometryEngine() : vboIds(new GLuint[2])
+GeometryEngine::GeometryEngine()
 {    
 }
 
 GeometryEngine::~GeometryEngine()
 {
     glDeleteBuffers(2, vboIds);
-    delete[] vboIds;
 }
 
 void GeometryEngine::init()
