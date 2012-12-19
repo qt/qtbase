@@ -197,7 +197,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_devicePixelRatio(1.0)
 {
     if (isQtApplication())
-        [[UIApplication sharedApplication].delegate.window.rootViewController.view addSubview:m_view];
+        [rootViewController().view addSubview:m_view];
 
     setWindowState(window->windowState());
 

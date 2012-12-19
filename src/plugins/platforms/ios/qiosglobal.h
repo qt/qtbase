@@ -47,9 +47,13 @@
 #import <QtGui/qguiapplication.h>
 #import "qiosscreen.h"
 
+@class QIOSViewController;
+
 QT_BEGIN_NAMESPACE
 
 bool isQtApplication();
+QIOSViewController *rootViewController();
+
 CGRect toCGRect(const QRect &rect);
 QRect fromCGRect(const CGRect &rect);
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);

@@ -41,6 +41,7 @@
 
 #include "qiosglobal.h"
 #include "qiosapplicationdelegate.h"
+#include "qiosviewcontroller.h"
 #include <QtGui/qscreen.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,6 +56,13 @@ bool isQtApplication()
     // scope of our QWindows/UIViews.
     static bool isQt = ([[UIApplication sharedApplication].delegate isKindOfClass:[QIOSApplicationDelegate class]]);
     return isQt;
+}
+
+QIOSViewController *rootViewController()
+{
+    static QIOSViewController *c = isQtApplication() ?
+        static_cast<QIOSViewController *>([UIApplication sharedApplication].delegate.window.rootViewController) : nil;
+    return c;
 }
 
 CGRect toCGRect(const QRect &rect)
