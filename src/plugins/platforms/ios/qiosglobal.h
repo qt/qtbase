@@ -43,9 +43,7 @@
 #define QIOSGLOBAL_H
 
 #import <UIKit/UIKit.h>
-#import <QtCore/qglobal.h>
-#import <QtGui/qguiapplication.h>
-#import "qiosscreen.h"
+#include <QtCore/QtCore>
 
 @class QIOSViewController;
 

@@ -42,7 +42,7 @@
 #include "qiosglobal.h"
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
-#include <QtGui/qscreen.h>
+#include "qiosscreen.h"
 
 QT_BEGIN_NAMESPACE
 
