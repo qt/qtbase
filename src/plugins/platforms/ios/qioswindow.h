@@ -49,31 +49,6 @@
 class QIOSContext;
 class QIOSWindow;
 
-@interface EAGLView : UIView <UIKeyInput>
-{
-    UITextAutocapitalizationType autocapitalizationType;
-    UITextAutocorrectionType autocorrectionType;
-    BOOL enablesReturnKeyAutomatically;
-    UIKeyboardAppearance keyboardAppearance;
-    UIKeyboardType keyboardType;
-    UIReturnKeyType returnKeyType;
-    BOOL secureTextEntry;
-    QIOSWindow *m_qioswindow;
-}
-
-- (id)initWithQIOSWindow:(QIOSWindow *)qioswindow;
-- (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons;
-
-@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
-@property(nonatomic) UITextAutocorrectionType autocorrectionType;
-@property(nonatomic) BOOL enablesReturnKeyAutomatically;
-@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
-@property(nonatomic) UIKeyboardType keyboardType;
-@property(nonatomic) UIReturnKeyType returnKeyType;
-@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
-
-@end
-
 QT_BEGIN_NAMESPACE
 
 class QIOSWindow : public QPlatformWindow
@@ -92,10 +67,10 @@ public:
     GLuint colorRenderbuffer(const QIOSContext &context) const;
     qreal devicePixelRatio() const;
 
-    EAGLView *nativeView() const { return m_view; }
+    UIView *nativeView() const { return m_view; }
 
 private:
-    EAGLView *m_view;
+    UIView *m_view;
     QRect m_requestedGeometry;
 
     mutable struct GLData {

@@ -53,6 +53,29 @@
 
 #include <QtDebug>
 
+@interface EAGLView : UIView <UIKeyInput>
+{
+@public
+    UITextAutocapitalizationType autocapitalizationType;
+    UITextAutocorrectionType autocorrectionType;
+    BOOL enablesReturnKeyAutomatically;
+    UIKeyboardAppearance keyboardAppearance;
+    UIKeyboardType keyboardType;
+    UIReturnKeyType returnKeyType;
+    BOOL secureTextEntry;
+    QIOSWindow *m_qioswindow;
+}
+
+@property(nonatomic) UITextAutocapitalizationType autocapitalizationType;
+@property(nonatomic) UITextAutocorrectionType autocorrectionType;
+@property(nonatomic) BOOL enablesReturnKeyAutomatically;
+@property(nonatomic) UIKeyboardAppearance keyboardAppearance;
+@property(nonatomic) UIKeyboardType keyboardType;
+@property(nonatomic) UIReturnKeyType returnKeyType;
+@property(nonatomic, getter=isSecureTextEntry) BOOL secureTextEntry;
+
+@end
+
 @implementation EAGLView
 
 + (Class)layerClass
@@ -185,7 +208,6 @@
 }
 
 @end
-
 
 QT_BEGIN_NAMESPACE
 
