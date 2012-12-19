@@ -43,9 +43,6 @@
 
 #include <QMainWindow>
 
-class QSlider;
-class GLWidget;
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
