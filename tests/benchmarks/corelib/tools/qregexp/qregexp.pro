@@ -6,7 +6,7 @@ CONFIG += release exceptions
 SOURCES += main.cpp
 RESOURCES += qregexp.qrc
 
-!isEmpty(QT.script.name) {
+!isEmpty(QT.script.name):!pcre {
     DEFINES += HAVE_JSC
     QT += script
 }
