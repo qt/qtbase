@@ -109,6 +109,9 @@
         keyboardType = UIKeyboardTypeDefault;
         returnKeyType = UIReturnKeyDone;
         secureTextEntry = NO;
+
+        if (isQtApplication())
+            self.hidden = YES;
     }
 
     return self;
