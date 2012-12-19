@@ -1156,8 +1156,10 @@ void QCommonStylePrivate::startAnimation(QStyleAnimation *animation) const
 void QCommonStylePrivate::stopAnimation(const QObject *target) const
 {
     QStyleAnimation *animation = animations.take(target);
-    if (animation && animation->state() != QAbstractAnimation::Stopped)
+    if (animation) {
         animation->stop();
+        delete animation;
+    }
 }
 
 /*! \internal */
