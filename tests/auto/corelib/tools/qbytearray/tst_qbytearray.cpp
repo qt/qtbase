@@ -401,7 +401,24 @@ void tst_QByteArray::rightJustified()
 void tst_QByteArray::setNum()
 {
     QByteArray a;
-    QCOMPARE(a.setNum(123), QByteArray("123"));
+    QCOMPARE(a.setNum(-1), QByteArray("-1"));
+    QCOMPARE(a.setNum(0), QByteArray("0"));
+    QCOMPARE(a.setNum(0, 2), QByteArray("0"));
+    QCOMPARE(a.setNum(0, 36), QByteArray("0"));
+    QCOMPARE(a.setNum(1), QByteArray("1"));
+    QCOMPARE(a.setNum(35, 36), QByteArray("z"));
+    QCOMPARE(a.setNum(37, 2), QByteArray("100101"));
+    QCOMPARE(a.setNum(37, 36), QByteArray("11"));
+
+    // Negative numbers are only properly supported for base 10.
+    QCOMPARE(a.setNum(short(-1), 16), QByteArray("ffff"));
+    QCOMPARE(a.setNum(int(-1), 16), QByteArray("ffffffff"));
+    QCOMPARE(a.setNum(qlonglong(-1), 16), QByteArray("ffffffffffffffff"));
+
+    QCOMPARE(a.setNum(short(-1), 10), QByteArray("-1"));
+    QCOMPARE(a.setNum(int(-1), 10), QByteArray("-1"));
+    QCOMPARE(a.setNum(qlonglong(-1), 10), QByteArray("-1"));
+
     QCOMPARE(a.setNum(-123), QByteArray("-123"));
     QCOMPARE(a.setNum(0x123,16), QByteArray("123"));
     QCOMPARE(a.setNum((short)123), QByteArray("123"));

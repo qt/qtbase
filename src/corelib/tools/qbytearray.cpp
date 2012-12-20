@@ -3585,7 +3585,8 @@ QByteArray QByteArray::toBase64() const
 
     Sets the byte array to the printed value of \a n in base \a base (10
     by default) and returns a reference to the byte array. The \a base can
-    be any value between 2 and 36.
+    be any value between 2 and 36. For bases other than 10, n is treated
+    as an unsigned integer.
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 40
@@ -3623,7 +3624,7 @@ QByteArray QByteArray::toBase64() const
     \sa toLongLong()
 */
 
-QByteArray &QByteArray::setNum(qlonglong n, int base)
+static char *qulltoa2(char *p, qulonglong n, int base)
 {
 #if defined(QT_CHECK_RANGE)
     if (base < 2 || base > 36) {
@@ -3631,8 +3632,31 @@ QByteArray &QByteArray::setNum(qlonglong n, int base)
         base = 10;
     }
 #endif
-    QLocale locale(QLocale::C);
-    *this = locale.d->longLongToString(n, -1, base).toLatin1();
+    const char b = 'a' - 10;
+    do {
+        const int c = n % base;
+        n /= base;
+        *--p = c + (c < 10 ? '0' : b);
+    } while (n);
+
+    return p;
+}
+
+QByteArray &QByteArray::setNum(qlonglong n, int base)
+{
+    const int buffsize = 66; // big enough for MAX_ULLONG in base 2
+    char buff[buffsize];
+    char *p;
+
+    if (n < 0 && base == 10) {
+        p = qulltoa2(buff + buffsize, qulonglong(-(1 + n)) + 1, base);
+        *--p = '-';
+    } else {
+        p = qulltoa2(buff + buffsize, qulonglong(n), base);
+    }
+
+    clear();
+    append(p, buffsize - (p - buff));
     return *this;
 }
 
@@ -3644,14 +3668,12 @@ QByteArray &QByteArray::setNum(qlonglong n, int base)
 
 QByteArray &QByteArray::setNum(qulonglong n, int base)
 {
-#if defined(QT_CHECK_RANGE)
-    if (base < 2 || base > 36) {
-        qWarning("QByteArray::setNum: Invalid base %d", base);
-        base = 10;
-    }
-#endif
-    QLocale locale(QLocale::C);
-    *this = locale.d->unsLongLongToString(n, -1, base).toLatin1();
+    const int buffsize = 66; // big enough for MAX_ULLONG in base 2
+    char buff[buffsize];
+    char *p = qulltoa2(buff + buffsize, n, base);
+
+    clear();
+    append(p, buffsize - (p - buff));
     return *this;
 }
 
