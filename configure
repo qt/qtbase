@@ -2623,6 +2623,11 @@ else
     CFG_FRAMEWORK=no
 fi
 
+# disable GTK style support auto-detection on Mac
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
+    CFG_QGTKSTYLE=no
+fi
+
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
