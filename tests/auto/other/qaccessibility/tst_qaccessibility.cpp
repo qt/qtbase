@@ -184,7 +184,8 @@ static inline int indexOfChild(QAccessibleInterface *parentInterface, QWidget *c
     do { \
         if (!errorAt && !(cond)) { \
             errorAt = __LINE__; \
-            qWarning("level: %d, middle: %d, role: %d (%s)", treelevel, middle, iface->role(), #cond); \
+            qWarning("level: %d, role: %d (%s)", treelevel, iface->role(), #cond); \
+            break; \
         } \
     } while (0)
 
@@ -195,13 +196,10 @@ static int verifyHierarchy(QAccessibleInterface *iface)
     QAIPtr middleChild;
     QAIPtr if2;
     ++treelevel;
-    int middle = iface->childCount()/2 + 1;
-    if (iface->childCount() >= 2) {
-        middleChild = QAIPtr(iface->child(middle - 1));
-    }
     for (int i = 0; i < iface->childCount() && !errorAt; ++i) {
         if2 = QAIPtr(iface->child(i));
         EXPECT(if2 != 0);
+        EXPECT(iface->indexOfChild(if2.data()) == i);
         // navigate Ancestor
         QAIPtr parent(if2->parent());
         EXPECT(iface->object() == parent->object());
