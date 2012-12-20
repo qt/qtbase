@@ -30,11 +30,52 @@ plugin { #Qt plugins
    }
 }
 
-QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
+qtestlib {
+    warning("CONFIG+=qtestlib is deprecated. Use QT+=testlib instead.")
+    QT += testlib
+}
+qdbus {
+    warning("CONFIG+=qdbus is deprecated. Use QT+=dbus instead.")
+    QT += dbus
+}
+help {
+    warning("CONFIG+=help is deprecated. Use QT+=help instead.")
+    QT += help-private   # sic!
+}
+designer {
+    warning("CONFIG+=designer is deprecated. Use QT+=designer instead.")
+    QT += designer
+}
+uitools {
+    warning("CONFIG+=uitools is deprecated. Use QT+=uitools instead.")
+    QT += uitools
+}
+qaxcontainer {
+    warning("CONFIG+=qaxcontainer is deprecated. Use QT+=axcontainer instead.")
+    QT += axcontainer
+}
+qaxserver {
+    warning("CONFIG+=qaxserver is deprecated. Use QT+=axserver instead.")
+    QT += axserver
+}
 
+unset(using_privates)
+qtAddModules(QT, LIBS)
+qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
+!isEmpty(using_privates):!auto_use_privates:!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
+    message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
+    message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
+    message("This is not a bug, but a result of using Qt internals. You have been warned!")
+}
+
+wince*:static:gui {
+   QTLIB += qmenu_wce.res
+}
+
+QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
 contains(QT_CONFIG, static) {
     QT_PLUGIN_VERIFY += QTPLUGIN
-    contains(TEMPLATE, .*app) {
+    force_import_plugins|contains(TEMPLATE, .*app) {
         contains(QT, gui):import_qpa_plugin {
             qpa_minimal_plugin: \
                 QTPLUGIN += qminimal
@@ -92,46 +133,4 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
             DEPLOYMENT *= qt_additional_plugin_$${QTPLUG}
         }
     }
-}
-
-qtestlib {
-    warning("CONFIG+=qtestlib is deprecated. Use QT+=testlib instead.")
-    QT += testlib
-}
-qdbus {
-    warning("CONFIG+=qdbus is deprecated. Use QT+=dbus instead.")
-    QT += dbus
-}
-help {
-    warning("CONFIG+=help is deprecated. Use QT+=help instead.")
-    QT += help-private   # sic!
-}
-designer {
-    warning("CONFIG+=designer is deprecated. Use QT+=designer instead.")
-    QT += designer
-}
-uitools {
-    warning("CONFIG+=uitools is deprecated. Use QT+=uitools instead.")
-    QT += uitools
-}
-qaxcontainer {
-    warning("CONFIG+=qaxcontainer is deprecated. Use QT+=axcontainer instead.")
-    QT += axcontainer
-}
-qaxserver {
-    warning("CONFIG+=qaxserver is deprecated. Use QT+=axserver instead.")
-    QT += axserver
-}
-
-unset(using_privates)
-qtAddModules(QT, LIBS)
-qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
-!isEmpty(using_privates):!auto_use_privates:!no_private_qt_headers_warning:if(!debug_and_release|!build_pass) {
-    message("This project is using private headers and will therefore be tied to this specific Qt module build version.")
-    message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
-    message("This is not a bug, but a result of using Qt internals. You have been warned!")
-}
-
-wince*:static:gui {
-   QTLIB += qmenu_wce.res
 }
