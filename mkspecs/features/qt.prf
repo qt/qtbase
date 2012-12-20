@@ -76,7 +76,7 @@ QT_PLUGIN_VERIFY = DEPLOYMENT_PLUGIN
 contains(QT_CONFIG, static) {
     QT_PLUGIN_VERIFY += QTPLUGIN
     force_import_plugins|contains(TEMPLATE, .*app) {
-        contains(QT, gui):import_qpa_plugin {
+        needs_qpa_plugin:import_qpa_plugin {
             qpa_minimal_plugin: \
                 QTPLUGIN += qminimal
             else: \
