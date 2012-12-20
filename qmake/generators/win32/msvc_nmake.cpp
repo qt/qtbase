@@ -366,16 +366,6 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
 
 }
 
-static QString cQuoted(const QString &str)
-{
-    QString ret = str;
-    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
-    ret.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
-    ret.prepend(QLatin1Char('"'));
-    ret.append(QLatin1Char('"'));
-    return ret;
-}
-
 void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 {
     const ProString templateName = project->first("TEMPLATE");
