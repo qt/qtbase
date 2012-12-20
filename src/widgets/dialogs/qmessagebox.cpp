@@ -1225,6 +1225,30 @@ void QMessageBox::setTextFormat(Qt::TextFormat format)
 }
 
 /*!
+    \property QMessageBox::textInteractionFlags
+    \since 5.1
+
+    Specifies how the label of the message box should interact with user
+    input.
+
+    The default value depends on the style.
+
+    \sa QStyle::SH_MessageBox_TextInteractionFlags
+*/
+
+Qt::TextInteractionFlags QMessageBox::textInteractionFlags() const
+{
+    Q_D(const QMessageBox);
+    return d->label->textInteractionFlags();
+}
+
+void QMessageBox::setTextInteractionFlags(Qt::TextInteractionFlags flags)
+{
+    Q_D(QMessageBox);
+    d->label->setTextInteractionFlags(flags);
+}
+
+/*!
     \reimp
 */
 bool QMessageBox::event(QEvent *e)
