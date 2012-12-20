@@ -26,7 +26,7 @@ SOURCES += \
 
 !static {
     DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}.def
-    win32-g++*: DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}_mingw.def
+    win32-g++*:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}_mingw32.def
 }
 
 load(qt_installs)

@@ -68,7 +68,7 @@ SSE2_SOURCES += $$ANGLE_DIR/src/libGLESv2/TextureSSE2.cpp
 
 !static {
     DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}.def
-    win32-g++*: DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}_mingw.def
+    win32-g++*:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libGLESv2/$${TARGET}_mingw32.def
 }
 
 float_converter.target = float_converter
