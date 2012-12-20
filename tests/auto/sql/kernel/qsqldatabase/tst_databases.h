@@ -463,6 +463,13 @@ public:
         return "blob";
     }
 
+    static QString dateTimeTypeName(QSqlDatabase db)
+    {
+        if (db.driverName().startsWith("QPSQL"))
+            return QLatin1String("timestamp");
+        return QLatin1String("datetime");
+    }
+
     static QString autoFieldName( QSqlDatabase db )
     {
         if ( db.driverName().startsWith( "QMYSQL" ) )
