@@ -238,17 +238,17 @@ void tst_QAbstractScrollArea::setScrollBars2()
 
     // Hide the OLD scroll bar and ensure that the NEW one is hidden.
     hbar->hide();
-    scrollArea.setHorizontalScrollBar(new QScrollBar);
-    qApp->processEvents();
-    QVERIFY(!scrollArea.horizontalScrollBar()->isVisible());
+    hbar = new QScrollBar(&scrollArea);
+    scrollArea.setHorizontalScrollBar(hbar);
+    QVERIFY(!hbar->isVisibleTo(hbar->parentWidget()));
 
     vbar->hide();
-    scrollArea.setVerticalScrollBar(new QScrollBar);
-    qApp->processEvents();
-    QVERIFY(!scrollArea.verticalScrollBar()->isVisible());
+    vbar = new QScrollBar(&scrollArea);
+    scrollArea.setVerticalScrollBar(vbar);
+    QVERIFY(!vbar->isVisibleTo(vbar->parentWidget()));
 
-    scrollArea.verticalScrollBar()->show();
-    scrollArea.horizontalScrollBar()->show();
+    vbar->show();
+    hbar->show();
 
     // Hide the NEW scroll bar and ensure that it's visible
     // (because the OLD one is visible).
