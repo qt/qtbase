@@ -767,9 +767,11 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accChild(VARIANT varChildI
             // actually ask for the same object. As a consequence, we need to clone ourselves:
             if (QAccessibleInterface *par = accessible->parent()) {
                 const int indexOf = par->indexOfChild(accessible);
-                QAccessibleInterface *clone = par->child(indexOf);
+                if (indexOf == -1)
+                    qWarning() << "inconsistent hierarchy, parent:" << par << "child:" << accessible;
+                else
+                    acc = par->child(indexOf);
                 delete par;
-                acc = clone;
             }
         }
     }
