@@ -1265,14 +1265,21 @@ void tst_QAccessibility::menuTest()
 
     mw.menuBar()->addAction("Action!");
 
+    QMenu *childOfMainWindow = new QMenu(QStringLiteral("&Tools"), &mw);
+    childOfMainWindow->addAction("&Options");
+    mw.menuBar()->addMenu(childOfMainWindow);
+
     mw.show(); // triggers layout
     QTest::qWait(100);
 
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(mw.menuBar());
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&mw);
     QCOMPARE(verifyHierarchy(interface),  0);
+    delete interface;
+
+    interface = QAccessible::queryAccessibleInterface(mw.menuBar());
 
     QVERIFY(interface);
-    QCOMPARE(interface->childCount(), 5);
+    QCOMPARE(interface->childCount(), 6);
     QCOMPARE(interface->role(), QAccessible::MenuBar);
 
     QAccessibleInterface *iFile = interface->child(0);
