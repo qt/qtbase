@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-contains(QT_CONFIG, dbus) {
+qtHaveModule(dbus) {
 !macx:!win32:SUBDIRS += ibus maliit
 }

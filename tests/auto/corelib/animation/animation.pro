@@ -8,5 +8,5 @@ SUBDIRS=\
    qsequentialanimationgroup \
    qvariantanimation
 
-contains(QT_CONFIG, no-widgets): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
    qpropertyanimation

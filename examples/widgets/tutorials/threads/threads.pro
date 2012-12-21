@@ -5,4 +5,4 @@ SUBDIRS = hellothread \
           clock \
           movedobject 
 
-contains(QT_CONFIG, concurrent): SUBDIRS += helloconcurrent
+qtHaveModule(concurrent): SUBDIRS += helloconcurrent

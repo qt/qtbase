@@ -1,5 +1,5 @@
 QT += widgets
-!isEmpty(QT.printsupport.name): QT += printsupport
+qtHaveModule(printsupport): QT += printsupport
 
 HEADERS         = mainwindow.h
 SOURCES         = main.cpp \

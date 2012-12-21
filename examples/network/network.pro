@@ -4,7 +4,7 @@ SUBDIRS       = \
                 download \
                 downloadmanager
 
-!contains(QT_CONFIG, no-widgets) {
+qtHaveModule(widgets) {
     SUBDIRS +=  \
                 blockingfortuneclient \
                 broadcastreceiver \

@@ -6,7 +6,7 @@ SHARED_FOLDER = ../shared
 include($$SHARED_FOLDER/shared.pri)
 
 RESOURCES += composition.qrc
-contains(QT_CONFIG, opengl) {
+qtHaveModule(opengl) {
 	DEFINES += QT_OPENGL_SUPPORT
 	QT += opengl
 }

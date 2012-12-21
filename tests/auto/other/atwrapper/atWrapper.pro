@@ -6,7 +6,7 @@ DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 QT += xml svg network testlib
 
-contains(QT_CONFIG, opengl):QT += opengl
+qtHaveModule(opengl): QT += opengl
 
 include($$ARTHUR/datagenerator/datagenerator.pri)
 

@@ -17,5 +17,5 @@ SUBPROGRAMS = \
 
 !contains(QMAKE_PLATFORM, wince): SUBPROGRAMS += testForwarding
 
-contains(QT_CONFIG, no-widgets): SUBPROGRAMS -= \
+!qtHaveModule(widgets): SUBPROGRAMS -= \
           testGuiProcess

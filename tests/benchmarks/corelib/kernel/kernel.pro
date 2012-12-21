@@ -7,6 +7,6 @@ SUBDIRS = \
         qvariant \
         qcoreapplication
 
-isEmpty(QT.widgets.name): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
     qmetaobject \
     qobject

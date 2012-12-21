@@ -3,5 +3,5 @@ SUBDIRS= \
     qstandarditem \
     qstandarditemmodel
 
-isEmpty(QT.widgets.name):SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
     qstandarditemmodel

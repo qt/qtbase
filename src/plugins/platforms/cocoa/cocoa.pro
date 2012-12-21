@@ -82,7 +82,7 @@ LIBS += -framework Cocoa -framework IOKit
 
 QT += core-private gui-private platformsupport-private
 
-!contains(QT_CONFIG, no-widgets) {
+qtHaveModule(widgets) {
     OBJECTIVE_SOURCES += \
         qpaintengine_mac.mm \
         qprintengine_mac.mm \

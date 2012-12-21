@@ -4,5 +4,5 @@ SUBDIRS=\
    qsqlrelationaltablemodel \
    qsqltablemodel \
 
-contains(QT_CONFIG, no-widgets): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
    qsqlquerymodel

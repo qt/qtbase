@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-!isEmpty(QT.widgets.name):SUBDIRS = \
+qtHaveModule(widgets): SUBDIRS = \
         qapplication \
         qwidget

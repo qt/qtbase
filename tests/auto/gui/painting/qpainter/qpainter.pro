@@ -3,8 +3,8 @@ CONFIG += parallel_test
 TARGET = tst_qpainter
 
 QT += testlib
-!contains(QT_CONFIG, no-widgets): QT += widgets widgets-private
-!contains(QT_CONFIG, no-widgets):!wince*: QT += printsupport
+qtHaveModule(widgets): QT += widgets widgets-private
+qtHaveModule(widgets):!wince*: QT += printsupport
 
 SOURCES  += tst_qpainter.cpp
 

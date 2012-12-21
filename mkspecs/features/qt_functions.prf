@@ -51,6 +51,13 @@ defineTest(qtProcessModuleFlags) {
     export($$1)
 }
 
+# qt module
+defineTest(qtHaveModule) {
+    !isEmpty(QT.$${1}.name): \
+        return(true)
+    return(false)
+}
+
 # qt module, UsePrivate flag, libs variable
 defineTest(qtAddModule) {
     MODULE_NAME = $$eval(QT.$${1}.name)

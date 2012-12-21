@@ -10,4 +10,4 @@ RESOURCES += \
         chiptester/images.qrc
 
 QT += widgets
-contains(QT_CONFIG, opengl) QT += opengl
+qtHaveModule(opengl): QT += opengl

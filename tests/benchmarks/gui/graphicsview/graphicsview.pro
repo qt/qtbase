@@ -8,7 +8,7 @@ SUBDIRS = \
         qgraphicsview \
         qgraphicswidget
 
-isEmpty(QT.widgets.name): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
     qgraphicsanchorlayout \
     qgraphicsitem \
     qgraphicsscene \

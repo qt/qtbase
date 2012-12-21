@@ -1,5 +1,5 @@
 QT += widgets
-!isEmpty(QT.printsupport.name): QT += printsupport
+qtHaveModule(printsupport): QT += printsupport
 
 FORMS     = mainwindowbase.ui
 HEADERS   = mainwindow.h

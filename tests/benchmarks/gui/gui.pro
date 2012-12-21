@@ -17,5 +17,5 @@ TRUSTED_BENCHMARKS += \
 
 include(../trusted-benchmarks.pri)
 
-isEmpty(QT.widgets.name): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
     itemviews

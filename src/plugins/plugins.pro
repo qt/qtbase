@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS *= sqldrivers bearer
-!contains(QT_CONFIG, no-gui): SUBDIRS *= imageformats platforms platforminputcontexts generic
-!contains(QT_CONFIG, no-widgets): SUBDIRS += accessible
+qtHaveModule(gui): SUBDIRS *= imageformats platforms platforminputcontexts generic
+qtHaveModule(widgets): SUBDIRS += accessible
 
-!wince*:!contains(QT_CONFIG, no-widgets):SUBDIRS += printsupport
+!wince*:qtHaveModule(widgets): SUBDIRS += printsupport

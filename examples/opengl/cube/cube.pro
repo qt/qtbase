@@ -5,7 +5,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp
 
-contains(QT_CONFIG, opengl) {
+qtHaveModule(opengl) {
     QT += opengl
 
     SOURCES += mainwidget.cpp \
