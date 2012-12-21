@@ -114,7 +114,7 @@
     QUrl is capable of detecting many errors in URLs while parsing it or when
     components of the URL are set with individual setter methods (like
     setScheme(), setHost() or setPath()). If the parsing or setter function is
-    succesful, any previously recorded error conditions will be discarded.
+    successful, any previously recorded error conditions will be discarded.
 
     By default, QUrl setter methods operate in QUrl::TolerantMode, which means
     they accept some common mistakes and mis-representation of data. An
