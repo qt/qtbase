@@ -555,7 +555,10 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                                           Node* node,
                                           bool generateInternalNodes)
 {
-    if (node->subType() == Node::DitaMap)
+    /*
+      Don't include index nodes in a new index file. Or DITA map nodes.
+     */
+    if (node->isIndexNode() || node->subType() == Node::DitaMap)
         return false;
 
     QString nodeName;
