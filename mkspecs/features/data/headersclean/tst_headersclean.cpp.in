@@ -48,7 +48,7 @@
 $${includes}
 #include <QtCore/qglobal.h>
 
-int main()
+int main(int, char **)
 {
     qWarning(\"This is a compile test only\");
     return 0;
