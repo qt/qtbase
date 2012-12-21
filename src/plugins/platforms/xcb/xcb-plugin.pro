@@ -110,7 +110,7 @@ contains(QT_CONFIG, xcb-qt) {
     DEFINES += XCB_USE_RENDER
     XCB_DIR = ../../../3rdparty/xcb
     INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/sysinclude
-    LIBS += -lxcb -L ./xcb-static -l xcb-static
+    LIBS += -lxcb -L$$OUT_PWD/xcb-static -lxcb-static
 } else {
     LIBS += -lxcb -lxcb-image -lxcb-keysyms -lxcb-icccm -lxcb-sync -lxcb-xfixes -lxcb-shm -lxcb-randr
     !contains(DEFINES, QT_NO_SHAPE):LIBS += -lxcb-shape
