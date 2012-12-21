@@ -2617,6 +2617,10 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("add scheme-2") << "ftp.example.org" << QUrl("ftp://ftp.example.org");
     QTest::newRow("add scheme-3") << "hostname" << QUrl("http://hostname");
 
+    // no host
+    QTest::newRow("nohost-1") << "http://" << QUrl("http://");
+    QTest::newRow("nohost-2") << "smb:" << QUrl("smb:");
+
     // QUrl's tolerant parser should already handle this
     QTest::newRow("not-encoded-0") << "http://example.org/test page.html" << QUrl::fromEncoded("http://example.org/test%20page.html");
 
