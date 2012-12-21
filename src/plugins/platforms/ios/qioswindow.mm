@@ -243,7 +243,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
     // paint device.
     if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)] == YES) {
         m_devicePixelRatio = [[UIScreen mainScreen] scale];
-        [m_view setContentScaleFactor : m_devicePixelRatio];
+        [m_view setContentScaleFactor: m_devicePixelRatio];
     }
 }
 
@@ -355,7 +355,7 @@ GLuint QIOSWindow::colorRenderbuffer(const QIOSContext &context) const
 {
     if (!m_glData.colorRenderbuffer ||
         m_glData.renderbufferWidth != geometry().width() * m_devicePixelRatio ||
-        m_glData.renderbufferHeight != geometry().height() *m_devicePixelRatio) {
+        m_glData.renderbufferHeight != geometry().height() * m_devicePixelRatio) {
 
         glBindRenderbuffer(GL_RENDERBUFFER, m_glData.colorRenderbuffer);
         [context.nativeContext() renderbufferStorage:GL_RENDERBUFFER fromDrawable:static_cast<CAEAGLLayer *>(m_view.layer)];
