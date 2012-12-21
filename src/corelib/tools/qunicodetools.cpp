@@ -44,7 +44,7 @@
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
 
-#include <harfbuzz-shaper.h>
+#include "qharfbuzz_p.h"
 
 #define FLAG(x) (1 << (x))
 
@@ -615,7 +615,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = items[i].position - items[start].position;
-            item.script = (HB_Script)items[start].script;
+            item.script = script_to_hbscript(items[start].script);
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
             start = i;
@@ -624,7 +624,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = length - items[start].position;
-            item.script = (HB_Script)items[start].script;
+            item.script = script_to_hbscript(items[start].script);
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
         }

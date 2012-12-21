@@ -276,8 +276,7 @@ void QPlatformFontDatabase::populateFontDatabase()
     option to fall back to the fonts given by \a fallbacks if \a fontEngine does not support
     a certain character.
 */
-QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine,
-                                                         QUnicodeTables::Script script)
+QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine, QChar::Script script)
 {
     return new QFontEngineMultiQPA(fontEngine, script);
 }
@@ -286,7 +285,7 @@ QFontEngineMulti *QPlatformFontDatabase::fontEngineMulti(QFontEngine *fontEngine
     Returns the font engine that can be used to render the font described by
     the font definition, \a fontDef, in the specified \a script.
 */
-QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle)
+QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle)
 {
     Q_UNUSED(script);
     Q_UNUSED(handle);
@@ -310,7 +309,7 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal
     Returns a list of alternative fonts for the specified \a family and
     \a style and \a script using the \a styleHint given.
 */
-QStringList QPlatformFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
+QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);

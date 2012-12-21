@@ -6724,43 +6724,6 @@ Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4)
     return (LineBreakClass)qGetProp(ucs4)->lineBreakClass;
 }
 
-Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4)
-{
-    switch (qGetProp(ucs4)->script) {
-    case QChar::Script_Inherited: return Inherited;
-    case QChar::Script_Common: return Common;
-    case QChar::Script_Arabic: return Arabic;
-    case QChar::Script_Armenian: return Armenian;
-    case QChar::Script_Bengali: return Bengali;
-    case QChar::Script_Cyrillic: return Cyrillic;
-    case QChar::Script_Devanagari: return Devanagari;
-    case QChar::Script_Georgian: return Georgian;
-    case QChar::Script_Greek: return Greek;
-    case QChar::Script_Gujarati: return Gujarati;
-    case QChar::Script_Gurmukhi: return Gurmukhi;
-    case QChar::Script_Hangul: return Hangul;
-    case QChar::Script_Hebrew: return Hebrew;
-    case QChar::Script_Kannada: return Kannada;
-    case QChar::Script_Khmer: return Khmer;
-    case QChar::Script_Lao: return Lao;
-    case QChar::Script_Malayalam: return Malayalam;
-    case QChar::Script_Myanmar: return Myanmar;
-    case QChar::Script_Ogham: return Ogham;
-    case QChar::Script_Oriya: return Oriya;
-    case QChar::Script_Runic: return Runic;
-    case QChar::Script_Sinhala: return Sinhala;
-    case QChar::Script_Syriac: return Syriac;
-    case QChar::Script_Tamil: return Tamil;
-    case QChar::Script_Telugu: return Telugu;
-    case QChar::Script_Thaana: return Thaana;
-    case QChar::Script_Thai: return Thai;
-    case QChar::Script_Tibetan: return Tibetan;
-    case QChar::Script_Nko: return Nko;
-    default: break;
-    };
-    return Common;
-}
-
 
 static const ushort specialCaseMap[] = {
     0x0, // placeholder

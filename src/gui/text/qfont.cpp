@@ -55,7 +55,6 @@
 #include "qthread.h"
 #include "qthreadstorage.h"
 
-#include <private/qunicodetables_p.h>
 #include "qfont_p.h"
 #include <private/qfontengine_p.h>
 #include <private/qpainter_p.h>
@@ -207,8 +206,8 @@ extern QMutex *qt_fontdatabase_mutex();
 QFontEngine *QFontPrivate::engineForScript(int script) const
 {
     QMutexLocker locker(qt_fontdatabase_mutex());
-    if (script >= QUnicodeTables::Inherited)
-        script = QUnicodeTables::Common;
+    if (script <= QChar::Script_Latin)
+        script = QChar::Script_Common;
     if (engineData && engineData->fontCache != QFontCache::instance()) {
         // throw out engineData that came from a different thread
         engineData->ref.deref();
@@ -319,12 +318,12 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
 QFontEngineData::QFontEngineData()
     : ref(1), fontCache(QFontCache::instance())
 {
-    memset(engines, 0, QUnicodeTables::ScriptCount * sizeof(QFontEngine *));
+    memset(engines, 0, QChar::ScriptCount * sizeof(QFontEngine *));
 }
 
 QFontEngineData::~QFontEngineData()
 {
-    for (int i = 0; i < QUnicodeTables::ScriptCount; ++i) {
+    for (int i = 0; i < QChar::ScriptCount; ++i) {
         if (engines[i])
             engines[i]->ref.deref();
         engines[i] = 0;
@@ -1667,7 +1666,7 @@ void QFont::setRawMode(bool enable)
 */
 bool QFont::exactMatch() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return (d->rawMode
             ? engine->type() != QFontEngine::Box
@@ -2363,7 +2362,7 @@ QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 */
 QString QFontInfo::family() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.family;
 }
@@ -2378,7 +2377,7 @@ QString QFontInfo::family() const
 */
 QString QFontInfo::styleName() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.styleName;
 }
@@ -2390,7 +2389,7 @@ QString QFontInfo::styleName() const
 */
 int QFontInfo::pointSize() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return qRound(engine->fontDef.pointSize);
 }
@@ -2402,7 +2401,7 @@ int QFontInfo::pointSize() const
 */
 qreal QFontInfo::pointSizeF() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.pointSize;
 }
@@ -2414,7 +2413,7 @@ qreal QFontInfo::pointSizeF() const
 */
 int QFontInfo::pixelSize() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.pixelSize;
 }
@@ -2426,7 +2425,7 @@ int QFontInfo::pixelSize() const
 */
 bool QFontInfo::italic() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.style != QFont::StyleNormal;
 }
@@ -2438,7 +2437,7 @@ bool QFontInfo::italic() const
 */
 QFont::Style QFontInfo::style() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return (QFont::Style)engine->fontDef.style;
 }
@@ -2450,7 +2449,7 @@ QFont::Style QFontInfo::style() const
 */
 int QFontInfo::weight() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->fontDef.weight;
 
@@ -2515,7 +2514,7 @@ bool QFontInfo::strikeOut() const
 */
 bool QFontInfo::fixedPitch() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
 #ifdef Q_OS_MAC
     if (!engine->fontDef.fixedPitchComputed) {
@@ -2539,7 +2538,7 @@ bool QFontInfo::fixedPitch() const
 */
 QFont::StyleHint QFontInfo::styleHint() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return (QFont::StyleHint) engine->fontDef.styleHint;
 }
@@ -2567,7 +2566,7 @@ bool QFontInfo::rawMode() const
 */
 bool QFontInfo::exactMatch() const
 {
-    QFontEngine *engine = d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return (d->rawMode
             ? engine->type() != QFontEngine::Box
@@ -2675,7 +2674,7 @@ void QFontCache::clear()
                                  end = engineDataCache.end();
         while (it != end) {
             QFontEngineData *data = it.value();
-            for (int i = 0; i < QUnicodeTables::ScriptCount; ++i) {
+            for (int i = 0; i < QChar::ScriptCount; ++i) {
                 if (data->engines[i]) {
                     data->engines[i]->ref.deref();
                     data->engines[i] = 0;

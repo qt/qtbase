@@ -1752,7 +1752,7 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
             QRawFont rawFont;
             QRawFontPrivate *rawFontD = QRawFontPrivate::get(rawFont);
             QFontPrivate *fontD = QFontPrivate::get(font);
-            rawFontD->fontEngine = fontD->engineForScript(QUnicodeTables::Common);
+            rawFontD->fontEngine = fontD->engineForScript(QChar::Script_Common);
             rawFontD->fontEngine->ref.ref();
 
             QGlyphRun glyphs;

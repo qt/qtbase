@@ -57,7 +57,6 @@
 #include "QtCore/qmap.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qstringlist.h"
-#include <private/qunicodetables_p.h>
 #include <QtGui/qfontdatabase.h>
 #include "private/qfixed_p.h"
 
@@ -143,7 +142,7 @@ public:
     QAtomicInt ref;
     QFontCache *fontCache;
 
-    QFontEngine *engines[QUnicodeTables::ScriptCount];
+    QFontEngine *engines[QChar::ScriptCount];
 };
 
 

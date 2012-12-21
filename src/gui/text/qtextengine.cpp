@@ -51,7 +51,6 @@
 #include "qfont_p.h"
 #include "qfontengine_p.h"
 #include "qstring.h"
-#include <private/qunicodetables_p.h>
 #include "qtextdocument_p.h"
 #include "qrawfont.h"
 #include "qrawfont_p.h"
@@ -134,7 +133,7 @@ private:
             // along, and nothing else.
             if (m_analysis[i].bidiLevel == m_analysis[start].bidiLevel
                 && m_analysis[i].flags == m_analysis[start].flags
-                && (m_analysis[i].script == m_analysis[start].script || m_string[i] == QLatin1Char('.'))
+                && (script_to_hbscript(m_analysis[i].script) == script_to_hbscript(m_analysis[start].script) || m_string[i] == QLatin1Char('.'))
                 && m_analysis[i].flags < QScriptAnalysis::SpaceTabOrObject
                 && i - start < MaxItemLength)
                 continue;
@@ -1004,7 +1003,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     memset(&entire_shaper_item, 0, sizeof(entire_shaper_item));
     entire_shaper_item.string = reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData());
     entire_shaper_item.stringLength = layoutData->string.length();
-    entire_shaper_item.item.script = (HB_Script)si.analysis.script;
+    entire_shaper_item.item.script = script_to_hbscript(si.analysis.script);
     entire_shaper_item.item.pos = si.position;
     entire_shaper_item.item.length = length(item);
     entire_shaper_item.item.bidiLevel = si.analysis.bidiLevel;
@@ -1348,42 +1347,44 @@ void QTextEngine::itemize() const
 
     const ushort *uc = reinterpret_cast<const ushort *>(layoutData->string.unicode());
     const ushort *e = uc + length;
-    int lastScript = QUnicodeTables::Common;
+    uchar lastScript = QChar::Script_Common;
     while (uc < e) {
         switch (*uc) {
         case QChar::ObjectReplacementCharacter:
-            analysis->script = QUnicodeTables::Common;
+            analysis->script = QChar::Script_Common;
             analysis->flags = QScriptAnalysis::Object;
             break;
         case QChar::LineSeparator:
             if (analysis->bidiLevel % 2)
                 --analysis->bidiLevel;
-            analysis->script = QUnicodeTables::Common;
+            analysis->script = QChar::Script_Common;
             analysis->flags = QScriptAnalysis::LineOrParagraphSeparator;
             if (option.flags() & QTextOption::ShowLineAndParagraphSeparators)
                 *const_cast<ushort*>(uc) = 0x21B5; // visual line separator
             break;
         case QChar::Tabulation:
-            analysis->script = QUnicodeTables::Common;
+            analysis->script = QChar::Script_Common;
             analysis->flags = QScriptAnalysis::Tab;
             analysis->bidiLevel = control.baseLevel();
             break;
         case QChar::Space:
         case QChar::Nbsp:
             if (option.flags() & QTextOption::ShowTabsAndSpaces) {
-                analysis->script = QUnicodeTables::Common;
+                analysis->script = QChar::Script_Common;
                 analysis->flags = QScriptAnalysis::Space;
                 analysis->bidiLevel = control.baseLevel();
                 break;
             }
         // fall through
         default:
-            int script = QUnicodeTables::script(*uc);
-            analysis->script = script == QUnicodeTables::Inherited ? lastScript : script;
+            analysis->script = QChar::script(*uc);
+            if (analysis->script == QChar::Script_Inherited)
+                analysis->script = lastScript;
             analysis->flags = QScriptAnalysis::None;
             break;
         }
         lastScript = analysis->script;
+        analysis->script = hbscript_to_script(script_to_hbscript(analysis->script)); // retain the old behavior
         ++uc;
         ++analysis;
     }
@@ -2033,9 +2034,9 @@ void QScriptLine::setDefaultHeight(QTextEngine *eng)
         QPaintDevice *pdev = eng->block.docHandle()->layout()->paintDevice();
         if (pdev)
             f = QFont(f, pdev);
-        e = f.d->engineForScript(QUnicodeTables::Common);
+        e = f.d->engineForScript(QChar::Script_Common);
     } else {
-        e = eng->fnt.d->engineForScript(QUnicodeTables::Common);
+        e = eng->fnt.d->engineForScript(QChar::Script_Common);
     }
 
     QFixed other_ascent = e->ascent();
@@ -2419,7 +2420,7 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
     {
         QChar ellipsisChar(0x2026);
 
-        QFontEngine *fe = fnt.d->engineForScript(QUnicodeTables::Common);
+        QFontEngine *fe = fnt.d->engineForScript(QChar::Script_Common);
 
         QGlyphLayoutArray<1> ellipsisGlyph;
         {
@@ -2866,8 +2867,8 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
     int clusterStart = -1;
     int clusterLength = 0;
 
-    if (si->analysis.script != QUnicodeTables::Common &&
-        si->analysis.script != QUnicodeTables::Greek) {
+    if (si->analysis.script != QChar::Script_Common &&
+        si->analysis.script != QChar::Script_Greek) {
         if (glyph_pos == -1)
             return si->position + end;
         else {

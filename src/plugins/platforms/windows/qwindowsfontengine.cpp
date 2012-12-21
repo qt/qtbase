@@ -66,7 +66,6 @@
 #include <QtCore/QThreadStorage>
 #include <QtCore/private/qsystemlibrary_p.h>
 
-#include <QtCore/private/qunicodetables_p.h>
 #include <QtCore/QDebug>
 
 #include <limits.h>
@@ -1269,7 +1268,7 @@ QFontEngine *QWindowsFontEngine::cloneWithSize(qreal pixelSize) const
     request.styleStrategy |= QFont::NoFontMerging;
 
     QFontEngine *fontEngine =
-        QWindowsFontDatabase::createEngine(QUnicodeTables::Common, request, 0,
+        QWindowsFontDatabase::createEngine(QChar::Script_Common, request, 0,
                                            QWindowsContext::instance()->defaultDPI(),
                                            false,
                                            QStringList(), m_fontEngineData);

@@ -217,8 +217,8 @@ QSupportedWritingSystems QBasicFontDatabase::determineWritingSystemsFromTrueType
 
 static inline bool scriptRequiresOpenType(int script)
 {
-    return ((script >= QUnicodeTables::Syriac && script <= QUnicodeTables::Sinhala)
-            || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
+    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
+            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
 }
 
 void QBasicFontDatabase::populateFontDatabase()
@@ -242,7 +242,7 @@ void QBasicFontDatabase::populateFontDatabase()
     }
 }
 
-QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *usrPtr)
+QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Script script, void *usrPtr)
 {
     QFontEngineFT *engine;
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
@@ -337,7 +337,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pi
     return fe;
 }
 
-QStringList QBasicFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
+QStringList QBasicFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);

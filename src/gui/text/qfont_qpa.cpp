@@ -72,7 +72,7 @@ QString QFont::defaultFamily() const
 {
     QPlatformFontDatabase *fontDB = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
     const QStringList fallbacks = fontDB->fallbacksForFamily(QString(), QFont::StyleNormal
-                                      , QFont::StyleHint(d->request.styleHint), QUnicodeTables::Common);
+                                      , QFont::StyleHint(d->request.styleHint), QChar::Script_Common);
     if (!fallbacks.isEmpty())
         return fallbacks.first();
     return QString();

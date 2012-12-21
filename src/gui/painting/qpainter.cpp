@@ -5738,7 +5738,7 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    QFontEngine *fe = staticText_d->font.d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *fe = staticText_d->font.d->engineForScript(QChar::Script_Common);
     if (fe->type() == QFontEngine::Multi)
         fe = static_cast<QFontEngineMulti *>(fe)->engine(0);
     bool supportsTransformations = d->extended->supportsTransformations(fe,
@@ -5845,7 +5845,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         int len = str.length();
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(len);
-        QFontEngine *fontEngine = d->state->font.d->engineForScript(QUnicodeTables::Common);
+        QFontEngine *fontEngine = d->state->font.d->engineForScript(QChar::Script_Common);
         if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0)) {
             glyphs.resize(numGlyphs);
             if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))

@@ -715,10 +715,6 @@ static const char *methods =
     "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);\n"
     "inline LineBreakClass lineBreakClass(QChar ch)\n"
     "{ return lineBreakClass(ch.unicode()); }\n"
-    "\n"
-    "Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4);\n"
-    "inline Script script(QChar ch)\n"
-    "{ return script(ch.unicode()); }\n"
     "\n";
 
 static const int SizeOfPropertiesStruct = 20;
@@ -1961,42 +1957,6 @@ static void readBlocks()
 }
 #endif
 
-static QList<QByteArray> scriptNames;
-static QList<int> scriptList;
-
-static const char *specialScripts[] = {
-    "Common",
-    "Greek",
-    "Cyrillic",
-    "Armenian",
-    "Hebrew",
-    "Arabic",
-    "Syriac",
-    "Thaana",
-    "Devanagari",
-    "Bengali",
-    "Gurmukhi",
-    "Gujarati",
-    "Oriya",
-    "Tamil",
-    "Telugu",
-    "Kannada",
-    "Malayalam",
-    "Sinhala",
-    "Thai",
-    "Lao",
-    "Tibetan",
-    "Myanmar",
-    "Georgian",
-    "Hangul",
-    "Ogham",
-    "Runic",
-    "Khmer",
-    "Nko",
-    "Inherited"
-};
-enum { specialScriptsCount = sizeof(specialScripts) / sizeof(const char *) };
-
 static void readScripts()
 {
     qDebug("Reading Scripts.txt");
@@ -2006,13 +1966,6 @@ static void readScripts()
         qFatal("Couldn't find Scripts.txt");
 
     f.open(QFile::ReadOnly);
-
-    int scriptsCount = specialScriptsCount;
-    // ### preserve the old ordering (temporary)
-    for (int i = 0; i < specialScriptsCount; ++i) {
-        scriptNames.append(specialScripts[i]);
-        scriptList.append(i);
-    }
 
     while (!f.atEnd()) {
         QByteArray line = f.readLine();
@@ -2049,55 +2002,11 @@ static void readScripts()
             qFatal("Unhandled script property value: %s", scriptName.constData());
         QChar::Script script = scriptMap.value(scriptName, QChar::Script_Unknown);
 
-        int scriptIndex = scriptNames.indexOf(scriptName);
-        if (scriptIndex == -1) {
-            scriptIndex = scriptNames.size();
-            scriptNames.append(scriptName);
-
-            // is the script alias for 'Common'?
-            int s = specialScriptsCount;
-            while (--s > 0) {
-                if (scriptName == specialScripts[s])
-                    break;
-            }
-            scriptList.append(s > 0 ? scriptsCount++ : 0);
-        }
-
         for (int codepoint = first; codepoint <= last; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
             ud.p.script = script;
         }
     }
-}
-
-static QByteArray createScriptEnumDeclaration()
-{
-    QByteArray declaration;
-
-    declaration += "// See http://www.unicode.org/reports/tr24/tr24-5.html\n";
-    declaration += "enum Script {\n    Common";
-
-    // output the ones with special processing first
-    for (int i = 1; i < scriptNames.size(); ++i) {
-        if (scriptList.at(i) == 0)
-            continue;
-        declaration += ",\n    ";
-        declaration += scriptNames.at(i);
-    }
-    declaration += ",\n    ScriptCount = Inherited";
-
-    // output the ones that are an alias for 'Common'
-    for (int i = 1; i < scriptNames.size(); ++i) {
-        if (scriptList.at(i) != 0)
-            continue;
-        declaration += ",\n    ";
-        declaration += scriptNames.at(i);
-        declaration += " = Common";
-    }
-
-    declaration += "\n};\n\n";
-
-    return declaration;
 }
 
 #if 0
@@ -2397,43 +2306,6 @@ static QByteArray createPropertyInfo()
            "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4)\n"
            "{\n"
            "    return (LineBreakClass)qGetProp(ucs4)->lineBreakClass;\n"
-           "}\n"
-           "\n"
-           "Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4)\n"
-           "{\n"
-           "    switch (qGetProp(ucs4)->script) {\n"
-           "    case QChar::Script_Inherited: return Inherited;\n"
-           "    case QChar::Script_Common: return Common;\n"
-           "    case QChar::Script_Arabic: return Arabic;\n"
-           "    case QChar::Script_Armenian: return Armenian;\n"
-           "    case QChar::Script_Bengali: return Bengali;\n"
-           "    case QChar::Script_Cyrillic: return Cyrillic;\n"
-           "    case QChar::Script_Devanagari: return Devanagari;\n"
-           "    case QChar::Script_Georgian: return Georgian;\n"
-           "    case QChar::Script_Greek: return Greek;\n"
-           "    case QChar::Script_Gujarati: return Gujarati;\n"
-           "    case QChar::Script_Gurmukhi: return Gurmukhi;\n"
-           "    case QChar::Script_Hangul: return Hangul;\n"
-           "    case QChar::Script_Hebrew: return Hebrew;\n"
-           "    case QChar::Script_Kannada: return Kannada;\n"
-           "    case QChar::Script_Khmer: return Khmer;\n"
-           "    case QChar::Script_Lao: return Lao;\n"
-           "    case QChar::Script_Malayalam: return Malayalam;\n"
-           "    case QChar::Script_Myanmar: return Myanmar;\n"
-           "    case QChar::Script_Ogham: return Ogham;\n"
-           "    case QChar::Script_Oriya: return Oriya;\n"
-           "    case QChar::Script_Runic: return Runic;\n"
-           "    case QChar::Script_Sinhala: return Sinhala;\n"
-           "    case QChar::Script_Syriac: return Syriac;\n"
-           "    case QChar::Script_Tamil: return Tamil;\n"
-           "    case QChar::Script_Telugu: return Telugu;\n"
-           "    case QChar::Script_Thaana: return Thaana;\n"
-           "    case QChar::Script_Thai: return Thai;\n"
-           "    case QChar::Script_Tibetan: return Tibetan;\n"
-           "    case QChar::Script_Nko: return Nko;\n"
-           "    default: break;\n"
-           "    };\n"
-           "    return Common;\n"
            "}\n"
            "\n";
 
@@ -2915,7 +2787,6 @@ int main(int, char **)
     QByteArray compositions = createCompositionInfo();
     QByteArray ligatures = createLigatureInfo();
     QByteArray normalizationCorrections = createNormalizationCorrections();
-    QByteArray scriptEnumDeclaration = createScriptEnumDeclaration();
 
     QByteArray header =
         "/****************************************************************************\n"
@@ -3006,7 +2877,6 @@ int main(int, char **)
     f.write("#define UNICODE_DATA_VERSION "DATA_VERSION_STR"\n\n");
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
-    f.write(scriptEnumDeclaration);
     f.write(grapheme_break_class_string);
     f.write(word_break_class_string);
     f.write(sentence_break_class_string);

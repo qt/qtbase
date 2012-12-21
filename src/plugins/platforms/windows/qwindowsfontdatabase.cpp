@@ -1132,9 +1132,7 @@ QWindowsFontDatabase::~QWindowsFontDatabase()
     removeApplicationFonts();
 }
 
-QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef,
-                                              QUnicodeTables::Script script,
-                                              void *handle)
+QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle)
 {
     QFontEngine *fe = QWindowsFontDatabase::createEngine(script, fontDef,
                                               0, QWindowsContext::instance()->defaultDPI(), false,
@@ -1187,7 +1185,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
             request.styleStrategy = QFont::NoFontMerging | QFont::PreferMatch;
             request.hintingPreference = hintingPreference;
 
-            fontEngine = QWindowsFontDatabase::createEngine(QUnicodeTables::Common, request, 0,
+            fontEngine = QWindowsFontDatabase::createEngine(QChar::Script_Common, request, 0,
                     QWindowsContext::instance()->defaultDPI(), false, QStringList(),
                     m_fontEngineData);
 
@@ -1300,7 +1298,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
     return fontEngine;
 }
 
-QStringList QWindowsFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
+QStringList QWindowsFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     QStringList result = QPlatformFontDatabase::fallbacksForFamily(family, style, styleHint, script);
     if (!result.isEmpty())
@@ -1538,8 +1536,8 @@ HFONT QWindowsFontDatabase::systemFont()
 
 static inline bool scriptRequiresOpenType(int script)
 {
-    return ((script >= QUnicodeTables::Syriac && script <= QUnicodeTables::Sinhala)
-            || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
+    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
+            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
 }
 
 static const char *other_tryFonts[] = {
@@ -1850,7 +1848,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         directWriteFont->Release();
 #endif
 
-    if(script == QUnicodeTables::Common
+    if (script == QChar::Script_Common
        && !(request.styleStrategy & QFont::NoFontMerging)) {
        QFontDatabase db;
        if (!db.writingSystems(request.family).contains(QFontDatabase::Symbol)) {
