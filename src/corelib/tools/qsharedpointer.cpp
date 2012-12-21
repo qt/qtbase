@@ -136,23 +136,11 @@
     \omit
     \secton1 QSharedPointer internals
 
-    QSharedPointer is in reality implemented by two ancestor classes:
-    QtSharedPointer::Basic and QtSharedPointer::ExternalRefCount. The reason
-    for having that split is now mostly legacy: in the beginning,
-    QSharedPointer was meant to support both internal reference counting and
-    external reference counting.
-
-    QtSharedPointer::Basic implements the basic functionality that is shared
-    between internal- and external-reference counting. That is, it's mostly
-    the accessor functions into QSharedPointer. Those are all inherited by
-    QSharedPointer, which adds another level of shared functionality (the
-    constructors and assignment operators). The Basic class has one member
-    variable, which is the actual pointer being tracked.
-
-    QtSharedPointer::ExternalRefCount implements the actual reference
-    counting and introduces the d-pointer for QSharedPointer. That d-pointer
-    itself is shared with other QSharedPointer objects as well as
-    QWeakPointer.
+    QSharedPointer has two "private" members: the pointer itself being tracked
+    and a d-pointer. Those members are private to the class, but QSharedPointer
+    is friends with QWeakPointer and other QSharedPointer with different
+    template arguments. (On some compilers, template friends are not supported,
+    so the members are technically public)
 
     The reason for keeping the pointer value itself outside the d-pointer is
     because of multiple inheritance needs. If you have two QSharedPointer
@@ -178,17 +166,19 @@
     QSharedObject instances that are attached to this Data.
 
     When the strong reference count decreases to zero, the object is deleted
-    (see below for information on custom deleters). The strong reference
-    count can also exceptionally be -1, indicating that there are no
-    QSharedPointers attached to an object, which is tracked too. The only
-    case where this is possible is that of QWeakPointers tracking a QObject.
+    (see below for information on custom deleters). The strong reference count
+    can also exceptionally be -1, indicating that there are no QSharedPointers
+    attached to an object, which is tracked too. The only case where this is
+    possible is that of QWeakPointers and QPointers tracking a QObject. Note
+    that QWeakPointers tracking a QObject is a deprecated feature as of Qt 5.0,
+    kept only for compatibility with Qt 4.x.
 
     The weak reference count controls the lifetime of the d-pointer itself.
     It can be thought of as an internal/intrusive reference count for
     ExternalRefCountData itself. This count is equal to the number of
-    QSharedPointers and QWeakPointers that are tracking this object. (In case
-    the object tracked derives from QObject, this number is increased by 1,
-    since QObjectPrivate tracks it too).
+    QSharedPointers and QWeakPointers that are tracking this object. In case
+    the object is a QObject being tracked by QPointer, this number is increased
+    by 1, since QObjectPrivate tracks it too.
 
     The third member is a pointer to the function that is used to delete the
     pointer being tracked. That happens when the destroy() function is called.
@@ -199,18 +189,21 @@
 
     \section3 QtSharedPointer::ExternalRefCountWithCustomDeleter
 
-    This class derives from ExternalRefCountData and is a
-    template class. As template parameters, it has the type of the pointer
-    being tracked (\tt T) and a \tt Deleter, which is anything. It adds two
-    fields to its parent class, matching those template parameters: a member
-    of type \tt Deleter and a member of type \tt T*.
+    This class derives from ExternalRefCountData and is a template class. As
+    template parameters, it has the type of the pointer being tracked (\tt T)
+    and a \tt Deleter, which is anything. It adds two fields to its parent
+    class, matching those template parameters: a member of type \tt Deleter and
+    a member of type \tt T*. Those members are actually inside a template
+    struct of type CustomDeleter, which is partially-specialized for normal
+    deletion. See below for more details on that.
 
     The purpose of this class is to store the pointer to be deleted and the
     deleter code along with the d-pointer. This allows the last strong
     reference to call any arbitrary function that disposes of the object. For
     example, this allows calling QObject::deleteLater() on a given object.
-    The pointer to the object is kept here to avoid the extra cost of keeping
-    the deleter in the generic case.
+    The pointer to the object is kept here because it needs to match the actual
+    deleter function's parameters, regardless of what template argument the
+    last QSharedPointer instance had.
 
     This class is never instantiated directly: the constructors and
     destructor are private and, in C++11, deleted. Only the create() function
