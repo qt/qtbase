@@ -145,6 +145,7 @@ public:
 private:
     QWindowsNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform,
                                       QImage::Format mask_format);
+    bool hasCFFTable() const;
 
     const QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
 
@@ -155,6 +156,7 @@ private:
     uint        stockFont  : 1;
     uint        ttf        : 1;
     uint        hasOutline : 1;
+    uint        cffTable   : 1;
     TEXTMETRIC  tm;
     int         lw;
     const unsigned char *cmap;
