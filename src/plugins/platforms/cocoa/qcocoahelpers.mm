@@ -623,20 +623,17 @@ CGFloat qt_mac_get_scalefactor()
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 {
-    switch (buttonNum) {
-    case 0:
+    if (buttonNum == 0)
         return Qt::LeftButton;
-    case 1:
+    if (buttonNum == 1)
         return Qt::RightButton;
-    case 2:
-        return Qt::MidButton;
-    case 3:
-        return Qt::XButton1;
-    case 4:
-        return Qt::XButton2;
-    default:
-        return Qt::NoButton;
+    if (buttonNum == 2)
+        return Qt::MiddleButton;
+    if (buttonNum >= 3 && buttonNum <= 31) { // handle XButton1 and higher via logical shift
+        return Qt::MouseButton(uint(Qt::MiddleButton) << (buttonNum - 3));
     }
+    // else error: buttonNum too high, or negative
+    return Qt::NoButton;
 }
 
 bool qt_mac_execute_apple_script(const char *script, long script_len, AEDesc *ret) {
