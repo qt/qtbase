@@ -584,4 +584,10 @@ void QSslConfiguration::setDefaultConfiguration(const QSslConfiguration &configu
     QSslConfigurationPrivate::setDefaultConfiguration(configuration);
 }
 
+/*! \internal
+*/
+bool QSslConfigurationPrivate::peerSessionWasShared(const QSslConfiguration &configuration) {
+        return configuration.d->peerSessionShared;
+    }
+
 QT_END_NAMESPACE

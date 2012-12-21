@@ -231,6 +231,10 @@ DEFINEFUNC3(void, SSL_set_bio, SSL *a, a, BIO *b, b, BIO *c, c, return, DUMMYARG
 DEFINEFUNC(void, SSL_set_accept_state, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(void, SSL_set_connect_state, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(int, SSL_shutdown, SSL *a, a, return -1, return)
+DEFINEFUNC2(int, SSL_set_session, SSL* to, to, SSL_SESSION *session, session, return -1, return)
+DEFINEFUNC(void, SSL_SESSION_free, SSL_SESSION *ses, ses, return, DUMMYARG)
+DEFINEFUNC(SSL_SESSION*, SSL_get1_session, const SSL *ssl, ssl, return 0, return)
+DEFINEFUNC(SSL_SESSION*, SSL_get_session, const SSL *ssl, ssl, return 0, return)
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 #ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(const SSL_METHOD *, SSLv2_client_method, DUMMYARG, DUMMYARG, return 0, return)
@@ -685,6 +689,10 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_set_bio)
     RESOLVEFUNC(SSL_set_connect_state)
     RESOLVEFUNC(SSL_shutdown)
+    RESOLVEFUNC(SSL_set_session)
+    RESOLVEFUNC(SSL_SESSION_free)
+    RESOLVEFUNC(SSL_get1_session)
+    RESOLVEFUNC(SSL_get_session)
     RESOLVEFUNC(SSL_write)
 #ifndef OPENSSL_NO_SSL2
     RESOLVEFUNC(SSLv2_client_method)

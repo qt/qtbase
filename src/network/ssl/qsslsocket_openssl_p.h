@@ -61,7 +61,10 @@
 #if defined(OCSP_RESPONSE)
 #undef OCSP_RESPONSE
 #endif
+#if defined(X509_NAME)
+#undef X509_NAME
 #endif
+#endif // Q_OS_WIN
 
 #include <openssl/asn1.h>
 #include <openssl/bio.h>
@@ -101,8 +104,6 @@ public:
     bool initSslContext();
     void destroySslContext();
     SSL *ssl;
-    SSL_CTX *ctx;
-    EVP_PKEY *pkey;
     BIO *readBio;
     BIO *writeBio;
     SSL_SESSION *session;

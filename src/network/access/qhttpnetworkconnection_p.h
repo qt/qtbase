@@ -62,6 +62,7 @@
 #include <qnetworkproxy.h>
 #include <qbuffer.h>
 #include <qtimer.h>
+#include <qsharedpointer.h>
 
 #include <private/qhttpnetworkheader_p.h>
 #include <private/qhttpnetworkrequest_p.h>
@@ -72,6 +73,8 @@
 #ifndef QT_NO_HTTP
 
 #ifndef QT_NO_SSL
+#    include <private/qsslcontext_p.h>
+#    include <private/qsslsocket_p.h>
 #    include <QtNetwork/qsslsocket.h>
 #    include <QtNetwork/qsslerror.h>
 #else
@@ -124,6 +127,8 @@ public:
     void setSslConfiguration(const QSslConfiguration &config);
     void ignoreSslErrors(int channel = -1);
     void ignoreSslErrors(const QList<QSslError> &errors, int channel = -1);
+    QSharedPointer<QSslContext> sslContext();
+    void setSslContext(QSharedPointer<QSslContext> context);
 #endif
 
 private:
@@ -233,6 +238,10 @@ public:
     //The request queues
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;
+
+#ifndef QT_NO_SSL
+    QSharedPointer<QSslContext> sslContext;
+#endif
 
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;

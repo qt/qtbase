@@ -2406,6 +2406,23 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
                                << "/opt/openssl/certs/"; // HP-UX
 }
 
+/*!
+    \internal
+*/
+void QSslSocketPrivate::checkSettingSslContext(QSslSocket* socket, QSharedPointer<QSslContext> sslContext)
+{
+    if (socket->d_func()->sslContextPointer.isNull())
+        socket->d_func()->sslContextPointer = sslContext;
+}
+
+/*!
+    \internal
+*/
+QSharedPointer<QSslContext> QSslSocketPrivate::sslContext(QSslSocket *socket)
+{
+    return (socket) ? socket->d_func()->sslContextPointer : QSharedPointer<QSslContext>();
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qsslsocket.cpp"

@@ -71,6 +71,9 @@
 #ifndef QT_NO_SSL
 #include <QtNetwork/qsslerror.h>
 #include <QtNetwork/qsslconfiguration.h>
+#ifdef QT_BUILD_INTERNAL
+#include <QtNetwork/private/qsslconfiguration_p.h>
+#endif
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
 #include <QtNetwork/qnetworkconfigmanager.h>
@@ -173,6 +176,9 @@ public Q_SLOTS:
     void sslErrors(QNetworkReply*,const QList<QSslError> &);
     void storeSslConfiguration();
     void ignoreSslErrorListSlot(QNetworkReply *reply, const QList<QSslError> &);
+#ifdef QT_BUILD_INTERNAL
+    void sslSessionSharingHelperSlot();
+#endif
 #endif
 
 protected Q_SLOTS:
@@ -357,6 +363,10 @@ private Q_SLOTS:
     void ignoreSslErrorsListWithSlot();
     void sslConfiguration_data();
     void sslConfiguration();
+#ifdef QT_BUILD_INTERNAL
+    void sslSessionSharing_data();
+    void sslSessionSharing();
+#endif
 #endif
 
     void getAndThenDeleteObject_data();
@@ -5871,6 +5881,73 @@ void tst_QNetworkReply::sslConfiguration()
     QCOMPARE(reply->error(), expectedError);
 }
 
+#ifdef QT_BUILD_INTERNAL
+
+void tst_QNetworkReply::sslSessionSharing_data()
+{
+    QTest::addColumn<bool>("sessionSharingEnabled");
+    QTest::newRow("enabled") << true;
+    QTest::newRow("disabled") << false;
+}
+
+void tst_QNetworkReply::sslSessionSharing()
+{
+    QString urlString("https://" + QtNetworkSettings::serverName() + "/qtest/mediumfile");
+    QList<QNetworkReplyPtr> replies;
+
+    // warm up SSL session cache
+    QNetworkRequest warmupRequest(urlString);
+    QFETCH(bool, sessionSharingEnabled);
+    warmupRequest.setAttribute(QNetworkRequest::User, sessionSharingEnabled); // so we can read it from the slot
+    if (! sessionSharingEnabled) {
+        QSslConfiguration configuration(QSslConfiguration::defaultConfiguration());
+        configuration.setSslOption(QSsl::SslOptionDisableSessionTickets, true);
+        warmupRequest.setSslConfiguration(configuration);
+    }
+    QNetworkReply *reply = manager.get(warmupRequest);
+    reply->ignoreSslErrors();
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(20);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    reply->deleteLater();
+
+    // now send several requests at the same time, so we open more sockets and reuse the SSL session
+    for (int a = 0; a < 6; a++) {
+        QNetworkRequest request(warmupRequest);
+        replies.append(QNetworkReplyPtr(manager.get(request)));
+        connect(replies.at(a), SIGNAL(finished()), this, SLOT(sslSessionSharingHelperSlot()));
+    }
+    QTestEventLoop::instance().enterLoop(20);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+}
+
+void tst_QNetworkReply::sslSessionSharingHelperSlot()
+{
+    static int count = 0;
+
+    // check that SSL session sharing was used in at least one of the replies
+    static bool sslSessionSharingWasUsed = false;
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    bool sslSessionSharingWasUsedInReply = QSslConfigurationPrivate::peerSessionWasShared(reply->sslConfiguration());
+    if (sslSessionSharingWasUsedInReply)
+        sslSessionSharingWasUsed = true;
+
+    QString urlQueryString = reply->url().query();
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    count++;
+
+    if (count == 6) { // all replies have finished
+        QTestEventLoop::instance().exitLoop();
+        bool sessionSharingWasEnabled = reply->request().attribute(QNetworkRequest::User).toBool();
+        QCOMPARE(sslSessionSharingWasUsed, sessionSharingWasEnabled);
+        count = 0; // reset for next row
+        sslSessionSharingWasUsed = false; // reset for next row
+    }
+}
+
+#endif // QT_BUILD_INTERNAL
 #endif // QT_NO_SSL
 
 void tst_QNetworkReply::getAndThenDeleteObject_data()
