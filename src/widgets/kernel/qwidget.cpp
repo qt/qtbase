@@ -9100,7 +9100,7 @@ QLayout *QWidget::layout() const
     existing layout manager (returned by layout()) before you can
     call setLayout() with the new layout.
 
-    If \a layout is the layout manger on a different widget, setLayout()
+    If \a layout is the layout manager on a different widget, setLayout()
     will reparent the layout and make it the layout manager for this widget.
 
     Example:
