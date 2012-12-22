@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 void QEglFSHooks::platformInit()
 {
+    Q_UNUSED(hooks);
 }
 
 void QEglFSHooks::platformDestroy()
