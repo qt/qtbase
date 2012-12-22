@@ -81,7 +81,7 @@ src_network.depends = src_corelib
 
 src_testlib.subdir = $$PWD/testlib
 src_testlib.target = sub-testlib
-src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depends
+src_testlib.depends = src_corelib   # testlib links only to corelib, but see below for the headers
 
 src_3rdparty_pcre.subdir = $$PWD/3rdparty/pcre
 src_3rdparty_pcre.target = sub-3rdparty-pcre
@@ -166,10 +166,12 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
     SUBDIRS += src_gui src_platformsupport src_platformheaders
     contains(QT_CONFIG, opengl(es2)?):SUBDIRS += src_openglextensions
     src_plugins.depends += src_gui src_platformsupport src_platformheaders
+    src_testlib.depends += src_gui      # if QtGui is enabled, QtTest requires QtGui's headers
     !contains(QT_CONFIG, no-widgets) {
         SUBDIRS += src_tools_uic src_widgets
         TOOLS += src_tools_uic
         src_plugins.depends += src_widgets
+        src_testlib.depends += src_widgets        # if QtWidgets is enabled, QtTest requires QtWidgets's headers
         contains(QT_CONFIG, opengl(es2)?) {
             SUBDIRS += src_opengl
             src_plugins.depends += src_opengl

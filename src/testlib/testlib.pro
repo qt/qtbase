@@ -97,4 +97,9 @@ mac {
     }
 }
 
+# Exclude these headers from the clean check if their dependencies aren't
+# being built
+contains(QT_CONFIG, no-widgets): HEADERSCLEAN_EXCLUDE += qtest_widgets.h
+contains(QT_CONFIG, no-gui):     HEADERSCLEAN_EXCLUDE += qtest_gui.h
+
 load(qt_module)
