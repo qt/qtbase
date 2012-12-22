@@ -545,7 +545,7 @@ QPoint QXcbCursor::pos() const
 
 void QXcbCursor::setPos(const QPoint &pos)
 {
-    xcb_window_t root;
+    xcb_window_t root = 0;
     queryPointer(connection(), &root, 0);
     xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
     xcb_flush(xcb_connection());
