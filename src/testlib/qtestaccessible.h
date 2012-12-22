@@ -256,7 +256,7 @@ private:
         str << "Event " << needle->object() <<  ", type: "
            << needle->type() << ", child: " << needle->child()
            <<  " not found at head of event list of size " << haystack.size() << " :";
-        foreach (const QAccessibleEvent *e, haystack)
+        Q_FOREACH (const QAccessibleEvent *e, haystack)
             str << ' ' << e->object() << ", type: "
                 << e->type() << ", child: " << e->child();
         return rc;
