@@ -557,10 +557,13 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         for (ProStringList::ConstIterator it = quc.begin(); it != quc.end(); ++it) {
             if (project->isEmpty(ProKey(*it + ".output")))
                 continue;
-            const ProStringList &inputs = project->values(ProKey(*it + ".input"));
-            for(int input = 0; input < inputs.size(); ++input) {
-                if (project->isEmpty(inputs.at(input).toKey()))
+            ProStringList &inputs = project->values(ProKey(*it + ".input"));
+            int input = 0;
+            while (input < inputs.size()) {
+                if (project->isEmpty(inputs.at(input).toKey())) {
+                    ++input;
                     continue;
+                }
                 bool duplicate = false;
                 bool isObj = project->values(ProKey(*it + ".CONFIG")).indexOf("no_link") == -1;
                 if (!isObj) {
@@ -581,7 +584,14 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     }
                     sources.append(ProjectBuilderSources(inputs.at(input).toQString(), true,
                             QString(), (*it).toQString(), isObj));
+
+                    if (isObj) {
+                        inputs.removeAt(input);
+                        continue;
+                    }
                 }
+
+                ++input;
             }
         }
     }
