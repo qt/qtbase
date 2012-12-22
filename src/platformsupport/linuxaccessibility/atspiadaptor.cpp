@@ -2137,8 +2137,9 @@ bool AtSpiAdaptor::valueInterface(const QAIPointer &interface, const QString &fu
             qAtspiDebug() << "WARNING: AtSpiAdaptor::valueInterface does not implement " << function << message.path();
             return false;
         }
-        if (!value.canConvert(QVariant::Double))
+        if (!value.canConvert(QVariant::Double)) {
             qAtspiDebug() << "AtSpiAdaptor::valueInterface: Could not convert to double: " << function;
+        }
 
         // explicitly convert to dbus-variant containing one double since atspi expects that
         // everything else might fail to convert back on the other end
