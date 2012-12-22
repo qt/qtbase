@@ -443,7 +443,7 @@ void QFontconfigDatabase::populateFontDatabase()
             // some languages are not supported by FontConfig, we rather check the
             // charset to detect these
             for (int i = 1; i < SampleCharCount; ++i) {
-                if (!sampleCharForWritingSystem[i])
+                if (!sampleCharForWritingSystem[i] || writingSystems.supported(QFontDatabase::WritingSystem(i)))
                     continue;
                 if (FcCharSetHasChar(cs, sampleCharForWritingSystem[i]))
                     writingSystems.setSupported(QFontDatabase::WritingSystem(i));
