@@ -5734,6 +5734,13 @@ if [ "$CFG_QML_DEBUG" = "no" ]; then
 fi
 
 case "$QMAKE_CONF_COMPILER" in
+*clang++*)
+    # Clang
+    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n '
+/^Apple clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_APPLE_CLANG_MAJOR_VERSION=\1; QT_APPLE_CLANG_MINOR_VERSION=\2/;p;q;}
+/^clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_CLANG_MAJOR_VERSION=\1; QT_CLANG_MINOR_VERSION=\2/;p;q;}'`
+    eval "$COMPILER_VERSION"
+    ;;
 *g++*)
     # GNU C++
     COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -dumpversion 2>/dev/null`
@@ -6073,6 +6080,14 @@ if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION" >> "$QTCONFIG.tmp"
+fi
+if [ -n "$QT_CLANG_MAJOR_VERSION" ]; then
+    echo "QT_CLANG_MAJOR_VERSION = $QT_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_CLANG_MINOR_VERSION = $QT_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
+fi
+if [ -n "$QT_APPLE_CLANG_MAJOR_VERSION" ]; then
+    echo "QT_APPLE_CLANG_MAJOR_VERSION = $QT_APPLE_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_APPLE_CLANG_MINOR_VERSION = $QT_APPLE_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
 fi
 
 if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
