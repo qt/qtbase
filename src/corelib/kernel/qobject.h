@@ -163,12 +163,8 @@ public:
     inline QList<T> findChildren(const QString &aName = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
-        union {
-            QList<T> *typedList;
-            QList<void *> *voidList;
-        } u;
-        u.typedList = &list;
-        qt_qFindChildren_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, aName, reinterpret_cast<T>(0)->staticMetaObject,
+                                reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
 
@@ -177,12 +173,8 @@ public:
     inline QList<T> findChildren(const QRegExp &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
-        union {
-            QList<T> *typedList;
-            QList<void *> *voidList;
-        } u;
-        u.typedList = &list;
-        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject,
+                                reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
 #endif
@@ -192,12 +184,8 @@ public:
     inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         QList<T> list;
-        union {
-            QList<T> *typedList;
-            QList<void *> *voidList;
-        } u;
-        u.typedList = &list;
-        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject, u.voidList, options);
+        qt_qFindChildren_helper(this, re, reinterpret_cast<T>(0)->staticMetaObject,
+                                reinterpret_cast<QList<void *> *>(&list), options);
         return list;
     }
 #endif
