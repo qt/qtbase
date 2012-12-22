@@ -498,7 +498,7 @@ static QString stringify(const QString &data)
                 retval += QLatin1String("\\\"");
             else
                 retval += data[i];
-        if (data[i] == QLatin1Char('\r') && data[i+1] == QLatin1Char('\n'))
+        if (i+1 < data.length() && data[i] == QLatin1Char('\r') && data[i+1] == QLatin1Char('\n'))
             i++;
         retval += QLatin1String("\\n\"\n");
     }
