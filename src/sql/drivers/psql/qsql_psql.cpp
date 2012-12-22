@@ -786,6 +786,7 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
     case SimpleLocking:
     case FinishQuery:
     case MultipleResultSets:
+    case CancelQuery:
         return false;
     case BLOB:
         return d->pro >= QPSQLDriver::Version71;
