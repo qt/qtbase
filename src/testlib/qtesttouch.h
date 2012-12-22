@@ -53,6 +53,7 @@
 #include <QtTest/qtestspontaneevent.h>
 #include <QtCore/qmap.h>
 #include <QtGui/qevent.h>
+#include <QtGui/qwindow.h>
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>
 #endif
