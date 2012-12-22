@@ -42,12 +42,9 @@
 #ifndef QWINEVENTNOTIFIER_H
 #define QWINEVENTNOTIFIER_H
 
-#if 0
-// inform syncqt
-#pragma qt_no_master_include
-#endif
-
 #include "QtCore/qobject.h"
+
+#ifdef Q_OS_WIN
 #include "QtCore/qt_windows.h"
 
 QT_BEGIN_HEADER
@@ -87,5 +84,7 @@ protected:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // Q_OS_WIN
 
 #endif // QWINEVENTNOTIFIER_H
