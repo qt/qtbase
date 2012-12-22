@@ -2,6 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2013 Intel Corporation.
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -893,6 +894,7 @@ CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
 CFG_DIRECTWRITE=no
+CFG_WERROR=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -2138,6 +2140,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    warnings-are-errors|Werror)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_WERROR="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -3295,6 +3304,10 @@ Additional options:
 
  *  -no-system-proxies .. Do not use system network proxies by default.
     -system-proxies ..... Use system network proxies by default.
+
+    -no-warnings-are-errors Make warnings be treated normally
+    -warnings-are-errors  Make warnings be treated as errors
+                          (enabled if -developer-build is active)
 
  $GBN  -no-glib ........... Do not compile Glib support.
  $GBY  -glib .............. Compile Glib support.
@@ -6098,6 +6111,11 @@ else
 fi
 if [ "$CFG_DEV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG private_tests"
+    if [ "$CFG_WERROR" != "no" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
+    fi
+elif [ "$CFG_WERROR" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
 fi
 
 cat >>"$QTCONFIG.tmp" <<EOF

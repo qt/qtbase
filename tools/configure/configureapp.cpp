@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -244,6 +245,7 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "CFG_GCC_SYSROOT" ] = "yes";
     dictionary[ "SLOG2" ]           = "no";
     dictionary[ "SYSTEM_PROXIES" ]  = "no";
+    dictionary[ "WERROR" ]          = "auto";
 
     //Only used when cross compiling.
     dictionary[ "QT_INSTALL_SETTINGS" ] = "/etc/xdg";
@@ -891,6 +893,11 @@ void Configure::parseCmdLine()
             dictionary[ "SYSTEM_PROXIES" ] = "no";
         } else if (configCmdLine.at(i) == "-system-proxies") {
             dictionary[ "SYSTEM_PROXIES" ] = "yes";
+        } else if (configCmdLine.at(i) == "-warnings-are-errors" ||
+                   configCmdLine.at(i) == "-Werror") {
+            dictionary[ "WERROR" ] = "yes";
+        } else if (configCmdLine.at(i) == "-no-warnings-are-errors") {
+            dictionary[ "WERROR" ] = "no";
         }
 
         // Work around compiler nesting limitation
@@ -1347,8 +1354,14 @@ void Configure::parseCmdLine()
     }
 
     // Allow tests for private classes to be compiled against internal builds
-    if (dictionary["BUILDDEV"] == "yes")
-        qtConfig += "private_tests";
+    if (dictionary["BUILDDEV"] == "yes") {
+        qtConfig << "private_tests";
+        if (dictionary["WERROR"] != "no")
+            qmakeConfig << "warnings_are_errors";
+    } else {
+        if (dictionary["WERROR"] == "yes")
+            qmakeConfig << "warnings_are_errors";
+    }
 
     if (dictionary["FORCE_ASSERTS"] == "yes")
         qtConfig += "force_asserts";
@@ -1718,6 +1731,8 @@ bool Configure::displayHelp()
         desc("SYSTEM_PROXIES", "yes",  "-system-proxies",    "Use system network proxies by default.");
         desc("SYSTEM_PROXIES", "no",   "-no-system-proxies", "Do not use system network proxies by default.\n");
 
+        desc("WERROR",      "yes",     "-warnings-are-errors",   "Make warnings be treated as errors.");
+        desc("WERROR",      "no",      "-no-warnings-are-errors","Make warnings be treated normally.");
 
 #if !defined(EVAL)
         desc(                   "-qtnamespace <name>", "Wraps all Qt library code in 'namespace name {...}'.");

@@ -18,3 +18,37 @@ contains(TEMPLATE, .*lib) {
     contains(QT_CONFIG, separate_debug_info): CONFIG += separate_debug_info
     contains(QT_CONFIG, separate_debug_info_nocopy): CONFIG += separate_debug_info_nocopy
 }
+
+warnings_are_errors:warning_clean {
+    # If the module declares that it has does its clean-up of warnings, enable -Werror.
+    # This setting is compiler-dependent anyway because it depends on the version of the
+    # compiler.
+    clang {
+        # Apple clang 4.0+ or clang 3.1+
+        greaterThan(QT_CLANG_MAJOR_VERSION, 3) | \
+        if(equals(QT_CLANG_MAJOR_VERSION, 3):greaterThan(QT_CLANG_MINOR_VERSION, 1)) | \
+        greaterThan(QT_APPLE_CLANG_MAJOR_VERSION, 3) {
+            QMAKE_CXXFLAGS += -Werror -Wno-error=\\$${LITERAL_HASH}warnings $$WERROR
+        }
+    } else:intel_icc {
+        # Intel CC 13.0+ (a.k.a. Intel Composer XE 2013)
+        greaterThan(QT_ICC_MAJOR_VERSION, 12) {
+            # 177: function "entity" was declared but never referenced
+            #      (too aggressive; ICC reports even for functions created due to template instantiation)
+            # 1224: #warning directive
+            # 1881: argument must be a constant null pointer value
+            #      (NULL in C++ is usually a literal 0)
+            QMAKE_CXXFLAGS += -Werror -ww177,1224,1881 $$WERROR
+        }
+    } else:gcc {
+        # GCC 4.6+
+        # note: there was no GCC 3.6 and this assumes no one is crazy enough to compile Qt with GCC 2.7
+        greaterThan(QT_GCC_MAJOR_VERSION, 4)|greaterThan(QT_GCC_MINOR_VERSION, 5) {
+            QMAKE_CXXFLAGS += -Werror -Wno-error=cpp $$WERROR
+
+            # GCC prints this bogus warning, after it has inlined a lot of code
+            # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
+            QMAKE_CXXFLAGS += -Wno-error=strict-overflow
+        }
+    }
+}
