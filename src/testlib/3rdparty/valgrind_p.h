@@ -259,6 +259,7 @@ typedef
                      : "cc", "memory"                             \
                     );                                            \
     _zzq_rlval = _zzq_result;                                     \
+    (void)_zzq_rlval;                                             \
   }
 
 #define VALGRIND_GET_NR_CONTEXT(_zzq_rlval)                       \
