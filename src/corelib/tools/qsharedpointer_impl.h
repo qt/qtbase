@@ -46,6 +46,11 @@
 #endif
 
 #if 0
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
+
+#if 0
 // These macros are duplicated here to make syncqt not complain a about
 // this header, as we have a "qt_sync_stop_processing" below, which in turn
 // is here because this file contains a template mess and duplicates the

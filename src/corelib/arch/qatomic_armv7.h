@@ -57,6 +57,9 @@
 QT_BEGIN_NAMESPACE
 
 QT_END_NAMESPACE
+
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
 #endif
 
 #endif // QATOMIC_ARMV7_H

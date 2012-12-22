@@ -45,6 +45,11 @@
 #error Do not include qobjectdefs_impl.h directly
 #endif
 
+#if 0
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
+
 QT_BEGIN_NAMESPACE
 
 

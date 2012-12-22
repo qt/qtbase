@@ -47,6 +47,15 @@
 
 QT_BEGIN_NAMESPACE
 
+#if 0
+// silence syncqt warnings
+QT_END_NAMESPACE
+QT_END_HEADER
+
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
+
 #define qt_i2addr(a) reinterpret_cast<Address *>(const_cast<int *>(a))
 #define qt_p2addr(a) reinterpret_cast<Address *>(const_cast<void *>(a))
 #define qt_addr(a) reinterpret_cast<Address>(a)

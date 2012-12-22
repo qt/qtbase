@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
+#pragma qt_sync_skip_header_check
 #pragma qt_sync_stop_processing
 #endif
 
