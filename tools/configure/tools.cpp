@@ -58,13 +58,6 @@ using namespace std;
 void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString> &licenseInfo,
                          const QString &path)
 {
-    if (dictionary[ "BUILDNOKIA" ] == "yes") {
-        dictionary["EDITION"] = "NokiaInternalBuild";
-        dictionary["LICENSE_FILE"] = ""; // No License for nokia developers
-        dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
-        return; // No license key checking in internal builds
-    }
-
     QString tpLicense = dictionary["QT_SOURCE_TREE"] + "/LICENSE.PREVIEW.OPENSOURCE";
     if (QFile::exists(tpLicense)) {
         dictionary["EDITION"] = "Preview";
