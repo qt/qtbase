@@ -67,9 +67,9 @@ public:
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
     void setVisible(bool visible);
 
-    GLuint framebufferObject(const QIOSContext &context) const;
-    GLuint colorRenderbuffer(const QIOSContext &context) const;
     qreal devicePixelRatio() const;
+    int effectiveWidth() const;
+    int effectiveHeight() const;
 
     UIView *nativeView() const { return m_view; }
 
@@ -77,13 +77,6 @@ private:
     UIView *m_view;
     QRect m_requestedGeometry;
 
-    mutable struct GLData {
-        GLuint framebufferObject;
-        GLuint colorRenderbuffer;
-        GLuint depthRenderbuffer;
-        GLint renderbufferWidth;
-        GLint renderbufferHeight;
-    } m_glData;
     qreal m_devicePixelRatio;
 };
 

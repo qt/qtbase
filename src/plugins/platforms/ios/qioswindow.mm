@@ -229,7 +229,6 @@ QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
     , m_requestedGeometry(QPlatformWindow::geometry())
-    , m_glData()
     , m_devicePixelRatio(1.0)
 {
     if (isQtApplication())
@@ -249,13 +248,6 @@ QIOSWindow::QIOSWindow(QWindow *window)
 
 QIOSWindow::~QIOSWindow()
 {
-    if (m_glData.framebufferObject)
-        glDeleteFramebuffers(1, &m_glData.framebufferObject);
-    if (m_glData.colorRenderbuffer)
-        glDeleteRenderbuffers(1, &m_glData.colorRenderbuffer);
-    if (m_glData.depthRenderbuffer)
-        glDeleteRenderbuffers(1, &m_glData.depthRenderbuffer);
-
     [m_view removeFromSuperview];
     [m_view release];
 }
@@ -325,64 +317,19 @@ void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientatio
     [[UIApplication sharedApplication] setStatusBarOrientation:uiOrientation animated:NO];
 }
 
-GLuint QIOSWindow::framebufferObject(const QIOSContext &context) const
-{
-    if (!m_glData.framebufferObject) {
-        [EAGLContext setCurrentContext:context.nativeContext()];
-
-        glGenFramebuffers(1, &m_glData.framebufferObject);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_glData.framebufferObject);
-
-        glGenRenderbuffers(1, &m_glData.colorRenderbuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, m_glData.colorRenderbuffer);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_glData.colorRenderbuffer);
-
-        QSurfaceFormat requestedFormat = context.format();
-        if (requestedFormat.depthBufferSize() > 0 || requestedFormat.stencilBufferSize() > 0) {
-            glGenRenderbuffers(1, &m_glData.depthRenderbuffer);
-            glBindRenderbuffer(GL_RENDERBUFFER, m_glData.depthRenderbuffer);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_glData.depthRenderbuffer);
-
-            if (requestedFormat.stencilBufferSize() > 0)
-                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_glData.depthRenderbuffer);
-        }
-    }
-
-    return m_glData.framebufferObject;
-}
-
-GLuint QIOSWindow::colorRenderbuffer(const QIOSContext &context) const
-{
-    if (!m_glData.colorRenderbuffer ||
-        m_glData.renderbufferWidth != geometry().width() * m_devicePixelRatio ||
-        m_glData.renderbufferHeight != geometry().height() * m_devicePixelRatio) {
-
-        glBindRenderbuffer(GL_RENDERBUFFER, m_glData.colorRenderbuffer);
-        [context.nativeContext() renderbufferStorage:GL_RENDERBUFFER fromDrawable:static_cast<CAEAGLLayer *>(m_view.layer)];
-
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &m_glData.renderbufferWidth);
-        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &m_glData.renderbufferHeight);
-
-        if (m_glData.depthRenderbuffer) {
-            glBindRenderbuffer(GL_RENDERBUFFER, m_glData.depthRenderbuffer);
-
-            // FIXME: Support more fine grained control over depth/stencil buffer sizes
-            if (context.format().stencilBufferSize() > 0)
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, m_glData.renderbufferWidth, m_glData.renderbufferHeight);
-            else
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, m_glData.renderbufferWidth, m_glData.renderbufferHeight);
-        }
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
-    }
-
-    return m_glData.colorRenderbuffer;
-}
-
 qreal QIOSWindow::devicePixelRatio() const
 {
     return m_devicePixelRatio;
+}
+
+int QIOSWindow::effectiveWidth() const
+{
+    return geometry().width() * m_devicePixelRatio;
+}
+
+int QIOSWindow::effectiveHeight() const
+{
+    return geometry().height() * m_devicePixelRatio;
 }
 
 QT_END_NAMESPACE

@@ -48,8 +48,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QIOSContext : public QPlatformOpenGLContext
+class QIOSContext : public QObject, public QPlatformOpenGLContext
 {
+    Q_OBJECT
+
 public:
     QIOSContext(QOpenGLContext *context);
     ~QIOSContext();
@@ -62,15 +64,26 @@ public:
     void doneCurrent();
 
     GLuint defaultFramebufferObject(QPlatformSurface *) const;
-    GLuint defaultColorRenderbuffer(QPlatformSurface *) const;
-
     QFunctionPointer getProcAddress(const QByteArray &procName);
 
-    EAGLContext *nativeContext() const;
+private Q_SLOTS:
+    void windowDestroyed(QObject *object);
 
 private:
     EAGLContext *m_eaglContext;
     QSurfaceFormat m_format;
+
+    struct FramebufferObject {
+        GLuint handle;
+        GLuint colorRenderbuffer;
+        GLuint depthRenderbuffer;
+        GLint renderbufferWidth;
+        GLint renderbufferHeight;
+    };
+
+    static void deleteBuffers(const FramebufferObject &framebufferObject);
+
+    mutable QHash<QWindow *, FramebufferObject> m_framebufferObjects;
 };
 
 QT_END_NAMESPACE

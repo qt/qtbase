@@ -70,10 +70,23 @@ QIOSContext::QIOSContext(QOpenGLContext *context)
 
 QIOSContext::~QIOSContext()
 {
-    if ([EAGLContext currentContext] == m_eaglContext)
-        doneCurrent();
+    [EAGLContext setCurrentContext:m_eaglContext];
 
+    foreach (const FramebufferObject &framebufferObject, m_framebufferObjects)
+        deleteBuffers(framebufferObject);
+
+    [EAGLContext setCurrentContext:nil];
     [m_eaglContext release];
+}
+
+void QIOSContext::deleteBuffers(const FramebufferObject &framebufferObject)
+{
+    if (framebufferObject.handle)
+        glDeleteFramebuffers(1, &framebufferObject.handle);
+    if (framebufferObject.colorRenderbuffer)
+        glDeleteRenderbuffers(1, &framebufferObject.colorRenderbuffer);
+    if (framebufferObject.depthRenderbuffer)
+        glDeleteRenderbuffers(1, &framebufferObject.depthRenderbuffer);
 }
 
 QSurfaceFormat QIOSContext::format() const
@@ -88,8 +101,7 @@ bool QIOSContext::makeCurrent(QPlatformSurface *surface)
     [EAGLContext setCurrentContext:m_eaglContext];
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject(surface));
 
-    // Ensures render buffers are set up and match the size of the window
-    return defaultColorRenderbuffer(surface) != 0;
+    return true;
 }
 
 void QIOSContext::doneCurrent()
@@ -100,20 +112,86 @@ void QIOSContext::doneCurrent()
 void QIOSContext::swapBuffers(QPlatformSurface *surface)
 {
     Q_ASSERT(surface && surface->surface()->surfaceType() == QSurface::OpenGLSurface);
+    Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
+    QWindow *window = static_cast<QWindow *>(surface->surface());
+    Q_ASSERT(m_framebufferObjects.contains(window));
 
     [EAGLContext setCurrentContext:m_eaglContext];
-    glBindRenderbuffer(GL_RENDERBUFFER, defaultColorRenderbuffer(surface));
+    glBindRenderbuffer(GL_RENDERBUFFER, m_framebufferObjects[window].colorRenderbuffer);
     [m_eaglContext presentRenderbuffer:GL_RENDERBUFFER];
 }
 
 GLuint QIOSContext::defaultFramebufferObject(QPlatformSurface *surface) const
 {
-    return static_cast<QIOSWindow *>(surface)->framebufferObject(*this);
+    Q_ASSERT(surface && surface->surface()->surfaceClass() == QSurface::Window);
+    QWindow *window = static_cast<QWindow *>(surface->surface());
+
+    FramebufferObject &framebufferObject = m_framebufferObjects[window];
+
+    // Set up an FBO for the window if it hasn't been created yet
+    if (!framebufferObject.handle) {
+        [EAGLContext setCurrentContext:m_eaglContext];
+
+        glGenFramebuffers(1, &framebufferObject.handle);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferObject.handle);
+
+        glGenRenderbuffers(1, &framebufferObject.colorRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+            framebufferObject.colorRenderbuffer);
+
+        if (m_format.depthBufferSize() > 0 || m_format.stencilBufferSize() > 0) {
+            glGenRenderbuffers(1, &framebufferObject.depthRenderbuffer);
+            glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.depthRenderbuffer);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+                framebufferObject.depthRenderbuffer);
+
+            if (m_format.stencilBufferSize() > 0)
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                    framebufferObject.depthRenderbuffer);
+        }
+
+        connect(window, SIGNAL(destroyed(QObject*)), this, SLOT(windowDestroyed(QObject*)));
+    }
+
+    // Ensure that the FBO's buffers match the size of the window
+    QIOSWindow *platformWindow = static_cast<QIOSWindow *>(surface);
+    if (framebufferObject.renderbufferWidth != platformWindow->effectiveWidth() ||
+        framebufferObject.renderbufferHeight != platformWindow->effectiveHeight()) {
+
+        glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.colorRenderbuffer);
+        CAEAGLLayer *layer = static_cast<CAEAGLLayer *>(platformWindow->nativeView().layer);
+        [m_eaglContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:layer];
+
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &framebufferObject.renderbufferWidth);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &framebufferObject.renderbufferHeight);
+
+        if (framebufferObject.depthRenderbuffer) {
+            glBindRenderbuffer(GL_RENDERBUFFER, framebufferObject.depthRenderbuffer);
+
+            // FIXME: Support more fine grained control over depth/stencil buffer sizes
+            if (m_format.stencilBufferSize() > 0)
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES,
+                    framebufferObject.renderbufferWidth, framebufferObject.renderbufferHeight);
+            else
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16,
+                    framebufferObject.renderbufferWidth, framebufferObject.renderbufferHeight);
+        }
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    }
+
+    return framebufferObject.handle;
 }
 
-GLuint QIOSContext::defaultColorRenderbuffer(QPlatformSurface *surface) const
+void QIOSContext::windowDestroyed(QObject *object)
 {
-    return static_cast<QIOSWindow *>(surface)->colorRenderbuffer(*this);
+    QWindow *window = static_cast<QWindow *>(object);
+    if (m_framebufferObjects.contains(window)) {
+        deleteBuffers(m_framebufferObjects[window]);
+        m_framebufferObjects.remove(window);
+    }
 }
 
 QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)
@@ -121,7 +199,5 @@ QFunctionPointer QIOSContext::getProcAddress(const QByteArray& functionName)
     return reinterpret_cast<QFunctionPointer>(dlsym(RTLD_NEXT, functionName.constData()));
 }
 
-EAGLContext *QIOSContext::nativeContext() const
-{
-    return m_eaglContext;
-}
+#include "moc_qioscontext.cpp"
+
