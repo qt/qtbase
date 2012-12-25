@@ -5,7 +5,4 @@ load(qt_plugin)
 
 QT += gui-private
 
-OBJECTIVE_SOURCES = qtmain.mm \
-    qiosviewcontroller.mm
-
-HEADERS = qiosviewcontroller.h
+OBJECTIVE_SOURCES = qtmain.mm
