@@ -57,7 +57,6 @@ extern int qt_main(int argc, char *argv[]);
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     self.window.rootViewController = [[[QIOSViewController alloc] init] autorelease];
-    self.window.rootViewController.view = [[UIView alloc] init];
 
     // Aid debugging during development
     self.window.backgroundColor = [UIColor cyanColor];
