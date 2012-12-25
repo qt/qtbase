@@ -48,6 +48,14 @@
 
 @implementation QIOSViewController
 
+- (void)viewDidLoad
+{
+#ifdef QT_DEBUG
+    if (!self.nibName)
+        self.view.backgroundColor = [UIColor magentaColor];
+#endif
+}
+
 -(BOOL)shouldAutorotate
 {
     // For now we assume that if the application doesn't listen to orientation
