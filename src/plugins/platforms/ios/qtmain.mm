@@ -55,20 +55,16 @@ extern int qt_main(int argc, char *argv[]);
 
 - (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // We may have a window already from a NIB or storyboard
-    if (!self.window) {
-        // If not, we create one ourselves
-        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        QIOSViewController *controller = [[QIOSViewController alloc] init];
-        self.window.rootViewController = controller;
-        controller.view = [[UIView alloc] init];
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    QIOSViewController *controller = [[QIOSViewController alloc] init];
+    self.window.rootViewController = controller;
+    controller.view = [[UIView alloc] init];
 
-        // Aid debugging during development
-        self.window.backgroundColor = [UIColor cyanColor];
-        self.window.rootViewController.view.backgroundColor = [UIColor magentaColor];
+    // Aid debugging during development
+    self.window.backgroundColor = [UIColor cyanColor];
+    self.window.rootViewController.view.backgroundColor = [UIColor magentaColor];
 
-        [self.window makeKeyAndVisible];
-    }
+    [self.window makeKeyAndVisible];
 
     // We schedule the main-redirection for the next eventloop pass so that we
     // can return from this function and let UIApplicationMain finish its job.
