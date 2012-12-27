@@ -20,6 +20,7 @@ SUBDIRS=\
     qprocessenvironment \
     qresourceengine \
     qsettings \
+    qsavefile \
     qstandardpaths \
     qtemporarydir \
     qtemporaryfile \
