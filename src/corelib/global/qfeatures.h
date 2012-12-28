@@ -378,7 +378,7 @@
 #define QT_NO_CONTEXTMENU
 #endif
 
-// QtDBus module
+// Qt D-Bus module
 #if !defined(QT_NO_DBUS) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_DOM))
 #define QT_NO_DBUS
 #endif

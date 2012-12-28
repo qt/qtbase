@@ -30,7 +30,7 @@
     \title Qt Widgets C++ Classes
     \ingroup modules
 
-    \brief The QtWidgets module extends Qt Gui with C++ widget functionality.
+    \brief The Qt Widgets module extends Qt GUI with C++ widget functionality.
 
     To include the definitions of the module's classes, use the
     following directive:

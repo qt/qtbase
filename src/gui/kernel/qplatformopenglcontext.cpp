@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     The only place to retrieve a QPlatformOpenGLContext from is through a QPlatformWindow.
 
     The context which is current for a specific thread can be collected by the currentContext()
-    function. This is how QPlatformOpenGLContext also makes it possible to use the QtGui module
+    function. This is how QPlatformOpenGLContext also makes it possible to use the Qt GUI module
     withhout using QOpenGLWidget. When using QOpenGLContext::currentContext(), it will ask
     QPlatformOpenGLContext for the currentContext. Then a corresponding QOpenGLContext will be returned,
     which maps to the QPlatformOpenGLContext.

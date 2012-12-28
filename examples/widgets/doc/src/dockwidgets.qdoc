@@ -56,8 +56,8 @@
     \snippet mainwindows/dockwidgets/mainwindow.cpp 0
 
     We start by including \c <QtGui>, a header file that contains the
-    definition of all classes in the \l QtCore and \l QtGui
-    libraries. This saves us from having to include
+    definition of all classes in the Qt Core and Qt GUI
+    modules. This saves us from having to include
     every class individually and is especially convenient if we add new
     widgets. We also include \c mainwindow.h.
 

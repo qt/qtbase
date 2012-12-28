@@ -315,7 +315,7 @@ namespace QDBusUtil
     /*!
         \internal
         \since 4.5
-        Dumps the contents of a QtDBus argument from \a arg into a string.
+        Dumps the contents of a Qt D-Bus argument from \a arg into a string.
     */
     QString argumentToString(const QVariant &arg)
     {

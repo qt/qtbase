@@ -220,7 +220,7 @@ static inline void clearFontUnlocked()
     For any GUI application using Qt, there is precisely \b one QGuiApplication
     object no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-GUI Qt applications, use QCoreApplication instead,
-    as it does not depend on the \l QtGui library. For QWidget based Qt applications,
+    as it does not depend on the Qt GUI module. For QWidget based Qt applications,
     use QApplication instead, as it provides some functionality needed for creating
     QWidget instances.
 

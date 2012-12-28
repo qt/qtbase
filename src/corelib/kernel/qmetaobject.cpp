@@ -2804,7 +2804,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     }
 
     // the status variable is changed by qt_metacall to indicate what it did
-    // this feature is currently only used by QtDBus and should not be depended
+    // this feature is currently only used by Qt D-Bus and should not be depended
     // upon. Don't change it without looking into QDBusAbstractInterface first
     // -1 (unchanged): normal qt_metacall, result stored in argv[0]
     // changed: result stored directly in value
@@ -2883,7 +2883,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     }
 
     // the status variable is changed by qt_metacall to indicate what it did
-    // this feature is currently only used by QtDBus and should not be depended
+    // this feature is currently only used by Qt D-Bus and should not be depended
     // upon. Don't change it without looking into QDBusAbstractInterface first
     // -1 (unchanged): normal qt_metacall, result stored in argv[0]
     // changed: result stored directly in value, return the value of status

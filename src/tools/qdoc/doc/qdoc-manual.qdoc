@@ -5024,9 +5024,9 @@
     / *!
         \module QtNetwork
 
-        \title QtNetwork Module
+        \title Qt Network Module
 
-        \brief The QtNetwork module offers classes that allow
+        \brief The Qt Network module offers classes that allow
         you to write TCP/IP clients and servers.
 
         The network module provides classes to make network
@@ -5042,10 +5042,10 @@
 
            \quotation
                \raw HTML
-               <h1><center>QtNetwork Module</center></h1>
+               <h1><center>Qt Network Module</center></h1>
                \endraw
 
-               The QtNetwork module offers classes that allow you to
+               The Qt Network module offers classes that allow you to
                write TCP/IP clients and servers.\l {module
                details} {More...}
 
@@ -5083,7 +5083,7 @@
                <h2>Detailed Description</h2>
 
                <p>
-               The QtNetwork module offers classes that allow you to
+               The Qt Network module offers classes that allow you to
                write TCP/IP clients and servers.
                </p>
 
@@ -6897,7 +6897,7 @@
     \endcode
 
     This ensures that the QDesignerTaskMenuExtension class is included
-    in the \c QtDesigner module, which means, for example, that the
+    in the Qt Designer module, which means, for example, that the
     class will appear on the list created by calling the \l
     {generatelist-command} {\\generatelist} command with the \c
     {{classesbymodule QtDesigner}} argument.

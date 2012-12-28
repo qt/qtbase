@@ -34,8 +34,8 @@ qt5_generate_moc("${main_file}" "${moc_file}")
 # QtTest and the definition of QTEST_MAIN.
 # If running this test manually (ctest -V -R no_link_widgets from
 # the tests/auto/cmake/build directory), the core_test is
-# expected to fail to link because of missing symbols from QtGui
-# and QtWidgets.
+# expected to fail to link because of missing symbols from Qt GUI
+# and Qt Widgets.
 # The widgets_test is expected to build successfully (though it may
 # be necessary to comment out the core_test and re-run cmake)
 add_executable(core_test "${main_file}" "${moc_file}")

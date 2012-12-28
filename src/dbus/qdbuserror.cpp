@@ -176,7 +176,7 @@ static inline QDBusError::ErrorType get(const char *name)
     C++ and Java exceptions are a valid analogy for D-Bus errors:
     instead of returning normally with a return value, remote
     applications and the bus may decide to throw an error
-    condition. However, the QtDBus implementation does not use the C++
+    condition. However, the Qt D-Bus implementation does not use the C++
     exception-throwing mechanism, so you will receive QDBusErrors in
     the return reply (see QDBusReply::error()).
 

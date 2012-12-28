@@ -881,7 +881,7 @@ void QCocoaEventDispatcherPrivate::cleanupModalSessions()
 void QCocoaEventDispatcherPrivate::beginModalSession(QWindow *window)
 {
     // We need to start spinning the modal session. Usually this is done with
-    // QDialog::exec() for QtWidgets based applications, but for others that
+    // QDialog::exec() for Qt Widgets based applications, but for others that
     // just call show(), we need to interrupt(). We call this here, before
     // setting currentModalSessionCached to zero, so that interrupt() calls
     // [NSApp abortModal] if another modal session is currently running

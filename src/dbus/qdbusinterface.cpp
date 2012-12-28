@@ -198,7 +198,7 @@ QDBusInterfacePrivate::~QDBusInterfacePrivate()
 
     \snippet code/src_qdbus_qdbusinterface.cpp 0
 
-    \sa {QtDBus XML compiler (qdbusxml2cpp)}
+    \sa {Qt D-Bus XML compiler (qdbusxml2cpp)}
 */
 
 /*!

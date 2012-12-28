@@ -1199,7 +1199,7 @@ QByteArray QDBusConnection::localMachineId()
     \inmodule QtDBus
 
     \brief The QDBus namespace contains miscellaneous identifiers used
-    throughout the QtDBus library.
+    throughout the Qt D-Bus module.
 */
 
 /*!

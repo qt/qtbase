@@ -452,8 +452,8 @@ bool QMimeData::hasHtml() const
     Returns a QVariant storing a QImage if the object can return an
     image; otherwise returns a null variant.
 
-    A QVariant is used because QMimeData belongs to the \l QtCore
-    library, whereas QImage belongs to \l QtGui. To convert the
+    A QVariant is used because QMimeData belongs to the Qt Core
+    module, whereas QImage belongs to Qt GUI. To convert the
     QVariant to a QImage, simply use qvariant_cast(). For example:
 
     \snippet code/src_corelib_kernel_qmimedata.cpp 5
@@ -469,8 +469,8 @@ QVariant QMimeData::imageData() const
 /*!
     Sets the data in the object to the given \a image.
 
-    A QVariant is used because QMimeData belongs to the \l QtCore
-    library, whereas QImage belongs to \l QtGui. The conversion
+    A QVariant is used because QMimeData belongs to the Qt Core
+    module, whereas QImage belongs to Qt GUI. The conversion
     from QImage to QVariant is implicit. For example:
 
     \snippet code/src_corelib_kernel_qmimedata.cpp 6
@@ -499,8 +499,8 @@ bool QMimeData::hasImage() const
     color (MIME type \c application/x-color); otherwise returns a
     null variant.
 
-    A QVariant is used because QMimeData belongs to the \l QtCore
-    library, whereas QColor belongs to \l QtGui. To convert the
+    A QVariant is used because QMimeData belongs to the Qt Core
+    module, whereas QColor belongs to Qt GUI. To convert the
     QVariant to a QColor, simply use qvariant_cast(). For example:
 
     \snippet code/src_corelib_kernel_qmimedata.cpp 7

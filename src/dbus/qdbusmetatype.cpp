@@ -96,7 +96,7 @@ void QDBusMetaTypeId::init()
     // reentrancy is not a problem since everything else is locked on their own
     // set the guard variable at the end
     if (!initialized.load()) {
-        // register our types with QtCore (calling qMetaTypeId<T>() does this implicitly)
+        // register our types with Qt Core (calling qMetaTypeId<T>() does this implicitly)
         (void)message();
         (void)argument();
         (void)variant();
@@ -106,7 +106,7 @@ void QDBusMetaTypeId::init()
         (void)unixfd();
 
 #ifndef QDBUS_NO_SPECIALTYPES
-        // and register QtCore's with us
+        // and register Qt Core's with us
         registerHelper<QDate>();
         registerHelper<QTime>();
         registerHelper<QDateTime>();
@@ -145,21 +145,21 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
 /*!
     \class QDBusMetaType
     \inmodule QtDBus
-    \brief Meta-type registration system for the QtDBus module.
+    \brief Meta-type registration system for the Qt D-Bus module.
     \internal
 
     The QDBusMetaType class allows you to register class types for
     marshalling and demarshalling over D-Bus. D-Bus supports a very
     limited set of primitive types, but allows one to extend the type
     system by creating compound types, such as arrays (lists) and
-    structs. In order to use them with QtDBus, those types must be
+    structs. In order to use them with Qt D-Bus, those types must be
     registered.
 
-    See \l {qdbustypesystem.html}{QtDBus type system} for more
+    See \l {qdbustypesystem.html}{Qt D-Bus Type System} for more
     information on the type system and how to register additional
     types.
 
-    \sa {qdbustypesystem.html}{QtDBus type system},
+    \sa {qdbustypesystem.html}{Qt D-Bus Type System},
     qDBusRegisterMetaType(), QMetaType, QVariant, QDBusArgument
 */
 
@@ -170,7 +170,7 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
     \since 4.2
 
     Registers \c{T} with the
-    \l {qdbustypesystem.html}{QtDBus type system} and the Qt \l
+    \l {qdbustypesystem.html}{Qt D-Bus Type System} and the Qt \l
     {QMetaType}{meta-type system}, if it's not already registered.
 
     To register a type, it must be declared as a meta-type with the
@@ -182,14 +182,14 @@ Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
     If \c{T} isn't a type derived from one of
     Qt's \l{container classes}, the \c{operator<<} and
     \c{operator>>} streaming operators between \c{T} and QDBusArgument
-    must be already declared. See the \l {qdbustypesystem.html}{QtDBus
-    type system} page for more information on how to declare such
+    must be already declared. See the \l {qdbustypesystem.html}{Qt D-Bus
+    Type System} page for more information on how to declare such
     types.
 
     This function returns the Qt meta type id for the type (the same
     value that is returned from qRegisterMetaType()).
 
-    \sa {qdbustypesystem.html}{QtDBus type system}, qRegisterMetaType(), QMetaType
+    \sa {qdbustypesystem.html}{Qt D-Bus Type System}, qRegisterMetaType(), QMetaType
 */
 
 /*!

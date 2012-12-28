@@ -204,7 +204,7 @@ QT_BEGIN_NAMESPACE
     \value CookieLoadControlAttribute
         Requests only, type: QMetaType::Int (default: QNetworkRequest::Automatic)
         Indicates whether to send 'Cookie' headers in the request.
-        This attribute is set to false by QtWebKit when creating a cross-origin
+        This attribute is set to false by Qt WebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
         See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag}{here} for more information.
@@ -214,7 +214,7 @@ QT_BEGIN_NAMESPACE
         Requests only, type: QMetaType::Int (default: QNetworkRequest::Automatic)
         Indicates whether to save 'Cookie' headers received from the server in reply
         to the request.
-        This attribute is set to false by QtWebKit when creating a cross-origin
+        This attribute is set to false by Qt WebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
         See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag} {here} for more information.
@@ -226,7 +226,7 @@ QT_BEGIN_NAMESPACE
         if available. If this is set to QNetworkRequest::Manual and the authentication
         mechanism is 'Basic' or 'Digest', Qt will not send an an 'Authorization' HTTP
         header with any cached credentials it may have for the request's URL.
-        This attribute is set to QNetworkRequest::Manual by QtWebKit when creating a cross-origin
+        This attribute is set to QNetworkRequest::Manual by Qt WebKit when creating a cross-origin
         XMLHttpRequest where withCredentials has not been set explicitly to true by the
         Javascript that created the request.
         See \l{http://www.w3.org/TR/XMLHttpRequest2/#credentials-flag} {here} for more information.
@@ -286,7 +286,7 @@ QT_BEGIN_NAMESPACE
     \since 4.7
 
     Indicates if an aspect of the request's loading mechanism has been
-    manually overridden, e.g. by QtWebKit.
+    manually overridden, e.g. by Qt WebKit.
 
     \value Automatic            default value: indicates default behaviour.
 
@@ -584,7 +584,7 @@ void QNetworkRequest::setSslConfiguration(const QSslConfiguration &config)
     Allows setting a reference to the \a object initiating
     the request.
 
-    For example QtWebKit sets the originating object to the
+    For example Qt WebKit sets the originating object to the
     QWebFrame that initiated the request.
 
     \sa originatingObject()
@@ -1036,7 +1036,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
         dt = QDateTime::fromString(QString::fromLatin1(value), Qt::TextDate);
     } else {
         // Use sscanf over QLocal/QDateTimeParser for speed reasons. See the
-        // QtWebKit performance benchmarks to get an idea.
+        // Qt WebKit performance benchmarks to get an idea.
         if (pos == 3) {
             char month_name[4];
             int day, year, hour, minute, second;

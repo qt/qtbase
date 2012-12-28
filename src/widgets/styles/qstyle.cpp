@@ -90,7 +90,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     Qt provides a set of QStyle subclasses that emulate the native
     look of the different platforms supported by Qt (QWindowsStyle,
     QMacStyle, etc.). These styles are built into the
-    QtGui library, other styles can be made available using Qt's
+    Qt GUI module, other styles can be made available using Qt's
     plugin mechansim.
 
     Most functions for drawing style elements take four arguments:
@@ -153,7 +153,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     Qt contains a set of QStyle subclasses that emulate the styles of
     the different platforms supported by Qt (QWindowsStyle,
     QMacStyle etc.). By default, these styles are built
-    into the QtGui library. Styles can also be made available as
+    into the Qt GUI module. Styles can also be made available as
     plugins.
 
     Qt's built-in widgets use QStyle to perform nearly all of their

@@ -1089,6 +1089,6 @@ Feature: DBUS
 Description: Provides classes for D-Bus.
 Section: D-Bus
 Requires: PROPERTIES DOM
-Name: QtDBus module
+Name: Qt D-Bus module
 SeeAlso: ???
 

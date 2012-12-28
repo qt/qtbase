@@ -31,10 +31,10 @@ qt5_generate_moc("${main_file}" "${moc_file}")
 
 # The core_test is expected to fail to build because
 # QT_GUI_LIB is defined, which affects the contents of
-# QtTest and the definition of QTEST_MAIN.
+# Qt Test and the definition of QTEST_MAIN.
 # If running this test manually (ctest -V -R no_link_gui from
 # the tests/auto/cmake/build directory), the core_test is
-# expected to fail to link because of missing symbols from QtGui.
+# expected to fail to link because of missing symbols from Qt GUI.
 # The gui_test is expected to build successfully  (though it may
 # be necessary to comment out the core_test and re-run cmake)
 add_executable(core_test "${main_file}" "${moc_file}")

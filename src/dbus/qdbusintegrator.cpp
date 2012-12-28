@@ -115,7 +115,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
 void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)
 {
     qDBusDebug() << QThread::currentThread()
-                 << "QtDBus threading action" << action
+                 << "Qt D-Bus threading action" << action
                  << (condition == QDBusLockerBase::BeforeLock ? "before lock" :
                      condition == QDBusLockerBase::AfterLock ? "after lock" :
                      condition == QDBusLockerBase::BeforeUnlock ? "before unlock" :
