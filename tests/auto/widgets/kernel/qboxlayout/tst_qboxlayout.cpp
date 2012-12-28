@@ -44,6 +44,14 @@
 #include <QtGui>
 #include <QtWidgets>
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QBoxLayout : public QObject
 {
     Q_OBJECT
@@ -198,6 +206,7 @@ void tst_QBoxLayout::sizeConstraints()
 void tst_QBoxLayout::setGeometry()
 {
     QWidget toplevel;
+    setFrameless(&toplevel);
     QWidget w(&toplevel);
     QVBoxLayout *lay = new QVBoxLayout;
     lay->setMargin(0);

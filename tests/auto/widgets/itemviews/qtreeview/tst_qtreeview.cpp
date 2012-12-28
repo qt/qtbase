@@ -111,6 +111,16 @@ struct PublicView : public QTreeView
     QAbstractItemViewPrivate* aiv_priv() { return static_cast<QAbstractItemViewPrivate*>(d_ptr.data()); }
 };
 
+// Make a widget frameless to prevent size constraints of title bars
+// from interfering (Windows).
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QTreeView : public QObject
 {
     Q_OBJECT
@@ -877,6 +887,7 @@ void tst_QTreeView::horizontalScrollMode()
     }
 
     QTreeView view;
+    setFrameless(&view);
     view.setModel(&model);
     view.setFixedSize(100, 100);
     view.header()->resizeSection(0, 200);
@@ -3417,6 +3428,7 @@ void tst_QTreeView::task224091_appendColumns()
 {
     QStandardItemModel *model = new QStandardItemModel();
     QWidget* topLevel= new QWidget;
+    setFrameless(topLevel);
     QTreeView *treeView = new QTreeView(topLevel);
     treeView->setModel(model);
     topLevel->show();

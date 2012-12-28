@@ -49,6 +49,14 @@
 
 #include "../../../../shared/filesystem.h"
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class CsvCompleter : public QCompleter
 {
     Q_OBJECT
@@ -1282,6 +1290,7 @@ private slots:
 void tst_QCompleter::task246056_setCompletionPrefix()
 {
     task246056_ComboBox *comboBox = new task246056_ComboBox;
+    setFrameless(comboBox);
     QVERIFY(comboBox->completer());
     comboBox->addItem("");
     comboBox->addItem("a1");

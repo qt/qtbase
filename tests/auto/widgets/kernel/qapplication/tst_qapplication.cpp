@@ -1945,6 +1945,7 @@ void tst_QApplication::touchEventPropagation()
     {
         // touch event behavior on a window
         TouchEventPropagationTestWidget window;
+        window.resize(200, 200);
         window.setObjectName("1. window");
         window.show(); // Must have an explicitly specified QWindow for handleTouchEvent,
                        // passing 0 would result in using topLevelAt() which is not ok in this case
@@ -1999,6 +2000,7 @@ void tst_QApplication::touchEventPropagation()
     {
         // touch event behavior on a window with a child widget
         TouchEventPropagationTestWidget window;
+        window.resize(200, 200);
         window.setObjectName("2. window");
         TouchEventPropagationTestWidget widget(&window);
         widget.setObjectName("2. widget");

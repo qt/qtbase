@@ -70,6 +70,14 @@
         QCOMPARE(expr, expected); \
     } while(0)
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class TestView : public QAbstractItemView
 {
     Q_OBJECT
@@ -621,6 +629,7 @@ void tst_QAbstractItemView::noModel()
 
     QStandardItemModel model(20,20);
     QTreeView view;
+    setFrameless(&view);
 
     view.setModel(&model);
     // Make the viewport smaller than the contents, so that we can scroll

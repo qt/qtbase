@@ -213,7 +213,7 @@ void tst_QShortcut::initTestCase()
     mainW = new QMainWindow(0);
     mainW->setWindowFlags(Qt::X11BypassWindowManagerHint);
     edit  = new TestEdit(mainW, "test_edit");
-    mainW->setFixedSize( 100, 100 );
+    mainW->setFixedSize( 200, 200 );
     mainW->setCentralWidget( edit );
     mainW->show();
     mainW->activateWindow();
