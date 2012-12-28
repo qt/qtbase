@@ -131,7 +131,7 @@ public:
     T result() const { return m_future.result(); }
     T resultAt(int index) const { return m_future.resultAt(index); }
 
-#ifdef qdoc
+#ifdef Q_QDOC
     int progressValue() const;
     int progressMinimum() const;
     int progressMaximum() const;

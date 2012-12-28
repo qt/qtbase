@@ -70,7 +70,7 @@ public:
         BigEndian,
         LittleEndian
 
-#  ifdef qdoc
+#  ifdef Q_QDOC
         , ByteOrder = <platform-dependent>
 #  elif Q_BYTE_ORDER == Q_BIG_ENDIAN
         , ByteOrder = BigEndian

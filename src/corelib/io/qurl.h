@@ -154,7 +154,7 @@ public:
         FullyDecoded = FullyEncoded | DecodeReserved | 0x4000000
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
-#ifdef qdoc
+#ifdef Q_QDOC
     Q_DECLARE_FLAGS(FormattingOptions, UrlFormattingOption)
 #else
     typedef QUrlTwoFlags<UrlFormattingOption, ComponentFormattingOption> FormattingOptions;

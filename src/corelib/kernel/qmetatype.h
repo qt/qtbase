@@ -574,7 +574,7 @@ namespace QtPrivate {
 
 template <typename T>
 int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName
-#ifndef qdoc
+#ifndef Q_QDOC
     , T * dummy = 0
     , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
@@ -604,7 +604,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
 
 template <typename T>
 int qRegisterMetaType(const char *typeName
-#ifndef qdoc
+#ifndef Q_QDOC
     , T * dummy = 0
     , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType defined = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
@@ -621,7 +621,7 @@ int qRegisterMetaType(const char *typeName
 #ifndef QT_NO_DATASTREAM
 template <typename T>
 void qRegisterMetaTypeStreamOperators(const char *typeName
-#ifndef qdoc
+#ifndef Q_QDOC
     , T * /* dummy */ = 0
 #endif
 )
@@ -634,7 +634,7 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
 
 template <typename T>
 inline Q_DECL_CONSTEXPR int qMetaTypeId(
-#ifndef qdoc
+#ifndef Q_QDOC
     T * /* dummy */ = 0
 #endif
 )
@@ -645,7 +645,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId(
 
 template <typename T>
 inline Q_DECL_CONSTEXPR int qRegisterMetaType(
-#if !defined(qdoc) && !defined(Q_CC_SUN)
+#if !defined(Q_QDOC) && !defined(Q_CC_SUN)
     T * dummy = 0
 #endif
 )

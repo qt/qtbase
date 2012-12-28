@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtConcurrent {
 
-#ifndef qdoc
+#ifndef Q_QDOC
 
 /*
     The ReduceQueueStartLimit and ReduceQueueThrottleLimit constants
@@ -85,7 +85,7 @@ public:
     QVector<T> vector;
 };
 
-#endif // qdoc
+#endif // Q_QDOC
 
 enum ReduceOption {
     UnorderedReduce = 0x1,
@@ -96,7 +96,7 @@ enum ReduceOption {
 Q_DECLARE_FLAGS(ReduceOptions, ReduceOption)
 Q_DECLARE_OPERATORS_FOR_FLAGS(ReduceOptions)
 
-#ifndef qdoc
+#ifndef Q_QDOC
 
 // supports both ordered and out-of-order reduction
 template <typename ReduceFunctor, typename ReduceResultType, typename T>
@@ -242,7 +242,7 @@ struct SequenceHolder2 : public Base
     }
 };
 
-#endif //qdoc
+#endif //Q_QDOC
 
 } // namespace QtConcurrent
 

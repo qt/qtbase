@@ -252,78 +252,78 @@ Q_SIGNALS:
     void layoutAboutToBeChanged(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(), QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
 
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void rowsInserted(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
 
     void rowsAboutToBeRemoved(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void rowsRemoved(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
 
     void columnsAboutToBeInserted(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void columnsInserted(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
 
     void columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void columnsRemoved(const QModelIndex &parent, int first, int last
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
 
     void modelAboutToBeReset(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );
     void modelReset(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );
 
     void rowsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void rowsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
 
     void columnsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );

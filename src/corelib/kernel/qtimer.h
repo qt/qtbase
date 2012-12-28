@@ -89,7 +89,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void timeout(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );

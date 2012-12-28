@@ -70,7 +70,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void activated(int socket
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
     , QPrivateSignal
 #endif
     );

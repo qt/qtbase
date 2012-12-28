@@ -95,7 +95,7 @@ public:
     { return *data(); }
     inline operator T*() const
     { return data(); }
-#ifdef qdoc
+#ifdef Q_QDOC
     inline bool isNull() const;
     inline void clear();
 #else

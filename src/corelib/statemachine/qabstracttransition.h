@@ -89,7 +89,7 @@ public:
 
 Q_SIGNALS:
     void triggered(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );

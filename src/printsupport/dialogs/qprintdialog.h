@@ -91,7 +91,7 @@ public:
 #endif
     void open(QObject *receiver, const char *member);
 
-#ifdef qdoc
+#ifdef Q_QDOC
     QPrinter *printer();
 #endif
 

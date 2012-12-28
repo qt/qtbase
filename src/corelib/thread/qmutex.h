@@ -51,7 +51,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-#if !defined(QT_NO_THREAD) && !defined(qdoc)
+#if !defined(QT_NO_THREAD) && !defined(Q_QDOC)
 
 #ifdef Q_OS_LINUX
 # define QT_MUTEX_LOCK_NOEXCEPT Q_DECL_NOTHROW
@@ -173,7 +173,7 @@ private:
     quintptr val;
 };
 
-#else // QT_NO_THREAD or qdoc
+#else // QT_NO_THREAD or Q_QDOC
 
 class Q_CORE_EXPORT QMutex
 {
@@ -207,7 +207,7 @@ private:
 
 typedef QMutex QBasicMutex;
 
-#endif // QT_NO_THREAD or qdoc
+#endif // QT_NO_THREAD or Q_QDOC
 
 QT_END_NAMESPACE
 
