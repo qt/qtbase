@@ -51,8 +51,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_STANDARDPATHS
 
-class QStringList;
-
 class Q_CORE_EXPORT QStandardPaths
 {
 public:
