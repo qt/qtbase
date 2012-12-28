@@ -1772,24 +1772,6 @@ void QGraphicsItem::setFlag(GraphicsItemFlag flag, bool enabled)
 }
 
 /*!
-    \internal
-
-    Sets the flag \a flag on \a item and all its children, to \a enabled.
-*/
-static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::GraphicsItemFlag flag,
-                                    bool enabled)
-{
-    if (item->flags() & flag) {
-        // If this item already has the correct flag set, we don't have to
-        // propagate it.
-        return;
-    }
-    item->setFlag(flag, enabled);
-    foreach (QGraphicsItem *child, item->childItems())
-        _q_qgraphicsItemSetFlag(child, flag, enabled);
-}
-
-/*!
     Sets the item flags to \a flags. All flags in \a flags are enabled; all
     flags not in \a flags are disabled.
 
