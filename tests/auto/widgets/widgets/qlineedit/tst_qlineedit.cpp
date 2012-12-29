@@ -866,12 +866,18 @@ public:
 
 void tst_QLineEdit::hasAcceptableInputValidator()
 {
+    QSignalSpy spyChanged(testWidget, SIGNAL(textChanged(QString)));
+    QSignalSpy spyEdited(testWidget, SIGNAL(textEdited(QString)));
+
     QFocusEvent lostFocus(QEvent::FocusOut);
     ValidatorWithFixup val;
     testWidget->setValidator(&val);
     testWidget->setText("foobar");
     qApp->sendEvent(testWidget, &lostFocus);
     QVERIFY(testWidget->hasAcceptableInput());
+
+    QCOMPARE(spyChanged.count(), 2);
+    QCOMPARE(spyEdited.count(), 0);
 }
 
 

@@ -427,7 +427,7 @@ bool QWidgetLineControl::fixup() // this function assumes that validate currentl
         m_validator->fixup(textCopy);
         if (m_validator->validate(textCopy, cursorCopy) == QValidator::Acceptable) {
             if (textCopy != m_text || cursorCopy != m_cursor)
-                internalSetText(textCopy, cursorCopy);
+                internalSetText(textCopy, cursorCopy, false);
             return true;
         }
     }
@@ -672,7 +672,7 @@ bool QWidgetLineControl::finishChange(int validateFromState, bool update, bool e
             m_validInput = (m_validator->validate(textCopy, cursorCopy) != QValidator::Invalid);
             if (m_validInput) {
                 if (m_text != textCopy) {
-                    internalSetText(textCopy, cursorCopy);
+                    internalSetText(textCopy, cursorCopy, false);
                     return true;
                 }
                 m_cursor = cursorCopy;
