@@ -1647,7 +1647,7 @@ bool Configure::displayHelp()
             desc(               "",                     qPrintable(QString("  %1").arg(defaultBuildParts.at(i))), false, ' ');
         desc(                   "-nomake <part>",       "Exclude part from the list of parts to be built.\n");
 
-        desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module.\n");
+        desc("WIDGETS", "no", "-no-widgets",            "Disable Qt Widgets module.\n");
 
         desc("ACCESSIBILITY", "no", "-no-accessibility", "Disable accessibility support.\n");
         desc(                   "",                      "Disabling accessibility is not recommended, as it will break QStyle\n"
@@ -1809,8 +1809,8 @@ bool Configure::displayHelp()
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
         desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
-        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQtMultimedia.");
-        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia.\n");
+        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
+        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
@@ -3385,8 +3385,8 @@ void Configure::displayConfig()
     sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
-    sout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
-    sout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
+    sout << "Qt D-Bus support............" << dictionary[ "DBUS" ] << endl;
+    sout << "Qt Widgets module support..." << dictionary[ "WIDGETS" ] << endl;
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
     sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
     sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl << endl;
