@@ -142,6 +142,7 @@ public:
     bool newPage_helper();
     void setPaperSize(QPrinter::PaperSize ps);
     QPrinter::PaperSize paperSize() const;
+    void setPaperName(const QString &name);
     QList<QVariant> supportedResolutions() const;
     inline bool isPrintSessionInitialized() const
     {

@@ -167,6 +167,9 @@ public:
     void setPaperSize(const QSizeF &paperSize, Unit unit);
     QSizeF paperSize(Unit unit) const;
 
+    void setPaperName(const QString &paperName);
+    QString paperName() const;
+
     void setPageOrder(PageOrder);
     PageOrder pageOrder() const;
 

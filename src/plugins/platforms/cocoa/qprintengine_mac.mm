@@ -180,6 +180,38 @@ QPrinter::PaperSize QMacPrintEnginePrivate::paperSize() const
     return QPlatformPrinterSupport::convertQSizeFToPaperSize(sizef);
 }
 
+void QMacPrintEnginePrivate::setPaperName(const QString &name)
+{
+    Q_Q(QMacPrintEngine);
+    PMPrinter printer;
+
+    if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
+        CFArrayRef array;
+        if (PMPrinterGetPaperList(printer, &array) != noErr) {
+            PMRelease(printer);
+            return;
+        }
+        int count = CFArrayGetCount(array);
+        for (int i = 0; i < count; ++i) {
+            PMPaper paper = static_cast<PMPaper>(const_cast<void *>(CFArrayGetValueAtIndex(array, i)));
+            QCFString paperName;
+            if (PMPaperCreateLocalizedName(paper, printer, &paperName) == noErr) {
+                if (QString(paperName) == name) {
+                    PMPageFormat tmp;
+                    PMCreatePageFormatWithPMPaper(&tmp, paper);
+                    PMCopyPageFormat(tmp, format());
+                    q->setProperty(QPrintEngine::PPK_Orientation, orient);
+                    if (PMSessionValidatePageFormat(session(), format(), kPMDontWantBoolean) != noErr) {
+                        // Don't know, warn for the moment.
+                        qWarning("QMacPrintEngine, problem setting paper name");
+                    }
+                }
+            }
+        }
+        PMRelease(printer);
+    }
+}
+
 QList<QVariant> QMacPrintEnginePrivate::supportedResolutions() const
 {
     Q_ASSERT_X(printInfo, "QMacPrinterEngine::supportedResolutions",
@@ -601,6 +633,9 @@ void QMacPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_PaperSize:
         d->setPaperSize(QPrinter::PaperSize(value.toInt()));
         break;
+    case PPK_PaperName:
+        d->setPaperName(value.toString());
+        break;
     case PPK_PrinterName: {
         bool printerNameSet = false;
         OSStatus status = noErr;
@@ -738,6 +773,9 @@ QVariant QMacPrintEngine::property(PrintEnginePropertyKey key) const
         break; }
     case PPK_PaperSize:
         ret = d->paperSize();
+        break;
+    case PPK_PaperName:
+        ret = QCFString::toQString([d->printInfo localizedPaperName]);
         break;
     case PPK_PaperRect: {
         QRect r;

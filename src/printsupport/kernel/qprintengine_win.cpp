@@ -167,6 +167,16 @@ static int mapPaperSourceDevmode(QPrinter::PaperSource s)
     return sources[i].winSourceName ? sources[i].winSourceName : s;
 }
 
+static inline uint qwcsnlen(const wchar_t *str, uint maxlen)
+{
+    uint length = 0;
+    if (str) {
+        while (length < maxlen && *str++)
+            length++;
+    }
+    return length;
+}
+
 QWin32PrintEngine::QWin32PrintEngine(QPrinter::PrinterMode mode)
     : QAlphaPaintEngine(*(new QWin32PrintEnginePrivate),
                    PaintEngineFeatures(PrimitiveTransform
@@ -1285,7 +1295,39 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         d->has_custom_paper_size = (QPrinter::PaperSize(value.toInt()) == QPrinter::Custom);
         d->doReinit();
         break;
-
+    case PPK_PaperName:
+        {
+            if (!d->devMode)
+                break;
+            DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                                            NULL, DC_PAPERNAMES, NULL, NULL);
+            if ((int)size > 0) {
+                wchar_t *paperNames = new wchar_t[size*64];
+                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                                          NULL, DC_PAPERNAMES, paperNames, NULL);
+                int paperPos = -1;
+                for (int i=0;i<(int)size;i++) {
+                    wchar_t *copyOfPaper = paperNames + (i * 64);
+                    if (value.toString() == QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64))) {
+                        paperPos = i;
+                        break;
+                    }
+                }
+                delete [] paperNames;
+                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                                          NULL, DC_PAPERS, NULL, NULL);
+                if ((int)size > 0) {
+                    wchar_t *papers = new wchar_t[size];
+                    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                                              NULL, DC_PAPERS, papers, NULL);
+                    d->has_custom_paper_size = false;
+                    d->devMode->dmPaperSize = papers[paperPos];
+                    d->doReinit();
+                    delete [] papers;
+                 }
+            }
+        }
+        break;
     case PPK_PaperSource:
         {
             if (!d->devMode)
@@ -1479,7 +1521,40 @@ QVariant QWin32PrintEngine::property(PrintEnginePropertyKey key) const
             value = QTransform(1/d->stretch_x, 0, 0, 1/d->stretch_y, 0, 0).mapRect(d->devPaperRect);
         }
         break;
+    case PPK_PaperName:
+        if (!d->devMode) {
+            value = QLatin1String("A4");
+        } else {
+            DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                                        NULL, DC_PAPERS, NULL, NULL);
+            int paperSizePos = -1;
+            if ((int)size > 0) {
+                wchar_t *papers = new wchar_t[size];
+                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                                           NULL, DC_PAPERS, papers, NULL);
+                for (int i=0;i<(int)size;i++) {
+                    if (papers[i] == d->devMode->dmPaperSize) {
+                        paperSizePos = i;
+                        break;
+                    }
+                }
+                delete [] papers;
 
+            }
+            if (paperSizePos != -1) {
+                size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                    NULL, DC_PAPERNAMES, NULL, NULL);
+                if ((int)size > 0) {
+                    wchar_t *papers = new wchar_t[size*64];
+                    size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(d->name.utf16()),
+                        NULL, DC_PAPERNAMES, papers, NULL);
+                    wchar_t *copyOfPaper = papers + (paperSizePos * 64);
+                    value = QString::fromWCharArray(copyOfPaper, qwcsnlen(copyOfPaper, 64));
+                    delete [] papers;
+                }
+            }
+        }
+        break;
     case PPK_PaperSource:
         if (!d->devMode) {
             value = QPrinter::Auto;
@@ -1594,16 +1669,6 @@ QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinter
         delete [] papers;
     }
     return returnList;
-}
-
-static inline uint qwcsnlen(const wchar_t *str, uint maxlen)
-{
-    uint length = 0;
-    if (str) {
-        while (length < maxlen && *str++)
-            length++;
-    }
-    return length;
 }
 
 QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const QPrinterInfo &printerInfo)
