@@ -82,7 +82,8 @@
     QCompleter::CaseSensitivelySortedModel or
     QCompleter::CaseInsensitivelySortedModel as the argument. On large models,
     this can lead to significant performance improvements, because QCompleter
-    can then use binary search instead of linear search.
+    can then use binary search instead of linear search. The binary search only
+    works when the filterMode is Qt::MatchStartsWith.
 
     The model can be a \l{QAbstractListModel}{list model},
     a \l{QAbstractTableModel}{table model}, or a
@@ -199,16 +200,18 @@ void QCompletionModel::setSourceModel(QAbstractItemModel *source)
 void QCompletionModel::createEngine()
 {
     bool sortedEngine = false;
-    switch (c->sorting) {
-    case QCompleter::UnsortedModel:
-        sortedEngine = false;
-        break;
-    case QCompleter::CaseSensitivelySortedModel:
-        sortedEngine = c->cs == Qt::CaseSensitive;
-        break;
-    case QCompleter::CaseInsensitivelySortedModel:
-        sortedEngine = c->cs == Qt::CaseInsensitive;
-        break;
+    if (c->filterMode == Qt::MatchStartsWith) {
+        switch (c->sorting) {
+        case QCompleter::UnsortedModel:
+            sortedEngine = false;
+            break;
+        case QCompleter::CaseSensitivelySortedModel:
+            sortedEngine = c->cs == Qt::CaseSensitive;
+            break;
+        case QCompleter::CaseInsensitivelySortedModel:
+            sortedEngine = c->cs == Qt::CaseInsensitive;
+            break;
+        }
     }
 
     if (sortedEngine)
@@ -522,6 +525,8 @@ bool QCompletionEngine::lookupCache(QString part, const QModelIndex& parent, QMa
 // When the cache size exceeds 1MB, it clears out about 1/2 of the cache.
 void QCompletionEngine::saveInCache(QString part, const QModelIndex& parent, const QMatchData& m)
 {
+    if (c->filterMode == Qt::MatchEndsWith)
+        return;
     QMatchData old = cache[parent].take(part);
     cost = cost + m.indices.cost() - old.indices.cost();
     if (cost * sizeof(int) > 1024 * 1024) {
@@ -703,9 +708,35 @@ int QUnsortedModelEngine::buildIndices(const QString& str, const QModelIndex& pa
 
     for (i = 0; i < indices.count() && count != n; ++i) {
         QModelIndex idx = model->index(indices[i], c->column, parent);
-        QString data = model->data(idx, c->role).toString();
-        if (!data.startsWith(str, c->cs) || !(model->flags(idx) & Qt::ItemIsSelectable))
+
+        if (!(model->flags(idx) & Qt::ItemIsSelectable))
             continue;
+
+        QString data = model->data(idx, c->role).toString();
+
+        switch (c->filterMode) {
+        case Qt::MatchStartsWith:
+            if (!data.startsWith(str, c->cs))
+                continue;
+            break;
+        case Qt::MatchContains:
+            if (!data.contains(str, c->cs))
+                continue;
+            break;
+        case Qt::MatchEndsWith:
+            if (!data.endsWith(str, c->cs))
+                continue;
+            break;
+        case Qt::MatchExactly:
+        case Qt::MatchFixedString:
+        case Qt::MatchCaseSensitive:
+        case Qt::MatchRegExp:
+        case Qt::MatchWildcard:
+        case Qt::MatchWrap:
+        case Qt::MatchRecursive:
+            Q_UNREACHABLE();
+            break;
+        }
         m->indices.append(indices[i]);
         ++count;
         if (m->exactMatchIndex == -1 && QString::compare(data, str, c->cs) == 0) {
@@ -773,9 +804,9 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
 
 ///////////////////////////////////////////////////////////////////////////////
 QCompleterPrivate::QCompleterPrivate()
-: widget(0), proxy(0), popup(0), cs(Qt::CaseSensitive), role(Qt::EditRole), column(0),
-  maxVisibleItems(7), sorting(QCompleter::UnsortedModel), wrap(true), eatFocusOut(true),
-  hiddenBecauseNoMatch(false)
+: widget(0), proxy(0), popup(0), filterMode(Qt::MatchStartsWith), cs(Qt::CaseSensitive),
+  role(Qt::EditRole), column(0), maxVisibleItems(7), sorting(QCompleter::UnsortedModel),
+  wrap(true), eatFocusOut(true), hiddenBecauseNoMatch(false)
 {
 }
 
@@ -1095,6 +1126,48 @@ QCompleter::CompletionMode QCompleter::completionMode() const
 {
     Q_D(const QCompleter);
     return d->mode;
+}
+
+/*!
+    \property QCompleter::filterMode
+    \brief how the filtering is performed
+    \since 5.2
+
+    If filterMode is set to Qt::MatchStartsWith, only those entries that start
+    with the typed characters will be displayed. Qt::MatchContains will display
+    the entries that contain the typed characters, and Qt::MatchEndsWith the
+    ones that end with the typed characters.
+
+    Currently, only these three modes are implemented. Setting filterMode to
+    any other Qt::MatchFlag will issue a warning, and no action will be
+    performed.
+
+    The default mode is Qt::MatchStartsWith.
+*/
+
+void QCompleter::setFilterMode(Qt::MatchFlags filterMode)
+{
+    Q_D(QCompleter);
+
+    if (d->filterMode == filterMode)
+        return;
+
+    if (filterMode != Qt::MatchStartsWith
+            && filterMode != Qt::MatchContains
+            && filterMode != Qt::MatchEndsWith) {
+        qWarning("Unhandled QCompleter::filterMode flag is used.");
+        return;
+    }
+
+    d->filterMode = filterMode;
+    d->proxy->createEngine();
+    d->proxy->invalidate();
+}
+
+Qt::MatchFlags QCompleter::filterMode() const
+{
+    Q_D(const QCompleter);
+    return d->filterMode;
 }
 
 /*!

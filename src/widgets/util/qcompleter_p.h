@@ -82,6 +82,7 @@ public:
     QCompletionModel *proxy;
     QAbstractItemView *popup;
     QCompleter::CompletionMode mode;
+    Qt::MatchFlags filterMode;
 
     QString prefix;
     Qt::CaseSensitivity cs;

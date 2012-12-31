@@ -1418,6 +1418,135 @@ void tst_QCompleter::task253125_lineEditCompletion()
 
     QCOMPARE(edit.text(), QString("iota"));
 
+    edit.clear();
+    completer->setCompletionMode(QCompleter::PopupCompletion);
+    completer->setFilterMode(Qt::MatchContains);
+
+    QTest::keyClick(&edit, 't');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("beta"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("beta"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'p');
+    QTest::keyClick(&edit, 'p');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("kappa"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("kappa"));
+
+    edit.clear();
+    completer->setFilterMode(Qt::MatchStartsWith);
+
+    QTest::keyClick(&edit, 't');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("theta"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("theta"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'p');
+    QTest::keyClick(&edit, 'p');
+    QCOMPARE(edit.completer()->currentCompletion(), QString());
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("pp"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'u');
+    QTest::keyClick(&edit, 'p');
+    QTest::keyClick(&edit, 's');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("upsilon"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("upsilon"));
+
+    edit.clear();
+    completer->setFilterMode(Qt::MatchEndsWith);
+
+    QTest::keyClick(&edit, 'm');
+    QTest::keyClick(&edit, 'm');
+    QTest::keyClick(&edit, 'a');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("gamma"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("gamma"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'g');
+    QTest::keyClick(&edit, 'm');
+    QTest::keyClick(&edit, 'a');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("sigma"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("sigma"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'm');
+    QTest::keyClick(&edit, 'm');
+    QCOMPARE(edit.completer()->currentCompletion(), QString());
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("mm"));
+
+    edit.clear();
+    completer->setFilterMode(Qt::MatchStartsWith);
+
+    QTest::keyClick(&edit, 'z');
+    QTest::keyClick(&edit, 'e');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("zeta"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("zeta"));
+
+    edit.clear();
+    completer->setFilterMode(Qt::MatchEndsWith);
+
+    QTest::keyClick(&edit, 'e');
+    QTest::keyClick(&edit, 'g');
+    QTest::keyClick(&edit, 'a');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("omega"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("omega"));
+
+    edit.clear();
+    completer->setFilterMode(Qt::MatchContains);
+
+    QTest::keyClick(&edit, 'c');
+    QTest::keyClick(&edit, 'r');
+    QCOMPARE(edit.completer()->currentCompletion(), QString("omicron"));
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("omicron"));
+
+    edit.clear();
+
+    QTest::keyClick(&edit, 'z');
+    QTest::keyClick(&edit, 'z');
+    QCOMPARE(edit.completer()->currentCompletion(), QString());
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
+    QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
+
+    QCOMPARE(edit.text(), QString("zz"));
+
     delete completer;
     delete model;
 }

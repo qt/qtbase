@@ -63,6 +63,7 @@ class Q_WIDGETS_EXPORT QCompleter : public QObject
     Q_OBJECT
     Q_PROPERTY(QString completionPrefix READ completionPrefix WRITE setCompletionPrefix)
     Q_PROPERTY(ModelSorting modelSorting READ modelSorting WRITE setModelSorting)
+    Q_PROPERTY(Qt::MatchFlags filterMode READ filterMode WRITE setFilterMode)
     Q_PROPERTY(CompletionMode completionMode READ completionMode WRITE setCompletionMode)
     Q_PROPERTY(int completionColumn READ completionColumn WRITE setCompletionColumn)
     Q_PROPERTY(int completionRole READ completionRole WRITE setCompletionRole)
@@ -98,6 +99,9 @@ public:
 
     void setCompletionMode(CompletionMode mode);
     CompletionMode completionMode() const;
+
+    void setFilterMode(Qt::MatchFlags filterMode);
+    Qt::MatchFlags filterMode() const;
 
     QAbstractItemView *popup() const;
     void setPopup(QAbstractItemView *popup);
