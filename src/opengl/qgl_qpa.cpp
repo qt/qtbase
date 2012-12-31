@@ -70,8 +70,8 @@ QGLFormat QGLFormat::fromSurfaceFormat(const QSurfaceFormat &format)
     if (format.depthBufferSize() >= 0)
         retFormat.setDepthBufferSize(format.depthBufferSize());
     if (format.samples() > 1) {
-        retFormat.setSampleBuffers(format.samples());
-        retFormat.setSamples(true);
+        retFormat.setSampleBuffers(true);
+        retFormat.setSamples(format.samples());
     }
     if (format.stencilBufferSize() > 0) {
         retFormat.setStencil(true);
