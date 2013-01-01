@@ -1596,6 +1596,38 @@ QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinter
     return returnList;
 }
 
+QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const QPrinterInfo &printerInfo)
+{
+    QList<QPair<QString, QSizeF> > paperSizes;
+    if (printerInfo.isNull())
+        return paperSizes;
+    DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
+                                    NULL, DC_PAPERNAMES, NULL, NULL);
+    if ((int)size != -1) {
+        wchar_t *papers = new wchar_t[size*64];
+        size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
+                                  NULL, DC_PAPERNAMES, papers, NULL);
+        DWORD size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
+                                         NULL, DC_PAPERSIZE, NULL, NULL);
+        if ((int)size2 != -1) {
+            POINT *points = new POINT[size2*sizeof(POINT)];
+
+            size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
+                                       NULL, DC_PAPERSIZE, (wchar_t *)points, NULL);
+            wchar_t copyOfPaper[65];
+            for (int i=0;i<(int)size;i++) {
+                wcscpy_s(copyOfPaper, 64, papers + (i * 64));
+                copyOfPaper[64] = '\0';
+                QString str = QString::fromWCharArray(copyOfPaper);
+                paperSizes << qMakePair(str, QSizeF(points[i].x / 10, points[i].y / 10));
+            }
+            delete [] points;
+        }
+        delete [] papers;
+    }
+    return paperSizes;
+}
+
 void QWin32PrintEngine::queryDefaultPrinter(QString &name, QString &program, QString &port)
 {
     /* Read the default printer name, driver and port with the intuitive function

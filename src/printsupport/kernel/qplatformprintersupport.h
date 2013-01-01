@@ -72,7 +72,7 @@ public:
     virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
     virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
-
+    virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo) const;
     virtual QList<QPrinterInfo> availablePrinters();
     virtual QPrinterInfo defaultPrinter();
     virtual QPrinterInfo printerInfo(const QString &printerName);

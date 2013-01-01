@@ -58,6 +58,7 @@
 #ifndef QT_NO_PRINTER
 
 #include "QtCore/qlist.h"
+#include "QtCore/qpair.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +66,8 @@ class QPrinterInfoPrivate
 {
 public:
     QPrinterInfoPrivate(const QString& name = QString()) :
-        name(name), isDefault(false), index(-1), hasPaperSizes(false)
+        name(name), isDefault(false), index(-1), hasPaperSizes(false),
+        hasPaperNames(false)
     {}
     ~QPrinterInfoPrivate()
     {}
@@ -81,6 +83,8 @@ public:
 
     mutable bool hasPaperSizes;
     mutable QList<QPrinter::PaperSize> paperSizes;
+    mutable bool hasPaperNames;
+    mutable QList<QPair<QString, QSizeF> > paperNames;
 };
 
 
