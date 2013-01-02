@@ -151,6 +151,11 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
+    // Transfer focus to the touched window:
+    QWindow *window = m_qioswindow->window();
+    if (window != QGuiApplication::focusWindow())
+        QWindowSystemInterface::handleWindowActivated(window);
+
     [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::LeftButton];
 }
 
