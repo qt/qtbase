@@ -122,6 +122,10 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslError::SslError &erro
 
 QT_END_NAMESPACE
 
+#ifndef QT_NO_SSL
+Q_DECLARE_METATYPE(QList<QSslError>)
+#endif
+
 QT_END_HEADER
 
 #endif

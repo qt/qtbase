@@ -223,10 +223,6 @@ private:
 
 QT_END_NAMESPACE
 
-#ifndef QT_NO_SSL
-Q_DECLARE_METATYPE(QList<QSslError>)
-#endif
-
 QT_END_HEADER
 
 #endif
