@@ -80,11 +80,11 @@ public:
     // ----------------------------------------------------
     // Additional methods
     void setVirtualSiblings(QList<QPlatformScreen *> siblings) { m_siblings = siblings; }
-    NSScreen *osScreen() const { return m_screen; }
+    NSScreen *osScreen() const;
     void updateGeometry();
 
 public:
-    NSScreen *m_screen;
+    int m_screenIndex;
     QRect m_geometry;
     QRect m_availableGeometry;
     QDpi m_logicalDpi;

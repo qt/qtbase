@@ -70,9 +70,8 @@ static void initResources()
 QT_BEGIN_NAMESPACE
 
 QCocoaScreen::QCocoaScreen(int screenIndex) :
-    QPlatformScreen(), m_refreshRate(60.0)
+    QPlatformScreen(), m_screenIndex(screenIndex), m_refreshRate(60.0)
 {
-    m_screen = [[NSScreen screens] objectAtIndex:screenIndex];
     updateGeometry();
     m_cursor = new QCocoaCursor;
 }
@@ -82,19 +81,25 @@ QCocoaScreen::~QCocoaScreen()
     delete m_cursor;
 }
 
+NSScreen *QCocoaScreen::osScreen() const
+{
+    return [[NSScreen screens] objectAtIndex:m_screenIndex];
+}
+
 void QCocoaScreen::updateGeometry()
 {
-    NSRect frameRect = [m_screen frame];
+    NSScreen *nsScreen = osScreen();
+    NSRect frameRect = [nsScreen frame];
     m_geometry = QRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width, frameRect.size.height);
-    NSRect visibleRect = [m_screen visibleFrame];
+    NSRect visibleRect = [nsScreen visibleFrame];
     m_availableGeometry = QRect(visibleRect.origin.x,
                                 frameRect.size.height - (visibleRect.origin.y + visibleRect.size.height), // invert y
                                 visibleRect.size.width, visibleRect.size.height);
 
     m_format = QImage::Format_RGB32;
-    m_depth = NSBitsPerPixelFromDepth([m_screen depth]);
+    m_depth = NSBitsPerPixelFromDepth([nsScreen depth]);
 
-    NSDictionary *devDesc = [m_screen deviceDescription];
+    NSDictionary *devDesc = [nsScreen deviceDescription];
     CGDirectDisplayID dpy = [[devDesc objectForKey:@"NSScreenNumber"] unsignedIntValue];
     CGSize size = CGDisplayScreenSize(dpy);
     m_physicalSize = QSizeF(size.width, size.height);
@@ -119,7 +124,7 @@ qreal QCocoaScreen::devicePixelRatio() const
 {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        return qreal([m_screen backingScaleFactor]);
+        return qreal([osScreen() backingScaleFactor]);
     } else
 #endif
     {
