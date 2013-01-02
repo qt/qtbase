@@ -57,7 +57,6 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
 
 class QAccessibleInterface;
 class QAccessibleEvent;
@@ -676,8 +675,6 @@ inline void QAccessible::updateAccessibility(QObject *object, int child, Event r
     updateAccessibility(&ev);
 }
 #endif
-
-#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 

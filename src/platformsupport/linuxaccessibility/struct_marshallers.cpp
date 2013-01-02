@@ -50,8 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
-
 QSpiObjectReference::QSpiObjectReference()
     : path(QDBusObjectPath(ATSPI_DBUS_PATH_NULL))
 {}
@@ -235,7 +233,5 @@ void qSpiInitializeStructTypes()
     qDBusRegisterMetaType<QSpiRelationArrayEntry>();
     qDBusRegisterMetaType<QSpiRelationArray>();
 }
-
-#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
