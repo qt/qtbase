@@ -606,7 +606,7 @@
 
 /*!
     \fn QSharedPointer<T> QSharedPointer::create()
-    \since 4.6
+    \since 5.1
 
     Creates a QSharedPointer object and allocates a new item of type \tt T. The
     QSharedPointer internals and the object are allocated in one single memory
