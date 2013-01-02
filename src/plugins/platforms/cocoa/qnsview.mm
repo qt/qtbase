@@ -49,6 +49,7 @@
 #include "qcocoaautoreleasepool.h"
 #include "qmultitouch_mac_p.h"
 #include "qcocoadrag.h"
+#include "qmacmime.h"
 #include <qpa/qplatformintegration.h>
 
 #include <qpa/qwindowsysteminterface.h>
@@ -1106,8 +1107,7 @@ static QTouchDevice *touchDevice = 0;
 -(void)registerDragTypes
 {
     QCocoaAutoReleasePool pool;
-    // ### Custom types disabled.
-    QStringList customTypes;  // = qEnabledDraggedTypes();
+    QStringList customTypes = qt_mac_enabledDraggedTypes();
     if (currentCustomDragTypes == 0 || *currentCustomDragTypes != customTypes) {
         if (currentCustomDragTypes == 0)
             currentCustomDragTypes = new QStringList();

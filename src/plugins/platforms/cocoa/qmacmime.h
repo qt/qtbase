@@ -48,7 +48,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QMacPasteboardMime {
+// Duplicate of QMacPasteboardMime in QtMacExtras. Keep in sync!
+class QMacPasteboardMime {
     char type;
 public:
     enum QMacPasteboardMimeType { MIME_DND=0x01,
@@ -76,6 +77,11 @@ public:
     virtual QList<QByteArray> convertFromMime(const QString &mime, QVariant data, QString flav) = 0;
     virtual int count(QMimeData *mimeData);
 };
+
+void qt_mac_addToGlobalMimeList(QMacPasteboardMime *macMime);
+void qt_mac_removeFromGlobalMimeList(QMacPasteboardMime *macMime);
+void qt_mac_registerDraggedTypes(const QStringList &types);
+const QStringList& qt_mac_enabledDraggedTypes();
 
 QT_END_NAMESPACE
 
