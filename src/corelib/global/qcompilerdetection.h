@@ -702,6 +702,9 @@
 #    ifdef Q_COMPILER_INITIALIZER_LISTS
 #      undef Q_COMPILER_INITIALIZER_LISTS
 #    endif
+#    ifdef Q_COMPILER_RVALUE_REFS
+#      undef Q_COMPILER_RVALUE_REFS
+#    endif
 #  endif
 # endif
 #endif // Q_OS_QNX
