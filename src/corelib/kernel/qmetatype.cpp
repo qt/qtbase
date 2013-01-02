@@ -240,6 +240,7 @@ struct DefinedTypesFilter {
     \omitvalue PointerToQObject
     \omitvalue WeakPointerToQObject
     \omitvalue TrackingPointerToQObject
+    \omitvalue WasDeclaredAsMetaType
 */
 
 /*!
