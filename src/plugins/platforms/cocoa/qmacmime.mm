@@ -68,7 +68,10 @@ Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 
 void qt_mac_addToGlobalMimeList(QMacPasteboardMime *macMime)
 {
-    globalMimeList()->append(macMime);
+    // globalMimeList is in decreasing priority order. Recently added
+    // converters take prioity over previously added converters: prepend
+    // to the list.
+    globalMimeList()->prepend(macMime);
 }
 
 void qt_mac_removeFromGlobalMimeList(QMacPasteboardMime *macMime)
@@ -810,6 +813,10 @@ QList<QByteArray> QMacPasteboardMimeVCard::convertFromMime(const QString &mime, 
 void QMacPasteboardMime::initializeMimeTypes()
 {
     if (globalMimeList()->isEmpty()) {
+        // Create QMacPasteboardMimeAny first to put it at the end of globalMimeList
+        // with lowest priority. (the constructor prepends to the list)
+        new QMacPasteboardMimeAny;
+
         //standard types that we wrap
         new QMacPasteboardMimeTiff;
         new QMacPasteboardMimeUnicodeText;
@@ -819,8 +826,6 @@ void QMacPasteboardMime::initializeMimeTypes()
         new QMacPasteboardMimeUrl;
         new QMacPasteboardMimeTypeName;
         new QMacPasteboardMimeVCard;
-        //make sure our "non-standard" types are always last! --Sam
-        new QMacPasteboardMimeAny;
     }
 }
 
