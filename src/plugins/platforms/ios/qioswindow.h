@@ -67,6 +67,9 @@ public:
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
     void setVisible(bool visible);
 
+    void raise() { raiseOrLower(true); }
+    void lower() { raiseOrLower(false); }
+
     qreal devicePixelRatio() const;
     int effectiveWidth() const;
     int effectiveHeight() const;
@@ -78,6 +81,8 @@ private:
     QRect m_requestedGeometry;
 
     qreal m_devicePixelRatio;
+
+    void raiseOrLower(bool raise);
 };
 
 QT_END_NAMESPACE

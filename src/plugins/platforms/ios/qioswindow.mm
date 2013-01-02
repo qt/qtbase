@@ -153,8 +153,10 @@
 {
     // Transfer focus to the touched window:
     QWindow *window = m_qioswindow->window();
-    if (window != QGuiApplication::focusWindow())
+    if (window != QGuiApplication::focusWindow()) {
+        m_qioswindow->raise();
         QWindowSystemInterface::handleWindowActivated(window);
+    }
 
     [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::LeftButton];
 }
@@ -312,6 +314,34 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
         m_view.autoresizingMask = UIViewAutoresizingNone;
         break;
     }
+}
+
+void QIOSWindow::raiseOrLower(bool raise)
+{
+    // Re-insert m_view at the correct index among its sibling views (QWindows), and ensure
+    // that window flags (staysOnTop, popup) are respected. This function assumes that all
+    // sibling views are sorted correctly. Note: We sort popup and staysOnTop windows at
+    // the same level:
+    if (!isQtApplication())
+        return;
+
+    NSArray *subviews = m_view.superview.subviews;
+    if (subviews.count == 1)
+        return;
+
+    const Qt::WindowFlags topFlag = (Qt::Popup | Qt::WindowStaysOnTopHint) & ~Qt::Dialog;
+    bool thisWindowIsTop = topFlag & window()->flags();
+
+    for (int i = int(subviews.count) - 1; i >= 0; --i) {
+        UIView *view = static_cast<UIView *>([subviews objectAtIndex:i]);
+        bool otherWindowIsTop = topFlag & view.qwindow->flags();
+        if ((raise && (thisWindowIsTop || !otherWindowIsTop))
+                || (!raise && (thisWindowIsTop && !otherWindowIsTop))) {
+            [m_view.superview insertSubview:m_view aboveSubview:view];
+            return;
+        }
+    }
+    [m_view.superview insertSubview:m_view atIndex:0];
 }
 
 void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientation)
