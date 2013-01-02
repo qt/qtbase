@@ -693,7 +693,7 @@
 #endif /* Q_CC_MSVC */
 
 #ifdef __cplusplus
-# if defined(Q_OS_BLACKBERRY) || defined(Q_OS_QNX)
+# if defined(Q_OS_QNX)
 #  include <utility>
 #  if defined(_YVALS) || defined(_LIBCPP_VER)
 // QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
@@ -704,7 +704,7 @@
 #    endif
 #  endif
 # endif
-#endif // Q_OS_BLACKBERRY || Q_OS_QNX
+#endif // Q_OS_QNX
 
 /*
  * C++11 keywords and expressions
