@@ -472,7 +472,7 @@ int QMetaObject::constructorCount() const
 
 /*!
     Returns the number of methods in this class, including the number of
-    properties provided by each base class. These include signals and slots
+    methods provided by each base class. These include signals and slots
     as well as normal member functions.
 
     Use code like the following to obtain a QStringList containing the methods
