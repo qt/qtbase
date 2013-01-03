@@ -178,7 +178,6 @@ tst_QStandardItemModel::~tst_QStandardItemModel()
 */
 void tst_QStandardItemModel::init()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     qRegisterMetaType<QStandardItem*>("QStandardItem*");
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
 

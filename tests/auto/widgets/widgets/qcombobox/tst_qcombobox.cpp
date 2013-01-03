@@ -377,7 +377,6 @@ Q_DECLARE_METATYPE(QComboBox::InsertPolicy)
 
 tst_QComboBox::tst_QComboBox()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     parent = 0;
 }
 

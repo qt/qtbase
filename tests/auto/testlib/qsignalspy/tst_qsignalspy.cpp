@@ -183,7 +183,6 @@ void tst_QSignalSpy::spyWithQtClasses()
 {
     QtTestObject2 obj;
 
-    qRegisterMetaType<QDateTime>("QDateTime");
 
     QSignalSpy spy(&obj, SIGNAL(sig2(QDateTime)));
     QDateTime dt = QDateTime::currentDateTime();

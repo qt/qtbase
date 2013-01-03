@@ -588,7 +588,6 @@ void tst_QColumnView::clicked()
     QModelIndex parent = home.parent();
     QVERIFY(parent.isValid());
 
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     QSignalSpy clickedSpy(&view, SIGNAL(clicked(QModelIndex)));
 
     QPoint localPoint = view.visualRect(home).center();

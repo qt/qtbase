@@ -323,9 +323,6 @@ void tst_QDateTimeEdit::getSetCheck()
 
 tst_QDateTimeEdit::tst_QDateTimeEdit()
 {
-    qRegisterMetaType<QDate>("QDate");
-    qRegisterMetaType<QTime>("QTime");
-    qRegisterMetaType<QDateTime>("QDateTime");
     qRegisterMetaType<QList<int> >("QList<int>");
 }
 

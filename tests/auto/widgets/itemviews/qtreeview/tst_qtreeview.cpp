@@ -402,7 +402,6 @@ void tst_QTreeView::initTestCase()
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
-    qRegisterMetaType<QModelIndex>("QModelIndex");
 }
 
 void tst_QTreeView::cleanupTestCase()

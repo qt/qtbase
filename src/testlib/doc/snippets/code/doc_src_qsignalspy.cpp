@@ -65,14 +65,14 @@ QVERIFY(arguments.at(2).type() == QVariant::double);
 
 
 //! [2]
-qRegisterMetaType<QModelIndex>("QModelIndex");
-QSignalSpy spy(&model, SIGNAL(whatever(QModelIndex)));
+qRegisterMetaType<SomeStruct>();
+QSignalSpy spy(&model, SIGNAL(whatever(SomeStruct)));
 //! [2]
 
 
 //! [3]
 // get the first argument from the first received signal:
-QModelIndex result = qvariant_cast<QModelIndex>(spy.at(0).at(0));
+SomeStruct result = qvariant_cast<SomeStruct>(spy.at(0).at(0));
 //! [3]
 
 

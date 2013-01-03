@@ -245,7 +245,6 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
 tst_QByteArray::tst_QByteArray()
 {
-    qRegisterMetaType<qulonglong>("qulonglong");
 }
 
 void tst_QByteArray::qCompress_data()

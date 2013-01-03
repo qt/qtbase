@@ -1125,7 +1125,6 @@ void tst_QPropertyAnimation::restart()
 
 void tst_QPropertyAnimation::valueChanged()
 {
-    qRegisterMetaType<QVariant>("QVariant");
 
     //we check that we receive the valueChanged signal
     MyErrorObject o;

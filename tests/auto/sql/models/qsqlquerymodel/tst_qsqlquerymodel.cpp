@@ -124,7 +124,6 @@ tst_QSqlQueryModel::~tst_QSqlQueryModel()
 
 void tst_QSqlQueryModel::initTestCase()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     dbs.open();
     for (QStringList::ConstIterator it = dbs.dbNames.begin(); it != dbs.dbNames.end(); ++it) {
 	QSqlDatabase db = QSqlDatabase::database((*it));

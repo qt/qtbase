@@ -674,7 +674,6 @@ void tst_QUdpSocket::writeDatagram()
     client.setProperty("_q_networksession", QVariant::fromValue(networkSession));
 #endif
 
-    qRegisterMetaType<qint64>("qint64");
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
 
     for(int i=0;;i++) {

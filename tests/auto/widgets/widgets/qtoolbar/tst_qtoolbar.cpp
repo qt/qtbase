@@ -99,7 +99,6 @@ QAction *triggered = 0;
 
 tst_QToolBar::tst_QToolBar()
 {
-    qRegisterMetaType<QSize>("QSize");
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     qRegisterMetaType<Qt::ToolBarAreas>("Qt::ToolBarAreas");
     qRegisterMetaType<Qt::ToolButtonStyle>("Qt::ToolButtonStyle");

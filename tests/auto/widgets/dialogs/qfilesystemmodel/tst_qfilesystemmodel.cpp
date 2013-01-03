@@ -141,7 +141,6 @@ private:
 
 tst_QFileSystemModel::tst_QFileSystemModel() : model(0)
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
 }
 
 void tst_QFileSystemModel::init()

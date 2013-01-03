@@ -179,7 +179,6 @@ tst_QSortFilterProxyModel::tst_QSortFilterProxyModel()
 
 void tst_QSortFilterProxyModel::initTestCase()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     qRegisterMetaType<IntList>("IntList");
     qRegisterMetaType<IntPair>("IntPair");
     qRegisterMetaType<IntPairList>("IntPairList");

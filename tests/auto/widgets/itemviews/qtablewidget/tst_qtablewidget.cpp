@@ -176,7 +176,6 @@ tst_QTableWidget::~tst_QTableWidget()
 
 void tst_QTableWidget::initTestCase()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     testWidget = new QTableWidget();
     testWidget->show();
 }

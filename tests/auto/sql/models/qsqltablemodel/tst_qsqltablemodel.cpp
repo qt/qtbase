@@ -152,7 +152,6 @@ private:
 
 tst_QSqlTableModel::tst_QSqlTableModel()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     dbs.open();
 }
 

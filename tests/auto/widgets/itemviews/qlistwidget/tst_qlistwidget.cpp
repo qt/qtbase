@@ -1178,7 +1178,6 @@ void tst_QListWidget::setData()
     QFETCH(QVariantList, values);
     QFETCH(int, expectedSignalCount);
     qRegisterMetaType<QListWidgetItem *>("QListWidgetItem*");
-    qRegisterMetaType<QModelIndex>("QModelIndex");
 
     QVERIFY(roles.count() == values.count());
 
