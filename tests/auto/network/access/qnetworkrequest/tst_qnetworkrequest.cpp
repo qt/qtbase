@@ -45,9 +45,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkCookie>
 
-Q_DECLARE_METATYPE(QList<QByteArray>)
 Q_DECLARE_METATYPE(QNetworkRequest::KnownHeaders)
-Q_DECLARE_METATYPE(QVariant)
 
 class tst_QNetworkRequest: public QObject
 {
