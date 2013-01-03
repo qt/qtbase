@@ -646,11 +646,26 @@ int QMetaType::registerNormalizedType(const NS(QByteArray) &normalizedTypeName, 
             "size %i, now registering size %i.",
             normalizedTypeName.constData(), idx, previousSize, size);
     }
+
+    // Ignore WasDeclaredAsMetaType inconsitency, to many users were hitting the problem
+    previousFlags |= WasDeclaredAsMetaType;
+    flags |= WasDeclaredAsMetaType;
+
     if (previousFlags != flags) {
-        qFatal("QMetaType::registerType: Binary compatibility break "
-            "-- Type flags for type '%s' [%i] don't match. Previously "
-            "registered TypeFlags(0x%x), now registering TypeFlags(0x%x).",
-            normalizedTypeName.constData(), idx, previousFlags, int(flags));
+        const int maskForTypeInfo = NeedsConstruction | NeedsDestruction | MovableType;
+        const char *msg = "QMetaType::registerType: Binary compatibility break. "
+                "\nType flags for type '%s' [%i] don't match. Previously "
+                "registered TypeFlags(0x%x), now registering TypeFlags(0x%x). "
+                "This is an ODR break, which means that your application depends on a C++ undefined behavior."
+                "\nHint: %s";
+        QT_PREPEND_NAMESPACE(QByteArray) hint;
+        if ((previousFlags & maskForTypeInfo) != (flags & maskForTypeInfo)) {
+            hint += "\nIt seems that the type was registered at least twice in a different translation units, "
+                    "but Q_DECLARE_TYPEINFO is not visible from all the translations unit or different flags were used."
+                    "Remember that Q_DECLARE_TYPEINFO should be declared before QMetaType registration, "
+                    "preferably it should be placed just after the type declaration and before Q_DECLARE_METATYPE";
+        }
+        qFatal(msg, normalizedTypeName.constData(), idx, previousFlags, int(flags), hint.constData());
     }
 
     return idx;
@@ -1722,6 +1737,9 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
 
     \snippet code/src_corelib_kernel_qmetatype.cpp 9
 
+    \warning This function is useful only for registering an alias (typedef)
+    for every other use case Q_DECLARE_METATYPE and qMetaTypeId() should be used instead.
+
     \sa qRegisterMetaTypeStreamOperators(), QMetaType::isRegistered(),
         Q_DECLARE_METATYPE()
 */
@@ -1767,7 +1785,7 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
 */
 
 /*!
-    \fn int qRegisterMetaType(const char *typeName)
+    \fn int qRegisterMetaType()
     \relates QMetaType
     \threadsafe
     \since 4.2
@@ -1778,6 +1796,14 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     Example:
 
     \snippet code/src_corelib_kernel_qmetatype.cpp 7
+
+    This function requires that \c{T} is a fully defined type at the point
+    where the function is called. For pointer types, it also requires that the
+    pointed to type is fully defined. Use Q_DECLARE_OPAQUE_POINTER() to be able
+    to register pointers to forward declared types.
+
+    After a type has been registered, you can create and destroy
+    objects of that type dynamically at run-time.
 
     To use the type \c T in QVariant, using Q_DECLARE_METATYPE() is
     sufficient. To use the type \c T in queued signal and slot connections,
