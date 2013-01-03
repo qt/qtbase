@@ -166,7 +166,6 @@ void tst_Cmptest::compare_pointerfuncs()
     QCOMPARE(&i, intptr());
 }
 
-Q_DECLARE_METATYPE(QVariant)
 
 struct PhonyClass
 {

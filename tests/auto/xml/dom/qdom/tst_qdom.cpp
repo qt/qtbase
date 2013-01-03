@@ -143,7 +143,6 @@ private:
     QList<QByteArray> m_testCodecs;
 };
 
-Q_DECLARE_METATYPE(QList<QVariant>)
 
 void tst_QDom::setContent_data()
 {

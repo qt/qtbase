@@ -49,13 +49,6 @@
 
 #include "functions.h"
 
-Q_DECLARE_METATYPE(QVector<int>);
-Q_DECLARE_METATYPE(QVector<double>);
-Q_DECLARE_METATYPE(QVector<QString>);
-Q_DECLARE_METATYPE(QList<int>);
-Q_DECLARE_METATYPE(QList<double>);
-Q_DECLARE_METATYPE(QList<QString>);
-
 class tst_QtConcurrentMap: public QObject
 {
     Q_OBJECT
