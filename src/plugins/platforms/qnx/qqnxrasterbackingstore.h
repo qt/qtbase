@@ -72,7 +72,9 @@ private:
         int dy;
     };
 
-    QQnxWindow *m_platformWindow;
+    QQnxWindow *platformWindow() const;
+
+    QWindow *m_window;
     QList<ScrollOp> m_scrollOpList;
     bool m_hasUnflushedPaintOperations;
 };
