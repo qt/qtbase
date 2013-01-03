@@ -50,6 +50,7 @@
 
 #include "externaltests.h"
 #include "forwarddeclared.h"
+#include "nontracked.h"
 #include "wrapper.h"
 
 #include <stdlib.h>
@@ -88,6 +89,7 @@ private slots:
     void dynamicCastDifferentPointers();
     void dynamicCastVirtualBase();
     void dynamicCastFailure();
+    void dynamicCastFailureNoLeak();
 #endif
     void constCorrectness();
     void customDeleter();
@@ -1065,6 +1067,11 @@ void tst_QSharedPointer::dynamicCastFailure()
     }
     QCOMPARE(int(refCountData(baseptr)->weakref.load()), 1);
     QCOMPARE(int(refCountData(baseptr)->strongref.load()), 1);
+}
+
+void tst_QSharedPointer::dynamicCastFailureNoLeak()
+{
+    NonTracked::dynamicCastFailureNoLeak();
 }
 #endif
 
