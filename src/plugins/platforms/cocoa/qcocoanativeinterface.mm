@@ -42,6 +42,7 @@
 #include "qcocoanativeinterface.h"
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
+#include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qmacmime.h"
 
@@ -59,6 +60,8 @@
 #include "qprintengine_mac_p.h"
 #include <qpa/qplatformprintersupport.h>
 #endif
+
+#include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,6 +106,8 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::removeFromMimeList);
     if (resource.toLower() == "registerdraggedtypes")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
+    if (resource.toLower() == "setdockmenu")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setDockMenu);
 
     return 0;
 }
@@ -168,6 +173,14 @@ void QCocoaNativeInterface::removeFromMimeList(void *macPasteboardMime)
 void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
 {
     qt_mac_registerDraggedTypes(types);
+}
+
+void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
+{
+    QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
+    NSMenu *menu = cocoaPlatformMenu->nsMenu();
+    // setDockMenu seems to be undocumented, but this is what Qt 4 did.
+    [NSApp setDockMenu: menu];
 }
 
 QT_END_NAMESPACE

@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 class QWidget;
 class QPlatformPrinterSupport;
 class QPrintEngine;
+class QPlatformMenu;
 
 class QCocoaNativeInterface : public QPlatformNativeInterface
 {
@@ -92,6 +93,9 @@ private:
     static void addToMimeList(void *macPasteboardMime);
     static void removeFromMimeList(void *macPasteboardMime);
     static void registerDraggedTypes(const QStringList &types);
+
+    // Dock menu support
+    static void setDockMenu(QPlatformMenu *platformMenu);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H
