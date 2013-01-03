@@ -193,6 +193,8 @@ public:
     // Unselects one column, leaving other selected columns selected (if any).
     virtual bool unselectColumn(int column) = 0;
 
+    virtual void modelChange(QAccessibleTableModelChangeEvent *event) = 0;
+
 protected:
 friend class QAbstractItemView;
 friend class QAbstractItemViewPrivate;

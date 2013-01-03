@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,53 +38,41 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QCOCOAACCESIBILITY_H
-#define QCOCOAACCESIBILITY_H
 
-#include <Cocoa/Cocoa.h>
+#ifndef QACCESSIBLECACHE_P
+#define QACCESSIBLECACHE_P
 
-#include <QtGui>
-#include <qpa/qplatformaccessibility.h>
+#include <QtCore/qglobal.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qhash.h>
 
-class QCococaAccessibility : public QPlatformAccessibility
+#include "qaccessible.h"
+
+QT_BEGIN_NAMESPACE
+
+
+class QAccessibleCache  :public QObject
 {
+    Q_OBJECT
+
 public:
-    QCococaAccessibility();
-    ~QCococaAccessibility();
-    void notifyAccessibilityUpdate(QAccessibleEvent *event);
-    void setRootObject(QObject *o);
-    void initialize();
-    void cleanup();
+    QAccessibleInterface *interfaceForId(QAccessible::Id id) const;
+    QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
+    void deleteInterface(QAccessible::Id id, QObject *obj = 0);
+
+private Q_SLOTS:
+    void objectDestroyed(QObject *obj);
+
+private:
+    QAccessible::Id acquireId() const;
+
+    mutable QHash<QAccessible::Id, QAccessibleInterface *> idToInterface;
+    mutable QHash<QObject *, QAccessible::Id> objectToId;
+
+    friend class QAccessible;
+    friend class QAccessibleInterface;
 };
 
-namespace QCocoaAccessible {
-
-/*
-    Qt Cocoa Accessibility Overview
-
-    Cocoa accessibility is implemented in the following files:
-
-    - qcocoaaccessibility (this file) : QCocoaAccessibility "plugin", conversion and helper functions.
-    - qnsviewaccessibility            : Root accessibility implementation for QNSView
-    - qcocoaaccessibilityelement      : Cocoa accessibility protocol wrapper for QAccessibleInterface
-
-    The accessibility implementation wraps QAccessibleInterfaces in QCocoaAccessibleElements, which
-    implements the cocoa accessibility protocol. The root QAccessibleInterface (the one returned
-    by QWindow::accessibleRoot), is anchored to the QNSView in qnsviewaccessibility.mm.
-
-    Cocoa explores the accessibility tree by walking the tree using the parent/child
-    relationships or hit testing. When this happens we create QCocoaAccessibleElements on
-    demand.
-*/
-
-NSString *macRole(QAccessibleInterface *interface);
-bool shouldBeIgnored(QAccessibleInterface *interface);
-NSString *getTranslatedAction(const QString &qtAction);
-NSMutableArray *createTranslatedActionsList(const QStringList &qtActions);
-QString translateAction(NSString *nsAction);
-bool hasValueAttribute(QAccessibleInterface *interface);
-id getValueAttribute(QAccessibleInterface *interface);
-
-}
+QT_END_NAMESPACE
 
 #endif

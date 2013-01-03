@@ -132,7 +132,7 @@ public:
 
     /* IAccessibleTable2 */
     HRESULT STDMETHODCALLTYPE get_cellAt( long row, long column, IUnknown **cell);
-    HRESULT STDMETHODCALLTYPE get_caption( IUnknown **accessible);
+    HRESULT STDMETHODCALLTYPE get_caption( IUnknown **accessibleInterface);
     HRESULT STDMETHODCALLTYPE get_columnDescription( long column, BSTR *description);
     HRESULT STDMETHODCALLTYPE get_nColumns( long *columnCount);
     HRESULT STDMETHODCALLTYPE get_nRows( long *rowCount);
@@ -143,7 +143,7 @@ public:
     HRESULT STDMETHODCALLTYPE get_selectedCells( IUnknown ***cells, long *nSelectedCells);
     HRESULT STDMETHODCALLTYPE get_selectedColumns( long **selectedColumns, long *nColumns);
     HRESULT STDMETHODCALLTYPE get_selectedRows( long **selectedRows, long *nRows);
-    HRESULT STDMETHODCALLTYPE get_summary( IUnknown **accessible);
+    HRESULT STDMETHODCALLTYPE get_summary( IUnknown **accessibleInterface);
     HRESULT STDMETHODCALLTYPE get_isColumnSelected( long column, boolean *isSelected);
     HRESULT STDMETHODCALLTYPE get_isRowSelected( long row, boolean *isSelected);
     HRESULT STDMETHODCALLTYPE selectRow( long row);
@@ -206,22 +206,27 @@ public:
     /* private helper functions */
 private:
     inline QAccessibleTextInterface *textInterface() const {
-        return accessible->isValid() ? accessible->textInterface() : static_cast<QAccessibleTextInterface *>(0);
+        QAccessibleInterface *accessible = accessibleInterface();
+        return accessible ? accessible->textInterface() : static_cast<QAccessibleTextInterface *>(0);
     }
 
     inline QAccessibleActionInterface *actionInterface() const {
+        QAccessibleInterface *accessible = accessibleInterface();
         return accessible->actionInterface();
     }
 
     inline QAccessibleValueInterface *valueInterface() const {
+        QAccessibleInterface *accessible = accessibleInterface();
         return accessible->valueInterface();
     }
 
     inline QAccessibleTableInterface *tableInterface() const {
+        QAccessibleInterface *accessible = accessibleInterface();
         return accessible->tableInterface();
     }
 
     inline QAccessibleTableCellInterface *tableCellInterface() const {
+        QAccessibleInterface *accessible = accessibleInterface();
         return accessible->tableCellInterface();
     }
 
@@ -231,6 +236,7 @@ private:
       \a x and \y (out) is in parent relative position if coordType == IA2_COORDTYPE_PARENT_RELATIVE
     */
     void mapFromScreenPos(enum IA2CoordinateType coordType, const QPoint &screenPos, long *x, long *y) const {
+        QAccessibleInterface *accessible = accessibleInterface();
         if (coordType == IA2_COORDTYPE_PARENT_RELATIVE) {
             // caller wants relative to parent
             if (QAccessibleInterface *parent = accessible->parent()) {
@@ -250,6 +256,7 @@ private:
       \return a screen relative position
     */
     QPoint mapToScreenPos(enum IA2CoordinateType coordType, long x, long y) const {
+        QAccessibleInterface *accessible = accessibleInterface();
         if (coordType == IA2_COORDTYPE_PARENT_RELATIVE) {
             if (QAccessibleInterface *parent = accessible->parent()) {
                 const QRect parentScreenRect = parent->rect();
@@ -261,7 +268,6 @@ private:
 
     HRESULT getRelationsHelper(IAccessibleRelation **relations, int startIndex, long maxRelations, long *nRelations = 0);
     HRESULT wrapListOfCells(const QList<QAccessibleInterface*> &inputCells, IUnknown ***outputAccessibles, long *nCellCount);
-    uint uniqueID() const;
     QByteArray IIDToString(REFIID id);
     QString textForRange(int startOffset, int endOffset) const;
     void replaceTextFallback(long startOffset, long endOffset, const QString &txt);

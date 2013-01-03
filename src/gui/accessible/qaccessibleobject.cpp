@@ -132,11 +132,8 @@ QAccessibleInterface *QAccessibleObject::childAt(int x, int y) const
     for (int i = 0; i < childCount(); ++i) {
         QAccessibleInterface *childIface = child(i);
         Q_ASSERT(childIface);
-        if (childIface->rect().contains(x,y)) {
+        if (childIface->rect().contains(x,y))
             return childIface;
-        } else {
-            delete childIface;
-        }
     }
     return 0;
 }
@@ -176,7 +173,6 @@ static QObjectList topLevelObjects()
             if (QAccessibleInterface *root = w->accessibleRoot()) {
                 if (root->object())
                     list.append(root->object());
-                delete root;
             }
         }
     }

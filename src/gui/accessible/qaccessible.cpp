@@ -41,6 +41,8 @@
 
 #include "qaccessible.h"
 
+#include "qaccessible2_p.h"
+#include "qaccessiblecache_p.h"
 #include "qaccessibleplugin.h"
 #include "qaccessibleobject.h"
 #include "qaccessiblebridge.h"
@@ -558,6 +560,8 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
     return old;
 }
 
+Q_GLOBAL_STATIC(QAccessibleCache, qAccessibleCache)
+
 /*!
     If a QAccessibleInterface implementation exists for the given \a object,
     this function returns a pointer to the implementation; otherwise it
@@ -574,14 +578,16 @@ QAccessible::RootObjectHandler QAccessible::installRootObjectHandler(RootObjectH
     function tries to find an implementation for the object's parent
     class, using the above strategy.
 
-    \warning The caller is responsible for deleting the returned
-    interface after use.
+    All interfaces are managed by an internal cache and should not be deleted.
 */
 QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
 {
     accessibility_active = true;
     if (!object)
         return 0;
+
+    if (Id id = qAccessibleCache->objectToId.value(object))
+        return qAccessibleCache->interfaceForId(id);
 
     // Create a QAccessibleInterface for the object class. Start by the most
     // derived class and walk up the class hierarchy.
@@ -592,8 +598,11 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         // Check if the class has a InterfaceFactory installed.
         for (int i = qAccessibleFactories()->count(); i > 0; --i) {
             InterfaceFactory factory = qAccessibleFactories()->at(i - 1);
-            if (QAccessibleInterface *iface = factory(cn, object))
+            if (QAccessibleInterface *iface = factory(cn, object)) {
+                qAccessibleCache->insert(object, iface);
+                Q_ASSERT(qAccessibleCache->objectToId.contains(object));
                 return iface;
+            }
         }
 #ifndef QT_NO_ACCESSIBILITY
 #ifndef QT_NO_LIBRARY
@@ -610,20 +619,82 @@ QAccessibleInterface *QAccessible::queryAccessibleInterface(QObject *object)
         // At this point the cache should contain a valid factory pointer or 0:
         Q_ASSERT(qAccessiblePlugins()->contains(cn));
         QAccessiblePlugin *factory = qAccessiblePlugins()->value(cn);
-        if (factory)
-            return factory->create(cn, object);
+        if (factory) {
+            QAccessibleInterface *result = factory->create(cn, object);
+            if (result) {   // Need this condition because of QDesktopScreenWidget
+                qAccessibleCache->insert(object, result);
+                Q_ASSERT(qAccessibleCache->objectToId.contains(object));
+            }
+            return result;
+        }
 #endif
 #endif
         mo = mo->superClass();
     }
 
 #ifndef QT_NO_ACCESSIBILITY
-    if (object == qApp)
-        return new QAccessibleApplication;
+    if (object == qApp) {
+        QAccessibleInterface *appInterface = new QAccessibleApplication;
+        qAccessibleCache->insert(object, appInterface);
+        Q_ASSERT(qAccessibleCache->objectToId.contains(qApp));
+        return appInterface;
+    }
 #endif
 
     return 0;
 }
+
+/*!
+    \internal
+    Required to ensure that manually created interfaces
+    are properly memory managed.
+
+    Must only be called exactly once per interface.
+    This is implicitly called when calling queryAccessibleInterface,
+    so it's only required when re-implementing for example
+    the child function and returning the child after new-ing
+    a QAccessibleInterface subclass.
+ */
+QAccessible::Id QAccessible::registerAccessibleInterface(QAccessibleInterface *iface)
+{
+    Q_ASSERT(iface);
+    return qAccessibleCache->insert(iface->object(), iface);
+}
+
+/*!
+    \internal
+    Removes the interface belonging to this id from the cache and
+    deletes it. The id becomes invalid an may be re-used by the
+    cache.
+*/
+void QAccessible::deleteAccessibleInterface(Id id)
+{
+    qAccessibleCache->deleteInterface(id);
+}
+
+/*!
+    \internal
+    Returns the unique ID for the accessibleInterface.
+*/
+QAccessible::Id QAccessible::uniqueId(QAccessibleInterface *iface)
+{
+    Id id = qAccessibleCache->idToInterface.key(iface);
+    if (!id)
+        id = registerAccessibleInterface(iface);
+    return id;
+}
+
+/*!
+    \internal
+    Returns the QAccessibleInterface belonging to the id.
+
+    Returns 0 if the id is invalid.
+*/
+QAccessibleInterface *QAccessible::accessibleInterface(Id id)
+{
+    return qAccessibleCache->idToInterface.value(id);
+}
+
 
 /*!
     Returns true if an accessibility implementation has been requested
@@ -687,15 +758,23 @@ void QAccessible::setRootObject(QObject *object)
 */
 void QAccessible::updateAccessibility(QAccessibleEvent *event)
 {
+    if (!isActive())
+        return;
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (event->type() == QAccessible::TableModelChanged) {
+        Q_ASSERT(event->object());
+        if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(event->object())) {
+            if (iface->tableInterface())
+                iface->tableInterface()->modelChange(static_cast<QAccessibleTableModelChangeEvent*>(event));
+        }
+    }
+
     if (updateHandler) {
         updateHandler(event);
         return;
     }
 
-    if (!isActive())
-        return;
-
-#ifndef QT_NO_ACCESSIBILITY
     if (QPlatformAccessibility *pfAccessibility = platformAccessibility())
         pfAccessibility->notifyAccessibilityUpdate(event);
 #endif
@@ -1026,6 +1105,10 @@ QColor QAccessibleInterface::foregroundColor() const
 QColor QAccessibleInterface::backgroundColor() const
 {
     return QColor();
+}
+
+QAccessibleInterface::~QAccessibleInterface()
+{
 }
 
 /*!
@@ -1362,7 +1445,6 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
     if (m_child >= 0) {
         QAccessibleInterface *child = iface->child(m_child);
         if (child) {
-            delete iface;
             iface = child;
         } else {
             qWarning() << "Cannot creat accessible child interface for object: " << m_object << " index: " << m_child;

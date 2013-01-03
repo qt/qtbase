@@ -76,7 +76,6 @@ public:
 
     QAccessibleInterface *recursiveSearch(TestBase *test, QAccessibleInterface *iface);
 
-    void deleteInDestructor(QAccessibleInterface * interface);
     static QWidget *getWidget(QAccessibleInterface *interface);
 private:
     QSet<QAccessibleInterface *> interfaces;

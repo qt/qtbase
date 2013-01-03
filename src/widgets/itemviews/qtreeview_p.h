@@ -229,7 +229,7 @@ public:
         { viewItems[item].height = 0; }
 
     inline int accessibleTable2Index(const QModelIndex &index) const {
-        return (viewIndex(index) + (header ? 1 : 0)) * model->columnCount()+index.column() + 1;
+        return (viewIndex(index) + (header ? 1 : 0)) * model->columnCount()+index.column();
     }
 
     // used for spanning rows
