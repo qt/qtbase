@@ -44,30 +44,40 @@
 void ButtonTester::mousePressEvent(QMouseEvent *e)
 {
     int j = ButtonTester::buttonByNumber (e->button());
-    QString result = "Mouse Press: raw button=" + QString::number(j) + "  Qt=" + enumNameFromValue(e->button());
+    QString result = "Mouse Press: raw button=" + QString::number(j)
+                + "  Qt=" + enumNameFromValue(e->button());
+    QString buttonsString = ButtonTester::enumNamesFromMouseButtons(e->buttons());
+    result += "\n heldbuttons " + buttonsString;
     qDebug() << result;
     this->setText(result);
-    if (j == 2) {
-        this->repaint();
-    }
+    this->repaint();
 }
 
 void ButtonTester::mouseReleaseEvent(QMouseEvent *e)
 {
     int j = ButtonTester::buttonByNumber (e->button());
-    QString result = "Mouse Release: raw button=" + QString::number(j) + "  Qt=" + enumNameFromValue(e->button());
+    QString result = "Mouse Release: raw button=" + QString::number(j)
+                + "  Qt=" + enumNameFromValue(e->button());
+    QString buttonsString = ButtonTester::enumNamesFromMouseButtons(e->buttons());
+    result += "\n heldbuttons " + buttonsString;
     qDebug() << result;
     this->setText(result);
+    this->repaint();
+
 }
 
 void ButtonTester::mouseDoubleClickEvent(QMouseEvent *e)
 {
     int j = ButtonTester::buttonByNumber (e->button());
-    QString result = "Mouse DoubleClick: raw button=" + QString::number(j) + "  Qt=" + enumNameFromValue(e->button());
+    QString result = "Mouse DoubleClick: raw button=" + QString::number(j)
+                + "  Qt=" + enumNameFromValue(e->button());
+    QString buttonsString = ButtonTester::enumNamesFromMouseButtons(e->buttons());
+    result += "\n heldbuttons" + buttonsString;
     qDebug() << result;
     this->setText(result);
 }
 
+#ifndef QT_NO_WHEELEVENT
 void ButtonTester::wheelEvent (QWheelEvent *e)
 {
     QString result;
@@ -88,6 +98,7 @@ void ButtonTester::wheelEvent (QWheelEvent *e)
     qDebug() << result;
     this->setText(result);
 }
+#endif
 
 int ButtonTester::buttonByNumber(const Qt::MouseButton button)
 {
@@ -170,3 +181,38 @@ QString ButtonTester::enumNameFromValue(const Qt::MouseButton button)
     qDebug("QMouseShortcutEntry::addShortcut contained Invalid Qt::MouseButton value");
     return "NoButton";
 }
+
+QString ButtonTester::enumNamesFromMouseButtons(const Qt::MouseButtons buttons)
+{
+    QString returnText = "";
+    if (buttons == Qt::NoButton)      return "NoButton";
+    if (buttons & Qt::LeftButton)    returnText += "LeftButton ";
+    if (buttons & Qt::RightButton)   returnText +=  "RightButton ";
+    if (buttons & Qt::MiddleButton)  returnText +=  "MiddleButton ";
+    if (buttons & Qt::BackButton)    returnText +=  "BackButton ";
+    if (buttons & Qt::ForwardButton) returnText +=  "ForwardButton ";
+    if (buttons & Qt::TaskButton)    returnText +=  "TaskButton ";
+    if (buttons & Qt::ExtraButton4)  returnText +=  "ExtraButton4 ";
+    if (buttons & Qt::ExtraButton5)  returnText +=  "ExtraButton5 ";
+    if (buttons & Qt::ExtraButton6)  returnText +=  "ExtraButton6 ";
+    if (buttons & Qt::ExtraButton7)  returnText +=  "ExtraButton7 ";
+    if (buttons & Qt::ExtraButton8)  returnText +=  "ExtraButton8 ";
+    if (buttons & Qt::ExtraButton9)  returnText +=  "ExtraButton9 ";
+    if (buttons & Qt::ExtraButton10) returnText +=  "ExtraButton10 ";
+    if (buttons & Qt::ExtraButton11) returnText +=  "ExtraButton11 ";
+    if (buttons & Qt::ExtraButton12) returnText +=  "ExtraButton12 ";
+    if (buttons & Qt::ExtraButton13) returnText +=  "ExtraButton13 ";
+    if (buttons & Qt::ExtraButton14) returnText +=  "ExtraButton14 ";
+    if (buttons & Qt::ExtraButton15) returnText +=  "ExtraButton15 ";
+    if (buttons & Qt::ExtraButton16) returnText +=  "ExtraButton16 ";
+    if (buttons & Qt::ExtraButton17) returnText +=  "ExtraButton17 ";
+    if (buttons & Qt::ExtraButton18) returnText +=  "ExtraButton18 ";
+    if (buttons & Qt::ExtraButton19) returnText +=  "ExtraButton19 ";
+    if (buttons & Qt::ExtraButton20) returnText +=  "ExtraButton20 ";
+    if (buttons & Qt::ExtraButton21) returnText +=  "ExtraButton21 ";
+    if (buttons & Qt::ExtraButton22) returnText +=  "ExtraButton22 ";
+    if (buttons & Qt::ExtraButton23) returnText +=  "ExtraButton23 ";
+    if (buttons & Qt::ExtraButton24) returnText +=  "ExtraButton24 ";
+    return returnText;
+}
+

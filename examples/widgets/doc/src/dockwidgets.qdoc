@@ -28,6 +28,7 @@
 /*!
     \example mainwindows/dockwidgets
     \title Dock Widgets Example
+    \ingroup examples-mainwindow
 
     \brief The Dock Widgets example shows how to add dock windows to an
     application. It also shows how to use Qt's rich text engine.

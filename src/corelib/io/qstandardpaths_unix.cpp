@@ -127,6 +127,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
                     return QString();
                 }
             }
+            qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%s'", qPrintable(xdgRuntimeDir));
         }
         // "The directory MUST be owned by the user"
         QFileInfo fileInfo(xdgRuntimeDir);

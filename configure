@@ -861,7 +861,6 @@ PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
 OPT_SHADOW=maybe
-OPT_FAST=auto
 OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
@@ -874,6 +873,7 @@ CFG_FORCE_ASSERTS=no
 CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
+CFG_DIRECTWRITE=no
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -2014,13 +2014,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    fast)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            OPT_FAST="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     rpath)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_RPATH="$VAL"
@@ -2112,6 +2105,17 @@ while [ "$#" -gt 0 ]; do
     system-proxies)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_SYSTEM_PROXIES="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    directwrite)
+        if [ "$XPLATFORM_MINGW" = "yes" ] ; then
+            if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+                CFG_DIRECTWRITE="$VAL"
+            else
+                UNKNOWN_OPT=yes
+            fi
         else
             UNKNOWN_OPT=yes
         fi
@@ -2291,14 +2295,6 @@ if [ ! -d "${outpath}/lib/fonts" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
     fi
-fi
-
-if [ "$OPT_FAST" = "auto" ]; then
-   if [ '!' -z "$AWK" ] && [ "$CFG_DEV" = "yes" ]; then
-       OPT_FAST=yes
-   else
-       OPT_FAST=no
-   fi
 fi
 
 # find a make command
@@ -3086,12 +3082,6 @@ Configure options:
  *  -process ........... Generate only a top-level Makefile.
     -fully-process ..... Generate Makefiles for the entire Qt tree.
     -dont-process ...... Do not generate any Makefiles.
-
- *  -no-fast ........... Configure Qt normally by generating Makefiles for all
-                         project files.
-    -fast .............. Configure Qt quickly by generating Makefiles only for
-                         library and subdirectory targets.  All other Makefiles
-                         are created as wrappers, which will in turn run qmake.
 
     -no-largefile ...... Disables large file support.
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
@@ -5333,7 +5323,6 @@ fi
 QMAKE_CONFIG="$QMAKE_CONFIG qpa"
 QT_CONFIG="$QT_CONFIG qpa"
 QTCONFIG_CONFIG="$QTCONFIG_CONFIG qpa"
-rm -f "src/.moc/$QMAKE_OUTDIR/allmoc.cpp" # needs remaking if config changes
 
 if [ "$XPLATFORM_MINGW" != "yes" ]; then
     # Do not set this here for Windows. Let qmake do it so
@@ -5469,6 +5458,7 @@ fi
 [ "$CFG_XCB" != "no" ] && QT_CONFIG="$QT_CONFIG xcb"
 [ "$CFG_XINPUT2" = "yes" ] && QT_CONFIG="$QT_CONFIG xinput2"
 [ "$CFG_SYSTEM_PROXIES" = "yes" ] && QT_CONFIG="$QT_CONFIG system-proxies"
+[ "$CFG_DIRECTWRITE" = "yes" ] && QT_CONFIG="$QT_CONFIG directwrite"
 
 [ '!' -z "$DEFINES" ] && QMakeVar add DEFINES "$DEFINES"
 [ '!' -z "$L_FLAGS" ] && QMakeVar add LIBS "$L_FLAGS"
@@ -6027,6 +6017,11 @@ QT_NAMESPACE = $QT_NAMESPACE
 
 EOF
 
+if [ "$CFG_SHARED" = "no" ]; then
+    echo "QT_DEFAULT_QPA_PLUGIN = q$QT_QPA_DEFAULT_PLATFORM" >> "$QTCONFIG.tmp"
+    echo >> "$QTCONFIG.tmp"
+fi
+
 if [ -n "$PKG_CONFIG_SYSROOT_DIR" ] || [ -n "$PKG_CONFIG_LIBDIR" ]; then
     echo "# pkgconfig" >> "$QTCONFIG.tmp"
     echo "PKG_CONFIG_SYSROOT_DIR = $PKG_CONFIG_SYSROOT_DIR" >> "$QTCONFIG.tmp"
@@ -6110,7 +6105,7 @@ fi
 
 # cmdline args
 cat "$QMAKE_VARS_FILE" >> "$QTMODULE.tmp"
-rm -f "$QMAKE_VARS_FILE" 2>/dev/null
+# QMAKE_VARS_FILE will be still needed for a status message.
 
 # replace qmodule.pri if it differs from the newly created temp file
 if cmp -s "$QTMODULE.tmp" "$QTMODULE"; then
@@ -6126,7 +6121,6 @@ fi
 CACHEFILE="$outpath/.qmake.cache"
 [ -f "$CACHEFILE.tmp" ] && rm -f "$CACHEFILE.tmp"
 cat >>"$CACHEFILE.tmp" <<EOF
-#paths
 QT_SOURCE_TREE = \$\$quote($relpath)
 QT_BUILD_TREE = \$\$quote($outpath)
 EOF
@@ -6274,6 +6268,10 @@ echo "FontConfig support ..... $CFG_FONTCONFIG"
 echo "XKB Support ............ $CFG_XKB"
 echo "GTK theme support ...... $CFG_QGTKSTYLE"
 
+if [ "$XPLATFORM_MINGW" = "yes" ] ; then
+    echo "DirectWrite support .... $CFG_DIRECTWRITE"
+fi
+
 [ "$CFG_SQL_mysql" != "no" ] && echo "MySQL support .......... $CFG_SQL_mysql"
 [ "$CFG_SQL_psql" != "no" ] && echo "PostgreSQL support ..... $CFG_SQL_psql"
 [ "$CFG_SQL_odbc" != "no" ] && echo "ODBC support ........... $CFG_SQL_odbc"
@@ -6340,6 +6338,7 @@ sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`
 PROCS=1
 EXEC=""
 
+rm -f "$QMAKE_VARS_FILE" 2>/dev/null
 
 #-------------------------------------------------------------------------------
 # build makefiles based on the configuration
@@ -6353,43 +6352,6 @@ if [ "$CFG_PROCESS" != "no" ]; then
         echo "Done"
     else
         "$outpath/bin/qmake" "$relpath"
-    fi
-
-    if [ "$OPT_FAST" = "yes" ]; then
-        PART_ROOTS=
-        for part in $CFG_BUILD_PARTS; do
-            case "$part" in
-            examples|tests) PART_ROOTS="$PART_ROOTS $part" ;;
-            esac
-        done
-        if [ "x$PART_ROOTS" != "x" ]; then
-            echo
-            echo "Creating stub makefiles. Please wait..."
-            QMAKE="$outpath/bin/qmake"
-            [ "$CFG_DEBUG_RELEASE" = "no" ] && first_tgt="first_target: first" || first_tgt=
-            (cd "$relpath" && find $PART_ROOTS -name '*.pro') | grep -v /testdata/ | while read p; do
-                d=${p%/*}
-                test -f "$outpath/$d/Makefile" && continue
-                echo "  for $relpath/$p"
-
-                mkdir -p "$outpath/$d" || exit
-                cat > "$outpath/$d/Makefile" <<EOF || exit
-# $outpath/$d/Makefile: generated by configure
-#
-# WARNING: This makefile will be replaced with a real makefile.
-# All changes made to this file will be lost.
-
-QMAKE = "$QMAKE"
-
-$first_tgt
-all clean install qmake first Makefile: FORCE
-	\$(QMAKE) $QMAKE_SWITCHES "$relpath/$p"
-	\$(MAKE) \$@
-FORCE:
-EOF
-            done || exit
-            echo "Done"
-        fi
     fi
 fi
 

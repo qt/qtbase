@@ -1,6 +1,7 @@
 TARGET = qcorewlanbearer
 
 PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QCoreWlanEnginePlugin
 load(qt_plugin)
 
 QT = core-private network-private

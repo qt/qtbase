@@ -44,7 +44,7 @@
 #include <QtWidgets>
 #include <QGLWidget>
 
-class QGLShaderProgram;
+QT_FORWARD_DECLARE_CLASS(QGLShaderProgram);
 
 class GLWidget : public QGLWidget
 {

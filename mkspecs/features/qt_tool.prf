@@ -1,9 +1,20 @@
+#
+#  W A R N I N G
+#  -------------
+#
+# This file is not part of the Qt API.  It exists purely as an
+# implementation detail.  It may change from version to version
+# without notice, or even be removed.
+#
+# We mean it.
+#
+
 TEMPLATE = app
 
 load(qt_build_paths)
 DESTDIR = $$MODULE_BASE_OUTDIR/bin
 
-CONFIG += qt warn_on console
+CONFIG += console
 isEmpty(QMAKE_INFO_PLIST): CONFIG -= app_bundle
 
 host_build {

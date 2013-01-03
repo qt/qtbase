@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS     = mainwindow.h
 SOURCES     = main.cpp \
               mainwindow.cpp
@@ -5,5 +7,3 @@ SOURCES     = main.cpp \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/richtext/calendar
 INSTALLS += target
-
-QT += widgets

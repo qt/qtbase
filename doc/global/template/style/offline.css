@@ -8,6 +8,9 @@ margin-left:5px;
 margin-right:5px;
 }
 
+p {
+line-height: 20px;
+}
 img{
 -moz-box-shadow: 3px 3px 3px #ccc;
 -webkit-box-shadow: 3px 3px 3px #ccc;
@@ -60,6 +63,16 @@ text-align:left;
 
 a:visited:hover{
 color: #44a51c;
+text-align:left;
+}
+
+a[href*="http://"], a[href*="ftp://"],a[href*="https://"]
+{
+text-decoration: none;
+background-image:url(../images/ico_out.png);
+background-repeat:no-repeat;
+background-position:left;
+padding-left:20px;
 text-align:left;
 }
 
@@ -154,71 +167,6 @@ padding-right:20px;
 height:20px;
 margin-left:30px;
 }
-
-.breadcrumb{
-display: block;
-position: relative;
-top:-20px;
-/*border-top:2px solid #ffffff;*/
-border-bottom: 1px solid #cecece;
-background-color:#F2F2F2;
-z-index:1;
-height:20px;
-padding:0px;
-margin:0px;
-padding-left:10px;
-padding-top:2px;
-margin-left:-5px;
-margin-right:-5px;
-}
-
-.breadcrumb ul{
- margin:0px;
- padding:0px;
-}
-
-.breadcrumb ul li{
-background-color:#F2F2F2;
-list-style-type:none;
-padding:0;
-margin:0;
-height:20px;
-}
-
-.breadcrumb li{
-float:left;
-}
-
-.breadcrumb .first {
-background:url(../images/home.png);
-background-position:left;
-background-repeat:no-repeat;
-padding-left:20px;
-}
-
-
-.breadcrumb li a{
-color:#2C418D;
-display:block;
-text-decoration:none;
-background:url(../images/arrow.png);
-background-repeat:no-repeat;
-background-position:right;
-padding-right:25px;
-padding-left:10px;
-}
-
-.breadcrumb li a:hover{
-color:#909090;
-display:block;
-text-decoration:none;
-background:url(../images/arrow.png);
-background-repeat:no-repeat;
-background-position:right;
-padding-right:20px;
-padding-left:10px;
-}
-
 
 /* table of content
 no display
@@ -483,7 +431,7 @@ margin: 10;
 overflow: hidden;
 overflow-x: hidden;
 overflow-y: hidden;
-padding: 20px 0 20px 0;
+padding: 20px 20px 20px 20px;
 }
 
 .qmldefault{
@@ -566,8 +514,7 @@ padding-right:5px;
 
 .toc ul li{
 margin-left:15px;
-list-style-image:url(../images/blu_dot.png);
-list-style:outside;
+list-style-image:url(../images/bullet_dn.png);
 marker-offset: 0px;
 margin-bottom:8px;
 padding-left:0px;
@@ -643,7 +590,7 @@ margin-bottom: 20px;
 
 .indexboxcont .sectionlist ul li
 {
-line-height: 12px;
+line-height: 1.5;
 }
 
 .content .indexboxcont li

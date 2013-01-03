@@ -1,6 +1,7 @@
 TARGET = qnlabearer
 
 PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QNlaEnginePlugin
 load(qt_plugin)
 
 QT = core core-private network network-private

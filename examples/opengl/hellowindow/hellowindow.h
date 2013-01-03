@@ -40,21 +40,15 @@
 
 #include <QWindow>
 
-#include <QtGui/qopengl.h>
-#include <QtGui/qopenglshaderprogram.h>
-
 #include <QColor>
-#include <QTime>
+#include <QOpenGLShaderProgram>
 #include <QSharedPointer>
-
-QT_BEGIN_NAMESPACE
-class QOpenGLContext;
-class QTimer;
-QT_END_NAMESPACE
+#include <QTimer>
 
 class Renderer : public QObject
 {
     Q_OBJECT
+
 public:
     explicit Renderer(const QSurfaceFormat &format, Renderer *share = 0, QScreen *screen = 0);
 
@@ -89,6 +83,7 @@ private:
 class HelloWindow : public QWindow
 {
     Q_OBJECT
+
 public:
     explicit HelloWindow(const QSharedPointer<Renderer> &renderer);
 

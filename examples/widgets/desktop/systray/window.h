@@ -42,6 +42,9 @@
 #define WINDOW_H
 
 #include <QSystemTrayIcon>
+
+#ifndef QT_NO_SYSTEMTRAYICON
+
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
@@ -108,5 +111,7 @@ private:
     QMenu *trayIconMenu;
 };
 //! [0]
+
+#endif // QT_NO_SYSTEMTRAYICON
 
 #endif

@@ -370,6 +370,9 @@ public:
     inline xcb_timestamp_t time() const { return m_time; }
     inline void setTime(xcb_timestamp_t t) { if (t > m_time) m_time = t; }
 
+    inline xcb_timestamp_t netWmUserTime() const { return m_netWmUserTime; }
+    inline void setNetWmUserTime(xcb_timestamp_t t) { if (t > m_netWmUserTime) m_netWmUserTime = t; }
+
     bool hasGLX() const { return has_glx_extension; }
     bool hasXFixes() const { return xfixes_first_event > 0; }
     bool hasXShape() const { return has_shape_extension; }
@@ -379,6 +382,8 @@ public:
     bool supportsThreadedRendering() const { return m_reader->isRunning(); }
 
     xcb_timestamp_t getTimestamp();
+
+    Qt::MouseButtons buttons() const { return m_buttons; }
 
 private slots:
     void processXcbEvents();
@@ -400,6 +405,8 @@ private:
     QXcbScreen* findOrCreateScreen(QList<QXcbScreen *>& newScreens, int screenNumber,
         xcb_screen_t* xcbScreen, xcb_randr_get_output_info_reply_t *output = NULL);
     void updateScreens();
+    void handleButtonPress(xcb_generic_event_t *event);
+    void handleButtonRelease(xcb_generic_event_t *event);
 
     bool m_xi2Enabled;
     int m_xi2Minor;
@@ -448,6 +455,7 @@ private:
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 
     xcb_timestamp_t m_time;
+    xcb_timestamp_t m_netWmUserTime;
 
     QByteArray m_displayName;
 
@@ -501,6 +509,8 @@ private:
     bool has_shape_extension;
     bool has_randr_extension;
     bool has_input_shape;
+
+    Qt::MouseButtons m_buttons;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))

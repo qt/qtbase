@@ -1943,9 +1943,6 @@
        other components and applications can understand.
     \endlist
 
-    For more information, see the \l
-    {"Item View Classes" Chapter of C++ GUI Programming with Qt 4}.
-
     \section2 Item data handling
 
     Models can provide varying levels of access to the data they provide: They can be

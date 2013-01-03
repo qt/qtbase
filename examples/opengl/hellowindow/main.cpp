@@ -38,21 +38,22 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
+#include "hellowindow.h"
+
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
+
+#include <QGuiApplication>
 #include <QScreen>
 #include <QThread>
 
-#include "hellowindow.h"
-
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
     const bool multipleWindows =
         QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL)
-        && !QGuiApplication::arguments().contains(QLatin1String("--single"));
+        && !QGuiApplication::arguments().contains(QStringLiteral("--single"));
 
     QScreen *screen = QGuiApplication::primaryScreen();
 
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
 
     HelloWindow *windowA = new HelloWindow(rendererA);
     windowA->setGeometry(QRect(center, windowSize).translated(-windowSize.width() - delta / 2, 0));
-    windowA->setTitle(QLatin1String("Thread A - Context A"));
+    windowA->setTitle(QStringLiteral("Thread A - Context A"));
     windowA->setVisible(true);
     windows.prepend(windowA);
 
@@ -85,13 +86,13 @@ int main(int argc, char **argv)
 
         HelloWindow *windowB = new HelloWindow(rendererA);
         windowB->setGeometry(QRect(center, windowSize).translated(delta / 2, 0));
-        windowB->setTitle(QLatin1String("Thread A - Context A"));
+        windowB->setTitle(QStringLiteral("Thread A - Context A"));
         windowB->setVisible(true);
         windows.prepend(windowB);
 
         HelloWindow *windowC = new HelloWindow(rendererB);
         windowC->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, windowSize.height() + delta));
-        windowC->setTitle(QLatin1String("Thread B - Context B"));
+        windowC->setTitle(QStringLiteral("Thread B - Context B"));
         windowC->setVisible(true);
         windows.prepend(windowC);
 
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
             window->setGeometry(QRect(center, windowSize).translated(-windowSize.width() / 2, -windowSize.height() / 2));
 
             QChar id = QChar('B' + i);
-            window->setTitle(QLatin1String("Thread ") + id + QLatin1String(" - Context ") + id);
+            window->setTitle(QStringLiteral("Thread ") + id + QStringLiteral(" - Context ") + id);
             window->setVisible(true);
             windows.prepend(window);
         }
@@ -128,6 +129,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < renderThreads.size(); ++i)
         renderThreads.at(i)->wait();
+
     qDeleteAll(windows);
     qDeleteAll(renderThreads);
 

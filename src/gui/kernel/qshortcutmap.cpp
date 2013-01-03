@@ -679,7 +679,7 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
 #if defined(DEBUG_QSHORTCUTMAP)
     qDebug().nospace()
         << "QShortcutMap::dispatchEvent(): Sending QShortcutEvent(\""
-        << (QString)next->keyseq << "\", " << next->id << ", "
+        << next->keyseq.toString() << "\", " << next->id << ", "
         << (bool)(enabledShortcuts>1) << ") to object(" << next->owner << ')';
 #endif
     QShortcutEvent se(next->keyseq, next->id, enabledShortcuts>1);

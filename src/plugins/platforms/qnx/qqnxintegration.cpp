@@ -406,7 +406,7 @@ QPlatformTheme *QQnxIntegration::createPlatformTheme(const QString &name) const
 {
     qIntegrationDebug() << Q_FUNC_INFO << "name =" << name;
     if (name == QQnxTheme::name())
-        return new QQnxTheme(m_fontDatabase, m_bpsEventFilter);
+        return new QQnxTheme(this);
     return QPlatformIntegration::createPlatformTheme(name);
 }
 #endif

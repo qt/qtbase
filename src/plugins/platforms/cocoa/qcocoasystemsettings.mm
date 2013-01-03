@@ -96,6 +96,8 @@ QColor qt_mac_colorForThemeTextColor(ThemeTextColor themeColor)
     case kThemeTextColorTabFrontInactive:
     case kThemeTextColorBevelButtonInactive:
         return QColor(127, 127, 127, 255);
+    case kThemeTextColorMenuItemSelected:
+        return Qt::white;
     default:
         return QColor(0, 0, 0, 255); // ### TODO: Sample color like Qt 4.
     }
@@ -153,21 +155,19 @@ struct QMacPaletteMap {
 };
 
 static QMacPaletteMap mac_widget_colors[] = {
-//    TODO (msorvig): Fix/match palette behavior with Qt 4 and enable.
-//
-//    QMacPaletteMap(QPlatformTheme::ToolButtonPalette, kThemeTextColorBevelButtonActive, kThemeTextColorBevelButtonInactive),
-//    QMacPaletteMap(QPlatformTheme::ButtonPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
-//    QMacPaletteMap(QPlatformTheme::HeaderPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
-//    QMacPaletteMap(QPlatformTheme::ComboBoxPalette, kThemeTextColorPopupButtonActive, kThemeTextColorPopupButtonInactive),
-//    QMacPaletteMap(QPlatformTheme::ItemViewPalette, kThemeTextColorListView, kThemeTextColorDialogInactive),
-//    QMacPaletteMap(QPlatformTheme::MessageBoxLabelPelette, kThemeTextColorAlertActive, kThemeTextColorAlertInactive),
-//    QMacPaletteMap(QPlatformTheme::TabBarPalette, kThemeTextColorTabFrontActive, kThemeTextColorTabFrontInactive),
-//    QMacPaletteMap(QPlatformTheme::LabelPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
-//    QMacPaletteMap(QPlatformTheme::GroupBoxPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
-//    QMacPaletteMap(QPlatformTheme::MenuPalette, kThemeTextColorPopupLabelActive, kThemeTextColorPopupLabelInactive),
-//    ### TODO: The zeros below gives white-on-black text.
-//    QMacPaletteMap(QPlatformTheme::TextEditPalette, 0, 0),
-//    QMacPaletteMap(QPlatformTheme::TextLineEditPalette, 0, 0),
+    QMacPaletteMap(QPlatformTheme::ToolButtonPalette, kThemeTextColorBevelButtonActive, kThemeTextColorBevelButtonInactive),
+    QMacPaletteMap(QPlatformTheme::ButtonPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
+    QMacPaletteMap(QPlatformTheme::HeaderPalette, kThemeTextColorPushButtonActive, kThemeTextColorPushButtonInactive),
+    QMacPaletteMap(QPlatformTheme::ComboBoxPalette, kThemeTextColorPopupButtonActive, kThemeTextColorPopupButtonInactive),
+    QMacPaletteMap(QPlatformTheme::ItemViewPalette, kThemeTextColorListView, kThemeTextColorDialogInactive),
+    QMacPaletteMap(QPlatformTheme::MessageBoxLabelPelette, kThemeTextColorAlertActive, kThemeTextColorAlertInactive),
+    QMacPaletteMap(QPlatformTheme::TabBarPalette, kThemeTextColorTabFrontActive, kThemeTextColorTabFrontInactive),
+    QMacPaletteMap(QPlatformTheme::LabelPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
+    QMacPaletteMap(QPlatformTheme::GroupBoxPalette, kThemeTextColorPlacardActive, kThemeTextColorPlacardInactive),
+    QMacPaletteMap(QPlatformTheme::MenuPalette, kThemeTextColorPopupLabelActive, kThemeTextColorPopupLabelInactive),
+    //### TODO: The zeros below gives white-on-black text.
+    QMacPaletteMap(QPlatformTheme::TextEditPalette, 0, 0),
+    QMacPaletteMap(QPlatformTheme::TextLineEditPalette, 0, 0),
     QMacPaletteMap(QPlatformTheme::NPalettes, 0, 0) };
 
 QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
@@ -175,7 +175,7 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
     QHash<QPlatformTheme::Palette, QPalette*> palettes;
     QColor qc;
     for (int i = 0; mac_widget_colors[i].paletteRole != QPlatformTheme::NPalettes; i++) {
-        QPalette pal;
+        QPalette pal = *qt_mac_createSystemPalette();
         if (mac_widget_colors[i].active != 0) {
             qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].active);
             pal.setColor(QPalette::Active, QPalette::Text, qc);

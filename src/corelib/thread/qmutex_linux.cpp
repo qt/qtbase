@@ -187,7 +187,7 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
     struct timespec ts, *pts = 0;
     QElapsedTimer elapsedTimer;
     checkElapsedTimerIsTrivial();
-    if (IsTimed) {
+    if (IsTimed && timeout > 0) {
         ts.tv_sec = timeout / 1000;
         ts.tv_nsec = (timeout % 1000) * 1000 * 1000;
         elapsedTimer.start();
@@ -206,7 +206,7 @@ bool lockInternal_helper(QBasicAtomicPointer<QMutexData> &d_ptr, int timeout = -
             ts.tv_sec = xtimeout / Q_INT64_C(1000) / 1000 / 1000;
             ts.tv_nsec = xtimeout % (Q_INT64_C(1000) * 1000 * 1000);
         }
-        if (IsTimed)
+        if (IsTimed && timeout > 0)
             pts = &ts;
 
         // successfully set the waiting bit, now sleep
@@ -232,7 +232,6 @@ void QBasicMutex::lockInternal() Q_DECL_NOTHROW
 bool QBasicMutex::lockInternal(int timeout) Q_DECL_NOTHROW
 {
     Q_ASSERT(!isRecursive());
-    Q_ASSERT(timeout >= 0);
     return lockInternal_helper<true>(d_ptr, timeout);
 }
 

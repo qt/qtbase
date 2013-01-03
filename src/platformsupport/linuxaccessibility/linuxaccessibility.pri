@@ -1,4 +1,4 @@
-contains(QT_CONFIG, dbus):contains(QT_CONFIG, xcb):contains(QT_CONFIG, accessibility) {
+qtHaveModule(dbus):contains(QT_CONFIG, xcb):contains(QT_CONFIG, accessibility) {
 
     QT += dbus
     include(../../3rdparty/atspi2/atspi2.pri)

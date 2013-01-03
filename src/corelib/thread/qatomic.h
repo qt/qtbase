@@ -82,6 +82,11 @@ public:
     }
 
 #ifdef qdoc
+    int load() const;
+    int loadAcquire() const;
+    void store(int newValue);
+    void storeRelease(int newValue);
+
     static Q_DECL_CONSTEXPR bool isReferenceCountingNative();
     static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree();
 
@@ -139,6 +144,11 @@ public:
     }
 
 #ifdef qdoc
+    T *load() const;
+    T *loadAcquire() const;
+    void store(T *newValue);
+    void storeRelease(T *newValue);
+
     static Q_DECL_CONSTEXPR bool isTestAndSetNative();
     static Q_DECL_CONSTEXPR bool isTestAndSetWaitFree();
 

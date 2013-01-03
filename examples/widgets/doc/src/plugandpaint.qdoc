@@ -48,7 +48,7 @@
     through plugins, we recommend that you start by reading this
     overview, which explains how to make an application use plugins.
     Afterward, you can read the
-    \l{plugandpaintplugins/basictools}{Basic Tools} and
+    \l{tools/plugandpaintplugins/basictools}{Basic Tools} and
     \l{plugandpaintplugins/extrafilters}{Extra Filters}
     overviews, which show how to implement static and dynamic
     plugins, respectively.
@@ -287,7 +287,7 @@
     \snippet tools/plugandpaint/main.cpp 0
 
     The argument to Q_IMPORT_PLUGIN() is the plugin's name, as
-    specified with Q_EXPORT_PLUGIN2() in the \l{Exporting the
+    specified with Q_PLUGIN_METADATA() in the \l{Exporting the
     Plugin}{plugin}.
 
     In the \c .pro file, we need to specify the static library.
@@ -324,7 +324,7 @@
     \list 1
     \li Declare a plugin class.
     \li Implement the interfaces provided by the plugin.
-    \li Export the plugin using the Q_EXPORT_PLUGIN2() macro.
+    \li Export the plugin using the Q_PLUGIN_METADATA() macro.
     \li Build the plugin using an adequate \c .pro file.
     \endlist
 
@@ -346,6 +346,8 @@
     interfaces. Without the \c Q_INTERFACES() macro, we couldn't use
     \l qobject_cast() in the \l{plugandpaint}{Plug & Paint}
     application to detect interfaces.
+    For an explanation for the \c Q_PLUGIN_METADATA() macro see
+    \l {Exporting the Plugin}.
 
     \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.h 2
 
@@ -440,15 +442,20 @@
 
     \section1 Exporting the Plugin
 
-    Whereas applications have a \c main() function as their entry
-    point, plugins need to contain exactly one occurrence of the
-    Q_EXPORT_PLUGIN2() macro to specify which class provides the
-    plugin:
+    To finally export your plugin you just have to add the
+    \c Q_PLUGIN_METADATA() macro right next to the \c Q_OBJECT() macro
+    into the header file of the plugin.
+    It must contain the plugins IID and optionally a filename pointing
+    to a json file containing the metadata for the plugin.
 
-    \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.cpp 9
+    \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.h 4
 
-    This line may appear in any \c .cpp file that is part of the
-    plugin's source code.
+    Within this example the json file does not need to export any metadata,
+    so it just contains an empty json object.
+
+    \code
+    {}
+    \endcode
 
     \section1 The .pro File
 

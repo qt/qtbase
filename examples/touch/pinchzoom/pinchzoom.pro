@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS += \
         mouse.h \
         graphicsview.h
@@ -12,7 +14,5 @@ RESOURCES += \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/touch/pinchzoom
 INSTALLS += target
-QT += widgets
-
 
 simulator: warning(This example might not fully work on Simulator platform)

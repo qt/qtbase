@@ -119,7 +119,9 @@ public:
     Q_PRIVATE_SLOT(d_func(), void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *))
     Q_PRIVATE_SLOT(d_func(), void replySslConfigurationChanged(const QSslConfiguration&))
 #endif
+#ifndef QT_NO_NETWORKPROXY
     Q_PRIVATE_SLOT(d_func(), void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth))
+#endif
 
     Q_PRIVATE_SLOT(d_func(), void resetUploadDataSlot(bool *r))
     Q_PRIVATE_SLOT(d_func(), void wantUploadDataSlot(qint64))

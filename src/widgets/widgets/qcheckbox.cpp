@@ -124,8 +124,8 @@ public:
         \li \inlineimage macintosh-checkbox.png Screenshot of a Macintosh style checkbox
         \li A checkbox shown in the \l{Macintosh Style Widget Gallery}{Macintosh widget style}.
     \row
-        \li \inlineimage windows-checkbox.png Screenshot of a Windows XP style checkbox
-        \li A checkbox shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+        \li \inlineimage windowsvista-checkbox.png Screenshot of a Windows Vista style checkbox
+        \li A checkbox shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
     \row
         \li \inlineimage fusion-checkbox.png Screenshot of a Fusion style checkbox
         \li A checkbox shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.

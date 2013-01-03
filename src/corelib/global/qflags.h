@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
+
 #ifndef QFLAGS_H
 #define QFLAGS_H
 
-#include <QtCore/qglobal.h>
 #include <QtCore/qtypeinfo.h>
 #include <QtCore/qtypetraits.h>
 

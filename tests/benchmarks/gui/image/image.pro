@@ -6,5 +6,5 @@ SUBDIRS = \
         qpixmap \
         qpixmapcache
 
-isEmpty(QT.widgets.name): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
         qimagereader

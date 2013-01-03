@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 QHash <QAccessible::Role, RoleNames> qSpiRoleMapping;
 
 quint64 spiStatesFromQState(QAccessible::State state)
@@ -69,8 +71,6 @@ quint64 spiStatesFromQState(QAccessible::State state)
 
     if (state.disabled) {
         unsetSpiStateBit(&spiState, ATSPI_STATE_ENABLED);
-        unsetSpiStateBit(&spiState, ATSPI_STATE_SHOWING);
-        unsetSpiStateBit(&spiState, ATSPI_STATE_VISIBLE);
         unsetSpiStateBit(&spiState, ATSPI_STATE_SENSITIVE);
     }
 
@@ -155,5 +155,7 @@ AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relat
     }
     return ATSPI_RELATION_NULL;
 }
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

@@ -6,7 +6,7 @@ SUBDIRS = \
         qtracebench \
         qtbench
 
-isEmpty(QT.widgets.name): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
     qpainter \
     qtracebench \
     qtbench

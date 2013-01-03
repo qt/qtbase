@@ -392,10 +392,7 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
 {
     int cores = -1;
 
-#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
-    // Mac OS X
-    cores = MPProcessorsScheduled();
-#elif defined(Q_OS_HPUX)
+#if defined(Q_OS_HPUX)
     // HP-UX
     struct pst_dynamic psd;
     if (pstat_getdynamic(&psd, sizeof(psd), 1, 0) == -1) {
@@ -405,7 +402,7 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
         cores = (int)psd.psd_proc_cnt;
     }
 #elif defined(Q_OS_BSD4)
-    // FreeBSD, OpenBSD, NetBSD, BSD/OS
+    // FreeBSD, OpenBSD, NetBSD, BSD/OS, Mac OS X
     size_t len = sizeof(cores);
     int mib[2];
     mib[0] = CTL_HW;

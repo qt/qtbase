@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSplitterHandle
-    \brief The QSplitterHandle class provides handle functionality of the splitter.
+    \brief The QSplitterHandle class provides handle functionality for the splitter.
 
     \ingroup organizers
     \inmodule QtWidgets
@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     QSplitterHandle. It is provided for developers who want splitter handles
     that provide extra features, such as popup menus.
 
-    The typical way one would create splitter handles is to subclass QSplitter then
+    The typical way one would create splitter handles is to subclass QSplitter and then
     reimplement QSplitter::createHandle() to instantiate the custom splitter
     handle. For example, a minimum QSplitter subclass might look like this:
 
@@ -113,7 +113,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     Creates a QSplitter handle with the given \a orientation and
-    QSplitter \a parent.
+    \a parent.
 */
 QSplitterHandle::QSplitterHandle(Qt::Orientation orientation, QSplitter *parent)
     : QWidget(*new QSplitterHandlePrivate, parent, 0)
@@ -888,7 +888,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
 
 
     A splitter lets the user control the size of child widgets by dragging the
-    boundary between the children. Any number of widgets may be controlled by a
+    boundary between them. Any number of widgets may be controlled by a
     single splitter. The typical use of a QSplitter is to create several
     widgets and add them using insertWidget() or addWidget().
 
@@ -921,7 +921,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     Alternatively, you can save and restore the sizes of the widgets from a
     QByteArray using saveState() and restoreState() respectively.
 
-    When you hide() a child its space will be distributed among the
+    When you hide() a child, its space will be distributed among the
     other children. It will be reinstated when you show() it again.
 
     \note Adding a QLayout to a QSplitter is not supported (either through
@@ -987,7 +987,7 @@ void QSplitter::refresh()
     \property QSplitter::orientation
     \brief the orientation of the splitter
 
-    By default the orientation is horizontal (i.e., the widgets are
+    By default, the orientation is horizontal (i.e., the widgets are
     laid out side by side). The possible orientations are
     Qt::Horizontal and Qt::Vertical.
 
@@ -1046,7 +1046,7 @@ bool QSplitter::childrenCollapsible() const
 }
 
 /*!
-    Sets whether the child widget at index \a index is collapsible to \a collapse.
+    Sets whether the child widget at \a index is collapsible to \a collapse.
 
     By default, children are collapsible, meaning that the user can
     resize them down to size 0, even if they have a non-zero
@@ -1070,7 +1070,7 @@ void QSplitter::setCollapsible(int index, bool collapse)
 }
 
 /*!
-    Returns true if the widget at \a index is collapsible, otherwise returns false
+    Returns true if the widget at \a index is collapsible, otherwise returns false.
 */
 bool QSplitter::isCollapsible(int index) const
 {
@@ -1372,7 +1372,7 @@ void QSplitter::moveSplitter(int pos, int index)
 
 
 /*!
-    Returns the valid range of the splitter with index \a index in
+    Returns the valid range of the splitter at \a index in
     *\a{min} and *\a{max} if \a min and \a max are not 0.
 */
 
@@ -1384,8 +1384,7 @@ void QSplitter::getRange(int index, int *min, int *max) const
 
 
 /*!
-    Returns the closest legal position to \a pos of the widget with index
-    \a index.
+    Returns the closest legal position to \a pos of the widget at \a index.
 
     For right-to-left languages such as Arabic and Hebrew, the layout
     of horizontal splitters is reversed. Positions are then measured
@@ -1484,7 +1483,7 @@ QSize QSplitter::minimumSizeHint() const
 
     If the splitter's orientation is horizontal, the list contains the
     widgets width in pixels, from left to right; if the orientation is
-    vertical, the list contains the widgets height in pixels,
+    vertical, the list contains the widgets' heights in pixels,
     from top to bottom.
 
     Giving the values to another splitter's setSizes() function will
@@ -1509,21 +1508,21 @@ QList<int> QSplitter::sizes() const
 }
 
 /*!
-    Sets the child widgets respective sizes to the values given in the \a list.
+    Sets the child widgets' respective sizes to the values given in the \a list.
 
-    If the splitter is horizontal, the values set the widths of each
+    If the splitter is horizontal, the values set the width of each
     widget in pixels, from left to right. If the splitter is vertical, the
-    heights of each widget is set, from top to bottom.
+    height of each widget is set, from top to bottom.
 
     Extra values in the \a list are ignored. If \a list contains too few
-    values, the result is undefined but the program will still be well-behaved.
+    values, the result is undefined, but the program will still be well-behaved.
 
     The overall size of the splitter widget is not affected.
     Instead, any additional/missing space is distributed amongst the
     widgets according to the relative weight of the sizes.
 
     If you specify a size of 0, the widget will be invisible. The size policies
-    of the widgets are preserved. That is, a value smaller then the minimal size
+    of the widgets are preserved. That is, a value smaller than the minimal size
     hint of the respective widget will be replaced by the value of the hint.
 
     \sa sizes()
@@ -1616,7 +1615,7 @@ QByteArray QSplitter::saveState() const
     Typically this is used in conjunction with QSettings to restore the size
     from a past session. Here is an example:
 
-    Restore the splitters's state:
+    Restore the splitter's state:
 
     \snippet splitter/splitter.cpp 2
 

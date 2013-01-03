@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = iconpreviewarea.h \
                 iconsizespinbox.h \
                 imagedelegate.h \
@@ -24,6 +26,5 @@ wince*: {
     }
     DEPLOYMENT += imageFiles
 }
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

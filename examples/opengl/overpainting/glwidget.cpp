@@ -38,15 +38,15 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtOpenGL>
-#include <stdlib.h>
-
-#include <math.h>
-
 #include "bubble.h"
 #include "qtlogo.h"
 #include "glwidget.h"
+
+#include <QMouseEvent>
+#include <QTime>
+
+#include <math.h>
+#include <stdlib.h>
 
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D

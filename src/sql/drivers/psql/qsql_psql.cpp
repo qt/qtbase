@@ -695,25 +695,30 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
             int vMaj = rx.cap(1).toInt();
             int vMin = rx.cap(2).toInt();
             serverVersion = qMakePSQLVersion(vMaj, vMin);
-#ifdef PG_MAJORVERSION
-            if (rx.indexIn(QLatin1String(PG_MAJORVERSION)) != -1) {
+#if defined(PG_MAJORVERSION)
+            if (rx.indexIn(QLatin1String(PG_MAJORVERSION)) != -1)
+#elif defined(PG_VERSION)
+            if (rx.indexIn(QLatin1String(PG_VERSION)) != -1)
+#else
+            if (0)
+#endif
+            {
                 vMaj = rx.cap(1).toInt();
                 vMin = rx.cap(2).toInt();
-            }
-            QPSQLDriver::Protocol clientVersion = qMakePSQLVersion(vMaj, vMin);
+                QPSQLDriver::Protocol clientVersion = qMakePSQLVersion(vMaj, vMin);
 
-            if (serverVersion >= QPSQLDriver::Version9 && clientVersion < QPSQLDriver::Version9) {
-                //Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
-                //but bytea format is set to hex by default in PSQL 9 and above. So need to force the
-                //server use the old escape mode when connects to the new server with old client library.
-                result = exec("SET bytea_output=escape; ");
-                status = PQresultStatus(result);
-            } else if (serverVersion == QPSQLDriver::VersionUnknown) {
-                serverVersion = clientVersion;
-                if (serverVersion != QPSQLDriver::VersionUnknown)
-                   qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
+                if (serverVersion >= QPSQLDriver::Version9 && clientVersion < QPSQLDriver::Version9) {
+                    //Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
+                    //but bytea format is set to hex by default in PSQL 9 and above. So need to force the
+                    //server use the old escape mode when connects to the new server with old client library.
+                    result = exec("SET bytea_output=escape; ");
+                    status = PQresultStatus(result);
+                } else if (serverVersion == QPSQLDriver::VersionUnknown) {
+                    serverVersion = clientVersion;
+                    if (serverVersion != QPSQLDriver::VersionUnknown)
+                        qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
+                }
             }
-#endif
         }
     }
     PQclear(result);
@@ -781,6 +786,7 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
     case SimpleLocking:
     case FinishQuery:
     case MultipleResultSets:
+    case CancelQuery:
         return false;
     case BLOB:
         return d->pro >= QPSQLDriver::Version71;

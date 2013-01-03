@@ -1436,6 +1436,7 @@ QGraphicsItem::~QGraphicsItem()
 #endif
 
     clearFocus();
+    setFocusProxy(0);
 
     // Update focus scope item ptr.
     QGraphicsItem *p = d_ptr->parent;
@@ -1768,24 +1769,6 @@ void QGraphicsItem::setFlag(GraphicsItemFlag flag, bool enabled)
         setFlags(GraphicsItemFlags(d_ptr->flags) | flag);
     else
         setFlags(GraphicsItemFlags(d_ptr->flags) & ~flag);
-}
-
-/*!
-    \internal
-
-    Sets the flag \a flag on \a item and all its children, to \a enabled.
-*/
-static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::GraphicsItemFlag flag,
-                                    bool enabled)
-{
-    if (item->flags() & flag) {
-        // If this item already has the correct flag set, we don't have to
-        // propagate it.
-        return;
-    }
-    item->setFlag(flag, enabled);
-    foreach (QGraphicsItem *child, item->childItems())
-        _q_qgraphicsItemSetFlag(child, flag, enabled);
 }
 
 /*!
@@ -3348,6 +3331,12 @@ void QGraphicsItem::clearFocus()
 */
 void QGraphicsItemPrivate::clearFocusHelper(bool giveFocusToParent, bool hiddenByParentPanel)
 {
+    QGraphicsItem *subFocusItem = q_ptr;
+    if (flags & QGraphicsItem::ItemIsFocusScope) {
+        while (subFocusItem->d_ptr->focusScopeItem)
+            subFocusItem = subFocusItem->d_ptr->focusScopeItem;
+    }
+
     if (giveFocusToParent) {
         // Pass focus to the closest parent focus scope
         if (!inDestructor) {
@@ -3356,10 +3345,10 @@ void QGraphicsItemPrivate::clearFocusHelper(bool giveFocusToParent, bool hiddenB
                 if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
                     if (p->d_ptr->focusScopeItem == q_ptr) {
                         p->d_ptr->focusScopeItem = 0;
-                        if (!q_ptr->hasFocus()) //if it has focus, focusScopeItemChange is called elsewhere
+                        if (!subFocusItem->hasFocus()) //if it has focus, focusScopeItemChange is called elsewhere
                             focusScopeItemChange(false);
                     }
-                    if (q_ptr->hasFocus())
+                    if (subFocusItem->hasFocus())
                         p->d_ptr->setFocusHelper(Qt::OtherFocusReason, /* climb = */ false,
                                                  /* focusFromHide = */ false);
                     return;
@@ -3369,7 +3358,7 @@ void QGraphicsItemPrivate::clearFocusHelper(bool giveFocusToParent, bool hiddenB
         }
     }
 
-    if (q_ptr->hasFocus()) {
+    if (subFocusItem->hasFocus()) {
         // Invisible items with focus must explicitly clear subfocus.
         if (!hiddenByParentPanel)
             clearSubFocus(q_ptr);

@@ -19,6 +19,6 @@ SUBDIRS=\
    qwindow \
    qguiapplication \
 
-contains(QT_CONFIG, no-widgets): SUBDIRS -= \
+!qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \
    qtouchevent

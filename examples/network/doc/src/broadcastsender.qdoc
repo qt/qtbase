@@ -28,9 +28,11 @@
 /*!
     \example broadcastsender
     \title Broadcast Sender Example
+    \ingroup examples-network
+    \brief Demonstrates how to broadcast information to multiple clients on a local network.
 
-    \brief The Broadcast Sender example shows how to broadcast information to multiple clients
-    on a local network.
+    This example uses Qt Network APIs to demonstrate how to broadcast messages
+    to multiple clients over a local network.
 
     \image broadcastsender-example.png
 */

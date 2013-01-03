@@ -2,7 +2,7 @@ CONFIG += testcase
 CONFIG += parallel_test
 TARGET = tst_qmovie
 QT += testlib
-!contains(QT_CONFIG, no-widgets): QT += widgets
+qtHaveModule(widgets): QT += widgets
 SOURCES += tst_qmovie.cpp
 MOC_DIR=tmp
 

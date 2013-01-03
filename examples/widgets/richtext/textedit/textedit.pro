@@ -1,7 +1,8 @@
+QT += widgets
+qtHaveModule(printsupport): QT += printsupport
+
 TEMPLATE        = app
 TARGET          = textedit
-
-CONFIG          += qt warn_on
 
 HEADERS         = textedit.h
 SOURCES         = textedit.cpp \
@@ -18,6 +19,3 @@ EXAMPLE_FILES = textedit.qdoc
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/richtext/textedit
 INSTALLS += target
-
-QT += widgets
-!isEmpty(QT.printsupport.name): QT += printsupport

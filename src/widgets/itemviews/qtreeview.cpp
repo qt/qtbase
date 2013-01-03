@@ -146,10 +146,10 @@ QT_BEGIN_NAMESPACE
     \endomit
 
     \table 100%
-    \row \li \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree view
+    \row \li \inlineimage windowsvista-treeview.png Screenshot of a Windows Vista style tree view
          \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree view
          \li \inlineimage fusion-treeview.png Screenshot of a Fusion style tree view
-    \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} tree view.
+    \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} tree view.
          \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree view.
          \li A \l{Fusion Style Widget Gallery}{Fusion style} tree view.
     \endtable
@@ -876,7 +876,7 @@ bool QTreeView::isSortingEnabled() const
     \brief whether animations are enabled
 
     If this property is true the treeview will animate expandsion
-    and collasping of branches. If this property is false, the treeview
+    and collapsing of branches. If this property is false, the treeview
     will expand or collapse branches immediately without showing
     the animation.
 
@@ -3743,7 +3743,7 @@ void QTreeView::currentChanged(const QModelIndex &current, const QModelIndex &pr
     }
 #ifndef QT_NO_ACCESSIBILITY
     if (QAccessible::isActive() && current.isValid()) {
-        int entry = (visualIndex(current) + (header()?1:0))*current.model()->columnCount()+current.column() + 1;
+        int entry = (visualIndex(current) + (header()?1:0))*current.model()->columnCount()+current.column();
         QAccessibleEvent event(this, QAccessible::Focus);
         event.setChild(entry);
         QAccessible::updateAccessibility(&event);
@@ -3763,16 +3763,16 @@ void QTreeView::selectionChanged(const QItemSelection &selected,
         // ### does not work properly for selection ranges.
         QModelIndex sel = selected.indexes().value(0);
         if (sel.isValid()) {
-            int entry = (visualIndex(sel) + (header()?1:0))*sel.model()->columnCount()+sel.column() + 1;
-            Q_ASSERT(entry > 0);
+            int entry = (visualIndex(sel) + (header()?1:0))*sel.model()->columnCount()+sel.column();
+            Q_ASSERT(entry >= 0);
             QAccessibleEvent event(this, QAccessible::Selection);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);
         }
         QModelIndex desel = deselected.indexes().value(0);
         if (desel.isValid()) {
-            int entry = (visualIndex(desel) + (header()?1:0))*desel.model()->columnCount()+desel.column() + 1;
-            Q_ASSERT(entry > 0);
+            int entry = (visualIndex(desel) + (header()?1:0))*desel.model()->columnCount()+desel.column();
+            Q_ASSERT(entry >= 0);
             QAccessibleEvent event(this, QAccessible::SelectionRemove);
             event.setChild(entry);
             QAccessible::updateAccessibility(&event);

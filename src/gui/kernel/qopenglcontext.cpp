@@ -121,7 +121,7 @@ QMutex QOpenGLContextPrivate::makeCurrentTrackerMutex;
     \l{OpenGL documentation}.
 
     For an example of how to use QOpenGLContext see the
-    \l{gui/openglwindow}{OpenGL Window} example.
+    \l{OpenGL Window Example}{OpenGL Window} example.
 
     \section1 Thread affinity
 

@@ -86,6 +86,11 @@ bool QQnxVirtualKeyboardBps::handleEvent(bps_event_t *event)
 bool QQnxVirtualKeyboardBps::showKeyboard()
 {
     qVirtualKeyboardDebug() << Q_FUNC_INFO << "current visibility=" << isVisible();
+
+    // They keyboard's mode is global between applications, we have to set it each time
+    if ( !isVisible() )
+        applyKeyboardMode(keyboardMode());
+
     virtualkeyboard_show();
     return true;
 }

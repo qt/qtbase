@@ -330,7 +330,7 @@
 
 /*! \fn QSet::const_iterator QSet::begin() const
 
-    Returns a const \l{STL-style iterator} positioned at the first
+    Returns a const \l{STL-style iterators}{STL-style iterator} positioned at the first
     item in the set.
 
     \sa constBegin(), end()
@@ -340,14 +340,14 @@
     \since 4.2
     \overload
 
-    Returns a non-const \l{STL-style iterator} positioned at the first
+    Returns a non-const \l{STL-style iterators}{STL-style iterator} positioned at the first
     item in the set.  
 */
 
 /*! \fn QSet::const_iterator QSet::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} positioned at the first
+    Returns a const \l{STL-style iterators}{STL-style iterator} positioned at the first
     item in the set.
 
     \sa begin(), cend()
@@ -355,7 +355,7 @@
 
 /*! \fn QSet::const_iterator QSet::constBegin() const
 
-    Returns a const \l{STL-style iterator} positioned at the first
+    Returns a const \l{STL-style iterators}{STL-style iterator} positioned at the first
     item in the set.
 
     \sa begin(), constEnd()
@@ -363,7 +363,7 @@
 
 /*! \fn QSet::const_iterator QSet::end() const
 
-    Returns a const \l{STL-style iterator} positioned at the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} positioned at the imaginary
     item after the last item in the set.
 
     \sa constEnd(), begin()
@@ -373,14 +373,14 @@
     \since 4.2
     \overload
 
-    Returns a non-const \l{STL-style iterator} pointing to the
+    Returns a non-const \l{STL-style iterators}{STL-style iterator} pointing to the
     imaginary item after the last item in the set.
 */
 
 /*! \fn QSet::const_iterator QSet::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the set.
 
     \sa cbegin(), end()
@@ -388,7 +388,7 @@
 
 /*! \fn QSet::const_iterator QSet::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the set.
 
     \sa constBegin(), end()

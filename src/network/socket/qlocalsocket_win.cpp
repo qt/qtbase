@@ -67,7 +67,7 @@ void QLocalSocketPrivate::_q_winError(ulong windowsError, const QString &functio
     Q_Q(QLocalSocket);
     QLocalSocket::LocalSocketState currentState = state;
 
-    // If the connectToServer fails due to WaitNamedPipe() time-out, assume ConnectionError  
+    // If the connectToServer fails due to WaitNamedPipe() time-out, assume ConnectionError
     if (state == QLocalSocket::ConnectingState && windowsError == ERROR_SEM_TIMEOUT)
         windowsError = ERROR_NO_DATA;
 

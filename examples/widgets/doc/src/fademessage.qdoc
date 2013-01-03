@@ -28,8 +28,10 @@
 /*!
     \example effects/fademessage
     \title Fade Message Effect Example
+    \ingroup examples-graphicsview-graphicseffects
+    \brief Demonstrates how to appliy effects on items in the view
 
-    \div { style="text-align: center"}
+    \div { style="text-align: left"}
     \inlineimage fademessageeffect-example.png
     \inlineimage fademessageeffect-example-faded.png
     \enddiv

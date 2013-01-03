@@ -40,39 +40,26 @@
 
 #include "mainwidget.h"
 
-#include "geometryengine.h"
-
-#include <QtOpenGL/QGLShaderProgram>
-
-#include <QBasicTimer>
 #include <QMouseEvent>
-#include <QDebug>
 
 #include <math.h>
 #include <locale.h>
 
 MainWidget::MainWidget(QWidget *parent) :
     QGLWidget(parent),
-    timer(new QBasicTimer),
-    program(new QGLShaderProgram),
-    geometries(new GeometryEngine),
     angularSpeed(0)
 {
 }
 
 MainWidget::~MainWidget()
 {
-    delete timer; timer = 0;
-    delete program; program = 0;
-    delete geometries; geometries = 0;
-
     deleteTexture(texture);
 }
 
 //! [0]
 void MainWidget::mousePressEvent(QMouseEvent *e)
 {
-    // Saving mouse press position
+    // Save mouse press position
     mousePressPosition = QVector2D(e->localPos());
 }
 
@@ -97,17 +84,15 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 //! [0]
 
 //! [1]
-void MainWidget::timerEvent(QTimerEvent *e)
+void MainWidget::timerEvent(QTimerEvent *)
 {
-    Q_UNUSED(e);
-
     // Decrease angular speed (friction)
     angularSpeed *= 0.99;
 
     // Stop rotation when speed goes below threshold
-    if (angularSpeed < 0.01)
+    if (angularSpeed < 0.01) {
         angularSpeed = 0.0;
-    else {
+    } else {
         // Update rotation
         rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
 
@@ -120,13 +105,8 @@ void MainWidget::timerEvent(QTimerEvent *e)
 void MainWidget::initializeGL()
 {
     initializeGLFunctions();
-
     qglClearColor(Qt::black);
-
-    qDebug() << "Initializing shaders...";
     initShaders();
-
-    qDebug() << "Initializing textures...";
     initTextures();
 
 //! [2]
@@ -137,33 +117,32 @@ void MainWidget::initializeGL()
     glEnable(GL_CULL_FACE);
 //! [2]
 
-    qDebug() << "Initializing geometries...";
-    geometries->init();
+    geometries.init();
 
-    // using QBasicTimer because its faster that QTimer
-    timer->start(12, this);
+    // Use QBasicTimer because its faster than QTimer
+    timer.start(12, this);
 }
 
 //! [3]
 void MainWidget::initShaders()
 {
-    // Overriding system locale until shaders are compiled
+    // Override system locale until shaders are compiled
     setlocale(LC_NUMERIC, "C");
 
-    // Compiling vertex shader
-    if (!program->addShaderFromSourceFile(QGLShader::Vertex, ":/vshader.glsl"))
+    // Compile vertex shader
+    if (!program.addShaderFromSourceFile(QGLShader::Vertex, ":/vshader.glsl"))
         close();
 
-    // Compiling fragment shader
-    if (!program->addShaderFromSourceFile(QGLShader::Fragment, ":/fshader.glsl"))
+    // Compile fragment shader
+    if (!program.addShaderFromSourceFile(QGLShader::Fragment, ":/fshader.glsl"))
         close();
 
-    // Linking shader pipeline
-    if (!program->link())
+    // Link shader pipeline
+    if (!program.link())
         close();
 
-    // Binding shader pipeline for use
-    if (!program->bind())
+    // Bind shader pipeline for use
+    if (!program.bind())
         close();
 
     // Restore system locale
@@ -174,7 +153,7 @@ void MainWidget::initShaders()
 //! [4]
 void MainWidget::initTextures()
 {
-    // Loading cube.png
+    // Load cube.png image
     glEnable(GL_TEXTURE_2D);
     texture = bindTexture(QImage(":/cube.png"));
 
@@ -198,7 +177,7 @@ void MainWidget::resizeGL(int w, int h)
     glViewport(0, 0, w, h);
 
     // Calculate aspect ratio
-    qreal aspect = (qreal)w / ((qreal)h?h:1);
+    qreal aspect = qreal(w) / qreal(h ? h : 1);
 
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
     const qreal zNear = 3.0, zFar = 7.0, fov = 45.0;
@@ -223,12 +202,12 @@ void MainWidget::paintGL()
     matrix.rotate(rotation);
 
     // Set modelview-projection matrix
-    program->setUniformValue("mvp_matrix", projection * matrix);
+    program.setUniformValue("mvp_matrix", projection * matrix);
 //! [6]
 
-    // Using texture unit 0 which contains cube.png
-    program->setUniformValue("texture", 0);
+    // Use texture unit 0 which contains cube.png
+    program.setUniformValue("texture", 0);
 
     // Draw cube geometry
-    geometries->drawCubeGeometry(program);
+    geometries.drawCubeGeometry(&program);
 }

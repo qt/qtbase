@@ -99,6 +99,7 @@ public:
     { control->processEvent(e, QPointF(horizontalOffset(), verticalOffset()), viewport); }
 
     void _q_currentCharFormatChanged(const QTextCharFormat &format);
+    void _q_cursorPositionChanged();
 
     void updateDefaultTextOption();
 

@@ -452,7 +452,7 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
 
         QFont::Stretch stretch = QFont::Unstretched;
 
-        registerFont(family,QString(),weight,style,stretch,true,true,0,fixedPitch,writingSystems,fontFile);
+        registerFont(family,QString::fromLatin1(face->style_name),QString(),weight,style,stretch,true,true,0,fixedPitch,writingSystems,fontFile);
 
         families.append(family);
 

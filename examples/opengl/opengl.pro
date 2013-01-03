@@ -26,5 +26,3 @@ SUBDIRS += hellowindow \
            paintedwindow
 
 EXAMPLE_FILES = shared
-
-QT += widgets

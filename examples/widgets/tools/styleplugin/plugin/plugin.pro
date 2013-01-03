@@ -1,6 +1,7 @@
 #! [0]
 TEMPLATE    = lib
 CONFIG     += plugin
+QT         += widgets
 HEADERS     = simplestyle.h \
               simplestyleplugin.h
 SOURCES     = simplestyle.cpp \
@@ -19,6 +20,3 @@ EXAMPLE_FILES += simplestyle.json
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/styleplugin/styles
 INSTALLS += target
-
-
-QT += widgets

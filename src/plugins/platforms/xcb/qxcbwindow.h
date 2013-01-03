@@ -109,6 +109,8 @@ public:
 
     bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 
+    void setOpacity(qreal level);
+
 #if !defined(QT_NO_SHAPE)
     void setMask(const QRegion &region);
 #endif // !QT_NO_SHAPE
@@ -132,11 +134,10 @@ public:
     void handleFocusOutEvent(const xcb_focus_out_event_t *event);
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event);
 
-    void handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
+    void handleMouseEvent(xcb_timestamp_t time, const QPoint &local, const QPoint &global, Qt::KeyboardModifiers modifiers);
 
     void updateSyncRequestCounter();
     void updateNetWmUserTime(xcb_timestamp_t timestamp);
-    void netWmUserTime() const;
 
 #if defined(XCB_USE_EGL)
     QXcbEGLSurface *eglSurface() const;

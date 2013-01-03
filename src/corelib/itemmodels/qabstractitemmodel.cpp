@@ -1437,7 +1437,7 @@ QAbstractItemModel::~QAbstractItemModel()
 
     For example:
 
-    \snippet itemviews/simpledommodel/dommodel.cpp 2
+    \snippet ../widgets/itemviews/simpledommodel/dommodel.cpp 2
 
     \note When implementing a table based model, columnCount() should return 0
     when the parent is valid.

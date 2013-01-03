@@ -312,3 +312,6 @@ tests/auto/dbus/qdbusinterface/qmyserver/qmyserver
 tests/auto/gui/kernel/qfileopenevent/qfileopeneventexternal/qfileopeneventexternal
 tests/auto/network/bearer/qnetworksession/lackey/lackey
 tests/auto/widgets/kernel/qapplication/modal/modal
+
+# Generated static plugin import sources
+*_plugin_import.cpp

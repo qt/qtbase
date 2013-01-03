@@ -28,6 +28,7 @@
 /*!
     \example dialogs/extension
     \title Extension Example
+    \ingroup examples-dialogs
 
     \brief The Extension example shows how to add an extension to a QDialog
     using the QAbstractButton::toggled() signal and the

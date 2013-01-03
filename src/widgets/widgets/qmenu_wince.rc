@@ -3,9 +3,9 @@
 #include <commctrl.h>
 #include "winuser.h"
 
-#if defined (_DEBUG) && defined(QT_DLL)
+#if defined (_DEBUG) && defined(QT_SHARED)
 #include "Qt5Widgetsd_resource.rc"
-#elif defined(QT_DLL)
+#elif defined(QT_SHARED)
 #include "Qt5Widgets_resource.rc"
 #endif
 

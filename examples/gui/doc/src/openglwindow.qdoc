@@ -1,0 +1,156 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example openglwindow
+    \title OpenGL Window Example
+
+    \brief This example shows how to create a minimal QWindow based application
+    for the purpose of using OpenGL.
+
+    \image openglwindow-example.png Screenshot of the OpenGLWindow example
+
+    \section1 OpenGLWindow super class
+
+    Our OpenGLWindow class acts as an API which is then subclassed to do the
+    actual rendering. It has functions to make a request for render() to be
+    called, either immediately with renderNow() or as soon as the event loop
+    has finished processing the current batch of events with renderLater().
+    The OpenGLWindow subclass can either reimplement render() for OpenGL based
+    rendering, or render(QPainter *) for rendering with a QPainter.  Use
+    OpenGLWindow::setAnimating(true) for render() to be called at the vertical
+    refresh rate, assuming vertical sync is enabled in the underlying OpenGL
+    drivers.
+
+    In the class that does the OpenGL rendering you will typically want to
+    inherit from QOpenGLFunctions, as our OpenGLWindow does, in order to get
+    platform independent access to OpenGL ES 2.0 functions. By inheriting from
+    QOpenGLFunctions the OpenGL functions it contains will get precedence, and
+    you will not have to worry about resolving those functions if you want your
+    application to work with OpenGL as well as OpenGL ES 2.0.
+
+    \snippet openglwindow/openglwindow.h 1
+
+    The window's surface type must be set to QSurface::OpenGLSurface to
+    indicate that the window is to be used for OpenGL rendering and not for
+    rendering raster content with QPainter using a QBackingStore.
+
+    \snippet openglwindow/openglwindow.cpp 1
+
+    Any OpenGL initialization needed can be done by overriding the initialize()
+    function, which is called once before the first call to render(), with a
+    valid current QOpenGLContext. As can be seen in the following code snippet,
+    the default render(QPainter *) and initialize() implementations are empty,
+    whereas the default render() implementation initializes a
+    QOpenGLPaintDevice and then calls into render(QPainter *).
+
+    \snippet openglwindow/openglwindow.cpp 2
+
+    The renderLater() function simply puts an update request event on
+    the event loop, which leads to renderNow() being called once the event
+    gets processed.
+
+    We also call renderNow() when we get an expose event. The exposeEvent() is
+    the notification to the window that its exposure, meaning visibility, on
+    the screen has changed. When the expose event is received you can query
+    QWindow::isExposed() to find out whether or not the window is currently
+    exposed. Do not render to or call QOpenGLContext::swapBuffers() on a window
+    before it has received its first expose event, as before then its final
+    size might be unknown, and in addition what is rendered might not even end
+    up on the screen.
+
+    \snippet openglwindow/openglwindow.cpp 3
+
+    In renderNow() we return if we are not currently exposed, in which case
+    rendering is delayed until we actually get an expose event. If we have not
+    yet done so, we create the QOpenGLContext with the same QSurfaceFormat as
+    was set on the OpenGLWindow, and call initialize() for the sake of the sub
+    class, and initializeOpenGLFunctions() in order for the QOpenGLFunctions
+    super class to be associated with the correct QOpenGLContext. In any case
+    we make the context current by calling QOpenGLContext::makeCurrent(), call
+    render() to do the actual rendering, and finally we schedule for the
+    rendered contents to be made visible by calling
+    QOpenGLContext::swapBuffers() with the OpenGLWindow as parameter.
+
+    Once the rendering of a frame using an OpenGL context is initiated by
+    calling QOpenGLContext::makeCurrent(), giving the surface on which to
+    render as a parameter, OpenGL commands can be issued. The commands can be
+    issued either directly by including <qopengl.h>, which also includes the
+    system's OpenGL headers, or as by using QOpenGLFunctions, which can
+    either be inherited from for convenience, or accessed using
+    QOpenGLContext::functions(). QOpenGLFunctions gives access to all the
+    OpenGL ES 2.0 level OpenGL calls that are not already standard in both
+    OpenGL ES 2.0 and desktop OpenGL. For more information about the OpenGL and
+    OpenGL ES APIs, refer to the official \l{http://www.opengl.org/registry/}{OpenGL Registry} and
+    \l {http://www.khronos.org/registry/gles/}{Khronos OpenGL ES API Registry}.
+
+    If animation has been enabled with OpenGLWindow::setAnimating(true), we
+    call renderLater() to put another update request on the event loop.
+
+    \snippet openglwindow/openglwindow.cpp 4
+
+    Enabling animation also triggers an update request as shown in the
+    following code snippet.
+
+    \snippet openglwindow/openglwindow.cpp 5
+
+    \section1 Example OpenGL rendering sub class
+
+    Here we sub class OpenGLWindow to show how to do OpenGL to render a
+    rotating triangle. By indirectly sub classing QOpenGLFunctions we gain
+    access to all OpenGL ES 2.0 level functionality.
+
+    \snippet openglwindow/main.cpp 1
+
+    In our main function we initialize QGuiApplication and instantiate our
+    TriangleOpenGLWindow. We give it a QSurfaceFormat specifying that we want
+    four samples of multisample antialiasing, as well as a default geometry.
+    Since we want to have animation we call the above mentioned setAnimating()
+    function with an argument of true.
+
+    \snippet openglwindow/main.cpp 2
+
+    The following code snippet shows the OpenGL shader program used in this
+    example. The vertex and fragment shaders are relatively simple, doing
+    vertex transformation and interpolated vertex coloring.
+
+    \snippet openglwindow/main.cpp 3
+
+    Here is the code that loads the shaders and initializes the shader program
+    By using QOpenGLShaderProgram instead of raw OpenGL we get the convenience
+    that strips out the highp, mediump, and lowp qualifiers on desktop OpenGL,
+    where they are not part of the standard. We store the attribute and uniform
+    locations in member variables to avoid having to do the location lookup
+    each frame.
+
+    \snippet openglwindow/main.cpp 4
+
+    Finally, here is our render() function, where we use OpenGL to set up the
+    viewport, clear the background, and render a rotating triangle.
+
+    \snippet openglwindow/main.cpp 5
+*/

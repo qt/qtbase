@@ -114,7 +114,7 @@
     QUrl is capable of detecting many errors in URLs while parsing it or when
     components of the URL are set with individual setter methods (like
     setScheme(), setHost() or setPath()). If the parsing or setter function is
-    succesful, any previously recorded error conditions will be discarded.
+    successful, any previously recorded error conditions will be discarded.
 
     By default, QUrl setter methods operate in QUrl::TolerantMode, which means
     they accept some common mistakes and mis-representation of data. An
@@ -363,6 +363,7 @@ public:
 
     enum ErrorCode {
         // the high byte of the error code matches the Section
+        // the first item in each value must be the generic "Invalid xxx Error"
         InvalidSchemeError = Scheme << 8,
 
         InvalidUserNameError = UserName << 8,
@@ -410,6 +411,9 @@ public:
     void clearError();
     void setError(ErrorCode errorCode, const QString &source, int supplement = -1);
     ErrorCode validityError(QString *source = 0, int *position = 0) const;
+    bool validateComponent(Section section, const QString &input, int begin, int end);
+    bool validateComponent(Section section, const QString &input)
+    { return validateComponent(section, input, 0, uint(input.length())); }
 
     // no QString scheme() const;
     void appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
@@ -895,58 +899,72 @@ inline void QUrlPrivate::setAuthority(const QString &auth, int from, int end, QU
 {
     sectionIsPresent &= ~Authority;
     sectionIsPresent |= Host;
-    if (from == end) {
-        userName.clear();
-        password.clear();
-        host.clear();
-        port = -1;
-        return;
-    }
 
-    int userInfoIndex = auth.indexOf(QLatin1Char('@'), from);
-    if (uint(userInfoIndex) < uint(end)) {
-        setUserInfo(auth, from, userInfoIndex);
-        from = userInfoIndex + 1;
-    }
-
-    int colonIndex = auth.lastIndexOf(QLatin1Char(':'), end - 1);
-    if (colonIndex < from)
-        colonIndex = -1;
-
-    if (uint(colonIndex) < uint(end)) {
-        if (auth.at(from).unicode() == '[') {
-            // check if colonIndex isn't inside the "[...]" part
-            int closingBracket = auth.indexOf(QLatin1Char(']'), from);
-            if (uint(closingBracket) > uint(colonIndex))
-                colonIndex = -1;
-        }
-    }
-
-    if (colonIndex == end - 1) {
-        // found a colon but no digits after it
-        setError(PortEmptyError, auth, colonIndex + 1);
-    } else if (uint(colonIndex) < uint(end)) {
-        unsigned long x = 0;
-        for (int i = colonIndex + 1; i < end; ++i) {
-            ushort c = auth.at(i).unicode();
-            if (c >= '0' && c <= '9') {
-                x *= 10;
-                x += c - '0';
-            } else {
-                x = ulong(-1); // x != ushort(x)
+    // we never actually _loop_
+    while (from != end) {
+        int userInfoIndex = auth.indexOf(QLatin1Char('@'), from);
+        if (uint(userInfoIndex) < uint(end)) {
+            setUserInfo(auth, from, userInfoIndex);
+            if (mode == QUrl::StrictMode && !validateComponent(UserInfo, auth, from, userInfoIndex))
                 break;
+            from = userInfoIndex + 1;
+        }
+
+        int colonIndex = auth.lastIndexOf(QLatin1Char(':'), end - 1);
+        if (colonIndex < from)
+            colonIndex = -1;
+
+        if (uint(colonIndex) < uint(end)) {
+            if (auth.at(from).unicode() == '[') {
+                // check if colonIndex isn't inside the "[...]" part
+                int closingBracket = auth.indexOf(QLatin1Char(']'), from);
+                if (uint(closingBracket) > uint(colonIndex))
+                    colonIndex = -1;
             }
         }
-        if (x == ushort(x)) {
-            port = ushort(x);
-        } else {
-            setError(InvalidPortError, auth, colonIndex + 1);
-        }
-    } else {
-        port = -1;
-    }
 
-    setHost(auth, from, qMin<uint>(end, colonIndex), mode);
+        if (colonIndex == end - 1) {
+            // found a colon but no digits after it
+            setError(PortEmptyError, auth, colonIndex + 1);
+        } else if (uint(colonIndex) < uint(end)) {
+            unsigned long x = 0;
+            for (int i = colonIndex + 1; i < end; ++i) {
+                ushort c = auth.at(i).unicode();
+                if (c >= '0' && c <= '9') {
+                    x *= 10;
+                    x += c - '0';
+                } else {
+                    x = ulong(-1); // x != ushort(x)
+                    break;
+                }
+            }
+            if (x == ushort(x)) {
+                port = ushort(x);
+            } else {
+                setError(InvalidPortError, auth, colonIndex + 1);
+                if (mode == QUrl::StrictMode)
+                    break;
+            }
+        } else {
+            port = -1;
+        }
+
+        setHost(auth, from, qMin<uint>(end, colonIndex), mode);
+        if (mode == QUrl::StrictMode && !validateComponent(Host, auth, from, qMin<uint>(end, colonIndex))) {
+            // clear host too
+            sectionIsPresent &= ~Authority;
+            break;
+        }
+
+        // success
+        return;
+    }
+    // clear all sections but host
+    sectionIsPresent &= ~Authority | Host;
+    userName.clear();
+    password.clear();
+    host.clear();
+    port = -1;
 }
 
 inline void QUrlPrivate::setUserInfo(const QString &userInfo, int from, int end)
@@ -1297,61 +1315,18 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     if (error || parsingMode == QUrl::TolerantMode)
         return;
 
-    // The parsing so far was tolerant of errors, so the StrictMode
-    // parsing is actually implemented here, as an extra post-check.
-    // We only execute it if we haven't found any errors so far.
+    // The parsing so far was partially tolerant of errors, except for the
+    // scheme parser (which is always strict) and the authority (which was
+    // executed in strict mode).
+    // If we haven't found any errors so far, continue the strict-mode parsing
+    // from the path component onwards.
 
-    // What we need to look out for, that the regular parser tolerates:
-    //  - percent signs not followed by two hex digits
-    //  - forbidden characters, which should always appear encoded
-    //    '"' / '<' / '>' / '\' / '^' / '`' / '{' / '|' / '}' / BKSP
-    //    control characters
-    //  - delimiters not allowed in certain positions
-    //    . scheme: parser is already strict
-    //    . user info: gen-delims (except for ':') disallowed
-    //    . host: parser is stricter than the standard
-    //    . port: parser is stricter than the standard
-    //    . path: all delimiters allowed
-    //    . fragment: all delimiters allowed
-    //    . query: all delimiters allowed
-    //    We would only need to check the user-info. However, the presence
-    //    of the disallowed gen-delims changes the parsing, so we don't
-    //    actually need to do anything
-    static const char forbidden[] = "\"<>\\^`{|}\x7F";
-    for (uint i = 0; i < uint(len); ++i) {
-        register uint uc = data[i];
-        if (uc >= 0x80)
-            continue;
-
-        if ((uc == '%' && (uint(len) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
-                || uc <= 0x20 || strchr(forbidden, uc)) {
-            // found an error
-            ErrorCode errorCode;
-
-            // where are we?
-            if (i > uint(hash)) {
-                errorCode = InvalidFragmentError;
-            } else if (i > uint(question)) {
-                errorCode = InvalidQueryError;
-            } else if (i > uint(pathStart)) {
-                // pathStart is never -1
-                errorCode = InvalidPathError;
-            } else {
-                // It must be in the authority, since the scheme is strict.
-                // Since the port and hostname parsers are also strict,
-                // the error can only have happened in the user info.
-                int pos = url.indexOf(QLatin1Char(':'), hierStart);
-                if (i > uint(pos)) {
-                    errorCode = InvalidPasswordError;
-                } else {
-                    errorCode = InvalidUserNameError;
-                }
-            }
-
-            setError(errorCode, url, i);
-            return;
-        }
-    }
+    if (!validateComponent(Path, url, pathStart, hierEnd))
+        return;
+    if (uint(question) < uint(hash) && !validateComponent(Query, url, question + 1, qMin<uint>(hash, len)))
+        return;
+    if (hash != -1)
+        validateComponent(Fragment, url, hash + 1, len);
 }
 
 /*
@@ -1517,6 +1492,67 @@ inline QUrlPrivate::ErrorCode QUrlPrivate::validityError(QString *source, int *p
         }
     }
     return NoError;
+}
+
+bool QUrlPrivate::validateComponent(QUrlPrivate::Section section, const QString &input,
+                                    int begin, int end)
+{
+    // What we need to look out for, that the regular parser tolerates:
+    //  - percent signs not followed by two hex digits
+    //  - forbidden characters, which should always appear encoded
+    //    '"' / '<' / '>' / '\' / '^' / '`' / '{' / '|' / '}' / BKSP
+    //    control characters
+    //  - delimiters not allowed in certain positions
+    //    . scheme: parser is already strict
+    //    . user info: gen-delims except ":" disallowed ("/" / "?" / "#" / "[" / "]" / "@")
+    //    . host: parser is stricter than the standard
+    //    . port: parser is stricter than the standard
+    //    . path: all delimiters allowed
+    //    . fragment: all delimiters allowed
+    //    . query: all delimiters allowed
+    static const char forbidden[] = "\"<>\\^`{|}\x7F";
+    static const char forbiddenUserInfo[] = ":/?#[]@";
+
+    Q_ASSERT(section != Authority && section != Hierarchy && section != FullUrl);
+
+    const ushort *const data = reinterpret_cast<const ushort *>(input.constData());
+    for (uint i = uint(begin); i < uint(end); ++i) {
+        register uint uc = data[i];
+        if (uc >= 0x80)
+            continue;
+
+        bool error = false;
+        if ((uc == '%' && (uint(end) < i + 2 || !isHex(data[i + 1]) || !isHex(data[i + 2])))
+                || uc <= 0x20 || strchr(forbidden, uc)) {
+            // found an error
+            error = true;
+        } else if (section & UserInfo) {
+            if (section == UserInfo && strchr(forbiddenUserInfo + 1, uc))
+                error = true;
+            else if (section != UserInfo && strchr(forbiddenUserInfo, uc))
+                error = true;
+        }
+
+        if (!error)
+            continue;
+
+        ErrorCode errorCode = ErrorCode(int(section) << 8);
+        if (section == UserInfo) {
+            // is it the user name or the password?
+            errorCode = InvalidUserNameError;
+            for (uint j = uint(begin); j < i; ++j)
+                if (data[j] == ':') {
+                    errorCode = InvalidPasswordError;
+                    break;
+                }
+        }
+
+        setError(errorCode, input, i);
+        return false;
+    }
+
+    // no errors
+    return true;
 }
 
 #if 0
@@ -1954,6 +1990,10 @@ void QUrl::setUserInfo(const QString &userInfo, ParsingMode mode)
         // QUrlPrivate::setUserInfo cleared almost everything
         // but it leaves the UserName bit set
         d->sectionIsPresent &= ~QUrlPrivate::UserInfo;
+    } else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::UserInfo, userInfo)) {
+        d->sectionIsPresent &= ~QUrlPrivate::UserInfo;
+        d->userName.clear();
+        d->password.clear();
     }
 }
 
@@ -2010,10 +2050,11 @@ void QUrl::setUserName(const QString &userName, ParsingMode mode)
         mode = TolerantMode;
     }
 
-
     d->setUserName(data, 0, data.length());
     if (userName.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::UserName;
+    else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::UserName, userName))
+        d->userName.clear();
 }
 
 /*!
@@ -2105,6 +2146,8 @@ void QUrl::setPassword(const QString &password, ParsingMode mode)
     d->setPassword(data, 0, data.length());
     if (password.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Password;
+    else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::Password, password))
+        d->password.clear();
 }
 
 /*!
@@ -2354,6 +2397,9 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
     // optimized out, since there is no path delimiter
 //    if (path.isNull())
 //        d->sectionIsPresent &= ~QUrlPrivate::Path;
+//    else
+    if (mode == StrictMode && !d->validateComponent(QUrlPrivate::Path, path))
+        d->path.clear();
 }
 
 /*!
@@ -2474,6 +2520,8 @@ void QUrl::setQuery(const QString &query, ParsingMode mode)
     d->setQuery(data, 0, data.length());
     if (query.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Query;
+    else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::Query, query))
+        d->query.clear();
 }
 
 /*!
@@ -2835,6 +2883,8 @@ void QUrl::setFragment(const QString &fragment, ParsingMode mode)
     d->setFragment(data, 0, data.length());
     if (fragment.isNull())
         d->sectionIsPresent &= ~QUrlPrivate::Fragment;
+    else if (mode == StrictMode && !d->validateComponent(QUrlPrivate::Fragment, fragment))
+        d->fragment.clear();
 }
 
 /*!
@@ -3812,7 +3862,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     \list
     \li qt.nokia.com becomes http://qt.nokia.com
-    \li ftp.qt.nokia.com becomes ftp://ftp.qt.nokia.com
+    \li ftp.qt-project.org becomes ftp://ftp.qt-project.org
     \li hostname becomes http://hostname
     \li /home/user/test.html becomes file:///home/user/test.html
     \endlist
@@ -3828,12 +3878,11 @@ QUrl QUrl::fromUserInput(const QString &userInput)
     QUrl url = QUrl(trimmedString, QUrl::TolerantMode);
     QUrl urlPrepended = QUrl(QStringLiteral("http://") + trimmedString, QUrl::TolerantMode);
 
-    // Check the most common case of a valid url with scheme and host
+    // Check the most common case of a valid url with a scheme
     // We check if the port would be valid by adding the scheme to handle the case host:port
     // where the host would be interpretted as the scheme
     if (url.isValid()
         && !url.scheme().isEmpty()
-        && (!url.host().isEmpty() || !url.path().isEmpty())
         && urlPrepended.port() == -1)
         return adjustFtpPath(url);
 

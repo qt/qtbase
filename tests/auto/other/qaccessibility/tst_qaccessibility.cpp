@@ -69,6 +69,16 @@
 
 #include "QtTest/qtestaccessible.h"
 
+// Make a widget frameless to prevent size constraints of title bars
+// from interfering (Windows).
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 #if defined(Q_OS_WINCE)
 extern "C" bool SystemParametersInfo(UINT uiAction, UINT uiParam, PVOID pvParam, UINT fWinIni);
 #define SPI_GETPLATFORMTYPE 257
@@ -363,6 +373,7 @@ void tst_QAccessibility::eventTest()
 {
     QPushButton* button = new QPushButton(0);
     button->setObjectName(QString("Olaf"));
+    setFrameless(button);
 
     button->show();
     QAccessibleEvent showEvent(button, QAccessible::ObjectShow);
@@ -440,6 +451,7 @@ void tst_QAccessibility::sliderTest()
 {
     {
     QSlider *slider = new QSlider(0);
+    setFrameless(slider);
     slider->setObjectName(QString("Slidy"));
     slider->show();
     QAIPtr iface(QAccessible::queryAccessibleInterface(slider));
@@ -453,6 +465,7 @@ void tst_QAccessibility::sliderTest()
     QVERIFY(valueIface != 0);
     QCOMPARE(valueIface->minimumValue().toInt(), slider->minimum());
     QCOMPARE(valueIface->maximumValue().toInt(), slider->maximum());
+    QCOMPARE(valueIface->minimumStepSize().toInt(), slider->singleStep());
     slider->setValue(50);
     QCOMPARE(valueIface->currentValue().toInt(), slider->value());
     slider->setValue(0);
@@ -461,6 +474,8 @@ void tst_QAccessibility::sliderTest()
     QCOMPARE(valueIface->currentValue().toInt(), slider->value());
     valueIface->setCurrentValue(77);
     QCOMPARE(77, slider->value());
+    slider->setSingleStep(2);
+    QCOMPARE(valueIface->minimumStepSize().toInt(), 2);
 
     delete slider;
     }
@@ -664,6 +679,7 @@ void tst_QAccessibility::textAttributes()
 void tst_QAccessibility::hideShowTest()
 {
     QWidget * const window = new QWidget();
+    window->resize(200, 200);
     QWidget * const child = new QWidget(window);
 
     QVERIFY(state(window).invisible);
@@ -724,6 +740,7 @@ void tst_QAccessibility::actionTest()
 
     {
     QPushButton *button = new QPushButton;
+    setFrameless(button);
     button->show();
     QVERIFY(QTest::qWaitForWindowExposed(button));
     button->clearFocus();
@@ -909,6 +926,7 @@ void tst_QAccessibility::buttonTest()
     QMenu *menu = new QMenu();
     menu->addAction(foo);
     QPushButton menuButton;
+    setFrameless(&menuButton);
     menuButton.setMenu(menu);
     menuButton.show();
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&menuButton);
@@ -1064,6 +1082,7 @@ void tst_QAccessibility::scrollBarTest()
 void tst_QAccessibility::tabTest()
 {
     QTabBar *tabBar = new QTabBar();
+    setFrameless(tabBar);
     tabBar->show();
 
     QAccessibleInterface * const interface = QAccessible::queryAccessibleInterface(tabBar);
@@ -1440,6 +1459,7 @@ void tst_QAccessibility::menuTest()
 void tst_QAccessibility::spinBoxTest()
 {
     QSpinBox * const spinBox = new QSpinBox();
+    setFrameless(spinBox);
     spinBox->setValue(3);
     spinBox->show();
 
@@ -1482,6 +1502,7 @@ void tst_QAccessibility::spinBoxTest()
 void tst_QAccessibility::doubleSpinBoxTest()
 {
     QDoubleSpinBox *doubleSpinBox = new QDoubleSpinBox;
+    setFrameless(doubleSpinBox);
     doubleSpinBox->show();
 
     QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(doubleSpinBox);
@@ -1530,6 +1551,7 @@ void tst_QAccessibility::textEditTest()
     for (int pass = 0; pass < 2; ++pass) {
         {
         QTextEdit edit;
+        setFrameless(&edit);
         int startOffset;
         int endOffset;
         // create two blocks of text. The first block has two lines.
@@ -1580,6 +1602,8 @@ void tst_QAccessibility::textEditTest()
         edit.setTextCursor(c);
         QAccessibleTextSelectionEvent sel(&edit, 2, 4);
         QVERIFY_EVENT(&sel);
+        QAccessibleTextCursorEvent cursor(&edit, 4);
+        QVERIFY_EVENT(&cursor);
 
         edit.selectAll();
         int end = edit.textCursor().position();
@@ -2126,6 +2150,7 @@ void tst_QAccessibility::dialogButtonBoxTest()
     QDialogButtonBox box(QDialogButtonBox::Reset |
                          QDialogButtonBox::Help |
                          QDialogButtonBox::Ok, Qt::Horizontal);
+    setFrameless(&box);
 
 
     // Test up and down navigation
@@ -2167,6 +2192,7 @@ void tst_QAccessibility::dialTest()
 {
     {
     QDial dial;
+    setFrameless(&dial);
     dial.setMinimum(23);
     dial.setMaximum(121);
     dial.setValue(42);
@@ -2925,6 +2951,7 @@ void tst_QAccessibility::labelTest()
 {
     QString text = "Hello World";
     QLabel *label = new QLabel(text);
+    setFrameless(label);
     label->show();
 
 #if defined(Q_OS_UNIX)

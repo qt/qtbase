@@ -28,7 +28,7 @@
 /*!
     \example itemviews/simplewidgetmapper
     \title Simple Widget Mapper Example
-
+    \ingroup examples-itemviews
     \brief The Simple Widget Mapper example shows how to use a widget mapper to display
     data from a model in a collection of widgets.
 

@@ -1180,10 +1180,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t\t\t\t" << writeSettings("SECTORDER_FLAGS", ProStringList()) << ";" << "\n"
       << "\t\t\t\t" << writeSettings("WARNING_CFLAGS", ProStringList()) << ";" << "\n"
       << "\t\t\t\t" << writeSettings("PREBINDING", ProStringList((project->isEmpty("QMAKE_DO_PREBINDING") ? "NO" : "YES")), SettingsNoQuote) << ";" << "\n";
-    if(!project->isEmpty("PRECOMPILED_HEADER")) {
-        t << "\t\t\t\t" << writeSettings("GCC_PRECOMPILE_PREFIX_HEADER", "YES") << ";" << "\n"
-          << "\t\t\t\t" << writeSettings("GCC_PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";" << "\n";
-    }
     if((project->first("TEMPLATE") == "app" && project->isActiveConfig("app_bundle")) ||
        (project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib") &&
         project->isActiveConfig("lib_bundle"))) {
@@ -1250,8 +1246,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t\t\t\t" << writeSettings("DYLIB_COMPATIBILITY_VERSION", project->first("COMPAT_VERSION")) << ";" << "\n";
     if(!project->isEmpty("QMAKE_MACOSX_DEPLOYMENT_TARGET"))
         t << "\t\t\t\t" << writeSettings("MACOSX_DEPLOYMENT_TARGET", project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET")) << ";" << "\n";
-    if (!project->isEmpty("OBJECTS_DIR"))
-        t << "\t\t\t\t" << writeSettings("OBJROOT", fixForOutput(project->first("OBJECTS_DIR").toQString())) << ";" << "\n";
     if(project->first("TEMPLATE") == "app") {
         t << "\t\t\t\t" << writeSettings("PRODUCT_NAME", fixForOutput(project->first("QMAKE_ORIG_TARGET").toQString())) << ";" << "\n";
     } else {
@@ -1393,6 +1387,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
               << "\t\t\t" << "buildSettings = {" << "\n";
             for (QMap<QString, QString>::Iterator set_it = settings.begin(); set_it != settings.end(); ++set_it)
                 t << "\t\t\t\t" << writeSettings(set_it.key(), set_it.value()) << ";\n";
+            if (!project->isEmpty("PRECOMPILED_HEADER")) {
+                t << "\t\t\t\t" << writeSettings("GCC_PRECOMPILE_PREFIX_HEADER", "YES") << ";" << "\n"
+                << "\t\t\t\t" << writeSettings("GCC_PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";" << "\n";
+            }
             if (buildConfigGroups.at(i) == QLatin1String("PROJECT")) {
                 t << "\t\t\t\t" << writeSettings("HEADER_SEARCH_PATHS", fixListForOutput("INCLUDEPATH") + ProStringList(fixForOutput(specdir())), SettingsAsList, 5) << ";" << "\n"
                   << "\t\t\t\t" << writeSettings("LIBRARY_SEARCH_PATHS", fixListForOutput("QMAKE_PBX_LIBPATHS"), SettingsAsList, 5) << ";" << "\n"
@@ -1429,6 +1427,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 const ProStringList &archs = project->values("QT_ARCH");
                 if (!archs.isEmpty())
                     t << "\t\t\t\t" << writeSettings("ARCHS", archs) << ";" << "\n";
+                if (!project->isEmpty("OBJECTS_DIR"))
+                    t << "\t\t\t\t" << writeSettings("OBJROOT", escapeFilePath(project->first("OBJECTS_DIR").toQString())) << ";" << "\n";
             } else {
                 if (project->first("TEMPLATE") == "app") {
                     t << "\t\t\t\t" << writeSettings("PRODUCT_NAME", fixForOutput(project->first("QMAKE_ORIG_TARGET").toQString())) << ";" << "\n";

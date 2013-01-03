@@ -63,6 +63,7 @@ void QGtkPainter::reset(QPainter *painter)
     m_hflipped = false;
     m_vflipped = false;
     m_usePixmapCache = true;
+    m_cliprect = QRect();
 }
 
 QString QGtkPainter::uniqueName(const QString &key, GtkStateType state, GtkShadowType shadow,

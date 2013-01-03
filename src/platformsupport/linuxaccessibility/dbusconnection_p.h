@@ -49,6 +49,8 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
+
 class DBusConnection
 {
 public:
@@ -61,6 +63,8 @@ private:
 
     QDBusConnection dbusConnection;
 };
+
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 QT_END_HEADER

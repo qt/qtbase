@@ -52,12 +52,14 @@ class TorrentView : public QTreeWidget
 public:
     TorrentView(QWidget *parent = 0);
 
+#ifndef QT_NO_DRAGANDDROP
 signals:
     void fileDropped(const QString &fileName);
 
 protected:
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
+#endif
 };
 
 // TorrentViewDelegate is used to draw the progress bars.
@@ -688,9 +690,12 @@ void MainWindow::closeEvent(QCloseEvent *)
 TorrentView::TorrentView(QWidget *parent)
     : QTreeWidget(parent)
 {
+#ifndef QT_NO_DRAGANDDROP
     setAcceptDrops(true);
+#endif
 }
 
+#ifndef QT_NO_DRAGANDDROP
 void TorrentView::dragMoveEvent(QDragMoveEvent *event)
 {
     // Accept file actions with a '.torrent' extension.
@@ -708,5 +713,6 @@ void TorrentView::dropEvent(QDropEvent *event)
     if (QFile::exists(fileName) && fileName.toLower().endsWith(".torrent"))
         emit fileDropped(fileName);
 }
+#endif
 
 #include "mainwindow.moc"

@@ -85,6 +85,16 @@ static bool qt_wince_is_smartphone() {
 
 #include <qwidget.h>
 
+// Make a widget frameless to prevent size constraints of title bars
+// from interfering (Windows).
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QStyle : public QObject
 {
     Q_OBJECT
@@ -337,6 +347,7 @@ bool tst_QStyle::testScrollBarSubControls(QStyle* style)
 #endif
 
     QScrollBar scrollBar;
+    setFrameless(&scrollBar);
     scrollBar.show();
     const QStyleOptionSlider opt = qt_qscrollbarStyleOption(&scrollBar);
     foreach (int subControl, QList<int>() << 1 << 2 << 4 << 8) {
@@ -586,8 +597,8 @@ public:
 
 };
 
-int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0*/,
-                                   const QWidget * widget /*= 0*/ ) const
+int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * /* option = 0*/,
+                                   const QWidget * /* widget = 0*/ ) const
 {
     switch (metric) {
         case QStyle::PM_DefaultTopLevelMargin:
@@ -660,6 +671,7 @@ void tst_QStyle::progressBarChangeStyle()
 void tst_QStyle::lineUpLayoutTest(QStyle *style)
 {
     QWidget widget;
+    setFrameless(&widget);
     QHBoxLayout layout;
     QFont font;
     font.setPointSize(9); //Plastique is lined up for odd numbers...
@@ -677,10 +689,21 @@ void tst_QStyle::lineUpLayoutTest(QStyle *style)
         foreach (QWidget *w, qFindChildren<QWidget *>(&widget))
             w->setStyle(style);
     widget.show();
-        QTest::qWait( 500 );
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
-    QVERIFY(qAbs(spinbox.height() - lineedit.height()) <= 1);
-    QVERIFY(qAbs(spinbox.height() - combo.height()) <= 1);
+#ifdef Q_OS_WIN
+    const int limit = 2; // Aero style has larger margins
+#else
+    const int limit = 1;
+#endif
+    const int slDiff = qAbs(spinbox.height() - lineedit.height());
+    const int scDiff = qAbs(spinbox.height() - combo.height());
+    QVERIFY2(slDiff <= limit,
+             qPrintable(QString::fromLatin1("%1 exceeds %2 for %3")
+                        .arg(slDiff).arg(limit).arg(style->objectName())));
+    QVERIFY2(scDiff <= limit,
+             qPrintable(QString::fromLatin1("%1 exceeds %2 for %3")
+                        .arg(scDiff).arg(limit).arg(style->objectName())));
 }
 
 void tst_QStyle::defaultFont()
@@ -690,6 +713,7 @@ void tst_QStyle::defaultFont()
     pointFont.setPixelSize(9);
     qApp->setFont(pointFont);
     QPushButton button;
+    setFrameless(&button);
     button.show();
     qApp->processEvents();
     qApp->setFont(defaultFont);
@@ -716,6 +740,7 @@ void tst_QStyle::testDrawingShortcuts()
 {
     {   
         QWidget w;
+        setFrameless(&w);
         QToolButton *tb = new QToolButton(&w);
         tb->setText("&abc");
         DrawTextStyle *dts = new DrawTextStyle;
@@ -730,6 +755,7 @@ void tst_QStyle::testDrawingShortcuts()
     }
     {
         QToolBar w;
+        setFrameless(&w);
         QToolButton *tb = new QToolButton(&w);
         tb->setText("&abc");
         DrawTextStyle *dts = new DrawTextStyle;

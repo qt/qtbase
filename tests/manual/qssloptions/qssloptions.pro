@@ -1,4 +1,3 @@
-CONFIG += testcase
 TARGET = tst_qssloptions
 
 QT -= gui

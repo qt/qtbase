@@ -254,5 +254,3 @@ js/form_tapper.js \
 js/mob_condjs.js \
 js/mobile.js \
 js/storage.js \
-
-QT += widgets

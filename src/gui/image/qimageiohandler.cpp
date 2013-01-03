@@ -514,6 +514,8 @@ int QImageIOHandler::nextImageDelay() const
     return 0;
 }
 
+#ifndef QT_NO_IMAGEFORMATPLUGIN
+
 /*!
     Constructs an image plugin with the given \a parent. This is
     invoked automatically by the moc generated code that exports the plugin.
@@ -553,5 +555,7 @@ QImageIOPlugin::~QImageIOPlugin()
 
     \sa keys()
 */
+
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
 QT_END_NAMESPACE

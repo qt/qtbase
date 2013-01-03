@@ -1,6 +1,7 @@
 TARGET = qminimalegl
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QMinimalEglIntegrationPlugin
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private

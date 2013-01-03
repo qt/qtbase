@@ -41,14 +41,9 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QWidget>
-
 #include "helper.h"
 
-QT_BEGIN_NAMESPACE
-class QLabel;
-class QWidget;
-QT_END_NAMESPACE
+#include <QWidget>
 
 //! [0]
 class Window : public QWidget

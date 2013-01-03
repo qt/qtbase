@@ -14,11 +14,11 @@ QMKSRC = $(SOURCE_PATH)\qmake
 #
 !if "$(QMAKESPEC)" == "win32-icc"
 CXX	    = icl
-LINK	    = link
+LINKER  = link
 CFLAGS      = /Zc:forScope
 !else
 CXX         = cl
-LINK	    = link
+LINKER  = link
 !endif
 
 #
@@ -49,7 +49,7 @@ CXXFLAGS = $(CFLAGS)
 
 LFLAGS	    =
 LIBS	    = ole32.lib advapi32.lib
-LINKQMAKE   = $(LINK) $(LFLAGS) -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
+LINKQMAKE   = $(LINKER) $(LFLAGS) -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    = vc60.pdb vc70.pdb qmake.pdb qmake.ilk
 
 !ELSE

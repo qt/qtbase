@@ -53,12 +53,6 @@
     The QAtomicInt class provides atomic reference counting, test-and-set, fetch-and-store,
     and fetch-and-add for integers.
 
-    \section1 Non-atomic convenience operators
-
-    For convenience, QAtomicInt provides integer comparison, cast, and
-    assignment operators. Note that a combination of these operators
-    is \e not an atomic operation.
-
     \section1 The Atomic API
 
     \section2 Reference counting
@@ -220,6 +214,44 @@
 
     Assigns \a other to this QAtomicInt and returns a reference to
     this QAtomicInt.
+*/
+
+/*!
+    \fn int QAtomicInt::load() const
+
+    Atomically loads the value of this QAtomicInt using relaxed memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), loadAcquire()
+*/
+
+/*!
+    \fn int QAtomicInt::loadAcquire() const
+
+    Atomically loads the value of this QAtomicInt using the "Acquire" memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), load()
+*/
+
+/*!
+    \fn void QAtomicInt::store(int newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    relaxed memory ordering.
+
+    \sa storeRelease(), load()
+*/
+
+/*!
+    \fn void QAtomicInt::storeRelease(int newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    the "Release" memory ordering.
+
+    \sa store(), load()
 */
 
 /*! \fn bool QAtomicInt::isReferenceCountingNative()
@@ -610,12 +642,6 @@
     An \e atomic operation is a complex operation that completes without interruption.
     The QAtomicPointer class provides atomic test-and-set, fetch-and-store, and fetch-and-add for pointers.
 
-    \section1 Non-atomic convenience operators
-
-    For convenience, QAtomicPointer provides pointer comparison, cast,
-    dereference, and assignment operators. Note that these operators
-    are \e not atomic.
-
     \section1 The Atomic API
 
     \section2 Memory ordering
@@ -760,6 +786,44 @@
 
     Assigns \a other to this QAtomicPointer and returns a reference to
     this QAtomicPointer.
+*/
+
+/*!
+    \fn T *QAtomicPointer::load() const
+
+    Atomically loads the value of this QAtomicPointer using relaxed memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), loadAcquire()
+*/
+
+/*!
+    \fn T *QAtomicPointer::loadAcquire() const
+
+    Atomically loads the value of this QAtomicPointerusing the "Acquire" memory
+    ordering. The value is not modified in any way, but note that there's no
+    guarantee that it remains so.
+
+    \sa store(), load()
+*/
+
+/*!
+    \fn void QAtomicPointer::store(T *newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    relaxed memory ordering.
+
+    \sa storeRelease(), load()
+*/
+
+/*!
+    \fn void QAtomicPointer::storeRelease(T *newValue)
+
+    Atomically stores the \a newValue value into this atomic type, using
+    the "Release" memory ordering.
+
+    \sa store(), load()
 */
 
 /*! \fn bool QAtomicPointer::isTestAndSetNative()

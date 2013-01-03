@@ -38,15 +38,19 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "glwidget.h"
 #include "widget.h"
 #include "window.h"
 
+#include <QGridLayout>
+#include <QLabel>
+#include <QTimer>
+
 //! [0]
 Window::Window()
-    : QWidget()
 {
+    setWindowTitle(tr("2D Painting on Native and OpenGL Widgets"));
+
     Widget *native = new Widget(&helper, this);
     GLWidget *openGL = new GLWidget(&helper, this);
     QLabel *nativeLabel = new QLabel(tr("Native"));
@@ -65,7 +69,5 @@ Window::Window()
     connect(timer, SIGNAL(timeout()), native, SLOT(animate()));
     connect(timer, SIGNAL(timeout()), openGL, SLOT(animate()));
     timer->start(50);
-
-    setWindowTitle(tr("2D Painting on Native and OpenGL Widgets"));
 }
 //! [0]

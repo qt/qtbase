@@ -58,7 +58,9 @@ class BasicToolsPlugin : public QObject,
                          public FilterInterface
 {
     Q_OBJECT
+//! [4]
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.Examples.PlugAndPaint.BrushInterface" FILE "basictools.json")
+//! [4]
     Q_INTERFACES(BrushInterface ShapeInterface FilterInterface)
 //! [0]
 

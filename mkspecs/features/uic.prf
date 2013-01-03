@@ -1,33 +1,19 @@
 qtPrepareTool(QMAKE_UIC, uic)
 
 isEmpty(UI_DIR):UI_DIR = .
-isEmpty(UI_SOURCES_DIR):UI_SOURCES_DIR = $$UI_DIR
-isEmpty(UI_HEADERS_DIR):UI_HEADERS_DIR = $$UI_DIR
 isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_
 
-# Allow FORMS3 to contain old UIC3 forms, while FORMS contains new
-# UIC files in the same project. However, if CONFIG+=uic3 and no
-# FORMS3 is defined, FORMS may only contain old UIC3 files.
+uic.commands = $$QMAKE_UIC ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+uic.depend_command = "$$QMAKE_UIC" -d "${QMAKE_FILE_IN}"
+uic.output = $$UI_DIR/$${QMAKE_MOD_UIC}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_H)}
+uic.input = FORMS
+uic.variable_out = GENERATED_FILES
+uic.CONFIG += no_link target_predeps
+uic.name = UIC ${QMAKE_FILE_IN}
+silent:uic.commands = @echo uic ${QMAKE_FILE_IN} && $$uic.commands
+QMAKE_EXTRA_COMPILERS += uic
+INCREDIBUILD_XGE += uic
 
-!uic3|!isEmpty(FORMS3) {
-    # If we have CONFIG+=uic3 and no FORMS3, then don't do this step,
-    # as UIC3 files don't need a ui_<formname>.h file
-
-    uic.commands = $$QMAKE_UIC ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
-    uic.depend_command = "$$QMAKE_UIC" -d "${QMAKE_FILE_IN}"
-    uic.output = $$UI_HEADERS_DIR/$${QMAKE_MOD_UIC}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_H)}
-    uic.input = FORMS
-    uic.variable_out = GENERATED_FILES
-    uic.CONFIG += no_link target_predeps
-    uic.name = UIC ${QMAKE_FILE_IN}
-    silent:uic.commands = @echo uic ${QMAKE_FILE_IN} && $$uic.commands
-    QMAKE_EXTRA_COMPILERS += uic
-    INCREDIBUILD_XGE += uic
-}
-
-!isEmpty(FORMS)|!isEmpty(FORMS3) {
-    ui_dir_short = $$UI_HEADERS_DIR
-    contains(QMAKE_HOST.os,Windows):ui_dir_short ~= s,^.:,/,
-    contains(ui_dir_short, ^[/\\\\].*):INCLUDEPATH += $$UI_HEADERS_DIR
-    else:INCLUDEPATH += $$OUT_PWD/$$UI_HEADERS_DIR
+!isEmpty(FORMS) {
+    INCLUDEPATH += $$absolute_path($$UI_DIR, $$OUT_PWD)
 }

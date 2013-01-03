@@ -1,13 +1,12 @@
 TEMPLATE = app
 TARGET = tst_bench_qregexp
 QT = core testlib
-CONFIG += release
+CONFIG += release exceptions
 
 SOURCES += main.cpp
 RESOURCES += qregexp.qrc
 
-!isEmpty(QT.webkit.sources):exists($${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri) {
-    include( $${QT.webkit.sources}/../JavaScriptCore/JavaScriptCore.pri )
+qtHaveModule(script):!pcre {
     DEFINES += HAVE_JSC
     QT += script
 }

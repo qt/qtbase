@@ -47,16 +47,15 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    a.setApplicationName("cube");
-    a.setApplicationVersion("0.1");
-#ifndef QT_NO_OPENGL
-    MainWidget w;
-    w.resize(640, 480);
-    w.show();
+    QApplication app(argc, argv);
+    app.setApplicationName("cube");
+    app.setApplicationVersion("0.1");
+#ifdef QT_NO_OPENGL
+    MainWidget widget;
+    widget.show();
 #else
-    QLabel * notifyLabel = new QLabel("OpenGL Support required");
-    notifyLabel->show();
+    QLabel note("OpenGL Support required");
+    note.show();
 #endif
-    return a.exec();
+    return app.exec();
 }

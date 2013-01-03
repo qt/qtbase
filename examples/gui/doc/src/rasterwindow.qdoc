@@ -1,0 +1,161 @@
+****************************************************************************
+**
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example rasterwindow
+    \title Raster Window Example
+
+    \brief This example shows how to create a minimal QWindow based
+    application using QPainter for rendering.
+
+
+    \section1 Application Entry Point
+
+    \snippet rasterwindow/main.cpp 1
+
+    The entry point for a QWindow based application is the \l
+    QGuiApplication class. It manages the GUI application's control
+    flow and main settings. We pass the command line arguments which
+    can be used to pick up certain system wide options.
+
+    From there, we go on to create our window instance and then call
+    the \l QWindow::show() function to tell the windowing system that
+    this window should now be made visible on screen.
+
+    Once this is done, we enter the application's event loop so the
+    application can run.
+
+
+    \section1 RasterWindow Declaration
+
+    \snippet rasterwindow/rasterwindow.h 1
+
+    We first start by including the the QtGui headers. This means we
+    can use all classes in the Qt GUI module. Classes can also be
+    included individually if that is preferred.
+
+    The RasterWindow class subclasses QWindow directly and provides a
+    constructor which allows the window to be a sub-window of another
+    QWindow. Parent-less QWindows show up in the windowing system as
+    top-level windows.
+
+    The class declares a QBackingStore which is what we use to manage
+    the window's back buffer for QPainter based graphics.
+
+    \e {The raster window is also reused in a few other examples and adds
+    a few helper functions, like renderLater().}
+
+
+    \section1 RasterWindow Implementation
+
+    \snippet rasterwindow/rasterwindow.cpp 1
+
+    The constructor first of all calls \l QWindow::create(). This will
+    create the window in the windowing system. Without calling create,
+    the window will not get events and will not be visible in the
+    windowing system. The call to create does not show the window. We
+    then set the geometry to be something reasonable.
+
+    Then we create the backingstore and pass it the window instance it
+    is supposed to manage.
+
+    \snippet rasterwindow/rasterwindow.cpp 2
+
+    Shortly after calling \l QWindow::show() on a created window, the
+    virtual function \l QWindow::exposeEvent() will be called to
+    notify us that the window's exposure in the windowing system has
+    changed. The event contains the exposed sub-region, but since we
+    will anyway draw the entire window every time, we do not make use
+    of that.
+
+    The function \l QWindow::isExposed() will tell us if the window is
+    showing or not. We need this as the exposeEvent is called also
+    when the window becomes obscured in the windowing system. If the
+    window is showing, we call renderNow() to draw the window
+    immediately. We want to draw right away so we can present the
+    system with some visual content.
+
+
+    \snippet rasterwindow/rasterwindow.cpp 5
+
+    The resize event is guaranteed to be called prior to the window
+    being shown on screen and will also be called whenever the window
+    is resized while on screen. We use this to resize the back buffer
+    and call renderNow() if we are visible to immediately update the
+    visual representation of the window on screen.
+
+    \snippet rasterwindow/rasterwindow.cpp 3
+
+    The renderNow function sets up what is needed for a \l QWindow to
+    render its content using QPainter. As obscured windows have will
+    not be visible, we abort if the window is not exposed in the
+    windowing system. This can for instance happen when another window
+    fully obscures this window.
+
+    We start the drawing by calling \l QBackingStore::beginPaint() on
+    the region we want to draw. Then we get the \l QPaintDevice of the
+    back buffer and create a QPainter to render to that paint device.
+
+    To void leaving traces from the previous rendering and start with a
+    clean buffer, we fill the entire buffer with the color white. Then
+    we call the virtual render() function which does the actual
+    drawing of this window.
+
+    After drawing is complete, we call endPaint() to signal that we
+    are done rendering and present the contents in the back buffer
+    using \l QBackingStore::flush().
+
+
+    \snippet rasterwindow/rasterwindow.cpp 4
+
+    The render function contains the drawing code for the window. In
+    this minial example, we only draw the string "QWindow" in the
+    center.
+
+
+    \section1 Rendering Asynchronously
+
+
+    \snippet rasterwindow/rasterwindow.cpp 6
+
+    We went through a few places where the window needed to repainted
+    immediately. There are some cases where this is not desierable,
+    but rather let the application return to the event loop and
+    later. We acheive this by posting an even to ourself which will
+    then be delivered when the application returns to the \l
+    QGuiApplication event loop. To avoid posting new requests when one
+    is already pending, we store this state in the \c m_update_pending
+    variable.
+
+    \snippet rasterwindow/rasterwindow.cpp 7
+
+    We reimplement the virtual \l QObject::event() function to handle
+    the update event we posted to ourselves. When the event comes in
+    we reset the pending update flag and call renderNow() to render
+    the window right away.
+
+  */

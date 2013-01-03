@@ -1300,9 +1300,10 @@ class Job : public QObject
 {
     Q_OBJECT
 public:
-    Job(QThread *thread, int deleteDelay, QObject *parent = 0)
-      : QObject(parent), quitLocker(thread), exitThreadCalled(false)
+    Job(QThread *thread, int deleteDelay, bool *flag, QObject *parent = 0)
+      : QObject(parent), quitLocker(thread), exitThreadCalled(*flag)
     {
+        exitThreadCalled = false;
         moveToThread(thread);
         QTimer::singleShot(deleteDelay, this, SLOT(deleteLater()));
         QTimer::singleShot(1000, this, SLOT(exitThread()));
@@ -1318,12 +1319,13 @@ private slots:
 private:
     QEventLoopLocker quitLocker;
 public:
-    bool exitThreadCalled;
+    bool &exitThreadCalled;
 };
 
 void tst_QThread::quitLock()
 {
     QThread thread;
+    bool exitThreadCalled;
 
     QEventLoop loop;
     connect(&thread, SIGNAL(finished()), &loop, SLOT(quit()));
@@ -1331,16 +1333,16 @@ void tst_QThread::quitLock()
     Job *job;
 
     thread.start();
-    job = new Job(&thread, 500);
+    job = new Job(&thread, 500, &exitThreadCalled);
     QCOMPARE(job->thread(), &thread);
     loop.exec();
-    QVERIFY(!job->exitThreadCalled);
+    QVERIFY(!exitThreadCalled);
 
     thread.start();
-    job = new Job(&thread, 2500);
+    job = new Job(&thread, 2500, &exitThreadCalled);
     QCOMPARE(job->thread(), &thread);
     loop.exec();
-    QVERIFY(job->exitThreadCalled);
+    QVERIFY(exitThreadCalled);
 }
 
 QTEST_MAIN(tst_QThread)

@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS     = mainwindow.h \
               pieview.h
 RESOURCES   = chart.qrc
@@ -9,6 +11,3 @@ unix:!mac:!vxworks:!integrity:LIBS+= -lm
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/chart
 INSTALLS += target
-
-QT += widgets
-

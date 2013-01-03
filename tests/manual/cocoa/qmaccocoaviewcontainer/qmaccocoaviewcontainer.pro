@@ -1,6 +1,5 @@
 TEMPLATE = app
 TARGET = qmaccocoaviewcontainer
-DEPENDPATH += .
 INCLUDEPATH += .
 QT += widgets
 LIBS += -framework Cocoa

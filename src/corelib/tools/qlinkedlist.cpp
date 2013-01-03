@@ -320,7 +320,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn QLinkedList::iterator QLinkedList::begin()
 
-    Returns an \l{STL-style iterator} pointing to the first item in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the list.
 
     \sa constBegin(), end()
@@ -334,7 +334,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \fn QLinkedList::const_iterator QLinkedList::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the list.
 
     \sa begin(), cend()
@@ -342,7 +342,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn QLinkedList::const_iterator QLinkedList::constBegin() const
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the list.
 
     \sa begin(), constEnd()
@@ -350,7 +350,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn QLinkedList::iterator QLinkedList::end()
 
-    Returns an \l{STL-style iterator} pointing to the imaginary item
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the list.
 
     \sa begin(), constEnd()
@@ -364,7 +364,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 /*! \fn QLinkedList::const_iterator QLinkedList::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
 
     \sa cbegin(), end()
@@ -372,7 +372,7 @@ const QLinkedListData QLinkedListData::shared_null = {
 
 /*! \fn QLinkedList::const_iterator QLinkedList::constEnd() const
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the list.
 
     \sa constBegin(), end()

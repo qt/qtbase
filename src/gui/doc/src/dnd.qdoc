@@ -41,9 +41,11 @@
     \tableofcontents
 
     This document describes the basic drag and drop mechanism and
-    outlines the approach used to enable it in custom widgets. Drag
-    and drop operations are also supported by Qt's item views and by
-    the graphics view framework. More information is available in
+    outlines the approach used to enable it in custom controls. Drag
+    and drop operations are also supported by many of Qt's controls,
+    such as the item views and graphics view framework, as well as
+    editing controls for Qt Widgets and Qt Quick. More information
+    about item views and graphics view is available in
     \l{Using drag and drop with item views} and \l{Graphics View
     Framework}.
 
@@ -56,22 +58,31 @@
 
     \section1 Configuration
 
-    The QApplication object provides some properties that are related
+    The QStyleHints object provides some properties that are related
     to drag and drop operations:
 
     \list
-    \li \l{QApplication::startDragTime} describes the amount of time in
+    \li \l{QStyleHints::startDragTime()} describes the amount of time in
        milliseconds that the user must hold down a mouse button over an
        object before a drag will begin.
-    \li \l{QApplication::startDragDistance} indicates how far the user has to
+    \li \l{QStyleHints::startDragDistance()} indicates how far the user has to
        move the mouse while holding down a mouse button before the movement
-       will be interpreted as dragging. Use of high values for this quantity
-       prevents accidental dragging when the user only meant to click on an
-       object.
+       will be interpreted as dragging.
+    \li \l{QStyleHints::startDragVelocity()} indicates how fast (in pixels/second)
+       the user has to move the mouse to start a drag. A value of \c 0 means
+       that there is no such limit.
     \endlist
 
-    These quantities provide sensible default values for you to use if you
-    provide drag and drop support in your widgets.
+    These quantities provide sensible default values that are compliant with
+    the underlying windowing system for you to use if you
+    provide drag and drop support in your controls.
+
+    \section1 Drag and Drop in Qt Quick
+
+    The rest of the document focuses mainly on how to implement drag and drop
+    in C++. For using drag and drop inside a Qt Quick scene, please read the
+    documentation for the Qt Quick \l{Drag}, \l{DragEvent} and \l{DropArea} items.
+    There is also an example \l{quick/draganddrop}{available}.
 
     \section1 Dragging
 
@@ -335,7 +346,7 @@
     the clipboard. To access this, you need to obtain a QClipboard object
     from the QApplication object:
 
-    \snippet widgets/charactermap/mainwindow.cpp 3
+    \snippet ../widgets/widgets/charactermap/mainwindow.cpp 3
 
     The QMimeData class is used to represent data that is transferred to and
     from the clipboard. To put data on the clipboard, you can use the
@@ -350,7 +361,7 @@
     For example, we can copy the contents of a QLineEdit to the clipboard
     with the following code:
 
-    \snippet widgets/charactermap/mainwindow.cpp 11
+    \snippet ../widgets/widgets/charactermap/mainwindow.cpp 11
 
     Data with different MIME types can also be put on the clipboard.
     Construct a QMimeData object and set data with setData() function in

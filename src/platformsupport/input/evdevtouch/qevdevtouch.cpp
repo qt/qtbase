@@ -457,7 +457,7 @@ void QEvdevTouchScreenData::assignIds()
     int maxId = -1;
     QHash<int, Contact>::iterator it, ite, bestMatch;
     while (!pending.isEmpty() && !candidates.isEmpty()) {
-        int bestDist = -1, bestId;
+        int bestDist = -1, bestId = 0;
         for (it = pending.begin(), ite = pending.end(); it != ite; ++it) {
             int dist;
             int id = findClosestContact(candidates, it->x, it->y, &dist);

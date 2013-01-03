@@ -1,0 +1,194 @@
+/****************************************************************************
+**
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file.  Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example xml/streambookmarks
+    \title QXmlStream Bookmarks Example
+    \brief Demonstrates how to read and write to XBEL files
+    \ingroup xml-examples
+
+    The QXmlStream Bookmarks example provides a reader for XML Bookmark
+    Exchange Language (XBEL) files using Qt's QXmlStreamReader class
+    for reading, and QXmlStreamWriter class for writing the files.
+
+    \image xmlstreamexample-screenshot.png
+
+    \section1 XbelWriter Class Definition
+
+    The \c XbelWriter class contains a private instance of QXmlStreamWriter,
+    which provides an XML writer with a streaming API. \c XbelWriter also
+    has a reference to the QTreeWidget instance where the bookmark hierarchy
+    is stored.
+
+    \snippet streambookmarks/xbelwriter.h 0
+
+    \section1 XbelWriter Class Implementation
+
+    The \c XbelWriter constructor accepts a \a treeWidget to initialize within
+    its definition. We enable \l{QXmlStreamWriter}'s auto-formatting property
+    to ensure line-breaks and indentations are added automatically to empty
+    sections between elements, increasing readability as the data is split into
+    several lines.
+
+    \snippet streambookmarks/xbelwriter.cpp 0
+
+    The \c writeFile() function accepts a QIODevice object and sets it using
+    \c setDevice(). This function then writes the document type
+    definition(DTD), the start element, the version, and \c{treeWidget}'s
+    top-level items.
+
+    \snippet streambookmarks/xbelwriter.cpp 1
+
+    The \c writeItem() function accepts a QTreeWidgetItem object and writes it
+    to the stream, depending on its \c tagName, which can either be a "folder",
+    "bookmark", or "separator".
+
+    \snippet streambookmarks/xbelwriter.cpp 2
+
+    \section1 XbelReader Class Definition
+
+    The \c XbelReader contains a private instance of QXmlStreamReader, the
+    companion class to QXmlStreamWriter. \c XbelReader also contains a
+    reference to the QTreeWidget that is used to group the bookmarks according
+    to their hierarchy.
+
+    \snippet streambookmarks/xbelreader.h 0
+
+    \section1 XbelReader Class Implementation
+
+    The \c XbelReader constructor accepts a QTreeWidget to initialize the
+    \c treeWidget within its definition. A QStyle object is used to set
+    \c{treeWidget}'s style property. The \c folderIcon is set to QIcon::Normal
+    mode where the pixmap is only displayed when the user is not interacting
+    with the icon. The QStyle::SP_DirClosedIcon, QStyle::SP_DirOpenIcon, and
+    QStyle::SP_FileIcon correspond to standard pixmaps that follow the style
+    of your GUI.
+
+    \snippet streambookmarks/xbelreader.cpp 0
+
+    The \c read() function accepts a QIODevice and sets it using
+    \l{QXmlStreamReader::}{setDevice()}. The actual process of reading only
+    takes place if the file is a valid XBEL 1.0 file. Note that the XML input
+    needs to be well-formed to be accepted by QXmlStreamReader. Otherwise, the
+    \l{QXmlStreamReader::}{raiseError()} function is used to display an error
+    message. Since the XBEL reader is only concerned with reading XML elements,
+    it makes extensive use of the \l{QXmlStreamReader::}{readNextStartElement()}
+    convenience function.
+
+    \snippet streambookmarks/xbelreader.cpp 1
+
+    The \c errorString() function is used if an error occurred, in order to
+    obtain a description of the error complete with line and column number
+    information.
+
+    \snippet streambookmarks/xbelreader.cpp 2
+
+    The \c readXBEL() function reads the name of a startElement and calls
+    the appropriate function to read it, depending on whether if its a
+    "folder", "bookmark" or "separator". Otherwise, it calls
+    \l{QXmlStreamReader::}{skipCurrentElement()}. The Q_ASSERT() macro is used
+    to provide a pre-condition for the function.
+
+    \snippet streambookmarks/xbelreader.cpp 3
+
+    The \c readTitle() function reads the bookmark's title.
+
+    \snippet streambookmarks/xbelreader.cpp 4
+
+    The \c readSeparator() function creates a separator and sets its flags.
+    The text is set to 30 "0xB7", the HEX equivalent for period. The element
+    is then skipped using \l{QXmlStreamReader::}{skipCurrentElement()}.
+
+    \snippet streambookmarks/xbelreader.cpp 5
+
+    \section1 MainWindow Class Definition
+
+    The \c MainWindow class is a subclass of QMainWindow, with a
+    \c File menu and a \c Help menu.
+
+    \snippet streambookmarks/mainwindow.h 0
+
+    \section1 MainWindow Class Implementation
+
+    The \c MainWindow constructor instantiates the QTreeWidget object, \c
+    treeWidget and sets its header with a QStringList object, \c labels.
+    The constructor also invokes \c createActions() and \c createMenus()
+    to set up the menus and their corresponding actions. The \c statusBar()
+    is used to display the message "Ready" and the window's size is fixed
+    to 480x320 pixels.
+
+    \snippet streambookmarks/mainwindow.cpp 0
+
+    The \c open() function enables the user to open an XBEL file using
+    QFileDialog::getOpenFileName(). A warning message is displayed along
+    with the \c fileName and \c errorString if the file cannot be read or
+    if there is a parse error.
+
+    \snippet streambookmarks/mainwindow.cpp 1
+
+    The \c saveAs() function displays a QFileDialog, prompting the user for
+    a \c fileName using QFileDialog::getSaveFileName(). Similar to the
+    \c open() function, this function also displays a warning message if
+    the file cannot be written to.
+
+    \snippet streambookmarks/mainwindow.cpp 2
+
+    The \c about() function displays a QMessageBox with a brief description
+    of the example.
+
+    \snippet streambookmarks/mainwindow.cpp 3
+
+    In order to implement the \c open(), \c saveAs(), \c exit(), \c about()
+    and \c aboutQt() functions, we connect them to QAction objects and
+    add them to the \c fileMenu and \c helpMenu. The connections are as shown
+    below:
+
+    \snippet streambookmarks/mainwindow.cpp 4
+
+    The \c createMenus() function creates the \c fileMenu and \c helpMenu
+    and adds the QAction objects to them in order to create the menu shown
+    in the screenshot below:
+
+    \table
+    \row
+         \li \inlineimage xmlstreamexample-filemenu.png
+         \li \inlineimage xmlstreamexample-helpmenu.png
+    \endtable
+
+    \snippet streambookmarks/mainwindow.cpp 5
+
+    \section1 \c{main()} Function
+
+    The \c main() function instantiates \c MainWindow and invokes the \c show()
+    function.
+
+    \snippet streambookmarks/main.cpp 0
+
+    See the \l{http://pyxml.sourceforge.net/topics/xbel/}
+    {XML Bookmark Exchange Language Resource Page} for more information
+    about XBEL files.
+*/

@@ -122,7 +122,7 @@ static QAccessibleInterface *acast(void *ptr)
         [attributes addObject : NSAccessibilityValueAttribute];
     }
 
-    return attributes;
+    return [attributes autorelease];
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
@@ -139,7 +139,7 @@ static QAccessibleInterface *acast(void *ptr)
             [kids addObject:[QCocoaAccessibleElement elementWithInterface:(void*)childInterface parent:self]];
         }
 
-        return NSAccessibilityUnignoredChildren(kids);
+        return kids;
     } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
         // Just check if the app thinks we're focused.
         id focusedElement = [NSApp accessibilityAttributeValue:NSAccessibilityFocusedUIElementAttribute];
@@ -239,6 +239,10 @@ static QAccessibleInterface *acast(void *ptr)
 
     if (!accessibleInterface)
         return NSAccessibilityUnignoredAncestor(self);
+
+    if (!acast(accessibleInterface)->isValid())
+        return NSAccessibilityUnignoredAncestor(self);
+
     QAccessibleInterface *childInterface = acast(accessibleInterface)->childAt(point.x, qt_mac_flipYCoordinate(point.y));
 
     // No child found, meaning we hit this element.

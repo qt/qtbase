@@ -85,7 +85,7 @@ inline static QString fromSQLTCHAR(const QVarLengthArray<SQLTCHAR>& input, int s
             result=QString::fromUcs4((const uint *)input.constData(), realsize);
             break;
         default:
-            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", sizeof(SQLTCHAR));
+            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", int(sizeof(SQLTCHAR)));
     }
     return result;
 }
@@ -105,7 +105,7 @@ inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
             memcpy(result.data(), input.toUcs4().data(), input.size() * 4);
             break;
         default:
-            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", sizeof(SQLTCHAR));
+            qCritical("sizeof(SQLTCHAR) is %d. Don't know how to handle this.", int(sizeof(SQLTCHAR)));
     }
     result.append(0); // make sure it's null terminated, doesn't matter if it already is, it does if it isn't.
     return result;
@@ -646,7 +646,7 @@ static QSqlField qMakeFieldInfo(const QODBCPrivate* p, int i )
     return f;
 }
 
-static int qGetODBCVersion(const QString &connOpts)
+static size_t qGetODBCVersion(const QString &connOpts)
 {
     if (connOpts.contains(QLatin1String("SQL_ATTR_ODBC_VERSION=SQL_OV_ODBC3"), Qt::CaseInsensitive))
         return SQL_OV_ODBC3;
@@ -703,13 +703,13 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
                 continue;
             }
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_ACCESS_MODE, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_ACCESS_MODE, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_CONNECTION_TIMEOUT")) {
             v = val.toUInt();
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_CONNECTION_TIMEOUT, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_CONNECTION_TIMEOUT, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_LOGIN_TIMEOUT")) {
             v = val.toUInt();
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_CURRENT_CATALOG")) {
             val.utf16(); // 0 terminate
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CURRENT_CATALOG,
@@ -728,10 +728,10 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
                 continue;
             }
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_METADATA_ID, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_METADATA_ID, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_PACKET_SIZE")) {
             v = val.toUInt();
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_PACKET_SIZE, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_PACKET_SIZE, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_TRACEFILE")) {
             val.utf16(); // 0 terminate
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACEFILE,
@@ -750,7 +750,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
                 continue;
             }
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACE, (SQLPOINTER) v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACE, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_CONNECTION_POOLING")) {
             if (val == QLatin1String("SQL_CP_OFF"))
                 v = SQL_CP_OFF;
@@ -764,7 +764,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
                 continue;
             }
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_CONNECTION_POOLING, (SQLPOINTER)v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_CONNECTION_POOLING, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_CP_MATCH")) {
             if (val.toUpper() == QLatin1String("SQL_CP_STRICT_MATCH"))
                 v = SQL_CP_STRICT_MATCH;
@@ -776,7 +776,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
                 continue;
             }
-            r = SQLSetConnectAttr(hDbc, SQL_ATTR_CP_MATCH, (SQLPOINTER)v, 0);
+            r = SQLSetConnectAttr(hDbc, SQL_ATTR_CP_MATCH, (SQLPOINTER) size_t(v), 0);
         } else if (opt.toUpper() == QLatin1String("SQL_ATTR_ODBC_VERSION")) {
             // Already handled in QODBCDriver::open()
             continue;
@@ -1801,6 +1801,7 @@ bool QODBCDriver::hasFeature(DriverFeature f) const
     case BatchOperations:
     case SimpleLocking:
     case EventNotifications:
+    case CancelQuery:
         return false;
     case MultipleResultSets:
         return d->hasMultiResultSets;
@@ -2171,7 +2172,7 @@ bool QODBCDriver::beginTransaction()
     SQLUINTEGER ac(SQL_AUTOCOMMIT_OFF);
     SQLRETURN r  = SQLSetConnectAttr(d->hDbc,
                                       SQL_ATTR_AUTOCOMMIT,
-                                      (SQLPOINTER)ac,
+                                      (SQLPOINTER)size_t(ac),
                                       sizeof(ac));
     if (r != SQL_SUCCESS) {
         setLastError(qMakeError(tr("Unable to disable autocommit"),
@@ -2220,7 +2221,7 @@ bool QODBCDriver::endTrans()
     SQLUINTEGER ac(SQL_AUTOCOMMIT_ON);
     SQLRETURN r  = SQLSetConnectAttr(d->hDbc,
                                       SQL_ATTR_AUTOCOMMIT,
-                                      (SQLPOINTER)ac,
+                                      (SQLPOINTER)size_t(ac),
                                       sizeof(ac));
     if (r != SQL_SUCCESS) {
         setLastError(qMakeError(tr("Unable to enable autocommit"), QSqlError::TransactionError, d));

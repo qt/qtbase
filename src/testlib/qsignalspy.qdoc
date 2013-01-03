@@ -94,4 +94,7 @@
     Optionally the event loop can return earlier on a \a timeout (in milliseconds).
 
     Returns true if the signal was emitted at least once in \a timeout milliseconds, otherwise returns false.
+
+    Example:
+    \snippet code/doc_src_qsignalspy.cpp 5
 */

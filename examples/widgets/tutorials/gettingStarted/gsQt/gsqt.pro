@@ -5,5 +5,3 @@ SUBDIRS = part1 \
           part3 \
           part4 \
           part5
-
-QT += widgets

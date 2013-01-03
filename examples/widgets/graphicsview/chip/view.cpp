@@ -50,6 +50,7 @@
 #endif
 #include <qmath.h>
 
+#ifndef QT_NO_WHEELEVENT
 void GraphicsView::wheelEvent(QWheelEvent *e)
 {
     if (e->modifiers() & Qt::ControlModifier) {
@@ -62,6 +63,7 @@ void GraphicsView::wheelEvent(QWheelEvent *e)
         QGraphicsView::wheelEvent(e);
     }
 }
+#endif
 
 View::View(const QString &name, QWidget *parent)
     : QFrame(parent)

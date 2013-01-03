@@ -55,8 +55,10 @@ QEglFSCursor::QEglFSCursor(QEglFSScreen *screen)
     initCursorAtlas();
 
     // initialize the cursor
+#ifndef QT_NO_CURSOR
     QCursor cursor(Qt::ArrowCursor);
     setCurrentCursor(&cursor);
+#endif
 }
 
 QEglFSCursor::~QEglFSCursor()
@@ -183,6 +185,7 @@ void QEglFSCursor::initCursorAtlas()
     m_cursorAtlas.image = image;
 }
 
+#ifndef QT_NO_CURSOR
 void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     Q_UNUSED(window);
@@ -221,6 +224,7 @@ bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
 
     return true;
 }
+#endif
 
 void QEglFSCursor::update(const QRegion &rgn)
 {

@@ -28,6 +28,9 @@
 /*!
     \example itemviews/simpletreemodel
     \title Simple Tree Model Example
+    \ingroup examples-itemviews
+    \brief The Simple Tree Model example shows how to use a hierarchical model
+    with Qt's standard view classes.
 
     \brief The Simple Tree Model example shows how to create a basic, read-only
     hierarchical model to use with Qt's standard view classes. For a

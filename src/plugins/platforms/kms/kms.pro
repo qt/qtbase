@@ -1,6 +1,7 @@
 TARGET = qkms
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QKmsIntegrationPlugin
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private opengl-private

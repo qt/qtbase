@@ -18,5 +18,4 @@ SUBDIRS       = addressbook \
                 spinboxdelegate \
                 spreadsheet \
                 stardelegate
-
-QT += widgets
+contains(DEFINES, QT_NO_DRAGANDDROP): SUBDIRS -= puzzle

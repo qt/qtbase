@@ -14,8 +14,11 @@ exampledirs += ../../../examples/dbus \
 
 headerdirs += ..
 imagedirs += images
-sourcedirs += ..
+sourcedirs += .. \
+              ../../../examples/dbus/doc/src
 excludedirs += ../../../examples/widgets/doc
+
+examplesinstallpath     = dbus
 
 depends += qtcore
 
@@ -33,15 +36,16 @@ qhp.qtdbus.file = qtdbus.qhp
 
 # Namespace for the output file. This namespace is used to distinguish between
 # different documentation files in Creator/Assistant.
-qhp.qtdbus.namespace = org.qt-project.qtdbus.500
+qhp.qtdbus.namespace = org.qt-project.qtdbus.501
 
 # Title for the package, will be the main title for the package in
 # Assistant/Creator.
-qhp.qtdbus.indexTitle = Qt Script Documentation
+qhp.qtdbus.indexTitle = Qt D-Bus
 
 # Only update the name of the project for the next variables.
 qhp.qtdbus.virtualFolder  = qtdbus
 qhp.qtdbus.subprojects = classes
-qhp.qtdbus.subprojects.classes.title = Qt D-Bus C++ Classes
+qhp.qtdbus.subprojects.classes.title = C++ Classes
+qhp.qtdbus.subprojects.classes.indexTitle = Qt D-Bus C++ Classes
 qhp.qtdbus.subprojects.classes.selectors = class fake:headerfile
 qhp.qtdbus.subprojects.classes.sortPages = true

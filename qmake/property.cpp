@@ -105,7 +105,7 @@ QMakeProperty::~QMakeProperty()
 void QMakeProperty::initSettings()
 {
     if(!settings) {
-        settings = new QSettings(QSettings::UserScope, "Trolltech", "QMake");
+        settings = new QSettings(QSettings::UserScope, "QtProject", "QMake");
         settings->setFallbacksEnabled(false);
     }
 }

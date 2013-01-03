@@ -368,7 +368,7 @@ Q_INLINE_TEMPLATE void QList<T>::node_construct(Node *n, const T &t)
     else *reinterpret_cast<T*>(n) = t;
 #else
     // This is always safe, but penaltizes unoptimized builds a lot.
-    else ::memcpy(n, &t, sizeof(T));
+    else ::memcpy(n, static_cast<const void *>(&t), sizeof(T));
 #endif
 }
 

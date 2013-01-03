@@ -132,7 +132,7 @@ static int bpsIOHandler(int fd, int io_events, void *data)
         }
 
         // post unblock event to our thread; in this callback the bps channel is
-        // guarenteed to be the same that was active when bps_add_fd was called
+        // guaranteed to be the same that was active when bps_add_fd was called
         result = bps_push_event(event);
         if (result != BPS_SUCCESS) {
             qWarning("QEventDispatcherBlackberryPrivate::QEventDispatcherBlackberry: bps_push_event() failed");

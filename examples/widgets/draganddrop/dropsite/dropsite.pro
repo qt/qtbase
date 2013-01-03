@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS = droparea.h \
           dropsitewindow.h
 SOURCES = droparea.cpp \
@@ -8,5 +10,4 @@ SOURCES = droparea.cpp \
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/draganddrop/dropsite
 INSTALLS += target
 
-QT += widgets
 simulator: warning(This example might not fully work on Simulator platform)

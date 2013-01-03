@@ -6,6 +6,7 @@ MODULE = core     # not corelib, as per project file
 MODULE_CONFIG = moc resources
 !isEmpty(QT_NAMESPACE): MODULE_DEFINES = QT_NAMESPACE=$$QT_NAMESPACE
 
+CONFIG += $$MODULE_CONFIG
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x67000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
@@ -40,7 +41,6 @@ mac|darwin {
     }
     LIBS_PRIVATE += -framework CoreFoundation
 }
-mac:lib_bundle:DEFINES += QT_NO_DEBUG_PLUGIN_CHECK
 win32:DEFINES-=QT_NO_CAST_TO_ASCII
 DEFINES += $$MODULE_DEFINES
 
@@ -50,29 +50,11 @@ QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtCore.dynlist
 
 contains(DEFINES,QT_EVAL):include(eval.pri)
 
-load(moc)
-load(resources)
+HOST_BINS = $$[QT_HOST_BINS]
+host_bins.name = host_bins
+host_bins.variable = HOST_BINS
 
-moc_dir.name = moc_location
-moc_dir.variable = QMAKE_MOC
-
-rcc_dir.name = rcc_location
-rcc_dir.variable = QMAKE_RCC
-
-QMAKE_PKGCONFIG_VARIABLES += moc_dir rcc_dir
-
-# These are aliens, but Linguist installs no own module, and it fits here best.
-
-qtPrepareTool(QMAKE_LUPDATE, lupdate)
-qtPrepareTool(QMAKE_LRELEASE, lrelease)
-
-lupdate_dir.name = lupdate_location
-lupdate_dir.variable = QMAKE_LUPDATE
-
-lrelease_dir.name = lrelease_location
-lrelease_dir.variable = QMAKE_LRELEASE
-
-QMAKE_PKGCONFIG_VARIABLES += lupdate_dir lrelease_dir
+QMAKE_PKGCONFIG_VARIABLES += host_bins
 
 ctest_macros_file.input = $$PWD/Qt5CTestMacros.cmake
 ctest_macros_file.output = $$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake

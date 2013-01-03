@@ -39,11 +39,6 @@
 **
 ****************************************************************************/
 
-/* Data structures */
-#ifndef QT_NO_QUUID_STRING
-#  define QT_NO_QUUID_STRING
-#endif
-
 /* Dialogs */
 #ifndef QT_NO_COLORDIALOG
 #  define QT_NO_COLORDIALOG

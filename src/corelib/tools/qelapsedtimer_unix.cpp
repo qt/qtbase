@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
  *  http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap02.html#tag_02_01_06 )
  *
  * The macro _POSIX_MONOTONIC_CLOCK can therefore assume the following values:
- *  -1          monotonic clock is never supported on this sytem
+ *  -1          monotonic clock is never supported on this system
  *   0          monotonic clock might be supported, runtime check is needed
  *  >1          (such as 200809L) monotonic clock is always supported
  *

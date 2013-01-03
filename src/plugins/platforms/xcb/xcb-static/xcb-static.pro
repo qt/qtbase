@@ -8,7 +8,7 @@ CONFIG += staticlib
 
 XCB_DIR = ../../../../3rdparty/xcb
 
-INCLUDEPATH += $$XCB_DIR/include/xcb $$XCB_DIR/sysinclude
+INCLUDEPATH += $$XCB_DIR/include $$XCB_DIR/include/xcb $$XCB_DIR/sysinclude
 
 # ignore compiler warnings in 3rdparty code
 QMAKE_CFLAGS_STATIC_LIB+=-w

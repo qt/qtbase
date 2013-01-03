@@ -14,6 +14,8 @@ SUBDIRS       = \
                 undo \
                 undoframework
 
+contains(DEFINES, QT_NO_TRANSLATION): SUBDIRS -= i18n
+
 plugandpaint.depends = plugandpaintplugins
 
 # install

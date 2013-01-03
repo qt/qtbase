@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-!isEmpty(QT.widgets.name):SUBDIRS = qanimation
+qtHaveModule(widgets): SUBDIRS = qanimation

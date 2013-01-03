@@ -1,5 +1,16 @@
+#
+#  W A R N I N G
+#  -------------
+#
+# This file is not part of the Qt API.  It exists purely as an
+# implementation detail.  It may change from version to version
+# without notice, or even be removed.
+#
+# We mean it.
+#
+
 probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
-!contains(probase, ^\\..*) {
+!isEmpty(probase):!contains(probase, ^\\..*) {
     for(ex, EXAMPLE_FILES): \
         sourcefiles += $$files($$absolute_path($$ex, $$_PRO_FILE_PWD_))
     for(res, RESOURCES) {
@@ -21,6 +32,7 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
     extras = \
         $$_PRO_FILE_PWD_/README \
         $$files($$_PRO_FILE_PWD_/*.pri) \
+        $$replace(_PRO_FILE_, \\.pro$, .qmlproject) \
         $$replace(_PRO_FILE_, \\.pro$, .json) \
         $$replace(_PRO_FILE_, \\.pro$, .inf)
     for(extra, extras): \
@@ -30,6 +42,10 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
     # Just for Qt Creator
     OTHER_FILES += $$sourcefiles
 
+    for(inst, INSTALLS): \
+        !equals(inst, target):!contains($${inst}.CONFIG, no_check_exist): \
+            for(file, $${inst}.files): \
+                sourcefiles += $$files($$absolute_path($$file, $$_PRO_FILE_PWD_))
     sourcefiles += \
         $$_PRO_FILE_ $$RC_FILE $$DEF_FILE \
         $$SOURCES $$HEADERS $$FORMS $$RESOURCES $$TRANSLATIONS \

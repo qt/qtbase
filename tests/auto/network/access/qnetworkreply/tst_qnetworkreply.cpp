@@ -6497,7 +6497,7 @@ void tst_QNetworkReply::qtbug27161httpHeaderMayBeDamaged_data(){
 
 /*
  * Purpose of this test is to check whether a content from server is parsed correctly
- * if it is splitted into two parts.
+ * if it is split into two parts.
  */
 void tst_QNetworkReply::qtbug27161httpHeaderMayBeDamaged(){
     QFETCH(QByteArray, firstPacket);

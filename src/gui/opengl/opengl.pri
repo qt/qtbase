@@ -46,5 +46,3 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                opengl/qtriangulator.cpp
 
 }
-
-#INCLUDEPATH += ../3rdparty/harfbuzz/src

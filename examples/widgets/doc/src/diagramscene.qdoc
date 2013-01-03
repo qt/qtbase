@@ -28,8 +28,8 @@
 /*!
     \example graphicsview/diagramscene
     \title Diagram Scene Example
-
-    \brief This example shows use of Qt's graphics framework.
+    \ingroup examples-graphicsview
+    \brief Demonstrate how to use the Graphics View framework
 
     \image diagramscene.png
 

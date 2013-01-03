@@ -165,6 +165,8 @@ QAccessibleInterface *QAccessibleObject::childAt(int x, int y) const
         Q_ASSERT(childIface);
         if (childIface->rect().contains(x,y)) {
             return childIface;
+        } else {
+            delete childIface;
         }
     }
     return 0;

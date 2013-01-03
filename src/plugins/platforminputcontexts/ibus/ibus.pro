@@ -1,6 +1,7 @@
 TARGET = ibusplatforminputcontextplugin
 
 PLUGIN_TYPE = platforminputcontexts
+PLUGIN_CLASS_NAME = QIbusPlatformInputContextPlugin
 load(qt_plugin)
 
 QT += dbus gui-private

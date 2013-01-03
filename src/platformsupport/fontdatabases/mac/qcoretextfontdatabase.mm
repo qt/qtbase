@@ -227,6 +227,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
     for (int i = 0; i < numFonts; ++i) {
         CTFontDescriptorRef font = (CTFontDescriptorRef) CFArrayGetValueAtIndex(fonts, i);
         QCFString familyName = (CFStringRef) CTFontDescriptorCopyLocalizedAttribute(font, kCTFontFamilyNameAttribute, NULL);
+        QCFString styleName = (CFStringRef)CTFontDescriptorCopyLocalizedAttribute(font, kCTFontStyleNameAttribute, NULL);
         QCFType<CFDictionaryRef> styles = (CFDictionaryRef) CTFontDescriptorCopyAttribute(font, kCTFontTraitsAttribute);
         QFont::Weight weight = QFont::Normal;
         QFont::Style style = QFont::StyleNormal;
@@ -285,7 +286,7 @@ void QCoreTextFontDatabase::populateFontDatabase()
         }
 
         CFRetain(font);
-        QPlatformFontDatabase::registerFont(familyName, foundryName, weight, style, stretch,
+        QPlatformFontDatabase::registerFont(familyName, styleName, foundryName, weight, style, stretch,
                                             true /* antialiased */, true /* scalable */,
                                             pixelSize, fixedPitch, writingSystems, (void *) font);
         CFStringRef psName = (CFStringRef) CTFontDescriptorCopyAttribute(font, kCTFontNameAttribute);

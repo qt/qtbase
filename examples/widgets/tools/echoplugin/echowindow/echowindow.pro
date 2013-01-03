@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS    = echowindow.h \
              echointerface.h
 SOURCES    = echowindow.cpp \
@@ -15,7 +17,5 @@ win32 {
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin
 INSTALLS += target
-
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

@@ -1945,7 +1945,7 @@ void QObject::deleteLater()
     is available.
 
     Example:
-    \snippet mainwindows/sdi/mainwindow.cpp implicit tr context
+    \snippet ../widgets/mainwindows/sdi/mainwindow.cpp implicit tr context
     \dots
 
     If the same \a sourceText is used in different roles within the
@@ -3864,9 +3864,9 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 
     Example:
 
-    \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.h 1
+    \snippet ../widgets/tools/plugandpaintplugins/basictools/basictoolsplugin.h 1
     \dots
-    \snippet tools/plugandpaintplugins/basictools/basictoolsplugin.h 3
+    \snippet ../widgets/tools/plugandpaintplugins/basictools/basictoolsplugin.h 3
 
     See the \l{tools/plugandpaintplugins/basictools}{Plug & Paint
     Basic Tools} example for details.
@@ -4293,6 +4293,16 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
     if (c->next)
         c->next->prev = c->prev;
     c->receiver = 0;
+
+    // destroy the QSlotObject, if possible
+    if (c->isSlotObject) {
+        c->slotObj->destroyIfLastRef();
+        c->isSlotObject = false;
+    }
+
+    const_cast<QMetaObject::Connection &>(connection).d_ptr = 0;
+    c->deref(); // has been removed from the QMetaObject::Connection object
+
     // disconnectNotify() not called (the signal index is unknown).
 
     return true;

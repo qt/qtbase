@@ -28,9 +28,11 @@
 /*!
     \example multicastsender
     \title Multicast Sender Example
+    \ingroup examples-network
+    \brief Demonstrates how to send messages to a multicast group
 
-    \brief The Multicast Sender example shows how to send information to multiple
-    clients in a multicast group.
+    This example demonstrates how to send messages to the clients of a
+    multicast group.
 
     \image multicastsender-example.png
 */

@@ -47,7 +47,7 @@
 #include <QRect>
 #include <QRectF>
 
-class QPainter;
+QT_FORWARD_DECLARE_CLASS(QPainter)
 
 class Bubble
 {

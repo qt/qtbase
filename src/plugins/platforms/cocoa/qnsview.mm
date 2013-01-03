@@ -84,6 +84,7 @@ static QTouchDevice *touchDevice = 0;
         m_sendKeyEvent = false;
         m_subscribesForGlobalFrameNotifications = false;
         currentCustomDragTypes = 0;
+        m_sendUpAsRightButton = false;
 
         if (!touchDevice) {
             touchDevice = new QTouchDevice;
@@ -183,6 +184,9 @@ static QTouchDevice *touchDevice = 0;
         // child window, use the frame rect
         geometry = qt_mac_toQRect([self frame]);
     }
+
+    if (m_platformWindow->m_nsWindow && geometry == m_platformWindow->geometry())
+        return;
 
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QNSView::udpateGeometry" << m_platformWindow << geometry;
@@ -312,6 +316,7 @@ static QTouchDevice *touchDevice = 0;
     );
     CGImageRef bsCGImage = m_backingStore->getBackingStoreCGImage();
     CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
+    CGContextSetBlendMode(cgContext, kCGBlendModeCopy);
     CGContextDrawImage(cgContext, dirtyWindowRect, cleanImg);
 
     // Clean-up:
@@ -427,6 +432,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    m_sendUpAsRightButton = false;
     if (m_platformWindow->m_activePopupWindow) {
         QWindowSystemInterface::handleCloseEvent(m_platformWindow->m_activePopupWindow);
         QWindowSystemInterface::flushWindowSystemEvents();
@@ -438,7 +444,12 @@ static QTouchDevice *touchDevice = 0;
             [inputManager handleMouseEvent:theEvent];
         }
     } else {
-        m_buttons |= Qt::LeftButton;
+        if ([self convertKeyModifiers:[theEvent modifierFlags]] & Qt::MetaModifier) {
+            m_buttons |= Qt::RightButton;
+            m_sendUpAsRightButton = true;
+        } else {
+            m_buttons |= Qt::LeftButton;
+        }
         [self handleMouseEvent:theEvent];
     }
 }
@@ -452,7 +463,12 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    m_buttons &= QFlag(~int(Qt::LeftButton));
+    if (m_sendUpAsRightButton) {
+        m_buttons &= QFlag(~int(Qt::RightButton));
+        m_sendUpAsRightButton = false;
+    } else {
+        m_buttons &= QFlag(~int(Qt::LeftButton));
+    }
     [self handleMouseEvent:theEvent];
 }
 
@@ -740,8 +756,18 @@ static QTouchDevice *touchDevice = 0;
 - (void)handleKeyEvent:(NSEvent *)nsevent eventType:(int)eventType
 {
     ulong timestamp = [nsevent timestamp] * 1000;
-    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers:[nsevent modifierFlags]];
+    ulong nativeModifiers = [nsevent modifierFlags];
+    Qt::KeyboardModifiers modifiers = [self convertKeyModifiers: nativeModifiers];
     NSString *charactersIgnoringModifiers = [nsevent charactersIgnoringModifiers];
+
+    // [from Qt 4 impl] There is no way to get the scan code from carbon. But we cannot
+    // use the value 0, since it indicates that the event originates from somewhere
+    // else than the keyboard.
+    quint32 nativeScanCode = 1;
+
+    UInt32 nativeVirtualKey = 0;
+    EventRef eventRef = EventRef([nsevent eventRef]);
+    GetEventParameter(eventRef, kEventParamKeyCode, typeUInt32, 0, sizeof(nativeVirtualKey), 0, &nativeVirtualKey);
 
     QChar ch;
     int keyCode;
@@ -783,7 +809,8 @@ static QTouchDevice *touchDevice = 0;
     }
 
     if (m_sendKeyEvent && m_composingText.isEmpty())
-        QWindowSystemInterface::handleKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers, text);
+        QWindowSystemInterface::handleExtendedKeyEvent(m_window, timestamp, QEvent::Type(eventType), keyCode, modifiers,
+                                                       nativeScanCode, nativeVirtualKey, nativeModifiers, text);
 
     m_sendKeyEvent = false;
 }

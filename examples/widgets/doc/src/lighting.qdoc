@@ -28,6 +28,8 @@
 /*!
     \example effects/lighting
     \title Lighting Effect Example
+    \ingroup examples-graphicsview-graphicseffects
+    \brief Demonstrates how to apply effects on items in the view
 
     \image lightingeffect-example.png
 */

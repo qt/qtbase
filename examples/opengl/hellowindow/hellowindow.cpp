@@ -41,9 +41,6 @@
 #include "hellowindow.h"
 
 #include <QOpenGLContext>
-
-#include <QTimer>
-
 #include <qmath.h>
 
 Renderer::Renderer(const QSurfaceFormat &format, Renderer *share, QScreen *screen)
@@ -77,10 +74,8 @@ HelloWindow::HelloWindow(const QSharedPointer<Renderer> &renderer)
     updateColor();
 }
 
-void HelloWindow::exposeEvent(QExposeEvent *event)
+void HelloWindow::exposeEvent(QExposeEvent *)
 {
-    Q_UNUSED(event);
-
     render();
 
     if (!m_timer) {
@@ -109,10 +104,7 @@ void HelloWindow::updateColor()
     };
 
     m_color = colors[m_colorIndex];
-
-    m_colorIndex++;
-    if (m_colorIndex >= int(sizeof(colors) / sizeof(colors[0])))
-        m_colorIndex = 0;
+    m_colorIndex = 1 - m_colorIndex;
 }
 
 void Renderer::render(QSurface *surface, const QColor &color, const QSize &viewSize)
@@ -171,31 +163,29 @@ void Renderer::initialize()
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
 
     QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
-    const char *vsrc =
-        "attribute highp vec4 vertex;\n"
-        "attribute mediump vec3 normal;\n"
-        "uniform mediump mat4 matrix;\n"
-        "uniform lowp vec4 sourceColor;\n"
-        "varying mediump vec4 color;\n"
-        "void main(void)\n"
-        "{\n"
-        "    vec3 toLight = normalize(vec3(0.0, 0.3, 1.0));\n"
-        "    float angle = max(dot(normal, toLight), 0.0);\n"
-        "    vec3 col = sourceColor.rgb;\n"
-        "    color = vec4(col * 0.2 + col * 0.8 * angle, 1.0);\n"
-        "    color = clamp(color, 0.0, 1.0);\n"
-        "    gl_Position = matrix * vertex;\n"
-        "}\n";
-    vshader->compileSourceCode(vsrc);
+    vshader->compileSourceCode(
+        "attribute highp vec4 vertex;"
+        "attribute mediump vec3 normal;"
+        "uniform mediump mat4 matrix;"
+        "uniform lowp vec4 sourceColor;"
+        "varying mediump vec4 color;"
+        "void main(void)"
+        "{"
+        "    vec3 toLight = normalize(vec3(0.0, 0.3, 1.0));"
+        "    float angle = max(dot(normal, toLight), 0.0);"
+        "    vec3 col = sourceColor.rgb;"
+        "    color = vec4(col * 0.2 + col * 0.8 * angle, 1.0);"
+        "    color = clamp(color, 0.0, 1.0);"
+        "    gl_Position = matrix * vertex;"
+        "}");
 
     QOpenGLShader *fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
-    const char *fsrc =
-        "varying mediump vec4 color;\n"
-        "void main(void)\n"
-        "{\n"
-        "    gl_FragColor = color;\n"
-        "}\n";
-    fshader->compileSourceCode(fsrc);
+    fshader->compileSourceCode(
+        "varying mediump vec4 color;"
+        "void main(void)"
+        "{"
+        "    gl_FragColor = color;"
+        "}");
 
     m_program = new QOpenGLShaderProgram(this);
     m_program->addShader(vshader);

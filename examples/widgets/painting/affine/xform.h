@@ -116,7 +116,9 @@ signals:
 
 protected:
     void timerEvent(QTimerEvent *e);
+#ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *);
+#endif
 
 private:
     QPolygonF ctrlPoints;

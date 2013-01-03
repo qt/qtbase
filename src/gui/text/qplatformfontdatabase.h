@@ -116,7 +116,8 @@ public:
 
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);
-    static void registerFont(const QString &familyname, const QString &foundryname, QFont::Weight weight,
+    static void registerFont(const QString &familyname, const QString &stylename,
+                             const QString &foundryname, QFont::Weight weight,
                              QFont::Style style, QFont::Stretch stretch, bool antialiased,
                              bool scalable, int pixelSize, bool fixedPitch,
                              const QSupportedWritingSystems &writingSystems, void *handle);

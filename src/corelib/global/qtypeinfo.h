@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
+
 #ifndef QTYPEINFO_H
 #define QTYPEINFO_H
-
-#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

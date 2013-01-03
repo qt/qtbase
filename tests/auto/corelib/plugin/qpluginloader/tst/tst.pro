@@ -4,6 +4,7 @@ TARGET  = ../tst_qpluginloader
 QT = core testlib
 SOURCES = ../tst_qpluginloader.cpp
 HEADERS = ../theplugin/plugininterface.h
+CONFIG -= app_bundle
 
 win32 {
     CONFIG(debug, debug|release) {

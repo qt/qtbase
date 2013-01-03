@@ -1,4 +1,4 @@
-TARGET = qnx
+TARGET = qqnx
 
 QT += platformsupport platformsupport-private
 
@@ -140,4 +140,5 @@ include (../../../platformsupport/eglconvenience/eglconvenience.pri)
 include (../../../platformsupport/fontdatabases/fontdatabases.pri)
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QQnxIntegrationPlugin
 load(qt_plugin)

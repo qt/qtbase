@@ -38,8 +38,6 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "bubble.h"
 
 Bubble::Bubble(const QPointF &position, qreal radius, const QPointF &velocity)

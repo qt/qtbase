@@ -257,6 +257,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     , has_shape_extension(false)
     , has_randr_extension(false)
     , has_input_shape(false)
+    , m_buttons(0)
 {
 #ifdef XCB_USE_XLIB
     Display *dpy = XOpenDisplay(m_displayName.constData());
@@ -312,6 +313,7 @@ QXcbConnection::QXcbConnection(QXcbNativeInterface *nativeInterface, const char 
     initializeAllAtoms();
 
     m_time = XCB_CURRENT_TIME;
+    m_netWmUserTime = XCB_CURRENT_TIME;
 
     initializeXRandr();
     updateScreens();
@@ -662,6 +664,73 @@ void QXcbConnection::handleXcbError(xcb_generic_error_t *error)
 #endif
 }
 
+static Qt::MouseButtons translateMouseButtons(int s)
+{
+    Qt::MouseButtons ret = 0;
+    if (s & XCB_BUTTON_MASK_1)
+        ret |= Qt::LeftButton;
+    if (s & XCB_BUTTON_MASK_2)
+        ret |= Qt::MidButton;
+    if (s & XCB_BUTTON_MASK_3)
+        ret |= Qt::RightButton;
+    return ret;
+}
+
+static Qt::MouseButton translateMouseButton(xcb_button_t s)
+{
+    switch (s) {
+    case 1: return Qt::LeftButton;
+    case 2: return Qt::MidButton;
+    case 3: return Qt::RightButton;
+    // Button values 4-7 were already handled as Wheel events, and won't occur here.
+    case 8: return Qt::BackButton;      // Also known as Qt::ExtraButton1
+    case 9: return Qt::ForwardButton;   // Also known as Qt::ExtraButton2
+    case 10: return Qt::ExtraButton3;
+    case 11: return Qt::ExtraButton4;
+    case 12: return Qt::ExtraButton5;
+    case 13: return Qt::ExtraButton6;
+    case 14: return Qt::ExtraButton7;
+    case 15: return Qt::ExtraButton8;
+    case 16: return Qt::ExtraButton9;
+    case 17: return Qt::ExtraButton10;
+    case 18: return Qt::ExtraButton11;
+    case 19: return Qt::ExtraButton12;
+    case 20: return Qt::ExtraButton13;
+    case 21: return Qt::ExtraButton14;
+    case 22: return Qt::ExtraButton15;
+    case 23: return Qt::ExtraButton16;
+    case 24: return Qt::ExtraButton17;
+    case 25: return Qt::ExtraButton18;
+    case 26: return Qt::ExtraButton19;
+    case 27: return Qt::ExtraButton20;
+    case 28: return Qt::ExtraButton21;
+    case 29: return Qt::ExtraButton22;
+    case 30: return Qt::ExtraButton23;
+    case 31: return Qt::ExtraButton24;
+    default: return Qt::NoButton;
+    }
+}
+
+void QXcbConnection::handleButtonPress(xcb_generic_event_t *ev)
+{
+    xcb_button_press_event_t *event = (xcb_button_press_event_t *)ev;
+
+    // the event explicitly contains the state of the three first buttons,
+    // the rest we need to manage ourselves
+    m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
+    m_buttons |= translateMouseButton(event->detail);
+}
+
+void QXcbConnection::handleButtonRelease(xcb_generic_event_t *ev)
+{
+    xcb_button_release_event_t *event = (xcb_button_release_event_t *)ev;
+
+    // the event explicitly contains the state of the three first buttons,
+    // the rest we need to manage ourselves
+    m_buttons = (m_buttons & ~0x7) | translateMouseButtons(event->state);
+    m_buttons &= ~translateMouseButton(event->detail);
+}
+
 void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
 {
 #ifdef Q_XCB_DEBUG
@@ -686,8 +755,10 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
         case XCB_EXPOSE:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_expose_event_t, window, handleExposeEvent);
         case XCB_BUTTON_PRESS:
+            handleButtonPress(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_press_event_t, event, handleButtonPressEvent);
         case XCB_BUTTON_RELEASE:
+            handleButtonRelease(event);
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_button_release_event_t, event, handleButtonReleaseEvent);
         case XCB_MOTION_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_motion_notify_event_t, event, handleMotionNotifyEvent);

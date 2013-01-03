@@ -80,6 +80,60 @@ static QString qdlerror()
     return err ? QLatin1Char('(') + QString::fromLocal8Bit(err) + QLatin1Char(')'): QString();
 }
 
+QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
+{
+    QStringList suffixes;
+#if defined(Q_OS_HPUX)
+    // according to
+    // http://docs.hp.com/en/B2355-90968/linkerdifferencesiapa.htm
+
+    // In PA-RISC (PA-32 and PA-64) shared libraries are suffixed
+    // with .sl. In IPF (32-bit and 64-bit), the shared libraries
+    // are suffixed with .so. For compatibility, the IPF linker
+    // also supports the .sl suffix.
+
+    // But since we don't know if we are built on HPUX or HPUXi,
+    // we support both .sl (and .<version>) and .so suffixes but
+    // .so is preferred.
+# if defined(__ia64)
+    if (!fullVersion.isEmpty()) {
+        suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
+    } else {
+        suffixes << QLatin1String(".so");
+    }
+# endif
+    if (!fullVersion.isEmpty()) {
+        suffixes << QString::fromLatin1(".sl.%1").arg(fullVersion);
+        suffixes << QString::fromLatin1(".%1").arg(fullVersion);
+    } else {
+        suffixes << QLatin1String(".sl");
+    }
+#elif defined(Q_OS_AIX)
+    suffixes << ".a";
+
+#else
+    if (!fullVersion.isEmpty()) {
+        suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
+    } else {
+        suffixes << QLatin1String(".so");
+    }
+#endif
+# ifdef Q_OS_MAC
+    if (!fullVersion.isEmpty()) {
+        suffixes << QString::fromLatin1(".%1.bundle").arg(fullVersion);
+        suffixes << QString::fromLatin1(".%1.dylib").arg(fullVersion);
+    } else {
+        suffixes << QLatin1String(".bundle") << QLatin1String(".dylib");
+    }
+#endif
+    return suffixes;
+}
+
+QStringList QLibraryPrivate::prefixes_sys()
+{
+    return QStringList() << QLatin1String("lib");
+}
+
 bool QLibraryPrivate::load_sys()
 {
     QString attempt;
@@ -96,50 +150,8 @@ bool QLibraryPrivate::load_sys()
     QStringList suffixes;
     QStringList prefixes;
     if (pluginState != IsAPlugin) {
-        prefixes << QLatin1String("lib");
-#if defined(Q_OS_HPUX)
-        // according to
-        // http://docs.hp.com/en/B2355-90968/linkerdifferencesiapa.htm
-
-        // In PA-RISC (PA-32 and PA-64) shared libraries are suffixed
-        // with .sl. In IPF (32-bit and 64-bit), the shared libraries
-        // are suffixed with .so. For compatibility, the IPF linker
-        // also supports the .sl suffix.
-
-        // But since we don't know if we are built on HPUX or HPUXi,
-        // we support both .sl (and .<version>) and .so suffixes but
-        // .so is preferred.
-# if defined(__ia64)
-        if (!fullVersion.isEmpty()) {
-            suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
-        } else {
-            suffixes << QLatin1String(".so");
-        }
-# endif
-        if (!fullVersion.isEmpty()) {
-            suffixes << QString::fromLatin1(".sl.%1").arg(fullVersion);
-            suffixes << QString::fromLatin1(".%1").arg(fullVersion);
-        } else {
-            suffixes << QLatin1String(".sl");
-        }
-#elif defined(Q_OS_AIX)
-        suffixes << ".a";
-
-#else
-        if (!fullVersion.isEmpty()) {
-            suffixes << QString::fromLatin1(".so.%1").arg(fullVersion);
-        } else {
-            suffixes << QLatin1String(".so");
-        }
-#endif
-# ifdef Q_OS_MAC
-        if (!fullVersion.isEmpty()) {
-            suffixes << QString::fromLatin1(".%1.bundle").arg(fullVersion);
-            suffixes << QString::fromLatin1(".%1.dylib").arg(fullVersion);
-        } else {
-            suffixes << QLatin1String(".bundle") << QLatin1String(".dylib");
-        }
-#endif
+        prefixes = prefixes_sys();
+        suffixes = suffixes_sys(fullVersion);
     }
     int dlFlags = 0;
 #if defined(QT_HPUX_LD)

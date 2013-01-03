@@ -1175,6 +1175,7 @@ bool QMYSQLDriver::hasFeature(DriverFeature f) const
     case SimpleLocking:
     case EventNotifications:
     case FinishQuery:
+    case CancelQuery:
         return false;
     case QuerySize:
     case BLOB:

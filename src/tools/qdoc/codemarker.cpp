@@ -396,7 +396,7 @@ void CodeMarker::insert(FastSection &fastSection,
     bool irrelevant = false;
     bool inheritedMember = false;
     if (!node->relates()) {
-        if (node->parent() != (const InnerNode*)fastSection.innerNode && !node->parent()->isAbstract()) {
+        if (node->parent() != fastSection.parent_) { // && !node->parent()->isAbstract()) {
             if (node->type() != Node::QmlProperty) {
                 inheritedMember = true;
             }
@@ -468,7 +468,7 @@ void CodeMarker::insert(FastSection& fastSection,
             (parent->subType() == Node::QmlPropertyGroup)) {
         parent = parent->parent();
     }
-    inheritedMember = (parent != (const InnerNode*)fastSection.innerNode);
+    inheritedMember = (parent != fastSection.parent_);
 
     if (!inheritedMember || style == Subpage) {
         QString key = sortName(node);
@@ -488,24 +488,24 @@ void CodeMarker::insert(FastSection& fastSection,
 }
 
 /*!
-  Returns true if \a node represents a reimplemented member function.
-  If it is, then it is inserted in the reimplemented member map in the
-  section \a fs. And, the test is only performed if \a status is \e OK.
-  Otherwise, false is returned.
+  Returns true if \a node represents a reimplemented member
+  function in the class of the FastSection \a fs. If it is
+  a reimplemented function, then it is inserted into the
+  reimplemented member map in \a fs. The test is performed
+  only if \a status is \e OK. True is returned if \a node
+  is inserted into the map. Otherwise, false is returned.
  */
 bool CodeMarker::insertReimpFunc(FastSection& fs, Node* node, Status status)
 {
-    if (node->access() == Node::Private)
-        return false;
-
-    const FunctionNode* fn = static_cast<const FunctionNode*>(node);
-    if ((fn->reimplementedFrom() != 0) && (status == Okay)) {
-        bool inherited = (!fn->relates() && (fn->parent() != (const InnerNode*)fs.innerNode));
-        if (!inherited) {
-            QString key = sortName(fn);
-            if (!fs.reimpMemberMap.contains(key)) {
-                fs.reimpMemberMap.insert(key,node);
-                return true;
+    if ((node->access() != Node::Private) && (node->relates() == 0)) {
+        const FunctionNode* fn = static_cast<const FunctionNode*>(node);
+        if ((fn->reimplementedFrom() != 0) && (status == Okay)) {
+            if (fn->parent() == fs.parent_) {
+                QString key = sortName(fn);
+                if (!fs.reimpMemberMap.contains(key)) {
+                    fs.reimpMemberMap.insert(key,node);
+                    return true;
+                }
             }
         }
     }

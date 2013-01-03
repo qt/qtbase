@@ -41,30 +41,26 @@
 #ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
-#include <QtOpenGL/QGLWidget>
-#include <QtOpenGL/QGLFunctions>
+#include "geometryengine.h"
 
+#include <QGLWidget>
+#include <QGLFunctions>
 #include <QMatrix4x4>
 #include <QQuaternion>
 #include <QVector2D>
+#include <QBasicTimer>
+#include <QGLShaderProgram>
 
-QT_BEGIN_NAMESPACE
-class QBasicTimer;
-class QGLShaderProgram;
-QT_END_NAMESPACE
 
 class GeometryEngine;
 
 class MainWidget : public QGLWidget, protected QGLFunctions
 {
     Q_OBJECT
+
 public:
     explicit MainWidget(QWidget *parent = 0);
-    virtual ~MainWidget();
-
-signals:
-
-public slots:
+    ~MainWidget();
 
 protected:
     void mousePressEvent(QMouseEvent *e);
@@ -79,9 +75,9 @@ protected:
     void initTextures();
 
 private:
-    QBasicTimer *timer;
-    QGLShaderProgram *program;
-    GeometryEngine *geometries;
+    QBasicTimer timer;
+    QGLShaderProgram program;
+    GeometryEngine geometries;
 
     GLuint texture;
 

@@ -251,12 +251,14 @@ void XFormView::timerEvent(QTimerEvent *e)
     }
 }
 
+#ifndef QT_NO_WHEELEVENT
 void XFormView::wheelEvent(QWheelEvent *e)
 {
     m_scale += e->delta() / qreal(600);
     m_scale = qMax(qreal(0.1), qMin(qreal(4), m_scale));
     emit scaleChanged(int(m_scale*1000));
 }
+#endif
 
 void XFormView::reset()
 {

@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSqlRelationalDelegate
+    \inmodule QtSql
     \brief The QSqlRelationalDelegate class provides a delegate that is used to
     display and edit data from a QSqlRelationalTableModel.
 
@@ -84,11 +85,6 @@ QT_BEGIN_NAMESPACE
     \fn QWidget *QSqlRelationalDelegate::createEditor(QWidget *parent,
                                                       const QStyleOptionViewItem &option,
                                                       const QModelIndex &index) const
-    \reimp
-*/
-
-/*!
-    \fn void QSqlRelationalDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
     \reimp
 */
 

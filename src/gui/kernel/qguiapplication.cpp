@@ -60,6 +60,7 @@
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qdir.h>
 #include <QtDebug>
+#include "qaccessible.h"
 #include <qpalette.h>
 #include <qscreen.h>
 #include "qsessionmanager.h"
@@ -1065,7 +1066,8 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
 
     QPixmapCache::clear();
 
-    delete  platform_theme;
+    delete platform_theme;
+    platform_theme = 0;
     delete platform_integration;
     platform_integration = 0;
     delete m_gammaTables.load();
@@ -1183,6 +1185,9 @@ QPlatformNativeInterface *QGuiApplication::platformNativeInterface()
 */
 int QGuiApplication::exec()
 {
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessible::setRootObject(qApp);
+#endif
     return QCoreApplication::exec();
 }
 

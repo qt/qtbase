@@ -74,10 +74,10 @@
     to threading see our Recommended Reading list:
 
     \list
-    \li \l{Threads Primer: A Guide to Multithreaded Programming}
-    \li \l{Thread Time: The Multithreaded Programming Guide}
-    \li \l{Pthreads Programming: A POSIX Standard for Better Multiprocessing}
-    \li \l{Win32 Multithreaded Programming}
+    \li \l {http://www.amazon.com/Threads-Primer-Guide-Multithreaded-Programming/dp/0134436989}{Threads Primer: A Guide to Multithreaded Programming}
+    \li \l {http://www.amazon.com/Thread-Time-MultiThreaded-Programming-Guide/dp/0131900676}{Thread Time: The Multithreaded Programming Guide}
+    \li \l {http://www.amazon.com/Pthreads-Programming-Standard-Multiprocessing-Nutshell/dp/1565921151a}{Pthreads Programming: A POSIX Standard for Better Multiprocessing}
+    \li \l {http://www.amazon.com/WIN32-Multithreaded-Programming-Aaron-Cohen/dp/1565922964}{Win32 Multithreaded Programming}
     \endlist
 
     \section1 The Threading Classes

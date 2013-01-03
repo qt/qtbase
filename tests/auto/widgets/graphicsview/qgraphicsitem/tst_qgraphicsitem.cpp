@@ -8486,7 +8486,9 @@ void tst_QGraphicsItem::focusProxyDeletion()
 
     rect2 = new QGraphicsRectItem;
     rect->setFocusProxy(rect2);
+    QGraphicsItem **danglingFocusProxyRef = &rect->d_ptr->focusProxy;
     delete rect; // don't crash
+    QVERIFY(!rect2->d_ptr->focusProxyRefs.contains(danglingFocusProxyRef));
 
     rect = new QGraphicsRectItem;
     rect->setFocusProxy(rect2);
@@ -9261,6 +9263,45 @@ void tst_QGraphicsItem::focusScope()
     scope2->setFocus();
     QVERIFY(scope2->hasFocus());
     scope3->setFocus();
+    QVERIFY(scope3->hasFocus());
+
+    // clearFocus() on a focus scope will remove focus from its children.
+    scope1->clearFocus();
+    QVERIFY(!scope1->hasFocus());
+    QVERIFY(!scope2->hasFocus());
+    QVERIFY(!scope3->hasFocus());
+
+    scope1->setFocus();
+    QVERIFY(!scope1->hasFocus());
+    QVERIFY(!scope2->hasFocus());
+    QVERIFY(scope3->hasFocus());
+
+    scope2->clearFocus();
+    QVERIFY(scope1->hasFocus());
+    QVERIFY(!scope2->hasFocus());
+    QVERIFY(!scope3->hasFocus());
+
+    scope2->setFocus();
+    QVERIFY(!scope1->hasFocus());
+    QVERIFY(!scope2->hasFocus());
+    QVERIFY(scope3->hasFocus());
+
+    // Focus cleared while a parent doesn't have focus remains cleared
+    // when the parent regains focus.
+    scope1->clearFocus();
+    scope3->clearFocus();
+    QVERIFY(!scope1->hasFocus());
+    QVERIFY(!scope2->hasFocus());
+    QVERIFY(!scope3->hasFocus());
+
+    scope1->setFocus();
+    QVERIFY(!scope1->hasFocus());
+    QVERIFY(scope2->hasFocus());
+    QVERIFY(!scope3->hasFocus());
+
+    scope3->setFocus();
+    QVERIFY(!scope1->hasFocus());
+    QVERIFY(!scope2->hasFocus());
     QVERIFY(scope3->hasFocus());
 
     QGraphicsRectItem *rect4 = new QGraphicsRectItem;

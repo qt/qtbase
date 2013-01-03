@@ -3502,6 +3502,10 @@ QString HtmlGenerator::getLink(const Atom *atom, const Node *relative, const Nod
             }
             if (!*node) {
                 *node = qdb_->findUnambiguousTarget(first, ref, relative);
+                if (*node && !(*node)->url().isEmpty() && !ref.isEmpty()) {
+                    QString final = (*node)->url() + "#" + ref;
+                    return final;
+                }
             }
         }
         if (*node) {

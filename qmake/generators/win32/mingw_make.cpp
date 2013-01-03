@@ -343,7 +343,7 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
     if(project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
         t << "LIB        =        " << var("QMAKE_LIB") << endl;
     } else {
-        t << "LINK        =        " << var("QMAKE_LINK") << endl;
+        t << "LINKER      =        " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        =        " << var("QMAKE_LFLAGS") << endl;
         t << "LIBS        =        "
           << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
@@ -405,7 +405,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             t << "\n\t" << objectsLinkLine << " " ;
         }
     } else if (project->first("TEMPLATE") != "aux") {
-        t << "\n\t" << "$(LINK) $(LFLAGS) -o $(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
+        t << "\n\t" << "$(LINKER) $(LFLAGS) -o $(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))
         t << "\n\t" <<var("QMAKE_POST_LINK");
@@ -416,14 +416,23 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
 {
     const QString rc_file = fileFixify(project->first("RC_FILE").toQString());
 
-    QString incPathStr = fileInfo(rc_file).path();
-    if (incPathStr != "." && QDir::isRelativePath(incPathStr))
-        incPathStr.prepend("./");
+    ProStringList rcIncPaths = project->values("RC_INCLUDEPATH");
+    rcIncPaths.prepend(fileInfo(rc_file).path());
+    QString incPathStr;
+    for (int i = 0; i < rcIncPaths.count(); ++i) {
+        const ProString &path = rcIncPaths.at(i);
+        if (path.isEmpty())
+            continue;
+        incPathStr += QStringLiteral(" --include-dir=");
+        if (path != "." && QDir::isRelativePath(path.toQString()))
+            incPathStr += "./";
+        incPathStr += escapeFilePath(path);
+    }
 
     if (!rc_file.isEmpty()) {
         t << escapeDependencyPath(var("RES_FILE")) << ": " << rc_file << "\n\t"
           << var("QMAKE_RC") << " -i " << rc_file << " -o " << var("RES_FILE") 
-          << " --include-dir=" << incPathStr << " $(DEFINES)" << endl << endl;
+          << incPathStr << " $(DEFINES)" << endl << endl;
     }
 }
 

@@ -6,5 +6,3 @@ SUBDIRS       = application \
                 menus \
                 recentfiles \
                 sdi
-
-QT += widgets

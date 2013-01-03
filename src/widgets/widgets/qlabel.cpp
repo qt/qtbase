@@ -141,8 +141,8 @@ QT_BEGIN_NAMESPACE
     \li \inlineimage fusion-label.png Screenshot of a Fusion style label
     \li A label shown in the \l{Fusion Style Widget Gallery}{Fusion widget style}.
     \row
-    \li \inlineimage windowsxp-label.png Screenshot of a Windows XP style label
-    \li A label shown in the \l{Windows XP Style Widget Gallery}{Windows XP widget style}.
+    \li \inlineimage windowsvista-label.png Screenshot of a Windows Vista style label
+    \li A label shown in the \l{Windows Vista Style Widget Gallery}{Windows Vista widget style}.
     \endtable
 
     \sa QLineEdit, QTextEdit, QPixmap, QMovie,

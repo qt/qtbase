@@ -133,7 +133,6 @@ pcre {
 }
 
 DEFINES += HB_EXPORT=Q_CORE_EXPORT
-INCLUDEPATH += ../3rdparty/harfbuzz/src
 HEADERS += ../3rdparty/harfbuzz/src/harfbuzz.h
 SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            ../3rdparty/harfbuzz/src/harfbuzz-gdef.c \
@@ -145,8 +144,6 @@ SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            ../3rdparty/harfbuzz/src/harfbuzz-shaper-all.cpp \
            tools/qharfbuzz.cpp
 HEADERS += tools/qharfbuzz_p.h
-
-private_headers.files += ../3rdparty/harfbuzz/src/*.h
 
 INCLUDEPATH += ../3rdparty/md5 \
                ../3rdparty/md4

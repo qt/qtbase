@@ -67,7 +67,7 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
     else
         fullServerName = prefix + requestedServerName;
 
-    QSettings settings(QLatin1String("Trolltech"), QLatin1String("Qt"));
+    QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
     if (settings.contains(fullServerName)) {
         qWarning("QLocalServer::listen: server name is already in use.");
         tcpServer.close();
@@ -87,7 +87,7 @@ bool QLocalServerPrivate::listen(qintptr socketDescriptor)
 
 void QLocalServerPrivate::closeServer()
 {
-    QSettings settings(QLatin1String("Trolltech"), QLatin1String("Qt"));
+    QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
     if (fullServerName == QLatin1String("QLocalServer"))
         settings.setValue(fullServerName, QVariant());
     else
@@ -126,7 +126,7 @@ bool QLocalServerPrivate::removeServer(const QString &name)
     else
         serverName = prefix + name;
 
-    QSettings settings(QLatin1String("Trolltech"), QLatin1String("Qt"));
+    QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
     if (settings.contains(serverName))
         settings.remove(serverName);
 

@@ -1,6 +1,7 @@
 TEMPLATE=subdirs
 
 SUBDIRS = bearerex \
+filetest \
 gestures \
 inputmethodhints \
 keypadnavigation \

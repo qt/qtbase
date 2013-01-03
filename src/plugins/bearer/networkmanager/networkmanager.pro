@@ -1,6 +1,7 @@
 TARGET = qnmbearer
 
 PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QNetworkManagerEnginePlugin
 load(qt_plugin)
 
 QT = core network-private dbus

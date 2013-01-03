@@ -24,7 +24,10 @@ SOURCES += \
     $$ANGLE_DIR/src/libEGL/main.cpp \
     $$ANGLE_DIR/src/libEGL/Surface.cpp
 
-msvc:DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}.def
+!static {
+    DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}.def
+    win32-g++*:equals(QT_ARCH, i386): DEF_FILE = $$ANGLE_DIR/src/libEGL/$${TARGET}_mingw32.def
+}
 
 load(qt_installs)
 

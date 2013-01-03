@@ -50,6 +50,7 @@
 #include <QDebug>
 
 #include <qpa/qwindowsysteminterface.h>
+#include <private/qmath_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +66,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
     , m_orientation(Qt::PrimaryOrientation)
     , m_number(number)
     , m_refreshRate(60)
+    , m_forcedDpi(-1)
 {
     if (connection->hasXRandr())
         xcb_randr_select_input(xcb_connection(), screen()->root, true);
@@ -80,6 +82,9 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, xcb_screen_t *scr,
         m_geometry = QRect(QPoint(), m_virtualSize);
     if (m_availableGeometry.isEmpty())
         m_availableGeometry = QRect(QPoint(), m_virtualSize);
+
+    readXResources();
+
 
 #ifdef Q_XCB_DEBUG
     qDebug();
@@ -242,8 +247,11 @@ QImage::Format QXcbScreen::format() const
 
 QDpi QXcbScreen::logicalDpi() const
 {
-    return QDpi(25.4 * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
-                25.4 * m_virtualSize.height() / m_virtualSizeMillimeters.height());
+    if (m_forcedDpi > 0)
+        return QDpi(m_forcedDpi, m_forcedDpi);
+
+    return QDpi(Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
+                Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
@@ -315,6 +323,9 @@ void QXcbScreen::handleScreenChange(xcb_randr_screen_change_notify_event_t *chan
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry());
     QWindowSystemInterface::handleScreenAvailableGeometryChange(QPlatformScreen::screen(), availableGeometry());
     QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
+    QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QPlatformScreen::screen(),
+        Q_MM_PER_INCH * m_virtualSize.width() / m_virtualSizeMillimeters.width(),
+        Q_MM_PER_INCH * m_virtualSize.height() / m_virtualSizeMillimeters.height());
 }
 
 void QXcbScreen::updateGeometry(xcb_timestamp_t timestamp)
@@ -468,6 +479,43 @@ QPixmap QXcbScreen::grabWindow(WId window, int x, int y, int width, int height) 
     xcb_free_pixmap(xcb_connection(), pixmap);
 
     return result;
+}
+
+void QXcbScreen::readXResources()
+{
+    int offset = 0;
+    QByteArray resources;
+    while(1) {
+        xcb_get_property_reply_t *reply =
+            xcb_get_property_reply(xcb_connection(),
+                xcb_get_property_unchecked(xcb_connection(), false, screen()->root,
+                                 XCB_ATOM_RESOURCE_MANAGER,
+                                 XCB_ATOM_STRING, offset/4, 8192), NULL);
+        bool more = false;
+        if (reply && reply->format == 8 && reply->type == XCB_ATOM_STRING) {
+            resources += QByteArray((const char *)xcb_get_property_value(reply), xcb_get_property_value_length(reply));
+            offset += xcb_get_property_value_length(reply);
+            more = reply->bytes_after != 0;
+        }
+
+        if (reply)
+            free(reply);
+
+        if (!more)
+            break;
+    }
+
+    QList<QByteArray> split = resources.split('\n');
+    for (int i = 0; i < split.size(); ++i) {
+        const QByteArray &r = split.at(i);
+        if (r.startsWith("Xft.dpi:\t")) {
+            bool ok;
+            int dpi = r.mid(sizeof("Xft.dpi:")).toInt(&ok);
+            if (ok)
+                m_forcedDpi = dpi;
+            break;
+        }
+    }
 }
 
 QT_END_NAMESPACE

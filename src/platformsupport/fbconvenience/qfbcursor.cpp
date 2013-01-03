@@ -116,6 +116,7 @@ void QFbCursor::setCursor(const uchar *data, const uchar *mask, int width, int h
     mGraphic->set(data, mask, width, height, hotX, hotY);
 }
 
+#ifndef QT_NO_CURSOR
 void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
 {
     Q_UNUSED(window);
@@ -134,6 +135,7 @@ void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
     if (mOnScreen || mScreen->geometry().intersects(mCurrentRect.translated(mScreenOffset)))
         setDirty();
 }
+#endif
 
 QT_END_NAMESPACE
 

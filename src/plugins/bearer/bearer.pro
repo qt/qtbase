@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-linux*:contains(QT_CONFIG, dbus) {
+linux*:qtHaveModule(dbus) {
     SUBDIRS += generic
     SUBDIRS += connman networkmanager
 }

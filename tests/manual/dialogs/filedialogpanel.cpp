@@ -105,9 +105,9 @@ inline void setComboBoxValue(QComboBox *c, int v)
     c->setCurrentIndex(c->findData(QVariant(v)));
 }
 
-static inline void addButton(const QString &desription, QBoxLayout *layout, QObject *receiver, const char *slotFunc)
+static inline void addButton(const QString &description, QBoxLayout *layout, QObject *receiver, const char *slotFunc)
 {
-    QPushButton *button = new QPushButton(desription);
+    QPushButton *button = new QPushButton(description);
     QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
     layout->addWidget(button);
 }

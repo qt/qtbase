@@ -341,11 +341,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             *str = v_cast<QUrl>(d)->toString();
             break;
 #endif
-#ifndef QT_NO_QUUID_STRING
         case QVariant::Uuid:
             *str = v_cast<QUuid>(d)->toString();
             break;
-#endif
         default:
             return false;
         }
@@ -722,11 +720,9 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
 #endif
     case QVariant::Uuid:
         switch (d->type) {
-#ifndef QT_NO_QUUID_STRING
         case QVariant::String:
             *static_cast<QUuid *>(result) = QUuid(*v_cast<QString>(d));
             break;
-#endif
         default:
             return false;
         }

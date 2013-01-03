@@ -28,6 +28,8 @@
 /*!
     \example effects/blurpicker
     \title Blur Picker Effect Example
+    \ingroup examples-graphicsview-graphicseffects
+    \brief Demonstrates how to apply graphical effects on items in the view
 
     \image blurpickereffect-example.png
 */

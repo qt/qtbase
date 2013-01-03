@@ -166,7 +166,7 @@ tst_QFiledialog::~tst_QFiledialog()
 void tst_QFiledialog::init()
 {
     // Save the developers settings so they don't get mad when their sidebar folders are gone.
-    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
     settings.beginGroup(QLatin1String("Qt"));
     userSettings = settings.value(QLatin1String("filedialog")).toByteArray();
     settings.remove(QLatin1String("filedialog"));
@@ -180,7 +180,7 @@ void tst_QFiledialog::init()
 
 void tst_QFiledialog::cleanup()
 {
-    QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));
+    QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
     settings.beginGroup(QLatin1String("Qt"));
     settings.setValue(QLatin1String("filedialog"), userSettings);
 }

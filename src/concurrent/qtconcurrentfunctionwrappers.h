@@ -43,6 +43,7 @@
 #define QTCONCURRENT_FUNCTIONWRAPPERS_H
 
 #include <QtConcurrent/qtconcurrentcompilertest.h>
+#include <QtCore/QStringList>
 
 #ifndef QT_NO_CONCURRENT
 

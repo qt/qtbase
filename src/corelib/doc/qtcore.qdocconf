@@ -3,21 +3,21 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 project                 = QtCore
 description             = Qt Core Reference Documentation
 url                     = http://qt-project.org/doc/qtcore
-version                 = 5.0.0
+version                 = 5.0.1
 
 examplesinstallpath     = core
 
 qhp.projects            = QtCore
 
 qhp.QtCore.file                = qtcore.qhp
-qhp.QtCore.namespace           = org.qt-project.qtcore.500
+qhp.QtCore.namespace           = org.qt-project.qtcore.501
 qhp.QtCore.virtualFolder       = qtcore
 qhp.QtCore.indexTitle          = Qt Core
 qhp.QtCore.indexRoot           =
 
-qhp.QtCore.filterAttributes    = qtcore 5.0.0 qtrefdoc
-qhp.QtCore.customFilters.Qt.name = QtCore 5.0.0
-qhp.QtCore.customFilters.Qt.filterAttributes = qtcore 5.0.0
+qhp.QtCore.filterAttributes    = qtcore 5.0.1 qtrefdoc
+qhp.QtCore.customFilters.Qt.name = QtCore 5.0.1
+qhp.QtCore.customFilters.Qt.filterAttributes = qtcore 5.0.1
 qhp.QtCore.subprojects         = classes
 qhp.QtCore.subprojects.classes.title = C++ Classes
 qhp.QtCore.subprojects.classes.indexTitle = Qt Core C++ Classes
@@ -26,7 +26,7 @@ qhp.QtCore.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtcore/qtcore.tags
 
-depends                 += qtgui qtwidgets qtnetwork qtdoc qtquick
+depends                 += qtgui qtwidgets qtnetwork qtdoc qtquick qtlinguist qtdesigner
 
 headerdirs  += ..
 
@@ -35,6 +35,8 @@ sourcedirs  += ..
 exampledirs += \
                ../ \
                snippets \
-               ../../../examples/threads
+               ../../../examples/threads/ \
+               ../../../examples/tools/ \
+               ../../../examples/widgets/widgets/analogclock
 
 imagedirs   += images

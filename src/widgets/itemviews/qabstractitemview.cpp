@@ -65,7 +65,7 @@
 #include <qaccessible.h>
 #include <qaccessible2.h>
 #endif
-#ifndef QT_NO_GESTURE
+#ifndef QT_NO_GESTURES
 #  include <qscroller.h>
 #endif
 

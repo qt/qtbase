@@ -54,6 +54,16 @@
 #include <QStyleFactory>
 #include <QSharedPointer>
 
+// Make a widget frameless to prevent size constraints of title bars
+// from interfering (Windows).
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QGridLayout : public QObject
 {
 Q_OBJECT
@@ -256,6 +266,7 @@ void tst_QGridLayout::badDistributionBug()
 void tst_QGridLayout::setMinAndMaxSize()
 {
     QWidget widget;
+    setFrameless(&widget);
     QGridLayout layout(&widget);
     layout.setMargin(0);
     layout.setSpacing(0);
@@ -412,6 +423,7 @@ private:
 void tst_QGridLayout::spacingAndSpacers()
 {
     QWidget widget;
+    setFrameless(&widget);
     QGridLayout layout(&widget);
     layout.setMargin(0);
     layout.setSpacing(0);
@@ -667,6 +679,8 @@ void tst_QGridLayout::spacingsAndMargins()
 
     QApplication::setStyle(new Qt42Style);
     QWidget toplevel;
+    setFrameless(&toplevel);
+
     QVBoxLayout vbox(&toplevel);
     QGridLayout grid1;
     vbox.addLayout(&grid1);
@@ -853,8 +867,10 @@ void tst_QGridLayout::minMaxSize()
     QApplication::setStyle(style);
     if (!m_grid)
         m_grid = new QGridLayout();
-    if (!m_toplevel)
+    if (!m_toplevel) {
         m_toplevel = new QWidget();
+        setFrameless(m_toplevel);
+    }
     if (fixedSize.isValid()) {
         m_toplevel->setFixedSize(fixedSize);
     } else {
@@ -1061,6 +1077,7 @@ void tst_QGridLayout::styleDependentSpacingsAndMargins()
 
     QApplication::setStyle(new CustomLayoutStyle());
     QWidget widget;
+    setFrameless(&widget);
     QGridLayout layout(&widget);
     QList<QPointer<SizeHinterFrame> > sizehinters;
     for (int i = 0; i < rows; ++i) {
@@ -1101,6 +1118,7 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = false;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        setFrameless(w);
         QVBoxLayout *layout = new QVBoxLayout();
         QRadioButton *rb1 = new QRadioButton(QLatin1String("Radio 1"), w);
         QRadioButton *rb2 = new QRadioButton(QLatin1String("Radio 2"), w);
@@ -1137,6 +1155,7 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = false;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        setFrameless(w);
         QHBoxLayout *layout = new QHBoxLayout();
         QLineEdit *le1 = new QLineEdit(w);
         QLineEdit *le2 = new QLineEdit(w);
@@ -1174,6 +1193,7 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = true;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        setFrameless(w);
         QVBoxLayout *layout = new QVBoxLayout();
         QPushButton *pb1 = new QPushButton(QLatin1String("Push 1"), w);
 
@@ -1210,6 +1230,7 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = true;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        setFrameless(w);
         QGridLayout *layout = new QGridLayout();
         QPushButton *pb1 = new QPushButton(QLatin1String("Push 1"), w);
         QPushButton *pb2 = new QPushButton(QLatin1String("Push 2"), w);
@@ -1277,6 +1298,7 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = true;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        setFrameless(w);
         QVBoxLayout *layout = new QVBoxLayout();
         QPushButton *pb1 = new QPushButton(QLatin1String("Push 1"), w);
 
@@ -1316,6 +1338,7 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = true;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        setFrameless(w);
         QVBoxLayout *layout = new QVBoxLayout();
         QPushButton *pb1 = new QPushButton(QLatin1String("Push 1"), w);
 
@@ -1364,6 +1387,7 @@ void tst_QGridLayout::layoutSpacing_data()
         style->reimplementSubelementRect = false;
         QApplication::setStyle(style);
         QWidget *w = new QWidget();
+        setFrameless(w);
         QGridLayout *layout = new QGridLayout();
         QPushButton *left = new QPushButton(w);
         QPushButton *up = new QPushButton(w);
@@ -1405,6 +1429,7 @@ void tst_QGridLayout::layoutSpacing_data()
             style->reimplementSubelementRect = false;
             QApplication::setStyle(style);
             QWidget *w = new QWidget();
+            setFrameless(w);
             QGridLayout *layout = new QGridLayout();
             QPushButton *left = new QPushButton(w);
             QPushButton *up = new QPushButton(w);
@@ -1442,6 +1467,7 @@ void tst_QGridLayout::layoutSpacing()
     QFETCH(bool, customSubElementRect);
 
     QWidget toplevel;
+    setFrameless(&toplevel);
 
     CustomLayoutStyle *style = new CustomLayoutStyle();
     style->hspacing = hSpacing;
@@ -1466,6 +1492,7 @@ void tst_QGridLayout::layoutSpacing()
 void tst_QGridLayout::spacing()
 {
     QWidget w;
+    setFrameless(&w);
     CustomLayoutStyle *style = new CustomLayoutStyle();
     style->hspacing = 5;
     style->vspacing = 10;
@@ -1569,6 +1596,7 @@ void tst_QGridLayout::spacerWithSpacing()
 void tst_QGridLayout::contentsRect()
 {
     QWidget w;
+    setFrameless(&w);
     QGridLayout grid;
     w.setLayout(&grid);
     grid.addWidget(new QPushButton(&w));

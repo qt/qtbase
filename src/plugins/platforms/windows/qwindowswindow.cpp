@@ -55,6 +55,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QRegion>
 #include <private/qwindow_p.h>
+#include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
@@ -321,7 +322,6 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     topLevel = ((creationFlags & ForceChild) || embedded) ? false : w->isTopLevel();
 
     if (topLevel && flags == 1) {
-        qWarning("Remove me: fixing toplevel window flags");
         flags |= Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint
                 |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
     }
@@ -731,6 +731,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0);
     setWindowState(aWindow->windowState());
+    const qreal opacity = qt_window_private(aWindow)->opacity;
+    if (!qFuzzyCompare(opacity, qreal(1.0)))
+        setOpacity(opacity);
 }
 
 QWindowsWindow::~QWindowsWindow()
@@ -1185,8 +1188,21 @@ void QWindowsWindow::setWindowTitle(const QString &title)
 {
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() <<title;
-    if (m_data.hwnd)
-        SetWindowText(m_data.hwnd, (const wchar_t*)title.utf16());
+    if (m_data.hwnd) {
+
+        QString fullTitle = title;
+        if (QGuiApplicationPrivate::displayName) {
+            // Append display name, if set.
+            if (!fullTitle.isEmpty())
+                fullTitle += QStringLiteral(" - ");
+            fullTitle += *QGuiApplicationPrivate::displayName;
+        } else if (fullTitle.isEmpty()) {
+            // Don't let the window title be completely empty, use the app name as fallback.
+            fullTitle = QCoreApplication::applicationName();
+        }
+
+        SetWindowText(m_data.hwnd, (const wchar_t*)fullTitle.utf16());
+    }
 }
 
 void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)

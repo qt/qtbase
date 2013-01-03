@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS =   window.h
 SOURCES =   main.cpp \ 
 	    window.cpp
@@ -5,5 +7,3 @@ SOURCES =   main.cpp \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/calendarwidget
 INSTALLS += target
-
-QT += widgets

@@ -49,6 +49,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
+#include <private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
 
@@ -372,9 +373,9 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
         if (flags == Qt::Window) {
             styleMask = (NSResizableWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSTitledWindowMask);
         } else if ((flags & Qt::Dialog) && (window()->modality() != Qt::NonModal)) {
-            styleMask = NSTitledWindowMask;
+            styleMask = NSResizableWindowMask | NSTitledWindowMask;
         } else if (!(flags & Qt::FramelessWindowHint)) {
-            if (flags & Qt::WindowMaximizeButtonHint)
+            if ((flags & Qt::Dialog) || (flags & Qt::WindowMaximizeButtonHint))
                 styleMask |= NSResizableWindowMask;
             if (flags & Qt::WindowTitleHint)
                 styleMask |= NSTitledWindowMask;
@@ -590,9 +591,7 @@ void QCocoaWindow::windowDidResize()
     if (!m_nsWindow)
         return;
 
-    NSRect rect = [[m_nsWindow contentView]frame];
-    // Call setFrameSize which will trigger a frameDidChangeNotification on QNSView.
-    [[m_nsWindow contentView] setFrameSize:rect.size];
+    [m_contentView updateGeometry];
 }
 
 void QCocoaWindow::windowWillClose()
@@ -651,6 +650,10 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         NSRect frame = NSMakeRect(rect.x(), rect.y(), rect.width(), rect.height());
         [m_contentView setFrame:frame];
     }
+
+    const qreal opacity = qt_window_private(window())->opacity;
+    if (!qFuzzyCompare(opacity, qreal(1.0)))
+        setOpacity(opacity);
 }
 
 NSWindow * QCocoaWindow::createNSWindow()

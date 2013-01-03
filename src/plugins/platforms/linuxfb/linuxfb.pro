@@ -1,6 +1,7 @@
 TARGET = qlinuxfb
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QLinuxFbIntegrationPlugin
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private

@@ -28,7 +28,7 @@
 /*!
     \example itemviews/coloreditorfactory
     \title Color Editor Factory Example
-
+    \ingroup examples-itemviews
     \brief This example shows how to create an editor that can be used by
     a QItemDelegate.
 

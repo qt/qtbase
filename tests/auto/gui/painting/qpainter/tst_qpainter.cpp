@@ -229,6 +229,7 @@ private slots:
     void drawImage_task217400();
     void drawImage_1x1();
     void drawImage_task258776();
+    void drawImage_QTBUG28324();
     void drawRect_task215378();
     void drawRect_task247505();
 
@@ -3231,6 +3232,25 @@ void tst_QPainter::drawImage_task258776()
     dest.save("dest.png");
     expected.save("expected.png");
     QCOMPARE(dest, expected);
+}
+
+void tst_QPainter::drawImage_QTBUG28324()
+{
+    QImage dest(512, 512, QImage::Format_ARGB32_Premultiplied);
+    dest.fill(0x0);
+
+    int x = 263; int y = 89; int w = 61; int h = 39;
+
+    QImage source(w, h, QImage::Format_ARGB32_Premultiplied);
+    quint32 *b = (quint32 *)source.bits();
+    for (int j = 0; j < w * h; ++j)
+        b[j] = 0x7f7f7f7f;
+
+    // nothing to test here since the bug is about
+    // an invalid memory read, which valgrind
+    // would complain about
+    QPainter p(&dest);
+    p.drawImage(x, y, source);
 }
 
 void tst_QPainter::clipRectSaveRestore()

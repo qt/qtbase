@@ -1,6 +1,7 @@
 TARGET = qevdevtouchplugin
 
 PLUGIN_TYPE = generic
+PLUGIN_CLASS_NAME = QEvdevTouchScreenPlugin
 load(qt_plugin)
 
 SOURCES = main.cpp

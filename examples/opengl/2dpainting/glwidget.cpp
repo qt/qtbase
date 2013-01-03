@@ -38,9 +38,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "glwidget.h"
 #include "helper.h"
+
+#include <QTimer>
 
 //! [0]
 GLWidget::GLWidget(Helper *helper, QWidget *parent)

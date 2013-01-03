@@ -79,3 +79,7 @@ QModelIndex result = qvariant_cast<QModelIndex>(spy.at(0).at(0));
 //! [4]
 QSignalSpy spy(myPushButton, SIGNAL(clicked(bool)));
 //! [4]
+
+//! [5]
+QVERIFY(spy.wait(1000));
+//! [5]

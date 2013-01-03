@@ -250,6 +250,8 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
 /*!
     \enum QDesktopServices::StandardLocation
     \since 4.4
+    \obsolete
+    Use QStandardPaths::StandardLocation
 
     This enum describes the different locations that can be queried by
     QDesktopServices::storageLocation and QDesktopServices::displayName.

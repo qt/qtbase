@@ -87,7 +87,7 @@ my $mkspecsdir = dirname(dirname($0));
 normalizePath(\$mkspecsdir) if (defined $mkspecsdir);
 
 # will be defined based on the modules sync.profile
-our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %modulepris, %explicitheaders, %deprecatedheaders);
+our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %explicitheaders, %deprecatedheaders);
 our @qpa_headers = ();
 
 # global variables (modified by options)
@@ -291,8 +291,7 @@ sub classNames {
             foreach my $symbol (@symbols) {
                 $symbol = (join("::", @namespaces) . "::" . $symbol) if (scalar @namespaces);
 
-                if ($symbol =~ /^Q[^:]*$/           # no-namespace, starting with Q
-                    || $symbol =~ /^Phonon::/) {    # or in the Phonon namespace
+                if ($symbol =~ /^Q[^:]*$/) {           # no-namespace, starting with Q
                     push @ret, $symbol;
                 } elsif (defined($publicclassregexp)) {
                     push @ret, $symbol if ($symbol =~ $publicclassregexp);
@@ -803,25 +802,13 @@ foreach my $lib (@modules_to_sync) {
     die "No such module: $lib" unless(defined $modules{$lib});
 
     #iteration info
-    my $dir = $modules{$lib};
+    my @dirs = split(/;/, $modules{$lib});
+    my $dir = $dirs[0];
 
     my $project = $dir;
     $project =~ s,/([^/]+)$,/$1/$1.pro,;
     my $module_version = fileContents($project);
     $module_version = $qt_version unless ($module_version =~ s,.*^VERSION[ \t]*=[ \t]*(\S+).*,$1,sm);
-
-    # Backwards compatibility for modules with checked in .pri files.
-    if (defined $modulepris{$lib} and -e "$modulepris{$lib}") {
-        my $content = fileContents($modulepris{$lib});
-        my @version_rows = grep(/QT\..*\.VERSION/, split('\n', $content));
-        if(@version_rows) {
-            # We only pick the first one, since each module need a separate .pri file
-            $module_version = $version_rows[0];
-            chomp $module_version;
-            $module_version =~ s/^\s*QT\..*\.VERSION\s*=\s*([^#]+).*$/$1/;
-            $module_version =~ s/\s+$//;
-        }
-    }
 
     my $pathtoheaders = "";
     $pathtoheaders = $moduleheaders{$lib} if ($moduleheaders{$lib});
@@ -883,7 +870,9 @@ foreach my $lib (@modules_to_sync) {
     }
 
     #create the new ones
-    foreach my $current_dir (split(/;/, $dir)) {
+    foreach my $current_dir (@dirs) {
+        my $thisprivate = 0;
+        ($current_dir =~ s/^\^//) and $thisprivate = 1;
         my @headers_paths = split(/;/, $pathtoheaders);
         if (@headers_paths) {
             @headers_paths = map { "$current_dir/$_" } @headers_paths;
@@ -919,7 +908,7 @@ foreach my $lib (@modules_to_sync) {
                         if(isQpaHeader($public_header)) {
                             $public_header = 0;
                             $qpa_header = 1;
-                        } elsif($allheadersprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
+                        } elsif($allheadersprivate || $thisprivate || $public_header =~ /_p.h$/ || $public_header =~ /_pch.h$/) {
                             $public_header = 0;
                         } else {
                             foreach (@ignore_for_master_contents) {
@@ -956,11 +945,6 @@ foreach my $lib (@modules_to_sync) {
                                         $class_lib_map_contents .= "QT_CLASS_LIB($full_class, $lib, $header_base)\n";
                                         $header_copies++ if(syncHeader($lib, "$out_basedir/include/$lib/$class", "$out_basedir/include/$lib/$header", 0, $ts));
                                     }
-
-                                    # KDE-Compat headers for Phonon
-                                    if ($lib eq "phonon") {
-                                        $header_copies++ if (syncHeader($lib, "$out_basedir/include/phonon_compat/Phonon/$class", "$out_basedir/include/$lib/$header", 0, $ts));
-                                    }
                                 }
 
                                 if ($explicitheaders{$lib}{basename($header)}) {
@@ -980,7 +964,7 @@ foreach my $lib (@modules_to_sync) {
                             if($public_header) {
                                 #deal with the install directives
                                 if($public_header) {
-                                    my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                                    my $pri_install_iheader = fixPaths($iheader, $dir);
                                     foreach my $class (@classes) {
                                         # Strip namespaces:
                                         $class =~ s/^.*:://;
@@ -988,23 +972,24 @@ foreach my $lib (@modules_to_sync) {
     #                                       $class =~ s,::,/,g;
     #                                   }
                                         my $class_header = fixPaths("$out_basedir/include/$lib/$class",
-                                                                    $current_dir) . " ";
+                                                                    $dir) . " ";
                                         $pri_install_classes .= $class_header
                                                                     unless($pri_install_classes =~ $class_header);
                                     }
                                     if ($explicitheaders{$lib}{basename($iheader)}) {
-                                        my $compat_header = fixPaths("$out_basedir/include/$lib/$explicitheaders{$lib}{basename($iheader)}", $current_dir) . " ";
+                                        my $compat_header = fixPaths("$out_basedir/include/$lib/$explicitheaders{$lib}{basename($iheader)}",
+                                                                     $dir) . " ";
                                         $pri_install_files .= $compat_header unless($pri_install_files =~ $compat_header);
                                     }
                                     $pri_install_files.= "$pri_install_iheader ";;
                                 }
                             }
                             elsif ($qpa_header) {
-                                my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_qpafiles.= "$pri_install_iheader ";;
                             }
                             else {
-                                my $pri_install_iheader = fixPaths($iheader, $current_dir);
+                                my $pri_install_iheader = fixPaths($iheader, $dir);
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
                         }
@@ -1104,11 +1089,6 @@ foreach my $lib (@modules_to_sync) {
         $pri_install_files .= fixPaths($vheader, $dir) . " ";
         $pri_install_classes .= fixPaths($VHeader, $dir) . " ";
 
-        # KDE-Compat master header for Phonon
-        if ($lib eq "phonon") {
-            syncHeader($lib, "$out_basedir/include/phonon_compat/Phonon/Phonon", "$out_basedir/include/phonon/phonon", 0);
-        }
-
         #handle the headers.pri for each module
         my $headers_pri_contents = "";
         $headers_pri_contents .= "SYNCQT.HEADER_FILES = $pri_install_files\n";
@@ -1156,17 +1136,11 @@ unless($showonly || !$create_uic_class_map) {
 }
 
 if($check_includes) {
-    for my $lib (keys(%modules)) {
+    foreach my $lib (@modules_to_sync) {
             #calc subdirs
-            my @subdirs = listSubdirs($modules{$lib});
+            my @subdirs = listSubdirs(map { s/^\^//; $_ } split(/;/, $modules{$lib}));
 
             foreach my $subdir (@subdirs) {
-                my $header_skip_qt_module_test = 0;
-                foreach(@ignore_for_qt_module_check) {
-                    foreach (split(/;/, $_)) {
-                        $header_skip_qt_module_test = 1 if ($subdir =~ /^$_/);
-                    }
-                }
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
                 foreach my $header (@headers) {
                     my $header_skip_qt_begin_header_test = 0;

@@ -1072,6 +1072,17 @@ void VcprojGenerator::initResourceTool()
     VCConfiguration &conf = vcProject.Configuration;
     conf.resource.PreprocessorDefinitions = conf.compiler.PreprocessorDefinitions;
 
+    foreach (const ProString &path, project->values("RC_INCLUDEPATH")) {
+        QString fixedPath = fileFixify(path.toQString());
+        if (fileInfo(fixedPath).isRelative()) {
+            if (fixedPath == QStringLiteral("."))
+                fixedPath = QStringLiteral("$(ProjectDir)");
+            else
+                fixedPath.prepend(QStringLiteral("$(ProjectDir)\\"));
+        }
+        conf.resource.AdditionalIncludeDirectories << escapeFilePath(fixedPath);
+    }
+
     // We need to add _DEBUG for the debug version of the project, since the normal compiler defines
     // do not contain it. (The compiler defines this symbol automatically, which is wy we don't need
     // to add it for the compiler) However, the resource tool does not do this.

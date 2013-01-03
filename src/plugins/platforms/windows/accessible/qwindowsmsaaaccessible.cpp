@@ -757,7 +757,7 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accChild(VARIANT varChildI
                 acc = res;
             }
         } else {
-            qWarning("get_accChild got a negative varChildID, but did not find it in cache");
+            qWarning("get_accChild got a negative varChildID (%d), but did not find it in cache", childIndex);
         }
     } else {
         if (childIndex) {

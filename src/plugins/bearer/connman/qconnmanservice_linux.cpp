@@ -57,9 +57,24 @@
 #ifndef QT_NO_DBUS
 
 QT_BEGIN_NAMESPACE
+
+QDBusArgument &operator<<(QDBusArgument &argument, const ConnmanMap &map)
+{
+    argument.beginStructure();
+    argument << map.objectPath << map.propertyMap;
+    argument.endStructure();
+    return argument;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &argument, ConnmanMap &map)
+{
+    argument.beginStructure();
+    argument >> map.objectPath >> map.propertyMap;
+    argument.endStructure();
+    return argument;
+}
+
 static QDBusConnection dbusConnection = QDBusConnection::systemBus();
-
-
 QConnmanManagerInterface::QConnmanManagerInterface( QObject *parent)
         : QDBusAbstractInterface(QLatin1String(CONNMAN_SERVICE),
                                  QLatin1String(CONNMAN_MANAGER_PATH),
@@ -301,14 +316,37 @@ QStringList QConnmanManagerInterface::getProfiles()
 
 QStringList QConnmanManagerInterface::getTechnologies()
 {
-    QVariant var = getProperty("Technologies");
-    return qdbus_cast<QStringList >(var);
+    QStringList list;
+    QDBusReply<ConnmanMapList> replyList = this->call(QLatin1String("GetTechnologies"));
+    if (replyList.isValid()) {
+        Q_FOREACH (ConnmanMap map, replyList.value()) {
+            list << map.objectPath.path();
+        }
+    } else {
+        // try for older version
+        QVariant var = getProperty("Technologies");
+        if (!var.isNull()) {
+            list = qdbus_cast<QStringList>(var);
+        }
+    }
+    return list;
 }
 
 QStringList QConnmanManagerInterface::getServices()
 {
-    QVariant var = getProperty("Services");
-    return qdbus_cast<QStringList >(var);
+    QStringList list;
+    QDBusReply<ConnmanMapList> replyList = this->call(QLatin1String("GetServices"));
+    if (replyList.isValid()) {
+        Q_FOREACH (ConnmanMap map, replyList.value()) {
+            list << map.objectPath.path();
+        }
+    } else {
+        QVariant var = getProperty("Services");
+        if (!var.isNull()) {
+            list = qdbus_cast<QStringList>(var);
+        }
+    }
+    return list;
 }
 
 QString QConnmanManagerInterface::getPathForTechnology(const QString &name)

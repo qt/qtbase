@@ -1,3 +1,6 @@
+QT += widgets
+qtHaveModule(printsupport): QT += printsupport
+
 HEADERS       = imageviewer.h
 SOURCES       = imageviewer.cpp \
                 main.cpp
@@ -10,7 +13,5 @@ INSTALLS += target
 wince*: {
    DEPLOYMENT_PLUGIN += qjpeg qgif
 }
-QT += widgets
-!isEmpty(QT.printsupport.name): QT += printsupport
 
 simulator: warning(This example might not fully work on Simulator platform)

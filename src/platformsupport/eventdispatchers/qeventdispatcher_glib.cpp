@@ -119,8 +119,6 @@ QPAEventDispatcherGlib::~QPAEventDispatcherGlib()
 
 bool QPAEventDispatcherGlib::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    Q_D(QPAEventDispatcherGlib);
-
     m_flags = flags;
     return QEventDispatcherGlib::processEvents(m_flags);
 }

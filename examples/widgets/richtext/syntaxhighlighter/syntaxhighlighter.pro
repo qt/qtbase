@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS         = highlighter.h \
                   mainwindow.h
 SOURCES         = highlighter.cpp \
@@ -14,5 +16,3 @@ wince*: {
    addFiles.path = .
    DEPLOYMENT += addFiles
 }
-QT += widgets
-

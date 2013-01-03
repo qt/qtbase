@@ -1,3 +1,6 @@
+QT += widgets
+qtHaveModule(printsupport): QT += printsupport
+
 HEADERS     = imagemodel.h \
               mainwindow.h \
               pixeldelegate.h
@@ -10,6 +13,3 @@ RESOURCES   += images.qrc
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/itemviews/pixelator
 INSTALLS += target
-
-QT += widgets
-!isEmpty(QT.printsupport.name): QT += printsupport

@@ -53,6 +53,9 @@
 #include <qmenu.h>
 #include <qstyle.h>
 #include <qtimer.h>
+#ifndef QT_NO_ACCESSIBILITY
+#include <qaccessible.h>
+#endif
 #include "private/qtextdocumentlayout_p.h"
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
@@ -154,7 +157,7 @@ void QTextEditPrivate::init(const QString &html)
     QObject::connect(control, SIGNAL(redoAvailable(bool)), q, SIGNAL(redoAvailable(bool)));
     QObject::connect(control, SIGNAL(copyAvailable(bool)), q, SIGNAL(copyAvailable(bool)));
     QObject::connect(control, SIGNAL(selectionChanged()), q, SIGNAL(selectionChanged()));
-    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
+    QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SLOT(_q_cursorPositionChanged()));
 
     QObject::connect(control, SIGNAL(textChanged()), q, SLOT(updateMicroFocus()));
 
@@ -204,6 +207,16 @@ void QTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
 
     r.translate(-xOffset, -yOffset);
     viewport->update(r);
+}
+
+void QTextEditPrivate::_q_cursorPositionChanged()
+{
+    Q_Q(QTextEdit);
+    emit q->cursorPositionChanged();
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessibleTextCursorEvent event(q, q->textCursor().position());
+    QAccessible::updateAccessibility(&event);
+#endif
 }
 
 void QTextEditPrivate::pageUpDown(QTextCursor::MoveOperation op, QTextCursor::MoveMode moveMode)

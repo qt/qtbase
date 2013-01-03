@@ -581,11 +581,11 @@ inline QByteArray &QByteArray::replace(const char *before, const char *after)
 { return replace(before, qstrlen(before), after, qstrlen(after)); }
 
 inline QByteArray &QByteArray::setNum(short n, int base)
-{ return setNum(qlonglong(n), base); }
+{ return base == 10 ? setNum(qlonglong(n), base) : setNum(qulonglong(ushort(n)), base); }
 inline QByteArray &QByteArray::setNum(ushort n, int base)
 { return setNum(qulonglong(n), base); }
 inline QByteArray &QByteArray::setNum(int n, int base)
-{ return setNum(qlonglong(n), base); }
+{ return base == 10 ? setNum(qlonglong(n), base) : setNum(qulonglong(uint(n)), base); }
 inline QByteArray &QByteArray::setNum(uint n, int base)
 { return setNum(qulonglong(n), base); }
 inline QByteArray &QByteArray::setNum(float n, char f, int prec)

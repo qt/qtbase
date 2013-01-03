@@ -38,10 +38,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "widget.h"
 #include "helper.h"
 
+#include <QPainter>
+#include <QTimer>
 
 //! [0]
 Widget::Widget(Helper *helper, QWidget *parent)

@@ -53,4 +53,6 @@ insignificant_test:!isEmpty(check.commands) {
     check.commands = -$${check.commands}
 }
 
+!qtHaveModule(widgets): CONFIG += insignificant_test # QTBUG-28540
+
 QMAKE_EXTRA_TARGETS *= check

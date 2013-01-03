@@ -61,7 +61,7 @@ private:
 QEglFSImx6Hooks::QEglFSImx6Hooks()
 {
     int width, height;
-    mNativeDisplay = fbGetDisplay();
+    mNativeDisplay = fbGetDisplayByIndex(0);
     fbGetDisplayGeometry(mNativeDisplay, &width, &height);
     mScreenSize.setHeight(height);
     mScreenSize.setWidth(width);
@@ -76,7 +76,7 @@ EGLNativeWindowType QEglFSImx6Hooks::createNativeWindow(const QSize &size, const
 {
     Q_UNUSED(format);
 
-    EGLNativeWindowType eglWindow = fbCreateWindow(mNativeDisplay, 0, 1, size.width(), size.height());
+    EGLNativeWindowType eglWindow = fbCreateWindow(mNativeDisplay, 0, 0, size.width(), size.height());
     return eglWindow;
 }
 

@@ -2192,11 +2192,6 @@ MakefileGenerator::writeStubMakefile(QTextStream &t)
 bool
 MakefileGenerator::writeMakefile(QTextStream &t)
 {
-    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-    if (ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile.remove(0, ofile.lastIndexOf(Option::dir_sep) +1);
-    t << "MAKEFILE      = " << ofile << endl << endl;
-
     t << "####### Compile" << endl << endl;
     writeObj(t, "SOURCES");
     writeObj(t, "GENERATED_SOURCES");
@@ -2257,6 +2252,10 @@ MakefileGenerator::writeHeader(QTextStream &t)
         t << "# Command: " << build_args().replace("$(QMAKE)", var("QMAKE_QMAKE")) << endl;
     t << "#############################################################################" << endl;
     t << endl;
+    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
+    if (ofile.lastIndexOf(Option::dir_sep) != -1)
+        ofile.remove(0, ofile.lastIndexOf(Option::dir_sep) +1);
+    t << "MAKEFILE      = " << ofile << endl << endl;
 }
 
 QList<MakefileGenerator::SubTarget*>
@@ -2415,10 +2414,6 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
         t << "include " << (*qeui_it) << endl;
 
     if (!(flags & SubTargetSkipDefaultVariables)) {
-        QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-        if(ofile.lastIndexOf(Option::dir_sep) != -1)
-            ofile.remove(0, ofile.lastIndexOf(Option::dir_sep) +1);
-        t << "MAKEFILE      = " << ofile << endl;
         /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
          * back-slashes to be turned into slashes. */
         t << "QMAKE         = " << var("QMAKE_QMAKE") << endl;

@@ -1,3 +1,5 @@
+# This file is loaded by qmake right after loading the actual project file.
+
 contains(TEMPLATE, ".*(lib|app)"):CONFIG += have_target
 
 !have_target:!force_qt: CONFIG -= qt
@@ -47,12 +49,3 @@ breakpad {
 
 QMAKE_INCDIR += $$QMAKE_INCDIR_POST
 QMAKE_LIBDIR += $$QMAKE_LIBDIR_POST
-
-# Let every project have a standard GNU `check' target
-!contains(QMAKE_EXTRA_TARGETS, check) {
-    contains(TEMPLATE, subdirs): \
-        prepareRecursiveTarget(check)
-    else: \
-        check.depends = first # `make check' implies build
-    QMAKE_EXTRA_TARGETS += check
-}

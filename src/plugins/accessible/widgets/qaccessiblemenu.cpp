@@ -165,7 +165,7 @@ QAccessibleMenuItem::~QAccessibleMenuItem()
 
 QAccessibleInterface *QAccessibleMenuItem::childAt(int x, int y ) const
 {
-    for (int i = childCount(); i >= 0; --i) {
+    for (int i = childCount() - 1; i >= 0; --i) {
         QAccessibleInterface *childInterface = child(i);
         if (childInterface->rect().contains(x,y)) {
             return childInterface;

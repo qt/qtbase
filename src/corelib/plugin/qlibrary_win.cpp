@@ -57,6 +57,17 @@ QT_BEGIN_NAMESPACE
 
 extern QString qt_error_string(int code);
 
+QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
+{
+    Q_UNUSED(fullVersion);
+    return QStringList() << ".dll";
+}
+
+QStringList QLibraryPrivate::prefixes_sys()
+{
+    return QStringList();
+}
+
 bool QLibraryPrivate::load_sys()
 {
     //avoid 'Bad Image' message box

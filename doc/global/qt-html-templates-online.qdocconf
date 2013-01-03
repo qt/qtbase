@@ -1,36 +1,14 @@
 HTML.nobreadcrumbs      = "true"
 
 HTML.stylesheets =  template/style/online.css
-HTML.extraimages =  template/images/btn_next_green.png \
-                    template/images/box_bg.png \
-                    template/images/page.png \
-                    template/images/arrow_down.png \
-                    template/images/btn_prev.png \
-                    template/images/blu_dot.png \
-                    template/images/ico_note_attention.png \
-                    template/images/btn_prev_green.png \
-                    template/images/bg_ll_blank.png \
-                    template/images/btn_next.png \
-                    template/images/bg_l_blank.png \
+HTML.extraimages += template/images/ico_out.png \
                     template/images/ico_note.png \
-                    template/images/home.png \
-                    template/images/ico_out.png \
-                    template/images/header_bg.png \
-                    template/images/page_bg.png \
-                    template/images/bg_l.png \
-                    template/images/bg_r.png \
-                    template/images/breadcrumb.png \
+                    template/images/ico_note_attention.png \
+                    template/images/btn_prev.png \
+                    template/images/btn_next.png \
                     template/images/bullet_dn.png \
-                    template/images/feedbackground.png \
-                    template/images/bullet_gt.png \
-                    template/images/arrow.png \
                     template/images/bullet_sq.png \
-                    template/images/bullet_up.png \
-                    template/images/sprites-combined.png \
-                    template/images/horBar.png \
-                    template/images/bg_ul_blank.png \
-                    template/images/bgrContent.png \
-
+                    template/images/bgrContent.png
 
 HTML.headerstyles = \
     "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/online.css\" />\n"
@@ -38,7 +16,7 @@ HTML.headerstyles = \
 HTML.endheader = \
     "</head>\n" \
     "<body>\n" \
-    "<div class=\"header\" id=\"qtdocheader\"></div>\n"
+    "<div class=\"header\" id=\"qtdocheader\"></div>\n" \
     "    <header>\n" \
     "    <div class=\"nav\">\n" \
     "        <a href=\"http://qt-project.org/\">Qt Home</a>\n" \

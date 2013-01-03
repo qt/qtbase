@@ -2379,10 +2379,10 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
   whether sorting is enabled.
 
   \table 100%
-  \row \li \inlineimage windowsxp-treeview.png Screenshot of a Windows XP style tree widget
+  \row \li \inlineimage windowsvista-treeview.png Screenshot of a Windows Vista style tree widget
        \li \inlineimage macintosh-treeview.png Screenshot of a Macintosh style tree widget
        \li \inlineimage fusion-treeview.png Screenshot of a Fusion style tree widget
-  \row \li A \l{Windows XP Style Widget Gallery}{Windows XP style} tree widget.
+  \row \li A \l{Windows Vista Style Widget Gallery}{Windows Vista style} tree widget.
        \li A \l{Macintosh Style Widget Gallery}{Macintosh style} tree widget.
        \li A \l{Fusion Style Widget Gallery}{Fusion style} tree widget.
   \endtable

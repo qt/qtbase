@@ -95,3 +95,73 @@
 
 */
 
+/*!
+    \group examples-dialogs
+    \ingroup all-examples
+    \title Dialog Examples
+    \brief Using Qt's standard dialogs and building and using custom dialogs.
+
+    \image dialog-examples.png
+
+    Qt includes standard dialogs for many common operations, such as file
+    selection, printing, and color selection.
+
+    Custom dialogs can also be created for specialized modal or modeless
+    interactions with users.
+*/
+
+/*!
+    \ingroup all-examples
+    \title Itemview Examples
+    \brief Using the model/view framework.
+    \group examples-itemviews
+
+    \image itemviews-examples.png
+
+    Qt provides a lot of capabalities to display pre- and user-defined item models
+    in different ways.
+    The separation of functionality introduced by the model/view architecture gives
+    developers greater flexibility to customize the presentation of items.
+
+*/
+
+/*!
+    \ingroup all-examples
+    \title Graphicsview Examples
+    \brief Using the Graphics View framework.
+    \page examples-graphicsview.html
+
+    \image graphicsview-examples.png
+
+    Qt provides powerful graphics engine that supports easy visualization of items, with
+    support for rotation and zooming.
+    Additionally it provides an event propagation architecture for interaction.
+
+    These examples demonstrate the fundamental aspects of canvas programming with Qt.
+
+    \annotatedlist{examples-graphicsview}
+
+    These examples show the use of graphics widgets and layouts.
+
+    \annotatedlist{examples-graphicsview-layout}
+
+    Some examples demonstrate the use of graphics effects with canvas items.
+
+    \annotatedlist{examples-graphicsview-graphicseffects}
+*/
+
+/*!
+    \group examples-mainwindow
+    \ingroup all-examples
+    \title Main Window Examples
+    \brief Building applications around a main window.
+
+    \image mainwindow-examples.png
+
+    All the standard features of application main windows are provided by Qt.
+
+    Main windows can have pull down menus, tool bars, and dock windows. These
+    separate forms of user input are unified in an integrated action system that
+    also supports keyboard shortcuts and accelerator keys in menu items.
+
+*/

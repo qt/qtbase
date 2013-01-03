@@ -28,8 +28,10 @@
 /*!
     \example graphicsview/embeddeddialogs
     \title Embedded Dialogs
+    \ingroup examples-graphicsview-layout
+    \brief Demonstrates how to embed dialogs into a graphics view
 
-    \brief This example shows how to embed standard dialogs into
+    This example shows how to embed standard dialogs into
     Graphics View. It also shows how you can customize the
     proxy class and add window shadows.
 

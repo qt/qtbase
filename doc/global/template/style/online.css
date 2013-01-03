@@ -8,6 +8,9 @@ margin-right:5px;
 background: none repeat scroll 0% 0% rgb(230,231,232);
 }
 
+p {
+line-height: 20px;
+}
 img{
 -moz-box-shadow: 3px 3px 3px #ccc;
 -webkit-box-shadow: 3px 3px 3px #ccc;
@@ -540,7 +543,7 @@ margin: 10;
 overflow: hidden;
 overflow-x: hidden;
 overflow-y: hidden;
-padding: 20px 0 20px 0;
+padding: 20px 20px 20px 20px;
 }
 
 .qmldefault{
@@ -701,7 +704,7 @@ margin-bottom: 20px;
 
 .indexboxcont .sectionlist ul li
 {
-line-height: 12px;
+line-height: 1.5;
 }
 
 .content .indexboxcont li

@@ -1,6 +1,8 @@
 TARGET     = QtGui
 QT = core-private
-MODULE_CONFIG = opengl
+
+MODULE_CONFIG = needs_qpa_plugin
+contains(QT_CONFIG, opengl.*):MODULE_CONFIG += opengl
 
 DEFINES   += QT_NO_USING_NAMESPACE
 

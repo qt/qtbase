@@ -2,6 +2,7 @@ TARGET     = QtWidgets
 QT = core-private gui-private
 MODULE_CONFIG = uic
 
+CONFIG += $$MODULE_CONFIG
 DEFINES   += QT_NO_USING_NAMESPACE
 win32-msvc*|win32-icc:QMAKE_LFLAGS += /BASE:0x65000000
 irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
@@ -41,15 +42,6 @@ testcocoon {
     load(testcocoon)
 }
 
-INCLUDEPATH += ../3rdparty/harfbuzz/src
-
 win32:!contains(QT_CONFIG, directwrite) {
     DEFINES += QT_NO_DIRECTWRITE
 }
-
-load(uic)
-
-uic_dir.name = uic_location
-uic_dir.variable = QMAKE_UIC
-
-QMAKE_PKGCONFIG_VARIABLES += uic_dir

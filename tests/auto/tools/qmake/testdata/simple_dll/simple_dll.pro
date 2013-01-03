@@ -1,5 +1,5 @@
 TEMPLATE	= lib
-CONFIG	+= qt warn_on dll
+CONFIG += dll
 
 win32:DEFINES	+= SIMPLEDLL_MAKEDLL
 

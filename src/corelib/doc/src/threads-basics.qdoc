@@ -244,18 +244,18 @@
     code that generates another thread which says hello in that thread and then
     exits.
 
-    \snippet tutorials/threads/hellothread/hellothread.h 1
+    \snippet ../widgets/tutorials/threads/hellothread/hellothread.h 1
 
     We derive a class from QThread and reimplement the \l{QThread::}{run()}
     method.
 
-    \snippet tutorials/threads/hellothread/hellothread.cpp 1
+    \snippet ../widgets/tutorials/threads/hellothread/hellothread.cpp 1
 
     The run method contains the code that will be run in a separate thread. In
     this example, a message containing the thread ID will be printed.
     QThread::start() will call the method in another thread.
 
-    \snippet tutorials/threads/hellothread/main.cpp 1
+    \snippet ../widgets/tutorials/threads/hellothread/main.cpp 1
 
     To start the thread, our thread object needs to be instantiated. The
     \l{QThread::}{start()} method creates a new thread and calls the
@@ -453,7 +453,7 @@
     another thread needs to be placed in the reimplemented QRunnable::run()
     method.
 
-    \snippet tutorials/threads/hellothreadpool/hellothreadpool.cpp  1
+    \snippet ../widgets/tutorials/threads/hellothreadpool/hellothreadpool.cpp  1
 
     We instantiate Work in main(), locate the global thread pool and use the
     QThreadPool::start() method. Now the thread pool runs our worker in another
@@ -463,7 +463,7 @@
 
     \section2 Example 2: Using QtConcurrent
 
-    \snippet tutorials/threads/helloconcurrent/helloconcurrent.cpp  1
+    \snippet ../widgets/tutorials/threads/helloconcurrent/helloconcurrent.cpp  1
 
     We write a global function hello() to implement the work. QtConcurrent::run()
     is used to run the function in another thread. The result is a QFuture.
@@ -499,17 +499,17 @@
     Communication from the GUI to the worker thread is shown in the next
     example.
 
-    \snippet tutorials/threads/clock/main.cpp  1
+    \snippet ../widgets/tutorials/threads/clock/main.cpp  1
 
     We've connected the \c clockThread with the label. The connection must be a
     queued signal-slot connection because we want to put the call in the event
     loop.
 
-    \snippet tutorials/threads/clock/clockthread.h  1
+    \snippet ../widgets/tutorials/threads/clock/clockthread.h  1
 
     We have derived a class from QThread and declared the \c sendTime() signal.
 
-    \snippet tutorials/threads/clock/clockthread.cpp  1
+    \snippet ../widgets/tutorials/threads/clock/clockthread.cpp  1
 
     The trickiest part of this example is that the timer is connected to its
     slot via a direct connection. A default connection would produce a queued
@@ -541,7 +541,7 @@
     The \c Thread class's code is short but somewhat involved, so we only show
     how to use the class.
 
-    \snippet tutorials/threads/movedobject/main.cpp  1
+    \snippet ../widgets/tutorials/threads/movedobject/main.cpp  1
 
     QMetaObject::invokeMethod() calls a slot via the event loop. The worker
     object's methods should not be called directly after the object has been

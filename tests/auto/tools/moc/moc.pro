@@ -31,7 +31,7 @@ SOURCES += tst_moc.cpp
 
 QT -= gui
 QT += sql network testlib
-contains(QT_CONFIG, dbus){
+qtHaveModule(dbus) {
     DEFINES += WITH_DBUS
     QT += dbus
 }

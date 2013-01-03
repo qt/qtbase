@@ -2204,8 +2204,10 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
 
             GtkRange *range = (GtkRange*)(horizontal ? gtkHScrollBar : gtkVScrollBar);
-            GtkAdjustment *adjustment = d->gtk_range_get_adjustment(range);
+            GtkAdjustment *adjustment = 0;
 
+            if (d->gtk_adjustment_configure)
+                adjustment = d->gtk_range_get_adjustment(range);
             if (adjustment) {
                 d->gtk_adjustment_configure(adjustment, fakePos, 0, maximum, 0, 0, 0);
             } else {

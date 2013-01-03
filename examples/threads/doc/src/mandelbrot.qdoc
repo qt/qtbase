@@ -26,20 +26,22 @@
 ****************************************************************************/
 
 /*!
-    \example threads/mandelbrot
+    \example mandelbrot
     \title Mandelbrot Example
+    \ingroup qtconcurrent-mtexamples
 
-    The Mandelbrot example shows how to use a worker thread to
+    \brief The Mandelbrot example demonstrates multi-thread programming
+    using Qt. It shows how to use a worker thread to
     perform heavy computations without blocking the main thread's
     event loop.
 
+    \image mandelbrot-example.png Screenshot of the Mandelbrot example
+
     The heavy computation here is the Mandelbrot set, probably the
     world's most famous fractal. These days, while sophisticated
-    programs such as \l{XaoS} that provide real-time zooming in the
+    programs such as \l{http://xaos.sourceforge.net/}{XaoS} that provide real-time zooming in the
     Mandelbrot set, the standard Mandelbrot algorithm is just slow
     enough for our purposes.
-
-    \image mandelbrot-example.png Screenshot of the Mandelbrot example
 
     In real life, the approach described here is applicable to a
     large set of problems, including synchronous network I/O and

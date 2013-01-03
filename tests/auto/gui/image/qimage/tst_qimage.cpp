@@ -773,7 +773,7 @@ void tst_QImage::convertToFormat()
     int dp = (src.depth() < 8 || result.depth() < 8) ? 8 : 1;
     QImage src2(src.bits() + (dp*src.depth())/8,
                 src.width() - dp*2,
-                src.height(), src.bytesPerLine(),
+                src.height() - 1, src.bytesPerLine(),
                 src.format());
     if (src.depth() < 8)
         src2.setColorTable(src.colorTable());
@@ -785,7 +785,7 @@ void tst_QImage::convertToFormat()
 
     QImage expected2(result.bits() + (dp*result.depth())/8,
                      result.width() - dp*2,
-                     result.height(), result.bytesPerLine(),
+                     result.height() - 1, result.bytesPerLine(),
                      result.format());
     if (result.depth() < 8)
         expected2.setColorTable(result.colorTable());

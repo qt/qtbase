@@ -1,4 +1,4 @@
-QT += widgets
+QT += network widgets
 
 HEADERS       = dialog.h \
                 fortuneserver.h \
@@ -7,7 +7,6 @@ SOURCES       = dialog.cpp \
                 fortuneserver.cpp \
                 fortunethread.cpp \
                 main.cpp
-QT           += network
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/network/threadedfortuneserver

@@ -1,3 +1,13 @@
+#
+#  W A R N I N G
+#  -------------
+#
+# This file is not part of the Qt API.  It exists purely as an
+# implementation detail.  It may change from version to version
+# without notice, or even be removed.
+#
+# We mean it.
+#
 
 defineReplace(cmakeModuleName) {
     _module = $$1
@@ -17,7 +27,7 @@ defineReplace(cmakeModuleList) {
 
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
-CMAKE_MODULE_DEPS = $$cmakeModuleList($$eval(QT.$${MODULE}.depends))
+CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
 CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
 !isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
 
@@ -49,16 +59,16 @@ contains(CMAKE_BIN_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
 }
 
-CMAKE_DATA_DIR = $$[QT_INSTALL_DATA]/ # For the mkspecs
-contains(CMAKE_DATA_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
-    CMAKE_DATA_DIR = $$replace(CMAKE_DATA_DIR, "$$CMAKE_QT_INSTALL_PREFIX_ESCAPED", )
+CMAKE_ARCHDATA_DIR = $$[QT_INSTALL_ARCHDATA]/ # For the mkspecs
+contains(CMAKE_ARCHDATA_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
+    CMAKE_ARCHDATA_DIR = $$replace(CMAKE_ARCHDATA_DIR, "$$CMAKE_QT_INSTALL_PREFIX_ESCAPED", )
 } else {
-    CMAKE_DATA_DIR_IS_ABSOLUTE = True
+    CMAKE_ARCHDATA_DIR_IS_ABSOLUTE = True
 }
 
 static|staticlib:CMAKE_STATIC_TYPE = true
 
-contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
+unix:contains(QT_CONFIG, reduce_relocations):CMAKE_ADD_FPIE_FLAGS = "true"
 
 CMAKE_MKSPEC = $$[QMAKE_XSPEC]
 
@@ -155,12 +165,12 @@ if (build_all|CONFIG(release, debug|release)):CMAKE_RELEASE_TYPE = release
 
 INSTALLS += cmake_qt5_module_files
 
-cmake_config_file.input = $$PWD/../cmake/Qt5BasicConfig.cmake.in
+cmake_config_file.input = $$PWD/data/cmake/Qt5BasicConfig.cmake.in
 cmake_config_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}Config.cmake
 
 CMAKE_PACKAGE_VERSION = $$eval(QT.$${MODULE}.VERSION)
 
-cmake_config_version_file.input = $$PWD/../cmake/Qt5ConfigVersion.cmake.in
+cmake_config_version_file.input = $$PWD/data/cmake/Qt5ConfigVersion.cmake.in
 cmake_config_version_file.output = $$DESTDIR/cmake/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}ConfigVersion.cmake
 
 !build_pass:QMAKE_SUBSTITUTES += \

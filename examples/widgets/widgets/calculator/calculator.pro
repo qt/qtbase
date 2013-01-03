@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = button.h \
                 calculator.h
 SOURCES       = button.cpp \
@@ -7,6 +9,3 @@ SOURCES       = button.cpp \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/calculator
 INSTALLS += target
-
-QT += widgets
-

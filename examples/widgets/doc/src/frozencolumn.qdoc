@@ -28,7 +28,7 @@
 /*!
     \example itemviews/frozencolumn
     \title Frozen Column Example
-
+    \ingroup examples-itemviews
     \brief This example demonstrates how to freeze a column within a QTableView.
 
     \image frozencolumn-example.png "Screenshot of the example"

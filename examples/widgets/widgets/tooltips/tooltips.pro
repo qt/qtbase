@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = shapeitem.h \
                 sortingbox.h
 SOURCES       = main.cpp \
@@ -8,5 +10,3 @@ RESOURCES     = tooltips.qrc
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/tooltips
 INSTALLS += target
-
-QT += widgets

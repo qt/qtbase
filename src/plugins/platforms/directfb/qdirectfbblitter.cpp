@@ -133,7 +133,7 @@ void QDirectFbBlitter::alphaFillRect(const QRectF &rect, const QColor &color, QP
     int x, y, w, h;
     DFBResult result;
 
-    // check paramters
+    // check parameters
     rect.toRect().getRect(&x, &y ,&w, &h);
     if ((w <= 0) || (h <= 0)) return;
 

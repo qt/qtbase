@@ -1,3 +1,4 @@
+QT += widgets
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
@@ -12,5 +13,3 @@ HEADERS += \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/threads/movedobject
 INSTALLS += target
-
-QT += widgets

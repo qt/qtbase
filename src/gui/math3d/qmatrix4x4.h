@@ -146,7 +146,7 @@ public:
     void ortho(const QRectF& rect);
     void ortho(float left, float right, float bottom, float top, float nearPlane, float farPlane);
     void frustum(float left, float right, float bottom, float top, float nearPlane, float farPlane);
-    void perspective(float angle, float aspect, float nearPlane, float farPlane);
+    void perspective(float verticalAngle, float aspectRatio, float nearPlane, float farPlane);
 #ifndef QT_NO_VECTOR3D
     void lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up);
 #endif

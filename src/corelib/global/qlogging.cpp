@@ -83,7 +83,6 @@ static bool isFatal(QtMsgType msgType)
 /*!
     \class QMessageLogContext
     \inmodule QtCore
-    \relates <QtGlobal>
     \brief The QMessageLogContext class provides additional information about a log message.
     \since 5.0
 
@@ -96,7 +95,6 @@ static bool isFatal(QtMsgType msgType)
 /*!
     \class QMessageLogger
     \inmodule QtCore
-    \relates <QtGlobal>
     \brief The QMessageLogger class generates log messages.
     \since 5.0
 

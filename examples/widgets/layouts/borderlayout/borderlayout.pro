@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS     = borderlayout.h \
               window.h
 SOURCES     = borderlayout.cpp \
@@ -7,5 +9,3 @@ SOURCES     = borderlayout.cpp \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/layouts/borderlayout
 INSTALLS += target
-
-QT += widgets

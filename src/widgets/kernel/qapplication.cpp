@@ -41,7 +41,6 @@
 
 #include "qplatformdefs.h"
 #include "qabstracteventdispatcher.h"
-#include "qaccessible.h"
 #include "qapplication.h"
 #include "qclipboard.h"
 #include "qcursor.h"
@@ -189,6 +188,15 @@ QApplicationPrivate::~QApplicationPrivate()
     object, no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-QWidget based Qt applications, use QGuiApplication instead,
     as it does not depend on the \l QtWidgets library.
+
+    Some GUI applications provide a special batch mode ie. provide command line
+    arguments for executing tasks without manual intervention. In such non-GUI
+    mode, it is often sufficient to instantiate a plain QCoreApplication to
+    avoid unnecessarily initializing resources needed for a graphical user
+    interface. The following example shows how to dynamically create an
+    appropriate type of application instance:
+
+    \snippet code/src_gui_kernel_qapplication.cpp 0
 
     The QApplication object is accessible through the instance() function that
     returns a pointer equivalent to the global qApp pointer.
@@ -2653,9 +2661,6 @@ int QApplication::startDragDistance()
 */
 int QApplication::exec()
 {
-#ifndef QT_NO_ACCESSIBILITY
-    QAccessible::setRootObject(qApp);
-#endif
     return QGuiApplication::exec();
 }
 

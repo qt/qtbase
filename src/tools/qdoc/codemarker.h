@@ -82,7 +82,7 @@ struct Section
 
 struct FastSection
 {
-    const InnerNode *innerNode;
+    const InnerNode *parent_;
     QString name;
     QString divClass;
     QString singularMember;
@@ -91,12 +91,12 @@ struct FastSection
     QMap<QString, Node *> reimpMemberMap;
     QList<QPair<InnerNode *, int> > inherited;
 
-    FastSection(const InnerNode *innerNode0,
+    FastSection(const InnerNode *parent,
                 const QString& name0,
                 const QString& divClass0,
                 const QString& singularMember0,
                 const QString& pluralMember0)
-        : innerNode(innerNode0),
+        : parent_(parent),
           name(name0),
           divClass(divClass0),
           singularMember(singularMember0),

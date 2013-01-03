@@ -1,6 +1,7 @@
 TARGET = qgenericbearer
 
 PLUGIN_TYPE = bearer
+PLUGIN_CLASS_NAME = QGenericEnginePlugin
 load(qt_plugin)
 
 QT = core-private network-private

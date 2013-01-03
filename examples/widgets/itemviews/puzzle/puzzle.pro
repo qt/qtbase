@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS     = mainwindow.h \
               piecesmodel.h \
               puzzlewidget.h
@@ -15,6 +17,3 @@ INSTALLS += target
 wince* {
    DEPLOYMENT_PLUGIN += qjpeg qgif
 }
-
-QT += widgets
-

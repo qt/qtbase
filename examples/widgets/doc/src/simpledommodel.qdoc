@@ -28,7 +28,7 @@
 /*!
     \example itemviews/simpledommodel
     \title Simple DOM Model Example
-
+    \ingroup examples-itemviews
     \brief The Simple DOM Model example shows how an existing class can be adapted for use with
     the model/view framework.
 

@@ -1,4 +1,3 @@
-CONFIG += testcase
 TARGET = tst_network_stresstest
 
 QT = core-private network-private testlib

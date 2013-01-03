@@ -10,5 +10,3 @@ SUBDIRS = 1_readonly \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/modelview
 INSTALLS += target
-
-QT += widgets

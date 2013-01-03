@@ -128,10 +128,10 @@ public:
 
     void createDisplay(screen_display_t display, bool isPrimary);
     void removeDisplay(QQnxScreen *screen);
+    QQnxScreen *primaryDisplay() const;
 private:
     void createDisplays();
     void destroyDisplays();
-    QQnxScreen *primaryDisplay() const;
 
     static void addWindow(screen_window_t qnxWindow, QWindow *window);
     static void removeWindow(screen_window_t qnxWindow);

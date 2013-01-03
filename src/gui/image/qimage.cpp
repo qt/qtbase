@@ -4213,6 +4213,7 @@ QImage QImage::mirrored(bool horizontal, bool vertical) const
 
     result.d->colortable = d->colortable;
     result.d->has_alpha_clut = d->has_alpha_clut;
+    result.d->devicePixelRatio = d->devicePixelRatio;
 
     if (depth() == 1)
         w = (w+7)/8;

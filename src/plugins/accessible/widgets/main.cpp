@@ -199,7 +199,7 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QSplitterHandle")) {
         iface = new QAccessibleWidget(widget, QAccessible::Grip);
 #endif
-#ifndef QT_NO_TEXTEDIT
+#if !defined(QT_NO_TEXTEDIT) && !defined(QT_NO_CURSOR)
     } else if (classname == QLatin1String("QTextEdit")) {
         iface = new QAccessibleTextEdit(widget);
     } else if (classname == QLatin1String("QPlainTextEdit")) {
@@ -233,7 +233,7 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QRubberBand")) {
         iface = new QAccessibleWidget(widget, QAccessible::Border);
 #endif
-#ifndef QT_NO_TEXTBROWSER
+#if !defined(QT_NO_TEXTBROWSER) && !defined(QT_NO_CURSOR)
     } else if (classname == QLatin1String("QTextBrowser")) {
         iface = new QAccessibleTextBrowser(widget);
 #endif

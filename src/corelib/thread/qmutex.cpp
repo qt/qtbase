@@ -394,7 +394,7 @@ bool QBasicMutex::isRecursive()
   to wait on the mutex. There are two tricks to keep in mind:
   We don't want to increment waiters after we checked no threads are waiting
   (waiters == 0). That's why we atomically set the BigNumber flag on waiters when
-  we check waiters. Similarily, if waiters is decremented right after we checked,
+  we check waiters. Similarly, if waiters is decremented right after we checked,
   the mutex would be unlocked (d->wakeUp() has (or will) be called), but there is
   no thread waiting. This is only happening if there was a timeout in tryLock at the
   same time as the mutex is unlocked. So when there was a timeout, we set the
@@ -531,7 +531,7 @@ void QBasicMutex::unlockInternal() Q_DECL_NOTHROW
 
     QMutexPrivate *d = reinterpret_cast<QMutexPrivate *>(copy);
 
-    // If no one is waiting for the lock anymore, we shoud reset d to 0x0.
+    // If no one is waiting for the lock anymore, we should reset d to 0x0.
     // Using fetchAndAdd, we atomically check that waiters was equal to 0, and add a flag
     // to the waiters variable (BigNumber). That way, we avoid the race in which waiters is
     // incremented right after we checked, because we won't increment waiters if is

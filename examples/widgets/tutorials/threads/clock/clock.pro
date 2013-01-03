@@ -1,3 +1,4 @@
+QT += widgets
 CONFIG += console
 TEMPLATE = app
 SOURCES += main.cpp \
@@ -7,6 +8,3 @@ HEADERS += clockthread.h
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tutorials/threads/clock
 INSTALLS += target
-
-
-QT += widgets

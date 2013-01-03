@@ -28,15 +28,16 @@
 /*!
     \example fortuneserver
     \title Fortune Server Example
+    \ingroup examples-network
+    \brief Demonstrates how to create a server for a network service.
 
-    \brief The Fortune Server example shows how to create a server for a simple
-    network service. It is intended to be run alongside the
+    This example is intended to be run alongside the
     \l{fortuneclient}{Fortune Client} example or the
     \l{blockingfortuneclient}{Blocking Fortune Client} example.
 
     \image fortuneserver-example.png Screenshot of the Fortune Server example
 
-    This example uses QTcpServer to accept incoming TCP connections, and a
+    It uses QTcpServer to accept incoming TCP connections, and a
     simple QDataStream based data transfer protocol to write a fortune to the
     connecting client (from the \l{fortuneclient}{Fortune Client}
     example), before closing the connection.
@@ -55,7 +56,7 @@
 
     \snippet fortuneserver/server.cpp 2
 
-    Our server generates a list of random fortunes that is can send to
+    Our server generates a list of random fortunes that it can send to
     connecting clients.
 
     \snippet fortuneserver/server.cpp 3

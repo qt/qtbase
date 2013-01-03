@@ -40,13 +40,13 @@
 
 //! [0]
 QFtp *ftp = new QFtp(parent);
-ftp->connectToHost("ftp.qt.nokia.com");
+ftp->connectToHost("ftp.qt-project.org");
 ftp->login();
 //! [0]
 
 
 //! [1]
-ftp->connectToHost("ftp.qt.nokia.com");   // id == 1
+ftp->connectToHost("ftp.qt-project.org");   // id == 1
 ftp->login();                             // id == 2
 ftp->cd("qt");                            // id == 3
 ftp->get("INSTALL");                      // id == 4

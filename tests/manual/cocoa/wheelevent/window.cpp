@@ -80,7 +80,6 @@ void Window::initialize()
         setSizeIncrement(QSize(10, 10));
         setBaseSize(QSize(640, 480));
         setMinimumSize(QSize(240, 160));
-        setMaximumSize(QSize(800, 600));
     }
 
     create();
@@ -102,6 +101,12 @@ void Window::mouseMoveEvent(QMouseEvent *event)
 {
     if (m_lastPos != QPoint(-1, -1)) {
         QPainter p(&m_image);
+
+        QPen pen;
+        pen.setCosmetic(true);
+        pen.setWidth(1);
+        p.setPen(pen);
+
         p.setRenderHint(QPainter::Antialiasing);
         p.drawLine(m_lastPos, event->pos());
         m_lastPos = event->pos();
@@ -153,13 +158,16 @@ void Window::resizeEvent(QResizeEvent *)
 {
     QImage old = m_image;
 
-    //qDebug() << "Window::resizeEvent" << width << height;
+    qDebug() << "Window::resizeEvent" << geometry();
 
-    int width = qMax(geometry().width(), old.width());
-    int height = qMax(geometry().height(), old.height());
+    int width = qMax(geometry().width() * devicePixelRatio(), qreal(old.width()));
+    int height = qMax(geometry().height() * devicePixelRatio(), qreal(old.height()));
+
+    qDebug() << "Window::resizeEvent" << width << height;
 
     if (width > old.width() || height > old.height()) {
         m_image = QImage(width, height, QImage::Format_RGB32);
+        m_image.setDevicePixelRatio(devicePixelRatio());
         m_image.fill(colorTable[(m_backgroundColorIndex) % (sizeof(colorTable) / sizeof(colorTable[0]))].rgba());
 
         QPainter p(&m_image);
@@ -221,6 +229,12 @@ void Window::render()
     // draw grid:
     int gridSpace = 80;
 
+    QPen pen;
+    pen.setCosmetic(true);
+    pen.setWidth(1);
+    p.setPen(pen);
+
+
     for (int y = 0; y < geometry().height() + gridSpace; y+= gridSpace) {
         int offset = scrollOffset.y() % gridSpace;
         //int color = ((y + offset) %255);// + scrollOffset.y()) % 255);
@@ -228,6 +242,7 @@ void Window::render()
         //p.setBrush(QColor(color,0, 0));
         //p.fillRect(0, y + offset, geometry().width(), gridSpace,QColor(color,0, 0));
     }
+
 
     for (int x = 0; x < geometry().width() + gridSpace; x+= gridSpace) {
         p.drawLine(x + scrollOffset.x() % gridSpace, 0, x + scrollOffset.x() % gridSpace, geometry().height());

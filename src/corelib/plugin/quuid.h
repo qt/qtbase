@@ -115,13 +115,11 @@ public:
     }
 #endif
 
-#ifndef QT_NO_QUUID_STRING
     QUuid(const QString &);
     QUuid(const char *);
     QString toString() const;
     QUuid(const QByteArray &);
     QByteArray toByteArray() const;
-#endif
     QByteArray toRfc4122() const;
     static QUuid fromRfc4122(const QByteArray &);
     bool isNull() const;
@@ -193,7 +191,6 @@ public:
 #ifndef QT_BOOTSTRAPPED
     static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData);
     static QUuid createUuidV5(const QUuid &ns, const QByteArray &baseData);
-#ifndef QT_NO_QUUID_STRING
     static inline QUuid createUuidV3(const QUuid &ns, const QString &baseData)
     {
         return QUuid::createUuidV3(ns, baseData.toUtf8());
@@ -204,7 +201,6 @@ public:
         return QUuid::createUuidV5(ns, baseData.toUtf8());
     }
 
-#endif
 #endif
 
     QUuid::Variant variant() const;

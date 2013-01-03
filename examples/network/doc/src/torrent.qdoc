@@ -28,16 +28,18 @@
 /*!
     \example torrent
     \title Torrent Example
+    \ingroup examples-network
+    \brief Demonstrates complex TCP/IP operations
 
-    \brief The Torrent example is a functional BitTorrent client that
-    illustrates how to write a complex TCP/IP application using Qt.
+    This example demonstrates some of the complex TCP/IP operations
+    supported by the Qt Network APIs.
 
     \image torrent-example.png
 
     \section1 License Information
 
     The implementation of the US Secure Hash Algorithm 1 (SHA1) in this example is
-    derived from the original description in \l{RFC 3174}.
+    derived from the original description in \l{http://www.rfc-editor.org/rfc/rfc3174.txt}{RFC 3174}.
 
     \legalese
     Copyright (C) The Internet Society (2001).  All Rights Reserved.

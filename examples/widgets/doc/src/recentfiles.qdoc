@@ -28,6 +28,7 @@
 /*! 
     \example mainwindows/recentfiles
     \title Recent Files Example
+    \ingroup examples-mainwindow
 
     \brief The Recent Files example shows how a standard File menu can be extended to show
     the most recent files loaded by a main window application.

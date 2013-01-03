@@ -26,10 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \example threads/queuedcustomtype
+    \example queuedcustomtype
     \title Queued Custom Type Example
+    \brief Demonstrates multi-thread programming using Qt
+    \ingroup qtconcurrent-mtexamples
 
-    The Queued Custom Type example shows how to send custom types between
+    \brief The Queued Custom Type example shows how to send custom types between
     threads with queued signals and slots.
 
     \image queuedcustomtype-example.png

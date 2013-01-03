@@ -4,6 +4,7 @@ HEADERS       = almostplugin.h
 SOURCES       = almostplugin.cpp
 TARGET        = almostplugin
 DESTDIR       = ../bin
+QT = core
 *-g++*:QMAKE_LFLAGS -= -Wl,--no-undefined
 
 # This is testdata for the tst_qpluginloader test.

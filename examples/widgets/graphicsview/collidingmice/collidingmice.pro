@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS += \
 	mouse.h
 SOURCES += \
@@ -10,6 +12,3 @@ RESOURCES += \
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/graphicsview/collidingmice
 INSTALLS += target
-
-QT += widgets
-

@@ -88,7 +88,7 @@ inline uint QColorToOLEColor(const QColor &col)
     return qRgba(col.blue(), col.green(), col.red(), 0x00);
 }
 
-bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out)
+bool QVariant2VARIANT(const QVariant &var, VARIANT &arg, const QByteArray &typeName, bool out)
 {
     QVariant qvar = var;
     // "type" is the expected type, so coerce if necessary
@@ -107,12 +107,12 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
     }
 
     if (out && arg.vt == (VT_VARIANT|VT_BYREF) && arg.pvarVal) {
-        return QVariantToVARIANT(var, *arg.pvarVal, typeName, false);
+        return QVariant2VARIANT(var, *arg.pvarVal, typeName, false);
     }
 
     if (out && proptype == QVariant::UserType && typeName == "QVariant") {
         VARIANT *pVariant = new VARIANT;
-        QVariantToVARIANT(var, *pVariant, QByteArray(), false);
+        QVariant2VARIANT(var, *pVariant, QByteArray(), false);
         arg.vt = VT_VARIANT|VT_BYREF;
         arg.pvarVal = pVariant;
         return true;
@@ -409,7 +409,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                         for (LONG j = 0;  j < columnCount; ++j) {
                             QVariant elem = columns.at(j);
                             VariantInit(&variant);
-                            QVariantToVARIANT(elem, variant, elem.typeName());
+                            QVariant2VARIANT(elem, variant, elem.typeName());
                             rgIndices[1] = j;
                             SafeArrayPutElement(array, rgIndices, pElement);
                             clearVARIANT(&variant);
@@ -425,7 +425,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                     if (listType != QVariant::LastType)
                         elem.convert(listType);
                     VariantInit(&variant);
-                    QVariantToVARIANT(elem, variant, elem.typeName());
+                    QVariant2VARIANT(elem, variant, elem.typeName());
                     SafeArrayPutElement(array, &index, pElement);
                     clearVARIANT(&variant);
                 }
@@ -555,7 +555,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
             arg.pRecInfo = recordInfo,
             arg.pvRecord = record;
             if (out) {
-                qWarning("QVariantToVARIANT: out-parameter not supported for records");
+                qWarning("QVariant2VARIANT: out-parameter not supported for records");
                 return false;
            }
         }
@@ -574,7 +574,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                 if (arg.pdispVal)
                     arg.pdispVal->AddRef();
                 if (out) {
-                    qWarning("QVariantToVARIANT: out-parameter not supported for IDispatch");
+                    qWarning("QVariant2VARIANT: out-parameter not supported for IDispatch");
                     return false;
                 }
             } else if (!qstrcmp(qvar.typeName(), "IDispatch**")) {
@@ -588,7 +588,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                 if (arg.punkVal)
                     arg.punkVal->AddRef();
                 if (out) {
-                    qWarning("QVariantToVARIANT: out-parameter not supported for IUnknown");
+                    qWarning("QVariant2VARIANT: out-parameter not supported for IUnknown");
                     return false;
                 }
 #ifdef QAX_SERVER
@@ -602,7 +602,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                     qAxFactory()->createObjectWrapper(static_cast<QObject*>(user), &arg.pdispVal);
                 }
                 if (out) {
-                    qWarning("QVariantToVARIANT: out-parameter not supported for subtype");
+                    qWarning("QVariant2VARIANT: out-parameter not supported for subtype");
                     return false;
                 }
 #else
@@ -612,7 +612,7 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
                 arg.vt = VT_DISPATCH;
                 object->queryInterface(IID_IDispatch, (void**)&arg.pdispVal);
                 if (out) {
-                    qWarning("QVariantToVARIANT: out-parameter not supported for subtype");
+                    qWarning("QVariant2VARIANT: out-parameter not supported for subtype");
                     return false;
                 }
 #endif

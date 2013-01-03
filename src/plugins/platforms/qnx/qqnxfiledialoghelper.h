@@ -48,13 +48,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQnxBpsEventFilter;
+class QQnxIntegration;
 
 class QQnxFileDialogHelper : public QPlatformFileDialogHelper
 {
     Q_OBJECT
 public:
-    explicit QQnxFileDialogHelper(QQnxBpsEventFilter *eventFilter);
+    explicit QQnxFileDialogHelper(const QQnxIntegration *);
     ~QQnxFileDialogHelper();
 
     bool handleEvent(bps_event_t *event);
@@ -81,7 +81,7 @@ Q_SIGNALS:
 private:
     void setNameFilter(const QString &filter);
 
-    QQnxBpsEventFilter *m_eventFilter;
+    const QQnxIntegration *m_integration;
     dialog_instance_t m_dialog;
     QFileDialogOptions::AcceptMode m_acceptMode;
     QString m_selectedFilter;

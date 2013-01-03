@@ -684,14 +684,15 @@ const Node* QDocDatabase::findNodeForTarget(const QString& target, const Node* r
   Inserts a new target into the target table with the specified
   \a name, \a node, and \a priority.
  */
-void QDocDatabase::insertTarget(const QString& name, Node* node, int priority)
+void QDocDatabase::insertTarget(const QString& name, TargetRec::Type type, Node* node, int priority)
 {
-    Target target;
+    TargetRec target;
+    target.type_ = type;
     target.node_ = node;
     target.priority_ = priority;
     Atom a = Atom(Atom::Target, name);
     target.ref_ = refForAtom(&a);
-    targetMultiMap_.insert(name, target);
+    targetRecMultiMap_.insert(name, target);
 }
 
 /*!
@@ -701,16 +702,16 @@ void QDocDatabase::insertTarget(const QString& name, Node* node, int priority)
 const Node*
 QDocDatabase::findUnambiguousTarget(const QString& target, QString& ref, const Node* relative)
 {
-    Target bestTarget;
+    TargetRec bestTarget;
     int numBestTargets = 0;
-    QList<Target> bestTargetList;
+    QList<TargetRec> bestTargetList;
 
     QString key = Doc::canonicalTitle(target);
-    TargetMultiMap::iterator i = targetMultiMap_.find(key);
-    while (i != targetMultiMap_.end()) {
+    TargetRecMultiMap::iterator i = targetRecMultiMap_.find(key);
+    while (i != targetRecMultiMap_.end()) {
         if (i.key() != key)
             break;
-        const Target& candidate = i.value();
+        const TargetRec& candidate = i.value();
         if (candidate.priority_ < bestTarget.priority_) {
             bestTarget = candidate;
             bestTargetList.clear();
@@ -808,14 +809,14 @@ const DocNode* QDocDatabase::findDocNodeByTitle(const QString& title, const Node
 QString QDocDatabase::findTarget(const QString& target, const Node* node) const
 {
     QString key = Doc::canonicalTitle(target);
-    TargetMultiMap::const_iterator i = targetMultiMap_.constFind(key);
+    TargetRecMultiMap::const_iterator i = targetRecMultiMap_.constFind(key);
 
-    if (i != targetMultiMap_.constEnd()) {
+    if (i != targetRecMultiMap_.constEnd()) {
         do {
             if (i.value().node_ == node)
                 return i.value().ref_;
             ++i;
-        } while (i != targetMultiMap_.constEnd() && i.key() == key);
+        } while (i != targetRecMultiMap_.constEnd() && i.key() == key);
     }
     return QString();
 }
@@ -840,7 +841,7 @@ void QDocDatabase::resolveTargets(InnerNode* root)
 
         if (child->doc().hasTableOfContents()) {
             const QList<Atom*>& toc = child->doc().tableOfContents();
-            Target target;
+            TargetRec target;
             target.node_ = child;
             target.priority_ = 3;
 
@@ -849,32 +850,32 @@ void QDocDatabase::resolveTargets(InnerNode* root)
                 QString title = Text::sectionHeading(toc.at(i)).toString();
                 if (!title.isEmpty()) {
                     QString key = Doc::canonicalTitle(title);
-                    targetMultiMap_.insert(key, target);
+                    targetRecMultiMap_.insert(key, target);
                 }
             }
         }
         if (child->doc().hasKeywords()) {
             const QList<Atom*>& keywords = child->doc().keywords();
-            Target target;
+            TargetRec target;
             target.node_ = child;
             target.priority_ = 1;
 
             for (int i = 0; i < keywords.size(); ++i) {
                 target.ref_ = refForAtom(keywords.at(i));
                 QString key = Doc::canonicalTitle(keywords.at(i)->string());
-                targetMultiMap_.insert(key, target);
+                targetRecMultiMap_.insert(key, target);
             }
         }
         if (child->doc().hasTargets()) {
             const QList<Atom*>& toc = child->doc().targets();
-            Target target;
+            TargetRec target;
             target.node_ = child;
             target.priority_ = 2;
 
             for (int i = 0; i < toc.size(); ++i) {
                 target.ref_ = refForAtom(toc.at(i));
                 QString key = Doc::canonicalTitle(toc.at(i)->string());
-                targetMultiMap_.insert(key, target);
+                targetRecMultiMap_.insert(key, target);
             }
         }
     }

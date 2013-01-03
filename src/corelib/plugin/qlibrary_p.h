@@ -92,6 +92,8 @@ public:
     QFunctionPointer resolve(const char *);
 
     static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString());
+    static QStringList suffixes_sys(const QString &fullVersion);
+    static QStringList prefixes_sys();
 
     static QVector<QStaticPlugin> staticPlugins();
 

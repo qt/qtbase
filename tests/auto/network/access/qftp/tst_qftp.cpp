@@ -2077,7 +2077,7 @@ void tst_QFtp::queueMoreCommandsInDoneSlot()
     this->ftp = &ftp;
     connect(&ftp, SIGNAL(done(bool)), this, SLOT(cdUpSlot(bool)));
 
-    ftp.connectToHost("ftp.qt.nokia.com");
+    ftp.connectToHost("ftp.qt-project.org");
     ftp.login();
     ftp.cd("qt");
     ftp.rmdir("qtest-removedir-noexist");

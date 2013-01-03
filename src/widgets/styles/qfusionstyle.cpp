@@ -2631,7 +2631,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     buttonOption.QStyleOption::operator=(*comboBox);
                     buttonOption.rect = rect;
                     buttonOption.state = (comboBox->state & (State_Enabled | State_MouseOver | State_HasFocus))
-                            | State_KeyboardFocusChange; // Allways show hig
+                            | State_KeyboardFocusChange; // Always show hig
 
                     if (sunken) {
                         buttonOption.state |= State_Sunken;

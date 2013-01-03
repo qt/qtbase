@@ -188,6 +188,7 @@ public:
     QVariant currentValue() const;
     QVariant maximumValue() const;
     QVariant minimumValue() const;
+    QVariant minimumStepSize() const;
     inline void setCurrentValue(const QVariant &) {}
 
 protected:

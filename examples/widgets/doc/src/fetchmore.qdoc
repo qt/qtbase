@@ -28,7 +28,7 @@
 /*!
     \example itemviews/fetchmore
     \title Fetch More Example
-
+    \ingroup examples-itemviews
     \brief The Fetch More example shows how two add items to an item view
     model on demand.
 

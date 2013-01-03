@@ -29,6 +29,11 @@ Since we build debug and release versions
 the .def files (libEGLd.def) must be created as copies
 with the LIBRARY name entry adapted.
 
+MinGW-w64 32-bit requires function exports in the .def files
+to be decorated. Modified versions of the .def files are created as
+<library>_mingw32.def. The decorated names of each function can be found
+using the nm command to list the symbols in libEGL.o and libGLESv2.o.
+
 Using a custom ANGLE
 -------------------------------------------------------------
 Qt supports building a version of ANGLE other than the one that

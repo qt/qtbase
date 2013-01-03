@@ -483,7 +483,7 @@
 /*! \fn QVarLengthArray::iterator QVarLengthArray::begin()
     \since 4.8
 
-    Returns an \l{STL-style iterator} pointing to the first item in
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the array.
 
     \sa constBegin(), end()
@@ -497,7 +497,7 @@
 /*! \fn QVarLengthArray::const_iterator QVarLengthArray::cbegin() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the array.
 
     \sa begin(), cend()
@@ -506,7 +506,7 @@
 /*! \fn QVarLengthArray::const_iterator QVarLengthArray::constBegin() const
     \since 4.8
 
-    Returns a const \l{STL-style iterator} pointing to the first item
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the array.
 
     \sa begin(), constEnd()
@@ -515,7 +515,7 @@
 /*! \fn QVarLengthArray::iterator QVarLengthArray::end()
     \since 4.8
 
-    Returns an \l{STL-style iterator} pointing to the imaginary item
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the array.
 
     \sa begin(), constEnd()
@@ -530,7 +530,7 @@
 /*! \fn QVarLengthArray::const_iterator QVarLengthArray::cend() const
     \since 5.0
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the array.
 
     \sa cbegin(), end()
@@ -539,7 +539,7 @@
 /*! \fn QVarLengthArray::const_iterator QVarLengthArray::constEnd() const
     \since 4.8
 
-    Returns a const \l{STL-style iterator} pointing to the imaginary
+    Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the array.
 
     \sa constBegin(), end()

@@ -1,6 +1,7 @@
 TARGET = qmeegointegration
 
 PLUGIN_TYPE = generic
+PLUGIN_CLASS_NAME = QMeeGoIntegrationPlugin
 load(qt_plugin)
 
 SOURCES = qmeegointegration.cpp \

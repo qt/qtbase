@@ -45,11 +45,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "5.0.0"
+#define QT_VERSION_STR   "5.0.1"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x050000
+#define QT_VERSION 0x050001
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -435,17 +435,6 @@ template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
 typedef QIntegerForSizeof<void*>::Unsigned quintptr;
 typedef QIntegerForSizeof<void*>::Signed qptrdiff;
 typedef qptrdiff qintptr;
-
-/*
-   Constant bool values
-*/
-
-#ifndef QT_LINUXBASE /* the LSB defines TRUE and FALSE for us */
-#  ifndef TRUE
-#   define TRUE true
-#   define FALSE false
-#  endif
-#endif
 
 /* moc compats (signals/slots) */
 #ifndef QT_MOC_COMPAT

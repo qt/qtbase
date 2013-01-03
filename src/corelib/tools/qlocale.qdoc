@@ -450,6 +450,7 @@
     \value Cambodia
     \value Cameroon
     \value Canada
+    \value CanaryIslands
     \value CapeVerde
     \value CaymanIslands
     \value CentralAfricanRepublic
@@ -457,6 +458,7 @@
     \value Chile
     \value China
     \value ChristmasIsland
+    \value ClippertonIsland
     \value CocosIslands
     \value Colombia
     \value Comoros
@@ -503,6 +505,7 @@
     \value Guadeloupe
     \value Guam
     \value Guatemala
+    \value Guernsey
     \value Guinea
     \value GuineaBissau
     \value Guyana
@@ -647,7 +650,7 @@
     \value Vanuatu
     \value VaticanCityState
     \value Venezuela
-    \value VietNam
+    \value Vietnam
     \value BritishVirginIslands
     \value UnitedStatesVirginIslands
     \value WallisAndFutunaIslands
@@ -718,7 +721,7 @@
     \value SinhalaScript
     \value SyriacScript
     \value YiScript
-    \value VaiiScript
+    \value VaiScript
     \omitvalue LastScript
 
     \sa script(), scriptToString(), languageToString()

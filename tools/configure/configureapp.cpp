@@ -210,7 +210,6 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "BUILD_QMAKE" ]     = "yes";
     dictionary[ "VCPROJFILES" ]     = "yes";
     dictionary[ "QMAKE_INTERNAL" ]  = "no";
-    dictionary[ "FAST" ]            = "no";
     dictionary[ "PROCESS" ]         = "partial";
     dictionary[ "WIDGETS" ]         = "yes";
     dictionary[ "RTTI" ]            = "yes";
@@ -802,11 +801,6 @@ void Configure::parseCmdLine()
             dictionary[ "NATIVE_GESTURES" ] = "no";
 #if !defined(EVAL)
         // Others ---------------------------------------------------
-        else if (configCmdLine.at(i) == "-fast")
-            dictionary[ "FAST" ] = "yes";
-        else if (configCmdLine.at(i) == "-no-fast")
-            dictionary[ "FAST" ] = "no";
-
         else if (configCmdLine.at(i) == "-widgets")
             dictionary[ "WIDGETS" ] = "yes";
         else if (configCmdLine.at(i) == "-no-widgets")
@@ -1649,11 +1643,6 @@ bool Configure::displayHelp()
         desc("LTCG", "yes",   "-ltcg",                  "Use Link Time Code Generation. (Release builds only)");
         desc("LTCG", "no",    "-no-ltcg",               "Do not use Link Time Code Generation.\n");
 
-        desc("FAST", "no",      "-no-fast",             "Configure Qt normally by generating Makefiles for all project files.");
-        desc("FAST", "yes",     "-fast",                "Configure Qt quickly by generating Makefiles only for library and "
-                                                        "subdirectory targets.  All other Makefiles are created as wrappers "
-                                                        "which will in turn run qmake.\n");
-
         desc(                   "-make <part>",         "Add part to the list of parts to be built at make time");
         for (int i=0; i<defaultBuildParts.size(); ++i)
             desc(               "",                     qPrintable(QString("  %1").arg(defaultBuildParts.at(i))), false, ' ');
@@ -1790,7 +1779,7 @@ bool Configure::displayHelp()
 
         desc("PROCESS", "partial", "-process",          "Generate top-level Makefiles/Project files.");
         desc("PROCESS", "full", "-fully-process",       "Generate Makefiles/Project files for the entire Qt\ntree.");
-        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files. This will override -no-fast if specified.\n");
+        desc("PROCESS", "no", "-dont-process",          "Do not generate Makefiles/Project files.\n");
 
         desc("RTTI", "no",      "-no-rtti",             "Do not compile runtime type information.");
         desc("RTTI", "yes",     "-rtti",                "Compile runtime type information.");
@@ -2632,6 +2621,9 @@ void Configure::generateOutputVars()
     else if (dictionary["QT_ICONV"] == "gnu")
         qtConfig += "gnu-libiconv";
 
+    if (dictionary["QT_INOTIFY"] == "yes")
+        qtConfig += "inotify";
+
     if (dictionary["FONT_CONFIG"] == "yes") {
         qtConfig += "fontconfig";
         qmakeVars += "QMAKE_CFLAGS_FONTCONFIG =";
@@ -2681,9 +2673,9 @@ void Configure::generateOutputVars()
     if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("linux"))
         qtConfig += "rpath";
 
-    qmakeVars += QString("OBJECTS_DIR     = ") + formatPath("tmp/obj/" + dictionary["QMAKE_OUTDIR"]);
-    qmakeVars += QString("MOC_DIR         = ") + formatPath("tmp/moc/" + dictionary["QMAKE_OUTDIR"]);
-    qmakeVars += QString("RCC_DIR         = ") + formatPath("tmp/rcc/" + dictionary["QMAKE_OUTDIR"]);
+    qmakeVars += QString("OBJECTS_DIR     = ") + formatPath(".obj/" + dictionary["QMAKE_OUTDIR"]);
+    qmakeVars += QString("MOC_DIR         = ") + formatPath(".moc/" + dictionary["QMAKE_OUTDIR"]);
+    qmakeVars += QString("RCC_DIR         = ") + formatPath(".rcc/" + dictionary["QMAKE_OUTDIR"]);
 
     if (!qmakeDefines.isEmpty())
         qmakeVars += QString("DEFINES        += ") + qmakeDefines.join(' ');
@@ -2771,7 +2763,8 @@ void Configure::generateCachefile()
     if (cacheFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream cacheStream(&cacheFile);
 
-        // nothing left here
+        cacheStream << "QT_SOURCE_TREE = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
+        cacheStream << "QT_BUILD_TREE = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
 
         cacheStream.flush();
         cacheFile.close();
@@ -2782,9 +2775,6 @@ void Configure::generateCachefile()
     if (moduleFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream moduleStream(&moduleFile);
 
-        moduleStream << "#paths" << endl;
-        moduleStream << "QT_BUILD_TREE   = " << formatPath(dictionary["QT_BUILD_TREE"]) << endl;
-        moduleStream << "QT_SOURCE_TREE  = " << formatPath(dictionary["QT_SOURCE_TREE"]) << endl;
         moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
@@ -3097,6 +3087,9 @@ void Configure::generateQConfigPri()
 
         if (!dictionary["QT_NAMESPACE"].isEmpty())
             configStream << "#namespaces" << endl << "QT_NAMESPACE = " << dictionary["QT_NAMESPACE"] << endl;
+
+        if (dictionary[ "SHARED" ] == "no")
+            configStream << "QT_DEFAULT_QPA_PLUGIN = q" << qpaPlatformName() << endl;
 
         configStream.flush();
         configFile.close();
@@ -3751,43 +3744,6 @@ void Configure::buildQmake()
 }
 #endif
 
-void Configure::findProjects(const QString& dirName)
-{
-    if (dictionary[ "PROCESS" ] != "no") {
-        QDir dir(dirName);
-        QString entryName;
-        int makeListNumber;
-        ProjectType qmakeTemplate;
-        const QFileInfoList &list = dir.entryInfoList(QStringList(QLatin1String("*.pro")),
-                                                      QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
-        for (int i = 0; i < list.size(); ++i) {
-            const QFileInfo &fi = list.at(i);
-            if (fi.fileName() != "qmake.pro") {
-                entryName = dirName + "/" + fi.fileName();
-                if (fi.isDir()) {
-                    findProjects(entryName);
-                } else {
-                    qmakeTemplate = projectType(fi.absoluteFilePath());
-                    switch (qmakeTemplate) {
-                    case Lib:
-                    case Subdirs:
-                        makeListNumber = 1;
-                        break;
-                    default:
-                        makeListNumber = 2;
-                        break;
-                    }
-                    makeList[makeListNumber].append(new MakeItem(sourceDir.relativeFilePath(fi.absolutePath()),
-                                                    fi.fileName(),
-                                                    "Makefile",
-                                                    qmakeTemplate));
-                }
-            }
-
-        }
-    }
-}
-
 void Configure::appendMakeItem(int inList, const QString &item)
 {
     QString dir;
@@ -3809,9 +3765,8 @@ void Configure::generateMakefiles()
         if (spec != "win32-msvc.net" && !spec.startsWith("win32-msvc2") && !spec.startsWith(QLatin1String("wince")))
             dictionary[ "VCPROJFILES" ] = "no";
 
-        int i = 0;
         QString pwd = QDir::currentPath();
-        if (dictionary["FAST"] != "yes") {
+        {
             QString dirName;
             bool generate = true;
             bool doDsp = (dictionary["VCPROJFILES"] == "yes");
@@ -3842,51 +3797,6 @@ void Configure::generateMakefiles()
                 if (int exitCode = Environment::execute(args, QStringList(), QStringList())) {
                     cout << "Qmake failed, return code " << exitCode  << endl << endl;
                     dictionary[ "DONE" ] = "error";
-                }
-            }
-        } else {
-            findProjects(sourcePath);
-            for (i=0; i<3; i++) {
-                for (int j=0; j<makeList[i].size(); ++j) {
-                    MakeItem *it=makeList[i][j];
-                    if (it->directory == "tools/configure")
-                        continue; // don't overwrite our own Makefile
-
-                    QString dirPath = it->directory + '/';
-                    QString projectName = it->proFile;
-                    QString makefileName = buildPath + "/" + dirPath + it->target;
-
-                    // For shadowbuilds, we need to create the path first
-                    QDir buildPathDir(buildPath);
-                    if (sourcePath != buildPath && !buildPathDir.exists(dirPath))
-                        buildPathDir.mkpath(dirPath);
-
-                    QStringList args;
-
-                    args << QDir::toNativeSeparators(buildPath + "/bin/qmake.exe");
-                    args << sourcePath + "/" + dirPath + projectName;
-
-                    cout << "For " << qPrintable(QDir::toNativeSeparators(dirPath + projectName)) << endl;
-                    args << "-o";
-                    args << it->target;
-
-                    QDir::setCurrent(dirPath);
-
-                    QFile file(makefileName);
-                    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-                        printf("failed on dirPath=%s, makefile=%s\n",
-                               qPrintable(QDir::toNativeSeparators(dirPath)),
-                               qPrintable(QDir::toNativeSeparators(makefileName)));
-                        continue;
-                    }
-                    QTextStream txt(&file);
-                    txt << "all:\n";
-                    txt << "\t" << args.join(' ') << "\n";
-                    txt << "\t$(MAKE) -$(MAKEFLAGS) -f " << it->target << "\n";
-                    txt << "first: all\n";
-                    txt << "qmake: FORCE\n";
-                    txt << "\t" << args.join(' ') << "\n";
-                    txt << "FORCE:\n";
                 }
             }
         }

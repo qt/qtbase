@@ -151,7 +151,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
                           (QImageIOHandlerFactoryInterface_iid, QLatin1String("/imageformats")))
 #endif
@@ -223,23 +223,23 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 
     QByteArray form = format.toLower();
     QImageIOHandler *handler = 0;
+    QByteArray suffix;
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     typedef QMultiMap<int, QString> PluginKeyMap;
 
     // check if we have plugins that support the image format
     QFactoryLoader *l = loader();
     const PluginKeyMap keyMap = l->keyMap();
-#endif
-    QByteArray suffix;
 
 #ifdef QIMAGEREADER_DEBUG
     qDebug() << "QImageReader::createReadHandler( device =" << (void *)device << ", format =" << format << "),"
              << keyMap.values().size() << "plugins available: " << keyMap.values();
 #endif
 
-#ifndef QT_NO_LIBRARY
     int suffixPluginIndex = -1;
+#endif // QT_NO_IMAGEFORMATPLUGIN
+
     if (device && format.isEmpty() && autoDetectImageFormat && !ignoresFormatAndExtension) {
         // if there's no format, see if \a device is a file, and if so, find
         // the file suffix and find support for that format among our plugins.
@@ -249,6 +249,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
             qDebug() << "QImageReader::createReadHandler: device is a file:" << file->fileName();
 #endif
             if (!(suffix = QFileInfo(file->fileName()).suffix().toLower().toLatin1()).isEmpty()) {
+#ifndef QT_NO_IMAGEFORMATPLUGIN
                 const int index = keyMap.key(QString::fromLatin1(suffix), -1);
                 if (index != -1) {
 #ifdef QIMAGEREADER_DEBUG
@@ -257,17 +258,17 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 #endif
                     suffixPluginIndex = index;
                 }
+#endif // QT_NO_IMAGEFORMATPLUGIN
             }
         }
     }
-#endif // QT_NO_LIBRARY
 
     QByteArray testFormat = !form.isEmpty() ? form : suffix;
 
     if (ignoresFormatAndExtension)
         testFormat = QByteArray();
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     if (suffixPluginIndex != -1) {
         // check if the plugin that claims support for this format can load
         // from this device with this format.
@@ -322,7 +323,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
             device->seek(pos);
     }
 
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     // if we don't have a handler yet, check if we have built-in support for
     // the format
@@ -369,7 +370,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 #endif
     }
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     if (!handler && (autoDetectImageFormat || ignoresFormatAndExtension)) {
         // check if any of our plugins recognize the file from its contents.
         const qint64 pos = device ? device->pos() : 0;
@@ -389,7 +390,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
         if (device && !device->isSequential())
             device->seek(pos);
     }
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     if (!handler && (autoDetectImageFormat || ignoresFormatAndExtension)) {
         // check if any of our built-in handlers recognize the file from its
@@ -1235,7 +1236,7 @@ bool QImageReader::read(QImage *image)
     }
 
     // successful read; check for "@2x" file name suffix and set device pixel ratio.
-    if (QFileInfo(fileName()).baseName().endsWith("@2x")) {
+    if (QFileInfo(fileName()).baseName().endsWith(QLatin1String("@2x"))) {
         image->setDevicePixelRatio(2.0);
     }
 
@@ -1429,7 +1430,7 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     return format;
 }
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
 void supportedImageHandlerFormats(QFactoryLoader *loader,
                                   QImageIOPlugin::Capability cap,
                                   QSet<QByteArray> *result);
@@ -1471,9 +1472,9 @@ QList<QByteArray> QImageReader::supportedImageFormats()
     for (int i = 0; i < _qt_NumFormats; ++i)
         formats << _qt_BuiltInFormats[i].extension;
 
-#ifndef QT_NO_LIBRARY
+#ifndef QT_NO_IMAGEFORMATPLUGIN
     supportedImageHandlerFormats(loader(), QImageIOPlugin::CanRead, &formats);
-#endif // QT_NO_LIBRARY
+#endif // QT_NO_IMAGEFORMATPLUGIN
 
     QList<QByteArray> sortedFormats;
     for (QSet<QByteArray>::ConstIterator it = formats.constBegin(); it != formats.constEnd(); ++it)

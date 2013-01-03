@@ -4,4 +4,4 @@ CONFIG += no_docs_target
 SUBDIRS       = semaphores \
                 waitconditions
 
-!contains(QT_CONFIG, no-widgets):SUBDIRS += mandelbrot
+qtHaveModule(widgets): SUBDIRS += mandelbrot

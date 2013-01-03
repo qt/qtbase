@@ -510,14 +510,16 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
 
 static inline void qt_mac_waitForMoreEvents(NSString *runLoopMode = NSDefaultRunLoopMode)
 {
-    // If no event exist in the cocoa event que, wait
-    // (and free up cpu time) until at least one event occur.
-    // This implementation is a bit on the edge, but seems to
-    // work fine:
-    [NSApp nextEventMatchingMask:NSAnyEventMask
-                       untilDate:[NSDate distantFuture]
-                          inMode:runLoopMode
-                         dequeue:NO];
+    // If no event exist in the cocoa event que, wait (and free up cpu time) until
+    // at least one event occur. Setting 'dequeuing' to 'no' in the following call
+    // causes it to hang under certain circumstances (QTBUG-28283), so we tell it
+    // to dequeue instead, just to repost the event again:
+    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+        untilDate:[NSDate distantFuture]
+        inMode:runLoopMode
+        dequeue:YES];
+    if (event)
+        [NSApp postEvent:event atStart:YES];
 }
 
 bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)

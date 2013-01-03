@@ -328,11 +328,14 @@ void QAbstractScrollAreaPrivate::setSingleFingerPanEnabled(bool on)
 void QAbstractScrollAreaPrivate::layoutChildren()
 {
     Q_Q(QAbstractScrollArea);
-    bool needh = (hbarpolicy == Qt::ScrollBarAlwaysOn
-                  || (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum() && !hbar->sizeHint().isEmpty()));
+    bool transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar ? vbar : hbar);
+    bool needh = (hbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
+                 || ((hbarpolicy == Qt::ScrollBarAsNeeded || transient)
+                     && hbar->minimum() < hbar->maximum() && !hbar->sizeHint().isEmpty());
 
-    bool needv = (vbarpolicy == Qt::ScrollBarAlwaysOn
-                  || (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty()));
+    bool needv = (vbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
+                 || ((vbarpolicy == Qt::ScrollBarAsNeeded || transient)
+                     && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty());
 
     QStyleOption opt(0);
     opt.init(q);
@@ -489,12 +492,20 @@ void QAbstractScrollAreaPrivate::layoutChildren()
         if (hasMacReverseSizeGrip)
             horizontalScrollBarRect.adjust(vsbExt, 0, 0, 0);
 #endif
+#ifdef Q_OS_MAC
+        if (!hasCornerWidget && QSysInfo::macVersion() >= QSysInfo::MV_10_8 && transient)
+            horizontalScrollBarRect.adjust(0, 0, cornerOffset.x(), 0);
+#endif
         scrollBarContainers[Qt::Horizontal]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, horizontalScrollBarRect));
         scrollBarContainers[Qt::Horizontal]->raise();
     }
 
     if (needv) {
-        const QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top() + hHeaderBottom),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
+        QRect verticalScrollBarRect  (QPoint(cornerPoint.x(), controlsRect.top() + hHeaderBottom),  QPoint(controlsRect.right(), cornerPoint.y() - 1));
+#ifdef Q_OS_MAC
+        if (!hasCornerWidget && QSysInfo::macVersion() >= QSysInfo::MV_10_8 && transient)
+            verticalScrollBarRect.adjust(0, 0, 0, cornerOffset.y());
+#endif
         scrollBarContainers[Qt::Vertical]->setGeometry(QStyle::visualRect(opt.direction, opt.rect, verticalScrollBarRect));
         scrollBarContainers[Qt::Vertical]->raise();
     }
@@ -654,7 +665,6 @@ void QAbstractScrollArea::setVerticalScrollBarPolicy(Qt::ScrollBarPolicy policy)
         d->layoutChildren();
     if (oldPolicy != d->vbarpolicy)
         d->scrollBarPolicyChanged(Qt::Vertical, d->vbarpolicy);
-    d->setScrollBarTransient(d->vbar, policy == Qt::ScrollBarAsNeeded);
 }
 
 
@@ -716,7 +726,6 @@ void QAbstractScrollArea::setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy polic
         d->layoutChildren();
     if (oldPolicy != d->hbarpolicy)
         d->scrollBarPolicyChanged(Qt::Horizontal, d->hbarpolicy);
-    d->setScrollBarTransient(d->hbar, policy == Qt::ScrollBarAsNeeded);
 }
 
 /*!
@@ -935,7 +944,7 @@ bool QAbstractScrollArea::eventFilter(QObject *o, QEvent *e)
     Q_D(QAbstractScrollArea);
     if ((o == d->hbar || o == d->vbar) && (e->type() == QEvent::HoverEnter || e->type() == QEvent::HoverLeave)) {
         Qt::ScrollBarPolicy policy = o == d->hbar ? d->vbarpolicy : d->hbarpolicy;
-        if (policy == Qt::ScrollBarAsNeeded) {
+        if (policy == Qt::ScrollBarAsNeeded || style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, d->vbar ? d->vbar : d->hbar)) {
             QScrollBar *sibling = o == d->hbar ? d->vbar : d->hbar;
             d->setScrollBarTransient(sibling, e->type() == QEvent::HoverLeave);
         }
@@ -1445,9 +1454,11 @@ bool QAbstractScrollAreaPrivate::canStartScrollingAt( const QPoint &startPos )
 
 void QAbstractScrollAreaPrivate::flashScrollBars()
 {
-    if (hbarpolicy == Qt::ScrollBarAsNeeded)
+    Q_Q(QAbstractScrollArea);
+    bool transient =  q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar ? vbar : hbar);
+    if (hbarpolicy == Qt::ScrollBarAsNeeded || transient)
         hbar->d_func()->flash();
-    if (vbarpolicy == Qt::ScrollBarAsNeeded)
+    if (vbarpolicy == Qt::ScrollBarAsNeeded || transient)
         vbar->d_func()->flash();
 }
 

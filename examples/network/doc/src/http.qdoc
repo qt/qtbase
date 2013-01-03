@@ -28,9 +28,11 @@
 /*!
     \example http
     \title HTTP Example
+    \ingroup examples-network
+    \brief Demonstrates a simple HTTP client
 
-    \brief The HTTP example demonstrates a simple HTTP client that shows how to fetch files
-    specified by URLs from remote hosts.
+    This example demonstrates how a simple HTTP client can fetch files
+    from remote hosts.
 
     \image http-example.png
 */

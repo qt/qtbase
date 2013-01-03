@@ -1,3 +1,7 @@
+# This file is loaded by qmake right before loading the qmakespec.
+# At this point, the built-in variables have been set up and the project's
+# .qmake.super was read (if present).
+
 QMAKE_DIR_SEP           = $$DIR_SEPARATOR
 QMAKE_DIRLIST_SEP       = $$DIRLIST_SEPARATOR
 

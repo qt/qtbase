@@ -3,7 +3,7 @@ SUBDIRS       = \
                 factorial \
                 pingpong
 
-!contains(QT_CONFIG, no-widgets) {
+qtHaveModule(widgets) {
     SUBDIRS +=  \
                 eventtransitions \
                 rogue \

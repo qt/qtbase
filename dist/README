@@ -91,10 +91,6 @@ Running Example Applications
 You can open example applications in the Qt Creator Welcome mode to build and
 run them.
 
-Ready to run example applications are located in
-<install_dir>/<version>/<compiler>/examples. You can launch the C++ based
-examples directly either from command line or your file system browser.
-
 The QML based Quick 2 examples are located in
 <install_dir>/<version>/<compiler>/examples/qtdeclarative. You can load them
 using the qmlscene application.
@@ -156,3 +152,8 @@ Much more information is available at:
 We hope you will enjoy using Qt!
 
 - The Qt developers @ qt-project.org
+
+
+
+			In memory of Trond Kjernåsen.
+			 You will not be forgotten.

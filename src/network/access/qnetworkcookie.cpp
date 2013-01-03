@@ -90,9 +90,9 @@ QT_BEGIN_NAMESPACE
 
     This class implements cookies as described by the
     \l{Netscape Cookie Specification}{initial cookie specification by
-    Netscape}, which is somewhat similar to the \l{RFC 2109} specification,
+    Netscape}, which is somewhat similar to the \l{http://www.rfc-editor.org/rfc/rfc2109.txt}{RFC 2109} specification,
     plus the \l{Mitigating Cross-site Scripting With HTTP-only Cookies}
-    {"HttpOnly" extension}. The more recent \l{RFC 2965} specification
+    {"HttpOnly" extension}. The more recent \l{http://www.rfc-editor.org/rfc/rfc2965.txt}{RFC 2965} specification
     (which uses the Set-Cookie2 header) is not supported.
 
     \sa QNetworkCookieJar, QNetworkRequest, QNetworkReply

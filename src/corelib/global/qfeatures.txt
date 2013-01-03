@@ -141,13 +141,6 @@ Name: QInputContext
 SeeAlso: ???
 # Data structures
 
-Feature: QUUID_STRING
-Description: Supports convertion between UUID and strings.
-Section: Data structures
-Requires:
-Name:  Universally Unique Identifier Convertion
-SeeAlso: ???
-
 Feature: TEXTDATE
 Description: Supports month and day names in dates.
 Section: Data structures
@@ -767,7 +760,7 @@ SeeAlso: ???
 Feature: IMAGEFORMATPLUGIN
 Description: Supports writing an image format plugin.
 Section: Images
-Requires:
+Requires: LIBRARY
 Name: QImageIOPlugin
 SeeAlso: ???
 

@@ -503,7 +503,7 @@ QString QColor::name() const
     \li #RRGGBB
     \li #RRRGGGBBB
     \li #RRRRGGGGBBBB
-    \li A name from the list of colors defined in the list of \l{SVG color keyword names}
+    \li A name from the list of colors defined in the list of \l{http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword names}
        provided by the World Wide Web Consortium; for example, "steelblue" or "gainsboro".
        These color names work on all platforms. Note that these color names are \e not the
        same as defined by the Qt::GlobalColor enums, e.g. "green" and Qt::green does not

@@ -45,6 +45,8 @@
 #include <QtGui/qmatrix.h>
 #include <QtGui/qtransform.h>
 
+#include <cmath>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MATRIX4X4
@@ -1456,27 +1458,29 @@ void QMatrix4x4::frustum(float left, float right, float bottom, float top, float
 
 /*!
     Multiplies this matrix by another that applies a perspective
-    projection.  The field of view will be \a angle degrees within
-    a window with a given \a aspect ratio.  The projection will
-    have the specified \a nearPlane and \a farPlane clipping planes.
+    projection. The vertical field of view will be \a verticalAngle degrees
+    within a window with a given \a aspectRatio that determines the horizontal
+    field of view.
+    The projection will have the specified \a nearPlane and \a farPlane clipping
+    planes which are the distances from the viewer to the corresponding planes.
 
     \sa ortho(), frustum()
 */
-void QMatrix4x4::perspective(float angle, float aspect, float nearPlane, float farPlane)
+void QMatrix4x4::perspective(float verticalAngle, float aspectRatio, float nearPlane, float farPlane)
 {
     // Bail out if the projection volume is zero-sized.
-    if (nearPlane == farPlane || aspect == 0.0f)
+    if (nearPlane == farPlane || aspectRatio == 0.0f)
         return;
 
     // Construct the projection.
     QMatrix4x4 m(1);
-    float radians = (angle / 2.0f) * M_PI / 180.0f;
+    float radians = (verticalAngle / 2.0f) * M_PI / 180.0f;
     float sine = sinf(radians);
     if (sine == 0.0f)
         return;
     float cotan = cosf(radians) / sine;
     float clip = farPlane - nearPlane;
-    m.m[0][0] = cotan / aspect;
+    m.m[0][0] = cotan / aspectRatio;
     m.m[1][0] = 0.0f;
     m.m[2][0] = 0.0f;
     m.m[3][0] = 0.0f;

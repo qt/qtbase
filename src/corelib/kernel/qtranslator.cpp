@@ -343,10 +343,10 @@ public:
 
     The most common use of QTranslator is to: load a translation
     file, install it using QCoreApplication::installTranslator(), and use
-    it via QObject::tr(). Here's the \c main() function from the
-    \l{linguist/hellotr}{Hello tr()} example:
+    it via QObject::tr(). Here's an example \c main() function using the
+    QTranslator:
 
-    \snippet linguist/hellotr/main.cpp 2
+    \snippet hellotrmain.cpp 0
 
     Note that the translator must be created \e before the
     application's widgets.

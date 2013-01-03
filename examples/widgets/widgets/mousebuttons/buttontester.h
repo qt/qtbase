@@ -56,9 +56,12 @@ protected:
     void    mousePressEvent(QMouseEvent *event);
     void    mouseReleaseEvent(QMouseEvent *event);
     void    mouseDoubleClickEvent(QMouseEvent *event);
+#ifndef QT_NO_WHEELEVENT
     void    wheelEvent(QWheelEvent * event);
+#endif
     int     buttonByNumber(const Qt::MouseButton button);
     QString enumNameFromValue(const Qt::MouseButton button);
+    QString enumNamesFromMouseButtons(const Qt::MouseButtons buttons);
 };
 
 #endif // BUTTONTESTER_H

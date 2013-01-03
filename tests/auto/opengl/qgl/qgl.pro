@@ -4,7 +4,7 @@
 
 CONFIG += testcase
 TARGET = tst_qgl
-requires(contains(QT_CONFIG,opengl))
+requires(qtHaveModule(opengl))
 QT += widgets widgets-private opengl-private gui-private core-private testlib
 
 SOURCES   += tst_qgl.cpp

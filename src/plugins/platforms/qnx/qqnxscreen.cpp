@@ -429,7 +429,7 @@ void QQnxScreen::addWindow(QQnxWindow *window)
     // Such a situation would strangely break focus handling due to the
     // invisible desktop widget window being layered on top of normal
     // windows
-    if (window->window()->windowType() == Qt::Desktop)
+    if (window->window()->type() == Qt::Desktop)
         m_childWindows.push_front(window);
     else
         m_childWindows.push_back(window);

@@ -121,7 +121,7 @@ public:
 
 tst_QAbstractNetworkCache::tst_QAbstractNetworkCache()
 {
-    QCoreApplication::setOrganizationName(QLatin1String("Trolltech"));
+    QCoreApplication::setOrganizationName(QLatin1String("QtProject"));
     QCoreApplication::setApplicationName(QLatin1String("autotest_qabstractnetworkcache"));
     QCoreApplication::setApplicationVersion(QLatin1String("1.0"));
 }

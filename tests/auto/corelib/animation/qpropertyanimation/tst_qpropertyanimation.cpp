@@ -44,6 +44,8 @@
 #include <QtCore/qvariantanimation.h>
 #include <QtWidgets/qwidget.h>
 
+Q_DECLARE_METATYPE(QAbstractAnimation::State)
+
 class UncontrolledAnimation : public QPropertyAnimation
 {
     Q_OBJECT
@@ -699,7 +701,6 @@ struct Number
 };
 
 Q_DECLARE_METATYPE(Number)
-Q_DECLARE_METATYPE(QAbstractAnimation::State)
 
 QVariant numberInterpolator(const Number &f, const Number &t, qreal progress)
 {

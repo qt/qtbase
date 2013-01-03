@@ -1,6 +1,7 @@
 #! [0]
 TEMPLATE        = lib
 CONFIG         += plugin
+QT             += widgets
 INCLUDEPATH    += ../echowindow
 HEADERS         = echoplugin.h
 SOURCES         = echoplugin.cpp
@@ -13,5 +14,3 @@ EXAMPLE_FILES = echoplugin.json
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin/plugin
 INSTALLS += target
-
-QT += widgets

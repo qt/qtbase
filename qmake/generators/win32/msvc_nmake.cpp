@@ -409,6 +409,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 manifest = escapeFilePath(fileFixify(manifest));
             }
 
+            const QString resourceId = (templateName == "app") ? "1" : "2";
             const bool incrementalLinking = project->values("QMAKE_LFLAGS").toQStringList().filter(QRegExp("(/|-)INCREMENTAL:NO")).isEmpty();
             if (incrementalLinking) {
                 // Link a resource that contains the manifest without modifying the exe/dll after linking.
@@ -418,7 +419,8 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 QString manifest_bak = escapeFilePath(target +  "_manifest.bak");
                 project->values("QMAKE_CLEAN") << manifest_rc << manifest_res;
 
-                t << "\n\techo 1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
+                t << "\n\techo " << resourceId
+                  << " /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ "
                   << cQuoted(unescapeFilePath(manifest)) << ">" << manifest_rc;
 
                 if (generateManifest) {
@@ -441,7 +443,8 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                 // directly embed the manifest in the executable after linking
                 t << "\n\t";
                 writeLinkCommand(t, extraLFlags);
-                t << "\n\t" << "mt.exe /nologo /manifest " << manifest << " /outputresource:$(DESTDIR_TARGET);1";
+                t << "\n\t" << "mt.exe /nologo /manifest " << manifest
+                  << " /outputresource:$(DESTDIR_TARGET);" << resourceId;
             }
         }  else {
             t << "\n\t";
@@ -462,7 +465,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
 
 void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &extraFlags, const QString &extraInlineFileContent)
 {
-    t << "$(LINK) $(LFLAGS)";
+    t << "$(LINKER) $(LFLAGS)";
     if (!extraFlags.isEmpty())
         t << ' ' << extraFlags;
     t << " /OUT:$(DESTDIR_TARGET) @<<\n"

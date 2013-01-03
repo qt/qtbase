@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS += stickman.h \
            animation.h \
            node.h \
@@ -17,5 +19,3 @@ RESOURCES += stickman.qrc
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/widgets/animation/stickman
 INSTALLS += target
-
-QT += widgets

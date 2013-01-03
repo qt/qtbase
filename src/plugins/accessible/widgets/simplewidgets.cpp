@@ -832,6 +832,14 @@ QVariant QAccessibleProgressBar::minimumValue() const
     return progressBar()->minimum();
 }
 
+QVariant QAccessibleProgressBar::minimumStepSize() const
+{
+    // This is arbitrary since any value between min and max is valid.
+    // Some screen readers (orca use it to calculate how many digits to display though,
+    // so it makes sense to return a "sensible" value. Providing 100 increments seems ok.
+    return (progressBar()->maximum() - progressBar()->minimum()) / 100.0;
+}
+
 QProgressBar *QAccessibleProgressBar::progressBar() const
 {
     return qobject_cast<QProgressBar *>(object());

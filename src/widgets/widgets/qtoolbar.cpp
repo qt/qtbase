@@ -273,7 +273,7 @@ bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
     q->initStyleOption(&opt);
     if (q->style()->subElementRect(QStyle::SE_ToolBarHandle, &opt, q).contains(event->pos()) == false) {
 #ifdef Q_WS_MAC
-        // When using the unified toolbar on Mac OS X the user can can click and
+        // When using the unified toolbar on Mac OS X, the user can click and
         // drag between toolbar contents to move the window. Make this work by
         // implementing the standard mouse-dragging code and then call
         // window->move() in mouseMoveEvent below.
@@ -421,13 +421,13 @@ void QToolBarPrivate::plug(const QRect &r)
     or insertAction(). Groups of buttons can be separated using
     addSeparator() or insertSeparator(). If a toolbar button is not
     appropriate, a widget can be inserted instead using addWidget() or
-    insertWidget(); examples of suitable widgets are QSpinBox,
-    QDoubleSpinBox, and QComboBox. When a toolbar button is pressed it
+    insertWidget(). Examples of suitable widgets are QSpinBox,
+    QDoubleSpinBox, and QComboBox. When a toolbar button is pressed, it
     emits the actionTriggered() signal.
 
-    A toolbar can be fixed in place in a particular area (e.g. at the
-    top of the window), or it can be movable (isMovable()) between
-    toolbar areas; see allowedAreas() and isAreaAllowed().
+    A toolbar can be fixed in place in a particular area (e.g., at the
+    top of the window), or it can be movable between toolbar areas;
+    see setMovable(), isMovable(), allowedAreas() and isAreaAllowed().
 
     When a toolbar is resized in such a way that it is too small to
     show all the items it contains, an extension button will appear as
@@ -454,7 +454,7 @@ void QToolBarPrivate::plug(const QRect &r)
     \fn void QToolBar::addAction(QAction *action)
     \overload
 
-    Appends the action \a action to the toolbar's list of actions.
+    Appends the \a action to the toolbar's list of actions.
 
     \sa QMenu::addAction(), QWidget::addAction()
 */
@@ -464,7 +464,7 @@ void QToolBarPrivate::plug(const QRect &r)
 
     This signal is emitted when an action in this toolbar is triggered.
     This happens when the action's tool button is pressed, or when the
-    action is triggered in some other way outside the tool bar. The parameter
+    action is triggered in some other way outside the toolbar. The parameter
     holds the triggered \a action.
 */
 
@@ -481,7 +481,7 @@ void QToolBarPrivate::plug(const QRect &r)
 /*!
     \fn void QToolBar::iconSizeChanged(const QSize &iconSize)
 
-    This signal is emitted when the icon size is changed.  The \a
+    This signal is emitted when the icon size is changed. The \a
     iconSize parameter holds the toolbar's new icon size.
 
     \sa iconSize, QMainWindow::iconSize
@@ -501,7 +501,7 @@ void QToolBarPrivate::plug(const QRect &r)
     \fn void QToolBar::orientationChanged(Qt::Orientation orientation)
 
     This signal is emitted when the orientation of the toolbar changes.
-    The new orientation is specified by the \a orientation given.
+    The \a orientation parameter holds the toolbar's new orientation.
 
     \sa orientation
 */
@@ -583,7 +583,7 @@ QToolBar::~QToolBar()
 
 /*! \property QToolBar::movable
     \brief whether the user can move the toolbar within the toolbar area,
-    or between toolbar areas
+    or between toolbar areas.
 
     By default, this property is true.
 
@@ -681,8 +681,8 @@ Qt::ToolBarAreas QToolBar::allowedAreas() const
 
     This function should not be used when the toolbar is managed
     by QMainWindow. You can use QMainWindow::addToolBar() or
-    QMainWindow::insertToolBar() if you wish to move a toolbar (that
-    is already added to a main window) to another Qt::ToolBarArea.
+    QMainWindow::insertToolBar() if you wish to move a toolbar that
+    is already added to a main window to another Qt::ToolBarArea.
 */
 
 void QToolBar::setOrientation(Qt::Orientation orientation)
@@ -833,7 +833,7 @@ QAction *QToolBar::addAction(const QString &text,
 /*!
     \overload
 
-    Creates a new action with the icon \a icon and text \a text. This
+    Creates a new action with the given \a icon and \a text. This
     action is added to the end of the toolbar. The action's
     \l{QAction::triggered()}{triggered()} signal is connected to \a
     member in \a receiver.
@@ -880,7 +880,7 @@ QAction *QToolBar::insertSeparator(QAction *before)
 
     The toolbar takes ownership of \a widget.
 
-    If you add a QToolButton with this method, the tools bar's
+    If you add a QToolButton with this method, the toolbar's
     Qt::ToolButtonStyle will not be respected.
 
     \note You should use QAction::setVisible() to change the

@@ -1,6 +1,7 @@
 TARGET = maliitplatforminputcontextplugin
 
 PLUGIN_TYPE = platforminputcontexts
+PLUGIN_CLASS_NAME = QMaliitPlatformInputContextPlugin
 load(qt_plugin)
 
 QT += dbus gui-private
