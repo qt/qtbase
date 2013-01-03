@@ -271,6 +271,11 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
     }
 }
 
+static inline int timevalToMillisecs(const timeval &tv)
+{
+    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+}
+
 int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                        timeval *timeout)
 {
@@ -278,9 +283,6 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     Q_D(QEventDispatcherBlackberry);
 
     BpsChannelScopeSwitcher channelSwitcher(d->bps_channel);
-
-    // Make a note of the start time
-    timeval startTime = qt_gettime();
 
     // prepare file sets for bps callback
     d->ioData->count = 0;
@@ -298,15 +300,15 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     if (exceptfds)
         FD_ZERO(exceptfds);
 
+    bps_event_t *event = 0;
+    unsigned int eventCount = 0;
+
     // Convert timeout to milliseconds
     int timeoutTotal = -1;
     if (timeout)
-        timeoutTotal = (timeout->tv_sec * 1000) + (timeout->tv_usec / 1000);
-
+        timeoutTotal = timevalToMillisecs(*timeout);
     int timeoutLeft = timeoutTotal;
-
-    bps_event_t *event = 0;
-    unsigned int eventCount = 0;
+    timeval startTime = qt_gettime();
 
     // This loop exists such that we can drain the bps event queue of all native events
     // more efficiently than if we were to return control to Qt after each event. This
@@ -331,10 +333,19 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
             // Clock source is monotonic, so we can recalculate how much timeout is left
             if (timeoutTotal != -1) {
                 timeval t2 = qt_gettime();
-                timeoutLeft = timeoutTotal - ((t2.tv_sec * 1000 + t2.tv_usec / 1000)
-                                              - (startTime.tv_sec * 1000 + startTime.tv_usec / 1000));
+                timeoutLeft = timeoutTotal
+                              - (timevalToMillisecs(t2) - timevalToMillisecs(startTime));
                 if (timeoutLeft < 0)
                     timeoutLeft = 0;
+            }
+
+            timeval tnext;
+            if (d->timerList.timerWait(tnext)) {
+                int timeoutNext = timevalToMillisecs(tnext);
+                if (timeoutNext < timeoutLeft || timeoutTotal == -1) {
+                    timeoutTotal = timeoutLeft = timeoutNext;
+                    startTime = qt_gettime();
+                }
             }
         }
 
