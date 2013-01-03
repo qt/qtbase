@@ -572,8 +572,6 @@ void tst_QEventLoop::processEventsExcludeTimers()
     timerReceiver.gotTimerEvent = -1;
 }
 
-Q_DECLARE_METATYPE(QThread*)
-
 namespace DeliverInDefinedOrder {
     enum { NbThread = 3,  NbObject = 500, NbEventQueue = 5, NbEvent = 50 };
 

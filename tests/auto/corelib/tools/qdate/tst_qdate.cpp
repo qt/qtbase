@@ -109,7 +109,6 @@ private:
     QDate invalidDate() const { return QDate(); }
 };
 
-Q_DECLARE_METATYPE(QDate)
 Q_DECLARE_METATYPE(Qt::DateFormat)
 
 void tst_QDate::isNull_data()

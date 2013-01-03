@@ -296,7 +296,6 @@ private:
     template<typename T> void detach() const;
 };
 
-Q_DECLARE_METATYPE(QVector<int>);
 
 template<typename T> struct SimpleValue
 {

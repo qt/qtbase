@@ -758,7 +758,6 @@ void tst_QSettings::testErrorHandling()
 #endif // !Q_OS_WIN
 }
 
-Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QSettings::Status)
 
 #ifdef QT_BUILD_INTERNAL

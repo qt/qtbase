@@ -774,7 +774,6 @@ void tst_QPropertyAnimation::interpolated()
     }
 }
 
-Q_DECLARE_METATYPE(QVariant)
 
 void tst_QPropertyAnimation::setStartEndValues_data()
 {

@@ -54,11 +54,6 @@ typedef QList<int> IntList;
 typedef QPair<int, int> IntPair;
 typedef QList<IntPair> IntPairList;
 
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(IntPair)
-Q_DECLARE_METATYPE(IntPairList)
-Q_DECLARE_METATYPE(QModelIndex)
-
 class tst_QSortFilterProxyModel : public QObject
 {
     Q_OBJECT

@@ -147,9 +147,6 @@ private:
     QTime invalidTime() const { return QTime(-1, -1, -1); }
 };
 
-Q_DECLARE_METATYPE(QDateTime)
-Q_DECLARE_METATYPE(QDate)
-Q_DECLARE_METATYPE(QTime)
 Q_DECLARE_METATYPE(Qt::TimeSpec)
 Q_DECLARE_METATYPE(Qt::DateFormat)
 

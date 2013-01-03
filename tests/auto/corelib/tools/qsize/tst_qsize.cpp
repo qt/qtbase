@@ -42,7 +42,6 @@
 #include <QtTest/QtTest>
 #include <qsize.h>
 
-Q_DECLARE_METATYPE(QSize)
 
 class tst_QSize : public QObject
 {

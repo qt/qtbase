@@ -74,8 +74,6 @@ extern "C" DWORD GetThreadLocale(void) {
 #    include <stdlib.h>
 #endif
 
-Q_DECLARE_METATYPE(qlonglong)
-Q_DECLARE_METATYPE(QDate)
 Q_DECLARE_METATYPE(QLocale::FormatType)
 
 class tst_QLocale : public QObject
@@ -957,7 +955,6 @@ void tst_QLocale::formatDate()
     QCOMPARE(l.toString(date, format), result);
 }
 
-Q_DECLARE_METATYPE(QTime)
 
 void tst_QLocale::formatTime_data()
 {

@@ -57,9 +57,6 @@
 
 #include "../../../network-settings.h"
 
-Q_DECLARE_METATYPE(qlonglong)
-Q_DECLARE_METATYPE(qulonglong)
-Q_DECLARE_METATYPE(QList<int>)
 
 QT_BEGIN_NAMESPACE
 template<> struct QMetaTypeId<QIODevice::OpenModeFlag>

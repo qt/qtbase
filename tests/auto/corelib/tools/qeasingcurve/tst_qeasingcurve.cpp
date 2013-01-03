@@ -158,8 +158,6 @@ void tst_QEasingCurve::propertyDefaults()
 
 typedef QList<int> IntList;
 typedef QList<qreal> RealList;
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(RealList)
 
 void tst_QEasingCurve::valueForProgress_data()
 {

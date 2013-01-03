@@ -99,8 +99,6 @@ private slots:
     void resize();
 };
 
-Q_DECLARE_METATYPE(QBitArray)
-
 void tst_QBitArray::size_data()
 {
     //create the testtable instance and define the elements
