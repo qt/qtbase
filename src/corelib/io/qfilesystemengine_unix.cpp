@@ -685,8 +685,16 @@ QFileSystemEntry QFileSystemEngine::currentPath()
         }
 #else
         char currentName[PATH_MAX+1];
-        if (::getcwd(currentName, PATH_MAX))
+        if (::getcwd(currentName, PATH_MAX)) {
+#if defined(Q_OS_VXWORKS) && defined(VXWORKS_VXSIM)
+            QByteArray dir(currentName);
+            if (dir.indexOf(':') < dir.indexOf('/'))
+                dir.remove(0, dir.indexOf(':')+1);
+
+            qstrncpy(currentName, dir.constData(), PATH_MAX);
+#endif
             result = QFileSystemEntry(QByteArray(currentName), QFileSystemEntry::FromNativePath());
+        }
 # if defined(QT_DEBUG)
         if (result.isEmpty())
             qWarning("QFileSystemEngine::currentPath: getcwd() failed");
