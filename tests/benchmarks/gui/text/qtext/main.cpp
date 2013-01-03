@@ -50,7 +50,6 @@
 #include <QBuffer>
 #include <qtest.h>
 
-Q_DECLARE_METATYPE(QTextDocument*)
 Q_DECLARE_METATYPE(QList<QTextLayout::FormatRange>)
 
 class tst_QText: public QObject

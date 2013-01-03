@@ -53,10 +53,6 @@
 
 #include <private/qpixmap_raster_p.h>
 
-Q_DECLARE_METATYPE(QLine)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QSize)
-Q_DECLARE_METATYPE(QPoint)
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(QPainter::RenderHint)
 Q_DECLARE_METATYPE(QPainter::CompositionMode)

@@ -42,7 +42,6 @@
 #include <QFile>
 #include <qtest.h>
 
-Q_DECLARE_METATYPE(QList<QByteArray>)
 Q_DECLARE_METATYPE(QTextCodec *)
 
 class tst_QTextCodec: public QObject
