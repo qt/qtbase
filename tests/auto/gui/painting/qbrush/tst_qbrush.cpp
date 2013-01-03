@@ -79,7 +79,6 @@ private slots:
     void debug();
 };
 
-Q_DECLARE_METATYPE(QBrush)
 
 tst_QBrush::tst_QBrush()
 {

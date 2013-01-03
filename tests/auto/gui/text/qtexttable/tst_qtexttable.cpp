@@ -54,7 +54,6 @@
 #endif
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 

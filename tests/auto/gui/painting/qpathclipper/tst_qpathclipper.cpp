@@ -1165,7 +1165,6 @@ static bool strictContains(const QPainterPath &a, const QPainterPath &b)
     return b.subtracted(a) == QPainterPath();
 }
 
-Q_DECLARE_METATYPE(QPolygonF)
 
 void tst_QPathClipper::task204301_data()
 {

@@ -153,10 +153,8 @@ private:
 
 static const int defaultSize = 3;
 
-Q_DECLARE_METATYPE(QModelIndex)
 Q_DECLARE_METATYPE(QStandardItem*)
 Q_DECLARE_METATYPE(Qt::Orientation)
-Q_DECLARE_METATYPE(QVariantList)
 
 tst_QStandardItemModel::tst_QStandardItemModel() : m_model(0), rcParent(8), rcFirst(8,0), rcLast(8,0)
 {

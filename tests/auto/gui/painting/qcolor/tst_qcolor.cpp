@@ -224,7 +224,6 @@ void tst_QColor::getSetCheck()
     QCOMPARE(obj1.rgb(), qRgb(0, 0, 0));
 }
 
-Q_DECLARE_METATYPE(QColor)
 
 
 tst_QColor::tst_QColor()
