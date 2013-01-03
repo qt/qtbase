@@ -47,11 +47,9 @@
 #include <qdialogbuttonbox.h>
 #include <limits.h>
 
-Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QDialogButtonBox::ButtonRole)
 Q_DECLARE_METATYPE(QDialogButtonBox::StandardButton)
 Q_DECLARE_METATYPE(QDialogButtonBox::StandardButtons)
-Q_DECLARE_METATYPE(QAbstractButton*)
 
 class tst_QDialogButtonBox : public QObject
 {

@@ -113,7 +113,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(QList<Qt::Key>)
-Q_DECLARE_METATYPE(QPoint)
 
 void tst_QAbstractSlider::initTestCase()
 {

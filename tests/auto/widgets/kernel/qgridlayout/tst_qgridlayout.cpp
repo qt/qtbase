@@ -513,7 +513,6 @@ int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0
 
 
 typedef QList<QPoint> PointList;
-Q_DECLARE_METATYPE(PointList)
 
 
 class SizeHinterFrame : public QLabel

@@ -1891,7 +1891,6 @@ enum WhichSize {
 typedef QPair<int, QVariant> Inst;
 
 Q_DECLARE_METATYPE(Inst)
-Q_DECLARE_METATYPE(QVector<Inst>)
 
 void tst_QGraphicsWidget::setSizes_data()
 {

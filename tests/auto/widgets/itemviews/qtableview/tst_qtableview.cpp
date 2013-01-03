@@ -54,10 +54,8 @@
 #endif
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 
 typedef QList<bool> BoolList;
-Q_DECLARE_METATYPE(BoolList)
 
 class tst_QTableView : public QObject
 {
@@ -787,7 +785,6 @@ void tst_QTableView::headerSections()
 }
 
 typedef QPair<int,int> IntPair;
-Q_DECLARE_METATYPE(IntPair)
 
 void tst_QTableView::moveCursor_data()
 {
@@ -1849,7 +1846,6 @@ void tst_QTableView::selectColumn()
         QCOMPARE(view.selectionModel()->selectedIndexes().at(i).column(), column);
 }
 
-Q_DECLARE_METATYPE(QRect)
 void tst_QTableView::visualRect_data()
 {
     QTest::addColumn<int>("rowCount");
@@ -2925,7 +2921,6 @@ void tst_QTableView::span()
 }
 
 typedef QVector<QRect> SpanList;
-Q_DECLARE_METATYPE(SpanList)
 
 void tst_QTableView::spans_data()
 {

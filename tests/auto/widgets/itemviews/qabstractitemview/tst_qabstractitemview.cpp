@@ -989,7 +989,6 @@ public:
 };
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 
 void tst_QAbstractItemView::setItemDelegate_data()
 {

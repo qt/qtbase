@@ -56,10 +56,8 @@
 #include <qdebug.h>
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 
 typedef QList<bool> BoolList;
-Q_DECLARE_METATYPE(BoolList)
 
 class protected_QHeaderView : public QHeaderView
 {

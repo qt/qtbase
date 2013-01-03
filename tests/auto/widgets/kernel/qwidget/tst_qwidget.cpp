@@ -4311,8 +4311,6 @@ void tst_QWidget::qobject_castInDestroyedSlot()
     QVERIFY(checker.wasQWidget == true);
 }
 
-Q_DECLARE_METATYPE(QList<QRect>)
-
 // Since X11 WindowManager operations are all async, and we have no way to know if the window
 // manager has finished playing with the window geometry, this test can't be reliable on X11.
 

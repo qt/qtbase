@@ -50,7 +50,6 @@
 #include <QVBoxLayout>
 #include <QSizeGrip>
 
-Q_DECLARE_METATYPE(QSize)
 
 
 QT_FORWARD_DECLARE_CLASS(QDialog)

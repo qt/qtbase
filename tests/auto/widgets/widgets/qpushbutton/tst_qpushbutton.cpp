@@ -54,8 +54,6 @@
 #include <QStyleFactory>
 #include <QTabWidget>
 
-Q_DECLARE_METATYPE(QPushButton*)
-
 class tst_QPushButton : public QObject
 {
 Q_OBJECT

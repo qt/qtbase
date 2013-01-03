@@ -44,7 +44,6 @@
 #include <qgraphicsitem.h>
 #include <qpen.h>
 
-Q_DECLARE_METATYPE(QPolygonF)
 
 class tst_QGraphicsPolygonItem : public QObject
 {
@@ -292,7 +291,6 @@ void tst_QGraphicsPolygonItem::shape()
     QCOMPARE(item.shape(), shape);
 }
 
-Q_DECLARE_METATYPE(QVariant)
 void tst_QGraphicsPolygonItem::extension_data()
 {
     QTest::addColumn<QVariant>("variant");

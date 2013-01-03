@@ -121,10 +121,6 @@ void tst_QDirModel::getSetCheck()
     QCOMPARE(true, obj1.lazyChildCount());
 }
 
-
-Q_DECLARE_METATYPE(QModelIndex)
-Q_DECLARE_METATYPE(QModelIndexList)
-
 void tst_QDirModel::cleanupTestCase()
 {
     QDir current;

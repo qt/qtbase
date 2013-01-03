@@ -73,10 +73,7 @@
 //Used in copyAvailable
 typedef QPair<Qt::Key, Qt::KeyboardModifier> keyPairType;
 typedef QList<keyPairType> pairListType;
-Q_DECLARE_METATYPE(pairListType);
 Q_DECLARE_METATYPE(keyPairType);
-Q_DECLARE_METATYPE(QList<bool>);
-Q_DECLARE_METATYPE(QList<int>);
 
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 

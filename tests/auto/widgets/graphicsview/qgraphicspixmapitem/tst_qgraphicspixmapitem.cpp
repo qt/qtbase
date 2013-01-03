@@ -370,7 +370,6 @@ void tst_QGraphicsPixmapItem::shape()
 }
 
 Q_DECLARE_METATYPE(SubQGraphicsPixmapItem::Extension)
-Q_DECLARE_METATYPE(QVariant)
 void tst_QGraphicsPixmapItem::extension_data()
 {
     QTest::addColumn<QVariant>("variant");

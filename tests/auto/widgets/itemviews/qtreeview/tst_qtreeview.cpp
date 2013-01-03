@@ -45,7 +45,6 @@
 #include <QtWidgets/QtWidgets>
 #include <private/qabstractitemview_p.h>
 
-Q_DECLARE_METATYPE(QModelIndex)
 #ifndef QT_NO_DRAGANDDROP
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
 #endif
@@ -1798,7 +1797,6 @@ public:
 };
 
 typedef QList<QPoint> PointList;
-Q_DECLARE_METATYPE(PointList)
 
 void tst_QTreeView::setSelection_data()
 {
