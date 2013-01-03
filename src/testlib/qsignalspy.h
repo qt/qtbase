@@ -97,7 +97,7 @@ public:
             return;
         }
         sig = ba;
-        initArgs(mo->method(sigIndex));
+        initArgs(mo->method(sigIndex), obj);
     }
 
     inline bool isValid() const { return !sig.isEmpty(); }
@@ -131,10 +131,23 @@ public:
 private:
     void initArgs(const QMetaMethod &member)
     {
+        initArgs(member, 0);
+    }
+
+    void initArgs(const QMetaMethod &member, const QObject *obj)
+    {
         const QList<QByteArray> params = member.parameterTypes();
         args.reserve(params.size());
         for (int i = 0; i < params.count(); ++i) {
-            const int tp = QMetaType::type(params.at(i).constData());
+            int tp = QMetaType::type(params.at(i).constData());
+            if (tp == QMetaType::UnknownType && obj) {
+                void *argv[] = { &tp, &i };
+                QMetaObject::metacall(const_cast<QObject*>(obj),
+                                      QMetaObject::RegisterMethodArgumentMetaType,
+                                      member.methodIndex(), argv);
+                if (tp == -1)
+                    tp = QMetaType::UnknownType;
+            }
             if (tp == QMetaType::UnknownType) {
                 Q_ASSERT(tp != QMetaType::Void); // void parameter => metaobject is corrupt
                 qWarning("Don't know how to handle '%s', use qRegisterMetaType to register it.",
