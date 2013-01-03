@@ -43,8 +43,12 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "qelapsedtimer.h"
+#ifdef Q_OS_VXWORKS
+#include "qfunctions_vxworks.h"
+#else
 #include <sys/time.h>
 #include <time.h>
+#endif
 #include <unistd.h>
 
 #include <qatomic.h>
