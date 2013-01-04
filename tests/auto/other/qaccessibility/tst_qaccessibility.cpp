@@ -1544,6 +1544,21 @@ static QRect characterRect(const QTextEdit &edit, int offset)
     return r;
 }
 
+/* The rects does not have to be exactly the same. They may be slightly different due to
+   different ways of calculating them. By having an acceptable delta, this should also
+   make the test a bit more resilient against any future changes in the behavior of
+   characterRect().
+*/
+static bool fuzzyRectCompare(const QRect &a, const QRect &b)
+{
+    static const int MAX_ACCEPTABLE_DELTA = 1;
+    const QMargins delta(a.left() - b.left(), a.top() - b.top(),
+                         a.right() - b.right(), a.bottom() - b.bottom());
+
+    return qAbs(delta.left()) <= MAX_ACCEPTABLE_DELTA && qAbs(delta.top()) <= MAX_ACCEPTABLE_DELTA
+           && qAbs(delta.right()) <= MAX_ACCEPTABLE_DELTA && qAbs(delta.bottom()) <= MAX_ACCEPTABLE_DELTA;
+}
+
 void tst_QAccessibility::textEditTest()
 {
     for (int pass = 0; pass < 2; ++pass) {
@@ -1580,16 +1595,16 @@ void tst_QAccessibility::textEditTest()
 
         int offset = 10;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("d"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
         offset = 13;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("H"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
         offset = 21;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("y"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
         offset = 32;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("I"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
 
         QTestAccessibility::clearEvents();
 
