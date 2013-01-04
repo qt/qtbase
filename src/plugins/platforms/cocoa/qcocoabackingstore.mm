@@ -67,7 +67,7 @@ QPaintDevice *QCocoaBackingStore::paintDevice()
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
             QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window()->handle());
-            if (cocoaWindow && cocoaWindow->m_contentView) {
+            if (cocoaWindow && cocoaWindow->m_contentView && [cocoaWindow->m_contentView window]) {
                 scaleFactor = int([[cocoaWindow->m_contentView window] backingScaleFactor]);
             }
         }
