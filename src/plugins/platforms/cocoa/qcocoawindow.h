@@ -162,6 +162,8 @@ public: // for QNSView
 
     QNSView *m_contentView;
     NSWindow *m_nsWindow;
+    bool m_contentViewIsEmbedded; // true if the m_contentView is embedded in a "foregin" NSView hiearchy
+
     QNSWindowDelegate *m_nsWindowDelegate;
     Qt::WindowFlags m_windowFlags;
     Qt::WindowState m_synchedWindowState;

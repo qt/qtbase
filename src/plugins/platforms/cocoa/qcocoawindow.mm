@@ -186,6 +186,7 @@ static bool isMouseEvent(NSEvent *ev)
 QCocoaWindow::QCocoaWindow(QWindow *tlw)
     : QPlatformWindow(tlw)
     , m_nsWindow(0)
+    , m_contentViewIsEmbedded(false)
     , m_nsWindowDelegate(0)
     , m_synchedWindowState(Qt::WindowActive)
     , m_windowModality(Qt::NonModal)
@@ -237,6 +238,10 @@ void QCocoaWindow::setGeometry(const QRect &rect)
 void QCocoaWindow::setCocoaGeometry(const QRect &rect)
 {
     QCocoaAutoReleasePool pool;
+
+    if (m_contentViewIsEmbedded)
+        return;
+
     if (m_nsWindow) {
         NSRect bounds = qt_mac_flipRect(rect, window());
         [m_nsWindow setContentSize : bounds.size];
@@ -634,7 +639,9 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         m_nsWindowDelegate = 0;
     }
 
-    if (!parentWindow) {
+    if (window()->type() == Qt::SubWindow) {
+        // Subwindows don't have a NSWindow.
+    } else if (!parentWindow) {
         // Create a new NSWindow if this is a top-level window.
         m_nsWindow = createNSWindow();
         setNSWindow(m_nsWindow);
