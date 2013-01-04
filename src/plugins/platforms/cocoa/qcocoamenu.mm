@@ -47,6 +47,7 @@
 #include <QtCore/QtDebug>
 #include "qcocoaapplication.h"
 #include "qcocoamenuloader.h"
+#include "qcocoawindow.h"
 
 static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 {
@@ -131,6 +132,20 @@ void QCocoaMenu::setText(const QString &text)
     QString stripped = qt_mac_removeAmpersandEscapes(text);
     [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
     [m_nativeItem setTitle:QCFString::toNSString(stripped)];
+}
+
+void QCocoaMenu::setMinimumWidth(int width)
+{
+    m_nativeMenu.minimumWidth = width;
+}
+
+void QCocoaMenu::setFont(const QFont &font)
+{
+    if (font.resolve()) {
+        NSFont *customMenuFont = [NSFont fontWithName:QCFString::toNSString(font.family())
+                                  size:font.pointSize()];
+        m_nativeMenu.font = customMenuFont;
+    }
 }
 
 void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
@@ -288,6 +303,28 @@ void QCocoaMenu::setEnabled(bool enabled)
 void QCocoaMenu::setVisible(bool visible)
 {
     [m_nativeItem setSubmenu:(visible ? m_nativeMenu : nil)];
+}
+
+void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
+{
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(parentWindow->handle());
+    NSView *view = cocoaWindow->contentView();
+    NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
+    NSPoint nsPos = NSMakePoint(pos.x(), pos.y());
+    [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:view];
+
+    // The call above blocks and swallows the mouse release event, so we send a
+    // synthetic one to bring back any QQuickMouseArea back to a more normal state.
+    NSEvent *releaseEvent = [NSEvent mouseEventWithType:NSLeftMouseUp
+                                               location:nsPos
+                                          modifierFlags:0
+                                              timestamp:0
+                                           windowNumber:view.window.windowNumber
+                                                context:[NSGraphicsContext currentContext]
+                                            eventNumber:0
+                                             clickCount:0
+                                               pressure:1.0];
+    [view.window sendEvent:releaseEvent];
 }
 
 QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const

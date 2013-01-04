@@ -71,11 +71,15 @@ public:
     void syncMenuItem(QPlatformMenuItem *menuItem);
     void setEnabled(bool enabled);
     void setVisible(bool visible);
+    void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item);
+
     void syncSeparatorsCollapsible(bool enable);
 
     void syncModalState(bool modal);
 
-    virtual void setText(const QString &text);
+    void setText(const QString &text);
+    void setMinimumWidth(int width);
+    void setFont(const QFont &font);
 
     void setParentItem(QCocoaMenuItem* item);
 
