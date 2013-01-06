@@ -827,9 +827,12 @@ void QDialog::adjustPosition(QWidget* w)
 
 
     if (w) {
-        // Use mapToGlobal rather than geometry() in case w might
-        // be embedded in another application
-        QPoint pp = w->mapToGlobal(QPoint(0,0));
+        // Use pos() if the widget is embedded into a native window
+        QPoint pp;
+        if (w->windowHandle() && w->windowHandle()->property("_q_embedded_native_parent_handle").value<WId>())
+            pp = w->pos();
+        else
+            pp = w->mapToGlobal(QPoint(0,0));
         p = QPoint(pp.x() + w->width()/2,
                     pp.y() + w->height()/ 2);
     } else {
