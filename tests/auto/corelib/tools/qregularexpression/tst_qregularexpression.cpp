@@ -71,7 +71,6 @@ struct Match
 };
 
 Q_DECLARE_METATYPE(Match)
-Q_DECLARE_METATYPE(QList<Match>)
 
 bool operator==(const QRegularExpressionMatch &rem, const Match &m)
 {

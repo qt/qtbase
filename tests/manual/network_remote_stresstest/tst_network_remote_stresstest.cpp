@@ -74,7 +74,6 @@ typedef int SOCKET;
 # include <winsock2.h>
 #endif
 
-Q_DECLARE_METATYPE(QVector<QUrl>)
 
 class tst_NetworkRemoteStressTest : public QObject
 {

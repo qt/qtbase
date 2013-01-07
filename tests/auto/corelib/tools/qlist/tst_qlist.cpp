@@ -1546,9 +1546,6 @@ void tst_QList::constSharedNullComplex() const
     QCOMPARE(liveCount, Complex::getLiveCount());
 }
 
-Q_DECLARE_METATYPE(QList<int>);
-Q_DECLARE_METATYPE(QList<Complex>);
-
 template <class T>
 void generateSetSharableData()
 {

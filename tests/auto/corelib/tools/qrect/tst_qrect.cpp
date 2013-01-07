@@ -45,10 +45,6 @@
 #include <limits.h>
 #include <qdebug.h>
 
-Q_DECLARE_METATYPE(QRectF)
-Q_DECLARE_METATYPE(QPointF)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QPoint)
 
 class tst_QRect : public QObject
 {

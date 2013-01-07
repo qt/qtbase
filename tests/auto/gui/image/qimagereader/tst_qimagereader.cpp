@@ -57,13 +57,6 @@
 
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
-Q_DECLARE_METATYPE(QImage)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QSize)
-Q_DECLARE_METATYPE(QColor)
-Q_DECLARE_METATYPE(QStringMap)
-Q_DECLARE_METATYPE(QIntList)
-Q_DECLARE_METATYPE(QIODevice *)
 Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QImageReader : public QObject

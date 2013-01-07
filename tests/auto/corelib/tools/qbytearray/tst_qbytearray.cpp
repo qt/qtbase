@@ -245,7 +245,6 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
 tst_QByteArray::tst_QByteArray()
 {
-    qRegisterMetaType<qulonglong>("qulonglong");
 }
 
 void tst_QByteArray::qCompress_data()
@@ -1235,7 +1234,6 @@ void tst_QByteArray::toInt()
     QCOMPARE( number, expectednumber );
 }
 
-Q_DECLARE_METATYPE(qulonglong)
 void tst_QByteArray::toULong_data()
 {
     QTest::addColumn<QByteArray>("str");

@@ -54,7 +54,7 @@
 
     \snippet code/doc_src_qsignalspy.cpp 2
 
-    To retrieve the \c QModelIndex, you can use qvariant_cast:
+    To retrieve the instance, you can use qvariant_cast:
 
     \snippet code/doc_src_qsignalspy.cpp 3
  */

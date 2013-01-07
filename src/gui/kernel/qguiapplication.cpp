@@ -1392,7 +1392,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
             // Ignore mouse events that don't change the current state.
             return;
         }
-        buttons = e->buttons;
+        mouse_buttons = buttons = e->buttons;
         if (button & e->buttons) {
             ulong doubleClickInterval = static_cast<ulong>(qApp->styleHints()->mouseDoubleClickInterval());
             doubleClick = e->timestamp - mousePressTime < doubleClickInterval && button == mousePressButton;
@@ -1688,7 +1688,10 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
         type = e->down ? QEvent::TabletPress : QEvent::TabletRelease;
         tabletState = e->down;
     }
+
     QWindow *window = e->window.data();
+    modifier_buttons = e->modifiers;
+
     bool localValid = true;
     // If window is null, pick one based on the global position and make sure all
     // subsequent events up to the release are delivered to that same window.
@@ -1719,7 +1722,7 @@ void QGuiApplicationPrivate::processTabletEvent(QWindowSystemInterfacePrivate::T
     QTabletEvent ev(type, local, e->global,
                     e->device, e->pointerType, e->pressure, e->xTilt, e->yTilt,
                     e->tangentialPressure, e->rotation, e->z,
-                    e->mods, e->uid);
+                    e->modifiers, e->uid);
     ev.setTimestamp(e->timestamp);
     QGuiApplication::sendSpontaneousEvent(window, &ev);
 #else

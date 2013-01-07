@@ -250,6 +250,7 @@ void * QXcbNativeInterface::eglContextForContext(QOpenGLContext *context)
     QEGLPlatformContext *eglPlatformContext = static_cast<QEGLPlatformContext *>(context->handle());
     return eglPlatformContext->eglContext();
 #else
+    Q_UNUSED(context);
     return 0;
 #endif
 }

@@ -48,8 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
-
 /*!
     \class DBusConnection
     \internal
@@ -105,7 +103,5 @@ QDBusConnection DBusConnection::connection() const
 {
     return dbusConnection;
 }
-
-#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

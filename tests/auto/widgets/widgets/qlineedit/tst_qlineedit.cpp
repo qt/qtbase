@@ -318,7 +318,6 @@ private:
 };
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 Q_DECLARE_METATYPE(QLineEdit::EchoMode)
 
 // Testing get/set functions

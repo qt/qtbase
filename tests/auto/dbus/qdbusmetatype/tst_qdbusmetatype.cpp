@@ -93,11 +93,6 @@ Q_DECLARE_METATYPE(Struct3)
 Q_DECLARE_METATYPE(Struct4)
 Q_DECLARE_METATYPE(StringPair)
 
-Q_DECLARE_METATYPE(QList<Struct1>)
-Q_DECLARE_METATYPE(QList<Struct2>)
-Q_DECLARE_METATYPE(QList<Struct3>)
-Q_DECLARE_METATYPE(QList<Struct4>)
-
 Q_DECLARE_METATYPE(Invalid0)
 Q_DECLARE_METATYPE(Invalid1)
 Q_DECLARE_METATYPE(Invalid2)
@@ -107,14 +102,9 @@ Q_DECLARE_METATYPE(Invalid5)
 Q_DECLARE_METATYPE(Invalid6)
 Q_DECLARE_METATYPE(Invalid7)
 
-Q_DECLARE_METATYPE(QList<Invalid0>)
-
 typedef QMap<int, QString> IntStringMap;
 typedef QMap<QString, QString> StringStringMap;
 typedef QMap<QString, Struct1> StringStruct1Map;
-Q_DECLARE_METATYPE(IntStringMap)
-Q_DECLARE_METATYPE(StringStringMap)
-Q_DECLARE_METATYPE(StringStruct1Map)
 
 Q_DECLARE_METATYPE(QVariant::Type)
 

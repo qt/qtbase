@@ -102,10 +102,6 @@ private slots:
 #endif
 };
 
-Q_DECLARE_METATYPE(QPolygon)
-Q_DECLARE_METATYPE(QVector<QRect>)
-Q_DECLARE_METATYPE(QRegion)
-
 tst_QRegion::tst_QRegion()
 {
 }

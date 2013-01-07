@@ -193,7 +193,6 @@ void tst_QMainWindow::getSetCheck()
 
 tst_QMainWindow::tst_QMainWindow()
 {
-    qRegisterMetaType<QSize>("QSize");
     qRegisterMetaType<Qt::ToolButtonStyle>("Qt::ToolButtonStyle");
 }
 

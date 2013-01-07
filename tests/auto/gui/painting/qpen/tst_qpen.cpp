@@ -101,8 +101,6 @@ void tst_QPen::swap()
     QCOMPARE(p2.color(), QColor(Qt::black));
 }
 
-Q_DECLARE_METATYPE(QPen)
-Q_DECLARE_METATYPE(QBrush)
 
 tst_QPen::tst_QPen()
 

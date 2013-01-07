@@ -67,8 +67,6 @@ static const Qt::WindowFlags DefaultWindowFlags
       | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
 
 Q_DECLARE_METATYPE(QMdiArea::WindowOrder)
-Q_DECLARE_METATYPE(QMdiSubWindow *)
-Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QTabWidget::TabPosition)
 
 static bool tabBetweenSubWindowsIn(QMdiArea *mdiArea, int tabCount = -1, bool reverse = false)

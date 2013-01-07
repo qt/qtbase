@@ -110,10 +110,7 @@ typedef QPair<int, int> IntPair;
 typedef QList<int> IntList;
 typedef QList<IntPair> IntIntList;
 
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(IntIntList)
 Q_DECLARE_METATYPE(QTableWidgetSelectionRange)
-Q_DECLARE_METATYPE(QModelIndex)
 
 
 // Testing get/set functions
@@ -176,7 +173,6 @@ tst_QTableWidget::~tst_QTableWidget()
 
 void tst_QTableWidget::initTestCase()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     testWidget = new QTableWidget();
     testWidget->show();
 }

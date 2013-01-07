@@ -53,8 +53,6 @@
 #include <QGridLayout>
 #include <QPainter>
 
-Q_DECLARE_METATYPE(QCommandLinkButton*)
-
 class tst_QCommandLinkButton : public QObject
 {
     Q_OBJECT

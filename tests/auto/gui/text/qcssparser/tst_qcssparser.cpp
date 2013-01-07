@@ -383,8 +383,6 @@ void tst_QCssParser::term()
     }
 }
 
-Q_DECLARE_METATYPE(QVector<QCss::Value>)
-
 void tst_QCssParser::expr_data()
 {
     QTest::addColumn<bool>("parseSuccess");
@@ -842,7 +840,6 @@ void tst_QCssParser::invalidAtKeywords()
     QCOMPARE(rule.declarations.at(0).d->values.at(0).variant.toString(), QString("blue"));
 }
 
-Q_DECLARE_METATYPE(QColor)
 
 void tst_QCssParser::colorValue_data()
 {

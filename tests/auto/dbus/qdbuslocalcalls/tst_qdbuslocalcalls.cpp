@@ -45,9 +45,6 @@
 #include <QtTest/QtTest>
 #include <QtDBus>
 
-Q_DECLARE_METATYPE(QVariant)
-Q_DECLARE_METATYPE(QList<int>)
-Q_DECLARE_METATYPE(QVector<int>)
 
 class tst_QDBusLocalCalls: public QObject
 {

@@ -813,6 +813,8 @@ template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &src)
 {
     register X *ptr = dynamic_cast<X *>(src.data()); // if you get an error in this line, the cast is invalid
+    if (!ptr)
+        return QSharedPointer<X>();
     return QtSharedPointer::copyAndSetPointer(ptr, src);
 }
 template <class X, class T>

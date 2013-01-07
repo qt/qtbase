@@ -435,7 +435,6 @@ void tst_QTabBar::tabButton()
 
 typedef QList<int> IntList;
 Q_DECLARE_METATYPE(QTabBar::SelectionBehavior)
-Q_DECLARE_METATYPE(IntList)
 #define ONE(x) (IntList() << x)
 void tst_QTabBar::selectionBehaviorOnRemove_data()
 {

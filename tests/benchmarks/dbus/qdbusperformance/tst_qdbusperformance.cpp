@@ -76,7 +76,6 @@ private slots:
     void roundTripVariant_data();
     void roundTripVariant();
 };
-Q_DECLARE_METATYPE(QVariant)
 
 void tst_QDBusPerformance::initTestCase()
 {

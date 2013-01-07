@@ -642,8 +642,6 @@ void tst_QListView::clicked()
     model.rCount = 10;
     model.colCount = 2;
 
-    qRegisterMetaType<QModelIndex>("QModelIndex");
-
     QListView view;
     view.setModel(&model);
 
@@ -930,7 +928,6 @@ public:
 };
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 
 void tst_QListView::selection_data()
 {

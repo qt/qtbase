@@ -215,9 +215,6 @@ void tst_QTreeWidget::getSetCheck()
 typedef QList<int> IntList;
 typedef QList<IntList> ListIntList;
 
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(ListIntList)
-Q_DECLARE_METATYPE(QModelIndex)
 Q_DECLARE_METATYPE(Qt::Orientation)
 
 typedef QTreeWidgetItem TreeItem;

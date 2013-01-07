@@ -161,8 +161,6 @@ void tst_QPainterPath::swap()
 }
 
 Q_DECLARE_METATYPE(QPainterPath)
-Q_DECLARE_METATYPE(QPointF)
-Q_DECLARE_METATYPE(QRectF)
 
 void tst_QPainterPath::currentPosition()
 {

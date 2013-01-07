@@ -53,7 +53,6 @@
 #include <QtGui/QAccessible>
 #include <atspi/atspi-constants.h>
 
-#ifndef QT_NO_ACCESSIBILITY
 
 // interface names from at-spi2-core/atspi/atspi-misc-private.h
 #define ATSPI_DBUS_NAME_REGISTRY "org.a11y.atspi.Registry"
@@ -135,7 +134,5 @@ AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relat
 
 QT_END_NAMESPACE
 QT_END_HEADER
-
-#endif // QT_NO_ACCESSIBILITY
 
 #endif /* Q_SPI_CONSTANT_MAPPINGS_H */

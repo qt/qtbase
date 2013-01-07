@@ -56,42 +56,13 @@ static bool compareFileDescriptors(int fd1, int fd2)
 }
 #endif
 
-Q_DECLARE_METATYPE(QVariant)
-Q_DECLARE_METATYPE(QList<bool>)
-Q_DECLARE_METATYPE(QList<short>)
-Q_DECLARE_METATYPE(QList<ushort>)
-Q_DECLARE_METATYPE(QList<int>)
-Q_DECLARE_METATYPE(QList<uint>)
-Q_DECLARE_METATYPE(QList<qlonglong>)
-Q_DECLARE_METATYPE(QList<qulonglong>)
-Q_DECLARE_METATYPE(QList<double>)
-Q_DECLARE_METATYPE(QList<QDBusVariant>)
-Q_DECLARE_METATYPE(QList<QDateTime>)
-
-Q_DECLARE_METATYPE(QList<QByteArray>)
-Q_DECLARE_METATYPE(QList<QVariantList>)
-Q_DECLARE_METATYPE(QList<QStringList>)
-Q_DECLARE_METATYPE(QList<QList<bool> >)
-Q_DECLARE_METATYPE(QList<QList<short> >)
-Q_DECLARE_METATYPE(QList<QList<ushort> >)
-Q_DECLARE_METATYPE(QList<QList<int> >)
-Q_DECLARE_METATYPE(QList<QList<uint> >)
-Q_DECLARE_METATYPE(QList<QList<qlonglong> >)
-Q_DECLARE_METATYPE(QList<QList<qulonglong> >)
-Q_DECLARE_METATYPE(QList<QList<double> >)
-Q_DECLARE_METATYPE(QList<QList<QDBusObjectPath> >)
-Q_DECLARE_METATYPE(QList<QList<QDBusSignature> >)
-
 typedef QMap<int, QString> IntStringMap;
 typedef QMap<QString, QString> StringStringMap;
 typedef QMap<QDBusObjectPath, QString> ObjectPathStringMap;
 typedef QMap<qlonglong, QDateTime> LLDateTimeMap;
 typedef QMap<QDBusSignature, QString> SignatureStringMap;
-Q_DECLARE_METATYPE(IntStringMap)
 Q_DECLARE_METATYPE(StringStringMap)
-Q_DECLARE_METATYPE(ObjectPathStringMap)
 Q_DECLARE_METATYPE(LLDateTimeMap)
-Q_DECLARE_METATYPE(SignatureStringMap)
 
 static bool compare(const QDBusUnixFileDescriptor &t1, const QDBusUnixFileDescriptor &t2)
 {
@@ -144,7 +115,6 @@ struct MyVariantMapStruct
     { return s == other.s && map == other.map; }
 };
 Q_DECLARE_METATYPE(MyVariantMapStruct)
-Q_DECLARE_METATYPE(QList<MyVariantMapStruct>)
 
 QDBusArgument &operator<<(QDBusArgument &arg, const MyVariantMapStruct &ms)
 {
@@ -170,7 +140,6 @@ struct MyFileDescriptorStruct
     { return compare(fd, other.fd); }
 };
 Q_DECLARE_METATYPE(MyFileDescriptorStruct)
-Q_DECLARE_METATYPE(QList<MyFileDescriptorStruct>)
 
 QDBusArgument &operator<<(QDBusArgument &arg, const MyFileDescriptorStruct &ms)
 {

@@ -46,7 +46,6 @@
 #include <qlocale.h>
 #include <locale.h>
 
-Q_DECLARE_METATYPE(qlonglong)
 
 class tst_QStringRef : public QObject
 {
@@ -83,9 +82,6 @@ static QStringRef emptyRef()
     QStringRef ref = padded.midRef(1, padded.size() - 2);
 
 typedef QList<int> IntList;
-
-Q_DECLARE_METATYPE(QList<QVariant>)
-Q_DECLARE_METATYPE(IntList)
 
 // This next bit is needed for the NAN and INF in string -> number conversion tests
 #include <float.h>

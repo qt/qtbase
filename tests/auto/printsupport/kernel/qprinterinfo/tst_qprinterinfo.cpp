@@ -50,7 +50,6 @@
 #  include <sys/wait.h>
 #endif
 
-Q_DECLARE_METATYPE(QRect)
 
 class tst_QPrinterInfo : public QObject
 {

@@ -774,7 +774,6 @@ void tst_QPropertyAnimation::interpolated()
     }
 }
 
-Q_DECLARE_METATYPE(QVariant)
 
 void tst_QPropertyAnimation::setStartEndValues_data()
 {
@@ -1125,7 +1124,6 @@ void tst_QPropertyAnimation::restart()
 
 void tst_QPropertyAnimation::valueChanged()
 {
-    qRegisterMetaType<QVariant>("QVariant");
 
     //we check that we receive the valueChanged signal
     MyErrorObject o;

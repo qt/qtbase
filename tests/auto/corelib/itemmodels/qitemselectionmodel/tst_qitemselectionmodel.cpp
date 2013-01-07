@@ -114,10 +114,6 @@ typedef QList<int> IntList;
 typedef QPair<int, int> IntPair;
 typedef QList<IntPair> PairList;
 
-Q_DECLARE_METATYPE(PairList)
-Q_DECLARE_METATYPE(QModelIndex)
-Q_DECLARE_METATYPE(QModelIndexList)
-Q_DECLARE_METATYPE(IntList)
 Q_DECLARE_METATYPE(QItemSelection)
 
 class QStreamHelper: public QAbstractItemModel
@@ -1683,9 +1679,6 @@ void tst_QItemSelectionModel::removeColumns()
 typedef QList<IntList> IntListList;
 typedef QPair<IntPair, IntPair> IntPairPair;
 typedef QList<IntPairPair> IntPairPairList;
-Q_DECLARE_METATYPE(IntListList)
-Q_DECLARE_METATYPE(IntPairPair)
-Q_DECLARE_METATYPE(IntPairPairList)
 
 void tst_QItemSelectionModel::modelLayoutChanged_data()
 {

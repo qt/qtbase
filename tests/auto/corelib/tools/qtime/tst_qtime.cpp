@@ -80,7 +80,6 @@ private:
     QTime invalidTime() { return QTime(-1, -1, -1); }
 };
 
-Q_DECLARE_METATYPE(QTime)
 Q_DECLARE_METATYPE(Qt::DateFormat)
 
 void tst_QTime::addSecs_data()

@@ -371,13 +371,10 @@ void tst_QComboBox::getSetCheck()
 typedef QList<QVariant> VariantList;
 typedef QList<QIcon> IconList;
 
-Q_DECLARE_METATYPE(VariantList)
-Q_DECLARE_METATYPE(IconList)
 Q_DECLARE_METATYPE(QComboBox::InsertPolicy)
 
 tst_QComboBox::tst_QComboBox()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     parent = 0;
 }
 
@@ -1727,7 +1724,6 @@ void tst_QComboBox::findText()
 
 typedef QList<int> IntList;
 typedef QList<Qt::Key> KeyList;
-Q_DECLARE_METATYPE(IntList)
 Q_DECLARE_METATYPE(KeyList)
 
 void tst_QComboBox::flaggedItems_data()

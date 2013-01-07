@@ -1105,16 +1105,16 @@ void QWindow::setGeometry(const QRect &rect)
         d->platformWindow->setGeometry(rect);
     } else {
         d->geometry = rect;
-    }
 
-    if (rect.x() != oldRect.x())
-        emit xChanged(rect.x());
-    if (rect.y() != oldRect.y())
-        emit yChanged(rect.y());
-    if (rect.width() != oldRect.width())
-        emit widthChanged(rect.width());
-    if (rect.height() != oldRect.height())
-        emit heightChanged(rect.height());
+        if (rect.x() != oldRect.x())
+            emit xChanged(rect.x());
+        if (rect.y() != oldRect.y())
+            emit yChanged(rect.y());
+        if (rect.width() != oldRect.width())
+            emit widthChanged(rect.width());
+        if (rect.height() != oldRect.height())
+            emit heightChanged(rect.height());
+    }
 }
 
 /*!

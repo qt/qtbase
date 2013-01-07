@@ -73,7 +73,8 @@ public:
             return returnedList;
         }
         QList<QNetworkProxy> returnedList;
-        int requestCounter;
+
+        static int requestCounter;
     };
 
 private slots:
@@ -91,6 +92,8 @@ private:
     QString formatProxyName(const QNetworkProxy & proxy) const;
     QDebugProxyFactory *factory;
 };
+
+int tst_QNetworkProxyFactory::QDebugProxyFactory::requestCounter = 0;
 
 tst_QNetworkProxyFactory::tst_QNetworkProxyFactory()
 {
@@ -204,6 +207,7 @@ void tst_QNetworkProxyFactory::systemProxyForQuery_local()
 
     // set an arbitrary proxy
     QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::HttpProxy, proxyHost, 80));
+    factory = 0;
 
     // localhost
     list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://localhost/")));
@@ -231,6 +235,7 @@ void tst_QNetworkProxyFactory::systemProxyForQuery_local()
 
     // disable proxy
     QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::NoProxy));
+    factory = 0;
 
     // localhost
     list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://localhost/")));
@@ -328,7 +333,7 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager()
     QFETCH(QNetworkConfiguration, config);
     QFETCH(QList<QNetworkProxy>, proxies);
 
-    int count = factory->requestCounter;
+    int count = QDebugProxyFactory::requestCounter;
 
     QNetworkAccessManager manager;
     manager.setConfiguration(config);
@@ -340,11 +345,12 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager()
     QTestEventLoop::instance().enterLoop(30);
     delete reply;
 
-    if (count == factory->requestCounter) {
+    if (count == QDebugProxyFactory::requestCounter) {
         //RND phones are preconfigured with several test access points which won't work without a matching SIM
         //If the network fails to start, QNAM won't ask the factory for proxies so we can't test.
         QSKIP("network configuration didn't start");
     }
+    QVERIFY(factory);
 
     qDebug() << "testing network configuration for" << config.name();
     foreach (QNetworkProxy proxy, factory->returnedList) {

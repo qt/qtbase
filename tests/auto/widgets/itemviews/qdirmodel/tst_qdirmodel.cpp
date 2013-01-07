@@ -121,10 +121,6 @@ void tst_QDirModel::getSetCheck()
     QCOMPARE(true, obj1.lazyChildCount());
 }
 
-
-Q_DECLARE_METATYPE(QModelIndex)
-Q_DECLARE_METATYPE(QModelIndexList)
-
 void tst_QDirModel::cleanupTestCase()
 {
     QDir current;
@@ -464,7 +460,6 @@ void tst_QDirModel::rowsAboutToBeRemoved()
     QDirModel model;
     model.setReadOnly(false);
 
-    qRegisterMetaType<QModelIndex>("QModelIndex");
 
     // NOTE: QDirModel will call refresh() when a file is removed. refresh() will reread the entire directory,
     // and emit layoutAboutToBeChanged and layoutChange. So, instead of checking for

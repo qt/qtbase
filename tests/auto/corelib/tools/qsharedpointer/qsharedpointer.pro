@@ -5,9 +5,11 @@ QT = core testlib
 
 SOURCES = tst_qsharedpointer.cpp \
     forwarddeclared.cpp \
+    nontracked.cpp \
     wrapper.cpp
 
 HEADERS = forwarddeclared.h \
+    nontracked.h \
     wrapper.h
 
 TESTDATA += forwarddeclared.cpp forwarddeclared.h

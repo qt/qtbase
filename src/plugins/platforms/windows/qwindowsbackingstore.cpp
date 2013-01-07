@@ -100,10 +100,15 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         POINT ptDst = {r.x(), r.y()};
         POINT ptSrc = {0, 0};
         BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * rw->opacity()), AC_SRC_ALPHA};
-        RECT dirty = {dirtyRect.x(), dirtyRect.y(),
-            dirtyRect.x() + dirtyRect.width(), dirtyRect.y() + dirtyRect.height()};
-        UPDATELAYEREDWINDOWINFO info = {sizeof(info), NULL, &ptDst, &size, m_image->hdc(), &ptSrc, 0, &blend, ULW_ALPHA, &dirty};
-        QWindowsContext::user32dll.updateLayeredWindowIndirect(rw->handle(), &info);
+
+        if (QWindowsContext::user32dll.updateLayeredWindowIndirect) {
+            RECT dirty = {dirtyRect.x(), dirtyRect.y(),
+                dirtyRect.x() + dirtyRect.width(), dirtyRect.y() + dirtyRect.height()};
+            UPDATELAYEREDWINDOWINFO info = {sizeof(info), NULL, &ptDst, &size, m_image->hdc(), &ptSrc, 0, &blend, ULW_ALPHA, &dirty};
+            QWindowsContext::user32dll.updateLayeredWindowIndirect(rw->handle(), &info);
+        } else {
+            QWindowsContext::user32dll.updateLayeredWindow(rw->handle(), NULL, &ptDst, &size, m_image->hdc(), &ptSrc, 0, &blend, ULW_ALPHA);
+        }
     } else {
 #endif
         const HDC dc = rw->getDC();

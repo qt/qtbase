@@ -45,12 +45,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 
-Q_DECLARE_METATYPE(QList<int>)
-Q_DECLARE_METATYPE(QList<QRectF>)
-Q_DECLARE_METATYPE(QMatrix)
 Q_DECLARE_METATYPE(QPainterPath)
-Q_DECLARE_METATYPE(QPointF)
-Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
 static void _scrollBarRanges_data_1(int offset)

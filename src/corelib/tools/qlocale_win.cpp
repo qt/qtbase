@@ -113,8 +113,6 @@ struct QSystemLocalePrivate
     void update();
 
 private:
-    QByteArray langEnvVar;
-
     enum SubstitutionType {
         SUnknown,
         SContext,
@@ -142,7 +140,6 @@ Q_GLOBAL_STATIC(QSystemLocalePrivate, systemLocalePrivate)
 QSystemLocalePrivate::QSystemLocalePrivate()
     : substitutionType(SUnknown)
 {
-    langEnvVar = qgetenv("LANG");
     lcid = GetUserDefaultLCID();
 }
 

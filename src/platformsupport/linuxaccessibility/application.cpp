@@ -52,8 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
-
 /*!
     \class QSpiApplicationAdaptor
     \internal
@@ -218,7 +216,5 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerError(const QDBusError& error
         QCoreApplication::postEvent(event.first, event.second);
     }
 }
-
-#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

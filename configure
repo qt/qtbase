@@ -2844,7 +2844,7 @@ if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
     if [ "$BUILD_ON_MAC" = "yes" ]; then
         QT_INSTALL_SETTINGS=/Library/Preferences/Qt
     else
-        QT_INSTALL_SETTINGS=/etc/xdg
+        QT_INSTALL_SETTINGS=$QT_INSTALL_PREFIX/etc/xdg
     fi
 fi
 QT_INSTALL_SETTINGS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_SETTINGS"`
@@ -3044,7 +3044,7 @@ Installation options:
     -translationdir <dir> . Translations of Qt programs will be installed to <dir>
                             (default DATADIR/translations)
     -sysconfdir <dir> ..... Settings used by Qt programs will be looked for in <dir>
-                            (default PREFIX/etc/settings)
+                            (default PREFIX/etc/xdg)
     -examplesdir <dir> .... Examples will be installed to <dir>
                             (default PREFIX/examples)
     -testsdir <dir> ....... Tests will be installed to <dir>

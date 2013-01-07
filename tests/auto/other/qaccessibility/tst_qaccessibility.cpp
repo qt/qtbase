@@ -184,7 +184,8 @@ static inline int indexOfChild(QAccessibleInterface *parentInterface, QWidget *c
     do { \
         if (!errorAt && !(cond)) { \
             errorAt = __LINE__; \
-            qWarning("level: %d, middle: %d, role: %d (%s)", treelevel, middle, iface->role(), #cond); \
+            qWarning("level: %d, role: %d (%s)", treelevel, iface->role(), #cond); \
+            break; \
         } \
     } while (0)
 
@@ -195,13 +196,10 @@ static int verifyHierarchy(QAccessibleInterface *iface)
     QAIPtr middleChild;
     QAIPtr if2;
     ++treelevel;
-    int middle = iface->childCount()/2 + 1;
-    if (iface->childCount() >= 2) {
-        middleChild = QAIPtr(iface->child(middle - 1));
-    }
     for (int i = 0; i < iface->childCount() && !errorAt; ++i) {
         if2 = QAIPtr(iface->child(i));
         EXPECT(if2 != 0);
+        EXPECT(iface->indexOfChild(if2.data()) == i);
         // navigate Ancestor
         QAIPtr parent(if2->parent());
         EXPECT(iface->object() == parent->object());
@@ -1534,7 +1532,7 @@ static QRect characterRect(const QTextEdit &edit, int offset)
     QPointF layoutPosition = layout->position();
     int relativeOffset = offset - block.position();
     QTextLine line = layout->lineForTextPosition(relativeOffset);
-    QFontMetrics fm(edit.font());
+    QFontMetrics fm(edit.currentFont());
     QChar ch = edit.document()->characterAt(offset);
     int w = fm.width(ch);
     int h = fm.height();
@@ -1544,6 +1542,21 @@ static QRect characterRect(const QTextEdit &edit, int offset)
     r.moveTo(edit.viewport()->mapToGlobal(r.topLeft()));
 
     return r;
+}
+
+/* The rects does not have to be exactly the same. They may be slightly different due to
+   different ways of calculating them. By having an acceptable delta, this should also
+   make the test a bit more resilient against any future changes in the behavior of
+   characterRect().
+*/
+static bool fuzzyRectCompare(const QRect &a, const QRect &b)
+{
+    static const int MAX_ACCEPTABLE_DELTA = 1;
+    const QMargins delta(a.left() - b.left(), a.top() - b.top(),
+                         a.right() - b.right(), a.bottom() - b.bottom());
+
+    return qAbs(delta.left()) <= MAX_ACCEPTABLE_DELTA && qAbs(delta.top()) <= MAX_ACCEPTABLE_DELTA
+           && qAbs(delta.right()) <= MAX_ACCEPTABLE_DELTA && qAbs(delta.bottom()) <= MAX_ACCEPTABLE_DELTA;
 }
 
 void tst_QAccessibility::textEditTest()
@@ -1561,7 +1574,7 @@ void tst_QAccessibility::textEditTest()
             QFont font("Helvetica");
             font.setPointSizeF(12.5);
             font.setWordSpacing(1.1);
-            edit.setFont(font);
+            edit.setCurrentFont(font);
         }
 
         edit.show();
@@ -1575,23 +1588,23 @@ void tst_QAccessibility::textEditTest()
         QCOMPARE(startOffset, 13);
         QCOMPARE(endOffset, 31);
         QCOMPARE(iface->textInterface()->characterCount(), 48);
-        QFontMetrics fm(edit.font());
+        QFontMetrics fm(edit.currentFont());
         QCOMPARE(iface->textInterface()->characterRect(0).size(), QSize(fm.width("h"), fm.height()));
         QCOMPARE(iface->textInterface()->characterRect(5).size(), QSize(fm.width(" "), fm.height()));
         QCOMPARE(iface->textInterface()->characterRect(6).size(), QSize(fm.width("w"), fm.height()));
 
         int offset = 10;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("d"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
         offset = 13;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("H"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
         offset = 21;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("y"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
         offset = 32;
         QCOMPARE(iface->textInterface()->text(offset, offset + 1), QStringLiteral("I"));
-        QCOMPARE(iface->textInterface()->characterRect(offset), characterRect(edit, offset));
+        QVERIFY(fuzzyRectCompare(iface->textInterface()->characterRect(offset), characterRect(edit, offset)));
 
         QTestAccessibility::clearEvents();
 
