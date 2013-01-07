@@ -52,6 +52,7 @@ QT_BEGIN_HEADER
 
 class QShapedPixmapWindow : public QWindow
 {
+    Q_OBJECT
 public:
     QShapedPixmapWindow();
 
