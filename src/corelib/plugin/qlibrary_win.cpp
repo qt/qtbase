@@ -60,7 +60,7 @@ extern QString qt_error_string(int code);
 QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
 {
     Q_UNUSED(fullVersion);
-    return QStringList() << ".dll";
+    return QStringList(QStringLiteral(".dll"));
 }
 
 QStringList QLibraryPrivate::prefixes_sys()
