@@ -834,10 +834,12 @@ QNetworkConfiguration QNetworkAccessManager::configuration() const
     Q_D(const QNetworkAccessManager);
 
     QSharedPointer<QNetworkSession> session(d->getNetworkSession());
-    if (session)
+    if (session) {
         return session->configuration();
-    else
-        return QNetworkConfiguration();
+    } else {
+        QNetworkConfigurationManager manager;
+        return manager.defaultConfiguration();
+    }
 }
 
 /*!
@@ -860,13 +862,12 @@ QNetworkConfiguration QNetworkAccessManager::activeConfiguration() const
     Q_D(const QNetworkAccessManager);
 
     QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
+    QNetworkConfigurationManager manager;
     if (networkSession) {
-        QNetworkConfigurationManager manager;
-
         return manager.configurationFromIdentifier(
             networkSession->sessionProperty(QLatin1String("ActiveConfiguration")).toString());
     } else {
-        return QNetworkConfiguration();
+        return manager.defaultConfiguration();
     }
 }
 
