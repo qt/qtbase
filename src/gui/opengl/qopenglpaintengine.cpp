@@ -877,7 +877,7 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
             // Tag it for later so that if the same path is drawn twice, it is assumed to be static and thus cachable
             path.makeCacheable();
 
-            if (device->context()->format().stencilBufferSize() == 0) {
+            if (device->context()->format().stencilBufferSize() <= 0) {
                 // If there is no stencil buffer, triangulate the path instead.
 
                 QRectF bbox = path.controlPointRect();
