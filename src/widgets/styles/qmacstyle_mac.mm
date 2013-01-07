@@ -6518,6 +6518,9 @@ void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig
 // move to QRegion?
 void qt_mac_scale_region(QRegion *region, qreal scaleFactor)
 {
+    if (!region || !region->rectCount())
+        return;
+
     QVector<QRect> scaledRects;
     scaledRects.reserve(region->rects().count());
 
