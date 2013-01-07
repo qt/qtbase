@@ -45,6 +45,7 @@
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qmacmime.h"
+#include "qcocoahelpers.h"
 
 #include <qbytearray.h>
 #include <qwindow.h>
@@ -108,6 +109,10 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
     if (resource.toLower() == "setdockmenu")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setDockMenu);
+    if (resource.toLower() == "qimagetocgimage")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qImageToCGImage);
+    if (resource.toLower() == "cgimagetoqimage")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::cgImageToQImage);
 
     return 0;
 }
@@ -182,5 +187,16 @@ void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
     // setDockMenu seems to be undocumented, but this is what Qt 4 did.
     [NSApp setDockMenu: menu];
 }
+
+CGImageRef QCocoaNativeInterface::qImageToCGImage(const QImage &image)
+{
+    return qt_mac_toCGImage(image, false, 0);
+}
+
+QImage QCocoaNativeInterface::cgImageToQImage(CGImageRef image)
+{
+    return qt_mac_toQImage(image);
+}
+
 
 QT_END_NAMESPACE

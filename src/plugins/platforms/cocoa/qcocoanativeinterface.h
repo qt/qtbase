@@ -42,6 +42,8 @@
 #ifndef QCOCOANATIVEINTERFACE_H
 #define QCOCOANATIVEINTERFACE_H
 
+#include <ApplicationServices/ApplicationServices.h>
+
 #include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -96,6 +98,10 @@ private:
 
     // Dock menu support
     static void setDockMenu(QPlatformMenu *platformMenu);
+
+    // QImage <-> CGImage conversion functions
+    static CGImageRef qImageToCGImage(const QImage &image);
+    static QImage cgImageToQImage(CGImageRef image);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H
