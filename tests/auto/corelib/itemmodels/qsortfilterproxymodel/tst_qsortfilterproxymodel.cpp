@@ -146,6 +146,8 @@ private slots:
     void hierarchyFilterInvalidation();
     void simpleFilterInvalidation();
 
+    void chainedProxyModelRoleNames();
+
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
     void checkHierarchy(const QStringList &data, const QAbstractItemModel *model);
@@ -3767,6 +3769,45 @@ void tst_QSortFilterProxyModel::simpleFilterInvalidation()
     model.insertRow(0, new QStandardItem("extra"));
 }
 
+class CustomRoleNameModel : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    CustomRoleNameModel(QObject *parent = 0) : QAbstractListModel(parent) {}
+
+    QVariant data(const QModelIndex &index, int role) const
+    {
+        Q_UNUSED(index);
+        Q_UNUSED(role);
+        return QVariant();
+    }
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const
+    {
+        Q_UNUSED(parent);
+        return 0;
+    }
+
+    QHash<int, QByteArray> roleNames() const
+    {
+        QHash<int, QByteArray> rn = QAbstractListModel::roleNames();
+        rn[Qt::UserRole + 1] = "custom";
+        return rn;
+    }
+};
+
+void tst_QSortFilterProxyModel::chainedProxyModelRoleNames()
+{
+    QSortFilterProxyModel proxy1;
+    QSortFilterProxyModel proxy2;
+    CustomRoleNameModel customModel;
+
+    proxy2.setSourceModel(&proxy1);
+
+    // changing the sourceModel of proxy1 must also update roleNames of proxy2
+    proxy1.setSourceModel(&customModel);
+    QVERIFY(proxy2.roleNames().value(Qt::UserRole + 1) == "custom");
+}
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"
