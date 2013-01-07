@@ -61,8 +61,6 @@
 
 #include "../../../network-settings.h"
 
-Q_DECLARE_METATYPE(QQueue<QByteArray>)
-
 class tst_QSocks5SocketEngine : public QObject, public QAbstractSocketEngineReceiver
 {
     Q_OBJECT

@@ -200,10 +200,6 @@ static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
     return true;
 }
 
-Q_DECLARE_METATYPE(QImage)
-Q_DECLARE_METATYPE(QPixmap)
-Q_DECLARE_METATYPE(QMatrix)
-Q_DECLARE_METATYPE(QBitmap)
 
 tst_QPixmap::tst_QPixmap()
 {

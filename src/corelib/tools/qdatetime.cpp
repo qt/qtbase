@@ -3533,6 +3533,18 @@ QDateTime QDateTime::fromString(const QString& s, Qt::DateFormat f)
     This could have meant 1 January 00:30.00 but the M will grab
     two digits.
 
+    Incorrectly specified fields of the \a string will cause an invalid
+    QDateTime to be returned. For example, consider the following code,
+    where the two digit year 12 is read as 1912 (see the table below for all
+    field defaults); the resulting datetime is invalid because 23 April 1912
+    was a Tuesday, not a Monday:
+
+    \snippet code/src_corelib_tools_qdatetime.cpp 20
+
+    The correct code is:
+
+    \snippet code/src_corelib_tools_qdatetime.cpp 21
+
     For any field that is not represented in the format, the following
     defaults are used:
 

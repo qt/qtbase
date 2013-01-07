@@ -45,7 +45,6 @@
 #include <qicon.h>
 #include <qiconengine.h>
 
-Q_DECLARE_METATYPE(QSize)
 
 class tst_QIcon : public QObject
 {

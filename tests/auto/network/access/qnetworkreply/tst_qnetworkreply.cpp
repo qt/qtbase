@@ -92,12 +92,8 @@ Q_DECLARE_METATYPE(QSharedPointer<char>)
 
 #include "../../../network-settings.h"
 
-Q_DECLARE_METATYPE(QNetworkReply*)
 Q_DECLARE_METATYPE(QAuthenticator*)
 Q_DECLARE_METATYPE(QNetworkProxyQuery)
-Q_DECLARE_METATYPE(QBuffer*)
-Q_DECLARE_METATYPE(QHttpMultiPart *)
-Q_DECLARE_METATYPE(QList<QFile*>) // for multiparts
 
 typedef QSharedPointer<QNetworkReply> QNetworkReplyPtr;
 

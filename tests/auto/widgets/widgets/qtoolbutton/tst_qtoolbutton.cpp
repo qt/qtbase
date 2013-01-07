@@ -117,8 +117,6 @@ void tst_QToolButton::getSetCheck()
     delete var4;
 }
 
-Q_DECLARE_METATYPE(QAction*)
-
 void tst_QToolButton::triggered()
 {
     qRegisterMetaType<QAction *>("QAction *");

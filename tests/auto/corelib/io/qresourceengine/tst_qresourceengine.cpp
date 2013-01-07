@@ -61,8 +61,6 @@ private slots:
     void setLocale();
 };
 
-Q_DECLARE_METATYPE(QLocale)
-Q_DECLARE_METATYPE(qlonglong)
 
 void tst_QResourceEngine::initTestCase()
 {

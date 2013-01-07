@@ -45,7 +45,6 @@
 #include <qmath.h>
 #include <qpolygon.h>
 
-Q_DECLARE_METATYPE(QRect)
 
 class tst_QWMatrix : public QObject
 {
@@ -74,8 +73,6 @@ private:
     void mapping_data();
 };
 
-Q_DECLARE_METATYPE(QMatrix)
-Q_DECLARE_METATYPE(QPolygon)
 
 tst_QWMatrix::tst_QWMatrix()
 {

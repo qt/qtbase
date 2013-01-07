@@ -45,7 +45,6 @@
 #include <QtWidgets/QtWidgets>
 #include <private/qabstractitemview_p.h>
 
-Q_DECLARE_METATYPE(QModelIndex)
 #ifndef QT_NO_DRAGANDDROP
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
 #endif
@@ -402,7 +401,6 @@ void tst_QTreeView::initTestCase()
 #ifdef Q_OS_WINCE //disable magic for WindowsCE
     qApp->setAutoMaximizeThreshold(-1);
 #endif
-    qRegisterMetaType<QModelIndex>("QModelIndex");
 }
 
 void tst_QTreeView::cleanupTestCase()
@@ -1799,7 +1797,6 @@ public:
 };
 
 typedef QList<QPoint> PointList;
-Q_DECLARE_METATYPE(PointList)
 
 void tst_QTreeView::setSelection_data()
 {

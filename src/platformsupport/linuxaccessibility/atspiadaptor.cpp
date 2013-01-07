@@ -65,8 +65,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
-
 static bool isDebugging = false;
 #define qAtspiDebug              if (!::isDebugging); else qDebug
 
@@ -2358,7 +2356,5 @@ bool AtSpiAdaptor::tableInterface(const QAIPointer &interface, const QString &fu
     }
     return true;
 }
-
-#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

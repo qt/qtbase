@@ -81,10 +81,6 @@
 #include <qfontdatabase.h>
 
 Q_DECLARE_METATYPE(QGradientStops)
-Q_DECLARE_METATYPE(QLine)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QSize)
-Q_DECLARE_METATYPE(QPoint)
 Q_DECLARE_METATYPE(QPainterPath)
 
 class tst_QPainter : public QObject
@@ -365,13 +361,6 @@ void tst_QPainter::getSetCheck()
     QCOMPARE(true, obj1.viewTransformEnabled());
 }
 
-Q_DECLARE_METATYPE(QPixmap)
-Q_DECLARE_METATYPE(QPolygon)
-Q_DECLARE_METATYPE(QBrush)
-Q_DECLARE_METATYPE(QPen)
-Q_DECLARE_METATYPE(QFont)
-Q_DECLARE_METATYPE(QColor)
-Q_DECLARE_METATYPE(QRegion)
 
 tst_QPainter::tst_QPainter()
 {

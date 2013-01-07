@@ -143,6 +143,8 @@ QDateTime dateTime = QDateTime::fromString("130", "Mm"); // invalid
 //! [14]
 QDateTime dateTime = QDateTime::fromString("1.30.1", "M.d.s");
 // dateTime is January 30 in 1900 at 00:00:01.
+dateTime = QDateTime::fromString("12", "yy");
+// dateTime is January 1 in 1912 at 00:00:00.
 //! [14]
 
 //! [15]
@@ -192,3 +194,15 @@ qDebug() << "UTC time is:" << UTC;
 
 qDebug() << "There are" << local.secsTo(UTC) << "seconds difference between the datetimes.";
 //! [19]
+
+//! [20]
+QString string = "Monday, 23 April 12 22:51:41";
+QString format = "dddd, d MMMM yy hh:mm:ss";
+QDateTime invalid = QDateTime::fromString(string, format);
+//! [20]
+
+//! [21]
+QString string = "Tuesday, 23 April 12 22:51:41";
+QString format = "dddd, d MMMM yy hh:mm:ss";
+QDateTime valid = QDateTime::fromString(string, format);
+//! [21]

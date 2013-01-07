@@ -148,8 +148,6 @@ private:
 };
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(QLocale)
 
 // Testing get/set functions
 void tst_QSpinBox::getSetCheck()

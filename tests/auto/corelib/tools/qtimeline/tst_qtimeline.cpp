@@ -130,7 +130,6 @@ void tst_QTimeLine::currentTime()
 {
     QTimeLine timeLine(2000);
     timeLine.setUpdateInterval((timeLine.duration()/2) / 33);
-    qRegisterMetaType<qreal>("qreal");
     QSignalSpy spy(&timeLine, SIGNAL(valueChanged(qreal)));
     QVERIFY(spy.isValid());
     timeLine.setFrameRange(10, 20);
@@ -225,7 +224,6 @@ void tst_QTimeLine::value()
     QVERIFY(timeLine.currentValue() == 0.0);
 
     // Default speed
-    qRegisterMetaType<qreal>("qreal");
     QSignalSpy spy(&timeLine, SIGNAL(valueChanged(qreal)));
     QVERIFY(spy.isValid());
     timeLine.start();

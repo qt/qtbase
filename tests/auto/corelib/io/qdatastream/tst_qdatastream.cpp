@@ -50,9 +50,6 @@
 
 #include "../../../qtest-config.h"
 
-Q_DECLARE_METATYPE(QBitArray)
-Q_DECLARE_METATYPE(qint64)
-
 class tst_QDataStream : public QObject
 {
 Q_OBJECT

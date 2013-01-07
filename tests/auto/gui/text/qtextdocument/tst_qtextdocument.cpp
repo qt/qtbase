@@ -184,6 +184,8 @@ private slots:
 
     void htmlExportImportBlockCount();
 
+    void QTBUG27354_spaceAndSoftSpace();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
 
@@ -2898,6 +2900,29 @@ void tst_QTextDocument::htmlExportImportBlockCount()
     document.setHtml(html);
 
     QCOMPARE(document.blockCount(), 5);
+}
+
+void tst_QTextDocument::QTBUG27354_spaceAndSoftSpace()
+{
+    QTextDocument document;
+    {
+        QTextCursor cursor(&document);
+        QTextBlockFormat blockFormat;
+        blockFormat.setAlignment(Qt::AlignJustify);
+        cursor.mergeBlockFormat(blockFormat);
+        cursor.insertText("ac");
+        cursor.insertBlock();
+        cursor.insertText(" ");
+        cursor.insertText(QChar(0x2028));
+    }
+
+    // Trigger justification of text
+    QImage image(1000, 1000, QImage::Format_ARGB32);
+    image.fill(0);
+    {
+        QPainter p(&image);
+        document.drawContents(&p, image.rect());
+    }
 }
 
 QTEST_MAIN(tst_QTextDocument)

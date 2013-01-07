@@ -42,7 +42,6 @@
 #include <qtest.h>
 #include <QImage>
 
-Q_DECLARE_METATYPE(QImage)
 
 class tst_QImageConversion : public QObject
 {

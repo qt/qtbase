@@ -166,8 +166,6 @@ private:
 
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(QVariantList)
 
 tst_QListWidget::tst_QListWidget(): testWidget(0), rcParent(8), rcFirst(8,0), rcLast(8,0)
 {
@@ -1178,7 +1176,6 @@ void tst_QListWidget::setData()
     QFETCH(QVariantList, values);
     QFETCH(int, expectedSignalCount);
     qRegisterMetaType<QListWidgetItem *>("QListWidgetItem*");
-    qRegisterMetaType<QModelIndex>("QModelIndex");
 
     QVERIFY(roles.count() == values.count());
 

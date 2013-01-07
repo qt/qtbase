@@ -192,7 +192,6 @@ void removeAll_test(const QList<int> &i10, ushort valueToRemove, int itemsToRemo
         QCOMPARE(MyBase::errorCount, 0);
 }
 
-Q_DECLARE_METATYPE(QList<int>);
 
 void tst_QList::removeAll_primitive_data()
 {

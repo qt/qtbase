@@ -2747,7 +2747,6 @@ void tst_QGraphicsProxyWidget::autoShow()
 
 }
 
-Q_DECLARE_METATYPE(QList<QRectF>)
 void tst_QGraphicsProxyWidget::windowOpacity()
 {
     QGraphicsScene scene;

@@ -419,9 +419,9 @@ inline bool isQMLApplication()
 {
     // check if the QtQuick library is loaded
 #ifdef _DEBUG
-    HMODULE handle = GetModuleHandle(L"QtQuick" QT_LIBINFIX L"d5.dll");
+    HMODULE handle = GetModuleHandle(L"Qt5Quick" QT_LIBINFIX L"d.dll");
 #else
-    HMODULE handle = GetModuleHandle(L"QtQuick" QT_LIBINFIX L"5.dll");
+    HMODULE handle = GetModuleHandle(L"Qt5Quick" QT_LIBINFIX L".dll");
 #endif
     return (handle != NULL);
 }

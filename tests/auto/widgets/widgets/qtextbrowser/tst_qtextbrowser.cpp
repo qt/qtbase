@@ -249,7 +249,6 @@ void tst_QTextBrowser::viewportPositionInHistory()
 
 void tst_QTextBrowser::relativeLinks()
 {
-    qRegisterMetaType<QUrl>("QUrl");
     QSignalSpy sourceChangedSpy(browser, SIGNAL(sourceChanged(QUrl)));
     browser->setSource(QUrl("subdir/../qtextbrowser.html"));
     QVERIFY(!browser->document()->isEmpty());

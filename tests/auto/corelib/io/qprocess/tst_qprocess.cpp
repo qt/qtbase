@@ -56,7 +56,6 @@
 #  include <windows.h>
 # endif
 
-Q_DECLARE_METATYPE(QList<QProcess::ExitStatus>);
 Q_DECLARE_METATYPE(QProcess::ExitStatus);
 Q_DECLARE_METATYPE(QProcess::ProcessState);
 #endif

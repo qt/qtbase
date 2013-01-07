@@ -69,13 +69,7 @@
 
 #include "../../../qtest-config.h"
 
-Q_DECLARE_METATYPE(QList<int>)
-Q_DECLARE_METATYPE(QList<QRectF>)
-Q_DECLARE_METATYPE(QMatrix)
 Q_DECLARE_METATYPE(QPainterPath)
-Q_DECLARE_METATYPE(QPointF)
-Q_DECLARE_METATYPE(QPolygonF)
-Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
 #ifdef Q_OS_MAC

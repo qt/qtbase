@@ -75,6 +75,7 @@
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QToolButton>
 
+#ifndef Q_OS_MAC
 // X11 Includes:
 
 // the following is necessary to work around breakage in many versions
@@ -90,6 +91,7 @@
 #undef XRegisterIMInstantiateCallback
 #undef XUnregisterIMInstantiateCallback
 #undef XSetIMValues
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -210,7 +212,9 @@ Ptr_gconf_client_get_bool QGtkStylePrivate::gconf_client_get_bool = 0;
 Ptr_gnome_icon_lookup_sync QGtkStylePrivate::gnome_icon_lookup_sync = 0;
 Ptr_gnome_vfs_init QGtkStylePrivate::gnome_vfs_init = 0;
 
+#ifndef Q_OS_MAC
 typedef int (*x11ErrorHandler)(Display*, XErrorEvent*);
+#endif
 
 QT_END_NAMESPACE
 
@@ -540,10 +544,14 @@ void QGtkStylePrivate::initGtkWidgets() const
     }
 
     if (QGtkStylePrivate::gtk_init) {
+#ifndef Q_OS_MAC
         // Gtk will set the Qt error handler so we have to reset it afterwards
         x11ErrorHandler qt_x_errhandler = XSetErrorHandler(0);
+#endif
         QGtkStylePrivate::gtk_init (NULL, NULL);
+#ifndef Q_OS_MAC
         XSetErrorHandler(qt_x_errhandler);
+#endif
 
         // make a window
         GtkWidget* gtkWindow = QGtkStylePrivate::gtk_window_new(GTK_WINDOW_POPUP);
@@ -967,13 +975,14 @@ void QGtkStylePrivate::setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *p
     QWidget *modalFor = parent ? parent->window() : qApp->activeWindow();
     if (modalFor) {
         QGtkStylePrivate::gtk_widget_realize(gtkFileChooser); // Creates X window
+#ifndef Q_OS_MAC
         XSetTransientForHint(QGtkStylePrivate::gdk_x11_drawable_get_xdisplay(gtkFileChooser->window),
                              QGtkStylePrivate::gdk_x11_drawable_get_xid(gtkFileChooser->window),
                              modalFor->winId());
 #ifdef Q_WS_X11
         QGtkStylePrivate::gdk_x11_window_set_user_time (gtkFileChooser->window, QX11Info::appUserTime());
 #endif
-
+#endif
     }
 
     QFileInfo fileinfo(dir);

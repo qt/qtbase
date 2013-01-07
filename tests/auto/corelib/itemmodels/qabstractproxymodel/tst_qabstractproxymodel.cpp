@@ -123,8 +123,6 @@ void tst_QAbstractProxyModel::qabstractproxymodel()
     model.submit();
 }
 
-Q_DECLARE_METATYPE(QVariant)
-Q_DECLARE_METATYPE(QModelIndex)
 void tst_QAbstractProxyModel::data_data()
 {
     QTest::addColumn<QModelIndex>("proxyIndex");

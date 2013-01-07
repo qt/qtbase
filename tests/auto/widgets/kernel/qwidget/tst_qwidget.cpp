@@ -399,6 +399,9 @@ private slots:
     void styleSheetPropagation();
 
     void destroyedSignal();
+
+    void keyboardModifiers();
+
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -4307,8 +4310,6 @@ void tst_QWidget::qobject_castInDestroyedSlot()
 
     QVERIFY(checker.wasQWidget == true);
 }
-
-Q_DECLARE_METATYPE(QList<QRect>)
 
 // Since X11 WindowManager operations are all async, and we have no way to know if the window
 // manager has finished playing with the window geometry, this test can't be reliable on X11.
@@ -10000,6 +10001,29 @@ void tst_QWidget::taskQTBUG_27643_enterEvents()
     QCOMPARE(dialog.enters, 1);
 }
 #endif // QTEST_NO_CURSOR
+
+class KeyboardWidget : public QWidget
+{
+public:
+    KeyboardWidget(QWidget* parent = 0) : QWidget(parent), m_eventCounter(0) {}
+    virtual void mousePressEvent(QMouseEvent* ev) Q_DECL_OVERRIDE {
+        m_modifiers = ev->modifiers();
+        m_appModifiers = QApplication::keyboardModifiers();
+        ++m_eventCounter;
+    }
+    Qt::KeyboardModifiers m_modifiers;
+    Qt::KeyboardModifiers m_appModifiers;
+    int m_eventCounter;
+};
+
+void tst_QWidget::keyboardModifiers()
+{
+    KeyboardWidget* w = new KeyboardWidget;
+    QTest::mouseClick(w, Qt::LeftButton, Qt::ControlModifier);
+    QCOMPARE(w->m_eventCounter, 1);
+    QCOMPARE(int(w->m_modifiers), int(Qt::ControlModifier));
+    QCOMPARE(int(w->m_appModifiers), int(Qt::ControlModifier));
+}
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

@@ -168,7 +168,6 @@ void tst_QSplitter::cleanupTestCase()
 
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 
 void tst_QSplitter::setSizes()
 {

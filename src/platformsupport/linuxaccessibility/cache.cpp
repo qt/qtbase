@@ -49,8 +49,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACCESSIBILITY
-
 /*!
     \class QSpiDBusCache
     \internal
@@ -90,7 +88,5 @@ QSpiAccessibleCacheArray QSpiDBusCache::GetItems()
     QList <QSpiAccessibleCacheItem> cacheArray;
     return cacheArray;
 }
-
-#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

@@ -155,7 +155,6 @@ private:
 };
 
 typedef QList<double> DoubleList;
-Q_DECLARE_METATYPE(DoubleList)
 
 tst_QDoubleSpinBox::tst_QDoubleSpinBox()
 

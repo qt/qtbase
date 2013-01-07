@@ -60,8 +60,7 @@ QQnxRasterBackingStore::QQnxRasterBackingStore(QWindow *window)
 {
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window;
 
-    // save platform window associated with widget
-    m_platformWindow = static_cast<QQnxWindow*>(window->handle());
+    m_window = window;
 }
 
 QQnxRasterBackingStore::~QQnxRasterBackingStore()
@@ -71,8 +70,9 @@ QQnxRasterBackingStore::~QQnxRasterBackingStore()
 
 QPaintDevice *QQnxRasterBackingStore::paintDevice()
 {
-    if (m_platformWindow->hasBuffers())
-        return m_platformWindow->renderBuffer().image();
+    QQnxWindow *platformWindow = this->platformWindow();
+    if (platformWindow->hasBuffers())
+        return platformWindow->renderBuffer().image();
 
     return 0;
 }
@@ -85,7 +85,8 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
     if (window)
         targetWindow = static_cast<QQnxWindow *>(window->handle());
 
-    if (!targetWindow || targetWindow == m_platformWindow) {
+    QQnxWindow *platformWindow = this->platformWindow();
+    if (!targetWindow || targetWindow == platformWindow) {
 
         // visit all pending scroll operations
         for (int i = m_scrollOpList.size() - 1; i >= 0; i--) {
@@ -93,14 +94,14 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
             // do the scroll operation
             ScrollOp &op = m_scrollOpList[i];
             QRegion srcArea = op.totalArea.intersected( op.totalArea.translated(-op.dx, -op.dy) );
-            m_platformWindow->scroll(srcArea, op.dx, op.dy);
+            platformWindow->scroll(srcArea, op.dx, op.dy);
         }
 
         // clear all pending scroll operations
         m_scrollOpList.clear();
 
         // update the display with newly rendered content
-        m_platformWindow->post(region);
+        platformWindow->post(region);
     } else if (targetWindow) {
 
         // The contents of the backing store should be flushed to a different window than the
@@ -119,7 +120,7 @@ void QQnxRasterBackingStore::flush(QWindow *window, const QRegion &region, const
         Q_ASSERT(!m_hasUnflushedPaintOperations);
 
         targetWindow->adjustBufferSize();
-        targetWindow->blitFrom(m_platformWindow, offset, region);
+        targetWindow->blitFrom(platformWindow, offset, region);
         targetWindow->post(region);
 
     } else {
@@ -177,13 +178,19 @@ void QQnxRasterBackingStore::beginPaint(const QRegion &region)
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
     m_hasUnflushedPaintOperations = true;
 
-    m_platformWindow->adjustBufferSize();
+    platformWindow()->adjustBufferSize();
 }
 
 void QQnxRasterBackingStore::endPaint(const QRegion &region)
 {
     Q_UNUSED(region);
     qRasterBackingStoreDebug() << Q_FUNC_INFO << "w =" << window();
+}
+
+QQnxWindow *QQnxRasterBackingStore::platformWindow() const
+{
+  Q_ASSERT(m_window->handle());
+  return static_cast<QQnxWindow*>(m_window->handle());
 }
 
 QT_END_NAMESPACE

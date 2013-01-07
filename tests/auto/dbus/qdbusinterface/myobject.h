@@ -45,7 +45,6 @@
 #include <QtCore/QObject>
 #include <QtDBus/QtDBus>
 
-Q_DECLARE_METATYPE(QVariantList)
 
 class MyObject: public QObject
 {

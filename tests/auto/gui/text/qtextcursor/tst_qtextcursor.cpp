@@ -162,7 +162,6 @@ private:
     QTextCursor cursor;
 };
 
-Q_DECLARE_METATYPE(QList<QVariant>)
 
 tst_QTextCursor::tst_QTextCursor()
 {}

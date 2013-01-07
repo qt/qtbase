@@ -46,7 +46,6 @@
 #include <qpolygon.h>
 #include <qdebug.h>
 
-Q_DECLARE_METATYPE(QRect)
 
 class tst_QTransform : public QObject
 {
@@ -87,7 +86,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(QTransform)
-Q_DECLARE_METATYPE(QPolygon)
 
 tst_QTransform::tst_QTransform()
 {

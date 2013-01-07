@@ -97,7 +97,6 @@ QVector<DataType> generateData(QString dataSetType, const int length)
     return container;
 }
 
-Q_DECLARE_METATYPE(QVector<int>)
 
 void tst_QAlgorithms::stableSort_data()
 {

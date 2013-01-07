@@ -56,7 +56,6 @@
 #include <windows.h>
 #endif
 
-Q_DECLARE_METATYPE(QRect)
 
 QT_FORWARD_DECLARE_CLASS(QPrinter)
 

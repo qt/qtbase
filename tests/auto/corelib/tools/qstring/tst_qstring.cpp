@@ -67,7 +67,6 @@
 #include <locale.h>
 #include <qhash.h>
 
-Q_DECLARE_METATYPE(qlonglong)
 
 #define CREATE_REF(string)                                              \
     const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
@@ -315,9 +314,6 @@ QString verifyZeroTermination(const QString &str)
     /**/
 
 typedef QList<int> IntList;
-
-Q_DECLARE_METATYPE(QList<QVariant>)
-Q_DECLARE_METATYPE(IntList)
 
 // This next bit is needed for the NAN and INF in string -> number conversion tests
 #include <float.h>

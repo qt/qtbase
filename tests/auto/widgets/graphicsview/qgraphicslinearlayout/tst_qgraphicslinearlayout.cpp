@@ -1053,8 +1053,6 @@ void tst_QGraphicsLinearLayout::itemSpacing()
  */
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(qreal)
 
 void tst_QGraphicsLinearLayout::setStretchFactor_data()
 {
