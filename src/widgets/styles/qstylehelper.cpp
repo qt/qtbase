@@ -86,6 +86,20 @@ qreal dpiScaled(qreal value)
 #endif
 }
 
+bool isInstanceOf(QObject *obj, QAccessible::Role role)
+{
+    bool match = false;
+#ifndef QT_NO_ACCESSIBILITY
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(obj);
+    match = iface && iface->role() == role;
+    delete iface;
+#else
+    Q_UNUSED(obj)
+    Q_UNUSED(role)
+#endif // QT_NO_ACCESSIBILITY
+    return match;
+}
+
 // Searches for an ancestor of a particular accessible role
 bool hasAncestor(QObject *obj, QAccessible::Role role)
 {
@@ -93,10 +107,8 @@ bool hasAncestor(QObject *obj, QAccessible::Role role)
 #ifndef QT_NO_ACCESSIBILITY
     QObject *parent = obj ? obj->parent() : 0;
     while (parent && !found) {
-        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(parent);
-        if (iface && iface->role() == role)
+        if (isInstanceOf(parent, role))
             found = true;
-        delete iface;
         parent = parent->parent();
     }
 #else
