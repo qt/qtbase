@@ -2204,7 +2204,6 @@ void tst_QGraphicsItem::sceneMatrix()
 void tst_QGraphicsItem::setMatrix()
 {
     QGraphicsScene scene;
-    qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy spy(&scene, SIGNAL(changed(QList<QRectF>)));
     QRectF unrotatedRect(-12, -34, 56, 78);
     QGraphicsRectItem item(unrotatedRect, 0);

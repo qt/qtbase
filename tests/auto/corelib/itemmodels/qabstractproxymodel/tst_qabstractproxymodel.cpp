@@ -281,8 +281,6 @@ void tst_QAbstractProxyModel::revert()
 // public void setSourceModel(QAbstractItemModel* sourceModel)
 void tst_QAbstractProxyModel::setSourceModel()
 {
-    qRegisterMetaType<QAbstractItemModel*>();
-
     SubQAbstractProxyModel model;
 
     QCOMPARE(model.property("sourceModel"), QVariant::fromValue<QAbstractItemModel*>(0));

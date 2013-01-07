@@ -1256,7 +1256,6 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     process->start("testProcessEcho/testProcessEcho");
     QVERIFY(process->waitForStarted(5000));
 
-    qRegisterMetaType<qint64>("qint64");
     QSignalSpy spy(process, SIGNAL(bytesWritten(qint64)));
     QVERIFY(spy.isValid());
     process->write("f");
