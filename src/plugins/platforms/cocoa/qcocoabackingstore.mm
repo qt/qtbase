@@ -91,7 +91,7 @@ void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint
     CGImageRelease(m_cgImage);
     m_cgImage = 0;
     if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle()))
-        [cocoaWindow->m_contentView flushBackingStore:this region:region offset:offset];
+        [cocoaWindow->m_qtView flushBackingStore:this region:region offset:offset];
 }
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)

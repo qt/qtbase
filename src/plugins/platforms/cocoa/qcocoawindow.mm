@@ -201,7 +201,8 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
 #endif
     QCocoaAutoReleasePool pool;
 
-    m_contentView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+    m_qtView = [[QNSView alloc] initWithQWindow:tlw platformWindow:this];
+    m_contentView = m_qtView;
     setGeometry(tlw->geometry());
 
     recreateWindow(parent());
@@ -534,7 +535,7 @@ void QCocoaWindow::setMask(const QRegion &region)
         [m_nsWindow setBackgroundColor:[NSColor clearColor]];
     }
 
-    [m_contentView setMaskRegion:&region];
+    [m_qtView setMaskRegion:&region];
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
@@ -578,6 +579,19 @@ NSView *QCocoaWindow::contentView() const
     return m_contentView;
 }
 
+void QCocoaWindow::setContentView(NSView *contentView)
+{
+    // Remove and release the previous content view
+    [m_contentView removeFromSuperview];
+    [m_contentView release];
+
+    // Insert and retain the new content view
+    [contentView retain];
+    m_contentView = contentView;
+    m_qtView = 0; // The new content view is not a QNSView.
+    recreateWindow(parent()); // Adds the content view to parent NSView
+}
+
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
@@ -590,7 +604,7 @@ void QCocoaWindow::windowWillMove()
 
 void QCocoaWindow::windowDidMove()
 {
-    [m_contentView updateGeometry];
+    [m_qtView updateGeometry];
 }
 
 void QCocoaWindow::windowDidResize()
@@ -598,7 +612,7 @@ void QCocoaWindow::windowDidResize()
     if (!m_nsWindow)
         return;
 
-    [m_contentView updateGeometry];
+    [m_qtView updateGeometry];
 }
 
 void QCocoaWindow::windowWillClose()
