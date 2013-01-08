@@ -1147,11 +1147,10 @@ void QMakeParser::finalizeCall(ushort *&tokPtr, ushort *uc, ushort *ptr, int arg
                     uint nlen = uce[1];
                     if (uce[nlen + 2] == TokFuncTerminator) {
                         m_tmp.setRawData((QChar *)uce + 2, nlen);
-                        if (m_tmp == statics.strhost_build) {
+                        if (m_tmp == statics.strhost_build)
                             m_proFile->setHostBuild(true);
-                        } else {
+                        else
                             parseError(fL1S("Unknown option() %1.").arg(m_tmp));
-                        }
                         return;
                     }
                 }
