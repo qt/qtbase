@@ -261,11 +261,6 @@ Class __sched_param
    base size=4 base align=4
 __sched_param (0xb56fd000) 0
 
-Class timex
-   size=128 align=4
-   base size=128 base align=4
-timex (0xb56fd070) 0
-
 Class tm
    size=44 align=4
    base size=44 base align=4
