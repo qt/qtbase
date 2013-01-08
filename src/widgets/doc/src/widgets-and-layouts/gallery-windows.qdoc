@@ -58,7 +58,7 @@
 \table 100%
 \row
 \li \image windows-groupbox.png
-   The The QGroupBox widget provides a group box frame with a title.
+   The QGroupBox widget provides a group box frame with a title.
 \li \image windows-tabwidget.png
    The QTabWidget class provides a stack of tabbed widgets.
 \li \image windows-frame.png

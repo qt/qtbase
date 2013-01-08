@@ -7026,7 +7026,7 @@
     is created actually contains XML text, but the \e{.ditamap} suffix is
     used to identify the file as containing a DITA MAP.
 
-    The argument is the name of the the file to be created. In the following
+    The argument is the name of the file to be created. In the following
     example, the file \e{creator.ditamap} is output:
     \code
       \ditamap creator.ditamap
