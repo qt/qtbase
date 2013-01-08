@@ -195,12 +195,6 @@ sub classNames {
             chomp $line;
                         chop $line if ($line =~ /\r$/);
             if($line =~ /^\#/) {
-                if($line =~ /\\$/) {
-                    while($line = <F>) {
-                        chomp $line;
-                        last unless($line =~ /\\$/);
-                    }
-                }
                 return @ret if($line =~ m/^#pragma qt_sync_stop_processing/);
                 push(@ret, $1) if($line =~ m/^#pragma qt_class\(([^)]*)\)[\r\n]*$/);
                 $line = 0;
