@@ -1674,10 +1674,10 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
 
 void QGuiApplicationPrivate::processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e)
 {
-    if (e->fileName.isEmpty())
+    if (e->url.isEmpty())
         return;
 
-    QFileOpenEvent event(e->fileName);
+    QFileOpenEvent event(e->url);
     QGuiApplication::sendSpontaneousEvent(qApp, &event);
 }
 

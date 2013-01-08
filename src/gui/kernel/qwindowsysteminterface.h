@@ -158,6 +158,7 @@ public:
     static void handleThemeChange(QWindow *tlw);
 
     static void handleFileOpenEvent(const QString& fileName);
+    static void handleFileOpenEvent(const QUrl &url);
 
     static void handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
                                   int device, int pointerType, qreal pressure, int xTilt, int yTilt,

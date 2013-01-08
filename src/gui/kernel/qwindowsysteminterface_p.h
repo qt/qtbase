@@ -285,9 +285,12 @@ public:
     class FileOpenEvent : public WindowSystemEvent {
     public:
         FileOpenEvent(const QString& fileName)
-            : WindowSystemEvent(FileOpen), fileName(fileName)
+            : WindowSystemEvent(FileOpen), url(QUrl::fromLocalFile(fileName))
         { }
-        QString fileName;
+        FileOpenEvent(const QUrl &url)
+            : WindowSystemEvent(FileOpen), url(url)
+        { }
+        QUrl url;
     };
 
     class TabletEvent : public InputEvent {

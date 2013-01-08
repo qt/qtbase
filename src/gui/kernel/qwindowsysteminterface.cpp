@@ -575,6 +575,12 @@ void QWindowSystemInterface::handleFileOpenEvent(const QString& fileName)
     QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
+void QWindowSystemInterface::handleFileOpenEvent(const QUrl &url)
+{
+    QWindowSystemInterfacePrivate::FileOpenEvent e(url);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
+}
+
 void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
