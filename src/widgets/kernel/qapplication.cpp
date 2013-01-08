@@ -579,6 +579,7 @@ void QApplicationPrivate::construct()
 void qRegisterGuiStateMachine();
 void qUnregisterGuiStateMachine();
 #endif
+extern void qRegisterWidgetsVariant();
 
 /*!
   \fn void QApplicationPrivate::initialize()
@@ -589,6 +590,9 @@ void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
+
+    // needed for a static build.
+    qRegisterWidgetsVariant();
 
     if (application_type != QApplicationPrivate::Tty)
         (void) QApplication::style();  // trigger creation of application style
