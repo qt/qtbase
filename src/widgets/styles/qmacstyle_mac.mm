@@ -3101,7 +3101,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         CGContextScaleCTM(cg, 1, -1);
         CGContextTranslateCTM(cg, -rect.origin.x, -rect.origin.y);
 
-        [triangleCell drawBezelWithFrame:rect inView:[triangleCell controlView]];
+        [triangleCell drawBezelWithFrame:NSRectFromCGRect(rect) inView:[triangleCell controlView]];
 
         [NSGraphicsContext restoreGraphicsState];
         CGContextRestoreGState(cg);
@@ -5028,7 +5028,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 // Draw the track when hovering
                 if (opt->activeSubControls || wasActive) {
-                    CGRect rect = [scroller bounds];
+                    NSRect rect = [scroller bounds];
                     if (shouldExpand) {
                         if (isHorizontal)
                             rect.origin.y += 4.5 - expandOffset;
