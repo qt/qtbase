@@ -777,7 +777,6 @@ my $class_lib_map_contents = "";
 our @ignore_headers = ();
 our @ignore_for_master_contents = ();
 our @ignore_for_include_check = ();
-our @ignore_for_qt_begin_header_check = ();
 our @ignore_for_qt_begin_namespace_check = ();
 our @ignore_for_qt_module_check = ();
 our %inject_headers = ();
@@ -1143,7 +1142,6 @@ if($check_includes) {
             foreach my $subdir (@subdirs) {
                 my @headers = findFiles($subdir, "^[-a-z0-9_]*\\.h\$" , 0);
                 foreach my $header (@headers) {
-                    my $header_skip_qt_begin_header_test = 0;
                     my $header_skip_qt_begin_namespace_test = 0;
                     $header = 0 if($header =~ /^ui_.*.h/);
                     foreach (@ignore_headers) {
@@ -1163,9 +1161,6 @@ if($check_includes) {
                                 foreach (@ignore_for_include_check) {
                                     $public_header = 0 if($header eq $_);
                                 }
-                                foreach(@ignore_for_qt_begin_header_check) {
-                                    $header_skip_qt_begin_header_test = 1 if ($header eq $_);
-                                }
                                 foreach(@ignore_for_qt_begin_namespace_check) {
                                     $header_skip_qt_begin_namespace_test = 1 if ($header eq $_);
                                 }
@@ -1175,8 +1170,6 @@ if($check_includes) {
                         my $iheader = $subdir . "/" . $header;
                         if($public_header) {
                             if(open(F, "<$iheader")) {
-                                my $qt_begin_header_found = 0;
-                                my $qt_end_header_found = 0;
                                 my $qt_begin_namespace_found = 0;
                                 my $qt_end_namespace_found = 0;
                                 my $line;
@@ -1203,23 +1196,10 @@ if($check_includes) {
                                                 }
                                             }
                                         }
-                                    } elsif ($header_skip_qt_begin_header_test == 0 and $line =~ /^QT_BEGIN_HEADER\s*$/) {
-                                        $qt_begin_header_found = 1;
-                                    } elsif ($header_skip_qt_begin_header_test == 0 and $line =~ /^QT_END_HEADER\s*$/) {
-                                        $qt_end_header_found = 1;
                                     } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_BEGIN_NAMESPACE\s*$/) {
                                         $qt_begin_namespace_found = 1;
                                     } elsif ($header_skip_qt_begin_namespace_test == 0 and $line =~ /^QT_END_NAMESPACE\s*$/) {
                                         $qt_end_namespace_found = 1;
-                                    }
-                                }
-                                if ($header_skip_qt_begin_header_test == 0 and $stop_processing  == 0) {
-                                    if ($qt_begin_header_found == 0) {
-                                        print "$lib: WARNING: $iheader does not include QT_BEGIN_HEADER\n";
-                                    }
-
-                                    if ($qt_begin_header_found && $qt_end_header_found == 0) {
-                                        print "$lib: WARNING: $iheader has QT_BEGIN_HEADER but no QT_END_HEADER\n";
                                     }
                                 }
 

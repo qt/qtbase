@@ -59,7 +59,6 @@ my @zlib_headers = ( "zconf.h", "zlib.h" );
 my @harfbuzz_headers = ( "harfbuzz-buffer-private.h", "harfbuzz-buffer.h", "harfbuzz-dump.h", "harfbuzz-external.h", "harfbuzz-gdef-private.h", "harfbuzz-gdef.h", "harfbuzz-global.h", "harfbuzz-gpos-private.h", "harfbuzz-gpos.h", "harfbuzz-gsub-private.h", "harfbuzz-gsub.h", "harfbuzz-impl.h", "harfbuzz-open-private.h", "harfbuzz-open.h", "harfbuzz-shape.h", "harfbuzz-shaper-private.h", "harfbuzz-shaper.h", "harfbuzz-stream-private.h", "harfbuzz-stream.h", "harfbuzz.h" );
 @ignore_headers = ( @internal_zlib_headers );
 @ignore_for_include_check = ( "qsystemdetection.h", "qcompilerdetection.h", "qprocessordetection.h", @zlib_headers, @angle_headers, @harfbuzz_headers);
-@ignore_for_qt_begin_header_check = ( "qiconset.h", "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qt_windows.h", @zlib_headers, @angle_headers, @harfbuzz_headers);
 @ignore_for_qt_begin_namespace_check = ( "qconfig.h", "qconfig-dist.h", "qconfig-large.h", "qconfig-medium.h", "qconfig-minimal.h", "qconfig-small.h", "qfeatures.h", "qatomic_arch.h", "qatomic_windowsce.h", "qt_windows.h", "qatomic_macosx.h", @zlib_headers, @angle_headers, @harfbuzz_headers);
 %inject_headers = ( "$basedir/src/corelib/global" => [ "qconfig.h" ] );
 # Module dependencies.
