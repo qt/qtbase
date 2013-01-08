@@ -687,6 +687,13 @@ void tst_QUrl::setUrl()
         QCOMPARE(url.encodedPath().constData(), "text/javascript,d5%20=%20'five%5Cu0027s';");
     }
 
+    {
+        // invalid port number
+        QUrl url;
+        url.setEncodedUrl("foo://tel:2147483648");
+        QVERIFY(!url.isValid());
+    }
+
     { //check it calls detach
         QUrl u1("http://aaa.com");
         QUrl u2 = u1;
@@ -2644,6 +2651,7 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("trash-0") << "example.org/test?someData=42%&someOtherData=abcde#anchor" << QUrl::fromEncoded("http://example.org/test?someData=42%25&someOtherData=abcde#anchor");
     QTest::newRow("other-scheme-0") << "spotify:track:0hO542doVbfGDAGQULMORT" << QUrl("spotify:track:0hO542doVbfGDAGQULMORT");
     QTest::newRow("other-scheme-1") << "weirdscheme:80:otherstuff" << QUrl("weirdscheme:80:otherstuff");
+    QTest::newRow("number-path-0") << "tel:2147483648" << QUrl("tel:2147483648");
 
     // FYI: The scheme in the resulting url user
     QUrl authUrl("user:pass@domain.com");
