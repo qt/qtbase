@@ -46,6 +46,8 @@
 #include <QtCore/qvarlengtharray.h>
 
 #include <stdlib.h> // for realpath()
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -256,6 +258,20 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     if (isDir)
         stringVersion.append(QLatin1Char('/'));
     return QFileSystemEntry(stringVersion);
+}
+
+//static
+QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
+{
+    struct stat statResult;
+    if (stat(entry.nativeFilePath().constData(), &statResult)) {
+        qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
+        return QByteArray();
+    }
+    QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
+    result += ':';
+    result += QByteArray::number(quint64(statResult.st_ino), 16);
+    return result;
 }
 
 //static
