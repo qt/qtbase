@@ -488,8 +488,20 @@ static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_pr
 #endif
     const int highestPriority = QThread::TimeCriticalPriority;
 
-    int prio_min = sched_get_priority_min(*sched_policy);
-    int prio_max = sched_get_priority_max(*sched_policy);
+    int prio_min;
+    int prio_max;
+#if defined(Q_OS_VXWORKS) && defined(VXWORKS_DKM)
+    // for other scheduling policies than SCHED_RR or SCHED_FIFO
+    prio_min = SCHED_FIFO_LOW_PRI;
+    prio_max = SCHED_FIFO_HIGH_PRI;
+
+    if ((*sched_policy == SCHED_RR) || (*sched_policy == SCHED_FIFO))
+#endif
+    {
+    prio_min = sched_get_priority_min(*sched_policy);
+    prio_max = sched_get_priority_max(*sched_policy);
+    }
+
     if (prio_min == -1 || prio_max == -1)
         return false;
 
