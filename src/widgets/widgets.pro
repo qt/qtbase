@@ -32,7 +32,7 @@ QMAKE_LIBS += $$QMAKE_LIBS_GUI
 
 contains(DEFINES,QT_EVAL):include($$QT_SOURCE_TREE/src/corelib/eval.pri)
 
-QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
+QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtWidgets.dynlist
 
 # Code coverage with TestCocoon
 # The following is required as extra compilers use $$QMAKE_CXX instead of $(CXX).
