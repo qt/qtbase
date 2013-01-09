@@ -2080,8 +2080,15 @@ void QWidgetPrivate::setOpaque(bool opaque)
 void QWidgetPrivate::updateIsTranslucent()
 {
     Q_Q(QWidget);
-    if (QWindow *window = q->windowHandle())
-        window->setOpacity(isOpaque ? qreal(1.0) : qreal(0.0));
+    if (QWindow *window = q->windowHandle()) {
+        QSurfaceFormat format = window->format();
+        const int oldAlpha = format.alphaBufferSize();
+        const int newAlpha = q->testAttribute(Qt::WA_TranslucentBackground)? 8 : 0;
+        if (oldAlpha != newAlpha) {
+            format.setAlphaBufferSize(newAlpha);
+            window->setFormat(format);
+        }
+    }
 }
 
 static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrush &brush)
