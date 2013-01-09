@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qt_mips_asm_dsp.h"
+#include "qt_mips_asm_dsp_p.h"
 
 LEAF_MIPS_DSPR2(qConvertRgb16To32_asm_mips_dspr2)
 /*

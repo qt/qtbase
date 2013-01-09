@@ -64,7 +64,7 @@ class QWindow;
 
 // We need to inherit QObject to expose the enums to QML.
 class Q_GUI_EXPORT QAccessible
-#ifndef qdoc
+#ifndef Q_QDOC
         :public QObject
 #endif
 {
@@ -269,7 +269,7 @@ public:
         StaticText     = 0x00000029,
         EditableText   = 0x0000002A,  // Editable, selectable, etc.
         Button         = 0x0000002B,
-#ifndef qdoc
+#ifndef Q_QDOC
         PushButton     = Button, // deprecated
 #endif
         CheckBox       = 0x0000002C,

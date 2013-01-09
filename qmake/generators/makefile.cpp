@@ -223,8 +223,8 @@ MakefileGenerator::initOutPaths()
     //some builtin directories
     if(project->isEmpty("PRECOMPILED_DIR") && !project->isEmpty("OBJECTS_DIR"))
         v["PRECOMPILED_DIR"] = v["OBJECTS_DIR"];
-    static const char * const dirs[] = { "OBJECTS_DIR", "DESTDIR", "QMAKE_PKGCONFIG_DESTDIR",
-                                         "SUBLIBS_DIR", "DLLDESTDIR", "QMAKE_LIBTOOL_DESTDIR",
+    static const char * const dirs[] = { "OBJECTS_DIR", "DESTDIR",
+                                         "SUBLIBS_DIR", "DLLDESTDIR",
                                          "PRECOMPILED_DIR", 0 };
     for (int x = 0; dirs[x]; x++) {
         const ProKey dkey(dirs[x]);

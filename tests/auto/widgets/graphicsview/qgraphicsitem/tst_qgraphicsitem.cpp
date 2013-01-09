@@ -7890,6 +7890,7 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     scene.addItem(rect);
     rect->setPos(200, 200);
     QWidget topLevel;
+    topLevel.resize(200, 200);
     QGraphicsView view(&scene, &topLevel);
     topLevel.setWindowFlags(Qt::X11BypassWindowManagerHint);
     rect->startTrack = false;

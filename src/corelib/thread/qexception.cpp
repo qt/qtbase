@@ -137,7 +137,7 @@ QUnhandledException *QUnhandledException::clone() const
     return new QUnhandledException(*this);
 }
 
-#ifndef qdoc
+#ifndef Q_QDOC
 
 namespace QtPrivate {
 
@@ -200,7 +200,7 @@ bool ExceptionStore::hasThrown() const { return exceptionHolder.base->hasThrown;
 
 } // namespace QtPrivate
 
-#endif //qdoc
+#endif //Q_QDOC
 
 QT_END_NAMESPACE
 

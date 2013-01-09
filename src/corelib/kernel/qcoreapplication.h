@@ -161,7 +161,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void aboutToQuit(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
     QPrivateSignal
 #endif
     );

@@ -53,6 +53,13 @@
 #include <qpushbutton.h>
 #include <qboxlayout.h>
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
 
 class tst_QWidget_window : public QWidget
 {
@@ -116,6 +123,7 @@ void tst_QWidget_window::tst_min_max_size()
     const QSize minSize(300, 400);
     const QSize maxSize(1000, 500);
     QWidget w1;
+    setFrameless(&w1);
     (new QVBoxLayout(&w1))->addWidget(new QPushButton("Test"));
     if (setMinMaxSizeBeforeShow) {
         w1.setMinimumSize(minSize);

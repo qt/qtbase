@@ -292,7 +292,7 @@ public:
 Q_SIGNALS:
     void buttonClicked(QAbstractButton *button);
 
-#ifdef qdoc
+#ifdef Q_QDOC
 public Q_SLOTS:
     int exec();
 #endif

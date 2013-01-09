@@ -82,6 +82,7 @@ namespace QStyleHelper
     void drawBorderPixmap(const QPixmap &pixmap, QPainter *painter, const QRect &rect,
                      int left = 0, int top = 0, int right = 0,
                      int bottom = 0);
+    bool isInstanceOf(QObject *obj, QAccessible::Role role);
     bool hasAncestor(QObject *obj, QAccessible::Role role);
 }
 

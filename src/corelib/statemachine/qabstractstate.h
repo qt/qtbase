@@ -66,12 +66,12 @@ public:
 
 Q_SIGNALS:
     void entered(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );
     void exited(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );

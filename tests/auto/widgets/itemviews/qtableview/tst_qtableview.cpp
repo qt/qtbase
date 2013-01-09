@@ -57,6 +57,16 @@ typedef QList<int> IntList;
 
 typedef QList<bool> BoolList;
 
+// Make a widget frameless to prevent size constraints of title bars
+// from interfering (Windows).
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QTableView : public QObject
 {
     Q_OBJECT
@@ -2147,6 +2157,7 @@ void tst_QTableView::rowViewportPosition()
 
     QtTestTableModel model(rowCount, 1);
     QtTestTableView view;
+    setFrameless(&view);
     view.resize(100, 2 * rowHeight);
     view.show();
 
@@ -2309,6 +2320,7 @@ void tst_QTableView::columnViewportPosition()
 
     QtTestTableModel model(1, columnCount);
     QtTestTableView view;
+    setFrameless(&view);
     view.resize(2 * columnWidth, 100);
     view.show();
 
@@ -2586,6 +2598,7 @@ void tst_QTableView::scrollTo()
 
     QtTestTableModel model(rowCount, columnCount);
     QWidget toplevel;
+    setFrameless(&toplevel);
     QtTestTableView view(&toplevel);
 
     toplevel.show();
@@ -3343,6 +3356,7 @@ void tst_QTableView::tabFocus()
     // to change focus on an empty table view, or on a table view that doesn't
     // have this property set.
     QWidget window;
+    window.resize(200, 200);
 
     QTableView *view = new QTableView(&window);
     QLineEdit *edit = new QLineEdit(&window);

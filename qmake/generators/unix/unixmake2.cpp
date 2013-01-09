@@ -665,20 +665,16 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
     writeMakeQmake(t);
     if(project->isEmpty("QMAKE_FAILED_REQUIREMENTS") && !project->isActiveConfig("no_autoqmake")) {
-        QString meta_files;
+        QStringList meta_files;
         if(project->isActiveConfig("create_libtool") && project->first("TEMPLATE") == "lib" &&
            !project->isActiveConfig("compile_libtool")) { //libtool
-            if(!meta_files.isEmpty())
-                meta_files += " ";
             meta_files += libtoolFileName();
         }
         if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib") { //pkg-config
-            if(!meta_files.isEmpty())
-                meta_files += " ";
             meta_files += pkgConfigFileName();
         }
         if(!meta_files.isEmpty())
-            t << escapeDependencyPath(meta_files) << ": " << "\n\t"
+            t << escapeDependencyPaths(meta_files).join(" ") << ": " << "\n\t"
               << "@$(QMAKE) -prl " << buildArgs() << " " << project->projectFile() << endl;
     }
 

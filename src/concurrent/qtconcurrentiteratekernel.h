@@ -56,7 +56,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-#ifndef qdoc
+#ifndef Q_QDOC
 
 namespace QtConcurrent {
 
@@ -300,7 +300,7 @@ public:
 
 } // namespace QtConcurrent
 
-#endif //qdoc
+#endif //Q_QDOC
 
 QT_END_NAMESPACE
 QT_END_HEADER

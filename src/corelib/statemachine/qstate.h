@@ -101,12 +101,12 @@ public:
 
 Q_SIGNALS:
     void finished(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );
     void propertiesAssigned(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );

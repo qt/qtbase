@@ -57,6 +57,14 @@
 #include <QRadioButton>
 #include <private/qlayoutengine_p.h>
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QLayout : public QObject
 {
 Q_OBJECT
@@ -126,6 +134,7 @@ void tst_QLayout::geometry()
     // should be the same.
     QApplication::setStyle(QStyleFactory::create(QLatin1String("Windows")));
     QWidget topLevel;
+    setFrameless(&topLevel);
     QWidget w(&topLevel);
     QVBoxLayout layout(&w);
     SizeHinterFrame widget(QSize(100,100));

@@ -51,6 +51,14 @@
 #include <qmainwindow.h>
 #include <qmenubar.h>
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QWidgetAction : public QObject
 {
     Q_OBJECT
@@ -98,6 +106,7 @@ void tst_QWidgetAction::defaultWidget()
     }
     {
         QPointer<QComboBox> combo = new QComboBox(0);
+        setFrameless(combo.data());
         combo->show();
 
         QWidgetAction *action = new QWidgetAction(0);
@@ -110,8 +119,10 @@ void tst_QWidgetAction::defaultWidget()
     }
     {
         QToolBar tb1;
+        setFrameless(&tb1);
         tb1.show();
         QToolBar tb2;
+        setFrameless(&tb2);
         tb2.show();
 
         QPointer<QComboBox> combo = new QComboBox(0);
@@ -175,6 +186,7 @@ void tst_QWidgetAction::visibilityUpdate()
     // actually keeping the widget's state in sync with the
     // action in terms of visibility is QToolBar's responsibility.
     QToolBar tb;
+    setFrameless(&tb);
     tb.show();
 
     QComboBox *combo = new QComboBox(0);
@@ -213,8 +225,10 @@ QWidget *ComboAction::createWidget(QWidget *parent)
 void tst_QWidgetAction::customWidget()
 {
     QToolBar tb1;
+    setFrameless(&tb1);
     tb1.show();
     QToolBar tb2;
+    setFrameless(&tb2);
     tb2.show();
 
     ComboAction *action = new ComboAction(0);
@@ -273,6 +287,7 @@ void tst_QWidgetAction::visibility()
         a->setDefaultWidget(combo);
 
         QToolBar *tb = new QToolBar;
+        setFrameless(tb);
         tb->addAction(a);
         QVERIFY(!combo->isVisible());
         tb->show();
@@ -292,6 +307,7 @@ void tst_QWidgetAction::visibility()
         QVERIFY(!combo->isVisible());
 
         QToolBar *tb2 = new QToolBar;
+        setFrameless(tb2);
         tb->removeAction(a);
         tb2->addAction(a);
         QVERIFY(!combo->isVisible());
@@ -308,6 +324,7 @@ void tst_QWidgetAction::visibility()
 void tst_QWidgetAction::setEnabled()
 {
     QToolBar toolbar;
+    setFrameless(&toolbar);
     QComboBox *combobox = new QComboBox;
     QAction *action = toolbar.addWidget(combobox);
     toolbar.show();

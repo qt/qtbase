@@ -186,7 +186,10 @@ void QQnxClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     if (mode != QClipboard::Clipboard)
         return;
 
-    if (data == m_mimeData || data == m_mimeData->userMimeData())
+    if (m_mimeData == data)
+        return;
+
+    if (m_mimeData->userMimeData() && m_mimeData->userMimeData() == data)
         return;
 
     empty_clipboard();
@@ -194,8 +197,10 @@ void QQnxClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     m_mimeData->clear();
     m_mimeData->setUserMimeData(data);
 
-    if (data == 0)
+    if (data == 0) {
+        emitChanged(QClipboard::Clipboard);
         return;
+    }
 
     const QStringList formats = data->formats();
     qClipboardDebug() << Q_FUNC_INFO << "formats=" << formats;

@@ -61,7 +61,7 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QKeySequence &ks);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &out, QKeySequence &ks);
 #endif
 
-#ifdef qdoc
+#ifdef Q_QDOC
 void qt_set_sequence_auto_mnemonic(bool b);
 #endif
 

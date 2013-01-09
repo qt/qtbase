@@ -140,7 +140,7 @@ inline void qCount(const Container &container, const T &value, Size &n)
     qCount(container.constBegin(), container.constEnd(), value, n);
 }
 
-#ifdef qdoc
+#ifdef Q_QDOC
 template <typename T>
 LessThan qLess()
 {

@@ -60,6 +60,7 @@
 #include <QtNetwork/QAbstractNetworkCache>
 #include <QtNetwork/qauthenticator.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qnetworkdiskcache.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkcookie.h>
@@ -379,6 +380,8 @@ private Q_SLOTS:
     void qtbug27161httpHeaderMayBeDamaged_data();
     void qtbug27161httpHeaderMayBeDamaged();
 
+    void qtbug28035browserDoesNotLoadQtProjectOrgCorrectly();
+
     void synchronousRequest_data();
     void synchronousRequest();
 #ifndef QT_NO_SSL
@@ -508,6 +511,11 @@ public:
             thread->start();
             ready.acquire();
         }
+    }
+
+    void setDataToTransmit(const QByteArray &data)
+    {
+        dataToTransmit = data;
     }
 
 protected:
@@ -6514,6 +6522,123 @@ void tst_QNetworkReply::qtbug27161httpHeaderMayBeDamaged(){
     QCOMPARE(reply->rawHeader("Content-length"), QByteArray("3"));
     QCOMPARE(reply->rawHeader("Server"), QByteArray("bogus"));
     QCOMPARE(reply->readAll(), QByteArray("ABC"));
+}
+
+void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
+    QByteArray getReply =
+            "HTTP/1.1 200\r\n"
+            "Connection: keep-alive\r\n"
+            "Content-Type: text/plain\r\n"
+            "Cache-control: max-age = 6000\r\n"
+            "\r\n"
+            "GET";
+
+    QByteArray postReply =
+            "HTTP/1.1 200\r\n"
+            "Connection: keep-alive\r\n"
+            "Content-Type: text/plain\r\n"
+            "Cache-control: max-age = 6000\r\n"
+            "Content-length: 4\r\n"
+            "\r\n"
+            "POST";
+
+    QByteArray putReply =
+            "HTTP/1.1 201\r\n"
+            "Connection: keep-alive\r\n"
+            "Content-Type: text/plain\r\n"
+            "Cache-control: max-age = 6000\r\n"
+            "\r\n";
+
+    QByteArray postData = "ACT=100";
+
+    QTemporaryDir tempDir(QDir::tempPath() + "/tmp_cache_28035");
+    tempDir.setAutoRemove(true);
+
+    QNetworkDiskCache *diskCache = new QNetworkDiskCache();
+    diskCache->setCacheDirectory(tempDir.path());
+    manager.setCache(diskCache);
+
+    MiniHttpServer server(getReply);
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply(manager.get(request));
+
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->readAll(), QByteArray("GET"));
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
+
+    server.setDataToTransmit(getReply);
+    reply.reset(manager.get(request));
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->readAll(), QByteArray("GET"));
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), true);
+
+    server.setDataToTransmit(postReply);
+    request.setRawHeader("Content-Type", "text/plain");
+    reply.reset(manager.post(request, postData));
+
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->rawHeader("Content-length"), QByteArray("4"));
+    QCOMPARE(reply->readAll(), QByteArray("POST"));
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
+
+    server.setDataToTransmit(getReply);
+    reply.reset(manager.get(request));
+
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->readAll(), QByteArray("GET"));
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
+
+    server.setDataToTransmit(getReply);
+    reply.reset(manager.get(request));
+
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->readAll(), QByteArray("GET"));
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), true);
+
+    server.setDataToTransmit(putReply);
+    reply.reset(manager.put(request, postData));
+
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
+
+    server.setDataToTransmit(getReply);
+    reply.reset(manager.get(request));
+
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->readAll(), QByteArray("GET"));
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), false);
+
+    server.setDataToTransmit(getReply);
+    reply.reset(manager.get(request));
+
+    QVERIFY(waitForFinish(reply) == Success);
+
+    QVERIFY(reply->isFinished());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->readAll(), QByteArray("GET"));
+    QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), true);
 }
 
 void tst_QNetworkReply::synchronousRequest_data()

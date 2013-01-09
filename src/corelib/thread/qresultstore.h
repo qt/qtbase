@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     either individually or in batches.
 */
 
-#ifndef qdoc
+#ifndef Q_QDOC
 
 namespace QtPrivate {
 
@@ -231,7 +231,7 @@ public:
 
 } // namespace QtPrivate
 
-#endif //qdoc
+#endif //Q_QDOC
 
 QT_END_NAMESPACE
 QT_END_HEADER

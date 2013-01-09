@@ -357,7 +357,7 @@ class Q_CORE_EXPORT QVariant
     { return canConvert(qMetaTypeId<T>()); }
 
  public:
-#ifndef qdoc
+#ifndef Q_QDOC
     struct PrivateShared
     {
         inline PrivateShared(void *v) : ptr(v), ref(1) { }
@@ -535,7 +535,7 @@ inline bool QVariant::isDetached() const
 { return !d.is_shared || d.data.shared->ref.load() == 1; }
 
 
-#ifdef qdoc
+#ifdef Q_QDOC
     inline bool operator==(const QVariant &v1, const QVariant &v2);
     inline bool operator!=(const QVariant &v1, const QVariant &v2);
 #else

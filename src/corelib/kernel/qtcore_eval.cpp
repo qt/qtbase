@@ -117,7 +117,7 @@ static int qt_eval_days_left()
 
     QDate today = QDate::currentDate();
     QDate build = QLibraryInfo::buildDate();
-    return qMax(-1, today.daysTo(build) + 30);
+    return qMax<qint64>(-1, today.daysTo(build) + 30);
 }
 
 static QString qt_eval_string()
@@ -198,7 +198,7 @@ void qt_core_eval_init(uint type)
 }
 #endif
 
-#ifdef QT_BUILD_GUI_LIB
+#ifdef QT_BUILD_WIDGETS_LIB
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <qdialog.h>
@@ -464,7 +464,7 @@ public:
         QFrame *border = new QFrame(this);
 
         QLabel *pixmap_label = new QLabel(border);
-        pixmap_label->setPixmap(qtlogo_eval_xpm);
+        pixmap_label->setPixmap(QPixmap(qtlogo_eval_xpm));
         pixmap_label->setAlignment(Qt::AlignTop);
 
         QLabel *text_label = new QLabel(str, border);

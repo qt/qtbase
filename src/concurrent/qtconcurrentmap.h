@@ -55,7 +55,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-#ifdef qdoc
+#ifdef Q_QDOC
 
 namespace QtConcurrent {
 
@@ -309,7 +309,7 @@ typename QtPrivate::MapResultType<Iterator, MapFunctor>::ResultType blockingMapp
 
 } // namespace QtConcurrent
 
-#endif // qdoc
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 QT_END_HEADER

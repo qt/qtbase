@@ -673,6 +673,7 @@
 #    endif
 #    if _MSC_VER >= 1600
        /* C++11 features supported in VC10 = VC2010: */
+#      define Q_COMPILER_AUTO_FUNCTION
 #      define Q_COMPILER_AUTO_TYPE
 #      define Q_COMPILER_LAMBDA
 #      define Q_COMPILER_DECLTYPE

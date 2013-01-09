@@ -52,6 +52,14 @@
 // defined to be 120 by the wheel mouse vendors according to the docs
 #define WHEEL_DELTA 120
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class Slider : public QAbstractSlider
 {
     public:
@@ -937,6 +945,7 @@ void tst_QAbstractSlider::sliderPressedReleased()
     QFETCH(int, expectedCount);
 
     QWidget topLevel;
+    setFrameless(&topLevel);
     QAbstractSlider *slider;
     switch (control) {
     default:

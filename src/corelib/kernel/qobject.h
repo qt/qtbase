@@ -125,7 +125,7 @@ public:
     virtual bool event(QEvent *);
     virtual bool eventFilter(QObject *, QEvent *);
 
-#ifdef qdoc
+#ifdef Q_QDOC
     static QString tr(const char *sourceText, const char *comment = 0, int n = -1);
     static QString trUtf8(const char *sourceText, const char *comment = 0, int n = -1);
     virtual const QMetaObject *metaObject() const;
@@ -367,7 +367,7 @@ public:
 Q_SIGNALS:
     void destroyed(QObject * = 0);
     void objectNameChanged(const QString &objectName
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
     , QPrivateSignal
 #endif
     );
@@ -438,7 +438,7 @@ public:
 };
 #endif
 
-#ifdef qdoc
+#ifdef Q_QDOC
 T qFindChild(const QObject *o, const QString &name = QString());
 QList<T> qFindChildren(const QObject *oobj, const QString &name = QString());
 QList<T> qFindChildren(const QObject *o, const QRegExp &re);

@@ -57,7 +57,6 @@ QT_BEGIN_NAMESPACE
 #define Q_TRIANGULATE_END_OF_POLYGON quint32(-1)
 
 
-namespace {
 
 //============================================================================//
 //                                   QPoint                                   //
@@ -82,6 +81,8 @@ inline bool operator >= (const QPoint &a, const QPoint &b)
 {
     return !(a < b);
 }
+
+namespace {
 
 inline int cross(const QPoint &u, const QPoint &v)
 {

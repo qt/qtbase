@@ -81,7 +81,7 @@ public:
         return *this;
     }
 
-#ifdef qdoc
+#ifdef Q_QDOC
     int load() const;
     int loadAcquire() const;
     void store(int newValue);
@@ -143,7 +143,7 @@ public:
         return *this;
     }
 
-#ifdef qdoc
+#ifdef Q_QDOC
     T *load() const;
     T *loadAcquire() const;
     void store(T *newValue);

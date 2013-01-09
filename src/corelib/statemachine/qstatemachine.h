@@ -154,12 +154,12 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void started(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );
     void stopped(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );

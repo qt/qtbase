@@ -122,7 +122,7 @@ public:
         Format_Grayscale2,
         Format_Grayscale2LSB
 #endif
-#ifndef qdoc
+#ifndef Q_QDOC
         NImageFormats
 #endif
     };

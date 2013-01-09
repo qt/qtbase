@@ -55,6 +55,14 @@
 
 #include <qformlayout.h>
 
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
+
 class tst_QFormLayout : public QObject
 {
     Q_OBJECT
@@ -345,6 +353,7 @@ void tst_QFormLayout::spacing()
 void tst_QFormLayout::contentsRect()
 {
     QWidget w;
+    setFrameless(&w);
     QFormLayout form;
     w.setLayout(&form);
     form.addRow("Label", new QPushButton(&w));

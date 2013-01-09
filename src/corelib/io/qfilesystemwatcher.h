@@ -73,12 +73,12 @@ public:
 
 Q_SIGNALS:
     void fileChanged(const QString &path
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
         , QPrivateSignal
 #endif
     );
     void directoryChanged(const QString &path
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
         , QPrivateSignal
 #endif
     );

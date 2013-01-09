@@ -54,7 +54,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
-#ifdef qdoc
+#ifdef Q_QDOC
 
 namespace QtConcurrent {
 
@@ -337,7 +337,7 @@ QFuture<T> run(const Class *object, T (Class::*fn)(Param1, Param2, Param3, Param
 
 } //namespace QtConcurrent
 
-#endif // qdoc
+#endif // Q_QDOC
 
 QT_END_NAMESPACE
 QT_END_HEADER

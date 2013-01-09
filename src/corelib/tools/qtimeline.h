@@ -126,22 +126,22 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void valueChanged(qreal x
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void frameChanged(int
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void stateChanged(QTimeLine::State newState
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       , QPrivateSignal
 #endif
     );
     void finished(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );
