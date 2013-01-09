@@ -33,6 +33,7 @@ isEmpty(CMAKE_VERSION) {
         } else {
             CMAKE_BUILD_TYPE = Debug
             CONFIG(release, debug|release):CMAKE_BUILD_TYPE = Release
+            win32-g++*:CMAKE_GENERATOR = -G \"MinGW Makefiles\"
 
             BUILD_DIR = $$replace($$list($$OUT_PWD/build), /, $$QMAKE_DIR_SEP)
 
@@ -42,7 +43,7 @@ isEmpty(CMAKE_VERSION) {
 
             check.commands = \
                 $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
-                cmake $$_PRO_FILE_PWD_ -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\" && \
+                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
         }
