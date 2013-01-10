@@ -579,7 +579,17 @@ void QGtkStylePrivate::initGtkWidgets() const
                 addWidget(QGtkStylePrivate::gtk_combo_box_entry_new());
             if (gtk_combo_box_new_with_entry)
                 addWidget(QGtkStylePrivate::gtk_combo_box_new_with_entry());
-            addWidget(QGtkStylePrivate::gtk_entry_new());
+            GtkWidget *entry = QGtkStylePrivate::gtk_entry_new();
+            // gtk-im-context-none is supported in gtk+ since 2.19.5
+            // and also exists in gtk3
+            // http://git.gnome.org/browse/gtk+/tree/gtk/gtkimmulticontext.c?id=2.19.5#n33
+            // reason that we don't use gtk-im-context-simple here is,
+            // gtk-im-context-none has less overhead, and 2.19.5 is
+            // relatively old. and even for older gtk+, it will fallback
+            // to gtk-im-context-simple if gtk-im-context-none doesn't
+            // exists.
+            g_object_set(entry, "im-module", "gtk-im-context-none", NULL);
+            addWidget(entry);
             addWidget(QGtkStylePrivate::gtk_frame_new(NULL));
             addWidget(QGtkStylePrivate::gtk_expander_new(""));
             addWidget(QGtkStylePrivate::gtk_statusbar_new());
