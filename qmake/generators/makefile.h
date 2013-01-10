@@ -248,6 +248,8 @@ protected:
     inline QStringList fileFixify(const QStringList& files, FileFixifyType fix, bool canon=true) const
     { return fileFixify(files, QString(), QString(), fix, canon); }
 
+    QString installMetaFile(const ProKey &replace_rule, const QString &src, const QString &dst);
+
 public:
     MakefileGenerator();
     virtual ~MakefileGenerator();

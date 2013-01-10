@@ -851,22 +851,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
                 }
                 if(!ret.isEmpty())
                     ret += "\n\t";
-                const ProKey replace_rule("QMAKE_PKGCONFIG_INSTALL_REPLACE");
-                if (project->isEmpty(replace_rule)
-                    || project->isActiveConfig("no_sed_meta_install")
-                    || project->isEmpty("QMAKE_STREAM_EDITOR")) {
-                    ret += "-$(INSTALL_FILE) \"" + pkgConfigFileName(true) + "\" \"" + dst_pc + "\"";
-                } else {
-                    ret += "-$(SED)";
-                    const ProStringList &replace_rules = project->values(replace_rule);
-                    for (int r = 0; r < replace_rules.size(); ++r) {
-                        const ProString match = project->first(ProKey(replace_rules.at(r) + ".match")),
-                                    replace = project->first(ProKey(replace_rules.at(r) + ".replace"));
-                        if (!match.isEmpty() /*&& match != replace*/)
-                            ret += " -e \"s," + match + "," + replace + ",g\"";
-                    }
-                    ret += " \"" + pkgConfigFileName(true) + "\" >\"" + dst_pc + "\"";
-                }
+                ret += installMetaFile(ProKey("QMAKE_PKGCONFIG_INSTALL_REPLACE"), pkgConfigFileName(true), dst_pc);
                 if(!uninst.isEmpty())
                     uninst.append("\n\t");
                 uninst.append("-$(DEL_FILE) \"" + dst_pc + "\"");
