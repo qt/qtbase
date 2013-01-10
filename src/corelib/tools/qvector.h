@@ -139,7 +139,7 @@ public:
     void remove(int i);
     void remove(int i, int n);
     inline void removeFirst() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
-    inline void removeLast()  { Q_ASSERT(!isEmpty()); erase(d->end() - 1); }
+    inline void removeLast();
     inline T takeFirst() { Q_ASSERT(!isEmpty()); T r = first(); removeFirst(); return r; }
     inline T takeLast()  { Q_ASSERT(!isEmpty()); T r = last(); removeLast(); return r; }
 
@@ -558,6 +558,22 @@ void QVector<T>::append(const T &t)
 }
 
 template <typename T>
+inline void QVector<T>::removeLast()
+{
+    Q_ASSERT(!isEmpty());
+
+    if (d->alloc) {
+        if (d->ref.isShared()) {
+            reallocData(d->size - 1, int(d->alloc));
+            return;
+        }
+        if (QTypeInfo<T>::isComplex)
+            (d->data() + d->size - 1)->~T();
+        --d->size;
+    }
+}
+
+template <typename T>
 typename QVector<T>::iterator QVector<T>::insert(iterator before, size_type n, const T &t)
 {
     int offset = std::distance(d->begin(), before);
@@ -606,6 +622,7 @@ typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 
     // FIXME we could do a proper realloc, which copy constructs only needed data.
     // FIXME we ara about to delete data maybe it is good time to shrink?
+    // FIXME the shrink is also an issue in removeLast, that is just a copy + reduce of this.
     if (d->alloc) {
         detach();
         abegin = d->begin() + itemsUntouched;

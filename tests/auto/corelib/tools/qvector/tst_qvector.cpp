@@ -1479,6 +1479,15 @@ void tst_QVector::removeFirstLast() const
     QCOMPARE(v2.at(0), 1);
     QCOMPARE(v3.at(0), 1);
     QCOMPARE(v3.at(1), 2);
+
+    // Remove last with shared
+    QVector<int> z1, z2;
+    z1.append(9);
+    z2 = z1;
+    z1.removeLast();
+    QCOMPARE(z1.size(), 0);
+    QCOMPARE(z2.size(), 1);
+    QCOMPARE(z2.at(0), 9);
 }
 
 
