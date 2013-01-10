@@ -45,6 +45,7 @@
 #include "qwindowscontext.h"
 
 #include <QtGui/QWindow>
+#include <QtGui/QPainter>
 
 #include <QtCore/QDebug>
 
@@ -147,8 +148,10 @@ void QWindowsBackingStore::resize(const QSize &size, const QRegion &region)
                 nsp << " from: " << m_image->image().size();
         }
 #endif
-        m_image.reset(new QWindowsNativeImage(size.width(), size.height(),
-                                              QWindowsNativeImage::systemFormat()));
+        QImage::Format format = QWindowsNativeImage::systemFormat();
+        if (format == QImage::Format_RGB32 && rasterWindow()->window()->format().hasAlpha())
+            format = QImage::Format_ARGB32;
+        m_image.reset(new QWindowsNativeImage(size.width(), size.height(), format));
     }
 }
 
@@ -168,9 +171,16 @@ bool QWindowsBackingStore::scroll(const QRegion &area, int dx, int dy)
 
 void QWindowsBackingStore::beginPaint(const QRegion &region)
 {
-    Q_UNUSED(region);
     if (QWindowsContext::verboseBackingStore > 1)
         qDebug() << __FUNCTION__;
+
+    if (m_image->image().hasAlphaChannel()) {
+        QPainter p(&m_image->image());
+        p.setCompositionMode(QPainter::CompositionMode_Source);
+        const QColor blank = Qt::transparent;
+        foreach (const QRect &r, region.rects())
+            p.fillRect(r, blank);
+    }
 }
 
 QWindowsWindow *QWindowsBackingStore::rasterWindow() const

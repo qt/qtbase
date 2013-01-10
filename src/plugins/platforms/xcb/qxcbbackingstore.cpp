@@ -272,7 +272,6 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
 
     m_image->preparePaint(region);
 
-#if 0
     if (m_image->image()->hasAlphaChannel()) {
         QPainter p(m_image->image());
         p.setCompositionMode(QPainter::CompositionMode_Source);
@@ -282,7 +281,6 @@ void QXcbBackingStore::beginPaint(const QRegion &region)
             p.fillRect(*it, blank);
         }
     }
-#endif
 }
 
 void QXcbBackingStore::endPaint(const QRegion &)
