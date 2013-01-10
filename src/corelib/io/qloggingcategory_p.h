@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,49 +39,28 @@
 **
 ****************************************************************************/
 
-// This test is for "release" mode, with -DQT_NO_DEBUG -DQT_NO_DEBUG_OUTPUT
-#ifndef QT_NO_DEBUG
-#define QT_NO_DEBUG
-#endif
-#ifndef QT_NO_DEBUG_OUTPUT
-#define QT_NO_DEBUG_OUTPUT
-#endif
+#ifndef QLOGGINGCATEGORY_P_H
+#define QLOGGINGCATEGORY_P_H
 
-#include <QtCore/QtCore>
-#include <QtCore/QtDebug>
-#include <QtCore/QLoggingCategory>
-#include <QtTest/QtTest>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of a number of Qt sources files.  This header file may change from
+// version to version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class tst_QNoDebug: public QObject
-{
-    Q_OBJECT
-private slots:
-    void noDebugOutput() const;
-    void streaming() const;
-};
+#include <QtCore/qglobal.h>
 
-void tst_QNoDebug::noDebugOutput() const
-{
-    QLoggingCategory cat("custom");
-    // should do nothing
-    qDebug() << "foo";
-    qCDebug(cat) << "foo";
+QT_BEGIN_NAMESPACE
 
-    // qWarning still works, though
-    QTest::ignoreMessage(QtWarningMsg, "bar ");
-    QTest::ignoreMessage(QtWarningMsg, "custom-bar ");
-    qWarning() << "bar";
-    qCWarning(cat) << "custom-bar";
-}
+// unique pointer to default category
+// (allows to compare for pointers instead of strings)
+extern const char qtDefaultCategoryName[];
 
-void tst_QNoDebug::streaming() const
-{
-    QDateTime dt(QDate(1,2,3),QTime(4,5,6));
-    QString debugString = dt.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
-                        + QStringLiteral(" Qt::LocalTime");
-    QTest::ignoreMessage(QtWarningMsg, qPrintable(QString::fromLatin1("QDateTime(\"%1\") ").arg(debugString)));
-    qWarning() << dt;
-}
+QT_END_NAMESPACE
 
-QTEST_MAIN(tst_QNoDebug);
-#include "tst_qnodebug.moc"
+#endif // QLOGGINGCATEGORY_P_H

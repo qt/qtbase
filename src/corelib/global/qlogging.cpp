@@ -49,6 +49,8 @@
 #ifndef QT_BOOTSTRAPPED
 #include "qcoreapplication.h"
 #include "qthread.h"
+#include "qloggingcategory.h"
+#include "private/qloggingregistry_p.h"
 #endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -920,6 +922,14 @@ static void qDefaultMsgHandler(QtMsgType type, const char *buf)
 
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
+#ifndef QT_BOOTSTRAPPED
+    // qDebug, qWarning, ... macros do not check whether category is enabled
+    if (!context.category || (strcmp(context.category, "default") == 0)) {
+        if (!QLoggingCategory::defaultCategory().isEnabled(msgType))
+            return;
+    }
+#endif
+
     if (!msgHandler)
         msgHandler = qDefaultMsgHandler;
     if (!messageHandler)
@@ -1150,6 +1160,7 @@ void qSetMessagePattern(const QString &pattern)
     if (!qMessagePattern()->fromEnvironment)
         qMessagePattern()->setPattern(pattern);
 }
+
 
 /*!
     Copies context information from \a logContext into this QMessageLogContext
