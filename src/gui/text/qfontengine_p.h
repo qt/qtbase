@@ -241,7 +241,7 @@ public:
         return canRender(utf16, utf16len);
     }
 
-    virtual bool supportsTransformations(const QTransform &transform) const;
+    virtual bool supportsTransformation(const QTransform &transform) const;
 
     virtual Type type() const = 0;
 

@@ -5552,13 +5552,13 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    bool supportsTransformations = d->extended
-        ? d->extended->supportsTransformations(fontD->fontEngine, d->state->matrix)
-        : d->engine->type() == QPaintEngine::CoreGraphics || d->state->matrix.isAffine();
+    bool engineRequiresPretransformedGlyphPositions = d->extended
+        ? d->extended->requiresPretransformedGlyphPositions(fontD->fontEngine, d->state->matrix)
+        : d->engine->type() != QPaintEngine::CoreGraphics && !d->state->matrix.isAffine();
 
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions[i];
-        if (!supportsTransformations)
+        if (engineRequiresPretransformedGlyphPositions)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
@@ -5741,13 +5741,17 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     QFontEngine *fe = staticText_d->font.d->engineForScript(QChar::Script_Common);
     if (fe->type() == QFontEngine::Multi)
         fe = static_cast<QFontEngineMulti *>(fe)->engine(0);
-    bool supportsTransformations = d->extended->supportsTransformations(fe,
-                                                                        d->state->matrix);
-    if (supportsTransformations && !staticText_d->untransformedCoordinates) {
-        staticText_d->untransformedCoordinates = true;
-        staticText_d->needsRelayout = true;
-    } else if (!supportsTransformations && staticText_d->untransformedCoordinates) {
+
+    bool engineRequiresPretransform = d->extended->requiresPretransformedGlyphPositions(fe, d->state->matrix);
+    if (staticText_d->untransformedCoordinates && engineRequiresPretransform) {
+        // The coordinates are untransformed, and the engine can't deal with that
+        // nativly, so we have to pre-transform the static text.
         staticText_d->untransformedCoordinates = false;
+        staticText_d->needsRelayout = true;
+    } else if (!staticText_d->untransformedCoordinates && !engineRequiresPretransform) {
+        // The coordinates are already transformed, but the engine can handle that
+        // nativly, so undo the transform of the static text.
+        staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
     }
 

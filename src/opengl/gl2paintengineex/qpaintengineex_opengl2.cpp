@@ -626,6 +626,16 @@ bool QGL2PaintEngineEx::isNativePaintingActive() const {
     return d->nativePaintingActive;
 }
 
+bool QGL2PaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &t) const
+{
+    float det = t.determinant();
+
+    // Don't try to cache huge fonts or vastly transformed fonts
+    return t.type() < QTransform::TxProject
+        && QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, t)
+        && det >= 0.25f && det <= 4.f;
+}
+
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 {
     if (newMode == mode)
@@ -1439,11 +1449,10 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     ensureActive();
 
     QPainterState *s = state();
-    float det = s->matrix.determinant();
 
     // don't try to cache huge fonts or vastly transformed fonts
     QFontEngine *fontEngine = textItem->fontEngine();
-    if (shouldDrawCachedGlyphs(fontEngine, s->matrix) && det >= 0.25f && det <= 4.f) {
+    if (shouldDrawCachedGlyphs(fontEngine, s->matrix)) {
         QFontEngineGlyphCache::Type glyphType = fontEngine->glyphFormat >= 0
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
@@ -1497,13 +1506,6 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
     QTransform::TransformationType txtype = s->matrix.type();
 
-    float det = s->matrix.determinant();
-    bool drawCached = txtype < QTransform::TxProject;
-
-    // don't try to cache huge fonts or vastly transformed fonts
-    if (!shouldDrawCachedGlyphs(ti.fontEngine, s->matrix) || det < 0.25f || det > 4.f)
-        drawCached = false;
-
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0
                                             ? QFontEngineGlyphCache::Type(ti.fontEngine->glyphFormat)
                                             : d->glyphCacheType;
@@ -1519,7 +1521,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
         }
     }
 
-    if (drawCached) {
+    if (shouldDrawCachedGlyphs(ti.fontEngine, s->matrix)) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
         QTransform matrix = QTransform::fromTranslate(p.x(), p.y());

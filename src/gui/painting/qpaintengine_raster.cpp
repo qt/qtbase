@@ -3010,13 +3010,15 @@ void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
     ensurePen();
     ensureRasterState();
 
+    QTransform matrix = state()->matrix;
+
     QFontEngine *fontEngine = textItem->fontEngine();
-    if (!supportsTransformations(fontEngine)) {
+    if (shouldDrawCachedGlyphs(fontEngine, matrix)) {
         drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
                          fontEngine);
-    } else if (state()->matrix.type() < QTransform::TxProject) {
+    } else if (matrix.type() < QTransform::TxProject) {
         bool invertible;
-        QTransform invMat = state()->matrix.inverted(&invertible);
+        QTransform invMat = matrix.inverted(&invertible);
         if (!invertible)
             return;
 
@@ -3055,7 +3057,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     QRasterPaintEngineState *s = state();
     QTransform matrix = s->matrix;
 
-    if (!supportsTransformations(ti.fontEngine)) {
+    if (shouldDrawCachedGlyphs(ti.fontEngine, matrix)) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
 
@@ -3299,21 +3301,25 @@ void QRasterPaintEngine::releaseDC(HDC) const
 /*!
     \internal
 */
-bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine) const
+bool QRasterPaintEngine::requiresPretransformedGlyphPositions(QFontEngine *fontEngine, const QTransform &m) const
 {
-    const QTransform &m = state()->matrix;
-    return supportsTransformations(fontEngine, m);
-}
-
-/*!
-    \internal
-*/
-bool QRasterPaintEngine::supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const
-{
-    if (fontEngine->supportsTransformations(m))
+    // Cached glyphs always require pretransformed positions
+    if (shouldDrawCachedGlyphs(fontEngine, m))
         return true;
 
-    return !shouldDrawCachedGlyphs(fontEngine, m);
+    // Otherwise let the base-class decide based on the transform
+    return QPaintEngineEx::requiresPretransformedGlyphPositions(fontEngine, m);
+}
+
+bool QRasterPaintEngine::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
+{
+    // The font engine might not support filling the glyph cache
+    // with the given transform applied, in which case we need to
+    // fall back to the QPainterPath code-path.
+    if (!fontEngine->supportsTransformation(m))
+        return false;
+
+    return QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, m);
 }
 
 /*!

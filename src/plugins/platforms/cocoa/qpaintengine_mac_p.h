@@ -122,8 +122,6 @@ public:
     void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode)
     { QPaintEngine::drawPolygon(points, pointCount, mode); }
 
-    bool supportsTransformations(qreal, const QTransform &) const { return true; };
-
 protected:
     friend class QMacPrintEngine;
     friend class QMacPrintEnginePrivate;

@@ -600,9 +600,9 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
     return new QCoreTextFontEngine(cgFont, newFontDef);
 }
 
-bool QCoreTextFontEngine::supportsTransformations(const QTransform &transform) const
+bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) const
 {
-    return transform.type() > QTransform::TxTranslate;
+    return transform.type() <= QTransform::TxTranslate;
 }
 
 QT_END_NAMESPACE

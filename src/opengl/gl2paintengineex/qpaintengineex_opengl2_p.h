@@ -155,7 +155,8 @@ public:
     void setRenderTextActive(bool);
 
     bool isNativePaintingActive() const;
-    bool supportsTransformations(QFontEngine *, const QTransform &) const { return true; }
+    bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const { return false; }
+    bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const;
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };

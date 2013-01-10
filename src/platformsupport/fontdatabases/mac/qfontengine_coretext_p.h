@@ -103,7 +103,7 @@ public:
     virtual qreal minLeftBearing() const;
     virtual QFixed emSquareSize() const;
 
-    bool supportsTransformations(const QTransform &transform) const;
+    bool supportsTransformation(const QTransform &transform) const;
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
     virtual int glyphMargin(QFontEngineGlyphCache::Type type) { Q_UNUSED(type); return 0; }
