@@ -538,6 +538,16 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa toStdMap()
 */
 
+/*! \fn QMap::QMap(std::initializer_list<std::pair<Key,T> > list)
+    \since 5.1
+
+    Constructs a map with a copy of each of the elements in the
+    initializer list \a list.
+
+    This function is only available if the program is being
+    compiled in C++11 mode.
+*/
+
 /*! \fn std::map<Key, T> QMap::toStdMap() const
 
     Returns an STL map equivalent to this QMap.
@@ -1574,6 +1584,16 @@ void QMapDataBase::freeData(QMapDataBase *d)
 /*! \fn QMultiMap::QMultiMap()
 
     Constructs an empty map.
+*/
+
+/*! \fn QMultiMap::QMultiMap(std::initializer_list<std::pair<Key,T> > list)
+    \since 5.1
+
+    Constructs a multi map with a copy of each of the elements in the
+    initializer list \a list.
+
+    This function is only available if the program is being
+    compiled in C++11 mode.
 */
 
 /*! \fn QMultiMap::QMultiMap(const QMap<Key, T> &other)

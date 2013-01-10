@@ -103,6 +103,16 @@
     \sa clear()
 */
 
+/*! \fn QSet::QSet(std::initializer_list<T> list)
+    \since 5.1
+
+    Constructs a set with a copy of each of the elements in the
+    initializer list \a list.
+
+    This function is only available if the program is being
+    compiled in C++11 mode.
+*/
+
 /*!
     \fn QSet::QSet(const QSet<T> &other)
 

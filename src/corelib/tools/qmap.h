@@ -54,6 +54,10 @@
 #include <map>
 #include <new>
 
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -327,6 +331,14 @@ class QMap
 
 public:
     inline QMap() : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null))) { }
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QMap(std::initializer_list<std::pair<Key,T> > list)
+        : d(static_cast<QMapData<Key, T> *>(const_cast<QMapDataBase *>(&QMapDataBase::shared_null)))
+    {
+        for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
+            insert(it->first, it->second);
+    }
+#endif
     QMap(const QMap<Key, T> &other);
 
     inline ~QMap() { if (!d->ref.deref()) d->destroy(); }
@@ -960,6 +972,13 @@ class QMultiMap : public QMap<Key, T>
 {
 public:
     QMultiMap() {}
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QMultiMap(std::initializer_list<std::pair<Key,T> > list)
+    {
+        for (typename std::initializer_list<std::pair<Key,T> >::const_iterator it = list.begin(); it != list.end(); ++it)
+            insert(it->first, it->second);
+    }
+#endif
     QMultiMap(const QMap<Key, T> &other) : QMap<Key, T>(other) {}
     inline void swap(QMultiMap<Key, T> &other) { QMap<Key, T>::swap(other); }
 
