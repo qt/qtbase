@@ -53,7 +53,6 @@ QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(),
         moveToThread(target->thread());
         setParent(target);
     }
-    connect(this, SIGNAL(finished()), SLOT(deleteLater()));
 }
 
 QStyleAnimation::~QStyleAnimation()
