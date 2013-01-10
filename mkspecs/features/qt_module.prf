@@ -196,11 +196,11 @@ unix|win32-g++* {
    lib_replace.match = $$rplbase/lib
    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
    QMAKE_PKGCONFIG_INSTALL_REPLACE += include_replace lib_replace
+   QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
 }
 
 unix {
    CONFIG += create_libtool explicitlib
-   QMAKE_PRL_INSTALL_REPLACE += include_replace lib_replace
    QMAKE_LIBTOOL_LIBDIR = $$[QT_INSTALL_LIBS/raw]
    QMAKE_LIBTOOL_INSTALL_REPLACE += include_replace lib_replace
 }

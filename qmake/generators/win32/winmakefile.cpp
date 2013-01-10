@@ -834,7 +834,7 @@ QString Win32MakefileGenerator::defaultInstall(const QString &t)
             if(slsh != -1)
                 dst_prl = dst_prl.right(dst_prl.length() - slsh - 1);
             dst_prl = filePrefixRoot(root, targetdir + dst_prl);
-            ret += "-$(INSTALL_FILE) \"" + project->first("QMAKE_INTERNAL_PRL_FILE") + "\" \"" + dst_prl + "\"";
+            ret += installMetaFile(ProKey("QMAKE_PRL_INSTALL_REPLACE"), project->first("QMAKE_INTERNAL_PRL_FILE").toQString(), dst_prl);
             if(!uninst.isEmpty())
                 uninst.append("\n\t");
             uninst.append("-$(DEL_FILE) \"" + dst_prl + "\"");
