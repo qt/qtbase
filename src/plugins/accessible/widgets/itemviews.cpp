@@ -489,7 +489,7 @@ int QAccessibleTree::childCount() const
 
 QAccessibleInterface *QAccessibleTree::child(int index) const
 {
-    if ((index < 0) || (!view()->model()))
+    if (index < 0 || !view()->model() || !view()->model()->columnCount())
         return 0;
     int hHeader = horizontalHeader() ? 1 : 0;
 
