@@ -559,14 +559,43 @@ QFile::rename(const QString &newName)
     }
     // If the file exists and it is a case-changing rename ("foo" -> "Foo"),
     // compare Ids to make sure it really is a different file.
-    if (QFile::exists(newName)
-        &&  (d->fileName.compare(newName, Qt::CaseInsensitive)
-             || QFileSystemEngine::id(QFileSystemEntry(d->fileName)) != QFileSystemEngine::id(QFileSystemEntry(newName)))) {
-        // ### Race condition. If a file is moved in after this, it /will/ be
-        // overwritten. On Unix, the proper solution is to use hardlinks:
-        // return ::link(old, new) && ::remove(old);
-        d->setError(QFile::RenameError, tr("Destination file exists"));
+    if (QFile::exists(newName)) {
+        if (d->fileName.compare(newName, Qt::CaseInsensitive)
+            || QFileSystemEngine::id(QFileSystemEntry(d->fileName)) != QFileSystemEngine::id(QFileSystemEntry(newName))) {
+            // ### Race condition. If a file is moved in after this, it /will/ be
+            // overwritten. On Unix, the proper solution is to use hardlinks:
+            // return ::link(old, new) && ::remove(old);
+            d->setError(QFile::RenameError, tr("Destination file exists"));
+            return false;
+        }
+#ifdef Q_OS_LINUX
+        // rename() on Linux simply does nothing when renaming "foo" to "Foo" on a case-insensitive
+        // FS, such as FAT32. Move the file away and rename in 2 steps to work around.
+        QTemporaryFile tempFile(d->fileName + QStringLiteral(".XXXXXX"));
+        tempFile.setAutoRemove(false);
+        if (!tempFile.open(QIODevice::ReadWrite)) {
+            d->setError(QFile::RenameError, tempFile.errorString());
+            return false;
+        }
+        tempFile.close();
+        if (!d->engine()->rename(tempFile.fileName())) {
+            d->setError(QFile::RenameError, tr("Error while renaming."));
+            return false;
+        }
+        if (tempFile.rename(newName)) {
+            d->fileEngine->setFileName(newName);
+            d->fileName = newName;
+            return true;
+        }
+        d->setError(QFile::RenameError, tempFile.errorString());
+        // We need to restore the original file.
+        if (!tempFile.rename(d->fileName)) {
+            d->setError(QFile::RenameError, errorString() + QLatin1Char('\n')
+                        + tr("Unable to restore from %1: %2").
+                        arg(QDir::toNativeSeparators(tempFile.fileName()), tempFile.errorString()));
+        }
         return false;
+#endif
     }
     unsetError();
     close();
