@@ -73,7 +73,7 @@ static bool isFatal(QtMsgType msgType)
         return true;
 
     if (msgType == QtWarningMsg) {
-        static bool fatalWarnings = qEnvironmentVariableIsSet("QT_FATAL_WARNINGS");
+        static bool fatalWarnings = !qEnvironmentVariableIsEmpty("QT_FATAL_WARNINGS");
         return fatalWarnings;
     }
 
