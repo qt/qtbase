@@ -270,7 +270,7 @@ QFixed QFontEngine::averageCharWidth() const
 
 bool QFontEngine::supportsTransformation(const QTransform &transform) const
 {
-    return transform.type() <= QTransform::TxProject;
+    return transform.type() < QTransform::TxProject;
 }
 
 void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform &matrix, QTextItem::RenderFlags flags,
