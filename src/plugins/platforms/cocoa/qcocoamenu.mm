@@ -307,8 +307,8 @@ void QCocoaMenu::setVisible(bool visible)
 
 void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
 {
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(parentWindow->handle());
-    NSView *view = cocoaWindow->contentView();
+    QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : 0;
+    NSView *view = cocoaWindow ? cocoaWindow->contentView() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
     NSPoint nsPos = NSMakePoint(pos.x(), pos.y());
     [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:view];
