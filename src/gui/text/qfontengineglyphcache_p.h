@@ -69,7 +69,8 @@ public:
     enum Type {
         Raster_RGBMask,
         Raster_A8,
-        Raster_Mono
+        Raster_Mono,
+        Raster_ARGB
     };
 
     QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
