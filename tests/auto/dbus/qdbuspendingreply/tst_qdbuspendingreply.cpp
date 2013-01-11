@@ -572,6 +572,8 @@ void tst_QDBusPendingReply::errors()
     QVERIFY(rint.isError());
     error = rint.error();
     VERIFY_ERROR(error);
+    int dummyint = rint;
+    QCOMPARE(dummyint, int());
 
     QDBusPendingReply<int,int> rintint(iface->asyncCall("sendError"));
     rintint.waitForFinished();
@@ -579,6 +581,9 @@ void tst_QDBusPendingReply::errors()
     QVERIFY(rintint.isError());
     error = rintint.error();
     VERIFY_ERROR(error);
+    dummyint = rintint;
+    QCOMPARE(dummyint, int());
+    QCOMPARE(rintint.argumentAt<1>(), int());
 
     QDBusPendingReply<QString> rstring(iface->asyncCall("sendError"));
     rstring.waitForFinished();
@@ -586,6 +591,8 @@ void tst_QDBusPendingReply::errors()
     QVERIFY(rstring.isError());
     error = rstring.error();
     VERIFY_ERROR(error);
+    QString dummystring = rstring;
+    QCOMPARE(dummystring, QString());
 }
 
 QTEST_MAIN(tst_QDBusPendingReply)
