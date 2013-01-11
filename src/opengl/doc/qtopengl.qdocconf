@@ -39,7 +39,7 @@ qhp.qtopengl.file = qtopengl.qhp
 
 # Namespace for the output file. This namespace is used to distinguish between
 # different documentation files in Creator/Assistant.
-qhp.qtopengl.namespace = org.qt-project.qtopengl.501
+qhp.qtopengl.namespace = org.qt-project.qtopengl.510
 
 # Title for the package, will be the main title for the package in
 # Assistant/Creator.

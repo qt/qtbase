@@ -3,21 +3,21 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 project                 = QtWidgets
 description             = Qt Widgets Reference Documentation
 url                     = http://qt-project.org/doc/qtwidgets
-version                 = 5.0.1
+version                 = 5.1.0
 
 examplesinstallpath     = widgets
 
 qhp.projects            = QtWidgets
 
 qhp.QtWidgets.file         = qtwidgets.qhp
-qhp.QtWidgets.namespace           = org.qt-project.qtwidgets.501
+qhp.QtWidgets.namespace           = org.qt-project.qtwidgets.510
 qhp.QtWidgets.virtualFolder       = qtwidgets
 qhp.QtWidgets.indexTitle          = Qt Widgets
 qhp.QtWidgets.indexRoot           =
 
-qhp.QtWidgets.filterAttributes    = qtwidgets 5.0.1 qtrefdoc
-qhp.QtWidgets.customFilters.Qt.name = QtWidgets 5.0.1
-qhp.QtWidgets.customFilters.Qt.filterAttributes = qtwidgets 5.0.1
+qhp.QtWidgets.filterAttributes    = qtwidgets 5.1.0 qtrefdoc
+qhp.QtWidgets.customFilters.Qt.name = QtWidgets 5.1.0
+qhp.QtWidgets.customFilters.Qt.filterAttributes = qtwidgets 5.1.0
 
 qhp.QtWidgets.subprojects         = classes
 qhp.QtWidgets.subprojects.classes.title = C++ Classes

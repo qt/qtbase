@@ -3,21 +3,21 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 project                 = QtSql
 description             = Qt SQL Reference Documentation
 url                     = http://qt-project.org/doc/qtsql
-version                 = 5.0.1
+version                 = 5.1.0
 
 examplesinstallpath     = sql
 
 qhp.projects            = QtSql
 
 qhp.QtSql.file            = qtsql.qhp
-qhp.QtSql.namespace           = org.qt-project.qtsql.501
+qhp.QtSql.namespace           = org.qt-project.qtsql.510
 qhp.QtSql.virtualFolder       = qtsql
 qhp.QtSql.indexTitle          = Qt SQL
 qhp.QtSql.indexRoot           =
 
-qhp.QtSql.filterAttributes    = qtsql 5.0.1 qtrefdoc
-qhp.QtSql.customFilters.Qt.name = QtSql 5.0.1
-qhp.QtSql.customFilters.Qt.filterAttributes = qtsql 5.0.1
+qhp.QtSql.filterAttributes    = qtsql 5.1.0 qtrefdoc
+qhp.QtSql.customFilters.Qt.name = QtSql 5.1.0
+qhp.QtSql.customFilters.Qt.filterAttributes = qtsql 5.1.0
 
 qhp.QtSql.subprojects         = classes
 qhp.QtSql.subprojects.classes.title = C++ Classes

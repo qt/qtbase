@@ -3,21 +3,21 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 project                 = QtNetwork
 description             = Qt Network Reference Documentation
 url                     = http://qt-project.org/doc/qtnetwork
-version                 = 5.0.1
+version                 = 5.1.0
 
 examplesinstallpath     = network
 
 qhp.projects            = QtNetwork
 
 qhp.QtNetwork.file         = qtnetwork.qhp
-qhp.QtNetwork.namespace           = org.qt-project.qtnetwork.501
+qhp.QtNetwork.namespace           = org.qt-project.qtnetwork.510
 qhp.QtNetwork.virtualFolder       = qtnetwork
 qhp.QtNetwork.indexTitle          = Qt Network
 qhp.QtNetwork.indexRoot           =
 
-qhp.QtNetwork.filterAttributes    = qtnetwork 5.0.1 qtrefdoc
-qhp.QtNetwork.customFilters.Qt.name = QtNetwork 5.0.1
-qhp.QtNetwork.customFilters.Qt.filterAttributes = qtnetwork 5.0.1
+qhp.QtNetwork.filterAttributes    = qtnetwork 5.1.0 qtrefdoc
+qhp.QtNetwork.customFilters.Qt.name = QtNetwork 5.1.0
+qhp.QtNetwork.customFilters.Qt.filterAttributes = qtnetwork 5.1.0
 
 qhp.QtNetwork.subprojects         = classes
 qhp.QtNetwork.subprojects.classes.title = C++ Classes

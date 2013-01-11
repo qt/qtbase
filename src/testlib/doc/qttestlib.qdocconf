@@ -3,21 +3,21 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 project                 = QtTestLib
 description             = Qt Test Reference Documentation
 url                     = http://qt-project.org/doc/qttestlib
-version                 = 5.0.1
+version                 = 5.1.0
 
 examplesinstallpath     = testlib
 
 qhp.projects            = QtTestLib
 
 qhp.QtTestLib.file                = qttestlib.qhp
-qhp.QtTestLib.namespace           = org.qt-project.qttest.501
+qhp.QtTestLib.namespace           = org.qt-project.qttest.510
 qhp.QtTestLib.virtualFolder       = qttest
 qhp.QtTestLib.indexTitle          = Qt Test
 qhp.QtTestLib.indexRoot           =
 
-qhp.QtTestLib.filterAttributes    = qttestlib 5.0.1 qtrefdoc
-qhp.QtTestLib.customFilters.Qt.name = QtTestLib 5.0.1
-qhp.QtTestLib.customFilters.Qt.filterAttributes = qttest 5.0.1
+qhp.QtTestLib.filterAttributes    = qttestlib 5.1.0 qtrefdoc
+qhp.QtTestLib.customFilters.Qt.name = QtTestLib 5.1.0
+qhp.QtTestLib.customFilters.Qt.filterAttributes = qttest 5.1.0
 
 qhp.QtTestLib.subprojects         = classes
 qhp.QtTestLib.subprojects.classes.title = C++ Classes

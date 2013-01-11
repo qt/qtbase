@@ -3,21 +3,21 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 project                 = QtXml
 description             = Qt XML Reference Documentation
 url                     = http://qt-project.org/doc/qtxml
-version                 = 5.0.1
+version                 = 5.1.0
 
 examplesinstallpath     = xml
 
 qhp.projects            = QtXml
 
 qhp.QtXml.file            = qtxml.qhp
-qhp.QtXml.namespace           = org.qt-project.qtxml.501
+qhp.QtXml.namespace           = org.qt-project.qtxml.510
 qhp.QtXml.virtualFolder       = qtxml
 qhp.QtXml.indexTitle          = Qt XML
 qhp.QtXml.indexRoot           =
 
-qhp.QtXml.filterAttributes    = qtxml 5.0.1 qtrefdoc
-qhp.QtXml.customFilters.Qt.name = QtXml 5.0.1
-qhp.QtXml.customFilters.Qt.filterAttributes = qtxml 5.0.1
+qhp.QtXml.filterAttributes    = qtxml 5.1.0 qtrefdoc
+qhp.QtXml.customFilters.Qt.name = QtXml 5.1.0
+qhp.QtXml.customFilters.Qt.filterAttributes = qtxml 5.1.0
 
 qhp.QtXml.subprojects         = classes
 qhp.QtXml.subprojects.classes.title = C++ Classes
