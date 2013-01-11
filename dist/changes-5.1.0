@@ -54,6 +54,9 @@ QtCore
    * Added operators for adding and subtracting QMargins objects,
      multiplication and division for int/qreal and unary minus.
 
+ - QMessageAuthenticationCode
+    * New class for hash-based message authentication code added to QtCore.
+
  -
 
 QtGui

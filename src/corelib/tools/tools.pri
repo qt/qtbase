@@ -29,6 +29,7 @@ HEADERS +=  \
         tools/qlocale_data_p.h \
         tools/qmap.h \
         tools/qmargins.h \
+        tools/qmessageauthenticationcode.h \
         tools/qcontiguouscache.h \
         tools/qpodlist_p.h \
         tools/qpair.h \
@@ -82,6 +83,7 @@ SOURCES += \
         tools/qpoint.cpp \
         tools/qmap.cpp \
         tools/qmargins.cpp \
+        tools/qmessageauthenticationcode.cpp \
         tools/qcontiguouscache.cpp \
         tools/qrect.cpp \
         tools/qregexp.cpp \
