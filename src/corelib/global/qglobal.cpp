@@ -2171,6 +2171,10 @@ bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT
     \a varName. It will create the variable if it does not exist. It
     returns 0 if the variable could not be set.
 
+    Calling qputenv with an empty value removes the environment variable on
+    Windows, and makes it set (but empty) on Unix. Prefer using qunsetenv()
+    for fully portable behavior.
+
     \note qputenv() was introduced because putenv() from the standard
     C library was deprecated in VC2005 (and later versions). qputenv()
     uses the replacement function in VC, and calls the standard C
@@ -2194,6 +2198,39 @@ bool qputenv(const char *varName, const QByteArray& value)
     if (result != 0) // error. we have to delete the string.
         delete[] envVar;
     return result == 0;
+#endif
+}
+
+/*!
+    \relates <QtGlobal>
+
+    This function deletes the variable \a varName from the environment.
+
+    Returns true on success.
+
+    \since 5.1
+
+    \sa qputenv(), qgetenv()
+*/
+bool qunsetenv(const char *varName)
+{
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+    return _putenv_s(varName, "") == 0;
+#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4)
+    // POSIX.1-2001 and BSD have unsetenv
+    return unsetenv(varName) == 0;
+#elif defined(Q_CC_MINGW)
+    // On mingw, putenv("var=") removes "var" from the environment
+    QByteArray buffer(varName);
+    buffer += '=';
+    return putenv(buffer.constData()) == 0;
+#else
+    // Fallback to putenv("var=") which will insert an empty var into the
+    // environment and leak it
+    QByteArray buffer(varName);
+    buffer += '=';
+    char *envVar = qstrdup(buffer.constData());
+    return putenv(envVar) == 0;
 #endif
 }
 
