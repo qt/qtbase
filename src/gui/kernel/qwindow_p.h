@@ -98,6 +98,7 @@ public:
         , screen(0)
 #ifndef QT_NO_CURSOR
         , cursor(Qt::ArrowCursor)
+        , hasCursor(false)
 #endif
     {
         isWindow = true;
@@ -109,6 +110,7 @@ public:
 
     void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR
+    void setCursor(const QCursor *c = 0);
     void applyCursor();
 #endif
 
@@ -151,6 +153,7 @@ public:
 
 #ifndef QT_NO_CURSOR
     QCursor cursor;
+    bool hasCursor;
 #endif
 };
 

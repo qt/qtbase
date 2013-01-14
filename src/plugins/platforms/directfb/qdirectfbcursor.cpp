@@ -59,8 +59,9 @@ void QDirectFBCursor::changeCursor(QCursor *cursor, QWindow *)
     int ySpot;
     QPixmap map;
 
-    if (cursor->shape() != Qt::BitmapCursor) {
-        m_image->set(cursor->shape());
+    const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
+    if (newShape != Qt::BitmapCursor) {
+        m_image->set(newShape);
         xSpot = m_image->hotspot().x();
         ySpot = m_image->hotspot().y();
         QImage *i = m_image->image();

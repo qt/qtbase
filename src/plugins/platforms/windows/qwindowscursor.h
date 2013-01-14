@@ -55,11 +55,13 @@ class QWindowsWindowCursorData;
 class QWindowsWindowCursor
 {
 public:
+    QWindowsWindowCursor();
     explicit QWindowsWindowCursor(const QCursor &c);
     ~QWindowsWindowCursor();
     QWindowsWindowCursor(const QWindowsWindowCursor &c);
     QWindowsWindowCursor &operator=(const QWindowsWindowCursor &c);
 
+    bool isNull() const;
     QCursor cursor() const;
     HCURSOR handle() const;
 

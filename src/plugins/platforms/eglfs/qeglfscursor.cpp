@@ -196,15 +196,16 @@ void QEglFSCursor::changeCursor(QCursor *cursor, QWindow *window)
 
 bool QEglFSCursor::setCurrentCursor(QCursor *cursor)
 {
-    if (m_cursor.shape == cursor->shape() && cursor->shape() != Qt::BitmapCursor)
+    const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
+    if (m_cursor.shape == newShape && newShape != Qt::BitmapCursor)
         return false;
 
     if (m_cursor.shape == Qt::BitmapCursor) {
         m_cursor.customCursorImage = QImage(); // in case render() never uploaded it
     }
 
-    m_cursor.shape = cursor->shape();
-    if (cursor->shape() != Qt::BitmapCursor) { // standard cursor
+    m_cursor.shape = newShape;
+    if (newShape != Qt::BitmapCursor) { // standard cursor
         const float ws = (float)m_cursorAtlas.cursorWidth / m_cursorAtlas.width,
                     hs = (float)m_cursorAtlas.cursorHeight / m_cursorAtlas.height;
         m_cursor.textureRect = QRectF(ws * (m_cursor.shape % m_cursorAtlas.cursorsPerRow),

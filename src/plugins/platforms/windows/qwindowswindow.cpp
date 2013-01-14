@@ -739,7 +739,6 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
-    m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
     m_dropTarget(0),
     m_savedStyle(0),
     m_format(aWindow->format()),
@@ -1668,18 +1667,40 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 
 void QWindowsWindow::applyCursor()
 {
-    SetCursor(m_cursor.handle());
+    if (m_cursor.isNull()) { // Recurse up to parent with non-null cursor.
+        if (const QWindow *p = window()->parent())
+            QWindowsWindow::baseWindowOf(p)->applyCursor();
+    } else {
+        SetCursor(m_cursor.handle());
+    }
+}
+
+// Check whether to apply a new cursor. Either the window in question is
+// currently under mouse, or it is the parent of the window under mouse and
+// there is no other window with an explicitly set cursor in-between.
+static inline bool applyNewCursor(const QWindow *w)
+{
+    const QWindow *underMouse = QWindowsContext::instance()->windowUnderMouse();
+    if (underMouse == w)
+        return true;
+    for (const QWindow *p = underMouse; p ; p = p->parent()) {
+        if (p == w)
+            return true;
+        if (!QWindowsWindow::baseWindowOf(p)->cursor().isNull())
+            return false;
+    }
+    return false;
 }
 
 void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
 {
     if (c.handle() != m_cursor.handle()) {
-        const bool underMouse = QWindowsContext::instance()->windowUnderMouse() == window();
+        const bool apply = applyNewCursor(window());
         if (QWindowsContext::verboseWindows)
             qDebug() << window() << __FUNCTION__ << "Shape=" << c.cursor().shape()
-                     << " isWUM=" << underMouse;
+                     << " doApply=" << apply;
         m_cursor = c;
-        if (underMouse)
+        if (apply)
             applyCursor();
     }
 }

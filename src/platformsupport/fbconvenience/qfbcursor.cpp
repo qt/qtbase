@@ -120,7 +120,7 @@ void QFbCursor::setCursor(const uchar *data, const uchar *mask, int width, int h
 void QFbCursor::changeCursor(QCursor * widgetCursor, QWindow *window)
 {
     Q_UNUSED(window);
-    Qt::CursorShape shape = widgetCursor->shape();
+    const Qt::CursorShape shape = widgetCursor ? widgetCursor->shape() : Qt::ArrowCursor;
 
     if (shape == Qt::BitmapCursor) {
         // application supplied cursor

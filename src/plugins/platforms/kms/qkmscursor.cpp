@@ -85,8 +85,9 @@ void QKmsCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
     if (!m_moved)
         drmModeMoveCursor(m_screen->device()->fd(), m_screen->crtcId(), 0, 0);
 
-    if (widgetCursor->shape() != Qt::BitmapCursor) {
-        m_cursorImage->set(widgetCursor->shape());
+    const Qt::CursorShape newShape = widgetCursor ? widgetCursor->shape() : Qt::ArrowCursor;
+    if (newShape != Qt::BitmapCursor) {
+        m_cursorImage->set(newShape);
     } else {
         m_cursorImage->set(widgetCursor->pixmap().toImage(),
                            widgetCursor->hotSpot().x(),

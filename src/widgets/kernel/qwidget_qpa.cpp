@@ -999,6 +999,12 @@ static inline void applyCursor(QWidget *w, QCursor c)
         window->setCursor(c);
 }
 
+static inline void unsetCursor(QWidget *w)
+{
+    if (QWindow *window = w->windowHandle())
+        window->unsetCursor();
+}
+
 void qt_qpa_set_cursor(QWidget *w, bool force)
 {
     if (!w->testAttribute(Qt::WA_WState_Created))
@@ -1032,9 +1038,9 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
         else
             // Enforce the windows behavior of clearing the cursor on
             // disabled widgets.
-            applyCursor(nativeParent, Qt::ArrowCursor);
+            unsetCursor(nativeParent);
     } else {
-        applyCursor(nativeParent, Qt::ArrowCursor);
+        unsetCursor(nativeParent);
     }
 }
 #endif //QT_NO_CURSOR 

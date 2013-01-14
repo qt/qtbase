@@ -405,8 +405,12 @@ void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
 
     if (QWindowsContext::verboseWindows > 1)
         qDebug() << __FUNCTION__ <<  cursorIn << window;
-    if (!cursorIn || !window)
+    if (!window)
         return;
+    if (!cursorIn) {
+        QWindowsWindow::baseWindowOf(window)->setCursor(QWindowsWindowCursor());
+        return;
+    }
     const QWindowsWindowCursor wcursor =
         cursorIn->shape() == Qt::BitmapCursor ?
         QWindowsWindowCursor(*cursorIn) : standardWindowCursor(cursorIn->shape());
@@ -448,6 +452,7 @@ void QWindowsCursor::setPos(const QPoint &pos)
 class QWindowsWindowCursorData : public QSharedData
 {
 public:
+    QWindowsWindowCursorData() : m_cursor(Qt::ArrowCursor), m_handle(0) {}
     explicit QWindowsWindowCursorData(const QCursor &c);
     ~QWindowsWindowCursorData();
 
@@ -463,7 +468,13 @@ QWindowsWindowCursorData::QWindowsWindowCursorData(const QCursor &c) :
 
 QWindowsWindowCursorData::~QWindowsWindowCursorData()
 {
-    DestroyCursor(m_handle);
+    if (m_handle)
+        DestroyCursor(m_handle);
+}
+
+QWindowsWindowCursor::QWindowsWindowCursor() :
+    m_data(new QWindowsWindowCursorData)
+{
 }
 
 QWindowsWindowCursor::QWindowsWindowCursor(const QCursor &c) :
@@ -485,6 +496,11 @@ QWindowsWindowCursor & QWindowsWindowCursor::operator =(const QWindowsWindowCurs
     if (this != &rhs)
         m_data.operator =(rhs.m_data);
     return *this;
+}
+
+bool QWindowsWindowCursor::isNull() const
+{
+    return m_data->m_handle == 0;
 }
 
 QCursor QWindowsWindowCursor::cursor() const

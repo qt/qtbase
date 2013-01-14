@@ -284,7 +284,7 @@ void QWindow::setVisible(bool visible)
     }
 
 #ifndef QT_NO_CURSOR
-    if (visible)
+    if (visible && d->hasCursor)
         d->applyCursor();
 #endif
     d->platformWindow->setVisible(visible);
@@ -1947,13 +1947,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 void QWindow::setCursor(const QCursor &cursor)
 {
     Q_D(QWindow);
-    d->cursor = cursor;
-    // Only attempt to set cursor and emit signal if there is an actual platform cursor
-    if (d->screen->handle()->cursor()) {
-        d->applyCursor();
-        QEvent event(QEvent::CursorChange);
-        QGuiApplication::sendEvent(this, &event);
-    }
+    d->setCursor(&cursor);
 }
 
 /*!
@@ -1961,7 +1955,8 @@ void QWindow::setCursor(const QCursor &cursor)
  */
 void QWindow::unsetCursor()
 {
-    setCursor(Qt::ArrowCursor);
+    Q_D(QWindow);
+    d->setCursor(0);
 }
 
 /*!
@@ -1975,14 +1970,39 @@ QCursor QWindow::cursor() const
     return d->cursor;
 }
 
+void QWindowPrivate::setCursor(const QCursor *newCursor)
+{
+
+    Q_Q(QWindow);
+    if (newCursor) {
+        const Qt::CursorShape newShape = newCursor->shape();
+        if (newShape <= Qt::LastCursor && hasCursor && newShape == cursor.shape())
+            return; // Unchanged and no bitmap/custom cursor.
+        cursor = *newCursor;
+        hasCursor = true;
+    } else {
+        if (!hasCursor)
+            return;
+        cursor = QCursor(Qt::ArrowCursor);
+        hasCursor = false;
+    }
+    // Only attempt to set cursor and emit signal if there is an actual platform cursor
+    if (screen->handle()->cursor()) {
+        applyCursor();
+        QEvent event(QEvent::CursorChange);
+        QGuiApplication::sendEvent(q, &event);
+    }
+}
+
 void QWindowPrivate::applyCursor()
 {
     Q_Q(QWindow);
     if (platformWindow) {
         if (QPlatformCursor *platformCursor = screen->handle()->cursor()) {
-            QCursor *oc = QGuiApplication::overrideCursor();
-            QCursor c = oc ? *oc : cursor;
-            platformCursor->changeCursor(&c, q);
+            QCursor *c = QGuiApplication::overrideCursor();
+            if (!c && hasCursor)
+                c = &cursor;
+            platformCursor->changeCursor(c, q);
         }
     }
 }

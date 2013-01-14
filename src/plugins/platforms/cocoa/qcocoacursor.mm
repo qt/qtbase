@@ -61,8 +61,9 @@ void QCocoaCursor::changeCursor(QCursor *cursor, QWindow *window)
 {
     Q_UNUSED(window);
 
+    const Qt::CursorShape newShape = cursor ? cursor->shape() : Qt::ArrowCursor;
     // Check for a suitable built-in NSCursor first:
-    switch (cursor->shape()) {
+    switch (newShape) {
     case Qt::ArrowCursor:
         [[NSCursor arrowCursor] set];
         break;
@@ -99,14 +100,14 @@ void QCocoaCursor::changeCursor(QCursor *cursor, QWindow *window)
     default : {
         // No suitable OS cursor exist, use cursors provided
         // by Qt for the rest. Check for a cached cursor:
-        NSCursor *cocoaCursor = m_cursors.value(cursor->shape());
+        NSCursor *cocoaCursor = m_cursors.value(newShape);
         if (cocoaCursor == 0) {
             cocoaCursor = createCursorData(cursor);
             if (cocoaCursor == 0) {
                 [[NSCursor arrowCursor] set];
                 return;
             }
-            m_cursors.insert(cursor->shape(), cocoaCursor);
+            m_cursors.insert(newShape, cocoaCursor);
         }
 
         [cocoaCursor set];

@@ -2629,6 +2629,13 @@ static inline void applyCursor(QWindow *w, QCursor c)
             cursor->changeCursor(&c, w);
 }
 
+static inline void unsetCursor(QWindow *w)
+{
+    if (const QScreen *screen = w->screen())
+        if (QPlatformCursor *cursor = screen->handle()->cursor())
+            cursor->changeCursor(0, w);
+}
+
 static inline void applyCursor(const QList<QWindow *> &l, const QCursor &c)
 {
     for (int i = 0; i < l.size(); ++i) {
@@ -2642,8 +2649,13 @@ static inline void applyWindowCursor(const QList<QWindow *> &l)
 {
     for (int i = 0; i < l.size(); ++i) {
         QWindow *w = l.at(i);
-        if (w->handle() && w->type() != Qt::Desktop)
-            applyCursor(w, w->cursor());
+        if (w->handle() && w->type() != Qt::Desktop) {
+            if (qt_window_private(w)->hasCursor) {
+                applyCursor(w, w->cursor());
+            } else {
+                unsetCursor(w);
+            }
+        }
     }
 }
 
