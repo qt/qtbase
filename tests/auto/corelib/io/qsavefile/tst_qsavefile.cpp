@@ -222,10 +222,34 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
     QCOMPARE(file.write("Hello"), qint64(5));
     QVERIFY(!QFile::exists(targetFile));
 
+    // Restore permissions so that the QTemporaryDir cleanup can happen
+    class PermissionRestorer
+    {
+    public:
+        PermissionRestorer(const QString& path)
+            : m_path(path)
+        {}
+
+        ~PermissionRestorer()
+        {
+            QFile file(m_path);
+#ifdef Q_OS_UNIX
+            file.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner));
+#else
+            file.setPermissions(QFile::WriteOwner);
+            file.remove();
+#endif
+        }
+
+    private:
+        QString m_path;
+    };
+
 #ifdef Q_OS_UNIX
     // Make rename() fail for lack of permissions in the directory
     QFile dirAsFile(dir.path()); // yay, I have to use QFile to change a dir's permissions...
     QVERIFY(dirAsFile.setPermissions(QFile::Permissions(0))); // no permissions
+    PermissionRestorer permissionRestorer(dir.path());
 #else
     // Windows: Make rename() fail for lack of permissions on an existing target file
     QFile existingTargetFile(targetFile);
@@ -233,6 +257,7 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
     QCOMPARE(file.write("Target"), qint64(6));
     existingTargetFile.close();
     QVERIFY(existingTargetFile.setPermissions(QFile::ReadOwner));
+    PermissionRestorer permissionRestorer(targetFile);
 #endif
 
     // The saving should fail.
@@ -241,14 +266,6 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
     QVERIFY(!QFile::exists(targetFile)); // renaming failed
 #endif
     QCOMPARE(file.error(), QFile::RenameError);
-
-    // Restore permissions so that the cleanup can happen
-#ifdef Q_OS_UNIX
-    QVERIFY(dirAsFile.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner)));
-#else
-    QVERIFY(existingTargetFile.setPermissions(QFile::WriteOwner));
-    QVERIFY(existingTargetFile.remove());
-#endif
 }
 
 QTEST_MAIN(tst_QSaveFile)
