@@ -44,6 +44,7 @@
 
 #ifndef QT_NO_OPENGL
 
+#include <QtGui/qopengl.h>
 #include <QtWidgets/qwidget.h>
 #include <QtGui/qpaintengine.h>
 #include <QtOpenGL/qglcolormap.h>
@@ -53,33 +54,6 @@
 #include <QtGui/QSurfaceFormat>
 
 QT_BEGIN_HEADER
-
-#if defined(Q_OS_WIN)
-# include <QtCore/qt_windows.h>
-#endif
-
-#if defined(Q_OS_MAC)
-# if !defined(Q_OS_IOS)
-# include <OpenGL/gl.h>
-# else
-#  if defined(QT_OPENGL_ES_2)
-#   include <OpenGLES/ES2/gl.h>
-#  endif
-# endif
-#elif defined(QT_OPENGL_ES_2)
-# include <GLES2/gl2.h>
-# else
-# include <GL/gl.h>
-# endif
-
-#if defined(QT_OPENGL_ES_2)
-# ifndef GL_DOUBLE
-#  define GL_DOUBLE GL_FLOAT
-# endif
-# ifndef GLdouble
-typedef GLfloat GLdouble;
-# endif
-#endif
 
 QT_BEGIN_NAMESPACE
 
