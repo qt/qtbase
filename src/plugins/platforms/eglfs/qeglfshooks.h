@@ -69,6 +69,7 @@ public:
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
     virtual QEglFSCursor *createCursor(QEglFSScreen *screen) const;
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
+    virtual void waitForVSync() const;
 
     virtual const char *fbDeviceName() const;
 };

@@ -47,8 +47,13 @@
 #include <sys/ioctl.h>
 
 #include <private/qmath_p.h>
+#include <private/qcore_unix_p.h>
 
 QT_BEGIN_NAMESPACE
+
+// file descriptor for the frame buffer
+// this is a global static to keep the QEglFSHooks interface as clean as possible
+static int framebuffer = -1;
 
 const char *QEglFSHooks::fbDeviceName() const
 {
@@ -58,10 +63,17 @@ const char *QEglFSHooks::fbDeviceName() const
 void QEglFSHooks::platformInit()
 {
     Q_UNUSED(hooks);
+
+    framebuffer = qt_safe_open(fbDeviceName(), O_RDONLY);
+
+    if (framebuffer == -1)
+        qWarning("EGLFS: Failed to open %s", fbDeviceName());
 }
 
 void QEglFSHooks::platformDestroy()
 {
+    if (framebuffer != -1)
+        close(framebuffer);
 }
 
 EGLNativeDisplayType QEglFSHooks::platformDisplay() const
@@ -86,22 +98,16 @@ QSizeF QEglFSHooks::physicalScreenSize() const
         }
 
         struct fb_var_screeninfo vinfo;
-        int fd = open(fbDeviceName(), O_RDONLY);
-
         int w = -1;
         int h = -1;
 
-        if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+        if (framebuffer != -1) {
+            if (ioctl(framebuffer, FBIOGET_VSCREENINFO, &vinfo) == -1) {
                 qWarning("EGLFS: Could not query variable screen info.");
             } else {
                 w = vinfo.width;
                 h = vinfo.height;
             }
-
-            close(fd);
-        } else {
-            qWarning("EGLFS: Failed to open %s to detect physical screen size.", fbDeviceName());
         }
 
         const int defaultPhysicalDpi = 100;
@@ -140,22 +146,17 @@ QSize QEglFSHooks::screenSize() const
         }
 
         struct fb_var_screeninfo vinfo;
-        int fd = open(fbDeviceName(), O_RDONLY);
 
         int xres = -1;
         int yres = -1;
 
-        if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+        if (framebuffer != -1) {
+            if (ioctl(framebuffer, FBIOGET_VSCREENINFO, &vinfo) == -1) {
                 qWarning("EGLFS: Could not query variable screen info.");
             } else {
                 xres = vinfo.xres;
                 yres = vinfo.yres;
             }
-
-            close(fd);
-        } else {
-            qWarning("EGLFS: Failed to open %s to detect screen resolution.", fbDeviceName());
         }
 
         const int defaultWidth = 800;
@@ -185,17 +186,12 @@ int QEglFSHooks::screenDepth() const
 
     if (depth == 0) {
         struct fb_var_screeninfo vinfo;
-        int fd = open(fbDeviceName(), O_RDONLY);
 
-        if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
+        if (framebuffer != -1) {
+            if (ioctl(framebuffer, FBIOGET_VSCREENINFO, &vinfo) == -1)
                 qWarning("EGLFS: Could not query variable screen info.");
             else
                 depth = vinfo.bits_per_pixel;
-
-            close(fd);
-        } else {
-            qWarning("EGLFS: Failed to open %s to detect screen depth.", fbDeviceName());
         }
 
         const int defaultDepth = 32;
@@ -248,6 +244,16 @@ QEglFSCursor *QEglFSHooks::createCursor(QEglFSScreen *screen) const
 {
     Q_UNUSED(screen);
     return 0;
+}
+
+void QEglFSHooks::waitForVSync() const
+{
+    static const bool forceSync = qgetenv("QT_QPA_EGLFS_FORCEVSYNC").toInt();
+    if (forceSync && framebuffer != -1) {
+        int arg = 0;
+        if (ioctl(framebuffer, FBIO_WAITFORVSYNC, &arg) == -1)
+            qWarning("Could not wait for vsync.");
+    }
 }
 
 #ifndef EGLFS_PLATFORM_HOOKS
