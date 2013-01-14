@@ -81,6 +81,7 @@ public:
     bool open(QIODevice::OpenMode flags, FILE *fh);
     bool close();
     bool flush();
+    bool syncToDisk();
     qint64 size() const;
     qint64 pos() const;
     bool seek(qint64);
@@ -150,6 +151,7 @@ public:
     bool nativeClose();
     bool closeFdFh();
     bool nativeFlush();
+    bool nativeSyncToDisk();
     bool flushFh();
     qint64 nativeSize() const;
 #ifndef Q_OS_WIN

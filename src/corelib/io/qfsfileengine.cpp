@@ -419,6 +419,17 @@ bool QFSFileEngine::flush()
 }
 
 /*!
+    \reimp
+*/
+bool QFSFileEngine::syncToDisk()
+{
+    Q_D(QFSFileEngine);
+    if ((d->openMode & QIODevice::WriteOnly) == 0)
+        return true;
+    return d->nativeSyncToDisk();
+}
+
+/*!
     \internal
 */
 bool QFSFileEnginePrivate::flushFh()

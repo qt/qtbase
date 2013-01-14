@@ -198,11 +198,21 @@ bool QFSFileEnginePrivate::nativeFlush()
         return true;
     }
 
-    // Windows native mode; flushing is
-    // unnecessary. FlushFileBuffers(), the equivalent of sync() or
-    // fsync() on Unix, does a low-level flush to the disk, and we
-    // don't expose an API for this.
+    // Windows native mode; flushing is unnecessary.
     return true;
+}
+
+/*
+    \internal
+    \since 5.1
+*/
+bool QFSFileEnginePrivate::nativeSyncToDisk()
+{
+    if (fh || fd != -1) {
+        // stdlib / stdio mode. No API available.
+        return false;
+    }
+    return FlushFileBuffers(fileHandle);
 }
 
 /*

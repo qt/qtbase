@@ -400,6 +400,19 @@ bool QAbstractFileEngine::close()
 }
 
 /*!
+    \since 5.1
+
+    Flushes and syncs the file to disk.
+
+    Returns true if successful; otherwise returns false.
+    The default implementation always returns false.
+*/
+bool QAbstractFileEngine::syncToDisk()
+{
+    return false;
+}
+
+/*!
     Flushes the open file, returning true if successful; otherwise returns
     false.
 

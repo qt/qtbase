@@ -124,6 +124,7 @@ public:
     virtual bool open(QIODevice::OpenMode openMode);
     virtual bool close();
     virtual bool flush();
+    virtual bool syncToDisk();
     virtual qint64 size() const;
     virtual qint64 pos() const;
     virtual bool seek(qint64 pos);
