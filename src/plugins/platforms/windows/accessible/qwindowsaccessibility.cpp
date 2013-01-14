@@ -190,6 +190,8 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     }
 
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
+    if (!window->handle()) // Called before show(), no native window yet.
+        return;
     HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
 
     static int eventNum = 0;
