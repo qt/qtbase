@@ -24,6 +24,7 @@ HEADERS +=  \
         io/qtextstream.h \
         io/qtemporarydir.h \
         io/qtemporaryfile.h \
+        io/qtemporaryfile_p.h \
         io/qresource_p.h \
         io/qresource_iterator_p.h \
         io/qstandardpaths.h \
