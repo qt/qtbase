@@ -218,6 +218,8 @@ static QString strippedText(QString s)
     *mCurrentSelection = QT_PREPEND_NAMESPACE(QCFString::toQString)([[mSavePanel URL] path]);
     if ([mSavePanel respondsToSelector:@selector(closePanel:)])
         [mSavePanel close];
+    if ([mSavePanel isSheet])
+        [NSApp endSheet: mSavePanel];
 }
 
 - (void)showModelessPanel
