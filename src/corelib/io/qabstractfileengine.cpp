@@ -496,6 +496,24 @@ bool QAbstractFileEngine::rename(const QString &newName)
 }
 
 /*!
+    \since 5.1
+
+    Requests that the file be renamed to \a newName in the file
+    system. If the new name already exists, it must be overwritten.
+    If the operation succeeds, returns true; otherwise returns
+    false.
+
+    This virtual function must be reimplemented by all subclasses.
+
+    \sa setFileName()
+ */
+bool QAbstractFileEngine::renameOverwrite(const QString &newName)
+{
+    Q_UNUSED(newName);
+    return false;
+}
+
+/*!
     Creates a link from the file currently specified by fileName() to
     \a newName. What a link is depends on the underlying filesystem
     (be it a shortcut on Windows or a symbolic link on Unix). Returns

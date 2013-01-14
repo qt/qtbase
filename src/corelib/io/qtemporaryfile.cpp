@@ -242,6 +242,7 @@ public:
     bool open(QIODevice::OpenMode flags);
     bool remove();
     bool rename(const QString &newName);
+    bool renameOverwrite(const QString &newName);
     bool close();
 
     bool filePathIsTemplate;
@@ -396,6 +397,12 @@ bool QTemporaryFileEngine::rename(const QString &newName)
 {
     QFSFileEngine::close();
     return QFSFileEngine::rename(newName);
+}
+
+bool QTemporaryFileEngine::renameOverwrite(const QString &newName)
+{
+    QFSFileEngine::close();
+    return QFSFileEngine::renameOverwrite(newName);
 }
 
 bool QTemporaryFileEngine::close()

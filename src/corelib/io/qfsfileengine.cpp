@@ -908,6 +908,11 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
+
+/*! \fn bool QFSFileEngine::renameOverwrite(const QString &newName)
+  \reimp
+*/
+
 /*! \fn bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
   \reimp
 */

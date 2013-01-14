@@ -88,6 +88,7 @@ public:
     bool remove();
     bool copy(const QString &newName);
     bool rename(const QString &newName);
+    bool renameOverwrite(const QString &newName);
     bool link(const QString &newName);
     bool mkdir(const QString &dirName, bool createParentDirectories) const;
     bool rmdir(const QString &dirName, bool recurseParentDirectories) const;

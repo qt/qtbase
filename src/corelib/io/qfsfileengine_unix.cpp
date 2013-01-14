@@ -388,6 +388,12 @@ bool QFSFileEngine::copy(const QString &newName)
     return ret;
 }
 
+bool QFSFileEngine::renameOverwrite(const QString &newName)
+{
+    // On Unix, rename() overwrites.
+    return rename(newName);
+}
+
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);

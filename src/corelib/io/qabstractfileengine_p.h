@@ -131,6 +131,7 @@ public:
     virtual bool remove();
     virtual bool copy(const QString &newName);
     virtual bool rename(const QString &newName);
+    virtual bool renameOverwrite(const QString &newName);
     virtual bool link(const QString &newName);
     virtual bool mkdir(const QString &dirName, bool createParentDirectories) const;
     virtual bool rmdir(const QString &dirName, bool recurseParentDirectories) const;
