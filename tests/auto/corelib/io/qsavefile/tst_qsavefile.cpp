@@ -66,7 +66,8 @@ private slots:
     void textStreamManualFlush();
     void textStreamAutoFlush();
     void saveTwice();
-    void transactionalWriteNoPermissions();
+    void transactionalWriteNoPermissionsOnDir();
+    void transactionalWriteNoPermissionsOnFile();
     void transactionalWriteCanceled();
     void transactionalWriteErrorRenaming();
 };
@@ -152,7 +153,7 @@ void tst_QSaveFile::textStreamAutoFlush()
     QFile::remove(targetFile);
 }
 
-void tst_QSaveFile::transactionalWriteNoPermissions()
+void tst_QSaveFile::transactionalWriteNoPermissionsOnDir()
 {
 #ifdef Q_OS_UNIX
     if (::geteuid() == 0)
@@ -167,6 +168,26 @@ void tst_QSaveFile::transactionalWriteNoPermissions()
     QCOMPARE((int)file.error(), (int)QFile::OpenError);
     QVERIFY(!file.commit());
 #endif
+}
+
+void tst_QSaveFile::transactionalWriteNoPermissionsOnFile()
+{
+    // Setup an existing but readonly file
+    QTemporaryDir dir;
+    const QString targetFile = dir.path() + QString::fromLatin1("/outfile");
+    QFile file(targetFile);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    QCOMPARE(file.write("Hello"), Q_INT64_C(5));
+    file.close();
+    file.setPermissions(QFile::ReadOwner);
+    QVERIFY(!file.open(QIODevice::WriteOnly));
+
+    // Try saving into it
+    {
+        QSaveFile saveFile(targetFile);
+        QVERIFY(!saveFile.open(QIODevice::WriteOnly)); // just like QFile
+    }
+    QVERIFY(file.exists());
 }
 
 void tst_QSaveFile::transactionalWriteCanceled()
