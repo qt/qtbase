@@ -267,7 +267,7 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, qreal level)
 struct WindowCreationData
 {
     typedef QWindowsWindow::WindowData WindowData;
-    enum Flags { ForceChild = 0x1 };
+    enum Flags { ForceChild = 0x1, ForceTopLevel = 0x2 };
 
     WindowCreationData() : parentHandle(0), type(Qt::Widget), style(0), exStyle(0),
         topLevel(false), popup(false), dialog(false), desktop(false),
@@ -319,7 +319,13 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         parentHandle = (HWND)prop.value<WId>();
     }
 
-    topLevel = ((creationFlags & ForceChild) || embedded) ? false : w->isTopLevel();
+    if (creationFlags & ForceChild) {
+        topLevel = false;
+    } else if (creationFlags & ForceTopLevel) {
+        topLevel = true;
+    } else {
+        topLevel = w->isTopLevel();
+    }
 
     if (topLevel && flags == 1) {
         flags |= Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint
@@ -984,10 +990,9 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
 
         // WS_CHILD/WS_POPUP must be manually set/cleared in addition
         // to dialog frames, etc (see  SetParent() ) if the top level state changes.
-        if (wasTopLevel != isTopLevel) {
-            const unsigned flags = isTopLevel ? unsigned(0) : unsigned(WindowCreationData::ForceChild);
-            setWindowFlags_sys(window()->flags(), flags);
-        }
+        // Force toplevel state as QWindow::isTopLevel cannot be relied upon here.
+        if (wasTopLevel != isTopLevel)
+            setWindowFlags_sys(window()->flags(), unsigned(isTopLevel ? WindowCreationData::ForceTopLevel : WindowCreationData::ForceChild));
     }
 }
 
