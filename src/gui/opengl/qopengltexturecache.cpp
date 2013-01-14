@@ -95,9 +95,10 @@ void QOpenGLTextureCacheWrapper::cleanupTexturesForPixmapData(QPlatformPixmap *p
     cleanupTexturesForCacheKey(pmd->cacheKey());
 }
 
-QOpenGLTextureCache::QOpenGLTextureCache(QOpenGLContext *ctx)
+QOpenGLTextureCache::QOpenGLTextureCache(QOpenGLContext *ctx, bool useByteSwapImage)
     : QOpenGLSharedResource(ctx->shareGroup())
     , m_cache(64 * 1024) // 64 MB cache
+    , m_useByteSwapImage(useByteSwapImage)
 {
 }
 
@@ -180,7 +181,9 @@ GLuint QOpenGLTextureCache::bindTexture(QOpenGLContext *context, qint64 key, con
 
     QImage tx = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
-    qgl_byteSwapImage(tx);
+    // Performance could be improved by skipping qgl_byteSwapImage().
+    if (m_useByteSwapImage)
+        qgl_byteSwapImage(tx);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tx.width(), tx.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, const_cast<const QImage &>(tx).bits());
 
