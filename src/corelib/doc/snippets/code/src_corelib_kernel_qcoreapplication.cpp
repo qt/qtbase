@@ -57,7 +57,14 @@ foreach (const QString &path, app.libraryPaths())
 
 
 //! [3]
+// Called once QCoreApplication exists
+static void preRoutineMyDebugTool()
+{
+    MyDebugTool* tool = new MyDebugTool(QCoreApplication::instance());
+    QCoreApplication::instance()->installEventFilter(tool);
+}
 
+Q_COREAPP_STARTUP_FUNCTION(preRoutineMyDebugTool)
 //! [3]
 
 

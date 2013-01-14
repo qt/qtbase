@@ -194,8 +194,32 @@ extern "C" void Q_CORE_EXPORT qt_startup_hook()
 {
 }
 
+typedef QList<QtStartUpFunction> QStartUpFuncList;
+Q_GLOBAL_STATIC(QStartUpFuncList, preRList)
 typedef QList<QtCleanUpFunction> QVFuncList;
 Q_GLOBAL_STATIC(QVFuncList, postRList)
+static QBasicMutex globalPreRoutinesMutex;
+
+/*!
+    \internal
+
+    Adds a global routine that will be called from the QCoreApplication
+    constructor. The public API is Q_COREAPP_STARTUP_FUNCTION.
+*/
+void qAddPreRoutine(QtStartUpFunction p)
+{
+    QStartUpFuncList *list = preRList();
+    if (!list)
+        return;
+    // Due to C++11 parallel dynamic initialization, this can be called
+    // from multiple threads.
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(&globalPreRoutinesMutex);
+#endif
+    if (QCoreApplication::instance())
+        p();
+    list->prepend(p); // in case QCoreApplication is re-created, see qt_call_pre_routines
+}
 
 void qAddPostRoutine(QtCleanUpFunction p)
 {
@@ -211,6 +235,21 @@ void qRemovePostRoutine(QtCleanUpFunction p)
     if (!list)
         return;
     list->removeAll(p);
+}
+
+static void qt_call_pre_routines()
+{
+    QStartUpFuncList *list = preRList();
+    if (!list)
+        return;
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(&globalPreRoutinesMutex);
+#endif
+    // Unlike qt_call_post_routines, we don't empty the list, because
+    // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
+    // the function to be executed every time QCoreApplication is created.
+    for (int i = 0; i < list->count(); ++i)
+        list->at(i)();
 }
 
 void Q_CORE_EXPORT qt_call_post_routines()
@@ -637,6 +676,7 @@ void QCoreApplication::init()
 
     d->processCommandLineArguments();
 
+    qt_call_pre_routines();
     qt_startup_hook();
 }
 
@@ -2323,6 +2363,31 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
         mainThread = QThread::currentThread(); // will also setup theMainThread
     mainThread->setEventDispatcher(eventDispatcher);
 }
+
+/*!
+    \macro Q_COREAPP_STARTUP_FUNCTION(QtStartUpFunction ptr)
+    \since 5.1
+    \relates QCoreApplication
+    \reentrant
+
+    Adds a global function that will be called from the QCoreApplication
+    constructor. This macro is normally used to initialize libraries
+    for program-wide functionality, without requiring the application to
+    call into the library for initialization.
+
+    The function specified by \a ptr should take no arguments and should
+    return nothing. For example:
+
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 3
+
+    Note that the startup function will run at the end of the QCoreApplication constructor,
+    before any GUI initialization. If GUI code is required in the function,
+    use a timer (or a queued invocation) to perform the initialization later on,
+    from the event loop.
+
+    If QCoreApplication is deleted and another QCoreApplication is created,
+    the startup function will be invoked again.
+*/
 
 /*!
     \fn void qAddPostRoutine(QtCleanUpFunction ptr)

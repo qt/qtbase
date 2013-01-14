@@ -220,11 +220,19 @@ public: \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
 private:
 
+typedef void (*QtStartUpFunction)();
 typedef void (*QtCleanUpFunction)();
 
+Q_CORE_EXPORT void qAddPreRoutine(QtStartUpFunction);
 Q_CORE_EXPORT void qAddPostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT void qRemovePostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT QString qAppName();                // get application name
+
+#define Q_COREAPP_STARTUP_FUNCTION(AFUNC) \
+    static void AFUNC ## _ctor_function() {  \
+        qAddPreRoutine(AFUNC);        \
+    }                                 \
+    Q_CONSTRUCTOR_FUNCTION(AFUNC ## _ctor_function)
 
 #if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QString decodeMSG(const MSG &);
