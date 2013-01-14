@@ -218,6 +218,8 @@ bool QLocalSocket::open(OpenMode openMode)
 {
     Q_D(QLocalSocket);
     if (state() == ConnectedState || state() == ConnectingState) {
+        setErrorString(tr("Trying to connect while connection is in progress"));
+        emit error(QLocalSocket::OperationError);
         return false;
     }
 
