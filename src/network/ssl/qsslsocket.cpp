@@ -903,7 +903,12 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.peerVerifyMode = configuration.peerVerifyMode();
     d->configuration.protocol = configuration.protocol();
     d->configuration.sslOptions = configuration.d->sslOptions;
-    d->allowRootCertOnDemandLoading = false;
+
+    // if the CA certificates were set explicitly (either via
+    // QSslConfiguration::setCaCertificates() or QSslSocket::setCaCertificates(),
+    // we cannot load the certificates on demand
+    if (!configuration.d->allowRootCertOnDemandLoading)
+        d->allowRootCertOnDemandLoading = false;
 }
 
 /*!
@@ -2376,6 +2381,14 @@ QByteArray QSslSocketPrivate::peek(qint64 maxSize)
         //encrypted mode - the socket engine will read and decrypt data into the QIODevice buffer
         return QTcpSocketPrivate::peek(maxSize);
     }
+}
+
+/*!
+    \internal
+*/
+bool QSslSocketPrivate::rootCertOnDemandLoadingSupported()
+{
+    return s_loadRootCertsOnDemand;
 }
 
 /*!
