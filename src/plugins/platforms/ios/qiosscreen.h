@@ -63,6 +63,7 @@ public:
     int depth() const;
     QImage::Format format() const;
     QSizeF physicalSize() const;
+    QDpi logicalDpi() const;
 
     Qt::ScreenOrientation nativeOrientation() const;
     Qt::ScreenOrientation orientation() const;

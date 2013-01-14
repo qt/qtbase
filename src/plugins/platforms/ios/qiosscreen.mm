@@ -178,6 +178,11 @@ QSizeF QIOSScreen::physicalSize() const
     return m_physicalSize;
 }
 
+QDpi QIOSScreen::logicalDpi() const
+{
+    return QDpi(72, 72);
+}
+
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
     return Qt::PortraitOrientation;
