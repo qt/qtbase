@@ -61,9 +61,7 @@
 #include "QtCore/qvarlengtharray.h"
 #include "private/qtimerinfo_unix_p.h"
 
-#if defined(Q_OS_VXWORKS)
-#  include <sys/times.h>
-#else
+#if !defined(Q_OS_VXWORKS)
 #  include <sys/time.h>
 #  if (!defined(Q_OS_HPUX) || defined(__ia64)) && !defined(Q_OS_NACL)
 #    include <sys/select.h>
