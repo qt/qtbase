@@ -98,6 +98,7 @@ Qt for Windows CE
 *                      Compiler Specific Changes                           *
 ****************************************************************************
 
+ - MinGW: Statically link runtime libraries into qmake
 
 ****************************************************************************
 *                          Tools                                           *
@@ -113,3 +114,7 @@ Qt for Windows CE
 *                   Important Behavior Changes                             *
 ****************************************************************************
 
+- QSharedMemory on Unix systems now no longer creates shared memory
+  segments that are readable and writeable to everyone. From Qt 5.0.1
+  forward, the segments are created readable and writeable only by the
+  current user. This matches the behavior on Windows.

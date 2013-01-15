@@ -597,12 +597,14 @@ void QWidgetWindow::handleWindowStateChangedEvent(QWindowStateChangeEvent *event
             if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
                 tle->normalGeometry = m_widget->geometry();
         widgetState |= Qt::WindowMaximized;
+        widgetState &= ~(Qt::WindowMinimized | Qt::WindowFullScreen);
         break;
     case Qt::WindowFullScreen:
         if (effectiveState(widgetState) == Qt::WindowNoState)
             if (QTLWExtra *tle = m_widget->d_func()->maybeTopData())
                 tle->normalGeometry = m_widget->geometry();
         widgetState |= Qt::WindowFullScreen;
+        widgetState &= ~(Qt::WindowMinimized);
         break;
     case Qt::WindowActive: // Not handled by QWindow
         break;

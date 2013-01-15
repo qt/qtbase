@@ -3042,7 +3042,7 @@ void Configure::generateQConfigPri()
             configStream << " slog2";
 
         if (dictionary["DIRECTWRITE"] == "yes")
-            configStream << "directwrite";
+            configStream << " directwrite";
 
         // ### For compatibility only, should be removed later.
         configStream << " qpa";
