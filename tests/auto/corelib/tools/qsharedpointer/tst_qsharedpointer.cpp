@@ -1996,7 +1996,7 @@ void tst_QSharedPointer::invalidConstructs()
     QByteArray body = code.toLatin1();
 
     bool result = (test.*testFunction)(body);
-    if (qgetenv("QTEST_EXTERNAL_DEBUG").toInt() > 0) {
+    if (!result || qgetenv("QTEST_EXTERNAL_DEBUG").toInt() > 0) {
         qDebug("External test output:");
 #ifdef Q_CC_MSVC
         // MSVC prints errors to stdout
