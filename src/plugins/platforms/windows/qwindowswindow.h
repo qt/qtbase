@@ -154,6 +154,7 @@ public:
 
     virtual void setVisible(bool visible);
     bool isVisible() const;
+    virtual bool isExposed() const { return m_windowState != Qt::WindowMinimized && isVisible(); }
     virtual bool isActive() const;
     virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
     virtual QPoint mapToGlobal(const QPoint &pos) const;
