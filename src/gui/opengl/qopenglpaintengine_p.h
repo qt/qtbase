@@ -236,6 +236,7 @@ public:
     void setBrush(const QBrush& brush);
     void transferMode(EngineMode newMode);
     bool prepareForDraw(bool srcPixelsAreOpaque); // returns true if the program has changed
+    bool prepareForCachedGlyphDraw(const QFontEngineGlyphCache &cache);
     inline void useSimpleShader();
     inline GLuint location(const QOpenGLEngineShaderManager::Uniform uniform) {
         return shaderManager->getUniformLocation(uniform);

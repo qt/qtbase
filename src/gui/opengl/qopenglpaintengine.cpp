@@ -1069,6 +1069,18 @@ void QOpenGL2PaintEngineExPrivate::resetClipIfNeeded()
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
+bool QOpenGL2PaintEngineExPrivate::prepareForCachedGlyphDraw(const QFontEngineGlyphCache &cache)
+{
+    Q_Q(QOpenGL2PaintEngineEx);
+
+    QTransform &transform = q->state()->matrix;
+    transform.scale(1.0 / cache.transform().m11(), 1.0 / cache.transform().m22());
+    bool ret = prepareForDraw(false);
+    transform.scale(cache.transform().m11(), cache.transform().m22());
+
+    return ret;
+}
+
 bool QOpenGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
 {
     if (brushTextureDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
@@ -1543,10 +1555,14 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
     bool recreateVertexArrays = false;
     QFontEngine *fe = staticTextItem->fontEngine();
 
+    // We allow scaling, so that the glyph-cache will contain glyphs with the
+    // appropriate resolution in the case of displays with a device-pixel-ratio != 1.
+    QTransform transform = QTransform::fromScale(s->matrix.m11(), s->matrix.m22());
+
     QOpenGLTextureGlyphCache *cache =
-            (QOpenGLTextureGlyphCache *) fe->glyphCache(cacheKey, glyphType, QTransform());
+            (QOpenGLTextureGlyphCache *) fe->glyphCache(cacheKey, glyphType, transform);
     if (!cache || cache->cacheType() != glyphType || cache->contextGroup() == 0) {
-        cache = new QOpenGLTextureGlyphCache(glyphType, QTransform());
+        cache = new QOpenGLTextureGlyphCache(glyphType, transform);
         fe->setGlyphCache(cacheKey, cache);
         recreateVertexArrays = true;
     }
@@ -1638,8 +1654,8 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
             if (c.isNull())
                 continue;
 
-            int x = qFloor(staticTextItem->glyphPositions[i].x) + c.baseLineX - margin;
-            int y = qRound(staticTextItem->glyphPositions[i].y) - c.baseLineY - margin;
+            int x = qFloor(staticTextItem->glyphPositions[i].x.toReal() * cache->transform().m11()) + c.baseLineX - margin;
+            int y = qRound(staticTextItem->glyphPositions[i].y.toReal() * cache->transform().m22()) - c.baseLineY - margin;
 
             vertexCoordinates->addQuad(QRectF(x, y, c.w, c.h));
             textureCoordinates->addQuad(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));
@@ -1712,9 +1728,9 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
             }
 
             compositionModeDirty = false; // I can handle this myself, thank you very much
-            prepareForDraw(false); // Text always causes src pixels to be transparent
+            prepareForCachedGlyphDraw(*cache);
 
-            // prepareForDraw() have set the opacity on the current shader, so the opacity state can now be reset.
+            // prepareForCachedGlyphDraw() have set the opacity on the current shader, so the opacity state can now be reset.
             if (compMode == QPainter::CompositionMode_Source) {
                 q->state()->opacity = oldOpacity;
                 opacityUniformDirty = true;
@@ -1735,7 +1751,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
             }
 
             compositionModeDirty = false; // I can handle this myself, thank you very much
-            prepareForDraw(false); // Text always causes src pixels to be transparent
+            prepareForCachedGlyphDraw(*cache);
             glEnable(GL_BLEND);
             glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 
@@ -1759,7 +1775,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
             }
 
             compositionModeDirty = false;
-            prepareForDraw(false); // Text always causes src pixels to be transparent
+            prepareForCachedGlyphDraw(*cache);
             glEnable(GL_BLEND);
             glBlendFunc(GL_ONE, GL_ONE);
         }
@@ -1768,7 +1784,7 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
         // Greyscale/mono glyphs
 
         shaderManager->setMaskType(QOpenGLEngineShaderManager::PixelMask);
-        prepareForDraw(false); // Text always causes src pixels to be transparent
+        prepareForCachedGlyphDraw(*cache);
     }
 
     QOpenGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QOpenGLTextureGlyphCache::Linear:QOpenGLTextureGlyphCache::Nearest;
