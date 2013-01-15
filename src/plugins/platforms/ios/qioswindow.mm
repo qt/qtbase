@@ -264,7 +264,15 @@ void QIOSWindow::setVisible(bool visible)
     QPlatformWindow::setVisible(visible);
     m_view.hidden = !visible;
 
-    if (isQtApplication() && !visible) {
+    if (!isQtApplication())
+        return;
+
+    // Since iOS doesn't do window management the way a Qt application
+    // expects, we need to raise and activate windows ourselves:
+    if (visible) {
+        raise();
+        QWindowSystemInterface::handleWindowActivated(window());
+    } else {
         // Activate top-most visible QWindow:
         NSArray *subviews = rootViewController().view.subviews;
         for (int i = int(subviews.count) - 1; i >= 0; --i) {
