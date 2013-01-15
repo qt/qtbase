@@ -270,7 +270,7 @@ QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
     }
     QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
     result += ':';
-    result += QByteArray::number(quint64(statResult.st_ino), 16);
+    result += QByteArray::number(quint64(statResult.st_ino));
     return result;
 }
 
