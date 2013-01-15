@@ -86,6 +86,7 @@ private slots:
     void checkMostLeftNode();
     void initializerList();
     void testInsertWithHint();
+    void testInsertMultiWithHint();
 };
 
 typedef QMap<QString, QString> StringMap;
@@ -939,6 +940,18 @@ void tst_QMap::qmultimap_specific()
     QVERIFY(map2.remove(42,5));
     QVERIFY(map1 == map2);
     }
+
+    map1.insert(map1.constBegin(), -1, -1);
+    QCOMPARE(map1.size(), 45);
+    map1.insert(map1.constBegin(), -1, -1);
+    QCOMPARE(map1.size(), 46);
+    map1.insert(map1.constBegin(), -2, -2);
+    QCOMPARE(map1.size(), 47);
+    map1.insert(map1.constBegin(), 5, 5); // Invald hint
+    QCOMPARE(map1.size(), 48);
+    map1.insert(map1.constBegin(), 5, 5); // Invald hint
+    QCOMPARE(map1.size(), 49);
+    sanityCheckTree(map1, __LINE__);
 }
 
 void tst_QMap::const_shared_null()
@@ -1223,6 +1236,59 @@ void tst_QMap::testInsertWithHint()
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 12);
 }
+
+void tst_QMap::testInsertMultiWithHint()
+{
+    QMap<int, int> map;
+    map.setSharable(false);
+
+    typedef QMap<int, int>::const_iterator cite; // Hack since we define QT_STRICT_ITERATORS
+    map.insertMulti(cite(map.end()), 64, 65);
+    map[128] = 129;
+    map[256] = 257;
+    sanityCheckTree(map, __LINE__);
+
+    map.insertMulti(cite(map.end()), 512, 513);
+    map.insertMulti(cite(map.end()), 512, 513 * 2);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 5);
+    map.insertMulti(cite(map.end()), 256, 258); // wrong hint
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 6);
+
+    QMap<int, int>::iterator i = map.insertMulti(map.constBegin(), 256, 259); // wrong hint
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 7);
+
+    QMap<int, int>::iterator j = map.insertMulti(map.constBegin(), 69, 66);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 8);
+
+    j = map.insertMulti(cite(j), 68, 259);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 9);
+
+    j = map.insertMulti(cite(j), 67, 67);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 10);
+
+    i = map.insertMulti(cite(i), 256, 259);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 11);
+
+    i = map.insertMulti(cite(i), 256, 260);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 12);
+
+    map.insertMulti(cite(i), 64, 67);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 13);
+
+    map.insertMulti(map.constBegin(), 20, 20);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 14);
+}
+
 
 QTEST_APPLESS_MAIN(tst_QMap)
 #include "tst_qmap.moc"
