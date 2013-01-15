@@ -210,7 +210,7 @@ int tst_QSharedMemory::remove(const QString &key)
         return -3;
     }
 
-    int id = shmget(unix_key, 0, 0660);
+    int id = shmget(unix_key, 0, 0600);
     if (-1 == id) {
         qDebug() << "shmget failed" << strerror(errno);
         return -4;

@@ -107,7 +107,7 @@ QXcbShmImage::QXcbShmImage(QXcbScreen *screen, const QSize &size, uint depth, QI
     if (!segmentSize)
         return;
 
-    int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0777);
+    int id = shmget(IPC_PRIVATE, segmentSize, IPC_CREAT | 0600);
     if (id == -1)
         qWarning("QXcbShmImage: shmget() failed (%d) for size %d (%dx%d)",
                  errno, segmentSize, size.width(), size.height());
