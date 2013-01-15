@@ -508,7 +508,15 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
 
 QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition)
 {
-    QImage im = imageForGlyph(glyph, subPixelPosition, false, QTransform());
+    return alphaMapForGlyph(glyph, subPixelPosition, QTransform());
+}
+
+QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &x)
+{
+    if (x.type() > QTransform::TxScale)
+        return QFontEngine::alphaMapForGlyph(glyph, subPixelPosition, x);
+
+    QImage im = imageForGlyph(glyph, subPixelPosition, false, x);
 
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
@@ -602,7 +610,7 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
 
 bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) const
 {
-    return transform.type() <= QTransform::TxTranslate;
+    return transform.type() <= QTransform::TxScale;
 }
 
 QT_END_NAMESPACE
