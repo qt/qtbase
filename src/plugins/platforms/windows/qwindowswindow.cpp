@@ -1260,6 +1260,10 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
     setFlag(FrameDirty);
     m_windowState = state;
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
+    if (state == Qt::WindowMinimized) {
+        handleHidden();
+        QWindowSystemInterface::flushWindowSystemEvents(); // Tell QQuickWindow to stop rendering now.
+    }
 }
 
 void QWindowsWindow::setWindowState(Qt::WindowState state)
