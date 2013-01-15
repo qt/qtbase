@@ -856,9 +856,15 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, const MSG &ms
     if (isNumpad && (nModifiers & AltAny)) {
         code = winceKeyBend(msg.wParam);
     } else if (!isDeadKey) {
-        unsigned char kbdBuffer[256]; // Will hold the complete keyboard state
-        GetKeyboardState(kbdBuffer);
-        code = toKeyOrUnicode(msg.wParam, scancode, kbdBuffer);
+        // QTBUG-8764, QTBUG-10032
+        // Can't call toKeyOrUnicode because that would call ToUnicode, and, if a dead key
+        // is pressed at the moment, Windows would NOT use it to compose a character for the next
+        // WM_CHAR event.
+
+        // Instead, use MapVirtualKey, which will provide adequate values.
+        code = MapVirtualKey(msg.wParam, MAPVK_VK_TO_CHAR);
+        if (code < 0x20 || code == 0x7f) // The same logic as in toKeyOrUnicode()
+            code = winceKeyBend(msg.wParam);
     }
 
     // Invert state logic:
