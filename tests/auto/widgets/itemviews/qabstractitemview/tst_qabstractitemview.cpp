@@ -236,6 +236,7 @@ private slots:
     void testClickedSignal();
     void testChangeEditorState();
     void deselectInSingleSelection();
+    void testNoActivateOnDisabledItem();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1640,6 +1641,29 @@ void tst_QAbstractItemView::deselectInSingleSelection()
     QTest::keyClick(&view, Qt::Key_Space, Qt::ControlModifier);
     QCOMPARE(view.currentIndex(), index22);
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+}
+
+void tst_QAbstractItemView::testNoActivateOnDisabledItem()
+{
+    QTreeView treeView;
+    QStandardItemModel model(1, 1);
+    QStandardItem *item = new QStandardItem("item");
+    model.setItem(0, 0, item);
+    item->setFlags(Qt::NoItemFlags);
+    treeView.setModel(&model);
+    treeView.show();
+
+    QApplication::setActiveWindow(&treeView);
+    QVERIFY(QTest::qWaitForWindowActive(&treeView));
+
+    QSignalSpy activatedSpy(&treeView, SIGNAL(activated(QModelIndex)));
+
+    // Ensure clicking on a disabled item doesn't emit itemActivated.
+    QModelIndex itemIndex = treeView.model()->index(0, 0);
+    QPoint clickPos = treeView.visualRect(itemIndex).center();
+    QTest::mouseClick(treeView.viewport(), Qt::LeftButton, 0, clickPos);
+
+    QCOMPARE(activatedSpy.count(), 0);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
