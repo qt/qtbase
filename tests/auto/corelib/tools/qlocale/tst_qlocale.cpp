@@ -1653,6 +1653,10 @@ void tst_QLocale::ampm()
     QLocale tr("tr_TR");
     QCOMPARE(tr.amText(), QString::fromUtf8("\303\226\303\226"));
     QCOMPARE(tr.pmText(), QString::fromUtf8("\303\226\123"));
+
+    QLocale id("id_ID");
+    QCOMPARE(id.amText(), QLatin1String("AM"));
+    QCOMPARE(id.pmText(), QLatin1String("PM"));
 }
 
 void tst_QLocale::dateFormat()
@@ -1681,6 +1685,14 @@ void tst_QLocale::timeFormat()
     QCOMPARE(no.timeFormat(QLocale::NarrowFormat), QLatin1String("HH:mm"));
     QCOMPARE(no.timeFormat(QLocale::ShortFormat), QLatin1String("HH:mm"));
     QCOMPARE(no.timeFormat(QLocale::LongFormat), QLatin1String("'kl'. HH:mm:ss t"));
+
+    const QLocale id("id_ID");
+    QCOMPARE(id.timeFormat(QLocale::ShortFormat), QLatin1String("HH.mm"));
+    QCOMPARE(id.timeFormat(QLocale::LongFormat), QLatin1String("HH.mm.ss t"));
+
+    const QLocale cat("ca_ES");
+    QCOMPARE(cat.timeFormat(QLocale::ShortFormat), QLatin1String("H.mm"));
+    QCOMPARE(cat.timeFormat(QLocale::LongFormat), QLatin1String("H.mm.ss t"));
 }
 
 void tst_QLocale::dateTimeFormat()
