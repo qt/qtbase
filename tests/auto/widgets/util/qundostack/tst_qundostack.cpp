@@ -247,7 +247,9 @@ private slots:
     void macroBeginEnd();
     void compression();
     void undoLimit();
+#ifndef QT_NO_PROCESS
     void commandTextFormat();
+#endif
     void separateUndoText();
 };
 
@@ -2964,6 +2966,7 @@ void tst_QUndoStack::undoLimit()
                 true);      // redoChanged
 }
 
+#ifndef QT_NO_PROCESS
 void tst_QUndoStack::commandTextFormat()
 {
     QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
@@ -3001,6 +3004,7 @@ void tst_QUndoStack::commandTextFormat()
 
     qApp->removeTranslator(&translator);
 }
+#endif
 
 void tst_QUndoStack::separateUndoText()
 {

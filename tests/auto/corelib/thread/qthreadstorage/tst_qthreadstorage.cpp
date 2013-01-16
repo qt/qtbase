@@ -71,7 +71,9 @@ private slots:
     void autoDelete();
     void adoptedThreads();
     void ensureCleanupOrder();
+#ifndef QT_NO_PROCESS
     void crashOnExit();
+#endif
     void leakInDestructor();
     void resetInDestructor();
     void valueBased();
@@ -305,6 +307,7 @@ void tst_QThreadStorage::ensureCleanupOrder()
     QVERIFY(First::order < Second::order);
 }
 
+#ifndef QT_NO_PROCESS
 static inline bool runCrashOnExit(const QString &binary, QString *errorMessage)
 {
     const int timeout = 60000;
@@ -332,6 +335,7 @@ void tst_QThreadStorage::crashOnExit()
     QVERIFY2(runCrashOnExit(m_crashOnExit, &errorMessage),
              qPrintable(errorMessage));
 }
+#endif
 
 // S stands for thread Safe.
 class SPointer

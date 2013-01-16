@@ -975,6 +975,7 @@ void tst_NetworkSelfTest::smbServer()
     QCOMPARE(ret, strlen(contents));
     QVERIFY(memcmp(buf, contents, strlen(contents)) == 0);
 #else
+#ifndef QT_NO_PROCESS
     // try to use Samba
     QString progname = "smbclient";
     QProcess smbclient;
@@ -1012,6 +1013,9 @@ void tst_NetworkSelfTest::smbServer()
     output = smbclient.readAll();
     QCOMPARE(output.constData(), contents);
     qDebug() << "Test file is correct";
+#else
+    QSKIP( "No QProcess support", SkipAll);
+#endif
 #endif
 }
 
