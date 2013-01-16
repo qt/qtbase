@@ -194,7 +194,7 @@ private slots:
     void pos();
     void pos2();
     void pos3LargeFile();
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
     void readStdin();
     void readAllFromStdin();
     void readLineFromStdin();
@@ -1386,8 +1386,8 @@ void tst_QTextStream::pos3LargeFile()
 }
 
 // ------------------------------------------------------------------------------
-#ifndef Q_OS_WINCE
 // Qt/CE has no stdin/out support for processes
+#if !defined(Q_OS_WINCE) && !defined(QT_NO_PROCESS)
 void tst_QTextStream::readStdin()
 {
     QProcess stdinProcess;
@@ -1409,10 +1409,8 @@ void tst_QTextStream::readStdin()
     QCOMPARE(b, 2);
     QCOMPARE(c, 3);
 }
-#endif
 
 // ------------------------------------------------------------------------------
-#ifndef Q_OS_WINCE
 // Qt/CE has no stdin/out support for processes
 void tst_QTextStream::readAllFromStdin()
 {
@@ -1430,10 +1428,8 @@ void tst_QTextStream::readAllFromStdin()
     QChar quoteChar('"');
     QCOMPARE(stream.readAll(), QString::fromLatin1("%1hello world%2 \n").arg(quoteChar).arg(quoteChar));
 }
-#endif
 
 // ------------------------------------------------------------------------------
-#ifndef Q_OS_WINCE
 // Qt/CE has no stdin/out support for processes
 void tst_QTextStream::readLineFromStdin()
 {

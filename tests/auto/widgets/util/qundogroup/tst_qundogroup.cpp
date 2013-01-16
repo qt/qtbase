@@ -201,7 +201,9 @@ private slots:
     void deleteStack();
     void checkSignals();
     void addStackAndDie();
+#ifndef QT_NO_PROCESS
     void commandTextFormat();
+#endif
 };
 
 tst_QUndoGroup::tst_QUndoGroup()
@@ -605,6 +607,7 @@ void tst_QUndoGroup::addStackAndDie()
     delete stack;
 }
 
+#ifndef QT_NO_PROCESS
 void tst_QUndoGroup::commandTextFormat()
 {
     QString binDir = QLibraryInfo::location(QLibraryInfo::BinariesPath);
@@ -644,6 +647,7 @@ void tst_QUndoGroup::commandTextFormat()
 
     qApp->removeTranslator(&translator);
 }
+#endif
 
 #else
 class tst_QUndoGroup : public QObject

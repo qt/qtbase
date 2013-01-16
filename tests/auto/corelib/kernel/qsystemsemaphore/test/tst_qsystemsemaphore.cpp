@@ -66,6 +66,7 @@ private slots:
     void basicacquire();
     void complexacquire();
 
+#ifndef QT_NO_PROCESS
     void basicProcesses();
 
     void processes_data();
@@ -75,6 +76,7 @@ private slots:
     void undo();
 #endif
     void initialValue();
+#endif // QT_NO_PROCESS
 
 private:
     QString helperBinary();
@@ -154,6 +156,7 @@ void tst_QSystemSemaphore::complexacquire()
     QCOMPARE(sem.errorString(), QString());
 }
 
+#ifndef QT_NO_PROCESS
 void tst_QSystemSemaphore::basicProcesses()
 {
     QSystemSemaphore sem("store", 0, QSystemSemaphore::Create);
@@ -261,6 +264,7 @@ void tst_QSystemSemaphore::initialValue()
     release.waitForFinished(HELPERWAITTIME);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 }
+#endif
 
 QString tst_QSystemSemaphore::helperBinary()
 {

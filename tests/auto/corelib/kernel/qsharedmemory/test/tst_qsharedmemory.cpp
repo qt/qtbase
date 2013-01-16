@@ -82,7 +82,7 @@ private slots:
     void removeWhileAttached();
 #endif
     void emptyMemory();
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(QT_NO_PROCESS)
     void readOnly();
 #endif
 
@@ -98,8 +98,10 @@ private slots:
     void simpleThreadedProducerConsumer();
 
     // with processes
+#ifndef QT_NO_PROCESS
     void simpleProcessProducerConsumer_data();
     void simpleProcessProducerConsumer();
+#endif
 
     // extreme cases
     void useTooMuchMemory();
@@ -447,7 +449,7 @@ void tst_QSharedMemory::emptyMemory()
     by writing to data and causing a segfault.
 */
 // This test opens a crash dialog on Windows.
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(QT_NO_PROCESS)
 void tst_QSharedMemory::readOnly()
 {
     rememberKey("readonly_segfault");
@@ -728,6 +730,7 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
     }
 }
 
+#ifndef QT_NO_PROCESS
 void tst_QSharedMemory::simpleProcessProducerConsumer_data()
 {
     QTest::addColumn<int>("processes");
@@ -785,6 +788,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     producer.waitForBytesWritten();
     QVERIFY(producer.waitForFinished(5000));
 }
+#endif
 
 void tst_QSharedMemory::uniqueKey_data()
 {

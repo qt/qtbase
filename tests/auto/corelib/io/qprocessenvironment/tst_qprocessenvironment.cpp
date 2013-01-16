@@ -43,6 +43,10 @@
 #include <QObject>
 #include <QProcessEnvironment>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 class tst_QProcessEnvironment: public QObject
 {
     Q_OBJECT
@@ -318,3 +322,4 @@ void tst_QProcessEnvironment::putenv()
 QTEST_MAIN(tst_QProcessEnvironment)
 
 #include "tst_qprocessenvironment.moc"
+#endif
