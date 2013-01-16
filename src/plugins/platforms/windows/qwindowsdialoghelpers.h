@@ -65,6 +65,7 @@ template <class BaseClass>
 class QWindowsDialogHelperBase : public BaseClass
 {
 public:
+    ~QWindowsDialogHelperBase() { deleteNativeDialog(); }
 
     virtual void exec();
     virtual bool show(Qt::WindowFlags windowFlags,
@@ -73,12 +74,13 @@ public:
     virtual void hide();
     virtual QVariant styleHint(QPlatformDialogHelper::StyleHint) const;
 
-    virtual bool supportsNonModalDialog() const { return true; }
+    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return true; }
 
 protected:
     QWindowsDialogHelperBase();
-    ~QWindowsDialogHelperBase();
     QWindowsNativeDialogBase *nativeDialog() const;
+    inline bool hasNativeDialog() const { return m_nativeDialog; }
+    void deleteNativeDialog();
 
 private:
     virtual QWindowsNativeDialogBase *createNativeDialog() = 0;
