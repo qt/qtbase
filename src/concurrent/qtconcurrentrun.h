@@ -98,7 +98,7 @@ QFuture<T> run(T (*functionPointer)(Param1, Param2, Param3, Param4, Param5), con
     return (new StoredFunctorCall5<T, T (*)(Param1, Param2, Param3, Param4, Param5), Arg1, Arg2, Arg3, Arg4, Arg5>(functionPointer, arg1, arg2, arg3, arg4, arg5))->start();
 }
 
-#ifdef Q_COMPILER_DECLTYPE
+#if defined(Q_COMPILER_DECLTYPE) && defined(Q_COMPILER_AUTO_FUNCTION)
 
 template <typename Functor>
 auto run(Functor functor) -> typename QtPrivate::QEnableIf<!QtPrivate::HasResultType<Functor>::Value, QFuture<decltype(functor())> >::Type

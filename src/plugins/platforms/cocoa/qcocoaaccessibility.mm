@@ -71,7 +71,8 @@ void QCococaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
         case QAccessible::TextInserted :
         case QAccessible::TextRemoved :
         case QAccessible::TextUpdated : {
-            QCocoaAccessibleElement *element = [QCocoaAccessibleElement elementWithInterface : interface parent : nil];
+            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithInterface : interface parent : nil];
+            [element autorelease];
             NSAccessibilityPostNotification(element, NSAccessibilityValueChangedNotification);
         break; }
 

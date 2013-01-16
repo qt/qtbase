@@ -6,6 +6,7 @@ QT += widgets widgets-private testlib
 QT += core-private gui-private
 
 SOURCES  += tst_qgraphicsview.cpp tst_qgraphicsview_2.cpp
+HEADERS +=  tst_qgraphicsview.h
 DEFINES += QT_NO_CAST_TO_ASCII
 
 mac:CONFIG+=insignificant_test # QTBUG-26580

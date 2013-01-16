@@ -109,6 +109,21 @@ public:
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
     virtual int glyphMargin(QFontEngineGlyphCache::Type type) { Q_UNUSED(type); return 0; }
 
+    static bool supportsColorGlyphs()
+    {
+#if defined(Q_OS_IOS)
+        return true;
+#elif MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+  #if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
+        return &CTFontDrawGlyphs;
+  #else
+        return true;
+  #endif
+#else
+        return false;
+#endif
+    }
+
     static int antialiasingThreshold;
     static QFontEngineGlyphCache::Type defaultGlyphFormat;
 

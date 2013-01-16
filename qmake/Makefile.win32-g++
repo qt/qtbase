@@ -54,7 +54,7 @@ CFLAGS	    =	-c -o$@ -O \
 		-DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
 		-DUNICODE
 CXXFLAGS    =   $(CFLAGS)
-LFLAGS      = -static-libgcc -s
+LFLAGS      = -static -s
 LIBS	    = -lole32 -luuid -ladvapi32 -lkernel32
 LINKQMAKE   =	g++ $(LFLAGS) -o qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    =

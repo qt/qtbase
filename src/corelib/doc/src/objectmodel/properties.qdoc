@@ -83,7 +83,7 @@
     existing signal in that class that is emitted whenever the value
     of the property changes.
 
-    \li A \c REVISION number is optional. If included, it defines the
+    \li A \c REVISION number is optional. If included, it defines
     the property and its notifier signal to be used in a particular
     revision of the API that is exposed to QML.
 

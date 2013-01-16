@@ -149,8 +149,6 @@ void QCoreTextFontEngine::init()
     Q_ASSERT(ctfont != NULL);
     Q_ASSERT(cgFont != NULL);
 
-    glyphFormat = defaultGlyphFormat;
-
     QCFString family = CTFontCopyFamilyName(ctfont);
     fontDef.family = family;
 
@@ -159,6 +157,14 @@ void QCoreTextFontEngine::init()
 
     synthesisFlags = 0;
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+    if (supportsColorGlyphs() && (traits & kCTFontColorGlyphsTrait))
+        glyphFormat = QFontEngineGlyphCache::Raster_ARGB;
+    else
+#endif
+        glyphFormat = defaultGlyphFormat;
+
     if (traits & kCTFontItalicTrait)
         fontDef.style = QFont::StyleItalic;
 
@@ -422,6 +428,9 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
 void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nGlyphs,
                                           QPainterPath *path, QTextItem::RenderFlags)
 {
+    if (glyphFormat == QFontEngineGlyphCache::Raster_ARGB)
+        return; // We can't convert color-glyphs to path
+
     CGAffineTransform cgMatrix = CGAffineTransformIdentity;
     cgMatrix = CGAffineTransformScale(cgMatrix, 1, -1);
 

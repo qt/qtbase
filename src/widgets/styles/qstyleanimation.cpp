@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 QStyleAnimation::QStyleAnimation(QObject *target) : QAbstractAnimation(target),
     _delay(0), _duration(-1), _startTime(QTime::currentTime())
 {
-    connect(this, SIGNAL(finished()), SLOT(deleteLater()));
 }
 
 QStyleAnimation::~QStyleAnimation()

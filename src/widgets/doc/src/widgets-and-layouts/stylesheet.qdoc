@@ -813,7 +813,7 @@
 
            In the case of a checkable QGroupBox, the title includes the
            check indicator. The indicator is styled using the
-           the \l{#indicator-sub}{::indicator} subcontrol. The
+           \l{#indicator-sub}{::indicator} subcontrol. The
            \l{#spacing-prop}{spacing} property can be used to control
            the spacing between the text and indicator.
 

@@ -579,6 +579,7 @@ void QApplicationPrivate::construct()
 void qRegisterGuiStateMachine();
 void qUnregisterGuiStateMachine();
 #endif
+extern void qRegisterWidgetsVariant();
 
 /*!
   \fn void QApplicationPrivate::initialize()
@@ -589,6 +590,9 @@ void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
+
+    // needed for a static build.
+    qRegisterWidgetsVariant();
 
     if (application_type != QApplicationPrivate::Tty)
         (void) QApplication::style();  // trigger creation of application style
@@ -2217,12 +2221,17 @@ Q_WIDGETS_EXPORT bool qt_tryModalHelper(QWidget *widget, QWidget **rettop)
 bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
 {
     widget = widget->window();
-    return self->isWindowBlocked(widget->windowHandle());
+    QWindow *window = widget->windowHandle();
+    return window && self->isWindowBlocked(window);
 }
 
 bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWindow) const
 {
     QWindow *unused = 0;
+    if (!window) {
+        qWarning().nospace() << "window == 0 passed.";
+        return false;
+    }
     if (!blockingWindow)
         blockingWindow = &unused;
 

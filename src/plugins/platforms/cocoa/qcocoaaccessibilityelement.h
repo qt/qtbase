@@ -56,7 +56,7 @@
 }
 
 - (id)initWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
-+ (QCocoaAccessibleElement *)elementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
++ (QCocoaAccessibleElement *)createElementWithInterface:(void *)anQAccessibleInterface parent:(id)aParent;
 
 @end
 

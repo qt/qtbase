@@ -3,7 +3,7 @@
 ** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,53 +38,48 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef TST_QGRAPHICSVIEW_H
+#define TST_QGRAPHICSVIEW_H
 
-#ifndef QFONTENGINEGLYPHCACHE_P_H
-#define QFONTENGINEGLYPHCACHE_P_H
+// This file contains structs used in tst_qgraphicsview::scrollBarRanges.
+// Whenever these mention scrollbars or spacing it is about the number of
+// scrollbars or spacings to use as these are style dependent so that the real
+// value to add/remove has to be obtained in test run using the actual style.
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+struct ExpectedValueDescription {
+    ExpectedValueDescription(int v = 0, int sbeta = 0, int sta = 0)
+        : value(v)
+        , scrollBarExtentsToAdd(sbeta)
+        , spacingsToAdd(sta)
+    {
+    }
 
+    int value;
+    // Describes how often the scrollbar widht/height has to be added to or
+    // removed from the value.
+    int scrollBarExtentsToAdd;
 
-#include "QtCore/qglobal.h"
-#include "QtCore/qatomic.h"
-#include <QtCore/qvarlengtharray.h>
-#include "private/qfont_p.h"
-
-
-
-QT_BEGIN_NAMESPACE
-
-class QFontEngineGlyphCache: public QSharedData
-{
-public:
-    enum Type {
-        Raster_RGBMask,
-        Raster_A8,
-        Raster_Mono,
-        Raster_ARGB
-    };
-
-    QFontEngineGlyphCache(const QTransform &matrix, Type type) : m_transform(matrix), m_type(type) { }
-
-    virtual ~QFontEngineGlyphCache() { }
-
-    Type cacheType() const { return m_type; }
-
-    QTransform m_transform;
-    QFontEngineGlyphCache::Type m_type;
+    // Describes how often the scrollbar spacing has to be added to or removed
+    // from the value if the used style has SH_ScrollView_FrameOnlyAroundContents
+    // set
+    int spacingsToAdd;
 };
-typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
-typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;
 
-QT_END_NAMESPACE
+// Describes how often the scroll bar width/height has to be added to/removed
+// from the according side of the sceneRect.
+struct ScrollBarCount {
+    ScrollBarCount(int l = 0, int t = 0, int r = 0, int b = 0 )
+        : left(l)
+        , top(t)
+        , right(r)
+        , bottom(b)
+    {
+    }
 
-#endif
+    int left;
+    int top;
+    int right;
+    int bottom;
+};
+
+#endif // TST_QGRAPHICSVIEW_H

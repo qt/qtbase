@@ -2341,7 +2341,7 @@
     \enum Qt::InputMethodQuery
 
     \value ImEnabled            The widget accepts input method input.
-    \value ImMicroFocus         \obsolete replaced by \c ImCursorRectangle
+    \value ImMicroFocus         This query is obsolete. Use \c ImCursorRectangle instead.
     \value ImCursorRectangle    The rectangle covering the area of the input cursor in widget coordinates.
     \value ImFont               The currently used font for text input.
     \value ImCursorPosition     The logical position of the cursor within the text surrounding the input area

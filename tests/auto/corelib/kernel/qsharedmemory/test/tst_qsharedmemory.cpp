@@ -177,6 +177,7 @@ void tst_QSharedMemory::cleanup()
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <errno.h>
 #endif
 
 QString tst_QSharedMemory::helperBinary()
@@ -209,9 +210,9 @@ int tst_QSharedMemory::remove(const QString &key)
         return -3;
     }
 
-    int id = shmget(unix_key, 0, 0660);
+    int id = shmget(unix_key, 0, 0600);
     if (-1 == id) {
-        qDebug() << "shmget failed";
+        qDebug() << "shmget failed" << strerror(errno);
         return -4;
     }
 
@@ -634,9 +635,8 @@ class Producer : public QThread
 {
 
 public:
-    void run()
+    Producer() : producer(QLatin1String("market"))
     {
-        QSharedMemory producer(QLatin1String("market"));
         int size = 1024;
         if (!producer.create(size)) {
             // left over from a crash...
@@ -646,7 +646,11 @@ public:
                 QVERIFY(producer.create(size));
             }
         }
-        QVERIFY(producer.isAttached());
+    }
+
+    void run()
+    {
+
         char *memory = (char*)producer.data();
         memory[1] = '0';
         QTime timer;
@@ -671,6 +675,8 @@ public:
         QVERIFY(producer.unlock());
 
     }
+
+    QSharedMemory producer;
 private:
 
 };
@@ -701,6 +707,7 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
 #endif
 
     Producer p;
+    QVERIFY(p.producer.isAttached());
     if (producerIsThread)
         p.start();
 
@@ -741,9 +748,10 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     rememberKey("market");
 
     QProcess producer;
-    producer.setProcessChannelMode(QProcess::ForwardedChannels);
     producer.start(helperBinary(), QStringList("producer"));
     QVERIFY2(producer.waitForStarted(), "Could not start helper binary");
+    QVERIFY2(producer.waitForReadyRead(), "Helper process failed to create shared memory segment: " +
+             producer.readAllStandardError());
 
     QList<QProcess*> consumers;
     unsigned int failedProcesses = 0;
@@ -758,8 +766,6 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
             ++failedProcesses;
     }
 
-    QVERIFY(producer.waitForFinished(5000));
-
     bool consumerFailed = false;
 
     while (!consumers.isEmpty()) {
@@ -773,6 +779,11 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     }
     QCOMPARE(consumerFailed, false);
     QCOMPARE(failedProcesses, (unsigned int)(0));
+
+    // tell the producer to exit now
+    producer.write("", 1);
+    producer.waitForBytesWritten();
+    QVERIFY(producer.waitForFinished(5000));
 }
 
 void tst_QSharedMemory::uniqueKey_data()
