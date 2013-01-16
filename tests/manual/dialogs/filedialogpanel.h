@@ -44,7 +44,9 @@
 
 #include <QGroupBox>
 #include <QFileDialog>
+#include <QPointer>
 
+class QPushButton;
 class QCheckBox;
 class QComboBox;
 class QLineEdit;
@@ -60,6 +62,7 @@ public:
 public slots:
     void showModal();
     void showNonModal();
+    void deleteNonModalDialog();
     void getOpenFileNames();
     void getOpenFileName();
     void getSaveFileName();
@@ -67,6 +70,9 @@ public slots:
     void accepted();
     void showAcceptedResult();
     void restoreDefaults();
+
+private slots:
+    void enableDeleteNonModalDialogButton();
 
 private:
     QString filterString() const;
@@ -87,7 +93,9 @@ private:
     QList<LabelLineEdit *> m_labelLineEdits;
     QPlainTextEdit *m_nameFilters;
     QLineEdit *m_selectedNameFilter;
+    QPushButton *m_deleteNonModalDialogButton;
     QString m_result;
+    QPointer<QFileDialog> m_nonModalDialog;
 };
 
 #endif // FILEDIALOGPANEL_H
