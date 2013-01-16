@@ -43,6 +43,7 @@
 #include <QStringList>
 #include <QDebug>
 #include <QTest>
+#include <stdio.h>
 
 void set(QSharedMemory &sm, int pos, QChar value)
 {
@@ -82,7 +83,10 @@ int producer()
             return EXIT_FAILURE;
         }
     }
+    // tell parent we're ready
     //qDebug("producer created and attached");
+    puts("");
+    fflush(stdout);
 
     if (!producer.lock()) {
         qWarning() << "Could not lock" << producer.key();
@@ -129,9 +133,8 @@ int producer()
 
     //qDebug("producer done");
 
-    // Sleep for a bit to let all consumers start, otherwise they will get stuck in the attach loop,
-    // because at least in Symbian the shared memory will be destroyed if there are no active handles to it.
-    QTest::qSleep(3000);
+    // Sleep for a bit to let all consumers exit
+    getchar();
     return EXIT_SUCCESS;
 }
 

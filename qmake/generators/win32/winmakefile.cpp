@@ -382,7 +382,7 @@ void Win32MakefileGenerator::processRcFileVar()
     if (Option::qmake_mode == Option::QMAKE_GENERATE_NOTHING)
         return;
 
-    if (((!project->values("VERSION").isEmpty())
+    if (((!project->values("VERSION").isEmpty() || !project->values("RC_ICONS").isEmpty())
         && project->values("RC_FILE").isEmpty()
         && project->values("RES_FILE").isEmpty()
         && !project->isActiveConfig("no_generated_target_info")
@@ -396,6 +396,10 @@ void Win32MakefileGenerator::processRcFileVar()
         for (int i = vers.size(); i < 4; i++)
             vers += "0";
         QString versionString = vers.join('.');
+
+        QStringList rcIcons;
+        foreach (const ProString &icon, project->values("RC_ICONS"))
+            rcIcons.append(fileFixify(icon.toQString(), FileFixifyAbsolute));
 
         QString companyName;
         if (!project->values("QMAKE_TARGET_COMPANY").isEmpty())
@@ -425,6 +429,11 @@ void Win32MakefileGenerator::processRcFileVar()
         ts << "#  include <winver.h>" << endl;
         ts << "# endif" << endl;
         ts << endl;
+        if (!rcIcons.isEmpty()) {
+            for (int i = 0; i < rcIcons.size(); ++i)
+                ts << QString("IDI_ICON%1\tICON\tDISCARDABLE\t%2").arg(i + 1).arg(cQuoted(rcIcons[i])) << endl;
+            ts << endl;
+        }
         ts << "VS_VERSION_INFO VERSIONINFO" << endl;
         ts << "\tFILEVERSION " << QString(versionString).replace(".", ",") << endl;
         ts << "\tPRODUCTVERSION " << QString(versionString).replace(".", ",") << endl;
@@ -899,6 +908,16 @@ QString Win32MakefileGenerator::escapeFilePath(const QString &path) const
             ret = "\"" + ret + "\"";
         debug_msg(2, "EscapeFilePath: %s -> %s", path.toLatin1().constData(), ret.toLatin1().constData());
     }
+    return ret;
+}
+
+QString Win32MakefileGenerator::cQuoted(const QString &str)
+{
+    QString ret = str;
+    ret.replace(QLatin1Char('"'), QStringLiteral("\\\""));
+    ret.replace(QLatin1Char('\\'), QStringLiteral("\\\\"));
+    ret.prepend(QLatin1Char('"'));
+    ret.append(QLatin1Char('"'));
     return ret;
 }
 

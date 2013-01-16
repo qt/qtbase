@@ -94,8 +94,8 @@
 #  define Q_FUNC_INFO __FUNCSIG__
 #  define Q_ALIGNOF(type) __alignof(type)
 #  define Q_DECL_ALIGN(n) __declspec(align(n))
-#  define Q_ASSUME(expr) __assume(expr)
-#  define Q_UNREACHABLE() __assume(0)
+#  define Q_ASSUME_IMPL(expr) __assume(expr)
+#  define Q_UNREACHABLE_IMPL() __assume(0)
 #  define Q_NORETURN __declspec(noreturn)
 #  define Q_DECL_DEPRECATED __declspec(deprecated)
 #  define Q_DECL_EXPORT __declspec(dllexport)
@@ -150,18 +150,18 @@
 #  if defined(__INTEL_COMPILER)
 /* Intel C++ also masquerades as GCC */
 #    define Q_CC_INTEL
-#    define Q_ASSUME(expr)  __assume(expr)
-#    define Q_UNREACHABLE() __assume(0)
+#    define Q_ASSUME_IMPL(expr)  __assume(expr)
+#    define Q_UNREACHABLE_IMPL() __assume(0)
 #  elif defined(__clang__)
 /* Clang also masquerades as GCC */
 #    define Q_CC_CLANG
-#    define Q_ASSUME(expr)  if (expr){} else __builtin_unreachable()
-#    define Q_UNREACHABLE() __builtin_unreachable()
+#    define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
+#    define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #  else
 /* Plain GCC */
 #    if (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
-#      define Q_ASSUME(expr)  if (expr){} else __builtin_unreachable()
-#      define Q_UNREACHABLE() __builtin_unreachable()
+#      define Q_ASSUME_IMPL(expr)  if (expr){} else __builtin_unreachable()
+#      define Q_UNREACHABLE_IMPL() __builtin_unreachable()
 #    endif
 #  endif
 
@@ -789,11 +789,11 @@
 #ifndef Q_UNLIKELY
 #  define Q_UNLIKELY(x) (x)
 #endif
-#ifndef Q_ASSUME
-#  define Q_ASSUME(expr) qt_noop()
+#ifndef Q_ASSUME_IMPL
+#  define Q_ASSUME_IMPL(expr) qt_noop()
 #endif
-#ifndef Q_UNREACHABLE
-#  define Q_UNREACHABLE() qt_noop()
+#ifndef Q_UNREACHABLE_IMPL
+#  define Q_UNREACHABLE_IMPL() qt_noop()
 #endif
 #ifndef Q_ALLOC_SIZE
 #  define Q_ALLOC_SIZE(x)
@@ -850,5 +850,18 @@
 #else
 #define qMove(x) (x)
 #endif
+
+#define Q_UNREACHABLE() \
+    do {\
+        Q_ASSERT_X(false, "Q_UNREACHABLE()", "Q_UNREACHABLE was reached");\
+        Q_UNREACHABLE_IMPL();\
+    } while (0)
+
+#define Q_ASSUME(Expr) \
+    do {\
+        const bool valueOfExpression = Expr;\
+        Q_ASSERT_X(valueOfExpression, "Q_ASSUME()", "Assumption in Q_ASSUME(\"" #Expr "\") was not correct");\
+        Q_ASSUME_IMPL(valueOfExpression);\
+    } while (0)
 
 #endif // QCOMPILERDETECTION_H

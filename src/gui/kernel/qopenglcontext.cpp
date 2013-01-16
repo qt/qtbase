@@ -759,15 +759,26 @@ void QOpenGLContextGroupPrivate::removeContext(QOpenGLContext *ctx)
 {
     Q_Q(QOpenGLContextGroup);
 
-    QMutexLocker locker(&m_mutex);
-    m_shares.removeOne(ctx);
+    bool deleteObject = false;
 
-    if (ctx == m_context && !m_shares.isEmpty())
-        m_context = m_shares.first();
+    {
+        QMutexLocker locker(&m_mutex);
+        m_shares.removeOne(ctx);
 
-    if (!m_refs.deref()) {
-        cleanup();
-        q->deleteLater();
+        if (ctx == m_context && !m_shares.isEmpty())
+            m_context = m_shares.first();
+
+        if (!m_refs.deref()) {
+            cleanup();
+            deleteObject = true;
+        }
+    }
+
+    if (deleteObject) {
+        if (q->thread() == QThread::currentThread())
+            delete q; // Delete directly to prevent leak, refer to QTBUG-29056
+        else
+            q->deleteLater();
     }
 }
 

@@ -51,6 +51,7 @@
 
 #include <private/qabstractfileengine_p.h>
 #include <private/qfsfileengine_p.h>
+#include <private/qfilesystemengine_p.h>
 
 #ifdef Q_OS_WIN
 QT_BEGIN_NAMESPACE
@@ -2418,6 +2419,7 @@ void tst_QFile::rename_data()
 #endif
     QTest::newRow("renamefile -> renamedfile") << QString::fromLatin1(renameSourceFile) << QString("renamedfile") << true;
     QTest::newRow("renamefile -> ..") << QString::fromLatin1(renameSourceFile) << QString("..") << false;
+    QTest::newRow("renamefile -> rEnAmEfIlE") << QString::fromLatin1(renameSourceFile) << QStringLiteral("rEnAmEfIlE") << true;
 }
 
 void tst_QFile::rename()
@@ -2435,7 +2437,8 @@ void tst_QFile::rename()
     }
 #endif
 
-    QFile sourceFile(QString::fromLatin1(renameSourceFile));
+    const QString sourceFileName = QString::fromLatin1(renameSourceFile);
+    QFile sourceFile(sourceFileName);
     QVERIFY2(sourceFile.open(QFile::WriteOnly | QFile::Text), qPrintable(sourceFile.errorString()));
     QVERIFY2(sourceFile.write(content), qPrintable(sourceFile.errorString()));
     sourceFile.close();
@@ -2445,7 +2448,10 @@ void tst_QFile::rename()
     if (result) {
         QVERIFY2(success, qPrintable(file.errorString()));
         QCOMPARE(file.error(), QFile::NoError);
-        QVERIFY(!sourceFile.exists());
+        // This will report the source file still existing for a rename changing the case
+        // on Windows, Mac.
+        if (sourceFileName.compare(destination, Qt::CaseInsensitive))
+            QVERIFY(!sourceFile.exists());
         QFile destinationFile(destination);
         QVERIFY2(destinationFile.open(QFile::ReadOnly | QFile::Text), qPrintable(destinationFile.errorString()));
         QCOMPARE(destinationFile.readAll(), content);

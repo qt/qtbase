@@ -357,8 +357,8 @@ static void processQdocconfFile(const QString &fileName)
     QSet<QString> outputFormats = config.getOutputFormats();
     Location outputFormatsLocation = config.lastLocation();
 
-    if (!Generator::runPrepareOnly())
-        loadIndexFiles(config);
+    //if (!Generator::runPrepareOnly())
+    loadIndexFiles(config);
 
     QSet<QString> excludedDirs;
     QSet<QString> excludedFiles;

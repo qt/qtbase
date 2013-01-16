@@ -271,8 +271,14 @@ void QQnxWindow::setVisible(bool visible)
 
     window()->requestActivate();
 
-    if (window()->isTopLevel() && visible)
-        QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+    if (window()->isTopLevel()) {
+        if (visible) {
+            QWindowSystemInterface::handleExposeEvent(window(), window()->geometry());
+        } else {
+            // Flush the context, otherwise it won't disappear immediately
+            screen_flush_context(m_screenContext, 0);
+        }
+    }
 }
 
 void QQnxWindow::updateVisibility(bool parentVisible)

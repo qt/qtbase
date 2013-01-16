@@ -43,6 +43,10 @@
 #ifndef QSSLCERTIFICATE_H
 #define QSSLCERTIFICATE_H
 
+#ifdef verify
+#undef verify
+#endif
+
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcryptographichash.h>

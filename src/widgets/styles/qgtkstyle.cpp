@@ -317,7 +317,7 @@ static GdkColor fromQColor(const QColor &color)
     It does this by making use of the GTK+ theme engine, ensuring
     that Qt applications look and feel native on these platforms.
 
-    Note: The style requires GTK+ version 2.10 or later.
+    Note: The style requires GTK+ version 2.18 or later.
           The Qt3-based "Qt" GTK+ theme engine will not work with QGtkStyle.
 
     \sa QWindowsXPStyle, QMacStyle, QWindowsStyle, QFusionStyle

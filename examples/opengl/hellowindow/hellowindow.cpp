@@ -92,7 +92,8 @@ void HelloWindow::mousePressEvent(QMouseEvent *)
 
 void HelloWindow::render()
 {
-    emit needRender(this, m_color, size());
+    if (isExposed())
+        emit needRender(this, m_color, size());
 }
 
 void HelloWindow::updateColor()

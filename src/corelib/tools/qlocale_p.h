@@ -380,10 +380,13 @@ class QQNXLocaleData: public QObject
 public:
     QQNXLocaleData();
     virtual ~QQNXLocaleData();
-    void readPPSLocale();
 
 public Q_SLOTS:
     void updateMeasurementSystem();
+    void installSocketNotifier();
+
+private:
+    void initialize();
 
 public:
     uint ppsMeasurement;

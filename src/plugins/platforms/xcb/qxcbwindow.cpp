@@ -382,6 +382,11 @@ void QXcbWindow::create()
     if (window()->flags() & Qt::WindowTransparentForInput)
         setTransparentForMouseEvents(true);
 
+#ifdef XCB_USE_XLIB
+    // force sync to read outstanding requests - see QTBUG-29106
+    XSync(DISPLAY_FROM_XCB(m_screen), false);
+#endif
+
 #ifndef QT_NO_DRAGANDDROP
     connection()->drag()->dndEnable(this, true);
 #endif

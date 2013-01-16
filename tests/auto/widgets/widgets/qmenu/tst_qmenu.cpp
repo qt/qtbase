@@ -101,6 +101,7 @@ private slots:
     void pushButtonPopulateOnAboutToShow();
     void QTBUG7907_submenus_autoselect();
     void QTBUG7411_submenus_activate();
+    void QTBUG20403_nested_popup_on_shortcut_trigger();
     void QTBUG_10735_crashWithDialog();
 protected slots:
     void onActivated(QAction*);
@@ -893,6 +894,22 @@ void tst_QMenu::QTBUG7411_submenus_activate()
     QVERIFY(!sub1.isVisible());
     QTest::keyPress(&menu, Qt::Key_S);
     QTRY_VERIFY(sub1.isVisible());
+}
+
+void tst_QMenu::QTBUG20403_nested_popup_on_shortcut_trigger()
+{
+    QMenu menu("Test Menu");
+    QMenu sub1("&sub1");
+    QMenu subsub1("&subsub1");
+    subsub1.addAction("foo");
+    sub1.addMenu(&subsub1);
+    menu.addMenu(&sub1);
+    menu.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
+    QTest::keyPress(&menu, Qt::Key_S);
+    QTest::qWait(100); // 20ms delay with previous behavior
+    QTRY_VERIFY(sub1.isVisible());
+    QVERIFY(!subsub1.isVisible());
 }
 
 class MyMenu : public QMenu

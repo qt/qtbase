@@ -1665,6 +1665,10 @@ void tst_QLocale::dateFormat()
     QCOMPARE(no.dateFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yy"));
     QCOMPARE(no.dateFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yy"));
     QCOMPARE(no.dateFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy"));
+
+    const QLocale ca("en_CA");
+    QCOMPARE(ca.dateFormat(QLocale::ShortFormat), QLatin1String("M/d/yy"));
+    QCOMPARE(ca.dateFormat(QLocale::LongFormat), QLatin1String("dddd, MMMM d, yyyy"));
 }
 
 void tst_QLocale::timeFormat()

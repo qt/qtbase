@@ -2624,6 +2624,11 @@ else
     CFG_FRAMEWORK=no
 fi
 
+# disable GTK style support auto-detection on Mac
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
+    CFG_QGTKSTYLE=no
+fi
+
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
@@ -2740,6 +2745,7 @@ libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
 DEFAULT_LIBDIRS=`IFS=:; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
 DEFAULT_INCDIRS=`echo "$gccout" | awk '
 /^End of search/ { yup=0 }
+/ \(framework directory\)$/ { next }
 yup { print substr($0, 2) }
 /^\#include </ { yup=1 }
 ' | sort -u`

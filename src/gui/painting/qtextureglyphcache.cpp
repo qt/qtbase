@@ -305,6 +305,8 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
     case QFontEngineGlyphCache::Raster_RGBMask:
         m_image = QImage(width, height, QImage::Format_RGB32);
         break;
+    case QFontEngineGlyphCache::Raster_ARGB:
+        break;
     }
 }
 

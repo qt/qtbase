@@ -73,6 +73,7 @@ protected:
     void fixTargetExt();
     void processRcFileVar();
     virtual QString getLibTarget();
+    static QString cQuoted(const QString &str);
 };
 
 inline Win32MakefileGenerator::~Win32MakefileGenerator()

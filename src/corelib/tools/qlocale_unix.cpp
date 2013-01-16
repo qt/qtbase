@@ -66,7 +66,12 @@ QQNXLocaleData::QQNXLocaleData()
     :ppsNotifier(0)
     ,ppsFd(-1)
 {
-    readPPSLocale();
+    initialize();
+
+    // we cannot call this directly, because by the time this constructor is
+    // called, the event dispatcher has not yet been created, causing the
+    // subsequent call to QSocketNotifier constructor to fail.
+    QMetaObject::invokeMethod(this, "installSocketNotifier", Qt::QueuedConnection);
 }
 
 QQNXLocaleData::~QQNXLocaleData()
@@ -106,7 +111,7 @@ void QQNXLocaleData::updateMeasurementSystem()
     ppsMeasurement = QLocale::MetricSystem;
 }
 
-void QQNXLocaleData::readPPSLocale()
+void QQNXLocaleData::initialize()
 {
     errno = 0;
     ppsFd = qt_safe_open(ppsServicePath, O_RDONLY);
@@ -116,10 +121,22 @@ void QQNXLocaleData::readPPSLocale()
     }
 
     updateMeasurementSystem();
-    if (QCoreApplication::instance()) {
-        ppsNotifier = new QSocketNotifier(ppsFd, QSocketNotifier::Read, this);
-        QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMeasurementSystem()));
+}
+
+void QQNXLocaleData::installSocketNotifier()
+{
+    if (!QCoreApplication::instance() || ppsFd == -1) {
+        qWarning("QQNXLocaleData: Failed to create socket notifier, locale updates may not work.");
+        return;
     }
+
+    if (ppsNotifier) {
+        qWarning("QQNXLocaleData: socket notifier already created.");
+        return;
+    }
+
+    ppsNotifier = new QSocketNotifier(ppsFd, QSocketNotifier::Read, this);
+    QObject::connect(ppsNotifier, SIGNAL(activated(int)), this, SLOT(updateMeasurementSystem()));
 }
 #endif
 

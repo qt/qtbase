@@ -3324,7 +3324,7 @@ void tst_QAccessibility::bridgeTest()
         ia2TableCell->Release();
         ia2Table->Release();
 #endif
-        iaccTextEdit->Release();
+        iaccTable->Release();
     }
 
     iaccWindow->Release();

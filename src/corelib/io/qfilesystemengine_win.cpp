@@ -42,6 +42,7 @@
 #include "qfilesystemengine_p.h"
 
 #include "qplatformdefs.h"
+#include "qsysinfo.h"
 #include "private/qabstractfileengine_p.h"
 #include "private/qfsfileengine_p.h"
 #include <private/qsystemlibrary_p.h>
@@ -561,6 +562,80 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         ret[0] = ret.at(0).toUpper();
     }
     return QFileSystemEntry(ret, QFileSystemEntry::FromInternalPath());
+}
+
+#ifndef Q_OS_WINCE
+
+// FILE_INFO_BY_HANDLE_CLASS has been extended by FileIdInfo = 18 as of VS2012.
+typedef enum { Q_FileIdInfo = 18 } Q_FILE_INFO_BY_HANDLE_CLASS;
+
+#  if defined(Q_CC_MINGW) || (defined(Q_CC_MSVC) && _MSC_VER < 1700)
+
+typedef struct _FILE_ID_128 {
+    BYTE  Identifier[16];
+} FILE_ID_128, *PFILE_ID_128;
+
+typedef struct _FILE_ID_INFO {
+    ULONGLONG VolumeSerialNumber;
+    FILE_ID_128 FileId;
+} FILE_ID_INFO, *PFILE_ID_INFO;
+#  endif // if defined (Q_CC_MINGW) || (defined(Q_CC_MSVC) && _MSC_VER < 1700))
+
+// File ID for Windows up to version 7.
+static inline QByteArray fileId(HANDLE handle)
+{
+    QByteArray result;
+    BY_HANDLE_FILE_INFORMATION info;
+    if (GetFileInformationByHandle(handle, &info)) {
+        result = QByteArray::number(uint(info.nFileIndexLow), 16);
+        result += ':';
+        result += QByteArray::number(uint(info.nFileIndexHigh), 16);
+    }
+    return result;
+}
+
+// File ID for Windows starting from version 8.
+QByteArray fileIdWin8(HANDLE handle)
+{
+    typedef BOOL (WINAPI* GetFileInformationByHandleExType)(HANDLE, Q_FILE_INFO_BY_HANDLE_CLASS, void *, DWORD);
+
+    // Dynamically resolve  GetFileInformationByHandleEx (Vista onwards).
+    static GetFileInformationByHandleExType getFileInformationByHandleEx = 0;
+    if (!getFileInformationByHandleEx) {
+        QSystemLibrary library(QLatin1String("kernel32"));
+        getFileInformationByHandleEx = (GetFileInformationByHandleExType)library.resolve("GetFileInformationByHandleEx");
+    }
+    QByteArray result;
+    if (getFileInformationByHandleEx) {
+        FILE_ID_INFO infoEx;
+        if (getFileInformationByHandleEx(handle, Q_FileIdInfo,
+                                         &infoEx, sizeof(FILE_ID_INFO))) {
+            result = QByteArray::number(infoEx.VolumeSerialNumber, 16);
+            result += ':';
+            result += QByteArray((char *)infoEx.FileId.Identifier, sizeof(infoEx.FileId.Identifier)).toHex();
+        }
+    }
+    return result;
+}
+#endif // !Q_OS_WINCE
+
+//static
+QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
+{
+#ifndef Q_OS_WINCE
+    QByteArray result;
+    const HANDLE handle =
+        CreateFile((wchar_t*)entry.nativeFilePath().utf16(), GENERIC_READ,
+                   FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (handle) {
+        result = QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS8 ?
+                 fileIdWin8(handle) : fileId(handle);
+        CloseHandle(handle);
+    }
+    return result;
+#else // !Q_OS_WINCE
+    return entry.nativeFilePath().toLower().toLatin1();
+#endif
 }
 
 //static

@@ -61,6 +61,12 @@
 
 QT_BEGIN_NAMESPACE
 
+//Some distributions of mingw (including 4.7.2 from mingw.org) are missing this from headers.
+//Also microsoft headers don't include it when building on XP and earlier.
+#ifndef IPV6_V6ONLY
+#define IPV6_V6ONLY 27
+#endif
+
 #if defined(QNATIVESOCKETENGINE_DEBUG)
 
 void verboseWSErrorDebug(int r)
@@ -204,7 +210,6 @@ static inline void qt_socket_getPortAndAddress(SOCKET socketDescriptor, const qt
 void QNativeSocketEnginePrivate::setPortAndAddress(sockaddr_in * sockAddrIPv4, qt_sockaddr_in6 * sockAddrIPv6,
                                                quint16 port, const QHostAddress & address, sockaddr ** sockAddrPtr, QT_SOCKLEN_T *sockAddrSize)
 {
-
     if (address.protocol() == QAbstractSocket::IPv6Protocol
         || address.protocol() == QAbstractSocket::AnyIPProtocol
         || socketProtocol == QAbstractSocket::IPv6Protocol
@@ -599,7 +604,6 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
         }
     }
 
-#if defined (IPV6_V6ONLY)
     // determine if local address is dual mode
     DWORD ipv6only = 0;
     QT_SOCKOPTLEN_T optlen = sizeof(ipv6only);
@@ -611,7 +615,6 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
                 localAddress = QHostAddress::Any;
             }
     }
-#endif
 
     memset(&sa, 0, sizeof(sa));
     if (::getpeername(socketDescriptor, &sa.a, &sockAddrSize) == 0) {
@@ -652,7 +655,6 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
 
     setPortAndAddress(&sockAddrIPv4, &sockAddrIPv6, port, address, &sockAddrPtr, &sockAddrSize);
 
-#if defined (IPV6_V6ONLY)
     if (socketProtocol == QAbstractSocket::IPv6Protocol && address.toIPv4Address()) {
         //IPV6_V6ONLY option must be cleared to connect to a V4 mapped address
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
@@ -660,7 +662,6 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
             ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
         }
     }
-#endif
 
     forever {
         int connectResult = ::WSAConnect(socketDescriptor, sockAddrPtr, sockAddrSize, 0,0,0,0);
@@ -793,15 +794,11 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
             // binding to a multicast address
             address = QHostAddress(QHostAddress::AnyIPv6);
         }
-#if defined (IPV6_V6ONLY)
         //This is default in current windows versions, it may change in future so set it explicitly
         if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
             ipv6only = 1;
             ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
         }
-#else
-        Q_UNUSED(ipv6only)
-#endif
         break;
     case QAbstractSocket::IPv4Protocol:
         if ((address.toIPv4Address() & 0xffff0000) == 0xefff0000) {
@@ -810,12 +807,9 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &a, quint16 port)
         }
         break;
     case QAbstractSocket::AnyIPProtocol:
-#if defined (IPV6_V6ONLY)
-        if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0)
+        if (QSysInfo::windowsVersion() >= QSysInfo::WV_6_0) {
             ipv6only = ::setsockopt(socketDescriptor, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only) );
-        else
-#endif
-        {
+        } else {
             address = QHostAddress(QHostAddress::AnyIPv4); //xp/WS2003 and earlier don't support dual stack, so bind to IPv4
             socketProtocol = QAbstractSocket::IPv4Protocol;
         }

@@ -77,7 +77,9 @@
         int numKids = m_accessibleRoot->childCount();
         NSMutableArray *kids = [NSMutableArray arrayWithCapacity:numKids];
         for (int i = 0; i < numKids; ++i) {
-            [kids addObject:[QCocoaAccessibleElement elementWithInterface: m_accessibleRoot->child(i) parent:self ]];
+            QCocoaAccessibleElement *element = [QCocoaAccessibleElement createElementWithInterface: m_accessibleRoot->child(i) parent:self ];
+            [kids addObject: element];
+            [element release];
         }
 
         return kids;
@@ -98,7 +100,8 @@
 
     // Hit a child, forward to child accessible interface.
 
-    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement elementWithInterface: childInterface parent:self ];
+    QCocoaAccessibleElement *accessibleElement = [QCocoaAccessibleElement createElementWithInterface: childInterface parent:self ];
+    [accessibleElement autorelease];
     return [accessibleElement accessibilityHitTest:point];
 }
 
