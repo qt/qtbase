@@ -55,7 +55,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef Q_OS_VXWORKS
 #include <pwd.h>
+#endif
 #endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -71,6 +73,10 @@
 #endif
 #include <private/qfileinfo_p.h>
 #include "../../../../shared/filesystem.h"
+
+#if defined(Q_OS_VXWORKS)
+#define Q_NO_SYMLINKS
+#endif
 
 QT_BEGIN_NAMESPACE
 extern Q_AUTOTEST_EXPORT bool qIsLikelyToBeNfs(int /* handle */);
@@ -1014,7 +1020,7 @@ void tst_QFileInfo::fileTimes()
         QEXPECT_FAIL("longfile absolutepath", "No long filenames on WinCE", Abort);
 #endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_UNIX && !defined(Q_OS_VXWORKS)
         if (qIsLikelyToBeNfs(file.handle()))
             QSKIP("This Test doesn't work on NFS");
 #endif
@@ -1512,7 +1518,7 @@ void tst_QFileInfo::isWritable()
 #if defined (Q_OS_BLACKBERRY)
     // The Blackberry filesystem is read-only
     QVERIFY(!QFileInfo("/etc/passwd").isWritable());
-#elif defined (Q_OS_UNIX)
+#elif defined (Q_OS_UNIX) && !defined(Q_OS_VXWORKS) // VxWorks does not have users/groups
     if (::getuid() == 0)
         QVERIFY(QFileInfo("/etc/passwd").isWritable());
     else
@@ -1711,7 +1717,7 @@ QT_END_NAMESPACE
 void tst_QFileInfo::owner()
 {
     QString userName;
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
     {
         passwd *user = getpwuid(geteuid());
         QVERIFY(user);
@@ -1774,7 +1780,7 @@ void tst_QFileInfo::owner()
 void tst_QFileInfo::group()
 {
     QString expected;
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
     struct group *gr;
     gid_t gid = getegid();
 
