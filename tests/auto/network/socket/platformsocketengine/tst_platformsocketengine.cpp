@@ -56,6 +56,10 @@
 #include <sys/socket.h>
 #endif
 
+#ifdef Q_OS_VXWORKS
+#include <sockLib.h>
+#endif
+
 #include <stddef.h>
 
 #define PLATFORMSOCKETENGINE QNativeSocketEngine
