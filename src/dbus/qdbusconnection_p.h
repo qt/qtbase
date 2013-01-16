@@ -140,14 +140,16 @@ public:
     {
         typedef QVector<ObjectTreeNode> DataList;
 
-        inline ObjectTreeNode() : obj(0), flags(0) { }
+        inline ObjectTreeNode() : obj(0), flags(0), activeChildren(0) { }
         inline ObjectTreeNode(const QString &n) // intentionally implicit
-            : name(n), obj(0), flags(0) { }
+            : name(n), obj(0), flags(0), activeChildren(0) { }
         inline ~ObjectTreeNode() { }
         inline bool operator<(const QString &other) const
             { return name < other; }
         inline bool operator<(const QStringRef &other) const
             { return QStringRef(&name) < other; }
+        inline bool isActive() const
+        { return obj || activeChildren; }
 
         QString name;
         union {
@@ -155,6 +157,7 @@ public:
             QDBusVirtualObject *treeNode;
         };
         int flags;
+        int activeChildren;
 
         DataList children;
     };

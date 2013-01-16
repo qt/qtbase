@@ -803,13 +803,8 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
                 return false;
 
             if (options & QDBusConnectionPrivate::VirtualObject) {
-                // technically the check for children needs to go even deeper
-                if (options & SubPath) {
-                    foreach (const QDBusConnectionPrivate::ObjectTreeNode &child, node->children) {
-                        if (child.obj)
-                            return false;
-                    }
-                }
+                if (options & SubPath && node->activeChildren)
+                    return false;
             } else {
                 if ((options & ExportChildObjects && !node->children.isEmpty()))
                     return false;
@@ -846,6 +841,7 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
             }
         } else {
             // add entry
+            ++node->activeChildren;
             node = node->children.insert(it, pathComponents.at(i));
         }
 

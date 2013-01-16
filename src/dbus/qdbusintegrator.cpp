@@ -591,12 +591,22 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
 {
     QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
     QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = haystack.children.end();
-    for ( ; it != end; ++it)
+    for ( ; it != end; ++it) {
+        if (!it->isActive())
+            continue;
         huntAndDestroy(needle, *it);
+        if (!it->isActive())
+            --haystack.activeChildren;
+    }
 
     if (needle == haystack.obj) {
         haystack.obj = 0;
         haystack.flags = 0;
+    }
+
+    if (haystack.activeChildren == 0) {
+        // quick clean-up, if we're out of children
+        haystack.children.clear();
     }
 }
 
@@ -610,6 +620,7 @@ static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusCon
 
         if (mode == QDBusConnection::UnregisterTree) {
             // clear the sub-tree as well
+            node->activeChildren = 0;
             node->children.clear();  // can't disconnect the objects because we really don't know if they can
                             // be found somewhere else in the path too
         }
@@ -618,10 +629,17 @@ static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusCon
         QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = node->children.end();
         QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
             std::lower_bound(node->children.begin(), end, pathComponents.at(i));
-        if (it == end || it->name != pathComponents.at(i))
+        if (it == end || it->name != pathComponents.at(i) || !it->isActive())
             return;              // node not found
 
         huntAndUnregister(pathComponents, i + 1, mode, it);
+        if (!it->isActive())
+            --node->activeChildren;
+
+        if (node->activeChildren == 0) {
+            // quick clean-up, if we're out of children
+            node->children.clear();
+        }
     }
 }
 
@@ -631,8 +649,10 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
 {
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it = haystack.children.constBegin();
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end = haystack.children.constEnd();
-    for ( ; it != end; ++it)
-        huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
+    for ( ; it != end; ++it) {
+        if (it->isActive())
+            huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
+    }
 
     if (needle == haystack.obj) {
         // is this a signal we should relay?
