@@ -98,12 +98,14 @@
 QIOSInputContext::QIOSInputContext()
     : QPlatformInputContext()
     , m_keyboardListener([[QIOSKeyboardListener alloc] initWithQIOSInputContext:this])
+    , m_focusView(0)
 {
 }
 
 QIOSInputContext::~QIOSInputContext()
 {
     [m_keyboardListener release];
+    [m_focusView release];
 }
 
 QRectF QIOSInputContext::keyboardRect() const
@@ -113,33 +115,28 @@ QRectF QIOSInputContext::keyboardRect() const
 
 void QIOSInputContext::showInputPanel()
 {
-    if (isInputPanelVisible())
-        return;
-
     // Documentation tells that one should call (and recall, if necessary) becomeFirstResponder/resignFirstResponder
     // to show/hide the keyboard. This is slightly inconvenient, since there exist no API to get the current first
-    // responder. Rather than searching for it from the top, we assume that the view backing the focus window in Qt
-    // is the best candidate as long as there exist no first responder from before (which the isInputPanelVisible
-    // test on top should catch). Note that Qt will forward keyevents to whichever QObject that needs it, regardless of
-    // which UIView the input actually came from. So in this respect, we're undermining iOS' responder chain.
-    if (QWindow *window = QGuiApplication::focusWindow()) {
-        QIOSWindow *qiosWindow = static_cast<QIOSWindow *>(window->handle());
-        [qiosWindow->nativeView() becomeFirstResponder];
-    }
+    // responder. Rather than searching for it from the top, we let the active QIOSWindow tell us which view to use.
+    // Note that Qt will forward keyevents to whichever QObject that needs it, regardless of which UIView the input
+    // actually came from. So in this respect, we're undermining iOS' responder chain.
+    [m_focusView becomeFirstResponder];
 }
 
 void QIOSInputContext::hideInputPanel()
 {
-    if (!isInputPanelVisible())
-        return;
-
-    if (QWindow *window = QGuiApplication::focusWindow()) {
-        QIOSWindow *qiosWindow = static_cast<QIOSWindow *>(window->handle());
-        [qiosWindow->nativeView() resignFirstResponder];
-    }
+    [m_focusView resignFirstResponder];
 }
 
 bool QIOSInputContext::isInputPanelVisible() const
 {
     return m_keyboardListener->m_keyboardVisible;
+}
+
+void QIOSInputContext::focusViewChanged(UIView *view)
+{
+    if ([m_focusView isFirstResponder])
+        [view becomeFirstResponder];
+    [m_focusView release];
+    m_focusView = [view retain];
 }

@@ -42,9 +42,12 @@
 #include "qiosglobal.h"
 #include "qioswindow.h"
 #include "qioscontext.h"
+#include "qiosinputcontext.h"
 #include "qiosscreen.h"
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 #import <QuartzCore/CAEAGLLayer.h>
 
@@ -327,6 +330,8 @@ void QIOSWindow::requestActivateWindow()
     // hierarchy (transient children). But only one window can be QGuiApplication::focusWindow().
     // Dispite the name, 'requestActivateWindow' means raise and transfer focus to the window:
     raise();
+    QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
+    static_cast<QIOSInputContext *>(context)->focusViewChanged(m_view);
     QPlatformWindow::requestActivateWindow();
 }
 

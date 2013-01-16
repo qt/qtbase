@@ -61,8 +61,11 @@ public:
     void hideInputPanel();
     bool isInputPanelVisible() const;
 
+    void focusViewChanged(UIView *view);
+
 private:
     QIOSKeyboardListener *m_keyboardListener;
+    UIView *m_focusView;
 };
 
 QT_END_NAMESPACE
