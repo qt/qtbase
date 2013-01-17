@@ -64,6 +64,12 @@ QRunnable *createTask(FunctionPointer pointer)
 class tst_QThreadPool : public QObject
 {
     Q_OBJECT
+public:
+    tst_QThreadPool();
+    ~tst_QThreadPool();
+
+    static QMutex *functionTestMutex;
+
 private slots:
     void runFunction();
     void createThreadRunFunction();
@@ -92,7 +98,23 @@ private slots:
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
     void stressTest();
+
+private:
+    QMutex m_functionTestMutex;
 };
+
+
+QMutex *tst_QThreadPool::functionTestMutex = 0;
+
+tst_QThreadPool::tst_QThreadPool()
+{
+    tst_QThreadPool::functionTestMutex = &m_functionTestMutex;
+}
+
+tst_QThreadPool::~tst_QThreadPool()
+{
+    tst_QThreadPool::functionTestMutex = 0;
+}
 
 int testFunctionCount;
 
@@ -114,19 +136,19 @@ void noSleepTestFunction()
 
 void sleepTestFunctionMutex()
 {
-    static QMutex testMutex;
+    Q_ASSERT(tst_QThreadPool::functionTestMutex);
     QTest::qSleep(1000);
-    testMutex.lock();
+    tst_QThreadPool::functionTestMutex->lock();
     ++testFunctionCount;
-    testMutex.unlock();
+    tst_QThreadPool::functionTestMutex->unlock();
 }
 
 void noSleepTestFunctionMutex()
 {
-    static QMutex testMutex;
-    testMutex.lock();
+    Q_ASSERT(tst_QThreadPool::functionTestMutex);
+    tst_QThreadPool::functionTestMutex->lock();
     ++testFunctionCount;
-    testMutex.unlock();
+    tst_QThreadPool::functionTestMutex->unlock();
 }
 
 void tst_QThreadPool::runFunction()
