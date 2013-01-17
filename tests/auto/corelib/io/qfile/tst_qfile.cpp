@@ -80,6 +80,12 @@ QT_END_NAMESPACE
 # include <sys/statfs.h>
 #elif defined(Q_OS_WINCE)
 # include <qplatformdefs.h>
+#elif defined(Q_OS_VXWORKS)
+# include <fcntl.h>
+#if defined(_WRS_KERNEL)
+#undef QT_OPEN
+#define QT_OPEN(path, oflag) ::open(path, oflag, 0)
+#endif
 #endif
 
 #include <stdio.h>
@@ -545,7 +551,7 @@ void tst_QFile::open()
 
     QFETCH( bool, ok );
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
     if (::getuid() == 0)
         // root and Chuck Norris don't care for file permissions. Skip.
         QSKIP("Running this test as root doesn't make sense");
@@ -2242,7 +2248,7 @@ static QByteArray getLargeDataBlock()
 
     if (array.isNull())
     {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
         int resizeSize = 1024 * 1024; // WinCE does not have much space
 #else
         int resizeSize = 64 * 1024 * 1024;
@@ -2432,7 +2438,9 @@ void tst_QFile::rename()
 
 #if defined(Q_OS_UNIX)
     if (strcmp(QTest::currentDataTag(), "renamefile -> /etc/renamefile") == 0) {
+#if !defined(Q_OS_VXWORKS)
         if (::getuid() == 0)
+#endif
             QSKIP("Running this test as root doesn't make sense");
     }
 #endif
@@ -2941,6 +2949,7 @@ void tst_QFile::map()
 
     file.close();
 
+#if !defined(Q_OS_VXWORKS)
 #if defined(Q_OS_UNIX)
     if (::getuid() != 0)
         // root always has permissions
@@ -2955,6 +2964,7 @@ void tst_QFile::map()
         QVERIFY(!memory);
         QVERIFY(file.setPermissions(originalPermissions));
     }
+#endif
     QVERIFY(file.remove());
 }
 
