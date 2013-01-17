@@ -330,8 +330,25 @@ static QTouchDevice *touchDevice = 0;
     return YES;
 }
 
+- (BOOL)becomeFirstResponder
+{
+    QWindow *focusWindow = m_window;
+
+    // For widgets we need to do a bit of trickery as the window
+    // to activate is the window of the top-level widget.
+    if (m_window->metaObject()->className() == QStringLiteral("QWidgetWindow")) {
+        while (focusWindow->parent()) {
+            focusWindow = focusWindow->parent();
+        }
+    }
+    QWindowSystemInterface::handleWindowActivated(focusWindow);
+    return YES;
+}
+
 - (BOOL)acceptsFirstResponder
 {
+    if ((m_window->flags() & Qt::ToolTip) == Qt::ToolTip)
+        return NO;
     return YES;
 }
 

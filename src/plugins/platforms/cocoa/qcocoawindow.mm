@@ -656,6 +656,13 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         setOpacity(opacity);
 }
 
+void QCocoaWindow::requestActivateWindow()
+{
+    NSWindow *window = [m_contentView window];
+    [ window makeFirstResponder : m_contentView ];
+    [ window makeKeyWindow ];
+}
+
 NSWindow * QCocoaWindow::createNSWindow()
 {
     QCocoaAutoReleasePool pool;

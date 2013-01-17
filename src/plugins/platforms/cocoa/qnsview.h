@@ -82,6 +82,7 @@ QT_END_NAMESPACE
 
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;
+- (BOOL)becomeFirstResponder;
 
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 - (void)mouseDown:(NSEvent *)theEvent;
