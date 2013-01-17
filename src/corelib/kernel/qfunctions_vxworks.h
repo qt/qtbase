@@ -65,6 +65,44 @@
 #include <net/if.h>
 #endif
 
+// VxWorks has public header mbuf.h which defines following variables for DKM.
+// Let's undef those to because they overlap with Qt variable names-
+// File mbuf.h is included in headers <netinet/in.h> <net/if.h>, so make sure
+// that those are included before undef's.
+#if defined(mbuf)
+#  undef mbuf
+#endif
+#if defined(m_data)
+#  undef m_data
+#endif
+#if defined(m_type)
+#  undef m_type
+#endif
+#if defined(m_next)
+#  undef m_next
+#endif
+#if defined(m_len)
+#  undef m_len
+#endif
+#if defined(m_flags)
+#  undef m_flags
+#endif
+#if defined(m_hdr)
+#  undef m_hdr
+#endif
+#if defined(m_ext)
+#  undef m_ext
+#endif
+#if defined(m_act)
+#  undef m_act
+#endif
+#if defined(m_nextpkt)
+#  undef m_nextpkt
+#endif
+#if defined(m_pkthdr)
+#  undef m_pkthdr
+#endif
+
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
