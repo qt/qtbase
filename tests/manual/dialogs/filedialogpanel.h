@@ -60,9 +60,11 @@ public:
     explicit FileDialogPanel(QWidget *parent = 0);
 
 public slots:
+    void execModal();
     void showModal();
     void showNonModal();
     void deleteNonModalDialog();
+    void deleteModalDialog();
     void getOpenFileNames();
     void getOpenFileName();
     void getSaveFileName();
@@ -73,6 +75,7 @@ public slots:
 
 private slots:
     void enableDeleteNonModalDialogButton();
+    void enableDeleteModalDialogButton();
 
 private:
     QString filterString() const;
@@ -94,7 +97,9 @@ private:
     QPlainTextEdit *m_nameFilters;
     QLineEdit *m_selectedNameFilter;
     QPushButton *m_deleteNonModalDialogButton;
+    QPushButton *m_deleteModalDialogButton;
     QString m_result;
+    QPointer<QFileDialog> m_modalDialog;
     QPointer<QFileDialog> m_nonModalDialog;
 };
 
