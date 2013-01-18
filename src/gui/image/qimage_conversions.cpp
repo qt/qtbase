@@ -2176,7 +2176,11 @@ void qInitImageConversions()
 #ifdef QT_COMPILER_SUPPORTS_MIPS_DSPR2
     extern bool convert_ARGB_to_ARGB_PM_inplace_mips_dspr2(QImageData *data, Qt::ImageConversionFlags);
     inplace_converter_map[QImage::Format_ARGB32][QImage::Format_ARGB32_Premultiplied] = convert_ARGB_to_ARGB_PM_inplace_mips_dspr2;
-    return;
+
+    extern void convert_RGB888_to_RGB32_mips_dspr2(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags);
+    qimage_converter_map[QImage::Format::RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_mips_dspr2;
+    qimage_converter_map[QImage::Format::RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_mips_dspr2;
+    qimage_converter_map[QImage::Format::RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_mips_dspr2;
 #endif
 }
 
