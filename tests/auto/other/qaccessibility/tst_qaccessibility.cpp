@@ -2458,6 +2458,12 @@ void tst_QAccessibility::listTest()
 void tst_QAccessibility::treeTest()
 {
     QTreeWidget *treeView = new QTreeWidget;
+
+    // Empty model (do not crash, etc)
+    treeView->setColumnCount(0);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView);
+    QCOMPARE(iface->child(0), static_cast<QAccessibleInterface*>(0));
+
     treeView->setColumnCount(2);
     QTreeWidgetItem *header = new QTreeWidgetItem;
     header->setText(0, "Artist");
@@ -2493,7 +2499,6 @@ void tst_QAccessibility::treeTest()
     QCoreApplication::processEvents();
     QTest::qWait(100);
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView);
     QCOMPARE(verifyHierarchy(iface), 0);
 
     QCOMPARE((int)iface->role(), (int)QAccessible::Tree);
