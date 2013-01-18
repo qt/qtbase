@@ -1650,8 +1650,12 @@ bool Configure::displayHelp()
 
         desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module.\n");
 
-        desc("ACCESSIBILITY", "no",  "-no-accessibility", "Do not compile Windows Active Accessibility support.");
-        desc("ACCESSIBILITY", "yes", "-accessibility",    "Compile Windows Active Accessibility support.\n");
+        desc("ACCESSIBILITY", "no", "-no-accessibility", "Disable accessibility support.\n");
+        desc(                   "",                      "Disabling accessibility is not recommended, as it will break QStyle\n"
+                                                         "and may break other internal parts of Qt.\n"
+                                                         "With this switch you create a source incompatible version of Qt,\n"
+                                                         "which is unsupported.\n");
+        desc("ACCESSIBILITY", "yes", "-accessibility",   "Enable accessibility support.\n");
 
         desc(                   "-no-sql-<driver>",     "Disable SQL <driver> entirely, by default none are turned on.");
         desc(                   "-qt-sql-<driver>",     "Enable a SQL <driver> in the Qt Library.");
