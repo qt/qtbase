@@ -383,6 +383,8 @@ int QAccessibleWidget::childCount() const
 /*! \reimp */
 int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 {
+    if (!child)
+        return -1;
     QWidgetList cl = childWidgets(widget());
     return cl.indexOf(qobject_cast<QWidget *>(child->object()));
 }

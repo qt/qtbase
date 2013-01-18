@@ -193,6 +193,8 @@ int QAccessibleApplication::childCount() const
 /*! \reimp */
 int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) const
 {
+    if (!child)
+        return -1;
     const QObjectList tlw(topLevelObjects());
     return tlw.indexOf(child->object());
 }

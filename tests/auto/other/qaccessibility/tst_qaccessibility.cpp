@@ -768,12 +768,40 @@ void tst_QAccessibility::actionTest()
 
 void tst_QAccessibility::applicationTest()
 {
+    {
     QLatin1String name = QLatin1String("My Name");
     qApp->setApplicationName(name);
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(qApp);
+    QAIPtr interface(QAccessible::queryAccessibleInterface(qApp));
     QCOMPARE(interface->text(QAccessible::Name), name);
+    QCOMPARE(interface->text(QAccessible::Description), qApp->applicationFilePath());
+    QCOMPARE(interface->text(QAccessible::Value), QString());
     QCOMPARE(interface->role(), QAccessible::Application);
-    delete interface;
+    QCOMPARE(interface->window(), static_cast<QWindow*>(0));
+    QCOMPARE(interface->parent(), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->focusChild(), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->indexOfChild(0), -1);
+    QCOMPARE(interface->child(0), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->child(-1), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->child(1), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->childCount(), 0);
+
+    QWidget widget;
+    widget.show();
+    qApp->setActiveWindow(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    QAIPtr widgetIface(QAccessible::queryAccessibleInterface(&widget));
+    QCOMPARE(interface->childCount(), 1);
+    QAIPtr focus(interface->focusChild());
+    QCOMPARE(focus->object(), &widget);
+    QCOMPARE(interface->indexOfChild(0), -1);
+    QCOMPARE(interface->indexOfChild(widgetIface.data()), 0);
+    QAIPtr child(interface->child(0));
+    QCOMPARE(child->object(), &widget);
+    QCOMPARE(interface->child(-1), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->child(1), static_cast<QAccessibleInterface*>(0));
+    }
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::mainWindowTest()
