@@ -84,7 +84,8 @@ class QMenuPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QMenu)
 public:
     QMenuPrivate() : itemsDirty(0), maxIconWidth(0), tabWidth(0), ncols(0),
-                      collapsibleSeparators(true), activationRecursionGuard(false), hasHadMouse(0), aboutToHide(0), motions(0),
+                      collapsibleSeparators(true), toolTipsVisible(false),
+                      activationRecursionGuard(false), hasHadMouse(0), aboutToHide(0), motions(0),
                       currentAction(0),
 #ifdef QT_KEYPAD_NAVIGATION
                       selectAction(0),
@@ -123,6 +124,7 @@ public:
     QRect popupGeometry(int screen = -1) const;
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
+    uint toolTipsVisible : 1;
     QSize adjustMenuSizeForScreen(const QRect & screen);
     int getLastVisibleAction() const;
 

@@ -67,6 +67,7 @@
 #include "qwidgetaction.h"
 #include "qtoolbutton.h"
 #include "qpushbutton.h"
+#include "qtooltip.h"
 #include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
 #include <private/qguiapplication_p.h>
@@ -2368,6 +2369,19 @@ QMenu::event(QEvent *e)
         if (d->currentAction)
             d->popupAction(d->currentAction, 0, false);
         break;
+#ifndef QT_NO_TOOLTIP
+    case QEvent::ToolTip:
+        if (d->toolTipsVisible) {
+            const QHelpEvent *ev = static_cast<const QHelpEvent*>(e);
+            if (const QAction *action = actionAt(ev->pos())) {
+                const QString toolTip = action->d_func()->tooltip;
+                if (!toolTip.isEmpty())
+                    QToolTip::showText(ev->globalPos(), toolTip, this);
+                return true;
+            }
+        }
+        break;
+#endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
     case QEvent::QueryWhatsThis:
         e->setAccepted(d->whatsThis.size());
@@ -3087,6 +3101,32 @@ void QMenu::setSeparatorsCollapsible(bool collapse)
     }
     if (d->platformMenu)
         d->platformMenu->syncSeparatorsCollapsible(collapse);
+}
+
+/*!
+  \property QMenu::toolTipsVisible
+  \since 5.1
+
+  \brief whether tooltips of menu actions should be visible
+
+  This property specifies whether action menu entries show
+  their tooltip.
+
+  By default, this property is false.
+*/
+bool QMenu::toolTipsVisible() const
+{
+    Q_D(const QMenu);
+    return d->toolTipsVisible;
+}
+
+void QMenu::setToolTipsVisible(bool visible)
+{
+    Q_D(QMenu);
+    if (d->toolTipsVisible == visible)
+        return;
+
+    d->toolTipsVisible = visible;
 }
 
 QT_END_NAMESPACE

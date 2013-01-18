@@ -70,6 +70,7 @@ private:
     Q_PROPERTY(QString title READ title WRITE setTitle)
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon)
     Q_PROPERTY(bool separatorsCollapsible READ separatorsCollapsible WRITE setSeparatorsCollapsible)
+    Q_PROPERTY(bool toolTipsVisible READ toolTipsVisible WRITE setToolTipsVisible)
 
 public:
     explicit QMenu(QWidget *parent = 0);
@@ -138,6 +139,9 @@ public:
 
     bool separatorsCollapsible() const;
     void setSeparatorsCollapsible(bool collapse);
+
+    bool toolTipsVisible() const;
+    void setToolTipsVisible(bool visible);
 
 Q_SIGNALS:
     void aboutToShow();
