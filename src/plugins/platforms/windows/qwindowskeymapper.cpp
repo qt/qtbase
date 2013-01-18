@@ -1126,7 +1126,7 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
     }
     result << int(baseKey + keyMods); // The base key is _always_ valid, of course
 
-    for (int i = 1; i < NumMods; ++i) {
+    for (size_t i = 1; i < NumMods; ++i) {
         Qt::KeyboardModifiers neededMods = ModsTbl[i];
         quint32 key = kbItem.qtKey[i];
         if (key && key != baseKey && ((keyMods & neededMods) == neededMods))

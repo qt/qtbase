@@ -304,10 +304,10 @@ private:
     class DragCursorHandle {
         Q_DISABLE_COPY(DragCursorHandle)
     public:
-        DragCursorHandle(HCURSOR c, quint64 k) :  cursor(c), cacheKey(k) {}
+        DragCursorHandle(HCURSOR c, qint64 k) :  cursor(c), cacheKey(k) {}
         ~DragCursorHandle() { DestroyCursor(cursor); }
         HCURSOR cursor;
-        quint64 cacheKey;
+        qint64 cacheKey;
     };
     typedef QMap <Qt::DropAction, QSharedPointer<DragCursorHandle> > ActionCursorMap;
 
@@ -490,7 +490,7 @@ QWindowsOleDropSource::GiveFeedback(DWORD dwEffect)
         qDebug("%s dwEffect=%lu, action=%d", __FUNCTION__, dwEffect, action);
 
     QSharedPointer<DragCursorHandle> cursorHandler = m_cursors.value(action);
-    quint64 currentCacheKey = m_drag->currentDrag()->dragCursor(action).cacheKey();
+    qint64 currentCacheKey = m_drag->currentDrag()->dragCursor(action).cacheKey();
     if (cursorHandler.isNull() || currentCacheKey != cursorHandler->cacheKey)
         createCursors();
 

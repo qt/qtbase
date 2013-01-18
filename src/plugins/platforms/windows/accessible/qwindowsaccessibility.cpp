@@ -270,7 +270,7 @@ bool QWindowsAccessibility::handleAccessibleObjectFromWindowRequest(HWND hwnd, W
 {
     if (static_cast<long>(lParam) == static_cast<long>(UiaRootObjectId)) {
         /* For UI Automation */
-    } else if ((DWORD)lParam == OBJID_CLIENT) {
+    } else if ((DWORD)lParam == DWORD(OBJID_CLIENT)) {
 #if 1
         // Ignoring all requests while starting up
         // ### Maybe QPA takes care of this???

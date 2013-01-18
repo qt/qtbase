@@ -1581,7 +1581,7 @@ void QWindowsVistaStyle::drawComplexControl(ComplexControl control, const QStyle
             bool doTransition = ((state & State_Sunken)     != (oldState & State_Sunken)    ||
                                  (state & State_On)         != (oldState & State_On)        ||
                                  (state & State_MouseOver)  != (oldState & State_MouseOver) ||
-                                  oldActiveControls         != option->activeSubControls);
+                                  oldActiveControls         != int(option->activeSubControls));
 
             if (qstyleoption_cast<const QStyleOptionSlider *>(option)) {
                 QRect oldSliderPos = styleObject->property("_q_stylesliderpos").toRect();
