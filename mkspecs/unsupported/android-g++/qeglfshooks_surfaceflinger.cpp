@@ -43,11 +43,16 @@
 
 #include <ui/DisplayInfo.h>
 #include <ui/FramebufferNativeWindow.h>
-#include <gui/SurfaceComposerClient.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/fb.h>
 #include <sys/ioctl.h>
+
+#if Q_ANDROID_VERSION_MAJOR > 4 || (Q_ANDROID_VERSION_MAJOR == 4 && Q_ANDROID_VERSION_MINOR >= 1)
+#include <gui/SurfaceComposerClient.h>
+#else
+#include <surfaceflinger/SurfaceComposerClient.h>
+#endif
 
 using namespace android;
 
