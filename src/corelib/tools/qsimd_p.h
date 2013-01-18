@@ -269,6 +269,8 @@ enum CPUFeatures {
     AVX2        = 0x100,
     HLE         = 0x200,
     RTM         = 0x400,
+    DSP         = 0x800,
+    DSPR2       = 0x1000,
 
     // used only to indicate that the CPU detection was initialised
     QSimdInitialized = 0x80000000
@@ -307,6 +309,12 @@ static const uint qCompilerCpuFeatures = 0
 #endif
 #if defined __IWMMXT__
         | IWMMXT
+#endif
+#if defined __mips_dsp
+        | DSP
+#endif
+#if defined __mips_dspr2
+        | DSPR2
 #endif
         ;
 

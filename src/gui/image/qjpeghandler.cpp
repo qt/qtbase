@@ -876,7 +876,9 @@ QJpegHandler::QJpegHandler()
     }
 #endif // QT_COMPILER_SUPPORTS_SSSE3
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
-    rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_mips_dspr2_asm;
+    if (qCpuHasFeature(DSPR2)) {
+        rgb888ToRgb32ConverterPtr = qt_convert_rgb888_to_rgb32_mips_dspr2_asm;
+    }
 #endif // QT_COMPILER_SUPPORTS_DSPR2
 }
 

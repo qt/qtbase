@@ -54,7 +54,7 @@
 #      include <intrin.h>
 #    endif
 #  endif
-#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT))
+#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(Q_PROCESSOR_MIPS_32) || defined(QT_COMPILER_SUPPORTS_IWMMXT))
 #include "private/qcore_unix_p.h"
 
 // the kernel header definitions for HWCAP_*
@@ -308,6 +308,141 @@ static inline uint detectProcessorFeatures()
     return features;
 }
 
+#elif defined(Q_PROCESSOR_MIPS_32)
+
+#if defined(Q_OS_LINUX)
+//
+// Do not use QByteArray: it could use SIMD instructions itself at
+// some point, thus creating a recursive dependency. Instead, use a
+// QSimpleBuffer, which has the bare minimum needed to use memory
+// dynamically and read lines from /proc/cpuinfo of arbitrary sizes.
+//
+struct QSimpleBuffer {
+    static const int chunk_size = 256;
+    char *data;
+    unsigned alloc;
+    unsigned size;
+
+    QSimpleBuffer(): data(0), alloc(0), size(0) {}
+    ~QSimpleBuffer() { ::free(data); }
+
+    void resize(unsigned newsize) {
+        if (newsize > alloc) {
+            unsigned newalloc = chunk_size * ((newsize / chunk_size) + 1);
+            if (newalloc < newsize) newalloc = newsize;
+            if (newalloc != alloc) {
+                data = static_cast<char*>(::realloc(data, newalloc));
+                alloc = newalloc;
+            }
+        }
+        size = newsize;
+    }
+    void append(const QSimpleBuffer &other, unsigned appendsize) {
+        unsigned oldsize = size;
+        resize(oldsize + appendsize);
+        ::memcpy(data + oldsize, other.data, appendsize);
+    }
+    void popleft(unsigned amount) {
+        if (amount >= size) return resize(0);
+        size -= amount;
+        ::memmove(data, data + amount, size);
+    }
+    char* cString() {
+        if (!alloc) resize(1);
+        return (data[size] = '\0', data);
+    }
+};
+
+//
+// Uses a scratch "buffer" (which must be used for all reads done in the
+// same file descriptor) to read chunks of data from a file, to read
+// one line at a time. Lines include the trailing newline character ('\n').
+// On EOF, line.size is zero.
+//
+static void bufReadLine(int fd, QSimpleBuffer &line, QSimpleBuffer &buffer)
+{
+    for (;;) {
+        char *newline = static_cast<char*>(::memchr(buffer.data, '\n', buffer.size));
+        if (newline) {
+            unsigned piece_size = newline - buffer.data + 1;
+            line.append(buffer, piece_size);
+            buffer.popleft(piece_size);
+            line.resize(line.size - 1);
+            return;
+        }
+        if (buffer.size + QSimpleBuffer::chunk_size > buffer.alloc) {
+            int oldsize = buffer.size;
+            buffer.resize(buffer.size + QSimpleBuffer::chunk_size);
+            buffer.size = oldsize;
+        }
+        ssize_t read_bytes = ::qt_safe_read(fd, buffer.data + buffer.size, QSimpleBuffer::chunk_size);
+        if (read_bytes > 0) buffer.size += read_bytes;
+        else return;
+    }
+}
+
+//
+// Checks if any line with a given prefix from /proc/cpuinfo contains
+// a certain string, surrounded by spaces.
+//
+static bool procCpuinfoContains(const char *prefix, const char *string)
+{
+    int cpuinfo_fd = ::qt_safe_open("/proc/cpuinfo", O_RDONLY);
+    if (cpuinfo_fd == -1)
+        return false;
+
+    unsigned string_len = ::strlen(string);
+    unsigned prefix_len = ::strlen(prefix);
+    QSimpleBuffer line, buffer;
+    bool present = false;
+    do {
+        line.resize(0);
+        bufReadLine(cpuinfo_fd, line, buffer);
+        char *colon = static_cast<char*>(::memchr(line.data, ':', line.size));
+        if (colon && line.size > prefix_len + string_len) {
+            if (!::strncmp(prefix, line.data, prefix_len)) {
+                // prefix matches, next character must be ':' or space
+                if (line.data[prefix_len] == ':' || ::isspace(line.data[prefix_len])) {
+                    // Does it contain the string?
+                    char *found = ::strstr(line.cString(), string);
+                    if (found && ::isspace(found[-1]) &&
+                            (::isspace(found[string_len]) || found[string_len] == '\0')) {
+                        present = true;
+                        break;
+                    }
+                }
+            }
+        }
+    } while (line.size);
+
+    ::qt_safe_close(cpuinfo_fd);
+    return present;
+}
+#endif
+
+static inline uint detectProcessorFeatures()
+{
+    // NOTE: MIPS 74K cores are the only ones supporting DSPr2.
+    uint flags = 0;
+
+#if defined __mips_dsp
+    flags |= DSP;
+#  if defined __mips_dsp_rev && __mips_dsp_rev >= 2
+    flags |= DSPR2;
+#  elif defined(Q_OS_LINUX)
+    if (procCpuinfoContains("cpu model", "MIPS 74Kc") || procCpuinfoContains("cpu model", "MIPS 74Kf"))
+        flags |= DSPR2;
+#  endif
+#elif defined(Q_OS_LINUX)
+    if (procCpuinfoContains("ASEs implemented", "dsp")) {
+        flags |= DSP;
+        if (procCpuinfoContains("cpu model", "MIPS 74Kc") || procCpuinfoContains("cpu model", "MIPS 74Kf"))
+            flags |= DSPR2;
+    }
+#endif
+
+    return flags;
+}
 
 #else
 static inline uint detectProcessorFeatures()
@@ -330,6 +465,8 @@ static inline uint detectProcessorFeatures()
  avx2
  hle
  rtm
+ dsp
+ dspr2
   */
 
 // begin generated
@@ -345,11 +482,13 @@ static const char features_string[] =
     " avx2\0"
     " hle\0"
     " rtm\0"
+    " dsp\0"
+    " dspr2\0"
     "\0";
 
 static const int features_indices[] = {
     0,    8,   14,   20,   26,   33,   41,   49,
-   54,   60,   65,   -1
+   54,   60,   65,   70,   75,   -1
 };
 // end generated
 

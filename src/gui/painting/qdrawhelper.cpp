@@ -6651,10 +6651,13 @@ void qt_memfill16(quint16 *dest, quint16 color, int count)
 }
 #endif
 #if !defined(__SSE2__) && !defined(__ARM_NEON__)
+#  ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
+extern "C" void qt_memfill32_asm_mips_dsp(quint32 *, quint32, int);
+#  endif
+
 void qt_memfill32(quint32 *dest, quint32 color, int count)
 {
 #  ifdef QT_COMPILER_SUPPORTS_MIPS_DSP
-    extern "C" qt_memfill32_asm_mips_dsp(quint32 *, quint32, int);
     qt_memfill32_asm_mips_dsp(dest, color, count);
 #  else
     qt_memfill_template<quint32>(dest, color, count);
@@ -6776,7 +6779,13 @@ void qInitDrawhelperAsm()
     qt_fetch_radial_gradient = qt_fetch_radial_gradient_neon;
 #endif
 
-#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP)
+#ifdef Q_PROCESSOR_MIPS_32
+    qt_memfill32 = qt_memfill32_asm_mips_dsp;
+#endif // Q_PROCESSOR_MIPS_32
+
+#if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
+    if (features & (DSP | DSPR2)) {
+        // Composition functions are all DSP r1
         functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_asm_mips_dsp;
         functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_mips_dsp;
         functionForMode_C[QPainter::CompositionMode_DestinationOver] = comp_func_DestinationOver_mips_dsp;
@@ -6820,8 +6829,9 @@ void qInitDrawhelperAsm()
 #else
         qBlendFunctions[QImage::Format_RGB16][QImage::Format_RGB16] = qt_blend_rgb16_on_rgb16_mips_dsp;
 #endif // QT_COMPILER_SUPPORTS_MIPS_DSPR2
+    }
+#endif // QT_COMPILER_SUPPORTS_MIPS_DSP || QT_COMPILER_SUPPORTS_MIPS_DSPR2
 
-#endif // QT_COMPILER_SUPPORTS_MIPS_DSP
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;
         functionForModeSolidAsm[destinationMode] = functionForModeSolid_C[destinationMode];
