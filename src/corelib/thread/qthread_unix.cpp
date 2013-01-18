@@ -204,6 +204,11 @@ static void clear_thread_data()
     pthread_setspecific(current_thread_data_key, 0);
 }
 
+void QThreadData::clearCurrentThreadData()
+{
+    clear_thread_data();
+}
+
 QThreadData *QThreadData::current()
 {
     QThreadData *data = get_thread_data();

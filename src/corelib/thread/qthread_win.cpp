@@ -96,6 +96,11 @@ Q_DESTRUCTOR_FUNCTION(qt_free_tls)
 /*
     QThreadData
 */
+void QThreadData::clearCurrentThreadData()
+{
+    TlsSetValue(qt_current_thread_data_tls_index, 0);
+}
+
 QThreadData *QThreadData::current()
 {
     qt_create_tls();
