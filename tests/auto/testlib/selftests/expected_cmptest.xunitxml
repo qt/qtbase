@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="18" tests="8" name="tst_Cmptest">
+<testsuite errors="0" failures="20" tests="10" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -22,21 +22,31 @@
    Expected (expected): QVariant(PhonyClass,&lt;value not representable as string&gt;)" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQStringLists">
-    <failure tag="last item different" message="Compared QStringLists differ at index 2.
+    <failure tag="last item different" message="Compared lists differ at index 2.
    Actual   (opA): &apos;string3&apos;
    Expected (opB): &apos;DIFFERS&apos;" result="fail"/>
-    <failure tag="second&#x002D;last item different" message="Compared QStringLists differ at index 2.
+    <failure tag="second&#x002D;last item different" message="Compared lists differ at index 2.
    Actual   (opA): &apos;string3&apos;
    Expected (opB): &apos;DIFFERS&apos;" result="fail"/>
-    <failure tag="prefix" message="Compared QStringLists have different sizes.
+    <failure tag="prefix" message="Compared lists have different sizes.
    Actual   (opA) size: &apos;2&apos;
    Expected (opB) size: &apos;1&apos;" result="fail"/>
-    <failure tag="short list second" message="Compared QStringLists have different sizes.
+    <failure tag="short list second" message="Compared lists have different sizes.
    Actual   (opA) size: &apos;12&apos;
    Expected (opB) size: &apos;1&apos;" result="fail"/>
-    <failure tag="short list first" message="Compared QStringLists have different sizes.
+    <failure tag="short list first" message="Compared lists have different sizes.
    Actual   (opA) size: &apos;1&apos;
    Expected (opB) size: &apos;12&apos;" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQListInt">
+    <failure message="Compared lists differ at index 2.
+   Actual   (int1): &apos;3&apos;
+   Expected (int2): &apos;4&apos;" result="fail"/>
+  </testcase>
+  <testcase result="fail" name="compareQListDouble">
+    <failure message="Compared lists differ at index 0.
+   Actual   (double1): &apos;1.5&apos;
+   Expected (double2): &apos;1&apos;" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQPixmaps">
     <failure tag="one null" message="Compared QPixmaps differ.
