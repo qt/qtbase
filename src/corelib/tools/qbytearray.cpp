@@ -67,7 +67,7 @@ int qFindByteArray(
     const char *needle0, int needleLen);
 
 
-int qAllocMore(int alloc, int extra)
+int qAllocMore(int alloc, int extra) Q_DECL_NOTHROW
 {
     Q_ASSERT(alloc >= 0 && extra >= 0);
     Q_ASSERT_X(alloc < (1 << 30) - extra, "qAllocMore", "Requested size is too large!");

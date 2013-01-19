@@ -116,9 +116,9 @@ struct Q_CORE_EXPORT QArrayData
 
     static QArrayData *allocate(size_t objectSize, size_t alignment,
             size_t capacity, AllocationOptions options = Default)
-        Q_REQUIRED_RESULT;
+        Q_DECL_NOTHROW Q_REQUIRED_RESULT;
     static void deallocate(QArrayData *data, size_t objectSize,
-            size_t alignment);
+            size_t alignment) Q_DECL_NOTHROW;
 
     static const QArrayData shared_null[2];
     static QArrayData *sharedNull() { return const_cast<QArrayData*>(shared_null); }

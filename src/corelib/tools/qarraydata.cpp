@@ -68,7 +68,7 @@ static const QArrayData &qt_array_empty = qt_array[0];
 static const QArrayData &qt_array_unsharable_empty = qt_array[1];
 
 QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
-        size_t capacity, AllocationOptions options)
+        size_t capacity, AllocationOptions options) Q_DECL_NOTHROW
 {
     // Alignment is a power of two
     Q_ASSERT(alignment >= Q_ALIGNOF(QArrayData)
@@ -111,7 +111,7 @@ QArrayData *QArrayData::allocate(size_t objectSize, size_t alignment,
 }
 
 void QArrayData::deallocate(QArrayData *data, size_t objectSize,
-        size_t alignment)
+        size_t alignment) Q_DECL_NOTHROW
 {
     // Alignment is a power of two
     Q_ASSERT(alignment >= Q_ALIGNOF(QArrayData)

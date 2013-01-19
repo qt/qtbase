@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 // implemented in qbytearray.cpp
-int Q_CORE_EXPORT qAllocMore(int alloc, int extra);
+int Q_CORE_EXPORT qAllocMore(int alloc, int extra) Q_DECL_NOTHROW;
 
 QT_END_NAMESPACE
 
