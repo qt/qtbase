@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2013 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1416,6 +1417,86 @@ void tst_QRegularExpression::captureCount()
     QTEST(re.captureCount(), "captureCount");
     if (!re.isValid())
         QCOMPARE(re.captureCount(), -1);
+}
+
+// the comma in the template breaks QFETCH...
+typedef QMultiHash<QString, int> StringToIntMap;
+Q_DECLARE_METATYPE(StringToIntMap)
+
+void tst_QRegularExpression::captureNames_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<StringToIntMap>("namedCapturesIndexMap");
+    StringToIntMap map;
+
+    QTest::newRow("captureNames01") << "a pattern" << map;
+    QTest::newRow("captureNames02") << "a.*pattern" << map;
+    QTest::newRow("captureNames03") << "(a) pattern" << map;
+    QTest::newRow("captureNames04") << "(a).*(pattern)" << map;
+
+    map.clear();
+    map.replace("named", 1);
+    QTest::newRow("captureNames05") << "a.*(?<named>pattern)" << map;
+
+    map.clear();
+    map.replace("named", 2);
+    QTest::newRow("captureNames06") << "(a).*(?<named>pattern)" << map;
+
+    map.clear();
+    map.replace("name1", 1);
+    map.replace("name2", 2);
+    QTest::newRow("captureNames07") << "(?<name1>a).*(?<name2>pattern)" << map;
+
+    map.clear();
+    map.replace("name1", 2);
+    map.replace("name2", 1);
+    QTest::newRow("captureNames08") << "(?<name2>a).*(?<name1>pattern)" << map;
+
+    map.clear();
+    map.replace("date", 1);
+    map.replace("month", 2);
+    map.replace("year", 3);
+    QTest::newRow("captureNames09") << "^(?<date>\\d\\d)/(?<month>\\d\\d)/(?<year>\\d\\d\\d\\d)$" << map;
+
+    map.clear();
+    map.replace("date", 2);
+    map.replace("month", 1);
+    map.replace("year", 3);
+    QTest::newRow("captureNames10") << "^(?<month>\\d\\d)/(?<date>\\d\\d)/(?<year>\\d\\d\\d\\d)$" << map;
+
+    map.clear();
+    map.replace("noun", 2);
+    QTest::newRow("captureNames11") << "(a)(?|(?<noun>b)|(?<noun>c))(d)" << map;
+
+    map.clear();
+    QTest::newRow("captureNames_invalid01") << "(.*" << map;
+    QTest::newRow("captureNames_invalid02") << "\\" << map;
+    QTest::newRow("captureNames_invalid03") << "(?<noun)" << map;
+    QTest::newRow("captureNames_invalid04") << "(?|(?<noun1>a)|(?<noun2>b))" << map;
+}
+
+void tst_QRegularExpression::captureNames()
+{
+    QFETCH(QString, pattern);
+    QFETCH(StringToIntMap, namedCapturesIndexMap);
+
+    const QRegularExpression re(pattern);
+    QStringList namedCaptureGroups = re.namedCaptureGroups();
+    int namedCaptureGroupsCount = namedCaptureGroups.size();
+
+    QCOMPARE(namedCaptureGroupsCount, re.captureCount() + 1);
+
+    for (int i = 0; i < namedCaptureGroupsCount; ++i) {
+        const QString &name = namedCaptureGroups.at(i);
+
+        if (name.isEmpty()) {
+            QVERIFY(!namedCapturesIndexMap.contains(name));
+        } else {
+            QVERIFY(namedCapturesIndexMap.contains(name));
+            QCOMPARE(i, namedCapturesIndexMap.value(name));
+        }
+    }
+
 }
 
 void tst_QRegularExpression::pcreJitStackUsage_data()

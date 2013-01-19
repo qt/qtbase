@@ -46,6 +46,7 @@
 #ifndef QT_NO_REGULAREXPRESSION
 
 #include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
 
@@ -94,6 +95,7 @@ public:
     QString errorString() const;
 
     int captureCount() const;
+    QStringList namedCaptureGroups() const;
 
     enum MatchType {
         NormalMatch = 0,

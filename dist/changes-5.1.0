@@ -59,6 +59,11 @@ QtCore
  - QMessageAuthenticationCode
     * New class for hash-based message authentication code added to QtCore.
 
+ - QRegularExpression
+    * It's now possible to know the names of the named capturing groups
+      inside the pattern string, as well as the numerical index of each
+      named capturing group.
+
  -
 
 QtGui

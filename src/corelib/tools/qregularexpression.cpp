@@ -1497,6 +1497,54 @@ int QRegularExpression::captureCount() const
 }
 
 /*!
+    \since 5.1
+
+    Returns a list of captureCount() elements, containing the names of the named
+    capturing groups in the pattern string. The list is sorted such that the
+    i-th element of the list is the name of the i-th capturing group, if it has
+    a name, or an empty string if the capturing group is unnamed.
+
+    If the regular expression is not valid, returns an empty list.
+
+    \sa isValid(), QRegularExpressionMatch::captured(), QString::isEmpty()
+*/
+QStringList QRegularExpression::namedCaptureGroups() const
+{
+    if (!isValid()) // isValid() will compile the pattern
+        return QStringList();
+
+    // namedCapturingTable will point to a table of
+    // namedCapturingTableEntryCount entries, each one of which
+    // contains one ushort followed by the name, NUL terminated.
+    // The ushort is the numerical index of the name in the pattern.
+    // The length of each entry is namedCapturingTableEntrySize.
+    ushort *namedCapturingTable;
+    int namedCapturingTableEntryCount;
+    int namedCapturingTableEntrySize;
+
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMETABLE, &namedCapturingTable);
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMECOUNT, &namedCapturingTableEntryCount);
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMEENTRYSIZE, &namedCapturingTableEntrySize);
+
+    QStringList result;
+
+    // no QList::resize nor fill is available. The +1 is for the implicit group #0
+    result.reserve(d->capturingCount + 1);
+    for (int i = 0; i < d->capturingCount + 1; ++i)
+        result.append(QString());
+
+    for (int i = 0; i < namedCapturingTableEntryCount; ++i) {
+        const ushort * const currentNamedCapturingTableRow = namedCapturingTable +
+                                                             namedCapturingTableEntrySize * i;
+
+        const int index = *currentNamedCapturingTableRow;
+        result[index] = QString::fromUtf16(currentNamedCapturingTableRow + 1);
+    }
+
+    return result;
+}
+
+/*!
     Returns true if the regular expression is a valid regular expression (that
     is, it contains no syntax errors, etc.), or false otherwise. Use
     errorString() to obtain a textual description of the error.
