@@ -146,7 +146,8 @@ void QAdoptedThread::run()
 
 QThreadPrivate::QThreadPrivate(QThreadData *d)
     : QObjectPrivate(), running(false), finished(false),
-      isInFinish(false), exited(false), returnCode(-1),
+      isInFinish(false), interruptionRequested(false),
+      exited(false), returnCode(-1),
       stackSize(0), priority(QThread::InheritPriority), data(d)
 {
 #if defined (Q_OS_UNIX)
@@ -799,6 +800,63 @@ bool QThread::event(QEvent *event)
     } else {
         return QObject::event(event);
     }
+}
+
+/*!
+    \since 5.2
+
+    Request the interruption of the thread.
+    That request is advisory and it is up to code running on the thread to decide
+    if and how it should act upon such request.
+    This function does not stop any event loop running on the thread and
+    does not terminate it in any way.
+
+    \sa isInterruptionRequested()
+*/
+
+void QThread::requestInterruption()
+{
+    Q_D(QThread);
+    QMutexLocker locker(&d->mutex);
+    if (!d->running || d->finished || d->isInFinish)
+        return;
+    if (this == QCoreApplicationPrivate::theMainThread) {
+        qWarning("QThread::requestInterruption has no effect on the main thread");
+        return;
+    }
+    d->interruptionRequested = true;
+}
+
+/*!
+    \since 5.2
+
+    Return true if the task running on this thread should be stopped.
+    An interruption can be requested by requestInterruption().
+
+    This function can be used to make long running tasks cleanly interruptible.
+    Never checking or acting on the value returned by this function is safe,
+    however it is advisable do so regularly in long running functions.
+    Take care not to call it too often, to keep the overhead low.
+
+    \code
+    void long_task() {
+         forever {
+            if ( QThread::currentThread()->isInterruptionRequested() ) {
+                return;
+            }
+        }
+    }
+    \endcode
+
+    \sa currentThread() requestInterruption()
+*/
+bool QThread::isInterruptionRequested() const
+{
+    Q_D(const QThread);
+    QMutexLocker locker(&d->mutex);
+    if (!d->running || d->finished || d->isInFinish)
+        return false;
+    return d->interruptionRequested;
 }
 
 QT_END_NAMESPACE

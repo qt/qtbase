@@ -86,6 +86,9 @@ public:
     bool isFinished() const;
     bool isRunning() const;
 
+    void requestInterruption();
+    bool isInterruptionRequested() const;
+
     void setStackSize(uint stackSize);
     uint stackSize() const;
 

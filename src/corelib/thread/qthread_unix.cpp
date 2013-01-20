@@ -377,6 +377,7 @@ void QThreadPrivate::finish(void *arg)
     d->thread_id = 0;
     d->running = false;
     d->finished = true;
+    d->interruptionRequested = false;
 
     d->isInFinish = false;
     d->thread_done.wakeAll();
@@ -549,6 +550,7 @@ void QThread::start(Priority priority)
     d->finished = false;
     d->returnCode = 0;
     d->exited = false;
+    d->interruptionRequested = false;
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);

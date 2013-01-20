@@ -106,6 +106,8 @@ private slots:
 
     void customEventDispatcher();
 
+    void requestTermination();
+
 #ifndef Q_OS_WINCE
     void stressTest();
 #endif
@@ -1343,6 +1345,44 @@ void tst_QThread::quitLock()
     QCOMPARE(job->thread(), &thread);
     loop.exec();
     QVERIFY(exitThreadCalled);
+}
+
+class StopableJob : public QObject
+{
+    Q_OBJECT
+public:
+    StopableJob (QSemaphore &sem) : sem(sem) {}
+    QSemaphore &sem;
+public Q_SLOTS:
+    void run() {
+        sem.release();
+        while (!thread()->isInterruptionRequested())
+            QTest::qSleep(10);
+        sem.release();
+        Q_EMIT finished();
+    }
+Q_SIGNALS:
+    void finished();
+};
+
+void tst_QThread::requestTermination()
+{
+    QThread thread;
+    QVERIFY(!thread.isInterruptionRequested());
+    QSemaphore sem;
+    StopableJob *j  = new StopableJob(sem);
+    j->moveToThread(&thread);
+    connect(&thread, &QThread::started, j, &StopableJob::run);
+    connect(j, &StopableJob::finished, &thread, &QThread::quit, Qt::DirectConnection);
+    connect(&thread, &QThread::finished, j, &QObject::deleteLater);
+    thread.start();
+    QVERIFY(!thread.isInterruptionRequested());
+    sem.acquire();
+    QVERIFY(!thread.wait(1000));
+    thread.requestInterruption();
+    sem.acquire();
+    QVERIFY(thread.wait(1000));
+    QVERIFY(!thread.isInterruptionRequested());
 }
 
 QTEST_MAIN(tst_QThread)
