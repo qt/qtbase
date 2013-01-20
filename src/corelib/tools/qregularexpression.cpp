@@ -975,7 +975,7 @@ void QRegularExpressionPrivate::getPatternInfo()
     pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_CAPTURECOUNT, &capturingCount);
 
     // detect the settings for the newline
-    int patternNewlineSetting;
+    unsigned long int patternNewlineSetting;
     pcre16_fullinfo(compiledPattern, studyData, PCRE_INFO_OPTIONS, &patternNewlineSetting);
     patternNewlineSetting &= PCRE_NEWLINE_CR  | PCRE_NEWLINE_LF | PCRE_NEWLINE_CRLF
             | PCRE_NEWLINE_ANY | PCRE_NEWLINE_ANYCRLF;
