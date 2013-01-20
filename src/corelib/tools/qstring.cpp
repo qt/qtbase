@@ -9193,6 +9193,37 @@ QVector<uint> QStringRef::toUcs4() const
     return v;
 }
 
+/*!
+    Returns a string that has whitespace removed from the start and
+    the end.
+
+    Whitespace means any character for which QChar::isSpace() returns
+    true. This includes the ASCII characters '\\t', '\\n', '\\v',
+    '\\f', '\\r', and ' '.
+
+    Unlike QString::simplified(), trimmed() leaves internal whitespace alone.
+
+    \since 5.1
+
+    \sa QString::trimmed()
+*/
+QStringRef QStringRef::trimmed() const
+{
+    if (m_size == 0 || m_string == 0)
+        return *this;
+    const QChar *s = m_string->constData() + m_position;
+    int start = 0;
+    int end = m_size - 1;
+    while (start <= end && s[start].isSpace())  // skip white space from start
+        start++;
+    if (start <= end) {                         // only white space
+        while (end && s[end].isSpace())         // skip white space from end
+            end--;
+    }
+    int l = end - start + 1;
+    Q_ASSERT(l >= 0);
+    return QStringRef(m_string, m_position + start, l);
+}
 
 /*!
     \obsolete

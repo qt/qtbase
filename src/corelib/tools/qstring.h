@@ -1273,6 +1273,8 @@ public:
     int localeAwareCompare(const QStringRef &s) const;
     static int localeAwareCompare(const QStringRef &s1, const QString &s2);
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
+
+    QStringRef trimmed() const Q_REQUIRED_RESULT;
 };
 Q_DECLARE_TYPEINFO(QStringRef, Q_PRIMITIVE_TYPE);
 
