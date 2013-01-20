@@ -587,6 +587,28 @@ bool QDBusConnectionPrivate::handleMessage(const QDBusMessage &amsg)
     return false;
 }
 
+static void garbageCollectChildren(QDBusConnectionPrivate::ObjectTreeNode &node)
+{
+    int size = node.children.count();
+    if (node.activeChildren == 0) {
+        // easy case
+        node.children.clear();
+    } else if (size > node.activeChildren * 3 || (size > 20 && size * 2 > node.activeChildren * 3)) {
+        // rewrite the vector, keeping only the active children
+        // if the vector is large (> 20 items) and has one third of inactives
+        // or if the vector is small and has two thirds of inactives.
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = node.children.end();
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = node.children.begin();
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator tgt = it;
+        for ( ; it != end; ++it) {
+            if (it->isActive())
+                *tgt++ = qMove(*it);
+        }
+        ++tgt;
+        node.children.erase(tgt, end);
+    }
+}
+
 static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNode &haystack)
 {
     QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it = haystack.children.begin();
@@ -604,10 +626,7 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
         haystack.flags = 0;
     }
 
-    if (haystack.activeChildren == 0) {
-        // quick clean-up, if we're out of children
-        haystack.children.clear();
-    }
+    garbageCollectChildren(haystack);
 }
 
 static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusConnection::UnregisterMode mode,
@@ -636,10 +655,7 @@ static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusCon
         if (!it->isActive())
             --node->activeChildren;
 
-        if (node->activeChildren == 0) {
-            // quick clean-up, if we're out of children
-            node->children.clear();
-        }
+        garbageCollectChildren(*node);
     }
 }
 
@@ -2269,19 +2285,6 @@ QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
     return signalHooks.erase(it);
 }
 
-
-static void cleanupDeletedNodes(QDBusConnectionPrivate::ObjectTreeNode &parent)
-{
-    QMutableVectorIterator<QDBusConnectionPrivate::ObjectTreeNode> it(parent.children);
-    while (it.hasNext()) {
-        QDBusConnectionPrivate::ObjectTreeNode& node = it.next();
-        if (node.obj == 0 && node.children.isEmpty())
-            it.remove();
-        else
-            cleanupDeletedNodes(node);
-    }
-}
-
 void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
 {
     connect(node->obj, SIGNAL(destroyed(QObject*)), SLOT(objectDestroyed(QObject*)),
@@ -2305,10 +2308,6 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
                 this, SLOT(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
                 Qt::DirectConnection);
     }
-
-    static int counter = 0;
-    if ((++counter % 20) == 0)
-        cleanupDeletedNodes(rootNode);
 }
 
 void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode)
