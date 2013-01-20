@@ -340,7 +340,7 @@ public:
     int indexOf(const QRegularExpression &re, int from = 0) const;
     int lastIndexOf(const QRegularExpression &re, int from = -1) const;
     bool contains(const QRegularExpression &re) const;
-    bool contains(const QRegularExpression &re, QRegularExpressionMatch *match) const;
+    bool contains(const QRegularExpression &re, QRegularExpressionMatch *match) const; // ### Qt 6: merge overloads
     int count(const QRegularExpression &re) const;
 #endif
 
