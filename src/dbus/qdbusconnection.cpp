@@ -883,35 +883,8 @@ void QDBusConnection::unregisterObject(const QString &path, UnregisterMode mode)
     if (!d || !d->connection || !QDBusUtil::isValidObjectPath(path))
         return;
 
-    QStringList pathComponents = path.split(QLatin1Char('/'));
     QDBusWriteLocker locker(UnregisterObjectAction, d);
-    QDBusConnectionPrivate::ObjectTreeNode *node = &d->rootNode;
-    int i = 1;
-
-    // find the object
-    while (node) {
-        if (pathComponents.count() == i || !path.compare(QLatin1String("/"))) {
-            // found it
-            node->obj = 0;
-            node->flags = 0;
-
-            if (mode == UnregisterTree) {
-                // clear the sub-tree as well
-                node->children.clear();  // can't disconnect the objects because we really don't know if they can
-                                // be found somewhere else in the path too
-            }
-
-            return;
-        }
-
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
-            std::lower_bound(node->children.begin(), node->children.end(), pathComponents.at(i));
-        if (it == node->children.end() || it->name != pathComponents.at(i))
-            break;              // node not found
-
-        node = it;
-        ++i;
-    }
+    d->unregisterObject(path, mode);
 }
 
 /*!

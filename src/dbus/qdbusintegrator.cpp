@@ -600,6 +600,31 @@ static void huntAndDestroy(QObject *needle, QDBusConnectionPrivate::ObjectTreeNo
     }
 }
 
+static void huntAndUnregister(const QStringList &pathComponents, int i, QDBusConnection::UnregisterMode mode,
+                              QDBusConnectionPrivate::ObjectTreeNode *node)
+{
+    if (pathComponents.count() == i) {
+        // found it
+        node->obj = 0;
+        node->flags = 0;
+
+        if (mode == QDBusConnection::UnregisterTree) {
+            // clear the sub-tree as well
+            node->children.clear();  // can't disconnect the objects because we really don't know if they can
+                            // be found somewhere else in the path too
+        }
+    } else {
+        // keep going
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator end = node->children.end();
+        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
+            std::lower_bound(node->children.begin(), end, pathComponents.at(i));
+        if (it == end || it->name != pathComponents.at(i))
+            return;              // node not found
+
+        huntAndUnregister(pathComponents, i + 1, mode, it);
+    }
+}
+
 static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
                         QObject *needle, const QDBusConnectionPrivate::ObjectTreeNode &haystack,
                         bool isScriptable, bool isAdaptor, const QString &path = QString())
@@ -2264,6 +2289,21 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
     static int counter = 0;
     if ((++counter % 20) == 0)
         cleanupDeletedNodes(rootNode);
+}
+
+void QDBusConnectionPrivate::unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode)
+{
+    QDBusConnectionPrivate::ObjectTreeNode *node = &rootNode;
+    QStringList pathComponents;
+    int i;
+    if (path == QLatin1String("/")) {
+        i = 0;
+    } else {
+        pathComponents = path.split(QLatin1Char('/'));
+        i = 1;
+    }
+
+    huntAndUnregister(pathComponents, i, mode, node);
 }
 
 void QDBusConnectionPrivate::connectRelay(const QString &service,

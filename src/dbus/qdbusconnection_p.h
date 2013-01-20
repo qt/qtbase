@@ -208,6 +208,7 @@ public:
                           const QString &name, const QStringList &argumentMatch, const QString &signature,
                           QObject *receiver, const char *slot);
     void registerObject(const ObjectTreeNode *node);
+    void unregisterObject(const QString &path, QDBusConnection::UnregisterMode mode);
     void connectRelay(const QString &service,
                       const QString &path, const QString &interface,
                       QDBusAbstractInterface *receiver, const QMetaMethod &signal);
