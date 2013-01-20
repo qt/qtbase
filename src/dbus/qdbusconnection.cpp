@@ -820,8 +820,8 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
 
         // if a virtual object occupies this path, return false
         if (node->obj && (node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath)) {
-            qDebug("Cannot register object at %s because QDBusVirtualObject handles all sub-paths.",
-                   qPrintable(path));
+            //qDebug("Cannot register object at %s because QDBusVirtualObject handles all sub-paths.",
+            //       qPrintable(path));
             return false;
         }
 
@@ -835,8 +835,8 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
             // are we allowed to go deeper?
             if (node->flags & ExportChildObjects) {
                 // we're not
-                qDebug("Cannot register object at %s because %s exports its own child objects",
-                       qPrintable(path), qPrintable(pathComponents.at(i)));
+                //qDebug("Cannot register object at %s because %s exports its own child objects",
+                //       qPrintable(path), qPrintable(pathComponents.at(i)));
                 return false;
             }
         } else {
