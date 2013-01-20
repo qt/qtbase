@@ -8801,7 +8801,7 @@ void QWidget::inputMethodEvent(QInputMethodEvent *event)
 
     \a query specifies which property is queried.
 
-    \sa inputMethodEvent(), QInputMethodEven, inputMethodHints
+    \sa inputMethodEvent(), QInputMethodEvent, QInputMethodQueryEvent, inputMethodHints
 */
 QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {

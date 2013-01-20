@@ -3560,8 +3560,8 @@ int QApplication::doubleClickInterval()
     \since 4.2
     \deprecated
 
-    Returns the current keyboard input direction. Replaced with QInputPanel::inputDirection()
-    \sa QInputPanel::inputDirection()
+    Returns the current keyboard input direction. Replaced with QInputMethod::inputDirection()
+    \sa QInputMethod::inputDirection()
 */
 
 /*!
