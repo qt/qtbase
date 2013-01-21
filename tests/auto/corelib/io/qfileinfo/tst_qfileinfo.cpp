@@ -46,6 +46,7 @@
 #include <qcoreapplication.h>
 #include <qlibrary.h>
 #include <qtemporaryfile.h>
+#include <qtemporarydir.h>
 #include <qdir.h>
 #include <qfileinfo.h>
 #ifdef Q_OS_UNIX
@@ -79,6 +80,9 @@ QT_END_NAMESPACE
 class tst_QFileInfo : public QObject
 {
 Q_OBJECT
+
+public:
+    tst_QFileInfo() : m_currentDir(QDir::currentPath()) {}
 
 private slots:
     void initTestCase();
@@ -193,8 +197,10 @@ private slots:
     void nonExistingFileDates();
 
 private:
+    const QString m_currentDir;
     QString m_sourceFile;
     QString m_resourcesDir;
+    QTemporaryDir m_dir;
 };
 
 void tst_QFileInfo::initTestCase()
@@ -203,32 +209,13 @@ void tst_QFileInfo::initTestCase()
     QVERIFY(!m_sourceFile.isEmpty());
     m_resourcesDir = QFINDTESTDATA("resources");
     QVERIFY(!m_resourcesDir.isEmpty());
+    QVERIFY(m_dir.isValid());
+    QVERIFY(QDir::setCurrent(m_dir.path()));
 }
 
 void tst_QFileInfo::cleanupTestCase()
 {
-    QFile::remove("brokenlink.lnk");
-    QFile::remove("link.lnk");
-    QFile::remove("file1");
-    QFile::remove("dummyfile");
-    QFile::remove("simplefile.txt");
-    QFile::remove("longFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileNamelongFileName.txt");
-    QFile::remove("tempfile.txt");
-
-#if defined(Q_OS_UNIX)
-    QDir().rmdir("./.hidden-directory");
-    QFile::remove("link_to_tst_qfileinfo");
-#endif
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
-    QDir().rmdir("./hidden-directory");
-    QDir().rmdir("abs_symlink");
-    QDir().rmdir("rel_symlink");
-    QDir().rmdir("junction_pwd");
-    QDir().rmdir("junction_root");
-    QDir().rmdir("mountpoint");
-    QFile::remove("abs_symlink.cpp");
-    QFile::remove("rel_symlink.cpp");
-#endif
+    QDir::setCurrent(m_currentDir); // Release temporary directory so that it can be deleted on Windows
 }
 
 // Testing get/set functions
@@ -1462,10 +1449,22 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
     QFETCH(QString, canonicalFilePath);
 
     QFileInfo fi(path);
-    QCOMPARE(fi.isSymLink(), isSymLink);
+    const bool actualIsSymLink = fi.isSymLink();
+    const QString actualSymLinkTarget = isSymLink ? fi.symLinkTarget() : QString();
+    const QString actualCanonicalFilePath = isSymLink ? fi.canonicalFilePath() : QString();
+    // Ensure that junctions, mountpoints are removed. If this fails, do not remove
+    // temporary directory to prevent it from trashing the system.
+    if (fi.isDir()) {
+        if (!QDir().rmdir(fi.fileName())) {
+            qWarning("Unable to remove NTFS junction '%s'', keeping '%s'.",
+                     qPrintable(fi.fileName()), qPrintable(QDir::toNativeSeparators(m_dir.path())));
+            m_dir.setAutoRemove(false);
+        }
+    }
+    QCOMPARE(actualIsSymLink, isSymLink);
     if (isSymLink) {
-        QCOMPARE(fi.symLinkTarget(), linkTarget);
-        QCOMPARE(fi.canonicalFilePath(), canonicalFilePath);
+        QCOMPARE(actualSymLinkTarget, linkTarget);
+        QCOMPARE(actualCanonicalFilePath, canonicalFilePath);
     }
 }
 
