@@ -230,7 +230,7 @@
     \row
     \li {2,1}
 
-    \snippet gui/analogclock/main.cpp 1
+    \snippet analogclock/main.cpp 1
 
     We translate the coordinate system so that point (0, 0) is in the
     widget's center, instead of being at the top-left corner. We also
@@ -244,7 +244,7 @@
 
     See also the \l {Window-Viewport Conversion} section.
 
-    \snippet gui/analogclock/main.cpp 2
+    \snippet analogclock/main.cpp 2
 
     We draw the clock's hour hand by rotating the coordinate system
     and calling QPainter::drawConvexPolygon(). Thank's to the
@@ -259,14 +259,14 @@
     the code guarantees that the code that follows won't be disturbed
     by the transformations we've used.
 
-    \snippet gui/analogclock/main.cpp 3
+    \snippet analogclock/main.cpp 3
 
     We do the same for the clock's minute hand, which is defined by
     the four points (1, 0), (0, 1), (-1, 0), and (0, -40). These
     coordinates specify a hand that is thinner and longer than the
     minute hand.
 
-    \snippet gui/analogclock/main.cpp 4
+    \snippet analogclock/main.cpp 4
 
     Finally, we draw the clock face, which consists of twelve short
     lines at 30-degree intervals. At the end of that, the painter is
