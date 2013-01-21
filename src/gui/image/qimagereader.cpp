@@ -162,6 +162,7 @@ enum _qt_BuiltInFormatType {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     _qt_JpgFormat,
+    _qt_JpegFormat,
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     _qt_GifFormat,
@@ -194,6 +195,7 @@ static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     {_qt_JpgFormat, "jpg"},
+    {_qt_JpegFormat, "jpeg"},
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     {_qt_GifFormat, "gif"},
@@ -422,6 +424,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
             case _qt_JpgFormat:
+            case _qt_JpegFormat:
                 if (QJpegHandler::canRead(device))
                     handler = new QJpegHandler;
                 break;
