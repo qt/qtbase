@@ -1801,7 +1801,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     int minRB = qMax(0, -fm.minRightBearing());
 
     if (d->control->text().isEmpty()) {
-        if (!hasFocus() && !d->placeholderText.isEmpty()) {
+        if (!d->placeholderText.isEmpty()) {
             QColor col = pal.text().color();
             col.setAlpha(128);
             QPen oldpen = p.pen();
@@ -1810,7 +1810,6 @@ void QLineEdit::paintEvent(QPaintEvent *)
             QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
             p.drawText(lineRect, va, elidedText);
             p.setPen(oldpen);
-            return;
         }
     }
 
