@@ -394,6 +394,19 @@ QWindowsWindowCursor QWindowsCursor::standardWindowCursor(Qt::CursorShape shape)
 }
 
 /*!
+    \brief Return cached pixmap cursor or create new one.
+*/
+
+QWindowsWindowCursor QWindowsCursor::pixmapWindowCursor(const QCursor &c)
+{
+    const qint64 cacheKey = c.pixmap().cacheKey();
+    PixmapCursorCache::iterator it = m_pixmapCursorCache.find(cacheKey);
+    if (it == m_pixmapCursorCache.end())
+        it = m_pixmapCursorCache.insert(cacheKey, QWindowsWindowCursor(c));
+    return it.value();
+}
+
+/*!
     \brief Set a cursor on a window.
 
     This is called frequently as the mouse moves over widgets in the window
@@ -413,7 +426,7 @@ void QWindowsCursor::changeCursor(QCursor *cursorIn, QWindow *window)
     }
     const QWindowsWindowCursor wcursor =
         cursorIn->shape() == Qt::BitmapCursor ?
-        QWindowsWindowCursor(*cursorIn) : standardWindowCursor(cursorIn->shape());
+        pixmapWindowCursor(*cursorIn) : standardWindowCursor(cursorIn->shape());
     if (wcursor.handle()) {
         QWindowsWindow::baseWindowOf(window)->setCursor(wcursor);
     } else {

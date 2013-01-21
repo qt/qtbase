@@ -83,11 +83,14 @@ public:
     static QPoint mousePosition();
 
     QWindowsWindowCursor standardWindowCursor(Qt::CursorShape s = Qt::ArrowCursor);
+    QWindowsWindowCursor pixmapWindowCursor(const QCursor &c);
 
 private:
     typedef QHash<Qt::CursorShape, QWindowsWindowCursor> StandardCursorCache;
+    typedef QHash<qint64, QWindowsWindowCursor> PixmapCursorCache;
 
     StandardCursorCache m_standardCursorCache;
+    PixmapCursorCache m_pixmapCursorCache;
 };
 
 QT_END_NAMESPACE
