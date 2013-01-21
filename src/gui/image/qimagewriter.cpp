@@ -708,7 +708,9 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
 QList<QByteArray> QImageWriter::supportedImageFormats()
 {
     QSet<QByteArray> formats;
+#ifndef QT_NO_IMAGEFORMAT_BMP
     formats << "bmp";
+#endif
 #ifndef QT_NO_IMAGEFORMAT_PPM
     formats << "pbm" << "pgm" << "ppm";
 #endif
