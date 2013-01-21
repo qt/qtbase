@@ -8846,6 +8846,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
 #ifndef QT_NO_IM
     Q_D(QWidget);
+    if (d->imHints == hints)
+        return;
     d->imHints = hints;
     qApp->inputMethod()->update(Qt::ImHints);
 #endif //QT_NO_IM
