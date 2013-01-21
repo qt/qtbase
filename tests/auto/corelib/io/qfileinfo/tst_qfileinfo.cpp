@@ -237,10 +237,9 @@ static QFileInfoPrivate* getPrivate(QFileInfo &info)
 
 void tst_QFileInfo::copy()
 {
-    QTemporaryFile *t;
-    t = new QTemporaryFile;
-    t->open();
-    QFileInfo info(t->fileName());
+    QTemporaryFile t;
+    t.open();
+    QFileInfo info(t.fileName());
     QVERIFY(info.exists());
 
     //copy constructor
