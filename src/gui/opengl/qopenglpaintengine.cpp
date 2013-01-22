@@ -1073,6 +1073,8 @@ bool QOpenGL2PaintEngineExPrivate::prepareForCachedGlyphDraw(const QFontEngineGl
 {
     Q_Q(QOpenGL2PaintEngineEx);
 
+    Q_ASSERT(cache.transform().type() <= QTransform::TxScale);
+
     QTransform &transform = q->state()->matrix;
     transform.scale(1.0 / cache.transform().m11(), 1.0 / cache.transform().m22());
     bool ret = prepareForDraw(false);
@@ -1557,7 +1559,11 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
 
     // We allow scaling, so that the glyph-cache will contain glyphs with the
     // appropriate resolution in the case of displays with a device-pixel-ratio != 1.
-    QTransform transform = QTransform::fromScale(s->matrix.m11(), s->matrix.m22());
+    QTransform transform = s->matrix.type() < QTransform::TxRotate ?
+        QTransform::fromScale(qAbs(s->matrix.m11()), qAbs(s->matrix.m22())) :
+        QTransform::fromScale(
+            QVector2D(s->matrix.m11(), s->matrix.m12()).length(),
+            QVector2D(s->matrix.m21(), s->matrix.m22()).length());
 
     QOpenGLTextureGlyphCache *cache =
             (QOpenGLTextureGlyphCache *) fe->glyphCache(cacheKey, glyphType, transform);
