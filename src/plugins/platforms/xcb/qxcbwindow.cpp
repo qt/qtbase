@@ -403,6 +403,9 @@ QXcbWindow::~QXcbWindow()
 
 void QXcbWindow::destroy()
 {
+    if (connection()->focusWindow() == this)
+        connection()->setFocusWindow(0);
+
     if (m_syncCounter && m_screen->syncRequestSupported())
         Q_XCB_CALL(xcb_sync_destroy_counter(xcb_connection(), m_syncCounter));
     if (m_window) {
@@ -1473,6 +1476,11 @@ void QXcbWindow::handleUnmapNotifyEvent(const xcb_unmap_notify_event_t *event)
 
 void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
 {
+    if (window() != QGuiApplication::focusWindow()) {
+        QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(window()))->eventReceiver();
+        w->requestActivate();
+    }
+
     updateNetWmUserTime(event->time);
 
     QPoint local(event->event_x, event->event_y);
@@ -1635,7 +1643,10 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
 
 void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
 {
-    QWindowSystemInterface::handleWindowActivated(window());
+    QWindow *w = window();
+    w = static_cast<QWindowPrivate *>(QObjectPrivate::get(w))->eventReceiver();
+    connection()->setFocusWindow(static_cast<QXcbWindow *>(w->handle()));
+    QWindowSystemInterface::handleWindowActivated(w);
 }
 
 static bool focusInPeeker(xcb_generic_event_t *event)
@@ -1651,6 +1662,7 @@ static bool focusInPeeker(xcb_generic_event_t *event)
 
 void QXcbWindow::handleFocusOutEvent(const xcb_focus_out_event_t *)
 {
+    connection()->setFocusWindow(0);
     // Do not set the active window to 0 if there is a FocusIn coming.
     // There is however no equivalent for XPutBackEvent so register a
     // callback for QXcbConnection instead.
