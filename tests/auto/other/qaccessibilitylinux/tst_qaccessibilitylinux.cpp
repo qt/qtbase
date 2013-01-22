@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -67,11 +67,8 @@ class AccessibleTestWindow : public QWidget
 public:
     AccessibleTestWindow()
     {
-        DBusConnection c;
-        m_address = c.connection().baseService().toLatin1().data();
         new QHBoxLayout(this);
     }
-    QString dbusAddress() const { return m_address; }
 
     void addWidget(QWidget* widget)
     {
@@ -85,10 +82,6 @@ public:
         qDeleteAll(children());
         new QHBoxLayout(this);
     }
-
-private:
-    QString m_address;
-    QString m_bus;
 };
 
 
@@ -116,7 +109,6 @@ private:
 
     AccessibleTestWindow *m_window;
 
-    QString bus;
     QString address;
     QDBusInterface *root; // the root object on dbus (for the app)
     QDBusInterface *rootApplication;
@@ -129,10 +121,12 @@ private:
 QStringList tst_QAccessibilityLinux::getChildren(QDBusInterface *interface)
 {
     QSpiObjectReferenceArray list;
-    interface->call(QDBus::Block, "GetChildren").arguments().first().value<QDBusArgument>() >> list;
+    const QList<QVariant> args = interface->call(QDBus::Block, "GetChildren").arguments();
+    Q_ASSERT(args.size() == 1);
+    Q_ASSERT(args.first().isValid());
+    args.first().value<QDBusArgument>() >> list;
 
     Q_ASSERT(interface->property("ChildCount").toInt() == list.count());
-
     QStringList children;
     Q_FOREACH (const QSpiObjectReference &ref, list)
         children << ref.path.path();
@@ -164,26 +158,18 @@ QDBusInterface *tst_QAccessibilityLinux::getInterface(const QString &path, const
 void tst_QAccessibilityLinux::initTestCase()
 {
     // Oxygen style creates many extra items, it's simply unusable here
-    qDebug() << "Using fusion style...";
     qApp->setStyle("fusion");
     qApp->setApplicationName("tst_QAccessibilityLinux app");
-    dbus = DBusConnection();
+
+    QTRY_VERIFY(dbus.isEnabled());
+    QTRY_VERIFY(dbus.connection().isConnected());
+    address = dbus.connection().baseService().toLatin1().data();
 
     m_window = new AccessibleTestWindow();
     m_window->show();
 
-    // this has the side-effect of immediately activating accessibility
-    qDebug() << "Explicitly activating accessibility...";
-    delete QAccessible::queryAccessibleInterface(m_window);
-
     QTest::qWaitForWindowExposed(m_window);
-
-    address = m_window->dbusAddress();
     registerDbus();
-
-    QStringList appChildren = getChildren(root);
-    QString window = appChildren.at(0);
-    mainWindow = getInterface(window, "org.a11y.atspi.Accessible");
 }
 
 void tst_QAccessibilityLinux::cleanupTestCase()

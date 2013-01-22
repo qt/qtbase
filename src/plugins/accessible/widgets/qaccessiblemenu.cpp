@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -104,9 +104,16 @@ QAccessibleInterface *QAccessibleMenu::child(int index) const
 
 QAccessibleInterface *QAccessibleMenu::parent() const
 {
-    QWidget *parent = menu()->parentWidget();
-    if (qobject_cast<QMenu*>(parent) || qobject_cast<QMenuBar*>(parent)) {
-        return new QAccessibleMenuItem(parent, menu()->menuAction());
+    if (QAction *menuAction = menu()->menuAction()) {
+        QList<QWidget *> parentCandidates;
+        parentCandidates << menu()->parentWidget();
+        parentCandidates << menuAction->associatedWidgets();
+        foreach (QWidget *w, parentCandidates) {
+            if (qobject_cast<QMenu*>(w) || qobject_cast<QMenuBar*>(w)) {
+                if (w->actions().indexOf(menuAction) != -1)
+                    return new QAccessibleMenuItem(w, menuAction);
+            }
+        }
     }
     return QAccessibleWidget::parent();
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -453,8 +453,11 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
     // backwards compatibility with Qt 4.x
     if (!qstrcmp(name, "CP949"))
         name = "windows-949";
-    // this one is broken data in ICU 4.4, and can't be resolved even though it's an alias to tis-620
-    if (!qstrcmp(name, "windows-874-2000"))
+    // these are broken data in ICU 4.4, and can't be resolved even though they are aliases to tis-620
+    if (!qstrcmp(name, "windows-874-2000")
+        || !qstrcmp(name, "windows-874")
+        || !qstrcmp(name, "MS874")
+        || !qstrcmp(name, "x-windows-874"))
         name = "TIS-620";
 
     UErrorCode error = U_ZERO_ERROR;

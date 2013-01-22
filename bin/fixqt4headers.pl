@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #############################################################################
 ##
-## Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is part of the porting tools of the Qt Toolkit.
@@ -145,13 +145,13 @@ findQtHeaders('QtConcurrent', $qtdir);
 findQtHeaders('QtWidgets', $qtdir);
 findQtHeaders('QtPrintSupport', $qtdir);
 
-if (-d $qtdir . '/include/QtMultiMedia') {
-    findQtHeaders('QtMultiMedia', $qtdir);
-    findQtHeaders('QtMultiMediaWidgets', $qtdir);
+if (-d $qtdir . '/include/QtMultimedia') {
+    findQtHeaders('QtMultimedia', $qtdir);
+    findQtHeaders('QtMultimediaWidgets', $qtdir);
 } elsif (-d $qtdir . '/../qtmultimedia' ) {
     # This is the case if QTDIR points to a source tree instead of an installed Qt
-    findQtHeaders('QtMultiMedia', $qtdir . '/../qtmultimedia');
-    findQtHeaders('QtMultiMediaWidgets', $qtdir . '/../qtmultimedia');
+    findQtHeaders('QtMultimedia', $qtdir . '/../qtmultimedia');
+    findQtHeaders('QtMultimediaWidgets', $qtdir . '/../qtmultimedia');
 }
 
 # Support porting from "Qt 4.99" QtDeclarative to QtQuick (QQuickItem et al)

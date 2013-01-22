@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -45,21 +45,41 @@
 
 #include <QtCore/QString>
 #include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusVariant>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class DBusConnection
+class QDBusServiceWatcher;
+
+class DBusConnection : public QObject
 {
+    Q_OBJECT
+
 public:
-    DBusConnection();
+    DBusConnection(QObject *parent = 0);
     QDBusConnection connection() const;
+    bool isEnabled() const { return m_enabled; }
+
+Q_SIGNALS:
+    // Emitted when the global accessibility status changes to enabled
+    void enabledChanged(bool enabled);
+
+private Q_SLOTS:
+    void serviceRegistered();
+    void serviceUnregistered();
+    void enabledStateCallback(const QDBusVariant &enabled);
+//    void enabledStateChanged(const QDBusVariant &);
+    void connectA11yBus(const QString &address);
+
+    void dbusError(const QDBusError &error);
 
 private:
     QString getAccessibilityBusAddress() const;
-    QDBusConnection connectDBus();
 
-    QDBusConnection dbusConnection;
+    QDBusServiceWatcher *dbusWatcher;
+    QDBusConnection m_a11yConnection;
+    bool m_enabled;
 };
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -62,24 +62,16 @@ QT_BEGIN_NAMESPACE
 */
 
 QSpiAccessibleBridge::QSpiAccessibleBridge()
-    : cache(0)
+    : cache(0), dec(0), dbusAdaptor(0), m_enabled(false)
 {
     dbusConnection = new DBusConnection();
-    if (!dBusConnection().isConnected())
-        qWarning() << "Could not connect to dbus.";
+    connect(dbusConnection, SIGNAL(enabledChanged(bool)), this, SLOT(enabledChanged(bool)));
+}
 
-    qSpiInitializeStructTypes();
-    initializeConstantMappings();
-
-    /* Create the cache of accessible objects */
-    cache = new QSpiDBusCache(dBusConnection(), this);
-    dec = new DeviceEventControllerAdaptor(this);
-
-    dBusConnection().registerObject(QLatin1String(ATSPI_DBUS_PATH_DEC), this, QDBusConnection::ExportAdaptors);
-
-    dbusAdaptor = new AtSpiAdaptor(dbusConnection, this);
-    dBusConnection().registerVirtualObject(QLatin1String(QSPI_OBJECT_PATH_ACCESSIBLE), dbusAdaptor, QDBusConnection::SubPath);
-    dbusAdaptor->registerApplication();
+void QSpiAccessibleBridge::enabledChanged(bool enabled)
+{
+    m_enabled = enabled;
+    updateStatus();
 }
 
 QSpiAccessibleBridge::~QSpiAccessibleBridge()
@@ -92,15 +84,30 @@ QDBusConnection QSpiAccessibleBridge::dBusConnection() const
     return dbusConnection->connection();
 }
 
-void QSpiAccessibleBridge::setRootObject(QObject *obj)
+void QSpiAccessibleBridge::updateStatus()
 {
-    Q_UNUSED(obj);
-    dbusAdaptor->setInitialized(true);
+    // create the adaptor to handle everything if we are in enabled state
+    if (!dbusAdaptor && m_enabled) {
+        qSpiInitializeStructTypes();
+        initializeConstantMappings();
+
+        cache = new QSpiDBusCache(dbusConnection->connection(), this);
+        dec = new DeviceEventControllerAdaptor(this);
+
+        dbusConnection->connection().registerObject(QLatin1String(ATSPI_DBUS_PATH_DEC), this, QDBusConnection::ExportAdaptors);
+
+        dbusAdaptor = new AtSpiAdaptor(dbusConnection, this);
+        dbusConnection->connection().registerVirtualObject(QLatin1String(QSPI_OBJECT_PATH_ACCESSIBLE), dbusAdaptor, QDBusConnection::SubPath);
+        dbusAdaptor->registerApplication();
+    }
 }
 
 void QSpiAccessibleBridge::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
-    dbusAdaptor->notify(event);
+    if (!dbusAdaptor)
+        return;
+    if (m_enabled)
+        dbusAdaptor->notify(event);
 }
 
 struct RoleMapping {

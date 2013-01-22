@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -44,9 +44,15 @@
 #include "dbusconnection_p.h"
 
 #include <QtDBus/QDBusMessage>
+#include <QtDBus/QDBusServiceWatcher>
 #include <qdebug.h>
 
+#include <QDBusConnectionInterface>
+
 QT_BEGIN_NAMESPACE
+
+QString A11Y_SERVICE = QStringLiteral("org.a11y.Bus");
+QString A11Y_PATH = QStringLiteral("/org/a11y/bus");
 
 /*!
     \class DBusConnection
@@ -55,53 +61,81 @@ QT_BEGIN_NAMESPACE
 
     This is usually a different bus from the session bus.
 */
-DBusConnection::DBusConnection()
-    : dbusConnection(connectDBus())
-{}
-
-QDBusConnection DBusConnection::connectDBus()
+DBusConnection::DBusConnection(QObject *parent)
+    : QObject(parent), m_a11yConnection(QString()), m_enabled(false)
 {
-    QString address = getAccessibilityBusAddress();
-
-    if (!address.isEmpty()) {
-        QDBusConnection c = QDBusConnection::connectToBus(address, QStringLiteral("a11y"));
-        if (c.isConnected())
-            return c;
-        qWarning("Found Accessibility DBus address but cannot connect. Falling back to session bus.");
-    } else {
-        qWarning("Accessibility DBus not found. Falling back to session bus.");
-    }
-
+    // Start monitoring if "org.a11y.Bus" is registered as DBus service.
     QDBusConnection c = QDBusConnection::sessionBus();
-    if (!c.isConnected()) {
-        qWarning("Could not connect to DBus.");
-    }
-    return QDBusConnection::sessionBus();
+    dbusWatcher = new QDBusServiceWatcher(A11Y_SERVICE, c, QDBusServiceWatcher::WatchForRegistration, this);
+    connect(dbusWatcher, SIGNAL(serviceRegistered(QString)), this, SLOT(serviceRegistered()));
+
+    // If it is registered already, setup a11y right away
+    if (c.interface()->isServiceRegistered(A11Y_SERVICE))
+        serviceRegistered();
 }
 
-QString DBusConnection::getAccessibilityBusAddress() const
+// We have the a11y registry on the session bus.
+// Subscribe to updates about a11y enabled state.
+// Find out the bus address
+void DBusConnection::serviceRegistered()
 {
+    // listen to enabled changes
     QDBusConnection c = QDBusConnection::sessionBus();
+    // FXIME check for changes of enabled state
+//    if (!c.connect(A11Y_SERVICE, A11Y_PATH, QStringLiteral("org.freedesktop.DBus.Properties"), QStringLiteral("PropertiesChanged"), this, SLOT(enabledStateChanged(QDBusVariant))))
+//        qWarning() << "Could not listen to accessibility enabled state changes.";
 
-    QDBusMessage m = QDBusMessage::createMethodCall(QLatin1String("org.a11y.Bus"),
-                                                    QLatin1String("/org/a11y/bus"),
-                                                    QLatin1String("org.a11y.Bus"), QLatin1String("GetAddress"));
-    QDBusMessage reply = c.call(m);
-    if (reply.type() == QDBusMessage::ErrorMessage) {
-        qWarning() << "Qt at-spi: error getting the accessibility dbus address: " << reply.errorMessage();
-        return QString();
+    // check if it's enabled right away
+    QDBusMessage enabledMessage = QDBusMessage::createMethodCall(A11Y_SERVICE, A11Y_PATH, QStringLiteral("org.freedesktop.DBus.Properties"), QStringLiteral("Get"));
+    QList<QVariant> args;
+    args << QStringLiteral("org.a11y.Status") << QStringLiteral("IsEnabled");
+    enabledMessage.setArguments(args);
+    c.callWithCallback(enabledMessage, this, SLOT(enabledStateCallback(QDBusVariant)), SLOT(dbusError(QDBusError)));
+}
+
+void DBusConnection::dbusError(const QDBusError &error)
+{
+    qWarning() << "Accessibility encountered a DBus error:" << error;
+}
+
+void DBusConnection::serviceUnregistered()
+{
+    emit enabledChanged(false);
+}
+
+void DBusConnection::enabledStateCallback(const QDBusVariant &enabled)
+{
+    m_enabled = enabled.variant().toBool();
+    if (m_a11yConnection.isConnected()) {
+        emit enabledChanged(m_enabled);
+    } else {
+        QDBusConnection c = QDBusConnection::sessionBus();
+        QDBusMessage m = QDBusMessage::createMethodCall(QLatin1String("org.a11y.Bus"),
+                                                        QLatin1String("/org/a11y/bus"),
+                                                        QLatin1String("org.a11y.Bus"), QLatin1String("GetAddress"));
+        c.callWithCallback(m, this, SLOT(connectA11yBus(QString)), SLOT(dbusError(QDBusError)));
     }
+}
 
-    QString busAddress = reply.arguments().at(0).toString();
-    return busAddress;
+void DBusConnection::connectA11yBus(const QString &address)
+{
+    if (address.isEmpty()) {
+        qWarning("Could not find Accessibility DBus address.");
+        return;
+    }
+    m_a11yConnection = QDBusConnection(QDBusConnection::connectToBus(address, QStringLiteral("a11y")));
+
+    if (m_enabled)
+        emit enabledChanged(true);
 }
 
 /*!
   Returns the DBus connection that got established.
+  Or an invalid connection if not yet connected.
 */
 QDBusConnection DBusConnection::connection() const
 {
-    return dbusConnection;
+    return m_a11yConnection;
 }
 
 QT_END_NAMESPACE

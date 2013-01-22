@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -59,6 +59,8 @@ public:
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
 
+    NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
+
     static void *cglContextForContext(QOpenGLContext *context);
     static void *nsOpenGLContextForContext(QOpenGLContext* context);
 
@@ -83,6 +85,13 @@ private:
         Needed by the native print dialog in the QtPrintSupport library.
     */
     Q_INVOKABLE void *NSPrintInfoForPrintEngine(QPrintEngine *printEngine);
+
+    // QMacPastebardMime support. The mac pasteboard void pointers are
+    // QMacPastebardMime instances from the cocoa plugin or qtmacextras
+    // These two classes are kept in sync and can be casted between.
+    static void addToMimeList(void *macPasteboardMime);
+    static void removeFromMimeList(void *macPasteboardMime);
+    static void registerDraggedTypes(const QStringList &types);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H

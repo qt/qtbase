@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 David Faure <faure@kde.org>
+** Copyright (C) 2013 David Faure <faure@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.

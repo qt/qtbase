@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -43,6 +43,7 @@
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
 #include "qcocoamenubar.h"
+#include "qmacmime.h"
 
 #include <qbytearray.h>
 #include <qwindow.h>
@@ -94,6 +95,18 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
     return 0;
 }
 
+QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
+{
+    if (resource.toLower() == "addtomimelist")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::addToMimeList);
+    if (resource.toLower() == "removefrommimelist")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::removeFromMimeList);
+    if (resource.toLower() == "registerdraggedtypes")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
+
+    return 0;
+}
+
 QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
 {
 #ifndef QT_NO_WIDGETS
@@ -140,6 +153,21 @@ void *QCocoaNativeInterface::nsOpenGLContextForContext(QOpenGLContext* context)
         }
     }
     return 0;
+}
+
+void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)
+{
+    qt_mac_addToGlobalMimeList(reinterpret_cast<QMacPasteboardMime *>(macPasteboardMime));
+}
+
+void QCocoaNativeInterface::removeFromMimeList(void *macPasteboardMime)
+{
+    qt_mac_removeFromGlobalMimeList(reinterpret_cast<QMacPasteboardMime *>(macPasteboardMime));
+}
+
+void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
+{
+    qt_mac_registerDraggedTypes(types);
 }
 
 QT_END_NAMESPACE

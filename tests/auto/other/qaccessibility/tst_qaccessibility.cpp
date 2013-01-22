@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1265,14 +1265,21 @@ void tst_QAccessibility::menuTest()
 
     mw.menuBar()->addAction("Action!");
 
+    QMenu *childOfMainWindow = new QMenu(QStringLiteral("&Tools"), &mw);
+    childOfMainWindow->addAction("&Options");
+    mw.menuBar()->addMenu(childOfMainWindow);
+
     mw.show(); // triggers layout
     QTest::qWait(100);
 
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(mw.menuBar());
+    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(&mw);
     QCOMPARE(verifyHierarchy(interface),  0);
+    delete interface;
+
+    interface = QAccessible::queryAccessibleInterface(mw.menuBar());
 
     QVERIFY(interface);
-    QCOMPARE(interface->childCount(), 5);
+    QCOMPARE(interface->childCount(), 6);
     QCOMPARE(interface->role(), QAccessible::MenuBar);
 
     QAccessibleInterface *iFile = interface->child(0);
@@ -2458,6 +2465,12 @@ void tst_QAccessibility::listTest()
 void tst_QAccessibility::treeTest()
 {
     QTreeWidget *treeView = new QTreeWidget;
+
+    // Empty model (do not crash, etc)
+    treeView->setColumnCount(0);
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView);
+    QCOMPARE(iface->child(0), static_cast<QAccessibleInterface*>(0));
+
     treeView->setColumnCount(2);
     QTreeWidgetItem *header = new QTreeWidgetItem;
     header->setText(0, "Artist");
@@ -2493,7 +2506,6 @@ void tst_QAccessibility::treeTest()
     QCoreApplication::processEvents();
     QTest::qWait(100);
 
-    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(treeView);
     QCOMPARE(verifyHierarchy(iface), 0);
 
     QCOMPARE((int)iface->role(), (int)QAccessible::Tree);

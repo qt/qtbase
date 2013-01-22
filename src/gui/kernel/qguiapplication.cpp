@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -709,10 +709,9 @@ QList<QScreen *> QGuiApplication::screens()
     device-independent pixels.
 
     Use this function only when you don't know which window you are targeting.
-    If you do know the target window use QWindow::devicePixelRatio() instead.
+    If you do know the target window, use QWindow::devicePixelRatio() instead.
 
-    \sa QWindow::devicePixelRatio();
-    \sa QGuiApplicaiton::devicePixelRatio();
+    \sa QWindow::devicePixelRatio()
 */
 qreal QGuiApplication::devicePixelRatio() const
 {
@@ -2294,6 +2293,7 @@ void QGuiApplication::setPalette(const QPalette &pal)
 */
 QFont QGuiApplication::font()
 {
+    Q_ASSERT_X(QGuiApplicationPrivate::self, "QGuiApplication::font()", "no QGuiApplication instance");
     QMutexLocker locker(&applicationFontMutex);
     initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;

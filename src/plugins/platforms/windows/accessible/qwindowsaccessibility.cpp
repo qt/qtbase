@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -179,6 +179,8 @@ void QWindowsAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     }
 
     QPlatformNativeInterface *platform = QGuiApplication::platformNativeInterface();
+    if (!window->handle()) // Called before show(), no native window yet.
+        return;
     HWND hWnd = (HWND)platform->nativeResourceForWindow("handle", window);
 
     static int eventNum = 0;
