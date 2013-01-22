@@ -3237,12 +3237,14 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             QGraphicsItem *oldFocusScopeItem = p->d_ptr->focusScopeItem;
             p->d_ptr->focusScopeItem = q_ptr;
+            if (oldFocusScopeItem)
+                oldFocusScopeItem->d_ptr->focusScopeItemChange(false);
+            focusScopeItemChange(true);
             if (!p->focusItem() && !focusFromHide) {
-                if (oldFocusScopeItem)
-                    oldFocusScopeItem->d_ptr->focusScopeItemChange(false);
-                focusScopeItemChange(true);
-                // If you call setFocus on a child of a focus scope that
-                // doesn't currently have a focus item, then stop.
+                // Calling setFocus() on a child of a focus scope that does
+                // not have focus changes only the focus scope pointer,
+                // so that focus is restored the next time the scope gains
+                // focus.
                 return;
             }
             break;

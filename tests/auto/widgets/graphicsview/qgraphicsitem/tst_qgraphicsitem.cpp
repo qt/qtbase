@@ -428,6 +428,7 @@ private slots:
     void ensureDirtySceneTransform();
     void focusScope();
     void focusScope2();
+    void focusScopeItemChangedWhileScopeDoesntHaveFocus();
     void stackBefore();
     void sceneModality();
     void panelModality();
@@ -9369,6 +9370,62 @@ void tst_QGraphicsItem::focusScope2()
     QVERIFY(siblingChild2->focusItem());
     QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild2);
     QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)siblingChild2);
+}
+
+class FocusScopeItemPrivate;
+class FocusScopeItem : public QGraphicsItem
+{
+    Q_DECLARE_PRIVATE(FocusScopeItem)
+public:
+    FocusScopeItem(QGraphicsItem *parent = 0);
+    QRectF boundingRect() const { return QRectF(); }
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) { }
+
+    int focusScopeChanged;
+    FocusScopeItemPrivate *d_ptr;
+};
+
+class FocusScopeItemPrivate : QGraphicsItemPrivate
+{
+    Q_DECLARE_PUBLIC(FocusScopeItem)
+public:
+    void focusScopeItemChange(bool)
+    { ++q_func()->focusScopeChanged; }
+};
+
+FocusScopeItem::FocusScopeItem(QGraphicsItem *parent)
+    : QGraphicsItem(*new FocusScopeItemPrivate, parent), focusScopeChanged(0)
+{
+    setFlag(ItemIsFocusable);
+}
+
+void tst_QGraphicsItem::focusScopeItemChangedWhileScopeDoesntHaveFocus()
+{
+    QGraphicsRectItem rect;
+    rect.setFlags(QGraphicsItem::ItemIsFocusScope | QGraphicsItem::ItemIsFocusable);
+
+    FocusScopeItem *child1 = new FocusScopeItem(&rect);
+    FocusScopeItem *child2 = new FocusScopeItem(&rect);
+
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(child1->focusScopeChanged, 0);
+    QCOMPARE(child2->focusScopeChanged, 0);
+    child1->setFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)child1);
+    QCOMPARE(child1->focusScopeChanged, 1);
+    QCOMPARE(child2->focusScopeChanged, 0);
+    child2->setFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)child2);
+    QCOMPARE(child1->focusScopeChanged, 2);
+    QCOMPARE(child2->focusScopeChanged, 1);
+    child1->setFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)child1);
+    QCOMPARE(child1->focusScopeChanged, 3);
+    QCOMPARE(child2->focusScopeChanged, 2);
+    child1->clearFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(child1->focusScopeChanged, 4);
+    QCOMPARE(child2->focusScopeChanged, 2);
 }
 
 void tst_QGraphicsItem::stackBefore()
