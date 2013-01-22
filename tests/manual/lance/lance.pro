@@ -1,5 +1,6 @@
 LANCELOT_DIR = $$PWD/../../auto/other/lancelot
 CONFIG+=console moc
+CONFIG -= app_bundle
 TEMPLATE = app
 INCLUDEPATH += . $$LANCELOT_DIR
 QT += core-private gui-private widgets printsupport
