@@ -1003,10 +1003,12 @@ void tst_QString::sprintf()
     a.sprintf("%s%n%s", "hello", &n1, "goodbye");
     QCOMPARE(n1, 5);
     QCOMPARE(a, QString("hellogoodbye"));
+#ifndef Q_CC_MINGW // does not know %ll
     qlonglong n2;
     a.sprintf("%s%s%lln%s", "foo", "bar", &n2, "whiz");
     QCOMPARE((int)n2, 6);
     QCOMPARE(a, QString("foobarwhiz"));
+#endif
 }
 
 /*
@@ -5236,6 +5238,9 @@ void tst_QString::QCharRefDetaching() const
 
 void tst_QString::sprintfZU() const
 {
+#ifdef Q_CC_MINGW
+    QSKIP("MinGW does not support '%zu'.");
+#else
     {
         QString string;
         size_t s = 6;
@@ -5264,6 +5269,7 @@ void tst_QString::sprintfZU() const
         string.sprintf("%zu %s\n", s, "foo");
         QCOMPARE(string, QString::fromLatin1("6 foo\n"));
     }
+#endif // !Q_CC_MINGW
 }
 
 void tst_QString::repeatedSignature() const
