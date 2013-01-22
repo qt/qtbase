@@ -450,7 +450,8 @@ protected:
 template <class BaseClass>
 QWindowsDialogHelperBase<BaseClass>::QWindowsDialogHelperBase() :
     m_nativeDialog(0),
-    m_ownerWindow(0)
+    m_ownerWindow(0),
+    m_timerId(0)
 {
 }
 
@@ -469,6 +470,12 @@ void QWindowsDialogHelperBase<BaseClass>::deleteNativeDialog()
 {
     delete m_nativeDialog;
     m_nativeDialog = 0;
+}
+
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::timerEvent(QTimerEvent *)
+{
+    startDialogThread();
 }
 
 template <class BaseClass>
@@ -527,11 +534,33 @@ bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
         return false; // Was it changed in-between?
     if (!ensureNativeDialog())
         return false;
-    if (!modal) { // Modal dialogs are shown in separate slot.
-        QWindowsDialogThread *thread = new QWindowsDialogThread(this);
-        thread->start();
+    // Start a background thread to show the dialog. For modal dialogs,
+    // a subsequent call to exec() may follow. So, start an idle timer
+    // which will start the dialog thread. If exec() is then called, the
+    // timer is stopped and dialog->exec() is called directly.
+    if (modal) {
+        m_timerId = this->startTimer(0);
+    } else {
+        startDialogThread();
     }
     return true;
+}
+
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::startDialogThread()
+{
+    QWindowsDialogThread *thread = new QWindowsDialogThread(this);
+    thread->start();
+    stopTimer();
+}
+
+template <class BaseClass>
+void QWindowsDialogHelperBase<BaseClass>::stopTimer()
+{
+    if (m_timerId) {
+        this->killTimer(m_timerId);
+        m_timerId = 0;
+    }
 }
 
 template <class BaseClass>
@@ -547,6 +576,7 @@ void QWindowsDialogHelperBase<BaseClass>::exec()
 {
     if (QWindowsContext::verboseDialogs)
         qDebug("%s" , __FUNCTION__);
+    stopTimer();
     if (QWindowsNativeDialogBase *nd = nativeDialog()) {
          nd->exec(m_ownerWindow);
          deleteNativeDialog();

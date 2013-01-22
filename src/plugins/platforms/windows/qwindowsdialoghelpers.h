@@ -81,13 +81,17 @@ protected:
     QWindowsNativeDialogBase *nativeDialog() const;
     inline bool hasNativeDialog() const { return m_nativeDialog; }
     void deleteNativeDialog();
+    void timerEvent(QTimerEvent *);
 
 private:
     virtual QWindowsNativeDialogBase *createNativeDialog() = 0;
     inline QWindowsNativeDialogBase *ensureNativeDialog();
+    inline void startDialogThread();
+    inline void stopTimer();
 
     QWindowsNativeDialogBase *m_nativeDialog;
     HWND m_ownerWindow;
+    int m_timerId;
 };
 
 QT_END_NAMESPACE
