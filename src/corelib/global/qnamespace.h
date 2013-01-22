@@ -1305,6 +1305,8 @@ public:
 
         ImhPreferLatin = 0x200,
 
+        ImhMultiLine = 0x400,
+
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,
         ImhUppercaseOnly = 0x40000,
