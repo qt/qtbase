@@ -122,6 +122,8 @@ public:
         return offset;
     }
 
+    virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "private/qwindow_p.h"
 #include "qwidgetwindow_qpa_p.h"
 
 #include "private/qwidget_p.h"
@@ -60,8 +61,23 @@ extern int openPopupCount;
 bool qt_replay_popup_mouse_event = false;
 extern bool qt_try_modal(QWidget *widget, QEvent::Type type);
 
+class QWidgetWindowPrivate : public QWindowPrivate
+{
+    Q_DECLARE_PUBLIC(QWidgetWindow)
+public:
+    QWindow *eventReceiver() {
+        Q_Q(QWidgetWindow);
+        QWindow *w = q;
+        while (w->parent() && qobject_cast<QWidgetWindow *>(w) && qobject_cast<QWidgetWindow *>(w->parent())) {
+            w = w->parent();
+        }
+        return w;
+    }
+};
+
 QWidgetWindow::QWidgetWindow(QWidget *widget)
-    : m_widget(widget)
+    : QWindow(*new QWidgetWindowPrivate(), 0)
+    , m_widget(widget)
 {
     updateObjectName();
     connect(m_widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);

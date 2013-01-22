@@ -385,6 +385,9 @@ public:
 
     Qt::MouseButtons buttons() const { return m_buttons; }
 
+    QXcbWindow *focusWindow() const { return m_focusWindow; }
+    void setFocusWindow(QXcbWindow *);
+
 private slots:
     void processXcbEvents();
 
@@ -511,6 +514,8 @@ private:
     bool has_input_shape;
 
     Qt::MouseButtons m_buttons;
+
+    QXcbWindow *m_focusWindow;
 };
 
 #define DISPLAY_FROM_XCB(object) ((Display *)(object->connection()->xlib_display()))
