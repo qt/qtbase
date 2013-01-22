@@ -7,7 +7,7 @@ include(compat.qdocconf)
 dita.metadata.default.author      = Qt Project
 dita.metadata.default.permissions = all
 dita.metadata.default.publisher   = Qt Project
-dita.metadata.default.copyryear = 2012
+dita.metadata.default.copyryear = 2013
 dita.metadata.default.copyrholder = Digia Plc
 dita.metadata.default.audience = programmer
 
