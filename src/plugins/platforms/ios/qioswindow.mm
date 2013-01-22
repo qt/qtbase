@@ -46,6 +46,7 @@
 #include "qiosscreen.h"
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
+#include "qiosintegration.h"
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 
@@ -115,6 +116,8 @@
 
         if (isQtApplication())
             self.hidden = YES;
+
+        self.multipleTouchEnabled = YES;
     }
 
     return self;
@@ -142,39 +145,119 @@
     [super layoutSubviews];
 }
 
-- (void)sendMouseEventForTouches:(NSSet *)touches withEvent:(UIEvent *)event fakeButtons:(Qt::MouseButtons)buttons
-{
-    UITouch *touch = [touches anyObject];
-    CGPoint locationInView = [touch locationInView:self];
-    QPoint p(locationInView.x , locationInView.y);
+/*
+    Touch handling:
 
-    // TODO handle global touch point? for status bar?
-    QWindowSystemInterface::handleMouseEvent(m_qioswindow->window(), (ulong)(event.timestamp*1000), p, p, buttons);
+    UIKit generates [Began -> Moved -> Ended] event sequences for
+    each touch point. The iOS plugin tracks each individual
+    touch and assigns it an id for use by Qt. The id counter is
+    incremented on each began and decrement as follows:
+    1) by one when the most recent touch ends.
+    2) to zero when all touches ends.
+
+    The TouchPoint list is reused between events.
+*/
+- (void)updateTouchList:(NSSet *)touches withState:(Qt::TouchPointState)state
+{
+    QList<QWindowSystemInterface::TouchPoint> &touchPoints = m_qioswindow->touchPoints();
+    QHash<UITouch *, int> &activeTouches = m_qioswindow->activeTouches();
+
+    // Mark all touch points as stationary
+    for (QList<QWindowSystemInterface::TouchPoint>::iterator it = touchPoints.begin(); it != touchPoints.end(); ++it)
+        it->state = Qt::TouchPointStationary;
+
+     // Update changed touch points with the new state
+    for (UITouch *touch in touches) {
+        const int touchId = activeTouches.value(touch);
+        QWindowSystemInterface::TouchPoint &touchPoint = touchPoints[touchId];
+        touchPoint.state = state;
+        if (state == Qt::TouchPointPressed)
+            touchPoint.pressure = 1.0;
+        else if (state == Qt::TouchPointReleased)
+            touchPoint.pressure = 0.0;
+
+        // Set position
+        CGPoint location = [touch locationInView:self];
+        touchPoint.area = QRectF(location.x, location.y, 0, 0);
+        QSize viewSize = fromCGRect(self.frame).size();
+        touchPoint.normalPosition = QPointF(location.x / viewSize.width(), location.y / viewSize.height());
+    }
+}
+
+- (void) sendTouchEventWithTimestamp:(ulong)timeStamp
+{
+    // Send touch event synchronously
+    QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QWindowSystemInterface::handleTouchEvent(m_qioswindow->window(), timeStamp,
+                                             iosIntegration->touchDevice(), m_qioswindow->touchPoints());
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    // Transfer focus to the touched window:
     QWindow *window = m_qioswindow->window();
+
+    // Transfer focus to the touched window:
     if (window != QGuiApplication::focusWindow())
         m_qioswindow->requestActivateWindow();
 
-    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::LeftButton];
+    // Track Cocoa touch id to Qt touch id. The UITouch pointer is constant
+    // for the touch duration.
+    QHash<UITouch *, int> &activeTouches = m_qioswindow->activeTouches();
+    QList<QWindowSystemInterface::TouchPoint> &touchPoints = m_qioswindow->touchPoints();
+    for (UITouch *touch in touches)
+        activeTouches.insert(touch, m_qioswindow->touchId()++);
+
+    // Create new touch points if needed.
+    int newTouchPointsNeeded = m_qioswindow->touchId() - touchPoints.count();
+    for (int i =  0; i < newTouchPointsNeeded; ++i) {
+        QWindowSystemInterface::TouchPoint touchPoint;
+        touchPoint.id = touchPoints.count(); // id is the index in the touchPoints list.
+        touchPoints.append(touchPoint);
+    }
+
+    [self updateTouchList:touches withState:Qt::TouchPointPressed];
+    [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::LeftButton];
+    [self updateTouchList:touches withState:Qt::TouchPointMoved];
+    [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::NoButton];
+    [self updateTouchList:touches withState:Qt::TouchPointReleased];
+    [self sendTouchEventWithTimestamp:ulong(event.timestamp * 1000)];
+
+    // Remove ended touch points from the active set (event processing has completed at this point)
+    QHash<UITouch *, int> &activeTouches = m_qioswindow->activeTouches();
+    for (UITouch *touch in touches) {
+        int id = activeTouches.take(touch);
+
+        // If this touch is the most recent touch we can reuse its id
+        if (id == m_qioswindow->touchId() - 1)
+            --m_qioswindow->touchId();
+    }
+
+    // Reset the touch id when there are no more active touches
+    if (activeTouches.isEmpty())
+        m_qioswindow->touchId() = 0;
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self sendMouseEventForTouches:touches withEvent:event fakeButtons:Qt::NoButton];
+    Q_UNUSED(touches) // ### can a subset of the active touches be cancelled?
+
+    // Clear current touch points
+    m_qioswindow->activeTouches().clear();
+    m_qioswindow->touchId() = 0;
+
+    // Send cancel touch event synchronously
+    QIOSIntegration *iosIntegration = static_cast<QIOSIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QWindowSystemInterface::handleTouchCancelEvent(m_qioswindow->window(), ulong(event.timestamp * 1000), iosIntegration->touchDevice());
+    QWindowSystemInterface::flushWindowSystemEvents();
 }
 
 @synthesize autocapitalizationType;
@@ -236,6 +319,7 @@ QT_BEGIN_NAMESPACE
 QIOSWindow::QIOSWindow(QWindow *window)
     : QPlatformWindow(window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
+    , m_touchId(0)
     , m_requestedGeometry(QPlatformWindow::geometry())
     , m_devicePixelRatio(1.0)
 {

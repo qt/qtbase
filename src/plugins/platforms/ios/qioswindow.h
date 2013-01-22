@@ -43,6 +43,7 @@
 #define QIOSWINDOW_H
 
 #include <qpa/qplatformwindow.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #import <UIKit/UIKit.h>
 
@@ -77,8 +78,16 @@ public:
 
     UIView *nativeView() const { return m_view; }
 
+    QList<QWindowSystemInterface::TouchPoint> &touchPoints()  { return m_touchPoints; }
+    QHash<UITouch *, int> &activeTouches() { return m_activeTouches; }
+    int &touchId() { return m_touchId; }
+
 private:
     UIView *m_view;
+    QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
+    QHash<UITouch *, int> m_activeTouches;
+    int m_touchId;
+
     QRect m_requestedGeometry;
 
     qreal m_devicePixelRatio;

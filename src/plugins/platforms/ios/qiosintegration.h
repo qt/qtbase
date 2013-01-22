@@ -44,6 +44,7 @@
 
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,10 +72,12 @@ public:
 
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window);
 
+    QTouchDevice *touchDevice();
 private:
     QPlatformFontDatabase *m_fontDatabase;
     QPlatformInputContext *m_inputContext;
     QPlatformScreen *m_screen;
+    QTouchDevice *m_touchDevice;
 };
 
 QT_END_NAMESPACE

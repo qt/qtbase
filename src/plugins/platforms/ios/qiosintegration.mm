@@ -72,10 +72,16 @@ QIOSIntegration::QIOSIntegration()
     }
 
     screenAdded(m_screen);
+
+    m_touchDevice = new QTouchDevice;
+    m_touchDevice->setType(QTouchDevice::TouchScreen);
+    m_touchDevice->setCapabilities(QTouchDevice::Position | QTouchDevice::NormalizedPosition);
+    QWindowSystemInterface::registerTouchDevice(m_touchDevice);
 }
 
 QIOSIntegration::~QIOSIntegration()
 {
+    delete m_touchDevice;
 }
 
 QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
@@ -155,6 +161,11 @@ void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWind
         return platformWindow->nativeView();
 
     return 0;
+}
+
+QTouchDevice *QIOSIntegration::touchDevice()
+{
+    return m_touchDevice;
 }
 
 QT_END_NAMESPACE
