@@ -151,7 +151,7 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return new QEglFSContext(hooks->surfaceFormatFor(context->format()), 0 /*share*/, mDisplay);
+    return new QEglFSContext(hooks->surfaceFormatFor(context->format()), context->shareHandle(), mDisplay);
 }
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
