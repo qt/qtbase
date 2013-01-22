@@ -1060,10 +1060,6 @@ void VcprojGenerator::initLinkerTool()
 
     conf.linker.OutputFile = "$(OutDir)\\";
     conf.linker.OutputFile += project->first("MSVCPROJ_TARGET").toQString();
-
-    if(project->isActiveConfig("dll")){
-        conf.linker.parseOptions(project->values("QMAKE_LFLAGS_QT_DLL"));
-    }
 }
 
 void VcprojGenerator::initResourceTool()
