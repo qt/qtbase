@@ -47,7 +47,7 @@ struct Foo
 
 int main()
 {
-    *(char*)0 = 0;
+    *(volatile char*)0 = 0;
     Foo *f = 0;
     return f->i;
 }
