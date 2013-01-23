@@ -49,19 +49,6 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-/*
- * QGlobalStatic internals:
- *
- * The pointer is initialized to 0.
- * The guard is initialized to 0.
- * The guard can assume the following values:
- *   -2:      object initialized and already destroyed
- *   -1:      object initialized and is still valid
- *    0:      not initialized, the value of the pointer should be null
- *   +1:      initializing, must wait until a state change happens
- *            (not used in the current implementation)
- */
-
 namespace QtGlobalStatic {
 enum GuardValues {
     Destroyed = -2,
