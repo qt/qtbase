@@ -668,6 +668,7 @@ public:
     inline void setNameFilters(const QStringList &f);
     inline void selectNameFilter(const QString &filter);
     inline QString selectedNameFilter() const;
+    void selectFile(const QString &fileName) const;
     bool hideFiltersDetails() const    { return m_hideFiltersDetails; }
     void setHideFiltersDetails(bool h) { m_hideFiltersDetails = h; }
     void setDefaultSuffix(const QString &s);
@@ -961,6 +962,11 @@ void QWindowsNativeFileDialogBase::setLabelText(QFileDialogOptions::DialogLabel 
     }
 }
 
+void QWindowsNativeFileDialogBase::selectFile(const QString &fileName) const
+{
+    m_fileDialog->SetFileName((wchar_t*)fileName.utf16());
+}
+
 // Return the index of the selected filter, accounting for QFileDialog
 // sometimes stripping the filter specification depending on the
 // hideFilterDetails setting.
@@ -1230,6 +1236,12 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
     const QString initialDirectory = opts->initialDirectory();
     if (!initialDirectory.isEmpty())
         result->setDirectory(initialDirectory);
+    const QStringList initialSelection = opts->initiallySelectedFiles();
+    if (initialSelection.size() > 0) {
+        QFileInfo info(initialSelection.front());
+        if (!info.isDir())
+            result->selectFile(info.fileName());
+    }
     const QString initialNameFilter = opts->initiallySelectedNameFilter();
     if (!initialNameFilter.isEmpty())
         result->selectNameFilter(initialNameFilter);
@@ -1255,9 +1267,13 @@ QString QWindowsFileDialogHelper::directory() const
     return QString();
 }
 
-void QWindowsFileDialogHelper::selectFile(const QString & /* filename */)
+void QWindowsFileDialogHelper::selectFile(const QString &fileName)
 {
-    // Not implemented.
+    if (QWindowsContext::verboseDialogs)
+        qDebug("%s %s" , __FUNCTION__, qPrintable(fileName));
+
+    if (QWindowsNativeFileDialogBase *nfd = nativeFileDialog())
+        nfd->selectFile(fileName);
 }
 
 QStringList QWindowsFileDialogHelper::selectedFiles() const
