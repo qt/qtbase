@@ -1,4 +1,4 @@
-This directory contains autotests and benchmarks based on QTestlib. In order
+This directory contains autotests and benchmarks based on Qt Test. In order
 to run the autotests reliably, you need to configure a desktop to match the
 test environment that these tests are written for.
 

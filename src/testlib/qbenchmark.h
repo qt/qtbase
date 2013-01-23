@@ -58,7 +58,7 @@ namespace QTest
 //  -------------
 //
 // The QBenchmarkIterationController class is not a part of the
-// QTestlib API. It exists purely as an implementation detail.
+// Qt Test API. It exists purely as an implementation detail.
 //
 //
 class Q_TESTLIB_EXPORT QBenchmarkIterationController

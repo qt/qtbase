@@ -15,8 +15,8 @@ qhp.QtTestLib.virtualFolder       = qttest
 qhp.QtTestLib.indexTitle          = Qt Test
 qhp.QtTestLib.indexRoot           =
 
-qhp.QtTestLib.filterAttributes    = qttestlib 5.0.1 qtrefdoc
-qhp.QtTestLib.customFilters.Qt.name = QtTestLib 5.0.1
+qhp.QtTestLib.filterAttributes    = qttest 5.0.1 qtrefdoc
+qhp.QtTestLib.customFilters.Qt.name = QtTest 5.0.1
 qhp.QtTestLib.customFilters.Qt.filterAttributes = qttest 5.0.1
 
 qhp.QtTestLib.subprojects         = classes

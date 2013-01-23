@@ -1,5 +1,5 @@
-The QTestLib framework is a tool for unit testing Qt based applications
-and libraries. QTestLib provides all the functionality commonly found
+The Qt Test framework is a tool for unit testing Qt based applications
+and libraries. Qt Test provides all the functionality commonly found
 in unit testing frameworks as well as extensions for testing graphical
 user interfaces.
 
