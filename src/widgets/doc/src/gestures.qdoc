@@ -68,7 +68,7 @@
     required gesture type. The standard types are defined by the Qt::GestureType
     enum and include many commonly used gestures.
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp enable gestures
+    \snippet ../../../examples/gestures/imagegestures/imagewidget.cpp enable gestures
 
     In the above code, the gestures are set up in the constructor of the target object
     itself.
@@ -125,18 +125,18 @@
     \l{QWidget::}{event()} handler function and delegates gesture events to a
     specialized gestureEvent() function:
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp event handler
+    \snippet ../../../examples/gestures/imagegestures/imagewidget.cpp event handler
 
     The gesture events delivered to the target object can be examined individually
     and dealt with appropriately:
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp gesture event handler
+    \snippet ../../../examples/gestures/imagegestures/imagewidget.cpp gesture event handler
 
     Responding to a gesture is simply a matter of obtaining the QGesture object
     delivered in the QGestureEvent sent to the target object and examining the
     information it contains.
 
-    \snippet examples/gestures/imagegestures/imagewidget.cpp swipe function
+    \snippet ../../../examples/gestures/imagegestures/imagewidget.cpp swipe function
 
     Here, we examine the direction in which the user swiped the widget and modify
     its contents accordingly.
