@@ -141,7 +141,8 @@ QT_BEGIN_HEADER
 #endif
 
 // other x86 intrinsics
-#if defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_GNU)
+#if defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_GNU) && \
+    (!defined(Q_CC_INTEL) || (__GNUC__ * 100 + __GNUC_MINOR__ < 407))
 #define QT_COMPILER_SUPPORTS_X86INTRIN
 #include <x86intrin.h>
 #endif
