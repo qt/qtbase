@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -214,13 +214,12 @@ qreal QScreen::logicalDotsPerInch() const
     return (dpi.first + dpi.second) * qreal(0.5);
 }
 
-/*
+/*!
     Returns the ratio between physical pixels and device-independent pixels for the screen.
 
-    Common values are 1.0 on normal displays and 2.0 on Apple retina displays.
+    Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
 
-    \sa QWindow::devicePixelRatio();
-    \sa QGuiApplicaiton::devicePixelRatio();
+    \sa QWindow::devicePixelRatio(), QGuiApplication::devicePixelRatio()
 */
 qreal QScreen::devicePixelRatio() const
 {

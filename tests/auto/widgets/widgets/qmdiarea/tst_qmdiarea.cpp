@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -508,7 +508,6 @@ void tst_QMdiArea::subWindowActivated2()
     if (!macHasAccessToWindowsServer())
         QEXPECT_FAIL("", "showMinimized doesn't really minimize if you don't have access to the server", Abort);
 #endif
-    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet. See Task 197453");
 #endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -2043,8 +2043,6 @@ void tst_QWidget::showFullScreen()
     QVERIFY(layouted.isFullScreen());
 
     layouted.showFullScreen();
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
     QVERIFY(!layouted.isMinimized());
     QVERIFY(layouted.isFullScreen());
     QVERIFY(layouted.isVisible());
@@ -7115,8 +7113,6 @@ void tst_QWidget::updateWhileMinimized()
     // Make sure update requests are discarded until the widget is shown again.
     widget.update(0, 0, 50, 50);
     QTest::qWait(10);
-    if (m_platform == QStringLiteral("windows"))
-        QEXPECT_FAIL("", "QTBUG-26424", Continue);
     QCOMPARE(widget.numPaintEvents, 0);
 
     // Restore window.

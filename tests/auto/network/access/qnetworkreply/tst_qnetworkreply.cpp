@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -215,6 +215,18 @@ private Q_SLOTS:
     void postToHttpSynchronous();
     void postToHttpMultipart_data();
     void postToHttpMultipart();
+#ifndef QT_NO_SSL
+    void putToHttps_data();
+    void putToHttps();
+    void putToHttpsSynchronous_data();
+    void putToHttpsSynchronous();
+    void postToHttps_data();
+    void postToHttps();
+    void postToHttpsSynchronous_data();
+    void postToHttpsSynchronous();
+    void postToHttpsMultipart_data();
+    void postToHttpsMultipart();
+#endif
     void deleteFromHttp_data();
     void deleteFromHttp();
     void putGetDeleteGetFromHttp_data();
@@ -2403,6 +2415,210 @@ void tst_QNetworkReply::putToHttpMultipart()
 //    QEXPECT_FAIL("nested", "the server does not understand nested multipart messages", Continue); // see above
     QCOMPARE(replyData, expectedReplyData);
 }
+
+#ifndef QT_NO_SSL
+void tst_QNetworkReply::putToHttps_data()
+{
+    uniqueExtension = createUniqueExtension();
+    putToFile_data();
+}
+
+void tst_QNetworkReply::putToHttps()
+{
+    QUrl url("https://" + QtNetworkSettings::serverName());
+    url.setPath(QString("/dav/qnetworkaccess-putToHttp-%1-%2")
+                .arg(QTest::currentDataTag())
+                .arg(uniqueExtension));
+
+    QNetworkRequest request(url);
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
+    QSslConfiguration conf;
+    conf.setCaCertificates(certs);
+    request.setSslConfiguration(conf);
+    QNetworkReplyPtr reply;
+
+    QFETCH(QByteArray, data);
+
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PutOperation, request, reply, data));
+
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 201); // 201 Created
+
+    // download the file again from HTTP to make sure it was uploaded
+    // correctly. HTTP/0.9 is enough
+    QTcpSocket socket;
+    socket.connectToHost(QtNetworkSettings::serverName(), 80);
+    socket.write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority) + "\r\n");
+    if (!socket.waitForDisconnected(10000))
+        QFAIL("Network timeout");
+
+    QByteArray uploadedData = socket.readAll();
+    QCOMPARE(uploadedData, data);
+}
+
+void tst_QNetworkReply::putToHttpsSynchronous_data()
+{
+    uniqueExtension = createUniqueExtension();
+    putToFile_data();
+}
+
+void tst_QNetworkReply::putToHttpsSynchronous()
+{
+    QUrl url("https://" + QtNetworkSettings::serverName());
+    url.setPath(QString("/dav/qnetworkaccess-putToHttp-%1-%2")
+                .arg(QTest::currentDataTag())
+                .arg(uniqueExtension));
+
+    QNetworkRequest request(url);
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
+    QSslConfiguration conf;
+    conf.setCaCertificates(certs);
+    request.setSslConfiguration(conf);
+    QNetworkReplyPtr reply;
+
+    QFETCH(QByteArray, data);
+
+    request.setAttribute(
+                QNetworkRequest::SynchronousRequestAttribute,
+                true);
+
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PutOperation, request, reply, data));
+
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 201); // 201 Created
+
+    // download the file again from HTTP to make sure it was uploaded
+    // correctly. HTTP/0.9 is enough
+    QTcpSocket socket;
+    socket.connectToHost(QtNetworkSettings::serverName(), 80);
+    socket.write("GET " + url.toEncoded(QUrl::RemoveScheme | QUrl::RemoveAuthority) + "\r\n");
+    if (!socket.waitForDisconnected(10000))
+        QFAIL("Network timeout");
+
+    QByteArray uploadedData = socket.readAll();
+    QCOMPARE(uploadedData, data);
+}
+
+void tst_QNetworkReply::postToHttps_data()
+{
+    putToFile_data();
+}
+
+void tst_QNetworkReply::postToHttps()
+{
+    QUrl url("https://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
+
+    QNetworkRequest request(url);
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
+    QSslConfiguration conf;
+    conf.setCaCertificates(certs);
+    request.setSslConfiguration(conf);
+    request.setRawHeader("Content-Type", "application/octet-stream");
+    QNetworkReplyPtr reply;
+
+    QFETCH(QByteArray, data);
+
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PostOperation, request, reply, data));
+
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 Ok
+
+    QFETCH(QByteArray, md5sum);
+    QByteArray uploadedData = reply->readAll().trimmed();
+    QCOMPARE(uploadedData, md5sum.toHex());
+}
+
+void tst_QNetworkReply::postToHttpsSynchronous_data()
+{
+    putToFile_data();
+}
+
+void tst_QNetworkReply::postToHttpsSynchronous()
+{
+    QUrl url("https://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi");
+
+    QNetworkRequest request(url);
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
+    QSslConfiguration conf;
+    conf.setCaCertificates(certs);
+    request.setSslConfiguration(conf);
+    request.setRawHeader("Content-Type", "application/octet-stream");
+
+    request.setAttribute(
+                QNetworkRequest::SynchronousRequestAttribute,
+                true);
+
+    QNetworkReplyPtr reply;
+
+    QFETCH(QByteArray, data);
+
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PostOperation, request, reply, data));
+
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 Ok
+
+    QFETCH(QByteArray, md5sum);
+    QByteArray uploadedData = reply->readAll().trimmed();
+    QCOMPARE(uploadedData, md5sum.toHex());
+}
+
+void tst_QNetworkReply::postToHttpsMultipart_data()
+{
+    postToHttpMultipart_data();
+}
+
+void tst_QNetworkReply::postToHttpsMultipart()
+{
+    QFETCH(QUrl, url);
+    url.setScheme("https");
+
+    static QSet<QByteArray> boundaries;
+
+    QNetworkRequest request(url);
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(testDataDir + "/certs/qt-test-server-cacert.pem");
+    QSslConfiguration conf;
+    conf.setCaCertificates(certs);
+    request.setSslConfiguration(conf);
+    QNetworkReplyPtr reply;
+
+    QFETCH(QHttpMultiPart *, multiPart);
+    QFETCH(QByteArray, expectedReplyData);
+    QFETCH(QByteArray, contentType);
+
+    // hack for testing the setting of the content-type header by hand:
+    if (contentType == "custom") {
+        QByteArray contentType("multipart/custom; boundary=\"" + multiPart->boundary() + "\"");
+        request.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
+    }
+
+    QVERIFY2(! boundaries.contains(multiPart->boundary()), "boundary '" + multiPart->boundary() + "' has been created twice");
+    boundaries.insert(multiPart->boundary());
+
+    RUN_REQUEST(runMultipartRequest(request, reply, multiPart, "POST"));
+    multiPart->deleteLater();
+
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200); // 200 Ok
+
+    QVERIFY(multiPart->boundary().count() > 20); // check that there is randomness after the "boundary_.oOo._" string
+    QVERIFY(multiPart->boundary().count() < 70);
+    QByteArray replyData = reply->readAll();
+
+    expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
+    QCOMPARE(replyData, expectedReplyData);
+}
+
+#endif // QT_NO_SSL
 
 void tst_QNetworkReply::deleteFromHttp_data()
 {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1780,7 +1780,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "to comply with the terms of the GNU GPL version 3.0.</p>"
         "<p>Please see <a href=\"http://qt.digia.com/Product/Licensing/\">qt.digia.com/Product/Licensing</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies) and other "
+        "<p>Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies) and other "
         "contributors.</p>"
         "<p>Qt and the Qt logo are trademarks of Digia Plc and/or its subsidiary(-ies).</p>"
         "<p>Qt is developed as an open source project on "

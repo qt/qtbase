@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the utils of the Qt Toolkit.
@@ -2791,7 +2791,7 @@ int main(int, char **)
     QByteArray header =
         "/****************************************************************************\n"
         "**\n"
-        "** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).\n"
+        "** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).\n"
         "** Contact: http://www.qt-project.org/legal\n"
         "**\n"
         "** This file is part of the QtCore module of the Qt Toolkit.\n"

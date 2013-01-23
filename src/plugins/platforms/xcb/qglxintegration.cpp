@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -284,8 +284,10 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
         glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
         glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 
+        QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber())).split(' ');
+
         // Use glXCreateContextAttribsARB if is available
-        if (glXCreateContextAttribsARB != 0) {
+        if (glxExt.contains("GLX_ARB_create_context") && glXCreateContextAttribsARB != 0) {
             // We limit the requested version by the version of the static context as
             // glXCreateContextAttribsARB fails and returns NULL if the requested context
             // version is not supported. This means that we will get the closest supported

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -66,6 +66,17 @@ typedef QList<QMacPasteboardMime*> MimeList;
 Q_GLOBAL_STATIC(MimeList, globalMimeList)
 Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 
+void qt_mac_addToGlobalMimeList(QMacPasteboardMime *macMime)
+{
+    globalMimeList()->append(macMime);
+}
+
+void qt_mac_removeFromGlobalMimeList(QMacPasteboardMime *macMime)
+{
+    if (!QGuiApplication::closingDown())
+        globalMimeList()->removeAll(macMime);
+}
+
 /*!
     \fn void qRegisterDraggedTypes(const QStringList &types)
     \relates QMacPasteboardMime
@@ -79,16 +90,15 @@ Q_GLOBAL_STATIC(QStringList, globalDraggedTypesList)
 
    \sa QMacPasteboardMime
 */
-Q_WIDGETS_EXPORT void qRegisterDraggedTypes(const QStringList &types)
+void qt_mac_registerDraggedTypes(const QStringList &types)
 {
     (*globalDraggedTypesList()) += types;
 }
 
-const QStringList& qEnabledDraggedTypes()
+const QStringList& qt_mac_enabledDraggedTypes()
 {
     return (*globalDraggedTypesList());
 }
-
 
 /*****************************************************************************
   QDnD debug facilities
@@ -155,7 +165,7 @@ CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
 */
 QMacPasteboardMime::QMacPasteboardMime(char t) : type(t)
 {
-    globalMimeList()->append(this);
+    qt_mac_addToGlobalMimeList(this);
 }
 
 /*!
@@ -164,8 +174,7 @@ QMacPasteboardMime::QMacPasteboardMime(char t) : type(t)
 */
 QMacPasteboardMime::~QMacPasteboardMime()
 {
-    if (!QGuiApplication::closingDown())
-        globalMimeList()->removeAll(this);
+    qt_mac_removeFromGlobalMimeList(this);
 }
 
 /*!

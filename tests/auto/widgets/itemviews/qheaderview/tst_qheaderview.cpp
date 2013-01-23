@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Thorbjørn Lund Martsum - tmartsum[at]gmail.com
 ** Contact: http://www.qt-project.org/legal
 **
