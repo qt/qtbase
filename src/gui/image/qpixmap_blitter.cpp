@@ -120,6 +120,8 @@ int QBlittablePlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) con
     case QPaintDevice::PdmDpiY: // fall-through
     case QPaintDevice::PdmPhysicalDpiY:
         return qt_defaultDpiY();
+    case QPaintDevice::PdmDevicePixelRatio:
+        return 1;
     default:
         qWarning("QRasterPlatformPixmap::metric(): Unhandled metric type %d", metric);
         break;

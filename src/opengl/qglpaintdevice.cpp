@@ -67,6 +67,8 @@ int QGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
         const QGLFormat f = format();
         return f.redBufferSize() + f.greenBufferSize() + f.blueBufferSize() + f.alphaBufferSize();
     }
+    case PdmDevicePixelRatio:
+        return 1;
     default:
         qWarning("QGLPaintDevice::metric() - metric %d not known", metric);
         return 0;
