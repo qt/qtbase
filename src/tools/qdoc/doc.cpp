@@ -3291,7 +3291,7 @@ QString Doc::canonicalTitle(const QString &title)
     for (int i = 0; i != title.size(); ++i) {
         uint c = title.at(i).unicode();
         if (c >= 'A' && c <= 'Z')
-            c -= 'A' - 'a';
+            c += 'a' - 'A';
         bool alnum = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
         if (alnum) {
             result += QLatin1Char(c);
