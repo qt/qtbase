@@ -473,6 +473,39 @@ static QTouchDevice *touchDevice = 0;
     [self handleMouseEvent:theEvent];
 }
 
+- (void)updateTrackingAreas
+{
+    [super updateTrackingAreas];
+
+    // [NSView addTrackingArea] is slow, so bail out early if we can:
+    if (NSIsEmptyRect([self visibleRect]))
+        return;
+
+    QCocoaAutoReleasePool pool;
+    if (NSArray *trackingArray = [self trackingAreas]) {
+        NSUInteger size = [trackingArray count];
+        for (NSUInteger i = 0; i < size; ++i) {
+            NSTrackingArea *t = [trackingArray objectAtIndex:i];
+            [self removeTrackingArea:t];
+        }
+    }
+
+    // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
+    // only be turned on if mouseTracking, hover is on or a tool tip is set.
+    // Unfortunately, Qt will send "tooltip" events on mouse moves, so we need to
+    // turn it on in ALL case. That means EVERY QCocoaView gets to pay the cost of
+    // mouse moves delivered to it (Apple recommends keeping it OFF because there
+    // is a performance hit). So it goes.
+    NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
+                                 | NSTrackingInVisibleRect | NSTrackingMouseMoved;
+    NSTrackingArea *ta = [[[NSTrackingArea alloc] initWithRect:[self frame]
+                                                      options:trackingOptions
+                                                        owner:self
+                                                     userInfo:nil]
+                                                                autorelease];
+    [self addTrackingArea:ta];
+}
+
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     [self handleMouseEvent:theEvent];
