@@ -1449,13 +1449,15 @@ QObject *QWindow::focusObject() const
     Shows the window.
 
     This equivalent to calling showFullScreen() or showNormal(), depending
-    on whether the platform defaults to windows being fullscreen or not.
+    on whether the platform defaults to windows being fullscreen or not, and
+    whether the window is a popup.
 
-    \sa showFullScreen(), showNormal(), hide(), QStyleHints::showIsFullScreen()
+    \sa showFullScreen(), showNormal(), hide(), QStyleHints::showIsFullScreen(), flags()
 */
 void QWindow::show()
 {
-    if (qApp->styleHints()->showIsFullScreen())
+    bool isPopup = d_func()->windowFlags & Qt::Popup & ~Qt::Window;
+    if (!isPopup && qApp->styleHints()->showIsFullScreen())
         showFullScreen();
     else
         showNormal();
