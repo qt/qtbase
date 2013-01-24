@@ -2041,11 +2041,6 @@ static inline QRgb qt_gl_convertToGLFormatHelper(QRgb src_pixel, GLenum texture_
     }
 }
 
-QRgb qt_gl_convertToGLFormat(QRgb src_pixel, GLenum texture_format)
-{
-    return qt_gl_convertToGLFormatHelper(src_pixel, texture_format);
-}
-
 static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum texture_format)
 {
     Q_ASSERT(dst.depth() == 32);
