@@ -1457,9 +1457,7 @@ class QWindowsFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFileDi
 {
 public:
     QWindowsFileDialogHelper() {}
-    // For Qt 4 compatibility, do not create native non-modal dialogs on widgets,
-    // but only on QQuickWindows, which do not have a fallback.
-    virtual bool supportsNonModalDialog(const QWindow *parent = 0) const { return isQQuickWindow(parent); }
+    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return false; }
     virtual bool defaultNameFilterDisables() const
         { return true; }
     virtual void setDirectory(const QString &directory);
@@ -1853,7 +1851,7 @@ class QWindowsXpFileDialogHelper : public QWindowsDialogHelperBase<QPlatformFile
 {
 public:
     QWindowsXpFileDialogHelper() {}
-    virtual bool supportsNonModalDialog(const QWindow *parent = 0) const { return isQQuickWindow(parent); }
+    virtual bool supportsNonModalDialog(const QWindow * /* parent */ = 0) const { return false; }
     virtual bool defaultNameFilterDisables() const
         { return true; }
     virtual void setDirectory(const QString &directory);
