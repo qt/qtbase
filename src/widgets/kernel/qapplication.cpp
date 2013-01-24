@@ -3367,6 +3367,34 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
     }
 #endif // QT_NO_GESTURES
+#ifdef Q_OS_MAC
+    // Enable touch events on enter, disable on leave.
+    typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
+    case QEvent::Enter:
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
+                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
+                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
+                if (registerTouchWindow)
+                    registerTouchWindow(w->window()->windowHandle(), true);
+            }
+        }
+        res = d->notify_helper(receiver, e);
+    break;
+    case QEvent::Leave:
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
+                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>
+                        (platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow"));
+                if (registerTouchWindow)
+                    registerTouchWindow(w->window()->windowHandle(), false);
+            }
+        }
+        res = d->notify_helper(receiver, e);
+    break;
+#endif
     default:
         res = d->notify_helper(receiver, e);
         break;

@@ -201,6 +201,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
     , m_isExposed(false)
+    , m_registerTouchCount(0)
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
@@ -897,6 +898,15 @@ void QCocoaWindow::setMenubar(QCocoaMenuBar *mb)
 QCocoaMenuBar *QCocoaWindow::menubar() const
 {
     return m_menubar;
+}
+
+void QCocoaWindow::registerTouch(bool enable)
+{
+    m_registerTouchCount += enable ? 1 : -1;
+    if (m_registerTouchCount == 1)
+        [m_contentView setAcceptsTouchEvents:YES];
+    else if (m_registerTouchCount == 0)
+        [m_contentView setAcceptsTouchEvents:NO];
 }
 
 qreal QCocoaWindow::devicePixelRatio() const

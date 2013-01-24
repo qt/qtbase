@@ -112,6 +112,15 @@ private:
 
     // Embedding NSViews as child QWindows
     static void setWindowContentView(QPlatformWindow *window, void *nsViewContentView);
+
+    // Register if a window should deliver touch events. Enabling
+    // touch events has implications for delivery of other events,
+    // for example by causing scrolling event lag.
+    //
+    // The registration is ref-counted: multiple widgets can enable
+    // touch events, which then will be delivered until the widget
+    // deregisters.
+    static void registerTouchWindow(QWindow *window,  bool enable);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H

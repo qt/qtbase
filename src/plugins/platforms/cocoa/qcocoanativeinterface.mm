@@ -119,6 +119,8 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::cgImageToQImage);
     if (resource.toLower() == "setwindowcontentview")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setWindowContentView);
+    if (resource.toLower() == "registertouchwindow")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerTouchWindow);
 
     return 0;
 }
@@ -225,6 +227,13 @@ void QCocoaNativeInterface::setWindowContentView(QPlatformWindow *window, void *
 {
     QCocoaWindow *cocoaPlatformWindow = static_cast<QCocoaWindow *>(window);
     cocoaPlatformWindow->setContentView(reinterpret_cast<NSView *>(contentView));
+}
+
+void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)
+{
+    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
+    if (cocoaWindow)
+        cocoaWindow->registerTouch(enable);
 }
 
 QT_END_NAMESPACE

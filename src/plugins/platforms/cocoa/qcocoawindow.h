@@ -147,6 +147,8 @@ public:
     void setMenubar(QCocoaMenuBar *mb);
     QCocoaMenuBar *menubar() const;
 
+    void registerTouch(bool enable);
+
     qreal devicePixelRatio() const;
     void exposeWindow();
     void obscureWindow();
@@ -187,6 +189,7 @@ public: // for QNSView
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
     bool m_isExposed;
+    int m_registerTouchCount;
 };
 
 QT_END_NAMESPACE
