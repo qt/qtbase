@@ -50,7 +50,7 @@ cross_compile: SUBDIRS -= \
 
 wince*|!contains(QT_CONFIG, accessibility): SUBDIRS -= qaccessibility
 
-!contains(QT_CONFIG, accessibility)|!contains(QT_CONFIG, xcb): SUBDIRS -= qaccessibilitylinux
+!contains(QT_CONFIG, accessibility-atspi-bridge): SUBDIRS -= qaccessibilitylinux
 
 !mac: SUBDIRS -= \
            macgui \

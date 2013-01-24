@@ -831,6 +831,7 @@ CFG_AVX=auto
 CFG_AVX2=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_ACCESSIBILITY=auto
+CFG_ACCESSIBILITY_ATSPI_BRIDGE=no # will be enabled depending on dbus and accessibility being enabled
 CFG_IWMMXT=no
 CFG_NEON=auto
 CFG_MIPS_DSP=auto
@@ -3094,6 +3095,10 @@ Configure options:
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
     -no-accessibility .. Do not compile Accessibility support.
+                         Disabling accessibility is not recommended, as it will break QStyle
+                         and may break other internal parts of Qt.
+                         With this switch you create a source incompatible version of Qt,
+                         which is unsupported.
  +  -accessibility ..... Compile Accessibility support.
 
     -no-sql-<driver> ... Disable SQL <driver> entirely.
@@ -4950,20 +4955,19 @@ if [ "$CFG_KMS" = "yes" ]; then
 fi
 
 # Detect accessibility support
-if [ "$CFG_ACCESSIBILITY" != "no" ]; then
-    if [ "$CFG_XCB" = "no" ]; then
-        CFG_ACCESSIBILITY=yes
-    else
-        # linux/xcb accessibility needs dbus
-        if [ "$CFG_DBUS" != "no" ] && [ -n "$PKG_CONFIG" ]; then
-            CFG_ACCESSIBILITY=yes
+if [ "$CFG_ACCESSIBILITY" = "no" ]; then
+    echo >&2 "Warning: Disabling Accessibility. This version of Qt is unsupported."
+else
+    CFG_ACCESSIBILITY=yes
+
+    # linux/xcb accessibility bridge needs dbus
+    if [ "$CFG_XCB" != "no" ]; then
+        if [ "$CFG_DBUS" != "no" ]; then
+            CFG_ACCESSIBILITY_ATSPI_BRIDGE=yes
+            QT_CONFIG="$QT_CONFIG accessibility-atspi-bridge"
         else
-            if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
-                CFG_ACCESSIBILITY=no
-            else
-                echo "Accessibility support needs DBus."
-                exit 101
-            fi
+            echo >&2 "Warning: Disabling Linux Accessibility Bridge: DBus is missing."
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ACCESSIBILITY_ATSPI_BRIDGE"
         fi
     fi
 fi

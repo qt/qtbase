@@ -46,7 +46,10 @@
 #include <QNetworkProxy>
 #include <QAuthenticator>
 
+#ifdef QT_BUILD_INTERNAL
 #include "private/qhostinfo_p.h"
+#include "private/qsslsocket_p.h"
+#endif
 
 #include "../../../network-settings.h"
 
@@ -211,12 +214,31 @@ void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMe
     socket3->connectToHostEncrypted(host, 443);
     QVERIFY(!socket3->waitForEncrypted());
 
-    // setting empty SSL configuration explicitly -> should not work
+    // setting empty SSL configuration explicitly -> depends on on-demand loading
     QSslSocketPtr socket4 = newSocket();
     this->socket = socket4.data();
-    socket4->setSslConfiguration(QSslConfiguration());
+    QSslConfiguration conf;
+    socket4->setSslConfiguration(conf);
     socket4->connectToHostEncrypted(host, 443);
-    QVERIFY(!socket4->waitForEncrypted());
+#ifdef QT_BUILD_INTERNAL
+    bool rootCertLoadingAllowed = QSslSocketPrivate::rootCertOnDemandLoadingSupported();
+#if defined(Q_OS_LINUX) || defined (Q_OS_BLACKBERRY)
+    QCOMPARE(rootCertLoadingAllowed, true);
+#elif defined(Q_OS_MAC)
+    QCOMPARE(rootCertLoadingAllowed, false);
+#endif // other platforms: undecided (Windows: depends on the version)
+    // when we allow on demand loading, it is enabled by default,
+    // so on Unix it will work without setting any certificates. Otherwise,
+    // the configuration contains an empty set of certificates
+    // and will fail.
+    bool works;
+#if defined (Q_OS_WIN)
+    works = false; // on Windows, this won't work even though we use on demand loading
+#else
+    works = rootCertLoadingAllowed;
+#endif
+    QCOMPARE(socket4->waitForEncrypted(), works);
+#endif // QT_BUILD_INTERNAL
 }
 
 #endif // QT_NO_OPENSSL
