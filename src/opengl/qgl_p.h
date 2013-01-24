@@ -265,7 +265,6 @@ public:
                             QGLContext::BindOptions options);
     QGLTexture *textureCacheLookup(const qint64 key, GLenum target);
     void init(QPaintDevice *dev, const QGLFormat &format);
-    QImage convertToGLFormat(const QImage &image, bool force_premul, GLenum texture_format);
     int maxTextureSize();
 
     void cleanup();

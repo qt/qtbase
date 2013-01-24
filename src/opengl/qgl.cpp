@@ -2139,18 +2139,6 @@ QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
     return qt_extensionFuncs;
 }
 
-QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_premul,
-                                            GLenum texture_format)
-{
-    QImage::Format target_format = image.format();
-    if (force_premul || image.format() != QImage::Format_ARGB32)
-        target_format = QImage::Format_ARGB32_Premultiplied;
-
-    QImage result(image.width(), image.height(), target_format);
-    convertToGLFormatHelper(result, image.convertToFormat(target_format), texture_format);
-    return result;
-}
-
 /*! \internal */
 QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
                                            QGLContext::BindOptions options)
