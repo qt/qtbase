@@ -99,8 +99,6 @@ QImageData::QImageData()
       format(QImage::Format_ARGB32), bytes_per_line(0),
       ser_no(qimage_serial_number.fetchAndAddRelaxed(1)),
       detach_no(0),
-      ldpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
-      ldpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       dpmx(qt_defaultDpiX() * 100 / qreal(2.54)),
       dpmy(qt_defaultDpiY() * 100 / qreal(2.54)),
       offset(0, 0), own_data(true), ro_data(false), has_alpha_clut(false),
@@ -4984,11 +4982,11 @@ int QImage::metric(PaintDeviceMetric metric) const
         return d->depth;
 
     case PdmDpiX:
-        return qRound(d->ldpmx * 0.0254);
+        return qRound(d->dpmx * 0.0254);
         break;
 
     case PdmDpiY:
-        return qRound(d->ldpmy * 0.0254);
+        return qRound(d->dpmy * 0.0254);
         break;
 
     case PdmPhysicalDpiX:
