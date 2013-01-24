@@ -72,10 +72,6 @@
 
     \snippet qmacnativewidget/main.mm 0
 
-    On Carbon, this would do the equivalent:
-
-    \snippet qmacnativewidget/main.mm 1
-
     Note that QMacNativeWidget requires knowledge of Carbon or Cocoa. All it
     does is get the Qt hierarchy into a window not owned by Qt. It is then up
     to the programmer to ensure it is placed correctly in the window and
