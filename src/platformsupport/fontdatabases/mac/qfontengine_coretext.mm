@@ -619,7 +619,13 @@ QFontEngine *QCoreTextFontEngine::cloneWithSize(qreal pixelSize) const
 
 bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) const
 {
-    return transform.type() <= QTransform::TxScale;
+    if (transform.type() < QTransform::TxScale)
+        return true;
+    else if (transform.type() == QTransform::TxScale &&
+             transform.m11() >= 0 && transform.m22() >= 0)
+        return true;
+    else
+        return false;
 }
 
 QT_END_NAMESPACE
