@@ -6908,14 +6908,15 @@ void QWidget::setUpdatesEnabled(bool enable)
     Shows the widget and its child widgets. This function is
     equivalent to setVisible(true) in the normal case, and equivalent
     to showFullScreen() if the QStyleHints::showIsFullScreen() hint
-    is true.
+    is true and the window is not a popup.
 
     \sa raise(), showEvent(), hide(), setVisible(), showMinimized(), showMaximized(),
-    showNormal(), isVisible()
+    showNormal(), isVisible(), windowFlags()
 */
 void QWidget::show()
 {
-    if (isWindow() && qApp->styleHints()->showIsFullScreen())
+    bool isPopup = data->window_flags & Qt::Popup & ~Qt::Window;
+    if (isWindow() && !isPopup && qApp->styleHints()->showIsFullScreen())
         showFullScreen();
     else
         setVisible(true);
