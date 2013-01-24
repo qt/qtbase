@@ -74,9 +74,3 @@ mac {
 }
 
 load(qt_module)
-
-QMAKE_TARGET_PRODUCT = QTestLib
-QMAKE_TARGET_DESCRIPTION = Qt \
-    Unit \
-    Testing \
-    Library
