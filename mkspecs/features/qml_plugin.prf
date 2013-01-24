@@ -50,6 +50,7 @@ INSTALLS += target
 TARGET = $$qtLibraryTarget($$TARGET)
 
 load(qt_targets)
+load(qt_common)
 
 # plugins.qmltypes is used by Qt Creator for syntax highlighting and the QML code model.  It needs
 # to be regenerated whenever the QML elements exported by the plugin change.  This cannot be done

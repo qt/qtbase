@@ -28,6 +28,7 @@ host_build {
 INSTALLS += target
 
 load(qt_targets)
+load(qt_common)
 
 # If we are doing a prefix build, create a "module" pri which enables
 # qtPrepareTool() to work with the non-installed build.
