@@ -771,6 +771,7 @@ void QXcbConnection::handleXcbEvent(xcb_generic_event_t *event)
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_unmap_notify_event_t, event, handleUnmapNotifyEvent);
         case XCB_CLIENT_MESSAGE:
             handleClientMessageEvent((xcb_client_message_event_t *)event);
+            break;
         case XCB_ENTER_NOTIFY:
             HANDLE_PLATFORM_WINDOW_EVENT(xcb_enter_notify_event_t, event, handleEnterNotifyEvent);
         case XCB_LEAVE_NOTIFY:

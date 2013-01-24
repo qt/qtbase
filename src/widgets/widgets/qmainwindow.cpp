@@ -1480,6 +1480,9 @@ bool QMainWindow::event(QEvent *event)
     \obsolete
 
     This property is not implemented in Qt 5. Setting it has no effect.
+
+    A replacement API (QtMacUnifiedToolBar) is available in QtMacExtras at
+    http://qt.gitorious.org/qtplayground/qtmacextras
 */
 void QMainWindow::setUnifiedTitleAndToolBarOnMac(bool set)
 {

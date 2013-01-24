@@ -46,7 +46,12 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qsslconfiguration.h>
 #include "../../auto/network-settings.h"
+
+#ifdef QT_BUILD_INTERNAL
+#include "private/qsslsocket_p.h"
+#endif
 
 #define BANDWIDTH_LIMIT_BYTES (1024*100)
 #define TIME_ESTIMATION_SECONDS (97)
@@ -58,6 +63,8 @@ private slots:
     void initTestCase();
     void limiting_data();
     void limiting();
+    void setSslConfiguration_data();
+    void setSslConfiguration();
 };
 
 QNetworkReply *reply;
@@ -129,6 +136,42 @@ void tst_qnetworkreply::limiting()
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
+void tst_qnetworkreply::setSslConfiguration_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<bool>("works");
+
+    QTest::newRow("codereview.qt-project.org") << QUrl("https://codereview.qt-project.org") << true;
+    QTest::newRow("test-server") << QUrl("https://" + QtNetworkSettings::serverName() + "/") << false;
+}
+
+void tst_qnetworkreply::setSslConfiguration()
+{
+    QFETCH(QUrl, url);
+    QNetworkRequest request(url);
+    QSslConfiguration conf = request.sslConfiguration();
+    conf.setProtocol(QSsl::TlsV1_0); // TLS 1.0 will be used anyway, just make sure we change the configuration
+    request.setSslConfiguration(conf);
+    QNetworkAccessManager manager;
+    reply = manager.get(request);
+    QObject::connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(15);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+#ifdef QT_BUILD_INTERNAL
+    QFETCH(bool, works);
+    bool rootCertLoadingAllowed = QSslSocketPrivate::rootCertOnDemandLoadingSupported();
+#if defined(Q_OS_LINUX) || defined (Q_OS_BLACKBERRY)
+    QCOMPARE(rootCertLoadingAllowed, true);
+#elif defined(Q_OS_MAC)
+    QCOMPARE(rootCertLoadingAllowed, false);
+#endif // other platforms: undecided (Windows: depends on the version)
+    if (works) {
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+    } else {
+        QCOMPARE(reply->error(), QNetworkReply::SslHandshakeFailedError);
+    }
+#endif
+}
 
 QTEST_MAIN(tst_qnetworkreply)
 

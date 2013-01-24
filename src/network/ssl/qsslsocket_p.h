@@ -182,6 +182,8 @@ public:
     virtual QSslCipher sessionCipher() const = 0;
     virtual void continueHandshake() = 0;
 
+    Q_AUTOTEST_EXPORT static bool rootCertOnDemandLoadingSupported();
+
 private:
     static bool ensureLibraryLoaded();
     static void ensureCiphersAndCertsLoaded();
