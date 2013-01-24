@@ -1244,17 +1244,17 @@ void tst_QAbstractSlider::setRepeatAction()
     QCOMPARE(slider->value(), 55);
 
     waitUntilTimeElapsed(t, 550);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(slider->value(), 65);
     QCOMPARE(spy.at(0).at(0).toUInt(), (uint)QAbstractSlider::SliderPageStepAdd);
 
     waitUntilTimeElapsed(t, 790);
-    QCOMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.count(), 2);
     QCOMPARE(slider->value(), 75);
     QCOMPARE(spy.at(1).at(0).toUInt(), (uint)QAbstractSlider::SliderPageStepAdd);
 
     waitUntilTimeElapsed(t, 1790);
-    QCOMPARE(spy.count(), 6);
+    QTRY_COMPARE(spy.count(), 6);
     QCOMPARE(slider->value(), 115);
     QCOMPARE(spy.at(4).at(0).toUInt(), (uint)QAbstractSlider::SliderPageStepAdd);
     QCOMPARE(spy.at(5).at(0).toUInt(), (uint)QAbstractSlider::SliderPageStepAdd);
