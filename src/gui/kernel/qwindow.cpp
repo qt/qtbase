@@ -642,7 +642,8 @@ void QWindow::lower()
 }
 
 /*!
-    Sets the window's opacity in the windowing system to \a level.
+    \property QWindow::opacity
+    \brief The opacity of the window in the windowing system.
 
     If the windowing system supports window opacity, this can be used to fade the
     window in and out, or to make it semitransparent.
@@ -650,15 +651,25 @@ void QWindow::lower()
     A value of 1.0 or above is treated as fully opaque, whereas a value of 0.0 or below
     is treated as fully transparent. Values inbetween represent varying levels of
     translucency between the two extremes.
+
+    The default value is 1.0.
 */
 void QWindow::setOpacity(qreal level)
 {
     Q_D(QWindow);
-    if (level == d->opacity) // #fixme: Add property for 5.1
+    if (level == d->opacity)
         return;
     d->opacity = level;
-    if (d->platformWindow)
+    if (d->platformWindow) {
         d->platformWindow->setOpacity(level);
+        emit opacityChanged(level);
+    }
+}
+
+qreal QWindow::opacity() const
+{
+    Q_D(const QWindow);
+    return d->opacity;
 }
 
 /*!

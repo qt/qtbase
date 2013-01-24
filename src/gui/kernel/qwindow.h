@@ -112,6 +112,7 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 
 public:
 
@@ -148,6 +149,8 @@ public:
     QString title() const;
 
     void setOpacity(qreal level);
+    qreal opacity() const;
+
     void requestActivate();
 
     bool isActive() const;
@@ -286,6 +289,8 @@ Q_SIGNALS:
     void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
     void focusObjectChanged(QObject *object);
+
+    void opacityChanged(qreal opacity);
 
 private Q_SLOTS:
     void screenDestroyed(QObject *screen);
