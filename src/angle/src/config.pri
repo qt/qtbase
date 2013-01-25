@@ -24,8 +24,8 @@ defineReplace(addGnuPath) {
     unset(gnuPath)
     gnuPath = $$1
     !isEmpty(gnuPath):!isEmpty(GNUTOOLS) {
-        eval(gnuPath = $${GNUTOOLS} && $$gnuPath)
-        silent: eval(gnuPath = @echo generating sources from ${QMAKE_FILE_IN} && $$val_escape($$gnuPath))
+        gnuPath = $${GNUTOOLS} && $$gnuPath
+        silent: gnuPath = @echo generating sources from ${QMAKE_FILE_IN} && $$gnuPath
     }
     return($$gnuPath)
 }
