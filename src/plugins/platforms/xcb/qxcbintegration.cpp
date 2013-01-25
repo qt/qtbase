@@ -114,7 +114,7 @@ QXcbIntegration::QXcbIntegration(const QStringList &parameters)
 
     m_fontDatabase.reset(new QGenericUnixFontDatabase());
     m_inputContext.reset(QPlatformInputContextFactory::create());
-#ifndef QT_NO_ACCESSIBILITY_ATSPI_BRIDGE
+#if !defined(QT_NO_ACCESSIBILITY) && !defined(QT_NO_ACCESSIBILITY_ATSPI_BRIDGE)
     m_accessibility.reset(new QSpiAccessibleBridge());
 #endif
 }
