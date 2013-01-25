@@ -13,17 +13,17 @@ isEmpty(ANGLE_DIR) {
 }
 
 win32 {
-    GNUTOOLS_DIR = $$absolute_path(../../../../gnuwin32/bin)
-    exists($$GNUTOOLS_DIR/gperf.exe) {
-        # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
-        GNUTOOLS = "(set PATH=$$replace(GNUTOOLS_DIR, [/\\\\], $${QMAKE_DIR_SEP});%PATH:)=^)%)"
+    gnutools.value = $$absolute_path(../../../../gnuwin32/bin)
+    exists($$gnutools.value/gperf.exe) {
+        gnutools.name = PATH
+        gnutools.CONFIG = prepend
     }
 }
 
 defineReplace(addGnuPath) {
     gnuPath = $$1
-    !isEmpty(gnuPath):!isEmpty(GNUTOOLS) {
-        gnuPath = $${GNUTOOLS} && $$gnuPath
+    !isEmpty(gnuPath):!isEmpty(gnutools.name) {
+        qtAddToolEnv(gnuPath, gnutools)
         silent: gnuPath = @echo generating sources from ${QMAKE_FILE_IN} && $$gnuPath
     }
     return($$gnuPath)
