@@ -3,7 +3,7 @@
 
 ANGLE_DIR = $$(ANGLE_DIR)
 isEmpty(ANGLE_DIR) {
-    ANGLE_DIR = $$PWD/../../3rdparty/angle
+    ANGLE_DIR = $$absolute_path(../../3rdparty/angle)
 } else {
     !build_pass:message("Using external ANGLE from $$ANGLE_DIR")
 }
@@ -13,7 +13,7 @@ isEmpty(ANGLE_DIR) {
 }
 
 win32 {
-    GNUTOOLS_DIR=$$PWD/../../../../gnuwin32/bin
+    GNUTOOLS_DIR = $$absolute_path(../../../../gnuwin32/bin)
     exists($$GNUTOOLS_DIR/gperf.exe) {
         # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
         GNUTOOLS = "(set PATH=$$replace(GNUTOOLS_DIR, [/\\\\], $${QMAKE_DIR_SEP});%PATH:)=^)%)"
