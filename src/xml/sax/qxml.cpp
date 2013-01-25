@@ -2365,7 +2365,7 @@ events are reported.
     it we can use the same handler for both of the following
     reader functions:
 
-    \snippet rsslisting/rsslisting.cpp 0
+    \snippet rsslisting/listing.cpp 0
 
     Since the reader will inform the handler of parsing errors, it is
     necessary to reimplement QXmlErrorHandler::fatalError() if, for
