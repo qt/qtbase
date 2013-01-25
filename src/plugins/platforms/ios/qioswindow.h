@@ -89,10 +89,11 @@ private:
     int m_touchId;
 
     QRect m_requestedGeometry;
-
+    int m_windowLevel;
     qreal m_devicePixelRatio;
 
     void raiseOrLower(bool raise);
+    void updateWindowLevel();
 };
 
 QT_END_NAMESPACE

@@ -321,6 +321,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_view([[EAGLView alloc] initWithQIOSWindow:this])
     , m_touchId(0)
     , m_requestedGeometry(QPlatformWindow::geometry())
+    , m_windowLevel(0)
     , m_devicePixelRatio(1.0)
 {
     if (isQtApplication())
@@ -355,6 +356,7 @@ void QIOSWindow::setVisible(bool visible)
     // Since iOS doesn't do window management the way a Qt application
     // expects, we need to raise and activate windows ourselves:
     if (visible) {
+        updateWindowLevel();
         requestActivateWindow();
     } else {
         // Activate top-most visible QWindow:
@@ -421,10 +423,8 @@ void QIOSWindow::requestActivateWindow()
 
 void QIOSWindow::raiseOrLower(bool raise)
 {
-    // Re-insert m_view at the correct index among its sibling views (QWindows), and ensure
-    // that window flags (staysOnTop, popup) are respected. This function assumes that all
-    // sibling views are sorted correctly. Note: We sort popup and staysOnTop windows at
-    // the same level:
+    // Re-insert m_view at the correct index among its sibling views
+    // (QWindows) according to their current m_windowLevel:
     if (!isQtApplication())
         return;
 
@@ -432,19 +432,41 @@ void QIOSWindow::raiseOrLower(bool raise)
     if (subviews.count == 1)
         return;
 
-    const Qt::WindowFlags topFlag = (Qt::Popup | Qt::WindowStaysOnTopHint) & ~Qt::Dialog;
-    bool thisWindowIsTop = topFlag & window()->flags();
-
     for (int i = int(subviews.count) - 1; i >= 0; --i) {
         UIView *view = static_cast<UIView *>([subviews objectAtIndex:i]);
-        bool otherWindowIsTop = topFlag & view.qwindow->flags();
-        if ((raise && (thisWindowIsTop || !otherWindowIsTop))
-                || (!raise && (thisWindowIsTop && !otherWindowIsTop))) {
+        if (view.hidden || view == m_view)
+            continue;
+        int level = static_cast<QIOSWindow *>(view.qwindow->handle())->m_windowLevel;
+        if (m_windowLevel > level || (raise && m_windowLevel == level)) {
             [m_view.superview insertSubview:m_view aboveSubview:view];
             return;
         }
     }
     [m_view.superview insertSubview:m_view atIndex:0];
+}
+
+void QIOSWindow::updateWindowLevel()
+{
+    Qt::WindowType type = static_cast<Qt::WindowType>(int(window()->flags() & Qt::WindowType_Mask));
+
+    if (type == Qt::ToolTip)
+        m_windowLevel = 120;
+    else if (window()->flags() & Qt::WindowStaysOnTopHint)
+        m_windowLevel = 100;
+    else if (window()->isModal())
+        m_windowLevel = 30;
+    else if (type & Qt::Popup & ~Qt::Window)
+        m_windowLevel = 20;
+    else if (type == Qt::Tool)
+        m_windowLevel = 10;
+    else
+        m_windowLevel = 0;
+
+    // A window should be in at least the same m_windowLevel as its parent:
+    QWindow *transientParent = window()->transientParent();
+    QIOSWindow *transientParentWindow = transientParent ? static_cast<QIOSWindow *>(transientParent->handle()) : 0;
+    if (transientParentWindow)
+        m_windowLevel = qMax(transientParentWindow->m_windowLevel, m_windowLevel);
 }
 
 void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientation)
