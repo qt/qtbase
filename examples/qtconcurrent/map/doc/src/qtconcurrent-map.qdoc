@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example qtconcurrent/map
+    \example map
     \title Map Example
     \brief Demonstrates how to scale images synchronously.
     \ingroup qtconcurrentexamples

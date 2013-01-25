@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example qtconcurrent/runfunction
+    \example runfunction
     \title Run Function Example
     \brief Demonstrates how to run standard functions concurrently.
     \ingroup qtconcurrentexamples
