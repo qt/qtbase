@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <math.h>
-#include <qglobal.h>
+#include <qdebug.h>
 #include <qdir.h>
 #include <qfileinfo.h>
 #include <QScopedArrayPointer>
@@ -1281,7 +1281,7 @@ static QString getWinLocaleInfo(LCTYPE type)
     int cnt = GetLocaleInfo(id, type, 0, 0) * 2;
 
     if (cnt == 0) {
-        qWarning("QLocale: empty windows locale info (%d)", type);
+        qWarning().nospace() << "QLocale: empty windows locale info (" <<  type << ')';
         return QString();
     }
     cnt /= sizeof(wchar_t);
@@ -1289,7 +1289,7 @@ static QString getWinLocaleInfo(LCTYPE type)
     cnt = GetLocaleInfo(id, type, buf.data(), cnt);
 
     if (cnt == 0) {
-        qWarning("QLocale: empty windows locale info (%d)", type);
+        qWarning().nospace() << "QLocale: empty windows locale info (" << type << ')';
         return QString();
     }
     return QString::fromWCharArray(buf.data());
