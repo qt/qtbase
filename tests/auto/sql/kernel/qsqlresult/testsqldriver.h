@@ -81,6 +81,8 @@ public:
         case QSqlDriver::PreparedQueries:
         case QSqlDriver::NamedPlaceholders:
             return true;
+        default:
+            break;
         }
         return false;
     }
