@@ -11,7 +11,6 @@ TARGET = tst_moc
 
 INCLUDEPATH += testproject/include testproject
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
 cross_compile: DEFINES += MOC_CROSS_COMPILED
 
 HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-newlines.h oldstyle-casts.h \
