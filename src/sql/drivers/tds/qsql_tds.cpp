@@ -145,6 +145,12 @@ public:
     bool initialized;
 };
 
+struct QTDSColumnData
+{
+    void *data;
+    DBINT nullbind;
+};
+Q_DECLARE_TYPEINFO(QTDSColumnData, Q_MOVABLE_TYPE);
 
 class QTDSResultPrivate
 {
@@ -156,7 +162,7 @@ public:
     void addErrorMsg(QString& errMsg) { errorMsgs.append(errMsg); }
     QString getErrorMsgs() { return errorMsgs.join(QLatin1String("\n")); }
     void clearErrorMsgs() { errorMsgs.clear(); }
-    QVector<void *> buffer;
+    QVector<QTDSColumnData> buffer;
     QSqlRecord rec;
 
 private:
@@ -325,8 +331,8 @@ void QTDSResult::cleanup()
 {
     d->clearErrorMsgs();
     d->rec.clear();
-    for (int i = 0; i < d->buffer.size() / 2; ++i)
-        free(d->buffer.at(i * 2));
+    for (int i = 0; i < d->buffer.size(); ++i)
+        free(d->buffer.at(i * 2).data);
     d->buffer.clear();
     // "can" stands for "cancel"... very clever.
     dbcanquery(d->dbproc);
@@ -340,9 +346,9 @@ QVariant QTDSResult::handle() const
     return QVariant(qRegisterMetaType<DBPROCESS *>("DBPROCESS*"), &d->dbproc);
 }
 
-static inline bool qIsNull(const void *ind)
+static inline bool qIsNull(const QTDSColumnData &p)
 {
-    return *reinterpret_cast<const DBINT *>(&ind) == -1;
+    return p.nullbind == -1;
 }
 
 bool QTDSResult::gotoNext(QSqlCachedResult::ValueCache &values, int index)
@@ -364,33 +370,33 @@ bool QTDSResult::gotoNext(QSqlCachedResult::ValueCache &values, int index)
         int idx = index + i;
         switch (d->rec.field(i).type()) {
             case QVariant::DateTime:
-                if (qIsNull(d->buffer.at(i * 2 + 1))) {
+                if (qIsNull(d->buffer.at(i))) {
                     values[idx] = QVariant(QVariant::DateTime);
                 } else {
-                    DBDATETIME *bdt = (DBDATETIME*) d->buffer.at(i * 2);
+                    DBDATETIME *bdt = (DBDATETIME*) d->buffer.at(i).data;
                     QDate date = QDate::fromString(QLatin1String("1900-01-01"), Qt::ISODate);
                     QTime time = QTime::fromString(QLatin1String("00:00:00"), Qt::ISODate);
                     values[idx] = QDateTime(date.addDays(bdt->dtdays), time.addMSecs(int(bdt->dttime / 0.3)));
                 }
                 break;
             case QVariant::Int:
-                if (qIsNull(d->buffer.at(i * 2 + 1)))
+                if (qIsNull(d->buffer.at(i)))
                     values[idx] = QVariant(QVariant::Int);
                 else
-                    values[idx] = *((int*)d->buffer.at(i * 2));
+                    values[idx] = *((int*)d->buffer.at(i).data);
                 break;
             case QVariant::Double:
             case QVariant::String:
-                if (qIsNull(d->buffer.at(i * 2 + 1)))
+                if (qIsNull(d->buffer.at(i)))
                     values[idx] = QVariant(QVariant::String);
                 else
-                    values[idx] = QString::fromLocal8Bit((const char*)d->buffer.at(i * 2)).trimmed();
+                    values[idx] = QString::fromLocal8Bit((const char*)d->buffer.at(i).data).trimmed();
                 break;
             case QVariant::ByteArray: {
-                if (qIsNull(d->buffer.at(i * 2 + 1)))
+                if (qIsNull(d->buffer.at(i)))
                     values[idx] = QVariant(QVariant::ByteArray);
                 else
-                    values[idx] = QByteArray((const char*)d->buffer.at(i * 2));
+                    values[idx] = QByteArray((const char*)d->buffer.at(i).data);
                 break;
             }
             default:
@@ -430,7 +436,7 @@ bool QTDSResult::reset (const QString& query)
     setSelect((DBCMDROW(d->dbproc) == SUCCEED)); // decide whether or not we are dealing with a SELECT query
     int numCols = dbnumcols(d->dbproc);
     if (numCols > 0) {
-        d->buffer.resize(numCols * 2);
+        d->buffer.resize(numCols);
         init(numCols);
     }
     for (int i = 0; i < numCols; ++i) {
@@ -470,11 +476,11 @@ bool QTDSResult::reset (const QString& query)
             break;
         }
         if (ret == SUCCEED) {
-            d->buffer[i * 2] = p;
-            ret = dbnullbind(d->dbproc, i+1, (DBINT*)(&d->buffer[i * 2 + 1]));
+            d->buffer[i].data = p;
+            ret = dbnullbind(d->dbproc, i+1, &d->buffer[i].nullbind);
         } else {
-            d->buffer[i * 2] = 0;
-            d->buffer[i * 2 + 1] = 0;
+            d->buffer[i].data = 0;
+            d->buffer[i].nullbind = 0;
             free(p);
         }
         if ((ret != SUCCEED) && (ret != -1)) {
