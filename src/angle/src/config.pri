@@ -21,7 +21,6 @@ win32 {
 }
 
 defineReplace(addGnuPath) {
-    unset(gnuPath)
     gnuPath = $$1
     !isEmpty(gnuPath):!isEmpty(GNUTOOLS) {
         gnuPath = $${GNUTOOLS} && $$gnuPath
