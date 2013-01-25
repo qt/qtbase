@@ -345,6 +345,12 @@ QIOSWindow::~QIOSWindow()
     [m_view release];
 }
 
+bool QIOSWindow::blockedByModal()
+{
+    QWindow *modalWindow = QGuiApplication::modalWindow();
+    return modalWindow && modalWindow != window();
+}
+
 void QIOSWindow::setVisible(bool visible)
 {
     QPlatformWindow::setVisible(visible);
@@ -355,8 +361,16 @@ void QIOSWindow::setVisible(bool visible)
 
     // Since iOS doesn't do window management the way a Qt application
     // expects, we need to raise and activate windows ourselves:
-    if (visible) {
+    if (visible)
         updateWindowLevel();
+
+    if (blockedByModal()) {
+        if (visible)
+            raise();
+        return;
+    }
+
+    if (visible) {
         requestActivateWindow();
     } else {
         // Activate top-most visible QWindow:
@@ -415,6 +429,9 @@ void QIOSWindow::requestActivateWindow()
     // Note that several windows can be active at the same time if they exist in the same
     // hierarchy (transient children). But only one window can be QGuiApplication::focusWindow().
     // Dispite the name, 'requestActivateWindow' means raise and transfer focus to the window:
+    if (blockedByModal())
+        return;
+
     raise();
     QPlatformInputContext *context = QGuiApplicationPrivate::platformIntegration()->inputContext();
     static_cast<QIOSInputContext *>(context)->focusViewChanged(m_view);

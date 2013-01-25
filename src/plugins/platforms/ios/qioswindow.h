@@ -94,6 +94,7 @@ private:
 
     void raiseOrLower(bool raise);
     void updateWindowLevel();
+    bool blockedByModal();
 };
 
 QT_END_NAMESPACE
