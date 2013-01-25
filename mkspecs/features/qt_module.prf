@@ -206,7 +206,7 @@ unix {
 }
 
 unix|win32-g++* {
-    for(i, QT): \
+    for(i, MODULE_DEPENDS): \
         QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$eval(QT.$${i}.MAJOR_VERSION))
     isEmpty(QMAKE_PKGCONFIG_DESCRIPTION): \
         QMAKE_PKGCONFIG_DESCRIPTION = $$replace(TARGET, ^Qt, "Qt ") module
