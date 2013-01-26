@@ -45,7 +45,7 @@ QUrl url("http://www.example.com/List of holidays.xml");
 
 
 //! [1]
-QUrl url = QUrl::fromEncoded("http://qt.nokia.com/List%20of%20holidays.xml");
+QUrl url = QUrl::fromEncoded("http://qt-project.org/List%20of%20holidays.xml");
 //! [1]
 
 
@@ -73,10 +73,10 @@ http://www.example.com/cgi-bin/drawgraph.cgi?type(pie)color(green)
 
 
 //! [5]
-QUrl baseUrl("http://qt.nokia.com/support");
-QUrl relativeUrl("../products/solutions");
+QUrl baseUrl("http://qt.digia.com/Support/");
+QUrl relativeUrl("../Product/Library/");
 qDebug(baseUrl.resolved(relativeUrl).toString());
-// prints "http://qt.nokia.com/products/solutions"
+// prints "http://qt.digia.com/Product/Library/"
 //! [5]
 
 

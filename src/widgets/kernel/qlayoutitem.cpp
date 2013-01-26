@@ -109,7 +109,7 @@ QSizePolicy::operator QVariant() const
     be expressed using hasHeightForWidth(), heightForWidth(), and
     minimumHeightForWidth(). For more explanation see the \e{Qt
     Quarterly} article
-    \l{http://qt.nokia.com/doc/qq/qq04-height-for-width.html}{Trading
+    \l{http://doc.qt.digia.com/qq/qq04-height-for-width.html}{Trading
     Height for Width}.
 
     \sa QLayout

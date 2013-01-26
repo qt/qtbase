@@ -45,16 +45,16 @@
                 <title>QtQuestions</title>
             </bookmark>
         </folder>
-        <bookmark href="http://qt.nokia.com/doc/qq/">
+        <bookmark href="http://doc.qt.digia.com/qq/">
             <title>Qt Quarterly</title>
         </bookmark>
-        <bookmark href="http://qt.nokia.com/">
+        <bookmark href="http://qt-project.org/">
             <title>Qt home page</title>
         </bookmark>
-        <bookmark href="http://qt.nokia.com/doc/4.0/">
+        <bookmark href="http://doc.qt.digia.com/4.0/">
             <title>Qt 4.0 documentation</title>
         </bookmark>
-        <bookmark href="http://qt.nokia.com/developer/faqs/">
+        <bookmark href="http://qt-project.org/faq/">
             <title>Frequently Asked Questions</title>
         </bookmark>
     </folder>
