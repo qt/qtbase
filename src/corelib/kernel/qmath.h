@@ -42,6 +42,10 @@
 #ifndef QMATH_H
 #define QMATH_H
 
+#if 0
+#pragma qt_class(QtMath)
+#endif
+
 #include <math.h>
 
 #include <QtCore/qglobal.h>
