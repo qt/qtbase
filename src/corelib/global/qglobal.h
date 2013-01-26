@@ -151,14 +151,10 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
-#define QT_BEGIN_HEADER
-#define QT_END_HEADER
-
 #if defined(Q_OS_DARWIN) && !defined(QT_LARGEFILE_SUPPORT)
 #  define QT_LARGEFILE_SUPPORT 64
 #endif
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 /*
@@ -968,8 +964,6 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 }
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
 // Q_GLOBAL_STATIC
 #include <QtCore/qglobalstatic.h>
 

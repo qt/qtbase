@@ -49,8 +49,6 @@
 #error qrect.h must be included before any header file that defines topLeft
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QMargins;
@@ -791,7 +789,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QRectF &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QRECT_H

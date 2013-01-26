@@ -60,8 +60,6 @@
 #include <QtGui/qevent.h>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -856,7 +854,5 @@ inline bool QWidget::testAttribute(Qt::WidgetAttribute attribute) const
 #define QWIDGETSIZE_MAX ((1<<24)-1)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWIDGET_H

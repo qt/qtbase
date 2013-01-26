@@ -59,8 +59,6 @@
 
 #include <QtGui/qopengl.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QOpenGLContextPrivate;
@@ -158,8 +156,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 

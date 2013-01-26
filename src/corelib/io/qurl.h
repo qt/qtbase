@@ -50,8 +50,6 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -383,7 +381,5 @@ QT_END_NAMESPACE
 #if QT_DEPRECATED_SINCE(5,0)
 # include <QtCore/qurlquery.h>
 #endif
-
-QT_END_HEADER
 
 #endif // QURL_H

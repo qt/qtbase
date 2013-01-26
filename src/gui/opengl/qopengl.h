@@ -46,8 +46,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 #if defined(QT_OPENGL_ES_2)
 # if defined(Q_OS_MAC)
 #  include <OpenGLES/ES2/gl.h>
@@ -111,8 +109,6 @@ QT_BEGIN_NAMESPACE
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 

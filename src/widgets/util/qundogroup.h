@@ -45,8 +45,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QUndoGroupPrivate;
@@ -103,7 +101,5 @@ private:
 #endif // QT_NO_UNDOGROUP
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QUNDOGROUP_H

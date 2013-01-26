@@ -47,8 +47,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -422,7 +420,5 @@ inline bool QTreeWidgetItem::isDisabled() const
 #endif // QT_NO_TREEWIDGET
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTREEWIDGET_H

@@ -54,8 +54,6 @@
 #include <QtGui/qpixmap.h>
 #include <QtCore/qatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -158,7 +156,5 @@ private:
 extern bool qt_xForm_helper(const QTransform&, int, int, int, uchar*, int, int, int, const uchar*, int, int, int);
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMPIXMAP_H

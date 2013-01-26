@@ -45,8 +45,6 @@
 #include <QtWidgets/qwidget.h>
 #include <QtGui/qkeysequence.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -100,7 +98,5 @@ protected:
 #endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSHORTCUT_H

@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -332,7 +330,5 @@ str)).arg(QString::fromLatin1(qVersion())); QMessageBox::critical(0, QApplicatio
 #endif // QT_NO_MESSAGEBOX
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMESSAGEBOX_H

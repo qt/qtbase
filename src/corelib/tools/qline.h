@@ -44,8 +44,6 @@
 
 #include <QtCore/qpoint.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -420,7 +418,5 @@ Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QLineF &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QLINE_H

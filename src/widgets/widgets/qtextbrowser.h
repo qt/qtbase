@@ -45,8 +45,6 @@
 #include <QtWidgets/qtextedit.h>
 #include <QtCore/qurl.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -128,7 +126,5 @@ private:
 #endif // QT_NO_TEXTBROWSER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTEXTBROWSER_H

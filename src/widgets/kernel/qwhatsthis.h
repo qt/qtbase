@@ -45,8 +45,6 @@
 #include <QtCore/qobject.h>
 #include <QtGui/qcursor.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -73,7 +71,5 @@ public:
 #endif // QT_NO_WHATSTHIS
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWHATSTHIS_H

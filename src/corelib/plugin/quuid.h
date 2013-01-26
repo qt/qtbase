@@ -44,8 +44,6 @@
 
 #include <QtCore/qstring.h>
 
-QT_BEGIN_HEADER
-
 #if defined(Q_OS_WIN)
 #ifndef GUID_DEFINED
 #define GUID_DEFINED
@@ -226,7 +224,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QUuid &);
 Q_CORE_EXPORT uint qHash(const QUuid &uuid, uint seed = 0) Q_DECL_NOTHROW;
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QUUID_H

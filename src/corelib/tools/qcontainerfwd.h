@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -64,7 +62,5 @@ template<class T, int Prealloc = 256> class QVarLengthArray;
 template <class T> class QVector;
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QCONTAINERFWD_H

@@ -58,8 +58,6 @@
 #include <QtWidgets/qwidget.h>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT  void qt_handleTouchEvent(QWindow *w, QTouchDevice *device,
@@ -233,7 +231,5 @@ private:
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTESTTOUCH_H

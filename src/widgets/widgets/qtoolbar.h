@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -171,7 +169,5 @@ inline QAction *QToolBar::actionAt(int ax, int ay) const
 #endif // QT_NO_TOOLBAR
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDYNAMICTOOLBAR_H

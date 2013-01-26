@@ -44,8 +44,6 @@
 
 #include <QtCore/qoldbasicatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
@@ -422,7 +420,5 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #undef __GNU_EXTENSION
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_S390_H

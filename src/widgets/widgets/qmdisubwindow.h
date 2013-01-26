@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -150,8 +148,6 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMdiSubWindow::SubWindowOptions)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_MDIAREA
 

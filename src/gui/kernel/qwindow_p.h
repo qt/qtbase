@@ -59,8 +59,6 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/QIcon>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #define QWINDOWSIZE_MAX ((1<<24)-1)
@@ -161,7 +159,5 @@ public:
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWINDOW_P_H

@@ -49,8 +49,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringmatcher.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -256,7 +254,5 @@ inline QDataStream &operator<<(QDataStream &out, const QStringList &list)
 #endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSTRINGLIST_H

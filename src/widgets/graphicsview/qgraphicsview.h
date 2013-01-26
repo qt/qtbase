@@ -47,8 +47,6 @@
 #include <QtWidgets/qscrollarea.h>
 #include <QtWidgets/qgraphicsscene.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -309,7 +307,5 @@ inline QPolygon QGraphicsView::mapFromScene(qreal ax, qreal ay, qreal w, qreal h
 #endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGRAPHICSVIEW_H

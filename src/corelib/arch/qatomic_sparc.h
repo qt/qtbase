@@ -44,8 +44,6 @@
 
 #include <QtCore/qoldbasicatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if defined(_LP64)
@@ -521,7 +519,5 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #endif // _LP64
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_SPARC_H

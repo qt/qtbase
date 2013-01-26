@@ -50,10 +50,8 @@
 // this header, as we have a "qt_sync_stop_processing" below, which in turn
 // is here because this file contains a template mess and duplicates the
 // classes found in qsharedpointer.h
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 QT_END_NAMESPACE
-QT_END_HEADER
 #pragma qt_sync_stop_processing
 #endif
 
@@ -65,8 +63,6 @@ QT_END_HEADER
 #if defined(Q_COMPILER_RVALUE_REFS) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
 #  include <utility>           // for std::forward
 #endif
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -888,7 +884,5 @@ template<typename T> Q_DECLARE_TYPEINFO_BODY(QSharedPointer<T>, Q_MOVABLE_TYPE);
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

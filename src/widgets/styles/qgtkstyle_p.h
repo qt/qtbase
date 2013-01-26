@@ -47,8 +47,6 @@
 #include <QtGui/QFont>
 #include <QtWidgets/QFileDialog>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -118,7 +116,5 @@ public:
 #endif //!defined(QT_NO_STYLE_QGTK)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif //QGTKSTYLE_P_H

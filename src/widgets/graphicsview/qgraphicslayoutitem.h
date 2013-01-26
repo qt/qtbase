@@ -46,8 +46,6 @@
 #include <QtWidgets/qsizepolicy.h>
 #include <QtGui/qevent.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -147,7 +145,5 @@ inline qreal QGraphicsLayoutItem::maximumHeight() const
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

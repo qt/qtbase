@@ -56,8 +56,6 @@
 #error qmetatype.h must be included before any header file that defines Bool
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -979,7 +977,5 @@ QT_END_NAMESPACE
 
 QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
-
-QT_END_HEADER
 
 #endif // QMETATYPE_H

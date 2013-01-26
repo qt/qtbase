@@ -52,8 +52,6 @@
 #include <byteswap.h>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -385,7 +383,5 @@ template <> inline qint8 qbswap<qint8>(qint8 source)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QENDIAN_H

@@ -60,8 +60,6 @@
 #include <QtCore/qrect.h>
 
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -300,7 +298,5 @@ int main(int argc, char *argv[]) \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }
-
-QT_END_HEADER
 
 #endif

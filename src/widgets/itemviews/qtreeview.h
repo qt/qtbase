@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qabstractitemview.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -234,7 +232,5 @@ private:
 #endif // QT_NO_TREEVIEW
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTREEVIEW_H

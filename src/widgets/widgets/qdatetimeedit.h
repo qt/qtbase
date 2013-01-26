@@ -46,8 +46,6 @@
 #include <QtCore/qvariant.h>
 #include <QtWidgets/qabstractspinbox.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -234,7 +232,5 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeEdit::Sections)
 #endif // QT_NO_DATETIMEEDIT
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDATETIMEEDIT_H

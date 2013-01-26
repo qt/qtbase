@@ -54,8 +54,6 @@
 
 #if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QRawFontPrivate;
@@ -142,8 +140,6 @@ private:
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 

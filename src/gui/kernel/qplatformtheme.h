@@ -53,8 +53,6 @@
 
 #include <QtCore/QtGlobal>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QMenu;
@@ -276,7 +274,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMTHEME_H

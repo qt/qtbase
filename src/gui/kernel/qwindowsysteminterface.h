@@ -62,8 +62,6 @@
 #include <QtCore/QEventLoop>
 #include <QtGui/QVector2D>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QMimeData;
@@ -192,5 +190,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
+
 #endif // QWINDOWSYSTEMINTERFACE_H

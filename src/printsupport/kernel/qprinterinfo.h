@@ -46,8 +46,6 @@
 
 #include <QtPrintSupport/QPrinter>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -90,7 +88,5 @@ private:
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPRINTERINFO_H

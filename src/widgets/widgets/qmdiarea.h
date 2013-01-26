@@ -45,8 +45,6 @@
 #include <QtWidgets/qabstractscrollarea.h>
 #include <QtWidgets/qtabwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -171,8 +169,6 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMdiArea::AreaOptions)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_MDIAREA
 #endif // QMDIAREA_H

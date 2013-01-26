@@ -49,8 +49,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -130,7 +128,5 @@ inline void QTestEventLoop::timerEvent(QTimerEvent *e)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

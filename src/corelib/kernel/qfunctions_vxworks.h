@@ -103,15 +103,12 @@
 #  undef m_pkthdr
 #endif
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_BUILD_CORE_LIB
 #endif
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
 
 #ifndef RTLD_LOCAL
 #define RTLD_LOCAL  0

@@ -46,8 +46,6 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QVariant>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -133,7 +131,5 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QScrollerProperties::OvershootPolicy)
 Q_DECLARE_METATYPE(QScrollerProperties::FrameRates)
-
-QT_END_HEADER
 
 #endif // QSCROLLERPROPERTIES_H

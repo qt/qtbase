@@ -48,8 +48,6 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
@@ -85,6 +83,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QEGLFSINTEGRATION_H

@@ -65,8 +65,6 @@
 #include "private/qshortcutmap_p.h"
 #include <qicon.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
@@ -292,7 +290,5 @@ Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey 
                              const QGuiApplicationPrivate::ActiveTouchPointsKey &b);
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGUIAPPLICATION_P_H

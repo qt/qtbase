@@ -44,10 +44,8 @@
 #include <QtCore/qfunctions_wince.h>
 
 #ifdef QT_BUILD_GUI_LIB
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 QT_END_NAMESPACE
-QT_END_HEADER
 #endif
 
 

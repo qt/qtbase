@@ -42,8 +42,6 @@
 #ifndef QATOMIC_VXWORKS_H
 #define QATOMIC_VXWORKS_H
 
-QT_BEGIN_HEADER
-
 #if defined(__ppc)
 #  include <QtCore/qatomic_power.h>
 #else // generic implementation with taskLock()
@@ -319,7 +317,5 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 QT_END_NAMESPACE
 
 #endif // generic implementation with taskLock()
-
-QT_END_HEADER
 
 #endif // QATOMIC_VXWORKS_H

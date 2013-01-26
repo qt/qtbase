@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -71,7 +69,5 @@ public:
 #endif // QT_NO_TOOLTIP
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTOOLTIP_H

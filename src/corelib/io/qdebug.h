@@ -53,8 +53,6 @@
 #include <QtCore/qset.h>
 #include <QtCore/qcontiguouscache.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -290,7 +288,5 @@ inline QDebug operator<<(QDebug debug, const QFlags<T> &flags)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDEBUG_H

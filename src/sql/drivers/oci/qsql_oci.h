@@ -52,8 +52,6 @@
 #define Q_EXPORT_SQLDRIVER_OCI Q_SQL_EXPORT
 #endif
 
-QT_BEGIN_HEADER
-
 typedef struct OCIEnv OCIEnv;
 typedef struct OCISvcCtx OCISvcCtx;
 
@@ -130,7 +128,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSQL_OCI_H

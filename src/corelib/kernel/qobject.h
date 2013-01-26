@@ -56,8 +56,6 @@
 
 #include <QtCore/qobject_impl.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -507,8 +505,6 @@ namespace QtPrivate {
 #define Q_SET_OBJECT_NAME(obj) QT_PREPEND_NAMESPACE(QtPrivate)::deref_for_methodcall(obj).setObjectName(QLatin1String(#obj))
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif
 

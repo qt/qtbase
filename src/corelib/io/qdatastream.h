@@ -50,8 +50,6 @@
 #error qdatastream.h must be included before any header file that defines Status
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -434,7 +432,5 @@ inline QDataStream& operator<<(QDataStream& s, const QPair<T1, T2>& p)
 #endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDATASTREAM_H

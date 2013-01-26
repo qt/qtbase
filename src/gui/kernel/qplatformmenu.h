@@ -57,8 +57,6 @@
 #include <QtGui/QKeySequence>
 #include <QtGui/QIcon>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QPlatformMenu;
@@ -134,8 +132,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif
 

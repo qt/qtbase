@@ -50,7 +50,6 @@
 #include <QtCore/qrunnable.h>
 #include <QtCore/qthreadpool.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -147,7 +146,6 @@ public:
 #endif //Q_QDOC
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_CONCURRENT
 

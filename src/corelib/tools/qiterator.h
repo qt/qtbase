@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #define Q_DECLARE_SEQUENTIAL_ITERATOR(C) \
@@ -189,7 +187,5 @@ public: \
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QITERATOR_H

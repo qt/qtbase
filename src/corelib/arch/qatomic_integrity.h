@@ -45,8 +45,6 @@
 #include <QtCore/qoldbasicatomic.h>
 #include <INTEGRITY.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #define qt_i2addr(a) reinterpret_cast<Address *>(const_cast<int *>(a))
@@ -283,8 +281,6 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_INTEGRITY_H
 

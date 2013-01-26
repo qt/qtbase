@@ -48,8 +48,6 @@
 #include <QtGui/qicon.h>
 #include <QtCore/qdiriterator.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -172,8 +170,6 @@ inline QFileInfo QFileSystemModel::fileInfo(const QModelIndex &aindex) const
 #endif // QT_NO_FILESYSTEMMODEL
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QFILESYSTEMMODEL_H
 

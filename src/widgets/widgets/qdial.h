@@ -45,8 +45,6 @@
 
 #include <QtWidgets/qabstractslider.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -104,7 +102,5 @@ private:
 #endif  // QT_NO_DIAL
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDIAL_H

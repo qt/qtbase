@@ -46,8 +46,6 @@
 
 #ifndef QT_NO_QOBJECT
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QVariant;
@@ -193,8 +191,6 @@ qPointerFromVariant(const QVariant &variant)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_QOBJECT
 

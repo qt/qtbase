@@ -45,8 +45,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qmetatype.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -251,7 +249,5 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QVector2D &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

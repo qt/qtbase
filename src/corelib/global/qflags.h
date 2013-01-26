@@ -47,8 +47,6 @@
 #include <QtCore/qtypeinfo.h>
 #include <QtCore/qtypetraits.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QFlag
@@ -151,7 +149,5 @@ typedef uint Flags;
 #endif /* Q_NO_TYPESAFE_FLAGS */
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QFLAGS_H

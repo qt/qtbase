@@ -51,8 +51,6 @@
 @class NSMenuItem;
 @class NSMenu;
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QCocoaMenu;
@@ -109,8 +107,6 @@ private:
     bool m_merged;
     quintptr m_tag;
 };
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 

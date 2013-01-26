@@ -47,8 +47,6 @@
 #include <QtSql/private/qsqlcachedresult_p.h>
 #include <ibase.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if 0
@@ -132,5 +130,4 @@ private:
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
 #endif // QSQL_IBASE_H

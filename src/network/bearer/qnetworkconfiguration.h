@@ -49,8 +49,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QNetworkConfigurationPrivate;
@@ -129,7 +127,5 @@ Q_DECLARE_SHARED(QNetworkConfiguration)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkConfiguration)
-
-QT_END_HEADER
 
 #endif // QNETWORKCONFIGURATION_H

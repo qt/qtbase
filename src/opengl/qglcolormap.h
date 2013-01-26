@@ -46,8 +46,6 @@
 #include <QtCore/qvector.h>
 #include <QtOpenGL/qtopenglglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -99,7 +97,5 @@ inline void QGLColormap::detach()
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGLCOLORMAP_H

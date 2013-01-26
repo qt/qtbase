@@ -53,8 +53,6 @@
 
 #include <stdlib.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -677,7 +675,5 @@ inline void QAccessible::updateAccessibility(QObject *object, int child, Event r
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QACCESSIBLE_H

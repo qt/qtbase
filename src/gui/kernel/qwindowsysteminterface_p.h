@@ -59,8 +59,6 @@
 #include <QMutex>
 #include <QList>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QWindowSystemInterfacePrivate {
@@ -424,7 +422,6 @@ public:
     static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };
 
-QT_END_HEADER
 QT_END_NAMESPACE
 
 #endif // QWINDOWSYSTEMINTERFACE_P_H

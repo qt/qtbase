@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QWindowContainerPrivate;
@@ -67,7 +65,5 @@ private slots:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWINDOWCONTAINER_H

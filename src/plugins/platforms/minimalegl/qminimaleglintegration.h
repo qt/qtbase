@@ -47,8 +47,6 @@
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformscreen.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QMinimalEglIntegration : public QPlatformIntegration
@@ -75,6 +73,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QMINIMALEGLINTEGRATION_H

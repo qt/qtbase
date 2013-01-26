@@ -45,8 +45,6 @@
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qtabwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -209,7 +207,5 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QMainWindow::DockOptions)
 #endif // QT_NO_MAINWINDOW
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDYNAMICMAINWINDOW_H

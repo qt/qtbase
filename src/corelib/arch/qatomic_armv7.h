@@ -54,11 +54,9 @@
 
 #if 0
 // silence syncqt warnings
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_END_NAMESPACE
-QT_END_HEADER
 #endif
 
 #endif // QATOMIC_ARMV7_H

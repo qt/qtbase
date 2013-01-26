@@ -50,8 +50,6 @@
 
 #include <limits.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -170,7 +168,5 @@ QT_END_NAMESPACE
 //### support old includes
 #include <QtWidgets/qboxlayout.h>
 #include <QtWidgets/qgridlayout.h>
-
-QT_END_HEADER
 
 #endif // QLAYOUT_H

@@ -68,8 +68,6 @@
 #  include <syslog.h>
 #endif
 
-QT_BEGIN_HEADER
-
 /*
     This cache stores internal Qt shader programs in shared memory.
 
@@ -449,8 +447,6 @@ private:
 QT_END_NAMESPACE
 
 #endif
-
-QT_END_HEADER
 
 #endif
 #endif

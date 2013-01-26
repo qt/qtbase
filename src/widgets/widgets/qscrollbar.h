@@ -45,8 +45,6 @@
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qabstractslider.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -93,7 +91,5 @@ private:
 #endif // QT_NO_SCROLLBAR
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSCROLLBAR_H

@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qabstractbutton.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -138,7 +136,5 @@ private:
 #endif // QT_NO_TOOLBUTTON
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTOOLBUTTON_H

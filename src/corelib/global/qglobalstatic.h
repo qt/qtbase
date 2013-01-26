@@ -46,7 +46,6 @@
 
 #include <QtCore/qatomic.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 namespace QtGlobalStatic {
@@ -139,6 +138,4 @@ struct QGlobalStatic
     Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ())
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #endif // QGLOBALSTATIC_H

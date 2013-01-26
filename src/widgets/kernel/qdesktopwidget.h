@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -103,7 +101,5 @@ inline int QDesktopWidget::screenCount() const
 { return numScreens(); }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDESKTOPWIDGET_H

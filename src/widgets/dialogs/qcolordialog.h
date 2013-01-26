@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qdialog.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -132,7 +130,5 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QColorDialog::ColorDialogOptions)
 #endif // QT_NO_COLORDIALOG
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QCOLORDIALOG_H

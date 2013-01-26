@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -81,7 +79,5 @@ inline bool qIsGray(QRgb rgb)
 { return qRed(rgb) == qGreen(rgb) && qRed(rgb) == qBlue(rgb); }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QRGB_H

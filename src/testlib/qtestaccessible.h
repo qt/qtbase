@@ -59,8 +59,6 @@
 #include <QtTest/qtest_global.h>
 #include <QtTest/qtestsystem.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -265,8 +263,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_ACCESSIBILITY
 #endif // QTESTACCESSIBLE_H

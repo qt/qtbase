@@ -45,8 +45,6 @@
 #include <QtCore/qrefcount.h>
 #include <string.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 struct Q_CORE_EXPORT QArrayData
@@ -360,7 +358,5 @@ namespace QtPrivate {
 #endif // !defined(Q_ARRAY_LITERAL)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // include guard

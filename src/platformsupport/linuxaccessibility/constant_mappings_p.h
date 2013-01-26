@@ -95,7 +95,6 @@
 
 #define QSPI_REGISTRY_NAME "org.a11y.atspi.Registry"
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 struct RoleNames {
@@ -133,6 +132,5 @@ QSpiUIntList spiStateSetFromSpiStates(quint64 states);
 AtspiRelationType qAccessibleRelationToAtSpiRelation(QAccessible::Relation relation);
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif /* Q_SPI_CONSTANT_MAPPINGS_H */

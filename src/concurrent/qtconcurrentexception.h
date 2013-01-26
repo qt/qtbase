@@ -48,7 +48,6 @@
 
 #include <QtCore/qexception.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -65,7 +64,6 @@ typedef Q_DECL_DEPRECATED QUnhandledException UnhandledException;
 } // namespace QtConcurrent
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_QFUTURE
 

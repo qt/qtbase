@@ -44,8 +44,6 @@
 
 #include <QtTest/qtest_global.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -66,7 +64,5 @@ enum QBenchmarkMetric {
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QBENCHMARK_H

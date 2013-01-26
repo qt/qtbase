@@ -46,8 +46,6 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qwidget.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -105,7 +103,5 @@ void QStylePainter::drawItemPixmap(const QRect &r, int flags, const QPixmap &pix
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSTYLEPAINTER_H

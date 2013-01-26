@@ -47,8 +47,6 @@
 #include <QtCore/qvector.h>
 //#include <QtWidgets/qitemselectionmodel.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -370,7 +368,5 @@ inline bool QTableWidgetItem::isSelected() const
 #endif // QT_NO_TABLEWIDGET
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTABLEWIDGET_H

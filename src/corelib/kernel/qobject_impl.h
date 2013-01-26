@@ -45,8 +45,6 @@
 #error Do not include qobject_impl.h directly
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -206,7 +204,5 @@ namespace QtPrivate {
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

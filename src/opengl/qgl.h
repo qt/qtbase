@@ -52,8 +52,6 @@
 
 #include <QtGui/QSurfaceFormat>
 
-QT_BEGIN_HEADER
-
 #if defined(Q_OS_WIN)
 # include <QtCore/qt_windows.h>
 #endif
@@ -550,8 +548,6 @@ inline bool QGLFormat::sampleBuffers() const
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 #endif // QGL_H

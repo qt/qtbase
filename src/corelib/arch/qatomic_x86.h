@@ -45,15 +45,11 @@
 
 #include <QtCore/qgenericatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #pragma qt_sync_stop_processing
 #endif
 
@@ -422,7 +418,5 @@ template <> struct QBasicAtomicOps<8>: QGenericAtomicOps<QBasicAtomicOps<8> >
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_X86_H

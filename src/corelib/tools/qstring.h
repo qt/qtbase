@@ -64,8 +64,6 @@ namespace std
 #error qstring.h must be included before any header file that defines truncate
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -1389,8 +1387,6 @@ QT_DEPRECATED inline QString escape(const QString &plain) {
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>

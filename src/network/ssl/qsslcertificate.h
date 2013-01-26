@@ -56,8 +56,6 @@
 #include <QtCore/qmap.h>
 #include <QtNetwork/qssl.h>
 
-QT_BEGIN_HEADER
-
 #ifndef QT_NO_SSL
 
 QT_BEGIN_NAMESPACE
@@ -163,7 +161,5 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QSslCertificate)
 
 #endif // QT_NO_SSL
-
-QT_END_HEADER
 
 #endif

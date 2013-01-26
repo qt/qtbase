@@ -44,8 +44,6 @@
 
 #include <private/qwindowsstyle_p.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -97,7 +95,5 @@ public:
 #endif // QT_NO_STYLE_WINDOWSCE
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWINDOWSCESTYLE_P_H
