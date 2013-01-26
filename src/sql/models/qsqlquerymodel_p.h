@@ -72,6 +72,7 @@ public:
     
     void prefetch(int);
     void initColOffsets(int size);
+    int columnInQuery(int modelColumn) const;
 
     mutable QSqlQuery query;
     mutable QSqlError error;
