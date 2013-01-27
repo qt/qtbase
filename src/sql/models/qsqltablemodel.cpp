@@ -355,6 +355,16 @@ void QSqlTableModel::setTable(const QString &tableName)
     if (d->rec.count() == 0)
         d->error = QSqlError(QLatin1String("Unable to find table ") + d->tableName, QString(),
                              QSqlError::StatementError);
+
+    // Remember the auto index column if there is one now.
+    // The record that will be obtained from the query after select lacks this feature.
+    d->autoColumn.clear();
+    for (int c = 0; c < d->rec.count(); ++c) {
+        if (d->rec.field(c).isAutoValue()) {
+            d->autoColumn = d->rec.fieldName(c);
+            break;
+        }
+    }
 }
 
 /*!
@@ -775,6 +785,11 @@ bool QSqlTableModel::submitAll()
         }
 
         if (success) {
+            if (d->strategy != OnManualSubmit && mrow.op() == QSqlTableModelPrivate::Insert) {
+                int c = mrow.rec().indexOf(d->autoColumn);
+                if (c != -1 && !mrow.rec().isGenerated(c))
+                    mrow.setValue(c, d->editQuery.lastInsertId());
+            }
             mrow.setSubmitted();
             if (d->strategy != OnManualSubmit)
                 success = selectRow(row);

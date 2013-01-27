@@ -96,6 +96,7 @@ public:
     QSqlIndex primaryIndex;
     QString tableName;
     QString filter;
+    QString autoColumn;
 
     enum Op { None, Insert, Update, Delete };
 

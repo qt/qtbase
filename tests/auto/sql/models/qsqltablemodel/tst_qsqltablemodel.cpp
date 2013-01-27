@@ -99,6 +99,8 @@ private slots:
     void insertRecord();
     void insertMultiRecords_data() { generic_data(); }
     void insertMultiRecords();
+    void insertWithAutoColumn_data() { generic_data_with_strategies("QSQLITE"); }
+    void insertWithAutoColumn();
     void removeRow_data() { generic_data(); }
     void removeRow();
     void removeRows_data() { generic_data(); }
@@ -961,6 +963,72 @@ void tst_QSqlTableModel::insertMultiRecords()
     QCOMPARE(model.data(model.index(5, 0)).toInt(), 44);
     QCOMPARE(model.data(model.index(5, 1)).toString(), QString("gunnar"));
     QCOMPARE(model.data(model.index(5, 2)).toInt(), 1);
+}
+
+void tst_QSqlTableModel::insertWithAutoColumn()
+{
+    QFETCH(QString, dbName);
+    QFETCH(int, submitpolicy_i);
+    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QString tbl = qTableName("autoColumnTest", __FILE__);
+    QSqlQuery q(db);
+    q.exec("DROP TABLE " + tbl);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tbl + "(id INTEGER PRIMARY KEY AUTOINCREMENT, val TEXT)"));
+
+    QSqlTableModel model(0, db);
+    model.setTable(tbl);
+    model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(submitpolicy);
+
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 0);
+
+    // For insertRow/insertRows, we have to touch at least one column
+    // or else the generated flag won't be set, which would lead to
+    // an empty column list in the INSERT statement, which generally
+    // does not work.
+    if (submitpolicy != QSqlTableModel::OnManualSubmit) {
+        for (int id = 1; id <= 2; ++id) {
+            QVERIFY_SQL(model, insertRow(0));
+            QVERIFY_SQL(model, setData(model.index(0, 1), QString("foo")));
+            QVERIFY_SQL(model, submit());
+            QCOMPARE(model.data(model.index(0, 0)).toInt(), id);
+        }
+    } else {
+        QVERIFY_SQL(model, insertRows(0, 2));
+        QVERIFY_SQL(model, setData(model.index(0, 1), QString("foo")));
+        QVERIFY_SQL(model, setData(model.index(1, 1), QString("foo")));
+    }
+
+    QCOMPARE(model.rowCount(), 2);
+
+    QSqlRecord rec = db.record(tbl);
+    QVERIFY(rec.field(0).isAutoValue());
+    rec.setGenerated(0, false);
+
+    QVERIFY_SQL(model, insertRecord(0, rec));
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 3);
+
+    QCOMPARE(model.rowCount(), 3);
+
+    if (submitpolicy != QSqlTableModel::OnManualSubmit) {
+        // Rows updated in original positions after previous submits.
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 3);
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(2, 0)).toInt(), 1);
+    } else {
+        // Manual submit is followed by requery.
+        QVERIFY_SQL(model, submitAll());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
+    }
+
+    QVERIFY_SQL(q, exec("DROP TABLE " + tbl));
 }
 
 void tst_QSqlTableModel::submitAll()
