@@ -84,7 +84,7 @@
 /*! \fn QPair::QPair()
 
     Constructs an empty pair. The \c first and \c second elements are
-    initialized with \l{default-constructed values}.
+    initialized with \l{default-constructed value}s.
 */
 
 /*!
