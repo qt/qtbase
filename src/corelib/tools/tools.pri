@@ -59,6 +59,9 @@ HEADERS +=  \
         tools/qstringmatcher.h \
         tools/qtextboundaryfinder.h \
         tools/qtimeline.h \
+        tools/qtimezone.h \
+        tools/qtimezoneprivate_p.h \
+        tools/qtimezoneprivate_data_p.h \
         tools/qelapsedtimer.h \
         tools/qunicodetables_p.h \
         tools/qunicodetools_p.h \
@@ -104,6 +107,8 @@ SOURCES += \
         tools/qstringlist.cpp \
         tools/qtextboundaryfinder.cpp \
         tools/qtimeline.cpp \
+        tools/qtimezone.cpp \
+        tools/qtimezoneprivate.cpp \
         tools/qunicodetools.cpp \
         tools/qvector.cpp \
         tools/qvsnprintf.cpp
