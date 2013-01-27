@@ -125,7 +125,7 @@ void QOpenWFDPort::attach()
     }
 
     if (mPipeline == WFD_INVALID_HANDLE) {
-        qWarning("Failed to create pipeline and cant bind it to port");
+        qWarning("Failed to create pipeline and can't bind it to port");
     }
 
     WFDint geomerty[] = { 0, 0, mPixelSize.width(), mPixelSize.height() };

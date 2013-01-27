@@ -491,7 +491,7 @@ void tst_QSharedMemory::useTooMuchMemory()
             QVERIFY(sm->data() == 0);
             if (sm->error() != QSharedMemory::OutOfResources)
                 qDebug() << sm->error() << sm->errorString();
-            // ### Linux wont return OutOfResources if there are not enough semaphores to use.
+            // ### Linux won't return OutOfResources if there are not enough semaphores to use.
             QVERIFY(sm->error() == QSharedMemory::OutOfResources
                     || sm->error() == QSharedMemory::LockError);
             QVERIFY(sm->errorString() != QString());

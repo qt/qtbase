@@ -468,7 +468,7 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     cookie.setExpirationDate(QDateTime(QDate(2010, 2, 3), QTime(0, 0), Qt::UTC));
     QTest::newRow("ambiguousd-2") << "a=b;expires=2/3/10 0:0" << cookie;
 
-    // FYI If you try these in Firefox it wont set a cookie for the following two string
+    // FYI If you try these in Firefox it won't set a cookie for the following two string
     // because 03 is turned into the year at which point it is expired
     cookie.setExpirationDate(QDateTime(QDate(2003, 2, 10), QTime(0, 0), Qt::UTC));
     QTest::newRow("ambiguousd-3") << "a=b;expires=2/10/3 0:0" << cookie;

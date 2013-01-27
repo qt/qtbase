@@ -478,7 +478,7 @@ void tst_QItemModel::parent()
     currentModel = testModels->createModel(modelType);
     QVERIFY(currentModel);
 
-    // Make sure the model wont crash and will return an invalid QModelIndex
+    // Make sure the model won't crash and will return an invalid QModelIndex
     // when asked for the parent of an invalid index.
     QCOMPARE(currentModel->parent(QModelIndex()), QModelIndex());
 

@@ -1916,7 +1916,7 @@ QString Configure::defaultTo(const QString &option)
     }
 
     // By default we do not want to compile OCI driver when compiling with
-    // MinGW, due to lack of such support from Oracle. It prob. wont work.
+    // MinGW, due to lack of such support from Oracle. It prob. won't work.
     // (Customer may force the use though)
     if (dictionary["QMAKESPEC"].endsWith("-g++")
         && option == "SQL_OCI")

@@ -67,7 +67,7 @@ public:
     void cleanupTestArea(QAbstractItemModel *model);
 
     enum Read {
-        ReadOnly, // wont perform remove(), insert(), and setData()
+        ReadOnly, // won't perform remove(), insert(), and setData()
         ReadWrite
     };
     enum Contains {

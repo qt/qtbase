@@ -6212,7 +6212,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                 // if the gesture was ignored by its target, we will update the
                 // targetItems list with a possible target items (items that
                 // want to receive partial gestures).
-                // ### wont' work if the target was destroyed in the event
+                // ### won't work if the target was destroyed in the event
                 //     we will just stop delivering it.
                 if (receiver && receiver.data() == gestureTargets.value(g, 0))
                     ignoredGestures.insert(g);

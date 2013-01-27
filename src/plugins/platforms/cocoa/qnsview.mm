@@ -1025,7 +1025,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)aPoint
 {
-    // We dont support cursor movements using mouse while composing.
+    // We don't support cursor movements using mouse while composing.
     Q_UNUSED(aPoint);
     return NSNotFound;
 }
