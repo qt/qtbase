@@ -54,6 +54,10 @@ src_opengl.subdir = $$PWD/opengl
 src_opengl.target = sub-opengl
 src_opengl.depends = src_gui src_widgets
 
+src_openglextensions.subdir = $$PWD/openglextensions
+src_openglextensions.target = sub-openglextensions
+src_openglextensions.depends = src_gui
+
 src_printsupport.subdir = $$PWD/printsupport
 src_printsupport.target = sub-printsupport
 src_printsupport.depends = src_corelib src_gui src_widgets
@@ -76,7 +80,7 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }
-    SUBDIRS += src_gui src_platformsupport
+    SUBDIRS += src_gui src_platformsupport src_openglextensions
     src_plugins.depends += src_gui src_platformsupport
     !contains(QT_CONFIG, no-widgets) {
         SUBDIRS += src_widgets
