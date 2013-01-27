@@ -66,7 +66,7 @@ QKmsIntegration::QKmsIntegration()
     setenv("EGL_PLATFORM", "drm",1);
     m_vtHandler = new QKmsVTHandler;
 
-    m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_DRM, 0);
+    m_deviceDiscovery = QDeviceDiscovery::create(QDeviceDiscovery::Device_DRM | QDeviceDiscovery::Device_DRM_PrimaryGPU, 0);
     if (m_deviceDiscovery) {
         QStringList devices = m_deviceDiscovery->scanConnectedDevices();
         foreach (QString device, devices)

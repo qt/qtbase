@@ -72,7 +72,8 @@ public:
         Device_Touchscreen = 0x04,
         Device_Keyboard = 0x08,
         Device_DRM = 0x10,
-        Device_Tablet = 0x20,
+        Device_DRM_PrimaryGPU = 0x20,
+        Device_Tablet = 0x40,
         Device_InputMask = Device_Mouse | Device_Touchpad | Device_Touchscreen | Device_Keyboard | Device_Tablet,
         Device_VideoMask = Device_DRM
     };

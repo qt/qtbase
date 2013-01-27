@@ -149,8 +149,16 @@ QStringList QDeviceDiscovery::scanConnectedDevices()
         QString candidate = QString::fromUtf8(udev_device_get_devnode(udevice));
         if ((m_types & Device_InputMask) && candidate.startsWith(QLatin1String(QT_EVDEV_DEVICE)))
             devices << candidate;
-        if ((m_types & Device_VideoMask) && candidate.startsWith(QLatin1String(QT_DRM_DEVICE)))
-            devices << candidate;
+        if ((m_types & Device_VideoMask) && candidate.startsWith(QLatin1String(QT_DRM_DEVICE))) {
+            if (m_types & Device_DRM_PrimaryGPU) {
+                udev_device *pci = udev_device_get_parent_with_subsystem_devtype(udevice, "pci", 0);
+                if (pci) {
+                    if (qstrcmp(udev_device_get_sysattr_value(pci, "boot_vga"), "1") == 0)
+                        devices << candidate;
+                }
+            } else
+                devices << candidate;
+        }
 
         udev_device_unref(udevice);
     }
