@@ -10,7 +10,11 @@
 #
 
 load(qt_build_paths)
-MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
+MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
+prefix_build: \
+    MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
+else: \
+    MODULE_PRI = $$MODULE_FWD_PRI
 
 !build_pass {
 
@@ -64,72 +68,84 @@ MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
         "" \
         "QT_CONFIG += $$MODULE" # this is obsolete, but some code still depends on it
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
+    MODULE_PRI_FILES = $$MODULE_PRI
 
-    MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
+    prefix_build {
 
-    # -rpath-link is used by the linker to find depedencies of dynamic
-    # libraries which were NOT specified on the command line.
-    # This means that .libs of each module's regular .depends (QT) don't
-    # need to be put there, as they appear on the linker line anyway.
-    # A module's QT_PRIVATE's .libs OTOH need to be put there.
-    # .depends_private (QT_FOR_PRIVATE) is somewhat special: if the privates
-    # are used, the libraries are explicitly linked. If not, their locations
-    # need to be put into -rpath-link. As QT_FOR_PRIVATE cannot in turn
-    # contain privates, they always end up in -rpath-link of dependant
-    # modules.
-    # For simplicity of use, each module's rpath list has all dependencies
-    # transitively resolved already.
-    pubqt = $$MODULE_DEPENDS $$QT_FOR_PRIVATE
-    pubdep = $$resolve_depends(pubqt, "QT.")
-    privqt = $$replace(QT_PRIVATE, -private$, )
-    privdep = $$resolve_depends(privqt, "QT.")
-    rpaths =
-    alldep = $$pubdep $$privdep
-    for(dep, alldep) {   # Inherit link-rpaths from all our dependencies
-        rpaths += $$eval(QT.$${dep}.rpath_link) $$eval(QT.$${dep}.rpath_link_private)
-    }
-    privdep -= $$pubdep
-    for(dep, privdep): \   # Add our private dependencies' lib paths as new link-rpaths
-        rpaths += $$eval(QT.$${dep}.libs)
-    !isEmpty(rpaths) {
-        rpaths = $$unique(rpaths)
-        module_rpathlink = "QT.$${MODULE}.rpath_link = $$val_escape(rpaths)"
-    } else {
-        module_rpathlink =
-    }
-    rpaths_priv =
-    xtradep = $$resolve_depends(QT_FOR_PRIVATE, "QT.")
-    for(dep, xtradep): \   # Add our private API's dependencies' lib paths as new link-rpaths
-        rpaths_priv += $$eval(QT.$${dep}.libs)
-    rpaths_priv = $$unique(rpaths_priv)
-    rpaths_priv -= $$rpaths
-    !isEmpty(rpaths_priv) {
-        module_rpathlink_priv = "QT.$${MODULE}.rpath_link_private = $$val_escape(rpaths_priv)"
-    } else {
-        module_rpathlink_priv =
-    }
+        # -rpath-link is used by the linker to find depedencies of dynamic
+        # libraries which were NOT specified on the command line.
+        # This means that .libs of each module's regular .depends (QT) don't
+        # need to be put there, as they appear on the linker line anyway.
+        # A module's QT_PRIVATE's .libs OTOH need to be put there.
+        # .depends_private (QT_FOR_PRIVATE) is somewhat special: if the privates
+        # are used, the libraries are explicitly linked. If not, their locations
+        # need to be put into -rpath-link. As QT_FOR_PRIVATE cannot in turn
+        # contain privates, they always end up in -rpath-link of dependant
+        # modules.
+        # For simplicity of use, each module's rpath list has all dependencies
+        # transitively resolved already.
+        pubqt = $$MODULE_DEPENDS $$QT_FOR_PRIVATE
+        pubdep = $$resolve_depends(pubqt, "QT.")
+        privqt = $$replace(QT_PRIVATE, -private$, )
+        privdep = $$resolve_depends(privqt, "QT.")
+        rpaths =
+        alldep = $$pubdep $$privdep
+        for(dep, alldep) {   # Inherit link-rpaths from all our dependencies
+            rpaths += $$eval(QT.$${dep}.rpath_link) $$eval(QT.$${dep}.rpath_link_private)
+        }
+        privdep -= $$pubdep
+        for(dep, privdep): \   # Add our private dependencies' lib paths as new link-rpaths
+            rpaths += $$eval(QT.$${dep}.libs)
+        !isEmpty(rpaths) {
+            rpaths = $$unique(rpaths)
+            module_rpathlink = "QT.$${MODULE}.rpath_link = $$val_escape(rpaths)"
+        } else {
+            module_rpathlink =
+        }
+        rpaths_priv =
+        xtradep = $$resolve_depends(QT_FOR_PRIVATE, "QT.")
+        for(dep, xtradep): \   # Add our private API's dependencies' lib paths as new link-rpaths
+            rpaths_priv += $$eval(QT.$${dep}.libs)
+        rpaths_priv = $$unique(rpaths_priv)
+        rpaths_priv -= $$rpaths
+        !isEmpty(rpaths_priv) {
+            module_rpathlink_priv = "QT.$${MODULE}.rpath_link_private = $$val_escape(rpaths_priv)"
+        } else {
+            module_rpathlink_priv =
+        }
 
-    # Create a forwarding module .pri file
-    MODULE_FWD_PRI_CONT = \
-        "QT_MODULE_BIN_BASE = $$MODULE_BASE_OUTDIR/bin" \
-        "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
-        "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
-        "QT_MODULE_QML_BASE = $$MODULE_BASE_OUTDIR/qml" \
-        "QT_MODULE_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
-        "QT_MODULE_LIBEXEC_BASE = $$MODULE_BASE_OUTDIR/libexec" \
-        "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
-        $$module_rpathlink \
-        $$module_rpathlink_priv \
-        "include($$MODULE_PRI)"
-    write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
-    touch($$MODULE_FWD_PRI, $$MODULE_PRI)
+        # Create a forwarding module .pri file
+        MODULE_FWD_PRI_CONT = \
+            "QT_MODULE_BIN_BASE = $$MODULE_BASE_OUTDIR/bin" \
+            "QT_MODULE_INCLUDE_BASE = $$MODULE_BASE_OUTDIR/include" \
+            "QT_MODULE_IMPORT_BASE = $$MODULE_BASE_OUTDIR/imports" \
+            "QT_MODULE_QML_BASE = $$MODULE_BASE_OUTDIR/qml" \
+            "QT_MODULE_LIB_BASE = $$MODULE_BASE_OUTDIR/lib" \
+            "QT_MODULE_LIBEXEC_BASE = $$MODULE_BASE_OUTDIR/libexec" \
+            "QT_MODULE_PLUGIN_BASE = $$MODULE_BASE_OUTDIR/plugins" \
+            $$module_rpathlink \
+            $$module_rpathlink_priv \
+            "include($$MODULE_PRI)"
+        write_file($$MODULE_FWD_PRI, MODULE_FWD_PRI_CONT)|error("Aborting.")
+        touch($$MODULE_FWD_PRI, $$MODULE_PRI)
+        MODULE_PRI_FILES += $$MODULE_FWD_PRI
+
+    } else { # prefix_build
+
+        # This is needed for the direct include() below.
+        QT_MODULE_BIN_BASE = $$[QT_INSTALL_BINS]
+        QT_MODULE_INCLUDE_BASE = $$[QT_INSTALL_HEADERS]
+        QT_MODULE_IMPORT_BASE = $$[QT_INSTALL_IMPORTS]
+        QT_MODULE_QML_BASE = $$[QT_INSTALL_QML]
+        QT_MODULE_LIB_BASE = $$[QT_INSTALL_LIBS]
+        QT_MODULE_LIBEXEC_BASE = $$[QT_INSTALL_LIBEXECS]
+        QT_MODULE_PLUGIN_BASE = $$[QT_INSTALL_PLUGINS]
+
+    }
 
     # Then, inject the new module into the current cache state
-    !contains(QMAKE_INTERNAL_INCLUDED_FILES, $$MODULE_PRI) { # before the actual include()!
-        added = $$MODULE_PRI $$MODULE_FWD_PRI
-        cache(QMAKE_INTERNAL_INCLUDED_FILES, add transient, added)
-        unset(added)
-    }
+    !contains(QMAKE_INTERNAL_INCLUDED_FILES, $$MODULE_PRI): \ # before the actual include()!
+        cache(QMAKE_INTERNAL_INCLUDED_FILES, add transient, MODULE_PRI_FILES)
     include($$MODULE_FWD_PRI)
     for(var, $$list(VERSION MAJOR_VERSION MINOR_VERSION PATCH_VERSION \
                     name depends private_depends module_config CONFIG DEFINES sources \
