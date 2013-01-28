@@ -468,12 +468,16 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     the currentCharFormatChanged() signal is emitted to reflect the new attributes
     at the new cursor position.
 
+    The textChanged() signal is emitted whenever the text changes (as a result
+    of setText() or through the editor itself).
+
     QTextEdit holds a QTextDocument object which can be retrieved using the
     document() method. You can also set your own document object using setDocument().
-    QTextDocument emits a textChanged() signal if the text changes and it also
-    provides a isModified() function which will return true if the text has been
-    modified since it was either loaded or since the last call to setModified
-    with false as argument. In addition it provides methods for undo and redo.
+
+    QTextDocument provides an \l {QTextDocument::isModified()}{isModified()}
+    function which will return true if the text has been modified since it was
+    either loaded or since the last call to setModified with false as argument.
+    In addition it provides methods for undo and redo.
 
     \section2 Drag and Drop
 
