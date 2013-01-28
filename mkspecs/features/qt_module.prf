@@ -112,7 +112,7 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}.private_inclu
 #other
 TEMPLATE         = lib
 DESTDIR          = $$eval(QT.$${MODULE}.libs)
-win32:!wince*:exists($$[QT_INSTALL_PREFIX]/.qmake.cache): DLLDESTDIR = $$eval(QT.$${MODULE}.bins)
+win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE}.bins)
 
 CONFIG          += qmake_cache target_qt
 
