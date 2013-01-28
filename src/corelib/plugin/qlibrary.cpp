@@ -376,7 +376,14 @@ inline void QLibraryStore::cleanup()
             Q_ASSERT(lib->pHnd);
             Q_ASSERT(lib->libraryUnloadCount.load() > 0);
             lib->libraryUnloadCount.store(1);
+#ifdef __GLIBC__
+            // glibc has a bug in unloading from global destructors
+            // see https://bugzilla.novell.com/show_bug.cgi?id=622977
+            // and http://sourceware.org/bugzilla/show_bug.cgi?id=11941
+            lib->unload(QLibraryPrivate::NoUnloadSys);
+#else
             lib->unload();
+#endif
             delete lib;
             it.value() = 0;
         }
@@ -490,15 +497,16 @@ bool QLibraryPrivate::load()
     return ret;
 }
 
-bool QLibraryPrivate::unload()
+bool QLibraryPrivate::unload(UnloadFlag flag)
 {
     if (!pHnd)
         return false;
     if (!libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
         delete inst.data();
-        if  (unload_sys()) {
+        if (flag == NoUnloadSys || unload_sys()) {
             if (qt_debug_component())
-                qWarning() << "QLibraryPrivate::unload succeeded on" << fileName;
+                qWarning() << "QLibraryPrivate::unload succeeded on" << fileName
+                           << (flag == NoUnloadSys ? "(faked)" : "");
             //when the library is unloaded, we release the reference on it so that 'this'
             //can get deleted
             libraryRefCount.deref();

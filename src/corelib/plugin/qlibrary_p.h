@@ -83,12 +83,14 @@ public:
 #endif
     pHnd;
 
+    enum UnloadFlag { UnloadSys, NoUnloadSys };
+
     QString fileName, qualifiedFileName;
     QString fullVersion;
 
     bool load();
     bool loadPlugin(); // loads and resolves instance
-    bool unload();
+    bool unload(UnloadFlag flag = UnloadSys);
     void release();
     QFunctionPointer resolve(const char *);
 
