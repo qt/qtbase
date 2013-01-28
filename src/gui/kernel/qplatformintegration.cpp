@@ -199,6 +199,13 @@ QPlatformServices *QPlatformIntegration::services() const
     \value MultipleWindows The platform supports multiple QWindows, i.e. does some kind
     of compositing either client or server side. Some platforms might only support a
     single fullscreen window.
+
+    \value ApplicationState The platform handles the application state explicitly.
+    This means that QEvent::ApplicationActivate and QEvent::ApplicationDeativate
+    will not be posted automatically. Instead, the platform must handle application
+    state explicitly by using QWindowSystemInterface::handleApplicationStateChanged().
+    If not set, application state will follow window activation, which is the normal
+    behavior for desktop platforms.
  */
 
 

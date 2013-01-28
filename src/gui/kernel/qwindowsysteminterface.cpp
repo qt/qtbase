@@ -46,6 +46,7 @@
 #include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
 #include <qpa/qplatformdrag.h>
+#include <qpa/qplatformintegration.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -119,6 +120,14 @@ void QWindowSystemInterface::handleWindowStateChanged(QWindow *tlw, Qt::WindowSt
 {
     QWindowSystemInterfacePrivate::WindowStateChangedEvent *e =
         new QWindowSystemInterfacePrivate::WindowStateChangedEvent(tlw, newState);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState newState)
+{
+    Q_ASSERT(QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState));
+    QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e =
+        new QWindowSystemInterfacePrivate::ApplicationStateChangedEvent(newState);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

@@ -88,7 +88,8 @@ public:
         TabletEnterProximity = UserInputEvent | 0x15,
         TabletLeaveProximity = UserInputEvent | 0x16,
         PlatformPanel = UserInputEvent | 0x17,
-        ContextMenu = UserInputEvent | 0x18
+        ContextMenu = UserInputEvent | 0x18,
+        ApplicationStateChanged = 0x19
     };
 
     class WindowSystemEvent {
@@ -150,6 +151,15 @@ public:
 
         QPointer<QWindow> window;
         Qt::WindowState newState;
+    };
+
+    class ApplicationStateChangedEvent : public WindowSystemEvent {
+    public:
+        ApplicationStateChangedEvent(Qt::ApplicationState newState)
+            : WindowSystemEvent(ApplicationStateChanged), newState(newState)
+        { }
+
+        Qt::ApplicationState newState;
     };
 
     class UserEvent : public WindowSystemEvent {

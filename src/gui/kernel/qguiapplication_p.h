@@ -127,6 +127,8 @@ public:
     static void processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e);
     static void processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *e);
 
+    static void processApplicationStateChangedEvent(QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e);
+
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
     static void updateFilteredScreenOrientation(QScreen *screen);
@@ -199,6 +201,7 @@ public:
     static bool tabletState;
     static QWindow *tabletPressTarget;
     static QWindow *currentMouseWindow;
+    static Qt::ApplicationState applicationState;
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;

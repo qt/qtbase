@@ -88,7 +88,8 @@ public:
         SharedGraphicsCache,
         BufferQueueingOpenGL,
         WindowMasks,
-        MultipleWindows
+        MultipleWindows,
+        ApplicationState
     };
 
     virtual ~QPlatformIntegration() { }

@@ -138,6 +138,8 @@ public:
     static void handleWindowActivated(QWindow *w);
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
 
+    static void handleApplicationStateChanged(Qt::ApplicationState newState);
+
     static void handleExposeEvent(QWindow *tlw, const QRegion &region);
 
 #ifndef QT_NO_DRAGANDDROP

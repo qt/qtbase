@@ -1783,6 +1783,21 @@
 */
 
 /*!
+    \enum Qt::ApplicationState
+
+    \keyword application state
+
+    This enum type is used to specify the current state of the application.
+
+    The states are
+
+    \value ApplicationInactive The application is running in the background.
+    \value ApplicationActive The application is running in the foreground.
+
+    \since 5.1
+*/
+
+/*!
     \enum Qt::ScreenOrientation
 
     This enum type specifies the various orientations a screen might have.

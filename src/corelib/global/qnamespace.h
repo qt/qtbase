@@ -325,6 +325,13 @@ public:
 
     Q_DECLARE_FLAGS(WindowStates, WindowState)
 
+    enum ApplicationState {
+        ApplicationInactive  = 0x00000000,
+        ApplicationActive    = 0x00000001
+    };
+
+    Q_DECLARE_FLAGS(ApplicationStates, ApplicationState)
+
     enum ScreenOrientation {
         PrimaryOrientation           = 0x00000000,
         PortraitOrientation          = 0x00000001,
