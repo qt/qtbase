@@ -54,7 +54,7 @@ class QQnxScreen;
 class QQnxRootWindow
 {
 public:
-    QQnxRootWindow(QQnxScreen *screen);
+    QQnxRootWindow(const QQnxScreen *screen);
     ~QQnxRootWindow();
 
     screen_window_t nativeHandle() const { return m_window; }
@@ -71,7 +71,7 @@ public:
 private:
     void createWindowGroup();
 
-    QQnxScreen *m_screen;
+    const QQnxScreen *m_screen;
     screen_window_t m_window;
     QByteArray m_windowGroupName;
 };

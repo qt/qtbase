@@ -80,7 +80,7 @@ public:
     int nativeFormat() const { return (depth() == 32) ? SCREEN_FORMAT_RGBA8888 : SCREEN_FORMAT_RGB565; }
     screen_display_t nativeDisplay() const { return m_display; }
     screen_context_t nativeContext() const { return m_screenContext; }
-    const char *windowGroupName() const { return m_rootWindow->groupName().constData(); }
+    const char *windowGroupName() const { return rootWindow()->groupName().constData(); }
 
     QQnxWindow *findWindow(screen_window_t windowHandle);
 
@@ -93,7 +93,7 @@ public:
 
     void onWindowPost(QQnxWindow *window);
 
-    QSharedPointer<QQnxRootWindow> rootWindow() const { return m_rootWindow; }
+    QSharedPointer<QQnxRootWindow> rootWindow() const;
 
 public Q_SLOTS:
     void setRotation(int rotation);
@@ -114,8 +114,8 @@ private:
 
     screen_context_t m_screenContext;
     screen_display_t m_display;
-    QSharedPointer<QQnxRootWindow> m_rootWindow;
-    bool m_primaryScreen;
+    mutable QSharedPointer<QQnxRootWindow> m_rootWindow;
+    const bool m_primaryScreen;
     bool m_posted;
 
     int m_initialRotation;
