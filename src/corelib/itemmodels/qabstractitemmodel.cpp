@@ -866,6 +866,27 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
 }
 
 /*!
+    \since 4.8
+
+    This slot is called just after the internal data of a model is cleared
+    while it is being reset.
+
+    This slot is provided the convenience of subclasses of concrete proxy
+    models, such as subclasses of QSortFilterProxyModel which maintain extra
+    data.
+
+    \snippet code/src_corelib_kernel_qabstractitemmodel.cpp 12
+
+    \note Due to a mistake, this slot is missing in Qt 5.0.
+
+    \sa modelAboutToBeReset(), modelReset()
+*/
+void QAbstractItemModel::resetInternalData()
+{
+
+}
+
+/*!
     \class QModelIndex
     \inmodule QtCore
 
@@ -3055,6 +3076,7 @@ void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
     d->invalidatePersistentIndexes();
+    QMetaObject::invokeMethod(this, "resetInternalData");
     emit modelReset(QPrivateSignal());
 }
 

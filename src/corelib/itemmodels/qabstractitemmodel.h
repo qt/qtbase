@@ -330,6 +330,10 @@ public Q_SLOTS:
     virtual bool submit();
     virtual void revert();
 
+protected Q_SLOTS:
+    // Qt 6: Make virtual
+    void resetInternalData();
+
 protected:
     QAbstractItemModel(QAbstractItemModelPrivate &dd, QObject *parent = 0);
 

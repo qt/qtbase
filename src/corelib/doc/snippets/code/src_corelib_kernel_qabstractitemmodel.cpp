@@ -97,3 +97,37 @@ beginResetModel();
 myData.clear();
 endResetModel();
 //! [11]
+
+//! [12]
+class CustomDataProxy : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    CustomDataProxy(QObject *parent)
+      : QSortFilterProxyModel(parent)
+    {
+    }
+
+    ...
+
+    QVariant data(const QModelIndex &index, int role)
+    {
+        if (role != Qt::BackgroundRole)
+            return QSortFilterProxyModel::data(index, role);
+
+        if (m_customData.contains(index.row()))
+            return m_customData.value(index.row());
+        return QSortFilterProxyModel::data(index, role);
+    }
+
+private slots:
+    void resetInternalData()
+    {
+        m_customData.clear();
+    }
+
+private:
+  QHash<int, QVariant> m_customData;
+};
+//! [12]
+
