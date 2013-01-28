@@ -31,6 +31,7 @@
     can be painted on with QPainter.
 
     \ingroup painting
+    \inmodule QtGui
 
     A paint device is an abstraction of a two-dimensional space that
     can be drawn on using a QPainter.  Its default coordinate system has

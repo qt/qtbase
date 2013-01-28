@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QGenericPlugin
     \ingroup plugins
+    \inmodule QtGui
 
     \brief The QGenericPlugin class is an abstract base class for
     plugins.

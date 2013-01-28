@@ -296,6 +296,7 @@ QRasterPaintEnginePrivate::QRasterPaintEnginePrivate() :
     \class QRasterPaintEngine
     \preliminary
     \ingroup qws
+    \inmodule QtGui
     \since 4.2
 
     \brief The QRasterPaintEngine class enables hardware acceleration

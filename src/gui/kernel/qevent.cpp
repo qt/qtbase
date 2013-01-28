@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QEnterEvent
     \ingroup events
+    \inmodule QtGui
 
     \brief The QEnterEvent class contains parameters that describe an enter event.
 
@@ -144,6 +145,7 @@ QInputEvent::~QInputEvent()
 /*!
     \class QMouseEvent
     \ingroup events
+    \inmodule QtGui
 
     \brief The QMouseEvent class contains parameters that describe a mouse event.
 
@@ -412,6 +414,7 @@ QMouseEvent::~QMouseEvent()
 /*!
     \class QHoverEvent
     \ingroup events
+    \inmodule QtGui
 
     \brief The QHoverEvent class contains parameters that describe a mouse event.
 
@@ -797,6 +800,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
     \brief The QKeyEvent class describes a key event.
 
     \ingroup events
+    \inmodule QtGui
 
     Key events are sent to the widget with keyboard input focus
     when keys are pressed or released.
@@ -1728,6 +1732,7 @@ QContextMenuEvent::QContextMenuEvent(Reason reason, const QPoint &pos)
 
 /*!
     \class QInputMethodEvent::Attribute
+    \inmodule QtGui
     \brief The QInputMethodEvent::Attribute class stores an input method attribute.
 */
 
