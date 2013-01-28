@@ -18,5 +18,5 @@ win32 {
 EXAMPLE_FILES += simplestyle.json
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/styleplugin/styles
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/styleplugin/styles
 INSTALLS += target

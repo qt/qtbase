@@ -19,5 +19,5 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
 #! [0]
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/plugandpaint
 INSTALLS += target
