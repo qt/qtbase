@@ -147,15 +147,15 @@
 
     \section1 Qt GUI prior to Qt 5.0
 
-    Prior to Qt 5.0, the Qt GUI library was the monolithic container
+    Prior to Qt 5.0, the Qt GUI module was the monolithic container
     for all things relating to graphical user interfaces in Qt, and
     included the Qt widget set, the item views, the graphics view
     framework and also printing. Starting Qt 5, these classes have
-    been moved to the QtWidgets library. Printing has been
-    moved to the QtPrintSupport library.  Please note that these
-    libraries can be excluded from a Qt installation.
+    been moved to the Qt Widgets module. Printing has been
+    moved to the Qt Print Support module.  Please note that these
+    modules can be excluded from a Qt installation.
 
-    QtGui now contains only a small set of enablers, which are generally
+    Qt GUI now contains only a small set of enablers, which are generally
     useful for all graphical applications.
 
     \section1 Drag and Drop

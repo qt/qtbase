@@ -177,10 +177,10 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     The class is used to send arguments over D-Bus to remote
     applications and to receive them back. D-Bus offers an extensible
     type system, based on a few primitive types and associations of
-    them. See the \l {qdbustypesystem.html}{QtDBus type system} page
+    them. See the \l {qdbustypesystem.html}{Qt D-Bus Type System} page
     for more information on the type system.
 
-    QDBusArgument is the central class in the QtDBus type system,
+    QDBusArgument is the central class in the Qt D-Bus type system,
     providing functions to marshall and demarshall the primitive
     types. The compound types are then created by association of one
     or more of the primitive types in arrays, dictionaries or
@@ -188,7 +188,7 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
 
     The following example illustrates how a structure containing an
     integer and a string can be constructed using the \l
-    {qdbustypesystem.html}{QtDBus type system}:
+    {qdbustypesystem.html}{Qt D-Bus type system}:
 
     \snippet code/src_qdbus_qdbusargument.cpp 0
 
@@ -229,9 +229,9 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
 
     In this example, both the \c{operator<<} and the \c{operator>>}
     functions may produce a different number of reads/writes. This can
-    confuse the QtDBus type system and should be avoided.
+    confuse the Qt D-Bus type system and should be avoided.
 
-    \sa QDBusAbstractInterface, {qdbustypesystem.html}{The QtDBus type
+    \sa QDBusAbstractInterface, {qdbustypesystem.html}{The Qt D-Bus type
     system}, {usingadaptors.html}{Using Adaptors}, qdbus_cast()
 */
 
@@ -522,7 +522,7 @@ QDBusArgument &QDBusArgument::operator<<(const QDBusVariant &arg)
     that are supported directly by QDBusArgument because of their
     widespread usage in Qt applications.
 
-    Other arrays are supported through compound types in QtDBus.
+    Other arrays are supported through compound types in Qt D-Bus.
 */
 QDBusArgument &QDBusArgument::operator<<(const QStringList &arg)
 {
@@ -540,7 +540,7 @@ QDBusArgument &QDBusArgument::operator<<(const QStringList &arg)
     that are supported directly by QDBusArgument because of their
     widespread usage in Qt applications.
 
-    Other arrays are supported through compound types in QtDBus.
+    Other arrays are supported through compound types in Qt D-Bus.
 */
 QDBusArgument &QDBusArgument::operator<<(const QByteArray &arg)
 {
@@ -784,7 +784,7 @@ const QDBusArgument &QDBusArgument::operator>>(QDBusVariant &arg) const
     that are supported directly by QDBusArgument because of their
     widespread usage in Qt applications.
 
-    Other arrays are supported through compound types in QtDBus.
+    Other arrays are supported through compound types in Qt D-Bus.
 */
 const QDBusArgument &QDBusArgument::operator>>(QStringList &arg) const
 {
@@ -802,7 +802,7 @@ const QDBusArgument &QDBusArgument::operator>>(QStringList &arg) const
     that are supported directly by QDBusArgument because of their
     widespread usage in Qt applications.
 
-    Other arrays are supported through compound types in QtDBus.
+    Other arrays are supported through compound types in Qt D-Bus.
 */
 const QDBusArgument &QDBusArgument::operator>>(QByteArray &arg) const
 {
@@ -855,7 +855,7 @@ void QDBusArgument::endStructure()
     If the type you want to marshall is a QList, QVector or any of the
     Qt's \l {Container Classes} that take one template parameter,
     you need not declare an \c{operator<<} function for it, since
-    QtDBus provides generic templates to do the job of marshalling
+    Qt D-Bus provides generic templates to do the job of marshalling
     the data. The same applies for STL's sequence containers, such
     as \c {std::list}, \c {std::vector}, etc.
 
@@ -892,7 +892,7 @@ void QDBusArgument::endArray()
     \snippet code/src_qdbus_qdbusargument.cpp 7
 
     If the type you want to marshall is a QMap or QHash, you need not
-    declare an \c{operator<<} function for it, since QtDBus provides
+    declare an \c{operator<<} function for it, since Qt D-Bus provides
     generic templates to do the job of marshalling the data.
 
     \sa endMap(), beginStructure(), beginArray(), beginMapEntry()
@@ -981,7 +981,7 @@ void QDBusArgument::endStructure() const
 
     If the type you want to demarshall is a QList, QVector or any of the
     Qt's \l {Container Classes} that take one template parameter, you
-    need not declare an \c{operator>>} function for it, since QtDBus
+    need not declare an \c{operator>>} function for it, since Qt D-Bus
     provides generic templates to do the job of demarshalling the data.
     The same applies for STL's sequence containers, such as \c {std::list},
     \c {std::vector}, etc.
@@ -1016,7 +1016,7 @@ void QDBusArgument::endArray() const
     \snippet code/src_qdbus_qdbusargument.cpp 10
 
     If the type you want to demarshall is a QMap or QHash, you need not
-    declare an \c{operator>>} function for it, since QtDBus provides
+    declare an \c{operator>>} function for it, since Qt D-Bus provides
     generic templates to do the job of demarshalling the data.
 
     \sa endMap(), beginStructure(), beginArray(), beginMapEntry()

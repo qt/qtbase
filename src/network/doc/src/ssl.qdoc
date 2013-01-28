@@ -73,6 +73,6 @@
     using code from the OpenSSL project are correctly certified for import
     and export in relevant regions of the world.
 
-    When the QtNetwork module is built with SSL support, the library is linked
+    When the Qt Network module is built with SSL support, the library is linked
     against OpenSSL in a way that requires OpenSSL license compliance.
 */

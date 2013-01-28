@@ -1597,8 +1597,8 @@ void tst_QGL::fboFormat()
 
 void tst_QGL::testDontCrashOnDanglingResources()
 {
-    // We have a number of Q_GLOBAL_STATICS inside the QtOpenGL
-    // library. This test is verify that we don't crash as a result of
+    // We have a number of Q_GLOBAL_STATICS inside the Qt OpenGL
+    // module. This test is verify that we don't crash as a result of
     // them calling into libgl on application shutdown.
     QWidget *widget = new UnclippedWidget();
     widget->show();

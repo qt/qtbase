@@ -82,7 +82,7 @@ private:
     Q_INVOKABLE QPlatformPrinterSupport *createPlatformPrinterSupport();
     /*
         Function to return the NSPrintInfo * from QMacPaintEnginePrivate.
-        Needed by the native print dialog in the QtPrintSupport library.
+        Needed by the native print dialog in the Qt Print Support module.
     */
     Q_INVOKABLE void *NSPrintInfoForPrintEngine(QPrintEngine *printEngine);
 

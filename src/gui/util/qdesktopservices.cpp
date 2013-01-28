@@ -143,7 +143,10 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     same argument, and it will try to open the URL using the
     appropriate mechanism for the user's desktop environment.
 
-    \sa QSystemTrayIcon, QProcess
+    \note Since Qt 5, storageLocation() and displayName() are replaced by functionality
+    provided by the QStandardPaths class.
+
+    \sa QSystemTrayIcon, QProcess, QStandardPaths
 */
 
 /*!

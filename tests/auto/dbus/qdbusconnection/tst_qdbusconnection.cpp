@@ -1055,11 +1055,11 @@ signals:
 void tst_QDBusConnection::serviceRegistrationRaceCondition()
 {
     // There was a race condition in the updating of list of name owners in
-    // QtDBus. When the user connects to a signal coming from a given
+    // Qt D-Bus. When the user connects to a signal coming from a given
     // service, we must listen for NameOwnerChanged signals relevant to that
     // name and update when the owner changes. However, it's possible that we
     // receive in one chunk from the server both the NameOwnerChanged signal
-    // about the service and the signal we're interested in. Since QtDBus
+    // about the service and the signal we're interested in. Since Qt D-Bus
     // posts events in order to handle the incoming signals, the update
     // happens too late.
 

@@ -228,7 +228,7 @@ void tst_QFontMetrics::bypassShaping()
     int charsWidth = 0;
     for (int i = 0; i < text.size(); ++i)
         charsWidth += fm.width(text[i]);
-    // This assertion is needed in QtWebKit's WebCore::Font::offsetForPositionForSimpleText
+    // This assertion is needed in Qt WebKit's WebCore::Font::offsetForPositionForSimpleText
     QCOMPARE(textWidth, charsWidth);
 }
 

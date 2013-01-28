@@ -361,7 +361,7 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
 
     q->QIODevice::open(QIODevice::ReadOnly);
     // Internal code that does a HTTP reply for the synchronous Ajax
-    // in QtWebKit.
+    // in Qt WebKit.
     QVariant synchronousHttpAttribute = req.attribute(
             static_cast<QNetworkRequest::Attribute>(QNetworkRequest::SynchronousRequestAttribute));
     // The synchronous HTTP is a corner case, we will put all upload data in one big QByteArray in the outgoingDataBuffer.

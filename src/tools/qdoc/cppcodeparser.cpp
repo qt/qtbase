@@ -658,7 +658,7 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
 
   This function splits the argument into one of those
   two forms. The three part form is the old form, which
-  was used before the creation of QtQuick 2 and Qt
+  was used before the creation of Qt Quick 2 and Qt
   Components. A <QML-module> is the QML equivalent of a
   C++ namespace. So this function splits \a arg on "::"
   and stores the parts in \a type, \a module, \a element,

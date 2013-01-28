@@ -128,7 +128,7 @@ void QDBusAbstractInterfacePrivate::property(const QMetaProperty &mp, QVariant &
     if (int(mp.type()) != QMetaType::QVariant) {
         expectedSignature = QDBusMetaType::typeToSignature(where.userType());
         if (expectedSignature == 0) {
-            qWarning("QDBusAbstractInterface: type %s must be registered with QtDBus before it can be "
+            qWarning("QDBusAbstractInterface: type %s must be registered with Qt D-Bus before it can be "
                      "used to read property %s.%s",
                      mp.typeName(), qPrintable(interface), mp.name());
             lastError = QDBusError(QDBusError::Failed,
@@ -264,7 +264,7 @@ int QDBusAbstractInterfaceBase::qt_metacall(QMetaObject::Call _c, int _id, void 
     \inmodule QtDBus
     \since 4.2
 
-    \brief The QDBusAbstractInterface class is the base class for all D-Bus interfaces in the QtDBus binding, allowing access to remote interfaces
+    \brief The QDBusAbstractInterface class is the base class for all D-Bus interfaces in the Qt D-Bus binding, allowing access to remote interfaces
 
     Generated-code classes also derive from QDBusAbstractInterface,
     all methods described here are also valid for generated-code

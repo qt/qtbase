@@ -949,8 +949,8 @@ Q_CORE_EXPORT void QVariantPrivate::registerHandler(const int /* Modules::Names 
 
     \section1 A Note on GUI Types
 
-    Because QVariant is part of the QtCore library, it cannot provide
-    conversion functions to data types defined in QtGui, such as
+    Because QVariant is part of the Qt Core module, it cannot provide
+    conversion functions to data types defined in Qt GUI, such as
     QColor, QImage, and QPixmap. In other words, there is no \c
     toColor() function. Instead, you can use the QVariant::value() or
     the qvariant_cast() template function. For example:

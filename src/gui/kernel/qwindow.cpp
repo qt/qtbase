@@ -216,7 +216,7 @@ QWindow::~QWindow()
 }
 
 /*!
-    Set the \a surfaceType of the window.
+    Sets the \a surfaceType of the window.
 
     Specifies whether the window is meant for raster rendering with
     QBackingStore, or OpenGL rendering with QOpenGLContext.
@@ -593,7 +593,7 @@ QString QWindow::filePath() const
 }
 
 /*!
-    \brief set the window's \a icon in the windowing system
+    \brief Sets the window's \a icon in the windowing system
 
     The window icon might be used by the windowing system for example to
     decorate the window, and/or in the task switcher.
@@ -607,7 +607,7 @@ void QWindow::setIcon(const QIcon &icon)
 }
 
 /*!
-    \brief set the window's icon in the windowing system
+    \brief Sets the window's icon in the windowing system
 
     \sa setIcon()
 */
@@ -1223,14 +1223,14 @@ void QWindow::setPosition(int posx, int posy)
 
 /*!
     \fn QPoint QWindow::position() const
-    \brief get the position of the window on the desktop excluding any window frame
+    \brief Returns the position of the window on the desktop excluding any window frame
 
     \sa setPosition()
 */
 
 /*!
     \fn QSize QWindow::size() const
-    \brief get the size of the window excluding any window frame
+    \brief Returns the size of the window excluding any window frame
 
     \sa resize()
 */
@@ -1309,7 +1309,7 @@ QPlatformSurface *QWindow::surfaceHandle() const
 }
 
 /*!
-    Set whether keyboard grab should be enabled or not (\a grab).
+    Sets whether keyboard grab should be enabled or not (\a grab).
 
     If the return value is true, the window receives all key events until
     setKeyboardGrabEnabled(false) is called; other windows get no key events at

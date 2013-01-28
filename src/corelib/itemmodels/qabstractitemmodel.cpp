@@ -1063,7 +1063,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     The QAbstractItemModel class is one of the \l{Model/View Classes}
     and is part of Qt's \l{Model/View Programming}{model/view framework}. It
     can be used as the underlying data model for the item view elements in
-    QML or the item view classes in the QtWidgets module.
+    QML or the item view classes in the Qt Widgets module.
 
     If you need a model to use with an item view such as QML's List View
     element or the C++ widgets QListView or QTableView, you should consider

@@ -8,7 +8,7 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-/* Since QtCore must export these symbols, define Z_PREFIX to avoid clashes system zlib */
+/* Since Qt Core must export these symbols, define Z_PREFIX to avoid clashes system zlib */
 #define Z_PREFIX
 
 /*

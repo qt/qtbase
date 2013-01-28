@@ -54,7 +54,7 @@
 
     \snippet rasterwindow/rasterwindow.h 1
 
-    We first start by including the QtGui headers. This means we
+    We first start by including the \c <QtGui> header. This means we
     can use all classes in the Qt GUI module. Classes can also be
     included individually if that is preferred.
 

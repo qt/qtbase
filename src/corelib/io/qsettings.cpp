@@ -2092,9 +2092,9 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \section1 QVariant and GUI Types
 
-    Because QVariant is part of the \l QtCore library, it cannot provide
+    Because QVariant is part of the Qt Core module, it cannot provide
     conversion functions to data types such as QColor, QImage, and
-    QPixmap, which are part of \l QtGui. In other words, there is no
+    QPixmap, which are part of Qt GUI. In other words, there is no
     \c toColor(), \c toImage(), or \c toPixmap() functions in QVariant.
 
     Instead, you can use the QVariant::value() or the qVariantValue()

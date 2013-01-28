@@ -37,7 +37,7 @@
     A style in Qt is a subclass of QStyle or of one of its
     subclasses. Styles perform drawing on behalf of widgets. Qt
     provides a whole range of predefined styles, either built into
-    the \l QtWidgets library or found in plugins. Styles are usually
+    the Qt Widgets module or found in plugins. Styles are usually
     customized by subclassing QProxyStyle and reimplementing a few
     virtual functions. While QProxyStyle provides a transparent way
     to customize either a specific style or the appropriate platform's

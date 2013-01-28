@@ -25,44 +25,43 @@ defineReplace(cmakeModuleList) {
     return ($$join(out, ";"))
 }
 
+defineReplace(cmakeRelativePath) {
+    path = $$relative_path($$1, $$2)
+    return($$replace(path, ([^/])$, \\1/))
+}
+
 CMAKE_MODULE_NAME = $$cmakeModuleName($${MODULE})
 
 CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.))
 CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
 !isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
 
-CMAKE_QT_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]/
-CMAKE_QT_INSTALL_PREFIX_ESCAPED = "^$$re_escape($$CMAKE_QT_INSTALL_PREFIX)"
-
-CMAKE_INCLUDE_DIR = $$[QT_INSTALL_HEADERS]/
-contains(CMAKE_INCLUDE_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
-    CMAKE_INCLUDE_DIR = $$replace(CMAKE_INCLUDE_DIR, "$$CMAKE_QT_INSTALL_PREFIX_ESCAPED", )
-} else {
+CMAKE_INCLUDE_DIR = $$cmakeRelativePath($$[QT_INSTALL_HEADERS], $$[QT_INSTALL_PREFIX])
+contains(CMAKE_INCLUDE_DIR, "^\.\.") {
+    CMAKE_INCLUDE_DIR = $$[QT_INSTALL_HEADERS]/
     CMAKE_INCLUDE_DIR_IS_ABSOLUTE = True
 }
 
-CMAKE_LIB_DIR = $$[QT_INSTALL_LIBS]/
-contains(CMAKE_LIB_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
-    CMAKE_LIB_DIR = $$replace(CMAKE_LIB_DIR, "$$CMAKE_QT_INSTALL_PREFIX_ESCAPED", )
-    CMAKE_RELATIVE_INSTALL_DIR = $$replace(CMAKE_LIB_DIR, "[^/]+", ..)
+CMAKE_LIB_DIR = $$cmakeRelativePath($$[QT_INSTALL_LIBS], $$[QT_INSTALL_PREFIX])
+contains(CMAKE_LIB_DIR, "^\.\.") {
+    CMAKE_LIB_DIR = $$[QT_INSTALL_LIBS]/
+    CMAKE_LIB_DIR_IS_ABSOLUTE = True
+} else {
+    CMAKE_RELATIVE_INSTALL_DIR = $$cmakeRelativePath($$[QT_INSTALL_PREFIX], $$[QT_INSTALL_LIBS])
     # We need to go up another two levels because the CMake files are
     # installed in $${CMAKE_LIB_DIR}/cmake/Qt5$${CMAKE_MODULE_NAME}
     CMAKE_RELATIVE_INSTALL_DIR = "$${CMAKE_RELATIVE_INSTALL_DIR}../../"
-} else {
-    CMAKE_LIB_DIR_IS_ABSOLUTE = True
 }
 
-CMAKE_BIN_DIR = $$[QT_HOST_BINS]/
-contains(CMAKE_BIN_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
-    CMAKE_BIN_DIR = $$replace(CMAKE_BIN_DIR, "$$CMAKE_QT_INSTALL_PREFIX_ESCAPED", )
-} else {
+CMAKE_BIN_DIR = $$cmakeRelativePath($$[QT_HOST_BINS], $$[QT_INSTALL_PREFIX])
+contains(CMAKE_BIN_DIR, "^\.\.") {
+    CMAKE_BIN_DIR = $$[QT_HOST_BINS]/
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
 }
 
-CMAKE_ARCHDATA_DIR = $$[QT_INSTALL_ARCHDATA]/ # For the mkspecs
-contains(CMAKE_ARCHDATA_DIR, "$${CMAKE_QT_INSTALL_PREFIX_ESCAPED}.*") {
-    CMAKE_ARCHDATA_DIR = $$replace(CMAKE_ARCHDATA_DIR, "$$CMAKE_QT_INSTALL_PREFIX_ESCAPED", )
-} else {
+CMAKE_ARCHDATA_DIR = $$cmakeRelativePath($$[QT_INSTALL_ARCHDATA], $$[QT_INSTALL_PREFIX])
+contains(CMAKE_ARCHDATA_DIR, "^\.\.") {  # For the mkspecs
+    CMAKE_ARCHDATA_DIR = $$[QT_INSTALL_ARCHDATA]/
     CMAKE_ARCHDATA_DIR_IS_ABSOLUTE = True
 }
 

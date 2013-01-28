@@ -789,7 +789,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
 */
 bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
-    // Make it possible for QtScript to hook into events even
+    // Make it possible for Qt Script to hook into events even
     // though QApplication is subclassed...
     bool result = false;
     void *cbdata[] = { receiver, event, &result };

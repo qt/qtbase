@@ -52,6 +52,7 @@
 #include <QtCore/qmath.h>
 #include <QtCore/QDebug>
 #include <QtCore/QtEndian>
+#include <QtCore/QThreadStorage>
 
 #include <wchar.h>
 
@@ -1112,19 +1113,46 @@ void QWindowsFontDatabase::populate(const QString &family)
     ReleaseDC(0, dummy);
 }
 
-QWindowsFontDatabase::QWindowsFontDatabase() :
-    m_fontEngineData(new QWindowsFontEngineData)
+typedef QSharedPointer<QWindowsFontEngineData> QWindowsFontEngineDataPtr;
+
+#ifndef QT_NO_THREAD
+typedef QThreadStorage<QWindowsFontEngineDataPtr> FontEngineThreadLocalData;
+
+Q_GLOBAL_STATIC(FontEngineThreadLocalData, fontEngineThreadLocalData)
+
+QSharedPointer<QWindowsFontEngineData> sharedFontData()
 {
-    // Properties accessed by QWin32PrintEngine (QtPrintSupport)
+    FontEngineThreadLocalData *data = fontEngineThreadLocalData();
+    if (!data->hasLocalData())
+        data->setLocalData(QSharedPointer<QWindowsFontEngineData>(new QWindowsFontEngineData));
+    return data->localData();
+}
+#else // !QT_NO_THREAD
+Q_GLOBAL_STATIC(QWindowsFontEngineDataPtr, fontEngineData)
+
+QWindowsFontEngineDataPtr sharedFontData()
+{
+    QWindowsFontEngineDataPtr *data = fontEngineData();
+    if (data->isNull())
+        *data = QWindowsFontEngineDataPtr(new QWindowsFontEngineData);
+    return *data;
+}
+#endif // QT_NO_THREAD
+
+QWindowsFontDatabase::QWindowsFontDatabase()
+{
+    // Properties accessed by QWin32PrintEngine (Qt Print Support)
     static const int hfontMetaTypeId = qRegisterMetaType<HFONT>();
     static const int logFontMetaTypeId = qRegisterMetaType<LOGFONT>();
     Q_UNUSED(hfontMetaTypeId)
     Q_UNUSED(logFontMetaTypeId)
 
-    if (QWindowsContext::verboseFonts)
+    if (QWindowsContext::verboseFonts) {
+        const QWindowsFontEngineDataPtr data = sharedFontData();
         qDebug() << __FUNCTION__ << "Clear type: "
-                 << m_fontEngineData->clearTypeEnabled << "gamma: "
-                 << m_fontEngineData->fontSmoothingGamma;
+                 << data->clearTypeEnabled << "gamma: "
+                 << data->fontSmoothingGamma;
+    }
 }
 
 QWindowsFontDatabase::~QWindowsFontDatabase()
@@ -1136,7 +1164,7 @@ QFontEngine * QWindowsFontDatabase::fontEngine(const QFontDef &fontDef, QChar::S
 {
     QFontEngine *fe = QWindowsFontDatabase::createEngine(script, fontDef,
                                               0, QWindowsContext::instance()->defaultDPI(), false,
-                                              QStringList(), m_fontEngineData);
+                                              QStringList(), sharedFontData());
     if (QWindowsContext::verboseFonts)
         qDebug() << __FUNCTION__ << "FONTDEF" << fontDef << script << fe << handle;
     return fe;
@@ -1187,7 +1215,7 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
 
             fontEngine = QWindowsFontDatabase::createEngine(QChar::Script_Common, request, 0,
                     QWindowsContext::instance()->defaultDPI(), false, QStringList(),
-                    m_fontEngineData);
+                    sharedFontData());
 
             if (fontEngine) {
                 if (request.family != fontEngine->fontDef.family) {

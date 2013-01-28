@@ -420,14 +420,19 @@ static QTouchDevice *touchDevice = 0;
         m_buttons |= Qt::LeftButton;
         break;
     case NSLeftMouseUp:
-         m_buttons &= QFlag(~int(Qt::LeftButton));
+         m_buttons &= ~Qt::LeftButton;
          break;
     case NSRightMouseDown:
         m_buttons |= Qt::RightButton;
         break;
     case NSRightMouseUp:
-        m_buttons &= QFlag(~int(Qt::RightButton));
+        m_buttons &= ~Qt::RightButton;
         break;
+    case NSOtherMouseDown:
+        m_buttons |= cocoaButton2QtButton([theEvent buttonNumber]);
+        break;
+    case NSOtherMouseUp:
+        m_buttons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
     default:
         break;
     }
@@ -482,10 +487,10 @@ static QTouchDevice *touchDevice = 0;
 - (void)mouseUp:(NSEvent *)theEvent
 {
     if (m_sendUpAsRightButton) {
-        m_buttons &= QFlag(~int(Qt::RightButton));
+        m_buttons &= ~Qt::RightButton;
         m_sendUpAsRightButton = false;
     } else {
-        m_buttons &= QFlag(~int(Qt::LeftButton));
+        m_buttons &= ~Qt::LeftButton;
     }
     [self handleMouseEvent:theEvent];
 }
@@ -556,59 +561,13 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)rightMouseUp:(NSEvent *)theEvent
 {
-    m_buttons &= QFlag(~int(Qt::RightButton));
+    m_buttons &= ~Qt::RightButton;
     [self handleMouseEvent:theEvent];
 }
 
 - (void)otherMouseDown:(NSEvent *)theEvent
 {
-    switch ([theEvent buttonNumber]) {
-        case 3:
-            m_buttons |= Qt::MiddleButton;
-            break;
-        case 4:
-            m_buttons |= Qt::ExtraButton1;  // AKA Qt::BackButton
-            break;
-        case 5:
-            m_buttons |= Qt::ExtraButton2;  // AKA Qt::ForwardButton
-            break;
-        case 6:
-            m_buttons |= Qt::ExtraButton3;
-            break;
-        case 7:
-            m_buttons |= Qt::ExtraButton4;
-            break;
-        case 8:
-            m_buttons |= Qt::ExtraButton5;
-            break;
-        case 9:
-            m_buttons |= Qt::ExtraButton6;
-            break;
-        case 10:
-            m_buttons |= Qt::ExtraButton7;
-            break;
-        case 11:
-            m_buttons |= Qt::ExtraButton8;
-            break;
-        case 12:
-            m_buttons |= Qt::ExtraButton9;
-            break;
-        case 13:
-            m_buttons |= Qt::ExtraButton10;
-            break;
-        case 14:
-            m_buttons |= Qt::ExtraButton11;
-            break;
-        case 15:
-            m_buttons |= Qt::ExtraButton12;
-            break;
-        case 16:
-            m_buttons |= Qt::ExtraButton13;
-            break;
-        default:
-            m_buttons |= Qt::MiddleButton;
-            break;
-    }
+    m_buttons |= cocoaButton2QtButton([theEvent buttonNumber]);
     [self handleMouseEvent:theEvent];
 }
 
@@ -621,53 +580,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (void)otherMouseUp:(NSEvent *)theEvent
 {
-    switch ([theEvent buttonNumber]) {
-        case 3:
-            m_buttons &= QFlag(~int(Qt::MiddleButton));
-            break;
-        case 4:
-            m_buttons &= QFlag(~int(Qt::ExtraButton1));  // AKA Qt::BackButton
-            break;
-        case 5:
-            m_buttons &= QFlag(~int(Qt::ExtraButton2));  // AKA Qt::ForwardButton
-            break;
-        case 6:
-            m_buttons &= QFlag(~int(Qt::ExtraButton3));
-            break;
-        case 7:
-            m_buttons &= QFlag(~int(Qt::ExtraButton4));
-            break;
-        case 8:
-            m_buttons &= QFlag(~int(Qt::ExtraButton5));
-            break;
-        case 9:
-            m_buttons &= QFlag(~int(Qt::ExtraButton6));
-            break;
-        case 10:
-            m_buttons &= QFlag(~int(Qt::ExtraButton7));
-            break;
-        case 11:
-            m_buttons &= QFlag(~int(Qt::ExtraButton8));
-            break;
-        case 12:
-            m_buttons &= QFlag(~int(Qt::ExtraButton9));
-            break;
-        case 13:
-            m_buttons &= QFlag(~int(Qt::ExtraButton10));
-            break;
-        case 14:
-            m_buttons &= QFlag(~int(Qt::ExtraButton11));
-            break;
-        case 15:
-            m_buttons &= QFlag(~int(Qt::ExtraButton12));
-            break;
-        case 16:
-            m_buttons &= QFlag(~int(Qt::ExtraButton13));
-            break;
-        default:
-            m_buttons &= QFlag(~int(Qt::MiddleButton));
-            break;
-    }
+    m_buttons &= ~cocoaButton2QtButton([theEvent buttonNumber]);
     [self handleMouseEvent:theEvent];
 }
 
@@ -1259,7 +1172,7 @@ static QTouchDevice *touchDevice = 0;
 
 // keep our state, and QGuiApplication state (buttons member) in-sync,
 // or future mouse events will be processed incorrectly
-    m_buttons &= QFlag(~int(Qt::LeftButton));
+    m_buttons &= ~Qt::LeftButton;
 
     NSPoint windowPoint = [self convertPoint: point fromView: nil];
     QPoint qtWindowPoint(windowPoint.x, windowPoint.y);
