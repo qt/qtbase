@@ -660,7 +660,7 @@ static const ushort encodedFragmentActions[] = {
     encode(']'), // 6
     0
 };
-static const ushort * const decodedFragmentInUrlActions = 0;
+//static const ushort * const decodedFragmentInUrlActions = 0;
 static const ushort * const decodedFragmentInIsolationActions = 0;
 
 // the query is handled specially: the decodedQueryXXX tables are run with
