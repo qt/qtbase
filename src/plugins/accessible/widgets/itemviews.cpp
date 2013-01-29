@@ -1046,14 +1046,11 @@ bool QAccessibleTableHeaderCell::isValid() const
 
 QAccessibleInterface *QAccessibleTableHeaderCell::parent() const
 {
-    if (false) {
 #ifndef QT_NO_TREEVIEW
-    } else if (qobject_cast<const QTreeView*>(view)) {
+    if (qobject_cast<const QTreeView*>(view))
         return new QAccessibleTree(view);
 #endif
-    } else {
-        return new QAccessibleTable(view);
-    }
+    return new QAccessibleTable(view);
 }
 
 QAccessibleInterface *QAccessibleTableHeaderCell::child(int) const
