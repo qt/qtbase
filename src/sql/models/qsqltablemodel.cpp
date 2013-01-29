@@ -587,7 +587,10 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (!(flags(index) & Qt::ItemIsEditable))
         return false;
 
-    if (QSqlTableModel::data(index, role) == value)
+    const QVariant oldValue = QSqlTableModel::data(index, role);
+    if (value == oldValue
+        && value.isNull() == oldValue.isNull()
+        && d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert)
         return true;
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];

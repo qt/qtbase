@@ -83,6 +83,8 @@ private slots:
     void insertColumns();
     void submitAll_data() { generic_data(); }
     void submitAll();
+    void setData_data()  { generic_data(); }
+    void setData();
     void setRecord_data()  { generic_data(); }
     void setRecord();
     void setRecordReimpl_data()  { generic_data(); }
@@ -499,6 +501,77 @@ void tst_QSqlTableModel::insertColumns()
     QCOMPARE(model.data(model.index(3, 3)), QVariant());
     QCOMPARE(model.data(model.index(3, 4)), QVariant());
     QCOMPARE(model.data(model.index(3, 5)), QVariant());
+}
+
+void tst_QSqlTableModel::setData()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model.setTable(test);
+    model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    //  initial state
+    QModelIndex idx = model.index(0, 0);
+    QVariant val = model.data(idx);
+    QVERIFY(val == int(1));
+    QVERIFY(!val.isNull());
+    QFAIL_SQL(model, isDirty());
+
+    // change 1 to 0
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, int(0)));
+    val = model.data(idx);
+    QVERIFY(val == int(0));
+    QVERIFY(!val.isNull());
+    QVERIFY_SQL(model, isDirty(idx));
+    QVERIFY_SQL(model, submitAll());
+
+    // change 0 to NULL
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
+    val = model.data(idx);
+    QVERIFY(val == QVariant(QVariant::Int));
+    QVERIFY(val.isNull());
+    QVERIFY_SQL(model, isDirty(idx));
+    QVERIFY_SQL(model, submitAll());
+
+    // change NULL to 0
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, int(0)));
+    val = model.data(idx);
+    QVERIFY(val == int(0));
+    QVERIFY(!val.isNull());
+    QVERIFY_SQL(model, isDirty(idx));
+    QVERIFY_SQL(model, submitAll());
+
+    // ignore unchanged 0 to 0
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, int(0)));
+    val = model.data(idx);
+    QVERIFY(val == int(0));
+    QVERIFY(!val.isNull());
+    QFAIL_SQL(model, isDirty(idx));
+
+    // pending INSERT
+    QVERIFY_SQL(model, insertRow(0));
+    // initial state
+    idx = model.index(0, 0);
+    QSqlRecord rec = model.record(0);
+    QVERIFY(rec.value(0) == QVariant(QVariant::Int));
+    QVERIFY(rec.isNull(0));
+    QVERIFY(!rec.isGenerated(0));
+    // unchanged value, but causes column to be included in INSERT
+    QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
+    rec = model.record(0);
+    QVERIFY(rec.value(0) == QVariant(QVariant::Int));
+    QVERIFY(rec.isNull(0));
+    QVERIFY(rec.isGenerated(0));
+    QVERIFY_SQL(model, submitAll());
 }
 
 void tst_QSqlTableModel::setRecord()
