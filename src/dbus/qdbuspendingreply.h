@@ -105,6 +105,10 @@ namespace QDBusPendingReplyTypes {
         static inline void fillMetaTypes(int *)
         { }
     };
+
+    struct TypeIsVoid {};
+    template <typename T> struct NotVoid       { typedef T Type; };
+    template <>           struct NotVoid<void> { typedef TypeIsVoid Type; };
 } // namespace QDBusPendingReplyTypes
 
 template<typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void,
@@ -176,7 +180,7 @@ public:
         return argumentAt<0>();
     }
 
-    inline operator typename Select<0>::Type() const
+    inline operator typename QDBusPendingReplyTypes::NotVoid<T1>::Type() const
     {
         return argumentAt<0>();
     }
