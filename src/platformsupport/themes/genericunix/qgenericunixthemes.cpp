@@ -426,6 +426,9 @@ QStringList QGenericUnixTheme::themeNames()
             result.push_back(QLatin1String(QKdeTheme::name));
 #endif
         } else { // Gnome, Unity, other Gtk-based desktops like XFCE.
+            // prefer the GTK2 theme implementation with native dialogs etc.
+            result.push_back(QStringLiteral("gtk2"));
+            // fallback to the generic Gnome theme if loading the GTK2 theme fails
             result.push_back(QLatin1String(QGnomeTheme::name));
         }
         const QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));

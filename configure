@@ -4472,14 +4472,17 @@ fi
 # auto-detect GTK style support
 if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
-        QT_CFLAGS_QGTKSTYLE=`$PKG_CONFIG --cflags gtk+-2.0 ">=" 2.18 atk 2>/dev/null`
-        QT_LIBS_QGTKSTYLE=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
+        QT_CFLAGS_QGTK2=`$PKG_CONFIG --cflags gtk+-2.0 ">=" 2.18 atk 2>/dev/null`
+        QT_LIBS_QGTK2=`$PKG_CONFIG --libs gtk+-2.0 2>/dev/null`
+        QT_LIBS_QGOBJECT=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
     fi
-    if [ -n "$QT_CFLAGS_QGTKSTYLE" ] ; then
+    if [ -n "$QT_CFLAGS_QGTK2" ] ; then
         CFG_QGTKSTYLE=yes
-        QT_CONFIG="$QT_CONFIG gtkstyle"
-        QMakeVar set QT_CFLAGS_QGTKSTYLE "$QT_CFLAGS_QGTKSTYLE"
-        QMakeVar set QT_LIBS_QGTKSTYLE "$QT_LIBS_QGTKSTYLE"
+        QT_CONFIG="$QT_CONFIG gtk2 gtkstyle"
+        QMakeVar set QT_CFLAGS_QGTKSTYLE "$QT_CFLAGS_QGTK2"
+        QMakeVar set QT_LIBS_QGTKSTYLE "$QT_LIBS_QGOBJECT"
+        QMakeVar set QT_CFLAGS_QGTK2 "$QT_CFLAGS_QGTK2"
+        QMakeVar set QT_LIBS_QGTK2 "$QT_LIBS_QGTK2"
     else
         if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "Gtk theme support cannot be enabled due to functionality tests!"
