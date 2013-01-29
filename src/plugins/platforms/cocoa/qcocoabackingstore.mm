@@ -73,7 +73,9 @@ QPaintDevice *QCocoaBackingStore::paintDevice()
         }
 #endif
 
-        m_qImage = QImage(m_requestedSize * scaleFactor, QImage::Format_ARGB32_Premultiplied);
+        QImage::Format format = window()->format().hasAlpha()
+                ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+        m_qImage = QImage(m_requestedSize * scaleFactor, format);
         m_qImage.setDevicePixelRatio(scaleFactor);
     }
     return &m_qImage;
