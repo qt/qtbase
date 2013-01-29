@@ -77,7 +77,7 @@ protected:
     QEventDispatcherBlackberry(QEventDispatcherBlackberryPrivate &dd, QObject *parent = 0);
 
     int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-               timeval *timeout);
+               timespec *timeout);
     int ioEvents(int fd);
 };
 

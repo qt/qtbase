@@ -90,7 +90,14 @@ int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
     // loop and recalculate the timeout as needed
     int ret;
     forever {
+#ifndef Q_OS_QNX
         ret = ::pselect(nfds, fdread, fdwrite, fdexcept, &timeout, 0);
+#else
+        timeval timeoutVal;
+        timeoutVal.tv_sec = timeout.tv_sec;
+        timeoutVal.tv_usec = timeout.tv_nsec / 1000;
+        ret = ::select(nfds, fdread, fdwrite, fdexcept, &timeoutVal);
+#endif
         if (ret != -1 || errno != EINTR)
             return ret;
 
