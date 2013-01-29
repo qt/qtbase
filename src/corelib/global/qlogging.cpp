@@ -115,6 +115,7 @@ static bool isFatal(QtMsgType msgType)
 extern bool usingWinMain;
 #endif
 
+#ifdef Q_OS_WIN
 static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
 {
     size_t len = qstrlen(s);
@@ -128,6 +129,7 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
         *d++ = *s++;
     *d++ = 0;
 }
+#endif
 
 #if !defined(QT_NO_EXCEPTIONS)
 /*!
