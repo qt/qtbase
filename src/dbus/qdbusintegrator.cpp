@@ -1848,7 +1848,8 @@ void QDBusConnectionPrivate::waitForFinished(QDBusPendingCallPrivate *pcall)
     }
 }
 
-static inline bool waitingForFinishedIsSet(QDBusPendingCallPrivate *call)
+// this function is called only in a Q_ASSERT
+static inline Q_DECL_UNUSED bool waitingForFinishedIsSet(QDBusPendingCallPrivate *call)
 {
     const QMutexLocker locker(&call->mutex);
     return call->waitingForFinished;
