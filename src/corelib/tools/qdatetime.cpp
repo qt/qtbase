@@ -93,11 +93,6 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
-static inline qint64 floordiv(qint64 a, qint64 b)
-{
-    return (a - (a < 0 ? b-1 : 0)) / b;
-}
-
 static inline qint64 floordiv(qint64 a, int b)
 {
     return (a - (a < 0 ? b-1 : 0)) / b;

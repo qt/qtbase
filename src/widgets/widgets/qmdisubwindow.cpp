@@ -183,14 +183,6 @@ static const QStyle::SubControl SubControls[] =
 };
 static const int NumSubControls = sizeof(SubControls) / sizeof(SubControls[0]);
 
-static const QStyle::StandardPixmap ButtonPixmaps[] =
-{
-    QStyle::SP_TitleBarMinButton,
-    QStyle::SP_TitleBarNormalButton,
-    QStyle::SP_TitleBarCloseButton
-};
-static const int NumButtonPixmaps = sizeof(ButtonPixmaps) / sizeof(ButtonPixmaps[0]);
-
 static const Qt::WindowFlags CustomizeWindowFlags =
       Qt::FramelessWindowHint
     | Qt::CustomizeWindowHint

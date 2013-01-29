@@ -333,11 +333,6 @@ static inline QString ftpScheme()
     return QStringLiteral("ftp");
 }
 
-static inline QString httpScheme()
-{
-    return QStringLiteral("http");
-}
-
 static inline QString fileScheme()
 {
     return QStringLiteral("file");
