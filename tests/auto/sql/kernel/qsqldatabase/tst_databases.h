@@ -232,7 +232,7 @@ public:
 //         addDb( "QOCI8", "//horsehead.nokia.troll.no:1521/ustest.troll.no", "scott", "tiger", "" ); // Oracle 9i on horsehead
 //         addDb( "QOCI8", "//iceblink.nokia.troll.no:1521/ice.troll.no", "scott", "tiger", "" ); // Oracle 8 on iceblink (not currently working)
 //         addDb( "QOCI", "//silence.nokia.troll.no:1521/testdb", "scott", "tiger" ); // Oracle 10g on silence
-//         addDb( "QOCI", "//bq-oracle10g.apac.nokia.com:1521/XE", "scott", "tiger" ); // Oracle 10gexpress
+//         addDb( "QOCI", "//bq-oracle10g.qt-project.org:1521/XE", "scott", "tiger" ); // Oracle 10gexpress
 
 //      This requires a local ODBC data source to be configured( pointing to a MySql database )
 //         addDb( "QODBC", "mysqlodbc", "troll", "trond" );
@@ -247,9 +247,9 @@ public:
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3309, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 5.0.18 Linux
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "silence.nokia.troll.no" ); // MySQL 5.1.36 Windows
 
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql41.apac.nokia.com" ); // MySQL 4.1.22-2.el4  linux
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql50.apac.nokia.com" ); // MySQL 5.0.45-7.el5 linux
-//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql51.apac.nokia.com" ); // MySQL 5.1.36-6.7.2.i586 linux
+//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql41.qt-project.org" ); // MySQL 4.1.22-2.el4  linux
+//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql50.qt-project.org" ); // MySQL 5.0.45-7.el5 linux
+//         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "bq-mysql51.qt-project.org" ); // MySQL 5.1.36-6.7.2.i586 linux
 
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no" ); // V7.2 NOT SUPPORTED!
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 5434 ); // V7.2 NOT SUPPORTED! Multi-byte
@@ -258,14 +258,14 @@ public:
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 5437 ); // V8.0.3
 //         addDb( "QPSQL7", "testdb", "troll", "trond", "silence.nokia.troll.no" );         // V8.2.1, UTF-8
 
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-postgres74.apac.nokia.com" );         // Version 7.4.19-1.el4_6.1
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql81.apac.nokia.com" );         // Version 8.1.11-1.el5_1.1
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql84.apac.nokia.com" );         // Version 8.4.1-2.1.i586
-//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql90.apac.nokia.com" );         // Version 9.0.0
+//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-postgres74.qt-project.org" );         // Version 7.4.19-1.el4_6.1
+//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql81.qt-project.org" );         // Version 8.1.11-1.el5_1.1
+//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql84.qt-project.org" );         // Version 8.4.1-2.1.i586
+//         addDb( "QPSQL7", "testdb", "testuser", "Ee4Gabf6_", "bq-pgsql90.qt-project.org" );         // Version 9.0.0
 
 
 //         addDb( "QDB2", "testdb", "troll", "trond", "silence.nokia.troll.no" ); // DB2 v9.1 on silence
-//         addDb( "QDB2", "testdb", "testuser", "Ee4Gabf6_", "bq-db2-972.apac.nokia.com" ); // DB2
+//         addDb( "QDB2", "testdb", "testuser", "Ee4Gabf6_", "bq-db2-972.qt-project.org" ); // DB2
 
 //      yes - interbase really wants the physical path on the host machine.
 //         addDb( "QIBASE", "/opt/interbase/qttest.gdb", "SYSDBA", "masterkey", "horsehead.nokia.troll.no" );
@@ -274,8 +274,8 @@ public:
 //         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird1-nokia.trolltech.com.au" ); // Firebird 1.5.5
 //         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "firebird2-nokia.trolltech.com.au" ); // Firebird 2.1.1
 
-//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "bq-firebird1.apac.nokia.com" ); // Firebird 1.5.5
-//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "bq-firebird2.apac.nokia.com" ); // Firebird 2.1.1
+//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "bq-firebird1.qt-project.org" ); // Firebird 1.5.5
+//         addDb( "QIBASE", "/opt/firebird/databases/testdb.fdb", "testuser", "Ee4Gabf6_", "bq-firebird2.qt-project.org" ); // Firebird 2.1.1
 
 //      use in-memory database to prevent local files
 //         addDb("QSQLITE", ":memory:");
@@ -284,18 +284,18 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=iceblink.nokia.troll.no\\ICEBLINK", "troll", "trond", "" );
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
 
-//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql50.apac.nokia.com;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql51.apac.nokia.com;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql50.qt-project.org;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=bq-mysql51.qt-project.org;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
-//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.qt-project.org;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
+//         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2008-x86-01.qt-project.org;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2003" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2008" );
-//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
-//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2003-x86-01.qt-project.org;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.qt-project.org;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={Microsoft Access Driver (*.mdb)};DBQ=c:\\dbs\\access\\testdb.mdb", "", "", "" );
-//         addDb( "QODBC", "DRIVER={Postgresql};SERVER=bq-pgsql84.apac.nokia.com;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={Postgresql};SERVER=bq-pgsql84.qt-project.org;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
     }
 
     void open()

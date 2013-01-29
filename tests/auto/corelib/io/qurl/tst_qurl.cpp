@@ -225,14 +225,14 @@ void tst_QUrl::constructing()
     QVERIFY(url == url);
     QVERIFY(!(url < url));
 
-    QUrl justHost("qt.nokia.com");
+    QUrl justHost("qt-project.org");
     QVERIFY(!justHost.isEmpty());
     QVERIFY(justHost.host().isEmpty());
-    QCOMPARE(justHost.path(), QString::fromLatin1("qt.nokia.com"));
+    QCOMPARE(justHost.path(), QString::fromLatin1("qt-project.org"));
 
-    QUrl hostWithSlashes("//qt.nokia.com");
+    QUrl hostWithSlashes("//qt-project.org");
     QVERIFY(hostWithSlashes.path().isEmpty());
-    QCOMPARE(hostWithSlashes.host(), QString::fromLatin1("qt.nokia.com"));
+    QCOMPARE(hostWithSlashes.host(), QString::fromLatin1("qt-project.org"));
 }
 
 void tst_QUrl::hashInPath()
@@ -269,7 +269,7 @@ void tst_QUrl::unc()
 
 void tst_QUrl::assignment()
 {
-    QUrl url("http://qt.nokia.com/");
+    QUrl url("http://qt-project.org/");
     QVERIFY(url.isValid());
 
     QUrl copy;
@@ -280,10 +280,10 @@ void tst_QUrl::assignment()
 
 void tst_QUrl::comparison()
 {
-    QUrl url1("http://qt.nokia.com/");
+    QUrl url1("http://qt-project.org/");
     QVERIFY(url1.isValid());
 
-    QUrl url2("http://qt.nokia.com/");
+    QUrl url2("http://qt-project.org/");
     QVERIFY(url2.isValid());
 
     QVERIFY(url1 == url2);
@@ -367,7 +367,7 @@ void tst_QUrl::comparison2()
 
 void tst_QUrl::copying()
 {
-    QUrl url("http://qt.nokia.com/");
+    QUrl url("http://qt-project.org/");
     QVERIFY(url.isValid());
 
     QUrl copy(url);
@@ -983,9 +983,9 @@ void tst_QUrl::toString_constructed_data()
 
     QString n("");
 
-    QTest::newRow("data1") << n << n << n << QString::fromLatin1("qt.nokia.com") << -1 << QString::fromLatin1("/index.html")
-                        << QByteArray() << n << QString::fromLatin1("//qt.nokia.com/index.html")
-                        << QByteArray("//qt.nokia.com/index.html") << 0u;
+    QTest::newRow("data1") << n << n << n << QString::fromLatin1("qt-project.org") << -1 << QString::fromLatin1("/index.html")
+                        << QByteArray() << n << QString::fromLatin1("//qt-project.org/index.html")
+                        << QByteArray("//qt-project.org/index.html") << 0u;
     QTest::newRow("data2") << QString::fromLatin1("file") << n << n << n << -1 << QString::fromLatin1("/root") << QByteArray()
                         << n << QString::fromLatin1("file:///root") << QByteArray("file:///root") << 0u;
     QTest::newRow("userAndPass") << QString::fromLatin1("http") << QString::fromLatin1("dfaure") << QString::fromLatin1("kde")
@@ -1143,22 +1143,22 @@ void tst_QUrl::compat_legacy()
     /* others
      */
     {
-        QUrl u( "http://qt.nokia.com/images/ban/pgs_front.jpg" );
+        QUrl u( "http://qt-project.org/images/ban/pgs_front.jpg" );
         QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
-        QUrl tmp( "http://qt.nokia.com/images/ban/" );
+        QUrl tmp( "http://qt-project.org/images/ban/" );
         QUrl u = tmp.resolved(QString("pgs_front.jpg"));
         QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
         QUrl tmp;
-        QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
+        QUrl u = tmp.resolved(QString("http://qt-project.org/images/ban/pgs_front.jpg"));
         QCOMPARE( u.path(), QString("/images/ban/pgs_front.jpg") );
     }
     {
         QUrl tmp;
-        QUrl u = tmp.resolved(QString("http://qt.nokia.com/images/ban/pgs_front.jpg"));
+        QUrl u = tmp.resolved(QString("http://qt-project.org/images/ban/pgs_front.jpg"));
         QFileInfo fi(u.path());
         u.setPath(fi.path());
         QCOMPARE( u.path(), QString("/images/ban") );
@@ -1240,11 +1240,11 @@ void tst_QUrl::compat_constructor_03_data()
     QTest::addColumn<QString>("res");
 
     //next we fill it with data
-    QTest::newRow( "protocol00" )  << QString( "http://qt.nokia.com/index.html" ) << QString( "http://qt.nokia.com/index.html" );
-    QTest::newRow( "protocol01" )  << QString( "http://qt.nokia.com" ) << QString( "http://qt.nokia.com" );
-    QTest::newRow( "protocol02" )  << QString( "http://qt.nokia.com/" ) << QString( "http://qt.nokia.com/" );
-    QTest::newRow( "protocol03" )  << QString( "http://qt.nokia.com/foo" ) << QString( "http://qt.nokia.com/foo" );
-    QTest::newRow( "protocol04" )  << QString( "http://qt.nokia.com/foo/" ) << QString( "http://qt.nokia.com/foo/" );
+    QTest::newRow( "protocol00" )  << QString( "http://qt-project.org/index.html" ) << QString( "http://qt-project.org/index.html" );
+    QTest::newRow( "protocol01" )  << QString( "http://qt-project.org" ) << QString( "http://qt-project.org" );
+    QTest::newRow( "protocol02" )  << QString( "http://qt-project.org/" ) << QString( "http://qt-project.org/" );
+    QTest::newRow( "protocol03" )  << QString( "http://qt-project.org/foo" ) << QString( "http://qt-project.org/foo" );
+    QTest::newRow( "protocol04" )  << QString( "http://qt-project.org/foo/" ) << QString( "http://qt-project.org/foo/" );
     QTest::newRow( "protocol05" )  << QString( "ftp://ftp.qt-project.org/foo/index.txt" ) << QString( "ftp://ftp.qt-project.org/foo/index.txt" );
 
     QTest::newRow( "local00" )  << QString( "/foo" ) << QString( "/foo" );
@@ -1371,7 +1371,7 @@ void tst_QUrl::compat_path_data()
     QTest::addColumn<QString>("url");
     QTest::addColumn<QString>("res");
 
-    QTest::newRow( "protocol00" ) << "http://qt.nokia.com/images/ban/pgs_front.jpg" << "/images/ban/pgs_front.jpg";
+    QTest::newRow( "protocol00" ) << "http://qt-project.org/images/ban/pgs_front.jpg" << "/images/ban/pgs_front.jpg";
 
 #if defined( Q_OS_WIN32 )
     QTest::newRow( "winShare00" ) << "//Anarki/homes" << "/homes";
@@ -1421,8 +1421,8 @@ void tst_QUrl::compat_decode_data()
     QTest::newRow("NormalString") << QByteArray("filename") << QString("filename");
     QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QString("file name");
     QTest::newRow("JustEncoded") << QByteArray("%20") << QString(" ");
-    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QString("http://qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QString("http://qt nokia com");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt-project.org") << QString("http://qt-project.org");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt-project%20org") << QString("http://qt-project org");
     QTest::newRow("EmptyString") << QByteArray("") << QString("");
     QTest::newRow("NulByte") << QByteArray("C%00%0A") << QString::fromLatin1("C\0\n", 3);
     QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QString::fromUtf8("Française");
@@ -1444,8 +1444,8 @@ void tst_QUrl::compat_encode_data()
     QTest::newRow("NormalString") << QString("filename") << QByteArray("filename");
     QTest::newRow("NormalStringEncoded") << QString("file name") << QByteArray("file%20name");
     QTest::newRow("JustEncoded") << QString(" ") << QByteArray("%20");
-    QTest::newRow("HTTPUrl") << QString("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QString("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
+    QTest::newRow("HTTPUrl") << QString("http://qt-project.org") << QByteArray("http%3A//qt-project.org");
+    QTest::newRow("HTTPUrlEncoded") << QString("http://qt-project org") << QByteArray("http%3A//qt-project%20org");
     QTest::newRow("EmptyString") << QString("") << QByteArray("");
     QTest::newRow("NulByte") << QString::fromLatin1("C\0\n", 3) << QByteArray("C%00%0A");
     QTest::newRow("Task27166") << QString::fromUtf8("Française") << QByteArray("Fran%C3%A7aise");
@@ -1541,9 +1541,9 @@ void tst_QUrl::toPercentEncoding()
 
 void tst_QUrl::swap()
 {
-    QUrl u1(QLatin1String("http://qt.nokia.com")), u2(QLatin1String("http://www.kdab.com"));
+    QUrl u1(QLatin1String("http://qt-project.org")), u2(QLatin1String("http://www.kdab.com"));
     u1.swap(u2);
-    QCOMPARE(u2.host(),QLatin1String("qt.nokia.com"));
+    QCOMPARE(u2.host(),QLatin1String("qt-project.org"));
     QCOMPARE(u1.host(),QLatin1String("www.kdab.com"));
 }
 
@@ -1557,8 +1557,8 @@ void tst_QUrl::symmetry()
     QCOMPARE(url.encodedQuery().constData(), QString::fromLatin1("a=b&a=d%C3%B8&a=f").toLatin1().constData());
     QCOMPARE(url.fragment(), QString::fromUtf8("vræl"));
 
-    QUrl onlyHost("//qt.nokia.com");
-    QCOMPARE(onlyHost.toString(), QString::fromLatin1("//qt.nokia.com"));
+    QUrl onlyHost("//qt-project.org");
+    QCOMPARE(onlyHost.toString(), QString::fromLatin1("//qt-project.org"));
 
     {
         QString urlString = QString::fromLatin1("http://desktop:33326/upnp/{32f525a6-6f31-426e-91ca-01c2e6c2c57e}");
@@ -1676,7 +1676,7 @@ void tst_QUrl::isRelative_data()
     QTest::addColumn<QString>("url");
     QTest::addColumn<bool>("trueFalse");
 
-    QTest::newRow("not") << QString::fromLatin1("http://qt.nokia.com") << false;
+    QTest::newRow("not") << QString::fromLatin1("http://qt-project.org") << false;
     QTest::newRow("55288") << QString::fromLatin1("node64.html#fig:form:ana") << true;
 
     // kde
@@ -1860,26 +1860,26 @@ void tst_QUrl::invalidSchemeValidator()
 {
     // test that if scheme does not start with an ALPHA, QUrl::isValid() returns false
     {
-        QUrl url("1http://qt.nokia.com");
+        QUrl url("1http://qt-project.org");
         QVERIFY(url.scheme().isEmpty());
         QVERIFY(url.path().startsWith("1http"));
     }
     {
-        QUrl url("http://qt.nokia.com");
-        url.setScheme("111http://qt.nokia.com");
+        QUrl url("http://qt-project.org");
+        url.setScheme("111http://qt-project.org");
         QCOMPARE(url.isValid(), false);
         QVERIFY(url.toString().isEmpty());
     }
     // non-ALPHA character at other positions in the scheme are ok
     {
-        QUrl url("ht111tp://qt.nokia.com", QUrl::StrictMode);
+        QUrl url("ht111tp://qt-project.org", QUrl::StrictMode);
         QVERIFY(url.isValid());
         QCOMPARE(url.scheme(), QString("ht111tp"));
         QVERIFY(!url.toString().isEmpty());
     }
     {
-        QUrl url("http://qt.nokia.com");
-        url.setScheme("ht123tp://qt.nokia.com");
+        QUrl url("http://qt-project.org");
+        url.setScheme("ht123tp://qt-project.org");
         QVERIFY(!url.isValid());
         QVERIFY(url.toString().isEmpty());
         url.setScheme("http");
@@ -1887,7 +1887,7 @@ void tst_QUrl::invalidSchemeValidator()
         QVERIFY(!url.toString().isEmpty());
     }
     {
-        QUrl url = QUrl::fromEncoded("ht321tp://qt.nokia.com", QUrl::StrictMode);
+        QUrl url = QUrl::fromEncoded("ht321tp://qt-project.org", QUrl::StrictMode);
         QVERIFY(url.isValid());
         QVERIFY(!url.toString().isEmpty());
     }
@@ -2431,7 +2431,7 @@ void tst_QUrl::hosts_data()
 
     // normal hostnames
     QTest::newRow("normal") << QString("http://intern") << QString("intern");
-    QTest::newRow("normal2") << QString("http://qt.nokia.com") << QString("qt.nokia.com");
+    QTest::newRow("normal2") << QString("http://qt-project.org") << QString("qt-project.org");
 
     // IDN hostnames
     QTest::newRow("idn") << QString(QLatin1String("http://\345r.no")) << QString(QLatin1String("\345r.no"));
