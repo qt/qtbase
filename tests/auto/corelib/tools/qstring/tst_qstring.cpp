@@ -2409,7 +2409,7 @@ void tst_QString::remove_uint_uint()
         s1.remove( (uint) index, (uint) len );
         QTEST( s1, "result" );
     } else
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
 }
 
 void tst_QString::remove_string()
@@ -2448,7 +2448,7 @@ void tst_QString::remove_string()
         s5.replace( QRegExp(before, cs, QRegExp::FixedString), after );
         QTEST( s5, "result" );
     } else {
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
 
@@ -2467,7 +2467,7 @@ void tst_QString::remove_regexp()
         s2.remove( QRegularExpression(regexp) );
         QTEST( s2, "result" );
     } else {
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
 
@@ -3778,7 +3778,7 @@ void tst_QString::fromLatin1Roundtrip()
     QFETCH(QByteArray, latin1);
     QFETCH(QString, unicode);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicode.isNull());
     QCOMPARE(latin1.isEmpty(), unicode.isEmpty());
     QCOMPARE(latin1.length(), unicode.length());
@@ -3833,7 +3833,7 @@ void tst_QString::toLatin1Roundtrip()
     QFETCH(QString, unicodesrc);
     QFETCH(QString, unicodedst);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicodesrc.isNull());
     QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
     QCOMPARE(latin1.length(), unicodesrc.length());
@@ -3868,7 +3868,7 @@ void tst_QString::stringRef_toLatin1Roundtrip()
     QFETCH(QString, unicodesrc);
     QFETCH(QString, unicodedst);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicodesrc.isNull());
     QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
     QCOMPARE(latin1.length(), unicodesrc.length());
@@ -3934,8 +3934,8 @@ void tst_QString::fromAscii()
 void tst_QString::arg()
 {
 /*
-    Warning: If any of these test fails, the warning given by QtTest
-    is all messed up, because QtTest itself uses QString::arg().
+    Warning: If any of these test fails, the warning given by Qt Test
+    is all messed up, because Qt Test itself uses QString::arg().
 */
 
     QLocale::setDefault(QString("de_DE"));

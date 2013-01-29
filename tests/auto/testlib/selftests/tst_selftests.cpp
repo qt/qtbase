@@ -501,7 +501,7 @@ static inline QProcessEnvironment processEnvironment()
 {
     QProcessEnvironment result;
     insertEnvironmentVariable(QStringLiteral("PATH"), result);
-    // Preserve DISPLAY for X11 as some tests use QtGui.
+    // Preserve DISPLAY for X11 as some tests use Qt GUI.
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     insertEnvironmentVariable(QStringLiteral("DISPLAY"), result);
 #endif

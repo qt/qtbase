@@ -381,7 +381,7 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     efficient way to add reasonable online help facilities to
     applications, and to provide a basis for rich text editors. If
     you find the HTML support insufficient for your needs you may consider
-    the use of QtWebKit, which provides a full-featured web browser
+    the use of Qt WebKit, which provides a full-featured web browser
     widget.
 
     The shape of the mouse cursor on a QTextEdit is Qt::IBeamCursor by default.

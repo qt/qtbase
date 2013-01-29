@@ -456,10 +456,10 @@ QPlatformOpenGLContext
 
 #ifdef Q_OS_WINCE
 // It's not easy to detect if we are running a QML application
-// Let's try to do so by checking if the QtQuick module is loaded.
+// Let's try to do so by checking if the Qt Quick module is loaded.
 inline bool isQMLApplication()
 {
-    // check if the QtQuick library is loaded
+    // check if the Qt Quick module is loaded
 #ifdef _DEBUG
     HMODULE handle = GetModuleHandle(L"Qt5Quick" QT_LIBINFIX L"d.dll");
 #else

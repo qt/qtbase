@@ -231,7 +231,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             url.setUserInfo(QString());
             request.setUrl(url);
         }
-        // Will only be false if QtWebKit is performing a cross-origin XMLHttpRequest
+        // Will only be false if Qt WebKit is performing a cross-origin XMLHttpRequest
         // and withCredentials has not been set to true.
         if (request.withCredentials())
             connection->d_func()->createAuthorization(socket, request);

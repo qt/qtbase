@@ -3317,18 +3317,18 @@ void Configure::displayConfig()
 
     // Give some feedback
     sout << "Environment:" << endl;
-    QString env = QString::fromLocal8Bit(getenv("INCLUDE")).replace(QRegExp("[;,]"), "\r\n      ");
+    QString env = QString::fromLocal8Bit(getenv("INCLUDE")).replace(QRegExp("[;,]"), "\n      ");
     if (env.isEmpty())
         env = "Unset";
-    sout << "    INCLUDE=\r\n      " << env << endl;
-    env = QString::fromLocal8Bit(getenv("LIB")).replace(QRegExp("[;,]"), "\r\n      ");
+    sout << "    INCLUDE=\n      " << env << endl;
+    env = QString::fromLocal8Bit(getenv("LIB")).replace(QRegExp("[;,]"), "\n      ");
     if (env.isEmpty())
         env = "Unset";
-    sout << "    LIB=\r\n      " << env << endl;
-    env = QString::fromLocal8Bit(getenv("PATH")).replace(QRegExp("[;,]"), "\r\n      ");
+    sout << "    LIB=\n      " << env << endl;
+    env = QString::fromLocal8Bit(getenv("PATH")).replace(QRegExp("[;,]"), "\n      ");
     if (env.isEmpty())
         env = "Unset";
-    sout << "    PATH=\r\n      " << env << endl;
+    sout << "    PATH=\n      " << env << endl;
 
     if (dictionary[QStringLiteral("EDITION")] != QStringLiteral("OpenSource")) {
         QString l1 = licenseInfo[ "LICENSEE" ];
@@ -3342,9 +3342,9 @@ void Configure::displayConfig()
     }
 
     sout << "Configuration:" << endl;
-    sout << "    " << qmakeConfig.join("\r\n    ") << endl;
+    sout << "    " << qmakeConfig.join("\n    ") << endl;
     sout << "Qt Configuration:" << endl;
-    sout << "    " << qtConfig.join("\r\n    ") << endl;
+    sout << "    " << qtConfig.join("\n    ") << endl;
     sout << endl;
 
     if (dictionary.contains("XQMAKESPEC"))

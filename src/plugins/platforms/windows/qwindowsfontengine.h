@@ -135,7 +135,7 @@ public:
 
     const QSharedPointer<QWindowsFontEngineData> &fontEngineData() const { return m_fontEngineData; }
 
-    // Properties accessed by QWin32PrintEngine (QtPrintSupport)
+    // Properties accessed by QWin32PrintEngine (Qt Print Support)
     LOGFONT logFont() const { return m_logfont; }
     HFONT hFont() const     { return hfont; }
     bool trueType() const   { return ttf; }

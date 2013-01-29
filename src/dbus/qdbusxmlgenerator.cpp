@@ -59,7 +59,7 @@ extern Q_DBUS_EXPORT QString qDBusGenerateMetaObjectXml(QString interface, const
 static inline QString typeNameToXml(const char *typeName)
 {
     // ### copied from qtextdocument.cpp
-    // ### move this into QtCore at some point
+    // ### move this into Qt Core at some point
     QString plain = QLatin1String(typeName);
     QString rich;
     rich.reserve(int(plain.length() * 1.1));

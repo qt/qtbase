@@ -27,8 +27,8 @@
 
 /*!
     \page qtxml-index.html
-    \title Qt Xml
-    \brief The QtXml module provides C++ implementations of the SAX and DOM standards for XML.
+    \title Qt XML
+    \brief The Qt XML module provides C++ implementations of the SAX and DOM standards for XML.
 
     The module is not actively maintained anymore. Please use
     the QXmlStreamReader and QXmlStreamwriter classes in Qt Core instead.
@@ -43,6 +43,6 @@
 
     \snippet code/doc_src_qtxml.pro 1
 
-    The \l{Qt Xml C++ classes} page gives an overview over the available classes
+    The \l{Qt XML C++ Classes} page gives an overview over the available classes
     int this module.
 */

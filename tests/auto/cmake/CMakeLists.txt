@@ -64,7 +64,7 @@ expect_pass("test(needsquoting)dirname")
 expect_pass(test_platform_defs_include)
 expect_pass(test_qtmainwin_library)
 
-# If QtDBus has been installed then run the tests for its macros.
+# If Qt D-Bus has been installed then run the tests for its macros.
 find_package(Qt5DBus QUIET)
 if (Qt5DBus_FOUND AND NOT APPLE)
     expect_pass(test_dbus_module)

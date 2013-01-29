@@ -533,7 +533,7 @@
     A QML type belongs to a \e module. The module
     may include all the related types for a platform or contain a certain
     version of \l{Qt Quick}. For example, the Qt Quick 2 \l{QML Elements} belong
-    to the QtQuick2 module while there is also a QtQuick1 module for the older
+    to the Qt Quick 2 module while there is also a Qt Quick 1 module for the older
     types introduced in Qt 4.
 
     QML modules allow grouping QML types. The \l{qmltype-command}
@@ -575,7 +575,7 @@
     point for readers to find instructional and reference materials that do,
     such as tutorials, examples and class documentation. An example of an
     overview might be a product page, such as a top level discussion of
-    QtQuick, individual modules, design principles, or tools.
+    Qt Quick, individual modules, design principles, or tools.
 
     To signify that a document is an article, you append the article keyword
     to the \\page command:

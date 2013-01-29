@@ -29,7 +29,7 @@
     \namespace QSql
     \inmodule QtSql
     \brief The QSql namespace contains miscellaneous identifiers used throughout
-    the Qt SQL library.
+    the Qt SQL module.
 
     \ingroup database
 

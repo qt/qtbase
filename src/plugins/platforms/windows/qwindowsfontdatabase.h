@@ -106,7 +106,6 @@ public:
 private:
     void populate(const QString &family = QString());
     void removeApplicationFonts();
-    QSharedPointer<QWindowsFontEngineData> m_fontEngineData;
     QSet<QString> m_families;
 
     struct WinApplicationFont {

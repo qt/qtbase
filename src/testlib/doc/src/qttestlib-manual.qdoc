@@ -51,7 +51,7 @@
            exported symbols.
     \row
         \li \b Self-contained
-        \li Qt Test requires only a few symbols from the Qt Core library
+        \li Qt Test requires only a few symbols from the Qt Core module
            for non-gui testing.
     \row
         \li \b {Rapid testing}
@@ -653,7 +653,7 @@
 
     \snippet tutorial3/testgui.cpp 0
 
-    The only difference is that you need to include the QtGui class
+    The only difference is that you need to include the Qt GUI class
     definitions in addition to the QTest namespace.
 
     \snippet tutorial3/testgui.cpp 1

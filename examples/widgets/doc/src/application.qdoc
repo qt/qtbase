@@ -76,8 +76,8 @@
     \snippet mainwindows/application/mainwindow.cpp 0
 
     We start by including \c <QtGui>, a header file that contains the
-    definition of all classes in the \l QtCore and \l QtGui
-    libraries. This saves us from the trouble of having to include
+    definition of all classes in the Qt Core and Qt GUI
+    modules. This saves us from the trouble of having to include
     every class individually. We also include \c mainwindow.h.
 
     You might wonder why we don't include \c <QtGui> in \c

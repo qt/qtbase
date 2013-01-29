@@ -667,7 +667,7 @@ QScreen *QOpenGLContext::screen() const
 }
 
 /*!
-    internal: Needs to have a pointer to qGLContext. But since this is in QtGui we cant
+    internal: Needs to have a pointer to qGLContext. But since this is in Qt GUI we cant
     have any type information.
 
     \internal

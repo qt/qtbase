@@ -3102,7 +3102,7 @@ Configure options:
  +  -accessibility ..... Compile Accessibility support.
 
     -no-sql-<driver> ... Disable SQL <driver> entirely.
-    -qt-sql-<driver> ... Enable a SQL <driver> in the QtSql library, by default
+    -qt-sql-<driver> ... Enable a SQL <driver> in the Qt SQL module, by default
                          none are turned on.
     -plugin-sql-<driver> Enable SQL <driver> as a plugin to be linked to
                          at run time.
@@ -3188,11 +3188,11 @@ Additional options:
                          ($QT_DEFAULT_BUILD_PARTS)
     -nomake <part> ..... Exclude part from the list of parts to be built.
 
-    -no-gui ............ Don't build the QtGui library and dependencies.
- +  -gui ............... Build the QtGui library and dependencies.
+    -no-gui ............ Don't build the Qt GUI module and dependencies.
+ +  -gui ............... Build the Qt GUI module and dependencies.
 
-    -no-widgets ........ Don't build the QtWidgets library and dependencies.
- +  -widgets ........... Build the QtWidgets library and dependencies.
+    -no-widgets ........ Don't build the Qt Widgets module and dependencies.
+ +  -widgets ........... Build the Qt Widgets module and dependencies.
 
     -R <string> ........ Add an explicit runtime library path to the Qt
                          libraries.
@@ -3234,9 +3234,9 @@ Additional options:
  $PHN  -no-pch ............ Do not use precompiled header support.
  $PHY  -pch ............... Use precompiled header support.
 
- $DBN  -no-dbus ........... Do not compile the QtDBus module.
- $DBY  -dbus .............. Compile the QtDBus module and dynamically load libdbus-1.
-    -dbus-linked ....... Compile the QtDBus module and link to libdbus-1.
+ $DBN  -no-dbus ........... Do not compile the Qt D-Bus module.
+ $DBY  -dbus .............. Compile the Qt D-Bus module and dynamically load libdbus-1.
+    -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
 
     -reduce-relocations ..... Reduce relocations in the libraries through extra
                               linker optimizations (Qt/X11 and Qt for Embedded Linux only;
@@ -4437,7 +4437,7 @@ if [ "$CFG_DBUS" != "no" ]; then
         elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             # CFG_DBUS is "yes" or "linked" here
 
-            echo "The QtDBus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
+            echo "The Qt D-Bus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -5676,7 +5676,7 @@ EOF
 esac
 
 if [ "$CFG_GUI" = "no" ]; then
-    # WebKit requires QtGui
+    # WebKit requires Qt GUI
     canBuildWebKit="no"
 fi
 
@@ -6230,12 +6230,12 @@ if [ -n "$PKG_CONFIG" ]; then
 else
     echo "pkg-config ............. no"
 fi
-[ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
-[ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
-[ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
-echo "QtConcurrent code ...... $CFG_CONCURRENT"
-echo "QtGui module ........... $CFG_GUI"
-echo "QtWidgets module ....... $CFG_WIDGETS"
+[ "$CFG_DBUS" = "no" ]     && echo "Qt D-Bus module ........ no"
+[ "$CFG_DBUS" = "yes" ]    && echo "Qt D-Bus module ........ yes (run-time)"
+[ "$CFG_DBUS" = "linked" ] && echo "Qt D-Bus module ........ yes (linked)"
+echo "Qt Concurrent code ..... $CFG_CONCURRENT"
+echo "Qt GUI module .......... $CFG_GUI"
+echo "Qt Widgets module ...... $CFG_WIDGETS"
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
     echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
 else

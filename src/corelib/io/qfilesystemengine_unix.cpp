@@ -633,7 +633,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 QString QFileSystemEngine::homePath()
 {
     QString home = QFile::decodeName(qgetenv("HOME"));
-    if (home.isNull())
+    if (home.isEmpty())
         home = rootPath();
     return QDir::cleanPath(home);
 }

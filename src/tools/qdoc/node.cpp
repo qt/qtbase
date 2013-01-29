@@ -1287,7 +1287,7 @@ void InnerNode::removeChild(Node *child)
 }
 
 /*!
-  Find the module (QtCore, QtGui, etc.) to which the class belongs.
+  Find the module (Qt Core, Qt GUI, etc.) to which the class belongs.
   We do this by obtaining the full path to the header file's location
   and examine everything between "src/" and the filename.  This is
   semi-dirty because we are assuming a particular directory structure.

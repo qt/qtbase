@@ -1344,6 +1344,14 @@ void tst_QDir::homePath()
 #ifdef Q_OS_UNIX
     if (strHome.length() > 1)      // root dir = "/"
         QVERIFY(!strHome.endsWith('/'));
+
+    QByteArray envHome = qgetenv("HOME");
+#if !defined(_WRS_KERNEL) // unsetenv is not available on VxWorks DKM mode
+    unsetenv("HOME");
+#endif
+    QCOMPARE(QDir::homePath(), QDir::rootPath());
+    qputenv("HOME", envHome);
+
 #elif defined(Q_OS_WIN)
     if (strHome.length() > 3)      // root dir = "c:/"; "//" is not really valid...
         QVERIFY(!strHome.endsWith('/'));

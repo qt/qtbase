@@ -27,7 +27,7 @@
 
 /*!
     \page usingadaptors.html
-    \title Using QtDBus Adaptors
+    \title Using Qt D-Bus Adaptors
     \brief How to create and use DBus adaptors in Qt.
 
     \ingroup best-practices
@@ -56,7 +56,7 @@
     of the MethodCall type. (See \l {Declaring Slots in D-Bus Adaptors} for more
     information). Signals in the class will be automatically relayed over D-Bus.
     However, not all types are allowed signals or slots' parameter lists: see
-    \l {The QtDBus Type System} for more information.
+    \l {The Qt D-Bus Type System} for more information.
 
     Also, any property declared with Q_PROPERTY will be automatically exposed
     over the Properties interface on D-Bus. Since the QObject property system
@@ -67,7 +67,7 @@
     \list
       \li \l{Declaring Slots in D-Bus Adaptors}
       \li \l{Declaring Signals in D-Bus Adaptors}
-      \li \l{The QtDBus Type System}
+      \li \l{The Qt D-Bus Type System}
       \li \l{D-Bus Adaptor Example}
     \endlist
 
@@ -78,8 +78,8 @@
     \page qdbusadaptorexample.html
     \title D-Bus Adaptor Example
 
-    \previouspage The QtDBus Type System
-    \contentspage Using QtDBus Adaptors
+    \previouspage The Qt D-Bus Type System
+    \contentspage Using Qt D-Bus Adaptors
 
     The following example code shows how a D-Bus interface can be implemented
     using an adaptor.
@@ -198,11 +198,11 @@
     \page qdbusdeclaringslots.html
     \title Declaring Slots in D-Bus Adaptors
 
-    \contentspage Using QtDBus Adaptors
+    \contentspage Using Qt D-Bus Adaptors
     \nextpage Declaring Signals in D-Bus Adaptors
 
     Slots in D-Bus adaptors are declared just like normal, public slots, but their
-    parameters must follow certain rules (see \l{The QtDBus Type System} for more
+    parameters must follow certain rules (see \l{The Qt D-Bus Type System} for more
     information). Slots whose parameters do not follow those rules or that are not
     public will not be accessible via D-Bus.
 
@@ -259,7 +259,7 @@
     \section1 Automatic Replies
 
     Method replies are generated automatically with the contents of the output
-    parameters (if there were any) by the QtDBus implementation. Slots need not
+    parameters (if there were any) by the Qt D-Bus implementation. Slots need not
     worry about constructing proper QDBusMessage objects and sending them over
     the connection.
 
@@ -267,7 +267,7 @@
     it needs to send a special reply or even an error, it can do so by using
     QDBusMessage::createReply() or QDBusMessage::createErrorReply() on the
     QDBusMessage parameter and send it with QDBusConnection::send(). The
-    QtDBus implementation will not generate any reply if the slot did so.
+    Qt D-Bus implementation will not generate any reply if the slot did so.
 
     \warning When a caller places a method call and waits for a reply, it will
     only wait for a limited amount of time. Slots intending to take a long time
@@ -306,12 +306,12 @@
     \snippet code/doc_src_qdbusadaptors.cpp 11
 
     As can be seen in the example, when a delayed reply is in place,
-    the return value(s) from the slot will be ignored by QtDBus. They
+    the return value(s) from the slot will be ignored by Qt D-Bus. They
     are used only to determine the slot's signature when communicating
     the adaptor's description to remote applications, or in case the
     code in the slot decides not to use a delayed reply.
 
-    The delayed reply itself is requested from QtDBus by calling
+    The delayed reply itself is requested from Qt D-Bus by calling
     QDBusMessage::reply() on the original message. It then becomes the
     resposibility of the called code to eventually send a reply to the
     caller.
@@ -321,8 +321,8 @@
     to complete should make that fact clear in documentation so that callers
     properly set higher timeouts.
 
-    \sa {Using QtDBus Adaptors}, {Declaring Signals in D-Bus Adaptors},
-        {The QtDBus Type System}, QDBusConnection, QDBusMessage
+    \sa {Using Qt D-Bus Adaptors}, {Declaring Signals in D-Bus Adaptors},
+        {The Qt D-Bus Type System}, QDBusConnection, QDBusMessage
 */
 
 /*!
@@ -330,12 +330,12 @@
     \title Declaring Signals in D-Bus Adaptors
 
     \previouspage Declaring Slots in D-Bus Adaptors
-    \contentspage Using QtDBus Adaptors
-    \nextpage The QtDBus Type System
+    \contentspage Using Qt D-Bus Adaptors
+    \nextpage The Qt D-Bus Type System
 
     Any signal in a class derived from QDBusAbstractAdaptor will be automatically
     relayed into D-Bus, provided that the signal's parameters conform to certain
-    rules (see \l{The QtDBus Type System} for more information). No special code
+    rules (see \l{The Qt D-Bus Type System} for more information). No special code
     is necessary to make this relay.
 
     However, signals must still be emitted. The easiest way to emit an adaptor
@@ -349,21 +349,21 @@
     the corresponding signals in the adaptor. It will inspect the list of signals
     in both classes and connect those whose parameters match exactly.
 
-    \sa {Using QtDBus Adaptors},
+    \sa {Using Qt D-Bus Adaptors},
         {Declaring Slots in D-Bus Adaptors},
-        {The QtDBus Type System}, QDBusAbstractAdaptor
+        {The Qt D-Bus Type System}, QDBusAbstractAdaptor
 */
 
 /*!
     \page qdbustypesystem.html
-    \title The QtDBus Type System
+    \title The Qt D-Bus Type System
 
     \previouspage Declaring Signals in D-Bus Adaptors
-    \contentspage Using QtDBus Adaptors
+    \contentspage Using Qt D-Bus Adaptors
     \nextpage D-Bus Adaptor Example
 
     D-Bus has an extensible type system based on a few primitives and
-    composition of the primitives in arrays and structures. QtDBus
+    composition of the primitives in arrays and structures. Qt D-Bus
     implements the interface to that type system through the
     QDBusArgument class, allowing user programs to send and receive
     practically every C++ type over the bus.
@@ -436,13 +436,13 @@
 
     \section1 Extending the Type System
 
-    In order to use one's own type with QtDBus, the type has to be
+    In order to use one's own type with Qt D-Bus, the type has to be
     declared as a Qt meta-type with the Q_DECLARE_METATYPE() macro and
     registered with the qDBusRegisterMetaType() function. The
     streaming operators \c{operator>>} and \c{operator<<} will be
     automatically found by the registration system.
 
-    QtDBus provides template specializations for arrays and maps for
+    Qt D-Bus provides template specializations for arrays and maps for
     use with Qt's \l{Container classes}{container classes}, such as
     QMap and QList, so it is not necessary to write the streaming
     operator functions for those. For other types, and specially for
@@ -454,7 +454,7 @@
 
     \section1 The Type System in Use
 
-    All of the QtDBus types (primitives and user-defined alike) can be
+    All of the Qt D-Bus types (primitives and user-defined alike) can be
     used to send and receive messages of all types over the bus.
 
     \warning You may not use any type that is not on the list above,
@@ -477,5 +477,5 @@
 
     Its presence in the method implementation (outside the class declaration) is optional.
 
-    \sa {Using QtDBus Adaptors}
+    \sa {Using Qt D-Bus Adaptors}
 */

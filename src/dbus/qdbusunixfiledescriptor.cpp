@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
     \brief The QDBusUnixFileDescriptor class holds one Unix file descriptor.
 
     The QDBusUnixFileDescriptor class is used to hold one Unix file
-    descriptor for use with the QtDBus module. This allows applications to
+    descriptor for use with the Qt D-Bus module. This allows applications to
     send and receive Unix file descriptors over the D-Bus connection, mapping
     automatically to the D-Bus type 'h'.
 
@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
 
     Unix file descriptor passing is not available in all D-Bus connections.
     This feature is present with D-Bus library and bus daemon version 1.4 and
-    upwards on Unix systems. QtDBus automatically enables the feature if such
+    upwards on Unix systems. Qt D-Bus automatically enables the feature if such
     a version was found at compile-time and run-time.
 
     To verify that your connection does support passing file descriptors,

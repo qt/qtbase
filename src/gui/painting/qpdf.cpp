@@ -2461,15 +2461,19 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
         trans.map(ti.width.toReal()/size, (ti.ascent.toReal()-ti.descent.toReal())/size, &x2, &y2);
 
         uint annot = addXrefEntry(-1);
+        QByteArray x1s, y1s, x2s, y2s;
+        x1s.setNum(static_cast<double>(x1), 'f');
+        y1s.setNum(static_cast<double>(y1), 'f');
+        x2s.setNum(static_cast<double>(x2), 'f');
+        y2s.setNum(static_cast<double>(y2), 'f');
+        QByteArray rectData = x1s + ' ' + y1s + ' ' + x2s + ' ' + y2s;
+        xprintf("<<\n/Type /Annot\n/Subtype /Link\n/Rect [");
+        xprintf(rectData.constData());
 #ifdef Q_DEBUG_PDF_LINKS
-        xprintf("<<\n/Type /Annot\n/Subtype /Link\n/Rect [%f %f %f %f]\n/Border [16 16 1]\n/A <<\n",
+        xprintf("]\n/Border [16 16 1]\n/A <<\n");
 #else
-        xprintf("<<\n/Type /Annot\n/Subtype /Link\n/Rect [%f %f %f %f]\n/Border [0 0 0]\n/A <<\n",
+        xprintf("]\n/Border [0 0 0]\n/A <<\n");
 #endif
-                static_cast<double>(x1),
-                static_cast<double>(y1),
-                static_cast<double>(x2),
-                static_cast<double>(y2));
         xprintf("/Type /Action\n/S /URI\n/URI (%s)\n",
                 ti.charFormat.anchorHref().toLatin1().constData());
         xprintf(">>\n>>\n");

@@ -27,11 +27,11 @@
 
 /*!
     \module QtXml
-    \title Qt Xml C++ classes
+    \title Qt XML C++ Classes
     \ingroup modules
     \ingroup technology-apis
 
-    \brief The QtXml module provides C++ implementations of the SAX and DOM standards for XML.
+    \brief The Qt XML module provides C++ implementations of the SAX and DOM standards for XML.
 
     The module is not actively maintained anymore. Please use
     the \l{QXmlStreamReader} and \l{QXmlStreamWriter} classes in \l{Qt Core} instead.

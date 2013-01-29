@@ -28,7 +28,7 @@
 /*!
     \module QtDBus
     \title Qt D-Bus C++ Classes
-    \brief The QtDBus module is a Unix-only library that you can use
+    \brief The Qt D-Bus module is a Unix-only library that you can use
     to perform Inter-Process Communication using the \l{D-Bus} protocol.
 
     \ingroup modules
@@ -37,12 +37,12 @@
     \target The QDBus compiler
 
 
-    Applications using the QtDBus module can provide services to
+    Applications using the Qt D-Bus module can provide services to
     other, remote applications by exporting objects, as well as use
     services exported by those applications by placing calls and
     accessing properties.
 
-    The QtDBus module provides an interface that extends the Qt \l
+    The Qt D-Bus module provides an interface that extends the Qt \l
     {signalsandslots.html}{Signals and Slots} mechanism, allowing one
     to connect to a signal emitted remotely as well as to connect a
     local signal to remote slot.
@@ -52,7 +52,7 @@
     \snippet code/doc_src_qtdbus.cpp 0
 
     If you're using qmake to build your application, you can add this
-    line to your .pro file to make it link against the QtDBus
+    line to your .pro file to make it link against the Qt D-Bus
     libraries:
 
     \snippet code/doc_src_qtdbus.pro 1

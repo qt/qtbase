@@ -69,7 +69,7 @@
     Since the higher-level API is built on top of the lower-level API,
     some issues are common to both.
 
-    If you want to provide plugins for use with Qt Designer, see the QtDesigner
+    If you want to provide plugins for use with Qt Designer, see the Qt Designer
     module documentation.
 
     Topics:

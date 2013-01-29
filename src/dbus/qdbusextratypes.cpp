@@ -82,7 +82,7 @@ void QDBusSignature::doCheck()
     The QVariant within a QDBusVariant is required to distinguish between a normal
     D-Bus value and a value within a D-Bus variant.
 
-    \sa {The QtDBus type system}
+    \sa {The Qt D-Bus Type System}
 */
 
 /*!
@@ -123,7 +123,7 @@ void QDBusSignature::doCheck()
     \brief The QDBusObjectPath class enables the programmer to
     identify the OBJECT_PATH type provided by the D-Bus typesystem.
 
-    \sa {The QtDBus type system}
+    \sa {The Qt D-Bus Type System}
 */
 
 /*!
@@ -176,7 +176,7 @@ void QDBusSignature::doCheck()
     \brief The QDBusSignature class enables the programmer to
     identify the SIGNATURE type provided by the D-Bus typesystem.
 
-    \sa {The QtDBus type system}
+    \sa {The Qt D-Bus Type System}
 */
 
 /*!
