@@ -837,11 +837,9 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
 
 qreal QCocoaWindow::devicePixelRatio() const
 {
-    if (!m_nsWindow)
-        return 1.0;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        return qreal([m_nsWindow backingScaleFactor]);
+        return qreal([[m_contentView window] backingScaleFactor]);
     } else
 #endif
     {
