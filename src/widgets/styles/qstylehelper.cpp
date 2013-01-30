@@ -86,17 +86,13 @@ qreal dpiScaled(qreal value)
 #endif
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 bool isInstanceOf(QObject *obj, QAccessible::Role role)
 {
     bool match = false;
-#ifndef QT_NO_ACCESSIBILITY
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(obj);
     match = iface && iface->role() == role;
     delete iface;
-#else
-    Q_UNUSED(obj)
-    Q_UNUSED(role)
-#endif // QT_NO_ACCESSIBILITY
     return match;
 }
 
@@ -104,19 +100,15 @@ bool isInstanceOf(QObject *obj, QAccessible::Role role)
 bool hasAncestor(QObject *obj, QAccessible::Role role)
 {
     bool found = false;
-#ifndef QT_NO_ACCESSIBILITY
     QObject *parent = obj ? obj->parent() : 0;
     while (parent && !found) {
         if (isInstanceOf(parent, role))
             found = true;
         parent = parent->parent();
     }
-#else
-    Q_UNUSED(obj)
-    Q_UNUSED(role)
-#endif // QT_NO_ACCESSIBILITY
     return found;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 
 #ifndef QT_NO_DIAL

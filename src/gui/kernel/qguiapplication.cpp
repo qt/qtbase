@@ -60,7 +60,9 @@
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/qdir.h>
 #include <QtDebug>
+#ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
+#endif
 #include <qpalette.h>
 #include <qscreen.h>
 #include "qsessionmanager.h"
