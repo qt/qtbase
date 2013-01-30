@@ -979,12 +979,13 @@ void QRegularExpressionPrivate::compilePattern()
 void QRegularExpressionPrivate::getPatternInfo()
 {
     Q_ASSERT(compiledPattern);
+    Q_ASSERT(studyData == 0);
 
     pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_CAPTURECOUNT, &capturingCount);
 
     // detect the settings for the newline
     unsigned long int patternNewlineSetting;
-    pcre16_fullinfo(compiledPattern, studyData, PCRE_INFO_OPTIONS, &patternNewlineSetting);
+    pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_OPTIONS, &patternNewlineSetting);
     patternNewlineSetting &= PCRE_NEWLINE_CR  | PCRE_NEWLINE_LF | PCRE_NEWLINE_CRLF
             | PCRE_NEWLINE_ANY | PCRE_NEWLINE_ANYCRLF;
     if (patternNewlineSetting == 0) {
