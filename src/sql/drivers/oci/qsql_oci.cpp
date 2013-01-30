@@ -51,6 +51,7 @@
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlquery.h>
+#include <QtSql/private/qsqlcachedresult_p.h>
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
 #include <qvector.h>
@@ -162,6 +163,33 @@ Q_DECLARE_METATYPE(QOCIRowIdPointer)
 QT_END_INCLUDE_NAMESPACE
 
 class QOCICols;
+struct QOCIResultPrivate;
+
+class Q_EXPORT_SQLDRIVER_OCI QOCIResult : public QSqlCachedResult
+{
+    friend class QOCIDriver;
+    friend struct QOCIResultPrivate;
+    friend class QOCICols;
+public:
+    QOCIResult(const QOCIDriver * db, const QOCIDriverPrivate* p);
+    ~QOCIResult();
+    bool prepare(const QString& query);
+    bool exec();
+    QVariant handle() const;
+
+protected:
+    bool gotoNext(ValueCache &values, int index);
+    bool reset (const QString& query);
+    int size();
+    int numRowsAffected();
+    QSqlRecord record() const;
+    QVariant lastInsertId() const;
+    bool execBatch(bool arrayBind = false);
+    void virtual_hook(int id, void *data);
+
+private:
+    QOCIResultPrivate *d;
+};
 
 struct QOCIResultPrivate
 {

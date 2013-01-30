@@ -44,7 +44,6 @@
 
 #include <QtSql/qsqlresult.h>
 #include <QtSql/qsqldriver.h>
-#include <QtSql/private/qsqlcachedresult_p.h>
 
 #ifdef QT_PLUGIN
 #define Q_EXPORT_SQLDRIVER_OCI
@@ -65,33 +64,6 @@ QT_BEGIN_NAMESPACE
 class QOCIDriver;
 class QOCICols;
 struct QOCIDriverPrivate;
-struct QOCIResultPrivate;
-
-class Q_EXPORT_SQLDRIVER_OCI QOCIResult : public QSqlCachedResult
-{
-    friend class QOCIDriver;
-    friend struct QOCIResultPrivate;
-    friend class QOCICols;
-public:
-    QOCIResult(const QOCIDriver * db, const QOCIDriverPrivate* p);
-    ~QOCIResult();
-    bool prepare(const QString& query);
-    bool exec();
-    QVariant handle() const;
-
-protected:
-    bool gotoNext(ValueCache &values, int index);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-    QVariant lastInsertId() const;
-    bool execBatch(bool arrayBind = false);
-    void virtual_hook(int id, void *data);
-
-private:
-    QOCIResultPrivate *d;
-};
 
 class Q_EXPORT_SQLDRIVER_OCI QOCIDriver : public QSqlDriver
 {

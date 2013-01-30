@@ -58,6 +58,7 @@
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlquery.h>
+#include <QtSql/private/qsqlcachedresult_p.h>
 #include <qstringlist.h>
 #include <qvector.h>
 
@@ -151,6 +152,27 @@ struct QTDSColumnData
     DBINT nullbind;
 };
 Q_DECLARE_TYPEINFO(QTDSColumnData, Q_MOVABLE_TYPE);
+
+class QTDSResultPrivate;
+
+class QTDSResult : public QSqlCachedResult
+{
+public:
+    explicit QTDSResult(const QTDSDriver* db);
+    ~QTDSResult();
+    QVariant handle() const;
+
+protected:
+    void cleanup();
+    bool reset (const QString& query);
+    int size();
+    int numRowsAffected();
+    bool gotoNext(QSqlCachedResult::ValueCache &values, int index);
+    QSqlRecord record() const;
+
+private:
+    QTDSResultPrivate* d;
+};
 
 class QTDSResultPrivate
 {

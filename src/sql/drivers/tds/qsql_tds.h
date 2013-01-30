@@ -44,7 +44,6 @@
 
 #include <QtSql/qsqlresult.h>
 #include <QtSql/qsqldriver.h>
-#include <QtSql/private/qsqlcachedresult_p.h>
 
 #ifdef Q_OS_WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -75,27 +74,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 class QTDSDriverPrivate;
-class QTDSResultPrivate;
 class QTDSDriver;
-
-class QTDSResult : public QSqlCachedResult
-{
-public:
-    explicit QTDSResult(const QTDSDriver* db);
-    ~QTDSResult();
-    QVariant handle() const;
-
-protected:
-    void cleanup();
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    bool gotoNext(QSqlCachedResult::ValueCache &values, int index);
-    QSqlRecord record() const;
-
-private:
-    QTDSResultPrivate* d;
-};
 
 class Q_EXPORT_SQLDRIVER_TDS QTDSDriver : public QSqlDriver
 {

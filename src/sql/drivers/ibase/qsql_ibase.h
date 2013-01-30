@@ -44,7 +44,6 @@
 
 #include <QtSql/qsqlresult.h>
 #include <QtSql/qsqldriver.h>
-#include <QtSql/private/qsqlcachedresult_p.h>
 #include <ibase.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,31 +54,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 class QIBaseDriverPrivate;
-class QIBaseResultPrivate;
 class QIBaseDriver;
-
-class QIBaseResult : public QSqlCachedResult
-{
-    friend class QIBaseResultPrivate;
-
-public:
-    explicit QIBaseResult(const QIBaseDriver* db);
-    virtual ~QIBaseResult();
-
-    bool prepare(const QString& query);
-    bool exec();
-    QVariant handle() const;
-
-protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-
-private:
-    QIBaseResultPrivate* d;
-};
 
 class QIBaseDriver : public QSqlDriver
 {

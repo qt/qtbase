@@ -46,7 +46,6 @@
 #include <QtSql/qsqlresult.h>
 #include <QtSql/qsqlrecord.h>
 #include <QtSql/qsqlindex.h>
-#include <QtSql/private/qsqlcachedresult_p.h>
 
 #if defined (Q_OS_WIN32)
 # include <QtCore/qt_windows.h>
@@ -62,30 +61,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 class QSQLite2DriverPrivate;
-class QSQLite2ResultPrivate;
 class QSQLite2Driver;
-
-class QSQLite2Result : public QSqlCachedResult
-{
-    friend class QSQLite2Driver;
-    friend class QSQLite2ResultPrivate;
-public:
-    explicit QSQLite2Result(const QSQLite2Driver* db);
-    ~QSQLite2Result();
-    QVariant handle() const;
-
-protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-    void detachFromResultSet();
-    void virtual_hook(int id, void *data);
-
-private:
-    QSQLite2ResultPrivate* d;
-};
 
 class QSQLite2Driver : public QSqlDriver
 {
