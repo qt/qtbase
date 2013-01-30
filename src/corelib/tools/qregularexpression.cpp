@@ -1013,6 +1013,14 @@ void QRegularExpressionPrivate::getPatternInfo()
     usingCrLfNewlines = (patternNewlineSetting == PCRE_NEWLINE_CRLF) ||
             (patternNewlineSetting == PCRE_NEWLINE_ANY) ||
             (patternNewlineSetting == PCRE_NEWLINE_ANYCRLF);
+
+    int hasJOptionChanged;
+    pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_JCHANGED, &hasJOptionChanged);
+    if (hasJOptionChanged) {
+        qWarning("QRegularExpressionPrivate::getPatternInfo(): the pattern '%s'\n"
+                 "    is using the (?J) option; duplicate capturing group names are not supported by Qt",
+                 qPrintable(pattern));
+    }
 }
 
 

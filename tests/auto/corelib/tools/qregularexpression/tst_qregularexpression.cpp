@@ -1550,3 +1550,35 @@ void tst_QRegularExpression::regularExpressionMatch()
     QTest::ignoreMessage(QtWarningMsg, "QRegularExpressionMatch::captured: empty capturing group name passed");
     QCOMPARE(match.captured(QString()).isNull(), true);
 }
+
+void tst_QRegularExpression::JOptionUsage_data()
+{
+    QTest::addColumn<QString>("pattern");
+    QTest::addColumn<bool>("isValid");
+    QTest::addColumn<bool>("JOptionUsed");
+
+    QTest::newRow("joption-notused-01") << "a.*b" << true << false;
+    QTest::newRow("joption-notused-02") << "^a(b)(c)$" << true << false;
+    QTest::newRow("joption-notused-03") << "a(b)(?<c>d)|e" << true << false;
+    QTest::newRow("joption-notused-04") << "(?<a>.)(?<a>.)" << false << false;
+
+    QTest::newRow("joption-used-01") << "(?J)a.*b" << true << true;
+    QTest::newRow("joption-used-02") << "(?-J)a.*b" << true << true;
+    QTest::newRow("joption-used-03") << "(?J)(?<a>.)(?<a>.)" << true << true;
+    QTest::newRow("joption-used-04") << "(?-J)(?<a>.)(?<a>.)" << false << true;
+
+}
+
+void tst_QRegularExpression::JOptionUsage()
+{
+    QFETCH(QString, pattern);
+    QFETCH(bool, isValid);
+    QFETCH(bool, JOptionUsed);
+
+    const QString warningMessage = QStringLiteral("QRegularExpressionPrivate::getPatternInfo(): the pattern '%1'\n    is using the (?J) option; duplicate capturing group names are not supported by Qt");
+
+    QRegularExpression re(pattern);
+    if (isValid && JOptionUsed)
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warningMessage.arg(pattern)));
+    QCOMPARE(re.isValid(), isValid);
+}
