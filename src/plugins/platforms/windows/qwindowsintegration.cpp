@@ -107,6 +107,9 @@ public:
     Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
                                           const QString &windowName,
                                           void *eventProc) const;
+
+    Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
+
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 };
@@ -184,6 +187,15 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
                                              (wchar_t*)windowName.utf16(),
                                              (WNDPROC)eventProc);
     return hwnd;
+}
+
+/*!
+    \brief Registers a unique window class with a callback function based on \a classNameIn.
+*/
+
+QString QWindowsNativeInterface::registerWindowClass(const QString &classNameIn, void *eventProc) const
+{
+    return QWindowsContext::instance()->registerWindowClass(classNameIn, (WNDPROC)eventProc);
 }
 
 bool QWindowsNativeInterface::asyncExpose() const
