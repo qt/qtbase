@@ -1726,12 +1726,13 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
 {
     Q_Q(QWidgetTextControl);
 
+    const QTextCursor oldSelection = cursor;
     if (sendMouseEventToInputContext(
             e, QEvent::MouseButtonRelease, button, pos, modifiers, buttons, globalPos)) {
+        repaintOldAndNewSelection(oldSelection);
         return;
     }
 
-    const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
 
 #ifndef QT_NO_DRAGANDDROP
