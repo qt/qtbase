@@ -448,6 +448,9 @@ MakefileGenerator::init()
     if (chkglue.isEmpty()) // Backwards compat with Qt4 specs
         chkglue = isWindowsShell() ? "" : "|| ";
 
+    if (v["QMAKE_LINK_O_FLAG"].isEmpty())
+        v["QMAKE_LINK_O_FLAG"].append("-o ");
+
     ProStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
     //make sure the COMPILERS are in the correct input/output chain order

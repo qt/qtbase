@@ -436,7 +436,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << "\n\t" << mkdir_p_asstring(destdir) << "\n\t";
             if(!project->isEmpty("QMAKE_PRE_LINK"))
                 t << var("QMAKE_PRE_LINK") << "\n\t";
-            t << "$(LINK) $(LFLAGS) -o $(TARGET) " << incr_deps << " " << incr_objs << " $(OBJCOMP) $(LIBS)";
+            t << "$(LINK) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(TARGET) " << incr_deps << " " << incr_objs << " $(OBJCOMP) $(LIBS)";
             if(!project->isEmpty("QMAKE_POST_LINK"))
                 t << "\n\t" << var("QMAKE_POST_LINK");
             t << endl << endl;
@@ -451,7 +451,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << mkdir_p_asstring(destdir) << "\n\t";
                 if (!project->isEmpty("QMAKE_PRE_LINK"))
                     t << var("QMAKE_PRE_LINK") << "\n\t";
-                t << "$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)";
+                t << "$(LINK) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)";
                 if (!project->isEmpty("QMAKE_POST_LINK"))
                     t << "\n\t" << var("QMAKE_POST_LINK");
             }
@@ -503,7 +503,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 t << incr_target_dir << ": $(INCREMENTAL_OBJECTS)" << "\n\t";
                 if(!destdir.isEmpty())
                     t << mkdir_p_asstring(destdir) << "\n\t";
-                t << "$(LINK) " << incr_lflags << " -o "<< incr_target_dir <<
+                t << "$(LINK) " << incr_lflags << " " << var("QMAKE_LINK_O_FLAG") << incr_target_dir <<
                     " $(INCREMENTAL_OBJECTS)" << endl;
                 //communicated below
                 ProStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
@@ -1173,7 +1173,7 @@ void UnixMakefileGenerator::init2()
         }
         if (project->values("QMAKE_LINK_SHLIB_CMD").isEmpty())
             project->values("QMAKE_LINK_SHLIB_CMD").append(
-                "$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS) $(OBJCOMP)");
+                "$(LINK) $(LFLAGS) " + project->first("QMAKE_LINK_O_FLAG") + "$(TARGET) $(OBJECTS) $(LIBS) $(OBJCOMP)");
     }
     if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         project->values("QMAKE_CFLAGS") += project->values("QMAKE_CFLAGS_APP");

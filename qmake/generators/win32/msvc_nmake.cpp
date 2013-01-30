@@ -276,6 +276,9 @@ void NmakeMakefileGenerator::init()
         project->values("QMAKE_LFLAGS").append("/VERSION:" + major + "." + minor);
     }
 
+    if (project->isEmpty("QMAKE_LINK_O_FLAG"))
+        project->values("QMAKE_LINK_O_FLAG").append("/OUT:");
+
     // Base class init!
     MakefileGenerator::init();
 
@@ -377,7 +380,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
     if(!project->isEmpty("QMAKE_PRE_LINK"))
         t << "\n\t" <<var("QMAKE_PRE_LINK");
     if(project->isActiveConfig("staticlib")) {
-        t << "\n\t" << "$(LIBAPP) $(LIBFLAGS) /OUT:$(DESTDIR_TARGET) @<<" << "\n\t  "
+        t << "\n\t" << "$(LIBAPP) $(LIBFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<" << "\n\t  "
           << "$(OBJECTS)"
           << "\n<<";
     } else if (templateName != "aux") {
@@ -459,7 +462,7 @@ void NmakeMakefileGenerator::writeLinkCommand(QTextStream &t, const QString &ext
     t << "$(LINKER) $(LFLAGS)";
     if (!extraFlags.isEmpty())
         t << ' ' << extraFlags;
-    t << " /OUT:$(DESTDIR_TARGET) @<<\n"
+    t << " " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) @<<\n"
       << "$(OBJECTS) $(LIBS)";
     if (!extraInlineFileContent.isEmpty())
         t << ' ' << extraInlineFileContent;

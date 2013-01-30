@@ -405,7 +405,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             t << "\n\t" << objectsLinkLine << " " ;
         }
     } else if (project->first("TEMPLATE") != "aux") {
-        t << "\n\t" << "$(LINKER) $(LFLAGS) -o $(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
+        t << "\n\t" << "$(LINKER) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))
         t << "\n\t" <<var("QMAKE_POST_LINK");
