@@ -19,9 +19,7 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           QM_EXPORT_XML \
                           QT_ASCII_CAST_WARN \
                           QT_ASCII_CAST_WARN_CONSTRUCTOR \
-                          QT_BEGIN_HEADER \
                           QT_DESIGNER_STATIC \
-                          QT_END_HEADER \
                           QT_FASTCALL \
                           QT_WIDGET_PLUGIN_EXPORT \
                           Q_COMPAT_EXPORT \
