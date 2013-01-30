@@ -44,7 +44,9 @@
 #include "qwindowscontext.h"
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"
-#include "qwindowscursor.h"
+#ifdef QT_NO_CURSOR
+#  include "qwindowscursor.h"
+#endif
 
 #ifdef QT_OPENGL_ES_2
 #  include "qwindowseglcontext.h"
@@ -726,7 +728,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
+#ifndef QT_NO_CURSOR
     m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
+#endif
     m_dropTarget(0),
     m_savedStyle(0),
     m_format(aWindow->format()),
@@ -1649,11 +1653,14 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 
 void QWindowsWindow::applyCursor()
 {
+#ifndef QT_NO_CURSOR
     SetCursor(m_cursor.handle());
+#endif
 }
 
 void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
 {
+#ifndef QT_NO_CURSOR
     if (c.handle() != m_cursor.handle()) {
         const bool underMouse = QWindowsContext::instance()->windowUnderMouse() == window();
         if (QWindowsContext::verboseWindows)
@@ -1663,6 +1670,7 @@ void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
         if (underMouse)
             applyCursor();
     }
+#endif
 }
 
 /*!

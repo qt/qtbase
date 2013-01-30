@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#ifndef  QT_NO_CURSOR
 #include "qwindowscursor.h"
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
@@ -498,3 +499,5 @@ HCURSOR QWindowsWindowCursor::handle() const
 }
 
 QT_END_NAMESPACE
+
+#endif // !QT_NO_CURSOR

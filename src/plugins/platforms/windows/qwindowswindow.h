@@ -224,7 +224,9 @@ public:
     void getSizeHints(MINMAXINFO *mmi) const;
 #endif
 
+#ifndef QT_NO_CURSOR
     QWindowsWindowCursor cursor() const { return m_cursor; }
+#endif
     void setCursor(const QWindowsWindowCursor &c);
     void applyCursor();
 
@@ -270,7 +272,9 @@ private:
     HDC m_hdc;
     Qt::WindowState m_windowState;
     qreal m_opacity;
+#ifndef QT_NO_CURSOR
     QWindowsWindowCursor m_cursor;
+#endif
     QWindowsOleDropTarget *m_dropTarget;
     unsigned m_savedStyle;
     QRect m_savedFrameGeometry;
