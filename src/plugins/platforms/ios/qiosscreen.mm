@@ -183,6 +183,11 @@ QDpi QIOSScreen::logicalDpi() const
     return QDpi(72, 72);
 }
 
+qreal QIOSScreen::devicePixelRatio() const
+{
+    return [m_uiScreen scale];
+}
+
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
     return Qt::PortraitOrientation;
