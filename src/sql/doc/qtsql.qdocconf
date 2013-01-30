@@ -2,7 +2,7 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtSql
 description             = Qt SQL Reference Documentation
-url                     = http://qt-project.org/doc/qtsql
+url                     = http://qt-project.org/doc/qt-$QT_VER/qtsql
 version                 = $QT_VERSION
 
 examplesinstallpath     = sql
