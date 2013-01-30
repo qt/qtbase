@@ -48,6 +48,11 @@
 
 QT_BEGIN_NAMESPACE
 
+const char *QEglFSHooks::fbDeviceName() const
+{
+    return "/dev/fb0";
+}
+
 void QEglFSHooks::platformInit()
 {
     Q_UNUSED(hooks);
@@ -60,6 +65,39 @@ void QEglFSHooks::platformDestroy()
 EGLNativeDisplayType QEglFSHooks::platformDisplay() const
 {
     return EGL_DEFAULT_DISPLAY;
+}
+
+QSizeF QEglFSHooks::physicalScreenSize() const
+{
+    static QSizeF size;
+    if (size.isEmpty()) {
+
+        // Note: in millimeters
+        int width = qgetenv("QT_QPA_EGLFS_PHYSICAL_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_PHYSICAL_HEIGHT").toInt();
+
+        if (width && height) {
+            // no need to read fb0
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
+        struct fb_var_screeninfo vinfo;
+        int fd = open(fbDeviceName(), O_RDONLY);
+
+        if (fd != -1) {
+            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("Could not query variable screen info.");
+            else
+                size = QSizeF(vinfo.width, vinfo.height);
+
+            close(fd);
+        } else {
+            qWarning("Failed to open %s to detect screen size.", fbDeviceName());
+        }
+    }
+    return size;
 }
 
 QSize QEglFSHooks::screenSize() const
@@ -78,7 +116,7 @@ QSize QEglFSHooks::screenSize() const
         }
 
         struct fb_var_screeninfo vinfo;
-        int fd = open("/dev/fb0", O_RDONLY);
+        int fd = open(fbDeviceName(), O_RDONLY);
 
         if (fd != -1) {
             if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
@@ -88,7 +126,7 @@ QSize QEglFSHooks::screenSize() const
 
             close(fd);
         } else {
-            qWarning("Failed to open /dev/fb0 to detect screen resolution.");
+            qWarning("Failed to open %s to detect screen depth.", fbDeviceName());
         }
 
         // override fb0 from environment var setting
@@ -107,7 +145,7 @@ int QEglFSHooks::screenDepth() const
 
     if (depth == 0) {
         struct fb_var_screeninfo vinfo;
-        int fd = open("/dev/fb0", O_RDONLY);
+        int fd = open(fbDeviceName(), O_RDONLY);
 
         if (fd != -1) {
             if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
@@ -117,7 +155,7 @@ int QEglFSHooks::screenDepth() const
 
             close(fd);
         } else {
-            qWarning("Failed to open /dev/fb0 to detect screen depth.");
+            qWarning("Failed to open %s to detect screen depth.", fbDeviceName());
         }
     }
 

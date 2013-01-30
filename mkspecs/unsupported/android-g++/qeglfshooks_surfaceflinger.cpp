@@ -63,9 +63,8 @@ class QEglFSPandaHooks : public QEglFSHooks
 public:
     QEglFSPandaHooks();
     virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
-    virtual QSize screenSize() const;
-    virtual int screenDepth() const;
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
+    virtual const char *fbDeviceName() const { return "/dev/graphics/fb0"; }
 
 private:
     EGLNativeWindowType createNativeWindowSurfaceFlinger(const QSize &size, const QSurfaceFormat &format);
@@ -150,68 +149,6 @@ bool QEglFSPandaHooks::filterConfig(EGLDisplay display, EGLConfig config) const
     eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &nativeVisualId);
 
     return nativeVisualId == mFramebufferVisualId;
-}
-
-QSize  QEglFSPandaHooks::screenSize() const
-{
-    static QSize size;
-
-    if (size.isEmpty()) {
-        int width = qgetenv("QT_QPA_EGLFS_WIDTH").toInt();
-        int height = qgetenv("QT_QPA_EGLFS_HEIGHT").toInt();
-
-        if (width && height) {
-            // no need to read fb0
-            size.setWidth(width);
-            size.setHeight(height);
-            return size;
-        }
-
-        struct fb_var_screeninfo vinfo;
-        int fd = open("/dev/graphics/fb0", O_RDONLY);
-
-        if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-                qWarning("Could not query variable screen info.");
-            else
-                size = QSize(vinfo.xres, vinfo.yres);
-
-            close(fd);
-        } else {
-            qWarning("Failed to open /dev/graphics/fb0 to detect screen resolution.");
-        }
-
-        // override fb0 from environment var setting
-        if (width)
-            size.setWidth(width);
-        if (height)
-            size.setHeight(height);
-    }
-
-    return size;
-}
-
-int QEglFSPandaHooks::screenDepth() const
-{
-    static int depth = qgetenv("QT_QPA_EGLFS_DEPTH").toInt();
-
-    if (depth == 0) {
-        struct fb_var_screeninfo vinfo;
-        int fd = open("/dev/graphics/fb0", O_RDONLY);
-
-        if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-                qWarning("Could not query variable screen info.");
-            else
-                depth = vinfo.bits_per_pixel;
-
-            close(fd);
-        } else {
-            qWarning("Failed to open /dev/graphics/fb0 to detect screen depth.");
-        }
-    }
-
-    return depth == 0 ? 32 : depth;
 }
 
 static QEglFSPandaHooks eglFSPandaHooks;

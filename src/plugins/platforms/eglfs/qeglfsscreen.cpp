@@ -83,6 +83,11 @@ QImage::Format QEglFSScreen::format() const
     return hooks->screenFormat();
 }
 
+QSizeF QEglFSScreen::physicalSize() const
+{
+    return hooks->physicalScreenSize();
+}
+
 QPlatformCursor *QEglFSScreen::cursor() const
 {
     return m_cursor;

@@ -55,10 +55,11 @@ class QEglFSScreen;
 class QEglFSHooks
 {
 public:
-    virtual ~QEglFSHooks() {};
+    virtual ~QEglFSHooks() {}
     virtual void platformInit();
     virtual void platformDestroy();
     virtual EGLNativeDisplayType platformDisplay() const;
+    virtual QSizeF physicalScreenSize() const;
     virtual QSize screenSize() const;
     virtual int screenDepth() const;
     virtual QImage::Format screenFormat() const;
@@ -68,6 +69,8 @@ public:
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
     virtual QEglFSCursor *createCursor(QEglFSScreen *screen) const;
     virtual bool filterConfig(EGLDisplay display, EGLConfig config) const;
+
+    virtual const char *fbDeviceName() const;
 };
 
 #ifdef EGLFS_PLATFORM_HOOKS
