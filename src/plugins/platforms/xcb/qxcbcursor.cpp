@@ -287,8 +287,14 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
 
 QXcbCursor::~QXcbCursor()
 {
+    xcb_connection_t *conn = xcb_connection();
     if (!--cursorCount)
-        xcb_close_font(xcb_connection(), cursorFont);
+        xcb_close_font(conn, cursorFont);
+
+    foreach (xcb_cursor_t cursor, m_bitmapCursorMap)
+        xcb_free_cursor(conn, cursor);
+    foreach (xcb_cursor_t cursor, m_shapeCursorMap)
+        xcb_free_cursor(conn, cursor);
 }
 
 #ifndef QT_NO_CURSOR
