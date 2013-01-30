@@ -60,9 +60,13 @@ private slots:
     void windowsId();
     // Backend tests
     void utcTest();
+    void icuTest();
 
 private:
     void printTimeZone(const QTimeZone tz);
+#ifdef QT_BUILD_INTERNAL
+    void testCetPrivate(const QTimeZonePrivate &tzp);
+#endif // QT_BUILD_INTERNAL
     bool debug;
 };
 
@@ -495,6 +499,143 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.daylightTimeOffset(now), 0);
 #endif // QT_BUILD_INTERNAL
 }
+
+void tst_QTimeZone::icuTest()
+{
+#if defined(QT_BUILD_INTERNAL) && defined(QT_USE_ICU)
+    // Known datetimes
+    qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+    qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+
+    // Test default constructor
+    QIcuTimeZonePrivate tzpd;
+    QVERIFY(tzpd.isValid());
+
+    // Test invalid constructor
+    QIcuTimeZonePrivate tzpi("Gondwana/Erewhon");
+    QCOMPARE(tzpi.isValid(), false);
+
+    // Test named constructor
+    QIcuTimeZonePrivate tzp("Europe/Berlin");
+    QVERIFY(tzp.isValid());
+
+    // Only test names in debug mode, names used can vary by ICU version installed
+    if (debug) {
+        // Test display names by type
+        QLocale enUS("en_US");
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
+                QString("Central European Standard Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
+                QString("GMT+01:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+01:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, enUS),
+                QString("Central European Summer Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::ShortName, enUS),
+                QString("GMT+02:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+02:00"));
+        // ICU C api does not support Generic Time yet, C++ api does
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::LongName, enUS),
+                QString("Central European Standard Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::ShortName, enUS),
+                QString("GMT+01:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+01:00"));
+
+        // Test Abbreviations
+        QCOMPARE(tzp.abbreviation(std), QString("CET"));
+        QCOMPARE(tzp.abbreviation(dst), QString("CEST"));
+    }
+
+    testCetPrivate(tzp);
+#endif // QT_USE_ICU
+}
+
+#ifdef QT_BUILD_INTERNAL
+// Test each private produces the same basic results for CET
+void tst_QTimeZone::testCetPrivate(const QTimeZonePrivate &tzp)
+{
+    // Known datetimes
+    qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+    qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+    qint64 prev = QDateTime(QDate(2011, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+
+    QCOMPARE(tzp.offsetFromUtc(std), 3600);
+    QCOMPARE(tzp.offsetFromUtc(dst), 7200);
+
+    QCOMPARE(tzp.standardTimeOffset(std), 3600);
+    QCOMPARE(tzp.standardTimeOffset(dst), 3600);
+
+    QCOMPARE(tzp.daylightTimeOffset(std), 0);
+    QCOMPARE(tzp.daylightTimeOffset(dst), 3600);
+
+    QCOMPARE(tzp.hasDaylightTime(), true);
+    QCOMPARE(tzp.isDaylightTime(std), false);
+    QCOMPARE(tzp.isDaylightTime(dst), true);
+
+    QTimeZonePrivate::Data dat = tzp.data(std);
+    QCOMPARE(dat.atMSecsSinceEpoch, std);
+    QCOMPARE(dat.offsetFromUtc, 3600);
+    QCOMPARE(dat.standardTimeOffset, 3600);
+    QCOMPARE(dat.daylightTimeOffset, 0);
+    QCOMPARE(dat.abbreviation, tzp.abbreviation(std));
+
+    dat = tzp.data(dst);
+    QCOMPARE(dat.atMSecsSinceEpoch, dst);
+    QCOMPARE(dat.offsetFromUtc, 7200);
+    QCOMPARE(dat.standardTimeOffset, 3600);
+    QCOMPARE(dat.daylightTimeOffset, 3600);
+    QCOMPARE(dat.abbreviation, tzp.abbreviation(dst));
+
+    // Only test transitions if host system supports them
+    if (tzp.hasTransitions()) {
+        QTimeZonePrivate::Data tran = tzp.nextTransition(std);
+        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1332637200000);
+        QCOMPARE(tran.offsetFromUtc, 7200);
+        QCOMPARE(tran.standardTimeOffset, 3600);
+        QCOMPARE(tran.daylightTimeOffset, 3600);
+
+        tran = tzp.nextTransition(dst);
+        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1351386000000);
+        QCOMPARE(tran.offsetFromUtc, 3600);
+        QCOMPARE(tran.standardTimeOffset, 3600);
+        QCOMPARE(tran.daylightTimeOffset, 0);
+
+        tran = tzp.previousTransition(std);
+        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1319936400000);
+        QCOMPARE(tran.offsetFromUtc, 3600);
+        QCOMPARE(tran.standardTimeOffset, 3600);
+        QCOMPARE(tran.daylightTimeOffset, 0);
+
+        tran = tzp.previousTransition(dst);
+        QCOMPARE(tran.atMSecsSinceEpoch, (qint64)1332637200000);
+        QCOMPARE(tran.offsetFromUtc, 7200);
+        QCOMPARE(tran.standardTimeOffset, 3600);
+        QCOMPARE(tran.daylightTimeOffset, 3600);
+
+        QTimeZonePrivate::DataList expected;
+        tran.atMSecsSinceEpoch = (qint64)1301752800000;
+        tran.offsetFromUtc = 7200;
+        tran.standardTimeOffset = 3600;
+        tran.daylightTimeOffset = 3600;
+        expected << tran;
+        tran.atMSecsSinceEpoch = (qint64)1316872800000;
+        tran.offsetFromUtc = 3600;
+        tran.standardTimeOffset = 3600;
+        tran.daylightTimeOffset = 0;
+        expected << tran;
+        QTimeZonePrivate::DataList result = tzp.transitions(prev, std);
+        QCOMPARE(result.count(), expected.count());
+        for (int i = 0; i > expected.count(); ++i) {
+            QCOMPARE(result.at(i).atMSecsSinceEpoch, expected.at(i).atMSecsSinceEpoch);
+            QCOMPARE(result.at(i).offsetFromUtc, expected.at(i).offsetFromUtc);
+            QCOMPARE(result.at(i).standardTimeOffset, expected.at(i).standardTimeOffset);
+            QCOMPARE(result.at(i).daylightTimeOffset, expected.at(i).daylightTimeOffset);
+        }
+    }
+}
+#endif // QT_BUILD_INTERNAL
 
 QTEST_APPLESS_MAIN(tst_QTimeZone)
 #include "tst_qtimezone.moc"

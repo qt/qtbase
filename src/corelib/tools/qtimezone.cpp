@@ -52,13 +52,21 @@ QT_BEGIN_NAMESPACE
 // Create default time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone()
 {
+#if defined QT_USE_ICU
+    return new QIcuTimeZonePrivate();
+#else
     return new QUtcTimeZonePrivate();
+#endif // QT_USE_ICU
 }
 
 // Create named time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone(const QByteArray &olsenId)
 {
+#if defined QT_USE_ICU
+    return new QIcuTimeZonePrivate(olsenId);
+#else
     return new QUtcTimeZonePrivate(olsenId);
+#endif // QT_USE_ICU
 }
 
 class QTimeZoneSingleton

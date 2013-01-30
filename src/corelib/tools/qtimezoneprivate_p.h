@@ -57,6 +57,10 @@
 #include "qtimezone.h"
 #include "qlocale_p.h"
 
+#ifdef QT_USE_ICU
+#include <unicode/ucal.h>
+#endif // QT_USE_ICU
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QTimeZonePrivate : public QSharedData
@@ -192,6 +196,49 @@ private:
     QLocale::Country m_country;
     QString m_comment;
 };
+
+#ifdef QT_USE_ICU
+class Q_AUTOTEST_EXPORT QIcuTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+{
+public:
+    // Create default time zone
+    QIcuTimeZonePrivate();
+    // Create named time zone
+    QIcuTimeZonePrivate(const QByteArray &olsenId);
+    QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other);
+    ~QIcuTimeZonePrivate();
+
+    QTimeZonePrivate *clone();
+
+    QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
+                        const QLocale &locale) const Q_DECL_OVERRIDE;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasDaylightTime() const Q_DECL_OVERRIDE;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasTransitions() const Q_DECL_OVERRIDE;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+
+    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QSet<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
+    QSet<QByteArray> availableTimeZoneIds(int offsetFromUtc) const Q_DECL_OVERRIDE;
+
+private:
+    void init(const QByteArray &olsenId);
+
+    UCalendar *m_ucal;
+};
+#endif // QT_USE_ICU
 
 QT_END_NAMESPACE
 

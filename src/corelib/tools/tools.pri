@@ -139,7 +139,8 @@ contains(QT_CONFIG, zlib) {
 
 contains(QT_CONFIG,icu) {
     SOURCES += tools/qlocale_icu.cpp \
-               tools/qcollator_icu.cpp
+               tools/qcollator_icu.cpp \
+               tools/qtimezoneprivate_icu.cpp
     DEFINES += QT_USE_ICU
     win32 {
         CONFIG(static, static|shared) {
