@@ -1528,12 +1528,12 @@ void Configure::desc(const char *mark_option, const char *mark, const char *opti
 */
 void Configure::applySpecSpecifics()
 {
-    if (!dictionary[ "XQMAKESPEC" ].isEmpty()) {
+    if (dictionary.contains("XQMAKESPEC")) {
         //Disable building tools, docs and translations when cross compiling.
         nobuildParts << "docs" << "translations" << "tools";
     }
 
-    if (dictionary[ "XQMAKESPEC" ].startsWith("wince")) {
+    if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
         dictionary[ "STYLE_FUSION" ]        = "no";
@@ -1558,7 +1558,7 @@ void Configure::applySpecSpecifics()
             dictionary[ "MMX" ]    = "yes";
             dictionary[ "IWMMXT" ] = "yes";
         }
-    } else if (dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
+    } else if (dictionary.value("XQMAKESPEC").startsWith("linux")) { //TODO actually wrong.
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
@@ -2307,7 +2307,7 @@ bool Configure::verifyConfiguration()
                  << "Disabling the ANGLE backend." << endl;
             prompt = true;
         }
-        if ((dictionary["OPENGL_ES_2"] == "yes") && (dictionary.value("XQMAKESPEC").isEmpty())) {
+        if ((dictionary["OPENGL_ES_2"] == "yes") && !dictionary.contains("XQMAKESPEC")) {
             cout << endl << "WARNING: Using OpenGL ES 2.0 without ANGLE." << endl
                  << "Specify -opengl desktop to use Open GL." << endl
                  <<  "The build will most likely fail." << endl;
@@ -3055,7 +3055,7 @@ void Configure::generateQConfigPri()
         configStream << "QT_HOST_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
         configStream << "QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
         configStream << "QT_HOST_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
-        if (!dictionary["XQMAKESPEC"].isEmpty() && !dictionary["XQMAKESPEC"].startsWith("wince")) {
+        if (dictionary.contains("XQMAKESPEC") && !dictionary["XQMAKESPEC"].startsWith("wince")) {
             // FIXME: add detection
             configStream << "QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib" << endl;
             configStream << "QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include" << endl;
