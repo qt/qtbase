@@ -45,7 +45,6 @@ SOURCES += \
     qwindowsguieventdispatcher.cpp \
     qwindowsole.cpp \
     qwindowsmime.cpp \
-    qwindowsdrag.cpp \
     qwindowsinternalmimedata.cpp \
     qwindowscursor.cpp \
     qwindowsinputcontext.cpp \
@@ -69,7 +68,6 @@ HEADERS += \
     qtwindows_additional.h \
     qwindowsole.h \
     qwindowsmime.h \
-    qwindowsdrag.h \
     qwindowsinternalmimedata.h \
     qwindowscursor.h \
     array.h \
@@ -92,6 +90,16 @@ contains(QT_CONFIG, opengles2) {
 !contains( DEFINES, QT_NO_CLIPBOARD ) {
     SOURCES += qwindowsclipboard.cpp
     HEADERS += qwindowsclipboard.h
+}
+
+# drag and drop on windows only works if a clipboard is available
+!contains( DEFINES, QT_NO_DRAGANDDROP ) {
+    !win32:SOURCES += qwindowsdrag.cpp
+    !win32:HEADERS += qwindowsdrag.h
+    win32:!contains( DEFINES, QT_NO_CLIPBOARD ) {
+        HEADERS += qwindowsdrag.h
+        SOURCES += qwindowsdrag.cpp
+    }
 }
 
 # Enable access to HB_Face in harfbuzz includes included by qfontengine_p.h.

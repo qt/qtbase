@@ -59,8 +59,10 @@
 #include "qwindowsguieventdispatcher.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
+#  ifndef QT_NO_DRAGANDDROP
+#    include "qwindowsdrag.h"
+#  endif
 #endif
-#include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
 #  ifndef QT_NO_ACCESSIBILITY
@@ -266,8 +268,10 @@ struct QWindowsIntegrationPrivate
     QWindowsNativeInterface m_nativeInterface;
 #ifndef QT_NO_CLIPBOARD
     QWindowsClipboard m_clipboard;
-#endif
+#  ifndef QT_NO_DRAGANDDROP
     QWindowsDrag m_drag;
+#  endif
+#endif
     QWindowsGuiEventDispatcher *m_eventDispatcher;
 #if defined(QT_OPENGL_ES_2)
     QEGLStaticContextPtr m_staticEGLContext;
@@ -529,12 +533,13 @@ QPlatformClipboard * QWindowsIntegration::clipboard() const
 {
     return &d->m_clipboard;
 }
-#endif // !QT_NO_CLIPBOARD
-
+#  ifndef QT_NO_DRAGANDDROP
 QPlatformDrag *QWindowsIntegration::drag() const
 {
     return &d->m_drag;
 }
+#  endif // !QT_NO_DRAGANDDROP
+#endif // !QT_NO_CLIPBOARD
 
 QPlatformInputContext * QWindowsIntegration::inputContext() const
 {

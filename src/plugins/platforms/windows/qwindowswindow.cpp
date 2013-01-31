@@ -815,21 +815,29 @@ void QWindowsWindow::destroyWindow()
 
 void QWindowsWindow::registerDropSite()
 {
+#ifndef QT_NO_CLIPBOARD
+#  ifndef QT_NO_DRAGANDDROP
     if (m_data.hwnd && !m_dropTarget) {
         m_dropTarget = new QWindowsOleDropTarget(window());
         RegisterDragDrop(m_data.hwnd, m_dropTarget);
         CoLockObjectExternal(m_dropTarget, true, true);
     }
+#  endif // !QT_NO_DRAGANDDROP
+#endif // !QT_NO_CLIPBOARD
 }
 
 void QWindowsWindow::unregisterDropSite()
 {
+#ifndef QT_NO_CLIPBOARD
+#  ifndef QT_NO_DRAGANDDROP
     if (m_data.hwnd && m_dropTarget) {
         m_dropTarget->Release();
         CoLockObjectExternal(m_dropTarget, false, true);
         RevokeDragDrop(m_data.hwnd);
         m_dropTarget = 0;
     }
+#  endif // !QT_NO_DRAGANDDROP
+#endif // !QT_NO_CLIPBOARD
 }
 
 // Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.
