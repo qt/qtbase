@@ -442,8 +442,7 @@ void Configure::parseCmdLine()
             if (j == argCount)
                 break;
             dictionary["XQMAKESPEC"] = configCmdLine.at(j);
-            if (!dictionary[ "XQMAKESPEC" ].isEmpty())
-                applySpecSpecifics();
+            applySpecSpecifics();
             break;
         }
     }
