@@ -238,7 +238,7 @@ bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool has
 
 static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal level)
 {
-#ifdef Q_OS_WINCE // maybe needs revisit WS_EX_LAYERED
+#ifdef Q_OS_WINCE // WINCE does not support that feature and microsoft explicitly warns to use those calls
     Q_UNUSED(hwnd);
     Q_UNUSED(flags);
     Q_UNUSED(hasAlpha);
@@ -756,8 +756,10 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
             break;
         }
     }
+#ifndef Q_OS_WINCE
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0);
+#endif // !Q_OS_WINCE
     setWindowState(aWindow->windowState());
     const qreal opacity = qt_window_private(aWindow)->opacity;
     if (!qFuzzyCompare(opacity, qreal(1.0)))
@@ -766,8 +768,10 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 
 QWindowsWindow::~QWindowsWindow()
 {
+#ifndef Q_OS_WINCE
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
+#endif // !Q_OS_WINCE
     destroyWindow();
     destroyIcon();
 }
@@ -797,7 +801,7 @@ void QWindowsWindow::destroyWindow()
                 ShowWindow(handle, SW_SHOW);
             }
         }
-#endif
+#endif // !Q_OS_WINCE
         if (m_data.hwnd != GetDesktopWindow())
             DestroyWindow(m_data.hwnd);
         QWindowsContext::instance()->removeWindow(m_data.hwnd);
