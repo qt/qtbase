@@ -5,5 +5,5 @@ SUBDIRS	    = echowindow \
 #! [0]
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/echoplugin
 INSTALLS += target

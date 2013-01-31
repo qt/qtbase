@@ -535,7 +535,7 @@ CApaApplication *myApplicationFactory();
 
 
 //! [49]
-void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *);
+void myMessageHandler(QtMsgType, const QMessageLogContext &, const QString &);
 //! [49]
 
 //! [50]

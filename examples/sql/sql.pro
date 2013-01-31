@@ -1,3 +1,5 @@
+requires(qtHaveModule(widgets))
+
 TEMPLATE      = subdirs
 
 SUBDIRS             =   books \
@@ -19,4 +21,3 @@ SUBDIRS             =   books \
 }
 
 EXAMPLE_FILES = connection.h
-

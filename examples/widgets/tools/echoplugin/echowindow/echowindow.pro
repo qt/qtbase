@@ -15,7 +15,7 @@ win32 {
 }
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/echoplugin
 INSTALLS += target
 
 simulator: warning(This example might not fully work on Simulator platform)

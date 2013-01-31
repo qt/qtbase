@@ -258,7 +258,7 @@ if (url.startsWith("ftp:"))
 
 
 //! [26]
-QByteArray url("http://qt.nokia.com/index.html");
+QByteArray url("http://qt-project.org/doc/qt-5.0/qtdoc/index.html");
 if (url.endsWith(".html"))
     ...
 //! [26]
@@ -286,16 +286,16 @@ QByteArray z = x.mid(5);        // z == "pineapples"
 
 
 //! [30]
-QByteArray x("Qt by NOKIA");
+QByteArray x("Qt by DIGIA");
 QByteArray y = x.toLower();
-// y == "qt by nokia"
+// y == "qt by digia"
 //! [30]
 
 
 //! [31]
-QByteArray x("Qt by NOKIA");
+QByteArray x("Qt by DIGIA");
 QByteArray y = x.toUpper();
-// y == "QT BY NOKIA"
+// y == "QT BY DIGIA"
 //! [31]
 
 

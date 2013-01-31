@@ -36,7 +36,6 @@ exampledirs += \
                ../ \
                snippets \
                ../../../examples/threads/ \
-               ../../../examples/tools/ \
-               ../../../examples/widgets/
+               ../../../examples/tools/
 
 imagedirs   += images

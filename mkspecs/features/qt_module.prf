@@ -45,65 +45,7 @@ else: \
     MODULE_DEFINE = QT_$${ucmodule}_LIB
 MODULE_DEFINES = $$MODULE_DEFINE $$MODULE_DEFINES
 
-load(qt_build_paths)
-MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
-
-!build_pass {
-
-    # Create a module .pri file
-    unix:!static: \
-        module_rpath = "QT.$${MODULE}.rpath = $$[QT_INSTALL_LIBS/raw]"
-    else: \
-        module_rpath =
-    !isEmpty(QT_FOR_PRIVATE) {
-        contains(QT_FOR_PRIVATE, .*-private$):error("QT_FOR_PRIVATE may not contain *-private.")
-        module_privdep = "QT.$${MODULE}.private_depends = $$QT_FOR_PRIVATE"
-    } else {
-        module_privdep =
-    }
-    static: \
-        module_build_type = "QT.$${MODULE}.module_config = staticlib"
-    else:mac:contains(QT_CONFIG, qt_framework): \
-        module_build_type = "QT.$${MODULE}.module_config = lib_bundle"
-    else: \
-        module_build_type =
-    !isEmpty(MODULE_CONFIG): \
-        module_config = "QT.$${MODULE}.CONFIG = $$MODULE_CONFIG"
-    else: \
-        module_config =
-    !no_module_headers {
-        MODULE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME"
-        MODULE_PRIVATE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
-                                   \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME"
-    }
-    MODULE_PRI_CONT = \
-        "QT.$${MODULE}.VERSION = $${VERSION}" \
-        "QT.$${MODULE}.MAJOR_VERSION = $$section(VERSION, ., 0, 0)" \
-        "QT.$${MODULE}.MINOR_VERSION = $$section(VERSION, ., 1, 1)" \
-        "QT.$${MODULE}.PATCH_VERSION = $$section(VERSION, ., 2, 2)" \
-        "" \
-        "QT.$${MODULE}.name = $$TARGET" \
-        "QT.$${MODULE}.bins = \$\$QT_MODULE_BIN_BASE" \
-        "QT.$${MODULE}.includes = $$MODULE_INCLUDES" \
-        "QT.$${MODULE}.private_includes = $$MODULE_PRIVATE_INCLUDES" \
-        "QT.$${MODULE}.libs = \$\$QT_MODULE_LIB_BASE" \
-        "QT.$${MODULE}.libexecs = \$\$QT_MODULE_LIBEXEC_BASE" \
-        $$module_rpath \
-        "QT.$${MODULE}.plugins = \$\$QT_MODULE_PLUGIN_BASE" \
-        "QT.$${MODULE}.imports = \$\$QT_MODULE_IMPORT_BASE" \
-        "QT.$${MODULE}.qml = \$\$QT_MODULE_QML_BASE" \
-        "QT.$${MODULE}.depends =$$join(MODULE_DEPENDS, " ", " ")" \
-        $$module_privdep \
-        $$module_build_type \
-        $$module_config \
-        "QT.$${MODULE}.DEFINES = $$MODULE_DEFINES" \ # assume sufficient quoting
-        "" \
-        "QT_CONFIG += $$MODULE" # this is obsolete, but some code still depends on it
-    write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
-
-} # !build_pass
-
-load(qt_module_fwdpri)
+load(qt_module_pris)
 
 INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}.private_includes)
 
@@ -112,7 +54,7 @@ INCLUDEPATH *= $$eval(QT.$${MODULE}.includes) $$eval(QT.$${MODULE}.private_inclu
 #other
 TEMPLATE         = lib
 DESTDIR          = $$eval(QT.$${MODULE}.libs)
-win32:!wince*:exists($$[QT_INSTALL_PREFIX]/.qmake.cache): DLLDESTDIR = $$eval(QT.$${MODULE}.bins)
+win32:!wince*:!prefix_build: DLLDESTDIR = $$eval(QT.$${MODULE}.bins)
 
 CONFIG          += qmake_cache target_qt
 
@@ -206,7 +148,9 @@ unix {
 }
 
 unix|win32-g++* {
-    for(i, QT):QMAKE_PKGCONFIG_REQUIRES += $$eval(QT.$${i}.name)
+    QMAKE_PKGCONFIG_NAME = $$replace(TARGET, ^Qt, Qt$$section(VERSION, ., 0, 0))
+    for(i, MODULE_DEPENDS): \
+        QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$eval(QT.$${i}.MAJOR_VERSION))
     isEmpty(QMAKE_PKGCONFIG_DESCRIPTION): \
         QMAKE_PKGCONFIG_DESCRIPTION = $$replace(TARGET, ^Qt, "Qt ") module
 }

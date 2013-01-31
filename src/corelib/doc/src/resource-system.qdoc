@@ -50,7 +50,7 @@
 
     Here's an example \c .qrc file:
 
-    \quotefile mainwindows/application/application.qrc
+    \quotefile resource-system/application.qrc
 
     The resource files listed in the \c .qrc file are files that are
     part of the application's source tree. The specified paths are
@@ -122,7 +122,7 @@
     mentioned in the application's \c .pro file so that \c qmake knows
     about it. For example:
 
-    \snippet mainwindows/application/application.pro 0
+    \snippet resource-system/application.pro 0
 
     \c qmake will produce make rules to generate a file called \c
     qrc_application.cpp that is linked into the application. This
@@ -167,7 +167,7 @@
     pass a resource path instead of a file name to the QIcon, QImage,
     or QPixmap constructor:
 
-    \snippet mainwindows/application/mainwindow.cpp 21
+    \snippet resource-system/mainwindow.cpp 21
 
     See the \l{mainwindows/application}{Application} example for an
     actual application that uses Qt's resource system to store its

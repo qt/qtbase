@@ -25,7 +25,7 @@ qml1_target: \
 else: \
     instbase = $$[QT_INSTALL_QML]
 
-exists($$[QT_HOST_PREFIX]/.qmake.cache) {
+!prefix_build {
     # These bizarre rules copy the files to the qtbase build directory
 
     defineReplace(qmlModStripSrcDir) {
