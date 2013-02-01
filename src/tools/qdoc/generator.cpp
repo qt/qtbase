@@ -476,13 +476,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
     switch (node->type()) {
     case Node::Class:
     case Node::Namespace:
-        if (parentNode && !parentNode->name().isEmpty()) {
-            parentName.remove(QLatin1Char('.') + currentGenerator()->fileExtension());
-            parentName +=  QLatin1Char('-')
-                    + fileBase(node).toLower() + QLatin1Char('.') + currentGenerator()->fileExtension();
-        } else {
-            parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
-        }
+        parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
         break;
     case Node::Function:
     {
