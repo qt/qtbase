@@ -60,6 +60,7 @@
 
 #include "private/qhexstring_p.h"
 #include "private/qguiapplication_p.h"
+#include "qpa/qplatformtheme.h"
 
 #ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE
@@ -986,7 +987,10 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
     if (qtIconCache()->contains(name)) {
         icon = *qtIconCache()->object(name);
     } else {
-        QIcon *cachedIcon  = new QIcon(new QIconLoaderEngine(name));
+        QPlatformTheme * const platformTheme = QGuiApplicationPrivate::platformTheme();
+        QIconEngine * const engine = platformTheme ? platformTheme->createIconEngine(name)
+                                                   : new QIconLoaderEngine(name);
+        QIcon *cachedIcon  = new QIcon(engine);
         qtIconCache()->insert(name, cachedIcon);
         icon = *cachedIcon;
     }
