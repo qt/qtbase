@@ -227,10 +227,10 @@ static QTouchDevice *touchDevice = 0;
         QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowMinimized);
     } else if (notificationName == NSWindowDidDeminiaturizeNotification) {
         QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowNoState);
-        // Qt expects an expose event after restore/deminiaturize. This also needs
-        // to be a non-synchronous event to make sure it gets processed after
-        // the state change event sent above.
-        QWindowSystemInterface::handleExposeEvent(m_window, QRegion(m_window->geometry()));
+    } else if ([notificationName isEqualToString: @"NSWindowDidOrderOffScreenNotification"]) {
+        m_platformWindow->obscureWindow();
+    } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
+        m_platformWindow->exposeWindow();
     } else {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
@@ -244,6 +244,16 @@ static QTouchDevice *touchDevice = 0;
 #endif
 
     }
+}
+
+- (void)viewDidHide
+{
+    m_platformWindow->obscureWindow();
+}
+
+- (void)viewDidUnhide
+{
+    m_platformWindow->exposeWindow();
 }
 
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset

@@ -79,6 +79,8 @@ QT_END_NAMESPACE
 - (void)drawRect:(NSRect)dirtyRect;
 - (void)updateGeometry;
 - (void)windowNotification : (NSNotification *) windowNotification;
+- (void)viewDidHide;
+- (void)viewDidUnhide;
 
 - (BOOL)isFlipped;
 - (BOOL)acceptsFirstResponder;

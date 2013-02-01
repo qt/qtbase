@@ -194,6 +194,7 @@ QCocoaWindow::QCocoaWindow(QWindow *tlw)
     , m_menubar(0)
     , m_hasModalSession(false)
     , m_frameStrutEventsEnabled(false)
+    , m_isExposed(false)
 {
 #ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
     qDebug() << "QCocoaWindow::QCocoaWindow" << this;
@@ -273,9 +274,12 @@ void QCocoaWindow::setVisible(bool visible)
 
         }
 
-        // Make sure the QWindow has a frame ready before we show the NSWindow.
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(), geometry().size()));
-        QWindowSystemInterface::flushWindowSystemEvents();
+        // This call is here to handle initial window show correctly:
+        // - top-level windows need to have backing store content ready when the
+        //   window is shown, sendin the expose event here makes that more likely.
+        // - QNSViews for child windows are initialy not hidden and won't get the
+        //   viewDidUnhide message.
+        exposeWindow();
 
         if (m_nsWindow) {
             // setWindowState might have been called while the window was hidden and
@@ -327,8 +331,6 @@ void QCocoaWindow::setVisible(bool visible)
         } else {
             [m_contentView setHidden:YES];
         }
-        if (!QCoreApplication::closingDown())
-            QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
 }
 
@@ -476,6 +478,11 @@ void QCocoaWindow::lower()
         return;
     if ([m_nsWindow isVisible])
         [m_nsWindow orderBack: m_nsWindow];
+}
+
+bool QCocoaWindow::isExposed() const
+{
+    return m_isExposed;
 }
 
 void QCocoaWindow::propagateSizeHints()
@@ -844,6 +851,22 @@ qreal QCocoaWindow::devicePixelRatio() const
 #endif
     {
         return 1.0;
+    }
+}
+
+void QCocoaWindow::exposeWindow()
+{
+    if (!m_isExposed) {
+        m_isExposed = true;
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(geometry()));
+    }
+}
+
+void QCocoaWindow::obscureWindow()
+{
+    if (m_isExposed) {
+        m_isExposed = false;
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion());
     }
 }
 
