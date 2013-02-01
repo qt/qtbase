@@ -45,6 +45,9 @@
 #include <QtCore/qscopedpointer.h>
 #include <qpa/qplatformdialoghelper.h>
 
+typedef struct _GtkDialog GtkDialog;
+typedef struct _GtkFileFilter GtkFileFilter;
+
 QT_BEGIN_NAMESPACE
 
 class QGtk2Dialog;
@@ -71,6 +74,43 @@ private:
     static void onColorChanged(QGtk2ColorDialogHelper *helper);
     void applyOptions();
 
+    mutable QScopedPointer<QGtk2Dialog> d;
+};
+
+class QGtk2FileDialogHelper : public QPlatformFileDialogHelper
+{
+    Q_OBJECT
+
+public:
+    QGtk2FileDialogHelper();
+    ~QGtk2FileDialogHelper();
+
+    virtual bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
+    virtual void exec();
+    virtual void hide();
+
+    virtual bool defaultNameFilterDisables() const;
+    virtual void setDirectory(const QString &directory);
+    virtual QString directory() const;
+    virtual void selectFile(const QString &filename);
+    virtual QStringList selectedFiles() const;
+    virtual void setFilter();
+    virtual void selectNameFilter(const QString &filter);
+    virtual QString selectedNameFilter() const;
+
+private Q_SLOTS:
+    void onAccepted();
+
+private:
+    static void onSelectionChanged(GtkDialog *dialog, QGtk2FileDialogHelper *helper);
+    static void onCurrentFolderChanged(QGtk2FileDialogHelper *helper);
+    void applyOptions();
+    void setNameFilters(const QStringList &filters);
+
+    QString _dir;
+    QStringList _selection;
+    QHash<QString, GtkFileFilter*> _filters;
+    QHash<GtkFileFilter*, QString> _filterNames;
     mutable QScopedPointer<QGtk2Dialog> d;
 };
 

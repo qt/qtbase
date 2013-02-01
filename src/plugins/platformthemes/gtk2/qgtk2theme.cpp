@@ -56,7 +56,7 @@ QGtk2Theme::QGtk2Theme()
 
 bool QGtk2Theme::usePlatformNativeDialog(DialogType type) const
 {
-    return type == ColorDialog;
+    return type == ColorDialog || type == FileDialog;
 }
 
 QPlatformDialogHelper *QGtk2Theme::createPlatformDialogHelper(DialogType type) const
@@ -64,6 +64,8 @@ QPlatformDialogHelper *QGtk2Theme::createPlatformDialogHelper(DialogType type) c
     switch (type) {
     case ColorDialog:
         return new QGtk2ColorDialogHelper;
+    case FileDialog:
+        return new QGtk2FileDialogHelper;
     default:
         return 0;
     }
