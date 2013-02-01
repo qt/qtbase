@@ -9,6 +9,22 @@
 # We mean it.
 #
 
+defineTest(addInstallFiles) {
+    for(sf, 2) {
+        sf = $$relative_path($$sf, $$_PRO_FILE_PWD_)
+        contains(sf, \\..*) {
+            check_examples: message("Notice: $$_PRO_FILE_ refers to $$sf")
+        } else {
+            sfp = $$replace(sf, /.*, )
+            !equals(sfp, $$sf): \
+                $$1 *= $$sfp
+            else: \
+                $$1 += $$sf
+        }
+    }
+    export($$1)
+}
+
 probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
 !isEmpty(probase):!contains(probase, ^\\..*) {
     for(ex, EXAMPLE_FILES): \
@@ -42,34 +58,26 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
     # Just for Qt Creator
     OTHER_FILES += $$sourcefiles
 
-    for(inst, INSTALLS): \
-        !equals(inst, target):!contains($${inst}.CONFIG, no_check_exist): \
-            for(file, $${inst}.files): \
-                sourcefiles += $$files($$absolute_path($$file, $$_PRO_FILE_PWD_))
     sourcefiles += \
         $$_PRO_FILE_ $$RC_FILE $$DEF_FILE \
         $$SOURCES $$HEADERS $$FORMS $$RESOURCES $$TRANSLATIONS \
         $$DBUS_ADAPTORS $$DBUS_INTERFACES
-    for(sf, sourcefiles) {
-        sf = $$relative_path($$sf, $$_PRO_FILE_PWD_)
-        contains(sf, \\..*) {
-            check_examples: message("Notice: $$_PRO_FILE_ refers to $$sf")
-        } else {
-            sfp = $$replace(sf, /.*, )
-            !equals(sfp, $$sf): \
-                sources.files *= $$sfp
-            else: \
-                sources.files += $$sf
-        }
-    }
+    addInstallFiles(sources.files, $$sourcefiles)
     sources.path = $$[QT_INSTALL_EXAMPLES]/$$probase
     INSTALLS += sources
 
     check_examples {
+        srcfiles = $$sources.files
+        for(inst, INSTALLS): \
+            !equals(inst, target):!contains($${inst}.CONFIG, no_check_exist): \
+                for(file, $${inst}.files): \
+                    instfiles += $$files($$absolute_path($$file, $$_PRO_FILE_PWD_))
+        addInstallFiles(srcfiles, $$instfiles)
+
         thefiles = $$files($$_PRO_FILE_PWD_/*)
         for(i, thefiles): \
             allfiles += $$relative_path($$i, $$_PRO_FILE_PWD_)
-        for(i, sources.files): \
+        for(i, srcfiles): \
             allfiles -= $$relative_path($$i, $$_PRO_FILE_PWD_)
         for(i, SUBDIRS) {
             sd = $$eval($${i}.file)
@@ -83,5 +91,13 @@ probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
         }
         allfiles -= doc
         !isEmpty(allfiles): warning("remaining files in $$_PRO_FILE_PWD_: $$allfiles")
+    }
+
+    # Do not actually build the examples in production builds
+    !equals(TEMPLATE, subdirs):!contains(QT_CONFIG, private_tests) {
+        TEMPLATE = aux
+        CONFIG -= have_target qt staticlib dll
+        SOURCES =
+        INSTALLS -= target
     }
 }

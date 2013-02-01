@@ -4,7 +4,7 @@ Qt documentation, which can be viewed using Qt Assistant or a Web browser.
 
 The tutorial is also available online at
 
-http://qt.nokia.com/doc/4.4/tutorial.html
+http://qt-project.org/doc/qt-5.0/qtwidgets/tutorials-addressbook.html
 
 All programs corresponding to the chapters in the tutorial should
 automatically be built when Qt is compiled, or will be provided as

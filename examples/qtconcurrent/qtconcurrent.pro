@@ -1,3 +1,5 @@
+requires(qtHaveModule(concurrent))
+
 TEMPLATE      = subdirs
 SUBDIRS       = imagescaling \
                 map \

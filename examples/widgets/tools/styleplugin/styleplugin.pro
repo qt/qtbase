@@ -3,5 +3,5 @@ SUBDIRS		= stylewindow \
 		  plugin
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/styleplugin
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/styleplugin
 INSTALLS += target

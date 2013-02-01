@@ -576,7 +576,7 @@
     problem.
 
     Qt Labs provides software called
-    \l{http://labs.qt.nokia.com/page/Projects/Itemview/Modeltest}{ModelTest},
+    \l{http://qt-project.org/wiki/Model_Test}{ModelTest},
     which checks models while your programming is running. Every time the model
     is changed, ModelTest scans the model and reports errors with an assert.
     This is especially important for tree models, since their hierarchical

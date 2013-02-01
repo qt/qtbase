@@ -47,11 +47,11 @@ manager->setCache(diskCache);
 
 //! [1]
 // do a normal request (preferred from network, as this is the default)
-QNetworkRequest request(QUrl(QString("http://qt.nokia.com")));
+QNetworkRequest request(QUrl(QString("http://qt-project.org")));
 manager->get(request);
 
 // do a request preferred from cache
-QNetworkRequest request2(QUrl(QString("http://qt.nokia.com")));
+QNetworkRequest request2(QUrl(QString("http://qt-project.org")));
 request2.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
 manager->get(request2);
 //! [1]

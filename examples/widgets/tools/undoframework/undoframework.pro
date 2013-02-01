@@ -12,7 +12,7 @@ SOURCES	    = commands.cpp \
 RESOURCES   = undoframework.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/undoframework
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/undoframework
 INSTALLS += target
 
 simulator: warning(This example might not fully work on Simulator platform)
