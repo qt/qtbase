@@ -73,27 +73,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
-// Types that aren't defined in all system's gl.h files.
-typedef ptrdiff_t qopengl_GLintptr;
-typedef ptrdiff_t qopengl_GLsizeiptr;
-
-
-#if defined(APIENTRY) && !defined(QOPENGLF_APIENTRY)
-#   define QOPENGLF_APIENTRY APIENTRY
-#elif defined(GL_APIENTRY) && !defined(QOPENGLF_APIENTRY)
-#   define QOPENGLF_APIENTRY GL_APIENTRY
-#endif
-
-# ifndef QOPENGLF_APIENTRYP
-#   ifdef QOPENGLF_APIENTRY
-#     define QOPENGLF_APIENTRYP QOPENGLF_APIENTRY *
-#   else
-#     define QOPENGLF_APIENTRY
-#     define QOPENGLF_APIENTRYP *
-#   endif
-# endif
-
 struct QOpenGLFunctionsPrivate;
 
 // Undefine any macros from GLEW, qopenglextensions_p.h, etc that
