@@ -347,29 +347,6 @@ static void qFreeEventBuffer(QIBaseEventBuffer* eBuffer)
     delete eBuffer;
 }
 
-class QIBaseResult : public QSqlCachedResult
-{
-    friend class QIBaseResultPrivate;
-
-public:
-    explicit QIBaseResult(const QIBaseDriver* db);
-    virtual ~QIBaseResult();
-
-    bool prepare(const QString& query);
-    bool exec();
-    QVariant handle() const;
-
-protected:
-    bool gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx);
-    bool reset (const QString& query);
-    int size();
-    int numRowsAffected();
-    QSqlRecord record() const;
-
-private:
-    QIBaseResultPrivate* d;
-};
-
 class QIBaseResultPrivate;
 
 class QIBaseResult : public QSqlCachedResult
