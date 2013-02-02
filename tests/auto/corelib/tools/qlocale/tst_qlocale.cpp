@@ -712,12 +712,23 @@ void tst_QLocale::double_conversion()
     QFETCH(QString, num_str);
     QFETCH(bool, good);
     QFETCH(double, num);
+    QStringRef num_strRef = num_str.leftRef(-1);
 
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);
 
     bool ok;
     double d = locale.toDouble(num_str, &ok);
+    QCOMPARE(ok, good);
+
+    if (ok) {
+        double diff = d - num;
+        if (diff < 0)
+            diff = -diff;
+        QVERIFY(diff <= MY_DOUBLE_EPSILON);
+    }
+
+    d = locale.toDouble(num_strRef, &ok);
     QCOMPARE(ok, good);
 
     if (ok) {
@@ -787,6 +798,7 @@ void tst_QLocale::long_long_conversion()
     QFETCH(QString, num_str);
     QFETCH(bool, good);
     QFETCH(qlonglong, num);
+    QStringRef num_strRef = num_str.leftRef(-1);
 
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);
@@ -795,9 +807,14 @@ void tst_QLocale::long_long_conversion()
     qlonglong l = locale.toLongLong(num_str, &ok);
     QCOMPARE(ok, good);
 
-    if (ok) {
+    if (ok)
         QCOMPARE(l, num);
-    }
+
+    l = locale.toLongLong(num_strRef, &ok);
+    QCOMPARE(ok, good);
+
+    if (ok)
+        QCOMPARE(l, num);
 }
 
 void tst_QLocale::long_long_conversion_extra()
