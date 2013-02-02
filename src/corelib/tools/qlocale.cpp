@@ -2892,12 +2892,12 @@ QString QLocalePrivate::unsLongLongToString(const QChar zero, const QChar group,
     number. We can't detect junk here, since we don't even know the base
     of the number.
 */
-bool QLocalePrivate::numberToCLocale(const QString &num,
+bool QLocalePrivate::numberToCLocale(const QChar *str, int len,
                                             GroupSeparatorMode group_sep_mode,
                                             CharBuff *result) const
 {
-    const QChar *uc = num.unicode();
-    int l = num.length();
+    const QChar *uc = str;
+    int l = len;
     int idx = 0;
 
     // Skip whitespace
@@ -3043,7 +3043,13 @@ double QLocalePrivate::stringToDouble(const QString &number, bool *ok,
                                         GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    if (!numberToCLocale(group().unicode() == 0xa0 ? number.trimmed() : number,
+    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
+    QString trimmedNumber;
+    if (group().unicode() == 0xa0)
+        trimmedNumber = number.trimmed();
+    else
+        trimmedNumber = number;
+    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
@@ -3056,7 +3062,13 @@ qlonglong QLocalePrivate::stringToLongLong(const QString &number, int base,
                                            bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    if (!numberToCLocale(group().unicode() == 0xa0 ? number.trimmed() : number,
+    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
+    QString trimmedNumber;
+    if (group().unicode() == 0xa0)
+        trimmedNumber = number.trimmed();
+    else
+        trimmedNumber = number;
+    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
@@ -3070,7 +3082,13 @@ qulonglong QLocalePrivate::stringToUnsLongLong(const QString &number, int base,
                                                bool *ok, GroupSeparatorMode group_sep_mode) const
 {
     CharBuff buff;
-    if (!numberToCLocale(group().unicode() == 0xa0 ? number.trimmed() : number,
+    // Do not use the ternary operator - triggers msvc2012 bug in optimized builds
+    QString trimmedNumber;
+    if (group().unicode() == 0xa0)
+        trimmedNumber = number.trimmed();
+    else
+        trimmedNumber = number;
+    if (!numberToCLocale(trimmedNumber.unicode(), trimmedNumber.size(),
                          group_sep_mode, &buff)) {
         if (ok != 0)
             *ok = false;
