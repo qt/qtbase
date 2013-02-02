@@ -1958,7 +1958,7 @@ QStringRef QXmlStreamReader::text() const
 }
 
 
-/*!  If the state() is \l DTD, this function returns the DTD's
+/*!  If the tokenType() is \l DTD, this function returns the DTD's
   notation declarations. Otherwise an empty vector is returned.
 
   The QXmlStreamNotationDeclarations class is defined to be a QVector
@@ -1973,7 +1973,7 @@ QXmlStreamNotationDeclarations QXmlStreamReader::notationDeclarations() const
 }
 
 
-/*!  If the state() is \l DTD, this function returns the DTD's
+/*!  If the tokenType() is \l DTD, this function returns the DTD's
   unparsed (external) entity declarations. Otherwise an empty vector is returned.
 
   The QXmlStreamEntityDeclarations class is defined to be a QVector
@@ -1990,7 +1990,7 @@ QXmlStreamEntityDeclarations QXmlStreamReader::entityDeclarations() const
 /*!
   \since 4.4
 
-  If the state() is \l DTD, this function returns the DTD's
+  If the tokenType() is \l DTD, this function returns the DTD's
   name. Otherwise an empty string is returned.
 
  */
@@ -2005,7 +2005,7 @@ QStringRef QXmlStreamReader::dtdName() const
 /*!
   \since 4.4
 
-  If the state() is \l DTD, this function returns the DTD's
+  If the tokenType() is \l DTD, this function returns the DTD's
   public identifier. Otherwise an empty string is returned.
 
  */
@@ -2020,7 +2020,7 @@ QStringRef QXmlStreamReader::dtdPublicId() const
 /*!
   \since 4.4
 
-  If the state() is \l DTD, this function returns the DTD's
+  If the tokenType() is \l DTD, this function returns the DTD's
   system identifier. Otherwise an empty string is returned.
 
  */
@@ -2032,7 +2032,7 @@ QStringRef QXmlStreamReader::dtdSystemId() const
    return QStringRef();
 }
 
-/*!  If the state() is \l StartElement, this function returns the
+/*!  If the tokenType() is \l StartElement, this function returns the
   element's namespace declarations. Otherwise an empty vector is
   returned.
 
@@ -2845,7 +2845,7 @@ bool QXmlStreamReader::isStandaloneDocument() const
 /*!
      \since 4.4
 
-     If the state() is \l StartDocument, this function returns the
+     If the tokenType() is \l StartDocument, this function returns the
      version string as specified in the XML declaration.
      Otherwise an empty string is returned.
  */
@@ -2860,7 +2860,7 @@ QStringRef QXmlStreamReader::documentVersion() const
 /*!
      \since 4.4
 
-     If the state() is \l StartDocument, this function returns the
+     If the tokenType() is \l StartDocument, this function returns the
      encoding string as specified in the XML declaration.
      Otherwise an empty string is returned.
  */
