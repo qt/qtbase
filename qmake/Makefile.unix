@@ -1,11 +1,3 @@
-SOURCE_PATH = @SOURCE_PATH@
-BUILD_PATH = @BUILD_PATH@
-QT_VERSION = @QT_VERSION@
-QTOBJS = @QMAKE_QTOBJS@
-QTSRCS = @QMAKE_QTSRCS@
-QMAKESPEC = @QMAKESPEC@
-LFLAGS = @QMAKE_LFLAGS@
-
 QMKSRC = $(SOURCE_PATH)/qmake
 QMKLIBSRC = $(QMKSRC)/library
 QMKGENSRC = $(QMKSRC)/generators
@@ -22,16 +14,12 @@ OBJS=project.o option.o property.o main.o ioutils.o proitems.o \
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qstringbuilder.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
       qarraydata.o qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfiledevice.o qfile.o \
-      qfilesystementry.o qfilesystemengine_unix.o qfilesystemengine.o qfilesystemiterator_unix.o \
-      qfsfileengine_unix.o qfsfileengine.o \
-      qfsfileengine_iterator.o qregexp.o qvector.o qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o \
-      qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
-      qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o qvariant.o qvsnprintf.o \
-      qlocale.o qlocale_tools.o qlocale_unix.o qlinkedlist.o qnumeric.o qcryptographichash.o \
-      qxmlstream.o qxmlutils.o qlogging.o \
+      qfilesystementry.o qfilesystemengine.o qfsfileengine.o qfsfileengine_iterator.o qregexp.o qvector.o \
+      qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o qfileinfo.o qdatetime.o qstringlist.o \
+      qabstractfileengine.o qtemporaryfile.o qmap.o qmetatype.o qsettings.o qsystemerror.o qlibraryinfo.o \
+      qvariant.o qvsnprintf.o qlocale.o qlocale_tools.o qlinkedlist.o qnumeric.o \
+      qcryptographichash.o qxmlstream.o qxmlutils.o qlogging.o \
       $(QTOBJS)
-
-
 
 
 #all sources, used for the depend target
@@ -58,10 +46,16 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp\
 	   $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystementry.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemengine.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvector.cpp $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
@@ -74,6 +68,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp \
+	   $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp $(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qtemporaryfile.cpp $(SOURCE_PATH)/src/corelib/kernel/qmetatype.cpp \
@@ -84,9 +79,11 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlogging.cpp \
+	   $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp \
+	   $(SOURCE_PATH)/tools/shared/windows/registry.cpp \
 	   $(QTSRCS)
 
-CPPFLAGS = -g $(OPENSOURCE_CXXFLAGS) \
+CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(QMKSRC) -I$(QMKLIBSRC) -I$(QMKSRC)/generators -I$(QMKSRC)/generators/unix -I$(QMKSRC)/generators/win32 \
 	   -I$(QMKSRC)/generators/mac -I$(QMKSRC)/generators/integrity \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
@@ -98,19 +95,23 @@ CPPFLAGS = -g $(OPENSOURCE_CXXFLAGS) \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
 	   -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM
 
-CXXFLAGS = @QMAKE_CXXFLAGS@ $(CPPFLAGS)
+CXXFLAGS = $(EXTRA_CXXFLAGS) $(CPPFLAGS)
 
-first all: $(BUILD_PATH)/bin/qmake
-qmake: $(BUILD_PATH)/bin/qmake
+first all: $(BUILD_PATH)/bin/qmake$(EXEEXT)
+qmake: $(BUILD_PATH)/bin/qmake$(EXEEXT)
 
-$(BUILD_PATH)/bin/qmake: $(OBJS) $(QOBJS)
+$(BUILD_PATH)/bin/qmake$(EXEEXT): $(OBJS) $(QOBJS)
 	$(CXX) -o "$@" $(OBJS) $(QOBJS) $(LFLAGS)
 
+Makefile: $(SOURCE_PATH)/qmake/Makefile.unix
+	@echo "Out of date, please rerun configure"
+
 clean::
-	rm -f $(OBJS) $(QOBJS)
+	$(RM_F) $(OBJS) $(QOBJS)
 
 distclean:: clean
-	rm -rf $(BUILD_PATH)/bin/qmake .deps
+	$(RM_RF) .deps
+	$(RM_F) $(BUILD_PATH)/bin/qmake$(EXEEXT)
 
 depend:
 	makedepend -D__MAKEDEPEND__ $(CPPFLAGS) $(DEPEND_SRC)
@@ -222,6 +223,9 @@ qnumeric.o: $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp
 qsettings_mac.o: $(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp
 
+qsettings_win.o: $(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp
+
 qiodevice.o: $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp
 
@@ -270,6 +274,9 @@ qlocale_tools.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_tools.cpp
 qlocale_unix.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_unix.cpp
 
+qlocale_win.o: $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp
+
 qdatastream.o: $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp
 
@@ -297,8 +304,14 @@ qfilesystemengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.c
 qfilesystemengine_mac.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_mac.cpp
 
+qfilesystemengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemengine_win.cpp
+
 qfilesystemiterator_unix.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp
+
+qfilesystemiterator_win.o: $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp
 
 qfsfileengine.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp
@@ -308,6 +321,9 @@ qfsfileengine_iterator.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.c
 
 qfsfileengine_unix.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp
+
+qfsfileengine_win.o: $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp
 
 qabstractfileengine.o: $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp
@@ -362,5 +378,11 @@ qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
 
 qlogging.o: $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/global/qlogging.cpp
+
+qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
+
+registry.o: $(SOURCE_PATH)/tools/shared/windows/registry.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/tools/shared/windows/registry.cpp
 
 # DO NOT DELETE THIS LINE -- make depend depends on it

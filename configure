@@ -381,6 +381,10 @@ if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
     PLATFORM_MAC=maybe
 fi
+BUILD_ON_MSYS=no
+if [ "$OSTYPE" = "msys" ]; then
+    BUILD_ON_MSYS=yes
+fi
 
 #-----------------------------------------------------------------------------
 # Qt version detection
@@ -3638,10 +3642,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         setBootstrapVariable QMAKE_CXXFLAGS
         setBootstrapVariable QMAKE_LFLAGS
 
-        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -DQMAKE_OPENSOURCE_EDITION"
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DQMAKE_OPENSOURCE_EDITION"
-        fi
         if [ "$CFG_RELEASE_QMAKE" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_RELEASE
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
@@ -3660,6 +3660,36 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                 EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
             done
         fi
+        if [ "$BUILD_ON_MSYS" = "yes" ]; then
+            EXTRA_CFLAGS="-DUNICODE"
+            EXTRA_CXXFLAGS="-DUNICODE"
+            EXTRA_OBJS="qfilesystemengine_win.o \
+                        qfilesystemiterator_win.o \
+                        qfsfileengine_win.o \
+                        qlocale_win.o \
+                        qsettings_win.o \
+                        qsystemlibrary.o \
+                        registry.o"
+            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/corelib/io/qfilesystemengine_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \
+                        \"\$(SOURCE_PATH)/tools/shared/windows/registry.cpp\""
+            EXTRA_LFLAGS="-static -s -lole32 -luuid -ladvapi32 -lkernel32"
+            EXEEXT=".exe"
+        else
+            EXTRA_OBJS="qfilesystemengine_unix.o \
+                        qfilesystemiterator_unix.o \
+                        qfsfileengine_unix.o \
+                        qlocale_unix.o"
+            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocal_unix.cpp\""
+            EXEEXT=
+        fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             echo "export MACOSX_DEPLOYMENT_TARGET = 10.6" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
@@ -3667,8 +3697,12 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(CARBON_CFLAGS)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
-            EXTRA_OBJS="qsettings_mac.o qcore_mac.o"
-            EXTRA_SRCS="\"$relpath/src/corelib/io/qsettings_mac.cpp\" \"$relpath/src/corelib/kernel/qcore_mac.cpp\""
+            EXTRA_OBJS="$EXTRA_OBJS \
+                        qsettings_mac.o \
+                        qcore_mac.o"
+            EXTRA_SRCS="$EXTRA_SRCS \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\""
         fi
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
@@ -3681,13 +3715,25 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
 	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
-        sed -e "s,@SOURCE_PATH@,$adjrelpath,g" -e "s,@BUILD_PATH@,$adjoutpath,g" \
-            -e "s,@QMAKE_CFLAGS@,$EXTRA_CFLAGS,g" -e "s,@QMAKE_LFLAGS@,$EXTRA_LFLAGS,g" \
-            -e "s,@QMAKE_CXXFLAGS@,$EXTRA_CXXFLAGS,g" \
-            -e "s,@QT_INSTALL_BINS@,\$(INSTALL_ROOT)$QMAKE_BIN_DIR,g" \
-            -e "s,@QT_INSTALL_DATA@,\$(INSTALL_ROOT)$QMAKE_DATA_DIR,g" \
-            -e "s,@QMAKE_QTOBJS@,$EXTRA_OBJS,g" -e "s,@QMAKE_QTSRCS@,$EXTRA_SRCS,g" \
-            -e "s,@QMAKESPEC@,$adjqmakespec,g" -e "s,@QT_VERSION@,$QT_VERSION,g" "$in_mkfile" >>"$mkfile"
+
+        echo "BUILD_PATH = $adjoutpath" >> "$mkfile"
+        echo "SOURCE_PATH = $adjrelpath" >> "$mkfile"
+        echo "QMAKESPEC = $adjqmakespec" >> "$mkfile"
+        echo "QT_VERSION = $QT_VERSION" >> "$mkfile"
+        echo "EXTRA_CFLAGS = $EXTRA_CFLAGS" >> "$mkfile"
+        echo "EXTRA_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
+        echo "QTOBJS = $EXTRA_OBJS" >> "$mkfile"
+        echo "QTSRCS = $EXTRA_SRCS" >> "$mkfile"
+        echo "LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
+        echo "QT_INSTALL_BINS = \$(INSTALL_ROOT)$QMAKE_BIN_DIR" >> "$mkfile"
+        echo "QT_INSTALL_DATA = \$(INSTALL_ROOT)$QMAKE_DATA_DIR" >> "$mkfile"
+        echo "EXEEXT = $EXEEXT" >> "$mkfile"
+        echo "RM_F = rm -f" >> "$mkfile"
+        echo "RM_RF = rm -rf" >> "$mkfile"
+        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
+            echo "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" >> "$mkfile"
+        fi
+        cat "$in_mkfile" >> "$mkfile"
 
         if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
             (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
