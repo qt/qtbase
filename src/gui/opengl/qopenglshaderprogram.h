@@ -63,9 +63,11 @@ class Q_GUI_EXPORT QOpenGLShader : public QObject
 public:
     enum ShaderTypeBit
     {
-        Vertex          = 0x0001,
-        Fragment        = 0x0002,
-        Geometry        = 0x0004
+        Vertex                 = 0x0001,
+        Fragment               = 0x0002,
+        Geometry               = 0x0004,
+        TessellationControl    = 0x0008,
+        TessellationEvaluation = 0x0010
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBit)
 
@@ -128,6 +130,15 @@ public:
     GLuint programId() const;
 
     int maxGeometryOutputVertices() const;
+
+    void setPatchVertexCount(int count);
+    int patchVertexCount() const;
+
+    void setDefaultOuterTessellationLevels(const QVector<float> &levels);
+    QVector<float> defaultOuterTessellationLevels() const;
+
+    void setDefaultInnerTessellationLevels(const QVector<float> &levels);
+    QVector<float> defaultInnerTessellationLevels() const;
 
     void bindAttributeLocation(const char *name, int location);
     void bindAttributeLocation(const QByteArray& name, int location);

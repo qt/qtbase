@@ -50,6 +50,10 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/QColor>
 
+#if !defined(QT_OPENGL_ES_2)
+#include <QtGui/qopenglfunctions_4_0_core.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -147,6 +151,10 @@ QT_BEGIN_NAMESPACE
     \value Fragment Fragment shader written in the OpenGL Shading Language (GLSL).
     \value Geometry Geometry shaders written in the OpenGL Shading Language (GLSL)
            based on the OpenGL core feature (requires OpenGL >= 3.2).
+    \value TessellationControl Tessellation control shaders written in the OpenGL
+           shading language (GLSL), based on the core feature (requires OpenGL >= 4.0).
+    \value TessellationEvaluation Tessellation evaluation shaders written in the OpenGL
+           shading language (GLSL), based on the core feature (requires OpenGL >= 4.0).
 */
 
 class QOpenGLShaderPrivate : public QObjectPrivate
@@ -160,14 +168,17 @@ public:
         , glfuncs(new QOpenGLFunctions(ctx))
 #ifndef QT_OPENGL_ES_2
         , supportsGeometryShaders(false)
+        , supportsTessellationShaders(false)
 #endif
     {
 #ifndef QT_OPENGL_ES_2
+        QSurfaceFormat f = ctx->format();
+
         // Geometry shaders require OpenGL >= 3.2
-        if (shaderType & QOpenGLShader::Geometry) {
-            QSurfaceFormat f = ctx->format();
+        if (shaderType & QOpenGLShader::Geometry)
             supportsGeometryShaders = (f.version() >= qMakePair<int, int>(3, 2));
-        }
+        else if (shaderType & (QOpenGLShader::TessellationControl | QOpenGLShader::TessellationEvaluation))
+            supportsTessellationShaders = (f.version() >= qMakePair<int, int>(4, 0));
 #endif
     }
     ~QOpenGLShaderPrivate();
@@ -182,6 +193,9 @@ public:
 #ifndef QT_OPENGL_ES_2
     // Support for geometry shaders
     bool supportsGeometryShaders;
+
+    // Support for tessellation shaders
+    bool supportsTessellationShaders;
 #endif
 
     bool create();
@@ -214,6 +228,12 @@ bool QOpenGLShaderPrivate::create()
 #if defined(QT_OPENGL_3_2)
     } else if (shaderType == QOpenGLShader::Geometry && supportsGeometryShaders) {
         shader = glfuncs->glCreateShader(GL_GEOMETRY_SHADER);
+#endif
+#if defined(QT_OPENGL_4)
+    } else if (shaderType == QOpenGLShader::TessellationControl && supportsTessellationShaders) {
+        shader = glfuncs->glCreateShader(GL_TESS_CONTROL_SHADER);
+    } else if (shaderType == QOpenGLShader::TessellationEvaluation && supportsTessellationShaders) {
+        shader = glfuncs->glCreateShader(GL_TESS_EVALUATION_SHADER);
 #endif
     } else {
         shader = glfuncs->glCreateShader(GL_FRAGMENT_SHADER);
@@ -534,6 +554,9 @@ public:
         , inited(false)
         , removingShaders(false)
         , glfuncs(new QOpenGLFunctions)
+#ifndef QT_OPENGL_ES_2
+        , tessellationFuncs(0)
+#endif
     {
     }
     ~QOpenGLShaderProgramPrivate();
@@ -548,6 +571,11 @@ public:
     QList<QOpenGLShader *> anonShaders;
 
     QOpenGLFunctions *glfuncs;
+
+#ifndef QT_OPENGL_ES_2
+    // Tessellation shader support
+    QOpenGLFunctions_4_0_Core *tessellationFuncs;
+#endif
 
     bool hasShader(QOpenGLShader::ShaderType type) const;
 };
@@ -606,6 +634,16 @@ bool QOpenGLShaderProgram::init()
     if (!context)
         return false;
     d->glfuncs->initializeOpenGLFunctions();
+
+#ifndef QT_OPENGL_ES_2
+    // Resolve OpenGL 4 functions for tessellation shader support
+    QSurfaceFormat format = context->format();
+    if (format.version() >= qMakePair<int, int>(4, 0)) {
+        d->tessellationFuncs = context->versionFunctions<QOpenGLFunctions_4_0_Core>();
+        d->tessellationFuncs->initializeOpenGLFunctions();
+    }
+#endif
+
     GLuint program = d->glfuncs->glCreateProgram();
     if (!program) {
         qWarning() << "QOpenGLShaderProgram: could not create shader program";
@@ -2964,6 +3002,185 @@ int QOpenGLShaderProgram::maxGeometryOutputVertices() const
 }
 
 /*!
+    Use this function to specify to OpenGL the number of vertices in
+    a patch to \a count. A patch is a custom OpenGL primitive whose interpretation
+    is entirely defined by the tessellation shader stages. Therefore, calling
+    this function only makes sense when using a QOpenGLShaderProgram
+    containing tessellation stage shaders. When using OpenGL tessellation,
+    the only primitive that can be rendered with \c{glDraw*()} functions is
+    \c{GL_PATCHES}.
+
+    This is equivalent to calling glPatchParameteri(GL_PATCH_VERTICES, count).
+
+    \note This modifies global OpenGL state and is not specific to this
+    QOpenGLShaderProgram instance. You should call this in your render
+    function when needed, as QOpenGLShaderProgram will not apply this for
+    you. This is purely a convenience function.
+
+    \sa patchVertexCount()
+*/
+void QOpenGLShaderProgram::setPatchVertexCount(int count)
+{
+#if defined(QT_OPENGL_4)
+    Q_D(QOpenGLShaderProgram);
+    if (d->tessellationFuncs)
+        d->tessellationFuncs->glPatchParameteri(GL_PATCH_VERTICES, count);
+#else
+    Q_UNUSED(count);
+#endif
+}
+
+/*!
+    Returns the number of vertices per-patch to be used when rendering.
+
+    \note This returns the global OpenGL state value. It is not specific to
+    this QOpenGLShaderProgram instance.
+
+    \sa setPatchVertexCount()
+*/
+int QOpenGLShaderProgram::patchVertexCount() const
+{
+    int patchVertices = 0;
+#if defined(QT_OPENGL_4)
+    Q_D(const QOpenGLShaderProgram);
+    if (d->tessellationFuncs)
+        d->tessellationFuncs->glGetIntegerv(GL_PATCH_VERTICES, &patchVertices);
+#endif
+    return patchVertices;
+}
+
+/*!
+    Sets the default outer tessellation levels to be used by the tessellation
+    primitive generator in the event that the tessellation control shader
+    does not output them to \a levels. For more details on OpenGL and Tessellation
+    shaders see \l{OpenGL Tessellation Shaders}.
+
+    The \a levels argument should be a QVector consisting of 4 floats. Not all
+    of the values make sense for all tessellation modes. If you specify a vector with
+    fewer than 4 elements, the remaining elements will be given a default value of 1.
+
+    \note This modifies global OpenGL state and is not specific to this
+    QOpenGLShaderProgram instance. You should call this in your render
+    function when needed, as QOpenGLShaderProgram will not apply this for
+    you. This is purely a convenience function.
+
+    \sa defaultOuterTessellationLevels(), setDefaultInnerTessellationLevels()
+*/
+void QOpenGLShaderProgram::setDefaultOuterTessellationLevels(const QVector<float> &levels)
+{
+#if defined(QT_OPENGL_4)
+    QVector<float> tessLevels = levels;
+
+    // Ensure we have the required 4 outer tessellation levels
+    // Use default of 1 for missing entries (same as spec)
+    const int argCount = 4;
+    if (tessLevels.size() < argCount) {
+        tessLevels.reserve(argCount);
+        for (int i = tessLevels.size(); i < argCount; ++i)
+            tessLevels.append(1.0f);
+    }
+
+    Q_D(QOpenGLShaderProgram);
+    if (d->tessellationFuncs)
+        d->tessellationFuncs->glPatchParameterfv(GL_PATCH_DEFAULT_OUTER_LEVEL, tessLevels.data());
+#else
+    Q_UNUSED(levels);
+#endif
+}
+
+/*!
+    Returns the default outer tessellation levels to be used by the tessellation
+    primitive generator in the event that the tessellation control shader
+    does not output them. For more details on OpenGL and Tessellation shaders see
+    \l{OpenGL Tessellation Shaders}.
+
+    Returns a QVector of floats describing the outer tessellation levels. The vector
+    will always have four elements but not all of them make sense for every mode
+    of tessellation.
+
+    \note This returns the global OpenGL state value. It is not specific to
+    this QOpenGLShaderProgram instance.
+
+    \sa setDefaultOuterTessellationLevels(), defaultInnerTessellationLevels()
+*/
+QVector<float> QOpenGLShaderProgram::defaultOuterTessellationLevels() const
+{
+    QVector<float> tessLevels(4, 1.0f);
+#if defined(QT_OPENGL_4)
+    Q_D(const QOpenGLShaderProgram);
+    if (d->tessellationFuncs)
+        d->tessellationFuncs->glGetFloatv(GL_PATCH_DEFAULT_OUTER_LEVEL, tessLevels.data());
+#endif
+    return tessLevels;
+}
+
+/*!
+    Sets the default outer tessellation levels to be used by the tessellation
+    primitive generator in the event that the tessellation control shader
+    does not output them to \a levels. For more details on OpenGL and Tessellation shaders see
+    \l{OpenGL Tessellation Shaders}.
+
+    The \a levels argument should be a QVector consisting of 2 floats. Not all
+    of the values make sense for all tessellation modes. If you specify a vector with
+    fewer than 2 elements, the remaining elements will be given a default value of 1.
+
+    \note This modifies global OpenGL state and is not specific to this
+    QOpenGLShaderProgram instance. You should call this in your render
+    function when needed, as QOpenGLShaderProgram will not apply this for
+    you. This is purely a convenience function.
+
+    \sa defaultInnerTessellationLevels(), setDefaultOuterTessellationLevels()
+*/
+void QOpenGLShaderProgram::setDefaultInnerTessellationLevels(const QVector<float> &levels)
+{
+#if defined(QT_OPENGL_4)
+    QVector<float> tessLevels = levels;
+
+    // Ensure we have the required 2 inner tessellation levels
+    // Use default of 1 for missing entries (same as spec)
+    const int argCount = 2;
+    if (tessLevels.size() < argCount) {
+        tessLevels.reserve(argCount);
+        for (int i = tessLevels.size(); i < argCount; ++i)
+            tessLevels.append(1.0f);
+    }
+
+    Q_D(QOpenGLShaderProgram);
+    if (d->tessellationFuncs)
+        d->tessellationFuncs->glPatchParameterfv(GL_PATCH_DEFAULT_INNER_LEVEL, tessLevels.data());
+#else
+    Q_UNUSED(levels);
+#endif
+}
+
+/*!
+    Returns the default inner tessellation levels to be used by the tessellation
+    primitive generator in the event that the tessellation control shader
+    does not output them. For more details on OpenGL and Tessellation shaders see
+    \l{OpenGL Tessellation Shaders}.
+
+    Returns a QVector of floats describing the inner tessellation levels. The vector
+    will always have two elements but not all of them make sense for every mode
+    of tessellation.
+
+    \note This returns the global OpenGL state value. It is not specific to
+    this QOpenGLShaderProgram instance.
+
+    \sa setDefaultInnerTessellationLevels(), defaultOuterTessellationLevels()
+*/
+QVector<float> QOpenGLShaderProgram::defaultInnerTessellationLevels() const
+{
+    QVector<float> tessLevels(2, 1.0f);
+#if defined(QT_OPENGL_4)
+    Q_D(const QOpenGLShaderProgram);
+    if (d->tessellationFuncs)
+        d->tessellationFuncs->glGetFloatv(GL_PATCH_DEFAULT_OUTER_LEVEL, tessLevels.data());
+#endif
+    return tessLevels;
+}
+
+
+/*!
     Returns true if shader programs written in the OpenGL Shading
     Language (GLSL) are supported on this system; false otherwise.
 
@@ -3009,9 +3226,10 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
     if (!context)
         return false;
 
-    if ((type & ~(Geometry | Vertex | Fragment)) || type == 0)
+    if ((type & ~(Geometry | Vertex | Fragment | TessellationControl | TessellationEvaluation)) || type == 0)
         return false;
 
+    QSurfaceFormat format = context->format();
     if (type == Geometry) {
 #ifndef QT_OPENGL_ES_2
         // Geometry shaders require OpenGL 3.2 or newer
@@ -3019,6 +3237,13 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
         return (format.version() >= qMakePair<int, int>(3, 2));
 #else
         // No geometry shader support in OpenGL ES2
+        return false;
+#endif
+    } else if (type == TessellationControl || type == TessellationEvaluation) {
+#if !defined(QT_OPENGL_ES_2)
+        return (format.version() >= qMakePair<int, int>(4, 0));
+#else
+        // No tessellation shader support in OpenGL ES2
         return false;
 #endif
     }
