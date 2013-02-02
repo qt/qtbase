@@ -2138,9 +2138,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->save();
             p->setClipRect(opt->rect);
 
-            QRect checkRect = subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
-            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, vopt, widget);
-            QRect textRect = subElementRect(SE_ItemViewItemText, vopt, widget);
+            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+            QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
+            QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
 
             // draw the background
             proxy()->drawPrimitive(PE_PanelItemViewItem, opt, p, widget);
