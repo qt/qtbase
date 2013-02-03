@@ -18,6 +18,8 @@ HEADERS +=  \
         io/qipaddress_p.h \
         io/qiodevice.h \
         io/qiodevice_p.h \
+        io/qlockfile.h \
+        io/qlockfile_p.h \
         io/qnoncontiguousbytedevice_p.h \
         io/qprocess.h \
         io/qprocess_p.h \
@@ -61,6 +63,7 @@ SOURCES += \
         io/qfileinfo.cpp \
         io/qipaddress.cpp \
         io/qiodevice.cpp \
+        io/qlockfile.cpp \
         io/qnoncontiguousbytedevice.cpp \
         io/qprocess.cpp \
         io/qtextstream.cpp \
@@ -85,6 +88,7 @@ SOURCES += \
 win32 {
         SOURCES += io/qsettings_win.cpp
         SOURCES += io/qfsfileengine_win.cpp
+        SOURCES += io/qlockfile_win.cpp
 
         SOURCES += io/qfilesystemwatcher_win.cpp
         HEADERS += io/qfilesystemwatcher_win_p.h
@@ -109,6 +113,7 @@ win32 {
         SOURCES += \
                 io/qfsfileengine_unix.cpp \
                 io/qfilesystemengine_unix.cpp \
+                io/qlockfile_unix.cpp \
                 io/qprocess_unix.cpp \
                 io/qfilesystemiterator_unix.cpp \
 

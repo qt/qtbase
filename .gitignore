@@ -307,6 +307,7 @@ tests/auto/corelib/thread/qthreadstorage/crashOnExit
 tests/auto/corelib/io/qresourceengine/qresourceengine
 tests/auto/corelib/codecs/qtextcodec/echo/echo
 tests/auto/corelib/plugin/quuid/testProcessUniqueness/testProcessUniqueness
+tests/auto/corelib/io/qlockfile/qlockfiletesthelper/qlockfile_test_helper
 tests/auto/dbus/qdbusabstractadaptor/qmyserver/qmyserver
 tests/auto/dbus/qdbusabstractinterface/qpinger/qpinger
 tests/auto/dbus/qdbusinterface/qmyserver/qmyserver

@@ -14,6 +14,7 @@ SUBDIRS=\
     qfilesystemwatcher \
     qiodevice \
     qipaddress \
+    qlockfile \
     qnodebug \
     qprocess \
     qprocess-noapplication \

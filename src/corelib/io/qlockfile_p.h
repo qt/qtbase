@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -39,70 +39,66 @@
 **
 ****************************************************************************/
 
-#ifndef QTEMPORARYFILE_H
-#define QTEMPORARYFILE_H
+#ifndef QLOCKFILE_P_H
+#define QLOCKFILE_P_H
 
-#include <QtCore/qiodevice.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qlockfile.h>
 #include <QtCore/qfile.h>
 
-#ifdef open
-#error qtemporaryfile.h must be included before any header file that defines open
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_TEMPORARYFILE
-
-class QTemporaryFilePrivate;
-class QLockFilePrivate;
-
-class Q_CORE_EXPORT QTemporaryFile : public QFile
+class QLockFilePrivate
 {
-#ifndef QT_NO_QOBJECT
-    Q_OBJECT
-#endif
-    Q_DECLARE_PRIVATE(QTemporaryFile)
-
 public:
-    QTemporaryFile();
-    explicit QTemporaryFile(const QString &templateName);
-#ifndef QT_NO_QOBJECT
-    explicit QTemporaryFile(QObject *parent);
-    QTemporaryFile(const QString &templateName, QObject *parent);
+    QLockFilePrivate(const QString &fn)
+        : fileName(fn),
+#ifdef Q_OS_WIN
+          fileHandle(INVALID_HANDLE_VALUE),
+#else
+          fileHandle(-1),
 #endif
-    ~QTemporaryFile();
+          staleLockTime(30 * 1000), // 30 seconds
+          lockError(QLockFile::NoError),
+          isLocked(false)
+    {
+    }
+    QLockFile::LockError tryLock_sys();
+    bool removeStaleLock();
+    bool getLockInfo(qint64 *pid, QString *hostname, QString *appname) const;
+    // Returns true if the lock belongs to dead PID, or is old.
+    // The attempt to delete it will tell us if it was really stale or not, though.
+    bool isApparentlyStale() const;
 
-    bool autoRemove() const;
-    void setAutoRemove(bool b);
-
-    // ### Hides open(flags)
-    bool open() { return open(QIODevice::ReadWrite); }
-
-    QString fileName() const;
-    QString fileTemplate() const;
-    void setFileTemplate(const QString &name);
-#if QT_DEPRECATED_SINCE(5,1)
-    QT_DEPRECATED inline static QTemporaryFile *createLocalFile(const QString &fileName)
-        { return createNativeFile(fileName); }
-    QT_DEPRECATED inline static QTemporaryFile *createLocalFile(QFile &file)
-        { return createNativeFile(file); }
+#ifdef Q_OS_UNIX
+    static int checkFcntlWorksAfterFlock();
 #endif
-    inline static QTemporaryFile *createNativeFile(const QString &fileName)
-        { QFile file(fileName); return createNativeFile(file); }
-    static QTemporaryFile *createNativeFile(QFile &file);
 
-protected:
-    bool open(OpenMode flags);
-
-private:
-    friend class QFile;
-    friend class QLockFilePrivate;
-    Q_DISABLE_COPY(QTemporaryFile)
+    QString fileName;
+#ifdef Q_OS_WIN
+    Qt::HANDLE fileHandle;
+#else
+    int fileHandle;
+#endif
+    int staleLockTime; // "int milliseconds" is big enough for 24 days
+    QLockFile::LockError lockError;
+    bool isLocked;
 };
-
-#endif // QT_NO_TEMPORARYFILE
 
 QT_END_NAMESPACE
 
-#endif // QTEMPORARYFILE_H
+#endif /* QLOCKFILE_P_H */

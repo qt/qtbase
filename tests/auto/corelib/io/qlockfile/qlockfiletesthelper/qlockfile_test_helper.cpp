@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 David Faure <faure+bluesystems@kde.org>
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,70 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef QTEMPORARYFILE_H
-#define QTEMPORARYFILE_H
+#include <QDebug>
+#include <QCoreApplication>
+#include <QLockFile>
+#include <QThread>
 
-#include <QtCore/qiodevice.h>
-#include <QtCore/qfile.h>
-
-#ifdef open
-#error qtemporaryfile.h must be included before any header file that defines open
-#endif
-
-QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_TEMPORARYFILE
-
-class QTemporaryFilePrivate;
-class QLockFilePrivate;
-
-class Q_CORE_EXPORT QTemporaryFile : public QFile
+int main(int argc, char *argv[])
 {
-#ifndef QT_NO_QOBJECT
-    Q_OBJECT
-#endif
-    Q_DECLARE_PRIVATE(QTemporaryFile)
+    QCoreApplication app(argc, argv);
 
-public:
-    QTemporaryFile();
-    explicit QTemporaryFile(const QString &templateName);
-#ifndef QT_NO_QOBJECT
-    explicit QTemporaryFile(QObject *parent);
-    QTemporaryFile(const QString &templateName, QObject *parent);
-#endif
-    ~QTemporaryFile();
+    if (argc <= 1)
+        return -1;
 
-    bool autoRemove() const;
-    void setAutoRemove(bool b);
+    const QString lockName = QString::fromLocal8Bit(argv[1]);
 
-    // ### Hides open(flags)
-    bool open() { return open(QIODevice::ReadWrite); }
+    QString option;
+    if (argc > 2)
+        option = QString::fromLocal8Bit(argv[2]);
 
-    QString fileName() const;
-    QString fileTemplate() const;
-    void setFileTemplate(const QString &name);
-#if QT_DEPRECATED_SINCE(5,1)
-    QT_DEPRECATED inline static QTemporaryFile *createLocalFile(const QString &fileName)
-        { return createNativeFile(fileName); }
-    QT_DEPRECATED inline static QTemporaryFile *createLocalFile(QFile &file)
-        { return createNativeFile(file); }
-#endif
-    inline static QTemporaryFile *createNativeFile(const QString &fileName)
-        { QFile file(fileName); return createNativeFile(file); }
-    static QTemporaryFile *createNativeFile(QFile &file);
+    if (option == "-crash") {
+        QLockFile *lockFile = new QLockFile(lockName);
+        lockFile->lock();
+        // leak the lockFile on purpose, so that the lock remains!
+        return 0;
+    } else if (option == "-busy") {
+        QLockFile lockFile(lockName);
+        lockFile.lock();
+        QThread::msleep(500);
+        return 0;
+    } else {
+        QLockFile lockFile(lockName);
+        if (lockFile.isLocked()) // cannot happen, before calling lock or tryLock
+            return QLockFile::UnknownError;
 
-protected:
-    bool open(OpenMode flags);
-
-private:
-    friend class QFile;
-    friend class QLockFilePrivate;
-    Q_DISABLE_COPY(QTemporaryFile)
-};
-
-#endif // QT_NO_TEMPORARYFILE
-
-QT_END_NAMESPACE
-
-#endif // QTEMPORARYFILE_H
+        lockFile.tryLock();
+        return lockFile.error();
+    }
+}

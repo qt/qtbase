@@ -62,6 +62,8 @@ protected:
     QString templateName;
 
     static QString defaultTemplateName();
+
+    friend class QLockFilePrivate;
 };
 
 class QTemporaryFileEngine : public QFSFileEngine
