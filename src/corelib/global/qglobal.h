@@ -151,6 +151,9 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
+#define QT_BEGIN_HEADER
+#define QT_END_HEADER
+
 #if defined(Q_OS_DARWIN) && !defined(QT_LARGEFILE_SUPPORT)
 #  define QT_LARGEFILE_SUPPORT 64
 #endif
