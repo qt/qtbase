@@ -174,7 +174,7 @@ ALIGN const UINT64 rot_39_41[2] = {39, 41};
 
 #include "KeccakF-1600-unrolling.macros"
 
-void KeccakPermutationOnWords(UINT64 *state)
+static void KeccakPermutationOnWords(UINT64 *state)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -188,7 +188,7 @@ void KeccakPermutationOnWords(UINT64 *state)
 #endif
 }
 
-void KeccakPermutationOnWordsAfterXoring(UINT64 *state, const UINT64 *input, unsigned int laneCount)
+static void KeccakPermutationOnWordsAfterXoring(UINT64 *state, const UINT64 *input, unsigned int laneCount)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -206,7 +206,7 @@ void KeccakPermutationOnWordsAfterXoring(UINT64 *state, const UINT64 *input, uns
 }
 
 #ifdef ProvideFast576
-void KeccakPermutationOnWordsAfterXoring576bits(UINT64 *state, const UINT64 *input)
+static void KeccakPermutationOnWordsAfterXoring576bits(UINT64 *state, const UINT64 *input)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -222,7 +222,7 @@ void KeccakPermutationOnWordsAfterXoring576bits(UINT64 *state, const UINT64 *inp
 #endif
 
 #ifdef ProvideFast832
-void KeccakPermutationOnWordsAfterXoring832bits(UINT64 *state, const UINT64 *input)
+static void KeccakPermutationOnWordsAfterXoring832bits(UINT64 *state, const UINT64 *input)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -238,7 +238,7 @@ void KeccakPermutationOnWordsAfterXoring832bits(UINT64 *state, const UINT64 *inp
 #endif
 
 #ifdef ProvideFast1024
-void KeccakPermutationOnWordsAfterXoring1024bits(UINT64 *state, const UINT64 *input)
+static void KeccakPermutationOnWordsAfterXoring1024bits(UINT64 *state, const UINT64 *input)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -254,7 +254,7 @@ void KeccakPermutationOnWordsAfterXoring1024bits(UINT64 *state, const UINT64 *in
 #endif
 
 #ifdef ProvideFast1088
-void KeccakPermutationOnWordsAfterXoring1088bits(UINT64 *state, const UINT64 *input)
+static void KeccakPermutationOnWordsAfterXoring1088bits(UINT64 *state, const UINT64 *input)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -270,7 +270,7 @@ void KeccakPermutationOnWordsAfterXoring1088bits(UINT64 *state, const UINT64 *in
 #endif
 
 #ifdef ProvideFast1152
-void KeccakPermutationOnWordsAfterXoring1152bits(UINT64 *state, const UINT64 *input)
+static void KeccakPermutationOnWordsAfterXoring1152bits(UINT64 *state, const UINT64 *input)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -286,7 +286,7 @@ void KeccakPermutationOnWordsAfterXoring1152bits(UINT64 *state, const UINT64 *in
 #endif
 
 #ifdef ProvideFast1344
-void KeccakPermutationOnWordsAfterXoring1344bits(UINT64 *state, const UINT64 *input)
+static void KeccakPermutationOnWordsAfterXoring1344bits(UINT64 *state, const UINT64 *input)
 {
     declareABCDE
 #if (Unrolling != 24)
@@ -301,11 +301,11 @@ void KeccakPermutationOnWordsAfterXoring1344bits(UINT64 *state, const UINT64 *in
 }
 #endif
 
-void KeccakInitialize()
+static void KeccakInitialize()
 {
 }
 
-void KeccakInitializeState(unsigned char *state)
+static void KeccakInitializeState(unsigned char *state)
 {
     memset(state, 0, 200);
 #ifdef UseBebigokimisa
@@ -318,13 +318,14 @@ void KeccakInitializeState(unsigned char *state)
 #endif
 }
 
-void KeccakPermutation(unsigned char *state)
+static void KeccakPermutation(unsigned char *state)
 {
     // We assume the state is always stored as words
     KeccakPermutationOnWords((UINT64*)state);
 }
 
-void fromBytesToWord(UINT64 *word, const UINT8 *bytes)
+#if 0 // Unused in the Qt configuration
+static void fromBytesToWord(UINT64 *word, const UINT8 *bytes)
 {
     unsigned int i;
 
@@ -332,9 +333,10 @@ void fromBytesToWord(UINT64 *word, const UINT8 *bytes)
     for(i=0; i<(64/8); i++)
         *word |= (UINT64)(bytes[i]) << (8*i);
 }
+#endif
 
 #ifdef ProvideFast576
-void KeccakAbsorb576bits(unsigned char *state, const unsigned char *data)
+static void KeccakAbsorb576bits(unsigned char *state, const unsigned char *data)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     KeccakPermutationOnWordsAfterXoring576bits((UINT64*)state, (const UINT64*)data);
@@ -350,7 +352,7 @@ void KeccakAbsorb576bits(unsigned char *state, const unsigned char *data)
 #endif
 
 #ifdef ProvideFast832
-void KeccakAbsorb832bits(unsigned char *state, const unsigned char *data)
+static void KeccakAbsorb832bits(unsigned char *state, const unsigned char *data)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     KeccakPermutationOnWordsAfterXoring832bits((UINT64*)state, (const UINT64*)data);
@@ -366,7 +368,7 @@ void KeccakAbsorb832bits(unsigned char *state, const unsigned char *data)
 #endif
 
 #ifdef ProvideFast1024
-void KeccakAbsorb1024bits(unsigned char *state, const unsigned char *data)
+static void KeccakAbsorb1024bits(unsigned char *state, const unsigned char *data)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     KeccakPermutationOnWordsAfterXoring1024bits((UINT64*)state, (const UINT64*)data);
@@ -382,7 +384,7 @@ void KeccakAbsorb1024bits(unsigned char *state, const unsigned char *data)
 #endif
 
 #ifdef ProvideFast1088
-void KeccakAbsorb1088bits(unsigned char *state, const unsigned char *data)
+static void KeccakAbsorb1088bits(unsigned char *state, const unsigned char *data)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     KeccakPermutationOnWordsAfterXoring1088bits((UINT64*)state, (const UINT64*)data);
@@ -398,7 +400,7 @@ void KeccakAbsorb1088bits(unsigned char *state, const unsigned char *data)
 #endif
 
 #ifdef ProvideFast1152
-void KeccakAbsorb1152bits(unsigned char *state, const unsigned char *data)
+static void KeccakAbsorb1152bits(unsigned char *state, const unsigned char *data)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     KeccakPermutationOnWordsAfterXoring1152bits((UINT64*)state, (const UINT64*)data);
@@ -414,7 +416,7 @@ void KeccakAbsorb1152bits(unsigned char *state, const unsigned char *data)
 #endif
 
 #ifdef ProvideFast1344
-void KeccakAbsorb1344bits(unsigned char *state, const unsigned char *data)
+static void KeccakAbsorb1344bits(unsigned char *state, const unsigned char *data)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     KeccakPermutationOnWordsAfterXoring1344bits((UINT64*)state, (const UINT64*)data);
@@ -429,7 +431,7 @@ void KeccakAbsorb1344bits(unsigned char *state, const unsigned char *data)
 }
 #endif
 
-void KeccakAbsorb(unsigned char *state, const unsigned char *data, unsigned int laneCount)
+static void KeccakAbsorb(unsigned char *state, const unsigned char *data, unsigned int laneCount)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     KeccakPermutationOnWordsAfterXoring((UINT64*)state, (const UINT64*)data, laneCount);
@@ -443,16 +445,18 @@ void KeccakAbsorb(unsigned char *state, const unsigned char *data, unsigned int 
 #endif
 }
 
-void fromWordToBytes(UINT8 *bytes, const UINT64 word)
+#if 0 // Unused in the Qt configuration
+static void fromWordToBytes(UINT8 *bytes, const UINT64 word)
 {
     unsigned int i;
 
     for(i=0; i<(64/8); i++)
         bytes[i] = (word >> (8*i)) & 0xFF;
 }
+#endif 
 
 #ifdef ProvideFast1024
-void KeccakExtract1024bits(const unsigned char *state, unsigned char *data)
+static void KeccakExtract1024bits(const unsigned char *state, unsigned char *data)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     memcpy(data, state, 128);
@@ -471,7 +475,7 @@ void KeccakExtract1024bits(const unsigned char *state, unsigned char *data)
 }
 #endif
 
-void KeccakExtract(const unsigned char *state, unsigned char *data, unsigned int laneCount)
+static void KeccakExtract(const unsigned char *state, unsigned char *data, unsigned int laneCount)
 {
 #if (PLATFORM_BYTE_ORDER == IS_LITTLE_ENDIAN)
     memcpy(data, state, laneCount*8);

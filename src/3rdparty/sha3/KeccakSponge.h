@@ -47,7 +47,7 @@ ALIGN typedef struct spongeStateStruct {
   * @pre    One must have r+c=1600 and the rate a multiple of 64 bits in this implementation.
   * @return Zero if successful, 1 otherwise.
   */
-int InitSponge(spongeState *state, unsigned int rate, unsigned int capacity);
+static int InitSponge(spongeState *state, unsigned int rate, unsigned int capacity);
 /**
   * Function to give input data for the sponge function to absorb.
   * @param  state       Pointer to the state of the sponge function initialized by InitSponge().
@@ -60,7 +60,7 @@ int InitSponge(spongeState *state, unsigned int rate, unsigned int capacity);
   *         i.e., Squeeze() must not have been called before.
   * @return Zero if successful, 1 otherwise.
   */
-int Absorb(spongeState *state, const unsigned char *data, unsigned long long databitlen);
+static int Absorb(spongeState *state, const unsigned char *data, unsigned long long databitlen);
 /**
   * Function to squeeze output data from the sponge function.
   * If the sponge function was in the absorbing phase, this function 
@@ -71,6 +71,6 @@ int Absorb(spongeState *state, const unsigned char *data, unsigned long long dat
   *                     It must be a multiple of 8.
   * @return Zero if successful, 1 otherwise.
   */
-int Squeeze(spongeState *state, unsigned char *output, unsigned long long outputLength);
+static int Squeeze(spongeState *state, unsigned char *output, unsigned long long outputLength);
 
 #endif

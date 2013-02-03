@@ -148,7 +148,8 @@ SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
 HEADERS += tools/qharfbuzz_p.h
 
 INCLUDEPATH += ../3rdparty/md5 \
-               ../3rdparty/md4
+               ../3rdparty/md4 \
+               ../3rdparty/sha3
 
 # Note: libm should be present by default becaue this is C++
 !macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm

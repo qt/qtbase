@@ -12,10 +12,10 @@ http://creativecommons.org/publicdomain/zero/1.0/
 */
 
 #include <string.h>
-#include "KeccakNISTInterface.h"
+//#include "KeccakNISTInterface.h"
 #include "KeccakF-1600-interface.h"
 
-HashReturn Init(hashState *state, int hashbitlen)
+static HashReturn Init(hashState *state, int hashbitlen)
 {
     switch(hashbitlen) {
         case 0: // Default parameters, arbitrary length output
@@ -40,29 +40,29 @@ HashReturn Init(hashState *state, int hashbitlen)
     return SUCCESS;
 }
 
-HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen)
+static HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen)
 {
     if ((databitlen % 8) == 0)
-        return Absorb((spongeState*)state, data, databitlen);
+        return (HashReturn) Absorb((spongeState*)state, data, databitlen);
     else {
-        HashReturn ret = Absorb((spongeState*)state, data, databitlen - (databitlen % 8));
+        HashReturn ret = (HashReturn) Absorb((spongeState*)state, data, databitlen - (databitlen % 8));
         if (ret == SUCCESS) {
             unsigned char lastByte; 
             // Align the last partial byte to the least significant bits
             lastByte = data[databitlen/8] >> (8 - (databitlen % 8));
-            return Absorb((spongeState*)state, &lastByte, databitlen % 8);
+            return (HashReturn) Absorb((spongeState*)state, &lastByte, databitlen % 8);
         }
         else
             return ret;
     }
 }
 
-HashReturn Final(hashState *state, BitSequence *hashval)
+static HashReturn Final(hashState *state, BitSequence *hashval)
 {
-    return Squeeze(state, hashval, state->fixedOutputLength);
+    return (HashReturn) Squeeze(state, hashval, state->fixedOutputLength);
 }
 
-HashReturn Hash(int hashbitlen, const BitSequence *data, DataLength databitlen, BitSequence *hashval)
+static HashReturn Hash(int hashbitlen, const BitSequence *data, DataLength databitlen, BitSequence *hashval)
 {
     hashState state;
     HashReturn result;

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Richard J. Moore <rich@kde.org>.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -60,7 +61,11 @@ public:
         Sha224,
         Sha256,
         Sha384,
-        Sha512
+        Sha512,
+        Sha3_224,
+        Sha3_256,
+        Sha3_384,
+        Sha3_512
     };
 
     explicit QCryptographicHash(Algorithm method);

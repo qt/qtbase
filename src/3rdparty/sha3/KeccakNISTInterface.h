@@ -32,7 +32,7 @@ typedef spongeState hashState;
   * @pre    The value of hashbitlen must be one of 0, 224, 256, 384 and 512.
   * @return SUCCESS if successful, BAD_HASHLEN if the value of hashbitlen is incorrect.
   */
-HashReturn Init(hashState *state, int hashbitlen);
+static HashReturn Init(hashState *state, int hashbitlen);
 /**
   * Function to give input data for the sponge function to absorb.
   * @param  state       Pointer to the state of the sponge function initialized by Init().
@@ -43,7 +43,7 @@ HashReturn Init(hashState *state, int hashbitlen);
   * @pre    In the previous call to Absorb(), databitLen was a multiple of 8.
   * @return SUCCESS if successful, FAIL otherwise.
   */
-HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen);
+static HashReturn Update(hashState *state, const BitSequence *data, DataLength databitlen);
 /**
   * Function to squeeze output data from the sponge function.
   * If @a hashbitlen was not 0 in the call to Init(), the number of output bits is equal to @a hashbitlen.
@@ -52,7 +52,7 @@ HashReturn Update(hashState *state, const BitSequence *data, DataLength databitl
   * @param  hashval     Pointer to the buffer where to store the output data.
   * @return SUCCESS if successful, FAIL otherwise.
   */
-HashReturn Final(hashState *state, BitSequence *hashval);
+static HashReturn Final(hashState *state, BitSequence *hashval);
 /**
   * Function to compute a hash using the Keccak[r, c] sponge function.
   * The rate r and capacity c values are determined from @a hashbitlen.
@@ -65,6 +65,6 @@ HashReturn Final(hashState *state, BitSequence *hashval);
   * @pre    The value of hashbitlen must be one of 224, 256, 384 and 512.
   * @return SUCCESS if successful, BAD_HASHLEN if the value of hashbitlen is incorrect.
   */
-HashReturn Hash(int hashbitlen, const BitSequence *data, DataLength databitlen, BitSequence *hashval);
+static HashReturn Hash(int hashbitlen, const BitSequence *data, DataLength databitlen, BitSequence *hashval);
 
 #endif

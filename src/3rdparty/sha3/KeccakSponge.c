@@ -18,7 +18,7 @@ http://creativecommons.org/publicdomain/zero/1.0/
 #include "displayIntermediateValues.h"
 #endif
 
-int InitSponge(spongeState *state, unsigned int rate, unsigned int capacity)
+static int InitSponge(spongeState *state, unsigned int rate, unsigned int capacity)
 {
     if (rate+capacity != 1600)
         return 1;
@@ -37,7 +37,7 @@ int InitSponge(spongeState *state, unsigned int rate, unsigned int capacity)
     return 0;
 }
 
-void AbsorbQueue(spongeState *state)
+static void AbsorbQueue(spongeState *state)
 {
     // state->bitsInQueue is assumed to be equal to state->rate
     #ifdef KeccakReference
@@ -77,7 +77,7 @@ void AbsorbQueue(spongeState *state)
     state->bitsInQueue = 0;
 }
 
-int Absorb(spongeState *state, const unsigned char *data, unsigned long long databitlen)
+static int Absorb(spongeState *state, const unsigned char *data, unsigned long long databitlen)
 {
     unsigned long long i, j, wholeBlocks;
     unsigned int partialBlock, partialByte;
@@ -191,7 +191,7 @@ int Absorb(spongeState *state, const unsigned char *data, unsigned long long dat
     return 0;
 }
 
-void PadAndSwitchToSqueezingPhase(spongeState *state)
+static void PadAndSwitchToSqueezingPhase(spongeState *state)
 {
     // Note: the bits are numbered from 0=LSB to 7=MSB
     if (state->bitsInQueue + 1 == state->rate) {
@@ -226,7 +226,7 @@ void PadAndSwitchToSqueezingPhase(spongeState *state)
     state->squeezing = 1;
 }
 
-int Squeeze(spongeState *state, unsigned char *output, unsigned long long outputLength)
+static int Squeeze(spongeState *state, unsigned char *output, unsigned long long outputLength)
 {
     unsigned long long i;
     unsigned int partialBlock;
