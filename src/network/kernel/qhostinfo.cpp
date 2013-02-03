@@ -699,8 +699,8 @@ void Q_AUTOTEST_EXPORT qt_qhostinfo_enable_cache(bool e)
 }
 
 // cache for 60 seconds
-// cache 64 items
-QHostInfoCache::QHostInfoCache() : max_age(60), enabled(true), cache(64)
+// cache 128 items
+QHostInfoCache::QHostInfoCache() : max_age(60), enabled(true), cache(128)
 {
 #ifdef QT_QHOSTINFO_CACHE_DISABLED_BY_DEFAULT
     enabled = false;
