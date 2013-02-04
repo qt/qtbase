@@ -222,7 +222,6 @@ void QXcbConnection::updateScreens()
     // Delete any existing screens which are not in activeScreens
     for (int i = m_screens.count() - 1; i >= 0; --i) {
         if (!activeScreens.contains(m_screens[i])) {
-            ((QXcbIntegration*)QGuiApplicationPrivate::platformIntegration())->removeDefaultOpenGLContextInfo(m_screens[i]);
             delete m_screens[i];
             m_screens.removeAt(i);
         }
