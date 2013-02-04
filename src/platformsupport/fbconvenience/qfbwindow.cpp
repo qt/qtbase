@@ -43,6 +43,7 @@
 #include "qfbscreen_p.h"
 
 #include <QtGui/QScreen>
+#include <qpa/qwindowsysteminterface.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,7 +72,7 @@ void QFbWindow::setGeometry(const QRect &rect)
     mOldGeometry = geometry();
 
     platformScreen()->invalidateRectCache();
-    //### QWindowSystemInterface::handleGeometryChange(window(), rect);
+    QWindowSystemInterface::handleGeometryChange(window(), rect);
 
     QPlatformWindow::setGeometry(rect);
 }
