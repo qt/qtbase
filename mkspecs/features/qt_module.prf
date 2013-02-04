@@ -172,9 +172,8 @@ win32 {
 
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 
-# Provides useful info normally only contained in the internal .qmake.cache file
 qt_conf.name = qt_config
-qt_conf.variable = CONFIG
+qt_conf.variable = QT_CONFIG
 QMAKE_PKGCONFIG_VARIABLES += qt_conf
 
 load(qt_targets)
