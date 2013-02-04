@@ -2404,9 +2404,9 @@ uint QDateTime::toTime_t() const
     (Qt::UTC). On systems that do not support time zones this function
     will behave as if local time were Qt::UTC.
 
-    Note that there are possible values for \a msecs that lie outside the
-    valid range of QDateTime, both negative and positive. The behavior of
-    this function is undefined for those values.
+    Note that passing the minimum of \c qint64
+    (\c{std::numeric_limits<qint64>::min()}) to \a msecs will result in
+    undefined behavior.
 
     \sa toMSecsSinceEpoch(), setTime_t()
 */
@@ -4010,7 +4010,7 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
         time = QTime();
         return QDateTimePrivate::LocalUnknown;
     } else {
-        int deltaDays = fakeDate.daysTo(date);
+        qint64 deltaDays = fakeDate.daysTo(date);
         date = QDate(brokenDown->tm_year + 1900, brokenDown->tm_mon + 1, brokenDown->tm_mday);
         time = QTime(brokenDown->tm_hour, brokenDown->tm_min, brokenDown->tm_sec, time.msec());
         date = date.addDays(deltaDays);
@@ -4078,7 +4078,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
         date = QDate(1970, 1, 1);
         time = QTime();
     } else {
-        int deltaDays = fakeDate.daysTo(date);
+        qint64 deltaDays = fakeDate.daysTo(date);
         date = QDate(brokenDown->tm_year + 1900, brokenDown->tm_mon + 1, brokenDown->tm_mday);
         time = QTime(brokenDown->tm_hour, brokenDown->tm_min, brokenDown->tm_sec, time.msec());
         date = date.addDays(deltaDays);

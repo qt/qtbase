@@ -145,6 +145,8 @@ private:
     QDateTime invalidDateTime() const { return QDateTime(invalidDate(), invalidTime()); }
     QDate invalidDate() const { return QDate(); }
     QTime invalidTime() const { return QTime(-1, -1, -1); }
+    qint64 minJd() const { return QDateTimePrivate::minJd(); }
+    qint64 maxJd() const { return QDateTimePrivate::maxJd(); }
 };
 
 Q_DECLARE_METATYPE(Qt::TimeSpec)
@@ -462,14 +464,25 @@ void tst_QDateTime::setMSecsSinceEpoch_data()
             << (Q_INT64_C(123456) << 32)
             << QDateTime(QDate(18772, 8, 15), QTime(1, 8, 14, 976), Qt::UTC)
             << QDateTime(QDate(18772, 8, 15), QTime(3, 8, 14, 976));
-    QTest::newRow("min_date") // julian day 0 is an invalid date for QDate
+    QTest::newRow("old min (Tue Nov 25 00:00:00 -4714)")
             << Q_INT64_C(-210866716800000)
             << QDateTime(QDate::fromJulianDay(1), QTime(), Qt::UTC)
             << QDateTime(QDate::fromJulianDay(1), QTime(1, 0));
-    QTest::newRow("max_date") // technically jd is unsigned, but fromJulianDay takes int
+    QTest::newRow("old max (Tue Jun 3 21:59:59 5874898)")
             << Q_INT64_C(185331720376799999)
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(21, 59, 59, 999), Qt::UTC)
             << QDateTime(QDate::fromJulianDay(0x7fffffff), QTime(23, 59, 59, 999));
+    QTest::newRow("min")
+            // + 1 because, in the reference check below, calling addMSecs(qint64min)
+            // will internally apply unary minus to -qint64min, resulting in a
+            // positive value 1 too big for qint64max, causing an overflow.
+            << std::numeric_limits<qint64>::min() + 1
+            << QDateTime(QDate(-292275056, 5, 16), QTime(16, 47, 4, 193), Qt::UTC)
+            << QDateTime(QDate(-292275056, 5, 16), QTime(17, 47, 4, 193), Qt::LocalTime);
+    QTest::newRow("max")
+            << std::numeric_limits<qint64>::max()
+            << QDateTime(QDate(292278994, 8, 17), QTime(7, 12, 55, 807), Qt::UTC)
+            << QDateTime(QDate(292278994, 8, 17), QTime(9, 12, 55, 807), Qt::LocalTime);
 }
 
 void tst_QDateTime::setMSecsSinceEpoch()
@@ -821,6 +834,29 @@ void tst_QDateTime::toTimeSpec_data()
     QTest::newRow("winter4") << QDateTime(QDate(6000, 2, 29), utcTime, Qt::UTC)
                           << QDateTime(QDate(6000, 2, 29), localStandardTime, Qt::LocalTime);
 
+    // Test mktime boundaries (1970 - 2038) and adjustDate().
+    QTest::newRow("1969/12/31 23:00 UTC")
+        << QDateTime(QDate(1969, 12, 31), QTime(23, 0, 0), Qt::UTC)
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
+    QTest::newRow("2037/12/31 23:00 UTC")
+        << QDateTime(QDate(2037, 12, 31), QTime(23, 0, 0), Qt::UTC)
+        << QDateTime(QDate(2038, 1, 1), QTime(0, 0, 0), Qt::LocalTime);
+
+    QTest::newRow("-271821/4/20 00:00 UTC (JavaScript min date, start of day)")
+        << QDateTime(QDate(-271821, 4, 20), QTime(0, 0, 0), Qt::UTC)
+        << QDateTime(QDate(-271821, 4, 20), QTime(1, 0, 0), Qt::LocalTime);
+    QTest::newRow("-271821/4/20 23:00 UTC (JavaScript min date, end of day)")
+        << QDateTime(QDate(-271821, 4, 20), QTime(23, 0, 0), Qt::UTC)
+        << QDateTime(QDate(-271821, 4, 21), QTime(0, 0, 0), Qt::LocalTime);
+
+    QTest::newRow("QDate min")
+        << QDateTime(QDate::fromJulianDay(minJd()), QTime(0, 0, 0), Qt::UTC)
+        << QDateTime(QDate::fromJulianDay(minJd()), QTime(1, 0, 0), Qt::LocalTime);
+
+    QTest::newRow("QDate max")
+        << QDateTime(QDate::fromJulianDay(maxJd()), QTime(22, 59, 59), Qt::UTC)
+        << QDateTime(QDate::fromJulianDay(maxJd()), QTime(23, 59, 59), Qt::LocalTime);
+
     if (europeanTimeZone) {
         QTest::newRow("summer1") << QDateTime(QDate(2004, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(2004, 6, 30), localDaylightTime, Qt::LocalTime);
@@ -835,6 +871,14 @@ void tst_QDateTime::toTimeSpec_data()
 #endif
         QTest::newRow("summer3") << QDateTime(QDate(4000, 6, 30), utcTime, Qt::UTC)
                                  << QDateTime(QDate(4000, 6, 30), localDaylightTime, Qt::LocalTime);
+
+        QTest::newRow("275760/9/23 00:00 UTC (JavaScript max date, start of day)")
+            << QDateTime(QDate(275760, 9, 23), QTime(0, 0, 0), Qt::UTC)
+            << QDateTime(QDate(275760, 9, 23), QTime(2, 0, 0), Qt::LocalTime);
+
+        QTest::newRow("275760/9/23 22:00 UTC (JavaScript max date, end of day)")
+            << QDateTime(QDate(275760, 9, 23), QTime(22, 0, 0), Qt::UTC)
+            << QDateTime(QDate(275760, 9, 24), QTime(0, 0, 0), Qt::LocalTime);
     }
 
     QTest::newRow("msec") << QDateTime(QDate(4000, 6, 30), utcTime.addMSecs(1), Qt::UTC)
