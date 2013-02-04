@@ -54,7 +54,10 @@ HOST_BINS = $$[QT_HOST_BINS/raw]
 host_bins.name = host_bins
 host_bins.variable = HOST_BINS
 
-QMAKE_PKGCONFIG_VARIABLES += host_bins
+qt_conf.name = qt_config
+qt_conf.variable = QT_CONFIG
+
+QMAKE_PKGCONFIG_VARIABLES += host_bins qt_conf
 
 ctest_macros_file.input = $$PWD/Qt5CTestMacros.cmake
 ctest_macros_file.output = $$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake
