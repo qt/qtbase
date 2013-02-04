@@ -47,8 +47,40 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
+#include <QComboBox>
 #include <QTimer>
 #include <QDebug>
+
+// SVG color keyword names provided by the World Wide Web Consortium
+static inline QStringList svgColorNames()
+{
+    return QStringList()
+        << "aliceblue" << "antiquewhite" << "aqua" << "aquamarine" << "azure" << "beige" << "bisque"
+        << "black" << "blanchedalmond" << "blue" << "blueviolet" << "brown" << "burlywood" << "cadetblue"
+        << "chartreuse" << "chocolate" << "coral" << "cornflowerblue" << "cornsilk" << "crimson" << "cyan"
+        << "darkblue" << "darkcyan" << "darkgoldenrod" << "darkgray" << "darkgreen" << "darkgrey"
+        << "darkkhaki" << "darkmagenta" << "darkolivegreen" << "darkorange" << "darkorchid" << "darkred"
+        << "darksalmon" << "darkseagreen" << "darkslateblue" << "darkslategray" << "darkslategrey"
+        << "darkturquoise" << "darkviolet" << "deeppink" << "deepskyblue" << "dimgray" << "dimgrey"
+        << "dodgerblue" << "firebrick" << "floralwhite" << "forestgreen" << "fuchsia" << "gainsboro"
+        << "ghostwhite" << "gold" << "goldenrod" << "gray" << "grey" << "green" << "greenyellow"
+        << "honeydew" << "hotpink" << "indianred" << "indigo" << "ivory" << "khaki" << "lavender"
+        << "lavenderblush" << "lawngreen" << "lemonchiffon" << "lightblue" << "lightcoral" << "lightcyan"
+        << "lightgoldenrodyellow" << "lightgray" << "lightgreen" << "lightgrey" << "lightpink"
+        << "lightsalmon" << "lightseagreen" << "lightskyblue" << "lightslategray" << "lightslategrey"
+        << "lightsteelblue" << "lightyellow" << "lime" << "limegreen" << "linen" << "magenta"
+        << "maroon" << "mediumaquamarine" << "mediumblue" << "mediumorchid" << "mediumpurple"
+        << "mediumseagreen" << "mediumslateblue" << "mediumspringgreen" << "mediumturquoise"
+        << "mediumvioletred" << "midnightblue" << "mintcream" << "mistyrose" << "moccasin"
+        << "navajowhite" << "navy" << "oldlace" << "olive" << "olivedrab" << "orange" << "orangered"
+        << "orchid" << "palegoldenrod" << "palegreen" << "paleturquoise" << "palevioletred"
+        << "papayawhip" << "peachpuff" << "peru" << "pink" << "plum" << "powderblue" << "purple" << "red"
+        << "rosybrown" << "royalblue" << "saddlebrown" << "salmon" << "sandybrown" << "seagreen"
+        << "seashell" << "sienna" << "silver" << "skyblue" << "slateblue" << "slategray" << "slategrey"
+        << "snow" << "springgreen" << "steelblue" << "tan" << "teal" << "thistle" << "tomato"
+        << "turquoise" << "violet" << "wheat" << "white" << "whitesmoke" << "yellow" << "yellowgreen";
+}
 
 static inline QPushButton *addButton(const QString &description, QVBoxLayout *layout,
                                      QObject *receiver, const char *slotFunc)
@@ -59,8 +91,28 @@ static inline QPushButton *addButton(const QString &description, QVBoxLayout *la
     return button;
 }
 
+class ColorProxyModel : public QSortFilterProxyModel
+{
+public:
+    ColorProxyModel(QObject *parent = 0) : QSortFilterProxyModel(parent)
+    {
+    }
+
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const
+    {
+        if (role == Qt::DisplayRole) {
+            QString name = data(index, Qt::EditRole).toString();
+            return tr("%1 (%2)").arg(name, QColor(name).name());
+        }
+        if (role == Qt::DecorationRole)
+            return QColor(data(index, Qt::EditRole).toString());
+        return QSortFilterProxyModel::data(index, role);
+    }
+};
+
 ColorDialogPanel::ColorDialogPanel(QWidget *parent)
     : QWidget(parent)
+    , m_colorComboBox(new QComboBox)
     , m_showAlphaChannel(new QCheckBox(tr("Show alpha channel")))
     , m_noButtons(new QCheckBox(tr("Don't display OK/Cancel buttons")))
     , m_dontUseNativeDialog(new QCheckBox(tr("Don't use native dialog")))
@@ -71,7 +123,19 @@ ColorDialogPanel::ColorDialogPanel(QWidget *parent)
     optionsLayout->addWidget(m_showAlphaChannel);
     optionsLayout->addWidget(m_noButtons);
     optionsLayout->addWidget(m_dontUseNativeDialog);
-    optionsLayout->addStretch();
+
+    // Color
+    QGroupBox *colorGroupBox = new QGroupBox(tr("Color"), this);
+    QVBoxLayout *colorLayout = new QVBoxLayout(colorGroupBox);
+    colorLayout->addWidget(m_colorComboBox);
+    m_colorComboBox->addItems(svgColorNames());
+    m_colorComboBox->setEditable(true);
+
+    QAbstractItemModel *sourceModel = m_colorComboBox->model();
+    ColorProxyModel* proxyModel = new ColorProxyModel(m_colorComboBox);
+    proxyModel->setSourceModel(sourceModel);
+    sourceModel->setParent(proxyModel);
+    m_colorComboBox->setModel(proxyModel);
 
     // Buttons
     QGroupBox *buttonsGroupBox = new QGroupBox(tr("Show"));
@@ -88,9 +152,14 @@ ColorDialogPanel::ColorDialogPanel(QWidget *parent)
 
     // Main layout
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    mainLayout->addWidget(optionsGroupBox);
+    QVBoxLayout *leftLayout = new QVBoxLayout;
+    leftLayout->addWidget(optionsGroupBox);
+    leftLayout->addWidget(colorGroupBox);
+    leftLayout->addStretch();
+    mainLayout->addLayout(leftLayout);
     mainLayout->addWidget(buttonsGroupBox);
 
+    enableDeleteModalDialogButton();
     enableDeleteNonModalDialogButton();
     restoreDefaults();
 }
@@ -188,4 +257,5 @@ void ColorDialogPanel::applySettings(QColorDialog *d) const
     d->setOption(QColorDialog::ShowAlphaChannel, m_showAlphaChannel->isChecked());
     d->setOption(QColorDialog::NoButtons, m_noButtons->isChecked());
     d->setOption(QColorDialog::DontUseNativeDialog, m_dontUseNativeDialog->isChecked());
+    d->setCurrentColor(QColor(m_colorComboBox->itemData(m_colorComboBox->currentIndex(), Qt::EditRole).toString()));
 }

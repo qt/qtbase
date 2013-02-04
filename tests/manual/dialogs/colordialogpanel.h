@@ -45,6 +45,7 @@
 #include <QPointer>
 #include <QColorDialog>
 
+class QComboBox;
 class QCheckBox;
 class QPushButton;
 
@@ -71,6 +72,7 @@ private slots:
 private:
     void applySettings(QColorDialog *d) const;
 
+    QComboBox *m_colorComboBox;
     QCheckBox *m_showAlphaChannel;
     QCheckBox *m_noButtons;
     QCheckBox *m_dontUseNativeDialog;
