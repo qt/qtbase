@@ -386,13 +386,14 @@ static inline qreal qRadialDeterminant(qreal a, qreal b, qreal c)
     return (b * b) - (4 * a * c);
 }
 
+extern void (*qt_memfill32)(quint32 *dest, quint32 value, int count);
+
 template <class RadialFetchFunc> Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL qt_fetch_radial_gradient_template(uint *buffer, const Operator *op, const QSpanData *data,
                                                            int y, int x, int length)
 {
     // avoid division by zero
     if (qFuzzyIsNull(op->radial.a)) {
-        extern void (*qt_memfill32)(quint32 *dest, quint32 value, int count);
         qt_memfill32(buffer, 0, length);
         return buffer;
     }
@@ -696,7 +697,6 @@ void qt_memfill(T *dest, T value, int count);
 
 template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
 {
-    extern void (*qt_memfill32)(quint32 *dest, quint32 value, int count);
     qt_memfill32(dest, color, count);
 }
 
