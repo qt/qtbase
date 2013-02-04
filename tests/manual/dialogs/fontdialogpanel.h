@@ -39,48 +39,49 @@
 **
 ****************************************************************************/
 
-#include "filedialogpanel.h"
-#include "colordialogpanel.h"
-#include "fontdialogpanel.h"
+#ifndef FONTDIALOGPANEL_H
+#define FONTDIALOGPANEL_H
 
-#include <QMainWindow>
-#include <QApplication>
-#include <QMenuBar>
-#include <QTabWidget>
-#include <QMenu>
-#include <QAction>
-#include <QKeySequence>
+#include <QPointer>
+#include <QFontDialog>
 
-// Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
-// Compiles with Qt 4.8 and Qt 5.
+class QCheckBox;
+class QPushButton;
+class QFontComboBox;
+class QDoubleSpinBox;
 
-class MainWindow : public QMainWindow {
+class FontDialogPanel : public QWidget
+{
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit FontDialogPanel(QWidget *parent = 0);
+
+public slots:
+    void execModal();
+    void showModal();
+    void showNonModal();
+    void deleteNonModalDialog();
+    void deleteModalDialog();
+    void accepted();
+    void showAcceptedResult();
+    void restoreDefaults();
+
+private slots:
+    void enableDeleteNonModalDialogButton();
+    void enableDeleteModalDialogButton();
+
+private:
+    void applySettings(QFontDialog *d) const;
+
+    QFontComboBox *m_fontFamilyBox;
+    QDoubleSpinBox *m_fontSizeBox;
+    QCheckBox *m_noButtons;
+    QCheckBox *m_dontUseNativeDialog;
+    QPushButton *m_deleteNonModalDialogButton;
+    QPushButton *m_deleteModalDialogButton;
+    QString m_result;
+    QPointer<QFontDialog> m_modalDialog;
+    QPointer<QFontDialog> m_nonModalDialog;
 };
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
-{
-    setWindowTitle(tr("Dialogs Qt %1").arg(QLatin1String(QT_VERSION_STR)));
-    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
-    QAction *quitAction = fileMenu->addAction(tr("Quit"));
-    quitAction->setShortcut(QKeySequence(QKeySequence::Quit));
-    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    QTabWidget *tabWidget = new QTabWidget;
-    tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
-    tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
-    tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
-    setCentralWidget(tabWidget);
-}
-
-int main(int argc, char *argv[])
-{
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.move(500, 200);
-    w.show();
-    return a.exec();
-}
-
-#include "main.moc"
+#endif // FONTDIALOGPANEL_H
