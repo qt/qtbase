@@ -66,7 +66,7 @@ class QVariant;
 class QAbstractFileEngineIterator;
 class QAbstractFileEnginePrivate;
 
-class Q_AUTOTEST_EXPORT QAbstractFileEngine
+class Q_CORE_EXPORT QAbstractFileEngine
 {
 public:
     enum FileFlag {
@@ -210,7 +210,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractFileEngine::FileFlags)
 
-class Q_AUTOTEST_EXPORT QAbstractFileEngineHandler
+class Q_CORE_EXPORT QAbstractFileEngineHandler
 {
 public:
     QAbstractFileEngineHandler();
@@ -219,7 +219,7 @@ public:
 };
 
 class QAbstractFileEngineIteratorPrivate;
-class Q_AUTOTEST_EXPORT QAbstractFileEngineIterator
+class Q_CORE_EXPORT QAbstractFileEngineIterator
 {
 public:
     QAbstractFileEngineIterator(QDir::Filters filters, const QStringList &nameFilters);
