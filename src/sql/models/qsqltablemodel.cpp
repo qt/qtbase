@@ -839,7 +839,8 @@ bool QSqlTableModel::submit()
     user canceled editing the current row.
 
     Reverts the changes if the model's strategy is set to
-    OnRowChange. Does nothing for the other edit strategies.
+    OnRowChange or OnFieldChange. Does nothing for the OnManualSubmit
+    strategy.
 
     Use revertAll() to revert all pending changes for the
     OnManualSubmit strategy or revertRow() to revert a specific row.
@@ -849,7 +850,7 @@ bool QSqlTableModel::submit()
 void QSqlTableModel::revert()
 {
     Q_D(QSqlTableModel);
-    if (d->strategy == OnRowChange)
+    if (d->strategy == OnRowChange || d->strategy == OnFieldChange)
         revertAll();
 }
 

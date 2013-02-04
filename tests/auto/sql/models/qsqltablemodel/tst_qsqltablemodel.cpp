@@ -109,6 +109,8 @@ private slots:
     void removeInsertedRow();
     void removeInsertedRows_data() { generic_data(); }
     void removeInsertedRows();
+    void revert_data() { generic_data_with_strategies("QSQLITE"); }
+    void revert();
     void isDirty_data() { generic_data_with_strategies(); }
     void isDirty();
     void setFilter_data() { generic_data(); }
@@ -1366,6 +1368,83 @@ void tst_QSqlTableModel::removeInsertedRows()
     QCOMPARE(model.rowCount(), 2);
     QCOMPARE(model.data(model.index(0, 1)).toString(), QString("harry"));
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
+}
+
+void tst_QSqlTableModel::revert()
+{
+    QFETCH(QString, dbName);
+    QFETCH(int, submitpolicy_i);
+    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QString tblA = qTableName("revertATest", __FILE__);
+    QString tblB = qTableName("revertBTest", __FILE__);
+    QSqlQuery q(db);
+    q.exec("PRAGMA foreign_keys = ON;");
+    q.exec("DROP TABLE " + tblB);
+    q.exec("DROP TABLE " + tblA);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tblA + "(a INT PRIMARY KEY)"));
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tblB + "(b INT PRIMARY KEY, FOREIGN KEY (b) REFERENCES " + tblA + " (a))"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + tblA + "(a) VALUES (1)"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + tblB + "(b) VALUES (1)"));
+    if (q.exec("UPDATE " + tblA + " SET a = -1"))
+        QSKIP("database does not enforce foreign key constraints, skipping test");
+
+    QSqlTableModel model(0, db);
+    model.setTable(tblA);
+    model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(submitpolicy);
+
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 1);
+    QFAIL_SQL(model, isDirty());
+
+    // don't crash if there is no change
+    model.revert();
+
+    // UPDATE
+    // invalid value makes submit fail leaving pending update in cache
+    const QModelIndex idx = model.index(0, 0);
+    if (submitpolicy == QSqlTableModel::OnFieldChange)
+        QFAIL_SQL(model, setData(idx, int(-1)));
+    else
+        QVERIFY_SQL(model, setData(idx, int(-1)));
+    QVERIFY_SQL(model, isDirty(idx));
+    model.revert();
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QFAIL_SQL(model, isDirty(idx));
+    else
+        QVERIFY_SQL(model, isDirty(idx));
+
+    // INSERT
+    QVERIFY_SQL(model, select());
+    // insertRow() does not submit leaving pending insert in cache
+    QVERIFY_SQL(model, insertRow(0));
+    QCOMPARE(model.rowCount(), 2);
+    QVERIFY_SQL(model, isDirty());
+    model.revert();
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QFAIL_SQL(model, isDirty());
+    else
+        QVERIFY_SQL(model, isDirty());
+
+    // DELETE
+    QVERIFY_SQL(model, select());
+    // foreign key makes submit fail leaving pending delete in cache
+    if (submitpolicy == QSqlTableModel::OnManualSubmit)
+        QVERIFY_SQL(model, removeRow(0));
+    else
+        QFAIL_SQL(model, removeRow(0));
+    QVERIFY_SQL(model, isDirty());
+    model.revert();
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QFAIL_SQL(model, isDirty());
+    else
+        QVERIFY_SQL(model, isDirty());
+
+    q.exec("DROP TABLE " + tblB);
+    q.exec("DROP TABLE " + tblA);
 }
 
 void tst_QSqlTableModel::isDirty()
