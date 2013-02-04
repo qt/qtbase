@@ -45,6 +45,7 @@
 #include <qwindow.h>
 #include <qcolor.h>
 #include <qdebug.h>
+#include <qfont.h>
 
 #include <private/qguiapplication_p.h>
 
@@ -52,6 +53,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
+#include <pango/pango.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -470,6 +472,136 @@ void QGtk2FileDialogHelper::setNameFilters(const QStringList& filters)
         _filters.insert(filter, gtkFilter);
         _filterNames.insert(gtkFilter, filter);
     }
+}
+
+QGtk2FontDialogHelper::QGtk2FontDialogHelper()
+{
+    d.reset(new QGtk2Dialog(gtk_font_selection_dialog_new("")));
+    connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
+    connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
+}
+
+QGtk2FontDialogHelper::~QGtk2FontDialogHelper()
+{
+}
+
+bool QGtk2FontDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
+{
+    applyOptions();
+    return d->show(flags, modality, parent);
+}
+
+void QGtk2FontDialogHelper::exec()
+{
+    d->exec();
+}
+
+void QGtk2FontDialogHelper::hide()
+{
+    d->hide();
+}
+
+static QString qt_fontToString(const QFont& font)
+{
+    PangoFontDescription *desc = pango_font_description_new();
+    pango_font_description_set_size(desc, font.pointSizeF() * PANGO_SCALE);
+    pango_font_description_set_family(desc, font.family().toUtf8());
+
+    int weight = font.weight();
+    if (weight >= QFont::Black)
+        pango_font_description_set_weight(desc, PANGO_WEIGHT_HEAVY);
+    else if (weight >= QFont::Bold)
+        pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+    else if (weight >= QFont::DemiBold)
+        pango_font_description_set_weight(desc, PANGO_WEIGHT_SEMIBOLD);
+    else if (weight >= QFont::Normal)
+        pango_font_description_set_weight(desc, PANGO_WEIGHT_NORMAL);
+    else
+        pango_font_description_set_weight(desc, PANGO_WEIGHT_LIGHT);
+
+    int style = font.style();
+    if (style == QFont::StyleItalic)
+        pango_font_description_set_style(desc, PANGO_STYLE_ITALIC);
+    else if (style == QFont::StyleOblique)
+        pango_font_description_set_style(desc, PANGO_STYLE_OBLIQUE);
+    else
+        pango_font_description_set_style(desc, PANGO_STYLE_NORMAL);
+
+    char *str = pango_font_description_to_string(desc);
+    QString name = QString::fromUtf8(str);
+    pango_font_description_free(desc);
+    g_free(str);
+    return name;
+}
+
+static QFont qt_fontFromString(const QString &name)
+{
+    QFont font;
+    PangoFontDescription* desc = pango_font_description_from_string(name.toUtf8());
+    font.setPointSizeF(static_cast<float>(pango_font_description_get_size(desc)) / PANGO_SCALE);
+
+    QString family = QString::fromUtf8(pango_font_description_get_family(desc));
+    if (!family.isEmpty())
+        font.setFamily(family);
+
+    int weight = pango_font_description_get_weight(desc);
+    if (weight >= PANGO_WEIGHT_HEAVY)
+        font.setWeight(QFont::Black);
+    else if (weight >= PANGO_WEIGHT_BOLD)
+        font.setWeight(QFont::Bold);
+    else if (weight >= PANGO_WEIGHT_SEMIBOLD)
+        font.setWeight(QFont::DemiBold);
+    else if (weight >= PANGO_WEIGHT_NORMAL)
+        font.setWeight(QFont::Normal);
+    else
+        font.setWeight(QFont::Light);
+
+    PangoStyle style = pango_font_description_get_style(desc);
+    if (style == PANGO_STYLE_ITALIC)
+        font.setStyle(QFont::StyleItalic);
+    else if (style == PANGO_STYLE_OBLIQUE)
+        font.setStyle(QFont::StyleOblique);
+    else
+        font.setStyle(QFont::StyleNormal);
+
+    pango_font_description_free(desc);
+    return font;
+}
+
+void QGtk2FontDialogHelper::setCurrentFont(const QFont &font)
+{
+    GtkFontSelectionDialog *gtkDialog = GTK_FONT_SELECTION_DIALOG(d->gtkDialog());
+    gtk_font_selection_dialog_set_font_name(gtkDialog, qt_fontToString(font).toUtf8());
+}
+
+QFont QGtk2FontDialogHelper::currentFont() const
+{
+    GtkFontSelectionDialog *gtkDialog = GTK_FONT_SELECTION_DIALOG(d->gtkDialog());
+    gchar *name = gtk_font_selection_dialog_get_font_name(gtkDialog);
+    QFont font = qt_fontFromString(QString::fromUtf8(name));
+    g_free(name);
+    return font;
+}
+
+void QGtk2FontDialogHelper::onAccepted()
+{
+    emit accept();
+    emit fontSelected(currentFont());
+}
+
+void QGtk2FontDialogHelper::applyOptions()
+{
+    GtkDialog *gtkDialog = d->gtkDialog();
+    const QSharedPointer<QFontDialogOptions> &opts = options();
+
+    gtk_window_set_title(GTK_WINDOW(gtkDialog), opts->windowTitle().toUtf8());
+
+    GtkWidget *okButton = gtk_font_selection_dialog_get_ok_button(GTK_FONT_SELECTION_DIALOG(gtkDialog));
+    GtkWidget *cancelButton = gtk_font_selection_dialog_get_cancel_button(GTK_FONT_SELECTION_DIALOG(gtkDialog));
+    if (okButton)
+        gtk_widget_set_visible(okButton, !options()->testOption(QFontDialogOptions::NoButtons));
+    if (cancelButton)
+        gtk_widget_set_visible(cancelButton, !options()->testOption(QFontDialogOptions::NoButtons));
 }
 
 QT_END_NAMESPACE

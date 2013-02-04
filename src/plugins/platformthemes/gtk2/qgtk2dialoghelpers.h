@@ -114,6 +114,30 @@ private:
     mutable QScopedPointer<QGtk2Dialog> d;
 };
 
+class QGtk2FontDialogHelper : public QPlatformFontDialogHelper
+{
+    Q_OBJECT
+
+public:
+    QGtk2FontDialogHelper();
+    ~QGtk2FontDialogHelper();
+
+    virtual bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
+    virtual void exec();
+    virtual void hide();
+
+    virtual void setCurrentFont(const QFont &font);
+    virtual QFont currentFont() const;
+
+private Q_SLOTS:
+    void onAccepted();
+
+private:
+    void applyOptions();
+
+    mutable QScopedPointer<QGtk2Dialog> d;
+};
+
 QT_END_NAMESPACE
 
 #endif // QGTK2DIALOGHELPERS_P_H
