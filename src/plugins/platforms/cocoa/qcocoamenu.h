@@ -75,6 +75,8 @@ public:
 
     void syncModalState(bool modal);
 
+    virtual void setIcon(const QIcon &icon) { Q_UNUSED(icon) }
+
     void setText(const QString &text);
     void setMinimumWidth(int width);
     void setFont(const QFont &font);

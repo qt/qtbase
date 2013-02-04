@@ -74,6 +74,7 @@ public:
     void setFont(const QFont &font);
     void setRole(MenuRole role);
     void setShortcut(const QKeySequence& shortcut);
+    void setCheckable(bool checkable) { Q_UNUSED(checkable) }
     void setChecked(bool isChecked);
     void setEnabled(bool isEnabled);
 
