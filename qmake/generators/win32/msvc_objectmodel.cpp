@@ -603,9 +603,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
             CallingConvention = callConventionFastCall;
             break;
         case 's':
-            // Warning: following [num] is not used,
-            // were should we put it?
-            BufferSecurityCheck = _True;
+            AdditionalOptions += option;
             break;
         case 'y':
             EnableFunctionLevelLinking = _True;
