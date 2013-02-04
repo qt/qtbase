@@ -59,7 +59,9 @@ static QTimeZonePrivate *newBackendTimeZone()
     return new QUtcTimeZonePrivate();
 #endif // QT_USE_ICU
 #else
-#if defined Q_OS_UNIX && !defined Q_OS_MAC
+#if defined Q_OS_MAC
+    return new QMacTimeZonePrivate();
+#elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate();
 #elif defined QT_USE_ICU
     return new QIcuTimeZonePrivate();
@@ -79,7 +81,9 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &olsenId)
     return new QUtcTimeZonePrivate(olsenId);
 #endif // QT_USE_ICU
 #else
-#if defined Q_OS_UNIX && !defined Q_OS_MAC
+#if defined Q_OS_MAC
+    return new QMacTimeZonePrivate(olsenId);
+#elif defined Q_OS_UNIX
     return new QTzTimeZonePrivate(olsenId);
 #elif defined QT_USE_ICU
     return new QIcuTimeZonePrivate(olsenId);

@@ -61,6 +61,14 @@
 #include <unicode/ucal.h>
 #endif // QT_USE_ICU
 
+#ifdef Q_OS_MAC
+#ifdef __OBJC__
+@class NSTimeZone;
+#else
+class NSTimeZone;
+#endif // __OBJC__
+#endif // Q_OS_MAC
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QTimeZonePrivate : public QSharedData
@@ -305,6 +313,49 @@ private:
     QByteArray m_posixRule;
 };
 #endif // Q_OS_UNIX
+
+#ifdef Q_OS_MAC
+class Q_AUTOTEST_EXPORT QMacTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+{
+public:
+    // Create default time zone
+    QMacTimeZonePrivate();
+    // Create named time zone
+    QMacTimeZonePrivate(const QByteArray &olsenId);
+    QMacTimeZonePrivate(const QMacTimeZonePrivate &other);
+    ~QMacTimeZonePrivate();
+
+    QTimeZonePrivate *clone();
+
+    QString comment() const Q_DECL_OVERRIDE;
+
+    QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
+                        const QLocale &locale) const Q_DECL_OVERRIDE;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasDaylightTime() const Q_DECL_OVERRIDE;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasTransitions() const Q_DECL_OVERRIDE;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+
+    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+
+private:
+    void init(const QByteArray &zoneId);
+
+    NSTimeZone *m_nstz;
+};
+#endif // Q_OS_MAC
 
 QT_END_NAMESPACE
 

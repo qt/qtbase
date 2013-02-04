@@ -116,6 +116,7 @@ SOURCES += \
 !nacl:mac: {
     SOURCES += tools/qelapsedtimer_mac.cpp
     OBJECTIVE_SOURCES += tools/qlocale_mac.mm \
+                         tools/qtimezoneprivate_mac.mm \
                          tools/qstring_mac.mm
 }
 else:blackberry {
