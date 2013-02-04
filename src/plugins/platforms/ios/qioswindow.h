@@ -65,6 +65,7 @@ public:
     void setGeometry(const QRect &rect);
 
     void setWindowState(Qt::WindowState state);
+    void setParent(const QPlatformWindow *window);
     void handleContentOrientationChange(Qt::ScreenOrientation orientation);
     void setVisible(bool visible);
 

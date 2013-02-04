@@ -324,9 +324,7 @@ QIOSWindow::QIOSWindow(QWindow *window)
     , m_windowLevel(0)
     , m_devicePixelRatio(1.0)
 {
-    if (isQtApplication())
-        [rootViewController().view addSubview:m_view];
-
+    setParent(parent());
     setWindowState(window->windowState());
 
     // Retina support: get screen scale factor and set it in the content view.
@@ -421,6 +419,16 @@ void QIOSWindow::setWindowState(Qt::WindowState state)
         m_view.frame = toCGRect(m_requestedGeometry);
         m_view.autoresizingMask = UIViewAutoresizingNone;
         break;
+    }
+}
+
+void QIOSWindow::setParent(const QPlatformWindow *parentWindow)
+{
+    if (parentWindow) {
+        UIView *parentView = reinterpret_cast<UIView *>(parentWindow->winId());
+        [parentView addSubview:m_view];
+    } else if (isQtApplication()) {
+        [rootViewController().view addSubview:m_view];
     }
 }
 
