@@ -164,6 +164,9 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     int id = theIdCounter.fetchAndAddRelaxed(1); // generate unique ID
 
     if (name.isEmpty()) {
+        if (!receiver)
+            return -1;
+
         QHostInfo hostInfo(id);
         hostInfo.setError(QHostInfo::HostNotFound);
         hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
@@ -183,6 +186,9 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
             bool valid = false;
             QHostInfo info = manager->cache.get(name, &valid);
             if (valid) {
+                if (!receiver)
+                    return -1;
+
                 info.setLookupId(id);
                 QHostInfoResult result;
                 QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
@@ -193,7 +199,8 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
 
         // cache is not enabled or it was not in the cache, do normal lookup
         QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id);
-        QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
+        if (receiver)
+            QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(runnable);
     }
     return id;
