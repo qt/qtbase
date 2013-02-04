@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
+extern QImage qt_gl_read_frame_buffer(const QSize&, bool, bool);
 
 #define QGL_FUNC_CONTEXT const QGLContext *ctx = QGLContext::currentContext();
 #define QGL_FUNCP_CONTEXT const QGLContext *ctx = QGLContext::currentContext();
@@ -1081,7 +1081,7 @@ QImage QGLFramebufferObject::toImage() const
     if (!d->valid)
         return QImage();
 
-    // qt_gl_read_framebuffer doesn't work on a multisample FBO
+    // qt_gl_read_frame_buffer doesn't work on a multisample FBO
     if (format().samples() != 0) {
         QGLFramebufferObject temp(size(), QGLFramebufferObjectFormat());
 
@@ -1094,7 +1094,7 @@ QImage QGLFramebufferObject::toImage() const
     bool wasBound = isBound();
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->bind();
-    QImage image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat() != GL_RGB, true);
+    QImage image = qt_gl_read_frame_buffer(d->size, format().internalTextureFormat() != GL_RGB, true);
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->release();
 
