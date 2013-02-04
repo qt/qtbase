@@ -663,7 +663,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         // unsuitable proxies
         QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
                                   Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
-                                  Q_ARG(QString, q->tr("No suitable proxy found")));
+                                  Q_ARG(QString, QNetworkReplyHttpImpl::tr("No suitable proxy found")));
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
     }
