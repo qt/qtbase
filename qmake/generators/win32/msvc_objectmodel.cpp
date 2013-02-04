@@ -311,7 +311,7 @@ VCCLCompilerTool::VCCLCompilerTool()
     :        AssemblerOutput(asmListingNone),
         BasicRuntimeChecks(runtimeBasicCheckNone),
         BrowseInformation(brInfoNone),
-        BufferSecurityCheck(_False),
+        BufferSecurityCheck(unset),
         CallingConvention(callConventionDefault),
         CompileAs(compileAsDefault),
         CompileAsManaged(managedDefault),
