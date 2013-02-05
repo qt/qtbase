@@ -373,17 +373,18 @@ inline void QLibraryStore::cleanup()
     for (; it != data->libraryMap.end(); ++it) {
         QLibraryPrivate *lib = it.value();
         if (lib->libraryRefCount.load() == 1) {
-            Q_ASSERT(lib->pHnd);
-            Q_ASSERT(lib->libraryUnloadCount.load() > 0);
-            lib->libraryUnloadCount.store(1);
+            if (lib->libraryUnloadCount.load() > 0) {
+                Q_ASSERT(lib->pHnd);
+                lib->libraryUnloadCount.store(1);
 #ifdef __GLIBC__
-            // glibc has a bug in unloading from global destructors
-            // see https://bugzilla.novell.com/show_bug.cgi?id=622977
-            // and http://sourceware.org/bugzilla/show_bug.cgi?id=11941
-            lib->unload(QLibraryPrivate::NoUnloadSys);
+                // glibc has a bug in unloading from global destructors
+                // see https://bugzilla.novell.com/show_bug.cgi?id=622977
+                // and http://sourceware.org/bugzilla/show_bug.cgi?id=11941
+                lib->unload(QLibraryPrivate::NoUnloadSys);
 #else
-            lib->unload();
+                lib->unload();
 #endif
+            }
             delete lib;
             it.value() = 0;
         }
