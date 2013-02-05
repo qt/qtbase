@@ -49,7 +49,8 @@
 
 #include "qcocoaglcontext.h"
 #include "qnsview.h"
-class QT_PREPEND_NAMESPACE(QCocoaWindow);
+
+QT_FORWARD_DECLARE_CLASS(QCocoaWindow)
 
 @interface QNSWindow : NSWindow {
     @public QCocoaWindow *m_cocoaPlatformWindow;
