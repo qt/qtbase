@@ -610,14 +610,14 @@ void QNetworkReplyHttpImplPrivate::postRequest()
     if (synchronous) {
         // A synchronous HTTP request uses its own thread
         thread = new QThread();
-        thread->setObjectName(QStringLiteral("httpReply"));
+        thread->setObjectName(QStringLiteral("Qt HTTP synchronous thread"));
         QObject::connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
         thread->start();
     } else if (!managerPrivate->httpThread) {
         // We use the manager-global thread.
         // At some point we could switch to having multiple threads if it makes sense.
         managerPrivate->httpThread = new QThread();
-        managerPrivate->httpThread->setObjectName(QStringLiteral("httpThread"));
+        managerPrivate->httpThread->setObjectName(QStringLiteral("Qt HTTP thread"));
         managerPrivate->httpThread->start();
 
         thread = managerPrivate->httpThread;
