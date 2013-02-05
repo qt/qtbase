@@ -5985,10 +5985,11 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 
     switch (ct) {
     case QStyle::CT_SpinBox:
-         // hack to work around horrible sizeHint() code in QAbstractSpinBox
+        // hack to work around horrible sizeHint() code in QAbstractSpinBox
+        sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
         sz.setHeight(sz.height() - 3);
         break;
-	case QStyle::CT_TabWidget:
+    case QStyle::CT_TabWidget:
         // the size between the pane and the "contentsRect" (+4,+4)
         // (the "contentsRect" is on the inside of the pane)
         sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);

@@ -4808,6 +4808,16 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                       }
         break;
 #endif // QT_NO_ITEMVIEWS
+#ifndef QT_NO_SPINBOX
+    case CT_SpinBox:
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            // Add button + frame widths
+            int buttonWidth = 20;
+            int fw = vopt->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, vopt, widget) : 0;
+            sz += QSize(buttonWidth + 2*fw, 2*fw);
+        }
+        break;
+#endif
     case CT_ScrollBar:
     case CT_MenuBar:
     case CT_Menu:

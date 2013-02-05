@@ -3910,7 +3910,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
         break;
     case CT_SpinBox:
         // QSpinBox does some nasty things that depends on CT_LineEdit
-        newSize = size + QSize(0, -d->gtk_widget_get_style(d->gtkWidget("GtkSpinButton"))->ythickness * 2);
+        newSize = newSize + QSize(0, -d->gtk_widget_get_style(d->gtkWidget("GtkSpinButton"))->ythickness * 2);
         break;
     case CT_RadioButton:
     case CT_CheckBox:
