@@ -64,6 +64,7 @@ private slots:
 #endif
 
     void qMessagePattern();
+    void qMessagePatternIf();
 
 private:
     QString m_appDir;
@@ -700,6 +701,69 @@ void tst_qmessagehandler::qMessagePattern()
     output.replace("\r\n", "\n");
 #endif
     QCOMPARE(QString::fromLatin1(output), QString::fromLatin1(expected));
+}
+
+void tst_qmessagehandler::qMessagePatternIf()
+{
+    QProcess process;
+    const QString appExe = m_appDir + "/app";
+
+    QStringList environment = QProcess::systemEnvironment();
+    environment.prepend("QT_MESSAGE_PATTERN=\"[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{message}\"");
+    process.setEnvironment(environment);
+    process.start(appExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
+    process.waitForFinished();
+
+    QByteArray output = process.readAllStandardError();
+    //    qDebug() << output;
+    QVERIFY(!output.isEmpty());
+    QVERIFY(!output.contains("QT_MESSAGE_PATTERN"));
+
+    QVERIFY(output.contains("[D] static constructor"));
+    //  we can't be sure whether the QT_MESSAGE_PATTERN is already destructed
+    QVERIFY(output.contains("static destructor"));
+    QVERIFY(output.contains("[D] qDebug"));
+    QVERIFY(output.contains("[W] qWarning"));
+    QVERIFY(output.contains("[C] qCritical"));
+    QVERIFY(output.contains("[D] qDebug2"));
+
+    //
+    // Tests some errors
+    //
+    environment = QProcess::systemEnvironment();
+    environment.prepend("QT_MESSAGE_PATTERN=\"PREFIX: %{unknown} %{endif}  %{if-warning}\"");
+    process.setEnvironment(environment);
+
+    process.start(appExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
+    process.waitForFinished();
+
+    output = process.readAllStandardError();
+    //     qDebug() << output;
+    QVERIFY(!output.isEmpty());
+    QVERIFY(output.contains("QT_MESSAGE_PATTERN: Unknown placeholder %{unknown}"));
+    QVERIFY(output.contains("QT_MESSAGE_PATTERN: %{endif} without an %{if-*}"));
+    QVERIFY(output.contains("QT_MESSAGE_PATTERN: missing %{endif}"));
+
+
+    environment = QProcess::systemEnvironment();
+    environment.prepend("QT_MESSAGE_PATTERN=\"A %{if-debug}DEBUG%{if-warning}WARNING%{endif} %{message}  \"");
+    process.setEnvironment(environment);
+
+    process.start(appExe);
+    QVERIFY2(process.waitForStarted(), qPrintable(
+        QString::fromLatin1("Could not start %1: %2").arg(appExe, process.errorString())));
+    process.waitForFinished();
+
+    output = process.readAllStandardError();
+    //     qDebug() << output;
+    QVERIFY(!output.isEmpty());
+    QVERIFY(output.contains("QT_MESSAGE_PATTERN: %{if-*} cannot be nested"));
+    QVERIFY(output.contains("A DEBUG qDebug"));
+    QVERIFY(output.contains("A  qWarning"));
 }
 
 QTEST_MAIN(tst_qmessagehandler)
