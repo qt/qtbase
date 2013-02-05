@@ -532,6 +532,9 @@ struct QMetaTypeId2
     static inline Q_DECL_CONSTEXPR int qt_metatype_id() { return QMetaTypeId<T>::qt_metatype_id(); }
 };
 
+template <typename T>
+struct QMetaTypeId2<const T&> : QMetaTypeId2<T> {};
+
 namespace QtPrivate {
     template <typename T, bool Defined = QMetaTypeId2<T>::Defined>
     struct QMetaTypeIdHelper {

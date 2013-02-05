@@ -110,6 +110,7 @@ private slots:
     void saveAndLoadCustom();
     void metaObject();
     void constexprMetaTypeIds();
+    void constRefs();
 };
 
 struct Foo { int i; };
@@ -1759,6 +1760,17 @@ void tst_QMetaType::constexprMetaTypeIds()
     Q_UNUSED(metaType);
 #else
     QSKIP("The test needs a compiler supporting constexpr");
+#endif
+}
+
+void tst_QMetaType::constRefs()
+{
+    QCOMPARE(::qMetaTypeId<const int &>(), ::qMetaTypeId<int>());
+    QCOMPARE(::qMetaTypeId<const QString &>(), ::qMetaTypeId<QString>());
+    QCOMPARE(::qMetaTypeId<const CustomMovable &>(), ::qMetaTypeId<CustomMovable>());
+    QCOMPARE(::qMetaTypeId<const QList<CustomMovable> &>(), ::qMetaTypeId<QList<CustomMovable> >());
+#if defined(Q_COMPILER_CONSTEXPR)
+    Q_STATIC_ASSERT(::qMetaTypeId<const int &>() == ::qMetaTypeId<int>());
 #endif
 }
 

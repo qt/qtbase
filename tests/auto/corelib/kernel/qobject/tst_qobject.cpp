@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1446,9 +1447,11 @@ public:
 
 public slots:
     void slot1(CustomType ct);
+    void slot2(const QList<CustomType> &ct);
 
 signals:
     void signal1(CustomType ct);
+    void signal2(const QList<CustomType> &ct);
 
 public:
     CustomType received;
@@ -1457,6 +1460,8 @@ public:
 void QCustomTypeChecker::slot1(CustomType ct)
 { received = ct; }
 
+void QCustomTypeChecker::slot2(const QList< CustomType >& ct)
+{ received = ct[0]; }
 
 void tst_QObject::customTypes()
 {
@@ -4667,6 +4672,21 @@ void tst_QObject::customTypesPointer()
         QCOMPARE(qRegisterMetaType<CustomType>("CustomType"), idx);
         QCOMPARE(QMetaType::type("CustomType"), idx);
         QVERIFY(QMetaType::isRegistered(idx));
+
+        // Test auto registered type  (QList<CustomType>)
+        QList<CustomType> list;
+        QCOMPARE(instanceCount, 4);
+        list.append(t1);
+        QCOMPARE(instanceCount, 5);
+        QVERIFY(connect(&checker, &QCustomTypeChecker::signal2,
+                        &checker, &QCustomTypeChecker::slot2, Qt::QueuedConnection));
+        emit checker.signal2(list);
+        QCOMPARE(instanceCount, 5); //because the list is implicitly shared.
+        list.clear();
+        QCOMPARE(instanceCount, 5);
+        QCoreApplication::processEvents();
+        QCOMPARE(checker.received.value(), t1.value());
+        QCOMPARE(instanceCount, 4);
     }
     QCOMPARE(instanceCount, 3);
 }
