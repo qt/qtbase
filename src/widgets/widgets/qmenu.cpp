@@ -2840,7 +2840,7 @@ QMenu::timerEvent(QTimerEvent *e)
     }
 }
 
-void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
+static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
 {
     item->setText(action->text());
     item->setIsSeparator(action->isSeparator());
@@ -2848,6 +2848,7 @@ void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
         item->setIcon(action->icon());
     item->setVisible(action->isVisible());
     item->setShortcut(action->shortcut());
+    item->setCheckable(action->isCheckable());
     item->setChecked(action->isChecked());
     item->setFont(action->font());
     item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
