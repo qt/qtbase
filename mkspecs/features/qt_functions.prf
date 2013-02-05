@@ -195,7 +195,6 @@ defineTest(qtAddRpathLink) {
     for(dep, privdep): \
         rpaths += $$eval(QT.$${dep}.libs)
     QMAKE_RPATHLINKDIR *= $$unique(rpaths)
-    QMAKE_RPATHLINKDIR -= $$QMAKE_RPATHDIR   # -rpath implies -rpath-link
     export(QMAKE_RPATHLINKDIR)
 }
 
