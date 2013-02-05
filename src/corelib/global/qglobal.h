@@ -151,6 +151,7 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
+// ### Qt6: remove me.
 #define QT_BEGIN_HEADER
 #define QT_END_HEADER
 
