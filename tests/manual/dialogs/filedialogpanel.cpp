@@ -228,6 +228,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     gridLayout->addWidget(labelsGroupBox, 1, 0);
     gridLayout->addWidget(buttonsGroupBox, 1, 1);
 
+    enableDeleteModalDialogButton();
     enableDeleteNonModalDialogButton();
     restoreDefaults();
 }
@@ -251,6 +252,7 @@ void FileDialogPanel::showModal()
         m_modalDialog->setWindowTitle(tr("Modal File Dialog #%1 Qt %2")
                                       .arg(++n)
                                       .arg(QLatin1String(QT_VERSION_STR)));
+        enableDeleteModalDialogButton();
     }
     applySettings(m_modalDialog);
     m_modalDialog->show();
