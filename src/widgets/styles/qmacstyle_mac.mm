@@ -4565,7 +4565,7 @@ QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         break;
     case SE_LineEditContents:
         rect = QCommonStyle::subElementRect(sr, opt, widget);
-        if(widget->parentWidget() && qobject_cast<const QComboBox*>(widget->parentWidget()))
+        if (widget && qobject_cast<const QComboBox*>(widget->parentWidget()))
             rect.adjust(-1, -2, 0, 0);
         else
             rect.adjust(-1, -1, 0, +1);
