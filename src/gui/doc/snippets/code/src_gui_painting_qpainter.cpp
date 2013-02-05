@@ -213,7 +213,7 @@ painter.drawPixmap(target, image, source);
 
 //! [17]
 QPainter painter(this);
-painter.drawText(rect, Qt::AlignCenter, tr("Qt by\nNokia"));
+painter.drawText(rect, Qt::AlignCenter, tr("Qt\nProject"));
 //! [17]
 
 

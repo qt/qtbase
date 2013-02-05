@@ -4061,10 +4061,10 @@
        <shortdesc>the QWidget class is the base class of all user interface objects.</shortdesc>
        <prolog>
            <author>Qt Development Frameworks</author>
-           <publisher>Nokia</publisher>
+           <publisher>Qt Project</publisher>
            <copyright>
-               <copyryear year="2011"/>
-               <copyrholder>Nokia</copyrholder>
+               <copyryear year="2013"/>
+               <copyrholder>Qt Project</copyrholder>
            </copyright>
            <permissions view="all"/>
            <metadata>
@@ -7313,9 +7313,9 @@
     \code
     dita.metadata.default.author      = Qt Development Frameworks
     dita.metadata.default.permissions = all
-    dita.metadata.default.publisher   = Nokia
-    dita.metadata.default.copyryear = 2011
-    dita.metadata.default.copyrholder = Nokia
+    dita.metadata.default.publisher   = Qt Project
+    dita.metadata.default.copyryear = 2013
+    dita.metadata.default.copyrholder = Qt Project
     dita.metadata.default.audience = programmer
     \endcode
 
