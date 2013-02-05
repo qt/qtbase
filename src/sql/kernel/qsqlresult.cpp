@@ -584,6 +584,8 @@ void QSqlResult::setForwardOnly(bool forward)
     functionality where possible. Returns true if the query is
     prepared successfully; otherwise returns false.
 
+    Note: This method should have been called "safePrepare()".
+
     \sa prepare()
 */
 bool QSqlResult::savePrepare(const QString& query)
