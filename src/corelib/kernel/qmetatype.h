@@ -631,29 +631,29 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
 #endif // QT_NO_DATASTREAM
 
 template <typename T>
-inline Q_DECL_CONSTEXPR int qMetaTypeId(
-#ifndef Q_QDOC
-    T * /* dummy */ = 0
-#endif
-)
+inline Q_DECL_CONSTEXPR int qMetaTypeId()
 {
     Q_STATIC_ASSERT_X(QMetaTypeId2<T>::Defined, "Type is not registered, please use the Q_DECLARE_METATYPE macro to make it known to Qt's meta-object system");
     return QMetaTypeId2<T>::qt_metatype_id();
 }
 
 template <typename T>
-inline Q_DECL_CONSTEXPR int qRegisterMetaType(
-#if !defined(Q_QDOC) && !defined(Q_CC_SUN)
-    T * dummy = 0
-#endif
-)
+inline Q_DECL_CONSTEXPR int qRegisterMetaType()
 {
-#ifdef Q_CC_SUN
-    return qMetaTypeId(static_cast<T *>(0));
-#else
-    return qMetaTypeId(dummy);
-#endif
+    return qMetaTypeId<T>();
 }
+
+#if QT_DEPRECATED_SINCE(5, 1) && !defined(Q_QDOC)
+// There used to be a T *dummy = 0 argument in Qt 4.0 to support MSVC6
+template <typename T>
+QT_DEPRECATED inline Q_DECL_CONSTEXPR int qMetaTypeId(T *)
+{ return qMetaTypeId<T>(); }
+#ifndef Q_CC_SUN
+template <typename T>
+QT_DEPRECATED inline Q_DECL_CONSTEXPR int qRegisterMetaType(T *)
+{ return qRegisterMetaType<T>(); }
+#endif
+#endif
 
 template <typename T>
 struct QMetaTypeIdQObject<T*, /* isPointerToTypeDerivedFromQObject */ true>

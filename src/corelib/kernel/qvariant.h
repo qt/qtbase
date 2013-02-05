@@ -484,7 +484,7 @@ public:
 template <typename T>
 inline QVariant qVariantFromValue(const T &t)
 {
-    return QVariant(qMetaTypeId<T>(reinterpret_cast<T *>(0)), &t, QTypeInfo<T>::isPointer);
+    return QVariant(qMetaTypeId<T>(), &t, QTypeInfo<T>::isPointer);
 }
 
 template <>
@@ -494,7 +494,7 @@ template <typename T>
 inline void qVariantSetValue(QVariant &v, const T &t)
 {
     //if possible we reuse the current QVariant private
-    const uint type = qMetaTypeId<T>(reinterpret_cast<T *>(0));
+    const uint type = qMetaTypeId<T>();
     QVariant::Private &d = v.data_ptr();
     if (v.isDetached() && (type == d.type || (type <= uint(QVariant::Char) && d.type <= uint(QVariant::Char)))) {
         d.type = type;
@@ -568,7 +568,7 @@ namespace QtPrivate {
     {
         static T metaType(const QVariant &v)
         {
-            const int vid = qMetaTypeId<T>(static_cast<T *>(0));
+            const int vid = qMetaTypeId<T>();
             if (vid == v.userType())
                 return *reinterpret_cast<const T *>(v.constData());
             if (vid < int(QMetaType::User)) {

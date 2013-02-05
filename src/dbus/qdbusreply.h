@@ -69,7 +69,7 @@ public:
     }
     inline QDBusReply& operator=(const QDBusMessage &reply)
     {
-        QVariant data(qMetaTypeId(&m_data), reinterpret_cast<void*>(0));
+        QVariant data(qMetaTypeId<Type>(), reinterpret_cast<void*>(0));
         qDBusReplyFill(reply, m_error, data);
         m_data = qvariant_cast<Type>(data);
         return *this;
