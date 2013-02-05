@@ -874,8 +874,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 #endif
 #ifndef QT_NO_CONTEXTMENU
     case QtWindows::ContextMenu:
-        handleContextMenuEvent(platformWindow->window(), msg);
-        return true;
+        return handleContextMenuEvent(platformWindow->window(), msg);
 #endif
     default:
         break;
@@ -909,7 +908,7 @@ void QWindowsContext::handleFocusEvent(QtWindows::WindowsEventType et,
 }
 
 #ifndef QT_NO_CONTEXTMENU
-void QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
+bool QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
 {
     bool mouseTriggered = false;
     QPoint globalPos;
@@ -919,10 +918,23 @@ void QWindowsContext::handleContextMenuEvent(QWindow *window, const MSG &msg)
         globalPos.setX(msg.pt.x);
         globalPos.setY(msg.pt.y);
         pos = QWindowsGeometryHint::mapFromGlobal(msg.hwnd, globalPos);
+
+        RECT clientRect;
+        if (GetClientRect(msg.hwnd, &clientRect)) {
+            if (pos.x() < (int)clientRect.left || pos.x() >= (int)clientRect.right ||
+                pos.y() < (int)clientRect.top || pos.y() >= (int)clientRect.bottom)
+            {
+                // This is the case that user has right clicked in the window's caption,
+                // We should call DefWindowProc() to display a default shortcut menu
+                // instead of sending a Qt window system event.
+                return false;
+            }
+        }
     }
 
     QWindowSystemInterface::handleContextMenuEvent(window, mouseTriggered, pos, globalPos,
                                                    QWindowsKeyMapper::queryKeyboardModifiers());
+    return true;
 }
 #endif
 
