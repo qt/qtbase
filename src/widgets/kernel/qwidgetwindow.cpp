@@ -352,6 +352,21 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             && qt_replay_popup_mouse_event) {
             if (m_widget->windowType() != Qt::Popup)
                 qt_button_down = 0;
+            if (event->type() == QEvent::MouseButtonPress) {
+                // the popup disappeared, replay the mouse press event
+                QWidget *w = QApplication::widgetAt(event->globalPos());
+                if (w && !QApplicationPrivate::isBlockedByModal(w)) {
+                    QWindow *win = w->windowHandle();
+                    if (!win)
+                        win = w->nativeParentWidget()->windowHandle();
+                    if (win && win->geometry().contains(event->globalPos())) {
+                        const QPoint localPos = win->mapFromGlobal(event->globalPos());
+                        QMouseEvent e(QEvent::MouseButtonPress, localPos, localPos, event->globalPos(), event->button(), event->buttons(), event->modifiers());
+                        e.setTimestamp(event->timestamp());
+                        QApplication::sendSpontaneousEvent(win, &e);
+                    }
+                }
+            }
             qt_replay_popup_mouse_event = false;
 #ifndef QT_NO_CONTEXTMENU
         } else if (event->type() == QEvent::MouseButtonPress
