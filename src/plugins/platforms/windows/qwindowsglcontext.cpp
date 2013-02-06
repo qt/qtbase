@@ -696,8 +696,8 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
         result.version = (version.mid(0, majorDot).toInt() << 8)
             + version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
     }
+    result.profile = QSurfaceFormat::NoProfile;
     if (result.version < 0x0300) {
-        result.profile = QSurfaceFormat::NoProfile;
         result.options |= QSurfaceFormat::DeprecatedFunctions;
         return result;
     }
@@ -713,17 +713,10 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
     // v3.2 onwards: Profiles
     value = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
-    switch (value) {
-    case WGL_CONTEXT_CORE_PROFILE_BIT_ARB:
+    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
         result.profile = QSurfaceFormat::CoreProfile;
-        break;
-    case WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
         result.profile = QSurfaceFormat::CompatibilityProfile;
-        break;
-    default:
-        result.profile = QSurfaceFormat::NoProfile;
-        break;
-    }
     return result;
 }
 

@@ -168,6 +168,8 @@ static void updateFormatFromContext(QSurfaceFormat &format)
         format.setMinorVersion(minor);
     }
 
+    format.setProfile(QSurfaceFormat::NoProfile);
+
     const int version = (major << 8) + minor;
     if (version < 0x0300) {
         format.setProfile(QSurfaceFormat::NoProfile);
@@ -189,17 +191,11 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     // Version 3.2 and newer have a profile
     value = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
-    switch (value) {
-    case GLX_CONTEXT_CORE_PROFILE_BIT_ARB:
+
+    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
         format.setProfile(QSurfaceFormat::CoreProfile);
-        break;
-    case GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
         format.setProfile(QSurfaceFormat::CompatibilityProfile);
-        break;
-    default:
-        format.setProfile(QSurfaceFormat::NoProfile);
-        break;
-    }
 }
 
 /*!
