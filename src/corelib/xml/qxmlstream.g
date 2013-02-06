@@ -207,18 +207,18 @@ public:
 
     inline QStringRef addToStringStorage(const QStringRef &s) {
         int pos = tagStackStringStorageSize;
-	int sz = s.size();
-	if (pos != tagStackStringStorage.size())
-	    tagStackStringStorage.resize(pos);
+        int sz = s.size();
+        if (pos != tagStackStringStorage.size())
+            tagStackStringStorage.resize(pos);
         tagStackStringStorage.insert(pos, s.unicode(), sz);
         tagStackStringStorageSize += sz;
         return QStringRef(&tagStackStringStorage, pos, sz);
     }
     inline QStringRef addToStringStorage(const QString &s) {
         int pos = tagStackStringStorageSize;
-	int sz = s.size();
-	if (pos != tagStackStringStorage.size())
-	    tagStackStringStorage.resize(pos);
+        int sz = s.size();
+        if (pos != tagStackStringStorage.size())
+            tagStackStringStorage.resize(pos);
         tagStackStringStorage.insert(pos, s.unicode(), sz);
         tagStackStringStorageSize += sz;
         return QStringRef(&tagStackStringStorage, pos, sz);
@@ -525,7 +525,7 @@ bool QXmlStreamReaderPrivate::parse()
     case QXmlStreamReader::StartElement:
         name.clear();
         prefix.clear();
-	qualifiedName.clear();
+        qualifiedName.clear();
         namespaceUri.clear();
         if (publicNamespaceDeclarations.size())
             publicNamespaceDeclarations.clear();
@@ -536,7 +536,7 @@ bool QXmlStreamReaderPrivate::parse()
             Tag &tag = tagStack_pop();
             namespaceUri = tag.namespaceDeclaration.namespaceUri;
             name = tag.name;
-	    qualifiedName = tag.qualifiedName;
+            qualifiedName = tag.qualifiedName;
             isEmptyElement = false;
             return true;
         }
@@ -545,7 +545,7 @@ bool QXmlStreamReaderPrivate::parse()
     case QXmlStreamReader::EndElement:
         name.clear();
         prefix.clear();
-	qualifiedName.clear();
+        qualifiedName.clear();
         namespaceUri.clear();
         clearTextBuffer();
         break;
@@ -559,7 +559,7 @@ bool QXmlStreamReaderPrivate::parse()
     case QXmlStreamReader::Comment:
     case QXmlStreamReader::Characters:
         isCDATA = false;
-	isWhitespace = true;
+        isWhitespace = true;
         text.clear();
         clearTextBuffer();
         break;
@@ -571,21 +571,21 @@ bool QXmlStreamReaderPrivate::parse()
     case QXmlStreamReader::ProcessingInstruction:
         processingInstructionTarget.clear();
         processingInstructionData.clear();
-	clearTextBuffer();
+        clearTextBuffer();
         break;
     case QXmlStreamReader::NoToken:
     case QXmlStreamReader::Invalid:
         break;
     case QXmlStreamReader::StartDocument:
-	lockEncoding = true;
+        lockEncoding = true;
         documentVersion.clear();
         documentEncoding.clear();
 #ifndef QT_NO_TEXTCODEC
-	if(decoder->hasFailure()) {
-	    raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
-	    readBuffer.clear();
-	    return false;
-	}
+        if (decoder->hasFailure()) {
+            raiseWellFormedError(QXmlStream::tr("Encountered incorrectly encoded content."));
+            readBuffer.clear();
+            return false;
+        }
 #endif
         // fall through
     default:
@@ -1225,7 +1225,7 @@ cdata ::= langle_bang CDATA_START;
         case $rule_number: {
             setType(QXmlStreamReader::Characters);
             isCDATA = true;
-	    isWhitespace = false;
+            isWhitespace = false;
             int pos = sym(2).pos;
             if (scanUntil("]]>", -1)) {
                 text = QStringRef(&textBuffer, pos, textBuffer.size() - pos - 3);
@@ -1294,7 +1294,7 @@ scan_content_char ::= SPACE;
                 resume($rule_number);
                 return false;
             }
-	break;
+        break;
 ./
 
 content_char_list ::= content_char_list char_ref;
@@ -1310,11 +1310,11 @@ content_char_list ::= scan_content_char;
 character_content ::= content_char_list %prec SHIFT_THERE;
 /.
         case $rule_number:
-	    if (!textBuffer.isEmpty()) {
+            if (!textBuffer.isEmpty()) {
                 setType(QXmlStreamReader::Characters);
                 text = &textBuffer;
-	    }
-	break;
+            }
+        break;
 ./
 
 literal ::= QUOTE QUOTE;
@@ -1361,7 +1361,7 @@ literal_content_start ::= LETTER | DIGIT | RANGLE | HASH | LBRACK | RBRACK | LPA
 literal_content_start ::= SPACE;
 /.
         case $rule_number:
-	    if (normalizeLiterals)
+            if (normalizeLiterals)
                 textBuffer.data()[textBuffer.size()-1] = QLatin1Char(' ');
         break;
 ./
@@ -1405,7 +1405,7 @@ entity_value ::= QUOTE entity_value_content_with_dblquote QUOTE;
 entity_value ::= DBLQUOTE entity_value_content_with_quote DBLQUOTE;
 /.
         case $rule_number:
-	    sym(1) = sym(2);
+            sym(1) = sym(2);
         break;
 ./
 
@@ -1609,7 +1609,7 @@ unresolved_entity ::= UNRESOLVED_ENTITY;
             }
             setType(QXmlStreamReader::EntityReference);
             name = &unresolvedEntity;
-	break;
+        break;
 ./
 
 entity_ref ::= AMPERSAND name SEMICOLON;
@@ -1646,10 +1646,10 @@ entity_ref ::= AMPERSAND name SEMICOLON;
                 }
             }
 
-	    injectToken(UNRESOLVED_ENTITY);
-	    unresolvedEntity = symString(2).toString();
-	    textBuffer.chop(2 + sym(2).len);
-	    clearSym();
+            injectToken(UNRESOLVED_ENTITY);
+            unresolvedEntity = symString(2).toString();
+            textBuffer.chop(2 + sym(2).len);
+            clearSym();
 
         } break;
 ./
