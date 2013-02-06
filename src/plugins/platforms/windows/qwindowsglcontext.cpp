@@ -704,7 +704,7 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
     // v3 onwards
     GLint value = 0;
     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
-    if (value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
         result.options |= QSurfaceFormat::DeprecatedFunctions;
     if (value & WGL_CONTEXT_DEBUG_BIT_ARB)
         result.options |= QSurfaceFormat::DebugContext;

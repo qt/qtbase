@@ -179,7 +179,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     // a debug context
     GLint value = 0;
     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
-    if (value & ~GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
         format.setOption(QSurfaceFormat::DeprecatedFunctions);
     if (value & GLX_CONTEXT_DEBUG_BIT_ARB)
         format.setOption(QSurfaceFormat::DebugContext);
