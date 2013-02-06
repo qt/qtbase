@@ -136,6 +136,10 @@
 #define GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT      0x0001
 #endif
 
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
+#endif
+
 QT_BEGIN_NAMESPACE
 
 template <class MaskType, class FlagType> inline bool testFlag(MaskType mask, FlagType flag)
@@ -706,7 +710,7 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
     if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
         result.options |= QSurfaceFormat::DeprecatedFunctions;
-    if (value & WGL_CONTEXT_DEBUG_BIT_ARB)
+    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
         result.options |= QSurfaceFormat::DebugContext;
     if (result.version < 0x0302)
         return result;

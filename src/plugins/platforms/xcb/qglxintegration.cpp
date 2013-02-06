@@ -74,6 +74,10 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXC
 #define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
 #endif
 
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
+#endif
+
 static Window createDummyWindow(QXcbScreen *screen, XVisualInfo *visualInfo)
 {
     Colormap cmap = XCreateColormap(DISPLAY_FROM_XCB(screen), screen->root(), visualInfo->visual, AllocNone);
@@ -183,7 +187,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
     if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
         format.setOption(QSurfaceFormat::DeprecatedFunctions);
-    if (value & GLX_CONTEXT_DEBUG_BIT_ARB)
+    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
         format.setOption(QSurfaceFormat::DebugContext);
     if (version < 0x0302)
         return;
