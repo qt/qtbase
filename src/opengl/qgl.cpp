@@ -59,6 +59,7 @@
 
 #include <qglpixelbuffer.h>
 #include <qglframebufferobject.h>
+#include <private/qopenglextensions_p.h>
 
 #include <private/qimage_p.h>
 #include <qpa/qplatformpixmap.h>
@@ -73,7 +74,52 @@
 
 QT_BEGIN_NAMESPACE
 
-QGLExtensionFuncs QGLContextPrivate::qt_extensionFuncs;
+class QGLDefaultExtensions
+{
+public:
+    QGLDefaultExtensions() : extensions(0) {
+        QGLTemporaryContext tempContext;
+        Q_ASSERT(QOpenGLContext::currentContext());
+        QOpenGLExtensions *ext = qgl_extensions();
+        Q_ASSERT(ext);
+        extensions = ext->openGLExtensions();
+        features = ext->openGLFeatures();
+    }
+
+    QOpenGLFunctions::OpenGLFeatures features;
+    QOpenGLExtensions::OpenGLExtensions extensions;
+};
+
+Q_GLOBAL_STATIC(QGLDefaultExtensions, qtDefaultExtensions)
+
+bool qgl_hasFeature(QOpenGLFunctions::OpenGLFeature feature)
+{
+    if (QOpenGLContext::currentContext())
+        return QOpenGLContext::currentContext()->functions()->hasOpenGLFeature(feature);
+    return qtDefaultExtensions()->features & feature;
+}
+
+bool qgl_hasExtension(QOpenGLExtensions::OpenGLExtension extension)
+{
+    if (QOpenGLContext::currentContext())
+        return qgl_extensions()->hasOpenGLExtension(extension);
+    return qtDefaultExtensions()->extensions & extension;
+}
+
+QOpenGLExtensions::OpenGLExtensions extensions;
+/*
+    Returns the GL extensions for the current QOpenGLContext. If there is no
+    current QOpenGLContext, a default context will be created and the extensions
+    for that context will be returned instead.
+*/
+QOpenGLExtensions* qgl_extensions()
+{
+    if (QOpenGLContext *context = QOpenGLContext::currentContext())
+        return static_cast<QOpenGLExtensions *>(context->functions());
+
+    Q_ASSERT(false);
+    return 0;
+}
 
 struct QGLThreadContext {
     ~QGLThreadContext() {
@@ -1567,8 +1613,6 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     max_texture_size = -1;
     version_flags_cached = false;
     version_flags = QGLFormat::OpenGL_Version_None;
-    extension_flags_cached = false;
-    extension_flags = 0;
     current_fbo = 0;
     default_fbo = 0;
     active_engine = 0;
@@ -1956,30 +2000,32 @@ void QGLContextPrivate::cleanup()
 #define ctx q_ptr
 void QGLContextPrivate::setVertexAttribArrayEnabled(int arrayIndex, bool enabled)
 {
+    Q_Q(QGLContext);
     Q_ASSERT(arrayIndex < QT_GL_VERTEX_ARRAY_TRACKED_COUNT);
 #ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
 #endif
 
     if (vertexAttributeArraysEnabledState[arrayIndex] && !enabled)
-        glDisableVertexAttribArray(arrayIndex);
+        q->functions()->glDisableVertexAttribArray(arrayIndex);
 
     if (!vertexAttributeArraysEnabledState[arrayIndex] && enabled)
-        glEnableVertexAttribArray(arrayIndex);
+        q->functions()->glEnableVertexAttribArray(arrayIndex);
 
     vertexAttributeArraysEnabledState[arrayIndex] = enabled;
 }
 
 void QGLContextPrivate::syncGlState()
 {
+    Q_Q(QGLContext);
 #ifdef glEnableVertexAttribArray
     Q_ASSERT(glEnableVertexAttribArray);
 #endif
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i) {
         if (vertexAttributeArraysEnabledState[i])
-            glEnableVertexAttribArray(i);
+            q->functions()->glEnableVertexAttribArray(i);
         else
-            glDisableVertexAttribArray(i);
+            q->functions()->glDisableVertexAttribArray(i);
     }
 
 }
@@ -2129,11 +2175,6 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
     }
 }
 
-QGLExtensionFuncs& QGLContextPrivate::extensionFuncs(const QGLContext *)
-{
-    return qt_extensionFuncs;
-}
-
 /*! \internal */
 QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
                                            QGLContext::BindOptions options)
@@ -2221,7 +2262,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     QImage img = image;
 
-    if (!(QGLExtensions::glExtensions() & QGLExtensions::NPOTTextures)
+    if (!qgl_extensions()->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures)
         && !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0)
         && (target == GL_TEXTURE_2D && (tx_w != image.width() || tx_h != image.height())))
     {
@@ -2243,7 +2284,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     bool genMipmap = false;
 #endif
     if (glFormat.directRendering()
-        && (QGLExtensions::glExtensions() & QGLExtensions::GenerateMipmap)
+        && (qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::GenerateMipmap))
         && target == GL_TEXTURE_2D
         && (options & QGLContext::MipmapBindOption))
     {
@@ -2267,7 +2308,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     bool premul = options & QGLContext::PremultipliedAlphaBindOption;
     GLenum externalFormat;
     GLuint pixel_type;
-    if (QGLExtensions::glExtensions() & QGLExtensions::BGRATextureFormat) {
+    if (qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::BGRATextureFormat)) {
         externalFormat = GL_BGRA;
         if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2)
             pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
@@ -4651,192 +4692,6 @@ QPaintEngine *QGLWidget::paintEngine() const
     return qt_qgl_paint_engine();
 }
 
-typedef const GLubyte * (QGLF_APIENTRYP qt_glGetStringi)(GLenum, GLuint);
-
-#ifndef GL_NUM_EXTENSIONS
-#define GL_NUM_EXTENSIONS 0x821D
-#endif
-
-QGLExtensionMatcher::QGLExtensionMatcher(const char *str)
-{
-    init(str);
-}
-
-QGLExtensionMatcher::QGLExtensionMatcher()
-{
-    const char *extensionStr = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
-
-    if (extensionStr) {
-        init(extensionStr);
-    } else {
-        // clear error state
-        while (glGetError()) {}
-
-        const QGLContext *ctx = QGLContext::currentContext();
-        if (ctx) {
-            qt_glGetStringi glGetStringi = (qt_glGetStringi)ctx->getProcAddress(QLatin1String("glGetStringi"));
-
-            GLint numExtensions;
-            glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
-
-            for (int i = 0; i < numExtensions; ++i) {
-                const char *str = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
-
-                m_offsets << m_extensions.size();
-
-                while (*str != 0)
-                    m_extensions.append(*str++);
-                m_extensions.append(' ');
-            }
-        }
-    }
-}
-
-void QGLExtensionMatcher::init(const char *str)
-{
-    m_extensions = str;
-
-    // make sure extension string ends with a space
-    if (!m_extensions.endsWith(' '))
-        m_extensions.append(' ');
-
-    int index = 0;
-    int next = 0;
-    while ((next = m_extensions.indexOf(' ', index)) >= 0) {
-        m_offsets << index;
-        index = next + 1;
-    }
-}
-
-// ####TODO Properly #ifdef this class to use #define symbols actually defined
-// by OpenGL/ES includes
-#ifndef GL_FRAMEBUFFER_SRGB_CAPABLE_EXT
-#define GL_FRAMEBUFFER_SRGB_CAPABLE_EXT 0x8DBA
-#endif
-
-/*
-    Returns the GL extensions for the current context.
-*/
-QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
-{
-    QGLExtensionMatcher extensions;
-    Extensions glExtensions;
-
-    if (extensions.match("GL_ARB_texture_rectangle"))
-        glExtensions |= TextureRectangle;
-    if (extensions.match("GL_ARB_multisample"))
-        glExtensions |= SampleBuffers;
-    if (extensions.match("GL_SGIS_generate_mipmap"))
-        glExtensions |= GenerateMipmap;
-    if (extensions.match("GL_ARB_texture_compression"))
-        glExtensions |= TextureCompression;
-    if (extensions.match("GL_EXT_texture_compression_s3tc"))
-        glExtensions |= DDSTextureCompression;
-    if (extensions.match("GL_OES_compressed_ETC1_RGB8_texture"))
-        glExtensions |= ETC1TextureCompression;
-    if (extensions.match("GL_IMG_texture_compression_pvrtc"))
-        glExtensions |= PVRTCTextureCompression;
-    if (extensions.match("GL_ARB_fragment_program"))
-        glExtensions |= FragmentProgram;
-    if (extensions.match("GL_ARB_fragment_shader"))
-        glExtensions |= FragmentShader;
-    if (extensions.match("GL_ARB_shader_objects"))
-        glExtensions |= FragmentShader;
-    if (extensions.match("GL_ARB_texture_mirrored_repeat"))
-        glExtensions |= MirroredRepeat;
-    if (extensions.match("GL_EXT_framebuffer_object"))
-        glExtensions |= FramebufferObject;
-    if (extensions.match("GL_EXT_stencil_two_side"))
-        glExtensions |= StencilTwoSide;
-    if (extensions.match("GL_EXT_stencil_wrap"))
-        glExtensions |= StencilWrap;
-    if (extensions.match("GL_EXT_packed_depth_stencil"))
-        glExtensions |= PackedDepthStencil;
-    if (extensions.match("GL_NV_float_buffer"))
-        glExtensions |= NVFloatBuffer;
-    if (extensions.match("GL_ARB_pixel_buffer_object"))
-        glExtensions |= PixelBufferObject;
-    if (extensions.match("GL_IMG_texture_format_BGRA8888"))
-        glExtensions |= BGRATextureFormat;
-#if defined(QT_OPENGL_ES_2)
-    glExtensions |= FramebufferObject;
-    glExtensions |= GenerateMipmap;
-    glExtensions |= FragmentShader;
-#endif
-#if defined(QT_OPENGL_ES)
-    if (extensions.match("GL_OES_packed_depth_stencil"))
-        glExtensions |= PackedDepthStencil;
-    if (extensions.match("GL_OES_element_index_uint"))
-        glExtensions |= ElementIndexUint;
-    if (extensions.match("GL_OES_depth24"))
-        glExtensions |= Depth24;
-#else
-    glExtensions |= ElementIndexUint;
-#endif
-    if (extensions.match("GL_ARB_framebuffer_object")) {
-        // ARB_framebuffer_object also includes EXT_framebuffer_blit.
-        glExtensions |= FramebufferObject;
-        glExtensions |= FramebufferBlit;
-    }
-
-    if (extensions.match("GL_EXT_framebuffer_blit"))
-        glExtensions |= FramebufferBlit;
-
-    if (extensions.match("GL_ARB_texture_non_power_of_two"))
-        glExtensions |= NPOTTextures;
-
-    if (extensions.match("GL_EXT_bgra"))
-        glExtensions |= BGRATextureFormat;
-
-#if !defined(QT_OPENGL_ES)
-    {
-        GLboolean srgbCapableFramebuffers = false;
-        glGetBooleanv(GL_FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgbCapableFramebuffers);
-        if (srgbCapableFramebuffers)
-            glExtensions |= SRGBFrameBuffer;
-    }
-#endif
-
-    return glExtensions;
-}
-
-
-class QGLDefaultExtensions
-{
-public:
-    QGLDefaultExtensions() {
-        QGLTemporaryContext tempContext;
-        extensions = QGLExtensions::currentContextExtensions();
-    }
-
-    QGLExtensions::Extensions extensions;
-};
-
-Q_GLOBAL_STATIC(QGLDefaultExtensions, qtDefaultExtensions)
-
-/*
-    Returns the GL extensions for the current QGLContext. If there is no
-    current QGLContext, a default context will be created and the extensions
-    for that context will be returned instead.
-*/
-QGLExtensions::Extensions QGLExtensions::glExtensions()
-{
-    Extensions extensionFlags = 0;
-    QGLContext *currentCtx = const_cast<QGLContext *>(QGLContext::currentContext());
-
-    if (currentCtx && currentCtx->d_func()->extension_flags_cached)
-        return currentCtx->d_func()->extension_flags;
-
-    if (!currentCtx) {
-        extensionFlags = qtDefaultExtensions()->extensions;
-    } else {
-        extensionFlags = currentContextExtensions();
-        currentCtx->d_func()->extension_flags_cached = true;
-        currentCtx->d_func()->extension_flags = extensionFlags;
-    }
-    return extensionFlags;
-}
-
 /*
   This is the shared initialization for all platforms. Called from QGLWidgetPrivate::init()
 */
@@ -5023,21 +4878,6 @@ QSize QGLTexture::bindCompressedTexture
         // systems such as x86 and ARM at the moment.
         return QSize();
     }
-#if !defined(QT_OPENGL_ES)
-    if (!glCompressedTexImage2D) {
-        if (!(QGLExtensions::glExtensions() & QGLExtensions::TextureCompression)) {
-            qWarning("QGLContext::bindTexture(): The GL implementation does "
-                     "not support texture compression extensions.");
-            return QSize();
-        }
-        glCompressedTexImage2D = (_glCompressedTexImage2DARB) ctx->getProcAddress(QLatin1String("glCompressedTexImage2DARB"));
-        if (!glCompressedTexImage2D) {
-            qWarning("QGLContext::bindTexture(): could not resolve "
-                     "glCompressedTexImage2DARB.");
-            return QSize();
-        }
-    }
-#endif
     if (!format) {
         // Auto-detect the format from the header.
         if (len >= 4 && !qstrncmp(buf, "DDS ", 4))
@@ -5064,7 +4904,7 @@ QSize QGLTexture::bindCompressedTextureDDS(const char *buf, int len)
         return QSize();
 
     // Bail out if the necessary extension is not present.
-    if (!(QGLExtensions::glExtensions() & QGLExtensions::DDSTextureCompression)) {
+    if (!qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::DDSTextureCompression)) {
         qWarning("QGLContext::bindTexture(): DDS texture compression is not supported.");
         return QSize();
     }
@@ -5116,7 +4956,7 @@ QSize QGLTexture::bindCompressedTextureDDS(const char *buf, int len)
         size = ((w+3)/4) * ((h+3)/4) * blockSize;
         if (size > available)
             break;
-        glCompressedTexImage2D(GL_TEXTURE_2D, i, format, w, h, 0,
+        qgl_extensions()->glCompressedTexImage2D(GL_TEXTURE_2D, i, format, w, h, 0,
                                size, pixels + offset);
         offset += size;
         available -= size;
@@ -5174,14 +5014,12 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
 
     // Bail out if the necessary extension is not present.
     if (textureFormat == GL_ETC1_RGB8_OES) {
-        if (!(QGLExtensions::glExtensions() &
-                    QGLExtensions::ETC1TextureCompression)) {
+        if (!qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::ETC1TextureCompression)) {
             qWarning("QGLContext::bindTexture(): ETC1 texture compression is not supported.");
             return QSize();
         }
     } else {
-        if (!(QGLExtensions::glExtensions() &
-                    QGLExtensions::PVRTCTextureCompression)) {
+        if (!qgl_extensions()->hasOpenGLExtension(QOpenGLExtensions::PVRTCTextureCompression)) {
             qWarning("QGLContext::bindTexture(): PVRTC texture compression is not supported.");
             return QSize();
         }
@@ -5227,7 +5065,7 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
              pvrHeader->bitsPerPixel) / 8;
         if (size > bufferSize)
             break;
-        glCompressedTexImage2D(GL_TEXTURE_2D, GLint(level), textureFormat,
+        qgl_extensions()->glCompressedTexImage2D(GL_TEXTURE_2D, GLint(level), textureFormat,
                                GLsizei(width), GLsizei(height), 0,
                                GLsizei(size), buffer);
         width /= 2;

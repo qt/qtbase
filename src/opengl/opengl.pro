@@ -23,7 +23,6 @@ HEADERS += qgl.h \
            qglpixelbuffer_p.h \
            qglframebufferobject.h  \
            qglframebufferobject_p.h  \
-           qglextensions_p.h \
            qglpaintdevice_p.h \
            qglbuffer.h \
            qtopenglglobal.h
@@ -33,7 +32,6 @@ SOURCES += qgl.cpp \
            qglfunctions.cpp \
            qglpixelbuffer.cpp \
            qglframebufferobject.cpp \
-           qglextensions.cpp \
            qglpaintdevice.cpp \
            qglbuffer.cpp \
 

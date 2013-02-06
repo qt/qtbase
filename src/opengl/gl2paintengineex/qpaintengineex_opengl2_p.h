@@ -62,6 +62,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qdatabuffer_p.h>
 #include <private/qtriangulatingstroker_p.h>
+#include <private/qopenglextensions_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -256,6 +257,8 @@ public:
     EngineMode mode;
     QFontEngineGlyphCache::Type glyphCacheType;
 
+    QOpenGLExtensions funcs;
+
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
     bool compositionModeDirty;
@@ -317,9 +320,9 @@ void QGL2PaintEngineExPrivate::setVertexAttributePointer(unsigned int arrayIndex
 
     vertexAttribPointers[arrayIndex] = pointer;
     if (arrayIndex == QT_OPACITY_ATTR)
-        glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
+        funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
     else
-        glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
+        funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
 }
 
 QT_END_NAMESPACE

@@ -62,17 +62,18 @@
 #include "QtCore/qatomic.h"
 #include "QtWidgets/private/qwidget_p.h"
 #include "QtGui/private/qopenglcontext_p.h"
+#include "QtGui/private/qopenglextensions_p.h"
 #include "qcache.h"
 #include "qglpaintdevice_p.h"
 
 #include <QtGui/QOpenGLContext>
-#include <QtOpenGL/private/qglextensions_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QGLContext;
 class QGLOverlayWidget;
 class QPixmap;
+class QOpenGLExtensions;
 
 class QGLFormatPrivate
 {
@@ -162,7 +163,6 @@ class QGLContextGroup
 public:
     ~QGLContextGroup();
 
-    QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
     const QGLContext *context() const {return m_context;}
     bool isSharing() const { return m_shares.size() >= 2; }
     QList<const QGLContext *> shares() const { return m_shares; }
@@ -173,7 +173,6 @@ public:
 private:
     QGLContextGroup(const QGLContext *context);
 
-    QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
     QList<const QGLContext *> m_shares;
     QAtomicInt m_refs;
@@ -186,39 +185,6 @@ private:
 // Get the context that resources for "ctx" will transfer to once
 // "ctx" is destroyed.  Returns null if nothing is sharing with ctx.
 const QGLContext *qt_gl_transfer_context(const QGLContext *);
-
-// GL extension definitions
-class QGLExtensions {
-public:
-    enum Extension {
-        TextureRectangle        = 0x00000001,
-        SampleBuffers           = 0x00000002,
-        GenerateMipmap          = 0x00000004,
-        TextureCompression      = 0x00000008,
-        FragmentProgram         = 0x00000010,
-        MirroredRepeat          = 0x00000020,
-        FramebufferObject       = 0x00000040,
-        StencilTwoSide          = 0x00000080,
-        StencilWrap             = 0x00000100,
-        PackedDepthStencil      = 0x00000200,
-        NVFloatBuffer           = 0x00000400,
-        PixelBufferObject       = 0x00000800,
-        FramebufferBlit         = 0x00001000,
-        NPOTTextures            = 0x00002000,
-        BGRATextureFormat       = 0x00004000,
-        DDSTextureCompression   = 0x00008000,
-        ETC1TextureCompression  = 0x00010000,
-        PVRTCTextureCompression = 0x00020000,
-        FragmentShader          = 0x00040000,
-        ElementIndexUint        = 0x00080000,
-        Depth24                 = 0x00100000,
-        SRGBFrameBuffer         = 0x00200000
-    };
-    Q_DECLARE_FLAGS(Extensions, Extension)
-
-    static Extensions glExtensions();
-    static Extensions currentContextExtensions();
-};
 
 /*
     QGLTemporaryContext - the main objective of this class is to have a way of
@@ -288,7 +254,6 @@ public:
     uint crWin : 1;
     uint internal_context : 1;
     uint version_flags_cached : 1;
-    uint extension_flags_cached : 1;
 
     // workarounds for driver/hw bugs on different platforms
     uint workaround_needsFullClearOnEveryFrame : 1;
@@ -306,7 +271,6 @@ public:
     QColor transpColor;
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
-    QGLExtensions::Extensions extension_flags;
 
     QGLContextGroup *group;
     GLint max_texture_size;
@@ -322,13 +286,8 @@ public:
 
     static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
 
-    static Q_OPENGL_EXPORT QGLExtensionFuncs qt_extensionFuncs;
-    static Q_OPENGL_EXPORT QGLExtensionFuncs& extensionFuncs(const QGLContext *);
-
     static void setCurrentContext(QGLContext *context);
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGLExtensions::Extensions)
 
 // Temporarily make a context current if not already current or
 // shared with the current contex.  The previous context is made
@@ -510,6 +469,10 @@ QGLTexture* QGLTextureCache::getTexture(QGLContext *ctx, qint64 key)
 
 Q_OPENGL_EXPORT extern QPaintEngine* qt_qgl_paint_engine();
 
+QOpenGLExtensions* qgl_extensions();
+bool qgl_hasFeature(QOpenGLFunctions::OpenGLFeature feature);
+bool qgl_hasExtension(QOpenGLExtensions::OpenGLExtension extension);
+
 // Put a guard around a GL object identifier and its context.
 // When the context goes away, a shared context will be used
 // in its place.  If there are no more shared contexts, then
@@ -573,35 +536,6 @@ QGLSharedResourceGuardBase *createSharedResourceGuard(QGLContext *context, GLuin
 {
     return new QGLSharedResourceGuard<Func>(context, id, cleanupFunc);
 }
-
-class QGLExtensionMatcher
-{
-public:
-    QGLExtensionMatcher(const char *str);
-    QGLExtensionMatcher();
-
-    bool match(const char *str) const {
-        int str_length = qstrlen(str);
-
-        Q_ASSERT(str);
-        Q_ASSERT(str_length > 0);
-        Q_ASSERT(str[str_length-1] != ' ');
-
-        for (int i = 0; i < m_offsets.size(); ++i) {
-            const char *extension = m_extensions.constData() + m_offsets.at(i);
-            if (qstrncmp(extension, str, str_length) == 0 && extension[str_length] == ' ')
-                return true;
-        }
-        return false;
-    }
-
-private:
-    void init(const char *str);
-
-    QByteArray m_extensions;
-    QVector<int> m_offsets;
-};
-
 
 // this is a class that wraps a QThreadStorage object for storing
 // thread local instances of the GL 1 and GL 2 paint engines

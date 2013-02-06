@@ -368,7 +368,6 @@ private:
     friend struct QGLGlyphTexture;
     friend class QGLContextGroup;
     friend class QGLPixmapBlurFilter;
-    friend class QGLExtensions;
     friend class QGLTexture;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
     friend class QGLFramebufferObject;

@@ -41,6 +41,7 @@
 
 #include "qtextureglyphcache_gl_p.h"
 #include "qpaintengineex_opengl2_p.h"
+#include "qglfunctions.h"
 #include "private/qglengineshadersource_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -167,10 +168,12 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
         return;
     }
 
+    QOpenGLFunctions *funcs = ctx->contextHandle()->functions();
+
     // ### the QTextureGlyphCache API needs to be reworked to allow
     // ### resizeTextureData to fail
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_textureResource->m_fbo);
+    funcs->glBindFramebuffer(GL_FRAMEBUFFER, m_textureResource->m_fbo);
 
     GLuint tmp_texture;
     glGenTextures(1, &tmp_texture);
@@ -183,10 +186,10 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_filterMode = Nearest;
     glBindTexture(GL_TEXTURE_2D, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                           GL_TEXTURE_2D, tmp_texture, 0);
+    funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                  GL_TEXTURE_2D, tmp_texture, 0);
 
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    funcs->glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
 
     if (pex != 0)
@@ -232,8 +235,8 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
             m_blitProgram->link();
         }
 
-        glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_vertexCoordinateArray);
-        glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
+        funcs->glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_vertexCoordinateArray);
+        funcs->glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, m_textureCoordinateArray);
 
         m_blitProgram->bind();
         m_blitProgram->enableAttributeArray(int(QT_VERTEX_COORDS_ATTR));
@@ -258,12 +261,12 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, oldWidth, oldHeight);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_RENDERBUFFER, 0);
+    funcs->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                     GL_RENDERBUFFER, 0);
     glDeleteTextures(1, &tmp_texture);
     glDeleteTextures(1, &oldTexture);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_ptr->current_fbo);
+    funcs->glBindFramebuffer(GL_FRAMEBUFFER, ctx->d_ptr->current_fbo);
 
     if (pex != 0) {
         glViewport(0, 0, pex->width, pex->height);

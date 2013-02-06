@@ -41,7 +41,7 @@
 
 #include <QtOpenGL/qgl.h>
 #include <QtOpenGL/private/qgl_p.h>
-#include <QtOpenGL/private/qglextensions_p.h>
+#include <private/qopenglextensions_p.h>
 #include <QtCore/qatomic.h>
 #include "qglbuffer.h"
 
@@ -139,7 +139,8 @@ public:
           type(t),
           guard(0),
           usagePattern(QGLBuffer::StaticDraw),
-          actualUsagePattern(QGLBuffer::StaticDraw)
+          actualUsagePattern(QGLBuffer::StaticDraw),
+          funcs(0)
     {
     }
 
@@ -148,6 +149,7 @@ public:
     QGLSharedResourceGuardBase *guard;
     QGLBuffer::UsagePattern usagePattern;
     QGLBuffer::UsagePattern actualUsagePattern;
+    QOpenGLExtensions *funcs;
 };
 
 /*!
@@ -259,8 +261,8 @@ void QGLBuffer::setUsagePattern(QGLBuffer::UsagePattern value)
 namespace {
     void freeBufferFunc(QGLContext *ctx, GLuint id)
     {
-        Q_UNUSED(ctx);
-        glDeleteBuffers(1, &id);
+        Q_ASSERT(ctx);
+        ctx->contextHandle()->functions()->glDeleteBuffers(1, &id);
     }
 }
 
@@ -284,10 +286,13 @@ bool QGLBuffer::create()
         return true;
     QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     if (ctx) {
-        if (!qt_resolve_buffer_extensions(ctx))
+        delete d->funcs;
+        d->funcs = new QOpenGLExtensions(ctx->contextHandle());
+        if (!d->funcs->hasOpenGLFeature(QOpenGLFunctions::Buffers))
             return false;
+
         GLuint bufferId = 0;
-        glGenBuffers(1, &bufferId);
+        d->funcs->glGenBuffers(1, &bufferId);
         if (bufferId) {
             if (d->guard)
                 d->guard->free();
@@ -340,10 +345,10 @@ bool QGLBuffer::read(int offset, void *data, int count)
 {
 #if !defined(QT_OPENGL_ES)
     Q_D(QGLBuffer);
-    if (!glGetBufferSubData || !d->guard->id())
+    if (!d->funcs->hasOpenGLFeature(QOpenGLFunctions::Buffers) || !d->guard->id())
         return false;
     while (glGetError() != GL_NO_ERROR) ; // Clear error state.
-    glGetBufferSubData(d->type, offset, count, data);
+    d->funcs->glGetBufferSubData(d->type, offset, count, data);
     return glGetError() == GL_NO_ERROR;
 #else
     Q_UNUSED(offset);
@@ -371,7 +376,7 @@ void QGLBuffer::write(int offset, const void *data, int count)
 #endif
     Q_D(QGLBuffer);
     if (d->guard && d->guard->id())
-        glBufferSubData(d->type, offset, count, data);
+        d->funcs->glBufferSubData(d->type, offset, count, data);
 }
 
 /*!
@@ -391,7 +396,7 @@ void QGLBuffer::allocate(const void *data, int count)
 #endif
     Q_D(QGLBuffer);
     if (d->guard && d->guard->id())
-        glBufferData(d->type, count, data, d->actualUsagePattern);
+        d->funcs->glBufferData(d->type, count, data, d->actualUsagePattern);
 }
 
 /*!
@@ -433,7 +438,7 @@ bool QGLBuffer::bind()
 #endif
             return false;
         }
-        glBindBuffer(d->type, bufferId);
+        d->funcs->glBindBuffer(d->type, bufferId);
         return true;
     } else {
         return false;
@@ -457,7 +462,7 @@ void QGLBuffer::release()
 #endif
     Q_D(const QGLBuffer);
     if (d->guard && d->guard->id())
-        glBindBuffer(d->type, 0);
+        d->funcs->glBindBuffer(d->type, 0);
 }
 
 #undef ctx
@@ -477,9 +482,8 @@ void QGLBuffer::release()
 */
 void QGLBuffer::release(QGLBuffer::Type type)
 {
-    const QGLContext *ctx = QGLContext::currentContext();
-    if (ctx && qt_resolve_buffer_extensions(const_cast<QGLContext *>(ctx)))
-        glBindBuffer(GLenum(type), 0);
+    if (QOpenGLContext *ctx = QOpenGLContext::currentContext())
+        ctx->functions()->glBindBuffer(GLenum(type), 0);
 }
 
 #define ctx QGLContext::currentContext()
@@ -515,7 +519,7 @@ int QGLBuffer::size() const
     if (!d->guard || !d->guard->id())
         return -1;
     GLint value = -1;
-    glGetBufferParameteriv(d->type, GL_BUFFER_SIZE, &value);
+    d->funcs->glGetBufferParameteriv(d->type, GL_BUFFER_SIZE, &value);
     return value;
 }
 
@@ -542,9 +546,7 @@ void *QGLBuffer::map(QGLBuffer::Access access)
 #endif
     if (!d->guard || !d->guard->id())
         return 0;
-    if (!glMapBufferARB)
-        return 0;
-    return glMapBufferARB(d->type, access);
+    return d->funcs->glMapBuffer(d->type, access);
 }
 
 /*!
@@ -569,9 +571,7 @@ bool QGLBuffer::unmap()
 #endif
     if (!d->guard || !d->guard->id())
         return false;
-    if (!glUnmapBufferARB)
-        return false;
-    return glUnmapBufferARB(d->type) == GL_TRUE;
+    return d->funcs->glUnmapBuffer(d->type) == GL_TRUE;
 }
 
 QT_END_NAMESPACE

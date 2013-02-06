@@ -202,6 +202,11 @@ void tst_QGLBuffer::testBuffer(QGLBuffer::Type type)
 
 void tst_QGLBuffer::bufferSharing()
 {
+#if defined(Q_OS_WIN)
+    // Needs investigation on Windows: https://bugreports.qt-project.org/browse/QTBUG-29692
+    QSKIP("Unreproducible timeout on Windows (MSVC/MinGW) CI bots");
+#endif
+
     QGLWidget *w1 = new QGLWidget();
     w1->makeCurrent();
 

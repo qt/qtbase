@@ -112,7 +112,7 @@ QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
     }
 
     if (elementIndicesVBOId != 0) {
-        glDeleteBuffers(1, &elementIndicesVBOId);
+        funcs.glDeleteBuffers(1, &elementIndicesVBOId);
         elementIndicesVBOId = 0;
     }
 }
@@ -199,7 +199,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         // Get the image data for the pattern
         QImage texImage = qt_imageForBrush(style, false);
 
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
@@ -212,7 +212,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         // for opacity to the cache.
         GLuint texId = QGL2GradientCache::cacheForContext(ctx)->getBuffer(*g, 1.0);
 
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         glBindTexture(GL_TEXTURE_2D, texId);
 
         if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
@@ -229,7 +229,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         if (currentBrushPixmap.width() > max_texture_size || currentBrushPixmap.height() > max_texture_size)
             currentBrushPixmap = currentBrushPixmap.scaled(max_texture_size, max_texture_size, Qt::KeepAspectRatio);
 
-        glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
@@ -426,9 +426,9 @@ void QGL2PaintEngineExPrivate::updateMatrix()
 
     // Set the PMV matrix attribute. As we use an attributes rather than uniforms, we only
     // need to do this once for every matrix change and persists across all shader programs.
-    glVertexAttrib3fv(QT_PMV_MATRIX_1_ATTR, pmvMatrix[0]);
-    glVertexAttrib3fv(QT_PMV_MATRIX_2_ATTR, pmvMatrix[1]);
-    glVertexAttrib3fv(QT_PMV_MATRIX_3_ATTR, pmvMatrix[2]);
+    funcs.glVertexAttrib3fv(QT_PMV_MATRIX_1_ATTR, pmvMatrix[0]);
+    funcs.glVertexAttrib3fv(QT_PMV_MATRIX_2_ATTR, pmvMatrix[1]);
+    funcs.glVertexAttrib3fv(QT_PMV_MATRIX_3_ATTR, pmvMatrix[2]);
 
     dasher.setInvScale(inverseScale);
     stroker.setInvScale(inverseScale);
@@ -538,12 +538,11 @@ void QGL2PaintEngineEx::beginNativePainting()
 
     d->nativePaintingActive = true;
 
-    QGLContext *ctx = d->ctx;
-    glUseProgram(0);
+    d->funcs.glUseProgram(0);
 
     // Disable all the vertex attribute arrays:
     for (int i = 0; i < QT_GL_VERTEX_ARRAY_TRACKED_COUNT; ++i)
-        glDisableVertexAttribArray(i);
+        d->funcs.glDisableVertexAttribArray(i);
 
 #ifndef QT_OPENGL_ES_2
     const QGLFormat &fmt = d->device->format();
@@ -572,8 +571,6 @@ void QGL2PaintEngineEx::beginNativePainting()
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(&mv_matrix[0][0]);
     }
-#else
-    Q_UNUSED(ctx);
 #endif
 
     d->lastTextureUsed = GLuint(-1);
@@ -588,13 +585,13 @@ void QGL2PaintEngineEx::beginNativePainting()
 void QGL2PaintEngineExPrivate::resetGLState()
 {
     glDisable(GL_BLEND);
-    glActiveTexture(GL_TEXTURE0);
+    funcs.glActiveTexture(GL_TEXTURE0);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(true);
     glDepthFunc(GL_LESS);
-    glClearDepth(1);
+    funcs.glClearDepthf(1);
     glStencilMask(0xff);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
     glStencilFunc(GL_ALWAYS, 0, 0xff);
@@ -604,7 +601,7 @@ void QGL2PaintEngineExPrivate::resetGLState()
 #ifndef QT_OPENGL_ES_2
     // gl_Color, corresponding to vertex attribute 3, may have been changed
     float color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    glVertexAttrib4fv(3, color);
+    funcs.glVertexAttrib4fv(3, color);
 #endif
 }
 
@@ -733,7 +730,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                     qreal scaleFactor = cache->iscale / inverseScale;
                     if (scaleFactor < 0.5 || scaleFactor > 2.0) {
 #ifdef QT_OPENGL_CACHE_AS_VBOS
-                        glDeleteBuffers(1, &cache->vbo);
+                        funcs.glDeleteBuffers(1, &cache->vbo);
                         cache->vbo = 0;
                         Q_ASSERT(cache->ibo == 0);
 #else
@@ -760,9 +757,9 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 cache->primitiveType = GL_TRIANGLE_FAN;
                 cache->iscale = inverseScale;
 #ifdef QT_OPENGL_CACHE_AS_VBOS
-                glGenBuffers(1, &cache->vbo);
-                glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
-                glBufferData(GL_ARRAY_BUFFER, floatSizeInBytes, vertexCoordinateArray.data(), GL_STATIC_DRAW);
+                funcs.glGenBuffers(1, &cache->vbo);
+                funcs.glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+                funcs.glBufferData(GL_ARRAY_BUFFER, floatSizeInBytes, vertexCoordinateArray.data(), GL_STATIC_DRAW);
                 cache->ibo = 0;
 #else
                 cache->vertices = (float *) malloc(floatSizeInBytes);
@@ -773,7 +770,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
             prepareForDraw(currentBrush.isOpaque());
 #ifdef QT_OPENGL_CACHE_AS_VBOS
-            glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
+            funcs.glBindBuffer(GL_ARRAY_BUFFER, cache->vbo);
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, 0);
 #else
             setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, cache->vertices);
@@ -999,9 +996,9 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(const float *data,
         }
 
         // Inc. for front-facing triangle
-        glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_INCR_WRAP);
+        funcs.glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_INCR_WRAP);
         // Dec. for back-facing "holes"
-        glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_DECR_WRAP);
+        funcs.glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_DECR_WRAP);
         glStencilMask(~GL_STENCIL_HIGH_BIT);
         drawVertexArrays(data, stops, stopCount, GL_TRIANGLE_FAN);
 
@@ -1389,7 +1386,7 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     bindOptions |= QGLContext::TemporarilyCachedBindOption;
 #endif
 
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture =
         ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, bindOptions);
 
@@ -1431,7 +1428,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
 
     QGLContext::BindOptions bindOptions = QGLContext::InternalBindOption;
 #ifdef QGL_USE_TEXTURE_POOL
@@ -1491,10 +1488,7 @@ bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     ensureActive();
     d->transferMode(ImageDrawingMode);
 
-#ifndef QT_OPENGL_ES_2
-    QGLContext *ctx = d->ctx;
-#endif
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    d->funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     QGLRect srcRect(src.left(), src.bottom(), src.right(), src.top());
@@ -1778,7 +1772,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 
             glEnable(GL_BLEND);
             glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR);
-            glBlendColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
+            funcs.glBlendColor(c.redF(), c.greenF(), c.blueF(), c.alphaF());
         } else {
             // Other brush styles need two passes.
 
@@ -1795,7 +1789,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             glEnable(GL_BLEND);
             glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 
-            glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+            funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
 
@@ -1830,7 +1824,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     QGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QGLTextureGlyphCache::Linear:QGLTextureGlyphCache::Nearest;
     if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
 
-        glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+        funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
         if (lastMaskTextureUsed != cache->texture()) {
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             lastMaskTextureUsed = cache->texture();
@@ -1937,7 +1931,7 @@ void QGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFragmen
         allOpaque &= (opacity >= 0.99f);
     }
 
-    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture = ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption
                                                      | QGLContext::CanFlipNativePixmapBindOption);
@@ -2010,14 +2004,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     // go after beginPaint:
     d->device->beginPaint();
 
-#if !defined(QT_OPENGL_ES_2)
-    bool success = qt_resolve_version_2_0_functions(d->ctx)
-                   && qt_resolve_buffer_extensions(d->ctx)
-                   && (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
-                       || qt_resolve_framebufferobject_extensions(d->ctx));
-    Q_ASSERT(success);
-    Q_UNUSED(success);
-#endif
+    d->funcs.initializeOpenGLFunctions();
 
     d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
@@ -2051,7 +2038,7 @@ bool QGL2PaintEngineEx::end()
     Q_D(QGL2PaintEngineEx);
 
     QGLContext *ctx = d->ctx;
-    glUseProgram(0);
+    d->funcs.glUseProgram(0);
     d->transferMode(BrushDrawingMode);
     d->device->endPaint();
 

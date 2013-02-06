@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLExtensionMatcher
+class Q_GUI_EXPORT QOpenGLExtensionMatcher
 {
 public:
     QOpenGLExtensionMatcher();
