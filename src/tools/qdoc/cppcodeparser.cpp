@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 
 /* qmake ignore Q_OBJECT */
 
+static bool inMacroCommand_ = false;
 QStringList CppCodeParser::exampleFiles;
 QStringList CppCodeParser::exampleDirs;
 
@@ -311,13 +312,14 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
                                          const QString& command,
                                          const ArgLocPair& arg)
 {
+    ExtraFuncData extra;
     if (command == COMMAND_FN) {
         QStringList parentPath;
         FunctionNode *func = 0;
         FunctionNode *clone = 0;
 
-        if (!makeFunctionNode(arg.first, &parentPath, &clone) &&
-                !makeFunctionNode("void " + arg.first, &parentPath, &clone)) {
+        if (!makeFunctionNode(arg.first, &parentPath, &clone, extra) &&
+            !makeFunctionNode("void " + arg.first, &parentPath, &clone, extra)) {
             doc.startLocation().warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_FN));
         }
         else {
@@ -368,7 +370,9 @@ Node* CppCodeParser::processTopicCommand(const Doc& doc,
         QStringList parentPath;
         FunctionNode *func = 0;
 
-        if (makeFunctionNode(arg.first, &parentPath, &func, qdb_->treeRoot())) {
+        extra.root = qdb_->treeRoot();
+        extra.isMacro = true;
+        if (makeFunctionNode(arg.first, &parentPath, &func, extra)) {
             if (!parentPath.isEmpty()) {
                 doc.startLocation().warning(tr("Invalid syntax in '\\%1'").arg(COMMAND_MACRO));
                 delete func;
@@ -1152,7 +1156,6 @@ bool CppCodeParser::matchTemplateAngles(CodeChunk *dataType)
                 if (--parenAndBraceDepth < 0)
                     return false;
             }
-
             if (dataType != 0)
                 dataType->append(lexeme());
             readToken();
@@ -1161,6 +1164,9 @@ bool CppCodeParser::matchTemplateAngles(CodeChunk *dataType)
     return matches;
 }
 
+/*
+  This function is no longer used.
+ */
 bool CppCodeParser::matchTemplateHeader()
 {
     readToken();
@@ -1204,13 +1210,27 @@ bool CppCodeParser::matchDataType(CodeChunk *dataType, QString *var)
         }
 
         if (virgin) {
-            if (match(Tok_Ident))
-                dataType->append(previousLexeme());
+            if (match(Tok_Ident)) {
+                /*
+                  This is a hack until we replace this "parser"
+                  with the real one used in Qt Creator.
+                 */
+                if (!inMacroCommand_ && lexeme() == "(" &&
+                    ((previousLexeme() == "QT_PREPEND_NAMESPACE") || (previousLexeme() == "NS"))) {
+                    readToken();
+                    readToken();
+                    dataType->append(previousLexeme());
+                    readToken();
+                }
+                else
+                    dataType->append(previousLexeme());
+            }
             else if (match(Tok_void) || match(Tok_int) || match(Tok_char) ||
                      match(Tok_double) || match(Tok_Ellipsis))
                 dataType->append(previousLexeme());
-            else
+            else {
                 return false;
+            }
         }
         else if (match(Tok_int) || match(Tok_char) || match(Tok_double)) {
             dataType->append(previousLexeme());
@@ -1242,8 +1262,9 @@ bool CppCodeParser::matchDataType(CodeChunk *dataType, QString *var)
         dataType->appendHotspot();
         if (var != 0 && match(Tok_Ident))
             *var = previousLexeme();
-        if (!match(Tok_RightParen) || tok != Tok_LeftParen)
+        if (!match(Tok_RightParen) || tok != Tok_LeftParen) {
             return false;
+        }
         dataType->append(previousLexeme());
 
         int parenDepth0 = tokenizer->parenDepth();
@@ -1298,8 +1319,9 @@ bool CppCodeParser::matchParameter(FunctionNode *func)
     QString name;
     CodeChunk defaultValue;
 
-    if (!matchDataType(&dataType, &name))
+    if (!matchDataType(&dataType, &name)) {
         return false;
+    }
     match(Tok_Comment);
     if (match(Tok_Equal)) {
         int parenDepth0 = tokenizer->parenDepth();
@@ -1312,10 +1334,7 @@ bool CppCodeParser::matchParameter(FunctionNode *func)
             readToken();
         }
     }
-    func->addParameter(Parameter(dataType.toString(),
-                                 "",
-                                 name,
-                                 defaultValue.toString())); // ###
+    func->addParameter(Parameter(dataType.toString(), "", name, defaultValue.toString())); // ###
     return true;
 }
 
@@ -1323,16 +1342,16 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
                                       QStringList *parentPathPtr,
                                       FunctionNode **funcPtr,
                                       const QString &templateStuff,
-                                      Node::Type type,
-                                      bool attached)
+                                      ExtraFuncData& extra)
 {
     CodeChunk returnType;
     QStringList parentPath;
     QString name;
-
     bool compat = false;
-    if (match(Tok_friend))
+
+    if (match(Tok_friend)) {
         return false;
+    }
     match(Tok_explicit);
     if (matchCompat())
         compat = true;
@@ -1473,7 +1492,7 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
     }
     readToken();
 
-    FunctionNode *func = new FunctionNode(type, parent, name, attached);
+    FunctionNode *func = new FunctionNode(extra.type, parent, name, extra.isAttached);
     func->setAccess(access);
     func->setLocation(location());
     func->setReturnType(returnType.toString());
@@ -1899,6 +1918,7 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
  */
 bool CppCodeParser::matchDeclList(InnerNode *parent)
 {
+    ExtraFuncData extra;
     QString templateStuff;
     int braceDepth0 = tokenizer->braceDepth();
     if (tok == Tok_RightBrace) // prevents failure on empty body
@@ -1921,7 +1941,12 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
             matchUsingDecl();
             break;
         case Tok_template:
-            templateStuff = matchTemplateHeader();
+            {
+                CodeChunk dataType;
+                readToken();
+                matchTemplateAngles(&dataType);
+                templateStuff = dataType.toString();
+            }
             continue;
         case Tok_enum:
             matchEnumDecl(parent);
@@ -2017,13 +2042,14 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
             match(Tok_RightParen);
             break;
         default:
-            if (!matchFunctionDecl(parent, 0, 0, templateStuff)) {
+            if (!matchFunctionDecl(parent, 0, 0, templateStuff, extra)) {
                 while (tok != Tok_Eoi &&
                        (tokenizer->braceDepth() > braceDepth0 ||
                         (!match(Tok_Semicolon) &&
                          tok != Tok_public && tok != Tok_protected &&
-                         tok != Tok_private)))
+                         tok != Tok_private))) {
                     readToken();
+                }
             }
         }
         templateStuff.clear();
@@ -2037,6 +2063,7 @@ bool CppCodeParser::matchDeclList(InnerNode *parent)
  */
 bool CppCodeParser::matchDocsAndStuff()
 {
+    ExtraFuncData extra;
     QSet<QString> topicCommandsAllowed = topicCommands();
     QSet<QString> otherMetacommandsAllowed = otherMetaCommands();
     QSet<QString> metacommandsAllowed = topicCommandsAllowed +
@@ -2082,7 +2109,7 @@ bool CppCodeParser::matchDocsAndStuff()
                 FunctionNode *clone;
                 FunctionNode *func = 0;
 
-                if (matchFunctionDecl(0, &parentPath, &clone)) {
+                if (matchFunctionDecl(0, &parentPath, &clone, QString(), extra)) {
                     foreach (const QString& usedNamespace_, activeNamespaces_) {
                         QStringList newPath = usedNamespace_.split("::") + parentPath;
                         func = qdb_->findFunctionNode(newPath, clone);
@@ -2176,7 +2203,7 @@ bool CppCodeParser::matchDocsAndStuff()
             FunctionNode *clone;
             FunctionNode *node = 0;
 
-            if (matchFunctionDecl(0, &parentPath, &clone)) {
+            if (matchFunctionDecl(0, &parentPath, &clone, QString(), extra)) {
                 /*
                   The location of the definition is more interesting
                   than that of the declaration. People equipped with
@@ -2209,9 +2236,7 @@ bool CppCodeParser::matchDocsAndStuff()
 bool CppCodeParser::makeFunctionNode(const QString& signature,
                                      QStringList* parentPathPtr,
                                      FunctionNode** funcPtr,
-                                     InnerNode* root,
-                                     Node::Type type,
-                                     bool attached)
+                                     ExtraFuncData& extra)
 {
     Tokenizer* outerTokenizer = tokenizer;
     int outerTok = tok;
@@ -2223,7 +2248,9 @@ bool CppCodeParser::makeFunctionNode(const QString& signature,
     tokenizer = &stringTokenizer;
     readToken();
 
-    bool ok = matchFunctionDecl(root, parentPathPtr, funcPtr, QString(), type, attached);
+    inMacroCommand_ = extra.isMacro;
+    bool ok = matchFunctionDecl(extra.root, parentPathPtr, funcPtr, QString(), extra);
+    inMacroCommand_ = false;
     // potential memory leak with funcPtr
 
     tokenizer = outerTokenizer;
@@ -2252,15 +2279,14 @@ FunctionNode* CppCodeParser::makeFunctionNode(const Doc& doc,
 {
     QStringList pp;
     FunctionNode* fn = 0;
-    if (!makeFunctionNode(sig,&pp,&fn,parent,type,attached) &&
-            !makeFunctionNode("void "+sig,&pp,&fn,parent,type,attached)) {
+    ExtraFuncData extra(parent, type, attached);
+    if (!makeFunctionNode(sig, &pp, &fn, extra) && !makeFunctionNode("void " + sig, &pp, &fn, extra)) {
         doc.location().warning(tr("Invalid syntax in '\\%1'").arg(qdoctag));
     }
     return fn;
 }
 
-void CppCodeParser::parseQiteratorDotH(const Location &location,
-                                       const QString &filePath)
+void CppCodeParser::parseQiteratorDotH(const Location &location, const QString &filePath)
 {
     QFile file(filePath);
     if (!file.open(QFile::ReadOnly))
