@@ -447,28 +447,46 @@ static QStringList findAllLibCrypto()
 # endif
 
 #ifdef Q_OS_WIN
+static bool tryToLoadOpenSslWin32Library(QLatin1String ssleay32LibName, QLatin1String libeay32LibName, QPair<QSystemLibrary*, QSystemLibrary*> &pair)
+{
+    pair.first = 0;
+    pair.second = 0;
+
+    QSystemLibrary *ssleay32 = new QSystemLibrary(ssleay32LibName);
+    if (!ssleay32->load(false)) {
+        delete ssleay32;
+        return FALSE;
+    }
+
+    QSystemLibrary *libeay32 = new QSystemLibrary(libeay32LibName);
+    if (!libeay32->load(false)) {
+        delete ssleay32;
+        delete libeay32;
+        return FALSE;
+    }
+
+    pair.first = ssleay32;
+    pair.second = libeay32;
+    return TRUE;
+}
+
 static QPair<QSystemLibrary*, QSystemLibrary*> loadOpenSslWin32()
 {
     QPair<QSystemLibrary*,QSystemLibrary*> pair;
     pair.first = 0;
     pair.second = 0;
 
-    QSystemLibrary *ssleay32 = new QSystemLibrary(QLatin1String("ssleay32"));
-    if (!ssleay32->load(false)) {
-        // Cannot find ssleay32.dll
-        delete ssleay32;
-        return pair;
+    // When OpenSSL is built using MSVC then the libraries are named 'ssleay32.dll' and 'libeay32'dll'.
+    // When OpenSSL is built using GCC then different library names are used (depending on the OpenSSL version)
+    // The oldest version of a GCC-based OpenSSL which can be detected by the code below is 0.9.8g (released in 2007)
+    if (!tryToLoadOpenSslWin32Library(QLatin1String("ssleay32"), QLatin1String("libeay32"), pair)) {
+        if (!tryToLoadOpenSslWin32Library(QLatin1String("libssl-10"), QLatin1String("libcrypto-10"), pair)) {
+            if (!tryToLoadOpenSslWin32Library(QLatin1String("libssl-8"), QLatin1String("libcrypto-8"), pair)) {
+                tryToLoadOpenSslWin32Library(QLatin1String("libssl-7"), QLatin1String("libcrypto-7"), pair);
+            }
+        }
     }
 
-    QSystemLibrary *libeay32 = new QSystemLibrary(QLatin1String("libeay32"));
-    if (!libeay32->load(false)) {
-        delete ssleay32;
-        delete libeay32;
-        return pair;
-    }
-
-    pair.first = ssleay32;
-    pair.second = libeay32;
     return pair;
 }
 #else
