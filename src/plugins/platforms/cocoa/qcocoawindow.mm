@@ -301,9 +301,11 @@ void QCocoaWindow::setVisible(bool visible)
                     [m_nsWindow orderFront: nil];
                 }
 
-                // We want the events to properly reach the popup and dialog
-                if (window()->type() == Qt::Popup || window()->type() == Qt::Dialog)
+                // We want the events to properly reach the popup, dialog, and tool
+                if ((window()->type() == Qt::Popup || window()->type() == Qt::Dialog || window()->type() == Qt::Tool)
+                    && [m_nsWindow isKindOfClass:[NSPanel class]]) {
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
+                }
             }
         } else {
             [m_contentView setHidden:NO];
