@@ -76,7 +76,7 @@ public:
     int effectiveWidth() const;
     int effectiveHeight() const;
 
-    UIView *nativeView() const { return m_view; }
+    WId winId() const { return WId(m_view); };
 
     QList<QWindowSystemInterface::TouchPoint> &touchPoints()  { return m_touchPoints; }
     QHash<UITouch *, int> &activeTouches() { return m_activeTouches; }

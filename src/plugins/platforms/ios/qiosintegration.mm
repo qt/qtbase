@@ -158,7 +158,7 @@ void *QIOSIntegration::nativeResourceForWindow(const QByteArray &resource, QWind
     QIOSWindow *platformWindow = static_cast<QIOSWindow *>(window->handle());
 
     if (lowerCaseResource == "uiview")
-        return platformWindow->nativeView();
+        return reinterpret_cast<void *>(platformWindow->winId());
 
     return 0;
 }
