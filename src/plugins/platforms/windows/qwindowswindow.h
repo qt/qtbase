@@ -216,6 +216,8 @@ public:
     static inline void *userDataOf(HWND hwnd);
     static inline void setUserDataOf(HWND hwnd, void *ud);
 
+    static bool setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal opacity);
+
     HDC getDC();
     void releaseDC();
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO

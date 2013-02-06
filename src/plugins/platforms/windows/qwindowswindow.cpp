@@ -209,22 +209,42 @@ static bool shouldShowMaximizeButton(Qt::WindowFlags flags)
     return flags & Qt::WindowMaximizeButtonHint;
 }
 
-static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, qreal level)
+// Set the WS_EX_LAYERED flag on a HWND if required. This is required for
+// translucent backgrounds, not fully opaque windows and for
+// Qt::WindowTransparentForInput (in combination with WS_EX_TRANSPARENT).
+bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal opacity)
+{
+#ifndef Q_OS_WINCE // maybe needs revisiting WS_EX_LAYERED
+    const LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+    const bool needsLayered = (flags & Qt::WindowTransparentForInput)
+        || (hasAlpha && (flags & Qt::FramelessWindowHint)) || opacity < 1.0;
+    const bool isLayered = (exStyle & WS_EX_LAYERED);
+    if (needsLayered != isLayered) {
+        if (needsLayered) {
+            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+        } else {
+            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+        }
+    }
+    return needsLayered;
+#else // !Q_OS_WINCE
+    Q_UNUSED(hwnd);
+    Q_UNUSED(flags);
+    Q_UNUSED(hasAlpha);
+    Q_UNUSED(opacity);
+    return false;
+#endif // Q_OS_WINCE
+}
+
+static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal level)
 {
 #ifdef Q_OS_WINCE // maybe needs revisit WS_EX_LAYERED
     Q_UNUSED(hwnd);
     Q_UNUSED(flags);
+    Q_UNUSED(hasAlpha);
     Q_UNUSED(level);
 #else
-    const long wl = GetWindowLong(hwnd, GWL_EXSTYLE);
-    const bool isOpaque = level == 1.0 && !(flags & Qt::WindowTransparentForInput);
-
-    if (isOpaque) {
-        if (wl & WS_EX_LAYERED)
-            SetWindowLong(hwnd, GWL_EXSTYLE, wl & ~WS_EX_LAYERED);
-    } else {
-        if ((wl & WS_EX_LAYERED) == 0)
-            SetWindowLong(hwnd, GWL_EXSTYLE, wl | WS_EX_LAYERED);
+    if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
         if (flags & Qt::FramelessWindowHint) {
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
             QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
@@ -271,7 +291,7 @@ struct WindowCreationData
 
     WindowCreationData() : parentHandle(0), type(Qt::Widget), style(0), exStyle(0),
         topLevel(false), popup(false), dialog(false), desktop(false),
-        tool(false), embedded(false) {}
+        tool(false), embedded(false), hasAlpha(false) {}
 
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
     inline WindowData create(const QWindow *w, const QRect &geometry, QString title) const;
@@ -290,6 +310,7 @@ struct WindowCreationData
     bool desktop;
     bool tool;
     bool embedded;
+    bool hasAlpha;
 };
 
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
@@ -308,6 +329,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                                     unsigned creationFlags)
 {
     isGL = w->surfaceType() == QWindow::OpenGLSurface;
+    hasAlpha = w->format().hasAlpha();
     flags = flagsIn;
 
     // Sometimes QWindow doesn't have a QWindow parent but does have a native parent window,
@@ -526,7 +548,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
 
-        setWindowOpacity(hwnd, flags, opacityLevel);
+        setWindowOpacity(hwnd, flags, hasAlpha, opacityLevel);
     } else { // child.
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
@@ -1471,7 +1493,7 @@ void QWindowsWindow::setOpacity(qreal level)
     if (m_opacity != level) {
         m_opacity = level;
         if (m_data.hwnd)
-            setWindowOpacity(m_data.hwnd, m_data.flags, level);
+            setWindowOpacity(m_data.hwnd, m_data.flags, window()->format().hasAlpha(), level);
     }
 }
 

@@ -88,11 +88,7 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
 
 #ifndef Q_OS_WINCE
-    if (rw->format().hasAlpha() && (window->flags() & Qt::FramelessWindowHint)) {
-        const long wl = GetWindowLong(rw->handle(), GWL_EXSTYLE);
-        if ((wl & WS_EX_LAYERED) == 0)
-            SetWindowLong(rw->handle(), GWL_EXSTYLE, wl | WS_EX_LAYERED);
-
+    if (QWindowsWindow::setWindowLayered(rw->handle(), window->flags(), rw->format().hasAlpha(), rw->opacity())) {
         QRect r = window->frameGeometry();
         QPoint frameOffset(window->frameMargins().left(), window->frameMargins().top());
         QRect dirtyRect = br.translated(offset + frameOffset);
