@@ -202,7 +202,7 @@ defineTest(qtAddRpathLink) {
 defineTest(qtPrepareTool) {
     $$1 = $$eval(QT_TOOL.$${2}.command)
     isEmpty($$1) {
-        $$1 = $$[QT_HOST_BINS/get]/$$2
+        $$1 = $$[QT_HOST_BINS]/$$2
         contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.(exe|bat)$) {
             exists($$eval($$1).bat) {
                 $$1 = $$eval($$1).bat
