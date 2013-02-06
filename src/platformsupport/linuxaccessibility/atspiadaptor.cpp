@@ -1181,7 +1181,7 @@ void AtSpiAdaptor::notifyAboutCreation(const QAIPointer &interface) const
 
 void AtSpiAdaptor::notifyAboutDestruction(const QAIPointer &interface) const
 {
-    if (!interface->isValid())
+    if (!interface || !interface->isValid())
         return;
 
     QAIPointer parent(interface->parent());
