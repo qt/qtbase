@@ -1562,7 +1562,7 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     \li On Windows platforms, this function may take several seconds to
     execute depending on the configuration of the user's system.
 
-    \li On BlackBerry, only UrlRequest queries are supported. SOCKS is
+    \li On BlackBerry, only UrlRequest and TcpSocket queries are supported. SOCKS is
     not supported. The proxy credentials are only retrieved for the
     default configuration.
     \endlist
