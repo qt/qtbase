@@ -2243,7 +2243,7 @@
     The text up to the line break becomes the target name. Be sure to
     follow the target name with a line break. Curly brackets are not
     required around the target name, but they may be required when the
-    target name is used in a link cammand. See below.
+    target name is used in a link command. See below.
 
     \code
     / *!
