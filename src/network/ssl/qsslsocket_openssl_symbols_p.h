@@ -335,7 +335,7 @@ void q_SSL_set_connect_state(SSL *a);
 int q_SSL_shutdown(SSL *a);
 int q_SSL_set_session(SSL *to, SSL_SESSION *session);
 void q_SSL_SESSION_free(SSL_SESSION *ses);
-SSL_SESSION *q_SSL_get1_session(const SSL *ssl);
+SSL_SESSION *q_SSL_get1_session(SSL *ssl);
 SSL_SESSION *q_SSL_get_session(const SSL *ssl);
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 const SSL_METHOD *q_SSLv2_client_method();
