@@ -96,6 +96,8 @@ enum { Tok_Eoi, Tok_Ampersand, Tok_Aster, Tok_Caret, Tok_LeftParen,
 
 class Tokenizer
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::Tokenizer)
+
 public:
     Tokenizer(const Location& loc, const QByteArray &in);
     Tokenizer(const Location& loc, QFile &file);

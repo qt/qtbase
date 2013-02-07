@@ -57,6 +57,8 @@ class QRegExp;
 
 class Location
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::Location)
+
 public:
     Location();
     Location(const QString& filePath);

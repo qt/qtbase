@@ -85,6 +85,8 @@ struct HelpProject
 
 class HelpProjectWriter
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::HelpProjectWriter)
+
 public:
     HelpProjectWriter(const Config &config,
                       const QString &defaultFileName,

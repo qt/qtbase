@@ -69,6 +69,8 @@ typedef QList<QPair<QString,QString> > ImportList;
 
 class Node
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::Node)
+
 public:
     enum Type {
         Namespace,
@@ -596,6 +598,8 @@ class QmlPropertyNode;
 
 class QmlPropertyNode : public LeafNode
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QmlPropertyNode)
+
 public:
     QmlPropertyNode(QmlClassNode *parent,
                     const QString& name,

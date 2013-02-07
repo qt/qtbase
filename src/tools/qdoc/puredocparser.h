@@ -60,6 +60,8 @@ class Tree;
 
 class PureDocParser : public CppCodeParser
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::PureDocParser)
+
 public:
     PureDocParser();
     virtual ~PureDocParser();

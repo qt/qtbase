@@ -88,6 +88,8 @@ void MetaStackEntry::close()
 */
 class MetaStack : private QStack<MetaStackEntry>
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::MetaStack)
+
 public:
     MetaStack();
 

@@ -57,6 +57,8 @@ class Tokenizer;
 
 class CppCodeParser : public CodeParser
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::CppCodeParser)
+
 public:
     CppCodeParser();
     ~CppCodeParser();
