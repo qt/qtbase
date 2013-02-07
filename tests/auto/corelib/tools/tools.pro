@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 SUBDIRS=\
     qalgorithms \
     qarraydata \
+    qarraydata_strictiterators \
     qbitarray \
     qbytearray \
     qbytearraylist \
@@ -20,11 +21,14 @@ SUBDIRS=\
     qexplicitlyshareddatapointer \
     qfreelist \
     qhash \
+    qhash_strictiterators \
     qline \
     qlinkedlist \
     qlist \
+    qlist_strictiterators \
     qlocale \
     qmap \
+    qmap_strictiterators \
     qmargins \
     qmessageauthenticationcode \
     qpair \
@@ -54,4 +58,5 @@ SUBDIRS=\
     qtimezone \
     qtimeline \
     qvarlengtharray \
-    qvector
+    qvector \
+    qvector_strictiterators
