@@ -87,17 +87,33 @@ QString QSqlResultPrivate::positionalToNamedBinding(const QString &query, QStrin
 
     QString result;
     result.reserve(n * 5 / 4);
-    bool inQuote = false;
+    QChar closingQuote;
     int count = 0;
 
     for (int i = 0; i < n; ++i) {
         QChar ch = query.at(i);
-        if (ch == QLatin1Char('?') && !inQuote) {
-            result += fieldSerialFunc(count++);
-        } else {
-            if (ch == QLatin1Char('\''))
-                inQuote = !inQuote;
+        if (!closingQuote.isNull()) {
+            if (ch == closingQuote) {
+                if (closingQuote == QLatin1Char(']')
+                    && i + 1 < n && query.at(i + 1) == closingQuote) {
+                    // consume the extra character. don't close.
+                    ++i;
+                    result += ch;
+                } else {
+                    closingQuote = QChar();
+                }
+            }
             result += ch;
+        } else {
+            if (ch == QLatin1Char('?')) {
+                result += fieldSerialFunc(count++);
+            } else {
+                if (ch == QLatin1Char('\'') || ch == QLatin1Char('"') || ch == QLatin1Char('`'))
+                    closingQuote = ch;
+                else if (ch == QLatin1Char('['))
+                    closingQuote = QLatin1Char(']');
+                result += ch;
+            }
         }
     }
     result.squeeze();
@@ -110,28 +126,45 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
 
     QString result;
     result.reserve(n);
-    bool inQuote = false;
+    QChar closingQuote;
     int count = 0;
     int i = 0;
 
     while (i < n) {
         QChar ch = query.at(i);
-        if (ch == QLatin1Char(':') && !inQuote
-                && (i == 0 || query.at(i - 1) != QLatin1Char(':'))
-                && (i + 1 < n && qIsAlnum(query.at(i + 1)))) {
-            int pos = i + 2;
-            while (pos < n && qIsAlnum(query.at(pos)))
-                ++pos;
-            QString holder(query.mid(i, pos - i));
-            indexes[holder].append(count++);
-            holders.append(QHolder(holder, i));
-            result += QLatin1Char('?');
-            i = pos;
-        } else {
-            if (ch == QLatin1Char('\''))
-                inQuote = !inQuote;
+        if (!closingQuote.isNull()) {
+            if (ch == closingQuote) {
+                if (closingQuote == QLatin1Char(']')
+                        && i + 1 < n && query.at(i + 1) == closingQuote) {
+                    // consume the extra character. don't close.
+                    ++i;
+                    result += ch;
+                } else {
+                    closingQuote = QChar();
+                }
+            }
             result += ch;
             ++i;
+        } else {
+            if (ch == QLatin1Char(':')
+                    && (i == 0 || query.at(i - 1) != QLatin1Char(':'))
+                    && (i + 1 < n && qIsAlnum(query.at(i + 1)))) {
+                int pos = i + 2;
+                while (pos < n && qIsAlnum(query.at(pos)))
+                    ++pos;
+                QString holder(query.mid(i, pos - i));
+                indexes[holder].append(count++);
+                holders.append(QHolder(holder, i));
+                result += QLatin1Char('?');
+                i = pos;
+            } else {
+                if (ch == QLatin1Char('\'') || ch == QLatin1Char('"') || ch == QLatin1Char('`'))
+                    closingQuote = ch;
+                else if (ch == QLatin1Char('['))
+                    closingQuote = QLatin1Char(']');
+                result += ch;
+                ++i;
+            }
         }
     }
     result.squeeze();
