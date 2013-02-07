@@ -115,7 +115,7 @@ static void printHelp()
                              "    -D<name>       "
                              "Define <name> as a macro while parsing sources\n"
                              "    -depends       "
-                             "Specify dependant modules\n"
+                             "Specify dependent modules\n"
                              "    -help          "
                              "Display this information and exit\n"
                              "    -highlighting  "
