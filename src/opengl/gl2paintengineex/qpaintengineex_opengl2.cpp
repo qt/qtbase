@@ -628,12 +628,8 @@ bool QGL2PaintEngineEx::isNativePaintingActive() const {
 
 bool QGL2PaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &t) const
 {
-    float det = t.determinant();
-
-    // Don't try to cache huge fonts or vastly transformed fonts
-    return t.type() < QTransform::TxProject
-        && QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, t)
-        && det >= 0.25f && det <= 4.f;
+    // Don't try to cache vastly transformed fonts
+    return t.type() < QTransform::TxProject && QPaintEngineEx::shouldDrawCachedGlyphs(fontEngine, t);
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
