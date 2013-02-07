@@ -88,7 +88,8 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
     QWindowsWindow *rw = QWindowsWindow::baseWindowOf(window);
 
 #ifndef Q_OS_WINCE
-    if (QWindowsWindow::setWindowLayered(rw->handle(), window->flags(), rw->format().hasAlpha(), rw->opacity())) {
+    const Qt::WindowFlags flags = window->flags();
+    if ((flags & Qt::FramelessWindowHint) && QWindowsWindow::setWindowLayered(rw->handle(), flags, rw->format().hasAlpha(), rw->opacity())) {
         QRect r = window->frameGeometry();
         QPoint frameOffset(window->frameMargins().left(), window->frameMargins().top());
         QRect dirtyRect = br.translated(offset + frameOffset);
@@ -97,7 +98,6 @@ void QWindowsBackingStore::flush(QWindow *window, const QRegion &region,
         POINT ptDst = {r.x(), r.y()};
         POINT ptSrc = {0, 0};
         BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * rw->opacity()), AC_SRC_ALPHA};
-
         if (QWindowsContext::user32dll.updateLayeredWindowIndirect) {
             RECT dirty = {dirtyRect.x(), dirtyRect.y(),
                 dirtyRect.x() + dirtyRect.width(), dirtyRect.y() + dirtyRect.height()};
