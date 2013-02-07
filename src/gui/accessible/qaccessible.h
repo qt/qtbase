@@ -284,10 +284,10 @@ public:
         Canvas         = 0x00000035,
         Animation      = 0x00000036,
         Equation       = 0x00000037,
-        ButtonDropDown = 0x00000038,
+        ButtonDropDown = 0x00000038, // The object represents a button that expands a grid.
         ButtonMenu     = 0x00000039,
         ButtonDropGrid = 0x0000003A,
-        Whitespace     = 0x0000003B,
+        Whitespace     = 0x0000003B, // The object represents blank space between other objects.
         PageTabList    = 0x0000003C,
         Clock          = 0x0000003D,
         Splitter       = 0x0000003E,
