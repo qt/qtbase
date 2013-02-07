@@ -1496,6 +1496,8 @@ void QRegularExpression::setPatternOptions(PatternOptions options)
     Returns the number of capturing groups inside the pattern string,
     or -1 if the regular expression is not valid.
 
+    \note The implicit capturing group 0 is \e{not} included in the returned number.
+
     \sa isValid()
 */
 int QRegularExpression::captureCount() const
@@ -1508,10 +1510,27 @@ int QRegularExpression::captureCount() const
 /*!
     \since 5.1
 
-    Returns a list of captureCount() elements, containing the names of the named
-    capturing groups in the pattern string. The list is sorted such that the
-    i-th element of the list is the name of the i-th capturing group, if it has
-    a name, or an empty string if the capturing group is unnamed.
+    Returns a list of captureCount() + 1 elements, containing the names of the
+    named capturing groups in the pattern string. The list is sorted such that
+    the element of the list at position \c{i} is the name of the \c{i}-th
+    capturing group, if it has a name, or an empty string if that capturing
+    group is unnamed.
+
+    For instance, given the regular expression
+
+    \code
+        (?<day>\d\d)-(?<month>\d\d)-(?<year>\d\d\d\d) (\w+) (?<name>\w+)
+    \endcode
+
+    namedCaptureGroups() will return the following list:
+
+    \code
+        ("", "day", "month", "year", "", "name")
+    \endcode
+
+    which corresponds to the fact that the capturing group #0 (corresponding to
+    the whole match) has no name, the capturing group #1 has name "day", the
+    capturing group #2 has name "month", etc.
 
     If the regular expression is not valid, returns an empty list.
 
