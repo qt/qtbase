@@ -616,34 +616,11 @@ bool QSqlResult::savePrepare(const QString& query)
 */
 bool QSqlResult::prepare(const QString& query)
 {
-    if (d->holders.isEmpty()) {
-        int n = query.size();
-
-        bool inQuote = false;
-        int i = 0;
-
-        while (i < n) {
-            QChar ch = query.at(i);
-            if (ch == QLatin1Char(':') && !inQuote
-                    && (i == 0 || query.at(i - 1) != QLatin1Char(':'))
-                    && (i + 1 < n && qIsAlnum(query.at(i + 1)))) {
-                int pos = i + 2;
-                while (pos < n && qIsAlnum(query.at(pos)))
-                    ++pos;
-
-                QString holder(query.mid(i, pos - i));
-                d->indexes[holder].append(d->holders.size());
-                d->holders.append(QHolder(holder, i));
-                i = pos;
-            } else {
-                if (ch == QLatin1Char('\''))
-                    inQuote = !inQuote;
-                ++i;
-            }
-        }
-        d->values.resize(d->holders.size());
-    }
     d->sql = query;
+    if (d->holders.isEmpty()) {
+        // parse the query to memorize parameter location
+        d->namedToPositionalBinding();
+    }
     return true; // fake prepares should always succeed
 }
 
