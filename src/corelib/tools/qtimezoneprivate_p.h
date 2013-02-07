@@ -69,6 +69,10 @@ class NSTimeZone;
 #endif // __OBJC__
 #endif // Q_OS_MAC
 
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif // Q_OS_WIN
+
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QTimeZonePrivate : public QSharedData
@@ -356,6 +360,64 @@ private:
     NSTimeZone *m_nstz;
 };
 #endif // Q_OS_MAC
+
+#ifdef Q_OS_WIN
+class Q_AUTOTEST_EXPORT QWinTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+{
+public:
+    struct QWinTransitionRule {
+        int startYear;
+        int standardTimeBias;
+        int daylightTimeBias;
+        SYSTEMTIME standardTimeRule;
+        SYSTEMTIME daylightTimeRule;
+    };
+
+    // Create default time zone
+    QWinTimeZonePrivate();
+    // Create named time zone
+    QWinTimeZonePrivate(const QByteArray &olsenId);
+    QWinTimeZonePrivate(const QWinTimeZonePrivate &other);
+    ~QWinTimeZonePrivate();
+
+    QTimeZonePrivate *clone();
+
+    QString comment() const Q_DECL_OVERRIDE;
+
+    QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
+                        const QLocale &locale) const Q_DECL_OVERRIDE;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasDaylightTime() const Q_DECL_OVERRIDE;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasTransitions() const Q_DECL_OVERRIDE;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+
+    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+
+private:
+    void init(const QByteArray &olsenId);
+    QWinTransitionRule ruleForYear(int year) const;
+    QTimeZonePrivate::Data ruleToData(const QWinTransitionRule &rule, qint64 atMSecsSinceEpoch,
+                                      QTimeZone::TimeType type) const;
+
+    QByteArray m_windowsId;
+    QString m_displayName;
+    QString m_standardName;
+    QString m_daylightName;
+    QList<QWinTransitionRule> m_tranRules;
+};
+#endif // Q_OS_WIN
 
 QT_END_NAMESPACE
 

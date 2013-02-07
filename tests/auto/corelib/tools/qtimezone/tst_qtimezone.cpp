@@ -63,6 +63,7 @@ private slots:
     void icuTest();
     void tzTest();
     void macTest();
+    void winTest();
 
 private:
     void printTimeZone(const QTimeZone tz);
@@ -710,34 +711,92 @@ void tst_QTimeZone::macTest()
     QMacTimeZonePrivate tzp("Europe/Berlin");
     QVERIFY(tzp.isValid());
 
-    // Test display names by type
-    QLocale enUS("en_US");
-    QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
-             QString("Central European Standard Time"));
-    QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
-             QString("GMT+01:00"));
-    QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::OffsetName, enUS),
-             QString("UTC+01:00"));
-    QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, enUS),
-             QString("Central European Summer Time"));
-    QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::ShortName, enUS),
-             QString("GMT+02:00"));
-    QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::OffsetName, enUS),
-             QString("UTC+02:00"));
-    // ICU C api does not support Generic Time yet, C++ api does
-    QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::LongName, enUS),
-             QString("Central European Time"));
-    QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::ShortName, enUS),
-             QString("Germany Time"));
-    QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::OffsetName, enUS),
-             QString("UTC+01:00"));
+    // Only test names in debug mode, names used can vary by version
+    if (debug) {
+        // Test display names by type
+        QLocale enUS("en_US");
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
+                QString("Central European Standard Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
+                QString("GMT+01:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+01:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, enUS),
+                QString("Central European Summer Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::ShortName, enUS),
+                QString("GMT+02:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+02:00"));
+        // ICU C api does not support Generic Time yet, C++ api does
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::LongName, enUS),
+                QString("Central European Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::ShortName, enUS),
+                QString("Germany Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+01:00"));
 
-    // Test Abbreviations
-    QCOMPARE(tzp.abbreviation(std), QString("CET"));
-    QCOMPARE(tzp.abbreviation(dst), QString("CEST"));
+        // Test Abbreviations
+        QCOMPARE(tzp.abbreviation(std), QString("CET"));
+        QCOMPARE(tzp.abbreviation(dst), QString("CEST"));
+    }
 
     testCetPrivate(tzp);
 #endif // Q_OS_MAC
+}
+
+void tst_QTimeZone::winTest()
+{
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN)
+    // Known datetimes
+    qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+    qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0, 0), Qt::UTC).toMSecsSinceEpoch();
+
+    // Test default constructor
+    QWinTimeZonePrivate tzpd;
+    if (debug)
+        qDebug() << "System ID = " << tzpd.id()
+                 << tzpd.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale())
+                 << tzpd.displayName(QTimeZone::GenericTime, QTimeZone::LongName, QLocale());
+    QVERIFY(tzpd.isValid());
+
+    // Test invalid constructor
+    QWinTimeZonePrivate tzpi("Gondwana/Erewhon");
+    QCOMPARE(tzpi.isValid(), false);
+
+    // Test named constructor
+    QWinTimeZonePrivate tzp("Europe/Berlin");
+    QVERIFY(tzp.isValid());
+
+    // Only test names in debug mode, names used can vary by version
+    if (debug) {
+        // Test display names by type
+        QLocale enUS("en_US");
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, enUS),
+                QString("W. Europe Standard Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::ShortName, enUS),
+                QString("W. Europe Standard Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+01:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, enUS),
+                QString("W. Europe Daylight Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::ShortName, enUS),
+                QString("W. Europe Daylight Time"));
+        QCOMPARE(tzp.displayName(QTimeZone::DaylightTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+02:00"));
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::LongName, enUS),
+                QString("(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna"));
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::ShortName, enUS),
+                QString("(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna"));
+        QCOMPARE(tzp.displayName(QTimeZone::GenericTime, QTimeZone::OffsetName, enUS),
+                QString("UTC+01:00"));
+
+        // Test Abbreviations
+        QCOMPARE(tzp.abbreviation(std), QString("W. Europe Standard Time"));
+        QCOMPARE(tzp.abbreviation(dst), QString("W. Europe Daylight Time"));
+    }
+
+    testCetPrivate(tzp);
+#endif // Q_OS_WIN
 }
 
 #ifdef QT_BUILD_INTERNAL

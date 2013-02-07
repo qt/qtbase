@@ -124,7 +124,7 @@ else:blackberry {
     HEADERS += tools/qlocale_blackberry.h
 }
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp tools/qtimezoneprivate_tz.cpp
-else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
+else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp tools/qtimezoneprivate_win.cpp
 else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:SOURCES += tools/qelapsedtimer_generic.cpp
 
