@@ -184,7 +184,7 @@ void QXcbConnection::updateScreens()
                         activeScreens << screen;
                         ++screenNumber;
                         if (!primaryScreen && primary) {
-                            if (primary->output == XCB_NONE || outputs[i] == primary->output) {
+                            if (m_primaryScreen == xcbScreenNumber && (primary->output == XCB_NONE || outputs[i] == primary->output)) {
                                 primaryScreen = screen;
                                 siblings.prepend(siblings.takeLast());
 #ifdef Q_XCB_DEBUG
