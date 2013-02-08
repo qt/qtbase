@@ -420,9 +420,11 @@ void tst_QSqlQuery::char1Select()
 
     {
         QSqlQuery q( db );
-        QVERIFY_SQL( q, exec( "create table " + qTableName( "char1Select", __FILE__ ) + " (id char(1))" ) );
-        QVERIFY_SQL( q, exec( "insert into " + qTableName( "char1Select", __FILE__ ) + " values ('a')" ) );
-        QVERIFY_SQL( q, exec( "select * from " + qTableName( "char1Select", __FILE__ ) ) );
+        const QString tbl = qTableName("char1Select", __FILE__);
+        q.exec( "drop table " + tbl);
+        QVERIFY_SQL(q, exec("create table " + tbl + " (id char(1))"));
+        QVERIFY_SQL(q, exec("insert into " + tbl + " values ('a')"));
+        QVERIFY_SQL(q, exec("select * from " + tbl));
         QVERIFY( q.next() );
 
         if ( db.driverName().startsWith( "QIBASE" ) )
@@ -1489,6 +1491,7 @@ void tst_QSqlQuery::precision()
         // need a new scope for SQLITE
         QSqlQuery q( db );
 
+        q.exec("drop table " + qtest_precision);
         if ( tst_Databases::isMSAccess( db ) )
             QVERIFY_SQL( q, exec( "create table " + qtest_precision + " (col1 number)" ) );
         else
@@ -1753,6 +1756,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         else
             createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200), name2 varchar(200))";
 
+        q.exec("drop table " + qtest_prepare);
         QVERIFY_SQL( q, exec( createQuery ) );
 
         QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name) values (:id, :name)" ) );
@@ -2286,8 +2290,10 @@ void tst_QSqlQuery::execErrorRecovery()
 
     QSqlQuery q( db );
 
-    QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_exerr", __FILE__ ) + " (id int not null primary key)" ) );
-    QVERIFY_SQL( q, prepare( "insert into " + qTableName( "qtest_exerr", __FILE__ ) + " values (?)" ) );
+    const QString tbl = qTableName("qtest_exerr", __FILE__);
+    q.exec("drop table " + tbl);
+    QVERIFY_SQL(q, exec("create table " + tbl + " (id int not null primary key)"));
+    QVERIFY_SQL(q, prepare("insert into " + tbl + " values (?)" ));
 
     q.addBindValue( 1 );
     QVERIFY_SQL( q, exec() );
@@ -2790,8 +2796,10 @@ void tst_QSqlQuery::emptyTableNavigate()
 
     {
         QSqlQuery q( db );
-        QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_empty", __FILE__ ) + " (id char(10))" ) );
-        QVERIFY_SQL( q, prepare( "select * from " + qTableName( "qtest_empty", __FILE__ ) ) );
+        const QString tbl = qTableName("qtest_empty", __FILE__);
+        q.exec("drop table " + tbl);
+        QVERIFY_SQL(q, exec("create table " + tbl + " (id char(10))"));
+        QVERIFY_SQL(q, prepare("select * from " + qTableName("qtest_empty", __FILE__ )));
         QVERIFY_SQL( q, exec() );
         QVERIFY( !q.next() );
         QCOMPARE( q.lastError().isValid(), false );
@@ -2806,6 +2814,7 @@ void tst_QSqlQuery::task_217003()
     QSqlQuery q( db );
     const QString Planet(qTableName( "Planet", __FILE__));
 
+    q.exec("drop table " + Planet);
     QVERIFY_SQL( q, exec( "create table " + Planet + " (Name varchar(20))" ) );
     QVERIFY_SQL( q, exec( "insert into " + Planet + " VALUES ('Mercury')" ) );
     QVERIFY_SQL( q, exec( "insert into " + Planet + " VALUES ('Venus')" ) );
