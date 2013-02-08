@@ -597,13 +597,12 @@ bool QSqlResult::savePrepare(const QString& query)
     if (!driver()->hasFeature(QSqlDriver::PreparedQueries))
         return prepare(query);
 
-    if (driver()->hasFeature(QSqlDriver::NamedPlaceholders)) {
-        // parse the query to memorize parameter location
-        d->namedToPositionalBinding();
+    // parse the query to memorize parameter location
+    d->executedQuery = d->namedToPositionalBinding();
+
+    if (driver()->hasFeature(QSqlDriver::NamedPlaceholders))
         d->executedQuery = d->positionalToNamedBinding();
-    } else {
-        d->executedQuery = d->namedToPositionalBinding();
-    }
+
     return prepare(d->executedQuery);
 }
 
