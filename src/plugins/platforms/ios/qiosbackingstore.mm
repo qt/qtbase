@@ -92,6 +92,13 @@ void QIOSBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
+    if (window != this->window()) {
+        // We skip flushing raster-based child windows, to avoid the extra cost of copying from the
+        // parent FBO into the child FBO. Since the child is already drawn inside the parent FBO, it
+        // will become visible when flushing the parent. The only case we end up not supporting is if
+        // the child window overlaps a sibling window that's draws using a separate QOpenGLContext.
+        return;
+    }
     m_context->swapBuffers(window);
 }
 
