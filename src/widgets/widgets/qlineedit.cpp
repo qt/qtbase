@@ -1758,7 +1758,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         QObject::disconnect(d->control->completer(), 0, this, 0);
     }
 #endif
-    update();
+    QWidget::focusOutEvent(e);
 }
 
 /*!\reimp
