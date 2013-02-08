@@ -15,6 +15,7 @@ SUBDIRS=\
    qmouseevent_modal \
    qpalette \
    qscreen \
+   qsurfaceformat \
    qtouchevent \
    qwindow \
    qguiapplication \

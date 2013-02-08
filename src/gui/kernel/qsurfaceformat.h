@@ -42,6 +42,7 @@
 #define QSURFACEFORMAT_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qpair.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -119,6 +120,9 @@ public:
 
     void setMinorVersion(int minorVersion);
     int minorVersion() const;
+
+    QPair<int, int> version() const;
+    void setVersion(int major, int minor);
 
     bool stereo() const;
     void setStereo(bool enable);
