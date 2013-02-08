@@ -41,3 +41,5 @@ SUBDIRS = $$TOOLS_SUBDIRS
 bootstrap_prepare_docs.depends += $${src_tools_qdoc.target}-make_first
 bootstrap_prepare_docs.target = $${src_tools_bootstrap.target}-prepare_docs
 QMAKE_EXTRA_TARGETS += bootstrap_prepare_docs
+
+TR_EXCLUDE += $$PWD/*
