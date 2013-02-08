@@ -206,8 +206,7 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
             }
         }
 
-        int dotIdx = colName.lastIndexOf(QLatin1Char('.'));
-        QSqlField fld(colName.mid(dotIdx == -1 ? 0 : dotIdx + 1), fieldType);
+        QSqlField fld(colName, fieldType);
         fld.setSqlType(stp);
         rInf.append(fld);
     }
