@@ -540,7 +540,7 @@ void tst_QSqlQuery::mysqlOutValues()
 
     q.exec( "drop function " + hello );
 
-    QVERIFY_SQL( q, exec( "create function " + hello + " (s char(20)) returns varchar(50) return concat('Hello ', s)" ) );
+    QVERIFY_SQL(q, exec("create function " + hello + " (s char(20)) returns varchar(50) READS SQL DATA return concat('Hello ', s)"));
 
     QVERIFY_SQL( q, exec( "select " + hello + "('world')" ) );
     QVERIFY_SQL( q, next() );
@@ -3580,7 +3580,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     CHECK_DATABASE(db);
     QVariant::Type intType = QVariant::Int;
     // QPSQL uses LongLong for manipulation of integers
-    if (db.driverName().startsWith("QPSQL"))
+    if (db.driverName().startsWith("QPSQL") || db.driverName().startsWith("QMYSQL"))
         intType = QVariant::LongLong;
     {
         const QString tableName(qTableName("numericFunctionsWithIntValues", __FILE__));
@@ -3594,6 +3594,8 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY(q.next());
         if (db.driverName().startsWith("QSQLITE"))
             QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        else if (db.driverName().startsWith("QMYSQL"))
+            QCOMPARE(q.record().field(0).type(), QVariant::Double);
         else
             QCOMPARE(q.record().field(0).type(), intType);
 
@@ -3603,11 +3605,15 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 3);
-        QCOMPARE(q.record().field(0).type(), intType);
+        if (db.driverName().startsWith("QMYSQL"))
+            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        else
+            QCOMPARE(q.record().field(0).type(), intType);
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
-        if (db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QPSQL")) {
+        if (db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QPSQL")
+            || (db.driverName().startsWith("QMYSQL"))) {
             QCOMPARE(q.value(0).toDouble(), 1.5);
             QCOMPARE(q.record().field(0).type(), QVariant::Double);
         } else {
@@ -3682,7 +3688,10 @@ void tst_QSqlQuery::aggregateFunctionTypes()
 
             QVERIFY_SQL(q, exec("SELECT ROUND(id, 0) FROM " + tableName + " WHERE id=2.5"));
             QVERIFY(q.next());
-            QCOMPARE(q.value(0).toDouble(), 3.0);
+            if (db.driverName().startsWith("QMYSQL"))
+                QCOMPARE(q.value(0).toDouble(), 2.0);
+            else
+                QCOMPARE(q.value(0).toDouble(), 3.0);
             QCOMPARE(q.record().field(0).type(), QVariant::Double);
         }
     }
