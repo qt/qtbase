@@ -83,6 +83,7 @@ public:
         , visible(false)
         , exposed(false)
         , windowState(Qt::WindowNoState)
+        , visibility(QWindow::Hidden)
         , resizeEventPending(true)
         , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
@@ -122,6 +123,8 @@ public:
 
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
 
+    void updateVisibility();
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;
@@ -134,6 +137,7 @@ public:
     QIcon windowIcon;
     QRect geometry;
     Qt::WindowState windowState;
+    QWindow::Visibility visibility;
     bool resizeEventPending;
     bool receivedExpose;
     PositionPolicy positionPolicy;

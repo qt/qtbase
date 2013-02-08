@@ -91,6 +91,8 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_OBJECT
     Q_DECLARE_PRIVATE(QWindow)
 
+    Q_ENUMS(Visibility)
+
     // All properties which are declared here are inherited by QQuickWindow and therefore available in QML.
     // So please think carefully about what it does to the QML namespace if you add any new ones,
     // particularly the possible meanings these names might have in any specializations of Window.
@@ -109,10 +111,19 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
     Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged)
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 
 public:
+    enum Visibility {
+        Hidden = 0,
+        AutomaticVisibility,
+        Windowed,
+        Minimized,
+        Maximized,
+        FullScreen
+    };
 
     explicit QWindow(QScreen *screen = 0);
     explicit QWindow(QWindow *parent);
@@ -122,6 +133,9 @@ public:
     SurfaceType surfaceType() const;
 
     bool isVisible() const;
+
+    Visibility visibility() const;
+    void setVisibility(Visibility v);
 
     void create();
 
@@ -284,6 +298,7 @@ Q_SIGNALS:
     void maximumHeightChanged(int arg);
 
     void visibleChanged(bool arg);
+    void visibilityChanged(QWindow::Visibility visibility);
     void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
     void focusObjectChanged(QObject *object);
