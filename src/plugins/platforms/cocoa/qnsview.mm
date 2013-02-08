@@ -398,6 +398,11 @@ static QTouchDevice *touchDevice = 0;
     }
 }
 
+- (void)resetMouseButtons
+{
+    m_buttons = Qt::NoButton;
+}
+
 - (void)handleMouseEvent:(NSEvent *)theEvent
 {
     QPoint qtWindowPoint, qtScreenPoint;

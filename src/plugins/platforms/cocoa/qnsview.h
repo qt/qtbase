@@ -84,6 +84,8 @@ QT_END_NAMESPACE
 - (BOOL)acceptsFirstResponder;
 - (BOOL)becomeFirstResponder;
 
+- (void)resetMouseButtons;
+
 - (void)handleMouseEvent:(NSEvent *)theEvent;
 - (void)mouseDown:(NSEvent *)theEvent;
 - (void)mouseDragged:(NSEvent *)theEvent;

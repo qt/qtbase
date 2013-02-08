@@ -48,6 +48,7 @@
 #include "qcocoaapplication.h"
 #include "qcocoamenuloader.h"
 #include "qcocoawindow.h"
+#import "qnsview.h"
 
 static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 {
@@ -313,18 +314,10 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatf
     NSPoint nsPos = NSMakePoint(pos.x(), pos.y());
     [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:view];
 
-    // The call above blocks and swallows the mouse release event, so we send a
-    // synthetic one to bring back any QQuickMouseArea back to a more normal state.
-    NSEvent *releaseEvent = [NSEvent mouseEventWithType:NSLeftMouseUp
-                                               location:nsPos
-                                          modifierFlags:0
-                                              timestamp:0
-                                           windowNumber:view.window.windowNumber
-                                                context:[NSGraphicsContext currentContext]
-                                            eventNumber:0
-                                             clickCount:0
-                                               pressure:1.0];
-    [view.window sendEvent:releaseEvent];
+    // The call above blocks, and also swallows any mouse release event,
+    // so we need to clear any mouse button that triggered the menu popup.
+    if ([view isKindOfClass:[QNSView class]])
+        [(QNSView *)view resetMouseButtons];
 }
 
 QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const
