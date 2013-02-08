@@ -58,7 +58,8 @@ class Q_GUI_EXPORT QSurface
 {
 public:
     enum SurfaceClass {
-        Window
+        Window,
+        Offscreen
     };
 
     enum SurfaceType {

@@ -39,48 +39,38 @@
 **
 ****************************************************************************/
 
-#include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfscursor.h"
-#include "qeglfshooks.h"
-#include "qeglfsintegration.h"
-
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtGui/QSurface>
-#include <QtDebug>
+#include <QtGui/QOffscreenSurface>
+#include "qeglpbuffer_p.h"
+#include "qeglconvenience_p.h"
 
 QT_BEGIN_NAMESPACE
 
-QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
-                             EGLDisplay display, EGLenum eglApi)
-    : QEGLPlatformContext(format, share, display, QEglFSIntegration::chooseConfig(display, format), eglApi)
+QEGLPbuffer::QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface)
+    : QPlatformOffscreenSurface(offscreenSurface)
+    , m_format(format)
+    , m_display(display)
+    , m_pbuffer(EGL_NO_SURFACE)
 {
-}
+    EGLConfig config = q_configFromGLFormat(m_display, m_format, false, EGL_PBUFFER_BIT);
 
-bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
-{
-    return QEGLPlatformContext::makeCurrent(surface);
-}
+    if (config) {
+        const EGLint attributes[] = {
+            EGL_WIDTH, offscreenSurface->size().width(),
+            EGL_HEIGHT, offscreenSurface->size().height(),
+            EGL_LARGEST_PBUFFER, EGL_FALSE,
+            EGL_NONE
+        };
 
-EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        return static_cast<QEglFSWindow *>(surface)->surface();
-    else
-        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
-}
+        m_pbuffer = eglCreatePbufferSurface(m_display, config, attributes);
 
-void QEglFSContext::swapBuffers(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
-        // draw the cursor
-        if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->cursor()))
-            cursor->paintOnScreen();
+        if (m_pbuffer != EGL_NO_SURFACE)
+            m_format = q_glFormatFromConfig(m_display, config);
     }
+}
 
-    QEGLPlatformContext::swapBuffers(surface);
+QEGLPbuffer::~QEGLPbuffer()
+{
+    eglDestroySurface(m_display, m_pbuffer);
 }
 
 QT_END_NAMESPACE
-

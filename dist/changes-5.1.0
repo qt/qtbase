@@ -29,7 +29,7 @@ General Improvements
 Third party components
 ----------------------
 
- - 
+ -
 
 
 ****************************************************************************
@@ -72,7 +72,9 @@ QtCore
 QtGui
 -----
 
- -
+ - QOffscreenSurface
+    * New class for rendering graphics using OpenGL in an arbitrary thread
+      without needing to use a hidden QWindow.
 
 
 QtNetwork

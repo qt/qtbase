@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,48 +39,60 @@
 **
 ****************************************************************************/
 
-#include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfscursor.h"
-#include "qeglfshooks.h"
-#include "qeglfsintegration.h"
+#ifndef QOFFSCREENSURFACE_H
+#define QOFFSCREENSURFACE_H
 
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtGui/QSurface>
-#include <QtDebug>
+#include <QtCore/QObject>
+#include <QtGui/qsurface.h>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
-                             EGLDisplay display, EGLenum eglApi)
-    : QEGLPlatformContext(format, share, display, QEglFSIntegration::chooseConfig(display, format), eglApi)
-{
-}
+class QOffscreenSurfacePrivate;
 
-bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
-{
-    return QEGLPlatformContext::makeCurrent(surface);
-}
+class QScreen;
+class QPlatformOffscreenSurface;
 
-EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+class Q_GUI_EXPORT QOffscreenSurface : public QObject, public QSurface
 {
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        return static_cast<QEglFSWindow *>(surface)->surface();
-    else
-        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
-}
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QOffscreenSurface)
 
-void QEglFSContext::swapBuffers(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
-        // draw the cursor
-        if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->cursor()))
-            cursor->paintOnScreen();
-    }
+public:
 
-    QEGLPlatformContext::swapBuffers(surface);
-}
+    explicit QOffscreenSurface(QScreen *screen = 0);
+    virtual ~QOffscreenSurface();
+
+    SurfaceType surfaceType() const;
+
+    void create();
+    void destroy();
+
+    bool isValid() const;
+
+    void setFormat(const QSurfaceFormat &format);
+    QSurfaceFormat format() const;
+    QSurfaceFormat requestedFormat() const;
+
+    QSize size() const;
+
+    QScreen *screen() const;
+    void setScreen(QScreen *screen);
+
+    QPlatformOffscreenSurface *handle() const;
+
+Q_SIGNALS:
+    void screenChanged(QScreen *screen);
+
+private Q_SLOTS:
+    void screenDestroyed(QObject *screen);
+
+private:
+
+    QPlatformSurface *surfaceHandle() const;
+
+    Q_DISABLE_COPY(QOffscreenSurface)
+};
 
 QT_END_NAMESPACE
 
+#endif // QOFFSCREENSURFACE_H

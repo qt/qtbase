@@ -39,48 +39,31 @@
 **
 ****************************************************************************/
 
-#include "qeglfscontext.h"
-#include "qeglfswindow.h"
-#include "qeglfscursor.h"
-#include "qeglfshooks.h"
-#include "qeglfsintegration.h"
+#ifndef QEGLPBUFFER_H
+#define QEGLPBUFFER_H
 
-#include <QtPlatformSupport/private/qeglpbuffer_p.h>
-#include <QtGui/QSurface>
-#include <QtDebug>
+#include <EGL/egl.h>
+#include <qpa/qplatformoffscreensurface.h>
 
 QT_BEGIN_NAMESPACE
 
-QEglFSContext::QEglFSContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share,
-                             EGLDisplay display, EGLenum eglApi)
-    : QEGLPlatformContext(format, share, display, QEglFSIntegration::chooseConfig(display, format), eglApi)
+class QEGLPbuffer : public QPlatformOffscreenSurface
 {
-}
+public:
+    QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface);
+    ~QEGLPbuffer();
 
-bool QEglFSContext::makeCurrent(QPlatformSurface *surface)
-{
-    return QEGLPlatformContext::makeCurrent(surface);
-}
+    QSurfaceFormat format() const { return m_format; }
+    bool isValid() const { return m_pbuffer != EGL_NO_SURFACE; }
 
-EGLSurface QEglFSContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window)
-        return static_cast<QEglFSWindow *>(surface)->surface();
-    else
-        return static_cast<QEGLPbuffer *>(surface)->pbuffer();
-}
+    EGLSurface pbuffer() const { return m_pbuffer; }
 
-void QEglFSContext::swapBuffers(QPlatformSurface *surface)
-{
-    if (surface->surface()->surfaceClass() == QSurface::Window) {
-        QEglFSWindow *window = static_cast<QEglFSWindow *>(surface);
-        // draw the cursor
-        if (QEglFSCursor *cursor = static_cast<QEglFSCursor *>(window->screen()->cursor()))
-            cursor->paintOnScreen();
-    }
-
-    QEGLPlatformContext::swapBuffers(surface);
-}
+private:
+    QSurfaceFormat m_format;
+    EGLDisplay m_display;
+    EGLSurface m_pbuffer;
+};
 
 QT_END_NAMESPACE
 
+#endif // QEGLPBUFFER_H

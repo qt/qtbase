@@ -51,6 +51,7 @@
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
 #if !defined(QT_NO_EVDEV)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
@@ -62,6 +63,7 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformcursor.h>
 
 #include "qeglfscontext.h"
@@ -152,6 +154,12 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     return new QEglFSContext(hooks->surfaceFormatFor(context->format()), context->shareHandle(), mDisplay);
+}
+
+QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    QEglFSScreen *screen = static_cast<QEglFSScreen *>(surface->screen()->handle());
+    return new QEGLPbuffer(screen->display(), hooks->surfaceFormatFor(surface->requestedFormat()), surface);
 }
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const

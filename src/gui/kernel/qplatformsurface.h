@@ -72,6 +72,7 @@ private:
     QSurface *m_surface;
 
     friend class QPlatformWindow;
+    friend class QPlatformOffscreenSurface;
 };
 
 QT_END_NAMESPACE

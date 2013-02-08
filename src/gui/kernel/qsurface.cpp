@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
     The SurfaceClass enum describes the actual subclass of the surface.
 
     \value Window The surface is an instance of QWindow.
+    \value Offscreen The surface is an instance of QOffscreenSurface.
  */
 
 

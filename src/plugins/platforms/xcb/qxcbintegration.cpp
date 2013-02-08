@@ -78,10 +78,12 @@
 #elif defined(XCB_USE_EGL)
 #include "qxcbeglsurface.h"
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
 #endif
 
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <QtGui/QOffscreenSurface>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qpa/qplatformaccessibility.h>
 #ifndef QT_NO_ACCESSIBILITY_ATSPI_BRIDGE
@@ -168,7 +170,10 @@ public:
 
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
     {
-        return static_cast<QXcbWindow *>(surface)->eglSurface()->surface();
+        if (surface->surface()->surfaceClass() == QSurface::Window)
+            return static_cast<QXcbWindow *>(surface)->eglSurface()->surface();
+        else
+            return static_cast<QEGLPbuffer *>(surface)->pbuffer();
     }
 
 private:
@@ -203,6 +208,20 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
     return new QXcbBackingStore(window);
+}
+
+QPlatformOffscreenSurface *QXcbIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+#if defined(XCB_USE_GLX)
+    return new QGLXPbuffer(surface);
+#elif defined(XCB_USE_EGL)
+    QXcbScreen *screen = static_cast<QXcbScreen *>(surface->screen()->handle());
+    return new QEGLPbuffer(screen->connection()->egl_display(), surface->requestedFormat(), surface);
+#else
+    Q_UNUSED(surface);
+    qWarning("QXcbIntegration: Cannot create platform offscreen surface, neither GLX nor EGL are enabled");
+    return 0;
+#endif
 }
 
 bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const

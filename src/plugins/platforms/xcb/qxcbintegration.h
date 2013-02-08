@@ -68,6 +68,8 @@ public:
 #endif
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
+
     bool hasCapability(Capability cap) const;
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 

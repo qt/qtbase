@@ -75,6 +75,8 @@ class QPlatformDialogHelper;
 class QPlatformSharedGraphicsCache;
 class QPlatformServices;
 class QKeyEvent;
+class QPlatformOffscreenSurface;
+class QOffscreenSurface;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -145,6 +147,8 @@ public:
 
     virtual QStringList themeNames() const;
     virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
+
+    virtual QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
 
 protected:
     void screenAdded(QPlatformScreen *screen);

@@ -50,6 +50,7 @@
 #include <GL/glx.h>
 
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOffscreenSurface>
 
 #include "qglxintegration.h"
 #include <QtPlatformSupport/private/qglxconvenience_p.h>
@@ -270,6 +271,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     , m_screen(screen)
     , m_context(0)
     , m_format(format)
+    , m_isPBufferCurrent(false)
 {
     m_shareContext = 0;
     if (share)
@@ -390,19 +392,35 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 {
     Q_ASSERT(surface->surface()->surfaceType() == QSurface::OpenGLSurface);
 
-    GLXDrawable glxDrawable = static_cast<QXcbWindow *>(surface)->xcb_window();
-
-    return glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), glxDrawable, m_context);
+    QSurface::SurfaceClass surfaceClass = surface->surface()->surfaceClass();
+    if (surfaceClass == QSurface::Window) {
+        m_isPBufferCurrent = false;
+        QXcbWindow *window = static_cast<QXcbWindow *>(surface);
+        return glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), window->xcb_window(), m_context);
+    } else if (surfaceClass == QSurface::Offscreen) {
+        m_isPBufferCurrent = true;
+        QGLXPbuffer *pbuffer = static_cast<QGLXPbuffer *>(surface);
+        return glXMakeContextCurrent(DISPLAY_FROM_XCB(m_screen), pbuffer->pbuffer(), pbuffer->pbuffer(), m_context);
+    }
+    return false;
 }
 
 void QGLXContext::doneCurrent()
 {
-    glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0);
+    if (m_isPBufferCurrent)
+        glXMakeContextCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0, 0);
+    else
+        glXMakeCurrent(DISPLAY_FROM_XCB(m_screen), 0, 0);
+    m_isPBufferCurrent = false;
 }
 
 void QGLXContext::swapBuffers(QPlatformSurface *surface)
 {
-    GLXDrawable glxDrawable = static_cast<QXcbWindow *>(surface)->xcb_window();
+    GLXDrawable glxDrawable = 0;
+    if (surface->surface()->surfaceClass() == QSurface::Offscreen)
+        glxDrawable = static_cast<QGLXPbuffer *>(surface)->pbuffer();
+    else
+        glxDrawable = static_cast<QXcbWindow *>(surface)->xcb_window();
     glXSwapBuffers(DISPLAY_FROM_XCB(m_screen), glxDrawable);
 }
 
@@ -453,5 +471,37 @@ bool QGLXContext::isValid() const
 {
     return m_context != 0;
 }
+
+
+QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
+    : QPlatformOffscreenSurface(offscreenSurface)
+    , m_format(offscreenSurface->requestedFormat())
+    , m_screen(static_cast<QXcbScreen *>(offscreenSurface->screen()->handle()))
+    , m_pbuffer(0)
+{
+    GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber(), m_format);
+
+    if (config) {
+        const int attributes[] = {
+            GLX_PBUFFER_WIDTH, offscreenSurface->size().width(),
+            GLX_PBUFFER_HEIGHT, offscreenSurface->size().height(),
+            GLX_LARGEST_PBUFFER, False,
+            GLX_PRESERVED_CONTENTS, False,
+            GLX_NONE
+        };
+
+        m_pbuffer = glXCreatePbuffer(DISPLAY_FROM_XCB(m_screen), config, attributes);
+
+        if (m_pbuffer)
+            m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(m_screen), config);
+    }
+}
+
+QGLXPbuffer::~QGLXPbuffer()
+{
+    if (m_pbuffer)
+        glXDestroyPbuffer(DISPLAY_FROM_XCB(m_screen), m_pbuffer);
+}
+
 
 QT_END_NAMESPACE
