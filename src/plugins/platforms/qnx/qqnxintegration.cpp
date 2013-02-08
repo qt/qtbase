@@ -214,7 +214,7 @@ QQnxIntegration::QQnxIntegration()
 
 #if defined(QQNX_PPS)
         // Set up the input context
-        m_inputContext = new QQnxInputContext(*m_virtualKeyboard);
+        m_inputContext = new QQnxInputContext(this, *m_virtualKeyboard);
 #endif
     }
 

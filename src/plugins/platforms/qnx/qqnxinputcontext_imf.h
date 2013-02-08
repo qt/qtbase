@@ -54,20 +54,23 @@
 QT_BEGIN_NAMESPACE
 
 class QQnxAbstractVirtualKeyboard;
+class QQnxIntegration;
 
 class QQnxInputContext : public QPlatformInputContext
 {
     Q_OBJECT
 public:
-    explicit QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard);
+    explicit QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVirtualKeyboard &keyboard);
     ~QQnxInputContext();
 
     bool isValid() const;
 
     bool filterEvent(const QEvent *event);
+    QRectF keyboardRect() const;
     void reset();
     void update(Qt::InputMethodQueries);
     bool handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap);
+
 
     void showInputPanel();
     void hideInputPanel();
@@ -125,6 +128,7 @@ private:
     QString m_composingText;
     bool m_inputPanelVisible;
     QLocale m_inputPanelLocale;
+    QQnxIntegration *m_integration;
     QQnxAbstractVirtualKeyboard &m_virtualKeyboad;
 };
 
