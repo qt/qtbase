@@ -345,10 +345,12 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
 
     if (creationFlags & ForceChild) {
         topLevel = false;
-    } else if (creationFlags & ForceTopLevel) {
-        topLevel = true;
+    } else if (embedded) {
+        // Embedded native windows (for example Active X server windows) are by
+        // definition never toplevel, even though they do not have QWindow parents.
+        topLevel = false;
     } else {
-        topLevel = w->isTopLevel();
+        topLevel = (creationFlags & ForceTopLevel) ? true : w->isTopLevel();
     }
 
     if (topLevel && flags == 1) {
