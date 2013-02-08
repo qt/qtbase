@@ -121,12 +121,14 @@ int main(int argc, char **argv) {
     outIndicesBuffer.write("static const quint16 tldCount = ");
     outIndicesBuffer.write(QByteArray::number(lineCount));
     outIndicesBuffer.write(";\n");
-    outIndicesBuffer.write("static const quint16 tldIndices[");
+    outIndicesBuffer.write("static const quint32 tldIndices[");
 //    outIndicesBuffer.write(QByteArray::number(lineCount+1)); // not needed
     outIndicesBuffer.write("] = {\n");
 
-    int utf8Size = 0;
-//    int charSize = 0;
+    int totalUtf8Size = 0;
+    int chunkSize = 0;
+    int stringUtf8Size = 0;
+    QStringList chunks;
     for (int a = 0; a < lineCount; a++) {
         bool lineIsEmpty = strings.at(a).isEmpty();
         if (!lineIsEmpty) {
@@ -136,24 +138,40 @@ int main(int argc, char **argv) {
         int zeroCount = strings.at(a).count(QLatin1String("\\0"));
         int utf8CharsCount = strings.at(a).count(QLatin1String("\\x"));
         int quoteCount = strings.at(a).count('"');
+        stringUtf8Size = strings.at(a).count() - (zeroCount + quoteCount + utf8CharsCount * 3);
+        chunkSize += stringUtf8Size;
+        if (chunkSize > 65535) {
+            static int chunkCount = 0;
+            qWarning() << "chunk" << ++chunkCount << "has length" << chunkSize - stringUtf8Size;
+            outDataBuffer.write(",\n\n");
+            chunks.append(QByteArray::number(totalUtf8Size));
+            chunkSize = 0;
+        }
         outDataBuffer.write(strings.at(a).toUtf8());
         if (!lineIsEmpty)
             outDataBuffer.write("\n");
-        outIndicesBuffer.write(QByteArray::number(utf8Size));
+        outIndicesBuffer.write(QByteArray::number(totalUtf8Size));
         outIndicesBuffer.write(",\n");
-        utf8Size += strings.at(a).count() - (zeroCount + quoteCount + utf8CharsCount * 3);
-//        charSize += strings.at(a).count();
+        totalUtf8Size += stringUtf8Size;
     }
-    outIndicesBuffer.write(QByteArray::number(utf8Size));
+    chunks.append(QByteArray::number(totalUtf8Size));
+    outIndicesBuffer.write(QByteArray::number(totalUtf8Size));
     outIndicesBuffer.write("};\n");
     outIndicesBuffer.close();
     outFile.write(outIndicesBufferBA);
 
     outDataBuffer.close();
-    outFile.write("\nstatic const char tldData[");
+    outFile.write("\nstatic const char *tldData[");
 //    outFile.write(QByteArray::number(charSize)); // not needed
     outFile.write("] = {\n");
     outFile.write(outDataBufferBA);
+    outFile.write("};\n");
+
+    // write chunk information
+    outFile.write("\nstatic const quint16 tldChunkCount = ");
+    outFile.write(QByteArray::number(chunks.count()));
+    outFile.write(";\nstatic const quint32 tldChunks[] = {");
+    outFile.write(chunks.join(", ").toLatin1());
     outFile.write("};\n");
     outFile.close();
     printf("data generated to %s . Now copy the data from this file to src/corelib/io/qurltlds_p.h in your Qt repo\n", argv[2]);
