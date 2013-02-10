@@ -96,6 +96,7 @@ private Q_SLOTS:
 
     void toJson();
     void toJsonSillyNumericValues();
+    void toJsonLargeNumericValues();
     void fromJson();
     void fromJsonErrors();
     void fromBinary();
@@ -1099,6 +1100,57 @@ void tst_QtJson::toJsonSillyNumericValues()
             "        null,\n"
             "        null,\n"
             "        null\n"
+            "    ]\n"
+            "}\n";
+
+    QCOMPARE(json, expected);
+
+    QJsonDocument doc;
+    doc.setObject(object);
+    json = doc.toJson();
+    QCOMPARE(json, expected);
+}
+
+void tst_QtJson::toJsonLargeNumericValues()
+{
+    QJsonObject object;
+    QJsonArray array;
+    array.append(QJsonValue(1.234567)); // actual precision bug in Qt 5.0.0
+    array.append(QJsonValue(1.7976931348623157e+308)); // JS Number.MAX_VALUE
+    array.append(QJsonValue(5e-324));                  // JS Number.MIN_VALUE
+    array.append(QJsonValue(std::numeric_limits<double>::min()));
+    array.append(QJsonValue(std::numeric_limits<double>::max()));
+    array.append(QJsonValue(std::numeric_limits<double>::epsilon()));
+    array.append(QJsonValue(std::numeric_limits<double>::denorm_min()));
+    array.append(QJsonValue(0.0));
+    array.append(QJsonValue(-std::numeric_limits<double>::min()));
+    array.append(QJsonValue(-std::numeric_limits<double>::max()));
+    array.append(QJsonValue(-std::numeric_limits<double>::epsilon()));
+    array.append(QJsonValue(-std::numeric_limits<double>::denorm_min()));
+    array.append(QJsonValue(-0.0));
+    object.insert("Array", array);
+
+    QByteArray json = QJsonDocument(object).toJson();
+
+    QByteArray expected =
+            "{\n"
+            "    \"Array\": [\n"
+            "        1.234567,\n"
+            "        1.7976931348623157e+308,\n"
+            //     ((4.9406564584124654e-324 == 5e-324) == true)
+            // I can only think JavaScript has a special formatter to
+            //  emit this value for this IEEE754 bit pattern.
+            "        4.9406564584124654e-324,\n"
+            "        2.2250738585072014e-308,\n"
+            "        1.7976931348623157e+308,\n"
+            "        2.2204460492503131e-16,\n"
+            "        4.9406564584124654e-324,\n"
+            "        0,\n"
+            "        -2.2250738585072014e-308,\n"
+            "        -1.7976931348623157e+308,\n"
+            "        -2.2204460492503131e-16,\n"
+            "        -4.9406564584124654e-324,\n"
+            "        0\n"
             "    ]\n"
             "}\n";
 

@@ -63,6 +63,7 @@
 #include <qnumeric.h>
 
 #include <limits.h>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
