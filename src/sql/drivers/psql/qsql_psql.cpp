@@ -585,7 +585,7 @@ bool QPSQLResult::exec()
     cleanup();
 
     QString stmt;
-    const QString params = qCreateParamString(boundValues(), d->q->driver());
+    const QString params = qCreateParamString(boundValues(), driver());
     if (params.isEmpty())
         stmt = QString::fromLatin1("EXECUTE %1").arg(d->preparedStmtId);
     else
