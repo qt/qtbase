@@ -169,9 +169,14 @@ static void valueToJson(const QJsonPrivate::Base *b, const QJsonPrivate::Value &
     case QJsonValue::Bool:
         json += v.toBoolean() ? "true" : "false";
         break;
-    case QJsonValue::Double:
-        json += QByteArray::number(v.toDouble(b));
+    case QJsonValue::Double: {
+        const double d = v.toDouble(b);
+        if (qIsFinite(d))
+            json += QByteArray::number(d);
+        else
+            json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)
         break;
+    }
     case QJsonValue::String:
         json += '"';
         json += escapedString(v.toString(b));

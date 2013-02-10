@@ -44,6 +44,7 @@
 #include "qjsonobject.h"
 #include "qjsonvalue.h"
 #include "qjsondocument.h"
+#include <limits>
 
 #define INVALID_UNICODE "\357\277\277" // "\uffff"
 #define UNICODE_DJE "\320\202" // Character from the Serbian Cyrillic alphabet
@@ -94,6 +95,7 @@ private Q_SLOTS:
     void toVariantList();
 
     void toJson();
+    void toJsonSillyNumericValues();
     void fromJson();
     void fromJsonErrors();
     void fromBinary();
@@ -1078,6 +1080,34 @@ void tst_QtJson::toJson()
         expected = "[true,999,\"string\",null,\"\\\\\\u0007\\n\\r\\b\\tabcABC\\\"\"]";
         QCOMPARE(json, expected);
     }
+}
+
+void tst_QtJson::toJsonSillyNumericValues()
+{
+    QJsonObject object;
+    QJsonArray array;
+    array.append(QJsonValue(std::numeric_limits<double>::infinity()));  // encode to: null
+    array.append(QJsonValue(-std::numeric_limits<double>::infinity())); // encode to: null
+    array.append(QJsonValue(std::numeric_limits<double>::quiet_NaN())); // encode to: null
+    object.insert("Array", array);
+
+    QByteArray json = QJsonDocument(object).toJson();
+
+    QByteArray expected =
+            "{\n"
+            "    \"Array\": [\n"
+            "        null,\n"
+            "        null,\n"
+            "        null\n"
+            "    ]\n"
+            "}\n";
+
+    QCOMPARE(json, expected);
+
+    QJsonDocument doc;
+    doc.setObject(object);
+    json = doc.toJson();
+    QCOMPARE(json, expected);
 }
 
 void tst_QtJson::fromJson()
