@@ -8,6 +8,7 @@ HEADERS +=      kernel/qsql.h \
                 kernel/qsqldriverplugin.h \
                 kernel/qsqlerror.h \
                 kernel/qsqlresult.h \
+                kernel/qsqlresult_p.h \
                 kernel/qsqlcachedresult_p.h \
                 kernel/qsqlindex.h
 

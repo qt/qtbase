@@ -50,77 +50,10 @@
 #include "qvector.h"
 #include "qsqldriver.h"
 #include "qpointer.h"
+#include "qsqlresult_p.h"
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
-
-struct QHolder {
-    QHolder(const QString& hldr = QString(), int index = -1): holderName(hldr), holderPos(index) {}
-    bool operator==(const QHolder& h) const { return h.holderPos == holderPos && h.holderName == holderName; }
-    bool operator!=(const QHolder& h) const { return h.holderPos != holderPos || h.holderName != holderName; }
-    QString holderName;
-    int holderPos;
-};
-
-class QSqlResultPrivate
-{
-public:
-    QSqlResultPrivate(QSqlResult* d)
-    : q(d), idx(QSql::BeforeFirstRow), active(false),
-      isSel(false), forwardOnly(false), precisionPolicy(QSql::LowPrecisionDouble), bindCount(0), binds(QSqlResult::PositionalBinding)
-    {}
-
-    void clearValues()
-    {
-        values.clear();
-        bindCount = 0;
-    }
-
-    void resetBindCount()
-    {
-        bindCount = 0;
-    }
-
-    void clearIndex()
-    {
-        indexes.clear();
-        holders.clear();
-        types.clear();
-    }
-
-    void clear()
-    {
-        clearValues();
-        clearIndex();;
-    }
-
-    QString positionalToNamedBinding();
-    QString namedToPositionalBinding();
-    QString holderAt(int index) const;
-
-public:
-    QSqlResult* q;
-    QPointer<QSqlDriver> sqldriver;
-    int idx;
-    QString sql;
-    bool active;
-    bool isSel;
-    QSqlError error;
-    bool forwardOnly;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
-
-    int bindCount;
-    QSqlResult::BindingSyntax binds;
-
-    QString executedQuery;
-    QHash<int, QSql::ParamType> types;
-    QVector<QVariant> values;
-    typedef QHash<QString, QList<int> > IndexMap;
-    IndexMap indexes;
-
-    typedef QVector<QHolder> QHolderVector;
-    QHolderVector holders;
-};
 
 static QString qFieldSerial(int);
 
