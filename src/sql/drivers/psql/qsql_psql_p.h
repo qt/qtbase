@@ -73,7 +73,8 @@ class QSqlRecordInfo;
 
 class QPSQLResult : public QSqlResult
 {
-    friend class QPSQLResultPrivate;
+    Q_DECLARE_PRIVATE(QPSQLResult)
+
 public:
     QPSQLResult(const QPSQLDriver* db);
     ~QPSQLResult();
@@ -95,9 +96,6 @@ protected:
     QVariant lastInsertId() const;
     bool prepare(const QString& query);
     bool exec();
-
-private:
-    QPSQLResultPrivate *d;
 };
 
 class QPSQLDriverPrivate;

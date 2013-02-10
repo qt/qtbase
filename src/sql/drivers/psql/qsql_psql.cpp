@@ -191,15 +191,21 @@ PGresult * QPSQLDriverPrivate::exec(const QString & stmt) const
     return exec(isUtf8 ? stmt.toUtf8().constData() : stmt.toLocal8Bit().constData());
 }
 
-class QPSQLResultPrivate
+class QPSQLResultPrivate : public QSqlResultPrivate
 {
+    Q_DECLARE_PUBLIC(QPSQLResult)
 public:
-    QPSQLResultPrivate(QPSQLResult *qq): q(qq), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
+    QPSQLResultPrivate()
+      : QSqlResultPrivate(),
+        result(0),
+        currentSize(-1),
+        preparedQueriesEnabled(false)
+    { }
+
     static QString fieldSerial(int i) { return QLatin1Char('$') + QString::number(i + 1); }
     void deallocatePreparedStmt();
-    const QPSQLDriverPrivate * privDriver() const { return reinterpret_cast<const QPSQLDriver *>(q->driver())->d; }
+    const QPSQLDriverPrivate * privDriver() const {Q_Q(const QPSQLResult); return reinterpret_cast<const QPSQLDriver *>(q->driver())->d; }
 
-    QPSQLResult *q;
     PGresult *result;
     int currentSize;
     bool preparedQueriesEnabled;
@@ -222,6 +228,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 
 bool QPSQLResultPrivate::processResults()
 {
+    Q_Q(QPSQLResult);
     if (!result)
         return false;
 
@@ -300,29 +307,30 @@ void QPSQLResultPrivate::deallocatePreparedStmt()
 }
 
 QPSQLResult::QPSQLResult(const QPSQLDriver* db)
-    : QSqlResult(db)
+    : QSqlResult(*new QPSQLResultPrivate, db)
 {
-    d = new QPSQLResultPrivate(this);
+    Q_D(QPSQLResult);
     d->preparedQueriesEnabled = db->hasFeature(QSqlDriver::PreparedQueries);
 }
 
 QPSQLResult::~QPSQLResult()
 {
+    Q_D(QPSQLResult);
     cleanup();
 
     if (d->preparedQueriesEnabled && !d->preparedStmtId.isNull())
         d->deallocatePreparedStmt();
-
-    delete d;
 }
 
 QVariant QPSQLResult::handle() const
 {
+    Q_D(const QPSQLResult);
     return QVariant::fromValue(d->result);
 }
 
 void QPSQLResult::cleanup()
 {
+    Q_D(QPSQLResult);
     if (d->result)
         PQclear(d->result);
     d->result = 0;
@@ -333,6 +341,7 @@ void QPSQLResult::cleanup()
 
 bool QPSQLResult::fetch(int i)
 {
+    Q_D(const QPSQLResult);
     if (!isActive())
         return false;
     if (i < 0)
@@ -352,11 +361,13 @@ bool QPSQLResult::fetchFirst()
 
 bool QPSQLResult::fetchLast()
 {
+    Q_D(const QPSQLResult);
     return fetch(PQntuples(d->result) - 1);
 }
 
 QVariant QPSQLResult::data(int i)
 {
+    Q_D(const QPSQLResult);
     if (i >= PQnfields(d->result)) {
         qWarning("QPSQLResult::data: column %d out of range", i);
         return QVariant();
@@ -457,12 +468,14 @@ QVariant QPSQLResult::data(int i)
 
 bool QPSQLResult::isNull(int field)
 {
+    Q_D(const QPSQLResult);
     PQgetvalue(d->result, at(), field);
     return PQgetisnull(d->result, at(), field);
 }
 
 bool QPSQLResult::reset (const QString& query)
 {
+    Q_D(QPSQLResult);
     cleanup();
     if (!driver())
         return false;
@@ -474,16 +487,19 @@ bool QPSQLResult::reset (const QString& query)
 
 int QPSQLResult::size()
 {
+    Q_D(const QPSQLResult);
     return d->currentSize;
 }
 
 int QPSQLResult::numRowsAffected()
 {
+    Q_D(const QPSQLResult);
     return QString::fromLatin1(PQcmdTuples(d->result)).toInt();
 }
 
 QVariant QPSQLResult::lastInsertId() const
 {
+    Q_D(const QPSQLResult);
     if (d->privDriver()->pro >= QPSQLDriver::Version81) {
         QSqlQuery qry(driver()->createResult());
         // Most recent sequence value obtained from nextval
@@ -499,6 +515,7 @@ QVariant QPSQLResult::lastInsertId() const
 
 QSqlRecord QPSQLResult::record() const
 {
+    Q_D(const QPSQLResult);
     QSqlRecord info;
     if (!isActive() || !isSelect())
         return info;
@@ -567,6 +584,7 @@ QString qMakePreparedStmtId()
 
 bool QPSQLResult::prepare(const QString &query)
 {
+    Q_D(QPSQLResult);
     if (!d->preparedQueriesEnabled)
         return QSqlResult::prepare(query);
 
@@ -595,6 +613,7 @@ bool QPSQLResult::prepare(const QString &query)
 
 bool QPSQLResult::exec()
 {
+    Q_D(QPSQLResult);
     if (!d->preparedQueriesEnabled)
         return QSqlResult::exec();
 
