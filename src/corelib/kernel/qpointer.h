@@ -50,56 +50,44 @@ QT_BEGIN_NAMESPACE
 
 class QVariant;
 
-class QPointerBase
-{
-    QWeakPointer<QObject> wp;
-
-protected:
-    inline QPointerBase() : wp() { }
-    inline QPointerBase(QObject *p) : wp(p, true) { }
-    // compiler-generated copy/move ctor/assignment operators are fine! (even though public)
-    inline ~QPointerBase() { }
-
-    inline QObject* data() const
-    { return wp.data(); }
-
-    inline void assign(QObject *p)
-    { wp.assign(p); }
-
-    inline bool isNull() const
-    { return wp.isNull(); }
-
-    inline void clear()
-    { wp.clear(); }
-};
-
 template <class T>
-class QPointer : private QPointerBase
+class QPointer
 {
+    template<typename U>
+    struct TypeSelector
+    {
+        typedef QObject Type;
+    };
+    template<typename U>
+    struct TypeSelector<const U>
+    {
+        typedef const QObject Type;
+    };
+    typedef typename TypeSelector<T>::Type QObjectType;
+    QWeakPointer<QObjectType> wp;
 public:
     inline QPointer() { }
-    inline QPointer(T *p) : QPointerBase(p) { }
+    inline QPointer(T *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine!
     inline ~QPointer() { }
 
     inline QPointer<T> &operator=(T* p)
-    { QPointerBase::assign(p); return *this; }
+    { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
     inline T* data() const
-    { return static_cast<T*>(QPointerBase::data()); }
+    { return static_cast<T*>( wp.data()); }
     inline T* operator->() const
     { return data(); }
     inline T& operator*() const
     { return *data(); }
     inline operator T*() const
     { return data(); }
-#ifdef Q_QDOC
-    inline bool isNull() const;
-    inline void clear();
-#else
-    using QPointerBase::isNull;
-    using QPointerBase::clear;
-#endif
+
+    inline bool isNull() const
+    { return wp.isNull(); }
+
+    inline void clear()
+    { wp.clear(); }
 };
 template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_MOVABLE_TYPE);
 

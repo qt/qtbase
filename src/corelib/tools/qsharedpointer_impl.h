@@ -639,7 +639,7 @@ private:
 public:
 #else
     template <class X> friend class QSharedPointer;
-    friend class QPointerBase;
+    template <class X> friend class QPointer;
 #endif
 
     template <class X>

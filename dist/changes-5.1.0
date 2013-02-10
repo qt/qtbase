@@ -64,6 +64,9 @@ QtCore
       inside the pattern string, as well as the numerical index of each
       named capturing group.
 
+ - QPointer
+    * It is now possible to create a QPointer with a const templated type.
+
  -
 
 QtGui
