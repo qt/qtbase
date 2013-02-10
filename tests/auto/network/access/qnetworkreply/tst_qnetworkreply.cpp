@@ -361,6 +361,7 @@ private Q_SLOTS:
     void ignoreSslErrorsList();
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
+    void encrypted();
     void sslConfiguration_data();
     void sslConfiguration();
 #ifdef QT_BUILD_INTERNAL
@@ -5865,6 +5866,24 @@ void tst_QNetworkReply::sslConfiguration_data()
     QTest::newRow("set-root-cert") << conf << true;
     conf.setProtocol(QSsl::SecureProtocols);
     QTest::newRow("secure") << conf << true;
+}
+
+void tst_QNetworkReply::encrypted()
+{
+    qDebug() << QtNetworkSettings::serverName();
+    QUrl url("https://" + QtNetworkSettings::serverName());
+    QNetworkRequest request(url);
+    QNetworkReply *reply = manager.get(request);
+    reply->ignoreSslErrors();
+
+    QSignalSpy spy(reply, SIGNAL(encrypted()));
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(20);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(spy.count(), 1);
+
+    reply->deleteLater();
 }
 
 void tst_QNetworkReply::sslConfiguration()

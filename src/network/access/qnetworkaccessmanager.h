@@ -139,6 +139,7 @@ Q_SIGNALS:
     void authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator);
     void finished(QNetworkReply *reply);
 #ifndef QT_NO_SSL
+    void encrypted(QNetworkReply *reply);
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 #endif
 
@@ -159,6 +160,7 @@ private:
 
     Q_DECLARE_PRIVATE(QNetworkAccessManager)
     Q_PRIVATE_SLOT(d_func(), void _q_replyFinished())
+    Q_PRIVATE_SLOT(d_func(), void _q_replyEncrypted())
     Q_PRIVATE_SLOT(d_func(), void _q_replySslErrors(QList<QSslError>))
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())

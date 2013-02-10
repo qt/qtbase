@@ -374,6 +374,32 @@ static void ensureInitialized()
 */
 
 /*!
+    \fn void QNetworkAccessManager::encrypted(QNetworkReply *reply)
+    \since 5.1
+
+    This signal is emitted when an SSL/TLS session has successfully
+    completed the initial handshake. At this point, no user data
+    has been transmitted. The signal can be used to perform
+    additional checks on the certificate chain, for example to
+    notify users when the certificate for a website has changed. The
+    \a reply parameter specifies which network reply is responsible.
+    If the reply does not match the expected criteria then it should
+    be aborted by calling QNetworkReply::abort() by a slot connected
+    to this signal. The SSL configuration in use can be inspected
+    using the QNetworkReply::sslConfiguration() method.
+
+    Internally, QNetworkAccessManager may open multiple connections
+    to a server, in order to allow it process requests in parallel.
+    These connections may be reused, which means that the encrypted()
+    signal would not be emitted. This means that you are only
+    guaranteed to receive this signal for the first connection to a
+    site in the lifespan of the QNetworkAccessManager.
+
+    \sa QSslSocket::encrypted()
+    \sa QNetworkReply::encrypted()
+*/
+
+/*!
     \fn void QNetworkAccessManager::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 
     This signal is emitted if the SSL/TLS session encountered errors
@@ -1132,6 +1158,16 @@ void QNetworkAccessManagerPrivate::_q_replyFinished()
 #endif
 }
 
+void QNetworkAccessManagerPrivate::_q_replyEncrypted()
+{
+#ifndef QT_NO_SSL
+    Q_Q(QNetworkAccessManager);
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(q->sender());
+    if (reply)
+        emit q->encrypted(reply);
+#endif
+}
+
 void QNetworkAccessManagerPrivate::_q_replySslErrors(const QList<QSslError> &errors)
 {
 #ifndef QT_NO_SSL
@@ -1152,6 +1188,7 @@ QNetworkReply *QNetworkAccessManagerPrivate::postProcess(QNetworkReply *reply)
 #ifndef QT_NO_SSL
     /* In case we're compiled without SSL support, we don't have this signal and we need to
      * avoid getting a connection error. */
+    q->connect(reply, SIGNAL(encrypted()), SLOT(_q_replyEncrypted()));
     q->connect(reply, SIGNAL(sslErrors(QList<QSslError>)), SLOT(_q_replySslErrors(QList<QSslError>)));
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT

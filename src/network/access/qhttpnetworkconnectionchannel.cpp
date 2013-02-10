@@ -1225,6 +1225,8 @@ void QHttpNetworkConnectionChannel::_q_encrypted()
     if (!reply)
         connection->d_func()->dequeueRequest(socket);
     if (reply)
+        emit reply->encrypted();
+    if (reply)
         sendRequest();
 }
 

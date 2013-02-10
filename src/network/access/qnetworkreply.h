@@ -148,6 +148,7 @@ Q_SIGNALS:
     void finished();
     void error(QNetworkReply::NetworkError);
 #ifndef QT_NO_SSL
+    void encrypted();
     void sslErrors(const QList<QSslError> &errors);
 #endif
 

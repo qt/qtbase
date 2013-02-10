@@ -116,6 +116,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void httpAuthenticationRequired(const QHttpNetworkRequest &, QAuthenticator *))
     Q_PRIVATE_SLOT(d_func(), void httpError(QNetworkReply::NetworkError, const QString &))
 #ifndef QT_NO_SSL
+    Q_PRIVATE_SLOT(d_func(), void replyEncrypted())
     Q_PRIVATE_SLOT(d_func(), void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *))
     Q_PRIVATE_SLOT(d_func(), void replySslConfigurationChanged(const QSslConfiguration&))
 #endif
@@ -280,6 +281,7 @@ public:
     void httpAuthenticationRequired(const QHttpNetworkRequest &request, QAuthenticator *auth);
     void httpError(QNetworkReply::NetworkError error, const QString &errorString);
 #ifndef QT_NO_SSL
+    void replyEncrypted();
     void replySslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
     void replySslConfigurationChanged(const QSslConfiguration&);
 #endif

@@ -142,6 +142,7 @@ public:
     void ignoreSslErrors(const QList<QSslError> &errors);
 
 Q_SIGNALS:
+    void encrypted();
     void sslErrors(const QList<QSslError> &errors);
 #endif
 
