@@ -185,6 +185,7 @@ class QPSQLResultPrivate
 public:
     QPSQLResultPrivate(QPSQLResult *qq): q(qq), privDriver(0), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
     static QString fieldSerial(int i) { return QLatin1Char('$') + QString::number(i + 1); }
+    void deallocatePreparedStmt();
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *privDriver;
@@ -276,15 +277,15 @@ static QVariant::Type qDecodePSQLType(int t)
     return type;
 }
 
-static void qDeallocatePreparedStmt(QPSQLResultPrivate *d)
+void QPSQLResultPrivate::deallocatePreparedStmt()
 {
-    const QString stmt = QLatin1String("DEALLOCATE ") + d->preparedStmtId;
-    PGresult *result = d->privDriver->exec(stmt);
+    const QString stmt = QLatin1String("DEALLOCATE ") + preparedStmtId;
+    PGresult *result = privDriver->exec(stmt);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK)
-        qWarning("Unable to free statement: %s", PQerrorMessage(d->privDriver->connection));
+        qWarning("Unable to free statement: %s", PQerrorMessage(privDriver->connection));
     PQclear(result);
-    d->preparedStmtId.clear();
+    preparedStmtId.clear();
 }
 
 QPSQLResult::QPSQLResult(const QPSQLDriver* db, const QPSQLDriverPrivate* p)
@@ -300,7 +301,7 @@ QPSQLResult::~QPSQLResult()
     cleanup();
 
     if (d->preparedQueriesEnabled && !d->preparedStmtId.isNull())
-        qDeallocatePreparedStmt(d);
+        d->deallocatePreparedStmt();
 
     delete d;
 }
@@ -557,7 +558,7 @@ bool QPSQLResult::prepare(const QString &query)
     cleanup();
 
     if (!d->preparedStmtId.isEmpty())
-        qDeallocatePreparedStmt(d);
+        d->deallocatePreparedStmt();
 
     const QString stmtId = qMakePreparedStmtId();
     const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(QSqlResultPrivate::positionalToNamedBinding(query, QPSQLResultPrivate::fieldSerial));
