@@ -183,11 +183,11 @@ PGresult * QPSQLDriverPrivate::exec(const QString & stmt) const
 class QPSQLResultPrivate
 {
 public:
-    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
+    QPSQLResultPrivate(QPSQLResult *qq): q(qq), privDriver(0), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
     static QString fieldSerial(int i) { return QLatin1Char('$') + QString::number(i + 1); }
 
     QPSQLResult *q;
-    const QPSQLDriverPrivate *driver;
+    const QPSQLDriverPrivate *privDriver;
     PGresult *result;
     int currentSize;
     bool preparedQueriesEnabled;
@@ -226,7 +226,7 @@ bool QPSQLResultPrivate::processResults()
         return true;
     }
     q->setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
-                    "Unable to create query"), QSqlError::StatementError, driver, result));
+                    "Unable to create query"), QSqlError::StatementError, privDriver, result));
     return false;
 }
 
@@ -279,10 +279,10 @@ static QVariant::Type qDecodePSQLType(int t)
 static void qDeallocatePreparedStmt(QPSQLResultPrivate *d)
 {
     const QString stmt = QLatin1String("DEALLOCATE ") + d->preparedStmtId;
-    PGresult *result = d->driver->exec(stmt);
+    PGresult *result = d->privDriver->exec(stmt);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK)
-        qWarning("Unable to free statement: %s", PQerrorMessage(d->driver->connection));
+        qWarning("Unable to free statement: %s", PQerrorMessage(d->privDriver->connection));
     PQclear(result);
     d->preparedStmtId.clear();
 }
@@ -291,7 +291,7 @@ QPSQLResult::QPSQLResult(const QPSQLDriver* db, const QPSQLDriverPrivate* p)
     : QSqlResult(db)
 {
     d = new QPSQLResultPrivate(this);
-    d->driver = p;
+    d->privDriver = p;
     d->preparedQueriesEnabled = db->hasFeature(QSqlDriver::PreparedQueries);
 }
 
@@ -359,7 +359,7 @@ QVariant QPSQLResult::data(int i)
     case QVariant::Bool:
         return QVariant((bool)(val[0] == 't'));
     case QVariant::String:
-        return d->driver->isUtf8 ? QString::fromUtf8(val) : QString::fromLatin1(val);
+        return d->privDriver->isUtf8 ? QString::fromUtf8(val) : QString::fromLatin1(val);
     case QVariant::LongLong:
         if (val[0] == '-')
             return QString::fromLatin1(val).toLongLong();
@@ -457,7 +457,7 @@ bool QPSQLResult::reset (const QString& query)
         return false;
     if (!driver()->isOpen() || driver()->isOpenError())
         return false;
-    d->result = d->driver->exec(query);
+    d->result = d->privDriver->exec(query);
     return d->processResults();
 }
 
@@ -490,7 +490,7 @@ QSqlRecord QPSQLResult::record() const
     int count = PQnfields(d->result);
     for (int i = 0; i < count; ++i) {
         QSqlField f;
-        if (d->driver->isUtf8)
+        if (d->privDriver->isUtf8)
             f.setName(QString::fromUtf8(PQfname(d->result, i)));
         else
             f.setName(QString::fromLocal8Bit(PQfname(d->result, i)));
@@ -562,11 +562,11 @@ bool QPSQLResult::prepare(const QString &query)
     const QString stmtId = qMakePreparedStmtId();
     const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(QSqlResultPrivate::positionalToNamedBinding(query, QPSQLResultPrivate::fieldSerial));
 
-    PGresult *result = d->driver->exec(stmt);
+    PGresult *result = d->privDriver->exec(stmt);
 
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
         setLastError(qMakeError(QCoreApplication::translate("QPSQLResult",
-                                "Unable to prepare statement"), QSqlError::StatementError, d->driver, result));
+                                "Unable to prepare statement"), QSqlError::StatementError, d->privDriver, result));
         PQclear(result);
         d->preparedStmtId.clear();
         return false;
@@ -591,7 +591,7 @@ bool QPSQLResult::exec()
     else
         stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId).arg(params);
 
-    d->result = d->driver->exec(stmt);
+    d->result = d->privDriver->exec(stmt);
 
     return d->processResults();
 }
