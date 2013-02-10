@@ -6,6 +6,7 @@ load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
 
+CONFIG += X11
 QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTK2
 LIBS += $$QT_LIBS_QGTK2
 
