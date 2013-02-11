@@ -604,6 +604,7 @@
     \value LocalTime Locale dependent time (Timezones and Daylight Savings Time).
     \value UTC Coordinated Universal Time, replaces Greenwich Mean Time.
     \value OffsetFromUTC An offset in seconds from Coordinated Universal Time.
+    \value TimeZone A named time zone using a specific set of Daylight Savings rules.
 */
 
 /*!

@@ -1303,6 +1303,18 @@ void tst_QLocale::formatTimeZone()
         QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
     }
 
+    QDateTime dt6(QDate(2013, 1, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
+#endif
+    QCOMPARE(enUS.toString(dt6, "t"), QString("CET"));
+
+    QDateTime dt7(QDate(2013, 6, 1), QTime(0, 0, 0), QTimeZone("Europe/Berlin"));
+#ifdef Q_OS_WIN
+    QEXPECT_FAIL("", "QTimeZone windows backend only returns long name", Continue);
+#endif
+    QCOMPARE(enUS.toString(dt7, "t"), QString("CEST"));
+
     // Current datetime should return current abbreviation
     QCOMPARE(enUS.toString(QDateTime::currentDateTime(), "t"),
              QDateTime::currentDateTime().timeZoneAbbreviation());

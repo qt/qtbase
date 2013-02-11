@@ -48,6 +48,10 @@
 
 QT_BEGIN_NAMESPACE
 
+enum {
+    MSECS_TRAN_WINDOW = 21600000 // 6 hour window for possible recent transitions
+};
+
 /*
     Static utilities for looking up Windows ID tables
 */
@@ -240,6 +244,67 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
     Q_UNUSED(forMSecsSinceEpoch)
     return invalidData();
+}
+
+// Private only method for use by QDateTime to convert local msecs to epoch msecs
+// TODO Could be platform optimised if needed
+QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs) const
+{
+    if (!hasDaylightTime() ||!hasTransitions()) {
+        // No daylight time means same offset for all local msecs
+        // Having daylight time but no transitions means we can't calculate, so use nearest
+        return data(forLocalMSecs - (standardTimeOffset(forLocalMSecs) * 1000));
+    }
+
+    // Get the transition for the local msecs which most of the time should be the right one
+    // Only around the transition times might it not be the right one
+    Data tran = previousTransition(forLocalMSecs);
+    Data nextTran;
+
+    // If the local msecs is less than the real local time of the transition
+    // then get the previous transition to use instead
+    if (forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
+        while (forLocalMSecs < tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000)) {
+            nextTran = tran;
+            tran = previousTransition(tran.atMSecsSinceEpoch);
+        }
+    } else {
+        // The zone msecs is after the transition, so check it is before the next tran
+        // If not try use the next transition instead
+        nextTran = nextTransition(tran.atMSecsSinceEpoch);
+        while (forLocalMSecs >= nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)) {
+            tran = nextTran;
+            nextTran = nextTransition(tran.atMSecsSinceEpoch);
+        }
+    }
+
+    if (tran.daylightTimeOffset == 0) {
+        // If tran is in StandardTime, then need to check if falls close either daylight transition
+        // If it does, then it may need adjusting for missing hour or for second occurrence
+        qint64 diffPrevTran = forLocalMSecs
+                              - (tran.atMSecsSinceEpoch + (tran.offsetFromUtc * 1000));
+        qint64 diffNextTran = nextTran.atMSecsSinceEpoch + (nextTran.offsetFromUtc * 1000)
+                              - forLocalMSecs;
+        if (diffPrevTran >= 0 && diffPrevTran < MSECS_TRAN_WINDOW) {
+            // If tran picked is for standard time check if changed from daylight in last 6 hours,
+            // as the local msecs may be ambiguous and represent two valid utc msecs.
+            // If in last 6 hours then get prev tran and if diff falls within the daylight offset
+            // then use the prev tran as we default to the FirstOccurrence
+            // TODO Check if faster to just always get prev tran, or if faster using 6 hour check.
+            Data dstTran = previousTransition(tran.atMSecsSinceEpoch);
+            if (dstTran.daylightTimeOffset > 0 && diffPrevTran < (dstTran.daylightTimeOffset * 1000))
+                tran = dstTran;
+        } else if (diffNextTran >= 0 && diffNextTran <= (nextTran.daylightTimeOffset * 1000)) {
+            // If time falls within last hour of standard time then is actually the missing hour
+            // So return the next tran instead and adjust the local time to be valid
+            tran = nextTran;
+            forLocalMSecs = forLocalMSecs + (nextTran.daylightTimeOffset * 1000);
+        }
+    }
+
+    // tran should now hold the right transition offset to use
+    tran.atMSecsSinceEpoch = forLocalMSecs - (tran.offsetFromUtc * 1000);
+    return tran;
 }
 
 bool QTimeZonePrivate::hasTransitions() const

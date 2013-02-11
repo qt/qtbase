@@ -39,7 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QLocale>
+#include <QDateTime>
+#include <QTimeZone>
 #include <QTest>
 #include <qdebug.h>
 
@@ -71,21 +72,27 @@ private Q_SLOTS:
     void toMSecsSinceEpoch();
     void toMSecsSinceEpoch1950();
     void toMSecsSinceEpoch2050();
+    void toMSecsSinceEpochTz();
+    void toMSecsSinceEpoch1950Tz();
+    void toMSecsSinceEpoch2050Tz();
     void toTime_t();
     void setDate();
     void setTime();
     void setTimeSpec();
     void setOffsetFromUtc();
     void setMSecsSinceEpoch();
+    void setMSecsSinceEpochTz();
     void setTime_t();
     void toString();
     void toStringTextFormat();
     void toStringIsoFormat();
     void addDays();
+    void addDaysTz();
     void addMonths();
     void addYears();
     void addSecs();
     void addMSecs();
+    void addMSecsTz();
     void toTimeSpec();
     void toOffsetFromUtc();
     void daysTo();
@@ -106,6 +113,7 @@ private Q_SLOTS:
     void fromTime_t();
     void fromMSecsSinceEpoch();
     void fromMSecsSinceEpochUtc();
+    void fromMSecsSinceEpochTz();
 };
 
 void tst_QDateTime::create()
@@ -228,6 +236,42 @@ void tst_QDateTime::toMSecsSinceEpoch2050()
     }
 }
 
+void tst_QDateTime::toMSecsSinceEpochTz()
+{
+    QTimeZone cet = QTimeZone("Europe/Oslo");
+    QList<QDateTime> list;
+    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
+        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0), cet));
+    QBENCHMARK {
+        foreach (const QDateTime &test, list)
+            qint64 result = test.toMSecsSinceEpoch();
+    }
+}
+
+void tst_QDateTime::toMSecsSinceEpoch1950Tz()
+{
+    QTimeZone cet = QTimeZone("Europe/Oslo");
+    QList<QDateTime> list;
+    for (int jd = JULIAN_DAY_1950; jd < JULIAN_DAY_1960; ++jd)
+        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0), cet));
+    QBENCHMARK {
+        foreach (const QDateTime &test, list)
+            qint64 result = test.toMSecsSinceEpoch();
+    }
+}
+
+void tst_QDateTime::toMSecsSinceEpoch2050Tz()
+{
+    QTimeZone cet = QTimeZone("Europe/Oslo");
+    QList<QDateTime> list;
+    for (int jd = JULIAN_DAY_2050; jd < JULIAN_DAY_2060; ++jd)
+        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0), cet));
+    QBENCHMARK {
+        foreach (const QDateTime &test, list)
+            qint64 result = test.toMSecsSinceEpoch();
+    }
+}
+
 void tst_QDateTime::toTime_t()
 {
     QList<QDateTime> list;
@@ -295,6 +339,18 @@ void tst_QDateTime::setMSecsSinceEpoch()
     }
 }
 
+void tst_QDateTime::setMSecsSinceEpochTz()
+{
+    QTimeZone cet = QTimeZone("Europe/Oslo");
+    QList<QDateTime> list;
+    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
+        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0), cet));
+    QBENCHMARK {
+        foreach (QDateTime test, list)
+            test.setMSecsSinceEpoch((JULIAN_DAY_2010 + 180) * MSECS_PER_DAY);
+    }
+}
+
 void tst_QDateTime::setTime_t()
 {
     time_t secs = time_t(JULIAN_DAY_2010 + 180) * SECS_PER_DAY;
@@ -351,6 +407,18 @@ void tst_QDateTime::addDays()
     }
 }
 
+void tst_QDateTime::addDaysTz()
+{
+    QTimeZone cet = QTimeZone("Europe/Oslo");
+    QList<QDateTime> list;
+    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
+        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0), cet));
+    QBENCHMARK {
+        foreach (const QDateTime &test, list)
+            QDateTime result = test.addDays(1);
+    }
+}
+
 void tst_QDateTime::addMonths()
 {
     QList<QDateTime> list;
@@ -392,6 +460,18 @@ void tst_QDateTime::addMSecs()
     QBENCHMARK {
         foreach (const QDateTime &test, list)
             test.addMSecs(1);
+    }
+}
+
+void tst_QDateTime::addMSecsTz()
+{
+    QTimeZone cet = QTimeZone("Europe/Oslo");
+    QList<QDateTime> list;
+    for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
+        list.append(QDateTime(QDate::fromJulianDay(jd), QTime::fromMSecsSinceStartOfDay(0), cet));
+    QBENCHMARK {
+        foreach (const QDateTime &test, list)
+            QDateTime result = test.addMSecs(1);
     }
 }
 
@@ -598,6 +678,15 @@ void tst_QDateTime::fromMSecsSinceEpochUtc()
     QBENCHMARK {
         for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
             QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY, Qt::UTC);
+    }
+}
+
+void tst_QDateTime::fromMSecsSinceEpochTz()
+{
+    QTimeZone cet = QTimeZone("Europe/Oslo");
+    QBENCHMARK {
+        for (int jd = JULIAN_DAY_2010; jd < JULIAN_DAY_2020; ++jd)
+            QDateTime test = QDateTime::fromMSecsSinceEpoch(jd * MSECS_PER_DAY, cet);
     }
 }
 
