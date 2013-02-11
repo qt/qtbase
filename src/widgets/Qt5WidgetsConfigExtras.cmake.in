@@ -1,12 +1,10 @@
 
-get_filename_component(_qt5_widgets_install_prefix \"${CMAKE_CURRENT_LIST_DIR}/$${CMAKE_RELATIVE_INSTALL_DIR}\" ABSOLUTE)
-
 if (NOT TARGET Qt5::uic)
     add_executable(Qt5::uic IMPORTED)
 
     set_target_properties(Qt5::uic PROPERTIES
 !!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION \"${_qt5_widgets_install_prefix}/$${CMAKE_BIN_DIR}uic$$CMAKE_BIN_SUFFIX\"
+        IMPORTED_LOCATION \"${_qt5Widgets_install_prefix}/$${CMAKE_BIN_DIR}uic$$CMAKE_BIN_SUFFIX\"
 !!ELSE
         IMPORTED_LOCATION \"$${CMAKE_BIN_DIR}uic$$CMAKE_BIN_SUFFIX\"
 !!ENDIF
