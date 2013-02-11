@@ -580,9 +580,10 @@ void tst_QSqlQuery::mysqlOutValues()
 void tst_QSqlQuery::bindBool()
 {
     // QTBUG-27763: bool value got converted to int 127 by mysql driver because sizeof(bool) < sizeof(int).
-    // The problem was the way the bool value from the application was handled. It doesn't matter
-    // whether the table column type is BOOL or INT. Use INT here because all DBMSs have it and all
-    // should pass this test.
+    // The problem was the way the bool value from the application was handled. For our purposes here, it
+    // doesn't matter whether the column type is BOOLEAN or INT. All DBMSs have INT, and this usually
+    // works for this test. Postresql is an exception because its INT type does not accept BOOLEAN
+    // values and its BOOLEAN columns do not accept INT values.
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
@@ -590,7 +591,8 @@ void tst_QSqlQuery::bindBool()
 
     const QString tableName(qTableName( "bindBool", __FILE__ ));
     q.exec("DROP TABLE " + tableName);
-    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT, flag INT NOT NULL, PRIMARY KEY(id))"));
+    QString colType = db.driverName().startsWith("QPSQL") ? QLatin1String("BOOLEAN") : QLatin1String("INT");
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT, flag " + colType + " NOT NULL, PRIMARY KEY(id))"));
 
     for (int i = 0; i < 2; ++i) {
         bool flag = i;
