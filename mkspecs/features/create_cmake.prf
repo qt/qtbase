@@ -36,14 +36,24 @@ CMAKE_MODULE_DEPS = $$cmakeModuleList($$sort_depends(QT.$${MODULE}.depends, QT.)
 CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
 !isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
 
+# Several distros (ArchLinux, Fedora) have in the past installed libraries
+# in /lib(64)?, but are now moving to install libraries in /usr/lib(64)?/.
+# The /lib paths are made symlinks to the /usr/lib paths. If someone searching
+# for a Qt 5 package finds it in /lib/cmake/Qt5Core, although it has been
+# installed in /usr/lib/cmake/Qt5Core, relative paths to the includes and
+# executables will not work. So, we treat installations to /usr as non-relocatable
+# packages with absolute paths.
+CMAKE_INSTALL_LIBS_DIR = $$[QT_INSTALL_LIBS]
+contains(CMAKE_INSTALL_LIBS_DIR, ^(/usr)?/lib(64)?.*): CMAKE_FORCE_ABSOLUTE_PATHS = True
+
 CMAKE_INCLUDE_DIR = $$cmakeRelativePath($$[QT_INSTALL_HEADERS], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_INCLUDE_DIR, "^\\.\\./.*") {
+!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_INCLUDE_DIR, "^\\.\\./.*") {
     CMAKE_INCLUDE_DIR = $$[QT_INSTALL_HEADERS]/
     CMAKE_INCLUDE_DIR_IS_ABSOLUTE = True
 }
 
 CMAKE_LIB_DIR = $$cmakeRelativePath($$[QT_INSTALL_LIBS], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_LIB_DIR, "^\\.\\./.*") {
+!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_LIB_DIR,"^\\.\\./.*") {
     CMAKE_LIB_DIR = $$[QT_INSTALL_LIBS]/
     CMAKE_LIB_DIR_IS_ABSOLUTE = True
 } else {
@@ -54,13 +64,13 @@ contains(CMAKE_LIB_DIR, "^\\.\\./.*") {
 }
 
 CMAKE_BIN_DIR = $$cmakeRelativePath($$[QT_HOST_BINS], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
+!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
     CMAKE_BIN_DIR = $$[QT_HOST_BINS]/
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
 }
 
 CMAKE_ARCHDATA_DIR = $$cmakeRelativePath($$[QT_INSTALL_ARCHDATA], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_ARCHDATA_DIR, "^\\.\\./.*") {  # For the mkspecs
+!isEmpty(CMAKE_FORCE_ABSOLUTE_PATHS)|contains(CMAKE_ARCHDATA_DIR, "^\\.\\./.*") {  # For the mkspecs
     CMAKE_ARCHDATA_DIR = $$[QT_INSTALL_ARCHDATA]/
     CMAKE_ARCHDATA_DIR_IS_ABSOLUTE = True
 }
