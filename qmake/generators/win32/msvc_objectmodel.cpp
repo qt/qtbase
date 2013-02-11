@@ -1198,6 +1198,7 @@ VCLinkerTool::VCLinkerTool()
         TurnOffAssemblyGeneration(unset),
         TypeLibraryResourceID(0),
         GenerateManifest(unset),
+        GenerateWindowsMetadata(unset),
         EnableUAC(unset),
         UACUIAccess(unset),
         SectionAlignment(-1),
@@ -1265,6 +1266,7 @@ bool VCLinkerTool::parseOption(const char* option)
     displayHash("/SWAPRUN"); displayHash("/TLBID"); displayHash("/TLBOUT");
     displayHash("/TSAWARE"); displayHash("/VERBOSE"); displayHash("/VERSION");
     displayHash("/VXD"); displayHash("/WS "); displayHash("/libpath");
+    displayHash("/WINMD"); displayHash("/WINMDFILE:");
 
 #endif
 #ifdef USE_DISPLAY_HASH
@@ -1376,6 +1378,15 @@ bool VCLinkerTool::parseOption(const char* option)
             GenerateManifest = _False;
         else
             GenerateManifest = _True;
+        break;
+    case 0x34be314: // /WINMD[:NO]
+        if ((*(option+6) == ':' && (*(option+7) == 'N' || *(option+7) == 'n')))
+            GenerateWindowsMetadata = _False;
+        else
+            GenerateWindowsMetadata = _True;
+        break;
+    case 0x31be7e5: // /WINMDFILE:filename
+        WindowsMetadataFile = option+11;
         break;
     case 0x8b64559: // /MANIFESTDEPENDENCY:manifest_dependency
         AdditionalManifestDependencies += option+20;

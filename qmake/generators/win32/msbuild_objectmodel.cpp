@@ -139,6 +139,7 @@ const char _GenerateMapFile[]                   = "GenerateMapFile";
 const char _GenerateServerFiles[]               = "GenerateServerFiles";
 const char _GenerateStublessProxies[]           = "GenerateStublessProxies";
 const char _GenerateTypeLibrary[]               = "GenerateTypeLibrary";
+const char _GenerateWindowsMetadata[]           = "GenerateWindowsMetadata";
 const char _GenerateXMLDocumentationFiles[]     = "GenerateXMLDocumentationFiles";
 const char _HeaderFileName[]                    = "HeaderFileName";
 const char _HeapCommitSize[]                    = "HeapCommitSize";
@@ -255,6 +256,7 @@ const char _Version[]                           = "Version";
 const char _WarnAsError[]                       = "WarnAsError";
 const char _WarningLevel[]                      = "WarningLevel";
 const char _WholeProgramOptimization[]          = "WholeProgramOptimization";
+const char _WindowsMetadataFile[]               = "WindowsMetadataFile";
 const char _XMLDocumentationFileName[]          = "XMLDocumentationFileName";
 
 
@@ -1479,6 +1481,8 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCLinkerTool &tool)
             << attrTagS(_FunctionOrder, tool.FunctionOrder)
             << attrTagT(_GenerateDebugInformation, tool.GenerateDebugInformation)
             << attrTagT(_GenerateManifest, tool.GenerateManifest)
+            << attrTagT(_GenerateWindowsMetadata, tool.GenerateWindowsMetadata)
+            << attrTagS(_WindowsMetadataFile, tool.GenerateWindowsMetadata == _True ? tool.WindowsMetadataFile : QString())
             << attrTagT(_GenerateMapFile, tool.GenerateMapFile)
             << attrTagL(_HeapCommitSize, tool.HeapCommitSize, /*ifNot*/ -1)
             << attrTagL(_HeapReserveSize, tool.HeapReserveSize, /*ifNot*/ -1)
