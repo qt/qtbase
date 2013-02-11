@@ -106,6 +106,7 @@ public:
         clearIndex();;
     }
 
+    static QString fieldSerial(int);
     QString positionalToNamedBinding();
     QString namedToPositionalBinding();
     QString holderAt(int index) const;

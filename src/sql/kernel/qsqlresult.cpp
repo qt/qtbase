@@ -55,15 +55,13 @@
 
 QT_BEGIN_NAMESPACE
 
-static QString qFieldSerial(int);
-
 QString QSqlResultPrivate::holderAt(int index) const
 {
-    return holders.size() > index ? holders.at(index).holderName : qFieldSerial(index);
+    return holders.size() > index ? holders.at(index).holderName : fieldSerial(index);
 }
 
 // return a unique id for bound names
-static QString qFieldSerial(int i)
+QString QSqlResultPrivate::fieldSerial(int i)
 {
     ushort arr[] = { ':', 'f', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     ushort *ptr = &arr[1];
@@ -95,7 +93,7 @@ QString QSqlResultPrivate::positionalToNamedBinding()
     for (int i = 0; i < n; ++i) {
         QChar ch = sql.at(i);
         if (ch == QLatin1Char('?') && !inQuote) {
-            result += qFieldSerial(count++);
+            result += fieldSerial(count++);
         } else {
             if (ch == QLatin1Char('\''))
                 inQuote = !inQuote;
@@ -617,7 +615,7 @@ bool QSqlResult::exec()
 void QSqlResult::bindValue(int index, const QVariant& val, QSql::ParamType paramType)
 {
     d->binds = PositionalBinding;
-    d->indexes[qFieldSerial(index)].append(index);
+    d->indexes[QSqlResultPrivate::fieldSerial(index)].append(index);
     if (d->values.count() <= index)
         d->values.resize(index + 1);
     d->values[index] = val;
