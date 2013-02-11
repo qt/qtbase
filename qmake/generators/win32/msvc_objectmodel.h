@@ -862,6 +862,7 @@ public:
     ~VCConfiguration(){}
 
     DotNET                  CompilerVersion;
+    bool                    WinRT, WinPhone;
 
     // Variables
     triState                ATLMinimizesCRunTimeLibraryUsage;

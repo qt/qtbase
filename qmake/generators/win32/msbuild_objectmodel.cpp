@@ -620,8 +620,23 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
         << attrTag("Label", "Globals")
         << tagValue("ProjectGuid", tool.ProjectGUID)
         << tagValue("RootNamespace", tool.Name)
-        << tagValue("Keyword", tool.Keyword)
-        << closetag();
+        << tagValue("Keyword", tool.Keyword);
+
+    if (tool.SingleProjects.at(0).Configuration.WinRT) {
+        xml << tagValue("MinimumVisualStudioVersion", "11.0");
+        if (tool.SingleProjects.at(0).Configuration.WinPhone)
+            xml << tagValue("WinMDAssembly", "true");
+        else
+            xml << tagValue("AppContainerApplication", "true");
+    }
+
+    if (tool.SingleProjects.at(0).Configuration.WinPhone
+            && tool.SingleProjects.at(0).Configuration.ConfigurationType == typeApplication) {
+        xml << tagValue("XapOutputs", "true");
+        xml << tagValue("XapFilename", "$(RootNamespace)_$(Configuration)_$(Platform).xap");
+    }
+
+    xml << closetag();
 
     // config part.
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.Default.props");
@@ -791,6 +806,9 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     outputFilter(tool, xml, xmlFilter, "Root Files");
 
     xml << import("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
+
+    if (tool.SingleProjects.at(0).Configuration.WinPhone)
+        xml << import("Project", "$(MSBuildExtensionsPath)\\Microsoft\\WindowsPhone\\v8.0\\Microsoft.Cpp.WindowsPhone.8.0.targets");
 
     xml << tag("ImportGroup")
         << attrTag("Label", "ExtensionTargets")

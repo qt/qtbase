@@ -968,6 +968,12 @@ void VcprojGenerator::initConfiguration()
             conf.PrimaryOutput.append(project->first("TARGET_VERSION_EXT").toQString());
     }
 
+    if (conf.CompilerVersion >= NET2012) {
+        conf.WinRT = project->isActiveConfig("winrt");
+        if (conf.WinRT)
+            conf.WinPhone = project->isActiveConfig("winphone");
+    }
+
     conf.Name = project->values("BUILD_NAME").join(' ');
     if (conf.Name.isEmpty())
         conf.Name = isDebug ? "Debug" : "Release";
