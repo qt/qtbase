@@ -64,7 +64,8 @@ public:
 
 private:
     mutable QString defaultFontName;
-    QHash<QFont::StyleHint, QStringList> fallbackLists;
+    mutable QHash<QString, QString> psNameToFamily;
+    mutable QHash<QString, QString> familyNameToPsName;
 };
 
 QT_END_NAMESPACE
