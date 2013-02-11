@@ -131,6 +131,9 @@ public:
     void setSslConfiguration(const QSslConfiguration &config);
 
     // Certificate & cipher accessors.
+    void setLocalCertificateChain(const QList<QSslCertificate> &localChain);
+    QList<QSslCertificate> localCertificateChain() const;
+
     void setLocalCertificate(const QSslCertificate &certificate);
     void setLocalCertificate(const QString &fileName, QSsl::EncodingFormat format = QSsl::Pem);
     QSslCertificate localCertificate() const;

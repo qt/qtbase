@@ -234,6 +234,17 @@ init_context:
             sslContext->errorCode = QSslError::UnspecifiedError;
             return sslContext;
         }
+
+        // If we have any intermediate certificates then we need to add them to our chain
+        bool first = true;
+        foreach (const QSslCertificate &cert, configuration.d->localCertificateChain) {
+            if (first) {
+                first = false;
+                continue;
+            }
+            q_SSL_CTX_ctrl(sslContext->ctx, SSL_CTRL_EXTRA_CHAIN_CERT, 0,
+                           q_X509_dup(reinterpret_cast<X509 *>(cert.handle())));
+        }
     }
 
     // Initialize peer verification.

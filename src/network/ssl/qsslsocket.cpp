@@ -912,6 +912,32 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
 }
 
 /*!
+    Sets the certificate chain to be presented to the peer during the
+    SSL handshake to be \a localChain.
+
+    \sa QSslConfiguration::setLocalCertificateChain()
+    \since 5.1
+ */
+void QSslSocket::setLocalCertificateChain(const QList<QSslCertificate> &localChain)
+{
+    Q_D(QSslSocket);
+    d->configuration.localCertificateChain = localChain;
+}
+
+/*!
+    Returns the socket's local \l {QSslCertificate} {certificate} chain,
+    or an empty list if no local certificates have been assigned.
+
+    \sa setLocalCertificateChain()
+    \since 5.1
+*/
+QList<QSslCertificate> QSslSocket::localCertificateChain() const
+{
+    Q_D(const QSslSocket);
+    return d->configuration.localCertificateChain;
+}
+
+/*!
     Sets the socket's local certificate to \a certificate. The local
     certificate is necessary if you need to confirm your identity to the
     peer. It is used together with the private key; if you set the local
