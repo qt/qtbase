@@ -52,15 +52,6 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qpixmap.h>
 
-#if defined(Q_OS_VXWORKS)
-#  if defined(m_data)
-#    undef m_data
-#  endif
-#  if defined(m_type)
-#    undef m_type
-#  endif
-#endif
-
 QT_BEGIN_NAMESPACE
 
 

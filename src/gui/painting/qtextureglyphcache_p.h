@@ -60,10 +60,6 @@
 
 #include <private/qfontengineglyphcache_p.h>
 
-#if defined(Q_OS_VXWORKS) && defined(m_type)
-#  undef m_type
-#endif
-
 #ifndef QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH
 #define QT_DEFAULT_TEXTURE_GLYPH_CACHE_WIDTH 256
 #endif

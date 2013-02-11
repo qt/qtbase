@@ -50,10 +50,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 
-#if defined(Q_OS_VXWORKS) && defined(m_type)
-#  undef m_type
-#endif
-
 QT_BEGIN_NAMESPACE
 
 
