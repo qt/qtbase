@@ -2609,7 +2609,7 @@ if [ "$CFG_DEBUG_RELEASE" = "yes" ]; then
 fi
 
 if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG force_debug_info"
+    QMAKE_CONFIG="$QMAKE_CONFIG force_debug_info"
 fi
 
 # pass on $CFG_SDK to the arch/configure tests.

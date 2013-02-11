@@ -2545,7 +2545,7 @@ void Configure::generateOutputVars()
         qtConfig += "build_all";
     }
     if (dictionary[ "FORCEDEBUGINFO" ] == "yes")
-        qtConfig += "force_debug_info";
+        qmakeConfig += "force_debug_info";
     qmakeConfig += dictionary[ "BUILD" ];
     dictionary[ "QMAKE_OUTDIR" ] = dictionary[ "BUILD" ];
 
