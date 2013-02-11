@@ -320,6 +320,7 @@ VCCLCompilerTool::VCCLCompilerTool()
         CallingConvention(callConventionDefault),
         CompileAs(compileAsDefault),
         CompileAsManaged(managedDefault),
+        CompileAsWinRT(unset),
         CompileOnly(unset),
         DebugInformationFormat(debugDisabled),
         DefaultCharIsUnsigned(unset),
@@ -941,6 +942,12 @@ bool VCCLCompilerTool::parseOption(const char* option)
             default:
                 found = false; break;
             }
+            break;
+        case 'W':
+            if (third == '-')
+                CompileAsWinRT = _False;
+            else
+                CompileAsWinRT = _True;
             break;
         default:
             found = false; break;

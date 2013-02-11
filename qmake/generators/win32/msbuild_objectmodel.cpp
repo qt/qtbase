@@ -89,6 +89,7 @@ const char _CLRUnmanagedCodeCheck[]             = "CLRUnmanagedCodeCheck";
 const char _Command[]                           = "Command";
 const char _CompileAs[]                         = "CompileAs";
 const char _CompileAsManaged[]                  = "CompileAsManaged";
+const char _CompileAsWinRT[]                    = "CompileAsWinRT";
 const char _ConfigurationType[]                 = "ConfigurationType";
 const char _CPreprocessOptions[]                = "CPreprocessOptions";
 const char _CreateHotpatchableImage[]           = "CreateHotpatchableImage";
@@ -1389,6 +1390,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagS(_CallingConvention, toString(tool.CallingConvention))
             << attrTagS(_CompileAs, toString(tool.CompileAs))
             << attrTagS(_CompileAsManaged, toString(tool.CompileAsManaged))
+            << attrTagT(_CompileAsWinRT, tool.CompileAsWinRT)
             << attrTagT(_CreateHotpatchableImage, tool.CreateHotpatchableImage)
             << attrTagS(_DebugInformationFormat, toString(tool.DebugInformationFormat))
             << attrTagT(_DisableLanguageExtensions, tool.DisableLanguageExtensions)
