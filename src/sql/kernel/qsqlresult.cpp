@@ -81,7 +81,7 @@ static bool qIsAlnum(QChar ch)
     return u - 'a' < 26 || u - 'A' < 26 || u - '0' < 10 || u == '_';
 }
 
-QString QSqlResultPrivate::positionalToNamedBinding(const QString &query)
+QString QSqlResultPrivate::positionalToNamedBinding(const QString &query, QString (fieldSerialFunc)(int idx))
 {
     int n = query.size();
 
@@ -93,7 +93,7 @@ QString QSqlResultPrivate::positionalToNamedBinding(const QString &query)
     for (int i = 0; i < n; ++i) {
         QChar ch = query.at(i);
         if (ch == QLatin1Char('?') && !inQuote) {
-            result += fieldSerial(count++);
+            result += fieldSerialFunc(count++);
         } else {
             if (ch == QLatin1Char('\''))
                 inQuote = !inQuote;
