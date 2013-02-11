@@ -107,8 +107,8 @@ public:
     }
 
     static QString fieldSerial(int);
-    QString positionalToNamedBinding();
-    QString namedToPositionalBinding();
+    static QString positionalToNamedBinding(const QString &query);
+    QString namedToPositionalBinding(const QString &query);
     QString holderAt(int index) const;
 
     QSqlResult *q;
