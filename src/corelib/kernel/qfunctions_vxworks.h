@@ -134,7 +134,9 @@ void *lfind(const void* key, const void* base, size_t* elements, size_t size,
 // no rand_r(), but rand()
 // NOTE: this implementation is wrong for multi threaded applications,
 // but there is no way to get it right on VxWorks (in kernel mode)
+#if defined(_WRS_KERNEL)
 int rand_r(unsigned int * /*seedp*/);
+#endif
 
 // no usleep() support
 int usleep(unsigned int);
