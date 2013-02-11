@@ -1407,7 +1407,7 @@ bool QODBCResult::exec()
 
                     // (How many leading digits do we want to keep?  With SQL Server 2005, this should be 3: 123000000)
                     int keep = (int)qPow(10.0, 9 - qMin(9, precision));
-                    dt->fraction /= keep * keep;
+                    dt->fraction = (dt->fraction / keep) * keep;
                 }
 
                 r = SQLBindParameter(d->hStmt,

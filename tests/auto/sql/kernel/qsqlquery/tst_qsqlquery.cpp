@@ -3458,14 +3458,19 @@ void tst_QSqlQuery::QTBUG_2192()
         QSqlQuery q(db);
         QVERIFY_SQL(q, exec(QString("CREATE TABLE " + tableName + " (dt %1)").arg(tst_Databases::dateTimeTypeName(db))));
 
+        QDateTime dt = QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999));
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (dt) VALUES (?)"));
-        q.bindValue(0, QVariant(QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999))));
+        q.bindValue(0, dt);
         QVERIFY_SQL(q, exec());
 
-        // Check if value was stored with at least second precision.
         QVERIFY_SQL(q, exec("SELECT dt FROM " + tableName));
         QVERIFY_SQL(q, next());
-        QVERIFY(q.value(0).toDateTime().msecsTo(QDateTime(QDate(2012, 7, 4), QTime(23, 59, 59, 999))) < 1000 );
+
+        // Check if retrieved value preserves reported precision
+        int precision = qMax(0, q.record().field("dt").precision());
+        int diff = qAbs(q.value(0).toDateTime().msecsTo(dt));
+        int keep = qMin(1000, (int)qPow(10.0, precision));
+        QVERIFY(diff <= 1000 - keep);
     }
 }
 
