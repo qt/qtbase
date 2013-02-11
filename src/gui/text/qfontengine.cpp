@@ -649,6 +649,13 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition
     return rgbMask;
 }
 
+QImage QFontEngine::bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform&)
+{
+    Q_UNUSED(subPixelPosition);
+
+    return QImage();
+}
+
 QFixed QFontEngine::subPixelPositionForX(QFixed x) const
 {
     if (m_subPixelPositionCount <= 1 || !supportsSubPixelPositions())

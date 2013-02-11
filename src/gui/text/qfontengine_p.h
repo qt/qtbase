@@ -112,7 +112,8 @@ public:
         Format_Render = Format_None,
         Format_Mono,
         Format_A8,
-        Format_A32
+        Format_A32,
+        Format_ARGB
     };
 
     enum ShaperFlag {
@@ -191,6 +192,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
+    virtual QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                            GlyphFormat neededFormat,
                                            const QTransform &t = QTransform(),

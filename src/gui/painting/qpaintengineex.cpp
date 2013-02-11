@@ -1088,6 +1088,9 @@ bool QPaintEngineEx::requiresPretransformedGlyphPositions(QFontEngine *, const Q
 
 bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
 {
+    if (fontEngine->glyphFormat == QFontEngineGlyphCache::Raster_ARGB)
+        return true;
+
     qreal pixelSize = fontEngine->fontDef.pixelSize;
     return (pixelSize * pixelSize * qAbs(m.determinant())) <
             QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;

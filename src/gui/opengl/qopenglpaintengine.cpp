@@ -624,7 +624,7 @@ void QOpenGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
     if (newMode == mode)
         return;
 
-    if (mode == TextDrawingMode || mode == ImageDrawingMode || mode == ImageArrayDrawingMode) {
+    if (mode != BrushDrawingMode) {
         lastTextureUsed = GLuint(-1);
     }
 
@@ -639,10 +639,12 @@ void QOpenGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
         setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, staticTextureCoordinateArray);
     }
 
-    if (newMode == ImageArrayDrawingMode) {
+    if (newMode == ImageArrayDrawingMode || newMode == ImageOpacityArrayDrawingMode) {
         setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinateArray.data());
         setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinateArray.data());
-        setVertexAttributePointer(QT_OPACITY_ATTR, (GLfloat*)opacityArray.data());
+
+        if (newMode == ImageOpacityArrayDrawingMode)
+            setVertexAttributePointer(QT_OPACITY_ATTR, (GLfloat*)opacityArray.data());
     }
 
     // This needs to change when we implement high-quality anti-aliasing...
@@ -1085,7 +1087,7 @@ bool QOpenGL2PaintEngineExPrivate::prepareForCachedGlyphDraw(const QFontEngineGl
 
 bool QOpenGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
 {
-    if (brushTextureDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
+    if (brushTextureDirty && (mode == TextDrawingMode || mode == BrushDrawingMode))
         updateBrushTexture();
 
     if (compositionModeDirty)
@@ -1105,12 +1107,12 @@ bool QOpenGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
     }
 
     QOpenGLEngineShaderManager::OpacityMode opacityMode;
-    if (mode == ImageArrayDrawingMode) {
+    if (mode == ImageOpacityArrayDrawingMode) {
         opacityMode = QOpenGLEngineShaderManager::AttributeOpacity;
     } else {
         opacityMode = stateHasOpacity ? QOpenGLEngineShaderManager::UniformOpacity
                                       : QOpenGLEngineShaderManager::NoOpacity;
-        if (stateHasOpacity && (mode != ImageDrawingMode)) {
+        if (stateHasOpacity && (mode != ImageDrawingMode && mode != ImageArrayDrawingMode)) {
             // Using a brush
             bool brushIsPattern = (currentBrush.style() >= Qt::Dense1Pattern) &&
                                   (currentBrush.style() <= Qt::DiagCrossPattern);
@@ -1130,7 +1132,7 @@ bool QOpenGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         matrixUniformDirty = true;
     }
 
-    if (brushUniformsDirty && mode != ImageDrawingMode && mode != ImageArrayDrawingMode)
+    if (brushUniformsDirty && (mode == TextDrawingMode || mode == BrushDrawingMode))
         updateBrushUniforms();
 
     if (opacityMode == QOpenGLEngineShaderManager::UniformOpacity && opacityUniformDirty) {
@@ -1602,7 +1604,10 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
     if (cache->width() == 0 || cache->height() == 0)
         return;
 
-    transferMode(TextDrawingMode);
+    if (glyphType == QFontEngineGlyphCache::Raster_ARGB)
+        transferMode(ImageArrayDrawingMode);
+    else
+        transferMode(TextDrawingMode);
 
     int margin = fe->glyphMargin(glyphType);
 
@@ -1698,8 +1703,10 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
 #endif
     }
 
-    setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinates->data());
-    setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinates->data());
+    if (glyphType != QFontEngineGlyphCache::Raster_ARGB || recreateVertexArrays) {
+        setVertexAttributePointer(QT_VERTEX_COORDS_ATTR, (GLfloat*)vertexCoordinates->data());
+        setVertexAttributePointer(QT_TEXTURE_COORDS_ATTR, (GLfloat*)textureCoordinates->data());
+    }
 
     if (!snapToPixelGrid) {
         snapToPixelGrid = true;
@@ -1782,6 +1789,11 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
             glBlendFunc(GL_ONE, GL_ONE);
         }
         compositionModeDirty = true;
+    } else if (glyphType == QFontEngineGlyphCache::Raster_ARGB) {
+        currentBrush = noBrush;
+        shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::ImageSrc);
+        if (prepareForCachedGlyphDraw(*cache))
+            shaderManager->currentProgram()->setUniformValue(location(QOpenGLEngineShaderManager::ImageTexture), QT_IMAGE_TEXTURE_UNIT);
     } else {
         // Greyscale/mono glyphs
 
@@ -1792,7 +1804,11 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type 
     QOpenGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QOpenGLTextureGlyphCache::Linear:QOpenGLTextureGlyphCache::Nearest;
     if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
 
-        funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+        if (glyphType == QFontEngineGlyphCache::Raster_ARGB)
+            funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+        else
+            funcs.glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+
         if (lastMaskTextureUsed != cache->texture()) {
             glBindTexture(GL_TEXTURE_2D, cache->texture());
             lastMaskTextureUsed = cache->texture();
@@ -1908,7 +1924,7 @@ void QOpenGL2PaintEngineExPrivate::drawPixmapFragments(const QPainter::PixmapFra
 
     funcs.glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     GLuint id = QOpenGLTextureCache::cacheForContext(ctx)->bindTexture(ctx, pixmap);
-    transferMode(ImageArrayDrawingMode);
+    transferMode(ImageOpacityArrayDrawingMode);
 
     bool isBitmap = pixmap.isQBitmap();
     bool isOpaque = !isBitmap && (!pixmap.hasAlpha() || (hints & QPainter::OpaqueHint)) && allOpaque;

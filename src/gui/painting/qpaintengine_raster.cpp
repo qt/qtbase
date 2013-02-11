@@ -2857,7 +2857,19 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
             //        x, y,
             //        positions[i].x.toInt(), positions[i].y.toInt());
 
-            alphaPenBlt(bits + ((c.x << leftShift) >> rightShift) + c.y * bpl, bpl, depth, x, y, c.w, c.h);
+            const uchar *glyphBits = bits + ((c.x << leftShift) >> rightShift) + c.y * bpl;
+
+            if (glyphType == QFontEngineGlyphCache::Raster_ARGB) {
+                // The current state transform has already been applied to the positions,
+                // so we prevent drawImage() from re-applying the transform by clearing
+                // the state for the duration of the call.
+                QTransform originalTransform = s->matrix;
+                s->matrix = QTransform();
+                drawImage(QPoint(x, y), QImage(glyphBits, c.w, c.h, bpl, image.format()));
+                s->matrix = originalTransform;
+            } else {
+                alphaPenBlt(glyphBits, bpl, depth, x, y, c.w, c.h);
+            }
         }
     }
     return true;

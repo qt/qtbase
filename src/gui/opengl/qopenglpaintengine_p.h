@@ -70,7 +70,8 @@ enum EngineMode {
     ImageDrawingMode,
     TextDrawingMode,
     BrushDrawingMode,
-    ImageArrayDrawingMode
+    ImageArrayDrawingMode,
+    ImageOpacityArrayDrawingMode
 };
 
 QT_BEGIN_NAMESPACE
