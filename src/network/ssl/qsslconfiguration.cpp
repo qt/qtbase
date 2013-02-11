@@ -173,7 +173,7 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         return true;
     return d->peerCertificate == other.d->peerCertificate &&
         d->peerCertificateChain == other.d->peerCertificateChain &&
-        d->localCertificate == other.d->localCertificate &&
+        d->localCertificateChain == other.d->localCertificateChain &&
         d->privateKey == other.d->privateKey &&
         d->sessionCipher == other.d->sessionCipher &&
         d->ciphers == other.d->ciphers &&
@@ -212,7 +212,7 @@ bool QSslConfiguration::isNull() const
             d->allowRootCertOnDemandLoading == true &&
             d->caCertificates.count() == 0 &&
             d->ciphers.count() == 0 &&
-            d->localCertificate.isNull() &&
+            d->localCertificateChain.isEmpty() &&
             d->privateKey.isNull() &&
             d->peerCertificate.isNull() &&
             d->peerCertificateChain.count() == 0 &&
@@ -313,6 +313,18 @@ void QSslConfiguration::setPeerVerifyDepth(int depth)
 }
 
 /*!
+    Returns the certificate chain to be presented to the peer during
+    the SSL handshake process.
+
+    \sa localCertificate()
+    \since 5.1
+*/
+QList<QSslCertificate> QSslConfiguration::localCertificateChain() const
+{
+    return d->localCertificateChain;
+}
+
+/*!
     Returns the certificate to be presented to the peer during the SSL
     handshake process.
 
@@ -320,7 +332,9 @@ void QSslConfiguration::setPeerVerifyDepth(int depth)
 */
 QSslCertificate QSslConfiguration::localCertificate() const
 {
-    return d->localCertificate;
+    if (d->localCertificateChain.isEmpty())
+        return QSslCertificate();
+    return d->localCertificateChain[0];
 }
 
 /*!
@@ -341,7 +355,8 @@ QSslCertificate QSslConfiguration::localCertificate() const
 */
 void QSslConfiguration::setLocalCertificate(const QSslCertificate &certificate)
 {
-    d->localCertificate = certificate;
+    d->localCertificateChain = QList<QSslCertificate>();
+    d->localCertificateChain += certificate;
 }
 
 /*!

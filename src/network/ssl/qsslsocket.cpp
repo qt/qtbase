@@ -895,7 +895,7 @@ QSslConfiguration QSslSocket::sslConfiguration() const
 void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
 {
     Q_D(QSslSocket);
-    d->configuration.localCertificate = configuration.localCertificate();
+    d->configuration.localCertificateChain = configuration.localCertificateChain();
     d->configuration.privateKey = configuration.privateKey();
     d->configuration.ciphers = configuration.ciphers();
     d->configuration.caCertificates = configuration.caCertificates();
@@ -926,7 +926,8 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
 void QSslSocket::setLocalCertificate(const QSslCertificate &certificate)
 {
     Q_D(QSslSocket);
-    d->configuration.localCertificate = certificate;
+    d->configuration.localCertificateChain = QList<QSslCertificate>();
+    d->configuration.localCertificateChain += certificate;
 }
 
 /*!
@@ -939,10 +940,10 @@ void QSslSocket::setLocalCertificate(const QSslCertificate &certificate)
 void QSslSocket::setLocalCertificate(const QString &path,
                                      QSsl::EncodingFormat format)
 {
-    Q_D(QSslSocket);
     QFile file(path);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-        d->configuration.localCertificate = QSslCertificate(file.readAll(), format);
+        setLocalCertificate(QSslCertificate(file.readAll(), format));
+
 }
 
 /*!
@@ -954,7 +955,9 @@ void QSslSocket::setLocalCertificate(const QString &path,
 QSslCertificate QSslSocket::localCertificate() const
 {
     Q_D(const QSslSocket);
-    return d->configuration.localCertificate;
+    if (d->configuration.localCertificateChain.isEmpty())
+        return QSslCertificate();
+    return d->configuration.localCertificateChain[0];
 }
 
 /*!
@@ -2057,7 +2060,7 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
     ptr->ref.store(1);
     ptr->peerCertificate = global->peerCertificate;
     ptr->peerCertificateChain = global->peerCertificateChain;
-    ptr->localCertificate = global->localCertificate;
+    ptr->localCertificateChain = global->localCertificateChain;
     ptr->privateKey = global->privateKey;
     ptr->sessionCipher = global->sessionCipher;
     ptr->ciphers = global->ciphers;

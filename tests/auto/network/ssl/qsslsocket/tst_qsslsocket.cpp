@@ -142,6 +142,7 @@ private slots:
     void protocolServerSide();
     void setCaCertificates();
     void setLocalCertificate();
+    void localCertificateChain();
     void setPrivateKey();
     void setSocketDescriptor();
     void setSslConfiguration_data();
@@ -1098,6 +1099,21 @@ void tst_QSslSocket::setCaCertificates()
 
 void tst_QSslSocket::setLocalCertificate()
 {
+}
+
+void tst_QSslSocket::localCertificateChain()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocket socket;
+    socket.setLocalCertificate(QLatin1String(SRCDIR "certs/fluke.cert"));
+
+    QSslConfiguration conf = socket.sslConfiguration();
+    QList<QSslCertificate> chain = conf.localCertificateChain();
+    QCOMPARE(chain.size(), 1);
+    QCOMPARE(chain[0], conf.localCertificate());
+    QCOMPARE(chain[0], socket.localCertificate());
 }
 
 void tst_QSslSocket::setPrivateKey()

@@ -91,7 +91,7 @@ public:
     QSslCertificate peerCertificate;
     QList<QSslCertificate> peerCertificateChain;
 
-    QSslCertificate localCertificate;
+    QList<QSslCertificate> localCertificateChain;
 
     QSslKey privateKey;
     QSslCipher sessionCipher;
