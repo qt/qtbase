@@ -2475,6 +2475,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
     outputFilter(tempProj, xml, "TranslationFiles");
     outputFilter(tempProj, xml, "FormFiles");
     outputFilter(tempProj, xml, "ResourceFiles");
+    outputFilter(tempProj, xml, "DeploymentFiles");
 
     QSet<QString> extraCompilersInProject;
     for (int i = 0; i < tool.ExtraCompilersFiles.count(); ++i) {
@@ -2527,6 +2528,7 @@ void VCProjectWriter::write(XmlOutput &xml, VCProject &tool)
     outputFilter(tool, xml, "TranslationFiles");
     outputFilter(tool, xml, "FormFiles");
     outputFilter(tool, xml, "ResourceFiles");
+    outputFilter(tool, xml, "DeploymentFiles");
     for (int x = 0; x < tool.ExtraCompilers.count(); ++x) {
         outputFilter(tool, xml, tool.ExtraCompilers.at(x));
     }
@@ -2878,6 +2880,8 @@ void VCProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, const QSt
             filter = projectSingleConfig.FormFiles;
         } else if (filtername == "ResourceFiles") {
             filter = projectSingleConfig.ResourceFiles;
+        } else if (filtername == "DeploymentFiles") {
+            filter = projectSingleConfig.DeploymentFiles;
         } else {
             // ExtraCompilers
             filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
@@ -2938,6 +2942,8 @@ void VCProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, cons
             filter = projectSingleConfig.FormFiles;
         } else if (filtername == "ResourceFiles") {
             filter = projectSingleConfig.ResourceFiles;
+        } else if (filtername == "DeploymentFiles") {
+            filter = projectSingleConfig.DeploymentFiles;
         } else {
             // ExtraCompilers
             filter = project.SingleProjects[i].filterForExtraCompiler(filtername);
