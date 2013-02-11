@@ -1673,6 +1673,9 @@ void tst_QLocale::dateFormat()
     const QLocale ca("en_CA");
     QCOMPARE(ca.dateFormat(QLocale::ShortFormat), QLatin1String("M/d/yy"));
     QCOMPARE(ca.dateFormat(QLocale::LongFormat), QLatin1String("dddd, MMMM d, yyyy"));
+
+    const QLocale ja("ja_JP");
+    QCOMPARE(ja.dateFormat(QLocale::ShortFormat), QLatin1String("yyyy/MM/dd"));
 }
 
 void tst_QLocale::timeFormat()
@@ -1739,6 +1742,10 @@ void tst_QLocale::monthName()
     QLocale ir("ga_IE");
     QCOMPARE(ir.monthName(1, QLocale::ShortFormat), QLatin1String("Ean"));
     QCOMPARE(ir.monthName(12, QLocale::ShortFormat), QLatin1String("Noll"));
+
+    QLocale cz("cs_CZ");
+    QCOMPARE(cz.monthName(1, QLocale::ShortFormat), QLatin1String("led"));
+    QCOMPARE(cz.monthName(12, QLocale::ShortFormat), QLatin1String("pro"));
 }
 
 void tst_QLocale::standaloneMonthName()
