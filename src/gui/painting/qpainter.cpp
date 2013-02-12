@@ -1155,9 +1155,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     should antialias text if possible, and the \l
     {RenderHint}{QPainter::SmoothPixmapTransform} indicates that the
     engine should use a smooth pixmap transformation algorithm.
-    \l {RenderHint}{HighQualityAntialiasing} is an OpenGL-specific rendering hint
-    indicating that the engine should use fragment programs and offscreen
-    rendering for antialiasing.
 
     The renderHints() function returns a flag that specifies the
     rendering hints that are set for this painter.  Use the
@@ -1409,9 +1406,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     a smooth pixmap transformation algorithm (such as bilinear) rather
     than nearest neighbor.
 
-    \value HighQualityAntialiasing An OpenGL-specific rendering hint
-    indicating that the engine should use fragment programs and offscreen
-    rendering for antialiasing.
+    \value HighQualityAntialiasing This value is obsolete and will be ignored,
+    use the Antialiasing render hint instead.
 
     \value NonCosmeticDefaultPen This value is obsolete, the default for QPen
     is now non-cosmetic.
