@@ -558,6 +558,7 @@ private slots:
     void autoSignalSpyMetaTypeRegistration();
     void parseDefines();
     void preprocessorOnly();
+    void unterminatedFunctionMacro();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -2943,6 +2944,26 @@ void tst_Moc::preprocessorOnly()
     QCOMPARE(proc.readAllStandardError(), QByteArray());
 
     QVERIFY(mocOut.contains("$$ = parser->createFoo()"));
+#else
+    QSKIP("Only tested on linux/gcc");
+#endif
+}
+
+
+void tst_Moc::unterminatedFunctionMacro()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
+    QProcess proc;
+    proc.start("moc", QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/unterminated-function-macro.h"));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), 1);
+    QCOMPARE(proc.readAllStandardOutput(), QByteArray());
+    QByteArray errorOutput = proc.readAllStandardError();
+    QVERIFY(!errorOutput.isEmpty());
+    QVERIFY(errorOutput.contains("missing ')' in macro usage"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
