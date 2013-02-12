@@ -1173,13 +1173,17 @@ class Q_CORE_EXPORT QStringRef {
     int m_position;
     int m_size;
 public:
+    // ### Qt 6: make this constructor constexpr, after the destructor is made trivial
     inline QStringRef():m_string(0), m_position(0), m_size(0){}
     inline QStringRef(const QString *string, int position, int size);
     inline QStringRef(const QString *string);
+
+    // ### Qt 6: remove this copy constructor, the implicit one is fine
     inline QStringRef(const QStringRef &other)
         :m_string(other.m_string), m_position(other.m_position), m_size(other.m_size)
         {}
 
+    // ### Qt 6: remove this destructor, the implicit one is fine
     inline ~QStringRef(){}
     inline const QString *string() const { return m_string; }
     inline int position() const { return m_position; }
