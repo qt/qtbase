@@ -623,6 +623,7 @@ const NodeMultiMap& QDocDatabase::getSinceMap(const QString& key) const
   to generating documentation.
  */
 void QDocDatabase::resolveIssues() {
+    resolveQmlInheritance(treeRoot());
     resolveTargets(treeRoot());
     tree_->resolveCppToQmlLinks();
 }
@@ -819,6 +820,35 @@ QString QDocDatabase::findTarget(const QString& target, const Node* node) const
         } while (i != targetRecMultiMap_.constEnd() && i.key() == key);
     }
     return QString();
+}
+
+/*!
+  For each QML Type node in the tree beginning at \a root,
+  if it has a QML base type name but its QML base type node
+  pointer is 0, use the QML base type name to look up the
+  base type node. If the node is found in the tree, set the
+  node's QML base type node pointer.
+ */
+void QDocDatabase::resolveQmlInheritance(InnerNode* root)
+{
+    // Dop we need recursion?
+    foreach (Node* child, root->childNodes()) {
+        if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
+            QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
+            if ((qcn->qmlBaseNode() == 0) && !qcn->qmlBaseName().isEmpty()) {
+                QmlClassNode* bqcn = findQmlType(QString(), qcn->qmlBaseName());
+                if (bqcn) {
+                    qcn->setQmlBaseNode(bqcn);
+                }
+#if 0
+                else {
+                    qDebug() << "Unable to resolve QML base type:" << qcn->qmlBaseName()
+                             << "for QML type:" << qcn->name();
+                }
+#endif
+            }
+        }
+    }
 }
 
 /*!

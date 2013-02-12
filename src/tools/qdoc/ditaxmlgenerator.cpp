@@ -4198,7 +4198,7 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* 
 {
     if (!qcn)
         return;
-    const DocNode* base = qcn->qmlBase();
+    const DocNode* base = qcn->qmlBaseNode();
     if (base) {
         writeStartTag(DT_qmlInherits);
         //writeStartTag(DT_qmlTypeDef);

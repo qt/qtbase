@@ -3869,7 +3869,7 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* mar
 {
     if (!qcn)
         return;
-    const DocNode* base = qcn->qmlBase();
+    const DocNode* base = qcn->qmlBaseNode();
     if (base) {
         Text text;
         text << Atom::ParaLeft << "Inherits ";
