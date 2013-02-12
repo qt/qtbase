@@ -1110,18 +1110,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-R,,'`
         fi
         ;;
-    -largefile)
-        VAR="largefile"
-        VAL="yes"
-        ;;
-    -l?*|-l)
+    -l)  # -lfoo is handled differently
         VAR="add_link"
-        if [ "$1" = "-l" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-l,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -F?*|-F)
         VAR="add_fpath"
@@ -1132,14 +1124,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-F,,'`
         fi
         ;;
-    -fw?*|-fw)
+    -fw)  # -fwfoo is handled differently
         VAR="add_framework"
-        if [ "$1" = "-fw" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-fw,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -W*)
         VAR="add_warn"
@@ -2126,6 +2114,16 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    l*)  # -lfoo
+        L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        ;;
+    fw*)  # -fwfoo
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
         else
             UNKNOWN_OPT=yes
         fi
