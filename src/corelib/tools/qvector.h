@@ -506,8 +506,7 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
     }
     if (d != x) {
         if (!d->ref.deref()) {
-            Q_ASSERT(!isShared);
-            if (QTypeInfo<T>::isStatic || !aalloc) {
+            if (QTypeInfo<T>::isStatic || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
                 // data was copy constructed, we need to call destructors
                 // or if !alloc we did nothing to the old 'd'.
                 freeData(d);

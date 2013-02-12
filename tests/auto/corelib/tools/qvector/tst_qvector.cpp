@@ -41,6 +41,8 @@
 
 #include <QtTest/QtTest>
 #include <QAtomicInt>
+#include <QThread>
+#include <QSemaphore>
 #include <qvector.h>
 
 struct Movable {
@@ -272,6 +274,9 @@ private slots:
     void detachInt() const;
     void detachMovable() const;
     void detachCustom() const;
+    void detachThreadSafetyInt() const;
+    void detachThreadSafetyMovable() const;
+    void detachThreadSafetyCustom() const;
 
 private:
     template<typename T> void copyConstructor() const;
@@ -295,6 +300,7 @@ private:
     template<typename T> void setSharable_data() const;
     template<typename T> void setSharable() const;
     template<typename T> void detach() const;
+    template<typename T> void detachThreadSafety() const;
 };
 
 
@@ -2213,5 +2219,75 @@ void tst_QVector::detachCustom() const
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
 
-QTEST_APPLESS_MAIN(tst_QVector)
+static QAtomicPointer<QVector<int> > detachThreadSafetyDataInt;
+static QAtomicPointer<QVector<Movable> > detachThreadSafetyDataMovable;
+static QAtomicPointer<QVector<Custom> > detachThreadSafetyDataCustom;
+
+template<typename T> QAtomicPointer<QVector<T> > *detachThreadSafetyData();
+template<> QAtomicPointer<QVector<int> > *detachThreadSafetyData() { return &detachThreadSafetyDataInt; }
+template<> QAtomicPointer<QVector<Movable> > *detachThreadSafetyData() { return &detachThreadSafetyDataMovable; }
+template<> QAtomicPointer<QVector<Custom> > *detachThreadSafetyData() { return &detachThreadSafetyDataCustom; }
+
+static QSemaphore detachThreadSafetyLock;
+
+template<typename T>
+void tst_QVector::detachThreadSafety() const
+{
+    delete detachThreadSafetyData<T>()->fetchAndStoreOrdered(new QVector<T>(SimpleValue<T>::vector(400)));
+
+    static const uint threadsCount = 5;
+
+    struct : QThread {
+        void run() Q_DECL_OVERRIDE
+        {
+            QVector<T> copy(*detachThreadSafetyData<T>()->load());
+            QVERIFY(!copy.isDetached());
+            detachThreadSafetyLock.release();
+            detachThreadSafetyLock.acquire(100);
+            copy.detach();
+        }
+    } threads[threadsCount];
+
+    for (uint i = 0; i < threadsCount; ++i)
+        threads[i].start();
+    QThread::yieldCurrentThread();
+    detachThreadSafetyLock.acquire(threadsCount);
+
+    // destroy static original data
+    delete detachThreadSafetyData<T>()->fetchAndStoreOrdered(0);
+
+    QVERIFY(threadsCount < 100);
+    detachThreadSafetyLock.release(threadsCount * 100);
+    QThread::yieldCurrentThread();
+
+    for (uint i = 0; i < threadsCount; ++i)
+        threads[i].wait();
+}
+
+void tst_QVector::detachThreadSafetyInt() const
+{
+    for (uint i = 0; i < 128; ++i)
+        detachThreadSafety<int>();
+}
+
+void tst_QVector::detachThreadSafetyMovable() const
+{
+    const int instancesCount = Movable::counter.loadAcquire();
+    for (uint i = 0; i < 128; ++i) {
+        detachThreadSafety<Movable>();
+        QCOMPARE(Movable::counter.loadAcquire(), instancesCount);
+    }
+}
+
+void tst_QVector::detachThreadSafetyCustom() const
+{
+    const int instancesCount = Custom::counter.loadAcquire();
+    for (uint i = 0; i < 128; ++i) {
+        detachThreadSafety<Custom>();
+        QCOMPARE(Custom::counter.loadAcquire(), instancesCount);
+    }
+}
+
+
+QTEST_MAIN(tst_QVector)
 #include "tst_qvector.moc"
