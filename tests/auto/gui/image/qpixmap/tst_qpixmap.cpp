@@ -166,6 +166,7 @@ private slots:
     void loadAsBitmapOrPixmap();
 
     void scaled_QTBUG19157();
+    void detachOnLoad_QTBUG29639();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -1486,6 +1487,20 @@ void tst_QPixmap::scaled_QTBUG19157()
     QPixmap foo(5000, 1);
     foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
     QVERIFY(!foo.isNull());
+}
+
+void tst_QPixmap::detachOnLoad_QTBUG29639()
+{
+    const QString prefix = QFINDTESTDATA("convertFromImage");
+
+    QPixmap a;
+    a.load(prefix + "/task31722_0/img1.png");
+    a.load(prefix + "/task31722_0/img2.png");
+
+    QPixmap b;
+    b.load(prefix + "/task31722_0/img1.png");
+
+    QVERIFY(a.toImage() != b.toImage());
 }
 
 QTEST_MAIN(tst_QPixmap)
