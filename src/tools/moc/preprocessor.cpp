@@ -630,6 +630,8 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
 
             if (nesting < 0)
                 break;
+            else if (!symbols.hasNext())
+                that->error("missing ')' in macro usage");
         }
 
         // empty VA_ARGS
