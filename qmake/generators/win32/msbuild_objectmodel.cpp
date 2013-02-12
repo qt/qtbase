@@ -1672,7 +1672,8 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCConfiguration &tool)
         xml << tag("PropertyGroup")
             << attrTag("Condition", generateCondition(tool))
             << attrTag("Label", "Configuration")
-            << attrTagS(_PlatformToolSet, platformToolSetVersion(tool.CompilerVersion))
+            << attrTagS(_PlatformToolSet, platformToolSetVersion(tool.CompilerVersion,
+                                                                 tool.WinPhone))
             << attrTagS(_OutputDirectory, tool.OutputDirectory)
             << attrTagT(_ATLMinimizesCRunTimeLibraryUsage, tool.ATLMinimizesCRunTimeLibraryUsage)
             << attrTagT(_BuildBrowserInformation, tool.BuildBrowserInformation)
@@ -2075,12 +2076,12 @@ QString VCXProjectWriter::generateCondition(const VCConfiguration &config)
     return QStringLiteral("'$(Configuration)|$(Platform)'=='") + config.Name + QLatin1Char('\'');
 }
 
-QString VCXProjectWriter::platformToolSetVersion(const DotNET version)
+QString VCXProjectWriter::platformToolSetVersion(const DotNET version, bool winphoneBuild)
 {
     switch (version)
     {
     case NET2012:
-        return "v110";
+        return winphoneBuild ? "v110_wp80" : "v110";
     case NET2013:
         return "v120";
     }
