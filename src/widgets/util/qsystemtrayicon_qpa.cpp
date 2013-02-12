@@ -68,7 +68,7 @@ void QSystemTrayIconPrivate::install_sys()
     if (qpa_sys) {
         qpa_sys->init();
         QObject::connect(qpa_sys, SIGNAL(activated(QPlatformSystemTrayIcon::ActivationReason)),
-                         q_func(), SLOT(emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
+                         q_func(), SLOT(_q_emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
         QObject::connect(qpa_sys, SIGNAL(messageClicked()),
                          q_func(), SIGNAL(messageClicked()));
         updateMenu_sys();
