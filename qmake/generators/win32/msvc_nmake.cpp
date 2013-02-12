@@ -79,7 +79,7 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
 #endif
         if (!project->isHostBuild()) {
             const ProValueMap &variables = project->variables();
-            if (variables["QMAKESPEC"].first().contains("wince", Qt::CaseInsensitive)) {
+            if (project->isActiveConfig("wince")) {
                 CeSdkHandler sdkhandler;
                 sdkhandler.parse();
                 const QString sdkName = variables["CE_SDK"].join(' ')
