@@ -62,6 +62,7 @@ QQnxInputContext::QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVir
     m_integration(integration),
     m_virtualKeyboard(keyboard)
 {
+    connect(&keyboard, SIGNAL(heightChanged(int)), this, SLOT(keyboardHeightChanged()));
     connect(&keyboard, SIGNAL(visibilityChanged(bool)), this, SLOT(keyboardVisibilityChanged(bool)));
     connect(&keyboard, SIGNAL(localeChanged(QLocale)), this, SLOT(keyboardLocaleChanged(QLocale)));
     keyboardVisibilityChanged(keyboard.isVisible());
@@ -145,6 +146,11 @@ bool QQnxInputContext::isInputPanelVisible() const
 QLocale QQnxInputContext::locale() const
 {
     return m_inputPanelLocale;
+}
+
+void QQnxInputContext::keyboardHeightChanged()
+{
+    emitKeyboardRectChanged();
 }
 
 void QQnxInputContext::keyboardVisibilityChanged(bool visible)

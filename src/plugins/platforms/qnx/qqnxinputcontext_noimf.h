@@ -73,6 +73,7 @@ public:
     void setFocusObject(QObject *object);
 
 private Q_SLOTS:
+    void keyboardHeightChanged();
     void keyboardVisibilityChanged(bool visible);
     void keyboardLocaleChanged(const QLocale &locale);
 
