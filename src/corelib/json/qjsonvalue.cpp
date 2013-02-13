@@ -156,6 +156,18 @@ QJsonValue::QJsonValue(int n)
 }
 
 /*!
+    \overload
+    Creates a value of type Double, with value \a n.
+    NOTE: the integer limits for IEEE 754 double precision data is 2^53 (-9007199254740992 to +9007199254740992).
+    If you pass in values outside this range expect a loss of precision to occur.
+ */
+QJsonValue::QJsonValue(qint64 n)
+    : d(0), t(Double)
+{
+    this->dbl = n;
+}
+
+/*!
     Creates a value of type String, with value \a s.
  */
 QJsonValue::QJsonValue(const QString &s)

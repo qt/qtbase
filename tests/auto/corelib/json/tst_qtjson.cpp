@@ -1128,6 +1128,8 @@ void tst_QtJson::toJsonLargeNumericValues()
     array.append(QJsonValue(-std::numeric_limits<double>::epsilon()));
     array.append(QJsonValue(-std::numeric_limits<double>::denorm_min()));
     array.append(QJsonValue(-0.0));
+    array.append(QJsonValue(9007199254740992LL));  // JS Number max integer
+    array.append(QJsonValue(-9007199254740992LL)); // JS Number min integer
     object.insert("Array", array);
 
     QByteArray json = QJsonDocument(object).toJson();
@@ -1150,7 +1152,9 @@ void tst_QtJson::toJsonLargeNumericValues()
             "        -1.7976931348623157e+308,\n"
             "        -2.2204460492503131e-16,\n"
             "        -4.9406564584124654e-324,\n"
-            "        0\n"
+            "        0,\n"
+            "        9007199254740992,\n"
+            "        -9007199254740992\n"
             "    ]\n"
             "}\n";
 
