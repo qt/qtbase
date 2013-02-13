@@ -356,6 +356,12 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
                 // the popup disappeared, replay the mouse press event
                 QWidget *w = QApplication::widgetAt(event->globalPos());
                 if (w && !QApplicationPrivate::isBlockedByModal(w)) {
+                    // activate window of the widget under mouse pointer
+                    if (!w->isActiveWindow()) {
+                        w->activateWindow();
+                        w->raise();
+                    }
+
                     QWindow *win = w->windowHandle();
                     if (!win)
                         win = w->nativeParentWidget()->windowHandle();
