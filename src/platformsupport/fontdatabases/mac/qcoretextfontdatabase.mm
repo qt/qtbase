@@ -395,6 +395,8 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
         if (fallbackLists.contains(family))
             return fallbackLists.value(family);
     }
+#else
+    Q_UNUSED(family);
 #endif
 
     // We were not able to find a fallback for the specific family,
@@ -428,6 +430,10 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                 else if ([item isKindOfClass: [NSString class]])
                     fallbackList.append(familyNameFromPostScriptName(psNameToFamily, item));
             }
+
+            if (QCoreTextFontEngine::supportsColorGlyphs())
+                fallbackList.append(QLatin1String("Apple Color Emoji"));
+
             fallbackLists[styleLookupKey.arg(fallbackStyleHint)] = fallbackList;
         }
 #else
