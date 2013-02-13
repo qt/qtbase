@@ -52,10 +52,10 @@
 #include <qevent.h>
 #include <qpen.h>
 #include <qdebug.h>
+#include <QMetaMethod>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #include <qaccessible2.h>
-#include <QMetaMethod>
 #endif
 
 #include <private/qtreeview_p.h>
