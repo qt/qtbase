@@ -1714,9 +1714,13 @@ void QSslSocket::startServerEncryption()
     will not emit the sslErrors() signal, and it is unnecessary to
     call this function.
 
-    Ignoring errors that occur during an SSL handshake should be done
-    with caution. A fundamental characteristic of secure connections
-    is that they should be established with an error free handshake.
+    \warning Be sure to always let the user inspect the errors
+    reported by the sslErrors() signal, and only call this method
+    upon confirmation from the user that proceeding is ok.
+    If there are unexpected errors, the connection should be aborted.
+    Calling this method without inspecting the actual errors will
+    most likely pose a security risk for your application. Use it
+    with great care!
 
     \sa sslErrors()
 */
