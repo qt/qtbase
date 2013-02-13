@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
        tray specification, including recent versions of KDE and GNOME.
     \li All supported versions of Mac OS X. Note that the Growl
        notification system must be installed for
-       QSystemTrayIcon::showMessage() to display messages.
+       QSystemTrayIcon::showMessage() to display messages on Mac OS X prior to 10.8 (Mountain Lion).
     \endlist
 
     To check whether a system tray is present on the user's desktop,
