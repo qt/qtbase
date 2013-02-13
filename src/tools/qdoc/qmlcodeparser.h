@@ -62,6 +62,8 @@ class Tree;
 
 class QmlCodeParser : public CodeParser
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QmlCodeParser)
+
 public:
     QmlCodeParser();
     virtual ~QmlCodeParser();

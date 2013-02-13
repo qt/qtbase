@@ -36,7 +36,7 @@ src_testlib.target = sub-testlib
 src_testlib.depends = src_corelib   # src_gui & src_widgets are not build-depends
 
 src_angle.subdir = $$PWD/angle
-src_angle.target = src_angle
+src_angle.target = sub-angle
 
 src_gui.subdir = $$PWD/gui
 src_gui.target = sub-gui

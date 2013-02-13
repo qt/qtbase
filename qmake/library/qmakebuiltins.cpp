@@ -382,14 +382,16 @@ QByteArray QMakeEvaluator::getCommandOutput(const QString &args) const
 }
 
 void QMakeEvaluator::populateDeps(
-        const ProStringList &deps, const ProString &prefix,
+        const ProStringList &deps, const ProString &prefix, const ProStringList &suffixes,
         QHash<ProKey, QSet<ProKey> > &dependencies, ProValueMap &dependees,
         ProStringList &rootSet) const
 {
     foreach (const ProString &item, deps)
         if (!dependencies.contains(item.toKey())) {
             QSet<ProKey> &dset = dependencies[item.toKey()]; // Always create entry
-            ProStringList depends = values(ProKey(prefix + item + QString::fromLatin1(".depends")));
+            ProStringList depends;
+            foreach (const ProString &suffix, suffixes)
+                depends += values(ProKey(prefix + item + suffix));
             if (depends.isEmpty()) {
                 rootSet << item;
             } else {
@@ -397,7 +399,7 @@ void QMakeEvaluator::populateDeps(
                     dset.insert(dep.toKey());
                     dependees[dep.toKey()] << item;
                 }
-                populateDeps(depends, prefix, dependencies, dependees, rootSet);
+                populateDeps(depends, prefix, suffixes, dependencies, dependees, rootSet);
             }
         }
 }
@@ -692,11 +694,10 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         }
         break;
     case E_EVAL:
-        if (args.count() != 1) {
+        if (args.count() != 1)
             evalError(fL1S("eval(variable) requires one argument."));
-        } else {
+        else
             ret += values(map(args.at(0)));
-        }
         break;
     case E_LIST: {
         QString tmp;
@@ -913,14 +914,17 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
         break;
     case E_SORT_DEPENDS:
     case E_RESOLVE_DEPENDS:
-        if (args.count() < 1 || args.count() > 2) {
-            evalError(fL1S("%1(var, prefix) requires one or two arguments.").arg(func.toQString(m_tmp1)));
+        if (args.count() < 1 || args.count() > 3) {
+            evalError(fL1S("%1(var, [prefix, [suffixes]]) requires one to three arguments.")
+                      .arg(func.toQString(m_tmp1)));
         } else {
             QHash<ProKey, QSet<ProKey> > dependencies;
             ProValueMap dependees;
             ProStringList rootSet;
             ProStringList orgList = values(args.at(0).toKey());
             populateDeps(orgList, (args.count() < 2 ? ProString() : args.at(1)),
+                         args.count() < 3 ? ProStringList(ProString(".depends"))
+                                          : split_value_list(args.at(2).toQString(m_tmp2)),
                          dependencies, dependees, rootSet);
             for (int i = 0; i < rootSet.size(); ++i) {
                 const ProString &item = rootSet.at(i);
@@ -1155,9 +1159,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
 
         for (int i = configs.size() - 1; i >= 0; i--) {
             for (int mut = 0; mut < mutuals.count(); mut++) {
-                if (configs[i] == mutuals[mut].trimmed()) {
+                if (configs[i] == mutuals[mut].trimmed())
                     return returnBool(configs[i] == args[0]);
-                }
             }
         }
         return ReturnFalse;
@@ -1421,9 +1424,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
         }
         const QString &file = resolvePath(m_option->expandEnvVars(args.at(0).toQString(m_tmp1)));
 
-        if (IoUtils::exists(file)) {
+        if (IoUtils::exists(file))
             return ReturnTrue;
-        }
         int slsh = file.lastIndexOf(QLatin1Char('/'));
         QString fn = file.mid(slsh+1);
         if (fn.contains(QLatin1Char('*')) || fn.contains(QLatin1Char('?'))) {

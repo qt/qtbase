@@ -45,6 +45,7 @@
 #include <QDebug>
 #include <QThreadStorage>
 #include <QStringList>
+#include <QTimer>
 
 #include <bps/netstatus.h>
 
@@ -355,6 +356,9 @@ void QBBEngine::updateConfiguration(const char *interface)
             changed = true;
         }
 
+        const netstatus_ip_status_t oldIpStatus = ptr->oldIpStatus;
+        ptr->oldIpStatus = ipStatus;
+
         ptrLocker.unlock();
 
         locker.unlock();
@@ -364,7 +368,17 @@ void QBBEngine::updateConfiguration(const char *interface)
 
             Q_EMIT configurationChanged(ptr);
         } else {
+            // maybe Wifi has changed but gateway not yet ready etc.
             qBearerDebug() << Q_FUNC_INFO << "configuration has not changed.";
+            if (oldIpStatus != ipStatus) { // if IP status changed
+                if (ipStatus != NETSTATUS_IP_STATUS_OK
+                        && ipStatus != NETSTATUS_IP_STATUS_ERROR_NOT_UP
+                        && ipStatus != NETSTATUS_IP_STATUS_ERROR_NOT_CONFIGURED) {
+                    // work around race condition in netstatus API by just checking
+                    // again in 300 ms
+                    QTimer::singleShot(300, this, SLOT(doRequestUpdate()));
+                }
+            }
         }
 
         return;

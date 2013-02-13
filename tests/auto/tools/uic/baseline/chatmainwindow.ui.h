@@ -149,7 +149,7 @@ public:
 
     void retranslateUi(QMainWindow *ChatMainWindow)
     {
-        ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "QtDBus Chat", 0));
+        ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "Qt D-Bus Chat", 0));
         actionQuit->setText(QApplication::translate("ChatMainWindow", "Quit", 0));
         actionQuit->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+Q", 0));
         actionAboutQt->setText(QApplication::translate("ChatMainWindow", "About Qt...", 0));

@@ -301,9 +301,11 @@ void QCocoaWindow::setVisible(bool visible)
                     [m_nsWindow orderFront: nil];
                 }
 
-                // We want the events to properly reach the popup and dialog
-                if (window()->type() == Qt::Popup || window()->type() == Qt::Dialog)
+                // We want the events to properly reach the popup, dialog, and tool
+                if ((window()->type() == Qt::Popup || window()->type() == Qt::Dialog || window()->type() == Qt::Tool)
+                    && [m_nsWindow isKindOfClass:[NSPanel class]]) {
                     [(NSPanel *)m_nsWindow setWorksWhenModal:YES];
+                }
             }
         } else {
             [m_contentView setHidden:NO];
@@ -717,6 +719,11 @@ NSWindow * QCocoaWindow::createNSWindow()
         createdWindow = window;
     }
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
+    if ([createdWindow respondsToSelector:@selector(setRestorable:)])
+        [createdWindow setRestorable: NO];
+#endif
+
     NSInteger level = windowLevel(flags);
     [createdWindow setLevel:level];
     m_windowModality = window()->modality();
@@ -837,11 +844,9 @@ QCocoaMenuBar *QCocoaWindow::menubar() const
 
 qreal QCocoaWindow::devicePixelRatio() const
 {
-    if (!m_nsWindow)
-        return 1.0;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7) {
-        return qreal([m_nsWindow backingScaleFactor]);
+        return qreal([[m_contentView window] backingScaleFactor]);
     } else
 #endif
     {

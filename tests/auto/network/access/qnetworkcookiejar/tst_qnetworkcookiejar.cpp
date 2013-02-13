@@ -275,74 +275,74 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QNetworkCookie cookie;
     cookie.setName("a");
     cookie.setPath("/web");
-    cookie.setDomain(".nokia.com");
+    cookie.setDomain(".qt-project.org");
     allCookies += cookie;
 
     QTest::newRow("no-match-1") << allCookies << "http://foo.bar/" << result;
     QTest::newRow("no-match-2") << allCookies << "http://foo.bar/web" << result;
     QTest::newRow("no-match-3") << allCookies << "http://foo.bar/web/wiki" << result;
-    QTest::newRow("no-match-4") << allCookies << "http://nokia.com" << result;
-    QTest::newRow("no-match-5") << allCookies << "http://qt.nokia.com" << result;
-    QTest::newRow("no-match-6") << allCookies << "http://nokia.com/webinar" << result;
-    QTest::newRow("no-match-7") << allCookies << "http://qt.nokia.com/webinar" << result;
-    QTest::newRow("no-match-8") << allCookies << "http://qt.nokia.com./web" << result;
-    QTest::newRow("no-match-9") << allCookies << "http://nokia.com./web" << result;
+    QTest::newRow("no-match-4") << allCookies << "http://qt-project.org" << result;
+    QTest::newRow("no-match-5") << allCookies << "http://qt-project.org" << result;
+    QTest::newRow("no-match-6") << allCookies << "http://qt-project.org/webinar" << result;
+    QTest::newRow("no-match-7") << allCookies << "http://qt-project.org/webinar" << result;
+    QTest::newRow("no-match-8") << allCookies << "http://qt-project.org./web" << result;
+    QTest::newRow("no-match-9") << allCookies << "http://qt-project.org./web" << result;
 
     result = allCookies;
-    QTest::newRow("match-1") << allCookies << "http://nokia.com/web" << result;
-    QTest::newRow("match-2") << allCookies << "http://nokia.com/web/" << result;
-    QTest::newRow("match-3") << allCookies << "http://nokia.com/web/content" << result;
-    QTest::newRow("match-4") << allCookies << "http://qt.nokia.com/web" << result;
-    QTest::newRow("match-5") << allCookies << "http://qt.nokia.com/web/" << result;
-    QTest::newRow("match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
+    QTest::newRow("match-1") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("match-2") << allCookies << "http://qt-project.org/web/" << result;
+    QTest::newRow("match-3") << allCookies << "http://qt-project.org/web/content" << result;
+    QTest::newRow("match-4") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("match-5") << allCookies << "http://qt-project.org/web/" << result;
+    QTest::newRow("match-6") << allCookies << "http://qt-project.org/web/content" << result;
 
     cookie.setPath("/web/wiki");
     allCookies += cookie;
 
     // exact same results as before:
-    QTest::newRow("one-match-1") << allCookies << "http://nokia.com/web" << result;
-    QTest::newRow("one-match-2") << allCookies << "http://nokia.com/web/" << result;
-    QTest::newRow("one-match-3") << allCookies << "http://nokia.com/web/content" << result;
-    QTest::newRow("one-match-4") << allCookies << "http://qt.nokia.com/web" << result;
-    QTest::newRow("one-match-5") << allCookies << "http://qt.nokia.com/web/" << result;
-    QTest::newRow("one-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
+    QTest::newRow("one-match-1") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("one-match-2") << allCookies << "http://qt-project.org/web/" << result;
+    QTest::newRow("one-match-3") << allCookies << "http://qt-project.org/web/content" << result;
+    QTest::newRow("one-match-4") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("one-match-5") << allCookies << "http://qt-project.org/web/" << result;
+    QTest::newRow("one-match-6") << allCookies << "http://qt-project.org/web/content" << result;
 
     result.prepend(cookie);     // longer path, it must match first
-    QTest::newRow("two-matches-1") << allCookies << "http://nokia.com/web/wiki" << result;
-    QTest::newRow("two-matches-2") << allCookies << "http://qt.nokia.com/web/wiki" << result;
+    QTest::newRow("two-matches-1") << allCookies << "http://qt-project.org/web/wiki" << result;
+    QTest::newRow("two-matches-2") << allCookies << "http://qt-project.org/web/wiki" << result;
 
     // invert the order;
     allCookies.clear();
     allCookies << result.at(1) << result.at(0);
-    QTest::newRow("two-matches-3") << allCookies << "http://nokia.com/web/wiki" << result;
-    QTest::newRow("two-matches-4") << allCookies << "http://qt.nokia.com/web/wiki" << result;
+    QTest::newRow("two-matches-3") << allCookies << "http://qt-project.org/web/wiki" << result;
+    QTest::newRow("two-matches-4") << allCookies << "http://qt-project.org/web/wiki" << result;
 
     // expired cookie
     allCookies.clear();
     cookie.setExpirationDate(QDateTime::fromString("09-Nov-1999", "dd-MMM-yyyy"));
     allCookies += cookie;
     result.clear();
-    QTest::newRow("exp-match-1") << allCookies << "http://nokia.com/web" << result;
-    QTest::newRow("exp-match-2") << allCookies << "http://nokia.com/web/" << result;
-    QTest::newRow("exp-match-3") << allCookies << "http://nokia.com/web/content" << result;
-    QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web" << result;
-    QTest::newRow("exp-match-5") << allCookies << "http://qt.nokia.com/web/" << result;
-    QTest::newRow("exp-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
+    QTest::newRow("exp-match-1") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("exp-match-2") << allCookies << "http://qt-project.org/web/" << result;
+    QTest::newRow("exp-match-3") << allCookies << "http://qt-project.org/web/content" << result;
+    QTest::newRow("exp-match-4") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("exp-match-5") << allCookies << "http://qt-project.org/web/" << result;
+    QTest::newRow("exp-match-6") << allCookies << "http://qt-project.org/web/content" << result;
 
     // path matching
     allCookies.clear();
     QNetworkCookie anotherCookie;
     anotherCookie.setName("a");
     anotherCookie.setPath("/web");
-    anotherCookie.setDomain(".nokia.com");
+    anotherCookie.setDomain(".qt-project.org");
     allCookies += anotherCookie;
     result.clear();
-    QTest::newRow("path-unmatch-1") << allCookies << "http://nokia.com/" << result;
-    QTest::newRow("path-unmatch-2") << allCookies << "http://nokia.com/something/else" << result;
+    QTest::newRow("path-unmatch-1") << allCookies << "http://qt-project.org/" << result;
+    QTest::newRow("path-unmatch-2") << allCookies << "http://qt-project.org/something/else" << result;
     result += anotherCookie;
-    QTest::newRow("path-match-1") << allCookies << "http://nokia.com/web" << result;
-    QTest::newRow("path-match-2") << allCookies << "http://nokia.com/web/" << result;
-    QTest::newRow("path-match-3") << allCookies << "http://nokia.com/web/content" << result;
+    QTest::newRow("path-match-1") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("path-match-2") << allCookies << "http://qt-project.org/web/" << result;
+    QTest::newRow("path-match-3") << allCookies << "http://qt-project.org/web/content" << result;
 
     // secure cookies
     allCookies.clear();
@@ -350,14 +350,14 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QNetworkCookie secureCookie;
     secureCookie.setName("a");
     secureCookie.setPath("/web");
-    secureCookie.setDomain(".nokia.com");
+    secureCookie.setDomain(".qt-project.org");
     secureCookie.setSecure(true);
     allCookies += secureCookie;
-    QTest::newRow("no-match-secure-1") << allCookies << "http://nokia.com/web" << result;
-    QTest::newRow("no-match-secure-2") << allCookies << "http://qt.nokia.com/web" << result;
+    QTest::newRow("no-match-secure-1") << allCookies << "http://qt-project.org/web" << result;
+    QTest::newRow("no-match-secure-2") << allCookies << "http://qt-project.org/web" << result;
     result += secureCookie;
-    QTest::newRow("match-secure-1") << allCookies << "https://nokia.com/web" << result;
-    QTest::newRow("match-secure-2") << allCookies << "https://qt.nokia.com/web" << result;
+    QTest::newRow("match-secure-1") << allCookies << "https://qt-project.org/web" << result;
+    QTest::newRow("match-secure-2") << allCookies << "https://qt-project.org/web" << result;
 
     // domain ending in .
     allCookies.clear();

@@ -100,7 +100,7 @@
     event delivery mechanisms are flexible. The documentation for
     QCoreApplication::notify() concisely tells the whole story; the
     \e{Qt Quarterly} article
-    \l{http://doc.qt.nokia.com/qq/qq11-events.html}{Another Look at Events}
+    \l{http://doc.qt.digia.com/qq/qq11-events.html}{Another Look at Events}
     rehashes it less concisely. Here we will explain enough for 95%
     of applications.
 

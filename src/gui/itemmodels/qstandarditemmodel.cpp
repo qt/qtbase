@@ -1470,7 +1470,7 @@ void QStandardItem::insertRow(int row, const QList<QStandardItem*> &items)
 }
 
 /*!
-    Inserts \a items at \a row. The column count wont be changed.
+    Inserts \a items at \a row. The column count won't be changed.
 
     \sa insertRow(), insertColumn()
 */

@@ -364,7 +364,8 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
     if (wchar_t *envStrings = GetEnvironmentStringsW()) {
         for (const wchar_t *entry = envStrings; *entry; ) {
             const int entryLen = int(wcslen(entry));
-            if (const wchar_t *equal = wcschr(entry, L'=')) {
+            // + 1 to permit magic cmd variable names starting with =
+            if (const wchar_t *equal = wcschr(entry + 1, L'=')) {
                 int nameLen = equal - entry;
                 QString name = QString::fromWCharArray(entry, nameLen);
                 QString value = QString::fromWCharArray(equal + 1, entryLen - nameLen - 1);

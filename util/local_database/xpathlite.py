@@ -248,7 +248,7 @@ def _findEntry(base, path, draft=None, attribute=None):
                 # see http://www.unicode.org/reports/tr35/#Common_Elements
                 aliasfile = os.path.dirname(file) + "/" + alias + ".xml"
                 if not os.path.isfile(aliasfile):
-                    raise Error("findEntry: fatal error: found an alias '%s' to '%s', but the alias file couldnt be found" % (filename, alias))
+                    raise Error("findEntry: fatal error: found an alias '%s' to '%s', but the alias file couldn't be found" % (filename, alias))
                 # found an alias, recurse into parsing it
                 result = _findEntry(aliasfile, path, draft, attribute)
                 return result

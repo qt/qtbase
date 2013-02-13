@@ -121,15 +121,6 @@ defineTest(qtAddModule) {
 
        contains(MODULE_CONFIG, staticlib): \
            PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
-
-       # Make sure we can link to uninstalled libraries
-       !isEmpty(MODULE_LIBS) {
-            for(rpl, QT.$${1}.rpath_link): \
-                QMAKE_RPATHLINKDIR *= $$rpl
-            !auto_use_privates:!isEqual(2, UsePrivate): \
-                for(rpl, QT.$${1}.rpath_link_private): \
-                    QMAKE_RPATHLINKDIR *= $$rpl
-       }
     }
     # Only link to this module if a libs directory is set, else this is just a module
     # to give access to sources or include files, and not for linking.
@@ -190,11 +181,28 @@ defineTest(qtAddModules) {
     export(using_privates)
 }
 
+defineTest(qtAddRpathLink) {
+    # -rpath-link is used by the linker to find dependencies of dynamic
+    # libraries which were NOT specified on the command line.
+    # This means that paths of direct dependencies (QT & QT_PRIVATE)
+    # don't need to appear here. However, their private dependencies'
+    # paths OTOH need to be put there.
+    pubqt = $$replace(1, -private$, )
+    pubdep = $$resolve_depends(pubqt, "QT.")
+    privdep = $$resolve_depends(pubqt, "QT.", ".depends" ".private_depends" ".run_depends")
+    privdep -= $$pubdep
+    rpaths =
+    for(dep, privdep): \
+        rpaths += $$eval(QT.$${dep}.libs)
+    QMAKE_RPATHLINKDIR *= $$unique(rpaths)
+    export(QMAKE_RPATHLINKDIR)
+}
+
 # variable, default
 defineTest(qtPrepareTool) {
     $$1 = $$eval(QT_TOOL.$${2}.command)
     isEmpty($$1) {
-        $$1 = $$[QT_HOST_BINS/get]/$$2
+        $$1 = $$[QT_HOST_BINS]/$$2
         contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.(exe|bat)$) {
             exists($$eval($$1).bat) {
                 $$1 = $$eval($$1).bat

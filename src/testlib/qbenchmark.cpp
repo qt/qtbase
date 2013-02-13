@@ -266,7 +266,7 @@ quint64 QTest::endBenchmarkMeasurement()
     Sets the benchmark result for this test function to \a result.
 
     Use this function if you want to report benchmark results without
-    using the QBENCHMARK macro. Use \a metric to specify how QTestLib
+    using the QBENCHMARK macro. Use \a metric to specify how Qt Test
     should interpret the results.
 
     The context for the result will be the test function name and any

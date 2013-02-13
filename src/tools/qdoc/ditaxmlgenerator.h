@@ -56,6 +56,8 @@ typedef QMap<QString, GuidMap*> GuidMaps;
 
 class DitaXmlGenerator : public Generator
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::DitaXmlGenerator)
+
 public:
     enum SinceType {
         Namespace,

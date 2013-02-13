@@ -107,7 +107,6 @@ static QSize determineScreenSize(screen_display_t display, bool primaryScreen) {
 QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display, bool primaryScreen)
     : m_screenContext(screenContext),
       m_display(display),
-      m_rootWindow(),
       m_primaryScreen(primaryScreen),
       m_posted(false),
       m_keyboardHeight(0),
@@ -147,10 +146,6 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
         m_currentPhysicalSize = m_initialPhysicalSize = screenSize;
     else
         m_currentPhysicalSize = m_initialPhysicalSize = screenSize.transposed();
-
-    // We only create the root window if we are the primary display.
-    if (primaryScreen)
-        m_rootWindow = QSharedPointer<QQnxRootWindow>(new QQnxRootWindow(this));
 }
 
 QQnxScreen::~QQnxScreen()
@@ -252,8 +247,8 @@ void QQnxScreen::setRotation(int rotation)
     // Check if rotation changed
     if (m_currentRotation != rotation) {
         // Update rotation of root window
-        if (m_rootWindow)
-            m_rootWindow->setRotation(rotation);
+        if (rootWindow())
+            rootWindow()->setRotation(rotation);
 
         const QRect previousScreenGeometry = geometry();
 
@@ -269,16 +264,16 @@ void QQnxScreen::setRotation(int rotation)
         // Resize root window if we've rotated 90 or 270 from previous orientation
         if (isOrthogonal(m_currentRotation, rotation)) {
             qScreenDebug() << Q_FUNC_INFO << "resize, size =" << m_currentGeometry.size();
-            if (m_rootWindow)
-                m_rootWindow->resize(m_currentGeometry.size());
+            if (rootWindow())
+                rootWindow()->resize(m_currentGeometry.size());
 
             if (m_primaryScreen)
                 resizeWindows(previousScreenGeometry);
         } else {
             // TODO: Find one global place to flush display updates
             // Force immediate display update if no geometry changes required
-            if (m_rootWindow)
-                m_rootWindow->flush();
+            if (rootWindow())
+                rootWindow()->flush();
         }
 
         // Save new rotation
@@ -495,8 +490,8 @@ void QQnxScreen::onWindowPost(QQnxWindow *window)
     // post app window (so navigator will show it) after first child window
     // has posted; this only needs to happen once as the app window's content
     // never changes
-    if (!m_posted && m_rootWindow) {
-        m_rootWindow->post();
+    if (!m_posted && rootWindow()) {
+        rootWindow()->post();
         m_posted = true;
     }
 }
@@ -580,6 +575,15 @@ void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
         return;
 
     QWindowSystemInterface::handleWindowActivated(0);
+}
+
+QSharedPointer<QQnxRootWindow> QQnxScreen::rootWindow() const
+{
+    // We only create the root window if we are the primary display.
+    if (m_primaryScreen && !m_rootWindow)
+        m_rootWindow = QSharedPointer<QQnxRootWindow>(new QQnxRootWindow(this));
+
+    return m_rootWindow;
 }
 
 QT_END_NAMESPACE

@@ -82,6 +82,8 @@ typedef QMultiMap<QString, TargetRec> TargetRecMultiMap;
 
 class QDocDatabase
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QDocDatabase)
+
   public:
     static QDocDatabase* qdocDB();
     static void destroyQdocDB();

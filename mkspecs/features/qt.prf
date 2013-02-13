@@ -67,6 +67,7 @@ qtAddModules(QT_PRIVATE, LIBS_PRIVATE)
     message("Running this project against other versions of the Qt modules may crash at any arbitrary point.")
     message("This is not a bug, but a result of using Qt internals. You have been warned!")
 }
+qtAddRpathLink($$QT $$QT_PRIVATE)
 
 wince*:static:gui {
    QTLIB += qmenu_wce.res

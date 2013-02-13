@@ -130,7 +130,6 @@ public:
 
     \value StereoBuffers Used to request stereo buffers in the surface format.
     \value DebugContext Used to request a debug context with extra debugging information.
-        This requires OpenGL version 3.0 or higher.
     \value DeprecatedFunctions Used to request that deprecated functions be included
         in the OpenGL context profile. If not specified, you should get a forward compatible context
         without support functionality marked as deprecated. This requires OpenGL version 3.0 or higher.

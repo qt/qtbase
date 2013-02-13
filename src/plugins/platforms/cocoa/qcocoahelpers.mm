@@ -714,35 +714,38 @@ QString qt_mac_removeAmpersandEscapes(QString s)
  \warning This function is only available on Mac OS X.
  \warning This function is duplicated in qmacstyle_mac.mm
  */
-CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
+CGContextRef qt_mac_cg_context(QPaintDevice *pdev)
 {
-    if (pdev->devType() == QInternal::Pixmap) {
-        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
-        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
-        uint flags = kCGImageAlphaPremultipliedFirst;
-        flags |= kCGBitmapByteOrder32Host;
-        CGContextRef ret = 0;
+    // In Qt 5, QWidget and QPixmap (and QImage) paint devices are all QImages under the hood.
+    QImage *image = 0;
+    if (pdev->devType() == QInternal::Image) {
+        image = static_cast<QImage *>(pdev);
+    } else if (pdev->devType() == QInternal::Pixmap) {
 
+        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
         QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
         if (data && data->classId() == QPlatformPixmap::RasterClass) {
-            QImage *image = data->buffer();
-            ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorspace, flags);
+            image = data->buffer();
         } else {
             qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
         }
-
-        CGContextTranslateCTM(ret, 0, pm->height());
-        CGContextScaleCTM(ret, 1, -1);
-        return ret;
     } else if (pdev->devType() == QInternal::Widget) {
-        //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
-        ///CGContextRetain(ret);
-        //return ret;
+        // TODO test: image = static_cast<QImage *>(static_cast<const QWidget *>(pdev)->backingStore()->paintDevice());
         qDebug() << "qt_mac_cg_context: not implemented: Widget class";
-        return 0;
     }
-    return 0;
+
+    if (!image)
+        return 0; // Context type not supported.
+
+    CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
+    uint flags = kCGImageAlphaPremultipliedFirst;
+    flags |= kCGBitmapByteOrder32Host;
+    CGContextRef ret = 0;
+    ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
+                                8, image->bytesPerLine(), colorspace, flags);
+    CGContextTranslateCTM(ret, 0, image->height());
+    CGContextScaleCTM(ret, 1, -1);
+    return ret;
 }
 
 CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
@@ -835,5 +838,19 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
     CGDataProviderRelease(cgDataProviderRef);
     return cgImage;
 }
+
+QImage qt_mac_toQImage(CGImageRef image)
+{
+    const size_t w = CGImageGetWidth(image),
+                 h = CGImageGetHeight(image);
+    QImage ret(w, h, QImage::Format_ARGB32_Premultiplied);
+    ret.fill(Qt::transparent);
+    CGRect rect = CGRectMake(0, 0, w, h);
+    CGContextRef ctx = qt_mac_cg_context(&ret);
+    qt_mac_drawCGImage(ctx, &rect, image);
+    CGContextRelease(ctx);
+    return ret;
+}
+
 
 QT_END_NAMESPACE

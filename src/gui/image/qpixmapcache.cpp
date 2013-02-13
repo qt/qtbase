@@ -75,22 +75,20 @@ QT_BEGIN_NAMESPACE
     behavior of the QHash and QCache classes.
 
     The cache becomes full when the total size of all pixmaps in the
-    cache exceeds cacheLimit(). The initial cache limit is
-    2048 KB (2 MB) on embedded platforms, 10240 KB (10 MB) on desktop
-    platforms; you can change this by calling setCacheLimit() with the
-    required value.
+    cache exceeds cacheLimit(). The initial cache limit is 10240 KB (10 MB);
+    you can change this by calling setCacheLimit() with the required value.
     A pixmap takes roughly (\e{width} * \e{height} * \e{depth})/8 bytes of
     memory.
 
     The \e{Qt Quarterly} article
-    \l{http://qt.nokia.com/doc/qq/qq12-qpixmapcache.html}{Optimizing
+    \l{http://doc.qt.digia.com/qq/qq12-qpixmapcache.html}{Optimizing
     with QPixmapCache} explains how to use QPixmapCache to speed up
     applications by caching the results of painting.
 
     \sa QCache, QPixmap
 */
 
-static int cache_limit = 10240; // 10 MB cache limit for desktop
+static int cache_limit = 10240; // 10 MB cache limit
 
 /*!
     \class QPixmapCache::Key
@@ -596,8 +594,7 @@ bool QPixmapCache::replace(const Key &key, const QPixmap &pixmap)
 /*!
     Returns the cache limit (in kilobytes).
 
-    The default cache limit is 2048 KB on embedded platforms, 10240 KB on
-    desktop platforms.
+    The default cache limit is 10240 KB.
 
     \sa setCacheLimit()
 */
@@ -610,8 +607,7 @@ int QPixmapCache::cacheLimit()
 /*!
     Sets the cache limit to \a n kilobytes.
 
-    The default setting is 2048 KB on embedded platforms, 10240 KB on
-    desktop platforms.
+    The default setting is 10240 KB.
 
     \sa cacheLimit()
 */

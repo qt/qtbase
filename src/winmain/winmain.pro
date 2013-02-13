@@ -25,3 +25,9 @@ TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 load(qt_targets)
 
 wince*:QMAKE_POST_LINK =
+
+unix|win32-g++* {
+    lib_replace.match = $$[QT_INSTALL_LIBS/get]
+    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
+    QMAKE_PRL_INSTALL_REPLACE += lib_replace
+}

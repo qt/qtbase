@@ -193,9 +193,8 @@ bool usage(const char *a0)
 }
 
 int
-Option::parseCommandLine(QStringList &args)
+Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
 {
-    QMakeCmdLineParserState state(QDir::currentPath());
     enum { ArgNone, ArgOutput } argState = ArgNone;
     int x = 0;
     while (x < args.count()) {
@@ -313,8 +312,6 @@ Option::parseCommandLine(QStringList &args)
         fprintf(stderr, "***Option %s requires a parameter\n", qPrintable(args.at(x - 1)));
         return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
     }
-    globals->commitCommandLineArguments(state);
-    globals->debugLevel = Option::debug_level;
     return Option::QMAKE_CMDLINE_SUCCESS;
 }
 
@@ -374,6 +371,7 @@ Option::init(int argc, char **argv)
         Option::qmake_mode = Option::QMAKE_GENERATE_MAKEFILE;
     }
 
+    QMakeCmdLineParserState cmdstate(QDir::currentPath());
     const QByteArray envflags = qgetenv("QMAKEFLAGS");
     if (!envflags.isNull()) {
         QStringList args;
@@ -399,7 +397,8 @@ Option::init(int argc, char **argv)
         }
         if (hasWord)
             args << QString::fromLocal8Bit(buf);
-        parseCommandLine(args);
+        parseCommandLine(args, cmdstate);
+        cmdstate.flush();
     }
     if(argc && argv) {
         QStringList args;
@@ -430,7 +429,7 @@ Option::init(int argc, char **argv)
             break;
         }
 
-        int ret = parseCommandLine(args);
+        int ret = parseCommandLine(args, cmdstate);
         if(ret != Option::QMAKE_CMDLINE_SUCCESS) {
             if ((ret & Option::QMAKE_CMDLINE_SHOW_USAGE) != 0)
                 usage(argv[0]);
@@ -439,6 +438,8 @@ Option::init(int argc, char **argv)
         }
         Option::qmake_args = args;
     }
+    globals->commitCommandLineArguments(cmdstate);
+    globals->debugLevel = Option::debug_level;
 
     //last chance for defaults
     if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||

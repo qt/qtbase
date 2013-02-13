@@ -305,13 +305,23 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 
             // If asking for OpenGL 3.2 or newer we should also specify a profile
             if (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
-                if (m_format.profile() == QSurfaceFormat::CoreProfile) {
-                    contextAttributes << GLX_CONTEXT_FLAGS_ARB << GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB
-                                      << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-                } else {
+                if (m_format.profile() == QSurfaceFormat::CoreProfile)
+                    contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+                else
                     contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-                }
             }
+
+            int flags = 0;
+
+            if (m_format.testOption(QSurfaceFormat::DebugContext))
+                flags |= GLX_CONTEXT_DEBUG_BIT_ARB;
+
+            // A forward-compatible context may be requested for 3.0 and later
+            if (m_format.majorVersion() >= 3 && !m_format.testOption(QSurfaceFormat::DeprecatedFunctions))
+                flags |= GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+
+            if (flags != 0)
+                contextAttributes << GLX_CONTEXT_FLAGS_ARB << flags;
 
             contextAttributes << None;
 

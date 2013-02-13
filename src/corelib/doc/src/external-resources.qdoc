@@ -65,3 +65,8 @@
     \externalpage http://www.ietf.org/rfc/rfc2045.txt
     \title RFC 2045
 */
+
+/*!
+    \externalpage http://www.iana.org/assignments/character-sets/character-sets.xml
+    \title IANA character-sets encoding file
+*/

@@ -41,6 +41,8 @@
 
 #include "qqnxinputcontext_noimf.h"
 #include "qqnxabstractvirtualkeyboard.h"
+#include "qqnxintegration.h"
+#include "qqnxscreen.h"
 
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
@@ -53,12 +55,14 @@
 
 QT_BEGIN_NAMESPACE
 
-QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard) :
+QQnxInputContext::QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVirtualKeyboard &keyboard) :
     QPlatformInputContext(),
     m_inputPanelVisible(false),
     m_inputPanelLocale(QLocale::c()),
+    m_integration(integration),
     m_virtualKeyboard(keyboard)
 {
+    connect(&keyboard, SIGNAL(heightChanged(int)), this, SLOT(keyboardHeightChanged()));
     connect(&keyboard, SIGNAL(visibilityChanged(bool)), this, SLOT(keyboardVisibilityChanged(bool)));
     connect(&keyboard, SIGNAL(localeChanged(QLocale)), this, SLOT(keyboardLocaleChanged(QLocale)));
     keyboardVisibilityChanged(keyboard.isVisible());
@@ -105,6 +109,13 @@ bool QQnxInputContext::filterEvent( const QEvent *event )
 
 }
 
+QRectF QQnxInputContext::keyboardRect() const
+{
+    QRect screenGeometry = m_integration->primaryDisplay()->geometry();
+    return QRectF(screenGeometry.x(), screenGeometry.height() - m_virtualKeyboard.height(),
+                  screenGeometry.width(), m_virtualKeyboard.height());
+}
+
 bool QQnxInputContext::handleKeyboardEvent(int flags, int sym, int mod, int scan, int cap)
 {
     Q_UNUSED(flags);
@@ -135,6 +146,11 @@ bool QQnxInputContext::isInputPanelVisible() const
 QLocale QQnxInputContext::locale() const
 {
     return m_inputPanelLocale;
+}
+
+void QQnxInputContext::keyboardHeightChanged()
+{
+    emitKeyboardRectChanged();
 }
 
 void QQnxInputContext::keyboardVisibilityChanged(bool visible)

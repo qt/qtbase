@@ -94,6 +94,18 @@ function(test_module_includes)
       include_directories(\${Qt5${qtmodule}_INCLUDE_DIRS})
       add_definitions(\${Qt5${qtmodule}_DEFINITIONS})\n"
     )
+
+    # Because the CI system tests built packages before installation,
+    # the include dir allowing module-includes for the new module is not
+    # the same as the dir for QtCore (because that is at the installation
+    # location). The CI system is untypical here in that it attempts to use
+    # packages while they are in an intermediate state, so we work around
+    # that in the test system.
+    set(packages_string
+      "${packages_string}
+      include_directories(\"\${Qt5${qtmodule}_DIR}/../../../include\")\n"
+    )
+
     set(libraries_string "${libraries_string} Qt5::${qtmodule}")
   endwhile()
 

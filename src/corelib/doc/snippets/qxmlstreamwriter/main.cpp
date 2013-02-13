@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
     stream.writeAttribute("folded", "no");
 //! [write element]
     stream.writeStartElement("bookmark");
-    stream.writeAttribute("href", "http://qt.nokia.com/");
-    stream.writeTextElement("title", "Qt Home");
+    stream.writeAttribute("href", "http://qt-project.org/");
+    stream.writeTextElement("title", "Qt Project");
     stream.writeEndElement(); // bookmark
 //! [write element]
     stream.writeEndElement(); // folder

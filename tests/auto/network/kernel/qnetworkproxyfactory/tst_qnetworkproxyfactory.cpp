@@ -273,7 +273,7 @@ void tst_QNetworkProxyFactory::fromConfigurations()
 {
     QNetworkConfigurationManager manager;
     QList<QNetworkProxy> proxies;
-    QUrl url(QLatin1String("http://qt.nokia.com"));
+    QUrl url(QLatin1String("http://qt-project.org"));
     //get from known configurations
     foreach (QNetworkConfiguration config, manager.allConfigurations()) {
         QNetworkProxyQuery query(config, url, QNetworkProxyQuery::UrlRequest);
@@ -320,7 +320,7 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager_data()
     QNetworkConfigurationManager manager;
     //get from known configurations
     foreach (QNetworkConfiguration config, manager.allConfigurations()) {
-        QNetworkProxyQuery query(config, QUrl(QString("http://qt.nokia.com")), QNetworkProxyQuery::UrlRequest);
+        QNetworkProxyQuery query(config, QUrl(QString("http://qt-project.org")), QNetworkProxyQuery::UrlRequest);
         QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(query);
         QTest::newRow(config.name().toUtf8()) << config << proxies;
     }
@@ -339,7 +339,7 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager()
     manager.setConfiguration(config);
 
     //using an internet server, because cellular APs won't have a route to the test server.
-    QNetworkRequest req(QUrl(QString("http://qt.nokia.com")));
+    QNetworkRequest req(QUrl(QString("http://qt-project.org")));
     QNetworkReply *reply = manager.get(req);
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(30);
@@ -383,7 +383,7 @@ public:
 //regression test for QTBUG-18799
 void tst_QNetworkProxyFactory::systemProxyForQueryCalledFromThread()
 {
-    QUrl url(QLatin1String("http://qt.nokia.com"));
+    QUrl url(QLatin1String("http://qt-project.org"));
     QNetworkProxyQuery query(url);
     QSPFQThread thread;
     thread.query = query;

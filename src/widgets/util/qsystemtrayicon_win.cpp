@@ -166,21 +166,29 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsTrayconWndProc(HWND hwnd, UINT messag
 }
 
 // Invoke a service of the native Windows interface to create
-// a non-visible message window.
+// a non-visible toplevel window to receive tray messages.
+// Note: Message windows (HWND_MESSAGE) are not sufficient, they
+// will not receive the "TaskbarCreated" message.
 static inline HWND createTrayIconMessageWindow()
 {
-    if (QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface()) {
-        void *hwnd = 0;
-        void *wndProc = reinterpret_cast<void *>(qWindowsTrayconWndProc);
-        if (QMetaObject::invokeMethod(ni, "createMessageWindow", Qt::DirectConnection,
-                                  Q_RETURN_ARG(void *, hwnd),
-                                  Q_ARG(QString, QStringLiteral("QTrayIconMessageWindowClass")),
-                                  Q_ARG(QString, QStringLiteral("QTrayIconMessageWindow")),
-                                  Q_ARG(void *, wndProc)) && hwnd) {
-            return reinterpret_cast<HWND>(hwnd);
-        }
+    QPlatformNativeInterface *ni = QGuiApplication::platformNativeInterface();
+    if (!ni)
+        return 0;
+    // Register window class in the platform plugin.
+    QString className;
+    void *wndProc = reinterpret_cast<void *>(qWindowsTrayconWndProc);
+    if (!QMetaObject::invokeMethod(ni, "registerWindowClass", Qt::DirectConnection,
+                                   Q_RETURN_ARG(QString, className),
+                                   Q_ARG(QString, QStringLiteral("QTrayIconMessageWindowClass")),
+                                   Q_ARG(void *, wndProc))) {
+        return 0;
     }
-    return 0;
+    const wchar_t windowName[] = L"QTrayIconMessageWindow";
+    return CreateWindowEx(0, (wchar_t*)className.utf16(),
+                          windowName, WS_OVERLAPPED,
+                          CW_USEDEFAULT, CW_USEDEFAULT,
+                          CW_USEDEFAULT, CW_USEDEFAULT,
+                          NULL, NULL, (HINSTANCE)GetModuleHandle(0), NULL);
 }
 
 QSystemTrayIconSys::QSystemTrayIconSys(HWND hwnd, QSystemTrayIcon *object)

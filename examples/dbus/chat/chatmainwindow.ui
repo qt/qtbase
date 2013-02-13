@@ -13,7 +13,7 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>QtDBus Chat</string>
+   <string>Qt D-Bus Chat</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <layout class="QHBoxLayout" >

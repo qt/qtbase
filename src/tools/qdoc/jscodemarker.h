@@ -52,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 class JsCodeMarker : public QmlCodeMarker
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::JsCodeMarker)
+
 public:
     JsCodeMarker();
     ~JsCodeMarker();

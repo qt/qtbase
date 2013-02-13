@@ -175,9 +175,13 @@ void tst_QWindow::positioning()
 
     // Some platforms enforce minimum widths for windows, which can cause extra resize
     // events, so set the width to suitably large value to avoid those.
-    QRect geometry(80, 80, 300, 40);
+    const QSize size = QSize(300, 40);
+    const QRect geometry(QPoint(80, 80), size);
 
     Window window;
+    window.setGeometry(QRect(QPoint(20, 20), size));
+    window.setFramePosition(QPoint(40, 40)); // Move window around before show, size must not change.
+    QCOMPARE(window.geometry().size(), size);
     window.setGeometry(geometry);
     QCOMPARE(window.geometry(), geometry);
     window.show();

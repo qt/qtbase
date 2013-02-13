@@ -224,7 +224,7 @@ static QString documentElement(const QByteArray &document)
  * Since this suite is fairly large, it runs the tests sequentially in order to not
  * have them all loaded into memory at once. In this way, the maximum memory usage stays
  * low, which means one can run valgrind on this test. However, the drawback is that
- * QTestLib's usual error reporting and testing mechanisms are slightly bypassed.
+ * Qt Test's usual error reporting and testing mechanisms are slightly bypassed.
  *
  * Part of this code is a manual, ad-hoc implementation of xml:base.
  *
@@ -611,11 +611,11 @@ void tst_QXmlStream::reportFailures_data()
     QTest::addColumn<QString>("description");
 
     /* We loop over all our failures(if any!), and output them such
-     * that they appear in the QTestLib log. */
+     * that they appear in the Qt Test log. */
     for(int i = 0; i < len; ++i)
         QTest::newRow(m_handler.failures.at(i).first.toLatin1().constData()) << true << m_handler.failures.at(i).second;
 
-    /* We need to add at least one column of test data, otherwise QTestLib complains. */
+    /* We need to add at least one column of test data, otherwise Qt Test complains. */
     if(len == 0)
         QTest::newRow("Whole test suite passed") << false << QString();
 
@@ -1140,7 +1140,7 @@ void tst_QXmlStream::crashInUTF16Codec() const
 }
 
 /*
-  In addition to QTestLib's flags, one can specify "-c <filename>" and have that file output in its canonical form.
+  In addition to Qt Test's flags, one can specify "-c <filename>" and have that file output in its canonical form.
 */
 int main(int argc, char *argv[])
 {

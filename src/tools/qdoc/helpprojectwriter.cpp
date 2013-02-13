@@ -429,17 +429,18 @@ void HelpProjectWriter::generateSections(HelpProject &project,
 
         // Ensure that we don't visit nodes more than once.
         QMap<QString, const Node*> childMap;
-        foreach (const Node *node, inner->childNodes()) {
-            if (node->access() == Node::Private)
+        foreach (const Node *childNode, inner->childNodes()) {
+            if (childNode->access() == Node::Private)
                 continue;
-            if (node->type() == Node::Document) {
+
+            if (childNode->type() == Node::Document) {
                 /*
                   Don't visit QML property group nodes,
                   but visit their children, which are all
                   QML property nodes.
                  */
-                if (node->subType() == Node::QmlPropertyGroup) {
-                    const InnerNode* inner = static_cast<const InnerNode*>(node);
+                if (childNode->subType() == Node::QmlPropertyGroup) {
+                    const InnerNode* inner = static_cast<const InnerNode*>(childNode);
                     foreach (const Node* n, inner->childNodes()) {
                         if (n->access() == Node::Private)
                             continue;
@@ -447,17 +448,24 @@ void HelpProjectWriter::generateSections(HelpProject &project,
                     }
                 }
                 else
-                    childMap[static_cast<const DocNode *>(node)->fullTitle()] = node;
+                    childMap[static_cast<const DocNode *>(childNode)->fullTitle()] = childNode;
             }
             else {
-                if (node->type() == Node::Function) {
-                    const FunctionNode *funcNode = static_cast<const FunctionNode *>(node);
+                // Store member status of children
+                project.memberStatus[node].insert(childNode->status());
+
+                if (childNode->type() == Node::Function) {
+                    const FunctionNode *funcNode = static_cast<const FunctionNode *>(childNode);
                     if (funcNode->isOverload())
                         continue;
                 }
-                childMap[node->fullDocumentName()] = node;
+                childMap[childNode->fullDocumentName()] = childNode;
             }
         }
+        // Insert files for all/compatibility/obsolete members
+        addMembers(project, writer, node, false);
+        if (node->relates())
+            addMembers(project, writer, node->relates(), false);
 
         foreach (const Node *child, childMap)
             generateSections(project, writer, child);
@@ -483,6 +491,57 @@ void HelpProjectWriter::writeHashFile(QFile &file)
     hashFile.close();
 }
 
+void HelpProjectWriter::writeSection(QXmlStreamWriter &writer, const QString &path,
+                                           const QString &value)
+{
+    writer.writeStartElement(QStringLiteral("section"));
+    writer.writeAttribute(QStringLiteral("ref"), path);
+    writer.writeAttribute(QStringLiteral("title"), value);
+    writer.writeEndElement(); // section
+}
+
+/*
+    Add files for all members, compatibility members and obsolete members
+    Also write subsections for these depending on 'writeSections' (default=true).
+*/
+void HelpProjectWriter::addMembers(HelpProject &project, QXmlStreamWriter &writer,
+                                          const Node *node, bool writeSections)
+{
+    QString href = gen_->fullDocumentLocation(node,true);
+    href = href.left(href.size()-5);
+    if (href.isEmpty())
+        return;
+
+    Node::SubType subType = static_cast<const DocNode*>(node)->subType();
+
+    bool derivedClass = false;
+    if (node->type() == Node::Class)
+        derivedClass = !(static_cast<const ClassNode *>(node)->baseClasses().isEmpty());
+
+    // Do not generate a 'List of all members' for namespaces or header files,
+    // but always generate it for derived classes and QML classes
+    if (node->type() != Node::Namespace && subType != Node::HeaderFile &&
+            (derivedClass || subType == Node::QmlClass ||
+             !project.memberStatus[node].isEmpty())) {
+        QString membersPath = href + QStringLiteral("-members.html");
+        project.files.insert(membersPath);
+        if (writeSections)
+            writeSection(writer, membersPath, tr("List of all members"));
+    }
+    if (project.memberStatus[node].contains(Node::Compat)) {
+        QString compatPath = href + QStringLiteral("-compat.html");
+        project.files.insert(compatPath);
+        if (writeSections)
+            writeSection(writer, compatPath, tr("Compatibility members"));
+    }
+    if (project.memberStatus[node].contains(Node::Obsolete)) {
+        QString obsoletePath = href + QStringLiteral("-obsolete.html");
+        project.files.insert(obsoletePath);
+        if (writeSections)
+            writeSection(writer, obsoletePath, tr("Obsolete members"));
+    }
+}
+
 void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer,
                                   const Node *node)
 {
@@ -499,41 +558,12 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
         else
             writer.writeAttribute("title", tr("%1 Class Reference").arg(objName));
 
-        // Write subsections for all members, obsolete members and Qt 3
-        // members.
-        if (!project.memberStatus[node].isEmpty()) {
-            QString membersPath = href.left(href.size()-5) + "-members.html";
-            writer.writeStartElement("section");
-            writer.writeAttribute("ref", membersPath);
-            writer.writeAttribute("title", tr("List of all members"));
-            writer.writeEndElement(); // section
-            project.files.insert(membersPath);
-        }
-        if (project.memberStatus[node].contains(Node::Compat)) {
-            QString compatPath = href.left(href.size()-5) + "-compat.html";
-            writer.writeStartElement("section");
-            writer.writeAttribute("ref", compatPath);
-            writer.writeAttribute("title", tr("Compatibility members"));
-            writer.writeEndElement(); // section
-            project.files.insert(compatPath);
-        }
-        if (project.memberStatus[node].contains(Node::Obsolete)) {
-            QString obsoletePath = href.left(href.size()-5) + "-obsolete.html";
-            writer.writeStartElement("section");
-            writer.writeAttribute("ref", obsoletePath);
-            writer.writeAttribute("title", tr("Obsolete members"));
-            writer.writeEndElement(); // section
-            project.files.insert(obsoletePath);
-        }
-
+        addMembers(project, writer, node);
         writer.writeEndElement(); // section
         break;
 
     case Node::Namespace:
-        writer.writeStartElement("section");
-        writer.writeAttribute("ref", href);
-        writer.writeAttribute("title", objName);
-        writer.writeEndElement(); // section
+        writeSection(writer, href, objName);
         break;
 
     case Node::Document: {
@@ -548,34 +578,8 @@ void HelpProjectWriter::writeNode(HelpProject &project, QXmlStreamWriter &writer
         else
             writer.writeAttribute("title", docNode->fullTitle());
 
-        if ((docNode->subType() == Node::HeaderFile) || (docNode->subType() == Node::QmlClass)) {
-            // Write subsections for all members, obsolete members and Qt 3
-            // members.
-            if (!project.memberStatus[node].isEmpty() || (docNode->subType() == Node::QmlClass)) {
-                QString membersPath = href.left(href.size()-5) + "-members.html";
-                writer.writeStartElement("section");
-                writer.writeAttribute("ref", membersPath);
-                writer.writeAttribute("title", tr("List of all members"));
-                writer.writeEndElement(); // section
-                project.files.insert(membersPath);
-            }
-            if (project.memberStatus[node].contains(Node::Compat)) {
-                QString compatPath = href.left(href.size()-5) + "-compat.html";
-                writer.writeStartElement("section");
-                writer.writeAttribute("ref", compatPath);
-                writer.writeAttribute("title", tr("Compatibility members"));
-                writer.writeEndElement(); // section
-                project.files.insert(compatPath);
-            }
-            if (project.memberStatus[node].contains(Node::Obsolete)) {
-                QString obsoletePath = href.left(href.size()-5) + "-obsolete.html";
-                writer.writeStartElement("section");
-                writer.writeAttribute("ref", obsoletePath);
-                writer.writeAttribute("title", tr("Obsolete members"));
-                writer.writeEndElement(); // section
-                project.files.insert(obsoletePath);
-            }
-        }
+        if ((docNode->subType() == Node::HeaderFile) || (docNode->subType() == Node::QmlClass))
+            addMembers(project, writer, node);
 
         writer.writeEndElement(); // section
     }

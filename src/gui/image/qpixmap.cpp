@@ -763,6 +763,8 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
     }
 
+    detach();
+
     QFileInfo info(fileName);
     QString key = QLatin1String("qt_pixmap")
                   % info.absoluteFilePath()

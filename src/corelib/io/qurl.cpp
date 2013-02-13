@@ -3887,7 +3887,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     \section1 Examples:
 
     \list
-    \li qt.nokia.com becomes http://qt.nokia.com
+    \li qt-project.org becomes http://qt-project.org
     \li ftp.qt-project.org becomes ftp://ftp.qt-project.org
     \li hostname becomes http://hostname
     \li /home/user/test.html becomes file:///home/user/test.html

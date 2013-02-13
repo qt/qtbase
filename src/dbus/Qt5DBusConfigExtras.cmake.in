@@ -1,12 +1,10 @@
 
-get_filename_component(_qt5_dbus_install_prefix \"${CMAKE_CURRENT_LIST_DIR}/$${CMAKE_RELATIVE_INSTALL_DIR}\" ABSOLUTE)
-
 if (NOT TARGET Qt5::qdbuscpp2xml)
     add_executable(Qt5::qdbuscpp2xml IMPORTED)
 
     set_target_properties(Qt5::qdbuscpp2xml PROPERTIES
 !!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION \"${_qt5_dbus_install_prefix}/$${CMAKE_BIN_DIR}qdbuscpp2xml$$CMAKE_BIN_SUFFIX\"
+        IMPORTED_LOCATION \"${_qt5DBus_install_prefix}/$${CMAKE_BIN_DIR}qdbuscpp2xml$$CMAKE_BIN_SUFFIX\"
 !!ELSE
         IMPORTED_LOCATION \"$${CMAKE_BIN_DIR}qdbuscpp2xml$$CMAKE_BIN_SUFFIX\"
 !!ENDIF
@@ -18,7 +16,7 @@ if (NOT TARGET Qt5::qdbusxml2cpp)
 
     set_target_properties(Qt5::qdbusxml2cpp PROPERTIES
 !!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION \"${_qt5_dbus_install_prefix}/$${CMAKE_BIN_DIR}qdbusxml2cpp$$CMAKE_BIN_SUFFIX\"
+        IMPORTED_LOCATION \"${_qt5DBus_install_prefix}/$${CMAKE_BIN_DIR}qdbusxml2cpp$$CMAKE_BIN_SUFFIX\"
 !!ELSE
         IMPORTED_LOCATION \"$${CMAKE_BIN_DIR}qdbusxml2cpp$$CMAKE_BIN_SUFFIX\"
 !!ENDIF

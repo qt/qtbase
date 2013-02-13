@@ -2029,7 +2029,7 @@ void tst_QVariant::saveLoadCustomTypes()
 
 void tst_QVariant::url()
 {
-    QString str("http://qt.nokia.com");
+    QString str("http://qt-project.org");
     QUrl url(str);
 
     QVariant v(url); //built with a QUrl

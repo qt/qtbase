@@ -40,12 +40,6 @@
 ****************************************************************************/
 
 #include <qdebug.h>
-#ifdef QT_BOOTSTRAPPED
-#define tr(x, y) QString(QLatin1String(y))
-#else
-#include <qcoreapplication.h>
-#define tr(x, y) QCoreApplication::translate(x, y)
-#endif
 
 #include <string.h>
 

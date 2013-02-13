@@ -442,8 +442,7 @@ void Configure::parseCmdLine()
             if (j == argCount)
                 break;
             dictionary["XQMAKESPEC"] = configCmdLine.at(j);
-            if (!dictionary[ "XQMAKESPEC" ].isEmpty())
-                applySpecSpecifics();
+            applySpecSpecifics();
             break;
         }
     }
@@ -1529,12 +1528,12 @@ void Configure::desc(const char *mark_option, const char *mark, const char *opti
 */
 void Configure::applySpecSpecifics()
 {
-    if (!dictionary[ "XQMAKESPEC" ].isEmpty()) {
+    if (dictionary.contains("XQMAKESPEC")) {
         //Disable building tools, docs and translations when cross compiling.
         nobuildParts << "docs" << "translations" << "tools";
     }
 
-    if (dictionary[ "XQMAKESPEC" ].startsWith("wince")) {
+    if (dictionary.value("XQMAKESPEC").startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
         dictionary[ "STYLE_FUSION" ]        = "no";
@@ -1559,7 +1558,7 @@ void Configure::applySpecSpecifics()
             dictionary[ "MMX" ]    = "yes";
             dictionary[ "IWMMXT" ] = "yes";
         }
-    } else if (dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
+    } else if (dictionary.value("XQMAKESPEC").startsWith("linux")) { //TODO actually wrong.
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
@@ -1648,7 +1647,7 @@ bool Configure::displayHelp()
             desc(               "",                     qPrintable(QString("  %1").arg(defaultBuildParts.at(i))), false, ' ');
         desc(                   "-nomake <part>",       "Exclude part from the list of parts to be built.\n");
 
-        desc("WIDGETS", "no", "-no-widgets",            "Disable QtWidgets module.\n");
+        desc("WIDGETS", "no", "-no-widgets",            "Disable Qt Widgets module.\n");
 
         desc("ACCESSIBILITY", "no", "-no-accessibility", "Disable accessibility support.\n");
         desc(                   "",                      "Disabling accessibility is not recommended, as it will break QStyle\n"
@@ -1810,8 +1809,8 @@ bool Configure::displayHelp()
         desc("DBUS", "no",       "-no-dbus",            "Do not compile in D-Bus support.");
         desc("DBUS", "yes",      "-dbus",               "Compile in D-Bus support and load libdbus-1\ndynamically.");
         desc("DBUS", "linked",   "-dbus-linked",        "Compile in D-Bus support and link to libdbus-1.\n");
-        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQtMultimedia.");
-        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into QtMultimedia.\n");
+        desc("AUDIO_BACKEND", "no","-no-audio-backend", "Do not compile in the platform audio backend into\nQt Multimedia.");
+        desc("AUDIO_BACKEND", "yes","-audio-backend",   "Compile in the platform audio backend into Qt Multimedia.\n");
         desc("QML_DEBUG", "no",    "-no-qml-debug",     "Do not build the in-process QML debugging support.");
         desc("QML_DEBUG", "yes",   "-qml-debug",        "Build the in-process QML debugging support.\n");
         desc("DIRECTWRITE", "no", "-no-directwrite", "Do not build support for DirectWrite font rendering.");
@@ -1916,7 +1915,7 @@ QString Configure::defaultTo(const QString &option)
     }
 
     // By default we do not want to compile OCI driver when compiling with
-    // MinGW, due to lack of such support from Oracle. It prob. wont work.
+    // MinGW, due to lack of such support from Oracle. It prob. won't work.
     // (Customer may force the use though)
     if (dictionary["QMAKESPEC"].endsWith("-g++")
         && option == "SQL_OCI")
@@ -2308,7 +2307,7 @@ bool Configure::verifyConfiguration()
                  << "Disabling the ANGLE backend." << endl;
             prompt = true;
         }
-        if ((dictionary["OPENGL_ES_2"] == "yes") && (dictionary.value("XQMAKESPEC").isEmpty())) {
+        if ((dictionary["OPENGL_ES_2"] == "yes") && !dictionary.contains("XQMAKESPEC")) {
             cout << endl << "WARNING: Using OpenGL ES 2.0 without ANGLE." << endl
                  << "Specify -opengl desktop to use Open GL." << endl
                  <<  "The build will most likely fail." << endl;
@@ -3056,7 +3055,7 @@ void Configure::generateQConfigPri()
         configStream << "QT_HOST_ARCH = " << dictionary["QT_HOST_ARCH"] << endl;
         configStream << "QT_CPU_FEATURES = " << dictionary["QT_CPU_FEATURES"] << endl;
         configStream << "QT_HOST_CPU_FEATURES = " << dictionary["QT_HOST_CPU_FEATURES"] << endl;
-        if (!dictionary["XQMAKESPEC"].isEmpty() && !dictionary["XQMAKESPEC"].startsWith("wince")) {
+        if (dictionary.contains("XQMAKESPEC") && !dictionary["XQMAKESPEC"].startsWith("wince")) {
             // FIXME: add detection
             configStream << "QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib" << endl;
             configStream << "QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include" << endl;
@@ -3386,8 +3385,8 @@ void Configure::displayConfig()
     sout << "CUPS support................" << dictionary[ "QT_CUPS" ] << endl;
     sout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     sout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
-    sout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
-    sout << "QtWidgets module support...." << dictionary[ "WIDGETS" ] << endl;
+    sout << "Qt D-Bus support............" << dictionary[ "DBUS" ] << endl;
+    sout << "Qt Widgets module support..." << dictionary[ "WIDGETS" ] << endl;
     sout << "QML debugging..............." << dictionary[ "QML_DEBUG" ] << endl;
     sout << "DirectWrite support........." << dictionary[ "DIRECTWRITE" ] << endl;
     sout << "Use system proxies.........." << dictionary[ "SYSTEM_PROXIES" ] << endl << endl;

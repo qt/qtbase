@@ -37,13 +37,13 @@ CMAKE_PARTIAL_MODULE_DEPS = $$replace(CMAKE_MODULE_DEPS, ";", ";Qt5::")
 !isEmpty(CMAKE_PARTIAL_MODULE_DEPS):CMAKE_QT5_MODULE_DEPS = "Qt5::$${CMAKE_PARTIAL_MODULE_DEPS}"
 
 CMAKE_INCLUDE_DIR = $$cmakeRelativePath($$[QT_INSTALL_HEADERS], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_INCLUDE_DIR, "^\.\.") {
+contains(CMAKE_INCLUDE_DIR, "^\\.\\./.*") {
     CMAKE_INCLUDE_DIR = $$[QT_INSTALL_HEADERS]/
     CMAKE_INCLUDE_DIR_IS_ABSOLUTE = True
 }
 
 CMAKE_LIB_DIR = $$cmakeRelativePath($$[QT_INSTALL_LIBS], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_LIB_DIR, "^\.\.") {
+contains(CMAKE_LIB_DIR, "^\\.\\./.*") {
     CMAKE_LIB_DIR = $$[QT_INSTALL_LIBS]/
     CMAKE_LIB_DIR_IS_ABSOLUTE = True
 } else {
@@ -54,13 +54,13 @@ contains(CMAKE_LIB_DIR, "^\.\.") {
 }
 
 CMAKE_BIN_DIR = $$cmakeRelativePath($$[QT_HOST_BINS], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_BIN_DIR, "^\.\.") {
+contains(CMAKE_BIN_DIR, "^\\.\\./.*") {
     CMAKE_BIN_DIR = $$[QT_HOST_BINS]/
     CMAKE_BIN_DIR_IS_ABSOLUTE = True
 }
 
 CMAKE_ARCHDATA_DIR = $$cmakeRelativePath($$[QT_INSTALL_ARCHDATA], $$[QT_INSTALL_PREFIX])
-contains(CMAKE_ARCHDATA_DIR, "^\.\.") {  # For the mkspecs
+contains(CMAKE_ARCHDATA_DIR, "^\\.\\./.*") {  # For the mkspecs
     CMAKE_ARCHDATA_DIR = $$[QT_INSTALL_ARCHDATA]/
     CMAKE_ARCHDATA_DIR_IS_ABSOLUTE = True
 }

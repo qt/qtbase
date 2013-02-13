@@ -1,0 +1,41 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 14905561440751715648 (0xcedb312845c40540)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: C=AU, ST=Some-State, O=Internet Widgits Pty Ltd
+        Validity
+            Not Before: Aug  4 09:53:41 2010 GMT
+            Not After : Aug 29 09:53:41 2051 GMT
+        Subject: C=AU, ST=Some-State, O=Internet Widgits Pty Ltd
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:cd:aa:db:6f:d6:34:c9:a7:f1:c0:be:e4:41:18:
+                    19:e2:02:c9:22:e6:a7:d5:ba:03:2e:9e:28:7a:f4:
+                    5f:1a:77:5f:77:a9:11:3b:8f:7e:f0:2e:c6:9e:eb:
+                    3a:d9:12:d7:c1:0c:51:e8:24:52:3f:23:c3:42:0c:
+                    11:c6:f2:1c:a1:42:fe:b4:c2:69:83:ad:f7:70:b1:
+                    18:15:cc:20:28:62:30:f0:2c:15:e6:33:19:af:c3:
+                    eb:1c:c0:91:f7:11:68:94:50:f8:49:37:08:32:d7:
+                    3e:75:df:a3:bc:69:00:15:de:cd:87:0f:5c:02:6b:
+                    82:c8:01:7d:6a:f0:1d:dc:73
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                8A:6E:19:E7:97:9B:8F:D9:7F:B3:BB:01:4F:E8:6A:2F:52:95:0D:D9
+            X509v3 Authority Key Identifier: 
+                keyid:8A:6E:19:E7:97:9B:8F:D9:7F:B3:BB:01:4F:E8:6A:2F:52:95:0D:D9
+
+            X509v3 Basic Constraints: 
+                CA:TRUE
+    Signature Algorithm: sha1WithRSAEncryption
+         a1:74:8e:5d:36:96:2c:05:7e:ea:66:cc:2e:68:c7:3d:93:dc:
+         8c:a3:11:ad:b5:7e:6e:d0:04:c4:09:bd:0a:f9:39:3b:97:d7:
+         f0:bb:0c:09:7b:83:fe:bf:87:b0:47:e8:94:b7:aa:9c:79:ad:
+         71:9e:b7:c4:99:98:6f:1d:38:32:f8:a3:75:38:c4:e5:e7:37:
+         37:21:ec:7b:50:8b:15:b0:97:1e:17:9c:50:17:3c:c1:df:94:
+         55:fb:60:2e:50:40:d1:ea:23:c6:3c:21:6f:97:8c:06:16:a5:
+         82:72:c1:63:14:64:86:eb:d7:ff:72:f6:09:f5:6d:e6:04:13:
+         7a:6a

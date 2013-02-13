@@ -373,7 +373,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun, const Plat
     errMsg.clear();
     QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
     if (serverName.isNull())
-        serverName = "lancelot.test.qt.nokia.com";
+        serverName = "lancelot.test.qt-project.org";
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {

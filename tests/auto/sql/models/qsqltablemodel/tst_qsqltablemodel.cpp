@@ -83,6 +83,8 @@ private slots:
     void insertColumns();
     void submitAll_data() { generic_data(); }
     void submitAll();
+    void setData_data()  { generic_data(); }
+    void setData();
     void setRecord_data()  { generic_data(); }
     void setRecord();
     void setRecordReimpl_data()  { generic_data(); }
@@ -97,6 +99,8 @@ private slots:
     void insertRecord();
     void insertMultiRecords_data() { generic_data(); }
     void insertMultiRecords();
+    void insertWithAutoColumn_data() { generic_data_with_strategies("QSQLITE"); }
+    void insertWithAutoColumn();
     void removeRow_data() { generic_data(); }
     void removeRow();
     void removeRows_data() { generic_data(); }
@@ -105,6 +109,8 @@ private slots:
     void removeInsertedRow();
     void removeInsertedRows_data() { generic_data(); }
     void removeInsertedRows();
+    void revert_data() { generic_data_with_strategies("QSQLITE"); }
+    void revert();
     void isDirty_data() { generic_data_with_strategies(); }
     void isDirty();
     void setFilter_data() { generic_data(); }
@@ -501,6 +507,77 @@ void tst_QSqlTableModel::insertColumns()
     QCOMPARE(model.data(model.index(3, 5)), QVariant());
 }
 
+void tst_QSqlTableModel::setData()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlTableModel model(0, db);
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model.setTable(test);
+    model.setSort(0, Qt::AscendingOrder);
+    QVERIFY_SQL(model, select());
+
+    //  initial state
+    QModelIndex idx = model.index(0, 0);
+    QVariant val = model.data(idx);
+    QVERIFY(val == int(1));
+    QVERIFY(!val.isNull());
+    QFAIL_SQL(model, isDirty());
+
+    // change 1 to 0
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, int(0)));
+    val = model.data(idx);
+    QVERIFY(val == int(0));
+    QVERIFY(!val.isNull());
+    QVERIFY_SQL(model, isDirty(idx));
+    QVERIFY_SQL(model, submitAll());
+
+    // change 0 to NULL
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
+    val = model.data(idx);
+    QVERIFY(val == QVariant(QVariant::Int));
+    QVERIFY(val.isNull());
+    QVERIFY_SQL(model, isDirty(idx));
+    QVERIFY_SQL(model, submitAll());
+
+    // change NULL to 0
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, int(0)));
+    val = model.data(idx);
+    QVERIFY(val == int(0));
+    QVERIFY(!val.isNull());
+    QVERIFY_SQL(model, isDirty(idx));
+    QVERIFY_SQL(model, submitAll());
+
+    // ignore unchanged 0 to 0
+    idx = model.index(0, 0);
+    QVERIFY_SQL(model, setData(idx, int(0)));
+    val = model.data(idx);
+    QVERIFY(val == int(0));
+    QVERIFY(!val.isNull());
+    QFAIL_SQL(model, isDirty(idx));
+
+    // pending INSERT
+    QVERIFY_SQL(model, insertRow(0));
+    // initial state
+    idx = model.index(0, 0);
+    QSqlRecord rec = model.record(0);
+    QVERIFY(rec.value(0) == QVariant(QVariant::Int));
+    QVERIFY(rec.isNull(0));
+    QVERIFY(!rec.isGenerated(0));
+    // unchanged value, but causes column to be included in INSERT
+    QVERIFY_SQL(model, setData(idx, QVariant(QVariant::Int)));
+    rec = model.record(0);
+    QVERIFY(rec.value(0) == QVariant(QVariant::Int));
+    QVERIFY(rec.isNull(0));
+    QVERIFY(rec.isGenerated(0));
+    QVERIFY_SQL(model, submitAll());
+}
+
 void tst_QSqlTableModel::setRecord()
 {
     QFETCH(QString, dbName);
@@ -890,6 +967,72 @@ void tst_QSqlTableModel::insertMultiRecords()
     QCOMPARE(model.data(model.index(5, 2)).toInt(), 1);
 }
 
+void tst_QSqlTableModel::insertWithAutoColumn()
+{
+    QFETCH(QString, dbName);
+    QFETCH(int, submitpolicy_i);
+    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QString tbl = qTableName("autoColumnTest", __FILE__);
+    QSqlQuery q(db);
+    q.exec("DROP TABLE " + tbl);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tbl + "(id INTEGER PRIMARY KEY AUTOINCREMENT, val TEXT)"));
+
+    QSqlTableModel model(0, db);
+    model.setTable(tbl);
+    model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(submitpolicy);
+
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 0);
+
+    // For insertRow/insertRows, we have to touch at least one column
+    // or else the generated flag won't be set, which would lead to
+    // an empty column list in the INSERT statement, which generally
+    // does not work.
+    if (submitpolicy != QSqlTableModel::OnManualSubmit) {
+        for (int id = 1; id <= 2; ++id) {
+            QVERIFY_SQL(model, insertRow(0));
+            QVERIFY_SQL(model, setData(model.index(0, 1), QString("foo")));
+            QVERIFY_SQL(model, submit());
+            QCOMPARE(model.data(model.index(0, 0)).toInt(), id);
+        }
+    } else {
+        QVERIFY_SQL(model, insertRows(0, 2));
+        QVERIFY_SQL(model, setData(model.index(0, 1), QString("foo")));
+        QVERIFY_SQL(model, setData(model.index(1, 1), QString("foo")));
+    }
+
+    QCOMPARE(model.rowCount(), 2);
+
+    QSqlRecord rec = db.record(tbl);
+    QVERIFY(rec.field(0).isAutoValue());
+    rec.setGenerated(0, false);
+
+    QVERIFY_SQL(model, insertRecord(0, rec));
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 3);
+
+    QCOMPARE(model.rowCount(), 3);
+
+    if (submitpolicy != QSqlTableModel::OnManualSubmit) {
+        // Rows updated in original positions after previous submits.
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 3);
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(2, 0)).toInt(), 1);
+    } else {
+        // Manual submit is followed by requery.
+        QVERIFY_SQL(model, submitAll());
+        QCOMPARE(model.data(model.index(0, 0)).toInt(), 1);
+        QCOMPARE(model.data(model.index(1, 0)).toInt(), 2);
+        QCOMPARE(model.data(model.index(2, 0)).toInt(), 3);
+    }
+
+    QVERIFY_SQL(q, exec("DROP TABLE " + tbl));
+}
+
 void tst_QSqlTableModel::submitAll()
 {
     QFETCH(QString, dbName);
@@ -1227,6 +1370,83 @@ void tst_QSqlTableModel::removeInsertedRows()
     QCOMPARE(model.data(model.index(1, 1)).toString(), QString("vohi"));
 }
 
+void tst_QSqlTableModel::revert()
+{
+    QFETCH(QString, dbName);
+    QFETCH(int, submitpolicy_i);
+    QSqlTableModel::EditStrategy submitpolicy = (QSqlTableModel::EditStrategy) submitpolicy_i;
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QString tblA = qTableName("revertATest", __FILE__);
+    QString tblB = qTableName("revertBTest", __FILE__);
+    QSqlQuery q(db);
+    q.exec("PRAGMA foreign_keys = ON;");
+    q.exec("DROP TABLE " + tblB);
+    q.exec("DROP TABLE " + tblA);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tblA + "(a INT PRIMARY KEY)"));
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tblB + "(b INT PRIMARY KEY, FOREIGN KEY (b) REFERENCES " + tblA + " (a))"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + tblA + "(a) VALUES (1)"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + tblB + "(b) VALUES (1)"));
+    if (q.exec("UPDATE " + tblA + " SET a = -1"))
+        QSKIP("database does not enforce foreign key constraints, skipping test");
+
+    QSqlTableModel model(0, db);
+    model.setTable(tblA);
+    model.setSort(0, Qt::AscendingOrder);
+    model.setEditStrategy(submitpolicy);
+
+    QVERIFY_SQL(model, select());
+    QCOMPARE(model.rowCount(), 1);
+    QFAIL_SQL(model, isDirty());
+
+    // don't crash if there is no change
+    model.revert();
+
+    // UPDATE
+    // invalid value makes submit fail leaving pending update in cache
+    const QModelIndex idx = model.index(0, 0);
+    if (submitpolicy == QSqlTableModel::OnFieldChange)
+        QFAIL_SQL(model, setData(idx, int(-1)));
+    else
+        QVERIFY_SQL(model, setData(idx, int(-1)));
+    QVERIFY_SQL(model, isDirty(idx));
+    model.revert();
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QFAIL_SQL(model, isDirty(idx));
+    else
+        QVERIFY_SQL(model, isDirty(idx));
+
+    // INSERT
+    QVERIFY_SQL(model, select());
+    // insertRow() does not submit leaving pending insert in cache
+    QVERIFY_SQL(model, insertRow(0));
+    QCOMPARE(model.rowCount(), 2);
+    QVERIFY_SQL(model, isDirty());
+    model.revert();
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QFAIL_SQL(model, isDirty());
+    else
+        QVERIFY_SQL(model, isDirty());
+
+    // DELETE
+    QVERIFY_SQL(model, select());
+    // foreign key makes submit fail leaving pending delete in cache
+    if (submitpolicy == QSqlTableModel::OnManualSubmit)
+        QVERIFY_SQL(model, removeRow(0));
+    else
+        QFAIL_SQL(model, removeRow(0));
+    QVERIFY_SQL(model, isDirty());
+    model.revert();
+    if (submitpolicy != QSqlTableModel::OnManualSubmit)
+        QFAIL_SQL(model, isDirty());
+    else
+        QVERIFY_SQL(model, isDirty());
+
+    q.exec("DROP TABLE " + tblB);
+    q.exec("DROP TABLE " + tblA);
+}
+
 void tst_QSqlTableModel::isDirty()
 {
     QFETCH(QString, dbName);
@@ -1433,6 +1653,14 @@ void tst_QSqlTableModel::emptyTable()
     QVERIFY_SQL(model, select());
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 1);
+
+    // QTBUG-29108: check correct horizontal header for empty query with pending insert
+    QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), QString("id"));
+    model.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model.insertRow(0);
+    QCOMPARE(model.rowCount(), 1);
+    QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), QString("id"));
+    model.revertAll();
 }
 
 void tst_QSqlTableModel::tablesAndSchemas()

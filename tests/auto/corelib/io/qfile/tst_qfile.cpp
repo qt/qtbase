@@ -2914,7 +2914,7 @@ void tst_QFile::map()
     QVERIFY(file.unmap(memory));
     QCOMPARE(file.error(), QFile::NoError);
 
-    // hpux wont let you map multiple times.
+    // hpux won't let you map multiple times.
 #if !defined(Q_OS_HPUX) && !defined(Q_USE_DEPRECATED_MAP_API) && !defined(Q_OS_WINCE)
     // exotic test to make sure that multiple maps work
 

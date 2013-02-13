@@ -51,14 +51,14 @@ QT_BEGIN_NAMESPACE
 QString separator(int index, int count)
 {
     if (index == count - 1)
-        return tr(".", "terminator");
+        return QCoreApplication::translate("QDoc", ".", "terminator");
     if (count == 2)
-        return tr(" and ", "separator when N = 2");
+        return QCoreApplication::translate("QDoc", " and ", "separator when N = 2");
     if (index == 0)
-        return tr(", ", "first separator when N > 2");
+        return QCoreApplication::translate("QDoc", ", ", "first separator when N > 2");
     if (index < count - 2)
-        return tr(", ", "general separator when N > 2");
-    return tr(", and ", "last separator when N > 2");
+        return QCoreApplication::translate("QDoc", ", ", "general separator when N > 2");
+    return QCoreApplication::translate("QDoc", ", and ", "last separator when N > 2");
 }
 
 QString comma(int index, int count)
@@ -66,12 +66,12 @@ QString comma(int index, int count)
     if (index == count - 1)
         return QString();
     if (count == 2)
-        return tr(" and ", "separator when N = 2");
+        return QCoreApplication::translate("QDoc", " and ", "separator when N = 2");
     if (index == 0)
-        return tr(", ", "first separator when N > 2");
+        return QCoreApplication::translate("QDoc", ", ", "first separator when N > 2");
     if (index < count - 2)
-        return tr(", ", "general separator when N > 2");
-    return tr(", and ", "last separator when N > 2");
+        return QCoreApplication::translate("QDoc", ", ", "general separator when N > 2");
+    return QCoreApplication::translate("QDoc", ", and ", "last separator when N > 2");
 }
 
 QT_END_NAMESPACE

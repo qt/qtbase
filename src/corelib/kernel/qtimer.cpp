@@ -385,6 +385,7 @@ void QTimer::setInterval(int msec)
 
 /*!
     \property QTimer::remainingTime
+    \since 5.0
     \brief the remaining time in milliseconds
 
     Returns the timer's remaining value in milliseconds left until the timeout.

@@ -1458,8 +1458,8 @@ void tst_QByteArray::fromPercentEncoding_data()
     QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
     QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QByteArray("file name");
     QTest::newRow("JustEncoded") << QByteArray("%20") << QByteArray(" ");
-    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http://qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QByteArray("http://qt nokia com");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt-project.org") << QByteArray("http://qt-project.org");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt-project%20org") << QByteArray("http://qt-project org");
     QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
     QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QByteArray("Française");
 }
@@ -1480,8 +1480,8 @@ void tst_QByteArray::toPercentEncoding_data()
     QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
     QTest::newRow("NormalStringEncoded") << QByteArray("file name") << QByteArray("file%20name");
     QTest::newRow("JustEncoded") << QByteArray(" ") << QByteArray("%20");
-    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt-project.org") << QByteArray("http%3A//qt-project.org");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt-project org") << QByteArray("http%3A//qt-project%20org");
     QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
     QTest::newRow("Task27166") << QByteArray("Française") << QByteArray("Fran%C3%A7aise");
 }

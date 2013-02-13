@@ -42,6 +42,7 @@
 #include "qplatformwindow.h"
 #include "qplatformwindow_p.h"
 
+#include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qscreen.h>
@@ -434,6 +435,29 @@ void QPlatformWindow::setFrameStrutEventsEnabled(bool enabled)
 bool QPlatformWindow::frameStrutEventsEnabled() const
 {
     return false;
+}
+
+/*!
+    Call this method to put together a window title composed of
+    \a title
+    \a separator
+    the application display name
+
+    If the display name isn't set, and the title is empty, the raw app name is used.
+*/
+QString QPlatformWindow::formatWindowTitle(const QString &title, const QString &separator)
+{
+    QString fullTitle = title;
+    if (QGuiApplicationPrivate::displayName) {
+        // Append display name, if set.
+        if (!fullTitle.isEmpty())
+            fullTitle += separator;
+        fullTitle += *QGuiApplicationPrivate::displayName;
+    } else if (fullTitle.isEmpty()) {
+        // Don't let the window title be completely empty, use the app name as fallback.
+        fullTitle = QCoreApplication::applicationName();
+    }
+    return fullTitle;
 }
 
 /*!

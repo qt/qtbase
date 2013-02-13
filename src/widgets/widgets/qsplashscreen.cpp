@@ -225,7 +225,7 @@ void QSplashScreen::clearMessage()
     repaint();
 }
 
-// A copy of QTestLib's qWaitForWindowExposed() and qSleep().
+// A copy of Qt Test's qWaitForWindowExposed() and qSleep().
 inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
 {
     enum { TimeOutMs = 10 };

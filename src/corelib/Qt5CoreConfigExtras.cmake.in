@@ -1,12 +1,10 @@
 
-get_filename_component(_qt5_corelib_install_prefix \"${CMAKE_CURRENT_LIST_DIR}/$${CMAKE_RELATIVE_INSTALL_DIR}\" ABSOLUTE)
-
 if (NOT TARGET Qt5::qmake)
     add_executable(Qt5::qmake IMPORTED)
 
     set_target_properties(Qt5::qmake PROPERTIES
 !!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION \"${_qt5_corelib_install_prefix}/$${CMAKE_BIN_DIR}qmake$$CMAKE_BIN_SUFFIX\"
+        IMPORTED_LOCATION \"${_qt5Core_install_prefix}/$${CMAKE_BIN_DIR}qmake$$CMAKE_BIN_SUFFIX\"
 !!ELSE
         IMPORTED_LOCATION \"$${CMAKE_BIN_DIR}qmake$$CMAKE_BIN_SUFFIX\"
 !!ENDIF
@@ -18,7 +16,7 @@ if (NOT TARGET Qt5::moc)
 
     set_target_properties(Qt5::moc PROPERTIES
 !!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION \"${_qt5_corelib_install_prefix}/$${CMAKE_BIN_DIR}moc$$CMAKE_BIN_SUFFIX\"
+        IMPORTED_LOCATION \"${_qt5Core_install_prefix}/$${CMAKE_BIN_DIR}moc$$CMAKE_BIN_SUFFIX\"
 !!ELSE
         IMPORTED_LOCATION \"$${CMAKE_BIN_DIR}moc$$CMAKE_BIN_SUFFIX\"
 !!ENDIF
@@ -32,7 +30,7 @@ if (NOT TARGET Qt5::rcc)
 
     set_target_properties(Qt5::rcc PROPERTIES
 !!IF isEmpty(CMAKE_BIN_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION \"${_qt5_corelib_install_prefix}/$${CMAKE_BIN_DIR}rcc$$CMAKE_BIN_SUFFIX\"
+        IMPORTED_LOCATION \"${_qt5Core_install_prefix}/$${CMAKE_BIN_DIR}rcc$$CMAKE_BIN_SUFFIX\"
 !!ELSE
         IMPORTED_LOCATION \"$${CMAKE_BIN_DIR}rcc$$CMAKE_BIN_SUFFIX\"
 !!ENDIF
@@ -44,9 +42,9 @@ set(Qt5Core_MOC_EXECUTABLE Qt5::moc)
 set(Qt5Core_RCC_EXECUTABLE Qt5::rcc)
 
 !!IF isEmpty(CMAKE_ARCHDATA_DIR_IS_ABSOLUTE)
-list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5_corelib_install_prefix}/$${CMAKE_ARCHDATA_DIR}/mkspecs/$${CMAKE_MKSPEC}\")
+list(APPEND Qt5Core_INCLUDE_DIRS \"${_qt5Core_install_prefix}/$$CMAKE_INCLUDE_DIR\" \"${_qt5Core_install_prefix}/$${CMAKE_ARCHDATA_DIR}/mkspecs/$${CMAKE_MKSPEC}\")
 !!ELSE
-list(APPEND Qt5Core_INCLUDE_DIRS \"$${CMAKE_ARCHDATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
+list(APPEND Qt5Core_INCLUDE_DIRS \"$$CMAKE_INCLUDE_DIR\" \"$${CMAKE_ARCHDATA_DIR}mkspecs/$${CMAKE_MKSPEC}\")
 !!ENDIF
 
 !!IF !isEmpty(CMAKE_ADD_FPIE_FLAGS)
@@ -80,7 +78,7 @@ if (NOT TARGET Qt5::WinMain)
     set_property(TARGET Qt5::WinMain APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
     set_target_properties(Qt5::WinMain PROPERTIES
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION_DEBUG \"${_qt5_corelib_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_WINMAIN_FILE_LOCATION_DEBUG}\"
+        IMPORTED_LOCATION_DEBUG \"${_qt5Core_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_WINMAIN_FILE_LOCATION_DEBUG}\"
 !!ELSE
         IMPORTED_LOCATION_DEBUG \"$${CMAKE_LIB_DIR}$${CMAKE_WINMAIN_FILE_LOCATION_DEBUG}\"
 !!ENDIF
@@ -91,7 +89,7 @@ if (NOT TARGET Qt5::WinMain)
     set_property(TARGET Qt5::WinMain APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
     set_target_properties(Qt5::WinMain PROPERTIES
 !!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
-        IMPORTED_LOCATION_RELEASE \"${_qt5_corelib_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_WINMAIN_FILE_LOCATION_RELEASE}\"
+        IMPORTED_LOCATION_RELEASE \"${_qt5Core_install_prefix}/$${CMAKE_LIB_DIR}$${CMAKE_WINMAIN_FILE_LOCATION_RELEASE}\"
 !!ELSE
         IMPORTED_LOCATION_RELEASE \"$${CMAKE_LIB_DIR}$${CMAKE_WINMAIN_FILE_LOCATION_RELEASE}\"
 !!ENDIF

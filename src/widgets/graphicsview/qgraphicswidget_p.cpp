@@ -466,7 +466,7 @@ static QSizeF closestAcceptableSize(const QSizeF &proposed,
 
     do {
         if (maxw - minw < 0.1) {
-            // we still havent found anything, cut off binary search
+            // we still haven't found anything, cut off binary search
             minw = maxw;
             minh = maxh;
         }

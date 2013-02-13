@@ -71,7 +71,7 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
             break;
         }
         /*
-          We musn't convert 'char * const *' into 'const char **'
+          We mustn't convert 'char * const *' into 'const char **'
           and we must beware of 'Bar<const Bla>'.
         */
         if (t[i] == '&' || t[i] == '*' ||t[i] == '<')

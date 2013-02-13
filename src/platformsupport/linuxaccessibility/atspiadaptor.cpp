@@ -1104,22 +1104,10 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         }
         break;
     }
-//    case QAccessible::TableModelChanged: {
-//        // This is rather evil. We don't send data and hope that at-spi fetches the right child.
-//        // This hack fails when a row gets removed and a different one added in its place.
-//        QDBusVariant data;
-//        emit ChildrenChanged("add", 0, 0, data, spiBridge->getRootReference());
-//        break;
-//    }
-        //    case QAccessible::TableModelChanged:
-        //        QAccessible2::TableModelChange change = interface->tableInterface()->modelChange();
-        //        // assume we should reset if everything is 0
-        //        if (change.firstColumn == 0 && change.firstRow == 0 && change.lastColumn == 0 && change.lastRow == 0) {
-        //            notifyAboutDestruction(accessible);
-        //            notifyAboutCreation(accessible);
-        //        }
-        //        break;
-
+    case QAccessible::TableModelChanged:
+        // For now we ignore this event and hope that
+        // setting manages_descendants works.
+        break;
     case QAccessible::ParentChanged:
         break;
     case QAccessible::DialogStart:
@@ -1181,7 +1169,7 @@ void AtSpiAdaptor::notifyAboutCreation(const QAIPointer &interface) const
 
 void AtSpiAdaptor::notifyAboutDestruction(const QAIPointer &interface) const
 {
-    if (!interface->isValid())
+    if (!interface || !interface->isValid())
         return;
 
     QAIPointer parent(interface->parent());

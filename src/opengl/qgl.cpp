@@ -1637,7 +1637,7 @@ static void convertFromGLImage(QImage &img, int w, int h, bool alpha_format, boo
     img = img.mirrored();
 }
 
-QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+QImage qt_gl_read_frame_buffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
     QImage img(size, (alpha_format && include_alpha) ? QImage::Format_ARGB32_Premultiplied
                                                      : QImage::Format_RGB32);
@@ -4046,7 +4046,7 @@ QImage QGLWidget::grabFrameBuffer(bool withAlpha)
     int w = width();
     int h = height();
     if (format().rgba())
-        res = qt_gl_read_framebuffer(QSize(w, h), format().alpha(), withAlpha);
+        res = qt_gl_read_frame_buffer(QSize(w, h), format().alpha(), withAlpha);
 
     return res;
 }

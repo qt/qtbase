@@ -2720,7 +2720,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     if(e->spontaneous()) {
         // Capture the current mouse and keyboard states. Doing so here is
-        // required in order to support QTestLib synthesized events. Real mouse
+        // required in order to support Qt Test synthesized events. Real mouse
         // and keyboard state updates from the platform plugin are managed by
         // QGuiApplicationPrivate::process(Mouse|Wheel|Key|Touch|Tablet)Event();
         switch (e->type()) {

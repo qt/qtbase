@@ -29,7 +29,7 @@
     \page qdoc-index.html
     \nextpage Introduction to QDoc
 
-    \title Table of Contents
+    \title QDoc Manual
 
     \list
       \li \l {Introduction to QDoc}
@@ -75,8 +75,8 @@
 
 /*!
     \page 01-qdoc-manual.html
-    \contentspage Table of Contents
-    \previouspage Table of Contents
+    \contentspage QDoc Manual
+    \previouspage QDoc Manual
     \nextpage Command Index
 
     \title Introduction to QDoc
@@ -229,7 +229,7 @@
 
 /*!
     \page 03-qdoc-commands-markup.html
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \previouspage Naming Things
     \nextpage Text Markup
 
@@ -310,7 +310,7 @@
 
 /*!
     \page 04-qdoc-commands-textmarkup.html
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \previouspage Markup Commands
     \nextpage Document Structure
 
@@ -924,7 +924,7 @@
 /*!
     \page 05-qdoc-commands-documentstructure.html
     \previouspage Text Markup
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Including Code Inline
 
     \title Document Structure
@@ -1146,7 +1146,7 @@
 /*!
     \page 06-qdoc-commands-includecodeinline.html
     \previouspage Document Structure
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Including External Code
 
     \title Including Code Inline
@@ -1392,7 +1392,7 @@
 /*!
     \page 07-0-qdoc-commands-includingexternalcode.html
     \previouspage Including Code Inline
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Creating Links
 
     \title Including External Code
@@ -2030,7 +2030,7 @@
 /*!
     \page  07-1-example.html
     \previouspage Including External Code
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title Example File
 
@@ -2040,7 +2040,7 @@
 /*!
     \page 08-qdoc-commands-creatinglinks.html
     \previouspage Including External Code
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Including Images
 
     \title Creating Links
@@ -2243,7 +2243,7 @@
     The text up to the line break becomes the target name. Be sure to
     follow the target name with a line break. Curly brackets are not
     required around the target name, but they may be required when the
-    target name is used in a link cammand. See below.
+    target name is used in a link command. See below.
 
     \code
     / *!
@@ -2339,7 +2339,7 @@
 /*!
     \page 09-qdoc-commands-includingimages.html
     \previouspage Creating Links
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Tables and Lists
 
     \title Including Images
@@ -2535,7 +2535,7 @@
 /*!
     \page 10-qdoc-commands-tablesandlists.html
     \previouspage Including Images
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Special Content
 
     \title Tables and Lists
@@ -3061,7 +3061,7 @@
 /*!
     \page 11-qdoc-commands-specialcontent.html
     \previouspage Tables and Lists
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Miscellaneous
 
     \title Special Content
@@ -3496,7 +3496,7 @@
 /*!
     \page 12-0-qdoc-commands-miscellaneous.html
     \previouspage Special Content
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Creating DITA Maps
 
     \title Miscellaneous
@@ -4061,10 +4061,10 @@
        <shortdesc>the QWidget class is the base class of all user interface objects.</shortdesc>
        <prolog>
            <author>Qt Development Frameworks</author>
-           <publisher>Nokia</publisher>
+           <publisher>Qt Project</publisher>
            <copyright>
-               <copyryear year="2011"/>
-               <copyrholder>Nokia</copyrholder>
+               <copyryear year="2013"/>
+               <copyrholder>Qt Project</copyrholder>
            </copyright>
            <permissions view="all"/>
            <metadata>
@@ -4247,7 +4247,7 @@
 /*!
     \page 12-1-signalandslots.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title signalandslots.qdocinc
 
@@ -4257,7 +4257,7 @@
 /*!
     \page 12-2-objectmodel.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title objectmodel.qdocinc
 
@@ -4267,7 +4267,7 @@
 /*!
     \page 12-3-layoutmanagement.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title layoutmanagement.qdocinc
 
@@ -4277,7 +4277,7 @@
 /*!
     \page 13-qdoc-commands-topics.html
     \previouspage Command Index
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Context Commands
 
     \title Topic Commands
@@ -5887,7 +5887,7 @@
 /*!
     \page 14-qdoc-commands-contextcommands.html
     \previouspage Topic Commands
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Document Navigation
 
     \title Context Commands
@@ -5929,7 +5929,7 @@
 /*!
     \page 15-qdoc-commands-navigation.html
     \previouspage Context Commands
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Reporting Status
 
     \title Document Navigation
@@ -6125,7 +6125,7 @@
 /*!
     \page 16-qdoc-commands-status.html
     \previouspage Document Navigation
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Thread Support
 
     \title Reporting Status
@@ -6427,7 +6427,7 @@
 /*!
     \page 17-qdoc-commands-thread.html
     \previouspage Reporting Status
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Relating Things
 
     \title Thread Support
@@ -6610,7 +6610,7 @@
 /*!
     \page 18-qdoc-commands-relating.html
     \previouspage Thread Support
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Grouping Things
 
     \title Relating Things
@@ -6795,7 +6795,7 @@
 /*!
     \page 19-qdoc-commands-grouping.html
     \previouspage Relating Things
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Naming Things
 
     \title Grouping Things
@@ -6909,7 +6909,7 @@
 /*!
     \page 20-qdoc-commands-namingthings.html
     \previouspage Grouping Things
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Markup Commands
 
     \title Naming Things
@@ -6997,7 +6997,7 @@
 /*!
     \page 21-0-qdoc-creating-dita-maps.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage The QDoc Configuration File
 
     \title Creating DITA Maps
@@ -7134,7 +7134,7 @@
 /*!
     \page 21-0-qdoc-configuration.html
     \previouspage Creating DITA Maps
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Generic Configuration Variables
 
     \title The QDoc Configuration File
@@ -7246,7 +7246,7 @@
 /*!
     \page 21-1-minimum-qdocconf.html
     \previouspage qt.qdocconf
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Generating DITA XML Output
 
     \title minimum.qdocconf
@@ -7257,7 +7257,7 @@
 /*!
     \page 21-2-qt-qdocconf.html
     \previouspage Supporting Derived Projects
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage minimum.qdocconf
 
     \title qt.qdocconf
@@ -7268,8 +7268,8 @@
 /*!
     \page 21-3-qt-dita-xml-output.html
     \previouspage minimum.qdocconf
-    \contentspage Table of Contents
-    \nextpage Table of Contents
+    \contentspage QDoc Manual
+    \nextpage QDoc Manual
 
     \title Generating DITA XML Output
 
@@ -7313,9 +7313,9 @@
     \code
     dita.metadata.default.author      = Qt Development Frameworks
     dita.metadata.default.permissions = all
-    dita.metadata.default.publisher   = Nokia
-    dita.metadata.default.copyryear = 2011
-    dita.metadata.default.copyrholder = Nokia
+    dita.metadata.default.publisher   = Qt Project
+    dita.metadata.default.copyryear = 2013
+    dita.metadata.default.copyrholder = Qt Project
     dita.metadata.default.audience = programmer
     \endcode
 
@@ -7327,7 +7327,7 @@
 /*!
     \page 22-qdoc-configuration-generalvariables.html
     \previouspage The QDoc Configuration File
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Creating Help Project Files
 
     \title Generic Configuration Variables
@@ -8235,7 +8235,7 @@
 /*!
     \page 22-creating-help-project-files.html
     \previouspage Generic Configuration Variables
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage C++ Specific Configuration Variables
 
     \title Creating Help Project Files
@@ -8304,7 +8304,7 @@
 /*!
     \page 23-qdoc-configuration-cppvariables.html
     \previouspage Creating Help Project Files
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage HTML Specific Configuration Variables
 
     \title C++ Specific Configuration Variables
@@ -8418,7 +8418,7 @@
 /*!
     \page 24-qdoc-configuration-htmlvariables.html
     \previouspage C++ Specific Configuration Variables
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Supporting Derived Projects
 
     \title HTML Specific Configuration Variables
@@ -8533,7 +8533,7 @@
 /*!
     \page 25-qdoc-configuration-derivedprojects.html
     \previouspage HTML Specific Configuration Variables
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title Supporting Derived Projects
 
@@ -8674,7 +8674,7 @@
 /*!
     \page 27-qdoc-commands-alphabetical.html
     \previouspage Introduction to QDoc
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Topic Commands
 
     \title Command Index

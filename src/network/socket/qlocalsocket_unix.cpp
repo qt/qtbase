@@ -248,7 +248,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                         QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
-    // set non blocking so we can try to connect and it wont wait
+    // set non blocking so we can try to connect and it won't wait
     int flags = fcntl(d->connectingSocket, F_GETFL, 0);
     if (-1 == flags
         || -1 == (fcntl(d->connectingSocket, F_SETFL, flags | O_NONBLOCK))) {

@@ -234,7 +234,7 @@ private:
 /*!
     \class QScroller
     \brief The QScroller class enables kinetic scrolling for any scrolling widget or graphics item.
-    \since 4.8
+    \since 5.0
 
     \inmodule QtWidgets
  
