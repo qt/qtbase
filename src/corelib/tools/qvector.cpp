@@ -544,6 +544,26 @@
     \sa insert(), replace(), fill()
 */
 
+/*! \fn void QVector::removeFirst()
+    \since 5.1
+    Removes the first item in the vector. Calling this function is
+    equivalent to calling remove(0). The vector must not be empty. If
+    the vector can be empty, call isEmpty() before calling this
+    function.
+
+    \sa remove(), isEmpty()
+*/
+
+/*! \fn void QVector::removeLast()
+    \since 5.1
+    Removes the last item in the vector. Calling this function is
+    equivalent to calling remove(size() - 1). The vector must not be
+    empty. If the vector can be empty, call isEmpty() before calling
+    this function.
+
+    \sa remove(), removeFirst(), isEmpty()
+*/
+
 /*! \fn QVector &QVector::fill(const T &value, int size = -1)
 
     Assigns \a value to all items in the vector. If \a size is
@@ -773,13 +793,13 @@
 /*! \fn void QVector::pop_front()
 
     This function is provided for STL compatibility. It is equivalent
-    to erase(begin()).
+    to removeFirst().
 */
 
 /*! \fn void QVector::pop_back()
 
     This function is provided for STL compatibility. It is equivalent
-    to erase(end() - 1).
+    to removeLast().
 */
 
 /*! \fn T& QVector::front()

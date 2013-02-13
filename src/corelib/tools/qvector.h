@@ -138,6 +138,8 @@ public:
     void replace(int i, const T &t);
     void remove(int i);
     void remove(int i, int n);
+    inline void removeFirst() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
+    inline void removeLast()  { Q_ASSERT(!isEmpty()); erase(d->end() - 1); }
 
     QVector<T> &fill(const T &t, int size = -1);
 
@@ -198,8 +200,8 @@ public:
     typedef int size_type;
     inline void push_back(const T &t) { append(t); }
     inline void push_front(const T &t) { prepend(t); }
-    void pop_back() { Q_ASSERT(!isEmpty()); erase(d->end() - 1); }
-    void pop_front() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
+    void pop_back() { removeLast(); }
+    void pop_front() { removeFirst(); }
     inline bool empty() const
     { return d->size == 0; }
     inline T& front() { return first(); }
