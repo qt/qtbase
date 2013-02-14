@@ -63,7 +63,7 @@
     if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
         return !guiApp->primaryScreen()->orientationUpdateMask();
     else
-        return NO;
+        return YES; // Startup case: QGuiApplication is not ready yet.
 
     // FIXME: Investigate a proper Qt API for auto-rotation and orientation locking
 }
