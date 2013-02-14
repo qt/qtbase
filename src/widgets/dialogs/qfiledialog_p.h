@@ -204,6 +204,7 @@ public:
     void _q_updateOkButton();
     void _q_currentChanged(const QModelIndex &index);
     void _q_enterDirectory(const QModelIndex &index);
+    void _q_nativeEnterDirectory(const QString &directory);
     void _q_goToDirectory(const QString &);
     void _q_useNameFilter(int index);
     void _q_selectionChanged();
