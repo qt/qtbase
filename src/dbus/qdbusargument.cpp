@@ -212,7 +212,8 @@ bool QDBusArgumentPrivate::checkReadAndDetach(QDBusArgumentPrivate *&d)
     The following example illustrates this wrong usage
     in context of a class that may contain invalid data:
 
-    \badcode
+    \code
+    //bad code
         // Wrongly marshall the MyTime data into a D-Bus argument
         QDBusArgument &operator<<(QDBusArgument &argument, const MyTime &mytime)
         {

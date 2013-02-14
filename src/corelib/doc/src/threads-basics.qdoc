@@ -269,7 +269,8 @@
 
     This is the result of running the code:
 
-    \badcode
+    \code
+    //bad code
     hello from GUI thread  3079423696
     hello from worker thread  3076111216
     \endcode

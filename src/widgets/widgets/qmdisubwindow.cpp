@@ -2236,7 +2236,8 @@ void QMdiSubWindowPrivate::updateInternalWindowTitle()
     Note that only \l{QMdiSubWindow}s can be set as children of
     QMdiArea; you cannot, for instance, write:
 
-    \badcode
+    \code
+        //bad code
         QMdiArea mdiArea;
         QTextEdit editor(&mdiArea); // invalid child widget
     \endcode
