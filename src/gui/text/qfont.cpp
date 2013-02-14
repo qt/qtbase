@@ -672,7 +672,7 @@ void QFontPrivate::detachButKeepEngineData(QFont *font)
     \sa QGuiApplication::setFont(), QGuiApplication::font()
 */
 QFont::QFont()
-    : d(QGuiApplication::font().d.data()), resolve_mask(0)
+    : d(QGuiApplicationPrivate::instance() ? QGuiApplication::font().d.data() : new QFontPrivate()), resolve_mask(0)
 {
 }
 
