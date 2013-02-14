@@ -118,6 +118,7 @@
 #    define Q_PROCESSOR_ARM_V6
 #    define Q_PROCESSOR_ARM_V5
 #  elif defined(__ARM_ARCH_5TEJ__) \
+        || defined(__ARM_ARCH_5TE__) \
         || (defined(__TARGET_ARCH_ARM) && __TARGET_ARCH_ARM-0 >= 5) \
         || (defined(_M_ARM) && _M_ARM-0 >= 5)
 #    define Q_PROCESSOR_ARM_V5
