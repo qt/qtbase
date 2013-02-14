@@ -322,7 +322,10 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatf
 
 QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const
 {
-    return m_menuItems.at(position);
+    if (0 <= position && position < m_menuItems.count())
+        return m_menuItems.at(position);
+
+    return 0;
 }
 
 QPlatformMenuItem *QCocoaMenu::menuItemForTag(quintptr tag) const
