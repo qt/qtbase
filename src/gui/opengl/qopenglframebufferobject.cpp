@@ -702,8 +702,8 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
     create a QOpenGLFramebufferObject with more than one sample per pixel for
     primitives to be antialiased when drawing using a QPainter. To create a
     multisample framebuffer object you should use one of the constructors that
-    take a QOpenGLFramebufferObject parameter, and set the
-    QOpenGLFramebufferObject::samples() property to a non-zero value.
+    take a QOpenGLFramebufferObjectFormat parameter, and set the
+    QOpenGLFramebufferObjectFormat::samples() property to a non-zero value.
 
     For multisample framebuffer objects a color render buffer is created,
     otherwise a texture with the specified texture target is created.
