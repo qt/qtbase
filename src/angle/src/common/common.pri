@@ -40,6 +40,8 @@ win32-msvc2012 {
     }
 }
 
+static: DEFINES *= QT_OPENGL_ES_2_ANGLE_STATIC
+
 HEADERS +=  \
     $$ANGLE_DIR/src/common/angleutils.h \
     $$ANGLE_DIR/src/common/debug.h \

@@ -1,0 +1,218 @@
+From cbe9afef7cd467c41353e8a41544d86807be7dd2 Mon Sep 17 00:00:00 2001
+From: Friedemann Kleint <Friedemann.Kleint@digia.com>
+Date: Thu, 14 Feb 2013 09:40:30 +0100
+Subject: [PATCH] Make it possible to link ANGLE statically for single-thread
+ use.
+
+Fix exports and provide static instances of thread-local
+data depending on QT_OPENGL_ES_2_ANGLE_STATIC.
+
+Change-Id: Ifab25a820adf5953bb3b09036de53dbf7f1a7fd5
+---
+ src/3rdparty/angle/include/KHR/khrplatform.h |  3 +-
+ src/3rdparty/angle/src/libEGL/main.cpp       | 58 ++++++++++++++--------------
+ src/3rdparty/angle/src/libGLESv2/main.cpp    | 32 ++++++++++-----
+ 3 files changed, 53 insertions(+), 40 deletions(-)
+
+diff --git a/src/3rdparty/angle/include/KHR/khrplatform.h b/src/3rdparty/angle/include/KHR/khrplatform.h
+index 56c676c..18a104e 100644
+--- a/src/3rdparty/angle/include/KHR/khrplatform.h
++++ b/src/3rdparty/angle/include/KHR/khrplatform.h
+@@ -97,7 +97,8 @@
+  *-------------------------------------------------------------------------
+  * This precedes the return type of the function in the function prototype.
+  */
+-#if defined(_WIN32) && !defined(__SCITECH_SNAP__)
++
++#if defined(_WIN32) && !defined(__SCITECH_SNAP__) && !defined(QT_OPENGL_ES_2_ANGLE_STATIC)
+ #   define KHRONOS_APICALL __declspec(dllimport)
+ #elif defined (__SYMBIAN32__)
+ #   define KHRONOS_APICALL IMPORT_C
+diff --git a/src/3rdparty/angle/src/libEGL/main.cpp b/src/3rdparty/angle/src/libEGL/main.cpp
+index dc24c4f..614bcf6 100644
+--- a/src/3rdparty/angle/src/libEGL/main.cpp
++++ b/src/3rdparty/angle/src/libEGL/main.cpp
+@@ -10,6 +10,8 @@
+ 
+ #include "common/debug.h"
+ 
++#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
++
+ static DWORD currentTLS = TLS_OUT_OF_INDEXES;
+ 
+ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+@@ -86,76 +88,72 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+     return TRUE;
+ }
+ 
++static inline egl::Current *current()
++{
++    return (egl::Current*)TlsGetValue(currentTLS);
++}
++
++#else // !QT_OPENGL_ES_2_ANGLE_STATIC
++
++static egl::Current *current()
++{
++    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
++    static egl::Current curr = { EGL_SUCCESS, EGL_OPENGL_ES_API, EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE };
++    return &curr;
++}
++
++#endif // QT_OPENGL_ES_2_ANGLE_STATIC
++
+ namespace egl
+ {
+ void setCurrentError(EGLint error)
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    current->error = error;
++    current()->error = error;
+ }
+ 
+ EGLint getCurrentError()
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    return current->error;
++    return current()->error;
+ }
+ 
+ void setCurrentAPI(EGLenum API)
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    current->API = API;
++    current()->API = API;
+ }
+ 
+ EGLenum getCurrentAPI()
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    return current->API;
++    return current()->API;
+ }
+ 
+ void setCurrentDisplay(EGLDisplay dpy)
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    current->display = dpy;
++    current()->display = dpy;
+ }
+ 
+ EGLDisplay getCurrentDisplay()
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    return current->display;
++    return current()->display;
+ }
+ 
+ void setCurrentDrawSurface(EGLSurface surface)
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    current->drawSurface = surface;
++    current()->drawSurface = surface;
+ }
+ 
+ EGLSurface getCurrentDrawSurface()
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    return current->drawSurface;
++    return current()->drawSurface;
+ }
+ 
+ void setCurrentReadSurface(EGLSurface surface)
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    current->readSurface = surface;
++    current()->readSurface = surface;
+ }
+ 
+ EGLSurface getCurrentReadSurface()
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    return current->readSurface;
++    return current()->readSurface;
+ }
+ }
+ 
+diff --git a/src/3rdparty/angle/src/libGLESv2/main.cpp b/src/3rdparty/angle/src/libGLESv2/main.cpp
+index 6e678c2..3853e41 100644
+--- a/src/3rdparty/angle/src/libGLESv2/main.cpp
++++ b/src/3rdparty/angle/src/libGLESv2/main.cpp
+@@ -14,6 +14,8 @@
+ 
+ #include "libGLESv2/Framebuffer.h"
+ 
++#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
++
+ static DWORD currentTLS = TLS_OUT_OF_INDEXES;
+ 
+ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
+@@ -72,14 +74,30 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
+     return TRUE;
+ }
+ 
++static gl::Current *current()
++{
++    return (gl::Current*)TlsGetValue(currentTLS);
++}
++
++#else // !QT_OPENGL_ES_2_ANGLE_STATIC
++
++static inline gl::Current *current()
++{
++    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
++    static gl::Current curr = { 0, 0 };
++    return &curr;
++}
++
++#endif // QT_OPENGL_ES_2_ANGLE_STATIC
++
+ namespace gl
+ {
+ void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
++    Current *curr = current();
+ 
+-    current->context = context;
+-    current->display = display;
++    curr->context = context;
++    curr->display = display;
+ 
+     if (context && display && surface)
+     {
+@@ -89,9 +107,7 @@ void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
+ 
+ Context *getContext()
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    return current->context;
++    return current()->context;
+ }
+ 
+ Context *getNonLostContext()
+@@ -115,9 +131,7 @@ Context *getNonLostContext()
+ 
+ egl::Display *getDisplay()
+ {
+-    Current *current = (Current*)TlsGetValue(currentTLS);
+-
+-    return current->display;
++    return current()->display;
+ }
+ 
+ IDirect3DDevice9 *getDevice()
+-- 
+1.8.0.msysgit.0
+
