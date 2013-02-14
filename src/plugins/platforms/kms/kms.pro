@@ -4,9 +4,10 @@ PLUGIN_TYPE = platforms
 PLUGIN_CLASS_NAME = QKmsIntegrationPlugin
 load(qt_plugin)
 
-QT += core-private gui-private platformsupport-private opengl-private
+QT += core-private gui-private platformsupport-private
+qtHaveModule(opengl):QT += opengl-private
 
-DEFINES += MESA_EGL_NO_X11_HEADERS
+DEFINES += MESA_EGL_NO_X11_HEADERS __GBM__
 
 CONFIG += link_pkgconfig egl qpa/genericunixfontdatabase
 
