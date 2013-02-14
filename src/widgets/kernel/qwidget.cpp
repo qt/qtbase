@@ -8413,7 +8413,7 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event);
+    event->ignore();
 }
 
 #ifndef QT_NO_WHEELEVENT
