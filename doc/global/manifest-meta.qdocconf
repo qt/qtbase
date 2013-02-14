@@ -1,0 +1,33 @@
+# Additional meta information (attributes for matched entries, as well as tags)
+# to be added to manifest.xml files.
+#
+# manifestmeta.filters = <filter1>,<filter2>,...
+#
+# manifestmeta.<filter>.names = <Module1>/<name1>,<Module2>/<name2>,..
+# manifestmeta.<filter>.attributes = <attribute1:value1>,<attribute2:value2>,..
+# manifestmeta.<filter>.tags = <tag1>,<tag2>,..
+#
+# <filter>.names specify all the module/name combinations to apply the
+# attributes/tags to. You can use simple wildcard matching by appending
+# '*' at the end of name.
+#
+# Note: You cannot use operators (+, =, -) in the names.
+#
+# Examples: add a 'isHighlighted' attribute for two 'Analog Clock' examples,
+# add a 'database' tag for QtSql all examples, a 'webkit' tag for QtWebKit
+# examples, and a 'qt5' tag for all examples
+#
+# manifestmeta.filters                = highlighted sql webkit global
+#
+# manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example" \
+#                                       "QtWidgets/Analog Clock Example"
+# manifestmeta.highlighted.attributes = isHighlighted:true
+#
+# manifestmeta.sql.names              = "QtSql/*"
+# manifestmeta.sql.tags               = database
+#
+# manifestmeta.webkit.names           = "QtWebKitExamples/*"
+# manifestmeta.webkit.tags            = webkit
+#
+# manifestmeta.global.names           = *
+# manifestmeta.global.tags            = qt5

@@ -223,6 +223,7 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     QString prefix = CONFIG_QHP + Config::dot + project + Config::dot;
     manifestDir = "qthelp://" + config.getString(prefix + "namespace");
     manifestDir += QLatin1Char('/') + config.getString(prefix + "virtualFolder") + QLatin1Char('/');
+    readManifestMetaContent(config);
     examplesPath = config.getString(CONFIG_EXAMPLESINSTALLPATH);
     if (!examplesPath.isEmpty())
         examplesPath += QLatin1Char('/');
@@ -3991,10 +3992,11 @@ void HtmlGenerator::generateManifestFiles()
     generateManifestFile("examples", "example");
     generateManifestFile("demos", "demo");
     ExampleNode::exampleNodeMap.clear();
+    manifestMetaContent.clear();
 }
 
 /*!
-  This function is called by generaqteManiferstFile(), once
+  This function is called by generateManifestFiles(), once
   for each manifest file to be generated. \a manifest is the
   type of manifest file.
  */
@@ -4086,6 +4088,36 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         }
         if (!en->imageFileName().isEmpty())
             writer.writeAttribute("imageUrl", manifestDir + en->imageFileName());
+
+        QString fullName = project + QLatin1Char('/') + en->title();
+        QSet<QString> tags;
+        for (int idx=0; idx < manifestMetaContent.size(); ++idx) {
+            foreach (const QString &name, manifestMetaContent[idx].names) {
+                bool match = false;
+                int wildcard = name.indexOf(QChar('*'));
+                switch (wildcard) {
+                case -1: // no wildcard, exact match
+                    match = (fullName == name);
+                    break;
+                case 0: // '*' matches all
+                    match = true;
+                    break;
+                default: // match with wildcard at the end
+                    match = fullName.startsWith(name.left(wildcard));
+                }
+                if (match) {
+                    tags += manifestMetaContent[idx].tags;
+                    foreach (const QString &attr, manifestMetaContent[idx].attributes) {
+                        QStringList attrList = attr.split(QLatin1Char(':'), QString::SkipEmptyParts);
+                        if (attrList.count() == 1)
+                            attrList.append(QStringLiteral("true"));
+                        if (attrList.count() == 2)
+                            writer.writeAttribute(attrList[0], attrList[1]);
+                    }
+                }
+            }
+        }
+
         writer.writeStartElement("description");
         Text brief = en->doc().briefText();
         if (!brief.isEmpty())
@@ -4093,12 +4125,11 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
         else
             writer.writeCDATA(QString("No description available"));
         writer.writeEndElement(); // description
-        QStringList tags = en->title().toLower().split(QLatin1Char(' '));
+        tags += QSet<QString>::fromList(en->title().toLower().split(QLatin1Char(' ')));
         if (!tags.isEmpty()) {
             writer.writeStartElement("tags");
             bool wrote_one = false;
-            for (int n=0; n<tags.size(); ++n) {
-                QString tag = tags.at(n);
+            foreach (QString tag, tags) {
                 if (tag.at(0).isDigit())
                     continue;
                 if (tag.at(0) == '-')
@@ -4109,7 +4140,7 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
                     continue;
                 if (tag.endsWith(QLatin1Char(':')))
                     tag.chop(1);
-                if (n>0 && wrote_one)
+                if (wrote_one)
                     writer.writeCharacters(",");
                 writer.writeCharacters(tag);
                 wrote_one = true;
@@ -4160,6 +4191,25 @@ void HtmlGenerator::generateManifestFile(QString manifest, QString element)
     writer.writeEndElement(); // instructionals
     writer.writeEndDocument();
     file.close();
+}
+
+/*!
+  Reads metacontent - additional attributes and tags to apply
+  when generating manifest files, read from config. Takes the
+  configuration class \a config as a parameter.
+ */
+void HtmlGenerator::readManifestMetaContent(const Config &config)
+{
+    QStringList names = config.getStringList(CONFIG_MANIFESTMETA + Config::dot + QStringLiteral("filters"));
+
+    foreach (const QString &manifest, names) {
+        ManifestMetaFilter filter;
+        QString prefix = CONFIG_MANIFESTMETA + Config::dot + manifest + Config::dot;
+        filter.names = config.getStringSet(prefix + QStringLiteral("names"));
+        filter.attributes = config.getStringSet(prefix + QStringLiteral("attributes"));
+        filter.tags = config.getStringSet(prefix + QStringLiteral("tags"));
+        manifestMetaContent.append(filter);
+    }
 }
 
 /*!
