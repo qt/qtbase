@@ -118,9 +118,6 @@ QT_DEPRECATED inline bool setYMD(int y, int m, int d)
     inline qint64 toJulianDay() const { return jd; }
 
 private:
-#if defined(min) || defined(max)
-#error min or max defined, cannot continue. If this is caused by an #include of windows.h, NOMINMAX can be defined.
-#endif
     static inline qint64 nullJd() { return std::numeric_limits<qint64>::min(); }
     static inline qint64 minJd() { return Q_INT64_C(-784350574879); }
     static inline qint64 maxJd() { return Q_INT64_C( 784354017364); }
