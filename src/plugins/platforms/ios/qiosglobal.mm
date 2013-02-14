@@ -75,6 +75,16 @@ QRect fromCGRect(const CGRect &rect)
     return QRect(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
 }
 
+CGPoint toCGPoint(const QPoint &point)
+{
+    return CGPointMake(point.x(), point.y());
+}
+
+QPoint fromCGPoint(const CGPoint &point)
+{
+    return QPoint(point.x, point.y);
+}
+
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)
 {
     Qt::ScreenOrientation qtOrientation;

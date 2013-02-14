@@ -54,6 +54,8 @@ QIOSViewController *rootViewController();
 
 CGRect toCGRect(const QRect &rect);
 QRect fromCGRect(const CGRect &rect);
+CGPoint toCGPoint(const QPoint &point);
+QPoint fromCGPoint(const CGPoint &point);
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
 UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
 QRect fromPortraitToPrimary(const QRect &rect);

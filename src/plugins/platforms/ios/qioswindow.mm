@@ -177,10 +177,13 @@
             touchPoint.pressure = 0.0;
 
         // Set position
-        CGPoint location = [touch locationInView:self];
-        touchPoint.area = QRectF(location.x, location.y, 0, 0);
-        QSize viewSize = fromCGRect(self.frame).size();
-        touchPoint.normalPosition = QPointF(location.x / viewSize.width(), location.y / viewSize.height());
+        QRect viewGeometry = fromCGRect(self.frame);
+        QPoint touchViewLocation = fromCGPoint([touch locationInView:self]);
+        QPoint touchScreenLocation = touchViewLocation + viewGeometry.topLeft();
+        touchPoint.area = QRectF(touchScreenLocation , QSize(0, 0));
+
+        CGSize fullscreenSize = self.window.rootViewController.view.bounds.size;
+        touchPoint.normalPosition = QPointF(touchScreenLocation.x() / fullscreenSize.width, touchScreenLocation.y() / fullscreenSize.height);
     }
 }
 
