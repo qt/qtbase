@@ -224,7 +224,7 @@ void QIOSScreen::setPrimaryOrientation(Qt::ScreenOrientation orientation)
     // Switching portrait/landscape means swapping width/height (and adjusting x/y):
     m_geometry = QRect(0, 0, m_geometry.height(), m_geometry.width());
     m_physicalSize = QSizeF(m_physicalSize.height(), m_physicalSize.width());
-    m_availableGeometry = fromPortraitToPrimary(fromCGRect(m_uiScreen.applicationFrame));
+    m_availableGeometry = fromPortraitToPrimary(fromCGRect(m_uiScreen.applicationFrame), this);
 
     QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
     QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);

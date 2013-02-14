@@ -83,7 +83,7 @@
     CGRect frame;
     [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&frame];
 
-    m_keyboardRect = fromPortraitToPrimary(fromCGRect(frame));
+    m_keyboardRect = fromPortraitToPrimary(fromCGRect(frame), QGuiApplication::primaryScreen()->handle());
     m_context->emitKeyboardRectChanged();
 
     BOOL visible = CGRectIntersectsRect(frame, [UIScreen mainScreen].bounds);

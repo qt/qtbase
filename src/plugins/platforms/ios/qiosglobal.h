@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPlatformScreen;
+
 bool isQtApplication();
 QIOSViewController *rootViewController();
 
@@ -58,7 +60,7 @@ CGPoint toCGPoint(const QPoint &point);
 QPoint fromCGPoint(const CGPoint &point);
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
 UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation);
-QRect fromPortraitToPrimary(const QRect &rect);
+QRect fromPortraitToPrimary(const QRect &rect, QPlatformScreen *screen);
 
 QT_END_NAMESPACE
 
