@@ -163,12 +163,20 @@ __asm T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL
 template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
+#if defined(__thumb__)
+    register T originalValue;
+    do {
+        originalValue = _q_value;
+    } while (_q_cmpxchg(originalValue, newValue, &_q_value) != 0);
+    return originalValue;
+#else
     T originalValue;
     asm volatile("swp %0,%2,[%3]"
                  : "=&r"(originalValue), "=m" (_q_value)
                  : "r"(newValue), "r"(&_q_value)
                  : "cc", "memory");
     return originalValue;
+#endif
 }
 #endif // Q_CC_RVCT
 
