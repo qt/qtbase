@@ -105,7 +105,9 @@ void QCocoaScreen::updateGeometry()
     m_physicalSize = QSizeF(size.width, size.height);
     m_logicalDpi.first = 72;
     m_logicalDpi.second = 72;
-    m_refreshRate = CGDisplayModeGetRefreshRate(CGDisplayCopyDisplayMode(dpy));
+    float refresh = CGDisplayModeGetRefreshRate(CGDisplayCopyDisplayMode(dpy));
+    if (refresh > 0)
+        m_refreshRate = refresh;
 
     // Get m_name (brand/model of the monitor)
     NSDictionary *deviceInfo = (NSDictionary *)IODisplayCreateInfoDictionary(CGDisplayIOServicePort(dpy), kIODisplayOnlyPreferredName);
