@@ -414,7 +414,8 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
                   << cQuoted(unescapeFilePath(manifest)) << ">" << manifest_rc;
 
                 if (generateManifest) {
-                    t << "\n\tif not exist $(DESTDIR_TARGET) del " << manifest << ">NUL 2>&1";
+                    t << "\n\tif not exist $(DESTDIR_TARGET) if exist " << manifest
+                      << " del " << manifest;
                     t << "\n\tif exist " << manifest << " copy /Y " << manifest << ' ' << manifest_bak;
                     const QString extraInlineFileContent = "\n!IF EXIST(" + manifest_res + ")\n" + manifest_res + "\n!ENDIF";
                     t << "\n\t";
