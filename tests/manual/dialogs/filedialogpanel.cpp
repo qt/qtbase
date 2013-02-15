@@ -400,7 +400,9 @@ void FileDialogPanel::applySettings(QFileDialog *d) const
     d->setFileMode(comboBoxValue<QFileDialog::FileMode>(m_fileMode));
     d->setOptions(options());
     d->setDefaultSuffix(m_defaultSuffix->text().trimmed());
-    d->setDirectory(m_directory->text().trimmed());
+    const QString directory = m_directory->text().trimmed();
+    if (!directory.isEmpty())
+        d->setDirectory(directory);
     const QString file = m_selectedFileName->text().trimmed();
     if (!file.isEmpty())
        d->selectFile(file);
