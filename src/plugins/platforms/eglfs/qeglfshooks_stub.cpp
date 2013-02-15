@@ -46,6 +46,8 @@
 #include <linux/fb.h>
 #include <sys/ioctl.h>
 
+#include <private/qmath_p.h>
+
 QT_BEGIN_NAMESPACE
 
 const char *QEglFSHooks::fbDeviceName() const
@@ -86,16 +88,38 @@ QSizeF QEglFSHooks::physicalScreenSize() const
         struct fb_var_screeninfo vinfo;
         int fd = open(fbDeviceName(), O_RDONLY);
 
+        int w = -1;
+        int h = -1;
+
         if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-                qWarning("Could not query variable screen info.");
-            else
-                size = QSizeF(vinfo.width, vinfo.height);
+            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("EGLFS: Could not query variable screen info.");
+            } else {
+                w = vinfo.width;
+                h = vinfo.height;
+            }
 
             close(fd);
         } else {
-            qWarning("Failed to open %s to detect screen size.", fbDeviceName());
+            qWarning("EGLFS: Failed to open %s to detect physical screen size.", fbDeviceName());
         }
+
+        const int defaultPhysicalDpi = 100;
+        size.setWidth(w <= 0 ? vinfo.xres * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(w));
+        size.setHeight(h <= 0 ? vinfo.yres * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(h));
+
+        if (w <= 0 || h <= 0) {
+            qWarning("EGLFS: Unable to query physical screen size, defaulting to %d dpi.\n"
+                     "EGLFS: To override, set QT_QPA_EGLFS_PHYSICAL_WIDTH "
+                     "and QT_QPA_EGLFS_PHYSICAL_HEIGHT (in millimeters).",
+                     defaultPhysicalDpi);
+        }
+
+        // override fb0 from environment var setting
+        if (width)
+            size.setWidth(width);
+        if (height)
+            size.setWidth(height);
     }
     return size;
 }
@@ -118,15 +142,31 @@ QSize QEglFSHooks::screenSize() const
         struct fb_var_screeninfo vinfo;
         int fd = open(fbDeviceName(), O_RDONLY);
 
+        int xres = -1;
+        int yres = -1;
+
         if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-                qWarning("Could not query variable screen info.");
-            else
-                size = QSize(vinfo.xres, vinfo.yres);
+            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("EGLFS: Could not query variable screen info.");
+            } else {
+                xres = vinfo.xres;
+                yres = vinfo.yres;
+            }
 
             close(fd);
         } else {
-            qWarning("Failed to open %s to detect screen depth.", fbDeviceName());
+            qWarning("EGLFS: Failed to open %s to detect screen resolution.", fbDeviceName());
+        }
+
+        const int defaultWidth = 800;
+        const int defaultHeight = 600;
+        size.setWidth(xres <= 0 ? defaultWidth : xres);
+        size.setHeight(yres <= 0 ? defaultHeight : yres);
+
+        if (xres <= 0 || yres <= 0) {
+            qWarning("EGLFS: Unable to query screen resolution, defaulting to %dx%d.\n"
+                     "EGLFS: To override, set QT_QPA_EGLFS_WIDTH and QT_QPA_EGLFS_HEIGHT.",
+                     defaultWidth, defaultHeight);
         }
 
         // override fb0 from environment var setting
@@ -149,17 +189,26 @@ int QEglFSHooks::screenDepth() const
 
         if (fd != -1) {
             if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-                qWarning("Could not query variable screen info.");
+                qWarning("EGLFS: Could not query variable screen info.");
             else
                 depth = vinfo.bits_per_pixel;
 
             close(fd);
         } else {
-            qWarning("Failed to open %s to detect screen depth.", fbDeviceName());
+            qWarning("EGLFS: Failed to open %s to detect screen depth.", fbDeviceName());
+        }
+
+        const int defaultDepth = 32;
+
+        if (depth <= 0) {
+            depth = defaultDepth;
+
+            qWarning("EGLFS: Unable to query screen depth, defaulting to %d.\n"
+                     "EGLFS: To override, set QT_QPA_EGLFS_DEPTH.", defaultDepth);
         }
     }
 
-    return depth == 0 ? 32 : depth;
+    return depth;
 }
 
 QImage::Format QEglFSHooks::screenFormat() const
