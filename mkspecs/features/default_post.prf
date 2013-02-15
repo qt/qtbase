@@ -8,7 +8,7 @@ load(resolve_config)
 
 QT_BREAKPAD_ROOT_PATH = $$(QT_BREAKPAD_ROOT_PATH)
 !isEmpty(QT_BREAKPAD_ROOT_PATH): \   # quick test first whether requested ...
-        !staticlib:!static:CONFIG(release, debug|release):have_target: \   # is it applicable?
+        !static:release:have_target: \   # is it applicable?
         !contains(TARGET, .*phony_target.*): \   # monster hack, you don't really see this here, right? ;)
         system($$QT_BREAKPAD_ROOT_PATH/qtbreakpadsymbols --breakpad-exists) {    # do we really have it?
     CONFIG += breakpad force_debug_info

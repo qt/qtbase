@@ -125,7 +125,7 @@ for(QT_CURRENT_VERIFY, $$list($$QT_PLUGIN_VERIFY)) {
         }
         isEqual(QT_CURRENT_VERIFY, DEPLOYMENT_PLUGIN):shared:wince*: {
             QT_ITEM =
-            CONFIG(debug, debug|release): QT_ITEM = $${QTPLUG}d4.dll
+            debug: QT_ITEM = $${QTPLUG}d4.dll
             else: QT_ITEM = $${QTPLUG}4.dll
 
             eval(qt_additional_plugin_$${QTPLUG}.files = $$[QT_INSTALL_PLUGINS/get]/$${QT_PLUGINPATH}/$${QT_ITEM})
