@@ -155,6 +155,8 @@ QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
     , m_interrupted(false)
     , m_runLoopTimerRef(0)
 {
+    m_cfSocketNotifier.setHostEventDispatcher(this);
+
     CFRunLoopRef mainRunLoop = CFRunLoopGetMain();
     CFRunLoopSourceContext context;
     bzero(&context, sizeof(CFRunLoopSourceContext));
@@ -184,6 +186,8 @@ QIOSEventDispatcher::~QIOSEventDispatcher()
     maybeStopCFRunLoopTimer();
     CFRunLoopRemoveSource(CFRunLoopGetMain(), m_blockingTimerRunLoopSource, kCFRunLoopCommonModes);
     CFRelease(m_blockingTimerRunLoopSource);
+
+    m_cfSocketNotifier.removeSocketNotifiers();
 }
 
 bool QIOSEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
@@ -215,14 +219,12 @@ bool QIOSEventDispatcher::hasPendingEvents()
 
 void QIOSEventDispatcher::registerSocketNotifier(QSocketNotifier *notifier)
 {
-    qDebug() << __FUNCTION__ << "not implemented";
-    Q_UNUSED(notifier);
+    m_cfSocketNotifier.registerSocketNotifier(notifier);
 }
 
 void QIOSEventDispatcher::unregisterSocketNotifier(QSocketNotifier *notifier)
 {
-    qDebug() << __FUNCTION__ << "not implemented";
-    Q_UNUSED(notifier);
+    m_cfSocketNotifier.unregisterSocketNotifier(notifier);
 }
 
 void QIOSEventDispatcher::registerTimer(int timerId, int interval, Qt::TimerType timerType, QObject *obj)

@@ -78,6 +78,7 @@
 
 #include <QtCore/qabstracteventdispatcher.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
+#include <QtPlatformSupport/private/qcfsocketnotifier_p.h>
 #include <CoreFoundation/CoreFoundation.h>
 
 QT_BEGIN_NAMESPACE
@@ -115,6 +116,8 @@ private:
 
     QTimerInfoList m_timerInfoList;
     CFRunLoopTimerRef m_runLoopTimerRef;
+
+    QCFSocketNotifier m_cfSocketNotifier;
 
     void processPostedEvents();
     void maybeStartCFRunLoopTimer();

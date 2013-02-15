@@ -93,6 +93,7 @@
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/private/qtimerinfo_unix_p.h>
+#include <QtPlatformSupport/private/qcfsocketnotifier_p.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -132,16 +133,9 @@ public:
     void wakeUp();
     void interrupt();
     void flush();
-};
 
-struct MacSocketInfo {
-    MacSocketInfo() : socket(0), runloop(0), readNotifier(0), writeNotifier(0) {}
-    CFSocketRef socket;
-    CFRunLoopSourceRef runloop;
-    QObject *readNotifier;
-    QObject *writeNotifier;
+    friend void qt_mac_maybeCancelWaitForMoreEventsForwarder(QAbstractEventDispatcher *eventDispatcher);
 };
-typedef QHash<int, MacSocketInfo *> MacSocketHash;
 
 class QCocoaEventDispatcherPrivate : public QAbstractEventDispatcherPrivate
 {
@@ -183,7 +177,7 @@ public:
     void maybeCancelWaitForMoreEvents();
     void ensureNSAppInitialized();
 
-    MacSocketHash macSockets;
+    QCFSocketNotifier cfSocketNotifier;
     QList<void *> queuedUserInputEvents; // NSEvent *
     CFRunLoopSourceRef postedEventsSource;
     CFRunLoopObserverRef waitingObserver;
