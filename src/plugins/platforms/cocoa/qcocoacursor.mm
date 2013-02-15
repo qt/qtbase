@@ -49,6 +49,10 @@ QT_BEGIN_NAMESPACE
 
 QCocoaCursor::QCocoaCursor()
 {
+}
+
+QCocoaCursor::~QCocoaCursor()
+{
     // release cursors
     QHash<Qt::CursorShape, NSCursor *>::const_iterator i = m_cursors.constBegin();
     while (i != m_cursors.constEnd()) {
