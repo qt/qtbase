@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include "qprogressbar.h"
+#include <qlocale.h>
 #include <qapplication.h>
 #include <qstyleoption.h>
 #include <qdebug.h>
@@ -64,6 +65,7 @@ private slots:
     void sizeHint();
     void formatedText_data();
     void formatedText();
+    void localizedFormattedText();
 
     void task245201_testChangeStyleAndDelete_data();
     void task245201_testChangeStyleAndDelete();
@@ -299,6 +301,40 @@ void tst_QProgressBar::formatedText()
     bar.setValue(value);
     bar.setFormat(format);
     QCOMPARE(bar.text(), text);
+}
+
+void tst_QProgressBar::localizedFormattedText() // QTBUG-28751
+{
+    QProgressBar bar;
+    const int value = 42;
+    bar.setValue(value);
+    const QString defaultExpectedNumber = QString::number(value);
+    const QString defaultExpectedValue = defaultExpectedNumber + QLatin1Char('%');
+    QCOMPARE(bar.text(), defaultExpectedValue);
+
+    // Temporarily switch to Egyptian, which has a different percent sign and number formatting
+    QLocale egypt(QLocale::Arabic, QLocale::Egypt);
+    bar.setLocale(egypt);
+    const QString egyptianExpectedNumber = egypt.toString(value);
+    const QString egyptianExpectedValue = egyptianExpectedNumber + egypt.percent();
+    if (egyptianExpectedValue == defaultExpectedValue)
+        QSKIP("Egyptian locale does not work on this system.");
+    QCOMPARE(bar.text(), egyptianExpectedValue);
+
+    bar.setLocale(QLocale());
+    QCOMPARE(bar.text(), defaultExpectedValue);
+
+    // Set a custom format containing only the number
+    bar.setFormat(QStringLiteral("%p"));
+    QCOMPARE(bar.text(), defaultExpectedNumber);
+    bar.setLocale(egypt);
+    QCOMPARE(bar.text(), egyptianExpectedNumber);
+
+    // Clear the format
+    bar.resetFormat();
+    QCOMPARE(bar.text(), egyptianExpectedValue);
+    bar.setLocale(QLocale());
+    QCOMPARE(bar.text(), defaultExpectedValue);
 }
 
 void tst_QProgressBar::task245201_testChangeStyleAndDelete_data()

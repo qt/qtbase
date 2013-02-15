@@ -65,7 +65,7 @@ class Q_WIDGETS_EXPORT QProgressBar : public QWidget
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(bool invertedAppearance READ invertedAppearance WRITE setInvertedAppearance)
     Q_PROPERTY(Direction textDirection READ textDirection WRITE setTextDirection)
-    Q_PROPERTY(QString format READ format WRITE setFormat)
+    Q_PROPERTY(QString format READ format WRITE setFormat RESET resetFormat)
 
 public:
     enum Direction { TopToBottom, BottomToTop };
@@ -96,6 +96,7 @@ public:
     QProgressBar::Direction textDirection() const;
 
     void setFormat(const QString &format);
+    void resetFormat();
     QString format() const;
 
 public Q_SLOTS:

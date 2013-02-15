@@ -41,6 +41,7 @@
 
 #include "qprogressbar.h"
 #ifndef QT_NO_PROGRESSBAR
+#include <qlocale.h>
 #include <qevent.h>
 #include <qpainter.h>
 #include <qstylepainter.h>
@@ -61,6 +62,7 @@ public:
     QProgressBarPrivate();
 
     void init();
+    void initDefaultFormat();
     inline void resetLayoutItemMargins();
 
     int minimum;
@@ -68,6 +70,7 @@ public:
     int value;
     Qt::Alignment alignment;
     uint textVisible : 1;
+    uint defaultFormat: 1;
     int lastPaintedValue;
     Qt::Orientation orientation;
     bool invertedAppearance;
@@ -79,9 +82,16 @@ public:
 
 QProgressBarPrivate::QProgressBarPrivate()
     : minimum(0), maximum(100), value(-1), alignment(Qt::AlignLeft), textVisible(true),
-      lastPaintedValue(-1), orientation(Qt::Horizontal), invertedAppearance(false),
-      textDirection(QProgressBar::TopToBottom), format(QLatin1String("%p%"))
+      defaultFormat(true), lastPaintedValue(-1), orientation(Qt::Horizontal), invertedAppearance(false),
+      textDirection(QProgressBar::TopToBottom)
 {
+    initDefaultFormat();
+}
+
+void QProgressBarPrivate::initDefaultFormat()
+{
+    if (defaultFormat)
+        format = QLatin1String("%p") + locale.percent();
 }
 
 void QProgressBarPrivate::init()
@@ -466,19 +476,21 @@ QString QProgressBar::text() const
     qint64 totalSteps = qint64(d->maximum) - d->minimum;
 
     QString result = d->format;
-    result.replace(QLatin1String("%m"), QString::number(totalSteps));
-    result.replace(QLatin1String("%v"), QString::number(d->value));
+    QLocale locale = d->locale; // Omit group separators for compatibility with previous versions that were non-localized.
+    locale.setNumberOptions(locale.numberOptions() | QLocale::OmitGroupSeparator);
+    result.replace(QLatin1String("%m"), locale.toString(totalSteps));
+    result.replace(QLatin1String("%v"), locale.toString(d->value));
 
     // If max and min are equal and we get this far, it means that the
     // progress bar has one step and that we are on that step. Return
     // 100% here in order to avoid division by zero further down.
     if (totalSteps == 0) {
-        result.replace(QLatin1String("%p"), QString::number(100));
+        result.replace(QLatin1String("%p"), locale.toString(int(100)));
         return result;
     }
 
     int progress = (qreal(d->value) - d->minimum) * 100.0 / totalSteps;
-    result.replace(QLatin1String("%p"), QString::number(progress));
+    result.replace(QLatin1String("%p"), locale.toString(progress));
     return result;
 }
 
@@ -568,12 +580,19 @@ QProgressBar::Direction QProgressBar::textDirection() const
 bool QProgressBar::event(QEvent *e)
 {
     Q_D(QProgressBar);
-    if (e->type() == QEvent::StyleChange
+    switch (e->type()) {
+    case QEvent::StyleChange:
 #ifdef Q_OS_MAC
-            || e->type() == QEvent::MacSizeChange
+    case QEvent::MacSizeChange:
 #endif
-            )
         d->resetLayoutItemMargins();
+        break;
+    case QEvent::LocaleChange:
+        d->initDefaultFormat();
+        break;
+    default:
+        break;
+    }
     return QWidget::event(e);
 }
 
@@ -596,6 +615,15 @@ void QProgressBar::setFormat(const QString &format)
     if (d->format == format)
         return;
     d->format = format;
+    d->defaultFormat = false;
+    update();
+}
+
+void QProgressBar::resetFormat()
+{
+    Q_D(QProgressBar);
+    d->defaultFormat = true;
+    d->initDefaultFormat();
     update();
 }
 
