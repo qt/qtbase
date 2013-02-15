@@ -317,9 +317,10 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
         remove(key);
         return end();
     }
+    QJsonValue val = value;
 
     bool latinOrIntValue;
-    int valueSize = QJsonPrivate::Value::requiredStorage(value, &latinOrIntValue);
+    int valueSize = QJsonPrivate::Value::requiredStorage(val, &latinOrIntValue);
 
     bool latinKey = QJsonPrivate::useCompressed(key);
     int valueOffset = sizeof(QJsonPrivate::Entry) + QJsonPrivate::qStringSize(key, latinKey);
@@ -335,16 +336,21 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
     if (keyExists)
         ++d->compactionCounter;
 
-    o->reserveSpace(requiredSize, pos, 1, keyExists);
+    uint off = o->reserveSpace(requiredSize, pos, 1, keyExists);
+    if (!off)
+        return end();
 
     QJsonPrivate::Entry *e = o->entryAt(pos);
-    e->value.type = value.t;
+    e->value.type = val.t;
     e->value.latinKey = latinKey;
     e->value.latinOrIntValue = latinOrIntValue;
-    e->value.value = QJsonPrivate::Value::valueToStore(value, (char *)e - (char *)o + valueOffset);
+    e->value.value = QJsonPrivate::Value::valueToStore(val, (char *)e - (char *)o + valueOffset);
     QJsonPrivate::copyString((char *)(e + 1), key, latinKey);
     if (valueSize)
-        QJsonPrivate::Value::copyData(value, (char *)e + valueOffset, latinOrIntValue);
+        QJsonPrivate::Value::copyData(val, (char *)e + valueOffset, latinOrIntValue);
+
+    if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
+        compact();
 
     return iterator(this, pos);
 }

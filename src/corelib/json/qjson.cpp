@@ -149,6 +149,10 @@ bool Data::valid() const
 int Base::reserveSpace(uint dataSize, int posInTable, uint numItems, bool replace)
 {
     Q_ASSERT(posInTable >= 0 && posInTable <= (int)length);
+    if (size + dataSize >= Value::MaxSize) {
+        qWarning("QJson: Document too large to store in data structure %d %d %d", (uint)size, dataSize, Value::MaxSize);
+        return 0;
+    }
 
     offset off = tableOffset;
     // move table to new position
@@ -334,7 +338,7 @@ bool Value::isValid(const Base *b) const
 /*!
     \internal
  */
-int Value::requiredStorage(const QJsonValue &v, bool *compressed)
+int Value::requiredStorage(QJsonValue &v, bool *compressed)
 {
     *compressed = false;
     switch (v.t) {
@@ -351,6 +355,11 @@ int Value::requiredStorage(const QJsonValue &v, bool *compressed)
     }
     case QJsonValue::Array:
     case QJsonValue::Object:
+        if (v.d && v.d->compactionCounter) {
+            v.detach();
+            v.d->compact();
+            v.base = static_cast<QJsonPrivate::Base *>(v.d->header->root());
+        }
         return v.base ? v.base->size : sizeof(QJsonPrivate::Base);
     case QJsonValue::Undefined:
     case QJsonValue::Null:
