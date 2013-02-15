@@ -2512,6 +2512,7 @@ fi
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
 case "$XPLATFORM" in *-maemo*) XPLATFORM_MAEMO=yes;; esac
 case "$XPLATFORM" in *qnx-*|*blackberry-*) XPLATFORM_QNX=yes;; esac
+case "$XPLATFORM" in *ios*) XPLATFORM_IOS=yes;; esac
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
@@ -2618,6 +2619,11 @@ fi
 
 if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_debug_info"
+fi
+
+# iOS builds should be static to be able to submit to the App Store
+if [ "$XPLATFORM_IOS" = "yes" ]; then
+    CFG_SHARED="no"
 fi
 
 # disable GTK style support auto-detection on Mac
