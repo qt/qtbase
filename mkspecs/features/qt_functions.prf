@@ -10,7 +10,7 @@ defineReplace(qtPlatformTargetSuffix) {
 
 defineReplace(qtLibraryTarget) {
    LIBRARY_NAME = $$1
-   mac:!static:contains(QT_CONFIG, qt_framework) {
+   mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
       QMAKE_FRAMEWORK_BUNDLE_NAME = $$LIBRARY_NAME
       export(QMAKE_FRAMEWORK_BUNDLE_NAME)
    } else {

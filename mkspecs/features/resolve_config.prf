@@ -14,11 +14,6 @@ staticlib: \
 else: dll: \
     CONFIG += shared
 
-!shared:!static {
-    contains(QT_CONFIG, static): CONFIG += static
-    else: CONFIG += shared
-}
-
 CONFIG(static, static|shared) {
     CONFIG -= shared dll
     contains(TEMPLATE, ".*lib"): CONFIG += staticlib
