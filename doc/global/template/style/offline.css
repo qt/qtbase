@@ -290,14 +290,10 @@ box-shadow: 0px 0px 0px #fff;
 background-color: #F6F6F6;
 border: 1px solid #E6E6E6;
 border-collapse: separate;
-font-size: 12px;
-line-height: 1.2;
 margin-bottom: 25px;
 margin-left: 15px;
 font-size: 12px;
 line-height: 1.2;
-margin-bottom: 25px;
-margin-left: 15px;
 }
 
 
@@ -451,6 +447,9 @@ padding: 3px 5px 3px 10px;
 text-align: right;
 }
 
+.qmldoc {
+margin-left: 15px;
+}
 /*
 -----------
 Content table
