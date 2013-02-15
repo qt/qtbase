@@ -1677,6 +1677,38 @@ QSqlRecord QODBCResult::record() const
     return d->rInf;
 }
 
+QVariant QODBCResult::lastInsertId() const
+{
+    QString sql;
+
+    switch (d->driverPrivate->dbmsType) {
+    case QODBCDriverPrivate::MSSqlServer:
+    case QODBCDriverPrivate::Sybase:
+        sql = QLatin1String("SELECT @@IDENTITY;");
+        break;
+    case QODBCDriverPrivate::MySqlServer:
+        sql = QLatin1String("SELECT LAST_INSERT_ID();");
+        break;
+    case QODBCDriverPrivate::PostgreSQL:
+        sql = QLatin1String("SELECT lastval();");
+        break;
+    default:
+        break;
+    }
+
+    if (!sql.isEmpty()) {
+        QSqlQuery qry(driver()->createResult());
+        if (qry.exec(sql) && qry.next())
+            return qry.value(0);
+
+        qSqlWarning(QLatin1String("QODBCResult::lastInsertId: Unable to get lastInsertId"), d);
+    } else {
+        qSqlWarning(QLatin1String("QODBCResult::lastInsertId: not implemented for this DBMS"), d);
+    }
+
+    return QVariant();
+}
+
 QVariant QODBCResult::handle() const
 {
     return QVariant(qRegisterMetaType<SQLHANDLE>("SQLHANDLE"), &d->hStmt);
@@ -1797,12 +1829,16 @@ bool QODBCDriver::hasFeature(DriverFeature f) const
         return true;
     case QuerySize:
     case NamedPlaceholders:
-    case LastInsertId:
     case BatchOperations:
     case SimpleLocking:
     case EventNotifications:
     case CancelQuery:
         return false;
+    case LastInsertId:
+        return (d->dbmsType == QODBCDriverPrivate::MSSqlServer)
+                || (d->dbmsType == QODBCDriverPrivate::Sybase)
+                || (d->dbmsType == QODBCDriverPrivate::MySqlServer)
+                || (d->dbmsType == QODBCDriverPrivate::PostgreSQL);
     case MultipleResultSets:
         return d->hasMultiResultSets;
     case BLOB: {

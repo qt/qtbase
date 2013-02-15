@@ -97,6 +97,7 @@ public:
     bool prepare(const QString& query);
     bool exec();
 
+    QVariant lastInsertId() const;
     QVariant handle() const;
     virtual void setForwardOnly(bool forward);
 
