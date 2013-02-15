@@ -859,7 +859,6 @@ CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_MAC_HARFBUZZ=no
-CFG_SDK=
 DEFINES=
 D_FLAGS=
 I_FLAGS=
@@ -1303,7 +1302,6 @@ while [ "$#" -gt 0 ]; do
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            CFG_SDK="$VAL"
             DeviceVar set QMAKE_MAC_SDK "$VAL"
         else
             UNKNOWN_OPT=yes
@@ -2616,13 +2614,6 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_debug_info"
 fi
 
-# pass on $CFG_SDK to the arch/configure tests.
-if [ -n "$CFG_SDK" ]; then
-    MAC_SDK_FLAG="-sdk $CFG_SDK"
-else
-    MAC_SDK_FLAG=
-fi
-
 # disable GTK style support auto-detection on Mac
 if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
     CFG_QGTKSTYLE=no
@@ -3329,8 +3320,8 @@ Qt/Mac only:
                          link tools against those frameworks.
     -no-framework ...... Do not build Qt as a series of frameworks.
 
-    -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
-                         To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
+    -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
+                         one of the available SDKs as listed by 'xcodebuild -showsdks'.
 
     -harfbuzz .......... Use HarfBuzz to do text layout instead of Core Text when possible.
  *  -no-harfbuzz ....... Disable HarfBuzz on Mac. It can still be enabled by setting
@@ -3821,7 +3812,7 @@ compileTest()
     path=config.tests/$1
     name=$2
     shift 2
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $MAC_SDK_FLAG "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -3830,7 +3821,7 @@ compileTest()
 
 # Use config.tests/arch/arch.pro to have the compiler tell us what the target architecture is
 OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "target" $MAC_SDK_FLAG
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "target"
 if [ $? -eq 0 ]; then
     eval `cat "$OUTFILE"`
 else

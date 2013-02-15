@@ -32,11 +32,6 @@ while [ "$#" -gt 0 ]; do
         MAC_ARCH_LFLAGS="$MAC_ARCH_LFLAGS -arch $2"
         shift
         ;;
-    -sdk)
-        LFLAGS="$LFLAGS -Wl,-syslibroot,$2"
-        CXXFLAGS="$CXXFLAGS -isysroot $2"
-        shift
-        ;;
     -F*|-m*|-x*)
         LFLAGS="$LFLAGS $PARAM"
         CXXFLAGS="$CXXFLAGS $PARAM"

@@ -19,20 +19,6 @@ fi
 LFLAGS="$SYSROOT_FLAG"
 CXXFLAGS="$SYSROOT_FLAG"
 
-while [ "$#" -gt 0 ]; do
-    PARAM=$1
-    case $PARAM in
-    -sdk)
-        LFLAGS="$LFLAGS -Wl,-syslibroot,$2"
-        CXXFLAGS="$CXXFLAGS -isysroot $2"
-        shift
-        ;;
-    *)  ;;
-    esac
-    shift
-done
-
-
 # debuggery
 [ "$VERBOSE" = "yes" ] && echo "Determining architecture... ($*)"
 

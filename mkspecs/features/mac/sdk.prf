@@ -1,8 +1,24 @@
-!isEmpty(QMAKE_MAC_SDK) {
-    !macx-xcode:!macx-pbuilder {
-        QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK
-        QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK
-        QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK
-        QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK
+!host_build:!isEmpty(QMAKE_MAC_SDK) {
+
+    contains(QMAKE_MAC_SDK, .*/.*): \
+        error("QMAKE_MAC_SDK can only contain short-form SDK names (eg. macosx, iphoneos)")
+
+    QMAKE_MAC_SDK_INFO = $$system("xcodebuild -sdk $$QMAKE_MAC_SDK -version 2>/dev/null", lines)
+    isEmpty(QMAKE_MAC_SDK_INFO): error("Could not resolve SDK \'$$QMAKE_MAC_SDK\'")
+
+    defineReplace(qtMacSDKInfo): \
+        return($$replace($$list($$find(QMAKE_MAC_SDK_INFO, ^$$1:)), ^$$1:(.*), \\1))
+
+    QMAKE_MAC_SDK_PATH = $$qtMacSDKInfo(Path)
+
+    !equals(MAKEFILE_GENERATOR, XCODE) {
+        QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+        QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+        QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+        QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH
     }
+
+    sysrootified =
+    for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
+    QMAKE_INCDIR_OPENGL = $$sysrootified
 }
