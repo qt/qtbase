@@ -190,23 +190,7 @@ QList<QVariant> QMacPrintEnginePrivate::supportedResolutions() const
     if (PMSessionGetCurrentPrinter(session(), &printer) == noErr) {
         PMResolution res;
         OSStatus status = PMPrinterGetPrinterResolutionCount(printer, &resCount);
-        if (status  == kPMNotImplemented) {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
-            // *Sigh* we have to use the non-indexed version.
-            if (PMPrinterGetPrinterResolution(printer, kPMMinSquareResolution, &res) == noErr)
-                resolutions.append(int(res.hRes));
-            if (PMPrinterGetPrinterResolution(printer, kPMMaxSquareResolution, &res) == noErr) {
-                QVariant var(int(res.hRes));
-                if (!resolutions.contains(var))
-                    resolutions.append(var);
-            }
-            if (PMPrinterGetPrinterResolution(printer, kPMDefaultResolution, &res) == noErr) {
-                QVariant var(int(res.hRes));
-                if (!resolutions.contains(var))
-                    resolutions.append(var);
-            }
-#endif
-        } else if (status == noErr) {
+        if (status == noErr) {
             // According to the docs, index start at 1.
             for (UInt32 i = 1; i <= resCount; ++i) {
                 if (PMPrinterGetIndexedPrinterResolution(printer, i, &res) == noErr)

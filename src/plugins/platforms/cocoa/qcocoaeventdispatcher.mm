@@ -490,14 +490,12 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
         case NSOtherMouseUp:     
         case NSOtherMouseDragged:
 #ifndef QT_NO_GESTURES
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
         case NSEventTypeGesture: // touch events
         case NSEventTypeMagnify:
         case NSEventTypeSwipe:
         case NSEventTypeRotate:
         case NSEventTypeBeginGesture:
         case NSEventTypeEndGesture:
-#endif
 #endif // QT_NO_GESTURES
             result    = true;
         break;

@@ -391,11 +391,6 @@ void tst_QScroller::scrollTo()
 
 void tst_QScroller::scroll()
 {
-#if defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
-    QSKIP("Mac OS X < 10.6 does not support QTouchEvents");
-    return;
-#endif
-
 #ifndef QT_NO_GESTURES
     // -- good case. normal scroll
     tst_QScrollerWidget *sw = new tst_QScrollerWidget();
@@ -438,11 +433,6 @@ void tst_QScroller::scroll()
 
 void tst_QScroller::overshoot()
 {
-#if defined(Q_OS_MACX) && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6)
-    QSKIP("Mac OS X < 10.6 does not support QTouchEvents");
-    return;
-#endif
-
 #ifndef QT_NO_GESTURES
     tst_QScrollerWidget *sw = new tst_QScrollerWidget();
     sw->scrollArea = QRectF(0, 0, 1000, 1000);

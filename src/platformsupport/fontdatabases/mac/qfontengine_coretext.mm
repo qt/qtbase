@@ -46,8 +46,6 @@
 
 #include <private/qimage_p.h>
 
-#if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-
 QT_BEGIN_NAMESPACE
 
 static float SYNTHETIC_ITALIC_SKEW = tanf(14 * acosf(0) / 90);
@@ -650,6 +648,3 @@ bool QCoreTextFontEngine::supportsTransformation(const QTransform &transform) co
 }
 
 QT_END_NAMESPACE
-
-#endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
-

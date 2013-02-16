@@ -83,11 +83,7 @@
 
 #define QT_OPEN_LARGEFILE       0
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
 #define QT_SOCKLEN_T            socklen_t
-#else
-#define QT_SOCKLEN_T            int
-#endif
 
 #define QT_SIGNAL_IGNORE        (void (*)(int))1
 

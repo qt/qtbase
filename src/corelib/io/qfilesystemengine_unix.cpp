@@ -360,12 +360,10 @@ bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemM
         if (!data.hasFlags(QFileSystemMetaData::DirectoryType))
             what |= QFileSystemMetaData::DirectoryType;
     }
-#    if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
     if (what & QFileSystemMetaData::HiddenAttribute) {
         // Mac OS >= 10.5: st_flags & UF_HIDDEN
         what |= QFileSystemMetaData::PosixStatFlags;
     }
-#   endif // MAC_OS_X_VERSION_MAX_ALLOWED...
 #endif // defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 
     if (what & QFileSystemMetaData::PosixStatFlags)

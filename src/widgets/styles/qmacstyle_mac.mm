@@ -586,11 +586,9 @@ CGColorSpaceRef qt_mac_genericColorSpace()
 {
 #if 0
     if (!m_genericColorSpace) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
             m_genericColorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
         } else
-#endif
         {
             m_genericColorSpace = CGColorSpaceCreateDeviceRGB();
         }
@@ -4912,10 +4910,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             } else {
                 if (!(slider->subControls & SC_SliderHandle))
                     tdi.attributes &= ~kThemeTrackShowThumb;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
                 if (!(slider->subControls & SC_SliderGroove))
                     tdi.attributes |= kThemeTrackHideTrack;
-#endif
             }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7

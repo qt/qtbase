@@ -136,14 +136,4 @@ private:
 
 QT_END_NAMESPACE
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
-#ifndef __LP64__
-	typedef float CGFloat;
-        typedef int NSInteger;
-        typedef unsigned int NSUInteger;
-	#define SRefCon SInt32
-	#define URefCon UInt32
-#endif
-#endif
-
 #endif // QCORE_MAC_P_H

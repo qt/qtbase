@@ -90,14 +90,11 @@ void qt_mac_clip_cg(CGContextRef hd, const QRegion &rgn, CGAffineTransform *orig
     if (rgn.isEmpty()) {
         CGContextAddRect(hd, CGRectMake(0, 0, 0, 0));
     } else {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
             QCFType<HIMutableShapeRef> shape = qt_mac_QRegionToHIMutableShape(rgn);
             Q_ASSERT(!HIShapeIsEmpty(shape));
             HIShapeReplacePathInCGContext(shape, hd);
-        } else
-#endif
-        {
+        } else {
             QVector<QRect> rects = rgn.rects();
             const int count = rects.size();
             for (int i = 0; i < count; i++) {
@@ -338,11 +335,9 @@ CGColorSpaceRef QCoreGraphicsPaintEngine::macGenericColorSpace()
 {
 #if 0
     if (!m_genericColorSpace) {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
             m_genericColorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
         } else
-#endif
         {
             m_genericColorSpace = CGColorSpaceCreateDeviceRGB();
         }
@@ -1185,7 +1180,6 @@ extern "C" {
 void
 QCoreGraphicsPaintEngine::updateCompositionMode(QPainter::CompositionMode mode)
 {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
         int cg_mode = kCGBlendModeNormal;
         switch (mode) {
@@ -1267,11 +1261,9 @@ QCoreGraphicsPaintEngine::updateCompositionMode(QPainter::CompositionMode mode)
         if (cg_mode > -1) {
             CGContextSetBlendMode(d_func()->hd, CGBlendMode(cg_mode));
         }
-    } else
-#endif
-    // The standard porter duff ops.
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_3
+    } else if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_3
             && mode <= QPainter::CompositionMode_Xor) {
+        // The standard porter duff ops.
         int cg_mode = kCGCompositeModeCopy;
         switch (mode) {
         case QPainter::CompositionMode_SourceOver:
@@ -1317,7 +1309,6 @@ QCoreGraphicsPaintEngine::updateCompositionMode(QPainter::CompositionMode mode)
         if (cg_mode > -1)
             CGContextSetCompositeOperation(d_func()->hd, CGCompositeMode(cg_mode));
     } else {
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
         bool needPrivateAPI = false;
         if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
             int cg_mode = kCGBlendModeNormal;
@@ -1367,7 +1358,6 @@ QCoreGraphicsPaintEngine::updateCompositionMode(QPainter::CompositionMode mode)
             else
                 CGContextSetCompositeOperation(d_func()->hd, CGCompositeMode(cg_mode));
         }
-#endif
     }
 }
 

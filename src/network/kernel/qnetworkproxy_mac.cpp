@@ -231,7 +231,6 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
             // PAC is enabled
             CFStringRef cfPacLocation = (CFStringRef)CFDictionaryGetValue(dict, kSCPropNetProxiesProxyAutoConfigURLString);
 
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
             if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
                 QCFType<CFDataRef> pacData;
                 QCFType<CFURLRef> pacUrl = CFURLCreateWithString(kCFAllocatorDefault, cfPacLocation, NULL);
@@ -275,9 +274,7 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
                     result << proxyFromDictionary(proxy);
                 }
                 return result;
-            } else
-#endif
-            {
+            } else {
                 QString pacLocation = QCFString::toQString(cfPacLocation);
                 qWarning("Mac system proxy: PAC script at \"%s\" not handled", qPrintable(pacLocation));
             }
