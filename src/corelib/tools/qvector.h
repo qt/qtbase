@@ -140,6 +140,8 @@ public:
     void remove(int i, int n);
     inline void removeFirst() { Q_ASSERT(!isEmpty()); erase(d->begin()); }
     inline void removeLast()  { Q_ASSERT(!isEmpty()); erase(d->end() - 1); }
+    inline T takeFirst() { Q_ASSERT(!isEmpty()); T r = first(); removeFirst(); return r; }
+    inline T takeLast()  { Q_ASSERT(!isEmpty()); T r = last(); removeLast(); return r; }
 
     QVector<T> &fill(const T &t, int size = -1);
 

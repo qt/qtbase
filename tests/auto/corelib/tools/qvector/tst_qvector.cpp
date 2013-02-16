@@ -1410,11 +1410,12 @@ struct RemoveLastTestClass
 void tst_QVector::removeFirstLast() const
 {
     // pop_pack - pop_front
-    QVector<int> t;
+    QVector<int> t, t2;
     t.append(1);
     t.append(2);
     t.append(3);
     t.append(4);
+    t2 = t;
     t.pop_front();
     QCOMPARE(t.size(), 3);
     QCOMPARE(t.at(0), 2);
@@ -1422,6 +1423,18 @@ void tst_QVector::removeFirstLast() const
     QCOMPARE(t.size(), 2);
     QCOMPARE(t.at(0), 2);
     QCOMPARE(t.at(1), 3);
+
+    // takefirst - takeLast
+    int n1 = t2.takeLast();
+    QCOMPARE(t2.size(), 3);
+    QCOMPARE(n1, 4);
+    QCOMPARE(t2.at(0), 1);
+    QCOMPARE(t2.at(2), 3);
+    n1 = t2.takeFirst();
+    QCOMPARE(t2.size(), 2);
+    QCOMPARE(n1, 1);
+    QCOMPARE(t2.at(0), 2);
+    QCOMPARE(t2.at(1), 3);
 
     // remove first
     QVector<int> x, y;

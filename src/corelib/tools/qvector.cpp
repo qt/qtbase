@@ -551,7 +551,7 @@
     the vector can be empty, call isEmpty() before calling this
     function.
 
-    \sa remove(), isEmpty()
+    \sa remove(), takeFirst(), isEmpty()
 */
 
 /*! \fn void QVector::removeLast()
@@ -561,8 +561,30 @@
     empty. If the vector can be empty, call isEmpty() before calling
     this function.
 
-    \sa remove(), removeFirst(), isEmpty()
+    \sa remove(), takeLast(), removeFirst(), isEmpty()
 */
+
+/*! \fn T QVector::takeFirst()
+
+    Removes the first item in the vector and returns it. This function
+    assumes the vector is not empty. To avoid failure, call isEmpty()
+    before calling this function.
+
+    \sa takeLast(), removeFirst()
+*/
+
+/*! \fn T QVector::takeLast()
+
+    Removes the last item in the list and returns it. This function
+    assumes the vector is not empty. To avoid failure, call isEmpty()
+    before calling this function.
+
+    If you don't use the return value, removeLast() is more
+    efficient.
+
+    \sa takeFirst(), removeLast()
+*/
+
 
 /*! \fn QVector &QVector::fill(const T &value, int size = -1)
 
