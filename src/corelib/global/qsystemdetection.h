@@ -175,31 +175,34 @@
 #endif
 
 #ifdef Q_OS_DARWIN
+#  include <Availability.h>
+#  if !defined(__MAC_OS_X_VERSION_MIN_REQUIRED) || __MAC_OS_X_VERSION_MIN_REQUIRED < __MAC_10_6
+#     undef __MAC_OS_X_VERSION_MIN_REQUIRED
+#     define __MAC_OS_X_VERSION_MIN_REQUIRED __MAC_10_6
+#  endif
 #  include <AvailabilityMacros.h>
 #  if !defined(MAC_OS_X_VERSION_MIN_REQUIRED) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
 #     undef MAC_OS_X_VERSION_MIN_REQUIRED
 #     define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_6
 #  endif
 #
-#  if !defined(MAC_OS_X_VERSION_10_3)
-#     define MAC_OS_X_VERSION_10_3 MAC_OS_X_VERSION_10_2 + 1
+#  // Numerical checks are preferred to named checks, but to be safe
+#  // we define the missing version names in case Qt uses them.
+#
+#  if !defined(__MAC_10_7)
+#       define __MAC_10_7 1070
 #  endif
-#  if !defined(MAC_OS_X_VERSION_10_4)
-#       define MAC_OS_X_VERSION_10_4 MAC_OS_X_VERSION_10_3 + 1
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_5)
-#       define MAC_OS_X_VERSION_10_5 MAC_OS_X_VERSION_10_4 + 1
-#  endif
-#  if !defined(MAC_OS_X_VERSION_10_6)
-#       define MAC_OS_X_VERSION_10_6 MAC_OS_X_VERSION_10_5 + 1
+#  if !defined(__MAC_10_8)
+#       define __MAC_10_8 1080
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_7)
-#       define MAC_OS_X_VERSION_10_7 MAC_OS_X_VERSION_10_6 + 1
+#       define MAC_OS_X_VERSION_10_7 1070
 #  endif
 #  if !defined(MAC_OS_X_VERSION_10_8)
-#       define MAC_OS_X_VERSION_10_8 MAC_OS_X_VERSION_10_7 + 1
+#       define MAC_OS_X_VERSION_10_8 1080
 #  endif
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8)
+#
+#  if (__MAC_OS_X_VERSION_MAX_ALLOWED > __MAC_10_8)
 #    warning "This version of Mac OS X is unsupported"
 #  endif
 #endif
