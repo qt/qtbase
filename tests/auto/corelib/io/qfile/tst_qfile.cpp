@@ -487,11 +487,6 @@ void tst_QFile::open_data()
     QTest::addColumn<bool>("ok");
     QTest::addColumn<QFile::FileError>("status");
 
-#ifdef Q_OS_MAC
-    static const QString denied("Operation not permitted");
-#else
-    static const QString denied("Permission denied");
-#endif
     QTest::newRow( "exist_readOnly"  )
         << m_testFile << int(QIODevice::ReadOnly)
         << true << QFile::NoError;
