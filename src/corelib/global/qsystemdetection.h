@@ -175,11 +175,12 @@
 #endif
 
 #ifdef Q_OS_DARWIN
-#  ifdef MAC_OS_X_VERSION_MIN_REQUIRED
-#    undef MAC_OS_X_VERSION_MIN_REQUIRED
-#  endif
-#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_6
 #  include <AvailabilityMacros.h>
+#  if !defined(MAC_OS_X_VERSION_MIN_REQUIRED) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
+#     undef MAC_OS_X_VERSION_MIN_REQUIRED
+#     define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_6
+#  endif
+#
 #  if !defined(MAC_OS_X_VERSION_10_3)
 #     define MAC_OS_X_VERSION_10_3 MAC_OS_X_VERSION_10_2 + 1
 #  endif
