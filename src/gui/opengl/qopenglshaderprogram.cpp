@@ -49,6 +49,7 @@
 #include <QtCore/qvector.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/QColor>
+#include <QtGui/QSurfaceFormat>
 
 #if !defined(QT_OPENGL_ES_2)
 #include <QtGui/qopenglfunctions_4_0_core.h>
@@ -373,18 +374,12 @@ QOpenGLShader::ShaderType QOpenGLShader::shaderType() const
     return d->shaderType;
 }
 
-// The precision qualifiers are useful on OpenGL/ES systems,
-// but usually not present on desktop systems.  Define the
-// keywords to empty strings on desktop systems.
-#if !defined(QT_OPENGL_ES) || defined(QT_OPENGL_FORCE_SHADER_DEFINES)
-#define QOpenGL_DEFINE_QUALIFIERS 1
 static const char qualifierDefines[] =
     "#define lowp\n"
     "#define mediump\n"
     "#define highp\n";
 
-#else
-
+#if defined(QT_OPENGL_ES) && !defined(QT_OPENGL_FORCE_SHADER_DEFINES)
 // The "highp" qualifier doesn't exist in fragment shaders
 // on all ES platforms.  When it doesn't exist, use "mediump".
 #define QOpenGL_REDEFINE_HIGHP 1
@@ -424,10 +419,19 @@ bool QOpenGLShader::compileSourceCode(const char *source)
             src.append(source);
             srclen.append(GLint(headerLen));
         }
-#ifdef QOpenGL_DEFINE_QUALIFIERS
-        src.append(qualifierDefines);
-        srclen.append(GLint(sizeof(qualifierDefines) - 1));
+
+        // The precision qualifiers are useful on OpenGL/ES systems,
+        // but usually not present on desktop systems.
+        const QSurfaceFormat currentSurfaceFormat = QOpenGLContext::currentContext()->format();
+        if (currentSurfaceFormat.renderableType() == QSurfaceFormat::OpenGL
+#ifdef QT_OPENGL_FORCE_SHADER_DEFINES
+                || true
 #endif
+                ) {
+            src.append(qualifierDefines);
+            srclen.append(GLint(sizeof(qualifierDefines) - 1));
+        }
+
 #ifdef QOpenGL_REDEFINE_HIGHP
         if (d->shaderType == Fragment) {
             src.append(redefineHighp);
