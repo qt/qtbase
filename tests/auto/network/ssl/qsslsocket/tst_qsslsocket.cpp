@@ -1533,6 +1533,8 @@ public slots:
 
 void tst_QSslSocket::setReadBufferSize_task_250027()
 {
+    QSKIP("QTBUG-29730 - flakey test blocking integration");
+
     // do not execute this when a proxy is set.
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
