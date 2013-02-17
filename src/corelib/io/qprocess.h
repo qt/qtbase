@@ -136,8 +136,14 @@ public:
 
     void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
     void start(const QString &command, OpenMode mode = ReadWrite);
+    void start(OpenMode mode = ReadWrite);
+    bool open(OpenMode mode = ReadWrite) Q_DECL_OVERRIDE;
+
     QString program() const;
+    void setProgram(const QString &program);
+
     QStringList arguments() const;
+    void setArguments(const QStringList & arguments);
 
     ProcessChannelMode readChannelMode() const;
     void setReadChannelMode(ProcessChannelMode mode);
