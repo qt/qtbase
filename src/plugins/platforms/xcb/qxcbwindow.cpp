@@ -1125,18 +1125,8 @@ void QXcbWindow::setParent(const QPlatformWindow *parent)
 
 void QXcbWindow::setWindowTitle(const QString &title)
 {
-    QString fullTitle = title;
-    if (QGuiApplicationPrivate::displayName) {
-        // Append display name, if set.
-        if (!fullTitle.isEmpty())
-            fullTitle += QString::fromUtf8(" \xe2\x80\x94 "); // unicode character U+2014, EM DASH
-        fullTitle += *QGuiApplicationPrivate::displayName;
-    } else if (fullTitle.isEmpty()) {
-        // Don't let the window title be completely empty, use the app name as fallback.
-        fullTitle = QCoreApplication::applicationName();
-    }
+    const QString fullTitle = formatWindowTitle(title, QString::fromUtf8(" \xe2\x80\x94 ")); // unicode character U+2014, EM DASH
     const QByteArray ba = fullTitle.toUtf8();
-
     Q_XCB_CALL(xcb_change_property(xcb_connection(),
                                    XCB_PROP_MODE_REPLACE,
                                    m_window,

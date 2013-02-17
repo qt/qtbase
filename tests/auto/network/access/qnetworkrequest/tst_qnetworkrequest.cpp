@@ -102,7 +102,7 @@ void tst_QNetworkRequest::ctor_data()
 
     QTest::newRow("nothing") << QUrl();
     QTest::newRow("empty") << QUrl();
-    QTest::newRow("http") << QUrl("http://qt.nokia.com");
+    QTest::newRow("http") << QUrl("http://qt-project.org");
 }
 
 void tst_QNetworkRequest::ctor()

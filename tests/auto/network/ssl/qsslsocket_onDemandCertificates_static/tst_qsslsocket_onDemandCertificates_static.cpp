@@ -189,7 +189,7 @@ void tst_QSslSocket_onDemandCertificates_static::proxyAuthenticationRequired(con
 
 void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMethods()
 {
-    QString host("codereview.qt-project.org");
+    QString host("qt-project.org");
 
     // not using any root certs -> should not work
     QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());

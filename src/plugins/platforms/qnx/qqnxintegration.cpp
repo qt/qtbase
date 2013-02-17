@@ -214,7 +214,7 @@ QQnxIntegration::QQnxIntegration()
 
 #if defined(QQNX_PPS)
         // Set up the input context
-        m_inputContext = new QQnxInputContext(*m_virtualKeyboard);
+        m_inputContext = new QQnxInputContext(this, *m_virtualKeyboard);
 #endif
     }
 
@@ -446,6 +446,11 @@ void QQnxIntegration::createDisplays()
         qFatal("QQnxIntegration: failed to query display count, errno=%d", errno);
     }
 
+    if (displayCount < 1) {
+        // Never happens, even if there's no display, libscreen returns 1
+        qFatal("QQnxIntegration: displayCount=%d", displayCount);
+    }
+
     // Get all displays
     errno = 0;
     screen_display_t *displays = (screen_display_t *)alloca(sizeof(screen_display_t) * displayCount);
@@ -454,7 +459,11 @@ void QQnxIntegration::createDisplays()
         qFatal("QQnxIntegration: failed to query displays, errno=%d", errno);
     }
 
-    for (int i=0; i<displayCount; i++) {
+    // If it's primary, we create a QScreen for it even if it's not attached
+    // since Qt will dereference QGuiApplication::primaryScreen()
+    createDisplay(displays[0], /*isPrimary=*/true);
+
+    for (int i=1; i<displayCount; i++) {
         int isAttached = 0;
         result = screen_get_display_property_iv(displays[i], SCREEN_PROPERTY_ATTACHED, &isAttached);
         if (result != 0) {
@@ -468,7 +477,7 @@ void QQnxIntegration::createDisplays()
         }
 
         qIntegrationDebug() << Q_FUNC_INFO << "Creating screen for display" << i;
-        createDisplay(displays[i], i==0);
+        createDisplay(displays[i], /*isPrimary=*/false);
     } // of displays iteration
 }
 

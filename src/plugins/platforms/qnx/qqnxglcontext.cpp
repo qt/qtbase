@@ -150,13 +150,13 @@ QQnxGLContext::QQnxGLContext(QOpenGLContext *glContext)
     // Select EGL config based on requested window format
     m_eglConfig = q_configFromGLFormat(ms_eglDisplay, format);
     if (m_eglConfig == 0) {
-        qFatal("QQNXQBBWindow: failed to find EGL config");
+        qFatal("QQnxGLContext: failed to find EGL config");
     }
 
     m_eglContext = eglCreateContext(ms_eglDisplay, m_eglConfig, EGL_NO_CONTEXT, contextAttrs());
     if (m_eglContext == EGL_NO_CONTEXT) {
         checkEGLError("eglCreateContext");
-        qFatal("QQNXQBBWindow: failed to create EGL context, err=%d", eglGetError());
+        qFatal("QQnxGLContext: failed to create EGL context, err=%d", eglGetError());
     }
 
     // Query/cache window format of selected EGL config
@@ -184,13 +184,13 @@ void QQnxGLContext::initialize()
     ms_eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (ms_eglDisplay == EGL_NO_DISPLAY) {
         checkEGLError("eglGetDisplay");
-        qFatal("QQNXQBBWindow: failed to obtain EGL display");
+        qFatal("QQnxGLContext: failed to obtain EGL display");
     }
 
     EGLBoolean eglResult = eglInitialize(ms_eglDisplay, 0, 0);
     if (eglResult != EGL_TRUE) {
         checkEGLError("eglInitialize");
-        qFatal("QQNXQBBWindow: failed to initialize EGL display, err=%d", eglGetError());
+        qFatal("QQnxGLContext: failed to initialize EGL display, err=%d", eglGetError());
     }
 }
 
@@ -217,7 +217,7 @@ bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
     // Set current rendering API
     EGLBoolean eglResult = eglBindAPI(EGL_OPENGL_ES_API);
     if (eglResult != EGL_TRUE) {
-        qFatal("QQNXQBBWindow: failed to set EGL API, err=%d", eglGetError());
+        qFatal("QQnxGLContext: failed to set EGL API, err=%d", eglGetError());
     }
 
     if (m_newSurfaceRequested.testAndSetOrdered(true, false)) {

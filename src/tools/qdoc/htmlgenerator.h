@@ -59,6 +59,8 @@ class HelpProjectWriter;
 
 class HtmlGenerator : public Generator
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::HtmlGenerator)
+
 public:
     enum SinceType {
         Namespace,

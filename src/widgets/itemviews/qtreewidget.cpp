@@ -1896,7 +1896,7 @@ void QTreeWidgetItem::addChild(QTreeWidgetItem *child)
 /*!
   Inserts the \a child item at \a index in the list of children.
 
-  If the child has already been inserted somewhere else it wont be inserted again.
+  If the child has already been inserted somewhere else it won't be inserted again.
 */
 void QTreeWidgetItem::insertChild(int index, QTreeWidgetItem *child)
 {
@@ -1998,7 +1998,7 @@ void QTreeWidgetItem::addChildren(const QList<QTreeWidgetItem*> &children)
 
   Inserts the given list of \a children into the list of the item children at \a index .
 
-  Children that have already been inserted somewhere else wont be inserted.
+  Children that have already been inserted somewhere else won't be inserted.
 */
 void QTreeWidgetItem::insertChildren(int index, const QList<QTreeWidgetItem*> &children)
 {
@@ -2621,7 +2621,7 @@ int QTreeWidget::topLevelItemCount() const
 /*!
   Inserts the \a item at \a index in the top level in the view.
 
-  If the item has already been inserted somewhere else it wont be inserted.
+  If the item has already been inserted somewhere else it won't be inserted.
 
   \sa addTopLevelItem(), columnCount()
 */
@@ -2675,7 +2675,7 @@ int QTreeWidget::indexOfTopLevelItem(QTreeWidgetItem *item) const
 
   Inserts the list of \a items at \a index in the top level in the view.
 
-  Items that have already been inserted somewhere else wont be inserted.
+  Items that have already been inserted somewhere else won't be inserted.
 
   \sa addTopLevelItems()
 */

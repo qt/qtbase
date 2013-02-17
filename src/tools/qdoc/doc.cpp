@@ -439,6 +439,8 @@ bool DocPrivate::isEnumDocSimplifiable() const
 
 class DocParser
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::DocParser)
+
 public:
     void parse(const QString &source,
                DocPrivate *docPrivate,

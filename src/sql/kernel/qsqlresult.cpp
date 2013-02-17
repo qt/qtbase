@@ -50,77 +50,10 @@
 #include "qvector.h"
 #include "qsqldriver.h"
 #include "qpointer.h"
+#include "qsqlresult_p.h"
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
-
-struct QHolder {
-    QHolder(const QString& hldr = QString(), int index = -1): holderName(hldr), holderPos(index) {}
-    bool operator==(const QHolder& h) const { return h.holderPos == holderPos && h.holderName == holderName; }
-    bool operator!=(const QHolder& h) const { return h.holderPos != holderPos || h.holderName != holderName; }
-    QString holderName;
-    int holderPos;
-};
-
-class QSqlResultPrivate
-{
-public:
-    QSqlResultPrivate(QSqlResult* d)
-    : q(d), idx(QSql::BeforeFirstRow), active(false),
-      isSel(false), forwardOnly(false), precisionPolicy(QSql::LowPrecisionDouble), bindCount(0), binds(QSqlResult::PositionalBinding)
-    {}
-
-    void clearValues()
-    {
-        values.clear();
-        bindCount = 0;
-    }
-
-    void resetBindCount()
-    {
-        bindCount = 0;
-    }
-
-    void clearIndex()
-    {
-        indexes.clear();
-        holders.clear();
-        types.clear();
-    }
-
-    void clear()
-    {
-        clearValues();
-        clearIndex();;
-    }
-
-    QString positionalToNamedBinding();
-    QString namedToPositionalBinding();
-    QString holderAt(int index) const;
-
-public:
-    QSqlResult* q;
-    QPointer<QSqlDriver> sqldriver;
-    int idx;
-    QString sql;
-    bool active;
-    bool isSel;
-    QSqlError error;
-    bool forwardOnly;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
-
-    int bindCount;
-    QSqlResult::BindingSyntax binds;
-
-    QString executedQuery;
-    QHash<int, QSql::ParamType> types;
-    QVector<QVariant> values;
-    typedef QHash<QString, QList<int> > IndexMap;
-    IndexMap indexes;
-
-    typedef QVector<QHolder> QHolderVector;
-    QHolderVector holders;
-};
 
 static QString qFieldSerial(int);
 
@@ -584,6 +517,8 @@ void QSqlResult::setForwardOnly(bool forward)
     functionality where possible. Returns true if the query is
     prepared successfully; otherwise returns false.
 
+    Note: This method should have been called "safePrepare()".
+
     \sa prepare()
 */
 bool QSqlResult::savePrepare(const QString& query)
@@ -595,13 +530,12 @@ bool QSqlResult::savePrepare(const QString& query)
     if (!driver()->hasFeature(QSqlDriver::PreparedQueries))
         return prepare(query);
 
-    if (driver()->hasFeature(QSqlDriver::NamedPlaceholders)) {
-        // parse the query to memorize parameter location
-        d->namedToPositionalBinding();
+    // parse the query to memorize parameter location
+    d->executedQuery = d->namedToPositionalBinding();
+
+    if (driver()->hasFeature(QSqlDriver::NamedPlaceholders))
         d->executedQuery = d->positionalToNamedBinding();
-    } else {
-        d->executedQuery = d->namedToPositionalBinding();
-    }
+
     return prepare(d->executedQuery);
 }
 
@@ -614,34 +548,11 @@ bool QSqlResult::savePrepare(const QString& query)
 */
 bool QSqlResult::prepare(const QString& query)
 {
-    if (d->holders.isEmpty()) {
-        int n = query.size();
-
-        bool inQuote = false;
-        int i = 0;
-
-        while (i < n) {
-            QChar ch = query.at(i);
-            if (ch == QLatin1Char(':') && !inQuote
-                    && (i == 0 || query.at(i - 1) != QLatin1Char(':'))
-                    && (i + 1 < n && qIsAlnum(query.at(i + 1)))) {
-                int pos = i + 2;
-                while (pos < n && qIsAlnum(query.at(pos)))
-                    ++pos;
-
-                QString holder(query.mid(i, pos - i));
-                d->indexes[holder].append(d->holders.size());
-                d->holders.append(QHolder(holder, i));
-                i = pos;
-            } else {
-                if (ch == QLatin1Char('\''))
-                    inQuote = !inQuote;
-                ++i;
-            }
-        }
-        d->values.resize(d->holders.size());
-    }
     d->sql = query;
+    if (d->holders.isEmpty()) {
+        // parse the query to memorize parameter location
+        d->namedToPositionalBinding();
+    }
     return true; // fake prepares should always succeed
 }
 

@@ -66,6 +66,8 @@ class QDocDatabase;
 
 class Generator
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::Generator)
+
 public:
     enum Passes { Both, Prepare, Generate };
 

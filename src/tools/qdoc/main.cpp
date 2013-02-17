@@ -110,12 +110,12 @@ static QString documentationPath;
  */
 static void printHelp()
 {
-    Location::information(tr("Usage: qdoc [options] file1.qdocconf ...\n"
+    Location::information(QCoreApplication::translate("QDoc", "Usage: qdoc [options] file1.qdocconf ...\n"
                              "Options:\n"
                              "    -D<name>       "
                              "Define <name> as a macro while parsing sources\n"
                              "    -depends       "
-                             "Specify dependant modules\n"
+                             "Specify dependent modules\n"
                              "    -help          "
                              "Display this information and exit\n"
                              "    -highlighting  "
@@ -149,7 +149,7 @@ static void printHelp()
  */
 static void printVersion()
 {
-    QString s = tr("qdoc version %1").arg(QT_VERSION_STR);
+    QString s = QCoreApplication::translate("QDoc", "qdoc version %1").arg(QT_VERSION_STR);
     Location::information(s);
 }
 
@@ -250,7 +250,7 @@ static void processQdocconfFile(const QString &fileName)
       All the other classes are initialized with the config. Here we
       initialize the configuration with some default values.
      */
-    Config config(tr("qdoc"));
+    Config config(QCoreApplication::translate("QDoc", "qdoc"));
     int i = 0;
     while (defaults[i].key) {
         config.setStringList(defaults[i].key, QStringList() << defaults[i].value);
@@ -325,7 +325,7 @@ static void processQdocconfFile(const QString &fileName)
     while (fn != fileNames.constEnd()) {
         QTranslator *translator = new QTranslator(0);
         if (!translator->load(*fn))
-            config.lastLocation().error(tr("Cannot load translator '%1'").arg(*fn));
+            config.lastLocation().error(QCoreApplication::translate("QDoc", "Cannot load translator '%1'").arg(*fn));
         QCoreApplication::instance()->installTranslator(translator);
         translators.append(translator);
         ++fn;
@@ -489,7 +489,7 @@ static void processQdocconfFile(const QString &fileName)
     while (of != outputFormats.constEnd()) {
         Generator* generator = Generator::generatorForFormat(*of);
         if (generator == 0)
-            outputFormatsLocation.fatal(tr("Unknown output format '%1'").arg(*of));
+            outputFormatsLocation.fatal(QCoreApplication::translate("QDoc", "Unknown output format '%1'").arg(*of));
         generator->generateTree();
         ++of;
     }

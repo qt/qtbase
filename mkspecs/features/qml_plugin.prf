@@ -89,3 +89,12 @@ load(qt_targets)
 }
 
 load(qml_module)
+
+unix|win32-g++* {
+    !isEmpty(_QMAKE_SUPER_CACHE_): \
+        lib_replace.match = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*/lib
+    else: \
+        lib_replace.match = $$eval(QT.$${CXX_MODULE}.libs)
+    lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
+    QMAKE_PRL_INSTALL_REPLACE += lib_replace
+}

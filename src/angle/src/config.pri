@@ -15,7 +15,8 @@ isEmpty(ANGLE_DIR) {
 win32 {
     GNUTOOLS_DIR=$$PWD/../../../../gnuwin32/bin
     exists($$GNUTOOLS_DIR/gperf.exe) {
-        GNUTOOLS = "(set $$escape_expand(\\\")PATH=$$replace(GNUTOOLS_DIR, [/\\\\], $${QMAKE_DIR_SEP});%PATH%$$escape_expand(\\\"))"
+        # Escape closing parens when expanding the variable, otherwise cmd confuses itself.
+        GNUTOOLS = "(set PATH=$$replace(GNUTOOLS_DIR, [/\\\\], $${QMAKE_DIR_SEP});%PATH:)=^)%)"
     }
 }
 

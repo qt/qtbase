@@ -24,7 +24,7 @@ win32 {
                 $$PWD/qprintengine_win_p.h
         SOURCES += \
                 $$PWD/qprintengine_win.cpp
-        LIBS += -lwinspool -lcomdlg32
+        LIBS += -lwinspool -lcomdlg32 -lgdi32 -luser32
 }
 
 unix:!mac:contains(QT_CONFIG, cups): {

@@ -100,7 +100,7 @@ QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
         retFormat.setRedBufferSize(format.redBufferSize());
     if (format.depth())
         retFormat.setDepthBufferSize(format.depthBufferSize() == -1 ? 1 : format.depthBufferSize());
-    retFormat.setSwapBehavior(format.doubleBuffer() ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::DefaultSwapBehavior);
+    retFormat.setSwapBehavior(format.doubleBuffer() ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::SingleBuffer);
     if (format.sampleBuffers())
         retFormat.setSamples(format.samples() == -1 ? 4 : format.samples());
     if (format.stencil())

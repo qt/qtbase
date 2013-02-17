@@ -42,8 +42,10 @@
 #include "qcocoanativeinterface.h"
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
+#include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qmacmime.h"
+#include "qcocoahelpers.h"
 
 #include <qbytearray.h>
 #include <qwindow.h>
@@ -59,6 +61,8 @@
 #include "qprintengine_mac_p.h"
 #include <qpa/qplatformprintersupport.h>
 #endif
+
+#include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,6 +107,12 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::removeFromMimeList);
     if (resource.toLower() == "registerdraggedtypes")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
+    if (resource.toLower() == "setdockmenu")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setDockMenu);
+    if (resource.toLower() == "qimagetocgimage")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qImageToCGImage);
+    if (resource.toLower() == "cgimagetoqimage")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::cgImageToQImage);
 
     return 0;
 }
@@ -169,5 +179,24 @@ void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
 {
     qt_mac_registerDraggedTypes(types);
 }
+
+void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
+{
+    QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
+    NSMenu *menu = cocoaPlatformMenu->nsMenu();
+    // setDockMenu seems to be undocumented, but this is what Qt 4 did.
+    [NSApp setDockMenu: menu];
+}
+
+CGImageRef QCocoaNativeInterface::qImageToCGImage(const QImage &image)
+{
+    return qt_mac_toCGImage(image, false, 0);
+}
+
+QImage QCocoaNativeInterface::cgImageToQImage(CGImageRef image)
+{
+    return qt_mac_toQImage(image);
+}
+
 
 QT_END_NAMESPACE

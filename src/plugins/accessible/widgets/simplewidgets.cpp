@@ -424,7 +424,7 @@ QString QAccessibleDisplay::text(QAccessible::Text t) const
 
 /*! \reimp */
 QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
-QAccessibleDisplay::relations(QAccessible::Relation match /*= QAccessible::AllRelations*/) const
+QAccessibleDisplay::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
     QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
     if (match & QAccessible::Labelled) {
@@ -530,7 +530,7 @@ QAccessible::Role QAccessibleGroupBox::role() const
 }
 
 QVector<QPair<QAccessibleInterface*, QAccessible::Relation> >
-QAccessibleGroupBox::relations(QAccessible::Relation match /*= QAccessible::AllRelations*/) const
+QAccessibleGroupBox::relations(QAccessible::Relation match /* = QAccessible::AllRelations */) const
 {
     QVector<QPair<QAccessibleInterface*, QAccessible::Relation> > rels = QAccessibleWidget::relations(match);
 

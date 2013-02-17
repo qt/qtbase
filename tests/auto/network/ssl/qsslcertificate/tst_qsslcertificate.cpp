@@ -538,7 +538,7 @@ void tst_QSslCertificate::fromPath_data()
     QTest::newRow("\"certificates/cert*\" wildcard pem") << QString("certificates/cert*") << int(QRegExp::Wildcard) << true << 4;
     QTest::newRow("\"certificates/cert-[sure]*\" wildcard pem") << QString("certificates/cert-[sure]*") << int(QRegExp::Wildcard) << true << 3;
     QTest::newRow("\"certificates/cert-[not]*\" wildcard pem") << QString("certificates/cert-[not]*") << int(QRegExp::Wildcard) << true << 0;
-    QTest::newRow("\"certificates/*\" wildcard der") << QString("certificates/*") << int(QRegExp::Wildcard) << false << 0;
+    QTest::newRow("\"certificates/*\" wildcard der") << QString("certificates/*") << int(QRegExp::Wildcard) << false << 2;
     QTest::newRow("\"c*/c*.pem\" fixed pem") << QString("c*/c*.pem") << int(QRegExp::FixedString) << true << 0;
     QTest::newRow("\"c*/c*.pem\" fixed der") << QString("c*/c*.pem") << int(QRegExp::FixedString) << false << 0;
     QTest::newRow("\"c*/c*.pem\" regexp pem") << QString("c*/c*.pem") << int(QRegExp::RegExp) << true << 0;
@@ -868,11 +868,16 @@ void tst_QSslCertificate::toText()
     QVERIFY(f101.open(QIODevice::ReadOnly | QFile::Text));
     QByteArray txt101 = f101.readAll();
 
+    QFile f101c(testDataDir + "/more-certificates/cert-large-expiration-date.txt.1.0.1c");
+    QVERIFY(f101c.open(QIODevice::ReadOnly | QFile::Text));
+    QByteArray txt101c = f101c.readAll();
+
     QString txtcert = cert.toText();
 
     QVERIFY(QString::fromLatin1(txt098) == txtcert ||
             QString::fromLatin1(txt100) == txtcert ||
-            QString::fromLatin1(txt101) == txtcert );
+            QString::fromLatin1(txt101) == txtcert ||
+            QString::fromLatin1(txt101c) == txtcert );
 }
 
 void tst_QSslCertificate::multipleCommonNames()

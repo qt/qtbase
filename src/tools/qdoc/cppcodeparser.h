@@ -57,6 +57,18 @@ class Tokenizer;
 
 class CppCodeParser : public CodeParser
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::CppCodeParser)
+
+    struct ExtraFuncData {
+        InnerNode* root; // Used as the parent.
+        Node::Type type; // The node type: Function, etc.
+        bool isAttached; // If true, the method is attached.
+        bool isMacro;    // If true, we are parsing a macro signature.
+        ExtraFuncData() : root(0), type(Node::Function), isAttached(false), isMacro(false) { }
+        ExtraFuncData(InnerNode* r, Node::Type t, bool a)
+          : root(r), type(t), isAttached(a), isMacro(false) { }
+    };
+
 public:
     CppCodeParser();
     ~CppCodeParser();
@@ -112,11 +124,10 @@ protected:
     bool matchDataType(CodeChunk *type, QString *var = 0);
     bool matchParameter(FunctionNode *func);
     bool matchFunctionDecl(InnerNode *parent,
-                           QStringList *parentPathPtr = 0,
-                           FunctionNode **funcPtr = 0,
-                           const QString &templateStuff = QString(),
-                           Node::Type type = Node::Function,
-                           bool attached = false);
+                           QStringList *parentPathPtr,
+                           FunctionNode **funcPtr,
+                           const QString &templateStuff,
+                           ExtraFuncData& extra);
     bool matchBaseSpecifier(ClassNode *classe, bool isClass);
     bool matchBaseList(ClassNode *classe, bool isClass);
     bool matchClassDecl(InnerNode *parent,
@@ -132,9 +143,7 @@ protected:
     bool makeFunctionNode(const QString &synopsis,
                           QStringList *parentPathPtr,
                           FunctionNode **funcPtr,
-                          InnerNode *root = 0,
-                          Node::Type type = Node::Function,
-                          bool attached = false);
+                          ExtraFuncData& params);
     FunctionNode* makeFunctionNode(const Doc& doc,
                                    const QString& sig,
                                    InnerNode* parent,

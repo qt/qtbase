@@ -3110,15 +3110,18 @@ MakefileGenerator::openOutput(QFile &file, const QString &build) const
 QString
 MakefileGenerator::pkgConfigFileName(bool fixify)
 {
-    QString ret = var("TARGET");
-    int slsh = ret.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        ret = ret.right(ret.length() - slsh - 1);
-    if(ret.startsWith("lib"))
-        ret = ret.mid(3);
-    int dot = ret.indexOf('.');
-    if(dot != -1)
-        ret = ret.left(dot);
+    QString ret = project->first("QMAKE_PKGCONFIG_FILE").toQString();
+    if (ret.isEmpty()) {
+        ret = project->first("TARGET").toQString();
+        int slsh = ret.lastIndexOf(Option::dir_sep);
+        if (slsh != -1)
+            ret = ret.right(ret.length() - slsh - 1);
+        if (ret.startsWith("lib"))
+            ret = ret.mid(3);
+        int dot = ret.indexOf('.');
+        if (dot != -1)
+            ret = ret.left(dot);
+    }
     ret += Option::pkgcfg_ext;
     QString subdir = project->first("QMAKE_PKGCONFIG_DESTDIR").toQString();
     if(!subdir.isEmpty()) {

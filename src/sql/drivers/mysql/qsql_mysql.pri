@@ -13,7 +13,7 @@ unix {
             else:LIBS += -lmysqlclient
         }
     } else {
-        LIBS *= $$QT_LFLAGS_MYSQL
+        LIBS += $$QT_LFLAGS_MYSQL
         QMAKE_CXXFLAGS *= $$QT_CFLAGS_MYSQL
     }
 } else {

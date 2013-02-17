@@ -118,10 +118,7 @@ QMakeProperty::value(const ProKey &vk)
         return val;
 
     initSettings();
-    QString v = vk.toQString();
-    if (!settings->contains(v))
-        return settings->value("2.01a/" + v).toString(); // Backwards compat
-    return settings->value(v).toString();
+    return settings->value(vk.toQString()).toString();
 }
 
 bool
@@ -135,7 +132,6 @@ QMakeProperty::setValue(QString var, const QString &val)
 {
     initSettings();
     settings->setValue(var, val);
-    settings->remove("2.01a/" + var); // Backwards compat
 }
 
 void
@@ -143,7 +139,6 @@ QMakeProperty::remove(const QString &var)
 {
     initSettings();
     settings->remove(var);
-    settings->remove("2.01a/" + var); // Backwards compat
 }
 
 bool
@@ -153,13 +148,8 @@ QMakeProperty::exec()
     if(Option::qmake_mode == Option::QMAKE_QUERY_PROPERTY) {
         if(Option::prop::properties.isEmpty()) {
             initSettings();
-            QStringList keys = settings->childKeys();
-            settings->beginGroup("2.01a");
-            keys += settings->childKeys();
-            settings->endGroup();
-            keys.removeDuplicates();
-            foreach (const QString &key, keys) {
-                QString val = settings->value(settings->contains(key) ? key : "2.01a/" + key).toString();
+            foreach (const QString &key, settings->childKeys()) {
+                QString val = settings->value(key).toString();
                 fprintf(stdout, "%s:%s\n", qPrintable(key), qPrintable(val));
             }
             QStringList specialProps;

@@ -66,6 +66,8 @@ struct QmlPropArgs
 
 class QmlDocVisitor : public QQmlJS::AST::Visitor
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QmlDocVisitor)
+
 public:
     QmlDocVisitor(const QString &filePath,
                   const QString &code,

@@ -192,7 +192,7 @@ public:
 private:
     void handleFocusEvent(QtWindows::WindowsEventType et, QWindowsWindow *w);
 #ifndef QT_NO_CONTEXTMENU
-    void handleContextMenuEvent(QWindow *window, const MSG &msg);
+    bool handleContextMenuEvent(QWindow *window, const MSG &msg);
 #endif
     void unregisterWindowClasses();
 

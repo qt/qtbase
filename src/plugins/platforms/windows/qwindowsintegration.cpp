@@ -59,8 +59,10 @@
 #include "qwindowsguieventdispatcher.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
+#  ifndef QT_NO_DRAGANDDROP
+#    include "qwindowsdrag.h"
+#  endif
 #endif
-#include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
 #  ifndef QT_NO_ACCESSIBILITY
@@ -108,6 +110,9 @@ public:
     Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
                                           const QString &windowName,
                                           void *eventProc) const;
+
+    Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
+
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 
@@ -223,6 +228,15 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
     return hwnd;
 }
 
+/*!
+    \brief Registers a unique window class with a callback function based on \a classNameIn.
+*/
+
+QString QWindowsNativeInterface::registerWindowClass(const QString &classNameIn, void *eventProc) const
+{
+    return QWindowsContext::instance()->registerWindowClass(classNameIn, (WNDPROC)eventProc);
+}
+
 bool QWindowsNativeInterface::asyncExpose() const
 {
     return QWindowsContext::instance()->asyncExpose();
@@ -291,8 +305,10 @@ struct QWindowsIntegrationPrivate
     QWindowsNativeInterface m_nativeInterface;
 #ifndef QT_NO_CLIPBOARD
     QWindowsClipboard m_clipboard;
-#endif
+#  ifndef QT_NO_DRAGANDDROP
     QWindowsDrag m_drag;
+#  endif
+#endif
     QWindowsGuiEventDispatcher *m_eventDispatcher;
 #if defined(QT_OPENGL_ES_2)
     QEGLStaticContextPtr m_staticEGLContext;
@@ -559,12 +575,13 @@ QPlatformClipboard * QWindowsIntegration::clipboard() const
 {
     return &d->m_clipboard;
 }
-#endif // !QT_NO_CLIPBOARD
-
+#  ifndef QT_NO_DRAGANDDROP
 QPlatformDrag *QWindowsIntegration::drag() const
 {
     return &d->m_drag;
 }
+#  endif // !QT_NO_DRAGANDDROP
+#endif // !QT_NO_CLIPBOARD
 
 QPlatformInputContext * QWindowsIntegration::inputContext() const
 {

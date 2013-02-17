@@ -355,6 +355,16 @@ void QSqlTableModel::setTable(const QString &tableName)
     if (d->rec.count() == 0)
         d->error = QSqlError(QLatin1String("Unable to find table ") + d->tableName, QString(),
                              QSqlError::StatementError);
+
+    // Remember the auto index column if there is one now.
+    // The record that will be obtained from the query after select lacks this feature.
+    d->autoColumn.clear();
+    for (int c = 0; c < d->rec.count(); ++c) {
+        if (d->rec.field(c).isAutoValue()) {
+            d->autoColumn = d->rec.fieldName(c);
+            break;
+        }
+    }
 }
 
 /*!
@@ -587,7 +597,10 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
     if (!(flags(index) & Qt::ItemIsEditable))
         return false;
 
-    if (QSqlTableModel::data(index, role) == value)
+    const QVariant oldValue = QSqlTableModel::data(index, role);
+    if (value == oldValue
+        && value.isNull() == oldValue.isNull()
+        && d->cache.value(index.row()).op() != QSqlTableModelPrivate::Insert)
         return true;
 
     QSqlTableModelPrivate::ModifiedRow &row = d->cache[index.row()];
@@ -772,6 +785,11 @@ bool QSqlTableModel::submitAll()
         }
 
         if (success) {
+            if (d->strategy != OnManualSubmit && mrow.op() == QSqlTableModelPrivate::Insert) {
+                int c = mrow.rec().indexOf(d->autoColumn);
+                if (c != -1 && !mrow.rec().isGenerated(c))
+                    mrow.setValue(c, d->editQuery.lastInsertId());
+            }
             mrow.setSubmitted();
             if (d->strategy != OnManualSubmit)
                 success = selectRow(row);
@@ -821,7 +839,8 @@ bool QSqlTableModel::submit()
     user canceled editing the current row.
 
     Reverts the changes if the model's strategy is set to
-    OnRowChange. Does nothing for the other edit strategies.
+    OnRowChange or OnFieldChange. Does nothing for the OnManualSubmit
+    strategy.
 
     Use revertAll() to revert all pending changes for the
     OnManualSubmit strategy or revertRow() to revert a specific row.
@@ -831,7 +850,7 @@ bool QSqlTableModel::submit()
 void QSqlTableModel::revert()
 {
     Q_D(QSqlTableModel);
-    if (d->strategy == OnRowChange)
+    if (d->strategy == OnRowChange || d->strategy == OnFieldChange)
         revertAll();
 }
 

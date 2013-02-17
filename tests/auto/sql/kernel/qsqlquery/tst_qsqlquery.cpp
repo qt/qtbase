@@ -420,9 +420,11 @@ void tst_QSqlQuery::char1Select()
 
     {
         QSqlQuery q( db );
-        QVERIFY_SQL( q, exec( "create table " + qTableName( "char1Select", __FILE__ ) + " (id char(1))" ) );
-        QVERIFY_SQL( q, exec( "insert into " + qTableName( "char1Select", __FILE__ ) + " values ('a')" ) );
-        QVERIFY_SQL( q, exec( "select * from " + qTableName( "char1Select", __FILE__ ) ) );
+        const QString tbl = qTableName("char1Select", __FILE__);
+        q.exec( "drop table " + tbl);
+        QVERIFY_SQL(q, exec("create table " + tbl + " (id char(1))"));
+        QVERIFY_SQL(q, exec("insert into " + tbl + " values ('a')"));
+        QVERIFY_SQL(q, exec("select * from " + tbl));
         QVERIFY( q.next() );
 
         if ( db.driverName().startsWith( "QIBASE" ) )
@@ -540,7 +542,7 @@ void tst_QSqlQuery::mysqlOutValues()
 
     q.exec( "drop function " + hello );
 
-    QVERIFY_SQL( q, exec( "create function " + hello + " (s char(20)) returns varchar(50) return concat('Hello ', s)" ) );
+    QVERIFY_SQL(q, exec("create function " + hello + " (s char(20)) returns varchar(50) READS SQL DATA return concat('Hello ', s)"));
 
     QVERIFY_SQL( q, exec( "select " + hello + "('world')" ) );
     QVERIFY_SQL( q, next() );
@@ -580,9 +582,10 @@ void tst_QSqlQuery::mysqlOutValues()
 void tst_QSqlQuery::bindBool()
 {
     // QTBUG-27763: bool value got converted to int 127 by mysql driver because sizeof(bool) < sizeof(int).
-    // The problem was the way the bool value from the application was handled. It doesn't matter
-    // whether the table column type is BOOL or INT. Use INT here because all DBMSs have it and all
-    // should pass this test.
+    // The problem was the way the bool value from the application was handled. For our purposes here, it
+    // doesn't matter whether the column type is BOOLEAN or INT. All DBMSs have INT, and this usually
+    // works for this test. Postresql is an exception because its INT type does not accept BOOLEAN
+    // values and its BOOLEAN columns do not accept INT values.
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
@@ -590,7 +593,8 @@ void tst_QSqlQuery::bindBool()
 
     const QString tableName(qTableName( "bindBool", __FILE__ ));
     q.exec("DROP TABLE " + tableName);
-    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT, flag INT NOT NULL, PRIMARY KEY(id))"));
+    QString colType = db.driverName().startsWith("QPSQL") ? QLatin1String("BOOLEAN") : QLatin1String("INT");
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INT, flag " + colType + " NOT NULL, PRIMARY KEY(id))"));
 
     for (int i = 0; i < 2; ++i) {
         bool flag = i;
@@ -1487,6 +1491,7 @@ void tst_QSqlQuery::precision()
         // need a new scope for SQLITE
         QSqlQuery q( db );
 
+        q.exec("drop table " + qtest_precision);
         if ( tst_Databases::isMSAccess( db ) )
             QVERIFY_SQL( q, exec( "create table " + qtest_precision + " (col1 number)" ) );
         else
@@ -1751,6 +1756,7 @@ void tst_QSqlQuery::prepare_bind_exec()
         else
             createQuery = "create table " + qtest_prepare + " (id int not null primary key, name varchar(200), name2 varchar(200))";
 
+        q.exec("drop table " + qtest_prepare);
         QVERIFY_SQL( q, exec( createQuery ) );
 
         QVERIFY( q.prepare( "insert into " + qtest_prepare + " (id, name) values (:id, :name)" ) );
@@ -2284,8 +2290,10 @@ void tst_QSqlQuery::execErrorRecovery()
 
     QSqlQuery q( db );
 
-    QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_exerr", __FILE__ ) + " (id int not null primary key)" ) );
-    QVERIFY_SQL( q, prepare( "insert into " + qTableName( "qtest_exerr", __FILE__ ) + " values (?)" ) );
+    const QString tbl = qTableName("qtest_exerr", __FILE__);
+    q.exec("drop table " + tbl);
+    QVERIFY_SQL(q, exec("create table " + tbl + " (id int not null primary key)"));
+    QVERIFY_SQL(q, prepare("insert into " + tbl + " values (?)" ));
 
     q.addBindValue( 1 );
     QVERIFY_SQL( q, exec() );
@@ -2788,8 +2796,10 @@ void tst_QSqlQuery::emptyTableNavigate()
 
     {
         QSqlQuery q( db );
-        QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest_empty", __FILE__ ) + " (id char(10))" ) );
-        QVERIFY_SQL( q, prepare( "select * from " + qTableName( "qtest_empty", __FILE__ ) ) );
+        const QString tbl = qTableName("qtest_empty", __FILE__);
+        q.exec("drop table " + tbl);
+        QVERIFY_SQL(q, exec("create table " + tbl + " (id char(10))"));
+        QVERIFY_SQL(q, prepare("select * from " + qTableName("qtest_empty", __FILE__ )));
         QVERIFY_SQL( q, exec() );
         QVERIFY( !q.next() );
         QCOMPARE( q.lastError().isValid(), false );
@@ -2804,6 +2814,7 @@ void tst_QSqlQuery::task_217003()
     QSqlQuery q( db );
     const QString Planet(qTableName( "Planet", __FILE__));
 
+    q.exec("drop table " + Planet);
     QVERIFY_SQL( q, exec( "create table " + Planet + " (Name varchar(20))" ) );
     QVERIFY_SQL( q, exec( "insert into " + Planet + " VALUES ('Mercury')" ) );
     QVERIFY_SQL( q, exec( "insert into " + Planet + " VALUES ('Venus')" ) );
@@ -3580,7 +3591,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     CHECK_DATABASE(db);
     QVariant::Type intType = QVariant::Int;
     // QPSQL uses LongLong for manipulation of integers
-    if (db.driverName().startsWith("QPSQL"))
+    if (db.driverName().startsWith("QPSQL") || db.driverName().startsWith("QMYSQL"))
         intType = QVariant::LongLong;
     {
         const QString tableName(qTableName("numericFunctionsWithIntValues", __FILE__));
@@ -3594,6 +3605,8 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY(q.next());
         if (db.driverName().startsWith("QSQLITE"))
             QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+        else if (db.driverName().startsWith("QMYSQL"))
+            QCOMPARE(q.record().field(0).type(), QVariant::Double);
         else
             QCOMPARE(q.record().field(0).type(), intType);
 
@@ -3603,11 +3616,15 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
         QVERIFY(q.next());
         QCOMPARE(q.value(0).toInt(), 3);
-        QCOMPARE(q.record().field(0).type(), intType);
+        if (db.driverName().startsWith("QMYSQL"))
+            QCOMPARE(q.record().field(0).type(), QVariant::Double);
+        else
+            QCOMPARE(q.record().field(0).type(), intType);
 
         QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
         QVERIFY(q.next());
-        if (db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QPSQL")) {
+        if (db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QPSQL")
+            || (db.driverName().startsWith("QMYSQL"))) {
             QCOMPARE(q.value(0).toDouble(), 1.5);
             QCOMPARE(q.record().field(0).type(), QVariant::Double);
         } else {
@@ -3682,7 +3699,10 @@ void tst_QSqlQuery::aggregateFunctionTypes()
 
             QVERIFY_SQL(q, exec("SELECT ROUND(id, 0) FROM " + tableName + " WHERE id=2.5"));
             QVERIFY(q.next());
-            QCOMPARE(q.value(0).toDouble(), 3.0);
+            if (db.driverName().startsWith("QMYSQL"))
+                QCOMPARE(q.value(0).toDouble(), 2.0);
+            else
+                QCOMPARE(q.value(0).toDouble(), 3.0);
             QCOMPARE(q.record().field(0).type(), QVariant::Double);
         }
     }

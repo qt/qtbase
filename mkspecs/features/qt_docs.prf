@@ -24,6 +24,13 @@ for(qmod, QMAKEMODULES): \
 QDOC += -outputdir $$QMAKE_DOCS_OUTPUTDIR
 !build_online_docs: \
     QDOC += -installdir $$[QT_INSTALL_DOCS]
+qtver.name = QT_VERSION
+qtver.value = $$QT_VERSION
+qtmver.name = QT_VER
+qtmver.value = $${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}
+qtvertag.name = QT_VERSION_TAG
+qtvertag.value = $$replace(QT_VERSION, \.,)
+qtAddToolEnv(QDOC, qtver qtmver qtvertag)
 doc_command = $$QDOC $$QMAKE_DOCS
 prepare_docs {
     prepare_docs.commands += $$doc_command -prepare -no-link-errors

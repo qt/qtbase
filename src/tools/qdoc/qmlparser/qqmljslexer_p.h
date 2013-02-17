@@ -55,6 +55,7 @@
 
 #include "qqmljsglobal_p.h"
 #include "qqmljsgrammar_p.h"
+#include "tr.h"
 #include <qstring.h>
 
 QT_QML_BEGIN_NAMESPACE
@@ -87,6 +88,8 @@ public:
 
 class QML_PARSER_EXPORT Lexer: public QQmlJSGrammar
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QQmlJS::Lexer)
+
 public:
     enum {
         T_ABSTRACT = T_RESERVED_WORD,

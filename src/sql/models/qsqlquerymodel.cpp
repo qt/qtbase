@@ -95,6 +95,13 @@ void QSqlQueryModelPrivate::initColOffsets(int size)
     memset(colOffsets.data(), 0, colOffsets.size() * sizeof(int));
 }
 
+int QSqlQueryModelPrivate::columnInQuery(int modelColumn) const
+{
+    if (modelColumn < 0 || modelColumn >= rec.count() || !rec.isGenerated(modelColumn) || modelColumn >= colOffsets.size())
+        return -1;
+    return modelColumn - colOffsets[modelColumn];
+}
+
 /*!
     \class QSqlQueryModel
     \brief The QSqlQueryModel class provides a read-only data model for SQL
@@ -370,11 +377,7 @@ QVariant QSqlQueryModel::headerData(int section, Qt::Orientation orientation, in
             val = d->headers.value(section).value(Qt::EditRole);
         if (val.isValid())
             return val;
-
-        // See if it's an inserted column (iiq.column() != -1)
-        QModelIndex dItem = indexInQuery(createIndex(0, section));
-
-        if (role == Qt::DisplayRole && d->rec.count() > section && dItem.column() != -1)
+        if (role == Qt::DisplayRole && d->rec.count() > section && d->columnInQuery(section) != -1)
             return d->rec.fieldName(section);
     }
     return QAbstractItemModel::headerData(section, orientation, role);
@@ -668,12 +671,10 @@ bool QSqlQueryModel::removeColumns(int column, int count, const QModelIndex &par
 QModelIndex QSqlQueryModel::indexInQuery(const QModelIndex &item) const
 {
     Q_D(const QSqlQueryModel);
-    if (item.column() < 0 || item.column() >= d->rec.count()
-        || !d->rec.isGenerated(item.column())
-        || item.column() >= d->colOffsets.size())
+    int modelColumn = d->columnInQuery(item.column());
+    if (modelColumn < 0)
         return QModelIndex();
-    return createIndex(item.row(), item.column() - d->colOffsets[item.column()],
-                       item.internalPointer());
+    return createIndex(item.row(), modelColumn, item.internalPointer());
 }
 
 QT_END_NAMESPACE

@@ -223,6 +223,7 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("BMP: 4bpp uncompressed") << QString("tst7.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: 16bpp") << QString("16bpp.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: negative height") << QString("negativeheight.bmp") << true << QByteArray("bmp");
+    QTest::newRow("BMP: high mask bit set") << QString("rgb32bf.bmp") << true << QByteArray("bmp");
     QTest::newRow("XPM: marble") << QString("marble.xpm") << true << QByteArray("xpm");
     QTest::newRow("PNG: kollada") << QString("kollada.png") << true << QByteArray("png");
     QTest::newRow("PPM: teapot") << QString("teapot.ppm") << true << QByteArray("ppm");

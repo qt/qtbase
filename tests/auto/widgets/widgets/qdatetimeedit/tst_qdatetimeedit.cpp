@@ -3219,7 +3219,7 @@ void tst_QDateTimeEdit::cachedDayTest()
     testWidget->setDate(QDate(2007, 1, 30));
     testWidget->setCurrentSection(QDateTimeEdit::DaySection);
     //QTest::keyClick(testWidget->lineEdit(), Qt::Key_Up); // this doesn't work
-    //on Mac. QTestLib bug? ###
+    //on Mac. Qt Test bug? ###
     QTest::keyClick(testWidget, Qt::Key_Up);
     testWidget->setCurrentSection(QDateTimeEdit::MonthSection);
     QTest::keyClick(testWidget, Qt::Key_Up);

@@ -42,6 +42,7 @@
 #include "qqnxscreeneventhandler.h"
 #include "qqnxintegration.h"
 #include "qqnxkeytranslator.h"
+#include "qqnxscreen.h"
 
 #include <QDebug>
 #include <QGuiApplication>
@@ -489,9 +490,18 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
             m_qnxIntegration->createDisplay(nativeDisplay, false /* not primary, we assume */);
         }
     } else if (!isAttached) {
-        // libscreen display is deactivated, let's remove the QQnxScreen / QScreen
-        qScreenEventDebug() << "removing display";
-        m_qnxIntegration->removeDisplay(screen);
+        // We never remove the primary display, the qpa plugin doesn't support that and it crashes.
+        // To support it, this would be needed:
+        // - Adjust all qnx qpa code which uses screens
+        // - Make QWidgetBackingStore not dereference a null paint device
+        // - Create platform resources ( QQnxWindow ) for all QWindow because they would be deleted
+        //   when you delete the screen
+
+        if (!screen->isPrimaryScreen()) {
+            // libscreen display is deactivated, let's remove the QQnxScreen / QScreen
+            qScreenEventDebug() << "removing display";
+            m_qnxIntegration->removeDisplay(screen);
+        }
     }
 }
 

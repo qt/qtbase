@@ -41,10 +41,10 @@
 
 /****************************************************************************
 **
-** In addition, as a special exception, Nokia gives permission to link
-** the code of its release of Qt with the OpenSSL project's "OpenSSL" library
-** (or modified versions of the "OpenSSL" library that use the same license
-** as the original version), and distribute the linked executables.
+** In addition, as a special exception, the copyright holders listed above give
+** permission to link the code of its release of Qt with the OpenSSL project's
+** "OpenSSL" library (or modified versions of the "OpenSSL" library that use the
+** same license as the original version), and distribute the linked executables.
 **
 ** You must comply with the GNU General Public License version 2 in all
 ** respects for all of the code used other than the "OpenSSL" code.  If you

@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example qtconcurrent/wordcount
+    \example wordcount
     \title QtConcurrent Word Count Example
     \brief Demonstrates how to use the map-reduce algorithm
     \ingroup qtconcurrentexamples

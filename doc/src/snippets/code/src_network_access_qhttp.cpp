@@ -51,14 +51,14 @@ QString contentType = header.value("content-type");
 
 //! [2]
 QHttpRequestHeader header("GET", QUrl::toPercentEncoding("/index.html"));
-header.setValue("Host", "qt.nokia.com");
-http->setHost("qt.nokia.com");
+header.setValue("Host", "qt-project.org");
+http->setHost("qt-project.org");
 http->request(header);
 //! [2]
 
 
 //! [3]
-http->setHost("qt.nokia.com");                // id == 1
+http->setHost("qt-project.org");                // id == 1
 http->get(QUrl::toPercentEncoding("/index.html")); // id == 2
 //! [3]
 

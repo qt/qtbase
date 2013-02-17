@@ -523,11 +523,11 @@
            application to deadlock.
 
     \value UniqueConnection
-           Same as AutoConnection, but the connection is made only if
-           it does not duplicate an existing connection. i.e., if the
-           same signal is already connected to the same slot for the
-           same pair of objects, then the connection will fail. This
-           connection type was introduced in Qt 4.6.
+           This is a flag that can be combined with any one of the above
+           connection types, using a bitwise OR. When Qt::UniqueConnection is
+           set, QObject::connect() will fail if the connection already exists
+           (i.e. if the same signal is already connected to the same slot
+           for the same pair of objects). This flag was introduced in Qt 4.6.
 
     With queued connections, the parameters must be of types that are
     known to Qt's meta-object system, because Qt needs to copy the
@@ -2493,7 +2493,7 @@
     "\l{http://bugreports.qt-project.org/browse/QTWEBSITE-13}{http://bugreports.qt.../QTWEBSITE-13/}"),
     whereas Qt::ElideRight is appropriate
     for other strings (e.g.,
-    "\l{http://qt.nokia.com/doc/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
+    "\l{http://doc.qt.digia.com/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
 
     \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag, QTabBar::elideMode
 */

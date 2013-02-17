@@ -12,5 +12,5 @@ DESTDIR         = ../plugins
 EXAMPLE_FILES = echoplugin.json
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/echoplugin/plugin
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/echoplugin/plugin
 INSTALLS += target

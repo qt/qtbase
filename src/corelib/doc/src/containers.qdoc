@@ -221,7 +221,7 @@
     \codeline
     \snippet streaming/main.cpp 2
 
-    \keyword default-constructed values
+    \keyword default-constructed value
 
     The documentation of certain container class functions refer to
     \e{default-constructed values}; for example, QVector

@@ -1,3 +1,5 @@
+requires(qtHaveModule(opengl))
+
 TEMPLATE      = subdirs
 
 contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){

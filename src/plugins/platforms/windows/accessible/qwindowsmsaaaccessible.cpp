@@ -577,9 +577,10 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accLocation(long *pxLeft, long
 
     QRect rect;
     if (varID.lVal) {
-        QAIPointer child = QAIPointer(accessible->child(varID.lVal - 1));
-        if (child->isValid())
-            rect = child->rect();
+        QAIPointer child(childPointer(varID));
+        if (!child)
+            return E_FAIL;
+        rect = child->rect();
     } else {
         rect = accessible->rect();
     }

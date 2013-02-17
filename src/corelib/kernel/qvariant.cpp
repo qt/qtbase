@@ -2960,7 +2960,7 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 
     Returns the stored value converted to the template type \c{T}.
     Call canConvert() to find out whether a type can be converted.
-    If the value cannot be converted, \l{default-constructed value}
+    If the value cannot be converted, a \l{default-constructed value}
     will be returned.
 
     If the type \c{T} is supported by QVariant, this function behaves

@@ -480,7 +480,8 @@ QObject::disconnect(lineEdit, &QLineEdit::textChanged,
 //! [48]
 
 //! [49]
-if (isSignalConnected(QMetaMethod::fromSignal(&MyObject::valueChanged))) {
+static const QMetaMethod valueChangedSignal = QMetaMethod::fromSignal(&MyObject::valueChanged);
+if (isSignalConnected(valueChangedSignal)) {
     QByteArray data;
     data = get_the_value();       // expensive operation
     emit valueChanged(data);

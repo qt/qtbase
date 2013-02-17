@@ -3211,6 +3211,11 @@ void tst_QAccessibility::bridgeTest()
 
     // **** Test accLocation ****
     long x, y, w, h;
+    // Do not crash on insane arguments.
+    varChild.lVal = 999;
+    hr = iaccButton->accLocation(&x, &y, &w, &h, varChild);
+    QCOMPARE(SUCCEEDED(hr), false);
+
     hr = iaccButton->accLocation(&x, &y, &w, &h, varSELF);
     QCOMPARE(buttonRect, QRect(x, y, w, h));
 

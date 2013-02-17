@@ -57,7 +57,7 @@
 
 static const int MAGIC_ZORDER_FOR_NO_NAV = 10;
 
-QQnxRootWindow::QQnxRootWindow(QQnxScreen *screen)
+QQnxRootWindow::QQnxRootWindow(const QQnxScreen *screen)
     : m_screen(screen),
       m_window(0),
       m_windowGroupName()

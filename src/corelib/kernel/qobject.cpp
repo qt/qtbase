@@ -1917,7 +1917,11 @@ void QObject::removeEventFilter(QObject *obj)
     loop. If the event loop is not running when this function is
     called (e.g. deleteLater() is called on an object before
     QCoreApplication::exec()), the object will be deleted once the
-    event loop is started.
+    event loop is started. If deleteLater() is called after the main event loop
+    has stopped, the object will not be deleted.
+    Since Qt 4.8, if deleteLater() is called on an object that lives in a
+    thread with no running event loop, the object will be destroyed when the
+    thread finishes.
 
     Note that entering and leaving a new event loop (e.g., by opening a modal
     dialog) will \e not perform the deferred deletion; for the object to be

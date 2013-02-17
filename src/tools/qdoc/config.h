@@ -72,6 +72,8 @@ typedef QMap<QString, QStringListPair> QStringListPairMap;
 
 class Config
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::Config)
+
 public:
     Config(const QString& programName);
     ~Config();

@@ -47,10 +47,11 @@
 #include <QAuthenticator>
 
 #ifdef QT_BUILD_INTERNAL
-#include "private/qhostinfo_p.h"
-#include "private/qsslsocket_p.h"
-#endif
-
+#  include "private/qhostinfo_p.h"
+#  ifndef QT_NO_OPENSSL
+#    include "private/qsslsocket_p.h"
+#  endif // !QT_NO_OPENSSL
+#endif // QT_BUILD_INTERNAL
 #include "../../../network-settings.h"
 
 #ifndef QT_NO_OPENSSL
@@ -192,7 +193,7 @@ void tst_QSslSocket_onDemandCertificates_member::proxyAuthenticationRequired(con
 
 void tst_QSslSocket_onDemandCertificates_member::onDemandRootCertLoadingMemberMethods()
 {
-    QString host("codereview.qt-project.org");
+    QString host("qt-project.org");
 
     // not using any root certs -> should not work
     QSslSocketPtr socket2 = newSocket();

@@ -46,26 +46,36 @@
 #ifndef TR_H
 #define TR_H
 
-#ifndef QT_BOOTSTRAPPED
-#  include "qcoreapplication.h"
+#include <qglobal.h>
+
+#if !defined(QT_BOOTSTRAPPED) && !defined(QT_NO_TRANSLATION)
+#  define TRANSLATE_QDOC
 #endif
 
 #include <qstring.h>
+#ifdef TRANSLATE_QDOC
+#  include <qcoreapplication.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
-#if defined(QT_BOOTSTRAPPED) || defined(QT_NO_TRANSLATION)
+#ifndef TRANSLATE_QDOC
+
+#define Q_DECLARE_TR_FUNCTIONS(context)
+
 inline QString tr(const char *sourceText, const char *comment = 0)
 {
     Q_UNUSED(comment);
     return QString( QLatin1String(sourceText) );
 }
-#else
-inline QString tr(const char *sourceText, const char *comment = 0)
+
+struct QCoreApplication
 {
-    return QCoreApplication::instance()->translate("", sourceText, comment);
-}
-#endif
+    static inline QString translate(const char * /* context */ , const char *sourceText, const char * /* disambiguation */ = 0)
+        { return QLatin1String(sourceText); }
+};
+
+#endif // !TRANSLATE_QDOC
 
 QT_END_NAMESPACE
 

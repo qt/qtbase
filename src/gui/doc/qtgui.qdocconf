@@ -2,22 +2,22 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtGui
 description             = Qt GUI Reference Documentation
-url                     = http://qt-project.org/doc/qtgui
-version                 = 5.1.0
+url                     = http://qt-project.org/doc/qt-$QT_VER/qtgui
+version                 = $QT_VERSION
 
 examplesinstallpath     = gui
 
 qhp.projects            = QtGui
 
 qhp.QtGui.file         = qtgui.qhp
-qhp.QtGui.namespace           = org.qt-project.qtgui.510
+qhp.QtGui.namespace           = org.qt-project.qtgui.$QT_VERSION_TAG
 qhp.QtGui.virtualFolder       = qtgui
 qhp.QtGui.indexTitle          = Qt GUI
 qhp.QtGui.indexRoot           =
 
-qhp.QtGui.filterAttributes    = qtgui 5.1.0 qtrefdoc
-qhp.QtGui.customFilters.Qt.name = Qtgui 5.1.0
-qhp.QtGui.customFilters.Qt.filterAttributes = qtgui 5.1.0
+qhp.QtGui.filterAttributes    = qtgui $QT_VERSION qtrefdoc
+qhp.QtGui.customFilters.Qt.name = Qtgui $QT_VERSION
+qhp.QtGui.customFilters.Qt.filterAttributes = qtgui $QT_VERSION
 
 qhp.QtGui.subprojects         = classes
 qhp.QtGui.subprojects.classes.title = C++ Classes

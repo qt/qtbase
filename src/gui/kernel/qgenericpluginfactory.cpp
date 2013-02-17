@@ -61,6 +61,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 /*!
     \class QGenericPluginFactory
     \ingroup plugins
+    \inmodule QtGui
 
     \brief The QGenericPluginFactory class creates plugin drivers.
 

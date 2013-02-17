@@ -2,22 +2,22 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtConcurrent
 description             = Qt Concurrent Reference Documentation
-url                     = http://qt-project.org/doc/qtconcurrent
-version                 = 5.1.0
+url                     = http://qt-project.org/doc/qt-$QT_VER/qtconcurrent
+version                 = $QT_VERSION
 
 examplesinstallpath     = qtconcurrent
 
 qhp.projects            = QtConcurrent
 
 qhp.QtConcurrent.file         = qtconcurrent.qhp
-qhp.QtConcurrent.namespace           = org.qt-project.qtconcurrent.510
+qhp.QtConcurrent.namespace           = org.qt-project.qtconcurrent.$QT_VERSION_TAG
 qhp.QtConcurrent.virtualFolder       = qtconcurrent
 qhp.QtConcurrent.indexTitle          = Qt Concurrent
 qhp.QtConcurrent.indexRoot           =
 
-qhp.QtConcurrent.filterAttributes    = qtconcurrent 5.1.0 qtrefdoc
-qhp.QtConcurrent.customFilters.Qt.name = QtConcurrent 5.1.0
-qhp.QtConcurrent.customFilters.Qt.filterAttributes = qtconcurrent 5.1.0
+qhp.QtConcurrent.filterAttributes    = qtconcurrent $QT_VERSION qtrefdoc
+qhp.QtConcurrent.customFilters.Qt.name = QtConcurrent $QT_VERSION
+qhp.QtConcurrent.customFilters.Qt.filterAttributes = qtconcurrent $QT_VERSION
 
 qhp.QtConcurrent.subprojects         = classes
 qhp.QtConcurrent.subprojects.classes.title = C++ Classes

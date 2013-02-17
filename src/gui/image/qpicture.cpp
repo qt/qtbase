@@ -1278,6 +1278,7 @@ QList<QByteArray> QPicture::outputFormats()
 
     \ingroup painting
     \ingroup io
+    \inmodule QtGui
 
     QPictureIO contains a QIODevice object that is used for picture data
     I/O. The programmer can install new picture file formats in addition

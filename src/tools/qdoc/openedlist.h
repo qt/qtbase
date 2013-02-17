@@ -49,11 +49,14 @@
 #include <qstring.h>
 
 #include "location.h"
+#include "tr.h"
 
 QT_BEGIN_NAMESPACE
 
 class OpenedList
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::OpenedList)
+
 public:
     enum Style { Bullet, Tag, Value, Numeric, UpperAlpha, LowerAlpha,
                  UpperRoman, LowerRoman };

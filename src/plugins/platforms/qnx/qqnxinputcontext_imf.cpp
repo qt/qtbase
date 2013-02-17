@@ -42,6 +42,8 @@
 #include "qqnxinputcontext_imf.h"
 #include "qqnxeventthread.h"
 #include "qqnxabstractvirtualkeyboard.h"
+#include "qqnxintegration.h"
+#include "qqnxscreen.h"
 
 #include <QtGui/QGuiApplication>
 #include <QtGui/QInputMethodEvent>
@@ -645,12 +647,13 @@ static bool imfAvailable()
 
 QT_BEGIN_NAMESPACE
 
-QQnxInputContext::QQnxInputContext(QQnxAbstractVirtualKeyboard &keyboard):
+QQnxInputContext::QQnxInputContext(QQnxIntegration *integration, QQnxAbstractVirtualKeyboard &keyboard) :
          QPlatformInputContext(),
          m_lastCaretPos(0),
          m_isComposing(false),
          m_inputPanelVisible(false),
          m_inputPanelLocale(QLocale::c()),
+         m_integration(integration),
          m_virtualKeyboad(keyboard)
 {
     qInputContextDebug() << Q_FUNC_INFO;
@@ -855,6 +858,13 @@ bool QQnxInputContext::filterEvent( const QEvent *event )
     default:
         return false;
     }
+}
+
+QRectF QQnxInputContext::keyboardRect() const
+{
+    QRect screenGeometry = m_integration->primaryDisplay()->geometry();
+    return QRectF(screenGeometry.x(), screenGeometry.height() - m_virtualKeyboard.height(),
+                  screenGeometry.width(), m_virtualKeyboard.height());
 }
 
 void QQnxInputContext::reset()

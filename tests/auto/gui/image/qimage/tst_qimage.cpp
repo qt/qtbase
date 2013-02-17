@@ -86,6 +86,7 @@ private slots:
 #endif
 
     void dotsPerMeterZero();
+    void dotsPerMeterAndDpi();
 
     void convertToFormatPreserveDotsPrMeter();
     void convertToFormatPreserveText();
@@ -899,6 +900,27 @@ void tst_QImage::dotsPerMeterZero()
 
     QCOMPARE(img.dotsPerMeterX(), defaultDpmX);
     QCOMPARE(img.dotsPerMeterY(), defaultDpmY);
+
+}
+
+// verify that setting dotsPerMeter has an effect on the dpi.
+void tst_QImage::dotsPerMeterAndDpi()
+{
+    QImage img(100, 100, QImage::Format_RGB32);
+    QVERIFY(!img.isNull());
+
+    QPoint defaultLogicalDpi(img.logicalDpiX(), img.logicalDpiY());
+    QPoint defaultPhysicalDpi(img.physicalDpiX(), img.physicalDpiY());
+
+    img.setDotsPerMeterX(100);  // set x
+    QCOMPARE(img.logicalDpiY(), defaultLogicalDpi.y()); // no effect on y
+    QCOMPARE(img.physicalDpiY(), defaultPhysicalDpi.y());
+    QVERIFY(img.logicalDpiX() != defaultLogicalDpi.x()); // x changed
+    QVERIFY(img.physicalDpiX() != defaultPhysicalDpi.x());
+
+    img.setDotsPerMeterY(200);  // set y
+    QVERIFY(img.logicalDpiY() != defaultLogicalDpi.y()); // y changed
+    QVERIFY(img.physicalDpiY() != defaultPhysicalDpi.y());
 }
 
 void tst_QImage::rotate_data()

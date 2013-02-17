@@ -82,10 +82,8 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
     int ser_no;               // serial number
     int detach_no;
 
-    qreal  ldpmx;               // logical dots per meter X (or 0)
-    qreal  ldpmy;               // logical dots per meter Y (or 0)
-    qreal  dpmx;                // device dots per meter X (or 0)
-    qreal  dpmy;                // device dots per meter Y (or 0)
+    qreal  dpmx;                // dots per meter X (or 0)
+    qreal  dpmy;                // dots per meter Y (or 0)
     QPoint  offset;           // offset in pixels
 
     uint own_data : 1;

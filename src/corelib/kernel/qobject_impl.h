@@ -76,14 +76,14 @@ namespace QtPrivate {
     { static const int *types() { static const int t[4] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
                                                             QtPrivate::QMetaTypeIdHelper<Arg3>::qt_metatype_id(), 0 }; return t; } };
     template <typename Arg1, typename Arg2, typename Arg3, typename Arg4> struct ConnectionTypes<List<Arg1, List<Arg2,  List<Arg3, List<Arg4, void> > > >, true>
-    { static const int *types() { static const int t[4] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
+    { static const int *types() { static const int t[5] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
                 QtPrivate::QMetaTypeIdHelper<Arg3>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg4>::qt_metatype_id(), 0 }; return t; } };
     template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5> struct ConnectionTypes<List<Arg1, List<Arg2,  List<Arg3, List<Arg4, List<Arg5, void> > > > >, true>
-    { static const int *types() { static const int t[4] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
+    { static const int *types() { static const int t[6] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
                 QtPrivate::QMetaTypeIdHelper<Arg3>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg4>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg5>::qt_metatype_id(), 0 }; return t; } };
     template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
     struct ConnectionTypes<List<Arg1, List<Arg2,  List<Arg3, List<Arg4, List<Arg5, List<Arg6, void> > > > > >, true>
-    { static const int *types() { static const int t[4] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
+    { static const int *types() { static const int t[7] = { QtPrivate::QMetaTypeIdHelper<Arg1>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg2>::qt_metatype_id(),
             QtPrivate::QMetaTypeIdHelper<Arg3>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg4>::qt_metatype_id(), QtPrivate::QMetaTypeIdHelper<Arg5>::qt_metatype_id(),
             QtPrivate::QMetaTypeIdHelper<Arg6>::qt_metatype_id(), 0 }; return t; } };
 #else
