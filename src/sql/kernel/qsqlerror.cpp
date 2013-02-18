@@ -63,9 +63,7 @@ QDebug operator<<(QDebug dbg, const QSqlError &s)
     A QSqlError object can provide database-specific error data,
     including the driverText() and databaseText() messages (or both
     concatenated together as text()), and the error number() and
-    type(). The functions all have setters so that you can create and
-    return QSqlError objects from your own classes, for example from
-    your own SQL drivers.
+    type().
 
     \sa QSqlDatabase::lastError(), QSqlQuery::lastError()
 */
@@ -149,7 +147,7 @@ QSqlError::~QSqlError()
     Returns the text of the error as reported by the driver. This may
     contain database-specific descriptions. It may also be empty.
 
-    \sa setDriverText(), databaseText(), text()
+    \sa databaseText(), text()
 */
 QString QSqlError::driverText() const
 {
@@ -157,21 +155,29 @@ QString QSqlError::driverText() const
 }
 
 /*!
+    \fn void QSqlError::setDriverText(const QString &driverText)
+    \obsolete
+
     Sets the driver error text to the value of \a driverText.
+
+    Use QSqlError(const QString &driverText, const QString &databaseText,
+                  ErrorType type, int number) instead
 
     \sa driverText(), setDatabaseText(), text()
 */
 
+#if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setDriverText(const QString& driverText)
 {
     driverError = driverText;
 }
+#endif
 
 /*!
     Returns the text of the error as reported by the database. This
     may contain database-specific descriptions; it may be empty.
 
-    \sa setDatabaseText(), driverText(), text()
+    \sa driverText(), text()
 */
 
 QString QSqlError::databaseText() const
@@ -180,20 +186,26 @@ QString QSqlError::databaseText() const
 }
 
 /*!
+    \fn void QSqlError::setDatabaseText(const QString &databaseText)
+    \obsolete
+
     Sets the database error text to the value of \a databaseText.
+
+    Use QSqlError(const QString &driverText, const QString &databaseText,
+                  ErrorType type, int number) instead
 
     \sa databaseText(), setDriverText(), text()
 */
 
+#if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setDatabaseText(const QString& databaseText)
 {
     databaseError = databaseText;
 }
+#endif
 
 /*!
     Returns the error type, or -1 if the type cannot be determined.
-
-    \sa setType()
 */
 
 QSqlError::ErrorType QSqlError::type() const
@@ -202,21 +214,27 @@ QSqlError::ErrorType QSqlError::type() const
 }
 
 /*!
+    \fn void QSqlError::setType(ErrorType type)
+    \obsolete
+
     Sets the error type to the value of \a type.
+
+    Use QSqlError(const QString &driverText, const QString &databaseText,
+                  ErrorType type, int number) instead
 
     \sa type()
 */
 
+#if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setType(ErrorType type)
 {
     errorType = type;
 }
+#endif
 
 /*!
     Returns the database-specific error number, or -1 if it cannot be
     determined.
-
-    \sa setNumber()
 */
 
 int QSqlError::number() const
@@ -225,15 +243,23 @@ int QSqlError::number() const
 }
 
 /*!
+    \fn void QSqlError::setNumber(int number)
+    \obsolete
+
     Sets the database-specific error number to \a number.
+
+    Use QSqlError(const QString &driverText, const QString &databaseText,
+                  ErrorType type, int number) instead
 
     \sa number()
 */
 
+#if QT_DEPRECATED_SINCE(5, 1)
 void QSqlError::setNumber(int number)
 {
     errorNumber = number;
 }
+#endif
 
 /*!
     This is a convenience function that returns databaseText() and
