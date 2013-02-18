@@ -1165,8 +1165,8 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                if (qcn->qmlBase() != 0) {
-                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBase());
+                if (qcn->qmlBaseNode() != 0) {
+                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBaseNode());
                     if (!qcn->isAbstract())
                         qcn = 0;
                 }
@@ -1241,8 +1241,8 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                if (qcn->qmlBase() != 0) {
-                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBase());
+                if (qcn->qmlBaseNode() != 0) {
+                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBaseNode());
                     if (!qcn->isAbstract())
                         qcn = 0;
                 }
@@ -1287,7 +1287,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                const DocNode* dn = current->qmlBase();
+                const DocNode* dn = current->qmlBaseNode();
                 if (dn) {
                     if (dn->subType() == Node::QmlClass)
                         current = static_cast<const QmlClassNode*>(dn);

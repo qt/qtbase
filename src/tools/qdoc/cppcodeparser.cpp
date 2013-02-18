@@ -951,11 +951,10 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
     else if (command == COMMAND_QMLINHERITS) {
         if (node->name() == arg)
             doc.location().warning(tr("%1 tries to inherit itself").arg(arg));
-        else {
-            setLink(node, Node::InheritsLink, arg);
-            if (node->subType() == Node::QmlClass) {
-                QmlClassNode::addInheritedBy(arg,node);
-            }
+        else if (node->subType() == Node::QmlClass) {
+            QmlClassNode *qmlClass = static_cast<QmlClassNode*>(node);
+            qmlClass->setQmlBaseName(arg);
+            QmlClassNode::addInheritedBy(arg,node);
         }
     }
     else if (command == COMMAND_QMLINSTANTIATES) {

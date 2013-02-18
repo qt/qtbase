@@ -136,6 +136,10 @@
 #define GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT      0x0001
 #endif
 
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
+#endif
+
 QT_BEGIN_NAMESPACE
 
 template <class MaskType, class FlagType> inline bool testFlag(MaskType mask, FlagType flag)
@@ -696,34 +700,27 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
         result.version = (version.mid(0, majorDot).toInt() << 8)
             + version.mid(majorDot + 1, minorDot - majorDot - 1).toInt();
     }
+    result.profile = QSurfaceFormat::NoProfile;
     if (result.version < 0x0300) {
-        result.profile = QSurfaceFormat::NoProfile;
         result.options |= QSurfaceFormat::DeprecatedFunctions;
         return result;
     }
     // v3 onwards
     GLint value = 0;
     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
-    if (value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
         result.options |= QSurfaceFormat::DeprecatedFunctions;
-    if (value & WGL_CONTEXT_DEBUG_BIT_ARB)
+    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
         result.options |= QSurfaceFormat::DebugContext;
     if (result.version < 0x0302)
         return result;
     // v3.2 onwards: Profiles
     value = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
-    switch (value) {
-    case WGL_CONTEXT_CORE_PROFILE_BIT_ARB:
+    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
         result.profile = QSurfaceFormat::CoreProfile;
-        break;
-    case WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
         result.profile = QSurfaceFormat::CompatibilityProfile;
-        break;
-    default:
-        result.profile = QSurfaceFormat::NoProfile;
-        break;
-    }
     return result;
 }
 

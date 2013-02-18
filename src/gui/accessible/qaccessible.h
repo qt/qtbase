@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_ACCESSIBILITY
 #ifndef QACCESSIBLE_H
 #define QACCESSIBLE_H
 
@@ -677,3 +678,4 @@ inline void QAccessible::updateAccessibility(QObject *object, int child, Event r
 QT_END_NAMESPACE
 
 #endif // QACCESSIBLE_H
+#endif //!QT_NO_ACCESSIBILITY

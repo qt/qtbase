@@ -55,15 +55,13 @@
 
 QT_BEGIN_NAMESPACE
 
-static QString qFieldSerial(int);
-
 QString QSqlResultPrivate::holderAt(int index) const
 {
-    return holders.size() > index ? holders.at(index).holderName : qFieldSerial(index);
+    return holders.size() > index ? holders.at(index).holderName : fieldSerial(index);
 }
 
 // return a unique id for bound names
-static QString qFieldSerial(int i)
+QString QSqlResultPrivate::fieldSerial(int i)
 {
     ushort arr[] = { ':', 'f', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     ushort *ptr = &arr[1];
@@ -83,57 +81,90 @@ static bool qIsAlnum(QChar ch)
     return u - 'a' < 26 || u - 'A' < 26 || u - '0' < 10 || u == '_';
 }
 
-QString QSqlResultPrivate::positionalToNamedBinding()
+QString QSqlResultPrivate::positionalToNamedBinding(const QString &query, QString (fieldSerialFunc)(int idx))
 {
-    int n = sql.size();
+    int n = query.size();
 
     QString result;
     result.reserve(n * 5 / 4);
-    bool inQuote = false;
+    QChar closingQuote;
     int count = 0;
 
     for (int i = 0; i < n; ++i) {
-        QChar ch = sql.at(i);
-        if (ch == QLatin1Char('?') && !inQuote) {
-            result += qFieldSerial(count++);
-        } else {
-            if (ch == QLatin1Char('\''))
-                inQuote = !inQuote;
+        QChar ch = query.at(i);
+        if (!closingQuote.isNull()) {
+            if (ch == closingQuote) {
+                if (closingQuote == QLatin1Char(']')
+                    && i + 1 < n && query.at(i + 1) == closingQuote) {
+                    // consume the extra character. don't close.
+                    ++i;
+                    result += ch;
+                } else {
+                    closingQuote = QChar();
+                }
+            }
             result += ch;
+        } else {
+            if (ch == QLatin1Char('?')) {
+                result += fieldSerialFunc(count++);
+            } else {
+                if (ch == QLatin1Char('\'') || ch == QLatin1Char('"') || ch == QLatin1Char('`'))
+                    closingQuote = ch;
+                else if (ch == QLatin1Char('['))
+                    closingQuote = QLatin1Char(']');
+                result += ch;
+            }
         }
     }
     result.squeeze();
     return result;
 }
 
-QString QSqlResultPrivate::namedToPositionalBinding()
+QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
 {
-    int n = sql.size();
+    int n = query.size();
 
     QString result;
     result.reserve(n);
-    bool inQuote = false;
+    QChar closingQuote;
     int count = 0;
     int i = 0;
 
     while (i < n) {
-        QChar ch = sql.at(i);
-        if (ch == QLatin1Char(':') && !inQuote
-                && (i == 0 || sql.at(i - 1) != QLatin1Char(':'))
-                && (i + 1 < n && qIsAlnum(sql.at(i + 1)))) {
-            int pos = i + 2;
-            while (pos < n && qIsAlnum(sql.at(pos)))
-                ++pos;
-            QString holder(sql.mid(i, pos - i));
-            indexes[holder].append(count++);
-            holders.append(QHolder(holder, i));
-            result += QLatin1Char('?');
-            i = pos;
-        } else {
-            if (ch == QLatin1Char('\''))
-                inQuote = !inQuote;
+        QChar ch = query.at(i);
+        if (!closingQuote.isNull()) {
+            if (ch == closingQuote) {
+                if (closingQuote == QLatin1Char(']')
+                        && i + 1 < n && query.at(i + 1) == closingQuote) {
+                    // consume the extra character. don't close.
+                    ++i;
+                    result += ch;
+                } else {
+                    closingQuote = QChar();
+                }
+            }
             result += ch;
             ++i;
+        } else {
+            if (ch == QLatin1Char(':')
+                    && (i == 0 || query.at(i - 1) != QLatin1Char(':'))
+                    && (i + 1 < n && qIsAlnum(query.at(i + 1)))) {
+                int pos = i + 2;
+                while (pos < n && qIsAlnum(query.at(pos)))
+                    ++pos;
+                QString holder(query.mid(i, pos - i));
+                indexes[holder].append(count++);
+                holders.append(QHolder(holder, i));
+                result += QLatin1Char('?');
+                i = pos;
+            } else {
+                if (ch == QLatin1Char('\'') || ch == QLatin1Char('"') || ch == QLatin1Char('`'))
+                    closingQuote = ch;
+                else if (ch == QLatin1Char('['))
+                    closingQuote = QLatin1Char(']');
+                result += ch;
+                ++i;
+            }
         }
     }
     result.squeeze();
@@ -531,10 +562,10 @@ bool QSqlResult::savePrepare(const QString& query)
         return prepare(query);
 
     // parse the query to memorize parameter location
-    d->executedQuery = d->namedToPositionalBinding();
+    d->executedQuery = d->namedToPositionalBinding(query);
 
     if (driver()->hasFeature(QSqlDriver::NamedPlaceholders))
-        d->executedQuery = d->positionalToNamedBinding();
+        d->executedQuery = QSqlResultPrivate::positionalToNamedBinding(query);
 
     return prepare(d->executedQuery);
 }
@@ -551,7 +582,7 @@ bool QSqlResult::prepare(const QString& query)
     d->sql = query;
     if (d->holders.isEmpty()) {
         // parse the query to memorize parameter location
-        d->namedToPositionalBinding();
+        d->namedToPositionalBinding(query);
     }
     return true; // fake prepares should always succeed
 }
@@ -617,7 +648,7 @@ bool QSqlResult::exec()
 void QSqlResult::bindValue(int index, const QVariant& val, QSql::ParamType paramType)
 {
     d->binds = PositionalBinding;
-    d->indexes[qFieldSerial(index)].append(index);
+    d->indexes[QSqlResultPrivate::fieldSerial(index)].append(index);
     if (d->values.count() <= index)
         d->values.resize(index + 1);
     d->values[index] = val;

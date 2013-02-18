@@ -188,6 +188,7 @@ private:
 #define CONFIG_INDEXES                  "indexes"
 #define CONFIG_LANGUAGE                 "language"
 #define CONFIG_MACRO                    "macro"
+#define CONFIG_MANIFESTMETA             "manifestmeta"
 #define CONFIG_NATURALLANGUAGE          "naturallanguage"
 #define CONFIG_NOLINKERRORS             "nolinkerrors"
 #define CONFIG_OBSOLETELINKS            "obsoletelinks"

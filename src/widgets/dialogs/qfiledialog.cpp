@@ -536,6 +536,7 @@ void QFileDialogPrivate::initHelper(QPlatformDialogHelper *h)
     QObject::connect(h, SIGNAL(filesSelected(QStringList)), d, SIGNAL(filesSelected(QStringList)));
     QObject::connect(h, SIGNAL(currentChanged(QString)), d, SIGNAL(currentChanged(QString)));
     QObject::connect(h, SIGNAL(directoryEntered(QString)), d, SIGNAL(directoryEntered(QString)));
+    QObject::connect(h, SIGNAL(directoryEntered(QString)), d, SLOT(_q_nativeEnterDirectory(QString)));
     QObject::connect(h, SIGNAL(filterSelected(QString)), d, SIGNAL(filterSelected(QString)));
     static_cast<QPlatformFileDialogHelper *>(h)->setOptions(options);
 }
@@ -3112,6 +3113,12 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldNa
         if (path == rootPath() && lineEdit()->text() == oldName)
             lineEdit()->setText(newName);
     }
+}
+
+void QFileDialogPrivate::_q_nativeEnterDirectory(const QString &directory)
+{
+    if (!directory.isEmpty()) // Windows native dialogs occasionally emit signals with empty strings.
+        *lastVisitedDir() = directory;
 }
 
 /*!

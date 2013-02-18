@@ -53,6 +53,7 @@
 #include <qsocketnotifier.h>
 #include <qstringlist.h>
 #include <qmutex.h>
+#include <QtSql/private/qsqlresult_p.h>
 
 #include <libpq-fe.h>
 #include <pg_config.h>
@@ -183,6 +184,7 @@ class QPSQLResultPrivate
 {
 public:
     QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
+    static QString fieldSerial(int i) { return QLatin1Char('$') + QString::number(i + 1); }
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *driver;
@@ -515,29 +517,6 @@ void QPSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static QString qReplacePlaceholderMarkers(const QString &query)
-{
-    const int originalLength = query.length();
-    bool inQuote = false;
-    int markerIdx = 0;
-    QString result;
-    result.reserve(originalLength + 23);
-    for (int i = 0; i < originalLength; ++i) {
-        const QChar ch = query.at(i);
-        if (ch == QLatin1Char('?') && !inQuote) {
-            result += QLatin1Char('$');
-            result += QString::number(++markerIdx);
-        } else {
-            if (ch == QLatin1Char('\''))
-                inQuote = !inQuote;
-            result += ch;
-        }
-    }
-
-    result.squeeze();
-    return result;
-}
-
 static QString qCreateParamString(const QVector<QVariant> boundValues, const QSqlDriver *driver)
 {
     if (boundValues.isEmpty())
@@ -581,7 +560,7 @@ bool QPSQLResult::prepare(const QString &query)
         qDeallocatePreparedStmt(d);
 
     const QString stmtId = qMakePreparedStmtId();
-    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(qReplacePlaceholderMarkers(query));
+    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(QSqlResultPrivate::positionalToNamedBinding(query, QPSQLResultPrivate::fieldSerial));
 
     PGresult *result = d->driver->exec(stmt);
 

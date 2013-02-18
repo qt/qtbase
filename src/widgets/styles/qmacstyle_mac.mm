@@ -2705,7 +2705,8 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = false;
         break;
     case SH_ScrollBar_Transient:
-        if (qobject_cast<const QScrollBar *>(w) ||
+        if ((qobject_cast<const QScrollBar *>(w) && w->parent() &&
+                qobject_cast<QAbstractScrollArea*>(w->parent()->parent())) ||
                 (opt && QStyleHelper::hasAncestor(opt->styleObject, QAccessible::ScrollBar))) {
             ret = QSysInfo::MacintoshVersion >= QSysInfo::MV_10_7;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7

@@ -2115,5 +2115,5 @@ void tst_QImage::cleanupFunctions()
 
 }
 
-QTEST_MAIN(tst_QImage)
+QTEST_GUILESS_MAIN(tst_QImage)
 #include "tst_qimage.moc"

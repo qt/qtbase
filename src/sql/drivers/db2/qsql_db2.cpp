@@ -1030,7 +1030,7 @@ QVariant QDB2Result::data(int field)
                     v = new QVariant(qGetIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionInt64:
-                    v = new QVariant(qGetBigIntData(d->hStmt, field, isNull));
+                    v = new QVariant((qint64) qGetBigIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionDouble:
                     v = new QVariant(qGetDoubleData(d->hStmt, field, isNull));

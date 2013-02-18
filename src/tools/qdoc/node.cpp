@@ -2097,7 +2097,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent, const QString& name)
       abstract_(false),
       cnodeRequired_(false),
       cnode_(0),
-      base_(0)
+      baseNode_(0)
 {
     int i = 0;
     if (name.startsWith("QML:")) {

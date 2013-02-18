@@ -3,6 +3,7 @@ include(qt-cpp-ignore.qdocconf)
 include(qt-defines.qdocconf)
 include(qt-html-templates-offline.qdocconf)
 include(compat.qdocconf)
+include(manifest-meta.qdocconf)
 
 dita.metadata.default.author      = Qt Project
 dita.metadata.default.permissions = all

@@ -411,6 +411,7 @@ private slots:
     void destroyedSignal();
 
     void keyboardModifiers();
+    void mouseDoubleClickBubbling_QTBUG29680();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -10045,6 +10046,31 @@ void tst_QWidget::keyboardModifiers()
     QCOMPARE(w->m_eventCounter, 1);
     QCOMPARE(int(w->m_modifiers), int(Qt::ControlModifier));
     QCOMPARE(int(w->m_appModifiers), int(Qt::ControlModifier));
+}
+
+class DClickWidget : public QWidget
+{
+public:
+    DClickWidget() : triggered(false) {}
+    void mouseDoubleClickEvent(QMouseEvent *)
+    {
+        triggered = true;
+    }
+    bool triggered;
+};
+
+void tst_QWidget::mouseDoubleClickBubbling_QTBUG29680()
+{
+    DClickWidget parent;
+    QWidget child(&parent);
+    parent.resize(200, 200);
+    child.resize(200, 200);
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+
+    QTest::mouseDClick(&child, Qt::LeftButton);
+
+    QTRY_VERIFY(parent.triggered);
 }
 
 QTEST_MAIN(tst_QWidget)
