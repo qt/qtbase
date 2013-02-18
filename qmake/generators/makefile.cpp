@@ -3158,11 +3158,8 @@ MakefileGenerator::pkgConfigFixPath(QString path) const
 void
 MakefileGenerator::writePkgConfigFile()
 {
-    QString fname = pkgConfigFileName(), lname = fname;
+    QString fname = pkgConfigFileName();
     mkdir(fileInfo(fname).path());
-    int slsh = lname.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        lname = lname.right(lname.length() - slsh - 1);
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
@@ -3249,7 +3246,7 @@ MakefileGenerator::writePkgConfigFile()
         pkgConfiglibName = "-framework " + bundle + " ";
     } else {
         pkgConfiglibDir = "-L${libdir}";
-        pkgConfiglibName = "-l" + lname.left(lname.length()-Option::libtool_ext.length());
+        pkgConfiglibName = "-l" + fileInfo(fname).completeBaseName();
         if (project->isActiveConfig("shared"))
             pkgConfiglibName += project->first("TARGET_VERSION_EXT").toQString();
     }
