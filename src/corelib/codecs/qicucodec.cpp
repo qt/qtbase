@@ -457,7 +457,8 @@ QTextCodec *QIcuCodec::codecForNameUnlocked(const char *name)
     if (!qstrcmp(name, "windows-874-2000")
         || !qstrcmp(name, "windows-874")
         || !qstrcmp(name, "MS874")
-        || !qstrcmp(name, "x-windows-874"))
+        || !qstrcmp(name, "x-windows-874")
+        || !qstrcmp(name, "ISO 8859-11"))
         name = "TIS-620";
 
     UErrorCode error = U_ZERO_ERROR;
