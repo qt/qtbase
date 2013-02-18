@@ -247,6 +247,12 @@
     2000.
     \li \c -nocrashhandler \br
     Disables the crash handler on Unix platforms.
+    \li \c -platform \e name \br
+    This command line argument applies to all Qt applications, but might be
+    especially useful in the context of auto-testing. By using the "offscreen"
+    platform plugin (-platform offscreen) it's possible to have tests that use
+    QWidget or QWindow run without showing anything on the screen. Currently
+    the offscreen platform plugin is only fully supported on X11.
     \endlist
 
     \section3 Benchmarking Options
