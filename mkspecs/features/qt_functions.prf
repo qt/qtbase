@@ -105,12 +105,7 @@ defineTest(qtAddModule) {
 
     isEmpty(LINKAGE) {
        !isEmpty(MODULE_LIBS_ADD): LINKAGE = -L$$MODULE_LIBS_ADD
-       lib =
-       if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
-           win32: lib = $${MODULE_NAME}$${QT_LIBINFIX}d
-           mac: lib = $${MODULE_NAME}$${QT_LIBINFIX}_debug
-       }
-       isEmpty(lib): lib = $${MODULE_NAME}$${QT_LIBINFIX}
+       lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
        LINKAGE += -l$$lib
 
        contains(QT_CONFIG, rpath): QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
