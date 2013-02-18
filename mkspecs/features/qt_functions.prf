@@ -19,10 +19,7 @@ defineReplace(qtLibraryTarget) {
        MAJOR_VERSION = $$section(VERSION, ., 0, 0)
        LIBRARY_NAME ~= s,^Qt,Qt$$MAJOR_VERSION,
    }
-   unset(LIBRARY_SUFFIX)
-   contains(TEMPLATE, .*lib):LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
-   isEmpty(LIBRARY_SUFFIX):return($$LIBRARY_NAME)
-   else:return($$member(LIBRARY_NAME, 0)$$LIBRARY_SUFFIX)
+   return($$LIBRARY_NAME$$qtPlatformTargetSuffix())
 }
 
 defineTest(qtAddLibrary) {
