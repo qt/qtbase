@@ -853,8 +853,9 @@ QFont QFontDialog::selectedFont() const
 */
 void QFontDialog::setOption(FontDialogOption option, bool on)
 {
-    Q_D(QFontDialog);
-    d->options->setOption(static_cast<QFontDialogOptions::FontDialogOption>(option), on);
+    const QFontDialog::FontDialogOptions previousOptions = options();
+    if (!(previousOptions & option) != !on)
+        setOptions(previousOptions ^ option);
 }
 
 /*!
