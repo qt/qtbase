@@ -697,6 +697,7 @@ public:
     QXmlStreamSimpleStack<NamespaceDeclaration> namespaceDeclarations;
     QString tagStackStringStorage;
     int tagStackStringStorageSize;
+    int initialTagStackStringStorageSize;
     bool tagsDone;
 
     inline QStringRef addToStringStorage(const QStringRef &s) {

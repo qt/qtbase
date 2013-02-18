@@ -784,6 +784,7 @@ QXmlStreamPrivateTagStack::QXmlStreamPrivateTagStack()
     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
     namespaceDeclaration.prefix = addToStringStorage(QLatin1String("xml"));
     namespaceDeclaration.namespaceUri = addToStringStorage(QLatin1String("http://www.w3.org/XML/1998/namespace"));
+    initialTagStackStringStorageSize = tagStackStringStorageSize;
 }
 
 #ifndef QT_NO_XMLSTREAMREADER
@@ -854,6 +855,7 @@ void QXmlStreamReaderPrivate::init()
     rawReadBuffer.clear();
     dataBuffer.clear();
     readBuffer.clear();
+    tagStackStringStorageSize = initialTagStackStringStorageSize;
 
     type = QXmlStreamReader::NoToken;
     error = QXmlStreamReader::NoError;
