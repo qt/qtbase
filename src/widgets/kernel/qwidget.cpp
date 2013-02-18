@@ -1391,6 +1391,14 @@ QWidget::~QWidget()
 
 
     QT_TRY {
+#ifndef QT_NO_GRAPHICSVIEW
+        const QWidget* w = this;
+        while (w->d_func()->extra && w->d_func()->extra->focus_proxy)
+            w = w->d_func()->extra->focus_proxy;
+        QWidget *window = w->window();
+        QWExtra *e = window ? window->d_func()->extra : 0;
+        if (!e || !e->proxyWidget)
+#endif
         clearFocus();
     } QT_CATCH(...) {
         // swallow this problem because we are in a destructor
@@ -8414,7 +8422,7 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event);
+    event->ignore();
 }
 
 #ifndef QT_NO_WHEELEVENT

@@ -15,17 +15,17 @@ win32-msvc2012 {
         error("Cannot determine DirectX SDK location. Please set DXSDK_DIR environment variable.")
     }
 
-    DXINC_DIR = $$quote($${DX_DIR}Include)
+    DXINC_DIR = $${DX_DIR}Include
     contains(QT_ARCH, x86_64) {
-        DXLIB_DIR = $$quote($${DX_DIR}Lib\\x64)
+        DXLIB_DIR = $${DX_DIR}Lib\\x64
     } else {
-        DXLIB_DIR = $$quote($${DX_DIR}Lib\\x86)
+        DXLIB_DIR = $${DX_DIR}Lib\\x86
     }
 
     equals(QMAKE_TARGET.arch, x86_64) {
-        FXC = "\"$${DX_DIR}Utilities\\bin\\x64\\fxc.exe\""
+        FXC = \"$${DX_DIR}Utilities\\bin\\x64\\fxc.exe\"
     } else {
-        FXC = "\"$${DX_DIR}Utilities\\bin\\x86\\fxc.exe\""
+        FXC = \"$${DX_DIR}Utilities\\bin\\x86\\fxc.exe\"
     }
 
     msvc {
@@ -36,7 +36,7 @@ win32-msvc2012 {
 
         # Similarly we want the MinGW linker to use the import libraries shipped with the compiler
         # instead of those from the SDK which cause a crash on startup.
-        LIBS += -L$$DXLIB_DIR
+        LIBS += -L\"$$DXLIB_DIR\"
     }
 }
 

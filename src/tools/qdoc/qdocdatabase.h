@@ -140,6 +140,7 @@ class QDocDatabase
     Tree* tree() { return tree_; }
     NamespaceNode* treeRoot() { return tree_->root(); }
     void resolveInheritance() { tree_->resolveInheritance(); }
+    void resolveQmlInheritance(InnerNode* root);
     void resolveIssues();
     void fixInheritance() { tree_->fixInheritance(); }
     void resolveProperties() { tree_->resolveProperties(); }

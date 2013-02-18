@@ -399,10 +399,12 @@ void Tree::addPropertyFunction(PropertyNode* property,
 
 /*!
   This function resolves inheritance and reimplementation settings
-  for each class node found in the namspace beginning ar \a rootNode.
+  for each C++ class node found in the namspace beginning at \a rootNode.
   If it finds another namespace node in the child list of \a rootNode,
   it calls itself recursively. For each child of \a rootNode that is a
   class node, it calls the other resolveInheritance() function.
+
+  This function does not resolve QML inheritance.
  */
 void Tree::resolveInheritance(NamespaceNode* rootNode)
 {

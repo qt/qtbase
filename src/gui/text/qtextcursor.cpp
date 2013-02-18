@@ -1283,7 +1283,7 @@ bool QTextCursor::movePosition(MoveOperation op, MoveMode mode, int n)
   Returns true if the cursor does visual navigation; otherwise
   returns false.
 
-  Visual navigation means skipping over hidden text pragraphs. The
+  Visual navigation means skipping over hidden text paragraphs. The
   default is false.
 
   \sa setVisualNavigation(), movePosition()
@@ -1298,7 +1298,7 @@ bool QTextCursor::visualNavigation() const
 
   Sets visual navigation to \a b.
 
-  Visual navigation means skipping over hidden text pragraphs. The
+  Visual navigation means skipping over hidden text paragraphs. The
   default is false.
 
   \sa visualNavigation(), movePosition()

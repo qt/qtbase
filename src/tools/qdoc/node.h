@@ -131,8 +131,7 @@ public:
         NextLink,
         PreviousLink,
         ContentsLink,
-        IndexLink,
-        InheritsLink /*,
+        IndexLink /*,
         GlossaryLink,
         CopyrightLink,
         ChapterLink,
@@ -546,8 +545,10 @@ public:
     virtual void setAbstract(bool b) { abstract_ = b; }
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
-    const DocNode* qmlBase() const { return base_; }
-    void setQmlBase(DocNode* b) { base_ = b; }
+    const QString& qmlBaseName() const { return baseName_; }
+    void setQmlBaseName(const QString& name) { baseName_ = name; }
+    const DocNode* qmlBaseNode() const { return baseNode_; }
+    void setQmlBaseNode(DocNode* b) { baseNode_ = b; }
     void requireCppClass() { cnodeRequired_ = true; }
     bool cppClassRequired() const { return cnodeRequired_; }
     static void addInheritedBy(const QString& base, Node* sub);
@@ -562,7 +563,8 @@ private:
     bool abstract_;
     bool cnodeRequired_;
     ClassNode*    cnode_;
-    DocNode*     base_;
+    QString      baseName_;
+    DocNode*     baseNode_;
     ImportList          importList_;
 };
 

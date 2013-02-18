@@ -91,3 +91,5 @@ qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
 QMAKE_DOCS = $$PWD/doc/config/qdoc.qdocconf
 
 load(qt_tool)
+
+TR_EXCLUDE += $$PWD/*

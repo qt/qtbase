@@ -752,8 +752,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     Note that you need to create a QGLFramebufferObject with more than one
     sample per pixel for primitives to be antialiased when drawing using a
     QPainter. To create a multisample framebuffer object you should use one of
-    the constructors that take a QGLFramebufferObject parameter, and set the
-    QGLFramebufferObject::samples() property to a non-zero value.
+    the constructors that take a QGLFramebufferObjectFormat parameter, and set
+    the QGLFramebufferObjectFormat::samples() property to a non-zero value.
 
     When painting to a QGLFramebufferObject using QPainter, the state of
     the current GL context will be altered by the paint engine to reflect

@@ -686,25 +686,24 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
     \ingroup painting-3D
 
     The QOpenGLFramebufferObject class encapsulates an OpenGL framebuffer
-    object, defined by the \c{GL_EXT_framebuffer_object} extension. In
-    addition it provides a rendering surface that can be painted on
-    with a QPainter, rendered to using native OpenGL calls, or both. This
-    surface can be bound and used as a regular texture in your own OpenGL
-    drawing code.  By default, the QOpenGLFramebufferObject class
-    generates a 2D OpenGL texture (using the \c{GL_TEXTURE_2D} target),
-    which is used as the internal rendering target.
+    object, defined by the \c{GL_EXT_framebuffer_object} extension. It provides
+    a rendering surface that can be painted on with a QPainter with the help of
+    QOpenGLPaintDevice, or rendered to using native OpenGL calls. This surface
+    can be bound and used as a regular texture in your own OpenGL drawing code.
+    By default, the QOpenGLFramebufferObject class generates a 2D OpenGL
+    texture (using the \c{GL_TEXTURE_2D} target), which is used as the internal
+    rendering target.
 
     \b{It is important to have a current OpenGL context when creating a
     QOpenGLFramebufferObject, otherwise initialization will fail.}
 
-    When using a QPainter to paint to a QOpenGLFramebufferObject you should take
-    care that the QOpenGLFramebufferObject is created with the CombinedDepthStencil
-    attachment for QPainter to be able to render correctly.
-    Note that you need to create a QOpenGLFramebufferObject with more than one
-    sample per pixel for primitives to be antialiased when drawing using a
-    QPainter. To create a multisample framebuffer object you should use one of
-    the constructors that take a QOpenGLFramebufferObject parameter, and set the
-    QOpenGLFramebufferObject::samples() property to a non-zero value.
+    Create the QOpenGLFrameBufferObject instance with the CombinedDepthStencil
+    attachment if you want QPainter to render correctly. Note that you need to
+    create a QOpenGLFramebufferObject with more than one sample per pixel for
+    primitives to be antialiased when drawing using a QPainter. To create a
+    multisample framebuffer object you should use one of the constructors that
+    take a QOpenGLFramebufferObjectFormat parameter, and set the
+    QOpenGLFramebufferObjectFormat::samples() property to a non-zero value.
 
     For multisample framebuffer objects a color render buffer is created,
     otherwise a texture with the specified texture target is created.
@@ -716,11 +715,8 @@ void QOpenGLFramebufferObjectPrivate::initAttachments(QOpenGLContext *ctx, QOpen
     as a texture, you first need to copy from it to a regular framebuffer
     object using QOpenGLContext::blitFramebuffer().
 
-    \section1 Threading
-
-    As of Qt 4.8, it's possible to draw into a QOpenGLFramebufferObject
-    using a QPainter in a separate thread. Note that OpenGL 2.0 or
-    OpenGL ES 2.0 is required for this to work.
+    It is possible to draw into a QOpenGLFramebufferObject using QPainter and
+    QOpenGLPaintDevice in a separate thread.
 */
 
 

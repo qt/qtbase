@@ -1,9 +1,6 @@
 # fixExclusiveOutputDirs(1config, 2config)
 # Change all output paths that references 2config to have the string 1config in them
 defineTest(fixExclusiveOutputDirs) {
-    unset(firstBuild)
-    unset(secondBuild)
-    unset(appendFirstBuild)
     firstBuild = $$1
     secondBuild = $$2
     count(ARGS, 2, greaterThan):isEqual($$list($$lower($$3)), false):appendFirstBuild = false
@@ -29,11 +26,6 @@ defineTest(fixExclusiveOutputDirs) {
 # addExclusiveBuilds(1config, 1name, 2config, 2name)
 # Adds two BUILDS which are exclusive to each other.
 defineTest(addExclusiveBuilds) {
-    unset(firstBuild)
-    unset(firstBuildName)
-    unset(secondBuild)
-    unset(secondBuildName)
-
     firstBuild = $$1
     firstBuildName = $$2
     secondBuild = $$3

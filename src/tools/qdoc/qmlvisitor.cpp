@@ -106,7 +106,7 @@ QmlDocVisitor::~QmlDocVisitor()
 }
 
 /*!
-  Returns the location of thre nearest comment above the \a offset.
+  Returns the location of the nearest comment above the \a offset.
  */
 QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) const
 {
@@ -322,11 +322,10 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if (command == COMMAND_QMLINHERITS) {
                 if (node->name() == args[0].first)
                     doc.location().warning(tr("%1 tries to inherit itself").arg(args[0].first));
-                else {
-                    CodeParser::setLink(node, Node::InheritsLink, args[0].first);
-                    if (node->subType() == Node::QmlClass) {
-                        QmlClassNode::addInheritedBy(args[0].first,node);
-                    }
+                else if (node->subType() == Node::QmlClass) {
+                    QmlClassNode *qmlClass = static_cast<QmlClassNode*>(node);
+                    qmlClass->setQmlBaseName(args[0].first);
+                    QmlClassNode::addInheritedBy(args[0].first,node);
                 }
             }
             else if (command == COMMAND_QMLDEFAULT) {
@@ -389,11 +388,9 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
         QmlClassNode *component = new QmlClassNode(current, name);
         component->setTitle(name);
         component->setImportList(importList);
-
         if (applyDocumentation(definition->firstSourceLocation(), component)) {
             QmlClassNode::addInheritedBy(type, component);
-            if (!component->links().contains(Node::InheritsLink))
-                component->setLink(Node::InheritsLink, type, type);
+            component->setQmlBaseName(type);
         }
         current = component;
     }

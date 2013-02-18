@@ -2815,8 +2815,14 @@ if [ -z "$QT_INSTALL_BINS" ]; then #default
 fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
+    QT_INSTALL_LIBEXECS_DIRNAME="lib"
+else
+    QT_INSTALL_LIBEXECS_DIRNAME="libexec"
+fi
+
 if [ -z "$QT_INSTALL_LIBEXECS" ]; then #default
-    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/libexec" #fallback
+    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/$$QT_INSTALL_LIBEXECS_DIRNAME" #fallback
 fi
 QT_INSTALL_LIBEXECS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBEXECS"`
 
@@ -3038,7 +3044,7 @@ Installation options:
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default ARCHDATADIR/plugins)
     -libexecdir <dir> ..... Program executables will be installed to <dir>
-                            (default ARCHDATADIR/libexec)
+                            (default ARCHDATADIR/$QT_INSTALL_LIBEXECS_DIRNAME)
     -importdir <dir> ...... Imports for QML1 will be installed to <dir>
                             (default ARCHDATADIR/imports)
     -qmldir <dir> ......... Imports for QML2 will be installed to <dir>
