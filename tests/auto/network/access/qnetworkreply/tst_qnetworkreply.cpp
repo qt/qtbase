@@ -5892,7 +5892,7 @@ void tst_QNetworkReply::sslSessionSharing_data()
 
 void tst_QNetworkReply::sslSessionSharing()
 {
-    QString urlString("https://" + QtNetworkSettings::serverName() + "/qtest/mediumfile");
+    QString urlString("https://" + QtNetworkSettings::serverName());
     QList<QNetworkReplyPtr> replies;
 
     // warm up SSL session cache
