@@ -1011,6 +1011,20 @@ void Configure::parseCmdLine()
             nobuildParts.append(configCmdLine.at(i));
         }
 
+        else if (configCmdLine.at(i) == "-skip") {
+            ++i;
+            if (i == argCount)
+                break;
+            QString mod = configCmdLine.at(i);
+            if (!mod.startsWith(QStringLiteral("qt")))
+                mod.insert(0, QStringLiteral("qt"));
+            if (!QFileInfo(sourcePath + "/../" + mod).isDir()) {
+                cout << "Attempting to skip non-existent module " << mod << "." << endl;
+                dictionary["DONE"] = "error";
+            }
+            skipModules += mod;
+        }
+
         // Directories ----------------------------------------------
         else if (configCmdLine.at(i) == "-prefix") {
             ++i;
@@ -1646,6 +1660,8 @@ bool Configure::displayHelp()
         for (int i=0; i<defaultBuildParts.size(); ++i)
             desc(               "",                     qPrintable(QString("  %1").arg(defaultBuildParts.at(i))), false, ' ');
         desc(                   "-nomake <part>",       "Exclude part from the list of parts to be built.\n");
+
+        desc(                   "-skip <module>",       "Exclude an entire module from the build.\n");
 
         desc("WIDGETS", "no", "-no-widgets",            "Disable Qt Widgets module.\n");
 
@@ -2778,7 +2794,10 @@ void Configure::generateCachefile()
     if (moduleFile.open(QFile::WriteOnly | QFile::Text)) { // Truncates any existing file.
         QTextStream moduleStream(&moduleFile);
 
-        moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl << endl;
+        moduleStream << "QT_BUILD_PARTS += " << buildParts.join(' ') << endl;
+        if (!skipModules.isEmpty())
+            moduleStream << "QT_SKIP_MODULES += " << skipModules.join(' ') << endl;
+        moduleStream << endl;
 
         if (dictionary["QT_EDITION"] != "QT_EDITION_OPENSOURCE")
             moduleStream << "DEFINES        *= QT_EDITION=QT_EDITION_DESKTOP" << endl;

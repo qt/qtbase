@@ -777,6 +777,7 @@ CFG_SQL_AVAILABLE=
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
+CFG_SKIP_MODULES=""
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_V8SNAPSHOT=auto
@@ -995,7 +996,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-skip|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1287,6 +1288,14 @@ while [ "$#" -gt 0 ]; do
         ;;
     make)
 	CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
+        ;;
+    skip)
+        VAL=qt${VAL#qt}
+        if ! [ -d $relpath/../$VAL ]; then
+            echo "Attempting to skip non-existent module $VAL." >&2
+            exit 1
+        fi
+        CFG_SKIP_MODULES="$CFG_SKIP_MODULES $VAL"
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
@@ -3192,6 +3201,8 @@ Additional options:
     -make <part> ....... Add part to the list of parts to be built at make time.
                          ($QT_DEFAULT_BUILD_PARTS)
     -nomake <part> ..... Exclude part from the list of parts to be built.
+
+    -skip <module> ..... Exclude an entire module from the build.
 
     -no-gui ............ Don't build the Qt GUI module and dependencies.
  +  -gui ............... Build the Qt GUI module and dependencies.
@@ -6084,6 +6095,9 @@ QTMODULE="$outpath/mkspecs/qmodule.pri"
 
 echo "CONFIG += $QMAKE_CONFIG" >> "$QTMODULE.tmp"
 echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
+if [ -n "$CFG_SKIP_MODULES" ]; then
+    echo "QT_SKIP_MODULES += $CFG_SKIP_MODULES" >> "$QTMODULE.tmp"
+fi
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$QTMODULE.tmp"
