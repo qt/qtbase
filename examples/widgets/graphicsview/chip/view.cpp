@@ -250,7 +250,7 @@ void View::toggleAntialiasing()
 
 void View::print()
 {
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     QPrinter printer;
     QPrintDialog dialog(&printer, this);
     if (dialog.exec() == QDialog::Accepted) {
