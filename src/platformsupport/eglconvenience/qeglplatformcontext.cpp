@@ -63,7 +63,7 @@ QEGLPlatformContext::QEGLPlatformContext(const QSurfaceFormat &format, QPlatform
                                          EGLenum eglApi)
     : m_eglDisplay(display)
     , m_eglApi(eglApi)
-    , m_eglConfig(q_configFromGLFormat(display, format, true))
+    , m_eglConfig(q_configFromGLFormat(display, format))
 {
     init(format, share);
 }
