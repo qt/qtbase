@@ -76,7 +76,7 @@ else
     $MAKE >/dev/null 2>&1
 fi
 
-( [ -x "$EXE" ] || [ -x "${EXE}.exe" ] ) && SUCCESS=yes
+( [ -f "$EXE" ] || [ -f "${EXE}.exe" ] ) && SUCCESS=yes
 
 # done
 if [ "$SUCCESS" != "yes" ]; then
