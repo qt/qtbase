@@ -58,7 +58,7 @@ public:
 
 private slots:
     void getSetCheck();
-	void testMinimumSize();
+    void testMinimumSize();
 };
 
 tst_QStackedWidget::tst_QStackedWidget()
@@ -72,15 +72,15 @@ tst_QStackedWidget::~tst_QStackedWidget()
 // Testing that stackedwidget respect the minimum size of it's contents (task 95319)
 void tst_QStackedWidget::testMinimumSize()
 {
-	QWidget w;
+    QWidget w;
     QStackedWidget sw(&w);
     QPushButton button("Text", &sw);
-	sw.addWidget(&button);
+    sw.addWidget(&button);
     QHBoxLayout hboxLayout;
     hboxLayout.addWidget(&sw);
     w.setLayout(&hboxLayout);
     w.show();
-	QVERIFY(w.minimumSize() != QSize(0, 0));
+    QVERIFY(w.minimumSize() != QSize(0, 0));
 }
 
 // Testing get/set functions
@@ -111,7 +111,7 @@ void tst_QStackedWidget::getSetCheck()
     // has no problem handling out-of-bounds indices.
     // ("convenience function" => "just another way of achieving the
     // same goal")
-	obj1.setCurrentWidget((QWidget *)0);
+    obj1.setCurrentWidget((QWidget *)0);
     QCOMPARE(obj1.currentWidget(), var2);
 #endif
     delete var2;
