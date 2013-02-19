@@ -35,6 +35,13 @@ SUBDIRS=\
         qwinoverlappedionotifier
 }
 
+!qtHaveModule(network): SUBDIRS -= \
+    qfile \
+    qiodevice \
+    qprocess \
+    qtextstream
+}
+
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qabstractfileengine \
     qfileinfo \

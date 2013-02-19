@@ -22,3 +22,4 @@ cross_compile:                              SUBDIRS -= tools
 !unix|embedded|!qtHaveModule(dbus):         SUBDIRS -= dbus
 !qtHaveModule(widgets):                     SUBDIRS -= widgets printsupport
 !qtHaveModule(concurrent):                  SUBDIRS -= concurrent
+!qtHaveModule(network):                     SUBDIRS -= network

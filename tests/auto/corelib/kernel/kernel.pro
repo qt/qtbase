@@ -21,6 +21,11 @@ SUBDIRS=\
     qvariant \
     qwineventnotifier
 
+!qtHaveModule(network): SUBDIRS -= \
+    qeventloop \
+    qobject \
+    qsocketnotifier
+
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qsocketnotifier \
     qsharedmemory

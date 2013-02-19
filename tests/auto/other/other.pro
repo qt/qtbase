@@ -42,6 +42,14 @@ SUBDIRS=\
    qaccessibility \
    qaccessibilitylinux \
 
+!qtHaveModule(network): SUBDIRS -= \
+   baselineexample \
+   headersclean \
+   lancelot \
+   networkselftest \
+   qnetworkaccessmanager_and_qprogressdialog \
+   qobjectperformance
+
 testcocoon: SUBDIRS -= headersclean
 
 cross_compile: SUBDIRS -= \
