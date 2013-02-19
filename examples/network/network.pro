@@ -1,3 +1,5 @@
+requires(qtHaveModule(network))
+
 TEMPLATE      = subdirs
 SUBDIRS       = \
                 dnslookup \

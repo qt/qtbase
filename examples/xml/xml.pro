@@ -4,7 +4,9 @@ SUBDIRS       = htmlinfo \
 
 qtHaveModule(widgets) {
     SUBDIRS +=  dombookmarks \
-                rsslisting \
                 saxbookmarks \
                 streambookmarks
+
+    qtHaveModule(network): SUBDIRS += \
+                rsslisting
 }
