@@ -10,6 +10,7 @@ SUBDIRS=\
     qfile \
     largefile \
     qfileinfo \
+    qfileselector \
     qfilesystementry \
     qfilesystemwatcher \
     qiodevice \

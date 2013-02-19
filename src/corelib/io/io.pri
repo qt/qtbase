@@ -47,7 +47,9 @@ HEADERS +=  \
         io/qfilesystementry_p.h \
         io/qfilesystemengine_p.h \
         io/qfilesystemmetadata_p.h \
-        io/qfilesystemiterator_p.h
+        io/qfilesystemiterator_p.h \
+        io/qfileselector.h \
+        io/qfileselector_p.h
 
 SOURCES += \
         io/qabstractfileengine.cpp \
@@ -83,7 +85,8 @@ SOURCES += \
         io/qfilesystemwatcher.cpp \
         io/qfilesystemwatcher_polling.cpp \
         io/qfilesystementry.cpp \
-        io/qfilesystemengine.cpp
+        io/qfilesystemengine.cpp \
+        io/qfileselector.cpp
 
 win32 {
         SOURCES += io/qsettings_win.cpp

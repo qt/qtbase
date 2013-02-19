@@ -1,0 +1,23 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+   <file>extras/test</file>
+   <file>extras/test2</file>
+   <file>extras/+custom1/test</file>
+   <file>extras/+custom1/test3</file>
+   <file>extras/+custom2/test</file>
+   <file>extras/+custom3/test</file>
+   <file>extras/+custom3/+custom2/test</file>
+   <file>extras/+custom3/+custom4/test</file>
+   <file>extras/+custom3/+custom5/test</file>
+   <file>extras/+custom5/+custom3/test</file>
+   <file>platforms/test</file>
+   <file>platforms/+android/test</file>
+   <file>platforms/+blackberry/test</file>
+   <file>platforms/+ios/test</file>
+   <file>platforms/+mac/test</file>
+   <file>platforms/+wince/test</file>
+   <file>platforms/+windows/test</file>
+   <file>platforms/+linux/test</file>
+   <file>platforms/+generic_unix/test</file>
+</qresource>
+</RCC>
