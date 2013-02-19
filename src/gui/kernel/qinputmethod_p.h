@@ -84,6 +84,7 @@ public:
     bool objectAcceptsInputMethod(QObject *object);
 
     QTransform inputItemTransform;
+    QRectF inputRectangle;
     QPlatformInputContext *testContext;
 };
 

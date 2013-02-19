@@ -354,6 +354,7 @@ void QWidgetPrivate::updateWidgetTransform()
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
         qApp->inputMethod()->setInputItemTransform(t);
+        qApp->inputMethod()->setInputItemRectangle(q->rect());
     }
 }
 
