@@ -240,6 +240,72 @@ private:
 };
 #endif // QT_USE_ICU
 
+#if defined Q_OS_UNIX && !defined Q_OS_MAC
+class Q_AUTOTEST_EXPORT QTzTimeZonePrivate Q_DECL_FINAL : public QTimeZonePrivate
+{
+public:
+    // Create default time zone
+    QTzTimeZonePrivate();
+    // Create named time zone
+    QTzTimeZonePrivate(const QByteArray &olsenId);
+    QTzTimeZonePrivate(const QTzTimeZonePrivate &other);
+    ~QTzTimeZonePrivate();
+
+    QTimeZonePrivate *clone();
+
+    QLocale::Country country() const Q_DECL_OVERRIDE;
+    QString comment() const Q_DECL_OVERRIDE;
+
+    QString displayName(qint64 atMSecsSinceEpoch,
+                        QTimeZone::NameType nameType,
+                        const QLocale &locale) const Q_DECL_OVERRIDE;
+    QString displayName(QTimeZone::TimeType timeType,
+                        QTimeZone::NameType nameType,
+                        const QLocale &locale) const Q_DECL_OVERRIDE;
+    QString abbreviation(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasDaylightTime() const Q_DECL_OVERRIDE;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    Data data(qint64 forMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    bool hasTransitions() const Q_DECL_OVERRIDE;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const Q_DECL_OVERRIDE;
+
+    QByteArray systemTimeZoneId() const Q_DECL_OVERRIDE;
+
+    QSet<QByteArray> availableTimeZoneIds() const Q_DECL_OVERRIDE;
+    QSet<QByteArray> availableTimeZoneIds(QLocale::Country country) const Q_DECL_OVERRIDE;
+
+private:
+    void init(const QByteArray &olsenId);
+
+    struct QTzTransitionTime {
+        qint64 atMSecsSinceEpoch;
+        quint8 ruleIndex;
+    };
+    struct QTzTransitionRule {
+        int stdOffset;
+        int dstOffset;
+        quint8 abbreviationIndex;
+        bool operator==(const QTzTransitionRule &other) { return (stdOffset == other.stdOffset
+        && dstOffset == other.dstOffset && abbreviationIndex == other.abbreviationIndex); }
+    };
+    QList<QTzTransitionTime> m_tranTimes;
+    QList<QTzTransitionRule> m_tranRules;
+    QList<QByteArray> m_abbreviations;
+#ifdef QT_USE_ICU
+    mutable QSharedDataPointer<QTimeZonePrivate> m_icu;
+#endif // QT_USE_ICU
+    QByteArray m_posixRule;
+};
+#endif // Q_OS_UNIX
+
 QT_END_NAMESPACE
 
 #endif // QTIMEZONEPRIVATE_P_H

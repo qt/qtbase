@@ -52,21 +52,41 @@ QT_BEGIN_NAMESPACE
 // Create default time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone()
 {
-#if defined QT_USE_ICU
+#ifdef QT_NO_SYSTEMLOCALE
+#ifdef QT_USE_ICU
     return new QIcuTimeZonePrivate();
 #else
     return new QUtcTimeZonePrivate();
 #endif // QT_USE_ICU
+#else
+#if defined Q_OS_UNIX && !defined Q_OS_MAC
+    return new QTzTimeZonePrivate();
+#elif defined QT_USE_ICU
+    return new QIcuTimeZonePrivate();
+#else
+    return new QUtcTimeZonePrivate();
+#endif // System Locales
+#endif // QT_NO_SYSTEMLOCALE
 }
 
 // Create named time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone(const QByteArray &olsenId)
 {
-#if defined QT_USE_ICU
+#ifdef QT_NO_SYSTEMLOCALE
+#ifdef QT_USE_ICU
     return new QIcuTimeZonePrivate(olsenId);
 #else
     return new QUtcTimeZonePrivate(olsenId);
 #endif // QT_USE_ICU
+#else
+#if defined Q_OS_UNIX && !defined Q_OS_MAC
+    return new QTzTimeZonePrivate(olsenId);
+#elif defined QT_USE_ICU
+    return new QIcuTimeZonePrivate(olsenId);
+#else
+    return new QUtcTimeZonePrivate(olsenId);
+#endif // System Locales
+#endif // QT_NO_SYSTEMLOCALE
 }
 
 class QTimeZoneSingleton
