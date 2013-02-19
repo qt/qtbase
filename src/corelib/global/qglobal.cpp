@@ -643,11 +643,29 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 */
 
 /*!
+    \typedef qintptr
+    \relates <QtGlobal>
+
+    Integral type for representing pointers in a signed integer (useful for
+    hashing, etc.).
+
+    Typedef for either qint32 or qint64. This type is guaranteed to
+    be the same size as a pointer on all platforms supported by Qt. On
+    a system with 32-bit pointers, qintptr is a typedef for qint32;
+    on a system with 64-bit pointers, qintptr is a typedef for
+    qint64.
+
+    Note that qintptr is signed. Use quintptr for unsigned values.
+
+    \sa qptrdiff, qint32, qint64
+*/
+
+/*!
     \typedef quintptr
     \relates <QtGlobal>
 
-    Integral type for representing a pointers (useful for hashing,
-    etc.).
+    Integral type for representing pointers in an unsigned integer (useful for
+    hashing, etc.).
 
     Typedef for either quint32 or quint64. This type is guaranteed to
     be the same size as a pointer on all platforms supported by Qt. On
