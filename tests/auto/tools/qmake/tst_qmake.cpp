@@ -85,8 +85,7 @@ private slots:
     void one_space();
     void findMocs();
     void findDeps();
-#ifndef Q_OS_WIN
-    // Test requires make
+#if defined(Q_OS_MAC)
     void bundle_spaces();
 #endif
     void includefunction();
@@ -456,7 +455,7 @@ struct TempFile
     }
 };
 
-#ifndef Q_OS_WIN
+#if defined(Q_OS_MAC)
 void tst_qmake::bundle_spaces()
 {
     QString workDir = base_path + "/testdata/bundle-spaces";
@@ -465,7 +464,7 @@ void tst_qmake::bundle_spaces()
     // Bundles and since this might be the wrong output we rely on dry-running
     // make (-n).
 
-    test_compiler.setArguments("-n", "-spec macx-g++");
+    test_compiler.setArguments("-n", "-spec macx-clang");
 
     QVERIFY( test_compiler.qmake(workDir, "bundle-spaces") );
 
@@ -486,7 +485,7 @@ void tst_qmake::bundle_spaces()
     QVERIFY( !non_existing_file.exists() );
     QVERIFY( test_compiler.removeMakefile(workDir) );
 }
-#endif // Q_OS_WIN
+#endif // defined(Q_OS_MAC)
 
 void tst_qmake::includefunction()
 {
