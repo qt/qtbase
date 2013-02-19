@@ -1,30 +1,7 @@
-include(macros.qdocconf)
-include(qt-cpp-ignore.qdocconf)
-include(qt-defines.qdocconf)
-include(qt-html-templates-offline.qdocconf)
-include(compat.qdocconf)
-include(manifest-meta.qdocconf)
+#The default configuration for a Qt 5 module, including Add-Ons and Tools.
+#Include this file for a standard Qt 5 module. This file is provided for
+#compatibility reasons.
 
-dita.metadata.default.author      = Qt Project
-dita.metadata.default.permissions = all
-dita.metadata.default.publisher   = Qt Project
-dita.metadata.default.copyryear = 2013
-dita.metadata.default.copyrholder = Digia Plc
-dita.metadata.default.audience = programmer
-
-naturallanguage         = en_US
-outputencoding          = UTF-8
-sourceencoding          = UTF-8
-
-examples.fileextensions = "*.cpp *.h *.js *.xq *.svg *.xml *.ui *.qhp *.qhcp *.qml *.css"
-examples.imageextensions = "*.png *.jpg *.gif"
-
-headers.fileextensions  = "*.ch *.h *.h++ *.hh *.hpp *.hxx"
-sources.fileextensions  = "*.c++ *.cc *.cpp *.cxx *.mm *.qml *.qdoc"
-
-versionsym              = QT_VERSION_STR
-
-macro.raisedaster.HTML  = "<sup>*</sup>"
-
-#include the external websites
-sourcedirs += externalsites
+#The default is the offline style. The alternate style is in
+#qt-module-defaults-online.qdocconf
+include(qt-module-defaults-offline.qdocconf)

@@ -181,6 +181,74 @@ footer and license
 text-align:center
 }
 
+.navigationbar{
+display: block;
+position: relative;
+top:-20px;
+/*border-top:2px solid #ffffff;*/
+border-bottom: 1px solid #cecece;
+background-color:#F2F2F2;
+z-index:1;
+height:20px;
+padding-left:7px;
+margin:0px;
+padding-top:2px;
+margin-left:-5px;
+margin-right:-5px;
+}
+
+.navigationbar ul{
+ margin:0px;
+ padding:0px;
+}
+
+.navigationbar ul li{
+list-style-type:none;
+padding-top:2px;
+padding-left: 4px;
+margin:0;
+height:20px;
+}
+
+.navigationbar li{
+float:left;
+}
+
+.navigationbar .first {
+background:url(../images/home.png);
+background-position:left;
+background-repeat:no-repeat;
+padding-left:20px;
+}
+
+
+.navigationbar li a{
+display:block;
+text-decoration:none;
+background:url(../images/arrow_bc.png);
+background-repeat:no-repeat;
+background-position:right;
+padding-right:17px;
+}
+
+
+/*
+-----------
+footer and license
+-----------
+*/
+.footer{
+text-align:center
+}
+
+#buildversion{
+font-style: italic;
+font-size: small;
+float: right;
+margin-right: 5px;
+}
+/*
+
 /* table of content
 no display
 */
@@ -441,7 +509,7 @@ padding: 3px 15px 3px 0;
 
 .qml{
 display: block;
-margin: 10;
+margin: 10px;
 overflow: auto;
 padding: 20px 20px 20px 20px;
 }
@@ -493,7 +561,7 @@ vertical-align:top;
 -moz-border-radius: 7px 7px 7px 7px;
 -webkit-border-radius: 7px 7px 7px 7px;
 border-radius: 7px 7px 7px 7px;
- background:#FFF url(../images/bgrContent.png);
+ background:#FFF url('../images/bgrContent.png');
 background-position:top;
 background-repeat:repeat-x;
 border: 1px solid #E6E6E6;

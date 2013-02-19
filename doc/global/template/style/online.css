@@ -12,7 +12,7 @@ height: auto
 }
 
 .content{
-    margin: 30px;
+    margin: 15px;
 }
 
 .descr{
@@ -137,64 +137,46 @@ height:20px;
 margin-left:30px;
 }
 
-.breadcrumb{
-display: block;
-position: relative;
-z-index:1;
-height:20px;
-padding:0px;
+.navigationbar {
+    background-repeat: no-repeat;
+    height: 33px;
+    margin: 0px !important;
+    padding: 0px !important;
+    border-bottom: 1px solid rgb(209, 209, 209);
+    background-image: -moz-linear-gradient(center top , rgb(246, 245, 245), rgb(239, 239, 239));
+background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0.0, #efefef), color-stop(0.5,    #f6f5f5) );
+    border-radius: 10px 10px 0px 0px;
+}
+
+.navigationbar ul{
 margin:0px;
-padding-left:10px;
-padding-top:12px;
-margin-left:-5px;
-margin-right:-5px;
-}
-
-.breadcrumb ul{
- margin:0px;
- padding:0px;
-}
-
-.breadcrumb ul li{
-list-style-type:none;
-padding:0;
-margin:0;
+padding:8px 0px 15px 15px;
 height:20px;
 }
 
-.breadcrumb li{
+.navigationbar li{
+list-style-type:none;
 float:left;
+font-size: 15px;
 }
 
-.breadcrumb .first {
-background:url('../images/home.png');
-background-position:left;
-background-repeat:no-repeat;
-padding-left:20px;
-}
-
-
-.breadcrumb li a{
+.navigationbar li a{
 display:block;
 text-decoration:none;
-background:url('../images/arrow.png');
+background:url('../images/arrow_bc.png');
 background-repeat:no-repeat;
 background-position:right;
 padding-right:25px;
-padding-left:10px;
+font-size: inherit;
 }
 
-.breadcrumb li a:hover{
-color:#909090;
-display:block;
-text-decoration:none;
-background:url('../images/arrow.png');
-background-repeat:no-repeat;
-background-position:right;
-padding-right:20px;
-padding-left:10px;
-}
 
+#buildversion{
+font-style: italic;
+font-size: small;
+float: right;
+margin-right: 5px;
+}
 
 /*
 -----------
@@ -844,7 +826,7 @@ p.forum-overview-title,
 p.forum-description,
 p.desc,
 p.forum-lastpost,
-div.breadcrumbs li,
+div.navigationbars li,
 div.block-profile div
 {
     font-size: 13px;
@@ -866,18 +848,23 @@ div.notes p
     font-size: 12px !important;
 }
 
-.line {
-    display: inline-block;
-    background: none repeat scroll 0% 0% rgb(255,255,255);
-    width: 100%;
-    border: 1px solid #DADADA;
-    border-radius: 10px 10px 10px 10px;
-    box-shadow: 0 0 3px #C4C4C4;
-}
 a {
 color: #44a51c;
 text-decoration: none;
 }
 .wrap{
 padding-left: 30px
+}
+
+.main {
+    padding: 0px 30px 30px 30px;
+}
+.main-rounded {
+    display: inline-block;
+    background: none repeat scroll 0% 0% rgb(255,255,255);
+    width: 100%;
+    border: 1px solid #DADADA;
+    border-radius: 10px 10px 10px 10px;
+    box-shadow: 0 0 3px #C4C4C4;
+    padding-bottom: 30px;
 }

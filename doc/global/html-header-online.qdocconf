@@ -1,0 +1,64 @@
+#HTML Header with Qt Project branding and online links
+
+HTML.stylesheets = template/style/online.css
+
+#for including files into the qch file. Relative to the outputdir of a QDoc build.
+# $QT_INSTALL_DOCS/qtquick/style/online.css for example
+qhp.extraFiles += style/online.css
+
+HTML.headerstyles = \
+    "  <link rel=\"stylesheet\" type=\"text/css\" href=\"style/online.css\" />\n"
+
+HTML.endheader = \
+    "</head>\n"
+
+HTML.postheader = \
+    "<body>\n" \
+    "<div class=\"header\" id=\"qtdocheader\"></div>\n" \
+    "    <div class=\"nav\" id=\"qt13a-header\">\n" \
+    "        <div class=\"qt13a-gradient\">\n" \
+    "        <div class=\"qt13a-container qt13a-dynamicREMOVE\" >\n" \
+    "                <div id=\"qt13a-register\">\n" \
+    "                    <a href=\"http://qt-project.org/\">Qt Home</a>\n" \
+    "                    <a href=\"https://bugreports.qt-project.org/\">Bug Tracker</a>\n" \
+    "                    <a href=\"https://codereview.qt-project.org/\">Code Review</a>\n" \
+    "                </div>\n" \
+    "                <div class=\"qt13a-sixCol\">\n" \
+    "                    <div id=\"qt13a-logo\">\n" \
+    "                        <a href=\"http://qt-project.org/\" class=\"qt13a-site-logo\">\n" \
+    "                            <img src=\"images/Qt-logo.png\" alt=\"Qt\"></img>\n" \
+    "                        </a>\n" \
+    "                    </div>\n" \
+    "                    <div id=\"qt13a-title_nav\">\n" \
+    "                        <div id=\"qt13a-title\">\n" \
+    "                                <p class=\"qt13a-title\">Qt Documentation Snapshots</p>\n" \
+    "                        </div>\n" \
+    "                            <div class=\"qt13a-nav\">\n" \
+    "                                <ul>\n" \
+    "                                    <li>\n" \
+    "                                        <a href=\"http://doc-snapshot.qt-project.org\">Snapshots</a>\n" \
+    "                                    </li>\n" \
+    "                                    <li>\n" \
+    "                                        <a href=\"http://qt-project.org/doc\">Released</a>\n" \
+    "                                    </li>\n" \
+    "                                    <li>\n" \
+    "                                        <a href=\"http://doc.qt.digia.com\">Archives</a>\n" \
+    "                                    </li>\n" \
+    "                                </ul>\n" \
+    "                            </div>\n" \
+    "                    </div>\n" \
+    "                </div>\n" \
+    "        </div>\n" \
+    "        </div>\n" \
+    "    </div>\n" \
+    "    <div class=\"main\">\n" \
+    "    <div class=\"main-rounded\">\n" \
+    "        <div class=\"navigationbar\">\n" \
+    "            <ul>\n" \
+
+HTML.postpostheader = \
+    "            </ul>\n" \
+    "        </div>\n" \
+    "<div class=\"content\">\n" \
+    "    <div class=\"line\">\n" \
+    "        <div class=\"content mainContent\">\n" \

@@ -1,3 +1,21 @@
+versionsym              = QT_VERSION_STR
+
+defines                 += Q_QDOC \
+                          QT_.*_SUPPORT \
+                          QT_.*_LIB \
+                          QT_COMPAT \
+                          QT_KEYPAD_NAVIGATION \
+                          QT_NO_EGL \
+                          QT3_SUPPORT \
+                          Q_WS_.* \
+                          Q_OS_.* \
+                          Q_BYTE_ORDER \
+                          QT_DEPRECATED \
+                          QT_DEPRECATED_* \
+                          Q_NO_USING_KEYWORD \
+                          __cplusplus \
+                          Q_COMPILER_INITIALIZER_LISTS
+
 Cpp.ignoretokens        += \
                           PHONON_EXPORT \
                           Q_AUTOTEST_EXPORT \
@@ -90,7 +108,7 @@ Cpp.ignoretokens        += \
                           QTNFC_END_NAMESPACE \
                           QWEBKIT_EXPORT
 
-Cpp.ignoredirectives    = \
+Cpp.ignoredirectives    += \
                           __attribute__ \
                           K_DECLARE_PRIVATE \
                           PHONON_HEIR \

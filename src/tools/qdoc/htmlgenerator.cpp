@@ -166,9 +166,9 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     pleaseGenerateMacRef = config.getBool(HtmlGenerator::format() +
                                           Config::dot +
                                           HTMLGENERATOR_GENERATEMACREFS);
-    noBreadCrumbs = config.getBool(HtmlGenerator::format() +
+    noNavigationBar = config.getBool(HtmlGenerator::format() +
                                    Config::dot +
-                                   HTMLGENERATOR_NOBREADCRUMBS);
+                                   HTMLGENERATOR_NONAVIGATIONBAR);
 
     project = config.getString(CONFIG_PROJECT);
 
@@ -229,6 +229,25 @@ void HtmlGenerator::initializeGenerator(const Config &config)
     examplesPath = config.getString(CONFIG_EXAMPLESINSTALLPATH);
     if (!examplesPath.isEmpty())
         examplesPath += QLatin1Char('/');
+
+    //retrieve the config for the navigation bar
+    homepage = config.getString(CONFIG_NAVIGATION
+                                    + Config::dot
+                                    + CONFIG_HOMEPAGE);
+
+    landingpage = config.getString(CONFIG_NAVIGATION
+                                    + Config::dot
+                                    + CONFIG_LANDINGPAGE);
+
+    cppclassespage = config.getString(CONFIG_NAVIGATION
+                                    + Config::dot
+                                    + CONFIG_CPPCLASSESPAGE);
+
+    qmltypespage = config.getString(CONFIG_NAVIGATION
+                                    + Config::dot
+                                    + CONFIG_QMLTYPESPAGE);
+
+    buildversion = config.getString(CONFIG_BUILDVERSION);
 }
 
 /*!
@@ -1616,129 +1635,67 @@ QString HtmlGenerator::fileExtension() const
 }
 
 /*!
-  Output breadcrumb list in the html file.
+  Output navigation list in the html file.
  */
-void HtmlGenerator::generateBreadCrumbs(const QString &title,
+void HtmlGenerator::generateNavigationBar(const QString &title,
                                         const Node *node,
                                         CodeMarker *marker)
 {
-    if (noBreadCrumbs)
+    if (noNavigationBar)
         return;
 
-    Text breadcrumbs;
+    Text navigationbar;
+
+    if (homepage == title)
+        return;
+    if (!homepage.isEmpty())
+        navigationbar << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::AutoLink, homepage)
+                    << Atom(Atom::ListItemRight);
+    if (!landingpage.isEmpty() && landingpage != title)
+        navigationbar << Atom(Atom::ListItemLeft)
+                    << Atom(Atom::AutoLink, landingpage)
+                    << Atom(Atom::ListItemRight);
+
     if (node->type() == Node::Class) {
         const ClassNode *cn = static_cast<const ClassNode *>(node);
         QString name =  node->moduleName();
-        breadcrumbs << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::Link, QLatin1String("All Modules"))
-                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                    << Atom(Atom::String, QLatin1String("Modules"))
-                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                    << Atom(Atom::ListItemRight);
-        if (!name.isEmpty())
-            breadcrumbs << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::AutoLink, name)
+
+        if (!cppclassespage.isEmpty())
+            navigationbar << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::Link, cppclassespage)
+                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
+                        << Atom(Atom::String, QLatin1String("C++ Classes"))
+                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                         << Atom(Atom::ListItemRight);
+
         if (!cn->name().isEmpty())
-            breadcrumbs << Atom(Atom::ListItemLeft)
+            navigationbar << Atom(Atom::ListItemLeft)
                         << Atom(Atom::String, protectEnc(cn->name()))
                         << Atom(Atom::ListItemRight);
     }
     else if (node->type() == Node::Document) {
-        const DocNode* fn = static_cast<const DocNode*>(node);
-        if (node->subType() == Node::Module) {
-            breadcrumbs << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::Link, QLatin1String("All Modules"))
+        if (node->subType() == Node::QmlClass || node->subType() == Node::QmlBasicType) {
+            if (!qmltypespage.isEmpty())
+                navigationbar << Atom(Atom::ListItemLeft)
+                        << Atom(Atom::Link, qmltypespage)
                         << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                        << Atom(Atom::String, QLatin1String("Modules"))
+                        << Atom(Atom::String, QLatin1String("QML Types"))
                         << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
                         << Atom(Atom::ListItemRight);
-            QString name =  node->name();
-            if (!name.isEmpty())
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::String, protectEnc(name))
-                            << Atom(Atom::ListItemRight);
-        }
-        else if (node->subType() == Node::Group) {
-            if (fn->name() == QString("modules"))
-                breadcrumbs << Atom(Atom::String, QLatin1String("Modules"));
-            else
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::String, protectEnc(title))
-                            << Atom(Atom::ListItemRight);
-        }
-        else if (node->subType() == Node::Page) {
-            if (fn->name() == QString("qdeclarativeexamples.html")) {
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
-                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                            << Atom(Atom::String, QLatin1String("Examples"))
-                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                            << Atom(Atom::ListItemRight);
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::AutoLink, QLatin1String("QML Examples & Demos"))
-                            << Atom(Atom::ListItemRight);
-            }
-            else if (fn->name().startsWith("examples-")) {
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::Link, QLatin1String("Qt Examples"))
-                            << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                            << Atom(Atom::String, QLatin1String("Examples"))
-                            << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                            << Atom(Atom::ListItemRight);
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::String, protectEnc(title))
-                            << Atom(Atom::ListItemRight);
-            }
-            else if (fn->name() == QString("namespaces.html"))
-                breadcrumbs << Atom(Atom::String, QLatin1String("Namespaces"));
-            else
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::String, protectEnc(title))
-                            << Atom(Atom::ListItemRight);
-        }
-        else if (node->subType() == Node::QmlClass) {
-            breadcrumbs << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::AutoLink, QLatin1String("Basic QML Types"))
-                        << Atom(Atom::ListItemRight);
-            breadcrumbs << Atom(Atom::ListItemLeft)
+
+            navigationbar << Atom(Atom::ListItemLeft)
                         << Atom(Atom::String, protectEnc(title))
                         << Atom(Atom::ListItemRight);
         }
-        else if (node->subType() == Node::Example) {
-            breadcrumbs << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::Link, QLatin1String("Qt Examples"))
-                        << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                        << Atom(Atom::String, QLatin1String("Examples"))
-                        << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                        << Atom(Atom::ListItemRight);
-            QStringList sl = fn->name().split('/');
-            if (sl.contains("declarative"))
-                breadcrumbs << Atom(Atom::ListItemLeft)
-                            << Atom(Atom::AutoLink, QLatin1String("QML Examples & Demos"))
-                            << Atom(Atom::ListItemRight);
-            else {
-                QString name = protectEnc("examples-" + sl.at(0) + ".html"); // this generates an empty link
-                QString t = CodeParser::titleFromName(name);
-            }
-            breadcrumbs << Atom(Atom::ListItemLeft)
-                        << Atom(Atom::String, protectEnc(title))
-                        << Atom(Atom::ListItemRight);
+        else {
+            navigationbar << Atom(Atom::ListItemLeft)
+                      << Atom(Atom::String, protectEnc(title))
+                      << Atom(Atom::ListItemRight);
         }
-    }
-    else if (node->type() == Node::Namespace) {
-        breadcrumbs << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::Link, QLatin1String("All Namespaces"))
-                    << Atom(Atom::FormattingLeft, ATOM_FORMATTING_LINK)
-                    << Atom(Atom::String, QLatin1String("Namespaces"))
-                    << Atom(Atom::FormattingRight, ATOM_FORMATTING_LINK)
-                    << Atom(Atom::ListItemRight);
-        breadcrumbs << Atom(Atom::ListItemLeft)
-                    << Atom(Atom::String, protectEnc(title))
-                    << Atom(Atom::ListItemRight);
     }
 
-    generateText(breadcrumbs, node, marker);
+    generateText(navigationbar, node, marker);
 }
 
 void HtmlGenerator::generateHeader(const QString& title,
@@ -1782,7 +1739,8 @@ void HtmlGenerator::generateHeader(const QString& title,
 #endif
 
     out() << QString(postHeader).replace("\\" + COMMAND_VERSION, qdb_->version());
-    generateBreadCrumbs(title,node,marker);
+    generateNavigationBar(title,node,marker);
+    out() << "<li id=\"buildversion\">\n" << buildversion << "</li>\n";
     out() << QString(postPostHeader).replace("\\" + COMMAND_VERSION, qdb_->version());
 
     navigationLinks.clear();

@@ -127,7 +127,7 @@ private:
     };
 
     const QPair<QString,QString> anchorForNode(const Node *node);
-    void generateBreadCrumbs(const QString& title,
+    void generateNavigationBar(const QString& title,
                              const Node *node,
                              CodeMarker *marker);
     void generateHeader(const QString& title,
@@ -239,7 +239,7 @@ private:
     QString footer;
     QString address;
     bool pleaseGenerateMacRef;
-    bool noBreadCrumbs;
+    bool noNavigationBar;
     QString project;
     QString projectDescription;
     QString projectUrl;
@@ -252,6 +252,12 @@ private:
     QStack<QXmlStreamWriter*> xmlWriterStack;
     static int id;
     QList<ManifestMetaFilter> manifestMetaContent;
+    QString homepage;
+    QString landingpage;
+    QString cppclassespage;
+    QString qmltypespage;
+    QString buildversion;
+
 public:
     static bool debugging_on;
     static QString divNavTop;
@@ -262,9 +268,9 @@ public:
 #define HTMLGENERATOR_GENERATEMACREFS   "generatemacrefs" // ### document me
 #define HTMLGENERATOR_POSTHEADER        "postheader"
 #define HTMLGENERATOR_POSTPOSTHEADER    "postpostheader"
-#define HTMLGENERATOR_NOBREADCRUMBS     "nobreadcrumbs"
+#define HTMLGENERATOR_NONAVIGATIONBAR   "nonavigationbar"
+
 
 QT_END_NAMESPACE
 
 #endif
-

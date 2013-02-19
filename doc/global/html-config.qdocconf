@@ -1,23 +1,23 @@
-#include standard set of HTML header and footer.
-include(html-config.qdocconf)
-include(html-header-offline.qdocconf)
-include(html-footer.qdocconf)
+#Additional HTML settings
 
-#uncomment if navigation bar is not wanted
-#HTML.nonavigationbar      = "true"
+HTML.nonavigationbar      = "false"
 
-HTML.stylesheets = template/style/offline.css
-HTML.extraimages += template/images/ico_out.png \
+HTML.extraimages += template/images/arrow_bc.png \
+                    template/images/home.png \
+                    template/images/ico_out.png \
                     template/images/ico_note.png \
                     template/images/ico_note_attention.png \
                     template/images/btn_prev.png \
                     template/images/btn_next.png \
                     template/images/bullet_dn.png \
                     template/images/bullet_sq.png \
-                    template/images/bgrContent.png
+                    template/images/bgrContent.png \
+                    template/images/logo.png
 
 #specify which files in the output directory should be packed into the qch file.
-qhp.extraFiles +=   style/offline.css \
+#these files are assumed to be in each module's output directory."qtquick/images/ico_out.png" for example.
+qhp.extraFiles +=   images/arrow_bc.png \
+                    images/home.png \
                     images/ico_out.png \
                     images/ico_note.png \
                     images/ico_note_attention.png \
@@ -25,4 +25,5 @@ qhp.extraFiles +=   style/offline.css \
                     images/btn_next.png \
                     images/bullet_dn.png \
                     images/bullet_sq.png \
-                    images/bgrContent.png
+                    images/bgrContent.png \
+                    images/logo.png
