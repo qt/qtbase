@@ -382,7 +382,9 @@ if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     PLATFORM_MAC=maybe
 fi
 BUILD_ON_MSYS=no
+HOST_DIRLIST_SEP=":"
 if [ "$OSTYPE" = "msys" ]; then
+    HOST_DIRLIST_SEP=";"
     BUILD_ON_MSYS=yes
 fi
 
@@ -2736,7 +2738,7 @@ fi
 # auto-detect default include and library search paths
 gccout=`$TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null`
 libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
-DEFAULT_LIBDIRS=`IFS=:; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
+DEFAULT_LIBDIRS=`IFS=${HOST_DIRLIST_SEP}; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
 DEFAULT_INCDIRS=`echo "$gccout" | awk '
 /^End of search/ { yup=0 }
 / \(framework directory\)$/ { next }
