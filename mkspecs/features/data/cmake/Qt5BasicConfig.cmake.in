@@ -16,7 +16,7 @@ set(Qt5$${CMAKE_MODULE_NAME}_VERSION_STRING "$$eval(QT.$${MODULE}.MAJOR_VERSION)
 
 set(Qt5$${CMAKE_MODULE_NAME}_LIBRARIES Qt5::$${CMAKE_MODULE_NAME})
 
-macro(_populate_imported_target_properties Configuration LIB_LOCATION IMPLIB_LOCATION)
+macro(_populate_$${CMAKE_MODULE_NAME}_target_properties Configuration LIB_LOCATION IMPLIB_LOCATION)
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${Configuration})
 
     set_target_properties(Qt5::$${CMAKE_MODULE_NAME} PROPERTIES
@@ -120,9 +120,9 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 
 !!IF !isEmpty(CMAKE_DEBUG_TYPE)
 !!IF !isEmpty(CMAKE_STATIC_WINDOWS_BUILD)
-    _populate_imported_target_properties(DEBUG \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" \"\" )
+    _populate_$${CMAKE_MODULE_NAME}_target_properties(DEBUG \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" \"\" )
 !!ELSE
-    _populate_imported_target_properties(DEBUG \"$${CMAKE_LIB_FILE_LOCATION_DEBUG}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" )
+    _populate_$${CMAKE_MODULE_NAME}_target_properties(DEBUG \"$${CMAKE_LIB_FILE_LOCATION_DEBUG}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" )
 !!ENDIF // CMAKE_STATIC_WINDOWS_BUILD
 
 !!IF !isEmpty(CMAKE_FIND_OTHER_LIBRARY_BUILD)
@@ -141,9 +141,9 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF // CMAKE_STATIC_WINDOWS_BUILD
 !!ENDIF
 !!IF !isEmpty(CMAKE_STATIC_WINDOWS_BUILD)
-        _populate_imported_target_properties(RELEASE \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" \"\" )
+        _populate_$${CMAKE_MODULE_NAME}_target_properties(RELEASE \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" \"\" )
 !!ELSE
-        _populate_imported_target_properties(RELEASE \"$${CMAKE_LIB_FILE_LOCATION_RELEASE}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" )
+        _populate_$${CMAKE_MODULE_NAME}_target_properties(RELEASE \"$${CMAKE_LIB_FILE_LOCATION_RELEASE}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" )
 !!ENDIF // CMAKE_STATIC_WINDOWS_BUILD
     endif()
 !!ENDIF // CMAKE_RELEASE_TYPE
@@ -153,9 +153,9 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 
 !!IF !isEmpty(CMAKE_RELEASE_TYPE)
 !!IF !isEmpty(CMAKE_STATIC_WINDOWS_BUILD)
-    _populate_imported_target_properties(RELEASE \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" \"\" )
+    _populate_$${CMAKE_MODULE_NAME}_target_properties(RELEASE \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" \"\" )
 !!ELSE
-    _populate_imported_target_properties(RELEASE \"$${CMAKE_LIB_FILE_LOCATION_RELEASE}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" )
+    _populate_$${CMAKE_MODULE_NAME}_target_properties(RELEASE \"$${CMAKE_LIB_FILE_LOCATION_RELEASE}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_RELEASE}\" )
 !!ENDIF // CMAKE_STATIC_WINDOWS_BUILD
 
 !!IF !isEmpty(CMAKE_FIND_OTHER_LIBRARY_BUILD)
@@ -174,9 +174,9 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 !!ENDIF // CMAKE_STATIC_WINDOWS_BUILD
 !!ENDIF
 !!IF !isEmpty(CMAKE_STATIC_WINDOWS_BUILD)
-        _populate_imported_target_properties(DEBUG \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" \"\" )
+        _populate_$${CMAKE_MODULE_NAME}_target_properties(DEBUG \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" \"\" )
 !!ELSE
-        _populate_imported_target_properties(DEBUG \"$${CMAKE_LIB_FILE_LOCATION_DEBUG}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" )
+        _populate_$${CMAKE_MODULE_NAME}_target_properties(DEBUG \"$${CMAKE_LIB_FILE_LOCATION_DEBUG}\" \"$${CMAKE_IMPLIB_FILE_LOCATION_DEBUG}\" )
 !!ENDIF // CMAKE_STATIC_WINDOWS_BUILD
     endif()
 !!ENDIF // CMAKE_DEBUG_TYPE
