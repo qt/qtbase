@@ -9239,6 +9239,19 @@ QString QString::toHtmlEscaped() const
   \code
   if (attribute.name() == QLatin1String("http-contents-length")) //...
   \endcode
+
+  \note There some restrictions when using the MSVC 2010 or 2012 compilers. The example snippets provided here
+  fail to compile with them.
+  \list
+  \li Concatenated string literals cannot be used with QStringLiteral.
+  \code
+  QString s = QStringLiteral("a" "b");
+  \endcode
+  \li QStringLiteral cannot be used to initialize lists or arrays of QString.
+  \code
+  QString a[] = { QStringLiteral("a"), QStringLiteral("b") };
+  \endcode
+  \endlist
 */
 
 QT_END_NAMESPACE
