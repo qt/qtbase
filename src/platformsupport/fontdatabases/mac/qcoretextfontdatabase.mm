@@ -361,9 +361,9 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
     static QHash<QString, QStringList> fallbackLists;
 
-#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_NA, __IPHONE_6_0)
+#if QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_8, __IPHONE_6_0)
   // CTFontCopyDefaultCascadeListForLanguages is available in the SDK
-  #if QT_MAC_DEPLOYMENT_TARGET_BELOW(__MAC_NA, __IPHONE_6_0)
+  #if QT_MAC_DEPLOYMENT_TARGET_BELOW(__MAC_10_8, __IPHONE_6_0)
     // But we have to feature check at runtime
     if (&CTFontCopyDefaultCascadeListForLanguages)
   #endif
