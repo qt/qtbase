@@ -844,7 +844,9 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
 */
 void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config)
 {
-    d_func()->createSession(config);
+    Q_D(QNetworkAccessManager);
+    d->networkConfiguration = config;
+    d->createSession(config);
 }
 
 /*!
@@ -1050,10 +1052,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         return new QDisabledNetworkReply(this, req, op);
     }
 
-    if (!d->networkSessionStrongRef && (d->initializeSession || !d->networkConfiguration.isEmpty())) {
+    if (!d->networkSessionStrongRef && (d->initializeSession || !d->networkConfiguration.identifier().isEmpty())) {
         QNetworkConfigurationManager manager;
-        if (!d->networkConfiguration.isEmpty()) {
-            d->createSession(manager.configurationFromIdentifier(d->networkConfiguration));
+        if (!d->networkConfiguration.identifier().isEmpty()) {
+            d->createSession(d->networkConfiguration);
         } else {
             if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired)
                 d->createSession(manager.defaultConfiguration());
@@ -1403,7 +1405,7 @@ void QNetworkAccessManagerPrivate::_q_networkSessionClosed()
     Q_Q(QNetworkAccessManager);
     QSharedPointer<QNetworkSession> networkSession(getNetworkSession());
     if (networkSession) {
-        networkConfiguration = networkSession->configuration().identifier();
+        networkConfiguration = networkSession->configuration();
 
         //disconnect from old session
         QObject::disconnect(networkSession.data(), SIGNAL(opened()), q, SIGNAL(networkSessionConnected()));
