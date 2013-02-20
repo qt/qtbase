@@ -1287,17 +1287,15 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                const DocNode* dn = current->qmlBaseNode();
-                if (dn) {
-                    if (dn->subType() == Node::QmlClass)
-                        current = static_cast<const QmlClassNode*>(dn);
-                    else {
-                        dn->doc().location().warning(tr("Base class of QML class '%1' is ambgiguous").arg(current->name()));
-                        current = 0;
-                    }
+                current = current->qmlBaseNode();
+                while (current) {
+                    if (current->isAbstract())
+                        break;
+                    if (current->isInternal())
+                        current = current->qmlBaseNode();
+                    else
+                        break;
                 }
-                else
-                    current = 0;
             }
             append(sections, all, true);
         }

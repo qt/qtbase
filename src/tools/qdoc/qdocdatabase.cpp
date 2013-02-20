@@ -291,18 +291,29 @@ DocNode* QDocDatabase::addToModule(const QString& name, Node* node)
  */
 DocNode* QDocDatabase::addToQmlModule(const QString& name, Node* node)
 {
+    QString longQmid, shortQmid;
+    QStringList dotSplit;
+    QStringList blankSplit = name.split(QLatin1Char(' '));
+    if (blankSplit.size() > 1) {
+        longQmid = blankSplit[0] + blankSplit[1];
+        dotSplit = blankSplit[1].split(QLatin1Char('.'));
+        shortQmid = blankSplit[0] + dotSplit[0];
+    }
     DocNode* dn = findQmlModule(name);
     dn->addMember(node);
     node->setQmlModuleInfo(name);
     if (node->subType() == Node::QmlClass) {
-        QString t = node->qmlModuleIdentifier() + "::" + node->name();
         QmlClassNode* n = static_cast<QmlClassNode*>(node);
-        if (!qmlTypeMap_.contains(t))
-            qmlTypeMap_.insert(t,n);
-        if (!masterMap_.contains(t))
-            masterMap_.insert(t,node);
-        if (!masterMap_.contains(node->name(),node))
-            masterMap_.insert(node->name(),node);
+        QString key = longQmid + "::" + node->name();
+        for (int i=0; i<2; ++i) {
+            if (!qmlTypeMap_.contains(key))
+                qmlTypeMap_.insert(key,n);
+            if (!masterMap_.contains(key))
+                masterMap_.insert(key,node);
+            if (!masterMap_.contains(node->name(),node))
+                masterMap_.insert(node->name(),node);
+            key = shortQmid + "::" + node->name();
+        }
     }
     return dn;
 }
@@ -332,7 +343,45 @@ QmlClassNode* QDocDatabase::findQmlType(const QString& qmid, const QString& name
         }
     }
     return 0;
+}
 
+/*!
+  Looks up the QML type node identified by the Qml module id
+  constructed from the strings in the \a import record and the
+  QML type \a name and returns a pointer to the QML type node.
+  If a QML type node is not found, 0 is returned.
+ */
+QmlClassNode* QDocDatabase::findQmlType(const ImportRec& import, const QString& name) const
+{
+    if (!import.isEmpty()) {
+        QStringList dotSplit;
+        dotSplit = name.split(QLatin1Char('.'));
+        QString qmName;
+        if (import.importUri_.isEmpty())
+            qmName = import.name_;
+        else
+            qmName = import.importUri_;
+        for (int i=0; i<dotSplit.size(); ++i) {
+            QString qmid = qmName + import.version_;
+            QString qualifiedName = qmid + "::" + dotSplit[i];
+            QmlClassNode* qcn = qmlTypeMap_.value(qualifiedName);
+            if (qcn) {
+                return qcn;
+            }
+            if (import.version_.size() > 1) {
+                int dot = import.version_.lastIndexOf(QChar('.'));
+                if (dot > 0) {
+                    qmid = import.name_ + import.version_.left(dot);
+                    qualifiedName = qmid + "::" + dotSplit[i];
+                    qcn = qmlTypeMap_.value(qualifiedName);
+                    if (qcn) {
+                        return qcn;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 /*!
@@ -836,20 +885,47 @@ void QDocDatabase::resolveQmlInheritance(InnerNode* root)
         if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
             QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
             if ((qcn->qmlBaseNode() == 0) && !qcn->qmlBaseName().isEmpty()) {
-                QmlClassNode* bqcn = findQmlType(QString(), qcn->qmlBaseName());
+                QmlClassNode* bqcn = 0;
+                const ImportList& imports = qcn->importList();
+                for (int i=0; i<imports.size(); ++i) {
+                    bqcn = findQmlType(imports[i], qcn->qmlBaseName());
+                    if (bqcn)
+                        break;
+                }
+                if (bqcn == 0) {
+                    bqcn = findQmlType(QString(), qcn->qmlBaseName());
+                }
                 if (bqcn) {
                     qcn->setQmlBaseNode(bqcn);
                 }
 #if 0
                 else {
-                    qDebug() << "Unable to resolve QML base type:" << qcn->qmlBaseName()
-                             << "for QML type:" << qcn->name();
+                    qDebug() << "Temporary error message (ignore): UNABLE to resolve QML base type:"
+                             << qcn->qmlBaseName() << "for QML type:" << qcn->name();
                 }
 #endif
             }
         }
     }
 }
+
+#if 0
+void QDocDatabase::resolveQmlInheritance(InnerNode* root)
+{
+    // Dop we need recursion?
+    foreach (Node* child, root->childNodes()) {
+        if (child->type() == Node::Document && child->subType() == Node::QmlClass) {
+            QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
+            if ((qcn->qmlBaseNode() == 0) && !qcn->qmlBaseName().isEmpty()) {
+                QmlClassNode* bqcn = findQmlType(QString(), qcn->qmlBaseName());
+                if (bqcn) {
+                    qcn->setQmlBaseNode(bqcn);
+                }
+            }
+        }
+    }
+}
+#endif
 
 /*!
  */
