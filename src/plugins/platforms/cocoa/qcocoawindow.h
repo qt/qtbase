@@ -157,6 +157,8 @@ protected:
     QCocoaWindow *parentCocoaWindow() const;
     void syncWindowState(Qt::WindowState newState);
 
+    void updateOpaque();
+
 // private:
 public: // for QNSView
     friend class QCocoaBackingStore;

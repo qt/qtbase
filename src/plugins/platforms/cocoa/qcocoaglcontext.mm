@@ -78,6 +78,10 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     const GLint interval = 1;
     [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
+    if (format.alphaBufferSize() > 0) {
+        int zeroOpacity = 0;
+        [m_context setValues:&zeroOpacity forParameter:NSOpenGLCPSurfaceOpacity];
+    }
 }
 
 QCocoaGLContext::~QCocoaGLContext()

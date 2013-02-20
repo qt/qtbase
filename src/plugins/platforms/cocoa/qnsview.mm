@@ -254,6 +254,11 @@ static QTouchDevice *touchDevice = 0;
     [self setNeedsDisplayInRect:NSMakeRect(br.x(), br.y(), br.width(), br.height())];
 }
 
+- (BOOL) hasMask
+{
+    return m_maskData != 0;
+}
+
 - (void) setMaskRegion:(const QRegion *)region
 {
     if (m_maskImage)

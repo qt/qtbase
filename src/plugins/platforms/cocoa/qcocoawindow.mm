@@ -516,20 +516,30 @@ void QCocoaWindow::propagateSizeHints()
     }
 }
 
+void QCocoaWindow::updateOpaque()
+{
+    bool translucent = window()->format().alphaBufferSize() > 0
+            || window()->opacity() < 1
+            || (m_contentView && [m_contentView hasMask]);
+    [m_nsWindow setOpaque:!translucent];
+}
+
+
 void QCocoaWindow::setOpacity(qreal level)
 {
-    if (m_nsWindow)
+    if (m_nsWindow) {
         [m_nsWindow setAlphaValue:level];
+        updateOpaque();
+    }
 }
 
 void QCocoaWindow::setMask(const QRegion &region)
 {
-    if (m_nsWindow) {
-        [m_nsWindow setOpaque:NO];
+    if (m_nsWindow)
         [m_nsWindow setBackgroundColor:[NSColor clearColor]];
-    }
 
     [m_contentView setMaskRegion:&region];
+    updateOpaque();
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
@@ -726,6 +736,12 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     NSInteger level = windowLevel(flags);
     [createdWindow setLevel:level];
+
+    if (window()->format().alphaBufferSize() > 0) {
+        [createdWindow setBackgroundColor:[NSColor clearColor]];
+        [createdWindow setOpaque:NO];
+    }
+
     m_windowModality = window()->modality();
     return createdWindow;
 }
