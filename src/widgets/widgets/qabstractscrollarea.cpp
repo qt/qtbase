@@ -329,13 +329,13 @@ void QAbstractScrollAreaPrivate::layoutChildren()
 {
     Q_Q(QAbstractScrollArea);
     bool transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar ? vbar : hbar);
-    bool needh = (hbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
+    bool needh = (hbarpolicy != Qt::ScrollBarAlwaysOff) && ((hbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
                  || ((hbarpolicy == Qt::ScrollBarAsNeeded || transient)
-                     && hbar->minimum() < hbar->maximum() && !hbar->sizeHint().isEmpty());
+                     && hbar->minimum() < hbar->maximum() && !hbar->sizeHint().isEmpty()));
 
-    bool needv = (vbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
+    bool needv = (vbarpolicy != Qt::ScrollBarAlwaysOff) && ((vbarpolicy == Qt::ScrollBarAlwaysOn && !transient)
                  || ((vbarpolicy == Qt::ScrollBarAsNeeded || transient)
-                     && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty());
+                     && vbar->minimum() < vbar->maximum() && !vbar->sizeHint().isEmpty()));
 
     QStyleOption opt(0);
     opt.init(q);
@@ -1456,9 +1456,9 @@ void QAbstractScrollAreaPrivate::flashScrollBars()
 {
     Q_Q(QAbstractScrollArea);
     bool transient =  q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar ? vbar : hbar);
-    if (hbarpolicy == Qt::ScrollBarAsNeeded || transient)
+    if ((hbarpolicy != Qt::ScrollBarAlwaysOff) && (hbarpolicy == Qt::ScrollBarAsNeeded || transient))
         hbar->d_func()->flash();
-    if (vbarpolicy == Qt::ScrollBarAsNeeded || transient)
+    if ((vbarpolicy != Qt::ScrollBarAlwaysOff) && (vbarpolicy == Qt::ScrollBarAsNeeded || transient))
         vbar->d_func()->flash();
 }
 
