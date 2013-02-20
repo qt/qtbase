@@ -4,14 +4,11 @@ contains(TEMPLATE, ".*(lib|app)"):CONFIG += have_target
 
 !have_target:!force_qt: CONFIG -= qt
 
-!shared:!dll:!static:!staticlib {
-    contains(QT_CONFIG, static): CONFIG += static
-    else: CONFIG += shared
-}
+load(resolve_config)
 
 QT_BREAKPAD_ROOT_PATH = $$(QT_BREAKPAD_ROOT_PATH)
 !isEmpty(QT_BREAKPAD_ROOT_PATH): \   # quick test first whether requested ...
-        !staticlib:!static:CONFIG(release, debug|release):have_target: \   # is it applicable?
+        !static:release:have_target: \   # is it applicable?
         !contains(TARGET, .*phony_target.*): \   # monster hack, you don't really see this here, right? ;)
         system($$QT_BREAKPAD_ROOT_PATH/qtbreakpadsymbols --breakpad-exists) {    # do we really have it?
     CONFIG += breakpad force_debug_info
@@ -24,9 +21,27 @@ force_debug_info {
     QMAKE_LFLAGS_RELEASE = $$QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
 }
 
-CONFIG(debug, debug|release):load(debug)
-else:load(release)
-debug_and_release:load(debug_and_release)
+debug {
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_DEBUG
+    QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_DEBUG
+    QMAKE_OBJECTIVE_CFLAGS += $$QMAKE_OBJECTIVE_CFLAGS_DEBUG
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS_DEBUG
+    QMAKE_LIBFLAGS += $$QMAKE_LIBFLAGS_DEBUG
+} else {
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_RELEASE
+    QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_RELEASE
+    QMAKE_OBJECTIVE_CFLAGS += $$QMAKE_OBJECTIVE_CFLAGS_RELEASE
+    QMAKE_LFLAGS += $$QMAKE_LFLAGS_RELEASE
+    QMAKE_LIBFLAGS += $$QMAKE_LIBFLAGS_RELEASE
+}
+
+dll:win32: QMAKE_LFLAGS += $$QMAKE_LFLAGS_DLL
+static:mac: QMAKE_LFLAGS += $$QMAKE_LFLAGS_STATIC_LIB
+staticlib:unix {
+    QMAKE_CFLAGS += $$QMAKE_CFLAGS_STATIC_LIB
+    QMAKE_CXXFLAGS += $$QMAKE_CXXFLAGS_STATIC_LIB
+}
+
 incredibuild_xge {
     CONFIG -= incredibuild_xge
     CONFIG = incredibuild_xge $$CONFIG

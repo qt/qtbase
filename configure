@@ -5393,9 +5393,11 @@ fi
 if [ "$CFG_SHARED" = "yes" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-shared"
     QT_CONFIG="$QT_CONFIG shared"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG shared"
 elif [ "$CFG_SHARED" = "no" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-static"
     QT_CONFIG="$QT_CONFIG static"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG static"
 fi
 
 #FIXME: qpa is implicit this should all be removed

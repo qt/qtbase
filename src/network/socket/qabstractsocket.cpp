@@ -313,15 +313,15 @@
            or the proxy server stopped responding in the authentication phase.
     \value ProxyNotFoundError The proxy address set with setProxy() (or the application
            proxy) was not found.
-    \value ProxyProtocolError The connection negotiation with the proxy server
+    \value ProxyProtocolError The connection negotiation with the proxy server failed,
            because the response from the proxy server could not be understood.
     \value OperationError An operation was attempted while the socket was in a state that
            did not permit it.
-    \value SslInternalError The SSL library being used reported a internal error, this is
+    \value SslInternalError The SSL library being used reported an internal error. This is
            probably the result of a bad installation or misconfiguration of the library.
-    \value SslInvalidUserDataError Invalid data(certificate, key, cypher, etc.) was
+    \value SslInvalidUserDataError Invalid data (certificate, key, cypher, etc.) was
            provided and its use resulted in an error in the SSL library.
-    \value TemporaryError A temporary error occurred(e.g., operation would block and socket
+    \value TemporaryError A temporary error occurred (e.g., operation would block and socket
            is non-blocking).
 
     \value UnknownSocketError An unidentified error occurred.

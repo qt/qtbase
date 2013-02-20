@@ -1000,6 +1000,14 @@ void QDockWidgetPrivate::plug(const QRect &rect)
     setWindowState(false, false, rect);
 }
 
+static void setFrameStrutEventsEnabled(const QWidget *w, bool enabled)
+{
+    if (const QWindow *window = w->windowHandle())
+        if (QPlatformWindow *platformWindow = window->handle())
+            if (platformWindow->frameStrutEventsEnabled() != enabled)
+                platformWindow->setFrameStrutEventsEnabled(enabled);
+}
+
 void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect &rect)
 {
     Q_Q(QDockWidget);
@@ -1053,9 +1061,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     }
 
     if (floating && nativeDeco)
-        if (const QWindow *window = q->windowHandle())
-            if (QPlatformWindow *platformWindow = window->handle())
-                platformWindow->setFrameStrutEventsEnabled(true);
+        setFrameStrutEventsEnabled(q, true);
 
     resizer->setActive(QWidgetResizeHandler::Resize, !unplug && floating && !nativeDeco);
 }
@@ -1391,6 +1397,8 @@ bool QDockWidget::event(QEvent *event)
         emit visibilityChanged(false);
         break;
     case QEvent::Show:
+        if (static_cast<QDockWidgetLayout *>(QDockWidget::layout())->nativeWindowDeco(isFloating()))
+            setFrameStrutEventsEnabled(this, true);
         d->toggleViewAction->setChecked(true);
         emit visibilityChanged(geometry().right() >= 0 && geometry().bottom() >= 0);
         break;

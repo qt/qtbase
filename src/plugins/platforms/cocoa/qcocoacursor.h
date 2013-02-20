@@ -53,6 +53,7 @@ class QCocoaCursor : public QPlatformCursor
 {
 public:
     QCocoaCursor();
+    ~QCocoaCursor();
 
     virtual void changeCursor(QCursor * widgetCursor, QWindow * widget);
     virtual QPoint pos() const;
