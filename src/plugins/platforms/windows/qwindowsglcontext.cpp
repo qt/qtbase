@@ -232,6 +232,7 @@ static QSurfaceFormat
                                          QWindowsOpenGLAdditionalFormat *additionalIn = 0)
 {
     QSurfaceFormat format;
+    format.setRenderableType(QSurfaceFormat::OpenGL);
     if (pfd.dwFlags & PFD_DOUBLEBUFFER)
         format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     format.setDepthBufferSize(pfd.cDepthBits);
@@ -500,6 +501,7 @@ static QSurfaceFormat
     enum { attribSize =40 };
 
     QSurfaceFormat result;
+    result.setRenderableType(QSurfaceFormat::OpenGL);
     if (!staticContext.hasExtensions())
         return result;
     int iAttributes[attribSize];
@@ -875,6 +877,12 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
     m_renderingContext(0),
     m_pixelFormat(0), m_extensionsUsed(false)
 {
+    QSurfaceFormat format = context->format();
+    if (format.renderableType() == QSurfaceFormat::DefaultRenderableType)
+        format.setRenderableType(QSurfaceFormat::OpenGL);
+    if (format.renderableType() != QSurfaceFormat::OpenGL)
+        return;
+
     // workaround for matrox driver:
     // make a cheap call to opengl to force loading of DLL
     static bool opengl32dll = false;
@@ -912,7 +920,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         QWindowsOpenGLAdditionalFormat obtainedAdditional;
         if (tryExtensions) {
             m_pixelFormat =
-                ARB::choosePixelFormat(hdc, *m_staticContext, context->format(),
+                ARB::choosePixelFormat(hdc, *m_staticContext, format,
                                        requestedAdditional, &m_obtainedPixelFormatDescriptor);
             if (m_pixelFormat > 0) {
                 m_obtainedFormat =
@@ -922,7 +930,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
             }
         } // tryExtensions
         if (!m_pixelFormat) { // Failed, try GDI
-            m_pixelFormat = GDI::choosePixelFormat(hdc, context->format(), requestedAdditional,
+            m_pixelFormat = GDI::choosePixelFormat(hdc, format, requestedAdditional,
                                                    &m_obtainedPixelFormatDescriptor);
             if (m_pixelFormat)
                 m_obtainedFormat =
@@ -945,7 +953,7 @@ QWindowsGLContext::QWindowsGLContext(const QOpenGLStaticContextPtr &staticContex
         if (m_extensionsUsed)
             m_renderingContext =
                 ARB::createContext(*m_staticContext, hdc,
-                                   context->format(),
+                                   format,
                                    requestedAdditional,
                                    sharingRenderingContext);
         if (!m_renderingContext)
