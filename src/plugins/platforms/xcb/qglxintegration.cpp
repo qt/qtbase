@@ -270,14 +270,19 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     : QPlatformOpenGLContext()
     , m_screen(screen)
     , m_context(0)
+    , m_shareContext(0)
     , m_format(format)
     , m_isPBufferCurrent(false)
 {
-    m_shareContext = 0;
+    if (m_format.renderableType() == QSurfaceFormat::DefaultRenderableType)
+        m_format.setRenderableType(QSurfaceFormat::OpenGL);
+    if (m_format.renderableType() != QSurfaceFormat::OpenGL)
+        return;
+
     if (share)
         m_shareContext = static_cast<const QGLXContext*>(share)->glxContext();
 
-    GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),format);
+    GLXFBConfig config = qglx_findConfig(DISPLAY_FROM_XCB(screen),screen->screenNumber(),m_format);
     XVisualInfo *visualInfo = 0;
     Window window = 0; // Temporary window used to query OpenGL context
 
@@ -297,7 +302,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
             // context format that that which was requested and is supported by the driver
             const int maxSupportedVersion = (defaultContextInfo->format.majorVersion() << 8)
                                           + defaultContextInfo->format.minorVersion();
-            const int requestedVersion = qMin((format.majorVersion() << 8) + format.minorVersion(),
+            const int requestedVersion = qMin((m_format.majorVersion() << 8) + m_format.minorVersion(),
                                                maxSupportedVersion);
             const int majorVersion = requestedVersion >> 8;
             const int minorVersion = requestedVersion & 0xFF;

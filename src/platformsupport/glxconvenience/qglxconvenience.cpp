@@ -224,6 +224,8 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
 QSurfaceFormat qglx_surfaceFormatFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext)
 {
     QSurfaceFormat format;
+    format.setRenderableType(QSurfaceFormat::OpenGL);
+
     int redSize     = 0;
     int greenSize   = 0;
     int blueSize    = 0;
