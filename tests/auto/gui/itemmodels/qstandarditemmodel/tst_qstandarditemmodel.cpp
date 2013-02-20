@@ -718,6 +718,8 @@ void tst_QStandardItemModel::checkChildren()
     QVERIFY(!model.hasChildren());
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 1);
+
+    QVERIFY(!model.index(0,0).sibling(100,100).isValid());
 }
 
 void tst_QStandardItemModel::data()
