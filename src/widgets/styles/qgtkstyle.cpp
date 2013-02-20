@@ -3173,7 +3173,8 @@ void QGtkStyle::drawControl(ControlElement element,
 
 #ifndef QT_NO_COMBOBOX
 
-            if (qobject_cast<const QComboBox*>(widget))
+            if (qobject_cast<const QComboBox*>(widget) ||
+                option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool())
                 ignoreCheckMark = true; // Ignore the checkmarks provided by the QComboMenuDelegate
 
 #endif
