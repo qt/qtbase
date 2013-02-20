@@ -69,9 +69,16 @@ public:
     QPlatformCursor *cursor() const;
 
     EGLDisplay display() const { return m_dpy; }
+    EGLSurface primarySurface() const { return m_surface; }
+
+protected:
+    void setPrimarySurface(EGLSurface surface);
 
 private:
+    friend class QEglFSWindow;
+
     EGLDisplay m_dpy;
+    EGLSurface m_surface;
     QEglFSCursor *m_cursor;
 };
 

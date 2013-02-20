@@ -59,8 +59,10 @@ public:
     void setWindowState(Qt::WindowState state);
     WId winId() const;
 
-    EGLSurface surface() const { return m_surface; }
+    EGLSurface surface() const;
     QSurfaceFormat format() const;
+
+    QEglFSScreen *screen() const;
 
     void create();
     void destroy();

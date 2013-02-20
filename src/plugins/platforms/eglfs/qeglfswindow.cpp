@@ -42,6 +42,8 @@
 #include "qeglfswindow.h"
 #include "qeglfshooks.h"
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
 
 #include <QtPlatformSupport/private/qeglconvenience_p.h>
 
@@ -66,6 +68,11 @@ QEglFSWindow::~QEglFSWindow()
     destroy();
 }
 
+static inline bool supportsMultipleWindows()
+{
+    return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
+}
+
 void QEglFSWindow::create()
 {
     if (m_window)
@@ -79,6 +86,9 @@ void QEglFSWindow::create()
         QWindowSystemInterface::handleGeometryChange(window(), rect);
         return;
     }
+
+    if (!supportsMultipleWindows() && screen()->primarySurface())
+        return;
 
     EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
     QSurfaceFormat platformFormat = QEglFSHooks::hooks()->surfaceFormatFor(window()->requestedFormat());
@@ -104,11 +114,14 @@ void QEglFSWindow::resetSurface()
 
     m_window = QEglFSHooks::hooks()->createNativeWindow(QEglFSHooks::hooks()->screenSize(), m_format);
     m_surface = eglCreateWindowSurface(display, m_config, m_window, NULL);
+
     if (m_surface == EGL_NO_SURFACE) {
         EGLint error = eglGetError();
         eglTerminate(display);
         qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
     }
+
+    screen()->setPrimarySurface(m_surface);
 }
 
 void QEglFSWindow::destroy()
@@ -116,6 +129,12 @@ void QEglFSWindow::destroy()
     if (m_surface) {
         EGLDisplay display = static_cast<QEglFSScreen *>(screen())->display();
         eglDestroySurface(display, m_surface);
+
+        if (!supportsMultipleWindows()) {
+            // ours must be the primary surface
+            screen()->setPrimarySurface(0);
+        }
+
         m_surface = 0;
     }
 
@@ -144,9 +163,21 @@ WId QEglFSWindow::winId() const
     return m_winid;
 }
 
+EGLSurface QEglFSWindow::surface() const
+{
+    if (!supportsMultipleWindows())
+        return screen()->primarySurface();
+    return m_surface;
+}
+
 QSurfaceFormat QEglFSWindow::format() const
 {
     return m_format;
+}
+
+QEglFSScreen *QEglFSWindow::screen() const
+{
+    return static_cast<QEglFSScreen *>(QPlatformWindow::screen());
 }
 
 QT_END_NAMESPACE

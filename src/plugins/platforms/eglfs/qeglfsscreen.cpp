@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 QEglFSScreen::QEglFSScreen(EGLDisplay dpy)
     : m_dpy(dpy)
+    , m_surface(0)
     , m_cursor(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
@@ -93,6 +94,11 @@ QDpi QEglFSScreen::logicalDpi() const
 QPlatformCursor *QEglFSScreen::cursor() const
 {
     return m_cursor;
+}
+
+void QEglFSScreen::setPrimarySurface(EGLSurface surface)
+{
+    m_surface = surface;
 }
 
 QT_END_NAMESPACE
