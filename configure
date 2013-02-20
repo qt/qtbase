@@ -3202,7 +3202,7 @@ Third Party Libraries:
 Additional options:
 
     -make <part> ....... Add part to the list of parts to be built at make time.
-                         ($QT_DEFAULT_BUILD_PARTS)
+                         (defaults to: $QT_DEFAULT_BUILD_PARTS)
     -nomake <part> ..... Exclude part from the list of parts to be built.
 
     -skip <module> ..... Exclude an entire module from the build.
