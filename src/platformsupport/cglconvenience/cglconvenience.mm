@@ -61,6 +61,7 @@ void (*qcgl_getProcAddress(const QByteArray &procName))()
 QSurfaceFormat qcgl_surfaceFormat()
 {
     QSurfaceFormat format;
+    format.setRenderableType(QSurfaceFormat::OpenGL);
     format.setRedBufferSize(8);
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
