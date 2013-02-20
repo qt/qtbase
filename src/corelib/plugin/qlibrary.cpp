@@ -502,7 +502,7 @@ bool QLibraryPrivate::unload(UnloadFlag flag)
 {
     if (!pHnd)
         return false;
-    if (!libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
+    if (libraryUnloadCount.load() > 0 && !libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
         delete inst.data();
         if (flag == NoUnloadSys || unload_sys()) {
             if (qt_debug_component())
