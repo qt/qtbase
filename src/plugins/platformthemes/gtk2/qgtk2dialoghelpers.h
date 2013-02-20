@@ -74,7 +74,7 @@ private:
     static void onColorChanged(QGtk2ColorDialogHelper *helper);
     void applyOptions();
 
-    mutable QScopedPointer<QGtk2Dialog> d;
+    QScopedPointer<QGtk2Dialog> d;
 };
 
 class QGtk2FileDialogHelper : public QPlatformFileDialogHelper
@@ -111,7 +111,7 @@ private:
     QStringList _selection;
     QHash<QString, GtkFileFilter*> _filters;
     QHash<GtkFileFilter*, QString> _filterNames;
-    mutable QScopedPointer<QGtk2Dialog> d;
+    QScopedPointer<QGtk2Dialog> d;
 };
 
 class QGtk2FontDialogHelper : public QPlatformFontDialogHelper
@@ -135,7 +135,7 @@ private Q_SLOTS:
 private:
     void applyOptions();
 
-    mutable QScopedPointer<QGtk2Dialog> d;
+    QScopedPointer<QGtk2Dialog> d;
 };
 
 QT_END_NAMESPACE
