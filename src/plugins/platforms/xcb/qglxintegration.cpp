@@ -71,6 +71,10 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXC
 #define GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB 0x00000002
 #endif
 
+#ifndef GLX_CONTEXT_ES2_PROFILE_BIT_EXT
+#define GLX_CONTEXT_ES2_PROFILE_BIT_EXT 0x00000004
+#endif
+
 #ifndef GLX_CONTEXT_PROFILE_MASK_ARB
 #define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
 #endif
@@ -123,33 +127,34 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     }
 
     format.setProfile(QSurfaceFormat::NoProfile);
+    format.setOption(QSurfaceFormat::FormatOptions());
 
-    const int version = (major << 8) + minor;
-    if (version < 0x0300) {
-        format.setProfile(QSurfaceFormat::NoProfile);
-        format.setOption(QSurfaceFormat::DeprecatedFunctions);
-        return;
+    if (format.renderableType() == QSurfaceFormat::OpenGL) {
+        if (format.version() < qMakePair(3, 0)) {
+            format.setOption(QSurfaceFormat::DeprecatedFunctions);
+            return;
+        }
+
+        // Version 3.0 onwards - check if it includes deprecated functionality or is
+        // a debug context
+        GLint value = 0;
+        glGetIntegerv(GL_CONTEXT_FLAGS, &value);
+        if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
+            format.setOption(QSurfaceFormat::DeprecatedFunctions);
+        if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
+            format.setOption(QSurfaceFormat::DebugContext);
+        if (format.version() < qMakePair(3, 2))
+            return;
+
+        // Version 3.2 and newer have a profile
+        value = 0;
+        glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
+
+        if (value & GL_CONTEXT_CORE_PROFILE_BIT)
+            format.setProfile(QSurfaceFormat::CoreProfile);
+        else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
+            format.setProfile(QSurfaceFormat::CompatibilityProfile);
     }
-
-    // Version 3.0 onwards - check if it includes deprecated functionality or is
-    // a debug context
-    GLint value = 0;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &value);
-    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
-        format.setOption(QSurfaceFormat::DeprecatedFunctions);
-    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
-        format.setOption(QSurfaceFormat::DebugContext);
-    if (version < 0x0302)
-        return;
-
-    // Version 3.2 and newer have a profile
-    value = 0;
-    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
-
-    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
-        format.setProfile(QSurfaceFormat::CoreProfile);
-    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
-        format.setProfile(QSurfaceFormat::CompatibilityProfile);
 }
 
 QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlatformOpenGLContext *share)
@@ -162,7 +167,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 {
     if (m_format.renderableType() == QSurfaceFormat::DefaultRenderableType)
         m_format.setRenderableType(QSurfaceFormat::OpenGL);
-    if (m_format.renderableType() != QSurfaceFormat::OpenGL)
+    if (m_format.renderableType() != QSurfaceFormat::OpenGL && m_format.renderableType() != QSurfaceFormat::OpenGLES)
         return;
 
     if (share)
@@ -181,17 +186,31 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
         bool supportsProfiles = glxExt.contains("GLX_ARB_create_context_profile");
 
         // Use glXCreateContextAttribsARB if available
-        if (glxExt.contains("GLX_ARB_create_context") && glXCreateContextAttribsARB != 0) {
+        // Also, GL ES context creation requires GLX_EXT_create_context_es2_profile
+        if (glxExt.contains("GLX_ARB_create_context") && glXCreateContextAttribsARB != 0
+                && (m_format.renderableType() != QSurfaceFormat::OpenGLES || (supportsProfiles && glxExt.contains("GLX_EXT_create_context_es2_profile")))) {
             // Try to create an OpenGL context for each known OpenGL version in descending
             // order from the requested version.
             const int requestedVersion = format.majorVersion() * 10 + qMin(format.minorVersion(), 9);
 
             QVector<int> glVersions;
-            if (requestedVersion > 43)
-                glVersions << requestedVersion;
+            if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
+                if (requestedVersion > 43)
+                    glVersions << requestedVersion;
 
-            // Don't bother with versions below 2.0
-            glVersions << 43 << 42 << 41 << 40 << 33 << 32 << 31 << 30 << 21 << 20;
+                // Don't bother with versions below 2.0
+                glVersions << 43 << 42 << 41 << 40 << 33 << 32 << 31 << 30 << 21 << 20;
+            } else if (m_format.renderableType() == QSurfaceFormat::OpenGLES) {
+                if (requestedVersion > 30)
+                    glVersions << requestedVersion;
+
+                // Don't bother with versions below ES 2.0
+                glVersions << 30 << 20;
+                // ES does not support any format option
+                m_format.setOption(QSurfaceFormat::FormatOptions());
+            }
+
+            Q_ASSERT(glVersions.count() > 0);
 
             for (int i = 0; !m_context && i < glVersions.count(); i++) {
                 const int version = glVersions[i];
@@ -205,25 +224,30 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
                 contextAttributes << GLX_CONTEXT_MAJOR_VERSION_ARB << majorVersion
                                   << GLX_CONTEXT_MINOR_VERSION_ARB << minorVersion;
 
-                // If asking for OpenGL 3.2 or newer we should also specify a profile
-                if (version >= 32 && supportsProfiles) {
-                    if (m_format.profile() == QSurfaceFormat::CoreProfile)
-                        contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-                    else
-                        contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+
+                if (m_format.renderableType() == QSurfaceFormat::OpenGL) {
+                    // If asking for OpenGL 3.2 or newer we should also specify a profile
+                    if (version >= 32 && supportsProfiles) {
+                        if (m_format.profile() == QSurfaceFormat::CoreProfile)
+                            contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+                        else
+                            contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
+                    }
+
+                    int flags = 0;
+
+                    if (m_format.testOption(QSurfaceFormat::DebugContext))
+                        flags |= GLX_CONTEXT_DEBUG_BIT_ARB;
+
+                    // A forward-compatible context may be requested for 3.0 and later
+                    if (version >= 30 && !m_format.testOption(QSurfaceFormat::DeprecatedFunctions))
+                        flags |= GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+
+                    if (flags != 0)
+                        contextAttributes << GLX_CONTEXT_FLAGS_ARB << flags;
+                } else if (m_format.renderableType() == QSurfaceFormat::OpenGLES) {
+                    contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_ES2_PROFILE_BIT_EXT;
                 }
-
-                int flags = 0;
-
-                if (m_format.testOption(QSurfaceFormat::DebugContext))
-                    flags |= GLX_CONTEXT_DEBUG_BIT_ARB;
-
-                // A forward-compatible context may be requested for 3.0 and later
-                if (version >= 30 && !m_format.testOption(QSurfaceFormat::DeprecatedFunctions))
-                    flags |= GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
-
-                if (flags != 0)
-                    contextAttributes << GLX_CONTEXT_FLAGS_ARB << flags;
 
                 contextAttributes << None;
 
@@ -239,6 +263,10 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 
         // Could not create a context using glXCreateContextAttribsARB, falling back to glXCreateNewContext.
         if (!m_context) {
+            // requesting an OpenGL ES context requires glXCreateContextAttribsARB, so bail out
+            if (m_format.renderableType() == QSurfaceFormat::OpenGLES)
+                return;
+
             m_context = glXCreateNewContext(DISPLAY_FROM_XCB(screen), config, GLX_RGBA_TYPE, m_shareContext, true);
             if (!m_context && m_shareContext) {
                 // re-try without a shared glx context
@@ -255,6 +283,10 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
         // Create a temporary window so that we can make the new context current
         window = createDummyWindow(screen, config);
     } else {
+        // requesting an OpenGL ES context requires glXCreateContextAttribsARB, so bail out
+        if (m_format.renderableType() == QSurfaceFormat::OpenGLES)
+            return;
+
         // Note that m_format gets updated with the used surface format
         visualInfo = qglx_findVisualInfo(DISPLAY_FROM_XCB(screen), screen->screenNumber(), &m_format);
         if (!visualInfo)
