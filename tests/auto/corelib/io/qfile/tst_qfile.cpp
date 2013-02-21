@@ -82,6 +82,12 @@ QT_END_NAMESPACE
 # include <qplatformdefs.h>
 #endif
 
+#ifdef Q_OS_QNX
+#ifdef open
+#undef open
+#endif
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 
