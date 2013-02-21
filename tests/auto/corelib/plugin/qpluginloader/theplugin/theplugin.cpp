@@ -46,3 +46,9 @@ QString ThePlugin::pluginName() const
 {
     return QLatin1String("Plugin ok");
 }
+
+static int pluginVariable = 0xc0ffee;
+extern "C" Q_DECL_EXPORT int *pointerAddress()
+{
+    return &pluginVariable;
+}

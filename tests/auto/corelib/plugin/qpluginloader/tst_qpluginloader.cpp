@@ -99,7 +99,11 @@
 
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
-    return QFINDTESTDATA(QString("bin/%1%2%3").arg(PREFIX).arg(fileName).arg(SUFFIX));
+    QString libname = QFINDTESTDATA(QString("bin/%1%2%3").arg(PREFIX).arg(fileName).arg(SUFFIX));
+    QFileInfo fi(libname);
+    if (fi.exists())
+        return fi.canonicalFilePath();
+    return libname;
 }
 
 QT_FORWARD_DECLARE_CLASS(QPluginLoader)
@@ -119,6 +123,8 @@ private slots:
 #endif
     void relativePath();
     void reloadPlugin();
+    void preloadedPlugin_data();
+    void preloadedPlugin();
 };
 
 void tst_QPluginLoader::cleanup()
@@ -354,6 +360,47 @@ void tst_QPluginLoader::reloadPlugin()
 
     QVERIFY(loader.unload());
 }
+
+void tst_QPluginLoader::preloadedPlugin_data()
+{
+    QTest::addColumn<bool>("doLoad");
+    QTest::addColumn<QString>("libname");
+    QTest::newRow("create-plugin") << false << sys_qualifiedLibraryName("theplugin");
+    QTest::newRow("load-plugin") << true << sys_qualifiedLibraryName("theplugin");
+    QTest::newRow("create-non-plugin") << false << sys_qualifiedLibraryName("tst_qpluginloaderlib");
+    QTest::newRow("load-non-plugin") << true << sys_qualifiedLibraryName("tst_qpluginloaderlib");
+}
+
+void tst_QPluginLoader::preloadedPlugin()
+{
+    // check that using QPluginLoader does not interfere with QLibrary
+    QFETCH(QString, libname);
+    QLibrary lib(libname);
+    QVERIFY(lib.load());
+
+    typedef int *(*pf_t)();
+    pf_t pf = (pf_t)lib.resolve("pointerAddress");
+    QVERIFY(pf);
+
+    int *pluginVariable = pf();
+    QVERIFY(pluginVariable);
+    QCOMPARE(*pluginVariable, 0xc0ffee);
+
+    {
+        // load the plugin
+        QPluginLoader loader(libname);
+        QFETCH(bool, doLoad);
+        if (doLoad && loader.load()) {
+            // unload() returns false because QLibrary has it loaded
+            QVERIFY(!loader.unload());
+        }
+    }
+
+    QVERIFY(lib.isLoaded());
+
+    // if the library was unloaded behind our backs, the following will crash:
+    QCOMPARE(*pluginVariable, 0xc0ffee);
+    QVERIFY(lib.unload());
 }
 
 QTEST_MAIN(tst_QPluginLoader)

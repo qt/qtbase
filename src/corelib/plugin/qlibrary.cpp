@@ -711,7 +711,7 @@ void QLibraryPrivate::updatePluginState()
                 hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, dwFlags);
                 SetErrorMode(oldmode);
 #else
-                temporary_load =  load_sys();
+                temporary_load =  load();
 #endif
             }
             QtPluginQueryVerificationDataFunction getMetaData = NULL;
@@ -736,11 +736,10 @@ void QLibraryPrivate::updatePluginState()
             if (getMetaData)
                 ret = qt_get_metadata(getMetaData, this, &exceptionThrown);
 
+            if (temporary_load)
+                unload();
             if (!exceptionThrown) {
-                if (!ret) {
-                    if (temporary_load)
-                        unload_sys();
-                } else {
+                if (ret) {
                     success = true;
                 }
                 retryLoadLibrary = false;

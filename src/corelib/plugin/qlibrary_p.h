@@ -127,7 +127,9 @@ private:
     bool unload_sys();
     QFunctionPointer resolve_sys(const char *);
 
+    /// counts how many QLibrary or QPluginLoader are attached to us, plus 1 if it's loaded
     QAtomicInt libraryRefCount;
+    /// counts how many times load() or loadPlugin() were called
     QAtomicInt libraryUnloadCount;
 
     enum { IsAPlugin, IsNotAPlugin, MightBeAPlugin } pluginState;
