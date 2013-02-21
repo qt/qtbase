@@ -1681,6 +1681,47 @@ QKeySequence QKeySequence::fromString(const QString &str, SequenceFormat format)
     return QKeySequence(str, format);
 }
 
+/*!
+    \since 5.1
+
+    Return a list of QKeySequence from the string \a str based on \a format.
+
+    \sa fromString()
+    \sa listToString()
+*/
+QList<QKeySequence> QKeySequence::listFromString(const QString &str, SequenceFormat format)
+{
+    QList<QKeySequence> result;
+
+    QStringList strings = str.split(QLatin1String("; "));
+    foreach (const QString &string, strings) {
+        result << fromString(string, format);
+    }
+
+    return result;
+}
+
+/*!
+    \since 5.1
+
+    Return a string representation of \a list based on \a format.
+
+    \sa toString()
+    \sa listFromString()
+*/
+QString QKeySequence::listToString(const QList<QKeySequence> &list, SequenceFormat format)
+{
+    QString result;
+
+    foreach (const QKeySequence &sequence, list) {
+        result += sequence.toString(format);
+        result += QLatin1String("; ");
+    }
+    result.truncate(result.length() - 2);
+
+    return result;
+}
+
 /*****************************************************************************
   QKeySequence stream functions
  *****************************************************************************/

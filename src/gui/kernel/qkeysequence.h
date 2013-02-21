@@ -163,6 +163,9 @@ public:
     QString toString(SequenceFormat format = PortableText) const;
     static QKeySequence fromString(const QString &str, SequenceFormat format = PortableText);
 
+    static QList<QKeySequence> listFromString(const QString &str, SequenceFormat format = PortableText);
+    static QString listToString(const QList<QKeySequence> &list, SequenceFormat format = PortableText);
+
     SequenceMatch matches(const QKeySequence &seq) const;
     static QKeySequence mnemonic(const QString &text);
     static QList<QKeySequence> keyBindings(StandardKey key);
