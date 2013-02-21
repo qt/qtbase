@@ -106,6 +106,8 @@ QT_FORWARD_DECLARE_CLASS(QPluginLoader)
 class tst_QPluginLoader : public QObject
 {
     Q_OBJECT
+public slots:
+    void cleanup();
 private slots:
     void errorString();
     void loadHints();
@@ -118,6 +120,21 @@ private slots:
     void relativePath();
     void reloadPlugin();
 };
+
+void tst_QPluginLoader::cleanup()
+{
+    // check if the library/plugin was leaked
+    // we can't use QPluginLoader::isLoaded here because on some platforms the plugin is always loaded by QPluginLoader.
+    // Also, if this test fails once, it will keep on failing because we can't force the unload,
+    // so we report it only once.
+    static bool failedAlready = false;
+    if (!failedAlready) {
+        QLibrary lib(sys_qualifiedLibraryName("theplugin"));
+        failedAlready = true;
+        QVERIFY2(!lib.isLoaded(), "Plugin was leaked - will not check again");
+        failedAlready = false;
+    }
+}
 
 void tst_QPluginLoader::errorString()
 {
@@ -334,6 +351,9 @@ void tst_QPluginLoader::reloadPlugin()
     PluginInterface *instance2 = qobject_cast<PluginInterface*>(loader.instance());
     QVERIFY(instance2);
     QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
+
+    QVERIFY(loader.unload());
+}
 }
 
 QTEST_MAIN(tst_QPluginLoader)
