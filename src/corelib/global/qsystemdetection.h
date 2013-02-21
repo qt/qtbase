@@ -208,6 +208,22 @@
 #       define MAC_OS_X_VERSION_10_8 1080
 #  endif
 #
+#  if !defined(__IPHONE_4_3)
+#       define __IPHONE_4_3 40300
+#  endif
+#  if !defined(__IPHONE_5_0)
+#       define __IPHONE_5_0 50000
+#  endif
+#  if !defined(__IPHONE_5_1)
+#       define __IPHONE_5_1 50100
+#  endif
+#  if !defined(__IPHONE_6_0)
+#       define __IPHONE_6_0 60000
+#  endif
+#  if !defined(__IPHONE_6_1)
+#       define __IPHONE_6_1 60100
+#  endif
+#
 #  if (__MAC_OS_X_VERSION_MAX_ALLOWED > __MAC_10_8)
 #    warning "This version of Mac OS X is unsupported"
 #  endif
