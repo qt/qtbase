@@ -54,6 +54,8 @@ public:
     QIOSIntegration();
     ~QIOSIntegration();
 
+    bool hasCapability(Capability cap) const;
+
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
 

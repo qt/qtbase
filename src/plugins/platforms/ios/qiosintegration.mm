@@ -84,6 +84,18 @@ QIOSIntegration::~QIOSIntegration()
     delete m_touchDevice;
 }
 
+bool QIOSIntegration::hasCapability(Capability cap) const
+{
+    switch (cap) {
+    case OpenGL:
+        return true;
+    case MultipleWindows:
+        return true;
+    default:
+        return QPlatformIntegration::hasCapability(cap);
+    }
+}
+
 QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 {
     qDebug() <<  __FUNCTION__ << "Creating platform window";
