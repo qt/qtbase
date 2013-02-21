@@ -193,6 +193,9 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         QString qmlModuleName = element.attribute("qml-module-name");
         QString qmlModuleVersion = element.attribute("qml-module-version");
         qdb_->addToQmlModule(qmlModuleName + " " + qmlModuleVersion, qcn);
+        QString qmlFullBaseName = element.attribute("qml-base-type");
+        if (!qmlFullBaseName.isEmpty())
+            qcn->setQmlBaseName(qmlFullBaseName);
         if (element.hasAttribute("location"))
             name = element.attribute("location", QString());
         if (!indexUrl.isEmpty())
@@ -597,6 +600,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     QString nodeName;
     QString qmlModuleName;
     QString qmlModuleVersion;
+    QString qmlFullBaseName;
     switch (node->type()) {
     case Node::Namespace:
         nodeName = "namespace";
@@ -610,6 +614,7 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
             nodeName = "qmlclass";
             qmlModuleName = node->qmlModuleName();
             qmlModuleVersion = node->qmlModuleVersion();
+            qmlFullBaseName = node->qmlFullBaseName();
         }
         else if (node->subType() == Node::QmlBasicType)
             nodeName = "qmlbasictype";
@@ -728,6 +733,8 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     if (!qmlModuleName.isEmpty()) {
         writer.writeAttribute("qml-module-name", qmlModuleName);
         writer.writeAttribute("qml-module-version", qmlModuleVersion);
+        if (!qmlFullBaseName.isEmpty())
+            writer.writeAttribute("qml-base-type", qmlFullBaseName);
     }
     QString fullName = node->fullDocumentName();
     if (fullName != objName)

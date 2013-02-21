@@ -1259,7 +1259,6 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
         }
         else {
             FastSection all(qmlClassNode,QString(),QString(),"member","members");
-
             const QmlClassNode* current = qmlClassNode;
             while (current != 0) {
                 NodeList::ConstIterator c = current->childNodes().constBegin();
@@ -1271,9 +1270,9 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                             if ((*p)->type() == Node::QmlProperty) {
                                 QString key = current->name() + "::" + (*p)->name();
                                 key = sortName(*p, &key);
-                                if (!all.memberMap.contains(key))
+                                if (!all.memberMap.contains(key)) {
                                     all.memberMap.insert(key,*p);
-                                //insert(all,*p,style,Okay);
+                                }
                             }
                             ++p;
                         }
@@ -1281,9 +1280,9 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     else {
                         QString key = current->name() + "::" + (*c)->name();
                         key = sortName(*c, &key);
-                        if (!all.memberMap.contains(key))
+                        if (!all.memberMap.contains(key)) {
                             all.memberMap.insert(key,*c);
-                        //insert(all,*c,style,Okay);
+                        }
                     }
                     ++c;
                 }

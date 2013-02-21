@@ -886,11 +886,16 @@ void QDocDatabase::resolveQmlInheritance(InnerNode* root)
             QmlClassNode* qcn = static_cast<QmlClassNode*>(child);
             if ((qcn->qmlBaseNode() == 0) && !qcn->qmlBaseName().isEmpty()) {
                 QmlClassNode* bqcn = 0;
-                const ImportList& imports = qcn->importList();
-                for (int i=0; i<imports.size(); ++i) {
-                    bqcn = findQmlType(imports[i], qcn->qmlBaseName());
-                    if (bqcn)
-                        break;
+                if (qcn->qmlBaseName().contains("::")) {
+                    bqcn =  qmlTypeMap_.value(qcn->qmlBaseName());
+                }
+                else {
+                    const ImportList& imports = qcn->importList();
+                    for (int i=0; i<imports.size(); ++i) {
+                        bqcn = findQmlType(imports[i], qcn->qmlBaseName());
+                        if (bqcn)
+                            break;
+                    }
                 }
                 if (bqcn == 0) {
                     bqcn = findQmlType(QString(), qcn->qmlBaseName());

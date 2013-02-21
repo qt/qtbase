@@ -240,6 +240,7 @@ public:
     QString guid() const;
     QString extractClassName(const QString &string) const;
     virtual QString qmlTypeName() const { return name_; }
+    virtual QString qmlFullBaseName() const { return QString(); }
     virtual QString qmlModuleName() const { return qmlModuleName_; }
     virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
     virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
@@ -332,7 +333,7 @@ public:
     const NodeList & childNodes() const { return children_; }
     const NodeList & relatedNodes() const { return related_; }
 
-    virtual void addMember(Node* node) { members_.append(node); }
+    virtual void addMember(Node* node);
     const NodeList& members() const { return members_; }
     virtual bool hasMembers() const;
     virtual bool hasNamespaces() const;
@@ -563,6 +564,7 @@ public:
     virtual bool isAbstract() const { return abstract_; }
     virtual void setAbstract(bool b) { abstract_ = b; }
     virtual bool isInternal() const { return (status() == Internal); }
+    virtual QString qmlFullBaseName() const;
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
     const QString& qmlBaseName() const { return baseName_; }

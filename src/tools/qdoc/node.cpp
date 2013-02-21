@@ -662,6 +662,16 @@ bool InnerNode::hasMembers() const
 }
 
 /*!
+  Appends \a node to the members list, if and only if it
+  isn't already in the members list.
+ */
+void InnerNode::addMember(Node* node)
+{
+    if (!members_.contains(node))
+        members_.append(node);
+}
+
+/*!
   Returns true if this node's members collection contains at
   least one namespace node.
  */
@@ -2185,6 +2195,20 @@ bool Node::setQmlModuleInfo(const QString& arg)
         }
     }
     return false;
+}
+
+/*!
+  If this QML type node has a base type node,
+  return the fully qualified name of that QML
+  type, i.e. <QML-module-name>::<QML-type-name>.
+ */
+QString QmlClassNode::qmlFullBaseName() const
+{
+    QString result;
+    if (baseNode_) {
+        result = baseNode_->qmlModuleIdentifier() + "::" + baseNode_->name();
+    }
+    return result;
 }
 
 /*!
