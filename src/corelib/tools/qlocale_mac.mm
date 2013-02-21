@@ -434,18 +434,26 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     case CurrencyToString:
         return macFormatCurrency(in.value<QSystemLocale::CurrencyToStringArgument>());
     case UILanguages: {
-        QCFType<CFArrayRef> languages = (CFArrayRef)CFPreferencesCopyValue(
+        QCFType<CFPropertyListRef> languages = (CFArrayRef)CFPreferencesCopyValue(
                  CFSTR("AppleLanguages"),
                  kCFPreferencesAnyApplication,
                  kCFPreferencesCurrentUser,
                  kCFPreferencesAnyHost);
-        const int cnt = languages == NULL ? 0 : CFArrayGetCount(languages);
         QStringList result;
-        result.reserve(cnt);
-        for (int i = 0; i < cnt; ++i) {
-            const QString lang = QCFString::toQString(
-                        static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages, i)));
-            result.append(lang);
+        CFTypeID typeId = CFGetTypeID(languages);
+        if (typeId == CFArrayGetTypeID()) {
+            const int cnt = CFArrayGetCount(languages.as<CFArrayRef>());
+            result.reserve(cnt);
+            for (int i = 0; i < cnt; ++i) {
+                const QString lang = QCFString::toQString(
+                            static_cast<CFStringRef>(CFArrayGetValueAtIndex(languages.as<CFArrayRef>(), i)));
+                result.append(lang);
+            }
+        } else if (typeId == CFStringGetTypeID()) {
+            result = QStringList(QCFString::toQString(languages.as<CFStringRef>()));
+        } else {
+            qWarning("QLocale::uiLanguages(): CFPreferencesCopyValue returned unhandled type \"%s\"; please report to http://bugreports.qt-project.org",
+                     qPrintable(QCFString::toQString(CFCopyTypeIDDescription(typeId))));
         }
         return QVariant(result);
     }

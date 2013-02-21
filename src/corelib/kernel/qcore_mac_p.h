@@ -106,6 +106,7 @@ public:
 	return *this;
     }
     inline T *operator&() { return &type; }
+    template <typename X> X as() const { return reinterpret_cast<X>(type); }
     static QCFType constructFromGet(const T &t)
     {
         CFRetain(t);
