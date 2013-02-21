@@ -335,7 +335,11 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
     // Set window buffer size
     errno = 0;
-    int val[2] = { size.width(), size.height() };
+
+    // libscreen fails when creating empty buffers
+    const QSize nonEmptySize = size.isEmpty() ? QSize(1, 1) : size;
+
+    int val[2] = { nonEmptySize.width(), nonEmptySize.height() };
     int result = screen_set_window_property_iv(m_window, SCREEN_PROPERTY_BUFFER_SIZE, val);
     if (result != 0) {
         qFatal("QQnxWindow: failed to set window buffer size, errno=%d", errno);
@@ -362,6 +366,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
         errno = 0;
         result = screen_create_window_buffers(m_window, MAX_BUFFER_COUNT);
         if (result != 0) {
+            qWarning() << "QQnxWindow: Buffer size was" << size;
             qFatal("QQnxWindow: failed to create window buffers, errno=%d", errno);
         }
 
@@ -380,7 +385,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
     }
 
     // Cache new buffer size
-    m_bufferSize = size;
+    m_bufferSize = nonEmptySize;
 
     // Buffers were destroyed; reacquire them
     m_currentBufferIndex = -1;

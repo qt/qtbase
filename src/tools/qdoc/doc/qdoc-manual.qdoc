@@ -243,7 +243,6 @@
     \li \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
     \li \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\b} \span {class="newStuff"} {(new 5/3/2012)}
-    \li \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\bold} {(deprecated, use \\b)}
     \li \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
     \li \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
@@ -1175,8 +1174,7 @@
     snippets. It renders the code verbatim in a separate paragraph in
     the code font.
 
-    When processing any of the \\code, \l {badcode-command}
-    {\\badcode}, \l {newcode-command} {\\newcode} or \l
+    When processing any of the \\code, \l {newcode-command} {\\newcode} or \l
     {oldcode-command} {\\oldcode} commands, QDoc removes all
     indentation that is common for the verbatim code blocks within a
     \c{/}\c{*!} ...  \c{*}\c{/} comment before it adds the standard
@@ -1225,66 +1223,8 @@
 
     See also \l {c-command} {\\c}, \l
     {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command}
-    {\\quotefromfile}, \l {badcode-command} {\\badcode}, \l
-    {newcode-command} {\\newcode} and \l {oldcode-command}
+    {\\quotefromfile}, \l{newcode-command} {\\newcode} and \l {oldcode-command}
     {\\oldcode}.
-
-    \target badcode-command
-    \section1 \\badcode
-
-    The \\badcode and \\endcode commands delimit a snippet of code
-    that doesn't compile or is wrong for some other reason.
-
-    The \\badcode command is similar to the \l {code-command} {\\code}
-    command, but it renders the code snippet using a grey font instead
-    of black.
-
-    Like the \l {code-command} {\\code} command, this command begins
-    its code snippet on a new line rendered in the code font and with
-    the standard indentation.
-
-           \code
-           / *!
-               The statement below is rendered using the
-               regular \\code command:
-
-               \code
-                   statusbar()->message(tr("Host %1 found").arg(hostName));
-               \ endcode
-
-               While the following  statement is rendered using
-               the \\badcode command:
-
-               \badcode
-                   statusbar()->message(tr("Host" + hostName + " found"));
-               \ endcode
-           * /
-           \endcode
-
-    QDoc renders this as:
-
-           \quotation
-               The statement below is rendered using the
-               regular \\code command:
-
-               \code
-                   statusbar()->message(tr("Host %1 found").arg(hostName));
-               \endcode
-
-               While the following  statement is rendered using
-               the \\badcode command:
-
-               \badcode
-                   statusbar()->message(tr("Host" + hostName + " found"));
-               \endcode
-           \endquotation
-
-    Other QDoc commands are disabled within \\badcode... \\endcode,
-    and the special character '\\' is accepted and rendered like the
-    rest of the code.
-
-    See also \l {code-command} {\\code}, \l {newcode-command}
-    {\\newcode} and \l {oldcode-command} {\\oldcode}.
 
     \target newcode-command
     \section1 \\newcode
@@ -1293,14 +1233,12 @@
     show how to port a snippet of code to a new version of an API.
 
     The \\newcode command, and its companion the \\oldcode command, is
-    a convenience combination of the \l {code-command} {\\code} and \l
-    {badcode-command} {\\badcode} commands: The combination provides a
-    text relating the two code snippets to each other. The command
-    requires a preceding \\oldcode statement.
+    a convenience combination of the \l {code-command} {\\code} commands:
+    The combination provides a text relating the two code snippets to each
+    other. The command requires a preceding \\oldcode statement.
 
-    Like the \l {code-command} {\\code} and \l {badcode-command}
-    {\\badcode} commands, the \\newcode command renders its code on a
-    new line in the documentation using a typewriter font and the
+    Like the \l{code-command}{\\code} command, the \\newcode command renders its
+    code on a new line in the documentation using a typewriter font and the
     standard indentation.
 
            \code
@@ -1339,7 +1277,7 @@
     \\newcode statement; otherwise QDoc fails to parse the command
     and emits a warning.
 
-    See also \l {newcode-command} {\\newcode} and \l {badcode-command} {\\badcode}.
+    See also \l {newcode-command} {\\newcode}.
 
     \target qml-command
     \section1 \\qml
@@ -8688,7 +8626,6 @@
     \li \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\b} \span {class="newStuff"} {(new 5/3/2012)}
     \li \l { 22-qdoc-configuration-generalvariables.html#basedir-variable} {basedir} \span {class="newStuff"} {(experimental)}
-    \li \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\bold} \span {class="newStuff"} {(deprecated, use \\b)}
     \li \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
     \li \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}

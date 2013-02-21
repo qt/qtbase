@@ -25,12 +25,6 @@ isEmpty(VERSION):VERSION = $$QT_VERSION
 # Compile as shared/DLL or static according to the option given to configure
 # unless overridden. Host builds are always static
 host_build|staticlib: CONFIG += static
-!static:!shared {
-    contains(QT_CONFIG, static): \
-        CONFIG += static
-    else: \
-        CONFIG += shared
-}
 
 ucmodule = $$upper($$MODULE)
 
@@ -87,7 +81,7 @@ contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_no
 contains(QT_CONFIG, c++11):CONFIG += c++11
 
 #mac frameworks
-mac:!static:contains(QT_CONFIG, qt_framework) {
+mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    #QMAKE_FRAMEWORK_VERSION = 4.0
    CONFIG += lib_bundle qt_no_framework_direct_includes qt_framework
    CONFIG(release, debug|release) {

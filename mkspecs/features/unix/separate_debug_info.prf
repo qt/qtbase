@@ -1,5 +1,5 @@
 
-!separate_debug_info_nocopy:have_target:!staticlib:!static:!isEmpty(QMAKE_OBJCOPY) {
+!separate_debug_info_nocopy:have_target:!static:!isEmpty(QMAKE_OBJCOPY) {
     qnx {
         debug_info_suffix = sym
         debug_info_keep = --keep-file-symbols

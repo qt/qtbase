@@ -600,9 +600,6 @@ void tst_QMdiSubWindow::showShaded()
     else
 #endif
         mouseReceiver = window;
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-25297", Abort);
-#endif
     QVERIFY(mouseReceiver);
     sendMouseMove(mouseReceiver, mousePosition, Qt::NoButton);
     sendMousePress(mouseReceiver, mousePosition);
@@ -711,9 +708,6 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
         mouseReceiver = qFindChild<QSizeGrip *>(window);
     else
         mouseReceiver = window;
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-25297", Abort);
-#endif
     QVERIFY(mouseReceiver);
 
     // ----------------------------- resize -----------------------------
@@ -1451,9 +1445,6 @@ void tst_QMdiSubWindow::defaultSizeGrip()
     // QSizeGrip on windows with decoration.
     QMdiSubWindow *windowWithDecoration = mdiArea.addSubWindow(new QWidget);
     windowWithDecoration->show();
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-25297", Abort);
-#endif
     QVERIFY(qFindChild<QSizeGrip *>(windowWithDecoration));
 
     // ...but not on windows without decoration (Qt::FramelessWindowHint).
@@ -1713,9 +1704,6 @@ void tst_QMdiSubWindow::fixedMinMaxSize()
     // to minimize the window.
     subWindow->showMinimized();
     QVERIFY(subWindow->isMinimized());
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "QTBUG-25297", Abort);
-#endif
     QCOMPARE(subWindow->size(), minimizedSize);
     QCOMPARE(subWindow->minimumSize(), minimizedSize);
 

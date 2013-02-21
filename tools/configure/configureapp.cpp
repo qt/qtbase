@@ -3029,6 +3029,7 @@ void Configure::generateQConfigPri()
 
         configStream << "CONFIG+= ";
         configStream << dictionary[ "BUILD" ];
+        configStream << (dictionary[ "SHARED" ] == "no" ? " static" : " shared");
 
         if (dictionary[ "LTCG" ] == "yes")
             configStream << " ltcg";

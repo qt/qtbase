@@ -1,4 +1,4 @@
-!CONFIG(separate_debug_info):CONFIG(debug, debug|release):have_target:!staticlib:!static:!isEmpty(QMAKE_OBJCOPY) {
+!separate_debug_info:have_target:debug:!static:!isEmpty(QMAKE_OBJCOPY) {
 
     contains(TEMPLATE, "lib") {
         QMAKE_GDB_INDEX = { test -z \"$(DESTDIR)\" || cd \"$(DESTDIR)\"; } &&

@@ -28,10 +28,7 @@ contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
 contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
 contains(QT_CONFIG, c++11):CONFIG += c++11
 
-contains(QT_CONFIG, static):CONFIG += static
-else:CONFIG += shared
-
-static {
+CONFIG(static, static|shared) {
     isEmpty(MODULE): MODULE = $$basename(TARGET)
 
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_plugin_$${MODULE}.pri

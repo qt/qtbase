@@ -9,6 +9,8 @@
 # We mean it.
 #
 
+load(resolve_config)
+
 QMAKE_RESOLVED_TARGET = $$absolute_path($$DESTDIR, $$OUT_PWD)/
 
 win32 {
