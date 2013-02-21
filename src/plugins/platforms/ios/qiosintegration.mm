@@ -98,14 +98,12 @@ bool QIOSIntegration::hasCapability(Capability cap) const
 
 QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 {
-    qDebug() <<  __FUNCTION__ << "Creating platform window";
     return new QIOSWindow(window);
 }
 
 // Used when the QWindow's surface type is set by the client to QSurface::RasterSurface
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    qDebug() <<  __FUNCTION__ << "Creating platform backingstore";
     return new QIOSBackingStore(window);
 }
 
@@ -113,7 +111,6 @@ QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *wind
 QPlatformOpenGLContext *QIOSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
     Q_UNUSED(context);
-    qDebug() <<  __FUNCTION__ << "Creating platform opengl context";
     return new QIOSContext(context);
 }
 
