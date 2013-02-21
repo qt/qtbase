@@ -92,6 +92,8 @@ mac {
 }
 
 mac:!nacl {
+       HEADERS += \
+                kernel/qcore_mac_p.h
        SOURCES += \
                 kernel/qcore_mac.cpp
        OBJECTIVE_SOURCES += \
