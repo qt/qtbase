@@ -355,7 +355,7 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
 
         // Get the basic surface format details
         if (m_context)
-            m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(screen), config, m_context);
+            qglx_surfaceFormatFromGLXFBConfig(&m_format, DISPLAY_FROM_XCB(screen), config, m_context);
 
         // Create a temporary window so that we can make the new context current
         window = createDummyWindow(screen, config);
@@ -499,7 +499,7 @@ QGLXPbuffer::QGLXPbuffer(QOffscreenSurface *offscreenSurface)
         m_pbuffer = glXCreatePbuffer(DISPLAY_FROM_XCB(m_screen), config, attributes);
 
         if (m_pbuffer)
-            m_format = qglx_surfaceFormatFromGLXFBConfig(DISPLAY_FROM_XCB(m_screen), config);
+            qglx_surfaceFormatFromGLXFBConfig(&m_format, DISPLAY_FROM_XCB(m_screen), config);
     }
 }
 

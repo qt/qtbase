@@ -171,7 +171,7 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
     GLXFBConfig config = qglx_findConfig(display,screen,*format);
     if (config) {
         visualInfo = glXGetVisualFromFBConfig(display, config);
-        *format = qglx_surfaceFormatFromGLXFBConfig(display, config);
+        qglx_surfaceFormatFromGLXFBConfig(format, display, config);
     }
 
     // attempt to fall back to glXChooseVisual
@@ -221,11 +221,8 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
     return visualInfo;
 }
 
-QSurfaceFormat qglx_surfaceFormatFromGLXFBConfig(Display *display, GLXFBConfig config, GLXContext)
+void qglx_surfaceFormatFromGLXFBConfig(QSurfaceFormat *format, Display *display, GLXFBConfig config, GLXContext)
 {
-    QSurfaceFormat format;
-    format.setRenderableType(QSurfaceFormat::OpenGL);
-
     int redSize     = 0;
     int greenSize   = 0;
     int blueSize    = 0;
@@ -247,20 +244,18 @@ QSurfaceFormat qglx_surfaceFormatFromGLXFBConfig(Display *display, GLXFBConfig c
     glXGetFBConfigAttrib(display, config, GLX_SAMPLES_ARB,  &sampleBuffers);
     glXGetFBConfigAttrib(display, config, GLX_STEREO,       &stereo);
 
-    format.setRedBufferSize(redSize);
-    format.setGreenBufferSize(greenSize);
-    format.setBlueBufferSize(blueSize);
-    format.setAlphaBufferSize(alphaSize);
-    format.setDepthBufferSize(depthSize);
-    format.setStencilBufferSize(stencilSize);
+    format->setRedBufferSize(redSize);
+    format->setGreenBufferSize(greenSize);
+    format->setBlueBufferSize(blueSize);
+    format->setAlphaBufferSize(alphaSize);
+    format->setDepthBufferSize(depthSize);
+    format->setStencilBufferSize(stencilSize);
     if (sampleBuffers) {
         glXGetFBConfigAttrib(display, config, GLX_SAMPLES_ARB, &sampleCount);
-        format.setSamples(sampleCount);
+        format->setSamples(sampleCount);
     }
 
-    format.setStereo(stereo);
-
-    return format;
+    format->setStereo(stereo);
 }
 
 QSurfaceFormat qglx_reduceSurfaceFormat(const QSurfaceFormat &format, bool *reduced)

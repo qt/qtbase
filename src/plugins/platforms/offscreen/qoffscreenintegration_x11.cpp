@@ -179,7 +179,7 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
 
         // Get the basic surface format details
         if (d->context)
-            d->format = qglx_surfaceFormatFromGLXFBConfig(x11->display(), config, d->context);
+            qglx_surfaceFormatFromGLXFBConfig(&d->format, x11->display(), config, d->context);
 
         // Create a temporary window so that we can make the new context current
         d->window = createDummyWindow(x11, config);
