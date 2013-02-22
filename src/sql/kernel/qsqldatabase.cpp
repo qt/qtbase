@@ -48,31 +48,31 @@
 #endif
 
 #ifdef QT_SQL_PSQL
-#include "../drivers/psql/qsql_psql.h"
+#include "../drivers/psql/qsql_psql_p.h"
 #endif
 #ifdef QT_SQL_MYSQL
-#include "../drivers/mysql/qsql_mysql.h"
+#include "../drivers/mysql/qsql_mysql_p.h"
 #endif
 #ifdef QT_SQL_ODBC
-#include "../drivers/odbc/qsql_odbc.h"
+#include "../drivers/odbc/qsql_odbc_p.h"
 #endif
 #ifdef QT_SQL_OCI
-#include "../drivers/oci/qsql_oci.h"
+#include "../drivers/oci/qsql_oci_p.h"
 #endif
 #ifdef QT_SQL_TDS
 // conflicting RETCODE typedef between odbc and freetds
 #define RETCODE DBRETCODE
-#include "../drivers/tds/qsql_tds.h"
+#include "../drivers/tds/qsql_tds_p.h"
 #undef RETCODE
 #endif
 #ifdef QT_SQL_DB2
-#include "../drivers/db2/qsql_db2.h"
+#include "../drivers/db2/qsql_db2_p.h"
 #endif
 #ifdef QT_SQL_SQLITE
-#include "../drivers/sqlite/qsql_sqlite.h"
+#include "../drivers/sqlite/qsql_sqlite_p.h"
 #endif
 #ifdef QT_SQL_SQLITE2
-#include "../drivers/sqlite2/qsql_sqlite2.h"
+#include "../drivers/sqlite2/qsql_sqlite2_p.h"
 #endif
 #ifdef QT_SQL_IBASE
 #undef SQL_FLOAT  // avoid clash with ODBC
@@ -82,7 +82,7 @@
 #undef SQL_TYPE_DATE
 #undef SQL_DATE
 #define SCHAR IBASE_SCHAR  // avoid clash with ODBC (older versions of ibase.h with Firebird)
-#include "../drivers/ibase/qsql_ibase.h"
+#include "../drivers/ibase/qsql_ibase_p.h"
 #undef SCHAR
 #endif
 

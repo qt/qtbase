@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_tds.h"
+#include "qsql_tds_p.h"
 
 #include <qglobal.h>
 #ifdef Q_OS_WIN32    // We assume that MS SQL Server is used. Set Q_USE_SYBASE to force Sybase.

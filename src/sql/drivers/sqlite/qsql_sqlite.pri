@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_sqlite.h
+HEADERS += $$PWD/qsql_sqlite_p.h
 SOURCES += $$PWD/qsql_sqlite.cpp
 
 !system-sqlite:!contains(LIBS, .*sqlite3.*) {

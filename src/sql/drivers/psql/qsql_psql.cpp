@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_psql.h"
+#include "qsql_psql_p.h"
 
 #include <qcoreapplication.h>
 #include <qvariant.h>

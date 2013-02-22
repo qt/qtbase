@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_ibase.h"
+#include "qsql_ibase_p.h"
 #include <qcoreapplication.h>
 #include <qdatetime.h>
 #include <qvariant.h>

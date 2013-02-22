@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_oci.h"
+#include "qsql_oci_p.h"
 
 #include <qcoreapplication.h>
 #include <qvariant.h>

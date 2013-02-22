@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_db2.h
+HEADERS += $$PWD/qsql_db2_p.h
 SOURCES += $$PWD/qsql_db2.cpp
 
 unix {

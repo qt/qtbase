@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_tds.h
+HEADERS += $$PWD/qsql_tds_p.h
 SOURCES += $$PWD/qsql_tds.cpp
 
 unix|win32-g++*: {

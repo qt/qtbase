@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_mysql.h"
+#include "qsql_mysql_p.h"
 
 #include <qcoreapplication.h>
 #include <qvariant.h>

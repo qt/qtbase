@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_odbc.h"
+#include "qsql_odbc_p.h"
 #include <qsqlrecord.h>
 
 #if defined (Q_OS_WIN32)

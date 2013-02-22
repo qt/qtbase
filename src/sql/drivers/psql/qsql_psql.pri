@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_psql.h
+HEADERS += $$PWD/qsql_psql_p.h
 SOURCES += $$PWD/qsql_psql.cpp
 
 unix|win32-g++* {

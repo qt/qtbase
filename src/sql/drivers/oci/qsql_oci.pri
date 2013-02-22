@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_oci.h
+HEADERS += $$PWD/qsql_oci_p.h
 SOURCES += $$PWD/qsql_oci.cpp
 
 unix {
