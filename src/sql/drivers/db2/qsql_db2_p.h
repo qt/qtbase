@@ -42,6 +42,17 @@
 #ifndef QSQL_DB2_H
 #define QSQL_DB2_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #ifdef QT_PLUGIN
 #define Q_EXPORT_SQLDRIVER_DB2
 #else
@@ -52,11 +63,6 @@
 #include <QtSql/qsqldriver.h>
 
 QT_BEGIN_NAMESPACE
-
-#if 0
-#pragma qt_no_master_include
-#pragma qt_sync_stop_processing
-#endif
 
 class QDB2Driver;
 class QDB2DriverPrivate;
