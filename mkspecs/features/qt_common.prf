@@ -9,6 +9,7 @@
 # We mean it.
 #
 
+contains(QT_CONFIG, c++11): CONFIG += c++11
 contains(TEMPLATE, .*lib) {
     # module and plugins
     contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
@@ -16,5 +17,4 @@ contains(TEMPLATE, .*lib) {
     contains(QT_CONFIG, largefile): CONFIG += largefile
     contains(QT_CONFIG, separate_debug_info): CONFIG += separate_debug_info
     contains(QT_CONFIG, separate_debug_info_nocopy): CONFIG += separate_debug_info_nocopy
-    contains(QT_CONFIG, c++11):CONFIG += c++11
 }
