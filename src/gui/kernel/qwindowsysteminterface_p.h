@@ -411,7 +411,7 @@ public:
             const QMutexLocker locker(&mutex);
             for (int i = 0; i < impl.size(); ++i) {
                 if (impl.at(i) == e) {
-                    impl.removeAt(i);
+                    delete impl.takeAt(i);
                     break;
                 }
             }
