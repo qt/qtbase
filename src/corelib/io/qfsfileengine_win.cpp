@@ -900,7 +900,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
         return 0;
     }
 
-    if (mapHandle == INVALID_HANDLE_VALUE) {
+    if (mapHandle == NULL) {
         // get handle to the file
         HANDLE handle = fileHandle;
 
@@ -933,7 +933,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
         // first create the file mapping handle
         DWORD protection = (openMode & QIODevice::WriteOnly) ? PAGE_READWRITE : PAGE_READONLY;
         mapHandle = ::CreateFileMapping(handle, 0, protection, 0, 0, 0);
-        if (mapHandle == INVALID_HANDLE_VALUE) {
+        if (mapHandle == NULL) {
             q->setError(QFile::PermissionsError, qt_error_string());
 #ifdef Q_USE_DEPRECATED_MAP_API
             ::CloseHandle(handle);
@@ -976,6 +976,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     }
 
     ::CloseHandle(mapHandle);
+    mapHandle = NULL;
     return 0;
 }
 
@@ -995,7 +996,7 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
     maps.remove(ptr);
     if (maps.isEmpty()) {
         ::CloseHandle(mapHandle);
-        mapHandle = INVALID_HANDLE_VALUE;
+        mapHandle = NULL;
     }
 
     return true;
