@@ -5017,6 +5017,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                       bgColor.blue() < 128;
                 if (isDarkBg)
                     [scroller setKnobStyle:NSScrollerKnobStyleLight];
+                else
+                    [scroller setKnobStyle:NSScrollerKnobStyleDefault];
 
                 [scroller setControlSize:(tdi.kind == kThemeSmallScrollBar ? NSMiniControlSize
                                                                            : NSRegularControlSize)];
