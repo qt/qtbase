@@ -3095,6 +3095,9 @@ Configure options:
     -opensource ........ Compile and link the Open-Source Edition of Qt.
     -commercial ........ Compile and link the Commercial Edition of Qt.
 
+    -confirm-license.... Automatically acknowledge the license (use with
+                         either -opensource or -commercial)
+
     -no-c++11 .......... Do not compile Qt with C++11 support enabled.
  +  -c++11 ............. Compile Qt with C++11 support enabled.
 
