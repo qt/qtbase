@@ -108,7 +108,7 @@ QDBusObjectPath QOfonoManagerInterface::currentModem()
     foreach (const QDBusObjectPath &modem, modems) {
         QOfonoModemInterface device(modem.path());
         if (device.isPowered() && device.isOnline())
-        return modem;;
+        return modem;
     }
     return QDBusObjectPath();
 }
@@ -770,7 +770,7 @@ QVariantMap QOfonoDataConnectionManagerInterface::getProperties()
     return reply.value();
 }
 
-QOfonoPrimaryDataContextInterface::QOfonoPrimaryDataContextInterface(const QString &dbusPathName, QObject *parent)
+QOfonoConnectionContextInterface::QOfonoConnectionContextInterface(const QString &dbusPathName, QObject *parent)
     : QDBusAbstractInterface(QLatin1String(OFONO_SERVICE),
                              dbusPathName,
                              OFONO_DATA_CONTEXT_INTERFACE,
@@ -778,68 +778,68 @@ QOfonoPrimaryDataContextInterface::QOfonoPrimaryDataContextInterface(const QStri
 {
 }
 
-QOfonoPrimaryDataContextInterface::~QOfonoPrimaryDataContextInterface()
+QOfonoConnectionContextInterface::~QOfonoConnectionContextInterface()
 {
 }
 
-bool QOfonoPrimaryDataContextInterface::isActive()
+bool QOfonoConnectionContextInterface::isActive()
 {
     QVariant var = getProperty("Active");
     return qdbus_cast<bool>(var);
 }
 
-QString QOfonoPrimaryDataContextInterface::getApName()
+QString QOfonoConnectionContextInterface::getApName()
 {
     QVariant var = getProperty("AccessPointName");
     return qdbus_cast<QString>(var);
 }
 
-QString QOfonoPrimaryDataContextInterface::getType()
+QString QOfonoConnectionContextInterface::getType()
 {
     QVariant var = getProperty("Type");
     return qdbus_cast<QString>(var);
 }
 
-QString QOfonoPrimaryDataContextInterface::getName()
+QString QOfonoConnectionContextInterface::getName()
 {
     QVariant var = getProperty("Name");
     return qdbus_cast<QString>(var);
 }
 
-QVariantMap QOfonoPrimaryDataContextInterface::getSettings()
+QVariantMap QOfonoConnectionContextInterface::getSettings()
 {
     QVariant var = getProperty("Settings");
     return qdbus_cast<QVariantMap>(var);
 }
 
-QString QOfonoPrimaryDataContextInterface::getInterface()
+QString QOfonoConnectionContextInterface::getInterface()
 {
     QVariant var = getProperty("Interface");
     return qdbus_cast<QString>(var);
 }
 
-QString QOfonoPrimaryDataContextInterface::getAddress()
+QString QOfonoConnectionContextInterface::getAddress()
 {
     QVariant var = getProperty("Address");
     return qdbus_cast<QString>(var);
 }
 
-bool QOfonoPrimaryDataContextInterface::setActive(bool on)
+bool QOfonoConnectionContextInterface::setActive(bool on)
 {
 //    this->setProperty("Active", QVariant(on));
 
     return setProp("Active", QVariant::fromValue(on));
 }
 
-bool QOfonoPrimaryDataContextInterface::setApn(const QString &name)
+bool QOfonoConnectionContextInterface::setApn(const QString &name)
 {
     return setProp("AccessPointName", QVariant::fromValue(name));
 }
 
-void QOfonoPrimaryDataContextInterface::connectNotify(const QMetaMethod &signal)
+void QOfonoConnectionContextInterface::connectNotify(const QMetaMethod &signal)
 {
     Q_UNUSED(signal);
-//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoPrimaryDataContextInterface::propertyChanged);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoConnectionContextInterface::propertyChanged);
 //    if (signal == propertyChangedSignal) {
 //        if (!connection().connect(QLatin1String(OFONO_SERVICE),
 //                               this->path(),
@@ -850,7 +850,7 @@ void QOfonoPrimaryDataContextInterface::connectNotify(const QMetaMethod &signal)
 //        }
 //    }
 
-//    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoPrimaryDataContextInterface::propertyChangedContext);
+//    static const QMetaMethod propertyChangedContextSignal = QMetaMethod::fromSignal(&QOfonoConnectionContextInterface::propertyChangedContext);
 //    if (signal == propertyChangedContextSignal) {
 //        QOfonoDBusHelper *helper;
 //        helper = new QOfonoDBusHelper(this);
@@ -867,16 +867,16 @@ void QOfonoPrimaryDataContextInterface::connectNotify(const QMetaMethod &signal)
 //    }
 }
 
-void QOfonoPrimaryDataContextInterface::disconnectNotify(const QMetaMethod &signal)
+void QOfonoConnectionContextInterface::disconnectNotify(const QMetaMethod &signal)
 {
     Q_UNUSED(signal);
-//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoPrimaryDataContextInterface::propertyChanged);
+//    static const QMetaMethod propertyChangedSignal = QMetaMethod::fromSignal(&QOfonoConnectionContextInterface::propertyChanged);
 //    if (signal == propertyChangedSignal) {
 
 //    }
 }
 
-QVariant QOfonoPrimaryDataContextInterface::getProperty(const QString &property)
+QVariant QOfonoConnectionContextInterface::getProperty(const QString &property)
 {
     QVariant var;
     QVariantMap map = getProperties();
@@ -888,13 +888,13 @@ QVariant QOfonoPrimaryDataContextInterface::getProperty(const QString &property)
     return var;
 }
 
-QVariantMap QOfonoPrimaryDataContextInterface::getProperties()
+QVariantMap QOfonoConnectionContextInterface::getProperties()
 {
     QDBusReply<QVariantMap > reply =  this->call(QLatin1String("GetProperties"));
     return reply.value();
 }
 
-bool QOfonoPrimaryDataContextInterface::setProp(const QString &property, const QVariant &var)
+bool QOfonoConnectionContextInterface::setProp(const QString &property, const QVariant &var)
 {
     QList<QVariant> args;
     args << QVariant::fromValue(property) << QVariant::fromValue(QDBusVariant(var));
