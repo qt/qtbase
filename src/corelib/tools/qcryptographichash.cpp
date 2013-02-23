@@ -41,12 +41,16 @@
 ****************************************************************************/
 
 #include <qcryptographichash.h>
+#include <qiodevice.h>
 
+#include "../../3rdparty/sha1/sha1.cpp"
+
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+// qdoc only needs SHA-1
 #include "../../3rdparty/md5/md5.h"
 #include "../../3rdparty/md5/md5.cpp"
 #include "../../3rdparty/md4/md4.h"
 #include "../../3rdparty/md4/md4.cpp"
-#include "../../3rdparty/sha1/sha1.cpp"
 
 typedef unsigned char BitSequence;
 typedef unsigned long long DataLength;
@@ -124,8 +128,6 @@ static int SHA384_512AddLength(SHA512Context *context, unsigned int length);
 #undef uint68_t
 #undef int_least16_t
 
-#include <qiodevice.h>
-
 static inline int SHA224_256AddLength(SHA256Context *context, unsigned int length)
 {
   QT_PREPEND_NAMESPACE(quint32) addTemp;
@@ -136,6 +138,7 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
   QT_PREPEND_NAMESPACE(quint64) addTemp;
   return SHA384_512AddLengthM(context, length);
 }
+#endif // QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 
 QT_BEGIN_NAMESPACE
 
@@ -144,14 +147,16 @@ class QCryptographicHashPrivate
 public:
     QCryptographicHash::Algorithm method;
     union {
+        Sha1State sha1Context;
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
         MD5Context md5Context;
         md4_context md4Context;
-        Sha1State sha1Context;
         SHA224Context sha224Context;
         SHA256Context sha256Context;
         SHA384Context sha384Context;
         SHA512Context sha512Context;
         SHA3Context sha3Context;
+#endif
     };
     QByteArray result;
 };
@@ -212,14 +217,20 @@ QCryptographicHash::~QCryptographicHash()
 void QCryptographicHash::reset()
 {
     switch (d->method) {
+    case Sha1:
+        sha1InitState(&d->sha1Context);
+        break;
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    default:
+        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+        Q_UNREACHABLE();
+        break;
+#else
     case Md4:
         md4_init(&d->md4Context);
         break;
     case Md5:
         MD5Init(&d->md5Context);
-        break;
-    case Sha1:
-        sha1InitState(&d->sha1Context);
         break;
     case Sha224:
         SHA224Reset(&d->sha224Context);
@@ -245,6 +256,7 @@ void QCryptographicHash::reset()
     case Sha3_512:
         sha3Init(&d->sha3Context, 512);
         break;
+#endif
     }
     d->result.clear();
 }
@@ -256,14 +268,20 @@ void QCryptographicHash::reset()
 void QCryptographicHash::addData(const char *data, int length)
 {
     switch (d->method) {
+    case Sha1:
+        sha1Update(&d->sha1Context, (const unsigned char *)data, length);
+        break;
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    default:
+        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+        Q_UNREACHABLE();
+        break;
+#else
     case Md4:
         md4_update(&d->md4Context, (const unsigned char *)data, length);
         break;
     case Md5:
         MD5Update(&d->md5Context, (const unsigned char *)data, length);
-        break;
-    case Sha1:
-        sha1Update(&d->sha1Context, (const unsigned char *)data, length);
         break;
     case Sha224:
         SHA224Input(&d->sha224Context, reinterpret_cast<const unsigned char *>(data), length);
@@ -289,6 +307,7 @@ void QCryptographicHash::addData(const char *data, int length)
     case Sha3_512:
         sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
         break;
+#endif
     }    
     d->result.clear();
 }
@@ -335,6 +354,19 @@ QByteArray QCryptographicHash::result() const
         return d->result;
 
     switch (d->method) {
+    case Sha1: {
+        Sha1State copy = d->sha1Context;
+        d->result.resize(20);
+        sha1FinalizeState(&copy);
+        sha1ToHash(&copy, (unsigned char *)d->result.data());
+        break;
+    }
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    default:
+        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+        Q_UNREACHABLE();
+        break;
+#else
     case Md4: {
         md4_context copy = d->md4Context;
         d->result.resize(MD4_RESULTLEN);
@@ -345,13 +377,6 @@ QByteArray QCryptographicHash::result() const
         MD5Context copy = d->md5Context;
         d->result.resize(16);
         MD5Final(&copy, (unsigned char *)d->result.data());
-        break;
-    }
-    case Sha1: {
-        Sha1State copy = d->sha1Context;
-        d->result.resize(20);
-        sha1FinalizeState(&copy);
-        sha1ToHash(&copy, (unsigned char *)d->result.data());
         break;
     }
     case Sha224: {
@@ -402,6 +427,7 @@ QByteArray QCryptographicHash::result() const
         sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
         break;
     }
+#endif
     }
     return d->result;
 }
