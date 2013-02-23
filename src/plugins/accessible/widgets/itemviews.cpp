@@ -792,7 +792,7 @@ void QAccessibleTableCell::doAction(const QString& actionName)
     }
 }
 
-QStringList QAccessibleTableCell::keyBindingsForAction(const QString& actionName) const
+QStringList QAccessibleTableCell::keyBindingsForAction(const QString &) const
 {
     return QStringList();
 }

@@ -245,7 +245,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
 
     configureAttributes.append(EGL_NONE);
 
-    EGLConfig cfg;
+    EGLConfig cfg = 0;
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;

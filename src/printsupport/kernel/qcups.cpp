@@ -514,7 +514,7 @@ QList<QPair<QString, QSizeF> > QCUPSSupport::getCupsPrinterPaperSizesWithNames(i
         for (int j = 0; j < size->num_choices; ++j) {
             double multiplier = qt_multiplierForUnit(QPrinter::Millimeter, 0); // resolution is not needed here
             QSize sz = cups.paperRect(size->choices[j].choice).size();
-            result.append(qMakePair(QString(size->choices[j].text), QSizeF(sz.width() / multiplier, sz.height() / multiplier)));
+            result.append(qMakePair(QString::fromUtf8(size->choices[j].text), QSizeF(sz.width() / multiplier, sz.height() / multiplier)));
         }
     }
     return result;
