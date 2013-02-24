@@ -94,8 +94,7 @@ timeval QTimerInfoList::updateCurrentTime()
 
 #if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC) && !defined(Q_OS_INTEGRITY)) || defined(QT_BOOTSTRAPPED)
 
-template <>
-timeval qAbs(const timeval &t)
+timeval qAbsTimeval(const timeval &t)
 {
     timeval tmp = t;
     if (tmp.tv_sec < 0) {
@@ -144,7 +143,7 @@ bool QTimerInfoList::timeChanged(timeval *delta)
     timeval tickGranularity;
     tickGranularity.tv_sec = 0;
     tickGranularity.tv_usec = msPerTick * 1000;
-    return elapsedTimeTicks < ((qAbs(*delta) - tickGranularity) * 10);
+    return elapsedTimeTicks < ((qAbsTimeval(*delta) - tickGranularity) * 10);
 }
 
 /*
