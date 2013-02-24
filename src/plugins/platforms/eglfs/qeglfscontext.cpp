@@ -79,7 +79,7 @@ void QEglFSContext::swapBuffers(QPlatformSurface *surface)
             cursor->paintOnScreen();
     }
 
-    hooks->waitForVSync();
+    QEglFSHooks::hooks()->waitForVSync();
     QEGLPlatformContext::swapBuffers(surface);
 }
 

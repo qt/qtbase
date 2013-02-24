@@ -62,8 +62,6 @@ const char *QEglFSHooks::fbDeviceName() const
 
 void QEglFSHooks::platformInit()
 {
-    Q_UNUSED(hooks);
-
     framebuffer = qt_safe_open(fbDeviceName(), O_RDONLY);
 
     if (framebuffer == -1)

@@ -72,15 +72,18 @@ public:
     virtual void waitForVSync() const;
 
     virtual const char *fbDeviceName() const;
-};
 
+    static QEglFSHooks *hooks()
+    {
 #ifdef EGLFS_PLATFORM_HOOKS
-extern QEglFSHooks *platformHooks;
-static QEglFSHooks *hooks = platformHooks;
+        extern QEglFSHooks *platformHooks;
+        return platformHooks;
 #else
-extern QEglFSHooks stubHooks;
-static QEglFSHooks *hooks = &stubHooks;
+        extern QEglFSHooks stubHooks;
+        return &stubHooks;
 #endif
+    }
+};
 
 QT_END_NAMESPACE
 

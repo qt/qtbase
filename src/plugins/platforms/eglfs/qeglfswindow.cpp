@@ -76,18 +76,18 @@ void QEglFSWindow::create()
         return;
 
     if (window()->type() == Qt::Desktop) {
-        QRect rect(QPoint(), hooks->screenSize());
+        QRect rect(QPoint(), QEglFSHooks::hooks()->screenSize());
         QPlatformWindow::setGeometry(rect);
         QWindowSystemInterface::handleGeometryChange(window(), rect);
         return;
     }
 
     EGLDisplay display = (static_cast<QEglFSScreen *>(window()->screen()->handle()))->display();
-    QSurfaceFormat platformFormat = hooks->surfaceFormatFor(window()->requestedFormat());
+    QSurfaceFormat platformFormat = QEglFSHooks::hooks()->surfaceFormatFor(window()->requestedFormat());
     EGLConfig config = QEglFSIntegration::chooseConfig(display, platformFormat);
 
     m_format = q_glFormatFromConfig(display, config);
-    m_window = hooks->createNativeWindow(hooks->screenSize(), m_format);
+    m_window = QEglFSHooks::hooks()->createNativeWindow(QEglFSHooks::hooks()->screenSize(), m_format);
     m_surface = eglCreateWindowSurface(display, config, m_window, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         EGLint error = eglGetError();
@@ -105,7 +105,7 @@ void QEglFSWindow::destroy()
     }
 
     if (m_window) {
-        hooks->destroyNativeWindow(m_window);
+        QEglFSHooks::hooks()->destroyNativeWindow(m_window);
         m_window = 0;
     }
 }

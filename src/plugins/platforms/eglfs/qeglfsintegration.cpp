@@ -83,7 +83,7 @@ QEglFSIntegration::QEglFSIntegration()
     new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
 #endif
 
-    hooks->platformInit();
+    QEglFSHooks::hooks()->platformInit();
 
     EGLint major, minor;
 
@@ -92,7 +92,7 @@ QEglFSIntegration::QEglFSIntegration()
         qFatal("EGL error");
     }
 
-    mDisplay = eglGetDisplay(hooks ? hooks->platformDisplay() : EGL_DEFAULT_DISPLAY);
+    mDisplay = eglGetDisplay(QEglFSHooks::hooks() ? QEglFSHooks::hooks()->platformDisplay() : EGL_DEFAULT_DISPLAY);
     if (mDisplay == EGL_NO_DISPLAY) {
         qWarning("Could not open egl display\n");
         qFatal("EGL error");
@@ -122,13 +122,13 @@ QEglFSIntegration::~QEglFSIntegration()
     delete mScreen;
 
     eglTerminate(mDisplay);
-    hooks->platformDestroy();
+    QEglFSHooks::hooks()->platformDestroy();
 }
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     // We assume that devices will have more and not less capabilities
-    if (hooks && hooks->hasCapability(cap))
+    if (QEglFSHooks::hooks() && QEglFSHooks::hooks()->hasCapability(cap))
         return true;
 
     switch (cap) {
@@ -153,13 +153,13 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return new QEglFSContext(hooks->surfaceFormatFor(context->format()), context->shareHandle(), mDisplay);
+    return new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(context->format()), context->shareHandle(), mDisplay);
 }
 
 QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
 {
     QEglFSScreen *screen = static_cast<QEglFSScreen *>(surface->screen()->handle());
-    return new QEGLPbuffer(screen->display(), hooks->surfaceFormatFor(surface->requestedFormat()), surface);
+    return new QEGLPbuffer(screen->display(), QEglFSHooks::hooks()->surfaceFormatFor(surface->requestedFormat()), surface);
 }
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
@@ -230,7 +230,7 @@ EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceForm
         QEglFSHooks *m_hooks;
     };
 
-    Chooser chooser(display, hooks);
+    Chooser chooser(display, QEglFSHooks::hooks());
     chooser.setSurfaceFormat(format);
     return chooser.chooseConfig();
 }
