@@ -9169,6 +9169,8 @@ QVector<uint> QStringRef::toUcs4() const
 */
 
 /*!
+    \since 5.0
+
     Converts a plain text string to an HTML string with
     HTML metacharacters \c{<}, \c{>}, \c{&}, and \c{"} replaced by HTML
     entities.

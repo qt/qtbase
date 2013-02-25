@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 /*!
   \class QUrlQuery
   \inmodule QtCore
+  \since 5.0
 
   \brief The QUrlQuery class provides a way to manipulate a key-value pairs in
   a URL's query.

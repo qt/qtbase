@@ -158,6 +158,7 @@
 
 /*!
     \fn void QPointer::clear()
+    \since 5.0
 
     Clears this QPointer object.
 
