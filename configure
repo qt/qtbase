@@ -751,7 +751,7 @@ QMakeVar add styles "mac fusion windows"
 unset QTDIR
 
 # the minimum version of libdbus-1 that we require:
-MIN_DBUS_1_VERSION=0.93
+MIN_DBUS_1_VERSION=1.2
 
 # initalize internal variables
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
