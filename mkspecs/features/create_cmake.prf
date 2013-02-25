@@ -9,21 +9,7 @@
 # We mean it.
 #
 
-defineReplace(cmakeModuleName) {
-    _module = $$1
-    _name = $$eval(QT.$${_module}.name)
-    cmake_module_name = $$replace(_name, ^Qt, )
-    return ($$cmake_module_name)
-}
-
-defineReplace(cmakeModuleList) {
-    variable = $$1
-    out =
-    for(v, variable) {
-        out += $$cmakeModuleName($$v)
-    }
-    return ($$join(out, ";"))
-}
+load(cmake_functions)
 
 defineReplace(cmakeRelativePath) {
     path = $$relative_path($$1, $$2)
