@@ -31,6 +31,8 @@ isEmpty(CMAKE_VERSION) {
         isEmpty(VERSION_OK) {
             message("cmake $$CMAKE_VERSION is too old for this test.")
         } else {
+            load(cmake_functions)
+
             CMAKE_BUILD_TYPE = Debug
             CONFIG(release, debug|release):CMAKE_BUILD_TYPE = Release
             win32-g++*:CMAKE_GENERATOR = -G \"MinGW Makefiles\"
@@ -41,9 +43,13 @@ isEmpty(CMAKE_VERSION) {
                 CMAKE_PREFIX_PATH *= $$dirname(d)
             }
 
+            dependentmodules = $$resolve_depends(CMAKE_QT_MODULES_UNDER_TEST, "QT.")
+            dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST
+            dependentmodules = $$cmakeModuleList($$dependentmodules)
+
             check.commands = \
                 $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
-                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\" && \
+                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\" -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
         }
