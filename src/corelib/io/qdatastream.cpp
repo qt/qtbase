@@ -539,8 +539,8 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_4_8 Same as Qt_4_6.
     \value Qt_4_9 Same as Qt_4_6.
     \value Qt_5_0 Version 13 (Qt 5.0)
-    \value Qt_5_1 Version 14 (Qt 5.1, Qt 5.2)
-    \value Qt_5_2 Same as Qt_5_1.
+    \value Qt_5_1 Version 14 (Qt 5.1)
+    \value Qt_5_2 Version 15 (Qt 5.2)
 
     \sa setVersion(), version()
 */
@@ -572,6 +572,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
 
     \table
     \header \li Qt Version       \li QDataStream Version
+    \row \li Qt 5.2                  \li 15
     \row \li Qt 5.1                  \li 14
     \row \li Qt 5.0                  \li 13
     \row \li Qt 4.6                  \li 12

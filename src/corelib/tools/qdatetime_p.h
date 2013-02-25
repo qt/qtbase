@@ -81,25 +81,27 @@ class QDateTimePrivate : public QSharedData
 public:
     enum Spec { LocalUnknown = -1, LocalStandard = 0, LocalDST = 1, UTC = 2, OffsetFromUTC = 3};
 
-    QDateTimePrivate() : spec(LocalUnknown), utcOffset(0) {}
+    QDateTimePrivate() : spec(LocalUnknown), m_offsetFromUtc(0) {}
+    QDateTimePrivate(const QDate &toDate, const QTime &toTime, Qt::TimeSpec toSpec,
+                     int offsetSeconds);
     QDateTimePrivate(const QDateTimePrivate &other)
-        : QSharedData(other), date(other.date), time(other.time), spec(other.spec), utcOffset(other.utcOffset)
+        : QSharedData(other), date(other.date), time(other.time), spec(other.spec),
+          m_offsetFromUtc(other.m_offsetFromUtc)
     {}
 
     QDate date;
     QTime time;
     Spec spec;
-    /*!
-      \internal
-      \since 4.4
+    int m_offsetFromUtc;
 
-      The offset in seconds. Applies only when timeSpec() is OffsetFromUTC.
-     */
-    int utcOffset;
-
+    // Get current date/time in LocalTime and put result in outDate and outTime
     Spec getLocal(QDate &outDate, QTime &outTime) const;
+    // Get current date/time in UTC and put result in outDate and outTime
     void getUTC(QDate &outDate, QTime &outTime) const;
+
+    // Add msecs to given datetime and return result
     static QDateTime addMSecs(const QDateTime &dt, qint64 msecs);
+    // Add msecs to given datetime and put result in utcDate and utcTime
     static void addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs);
 
     static inline qint64 minJd() { return QDate::minJd(); }

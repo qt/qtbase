@@ -87,7 +87,7 @@ public:
         Qt_4_9 = Qt_4_8,
         Qt_5_0 = 13,
         Qt_5_1 = 14,
-        Qt_5_2 = Qt_5_1
+        Qt_5_2 = 15
 #if QT_VERSION >= 0x050300
 #error Add the datastream version for this Qt version
 #endif
