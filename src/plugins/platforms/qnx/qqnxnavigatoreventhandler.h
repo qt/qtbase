@@ -58,11 +58,13 @@ public:
     void handleExit();
     void handleWindowGroupActivated(const QByteArray &id);
     void handleWindowGroupDeactivated(const QByteArray &id);
+    void handleWindowGroupStateChanged(const QByteArray &id, Qt::WindowState state);
 
 Q_SIGNALS:
     void rotationChanged(int angle);
     void windowGroupActivated(const QByteArray &id);
     void windowGroupDeactivated(const QByteArray &id);
+    void windowGroupStateChanged(const QByteArray &id, Qt::WindowState state);
 };
 
 QT_END_NAMESPACE

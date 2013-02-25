@@ -210,6 +210,26 @@ bool QQnxBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
         m_navigatorEventHandler->handleExit();
         break;
 
+    case NAVIGATOR_WINDOW_STATE: {
+        qBpsEventFilterDebug() << Q_FUNC_INFO << "WINDOW STATE event";
+        const navigator_window_state_t state = navigator_event_get_window_state(event);
+        const QByteArray id(navigator_event_get_groupid(event));
+
+        switch (state) {
+        case NAVIGATOR_WINDOW_FULLSCREEN:
+            m_navigatorEventHandler->handleWindowGroupStateChanged(id, Qt::WindowFullScreen);
+            break;
+        case NAVIGATOR_WINDOW_THUMBNAIL:
+            m_navigatorEventHandler->handleWindowGroupStateChanged(id, Qt::WindowMinimized);
+            break;
+        case NAVIGATOR_WINDOW_INVISIBLE:
+            m_navigatorEventHandler->handleWindowGroupDeactivated(id);
+            break;
+        }
+
+        break;
+    }
+
     case NAVIGATOR_WINDOW_ACTIVE: {
         qBpsEventFilterDebug() << Q_FUNC_INFO << "WINDOW ACTIVE event";
         const QByteArray id(navigator_event_get_groupid(event));

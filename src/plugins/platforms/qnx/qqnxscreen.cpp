@@ -551,6 +551,21 @@ void QQnxScreen::windowClosed(void *window)
     removeOverlayWindow(windowHandle);
 }
 
+void QQnxScreen::windowGroupStateChanged(const QByteArray &id, Qt::WindowState state)
+{
+    qScreenDebug() << Q_FUNC_INFO;
+
+    if (!rootWindow() || id != rootWindow()->groupName())
+        return;
+
+    QWindow * const window = topMostChildWindow();
+
+    if (!window)
+        return;
+
+    QWindowSystemInterface::handleWindowStateChanged(window, state);
+}
+
 void QQnxScreen::activateWindowGroup(const QByteArray &id)
 {
     qScreenDebug() << Q_FUNC_INFO;
@@ -558,13 +573,12 @@ void QQnxScreen::activateWindowGroup(const QByteArray &id)
     if (!rootWindow() || id != rootWindow()->groupName())
         return;
 
-    if (!m_childWindows.isEmpty()) {
-        // We're picking up the last window of the list here
-        // because this list is ordered by stacking order.
-        // Last window is effectively the one on top.
-        QWindow * const window = m_childWindows.last()->window();
-        QWindowSystemInterface::handleWindowActivated(window);
-    }
+    QWindow * const window = topMostChildWindow();
+
+    if (!window)
+        return;
+
+    QWindowSystemInterface::handleWindowActivated(window);
 }
 
 void QQnxScreen::deactivateWindowGroup(const QByteArray &id)
@@ -584,6 +598,19 @@ QSharedPointer<QQnxRootWindow> QQnxScreen::rootWindow() const
         m_rootWindow = QSharedPointer<QQnxRootWindow>(new QQnxRootWindow(this));
 
     return m_rootWindow;
+}
+
+QWindow * QQnxScreen::topMostChildWindow() const
+{
+    if (!m_childWindows.isEmpty()) {
+
+        // We're picking up the last window of the list here
+        // because this list is ordered by stacking order.
+        // Last window is effectively the one on top.
+        return m_childWindows.last()->window();
+    }
+
+    return 0;
 }
 
 QT_END_NAMESPACE
