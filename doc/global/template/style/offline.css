@@ -66,6 +66,11 @@ color: #44a51c;
 text-align:left;
 }
 
+/*
+-----------
+offline viewing: HTML links display an icon
+-----------
+*/
 a[href*="http://"], a[href*="ftp://"],a[href*="https://"]
 {
 text-decoration: none;
@@ -127,7 +132,6 @@ Top navigation
 .qtref{
 display: block;
 position: relative;
-top: -76px;
 height:15px;
 z-index: 1;
 font-size:11px;
@@ -136,10 +140,11 @@ float:right;
 }
 
 .naviNextPrevious{
+clear: both;
 display: block;
 position: relative;
 text-align: right;
-top: -53px;
+top: -47px;
 float:right;
 height:20px;
 z-index:1;
@@ -166,6 +171,14 @@ background-position:right;
 padding-right:20px;
 height:20px;
 margin-left:30px;
+}
+/*
+-----------
+footer and license
+-----------
+*/
+.footer{
+text-align:center
 }
 
 /* table of content
@@ -390,10 +403,15 @@ text-align: left;
 
 .cpp{
 display: block;
-margin: 10;
-overflow: hidden;
-overflow-x: hidden;
-overflow-y: hidden;
+margin: 10px;
+overflow: auto;
+padding: 20px 20px 20px 20px;
+}
+
+.js{
+display: block;
+margin: 10px;
+overflow: auto;
 padding: 20px 20px 20px 20px;
 }
 
@@ -424,9 +442,7 @@ padding: 3px 15px 3px 0;
 .qml{
 display: block;
 margin: 10;
-overflow: hidden;
-overflow-x: hidden;
-overflow-y: hidden;
+overflow: auto;
 padding: 20px 20px 20px 20px;
 }
 
@@ -459,6 +475,7 @@ Content table
 @media print{
 .toc {
 float: right;
+clear: right;
 padding-bottom: 10px;
 padding-top: 50px;
 width: 100%;
@@ -470,8 +487,8 @@ background-repeat:no-repeat;
 
 @media screen{
 .toc{
-clear:both;
 float:right;
+clear: right;
 vertical-align:top;
 -moz-border-radius: 7px 7px 7px 7px;
 -webkit-border-radius: 7px 7px 7px 7px;
@@ -485,11 +502,7 @@ padding-bottom:10px;
 height: auto;
 width: 200px;
 text-align:left;
-z-index:2;
 margin-left:20px;
-margin-right:20px;
-margin-top:0px;
-padding-top:0px;
 }
 }
 
