@@ -163,6 +163,9 @@ public:
     void setOpacity(qreal level);
     qreal opacity() const;
 
+    void setMask(const QRegion &region);
+    QRegion mask() const;
+
     void requestActivate();
 
     bool isActive() const;

@@ -143,6 +143,7 @@ public:
     PositionPolicy positionPolicy;
     Qt::ScreenOrientation contentOrientation;
     qreal opacity;
+    QRegion mask;
 
     QSize minimumSize;
     QSize maximumSize;

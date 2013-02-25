@@ -791,6 +791,39 @@ qreal QWindow::opacity() const
 }
 
 /*!
+    Sets the mask of the window.
+
+    The mask is a hint to the windowing system that the application does not
+    want to receive mouse or touch input outside the given \a region.
+
+    The window manager may or may not choose to display any areas of the window
+    not included in the mask, thus it is the application's responsibility to
+    clear to transparent the areas that are not part of the mask.
+
+    Setting the mask before the window has been created has no effect.
+*/
+void QWindow::setMask(const QRegion &region)
+{
+    Q_D(QWindow);
+    if (!d->platformWindow)
+        return;
+    d->platformWindow->setMask(region);
+    d->mask = region;
+}
+
+/*!
+    Returns the mask set on the window.
+
+    The mask is a hint to the windowing system that the application does not
+    want to receive mouse or touch input outside the given region.
+*/
+QRegion QWindow::mask() const
+{
+    Q_D(const QWindow);
+    return d->mask;
+}
+
+/*!
     Requests the window to be activated, i.e. receive keyboard focus.
 
     \sa isActive(), QGuiApplication::focusWindow()

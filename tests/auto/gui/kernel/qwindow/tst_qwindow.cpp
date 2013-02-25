@@ -77,6 +77,7 @@ private slots:
     void tabletEvents();
     void windowModality_QTBUG27039();
     void visibility();
+    void mask();
 
     void initTestCase()
     {
@@ -1117,6 +1118,22 @@ void tst_QWindow::visibility()
     QCOMPARE(window.visibility(), QWindow::Hidden);
     QCOMPARE(spy.count(), 1);
     spy.clear();
+}
+
+void tst_QWindow::mask()
+{
+    QRegion mask = QRect(10, 10, 800 - 20, 600 - 20);
+
+    QWindow window;
+    window.resize(800, 600);
+    window.setMask(mask);
+
+    QCOMPARE(window.mask(), QRegion());
+
+    window.create();
+    window.setMask(mask);
+
+    QCOMPARE(window.mask(), mask);
 }
 
 #include <tst_qwindow.moc>
