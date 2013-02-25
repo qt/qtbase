@@ -387,8 +387,6 @@ SubdirsMetaMakefileGenerator::write()
         const Subdir *sub = subs.at(i);
         qmake_setpwd(subs.at(i)->input_dir);
         Option::output_dir = QFileInfo(subs.at(i)->output_dir).absoluteFilePath();
-        if(Option::output_dir.at(Option::output_dir.length()-1) != QLatin1Char('/'))
-            Option::output_dir += QLatin1Char('/');
         Option::output.setFileName(subs.at(i)->output_file);
         if(i != subs.count()-1) {
             for (int ind = 0; ind < sub->indent; ++ind)
