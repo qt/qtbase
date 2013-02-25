@@ -187,7 +187,7 @@ int runQMake(int argc, char **argv)
         if (!success)
             exit_val = 3;
 
-        if(mkfile && !mkfile->write(oldpwd)) {
+        if (mkfile && !mkfile->write()) {
             if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT)
                 fprintf(stderr, "Unable to generate project file.\n");
             else
