@@ -2039,9 +2039,21 @@ QStringList QCoreApplication::arguments()
     \sa organizationDomain, applicationName
 */
 
+/*!
+  \fn void QCoreApplication::organizationNameChanged()
+  \internal
+
+  While not useful from C++ due to how organizationName is normally set once on
+  startup, this is still needed for QML so that bindings are reevaluated after
+  that initial change.
+*/
 void QCoreApplication::setOrganizationName(const QString &orgName)
 {
+    if (coreappdata()->orgName == orgName)
+        return;
     coreappdata()->orgName = orgName;
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->organizationNameChanged();
 }
 
 QString QCoreApplication::organizationName()
@@ -2067,9 +2079,19 @@ QString QCoreApplication::organizationName()
 
     \sa organizationName, applicationName, applicationVersion
 */
+/*!
+  \fn void QCoreApplication::organizationDomainChanged()
+  \internal
+
+  Primarily for QML, see organizationNameChanged.
+*/
 void QCoreApplication::setOrganizationDomain(const QString &orgDomain)
 {
+    if (coreappdata()->orgDomain == orgDomain)
+        return;
     coreappdata()->orgDomain = orgDomain;
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->organizationDomainChanged();
 }
 
 QString QCoreApplication::organizationDomain()
@@ -2089,9 +2111,19 @@ QString QCoreApplication::organizationDomain()
 
     \sa organizationName, organizationDomain, applicationVersion, applicationFilePath
 */
+/*!
+  \fn void QCoreApplication::applicationNameChanged()
+  \internal
+
+  Primarily for QML, see organizationNameChanged.
+*/
 void QCoreApplication::setApplicationName(const QString &application)
 {
+    if (coreappdata()->application == application)
+        return;
     coreappdata()->application = application;
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->applicationNameChanged();
 }
 
 QString QCoreApplication::applicationName()
@@ -2118,9 +2150,19 @@ Q_CORE_EXPORT QString qt_applicationName_noFallback()
 
     \sa applicationName, organizationName, organizationDomain
 */
+/*!
+  \fn void QCoreApplication::applicationVersionChanged()
+  \internal
+
+  Primarily for QML, see organizationNameChanged.
+*/
 void QCoreApplication::setApplicationVersion(const QString &version)
 {
+    if (coreappdata()->applicationVersion == version)
+        return;
     coreappdata()->applicationVersion = version;
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->applicationVersionChanged();
 }
 
 QString QCoreApplication::applicationVersion()

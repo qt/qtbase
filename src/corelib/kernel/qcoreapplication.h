@@ -66,10 +66,10 @@ class QAbstractNativeEventFilter;
 class Q_CORE_EXPORT QCoreApplication : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString applicationName READ applicationName WRITE setApplicationName)
-    Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion)
-    Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName)
-    Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain)
+    Q_PROPERTY(QString applicationName READ applicationName WRITE setApplicationName NOTIFY applicationNameChanged)
+    Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion NOTIFY applicationVersionChanged)
+    Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName NOTIFY organizationNameChanged)
+    Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain NOTIFY organizationDomainChanged)
     Q_PROPERTY(bool quitLockEnabled READ isQuitLockEnabled WRITE setQuitLockEnabled)
 
     Q_DECLARE_PRIVATE(QCoreApplication)
@@ -163,6 +163,11 @@ Q_SIGNALS:
     QPrivateSignal
 #endif
     );
+
+    void organizationNameChanged();
+    void organizationDomainChanged();
+    void applicationNameChanged();
+    void applicationVersionChanged();
 
 protected:
     bool event(QEvent *);
