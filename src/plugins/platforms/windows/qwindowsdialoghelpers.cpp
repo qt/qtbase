@@ -86,6 +86,8 @@ static const IID   q_IID_IShellItem      = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0
 #define IID_IShellItem q_IID_IShellItem
 #else
 static const IID   IID_IShellItem        = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0x55, 0xa1, 0xe2, 0x61, 0xc3, 0x7b, 0xfe}};
+static const IID   IID_IShellItemArray   = {0xb63ea76d, 0x1f85, 0x456f, {0xa1, 0x9c, 0x48, 0x15, 0x9e, 0xfa, 0x85, 0x8b}};
+#  define LFF_FORCEFILESYSTEM 1
 #endif
 static const IID   IID_IFileDialogEvents = {0x973510db, 0x7d7f, 0x452b,{0x89, 0x75, 0x74, 0xa8, 0x58, 0x28, 0xd3, 0x54}};
 static const CLSID CLSID_FileOpenDialog  = {0xdc1c5a9c, 0xe88a, 0x4dde, {0xa5, 0xa1, 0x60, 0xf8, 0x2a, 0x20, 0xae, 0xf7}};
@@ -250,6 +252,34 @@ DECLARE_INTERFACE_(IShellItemArray, IUnknown)
     STDMETHOD(GetCount)(THIS_ DWORD *pdwNumItems) PURE;
     STDMETHOD(GetItemAt)(THIS_ DWORD dwIndex, IShellItem **ppsi) PURE;
     STDMETHOD(EnumItems)(THIS_ IEnumShellItems **ppenumShellItems) PURE;
+};
+#endif
+
+#ifndef __IShellLibrary_INTERFACE_DEFINED__
+
+enum LIBRARYOPTIONFLAGS {};
+enum DEFAULTSAVEFOLDERTYPE { DSFT_DETECT = 1 };
+enum LIBRARYSAVEFLAGS {};
+
+DECLARE_INTERFACE_(IShellLibrary, IUnknown)
+{
+    STDMETHOD(LoadLibraryFromItem)(THIS_ IShellItem *psiLibrary, DWORD grfMode) PURE;
+    STDMETHOD(LoadLibraryFromKnownFolder)(THIS_ const GUID &kfidLibrary, DWORD grfMode) PURE;
+    STDMETHOD(AddFolder)(THIS_ IShellItem *psiLocation) PURE;
+    STDMETHOD(RemoveFolder)(THIS_ IShellItem *psiLocation) PURE;
+    STDMETHOD(GetFolders)(THIS_ int lff, REFIID riid, void **ppv) PURE;
+    STDMETHOD(ResolveFolder)(THIS_ IShellItem *psiFolderToResolve, DWORD dwTimeout, REFIID riid, void **ppv) PURE;
+    STDMETHOD(GetDefaultSaveFolder)(THIS_ DEFAULTSAVEFOLDERTYPE dsft, REFIID riid, void **ppv) PURE;
+    STDMETHOD(SetDefaultSaveFolder)(THIS_ DEFAULTSAVEFOLDERTYPE dsft, IShellItem *psi) PURE;
+    STDMETHOD(GetOptions)(THIS_ LIBRARYOPTIONFLAGS *plofOptions) PURE;
+    STDMETHOD(SetOptions)(THIS_ LIBRARYOPTIONFLAGS lofMask, LIBRARYOPTIONFLAGS lofOptions) PURE;
+    STDMETHOD(GetFolderType)(THIS_ GUID *pftid) PURE;
+    STDMETHOD(SetFolderType)(THIS_ const GUID &ftid) PURE;
+    STDMETHOD(GetIcon)(THIS_ LPWSTR *ppszIcon) PURE;
+    STDMETHOD(SetIcon)(THIS_ LPCWSTR pszIcon) PURE;
+    STDMETHOD(Commit)(THIS_) PURE;
+    STDMETHOD(Save)(THIS_ IShellItem *psiFolderToSaveIn, LPCWSTR pszLibraryName, LIBRARYSAVEFLAGS lsf, IShellItem **ppsiSavedTo) PURE;
+    STDMETHOD(SaveInKnownFolder)(THIS_ const GUID &kfidToSaveIn, LPCWSTR pszLibraryName, LIBRARYSAVEFLAGS lsf,IShellItem **ppsiSavedTo) PURE;
 };
 #endif
 
@@ -829,6 +859,8 @@ protected:
     bool init(const CLSID &clsId, const IID &iid);
     inline IFileDialog * fileDialog() const { return m_fileDialog; }
     static QString itemPath(IShellItem *item);
+    static QStringList libraryItemFolders(IShellItem *item);
+    static QString libraryItemDefaultSaveFolder(IShellItem *item);
     static int itemPaths(IShellItemArray *items, QStringList *fileResult = 0);
     static IShellItem *shellItem(const QString &path);
 
@@ -972,15 +1004,92 @@ void QWindowsNativeFileDialogBase::setMode(QFileDialogOptions::FileMode mode, QF
         qErrnoWarning("%s: SetOptions() failed", __FUNCTION__);
 }
 
-QString QWindowsNativeFileDialogBase::itemPath(IShellItem *item)
+#ifndef Q_OS_WINCE
+
+// Helper for "Libraries": collections of folders appearing from Windows 7
+// on, visible in the file dialogs.
+
+// Load a library from a IShellItem (sanitized copy of the inline function
+// SHLoadLibraryFromItem from ShObjIdl.h, which does not exist for MinGW).
+static IShellLibrary *sHLoadLibraryFromItem(IShellItem *libraryItem, DWORD mode)
 {
-    QString result;
-    LPWSTR name = 0;
-    if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &name))) {
-        result = QDir::cleanPath(QString::fromWCharArray(name));
-        CoTaskMemFree(name);
+    // ID symbols present from Windows 7 on:
+    static const CLSID classId_ShellLibrary = {0xd9b3211d, 0xe57f, 0x4426, {0xaa, 0xef, 0x30, 0xa8, 0x6, 0xad, 0xd3, 0x97}};
+    static const IID   iId_IShellLibrary    = {0x11a66efa, 0x382e, 0x451a, {0x92, 0x34, 0x1e, 0xe, 0x12, 0xef, 0x30, 0x85}};
+
+    IShellLibrary *helper = 0;
+    IShellLibrary *result = 0;
+    if (SUCCEEDED(CoCreateInstance(classId_ShellLibrary, NULL, CLSCTX_INPROC_SERVER, iId_IShellLibrary, reinterpret_cast<void **>(&helper))))
+        if (SUCCEEDED(helper->LoadLibraryFromItem(libraryItem, mode)))
+            helper->QueryInterface(iId_IShellLibrary, reinterpret_cast<void **>(&result));
+    if (helper)
+        helper->Release();
+    return result;
+}
+
+// Return all folders of a library-type item.
+QStringList QWindowsNativeFileDialogBase::libraryItemFolders(IShellItem *item)
+{
+    QStringList result;
+    if (IShellLibrary *library = sHLoadLibraryFromItem(item, STGM_READ | STGM_SHARE_DENY_WRITE)) {
+        IShellItemArray *itemArray = 0;
+        if (SUCCEEDED(library->GetFolders(LFF_FORCEFILESYSTEM, IID_IShellItemArray, reinterpret_cast<void **>(&itemArray)))) {
+            QWindowsNativeFileDialogBase::itemPaths(itemArray, &result);
+            itemArray->Release();
+        }
+        library->Release();
     }
     return result;
+}
+
+// Return default save folders of a library-type item.
+QString QWindowsNativeFileDialogBase::libraryItemDefaultSaveFolder(IShellItem *item)
+{
+    QString result;
+    if (IShellLibrary *library = sHLoadLibraryFromItem(item, STGM_READ | STGM_SHARE_DENY_WRITE)) {
+        IShellItem *item = 0;
+        if (SUCCEEDED(library->GetDefaultSaveFolder(DSFT_DETECT, IID_IShellItem, reinterpret_cast<void **>(&item)))) {
+            result = QWindowsNativeFileDialogBase::itemPath(item);
+            item->Release();
+        }
+        library->Release();
+    }
+    return result;
+}
+
+#else // !Q_OS_WINCE
+
+QStringList QWindowsNativeFileDialogBase::libraryItemPaths(IShellItem *)
+{
+    return QStringList();
+}
+
+QString QWindowsNativeFileDialogBase::libraryDefaultSaveFolder(IShellItem *)
+{
+    return QString();
+}
+
+#endif // Q_OS_WINCE
+
+QString QWindowsNativeFileDialogBase::itemPath(IShellItem *item)
+{
+    SFGAOF attributes = 0;
+    // Check whether it has a file system representation?
+    if (FAILED(item->GetAttributes(SFGAO_FILESYSTEM, &attributes)))
+         return QString();
+    if (attributes & SFGAO_FILESYSTEM) {
+        LPWSTR name = 0;
+        QString result;
+        if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH, &name))) {
+            result = QDir::cleanPath(QString::fromWCharArray(name));
+            CoTaskMemFree(name);
+        }
+        return result;
+    }
+    // Check for a "Library" item
+    if ((QSysInfo::windowsVersion() & QSysInfo::WV_NT_based) && QSysInfo::windowsVersion() >= QSysInfo::WV_WINDOWS7)
+        return QWindowsNativeFileDialogBase::libraryItemDefaultSaveFolder(item);
+    return QString();
 }
 
 int QWindowsNativeFileDialogBase::itemPaths(IShellItemArray *items,
