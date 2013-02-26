@@ -378,8 +378,8 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     def->isVirtual = false;
     def->isStatic = false;
     //skip modifiers and attributes
-    while (test(INLINE) || (test(STATIC) && (def->isStatic = true)) ||
-        (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
+    while (test(INLINE) || (test(STATIC) && (def->isStatic = true) == true) ||
+        (test(VIRTUAL) && (def->isVirtual = true) == true) //mark as virtual
         || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool templateFunction = (lookup() == TEMPLATE);
     def->type = parseType();
@@ -473,8 +473,8 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     def->isVirtual = false;
     def->isStatic = false;
     //skip modifiers and attributes
-    while (test(EXPLICIT) || test(INLINE) || (test(STATIC) && (def->isStatic = true)) ||
-        (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
+    while (test(EXPLICIT) || test(INLINE) || (test(STATIC) && (def->isStatic = true) == true) ||
+        (test(VIRTUAL) && (def->isVirtual = true) == true) //mark as virtual
         || testFunctionAttribute(def) || testFunctionRevision(def)) {}
     bool tilde = test(TILDE);
     def->type = parseType();
