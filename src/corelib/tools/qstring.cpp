@@ -966,20 +966,21 @@ const QString::Null QString::null = { };
     \sa utf16(), toLatin1(), toUtf8(), toLocal8Bit()
 */
 
-// ### replace with QCharIterator
 int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 {
     int i = 0;
-    for (; i < length; ++i) {
-        uint u = uc[i];
-        if (QChar::isHighSurrogate(u) && i + 1 < length) {
-            ushort low = uc[i+1];
+    const ushort *const e = uc + length;
+    while (uc < e) {
+        uint u = *uc;
+        if (QChar::isHighSurrogate(u) && uc + 1 < e) {
+            ushort low = uc[1];
             if (QChar::isLowSurrogate(low)) {
-                ++i;
+                ++uc;
                 u = QChar::surrogateToUcs4(u, low);
             }
         }
-        *out++ = u;
+        out[i++] = u;
+        ++uc;
     }
     return i;
 }

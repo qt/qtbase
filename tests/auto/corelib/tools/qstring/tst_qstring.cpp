@@ -195,6 +195,8 @@ private slots:
     void stringRef_local8Bit();
     void fromLatin1();
     void fromAscii();
+    void fromUcs4();
+    void toUcs4();
     void arg();
     void number();
     void arg_fillChar_data();
@@ -3929,6 +3931,52 @@ void tst_QString::fromAscii()
     QVERIFY(a.isEmpty());
     a = QString::fromAscii("\0abcd", 5);
     QVERIFY(a.size() == 5);
+}
+
+void tst_QString::fromUcs4()
+{
+    QString s;
+    s = QString::fromUcs4( 0 );
+    QVERIFY( s.isNull() );
+    QCOMPARE( s.size(), 0 );
+    s = QString::fromUcs4( 0, 0 );
+    QVERIFY( s.isNull() );
+    QCOMPARE( s.size(), 0 );
+    s = QString::fromUcs4( 0, 5 );
+    QVERIFY( s.isNull() );
+    QCOMPARE( s.size(), 0 );
+
+    uint nil = '\0';
+    s = QString::fromUcs4( &nil );
+    QVERIFY( !s.isNull() );
+    QCOMPARE( s.size(), 0 );
+    s = QString::fromUcs4( &nil, 0 );
+    QVERIFY( !s.isNull() );
+    QCOMPARE( s.size(), 0 );
+
+    uint bmp = 'a';
+    s = QString::fromUcs4( &bmp, 1 );
+    QVERIFY( !s.isNull() );
+    QCOMPARE( s.size(), 1 );
+
+    uint smp = 0x10000;
+    s = QString::fromUcs4( &smp, 1 );
+    QVERIFY( !s.isNull() );
+    QCOMPARE( s.size(), 2 );
+}
+
+void tst_QString::toUcs4()
+{
+    QString s;
+    QCOMPARE( s.toUcs4().size(), 0 );
+
+    QChar bmp = QLatin1Char('a');
+    s = QString(&bmp, 1);
+    QCOMPARE( s.toUcs4().size(), 1 );
+
+    QChar smp[] = { QChar::highSurrogate(0x10000), QChar::lowSurrogate(0x10000) };
+    s = QString(smp, 2);
+    QCOMPARE( s.toUcs4().size(), 1 );
 }
 
 void tst_QString::arg()
