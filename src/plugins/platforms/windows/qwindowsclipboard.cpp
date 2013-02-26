@@ -178,6 +178,20 @@ void QWindowsClipboard::unregisterViewer()
     }
 }
 
+static bool isProcessBeingDebugged(HWND hwnd)
+{
+    DWORD pid = 0;
+    if (!GetWindowThreadProcessId(hwnd, &pid) || !pid)
+        return false;
+    const HANDLE processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+    if (!processHandle)
+        return false;
+    BOOL debugged = FALSE;
+    CheckRemoteDebuggerPresent(processHandle, &debugged);
+    CloseHandle(processHandle);
+    return debugged != FALSE;
+}
+
 void QWindowsClipboard::propagateClipboardMessage(UINT message, WPARAM wParam, LPARAM lParam) const
 {
     if (!m_nextClipboardViewer)
@@ -187,6 +201,12 @@ void QWindowsClipboard::propagateClipboardMessage(UINT message, WPARAM wParam, L
     if (QWindowsContext::user32dll.isHungAppWindow
         && QWindowsContext::user32dll.isHungAppWindow(m_nextClipboardViewer)) {
         qWarning("%s: Cowardly refusing to send clipboard message to hung application...", Q_FUNC_INFO);
+        return;
+    }
+    // Also refuse if the process is being debugged, specifically, if it is
+    // displaying a runtime assert, which is not caught by isHungAppWindow().
+    if (isProcessBeingDebugged(m_nextClipboardViewer)) {
+        qWarning("%s: Cowardly refusing to send clipboard message to application under debugger...", Q_FUNC_INFO);
         return;
     }
     SendMessage(m_nextClipboardViewer, message, wParam, lParam);
