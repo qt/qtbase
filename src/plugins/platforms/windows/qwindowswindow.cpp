@@ -203,17 +203,16 @@ static inline QSize clientSize(HWND hwnd)
     return qSizeOfRect(rect);
 }
 
-// from qwidget_win.cpp/maximum layout size check removed.
-static bool shouldShowMaximizeButton(Qt::WindowFlags flags)
+// from qwidget_win.cpp
+static bool shouldShowMaximizeButton(const QWindow *w)
 {
-    if (flags & Qt::MSWindowsFixedSizeDialogHint)
+    const Qt::WindowFlags flags = w->flags();
+    if ((flags & Qt::MSWindowsFixedSizeDialogHint) || !(flags & Qt::WindowMaximizeButtonHint))
         return false;
     // if the user explicitly asked for the maximize button, we try to add
     // it even if the window has fixed size.
-    if (flags & Qt::CustomizeWindowHint &&
-        flags & Qt::WindowMaximizeButtonHint)
-        return true;
-    return flags & Qt::WindowMaximizeButtonHint;
+    return (flags & Qt::CustomizeWindowHint) ||
+        w->maximumSize() == QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX);
 }
 
 // Set the WS_EX_LAYERED flag on a HWND if required. This is required for
@@ -432,7 +431,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                     style |= WS_SYSMENU;
                 if (flags & Qt::WindowMinimizeButtonHint)
                     style |= WS_MINIMIZEBOX;
-                if (shouldShowMaximizeButton(flags))
+                if (shouldShowMaximizeButton(w))
                     style |= WS_MAXIMIZEBOX;
                 if (tool)
                     exStyle |= WS_EX_TOOLWINDOW;
