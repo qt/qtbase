@@ -80,6 +80,7 @@ static QTouchDevice *touchDevice = 0;
         m_backingStore = 0;
         m_maskImage = 0;
         m_maskData = 0;
+        m_shouldInvalidateWindowShadow = false;
         m_window = 0;
         m_buttons = Qt::NoButton;
         m_sendKeyEvent = false;
@@ -266,6 +267,7 @@ static QTouchDevice *touchDevice = 0;
 
 - (void) setMaskRegion:(const QRegion *)region
 {
+    m_shouldInvalidateWindowShadow = true;
     if (m_maskImage)
         CGImageRelease(m_maskImage);
     if (region->isEmpty()) {
@@ -283,6 +285,14 @@ static QTouchDevice *touchDevice = 0;
 
     maskImage = maskImage.convertToFormat(QImage::Format_Indexed8);
     m_maskImage = qt_mac_toCGImage(maskImage, true, &m_maskData);
+}
+
+- (void)invalidateWindowShadowIfNeeded
+{
+    if (m_shouldInvalidateWindowShadow && m_platformWindow->m_nsWindow) {
+        [m_platformWindow->m_nsWindow invalidateShadow];
+        m_shouldInvalidateWindowShadow = false;
+    }
 }
 
 - (void) drawRect:(NSRect)dirtyRect
@@ -334,6 +344,8 @@ static QTouchDevice *touchDevice = 0;
     CGContextRestoreGState(cgContext);
     CGImageRelease(cleanImg);
     CGImageRelease(subMask);
+
+    [self invalidateWindowShadowIfNeeded];
 }
 
 - (BOOL) isFlipped
