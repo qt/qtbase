@@ -68,7 +68,6 @@ typedef struct pg_result PGresult;
 QT_BEGIN_NAMESPACE
 
 class QPSQLResultPrivate;
-class QPSQLDriverPrivate;
 class QPSQLDriver;
 class QSqlRecordInfo;
 
@@ -76,7 +75,7 @@ class QPSQLResult : public QSqlResult
 {
     friend class QPSQLResultPrivate;
 public:
-    QPSQLResult(const QPSQLDriver* db, const QPSQLDriverPrivate* p);
+    QPSQLResult(const QPSQLDriver* db);
     ~QPSQLResult();
 
     QVariant handle() const;
@@ -101,8 +100,12 @@ private:
     QPSQLResultPrivate *d;
 };
 
+class QPSQLDriverPrivate;
+
 class Q_EXPORT_SQLDRIVER_PSQL QPSQLDriver : public QSqlDriver
 {
+    friend class QPSQLResultPrivate;
+
     Q_OBJECT
 public:
     enum Protocol {
