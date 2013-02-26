@@ -160,10 +160,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         // Although Microsoft has a Cache key it is a pointer to IE's cache, not a cache
         // location for everyone.  Most applications seem to be using a
         // cache directory located in their AppData directory
-        return writableLocation(DataLocation) + QLatin1String("\\cache");
+        return writableLocation(DataLocation) + QLatin1String("/cache");
 
     case GenericCacheLocation:
-        return writableLocation(GenericDataLocation) + QLatin1String("\\cache");
+        return writableLocation(GenericDataLocation) + QLatin1String("/cache");
 
     case RuntimeLocation:
     case HomeLocation:
