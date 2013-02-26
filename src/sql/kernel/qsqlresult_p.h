@@ -71,8 +71,8 @@ struct QHolder {
 class Q_SQL_EXPORT QSqlResultPrivate
 {
 public:
-    QSqlResultPrivate(QSqlResult *d)
-      : q(d),
+    QSqlResultPrivate()
+      : q(0),
         idx(QSql::BeforeFirstRow),
         active(false),
         isSel(false),
@@ -81,6 +81,7 @@ public:
         bindCount(0),
         binds(QSqlResult::PositionalBinding)
     { }
+    virtual ~QSqlResultPrivate() { }
 
     void clearValues()
     {
