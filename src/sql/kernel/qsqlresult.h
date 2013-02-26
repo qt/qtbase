@@ -74,6 +74,7 @@ protected:
     };
 
     explicit QSqlResult(const QSqlDriver * db);
+    QSqlResult(QSqlResultPrivate &dd, const QSqlDriver *db);
     int at() const;
     QString lastQuery() const;
     QSqlError lastError() const;

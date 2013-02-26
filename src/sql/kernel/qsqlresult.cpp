@@ -225,6 +225,17 @@ QSqlResult::QSqlResult(const QSqlDriver *db)
         setNumericalPrecisionPolicy(d->sqldriver->numericalPrecisionPolicy());
 }
 
+/*!  \internal
+*/
+QSqlResult::QSqlResult(QSqlResultPrivate &dd, const QSqlDriver *db)
+{
+    d = &dd;
+    d->q_ptr = this;
+    d->sqldriver = const_cast<QSqlDriver *>(db);
+    if (d->sqldriver)
+        setNumericalPrecisionPolicy(d->sqldriver->numericalPrecisionPolicy());
+}
+
 /*!
     Destroys the object and frees any allocated resources.
 */
