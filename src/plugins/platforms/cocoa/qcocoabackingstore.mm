@@ -90,8 +90,10 @@ void QCocoaBackingStore::flush(QWindow *win, const QRegion &region, const QPoint
     // m_cgImage is only a reference to the data inside m_qImage, it is not a copy.
     CGImageRelease(m_cgImage);
     m_cgImage = 0;
-    if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle()))
-        [cocoaWindow->m_contentView flushBackingStore:this region:region offset:offset];
+    if (!m_qImage.isNull()) {
+        if (QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(win->handle()))
+            [cocoaWindow->m_contentView flushBackingStore:this region:region offset:offset];
+    }
 }
 
 void QCocoaBackingStore::resize(const QSize &size, const QRegion &)
