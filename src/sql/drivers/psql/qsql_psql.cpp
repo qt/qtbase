@@ -474,7 +474,12 @@ int QPSQLResult::numRowsAffected()
 
 QVariant QPSQLResult::lastInsertId() const
 {
-    if (isActive()) {
+    if (d->privDriver->pro >= QPSQLDriver::Version81) {
+        QSqlQuery qry(driver()->createResult());
+        // Most recent sequence value obtained from nextval
+        if (qry.exec(QLatin1String("SELECT lastval();")) && qry.next())
+            return qry.value(0);
+    } else if (isActive()) {
         Oid id = PQoidValue(d->result);
         if (id != InvalidOid)
             return QVariant(id);
