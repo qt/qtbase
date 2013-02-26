@@ -97,6 +97,7 @@ private slots:
     void simpleTypes();
     void complexTypes();
     void wrongTypes();
+    void error();
 };
 
 class TypesInterface: public QDBusAbstractAdaptor
@@ -370,6 +371,30 @@ void tst_QDBusReply::wrongTypes()
 
     rstruct = iface->call(QDBus::BlockWithGui, "retrieveIntStringMap");
     QVERIFY(!rstruct.isValid());
+}
+
+void tst_QDBusReply::error()
+{
+    {
+        // Wrong type
+        QDBusReply<bool> result = iface->call(QDBus::BlockWithGui, "retrieveInt");
+        QVERIFY(result.error().isValid());
+    }
+    {
+        // Wrong type, const version
+        const QDBusReply<bool> result = iface->call(QDBus::BlockWithGui, "retrieveInt");
+        QVERIFY(result.error().isValid());
+    }
+    {
+        // Ok type
+        QDBusReply<void> result = iface->call(QDBus::BlockWithGui, "retrieveInt");
+        QVERIFY(!result.error().isValid());
+    }
+    {
+        // Ok type, const version
+        const QDBusReply<void> result = iface->call(QDBus::BlockWithGui, "retrieveInt");
+        QVERIFY(!result.error().isValid());
+    }
 }
 
 QTEST_MAIN(tst_QDBusReply)
