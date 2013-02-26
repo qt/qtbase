@@ -1596,6 +1596,16 @@ QList<QPrinter::PaperSize> QWin32PrintEngine::supportedPaperSizes(const QPrinter
     return returnList;
 }
 
+static inline uint qwcsnlen(const wchar_t *str, uint maxlen)
+{
+    uint length = 0;
+    if (str) {
+        while (length < maxlen && *str++)
+            length++;
+    }
+    return length;
+}
+
 QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const QPrinterInfo &printerInfo)
 {
     QList<QPair<QString, QSizeF> > paperSizes;
@@ -1603,22 +1613,20 @@ QList<QPair<QString, QSizeF> > QWin32PrintEngine::supportedSizesWithNames(const 
         return paperSizes;
     DWORD size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
                                     NULL, DC_PAPERNAMES, NULL, NULL);
-    if ((int)size != -1) {
+    if ((int)size > 0) {
         wchar_t *papers = new wchar_t[size*64];
         size = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
                                   NULL, DC_PAPERNAMES, papers, NULL);
         DWORD size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
                                          NULL, DC_PAPERSIZE, NULL, NULL);
-        if ((int)size2 != -1) {
+        if ((int)size2 > 0) {
             POINT *points = new POINT[size2*sizeof(POINT)];
 
             size2 = DeviceCapabilities(reinterpret_cast<const wchar_t*>(printerInfo.printerName().utf16()),
                                        NULL, DC_PAPERSIZE, (wchar_t *)points, NULL);
-            wchar_t copyOfPaper[65];
             for (int i=0;i<(int)size;i++) {
-                wcscpy_s(copyOfPaper, 64, papers + (i * 64));
-                copyOfPaper[64] = '\0';
-                QString str = QString::fromWCharArray(copyOfPaper);
+                wchar_t *paper = papers + (i * 64);
+                QString str = QString::fromWCharArray(paper, qwcsnlen(paper, 64));
                 paperSizes << qMakePair(str, QSizeF(points[i].x / 10, points[i].y / 10));
             }
             delete [] points;
