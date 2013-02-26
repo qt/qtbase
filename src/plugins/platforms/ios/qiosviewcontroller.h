@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #import <UIKit/UIKit.h>
-#import <QtCore/qnamespace.h>
 
 @interface QIOSViewController : UIViewController
 @end

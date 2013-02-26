@@ -88,10 +88,11 @@ QIOSScreen::QIOSScreen(unsigned int screenIndex)
         unscaledDpi = 132;
     };
 
-    // UIScreen does not report different bounds for different orientations. We
-    // match this behavior by staying with a fixed QScreen geometry.
     CGRect bounds = [m_uiScreen bounds];
     m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+
+    CGRect frame = m_uiScreen.applicationFrame;
+    m_availableGeometry = QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
 
     const qreal millimetersPerInch = 25.4;
     m_physicalSize = QSizeF(m_geometry.size()) / unscaledDpi * millimetersPerInch;
@@ -111,8 +112,7 @@ QRect QIOSScreen::geometry() const
 
 QRect QIOSScreen::availableGeometry() const
 {
-    CGRect frame = m_uiScreen.applicationFrame;
-    return QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+    return m_availableGeometry;
 }
 
 int QIOSScreen::depth() const
@@ -148,6 +148,30 @@ void QIOSScreen::setOrientationUpdateMask(Qt::ScreenOrientations mask)
     } else if (!m_orientationListener) {
         m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
     }
+}
+
+void QIOSScreen::setPrimaryOrientation(Qt::ScreenOrientation orientation)
+{
+    // Note that UIScreen never changes orientation, but QScreen should. To work around
+    // this, we let QIOSViewController call us whenever interface orientation changes, and
+    // use that as primary orientation. After all, the viewcontrollers geometry is what we
+    // place QWindows on top of. A problem with this approach is that QIOSViewController is
+    // not in use in a mixed environment, which results in no change to primary orientation.
+    // We see that as acceptable since Qt should most likely not interfere with orientation
+    // for that case anyway.
+    bool portrait = screen()->isPortrait(orientation);
+    if (portrait && m_geometry.width() < m_geometry.height())
+        return;
+
+    // Switching portrait/landscape means swapping width/height (and adjusting x/y):
+    CGRect frame = m_uiScreen.applicationFrame;
+    m_availableGeometry = portrait ? QRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height)
+        : QRect(frame.origin.y, m_geometry.width() - frame.size.width - frame.origin.x, frame.size.height, frame.size.width);
+    m_geometry = QRect(0, 0, m_geometry.height(), m_geometry.width());
+    m_physicalSize = QSizeF(m_physicalSize.height(), m_physicalSize.width());
+
+    QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry);
+    QWindowSystemInterface::handleScreenAvailableGeometryChange(screen(), m_availableGeometry);
 }
 
 UIScreen *QIOSScreen::uiScreen() const
