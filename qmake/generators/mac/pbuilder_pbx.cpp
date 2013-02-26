@@ -906,21 +906,23 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     library = fileFixify(library);
                     QString filetype = xcodeFiletypeForFilename(library);
                     QString key = keyFor(library);
-                    t << "\t\t" << key << " = {" << "\n"
-                      << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
-                      << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";" << "\n"
-                      << "\t\t\t" << writeSettings("path", escapeFilePath(library)) << ";" << "\n"
-                      << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";" << "\n";
-                    if (!filetype.isNull())
-                        t << "\t\t\t" << writeSettings("lastKnownFileType", filetype) << ";" << "\n";
-                    t << "\t\t" << "};" << "\n";
-                    project->values("QMAKE_PBX_LIBRARIES").append(key);
-                    QString build_key = keyFor(library + ".BUILDABLE");
-                    t << "\t\t" << build_key << " = {" << "\n"
-                      << "\t\t\t" << writeSettings("fileRef", key) << ";" << "\n"
-                      << "\t\t\t" << writeSettings("isa", "PBXBuildFile", SettingsNoQuote) << ";" << "\n"
-                      << "\t\t" << "};" << "\n";
-                    project->values("QMAKE_PBX_BUILD_LIBRARIES").append(build_key);
+                    if (!project->values("QMAKE_PBX_LIBRARIES").contains(key)) {
+                        t << "\t\t" << key << " = {" << "\n"
+                          << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
+                          << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";" << "\n"
+                          << "\t\t\t" << writeSettings("path", escapeFilePath(library)) << ";" << "\n"
+                          << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";" << "\n";
+                        if (!filetype.isNull())
+                            t << "\t\t\t" << writeSettings("lastKnownFileType", filetype) << ";" << "\n";
+                        t << "\t\t" << "};" << "\n";
+                        project->values("QMAKE_PBX_LIBRARIES").append(key);
+                        QString build_key = keyFor(library + ".BUILDABLE");
+                        t << "\t\t" << build_key << " = {" << "\n"
+                          << "\t\t\t" << writeSettings("fileRef", key) << ";" << "\n"
+                          << "\t\t\t" << writeSettings("isa", "PBXBuildFile", SettingsNoQuote) << ";" << "\n"
+                          << "\t\t" << "};" << "\n";
+                        project->values("QMAKE_PBX_BUILD_LIBRARIES").append(build_key);
+                    }
                 }
                 if(remove)
                     tmp.removeAt(x);
