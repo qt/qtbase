@@ -1020,7 +1020,7 @@ void tst_QFileInfo::fileTimes()
         QEXPECT_FAIL("longfile absolutepath", "No long filenames on WinCE", Abort);
 #endif
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
-#ifdef Q_OS_UNIX && !defined(Q_OS_VXWORKS)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
         if (qIsLikelyToBeNfs(file.handle()))
             QSKIP("This Test doesn't work on NFS");
 #endif
