@@ -274,7 +274,7 @@ static QTouchDevice *touchDevice = 0;
         m_maskImage = 0;
     }
 
-    const QRect &rect = qt_mac_toQRect([self frame]);
+    const QRect &rect = region->boundingRect();
     QImage maskImage(rect.size(), QImage::Format_RGB888);
     maskImage.fill(Qt::white);
     QPainter p(&maskImage);
