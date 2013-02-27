@@ -378,7 +378,7 @@ NSUInteger QCocoaWindow::windowStyleMask(Qt::WindowFlags flags)
     NSInteger styleMask = NSBorderlessWindowMask;
 
     if ((type & Qt::Popup) == Qt::Popup) {
-        if (!windowIsPopupType(type))
+        if (!windowIsPopupType(type) && !(flags & Qt::FramelessWindowHint))
             styleMask = (NSUtilityWindowMask | NSResizableWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSTitledWindowMask);
     } else {
