@@ -754,7 +754,6 @@ void QCocoaWindow::setNSWindow(NSWindow *window)
 {
     m_nsWindowDelegate = [[QNSWindowDelegate alloc] initWithQCocoaWindow:this];
     [window setDelegate:m_nsWindowDelegate];
-    [window setAcceptsMouseMovedEvents:YES];
 
     // Prevent Cocoa from releasing the window on close. Qt
     // handles the close event asynchronously and we want to
