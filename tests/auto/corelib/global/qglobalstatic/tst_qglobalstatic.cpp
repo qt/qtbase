@@ -50,6 +50,7 @@ private Q_SLOTS:
     void api();
     void constVolatile();
     void exception();
+    void threadedException();
     void threadStressTest();
     void afterDestruction();
 };
@@ -107,6 +108,11 @@ struct ThrowingType
 {
     static QBasicAtomicInt constructedCount;
     static QBasicAtomicInt destructedCount;
+    ThrowingType()
+    {
+        throw 0;
+    }
+
     ThrowingType(QBasicAtomicInt &throwControl)
     {
         constructedCount.ref();
@@ -115,12 +121,28 @@ struct ThrowingType
     }
     ~ThrowingType() { destructedCount.ref(); }
 };
+
 QBasicAtomicInt ThrowingType::constructedCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 QBasicAtomicInt ThrowingType::destructedCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 
+Q_GLOBAL_STATIC(ThrowingType, throwingGS)
+void tst_QGlobalStatic::exception()
+{
+    bool exceptionCaught = false;
+    try {
+        throwingGS();
+    } catch (int) {
+        exceptionCaught = true;
+    }
+    QVERIFY(exceptionCaught);
+    QCOMPARE(Q_QGS_throwingGS::guard.load(), 0);
+    QVERIFY(!throwingGS.exists());
+    QVERIFY(!throwingGS.isDestroyed());
+}
+
 QBasicAtomicInt exceptionControlVar = Q_BASIC_ATOMIC_INITIALIZER(1);
 Q_GLOBAL_STATIC_WITH_ARGS(ThrowingType, exceptionGS, (exceptionControlVar))
-void tst_QGlobalStatic::exception()
+void tst_QGlobalStatic::threadedException()
 {
     if (exceptionControlVar.load() != 1)
         QSKIP("This test cannot be run more than once");

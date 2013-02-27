@@ -68,7 +68,8 @@ enum GuardValues {
     {                                                           \
         struct HolderBase {                                     \
             ~HolderBase() Q_DECL_NOTHROW                        \
-            { guard.store(QtGlobalStatic::Destroyed); }         \
+            { if (guard.load() == QtGlobalStatic::Initialized)  \
+                  guard.store(QtGlobalStatic::Destroyed); }     \
         };                                                      \
         static struct Holder : public HolderBase {              \
             Type value;                                         \

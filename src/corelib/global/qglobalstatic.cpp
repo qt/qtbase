@@ -288,9 +288,11 @@
     structure so holder's destructor can set the guard variable to the value -2
     (destroyed) when the type has finished destruction. Since we need to set
     the guard \b after the destruction has finished, this code needs to be in a
-    base struct's destructor. A holder structure is used to avoid creating two
-    statics, which the ABI might require duplicating the thread-safe control
-    structures for.
+    base struct's destructor. And it only sets to -2 (destroyed) if it finds
+    the guard at -1 (initialized): this is done to ensure that the guard isn't
+    set to -2 in the event the type's constructor threw an exception. A holder
+    structure is used to avoid creating two statics, which the ABI might
+    require duplicating the thread-safe control structures for.
 
     The other implementation is similar to Qt 4's Q_GLOBAL_STATIC, but unlike
     that one, it uses a \l QBasicMutex to provide locking. It is also more
