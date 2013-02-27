@@ -513,7 +513,7 @@ void tst_QTcpSocket::bind()
 {
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
-        QSKIP("QTBUG-22964");
+        return; // QTBUG-22964 for proxies, QTBUG-29972 for QSKIP
     QFETCH(QString, stringAddr);
     QFETCH(bool, successExpected);
     QFETCH(QString, stringExpectedLocalAddress);
