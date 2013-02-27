@@ -34,6 +34,8 @@ windowflags \
 windowgeometry \
 windowmodality \
 widgetgrab \
+xembed-raster \
+xembed-widgets \
 dialogs
 
 !contains(QT_CONFIG, openssl):!contains(QT_CONFIG, openssl-linked):SUBDIRS -= qssloptions
