@@ -113,7 +113,9 @@ void tst_QProgressBar::minMaxSameValue()
     QProgressBar bar;
     bar.setRange(10, 10);
     bar.setValue(10);
+    bar.move(300, 300);
     bar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&bar));
 }
 
 void tst_QProgressBar::destroyIndeterminate()
@@ -123,7 +125,9 @@ void tst_QProgressBar::destroyIndeterminate()
     // it's deleted.
     QPointer<QProgressBar> bar = new QProgressBar;
     bar->setMaximum(0);
+    bar->move(300, 300);
     bar->show();
+    QVERIFY(QTest::qWaitForWindowExposed(bar.data()));
 
     QEventLoop loop;
     QTimer::singleShot(500, bar, SLOT(deleteLater()));
@@ -166,7 +170,9 @@ void tst_QProgressBar::format()
     ProgressBar bar;
     bar.setRange(0, 10);
     bar.setValue(1);
+    bar.move(300, 300);
     bar.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&bar));
     QVERIFY(QTest::qWaitForWindowExposed(&bar));
 
     QTest::qWait(20);
@@ -202,6 +208,7 @@ void tst_QProgressBar::setValueRepaint()
     pbar.setMinimum(0);
     pbar.setMaximum(10);
     pbar.setFormat("%v");
+    pbar.move(300, 300);
     pbar.show();
     QVERIFY(QTest::qWaitForWindowExposed(&pbar));
 
@@ -224,7 +231,9 @@ void tst_QProgressBar::setMinMaxRepaint()
     pbar.setMinimum(0);
     pbar.setMaximum(10);
     pbar.setFormat("%v");
+    pbar.move(300, 300);
     pbar.show();
+    qApp->setActiveWindow(&pbar);
     QVERIFY(QTest::qWaitForWindowActive(&pbar));
 
     // No repaint when setting minimum to the current minimum
@@ -319,7 +328,9 @@ void tst_QProgressBar::task245201_testChangeStyleAndDelete()
 
     QStyle *style = QStyleFactory::create(style1_str);
     bar->setStyle(style);
+    bar->move(300, 300);
     bar->show();
+    QVERIFY(QTest::qWaitForWindowExposed(bar));
     QStyle *style2 = QStyleFactory::create(style2_str);
     bar->setStyle(style2);
     QTest::qWait(10);
