@@ -1891,6 +1891,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_ScrollBar_Transient Determines if the style supports transient scroll bars. Transient
            scroll bars appear when the content is scrolled and disappear when they are no longer needed.
 
+    \value SH_Menu_SupportsSections Determines if the style displays sections in menus or treat them as
+           plain separators. Sections are separators with a text and icon hint.
+
     \sa styleHint()
 */
 

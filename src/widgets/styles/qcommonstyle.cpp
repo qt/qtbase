@@ -5109,6 +5109,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
     case SH_ScrollBar_Transient:
         ret = false;
         break;
+    case SH_Menu_SupportsSections:
+        ret = false;
+        break;
     default:
         ret = 0;
         break;

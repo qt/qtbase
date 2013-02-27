@@ -3473,6 +3473,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
     case SH_ItemView_ChangeHighlightOnFocus:
     case SH_MenuBar_MouseTracking:
     case SH_Menu_MouseTracking:
+    case SH_Menu_SupportsSections:
         return 1;
 
     case SH_ToolBox_SelectedPageTitleBold:

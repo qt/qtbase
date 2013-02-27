@@ -260,12 +260,15 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     bool previousWasSeparator = true; // this is true to allow removing the leading separators
     for(int i = 0; i <= lastVisibleAction; i++) {
         QAction *action = actions.at(i);
+        const bool isSection = action->isSeparator() && (!action->text().isEmpty() || !action->icon().isNull());
+        const bool isPlainSeparator = (isSection && !q->style()->styleHint(QStyle::SH_Menu_SupportsSections))
+                                   || (action->isSeparator() && !isSection);
 
         if (!action->isVisible() ||
-            (collapsibleSeparators && previousWasSeparator && action->isSeparator()))
+            (collapsibleSeparators && previousWasSeparator && isPlainSeparator))
             continue; // we continue, this action will get an empty QRect
 
-        previousWasSeparator = action->isSeparator();
+        previousWasSeparator = isPlainSeparator;
 
         //let the style modify the above size..
         QStyleOptionMenuItem opt;
@@ -1511,6 +1514,54 @@ QAction *QMenu::addSeparator()
 }
 
 /*!
+    \since 5.1
+
+    This convenience function creates a new section action, i.e. an
+    action with QAction::isSeparator() returning true but also
+    having \a text hint, and adds the new action to this menu's list
+    of actions. It returns the newly created action.
+
+    The rendering of the hint is style and platform dependent. Widget
+    styles can use the text information in the rendering for sections,
+    or can choose to ignore it and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::addAction()
+*/
+QAction *QMenu::addSection(const QString &text)
+{
+    QAction *action = new QAction(text, this);
+    action->setSeparator(true);
+    addAction(action);
+    return action;
+}
+
+/*!
+    \since 5.1
+
+    This convenience function creates a new section action, i.e. an
+    action with QAction::isSeparator() returning true but also
+    having \a text and \a icon hints, and adds the new action to this menu's
+    list of actions. It returns the newly created action.
+
+    The rendering of the hints is style and platform dependent. Widget
+    styles can use the text and icon information in the rendering for sections,
+    or can choose to ignore them and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::addAction()
+*/
+QAction *QMenu::addSection(const QIcon &icon, const QString &text)
+{
+    QAction *action = new QAction(icon, text, this);
+    action->setSeparator(true);
+    addAction(action);
+    return action;
+}
+
+/*!
     This convenience function inserts \a menu before action \a before
     and returns the menus menuAction().
 
@@ -1536,6 +1587,55 @@ QAction *QMenu::insertMenu(QAction *before, QMenu *menu)
 QAction *QMenu::insertSeparator(QAction *before)
 {
     QAction *action = new QAction(this);
+    action->setSeparator(true);
+    insertAction(before, action);
+    return action;
+}
+
+/*!
+    \since 5.1
+
+    This convenience function creates a new title action, i.e. an
+    action with QAction::isSeparator() returning true but also having
+    \a text hint. The function inserts the newly created action
+    into this menu's list of actions before action \a before and
+    returns it.
+
+    The rendering of the hint is style and platform dependent. Widget
+    styles can use the text information in the rendering for sections,
+    or can choose to ignore it and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::insertAction(), addSection()
+*/
+QAction *QMenu::insertSection(QAction *before, const QString &text)
+{
+    QAction *action = new QAction(text, this);
+    action->setSeparator(true);
+    insertAction(before, action);
+    return action;
+}
+
+/*!
+    \since 5.1
+
+    This convenience function creates a new title action, i.e. an
+    action with QAction::isSeparator() returning true but also having
+    \a text and \a icon hints. The function inserts the newly created action
+    into this menu's list of actions before action \a before and returns it.
+
+    The rendering of the hints is style and platform dependent. Widget
+    styles can use the text and icon information in the rendering for sections,
+    or can choose to ignore them and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::insertAction(), addSection()
+*/
+QAction *QMenu::insertSection(QAction *before, const QIcon &icon, const QString &text)
+{
+    QAction *action = new QAction(icon, text, this);
     action->setSeparator(true);
     insertAction(before, action);
     return action;

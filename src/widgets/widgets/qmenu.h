@@ -93,8 +93,13 @@ public:
 
     QAction *addSeparator();
 
+    QAction *addSection(const QString &text);
+    QAction *addSection(const QIcon &icon, const QString &text);
+
     QAction *insertMenu(QAction *before, QMenu *menu);
     QAction *insertSeparator(QAction *before);
+    QAction *insertSection(QAction *before, const QString &text);
+    QAction *insertSection(QAction *before, const QIcon &icon, const QString &text);
 
     bool isEmpty() const;
     void clear();
