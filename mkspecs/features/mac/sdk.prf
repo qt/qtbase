@@ -19,6 +19,15 @@ sysrootified =
 for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
 QMAKE_INCDIR_OPENGL = $$sysrootified
 
+# Resolve SDK version of various tools
+for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_LINK QMAKE_LINK_SHLIB)) {
+    value = $$eval($$tool)
+    isEmpty(value): next()
+
+    sysrooted = $$system("xcrun -sdk $$QMAKE_MAC_SDK -find $$first(value)")
+    $$tool = $$sysrooted $$member(value, 1, -1)
+}
+
 # We use xml as the output format instead of json since plutil on 10.6 does not have that option
 QMAKE_MAC_PLATFORM_NAME = $$system("plutil -convert xml1 \"$$QMAKE_MAC_SDK_PATH/SDKSettings.plist\" -o - | " \
     "sed '/^<!DOCTYPE/d' | " \ # Don't look up http://www.apple.com/DTDs/PropertyList-1.0.dtd

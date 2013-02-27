@@ -226,12 +226,60 @@ getSingleQMakeVariable()
     echo "$2" | $AWK "/^($1)=/ { print substr(\$0, index(\$0, \"=\") + 1) }"
 }
 
+macSDKify()
+{
+    # Normally we take care of sysrootifying in sdk.prf, but configure extracts some
+    # values before qmake is even built, so we have to duplicate the logic here.
+
+    sdk=$(getSingleQMakeVariable "QMAKE_MAC_SDK" "$1")
+    if [ -z "$sdk" ]; then echo "QMAKE_MAC_SDK must be set when building on Mac" >&2; exit 1; fi
+    sysroot=$(xcodebuild -sdk $sdk -version Path 2>/dev/null)
+    if [ -z "$sysroot" ]; then echo "Failed to resolve SDK path for '$sdk'" >&2; exit 1; fi
+
+    case "$sdk" in
+        macosx*)
+            version_min_flag="-mmacosx-version-min=$(getSingleQMakeVariable QMAKE_MACOSX_DEPLOYMENT_TARGET "$1")"
+        ;;
+        iphoneos*)
+            version_min_flag="-miphoneos-version-min=$(getSingleQMakeVariable QMAKE_IOS_DEPLOYMENT_TARGET "$1")"
+        ;;
+        iphonesimulator*)
+            version_min_flag="-mios-simulator-version-min=$(getSingleQMakeVariable QMAKE_IOS_DEPLOYMENT_TARGET "$1")"
+        ;;
+        *)
+        ;;
+    esac
+
+    echo "$1" | while read line; do
+        case "$line" in
+            QMAKE_CC=*|QMAKE_CXX=*|QMAKE_FIX_RPATH=*|QMAKE_AR=*|QMAKE_RANLIB=*|QMAKE_LINK=*|QMAKE_LINK_SHLIB=*)
+                # Prefix tool with toolchain path
+                var=$(echo "$line" | cut -d '=' -f 1)
+                val=$(echo "$line" | cut -d '=' -f 2-)
+                sdk_val=$(xcrun -sdk $sdk -find $(echo $val | cut -d ' ' -f 1))
+                val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
+                echo "$var=$val"
+            ;;
+            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*|QMAKE_OBJECTIVE_CFLAGS=*)
+                echo "$line -isysroot $sysroot $version_min_flag"
+            ;;
+            QMAKE_LFLAGS=*)
+                echo "$line -Wl,-syslibroot,$sysroot $version_min_flag"
+            ;;
+            *)
+                echo "$line"
+            ;;
+        esac
+    done
+}
+
 # relies on $QMAKESPEC being set correctly. parses include statements in
 # qmake.conf and prints out the expanded file
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
         specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables "host_build"`
+        if [ "$BUILD_ON_MAC" = "yes" ]; then specvals=$(macSDKify "$specvals"); fi
     fi
     getSingleQMakeVariable "$1" "$specvals"
 }
@@ -240,6 +288,7 @@ getXQMakeConf()
 {
     if [ -z "$xspecvals" ]; then
         xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" | extractQMakeVariables "!host_build"`
+        if [ "$BUILD_ON_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
     fi
     getSingleQMakeVariable "$1" "$xspecvals"
 }
@@ -3892,12 +3941,11 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXEEXT=
         fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            DEPLOYMENT_CFLAGS="-mmacosx-version-min=$(getQMakeConf QMAKE_MACOSX_DEPLOYMENT_TARGET)"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $DEPLOYMENT_CFLAGS \$(CARBON_CFLAGS)"
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS $DEPLOYMENT_CFLAGS \$(CARBON_CFLAGS)"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS \$(CARBON_CFLAGS)"
+            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
             EXTRA_OBJS="$EXTRA_OBJS \
                         qsettings_mac.o \
                         qcore_mac.o"
