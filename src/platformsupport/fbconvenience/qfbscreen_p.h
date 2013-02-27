@@ -64,7 +64,7 @@ public:
     virtual QImage::Format format() const { return mFormat; }
     virtual QSizeF physicalSize() const { return mPhysicalSize; }
 
-    QWindow *topWindow();
+    QWindow *topWindow() const;
     virtual QWindow *topLevelAt(const QPoint & p) const;
 
     // compositor api
@@ -72,7 +72,7 @@ public:
     virtual void removeWindow(QFbWindow *window);
     virtual void raise(QFbWindow *window);
     virtual void lower(QFbWindow *window);
-    virtual void topWindowChanged(QWindow *){}
+    virtual void topWindowChanged(QWindow *) {}
 
 public slots:
     virtual void setDirty(const QRect &rect);

@@ -114,7 +114,7 @@ void QFbScreen::lower(QFbWindow *window)
     topWindowChanged(w);
 }
 
-QWindow *QFbScreen::topWindow()
+QWindow *QFbScreen::topWindow() const
 {
     foreach (QFbWindow *fbw, mWindowStack)
         if (fbw->window()->type() == Qt::Window || fbw->window()->type() == Qt::Dialog)
