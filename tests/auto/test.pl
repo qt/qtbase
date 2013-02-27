@@ -42,6 +42,7 @@
 
 use strict;
 use Cwd;
+use warnings;
 
 # Usage: test.pl <SearchPath> <ExecutionMode> <TestResults> <Timeout [Default 300 seconds]>
 # Variable declarations to keep strict happy
@@ -56,8 +57,8 @@ our $timeoutChildren;
 our $totalExecuted;
 our $totalStarted;
 our $totalTimedOut;
-our $next;
 our $currentDirectory;
+our $testRoot;
 
 # Where do we run this script? What directory?
 $SEARCH_PATH=$ARGV[0];
@@ -86,8 +87,8 @@ if($EXEC_MODE =~ /^U$/)
 } elsif($EXEC_MODE =~ /^M$/)
 {
     print "Using OSX execution mode\n";
-    $EXE_PREFIX="/Content/MacOS/";
-    $EXE_SUFFIX="";
+    $EXE_PREFIX="/Contents/MacOS/";
+    $EXE_SUFFIX=".app";
 } elsif($EXEC_MODE =~ /^E$/)
 {
     print "Using embedded execution mode\n";
@@ -101,24 +102,18 @@ if($EXEC_MODE =~ /^U$/)
 # We get the current directory, we 'll need it afterwards
 $currentDirectory = getcwd();
 
+$testRoot = Cwd::abs_path($SEARCH_PATH);
+
 # We assume that by default goes to "reports" unless the user specifies it.
 $REPORTDIR = $ARGV[2];
 if(!$REPORTDIR)
 {
-    if($SEARCH_PATH =~ /^\.$/)
-    {
-#       '.' ie current directory
-        $REPORTDIR = $currentDirectory."/reports";
-    } elsif($SEARCH_PATH =~ /^\//) {
-#       Absolute path
-        $REPORTDIR = $SEARCH_PATH."/reports";
-    } else {
-#       Relative path
-        $REPORTDIR = $currentDirectory.$SEARCH_PATH."/reports";
-    }
+    $REPORTDIR = $testRoot."/reports";
+    mkdir $REPORTDIR;
+} else {
+    mkdir $REPORTDIR;
+    $REPORTDIR = Cwd::abs_path($REPORTDIR);
 }
-# Let's create the directory
-mkdir $REPORTDIR;
 
 # If given we use it, otherwise we default to 300 seconds.
 $TIMEOUT = $ARGV[3];
@@ -139,23 +134,51 @@ $totalTimedOut = 0;
 $SIG{'CHLD'} = 'handleDeath';
 $SIG{'ALRM'} = 'handleTimeout';
 
-while ($next = <$SEARCH_PATH/*>) 
-{
-    if( -d $next )
+handleDir($testRoot);
+
+print " ** Statistics ** \n";
+print " Tests started: $totalStarted \n";
+print " Tests executed: $totalExecuted \n";
+print " Tests timed out: $totalTimedOut \n";
+
+sub handleDir {
+
+    my ($dir) = @_;
+    my $currentDir = getcwd();
+
+    chdir($dir) || die("Could not chdir to $dir");
+    my @components;
+    my $command;
+    @components = split(/\//, $dir);
+    my $component = $components[$#components];
+
+    $command = "tst_".$component;
+
+    if ( -e $command.$EXE_SUFFIX )
     {
-        print "Examining $next \n";
-        chdir($next) || die("Could not chdir to $next");
-        my @components;
-        my $command;
-        @components = split(/\//, $next);
-        if($EXEC_MODE =~ /^M$/)
+        executeTestCurrentDir($command);
+    } else {
+        opendir(DIR, $dir);
+        my @files = readdir(DIR);
+        closedir DIR;
+        my $file;
+        foreach $file (@files)
         {
-            $command = "tst_".$components[1].".app";
-        } else {
-            $command = "tst_".$components[1];
+            #skip hidden files
+            next if (substr($file,0,1) eq ".");
+
+            if ( -d $dir."/".$file)
+            {
+                handleDir($dir."/".$file)
+            }
+
         }
-        if( -e $command)
-        {
+    }
+    chdir($currentDir);
+}
+
+sub executeTestCurrentDir {
+    my ($command) = @_;
             print "Executing $command \n";
             my $myPid;
             $myPid = fork();
@@ -164,11 +187,12 @@ while ($next = <$SEARCH_PATH/*>)
                 my $realCommand;
                 if($EXEC_MODE =~/^M$/)
                 {
-                    $realCommand = "./".$command.".app".$EXE_PREFIX.$command;
+                    $realCommand = "./".$command.$EXE_SUFFIX.$EXE_PREFIX.$command;
                 } else {
                     $realCommand = $EXE_PREFIX.$command.$EXE_SUFFIX;
                 }
-                my $outputRedirection = $REPORTDIR."/".$command.".xml";
+                my $outputRedirection = $REPORTDIR."/".$command.$EXE_SUFFIX.".xml";
+
                 if($EXEC_MODE =~ /^E$/)
                 {
                     exec($realCommand, "-qws", "-xml", "-o", $outputRedirection);
@@ -210,15 +234,8 @@ while ($next = <$SEARCH_PATH/*>)
             } else {
                 print "Problems trying to execute $command";
             }
-        } 
-    }
-    chdir($currentDirectory);
 
 }
-print " ** Statistics ** \n";
-print " Tests started: $totalStarted \n";
-print " Tests executed: $totalExecuted \n";
-print " Tests timed out: $totalTimedOut \n";
 
 # This procedure takes care of handling dead children on due time
 sub handleDeath {
