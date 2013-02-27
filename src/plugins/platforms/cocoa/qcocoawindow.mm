@@ -927,6 +927,21 @@ void QCocoaWindow::obscureWindow()
     }
 }
 
+QWindow *QCocoaWindow::childWindowAt(QPoint windowPoint)
+{
+    QWindow *targetWindow = window();
+    foreach (QObject *child, targetWindow->children()) {
+        if (QWindow *childWindow = qobject_cast<QWindow *>(child)) {
+            if (childWindow->geometry().contains(windowPoint)) {
+                QCocoaWindow* platformWindow = static_cast<QCocoaWindow*>(childWindow->handle());
+                targetWindow = platformWindow->childWindowAt(windowPoint - childWindow->position());
+            }
+        }
+    }
+
+    return targetWindow;
+}
+
 QMargins QCocoaWindow::frameMargins() const
 {
     NSRect frameW = [m_nsWindow frame];

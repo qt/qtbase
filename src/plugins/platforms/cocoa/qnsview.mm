@@ -599,6 +599,7 @@ static QTouchDevice *touchDevice = 0;
     if (NSIsEmptyRect([self visibleRect]))
         return;
 
+    // Remove current trakcing areas:
     QCocoaAutoReleasePool pool;
     if (NSArray *trackingArray = [self trackingAreas]) {
         NSUInteger size = [trackingArray count];
@@ -611,7 +612,7 @@ static QTouchDevice *touchDevice = 0;
     // Ideally, we shouldn't have NSTrackingMouseMoved events included below, it should
     // only be turned on if mouseTracking, hover is on or a tool tip is set.
     // Unfortunately, Qt will send "tooltip" events on mouse moves, so we need to
-    // turn it on in ALL case. That means EVERY QCocoaView gets to pay the cost of
+    // turn it on in ALL case. That means EVERY QWindow gets to pay the cost of
     // mouse moves delivered to it (Apple recommends keeping it OFF because there
     // is a performance hit). So it goes.
     NSUInteger trackingOptions = NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp
@@ -628,23 +629,58 @@ static QTouchDevice *touchDevice = 0;
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseMoved:theEvent];
-    [self handleMouseEvent:theEvent];
+
+    QPoint windowPoint, screenPoint;
+    [self convertFromEvent:theEvent toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
+    QWindow *childWindow = m_platformWindow->childWindowAt(windowPoint);
+
+    // Top-level windows generate enter-leave events for sub-windows.
+    // Qt wants to know which window (if any) will be entered at the
+    // the time of the leave. This is dificult to accomplish by
+    // handling mouseEnter and mouseLeave envents, since they are sent
+    // individually to different views.
+    if (m_platformWindow->m_nsWindow && childWindow) {
+        if (childWindow != m_platformWindow->m_underMouseWindow) {
+            QWindowSystemInterface::handleEnterLeaveEvent(childWindow, m_platformWindow->m_underMouseWindow, windowPoint, screenPoint);
+            m_platformWindow->m_underMouseWindow = childWindow;
+        }
+    }
+
+    // Cocoa keeps firing mouse move events for obscured parent views. Qt should not
+    // send those events so filter them out here.
+    if (childWindow != m_window)
+        return;
+
+    [self handleMouseEvent: theEvent];
 }
 
 - (void)mouseEntered:(NSEvent *)theEvent
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseEntered:theEvent];
+
+    // Top-level windows generate enter events for sub-windows.
+    if (!m_platformWindow->m_nsWindow)
+        return;
+
     QPoint windowPoint, screenPoint;
     [self convertFromEvent:theEvent toWindowPoint:&windowPoint andScreenPoint:&screenPoint];
-    QWindowSystemInterface::handleEnterEvent(m_window, windowPoint, screenPoint);
+    m_platformWindow->m_underMouseWindow = m_platformWindow->childWindowAt(windowPoint);
+    QWindowSystemInterface::handleEnterEvent(m_platformWindow->m_underMouseWindow, windowPoint, screenPoint);
 }
 
 - (void)mouseExited:(NSEvent *)theEvent
 {
     if (m_window->flags() & Qt::WindowTransparentForInput)
         return [super mouseExited:theEvent];
-    QWindowSystemInterface::handleLeaveEvent(m_window);
+    Q_UNUSED(theEvent);
+
+    // Top-level windows generate leave events for sub-windows.
+    if (!m_platformWindow->m_nsWindow)
+        return;
+
+    QWindowSystemInterface::handleLeaveEvent(m_platformWindow->m_underMouseWindow);
+    m_platformWindow->m_underMouseWindow = 0;
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent

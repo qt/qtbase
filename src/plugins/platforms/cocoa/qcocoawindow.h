@@ -150,6 +150,7 @@ public:
     qreal devicePixelRatio() const;
     void exposeWindow();
     void obscureWindow();
+    QWindow *childWindowAt(QPoint windowPoint);
 protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
     // in an existing NSWindow or in one created by Qt.
@@ -177,6 +178,7 @@ public: // for QNSView
     Qt::WindowState m_synchedWindowState;
     Qt::WindowModality m_windowModality;
     QPointer<QWindow> m_activePopupWindow;
+    QPointer<QWindow> m_underMouseWindow;
 
     bool m_inConstructor;
     QCocoaGLContext *m_glContext;
