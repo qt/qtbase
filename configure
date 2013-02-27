@@ -2445,20 +2445,25 @@ if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
-         OSX_VERSION=`uname -r | cut -d. -f1`
-         # Select compiler. Use g++ unless we find a usable Clang version
-         PLATFORM=macx-g++
-         if [ "$OSX_VERSION" -ge 12 ]; then
-            # We're on Mountain Lion or above. Use Clang. Don't advertise gcc.
+        # Select compiler. Use g++ unless we find a usable Clang version. Note that
+        # we are checking the "Apple" clang/LLVM version number, not the actual
+        # clang/LLVM version number that the Apple version was based on. We look
+        # for Apple clang version 3.0 or higher, which was branched off LLVM 3.0
+        # from SVN, and first included in Xcode 4.2. Also note that we do not care
+        # about the OS version, since we're not using the clang version that comes
+        # with the system. We use 'xcrun' to check the clang version that's part of
+        # the Xcode installation.
+        if [ "$(xcrun -sdk macosx clang -v 2>&1 | sed -n 's/.*version \([0-9]\).*/\1/p')" -ge 3 ]; then
             PLATFORM=macx-clang
-         elif [ "$OSX_VERSION" -eq 11 ]; then
-             # We're on Lion. Check if we have a supported Clang version
-             if [ "$(clang -v 2>&1 | grep -Po '(?<=version )[\d]')" -ge 3 ]; then
-                     PLATFORM=macx-clang
-                     PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
-             fi
-         fi
-         ;;
+
+            # Advertise g++ as an alternative on Lion and below
+            if [ "$(uname -r | cut -d. -f1)" -le 11 ]; then
+                PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
+            fi
+        else
+            PLATFORM=macx-g++
+        fi
+        ;;
      AIX:*)
         #PLATFORM=aix-g++
         #PLATFORM=aix-g++-64
