@@ -219,7 +219,7 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
 QSqlResult::QSqlResult(const QSqlDriver *db)
 {
     d = new QSqlResultPrivate;
-    d->q = this;
+    d->q_ptr = this;
     d->sqldriver = const_cast<QSqlDriver *>(db);
     if (d->sqldriver)
         setNumericalPrecisionPolicy(d->sqldriver->numericalPrecisionPolicy());
