@@ -36,7 +36,15 @@
 }
 
 !equals(MAKEFILE_GENERATOR, XCODE) {
-    version_min_flag = -m$${QMAKE_MAC_PLATFORM_NAME}-version-min=$$QMAKE_MACOSX_DEPLOYMENT_TARGET
+    # FIXME: Get the version_min_flag out of the platform's 'Native Build System.xcspec'
+    version_identifier = $$replace(QMAKE_MAC_PLATFORM_NAME, iphonesimulator, ios-simulator)
+
+    ios:!host_build: \
+        deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
+    else: \
+        deployment_target = $$QMAKE_MACOSX_DEPLOYMENT_TARGET
+
+    version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
     QMAKE_CFLAGS += $$version_min_flag
     QMAKE_CXXFLAGS += $$version_min_flag
     QMAKE_OBJECTIVE_CFLAGS += $$version_min_flag

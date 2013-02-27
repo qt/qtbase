@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qglobal.h"
+
 #ifndef Q_OS_IOS
 #import <Cocoa/Cocoa.h>
 #import <IOKit/graphics/IOGraphicsLib.h>

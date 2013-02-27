@@ -2,13 +2,14 @@ TARGET     = QtPlatformSupport
 QT         = core-private gui-private
 
 CONFIG += static internal_module
-mac:LIBS += -lz -framework CoreFoundation -framework Carbon
+mac:LIBS += -lz
 
 load(qt_module)
 
 DEFINES += QT_NO_CAST_FROM_ASCII
 PRECOMPILED_HEADER = ../corelib/global/qt_pch.h
 
+include(cfsocketnotifier/cfsocketnotifier.pri)
 include(cglconvenience/cglconvenience.pri)
 include(dnd/dnd.pri)
 include(eglconvenience/eglconvenience.pri)

@@ -2512,6 +2512,7 @@ fi
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
 case "$XPLATFORM" in *-maemo*) XPLATFORM_MAEMO=yes;; esac
 case "$XPLATFORM" in *qnx-*|*blackberry-*) XPLATFORM_QNX=yes;; esac
+case "$XPLATFORM" in *ios*) XPLATFORM_IOS=yes;; esac
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
@@ -2618,6 +2619,11 @@ fi
 
 if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG force_debug_info"
+fi
+
+# iOS builds should be static to be able to submit to the App Store
+if [ "$XPLATFORM_IOS" = "yes" ]; then
+    CFG_SHARED="no"
 fi
 
 # disable GTK style support auto-detection on Mac
@@ -4026,7 +4032,8 @@ fi
 
 # detect neon support
 if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
-    if compileTest unix/neon "neon"; then
+    # The iOS toolchain has trouble building the pixman NEON draw-helpers
+    if [ "$XPLATFORM_IOS" != "yes" ] && compileTest unix/neon "neon"; then
 	CFG_NEON=yes
     else
 	CFG_NEON=no

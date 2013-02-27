@@ -1,0 +1,4 @@
+# Unset makefile generator, so we can auto-detect value in default_post
+unset(MAKEFILE_GENERATOR)
+
+load(default_pre)
