@@ -59,9 +59,9 @@ class QSqlResultPrivate;
 
 class Q_SQL_EXPORT QSqlResult
 {
+    Q_DECLARE_PRIVATE(QSqlResult)
     friend class QSqlQuery;
     friend class QSqlTableModelPrivate;
-    friend class QSqlResultPrivate;
 
 public:
     virtual ~QSqlResult();
@@ -133,8 +133,7 @@ protected:
     virtual bool nextResult();
     void resetBindCount(); // HACK
 
-private:
-    QSqlResultPrivate* d;
+    QSqlResultPrivate *d_ptr;
 
 private:
     Q_DISABLE_COPY(QSqlResult)
