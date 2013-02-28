@@ -44,6 +44,10 @@
 #include <qpluginloader.h>
 #include "theplugin/plugininterface.h"
 
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
+#  include <QtCore/private/qmachparser_p.h>
+#endif
+
 // Helper macros to let us know if some suffixes are valid
 #define bundle_VALID    false
 #define dylib_VALID     false
@@ -118,6 +122,8 @@ private slots:
     void deleteinstanceOnUnload();
     void loadDebugObj();
     void loadCorruptElf();
+    void loadMachO_data();
+    void loadMachO();
 #if defined (Q_OS_UNIX)
     void loadGarbage();
 #endif
@@ -308,6 +314,73 @@ void tst_QPluginLoader::loadCorruptElf()
     } else {
         QFAIL("Please port QElfParser to this platform or blacklist this test.");
     }
+#endif
+}
+
+void tst_QPluginLoader::loadMachO_data()
+{
+#ifdef Q_OF_MACH_O
+    QTest::addColumn<int>("parseResult");
+
+    QTest::newRow("/dev/null") << int(QMachOParser::NotSuitable);
+    QTest::newRow("elftest/debugobj.so") << int(QMachOParser::NotSuitable);
+    QTest::newRow("tst_qpluginloader.cpp") << int(QMachOParser::NotSuitable);
+    QTest::newRow("tst_qpluginloader") << int(QMachOParser::NotSuitable);
+
+#  ifdef Q_PROCESSOR_X86_64
+    QTest::newRow("machtest/good.x86_64.dylib") << int(QMachOParser::QtMetaDataSection);
+    QTest::newRow("machtest/good.i386.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.no-x86_64.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.no-i386.dylib") << int(QMachOParser::QtMetaDataSection);
+#  elif defined(Q_PROCESSOR_X86_32)
+    QTest::newRow("machtest/good.i386.dylib") << int(QMachOParser::QtMetaDataSection);
+    QTest::newRow("machtest/good.x86_64.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.no-i386.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.no-x86_64.dylib") << int(QMachOParser::QtMetaDataSection);
+#  endif
+#  ifndef Q_PROCESSOR_POWER_64
+    QTest::newRow("machtest/good.ppc64.dylib") << int(QMachOParser::NotSuitable);
+#  endif
+
+    QTest::newRow("machtest/good.fat.all.dylib") << int(QMachOParser::QtMetaDataSection);
+    QTest::newRow("machtest/good.fat.stub-x86_64.dylib") << int(QMachOParser::NotSuitable);
+    QTest::newRow("machtest/good.fat.stub-i386.dylib") << int(QMachOParser::NotSuitable);
+#endif
+}
+
+void tst_QPluginLoader::loadMachO()
+{
+#ifdef Q_OF_MACH_O
+    QFile f(QFINDTESTDATA(QTest::currentDataTag()));
+    QVERIFY(f.open(QIODevice::ReadOnly));
+    QByteArray data = f.readAll();
+
+    long pos;
+    ulong len;
+    QString errorString;
+    int r = QMachOParser::parse(data.constData(), data.size(), f.fileName(), &errorString, &pos, &len);
+
+    QFETCH(int, parseResult);
+    QCOMPARE(r, parseResult);
+
+    if (r == QMachOParser::NotSuitable)
+        return;
+
+    QVERIFY(pos > 0);
+    QVERIFY(len >= sizeof(void*));
+    QVERIFY(pos + long(len) < data.size());
+    QCOMPARE(pos & (sizeof(void*) - 1), 0UL);
+
+    void *value = *(void**)(data.constData() + pos);
+    QCOMPARE(value, sizeof(void*) > 4 ? (void*)(0xc0ffeec0ffeeL) : (void*)0xc0ffee);
+
+    // now that we know it's valid, let's try to make it invalid
+    ulong offeredlen = pos;
+    do {
+        --offeredlen;
+        r = QMachOParser::parse(data.constData(), offeredlen, f.fileName(), &errorString, &pos, &len);
+        QVERIFY2(r == QMachOParser::NotSuitable, qPrintable(QString("Failed at size 0x%1").arg(offeredlen, 0, 16)));
+    } while (offeredlen);
 #endif
 }
 

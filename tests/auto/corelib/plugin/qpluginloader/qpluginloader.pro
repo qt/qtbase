@@ -5,6 +5,7 @@ SUBDIRS	=	lib \
                 theplugin \
 		tst
 !win32: !mac: SUBDIRS += almostplugin
+macx-*: SUBDIRS += machtest
 TARGET = tst_qpluginloader
 
 # no special install rule for subdir

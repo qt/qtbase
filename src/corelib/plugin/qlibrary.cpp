@@ -1,7 +1,7 @@
-
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Intel Corporation
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -64,6 +64,7 @@
 #include <qjsondocument.h>
 #include <qjsonvalue.h>
 #include "qelfparser_p.h"
+#include "qmachparser_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -180,7 +181,7 @@ QT_BEGIN_NAMESPACE
 */
 
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX)
 
 static long qt_find_pattern(const char *s, ulong s_len,
                              const char *pattern, ulong p_len)
@@ -253,7 +254,7 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
     }
 
     /*
-       ELF binaries on GNU, have .qplugin sections.
+       ELF and Mach-O binaries with GCC have .qplugin sections.
     */
     bool hasMetaData = false;
     long pos = 0;
@@ -267,6 +268,26 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
             }
             return false;
     } else if (r == QElfParser::QtMetaDataSection) {
+        long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
+        if (rel < 0)
+            pos = -1;
+        else
+            pos += rel;
+        hasMetaData = true;
+    }
+#elif defined (Q_OF_MACH_O)
+    {
+        QString errorString;
+        int r = QMachOParser::parse(filedata, fdlen, library, &errorString, &pos, &fdlen);
+        if (r == QMachOParser::NotSuitable) {
+            if (qt_debug_component())
+                qWarning("QMachOParser: %s", qPrintable(errorString));
+            if (lib)
+                lib->errorString = errorString;
+            return false;
+        }
+        // even if the metadata section was not found, the Mach-O parser will
+        // at least return the boundaries of the right architecture
         long rel = qt_find_pattern(filedata + pos, fdlen, pattern, plen);
         if (rel < 0)
             pos = -1;
@@ -690,7 +711,7 @@ void QLibraryPrivate::updatePluginState()
     }
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX)
     if (!pHnd) {
         // use unix shortcut to avoid loading the library
         success = qt_unix_query(fileName, this);
