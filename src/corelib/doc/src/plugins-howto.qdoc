@@ -184,12 +184,12 @@
 
     For example, here's the definition of an interface class:
 
-    \snippet tools/plugandpaint/interfaces.h 2
+    \snippet plugins/interfaces.h 2
 
     Here's the definition of a plugin class that implements that
     interface:
 
-    \snippet tools/plugandpaintplugins/extrafilters/extrafiltersplugin.h 0
+    \snippet plugins/extrafiltersplugin.h 0
 
     The \l{tools/plugandpaint}{Plug & Paint} example documentation
     explains this process in detail. See also \l{Creating Custom

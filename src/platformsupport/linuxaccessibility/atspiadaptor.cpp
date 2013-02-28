@@ -1104,23 +1104,64 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
         }
         break;
     }
+        // For now we ignore these events
     case QAccessible::TableModelChanged:
-        // For now we ignore this event and hope that
-        // setting manages_descendants works.
-        break;
+        // For tables, setting manages_descendants should
+        // indicate to the client that it cannot cache these
+        // interfaces.
     case QAccessible::ParentChanged:
-        break;
     case QAccessible::DialogStart:
-        break;
     case QAccessible::DialogEnd:
-        break;
     case QAccessible::SelectionRemove:
-        break;
-    default:
-        QAIPointer iface = QAIPointer(event->accessibleInterface());
-        qAtspiDebug() << "QSpiAccessible::accessibleEvent not handled: " << QString::number(event->type(), 16)
-                   << " obj: " << iface->object()
-                   << ((iface->isValid() && iface->object()) ? iface->object()->objectName() : QLatin1String(" invalid interface!"));
+    case QAccessible::PopupMenuStart:
+    case QAccessible::PopupMenuEnd:
+    case QAccessible::SoundPlayed:
+    case QAccessible::Alert:
+    case QAccessible::ForegroundChanged:
+    case QAccessible::MenuStart:
+    case QAccessible::MenuEnd:
+    case QAccessible::ContextHelpStart:
+    case QAccessible::ContextHelpEnd:
+    case QAccessible::DragDropStart:
+    case QAccessible::DragDropEnd:
+    case QAccessible::ScrollingStart:
+    case QAccessible::ScrollingEnd:
+    case QAccessible::MenuCommand:
+    case QAccessible::ActionChanged:
+    case QAccessible::ActiveDescendantChanged:
+    case QAccessible::AttributeChanged:
+    case QAccessible::DocumentContentChanged:
+    case QAccessible::DocumentLoadComplete:
+    case QAccessible::DocumentLoadStopped:
+    case QAccessible::DocumentReload:
+    case QAccessible::HyperlinkEndIndexChanged:
+    case QAccessible::HyperlinkNumberOfAnchorsChanged:
+    case QAccessible::HyperlinkSelectedLinkChanged:
+    case QAccessible::HypertextLinkActivated:
+    case QAccessible::HypertextLinkSelected:
+    case QAccessible::HyperlinkStartIndexChanged:
+    case QAccessible::HypertextChanged:
+    case QAccessible::HypertextNLinksChanged:
+    case QAccessible::ObjectAttributeChanged:
+    case QAccessible::PageChanged:
+    case QAccessible::SectionChanged:
+    case QAccessible::TableCaptionChanged:
+    case QAccessible::TableColumnDescriptionChanged:
+    case QAccessible::TableColumnHeaderChanged:
+    case QAccessible::TableRowDescriptionChanged:
+    case QAccessible::TableRowHeaderChanged:
+    case QAccessible::TableSummaryChanged:
+    case QAccessible::TextAttributeChanged:
+    case QAccessible::TextColumnChanged:
+    case QAccessible::VisibleDataChanged:
+    case QAccessible::ObjectReorder:
+    case QAccessible::SelectionAdd:
+    case QAccessible::SelectionWithin:
+    case QAccessible::LocationChanged:
+    case QAccessible::HelpChanged:
+    case QAccessible::DefaultActionChanged:
+    case QAccessible::AcceleratorChanged:
+    case QAccessible::InvalidEvent:
         break;
     }
 }

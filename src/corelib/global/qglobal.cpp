@@ -846,6 +846,10 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
     integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can
     be compared with another similarly processed version id.
 
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qt-version-check
+
     \sa QT_VERSION
 */
 
