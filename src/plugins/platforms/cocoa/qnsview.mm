@@ -241,6 +241,7 @@ static QTouchDevice *touchDevice = 0;
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
         QWindowSystemInterface::handleGeometryChange(m_window, geometry);
+        QWindowSystemInterface::handleExposeEvent(m_window, geometry);
         QWindowSystemInterface::flushWindowSystemEvents();
     }
 }
