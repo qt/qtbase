@@ -11,7 +11,7 @@
 
 load(qt_build_paths)
 MODULE_FWD_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_lib_$${MODULE}.pri
-prefix_build: \
+force_independent: \
     MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules-inst/qt_lib_$${MODULE}.pri
 else: \
     MODULE_PRI = $$MODULE_FWD_PRI
@@ -75,7 +75,7 @@ else: \
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     MODULE_PRI_FILES = $$MODULE_PRI
 
-    prefix_build {
+    force_independent {
 
         # Create a forwarding module .pri file
         MODULE_FWD_PRI_CONT = \
