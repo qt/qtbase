@@ -431,6 +431,7 @@ static void ensureInitialized()
 QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     : QObject(*new QNetworkAccessManagerPrivate, parent)
 {
+    Q_D(QNetworkAccessManager);
     ensureInitialized();
 
     qRegisterMetaType<QNetworkReply::NetworkError>();
@@ -447,6 +448,19 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
 #endif
     qRegisterMetaType<QNetworkReply::NetworkError>();
     qRegisterMetaType<QSharedPointer<char> >();
+
+#ifndef QT_NO_BEARERMANAGEMENT
+    if (!d->networkSessionRequired) {
+        // if a session is required, we track online state through
+        // the QNetworkSession's signals
+        connect(&d->networkConfigurationManager, SIGNAL(onlineStateChanged(bool)),
+                SLOT(_q_onlineStateChanged(bool)));
+        // we would need all active configurations to check for
+        // d->networkConfigurationManager.isOnline(), which is asynchronous
+        // and potentially expensive. We can just check the configuration here
+        d->online = (d->networkConfiguration.state() & QNetworkConfiguration::Active);
+    }
+#endif
 }
 
 /*!
@@ -833,6 +847,11 @@ QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &requ
     To restore the default network configuration set the network configuration to the value
     returned from QNetworkConfigurationManager::defaultConfiguration().
 
+    Setting a network configuration means that the QNetworkAccessManager instance will only
+    be using the specified one. In particular, if the default network configuration changes
+    (upon e.g. Wifi being available), this new configuration needs to be enabled
+    manually if desired.
+
     \snippet code/src_network_access_qnetworkaccessmanager.cpp 2
 
     If an invalid network configuration is set, a network session will not be created.  In this
@@ -846,6 +865,7 @@ void QNetworkAccessManager::setConfiguration(const QNetworkConfiguration &config
 {
     Q_D(QNetworkAccessManager);
     d->networkConfiguration = config;
+    d->customNetworkConfiguration = true;
     d->createSession(config);
 }
 
@@ -928,16 +948,23 @@ QNetworkAccessManager::NetworkAccessibility QNetworkAccessManager::networkAccess
 {
     Q_D(const QNetworkAccessManager);
 
-    QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
-    if (networkSession) {
-        // d->online holds online/offline state of this network session.
+    if (d->networkSessionRequired) {
+        QSharedPointer<QNetworkSession> networkSession(d->getNetworkSession());
+        if (networkSession) {
+            // d->online holds online/offline state of this network session.
+            if (d->online)
+                return d->networkAccessible;
+            else
+                return NotAccessible;
+        } else {
+            // Network accessibility is either disabled or unknown.
+            return (d->networkAccessible == NotAccessible) ? NotAccessible : UnknownAccessibility;
+        }
+    } else {
         if (d->online)
             return d->networkAccessible;
         else
             return NotAccessible;
-    } else {
-        // Network accessibility is either disabled or unknown.
-        return (d->networkAccessible == NotAccessible) ? NotAccessible : UnknownAccessibility;
     }
 }
 
@@ -1439,6 +1466,18 @@ void QNetworkAccessManagerPrivate::_q_networkSessionStateChanged(QNetworkSession
         }
     }
 }
+
+void QNetworkAccessManagerPrivate::_q_onlineStateChanged(bool isOnline)
+{
+    // if the user set a config, we only care whether this one is active.
+    // Otherwise, this QNAM is online if there is an online config.
+    if (customNetworkConfiguration) {
+        online = (networkConfiguration.state() & QNetworkConfiguration::Active);
+    } else {
+        online = isOnline;
+    }
+}
+
 #endif // QT_NO_BEARERMANAGEMENT
 
 QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkRequest &request, QHttpMultiPart *multiPart)

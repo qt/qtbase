@@ -165,6 +165,7 @@ private:
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionClosed())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionStateChanged(QNetworkSession::State))
+    Q_PRIVATE_SLOT(d_func(), void _q_onlineStateChanged(bool))
 #endif
 };
 
