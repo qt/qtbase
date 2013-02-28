@@ -57,7 +57,6 @@ ProFileCache *Option::proFileCache;
 QMakeParser *Option::parser;
 
 //convenience
-const char *Option::application_argv0 = 0;
 QString Option::prf_ext;
 QString Option::prl_ext;
 QString Option::libtool_ext;
@@ -318,13 +317,11 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
 int
 Option::init(int argc, char **argv)
 {
-    Option::application_argv0 = 0;
     Option::prf_ext = ".prf";
     Option::pro_ext = ".pro";
     Option::field_sep = ' ';
 
     if(argc && argv) {
-        Option::application_argv0 = argv[0];
         QString argv0 = argv[0];
         if(Option::qmake_mode == Option::QMAKE_GENERATE_NOTHING)
             Option::qmake_mode = default_mode(argv0);

@@ -109,7 +109,6 @@ struct Option
     static QString pro_ext;
     static QString res_ext;
     static char field_sep;
-    static const char *application_argv0;
 
     enum CmdLineFlags {
         QMAKE_CMDLINE_SUCCESS       = 0x00,
