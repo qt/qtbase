@@ -89,6 +89,9 @@ public:
     void store(int newValue);
     void storeRelease(int newValue);
 
+    operator int() const;
+    QAtomicInteger &operator=(int);
+
     static Q_DECL_CONSTEXPR bool isReferenceCountingNative();
     static Q_DECL_CONSTEXPR bool isReferenceCountingWaitFree();
 
@@ -118,6 +121,36 @@ public:
     int fetchAndAddAcquire(int valueToAdd);
     int fetchAndAddRelease(int valueToAdd);
     int fetchAndAddOrdered(int valueToAdd);
+
+    int fetchAndSubRelaxed(int valueToSub);
+    int fetchAndSubAcquire(int valueToSub);
+    int fetchAndSubRelease(int valueToSub);
+    int fetchAndSubOrdered(int valueToSub);
+
+    int fetchAndOrRelaxed(int valueToOr);
+    int fetchAndOrAcquire(int valueToOr);
+    int fetchAndOrRelease(int valueToOr);
+    int fetchAndOrOrdered(int valueToOr);
+
+    int fetchAndAndRelaxed(int valueToAnd);
+    int fetchAndAndAcquire(int valueToAnd);
+    int fetchAndAndRelease(int valueToAnd);
+    int fetchAndAndOrdered(int valueToAnd);
+
+    int fetchAndXorRelaxed(int valueToXor);
+    int fetchAndXorAcquire(int valueToXor);
+    int fetchAndXorRelease(int valueToXor);
+    int fetchAndXorOrdered(int valueToXor);
+
+    int operator++();
+    int operator++(int);
+    int operator--();
+    int operator--(int);
+    int operator+=(int value);
+    int operator-=(int value);
+    int operator|=(int value);
+    int operator&=(int value);
+    int operator^=(int value);
 #endif
 };
 
