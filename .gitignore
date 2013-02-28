@@ -48,6 +48,7 @@ pcviewer.cfg
 core
 .qmake.cache
 .qmake.vars
+.device.vars
 *.prl
 tags
 .DS_Store
