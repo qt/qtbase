@@ -41,6 +41,7 @@
 
 #include "qgtk2theme.h"
 #include "qgtk2dialoghelpers.h"
+#include <QVariant>
 
 #undef signals
 #include <gtk/gtk.h>
@@ -49,9 +50,31 @@ QT_BEGIN_NAMESPACE
 
 const char *QGtk2Theme::name = "gtk2";
 
+static QString gtkSetting(const gchar *propertyName)
+{
+    GtkSettings *settings = gtk_settings_get_default();
+    gchararray value;
+    g_object_get(settings, propertyName, &value, NULL);
+    QString str = QString::fromUtf8(value);
+    g_free(value);
+    return str;
+}
+
 QGtk2Theme::QGtk2Theme()
 {
     gtk_init(0, 0);
+}
+
+QVariant QGtk2Theme::themeHint(QPlatformTheme::ThemeHint hint) const
+{
+    switch (hint) {
+    case QPlatformTheme::SystemIconThemeName:
+        return QVariant(gtkSetting("gtk-icon-theme-name"));
+    case QPlatformTheme::SystemIconFallbackThemeName:
+        return QVariant(gtkSetting("gtk-fallback-icon-theme"));
+    default:
+        return QGnomeTheme::themeHint(hint);
+    }
 }
 
 bool QGtk2Theme::usePlatformNativeDialog(DialogType type) const
