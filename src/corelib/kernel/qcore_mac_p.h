@@ -63,6 +63,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include "qglobal.h"
+
 #ifndef Q_OS_IOS
 #include <CoreServices/CoreServices.h>
 #endif
