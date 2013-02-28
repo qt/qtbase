@@ -326,8 +326,10 @@ public:
     Q_DECLARE_FLAGS(WindowStates, WindowState)
 
     enum ApplicationState {
-        ApplicationInactive  = 0x00000000,
-        ApplicationActive    = 0x00000001
+        ApplicationSuspended    = 0x00000000,
+        ApplicationHidden       = 0x00000001,
+        ApplicationInactive     = 0x00000002,
+        ApplicationActive       = 0x00000004
     };
 
     Q_DECLARE_FLAGS(ApplicationStates, ApplicationState)

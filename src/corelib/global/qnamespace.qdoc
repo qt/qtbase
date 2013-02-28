@@ -1791,8 +1791,23 @@
 
     The states are
 
-    \value ApplicationInactive The application is running in the background.
-    \value ApplicationActive The application is running in the foreground.
+    \value ApplicationSuspended    The application is about to suspend. When entering this state, the
+                                   application should save its state, cease all activities, and be
+                                   prepared for code execution to stop. While suspended, the
+                                   application can be killed at any time without further warnings
+                                   (e.g. when low memory forces the OS to purge suspended applications).
+    \value ApplicationHidden       The application is hidden and runs in the background. This
+                                   is the normal state for applications that need to do background
+                                   processing, like playing music, while the user interacts with
+                                   other applications. The application should free up all graphical
+                                   resources when entering this state.
+    \value ApplicationInactive     The application is visible, but not selected to be in front.
+                                   On desktop platforms, this typically means that the user
+                                   activated another application. On mobile platforms, it is
+                                   more common to enter this state when the OS is interrupting
+                                   the user with e.g. incoming calls or SMS-messages.
+                                   While in this state, consider reducing CPU-intensive tasks.
+    \value ApplicationActive       The application is visible and selected to be in front.
 
     \since 5.1
 */
