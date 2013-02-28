@@ -58,6 +58,7 @@
 #include <QPointer>
 #include <QMutex>
 #include <QList>
+#include <QWaitCondition>
 
 QT_BEGIN_NAMESPACE
 
@@ -89,7 +90,8 @@ public:
         TabletLeaveProximity = UserInputEvent | 0x16,
         PlatformPanel = UserInputEvent | 0x17,
         ContextMenu = UserInputEvent | 0x18,
-        ApplicationStateChanged = 0x19
+        ApplicationStateChanged = 0x19,
+        FlushEvents = 0x20
     };
 
     class WindowSystemEvent {
@@ -160,6 +162,13 @@ public:
         { }
 
         Qt::ApplicationState newState;
+    };
+
+    class FlushEventsEvent : public WindowSystemEvent {
+    public:
+        FlushEventsEvent()
+            : WindowSystemEvent(FlushEvents)
+        { }
     };
 
     class UserEvent : public WindowSystemEvent {
@@ -431,6 +440,9 @@ public:
 
     static QElapsedTimer eventTime;
     static bool synchronousWindowsSystemEvents;
+
+    static QWaitCondition eventsFlushed;
+    static QMutex flushEventMutex;
 
     static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };

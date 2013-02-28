@@ -186,6 +186,7 @@ public:
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static void setSynchronousWindowsSystemEvents(bool enable);
     static void flushWindowSystemEvents();
+    static void deferredFlushWindowSystemEvents();
     static int windowSystemEventsQueued();
 
 private:

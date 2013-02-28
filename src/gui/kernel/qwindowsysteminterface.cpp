@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
 
 QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents = false;
+QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
+QMutex QWindowSystemInterfacePrivate::flushEventMutex;
 
 //------------------------------------------------------------
 //
@@ -514,9 +516,25 @@ void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &regi
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::deferredFlushWindowSystemEvents()
+{
+    Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
+
+    QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
+    flushWindowSystemEvents();
+    QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
+}
+
 void QWindowSystemInterface::flushWindowSystemEvents()
 {
-    sendWindowSystemEventsImplementation(QEventLoop::AllEvents);
+    if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+        QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
+        QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent();
+        QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+        QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
+    } else {
+        sendWindowSystemEventsImplementation(QEventLoop::AllEvents);
+    }
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
