@@ -581,20 +581,42 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     QFETCH(QDateTime, utc);
     QFETCH(QDateTime, european);
 
-    QDateTime dt(QDateTime::fromMSecsSinceEpoch(msecs));
+    QDateTime dtLocal = QDateTime::fromMSecsSinceEpoch(msecs, Qt::LocalTime);
+    QDateTime dtUtc = QDateTime::fromMSecsSinceEpoch(msecs, Qt::UTC);
+    QDateTime dtOffset = QDateTime::fromMSecsSinceEpoch(msecs, Qt::OffsetFromUTC, 60*60);
 
-    QCOMPARE(dt, utc);
-    if (europeanTimeZone)
-        QCOMPARE(dt.toLocalTime(), european);
+    QCOMPARE(dtLocal, utc);
 
-    QCOMPARE(dt.toMSecsSinceEpoch(), msecs);
+    QCOMPARE(dtUtc, utc);
+    QCOMPARE(dtUtc.date(), utc.date());
+    QCOMPARE(dtUtc.time(), utc.time());
+
+    QCOMPARE(dtOffset, utc);
+    QCOMPARE(dtOffset.utcOffset(), 60*60);
+    QCOMPARE(dtOffset.time(), utc.time().addMSecs(60*60*1000));
+
+    if (europeanTimeZone) {
+        QCOMPARE(dtLocal.toLocalTime(), european);
+        QCOMPARE(dtUtc.toLocalTime(), european);
+        QCOMPARE(dtOffset.toLocalTime(), european);
+    } else {
+        QSKIP("You must test using Central European (CET/CEST) time zone, e.g. TZ=Europe/Oslo");
+    }
+
+    QCOMPARE(dtLocal.toMSecsSinceEpoch(), msecs);
+    QCOMPARE(dtUtc.toMSecsSinceEpoch(), msecs);
+    QCOMPARE(dtOffset.toMSecsSinceEpoch(), msecs);
 
     if (quint64(msecs / 1000) < 0xFFFFFFFF) {
-        QCOMPARE(qint64(dt.toTime_t()), msecs / 1000);
+        QCOMPARE(qint64(dtLocal.toTime_t()), msecs / 1000);
+        QCOMPARE(qint64(dtUtc.toTime_t()), msecs / 1000);
+        QCOMPARE(qint64(dtOffset.toTime_t()), msecs / 1000);
     }
 
     QDateTime reference(QDate(1970, 1, 1), QTime(), Qt::UTC);
-    QCOMPARE(dt, reference.addMSecs(msecs));
+    QCOMPARE(dtLocal, reference.addMSecs(msecs));
+    QCOMPARE(dtUtc, reference.addMSecs(msecs));
+    QCOMPARE(dtOffset, reference.addMSecs(msecs));
 }
 
 void tst_QDateTime::toString_isoDate_data()

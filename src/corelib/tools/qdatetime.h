@@ -271,7 +271,12 @@ public:
 #endif
     // ### Qt 6: use quint64 instead of uint
     static QDateTime fromTime_t(uint secsSince1Jan1970UTC);
+    // ### Qt 6: Merge with above with default spec = Qt::LocalTime
+    static QDateTime fromTime_t(uint secsSince1Jan1970UTC, Qt::TimeSpec spec,
+                                int offsetFromUtc = 0);
     static QDateTime fromMSecsSinceEpoch(qint64 msecs);
+    // ### Qt 6: Merge with above with default spec = Qt::LocalTime
+    static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec, int offsetFromUtc = 0);
     static qint64 currentMSecsSinceEpoch() Q_DECL_NOTHROW;
 
 private:
