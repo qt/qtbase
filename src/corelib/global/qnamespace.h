@@ -498,6 +498,7 @@ public:
         AA_X11InitThreads = 10,
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
+        AA_UseHighDpiPixmaps = 13,
 
         // Add new attributes before this line
         AA_AttributeCount
