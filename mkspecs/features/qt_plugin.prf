@@ -60,7 +60,7 @@ unix|win32-g++* {
     !isEmpty(_QMAKE_SUPER_CACHE_): \
         rplbase = $$dirname(_QMAKE_SUPER_CACHE_)/[^/][^/]*
     else: \
-        rplbase = $$MODULE_QMAKE_OUTDIR
+        rplbase = $$MODULE_BASE_OUTDIR
     lib_replace.match = $$rplbase/lib
     lib_replace.replace = $$[QT_INSTALL_LIBS/raw]
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
