@@ -1,40 +1,36 @@
-!host_build:!isEmpty(QMAKE_MAC_SDK) {
 
-    contains(QMAKE_MAC_SDK, .*/.*): \
-        error("QMAKE_MAC_SDK can only contain short-form SDK names (eg. macosx, iphoneos)")
+isEmpty(QMAKE_MAC_SDK): \
+    error("QMAKE_MAC_SDK must be set when using CONFIG += sdk.")
 
-    QMAKE_MAC_SDK_INFO = $$system("xcodebuild -sdk $$QMAKE_MAC_SDK -version 2>/dev/null", lines)
-    isEmpty(QMAKE_MAC_SDK_INFO): error("Could not resolve SDK \'$$QMAKE_MAC_SDK\'")
+contains(QMAKE_MAC_SDK, .*/.*): \
+    error("QMAKE_MAC_SDK can only contain short-form SDK names (eg. macosx, iphoneos)")
 
-    defineReplace(qtMacSDKInfo): \
-        return($$replace($$list($$find(QMAKE_MAC_SDK_INFO, ^$$1:)), ^$$1:(.*), \\1))
+QMAKE_MAC_SDK_INFO = $$system("xcodebuild -sdk $$QMAKE_MAC_SDK -version 2>/dev/null", lines)
+isEmpty(QMAKE_MAC_SDK_INFO): error("Could not resolve SDK \'$$QMAKE_MAC_SDK\'")
 
-    QMAKE_MAC_SDK_PATH = $$qtMacSDKInfo(Path)
+defineReplace(qtMacSDKInfo): \
+    return($$replace($$list($$find(QMAKE_MAC_SDK_INFO, ^$$1:)), ^$$1:(.*), \\1))
 
-    !equals(MAKEFILE_GENERATOR, XCODE) {
-        QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
-        QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
-        QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
-        QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH
-    }
+QMAKE_MAC_SDK_PATH = $$qtMacSDKInfo(Path)
 
-    sysrootified =
-    for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
-    QMAKE_INCDIR_OPENGL = $$sysrootified
-
-    # We use xml as the output format instead of json since plutil on 10.6 does not have that option
-    QMAKE_MAC_PLATFORM_NAME = $$system("plutil -convert xml1 \"$$QMAKE_MAC_SDK_PATH/SDKSettings.plist\" -o - | " \
-        "sed '/^<!DOCTYPE/d' | " \ # Don't look up http://www.apple.com/DTDs/PropertyList-1.0.dtd
-        "PERL5LIB= xpath 'string(//key[.=\"PLATFORM_NAME\"]/following-sibling::*[1])' 2>&1 | " \
-        "sed 's/.*Value: \\(.*\\)/\\1/'")
-
-    isEmpty(QMAKE_MAC_PLATFORM_NAME): error("Could not resolve platform name for SDK '$$QMAKE_MAC_SDK'")
-
-} else {
-    # Host tools require Mac OS X >= 10.6
-    QMAKE_MAC_PLATFORM_NAME = macosx
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.6
+!equals(MAKEFILE_GENERATOR, XCODE) {
+    QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+    QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+    QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+    QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH
 }
+
+sysrootified =
+for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
+QMAKE_INCDIR_OPENGL = $$sysrootified
+
+# We use xml as the output format instead of json since plutil on 10.6 does not have that option
+QMAKE_MAC_PLATFORM_NAME = $$system("plutil -convert xml1 \"$$QMAKE_MAC_SDK_PATH/SDKSettings.plist\" -o - | " \
+    "sed '/^<!DOCTYPE/d' | " \ # Don't look up http://www.apple.com/DTDs/PropertyList-1.0.dtd
+    "PERL5LIB= xpath 'string(//key[.=\"PLATFORM_NAME\"]/following-sibling::*[1])' 2>&1 | " \
+    "sed 's/.*Value: \\(.*\\)/\\1/'")
+
+isEmpty(QMAKE_MAC_PLATFORM_NAME): error("Could not resolve platform name for SDK '$$QMAKE_MAC_SDK'")
 
 !equals(MAKEFILE_GENERATOR, XCODE) {
     # FIXME: Get the version_min_flag out of the platform's 'Native Build System.xcspec'
