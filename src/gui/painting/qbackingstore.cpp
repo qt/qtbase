@@ -45,6 +45,7 @@
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qplatformintegration.h>
 #include <qscreen.h>
+#include <qdebug.h>
 
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
@@ -97,8 +98,10 @@ void QBackingStore::flush(const QRegion &region, QWindow *win, const QPoint &off
     if (!win)
         win = window();
 
-    if (win && !qt_window_private(win)->receivedExpose)
-        qWarning("QBackingStore::flush() called with non-exposed window, behavior is undefined");
+    if (win && !qt_window_private(win)->receivedExpose) {
+        qWarning().nospace() << "QBackingStore::flush() called with non-exposed window "
+            << win << ", behavior is undefined";
+    }
 
     d_ptr->platformBackingStore->flush(win, region, offset);
 }
