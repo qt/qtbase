@@ -62,16 +62,16 @@ public:
 
 PixmapPainter::PixmapPainter()
 {
-    pixmap1X = QPixmap(":/qticon.png");
-    pixmap2X = QPixmap(":/qticon@2x.png");
-    pixmapLarge = QPixmap(":/qticon_large.png");
+    pixmap1X = QPixmap(":/qticon32.png");
+    pixmap2X = QPixmap(":/qticon32@2x.png");
+    pixmapLarge = QPixmap(":/qticon64.png");
 
-    image1X = QImage(":/qticon.png");
-    image2X = QImage(":/qticon@2x.png");
-    imageLarge = QImage(":/qticon_large.png");
+    image1X = QImage(":/qticon32.png");
+    image2X = QImage(":/qticon32@2x.png");
+    imageLarge = QImage(":/qticon64.png");
 
-    qtIcon.addFile(":/qticon.png");
-    qtIcon.addFile(":/qticon@2x.png");
+    qtIcon.addFile(":/qticon32.png");
+    qtIcon.addFile(":/qticon32@2x.png");
 }
 
 void PixmapPainter::paintEvent(QPaintEvent *event)
@@ -79,12 +79,12 @@ void PixmapPainter::paintEvent(QPaintEvent *event)
     QPainter p(this);
     p.fillRect(QRect(QPoint(0, 0), size()), QBrush(Qt::gray));
 
-    int pixmapPointSize = 64;
+    int pixmapPointSize = 32;
     int y = 30;
-    int dy = 150;
+    int dy = 90;
 
     int x = 10;
-    int dx = 80;
+    int dx = 40;
     // draw at point
 //          qDebug() << "paint pixmap" << pixmap1X.devicePixelRatio();
           p.drawPixmap(x, y, pixmap1X);
@@ -95,7 +95,7 @@ void PixmapPainter::paintEvent(QPaintEvent *event)
     x+=dx;p.drawImage(x, y, image2X);
     x+=dx;p.drawImage(x, y, imageLarge);
 
-    // draw at 64x64 rect
+    // draw at 32x32 rect
     y+=dy;
     x = 10;
           p.drawPixmap(QRect(x, y, pixmapPointSize, pixmapPointSize), pixmap1X);
@@ -107,7 +107,7 @@ void PixmapPainter::paintEvent(QPaintEvent *event)
     x+=dx;p.drawImage(QRect(x, y, pixmapPointSize, pixmapPointSize), imageLarge);
 
 
-    // draw at 128x128 rect
+    // draw at 64x64 rect
     y+=dy - 50;
     x = 10;
                p.drawPixmap(QRect(x, y, pixmapPointSize * 2, pixmapPointSize * 2), pixmap1X);
@@ -132,12 +132,12 @@ public:
 
 Labels::Labels()
 {
-    pixmap1X = QPixmap(":/qticon.png");
-    pixmap2X = QPixmap(":/qticon@2x.png");
-    pixmapLarge = QPixmap(":/qticon_large.png");
+    pixmap1X = QPixmap(":/qticon32.png");
+    pixmap2X = QPixmap(":/qticon32@2x.png");
+    pixmapLarge = QPixmap(":/qticon64.png");
 
-    qtIcon.addFile(":/qticon.png");
-    qtIcon.addFile(":/qticon@2x.png");
+    qtIcon.addFile(":/qticon32.png");
+    qtIcon.addFile(":/qticon32@2x.png");
     setWindowIcon(qtIcon);
     setWindowTitle("Labels");
 
@@ -146,15 +146,15 @@ Labels::Labels()
     QLabel *label2x = new QLabel();
     label2x->setPixmap(pixmap2X);
     QLabel *labelIcon = new QLabel();
-    labelIcon->setPixmap(qtIcon.pixmap(QSize(64,64)));
+    labelIcon->setPixmap(qtIcon.pixmap(QSize(32,32)));
     QLabel *labelLarge = new QLabel();
     labelLarge->setPixmap(pixmapLarge);
 
     QHBoxLayout *layout = new QHBoxLayout(this);
-//    layout->addWidget(label1x); //expected low-res on high-dpi displays
-    layout->addWidget(label2x);
-//    layout->addWidget(labelIcon);
-//    layout->addWidget(labelLarge); // expected large size and low-res
+    layout->addWidget(label1x);    //expected low-res on high-dpi displays
+    layout->addWidget(label2x);    //expected high-res on high-dpi displays
+    layout->addWidget(labelIcon);  //expected high-res on high-dpi displays
+    layout->addWidget(labelLarge); // expected large size and low-res
     setLayout(layout);
 }
 
@@ -172,16 +172,14 @@ public:
 
 MainWindow::MainWindow()
 {
-    qtIcon.addFile(":/qticon.png");
-    qtIcon.addFile(":/qticon@2x.png");
-    qtIcon1x.addFile(":/qticon.png");
-    qtIcon2x.addFile(":/qticon@2x.png");
+    // beware that QIcon auto-loads the @2x versions.
+    qtIcon1x.addFile(":/qticon16.png");
+    qtIcon2x.addFile(":/qticon32.png");
     setWindowIcon(qtIcon);
     setWindowTitle("MainWindow");
 
     fileToolBar = addToolBar(tr("File"));
 //    fileToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    fileToolBar->addAction(new QAction(qtIcon, QString("1x and 2x"), this));
     fileToolBar->addAction(new QAction(qtIcon1x, QString("1x"), this));
     fileToolBar->addAction(new QAction(qtIcon2x, QString("2x"), this));
 }
@@ -331,36 +329,165 @@ void apiTest()
     apiTestdevicePixelRatioSetter<QPixmap>();
 }
 
+// Request and draw an icon at different sizes
+class IconDrawing : public QWidget
+{
+public:
+    QIcon *iconHighDPI;
+    QIcon *iconNormalDpi;
+
+    IconDrawing()
+    {
+        QFile::copy(":/qticon32.png", "/tmp/qticon32-2.png");
+
+        QFile::copy(":/qticon32.png", "/tmp/qticon32.png");
+        QFile::copy(":/qticon32@2x.png", "/tmp/qticon32@2x.png");
+
+        iconHighDPI = new QIcon("/tmp/qticon32.png"); // will auto-load @2x version.
+        iconNormalDpi = new QIcon("/tmp/qticon32-2.png"); // does not have a 2x version.
+    }
+
+    ~IconDrawing()
+    {
+        delete iconHighDPI;
+        delete iconNormalDpi;
+//        Qile::
+    }
+
+    void paintEvent(QPaintEvent *event)
+    {
+        int x = 10;
+        int y = 10;
+        int dx = 50;
+        int dy = 50;
+        int maxX = 600;
+        int minSize = 5;
+        int maxSize = 64;
+        int sizeIncrement = 5;
+
+        // Disable high-dpi icons
+        qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, false);
+
+        // normal icon
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconNormalDpi->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+        x = 10;
+        y+=dy;
+
+        // high-dpi icon
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconHighDPI->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+
+        x = 10;
+        y+=dy;
+
+        // Enable high-dpi icons
+        qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+
+        // normal icon
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconNormalDpi->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+        x = 10;
+        y+=dy;
+
+        // high-dpi icon (draw point)
+        for (int size = minSize; size < maxSize; size += sizeIncrement) {
+            QPainter p(this);
+            p.drawPixmap(x, y, iconHighDPI->pixmap(size, size));
+            if (x + dx > maxX)
+                y+=dy;
+            x = ((x + dx) % maxX);
+        }
+
+        x = 10;
+        y+=dy;
+
+    };
+};
+
+// Icons on buttons
+class Buttons : public QWidget
+{
+public:
+    Buttons()
+    {
+        QIcon icon;
+        icon.addFile(":/qticon16@2x.png");
+
+        QPushButton *button =  new QPushButton(this);
+        button->setIcon(icon);
+        button->setText("16@2x");
+
+        QTabBar *tab = new QTabBar(this);
+        tab->addTab(QIcon(":/qticon16.png"), "16@1x");
+        tab->addTab(QIcon(":/qticon16@2x.png"), "16@2x");
+        tab->addTab(QIcon(":/qticon16.png"), "");
+        tab->addTab(QIcon(":/qticon16@2x.png"), "");
+        tab->move(10, 100);
+        tab->show();
+
+        QToolBar *toolBar = new QToolBar(this);
+        toolBar->addAction(QIcon(":/qticon16.png"), "16");
+        toolBar->addAction(QIcon(":/qticon16@2x.png"), "16@2x");
+        toolBar->addAction(QIcon(":/qticon32.png"), "32");
+        toolBar->addAction(QIcon(":/qticon32@2x.png"), "32@2x");
+
+        toolBar->move(10, 200);
+        toolBar->show();
+    }
+};
+
+
 int main(int argc, char **argv)
 {
-    qputenv("QT_HIGHDPI_AWARE", "1");
     QApplication app(argc, argv);
+    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     PixmapPainter pixmapPainter;
-
-//  Enable for lots of pixmap drawing
     pixmapPainter.show();
 
     Labels label;
     label.resize(200, 200);
-    label.show();
+//    label.show();
 
     MainWindow mainWindow;
-    mainWindow.show();
+//    mainWindow.show();
 
     StandardIcons icons;
     icons.resize(510, 510);
-    icons.show();
+//    icons.show();
 
     Caching caching;
     caching.resize(300, 300);
-    caching.show();
+//    caching.show();
 
     Style style;
-    style.show();
+//    style.show();
 
     Fonts fonts;
-    fonts.show();
+//    fonts.show();
+
+    IconDrawing iconDrawing;
+//    iconDrawing.show();
+
+    Buttons buttons;
+//    buttons.show();
+
 
     return app.exec();
 }
