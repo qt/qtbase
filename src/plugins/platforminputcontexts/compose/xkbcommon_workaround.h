@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,73 +39,67 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatforminputcontextfactory_p.h>
-#include <qpa/qplatforminputcontextplugin_p.h>
-#include <qpa/qplatforminputcontext.h>
-#include "private/qfactoryloader_p.h"
+#ifndef XKBCOMMON_WORKAROUND_H
+#define XKBCOMMON_WORKAROUND_H
 
-#include "qguiapplication.h"
-#include "qdebug.h"
-#include <stdlib.h>
-
-QT_BEGIN_NAMESPACE
-
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QPlatformInputContextFactoryInterface_iid, QLatin1String("/platforminputcontexts"), Qt::CaseInsensitive))
-#endif
-
-QStringList QPlatformInputContextFactory::keys()
+// Function utf32_to_utf8() is borrowed from the libxkbcommon library,
+// file keysym-utf.c. The workaround should be removed once the fix from
+// https://bugs.freedesktop.org/show_bug.cgi?id=56780 gets released.
+static int utf32_to_utf8(uint32_t unichar, char *buffer)
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    return loader()->keyMap().values();
-#else
-    return QStringList();
-#endif
-}
+    int count, shift, length;
+    uint8_t head;
 
-QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
-{
-    QStringList paramList = key.split(QLatin1Char(':'));
-    const QString platform = paramList.takeFirst().toLower();
-
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    if (QPlatformInputContext *ret = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>(loader(), platform, paramList))
-        return ret;
-#endif
-    return 0;
-}
-
-QPlatformInputContext *QPlatformInputContextFactory::create()
-{
-    QPlatformInputContext *ic = 0;
-
-    QString icString = QString::fromLatin1(qgetenv("QT_IM_MODULE"));
-
-    if (icString == QLatin1String("none"))
-        icString = QStringLiteral("compose");
-
-    ic = create(icString);
-    if (ic && ic->isValid())
-        return ic;
-
-    delete ic;
-    ic = 0;
-
-    QStringList k = keys();
-    for (int i = 0; i < k.size(); ++i) {
-        if (k.at(i) == icString)
-            continue;
-        ic = create(k.at(i));
-        if (ic && ic->isValid())
-            return ic;
-        delete ic;
-        ic = 0;
+    if (unichar <= 0x007f) {
+        buffer[0] = unichar;
+        buffer[1] = '\0';
+        return 2;
+    }
+    else if (unichar <= 0x07FF) {
+        length = 2;
+        head = 0xc0;
+    }
+    else if (unichar <= 0xffff) {
+        length = 3;
+        head = 0xe0;
+    }
+    else if (unichar <= 0x1fffff) {
+        length = 4;
+        head = 0xf0;
+    }
+    else if (unichar <= 0x3ffffff) {
+        length = 5;
+        head = 0xf8;
+    }
+    else {
+        length = 6;
+        head = 0xfc;
     }
 
-    return 0;
+    for (count = length - 1, shift = 0; count > 0; count--, shift += 6)
+        buffer[count] = 0x80 | ((unichar >> shift) & 0x3f);
+
+    buffer[0] = head | ((unichar >> shift) & 0x3f);
+    buffer[length] = '\0';
+
+    return length + 1;
 }
 
+static bool needWorkaround(uint32_t sym)
+{
+    /* patch encoding botch */
+    if (sym == XKB_KEY_KP_Space)
+        return true;
 
-QT_END_NAMESPACE
+    /* special keysyms */
+    if ((sym >= XKB_KEY_BackSpace && sym <= XKB_KEY_Clear) ||
+        (sym >= XKB_KEY_KP_Multiply && sym <= XKB_KEY_KP_9) ||
+        sym == XKB_KEY_Return || sym == XKB_KEY_Escape ||
+        sym == XKB_KEY_Delete || sym == XKB_KEY_KP_Tab ||
+        sym == XKB_KEY_KP_Enter || sym == XKB_KEY_KP_Equal)
+        return true;
 
+    return false;
+}
+
+#endif // XKBCOMMON_WORKAROUND_H

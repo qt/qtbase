@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,73 +39,32 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontextplugin_p.h>
-#include <qpa/qplatforminputcontext.h>
-#include "private/qfactoryloader_p.h"
 
-#include "qguiapplication.h"
-#include "qdebug.h"
-#include <stdlib.h>
+#include <QtCore/QStringList>
+
+#include "qcomposeplatforminputcontext.h"
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QPlatformInputContextFactoryInterface_iid, QLatin1String("/platforminputcontexts"), Qt::CaseInsensitive))
-#endif
-
-QStringList QPlatformInputContextFactory::keys()
+class QComposePlatformInputContextPlugin : public QPlatformInputContextPlugin
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    return loader()->keyMap().values();
-#else
-    return QStringList();
-#endif
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QPlatformInputContextFactoryInterface" FILE "compose.json")
 
-QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
+public:
+    QComposeInputContext *create(const QString &, const QStringList &);
+};
+
+QComposeInputContext *QComposePlatformInputContextPlugin::create(const QString &system, const QStringList &paramList)
 {
-    QStringList paramList = key.split(QLatin1Char(':'));
-    const QString platform = paramList.takeFirst().toLower();
+    Q_UNUSED(paramList);
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    if (QPlatformInputContext *ret = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>(loader(), platform, paramList))
-        return ret;
-#endif
+    if (system.compare(system, QStringLiteral("compose"), Qt::CaseInsensitive) == 0)
+        return new QComposeInputContext;
     return 0;
 }
-
-QPlatformInputContext *QPlatformInputContextFactory::create()
-{
-    QPlatformInputContext *ic = 0;
-
-    QString icString = QString::fromLatin1(qgetenv("QT_IM_MODULE"));
-
-    if (icString == QLatin1String("none"))
-        icString = QStringLiteral("compose");
-
-    ic = create(icString);
-    if (ic && ic->isValid())
-        return ic;
-
-    delete ic;
-    ic = 0;
-
-    QStringList k = keys();
-    for (int i = 0; i < k.size(); ++i) {
-        if (k.at(i) == icString)
-            continue;
-        ic = create(k.at(i));
-        if (ic && ic->isValid())
-            return ic;
-        delete ic;
-        ic = 0;
-    }
-
-    return 0;
-}
-
 
 QT_END_NAMESPACE
 
+#include "main.moc"

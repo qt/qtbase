@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,73 +39,47 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatforminputcontextfactory_p.h>
-#include <qpa/qplatforminputcontextplugin_p.h>
-#include <qpa/qplatforminputcontext.h>
-#include "private/qfactoryloader_p.h"
+#ifndef QCOMPOSEPLATFORMINPUTCONTEXT_H
+#define QCOMPOSEPLATFORMINPUTCONTEXT_H
 
-#include "qguiapplication.h"
-#include "qdebug.h"
-#include <stdlib.h>
+#include <qpa/qplatforminputcontext.h>
+
+#include <QtCore/QList>
+
+#include "generator/qtablegenerator.h"
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
-    (QPlatformInputContextFactoryInterface_iid, QLatin1String("/platforminputcontexts"), Qt::CaseInsensitive))
-#endif
+class QEvent;
 
-QStringList QPlatformInputContextFactory::keys()
+class QComposeInputContext : public QPlatformInputContext
 {
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    return loader()->keyMap().values();
-#else
-    return QStringList();
-#endif
-}
+    Q_OBJECT
 
-QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
-{
-    QStringList paramList = key.split(QLatin1Char(':'));
-    const QString platform = paramList.takeFirst().toLower();
+public:
+    QComposeInputContext();
+    ~QComposeInputContext();
 
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
-    if (QPlatformInputContext *ret = qLoadPlugin1<QPlatformInputContext, QPlatformInputContextPlugin>(loader(), platform, paramList))
-        return ret;
-#endif
-    return 0;
-}
+    bool isValid() const;
+    void setFocusObject(QObject *object);
+    void reset();
+    void update(Qt::InputMethodQueries);
+    bool filterEvent(const QEvent *event);
 
-QPlatformInputContext *QPlatformInputContextFactory::create()
-{
-    QPlatformInputContext *ic = 0;
+protected:
+    void clearComposeBuffer();
+    bool ignoreKey(int keyval) const;
+    bool composeKey(int keyval) const;
+    bool checkComposeTable();
+    void commitText(uint character) const;
 
-    QString icString = QString::fromLatin1(qgetenv("QT_IM_MODULE"));
-
-    if (icString == QLatin1String("none"))
-        icString = QStringLiteral("compose");
-
-    ic = create(icString);
-    if (ic && ic->isValid())
-        return ic;
-
-    delete ic;
-    ic = 0;
-
-    QStringList k = keys();
-    for (int i = 0; i < k.size(); ++i) {
-        if (k.at(i) == icString)
-            continue;
-        ic = create(k.at(i));
-        if (ic && ic->isValid())
-            return ic;
-        delete ic;
-        ic = 0;
-    }
-
-    return 0;
-}
-
+private:
+    QObject *m_focusObject;
+    QList<QComposeTableElement> m_composeTable;
+    uint m_composeBuffer[QT_KEYSEQUENCE_MAX_LEN + 1];
+    TableGenerator::TableState m_tableState;
+};
 
 QT_END_NAMESPACE
 
+#endif // QCOMPOSEPLATFORMINPUTCONTEXT_H
