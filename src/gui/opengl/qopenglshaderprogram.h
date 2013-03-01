@@ -67,7 +67,8 @@ public:
         Fragment               = 0x0002,
         Geometry               = 0x0004,
         TessellationControl    = 0x0008,
-        TessellationEvaluation = 0x0010
+        TessellationEvaluation = 0x0010,
+        Compute                = 0x0020
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBit)
 

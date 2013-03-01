@@ -108,6 +108,7 @@ typedef GLfloat GLdouble;
 # endif
 #if !defined(Q_OS_MAC)
 #  define QT_OPENGL_4
+#  define QT_OPENGL_4_3
 #endif
 #endif
 

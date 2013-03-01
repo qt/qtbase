@@ -156,6 +156,8 @@ QT_BEGIN_NAMESPACE
            shading language (GLSL), based on the core feature (requires OpenGL >= 4.0).
     \value TessellationEvaluation Tessellation evaluation shaders written in the OpenGL
            shading language (GLSL), based on the core feature (requires OpenGL >= 4.0).
+    \value Compute Compute shaders written in the OpenGL shading language (GLSL),
+           based on the core feature (requires OpenGL >= 4.3).
 */
 
 class QOpenGLShaderPrivate : public QObjectPrivate
@@ -235,6 +237,10 @@ bool QOpenGLShaderPrivate::create()
         shader = glfuncs->glCreateShader(GL_TESS_CONTROL_SHADER);
     } else if (shaderType == QOpenGLShader::TessellationEvaluation && supportsTessellationShaders) {
         shader = glfuncs->glCreateShader(GL_TESS_EVALUATION_SHADER);
+#endif
+#if defined(QT_OPENGL_4_3)
+    } else if (shaderType == QOpenGLShader::Compute) {
+        shader = glfuncs->glCreateShader(GL_COMPUTE_SHADER);
 #endif
     } else {
         shader = glfuncs->glCreateShader(GL_FRAGMENT_SHADER);
@@ -3230,7 +3236,7 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
     if (!context)
         return false;
 
-    if ((type & ~(Geometry | Vertex | Fragment | TessellationControl | TessellationEvaluation)) || type == 0)
+    if ((type & ~(Geometry | Vertex | Fragment | TessellationControl | TessellationEvaluation | Compute)) || type == 0)
         return false;
 
     QSurfaceFormat format = context->format();
@@ -3248,6 +3254,13 @@ bool QOpenGLShader::hasOpenGLShaders(ShaderType type, QOpenGLContext *context)
         return (format.version() >= qMakePair<int, int>(4, 0));
 #else
         // No tessellation shader support in OpenGL ES2
+        return false;
+#endif
+    } else if (type == Compute) {
+#if defined(QT_OPENGL_4_3)
+        return (format.version() >= qMakePair<int, int>(4, 3));
+#else
+        // No compute shader support without OpenGL 4.3 or newer
         return false;
 #endif
     }
