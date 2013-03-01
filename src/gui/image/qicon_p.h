@@ -72,6 +72,8 @@ public:
         delete engine;
     }
 
+    qreal pixmapDevicePixelRatio(qreal displayDevicePixelRatio, const QSize &requestedSize, const QSize &actualSize);
+
     QIconEngine *engine;
 
     QAtomicInt ref;
