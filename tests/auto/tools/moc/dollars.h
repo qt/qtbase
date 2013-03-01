@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,85 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef UTILS_H
-#define UTILS_H
+/* both GCC and clang allow $ in identifiers
+ * So moc should not throw a parse error if it parses a file that contains such identifiers
+ */
 
-#include <QtCore/qglobal.h>
+#include <QObject>
 
-QT_BEGIN_NAMESPACE
+#define macro$1 function1
+#define $macro2 function2
 
-inline bool is_whitespace(char s)
-{
-    return (s == ' ' || s == '\t' || s == '\n');
+namespace $NS {
+    class $CLS : public QObject
+    {
+        Q_PROPERTY(int rich$ MEMBER m_$rich$)
+        Q_PROPERTY(int money$$$ READ $$$money$$$ WRITE $$$setMoney$$$)
+        Q_OBJECT
+
+        int m_$rich$;
+        int m_money;
+        int $$$money$$$() { return m_money; }
+        int $$$setMoney$$$(int m) { return m_money = m; }
+
+    Q_SIGNALS:
+        void macro$1 ();
+        void $macro2 ();
+
+        void function$3 ($CLS * cl$s);
+    };
 }
 
-inline bool is_space(char s)
-{
-    return (s == ' ' || s == '\t');
-}
-
-inline bool is_ident_start(char s)
-{
-    return ((s >= 'a' && s <= 'z')
-            || (s >= 'A' && s <= 'Z')
-            || s == '_' || s == '$'
-       );
-}
-
-inline bool is_ident_char(char s)
-{
-    return ((s >= 'a' && s <= 'z')
-            || (s >= 'A' && s <= 'Z')
-            || (s >= '0' && s <= '9')
-            || s == '_' || s == '$'
-       );
-}
-
-inline bool is_identifier(const char *s, int len)
-{
-    if (len < 1)
-        return false;
-    if (!is_ident_start(*s))
-        return false;
-    for (int i = 1; i < len; ++i)
-        if (!is_ident_char(s[i]))
-            return false;
-    return true;
-}
-
-inline bool is_digit_char(char s)
-{
-    return (s >= '0' && s <= '9');
-}
-
-inline bool is_octal_char(char s)
-{
-    return (s >= '0' && s <= '7');
-}
-
-inline bool is_hex_char(char s)
-{
-    return ((s >= 'a' && s <= 'f')
-            || (s >= 'A' && s <= 'F')
-            || (s >= '0' && s <= '9')
-       );
-}
-
-inline const char *skipQuote(const char *data)
-{
-    while (*data && (*data != '\"')) {
-        if (*data == '\\') {
-            ++data;
-            if (!*data) break;
-        }
-        ++data;
-    }
-    
-    if (*data)  //Skip last quote
-        ++data;
-    return data; 
-}
-
-QT_END_NAMESPACE
-
-#endif // UTILS_H
