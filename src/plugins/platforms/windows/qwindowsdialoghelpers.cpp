@@ -1223,8 +1223,9 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
 
     // Apply settings.
     const QSharedPointer<QFileDialogOptions> &opts = options();
+    const QFileDialogOptions::FileMode mode = opts->fileMode();
     result->setWindowTitle(opts->windowTitle());
-    result->setMode(opts->fileMode(), opts->options());
+    result->setMode(mode, opts->options());
     result->setHideFiltersDetails(opts->testOption(QFileDialogOptions::HideNameFilterDetails));
     const QStringList nameFilters = opts->nameFilters();
     if (!nameFilters.isEmpty())
@@ -1242,9 +1243,12 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
         if (!info.isDir())
             result->selectFile(info.fileName());
     }
-    const QString initialNameFilter = opts->initiallySelectedNameFilter();
-    if (!initialNameFilter.isEmpty())
-        result->selectNameFilter(initialNameFilter);
+    // No need to select initialNameFilter if mode is Dir
+    if (mode != QFileDialogOptions::Directory && mode != QFileDialogOptions::DirectoryOnly) {
+        const QString initialNameFilter = opts->initiallySelectedNameFilter();
+        if (!initialNameFilter.isEmpty())
+            result->selectNameFilter(initialNameFilter);
+    }
     const QString defaultSuffix = opts->defaultSuffix();
     if (!defaultSuffix.isEmpty())
         result->setDefaultSuffix(defaultSuffix);
