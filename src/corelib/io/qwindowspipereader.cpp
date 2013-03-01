@@ -64,7 +64,7 @@ QWindowsPipeReader::QWindowsPipeReader(QObject *parent)
     connect(dataReadNotifier, &QWinOverlappedIoNotifier::notified, this, &QWindowsPipeReader::notified);
 }
 
-static void qt_cancelIo(HANDLE handle, OVERLAPPED *overlapped)
+static bool qt_cancelIo(HANDLE handle, OVERLAPPED *overlapped)
 {
     typedef BOOL (WINAPI *PtrCancelIoEx)(HANDLE, LPOVERLAPPED);
     static PtrCancelIoEx ptrCancelIoEx = 0;
@@ -74,16 +74,18 @@ static void qt_cancelIo(HANDLE handle, OVERLAPPED *overlapped)
             ptrCancelIoEx = PtrCancelIoEx(GetProcAddress(kernel32, "CancelIoEx"));
     }
     if (ptrCancelIoEx)
-        ptrCancelIoEx(handle, overlapped);
+        return ptrCancelIoEx(handle, overlapped);
     else
-        CancelIo(handle);
+        return CancelIo(handle);
 }
 
 QWindowsPipeReader::~QWindowsPipeReader()
 {
     if (readSequenceStarted) {
-        qt_cancelIo(handle, &overlapped);
-        dataReadNotifier->waitForNotified(-1, &overlapped);
+        if (qt_cancelIo(handle, &overlapped))
+            dataReadNotifier->waitForNotified(-1, &overlapped);
+        else
+            qErrnoWarning("QWindowsPipeReader: qt_cancelIo on handle %x failed.", handle);
     }
 }
 
