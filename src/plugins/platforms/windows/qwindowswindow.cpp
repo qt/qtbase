@@ -257,6 +257,8 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qr
         } else {
             QWindowsContext::user32dll.setLayeredWindowAttributes(hwnd, 0, (int)(level * 255), LWA_ALPHA);
         }
+    } else if (IsWindowVisible(hwnd)) { // Repaint when switching from layered.
+        InvalidateRect(hwnd, NULL, TRUE);
     }
 #endif // !Q_OS_WINCE
 }
