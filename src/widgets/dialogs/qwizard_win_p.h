@@ -107,6 +107,8 @@ public:
     }
     static int topOffset();
 
+    static HDC backingStoreDC(const QWidget *wizard, QPoint *offset);
+
 private:
     static HFONT getCaptionFont(HANDLE hTheme);
     HWND wizardHWND() const;

@@ -221,9 +221,11 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     QRect r = rect();
     HANDLE theme = pOpenThemeData(0, L"Navigation");
     //RECT rect;
+    QPoint origin;
+    const HDC hdc = QVistaHelper::backingStoreDC(parentWidget(), &origin);
     RECT clipRect;
-    int xoffset = QWidget::mapToParent(r.topLeft()).x() - 1;
-    int yoffset = QWidget::mapToParent(r.topLeft()).y() - 1;
+    int xoffset = origin.x() + QWidget::mapToParent(r.topLeft()).x() - 1;
+    int yoffset = origin.y() + QWidget::mapToParent(r.topLeft()).y() - 1;
 
     clipRect.top = r.top() + yoffset;
     clipRect.bottom = r.bottom() + yoffset;
@@ -238,8 +240,6 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     else if (underMouse())
         state = WIZ_NAV_BB_HOT;
 
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    HDC hdc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore()));
     pDrawThemeBackground(theme, hdc, WIZ_NAV_BACKBUTTON, state, &clipRect, &clipRect);
 }
 
@@ -358,11 +358,11 @@ Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
     Q_ASSERT(backButton_);
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    QBackingStore *backingStore = backButton_->backingStore();
-    HDC hdc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
+    QPoint origin;
+    const bool isWindow = wizard->isWindow();
+    const HDC hdc = QVistaHelper::backingStoreDC(wizard, &origin);
 
-    if (vistaState() == VistaAero)
+    if (vistaState() == VistaAero && isWindow)
         drawBlackRect(QRect(0, 0, wizard->width(),
                             titleBarSize() + topOffset()), hdc);
     const int btnTop = backButton_->mapToParent(QPoint()).y();
@@ -383,14 +383,20 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
         glowOffset = glowSize();
     }
 
-    drawTitleText(
-        painter, text,
-        QRect(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight),
-        hdc);
+    const QRect textRectangle(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight);
+    if (isWindow) {
+        drawTitleText(painter, text, textRectangle, hdc);
+    } else {
+        painter->save();
+        painter->setFont(font);
+        painter->drawText(textRectangle, Qt::AlignVCenter | Qt::AlignHCenter, text);
+        painter->restore();
+    }
 
     const QIcon windowIcon = wizard->windowIcon();
     if (!windowIcon.isNull()) {
-        QRect rect(leftMargin(), verticalCenter - iconSize() / 2, iconSize(), iconSize());
+        const QRect rect(origin.x() + leftMargin(),
+                         origin.y() + verticalCenter - iconSize() / 2, iconSize(), iconSize());
         const HICON hIcon = qt_pixmapToWinHICON(windowIcon.pixmap(iconSize()));
         DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
         DestroyIcon(hIcon);
@@ -640,6 +646,18 @@ HFONT QVistaHelper::getCaptionFont(HANDLE hTheme)
         lf = ncm.lfMessageFont;
     }
     return CreateFontIndirect(&lf);
+}
+
+// Return a HDC for the wizard along with the transformation if the
+// wizard is a child window.
+HDC QVistaHelper::backingStoreDC(const QWidget *wizard, QPoint *offset)
+{
+    HDC hdc = static_cast<HDC>(QGuiApplication::platformNativeInterface()->nativeResourceForBackingStore(QByteArrayLiteral("getDC"), wizard->backingStore()));
+    *offset = QPoint(0, 0);
+    if (!wizard->windowHandle())
+        if (QWidget *nativeParent = wizard->nativeParentWidget())
+            *offset = wizard->mapTo(nativeParent, *offset);
+    return hdc;
 }
 
 HWND QVistaHelper::wizardHWND() const
