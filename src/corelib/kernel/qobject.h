@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -265,27 +266,50 @@ public:
     static inline typename QtPrivate::QEnableIf<QtPrivate::FunctionPointer<Func2>::ArgumentCount == -1, QMetaObject::Connection>::Type
             connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal, Func2 slot)
     {
+#if defined (Q_COMPILER_DECLTYPE) && defined (Q_COMPILER_VARIADIC_TEMPLATES)
+        typedef QtPrivate::FunctionPointer<Func1> SignalType;
+        const int FunctorArgumentCount = QtPrivate::ComputeFunctorArgumentCount<Func2 , typename SignalType::Arguments>::Value;
+
+        Q_STATIC_ASSERT_X((FunctorArgumentCount >= 0),
+                          "Signal and slot arguments are not compatible.");
+        const int SlotArgumentCount = (FunctorArgumentCount >= 0) ? FunctorArgumentCount : 0;
+        typedef typename QtPrivate::FunctorReturnType<Func2, typename QtPrivate::List_Left<typename SignalType::Arguments, SlotArgumentCount>::Value>::Value SlotReturnType;
+#else
+      // Without variadic template, we don't detect the best overload of operator(). We just
+      // assume there is only one simple operator() and connect to &Func2::operator()
+
+      /* If you get an error such as:
+             couldn't deduce template parameter 'Func2Operator'
+        or
+             cannot resolve address of overloaded function
+        It means the functor does not have a single operator().
+        Functors with overloaded or templated operator() are only supported if the compiler supports
+        C++11 variadic templates
+      */
 #ifndef Q_COMPILER_DECLTYPE  //Workaround the lack of decltype using another function as indirection
         return connect_functor(sender, signal, slot, &Func2::operator()); }
     template <typename Func1, typename Func2, typename Func2Operator>
     static inline QMetaObject::Connection connect_functor(const QObject *sender, Func1 signal, Func2 slot, Func2Operator) {
         typedef QtPrivate::FunctionPointer<Func2Operator> SlotType ;
 #else
-
         typedef QtPrivate::FunctionPointer<decltype(&Func2::operator())> SlotType ;
 #endif
         typedef QtPrivate::FunctionPointer<Func1> SignalType;
+        typedef typename SlotType::ReturnType SlotReturnType;
+        const int SlotArgumentCount = SlotType::ArgumentCount;
 
-        Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
+        Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= SlotArgumentCount,
                           "The slot requires more arguments than the signal provides.");
         Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
                           "Signal and slot arguments are not compatible.");
-        Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
+#endif
+
+        Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<SlotReturnType, typename SignalType::ReturnType>::value),
                           "Return type of the slot is not compatible with the return type of the signal.");
 
         return connectImpl(sender, reinterpret_cast<void **>(&signal), sender, 0,
-                           new QtPrivate::QFunctorSlotObject<Func2, SlotType::ArgumentCount,
-                                typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
+                           new QtPrivate::QFunctorSlotObject<Func2, SlotArgumentCount,
+                                typename QtPrivate::List_Left<typename SignalType::Arguments, SlotArgumentCount>::Value,
                                 typename SignalType::ReturnType>(slot),
                            Qt::DirectConnection, 0, &SignalType::Object::staticMetaObject);
     }

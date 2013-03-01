@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -597,10 +598,43 @@ namespace QtPrivate {
         enum { value = AreArgumentsCompatible<typename RemoveConstRef<Arg1>::Type, typename RemoveConstRef<Arg2>::Type>::value
                     && CheckCompatibleArguments<List<Tail1...>, List<Tail2...>>::value };
     };
-
 #endif
-}
 
+#if defined(Q_COMPILER_DECLTYPE) && defined(Q_COMPILER_VARIADIC_TEMPLATES)
+    /*
+       Find the maximum number of arguments a functor object can take and be still compatible with
+       the arguments from the signal.
+       Value is the number of arguments, or -1 if nothing matches.
+     */
+    template <typename Functor, typename ArgList> struct ComputeFunctorArgumentCount;
+
+    template <typename Functor, typename ArgList, bool Done> struct ComputeFunctorArgumentCountHelper
+    { enum { Value = -1 }; };
+    template <typename Functor, typename First, typename... ArgList>
+    struct ComputeFunctorArgumentCountHelper<Functor, List<First, ArgList...>, false>
+        : ComputeFunctorArgumentCount<Functor,
+            typename List_Left<List<First, ArgList...>, sizeof...(ArgList)>::Value> {};
+
+    template <typename Functor, typename... ArgList> struct ComputeFunctorArgumentCount<Functor, List<ArgList...>>
+    {
+        template <typename D> static D dummy();
+        template <typename F> static auto test(F f) -> decltype(((f.operator()((dummy<ArgList>())...)), int()));
+        static char test(...);
+        enum {
+            Ok = sizeof(test(dummy<Functor>())) == sizeof(int),
+            Value = Ok ? sizeof...(ArgList) : int(ComputeFunctorArgumentCountHelper<Functor, List<ArgList...>, Ok>::Value)
+        };
+    };
+
+    /* get the return type of a functor, given the signal argument list  */
+    template <typename Functor, typename ArgList> struct FunctorReturnType;
+    template <typename Functor, typename ... ArgList> struct FunctorReturnType<Functor, List<ArgList...>> {
+        template <typename D> static D dummy();
+        typedef decltype(dummy<Functor>().operator()((dummy<ArgList>())...)) Value;
+    };
+#endif
+
+}
 
 QT_END_NAMESPACE
 

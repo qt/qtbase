@@ -143,6 +143,7 @@ private slots:
     void connectVirtualSlots();
     void connectPrivateSlots();
     void connectFunctorArgDifference();
+    void connectFunctorOverloads();
     void disconnectDoesNotLeakFunctor();
 };
 
@@ -5597,6 +5598,131 @@ void tst_QObject::connectFunctorArgDifference()
 #endif
 
     QVERIFY(true);
+}
+
+struct ComplexFunctor {
+    ComplexFunctor(int &overload, QList<QVariant> &result) : overload(overload), result(result) {}
+    void operator()(int a, int b) {
+        overload = 1;
+        result << a << b;
+    }
+    void operator()(double a, double b) {
+        overload = 2;
+        result << a << b;
+    }
+    void operator()(const QString &s) {
+        overload = 3;
+        result << s;
+    }
+    void operator()(const QString &) const {
+        Q_ASSERT(!"Should not be called because the non-const one should");
+        overload = -1;
+    }
+    template<typename T1, typename T2, typename T3, typename T4>
+    void operator()(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4) {
+        overload = 4;
+        result << QVariant::fromValue(t1) << QVariant::fromValue(t2) << QVariant::fromValue(t3) << QVariant::fromValue(t4);
+    }
+    int &overload;
+    QList<QVariant> &result;
+protected:
+    void operator()() const {
+        Q_ASSERT(!"Should not be called because it is protected");
+        overload = -1;
+    }
+};
+
+struct ComplexFunctorDeriv : ComplexFunctor {
+    ComplexFunctorDeriv(int &overload, QList<QVariant> &result) : ComplexFunctor(overload, result) {}
+
+    void operator()() const {
+        overload = 10;
+    }
+    void operator()(int a, int b) {
+        overload = 11;
+        result << a << b;
+    }
+    using ComplexFunctor::operator();
+private:
+    void operator()(int) {
+        Q_ASSERT(!"Should not be called because it is private");
+        overload = -1;
+    }
+};
+
+class FunctorArgDifferenceObject : public QObject
+{
+    Q_OBJECT
+signals:
+    void signal_ii(int,int);
+    void signal_iiS(int,int, const QString &);
+    void signal_dd(double,double);
+    void signal_ddS(double,double, const QString &);
+    void signal_S(const QString &);
+    void signal_SSSS(const QString &, const QString &, const QString &, const QString &);
+    void signal_iiSS(int, int, const QString &, const QString &);
+    void signal_VV(const QVariant &, const QVariant &);
+};
+
+template<typename Functor, typename Signal>
+void connectFunctorOverload_impl(Signal signal, int expOverload, QList<QVariant> expResult)
+{
+    FunctorArgDifferenceObject obj;
+    int overload;
+    QList<QVariant> result;
+    QVERIFY(QObject::connect(&obj, signal, Functor(overload, result)));
+
+    obj.signal_ii(1,2);
+    obj.signal_iiS(3,4,"5");
+    obj.signal_dd(6.6,7.7);
+    obj.signal_ddS(8.8,9.9,"10");
+    obj.signal_S("11");
+    obj.signal_SSSS("12", "13", "14", "15");
+    obj.signal_iiSS(16, 17, "18", "19");
+    obj.signal_VV(20,21);
+
+    QCOMPARE(overload, expOverload);
+    QCOMPARE(result, expResult);
+}
+
+void tst_QObject::connectFunctorOverloads()
+{
+#if defined (Q_COMPILER_DECLTYPE) && defined (Q_COMPILER_VARIADIC_TEMPLATES)
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_ii, 1,
+                                (QList<QVariant>() << 1 << 2));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_iiS, 1,
+                                (QList<QVariant>() << 3 << 4));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_dd, 2,
+                                (QList<QVariant>() << 6.6 << 7.7));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_ddS, 2,
+                                (QList<QVariant>() << 8.8 << 9.9));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_S, 3,
+                                (QList<QVariant>() << QString("11")));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_SSSS, 4,
+                                (QList<QVariant>() << QString("12") << QString("13") << QString("14") << QString("15")));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_iiSS, 4,
+                                (QList<QVariant>() << 16 << 17 << QString("18") << QString("19")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_ii, 11,
+                                (QList<QVariant>() << 1 << 2));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_iiS, 11,
+                                (QList<QVariant>() << 3 << 4));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_dd, 2,
+                                (QList<QVariant>() << 6.6 << 7.7));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_ddS, 2,
+                                (QList<QVariant>() << 8.8 << 9.9));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_S, 3,
+                                (QList<QVariant>() << QString("11")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_SSSS, 4,
+                                (QList<QVariant>() << QString("12") << QString("13") << QString("14") << QString("15")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_iiSS, 4,
+                                (QList<QVariant>() << 16 << 17 << QString("18") << QString("19")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_VV, 10,
+                                (QList<QVariant>()));
+
+
+#else
+    QSKIP("Does not compile without C++11 variadic template");
+#endif
 }
 
 static int countedStructObjectsCount = 0;
