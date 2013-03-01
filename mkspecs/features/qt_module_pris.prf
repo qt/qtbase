@@ -71,7 +71,7 @@ else: \
         $$module_config \
         "QT.$${MODULE}.DEFINES = $$MODULE_DEFINES" \ # assume sufficient quoting
         "" \
-        "QT_CONFIG += $$MODULE" # this is obsolete, but some code still depends on it
+        "QT_MODULES += $$MODULE"
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error("Aborting.")
     MODULE_PRI_FILES = $$MODULE_PRI
 
@@ -113,7 +113,7 @@ else: \
                     includes private_includes bins libs libexecs plugins imports qml \
                     rpath_link rpath_link_private \
             )):defined(QT.$${MODULE}.$$var, var):cache(QT.$${MODULE}.$$var, transient)
-    cache(QT_CONFIG, transient)
+    cache(QT_MODULES, transient)
 
 } # !build_pass
 
