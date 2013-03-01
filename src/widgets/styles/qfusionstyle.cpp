@@ -1768,12 +1768,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         painter->save();
     {
         painter->fillRect(rect, option->palette.window());
-        if (widget && qobject_cast<const QMainWindow *>(widget->parentWidget())) {
-            QColor shadow = mergedColors(option->palette.background().color().darker(120),
-                                         outline.lighter(140), 60);
-            painter->setPen(QPen(shadow));
-            painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
-        }
+        QColor shadow = mergedColors(option->palette.background().color().darker(120),
+                                     outline.lighter(140), 60);
+        painter->setPen(QPen(shadow));
+        painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
     }
         painter->restore();
         break;
