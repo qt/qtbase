@@ -102,21 +102,20 @@ int main(int argc, char *argv[])
     QWidget w;
     w.setLayout(new QVBoxLayout);
     QLabel *l = new QLabel(&w);
-    MyGraphicsView &v = *(new MyGraphicsView(&w, l));
+    MyGraphicsView *v = new MyGraphicsView(&w, l);
 
-    w.layout()->addWidget(&v);
+    w.layout()->addWidget(v);
     w.layout()->addWidget(l);
 
     QGraphicsScene s(0.0, 0.0, 5000.0, 5000.0);
-    v.setScene(&s);
-    v.setInteractive(true);
-    v.setRubberBandSelectionMode(Qt::IntersectsItemBoundingRect);
-    s.addRect( (qreal) 0.0, 0.0, 1000.0, 50.0, QPen(),QBrush(QColor(0,0,255)));
+    v->setScene(&s);
+    v->setInteractive(true);
+    v->setRubberBandSelectionMode(Qt::IntersectsItemBoundingRect);
 
     for (int u = 0; u < 100; ++u)
-        for (int v = 0; v < 100; ++v) {
+        for (int n = 0; n < 100; ++n) {
             MyGraphicsItem *item = new MyGraphicsItem();
-            item->setRect(QRectF(v * 80.0, u * 80.0, 50.0, 20.0));
+            item->setRect(QRectF(n * 80.0, u * 80.0, 50.0, 20.0));
             s.addItem(item);
         }
 
