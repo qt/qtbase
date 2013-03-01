@@ -181,8 +181,6 @@ QT_BEGIN_NAMESPACE
 */
 
 
-#if defined(Q_OS_UNIX)
-
 static long qt_find_pattern(const char *s, ulong s_len,
                              const char *pattern, ulong p_len)
 {
@@ -229,7 +227,7 @@ static long qt_find_pattern(const char *s, ulong s_len,
                 information could not be read.
   Returns  true if version information is present and successfully read.
 */
-static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
+static bool findPatternUnloaded(const QString &library, QLibraryPrivate *lib)
 {
     QFile file(library);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -320,8 +318,6 @@ static bool qt_unix_query(const QString &library, QLibraryPrivate *lib)
     file.close();
     return ret;
 }
-
-#endif // Q_OS_UNIX && !Q_OS_MAC
 
 static void installCoverageTool(QLibraryPrivate *libPrivate)
 {
@@ -639,41 +635,18 @@ bool QLibrary::isLibrary(const QString &fileName)
 
 }
 
-#if defined (Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400  && !defined(Q_CC_INTEL)
-#define QT_USE_MS_STD_EXCEPTION 1
-const char* qt_try_versioninfo(void *pfn, bool *exceptionThrown)
-{
-    *exceptionThrown = false;
-    const char *szData = 0;
-    typedef const char * (*VerificationFunction)();
-    VerificationFunction func = reinterpret_cast<VerificationFunction>(pfn);
-    __try {
-        if(func)
-            szData =  func();
-    } __except(EXCEPTION_EXECUTE_HANDLER) {
-        *exceptionThrown = true;
-    }
-    return szData;
-}
-#endif
-
 typedef const char * (*QtPluginQueryVerificationDataFunction)();
 
-bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate *priv, bool *exceptionThrown)
+static bool qt_get_metadata(QtPluginQueryVerificationDataFunction pfn, QLibraryPrivate *priv)
 {
-    *exceptionThrown = false;
     const char *szData = 0;
     if (!pfn)
         return false;
-#ifdef QT_USE_MS_STD_EXCEPTION
-    szData = qt_try_versioninfo((void *)pfn, exceptionThrown);
-    if (*exceptionThrown)
-        return false;
-#else
+
     szData = pfn();
-#endif
     if (!szData)
         return false;
+
     QJsonDocument doc = QLibraryPrivate::fromRawMetaData(szData);
     if (doc.isNull())
         return false;
@@ -711,80 +684,15 @@ void QLibraryPrivate::updatePluginState()
     }
 #endif
 
-#if defined(Q_OS_UNIX)
     if (!pHnd) {
-        // use unix shortcut to avoid loading the library
-        success = qt_unix_query(fileName, this);
-    } else
-#endif
-    {
-        bool retryLoadLibrary = false;    // Only used on Windows with MS compiler.(false in other cases)
-        do {
-            bool temporary_load = false;
-#ifdef Q_OS_WIN
-            HMODULE hTempModule = 0;
-#endif
-            if (!pHnd) {
-#ifdef Q_OS_WIN
-                DWORD dwFlags = (retryLoadLibrary) ? 0: DONT_RESOLVE_DLL_REFERENCES;
-                //avoid 'Bad Image' message box
-                UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
-                hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, dwFlags);
-                SetErrorMode(oldmode);
-#else
-                temporary_load =  load();
-#endif
-            }
-            QtPluginQueryVerificationDataFunction getMetaData = NULL;
-
-            bool exceptionThrown = false;
-            bool ret = false;
-#ifdef Q_OS_WIN
-            if (hTempModule) {
-                getMetaData = (QtPluginQueryVerificationDataFunction)
-#ifdef Q_OS_WINCE
-                    ::GetProcAddress(hTempModule, L"qt_plugin_query_metadata")
-#else
-                    ::GetProcAddress(hTempModule, "qt_plugin_query_metadata")
-#endif
-                        ;
-            } else
-#endif
-            {
-                getMetaData = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_metadata");
-            }
-
-            if (getMetaData)
-                ret = qt_get_metadata(getMetaData, this, &exceptionThrown);
-
-            if (temporary_load)
-                unload();
-            if (!exceptionThrown) {
-                if (ret) {
-                    success = true;
-                }
-                retryLoadLibrary = false;
-            }
-#ifdef QT_USE_MS_STD_EXCEPTION
-            else {
-                // An exception was thrown when calling qt_plugin_query_verification_data().
-                // This usually happens when plugin is compiled with the /clr compiler flag,
-                // & will only work if the dependencies are loaded & DLLMain() is called.
-                // LoadLibrary() will do this, try once with this & if it fails don't load.
-                retryLoadLibrary = !retryLoadLibrary;
-            }
-#endif
-#ifdef Q_OS_WIN
-            if (hTempModule) {
-                BOOL ok = ::FreeLibrary(hTempModule);
-                if (ok) {
-                    hTempModule = 0;
-                }
-
-            }
-#endif
-        } while (retryLoadLibrary);  // Will be 'false' in all cases other than when an
-        // exception is thrown(will happen only when using a MS compiler)
+        // scan for the plugin metadata without loading
+        success = findPatternUnloaded(fileName, this);
+    } else {
+        // library is already loaded (probably via QLibrary)
+        // simply get the target function and call it.
+        QtPluginQueryVerificationDataFunction getMetaData = NULL;
+        getMetaData = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_metadata");
+        success = qt_get_metadata(getMetaData, this);
     }
 
     if (!success) {
