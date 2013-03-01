@@ -3712,12 +3712,12 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             EXEEXT=
         fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            echo "export MACOSX_DEPLOYMENT_TARGET = 10.6" >> "$mkfile"
+            DEPLOYMENT_CFLAGS="-mmacosx-version-min=$(getQMakeConf QMAKE_MACOSX_DEPLOYMENT_TARGET)"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS \$(CARBON_CFLAGS)"
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $DEPLOYMENT_CFLAGS \$(CARBON_CFLAGS)"
+            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS $DEPLOYMENT_CFLAGS \$(CARBON_CFLAGS)"
             EXTRA_OBJS="$EXTRA_OBJS \
                         qsettings_mac.o \
                         qcore_mac.o"
