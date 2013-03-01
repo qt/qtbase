@@ -902,12 +902,14 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     QString key = keyFor(library);
                     bool is_frmwrk = (library.endsWith(".framework"));
                     t << "\t\t" << key << " = {" << "\n"
-                      << "\t\t\t" << writeSettings("isa", (is_frmwrk ? "PBXFrameworkReference" : "PBXFileReference"), SettingsNoQuote) << ";" << "\n"
+                      << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
                       << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";" << "\n"
                       << "\t\t\t" << writeSettings("path", escapeFilePath(library)) << ";" << "\n"
                       << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(library)), SettingsNoQuote) << ";" << "\n"
-                      << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";" << "\n"
-                      << "\t\t" << "};" << "\n";
+                      << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";" << "\n";
+                    if (is_frmwrk)
+                        t << "\t\t\t" << writeSettings("lastKnownFileType", "wrapper.framework") << ";" << "\n";
+                    t << "\t\t" << "};" << "\n";
                     project->values("QMAKE_PBX_LIBRARIES").append(key);
                     QString build_key = keyFor(library + ".BUILDABLE");
                     t << "\t\t" << build_key << " = {" << "\n"

@@ -7340,8 +7340,8 @@ void QGraphicsItem::updateMicroFocus()
 /*!
     This virtual function is called by QGraphicsItem to notify custom items
     that some part of the item's state changes. By reimplementing this
-    function, your can react to a change, and in some cases, (depending on \a
-    change,) adjustments can be made.
+    function, you can react to a change, and in some cases (depending on \a
+    change), adjustments can be made.
 
     \a change is the parameter of the item that is changing. \a value is the
     new value; the type of the value depends on \a change.
