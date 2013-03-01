@@ -345,6 +345,11 @@ void tst_QPluginLoader::loadMachO_data()
     QTest::newRow("machtest/good.fat.all.dylib") << int(QMachOParser::QtMetaDataSection);
     QTest::newRow("machtest/good.fat.stub-x86_64.dylib") << int(QMachOParser::NotSuitable);
     QTest::newRow("machtest/good.fat.stub-i386.dylib") << int(QMachOParser::NotSuitable);
+
+    QDir d(QFINDTESTDATA("machtest"));
+    QStringList badlist = d.entryList(QStringList() << "bad*.dylib");
+    foreach (const QString &bad, badlist)
+        QTest::newRow(qPrintable("machtest/" + bad)) << int(QMachOParser::NotSuitable);
 #endif
 }
 

@@ -90,25 +90,24 @@ static int ns(const QString &reason, const QString &library, QString *errorStrin
 
 int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QString *errorString, long *pos, ulong *sectionlen)
 {
-    // we test all possibilities so that we report whether a file is a binary or not
-    const fat_header *fat = reinterpret_cast<const fat_header *>(m_s);
-    const mach_header *mh = reinterpret_cast<const mach_header *>(m_s);
-    const mach_header_64 *mh64 = reinterpret_cast<const mach_header_64 *>(m_s);
-    if (fdlen < sizeof(uint32_t) && fat->magic != qToBigEndian(FAT_MAGIC)
-            && mh->magic != MH_MAGIC && mh->magic != MH_CIGAM
-            && mh64->magic != MH_MAGIC_64 && mh64->magic != MH_CIGAM_64) {
-        if (errorString)
-            *errorString = QLibrary::tr("'%1' is not a Mach-O binary (%2)").arg(library, QLibrary::tr("invalid magic"));
-        return NotSuitable;
-    }
+    // The minimum size of a Mach-O binary we're interested in.
+    // It must have a full Mach header, at least one segment and at least one
+    // section. It's probably useless with just the "qtmetadata" section, but
+    // it's valid nonetheless.
+    // A fat binary must have this plus the fat header, of course.
+    static const size_t MinFileSize = sizeof(my_mach_header) + sizeof(my_segment_command) + sizeof(my_section);
+    static const size_t MinFatHeaderSize = sizeof(fat_header) + 2 * sizeof(fat_arch);
+
+    if (Q_UNLIKELY(fdlen < MinFileSize))
+        return ns(QLibrary::tr("file too small"), library, errorString);
 
     // find out if this is a fat Mach-O binary first
     const my_mach_header *header = 0;
+    const fat_header *fat = reinterpret_cast<const fat_header *>(m_s);
     if (fat->magic == qToBigEndian(FAT_MAGIC)) {
         // find our architecture in the binary
-        const fat_arch *arch = reinterpret_cast<const fat_arch *>(m_s + sizeof(*fat));
-        if (Q_UNLIKELY(fdlen < sizeof(*fat) + 2 * sizeof(*arch))) {
-            // fat binaries must contain at least two architectures
+        const fat_arch *arch = reinterpret_cast<const fat_arch *>(fat + 1);
+        if (Q_UNLIKELY(fdlen < MinFatHeaderSize)) {
             return ns(QLibrary::tr("file too small"), library, errorString);
         }
 
@@ -121,7 +120,8 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
                 // ### should we check the CPU subtype? Maybe on ARM?
                 uint32_t size = qFromBigEndian(arch[i].size);
                 uint32_t offset = qFromBigEndian(arch[i].offset);
-                if (Q_UNLIKELY(size + offset > fdlen || size < sizeof(my_mach_header)))
+                if (Q_UNLIKELY(size > fdlen) || Q_UNLIKELY(offset > fdlen)
+                        || Q_UNLIKELY(size + offset > fdlen) || Q_UNLIKELY(size < MinFileSize))
                     return ns(QString(), library, errorString);
 
                 header = reinterpret_cast<const my_mach_header *>(m_s + offset);
@@ -141,9 +141,8 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
 
         // check magic
         if (header->magic != my_magic)
-            return ns(QLibrary::tr("invalid magic"), library, errorString);
-        if (Q_UNLIKELY(fdlen < sizeof(my_mach_header)))
-            return ns(QString(), library, errorString);
+            return ns(QLibrary::tr("invalid magic %1").arg(qFromBigEndian(header->magic), 8, 16, QLatin1Char('0')),
+                      library, errorString);
     }
 
     // from this point on, fdlen is specific to this architecture
@@ -168,11 +167,16 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
 
     for (uint i = 0; i < header->ncmds; ++i,
          seg = reinterpret_cast<const my_segment_command *>(reinterpret_cast<const char *>(seg) + seg->cmdsize)) {
+        // We're sure that the file size includes at least one load command
+        // but we have to check anyway if we're past the first
         if (Q_UNLIKELY(fdlen < minsize + sizeof(load_command)))
             return ns(QString(), library, errorString);
 
+        // cmdsize can't be trusted until validated
+        // so check it against fdlen anyway
+        // (these are unsigned operations, with overflow behavior specified in the standard)
         minsize += seg->cmdsize;
-        if (Q_UNLIKELY(fdlen < minsize))
+        if (Q_UNLIKELY(fdlen < minsize) || Q_UNLIKELY(fdlen < seg->cmdsize))
             return ns(QString(), library, errorString);
 
         const uint32_t MyLoadCommand = sizeof(void *) > 4 ? LC_SEGMENT_64 : LC_SEGMENT;
@@ -188,7 +192,8 @@ int QMachOParser::parse(const char *m_s, ulong fdlen, const QString &library, QS
                     continue;
 
                 // found it!
-                if (Q_UNLIKELY(fdlen < sect[j].offset + sect[j].size))
+                if (Q_UNLIKELY(fdlen < sect[j].offset) || Q_UNLIKELY(fdlen < sect[j].size)
+                        || Q_UNLIKELY(fdlen < sect[j].offset + sect[j].size))
                     return ns(QString(), library, errorString);
 
                 *pos += sect[j].offset;

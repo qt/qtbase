@@ -1,6 +1,7 @@
 TEMPLATE = aux
 OTHER_FILES += \
-    ppcconverter.pl
+    ppcconverter.pl \
+    generate-bad.pl
 
 i386.target = good.i386.dylib
 i386.commands = $(CXX) -shared -arch i386 -o $@ -I$$[QT_INSTALL_HEADERS/get] $<
@@ -39,13 +40,17 @@ fat_stub_x86_64.target = good.fat.stub-x86_64.dylib
 fat_stub_x86_64.commands = lipo -create -output $@ -arch ppc64 $$ppc64.target -arch_blank x86_64
 fat_stub_x86_64.depends += i386 ppc64
 
+bad.commands = $$PWD/generate-bad.pl
+bad.depends += $$PWD/generate-bad.pl
+
 MYTARGETS = $$fat_all.depends fat_all fat_no_x86_64 fat_no_i386 \
-            fat_stub_i386 fat_stub_x86_64
+            fat_stub_i386 fat_stub_x86_64 bad
 all.depends += $$MYTARGETS
 QMAKE_EXTRA_TARGETS += $$MYTARGETS all
 
 QMAKE_CLEAN += $$i386.target $$x86_64.target $$ppc64.target $$fat_all.target \
             $$fat_no_i386.target $$fat_no_x86_64.target \
-            $$fat_stub_i386.target $$fat_stub_x86_64.target
+            $$fat_stub_i386.target $$fat_stub_x86_64.target \
+            "bad*.dylib"
 
 
