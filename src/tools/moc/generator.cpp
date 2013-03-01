@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -896,7 +897,7 @@ void Generator::generateMetacall()
         for (int i = 0; i < cdef->propertyList.size(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
             needGet |= !p.read.isEmpty() || !p.member.isEmpty();
-            if (!p.read.isEmpty())
+            if (!p.read.isEmpty() || !p.member.isEmpty())
                 needTempVarForGet |= (p.gspec != PropertyDef::PointerSpec
                                       && p.gspec != PropertyDef::ReferenceSpec);
 

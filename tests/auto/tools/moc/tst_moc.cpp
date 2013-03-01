@@ -547,7 +547,7 @@ private slots:
     void returnRefs();
     void memberProperties_data();
     void memberProperties();
-
+    void memberProperties2();
     void privateSignalConnection();
     void finalClasses_data();
     void finalClasses();
@@ -1891,6 +1891,23 @@ void tst_Moc::memberProperties()
         QCOMPARE(prop.write(pObj, writeValue), expectedWriteResult);
         QCOMPARE(notifySpy.count(), 0);
     }
+}
+
+//this used to fail to compile
+class ClassWithOneMember  : public QObject {
+    Q_PROPERTY(int member MEMBER member)
+    Q_OBJECT
+public:
+    int member;
+};
+
+void tst_Moc::memberProperties2()
+{
+    ClassWithOneMember o;
+    o.member = 442;
+    QCOMPARE(o.property("member").toInt(), 442);
+    QVERIFY(o.setProperty("member", 6666));
+    QCOMPARE(o.member, 6666);
 }
 
 class SignalConnectionTester : public QObject
