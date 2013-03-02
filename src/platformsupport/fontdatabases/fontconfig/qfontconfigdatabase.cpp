@@ -638,8 +638,7 @@ QFontEngine *QFontconfigDatabase::fontEngine(const QFontDef &f, QChar::Script sc
         delete engine;
         engine = 0;
     } else if (scriptRequiresOpenType(script)) {
-        HB_Face hbFace = engine->initializedHarfbuzzFace();
-        if (!hbFace || !hbFace->supported_scripts[script]) {
+        if (!engine->supportsScript(script)) {
             delete engine;
             engine = 0;
         }

@@ -1883,8 +1883,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(int script, const QFontDef &requ
         // for scripts that do not require OpenType we should just look at the list of
         // supported writing systems in the font's OS/2 table.
         if (scriptRequiresOpenType(script)) {
-            HB_Face hbFace = few->harfbuzzFace();
-            if (!hbFace || !hbFace->supported_scripts[script]) {
+            if (!few->supportsScript(QChar::Script(script))) {
                 qWarning("  OpenType support missing for script\n");
                 delete few;
                 return 0;

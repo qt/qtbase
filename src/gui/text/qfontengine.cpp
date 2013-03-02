@@ -236,6 +236,11 @@ HB_Face QFontEngine::initializedHarfbuzzFace() const
     return face;
 }
 
+bool QFontEngine::supportsScript(QChar::Script script) const
+{
+    return initializedHarfbuzzFace()->supported_scripts[script_to_hbscript(script)];
+}
+
 glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix)
 {
     glyph_metrics_t metrics = boundingBox(glyph);
