@@ -113,7 +113,7 @@ win32:SOURCES += ../../corelib/io/qfilesystemengine_win.cpp \
                  ../../corelib/io/qsettings_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
 
-macx: {
+mac {
    SOURCES += ../../corelib/io/qfilesystemengine_mac.cpp \
               ../../corelib/io/qsettings_mac.cpp \
               ../../corelib/kernel/qcore_mac.cpp

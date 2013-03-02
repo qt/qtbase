@@ -117,12 +117,12 @@ win32 {
                 io/qprocess_unix.cpp \
                 io/qfilesystemiterator_unix.cpp \
 
-        !nacl:macx-*: {
+        !nacl:mac: {
             SOURCES += io/qfilesystemengine_mac.cpp
             SOURCES += io/qsettings_mac.cpp
         }
-        macx-*: {
-            !ios {
+        mac {
+            macx {
                 SOURCES += io/qstandardpaths_mac.cpp
             } else {
                 SOURCES += io/qstandardpaths_unix.cpp
@@ -139,7 +139,7 @@ win32 {
         }
 
         !nacl {
-            freebsd-*|macx-*|darwin-*|openbsd-*:{
+            freebsd-*|mac|darwin-*|openbsd-*:{
                 SOURCES += io/qfilesystemwatcher_kqueue.cpp
                 HEADERS += io/qfilesystemwatcher_kqueue_p.h
             }

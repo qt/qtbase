@@ -40,7 +40,7 @@ contains( styles, all ) {
     styles = fusion mac windows windowsxp windowsvista
 }
 
-!macx-*|ios:styles -= mac
+!mac:styles -= mac
 
 contains(QT_CONFIG, gtkstyle) {
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE

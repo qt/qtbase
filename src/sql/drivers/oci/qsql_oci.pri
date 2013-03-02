@@ -6,4 +6,4 @@ unix {
 } else {
     LIBS *= -loci
 }
-macx:QMAKE_LFLAGS += -Wl,-flat_namespace,-U,_environ
+mac:QMAKE_LFLAGS += -Wl,-flat_namespace,-U,_environ
