@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "../../common/ios/qplatformdefs.h"
+#include "../../common/mac/qplatformdefs.h"
