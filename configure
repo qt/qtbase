@@ -187,9 +187,10 @@ BEGIN {
     value = ovalue value
 
     ovalue = ""
-    while (match(value, /\$\$system\((.*?)\)/)) {
+    while (match(value, /\$\$system\(("[^"]*"|[^)]*)\)/)) {
         ovalue = ovalue substr(value, 1, RSTART - 1)
         cmd = substr(value, RSTART + 9, RLENGTH - 10)
+        gsub(/^"|"$/, "", cmd)
         value = substr(value, RSTART + RLENGTH)
         while ((cmd | getline line) > 0) {
             ovalue = ovalue line
