@@ -93,7 +93,7 @@ namespace QtPrivate {
     template <typename T>
     struct ApplyReturnValue {
         void *data;
-        ApplyReturnValue(void *data_) : data(data_) {}
+        explicit ApplyReturnValue(void *data_) : data(data_) {}
     };
     template<typename T, typename U>
     void operator,(const T &value, const ApplyReturnValue<U> &container) {
