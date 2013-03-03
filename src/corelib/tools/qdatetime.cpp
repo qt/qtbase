@@ -4050,6 +4050,16 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     _tzset();
 #endif
     time_t secsSince1Jan1970UTC = mktime(&localTM);
+#ifdef Q_OS_QNX
+    //mktime sometimes fails on QNX. Following workaround converts the date and time then manually
+    if (secsSince1Jan1970UTC == (time_t)-1) {
+        QDateTime tempTime = QDateTime(date, time, Qt::UTC);;
+        tempTime = tempTime.addMSecs(timezone * 1000);
+        date = tempTime.date();
+        time = tempTime.time();
+        return;
+    }
+#endif
 #endif
     tm *brokenDown = 0;
 #if defined(Q_OS_WINCE)
