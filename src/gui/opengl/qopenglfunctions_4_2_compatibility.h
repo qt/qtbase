@@ -51,7 +51,9 @@
 #ifndef QOPENGLVERSIONFUNCTIONS_4_2_COMPATIBILITY_H
 #define QOPENGLVERSIONFUNCTIONS_4_2_COMPATIBILITY_H
 
-#ifndef QT_NO_OPENGL
+#include <QtCore/qglobal.h>
+
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 
 #include <QtGui/QOpenGLVersionFunctions>
 #include <QtGui/qopenglcontext.h>
@@ -5631,6 +5633,6 @@ inline void QOpenGLFunctions_4_2_Compatibility::glVertexAttribI1i(GLuint index, 
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_OPENGL
+#endif // QT_NO_OPENGL && !QT_OPENGL_ES_2
 
 #endif

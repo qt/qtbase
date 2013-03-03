@@ -51,7 +51,9 @@
 #ifndef QOPENGLVERSIONFUNCTIONS_1_1_H
 #define QOPENGLVERSIONFUNCTIONS_1_1_H
 
-#ifndef QT_NO_OPENGL
+#include <QtCore/qglobal.h>
+
+#if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 
 #include <QtGui/QOpenGLVersionFunctions>
 #include <QtGui/qopenglcontext.h>
@@ -2113,6 +2115,6 @@ inline void QOpenGLFunctions_1_1::glArrayElement(GLint i)
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_OPENGL
+#endif // QT_NO_OPENGL && !QT_OPENGL_ES_2
 
 #endif

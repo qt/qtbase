@@ -42,7 +42,9 @@
 #ifndef QOPENGLVERSIONFUNCTIONS_ES2_H
 #define QOPENGLVERSIONFUNCTIONS_ES2_H
 
-#ifndef QT_NO_OPENGL
+#include <QtCore/qglobal.h>
+
+#if defined(QT_OPENGL_ES_2)
 
 #include <QtGui/QOpenGLVersionFunctions>
 #include <QtGui/qopenglcontext.h>
@@ -926,6 +928,6 @@ inline void QOpenGLFunctions_ES2::glViewport(GLint x, GLint y, GLsizei width, GL
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_OPENGL
+#endif // QT_OPENGL_ES_2
 
 #endif
