@@ -246,12 +246,13 @@ void QXmlTestLogger::addBenchmarkResult(const QBenchmarkResult &result)
         benchmarkMetricName(result.metric));
     xmlQuote(&quotedTag, result.context.tag.toUtf8().constData());
 
+    const qreal valuePerIteration = qreal(result.value) / qreal(result.iterations);
     QTest::qt_asprintf(
         &buf,
         QTest::benchmarkResultFormatString(),
         quotedMetric.constData(),
         quotedTag.constData(),
-        QByteArray::number(result.value).constData(),  //no 64-bit qsnprintf support
+        QByteArray::number(valuePerIteration).constData(),  //no 64-bit qsnprintf support
         result.iterations);
     outputString(buf.constData());
 }
