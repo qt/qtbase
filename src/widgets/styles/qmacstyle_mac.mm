@@ -6532,15 +6532,12 @@ QMacCGContext::QMacCGContext(QPainter *p)
         context = CGBitmapContextCreate((void *) image->bits(), image->width(), image->height(),
                                         8, image->bytesPerLine(), colorspace, flags);
 
-        CGContextTranslateCTM(context, 0, image->height());
-        CGContextScaleCTM(context, 1, -1);
+        const qreal devicePixelRatio = image->devicePixelRatio();
 
         if (devType == QInternal::Widget) {
             // Set the clip rect which is an intersection of the system clip
             // and the painter clip. To make matters more interesting these
             // are in device pixels and device-independent pixels, respectively.
-            const qreal devicePixelRatio =  image->devicePixelRatio();
-
             QRegion clip = p->paintEngine()->systemClip(); // get system clip in device pixels
             QTransform native = p->deviceTransform();      // get device transform. dx/dy is in device pixels
 
@@ -6558,6 +6555,13 @@ QMacCGContext::QMacCGContext(QPainter *p)
             // Scale the context so that painting happens in device-independet pixels.
             CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
             CGContextTranslateCTM(context, native.dx() / devicePixelRatio, native.dy() / devicePixelRatio);
+        } else {
+            // Invert y axis.
+            CGContextTranslateCTM(context, 0, image->height());
+            CGContextScaleCTM(context, 1, -1);
+
+            // Scale to paint in device-independent pixels.
+            CGContextScaleCTM(context, devicePixelRatio, devicePixelRatio);
         }
     } else {
         qDebug() << "QMacCGContext:: Unsupported painter devtype type" << devType;
