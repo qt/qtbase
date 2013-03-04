@@ -4194,7 +4194,7 @@ void qDeleteInEventHandler(QObject *o)
                 connecting to a static function or a functor
     \a slot a pointer only used when using Qt::UniqueConnection
     \a type the Qt::ConnctionType passed as argument to connect
-    \a types an array of integer with the metatype id of the parametter of the signal
+    \a types an array of integer with the metatype id of the parameter of the signal
              to be used with queued connection
              must stay valid at least for the whole time of the connection, this function
              do not take ownership. typically static data.
@@ -4209,7 +4209,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
                                              const int *types, const QMetaObject *senderMetaObject)
 {
     if (!sender || !signal || !slotObj || !senderMetaObject) {
-        qWarning("QObject::connect: invalid null parametter");
+        qWarning("QObject::connect: invalid null parameter");
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
