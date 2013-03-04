@@ -174,7 +174,7 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
                         SLOT(notifyKeyboardListenerError(QDBusError, QDBusMessage)), timeout);
         if (sent) {
             //queue the event and send it after callback
-            keyEvents.enqueue(QPair<QObject*, QKeyEvent*> (target, copyKeyEvent(keyEvent)));
+            keyEvents.enqueue(QPair<QPointer<QObject>, QKeyEvent*> (QPointer<QObject>(target), copyKeyEvent(keyEvent)));
 #ifdef KEYBOARD_DEBUG
             qDebug() << QStringLiteral("Sent key: ") << de.text;
 #endif
@@ -200,11 +200,12 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerCallback(const QDBusMessage& 
     }
     Q_ASSERT(message.arguments().length() == 1);
     if (message.arguments().at(0).toBool() == true) {
-        QPair<QObject*, QKeyEvent*> event = keyEvents.dequeue();
+        QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
         delete event.second;
     } else {
-        QPair<QObject*, QKeyEvent*> event = keyEvents.dequeue();
-        QCoreApplication::postEvent(event.first, event.second);
+        QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
+        if (event.first)
+            QCoreApplication::postEvent(event.first.data(), event.second);
     }
 }
 
@@ -212,8 +213,9 @@ void QSpiApplicationAdaptor::notifyKeyboardListenerError(const QDBusError& error
 {
     qWarning() << QStringLiteral("QSpiApplication::keyEventError ") << error.name() << error.message();
     while (!keyEvents.isEmpty()) {
-        QPair<QObject*, QKeyEvent*> event = keyEvents.dequeue();
-        QCoreApplication::postEvent(event.first, event.second);
+        QPair<QPointer<QObject>, QKeyEvent*> event = keyEvents.dequeue();
+        if (event.first)
+            QCoreApplication::postEvent(event.first.data(), event.second);
     }
 }
 
