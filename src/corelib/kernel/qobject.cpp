@@ -4185,6 +4185,9 @@ void qDeleteInEventHandler(QObject *o)
     \snippet code/src_corelib_kernel_qobject.cpp 25
 
     make sure to declare the argument type with Q_DECLARE_METATYPE
+
+    \note The number of arguments in the signal or slot are limited to 6 if
+    the compiler does not support C++11 variadic templates.
  */
 
 
@@ -4215,6 +4218,10 @@ void qDeleteInEventHandler(QObject *o)
     \snippet code/src_corelib_kernel_qobject.cpp 46
 
     The connection will automatically disconnect if the sender is destroyed.
+
+    \note If the compiler does not support C++11 variadic templates, the number
+    of arguments in the signal or slot are limited to 6, and the functor object
+    must not have an overloaded or templated operator().
  */
 
 /**
