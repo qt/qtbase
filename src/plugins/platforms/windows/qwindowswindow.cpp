@@ -1114,14 +1114,19 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
         if (m_data.geometry != rect) {
             qWarning("%s: Unable to set geometry %dx%d+%d+%d on '%s'."
                      " Resulting geometry:  %dx%d+%d+%d "
-                     "(frame: %d, %d, %d, %d).",
+                     "(frame: %d, %d, %d, %d, custom margin: %d, %d, %d, %d"
+                     ", minimum size: %dx%d, maximum size: %dx%d).",
                      __FUNCTION__,
                      rect.width(), rect.height(), rect.x(), rect.y(),
                      qPrintable(window()->objectName()),
                      m_data.geometry.width(), m_data.geometry.height(),
                      m_data.geometry.x(), m_data.geometry.y(),
                      m_data.frame.left(), m_data.frame.top(),
-                     m_data.frame.right(), m_data.frame.bottom());
+                     m_data.frame.right(), m_data.frame.bottom(),
+                     m_data.customMargins.left(), m_data.customMargins.top(),
+                     m_data.customMargins.right(), m_data.customMargins.bottom(),
+                     window()->minimumWidth(), window()->minimumHeight(),
+                     window()->maximumWidth(), window()->maximumHeight());
         }
     } else {
         QPlatformWindow::setGeometry(rect);
