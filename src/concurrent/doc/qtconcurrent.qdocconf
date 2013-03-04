@@ -40,3 +40,6 @@ exampledirs += ../../../examples/qtconcurrent \
 excludedirs += ../../../examples/widgets/doc
 
 imagedirs   += images
+
+navigation.landingpage = "Qt Concurrent"
+navigation.cppclassespage = "Qt Concurrent C++ Classes"

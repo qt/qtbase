@@ -48,3 +48,6 @@ exampledirs += ../../../examples/gui \
 imagedirs   += images \
                ../../../examples/gui/doc/images \
                ../../../doc/src/images \
+
+navigation.landingpage = "Qt GUI"
+navigation.cppclassespage = "Qt GUI C++ Classes"

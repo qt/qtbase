@@ -20,7 +20,7 @@ excludedirs += ../../../examples/widgets/doc
 
 examplesinstallpath     = dbus
 
-depends += qtcore
+depends += qtdoc qtcore
 
 # The following parameters are for creating a qhp file, the qhelpgenerator
 # program can convert the qhp file into a qch file which can be opened in
@@ -49,3 +49,6 @@ qhp.QtDBus.subprojects.classes.title = C++ Classes
 qhp.QtDBus.subprojects.classes.indexTitle = Qt D-Bus C++ Classes
 qhp.QtDBus.subprojects.classes.selectors = class fake:headerfile
 qhp.QtDBus.subprojects.classes.sortPages = true
+
+navigation.landingpage = "Qt D-Bus"
+navigation.cppclassespage = "Qt D-Bus C++ Classes"

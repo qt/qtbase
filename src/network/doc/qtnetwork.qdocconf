@@ -40,3 +40,6 @@ exampledirs += ../../../examples/network \
 
 imagedirs   += images \
                ../../../examples/network/doc/images
+
+navigation.landingpage = "Qt Network"
+navigation.cppclassespage = "Qt Network C++ Classes"

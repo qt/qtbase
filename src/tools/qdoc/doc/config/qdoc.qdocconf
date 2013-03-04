@@ -70,3 +70,5 @@ depends += \
     qtwebkitexamples \
     qtxml \
     qtxmlpatterns
+
+navigation.landingpage = "QDoc Manual"

@@ -19,7 +19,7 @@ exampledirs += ../../../examples/opengl \
 imagedirs   += images \
                ../../../examples/opengl/doc/images
 
-depends += qtcore qtgui qtwidgets
+depends += qtdoc qtcore qtgui qtwidgets
 
 examplesinstallpath     = opengl
 
@@ -50,3 +50,6 @@ qhp.QtOpenGL.subprojects.classes.title = C++ Classes
 qhp.QtOpenGL.subprojects.classes.indexTitle = Qt OpenGL C++ Classes
 qhp.QtOpenGL.subprojects.classes.selectors = class fake:headerfile
 qhp.QtOpenGL.subprojects.classes.sortPages = true
+
+navigation.landingpage = "Qt OpenGL"
+navigation.cppclassespage = "Qt OpenGL C++ Classes"

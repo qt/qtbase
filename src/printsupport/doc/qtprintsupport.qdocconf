@@ -40,3 +40,6 @@ excludedirs += ../../../examples/widgets/doc
 
 imagedirs   += images \
                ../../widgets/doc/images \
+
+navigation.landingpage = "Qt Print Support"
+navigation.cppclassespage = "Qt Print Support C++ Classes"

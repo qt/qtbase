@@ -39,3 +39,6 @@ exampledirs += ../../../examples/sql \
 
 imagedirs   += images \
                ../../../examples/sql/doc/images
+
+navigation.landingpage = "Qt SQL"
+navigation.cppclassespage = "Qt SQL C++ Classes"

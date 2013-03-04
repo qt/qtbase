@@ -40,3 +40,6 @@ exampledirs += ../../../examples/xml \
 
 imagedirs   += images \
                ../../../examples/xml/images
+
+navigation.landingpage = "Qt XML"
+navigation.cppclassespage = "Qt XML C++ Classes"

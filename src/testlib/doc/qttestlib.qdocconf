@@ -40,3 +40,6 @@ exampledirs += ../../../examples/qtestlib \
 excludedirs += ../../../examples/widgets/doc
 
 imagedirs   += images
+
+navigation.landingpage = "Qt Test"
+navigation.cppclassespage = "Qt Test C++ Classes"
