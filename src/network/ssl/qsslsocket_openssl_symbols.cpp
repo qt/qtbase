@@ -67,7 +67,7 @@
 #if defined(Q_OS_UNIX)
 #include <QtCore/qdir.h>
 #endif
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID_NO_SDK)
 #include <link.h>
 #endif
 
@@ -383,7 +383,7 @@ static bool libGreaterThan(const QString &lhs, const QString &rhs)
     return true;
 }
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID_NO_SDK)
 static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
 {
     if (size < sizeof (info->dlpi_addr) + sizeof (info->dlpi_name))
@@ -414,7 +414,9 @@ static QStringList libraryPathList()
     paths << QLatin1String("/lib64") << QLatin1String("/usr/lib64") << QLatin1String("/usr/local/lib64");
     paths << QLatin1String("/lib32") << QLatin1String("/usr/lib32") << QLatin1String("/usr/local/lib32");
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_ANDROID_NO_SDK)
+    paths << QLatin1String("/system/lib");
+#elif defined(Q_OS_LINUX)
     // discover paths of already loaded libraries
     QSet<QString> loadedPaths;
     dl_iterate_phdr(dlIterateCallback, &loadedPaths);
