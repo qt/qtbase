@@ -5626,6 +5626,7 @@ void tst_QWidget::showHideShowX11()
     qApp->installNativeEventFilter(&w);
 
     w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     w.hide();
 
     QEventLoop eventLoop;
