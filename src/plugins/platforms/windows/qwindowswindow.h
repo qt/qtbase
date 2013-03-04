@@ -67,7 +67,7 @@ class QWindowsEGLStaticContext;
 struct QWindowsGeometryHint
 {
     QWindowsGeometryHint() {}
-    explicit QWindowsGeometryHint(const QWindow *w);
+    explicit QWindowsGeometryHint(const QWindow *w, const QMargins &customMargins);
     static QMargins frame(DWORD style, DWORD exStyle);
     static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
 #ifndef Q_OS_WINCE //MinMax maybe define struct if not available
@@ -85,6 +85,7 @@ struct QWindowsGeometryHint
 
     QSize minimumSize;
     QSize maximumSize;
+    QMargins customMargins;
 };
 
 struct QWindowCreationContext

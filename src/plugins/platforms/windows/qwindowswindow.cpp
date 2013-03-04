@@ -575,9 +575,10 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
 
 #define QWINDOWSIZE_MAX ((1<<24)-1)
 
-QWindowsGeometryHint::QWindowsGeometryHint(const QWindow *w) :
+QWindowsGeometryHint::QWindowsGeometryHint(const QWindow *w, const QMargins &cm) :
      minimumSize(w->minimumSize()),
-     maximumSize(w->maximumSize())
+     maximumSize(w->maximumSize()),
+     customMargins(cm)
 {
 }
 
@@ -650,8 +651,8 @@ void QWindowsGeometryHint::applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXI
                            << " in " << *mmi;
 
     const QMargins margins = QWindowsGeometryHint::frame(style, exStyle);
-    const int frameWidth = margins.left() + margins.right();
-    const int frameHeight = margins.top() + margins.bottom();
+    const int frameWidth = margins.left() + margins.right() + customMargins.left() + customMargins.right();
+    const int frameHeight = margins.top() + margins.bottom() + customMargins.top() + customMargins.bottom();
     if (minimumSize.width() > 0)
         mmi->ptMinTrackSize.x = minimumSize.width() + frameWidth;
     if (minimumSize.height() > 0)
@@ -702,7 +703,7 @@ QWindowCreationContext::QWindowCreationContext(const QWindow *w,
                                                const QRect &geometry,
                                                const QMargins &cm,
                                                DWORD style_, DWORD exStyle_) :
-    geometryHint(w), style(style_), exStyle(exStyle_),
+    geometryHint(w, cm), style(style_), exStyle(exStyle_),
     requestedGeometry(geometry), obtainedGeometry(geometry),
     margins(QWindowsGeometryHint::frame(style, exStyle)), customMargins(cm),
     frameX(CW_USEDEFAULT), frameY(CW_USEDEFAULT),
@@ -1095,7 +1096,7 @@ void QWindowsWindow::setGeometry(const QRect &rectIn)
     const QSize newSize = rect.size();
     // Check on hint.
     if (newSize != oldSize) {
-        const QWindowsGeometryHint hint(window());
+        const QWindowsGeometryHint hint(window(), m_data.customMargins);
         if (!hint.validSize(newSize)) {
             qWarning("%s: Attempt to set a size (%dx%d) violating the constraints"
                      "(%dx%d - %dx%d) on window '%s'.", __FUNCTION__,
@@ -1683,7 +1684,7 @@ void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
-    const QWindowsGeometryHint hint(window());
+    const QWindowsGeometryHint hint(window(), m_data.customMargins);
     hint.applyToMinMaxInfo(m_data.hwnd, mmi);
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << window() << *mmi;
