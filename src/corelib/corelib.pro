@@ -16,6 +16,12 @@ win32-g++*:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
 
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 
+ANDROID_JAR_DEPENDENCIES = \
+    jar/QtAndroid.jar
+ANDROID_LIB_DEPENDENCIES = \
+    plugins/platforms/android/libqtforandroid.so \
+    libs/libgnustl_shared.so
+
 load(qt_module)
 
 include(animation/animation.pri)

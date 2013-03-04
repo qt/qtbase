@@ -287,7 +287,7 @@ static void setCurrentThreadName(pthread_t threadId, const char *name)
 
 void *QThreadPrivate::start(void *arg)
 {
-#if !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_ANDROID)
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 #endif
     pthread_cleanup_push(QThreadPrivate::finish, arg);
@@ -326,7 +326,7 @@ void *QThreadPrivate::start(void *arg)
 #endif
 
     emit thr->started(QThread::QPrivateSignal());
-#if !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_ANDROID)
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_testcancel();
 #endif
@@ -631,7 +631,7 @@ void QThread::start(Priority priority)
 
 void QThread::terminate()
 {
-#if !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_ANDROID)
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 
@@ -673,7 +673,7 @@ void QThread::setTerminationEnabled(bool enabled)
                "Current thread was not started with QThread.");
 
     Q_UNUSED(thr)
-#if defined(Q_OS_LINUX_ANDROID)
+#if defined(Q_OS_ANDROID)
     Q_UNUSED(enabled);
 #else
     pthread_setcancelstate(enabled ? PTHREAD_CANCEL_ENABLE : PTHREAD_CANCEL_DISABLE, NULL);

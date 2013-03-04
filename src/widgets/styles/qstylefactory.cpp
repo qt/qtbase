@@ -48,6 +48,9 @@
 #include "qwindowsstyle_p.h"
 #ifndef QT_NO_STYLE_FUSION
 #include "qfusionstyle_p.h"
+#ifndef QT_NO_STYLE_ANDROID
+#include "qandroidstyle_p.h"
+#endif
 #endif
 #ifndef QT_NO_STYLE_GTK
 #include "qgtkstyle_p.h"
@@ -143,6 +146,11 @@ QStyle *QStyleFactory::create(const QString& key)
         ret = new QFusionStyle;
     else
 #endif
+#ifndef QT_NO_STYLE_ANDROID
+    if (style == QLatin1String("android"))
+        ret = new QAndroidStyle;
+    else
+#endif
 #ifndef QT_NO_STYLE_GTK
     if (style == QLatin1String("gtk") || style == QLatin1String("gtk+"))
         ret = new QGtkStyle;
@@ -205,6 +213,10 @@ QStringList QStyleFactory::keys()
     if (!list.contains(QLatin1String("WindowsVista")) &&
         (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         list << QLatin1String("WindowsVista");
+#endif
+#ifndef QT_NO_STYLE_ANDROID
+    if (!list.contains(QLatin1String("Android")))
+        list << QLatin1String("Android");
 #endif
 #ifndef QT_NO_STYLE_GTK
     if (!list.contains(QLatin1String("GTK+")))

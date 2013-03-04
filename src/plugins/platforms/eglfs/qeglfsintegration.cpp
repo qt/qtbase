@@ -53,7 +53,7 @@
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
 #include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
-#if !defined(QT_NO_EVDEV)
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
@@ -77,7 +77,7 @@ QEglFSIntegration::QEglFSIntegration()
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
 
-#if !defined(QT_NO_EVDEV)
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);

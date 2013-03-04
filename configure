@@ -875,6 +875,7 @@ RPATH_FLAGS=
 W_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
+XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_MAEMO=no
 XPLATFORM_QNX=no
@@ -955,6 +956,15 @@ CFG_SQL_oci=no
 CFG_SQL_db2=no
 
 CFG_SQL_AVAILABLE=
+
+# Android vars
+CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
+CFG_DEFAULT_ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
+CFG_DEFAULT_ANDROID_PLATFORM=android-9
+CFG_DEFAULT_ANDROID_TARGET_ARCH=armeabi-v7a
+CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION=4.7
+CFG_DEFAULT_ANDROID_NDK_HOST=$ANDROID_NDK_HOST
+
 if [ -d "$relpath/src/plugins/sqldrivers" ]; then
   for a in "$relpath/src/plugins/sqldrivers/"*; do
      if [ -d "$a" ]; then
@@ -1016,7 +1026,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig|-android-sdk|-android-ndk|-android-ndk-platform|-android-ndk-host|-android-arch|-android-toolchain-version)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -2148,6 +2158,24 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    android-sdk)
+        CFG_DEFAULT_ANDROID_SDK_ROOT="$VAL"
+        ;;
+    android-ndk)
+        CFG_DEFAULT_ANDROID_NDK_ROOT="$VAL"
+        ;;
+    android-ndk-platform)
+        CFG_DEFAULT_ANDROID_PLATFORM="$VAL"
+        ;;
+    android-ndk-host)
+        CFG_DEFAULT_ANDROID_NDK_HOST="$VAL"
+        ;;
+    android-arch)
+        CFG_DEFAULT_ANDROID_TARGET_ARCH="$VAL"
+        ;;
+    android-toolchain-version)
+        CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2520,9 +2548,89 @@ fi
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
 
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
-case "$XPLATFORM" in *-maemo*) XPLATFORM_MAEMO=yes;; esac
-case "$XPLATFORM" in *qnx-*|*blackberry-*) XPLATFORM_QNX=yes;; esac
-case "$XPLATFORM" in *ios*) XPLATFORM_IOS=yes;; esac
+case "$XPLATFORM" in
+    *-maemo*)
+        XPLATFORM_MAEMO=yes
+        ;;
+    *qnx-*|*blackberry-*)
+        XPLATFORM_QNX=yes
+        ;;
+    *ios*)
+        XPLATFORM_IOS=yes
+        ;;
+    # XPLATFORM_ANDROID should not be set for unsupported/android-g++
+    *unsupported*)
+        ;;
+    *android-g++*)
+        XPLATFORM_ANDROID=yes
+        ;;
+esac
+
+if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
+        case $PLATFORM in
+        linux-*-64)
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
+            else
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            fi
+            ;;
+        linux-*)
+            CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            ;;
+        macx-*)
+            CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
+            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86_64
+            fi
+            ;;
+        win32-*)
+            CFG_DEFAULT_ANDROID_NDK_HOST=windows
+            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=windows-x86_64
+            fi
+            ;;
+        esac
+    fi
+
+    if [ "$OPT_HELP" != "yes" ]; then
+        if [ -z "$CFG_DEFAULT_ANDROID_NDK_ROOT" ]; then
+            echo
+            echo "Can not find Android NDK. Please use -android-ndk option to specify one"
+            exit 1
+        fi
+        if [ -z "$CFG_DEFAULT_ANDROID_SDK_ROOT" ]; then
+            echo
+            echo "Can not find Android SDK. Please use -android-sdk option to specify one"
+            exit 1
+        fi
+        if [ -z "CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt" ]; then
+            echo
+            echo "Can not detect Android NDK toolchain. Please use -android-toolchain-version to specify"
+            exit 1
+        fi
+        if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
+            echo
+            echo "Can not detect the android host. Please use -android-ndk-host option to specify one"
+            exit 1
+        fi
+
+        QT_QPA_DEFAULT_PLATFORM="android"
+        CFG_LARGEFILE="no"
+
+        # FIXME: Qt Creator requires this to be in the lib/ directory of Qt. This line can be removed
+        # once it's fixed to get the file directly from the NDK.
+        cp -f $CFG_DEFAULT_ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/libs/$CFG_DEFAULT_ANDROID_TARGET_ARCH/libgnustl_shared.so $outpath/lib
+
+        DeviceVar set DEFAULT_ANDROID_SDK_ROOT "$CFG_DEFAULT_ANDROID_SDK_ROOT"
+        DeviceVar set DEFAULT_ANDROID_NDK_ROOT "$CFG_DEFAULT_ANDROID_NDK_ROOT"
+        DeviceVar set DEFAULT_ANDROID_PLATFORM "$CFG_DEFAULT_ANDROID_PLATFORM"
+        DeviceVar set DEFAULT_ANDROID_NDK_HOST "$CFG_DEFAULT_ANDROID_NDK_HOST"
+        DeviceVar set DEFAULT_ANDROID_TARGET_ARCH "$CFG_DEFAULT_ANDROID_TARGET_ARCH"
+        DeviceVar set DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION "$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION"
+    fi
+fi
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
@@ -2644,6 +2752,32 @@ fi
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
+
+if [ "$OPT_HELP" != "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ] ; then
+    ANDROID_NDK_TOOLS_PREFIX=
+    ANDROID_PLATFORM_ARCH=
+    case $CFG_DEFAULT_ANDROID_TARGET_ARCH in
+        armeabi*)
+            ANDROID_NDK_TOOLS_PREFIX=arm-linux-androideabi
+            ANDROID_PLATFORM_ARCH=arch-arm
+            ;;
+        x86)
+            ANDROID_NDK_TOOLS_PREFIX=x86
+            ANDROID_PLATFORM_ARCH=arch-x86
+            ;;
+        mips)
+            ANDROID_NDK_TOOLS_PREFIX=mipsel-linux-android
+            ANDROID_PLATFORM_ARCH=arch-mips
+            ;;
+        *)
+            echo "ERROR: Unknown android arch $CFG_DEFAULT_ANDROID_TARGET_ARCH"
+            exit 1
+            ;;
+    esac
+    QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/$ANDROID_NDK_TOOLS_PREFIX-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/$ANDROID_NDK_TOOLS_PREFIX-g++
+    TEST_COMPILER="$QMAKE_CONF_COMPILER --sysroot=$CFG_DEFAULT_ANDROID_NDK_ROOT/platforms/$CFG_DEFAULT_ANDROID_PLATFORM/$ANDROID_PLATFORM_ARCH/"
+fi
+
 if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     if [ -z "$TEST_COMPILER" ]; then
         echo "ERROR: Cannot set the compiler for the configuration tests"
@@ -3354,6 +3488,31 @@ Qt/Mac only:
                          QT_ENABLE_HARFBUZZ environment variable.
 
 EOF
+fi
+
+if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    cat << EOF
+
+Android options:
+    -android-sdk path .............. The Android SDK root path.
+                                     (default $CFG_DEFAULT_ANDROID_SDK_ROOT)
+
+    -android-ndk path .............. The Android NDK root path.
+                                     (default $CFG_DEFAULT_ANDROID_NDK_ROOT)
+
+    -android-ndk-platform .......... Sets the android platform
+                                     (default $CFG_DEFAULT_ANDROID_PLATFORM)
+
+    -android-ndk-host .............. Sets the android NDK host (linux-x86, linux-x86_64, etc.)
+                                     (default $CFG_DEFAULT_ANDROID_NDK_HOST)
+
+    -android-arch .................. Sets the android architecture (armeabi, armeabi-v7a, x86, mips)
+                                     (default $CFG_DEFAULT_ANDROID_TARGET_ARCH)
+
+    -android-toolchain-version ..... Sets the android toolchain version
+                                     (default $CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION)
+EOF
+
 fi
 
    [ "x$ERROR" = "xyes" ] && exit 1
@@ -4079,6 +4238,7 @@ elif [ "$CFG_ARCH" != "mips" ]; then
 fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
+[ "$XPLATFORM_ANDROID" = "yes" ] && QMakeVar add styles "android"
 
 # detect zlib
 if [ "$CFG_ZLIB" = "no" ]; then
@@ -5088,7 +5248,7 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
     fi
 fi
 
-if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ]; then
+if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ]; then
     if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
             ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ] ); then
@@ -5242,7 +5402,7 @@ if [ "$CFG_OPENSSL" != "no" ]; then
             CFG_OPENSSL=yes
         fi
     else
-        if ( [ "$CFG_OPENSSL" = "yes" ] || [ "$CFG_OPENSSL" = "linked" ] ) && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        if ( [ "$CFG_OPENSSL" = "yes" ] || [ "$CFG_OPENSSL" = "linked" ] ) && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]  && [ "$XPLATFORM_ANDROID" = "no" ]; then
             echo "OpenSSL support cannot be enabled due to functionality tests!"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"

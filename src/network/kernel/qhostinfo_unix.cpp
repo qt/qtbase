@@ -323,7 +323,7 @@ QString QHostInfo::localHostName()
 
 QString QHostInfo::localDomainName()
 {
-#if !defined(Q_OS_VXWORKS) && !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_VXWORKS) && !defined(Q_OS_ANDROID)
     resolveLibrary();
     if (local_res_ninit) {
         // using thread-safe version

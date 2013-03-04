@@ -136,3 +136,10 @@ contains( styles, windowsmobile ) {
 } else {
     DEFINES += QT_NO_STYLE_WINDOWSMOBILE
 }
+
+contains( styles, android ) {
+    HEADERS += styles/qandroidstyle_p.h
+    SOURCES += styles/qandroidstyle.cpp
+} else {
+    DEFINES += QT_NO_STYLE_ANDROID
+}

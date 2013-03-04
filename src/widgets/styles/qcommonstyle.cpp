@@ -5100,7 +5100,11 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             ret = theme->themeHint(QPlatformTheme::ToolButtonStyle).toInt();
         break;
     case SH_RequestSoftwareInputPanel:
+#ifdef Q_OS_ANDROID
+        ret = RSIP_OnMouseClick;
+#else
         ret = RSIP_OnMouseClickAndAlreadyFocused;
+#endif
         break;
     case SH_ScrollBar_Transient:
         ret = false;

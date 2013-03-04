@@ -80,6 +80,7 @@
      LYNX     - LynxOS
      BSD4     - Any BSD 4.4 system
      UNIX     - Any UNIX BSD/SYSV system
+     ANDROID  - Android platform
 */
 
 #if defined(__APPLE__) && (defined(__GNUC__) || defined(__xlC__) || defined(__xlc__))
@@ -90,6 +91,9 @@
 #  else
 #    define Q_OS_DARWIN32
 #  endif
+#elif defined(ANDROID)
+#  define Q_OS_ANDROID
+#  define Q_OS_LINUX
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
 #elif !defined(SAG_COM) && (defined(WIN64) || defined(_WIN64) || defined(__WIN64__))

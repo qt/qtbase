@@ -49,7 +49,7 @@
 
 #include <string>
 
-#if defined(Q_OS_LINUX_ANDROID)
+#if defined(Q_OS_ANDROID)
 // std::wstring is disabled on android's glibc, as bionic lacks certain features
 // that libstdc++ checks for (like mbcslen).
 namespace std

@@ -36,6 +36,8 @@ if [ -f ./arch.exe ]; then
     binary=./arch.exe
 elif [ -f ./arch ]; then
     binary=./arch
+elif [ -f ./libarch.so ]; then
+    binary=./libarch.so
 else
     [ "$VERBOSE" = "yes" ] && echo "Unable to determine architecture!"
     exit 2

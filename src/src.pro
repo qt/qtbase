@@ -66,6 +66,8 @@ src_plugins.subdir = $$PWD/plugins
 src_plugins.target = sub-plugins
 src_plugins.depends = src_sql src_xml src_network
 
+src_android.subdir = $$PWD/android
+
 # this order is important
 SUBDIRS += src_tools src_corelib
 win32:SUBDIRS += src_winmain
@@ -98,3 +100,5 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
 SUBDIRS += src_plugins
 
 nacl: SUBDIRS -= src_network src_testlib
+
+android:!android-no-sdk: SUBDIRS += src_android

@@ -8,6 +8,9 @@ irix-cc*:QMAKE_CXXFLAGS += -no_prelink -ptused
 
 QMAKE_DOCS = $$PWD/doc/qtopengl.qdocconf
 
+ANDROID_LIB_DEPENDENCY_REPLACEMENTS = \
+    "plugins/platforms/android/libqtforandroid.so:plugins/platforms/android/libqtforandroidGL.so"
+
 load(qt_module)
 
 contains(QT_CONFIG, opengl):CONFIG += opengl

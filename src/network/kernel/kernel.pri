@@ -27,7 +27,7 @@ SOURCES += kernel/qauthenticator.cpp \
 
 unix:SOURCES += kernel/qdnslookup_unix.cpp kernel/qhostinfo_unix.cpp kernel/qnetworkinterface_unix.cpp
 
-linux-android* {
+android {
     SOURCES -= kernel/qdnslookup_unix.cpp
     SOURCES += kernel/qdnslookup_android.cpp
 }

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <linux/fb.h>
+#include <sys/kd.h>
 #include <sys/ioctl.h>
 
 int main(int, char **)

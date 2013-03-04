@@ -681,10 +681,19 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     }
 #elif defined(Q_OS_UNIX)
     QSet<QString> certFiles;
+# ifdef Q_OS_ANDROID
+    QList<QByteArray> directories;
+    directories << qgetenv("MINISTRO_SSL_CERTS_PATH"); // Set by Ministro
+# else
     QList<QByteArray> directories = unixRootCertDirectories();
+# endif
     QDir currentDir;
     QStringList nameFilters;
+# ifdef Q_OS_ANDROID
+    nameFilters << QLatin1String("*.der");
+#else
     nameFilters << QLatin1String("*.pem") << QLatin1String("*.crt");
+# endif
     currentDir.setNameFilters(nameFilters);
     for (int a = 0; a < directories.count(); a++) {
         currentDir.setPath(QLatin1String(directories.at(a)));
@@ -697,10 +706,16 @@ QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
     }
     QSetIterator<QString> it(certFiles);
     while(it.hasNext()) {
-        systemCerts.append(QSslCertificate::fromPath(it.next()));
+# ifdef Q_OS_ANDROID
+        systemCerts.append(QSslCertificate::fromPath(it.next(), QSsl::Der));
+# else
+        systemCerts.append(QSslCertificate::fromPath(it.next(), QSsl::Pem));
+# endif
     }
+# ifndef Q_OS_ANDROID
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/etc/pki/tls/certs/ca-bundle.crt"), QSsl::Pem)); // Fedora, Mandriva
     systemCerts.append(QSslCertificate::fromPath(QLatin1String("/usr/local/share/certs/ca-root-nss.crt"), QSsl::Pem)); // FreeBSD's ca_root_nss
+# endif
 #endif
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "systemCaCertificates retrieval time " << timer.elapsed() << "ms";

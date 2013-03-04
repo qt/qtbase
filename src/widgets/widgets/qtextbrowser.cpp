@@ -151,12 +151,18 @@ public:
 QString QTextBrowserPrivate::findFile(const QUrl &name) const
 {
     QString fileName;
-    if (name.scheme() == QLatin1String("qrc"))
+    if (name.scheme() == QLatin1String("qrc")) {
         fileName = QLatin1String(":/") + name.path();
-    else if (name.scheme().isEmpty())
+    } else if (name.scheme().isEmpty()) {
         fileName = name.path();
-    else
-        fileName = name.toLocalFile();
+    } else {
+#if defined(Q_OS_ANDROID)
+        if (name.scheme() == QLatin1String("assets"))
+            fileName = QLatin1String("assets:") + name.path();
+        else
+#endif
+            fileName = name.toLocalFile();
+    }
 
     if (QFileInfo(fileName).isAbsolute())
         return fileName;
@@ -217,13 +223,14 @@ void QTextBrowserPrivate::_q_activateAnchor(const QString &href)
     textOrSourceChanged = false;
 
 #ifndef QT_NO_DESKTOPSERVICES
-    if ((openExternalLinks
-         && url.scheme() != QLatin1String("file")
-         && url.scheme() != QLatin1String("qrc")
-         && !url.isRelative())
-        || (url.isRelative() && !currentURL.isRelative()
-            && currentURL.scheme() != QLatin1String("file")
-            && currentURL.scheme() != QLatin1String("qrc"))) {
+    bool isFileScheme =
+            url.scheme() == QLatin1String("file")
+#if defined(Q_OS_ANDROID)
+            || url.scheme() == QLatin1String("assets")
+#endif
+            || url.scheme() == QLatin1String("qrc");
+    if ((openExternalLinks && !isFileScheme && !url.isRelative())
+        || (url.isRelative() && !currentURL.isRelative() && !isFileScheme)) {
         QDesktopServices::openUrl(url);
         return;
     }

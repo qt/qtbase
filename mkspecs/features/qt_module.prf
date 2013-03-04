@@ -107,6 +107,8 @@ aix-g++* {
      QMAKE_CXXFLAGS += -mminimal-toc
 }
 
+android: CONFIG += qt_android_deps
+
 #install directives
 load(qt_installs)
 
