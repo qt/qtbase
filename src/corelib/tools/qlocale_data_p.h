@@ -77,7 +77,7 @@ static const int ImperialMeasurementSystemsCount =
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2012-11-23 from the
+    This part of the file was generated on 2012-12-19 from the
     Common Locale Data Repository v22.1
 
     http://www.unicode.org/cldr/
@@ -172,6 +172,7 @@ static const QLocaleId likely_subtags[] = {
     {  52,  0,   0 }, {  52,  7, 101 }, // id -> id_Latn_ID
     { 149,  0,   0 }, { 149,  7, 157 }, // ig -> ig_Latn_NG
     { 168,  0,   0 }, { 168, 34,  44 }, // ii -> ii_Yiii_CN
+    { 281,  0,   0 }, { 281,  2, 178 }, // inh -> inh_Cyrl_RU
     {  51,  0,   0 }, {  51,  7,  99 }, // is -> is_Latn_IS
     {  58,  0,   0 }, {  58,  7, 106 }, // it -> it_Latn_IT
     {  59,  0,   0 }, {  59, 19, 108 }, // ja -> ja_Jpan_JP
@@ -273,6 +274,7 @@ static const QLocaleId likely_subtags[] = {
     {  99,  0,   0 }, {  99, 13, 100 }, // sa -> sa_Deva_IN
     { 248,  0,   0 }, { 248,  2, 178 }, // sah -> sah_Cyrl_RU
     { 179,  0,   0 }, { 179,  7, 111 }, // saq -> saq_Latn_KE
+    { 304,  0,   0 }, { 304,  7, 100 }, // sat -> sat_Latn_IN
     { 249,  0,   0 }, { 249,  7, 210 }, // sbp -> sbp_Latn_TZ
     { 105,  0,   0 }, { 105,  1, 100 }, // sd -> sd_Arab_IN
     { 173,  0,   0 }, { 173,  7, 161 }, // se -> se_Latn_NO
@@ -334,7 +336,9 @@ static const QLocaleId likely_subtags[] = {
     {   0,  1, 100 }, { 130,  1, 100 }, // und_Arab_IN -> ur_Arab_IN
     {   0,  1, 157 }, {  47,  1, 157 }, // und_Arab_NG -> ha_Arab_NG
     {   0,  1, 163 }, { 130,  1, 163 }, // und_Arab_PK -> ur_Arab_PK
+    {   0, 57,   0 }, { 265, 57, 102 }, // und_Armi -> arc_Armi_IR
     {   0, 10,   0 }, {   9, 10,  11 }, // und_Armn -> hy_Armn_AM
+    {   0, 36,   0 }, { 255, 36, 102 }, // und_Avst -> ae_Avst_IR
     {   0,  0,  27 }, { 142,  7,  27 }, // und_BA -> bs_Latn_BA
     {   0,  0,  18 }, {  15, 11,  18 }, // und_BD -> bn_Beng_BD
     {   0,  0,  21 }, {  30,  7,  21 }, // und_BE -> nl_Latn_BE
@@ -349,7 +353,14 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0,  30 }, {  91,  7,  30 }, // und_BR -> pt_Latn_BR
     {   0,  0,  25 }, {  16, 31,  25 }, // und_BT -> dz_Tibt_BT
     {   0,  0,  20 }, {  22,  2,  20 }, // und_BY -> be_Cyrl_BY
+    {   0, 37,   0 }, { 266, 37, 101 }, // und_Bali -> ban_Bali_ID
+    {   0, 38,   0 }, { 267, 38,  37 }, // und_Bamu -> bax_Bamu_CM
+    {   0, 39,   0 }, { 268, 39, 101 }, // und_Batk -> bbc_Batk_ID
     {   0, 11,   0 }, {  15, 11,  18 }, // und_Beng -> bn_Beng_BD
+    {   0, 40,   0 }, {  25, 40, 208 }, // und_Bopo -> zh_Bopo_TW
+    {   0, 41,   0 }, { 300, 41, 100 }, // und_Brah -> pra_Brah_IN
+    {   0, 42,   0 }, { 269, 42, 101 }, // und_Bugi -> bug_Bugi_ID
+    {   0, 43,   0 }, { 270, 43, 170 }, // und_Buhd -> bku_Buhd_PH
     {   0,  0,  49 }, { 113,  7,  49 }, // und_CD -> sw_Latn_CD
     {   0,  0,  41 }, {  37,  7,  41 }, // und_CF -> fr_Latn_CF
     {   0,  0,  50 }, {  37,  7,  50 }, // und_CG -> fr_Latn_CG
@@ -365,7 +376,13 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0,  39 }, {  91,  7,  39 }, // und_CV -> pt_Latn_CV
     {   0,  0,  56 }, {  43, 16,  56 }, // und_CY -> el_Grek_CY
     {   0,  0,  57 }, {  28,  7,  57 }, // und_CZ -> cs_Latn_CZ
+    {   0, 46,   0 }, { 272, 46,  18 }, // und_Cakm -> ccp_Cakm_BD
+    {   0, 44,   0 }, { 221, 44,  38 }, // und_Cans -> cr_Cans_CA
+    {   0, 45,   0 }, { 271, 45, 217 }, // und_Cari -> xcr_Cari_TR
+    {   0, 47,   0 }, { 276, 47, 232 }, // und_Cham -> cjm_Cham_VN
     {   0, 12,   0 }, { 190, 12, 225 }, // und_Cher -> chr_Cher_US
+    {   0, 48,   0 }, { 274, 48,  64 }, // und_Copt -> cop_Copt_EG
+    {   0, 49,   0 }, { 264, 49,  56 }, // und_Cprt -> grc_Cprt_CY
     {   0,  2,   0 }, {  96,  2, 178 }, // und_Cyrl -> ru_Cyrl_RU
     {   0,  2,  27 }, { 100,  2,  27 }, // und_Cyrl_BA -> sr_Cyrl_BA
     {   0,  2,  81 }, {   2,  2,  81 }, // und_Cyrl_GE -> ab_Cyrl_GE
@@ -382,6 +399,7 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 236 }, {   8,  1, 236 }, // und_EH -> ar_Arab_EH
     {   0,  0,  67 }, { 122, 14,  67 }, // und_ER -> ti_Ethi_ER
     {   0,  0, 197 }, { 111,  7, 197 }, // und_ES -> es_Latn_ES
+    {   0, 50,   0 }, { 263, 50,  64 }, // und_Egyp -> egy_Egyp_EG
     {   0, 14,   0 }, {   7, 14,  69 }, // und_Ethi -> am_Ethi_ET
     {   0,  0,  73 }, {  36,  7,  73 }, // und_FI -> fi_Latn_FI
     {   0,  0,  71 }, {  34,  7,  71 }, // und_FO -> fo_Latn_FO
@@ -398,6 +416,8 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0,  90 }, { 111,  7,  90 }, // und_GT -> es_Latn_GT
     {   0,  0,  92 }, {  91,  7,  92 }, // und_GW -> pt_Latn_GW
     {   0, 15,   0 }, {  41, 15,  81 }, // und_Geor -> ka_Geor_GE
+    {   0, 52,   0 }, { 219, 52,  33 }, // und_Glag -> cu_Glag_BG
+    {   0, 53,   0 }, { 279, 53, 222 }, // und_Goth -> got_Goth_UA
     {   0, 16,   0 }, {  43, 16,  85 }, // und_Grek -> el_Grek_GR
     {   0, 17,   0 }, {  46, 17, 100 }, // und_Gujr -> gu_Gujr_IN
     {   0,  4,   0 }, {  92,  4, 100 }, // und_Guru -> pa_Guru_IN
@@ -406,6 +426,9 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0,  54 }, {  27,  7,  54 }, // und_HR -> hr_Latn_HR
     {   0,  0,  94 }, { 222,  7,  94 }, // und_HT -> ht_Latn_HT
     {   0,  0,  98 }, {  50,  7,  98 }, // und_HU -> hu_Latn_HU
+    {   0, 55,   0 }, {  66, 55, 114 }, // und_Hang -> ko_Hang_KR
+    {   0, 54,   0 }, {  25,  5,  44 }, // und_Hani -> zh_Hans_CN
+    {   0, 56,   0 }, { 280, 56, 170 }, // und_Hano -> hnn_Hano_PH
     {   0,  5,   0 }, {  25,  5,  44 }, // und_Hans -> zh_Hans_CN
     {   0,  6,   0 }, {  25,  6, 208 }, // und_Hant -> zh_Hant_TW
     {   0, 18,   0 }, {  48, 18, 105 }, // und_Hebr -> he_Hebr_IL
@@ -417,8 +440,10 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 102 }, {  89,  1, 102 }, // und_IR -> fa_Arab_IR
     {   0,  0,  99 }, {  51,  7,  99 }, // und_IS -> is_Latn_IS
     {   0,  0, 106 }, {  58,  7, 106 }, // und_IT -> it_Latn_IT
+    {   0, 79,   0 }, { 278, 79, 106 }, // und_Ital -> ett_Ital_IT
     {   0,  0, 109 }, {   8,  1, 109 }, // und_JO -> ar_Arab_JO
     {   0,  0, 108 }, {  59, 19, 108 }, // und_JP -> ja_Jpan_JP
+    {   0, 60,   0 }, {  60, 60, 101 }, // und_Java -> jv_Java_ID
     {   0, 19,   0 }, {  59, 19, 108 }, // und_Jpan -> ja_Jpan_JP
     {   0,  0, 116 }, {  65,  2, 116 }, // und_KG -> ky_Cyrl_KG
     {   0,  0,  36 }, {  23, 20,  36 }, // und_KH -> km_Khmr_KH
@@ -427,9 +452,13 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 114 }, {  66, 22, 114 }, // und_KR -> ko_Kore_KR
     {   0,  0, 115 }, {   8,  1, 115 }, // und_KW -> ar_Arab_KW
     {   0,  0, 110 }, {  96,  2, 110 }, // und_KZ -> ru_Cyrl_KZ
+    {   0, 63,   0 }, { 277, 63, 147 }, // und_Kali -> eky_Kali_MM
+    {   0, 62,   0 }, {  59, 62, 108 }, // und_Kana -> ja_Kana_JP
+    {   0, 64,   0 }, { 300, 64, 163 }, // und_Khar -> pra_Khar_PK
     {   0, 20,   0 }, {  23, 20,  36 }, // und_Khmr -> km_Khmr_KH
     {   0, 21,   0 }, {  61, 21, 100 }, // und_Knda -> kn_Knda_IN
     {   0, 22,   0 }, {  66, 22, 114 }, // und_Kore -> ko_Kore_KR
+    {   0, 61,   0 }, {  17, 61, 100 }, // und_Kthi -> bh_Kthi_IN
     {   0,  0, 117 }, {  69, 23, 117 }, // und_LA -> lo_Laoo_LA
     {   0,  0, 119 }, {   8,  1, 119 }, // und_LB -> ar_Arab_LB
     {   0,  0, 123 }, {  42,  7, 123 }, // und_LI -> de_Latn_LI
@@ -439,6 +468,7 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 125 }, {  37,  7, 125 }, // und_LU -> fr_Latn_LU
     {   0,  0, 118 }, {  71,  7, 118 }, // und_LV -> lv_Latn_LV
     {   0,  0, 122 }, {   8,  1, 122 }, // und_LY -> ar_Arab_LY
+    {   0, 65,   0 }, { 292, 65, 211 }, // und_Lana -> nod_Lana_TH
     {   0, 23,   0 }, {  69, 23, 117 }, // und_Laoo -> lo_Laoo_LA
     {   0,  7,  44 }, { 139,  7,  44 }, // und_Latn_CN -> za_Latn_CN
     {   0,  7,  56 }, { 125,  7,  56 }, // und_Latn_CY -> tr_Latn_CY
@@ -450,6 +480,12 @@ static const QLocaleId likely_subtags[] = {
     {   0,  7, 136 }, {  37,  7, 136 }, // und_Latn_MR -> fr_Latn_MR
     {   0,  7, 207 }, {  37,  7, 207 }, // und_Latn_SY -> fr_Latn_SY
     {   0,  7, 216 }, {  37,  7, 216 }, // und_Latn_TN -> fr_Latn_TN
+    {   0, 66,   0 }, { 283, 66, 100 }, // und_Lepc -> lep_Lepc_IN
+    {   0, 67,   0 }, { 284, 67, 100 }, // und_Limb -> lif_Limb_IN
+    {   0, 68,   0 }, { 264, 68,  85 }, // und_Linb -> grc_Linb_GR
+    {   0, 51,   0 }, { 285, 51,  44 }, // und_Lisu -> lis_Lisu_CN
+    {   0, 69,   0 }, { 287, 69, 217 }, // und_Lyci -> xlc_Lyci_TR
+    {   0, 70,   0 }, { 288, 70, 217 }, // und_Lydi -> xld_Lydi_TR
     {   0,  0, 145 }, {   8,  1, 145 }, // und_MA -> ar_Arab_MA
     {   0,  0, 142 }, {  37,  7, 142 }, // und_MC -> fr_Latn_MC
     {   0,  0, 141 }, {  95,  7, 141 }, // und_MD -> ro_Latn_MD
@@ -469,8 +505,12 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 139 }, { 111,  7, 139 }, // und_MX -> es_Latn_MX
     {   0,  0, 130 }, {  76,  7, 130 }, // und_MY -> ms_Latn_MY
     {   0,  0, 146 }, {  91,  7, 146 }, // und_MZ -> pt_Latn_MZ
+    {   0, 71,   0 }, { 273, 71, 102 }, // und_Mand -> myz_Mand_IR
+    {   0, 74,   0 }, { 291, 74, 201 }, // und_Merc -> xmr_Merc_SD
+    {   0, 73,   0 }, { 291, 73, 201 }, // und_Mero -> xmr_Mero_SD
     {   0, 24,   0 }, {  77, 24, 100 }, // und_Mlym -> ml_Mlym_IN
     {   0,  8,   0 }, {  82,  8,  44 }, // und_Mong -> mn_Mong_CN
+    {   0, 72,   0 }, { 290, 72, 100 }, // und_Mtei -> mni_Mtei_IN
     {   0, 25,   0 }, {  21, 25, 147 }, // und_Mymr -> my_Mymr_MM
     {   0,  0, 148 }, { 228,  7, 148 }, // und_NA -> kj_Latn_NA
     {   0,  0, 153 }, {  37,  7, 153 }, // und_NC -> fr_Latn_NC
@@ -479,8 +519,13 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 151 }, {  30,  7, 151 }, // und_NL -> nl_Latn_NL
     {   0,  0, 161 }, {  85,  7, 161 }, // und_NO -> nb_Latn_NO
     {   0,  0, 150 }, {  84, 13, 150 }, // und_NP -> ne_Deva_NP
+    {   0, 75,   0 }, { 289, 75,  91 }, // und_Nkoo -> man_Nkoo_GN
     {   0,  0, 162 }, {   8,  1, 162 }, // und_OM -> ar_Arab_OM
+    {   0, 77,   0 }, { 293, 77, 104 }, // und_Ogam -> sga_Ogam_IE
+    {   0, 78,   0 }, { 304, 78, 100 }, // und_Olck -> sat_Olck_IN
+    {   0, 82,   0 }, { 296, 82, 143 }, // und_Orkh -> otk_Orkh_MN
     {   0, 26,   0 }, {  87, 26, 100 }, // und_Orya -> or_Orya_IN
+    {   0, 83,   0 }, { 110, 83, 194 }, // und_Osma -> so_Osma_SO
     {   0,  0, 166 }, { 111,  7, 166 }, // und_PA -> es_Latn_PA
     {   0,  0, 169 }, { 111,  7, 169 }, // und_PE -> es_Latn_PE
     {   0,  0,  77 }, {  37,  7,  77 }, // und_PF -> fr_Latn_PF
@@ -492,12 +537,18 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 165 }, {   8,  1, 165 }, // und_PS -> ar_Arab_PS
     {   0,  0, 173 }, {  91,  7, 173 }, // und_PT -> pt_Latn_PT
     {   0,  0, 168 }, {  45,  7, 168 }, // und_PY -> gn_Latn_PY
+    {   0, 58,   0 }, { 297, 58, 102 }, // und_Phli -> pal_Phli_IR
+    {   0, 85,   0 }, { 299, 85, 119 }, // und_Phnx -> phn_Phnx_LB
+    {   0, 86,   0 }, { 282, 86,  44 }, // und_Plrd -> hmd_Plrd_CN
+    {   0, 59,   0 }, { 298, 59, 102 }, // und_Prti -> xpr_Prti_IR
     {   0,  0, 175 }, {   8,  1, 175 }, // und_QA -> ar_Arab_QA
     {   0,  0, 176 }, {  37,  7, 176 }, // und_RE -> fr_Latn_RE
     {   0,  0, 177 }, {  95,  7, 177 }, // und_RO -> ro_Latn_RO
     {   0,  0, 243 }, { 100,  2, 243 }, // und_RS -> sr_Cyrl_RS
     {   0,  0, 178 }, {  96,  2, 178 }, // und_RU -> ru_Cyrl_RU
     {   0,  0, 179 }, {  64,  7, 179 }, // und_RW -> rw_Latn_RW
+    {   0, 87,   0 }, { 301, 87, 101 }, // und_Rjng -> rej_Rjng_ID
+    {   0, 88,   0 }, { 294, 88, 205 }, // und_Runr -> non_Runr_SE
     {   0,  0, 186 }, {   8,  1, 186 }, // und_SA -> ar_Arab_SA
     {   0,  0, 188 }, {  37,  7, 188 }, // und_SC -> fr_Latn_SC
     {   0,  0, 201 }, {   8,  1, 201 }, // und_SD -> ar_Arab_SD
@@ -512,7 +563,16 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 185 }, {  91,  7, 185 }, // und_ST -> pt_Latn_ST
     {   0,  0,  65 }, { 111,  7,  65 }, // und_SV -> es_Latn_SV
     {   0,  0, 207 }, {   8,  1, 207 }, // und_SY -> ar_Arab_SY
+    {   0, 89,   0 }, { 303, 89, 105 }, // und_Samr -> smp_Samr_IL
+    {   0, 81,   0 }, { 302, 81, 237 }, // und_Sarb -> xsa_Sarb_YE
+    {   0, 90,   0 }, { 305, 90, 100 }, // und_Saur -> saz_Saur_IN
+    {   0, 92,   0 }, {  31, 92, 224 }, // und_Shaw -> en_Shaw_GB
+    {   0, 91,   0 }, {  99, 91, 100 }, // und_Shrd -> sa_Shrd_IN
     {   0, 32,   0 }, { 106, 32, 198 }, // und_Sinh -> si_Sinh_LK
+    {   0, 93,   0 }, { 306, 93, 100 }, // und_Sora -> srb_Sora_IN
+    {   0, 95,   0 }, { 112, 95, 101 }, // und_Sund -> su_Sund_ID
+    {   0, 96,   0 }, { 307, 96,  18 }, // und_Sylo -> syl_Sylo_BD
+    {   0, 33,   0 }, { 151, 33, 207 }, // und_Syrc -> syr_Syrc_SY
     {   0,  0,  42 }, {  37,  7,  42 }, // und_TD -> fr_Latn_TD
     {   0,  0, 212 }, {  37,  7, 212 }, // und_TG -> fr_Latn_TG
     {   0,  0, 211 }, { 120, 30, 211 }, // und_TH -> th_Thai_TH
@@ -524,9 +584,15 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 217 }, { 125,  7, 217 }, // und_TR -> tr_Latn_TR
     {   0,  0, 208 }, {  25,  6, 208 }, // und_TW -> zh_Hant_TW
     {   0,  0, 210 }, { 113,  7, 210 }, // und_TZ -> sw_Latn_TZ
+    {   0, 98,   0 }, { 308, 98, 170 }, // und_Tagb -> tbw_Tagb_PH
+    {   0, 101,   0 }, { 275, 101, 100 }, // und_Takr -> doi_Takr_IN
+    {   0, 99,   0 }, { 310, 99,  44 }, // und_Tale -> tdd_Tale_CN
+    {   0, 76,   0 }, { 286, 76,  44 }, // und_Talu -> khb_Talu_CN
     {   0, 27,   0 }, { 117, 27, 100 }, // und_Taml -> ta_Taml_IN
+    {   0, 100,   0 }, { 309, 100, 232 }, // und_Tavt -> blt_Tavt_VN
     {   0, 28,   0 }, { 119, 28, 100 }, // und_Telu -> te_Telu_IN
     {   0,  9,   0 }, { 183,  9, 216 }, // und_Tfng -> shi_Tfng_TN
+    {   0, 97,   0 }, { 166, 97, 170 }, // und_Tglg -> fil_Tglg_PH
     {   0, 29,   0 }, { 143, 29, 131 }, // und_Thaa -> dv_Thaa_MV
     {   0, 30,   0 }, { 120, 30, 211 }, // und_Thai -> th_Thai_TH
     {   0, 31,   0 }, { 121, 31,  44 }, // und_Tibt -> bo_Tibt_CN
@@ -534,6 +600,7 @@ static const QLocaleId likely_subtags[] = {
     {   0,  0, 221 }, { 113,  7, 221 }, // und_UG -> sw_Latn_UG
     {   0,  0, 227 }, { 111,  7, 227 }, // und_UY -> es_Latn_UY
     {   0,  0, 228 }, { 131,  2, 228 }, // und_UZ -> uz_Cyrl_UZ
+    {   0, 102,   0 }, { 311, 102, 207 }, // und_Ugar -> uga_Ugar_SY
     {   0,  0, 230 }, {  70,  7, 230 }, // und_VA -> la_Latn_VA
     {   0,  0, 231 }, { 111,  7, 231 }, // und_VE -> es_Latn_VE
     {   0,  0, 232 }, { 132,  7, 232 }, // und_VN -> vi_Latn_VN
@@ -541,6 +608,8 @@ static const QLocaleId likely_subtags[] = {
     {   0, 35,   0 }, { 252, 35, 121 }, // und_Vaii -> vai_Vaii_LR
     {   0,  0, 235 }, {  37,  7, 235 }, // und_WF -> fr_Latn_WF
     {   0,  0, 183 }, {  97,  7, 183 }, // und_WS -> sm_Latn_WS
+    {   0, 80,   0 }, { 295, 80, 102 }, // und_Xpeo -> peo_Xpeo_IR
+    {   0, 94,   0 }, { 262, 94, 103 }, // und_Xsux -> akk_Xsux_IQ
     {   0,  0, 237 }, {   8,  1, 237 }, // und_YE -> ar_Arab_YE
     {   0,  0, 138 }, {  37,  7, 138 }, // und_YT -> fr_Latn_YT
     {   0, 34,   0 }, { 168, 34,  44 }, // und_Yiii -> ii_Yiii_CN
@@ -563,6 +632,7 @@ static const QLocaleId likely_subtags[] = {
     { 139,  0,   0 }, { 139,  7,  44 }, // za -> za_Latn_CN
     {  25,  0,   0 }, {  25,  5,  44 }, // zh -> zh_Hans_CN
     {  25,  0,  97 }, {  25,  6,  97 }, // zh_HK -> zh_Hant_HK
+    {  25, 54,   0 }, {  25,  5,  44 }, // zh_Hani -> zh_Hans_CN
     {  25,  6,   0 }, {  25,  6, 208 }, // zh_Hant -> zh_Hant_TW
     {  25,  0, 126 }, {  25,  6, 126 }, // zh_MO -> zh_Hant_MO
     {  25,  0, 208 }, {  25,  6, 208 }, // zh_TW -> zh_Hant_TW
@@ -698,7 +768,7 @@ static const quint16 locale_index[] = {
    332, // Turkish
      0, // Turkmen
      0, // Tahitian
-     0, // Uigur
+     0, // Uighur
    334, // Ukrainian
    335, // Urdu
    337, // Uzbek
@@ -831,6 +901,57 @@ static const quint16 locale_index[] = {
    435, // Kako
    436, // Meta
    437, // Ngiemboon
+     0, // Aragonese
+     0, // Akkadian
+     0, // AncientEgyptian
+     0, // AncientGreek
+     0, // Aramaic
+     0, // Balinese
+     0, // Bamun
+     0, // BatakToba
+     0, // Buginese
+     0, // Buhid
+     0, // Carian
+     0, // Chakma
+     0, // ClassicalMandaic
+     0, // Coptic
+     0, // Dogri
+     0, // EasternCham
+     0, // EasternKayah
+     0, // Etruscan
+     0, // Gothic
+     0, // Hanunoo
+     0, // Ingush
+     0, // LargeFloweryMiao
+     0, // Lepcha
+     0, // Limbu
+     0, // Lisu
+     0, // Lu
+     0, // Lycian
+     0, // Lydian
+     0, // Mandingo
+     0, // Manipuri
+     0, // Meroitic
+     0, // NorthernThai
+     0, // OldIrish
+     0, // OldNorse
+     0, // OldPersian
+     0, // OldTurkish
+     0, // Pahlavi
+     0, // Parthian
+     0, // Phoenician
+     0, // PrakritLanguage
+     0, // Rejang
+     0, // Sabaean
+     0, // Samaritan
+     0, // Santali
+     0, // Saurashtra
+     0, // Sora
+     0, // Sylheti
+     0, // Tagbanwa
+     0, // TaiDam
+     0, // TaiNua
+     0, // Ugaritic
      0 // trailing 0
 };
 
@@ -5275,7 +5396,7 @@ static const char language_name_list[] =
 "Turkish\0"
 "Turkmen\0"
 "Tahitian\0"
-"Uigur\0"
+"Uighur\0"
 "Ukrainian\0"
 "Urdu\0"
 "Uzbek\0"
@@ -5408,6 +5529,57 @@ static const char language_name_list[] =
 "Kako\0"
 "Meta\0"
 "Ngiemboon\0"
+"Aragonese\0"
+"Akkadian\0"
+"AncientEgyptian\0"
+"AncientGreek\0"
+"Aramaic\0"
+"Balinese\0"
+"Bamun\0"
+"BatakToba\0"
+"Buginese\0"
+"Buhid\0"
+"Carian\0"
+"Chakma\0"
+"ClassicalMandaic\0"
+"Coptic\0"
+"Dogri\0"
+"EasternCham\0"
+"EasternKayah\0"
+"Etruscan\0"
+"Gothic\0"
+"Hanunoo\0"
+"Ingush\0"
+"LargeFloweryMiao\0"
+"Lepcha\0"
+"Limbu\0"
+"Lisu\0"
+"Lu\0"
+"Lycian\0"
+"Lydian\0"
+"Mandingo\0"
+"Manipuri\0"
+"Meroitic\0"
+"NorthernThai\0"
+"OldIrish\0"
+"OldNorse\0"
+"OldPersian\0"
+"OldTurkish\0"
+"Pahlavi\0"
+"Parthian\0"
+"Phoenician\0"
+"PrakritLanguage\0"
+"Rejang\0"
+"Sabaean\0"
+"Samaritan\0"
+"Santali\0"
+"Saurashtra\0"
+"Sora\0"
+"Sylheti\0"
+"Tagbanwa\0"
+"TaiDam\0"
+"TaiNua\0"
+"Ugaritic\0"
 ;
 
 static const quint16 language_name_index[] = {
@@ -5539,139 +5711,190 @@ static const quint16 language_name_index[] = {
   1023, // Turkish
   1031, // Turkmen
   1039, // Tahitian
-  1048, // Uigur
-  1054, // Ukrainian
-  1064, // Urdu
-  1069, // Uzbek
-  1075, // Vietnamese
-  1086, // Volapuk
-  1094, // Welsh
-  1100, // Wolof
-  1106, // Xhosa
-  1112, // Yiddish
-  1120, // Yoruba
-  1127, // Zhuang
-  1134, // Zulu
-  1139, // NorwegianNynorsk
-  1156, // Bosnian
-  1164, // Divehi
-  1171, // Manx
-  1176, // Cornish
-  1184, // Akan
-  1189, // Konkani
-  1197, // Ga
-  1200, // Igbo
-  1205, // Kamba
-  1211, // Syriac
-  1218, // Blin
-  1223, // Geez
-  1228, // Koro
-  1233, // Sidamo
-  1240, // Atsam
-  1246, // Tigre
-  1252, // Jju
-  1256, // Friulian
-  1265, // Venda
-  1271, // Ewe
-  1275, // Walamo
-  1282, // Hawaiian
-  1291, // Tyap
-  1296, // Nyanja
-  1303, // Filipino
-  1312, // Swiss German
-  1325, // Sichuan Yi
-  1336, // Kpelle
-  1343, // Low German
-  1354, // South Ndebele
-  1368, // Northern Sotho
-  1383, // Northern Sami
-  1397, // Taroko
-  1404, // Gusii
-  1410, // Taita
-  1416, // Fulah
-  1422, // Kikuyu
-  1429, // Samburu
-  1437, // Sena
-  1442, // North Ndebele
-  1456, // Rombo
-  1462, // Tachelhit
-  1472, // Kabyle
-  1479, // Nyankole
-  1488, // Bena
-  1493, // Vunjo
-  1499, // Bambara
-  1507, // Embu
-  1512, // Cherokee
-  1521, // Morisyen
-  1530, // Makonde
-  1538, // Langi
-  1544, // Ganda
-  1550, // Bemba
-  1556, // Kabuverdianu
-  1569, // Meru
-  1574, // Kalenjin
-  1583, // Nama
-  1588, // Machame
-  1596, // Colognian
-  1606, // Masai
-  1612, // Soga
-  1617, // Luyia
-  1623, // Asu
-  1627, // Teso
-  1632, // Saho
-  1637, // Koyra Chiini
-  1650, // Rwa
-  1654, // Luo
-  1658, // Chiga
-  1664, // Central Morocco Tamazight
-  1690, // Koyraboro Senni
-  1706, // Shambala
-  1715, // Bodo
-  1720, // Avaric
-  1727, // Chamorro
-  1736, // Chechen
-  1744, // Church
-  1751, // Chuvash
-  1759, // Cree
-  1764, // Haitian
-  1772, // Herero
-  1779, // Hiri Motu
-  1789, // Kanuri
-  1796, // Komi
-  1801, // Kongo
-  1807, // Kwanyama
-  1816, // Limburgish
-  1827, // LubaKatanga
-  1839, // Luxembourgish
-  1853, // Navaho
-  1860, // Ndonga
-  1867, // Ojibwa
-  1874, // Pali
-  1879, // Walloon
-  1887, // Aghem
-  1893, // Basaa
-  1899, // Zarma
-  1905, // Duala
-  1911, // JolaFonyi
-  1921, // Ewondo
-  1928, // Bafia
-  1934, // MakhuwaMeetto
-  1948, // Mundang
-  1956, // Kwasio
-  1963, // Nuer
-  1968, // Sakha
-  1974, // Sangu
-  1980, // Congo Swahili
-  1994, // Tasawaq
-  2002, // Vai
-  2006, // Walser
-  2013, // Yangben
-  2021, // Avestan
-  2029, // Asturian
-  2038, // Ngomba
-  2045, // Kako
-  2050, // Meta
-  2055, // Ngiemboon
+  1048, // Uighur
+  1055, // Ukrainian
+  1065, // Urdu
+  1070, // Uzbek
+  1076, // Vietnamese
+  1087, // Volapuk
+  1095, // Welsh
+  1101, // Wolof
+  1107, // Xhosa
+  1113, // Yiddish
+  1121, // Yoruba
+  1128, // Zhuang
+  1135, // Zulu
+  1140, // NorwegianNynorsk
+  1157, // Bosnian
+  1165, // Divehi
+  1172, // Manx
+  1177, // Cornish
+  1185, // Akan
+  1190, // Konkani
+  1198, // Ga
+  1201, // Igbo
+  1206, // Kamba
+  1212, // Syriac
+  1219, // Blin
+  1224, // Geez
+  1229, // Koro
+  1234, // Sidamo
+  1241, // Atsam
+  1247, // Tigre
+  1253, // Jju
+  1257, // Friulian
+  1266, // Venda
+  1272, // Ewe
+  1276, // Walamo
+  1283, // Hawaiian
+  1292, // Tyap
+  1297, // Nyanja
+  1304, // Filipino
+  1313, // Swiss German
+  1326, // Sichuan Yi
+  1337, // Kpelle
+  1344, // Low German
+  1355, // South Ndebele
+  1369, // Northern Sotho
+  1384, // Northern Sami
+  1398, // Taroko
+  1405, // Gusii
+  1411, // Taita
+  1417, // Fulah
+  1423, // Kikuyu
+  1430, // Samburu
+  1438, // Sena
+  1443, // North Ndebele
+  1457, // Rombo
+  1463, // Tachelhit
+  1473, // Kabyle
+  1480, // Nyankole
+  1489, // Bena
+  1494, // Vunjo
+  1500, // Bambara
+  1508, // Embu
+  1513, // Cherokee
+  1522, // Morisyen
+  1531, // Makonde
+  1539, // Langi
+  1545, // Ganda
+  1551, // Bemba
+  1557, // Kabuverdianu
+  1570, // Meru
+  1575, // Kalenjin
+  1584, // Nama
+  1589, // Machame
+  1597, // Colognian
+  1607, // Masai
+  1613, // Soga
+  1618, // Luyia
+  1624, // Asu
+  1628, // Teso
+  1633, // Saho
+  1638, // Koyra Chiini
+  1651, // Rwa
+  1655, // Luo
+  1659, // Chiga
+  1665, // Central Morocco Tamazight
+  1691, // Koyraboro Senni
+  1707, // Shambala
+  1716, // Bodo
+  1721, // Avaric
+  1728, // Chamorro
+  1737, // Chechen
+  1745, // Church
+  1752, // Chuvash
+  1760, // Cree
+  1765, // Haitian
+  1773, // Herero
+  1780, // Hiri Motu
+  1790, // Kanuri
+  1797, // Komi
+  1802, // Kongo
+  1808, // Kwanyama
+  1817, // Limburgish
+  1828, // LubaKatanga
+  1840, // Luxembourgish
+  1854, // Navaho
+  1861, // Ndonga
+  1868, // Ojibwa
+  1875, // Pali
+  1880, // Walloon
+  1888, // Aghem
+  1894, // Basaa
+  1900, // Zarma
+  1906, // Duala
+  1912, // JolaFonyi
+  1922, // Ewondo
+  1929, // Bafia
+  1935, // MakhuwaMeetto
+  1949, // Mundang
+  1957, // Kwasio
+  1964, // Nuer
+  1969, // Sakha
+  1975, // Sangu
+  1981, // Congo Swahili
+  1995, // Tasawaq
+  2003, // Vai
+  2007, // Walser
+  2014, // Yangben
+  2022, // Avestan
+  2030, // Asturian
+  2039, // Ngomba
+  2046, // Kako
+  2051, // Meta
+  2056, // Ngiemboon
+  2066, // Aragonese
+  2076, // Akkadian
+  2085, // AncientEgyptian
+  2101, // AncientGreek
+  2114, // Aramaic
+  2122, // Balinese
+  2131, // Bamun
+  2137, // BatakToba
+  2147, // Buginese
+  2156, // Buhid
+  2162, // Carian
+  2169, // Chakma
+  2176, // ClassicalMandaic
+  2193, // Coptic
+  2200, // Dogri
+  2206, // EasternCham
+  2218, // EasternKayah
+  2231, // Etruscan
+  2240, // Gothic
+  2247, // Hanunoo
+  2255, // Ingush
+  2262, // LargeFloweryMiao
+  2279, // Lepcha
+  2286, // Limbu
+  2292, // Lisu
+  2297, // Lu
+  2300, // Lycian
+  2307, // Lydian
+  2314, // Mandingo
+  2323, // Manipuri
+  2332, // Meroitic
+  2341, // NorthernThai
+  2354, // OldIrish
+  2363, // OldNorse
+  2372, // OldPersian
+  2383, // OldTurkish
+  2394, // Pahlavi
+  2402, // Parthian
+  2411, // Phoenician
+  2422, // PrakritLanguage
+  2438, // Rejang
+  2445, // Sabaean
+  2453, // Samaritan
+  2463, // Santali
+  2471, // Saurashtra
+  2482, // Sora
+  2487, // Sylheti
+  2495, // Tagbanwa
+  2504, // TaiDam
+  2511, // TaiNua
+  2518, // Ugaritic
 };
 
 static const char script_name_list[] =
@@ -5711,6 +5934,73 @@ static const char script_name_list[] =
 "Syriac\0"
 "Yi\0"
 "Vai\0"
+"Avestan\0"
+"Balinese\0"
+"Bamum\0"
+"Batak\0"
+"Bopomofo\0"
+"Brahmi\0"
+"Buginese\0"
+"Buhid\0"
+"CanadianAboriginal\0"
+"Carian\0"
+"Chakma\0"
+"Cham\0"
+"Coptic\0"
+"Cypriot\0"
+"Egyptian Hieroglyphs\0"
+"Fraser\0"
+"Glagolitic\0"
+"Gothic\0"
+"Han\0"
+"Hangul\0"
+"Hanunoo\0"
+"Imperial Aramaic\0"
+"Inscriptional Pahlavi\0"
+"Inscriptional Parthian\0"
+"Javanese\0"
+"Kaithi\0"
+"Katakana\0"
+"Kayah Li\0"
+"Kharoshthi\0"
+"Lanna\0"
+"Lepcha\0"
+"Limbu\0"
+"Linear B\0"
+"Lycian\0"
+"Lydian\0"
+"Mandaean\0"
+"Meitei Mayek\0"
+"Meroitic\0"
+"Meroitic Cursive\0"
+"Nko\0"
+"New Tai Lue\0"
+"Ogham\0"
+"Ol Chiki\0"
+"Old Italic\0"
+"Old Persian\0"
+"Old South Arabian\0"
+"Orkhon\0"
+"Osmanya\0"
+"Phags Pa\0"
+"Phoenician\0"
+"Pollard Phonetic\0"
+"Rejang\0"
+"Runic\0"
+"Samaritan\0"
+"Saurashtra\0"
+"Sharada\0"
+"Shavian\0"
+"Sora Sompeng\0"
+"Cuneiform\0"
+"Sundanese\0"
+"Syloti Nagri\0"
+"Tagalog\0"
+"Tagbanwa\0"
+"Tai Le\0"
+"Tai Viet\0"
+"Takri\0"
+"Ugaritic\0"
 ;
 
 static const quint16 script_name_index[] = {
@@ -5750,6 +6040,73 @@ static const quint16 script_name_index[] = {
    273, // Syriac
    280, // Yi
    283, // Vai
+   287, // Avestan
+   295, // Balinese
+   304, // Bamum
+   310, // Batak
+   316, // Bopomofo
+   325, // Brahmi
+   332, // Buginese
+   341, // Buhid
+   347, // CanadianAboriginal
+   366, // Carian
+   373, // Chakma
+   380, // Cham
+   385, // Coptic
+   392, // Cypriot
+   400, // Egyptian Hieroglyphs
+   421, // Fraser
+   428, // Glagolitic
+   439, // Gothic
+   446, // Han
+   450, // Hangul
+   457, // Hanunoo
+   465, // Imperial Aramaic
+   482, // Inscriptional Pahlavi
+   504, // Inscriptional Parthian
+   527, // Javanese
+   536, // Kaithi
+   543, // Katakana
+   552, // Kayah Li
+   561, // Kharoshthi
+   572, // Lanna
+   578, // Lepcha
+   585, // Limbu
+   591, // Linear B
+   600, // Lycian
+   607, // Lydian
+   614, // Mandaean
+   623, // Meitei Mayek
+   636, // Meroitic
+   645, // Meroitic Cursive
+   662, // Nko
+   666, // New Tai Lue
+   678, // Ogham
+   684, // Ol Chiki
+   693, // Old Italic
+   704, // Old Persian
+   716, // Old South Arabian
+   734, // Orkhon
+   741, // Osmanya
+   749, // Phags Pa
+   758, // Phoenician
+   769, // Pollard Phonetic
+   786, // Rejang
+   793, // Runic
+   799, // Samaritan
+   809, // Saurashtra
+   820, // Sharada
+   828, // Shavian
+   836, // Sora Sompeng
+   849, // Cuneiform
+   859, // Sundanese
+   869, // Syloti Nagri
+   882, // Tagalog
+   890, // Tagbanwa
+   899, // Tai Le
+   906, // Tai Viet
+   915, // Takri
+   921, // Ugaritic
 };
 
 static const char country_name_list[] =
@@ -6401,7 +6758,7 @@ static const unsigned char language_code_list[] =
 "tr\0" // Turkish
 "tk\0" // Turkmen
 "ty\0" // Tahitian
-"ug\0" // Uigur
+"ug\0" // Uighur
 "uk\0" // Ukrainian
 "ur\0" // Urdu
 "uz\0" // Uzbek
@@ -6534,6 +6891,57 @@ static const unsigned char language_code_list[] =
 "kkj" // Kako
 "mgo" // Meta
 "nnh" // Ngiemboon
+"an\0" // Aragonese
+"akk" // Akkadian
+"egy" // AncientEgyptian
+"grc" // AncientGreek
+"arc" // Aramaic
+"ban" // Balinese
+"bax" // Bamun
+"bbc" // BatakToba
+"bug" // Buginese
+"bku" // Buhid
+"xcr" // Carian
+"ccp" // Chakma
+"myz" // ClassicalMandaic
+"cop" // Coptic
+"doi" // Dogri
+"cjm" // EasternCham
+"eky" // EasternKayah
+"ett" // Etruscan
+"got" // Gothic
+"hnn" // Hanunoo
+"inh" // Ingush
+"hmd" // LargeFloweryMiao
+"lep" // Lepcha
+"lif" // Limbu
+"lis" // Lisu
+"khb" // Lu
+"xlc" // Lycian
+"xld" // Lydian
+"man" // Mandingo
+"mni" // Manipuri
+"xmr" // Meroitic
+"nod" // NorthernThai
+"sga" // OldIrish
+"non" // OldNorse
+"peo" // OldPersian
+"otk" // OldTurkish
+"pal" // Pahlavi
+"xpr" // Parthian
+"phn" // Phoenician
+"pra" // PrakritLanguage
+"rej" // Rejang
+"xsa" // Sabaean
+"smp" // Samaritan
+"sat" // Santali
+"saz" // Saurashtra
+"srb" // Sora
+"syl" // Sylheti
+"tbw" // Tagbanwa
+"blt" // TaiDam
+"tdd" // TaiNua
+"uga" // Ugaritic
 ;
 
 static const unsigned char script_code_list[] =
@@ -6570,9 +6978,76 @@ static const unsigned char script_code_list[] =
 "Thai" // Thai
 "Tibt" // Tibetan
 "Sinh" // Sinhala
-"Syri" // Syriac
+"Syrc" // Syriac
 "Yiii" // Yi
 "Vaii" // Vai
+"Avst" // Avestan
+"Bali" // Balinese
+"Bamu" // Bamum
+"Batk" // Batak
+"Bopo" // Bopomofo
+"Brah" // Brahmi
+"Bugi" // Buginese
+"Buhd" // Buhid
+"Cans" // CanadianAboriginal
+"Cari" // Carian
+"Cakm" // Chakma
+"Cham" // Cham
+"Copt" // Coptic
+"Cprt" // Cypriot
+"Egyp" // Egyptian Hieroglyphs
+"Lisu" // Fraser
+"Glag" // Glagolitic
+"Goth" // Gothic
+"Hani" // Han
+"Hang" // Hangul
+"Hano" // Hanunoo
+"Armi" // Imperial Aramaic
+"Phli" // Inscriptional Pahlavi
+"Prti" // Inscriptional Parthian
+"Java" // Javanese
+"Kthi" // Kaithi
+"Kana" // Katakana
+"Kali" // Kayah Li
+"Khar" // Kharoshthi
+"Lana" // Lanna
+"Lepc" // Lepcha
+"Limb" // Limbu
+"Linb" // Linear B
+"Lyci" // Lycian
+"Lydi" // Lydian
+"Mand" // Mandaean
+"Mtei" // Meitei Mayek
+"Mero" // Meroitic
+"Merc" // Meroitic Cursive
+"Nkoo" // Nko
+"Talu" // New Tai Lue
+"Ogam" // Ogham
+"Olck" // Ol Chiki
+"Ital" // Old Italic
+"Xpeo" // Old Persian
+"Sarb" // Old South Arabian
+"Orkh" // Orkhon
+"Osma" // Osmanya
+"Phag" // Phags Pa
+"Phnx" // Phoenician
+"Plrd" // Pollard Phonetic
+"Rjng" // Rejang
+"Runr" // Runic
+"Samr" // Samaritan
+"Saur" // Saurashtra
+"Shrd" // Sharada
+"Shaw" // Shavian
+"Sora" // Sora Sompeng
+"Xsux" // Cuneiform
+"Sund" // Sundanese
+"Sylo" // Syloti Nagri
+"Tglg" // Tagalog
+"Tagb" // Tagbanwa
+"Tale" // Tai Le
+"Tavt" // Tai Viet
+"Takr" // Takri
+"Ugar" // Ugaritic
 ;
 static const unsigned char country_code_list[] =
 "ZZ\0" // AnyCountry
