@@ -40,6 +40,7 @@ CONFIG(blackberry) {
 #DEFINES += QQNXVIRTUALKEYBOARD_DEBUG
 #DEFINES += QQNXWINDOW_DEBUG
 #DEFINES += QQNXCURSOR_DEBUG
+#DEFINES += QQNXFILEPICKER_DEBUG
 
 
 SOURCES =   main.cpp \
@@ -91,8 +92,7 @@ CONFIG(blackberry) {
                qqnxbpseventfilter.cpp \
                qqnxvirtualkeyboardbps.cpp \
                qqnxtheme.cpp \
-               qqnxsystemsettings.cpp \
-               qqnxfiledialoghelper.cpp
+               qqnxsystemsettings.cpp
 
     HEADERS += qqnxnavigatorbps.h \
                qqnxeventdispatcher_blackberry.h \
@@ -103,6 +103,17 @@ CONFIG(blackberry) {
                qqnxfiledialoghelper.h
 
     LIBS += -lbps
+}
+
+CONFIG(blackberry-playbook) {
+    SOURCES += qqnxfiledialoghelper_playbook.cpp
+} else {
+    CONFIG(blackberry) {
+        SOURCES += qqnxfiledialoghelper_bb10.cpp \
+                   qqnxfilepicker.cpp
+
+        HEADERS += qqnxfilepicker.h
+    }
 }
 
 CONFIG(qqnx_pps) {

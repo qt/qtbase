@@ -58,10 +58,8 @@ QQnxTheme::~QQnxTheme()
 
 bool QQnxTheme::usePlatformNativeDialog(DialogType type) const
 {
-#if defined(Q_OS_BLACKBERRY_TABLET)
     if (type == QPlatformTheme::FileDialog)
         return true;
-#endif
 #if !defined(QT_NO_COLORDIALOG)
     if (type == QPlatformTheme::ColorDialog)
         return false;
@@ -76,10 +74,8 @@ bool QQnxTheme::usePlatformNativeDialog(DialogType type) const
 QPlatformDialogHelper *QQnxTheme::createPlatformDialogHelper(DialogType type) const
 {
     switch (type) {
-#if defined(Q_OS_BLACKBERRY_TABLET)
     case QPlatformTheme::FileDialog:
         return new QQnxFileDialogHelper(m_integration);
-#endif
 #ifndef QT_NO_COLORDIALOG
     case QPlatformTheme::ColorDialog:
 #endif

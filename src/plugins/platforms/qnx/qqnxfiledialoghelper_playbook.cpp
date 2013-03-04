@@ -118,7 +118,7 @@ bool QQnxFileDialogHelper::handleEvent(bps_event_t *event)
         m_result = QPlatformDialogHelper::Rejected;
     }
 
-    emit dialogClosed();
+    Q_EMIT dialogClosed();
 
     return true;
 }
@@ -135,9 +135,9 @@ void QQnxFileDialogHelper::exec()
     loop.exec();
 
     if (m_result == QPlatformDialogHelper::Accepted)
-        emit accept();
+        Q_EMIT accept();
     else
-        emit reject();
+        Q_EMIT reject();
 }
 
 bool QQnxFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
@@ -291,9 +291,15 @@ QString QQnxFileDialogHelper::selectedNameFilter() const
 void QQnxFileDialogHelper::setNameFilter(const QString &filter)
 {
     qFileDialogHelperDebug() << Q_FUNC_INFO << "filter =" << filter;
+    setNameFilters(QPlatformFileDialogHelper::cleanFilterList(filter));
+}
 
-    // Extract the globbing expressions
-    QStringList filters = QPlatformFileDialogHelper::cleanFilterList(filter);
+void QQnxFileDialogHelper::setNameFilters(const QStringList &filters)
+{
+    qFileDialogHelperDebug() << Q_FUNC_INFO << "filters =" << filters;
+
+    Q_ASSERT(!filters.isEmpty());
+
     char **globs = new char*[filters.size()];
     for (int i = 0; i < filters.size(); ++i) {
         QByteArray glob = filters.at(i).toLocal8Bit();
@@ -303,7 +309,7 @@ void QQnxFileDialogHelper::setNameFilter(const QString &filter)
 
     // Set the filters
     dialog_set_filebrowse_filter(m_dialog, const_cast<const char**>(globs), filters.size());
-    m_selectedFilter = filter;
+    m_selectedFilter = filters.first();
 
     // Cleanup
     for (int i = 0; i < filters.size(); ++i)

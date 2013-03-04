@@ -1,6 +1,6 @@
 /***************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
+** Copyright (C) 2013 Research In Motion
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -39,69 +39,72 @@
 **
 ****************************************************************************/
 
-#ifndef QQNXFILEDIALOGHELPER_H
-#define QQNXFILEDIALOGHELPER_H
+#ifndef QQNXFILEPICKER_H
+#define QQNXFILEPICKER_H
 
-#include <qpa/qplatformdialoghelper.h>
+#include <QAbstractNativeEventFilter>
+#include <QObject>
+#include <QStringList>
 
+struct navigator_invoke_invocation_t;
 
-QT_BEGIN_NAMESPACE
-
-class QQnxIntegration;
-
-#if defined(Q_OS_BLACKBERRY_TABLET)
-#include <bps/dialog.h>
-#define NativeDialogPtr dialog_instance_t
-#else
-class QQnxFilePicker;
-#define NativeDialogPtr QQnxFilePicker *
-#endif
-
-class QQnxFileDialogHelper : public QPlatformFileDialogHelper
+class QQnxFilePicker : public QObject, public QAbstractNativeEventFilter
 {
     Q_OBJECT
+
 public:
-    explicit QQnxFileDialogHelper(const QQnxIntegration *);
-    ~QQnxFileDialogHelper();
+    explicit QQnxFilePicker(QObject *parent = 0);
+    ~QQnxFilePicker();
 
-#if defined(Q_OS_BLACKBERRY_TABLET)
-    bool handleEvent(bps_event_t *event);
-#endif
+    enum Mode {
+        Picker,
+        Saver,
+        PickerMultiple,
+        SaverMultiple
+    };
 
-    void exec();
+    bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) Q_DECL_OVERRIDE;
 
-    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
-    void hide();
+    void setMode(Mode mode);
+    void setDefaultSaveFileNames(const QStringList &fileNames);
+    void addDefaultSaveFileName(const QString &fileName);
+    void setDirectories(const QStringList &directories);
+    void addDirectory(const QString &directory);
+    void setFilters(const QStringList &filters);
+    void setTitle(const QString &title);
 
-    bool defaultNameFilterDisables() const;
-    void setDirectory(const QString &directory);
-    QString directory() const;
-    void selectFile(const QString &fileName);
+    Mode mode() const;
+
+    QStringList defaultSaveFileNames() const;
+    QStringList directories() const;
+    QStringList filters() const;
     QStringList selectedFiles() const;
-    void setFilter();
-    void selectNameFilter(const QString &filter);
-    QString selectedNameFilter() const;
 
-    NativeDialogPtr nativeDialog() const { return m_dialog; }
+    QString title() const;
 
 Q_SIGNALS:
-    void dialogClosed();
+    void closed();
+
+public Q_SLOTS:
+    void open();
+    void close();
 
 private:
-    void setNameFilter(const QString &filter);
-    void setNameFilters(const QStringList &filters);
+    void cleanup();
+    void handleFilePickerResponse(const char *data);
 
-    const QQnxIntegration *m_integration;
-    NativeDialogPtr m_dialog;
-    QFileDialogOptions::AcceptMode m_acceptMode;
-    QString m_selectedFilter;
+    QString modeToString(Mode mode) const;
 
-    QPlatformDialogHelper::DialogCode m_result;
-#if defined(Q_OS_BLACKBERRY_TABLET)
-    QStringList m_paths;
-#endif
+    navigator_invoke_invocation_t *m_invocationHandle;
+
+    Mode m_mode;
+
+    QStringList m_defaultSaveFileNames;
+    QStringList m_directories;
+    QStringList m_filters;
+    QStringList m_selectedFiles;
+
+    QString m_title;
 };
 
-QT_END_NAMESPACE
-
-#endif // QQNXFILEDIALOGHELPER_H
+#endif // QQNXFILEPICKER_H
