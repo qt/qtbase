@@ -387,9 +387,10 @@ public:
         mutable QMutex mutex;
     public:
         WindowSystemEventList() : impl(), mutex() {}
-        ~WindowSystemEventList()
-        { const QMutexLocker locker(&mutex); qDeleteAll(impl); impl.clear(); }
+        ~WindowSystemEventList() { clear(); }
 
+        void clear()
+        { const QMutexLocker locker(&mutex); qDeleteAll(impl); impl.clear(); }
         void prepend(WindowSystemEvent *e)
         { const QMutexLocker locker(&mutex); impl.prepend(e); }
         WindowSystemEvent *takeFirstOrReturnNull()

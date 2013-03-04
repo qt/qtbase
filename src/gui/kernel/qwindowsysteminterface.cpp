@@ -527,6 +527,16 @@ void QWindowSystemInterface::deferredFlushWindowSystemEvents()
 
 void QWindowSystemInterface::flushWindowSystemEvents()
 {
+    const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
+    if (!count)
+        return;
+    if (!QGuiApplication::instance()) {
+        qWarning().nospace()
+            << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
+               "QGuiApplication destruction, discarding " << count << " events.";
+        QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
+        return;
+    }
     if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
         QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent();
