@@ -611,7 +611,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
         scriptItems.reserve(numItems);
         int start = 0;
         for (int i = start + 1; i < numItems; ++i) {
-            if (items[i].script == items[start].script)
+            if (script_to_hbscript(items[i].script) == script_to_hbscript(items[start].script))
                 continue;
             HB_ScriptItem item;
             item.pos = items[start].position;
