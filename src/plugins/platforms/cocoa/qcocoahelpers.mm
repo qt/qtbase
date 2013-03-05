@@ -466,10 +466,9 @@ QString qt_mac_removeMnemonics(const QString &original)
     return returnText;
 }
 
-
-CGColorSpaceRef m_genericColorSpace = 0;
-QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
-bool m_postRoutineRegistered = false;
+static CGColorSpaceRef m_genericColorSpace = 0;
+static QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
+static bool m_postRoutineRegistered = false;
 
 CGColorSpaceRef qt_mac_genericColorSpace()
 {
