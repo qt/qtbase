@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -26,8 +26,10 @@
 ****************************************************************************/
 
 /*!
-    \example customcompleter
+    \example tools/customcompleter
     \title Custom Completer Example
+
+    \ingroup examples-widgets-tools
 
     \brief The Custom Completer example shows how to provide string-completion
     facilities for an input widget based on data provided by a model. The
@@ -43,7 +45,7 @@
     that has a list of words to help QCompleter complete words. This file
     contains the following:
 
-    \quotefile customcompleter/customcompleter.qrc
+    \quotefile tools/customcompleter/customcompleter.qrc
 
     \section1 TextEdit Class Definition
 
@@ -54,7 +56,7 @@
     contains a private function \c textUnderCursor() and a private instance
     of QCompleter, \c c.
 
-    \snippet customcompleter/textedit.h 0
+    \snippet tools/customcompleter/textedit.h 0
 
     \section1 TextEdit Class Implementation
 
@@ -63,11 +65,11 @@
     the \c TextEdit object, using the
     \l{QTextEdit::setPlainText()}{setPlainText()} function.
 
-    \snippet customcompleter/textedit.cpp 0
+    \snippet tools/customcompleter/textedit.cpp 0
 
     In addition, \c TextEdit also includes a default destructor:
 
-    \snippet customcompleter/textedit.cpp 1
+    \snippet tools/customcompleter/textedit.cpp 1
 
     The \c setCompleter() function accepts a \a completer and sets it up.
     We use \c{if (c)} to check if \c c has been initialized. If it has been
@@ -75,7 +77,7 @@
     the signal from the slot. This is to ensure that no previous completer
     object is still connected to the slot.
 
-    \snippet customcompleter/textedit.cpp 2
+    \snippet tools/customcompleter/textedit.cpp 2
 
     We then instantiate \c c with \a completer and set it as \c{TextEdit}'s
     widget. The completion mode and case sensitivity are also set and then
@@ -84,7 +86,7 @@
 
     The \c completer() function is a getter function that returns \c c.
 
-    \snippet customcompleter/textedit.cpp 3
+    \snippet tools/customcompleter/textedit.cpp 3
 
     The completer pops up the options available, based on the contents of
     \e wordlist.txt, but the text cursor is responsible for filling in the
@@ -99,7 +101,7 @@
     completer's widget is \c TextEdit before using \c tc to insert the extra
     characters to complete the word.
 
-    \snippet customcompleter/textedit.cpp 4
+    \snippet tools/customcompleter/textedit.cpp 4
 
     The figure below illustrates this process:
 
@@ -116,13 +118,13 @@
     The \c textUnderCursor() function uses a QTextCursor, \c tc, to select a
     word under the cursor and return it.
 
-    \snippet customcompleter/textedit.cpp 5
+    \snippet tools/customcompleter/textedit.cpp 5
 
     The \c TextEdit class reimplements \l{QWidget::focusInEvent()}
     {focusInEvent()} function, which is an event handler used to receive
     keyboard focus events for the widget.
 
-    \snippet customcompleter/textedit.cpp 6
+    \snippet tools/customcompleter/textedit.cpp 6
 
     The \l{QAbstractScrollArea::keyPressEvent()}{keyPressEvent()} is
     reimplemented to ignore key events like Qt::Key_Enter, Qt::Key_Return,
@@ -131,12 +133,12 @@
 
     If there is an active completer, we cannot process the shortcut, Ctrl+E.
 
-    \snippet customcompleter/textedit.cpp 7
+    \snippet tools/customcompleter/textedit.cpp 7
 
     We also handle other modifiers and shortcuts for which we do not want the
     completer to respond to.
 
-    \snippet customcompleter/textedit.cpp 8
+    \snippet tools/customcompleter/textedit.cpp 8
 
     Finally, we pop up the completer.
 
@@ -147,7 +149,7 @@
     \c createMenu() and \c modelFromFile() as well as private instances of
     QCompleter and \c TextEdit.
 
-    \snippet customcompleter/mainwindow.h 0
+    \snippet tools/customcompleter/mainwindow.h 0
 
     \section1 MainWindow Class Implementation
 
@@ -157,31 +159,31 @@
     to populate the \c completer. The \c{MainWindow}'s central widget is set
     to \c TextEdit and its size is set to 500 x 300.
 
-    \snippet customcompleter/mainwindow.cpp 0
+    \snippet tools/customcompleter/mainwindow.cpp 0
 
     The \c createMenu() function creates the necessary QAction objects needed
     for the "File" and "Help" menu and their \l{QAction::triggered()}
     {triggered()} signals are connected to the \c quit(), \c about(), and
     \c aboutQt() slots respectively.
 
-    \snippet customcompleter/mainwindow.cpp 1
+    \snippet tools/customcompleter/mainwindow.cpp 1
 
     The \c modelFromFile() function accepts a \a fileName and attempts to
     extract the contents of this file into a QStringListModel. We display the
     Qt::WaitCursor when we are populating the QStringList, \c words, and
     restore the mouse cursor when we are done.
 
-    \snippet customcompleter/mainwindow.cpp 2
+    \snippet tools/customcompleter/mainwindow.cpp 2
 
     The \c about() function provides a brief description about the Custom
     Completer example.
 
-    \snippet customcompleter/mainwindow.cpp 3
+    \snippet tools/customcompleter/mainwindow.cpp 3
 
     \section1 \c main() Function
 
     The \c main() function instantiates \c MainWindow and invokes the
     \l{QWidget::show()}{show()} function.
 
-    \snippet customcompleter/main.cpp 0
+    \snippet tools/customcompleter/main.cpp 0
 */
