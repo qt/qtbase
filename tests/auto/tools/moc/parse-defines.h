@@ -76,6 +76,9 @@
 
 #endif
 
+#define PD_ADD_SUFFIX(x)  PD_DEFINE1(x,_SUFFIX)
+#define PD_DEFINE_ITSELF PD_ADD_SUFFIX(PD_DEFINE_ITSELF)
+
 PD_BEGIN_NAMESPACE
 
 class PD_CLASSNAME : public QObject
@@ -127,6 +130,8 @@ public slots:
 #if !(cond1() & cond2())
     void conditionSlot() {}
 #endif
+
+    void PD_DEFINE_ITSELF(int) {}
 
 };
 

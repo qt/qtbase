@@ -3,4 +3,6 @@ CONFIG += no_docs_target
 
 SUBDIRS += analogclock
 SUBDIRS += rasterwindow
-SUBDIRS += openglwindow
+contains(QT_CONFIG, opengl(es1|es2)?) {
+    SUBDIRS += openglwindow
+}

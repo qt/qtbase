@@ -374,6 +374,24 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
 }
 
 /*!
+  Reconstruct the qualified \a id using dot notation
+  and return the fully qualified string.
+ */
+QString QmlDocVisitor::getFullyQualifiedId(QQmlJS::AST::UiQualifiedId *id)
+{
+    QString result;
+    if (id) {
+        result = id->name.toString();
+        id = id->next;
+        while (id != 0) {
+            result += QChar('.') + id->name.toString();
+            id = id->next;
+        }
+    }
+    return result;
+}
+
+/*!
   Begin the visit of the object \a definition, recording it in the
   qdoc database. Increment the object nesting level, which is used
   to test whether we are at the public API level. The public level
@@ -381,7 +399,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
 */
 bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
 {
-    QString type = definition->qualifiedTypeNameId->name.toString();
+    QString type = getFullyQualifiedId(definition->qualifiedTypeNameId);
     nestingLevel++;
 
     if (current->type() == Node::Namespace) {
@@ -420,17 +438,18 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::UiObjectDefinition *definition)
  */
 bool QmlDocVisitor::visit(QQmlJS::AST::UiImportList *imports)
 {
-    QQmlJS::AST::UiImport* imp = imports->import;
-    quint32 length =  imp->versionToken.offset - imp->fileNameToken.offset - 1;
-    QString module = document.mid(imp->fileNameToken.offset,length);
-    QString version = document.mid(imp->versionToken.offset, imp->versionToken.length);
-    if (version.size() > 1) {
-        int dot = version.lastIndexOf(QChar('.'));
-        if (dot > 0)
-            version = version.left(dot);
-    }
-    importList.append(QPair<QString, QString>(module, version));
+    while (imports != 0) {
+        QQmlJS::AST::UiImport* imp = imports->import;
 
+        QString name = document.mid(imp->fileNameToken.offset, imp->fileNameToken.length);
+        if (name[0] == '\"')
+            name = name.mid(1, name.length()-2);
+        QString version = document.mid(imp->versionToken.offset, imp->versionToken.length);
+        QString importId = document.mid(imp->importIdToken.offset, imp->importIdToken.length);
+        QString importUri = getFullyQualifiedId(imp->importUri);
+        importList.append(ImportRec(name, version, importId, importUri));
+        imports = imports->next;
+    }
     return true;
 }
 

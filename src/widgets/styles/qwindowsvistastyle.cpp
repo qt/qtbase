@@ -520,7 +520,11 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         }
         break;
     case PE_Frame: {
+#ifndef QT_NO_ACCESSIBILITY
         if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)) {
+#else
+        if (false) {
+#endif
             painter->save();
             int stateId = ETS_NORMAL;
             if (!(state & State_Enabled))

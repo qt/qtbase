@@ -121,6 +121,7 @@ public:
     void setParent(const QPlatformWindow *window);
 
     NSView *contentView() const;
+    void setContentView(NSView *contentView);
 
     void windowWillMove();
     void windowDidMove();
@@ -164,8 +165,11 @@ public: // for QNSView
     friend class QCocoaBackingStore;
     friend class QCocoaNativeInterface;
 
-    QNSView *m_contentView;
+    NSView *m_contentView;
+    QNSView *m_qtView;
     NSWindow *m_nsWindow;
+    bool m_contentViewIsEmbedded; // true if the m_contentView is embedded in a "foregin" NSView hiearchy
+
     QNSWindowDelegate *m_nsWindowDelegate;
     Qt::WindowFlags m_windowFlags;
     Qt::WindowState m_synchedWindowState;

@@ -172,13 +172,13 @@ QPixmap QCocoaScreen::grabWindow(WId window, int x, int y, int width, int height
             windowSize.setHeight(windowRect.height());
     }
 
-    QPixmap windowPixmap(windowSize);
+    QPixmap windowPixmap(windowSize * devicePixelRatio());
     windowPixmap.fill(Qt::transparent);
 
     for (uint i = 0; i < displayCount; ++i) {
         const CGRect bounds = CGDisplayBounds(displays[i]);
-        int w = (width < 0 ? bounds.size.width : width);
-        int h = (height < 0 ? bounds.size.height : height);
+        int w = (width < 0 ? bounds.size.width : width) * devicePixelRatio();
+        int h = (height < 0 ? bounds.size.height : height) * devicePixelRatio();
         QRect displayRect = QRect(x, y, w, h);
         QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
             CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));

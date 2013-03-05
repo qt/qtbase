@@ -143,7 +143,6 @@ typedef GtkWidget* (*Ptr_gtk_menu_bar_new)(void);
 typedef GtkWidget* (*Ptr_gtk_menu_new)(void);
 typedef GtkWidget* (*Ptr_gtk_combo_box_new)(void);
 typedef GtkWidget* (*Ptr_gtk_combo_box_entry_new)(void);
-typedef GtkWidget* (*Ptr_gtk_combo_box_new_with_entry)(void);
 typedef GtkWidget* (*Ptr_gtk_toolbar_new)(void);
 typedef GtkWidget* (*Ptr_gtk_spin_button_new)(GtkAdjustment*, double, int);
 typedef GtkWidget* (*Ptr_gtk_button_new)(void);
@@ -380,7 +379,6 @@ public:
     static Ptr_gtk_tree_view_get_column gtk_tree_view_get_column;
     static Ptr_gtk_combo_box_new gtk_combo_box_new;
     static Ptr_gtk_combo_box_entry_new gtk_combo_box_entry_new;
-    static Ptr_gtk_combo_box_new_with_entry gtk_combo_box_new_with_entry;
     static Ptr_gtk_progress_bar_new gtk_progress_bar_new;
     static Ptr_gtk_container_add gtk_container_add;
     static Ptr_gtk_menu_shell_append gtk_menu_shell_append;

@@ -77,8 +77,10 @@ QCocoaMenuBar::~QCocoaMenuBar()
     [m_nativeMenu release];
     static_menubars.removeOne(this);
 
-    if (m_window)
+    if (m_window && m_window->menubar() == this) {
         m_window->setMenubar(0);
+        updateMenuBarImmediately();
+    }
 }
 
 void QCocoaMenuBar::insertMenu(QPlatformMenu *platformMenu, QPlatformMenu *before)

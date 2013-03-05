@@ -33,8 +33,7 @@
     \ingroup qt-gui-concepts
 
     Drag and drop provides a simple visual mechanism which users can use
-    to transfer information between and within applications. (In the
-    literature this is referred to as a "direct manipulation model".) Drag
+    to transfer information between and within applications. Drag
     and drop is similar in function to the clipboard's cut and paste
     mechanism.
 

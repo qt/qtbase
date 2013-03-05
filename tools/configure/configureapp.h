@@ -116,6 +116,7 @@ private:
     QStringList defaultBuildParts;
     QStringList buildParts;
     QStringList nobuildParts;
+    QStringList skipModules;
     QStringList licensedModules;
     QStringList allSqlDrivers;
     QStringList allConfigs;

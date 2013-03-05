@@ -44,6 +44,8 @@
 
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
+#else
+#include <QtWidgets>
 #endif
 
 //! [0]

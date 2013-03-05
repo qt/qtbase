@@ -78,7 +78,7 @@ public:
 #  ifndef QT_NO_DRAGANDDROP
     virtual QPlatformDrag *drag() const;
 #  endif
-#endif !QT_NO_CLIPBOARD
+#endif // !QT_NO_CLIPBOARD
     virtual QPlatformInputContext *inputContext() const;
 #ifndef QT_NO_ACCESSIBILITY
     virtual QPlatformAccessibility *accessibility() const;

@@ -133,7 +133,6 @@ Ptr_gtk_separator_tool_item_new QGtkStylePrivate::gtk_separator_tool_item_new = 
 Ptr_gtk_tree_view_new QGtkStylePrivate::gtk_tree_view_new = 0;
 Ptr_gtk_combo_box_new QGtkStylePrivate::gtk_combo_box_new = 0;
 Ptr_gtk_combo_box_entry_new QGtkStylePrivate::gtk_combo_box_entry_new = 0;
-Ptr_gtk_combo_box_new_with_entry QGtkStylePrivate::gtk_combo_box_new_with_entry = 0;
 Ptr_gtk_progress_bar_new QGtkStylePrivate::gtk_progress_bar_new = 0;
 Ptr_gtk_container_add QGtkStylePrivate::gtk_container_add = 0;
 Ptr_gtk_menu_shell_append QGtkStylePrivate::gtk_menu_shell_append = 0;
@@ -411,7 +410,6 @@ void QGtkStylePrivate::resolveGtk() const
     gtk_tree_view_new = (Ptr_gtk_tree_view_new)libgtk.resolve("gtk_tree_view_new");
     gtk_combo_box_new = (Ptr_gtk_combo_box_new)libgtk.resolve("gtk_combo_box_new");
     gtk_combo_box_entry_new = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_entry_new");
-    gtk_combo_box_new_with_entry = (Ptr_gtk_combo_box_entry_new)libgtk.resolve("gtk_combo_box_new_with_entry");
     gtk_range_get_adjustment = (Ptr_gtk_range_get_adjustment)libgtk.resolve("gtk_range_get_adjustment");
     gtk_range_set_adjustment = (Ptr_gtk_range_set_adjustment)libgtk.resolve("gtk_range_set_adjustment");
     gtk_range_set_inverted = (Ptr_gtk_range_set_inverted)libgtk.resolve("gtk_range_set_inverted");
@@ -575,10 +573,7 @@ void QGtkStylePrivate::initGtkWidgets() const
             addWidget(QGtkStylePrivate::gtk_check_button_new());
             addWidget(QGtkStylePrivate::gtk_radio_button_new(NULL));
             addWidget(QGtkStylePrivate::gtk_combo_box_new());
-            if (gtk_combo_box_entry_new)
-                addWidget(QGtkStylePrivate::gtk_combo_box_entry_new());
-            if (gtk_combo_box_new_with_entry)
-                addWidget(QGtkStylePrivate::gtk_combo_box_new_with_entry());
+            addWidget(QGtkStylePrivate::gtk_combo_box_entry_new());
             GtkWidget *entry = QGtkStylePrivate::gtk_entry_new();
             // gtk-im-context-none is supported in gtk+ since 2.19.5
             // and also exists in gtk3

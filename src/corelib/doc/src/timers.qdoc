@@ -102,14 +102,14 @@
     QTimer to redraw a widget at regular intervals. From \c{AnalogClock}'s
     implementation:
 
-    \snippet analogclock.cpp 0
-    \snippet analogclock.cpp 2
-    \snippet analogclock.cpp 3
-    \snippet analogclock.cpp 4
-    \snippet analogclock.cpp 5
-    \snippet analogclock.cpp 6
+    \snippet timers/analogclock.cpp 0
+    \snippet timers/analogclock.cpp 2
+    \snippet timers/analogclock.cpp 3
+    \snippet timers/analogclock.cpp 4
+    \snippet timers/analogclock.cpp 5
+    \snippet timers/analogclock.cpp 6
     \dots
-    \snippet analogclock.cpp 7
+    \snippet timers/analogclock.cpp 7
 
     Every second, QTimer will call the QWidget::update() slot to
     refresh the clock's display.

@@ -2605,14 +2605,17 @@ static void updateObjects(const QList<const QObject *>& objects)
             styleSheetCaches->renderRulesCache.remove(object);
         }
     }
-    for (int i = 0; i < objects.size(); ++i) {
-        QObject *object = const_cast<QObject *>(objects.at(i));
-        if (object == 0)
-            continue;
-        if (QWidget *widget = qobject_cast<QWidget *>(object))
-            widget->style()->polish(widget);
-        QEvent event(QEvent::StyleChange);
-        QApplication::sendEvent(object, &event);
+
+    QWidgetList widgets;
+    foreach (const QObject *object, objects) {
+        if (QWidget *w = qobject_cast<QWidget*>(const_cast<QObject*>(object)))
+            widgets << w;
+    }
+
+    QEvent event(QEvent::StyleChange);
+    foreach (QWidget *widget, widgets) {
+        widget->style()->polish(widget);
+        QApplication::sendEvent(widget, &event);
     }
 }
 

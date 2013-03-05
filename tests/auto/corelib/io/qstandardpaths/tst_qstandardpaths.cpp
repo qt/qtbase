@@ -45,6 +45,7 @@
 #include <qstandardpaths.h>
 #include <qfileinfo.h>
 #include <qsysinfo.h>
+#include <qregexp.h>
 
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -72,6 +73,7 @@ private slots:
     void testCustomRuntimeDirectory();
     void testAllWritableLocations_data();
     void testAllWritableLocations();
+    void testCleanPath();
 
 private:
 #ifdef Q_XDG_PLATFORM
@@ -428,6 +430,18 @@ void tst_qstandardpaths::testAllWritableLocations()
     QString loc = QStandardPaths::writableLocation(location);
     if (loc.size() > 1)  // workaround for unlikely case of locations that return '/'
         QCOMPARE(loc.endsWith(QLatin1Char('/')), false);
+}
+
+void tst_qstandardpaths::testCleanPath()
+{
+    const QRegExp filter(QStringLiteral("\\\\"));
+    QVERIFY(filter.isValid());
+    for (int i = 0; i <= QStandardPaths::GenericCacheLocation; ++i) {
+        const QStringList paths = QStandardPaths::standardLocations(QStandardPaths::StandardLocation(i));
+        QVERIFY2(paths.filter(filter).isEmpty(),
+                 qPrintable(QString::fromLatin1("Backslash found in %1 %2")
+                            .arg(i).arg(paths.join(QLatin1Char(',')))));
+    }
 }
 
 QTEST_MAIN(tst_qstandardpaths)

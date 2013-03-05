@@ -78,7 +78,6 @@ private slots:
     void shareRegister();
     void textureCleanup();
 #endif
-    void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
     void glWidgetWithAlpha();
@@ -98,6 +97,7 @@ private slots:
     void destroyFBOAfterContext();
     void threadImages();
     void nullRectCrash();
+    void graphicsViewClipping();
 };
 
 tst_QGL::tst_QGL()
@@ -865,7 +865,11 @@ void tst_QGL::graphicsViewClipping()
 
     scene.setSceneRect(view.viewport()->rect());
 
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    #ifdef Q_OS_MAC
+        // The black rectangle jumps from the center to the upper left for some reason.
+        QTest::qWait(100);
+    #endif
 
     QImage image = viewport->grabFrameBuffer();
     QImage expected = image;
