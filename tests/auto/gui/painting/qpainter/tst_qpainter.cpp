@@ -280,6 +280,7 @@ private slots:
     void drawTextWithComplexBrush();
     void QTBUG26013_squareCapStroke();
     void QTBUG25153_drawLine();
+    void dashing_systemClip();
 
 private:
     void fillData();
@@ -4459,6 +4460,43 @@ void tst_QPainter::QTBUG25153_drawLine()
         QCOMPARE(image.pixel(0, 1), 0xffffffff);
         QCOMPARE(image.pixel(1, 0), 0xffffffff);
     }
+}
+
+static void dashing_systemClip_paint(QPainter *p)
+{
+    p->setPen(QPen(Qt::black, 1, Qt::DashLine, Qt::RoundCap, Qt::MiterJoin));
+    p->drawLine(8, 8, 42, 8);
+    p->drawLine(42, 8, 42, 42);
+    p->drawLine(42, 42, 8, 42);
+    p->drawLine(8, 42, 8, 8);
+}
+
+void tst_QPainter::dashing_systemClip()
+{
+    QImage image(50, 50, QImage::Format_RGB32);
+    image.fill(Qt::white);
+
+    QPainter p(&image);
+    dashing_systemClip_paint(&p);
+    p.end();
+
+    QImage old = image.copy();
+
+    image.paintEngine()->setSystemClip(QRect(10, 0, image.width() - 10, image.height()));
+
+    p.begin(&image);
+    dashing_systemClip_paint(&p);
+
+    // doing same paint operation again with different system clip should not change the image
+    QCOMPARE(old, image);
+
+    old = image;
+
+    p.setClipRect(QRect(20, 20, 30, 30));
+    dashing_systemClip_paint(&p);
+
+    // ditto for regular clips
+    QCOMPARE(old, image);
 }
 
 QTEST_MAIN(tst_QPainter)

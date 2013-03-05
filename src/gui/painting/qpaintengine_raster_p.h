@@ -323,6 +323,7 @@ public:
 #endif
 
     QRect deviceRect;
+    QRect deviceRectUnclipped;
 
     QStroker basicStroker;
     QScopedPointer<QDashStroker> dashStroker;
