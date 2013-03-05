@@ -3201,18 +3201,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         drawTabCloseButton(p, hover, active, selected);
         } break;
     case PE_PanelStatusBar: {
-        if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_4) {
-            QCommonStyle::drawPrimitive(pe, opt, p, w);
-            break;
-        }
-        // Use the Leopard style only if the status bar is the status bar for a
-        // QMainWindow with a unifed toolbar.
-        if (w == 0 || w->parent() == 0 || qobject_cast<QMainWindow *>(w->parent()) == 0 ||
-            qobject_cast<QMainWindow *>(w->parent())->unifiedTitleAndToolBarOnMac() == false ) {
-            QCommonStyle::drawPrimitive(pe, opt, p, w);
-            break;
-        }
-
         // Fill the status bar with the titlebar gradient.
         QLinearGradient linearGrad(0, opt->rect.top(), 0, opt->rect.bottom());
         if (opt->state & QStyle::State_Active) {
