@@ -126,7 +126,7 @@ shellArgumentListToQMakeList()
 
 # Helper function for getQMakeConf. It parses include statements in
 # qmake.conf and prints out the expanded file
-getQMakeConf1()
+expandQMakeConf()
 {
     while read line; do case "$line" in
         include*)
@@ -137,7 +137,7 @@ getQMakeConf1()
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            getQMakeConf1 "$conf_file"
+            expandQMakeConf "$conf_file"
         ;;
         *load\(device_config\)*)
             conf_file="$DEVICE_VARS_FILE"
@@ -145,7 +145,7 @@ getQMakeConf1()
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            getQMakeConf1 "$conf_file"
+            expandQMakeConf "$conf_file"
         ;;
         *)
             echo "$line"
@@ -153,7 +153,7 @@ getQMakeConf1()
     esac; done < "$1"
 }
 
-getQMakeConf2()
+extractQMakeVariables()
 {
     $AWK '
 BEGIN {
@@ -215,7 +215,7 @@ END {
 '
 }
 
-getQMakeConf3()
+getSingleQMakeVariable()
 {
     echo "$2" | $AWK "/^($1)=/ { print substr(\$0, index(\$0, \"=\") + 1) }"
 }
@@ -225,17 +225,17 @@ getQMakeConf3()
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
-        specvals=`getQMakeConf1 "$QMAKESPEC/qmake.conf" | getQMakeConf2`
+        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables`
     fi
-    getQMakeConf3 "$1" "$specvals"
+    getSingleQMakeVariable "$1" "$specvals"
 }
 
 getXQMakeConf()
 {
     if [ -z "$xspecvals" ]; then
-        xspecvals=`getQMakeConf1 "$XQMAKESPEC/qmake.conf" | getQMakeConf2`
+        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" | extractQMakeVariables`
     fi
-    getQMakeConf3 "$1" "$xspecvals"
+    getSingleQMakeVariable "$1" "$xspecvals"
 }
 
 compilerSupportsFlag()
