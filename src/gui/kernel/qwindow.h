@@ -99,6 +99,10 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     // For example "state" (meaning windowState) is not a good property to declare, because it has
     // a different meaning in QQuickItem, and users will tend to assume it is the same for Window.
 
+    // Any new properties which you add here MUST be versioned and MUST be documented both as
+    // C++ properties in qwindow.cpp AND as QML properties in qquickwindow.cpp.
+    // http://qt-project.org/doc/qt-5.0/qtqml/qtqml-cppintegration-definetypes.html#type-revisions-and-versions
+
     Q_PROPERTY(QString title READ title WRITE setTitle)
     Q_PROPERTY(Qt::WindowModality modality READ modality WRITE setModality NOTIFY modalityChanged)
     Q_PROPERTY(Qt::WindowFlags flags READ flags WRITE setFlags)
@@ -106,14 +110,14 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged)
-    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged)
-    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
-    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
+    Q_PROPERTY(int minimumWidth READ minimumWidth WRITE setMinimumWidth NOTIFY minimumWidthChanged REVISION 1)
+    Q_PROPERTY(int minimumHeight READ minimumHeight WRITE setMinimumHeight NOTIFY minimumHeightChanged REVISION 1)
+    Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged REVISION 1)
+    Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged REVISION 1)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
-    Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged)
-    Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION 1)
+    Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged REVISION 1)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION 1)
 
 public:
     enum Visibility {
@@ -281,10 +285,10 @@ public Q_SLOTS:
     void setWidth(int arg);
     void setHeight(int arg);
 
-    void setMinimumWidth(int w);
-    void setMinimumHeight(int h);
-    void setMaximumWidth(int w);
-    void setMaximumHeight(int h);
+    Q_REVISION(1) void setMinimumWidth(int w);
+    Q_REVISION(1) void setMinimumHeight(int h);
+    Q_REVISION(1) void setMaximumWidth(int w);
+    Q_REVISION(1) void setMaximumHeight(int h);
 
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
@@ -297,18 +301,18 @@ Q_SIGNALS:
     void widthChanged(int arg);
     void heightChanged(int arg);
 
-    void minimumWidthChanged(int arg);
-    void minimumHeightChanged(int arg);
-    void maximumWidthChanged(int arg);
-    void maximumHeightChanged(int arg);
+    Q_REVISION(1) void minimumWidthChanged(int arg);
+    Q_REVISION(1) void minimumHeightChanged(int arg);
+    Q_REVISION(1) void maximumWidthChanged(int arg);
+    Q_REVISION(1) void maximumHeightChanged(int arg);
 
     void visibleChanged(bool arg);
-    void visibilityChanged(QWindow::Visibility visibility);
-    void contentOrientationChanged(Qt::ScreenOrientation orientation);
+    Q_REVISION(1) void visibilityChanged(QWindow::Visibility visibility);
+    Q_REVISION(1) void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
     void focusObjectChanged(QObject *object);
 
-    void opacityChanged(qreal opacity);
+    Q_REVISION(1) void opacityChanged(qreal opacity);
 
 private Q_SLOTS:
     void screenDestroyed(QObject *screen);

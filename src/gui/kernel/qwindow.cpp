@@ -781,6 +781,7 @@ void QWindow::lower()
 /*!
     \property QWindow::opacity
     \brief The opacity of the window in the windowing system.
+    \since 5.1
 
     If the windowing system supports window opacity, this can be used to fade the
     window in and out, or to make it semitransparent.
@@ -904,6 +905,7 @@ bool QWindow::isActive() const
 /*!
     \property QWindow::contentOrientation
     \brief the orientation of the window's contents
+    \since 5.1
 
     This is a hint to the window manager in case it needs to display
     additional content like popups, dialogs, status bars, or similar
@@ -1160,6 +1162,7 @@ void QWindow::setHeight(int arg)
 /*!
     \property QWindow::minimumWidth
     \brief the minimum width of the window's geometry
+    \since 5.1
 */
 void QWindow::setMinimumWidth(int w)
 {
@@ -1169,6 +1172,7 @@ void QWindow::setMinimumWidth(int w)
 /*!
     \property QWindow::minimumHeight
     \brief the minimum height of the window's geometry
+    \since 5.1
 */
 void QWindow::setMinimumHeight(int h)
 {
@@ -1201,6 +1205,7 @@ void QWindow::setMaximumSize(const QSize &size)
 /*!
     \property QWindow::maximumWidth
     \brief the maximum width of the window's geometry
+    \since 5.1
 */
 void QWindow::setMaximumWidth(int w)
 {
@@ -1210,6 +1215,7 @@ void QWindow::setMaximumWidth(int w)
 /*!
     \property QWindow::maximumHeight
     \brief the maximum height of the window's geometry
+    \since 5.1
 */
 void QWindow::setMaximumHeight(int h)
 {
