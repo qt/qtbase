@@ -557,6 +557,18 @@ public:
 
 private:
     void detach_helper();
+    bool isValidIterator(const const_iterator &ci) const
+    {
+#if defined(QT_DEBUG) && !defined(Q_MAP_NO_ITERATOR_DEBUG)
+        const QMapNodeBase *n = ci.i;
+        while (n->parent())
+            n = n->parent();
+        return n->left == d->root();
+#else
+        Q_UNUSED(ci);
+        return true;
+#endif
+    }
 };
 
 template <class Key, class T>
@@ -670,6 +682,8 @@ typename QMap<Key, T>::iterator QMap<Key, T>::insert(const_iterator pos, const K
     if (d->ref.isShared())
         return this->insert(akey, avalue);
 
+    Q_ASSERT_X(isValidIterator(pos), "QMap::insert", "The specified const_iterator argument 'it' is invalid");
+
     if (pos == constEnd()) {
         // Hint is that the Node is larger than (or equal to) the largest value.
         Node *n = static_cast<Node *>(pos.i->left);
@@ -752,6 +766,8 @@ typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, co
 {
     if (d->ref.isShared())
         return this->insertMulti(akey, avalue);
+
+    Q_ASSERT_X(isValidIterator(pos), "QMap::insertMulti", "The specified const_iterator argument 'pos' is invalid");
 
     if (pos == constEnd()) {
         // Hint is that the Node is larger than (or equal to) the largest value.
@@ -894,6 +910,8 @@ Q_OUTOFLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::erase(iterato
 {
     if (it == iterator(d->end()))
         return it;
+
+    Q_ASSERT_X(isValidIterator(const_iterator(it)), "QMap::erase", "The specified iterator argument 'it' is invalid");
 
     Node *n = it.i;
     ++it;
