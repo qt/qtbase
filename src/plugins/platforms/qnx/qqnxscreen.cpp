@@ -151,6 +151,8 @@ QQnxScreen::QQnxScreen(screen_context_t screenContext, screen_display_t display,
 QQnxScreen::~QQnxScreen()
 {
     qScreenDebug() << Q_FUNC_INFO;
+    Q_FOREACH (QQnxWindow *childWindow, m_childWindows)
+        childWindow->setScreen(0);
 
     delete m_cursor;
 }
