@@ -840,7 +840,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
                                                           : kThemeGrowRight | kThemeGrowDown;
             gbi.size = sz == QAquaSizeSmall ? kHIThemeGrowBoxSizeSmall : kHIThemeGrowBoxSizeNormal;
             if (HIThemeGetGrowBoxBounds(&p, &gbi, &r) == noErr)
-                ret = QSize(r.size.width, r.size.height);
+                ret = QSize(QSysInfo::MacintoshVersion <= QSysInfo::MV_10_6 ? r.size.width : 0, r.size.height);
         }
         break;
     case QStyle::CT_ComboBox:
@@ -4316,6 +4316,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ProgressBarGroove:
         break;
     case CE_SizeGrip: {
+        // We do not draw size grips on versions > 10.6
+        if (QSysInfo::MacintoshVersion > QSysInfo::MV_10_6)
+            break;
+
         if (w && w->testAttribute(Qt::WA_MacOpaqueSizeGrip)) {
             HIThemeGrowBoxDrawInfo gdi;
             gdi.version = qt_mac_hitheme_version;
