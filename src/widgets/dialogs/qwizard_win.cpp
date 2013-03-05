@@ -256,8 +256,10 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     is_vista = resolveSymbols();
     if (instanceCount++ == 0)
         cachedVistaState = Dirty;
-    if (is_vista)
+    if (is_vista) {
         backButton_ = new QVistaBackButton(wizard);
+        backButton_->hide();
+    }
 
     // Handle diff between Windows 7 and Vista
     iconSpacing = QStyleHelper::dpiScaled(7);

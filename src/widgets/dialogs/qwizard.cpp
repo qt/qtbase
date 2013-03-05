@@ -1547,6 +1547,7 @@ bool QWizardPrivate::handleAeroStyleChange()
                 0, vistaHelper->topOffset() // ### should ideally work without the '+ 1'
                 - qMin(vistaHelper->topOffset(), vistaHelper->topPadding() + 1));
             vistaMargins = true;
+            vistaHelper->backButton()->show();
         } else {
             if (isWindow)
                 vistaHelper->setDWMTitleBar(QVistaHelper::NormalTitleBar);
