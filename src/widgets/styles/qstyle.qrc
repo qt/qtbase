@@ -133,5 +133,7 @@
         <file>images/closedock-down-16.png</file>
         <file>images/dockdock-16.png</file>
         <file>images/dockdock-down-16.png</file>
+        <file>images/toolbar-ext.png</file>
+        <file>images/toolbar-ext@2x.png</file>
     </qresource>
 </RCC>

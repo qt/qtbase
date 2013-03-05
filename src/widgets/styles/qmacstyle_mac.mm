@@ -48,7 +48,6 @@
 
 #include "qmacstyle_mac_p.h"
 #include "qmacstyle_mac_p_p.h"
-#include "qmacstylepixmaps_mac_p.h"
 
 #define QMAC_QAQUASTYLE_SIZE_CONSTRAIN
 //#define DEBUG_SIZE_CONSTRAINT
@@ -2374,6 +2373,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_MenuHMargin:
         ret = 0;
+        break;
+    case PM_ToolBarExtensionExtent:
+        ret = 21;
         break;
     case PM_ToolBarFrameWidth:
         ret = 1;
@@ -6362,7 +6364,7 @@ QIcon QMacStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *o
         return QCommonStyle::standardIcon(standardIcon, opt, widget);
     case SP_ToolBarHorizontalExtensionButton:
     case SP_ToolBarVerticalExtensionButton: {
-        QPixmap pixmap(qt_mac_toolbar_ext);
+        QPixmap pixmap(QLatin1String(":/qt-project.org/styles/macstyle/images/toolbar-ext.png"));
         if (standardIcon == SP_ToolBarVerticalExtensionButton) {
             QPixmap pix2(pixmap.height(), pixmap.width());
             pix2.fill(Qt::transparent);
