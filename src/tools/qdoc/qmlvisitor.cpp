@@ -424,8 +424,9 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
  */
 void QmlDocVisitor::endVisit(QQmlJS::AST::UiObjectDefinition *definition)
 {
-    if (nestingLevel > 0)
+    if (nestingLevel > 0) {
         --nestingLevel;
+    }
     lastEndOffset = definition->lastSourceLocation().end();
 }
 
@@ -461,6 +462,26 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::UiImportList *definition)
     lastEndOffset = definition->lastSourceLocation().end();
 }
 
+bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectBinding *)
+{
+    ++nestingLevel;
+    return true;
+}
+
+void QmlDocVisitor::endVisit(QQmlJS::AST::UiObjectBinding *)
+{
+    --nestingLevel;
+}
+
+bool QmlDocVisitor::visit(QQmlJS::AST::UiArrayBinding *)
+{
+    return true;
+}
+
+void QmlDocVisitor::endVisit(QQmlJS::AST::UiArrayBinding *)
+{
+}
+
 /*!
     Visits the public \a member declaration, which can be a
     signal or a property. It is a custom signal or property.
@@ -468,8 +489,9 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::UiImportList *definition)
 */
 bool QmlDocVisitor::visit(QQmlJS::AST::UiPublicMember *member)
 {
-    if (nestingLevel > 1)
+    if (nestingLevel > 1) {
         return true;
+    }
     switch (member->type) {
     case QQmlJS::AST::UiPublicMember::Signal:
     {
@@ -535,8 +557,9 @@ bool QmlDocVisitor::visit(QQmlJS::AST::IdentifierPropertyName *)
  */
 bool QmlDocVisitor::visit(QQmlJS::AST::FunctionDeclaration* fd)
 {
-    if (nestingLevel > 1)
+    if (nestingLevel > 1) {
         return true;
+    }
     if (current->type() == Node::Document) {
         QmlClassNode* qmlClass = static_cast<QmlClassNode*>(current);
         if (qmlClass) {
@@ -581,8 +604,9 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::FunctionDeclaration* fd)
  */
 bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* sb)
 {
-    if (nestingLevel > 1)
+    if (nestingLevel > 1) {
         return true;
+    }
     if (current->type() == Node::Document) {
         QString handler = sb->qualifiedId->name.toString();
         if (handler.length() > 2 && handler.startsWith("on") && handler.at(2).isUpper()) {
