@@ -2960,16 +2960,16 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             p->save();
             QPainterPath path;
             int x = opt->rect.x() + 6;
-            int y = opt->rect.y() + 5;
+            int y = opt->rect.y() + 7;
             static const int RectHeight = 2;
             if (opt->state & State_Horizontal) {
-                while (y < opt->rect.height() - RectHeight - 6) {
+                while (y < opt->rect.height() - RectHeight - 5) {
                     path.moveTo(x, y);
                     path.addRect(x, y, RectHeight, RectHeight);
                     y += 6;
                 }
             } else {
-                while (x < opt->rect.width() - RectHeight - 6) {
+                while (x < opt->rect.width() - RectHeight - 5) {
                     path.moveTo(x, y);
                     path.addRect(x, y, RectHeight, RectHeight);
                     x += 6;
@@ -2980,12 +2980,6 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             dark.setAlphaF(0.75);
             QColor light = opt->palette.light().color();
             light.setAlphaF(0.6);
-            p->fillPath(path, light);
-            p->save();
-            p->translate(1, 1);
-            p->fillPath(path, dark);
-            p->restore();
-            p->translate(3, 3);
             p->fillPath(path, light);
             p->translate(1, 1);
             p->fillPath(path, dark);
