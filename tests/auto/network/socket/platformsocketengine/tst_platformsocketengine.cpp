@@ -139,7 +139,7 @@ void tst_PlatformSocketEngine::construction()
     QVERIFY(socketDevice.error() == QAbstractSocket::UnknownSocketError);
 
     QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::bytesAvailable() was called in QAbstractSocket::UnconnectedState");
-    QVERIFY(socketDevice.bytesAvailable() == 0);
+    QVERIFY(socketDevice.bytesAvailable() == -1);
 
     QTest::ignoreMessage(QtWarningMsg, PLATFORMSOCKETENGINESTRING "::hasPendingDatagrams() was called in QAbstractSocket::UnconnectedState");
     QVERIFY(!socketDevice.hasPendingDatagrams());
