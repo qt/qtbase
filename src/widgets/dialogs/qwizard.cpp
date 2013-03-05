@@ -1525,6 +1525,8 @@ void QWizardPrivate::handleAeroStyleChange()
     vistaHelper->disconnectBackButton();
     q->removeEventFilter(vistaHelper);
 
+    bool vistaMargins = false;
+
     if (isVistaThemeEnabled()) {
         if (isVistaThemeEnabled(QVistaHelper::VistaAero)) {
             vistaHelper->setDWMTitleBar(QVistaHelper::ExtendedTitleBar);
@@ -1534,6 +1536,7 @@ void QWizardPrivate::handleAeroStyleChange()
             vistaHelper->backButton()->move(
                 0, vistaHelper->topOffset() // ### should ideally work without the '+ 1'
                 - qMin(vistaHelper->topOffset(), vistaHelper->topPadding() + 1));
+            vistaMargins = true;
         } else {
             vistaHelper->setDWMTitleBar(QVistaHelper::NormalTitleBar);
             q->setMouseTracking(true);
@@ -1556,8 +1559,7 @@ void QWizardPrivate::handleAeroStyleChange()
 
     _q_updateButtonStates();
 
-    if (q->isVisible())
-        vistaHelper->updateCustomMargins();
+    vistaHelper->updateCustomMargins(vistaMargins);
 
     inHandleAeroStyleChange = false;
 }
@@ -2922,10 +2924,6 @@ QWidget *QWizard::sideWidget() const
 void QWizard::setVisible(bool visible)
 {
     Q_D(QWizard);
-#if !defined(QT_NO_STYLE_WINDOWSVISTA)
-    if (visible)
-        d->vistaHelper->updateCustomMargins();
-#endif
     if (visible) {
         if (d->current == -1)
             restart();

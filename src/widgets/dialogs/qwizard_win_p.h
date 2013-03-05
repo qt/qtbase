@@ -87,7 +87,7 @@ public:
     QVistaHelper(QWizard *wizard);
     ~QVistaHelper();
     enum TitleBarChangeType { NormalTitleBar, ExtendedTitleBar };
-    void updateCustomMargins();
+    void updateCustomMargins(bool vistaMargins);
     bool setDWMTitleBar(TitleBarChangeType type);
     void setTitleBarIconAndCaptionVisible(bool visible);
     void mouseEvent(QEvent *event);

@@ -269,13 +269,13 @@ QVistaHelper::~QVistaHelper()
     --instanceCount;
 }
 
-void QVistaHelper::updateCustomMargins()
+void QVistaHelper::updateCustomMargins(bool vistaMargins)
 {
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS8)
         return; // Negative margins are not supported on Windows 8.
     if (QWindow *window = wizard->windowHandle()) {
         // Reduce top frame to zero since we paint it ourselves.
-        const QMargins customMargins = vistaState() == VistaAero ?
+        const QMargins customMargins = vistaMargins ?
                        QMargins(0, -titleBarSize(), 0, 0) : QMargins();
         const QVariant customMarginsV = qVariantFromValue(customMargins);
         // The dynamic property takes effect when creating the platform window.
