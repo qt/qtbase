@@ -173,6 +173,36 @@ static QTouchDevice *touchDevice = 0;
     QWindowSystemInterface::handleExposeEvent(m_window, m_window->geometry());
 }
 
+- (void)viewDidMoveToSuperview
+{
+    if (!(m_window->type() & Qt::SubWindow))
+        return;
+
+    if ([self superview]) {
+        m_platformWindow->m_contentViewIsEmbedded = true;
+        QWindowSystemInterface::handleGeometryChange(m_window, m_platformWindow->geometry());
+        QWindowSystemInterface::handleExposeEvent(m_window, m_platformWindow->geometry());
+        QWindowSystemInterface::flushWindowSystemEvents();
+    } else {
+        m_platformWindow->m_contentViewIsEmbedded = false;
+    }
+}
+
+- (void)viewWillMoveToWindow:(NSWindow *)newWindow
+{
+    // ### Merge "normal" window code path with this one for 5.1.
+    if (!(m_window->type() & Qt::SubWindow))
+        return;
+
+    if (newWindow) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                              selector:@selector(windowNotification:)
+                                              name:nil // Get all notifications
+                                              object:newWindow];
+    } else {
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:nil object:[self window]];
+    }
+}
 - (void)updateGeometry
 {
     QRect geometry;
@@ -181,6 +211,9 @@ static QTouchDevice *touchDevice = 0;
         NSRect rect = [self frame];
         NSRect windowRect = [[self window] frame];
         geometry = QRect(windowRect.origin.x, qt_mac_flipYCoordinate(windowRect.origin.y + rect.size.height), rect.size.width, rect.size.height);
+    } else if (m_window->type() & Qt::SubWindow) {
+        // embedded child window, use the frame rect ### merge with case below
+        geometry = qt_mac_toQRect([self bounds]);
     } else {
         // child window, use the frame rect
         geometry = qt_mac_toQRect([self frame]);
@@ -197,6 +230,12 @@ static QTouchDevice *touchDevice = 0;
     // doing that will initiate a geometry change it and possibly create
     // an infinite loop when this notification is triggered again.)
     m_platformWindow->QPlatformWindow::setGeometry(geometry);
+
+    // Don't send the geometry change if the QWindow is designated to be
+    // embedded in a foregin view hiearchy but has not actually been
+    // embedded yet - it's too early.
+    if ((m_window->type() & Qt::SubWindow) && !m_platformWindow->m_contentViewIsEmbedded)
+        return;
 
     // Send a geometry change event to Qt, if it's ready to handle events
     if (!m_platformWindow->m_inConstructor) {
@@ -322,7 +361,12 @@ static QTouchDevice *touchDevice = 0;
     );
     CGImageRef bsCGImage = m_backingStore->getBackingStoreCGImage();
     CGImageRef cleanImg = CGImageCreateWithImageInRect(bsCGImage, backingStoreRect);
-    CGContextSetBlendMode(cgContext, kCGBlendModeCopy);
+
+    // Optimization: Copy frame buffer content instead of blending for
+    // top-level windows where Qt fills the entire window content area.
+    if (m_platformWindow->m_nsWindow)
+        CGContextSetBlendMode(cgContext, kCGBlendModeCopy);
+
     CGContextDrawImage(cgContext, dirtyWindowRect, cleanImg);
 
     // Clean-up:

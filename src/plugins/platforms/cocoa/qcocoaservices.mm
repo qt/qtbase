@@ -55,7 +55,7 @@ bool QCocoaServices::openUrl(const QUrl &url)
     const QString scheme = url.scheme();
     if (scheme.isEmpty())
         return openDocument(url);
-    return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:QT_PREPEND_NAMESPACE(QCFString::toNSString)(url.toString())]];
+    return [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:QT_PREPEND_NAMESPACE(QCFString::toNSString)(url.toString(QUrl::FullyEncoded))]];
 }
 
 bool QCocoaServices::openDocument(const QUrl &url)

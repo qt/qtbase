@@ -64,6 +64,11 @@
 
 QT_BEGIN_NAMESPACE
 
+enum {
+    defaultWindowWidth = 160,
+    defaultWindowHeight = 160
+};
+
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
 
 static QByteArray debugWinStyle(DWORD style)
@@ -198,17 +203,16 @@ static inline QSize clientSize(HWND hwnd)
     return qSizeOfRect(rect);
 }
 
-// from qwidget_win.cpp/maximum layout size check removed.
-static bool shouldShowMaximizeButton(Qt::WindowFlags flags)
+// from qwidget_win.cpp
+static bool shouldShowMaximizeButton(const QWindow *w)
 {
-    if (flags & Qt::MSWindowsFixedSizeDialogHint)
+    const Qt::WindowFlags flags = w->flags();
+    if ((flags & Qt::MSWindowsFixedSizeDialogHint) || !(flags & Qt::WindowMaximizeButtonHint))
         return false;
     // if the user explicitly asked for the maximize button, we try to add
     // it even if the window has fixed size.
-    if (flags & Qt::CustomizeWindowHint &&
-        flags & Qt::WindowMaximizeButtonHint)
-        return true;
-    return flags & Qt::WindowMaximizeButtonHint;
+    return (flags & Qt::CustomizeWindowHint) ||
+        w->maximumSize() == QSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX);
 }
 
 // Set the WS_EX_LAYERED flag on a HWND if required. This is required for
@@ -427,7 +431,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                     style |= WS_SYSMENU;
                 if (flags & Qt::WindowMinimizeButtonHint)
                     style |= WS_MINIMIZEBOX;
-                if (shouldShowMaximizeButton(flags))
+                if (shouldShowMaximizeButton(w))
                     style |= WS_MAXIMIZEBOX;
                 if (tool)
                     exStyle |= WS_EX_TOOLWINDOW;
@@ -468,6 +472,8 @@ QWindowsWindow::WindowData
 
     const QString windowClassName = QWindowsContext::instance()->registerWindowClass(w, isGL);
 
+    QRect rect = QPlatformWindow::initialGeometry(w, data.geometry, defaultWindowWidth, defaultWindowHeight);
+
     if (title.isEmpty() && (result.flags & Qt::WindowTitleHint))
         title = topLevel ? qAppName() : w->objectName();
 
@@ -476,14 +482,14 @@ QWindowsWindow::WindowData
 
     // Capture events before CreateWindowEx() returns. The context is cleared in
     // the QWindowsWindow constructor.
-    const QWindowCreationContextPtr context(new QWindowCreationContext(w, data.geometry, data.customMargins, style, exStyle));
+    const QWindowCreationContextPtr context(new QWindowCreationContext(w, rect, data.customMargins, style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
                 << "CreateWindowEx: " << w << *this
                 << " class=" <<windowClassName << " title=" << title
-                << "\nrequested: " << data.geometry << ": "
+                << "\nrequested: " << rect << ": "
                 << context->frameWidth << 'x' <<  context->frameHeight
                 << '+' << context->frameX << '+' << context->frameY
                 << " custom margins: " << context->customMargins;
@@ -810,6 +816,7 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
 QWindowsWindow::~QWindowsWindow()
 {
 #ifndef Q_OS_WINCE
+    QWindowSystemInterface::flushWindowSystemEvents();
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
 #endif // !Q_OS_WINCE

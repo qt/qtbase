@@ -128,6 +128,9 @@ public:
     virtual void setFrameStrutEventsEnabled(bool enabled);
     virtual bool frameStrutEventsEnabled() const;
 
+    static QRect initialGeometry(const QWindow *w,
+        const QRect &initialGeometry, int defaultWidth, int defaultHeight);
+
 protected:
     static QString formatWindowTitle(const QString &title, const QString &separator);
 

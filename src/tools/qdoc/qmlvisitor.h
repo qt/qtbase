@@ -97,6 +97,7 @@ public:
     void endVisit(QQmlJS::AST::UiQualifiedId *);
 
 private:
+    QString getFullyQualifiedId(QQmlJS::AST::UiQualifiedId *id);
     QQmlJS::AST::SourceLocation precedingComment(quint32 offset) const;
     bool applyDocumentation(QQmlJS::AST::SourceLocation location, Node *node);
     void applyMetacommands(QQmlJS::AST::SourceLocation location, Node* node, Doc& doc);
@@ -110,7 +111,7 @@ private:
     QString filePath;
     QString name;
     QString document;
-    QList<QPair<QString, QString> > importList;
+    ImportList importList;
     QSet<QString> commands;
     QSet<QString> topics;
     QSet<quint32> usedComments;

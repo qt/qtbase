@@ -102,6 +102,9 @@ private:
     // QImage <-> CGImage conversion functions
     static CGImageRef qImageToCGImage(const QImage &image);
     static QImage cgImageToQImage(CGImageRef image);
+
+    // Embedding NSViews as child QWindows
+    static void setWindowContentView(QPlatformWindow *window, void *nsViewContentView);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H

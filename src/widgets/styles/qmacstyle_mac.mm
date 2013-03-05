@@ -4257,7 +4257,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             if (isIndeterminate || tdi.value < tdi.max) {
                 if (QProgressStyleAnimation *animation = qobject_cast<QProgressStyleAnimation*>(d->animation(opt->styleObject)))
                     tdi.trackInfo.progress.phase = animation->animationStep();
-                else
+                else if (opt->styleObject)
                     d->startAnimation(new QProgressStyleAnimation(d->animateSpeed(QMacStylePrivate::AquaProgressBar), opt->styleObject));
             } else {
                 d->stopAnimation(opt->styleObject);
@@ -5013,6 +5013,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                       bgColor.blue() < 128;
                 if (isDarkBg)
                     [scroller setKnobStyle:NSScrollerKnobStyleLight];
+                else
+                    [scroller setKnobStyle:NSScrollerKnobStyleDefault];
 
                 [scroller setControlSize:(tdi.kind == kThemeSmallScrollBar ? NSMiniControlSize
                                                                            : NSRegularControlSize)];

@@ -46,6 +46,20 @@
 #include "dynamictreemodel.h"
 #include "qidentityproxymodel.h"
 
+class DataChangedModel : public QAbstractListModel
+{
+public:
+    int rowCount(const QModelIndex &parent) const { return parent.isValid() ? 0 : 1; }
+    QVariant data(const QModelIndex&, int) const { return QVariant(); }
+    QModelIndex index(int row, int column, const QModelIndex &) const { return createIndex(row, column); }
+
+    void changeData()
+    {
+        const QModelIndex idx = index(0, 0, QModelIndex());
+        Q_EMIT dataChanged(idx, idx, QVector<int>() << 1);
+    }
+};
+
 class tst_QIdentityProxyModel : public QObject
 {
     Q_OBJECT
@@ -63,6 +77,7 @@ private slots:
     void removeRows();
     void moveRows();
     void reset();
+    void dataChanged();
 
 protected:
     void verifyIdentity(QAbstractItemModel *model, const QModelIndex &parent = QModelIndex());
@@ -79,6 +94,7 @@ tst_QIdentityProxyModel::tst_QIdentityProxyModel()
 
 void tst_QIdentityProxyModel::initTestCase()
 {
+    qRegisterMetaType<QVector<int> >();
     m_model = new QStandardItemModel(0, 1);
     m_proxy = new QIdentityProxyModel();
 }
@@ -321,6 +337,28 @@ void tst_QIdentityProxyModel::reset()
 
     QVERIFY(modelBeforeSpy.size() == 1 && 1 == proxyBeforeSpy.size());
     QVERIFY(modelAfterSpy.size() == 1 && 1 == proxyAfterSpy.size());
+
+    verifyIdentity(&model);
+    m_proxy->setSourceModel(0);
+}
+
+void tst_QIdentityProxyModel::dataChanged()
+{
+    DataChangedModel model;
+    m_proxy->setSourceModel(&model);
+
+    verifyIdentity(&model);
+
+    QSignalSpy modelSpy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+    QSignalSpy proxySpy(m_proxy, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+
+    QVERIFY(modelSpy.isValid());
+    QVERIFY(proxySpy.isValid());
+
+    model.changeData();
+
+    QCOMPARE(modelSpy.first().at(2).value<QVector<int> >(), QVector<int>() << 1);
+    QVERIFY(modelSpy.first().at(2) == proxySpy.first().at(2));
 
     verifyIdentity(&model);
     m_proxy->setSourceModel(0);

@@ -52,10 +52,6 @@ class QAbstractEventDispatcher;
 class QXcbNativeInterface;
 class QXcbScreen;
 
-#if !defined(QT_NO_OPENGL) && defined(XCB_USE_GLX)
-class QOpenGLDefaultContextInfo;
-#endif
-
 class QXcbIntegration : public QPlatformIntegration
 {
 public:
@@ -99,8 +95,6 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-    void removeDefaultOpenGLContextInfo(QXcbScreen *screen);
-
 private:
     QList<QXcbConnection *> m_connections;
 
@@ -109,10 +103,6 @@ private:
 
     QScopedPointer<QPlatformInputContext> m_inputContext;
     QAbstractEventDispatcher *m_eventDispatcher;
-
-#if !defined(QT_NO_OPENGL) && defined(XCB_USE_GLX)
-    mutable QHash<QXcbScreen *, QOpenGLDefaultContextInfo *> m_defaultContextInfos;
-#endif
 
 #ifndef QT_NO_ACCESSIBILITY
     QScopedPointer<QPlatformAccessibility> m_accessibility;

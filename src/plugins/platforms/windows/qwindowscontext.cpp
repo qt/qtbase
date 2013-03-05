@@ -849,10 +849,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         return true;
     case QtWindows::ShowEvent:
         platformWindow->handleShown();
-        return true;
+        return false; // Indicate transient children should be shown by windows (SW_PARENTOPENING)
     case QtWindows::HideEvent:
         platformWindow->handleHidden();
-        return true;
+        return false;// Indicate transient children should be hidden by windows (SW_PARENTCLOSING)
     case QtWindows::CloseEvent:
         QWindowSystemInterface::handleCloseEvent(platformWindow->window());
         return true;

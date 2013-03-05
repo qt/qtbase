@@ -2936,7 +2936,6 @@ void tst_Moc::parseDefines()
         }
         if (!qstrcmp(mci.name(), "TestString2")) {
             ++count;
-            qDebug() << mci.value();
             QVERIFY(!qstrcmp(mci.value(), "ParseDefine"));
         }
         if (!qstrcmp(mci.name(), "TestString3")) {
@@ -2945,6 +2944,9 @@ void tst_Moc::parseDefines()
         }
     }
     QVERIFY(count == 3);
+
+    index = mo->indexOfSlot("PD_DEFINE_ITSELF_SUFFIX(int)");
+    QVERIFY(index != -1);
 }
 
 void tst_Moc::preprocessorOnly()

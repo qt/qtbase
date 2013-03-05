@@ -58,6 +58,8 @@ int runConfigure( int argc, char** argv )
 #if !defined(EVAL)
     app.validateArgs();
 #endif
+    if (!app.isOk())
+        return 3;
     if( app.displayHelp() )
 	return 1;
 

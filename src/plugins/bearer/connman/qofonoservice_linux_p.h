@@ -76,7 +76,7 @@
 #define OFONO_NETWORK_OPERATOR_INTERFACE         "org.ofono.NetworkOperator"
 #define OFONO_DATA_CONNECTION_MANAGER_INTERFACE  "org.ofono.DataConnectionManager"
 #define OFONO_SIM_MANAGER_INTERFACE              "org.ofono.SimManager"
-#define OFONO_DATA_CONTEXT_INTERFACE             "org.ofono.PrimaryDataContext"
+#define OFONO_DATA_CONTEXT_INTERFACE             "org.ofono.ConnectionContext"
 
 #define OFONO_SMS_MANAGER_INTERFACE              "org.ofono.SmsManager"
 #define OFONO_PHONEBOOK_INTERFACE                "org.ofono.Phonebook"
@@ -281,14 +281,14 @@ protected:
 };
 
 
-class QOfonoPrimaryDataContextInterface : public QDBusAbstractInterface
+class QOfonoConnectionContextInterface : public QDBusAbstractInterface
 {
     Q_OBJECT
 
 public:
 
-    explicit QOfonoPrimaryDataContextInterface(const QString &dbusPathName, QObject *parent = 0);
-    ~QOfonoPrimaryDataContextInterface();
+    explicit QOfonoConnectionContextInterface(const QString &dbusPathName, QObject *parent = 0);
+    ~QOfonoConnectionContextInterface();
 
     QVariantMap getProperties();
 

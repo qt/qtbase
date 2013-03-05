@@ -107,6 +107,7 @@ class QDocDatabase
     DocNode* addToQmlModule(const QString& name, Node* node);
 
     QmlClassNode* findQmlType(const QString& qmid, const QString& name) const;
+    QmlClassNode* findQmlType(const ImportRec& import, const QString& name) const;
 
     void findAllClasses(const InnerNode *node);
     void findAllFunctions(const InnerNode *node);

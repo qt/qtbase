@@ -65,7 +65,6 @@ typedef QList<Node*> NodeList;
 typedef QMap<QString, Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
-typedef QList<QPair<QString,QString> > ImportList;
 
 class Node
 {
@@ -206,7 +205,7 @@ public:
     virtual bool hasProperty(const QString& ) const { return false; }
     virtual void getMemberNamespaces(NodeMap& ) { }
     virtual void getMemberClasses(NodeMap& ) { }
-    bool isInternal() const;
+    virtual bool isInternal() const;
     bool isIndexNode() const { return indexNodeFlag_; }
     bool wasSeen() const { return seen_; }
     Type type() const { return nodeType_; }
@@ -241,6 +240,7 @@ public:
     QString guid() const;
     QString extractClassName(const QString &string) const;
     virtual QString qmlTypeName() const { return name_; }
+    virtual QString qmlFullBaseName() const { return QString(); }
     virtual QString qmlModuleName() const { return qmlModuleName_; }
     virtual QString qmlModuleVersion() const { return qmlModuleVersionMajor_ + "." + qmlModuleVersionMinor_; }
     virtual QString qmlModuleIdentifier() const { return qmlModuleName_ + qmlModuleVersionMajor_; }
@@ -333,7 +333,7 @@ public:
     const NodeList & childNodes() const { return children_; }
     const NodeList & relatedNodes() const { return related_; }
 
-    virtual void addMember(Node* node) { members_.append(node); }
+    virtual void addMember(Node* node);
     const NodeList& members() const { return members_; }
     virtual bool hasMembers() const;
     virtual bool hasNamespaces() const;
@@ -530,6 +530,26 @@ private:
     QString imageFileName_;
 };
 
+struct ImportRec {
+    QString name_;      // module name
+    QString version_;   // <major> . <minor>
+    QString importId_;  // "as" name
+    QString importUri_; // subdirectory of module directory
+
+    ImportRec(const QString& name,
+              const QString& version,
+              const QString& importId,
+              const QString& importUri)
+    : name_(name), version_(version), importId_(importId), importUri_(importUri) { }
+    QString& name() { return name_; }
+    QString& version() { return version_; }
+    QString& importId() { return importId_; }
+    QString& importUri() { return importUri_; }
+    bool isEmpty() const { return name_.isEmpty(); }
+};
+
+typedef QList<ImportRec> ImportList;
+
 class QmlClassNode : public DocNode
 {
 public:
@@ -543,12 +563,14 @@ public:
     virtual void clearCurrentChild();
     virtual bool isAbstract() const { return abstract_; }
     virtual void setAbstract(bool b) { abstract_ = b; }
+    virtual bool isInternal() const { return (status() == Internal); }
+    virtual QString qmlFullBaseName() const;
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
     const QString& qmlBaseName() const { return baseName_; }
     void setQmlBaseName(const QString& name) { baseName_ = name; }
-    const DocNode* qmlBaseNode() const { return baseNode_; }
-    void setQmlBaseNode(DocNode* b) { baseNode_ = b; }
+    const QmlClassNode* qmlBaseNode() const { return baseNode_; }
+    void setQmlBaseNode(QmlClassNode* b) { baseNode_ = b; }
     void requireCppClass() { cnodeRequired_ = true; }
     bool cppClassRequired() const { return cnodeRequired_; }
     static void addInheritedBy(const QString& base, Node* sub);
@@ -564,7 +586,7 @@ private:
     bool cnodeRequired_;
     ClassNode*    cnode_;
     QString      baseName_;
-    DocNode*     baseNode_;
+    QmlClassNode*       baseNode_;
     ImportList          importList_;
 };
 

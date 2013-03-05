@@ -2295,7 +2295,6 @@ void QAbstractItemModel::doSetRoleNames(const QHash<int,QByteArray> &roleNames)
 
     Returns the model's role names.
 
-    \sa setRoleNames()
 */
 QHash<int,QByteArray> QAbstractItemModel::roleNames() const
 {

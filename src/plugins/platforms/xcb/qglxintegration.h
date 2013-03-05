@@ -55,23 +55,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLDefaultContextInfo
-{
-    Q_DISABLE_COPY(QOpenGLDefaultContextInfo)
-    QOpenGLDefaultContextInfo();
-public:
-    static QOpenGLDefaultContextInfo *create(QXcbScreen *screen);
-
-    const QByteArray vendor;
-    const QByteArray renderer;
-    QSurfaceFormat format;
-};
-
-
 class QGLXContext : public QPlatformOpenGLContext
 {
 public:
-    QGLXContext(QXcbScreen *xd, const QSurfaceFormat &format, QPlatformOpenGLContext *share, QOpenGLDefaultContextInfo *defaultContextInfo);
+    QGLXContext(QXcbScreen *xd, const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     ~QGLXContext();
 
     bool makeCurrent(QPlatformSurface *surface);

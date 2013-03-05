@@ -133,6 +133,7 @@
 // factory loader
 #include <qcoreapplication.h>
 #include <private/qfactoryloader_p.h>
+#include <QMutexLocker>
 
 // image handlers
 #include <private/qbmphandler_p.h>
@@ -233,6 +234,9 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     QByteArray suffix;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
+    static QMutex mutex;
+    QMutexLocker locker(&mutex);
+
     typedef QMultiMap<int, QString> PluginKeyMap;
 
     // check if we have plugins that support the image format

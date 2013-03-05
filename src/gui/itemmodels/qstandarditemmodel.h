@@ -330,6 +330,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+    // Qt 6: Remove
     QModelIndex sibling(int row, int column, const QModelIndex &idx) const;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;

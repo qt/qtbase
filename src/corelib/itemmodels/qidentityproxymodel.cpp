@@ -74,7 +74,7 @@ class QIdentityProxyModelPrivate : public QAbstractProxyModelPrivate
     void _q_sourceColumnsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
     void _q_sourceColumnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destParent, int dest);
 
-    void _q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void _q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last);
 
     void _q_sourceLayoutAboutToBeChanged(const QList<QPersistentModelIndex> &sourceParents, QAbstractItemModel::LayoutChangeHint hint);
@@ -371,8 +371,8 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
                    this, SLOT(_q_sourceModelAboutToBeReset()));
         disconnect(sourceModel(), SIGNAL(modelReset()),
                    this, SLOT(_q_sourceModelReset()));
-        disconnect(sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                   this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
+        disconnect(sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+                   this, SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex,QVector<int>)));
         disconnect(sourceModel(), SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                    this, SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
         disconnect(sourceModel(), SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
@@ -412,8 +412,8 @@ void QIdentityProxyModel::setSourceModel(QAbstractItemModel* newSourceModel)
                 SLOT(_q_sourceModelAboutToBeReset()));
         connect(sourceModel(), SIGNAL(modelReset()),
                 SLOT(_q_sourceModelReset()));
-        connect(sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex)));
+        connect(sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+                SLOT(_q_sourceDataChanged(QModelIndex,QModelIndex,QVector<int>)));
         connect(sourceModel(), SIGNAL(headerDataChanged(Qt::Orientation,int,int)),
                 SLOT(_q_sourceHeaderDataChanged(Qt::Orientation,int,int)));
         connect(sourceModel(), SIGNAL(layoutAboutToBeChanged(QList<QPersistentModelIndex>,QAbstractItemModel::LayoutChangeHint)),
@@ -480,12 +480,12 @@ void QIdentityProxyModelPrivate::_q_sourceColumnsRemoved(const QModelIndex &pare
     q->endRemoveColumns();
 }
 
-void QIdentityProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
+void QIdentityProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     Q_ASSERT(topLeft.isValid() ? topLeft.model() == model : true);
     Q_ASSERT(bottomRight.isValid() ? bottomRight.model() == model : true);
     Q_Q(QIdentityProxyModel);
-    q->dataChanged(q->mapFromSource(topLeft), q->mapFromSource(bottomRight));
+    q->dataChanged(q->mapFromSource(topLeft), q->mapFromSource(bottomRight), roles);
 }
 
 void QIdentityProxyModelPrivate::_q_sourceHeaderDataChanged(Qt::Orientation orientation, int first, int last)

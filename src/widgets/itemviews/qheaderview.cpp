@@ -1082,6 +1082,8 @@ int QHeaderView::logicalIndex(int visualIndex) const
 }
 
 /*!
+    \since 5.0
+
     If \a movable is true, the header may be moved by the user; otherwise it
     is fixed in place.
 
@@ -1105,6 +1107,8 @@ void QHeaderView::setSectionsMovable(bool movable)
 */
 
 /*!
+    \since 5.0
+
     Returns true if the header can be moved by the user; otherwise returns
     false.
 
@@ -1128,6 +1132,8 @@ bool QHeaderView::sectionsMovable() const
 */
 
 /*!
+    \since 5.0
+
     If \a clickable is true, the header will respond to single clicks.
 
     \sa sectionsClickable(), sectionClicked(), sectionPressed(),
@@ -1151,6 +1157,8 @@ void QHeaderView::setSectionsClickable(bool clickable)
 */
 
 /*!
+    \since 5.0
+
     Returns true if the header is clickable; otherwise returns false. A
     clickable header could be set up to allow the user to change the
     representation of the data in the view related to the header.
@@ -1187,6 +1195,8 @@ bool QHeaderView::highlightSections() const
 }
 
 /*!
+    \since 5.0
+
     Sets the constraints on how the header can be resized to those described
     by the given \a mode.
 
@@ -1205,6 +1215,8 @@ void QHeaderView::setSectionResizeMode(ResizeMode mode)
 }
 
 /*!
+    \since 5.0
+
     Sets the constraints on how the section specified by \a logicalIndex in
     the header can be resized to those described by the given \a mode. The logical
     index should exist at the time this function is called.
@@ -1259,6 +1271,8 @@ void QHeaderView::setSectionResizeMode(int logicalIndex, ResizeMode mode)
 */
 
 /*!
+    \since 5.0
+
     Returns the resize mode that applies to the section specified by the given
     \a logicalIndex.
 
