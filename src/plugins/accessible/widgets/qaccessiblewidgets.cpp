@@ -72,8 +72,6 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace QAccessible2;
-
 QString Q_GUI_EXPORT qt_accStripAmp(const QString &text);
 QString Q_GUI_EXPORT qt_accHotKey(const QString &text);
 
@@ -997,83 +995,18 @@ QPoint QAccessibleTextWidget::scrollBarPosition() const
     return QPoint(0, 0);
 }
 
-QPair< int, int > QAccessibleTextWidget::getBoundaries(int offset, BoundaryType boundaryType) const
-{
-    if (offset >= characterCount())
-        return QPair<int, int>(characterCount(), characterCount());
-    if (offset < 0)
-        return QPair<int, int>(0, 0);
 
-    QTextCursor cursor = textCursor();
-    QPair<int, int> result;
-
-    cursor.setPosition(offset);
-    switch (boundaryType) {
-    case CharBoundary:
-        result.first = cursor.position();
-        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
-        result.second = cursor.position();
-        break;
-    case WordBoundary:
-        cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
-        result.first = cursor.position();
-        cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-        result.second = cursor.position();
-        break;
-    case SentenceBoundary: {
-        // QCursor does not provide functionality to move to next sentence.
-        // We therefore find the current block, then go through the block using
-        // QTextBoundaryFinder and find the sentence the \offset represents
-        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
-        result.first = cursor.position();
-        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-        result.second = cursor.position();
-        QString blockText = cursor.selectedText();
-        const int offsetWithinBlockText = offset - result.first;
-        QTextBoundaryFinder sentenceFinder(QTextBoundaryFinder::Sentence, blockText);
-        sentenceFinder.setPosition(offsetWithinBlockText);
-        int prevBoundary = offsetWithinBlockText;
-        int nextBoundary = offsetWithinBlockText;
-        if (!(sentenceFinder.boundaryReasons() & QTextBoundaryFinder::StartOfItem))
-            prevBoundary = sentenceFinder.toPreviousBoundary();
-        nextBoundary = sentenceFinder.toNextBoundary();
-        if (nextBoundary != -1)
-            result.second = result.first + nextBoundary;
-        if (prevBoundary != -1)
-            result.first += prevBoundary;
-        break; }
-    case LineBoundary:
-        cursor.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
-        result.first = cursor.position();
-        cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
-        result.second = cursor.position();
-        break;
-    case ParagraphBoundary:
-        cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::MoveAnchor);
-        result.first = cursor.position();
-        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
-        result.second = cursor.position();
-        break;
-    case NoBoundary:
-        result.first = 0;
-        result.second = characterCount();
-        break;
-    default:
-        qWarning("QAccessibleTextWidget::getBoundaries: Unknown boundary type %d", boundaryType);
-        result.first = -1;
-        result.second = -1;
-    }
-    return result;
-}
-
-QString QAccessibleTextWidget::textBeforeOffset(int offset, BoundaryType boundaryType,
+QString QAccessibleTextWidget::textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                                 int *startOffset, int *endOffset) const
 {
     Q_ASSERT(startOffset);
     Q_ASSERT(endOffset);
 
-    QPair<int, int> boundaries = getBoundaries(offset, boundaryType);
-    boundaries = getBoundaries(boundaries.first - 1, boundaryType);
+    QTextCursor cursor = textCursor();
+    cursor.setPosition(offset);
+    QPair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
+    cursor.setPosition(boundaries.first - 1);
+    boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
 
     *startOffset = boundaries.first;
     *endOffset = boundaries.second;
@@ -1082,14 +1015,17 @@ QString QAccessibleTextWidget::textBeforeOffset(int offset, BoundaryType boundar
  }
 
 
-QString QAccessibleTextWidget::textAfterOffset(int offset, BoundaryType boundaryType,
+QString QAccessibleTextWidget::textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                               int *startOffset, int *endOffset) const
 {
     Q_ASSERT(startOffset);
     Q_ASSERT(endOffset);
 
-    QPair<int, int> boundaries = getBoundaries(offset, boundaryType);
-    boundaries = getBoundaries(boundaries.second, boundaryType);
+    QTextCursor cursor = textCursor();
+    cursor.setPosition(offset);
+    QPair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
+    cursor.setPosition(boundaries.second);
+    boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
 
     *startOffset = boundaries.first;
     *endOffset = boundaries.second;
@@ -1097,13 +1033,15 @@ QString QAccessibleTextWidget::textAfterOffset(int offset, BoundaryType boundary
     return text(boundaries.first, boundaries.second);
 }
 
-QString QAccessibleTextWidget::textAtOffset(int offset, BoundaryType boundaryType,
+QString QAccessibleTextWidget::textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                             int *startOffset, int *endOffset) const
 {
     Q_ASSERT(startOffset);
     Q_ASSERT(endOffset);
 
-    QPair<int, int> boundaries = getBoundaries(offset, boundaryType);
+    QTextCursor cursor = textCursor();
+    cursor.setPosition(offset);
+    QPair<int, int> boundaries = QAccessible::qAccessibleTextBoundaryHelper(cursor, boundaryType);
 
     *startOffset = boundaries.first;
     *endOffset = boundaries.second;

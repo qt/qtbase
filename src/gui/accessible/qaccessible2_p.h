@@ -50,18 +50,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ACCESSIBILITY
 
-namespace QAccessible2
-{
-    enum BoundaryType {
-        CharBoundary,
-        WordBoundary,
-        SentenceBoundary,
-        ParagraphBoundary,
-        LineBoundary,
-        NoBoundary
-    };
-}
-
 class Q_GUI_EXPORT QAccessibleTextInterface
 {
 public:
@@ -79,11 +67,11 @@ public:
 
     // text
     virtual QString text(int startOffset, int endOffset) const = 0;
-    virtual QString textBeforeOffset(int offset, QAccessible2::BoundaryType boundaryType,
+    virtual QString textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                      int *startOffset, int *endOffset) const;
-    virtual QString textAfterOffset(int offset, QAccessible2::BoundaryType boundaryType,
+    virtual QString textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                     int *startOffset, int *endOffset) const;
-    virtual QString textAtOffset(int offset, QAccessible2::BoundaryType boundaryType,
+    virtual QString textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
                                  int *startOffset, int *endOffset) const;
     virtual int characterCount() const = 0;
 

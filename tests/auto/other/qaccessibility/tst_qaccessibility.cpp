@@ -1644,10 +1644,10 @@ void tst_QAccessibility::textEditTest()
         QTest::qWaitForWindowShown(&edit);
         QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&edit);
         QCOMPARE(iface->text(QAccessible::Value), edit.toPlainText());
-        QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible2::WordBoundary, &startOffset, &endOffset), QString("world"));
+        QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible::WordBoundary, &startOffset, &endOffset), QString("world"));
         QCOMPARE(startOffset, 6);
         QCOMPARE(endOffset, 11);
-        QCOMPARE(iface->textInterface()->textAtOffset(15, QAccessible2::LineBoundary, &startOffset, &endOffset), QString("How are you today?"));
+        QCOMPARE(iface->textInterface()->textAtOffset(15, QAccessible::LineBoundary, &startOffset, &endOffset), QString("How are you today?"));
         QCOMPARE(startOffset, 13);
         QCOMPARE(endOffset, 31);
         QCOMPARE(iface->textInterface()->characterCount(), 48);
@@ -1705,10 +1705,10 @@ void tst_QAccessibility::textBrowserTest()
     QCOMPARE(iface->text(QAccessible::Value), text);
     int startOffset;
     int endOffset;
-    QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible2::WordBoundary, &startOffset, &endOffset), QString("world"));
+    QCOMPARE(iface->textInterface()->textAtOffset(8, QAccessible::WordBoundary, &startOffset, &endOffset), QString("world"));
     QCOMPARE(startOffset, 6);
     QCOMPARE(endOffset, 11);
-    QCOMPARE(iface->textInterface()->textAtOffset(14, QAccessible2::LineBoundary, &startOffset, &endOffset), QString("how are you today?"));
+    QCOMPARE(iface->textInterface()->textAtOffset(14, QAccessible::LineBoundary, &startOffset, &endOffset), QString("how are you today?"));
     QCOMPARE(startOffset, 12);
     QCOMPARE(endOffset, 30);
     QCOMPARE(iface->textInterface()->characterCount(), 31);
@@ -1931,45 +1931,45 @@ void tst_QAccessibility::lineEditTest()
 
     int start, end;
     QCOMPARE(textIface->text(0, 8), QString::fromLatin1("I always"));
-    QCOMPARE(textIface->textAtOffset(0, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("I"));
+    QCOMPARE(textIface->textAtOffset(0, QAccessible::CharBoundary,&start,&end), QString::fromLatin1("I"));
     QCOMPARE(start, 0);
     QCOMPARE(end, 1);
-    QCOMPARE(textIface->textBeforeOffset(0, QAccessible2::CharBoundary,&start,&end), QString());
-    QCOMPARE(textIface->textAfterOffset(0, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(textIface->textBeforeOffset(0, QAccessible::CharBoundary,&start,&end), QString());
+    QCOMPARE(textIface->textAfterOffset(0, QAccessible::CharBoundary,&start,&end), QString::fromLatin1(" "));
     QCOMPARE(start, 1);
     QCOMPARE(end, 2);
 
-    QCOMPARE(textIface->textAtOffset(5, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("a"));
+    QCOMPARE(textIface->textAtOffset(5, QAccessible::CharBoundary,&start,&end), QString::fromLatin1("a"));
     QCOMPARE(start, 5);
     QCOMPARE(end, 6);
-    QCOMPARE(textIface->textBeforeOffset(5, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("w"));
-    QCOMPARE(textIface->textAfterOffset(5, QAccessible2::CharBoundary,&start,&end), QString::fromLatin1("y"));
+    QCOMPARE(textIface->textBeforeOffset(5, QAccessible::CharBoundary,&start,&end), QString::fromLatin1("w"));
+    QCOMPARE(textIface->textAfterOffset(5, QAccessible::CharBoundary,&start,&end), QString::fromLatin1("y"));
 
-    QCOMPARE(textIface->textAtOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("always"));
+    QCOMPARE(textIface->textAtOffset(5, QAccessible::WordBoundary,&start,&end), QString::fromLatin1("always"));
     QCOMPARE(start, 2);
     QCOMPARE(end, 8);
 
-    QCOMPARE(textIface->textAtOffset(2, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("always"));
-    QCOMPARE(textIface->textAtOffset(7, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("always"));
-    QCOMPARE(textIface->textAtOffset(8, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
-    QCOMPARE(textIface->textAtOffset(25, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("advice"));
-    QCOMPARE(textIface->textAtOffset(92, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1("oneself"));
-    QCOMPARE(textIface->textAtOffset(101, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(". --"));
+    QCOMPARE(textIface->textAtOffset(2, QAccessible::WordBoundary,&start,&end), QString::fromLatin1("always"));
+    QCOMPARE(textIface->textAtOffset(7, QAccessible::WordBoundary,&start,&end), QString::fromLatin1("always"));
+    QCOMPARE(textIface->textAtOffset(8, QAccessible::WordBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(textIface->textAtOffset(25, QAccessible::WordBoundary,&start,&end), QString::fromLatin1("advice"));
+    QCOMPARE(textIface->textAtOffset(92, QAccessible::WordBoundary,&start,&end), QString::fromLatin1("oneself"));
+    QCOMPARE(textIface->textAtOffset(101, QAccessible::WordBoundary,&start,&end), QString::fromLatin1(". --"));
 
-    QCOMPARE(textIface->textBeforeOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
-    QCOMPARE(textIface->textAfterOffset(5, QAccessible2::WordBoundary,&start,&end), QString::fromLatin1(" "));
-    QCOMPARE(textIface->textAtOffset(5, QAccessible2::SentenceBoundary,&start,&end), QString::fromLatin1("I always pass on good advice. "));
+    QCOMPARE(textIface->textBeforeOffset(5, QAccessible::WordBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(textIface->textAfterOffset(5, QAccessible::WordBoundary,&start,&end), QString::fromLatin1(" "));
+    QCOMPARE(textIface->textAtOffset(5, QAccessible::SentenceBoundary,&start,&end), QString::fromLatin1("I always pass on good advice. "));
     QCOMPARE(start, 0);
     QCOMPARE(end, 30);
 
-    QCOMPARE(textIface->textBeforeOffset(40, QAccessible2::SentenceBoundary,&start,&end), QString::fromLatin1("I always pass on good advice. "));
-    QCOMPARE(textIface->textAfterOffset(5, QAccessible2::SentenceBoundary,&start,&end), QString::fromLatin1("It is the only thing to do with it. "));
+    QCOMPARE(textIface->textBeforeOffset(40, QAccessible::SentenceBoundary,&start,&end), QString::fromLatin1("I always pass on good advice. "));
+    QCOMPARE(textIface->textAfterOffset(5, QAccessible::SentenceBoundary,&start,&end), QString::fromLatin1("It is the only thing to do with it. "));
 
-    QCOMPARE(textIface->textAtOffset(5, QAccessible2::ParagraphBoundary,&start,&end), cite);
+    QCOMPARE(textIface->textAtOffset(5, QAccessible::ParagraphBoundary,&start,&end), cite);
     QCOMPARE(start, 0);
     QCOMPARE(end, cite.length());
-    QCOMPARE(textIface->textAtOffset(5, QAccessible2::LineBoundary,&start,&end), cite);
-    QCOMPARE(textIface->textAtOffset(5, QAccessible2::NoBoundary,&start,&end), cite);
+    QCOMPARE(textIface->textAtOffset(5, QAccessible::LineBoundary,&start,&end), cite);
+    QCOMPARE(textIface->textAtOffset(5, QAccessible::NoBoundary,&start,&end), cite);
 
     QTestAccessibility::clearEvents();
     }
