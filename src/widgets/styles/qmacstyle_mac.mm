@@ -1206,7 +1206,6 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
                                              const ThemeDrawState tds,
                                              HIThemeButtonDrawInfo *bdi) const
 {
-    bool drawColorless = btn->palette.currentColorGroup() == QPalette::Active;
     ThemeDrawState tdsModified = tds;
     if (btn->state & QStyle::State_On)
         tdsModified = kThemeStatePressed;
@@ -1214,7 +1213,7 @@ void QMacStylePrivate::initHIThemePushButton(const QStyleOptionButton *btn,
     bdi->state = tdsModified;
     bdi->value = kThemeButtonOff;
 
-    if (drawColorless && tdsModified == kThemeStateInactive)
+    if (tds == kThemeStateInactive)
         bdi->state = kThemeStateActive;
     if (btn->state & QStyle::State_HasFocus)
         bdi->adornment = kThemeAdornmentFocus;
@@ -1285,10 +1284,9 @@ void QMacStylePrivate::initComboboxBdi(const QStyleOptionComboBox *combo, HIThem
     bdi->value = kThemeButtonOff;
     if (combo->state & QStyle::State_HasFocus)
         bdi->adornment = kThemeAdornmentFocus;
-    bool drawColorless = combo->palette.currentColorGroup() == QPalette::Active && tds == kThemeStateInactive;
     if (combo->activeSubControls & QStyle::SC_ComboBoxArrow)
         bdi->state = kThemeStatePressed;
-    else if (drawColorless)
+    else if (tds == kThemeStateInactive)
         bdi->state = kThemeStateActive;
     else
         bdi->state = tds;
@@ -1609,8 +1607,6 @@ void QMacStylePrivate::getSliderInfo(QStyle::ComplexControl cc, const QStyleOpti
 
     tdi->enableState = (slider->state & QStyle::State_Enabled) ? kThemeTrackActive
                                                              : kThemeTrackDisabled;
-    if (!(slider->state & QStyle::State_Active))
-        tdi->enableState = kThemeTrackInactive;
     if (!isScrollbar) {
         if (slider->state & QStyle::QStyle::State_HasFocus)
             tdi->attributes |= kThemeTrackHasFocus;
@@ -3031,12 +3027,11 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorViewItemCheck:
     case PE_IndicatorRadioButton:
     case PE_IndicatorCheckBox: {
-        bool drawColorless = (!(opt->state & State_Active))
-                              && opt->palette.currentColorGroup() == QPalette::Active;
+        bool drawColorless = tds == kThemeStateInactive;
         HIThemeButtonDrawInfo bdi;
         bdi.version = qt_mac_hitheme_version;
         bdi.state = tds;
-        if (drawColorless && tds == kThemeStateInactive)
+        if (drawColorless)
             bdi.state = kThemeStateActive;
         bdi.adornment = kThemeDrawIndicatorOnly;
         if (opt->state & State_HasFocus)
@@ -3570,13 +3565,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 int arrowYOffset = bdi.kind == kThemePushButton ? 4 : 2;
                 HIRect arrowRect = CGRectMake(ir.right() - mbi - QMacStylePrivate::PushButtonRightOffset,
                                               ir.height() / 2 - arrowYOffset, mbi, ir.height() / 2);
-                bool drawColorless = btn->palette.currentColorGroup() == QPalette::Active;
-                if (drawColorless && tds == kThemeStateInactive)
-                    tds = kThemeStateActive;
 
                 HIThemePopupArrowDrawInfo pdi;
                 pdi.version = qt_mac_hitheme_version;
-                pdi.state = tds;
+                pdi.state = tds == kThemeStateInactive ? kThemeStateActive : tds;
                 pdi.orientation = kThemeArrowDown;
                 if (arrowRect.size.width < 8.)
                     pdi.size = kThemeArrow5pt;
@@ -5136,7 +5128,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                 HIThemeFrameDrawInfo fdi;
                 fdi.version = qt_mac_hitheme_version;
-                fdi.state = tds;
+                fdi.state = tds == kThemeStateInactive ? kThemeStateActive : tds;
                 fdi.kind = kHIThemeFrameTextFieldSquare;
                 fdi.isFocused = false;
                 HIRect hirect = qt_hirectForQRect(lineeditRect);
@@ -5167,11 +5159,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 else if (sb->activeSubControls == SC_SpinBoxUp
                          && (sb->state & State_Sunken))
                     tds = kThemeStatePressedUp;
-                bdi.state = tds;
-                if (!(sb->state & State_Active)
-                        && sb->palette.currentColorGroup() == QPalette::Active
-                        && tds == kThemeStateInactive)
+                if (tds == kThemeStateInactive)
                     bdi.state = kThemeStateActive;
+                else
+                    bdi.state = tds;
                 bdi.value = kThemeButtonOff;
                 bdi.adornment = kThemeAdornmentNone;
 
@@ -5188,7 +5179,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                 int(outRect.size.height - newRect.size.height));
 
                 newRect = qt_hirectForQRect(updown, off_rct);
-                HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
+                if (tds == kThemeStateInactive)
+                    d->drawColorlessButton(newRect, &bdi, p, sb);
+                else
+                    HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
             }
         }
         break;
@@ -5196,8 +5190,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
         if (const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt)){
             HIThemeButtonDrawInfo bdi;
             d->initComboboxBdi(combo, &bdi, widget, d->getDrawState(opt->state));
-            bool drawColorless = combo->palette.currentColorGroup() == QPalette::Active && tds == kThemeStateInactive;
-            if (!drawColorless)
+            if (!tds == kThemeStateInactive)
                 QMacStylePrivate::drawCombobox(qt_hirectForQRect(combo->rect), bdi, p);
             else
                 d->drawColorlessButton(qt_hirectForQRect(combo->rect), &bdi, p, opt);

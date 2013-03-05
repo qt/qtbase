@@ -179,14 +179,14 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
         if (mac_widget_colors[i].active != 0) {
             qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].active);
             pal.setColor(QPalette::Active, QPalette::Text, qc);
-            pal.setColor(QPalette::Active, QPalette::WindowText, qc);
-            pal.setColor(QPalette::Active, QPalette::HighlightedText, qc);
-            qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].inactive);
             pal.setColor(QPalette::Inactive, QPalette::Text, qc);
-            pal.setColor(QPalette::Disabled, QPalette::Text, qc);
+            pal.setColor(QPalette::Active, QPalette::WindowText, qc);
             pal.setColor(QPalette::Inactive, QPalette::WindowText, qc);
-            pal.setColor(QPalette::Disabled, QPalette::WindowText, qc);
+            pal.setColor(QPalette::Active, QPalette::HighlightedText, qc);
             pal.setColor(QPalette::Inactive, QPalette::HighlightedText, qc);
+            qc = qt_mac_colorForThemeTextColor(mac_widget_colors[i].inactive);
+            pal.setColor(QPalette::Disabled, QPalette::Text, qc);
+            pal.setColor(QPalette::Disabled, QPalette::WindowText, qc);
             pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette) {
