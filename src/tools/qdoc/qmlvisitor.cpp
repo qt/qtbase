@@ -601,9 +601,15 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::FunctionDeclaration* fd)
 /*!
   Begin the visit of the signal handler declaration \a sb, but only
   if the nesting level is 1.
+
+  This visit is now deprecated. It has been decided to document
+  public signals. If a signal handler must be discussed in the
+  documentation, that discussion must take place in the comment
+  for the signal.
  */
-bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* sb)
+bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* )
 {
+#if 0
     if (nestingLevel > 1) {
         return true;
     }
@@ -617,6 +623,7 @@ bool QmlDocVisitor::visit(QQmlJS::AST::UiScriptBinding* sb)
             }
         }
     }
+#endif
     return true;
 }
 
