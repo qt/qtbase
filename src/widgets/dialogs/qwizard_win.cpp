@@ -50,6 +50,7 @@
 #include "qpaintengine.h"
 #include "qapplication.h"
 #include <QtCore/QVariant>
+#include <QtCore/QDebug>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QWindow>
 #include <QtWidgets/QDesktopWidget>
@@ -345,9 +346,9 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
             mar.cyTopHeight = 0;
         else
             mar.cyTopHeight = titleBarSize() + topOffset();
-        HWND wizardHandle = QApplicationPrivate::getHWNDForWidget(wizard);
-        HRESULT hr = pDwmExtendFrameIntoClientArea(wizardHandle, &mar);
-        value = SUCCEEDED(hr);
+        if (const HWND wizardHandle = wizardHWND())
+            if (SUCCEEDED(pDwmExtendFrameIntoClientArea(wizardHandle, &mar)))
+                value = true;
     }
     return value;
 }
@@ -405,8 +406,8 @@ void QVistaHelper::setTitleBarIconAndCaptionVisible(bool visible)
             opt.dwMask = 0;
         else
             opt.dwMask = WIZ_WTNCA_NODRAWICON | WIZ_WTNCA_NODRAWCAPTION;
-        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-        pSetWindowThemeAttribute(handle, WIZ_WTA_NONCLIENT, &opt, sizeof(WIZ_WTA_OPTIONS));
+        if (const HWND handle = wizardHWND())
+            pSetWindowThemeAttribute(handle, WIZ_WTA_NONCLIENT, &opt, sizeof(WIZ_WTA_OPTIONS));
     }
 }
 
@@ -585,8 +586,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         msg.message = WM_NCHITTEST;
         msg.wParam  = 0;
         msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-        msg.hwnd = handle;
+        msg.hwnd = wizardHWND();
         winEvent(&msg, &result);
         msg.wParam = result;
         msg.message = WM_NCMOUSEMOVE;
@@ -600,8 +600,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;
             msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-            HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-            msg.hwnd = handle;
+            msg.hwnd = wizardHWND();
             winEvent(&msg, &result);
             msg.wParam = result;
             msg.message = WM_NCLBUTTONDOWN;
@@ -616,8 +615,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;
             msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-            HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-            msg.hwnd = handle;
+            msg.hwnd = wizardHWND();
             winEvent(&msg, &result);
             msg.wParam = result;
             msg.message = WM_NCLBUTTONUP;
@@ -642,6 +640,19 @@ HFONT QVistaHelper::getCaptionFont(HANDLE hTheme)
         lf = ncm.lfMessageFont;
     }
     return CreateFontIndirect(&lf);
+}
+
+HWND QVistaHelper::wizardHWND() const
+{
+    // Obtain the HWND if the wizard is a top-level window.
+    // Do not use winId() as this enforces native children of the parent
+    // widget when called before show() as happens when calling setWizardStyle().
+    if (QWindow *window = wizard->windowHandle())
+        if (window->handle())
+            if (void *vHwnd = QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("handle"), window))
+                return static_cast<HWND>(vHwnd);
+    qWarning().nospace() << "Failed to obtain HWND for wizard.";
+    return 0;
 }
 
 bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc)

@@ -54,6 +54,7 @@
 #include "qlabel.h"
 #include "qlineedit.h"
 #include "qpainter.h"
+#include "qwindow.h"
 #include "qpushbutton.h"
 #include "qset.h"
 #include "qstyle.h"
@@ -592,7 +593,7 @@ public:
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
     bool vistaDisabled() const;
     bool isVistaThemeEnabled(QVistaHelper::VistaState state) const;
-    void handleAeroStyleChange();
+    bool handleAeroStyleChange();
 #endif
     bool isVistaThemeEnabled() const;
     void disableUpdates();
@@ -1514,12 +1515,19 @@ bool QWizardPrivate::isVistaThemeEnabled(QVistaHelper::VistaState state) const
         && !vistaDisabled();
 }
 
-void QWizardPrivate::handleAeroStyleChange()
+bool QWizardPrivate::handleAeroStyleChange()
 {
     Q_Q(QWizard);
 
     if (inHandleAeroStyleChange)
-        return; // prevent recursion
+        return false; // prevent recursion
+    // For top-level wizards, we need the platform window handle for the
+    // DWM changes. Delay aero initialization to the show event handling if
+    // it does not exist. If we are a child, skip DWM and just make room by
+    // moving the antiFlickerWidget.
+    const bool isWindow = q->isWindow();
+    if (isWindow && (!q->windowHandle() || !q->windowHandle()->handle()))
+        return false;
     inHandleAeroStyleChange = true;
 
     vistaHelper->disconnectBackButton();
@@ -1529,8 +1537,10 @@ void QWizardPrivate::handleAeroStyleChange()
 
     if (isVistaThemeEnabled()) {
         if (isVistaThemeEnabled(QVistaHelper::VistaAero)) {
-            vistaHelper->setDWMTitleBar(QVistaHelper::ExtendedTitleBar);
-            q->installEventFilter(vistaHelper);
+            if (isWindow) {
+                vistaHelper->setDWMTitleBar(QVistaHelper::ExtendedTitleBar);
+                q->installEventFilter(vistaHelper);
+            }
             q->setMouseTracking(true);
             antiFlickerWidget->move(0, vistaHelper->titleBarSize() + vistaHelper->topOffset());
             vistaHelper->backButton()->move(
@@ -1538,12 +1548,14 @@ void QWizardPrivate::handleAeroStyleChange()
                 - qMin(vistaHelper->topOffset(), vistaHelper->topPadding() + 1));
             vistaMargins = true;
         } else {
-            vistaHelper->setDWMTitleBar(QVistaHelper::NormalTitleBar);
+            if (isWindow)
+                vistaHelper->setDWMTitleBar(QVistaHelper::NormalTitleBar);
             q->setMouseTracking(true);
             antiFlickerWidget->move(0, vistaHelper->topOffset());
             vistaHelper->backButton()->move(0, -1); // ### should ideally work with (0, 0)
         }
-        vistaHelper->setTitleBarIconAndCaptionVisible(false);
+        if (isWindow)
+            vistaHelper->setTitleBarIconAndCaptionVisible(false);
         QObject::connect(
             vistaHelper->backButton(), SIGNAL(clicked()), q, buttonSlots[QWizard::BackButton]);
         vistaHelper->backButton()->show();
@@ -1554,7 +1566,8 @@ void QWizardPrivate::handleAeroStyleChange()
 #endif
         antiFlickerWidget->move(0, 0);
         vistaHelper->hideBackButton();
-        vistaHelper->setTitleBarIconAndCaptionVisible(true);
+        if (isWindow)
+            vistaHelper->setTitleBarIconAndCaptionVisible(true);
     }
 
     _q_updateButtonStates();
@@ -1562,6 +1575,7 @@ void QWizardPrivate::handleAeroStyleChange()
     vistaHelper->updateCustomMargins(vistaMargins);
 
     inHandleAeroStyleChange = false;
+    return true;
 }
 #endif
 
@@ -2509,8 +2523,9 @@ void QWizard::setWizardStyle(WizardStyle style)
         updateGeometry();
         d->enableUpdates();
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
-        if (aeroStyleChange)
-            d->handleAeroStyleChange();
+        // Delay initialization when activating Aero style fails due to missing native window.
+        if (aeroStyleChange && !d->handleAeroStyleChange() && d->wizStyle == AeroStyle)
+            d->vistaInitPending = true;
 #endif
     }
 }
