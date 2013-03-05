@@ -312,11 +312,13 @@ void QProcessPrivate::destroyChannel(Channel *channel)
         }
     } else if (channel == &stdoutChannel) {
         if (stdoutReader) {
+            stdoutReader->stop();
             stdoutReader->deleteLater();
             stdoutReader = 0;
         }
     } else if (channel == &stderrChannel) {
         if (stderrReader) {
+            stderrReader->stop();
             stderrReader->deleteLater();
             stderrReader = 0;
         }
