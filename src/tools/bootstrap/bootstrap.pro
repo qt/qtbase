@@ -2,7 +2,7 @@ option(host_build)
 
 TARGET = QtBootstrap
 QT =
-CONFIG += no_module_headers internal_module
+CONFIG += internal_module
 !build_pass: CONFIG += release
 
 # otherwise mingw headers do not declare common functions like putenv
@@ -36,6 +36,13 @@ MODULE_PRIVATE_INCLUDES = \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION \
     \$\$QT_MODULE_INCLUDE_BASE/QtXml/$$QT_VERSION/QtXml
+
+# We need the forwarding headers before their respective modules are built,
+# so do a minimal syncqt run.
+CONFIG += minimal_syncqt
+QMAKE_SYNCQT_OPTIONS = -module QtCore -module QtDBus -module QtXml
+contains(QT_CONFIG, zlib): \
+    QMAKE_SYNCQT_OPTIONS += -module QtZlib
 
 load(qt_module)
 
@@ -128,19 +135,3 @@ win32:LIBS += -luser32 -lole32 -ladvapi32
 
 lib.CONFIG = dummy_install
 INSTALLS += lib
-
-!build_pass {
-    # We need the forwarding headers before their respective modules are built,
-    # so do a minimal syncqt run.
-    qtPrepareTool(QMAKE_SYNCQT, syncqt)
-    QTDIR = $$[QT_HOST_PREFIX]
-    exists($$QTDIR/.qmake.cache): \
-        mod_component_base = $$QTDIR
-    else: \
-        mod_component_base = $$dirname(_QMAKE_CACHE_)
-    QMAKE_SYNCQT += -minimal -module QtCore -module QtDBus -module QtXml \
-        -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
-    contains(QT_CONFIG, zlib):QMAKE_SYNCQT += -module QtZlib
-    !silent:message($$QMAKE_SYNCQT)
-    system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
-}

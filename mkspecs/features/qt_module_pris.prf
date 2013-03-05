@@ -43,7 +43,7 @@ else: \
         module_config = "QT.$${MODULE}.CONFIG = $$MODULE_CONFIG"
     else: \
         module_config =
-    !no_module_headers {
+    !no_module_headers:!minimal_syncqt {
         MODULE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME"
         MODULE_PRIVATE_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION \
                                    \$\$QT_MODULE_INCLUDE_BASE/$$MODULE_INCNAME/$$VERSION/$$MODULE_INCNAME"
