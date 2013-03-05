@@ -126,6 +126,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QRawFont::LayoutFlag
+    \since 5.1
+
+    This enum tells the function advancesForGlyphIndexes() how to calculate the advances.
+
+    \value SeparateAdvances Will calculate the advance for each glyph separately.
+    \value KernedAdvances Will apply kerning between adjacent glyphs. Note that OpenType GPOS based
+           kerning is currently not supported.
+    \value UseDesignMetrics Use design metrics instead of hinted metrics adjusted to the resolution
+           of the paint device.
+           Can be OR-ed with any of the options above.
+*/
+
+/*!
    Constructs an invalid QRawFont.
 */
 QRawFont::QRawFont()
@@ -510,25 +524,42 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
 }
 
 /*!
-    \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+   \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, LayoutFlags layoutFlags) const
+   \since 5.1
 
    Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
    give the distance from the position of a given glyph to where the next glyph should be drawn
-   to make it appear as if the two glyphs are unspaced.
+   to make it appear as if the two glyphs are unspaced. How the advances are calculated is
+   controlled by \a layoutFlags.
 
    \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
 */
 
 /*!
+   \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+
+   \overload
+
+   Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
+   give the distance from the position of a given glyph to where the next glyph should be drawn
+   to make it appear as if the two glyphs are unspaced. The advance of each glyph is calculated
+   separately.
+
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+*/
+
+/*!
+   \since 5.1
+
    Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
    give the distance from the position of a given glyph to where the next glyph should be drawn
    to make it appear as if the two glyphs are unspaced. The glyph indexes are given with the
    array \a glyphIndexes while the results are returned through \a advances, both of them must
-   have \a numGlyphs elements.
+   have \a numGlyphs elements. How the advances are calculated is controlled by \a layoutFlags.
 
    \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
 */
-bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const
+bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs, LayoutFlags layoutFlags) const
 {
     Q_ASSERT(glyphIndexes && advances);
     if (!d->isValid() || numGlyphs <= 0)
@@ -542,12 +573,32 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
     glyphs.advances_x = advances_x.data();
     glyphs.advances_y = advances_y.data();
 
-    d->fontEngine->recalcAdvances(&glyphs, 0);
+    bool design = layoutFlags & UseDesignMetrics;
+
+    d->fontEngine->recalcAdvances(&glyphs, design ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlag(0));
+    if (layoutFlags & KernedAdvances)
+        d->fontEngine->doKerning(&glyphs, design ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlag(0));
 
     for (int i=0; i<numGlyphs; ++i)
         advances[i] = QPointF(glyphs.advances_x[i].toReal(), glyphs.advances_y[i].toReal());
 
     return true;
+}
+
+/*!
+   \overload
+
+   Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
+   give the distance from the position of a given glyph to where the next glyph should be drawn
+   to make it appear as if the two glyphs are unspaced. The glyph indexes are given with the
+   array \a glyphIndexes while the results are returned through \a advances, both of them must
+   have \a numGlyphs elements. The advance of each glyph is calculated separately
+
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+*/
+bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const
+{
+    return QRawFont::advancesForGlyphIndexes(glyphIndexes, advances, numGlyphs, SeparateAdvances);
 }
 
 /*!
