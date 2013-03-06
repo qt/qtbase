@@ -160,6 +160,12 @@ BEGIN {
     values["LITERAL_WHITESPACE"] = " "
     values["LITERAL_DOLLAR"] = "$"
 }
+/^!?host_build:/ {
+    scopeStart = index($0, ":") + 1
+    condition = substr($0, 0, scopeStart - 2)
+    if (condition != "'"$1"'") { next }
+    $0 = substr($0, scopeStart)
+}
 /^[_A-Z0-9.]+[ \t]*\+?=/ {
     valStart = index($0, "=") + 1
 
@@ -225,7 +231,7 @@ getSingleQMakeVariable()
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
-        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables`
+        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables "host_build"`
     fi
     getSingleQMakeVariable "$1" "$specvals"
 }
@@ -233,7 +239,7 @@ getQMakeConf()
 getXQMakeConf()
 {
     if [ -z "$xspecvals" ]; then
-        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" | extractQMakeVariables`
+        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" | extractQMakeVariables "!host_build"`
     fi
     getSingleQMakeVariable "$1" "$xspecvals"
 }
