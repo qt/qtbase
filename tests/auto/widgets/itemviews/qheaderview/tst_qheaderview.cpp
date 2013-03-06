@@ -157,7 +157,7 @@ private slots:
     void sortIndicatorTracking();
     void removeAndInsertRow();
     void unhideSection();
-    void event();
+    void testEvent();
     void headerDataChanged();
     void currentChanged();
     void horizontalOffset();
@@ -1368,7 +1368,7 @@ void tst_QHeaderView::unhideSection()
 
 }
 
-void tst_QHeaderView::event()
+void tst_QHeaderView::testEvent()
 {
     protected_QHeaderView x(Qt::Vertical);
     x.testEvent();

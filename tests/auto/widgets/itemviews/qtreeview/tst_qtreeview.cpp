@@ -89,7 +89,8 @@ struct PublicView : public QTreeView
         MovePrevious = QAbstractItemView::MovePrevious
     };
 
-    inline QModelIndex moveCursor(PublicCursorAction ca, Qt::KeyboardModifiers kbm)
+    // enum PublicCursorAction and moveCursor() are protected in QTreeView.
+    inline QModelIndex doMoveCursor(PublicCursorAction ca, Qt::KeyboardModifiers kbm)
     { return QTreeView::moveCursor((CursorAction)ca, kbm); }
 
     inline void setSelection(const QRect &rect, QItemSelectionModel::SelectionFlags command)
@@ -1802,7 +1803,7 @@ void tst_QTreeView::moveCursor()
     QCOMPARE(view.currentIndex(), expected);
 
     //then pressing down should go to the next line
-    QModelIndex actual = view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    QModelIndex actual = view.doMoveCursor(PublicView::MoveDown, Qt::NoModifier);
     expected = model.index(2, 1, QModelIndex());
     QCOMPARE(actual, expected);
 
@@ -1811,7 +1812,7 @@ void tst_QTreeView::moveCursor()
 
     // PageUp was broken with uniform row heights turned on
     view.setCurrentIndex(model.index(1, 0));
-    actual = view.moveCursor(PublicView::MovePageUp, Qt::NoModifier);
+    actual = view.doMoveCursor(PublicView::MovePageUp, Qt::NoModifier);
     expected = model.index(0, 0, QModelIndex());
     QCOMPARE(actual, expected);
 
@@ -2855,7 +2856,7 @@ void tst_QTreeView::evilModel()
     view.setSelection(rect, QItemSelectionModel::Select);
     model.change();
 
-    view.moveCursor(PublicView::MoveDown, Qt::NoModifier);
+    view.doMoveCursor(PublicView::MoveDown, Qt::NoModifier);
     model.change();
 
     view.resizeColumnToContents(1);

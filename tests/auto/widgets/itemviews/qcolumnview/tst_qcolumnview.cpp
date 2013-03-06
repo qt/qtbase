@@ -165,7 +165,8 @@ public:
         QColumnView::setSelection(rect, command);
     }
 
-    QRegion visualRegionForSelection(QItemSelection selection){
+    // visualRegionForSelection() is protected in QColumnView.
+    QRegion getVisualRegionForSelection(const QItemSelection &selection){
         return QColumnView::visualRegionForSelection(selection);
     }
 protected:
@@ -664,7 +665,7 @@ void tst_QColumnView::visualRegionForSelection()
 {
     ColumnView view;
     QItemSelection emptyItemSelection;
-    QCOMPARE(QRegion(), view.visualRegionForSelection(emptyItemSelection));
+    QCOMPARE(QRegion(), view.getVisualRegionForSelection(emptyItemSelection));
 
     // a region that isn't empty
     QDirModel model;
@@ -680,7 +681,7 @@ void tst_QColumnView::visualRegionForSelection()
     QModelIndex home = model.index(location);
     QVERIFY(model.rowCount(home) > 1);
     QItemSelection itemSelection(model.index(0, 0, home), model.index(model.rowCount(home) - 1, 0, home));
-    QVERIFY(QRegion() != view.visualRegionForSelection(itemSelection));
+    QVERIFY(QRegion() != view.getVisualRegionForSelection(itemSelection));
 }
 
 void tst_QColumnView::moveGrip_basic()

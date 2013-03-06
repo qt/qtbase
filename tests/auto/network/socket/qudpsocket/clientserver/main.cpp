@@ -79,7 +79,7 @@ public:
         }
         fflush(stdout);
 
-        connect(this, SIGNAL(readyRead()), this, SLOT(readData()));
+        connect(this, SIGNAL(readyRead()), this, SLOT(readTestData()));
     }
 
 protected:
@@ -101,7 +101,7 @@ protected:
     }
 
 private slots:
-    void readData()
+    void readTestData()
     {
         printf("readData()\n");
         switch (type) {

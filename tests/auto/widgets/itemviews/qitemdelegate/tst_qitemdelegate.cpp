@@ -220,7 +220,7 @@ private slots:
     void doLayout();
     void rect_data();
     void rect();
-    void eventFilter();
+    void testEventFilter();
     void dateTimeEditor_data();
     void dateTimeEditor();
     void dateAndTimeEditorTest2();
@@ -695,7 +695,7 @@ void tst_QItemDelegate::rect()
 
 //TODO : Add a test for the keyPress event
 //with Qt::Key_Enter and Qt::Key_Return
-void tst_QItemDelegate::eventFilter()
+void tst_QItemDelegate::testEventFilter()
 {
     TestItemDelegate delegate;
     QWidget widget;

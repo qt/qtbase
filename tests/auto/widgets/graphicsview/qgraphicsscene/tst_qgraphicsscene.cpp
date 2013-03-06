@@ -240,7 +240,7 @@ private slots:
     void update();
     void update2();
     void views();
-    void event();
+    void testEvent();
     void eventsToDisabledItems();
     void exposedRect();
     void tabFocus_emptyScene();
@@ -2911,7 +2911,7 @@ protected:
     }
 };
 
-void tst_QGraphicsScene::event()
+void tst_QGraphicsScene::testEvent()
 {
     // Test that QGraphicsScene properly propagates events to QObject.
     CustomScene scene;
