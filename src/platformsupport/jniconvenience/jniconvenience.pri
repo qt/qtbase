@@ -1,4 +1,4 @@
-android {
+android:!android-no-sdk {
     QT += gui-private
 
     HEADERS += $$PWD/qjnihelpers_p.h \
