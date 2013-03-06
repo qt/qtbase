@@ -3219,6 +3219,9 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
 
     \snippet code/src_corelib_kernel_qobject.cpp 34
 
+    If \a object itself has a properly set object name, its own signals are also
+    connected to its respective slots.
+
     \sa QObject::setObjectName()
  */
 void QMetaObject::connectSlotsByName(QObject *o)
@@ -3227,7 +3230,10 @@ void QMetaObject::connectSlotsByName(QObject *o)
         return;
     const QMetaObject *mo = o->metaObject();
     Q_ASSERT(mo);
-    const QObjectList list = o->findChildren<QObject *>(QString());
+    const QObjectList list = // list of all objects to look for matching signals including...
+            o->findChildren<QObject *>(QString()) // all children of 'o'...
+            << o; // and the object 'o' itself
+
     for (int i = 0; i < mo->methodCount(); ++i) {
         QByteArray slotSignature = mo->method(i).methodSignature();
         const char *slot = slotSignature.constData();

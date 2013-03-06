@@ -406,6 +406,8 @@ public:
         connect(this, SIGNAL(on_Sender_signalLoopBack()), this, SLOT(slotLoopBack()));
     }
 
+    void emitSignalNoParams() { emit signalNoParams(); }
+    void emit_signal_with_underscore() { emit signal_with_underscore(); }
 
 public slots:
     void on_Sender_signalNoParams() { called_slots << 1; }
@@ -419,6 +421,8 @@ public slots:
     void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff)
     { called_slots << 7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
     void slotLoopBack() { called_slots << 8; }
+    void on_Receiver_signalNoParams() { called_slots << 9; }
+    void on_Receiver_signal_with_underscore() { called_slots << 10; }
 
 protected slots:
     void o() { called_slots << -1; }
@@ -426,11 +430,14 @@ protected slots:
 
 signals:
     void on_Sender_signalLoopBack();
+    void signalNoParams();
+    void signal_with_underscore();
 };
 
 void tst_QObject::connectSlotsByName()
 {
     AutoConnectReceiver receiver;
+    receiver.setObjectName("Receiver");
     AutoConnectSender sender(&receiver);
     sender.setObjectName("Sender");
 
@@ -462,6 +469,14 @@ void tst_QObject::connectSlotsByName()
     receiver.called_slots.clear();
     sender.emitSignalLoopBack();
     QCOMPARE(receiver.called_slots, QList<int>() << 8);
+
+    receiver.called_slots.clear();
+    receiver.emitSignalNoParams();
+    QCOMPARE(receiver.called_slots, QList<int>() << 9);
+
+    receiver.called_slots.clear();
+    receiver.emit_signal_with_underscore();
+    QCOMPARE(receiver.called_slots, QList<int>() << 10);
 }
 
 void tst_QObject::qobject_castTemplate()
