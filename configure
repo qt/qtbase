@@ -1330,7 +1330,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            DeviceVar set QMAKE_MAC_SDK "$VAL"
+            DeviceVar set !host_build:QMAKE_MAC_SDK "$VAL"
         else
             UNKNOWN_OPT=yes
         fi
