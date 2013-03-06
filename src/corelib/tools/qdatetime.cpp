@@ -1560,9 +1560,9 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li z \li the milliseconds without leading zeroes (0 to 999)
     \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
     \row \li AP or A
-         \li use AM/PM display. \e AP will be replaced by either "AM" or "PM".
+         \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
     \row \li ap or a
-         \li use am/pm display. \e ap will be replaced by either "am" or "pm".
+         \li use am/pm display. \e a/ap will be replaced by either "am" or "pm".
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
@@ -3759,8 +3759,7 @@ static bool hasUnquotedAP(const QString &f)
     for (int i=0; i<max; ++i) {
         if (f.at(i) == quote) {
             inquote = !inquote;
-        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')
-            && i + 1 < max && f.at(i + 1).toUpper() == QLatin1Char('P')) {
+        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')) {
             return true;
         }
     }
