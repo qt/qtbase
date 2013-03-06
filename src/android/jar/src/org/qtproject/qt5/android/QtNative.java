@@ -279,10 +279,10 @@ public class QtNative
         });
     }
 
-    //@ANDROID-5
+    //@ANDROID-9
     static private int getAction(int index, MotionEvent event)
     {
-        int action = event.getAction();
+        int action = event.getActionMasked();
         if (action == MotionEvent.ACTION_MOVE) {
             int hsz = event.getHistorySize();
             if (hsz > 0) {
@@ -295,48 +295,14 @@ public class QtNative
             }
             return 1;
         }
-
-        switch (index) {
-            case 0:
-                if (action == MotionEvent.ACTION_DOWN
-                        || action == MotionEvent.ACTION_POINTER_1_DOWN) {
-                    return 0;
-                }
-
-                if (action == MotionEvent.ACTION_UP
-                        || action == MotionEvent.ACTION_POINTER_1_UP) {
-                    return 3;
-                }
-                break;
-
-            case 1:
-                if (action == MotionEvent.ACTION_POINTER_2_DOWN
-                        || action == MotionEvent.ACTION_POINTER_DOWN) {
-                    return 0;
-                }
-
-                if (action == MotionEvent.ACTION_POINTER_2_UP
-                        || action == MotionEvent.ACTION_POINTER_UP) {
-                    return 3;
-                }
-                break;
-
-            case 2:
-                if (action == MotionEvent.ACTION_POINTER_3_DOWN
-                        || action == MotionEvent.ACTION_POINTER_DOWN) {
-                    return 0;
-                }
-
-                if (action == MotionEvent.ACTION_POINTER_3_UP
-                        || action == MotionEvent.ACTION_POINTER_UP) {
-                    return 3;
-                }
-
-                break;
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN && index == event.getActionIndex()) {
+            return 0;
+        } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP && index == event.getActionIndex()) {
+            return 3;
         }
         return 2;
     }
-    //@ANDROID-5
+    //@ANDROID-9
 
     static public void sendTouchEvent(MotionEvent event, int id)
     {
