@@ -427,6 +427,9 @@ public slots:
 protected slots:
     void o() { called_slots << -1; }
     void on() { called_slots << -1; }
+    void on_() { called_slots << -1; }
+    void on_something() { called_slots << -1; }
+    void on_child_signal() { called_slots << -1; }
 
 signals:
     void on_Sender_signalLoopBack();
@@ -441,6 +444,8 @@ void tst_QObject::connectSlotsByName()
     AutoConnectSender sender(&receiver);
     sender.setObjectName("Sender");
 
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::connectSlotsByName: No matching signal for on_child_signal()");
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::connectSlotsByName: Connecting slot on_Sender_signalManyParams() with the first of the following compatible signals: (\"signalManyParams(int,int,int,QString,bool)\", \"signalManyParams(int,int,int,QString,bool,bool)\") ");
     QMetaObject::connectSlotsByName(&receiver);
 
     receiver.called_slots.clear();
