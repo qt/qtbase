@@ -305,8 +305,8 @@ MakefileGenerator::setProjectFile(QMakeProject *p)
     project = p;
     if (project->isActiveConfig("win32"))
         target_mode = TARG_WIN_MODE;
-    else if (project->isActiveConfig("macx"))
-        target_mode = TARG_MACX_MODE;
+    else if (project->isActiveConfig("mac"))
+        target_mode = TARG_MAC_MODE;
     else
         target_mode = TARG_UNIX_MODE;
     init();
@@ -3236,7 +3236,7 @@ MakefileGenerator::writePkgConfigFile()
     t << "Libs: ";
     QString pkgConfiglibDir;
     QString pkgConfiglibName;
-    if (target_mode == TARG_MACX_MODE && project->isActiveConfig("lib_bundle")) {
+    if (target_mode == TARG_MAC_MODE && project->isActiveConfig("lib_bundle")) {
         pkgConfiglibDir = "-F${libdir}";
         ProString bundle;
         if (!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
