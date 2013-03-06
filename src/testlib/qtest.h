@@ -68,12 +68,12 @@ namespace QTest
 
 template<> inline char *toString(const QLatin1String &str)
 {
-    return qstrdup(str.latin1());
+    return qstrdup(qPrintable(QString(str)));
 }
 
 template<> inline char *toString(const QString &str)
 {
-    return qstrdup(str.toLatin1().constData());
+    return qstrdup(qPrintable(str));
 }
 
 template<> inline char *toString(const QByteArray &ba)
@@ -85,29 +85,29 @@ template<> inline char *toString(const QByteArray &ba)
 template<> inline char *toString(const QTime &time)
 {
     return time.isValid()
-        ? qstrdup(time.toString(QLatin1String("hh:mm:ss.zzz")).toLatin1().constData())
+        ? qstrdup(qPrintable(time.toString(QLatin1String("hh:mm:ss.zzz"))))
         : qstrdup("Invalid QTime");
 }
 
 template<> inline char *toString(const QDate &date)
 {
     return date.isValid()
-        ? qstrdup(date.toString(QLatin1String("yyyy/MM/dd")).toLatin1().constData())
+        ? qstrdup(qPrintable(date.toString(QLatin1String("yyyy/MM/dd"))))
         : qstrdup("Invalid QDate");
 }
 
 template<> inline char *toString(const QDateTime &dateTime)
 {
     return dateTime.isValid()
-        ? qstrdup((dateTime.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")) +
-                  (dateTime.timeSpec() == Qt::LocalTime ? QLatin1String("[local time]") : QLatin1String("[UTC]"))).toLatin1().constData())
+        ? qstrdup(qPrintable(dateTime.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")) +
+                             (dateTime.timeSpec() == Qt::LocalTime ? QLatin1String("[local time]") : QLatin1String("[UTC]"))))
         : qstrdup("Invalid QDateTime");
 }
 #endif // QT_NO_DATESTRING
 
 template<> inline char *toString(const QChar &c)
 {
-    return qstrdup(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16)).toLatin1().constData());
+    return qstrdup(qPrintable(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16))));
 }
 
 template<> inline char *toString(const QPoint &p)
@@ -143,7 +143,7 @@ template<> inline char *toString(const QRectF &s)
 template<> inline char *toString(const QUrl &uri)
 {
     if (!uri.isValid())
-        return qstrdup(QByteArray("Invalid URL: " + uri.errorString().toLatin1()).constData());
+        return qstrdup(qPrintable(QStringLiteral("Invalid URL: ") + uri.errorString()));
     return qstrdup(uri.toEncoded().constData());
 }
 
@@ -159,7 +159,7 @@ template<> inline char *toString(const QVariant &v)
         if (!v.isNull()) {
             vstring.append(',');
             if (v.canConvert(QVariant::String)) {
-                vstring.append(qvariant_cast<QString>(v).toLatin1());
+                vstring.append(qvariant_cast<QString>(v).toLocal8Bit());
             }
             else {
                 vstring.append("<value not representable as string>");
