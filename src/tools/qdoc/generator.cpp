@@ -360,7 +360,7 @@ QString Generator::fileBase(const Node *node) const
         QChar c = base.at(i);
         uint u = c.unicode();
         if (u >= 'A' && u <= 'Z')
-            u -= 'A' - 'a';
+            u += 'a' - 'A';
         if ((u >= 'a' &&  u <= 'z') || (u >= '0' && u <= '9')) {
             res += QLatin1Char(u);
             begun = true;

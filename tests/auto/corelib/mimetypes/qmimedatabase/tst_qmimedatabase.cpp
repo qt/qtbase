@@ -442,6 +442,8 @@ void tst_QMimeDatabase::mimeTypeForFileWithContent()
         txtTempFile.close();
         mime = db.mimeTypeForFile(txtTempFileName);
         QCOMPARE(mime.name(), QString::fromLatin1("text/plain"));
+        mime = db.mimeTypeForFile(txtTempFileName, QMimeDatabase::MatchContent);
+        QCOMPARE(mime.name(), QString::fromLatin1("application/smil"));
     }
 
     // Test what happens with an incorrect path
@@ -714,6 +716,8 @@ void tst_QMimeDatabase::findByData()
     QFileInfo info(filePath);
     QString mimeForInfo = database.mimeTypeForFile(info, QMimeDatabase::MatchContent).name();
     QCOMPARE(mimeForInfo, resultMimeTypeName);
+    QString mimeForFile = database.mimeTypeForFile(filePath, QMimeDatabase::MatchContent).name();
+    QCOMPARE(mimeForFile, resultMimeTypeName);
 }
 
 void tst_QMimeDatabase::findByFile_data()

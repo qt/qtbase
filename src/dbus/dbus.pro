@@ -6,6 +6,8 @@ MODULE_CONFIG = dbusadaptors dbusinterfaces
 !isEmpty(DBUS_PATH) {
     INCLUDEPATH += $$DBUS_PATH/include
     QMAKE_LIBDIR += $$DBUS_PATH/lib
+    win32:CONFIG(debug, debug|release):QT_LIBS_DBUS += -ldbus-1d
+    else:QT_LIBS_DBUS += -ldbus-1
 }
 
 DEFINES += DBUS_API_SUBJECT_TO_CHANGE
@@ -21,8 +23,6 @@ win32 {
         -ladvapi32 \
         -lnetapi32 \
         -luser32
-    CONFIG(debug, debug|release):LIBS_PRIVATE += -ldbus-1d
-    else:LIBS_PRIVATE += -ldbus-1
 }
 
 QMAKE_DOCS = $$PWD/doc/qtdbus.qdocconf

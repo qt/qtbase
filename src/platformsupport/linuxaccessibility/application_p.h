@@ -42,6 +42,7 @@
 #ifndef Q_SPI_APPLICATION_H
 #define Q_SPI_APPLICATION_H
 
+#include <QtCore/QPointer>
 #include <QtCore/QQueue>
 #include <QtDBus/QDBusConnection>
 #include <QtGui/QAccessibleInterface>
@@ -75,7 +76,7 @@ private Q_SLOTS:
 private:
     static QKeyEvent* copyKeyEvent(QKeyEvent*);
 
-    QQueue<QPair<QObject*, QKeyEvent*> > keyEvents;
+    QQueue<QPair<QPointer<QObject>, QKeyEvent*> > keyEvents;
     QDBusConnection dbusConnection;
 };
 

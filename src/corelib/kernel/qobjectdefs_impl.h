@@ -62,7 +62,7 @@ namespace QtPrivate {
     /*
        The following List classes are used to help to handle the list of arguments.
        It follow the same principles as the lisp lists.
-       List_Left<L,N> take a list and a number as a parametter and returns (via the Value typedef,
+       List_Left<L,N> take a list and a number as a parameter and returns (via the Value typedef,
        the list composed of the first N element of the list
      */
 #ifndef Q_COMPILER_VARIADIC_TEMPLATES
@@ -116,7 +116,7 @@ namespace QtPrivate {
         - ArgumentCount  is the number of argument, or -1 if it is unknown
         - the Object typedef is the Object of a pointer to member function
         - the Arguments typedef is the list of argument (in a QtPrivate::List)
-        - the Function typedef is an alias to the template parametter Func
+        - the Function typedef is an alias to the template parameter Func
         - the call<Args, R>(f,o,args) method is used to call that slot
             Args is the list of argument of the signal
             R is the return type of the signal

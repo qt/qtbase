@@ -291,29 +291,29 @@ DocNode* QDocDatabase::addToModule(const QString& name, Node* node)
  */
 DocNode* QDocDatabase::addToQmlModule(const QString& name, Node* node)
 {
-    QString longQmid, shortQmid;
+    QStringList qmid;
     QStringList dotSplit;
     QStringList blankSplit = name.split(QLatin1Char(' '));
+    qmid.append(blankSplit[0]);
     if (blankSplit.size() > 1) {
-        longQmid = blankSplit[0] + blankSplit[1];
+        qmid.append(blankSplit[0] + blankSplit[1]);
         dotSplit = blankSplit[1].split(QLatin1Char('.'));
-        shortQmid = blankSplit[0] + dotSplit[0];
+        qmid.append(blankSplit[0] + dotSplit[0]);
     }
     DocNode* dn = findQmlModule(name);
     dn->addMember(node);
     node->setQmlModuleInfo(name);
     if (node->subType() == Node::QmlClass) {
         QmlClassNode* n = static_cast<QmlClassNode*>(node);
-        QString key = longQmid + "::" + node->name();
-        for (int i=0; i<2; ++i) {
+        for (int i=0; i<qmid.size(); ++i) {
+            QString key = qmid[i] + "::" + node->name();
             if (!qmlTypeMap_.contains(key))
                 qmlTypeMap_.insert(key,n);
             if (!masterMap_.contains(key))
                 masterMap_.insert(key,node);
-            if (!masterMap_.contains(node->name(),node))
-                masterMap_.insert(node->name(),node);
-            key = shortQmid + "::" + node->name();
         }
+        if (!masterMap_.contains(node->name(),node))
+            masterMap_.insert(node->name(),node);
     }
     return dn;
 }

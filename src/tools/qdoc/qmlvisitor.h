@@ -85,6 +85,11 @@ public:
     bool visit(QQmlJS::AST::UiPublicMember *member);
     void endVisit(QQmlJS::AST::UiPublicMember *definition);
 
+    virtual bool visit(QQmlJS::AST::UiObjectBinding *);
+    virtual void endVisit(QQmlJS::AST::UiObjectBinding *);
+    virtual void endVisit(QQmlJS::AST::UiArrayBinding *);
+    virtual bool visit(QQmlJS::AST::UiArrayBinding *);
+
     bool visit(QQmlJS::AST::IdentifierPropertyName *idproperty);
 
     bool visit(QQmlJS::AST::FunctionDeclaration *);

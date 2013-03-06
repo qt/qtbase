@@ -418,7 +418,7 @@ QMimeType QMimeDatabase::mimeTypeForFile(const QString &fileName, MatchMode mode
     } else {
         // Implemented as a wrapper around mimeTypeForFile(QFileInfo), so no mutex.
         QFileInfo fileInfo(fileName);
-        return mimeTypeForFile(fileInfo);
+        return mimeTypeForFile(fileInfo, mode);
     }
 }
 

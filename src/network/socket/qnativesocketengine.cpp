@@ -623,8 +623,8 @@ int QNativeSocketEngine::accept()
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::accept(), -1);
-    Q_CHECK_STATE(QNativeSocketEngine::accept(), QAbstractSocket::ListeningState, false);
-    Q_CHECK_TYPE(QNativeSocketEngine::accept(), QAbstractSocket::TcpSocket, false);
+    Q_CHECK_STATE(QNativeSocketEngine::accept(), QAbstractSocket::ListeningState, -1);
+    Q_CHECK_TYPE(QNativeSocketEngine::accept(), QAbstractSocket::TcpSocket, -1);
 
     return d->nativeAccept();
 }
@@ -702,7 +702,7 @@ qint64 QNativeSocketEngine::bytesAvailable() const
 {
     Q_D(const QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::bytesAvailable(), -1);
-    Q_CHECK_NOT_STATE(QNativeSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, false);
+    Q_CHECK_NOT_STATE(QNativeSocketEngine::bytesAvailable(), QAbstractSocket::UnconnectedState, -1);
 
     return d->nativeBytesAvailable();
 }
@@ -732,7 +732,7 @@ qint64 QNativeSocketEngine::pendingDatagramSize() const
 {
     Q_D(const QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::pendingDatagramSize(), -1);
-    Q_CHECK_TYPE(QNativeSocketEngine::pendingDatagramSize(), QAbstractSocket::UdpSocket, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::pendingDatagramSize(), QAbstractSocket::UdpSocket, -1);
 
     return d->nativePendingDatagramSize();
 }
@@ -757,7 +757,7 @@ qint64 QNativeSocketEngine::readDatagram(char *data, qint64 maxSize, QHostAddres
 {
     Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::readDatagram(), -1);
-    Q_CHECK_TYPE(QNativeSocketEngine::readDatagram(), QAbstractSocket::UdpSocket, false);
+    Q_CHECK_TYPE(QNativeSocketEngine::readDatagram(), QAbstractSocket::UdpSocket, -1);
 
     return d->nativeReceiveDatagram(data, maxSize, address, port);
 }

@@ -109,6 +109,8 @@ Qt::KeyboardModifiers QWindowsMouseHandler::keyStateToModifiers(int wParam)
       mods |= Qt::ControlModifier;
     if (wParam & MK_SHIFT)
       mods |= Qt::ShiftModifier;
+    if (GetKeyState(VK_MENU) < 0)
+      mods |= Qt::AltModifier;
     return mods;
 }
 
