@@ -69,7 +69,7 @@ class tst_QObject : public QObject
 private slots:
     void initTestCase();
     void disconnect();
-    void connectByName();
+    void connectSlotsByName();
     void connectSignalsToSignalsWithDefaultArguments();
     void receivers();
     void normalize();
@@ -380,6 +380,7 @@ public:
     void emitSignalWithParams(int i) { emit signalWithParams(i); }
     void emitSignalWithParams(int i, QString string) { emit signalWithParams(i, string); }
     void emitSignalManyParams(int i1, int i2, int i3, QString string, bool onoff) { emit signalManyParams(i1, i2, i3, string, onoff); }
+    void emitSignalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy) { emit signalManyParams(i1, i2, i3, string, onoff, dummy); }
     void emitSignalManyParams2(int i1, int i2, int i3, QString string, bool onoff) { emit signalManyParams2(i1, i2, i3, string, onoff); }
     void emitSignalLoopBack() { emit signalLoopBack(); }
 
@@ -398,74 +399,36 @@ class AutoConnectReceiver : public QObject
     Q_OBJECT
 
 public:
+    QList<int> called_slots;
+
     AutoConnectReceiver()
     {
-        reset();
-
         connect(this, SIGNAL(on_Sender_signalLoopBack()), this, SLOT(slotLoopBack()));
     }
 
-    void reset() {
-        called_slot10 = 0;
-        called_slot9 = 0;
-        called_slot8 = 0;
-        called_slot7 = 0;
-        called_slot6 = 0;
-        called_slot5 = 0;
-        called_slot4 = 0;
-        called_slot3 = 0;
-        called_slot2 = 0;
-        called_slot1 = 0;
-    }
-
-    int called_slot1;
-    int called_slot2;
-    int called_slot3;
-    int called_slot4;
-    int called_slot5;
-    int called_slot6;
-    int called_slot7;
-    int called_slot8;
-    int called_slot9;
-    int called_slot10;
-
-    bool called(int slot) {
-        switch (slot) {
-        case 1: return called_slot1;
-        case 2: return called_slot2;
-        case 3: return called_slot3;
-        case 4: return called_slot4;
-        case 5: return called_slot5;
-        case 6: return called_slot6;
-        case 7: return called_slot7;
-        case 8: return called_slot8;
-        case 9: return called_slot9;
-        case 10: return called_slot10;
-        default: return false;
-        }
-    }
 
 public slots:
-    void on_Sender_signalNoParams() { ++called_slot1; }
-    void on_Sender_signalWithParams(int i = 0) { ++called_slot2; Q_UNUSED(i); }
-    void on_Sender_signalWithParams(int i, QString string) { ++called_slot3; Q_UNUSED(i);Q_UNUSED(string); }
-    void on_Sender_signalManyParams() { ++called_slot4; }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot5; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
+    void on_Sender_signalNoParams() { called_slots << 1; }
+    void on_Sender_signalWithParams(int i = 0) { called_slots << 2; Q_UNUSED(i); }
+    void on_Sender_signalWithParams(int i, QString string) { called_slots << 3; Q_UNUSED(i);Q_UNUSED(string); }
+    void on_Sender_signalManyParams() { called_slots << 4; }
+    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff)
+    { called_slots << 5; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
     void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy)
-    { ++called_slot6; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); Q_UNUSED(dummy);}
+    { called_slots << 6; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); Q_UNUSED(dummy);}
     void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff)
-    { ++called_slot7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
-    void slotLoopBack() { ++called_slot8; }
+    { called_slots << 7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
+    void slotLoopBack() { called_slots << 8; }
 
 protected slots:
-    void o() { ++called_slot9; }
-    void on() { ++called_slot10; }
+    void o() { called_slots << -1; }
+    void on() { called_slots << -1; }
 
 signals:
     void on_Sender_signalLoopBack();
 };
 
-void tst_QObject::connectByName()
+void tst_QObject::connectSlotsByName()
 {
     AutoConnectReceiver receiver;
     AutoConnectSender sender(&receiver);
@@ -473,83 +436,32 @@ void tst_QObject::connectByName()
 
     QMetaObject::connectSlotsByName(&receiver);
 
+    receiver.called_slots.clear();
     sender.emitSignalNoParams();
-    QCOMPARE(receiver.called(1), true);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 1);
 
+    receiver.called_slots.clear();
     sender.emitSignalWithParams(0);
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), true);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 2);
 
+    receiver.called_slots.clear();
     sender.emitSignalWithParams(0, "string");
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), true);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 3);
 
+    receiver.called_slots.clear();
     sender.emitSignalManyParams(1, 2, 3, "string", true);
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), true);
-    QCOMPARE(receiver.called(5), true);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    sender.emitSignalManyParams(1, 2, 3, "string", true, false);
+    // the slot '4' (signalManyParams()) will get connected
+    // to either of the two signalManyParams(...) overloads
+    QCOMPARE(receiver.called_slots, QList<int>() << 4 << 5 << 6);
 
+    receiver.called_slots.clear();
     sender.emitSignalManyParams2(1, 2, 3, "string", true);
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), true);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 7);
 
+    receiver.called_slots.clear();
     sender.emitSignalLoopBack();
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), true);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 8);
 }
 
 void tst_QObject::qobject_castTemplate()
