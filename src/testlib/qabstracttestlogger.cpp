@@ -82,9 +82,9 @@ QAbstractTestLogger::~QAbstractTestLogger()
 
 void QAbstractTestLogger::filterUnprintable(char *str) const
 {
-    char *idx = str;
+    unsigned char *idx = reinterpret_cast<unsigned char *>(str);
     while (*idx) {
-        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx > 0x7e))
+        if (((*idx < 0x20 && *idx != '\n' && *idx != '\t') || *idx == 0x7f))
             *idx = '?';
         ++idx;
     }
