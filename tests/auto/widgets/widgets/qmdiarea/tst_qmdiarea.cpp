@@ -290,7 +290,6 @@ private slots:
 
 private:
     QMdiSubWindow *activeWindow;
-    bool accelPressed;
 };
 
 tst_QMdiArea::tst_QMdiArea()
