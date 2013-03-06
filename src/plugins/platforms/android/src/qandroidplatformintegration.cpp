@@ -84,8 +84,9 @@ void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteA
 }
 
 QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &paramList)
+    : m_touchDevice(0)
 #ifdef ANDROID_PLUGIN_OPENGL
-    : m_primaryWindow(0)
+    , m_primaryWindow(0)
 #endif
 {
     Q_UNUSED(paramList);
@@ -179,6 +180,7 @@ QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
 {
     delete m_androidPlatformNativeInterface;
     delete m_androidFDB;
+    delete m_touchDevice;
     QtAndroid::setAndroidPlatformIntegration(NULL);
 }
 QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const

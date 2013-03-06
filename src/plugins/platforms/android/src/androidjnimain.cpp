@@ -266,6 +266,12 @@ namespace QtAndroid
         m_surfaceMutex.unlock();
     }
 
+    QAndroidPlatformIntegration *androidPlatformIntegration()
+    {
+        QMutexLocker locker(&m_surfaceMutex);
+        return m_androidPlatformIntegration;
+    }
+
     void setFullScreen(QWidget *widget)
     {
         AttachedJNIEnv env;

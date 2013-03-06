@@ -41,6 +41,7 @@
 
 #include "androidjniinput.h"
 #include "androidjnimain.h"
+#include "qandroidplatformintegration.h"
 
 #include <qpa/qwindowsysteminterface.h>
 #include <QTouchEvent>
@@ -219,6 +220,9 @@ namespace QtAndroidInput
 
     static void touchEnd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint action)
     {
+        if (m_touchPoints.isEmpty())
+            return;
+
         QEvent::Type eventType = QEvent::None;
         switch (action) {
             case 0:
@@ -232,8 +236,21 @@ namespace QtAndroidInput
                 break;
         }
 
-    // FIXME
-    //    QWindowSystemInterface::handleTouchEvent(0, 0, eventType, QTouchEvent::TouchScreen, m_touchPoints);
+        QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
+        QTouchDevice *touchDevice = platformIntegration->touchDevice();
+        if (touchDevice == 0) {
+            touchDevice = new QTouchDevice;
+            touchDevice->setType(QTouchDevice::TouchScreen);
+            touchDevice->setCapabilities(QTouchDevice::Position
+                                         | QTouchDevice::Area
+                                         | QTouchDevice::Pressure
+                                         | QTouchDevice::NormalizedPosition);
+            QWindowSystemInterface::registerTouchDevice(touchDevice);
+            platformIntegration->setTouchDevice(touchDevice);
+        }
+
+        QWindow *window = QtAndroid::topLevelWindowAt(m_touchPoints.at(0).area.center().toPoint());
+        QWindowSystemInterface::handleTouchEvent(window, touchDevice, m_touchPoints);
     }
 
     static int mapAndroidKey(int key)

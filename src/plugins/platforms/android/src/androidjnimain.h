@@ -65,6 +65,7 @@ class QWindow;
 
 namespace QtAndroid
 {
+    QAndroidPlatformIntegration *androidPlatformIntegration();
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
 

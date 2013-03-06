@@ -126,9 +126,15 @@ public:
         return QSize(m_defaultGeometryWidth, m_defaultGeometryHeight);
     }
 
+    QTouchDevice *touchDevice() const { return m_touchDevice; }
+    void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
+
 private:
 
     friend class QEglFSAndroidHooks;
+
+    QTouchDevice *m_touchDevice;
+
 #ifndef ANDROID_PLUGIN_OPENGL
     QAbstractEventDispatcher *m_eventDispatcher;
     QAndroidPlatformScreen *m_primaryScreen;
