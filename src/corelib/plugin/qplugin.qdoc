@@ -43,7 +43,7 @@
     to the interface class called \a ClassName. The \a Identifier must
     be unique. For example:
 
-    \snippet tools/plugandpaint/interfaces.h 3
+    \snippet plugins/interfaces.h 3
 
     This macro is normally used right after the class definition for
     \a ClassName, in a header file. See the
