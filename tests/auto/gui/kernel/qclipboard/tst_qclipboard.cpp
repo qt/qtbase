@@ -208,11 +208,12 @@ static bool runHelper(const QString &program, const QStringList &arguments, QByt
     // Windows: Due to implementation changes, the event loop needs
     // to be spun since we ourselves also need to answer the
     // WM_DRAWCLIPBOARD message as we are in the chain of clipboard
-    // viewers.
+    // viewers. Check for running before waitForFinished() in case
+    // the process terminated while processEvents() was executed.
     bool running = true;
     for (int i = 0; i < 60 && running; ++i) {
         QGuiApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-        if (process.waitForFinished(500))
+        if (process.state() != QProcess::Running || process.waitForFinished(500))
             running = false;
     }
     if (running) {
