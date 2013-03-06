@@ -845,7 +845,7 @@ void tst_QHash::iterators()
     //STL-Style iterators
 
     QHash<int, QString>::iterator stlIt = hash.begin();
-    for(stlIt = hash.begin(), i = 1; stlIt != hash.end(), i < 100; ++stlIt, ++i) {
+    for (stlIt = hash.begin(), i = 1; stlIt != hash.end() && i < 100; ++stlIt, ++i) {
             testMap.insert(i,stlIt.value());
             //QVERIFY(stlIt.value() == hash.value(
     }
@@ -870,7 +870,7 @@ void tst_QHash::iterators()
     //STL-Style const-iterators
 
     QHash<int, QString>::const_iterator cstlIt = hash.constBegin();
-    for(cstlIt = hash.constBegin(), i = 1; cstlIt != hash.constEnd(), i < 100; ++cstlIt, ++i) {
+    for (cstlIt = hash.constBegin(), i = 1; cstlIt != hash.constEnd() && i < 100; ++cstlIt, ++i) {
             testMap.insert(i,cstlIt.value());
             //QVERIFY(stlIt.value() == hash.value(
     }
