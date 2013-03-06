@@ -792,8 +792,8 @@ void QAndroidStyle::Android9PatchDrawable::draw(QPainter * painter, const QStyle
     QRectF dst;
     QRectF src;
 
-    const int32_t x0 = m_chunkData.xDivs[0];
-    const int32_t y0 = m_chunkData.yDivs[0];
+    const qint32 x0 = m_chunkData.xDivs[0];
+    const qint32 y0 = m_chunkData.yDivs[0];
     const quint8 numXDivs = m_chunkData.xDivs.size();
     const quint8 numYDivs = m_chunkData.yDivs.size();
     int i;
@@ -1272,15 +1272,15 @@ QAndroidStyle::AndroidControl::~AndroidControl()
     delete m_background;
 }
 
-void QAndroidStyle::AndroidControl::drawControl(const QStyleOption *opt, QPainter *p, const QWidget */*w*/)
+void QAndroidStyle::AndroidControl::drawControl(const QStyleOption *opt, QPainter *p, const QWidget * /* w */)
 {
     if (m_background)
         m_background->draw(p, opt);
 }
 
-QRect QAndroidStyle::AndroidControl::subElementRect(QStyle::SubElement /*subElement*/,
+QRect QAndroidStyle::AndroidControl::subElementRect(QStyle::SubElement /* subElement */,
                                                     const QStyleOption *option,
-                                                    const QWidget */*widget*/) const
+                                                    const QWidget * /* widget */) const
 {
     if (const AndroidDrawable *drawable=m_background) {
         if (drawable->type() == State)
@@ -1312,7 +1312,7 @@ QRect QAndroidStyle::AndroidControl::subControlRect(const QStyleOptionComplex *o
 
 QSize QAndroidStyle::AndroidControl::sizeFromContents(const QStyleOption *opt,
                                                       const QSize &contentsSize,
-                                                      const QWidget */*w*/) const
+                                                      const QWidget * /* w */) const
 {
     QSize sz;
     if (const AndroidDrawable *drawable=m_background) {
@@ -1418,7 +1418,7 @@ QAndroidStyle::AndroidProgressBarControl::~AndroidProgressBarControl()
     delete m_indeterminateDrawable;
 }
 
-void QAndroidStyle::AndroidProgressBarControl::drawControl(const QStyleOption *option, QPainter *p, const QWidget */*w*/)
+void QAndroidStyle::AndroidProgressBarControl::drawControl(const QStyleOption *option, QPainter *p, const QWidget * /* w */)
 {
     if (!m_progressDrawable)
         return;
@@ -1476,7 +1476,7 @@ QRect QAndroidStyle::AndroidProgressBarControl::subElementRect(QStyle::SubElemen
 
 QSize QAndroidStyle::AndroidProgressBarControl::sizeFromContents(const QStyleOption *opt,
                                                                  const QSize &contentsSize,
-                                                                 const QWidget */*w*/) const
+                                                                 const QWidget * /* w */) const
 {
     QSize sz(contentsSize);
     if (sz.height() < m_minSize.height())
@@ -1516,7 +1516,7 @@ QAndroidStyle::AndroidSeekBarControl::~AndroidSeekBarControl()
 
 void QAndroidStyle::AndroidSeekBarControl::drawControl(const QStyleOption *option,
                                                        QPainter *p,
-                                                       const QWidget */*w*/)
+                                                       const QWidget * /* w */)
 {
     if (!m_seekBarThumb || !m_progressDrawable)
         return;
@@ -1562,7 +1562,7 @@ QSize QAndroidStyle::AndroidSeekBarControl::sizeFromContents(const QStyleOption 
 
 QRect QAndroidStyle::AndroidSeekBarControl::subControlRect(const QStyleOptionComplex *option,
                                                            SubControl sc,
-                                                           const QWidget */*widget*/) const
+                                                           const QWidget * /* widget */) const
 {
     const QStyleOptionSlider *styleOption =
         qstyleoption_cast<const QStyleOptionSlider *>(option);
