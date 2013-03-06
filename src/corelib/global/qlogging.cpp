@@ -891,7 +891,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 static void qDefaultMsgHandler(QtMsgType type, const char *buf)
 {
     QMessageLogContext emptyContext;
-    qDefaultMessageHandler(type, emptyContext, QLatin1String(buf));
+    qDefaultMessageHandler(type, emptyContext, QString::fromLocal8Bit(buf));
 }
 
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
