@@ -76,7 +76,7 @@ static bool isFatal(QtMsgType msgType)
     if (msgType == QtFatalMsg)
         return true;
 
-    if (msgType == QtWarningMsg) {
+    if (msgType == QtWarningMsg || msgType == QtCriticalMsg) {
         static bool fatalWarnings = !qEnvironmentVariableIsEmpty("QT_FATAL_WARNINGS");
         return fatalWarnings;
     }
