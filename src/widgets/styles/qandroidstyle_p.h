@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QT_NO_STYLE_ANDROID)
 
-class Q_GUI_EXPORT QAndroidStyle : public QCommonStyle
+class Q_WIDGETS_EXPORT QAndroidStyle : public QCommonStyle
 {
     Q_OBJECT
 
