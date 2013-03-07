@@ -1781,24 +1781,6 @@ void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *ev
         }
         return;
     }
-
-    const xcb_atom_t xEmbedInfoAtom = atom(QXcbAtom::_XEMBED_INFO);
-    if (event->atom == xEmbedInfoAtom) {
-        const xcb_get_property_cookie_t get_cookie =
-            xcb_get_property(xcb_connection(), 0, m_window, xEmbedInfoAtom,
-                             XCB_ATOM_ANY, 0, 3);
-
-        xcb_get_property_reply_t *reply =
-            xcb_get_property_reply(xcb_connection(), get_cookie, NULL);
-        if (reply && reply->length >= 2) {
-            const long *data = (const long *)xcb_get_property_value(reply);
-            if (data[1] & XEMBED_MAPPED)
-                Q_XCB_CALL(xcb_map_window(xcb_connection(), m_window));
-            else
-                Q_XCB_CALL(xcb_unmap_window(xcb_connection(), m_window));
-        }
-        free(reply);
-    }
 }
 
 void QXcbWindow::handleFocusInEvent(const xcb_focus_in_event_t *)
