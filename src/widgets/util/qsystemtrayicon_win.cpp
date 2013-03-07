@@ -117,7 +117,7 @@ public:
     bool trayMessage(DWORD msg);
     void setIconContents(NOTIFYICONDATA &data);
     bool showMessage(const QString &title, const QString &message, QSystemTrayIcon::MessageIcon type, uint uSecs);
-    QRect findIconGeometry(const int a_iButtonID);
+    QRect findIconGeometry(UINT iconId);
     HICON createIcon();
     bool winEvent(MSG *m, long *result);
 
@@ -413,8 +413,15 @@ void QSystemTrayIconPrivate::install_sys()
 *
 * If it fails an invalid rect is returned.
 */
-QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
+
+QRect QSystemTrayIconSys::findIconGeometry(UINT iconId)
 {
+    struct AppData
+    {
+        HWND hwnd;
+        UINT uID;
+    };
+
     static PtrShell_NotifyIconGetRect Shell_NotifyIconGetRect =
         (PtrShell_NotifyIconGetRect)QSystemLibrary::resolve(QLatin1String("shell32"),
                                                             "Shell_NotifyIconGetRect");
@@ -474,21 +481,18 @@ QRect QSystemTrayIconSys::findIconGeometry(const int iconId)
     //search for our icon among all toolbar buttons
     for (int toolbarButton = 0; toolbarButton  < buttonCount; ++toolbarButton ) {
         SIZE_T numBytes = 0;
-        DWORD appData[2] = { 0, 0 };
+        AppData appData = { 0, 0 };
         SendMessage(trayHandle, TB_GETBUTTON, toolbarButton , (LPARAM)data);
 
         if (!ReadProcessMemory(trayProcess, data, &buttonData, sizeof(TBBUTTON), &numBytes))
             continue;
 
-        if (!ReadProcessMemory(trayProcess, (LPVOID) buttonData.dwData, appData, sizeof(appData), &numBytes))
+        if (!ReadProcessMemory(trayProcess, (LPVOID) buttonData.dwData, &appData, sizeof(AppData), &numBytes))
             continue;
 
-        int currentIconId = appData[1];
-        HWND currentIconHandle = (HWND) appData[0];
         bool isHidden = buttonData.fsState & TBSTATE_HIDDEN;
 
-        if (currentIconHandle == m_hwnd &&
-            currentIconId == iconId && !isHidden) {
+        if (m_hwnd == appData.hwnd && appData.uID == iconId && !isHidden) {
             SendMessage(trayHandle, TB_GETITEMRECT, toolbarButton , (LPARAM)data);
             RECT iconRect = {0, 0, 0, 0};
             if(ReadProcessMemory(trayProcess, data, &iconRect, sizeof(RECT), &numBytes)) {
