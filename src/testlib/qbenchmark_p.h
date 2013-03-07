@@ -63,7 +63,7 @@
 #undef QTESTLIB_USE_VALGRIND
 #endif
 
-#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(Q_OS_ANDROID)
 #define QTESTLIB_USE_PERF_EVENTS
 #else
 #undef QTESTLIB_USE_PERF_EVENTS
