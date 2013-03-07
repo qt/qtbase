@@ -1648,6 +1648,8 @@ void QGuiApplicationPrivate::processApplicationStateChangedEvent(QWindowSystemIn
         QEvent appDeactivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appDeactivate);
         break; }
+    default:
+        break;
     }
 }
 
