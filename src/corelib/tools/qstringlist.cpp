@@ -738,7 +738,8 @@ int QtPrivate::QStringList_removeDuplicates(QStringList *that)
 
     Construct a list from a std::initializer_list given by \a args.
 
-    This constructor is only enabled if the compiler supports C++0x
+    This constructor is only enabled if the compiler supports C++11 initializer
+    lists.
 */
 
 
