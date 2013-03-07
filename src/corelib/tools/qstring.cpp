@@ -5461,8 +5461,10 @@ QString &QString::vsprintf(const char* cformat, va_list ap)
     const char *c = cformat;
     for (;;) {
         // Copy non-escape chars to result
+        const char *cb = c;
         while (*c != '\0' && *c != '%')
-            result.append(QLatin1Char(*c++));
+            c++;
+        result.append(QString::fromUtf8(cb, (int)(c - cb)));
 
         if (*c == '\0')
             break;
