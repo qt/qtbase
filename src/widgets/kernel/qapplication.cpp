@@ -603,10 +603,8 @@ void QApplicationPrivate::initialize()
 
     is_app_running = true; // no longer starting up
 
-    Q_Q(QApplication);
-
     if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
-        q->setAttribute(Qt::AA_NativeWindows);
+        QCoreApplication::setAttribute(Qt::AA_NativeWindows);
 
 #ifdef Q_OS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
@@ -3777,8 +3775,6 @@ private:
 
 bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *event)
 {
-    Q_Q(QApplication);
-
     // Check if the platform wants synthesized mouse events.
     if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
         return false;
@@ -3809,7 +3805,7 @@ bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *ev
         // Note it has to be a spontaneous event if we want the focus management
         // and input method support to behave properly. Quite some of the code
         // related to those aspect check for the spontaneous flag.
-        const bool res = q->sendSpontaneousEvent(widget, &mouseEvent);
+        const bool res = QCoreApplication::sendSpontaneousEvent(widget, &mouseEvent);
         event->setAccepted(mouseEvent.isAccepted());
 
         if (mouseEvent.isAccepted())
