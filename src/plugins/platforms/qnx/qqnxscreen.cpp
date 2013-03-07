@@ -503,11 +503,6 @@ QPlatformCursor * QQnxScreen::cursor() const
     return m_cursor;
 }
 
-QPlatformCursor * QQnxScreen::cursor() const
-{
-    return m_cursor;
-}
-
 void QQnxScreen::keyboardHeightChanged(int height)
 {
     if (height == m_keyboardHeight)
