@@ -606,130 +606,6 @@ QDebug operator<<(QDebug d, const QFontDef &def)
     return d;
 }
 
-/* From QFontDatabase.cpp, qt_determine_writing_systems_from_truetype_bits().
- * Fixme: Make public? */
-
-// see the Unicode subset bitfields in the MSDN docs
-static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
-        // Any,
-    { 127, 127 },
-        // Latin,
-    { 0, 127 },
-        // Greek,
-    { 7, 127 },
-        // Cyrillic,
-    { 9, 127 },
-        // Armenian,
-    { 10, 127 },
-        // Hebrew,
-    { 11, 127 },
-        // Arabic,
-    { 13, 127 },
-        // Syriac,
-    { 71, 127 },
-    //Thaana,
-    { 72, 127 },
-    //Devanagari,
-    { 15, 127 },
-    //Bengali,
-    { 16, 127 },
-    //Gurmukhi,
-    { 17, 127 },
-    //Gujarati,
-    { 18, 127 },
-    //Oriya,
-    { 19, 127 },
-    //Tamil,
-    { 20, 127 },
-    //Telugu,
-    { 21, 127 },
-    //Kannada,
-    { 22, 127 },
-    //Malayalam,
-    { 23, 127 },
-    //Sinhala,
-    { 73, 127 },
-    //Thai,
-    { 24, 127 },
-    //Lao,
-    { 25, 127 },
-    //Tibetan,
-    { 70, 127 },
-    //Myanmar,
-    { 74, 127 },
-        // Georgian,
-    { 26, 127 },
-        // Khmer,
-    { 80, 127 },
-        // SimplifiedChinese,
-    { 126, 127 },
-        // TraditionalChinese,
-    { 126, 127 },
-        // Japanese,
-    { 126, 127 },
-        // Korean,
-    { 56, 127 },
-        // Vietnamese,
-    { 0, 127 }, // same as latin1
-        // Other,
-    { 126, 127 },
-        // Ogham,
-    { 78, 127 },
-        // Runic,
-    { 79, 127 },
-        // Nko,
-    { 14, 127 },
-};
-
-enum
-{
-    SimplifiedChineseCsbBit = 18,
-    TraditionalChineseCsbBit = 20,
-    JapaneseCsbBit = 17,
-    KoreanCsbBit = 21
-};
-
-static inline void writingSystemsFromTrueTypeBits(quint32 unicodeRange[4],
-                                                  quint32 codePageRange[2],
-                                                  QSupportedWritingSystems *ws)
-{
-    bool hasScript = false;
-    for(int i = 0; i < QFontDatabase::WritingSystemsCount; i++) {
-        int bit = requiredUnicodeBits[i][0];
-        int index = bit/32;
-        int flag =  1 << (bit&31);
-        if (bit != 126 && unicodeRange[index] & flag) {
-            bit = requiredUnicodeBits[i][1];
-            index = bit/32;
-
-            flag =  1 << (bit&31);
-            if (bit == 127 || unicodeRange[index] & flag) {
-                ws->setSupported(QFontDatabase::WritingSystem(i), true);
-                hasScript = true;
-            }
-        }
-    }
-    if(codePageRange[0] & (1 << SimplifiedChineseCsbBit)) {
-        ws->setSupported(QFontDatabase::SimplifiedChinese, true);
-        hasScript = true;
-    }
-    if(codePageRange[0] & (1 << TraditionalChineseCsbBit)) {
-        ws->setSupported(QFontDatabase::TraditionalChinese, true);
-        hasScript = true;
-    }
-    if(codePageRange[0] & (1 << JapaneseCsbBit)) {
-        ws->setSupported(QFontDatabase::Japanese, true);
-        hasScript = true;
-        //qDebug("font %s supports Japanese", familyName.latin1());
-    }
-    if(codePageRange[0] & (1 << KoreanCsbBit)) {
-        ws->setSupported(QFontDatabase::Korean, true);
-        hasScript = true;
-    }
-    if (!hasScript)
-        ws->setSupported(QFontDatabase::Symbol, true);
-}
-
 // convert 0 ~ 1000 integer to QFont::Weight
 static inline QFont::Weight weightFromInteger(long weight)
 {
@@ -1019,7 +895,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
             unicodeRange[3] = 0xffffffff;
         }
 #endif
-        writingSystemsFromTrueTypeBits(unicodeRange, codePageRange, &writingSystems);
+        writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
         // ### Hack to work around problem with Thai text on Windows 7. Segoe UI contains
         // the symbol for Baht, and Windows thus reports that it supports the Thai script.
         // Since it's the default UI font on this platform, most widgets will be unable to

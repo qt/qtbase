@@ -45,6 +45,7 @@
 
 #include "qrawfont.h"
 #include "qrawfont_p.h"
+#include "qplatformfontdatabase.h"
 
 #include <QtCore/qendian.h>
 
@@ -574,9 +575,6 @@ QByteArray QRawFont::fontTable(const char *tagName) const
     return d->fontEngine->getSfntTable(qToBigEndian(*tagId));
 }
 
-// From qfontdatabase.cpp
-extern QList<QFontDatabase::WritingSystem> qt_determine_writing_systems_from_truetype_bits(quint32 unicodeRange[4], quint32 codePageRange[2]);
-
 /*!
    Returns a list of writing systems supported by the font according to designer supplied
    information in the font file. Please note that this does not guarantee support for a
@@ -590,6 +588,7 @@ extern QList<QFontDatabase::WritingSystem> qt_determine_writing_systems_from_tru
 */
 QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
 {
+    QList<QFontDatabase::WritingSystem> writingSystems;
     if (d->isValid()) {
         QByteArray os2Table = fontTable("OS/2");
         if (os2Table.size() > 86) {
@@ -606,11 +605,15 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
                 unicodeRanges[i] = qFromBigEndian(bigEndianUnicodeRanges[i]);
             }
 
-            return qt_determine_writing_systems_from_truetype_bits(unicodeRanges, codepageRanges);
+            QSupportedWritingSystems ws = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRanges, codepageRanges);
+            for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+                if (ws.supported(QFontDatabase::WritingSystem(i)))
+                    writingSystems.append(QFontDatabase::WritingSystem(i));
+            }
         }
     }
 
-    return QList<QFontDatabase::WritingSystem>();
+    return writingSystems;
 }
 
 /*!

@@ -175,7 +175,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
         quint32 codePageRange[2] = {
             signature->fsCsb[0], signature->fsCsb[1]
         };
-        writingSystems = QBasicFontDatabase::determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+        writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
         // ### Hack to work around problem with Thai text on Windows 7. Segoe UI contains
         // the symbol for Baht, and Windows thus reports that it supports the Thai script.
         // Since it's the default UI font on this platform, most widgets will be unable to

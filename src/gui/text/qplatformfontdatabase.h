@@ -112,6 +112,9 @@ public:
     virtual bool fontsAlwaysScalable() const;
     virtual QList<int> standardSizes() const;
 
+    // helper
+    static QSupportedWritingSystems writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
+
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);
     static void registerFont(const QString &familyname, const QString &stylename,

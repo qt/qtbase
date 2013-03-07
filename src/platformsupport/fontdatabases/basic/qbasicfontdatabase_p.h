@@ -65,7 +65,6 @@ public:
     void releaseHandle(void *handle);
 
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file);
-    static QSupportedWritingSystems determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
     static QString fontNameFromTTFile(const QString &filename);
 };
 

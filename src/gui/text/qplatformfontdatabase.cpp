@@ -413,6 +413,107 @@ bool QPlatformFontDatabase::fontsAlwaysScalable() const
     return ret;
 }
 
+
+// ### copied to tools/makeqpf/qpf2.cpp
+
+// see the Unicode subset bitfields in the MSDN docs
+static const ushort requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
+    { 127, 127 }, // Any
+    { 0, 127 },   // Latin
+    { 7, 127 },   // Greek
+    { 9, 127 },   // Cyrillic
+    { 10, 127 },  // Armenian
+    { 11, 127 },  // Hebrew
+    { 13, 127 },  // Arabic
+    { 71, 127 },  // Syriac
+    { 72, 127 },  // Thaana
+    { 15, 127 },  // Devanagari
+    { 16, 127 },  // Bengali
+    { 17, 127 },  // Gurmukhi
+    { 18, 127 },  // Gujarati
+    { 19, 127 },  // Oriya
+    { 20, 127 },  // Tamil
+    { 21, 127 },  // Telugu
+    { 22, 127 },  // Kannada
+    { 23, 127 },  // Malayalam
+    { 73, 127 },  // Sinhala
+    { 24, 127 },  // Thai
+    { 25, 127 },  // Lao
+    { 70, 127 },  // Tibetan
+    { 74, 127 },  // Myanmar
+    { 26, 127 },  // Georgian
+    { 80, 127 },  // Khmer
+    { 126, 127 }, // SimplifiedChinese
+    { 126, 127 }, // TraditionalChinese
+    { 126, 127 }, // Japanese
+    { 56, 127 },  // Korean
+    { 0, 127 },   // Vietnamese (same as latin1)
+    { 126, 127 }, // Other
+    { 78, 127 },  // Ogham
+    { 79, 127 },  // Runic
+    { 14, 127 },  // Nko
+};
+
+enum {
+    SimplifiedChineseCsbBit = 18,
+    TraditionalChineseCsbBit = 20,
+    JapaneseCsbBit = 17,
+    KoreanCsbBit = 21
+};
+
+/*!
+    Helper function that determines the writing systems support by a given
+    \a unicodeRange and \a codePageRange.
+
+    \since 5.1
+*/
+QSupportedWritingSystems QPlatformFontDatabase::writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2])
+{
+    QSupportedWritingSystems writingSystems;
+
+    bool hasScript = false;
+    for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+        int bit = requiredUnicodeBits[i][0];
+        int index = bit/32;
+        int flag = 1 << (bit&31);
+        if (bit != 126 && (unicodeRange[index] & flag)) {
+            bit = requiredUnicodeBits[i][1];
+            index = bit/32;
+
+            flag = 1 << (bit&31);
+            if (bit == 127 || (unicodeRange[index] & flag)) {
+                writingSystems.setSupported(QFontDatabase::WritingSystem(i));
+                hasScript = true;
+                // qDebug("font %s: index=%d, flag=%8x supports script %d", familyName.latin1(), index, flag, i);
+            }
+        }
+    }
+    if (codePageRange[0] & (1 << SimplifiedChineseCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::SimplifiedChinese);
+        hasScript = true;
+        //qDebug("font %s supports Simplified Chinese", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << TraditionalChineseCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::TraditionalChinese);
+        hasScript = true;
+        //qDebug("font %s supports Traditional Chinese", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << JapaneseCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Japanese);
+        hasScript = true;
+        //qDebug("font %s supports Japanese", familyName.latin1());
+    }
+    if (codePageRange[0] & (1 << KoreanCsbBit)) {
+        writingSystems.setSupported(QFontDatabase::Korean);
+        hasScript = true;
+        //qDebug("font %s supports Korean", familyName.latin1());
+    }
+    if (!hasScript)
+        writingSystems.setSupported(QFontDatabase::Symbol);
+
+    return writingSystems;
+}
+
 /*!
     \class QPlatformFontDatabase
     \since 5.0
