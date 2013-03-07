@@ -9,6 +9,12 @@
             <meta-data android:name="android.app.qt_libs_resource_id" android:resource="@array/qt_libs"/>
             <meta-data android:name="android.app.bundled_libs_resource_id" android:resource="@array/bundled_libs"/>
             <meta-data android:name="android.app.lib_name" android:value=""/>
+            <!-- Run with local libs -->
+            <meta-data android:name="android.app.use_local_qt_libs" android:value="0"/>
+            <meta-data android:name="android.app.libs_prefix" android:value="/data/local/tmp/qt/"/>
+            <meta-data android:name="android.app.load_local_libs" android:value=""/>
+            <meta-data android:name="android.app.load_local_jars" android:value=""/>
+            <meta-data android:name="android.app.static_init_classes" android:value=""/>
             <!--  Messages maps -->
             <meta-data android:name="android.app.ministro_not_found_msg" android:value="@string/ministro_not_found_msg"/>
             <meta-data android:name="android.app.ministro_needed_msg" android:value="@string/ministro_needed_msg"/>
