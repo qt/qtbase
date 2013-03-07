@@ -106,6 +106,8 @@ private slots:
     void moveCursorStrikesBack_data();
     void moveCursorStrikesBack();
 
+    void moveCursorBiggerJump();
+
     void hideRows_data();
     void hideRows();
 
@@ -1351,6 +1353,34 @@ void tst_QTableView::moveCursorStrikesBack()
         return;
     QCOMPARE(newRow, expectedRow);
     QCOMPARE(newColumn, expectedColumn);
+}
+
+void tst_QTableView::moveCursorBiggerJump()
+{
+    QtTestTableModel model(50, 7);
+    QTableView view;
+    view.setModel(&model);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    int height = view.horizontalHeader()->height();
+    for (int i=0;i<8;i++)
+        height += view.verticalHeader()->sectionSize(i);
+    view.resize(view.width(), height);
+    view.setCurrentIndex(model.index(0,0));
+
+    QTest::keyClick(&view, Qt::Key_PageDown);
+    QCOMPARE(view.indexAt(QPoint(0,0)), model.index(1,0));
+    QTest::keyClick(&view, Qt::Key_PageDown);
+    QCOMPARE(view.indexAt(QPoint(0,0)), model.index(8,0));
+    QTest::keyClick(&view, Qt::Key_PageDown);
+    QCOMPARE(view.indexAt(QPoint(0,0)), model.index(15,0));
+    QTest::keyClick(&view, Qt::Key_PageUp);
+    QCOMPARE(view.indexAt(QPoint(0,0)), model.index(14,0));
+    QTest::keyClick(&view, Qt::Key_PageUp);
+    QCOMPARE(view.indexAt(QPoint(0,0)), model.index(7,0));
+    QTest::keyClick(&view, Qt::Key_PageUp);
+    QCOMPARE(view.indexAt(QPoint(0,0)), model.index(0,0));
 }
 
 void tst_QTableView::hideRows_data()
@@ -3761,8 +3791,6 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     QTRY_COMPARE(tv.rowAt(0), tv.verticalHeader()->logicalIndex(0));
 
     int newRow = tv.rowAt(tv.viewport()->height());
-    if (newRow == tv.rowAt(tv.viewport()->height() - 1)) // Overlapping row
-        newRow++;
     QTest::keyClick(&tv, Qt::Key_PageDown); // Scroll down and check current
     QTRY_COMPARE(tv.currentIndex().row(), newRow);
 
