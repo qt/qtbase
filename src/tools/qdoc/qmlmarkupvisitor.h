@@ -94,7 +94,7 @@ public:
 
     virtual bool visit(QQmlJS::AST::ElementList *);
     virtual bool visit(QQmlJS::AST::Elision *);
-    virtual bool visit(QQmlJS::AST::PropertyNameAndValueList *);
+    virtual bool visit(QQmlJS::AST::PropertyNameAndValue *);
     virtual bool visit(QQmlJS::AST::ArrayMemberExpression *);
     virtual bool visit(QQmlJS::AST::FieldMemberExpression *);
     virtual bool visit(QQmlJS::AST::NewMemberExpression *);

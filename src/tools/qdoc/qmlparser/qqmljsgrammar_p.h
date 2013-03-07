@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -63,12 +63,12 @@ class QQmlJSGrammar
 public:
   enum VariousConstants {
     EOF_SYMBOL = 0,
-    REDUCE_HERE = 101,
-    SHIFT_THERE = 100,
+    REDUCE_HERE = 104,
+    SHIFT_THERE = 103,
     T_AND = 1,
     T_AND_AND = 2,
     T_AND_EQ = 3,
-    T_AS = 91,
+    T_AS = 92,
     T_AUTOMATIC_SEMICOLON = 62,
     T_BREAK = 4,
     T_CASE = 5,
@@ -76,6 +76,7 @@ public:
     T_COLON = 7,
     T_COMMA = 8,
     T_COMMENT = 88,
+    T_COMPATIBILITY_SEMICOLON = 89,
     T_CONST = 84,
     T_CONTINUE = 9,
     T_DEBUGGER = 85,
@@ -89,18 +90,19 @@ public:
     T_EQ = 17,
     T_EQ_EQ = 18,
     T_EQ_EQ_EQ = 19,
-    T_ERROR = 93,
+    T_ERROR = 96,
     T_FALSE = 83,
-    T_FEED_JS_EXPRESSION = 97,
-    T_FEED_JS_PROGRAM = 99,
-    T_FEED_JS_SOURCE_ELEMENT = 98,
-    T_FEED_JS_STATEMENT = 96,
-    T_FEED_UI_OBJECT_MEMBER = 95,
-    T_FEED_UI_PROGRAM = 94,
+    T_FEED_JS_EXPRESSION = 100,
+    T_FEED_JS_PROGRAM = 102,
+    T_FEED_JS_SOURCE_ELEMENT = 101,
+    T_FEED_JS_STATEMENT = 99,
+    T_FEED_UI_OBJECT_MEMBER = 98,
+    T_FEED_UI_PROGRAM = 97,
     T_FINALLY = 20,
     T_FOR = 21,
     T_FUNCTION = 22,
     T_GE = 23,
+    T_GET = 94,
     T_GT = 24,
     T_GT_GT = 25,
     T_GT_GT_EQ = 26,
@@ -108,7 +110,7 @@ public:
     T_GT_GT_GT_EQ = 28,
     T_IDENTIFIER = 29,
     T_IF = 30,
-    T_IMPORT = 90,
+    T_IMPORT = 91,
     T_IN = 31,
     T_INSTANCEOF = 32,
     T_LBRACE = 33,
@@ -128,7 +130,7 @@ public:
     T_NOT_EQ_EQ = 46,
     T_NULL = 81,
     T_NUMERIC_LITERAL = 47,
-    T_ON = 92,
+    T_ON = 93,
     T_OR = 48,
     T_OR_EQ = 49,
     T_OR_OR = 50,
@@ -136,7 +138,7 @@ public:
     T_PLUS_EQ = 52,
     T_PLUS_PLUS = 53,
     T_PROPERTY = 66,
-    T_PUBLIC = 89,
+    T_PUBLIC = 90,
     T_QUESTION = 54,
     T_RBRACE = 55,
     T_RBRACKET = 56,
@@ -147,6 +149,7 @@ public:
     T_RETURN = 59,
     T_RPAREN = 60,
     T_SEMICOLON = 61,
+    T_SET = 95,
     T_SIGNAL = 67,
     T_STAR = 63,
     T_STAR_EQ = 64,
@@ -165,15 +168,15 @@ public:
     T_XOR = 79,
     T_XOR_EQ = 80,
 
-    ACCEPT_STATE = 644,
-    RULE_COUNT = 349,
-    STATE_COUNT = 645,
-    TERMINAL_COUNT = 102,
-    NON_TERMINAL_COUNT = 107,
+    ACCEPT_STATE = 655,
+    RULE_COUNT = 351,
+    STATE_COUNT = 656,
+    TERMINAL_COUNT = 105,
+    NON_TERMINAL_COUNT = 108,
 
-    GOTO_INDEX_OFFSET = 645,
-    GOTO_INFO_OFFSET = 2807,
-    GOTO_CHECK_OFFSET = 2807
+    GOTO_INDEX_OFFSET = 656,
+    GOTO_INFO_OFFSET = 2970,
+    GOTO_CHECK_OFFSET = 2970
   };
 
   static const char  *const    spell [];

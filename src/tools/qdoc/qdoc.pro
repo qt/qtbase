@@ -71,7 +71,7 @@ SOURCES += atom.cpp \
 
 ### QML/JS Parser ###
 
-include(qmlparser/qmlparser.pri)
+include(qmlparser/parser.pri)
 
 HEADERS += jscodemarker.h \
             qmlcodemarker.h \

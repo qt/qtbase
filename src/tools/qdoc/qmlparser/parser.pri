@@ -8,7 +8,7 @@ HEADERS += \
     $$PWD/qqmljsmemorypool_p.h \
     $$PWD/qqmljsparser_p.h \
     $$PWD/qqmljsglobal_p.h \
-    $$PWD/qqmljskeywords_p.h
+    $$PWD/qqmljskeywords_p.h \
 
 SOURCES += \
     $$PWD/qqmljsast.cpp \
@@ -16,4 +16,7 @@ SOURCES += \
     $$PWD/qqmljsengine_p.cpp \
     $$PWD/qqmljsgrammar.cpp \
     $$PWD/qqmljslexer.cpp \
-    $$PWD/qqmljsparser.cpp
+    $$PWD/qqmljsparser.cpp \
+
+OTHER_FILES += \
+    $$PWD/qqmljs.g

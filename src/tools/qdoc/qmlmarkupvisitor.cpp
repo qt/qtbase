@@ -407,7 +407,7 @@ bool QmlMarkupVisitor::visit(QQmlJS::AST::Elision *elision)
     return true;
 }
 
-bool QmlMarkupVisitor::visit(QQmlJS::AST::PropertyNameAndValueList *list)
+bool QmlMarkupVisitor::visit(QQmlJS::AST::PropertyNameAndValue *list)
 {
     QQmlJS::AST::Node::accept(list->name, this);
     addVerbatim(list->colonToken, list->colonToken);
