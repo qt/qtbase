@@ -3347,7 +3347,7 @@ void tst_QFile::autocloseHandle()
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::DontCloseHandle));
-        QCOMPARE(file.handle(), QT_FILENO(stream_));
+        QCOMPARE(file.handle(), int(QT_FILENO(stream_)));
         file.close();
         QCOMPARE(file.handle(), -1);
         //file is not closed, read should succeed
