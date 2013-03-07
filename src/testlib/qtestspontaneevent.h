@@ -71,7 +71,7 @@ public:
 class QSpontaneKeyEvent
 {
 public:
-    void setSpontaneous() { spont = 1; }
+    void setSpontaneous() { spont = 1; Q_UNUSED(posted) Q_UNUSED(m_accept) Q_UNUSED(reserved) }
     bool spontaneous() { return spont; }
     virtual void dummyFunc() {}
     virtual ~QSpontaneKeyEvent() {}
