@@ -1595,7 +1595,7 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
         return;
 
     if (previous) {
-        QFocusEvent focusOut(QEvent::FocusOut);
+        QFocusEvent focusOut(QEvent::FocusOut, e->reason);
         QCoreApplication::sendSpontaneousEvent(previous, &focusOut);
         QObject::disconnect(previous, SIGNAL(focusObjectChanged(QObject*)),
                             qApp, SLOT(_q_updateFocusObject(QObject*)));
