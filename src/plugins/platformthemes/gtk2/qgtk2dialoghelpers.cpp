@@ -65,7 +65,7 @@ public:
     QGtk2Dialog(GtkWidget *gtkWidget);
     ~QGtk2Dialog();
 
-    GtkDialog* gtkDialog() const;
+    GtkDialog *gtkDialog() const;
 
     void exec();
     bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
@@ -93,7 +93,7 @@ QGtk2Dialog::~QGtk2Dialog()
     gtk_widget_destroy(gtkWidget);
 }
 
-GtkDialog* QGtk2Dialog::gtkDialog() const
+GtkDialog *QGtk2Dialog::gtkDialog() const
 {
     return GTK_DIALOG(gtkWidget);
 }
@@ -217,7 +217,7 @@ void QGtk2ColorDialogHelper::onColorChanged(QGtk2ColorDialogHelper *dialog)
 
 void QGtk2ColorDialogHelper::applyOptions()
 {
-    GtkDialog* gtkDialog = d->gtkDialog();
+    GtkDialog *gtkDialog = d->gtkDialog();
     gtk_window_set_title(GTK_WINDOW(gtkDialog), options()->windowTitle().toUtf8());
 
     GtkWidget *gtkColorSelection = gtk_color_selection_dialog_get_color_selection(GTK_COLOR_SELECTION_DIALOG(gtkDialog));
@@ -449,7 +449,7 @@ void QGtk2FileDialogHelper::applyOptions()
     }
 }
 
-void QGtk2FileDialogHelper::setNameFilters(const QStringList& filters)
+void QGtk2FileDialogHelper::setNameFilters(const QStringList &filters)
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     foreach (GtkFileFilter *filter, _filters)
@@ -501,7 +501,7 @@ void QGtk2FontDialogHelper::hide()
     d->hide();
 }
 
-static QString qt_fontToString(const QFont& font)
+static QString qt_fontToString(const QFont &font)
 {
     PangoFontDescription *desc = pango_font_description_new();
     pango_font_description_set_size(desc, font.pointSizeF() * PANGO_SCALE);
@@ -537,7 +537,7 @@ static QString qt_fontToString(const QFont& font)
 static QFont qt_fontFromString(const QString &name)
 {
     QFont font;
-    PangoFontDescription* desc = pango_font_description_from_string(name.toUtf8());
+    PangoFontDescription *desc = pango_font_description_from_string(name.toUtf8());
     font.setPointSizeF(static_cast<float>(pango_font_description_get_size(desc)) / PANGO_SCALE);
 
     QString family = QString::fromUtf8(pango_font_description_get_family(desc));

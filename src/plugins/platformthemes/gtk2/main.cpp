@@ -56,7 +56,7 @@ public:
 QPlatformTheme *QGtk2ThemePlugin::create(const QString &key, const QStringList &params)
 {
     Q_UNUSED(params);
-    if (!key.compare(QStringLiteral("gtk2"), Qt::CaseInsensitive))
+    if (!key.compare(QLatin1String(QGtk2Theme::name), Qt::CaseInsensitive))
         return new QGtk2Theme;
 
     return 0;

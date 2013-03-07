@@ -51,10 +51,10 @@ class QGtk2Theme : public QGnomeTheme
 public:
     QGtk2Theme();
 
-    virtual QVariant themeHint(ThemeHint hint) const;
+    QVariant themeHint(ThemeHint hint) const;
 
-    virtual bool usePlatformNativeDialog(DialogType type) const;
-    virtual QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
+    bool usePlatformNativeDialog(DialogType type) const;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const;
 
     static const char *name;
 };

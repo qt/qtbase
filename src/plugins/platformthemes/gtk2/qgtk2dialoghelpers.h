@@ -60,12 +60,12 @@ public:
     QGtk2ColorDialogHelper();
     ~QGtk2ColorDialogHelper();
 
-    virtual bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
-    virtual void exec();
-    virtual void hide();
+    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
+    void exec();
+    void hide();
 
-    virtual void setCurrentColor(const QColor &color);
-    virtual QColor currentColor() const;
+    void setCurrentColor(const QColor &color);
+    QColor currentColor() const;
 
 private Q_SLOTS:
     void onAccepted();
@@ -85,18 +85,18 @@ public:
     QGtk2FileDialogHelper();
     ~QGtk2FileDialogHelper();
 
-    virtual bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
-    virtual void exec();
-    virtual void hide();
+    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
+    void exec();
+    void hide();
 
-    virtual bool defaultNameFilterDisables() const;
-    virtual void setDirectory(const QString &directory);
-    virtual QString directory() const;
-    virtual void selectFile(const QString &filename);
-    virtual QStringList selectedFiles() const;
-    virtual void setFilter();
-    virtual void selectNameFilter(const QString &filter);
-    virtual QString selectedNameFilter() const;
+    bool defaultNameFilterDisables() const;
+    void setDirectory(const QString &directory);
+    QString directory() const;
+    void selectFile(const QString &filename);
+    QStringList selectedFiles() const;
+    void setFilter();
+    void selectNameFilter(const QString &filter);
+    QString selectedNameFilter() const;
 
 private Q_SLOTS:
     void onAccepted();
@@ -122,12 +122,12 @@ public:
     QGtk2FontDialogHelper();
     ~QGtk2FontDialogHelper();
 
-    virtual bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
-    virtual void exec();
-    virtual void hide();
+    bool show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent);
+    void exec();
+    void hide();
 
-    virtual void setCurrentFont(const QFont &font);
-    virtual QFont currentFont() const;
+    void setCurrentFont(const QFont &font);
+    QFont currentFont() const;
 
 private Q_SLOTS:
     void onAccepted();
