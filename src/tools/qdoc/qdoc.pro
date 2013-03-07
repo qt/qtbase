@@ -1,8 +1,8 @@
 option(host_build)
 CONFIG += force_bootstrap   # because of weird QLibraryInfo::location() reference
 
-DEFINES += QDOC2_COMPAT \
-           QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+DEFINES += \
+    QDOC2_COMPAT
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
                $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser
@@ -66,8 +66,7 @@ SOURCES += atom.cpp \
            text.cpp \
            tokenizer.cpp \
            tree.cpp \
-           yyindent.cpp \
-           ../../corelib/tools/qcryptographichash.cpp
+           yyindent.cpp
 
 ### QML/JS Parser ###
 
