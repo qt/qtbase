@@ -170,7 +170,7 @@ protected:
             const QByteArray name = QString("Bar%1_%2").arg(i).arg((size_t)QThread::currentThreadId()).toLatin1();
             const char *nm = name.constData();
             int tp = qRegisterMetaType<Bar>(nm);
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
             pthread_yield();
 #endif
             QMetaType info(tp);
