@@ -1,9 +1,4 @@
-
-TEMPLATE = app
-QT = core
-CONFIG += console
-TARGET = qlalr
-mac:CONFIG -= app_bundle
+option(host_build)
 
 SOURCES += \
     compress.cpp \
@@ -23,3 +18,8 @@ HEADERS += \
     parsetable.h \
     recognizer.h \
     grammar_p.h
+
+OTHER_FILES += \
+    lalr.g
+
+load(qt_tool)
