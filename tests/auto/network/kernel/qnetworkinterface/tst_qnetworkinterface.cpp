@@ -91,11 +91,14 @@ void tst_QNetworkInterface::initTestCase()
         QSKIP("No network test server available");
 #ifndef QT_NO_BEARERMANAGEMENT
     netConfMan = new QNetworkConfigurationManager(this);
-    networkConfiguration = netConfMan->defaultConfiguration();
-    networkSession.reset(new QNetworkSession(networkConfiguration));
-    if (!networkSession->isOpen()) {
-        networkSession->open();
-        QVERIFY(networkSession->waitForOpened(30000));
+    if (netConfMan->capabilities()
+            & QNetworkConfigurationManager::NetworkSessionRequired) {
+        networkConfiguration = netConfMan->defaultConfiguration();
+        networkSession.reset(new QNetworkSession(networkConfiguration));
+        if (!networkSession->isOpen()) {
+            networkSession->open();
+            QVERIFY(networkSession->waitForOpened(30000));
+        }
     }
 #endif
 }
