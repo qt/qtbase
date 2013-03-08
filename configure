@@ -1419,7 +1419,7 @@ while [ "$#" -gt 0 ]; do
     device-option)
         DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
         DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
-        DeviceVar set $DEV_VAR $DEV_VAL
+        DeviceVar set $DEV_VAR "$DEV_VAL"
         ;;
     qpa)
         QT_QPA_DEFAULT_PLATFORM="$VAL"
