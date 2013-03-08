@@ -34,10 +34,3 @@ contains(QT_CONFIG, dbus) {
 }
 
 SUBDIRS = $$TOOLS_SUBDIRS
-
-# Ensure qdoc is built before making any docs. We rely on the existing dependency
-# on bootstrap for each of the other tools to ensure they also build qdoc first,
-# and likewise, the dependency of the rest of the build on tools, src, etc.
-bootstrap_prepare_docs.depends += $${src_tools_qdoc.target}-make_first
-bootstrap_prepare_docs.target = $${src_tools_bootstrap.target}-prepare_docs
-QMAKE_EXTRA_TARGETS += bootstrap_prepare_docs
