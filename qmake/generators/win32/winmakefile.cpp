@@ -122,7 +122,7 @@ Win32MakefileGenerator::findLibraries()
         if(opt.startsWith("/LIBPATH:")) {
             dirs.append(QMakeLocalFileName(opt.mid(9)));
         } else if(opt.startsWith("-L") || opt.startsWith("/L")) {
-            QString libpath = opt.mid(2);
+            QString libpath = Option::fixPathToTargetOS(opt.mid(2), false, false);
             QMakeLocalFileName l(libpath);
             if(!dirs.contains(l)) {
                 dirs.append(l);
