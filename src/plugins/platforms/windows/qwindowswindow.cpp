@@ -1705,6 +1705,16 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 }
 #endif // !Q_OS_WINCE
 
+// Return the default cursor (Arrow) from QWindowsCursor's cache.
+static inline QWindowsWindowCursor defaultCursor(const QWindow *w)
+{
+    if (QScreen *screen = w->screen())
+        if (const QPlatformScreen *platformScreen = screen->handle())
+            if (QPlatformCursor *cursor = platformScreen->cursor())
+                return static_cast<QWindowsCursor *>(cursor)->standardWindowCursor(Qt::ArrowCursor);
+    return QWindowsWindowCursor(Qt::ArrowCursor);
+}
+
 /*!
     \brief Applies to cursor property set on the window to the global cursor.
 
@@ -1714,9 +1724,12 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 void QWindowsWindow::applyCursor()
 {
 #ifndef QT_NO_CURSOR
-    if (m_cursor.isNull()) { // Recurse up to parent with non-null cursor.
-        if (const QWindow *p = window()->parent())
+    if (m_cursor.isNull()) { // Recurse up to parent with non-null cursor. Set default for toplevel.
+        if (const QWindow *p = window()->parent()) {
             QWindowsWindow::baseWindowOf(p)->applyCursor();
+        } else {
+            SetCursor(defaultCursor(window()).handle());
+        }
     } else {
         SetCursor(m_cursor.handle());
     }
