@@ -13,7 +13,8 @@ src_tools_rcc.depends = src_tools_bootstrap
 
 src_tools_uic.subdir = tools/uic
 src_tools_uic.target = sub-uic
-src_tools_uic.depends = src_tools_bootstrap
+force_bootstrap: src_tools_uic.depends = src_tools_bootstrap
+else: src_tools_uic.depends = src_corelib
 
 src_tools_qdoc.subdir = tools/qdoc
 src_tools_qdoc.target = sub-qdoc
@@ -25,11 +26,13 @@ src_tools_bootstrap_dbus.depends = src_tools_bootstrap
 
 src_tools_qdbusxml2cpp.subdir = tools/qdbusxml2cpp
 src_tools_qdbusxml2cpp.target = sub-qdbusxml2cpp
-src_tools_qdbusxml2cpp.depends = src_tools_bootstrap_dbus
+force_bootstrap: src_tools_qdbusxml2cpp.depends = src_tools_bootstrap_dbus
+else: src_tools_qdbusxml2cpp.depends = src_dbus
 
 src_tools_qdbuscpp2xml.subdir = tools/qdbuscpp2xml
 src_tools_qdbuscpp2xml.target = sub-qdbuscpp2xml
-src_tools_qdbuscpp2xml.depends = src_tools_bootstrap_dbus
+force_bootstrap: src_tools_qdbuscpp2xml.depends = src_tools_bootstrap_dbus
+else: src_tools_qdbuscpp2xml.depends = src_dbus
 
 src_winmain.subdir = $$PWD/winmain
 src_winmain.target = sub-winmain
@@ -101,7 +104,9 @@ SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_corelib
 win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
-    SUBDIRS += src_dbus src_tools_bootstrap_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
+    SUBDIRS += src_dbus
+    force_bootstrap: SUBDIRS += src_tools_bootstrap_dbus
+    SUBDIRS += src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
     contains(QT_CONFIG, accessibility-atspi-bridge): \
         src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp
     src_plugins.depends += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml

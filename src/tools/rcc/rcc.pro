@@ -1,4 +1,5 @@
 option(host_build)
+CONFIG += force_bootstrap
 
 DEFINES += QT_RCC QT_NO_CAST_FROM_ASCII
 

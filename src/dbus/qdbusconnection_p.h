@@ -344,8 +344,8 @@ public:
 // in qdbusmisc.cpp
 extern int qDBusParametersForMethod(const QMetaMethod &mm, QVector<int> &metaTypes);
 #endif // QT_BOOTSTRAPPED
-extern int qDBusParametersForMethod(const QList<QByteArray> &parameters, QVector<int>& metaTypes);
-extern bool qDBusCheckAsyncTag(const char *tag);
+extern Q_DBUS_EXPORT int qDBusParametersForMethod(const QList<QByteArray> &parameters, QVector<int>& metaTypes);
+extern Q_DBUS_EXPORT bool qDBusCheckAsyncTag(const char *tag);
 #ifndef QT_BOOTSTRAPPED
 extern bool qDBusInterfaceInObject(QObject *obj, const QString &interface_name);
 extern QString qDBusInterfaceFromMetaObject(const QMetaObject *mo);

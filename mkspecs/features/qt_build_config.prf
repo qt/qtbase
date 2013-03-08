@@ -39,6 +39,9 @@ mac {
    }
 }
 
+cross_compile: \
+    CONFIG += force_bootstrap
+
 CONFIG += \
     create_prl link_prl \
     prepare_docs qt_docs_targets \

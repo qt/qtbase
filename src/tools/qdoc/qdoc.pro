@@ -1,4 +1,5 @@
 option(host_build)
+CONFIG += force_bootstrap   # because of weird QLibraryInfo::location() reference
 
 DEFINES += QDOC2_COMPAT \
            QT_CRYPTOGRAPHICHASH_ONLY_SHA1
