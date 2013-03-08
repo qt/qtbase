@@ -106,6 +106,10 @@ SOURCES += \
     SOURCES += tools/qelapsedtimer_mac.cpp
     OBJECTIVE_SOURCES += tools/qlocale_mac.mm
 }
+else:blackberry {
+    SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_blackberry.cpp
+    HEADERS += tools/qlocale_blackberry.h
+}
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
 else:integrity:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp

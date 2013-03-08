@@ -59,10 +59,6 @@
 
 #include "qlocale.h"
 
-#if defined(Q_OS_BLACKBERRY)
-#include "qsocketnotifier.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -376,28 +372,6 @@ inline char QLocalePrivate::digitToCLocale(QChar in) const
 
     return 0;
 }
-
-#if defined(Q_OS_BLACKBERRY)
-class QQNXLocaleData: public QObject
-{
-    Q_OBJECT
-public:
-    QQNXLocaleData();
-    virtual ~QQNXLocaleData();
-
-public Q_SLOTS:
-    void updateMeasurementSystem();
-    void installSocketNotifier();
-
-private:
-    void initialize();
-
-public:
-    uint ppsMeasurement;
-    QSocketNotifier *ppsNotifier;
-    int ppsFd;
-};
-#endif
 
 QString qt_readEscapedFormatString(const QString &format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);
