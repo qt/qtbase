@@ -1054,20 +1054,20 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
 
 void QRasterPaintEnginePrivate::systemStateChanged()
 {
-    QRect clipRect(0, 0,
+    deviceRectUnclipped = QRect(0, 0,
             qMin(QT_RASTER_COORD_LIMIT, device->width()),
             qMin(QT_RASTER_COORD_LIMIT, device->height()));
 
     if (!systemClip.isEmpty()) {
-        QRegion clippedDeviceRgn = systemClip & clipRect;
+        QRegion clippedDeviceRgn = systemClip & deviceRectUnclipped;
         deviceRect = clippedDeviceRgn.boundingRect();
         baseClip->setClipRegion(clippedDeviceRgn);
     } else {
-        deviceRect = clipRect;
+        deviceRect = deviceRectUnclipped;
         baseClip->setClipRect(deviceRect);
     }
 #ifdef QT_DEBUG_DRAW
-    qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
+    qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << deviceRectUnclipped << systemClip;
 #endif
 
     exDeviceRect = deviceRect;
@@ -1529,7 +1529,7 @@ void QRasterPaintEngine::drawRects(const QRect *rects, int rectCount)
     if (s->penData.blend) {
         QRectVectorPath path;
         if (s->flags.fast_pen) {
-            QCosmeticStroker stroker(s, d->deviceRect);
+            QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
             stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
             for (int i = 0; i < rectCount; ++i) {
                 path.set(rects[i]);
@@ -1576,7 +1576,7 @@ void QRasterPaintEngine::drawRects(const QRectF *rects, int rectCount)
         if (s->penData.blend) {
             QRectVectorPath path;
             if (s->flags.fast_pen) {
-                QCosmeticStroker stroker(s, d->deviceRect);
+                QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
                 stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
                 for (int i = 0; i < rectCount; ++i) {
                     path.set(rects[i]);
@@ -1610,7 +1610,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     if (s->flags.fast_pen) {
-        QCosmeticStroker stroker(s, d->deviceRect);
+        QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
         stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         stroker.drawPath(path);
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
@@ -1953,7 +1953,7 @@ void QRasterPaintEngine::drawPolygon(const QPointF *points, int pointCount, Poly
     if (s->penData.blend) {
         QVectorPath vp((qreal *) points, pointCount, 0, QVectorPath::polygonFlags(mode));
         if (s->flags.fast_pen) {
-            QCosmeticStroker stroker(s, d->deviceRect);
+            QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
             stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
             stroker.drawPath(vp);
         } else {
@@ -2018,7 +2018,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
         QVectorPath vp((qreal *) fpoints.data(), pointCount, 0, QVectorPath::polygonFlags(mode));
 
         if (s->flags.fast_pen) {
-            QCosmeticStroker stroker(s, d->deviceRect);
+            QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
             stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
             stroker.drawPath(vp);
         } else {
@@ -3112,7 +3112,7 @@ void QRasterPaintEngine::drawPoints(const QPointF *points, int pointCount)
         return;
     }
 
-    QCosmeticStroker stroker(s, d->deviceRect);
+    QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
     stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
     stroker.drawPoints(points, pointCount);
 }
@@ -3132,7 +3132,7 @@ void QRasterPaintEngine::drawPoints(const QPoint *points, int pointCount)
         return;
     }
 
-    QCosmeticStroker stroker(s, d->deviceRect);
+    QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
     stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
     stroker.drawPoints(points, pointCount);
 }
@@ -3153,7 +3153,7 @@ void QRasterPaintEngine::drawLines(const QLine *lines, int lineCount)
         return;
 
     if (s->flags.fast_pen) {
-        QCosmeticStroker stroker(s, d->deviceRect);
+        QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
         stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         for (int i=0; i<lineCount; ++i) {
             const QLine &l = lines[i];
@@ -3225,7 +3225,7 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
     if (!s->penData.blend)
         return;
     if (s->flags.fast_pen) {
-        QCosmeticStroker stroker(s, d->deviceRect);
+        QCosmeticStroker stroker(s, d->deviceRect, d->deviceRectUnclipped);
         stroker.setLegacyRoundingEnabled(s->flags.legacy_rounding);
         for (int i=0; i<lineCount; ++i) {
             QLineF line = lines[i];

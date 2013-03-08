@@ -80,6 +80,7 @@ static QTouchDevice *touchDevice = 0;
         m_backingStore = 0;
         m_maskImage = 0;
         m_maskData = 0;
+        m_shouldInvalidateWindowShadow = false;
         m_window = 0;
         m_buttons = Qt::NoButton;
         m_sendKeyEvent = false;
@@ -266,10 +267,10 @@ static QTouchDevice *touchDevice = 0;
         QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowMinimized);
     } else if (notificationName == NSWindowDidDeminiaturizeNotification) {
         QWindowSystemInterface::handleWindowStateChanged(m_window, Qt::WindowNoState);
-        // Qt expects an expose event after restore/deminiaturize. This also needs
-        // to be a non-synchronous event to make sure it gets processed after
-        // the state change event sent above.
-        QWindowSystemInterface::handleExposeEvent(m_window, QRegion(m_window->geometry()));
+    } else if ([notificationName isEqualToString: @"NSWindowDidOrderOffScreenNotification"]) {
+        m_platformWindow->obscureWindow();
+    } else if ([notificationName isEqualToString: @"NSWindowDidOrderOnScreenAndFinishAnimatingNotification"]) {
+        m_platformWindow->exposeWindow();
     } else {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
@@ -285,6 +286,16 @@ static QTouchDevice *touchDevice = 0;
     }
 }
 
+- (void)viewDidHide
+{
+    m_platformWindow->obscureWindow();
+}
+
+- (void)viewDidUnhide
+{
+    m_platformWindow->exposeWindow();
+}
+
 - (void) flushBackingStore:(QCocoaBackingStore *)backingStore region:(const QRegion &)region offset:(QPoint)offset
 {
     m_backingStore = backingStore;
@@ -295,13 +306,14 @@ static QTouchDevice *touchDevice = 0;
 
 - (void) setMaskRegion:(const QRegion *)region
 {
+    m_shouldInvalidateWindowShadow = true;
     if (m_maskImage)
         CGImageRelease(m_maskImage);
     if (region->isEmpty()) {
         m_maskImage = 0;
     }
 
-    const QRect &rect = qt_mac_toQRect([self frame]);
+    const QRect &rect = region->boundingRect();
     QImage maskImage(rect.size(), QImage::Format_RGB888);
     maskImage.fill(Qt::white);
     QPainter p(&maskImage);
@@ -312,6 +324,14 @@ static QTouchDevice *touchDevice = 0;
 
     maskImage = maskImage.convertToFormat(QImage::Format_Indexed8);
     m_maskImage = qt_mac_toCGImage(maskImage, true, &m_maskData);
+}
+
+- (void)invalidateWindowShadowIfNeeded
+{
+    if (m_shouldInvalidateWindowShadow && m_platformWindow->m_nsWindow) {
+        [m_platformWindow->m_nsWindow invalidateShadow];
+        m_shouldInvalidateWindowShadow = false;
+    }
 }
 
 - (void) drawRect:(NSRect)dirtyRect
@@ -368,6 +388,8 @@ static QTouchDevice *touchDevice = 0;
     CGContextRestoreGState(cgContext);
     CGImageRelease(cleanImg);
     CGImageRelease(subMask);
+
+    [self invalidateWindowShadowIfNeeded];
 }
 
 - (BOOL) isFlipped
