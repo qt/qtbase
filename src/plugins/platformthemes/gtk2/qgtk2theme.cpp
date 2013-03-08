@@ -46,6 +46,8 @@
 #undef signals
 #include <gtk/gtk.h>
 
+#include <X11/Xlib.h>
+
 QT_BEGIN_NAMESPACE
 
 const char *QGtk2Theme::name = "gtk2";
@@ -62,7 +64,13 @@ static QString gtkSetting(const gchar *propertyName)
 
 QGtk2Theme::QGtk2Theme()
 {
+    // gtk_init will reset the Xlib error handler, and that causes
+    // Qt applications to quit on X errors. Therefore, we need to manually restore it.
+    int (*oldErrorHandler)(Display *, XErrorEvent *) = XSetErrorHandler(NULL);
+
     gtk_init(0, 0);
+
+    XSetErrorHandler(oldErrorHandler);
 }
 
 QVariant QGtk2Theme::themeHint(QPlatformTheme::ThemeHint hint) const
