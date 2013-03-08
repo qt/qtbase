@@ -265,8 +265,7 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
     If the specified date is invalid, the date is not set and
     isValid() returns false.
 
-    \warning Years 0 to 99 are interpreted as is, i.e., years
-             0-99.
+    \warning Years 1 to 99 are interpreted as is. Year 0 is invalid.
 
     \sa isValid()
 */
@@ -1488,10 +1487,7 @@ int QTime::msec() const
 
     If \a format is Qt::ISODate, the string format corresponds to the
     ISO 8601 extended specification for representations of dates,
-    which is also HH:MM:SS. (However, contrary to ISO 8601, dates
-    before 15 October 1582 are handled as Julian dates, not Gregorian
-    dates. See \l{QDate G and J} {Use of Gregorian and Julian
-    Calendars}. This might change in a future version of Qt.)
+    which is also HH:MM:SS.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
