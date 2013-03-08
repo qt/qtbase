@@ -2,9 +2,7 @@ option(host_build)
 
 MODULE = bootstrap_dbus
 TARGET = QtBootstrapDBus
-QT = bootstrap-private
-CONFIG += no_module_headers internal_module
-!build_pass: CONFIG += release
+CONFIG += no_module_headers internal_module force_bootstrap
 
 DEFINES += \
     QT_NO_CAST_FROM_ASCII

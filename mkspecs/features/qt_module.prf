@@ -26,6 +26,17 @@ isEmpty(VERSION):VERSION = $$QT_VERSION
 # unless overridden. Host builds are always static
 host_build|staticlib: CONFIG += static
 
+host_build {
+    QT -= gui   # no host module will ever use gui
+    force_bootstrap {
+        !build_pass: CONFIG += release
+        contains(QT, core(-private)?|xml) {
+            QT -= core core-private xml
+            QT += bootstrap-private
+        }
+    }
+}
+
 ucmodule = $$upper($$MODULE)
 
 isEmpty(MODULE_INCNAME): MODULE_INCNAME = $$TARGET
