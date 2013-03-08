@@ -4103,6 +4103,37 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 */
 
 /*!
+    \macro Q_REVISION
+    \relates QObject
+
+    Apply this macro to definitions of member functions to tag them with a
+    revision number in the meta-object system. The macro is written before
+    the return type, as shown in the following example:
+
+    \snippet qmetaobject-revision/window.h Window class with revision
+
+    This is useful when using the meta-object system to dynamically expose
+    objects to another API, as you can match the version expected by multiple
+    versions of the other API. Consider the following simplified example:
+
+    \snippet qmetaobject-revision/main.cpp Window class using revision
+
+    Using the same Window class as the previous example, the newProperty and
+    newMethod would only be exposed in this code when the expected version is
+    1 or greater.
+
+    Since all methods are considered to be in revision 0 if untagged, a tag
+    of Q_REVISION(0) is invalid and ignored.
+
+    This tag is not used by the meta-object system itself. Currently this is only
+    used by the QtQml module.
+
+    For a more generic string tag, see \l QMetaMethod::tag()
+
+    \sa QMetaMethod::revision()
+*/
+
+/*!
     \macro Q_SET_OBJECT_NAME(Object)
     \relates QObject
     \since 5.0

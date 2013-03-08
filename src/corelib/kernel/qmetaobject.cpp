@@ -1904,9 +1904,9 @@ int QMetaMethod::methodIndex() const
     return QMetaMethodPrivate::get(this)->ownMethodIndex() + mobj->methodOffset();
 }
 
+// This method has been around for a while, but the documentation was marked \internal until 5.1
 /*!
-    \internal
-
+    \since 5.1
     Returns the method revision if one was
     specified by Q_REVISION, otherwise returns 0.
  */
@@ -2550,7 +2550,7 @@ static QByteArray qualifiedName(const QMetaEnum &e)
 
     A property has a name() and a type(), as well as various
     attributes that specify its behavior: isReadable(), isWritable(),
-    isDesignable(), isScriptable(), and isStored().
+    isDesignable(), isScriptable(), revision(), and isStored().
 
     If the property is an enumeration, isEnumType() returns true; if the
     property is an enumeration that is also a flag (i.e. its values
@@ -2994,8 +2994,9 @@ int QMetaProperty::notifySignalIndex() const
     }
 }
 
+// This method has been around for a while, but the documentation was marked \internal until 5.1
 /*!
-    \internal
+    \since 5.1
 
     Returns the property revision if one was
     specified by REVISION, otherwise returns 0.

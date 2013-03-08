@@ -101,7 +101,8 @@
 
     \li A \c REVISION number is optional. If included, it defines
     the property and its notifier signal to be used in a particular
-    revision of the API that is exposed to QML.
+    revision of the API (usually for exposure to QML). If not included, it
+    defaults to 0.
 
     \li The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,

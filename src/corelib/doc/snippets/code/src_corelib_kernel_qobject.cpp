@@ -374,6 +374,7 @@ Q_PROPERTY(type name
            [WRITE setFunction]
            [RESET resetFunction]
            [NOTIFY notifySignal]
+           [REVISION int]
            [DESIGNABLE bool]
            [SCRIPTABLE bool]
            [STORED bool]
