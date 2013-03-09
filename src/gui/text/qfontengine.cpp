@@ -165,19 +165,33 @@ static HB_Error hb_getSFntTable(void *font, HB_Tag tableTag, HB_Byte *buffer, HB
     return HB_Err_Ok;
 }
 
+static void hb_freeFace(void *face)
+{
+    qHBFreeFace((HB_Face)face);
+}
+
 // QFontEngine
 
 QFontEngine::QFontEngine()
-    : QObject(), ref(0)
+    : QObject(), ref(0),
+      font_(0), font_destroy_func(0),
+      face_(0), face_destroy_func(0)
 {
     cache_count = 0;
     fsType = 0;
     symbol = false;
-    memset(&hbFont, 0, sizeof(hbFont));
-    hbFont.klass = &hb_fontClass;
-    hbFont.userData = this;
 
-    hbFace = 0;
+    {
+        HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
+        Q_CHECK_PTR(hbFont);
+        memset(hbFont, 0, sizeof(HB_FontRec));
+        hbFont->klass = &hb_fontClass;
+        hbFont->userData = this;
+
+        font_ = (void *)hbFont;
+        font_destroy_func = free;
+    }
+
     glyphFormat = -1;
     m_subPixelPositionCount = 0;
 }
@@ -185,7 +199,15 @@ QFontEngine::QFontEngine()
 QFontEngine::~QFontEngine()
 {
     m_glyphCaches.clear();
-    qHBFreeFace(hbFace);
+
+    if (font_ && font_destroy_func) {
+        font_destroy_func(font_);
+        font_ = 0;
+    }
+    if (face_ && face_destroy_func) {
+        face_destroy_func(face_);
+        face_ = 0;
+    }
 }
 
 QFixed QFontEngine::lineThickness() const
@@ -206,39 +228,37 @@ QFixed QFontEngine::underlinePosition() const
     return ((lineThickness() * 2) + 3) / 6;
 }
 
-HB_Font QFontEngine::harfbuzzFont() const
+void *QFontEngine::harfbuzzFont() const
 {
-    if (!hbFont.x_ppem) {
+    HB_FontRec *hbFont = (HB_FontRec *)font_;
+    if (!hbFont->x_ppem) {
         QFixed emSquare = emSquareSize();
-        hbFont.x_ppem = fontDef.pixelSize;
-        hbFont.y_ppem = fontDef.pixelSize * fontDef.stretch / 100;
-        hbFont.x_scale = (QFixed(hbFont.x_ppem * (1 << 16)) / emSquare).value();
-        hbFont.y_scale = (QFixed(hbFont.y_ppem * (1 << 16)) / emSquare).value();
+        hbFont->x_ppem = fontDef.pixelSize;
+        hbFont->y_ppem = fontDef.pixelSize * fontDef.stretch / 100;
+        hbFont->x_scale = (QFixed(hbFont->x_ppem * (1 << 16)) / emSquare).value();
+        hbFont->y_scale = (QFixed(hbFont->y_ppem * (1 << 16)) / emSquare).value();
     }
-    return &hbFont;
+    return font_;
 }
 
-HB_Face QFontEngine::harfbuzzFace() const
+void *QFontEngine::harfbuzzFace() const
 {
-    if (!hbFace) {
-        hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
+    if (!face_) {
+        HB_Face hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
         Q_CHECK_PTR(hbFace);
+        if (hbFace->font_for_init != 0)
+            hbFace = qHBLoadFace(hbFace);
+
+        face_ = (void *)hbFace;
+        face_destroy_func = hb_freeFace;
     }
-    return hbFace;
-}
-
-HB_Face QFontEngine::initializedHarfbuzzFace() const
-{
-    HB_Face face = harfbuzzFace();
-    if (face != 0 && face->font_for_init != 0)
-        face = qHBLoadFace(face);
-
-    return face;
+    return face_;
 }
 
 bool QFontEngine::supportsScript(QChar::Script script) const
 {
-    return initializedHarfbuzzFace()->supported_scripts[script_to_hbscript(script)];
+    HB_Face hbFace = (HB_Face)harfbuzzFace();
+    return hbFace->supported_scripts[script_to_hbscript(script)];
 }
 
 glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix)

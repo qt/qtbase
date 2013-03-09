@@ -60,8 +60,6 @@
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
 
-#include "private/qharfbuzz_copy_p.h"
-
 #include <private/qfontengineglyphcache_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -77,6 +75,7 @@ struct QGlyphLayout;
     ((quint32)(ch4)) \
    )
 
+typedef void (*qt_destroy_func_t) (void *user_data);
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
@@ -162,11 +161,6 @@ public:
 
     /* returns 0 as glyph index for non existent glyphs */
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const = 0;
-
-    /**
-     * This is a callback from harfbuzz. The font engine uses the font-system in use to find out the
-     * advances of each glyph and set it on the layout.
-     */
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const {}
     virtual void doKerning(QGlyphLayout *, ShaperFlags) const;
 
@@ -248,9 +242,8 @@ public:
 
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
 
-    HB_Font harfbuzzFont() const;
-    HB_Face harfbuzzFace() const;
-    HB_Face initializedHarfbuzzFace() const;
+    void *harfbuzzFont() const;
+    void *harfbuzzFace() const;
     bool supportsScript(QChar::Script script) const;
 
     virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
@@ -273,12 +266,16 @@ public:
 
     QAtomicInt ref;
     QFontDef fontDef;
+
+    mutable void *font_;
+    mutable qt_destroy_func_t font_destroy_func;
+    mutable void *face_;
+    mutable qt_destroy_func_t face_destroy_func;
+
     uint cache_cost; // amount of mem used in kb by the font
     int cache_count;
     uint fsType : 16;
     bool symbol;
-    mutable HB_FontRec hbFont;
-    mutable HB_Face hbFace;
     struct KernPair {
         uint left_right;
         QFixed adjust;

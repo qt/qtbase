@@ -46,6 +46,8 @@
 #include "qfontengine_ft_p.h"
 #include "private/qimage_p.h"
 
+#include <private/qharfbuzz_p.h>
+
 #ifndef QT_NO_FREETYPE
 
 #include "qfile.h"
@@ -258,8 +260,12 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
         }
         newFreetype->face = face;
 
-        newFreetype->hbFace = qHBNewFace(face, hb_getSFntTable);
-        Q_CHECK_PTR(newFreetype->hbFace);
+        HB_Face hbFace = qHBNewFace(face, hb_getSFntTable);
+        Q_CHECK_PTR(hbFace);
+        if (hbFace->font_for_init != 0)
+            hbFace = qHBLoadFace(hbFace);
+        newFreetype->hbFace = (void *)hbFace;
+
         newFreetype->ref.store(1);
         newFreetype->xsize = 0;
         newFreetype->ysize = 0;
@@ -313,7 +319,7 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 {
     QtFreetypeData *freetypeData = qt_getFreetypeData();
     if (!ref.deref()) {
-        qHBFreeFace(hbFace);
+        qHBFreeFace((HB_Face)hbFace);
         FT_Done_Face(face);
         if(freetypeData->faces.contains(face_id))
             freetypeData->faces.take(face_id);
@@ -654,7 +660,6 @@ QFontEngineFT::~QFontEngineFT()
 {
     if (freetype)
         freetype->release(face_id);
-    hbFace = 0; // we share the face in QFreeTypeFace, don't let ~QFontEngine delete it
 }
 
 bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
@@ -691,7 +696,7 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
         symbol = bool(fontDef.family.contains(QLatin1String("symbol"), Qt::CaseInsensitive));
     }
     // #####
-    freetype->hbFace->isSymbolFont = symbol;
+    ((HB_Face)freetype->hbFace)->isSymbolFont = symbol;
 
     lbearing = rbearing = SHRT_MIN;
     freetype->computeSize(fontDef, &xsize, &ysize, &defaultGlyphSet.outline_drawing);
@@ -729,12 +734,17 @@ bool QFontEngineFT::init(FaceId faceId, bool antialias, GlyphFormat format,
     if (line_thickness < 1)
         line_thickness = 1;
 
-    hbFont.x_ppem  = face->size->metrics.x_ppem;
-    hbFont.y_ppem  = face->size->metrics.y_ppem;
-    hbFont.x_scale = face->size->metrics.x_scale;
-    hbFont.y_scale = face->size->metrics.y_scale;
+    HB_FontRec *hbFont = (HB_FontRec *)font_;
+    hbFont->x_ppem  = face->size->metrics.x_ppem;
+    hbFont->y_ppem  = face->size->metrics.y_ppem;
+    hbFont->x_scale = face->size->metrics.x_scale;
+    hbFont->y_scale = face->size->metrics.y_scale;
 
-    hbFace = freetype->hbFace;
+    // ###
+    if (face_ && face_destroy_func)
+        face_destroy_func(face_);
+    face_ = freetype->hbFace;
+    face_destroy_func = 0; // we share the face in QFreeTypeFace, don't let ~QFontEngine delete it
 
     metrics = face->size->metrics;
 

@@ -69,8 +69,6 @@
 
 #include <qmutex.h>
 
-#include "private/qharfbuzz_copy_p.h"
-
 QT_BEGIN_NAMESPACE
 
 class QFontEngineFTRawFont;
@@ -101,7 +99,7 @@ struct QFreetypeFace
     }
 
     FT_Face face;
-    HB_Face hbFace;
+    void *hbFace;
     int xsize; // 26.6
     int ysize; // 26.6
     FT_Matrix matrix;

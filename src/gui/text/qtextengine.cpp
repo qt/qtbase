@@ -1111,8 +1111,8 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         si.descent = qMax(actualFontEngine->descent(), si.descent);
         si.leading = qMax(actualFontEngine->leading(), si.leading);
 
-        shaper_item.font = actualFontEngine->harfbuzzFont();
-        shaper_item.face = actualFontEngine->initializedHarfbuzzFace();
+        shaper_item.font = (HB_Font)actualFontEngine->harfbuzzFont();
+        shaper_item.face = (HB_Face)actualFontEngine->harfbuzzFace();
 
         shaper_item.glyphIndicesPresent = true;
 

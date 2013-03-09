@@ -50,6 +50,7 @@
 #include <QtCore/qbuffer.h>
 #if !defined(QT_NO_FREETYPE)
 #include "private/qfontengine_ft_p.h"
+#include <private/qharfbuzz_p.h>
 #endif
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
 
