@@ -69,8 +69,9 @@ typedef enum {
 typedef QT_PREPEND_NAMESPACE(quint32) HB_Glyph;
 typedef void * HB_Font;
 typedef void * HB_Face;
-typedef void * HB_FontRec;
 typedef QT_PREPEND_NAMESPACE(quint32) hb_uint32;
+typedef QT_PREPEND_NAMESPACE(quint16) HB_UShort;
+typedef QT_PREPEND_NAMESPACE(qint32) HB_16Dot16;
 typedef QT_PREPEND_NAMESPACE(qint32) HB_Fixed;
 
 typedef struct {
@@ -87,6 +88,16 @@ typedef struct {
     hb_bitfield dontPrint       :1;
     hb_bitfield combiningClass  :8;
 } HB_GlyphAttributes;
+
+typedef struct HB_Font_ {
+    const void *klass;
+
+    /* Metrics */
+    HB_UShort x_ppem, y_ppem;
+    HB_16Dot16 x_scale, y_scale;
+
+    void *userData;
+} HB_FontRec;
 
 }
 
