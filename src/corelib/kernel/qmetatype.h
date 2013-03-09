@@ -47,6 +47,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qisenum.h>
+#include <QtCore/qtypetraits.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif
@@ -62,6 +63,11 @@
 
 QT_BEGIN_NAMESPACE
 
+template <typename T>
+struct QMetaTypeId2;
+
+template <typename T>
+inline Q_DECL_CONSTEXPR int qMetaTypeId();
 
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, RealType)
 #define QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
@@ -204,6 +210,105 @@ class QDataStream;
 class QMetaTypeInterface;
 struct QMetaObject;
 
+namespace QtPrivate
+{
+/*!
+    This template is used for implicit conversion from type From to type To.
+    \internal
+*/
+template<typename From, typename To>
+To convertImplicit(const From& from)
+{
+    return from;
+}
+
+struct AbstractConverterFunction
+{
+    typedef bool (*Converter)(const AbstractConverterFunction *, const void *, void*);
+    typedef void (*Destroy)(AbstractConverterFunction *);
+    explicit AbstractConverterFunction(Converter c = 0, Destroy d = 0)
+        : convert(c), destroy(d) {}
+    Q_DISABLE_COPY(AbstractConverterFunction)
+    Converter convert;
+    Destroy destroy;
+};
+
+template<typename From, typename To>
+struct ConverterMemberFunction : public AbstractConverterFunction
+{
+    explicit ConverterMemberFunction(To(From::*function)() const)
+        : AbstractConverterFunction(convert, destroy),
+          m_function(function) {}
+    static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
+    {
+        const From *f = static_cast<const From *>(in);
+        To *t = static_cast<To *>(out);
+        const ConverterMemberFunction *_typedThis =
+            static_cast<const ConverterMemberFunction *>(_this);
+        *t = (f->*_typedThis->m_function)();
+        return true;
+    }
+
+    static void destroy(AbstractConverterFunction *_this)
+    {
+        delete static_cast<ConverterMemberFunction *>(_this);
+    }
+
+    To(From::* const m_function)() const;
+};
+
+template<typename From, typename To>
+struct ConverterMemberFunctionOk : public AbstractConverterFunction
+{
+    explicit ConverterMemberFunctionOk(To(From::*function)(bool *) const)
+        : AbstractConverterFunction(convert, destroy),
+          m_function(function) {}
+    static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
+    {
+        const From *f = static_cast<const From *>(in);
+        To *t = static_cast<To *>(out);
+        bool ok = false;
+        const ConverterMemberFunctionOk *_typedThis =
+            static_cast<const ConverterMemberFunctionOk *>(_this);
+        *t = (f->*_typedThis->m_function)(&ok);
+        if (!ok)
+            *t = To();
+        return ok;
+    }
+
+    static void destroy(AbstractConverterFunction *_this)
+    {
+        delete static_cast<ConverterMemberFunctionOk *>(_this);
+    }
+
+    To(From::* const m_function)(bool*) const;
+};
+
+template<typename From, typename To, typename UnaryFunction>
+struct ConverterFunctor : public AbstractConverterFunction
+{
+    explicit ConverterFunctor(UnaryFunction function)
+        : AbstractConverterFunction(convert, destroy),
+          m_function(function) {}
+    static bool convert(const AbstractConverterFunction *_this, const void *in, void *out)
+    {
+        const From *f = static_cast<const From *>(in);
+        To *t = static_cast<To *>(out);
+        const ConverterFunctor *_typedThis =
+            static_cast<const ConverterFunctor *>(_this);
+        *t = _typedThis->m_function(*f);
+        return true;
+    }
+
+    static void destroy(AbstractConverterFunction *_this)
+    {
+        delete static_cast<ConverterFunctor *>(_this);
+    }
+
+    UnaryFunction m_function;
+};
+}
+
 class Q_CORE_EXPORT QMetaType {
     enum ExtensionFlag { NoExtensionFlags,
                          CreateEx = 0x1, DestroyEx = 0x2,
@@ -337,6 +442,70 @@ public:
     inline void destroy(void *data) const;
     inline void *construct(void *where, const void *copy = 0) const;
     inline void destruct(void *data) const;
+
+public:
+    // implicit conversion supported like double -> float
+    template<typename From, typename To>
+    static bool registerConverter()
+    {
+        return registerConverter<From, To>(QtPrivate::convertImplicit<From, To>);
+    }
+
+#ifdef Q_QDOC
+    static bool registerConverter(MemberFunction function);
+    static bool registerConverter(MemberFunctionOk function);
+    static bool registerConverter(UnaryFunction function);
+#else
+    // member function as in "QString QFont::toString() const"
+    template<typename From, typename To>
+    static bool registerConverter(To(From::*function)() const)
+    {
+        Q_STATIC_ASSERT_X((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+            "QMetaType::registerConverter: At least one of the types must be a custom type.");
+
+        const int fromTypeId = qMetaTypeId<From>();
+        const int toTypeId = qMetaTypeId<To>();
+        return registerConverterFunction(new QtPrivate::ConverterMemberFunction<From, To>(function),
+                                         fromTypeId, toTypeId);
+    }
+
+    // member function as in "double QString::toDouble(bool *ok = 0) const"
+    template<typename From, typename To>
+    static bool registerConverter(To(From::*function)(bool*) const)
+    {
+        Q_STATIC_ASSERT_X((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+            "QMetaType::registerConverter: At least one of the types must be a custom type.");
+
+        const int fromTypeId = qMetaTypeId<From>();
+        const int toTypeId = qMetaTypeId<To>();
+        return registerConverterFunction(new QtPrivate::ConverterMemberFunctionOk<From, To>(function),
+                                         fromTypeId, toTypeId);
+    }
+
+    // functor or function pointer
+    template<typename From, typename To, typename UnaryFunction>
+    static bool registerConverter(UnaryFunction function)
+    {
+        Q_STATIC_ASSERT_X((!QMetaTypeId2<To>::IsBuiltIn || !QMetaTypeId2<From>::IsBuiltIn),
+            "QMetaType::registerConverter: At least one of the types must be a custom type.");
+
+        const int fromTypeId = qMetaTypeId<From>();
+        const int toTypeId = qMetaTypeId<To>();
+        return registerConverterFunction(new QtPrivate::ConverterFunctor<From, To, UnaryFunction>(function),
+                                        fromTypeId, toTypeId);
+    }
+#endif
+
+    static bool convert(const void *from, int fromTypeId, void *to, int toTypeId);
+
+    template<typename From, typename To>
+    static bool hasRegisteredConverterFunction()
+    {
+        return hasRegisteredConverterFunction(qMetaTypeId<From>(), qMetaTypeId<To>());
+    }
+
+    static bool hasRegisteredConverterFunction(int fromTypeId, int toTypeId);
+
 private:
     static QMetaType typeInfo(const int type);
     inline QMetaType(const ExtensionFlag extensionFlags, const QMetaTypeInterface *info,
@@ -364,6 +533,8 @@ private:
     void destroyExtended(void *data) const;
     void *constructExtended(void *where, const void *copy = 0) const;
     void destructExtended(void *data) const;
+
+    static bool registerConverterFunction(QtPrivate::AbstractConverterFunction *f, int from, int to);
 
     Creator m_creator;
     Deleter m_deleter;

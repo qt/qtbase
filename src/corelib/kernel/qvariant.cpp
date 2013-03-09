@@ -262,6 +262,16 @@ inline bool qt_convertToBool(const QVariant::Private *const d)
 
 /*!
  \internal
+ Returns the internal data pointer from \a d.
+ */
+
+static const void *constData(const QVariant::Private &d)
+{
+    return d.is_shared ? d.data.shared->ptr : reinterpret_cast<const void *>(&d.data.c);
+}
+
+/*!
+ \internal
 
  Converts \a d to type \a t, which is placed in \a result.
  */
@@ -269,6 +279,14 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
 {
     Q_ASSERT(d->type != uint(t));
     Q_ASSERT(result);
+
+    if (d->type >= QMetaType::User || t >= QMetaType::User) {
+        const bool isOk = QMetaType::convert(constData(*d), d->type, result, t);
+        if (ok)
+            *ok = isOk;
+        if (isOk)
+            return true;
+    }
 
     bool dummy;
     if (!ok)
@@ -842,8 +860,15 @@ static bool customCompare(const QVariant::Private *a, const QVariant::Private *b
     return !memcmp(a_ptr, b_ptr, QMetaType::sizeOf(a->type));
 }
 
-static bool customConvert(const QVariant::Private *, int, void *, bool *ok)
+static bool customConvert(const QVariant::Private *d, int t, void *result, bool *ok)
 {
+    if (d->type >= QMetaType::User || t >= QMetaType::User) {
+        const bool isOk = QMetaType::convert(constData(*d), d->type, result, t);
+        if (ok)
+            *ok = isOk;
+        return isOk;
+    }
+
     if (ok)
         *ok = false;
     return false;
@@ -1933,6 +1958,12 @@ inline T qVariantToHelper(const QVariant::Private &d, const HandlersManager &han
         return *v_cast<T>(&d);
 
     T ret;
+    if (d.type >= QMetaType::User || targetType >= QMetaType::User) {
+        const void * const from = constData(d);
+        if (QMetaType::convert(from, d.type, &ret, targetType))
+            return ret;
+    }
+
     handlerManager[d.type]->convert(&d, targetType, &ret, 0);
     return ret;
 }
@@ -2349,13 +2380,19 @@ template <typename T>
 inline T qNumVariantToHelper(const QVariant::Private &d,
                              const HandlersManager &handlerManager, bool *ok, const T& val)
 {
-    uint t = qMetaTypeId<T>();
+    const uint t = qMetaTypeId<T>();
     if (ok)
         *ok = true;
+
     if (d.type == t)
         return val;
 
     T ret = 0;
+    if ((d.type >= QMetaType::User || t >= QMetaType::User)
+        && QMetaType::convert(&val, d.type, &ret, t)) {
+        return ret;
+    }
+
     if (!handlerManager[d.type]->convert(&d, t, &ret, ok) && ok)
         *ok = false;
     return ret;
@@ -2714,6 +2751,11 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
 */
 bool QVariant::canConvert(int targetTypeId) const
 {
+    if ((d.type >= QMetaType::User || targetTypeId >= QMetaType::User)
+        && QMetaType::hasRegisteredConverterFunction(d.type, targetTypeId)) {
+        return true;
+    }
+
     // TODO Reimplement this function, currently it works but it is a historical mess.
     uint currentType = ((d.type == QMetaType::Float) ? QVariant::Double : d.type);
     if (currentType == QMetaType::SChar || currentType == QMetaType::Char)
@@ -2838,7 +2880,6 @@ bool QVariant::convert(int targetTypeId)
 */
 bool QVariant::convert(const int type, void *ptr) const
 {
-    Q_ASSERT(type < int(QMetaType::User));
     return handlerManager[type]->convert(&d, type, ptr, 0);
 }
 

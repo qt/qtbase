@@ -571,11 +571,9 @@ namespace QtPrivate {
             const int vid = qMetaTypeId<T>();
             if (vid == v.userType())
                 return *reinterpret_cast<const T *>(v.constData());
-            if (vid < int(QMetaType::User)) {
-                T t;
-                if (v.convert(vid, &t))
-                    return t;
-            }
+            T t;
+            if (v.convert(vid, &t))
+                return t;
             return T();
         }
 #ifndef QT_NO_QOBJECT

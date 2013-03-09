@@ -420,6 +420,49 @@ public:
     int alias;
 };
 
+class QMetaTypeConversionRegistry
+{
+public:
+    typedef QPair<int, int> Key;
+
+    ~QMetaTypeConversionRegistry()
+    {
+        const QWriteLocker locker(&lock);
+        Q_FOREACH (QtPrivate::AbstractConverterFunction *f, map)
+            f->destroy(f);
+        map.clear();
+    }
+
+    bool contains(int from, int to) const
+    {
+        const Key k(from, to);
+        const QReadLocker locker(&lock);
+        return map.contains(k);
+    }
+
+    bool insertIfNotContains(int from, int to, QtPrivate::AbstractConverterFunction *f)
+    {
+        const Key k(from, to);
+        const QWriteLocker locker(&lock);
+        QtPrivate::AbstractConverterFunction* &fun = map[k];
+        if (fun != 0)
+            return false;
+        fun = f;
+        return true;
+    }
+
+    QtPrivate::AbstractConverterFunction *function(int from, int to) const
+    {
+        const Key k(from, to);
+        const QReadLocker locker(&lock);
+        return map.value(k, 0);
+    }
+
+private:
+    mutable QReadWriteLock lock;
+    QHash<Key, QtPrivate::AbstractConverterFunction *> map;
+};
+
 namespace
 {
 union CheckThatItIsPod
@@ -431,6 +474,85 @@ union CheckThatItIsPod
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
 Q_GLOBAL_STATIC(QVector<QCustomTypeInfo>, customTypes)
 Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
+Q_GLOBAL_STATIC(QMetaTypeConversionRegistry, customTypesConversionRegistry)
+
+/*!
+    \fn bool QMetaType::registerConverter()
+    \since 5.1
+    Registers the possibility of an implicit conversion from type From to type To in the meta
+    type system. Returns true if the registration succeeded, otherwise false.
+*/
+
+/*!
+    \fn bool QMetaType::registerConverter(MemberFunction function)
+    \since 5.1
+    \overload
+    Registers a method \a function like To From::function() const as converter from type From
+    to type To in the meta type system. Returns true if the registration succeeded, otherwise false.
+*/
+
+/*!
+    \fn bool QMetaType::registerConverter(MemberFunctionOk function)
+    \since 5.1
+    \overload
+    Registers a method \a function like To From::function(bool *ok) const as converter from type From
+    to type To in the meta type system. Returns true if the registration succeeded, otherwise false.
+*/
+
+/*!
+    \fn bool QMetaType::registerConverter(UnaryFunction function)
+    \since 5.1
+    \overload
+    Registers a unary function object \a function as converter from type From
+    to type To in the meta type system. Returns true if the registration succeeded, otherwise false.
+*/
+
+/*!
+    Registers function \a f as converter function from type id \a from to \a to.
+    If there's already a conversion registered, this does nothing but deleting \a f.
+    Returns true if the registration succeeded, otherwise false.
+    \since 5.1
+    \internal
+*/
+bool QMetaType::registerConverterFunction(QtPrivate::AbstractConverterFunction *f, int from, int to)
+{
+    if (!customTypesConversionRegistry()->insertIfNotContains(from, to, f)) {
+        qWarning("Type conversion already registered from type %s to type %s",
+                 QMetaType::typeName(from), QMetaType::typeName(to));
+        if (f)
+            f->destroy(f);
+        return false;
+    }
+    return true;
+}
+
+/*!
+    Converts the object at \a from from \a fromTypeId to the preallocated space at \a to
+    typed \a toTypeId. Returns true, if the conversion succeeded, otherwise false.
+    \since 5.1
+*/
+bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
+{
+    const QtPrivate::AbstractConverterFunction * const f = customTypesConversionRegistry()->function(fromTypeId, toTypeId);
+    return f && f->convert(f, from, to);
+}
+
+/*!
+    \fn bool QMetaType::hasRegisteredConverterFunction()
+    Returns true, if the meta type system has a registered conversion from type From to type To.
+    \since 5.1
+    \overload
+    */
+
+/*!
+    Returns true, if the meta type system has a registered conversion from meta type id \a fromTypeId
+    to \a toTypeId
+    \since 5.1
+*/
+bool QMetaType::hasRegisteredConverterFunction(int fromTypeId, int toTypeId)
+{
+    return customTypesConversionRegistry()->contains(fromTypeId, toTypeId);
+}
 
 #ifndef QT_NO_DATASTREAM
 /*!
