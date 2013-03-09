@@ -135,7 +135,7 @@ static HB_Fixed hb_getFontMetric(HB_Font font, HB_FontMetric metric)
     return 0;
 }
 
-HB_Error QFontEngine::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
+int QFontEngine::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
     Q_UNUSED(glyph)
     Q_UNUSED(flags)
@@ -149,7 +149,7 @@ HB_Error QFontEngine::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 poi
 static HB_Error hb_getPointInOutline(HB_Font font, HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
 {
     QFontEngine *fe = (QFontEngine *)font->userData;
-    return fe->getPointInOutline(glyph, flags, point, xpos, ypos, nPoints);
+    return (HB_Error)fe->getPointInOutline(glyph, flags, point, (QFixed *)xpos, (QFixed *)ypos, (quint32 *)nPoints);
 }
 
 static const HB_FontClass hb_fontClass = {
@@ -1206,7 +1206,7 @@ bool QFontEngineBox::stringToCMap(const QChar *, int len, QGlyphLayout *glyphs, 
         return false;
     }
 
-    memset(glyphs->glyphs, 0, len * sizeof(HB_Glyph));
+    memset(glyphs->glyphs, 0, len * sizeof(glyph_t));
 
     *nglyphs = len;
     glyphs->numGlyphs = len;

@@ -60,16 +60,12 @@
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
 
-
+#include "private/qharfbuzz_copy_p.h"
 
 #include <private/qfontengineglyphcache_p.h>
 
-struct glyph_metrics_t;
-typedef unsigned int glyph_t;
-
 QT_BEGIN_NAMESPACE
 
-class QChar;
 class QPainterPath;
 
 struct QGlyphLayout;
@@ -257,7 +253,7 @@ public:
     HB_Face initializedHarfbuzzFace() const;
     bool supportsScript(QChar::Script script) const;
 
-    virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
+    virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
 
     void setGlyphCache(const void *key, QFontEngineGlyphCache *data);
     QFontEngineGlyphCache *glyphCache(const void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const;

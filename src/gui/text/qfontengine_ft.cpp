@@ -183,9 +183,9 @@ int QFreetypeFace::fsType() const
     return fsType;
 }
 
-HB_Error QFreetypeFace::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
+int QFreetypeFace::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
-    if (HB_Error error = (HB_Error)FT_Load_Glyph(face, glyph, flags))
+    if (int error = FT_Load_Glyph(face, glyph, flags))
         return error;
 
     if (face->glyph->format != FT_GLYPH_FORMAT_OUTLINE)
@@ -198,8 +198,8 @@ HB_Error QFreetypeFace::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
     if (point > *nPoints)
         return HB_Err_Invalid_SubTable;
 
-    *xpos = face->glyph->outline.points[point].x;
-    *ypos = face->glyph->outline.points[point].y;
+    *xpos = QFixed::fromFixed(face->glyph->outline.points[point].x);
+    *ypos = QFixed::fromFixed(face->glyph->outline.points[point].y);
 
     return HB_Err_Ok;
 }
@@ -2029,13 +2029,13 @@ void QFontEngineFT::QGlyphSet::setGlyph(glyph_t index, QFixed subPixelPosition, 
     }
 }
 
-HB_Error QFontEngineFT::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
+int QFontEngineFT::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
     lockFace();
     bool hsubpixel = true;
     int vfactor = 1;
     int load_flags = loadFlags(0, Format_A8, flags, hsubpixel, vfactor);
-    HB_Error result = freetype->getPointInOutline(glyph, load_flags, point, xpos, ypos, nPoints);
+    int result = freetype->getPointInOutline(glyph, load_flags, point, xpos, ypos, nPoints);
     unlockFace();
     return result;
 }

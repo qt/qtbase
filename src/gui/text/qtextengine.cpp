@@ -61,6 +61,8 @@
 
 #include "qfontengine_qpa_p.h"
 
+#include <private/qharfbuzz_p.h>
+
 QT_BEGIN_NAMESPACE
 
 static const float smallCapsFraction = 0.7f;
@@ -836,13 +838,6 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
 #endif
 }
 
-QT_BEGIN_INCLUDE_NAMESPACE
-
-
-#include <private/qharfbuzz_p.h>
-
-QT_END_INCLUDE_NAMESPACE
-
 // ask the font engine to find out which glyphs (as an index in the specific font) to use for the text in one item.
 static bool stringToGlyphs(HB_ShaperItem *item, QGlyphLayout *glyphs, QFontEngine *fontEngine)
 {
@@ -971,19 +966,21 @@ static inline bool hasCaseChange(const QScriptItem &si)
 static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
 {
     if (num > 0 && destination.glyphs != source.glyphs) {
-        memmove(destination.glyphs, source.glyphs, num * sizeof(HB_Glyph));
-        memmove(destination.attributes, source.attributes, num * sizeof(HB_GlyphAttributes));
-        memmove(destination.advances_x, source.advances_x, num * sizeof(HB_Fixed));
-        memmove(destination.offsets, source.offsets, num * sizeof(HB_FixedPoint));
+        memmove(destination.glyphs, source.glyphs, num * sizeof(glyph_t));
+        memmove(destination.attributes, source.attributes, num * sizeof(QGlyphAttributes));
+        memmove(destination.advances_x, source.advances_x, num * sizeof(QFixed));
+        memmove(destination.offsets, source.offsets, num * sizeof(QFixedPoint));
     }
 }
+
+Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
+Q_STATIC_ASSERT(sizeof(HB_GlyphAttributes) == sizeof(QGlyphAttributes));
+Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
+Q_STATIC_ASSERT(sizeof(HB_FixedPoint) == sizeof(QFixedPoint));
 
 /// take the item from layoutData->items and
 void QTextEngine::shapeTextWithHarfbuzz(int item) const
 {
-    Q_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
-    Q_ASSERT(sizeof(HB_FixedPoint) == sizeof(QFixedPoint));
-
     QScriptItem &si = layoutData->items[item];
 
     si.glyph_data_offset = layoutData->used;
@@ -1074,9 +1071,9 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
                 itemBoundaries.append(i);
             }
             lastEngine = engineIdx;
-            if (HB_IsHighSurrogate(entire_shaper_item.string[charIdx])
+            if (QChar::isHighSurrogate(entire_shaper_item.string[charIdx])
                 && charIdx < stringEnd - 1
-                && HB_IsLowSurrogate(entire_shaper_item.string[charIdx + 1]))
+                && QChar::isLowSurrogate(entire_shaper_item.string[charIdx + 1]))
                 ++charIdx;
         }
     }
@@ -1129,13 +1126,13 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             if (shaper_item.num_glyphs > shaper_item.item.length)
                 moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
-            shaper_item.glyphs = g.glyphs;
-            shaper_item.attributes = g.attributes;
+            shaper_item.glyphs = reinterpret_cast<HB_Glyph *>(g.glyphs);
+            shaper_item.attributes = reinterpret_cast<HB_GlyphAttributes *>(g.attributes);
             shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances_x);
             shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets);
 
             if (engineIdx != 0 && shaper_item.glyphIndicesPresent) {
-                for (hb_uint32 i = 0; i < shaper_item.initialGlyphCount; ++i)
+                for (quint32 i = 0; i < shaper_item.initialGlyphCount; ++i)
                     shaper_item.glyphs[i] &= 0x00ffffff;
             }
 
@@ -1147,14 +1144,14 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
         moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
-        for (hb_uint32 i = 0; i < shaper_item.item.length; ++i)
+        for (quint32 i = 0; i < shaper_item.item.length; ++i)
             shaper_item.log_clusters[i] += glyph_pos;
 
         if (kerningEnabled && !shaper_item.kerning_applied)
             actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags(0));
 
         if (engineIdx != 0) {
-            for (hb_uint32 i = 0; i < shaper_item.num_glyphs; ++i)
+            for (quint32 i = 0; i < shaper_item.num_glyphs; ++i)
                 g.glyphs[i] |= (engineIdx << 24);
         }
 
@@ -1224,7 +1221,7 @@ const QCharAttributes *QTextEngine::attributes() const
         scriptItems[i].script = si.analysis.script;
     }
 
-    QUnicodeTools::initCharAttributes(reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData()),
+    QUnicodeTools::initCharAttributes(reinterpret_cast<const ushort *>(layoutData->string.constData()),
                                       layoutData->string.length(),
                                       scriptItems.data(), scriptItems.size(),
                                       (QCharAttributes *)layoutData->memory);
@@ -2156,11 +2153,11 @@ void QGlyphLayout::grow(char *address, int totalGlyphs)
 
     if (numGlyphs) {
         // move the existing data
-        memmove(newLayout.attributes, oldLayout.attributes, numGlyphs * sizeof(HB_GlyphAttributes));
+        memmove(newLayout.attributes, oldLayout.attributes, numGlyphs * sizeof(QGlyphAttributes));
         memmove(newLayout.justifications, oldLayout.justifications, numGlyphs * sizeof(QGlyphJustification));
         memmove(newLayout.advances_y, oldLayout.advances_y, numGlyphs * sizeof(QFixed));
         memmove(newLayout.advances_x, oldLayout.advances_x, numGlyphs * sizeof(QFixed));
-        memmove(newLayout.glyphs, oldLayout.glyphs, numGlyphs * sizeof(HB_Glyph));
+        memmove(newLayout.glyphs, oldLayout.glyphs, numGlyphs * sizeof(glyph_t));
     }
 
     // clear the new data

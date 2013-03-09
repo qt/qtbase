@@ -526,7 +526,7 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
         return 0;
 
     if (flags & Qt::TextBypassShaping) {
-        // Skip harfbuzz complex shaping, only use advances
+        // Skip complex shaping, only use advances
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(numGlyphs);
         QFontEngine *engine = d->engineForScript(QChar::Script_Common);

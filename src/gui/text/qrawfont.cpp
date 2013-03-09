@@ -535,7 +535,7 @@ bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *adv
         return false;
 
     QGlyphLayout glyphs;
-    glyphs.glyphs = const_cast<HB_Glyph *>(glyphIndexes);
+    glyphs.glyphs = const_cast<glyph_t *>(glyphIndexes);
     glyphs.numGlyphs = numGlyphs;
     QVarLengthArray<QFixed> advances_x(numGlyphs);
     QVarLengthArray<QFixed> advances_y(numGlyphs);

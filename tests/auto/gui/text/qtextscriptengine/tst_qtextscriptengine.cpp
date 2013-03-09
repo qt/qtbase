@@ -1134,8 +1134,8 @@ void tst_QTextScriptEngine::mirroredChars()
     s.append(QLatin1Char('('));
     s.append(QLatin1Char(')'));
 
-    HB_Glyph leftParenthesis;
-    HB_Glyph rightParenthesis;
+    glyph_t leftParenthesis;
+    glyph_t rightParenthesis;
     {
         QTextLayout layout(s);
         layout.setCacheEnabled(true);

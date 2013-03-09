@@ -5612,13 +5612,13 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
 
         QVarLengthArray<QFixed, 128> advances(glyphCount);
         QVarLengthArray<QGlyphJustification, 128> glyphJustifications(glyphCount);
-        QVarLengthArray<HB_GlyphAttributes, 128> glyphAttributes(glyphCount);
-        memset(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(HB_GlyphAttributes));
+        QVarLengthArray<QGlyphAttributes, 128> glyphAttributes(glyphCount);
+        memset(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(QGlyphAttributes));
         memset(advances.data(), 0, advances.size() * sizeof(QFixed));
         memset(glyphJustifications.data(), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
 
         textItem.glyphs.numGlyphs = glyphCount;
-        textItem.glyphs.glyphs = reinterpret_cast<HB_Glyph *>(const_cast<quint32 *>(glyphArray));
+        textItem.glyphs.glyphs = const_cast<glyph_t *>(glyphArray);
         textItem.glyphs.offsets = positions;
         textItem.glyphs.advances_x = advances.data();
         textItem.glyphs.advances_y = advances.data();
@@ -5841,7 +5841,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         return;
 
     if (tf & Qt::TextBypassShaping) {
-        // Skip harfbuzz complex shaping, shape using glyph advances only
+        // Skip complex shaping, shape using glyph advances only
         int len = str.length();
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(len);

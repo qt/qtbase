@@ -74,11 +74,11 @@ QTextItemIntCopy::QTextItemIntCopy(const QTextItem &item)
     char *glyphLayoutData = new char[size];
     QGlyphLayout glyphs(glyphLayoutData, m_item.glyphs.numGlyphs);
     memcpy(glyphs.offsets, m_item.glyphs.offsets, m_item.glyphs.numGlyphs * sizeof(QFixedPoint));
-    memcpy(glyphs.glyphs, m_item.glyphs.glyphs, m_item.glyphs.numGlyphs * sizeof(HB_Glyph));
+    memcpy(glyphs.glyphs, m_item.glyphs.glyphs, m_item.glyphs.numGlyphs * sizeof(glyph_t));
     memcpy(glyphs.advances_x, m_item.glyphs.advances_x, m_item.glyphs.numGlyphs * sizeof(QFixed));
     memcpy(glyphs.advances_y, m_item.glyphs.advances_y, m_item.glyphs.numGlyphs * sizeof(QFixed));
     memcpy(glyphs.justifications, m_item.glyphs.justifications, m_item.glyphs.numGlyphs * sizeof(QGlyphJustification));
-    memcpy(glyphs.attributes, m_item.glyphs.attributes, m_item.glyphs.numGlyphs * sizeof(HB_GlyphAttributes));
+    memcpy(glyphs.attributes, m_item.glyphs.attributes, m_item.glyphs.numGlyphs * sizeof(QGlyphAttributes));
     m_item.glyphs = glyphs;
 
     m_font = *m_item.f;
