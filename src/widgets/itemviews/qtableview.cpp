@@ -2180,6 +2180,7 @@ int QTableView::sizeHintForRow(int row) const
         return -1;
 
     ensurePolished();
+    const int maximumProcessCols = 1000; // To avoid this to take forever.
 
     int left = qMax(0, d->horizontalHeader->visualIndexAt(0));
     int right = d->horizontalHeader->visualIndexAt(d->viewport->width());
@@ -2190,6 +2191,7 @@ int QTableView::sizeHintForRow(int row) const
 
     int hint = 0;
     QModelIndex index;
+    int columnsProcessed = 0;
     for (int column = left; column <= right; ++column) {
         int logicalColumn = d->horizontalHeader->logicalIndex(column);
         if (d->horizontalHeader->isSectionHidden(logicalColumn))
@@ -2211,6 +2213,9 @@ int QTableView::sizeHintForRow(int row) const
         }
 
         hint = qMax(hint, itemDelegate(index)->sizeHint(option, index).height());
+        ++columnsProcessed;
+        if (columnsProcessed == maximumProcessCols)
+            break;
     }
 
     return d->showGrid ? hint + 1 : hint;
@@ -2239,6 +2244,7 @@ int QTableView::sizeHintForColumn(int column) const
         return -1;
 
     ensurePolished();
+    const int maximumProcessRows = 1000; // To avoid this to take forever.
 
     int top = qMax(0, d->verticalHeader->visualIndexAt(0));
     int bottom = d->verticalHeader->visualIndexAt(d->viewport->height());
@@ -2248,6 +2254,7 @@ int QTableView::sizeHintForColumn(int column) const
     QStyleOptionViewItem option = d->viewOptions();
 
     int hint = 0;
+    int rowsProcessed = 0;
     QModelIndex index;
     for (int row = top; row <= bottom; ++row) {
         int logicalRow = d->verticalHeader->logicalIndex(row);
@@ -2264,6 +2271,9 @@ int QTableView::sizeHintForColumn(int column) const
         }
 
         hint = qMax(hint, itemDelegate(index)->sizeHint(option, index).width());
+        ++rowsProcessed;
+        if (rowsProcessed == maximumProcessRows)
+            break;
     }
 
     return d->showGrid ? hint + 1 : hint;

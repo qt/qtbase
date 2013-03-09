@@ -44,6 +44,8 @@
 #include <QTableView>
 #include <QImage>
 #include <QPainter>
+#include <QHeaderView>
+#include <QStandardItemModel>
 
 class QtTestTableModel: public QAbstractTableModel
 {
@@ -149,6 +151,7 @@ private slots:
     void columnInsertion();
     void columnRemoval_data();
     void columnRemoval();
+    void sizeHintForColumnWhenHidden();
 private:
     static inline void spanInit_helper(QTableView *);
 };
@@ -359,6 +362,24 @@ void tst_QTableView::columnRemoval()
     QBENCHMARK_ONCE {
         view.model()->removeColumns(3, 3);
     }
+}
+
+void tst_QTableView::sizeHintForColumnWhenHidden()
+{
+    QTableView view;
+    QStandardItemModel model(12500, 6);
+    for (int r = 0; r < model.rowCount(); ++r)
+        for (int c = 0; c < model.columnCount(); ++c) {
+            QStandardItem *item = new QStandardItem(QString("row %0, column %1").arg(r).arg(c));
+            model.setItem(r, c, item);
+        }
+
+    view.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    view.setModel(&model);
+    QBENCHMARK_ONCE {
+        view.horizontalHeader()->resizeSection(0, 10); // this force resizeSections - on a hidden view.
+    }
+
 }
 
 QTEST_MAIN(tst_QTableView)
