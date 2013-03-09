@@ -48,6 +48,12 @@
 #include "qkmsnativeinterface.h"
 #include "qkmsvthandler.h"
 
+#if !defined(QT_NO_EVDEV)
+#include <QtPlatformSupport/private/qevdevmousemanager_p.h>
+#include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+#include <QtPlatformSupport/private/qevdevtouch_p.h>
+#endif
+
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -75,6 +81,12 @@ QKmsIntegration::QKmsIntegration()
         connect(m_deviceDiscovery, SIGNAL(deviceDetected(QString)), this, SLOT(addDevice(QString)));
         connect(m_deviceDiscovery, SIGNAL(deviceRemoved(QString)), this, SLOT(removeDevice(QString)));
     }
+
+#if !defined(QT_NO_EVDEV)
+    new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
+    new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
+    new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
+#endif
 }
 
 QKmsIntegration::~QKmsIntegration()
