@@ -44,8 +44,7 @@
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
 
-#include <private/harfbuzz-shaper.h>
-#include <private/qharfbuzz_p.h>
+#include "qharfbuzz_p.h"
 
 #define FLAG(x) (1 << (x))
 

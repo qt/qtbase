@@ -42,7 +42,6 @@ HEADERS += \
         text/qrawfont_p.h \
     text/qglyphrun.h \
     text/qglyphrun_p.h \
-    text/qharfbuzz_copy_p.h \
     text/qdistancefield_p.h
 
 SOURCES += \

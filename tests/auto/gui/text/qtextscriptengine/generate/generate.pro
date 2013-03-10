@@ -1,5 +1,5 @@
 CONFIG -= moc
-QT += core-private   # for harfbuzz
+QT += core-private
 INCLUDEPATH += . /usr/include/freetype2
 
 SOURCES += main.cpp

@@ -54,7 +54,230 @@
 #define QHARFBUZZ_P_H
 
 #include <QtCore/qchar.h>
-#include <private/harfbuzz-shaper.h>
+
+#if defined(QT_BUILD_CORE_LIB)
+#  include <harfbuzz-shaper.h>
+#else
+// a minimal set of HB types required for Qt libs other than Core
+extern "C" {
+
+typedef enum {
+  /* no error */
+  HB_Err_Ok                           = 0x0000,
+  HB_Err_Not_Covered                  = 0xFFFF,
+
+  /* _hb_err() is called whenever returning the following errors,
+   * and in a couple places for HB_Err_Not_Covered too. */
+
+  /* programmer error */
+  HB_Err_Invalid_Argument             = 0x1A66,
+
+  /* font error */
+  HB_Err_Invalid_SubTable_Format      = 0x157F,
+  HB_Err_Invalid_SubTable             = 0x1570,
+  HB_Err_Read_Error                   = 0x6EAD,
+
+  /* system error */
+  HB_Err_Out_Of_Memory                = 0xDEAD
+} HB_Error;
+
+typedef QT_PREPEND_NAMESPACE(qint8) hb_int8;
+typedef QT_PREPEND_NAMESPACE(quint8) hb_uint8;
+typedef QT_PREPEND_NAMESPACE(qint16) hb_int16;
+typedef QT_PREPEND_NAMESPACE(quint16) hb_uint16;
+typedef QT_PREPEND_NAMESPACE(qint32) hb_int32;
+typedef QT_PREPEND_NAMESPACE(quint32) hb_uint32;
+
+typedef hb_uint8 HB_Bool;
+typedef hb_uint8 HB_Byte;
+typedef hb_uint16 HB_UShort;
+typedef hb_uint32 HB_UInt;
+typedef hb_int8 HB_Char;
+typedef hb_int16 HB_Short;
+typedef hb_int32 HB_Int;
+typedef hb_uint16 HB_UChar16;
+typedef hb_uint32 HB_UChar32;
+typedef hb_uint32 HB_Glyph;
+typedef hb_int32 HB_Fixed; /* 26.6 */
+typedef hb_int32 HB_16Dot16; /* 16.16 */
+typedef hb_uint32 HB_Tag;
+
+typedef struct {
+    HB_Fixed x;
+    HB_Fixed y;
+} HB_FixedPoint;
+
+typedef enum {
+    HB_Script_Common,
+    HB_Script_Greek,
+    HB_Script_Cyrillic,
+    HB_Script_Armenian,
+    HB_Script_Hebrew,
+    HB_Script_Arabic,
+    HB_Script_Syriac,
+    HB_Script_Thaana,
+    HB_Script_Devanagari,
+    HB_Script_Bengali,
+    HB_Script_Gurmukhi,
+    HB_Script_Gujarati,
+    HB_Script_Oriya,
+    HB_Script_Tamil,
+    HB_Script_Telugu,
+    HB_Script_Kannada,
+    HB_Script_Malayalam,
+    HB_Script_Sinhala,
+    HB_Script_Thai,
+    HB_Script_Lao,
+    HB_Script_Tibetan,
+    HB_Script_Myanmar,
+    HB_Script_Georgian,
+    HB_Script_Hangul,
+    HB_Script_Ogham,
+    HB_Script_Runic,
+    HB_Script_Khmer,
+    HB_Script_Nko,
+    HB_Script_Inherited,
+    HB_ScriptCount = HB_Script_Inherited
+} HB_Script;
+
+typedef enum {
+    HB_NoJustification= 0,   /* Justification can't be applied after this glyph */
+    HB_Arabic_Space   = 1,   /* This glyph represents a space inside arabic text */
+    HB_Character      = 2,   /* Inter-character justification point follows this glyph */
+    HB_Space          = 4,   /* This glyph represents a blank outside an Arabic run */
+    HB_Arabic_Normal  = 7,   /* Normal Middle-Of-Word glyph that connects to the right (begin) */
+    HB_Arabic_Waw     = 8,   /* Next character is final form of Waw/Ain/Qaf/Fa */
+    HB_Arabic_BaRa    = 9,   /* Next two chars are Ba + Ra/Ya/AlefMaksura */
+    HB_Arabic_Alef    = 10,  /* Next character is final form of Alef/Tah/Lam/Kaf/Gaf */
+    HB_Arabic_HaaDal  = 11,  /* Next character is final form of Haa/Dal/Taa Marbutah */
+    HB_Arabic_Seen    = 12,  /* Initial or Medial form Of Seen/Sad */
+    HB_Arabic_Kashida = 13   /* Kashida(U+640) in middle of word */
+} HB_JustificationClass;
+
+#ifdef  __xlC__
+typedef unsigned hb_bitfield;
+#else
+typedef hb_uint8 hb_bitfield;
+#endif
+
+typedef struct {
+    hb_bitfield justification   :4;  /* Justification class */
+    hb_bitfield clusterStart    :1;  /* First glyph of representation of cluster */
+    hb_bitfield mark            :1;  /* needs to be positioned around base char */
+    hb_bitfield zeroWidth       :1;  /* ZWJ, ZWNJ etc, with no width */
+    hb_bitfield dontPrint       :1;
+    hb_bitfield combiningClass  :8;
+} HB_GlyphAttributes;
+
+typedef void * HB_GDEF;
+typedef void * HB_GSUB;
+typedef void * HB_GPOS;
+typedef void * HB_Buffer;
+
+typedef HB_Error (*HB_GetFontTableFunc)(void *font, HB_Tag tag, HB_Byte *buffer, HB_UInt *length);
+
+typedef struct HB_FaceRec_ {
+    HB_Bool isSymbolFont;
+
+    HB_GDEF gdef;
+    HB_GSUB gsub;
+    HB_GPOS gpos;
+    HB_Bool supported_scripts[HB_ScriptCount];
+    HB_Buffer buffer;
+    HB_Script current_script;
+    int current_flags; /* HB_ShaperFlags */
+    HB_Bool has_opentype_kerning;
+    HB_Bool glyphs_substituted;
+    HB_GlyphAttributes *tmpAttributes;
+    unsigned int *tmpLogClusters;
+    int length;
+    int orig_nglyphs;
+    void *font_for_init;
+    HB_GetFontTableFunc get_font_table_func;
+} HB_FaceRec;
+
+typedef struct {
+    HB_Fixed x, y;
+    HB_Fixed width, height;
+    HB_Fixed xOffset, yOffset;
+} HB_GlyphMetrics;
+
+typedef enum {
+    HB_FontAscent
+} HB_FontMetric;
+
+struct HB_Font_;
+typedef struct HB_Font_ *HB_Font;
+typedef struct HB_FaceRec_ *HB_Face;
+
+typedef struct {
+    HB_Bool  (*convertStringToGlyphIndices)(HB_Font font, const HB_UChar16 *string, hb_uint32 length, HB_Glyph *glyphs, hb_uint32 *numGlyphs, HB_Bool rightToLeft);
+    void     (*getGlyphAdvances)(HB_Font font, const HB_Glyph *glyphs, hb_uint32 numGlyphs, HB_Fixed *advances, int flags /*HB_ShaperFlag*/);
+    HB_Bool  (*canRender)(HB_Font font, const HB_UChar16 *string, hb_uint32 length);
+    /* implementation needs to make sure to load a scaled glyph, so /no/ FT_LOAD_NO_SCALE */
+    HB_Error (*getPointInOutline)(HB_Font font, HB_Glyph glyph, int flags /*HB_ShaperFlag*/, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
+    void     (*getGlyphMetrics)(HB_Font font, HB_Glyph glyph, HB_GlyphMetrics *metrics);
+    HB_Fixed (*getFontMetric)(HB_Font font, HB_FontMetric metric);
+} HB_FontClass;
+
+typedef struct HB_Font_ {
+    const HB_FontClass *klass;
+
+    /* Metrics */
+    HB_UShort x_ppem, y_ppem;
+    HB_16Dot16 x_scale, y_scale;
+
+    void *userData;
+} HB_FontRec;
+
+typedef enum {
+    HB_LeftToRight = 0,
+    HB_RightToLeft = 1
+} HB_StringToGlyphsFlags;
+
+typedef enum {
+    HB_ShaperFlag_Default = 0,
+    HB_ShaperFlag_NoKerning = 1,
+    HB_ShaperFlag_UseDesignMetrics = 2
+} HB_ShaperFlag;
+
+typedef struct
+{
+    hb_uint32 pos;
+    hb_uint32 length;
+    HB_Script script;
+    hb_uint8 bidiLevel;
+} HB_ScriptItem;
+
+typedef struct HB_ShaperItem_ HB_ShaperItem;
+
+struct HB_ShaperItem_ {
+    const HB_UChar16 *string;               /* input: the Unicode UTF16 text to be shaped */
+    hb_uint32 stringLength;                 /* input: the length of the input in 16-bit words */
+    HB_ScriptItem item;                     /* input: the current run to be shaped: a run of text all in the same script that is a substring of <string> */
+    HB_Font font;                           /* input: the font: scale, units and function pointers supplying glyph indices and metrics */
+    HB_Face face;                           /* input: the shaper state; current script, access to the OpenType tables , etc. */
+    int shaperFlags;                        /* input (unused) should be set to 0; intended to support flags defined in HB_ShaperFlag */
+    HB_Bool glyphIndicesPresent;            /* input: true if the <glyphs> array contains glyph indices ready to be shaped */
+    hb_uint32 initialGlyphCount;            /* input: if glyphIndicesPresent is true, the number of glyph indices in the <glyphs> array */
+
+    hb_uint32 num_glyphs;                   /* input: capacity of output arrays <glyphs>, <attributes>, <advances>, <offsets>, and <log_clusters>; */
+                                            /* output: required capacity (may be larger than actual capacity) */
+
+    HB_Glyph *glyphs;                       /* output: <num_glyphs> indices of shaped glyphs */
+    HB_GlyphAttributes *attributes;         /* output: <num_glyphs> glyph attributes */
+    HB_Fixed *advances;                     /* output: <num_glyphs> advances */
+    HB_FixedPoint *offsets;                 /* output: <num_glyphs> offsets */
+    unsigned short *log_clusters;           /* output: for each output glyph, the index in the input of the start of its logical cluster */
+
+    /* internal */
+    HB_Bool kerning_applied;                /* output: true if kerning was applied by the shaper */
+};
+
+}
+
+#endif // QT_BUILD_CORE_LIB
+
 
 QT_BEGIN_NAMESPACE
 
@@ -144,4 +367,4 @@ Q_DECLARE_TYPEINFO(HB_FixedPoint, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QHARFBUZZ_P_H

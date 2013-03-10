@@ -134,7 +134,7 @@ pcre {
     LIBS_PRIVATE += -lpcre16
 }
 
-DEFINES += HB_EXPORT=Q_CORE_EXPORT
+INCLUDEPATH += ../3rdparty/harfbuzz/src
 HEADERS += ../3rdparty/harfbuzz/src/harfbuzz.h
 SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            ../3rdparty/harfbuzz/src/harfbuzz-gdef.c \
