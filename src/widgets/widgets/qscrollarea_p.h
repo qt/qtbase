@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_SCROLLAREA
 
 #include "private/qabstractscrollarea_p.h"

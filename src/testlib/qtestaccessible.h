@@ -47,6 +47,8 @@
 #pragma qt_no_master_include
 #endif
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_ACCESSIBILITY
 
 #define QVERIFY_EVENT(event) \

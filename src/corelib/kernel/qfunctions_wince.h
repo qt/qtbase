@@ -41,6 +41,9 @@
 
 #ifndef QFUNCTIONS_WINCE_H
 #define QFUNCTIONS_WINCE_H
+
+#include <QtCore/qglobal.h>
+
 #ifdef Q_OS_WINCE
 #include <stdio.h>
 #include <stdlib.h>

@@ -40,6 +40,9 @@
 ****************************************************************************/
 #ifndef QWIDGETSFUNCTIONS_WCE_H
 #define QWIDGETSFUNCTIONS_WCE_H
+
+#include <QtCore/qglobal.h>
+
 #ifdef Q_OS_WINCE
 #include <QtCore/qfunctions_wince.h>
 

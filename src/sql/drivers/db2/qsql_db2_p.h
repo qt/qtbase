@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 #ifdef QT_PLUGIN
 #define Q_EXPORT_SQLDRIVER_DB2
 #else

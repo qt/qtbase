@@ -43,6 +43,8 @@
 #ifndef QREGULAREXPRESSION_H
 #define QREGULAREXPRESSION_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_REGULAREXPRESSION
 
 #include <QtCore/qstring.h>

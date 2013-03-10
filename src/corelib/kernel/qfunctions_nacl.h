@@ -42,6 +42,8 @@
 #ifndef QFUNCTIONS_NACL_H
 #define QFUNCTIONS_NACL_H
 
+#include <QtCore/qglobal.h>
+
 #ifdef Q_OS_NACL
 
 #include <sys/types.h>

@@ -42,6 +42,7 @@
 #ifndef QIODEVICE_H
 #define QIODEVICE_H
 
+#include <QtCore/qglobal.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobject.h>
 #else

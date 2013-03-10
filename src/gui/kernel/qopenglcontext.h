@@ -42,6 +42,8 @@
 #ifndef QOPENGLCONTEXT_H
 #define QOPENGLCONTEXT_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtCore/qnamespace.h>

@@ -42,6 +42,8 @@
 #ifndef QOPENGLBUFFER_H
 #define QOPENGLBUFFER_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtCore/qscopedpointer.h>

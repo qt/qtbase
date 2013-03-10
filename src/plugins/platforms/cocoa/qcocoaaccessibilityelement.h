@@ -41,6 +41,7 @@
 #ifndef QCOCOAACCESIBILITYELEMENT_H
 #define QCOCOAACCESIBILITYELEMENT_H
 
+#include <QtCore/qglobal.h>
 
 #import <Cocoa/Cocoa.h>
 #import <AppKit/NSAccessibility.h>

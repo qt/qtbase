@@ -51,9 +51,10 @@
 #ifndef QOPENGLEXTENSIONS_H
 #define QOPENGLEXTENSIONS_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
-#include <QtCore/QtGlobal>
 #include <QtGui/qopengl.h>
 
 class QOpenGLContext;

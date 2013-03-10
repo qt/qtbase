@@ -42,6 +42,8 @@
 #ifndef QZIPREADER_H
 #define QZIPREADER_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_TEXTODFWRITER
 
 //

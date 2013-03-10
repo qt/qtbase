@@ -42,6 +42,8 @@
 #ifndef QOPENGLFRAMEBUFFEROBJECT_H
 #define QOPENGLFRAMEBUFFEROBJECT_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtGui/qopengl.h>

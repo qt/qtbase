@@ -42,6 +42,8 @@
 #ifndef QWINDOWSFONTENGINEDIRECTWRITE_H
 #define QWINDOWSFONTENGINEDIRECTWRITE_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_DIRECTWRITE
 
 #include <QtGui/private/qfontengine_p.h>

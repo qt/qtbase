@@ -42,6 +42,8 @@
 #ifndef QREGEXP_H
 #define QREGEXP_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_REGEXP
 
 #include <QtCore/qstring.h>

@@ -42,6 +42,8 @@
 #ifndef QTIMER_H
 #define QTIMER_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_QOBJECT
 
 #include <QtCore/qbasictimer.h> // conceptual inheritance

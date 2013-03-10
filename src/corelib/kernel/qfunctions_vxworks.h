@@ -41,6 +41,9 @@
 
 #ifndef QFUNCTIONS_VXWORKS_H
 #define QFUNCTIONS_VXWORKS_H
+
+#include <QtCore/qglobal.h>
+
 #ifdef Q_OS_VXWORKS
 
 #include <unistd.h>

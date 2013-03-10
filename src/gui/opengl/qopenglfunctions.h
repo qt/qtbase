@@ -42,6 +42,8 @@
 #ifndef QOPENGLFUNCTIONS_H
 #define QOPENGLFUNCTIONS_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #ifdef __GLEW_H__

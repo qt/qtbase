@@ -42,9 +42,9 @@
 #ifndef QOPENGL_H
 #define QOPENGL_H
 
-#ifndef QT_NO_OPENGL
-
 #include <QtCore/qglobal.h>
+
+#ifndef QT_NO_OPENGL
 
 // Windows always needs this to ensure that APIENTRY gets defined
 #if defined(Q_OS_WIN)

@@ -42,6 +42,8 @@
 #ifndef QOPENGLPAINTDEVICE_H
 #define QOPENGLPAINTDEVICE_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtGui/qpaintdevice.h>

@@ -51,9 +51,10 @@
 // source and binary incompatible with future versions of Qt.
 //
 
+#include <QtCore/qnamespace.h>
+
 #ifndef QT_NO_OPENGL
 
-#include <QtCore/qnamespace.h>
 #include <QtGui/qsurfaceformat.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qopengl.h>
