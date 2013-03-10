@@ -50,6 +50,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qatomic.h>
 
 #include <pcre.h>
 
@@ -801,7 +802,7 @@ struct QRegularExpressionPrivate : QSharedData
     void cleanCompiledPattern();
     void compilePattern();
     void getPatternInfo();
-    pcre16_extra *optimizePattern();
+    void optimizePattern();
 
     QRegularExpressionMatchPrivate *doMatch(const QString &subject,
                                             int offset,
@@ -827,7 +828,7 @@ struct QRegularExpressionPrivate : QSharedData
     // objects themselves; when the private is copied (i.e. a detach happened)
     // they are set to 0
     pcre16 *compiledPattern;
-    pcre16_extra *studyData;
+    QAtomicPointer<pcre16_extra> studyData;
     const char *errorString;
     int errorOffset;
     int capturingCount;
@@ -934,10 +935,10 @@ QRegularExpressionPrivate::QRegularExpressionPrivate(const QRegularExpressionPri
 void QRegularExpressionPrivate::cleanCompiledPattern()
 {
     pcre16_free(compiledPattern);
-    pcre16_free_study(studyData);
+    pcre16_free_study(studyData.load());
     usedCount = 0;
     compiledPattern = 0;
-    studyData = 0;
+    studyData.store(0);
     usingCrLfNewlines = false;
     errorOffset = -1;
     capturingCount = 0;
@@ -967,7 +968,7 @@ void QRegularExpressionPrivate::compilePattern()
         return;
 
     Q_ASSERT(errorCode == 0);
-    Q_ASSERT(studyData == 0); // studying (=>optimizing) is always done later
+    Q_ASSERT(studyData.load() == 0); // studying (=>optimizing) is always done later
     errorOffset = -1;
 
     getPatternInfo();
@@ -979,7 +980,7 @@ void QRegularExpressionPrivate::compilePattern()
 void QRegularExpressionPrivate::getPatternInfo()
 {
     Q_ASSERT(compiledPattern);
-    Q_ASSERT(studyData == 0);
+    Q_ASSERT(studyData.load() == 0);
 
     pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_CAPTURECOUNT, &capturingCount);
 
@@ -1101,17 +1102,18 @@ static bool isJitEnabled()
     leaving studyData to NULL); but before calling pcre16_exec to perform the
     match, another thread performs the studying and sets studyData to something
     else. Although the assignment to studyData is itself atomic, the release of
-    the memory pointed by studyData isn't. Therefore, the current studyData
-    value is returned and used by doMatch.
+    the memory pointed by studyData isn't. Therefore, we work on a local copy
+    (localStudyData) before using storeRelease on studyData. In doMatch there's
+    the corresponding loadAcquire.
 */
-pcre16_extra *QRegularExpressionPrivate::optimizePattern()
+void QRegularExpressionPrivate::optimizePattern()
 {
     Q_ASSERT(compiledPattern);
 
     QMutexLocker lock(&mutex);
 
-    if (studyData || (++usedCount != qt_qregularexpression_optimize_after_use_count))
-        return studyData;
+    if (studyData.load() || (++usedCount != qt_qregularexpression_optimize_after_use_count))
+        return;
 
     static const bool enableJit = isJitEnabled();
 
@@ -1120,15 +1122,15 @@ pcre16_extra *QRegularExpressionPrivate::optimizePattern()
         studyOptions |= PCRE_STUDY_JIT_COMPILE;
 
     const char *err;
-    studyData = pcre16_study(compiledPattern, studyOptions, &err);
+    pcre16_extra * const localStudyData = pcre16_study(compiledPattern, studyOptions, &err);
 
-    if (studyData && studyData->flags & PCRE_EXTRA_EXECUTABLE_JIT)
-        pcre16_assign_jit_stack(studyData, qtPcreCallback, 0);
+    if (localStudyData && localStudyData->flags & PCRE_EXTRA_EXECUTABLE_JIT)
+        pcre16_assign_jit_stack(localStudyData, qtPcreCallback, 0);
 
-    if (!studyData && err)
+    if (!localStudyData && err)
         qWarning("QRegularExpressionPrivate::optimizePattern(): pcre_study failed: %s", err);
 
-    return studyData;
+    studyData.storeRelease(localStudyData);
 }
 
 /*!
@@ -1231,7 +1233,12 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
                                                                               capturingCount + 1);
 
     // this is mutex protected
-    const pcre16_extra *currentStudyData = const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
+    const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
+
+    // work with a local copy of the study data, as we are running pcre_exec
+    // potentially more than once, and we don't want to run call it
+    // with different study data
+    const pcre16_extra * const currentStudyData = studyData.loadAcquire();
 
     int pcreOptions = convertToPcreOptions(matchOptions);
 
