@@ -4094,6 +4094,13 @@ QString::Data *QString::fromAscii_helper(const char *str, int size)
     \sa toLatin1(), fromUtf8(), fromLocal8Bit()
 */
 
+/*!
+    \fn QString QString::fromLatin1(const QByteArray &str)
+    \overload
+    \since 5.0
+
+    Returns a QString initialized with the Latin-1 string \a str.
+*/
 
 /*! \fn QString QString::fromLocal8Bit(const char *str, int size)
     Returns a QString initialized with the first \a size characters
@@ -4105,6 +4112,14 @@ QString::Data *QString::fromAscii_helper(const char *str, int size)
     QTextCodec::codecForLocale() is used to perform the conversion.
 
     \sa toLocal8Bit(), fromLatin1(), fromUtf8()
+*/
+
+/*!
+    \fn QString QString::fromLocal8Bit(const QByteArray &str)
+    \overload
+    \since 5.0
+
+    Returns a QString initialized with the 8-bit string \a str.
 */
 QString QString::fromLocal8Bit_helper(const char *str, int size)
 {
@@ -4138,6 +4153,15 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     \sa toAscii(), fromLatin1(), fromUtf8(), fromLocal8Bit()
 */
 
+/*!
+    \fn QString QString::fromAscii(const QByteArray &str)
+    \deprecated
+    \overload
+    \since 5.0
+
+    Returns a QString initialized with the string \a str.
+*/
+
 /*! \fn QString QString::fromUtf8(const char *str, int size)
     Returns a QString initialized with the first \a size bytes
     of the UTF-8 string \a str.
@@ -4158,6 +4182,14 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     as 32 codepoints in the range U+FDD0..U+FDEF, inclusive.
 
     \sa toUtf8(), fromLatin1(), fromLocal8Bit()
+*/
+
+/*!
+    \fn QString QString::fromUtf8(const QByteArray &str)
+    \overload
+    \since 5.0
+
+    Returns a QString initialized with the UTF-8 string \a str.
 */
 QString QString::fromUtf8_helper(const char *str, int size)
 {
