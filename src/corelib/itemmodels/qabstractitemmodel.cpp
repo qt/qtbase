@@ -2088,9 +2088,8 @@ void QAbstractItemModel::fetchMore(const QModelIndex &)
 
     The default implementation always returns false.
 
-    If canFetchMore() returns true, QAbstractItemView will call fetchMore().
-    However, the fetchMore() function is only called when the model is being
-    populated incrementally.
+    If canFetchMore() returns true, the fetchMore() function should
+    be called. This is the behavior of QAbstractItemView, for example.
 
     \sa fetchMore()
 */
