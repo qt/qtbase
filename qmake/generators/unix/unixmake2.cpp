@@ -349,7 +349,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
               << project->first("QMAKE_EXTENSION_STATICLIB") << " ";
         t << endl << endl;
     }
-    if(project->isActiveConfig("depend_prl") && !project->isEmpty("QMAKE_PRL_INTERNAL_FILES")) {
+    if ((project->isActiveConfig("depend_prl") || project->isActiveConfig("fast_depend_prl"))
+        && !project->isEmpty("QMAKE_PRL_INTERNAL_FILES")) {
         const ProStringList &l = project->values("QMAKE_PRL_INTERNAL_FILES");
         ProStringList::ConstIterator it;
         for(it = l.begin(); it != l.end(); ++it) {
@@ -361,8 +362,12 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     dir = (*it).left(slsh + 1);
                 QString targ = dir + libinfo.first("QMAKE_PRL_TARGET");
                 target_deps += " " + targ;
-                t << targ << ":" << "\n\t"
-                  << "@echo \"Creating '" << targ << "'\"" << "\n\t"
+                t << targ;
+                if (project->isActiveConfig("fast_depend_prl"))
+                    t << ":\n\t@echo \"Creating '";
+                else
+                    t << ": FORCE\n\t@echo \"Creating/updating '";
+                t << targ << "'\"" << "\n\t"
                   << "(cd " << libinfo.first("QMAKE_PRL_BUILD_DIR") << ";"
                   << "$(MAKE))" << endl;
             }
