@@ -52,8 +52,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "qdbusconnection.h"    // for the Export* flags
-#include "qdbusconnection_p.h"    // for the qDBusCheckAsyncTag
+#include <qdbusconnection.h>    // for the Export* flags
+#include <private/qdbusconnection_p.h>    // for the qDBusCheckAsyncTag
 
 // copied from dbus-protocol.h:
 static const char docTypeHeader[] =
@@ -64,9 +64,9 @@ static const char docTypeHeader[] =
 #define QCLASSINFO_DBUS_INTERFACE       "D-Bus Interface"
 #define QCLASSINFO_DBUS_INTROSPECTION   "D-Bus Introspection"
 
-#include "qdbusmetatype_p.h"
-#include "qdbusmetatype.h"
-#include "qdbusutil_p.h"
+#include <qdbusmetatype.h>
+#include <private/qdbusmetatype_p.h>
+#include <private/qdbusutil_p.h>
 
 #include "moc.h"
 #include "generator.h"

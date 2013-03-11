@@ -7,8 +7,7 @@ DEFINES += QT_NO_CAST_FROM_ASCII
 INCLUDEPATH += $$QT_BUILD_TREE/include \
                    $$QT_BUILD_TREE/include/QtDBus \
                    $$QT_BUILD_TREE/include/QtDBus/$$QT_VERSION \
-                   $$QT_BUILD_TREE/include/QtDBus/$$QT_VERSION/QtDBus \
-                   $$QT_SOURCE_TREE/src/dbus
+                   $$QT_BUILD_TREE/include/QtDBus/$$QT_VERSION/QtDBus
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
 
