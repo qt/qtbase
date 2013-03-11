@@ -43,7 +43,7 @@
 #include <QtTest/QtTest>
 #include <qmath.h>
 
-static const qreal PI = 3.14159265358979323846264338327950288;
+static const double PI = 3.14159265358979323846264338327950288;
 
 class tst_QMath : public QObject
 {
