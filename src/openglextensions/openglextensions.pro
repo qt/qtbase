@@ -1,5 +1,4 @@
 TARGET     = QtOpenGLExtensions
-QT = core
 CONFIG += static
 
 contains(QT_CONFIG, opengl):CONFIG += opengl
