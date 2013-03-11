@@ -2948,7 +2948,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
 QString &QString::replace(const QRegularExpression &re, const QString &after)
 {
     if (!re.isValid()) {
-        qWarning("QString::replace: invalid QRegularExpresssion object");
+        qWarning("QString::replace: invalid QRegularExpression object");
         return *this;
     }
 
@@ -3273,7 +3273,7 @@ int QString::count(const QRegExp& rx) const
 int QString::indexOf(const QRegularExpression& re, int from) const
 {
     if (!re.isValid()) {
-        qWarning("QString::indexOf: invalid QRegularExpresssion object");
+        qWarning("QString::indexOf: invalid QRegularExpression object");
         return -1;
     }
 
@@ -3299,7 +3299,7 @@ int QString::indexOf(const QRegularExpression& re, int from) const
 int QString::lastIndexOf(const QRegularExpression &re, int from) const
 {
     if (!re.isValid()) {
-        qWarning("QString::lastIndexOf: invalid QRegularExpresssion object");
+        qWarning("QString::lastIndexOf: invalid QRegularExpression object");
         return -1;
     }
 
@@ -3328,7 +3328,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from) const
 bool QString::contains(const QRegularExpression &re) const
 {
     if (!re.isValid()) {
-        qWarning("QString::contains: invalid QRegularExpresssion object");
+        qWarning("QString::contains: invalid QRegularExpression object");
         return false;
     }
     QRegularExpressionMatch match = re.match(*this);
@@ -3350,7 +3350,7 @@ bool QString::contains(const QRegularExpression &re) const
 int QString::count(const QRegularExpression &re) const
 {
     if (!re.isValid()) {
-        qWarning("QString::count: invalid QRegularExpresssion object");
+        qWarning("QString::count: invalid QRegularExpression object");
         return 0;
     }
     int count = 0;
