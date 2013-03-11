@@ -877,7 +877,12 @@ void QWidgetPrivate::createTLSysExtra()
             extra->topextra->window->setMinimumSize(QSize(extra->minw, extra->minh));
         if (extra->maxw != QWIDGETSIZE_MAX || extra->maxh != QWIDGETSIZE_MAX)
             extra->topextra->window->setMaximumSize(QSize(extra->maxw, extra->maxh));
+#ifdef Q_OS_WIN
+        if (q->inherits("QTipLabel") || q->inherits("QAlphaWidget"))
+            extra->topextra->window->setProperty("_q_windowsDropShadow", QVariant(true));
+#endif
     }
+
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
