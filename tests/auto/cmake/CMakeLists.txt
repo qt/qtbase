@@ -113,3 +113,4 @@ test_module_includes(
   ${qt_module_includes}
 )
 expect_pass(test_concurrent_module)
+expect_pass(test_openglextensions_module)
