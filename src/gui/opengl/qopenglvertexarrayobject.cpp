@@ -146,6 +146,7 @@ bool QOpenGLVertexArrayObjectPrivate::create()
         qWarning("QOpenGLVertexArrayObject::create() requires a valid current OpenGL context");
         return false;
     }
+    context = ctx;
 
 #if defined(QT_OPENGL_ES_2)
     if (ctx->hasExtension("GL_OES_vertex_array_object")) {
@@ -326,7 +327,7 @@ QOpenGLVertexArrayObject::~QOpenGLVertexArrayObject()
 
     Q_D(QOpenGLVertexArrayObject);
     QOpenGLContext *oldContext = 0;
-    if (d->context != ctx) {
+    if (d->context && d->context != ctx) {
         oldContext = ctx;
         if (d->context->makeCurrent(oldContext->surface())) {
             ctx = d->context;
