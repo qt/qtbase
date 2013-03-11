@@ -3210,7 +3210,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
 
         // If the touch event wasn't accepted, synthesize a mouse event and see if the widget wants it.
-        if (!touchEvent->isAccepted())
+        if (!touchEvent->isAccepted() && QGuiApplicationPrivate::synthesizeMouseFromTouchEventsEnabled())
             res = d->translateTouchToMouse(widget, touchEvent);
         break;
     }
@@ -3237,7 +3237,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
 
             // If the touch event wasn't accepted, synthesize a mouse event and see if the widget wants it.
-            if (!touchEvent->isAccepted()) {
+            if (!touchEvent->isAccepted() && QGuiApplicationPrivate::synthesizeMouseFromTouchEventsEnabled()) {
                 res = d->translateTouchToMouse(widget, touchEvent);
                 eventAccepted = touchEvent->isAccepted();
                 if (eventAccepted)
@@ -3801,10 +3801,6 @@ private:
 
 bool QApplicationPrivate::translateTouchToMouse(QWidget *widget, QTouchEvent *event)
 {
-    // Check if the platform wants synthesized mouse events.
-    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
-        return false;
-
     Q_FOREACH (const QTouchEvent::TouchPoint &p, event->touchPoints()) {
         const QEvent::Type eventType = (p.state() & Qt::TouchPointPressed) ? QEvent::MouseButtonPress
                                      : (p.state() & Qt::TouchPointReleased) ? QEvent::MouseButtonRelease

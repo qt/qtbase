@@ -41,6 +41,8 @@
 
 #include <qwindow.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
 
 #include <QtTest/QtTest>
 
@@ -484,6 +486,8 @@ void tst_QWindow::testInputEvents()
 
 void tst_QWindow::touchToMouseTranslation()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
+        QSKIP("Mouse events are synthesized by the system on this platform.");
     InputTestWindow window;
     window.ignoreTouch = true;
     window.setGeometry(80, 80, 40, 40);
@@ -684,6 +688,8 @@ void tst_QWindow::touchCancel()
 
 void tst_QWindow::touchCancelWithTouchToMouse()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::SynthesizeMouseFromTouchEvents).toBool())
+        QSKIP("Mouse events are synthesized by the system on this platform.");
     InputTestWindow window;
     window.ignoreTouch = true;
     window.setGeometry(80, 80, 40, 40);
