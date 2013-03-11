@@ -153,7 +153,6 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
     QCOMPARE( s1->state(), QScroller::Inactive );
 
     QScrollerProperties sp1 = QScroller::scroller(sw)->scrollerProperties();
-    int fps = 60;
 
     QTouchEvent::TouchPoint rawTouchPoint;
     rawTouchPoint.setId(0);
@@ -192,8 +191,7 @@ void tst_QScroller::kineticScroll( tst_QScrollerWidget *sw, QPointF from, QPoint
     QCOMPARE( sw->receivedPrepare, true );
 
 
-    QTest::qWait(1000 / fps * 2); // wait until the first scroll move
-    QCOMPARE( sw->receivedFirst, true );
+    QTRY_COMPARE( sw->receivedFirst, true );
     QCOMPARE( sw->receivedScroll, true );
     QCOMPARE( sw->receivedOvershoot, false );
 
@@ -406,7 +404,7 @@ void tst_QScroller::scroll()
     QScroller *s1 = QScroller::scroller(sw);
     kineticScroll(sw, QPointF(500, 500), QPoint(0, 0), QPoint(100, 100), QPoint(200, 200));
     // now we should be scrolling
-    QCOMPARE( s1->state(), QScroller::Scrolling );
+    QTRY_COMPARE( s1->state(), QScroller::Scrolling );
 
     // wait until finished, check that no further first scroll is send
     sw->receivedFirst = false;
