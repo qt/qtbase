@@ -89,7 +89,7 @@ public:
     };
 
     CasePreference casePreference() const;
-    void setCasePreference(CasePreference c);
+    void setCasePreference(CasePreference preference);
 
     void setNumericMode(bool on);
     bool numericMode() const;

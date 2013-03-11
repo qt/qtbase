@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qcollator_p.h"
+#include "qcollator.h"
 #include "qstringlist.h"
 #include "qstring.h"
 
@@ -117,7 +117,7 @@ static const char * const collationStrings[collationStringsCount] = {
     \inmodule QtCore
     \brief The QCollator class compares strings according to a localized collation algorithm.
 
-    \internal
+    \since 5.2
 
     \reentrant
     \ingroup i18n
@@ -133,6 +133,8 @@ static const char * const collationStrings[collationStringsCount] = {
 
     In addition to the locale and collation strategy, several optional flags can be set that influence
     the result of the collation.
+
+    QCollator currently depends on Qt being compiled with ICU support enabled.
 */
 
 /*!
@@ -140,7 +142,7 @@ static const char * const collationStrings[collationStringsCount] = {
     specified the default collation algorithm for the locale is being used. If
     \a locale is not specified QLocale::default() is being used.
 
-    \sa setLocale, setCollation, setOptions
+    \sa setLocale(), setCollation()
  */
 QCollator::QCollator(const QLocale &locale, QCollator::Collation collation)
     : d(new QCollatorPrivate)
@@ -221,7 +223,6 @@ void QCollator::detach()
     }
 }
 
-
 /*!
     Sets the locale of the collator to \a locale.
  */
@@ -253,6 +254,7 @@ QLocale QCollator::locale() const
 
     \value Default Use the default algorithm for the locale
     \value Big5Han
+    \value Dictionary
     \value Direct
     \value GB2312Han
     \value PhoneBook
@@ -266,7 +268,7 @@ QLocale QCollator::locale() const
 */
 
 /*!
-    Sets the collation algorithm to be used.
+    Sets the \a collation algorithm to be used.
 
     \sa QCollator::Collation
  */
@@ -298,7 +300,7 @@ QCollator::Collation QCollator::collation() const
     This method is helpful to save and restore defined collation
     objects.
 
-    \sa fromIdentifier
+    \sa fromIdentifier()
  */
 QString QCollator::identifier() const
 {
@@ -313,9 +315,9 @@ QString QCollator::identifier() const
 }
 
 /*!
-    Creates a QCollator from a unique identifier and returns it.
+    Creates a QCollator from a unique \a identifier and returns it.
 
-    \sa identifier
+    \sa identifier()
  */
 QCollator QCollator::fromIdentifier(const QString &identifier)
 {
@@ -351,20 +353,20 @@ QCollator QCollator::fromIdentifier(const QString &identifier)
 */
 
 /*!
-    Sets the case preference of the collator.
+    Sets the case \a preference of the collator.
 
     \sa QCollator::CasePreference
  */
-void QCollator::setCasePreference(CasePreference c)
+void QCollator::setCasePreference(CasePreference preference)
 {
     if (d->ref.load() != 1)
         detach();
 
 #ifdef QT_USE_ICU
     UColAttributeValue val = UCOL_OFF;
-    if (c == QCollator::CasePreferenceUpper)
+    if (preference == QCollator::CasePreferenceUpper)
         val = UCOL_UPPER_FIRST;
-    else if (c == QCollator::CasePreferenceLower)
+    else if (preference == QCollator::CasePreferenceLower)
         val = UCOL_LOWER_FIRST;
 
     UErrorCode status = U_ZERO_ERROR;
@@ -372,7 +374,7 @@ void QCollator::setCasePreference(CasePreference c)
     if (U_FAILURE(status))
         qWarning("ucol_setAttribute: Case First failed: %d", status);
 #else
-    Q_UNUSED(c);
+    Q_UNUSED(preference);
 #endif
 }
 
@@ -423,7 +425,7 @@ void QCollator::setNumericMode(bool on)
 /*!
     Returns true if numeric sorting is enabled, false otherwise.
 
-    \sa setNumericMode
+    \sa setNumericMode()
  */
 bool QCollator::numericMode() const
 {
@@ -436,7 +438,7 @@ bool QCollator::numericMode() const
 }
 
 /*!
-    If set to true, punctuation characters and symbols are ignored when determining sort order.
+    If \a on is set to true, punctuation characters and symbols are ignored when determining sort order.
 
     The default is locale dependent.
  */
@@ -458,7 +460,7 @@ void QCollator::setIgnorePunctuation(bool on)
 /*!
     Returns true if punctuation characters and symbols are ignored when determining sort order.
 
-    \sa setIgnorePunctuation
+    \sa setIgnorePunctuation()
  */
 bool QCollator::ignorePunctuation() const
 {
@@ -583,5 +585,10 @@ QStringList QCollator::indexCharacters() const
 
     return d->indexCharacters;
 }
+
+/*!
+    \fn bool QCollator::operator()(const QString &s1, const QString &s2) const
+    \internal
+*/
 
 QT_END_NAMESPACE

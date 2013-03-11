@@ -11,9 +11,9 @@ HEADERS +=  \
         tools/qbytedata_p.h \
         tools/qcache.h \
         tools/qchar.h \
-        tools/qcollator_p.h \
         tools/qcommandlineoption.h \
         tools/qcommandlineparser.h \
+        tools/qcollator.h \
         tools/qcontainerfwd.h \
         tools/qcryptographichash.h \
         tools/qdatetime.h \

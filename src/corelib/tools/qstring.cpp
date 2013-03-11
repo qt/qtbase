@@ -59,7 +59,7 @@
 #include "qhash.h"
 #include "qdebug.h"
 #include "qendian.h"
-#include "qcollator_p.h"
+#include "qcollator.h"
 
 #ifdef Q_OS_MAC
 #include <private/qcore_mac_p.h>
