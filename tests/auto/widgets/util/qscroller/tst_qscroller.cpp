@@ -391,6 +391,7 @@ void tst_QScroller::scrollTo()
 
 void tst_QScroller::scroll()
 {
+    QSKIP("Flakey test - https://bugreports.qt-project.org/browse/QTBUG-30133");
 #ifndef QT_NO_GESTURES
     // -- good case. normal scroll
     tst_QScrollerWidget *sw = new tst_QScrollerWidget();
