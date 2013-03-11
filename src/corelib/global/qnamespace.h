@@ -63,7 +63,7 @@ Qt {
     Q_ENUMS(ScrollBarPolicy FocusPolicy ContextMenuPolicy)
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
     Q_ENUMS(FillRule MaskMode BGMode ClipOperation SizeMode)
-    Q_ENUMS(Axis Corner LayoutDirection SizeHint Orientation DropAction)
+    Q_ENUMS(Axis Corner Edge LayoutDirection SizeHint Orientation DropAction)
     Q_FLAGS(Alignment Orientations DropActions)
     Q_FLAGS(DockWidgetAreas ToolBarAreas)
     Q_ENUMS(DockWidgetArea ToolBarArea)
@@ -1200,6 +1200,13 @@ public:
         TopRightCorner = 0x00001,
         BottomLeftCorner = 0x00002,
         BottomRightCorner = 0x00003
+    };
+
+    enum Edge {
+        TopEdge = 0x00001,
+        LeftEdge = 0x00002,
+        RightEdge = 0x00004,
+        BottomEdge = 0x00008
     };
 
     enum ConnectionType {

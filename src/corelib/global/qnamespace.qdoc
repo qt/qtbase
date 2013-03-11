@@ -1710,6 +1710,17 @@
 */
 
 /*!
+    \enum Qt::Edge
+
+    This enum type specifies an edge in a rectangle:
+
+    \value TopEdge    The top edge of the rectangle.
+    \value LeftEdge   The left edge of the rectangle.
+    \value RightEdge  The right edge of the rectangle.
+    \value BottomEdge The bottom edge of the rectangle.
+*/
+
+/*!
     \enum Qt::ScrollBarPolicy
 
     This enum type describes the various modes of QAbstractScrollArea's scroll
