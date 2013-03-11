@@ -293,12 +293,14 @@ static GSourceFuncs postEventSourceFuncs = {
 QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     : mainContext(context)
 {
+#if GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 32
     if (qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")) {
         static QBasicMutex mutex;
         QMutexLocker locker(&mutex);
         if (!g_thread_supported())
             g_thread_init(NULL);
     }
+#endif
 
     if (mainContext) {
         g_main_context_ref(mainContext);
