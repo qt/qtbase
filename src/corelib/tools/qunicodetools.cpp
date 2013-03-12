@@ -635,6 +635,51 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
     }
 }
 
+
+// ----------------------------------------------------------------------------
+//
+// The Unicode script property. See http://www.unicode.org/reports/tr24/ (some very old version)
+//
+// ----------------------------------------------------------------------------
+
+Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
+{
+    int sor = 0;
+    int eor = -1;
+    uchar script = QChar::Script_Common;
+    for (int i = 0; i < length; ++i) {
+        eor = i;
+        uint ucs4 = string[i];
+        if (QChar::isHighSurrogate(ucs4) && i + 1 < length) {
+            ushort low = string[i + 1];
+            if (QChar::isLowSurrogate(low)) {
+                ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                ++i;
+            }
+        }
+
+        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
+
+        if (Q_LIKELY(prop->script == script || prop->script == QChar::Script_Inherited))
+            continue;
+
+        // Never break between a combining mark (gc= Mc, Mn or Me) and its base character.
+        // Thus, a combining mark — whatever its script property value is — should inherit
+        // the script property value of its base character.
+        static const int test = (FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining) | FLAG(QChar::Mark_Enclosing));
+        if (Q_UNLIKELY(FLAG(prop->category) & test))
+            continue;
+
+        while (sor < eor)
+            scripts[sor++] = script;
+
+        script = prop->script;
+    }
+    eor = length;
+    while (sor < eor)
+        scripts[sor++] = script;
+}
+
 } // namespace QUnicodeTools
 
 QT_END_NAMESPACE

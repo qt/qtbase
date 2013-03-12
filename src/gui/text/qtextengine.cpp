@@ -1309,6 +1309,8 @@ void QTextEngine::itemize() const
     if (!length)
         return;
 
+    const ushort *string = reinterpret_cast<const ushort *>(layoutData->string.unicode());
+
     bool ignore = ignoreBidi;
 
     bool rtl = isRightToLeft();
@@ -1342,9 +1344,15 @@ void QTextEngine::itemize() const
         layoutData->hasBidi = bidiItemize(const_cast<QTextEngine *>(this), analysis, control);
     }
 
-    const ushort *uc = reinterpret_cast<const ushort *>(layoutData->string.unicode());
+    {
+        QVarLengthArray<uchar> scripts(length);
+        QUnicodeTools::initScripts(string, length, scripts.data());
+        for (int i = 0; i < length; ++i)
+            analysis[i].script = scripts.at(i);
+    }
+
+    const ushort *uc = string;
     const ushort *e = uc + length;
-    uchar lastScript = QChar::Script_Common;
     while (uc < e) {
         switch (*uc) {
         case QChar::ObjectReplacementCharacter:
@@ -1374,13 +1382,9 @@ void QTextEngine::itemize() const
             }
         // fall through
         default:
-            analysis->script = QChar::script(*uc);
-            if (analysis->script == QChar::Script_Inherited)
-                analysis->script = lastScript;
             analysis->flags = QScriptAnalysis::None;
             break;
         }
-        lastScript = analysis->script;
         analysis->script = hbscript_to_script(script_to_hbscript(analysis->script)); // retain the old behavior
         ++uc;
         ++analysis;

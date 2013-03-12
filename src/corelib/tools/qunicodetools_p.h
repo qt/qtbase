@@ -96,6 +96,9 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
                                       const ScriptItem *items, int numItems,
                                       QCharAttributes *attributes, CharAttributeOptions options = DefaultOptionsCompat);
 
+
+Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts);
+
 } // namespace QUnicodeTools
 
 QT_END_NAMESPACE

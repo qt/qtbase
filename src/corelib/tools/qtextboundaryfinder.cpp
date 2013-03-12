@@ -53,39 +53,24 @@ public:
 
 static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int length, QCharAttributes *attributes)
 {
-    QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems;
-
     const ushort *string = reinterpret_cast<const ushort *>(chars);
-    const ushort *unicode = string;
-    // correctly assign script, isTab and isObject to the script analysis
-    const ushort *uc = unicode;
-    const ushort *e = uc + length;
-    uchar script = QChar::Script_Common;
-    uchar lastScript = QChar::Script_Common;
-    const ushort *start = uc;
-    while (uc < e) {
-        int s = QChar::script(*uc);
-        if (s != QChar::Script_Inherited)
-            script = s;
-        if (*uc == QChar::ObjectReplacementCharacter || *uc == QChar::LineSeparator || *uc == 9) 
-            script = QChar::Script_Common;
-        if (script != lastScript) {
-            if (uc != start) {
+
+    QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems;
+    {
+        QVarLengthArray<uchar> scripts(length);
+
+        QUnicodeTools::initScripts(string, length, scripts.data());
+
+        int start = 0;
+        for (int i = start + 1; i <= length; ++i) {
+            if (i == length || scripts[i] != scripts[start]) {
                 QUnicodeTools::ScriptItem item;
-                item.position = start - string;
-                item.script = lastScript;
+                item.position = start;
+                item.script = scripts[start];
                 scriptItems.append(item);
-                start = uc;
+                start = i;
             }
-            lastScript = script;
         }
-        ++uc;
-    }
-    if (uc != start) {
-        QUnicodeTools::ScriptItem item;
-        item.position = start - string;
-        item.script = lastScript;
-        scriptItems.append(item);
     }
 
     QUnicodeTools::CharAttributeOptions options = 0;
