@@ -1604,6 +1604,8 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     } else if (!platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState)) {
         QEvent appActivate(QEvent::ApplicationActivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
+        QApplicationStateChangeEvent appState(Qt::ApplicationActive);
+        qApp->sendSpontaneousEvent(qApp, &appState);
     }
 
     if (QGuiApplicationPrivate::focus_window) {
@@ -1614,6 +1616,8 @@ void QGuiApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate
     } else if (!platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState)) {
         QEvent appActivate(QEvent::ApplicationDeactivate);
         qApp->sendSpontaneousEvent(qApp, &appActivate);
+        QApplicationStateChangeEvent appState(Qt::ApplicationInactive);
+        qApp->sendSpontaneousEvent(qApp, &appState);
     }
 
     if (self) {
@@ -1653,6 +1657,9 @@ void QGuiApplicationPrivate::processApplicationStateChangedEvent(QWindowSystemIn
     default:
         break;
     }
+
+    QApplicationStateChangeEvent event(applicationState);
+    qApp->sendSpontaneousEvent(qApp, &event);
 }
 
 void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::ThemeChangeEvent *tce)
