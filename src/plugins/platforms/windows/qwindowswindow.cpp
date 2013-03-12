@@ -487,6 +487,11 @@ QWindowsWindow::WindowData
     const QWindowCreationContextPtr context(new QWindowCreationContext(w, rect, data.customMargins, style, exStyle));
     QWindowsContext::instance()->setWindowCreationContext(context);
 
+    if (context->frameX < 0)
+        context->frameX = 0;
+    if (context->frameY < 0)
+        context->frameY = 0;
+
     if (QWindowsContext::verboseWindows)
         qDebug().nospace()
                 << "CreateWindowEx: " << w << *this

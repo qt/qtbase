@@ -47,6 +47,7 @@
 #include <QtGui>
 #include <qpa/qplatformscreen.h>
 #include <private/qguiapplication_p.h>
+#include <private/qwindow_p.h>
 
 #ifndef QT_NO_WIDGETS
 #include <QtWidgets/QWidget>
@@ -584,10 +585,28 @@ QString qt_mac_applicationName()
     return appName;
 }
 
+/*
+    Mac window coordinates are in the first quadrant: 0, 0 is at the lower-left
+    corner of the primary screen. This function converts the given rect to an
+    NSRect for the window geometry, flipping from 4th quadrant to 1st quadrant
+    and simultaneously ensuring that as much of the window as possible will be
+    onscreen. If the rect is too tall for the screen, the OS will reduce the
+    window's height anyway; but by moving the window upwards we can have more
+    of it onscreen.  But the application can still control the y coordinate
+    in case it really wants the window to be positioned partially offscreen.
+*/
 NSRect qt_mac_flipRect(const QRect &rect, QWindow *window)
 {
     QPlatformScreen *onScreen = QPlatformScreen::platformScreenForWindow(window);
-    int flippedY = onScreen->geometry().height() - rect.y() - rect.height();
+    int flippedY = onScreen->geometry().height() - (rect.y() + rect.height());
+
+    // In case of automatic positioning, try to put as much of the window onscreen as possible.
+    if (window->isTopLevel() && qt_window_private(const_cast<QWindow*>(window))->positionAutomatic && flippedY < 0)
+        flippedY = onScreen->geometry().height() - onScreen->availableGeometry().height() - onScreen->availableGeometry().y();
+#ifdef QT_COCOA_ENABLE_WINDOW_DEBUG
+    qDebug() << Q_FUNC_INFO << rect << "flippedY" << flippedY <<
+                "screen" << onScreen->geometry() << "available" << onScreen->availableGeometry();
+#endif
     return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
 }
 
