@@ -42,6 +42,7 @@ isEmpty(CMAKE_VERSION) {
             for(d, $$list($$split($$list($$[QMAKE_MKSPECS]), $$DIRLIST_SEPARATOR))) {
                 CMAKE_PREFIX_PATH *= $$dirname(d)
             }
+            CMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\"
 
             dependentmodules = $$resolve_depends(CMAKE_QT_MODULES_UNDER_TEST, "QT.")
             dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST
@@ -49,7 +50,7 @@ isEmpty(CMAKE_VERSION) {
 
             check.commands = \
                 $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
-                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\" -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
+                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
         }
