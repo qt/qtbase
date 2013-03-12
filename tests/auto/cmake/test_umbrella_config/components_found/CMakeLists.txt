@@ -1,6 +1,6 @@
 
 # The module finds its dependencies
-find_package(Qt5
+find_package(Qt5 5.1.0
              COMPONENTS Core
     OPTIONAL_COMPONENTS DoesNotExist
 )
