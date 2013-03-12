@@ -3615,7 +3615,7 @@ setBootstrapVariable()
 
 # build qmake
 if true; then ###[ '!' -f "$outpath/bin/qmake" ];
-    echo "Creating qmake. Please wait..."
+    echo "Creating qmake..."
 
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
@@ -3725,6 +3725,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
     (cd "$outpath/qmake"; "$MAKE") || exit 2
 fi # Build qmake
+
+echo "Running configuration tests..."
 
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself
