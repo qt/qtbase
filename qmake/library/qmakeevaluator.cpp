@@ -297,8 +297,13 @@ ProStringList QMakeEvaluator::split_value_list(const QString &vals, const ProFil
             build += QChar(unicode);
             break;
         case '\\':
-            if (x + 1 != vals_len)
-                unicode = vals_data[++x].unicode();
+            if (x + 1 != vals_len) {
+                ushort next = vals_data[++x].unicode();
+                if (next == '\'' || next == '"' || next == '\\')
+                    unicode = next;
+                else
+                    --x;
+            }
             // fallthrough
         default:
             hadWord = true;
