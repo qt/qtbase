@@ -61,9 +61,8 @@ QT_BEGIN_NAMESPACE
 class QDesktopScreenWidget : public QWidget {
     Q_OBJECT
 public:
-    QDesktopScreenWidget(int screenNumber = -1)
+    QDesktopScreenWidget(int screenNumber = -1) : QWidget(0, Qt::Desktop)
     {
-        setWindowFlags(Qt::Desktop);
         setVisible(false);
         QTLWExtra *topData = d_func()->topData();
         topData->screenIndex = screenNumber;
