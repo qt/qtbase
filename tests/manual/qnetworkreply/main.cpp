@@ -49,7 +49,7 @@
 #include <QtNetwork/qsslconfiguration.h>
 #include "../../auto/network-settings.h"
 
-#ifdef QT_BUILD_INTERNAL
+#if defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL)
 #include "private/qsslsocket_p.h"
 #endif
 
@@ -147,6 +147,9 @@ void tst_qnetworkreply::setSslConfiguration_data()
 
 void tst_qnetworkreply::setSslConfiguration()
 {
+#ifdef QT_NO_SSL
+    QSKIP("SSL is not enabled.");
+#else
     QFETCH(QUrl, url);
     QNetworkRequest request(url);
     QSslConfiguration conf = request.sslConfiguration();
@@ -171,6 +174,7 @@ void tst_qnetworkreply::setSslConfiguration()
         QCOMPARE(reply->error(), QNetworkReply::SslHandshakeFailedError);
     }
 #endif
+#endif // QT_NO_SSL
 }
 
 QTEST_MAIN(tst_qnetworkreply)
