@@ -57,7 +57,7 @@
 #  define __IMAGECAPTURE__
 #endif
 
-#if defined(QT_BUILD_QMAKE) || defined(QT_BOOTSTRAPPED)
+#if defined(QT_BOOTSTRAPPED)
 #include <ApplicationServices/ApplicationServices.h>
 #else
 #include <CoreFoundation/CoreFoundation.h>
