@@ -12,5 +12,6 @@ contains(QT_CONFIG,egl) {
         SOURCES += \
             $$PWD/qxlibeglintegration.cpp
     }
+    CONFIG += egl
 }
 
