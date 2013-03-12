@@ -63,7 +63,7 @@
 #include <private/qabstractitemmodel_p.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
-#include <qaccessible2.h>
+#include <private/qaccessible2_p.h>
 #endif
 #ifndef QT_NO_GESTURES
 #  include <qscroller.h>

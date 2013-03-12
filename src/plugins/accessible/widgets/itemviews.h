@@ -44,8 +44,8 @@
 
 #include "QtCore/qpointer.h"
 #include <QtGui/qaccessible.h>
-#include <QtGui/qaccessible2.h>
-#include <QtWidgets/qaccessiblewidget.h>
+#include <QtGui/private/qaccessible2_p.h>
+#include <QtWidgets/private/qaccessiblewidget_p.h>
 #include <QtWidgets/qabstractitemview.h>
 #include <QtWidgets/qheaderview.h>
 

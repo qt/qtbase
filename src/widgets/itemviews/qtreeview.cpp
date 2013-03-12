@@ -55,7 +55,7 @@
 #include <QMetaMethod>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
-#include <qaccessible2.h>
+#include <private/qaccessible2_p.h>
 #endif
 
 #include <private/qtreeview_p.h>

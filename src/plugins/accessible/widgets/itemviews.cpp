@@ -46,7 +46,7 @@
 #include <qlistview.h>
 #include <qtreeview.h>
 #include <private/qtreewidget_p.h>
-#include <qaccessible2.h>
+#include <QtGui/private/qaccessible2_p.h>
 #include <QDebug>
 
 #ifndef QT_NO_ACCESSIBILITY

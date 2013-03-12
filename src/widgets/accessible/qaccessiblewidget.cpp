@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qaccessiblewidget.h"
+#include "qaccessiblewidget_p.h"
 
 #ifndef QT_NO_ACCESSIBILITY
 

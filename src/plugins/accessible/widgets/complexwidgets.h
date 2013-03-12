@@ -43,9 +43,9 @@
 #define COMPLEXWIDGETS_H
 
 #include <QtCore/qpointer.h>
-#include <QtWidgets/qaccessiblewidget.h>
+#include <QtWidgets/private/qaccessiblewidget_p.h>
 #include <QtWidgets/qabstractitemview.h>
-#include <QtGui/qaccessible2.h>
+#include <QtGui/private/qaccessible2_p.h>
 
 QT_BEGIN_NAMESPACE
 

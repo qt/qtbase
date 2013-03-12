@@ -42,7 +42,7 @@
 #ifndef QACCESSIBLEMENU_H
 #define QACCESSIBLEMENU_H
 
-#include <QtWidgets/qaccessiblewidget.h>
+#include <QtWidgets/private/qaccessiblewidget_p.h>
 
 QT_BEGIN_NAMESPACE
 

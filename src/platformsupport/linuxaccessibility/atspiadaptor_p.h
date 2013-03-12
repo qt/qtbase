@@ -48,7 +48,7 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtDBus/qdbusvirtualobject.h>
 #include <QtGui/qaccessible.h>
-#include <QtGui/qaccessible2.h>
+#include <QtGui/private/qaccessible2_p.h>
 
 #include "dbusconnection_p.h"
 #include "struct_marshallers_p.h"

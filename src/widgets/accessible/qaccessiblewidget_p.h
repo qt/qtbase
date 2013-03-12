@@ -43,6 +43,7 @@
 #define QACCESSIBLEWIDGET_H
 
 #include <QtGui/qaccessibleobject.h>
+#include <QtGui/private/qaccessible2_p.h>
 
 QT_BEGIN_NAMESPACE
 
