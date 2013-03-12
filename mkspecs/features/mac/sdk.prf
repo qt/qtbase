@@ -5,13 +5,8 @@ isEmpty(QMAKE_MAC_SDK): \
 contains(QMAKE_MAC_SDK, .*/.*): \
     error("QMAKE_MAC_SDK can only contain short-form SDK names (eg. macosx, iphoneos)")
 
-QMAKE_MAC_SDK_INFO = $$system("xcodebuild -sdk $$QMAKE_MAC_SDK -version 2>/dev/null", lines)
-isEmpty(QMAKE_MAC_SDK_INFO): error("Could not resolve SDK \'$$QMAKE_MAC_SDK\'")
-
-defineReplace(qtMacSDKInfo): \
-    return($$replace($$list($$find(QMAKE_MAC_SDK_INFO, ^$$1:)), ^$$1:(.*), \\1))
-
-QMAKE_MAC_SDK_PATH = $$qtMacSDKInfo(Path)
+QMAKE_MAC_SDK_PATH = $$system("xcodebuild -sdk $$QMAKE_MAC_SDK -version Path 2>/dev/null")
+isEmpty(QMAKE_MAC_SDK_PATH): error("Could not resolve SDK path for \'$$QMAKE_MAC_SDK\'")
 
 !equals(MAKEFILE_GENERATOR, XCODE) {
     QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
