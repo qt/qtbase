@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(test_concurrent_module)
 
-find_package(Qt5Concurrent REQUIRED)
+find_package(Qt5Concurrent 5.0.0 REQUIRED)
 
 include_directories(
     ${Qt5Concurrent_INCLUDE_DIRS}

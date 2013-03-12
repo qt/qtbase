@@ -80,7 +80,7 @@ function(test_module_includes)
     set(packages_string
       "
       ${packages_string}
-      find_package(Qt5${_package} REQUIRED)
+      find_package(Qt5${_package} 5.0.0 REQUIRED)
       "
     )
   endforeach()
@@ -90,7 +90,7 @@ function(test_module_includes)
     list(REMOVE_AT all_args 0 1)
     set(packages_string
       "${packages_string}
-      find_package(Qt5${qtmodule} REQUIRED)
+      find_package(Qt5${qtmodule} 5.0.0 REQUIRED)
       include_directories(\${Qt5${qtmodule}_INCLUDE_DIRS})
       add_definitions(\${Qt5${qtmodule}_DEFINITIONS})\n"
     )
