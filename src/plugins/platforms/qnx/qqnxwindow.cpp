@@ -53,6 +53,11 @@
 
 #include <errno.h>
 
+#ifdef Q_OS_BLACKBERRY
+#include <sys/pps.h>
+#include <bps/navigator.h>
+#endif
+
 #ifdef QQNXWINDOW_DEBUG
 #define qWindowDebug qDebug
 #else
@@ -624,11 +629,19 @@ void QQnxWindow::setWindowState(Qt::WindowState state)
 
     switch (state) {
 
-    // WindowMinimized is not supported - navigator does not have an API to minimize a window
     // WindowActive is not an accepted parameter according to the docs
-    case Qt::WindowMinimized:
     case Qt::WindowActive:
         return;
+
+    case Qt::WindowMinimized:
+        minimize();
+
+        if (m_unmaximizedGeometry.isValid())
+            setGeometry(m_unmaximizedGeometry);
+        else
+            setGeometry(m_screen->geometry());
+
+        break;
 
     case Qt::WindowMaximized:
     case Qt::WindowFullScreen:
@@ -687,6 +700,27 @@ void QQnxWindow::blitFrom(QQnxWindow *sourceWindow, const QPoint &sourceOffset, 
     QQnxBuffer &targetBuffer = renderBuffer();
 
     blitHelper(sourceBuffer, targetBuffer, sourceOffset, QPoint(0, 0), targetRegion, true);
+}
+
+void QQnxWindow::minimize()
+{
+#if defined(Q_OS_BLACKBERRY) && !defined(Q_OS_BLACKBERRY_TABLET)
+    qWindowDebug() << Q_FUNC_INFO;
+
+    pps_encoder_t encoder;
+
+    pps_encoder_initialize(&encoder, false);
+    pps_encoder_add_string(&encoder, "msg", "minimizeWindow");
+
+    if (navigator_raw_write(pps_encoder_buffer(&encoder),
+                pps_encoder_length(&encoder)) != BPS_SUCCESS) {
+        qWindowDebug() << Q_FUNC_INFO << "navigator_raw_write failed:" << strerror(errno);
+    }
+
+    pps_encoder_cleanup(&encoder);
+#else
+    qWarning("Qt::WindowMinimized is not supported by this OS version");
+#endif
 }
 
 void QQnxWindow::updateZorder(int &topZorder)

@@ -116,6 +116,7 @@ public:
     QQnxWindow *findWindow(screen_window_t windowHandle);
 
     void blitFrom(QQnxWindow *sourceWindow, const QPoint &sourceOffset, const QRegion &targetRegion);
+    void minimize();
 
 private:
     QRect setGeometryHelper(const QRect &rect);

@@ -87,7 +87,7 @@ void QQnxBpsEventFilter::installOnEventDispatcher(QAbstractEventDispatcher *disp
 {
     qBpsEventFilterDebug() << Q_FUNC_INFO << "dispatcher=" << dispatcher;
 
-    if (navigator_request_events(0) != BPS_SUCCESS)
+    if (navigator_request_events(NAVIGATOR_EXTENDED_DATA) != BPS_SUCCESS)
         qWarning("QQNX: failed to register for navigator events");
 
     dispatcher->installNativeEventFilter(this);
