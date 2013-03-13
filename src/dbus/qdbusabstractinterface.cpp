@@ -609,7 +609,7 @@ void QDBusAbstractInterface::disconnectNotify(const QMetaMethod &signal)
         return;
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
-    if (conn)
+    if (conn && !isSignalConnected(signal))
         conn->disconnectRelay(d->service, d->path, d->interface,
                               this, signal);
 }
