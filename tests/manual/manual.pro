@@ -20,6 +20,7 @@ qlocale \
 qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
 qnetworkreply \
+qpainfo \
 qscreen \
 qssloptions \
 qtabletevent \
