@@ -1017,18 +1017,6 @@ void tst_QDBusAbstractInterface::followSignal()
     // now the signal must have been received:
     QCOMPARE(s.size(), 1);
     QVERIFY(s.at(0).size() == 0);
-    s.clear();
-
-    // disconnect the signal
-    disconnect(p.data(), SIGNAL(voidSignal()), &QTestEventLoop::instance(), 0);
-
-    // emit the signal again:
-    emit targetObj.voidSignal();
-    QTestEventLoop::instance().enterLoop(2);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-
-    // and now it mustn't have been received
-    QVERIFY(s.isEmpty());
 
     // cleanup:
     con.interface()->unregisterService(serviceToFollow);
