@@ -1004,7 +1004,7 @@ void QWindowsNativeFileDialogBase::setMode(QFileDialogOptions::FileMode mode, QF
         qErrnoWarning("%s: SetOptions() failed", __FUNCTION__);
 }
 
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && defined(__IShellLibrary_INTERFACE_DEFINED__) // Windows SDK 7
 
 // Helper for "Libraries": collections of folders appearing from Windows 7
 // on, visible in the file dialogs.
@@ -1057,7 +1057,7 @@ QString QWindowsNativeFileDialogBase::libraryItemDefaultSaveFolder(IShellItem *i
     return result;
 }
 
-#else // !Q_OS_WINCE
+#else // !Q_OS_WINCE && __IShellLibrary_INTERFACE_DEFINED__
 
 QStringList QWindowsNativeFileDialogBase::libraryItemPaths(IShellItem *)
 {
@@ -1069,7 +1069,7 @@ QString QWindowsNativeFileDialogBase::libraryDefaultSaveFolder(IShellItem *)
     return QString();
 }
 
-#endif // Q_OS_WINCE
+#endif // Q_OS_WINCE || !__IShellLibrary_INTERFACE_DEFINED__
 
 QString QWindowsNativeFileDialogBase::itemPath(IShellItem *item)
 {
