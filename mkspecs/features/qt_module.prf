@@ -20,7 +20,8 @@
 load(qt_build_config) # loads qmodule.pri if hasn't been loaded already
 
 isEmpty(MODULE):MODULE = $$section($$list($$basename(_PRO_FILE_)), ., 0, 0)
-isEmpty(VERSION):VERSION = $$QT_VERSION
+isEmpty(VERSION): VERSION = $$MODULE_VERSION
+isEmpty(VERSION): error("Module does not define version.")
 
 # Compile as shared/DLL or static according to the option given to configure
 # unless overridden. Host builds are always static

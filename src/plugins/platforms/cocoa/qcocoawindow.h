@@ -108,6 +108,7 @@ public:
     void setWindowIcon(const QIcon &icon);
     void raise();
     void lower();
+    bool isExposed() const;
     void propagateSizeHints();
     void setOpacity(qreal level);
     void setMask(const QRegion &region);
@@ -144,6 +145,8 @@ public:
     QCocoaMenuBar *menubar() const;
 
     qreal devicePixelRatio() const;
+    void exposeWindow();
+    void obscureWindow();
 protected:
     // NSWindow handling. The QCocoaWindow/QNSView can either be displayed
     // in an existing NSWindow or in one created by Qt.
@@ -178,6 +181,7 @@ public: // for QNSView
 
     bool m_hasModalSession;
     bool m_frameStrutEventsEnabled;
+    bool m_isExposed;
 };
 
 QT_END_NAMESPACE

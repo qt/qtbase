@@ -706,7 +706,7 @@ quint16 QNetworkProxy::port() const
     If a QAbstractSocket or QTcpSocket has the
     QNetworkProxy::DefaultProxy type, then the QNetworkProxy set with
     this function is used. If you want more flexibility in determining
-    which the proxy, use the QNetworkProxyFactory class.
+    which proxy is used, use the QNetworkProxyFactory class.
 
     Setting a default proxy value with this function will override the
     application proxy factory set with
