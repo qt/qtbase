@@ -926,6 +926,8 @@ static bool runningUnderDebugger()
 
 void QGuiApplicationPrivate::init()
 {
+    QCoreApplicationPrivate::is_app_running = false; // Starting up.
+
     bool doGrabUnderDebugger = false;
     QList<QByteArray> pluginList;
     // Get command line params

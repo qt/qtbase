@@ -638,6 +638,8 @@ void QCoreApplication::init()
     d->processCommandLineArguments();
 
     qt_startup_hook();
+
+    QCoreApplicationPrivate::is_app_running = true; // No longer starting up.
 }
 
 /*!

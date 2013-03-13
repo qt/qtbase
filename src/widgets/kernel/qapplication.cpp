@@ -588,6 +588,8 @@ extern void qRegisterWidgetsVariant();
 */
 void QApplicationPrivate::initialize()
 {
+    is_app_running = false; // Starting up.
+
     QWidgetPrivate::mapper = new QWidgetMapper;
     QWidgetPrivate::allWidgets = new QWidgetSet;
 
@@ -600,8 +602,6 @@ void QApplicationPrivate::initialize()
     // trigger registering of QStateMachine's GUI types
     qRegisterGuiStateMachine();
 #endif
-
-    is_app_running = true; // no longer starting up
 
     Q_Q(QApplication);
 
@@ -629,6 +629,8 @@ void QApplicationPrivate::initialize()
     if (QApplication::desktopSettingsAware())
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
             QApplicationPrivate::enabledAnimations = theme->themeHint(QPlatformTheme::UiEffects).toInt();
+
+    is_app_running = true; // no longer starting up
 }
 
 /*****************************************************************************
