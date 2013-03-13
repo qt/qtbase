@@ -17956,7 +17956,7 @@ public:
     void (QOPENGLF_APIENTRYP EGLImageTargetRenderbufferStorageOES)(GLenum target, GLeglImageOES image);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_OES_EGL_image : public QAbstractOpenGLExtension
+class QOpenGLExtension_OES_EGL_image : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_OES_EGL_image();
@@ -17989,7 +17989,7 @@ public:
     void (QOPENGLF_APIENTRYP ProgramBinaryOES)(GLuint program, GLenum binaryFormat, const GLvoid *binary, GLint length);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_OES_get_program_binary : public QAbstractOpenGLExtension
+class QOpenGLExtension_OES_get_program_binary : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_OES_get_program_binary();
@@ -18023,7 +18023,7 @@ public:
     void (QOPENGLF_APIENTRYP GetBufferPointervOES)(GLenum target, GLenum pname, GLvoid** params);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_OES_mapbuffer : public QAbstractOpenGLExtension
+class QOpenGLExtension_OES_mapbuffer : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_OES_mapbuffer();
@@ -18067,7 +18067,7 @@ public:
     void (QOPENGLF_APIENTRYP FramebufferTexture3DOES)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_OES_texture_3D : public QAbstractOpenGLExtension
+class QOpenGLExtension_OES_texture_3D : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_OES_texture_3D();
@@ -18130,7 +18130,7 @@ public:
     GLboolean (QOPENGLF_APIENTRYP IsVertexArrayOES)(GLuint array);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_OES_vertex_array_object : public QAbstractOpenGLExtension
+class QOpenGLExtension_OES_vertex_array_object : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_OES_vertex_array_object();
@@ -18186,7 +18186,7 @@ public:
     void (QOPENGLF_APIENTRYP GetPerfMonitorCounterDataAMD)(GLuint monitor, GLenum pname, GLsizei dataSize, GLuint *data, GLint *bytesWritten);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_AMD_performance_monitor : public QAbstractOpenGLExtension
+class QOpenGLExtension_AMD_performance_monitor : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_AMD_performance_monitor();
@@ -18281,7 +18281,7 @@ public:
     void (QOPENGLF_APIENTRYP BlitFramebufferANGLE)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_ANGLE_framebuffer_blit : public QAbstractOpenGLExtension
+class QOpenGLExtension_ANGLE_framebuffer_blit : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_ANGLE_framebuffer_blit();
@@ -18306,7 +18306,7 @@ public:
     void (QOPENGLF_APIENTRYP RenderbufferStorageMultisampleANGLE)(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_ANGLE_framebuffer_multisample : public QAbstractOpenGLExtension
+class QOpenGLExtension_ANGLE_framebuffer_multisample : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_ANGLE_framebuffer_multisample();
@@ -18333,7 +18333,7 @@ public:
     void (QOPENGLF_APIENTRYP VertexAttribDivisorANGLE)(GLuint index, GLuint divisor);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_ANGLE_instanced_arrays : public QAbstractOpenGLExtension
+class QOpenGLExtension_ANGLE_instanced_arrays : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_ANGLE_instanced_arrays();
@@ -18372,7 +18372,7 @@ public:
     void (QOPENGLF_APIENTRYP GetTranslatedShaderSourceANGLE)(GLuint shader, GLsizei bufsize, GLsizei *length, GLchar *source);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_ANGLE_translated_shader_source : public QAbstractOpenGLExtension
+class QOpenGLExtension_ANGLE_translated_shader_source : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_ANGLE_translated_shader_source();
@@ -18398,7 +18398,7 @@ public:
     void (QOPENGLF_APIENTRYP ResolveMultisampleFramebufferAPPLE)(void);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_APPLE_framebuffer_multisample : public QAbstractOpenGLExtension
+class QOpenGLExtension_APPLE_framebuffer_multisample : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_APPLE_framebuffer_multisample();
@@ -18431,7 +18431,7 @@ public:
     void (QOPENGLF_APIENTRYP GetObjectLabelEXT)(GLenum type, GLuint object, GLsizei bufSize, GLsizei *length, GLchar *label);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_debug_label : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_debug_label : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_debug_label();
@@ -18465,7 +18465,7 @@ public:
     void (QOPENGLF_APIENTRYP PopGroupMarkerEXT)(void);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_debug_marker : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_debug_marker : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_debug_marker();
@@ -18504,7 +18504,7 @@ public:
     void (QOPENGLF_APIENTRYP DiscardFramebufferEXT)(GLenum target, GLsizei numAttachments, const GLenum *attachments);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_discard_framebuffer : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_discard_framebuffer : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_discard_framebuffer();
@@ -18530,7 +18530,7 @@ public:
     void (QOPENGLF_APIENTRYP FramebufferTexture2DMultisampleEXT)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLsizei samples);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_multisampled_render_to_texture : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_multisampled_render_to_texture : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_multisampled_render_to_texture();
@@ -18563,7 +18563,7 @@ public:
     void (QOPENGLF_APIENTRYP MultiDrawElementsEXT)(GLenum mode, const GLsizei *count, GLenum type, const GLvoid* *indices, GLsizei primcount);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_multi_draw_arrays : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_multi_draw_arrays : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_multi_draw_arrays();
@@ -18601,7 +18601,7 @@ public:
     void (QOPENGLF_APIENTRYP GetQueryObjectuivEXT)(GLuint id, GLenum pname, GLuint *params);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_occlusion_query_boolean : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_occlusion_query_boolean : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_occlusion_query_boolean();
@@ -18671,7 +18671,7 @@ public:
     void (QOPENGLF_APIENTRYP GetnUniformivEXT)(GLuint program, GLint location, GLsizei bufSize, GLint *params);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_robustness : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_robustness : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_robustness();
@@ -18746,7 +18746,7 @@ public:
     void (QOPENGLF_APIENTRYP GetProgramPipelineInfoLogEXT)(GLuint pipeline, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_separate_shader_objects : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_separate_shader_objects : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_separate_shader_objects();
@@ -18979,7 +18979,7 @@ public:
     void (QOPENGLF_APIENTRYP TextureStorage3DEXT)(GLuint texture, GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_EXT_texture_storage : public QAbstractOpenGLExtension
+class QOpenGLExtension_EXT_texture_storage : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_EXT_texture_storage();
@@ -19040,7 +19040,7 @@ public:
     void (QOPENGLF_APIENTRYP FramebufferTexture2DMultisampleIMG)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_IMG_multisampled_render_to_texture : public QAbstractOpenGLExtension
+class QOpenGLExtension_IMG_multisampled_render_to_texture : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_IMG_multisampled_render_to_texture();
@@ -19073,7 +19073,7 @@ public:
     void (QOPENGLF_APIENTRYP CoverageOperationNV)(GLenum operation);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_NV_coverage_sample : public QAbstractOpenGLExtension
+class QOpenGLExtension_NV_coverage_sample : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_NV_coverage_sample();
@@ -19105,7 +19105,7 @@ public:
     void (QOPENGLF_APIENTRYP DrawBuffersNV)(GLsizei n, const GLenum *bufs);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_NV_draw_buffers : public QAbstractOpenGLExtension
+class QOpenGLExtension_NV_draw_buffers : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_NV_draw_buffers();
@@ -19136,7 +19136,7 @@ public:
     void (QOPENGLF_APIENTRYP SetFenceNV)(GLuint fence, GLenum condition);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_NV_fence : public QAbstractOpenGLExtension
+class QOpenGLExtension_NV_fence : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_NV_fence();
@@ -19203,7 +19203,7 @@ public:
     void (QOPENGLF_APIENTRYP ReadBufferNV)(GLenum mode);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_NV_read_buffer : public QAbstractOpenGLExtension
+class QOpenGLExtension_NV_read_buffer : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_NV_read_buffer();
@@ -19228,7 +19228,7 @@ public:
     void (QOPENGLF_APIENTRYP AlphaFuncQCOM)(GLenum func, GLclampf ref);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_QCOM_alpha_test : public QAbstractOpenGLExtension
+class QOpenGLExtension_QCOM_alpha_test : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_QCOM_alpha_test();
@@ -19256,7 +19256,7 @@ public:
     void (QOPENGLF_APIENTRYP DisableDriverControlQCOM)(GLuint driverControl);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_QCOM_driver_control : public QAbstractOpenGLExtension
+class QOpenGLExtension_QCOM_driver_control : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_QCOM_driver_control();
@@ -19309,7 +19309,7 @@ public:
     void (QOPENGLF_APIENTRYP ExtGetBufferPointervQCOM)(GLenum target, GLvoid **params);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_QCOM_extended_get : public QAbstractOpenGLExtension
+class QOpenGLExtension_QCOM_extended_get : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_QCOM_extended_get();
@@ -19386,7 +19386,7 @@ public:
     void (QOPENGLF_APIENTRYP ExtGetProgramBinarySourceQCOM)(GLuint program, GLenum shadertype, GLchar *source, GLint *length);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_QCOM_extended_get2 : public QAbstractOpenGLExtension
+class QOpenGLExtension_QCOM_extended_get2 : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_QCOM_extended_get2();
@@ -19433,7 +19433,7 @@ public:
     void (QOPENGLF_APIENTRYP EndTilingQCOM)(GLbitfield preserveMask);
 };
 
-class Q_GUI_EXPORT QOpenGLExtension_QCOM_tiled_rendering : public QAbstractOpenGLExtension
+class QOpenGLExtension_QCOM_tiled_rendering : public QAbstractOpenGLExtension
 {
 public:
     QOpenGLExtension_QCOM_tiled_rendering();
