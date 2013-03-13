@@ -609,9 +609,22 @@ void QDBusAbstractInterface::disconnectNotify(const QMetaMethod &signal)
         return;
 
     QDBusConnectionPrivate *conn = d->connectionPrivate();
-    if (conn && !isSignalConnected(signal))
-        conn->disconnectRelay(d->service, d->path, d->interface,
-                              this, signal);
+    if (conn && signal.isValid() && !isSignalConnected(signal))
+        return conn->disconnectRelay(d->service, d->path, d->interface,
+                                     this, signal);
+    if (!conn)
+        return;
+
+    // wildcard disconnecting, we need to figure out which of our signals are
+    // no longer connected to anything
+    const QMetaObject *mo = metaObject();
+    int midx = QObject::staticMetaObject.methodCount();
+    const int end = mo->methodCount();
+    for ( ; midx < end; ++midx) {
+        QMetaMethod mm = mo->method(midx);
+        if (mm.methodType() == QMetaMethod::Signal && !isSignalConnected(mm))
+            conn->disconnectRelay(d->service, d->path, d->interface, this, mm);
+    }
 }
 
 /*!

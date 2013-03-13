@@ -1046,8 +1046,10 @@ void tst_QDBusAbstractInterface::connectDisconnect_data()
     // we'd have to use QMetaObject::disconnectOne if we wanted just one
     QTest::newRow("null") << 0 << 0;
     QTest::newRow("connect-disconnect") << 1 << 1;
+    QTest::newRow("connect-disconnect-wildcard") << 1 << -1;
     QTest::newRow("connect-twice") << 2 << 0;
     QTest::newRow("connect-twice-disconnect") << 2 << 1;
+    QTest::newRow("connect-twice-disconnect-wildcard") << 2 << -1;
 }
 
 void tst_QDBusAbstractInterface::connectDisconnect()
@@ -1066,7 +1068,7 @@ void tst_QDBusAbstractInterface::connectDisconnect()
     for (int i = 0; i < connectCount; ++i)
         sr.connect(p.data(), SIGNAL(voidSignal()), SLOT(receive()));
     if (disconnectCount)
-        QObject::disconnect(p.data(), SIGNAL(voidSignal()), &sr, SLOT(receive()));
+        QObject::disconnect(p.data(), disconnectCount > 0 ? SIGNAL(voidSignal()) : 0, &sr, SLOT(receive()));
 
     emit targetObj.voidSignal();
     QTestEventLoop::instance().enterLoop(2);
@@ -1099,7 +1101,7 @@ void tst_QDBusAbstractInterface::connectDisconnectPeer()
     for (int i = 0; i < connectCount; ++i)
         sr.connect(p.data(), SIGNAL(voidSignal()), SLOT(receive()));
     if (disconnectCount)
-        QObject::disconnect(p.data(), SIGNAL(voidSignal()), &sr, SLOT(receive()));
+        QObject::disconnect(p.data(), disconnectCount > 0 ? SIGNAL(voidSignal()) : 0, &sr, SLOT(receive()));
 
     QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "voidSignal");
     QVERIFY(QDBusConnection::sessionBus().send(req));

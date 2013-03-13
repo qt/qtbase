@@ -2393,8 +2393,6 @@ void QDBusConnectionPrivate::disconnectRelay(const QString &service,
             return;
         }
     }
-
-    qWarning("QDBusConnectionPrivate::disconnectRelay called for a signal that was not found");
 }
 
 QString QDBusConnectionPrivate::getNameOwner(const QString& serviceName)
