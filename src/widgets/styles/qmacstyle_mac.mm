@@ -2466,9 +2466,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     case SH_TabBar_PreferNoArrows:
         ret = true;
         break;
-    case SH_LineEdit_PasswordCharacter:
-        ret = kBulletUnicode;
-        break;
         /*
     case SH_DialogButtons_DefaultButton:
         ret = QDialogButtons::Reject;

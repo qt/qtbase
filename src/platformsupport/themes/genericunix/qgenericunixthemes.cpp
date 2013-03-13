@@ -448,6 +448,8 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     }
     case QPlatformTheme::KeyboardScheme:
         return QVariant(int(GnomeKeyboardScheme));
+    case QPlatformTheme::PasswordMaskCharacter:
+        return QVariant(QChar(0x2022));
     default:
         break;
     }

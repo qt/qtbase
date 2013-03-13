@@ -602,21 +602,6 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
         }
         break;
 #endif // QT_NO_RUBBERBAND
-    case SH_LineEdit_PasswordCharacter:
-        {
-#ifdef Q_OS_WIN
-            if (widget && (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
-                const QFontMetrics &fm = widget->fontMetrics();
-                if (fm.inFont(QChar(0x25CF)))
-                    ret = 0x25CF;
-                else if (fm.inFont(QChar(0x2022)))
-                    ret = 0x2022;
-            }
-#endif
-            if (!ret)
-                ret = '*';
-        }
-        break;
 #ifndef QT_NO_WIZARD
     case SH_WizardStyle:
         ret = QWizard::ModernStyle;

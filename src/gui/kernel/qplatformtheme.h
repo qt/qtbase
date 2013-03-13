@@ -103,7 +103,8 @@ public:
         UiEffects,
         SpellCheckUnderlineStyle,
         TabAllWidgets,
-        IconPixmapSizes
+        IconPixmapSizes,
+        PasswordMaskCharacter
     };
 
     enum DialogType {

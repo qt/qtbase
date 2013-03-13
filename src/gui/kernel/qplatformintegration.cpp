@@ -313,6 +313,8 @@ QVariant QPlatformIntegration::styleHint(StyleHint hint) const
         return false;
     case PasswordMaskDelay:
         return QPlatformTheme::defaultThemeHint(QPlatformTheme::PasswordMaskDelay);
+    case PasswordMaskCharacter:
+        return QPlatformTheme::defaultThemeHint(QPlatformTheme::PasswordMaskCharacter);
     case FontSmoothingGamma:
         return qreal(1.7);
     case StartDragVelocity:
