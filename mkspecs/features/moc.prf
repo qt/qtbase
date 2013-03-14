@@ -9,7 +9,7 @@ isEmpty(QMAKE_EXT_CPP_MOC):QMAKE_EXT_CPP_MOC = .moc
 # has too many includes. We do this to overcome a command-line limit on Win < XP
 INCLUDETEMP=
 WIN_INCLUDETEMP=
-win32:count($$list($$INCLUDEPATH), 40, >) {
+win32:count(INCLUDEPATH, 40, >) {
     INCLUDETEMP = $$MOC_DIR/mocinclude.tmp
 
     WIN_INCLUDETEMP=$$INCLUDETEMP
@@ -23,7 +23,7 @@ win32:count($$list($$INCLUDEPATH), 40, >) {
 
     unset(INCFILELIST)
     RET =
-    for(incfile, $$list($$INCLUDEPATH)) {
+    for(incfile, INCLUDEPATH) {
         INCFILELIST = -I$$incfile
         isEmpty(RET): RET += @echo $$INCFILELIST> $$WIN_INCLUDETEMP $$EOC
         else:         RET += @echo $$INCFILELIST>> $$WIN_INCLUDETEMP $$EOC
