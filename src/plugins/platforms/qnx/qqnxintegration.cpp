@@ -84,6 +84,8 @@
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtGui/private/qguiapplication_p.h>
+
 #if !defined(QT_NO_OPENGL)
 #include "qqnxglcontext.h"
 #include <QtGui/QOpenGLContext>
@@ -107,7 +109,16 @@ QT_BEGIN_NAMESPACE
 QQnxWindowMapper QQnxIntegration::ms_windowMapper;
 QMutex QQnxIntegration::ms_windowMapperMutex;
 
-QQnxIntegration::QQnxIntegration()
+static inline QQnxIntegration::Options parseOptions(const QStringList &paramList)
+{
+    QQnxIntegration::Options options = QQnxIntegration::NoOptions;
+    if (!paramList.contains(QLatin1String("no-fullscreen"))) {
+        options |= QQnxIntegration::FullScreenApplication;
+    }
+    return options;
+}
+
+QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     : QPlatformIntegration()
     , m_screenEventThread(0)
     , m_navigatorEventHandler(new QQnxNavigatorEventHandler())
@@ -134,6 +145,7 @@ QQnxIntegration::QQnxIntegration()
 #if !defined(QT_NO_DRAGANDDROP)
     , m_drag(new QSimpleDrag())
 #endif
+    , m_options(parseOptions(paramList))
 {
     qIntegrationDebug() << Q_FUNC_INFO;
     // Open connection to QNX composition manager
@@ -385,7 +397,7 @@ QPlatformDrag *QQnxIntegration::drag() const
 QVariant QQnxIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
     qIntegrationDebug() << Q_FUNC_INFO;
-    if (hint == ShowIsFullScreen)
+    if ((hint == ShowIsFullScreen) && (m_options & FullScreenApplication))
         return true;
 
     return QPlatformIntegration::styleHint(hint);
@@ -527,6 +539,11 @@ QQnxScreen *QQnxIntegration::screenForNative(screen_display_t qnxScreen) const
 QQnxScreen *QQnxIntegration::primaryDisplay() const
 {
     return m_screens.first();
+}
+
+QQnxIntegration::Options QQnxIntegration::options() const
+{
+    return m_options;
 }
 
 bool QQnxIntegration::supportsNavigatorEvents() const
