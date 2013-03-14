@@ -1435,9 +1435,10 @@ void QTextEngine::itemize() const
             int lastIndex = 0;
             for (int i = 0; i < specialData->addFormats.size(); ++i) {
                 const QTextLayout::FormatRange &range = specialData->addFormats.at(i);
-                if (range.format.fontCapitalization()) {
+                QTextCharFormat format = formats()->charFormat(specialData->addFormatIndices.at(i));
+                if (format.fontCapitalization()) {
                     itemizer.generate(lastIndex, range.start - lastIndex, QFont::MixedCase);
-                    itemizer.generate(range.start, range.length, range.format.fontCapitalization());
+                    itemizer.generate(range.start, range.length, format.fontCapitalization());
                     lastIndex = range.start + range.length;
                 }
             }
