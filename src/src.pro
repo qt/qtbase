@@ -106,7 +106,8 @@ contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
         SUBDIRS += src_angle
         src_gui.depends += src_angle
     }
-    SUBDIRS += src_gui src_platformsupport src_openglextensions
+    SUBDIRS += src_gui src_platformsupport
+    contains(QT_CONFIG, opengl(es1|es2)?):SUBDIRS += src_openglextensions
     src_plugins.depends += src_gui src_platformsupport
     !contains(QT_CONFIG, no-widgets) {
         SUBDIRS += src_tools_uic src_widgets
