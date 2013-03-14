@@ -170,6 +170,28 @@ static void hb_freeFace(void *face)
     qHBFreeFace((HB_Face)face);
 }
 
+
+#ifdef QT_BUILD_INTERNAL
+// for testing purpose only, not thread-safe!
+static QList<QFontEngine *> *enginesCollector = 0;
+
+Q_AUTOTEST_EXPORT void QFontEngine_startCollectingEngines()
+{
+    delete enginesCollector;
+    enginesCollector = new QList<QFontEngine *>();
+}
+
+Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines()
+{
+    Q_ASSERT(enginesCollector);
+    QList<QFontEngine *> ret = *enginesCollector;
+    delete enginesCollector;
+    enginesCollector = 0;
+    return ret;
+}
+#endif // QT_BUILD_INTERNAL
+
+
 // QFontEngine
 
 QFontEngine::QFontEngine()
@@ -177,7 +199,6 @@ QFontEngine::QFontEngine()
       font_(0), font_destroy_func(0),
       face_(0), face_destroy_func(0)
 {
-    cache_count = 0;
     fsType = 0;
     symbol = false;
 
@@ -194,6 +215,11 @@ QFontEngine::QFontEngine()
 
     glyphFormat = -1;
     m_subPixelPositionCount = 0;
+
+#ifdef QT_BUILD_INTERNAL
+    if (enginesCollector)
+        enginesCollector->append(this);
+#endif
 }
 
 QFontEngine::~QFontEngine()
@@ -208,6 +234,11 @@ QFontEngine::~QFontEngine()
         face_destroy_func(face_);
         face_ = 0;
     }
+
+#ifdef QT_BUILD_INTERNAL
+    if (enginesCollector)
+        enginesCollector->removeOne(this);
+#endif
 }
 
 QFixed QFontEngine::lineThickness() const
@@ -1384,11 +1415,8 @@ QFontEngineMulti::~QFontEngineMulti()
 {
     for (int i = 0; i < engines.size(); ++i) {
         QFontEngine *fontEngine = engines.at(i);
-        if (fontEngine) {
-            fontEngine->ref.deref();
-            if (fontEngine->cache_count == 0 && fontEngine->ref.load() == 0)
-                delete fontEngine;
-        }
+        if (fontEngine && !fontEngine->ref.deref())
+            delete fontEngine;
     }
 }
 

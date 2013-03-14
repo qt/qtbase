@@ -273,7 +273,6 @@ public:
     mutable qt_destroy_func_t face_destroy_func;
 
     uint cache_cost; // amount of mem used in kb by the font
-    int cache_count;
     uint fsType : 16;
     bool symbol;
     struct KernPair {

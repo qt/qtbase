@@ -193,9 +193,8 @@ private:
 };
 
 
-class QFontCache : public QObject
+class Q_AUTOTEST_EXPORT QFontCache : public QObject
 {
-    Q_OBJECT
 public:
     // note: these static functions work on a per-thread basis
     static QFontCache *instance();
@@ -205,8 +204,7 @@ public:
     ~QFontCache();
 
     void clear();
-    // universal key structure.  QFontEngineDatas and QFontEngines are cached using
-    // the same keys
+
     struct Key {
         Key() : script(0), screen(0) { }
         Key(const QFontDef &d, int c, int s = 0)
@@ -245,13 +243,14 @@ public:
 
     typedef QMap<Key,Engine> EngineCache;
     EngineCache engineCache;
+    QHash<QFontEngine *, int> engineCacheCount;
 
     QFontEngine *findEngine(const Key &key);
 
     void updateHitCountAndTimeStamp(Engine &value);
     void insertEngine(const Key &key, QFontEngine *engine, bool insertMulti = false);
 
-    private:
+private:
     void increaseCost(uint cost);
     void decreaseCost(uint cost);
     void timerEvent(QTimerEvent *event);

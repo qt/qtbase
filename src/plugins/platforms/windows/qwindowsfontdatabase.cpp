@@ -1097,11 +1097,11 @@ QFontEngine *QWindowsFontDatabase::fontEngine(const QByteArray &fontData, qreal 
                 if (request.family != fontEngine->fontDef.family) {
                     qWarning("%s: Failed to load font. Got fallback instead: %s",
                              __FUNCTION__, qPrintable(fontEngine->fontDef.family));
-                    if (fontEngine->cache_count == 0 && fontEngine->ref.load() == 0)
+                    if (fontEngine->ref.load() == 0)
                         delete fontEngine;
                     fontEngine = 0;
                 } else {
-                    Q_ASSERT(fontEngine->cache_count == 0 && fontEngine->ref.load() == 0);
+                    Q_ASSERT(fontEngine->ref.load() == 0);
 
                     // Override the generated font name
                     static_cast<QWindowsFontEngine *>(fontEngine)->setUniqueFamilyName(uniqueFamilyName);
