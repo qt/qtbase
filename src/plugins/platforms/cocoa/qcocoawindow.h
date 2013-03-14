@@ -132,7 +132,7 @@ public:
     void windowWillMove();
     void windowDidMove();
     void windowDidResize();
-    void windowWillClose();
+    bool windowShouldClose();
     bool windowIsPopupType(Qt::WindowType type = Qt::Widget) const;
 
     NSInteger windowLevel(Qt::WindowFlags flags);
