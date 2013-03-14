@@ -1350,7 +1350,12 @@ QAccessibleInterface *QAccessibleEvent::accessibleInterface() const
 {
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(m_object);
     if (!iface) {
-        qWarning() << "Cannot create accessible interface for object: " << m_object;
+        static bool hasWarned = false;
+        if (!hasWarned) {
+            qWarning() << "Problem creating accessible interface for: " << m_object << endl
+                       << "Make sure to deploy Qt with accessibility plugins.";
+            hasWarned = true;
+        }
         return 0;
     }
 
