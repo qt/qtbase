@@ -47,7 +47,7 @@ defineReplace(mocCmdBase) {
     } else {
         incvar = $(INCPATH)
     }
-    RET += $$QMAKE_MOC $(DEFINES) $$incvar $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$QMAKE_MOC_OPTIONS
+    RET += $$QMAKE_MOC $(DEFINES) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$incvar $$join(QMAKE_DEFAULT_INCDIRS, " -I", -I) $$QMAKE_MOC_OPTIONS
     return($$RET)
 }
 
