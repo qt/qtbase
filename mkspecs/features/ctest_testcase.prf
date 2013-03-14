@@ -45,6 +45,7 @@ isEmpty(CMAKE_VERSION) {
             CMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\"
 
             !qtHaveModule(widgets): CMAKE_MODULE_DEFINES += -DNO_WIDGETS=True
+            !qtHaveModule(dbus): CMAKE_MODULE_DEFINES += -DNO_DBUS=True
 
             dependentmodules = $$resolve_depends(CMAKE_QT_MODULES_UNDER_TEST, "QT.")
             dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST

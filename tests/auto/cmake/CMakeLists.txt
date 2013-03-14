@@ -64,9 +64,7 @@ expect_fail(test_wrap_cpp_options)
 expect_pass(test_platform_defs_include)
 expect_pass(test_qtmainwin_library)
 
-# If Qt D-Bus has been installed then run the tests for its macros.
-find_package(Qt5DBus QUIET)
-if (Qt5DBus_FOUND AND NOT APPLE)
+if (NOT NO_DBUS)
     expect_pass(test_dbus_module)
 endif()
 expect_pass(test_multiple_find_package)
@@ -110,7 +108,7 @@ if (NOT NO_WIDGETS)
   )
 endif()
 
-if (UNIX AND NOT APPLE AND NOT QNXNTO)
+if (NOT NO_DBUS)
   list(APPEND qt_module_includes
     DBus QDBusMessage
   )
