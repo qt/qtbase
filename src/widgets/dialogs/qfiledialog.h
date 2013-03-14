@@ -44,6 +44,7 @@
 
 #include <QtCore/qdir.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qurl.h>
 #include <QtWidgets/qdialog.h>
 
 QT_BEGIN_NAMESPACE
@@ -58,7 +59,6 @@ class QFileIconProvider;
 class QFileDialogPrivate;
 class QAbstractItemDelegate;
 class QAbstractProxyModel;
-class QUrl;
 
 class Q_WIDGETS_EXPORT QFileDialog : public QDialog
 {
@@ -195,6 +195,14 @@ public:
                                    QString *selectedFilter = 0,
                                    Options options = 0);
 
+    static QUrl getOpenFileUrl(QWidget *parent = 0,
+                               const QString &caption = QString(),
+                               const QUrl &dir = QUrl(),
+                               const QString &filter = QString(),
+                               QString *selectedFilter = 0,
+                               Options options = 0,
+                               const QStringList &supportedSchemes = QStringList());
+
     static QString getSaveFileName(QWidget *parent = 0,
                                    const QString &caption = QString(),
                                    const QString &dir = QString(),
@@ -202,10 +210,24 @@ public:
                                    QString *selectedFilter = 0,
                                    Options options = 0);
 
+    static QUrl getSaveFileUrl(QWidget *parent = 0,
+                               const QString &caption = QString(),
+                               const QUrl &dir = QUrl(),
+                               const QString &filter = QString(),
+                               QString *selectedFilter = 0,
+                               Options options = 0,
+                               const QStringList &supportedSchemes = QStringList());
+
     static QString getExistingDirectory(QWidget *parent = 0,
                                         const QString &caption = QString(),
                                         const QString &dir = QString(),
                                         Options options = ShowDirsOnly);
+
+    static QUrl getExistingDirectoryUrl(QWidget *parent = 0,
+                                        const QString &caption = QString(),
+                                        const QUrl &dir = QUrl(),
+                                        Options options = ShowDirsOnly,
+                                        const QStringList &supportedSchemes = QStringList());
 
     static QStringList getOpenFileNames(QWidget *parent = 0,
                                         const QString &caption = QString(),
@@ -213,6 +235,14 @@ public:
                                         const QString &filter = QString(),
                                         QString *selectedFilter = 0,
                                         Options options = 0);
+
+    static QList<QUrl> getOpenFileUrls(QWidget *parent = 0,
+                                       const QString &caption = QString(),
+                                       const QUrl &dir = QUrl(),
+                                       const QString &filter = QString(),
+                                       QString *selectedFilter = 0,
+                                       Options options = 0,
+                                       const QStringList &supportedSchemes = QStringList());
 
 
 protected:

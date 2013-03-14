@@ -157,6 +157,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     , m_acceptMode(createCombo(this, acceptModeComboData, sizeof(acceptModeComboData)/sizeof(ComboData)))
     , m_fileMode(createCombo(this, fileModeComboData, sizeof(fileModeComboData)/sizeof(ComboData)))
     , m_viewMode(createCombo(this, viewModeComboData, sizeof(viewModeComboData)/sizeof(ComboData)))
+    , m_allowedSchemes(new QLineEdit(this))
     , m_defaultSuffix(new QLineEdit(this))
     , m_directory(new QLineEdit(this))
     , m_selectedFileName(new QLineEdit(this))
@@ -171,6 +172,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     optionsLayout->addRow(tr("AcceptMode:"), m_acceptMode);
     optionsLayout->addRow(tr("FileMode:"), m_fileMode);
     optionsLayout->addRow(tr("ViewMode:"), m_viewMode);
+    optionsLayout->addRow(tr("Allowed Schemes:"), m_allowedSchemes);
     optionsLayout->addRow(m_native);
     optionsLayout->addRow(m_confirmOverWrite);
     optionsLayout->addRow(m_nameFilterDetailsVisible);
@@ -216,9 +218,13 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     row = 0;
     column++;
     addButton(tr("getOpenFileName"), buttonLayout, row, column, this, SLOT(getOpenFileName()));
+    addButton(tr("getOpenFileUrl"), buttonLayout, row, column, this, SLOT(getOpenFileUrl()));
     addButton(tr("getOpenFileNames"), buttonLayout, row, column, this, SLOT(getOpenFileNames()));
+    addButton(tr("getOpenFileUrls"), buttonLayout, row, column, this, SLOT(getOpenFileUrls()));
     addButton(tr("getSaveFileName"), buttonLayout, row, column, this, SLOT(getSaveFileName()));
+    addButton(tr("getSaveFileUrl"), buttonLayout, row, column, this, SLOT(getSaveFileUrl()));
     addButton(tr("getExistingDirectory"), buttonLayout, row, column, this, SLOT(getExistingDirectory()));
+    addButton(tr("getExistingDirectoryUrl"), buttonLayout, row, column, this, SLOT(getExistingDirectoryUrl()));
     addButton(tr("Restore defaults"), buttonLayout, row, column, this, SLOT(restoreDefaults()));
 
     // Main layout
@@ -319,6 +325,11 @@ QFileDialog::Options FileDialogPanel::options() const
     return result;
 }
 
+QStringList FileDialogPanel::allowedSchemes() const
+{
+    return m_allowedSchemes->text().simplified().split(' ', QString::SkipEmptyParts);
+}
+
 void FileDialogPanel::getOpenFileNames()
 {
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
@@ -329,6 +340,22 @@ void FileDialogPanel::getOpenFileNames()
         QString result;
         QDebug(&result).nospace()
             << "Files: " << files
+            << "\nName filter: " << selectedFilter;
+        QMessageBox::information(this, tr("getOpenFileNames"), result, QMessageBox::Ok);
+    }
+}
+
+void FileDialogPanel::getOpenFileUrls()
+{
+    QString selectedFilter = m_selectedNameFilter->text().trimmed();
+    const QList<QUrl> files =
+        QFileDialog::getOpenFileUrls(this, tr("getOpenFileNames Qt %1").arg(QLatin1String(QT_VERSION_STR)),
+                                      QUrl(m_directory->text()), filterString(), &selectedFilter, options(),
+                                      allowedSchemes());
+    if (!files.isEmpty()) {
+        QString result;
+        QDebug(&result).nospace()
+            << "Files: " << QUrl::toStringList(files)
             << "\nName filter: " << selectedFilter;
         QMessageBox::information(this, tr("getOpenFileNames"), result, QMessageBox::Ok);
     }
@@ -349,6 +376,22 @@ void FileDialogPanel::getOpenFileName()
     }
 }
 
+void FileDialogPanel::getOpenFileUrl()
+{
+    QString selectedFilter = m_selectedNameFilter->text().trimmed();
+    const QUrl file =
+        QFileDialog::getOpenFileUrl(this, tr("getOpenFileUrl Qt %1").arg(QLatin1String(QT_VERSION_STR)),
+                                      QUrl(m_directory->text()), filterString(), &selectedFilter, options(),
+                                      allowedSchemes());
+    if (file.isValid()) {
+        QString result;
+        QDebug(&result).nospace()
+            << "File: " << file.toString()
+            << "\nName filter: " << selectedFilter;
+        QMessageBox::information(this, tr("getOpenFileName"), result, QMessageBox::Ok);
+    }
+}
+
 void FileDialogPanel::getSaveFileName()
 {
     QString selectedFilter = m_selectedNameFilter->text().trimmed();
@@ -364,6 +407,22 @@ void FileDialogPanel::getSaveFileName()
     }
 }
 
+void FileDialogPanel::getSaveFileUrl()
+{
+    QString selectedFilter = m_selectedNameFilter->text().trimmed();
+    const QUrl file =
+        QFileDialog::getSaveFileUrl(this, tr("getSaveFileName Qt %1").arg(QLatin1String(QT_VERSION_STR)),
+                                    QUrl(m_directory->text()), filterString(), &selectedFilter, options(),
+                                    allowedSchemes());
+    if (file.isValid()) {
+        QString result;
+        QDebug(&result).nospace()
+            << "File: " << file.toString()
+            << "\nName filter: " << selectedFilter;
+        QMessageBox::information(this, tr("getSaveFileNames"), result, QMessageBox::Ok);
+    }
+}
+
 void FileDialogPanel::getExistingDirectory()
 {
     const QString dir =
@@ -373,12 +432,23 @@ void FileDialogPanel::getExistingDirectory()
         QMessageBox::information(this, tr("getExistingDirectory"), QLatin1String("Directory: ") + dir, QMessageBox::Ok);
 }
 
+void FileDialogPanel::getExistingDirectoryUrl()
+{
+    const QUrl dir =
+        QFileDialog::getExistingDirectoryUrl(this, tr("getExistingDirectory Qt %1").arg(QLatin1String(QT_VERSION_STR)),
+                                          QUrl(m_directory->text()), options() | QFileDialog::ShowDirsOnly,
+                                          allowedSchemes());
+    if (!dir.isEmpty())
+        QMessageBox::information(this, tr("getExistingDirectory"), QLatin1String("Directory: ") + dir.toString(), QMessageBox::Ok);
+}
+
 void FileDialogPanel::restoreDefaults()
 {
     QFileDialog d;
     setComboBoxValue(m_acceptMode, d.acceptMode());
     setComboBoxValue(m_fileMode, d.fileMode());
     setComboBoxValue(m_viewMode, d.viewMode());
+    m_allowedSchemes->setText(QString());
     m_confirmOverWrite->setChecked(d.confirmOverwrite());
     m_nameFilterDetailsVisible->setChecked(d.isNameFilterDetailsVisible());
     m_resolveSymLinks->setChecked(d.resolveSymlinks());

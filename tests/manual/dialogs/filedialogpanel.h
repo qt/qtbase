@@ -66,9 +66,13 @@ public slots:
     void deleteNonModalDialog();
     void deleteModalDialog();
     void getOpenFileNames();
+    void getOpenFileUrls();
     void getOpenFileName();
+    void getOpenFileUrl();
     void getSaveFileName();
+    void getSaveFileUrl();
     void getExistingDirectory();
+    void getExistingDirectoryUrl();
     void accepted();
     void showAcceptedResult();
     void restoreDefaults();
@@ -80,6 +84,7 @@ private slots:
 private:
     QString filterString() const;
     QFileDialog::Options options() const;
+    QStringList allowedSchemes() const;
     void applySettings(QFileDialog *d) const;
 
     QCheckBox *m_readOnly;
@@ -90,6 +95,7 @@ private:
     QComboBox *m_acceptMode;
     QComboBox *m_fileMode;
     QComboBox *m_viewMode;
+    QLineEdit *m_allowedSchemes;
     QLineEdit *m_defaultSuffix;
     QLineEdit *m_directory;
     QLineEdit *m_selectedFileName;
