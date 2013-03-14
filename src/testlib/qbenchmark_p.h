@@ -160,6 +160,7 @@ public:
     bool createChart;
     bool verboseOutput;
     QString callgrindOutFileBase;
+    int minimumTotal;
 private:
     Mode mode_;
 };

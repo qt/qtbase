@@ -64,6 +64,8 @@
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/cycle_p.h>
 
+#include <numeric>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1351,6 +1353,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 #endif
          " -eventcounter       : Counts events received during benchmarks\n"
          " -minimumvalue n     : Sets the minimum acceptable measurement value\n"
+         " -minimumtotal n     : Sets the minimum acceptable total for repeated executions of a test function\n"
          " -iterations  n      : Sets the number of accumulation iterations.\n"
          " -median  n          : Sets the number of median iterations.\n"
          " -vb                 : Print out verbose benchmarking information.\n";
@@ -1518,6 +1521,13 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             } else {
                 QBenchmarkGlobalData::current->walltimeMinimum = qToInt(argv[++i]);
             }
+        } else if (strcmp(argv[i], "-minimumtotal") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "-minimumtotal needs an extra parameter to indicate the minimum total measurement\n");
+                exit(1);
+            } else {
+                QBenchmarkGlobalData::current->minimumTotal = qToInt(argv[++i]);
+            }
         } else if (strcmp(argv[i], "-iterations") == 0) {
             if (i + 1 >= argc) {
                 fprintf(stderr, "-iterations needs an extra parameter to indicate the number of iterations\n");
@@ -1647,6 +1657,15 @@ struct QTestDataSetter
     }
 };
 
+namespace {
+
+qreal addResult(qreal current, const QBenchmarkResult& r)
+{
+    return current + r.value;
+}
+
+}
+
 static void qInvokeTestMethodDataEntry(char *slot)
 {
     /* Benchmarking: for each median iteration*/
@@ -1655,6 +1674,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
     int i = (QBenchmarkGlobalData::current->measurer->needsWarmupIteration()) ? -1 : 0;
 
     QList<QBenchmarkResult> results;
+    bool minimumTotalReached = false;
     do {
         QBenchmarkTestMethodData::current->beginDataRun();
 
@@ -1713,8 +1733,16 @@ static void qInvokeTestMethodDataEntry(char *slot)
                 }
             }
         }
+
+        // Verify if the minimum total measurement is reached, if it was specified:
+        if (QBenchmarkGlobalData::current->minimumTotal == -1) {
+            minimumTotalReached = true;
+        } else {
+            const qreal total = std::accumulate(results.begin(), results.end(), 0.0, addResult);
+            minimumTotalReached = (total >= QBenchmarkGlobalData::current->minimumTotal);
+        }
     } while (isBenchmark
-             && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount())
+             && ((++i < QBenchmarkGlobalData::current->adjustMedianIterationCount()) || !minimumTotalReached)
              && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
 
     // If the test is a benchmark, finalize the result after all iterations have finished.

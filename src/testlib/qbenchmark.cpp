@@ -59,6 +59,7 @@ QBenchmarkGlobalData::QBenchmarkGlobalData()
     , medianIterationCount(-1)
     , createChart(false)
     , verboseOutput(false)
+    , minimumTotal(-1)
     , mode_(WallTime)
 {
     setMode(mode_);
