@@ -19,6 +19,10 @@ if (CMAKE_TOOLCHAIN_FILE)
   list(APPEND BUILD_OPTIONS_LIST "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
 endif()
 
+if (NO_WIDGETS)
+  list(APPEND BUILD_OPTIONS_LIST "-DNO_WIDGETS=True")
+endif()
+
 macro(expect_pass _dir)
   string(REPLACE "(" "_" testname "${_dir}")
   string(REPLACE ")" "_" testname "${testname}")

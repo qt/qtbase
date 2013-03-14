@@ -35,4 +35,6 @@ endmacro()
 
 add_subdirectory(core_only)
 add_subdirectory(gui)
-add_subdirectory(widgets)
+if(NOT NO_WIDGETS)
+    add_subdirectory(widgets)
+endif()

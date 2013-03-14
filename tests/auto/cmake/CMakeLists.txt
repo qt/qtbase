@@ -55,10 +55,12 @@ else()
     message("CMake version older than 2.8.9 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\"")
 endif()
 expect_pass(test_wrap_cpp_and_resources)
-expect_pass(test_dependent_modules)
+if (NOT NO_WIDGETS)
+    expect_pass(test_dependent_modules)
+    expect_pass("test(needsquoting)dirname")
+endif()
 expect_fail(test_add_resource_options)
 expect_fail(test_wrap_cpp_options)
-expect_pass("test(needsquoting)dirname")
 expect_pass(test_platform_defs_include)
 expect_pass(test_qtmainwin_library)
 
@@ -78,28 +80,35 @@ expect_pass(test_testlib_definitions)
 expect_pass(test_json_plugin_includes)
 
 expect_fail(test_testlib_no_link_gui)
-expect_fail(test_testlib_no_link_widgets)
-
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_gui/test_testlib_no_link_gui/"
 )
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
-    "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_widgets/test_testlib_no_link_widgets/"
-)
+
+if (NOT NO_WIDGETS)
+    expect_fail(test_testlib_no_link_widgets)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+        "${CMAKE_CURRENT_SOURCE_DIR}/test_testlib_definitions/main.cpp"
+        "${CMAKE_CURRENT_BINARY_DIR}/failbuild/test_testlib_no_link_widgets/test_testlib_no_link_widgets/"
+    )
+endif()
 
 set(qt_module_includes
   Core QObject
   Gui QImage
-  Widgets QWidget
   Network QHostInfo
-  OpenGL QGLBuffer
   Sql QSqlError
   Test QTestEventList
   Xml QDomDocument
-  PrintSupport QPrintDialog
 )
+
+if (NOT NO_WIDGETS)
+  list(APPEND qt_module_includes
+    Widgets QWidget
+    OpenGL QGLBuffer
+    PrintSupport QPrintDialog
+  )
+endif()
 
 if (UNIX AND NOT APPLE AND NOT QNXNTO)
   list(APPEND qt_module_includes

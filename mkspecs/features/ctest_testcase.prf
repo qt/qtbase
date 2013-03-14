@@ -44,13 +44,15 @@ isEmpty(CMAKE_VERSION) {
             }
             CMAKE_PREFIX_PATH=\"$$join(CMAKE_PREFIX_PATH, ;)\"
 
+            !qtHaveModule(widgets): CMAKE_MODULE_DEFINES += -DNO_WIDGETS=True
+
             dependentmodules = $$resolve_depends(CMAKE_QT_MODULES_UNDER_TEST, "QT.")
             dependentmodules -= $$CMAKE_QT_MODULES_UNDER_TEST
             dependentmodules = $$cmakeModuleList($$dependentmodules)
 
             check.commands = \
                 $(MKDIR) $$BUILD_DIR && cd $$BUILD_DIR && \
-                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
+                cmake $$_PRO_FILE_PWD_ $$CMAKE_GENERATOR $$CMAKE_MODULE_DEFINES -DCMAKE_BUILD_TYPE=$${CMAKE_BUILD_TYPE} -DCMAKE_PREFIX_PATH=$$CMAKE_PREFIX_PATH -DQt5_MODULE_TEST_DEPENDS=\"$${dependentmodules}\" && \
                 $(TESTRUNNER) ctest --output-on-failure
 
         }
@@ -60,7 +62,5 @@ isEmpty(CMAKE_VERSION) {
 insignificant_test:!isEmpty(check.commands) {
     check.commands = -$${check.commands}
 }
-
-!qtHaveModule(widgets): CONFIG += insignificant_test # QTBUG-28540
 
 QMAKE_EXTRA_TARGETS *= check
