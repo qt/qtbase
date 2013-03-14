@@ -46,6 +46,11 @@
 
 #include <QtCore/qglobal.h>
 
+// Windows always needs this to ensure that APIENTRY gets defined
+#if defined(Q_OS_WIN)
+# include <QtCore/qt_windows.h>
+#endif
+
 // Note: Mac OSX is a "controlled platform" for OpenGL ABI so we
 // use the system provided headers there. Controlled means that the
 // headers always match the actual driver implementation so there
@@ -101,9 +106,6 @@ typedef GLfloat GLdouble;
 #  endif
 #  include <OpenGL/glext.h>
 # else
-#  if defined(Q_OS_WIN)
-#   include <QtCore/qt_windows.h>
-#  endif
 #  define GL_GLEXT_LEGACY // Prevents GL/gl.h form #including system glext.h
 #  include <GL/gl.h>
 #  include <QtGui/qopenglext.h>
