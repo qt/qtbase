@@ -98,6 +98,8 @@ win32:SUBDIRS += src_winmain
 SUBDIRS += src_network src_sql src_xml src_testlib
 contains(QT_CONFIG, dbus) {
     SUBDIRS += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
+    contains(QT_CONFIG, accessibility-atspi-bridge): \
+        src_platformsupport.depends += src_dbus src_tools_qdbusxml2cpp
     src_plugins.depends += src_dbus src_tools_qdbusxml2cpp src_tools_qdbuscpp2xml
 }
 contains(QT_CONFIG, concurrent):SUBDIRS += src_concurrent
