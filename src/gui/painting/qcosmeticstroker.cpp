@@ -290,14 +290,14 @@ void QCosmeticStroker::setup()
         ppl = buffer->bytesPerLine()>>2;
     }
 
-    // dashes are sensitive to clips, so we need to clip consistently when painting to the same device
-    QRect clipRect = strokeSelection & Dashed ? deviceRect : clip;
+    // line drawing produces different results with different clips, so
+    // we need to clip consistently when painting to the same device
 
     // setup FP clip bounds
-    xmin = clipRect.left() - 1;
-    xmax = clipRect.right() + 2;
-    ymin = clipRect.top() - 1;
-    ymax = clipRect.bottom() + 2;
+    xmin = deviceRect.left() - 1;
+    xmax = deviceRect.right() + 2;
+    ymin = deviceRect.top() - 1;
+    ymax = deviceRect.bottom() + 2;
 
     lastPixel.x = -1;
 }
