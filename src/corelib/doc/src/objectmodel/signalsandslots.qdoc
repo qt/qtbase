@@ -365,7 +365,7 @@
     arguments can have default values. Consider QObject::destroyed():
 
     \code
-    void destroyed(QObject* = 0); 
+    void destroyed(QObject* = 0);
     \endcode
 
     When a QObject is deleted, it emits this QObject::destroyed()
@@ -434,7 +434,7 @@
     handle each signal differently.
 
     Suppose you have three push buttons that determine which file you
-    will open: "Tax File", "Accounts File", or "Report File". 
+    will open: "Tax File", "Accounts File", or "Report File".
 
     In order to open the correct file, you use QSignalMapper::setMapping() to
     map all the clicked() signals to a QSignalMapper object. Then you connect

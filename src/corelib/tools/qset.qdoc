@@ -130,7 +130,7 @@
     \fn QSet<T> &QSet::operator=(const QSet<T> &other)
 
     Assigns the \a other set to this set and returns a reference to
-    this set.  
+    this set.
 */
 
 /*!
@@ -306,7 +306,7 @@
 
     Returns a non-const iterator positioned at the item \a value in
     the set. If the set contains no item \a value, the function
-    returns end(). 
+    returns end().
 */
 
 /*! \fn QSet::const_iterator QSet::constFind(const T &value) const
@@ -351,7 +351,7 @@
     \overload
 
     Returns a non-const \l{STL-style iterators}{STL-style iterator} positioned at the first
-    item in the set.  
+    item in the set.
 */
 
 /*! \fn QSet::const_iterator QSet::cbegin() const
@@ -496,7 +496,7 @@
 /*!
     \fn QSet<T> &QSet::subtract(const QSet<T> &other)
 
-    Removes all items from  this set that are contained in the 
+    Removes all items from  this set that are contained in the
     \a other set. Returns a reference to this set.
 
     \sa operator-=(), unite(), intersect()
@@ -506,7 +506,7 @@
     \fn bool QSet::empty() const
 
     Returns true if the set is empty. This function is provided
-    for STL compatibility. It is equivalent to isEmpty().  
+    for STL compatibility. It is equivalent to isEmpty().
 */
 
 /*!
@@ -529,7 +529,7 @@
 /*!
     \fn QSet<T> &QSet::operator-=(const T &value)
 
-    Removes the occurrence of item \a value from the set, if 
+    Removes the occurrence of item \a value from the set, if
     it is found, and returns a reference to the set. If the
     \a value is not contained the set, nothing is removed.
 
@@ -559,7 +559,7 @@
     \overload
 
     Same as intersect(\e{other}), if we consider \e{other} to be a set
-    that contains the singleton \a value.  
+    that contains the singleton \a value.
 */
 
 
@@ -575,7 +575,7 @@
     \fn QSet<T> QSet::operator|(const QSet<T> &other) const
     \fn QSet<T> QSet::operator+(const QSet<T> &other) const
 
-    Returns a new QSet that is the union of this set and the 
+    Returns a new QSet that is the union of this set and the
     \a other set.
 
     \sa unite(), operator|=(), operator&(), operator-()
@@ -622,7 +622,7 @@
     iterators are slightly faster, and can improve code readability.
 
     QSet\<T\>::iterator allows you to iterate over a QSet\<T\> and
-    modify it as you go (using QSet::erase()). However, 
+    modify it as you go (using QSet::erase()). However,
 
     The default QSet::iterator constructor creates an uninitialized
     iterator. You must initialize it using a function like
@@ -701,7 +701,7 @@
     \sa QSet::begin(), QSet::end()
 */
 
-/*! 
+/*!
     \fn QSet::iterator::iterator(typename Hash::iterator i)
     \fn QSet::const_iterator::const_iterator(typename Hash::const_iterator i)
 

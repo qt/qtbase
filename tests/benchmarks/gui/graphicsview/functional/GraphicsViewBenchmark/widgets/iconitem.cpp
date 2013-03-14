@@ -45,7 +45,7 @@
 
 #include "iconitem.h"
 
-IconItem::IconItem(const QString &filename, QGraphicsItem *parent) 
+IconItem::IconItem(const QString &filename, QGraphicsItem *parent)
   : GvbWidget(parent)
   , m_filename(filename)
   , m_rotation(0.0)
@@ -79,7 +79,7 @@ void IconItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->drawPixmap(0,0, m_pixmap);
 }
 
-QSizeF IconItem::sizeHint(Qt::SizeHint which, 
+QSizeF IconItem::sizeHint(Qt::SizeHint which,
     const QSizeF &constraint) const
 {
     switch (which)
@@ -144,7 +144,7 @@ void IconItem::setOpacityEffectEnabled(const bool enable)
         gradient.setColorAt(0.0, QColor(0,0,0, 255));
         gradient.setColorAt(0.46, QColor(0,0,0, 255));
         gradient.setColorAt(0.62, QColor(0,0,0, 0));
-    
+
         m_opacityEffect = new QGraphicsOpacityEffect;
         m_opacityEffect->setOpacityMask(gradient);
         m_opacityEffect->setOpacity(1.0);

@@ -63,11 +63,11 @@ private slots:
     void periodChanged(double);
     void amplitudeChanged(double);
     void overshootChanged(double);
-    
+
 private:
     void createCurveIcons();
     void startAnimation();
-    
+
     Ui::Form m_ui;
     QGraphicsScene m_scene;
     PixmapItem *m_item;

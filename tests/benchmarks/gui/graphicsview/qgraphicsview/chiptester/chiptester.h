@@ -62,7 +62,7 @@ public:
 	Translate
     };
     ChipTester(QWidget *parent = 0);
-    
+
     void setAntialias(bool enabled);
     void setOpenGL(bool enabled);
     void runBenchmark();
@@ -75,7 +75,7 @@ protected:
 private:
     void populateScene();
 
-    QGraphicsView *view;    
+    QGraphicsView *view;
     QGraphicsScene *scene;
     int npaints;
     int timerId;

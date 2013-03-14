@@ -923,7 +923,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             fillPipeline(channels[i].socket);
 
     // If there is not already any connected channels we need to connect a new one.
-    // We do not pair the channel with the request until we know if it is 
+    // We do not pair the channel with the request until we know if it is
     // connected or not. This is to reuse connected channels before we connect new once.
     int queuedRequest = highPriorityQueue.count() + lowPriorityQueue.count();
     for (int i = 0; i < channelCount; ++i) {

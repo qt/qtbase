@@ -148,7 +148,7 @@ protected:
     bool m_filterMode;
     QMap<int, ResultItem> pendingResults;
     int filteredResults;
-    
+
 };
 
 template <typename T>

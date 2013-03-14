@@ -524,9 +524,9 @@ int QThread::exec()
 
     Note that unlike the C library function of the same name, this
     function \e does return to the caller -- it is event processing
-    that stops. 
-    
-    No QEventLoops will be started anymore in this thread  until 
+    that stops.
+
+    No QEventLoops will be started anymore in this thread  until
     QThread::exec() has been called again. If the eventloop in QThread::exec()
     is not running then the next call to QThread::exec() will also return
     immediately.

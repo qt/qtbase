@@ -5,7 +5,7 @@
 translate 0 10
 setRenderHint Antialiasing
 
-pixmap_load dome_argb32 the_pixmap 
+pixmap_load dome_argb32 the_pixmap
 
 begin_block draw_stuff
 save
@@ -25,7 +25,7 @@ save
     setRenderHint SmoothPixmapTransform false
     drawTiledPixmap the_pixmap 0 0 150 100 25 25
   restore
-  
+
   # xformed with smooth xform
   translate 160 0
   save
@@ -38,17 +38,17 @@ restore
 end_block
 
 translate 0 120
-pixmap_load dome_rgb32 the_pixmap 
+pixmap_load dome_rgb32 the_pixmap
 repeat_block draw_stuff
 
 
 translate 0 120
-pixmap_load dome_indexed the_pixmap 
+pixmap_load dome_indexed the_pixmap
 repeat_block draw_stuff
 
 
 translate 0 120
-pixmap_load dome_indexed_mask the_pixmap 
+pixmap_load dome_indexed_mask the_pixmap
 repeat_block draw_stuff
 
 

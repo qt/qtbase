@@ -1731,12 +1731,12 @@ void QPainterReplayer::process(const QPaintBufferCommand &cmd)
 #endif
         painter->setClipRegion(region, Qt::ClipOperation(cmd.extra));
         break; }
-        
+
 #if !defined(QT_NO_RAWFONT)
     case QPaintBufferPrivate::Cmd_DrawStaticText: {
-            
+
             QVariantList variants(d->variants.at(cmd.offset).value<QVariantList>());
-            
+
             QFont font = variants.at(0).value<QFont>();
 
             QVector<quint32> glyphIndexes;

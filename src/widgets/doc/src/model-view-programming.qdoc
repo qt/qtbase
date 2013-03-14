@@ -280,7 +280,7 @@
 
     In the above example, we neglected to mention how to handle selections
     of items. This subject is covered in more detail in the section about
-    \l{Handling Selections in Item Views}. 
+    \l{Handling Selections in Item Views}.
 
     \section1 Model classes
 

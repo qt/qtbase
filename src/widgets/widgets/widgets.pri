@@ -145,7 +145,7 @@ SOURCES += \
 false:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
                widgets/qmaccocoaviewcontainer_mac.h
-    OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \ 
+    OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \
                          widgets/qcocoamenu_mac_p.h
     OBJECTIVE_SOURCES += widgets/qmaccocoaviewcontainer_mac.mm \
                          widgets/qcocoatoolbardelegate_mac.mm \

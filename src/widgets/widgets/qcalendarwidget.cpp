@@ -2591,7 +2591,7 @@ QCalendarWidget::HorizontalHeaderFormat QCalendarWidget::horizontalHeaderFormat(
 }
 
 
-/*! 
+/*!
     \enum QCalendarWidget::VerticalHeaderFormat
 
     This enum type defines the various formats the vertical header can display.

@@ -158,7 +158,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
                metrics.yoff.toReal(),
                metrics.x.toReal(),
                metrics.y.toReal());
-#endif        
+#endif
         GlyphAndSubPixelPosition key(glyph, subPixelPosition);
         int glyph_width = metrics.width.ceil().toInt();
         int glyph_height = metrics.height.ceil().toInt();

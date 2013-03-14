@@ -70,7 +70,7 @@ void GLWidget::setScaling(int scale) {
         m_fScale = 1 + qreal(scale -50) / 50 * 0.5;
     else if (scale < 50)
         m_fScale =  1- (qreal(50 - scale) / 50 * 1/2);
-    else 
+    else
       m_fScale = 1;
 }
 
@@ -316,7 +316,7 @@ void GLWidget::paintGL()
     painter.drawText(20, 40, framesPerSecond + " fps");
 
     painter.end();
-    
+
     swapBuffers();
 
     QMutableListIterator<Bubble*> iter(bubbles);

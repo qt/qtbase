@@ -57,9 +57,9 @@ class BackgroundItem;
 class TopBar;
 
 class MainView : public QGraphicsView {
-	
+
 Q_OBJECT
-	
+
 public:
     MainView(const bool enableOpenGL, const bool outputFps, const bool imageBasedRendering = false, QWidget *parent = 0);
     ~MainView();
@@ -94,7 +94,7 @@ private slots:
 private:
     void construct();
     void resizeContent(const QSize &s);
-		
+
 private:
     Q_DISABLE_COPY(MainView)
 

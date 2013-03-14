@@ -104,7 +104,7 @@ public:
     SslError error() const;
     QString errorString() const;
     QSslCertificate certificate() const;
-    
+
 private:
     QScopedPointer<QSslErrorPrivate> d;
 };

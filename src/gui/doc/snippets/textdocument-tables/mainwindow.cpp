@@ -87,7 +87,7 @@ MainWindow::MainWindow()
     int row;
     QTextTableCell cell;
     QTextCursor cellCursor;
-    
+
     QTextCharFormat charFormat;
     charFormat.setForeground(Qt::black);
 

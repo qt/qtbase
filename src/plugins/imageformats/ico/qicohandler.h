@@ -57,13 +57,13 @@ public:
     bool write(const QImage &image);
 
     QByteArray name() const;
-    
+
     int imageCount() const;
     bool jumpToImage(int imageNumber);
     bool jumpToNextImage();
-    
+
     static bool canRead(QIODevice *device);
-    
+
     bool supportsOption(ImageOption option) const;
     QVariant option(ImageOption option) const;
 

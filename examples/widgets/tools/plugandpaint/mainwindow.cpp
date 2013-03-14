@@ -81,7 +81,7 @@ MainWindow::MainWindow() :
 void MainWindow::open()
 {
     const QString fileName = QFileDialog::getOpenFileName(this,
-                                                          tr("Open File"), 
+                                                          tr("Open File"),
                                                           QDir::currentPath());
     if (!fileName.isEmpty()) {
         if (!paintArea->openImage(fileName)) {

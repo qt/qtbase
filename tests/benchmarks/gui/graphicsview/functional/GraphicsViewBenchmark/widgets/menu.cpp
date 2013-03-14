@@ -73,14 +73,14 @@ Menu::~Menu()
 void Menu::init()
 {
     m_ButtonContainer = new QList<Button*>;
-    
+
     m_Layout->setContentsMargins(0,0,0,0);
     m_Layout->setSpacing(0);
-    
-    setMinimumWidth(150); 
-    
+
+    setMinimumWidth(150);
+
     setLayout(m_Layout);
-    
+
     connect(Theme::p(), SIGNAL(themeChanged()), this, SLOT(themeChange()));
 }
 
@@ -124,9 +124,9 @@ void Menu::menuHide()
 
 void Menu::themeChange()
 {
-    QPixmap pixmap = Theme::p()->pixmap("status_field_middle.svg", 
+    QPixmap pixmap = Theme::p()->pixmap("status_field_middle.svg",
             QSize(MinMenuItemWidth, MinMenuItemHeight));
-    
+
     for(int i = 0; i < m_ButtonContainer->count(); i++) {
         Button* button = m_ButtonContainer->at(i);
         button->setBackground(pixmap);
@@ -142,7 +142,7 @@ void Menu::keyPressEvent(QKeyEvent *event)
             Button* button = m_ButtonContainer->at(m_currentSelectedIndex);
             button->select(false);
             button->update();
-            
+
             m_currentSelectedIndex--;
             button = m_ButtonContainer->at(m_currentSelectedIndex);
             button->select(true);
@@ -162,7 +162,7 @@ void Menu::keyPressEvent(QKeyEvent *event)
             }
         }
     }
-    
+
     if(event->key() == 16777237 ) { //Down Arrow
         if (m_currentSelectedIndex < m_ButtonContainer->count()-1) { //One step down
             if(m_currentSelectedIndex >= 0) {
@@ -187,15 +187,15 @@ void Menu::keyPressEvent(QKeyEvent *event)
             }
         }
     }
-    
+
     if(event->key() == 17825792 || event->key() == 16842752 || //LSK, center key or enter
-            event->key() == 16777221 ) { 
+            event->key() == 16777221 ) {
         if(m_currentSelectedIndex >= 0) {
             Button* button = m_ButtonContainer->at(m_currentSelectedIndex);
             button->click();
         }
     }
-    
+
     if(event->key() == 17825793 ) { //RSK
         menuShowHide();
     }

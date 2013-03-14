@@ -25,7 +25,7 @@
 **
 ****************************************************************************/
 
-/*! 
+/*!
     \example relationaltablemodel
     \title Relational Table Model Example
     \ingroup sql_examples

@@ -174,7 +174,7 @@ void tst_QTableView::spanInit_helper(QTableView *view)
     for (int i=0; i < 40; i++) {
         view->setSpan(1+i%2, 1+4*i, 1+i%3, 2);
     }
-    
+
     for (int i=1; i < 40; i++) {
         view->setSpan(6 + i*7, 4, 4, 50);
     }
@@ -185,7 +185,7 @@ void tst_QTableView::spanInit()
     QtTestTableModel model(500, 500);
     QTableView v;
     v.setModel(&model);
-    
+
     QBENCHMARK {
         spanInit_helper(&v);
     }
@@ -196,7 +196,7 @@ void tst_QTableView::spanDraw()
     QtTestTableModel model(500, 500);
     QTableView v;
     v.setModel(&model);
-    
+
     spanInit_helper(&v);
     v.show();
     v.resize(500,500);
@@ -214,11 +214,11 @@ void tst_QTableView::spanSelectAll()
     QtTestTableModel model(500, 500);
     QTableView v;
     v.setModel(&model);
-    
+
     spanInit_helper(&v);
     v.show();
     QTest::qWait(30);
-    
+
     QBENCHMARK {
         v.selectAll();
     }
@@ -229,11 +229,11 @@ void tst_QTableView::spanSelectColumn()
     QtTestTableModel model(500, 500);
     QTableView v;
     v.setModel(&model);
-    
+
     spanInit_helper(&v);
     v.show();
     QTest::qWait(30);
-    
+
     QBENCHMARK {
         v.selectColumn(22);
     }

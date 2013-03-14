@@ -302,7 +302,7 @@ bool QXbmHandler::read(QImage *image)
 {
     if (state == Error)
         return false;
-    
+
     if (state == Ready && !readHeader()) {
         state = Error;
         return false;

@@ -67,7 +67,7 @@
 
 /*!
     \fn QColormap::~QColormap()
-    
+
     Destroys the colormap.
 */
 

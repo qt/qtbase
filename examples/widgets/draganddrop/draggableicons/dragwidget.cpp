@@ -103,7 +103,7 @@ void DragWidget::dropEvent(QDropEvent *event)
     if (event->mimeData()->hasFormat("application/x-dnditemdata")) {
         QByteArray itemData = event->mimeData()->data("application/x-dnditemdata");
         QDataStream dataStream(&itemData, QIODevice::ReadOnly);
-        
+
         QPixmap pixmap;
         QPoint offset;
         dataStream >> pixmap >> offset;
@@ -143,7 +143,7 @@ void DragWidget::mousePressEvent(QMouseEvent *event)
     QMimeData *mimeData = new QMimeData;
     mimeData->setData("application/x-dnditemdata", itemData);
 //! [2]
-        
+
 //! [3]
     QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);

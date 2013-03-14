@@ -513,7 +513,7 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
     not indicate that the executed call succeeded. If it fails,
     the \a errorMethod is called. If the queueing failed, this
     function returns false and no slot will be called.
- 
+
     The \a returnMethod must have as its parameters the types returned
     by the function call. Optionally, it may have a QDBusMessage
     parameter as its last or only parameter.  The \a errorMethod must

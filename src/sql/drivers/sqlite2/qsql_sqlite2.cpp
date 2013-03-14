@@ -195,7 +195,7 @@ void QSQLite2ResultPrivate::init(const char **cnames, int numCols)
     for (int i = 0; i < numCols; ++i) {
         const char* lastDot = strrchr(cnames[i], '.');
         const char* fieldName = lastDot ? lastDot + 1 : cnames[i];
-        
+
         //remove quotations around the field name if any
         QString fieldStr = QString::fromLatin1(fieldName);
         QLatin1Char quote('\"');
@@ -244,7 +244,7 @@ bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int 
         firstRow.clear();
         firstRow.resize(colNum);
     }
-    
+
     switch(res) {
     case SQLITE_ROW:
         // check to see if should fill out columns

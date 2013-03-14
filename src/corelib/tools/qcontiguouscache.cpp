@@ -313,8 +313,8 @@ MyRecord record(int row) const
 
     In most cases it is better to use either at() or insert().
 
-    \note This non-const overload of operator[] requires QContiguousCache 
-    to make a deep copy. Use at() for read-only access to a non-const 
+    \note This non-const overload of operator[] requires QContiguousCache
+    to make a deep copy. Use at() for read-only access to a non-const
     QContiguousCache.
 
     \sa insert(), at()

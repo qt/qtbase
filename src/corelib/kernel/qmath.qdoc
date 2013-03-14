@@ -25,7 +25,7 @@
 **
 ****************************************************************************/
 
-/*! 
+/*!
     \headerfile <QtCore/qmath.h>
     \title Math Functions
     \ingroup funclists
@@ -35,11 +35,11 @@
 
 /*!
     \fn int qCeil(qreal v)
-    Return the ceiling of the value \a v. 
+    Return the ceiling of the value \a v.
 
     The ceiling is the smallest integer that is not less than \a v.
     For example, if \a v is 41.2, then the ceiling is 42.
-    
+
     \relates <QtCore/qmath.h>
     \sa qFloor()
 */

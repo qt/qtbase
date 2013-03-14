@@ -741,7 +741,7 @@ public:
 
 void tst_QStyle::testDrawingShortcuts()
 {
-    {   
+    {
         QWidget w;
         setFrameless(&w);
         QToolButton *tb = new QToolButton(&w);
@@ -771,7 +771,7 @@ void tst_QStyle::testDrawingShortcuts()
         bool showMnemonic = dts->styleHint(QStyle::SH_UnderlineShortcut, &sotb, tb);
         QVERIFY(dts->alignment & (showMnemonic ? Qt::TextShowMnemonic : Qt::TextHideMnemonic));
         delete dts;
-     }   
+     }
 }
 
 #define SCROLLBAR_SPACING 33

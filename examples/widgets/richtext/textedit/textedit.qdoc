@@ -31,8 +31,8 @@
   \title Text Edit Example
 
   \brief This example displays a text editor with the user interface written
-  in pure C++. 
-  
+  in pure C++.
+
   A similar example which uses Qt Designer to produce the user
   interface is in the \l {Qt Designer Manual}.
 

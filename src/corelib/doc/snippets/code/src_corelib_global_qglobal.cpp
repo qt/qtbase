@@ -501,7 +501,7 @@ namespace QT_NAMESPACE {
 //! [43]
 class MyClass : public QObject
 {
-    
+
   private:
     Q_DISABLE_COPY(MyClass)
 };
@@ -511,7 +511,7 @@ class MyClass : public QObject
 //! [44]
 class MyClass : public QObject
 {
-    
+
   private:
      MyClass(const MyClass &);
      MyClass &operator=(const MyClass &);

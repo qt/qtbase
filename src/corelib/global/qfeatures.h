@@ -238,7 +238,7 @@
 // QWheelEvent
 //#define QT_NO_WHEELEVENT
 
-// 
+//
 //#define QT_NO_XMLSTREAM
 
 // Animation

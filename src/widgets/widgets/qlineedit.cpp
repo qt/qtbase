@@ -139,9 +139,9 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
 
     The length of the text can be constrained to maxLength(). The text
     can be arbitrarily constrained using a validator() or an
-    inputMask(), or both. When switching between a validator and an input mask 
-    on the same line edit, it is best to clear the validator or input mask to 
-    prevent undefined behavior. 
+    inputMask(), or both. When switching between a validator and an input mask
+    on the same line edit, it is best to clear the validator or input mask to
+    prevent undefined behavior.
 
 
     A related class is QTextEdit which allows multi-line, rich text

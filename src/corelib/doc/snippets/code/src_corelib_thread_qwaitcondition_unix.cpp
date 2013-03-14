@@ -84,6 +84,6 @@ forever {
         mutex.lock();
     }
     keyPressed.wakeAll();
-    mutex.unlock();          
+    mutex.unlock();
 }
 //! [3]

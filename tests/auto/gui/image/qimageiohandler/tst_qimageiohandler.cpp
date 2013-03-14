@@ -63,7 +63,7 @@ class MyImageIOHandler : public QImageIOHandler
 {
 public:
     MyImageIOHandler() : QImageIOHandler() { }
-    bool canRead() const { return true; }    
+    bool canRead() const { return true; }
     bool read(QImage *) { return true; }
 };
 

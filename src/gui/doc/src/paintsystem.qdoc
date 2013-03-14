@@ -50,7 +50,7 @@
     \ingroup qt-graphics
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts
-	
+
 
     Qt's paint system enables painting on screen and print devices
     using the same API, and is primarily based on the QPainter,
@@ -70,7 +70,7 @@
     same painting pipeline making it easy to add support for new
     features and providing default implementations for unsupported
     ones.
-    
+
     \section1 Topics
     \list
         \li \l{Classes for Painting}
@@ -126,7 +126,7 @@
     in a platform-independent way. Another benefit is that the
     painting can be performed in another thread than the current GUI
     thread.
-    
+
     \row \li \b Pixmap
 
     The QPixmap class is an off-screen image representation which is
@@ -175,7 +175,7 @@
     actually be able to draw on the device, this paint engine must be
     a custom paint engine created by deriving from the QPaintEngine
     class.
-    
+
     \endtable
 
 */
@@ -183,7 +183,7 @@
 /*!
     \page paintsystem-drawing.html
     \title Drawing and Filling
-    
+
     \previouspage Paint Devices and Backends
     \contentspage The Paint System
     \nextpage Coordinate System

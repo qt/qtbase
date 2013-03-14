@@ -184,9 +184,9 @@ void tst_qfile::readBigFile_QFSFileEngine()
     QSKIP("This test requires -developer-build.");
 #endif
 }
-void tst_qfile::readBigFile_posix() 
-{ 
-    readBigFile(); 
+void tst_qfile::readBigFile_posix()
+{
+    readBigFile();
 }
 void tst_qfile::readBigFile_Win32() { readBigFile(); }
 
@@ -509,13 +509,13 @@ void tst_qfile::readSmallFiles_QFSFileEngine()
     QSKIP("This test requires -developer-build.");
 #endif
 }
-void tst_qfile::readSmallFiles_posix() 
+void tst_qfile::readSmallFiles_posix()
 {
-    readSmallFiles(); 
+    readSmallFiles();
 }
-void tst_qfile::readSmallFiles_Win32() 
-{ 
-    readSmallFiles(); 
+void tst_qfile::readSmallFiles_Win32()
+{
+    readSmallFiles();
 }
 
 void tst_qfile::readSmallFiles_QFile_data()

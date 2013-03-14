@@ -7,47 +7,47 @@ begin_block text_drawing
 save
   setFont "sansserif" 10 normal
   drawText 0 20 "sansserif 10pt, normal"
-  
+
   setFont "sansserif" 12 normal
   drawText 0 40 "sansserif 12pt, normal"
-  
+
   setFont "sansserif" 10 bold
   drawText 0 60 "sansserif 12pt, bold"
-  
+
   setFont "sansserif" 10 bold italic
   drawText 0 80 "sansserif 10pt, bold italic"
-  
-  
+
+
   translate 0 100
   setPen #7fff0000
-  
+
   setFont "sansserif" 10 normal
   drawText 0 20 "alpha sansserif 10pt, normal"
-  
+
   setFont "sansserif" 12 normal
   drawText 0 40 "alpha sansserif 12pt, normal"
-  
+
   setFont "sansserif" 10 bold
   drawText 0 60 "alpha sansserif 12pt, bold"
-  
+
   setFont "sansserif" 10 bold italic
   drawText 0 80 "alpha sansserif 10pt, bold italic"
-  
-  
+
+
   translate 0 100
   setPen black
   save
     scale 0.9 0.9
-  
+
     setFont "sansserif" 10 normal
     drawText 0 20 "scaled sansserif 10pt, normal"
-  
+
     setFont "sansserif" 12 normal
     drawText 0 40 "scaled sansserif 12pt, normal"
-  
+
     setFont "sansserif" 10 bold
     drawText 0 60 "scaled sansserif 12pt, bold"
-  
+
     setFont "sansserif" 10 bold italic
     drawText 0 80 "scaled sansserif 10pt, bold italic"
   restore
@@ -75,36 +75,36 @@ save
   save
     translate 200 90
     rotate 185
-  
+
     setFont "sansserif" 10 normal
     drawText 0 20 "scaled sansserif 10pt, normal"
-  
+
     setFont "sansserif" 12 normal
     drawText 0 40 "scaled sansserif 12pt, normal"
-  
+
     setFont "sansserif" 10 bold
     drawText 0 60 "scaled sansserif 12pt, bold"
-  
+
     setFont "sansserif" 10 bold italic
     drawText 0 80 "scaled sansserif 10pt, bold italic"
   restore
-  
+
   translate 0 100
   gradient_appendStop 0 red
   gradient_appendStop 0.5 #00ff00
   gradient_appendStop 1 blue
   gradient_setLinear 0 0 200 0
   setPen brush
-  
+
   setFont "sansserif" 10 normal
   drawText 0 0 "gradient sansserif 10pt, normal"
-  
+
   setFont "sansserif" 12 normal
   drawText 0 20 "gradient sansserif 12pt, normal"
-  
+
   setFont "sansserif" 10 bold
   drawText 0 40 "gradient sansserif 12pt, bold"
-  
+
   setFont "sansserif" 10 bold italic
   drawText 0 60 "gradient sansserif 10pt, bold italic"
 restore
@@ -123,7 +123,7 @@ restore
 
 translate 150 0
 drawText 25 640 "clipped to path"
-save 
+save
   path_moveTo clip 20 0
   path_cubicTo clip 0 200  40 400  20 400
   path_lineTo clip 30 620

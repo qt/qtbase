@@ -112,7 +112,7 @@ public:
         return false;
     }
     bool runIteration(TestIterator it, int index , void *result)
-    { 
+    {
         return runIterations(it, index, index + 1, result);
     }
 
@@ -132,7 +132,7 @@ public:
         return false;
     }
     bool runIteration(TestIterator it, int index , void *result)
-    { 
+    {
         return runIterations(it, index, index + 1, result);
     }
 };
@@ -166,7 +166,7 @@ public:
         return false;
     }
     bool runIteration(TestIterator it, int index , void *result)
-    { 
+    {
         return runIterations(it, index, index + 1, result);
     }
 };
@@ -217,13 +217,13 @@ public:
         if (100 >= begin && 100 < end) {
             throttling = true;
         }
-        
+
         QTest::qWait(1);
 
         return false;
     }
     bool runIteration(TestIterator it, int index , void *result)
-    { 
+    {
         return runIterations(it, index, index + 1, result);
     }
 

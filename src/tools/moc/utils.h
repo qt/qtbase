@@ -112,10 +112,10 @@ inline const char *skipQuote(const char *data)
         }
         ++data;
     }
-    
+
     if (*data)  //Skip last quote
         ++data;
-    return data; 
+    return data;
 }
 
 QT_END_NAMESPACE

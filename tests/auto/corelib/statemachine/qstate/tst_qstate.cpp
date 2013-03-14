@@ -77,7 +77,7 @@ public:
 public slots:
     void slot() { called = true; }
 
-    
+
 };
 
 void tst_QState::assignProperty()
@@ -89,7 +89,7 @@ void tst_QState::assignProperty()
 
     QState *s1 = new QState(&machine);
     s1->assignProperty(object, "fooBar", 20);
-    
+
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
@@ -107,7 +107,7 @@ void tst_QState::assignPropertyTwice()
     QState *s1 = new QState(&machine);
     s1->assignProperty(object, "fooBar", 20);
     s1->assignProperty(object, "fooBar", 30);
-    
+
     machine.setInitialState(s1);
     machine.start();
     QCoreApplication::processEvents();
@@ -118,7 +118,7 @@ void tst_QState::assignPropertyTwice()
 class EventTestTransition: public QAbstractTransition
 {
 public:
-    EventTestTransition(QEvent::Type type, QState *targetState) 
+    EventTestTransition(QEvent::Type type, QState *targetState)
         : QAbstractTransition(), m_type(type)
     {
         setTargetState(targetState);
@@ -134,18 +134,18 @@ protected:
 
 private:
     QEvent::Type m_type;
-    
+
 };
 
-void tst_QState::historyInitialState() 
+void tst_QState::historyInitialState()
 {
     QStateMachine machine;
 
     QState *s1 = new QState(&machine);
-    
+
     QState *s2 = new QState(&machine);
     QHistoryState *h1 = new QHistoryState(s2);
-    
+
     s2->setInitialState(h1);
 
     QState *s3 = new QState(s2);

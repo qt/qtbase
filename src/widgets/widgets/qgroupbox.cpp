@@ -121,7 +121,7 @@ void QGroupBox::initStyleOption(QStyleOptionGroupBox *option) const
             option->state |= QStyle::State_Sunken;
     }
 
-    if (!option->palette.isBrushSet(isEnabled() ? QPalette::Active : 
+    if (!option->palette.isBrushSet(isEnabled() ? QPalette::Active :
                                     QPalette::Disabled, QPalette::WindowText))
         option->textColor = QColor(style()->styleHint(QStyle::SH_GroupBox_TextLabelColor,
                                    option, this));
@@ -229,7 +229,7 @@ void QGroupBoxPrivate::init()
     overCheckBox = false;
     pressedControl = QStyle::SC_None;
     calculateFrame();
-    q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred, 
+    q->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred,
                      QSizePolicy::GroupBox));
 }
 

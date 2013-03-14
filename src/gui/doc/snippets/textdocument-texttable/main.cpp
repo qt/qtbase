@@ -56,7 +56,7 @@ int main(int argc, char * argv[])
     tableFormat.setCellSpacing(2);
     QTextTable *table = cursor.insertTable(rows, columns);
     table->setFormat(tableFormat);
-    
+
     QTextCharFormat boldFormat;
     boldFormat.setFontWeight(QFont::Bold);
 

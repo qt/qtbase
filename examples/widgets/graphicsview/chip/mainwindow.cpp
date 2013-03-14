@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     h1Splitter = new QSplitter;
     h2Splitter = new QSplitter;
-    
+
     QSplitter *vSplitter = new QSplitter;
     vSplitter->setOrientation(Qt::Vertical);
     vSplitter->addWidget(h1Splitter);

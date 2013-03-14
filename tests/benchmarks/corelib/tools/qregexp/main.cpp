@@ -139,13 +139,13 @@ void tst_qregexp::escape_data()
 
     QTest::newRow("escape 0") << "Hello world" << "Hello world";
     QTest::newRow("escape 1") << "(Hello world)" << "\\(Hello world\\)";
-    { 
+    {
         QString s;
         for (int i = 0; i < 10; ++i)
             s += "(escape)";
         QTest::newRow("escape 10") << s << QRegExp::escape(s);
     }
-    { 
+    {
         QString s;
         for (int i = 0; i < 100; ++i)
             s += "(escape)";
@@ -242,7 +242,7 @@ void tst_qregexp::escape_new2()
             *quotedData = c;
             ++quotedData;
         }
-        quoted.resize(pattern.size() + escaped); 
+        quoted.resize(pattern.size() + escaped);
 
         verify(quoted, expected);
     }
@@ -329,7 +329,7 @@ void tst_qregexp::escape_new4()
         const QLatin1Char backslash('\\');
         QString quoted(n * 2, backslash);
         QChar *quotedData = quoted.data();
-        for (int j = 0; j != i; ++j) 
+        for (int j = 0; j != i; ++j)
             *quotedData++ = *patternData++;
         int escaped = 0;
         for (; i != n; ++i) {
@@ -342,7 +342,7 @@ void tst_qregexp::escape_new4()
             ++quotedData;
             ++patternData;
         }
-        quoted.resize(n + escaped); 
+        quoted.resize(n + escaped);
         verify(quoted, expected);
         // "return quoted"
     }

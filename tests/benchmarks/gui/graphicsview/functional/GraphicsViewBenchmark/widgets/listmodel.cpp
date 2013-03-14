@@ -106,7 +106,7 @@ void ListModel::insert(int row, RecycledListItem *item)
 {
     if (item)
         item->setModel(this);
-    if (!item || m_items.contains(item) ) {     
+    if (!item || m_items.contains(item) ) {
         return;
     }
     if (row < 0)

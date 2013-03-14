@@ -64,11 +64,11 @@ private slots:
 
 private:
     void keyPressEvent(QKeyEvent* event);
-    
+
     Ui::MainWindow *ui;
     QTimer *timer;
     int override;
-    
+
     QCursor ccurs;
     QCursor bcurs;
 };

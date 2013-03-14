@@ -3359,7 +3359,7 @@ void testVectorAlignment()
 
     for (int i = 0; i < 200; ++i)
         container.append(Aligned());
-    
+
     for (int i = 0; i < container.size(); ++i)
         QCOMPARE(quintptr(&container.at(i)) % Aligned::PreferredAlignment, quintptr(0));
 }

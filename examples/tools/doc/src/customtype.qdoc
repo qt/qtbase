@@ -104,7 +104,7 @@
     With the type fully defined, implemented, and integrated with the
     meta-object system, we can now use it.
 
-    \section1 Using the Message 
+    \section1 Using the Message
 
     In the example's \c{main()} function, we show how a \c Message object can
     be printed to the console by sending it to the debug stream:

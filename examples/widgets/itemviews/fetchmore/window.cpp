@@ -65,7 +65,7 @@ Window::Window(QWidget *parent)
             logViewer, SLOT(clear()));
     connect(model, SIGNAL(numberPopulated(int)),
             this, SLOT(updateLog(int)));
-    
+
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(label, 0, 0);
     layout->addWidget(lineEdit, 0, 1);

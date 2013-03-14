@@ -109,7 +109,7 @@ void Window::setupModel()
 
     QStringList ages;
     ages << "20" << "31" << "32" << "19" << "26";
-    
+
     for (int row = 0; row < 5; ++row) {
       QStandardItem *item = new QStandardItem(names[row]);
       model->setItem(row, 0, item);

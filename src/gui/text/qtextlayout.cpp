@@ -1022,7 +1022,7 @@ static inline QRectF clipIfValid(const QRectF &rect, const QRectF &clip)
 */
 #if !defined(QT_NO_RAWFONT)
 QList<QGlyphRun> QTextLayout::glyphRuns(int from, int length) const
-{    
+{
     if (from < 0)
         from = 0;
     if (length < 0)
@@ -1651,7 +1651,7 @@ namespace {
         }
 
         inline glyph_t currentGlyph() const
-        {            
+        {
             Q_ASSERT(currentPosition > 0);
             Q_ASSERT(logClusters[currentPosition - 1] < glyphs.numGlyphs);
 

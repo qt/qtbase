@@ -43,7 +43,7 @@
     QTcpSocket::connectToHost() returns immediately, and when the connection
     has been established, QTcpSocket emits
     \l{QTcpSocket::connected()}{connected()}.
-    
+
     \li \e{The synchronous (blocking) approach.} In non-GUI and multithreaded
     applications, you can call the \c waitFor...() functions (e.g.,
     QTcpSocket::waitForConnected()) to suspend the calling thread until the
@@ -208,7 +208,7 @@
     \snippet blockingfortuneclient/blockingclient.cpp 3
     \codeline
     \snippet blockingfortuneclient/blockingclient.cpp 4
-    
+
     Here, we simply display the fortune we received as the argument.
 
     \sa {Fortune Client Example}, {Fortune Server Example}

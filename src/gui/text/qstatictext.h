@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 class QStaticTextPrivate;
 class Q_GUI_EXPORT QStaticText
-{    
+{
 public:
     enum PerformanceHint {
         ModerateCaching,

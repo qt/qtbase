@@ -452,7 +452,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     // no corner widget. Also, on the Mac we paint if there is a native
     // (transparent) sizegrip in the area where a corner widget would be.
     if ((needv && needh && hasCornerWidget == false && scrollOverlap == 0)
-        || ((needv || needh) 
+        || ((needv || needh)
 #ifdef Q_WS_MAC
         && hasMacSizeGrip
 #endif

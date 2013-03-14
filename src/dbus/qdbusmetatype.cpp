@@ -318,10 +318,10 @@ int QDBusMetaType::signatureToType(const char *signature)
 
     case DBUS_TYPE_UINT16:
         return QMetaType::UShort;
-        
+
     case DBUS_TYPE_INT32:
         return QVariant::Int;
-        
+
     case DBUS_TYPE_UINT32:
         return QVariant::UInt;
 
@@ -375,7 +375,7 @@ int QDBusMetaType::signatureToType(const char *signature)
 
 /*!
     \fn QDBusMetaType::typeToSignature(int type)
-    \internal 
+    \internal
 
     Returns the D-Bus signature equivalent to the supplied meta type id \a type.
 

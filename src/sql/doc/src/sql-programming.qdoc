@@ -64,7 +64,7 @@
     \li \l{Using the SQL Model Classes}
     \li \l{Presenting Data in a Table View}
     \li \l{Creating Data-Aware Forms}
-    \endlist    
+    \endlist
 
     \section1 Database Classes
 
@@ -142,7 +142,7 @@
     \l{QSqlDatabase::addDatabase()} {addDatabase()} specifies the type
     of database driver to use for the connection. The set of database
     drivers included with Qt are shown in the table of \l{SQL Database
-    Drivers#Supported Databases} {supported database drivers}. 
+    Drivers#Supported Databases} {supported database drivers}.
 
     The connection in the snippet will be the \e{default} connection,
     because we don't pass the second argument to
@@ -176,11 +176,11 @@
     \page sql-sqlstatements.html
     \title Executing SQL Statements
     \ingroup qt-sql
-    
+
     \previouspage Connecting to Databases
     \contentspage SQL Programming
     \nextpage Using the SQL Model Classes
-    
+
 
     The QSqlQuery class provides an interface for executing SQL
     statements and navigating through the result set of a query.
@@ -328,7 +328,7 @@
     \page sql-model.html
     \title Using the SQL Model Classes
     \ingroup qt-sql
-    
+
     \previouspage Executing SQL Statements
     \contentspage SQL Programming
     \nextpage Presenting Data in a Table View
@@ -475,7 +475,7 @@
     \page sql-presenting.html
     \title Presenting Data in a Table View
     \ingroup qt-sql
-    
+
     \previouspage Using the SQL Model Classes
     \contentspage SQL Programming
     \nextpage Creating Data-Aware Forms
@@ -580,7 +580,7 @@
     \page sql-forms.html
     \title Creating Data-Aware Forms
     \ingroup qt-sql
-    
+
     \previouspage Presenting Data in a Table View
     \contentspage SQL Programming
 

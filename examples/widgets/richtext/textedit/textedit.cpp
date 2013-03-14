@@ -197,7 +197,7 @@ void TextEdit::setupFileActions()
 #ifndef QT_NO_PRINTER
     a = new QAction(QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png")),
                     tr("&Print..."), this);
-    a->setPriority(QAction::LowPriority);    
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Print);
     connect(a, SIGNAL(triggered()), this, SLOT(filePrint()));
     tb->addAction(a);

@@ -1322,7 +1322,7 @@ void tst_QFile::copyFallback()
     QVERIFY(QFile::exists("file-copy-destination.txt"));
     QVERIFY(!file.isOpen());
 
-    file.close(); 
+    file.close();
     QFile::setPermissions("file-copy-destination.txt",
             QFile::ReadOwner | QFile::WriteOwner);
 }
@@ -2928,8 +2928,8 @@ void tst_QFile::map()
     // exotic test to make sure that multiple maps work
 
     // note: windows ce does not reference count mutliple maps
-    // it's essentially just the same reference but it 
-    // cause a resource lock on the file which prevents it 
+    // it's essentially just the same reference but it
+    // cause a resource lock on the file which prevents it
     // from being removed    uchar *memory1 = file.map(0, file.size());
     uchar *memory1 = file.map(0, file.size());
     QCOMPARE(file.error(), QFile::NoError);

@@ -47,7 +47,7 @@
 class ButtonPrivate;
 class QTextDocument;
 
-class QPixmap; 
+class QPixmap;
 class QFont;
 
 class Button : public QGraphicsWidget
@@ -73,7 +73,7 @@ public slots:
     QString text();
 
 public:
-    
+
     void setBackground(QPixmap& background);
     bool isDown();
     void select(bool select){m_selected = select;}
@@ -81,9 +81,9 @@ public:
 
 private:
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
             QWidget *widget = 0);
-    QSizeF sizeHint(Qt::SizeHint which, 
+    QSizeF sizeHint(Qt::SizeHint which,
         const QSizeF &constraint = QSizeF()) const;
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

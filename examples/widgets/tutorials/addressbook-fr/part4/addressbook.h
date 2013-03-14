@@ -77,10 +77,10 @@ private:
     void updateInterface(Mode mode);
 //! [updateInterface() declaration]
     QPushButton *addButton;
-//! [buttons declaration]    
+//! [buttons declaration]
     QPushButton *editButton;
     QPushButton *removeButton;
-//! [buttons declaration]        
+//! [buttons declaration]
     QPushButton *submitButton;
     QPushButton *cancelButton;
     QPushButton *nextButton;
@@ -91,9 +91,9 @@ private:
     QMap<QString, QString> contacts;
     QString oldName;
     QString oldAddress;
-//! [mode declaration]    
+//! [mode declaration]
     Mode currentMode;
-//! [mode declaration]    
+//! [mode declaration]
 };
 
 #endif

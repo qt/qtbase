@@ -74,7 +74,7 @@ void tst_QMargins::getSetCheck()
     margins.setRight(5);
     QVERIFY(!margins.isNull());
     QCOMPARE(margins, QMargins(5, 0, 5, 0));
-} 
+}
 
 void tst_QMargins::operators()
 {

@@ -100,7 +100,6 @@ void tst_QtConcurrentFilter::filter()
         QCOMPARE(vector, QVector<int>() << 2 << 4);
     }
 
-
     // function
     {
         QList<int> list;
@@ -554,7 +553,6 @@ void tst_QtConcurrentFilter::filteredReduced()
         int sum = QtConcurrent::filteredReduced<int>(vector, KeepEvenIntegers(), IntSumReduce());
         QCOMPARE(sum, 6);
     }
-
     {
         int sum = QtConcurrent::filteredReduced<int>(list.begin(),
                                                      list.end(),
@@ -1396,43 +1394,42 @@ void tst_QtConcurrentFilter::filteredReduced()
     // ### the same as above, with an initial result value
 }
 
-bool filterfn(int i)  
-{ 
+bool filterfn(int i)
+{
     return (i % 2);
-} 
+}
 
 void tst_QtConcurrentFilter::resultAt()
 {
 
-    QList<int> ints; 
+    QList<int> ints;
     for (int i=0; i < 1000; ++i)
         ints << i;
 
     QFuture<int> future = QtConcurrent::filtered(ints, filterfn);
-    future.waitForFinished(); 
+    future.waitForFinished();
 
-    
     for (int i = 0; i < future.resultCount(); ++i) {
         QCOMPARE(future.resultAt(i), ints.at(i * 2 + 1));
     }
 
 }
 
-bool waitFilterfn(const int &i)  
-{ 
+bool waitFilterfn(const int &i)
+{
     QTest::qWait(1);
     return (i % 2);
-} 
+}
 
 void tst_QtConcurrentFilter::incrementalResults()
 {
     const int count = 200;
-    QList<int> ints; 
+    QList<int> ints;
     for (int i=0; i < count; ++i)
         ints << i;
 
     QFuture<int> future = QtConcurrent::filtered(ints, waitFilterfn);
-    
+
     QList<int> results;
 
     while (future.isFinished() == false) {

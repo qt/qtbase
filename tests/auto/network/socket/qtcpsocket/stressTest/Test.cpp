@@ -48,7 +48,7 @@
 #include "Test.h"
 
 //------------------------------------------------------------------------------
-My4Socket::My4Socket(QObject *parent) 
+My4Socket::My4Socket(QObject *parent)
     : QTcpSocket(parent), safeShutDown(false)
 {
     connect(this, SIGNAL(readyRead()), this, SLOT(read()));
@@ -74,7 +74,7 @@ void My4Socket::read(void)
         if (reply == 42)
             ++reply;
     }
-    
+
     // Reply with a bigger number
     sendTest(reply);
 }

@@ -117,7 +117,7 @@ void tst_QMacStyle::sizeHints_data()
 
 void tst_QMacStyle::sizeHints()
 {
-    QFETCH(Size, size);    
+    QFETCH(Size, size);
     QDialog w;
     setSize(&w, size);
 
@@ -234,7 +234,7 @@ void tst_QMacStyle::layoutMargins_data()
 
 void tst_QMacStyle::layoutMargins()
 {
-    QFETCH(Size, size);    
+    QFETCH(Size, size);
     QWidget w;
     setSize(&w, size);
 

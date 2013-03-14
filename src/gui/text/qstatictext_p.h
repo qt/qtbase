@@ -77,7 +77,7 @@ public:
 
 class Q_GUI_EXPORT QStaticTextItem
 {
-public:    
+public:
     QStaticTextItem() : chars(0), numChars(0), useBackendOptimizations(false),
                         userDataNeedsUpdate(0), m_fontEngine(0), m_userData(0) {}
 

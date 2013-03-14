@@ -61,7 +61,7 @@
     message to be sent.
 
     The \c Message class is defined in the following way:
-    
+
     \snippet examples/tools/customtypesending/message.h custom type definition
 
     The type is declared to the meta-type system with the Q_DECLARE_METATYPE()

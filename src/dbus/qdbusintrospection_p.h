@@ -97,7 +97,7 @@ public:
         inline bool operator==(const Argument& other) const
         { return name == other.name && type == other.type; }
     };
-    
+
     struct Method
     {
         QString name;

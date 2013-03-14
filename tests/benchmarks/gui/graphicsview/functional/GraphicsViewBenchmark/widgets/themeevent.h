@@ -55,7 +55,7 @@ public:
 
 public:
     inline QString getTheme() { return m_theme; }
-    
+
 private:
     QString m_theme;
 };

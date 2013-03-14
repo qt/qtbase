@@ -139,7 +139,7 @@
     \fn void QButtonGroup::buttonPressed(QAbstractButton *button)
     \since 4.2
 
-    This signal is emitted when the given \a button is pressed down. 
+    This signal is emitted when the given \a button is pressed down.
 
     \sa QAbstractButton::pressed()
 */
@@ -158,7 +158,7 @@
     \fn void QButtonGroup::buttonReleased(QAbstractButton *button)
     \since 4.2
 
-    This signal is emitted when the given \a button is released. 
+    This signal is emitted when the given \a button is released.
 
     \sa QAbstractButton::released()
 */

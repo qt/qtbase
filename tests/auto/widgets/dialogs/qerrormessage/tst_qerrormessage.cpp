@@ -61,7 +61,7 @@ void tst_QErrorMessage::dontShowAgain()
 
     QErrorMessage errorMessageDialog(0);
 
-    // show an error with plain string 
+    // show an error with plain string
     errorMessageDialog.showMessage(plainString);
     QVERIFY(errorMessageDialog.isVisible());
     checkBox = qFindChild<QCheckBox*>(&errorMessageDialog);

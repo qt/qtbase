@@ -82,11 +82,11 @@ public:
             delete shared;
         }
     }
-    
+
     template <typename T>
     LineStream &operator<<(const T &value)
     { (*shared->stream) << value; return *this; }
-    
+
     SharedStream *shared;
 };
 
@@ -101,11 +101,11 @@ public:
     template <typename T>
     LineStream operator<<(const T &value)
     { stream << indentStr; stream << value; return LineStream(&stream); }
-    
+
     inline void addNewLine() { stream << endl; }
-    
+
     inline QString toString() const { stream.flush(); return output; }
-    
+
 private:
     QString output;
     mutable QTextStream stream;
@@ -121,20 +121,20 @@ public:
 
     inline void setName(const QString &name) { fname = name; }
     inline QString name() const { return fname; }
-    
+
     inline void setInline(bool i) { iline = i; }
     inline bool isInline() const { return iline; }
-    
+
     inline void setReturnType(const QString &type) { rtype = type; }
     inline QString returnType() const { return rtype; }
-    
+
     inline void addBody(const QString &_body) { body += _body; }
     inline void addBody(const CodeBlock &block) { body += block.toString(); }
     inline bool hasBody() const { return !body.isEmpty(); }
-    
+
     inline void setConst(bool konst) { cnst = konst; }
     inline bool isConst() const { return cnst; }
-    
+
     void printDeclaration(CodeBlock &block, const QString &funcNamePrefix = QString()) const;
     QString definition() const;
 
@@ -157,19 +157,19 @@ public:
 
     inline void setName(const QString &name) { cname = name; }
     inline QString name() const { return cname; }
-    
+
     inline void addMember(Access access, const QString &name)
     { sections[access].variables.append(name); }
     inline void addMember(Access access, const Function &func)
     { sections[access].functions.append(func); }
-    
+
     void addConstructor(Access access, const QString &body, const QString &args = QString());
     inline void addConstructor(Access access, const CodeBlock &body, const QString &args = QString())
     { addConstructor(access, body.toString(), args); }
-    
+
     QString declaration() const;
     QString definition() const;
-    
+
 private:
     QString cname;
     struct Section
@@ -177,10 +177,10 @@ private:
         QVector<Function> functions;
         QStringList variables;
         QVector<Function> constructors;
-        
+
         inline bool isEmpty() const
         { return functions.isEmpty() && variables.isEmpty() && constructors.isEmpty(); }
-        
+
         void printDeclaration(const Class *klass, CodeBlock &block) const;
         QString definition(const Class *klass) const;
     };
@@ -192,9 +192,9 @@ class Generator
 {
 public:
     Generator(const DFA &dfa, const Config &config);
-    
+
     QString generate();
-    
+
 private:
     void generateTransitions(CodeBlock &body, const TransitionMap &transitions);
     bool isSingleReferencedFinalState(int i) const;

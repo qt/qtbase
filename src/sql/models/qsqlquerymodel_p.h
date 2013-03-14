@@ -69,7 +69,7 @@ class QSqlQueryModelPrivate: public QAbstractItemModelPrivate
 public:
     QSqlQueryModelPrivate() : atEnd(false), nestedResetLevel(0) {}
     ~QSqlQueryModelPrivate();
-    
+
     void prefetch(int);
     void initColOffsets(int size);
     int columnInQuery(int modelColumn) const;

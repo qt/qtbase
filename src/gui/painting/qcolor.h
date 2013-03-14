@@ -266,10 +266,10 @@ inline QColor::QColor(const QColor &acolor)
 inline bool QColor::isValid() const
 { return cspec != Invalid; }
 
-inline QColor QColor::lighter(int f) const 
+inline QColor QColor::lighter(int f) const
 { return light(f); }
 
-inline QColor QColor::darker(int f) const 
+inline QColor QColor::darker(int f) const
 { return dark(f); }
 
 QT_END_NAMESPACE

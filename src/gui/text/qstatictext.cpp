@@ -60,8 +60,8 @@ QT_BEGIN_NAMESPACE
     \mainclass
 
     QStaticText provides a way to cache layout data for a block of text so that it can be drawn
-    more efficiently than by using QPainter::drawText() in which the layout information is 
-    recalculated with every call. 
+    more efficiently than by using QPainter::drawText() in which the layout information is
+    recalculated with every call.
 
     The class primarily provides an optimization for cases where the text, its font and the
     transformations on the painter are static over several paint events. If the text or its layout
@@ -97,8 +97,8 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     The QStaticText class can be used to mimic the behavior of QPainter::drawText() to a specific
-    point with no boundaries, and also when QPainter::drawText() is called with a bounding 
-    rectangle. 
+    point with no boundaries, and also when QPainter::drawText() is called with a bounding
+    rectangle.
 
     If a bounding rectangle is not required, create a QStaticText object without setting a preferred
     text width. The text will then occupy a single line.
@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 /*!
     Constructs an empty QStaticText
 */
-QStaticText::QStaticText()    
+QStaticText::QStaticText()
     : data(new QStaticTextPrivate)
 {
 }
@@ -161,7 +161,7 @@ QStaticText::QStaticText()
 */
 QStaticText::QStaticText(const QString &text)
     : data(new QStaticTextPrivate)
-{    
+{
     data->text = text;
     data->invalidate();
 }
@@ -169,7 +169,7 @@ QStaticText::QStaticText(const QString &text)
 /*!
     Constructs a QStaticText object which is a copy of \a other.
 */
-QStaticText::QStaticText(const QStaticText &other)    
+QStaticText::QStaticText(const QStaticText &other)
 {
     data = other.data;
 }
@@ -186,7 +186,7 @@ QStaticText::~QStaticText()
     \internal
 */
 void QStaticText::detach()
-{    
+{
     if (data->ref.load() != 1)
         data.detach();
 }
@@ -219,7 +219,7 @@ void QStaticText::prepare(const QTransform &matrix, const QFont &font)
     Assigns \a other to this QStaticText.
 */
 QStaticText &QStaticText::operator=(const QStaticText &other)
-{    
+{
     data = other.data;
     return *this;
 }
@@ -300,7 +300,7 @@ Qt::TextFormat QStaticText::textFormat() const
 
     \sa setText()
 */
-QString QStaticText::text() const 
+QString QStaticText::text() const
 {
     return data->text;
 }
@@ -651,7 +651,7 @@ void QStaticTextPrivate::paintText(const QPointF &topLeftPosition, QPainter *p)
                                       .arg(QString::number(color.blue(), 16), 2, QLatin1Char('0')));
 #endif
         document.setDefaultFont(font);
-        document.setDocumentMargin(0.0);        
+        document.setDocumentMargin(0.0);
 #ifndef QT_NO_TEXTHTMLPARSER
         document.setHtml(text);
 #else

@@ -100,7 +100,7 @@ public:
     // Total size
     qint64 totalSize() const;
 
-private: 
+private:
     QString errString;
     QByteArray content;
     QByteArray infoData;

@@ -74,7 +74,7 @@ Q_DECLARE_METATYPE(QMargins)
 QT_BEGIN_NAMESPACE
 
 //DWM related
-typedef struct  {       //MARGINS       
+typedef struct  {       //MARGINS
     int cxLeftWidth;    // width of left border that retains its size
     int cxRightWidth;   // width of right border that retains its size
     int cyTopHeight;    // height of top border that retains its size
@@ -695,14 +695,14 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         dib.bmiHeader.biPlanes = 1;
         dib.bmiHeader.biBitCount = 32;
         dib.bmiHeader.biCompression = BI_RGB;
- 
+
         bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
 
         // Set up the DC
         HFONT hCaptionFont = getCaptionFont(hTheme);
         HBITMAP hOldBmp = (HBITMAP)SelectObject(dcMem, (HGDIOBJ) bmp);
         HFONT hOldFont = (HFONT)SelectObject(dcMem, (HGDIOBJ) hCaptionFont);
- 
+
         // Draw the text!
         WIZ_DTTOPTS dto;
         dto.dwSize = sizeof(WIZ_DTTOPTS);
@@ -711,7 +711,7 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
 
         dto.dwFlags = WIZ_DTT_COMPOSITED|WIZ_DTT_GLOWSIZE;
         dto.iGlowSize = glowSize();
- 
+
         pDrawThemeTextEx(hTheme, dcMem, 0, 0, (LPCWSTR)text.utf16(), -1, uFormat, &rctext, &dto );
         BitBlt(hdc, rect.left(), rect.top(), rect.width(), rect.height(), dcMem, 0, 0, SRCCOPY);
         SelectObject(dcMem, (HGDIOBJ) hOldBmp);
@@ -743,7 +743,7 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
         dib.bmiHeader.biPlanes = 1;
         dib.bmiHeader.biBitCount = 32;
         dib.bmiHeader.biCompression = BI_RGB;
- 
+
         bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
         HBITMAP hOldBmp = (HBITMAP)SelectObject(dcMem, (HGDIOBJ) bmp);
 

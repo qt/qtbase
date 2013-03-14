@@ -81,7 +81,7 @@ QImage createImage(int width, int height)
     int x = 0;
     int y = 0;
     int starWidth = image.width()/3;
-    int starHeight = image.height()/3; 
+    int starHeight = image.height()/3;
 
     QRect rect(x, y, starWidth, starHeight);
 

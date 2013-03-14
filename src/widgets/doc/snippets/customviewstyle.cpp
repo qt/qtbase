@@ -61,7 +61,7 @@ void CustomViewStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             painter->restore();
         break;
-        }    
+        }
         default:
             QProxyStyle::drawPrimitive(element, option, painter, widget);
     }

@@ -68,7 +68,7 @@ if(!$SEARCH_PATH)
     exit(0);
 }
 
-# We have four options: 
+# We have four options:
 # 'U': Unix
 # 'W': Windows
 # 'M': Mac

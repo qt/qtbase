@@ -267,7 +267,7 @@
 
 /*!
     \fn void QSslSocket::sslErrors(const QList<QSslError> &errors);
-    
+
     QSslSocket emits this signal after the SSL handshake to indicate that one
     or more errors have occurred while establishing the identity of the
     peer. The errors are usually an indication that QSslSocket is unable to
@@ -281,7 +281,7 @@
 
     \a errors contains one or more errors that prevent QSslSocket from
     verifying the identity of the peer.
-    
+
     Note: You cannot use Qt::QueuedConnection when connecting to this signal,
     or calling QSslSocket::ignoreSslErrors() will have no effect.
 
@@ -436,7 +436,7 @@ void QSslSocket::connectToHostEncrypted(const QString &hostName, quint16 port, O
     \overload
 
     In addition to the original behaviour of connectToHostEncrypted,
-    this overloaded method enables the usage of a different hostname 
+    this overloaded method enables the usage of a different hostname
     (\a sslPeerName) for the certificate validation instead of
     the one used for the TCP connection (\a hostName).
 
@@ -827,7 +827,7 @@ bool QSslSocket::flush()
 /*!
     \since 4.4
 
-    Sets the size of QSslSocket's internal read buffer to be \a size bytes. 
+    Sets the size of QSslSocket's internal read buffer to be \a size bytes.
 */
 void QSslSocket::setReadBufferSize(qint64 size)
 {
@@ -960,7 +960,7 @@ void QSslSocket::setLocalCertificate(const QSslCertificate &certificate)
     \overload
 
     Sets the socket's local \l {QSslCertificate} {certificate} to the
-    first one found in file \a path, which is parsed according to the 
+    first one found in file \a path, which is parsed according to the
     specified \a format.
 */
 void QSslSocket::setLocalCertificate(const QString &path,
@@ -990,7 +990,7 @@ QSslCertificate QSslSocket::localCertificate() const
     Returns the peer's digital certificate (i.e., the immediate
     certificate of the host you are connected to), or a null
     certificate, if the peer has not assigned a certificate.
-    
+
     The peer certificate is checked automatically during the
     handshake phase, so this function is normally used to fetch
     the certificate for display or for connection diagnostic
@@ -1102,7 +1102,7 @@ void QSslSocket::setPrivateKey(const QSslKey &key)
     creating an SSL server socket. If you are creating an SSL client
     socket, the key and local certificate are required if your client
     must identify itself to an SSL server.
-    
+
     \sa privateKey(), setLocalCertificate()
 */
 void QSslSocket::setPrivateKey(const QString &fileName, QSsl::KeyAlgorithm algorithm,
@@ -1710,7 +1710,7 @@ void QSslSocket::startClientEncryption()
     subclass of QTcpServer and reimplement
     QTcpServer::incomingConnection(). The returned socket descriptor
     is then passed to QSslSocket::setSocketDescriptor().
-    
+
     \sa connectToHostEncrypted(), startClientEncryption()
 */
 void QSslSocket::startServerEncryption()

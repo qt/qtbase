@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
     \since 4.6
 
     \inmodule QtWidgets
- 
+
     A QProxyStyle wraps a QStyle (usually the default system style) for the
     purpose of dynamically overriding painting or other specific style behavior.
 

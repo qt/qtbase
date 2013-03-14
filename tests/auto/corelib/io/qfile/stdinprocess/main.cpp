@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         printf("echos all its input to its output.\n");
         return 1;
     }
-    
+
     QFile file;
 
     if (strcmp(argv[1], "all") == 0) {

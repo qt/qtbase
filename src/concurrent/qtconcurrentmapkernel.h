@@ -80,7 +80,7 @@ public:
             runIteration(it, i, 0);
             advance(it, 1);
         }
-       
+
         return false;
     }
 };

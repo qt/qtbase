@@ -137,7 +137,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     state.
 
     \endtable
-    
+
     For more information about widget styling and appearance, see the
     \l{Styles and Style Aware Widgets}.
 */

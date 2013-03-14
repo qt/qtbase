@@ -678,7 +678,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     (to move the keyboard focus), and passes on most of the other events to
     one of the more specialized handlers above.
 
-    Events and the mechanism used to deliver them are covered in 
+    Events and the mechanism used to deliver them are covered in
     \l{The Event System}.
 
     \section1 Groups of Functions and Properties
@@ -9284,7 +9284,7 @@ int QWidget::heightForWidth(int w) const
     \since 5.0
 
     Returns true if the widget's preferred height depends on its width; otherwise returns false.
-*/ 
+*/
 bool QWidget::hasHeightForWidth() const
 {
     Q_D(const QWidget);

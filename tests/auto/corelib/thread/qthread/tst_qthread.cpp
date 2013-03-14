@@ -1026,7 +1026,7 @@ void tst_QThread::exitAndExec()
     thread.sem2.acquire();
     int v = thread.value;
     QCOMPARE(v, 556);
-    
+
     //test that the thread is running by executing queued connected signal there
     Syncronizer sync1;
     sync1.moveToThread(&thread);

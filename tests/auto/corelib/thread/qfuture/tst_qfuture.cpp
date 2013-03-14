@@ -243,13 +243,13 @@ void tst_QFuture::resultStore()
         store.addResult(2, &int2); // add result at index 2
         QCOMPARE(store.contains(2), false); // but 1 is missing, so this 2 won't be reported yet.
 
-        store.addResult(1, &int1); 
+        store.addResult(1, &int1);
         QCOMPARE(store.contains(1), true);
         QCOMPARE(store.contains(2), true); // 2 should be visible now.
 
-        store.addResult(4, &int0); 
-        store.addResult(5, &int0); 
-        store.addResult(7, &int0); 
+        store.addResult(4, &int0);
+        store.addResult(5, &int0);
+        store.addResult(7, &int0);
         QCOMPARE(store.contains(4), false);
         QCOMPARE(store.contains(5), false);
         QCOMPARE(store.contains(7), false);
@@ -273,9 +273,9 @@ void tst_QFuture::resultStore()
 
         store.addResult(0, &int0);
         QCOMPARE(store.contains(0), true);
-        
+
         store.addResult(2, &int0);
-        QCOMPARE(store.contains(2), false);       
+        QCOMPARE(store.contains(2), false);
 
         store.addCanceledResult(1); // report no result at 1
 
@@ -289,7 +289,7 @@ void tst_QFuture::resultStore()
         store.addResult(6, &int0);
         store.addResult(7, &int0);
         QCOMPARE(store.contains(3), false);
- 
+
         store.addCanceledResult(4);
         store.addCanceledResult(5);
 
@@ -311,10 +311,10 @@ void tst_QFuture::resultStore()
         store.addResult(0, &int0);
         QCOMPARE(store.count(), 1); // result 0 becomes available
         QCOMPARE(store.contains(0), true);
-        
+
         store.addResult(2, &int0);
         QCOMPARE(store.count(), 1);
-        QCOMPARE(store.contains(2), false);       
+        QCOMPARE(store.contains(2), false);
 
         store.addCanceledResult(1);
         QCOMPARE(store.count(), 2); // result 2 is renamed to 1 and becomes available
@@ -332,7 +332,7 @@ void tst_QFuture::resultStore()
         store.addResult(7, &int0);
         QCOMPARE(store.count(), 3);
         QCOMPARE(store.contains(3), false);
- 
+
         store.addCanceledResult(4);
         store.addCanceledResult(5);
         QCOMPARE(store.count(), 5); // 6 and 7 is renamed to 3 and 4 and becomes available
@@ -347,13 +347,13 @@ void tst_QFuture::resultStore()
         QCOMPARE(store.contains(6), false);
         QCOMPARE(store.contains(7), false);
     }
-    
+
     {
         // test resultCount in non-filtered mode. It should always be possible
         // to iterate through the results 0 to resultCount.
         QtPrivate::ResultStore<int> store;
         store.addResult(0, &int0);
-        
+
         QCOMPARE(store.count(), 1);
 
         store.addResult(2, &int0);
@@ -440,7 +440,7 @@ void tst_QFuture::resultStore()
         store.addCanceledResults(0, 3);
         QCOMPARE(store.count(), 2);  // results at 3 and 4 become available at index 0, 1
 
-        store.addResult(5, &int0); 
+        store.addResult(5, &int0);
         QCOMPARE(store.count(), 3);// result 5 becomes available at index 2
     }
 
@@ -1112,9 +1112,9 @@ void tst_QFuture::iterators()
         for (int i = 0; i < resultCount; ++i) {
             e.reportResult(i);
         }
-    
+
         e.reportFinished();
-    
+
         {
             QFutureIterator<int> it(f);
             QFutureIterator<int> it2(it);
@@ -1122,7 +1122,7 @@ void tst_QFuture::iterators()
 
         {
             QFutureIterator<int> it(f);
-    
+
             for (int i = 0; i < resultCount - 1; ++i) {
                 QVERIFY(it.hasNext());
                 QCOMPARE(it.peekNext(), i);

@@ -380,7 +380,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
     QAbstractButton *fb = qobject_cast<QAbstractButton *>(f);
     if (!fb || !buttonList.contains(fb))
         return;
-    
+
     QAbstractButton *candidate = 0;
     int bestScore = -1;
     QRect target = f->rect().translated(f->mapToGlobal(QPoint(0,0)));

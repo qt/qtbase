@@ -87,7 +87,7 @@ public:
     QBasicTimer repeatActionTimer;
     int repeatActionTime;
     QAbstractSlider::SliderAction repeatAction;
-    
+
 #ifdef QT_KEYPAD_NAVIGATION
     int origValue;
 

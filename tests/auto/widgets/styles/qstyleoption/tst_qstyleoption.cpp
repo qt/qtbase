@@ -44,7 +44,7 @@
 #include <QStyleOption>
 
 
-class tst_QStyleOption: public QObject 
+class tst_QStyleOption: public QObject
 {
     Q_OBJECT
 
@@ -54,7 +54,7 @@ private slots:
     void copyconstructors();
 };
 
-// Just a simple container for QStyleOption-pointer 
+// Just a simple container for QStyleOption-pointer
 struct StyleOptionPointerBase
 {
     QStyleOption *pointer;
@@ -80,7 +80,7 @@ void tst_QStyleOption::qstyleoptioncast_data()
 {
     QTest::addColumn<StyleOptionPointerBase *>("testOption");
     QTest::addColumn<bool>("canCastToComplex");
-    QTest::addColumn<int>("type");    
+    QTest::addColumn<int>("type");
 
     QTest::newRow("optionDefault") << stylePtr(new QStyleOption) << false << int(QStyleOption::SO_Default);
     QTest::newRow("optionButton") << stylePtr(new QStyleOptionButton) << false << int(QStyleOption::SO_Button);

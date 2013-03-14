@@ -3,7 +3,7 @@
 
 
 
-translate 10 10 
+translate 10 10
 setPen NoPen
 
 begin_block clipping
@@ -11,8 +11,8 @@ save
 
   setBrush 0x7f7fff
   save
-    setClipRect 0 0 50 10 
-    drawRect 0 0 100 100 
+    setClipRect 0 0 50 10
+    drawRect 0 0 100 100
 
     setClipRect 0 0 10 50 IntersectClip
     setBrush black CrossPattern
@@ -20,17 +20,17 @@ save
   restore
 
   translate 100 0
-  save 
+  save
     setClipRect 0 0 50 10
     drawRect 0 0 100 100
 
     setClipRect 0 0  10 50 ReplaceClip
     setBrush black CrossPattern
-    drawRect 0 0 100 100 
+    drawRect 0 0 100 100
   restore
 
   translate 100 0
-  save 
+  save
     setClipRect 0 0 50 10
     drawRect 0 0 100 100
 

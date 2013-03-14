@@ -46,7 +46,7 @@
 static const int MotionEndWaitTime = 2000;
 static const int TileSideLength = 128;
 
-WebViewPrivate::WebViewPrivate(WebView *w) 
+WebViewPrivate::WebViewPrivate(WebView *w)
     : q(w)
     , cache(0)
 {
@@ -56,14 +56,14 @@ WebViewPrivate::WebViewPrivate(WebView *w)
 
     web->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     web->page()->mainFrame()->setScrollBarPolicy(
-        Qt::Horizontal, Qt::ScrollBarAlwaysOff); 	
+        Qt::Horizontal, Qt::ScrollBarAlwaysOff);
     web->page()->mainFrame()->setScrollBarPolicy(
         Qt::Vertical, Qt::ScrollBarAlwaysOff);
     web->setZValue(3);
 
 //    cache = new WebViewCache(web);
 //    web->setGraphicsEffect(cache);
- 
+
     adjustSize();
 }
 
@@ -85,9 +85,8 @@ void WebViewPrivate::adjustSize()
             q->horizontalScrollBar()->setSliderSize(w);
         else
             q->horizontalScrollBar()->setSliderSize(0.0);
-        
 
-        if (h > q->viewport()->boundingRect().height()) 
+        if (h > q->viewport()->boundingRect().height())
             q->verticalScrollBar()->setSliderSize(h);
         else
             q->verticalScrollBar()->setSliderSize(0.0);
@@ -116,7 +115,7 @@ void WebViewPrivate::_q_loadFinished(bool ok)
 void WebViewPrivate::_q_viewportChanged(QGraphicsWidget* viewport)
 {
     web->setParentItem(viewport);
-    viewport->setFlag(QGraphicsItem::ItemClipsChildrenToShape, 
+    viewport->setFlag(QGraphicsItem::ItemClipsChildrenToShape,
                       true);
     adjustSize();
 }
@@ -131,7 +130,6 @@ void WebViewPrivate::_q_motionEnded()
 WebViewCache::WebViewCache(QGraphicsWebView *webView)
     : m_webView(webView)
 {
-   
 }
 
 WebViewCache::~WebViewCache()
@@ -178,8 +176,8 @@ void WebViewCache::draw(QPainter * painter, QGraphicsEffectSource * source)
             for (int j = 0; j < tilesY; j++) {
                 int x = i * TileSideLength;
                 int y = j * TileSideLength;
-                
-                m_tileRects[i + j * tilesX] 
+
+                m_tileRects[i + j * tilesX]
                     = QRectF(x, y, TileSideLength, TileSideLength);
             }
         }
@@ -205,13 +203,13 @@ void WebViewCache::draw(QPainter * painter, QGraphicsEffectSource * source)
 
             QWebFrame *webFrame = m_webView->page()->mainFrame();
 
-            QPainter tilePainter(&tilePixmap); 
+            QPainter tilePainter(&tilePixmap);
             tilePainter.translate(-m_tileRects[i].left(), -m_tileRects[i].top());
             webFrame->render(&tilePainter, m_tileRects[i].toRect());
             tilePainter.end();
 
             m_tilePixmaps[i] = QPixmapCache::insert(tilePixmap);
-        } 
+        }
 
         tileRect = tileRect.translated(-itemPos);
 
@@ -233,7 +231,7 @@ WebView::WebView(QGraphicsWidget *parent)
             this, SLOT(_q_loadFinished(bool)));
     connect(this, SIGNAL(viewportChanged(QGraphicsWidget*)),
             this, SLOT(_q_viewportChanged(QGraphicsWidget*)));
-    connect(&d->motionTimer, SIGNAL(timeout()), 
+    connect(&d->motionTimer, SIGNAL(timeout()),
             this, SLOT(_q_motionEnded()));
 }
 
@@ -272,21 +270,21 @@ void WebView::scrollContentsBy(qreal dx, qreal dy)
 
     if (x < minx)
         x = minx;
-    else if (x > 0) 
+    else if (x > 0)
         x = 0.0;
 
    qreal y = d->web->pos().y() - dy;
 
     if (y < miny)
         y = miny;
-    else if (y > 0) 
+    else if (y > 0)
         y = 0.0;
 
     d->web->setPos(x, y);
 }
 
 QSizeF WebView::sizeHint(Qt::SizeHint which, const QSizeF & constraint) const
-{ 
+{
     if (which == Qt::PreferredSize) {
         QSizeF contentSize = d->web->page()->mainFrame()->contentsSize();
         return contentSize;

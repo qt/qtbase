@@ -122,7 +122,7 @@ bool TouchWidget::event(QEvent *event)
     case QEvent::MouseButtonRelease:
         seenMouseRelease = true;
         if (closeWindowOnMouseRelease)
-            window()->close();        
+            window()->close();
         if (acceptMouseRelease) {
             event->accept();
             return true;

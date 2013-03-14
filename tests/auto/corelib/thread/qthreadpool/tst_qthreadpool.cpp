@@ -783,7 +783,7 @@ void tst_QThreadPool::waitForDoneTimeout()
     public:
       QMutex mutex;
       BlockedTask() { setAutoDelete(false); }
-      
+
       void run()
         {
           mutex.lock();

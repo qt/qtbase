@@ -435,7 +435,7 @@
     Same as at(\a i).
 */
 
-/*! 
+/*!
     \fn void QVector::append(const T &value)
 
     Inserts \a value at the end of the vector.

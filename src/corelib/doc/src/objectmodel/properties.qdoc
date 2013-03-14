@@ -62,7 +62,7 @@
     A property behaves like a class data member, but it has additional
     features accessible through the \l {Meta-Object System}.
 
-    \list 
+    \list
 
     \li A \c READ accessor function is required if no \c MEMBER variable was
     specified. It is for reading the property value. Ideally, a const function
@@ -130,7 +130,7 @@
     gets and sets a widget's \c USER property.
 
     \li The presence of the \c CONSTANT attibute indicates that the property
-    value is constant.  For a given object instance, the READ method of a 
+    value is constant.  For a given object instance, the READ method of a
     constant property must return the same value every time it is called.  This
     constant value may be different for different instances of the object.  A
     constant property cannot have a WRITE method or a NOTIFY signal.
@@ -272,7 +272,7 @@
     Q_DECLARE_METATYPE() macro so that their values can be stored in
     QVariant objects. This makes them suitable for use with both
     static properties declared using the Q_PROPERTY() macro in class
-    definitions and dynamic properties created at run-time. 
+    definitions and dynamic properties created at run-time.
 
     \sa Q_DECLARE_METATYPE(), QMetaType, QVariant
 

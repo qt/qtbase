@@ -96,7 +96,7 @@ void Window::paintEvent(QPaintEvent * /* event */)
     painter.setPen(Qt::white);
 
     painter.drawText(QPoint(0, yPos), status());
-    
+
     for (int y = 0; y < HEIGHT; ++y) {
         yPos += fontHeight;
         xPos = 0;
@@ -184,7 +184,7 @@ void Window::buildMachine()
 
 //![3]
     QState *quitState = new QState(machine);
-    quitState->assignProperty(this, "status", "Really quit(y/n)?"); 
+    quitState->assignProperty(this, "status", "Really quit(y/n)?");
 
     QKeyEventTransition *yesTransition = new
         QKeyEventTransition(this, QEvent::KeyPress, Qt::Key_Y);
@@ -218,7 +218,7 @@ void Window::movePlayer(Direction direction)
     switch (direction) {
         case Left:
             if (map[pX - 1][pY] != '#')
-                --pX;            
+                --pX;
             break;
         case Right:
             if (map[pX + 1][pY] != '#')
@@ -231,7 +231,7 @@ void Window::movePlayer(Direction direction)
         case Down:
             if (map[pX][pY + 1] != '#')
                 ++pY;
-            break;        
+            break;
     }
     repaint();
 }

@@ -109,7 +109,7 @@ static QHash<QHostAddress, QHostAddress> ipv4Netmasks()
     IP_ADAPTER_INFO staticBuf[2]; // 2 is arbitrary
     PIP_ADAPTER_INFO pAdapter = staticBuf;
     ULONG bufSize = sizeof staticBuf;
-    QHash<QHostAddress, QHostAddress> ipv4netmasks; 
+    QHash<QHostAddress, QHostAddress> ipv4netmasks;
 
     DWORD retval = ptrGetAdaptersInfo(pAdapter, &bufSize);
     if (retval == ERROR_BUFFER_OVERFLOW) {

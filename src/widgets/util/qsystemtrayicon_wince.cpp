@@ -166,7 +166,7 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
                 break;
 
             case WM_LBUTTONDBLCLK:
-                ignoreNextMouseRelease = true; // Since DBLCLICK Generates a second mouse 
+                ignoreNextMouseRelease = true; // Since DBLCLICK Generates a second mouse
                                                // release we must ignore it
                 emit q->activated(QSystemTrayIcon::DoubleClick);
                 break;

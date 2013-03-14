@@ -97,7 +97,7 @@ bool ResultIteratorBase::canIncrementVectorIndex() const
     return (m_vectorIndex + 1 < mapIterator.value().m_count);
 }
 
-ResultStoreBase::ResultStoreBase() 
+ResultStoreBase::ResultStoreBase()
     : insertIndex(0), resultCount(0), m_filterMode(false), filteredResults(0) { }
 
 void ResultStoreBase::setFilterMode(bool enable)
@@ -148,7 +148,7 @@ void ResultStoreBase::syncPendingResults()
     // check if we can insert any of the pending results:
     QMap<int, ResultItem>::iterator it = pendingResults.begin();
     while (it != pendingResults.end()) {
-        int index = it.key(); 
+        int index = it.key();
         if (index != resultCount + filteredResults)
             break;
 
@@ -165,7 +165,7 @@ int ResultStoreBase::addResult(int index, const void *result)
     return insertResultItem(index, resultItem);
 }
 
-int ResultStoreBase::addResults(int index, const void *results, int vectorSize, int totalCount) 
+int ResultStoreBase::addResults(int index, const void *results, int vectorSize, int totalCount)
 {
     if (m_filterMode == false || vectorSize == totalCount) {
         ResultItem resultItem(results, vectorSize);
@@ -218,7 +218,7 @@ ResultIteratorBase ResultStoreBase::resultAt(int index) const
     }
 
     const int vectorIndex = index - it.key();
-    
+
     if (vectorIndex >= it.value().count())
         return ResultIteratorBase(m_results.end());
     else if (it.value().isVector() == false && vectorIndex != 0)

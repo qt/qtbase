@@ -62,7 +62,7 @@ public:
 
     bool operator==(const QAuthenticator &other) const;
     inline bool operator!=(const QAuthenticator &other) const { return !operator==(other); }
-    
+
     QString user() const;
     void setUser(const QString &user);
 

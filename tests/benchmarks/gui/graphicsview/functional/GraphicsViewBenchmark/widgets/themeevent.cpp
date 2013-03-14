@@ -44,10 +44,10 @@
 ThemeEvent::ThemeEvent( const QString &newTheme, Type type) : QEvent(type),
     m_theme(newTheme)
 {
-    
+
 }
 
 ThemeEvent::~ThemeEvent()
 {
-    
+
 }

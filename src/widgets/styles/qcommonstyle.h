@@ -51,7 +51,7 @@ class QCommonStylePrivate;
 class Q_WIDGETS_EXPORT QCommonStyle: public QStyle
 {
     Q_OBJECT
-    
+
 public:
     QCommonStyle();
     ~QCommonStyle();

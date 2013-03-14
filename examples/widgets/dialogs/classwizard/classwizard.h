@@ -124,7 +124,7 @@ class OutputFilesPage : public QWizardPage
 {
     Q_OBJECT
 
-public:    
+public:
     OutputFilesPage(QWidget *parent = 0);
 
 protected:

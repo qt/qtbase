@@ -219,28 +219,28 @@ inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
     register int expectedValueCopy = expectedValue;
-    return (static_cast<int>(_InterlockedCompareExchange(&_q_value, 
-							 newValue, 
-							 expectedValueCopy))
-	    == expectedValue);
+    return (static_cast<int>(_InterlockedCompareExchange(&_q_value,
+                                                         newValue,
+                                                         expectedValueCopy))
+            == expectedValue);
 }
 
 inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 {
     register int expectedValueCopy = expectedValue;
-    return (static_cast<int>(_InterlockedCompareExchange_acq(reinterpret_cast<volatile uint *>(&_q_value), 
-							     newValue, 
-							     expectedValueCopy)) 
-	    == expectedValue);
+    return (static_cast<int>(_InterlockedCompareExchange_acq(reinterpret_cast<volatile uint *>(&_q_value),
+                                                             newValue,
+                                                             expectedValueCopy))
+            == expectedValue);
 }
 
 inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 {
     register int expectedValueCopy = expectedValue;
-    return (static_cast<int>(_InterlockedCompareExchange_rel(reinterpret_cast<volatile uint *>(&_q_value), 
-							     newValue, 
-							     expectedValueCopy)) 
-	    == expectedValue);
+    return (static_cast<int>(_InterlockedCompareExchange_rel(reinterpret_cast<volatile uint *>(&_q_value),
+                                                             newValue,
+                                                             expectedValueCopy))
+            == expectedValue);
 }
 
 inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
@@ -286,10 +286,10 @@ template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 {
     register T *expectedValueCopy = expectedValue;
-    return (_InterlockedCompareExchangePointer(reinterpret_cast<void * volatile*>(&_q_value), 
-					       newValue, 
-					       expectedValueCopy)
-	    == expectedValue);
+    return (_InterlockedCompareExchangePointer(reinterpret_cast<void * volatile*>(&_q_value),
+                                               newValue,
+                                               expectedValueCopy)
+            == expectedValue);
 }
 
 template <typename T>
@@ -301,7 +301,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
     };
     x = &_q_value;
     register T *expectedValueCopy = expectedValue;
-    return (_InterlockedCompareExchange64_acq(p, quintptr(newValue), quintptr(expectedValueCopy)) 
+    return (_InterlockedCompareExchange64_acq(p, quintptr(newValue), quintptr(expectedValueCopy))
 	    == quintptr(expectedValue));
 }
 

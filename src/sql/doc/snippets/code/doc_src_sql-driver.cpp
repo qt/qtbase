@@ -62,7 +62,7 @@ db.setDatabaseName("C:\\test.gdb");
 
 
 //! [25]
-// connect to database using the Latin-1 character set 
+// connect to database using the Latin-1 character set
 db.setConnectOptions("ISC_DPB_LC_CTYPE=Latin1");
 db.open();
 //! [25]

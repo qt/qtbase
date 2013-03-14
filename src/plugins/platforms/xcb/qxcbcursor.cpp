@@ -306,7 +306,7 @@ void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
     else
         // No X11 cursor control when there is no widget under the cursor
         return;
-    
+
     xcb_cursor_t c = XCB_CURSOR_NONE;
     if (cursor) {
         if (cursor->shape() == Qt::BitmapCursor) {

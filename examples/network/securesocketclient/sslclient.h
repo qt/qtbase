@@ -57,7 +57,7 @@ class SslClient : public QWidget
 public:
     SslClient(QWidget *parent = 0);
     ~SslClient();
-    
+
 private slots:
     void updateEnabledState();
     void secureConnect();

@@ -74,7 +74,7 @@ signals:
 
     void uploadCountUpdated(qint64 newUploadCount);
     void downloadCountUpdated(qint64 newDownloadCount);
-    
+
     void stopped();
 
 protected:
@@ -99,7 +99,7 @@ private:
     qint64 length;
     QString uname;
     QString pwd;
-    
+
     bool firstTrackerRequest;
     bool lastTrackerRequest;
     bool firstSeeding;

@@ -93,7 +93,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 #endif
     QStringList words;
-    
+
     while (!file.atEnd()) {
         QByteArray line = file.readLine();
         if (!line.isEmpty())

@@ -46,7 +46,7 @@
 #include <qt_windows.h>
 
 QT_BEGIN_NAMESPACE
-        
+
 #ifndef QT_NO_SYSTEMSEMAPHORE
 
 QSystemSemaphorePrivate::QSystemSemaphorePrivate() :

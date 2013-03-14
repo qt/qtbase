@@ -202,7 +202,7 @@ void ScribbleArea::print()
 {
 #if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     QPrinter printer(QPrinter::HighResolution);
- 
+
     QPrintDialog printDialog(&printer, this);
 //! [21] //! [22]
     if (printDialog.exec() == QDialog::Accepted) {

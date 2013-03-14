@@ -82,7 +82,7 @@ void Ping::start(const QString &name, const QString &oldValue, const QString &ne
             if (!reply.isNull())
                 printf("value = %s\n", qPrintable(reply.toString()));
         } else if (line.startsWith("value=")) {
-            iface->setProperty("value", line.mid(6));            
+            iface->setProperty("value", line.mid(6));
         } else {
             QDBusReply<QDBusVariant> reply = iface->call("query", line);
             if (reply.isValid())
@@ -92,7 +92,7 @@ void Ping::start(const QString &name, const QString &oldValue, const QString &ne
         if (iface->lastError().isValid())
             fprintf(stderr, "Call failed: %s\n", qPrintable(iface->lastError().message()));
     }
-}    
+}
 
 int main(int argc, char **argv)
 {

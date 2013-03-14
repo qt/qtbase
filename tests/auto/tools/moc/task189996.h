@@ -43,10 +43,12 @@
 #ifndef TASK189996_H
 #define TASK189996_H
 
-#include <QObject> 
- 
-class InlineSlotsWithThrowDeclaration : public QObject { 
-    Q_OBJECT 
+#include <QObject>
+
+class InlineSlotsWithThrowDeclaration : public QObject
+{
+    Q_OBJECT
+
 public slots:
     void a() throw() { }
     void b() const throw() { }

@@ -927,7 +927,7 @@ QObjectPrivate::Connection::~Connection()
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
-    T (or of a subclass); otherwise returns 0.  If \a object is 0 then 
+    T (or of a subclass); otherwise returns 0.  If \a object is 0 then
     it will also return 0.
 
     The class T must inherit (directly or indirectly) QObject and be
@@ -3089,8 +3089,8 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
 /*!
     \internal
 
-Disconnect a single signal connection.  If QMetaObject::connect() has been called 
-multiple times for the same sender, signal_index, receiver and method_index only 
+Disconnect a single signal connection.  If QMetaObject::connect() has been called
+multiple times for the same sender, signal_index, receiver and method_index only
 one of these connections will be removed.
  */
 bool QMetaObject::disconnectOne(const QObject *sender, int signal_index,
@@ -3368,7 +3368,7 @@ void QMetaObject::activate(QObject *sender, int signalOffset, int local_signal_i
         return;
 
     if (sender->d_func()->declarativeData && QAbstractDeclarativeData::signalEmitted)
-        QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender, 
+        QAbstractDeclarativeData::signalEmitted(sender->d_func()->declarativeData, sender,
                                                 signal_index, argv);
 
     void *empty_argv[] = { 0 };

@@ -328,9 +328,9 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
                 }
                 break;
             }
-        if ( if_it != interfaces.end() ) 
+        if ( if_it != interfaces.end() )
             continue;
-        
+
         QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
         interfaces << iface;
         iface->index = ifindex;

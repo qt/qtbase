@@ -986,7 +986,7 @@ public:
 
         if (!socket.waitForConnected(3000))
             exec();
-        connect(&socket, SIGNAL(bytesWritten(qint64)), 
+        connect(&socket, SIGNAL(bytesWritten(qint64)),
         this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
         socket.write("testing\n");
         exec();
@@ -1004,9 +1004,9 @@ private:
     signal.
 
     Create a thread that will write to a socket.
-    If the bytesWritten(qint64) signal is generated, 
+    If the bytesWritten(qint64) signal is generated,
     the slot connected to it will exit the thread,
-    indicating test success.  
+    indicating test success.
 
 */
 void tst_QLocalSocket::bytesWrittenSignal()

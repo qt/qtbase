@@ -1033,6 +1033,6 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
         unsetCursor(nativeParent);
     }
 }
-#endif //QT_NO_CURSOR 
+#endif //QT_NO_CURSOR
 
 QT_END_NAMESPACE

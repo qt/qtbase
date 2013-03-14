@@ -54,7 +54,7 @@ QT_END_NAMESPACE
 class AddDialog : public QDialog
 {
     Q_OBJECT
-    
+
 public:
     AddDialog(QWidget *parent = 0);
     QLineEdit *nameText;

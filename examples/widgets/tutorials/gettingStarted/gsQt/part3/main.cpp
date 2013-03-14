@@ -67,7 +67,7 @@ Notepad::Notepad()
     layout->addWidget(textEdit);
     layout->addWidget(quitButton);
 
-    setLayout(layout); 
+    setLayout(layout);
 
     setWindowTitle(tr("Notepad"));
 }
@@ -79,7 +79,7 @@ void Notepad::quit()
     messageBox.setText(tr("Do you really want to quit?"));
     messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     messageBox.setDefaultButton(QMessageBox::No);
-    if (messageBox.exec() == QMessageBox::Yes) 
+    if (messageBox.exec() == QMessageBox::Yes)
         qApp->quit();
 }
 

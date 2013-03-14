@@ -242,17 +242,17 @@ void tst_QSplitter::saveAndRestoreState()
     QFETCH(IntList, initialSizes);
     splitter->setSizes(initialSizes);
     QApplication::instance()->sendPostedEvents();
-    
+
     QSplitter *splitter2 = new QSplitter(splitter->orientation() == Qt::Horizontal ?
                                          Qt::Vertical : Qt::Horizontal);
     for (int i = 0; i < splitter->count(); ++i) {
-        splitter2->addWidget(new QWidget());        
+        splitter2->addWidget(new QWidget());
     }
-    splitter2->resize(splitter->size());    
+    splitter2->resize(splitter->size());
     splitter2->setChildrenCollapsible(!splitter->childrenCollapsible());
     splitter2->setOpaqueResize(!splitter->opaqueResize());
     splitter2->setHandleWidth(splitter->handleWidth()+3);
-    
+
     QByteArray ba = splitter->saveState();
     QVERIFY(splitter2->restoreState(ba));
 
@@ -269,10 +269,10 @@ void tst_QSplitter::saveAndRestoreState()
     }
 
     // destroy version and magic number
-    for (int i = 0; i < ba.size(); ++i) 
+    for (int i = 0; i < ba.size(); ++i)
         ba[i] = ~ba.at(i);
     QVERIFY(!splitter2->restoreState(ba));
-    
+
     delete splitter2;
 }
 
@@ -688,7 +688,7 @@ void tst_QSplitter::task187373_addAbstractScrollAreas()
 }
 
 //! A simple QTextEdit which can switch between two different size states
-class MyTextEdit : public QTextEdit 
+class MyTextEdit : public QTextEdit
 {
     public:
         MyTextEdit(const QString & text, QWidget* parent = NULL)

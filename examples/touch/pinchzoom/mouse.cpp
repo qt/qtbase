@@ -158,7 +158,7 @@ void Mouse::timerEvent(QTimerEvent *)
     foreach (QGraphicsItem *item, dangerMice) {
         if (item == this)
             continue;
-        
+
         QLineF lineToMouse(QPointF(0, 0), mapFromItem(item, 0, 0));
         qreal angleToMouse = ::acos(lineToMouse.dx() / lineToMouse.length());
         if (lineToMouse.dy() < 0)

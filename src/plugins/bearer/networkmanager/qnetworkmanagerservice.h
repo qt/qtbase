@@ -139,26 +139,26 @@ class QNetworkManagerInterfacePrivate;
 class QNetworkManagerInterface : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     QNetworkManagerInterface(QObject *parent = 0);
     ~QNetworkManagerInterface();
-    
+
     QList <QDBusObjectPath> getDevices() const;
     void activateConnection(const QString &serviceName, QDBusObjectPath connection, QDBusObjectPath device, QDBusObjectPath specificObject);
     void deactivateConnection(QDBusObjectPath connectionPath) const;
-    
+
     QDBusObjectPath path() const;
     QDBusInterface *connectionInterface() const;
-    
+
     bool wirelessEnabled() const;
     bool wirelessHardwareEnabled() const;
     QList <QDBusObjectPath> activeConnections() const;
     quint32 state();
     bool setConnections();
     bool isValid();
-    
+
 Q_SIGNALS:
     void deviceAdded(QDBusObjectPath);
     void deviceRemoved(QDBusObjectPath);
@@ -176,9 +176,9 @@ class QNetworkManagerInterfaceAccessPointPrivate;
 class QNetworkManagerInterfaceAccessPoint : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     enum DeviceState {
         Unknown = 0,
         Unmanaged,
@@ -191,14 +191,14 @@ public:
         Activated,
         Failed
     };
-    
+
     enum ApFlag {
         ApNone = 0x0,
         Privacy = 0x1
     };
-    
+
     Q_DECLARE_FLAGS(ApFlags, ApFlag);
-    
+
     enum ApSecurityFlag {
         ApSecurityNone = 0x0,
         PairWep40 = 0x1,
@@ -212,9 +212,9 @@ public:
         KeyPsk = 0x100,
         Key8021x = 0x200
     };
-    
+
     Q_DECLARE_FLAGS(ApSecurityFlags, ApSecurityFlag);
-    
+
     explicit QNetworkManagerInterfaceAccessPoint(const QString &dbusPathName, QObject *parent = 0);
     ~QNetworkManagerInterfaceAccessPoint();
 
@@ -231,7 +231,7 @@ public:
     quint32 strength() const;
     bool setConnections();
     bool isValid();
-    
+
 Q_SIGNALS:
     void propertiesChanged(QMap <QString,QVariant>);
     void propertiesChanged( const QString &, QMap<QString,QVariant>);
@@ -245,23 +245,23 @@ class QNetworkManagerInterfaceDevicePrivate;
 class QNetworkManagerInterfaceDevice : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     explicit QNetworkManagerInterfaceDevice(const QString &deviceObjectPath, QObject *parent = 0);
     ~QNetworkManagerInterfaceDevice();
-    
+
     QString udi() const;
     QString networkInterface() const;
     QDBusInterface *connectionInterface() const;
     quint32 ip4Address() const;
     quint32 state() const;
     quint32 deviceType() const;
-    
+
     QDBusObjectPath ip4config() const;
     bool setConnections();
     bool isValid();
-    
+
 Q_SIGNALS:
     void stateChanged(const QString &, quint32);
 
@@ -274,20 +274,20 @@ class QNetworkManagerInterfaceDeviceWiredPrivate;
 class QNetworkManagerInterfaceDeviceWired : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     explicit QNetworkManagerInterfaceDeviceWired(const QString &ifaceDevicePath,
                                                  QObject *parent = 0);
     ~QNetworkManagerInterfaceDeviceWired();
-    
+
     QDBusInterface  *connectionInterface() const;
     QString hwAddress() const;
     quint32 speed() const;
     bool carrier() const;
     bool setConnections();
     bool isValid();
-    
+
 Q_SIGNALS:
     void propertiesChanged( const QString &, QMap<QString,QVariant>);
 private:
@@ -299,9 +299,9 @@ class QNetworkManagerInterfaceDeviceWirelessPrivate;
 class QNetworkManagerInterfaceDeviceWireless : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     enum DeviceCapability {
         None = 0x0,
         Wep40 = 0x1,
@@ -311,11 +311,11 @@ public:
         Wpa = 0x10,
         Rsn = 0x20
        };
-    
+
     explicit QNetworkManagerInterfaceDeviceWireless(const QString &ifaceDevicePath,
                                                     QObject *parent = 0);
     ~QNetworkManagerInterfaceDeviceWireless();
-    
+
     QDBusObjectPath path() const;
     QList <QDBusObjectPath> getAccessPoints();
     QDBusInterface *connectionInterface() const;
@@ -327,7 +327,7 @@ public:
     quint32 wirelessCapabilities() const;
     bool setConnections();
     bool isValid();
-    
+
 Q_SIGNALS:
     void propertiesChanged( const QString &, QMap<QString,QVariant>);
     void accessPointAdded(const QString &,QDBusObjectPath);
@@ -341,12 +341,12 @@ class QNetworkManagerSettingsPrivate;
 class QNetworkManagerSettings : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     explicit QNetworkManagerSettings(const QString &settingsService, QObject *parent = 0);
     ~QNetworkManagerSettings();
-    
+
     QDBusInterface  *connectionInterface() const;
     QList <QDBusObjectPath> listConnections();
     bool setConnections();
@@ -362,12 +362,12 @@ class QNetworkManagerSettingsConnectionPrivate;
 class QNetworkManagerSettingsConnection : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     QNetworkManagerSettingsConnection(const QString &settingsService, const QString &connectionObjectPath, QObject *parent = 0);
     ~QNetworkManagerSettingsConnection();
-    
+
     QDBusInterface  *connectionInterface() const;
     QNmSettingsMap getSettings();
     bool setConnections();
@@ -382,7 +382,7 @@ public:
     bool isValid();
 
 Q_SIGNALS:
-    
+
     void updated(const QNmSettingsMap &settings);
     void removed(const QString &path);
 
@@ -395,18 +395,18 @@ class QNetworkManagerConnectionActivePrivate;
 class QNetworkManagerConnectionActive : public QObject
 {
     Q_OBJECT
-    
+
 public:
-    
+
     enum ActiveConnectionState {
         Unknown = 0,
         Activating = 1,
         Activated = 2
        };
-    
+
     explicit QNetworkManagerConnectionActive(const QString &dbusPathName, QObject *parent = 0);
     ~ QNetworkManagerConnectionActive();
-    
+
     QDBusInterface  *connectionInterface() const;
     QString serviceName() const;
     QDBusObjectPath connection() const;
@@ -417,7 +417,7 @@ public:
     bool setConnections();
     bool isValid();
 
-    
+
 Q_SIGNALS:
     void propertiesChanged(QList<QDBusObjectPath>);
     void propertiesChanged( const QString &, QMap<QString,QVariant>);
@@ -430,7 +430,7 @@ class QNetworkManagerIp4ConfigPrivate;
 class QNetworkManagerIp4Config : public QObject
 {
     Q_OBJECT
-    
+
 public:
     explicit QNetworkManagerIp4Config(const QString &dbusPathName, QObject *parent = 0);
 	~QNetworkManagerIp4Config();
@@ -439,7 +439,7 @@ public:
     bool isValid();
 
  private:
-	QNetworkManagerIp4ConfigPrivate *d;    
+    QNetworkManagerIp4ConfigPrivate *d;
 };
 
 QT_END_NAMESPACE

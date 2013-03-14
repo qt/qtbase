@@ -117,14 +117,14 @@ void AddTorrentDialog::setTorrent(const QString &torrentFile)
 
     if (lastDestinationDirectory.isEmpty())
         lastDestinationDirectory = lastDirectory;
-    
+
     MetaInfo metaInfo;
     QFile torrent(torrentFile);
     if (!torrent.open(QFile::ReadOnly) || !metaInfo.parse(torrent.readAll())) {
         enableOkButton();
         return;
     }
-    
+
     ui.torrentFile->setText(torrentFile);
     ui.announceUrl->setText(metaInfo.announceUrl());
     if (metaInfo.comment().isEmpty())

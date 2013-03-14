@@ -743,7 +743,7 @@ QDataStream &QDataStream::operator>>(bool &i)
 */
 
 QDataStream &QDataStream::operator>>(float &f)
-{    
+{
     if (version() >= QDataStream::Qt_4_6
         && floatingPointPrecision() == QDataStream::DoublePrecision) {
         double d;

@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     \ingroup painting
     \since 4.6
 
-    \brief The QMargins class defines the four margins of a rectangle. 
+    \brief The QMargins class defines the four margins of a rectangle.
 
     QMargin defines a set of four margins; left, top, right and bottom,
     that describe the size of the borders surrounding a rectangle.

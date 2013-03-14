@@ -62,7 +62,7 @@ QRectF Node::boundingRect() const
 }
 
 void Node::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
-{    
+{
     painter->setPen(Qt::white);
     painter->drawEllipse(QPointF(0.0, 0.0), 5.0, 5.0);
 }
@@ -83,7 +83,7 @@ void Node::mousePressEvent(QGraphicsSceneMouseEvent *)
 void Node::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (m_dragging)
-        setPos(mapToParent(event->pos()));    
+        setPos(mapToParent(event->pos()));
 }
 
 void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *)

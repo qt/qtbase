@@ -100,7 +100,7 @@ enum { QOCIEncoding = 2000 }; // AL16UTF16
 // Always set the OCI_ATTR_CHARSET_FORM to SQLCS_NCHAR is safe
 // because Oracle server will deal with the implicit Conversion
 // Between CHAR and NCHAR.
-// see: http://download.oracle.com/docs/cd/A91202_01/901_doc/appdev.901/a89857/oci05bnd.htm#422705 
+// see: http://download.oracle.com/docs/cd/A91202_01/901_doc/appdev.901/a89857/oci05bnd.htm#422705
 static const ub1 qOraCharsetForm = SQLCS_NCHAR;
 #endif
 
@@ -2211,7 +2211,7 @@ bool QOCIDriver::open(const QString & db,
     // Connect without tnsnames.ora if a hostname is given
     QString connectionString = db;
     if (!hostname.isEmpty())
-        connectionString = 
+        connectionString =
         QString::fromLatin1("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=%1)(Port=%2))"
                 "(CONNECT_DATA=(SID=%3)))").arg(hostname).arg((port > -1 ? port : 1521)).arg(db);
 

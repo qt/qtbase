@@ -1665,7 +1665,7 @@ bool QSplitter::restoreState(const QByteArray &state)
     have a stretch factor of \a stretch.
 
     \a stretch is not the effective stretch factor; the effective
-    stretch factor is calculated by taking the initial size of the 
+    stretch factor is calculated by taking the initial size of the
     widget and multiplying it with \a stretch.
 
     This function is provided for convenience. It is equivalent to

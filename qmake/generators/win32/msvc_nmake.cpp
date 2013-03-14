@@ -451,7 +451,7 @@ void NmakeMakefileGenerator::writeBuildRulesPart(QTextStream &t)
         }
     }
     QString signature = !project->isEmpty("SIGNATURE_FILE") ? var("SIGNATURE_FILE") : var("DEFAULT_SIGNATURE");
-    bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") && 
+    bool useSignature = !signature.isEmpty() && !project->isActiveConfig("staticlib") &&
                         !project->isEmpty("CE_SDK") && !project->isEmpty("CE_ARCH");
     if(useSignature) {
         t << "\n\tsigntool sign /F " << signature << " $(DESTDIR_TARGET)";

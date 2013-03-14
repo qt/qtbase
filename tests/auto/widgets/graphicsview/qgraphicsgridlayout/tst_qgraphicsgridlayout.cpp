@@ -1549,7 +1549,7 @@ void tst_QGraphicsGridLayout::setColumnSpacing()
 }
 
 void tst_QGraphicsGridLayout::setGeometry_data()
-{    
+{
     QTest::addColumn<QRectF>("rect");
     QTest::newRow("null") << QRectF();
     QTest::newRow("normal") << QRectF(0,0, 50, 50);

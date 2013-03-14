@@ -64,7 +64,7 @@ void tst_QRand::testqrand()
     for (int i=0; i<numTestValues; ++i)
         if (generatedNumbers[i] != qrand())
             generatesSameSequence = false;
-    
+
     QVERIFY(generatesSameSequence);
 
     for (unsigned int seed=1; seed < 10; seed+=100) {

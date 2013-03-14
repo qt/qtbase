@@ -65,7 +65,7 @@ private:
     void writeRcFilePart(QTextStream &t);
 
     QStringList &findDependencies(const QString &file);
-    
+
     QString preCompHeaderOut;
 
     virtual bool findLibraries();

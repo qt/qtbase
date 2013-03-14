@@ -98,7 +98,7 @@ public:
         CanMulticast = 0x20
     };
     Q_DECLARE_FLAGS(InterfaceFlags, InterfaceFlag)
-    
+
     QNetworkInterface();
     QNetworkInterface(const QNetworkInterface &other);
     QNetworkInterface &operator=(const QNetworkInterface &other);

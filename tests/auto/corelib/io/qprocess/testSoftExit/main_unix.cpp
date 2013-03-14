@@ -55,7 +55,7 @@ int main()
 
     printf("Ready\n");
     fflush(stdout);
-    
+
     for (int i = 0; i < 5; ++i)
         sleep(1);
     return 0;

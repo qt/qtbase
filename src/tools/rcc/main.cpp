@@ -216,7 +216,7 @@ int runRcc(int argc, char *argv[])
     }
     QFile errorDevice;
     errorDevice.open(stderr, QIODevice::WriteOnly|QIODevice::Text);
-    
+
     if (library.verbose())
         errorDevice.write("Qt resource compiler\n");
 
@@ -251,7 +251,7 @@ int runRcc(int argc, char *argv[])
             out.write("\n");
         }
         return 0;
-    } 
+    }
 
     return library.output(out, errorDevice) ? 0 : 1;
 }

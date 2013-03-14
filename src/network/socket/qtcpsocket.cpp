@@ -41,7 +41,7 @@
 
 //#define QTCPSOCKET_DEBUG
 
-/*! 
+/*!
     \class QTcpSocket
 
     \brief The QTcpSocket class provides a TCP socket.

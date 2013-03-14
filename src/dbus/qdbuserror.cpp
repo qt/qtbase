@@ -72,7 +72,7 @@ for ($j = 0; $j < $i; ++$j) {
 }
 print "0\n};\n";
 ===== PERL SCRIPT ====
- 
+
  * The input data is as follows:
 other
 org.freedesktop.DBus.Error.Failed

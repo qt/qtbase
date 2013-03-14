@@ -80,7 +80,7 @@ public:
                  m_futures[i].cancel();
             }
         }
-        
+
         for (int i = 0; i < m_futures.count(); ++i) {
              m_futures[i].waitForFinished();
          }

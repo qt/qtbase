@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \since 4.2
 
     \inmodule QtWidgets
- 
+
     For an overview of Qt's Undo Framework, see the
     \l{Overview of Qt's Undo Framework}{overview document}.
 
@@ -324,7 +324,7 @@ const QUndoCommand *QUndoCommand::child(int index) const
     \since 4.2
 
     \inmodule QtWidgets
- 
+
     For an overview of Qt's Undo Framework, see the
     \l{Overview of Qt's Undo Framework}{overview document}.
 
@@ -1009,7 +1009,7 @@ void QUndoStack::endMacro()
 
   This function returns a const pointer, because modifying a command,
   once it has been pushed onto the stack and executed, almost always
-  causes corruption of the state of the document, if the command is 
+  causes corruption of the state of the document, if the command is
   later undone or redone.
 
   \sa QUndoCommand::child()

@@ -45,7 +45,7 @@
     \since 4.2
 
     \inmodule QtWidgets
- 
+
     You can use QCompleter to provide auto completions in any Qt
     widget, such as QLineEdit and QComboBox.
     When the user starts typing a word, QCompleter suggests possible ways of

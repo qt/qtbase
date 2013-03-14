@@ -810,7 +810,7 @@ QLayoutItem *QToolBarAreaLayout::insertToolBar(QToolBar *before, QToolBar *toolB
     QInternal::DockPosition pos = findToolBar(before);
     if (pos == QInternal::DockCount)
         return 0;
-    
+
     return docks[pos].insertToolBar(before, toolBar);
 }
 
@@ -869,7 +869,7 @@ void QToolBarAreaLayout::insertItem(QToolBar *before, QLayoutItem *item)
     QInternal::DockPosition pos = findToolBar(before);
     if (pos == QInternal::DockCount)
         return;
-    
+
     docks[pos].insertItem(before, item);
 }
 

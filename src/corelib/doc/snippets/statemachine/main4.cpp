@@ -69,7 +69,7 @@ protected:
         StringEvent *se = static_cast<StringEvent*>(e);
         return (m_value == se->value);
     }
-    
+
     virtual void onTransition(QEvent *) {}
 
 private:

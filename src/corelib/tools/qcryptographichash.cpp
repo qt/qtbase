@@ -308,7 +308,7 @@ void QCryptographicHash::addData(const char *data, int length)
         sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
         break;
 #endif
-    }    
+    }
     d->result.clear();
 }
 
@@ -350,7 +350,7 @@ bool QCryptographicHash::addData(QIODevice* device)
 */
 QByteArray QCryptographicHash::result() const
 {
-    if (!d->result.isEmpty()) 
+    if (!d->result.isEmpty())
         return d->result;
 
     switch (d->method) {

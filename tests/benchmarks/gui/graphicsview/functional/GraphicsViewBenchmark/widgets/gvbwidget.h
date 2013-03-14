@@ -44,7 +44,7 @@
 
 #include <QGraphicsWidget>
 
-class GvbWidget : public QGraphicsWidget 
+class GvbWidget : public QGraphicsWidget
 {
     Q_OBJECT
 

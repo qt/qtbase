@@ -67,7 +67,7 @@ int pthread_cancel(pthread_t thread);
 
 int pthread_attr_setinheritsched(pthread_attr_t *attr,
     int inheritsched);
-int pthread_attr_getinheritsched(const pthread_attr_t *attr, 
+int pthread_attr_getinheritsched(const pthread_attr_t *attr,
     int *inheritsched);
 
 // event dispatcher, select

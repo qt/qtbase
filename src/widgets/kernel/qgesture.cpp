@@ -367,7 +367,7 @@ void QPanGesture::setAcceleration(qreal value)
 
 /*!
     \enum QPinchGesture::ChangeFlag
-    
+
     This enum describes the changes that can occur to the properties of
     the gesture object.
 

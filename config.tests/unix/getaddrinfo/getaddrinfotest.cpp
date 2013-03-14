@@ -59,6 +59,6 @@ int main()
     if (getaddrinfo("foo", 0, 0, &res) == 0)
         freeaddrinfo(res);
     gai_strerror(0);
-    
+
     return 0;
 }

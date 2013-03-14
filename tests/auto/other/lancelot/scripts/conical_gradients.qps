@@ -64,7 +64,7 @@ setBrush nobrush
 begin_block ellipse_draw
   setClipRect 0 0 100 100
   drawEllipse 35 35 11 11
-  save 
+  save
     translate 40 40
     rotate -50
     drawLine -100 0 100 0

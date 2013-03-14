@@ -13,9 +13,9 @@ begin_block drawShape
   setBrush 0xffff0000
   drawEllipse 5 5 30 30
   setBrush 0xff00ff00
-  drawRect 0 0 20 20 
+  drawRect 0 0 20 20
   setBrush 0xff0000ff
-  drawRect 20 20 20 20 
+  drawRect 20 20 20 20
 end_block
 
 begin_block loop

@@ -90,8 +90,8 @@ private:
     void adjustScrollBars();
 
     QGraphicsWidget *m_viewport;
-    ScrollBar *m_horizontalScrollBar; 
-    ScrollBar *m_verticalScrollBar; 
+    ScrollBar *m_horizontalScrollBar;
+    ScrollBar *m_verticalScrollBar;
     Qt::ScrollBarPolicy m_verticalScrollBarPolicy;
     Qt::ScrollBarPolicy m_horizontalScrollBarPolicy;
     qreal m_prevHorizontalValue;

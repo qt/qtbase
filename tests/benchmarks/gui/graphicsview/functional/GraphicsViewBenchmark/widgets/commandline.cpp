@@ -127,7 +127,7 @@ bool readSettingsFromCommandLine(int argc, char *argv[],
                 argv[i] = 0;
                 i++;
                 argv[i] = 0;
-            }        
+            }
         }
 
         if (!argv[i])
@@ -160,7 +160,7 @@ bool readSettingsFromCommandLine(int argc, char *argv[],
                 argv[i] = 0;
                 i++;
                 argv[i] = 0;
-            }        
+            }
         } else if (strcmp(argv[i], "-subtree-cache") == 0) {
             options |= Settings::UseListItemCache;
             argv[i] = 0;

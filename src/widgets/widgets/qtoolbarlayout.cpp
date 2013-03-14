@@ -409,7 +409,7 @@ void QToolBarLayout::setGeometry(const QRect &rect)
         }
     }
 #endif
-    
+
 }
 
 bool QToolBarLayout::layoutActions(const QSize &size)

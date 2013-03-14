@@ -2121,7 +2121,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             label.state = bflags;
             GtkWidget *gtkButton = d->gtkWidget("GtkToolButton.GtkButton");
             QPalette pal = toolbutton->palette;
-            if (option->state & State_Enabled && 
+            if (option->state & State_Enabled &&
                 option->state & State_MouseOver && !(widget && widget->testAttribute(Qt::WA_SetPalette))) {
                 GdkColor gdkText = d->gtk_widget_get_style(gtkButton)->fg[GTK_STATE_PRELIGHT];
                 QColor textColor = QColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
@@ -2971,7 +2971,7 @@ void QGtkStyle::drawControl(ControlElement element,
 
             if (option->state & State_Sunken)
                 shadow = GTK_SHADOW_IN;
-            
+
             gtkPainter->paintBox(gtkTreeHeader, "button", option->rect.adjusted(-1, 0, 0, 0), state, shadow, d->gtk_widget_get_style(gtkTreeHeader));
         }
 

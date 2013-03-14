@@ -574,7 +574,7 @@ void QHashData::checkSanity()
     \fn uint qHash(const QPair<T1, T2> &key, uint seed = 0)
     \since 5.0
     \relates QHash
-    
+
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 
     Types \c T1 and \c T2 must be supported by qHash().

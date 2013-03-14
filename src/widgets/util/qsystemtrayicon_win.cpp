@@ -345,12 +345,12 @@ bool QSystemTrayIconSys::winEvent( MSG *m, long *result )
             case NIN_KEYSELECT:
                 if (ignoreNextMouseRelease)
                     ignoreNextMouseRelease = false;
-                else 
+                else
                     emit q->activated(QSystemTrayIcon::Trigger);
                 break;
 
             case WM_LBUTTONDBLCLK:
-                ignoreNextMouseRelease = true; // Since DBLCLICK Generates a second mouse 
+                ignoreNextMouseRelease = true; // Since DBLCLICK Generates a second mouse
                                                // release we must ignore it
                 emit q->activated(QSystemTrayIcon::DoubleClick);
                 break;

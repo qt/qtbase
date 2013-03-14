@@ -1001,7 +1001,7 @@ int QMetaObject::indexOfProperty(const char *name) const
 
     Q_ASSERT(priv(this->d.data)->revision >= 3);
     if (priv(this->d.data)->flags & DynamicMetaObject) {
-        QAbstractDynamicMetaObject *me = 
+        QAbstractDynamicMetaObject *me =
             const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(this));
 
         return me->createProperty(name, 0);
@@ -2041,8 +2041,8 @@ QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **si
 
     \snippet code/src_corelib_kernel_qmetaobject.cpp 8
 
-    QMetaObject::normalizedSignature() is used here to ensure that the format 
-    of the signature is what invoke() expects.  E.g. extra whitespace is 
+    QMetaObject::normalizedSignature() is used here to ensure that the format
+    of the signature is what invoke() expects.  E.g. extra whitespace is
     removed.
 
     If the "compute" slot does not take exactly one QString, one int
@@ -2970,7 +2970,7 @@ QMetaMethod QMetaProperty::notifySignal() const
 {
     int id = notifySignalIndex();
     if (id != -1)
-        return mobj->method(id); 
+        return mobj->method(id);
     else
         return QMetaMethod();
 }
@@ -2978,7 +2978,7 @@ QMetaMethod QMetaProperty::notifySignal() const
 /*!
     \since 4.6
 
-    Returns the index of the property change notifying signal if one was 
+    Returns the index of the property change notifying signal if one was
     specified, otherwise returns -1.
 
     \sa hasNotifySignal()

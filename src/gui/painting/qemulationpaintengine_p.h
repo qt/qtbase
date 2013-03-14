@@ -62,10 +62,10 @@ class QEmulationPaintEngine : public QPaintEngineEx
 {
 public:
     QEmulationPaintEngine(QPaintEngineEx *engine);
-    
+
     virtual bool begin(QPaintDevice *pdev);
     virtual bool end();
-    
+
     virtual Type type() const;
     virtual QPainterState *createState(QPainterState *orig) const;
 
@@ -78,7 +78,7 @@ public:
     virtual void drawStaticTextItem(QStaticTextItem *item);
     virtual void drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, const QPointF &s);
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr, Qt::ImageConversionFlags flags);
-    
+
     virtual void clipEnabledChanged();
     virtual void penChanged();
     virtual void brushChanged();

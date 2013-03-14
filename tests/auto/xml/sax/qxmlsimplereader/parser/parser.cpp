@@ -103,7 +103,7 @@ class ContentHandler : public QXmlDefaultHandler
 
 	const QString &result() const { return m_result; }
         const QString &errorMsg() const { return m_error_msg; }
-        
+
     private:
         QString nestPrefix() const { return QString().fill(' ', 3*m_nest); }
 	QString formatAttributes(const QXmlAttributes & atts);

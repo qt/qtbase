@@ -128,7 +128,7 @@ void tst_QToolTip::whatsThis()
 {
     qApp->setStyleSheet( "QWidget { font-size: 72px; }" );
     QWhatsThis::showText(QPoint(0,0), "THis is text");
-    QTest::qWait(400);	
+    QTest::qWait(400);
     QWidget *whatsthis = 0;
     foreach (QWidget *widget, QApplication::topLevelWidgets()) {
         if (widget->inherits("QWhatsThat")) {

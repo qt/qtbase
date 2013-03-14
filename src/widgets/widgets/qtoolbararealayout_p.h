@@ -169,7 +169,7 @@ public:
     void removeToolBar(QToolBar *toolBar);
     void insertToolBarBreak(QToolBar *before);
     void removeToolBarBreak(QToolBar *before);
-    void moveToolBar(QToolBar *toolbar, int pos); 
+    void moveToolBar(QToolBar *toolbar, int pos);
 
     QList<int> gapIndex(const QPoint &pos, int *maxDistance) const;
     bool insertGap(const QList<int> &path, QLayoutItem *item);
@@ -215,7 +215,7 @@ public:
     void insertToolBarBreak(QToolBar *before);
     void removeToolBarBreak(QToolBar *before);
     void addToolBarBreak(QInternal::DockPosition pos);
-    void moveToolBar(QToolBar *toolbar, int pos); 
+    void moveToolBar(QToolBar *toolbar, int pos);
 
     void insertItem(QInternal::DockPosition pos, QLayoutItem *item);
     void insertItem(QToolBar *before, QLayoutItem *item);

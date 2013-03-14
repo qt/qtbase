@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     // Create a progress dialog.
     QProgressDialog dialog;
     dialog.setLabelText(QString("Progressing using %1 thread(s)...").arg(QThread::idealThreadCount()));
- 
+
     // Create a QFutureWatcher and connect signals and slots.
     QFutureWatcher<void> futureWatcher;
     QObject::connect(&futureWatcher, SIGNAL(finished()), &dialog, SLOT(reset()));
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
     // Display the dialog and start the event loop.
     dialog.exec();
-    
+
     futureWatcher.waitForFinished();
 
     // Query the future to check if was canceled.

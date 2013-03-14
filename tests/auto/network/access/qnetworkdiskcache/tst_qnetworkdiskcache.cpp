@@ -79,7 +79,7 @@ private slots:
 
     void oldCacheVersionFile_data();
     void oldCacheVersionFile();
-    
+
     void sync();
 
     void crashWhenParentingCache();

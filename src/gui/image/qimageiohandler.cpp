@@ -433,7 +433,7 @@ bool QImageIOHandler::supportsOption(ImageOption option) const
     the sequence number of the current image in the animation. If
     this function is called before any image is read(), -1 is
     returned. The number of the first image in the sequence is 0.
-    
+
     If the image format does not support animation, 0 is returned.
 
     \sa read()

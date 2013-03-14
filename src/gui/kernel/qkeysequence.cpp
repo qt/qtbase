@@ -878,7 +878,7 @@ const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate
     \value SelectPreviousPage       Extend selection to previous page.
     \value SelectPreviousWord       Extend selection to previous word.
     \value SelectStartOfBlock       Extend selection to the start of a text block. This shortcut is only used on OS X.
-    \value SelectStartOfDocument    Extend selection to start of document. 
+    \value SelectStartOfDocument    Extend selection to start of document.
     \value SelectStartOfLine        Extend selection to start of line.
     \value Underline        Underline text.
     \value Undo             Undo.
@@ -892,10 +892,10 @@ const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate
 /*!
     \since 4.2
 
-    Constructs a QKeySequence object for the given \a key. 
-    The result will depend on the currently running platform. 
+    Constructs a QKeySequence object for the given \a key.
+    The result will depend on the currently running platform.
 
-    The resulting object will be based on the first element in the 
+    The resulting object will be based on the first element in the
     list of key bindings for the \a key.
 */
 QKeySequence::QKeySequence(StandardKey key)
@@ -903,7 +903,7 @@ QKeySequence::QKeySequence(StandardKey key)
     const QList <QKeySequence> bindings = keyBindings(key);
     //pick only the first/primary shortcut from current bindings
     if (bindings.size() > 0) {
-        d = bindings.first().d; 
+        d = bindings.first().d;
         d->ref.ref();
     }
     else
@@ -991,8 +991,8 @@ static inline int maybeSwapShortcut(int shortcut)
     \since 4.2
 
     Returns a list of key bindings for the given \a key.
-    The result of calling this function will vary based on the target platform. 
-    The first element of the list indicates the primary shortcut for the given platform. 
+    The result of calling this function will vary based on the target platform.
+    The first element of the list indicates the primary shortcut for the given platform.
     If the result contains more than one result, these can
     be considered alternative shortcuts on the same platform for the given \a key.
 */
@@ -1509,9 +1509,9 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
 
     \obsolete
 
-    Use toString() instead. 
-    
-    Returns the key sequence as a QString. This is equivalent to 
+    Use toString() instead.
+
+    Returns the key sequence as a QString. This is equivalent to
     calling toString(QKeySequence::NativeText). Note that the
     result is not platform independent.
 */

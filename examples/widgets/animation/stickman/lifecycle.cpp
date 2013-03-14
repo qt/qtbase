@@ -65,7 +65,7 @@ public:
         if (QSignalTransition::eventTest(e)) {
             QVariant key = static_cast<QStateMachine::SignalEvent*>(e)->arguments().at(0);
             return (key.toInt() == int(m_key));
-        } 
+        }
 
         return false;
     }
@@ -100,7 +100,7 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     const int stickManNodeCount = m_stickMan->nodeCount();
     for (int i=0; i<stickManNodeCount; ++i) {
         QPropertyAnimation *pa = new QPropertyAnimation(m_stickMan->node(i), "pos");
-        m_animationGroup->addAnimation(pa);    
+        m_animationGroup->addAnimation(pa);
     }
 
     // Set up initial state graph
@@ -111,14 +111,14 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
 
     m_alive = new QState(m_machine);
     m_alive->setObjectName("alive");
-    
+
     // Make it blink when lightning strikes before entering dead animation
-    QState *lightningBlink = new QState(m_machine);    
+    QState *lightningBlink = new QState(m_machine);
     lightningBlink->assignProperty(m_stickMan->scene(), "backgroundBrush", QColor(Qt::white));
     lightningBlink->assignProperty(m_stickMan, "penColor", QColor(Qt::black));
     lightningBlink->assignProperty(m_stickMan, "fillColor", QColor(Qt::white));
     lightningBlink->assignProperty(m_stickMan, "isDead", true);
-    
+
 //! [5]
     QTimer *timer = new QTimer(lightningBlink);
     timer->setSingleShot(true);
@@ -126,13 +126,13 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     QObject::connect(lightningBlink, SIGNAL(entered()), timer, SLOT(start()));
     QObject::connect(lightningBlink, SIGNAL(exited()), timer, SLOT(stop()));
 //! [5]
-  
+
     m_dead = new QState(m_machine);
     m_dead->assignProperty(m_stickMan->scene(), "backgroundBrush", QColor(Qt::black));
     m_dead->assignProperty(m_stickMan, "penColor", QColor(Qt::white));
     m_dead->assignProperty(m_stickMan, "fillColor", QColor(Qt::black));
     m_dead->setObjectName("dead");
-           
+
     // Idle state (sets no properties)
     m_idle = new QState(m_alive);
     m_idle->setObjectName("idle");
@@ -172,7 +172,7 @@ void LifeCycle::addActivity(const QString &fileName, Qt::Key key, QObject *sende
 QState *LifeCycle::makeState(QState *parentState, const QString &animationFileName)
 {
     QState *topLevel = new QState(parentState);
-    
+
     Animation animation;
     {
         QFile file(animationFileName);
@@ -186,7 +186,7 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
         animation.setCurrentFrame(i);
 
 //! [1]
-        QState *frameState = new QState(topLevel);                       
+        QState *frameState = new QState(topLevel);
         const int nodeCount = animation.nodeCount();
         for (int j=0; j<nodeCount; ++j)
             frameState->assignProperty(m_stickMan->node(j), "pos", animation.nodePos(j));
@@ -199,7 +199,7 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
 //! [2]
             previousState->addTransition(previousState, SIGNAL(propertiesAssigned()), frameState);
 //! [2]
-        
+
         previousState = frameState;
     }
 

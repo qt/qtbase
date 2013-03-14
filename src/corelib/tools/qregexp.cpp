@@ -298,7 +298,7 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     Square brackets mean match any character contained in the square
     brackets. The character set abbreviations described above can
     appear in a character set in square brackets. Except for the
-    character set abbreviations and the following two exceptions, 
+    character set abbreviations and the following two exceptions,
     characters do not have special meanings in square brackets.
 
     \table

@@ -41,7 +41,7 @@
 
 /*
   Note: The qdoc comments for QMacStyle are contained in
-  .../doc/src/qstyles.qdoc. 
+  .../doc/src/qstyles.qdoc.
 */
 
 #include <Cocoa/Cocoa.h>
@@ -3402,7 +3402,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                 } else {
                                     pr.setHeight(pixmap.size().height() + 6);
                                     cr.adjust(0, pr.bottom(), 0, -3);
-                                }       
+                                }
                                 alignment |= Qt::AlignCenter;
                             } else {
                                 pr.setWidth(pixmap.width() + 8);
@@ -5292,7 +5292,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     else
                         x += br.width() / 2 - p->fontMetrics().width(titlebar->text) / 2;
                     if (iw)
-                        p->drawPixmap(x - iw, y, 
+                        p->drawPixmap(x - iw, y,
                                       titlebar->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize), QIcon::Normal));
                     drawItemText(p, br, Qt::AlignCenter, opt->palette, tds == kThemeStateActive,
                                     titlebar->text, QPalette::Text);
@@ -6002,12 +6002,12 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 ------------------------------  <- top of stack widget
 
 
-        To summarize: 
-             * 2 is the distance between the pane and the contentsRect 
+        To summarize:
+             * 2 is the distance between the pane and the contentsRect
              * The 14 and the 1's are the distance from the contentsRect to the stack widget.
                (same value as used in SE_TabWidgetTabContents)
              * overlap is how much the pane should overlap the tab bar
-        */	
+        */
         // then add the size between the stackwidget and the "contentsRect"
 
         if (const QStyleOptionTabWidgetFrame *twf

@@ -52,7 +52,7 @@ class ScrollBarPrivate {
 
 public:
 
-    ScrollBarPrivate(Qt::Orientation orientation, ScrollBar *scrollBar) 
+    ScrollBarPrivate(Qt::Orientation orientation, ScrollBar *scrollBar)
         : orientation(orientation)
         , sliderPosition(0.0)
         , sliderSize(0.0)
@@ -96,15 +96,15 @@ public:
     void updateSlider()
     {
         QRectF oldSlider = slider;
-        slider = q_func()->boundingRect(); 
-        
+        slider = q_func()->boundingRect();
+
         qreal x = 0;
         qreal y = 0;
         qreal w = scrollerPixmap.width();
         qreal h = scrollerPixmap.height();
-        
+
         //Adjust the scrollBar in relation to the scroller
-        
+
         if (orientation == Qt::Horizontal) {
             qreal scrollBarHeight = scrollBarPixmap.height();
 
@@ -120,7 +120,7 @@ public:
             }
             slider.setWidth(scrollBarWidth);
         }
-        
+
         if(oldSlider != slider && (slider.size().width() > 0 &&slider.size().height() > 0 )) {
             scrollBarPixmap = Theme::p()->pixmap("scrollbar.svg", slider.size().toSize());
         }
@@ -153,7 +153,7 @@ public:
 ScrollBar::ScrollBar(Qt::Orientation orientation, QGraphicsWidget *parent)
     : QGraphicsWidget(parent)
     , d_ptr(new ScrollBarPrivate(orientation, this))
-{     
+{
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding);
     setContentsMargins(0, 0, 0, 0);
 
@@ -198,8 +198,8 @@ bool ScrollBar::sliderDown() const
     return d->sliderDown;
 }
 
-void ScrollBar::paint(QPainter *painter, 
-        const QStyleOptionGraphicsItem *option, 
+void ScrollBar::paint(QPainter *painter,
+        const QStyleOptionGraphicsItem *option,
         QWidget *widget)
 {
     Q_D(ScrollBar);
@@ -208,23 +208,23 @@ void ScrollBar::paint(QPainter *painter,
 
     d->updateSlider();
 
-    QRect sliderRect = d->slider.toRect(); 
+    QRect sliderRect = d->slider.toRect();
     painter->drawPixmap(sliderRect.topLeft(), d->scrollBarPixmap);
-    
+
     QRect cursorRect = d->cursor.toRect();
     painter->drawPixmap(cursorRect.topLeft(), d->scrollerPixmap);
 }
 
-QSizeF ScrollBar::sizeHint(Qt::SizeHint which, 
-        const QSizeF &constraint) const 
+QSizeF ScrollBar::sizeHint(Qt::SizeHint which,
+        const QSizeF &constraint) const
 {
     Q_D(const ScrollBar);
 
     QSizeF s;
 
-    if (d->orientation == Qt::Horizontal) 
+    if (d->orientation == Qt::Horizontal)
         s = QSizeF(-1, qMax(d->scrollBarPixmap.height(), d->scrollerPixmap.height()));
-    else 
+    else
         s = QSizeF(qMax(d->scrollBarPixmap.width(), d->scrollerPixmap.width()), -1);
 
     switch (which)
@@ -265,18 +265,18 @@ void ScrollBar::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(ScrollBar);
 
-    if (!d->sliderDown) 
+    if (!d->sliderDown)
         return;
 
     if (d->orientation == Qt::Horizontal) {
         qreal f = (event->pos().x() - d->pressPos.x())/(d->slider.width() - d->cursor.width());
         qreal dx = f * d->sliderSize;
-        
+
         d->setSliderPosition(d->sliderPosition + dx);
     } else {
         qreal f = (event->pos().y() - d->pressPos.y())/(d->slider.height() - d->cursor.height());
         qreal dy = f * d->sliderSize;
- 
+
         d->setSliderPosition(d->sliderPosition + dy);
     }
 

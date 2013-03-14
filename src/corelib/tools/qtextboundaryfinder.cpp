@@ -84,7 +84,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     QUnicodeTools::initCharAttributes(string, length, scriptItems.data(), scriptItems.count(), attributes, options);
 }
 
-/*! 
+/*!
     \class QTextBoundaryFinder
     \inmodule QtCore
 

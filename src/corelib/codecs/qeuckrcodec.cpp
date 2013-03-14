@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-// Most of the cp949 code was originally written by Joon-Kyu Park, and is included 
+// Most of the cp949 code was originally written by Joon-Kyu Park, and is included
 // in Qt with the author's permission and the grateful thanks of the Qt team.
 
 /*! \class QEucKrCodec
@@ -3405,7 +3405,7 @@ QByteArray QCP949Codec::convertFromUnicode(const QChar *uc, int len, ConverterSt
                     row = internal_code / 178;
                     column = internal_code % 178;
                 }
-                else { 
+                else {
                     // code between a1-fe
                     internal_code -= 3008;
                     row = internal_code / 84;

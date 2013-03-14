@@ -83,7 +83,7 @@ qvector_const_read_access:
         xorl    %eax, %eax
 .L183:
 !       fldl    s
-!       faddl   16(%edx,%eax,8) 
+!       faddl   16(%edx,%eax,8)
 !       addl    $1, %eax
 !       cmpl    $10000, %eax
 !       fstpl   s

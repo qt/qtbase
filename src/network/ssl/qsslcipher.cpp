@@ -194,7 +194,7 @@ QString QSslCipher::keyExchangeMethod() const
 {
     return d->keyExchangeMethod;
 }
- 
+
 /*!
     Returns the cipher's authentication method as a QString.
 */

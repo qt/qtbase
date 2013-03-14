@@ -133,7 +133,7 @@ void QThreadPoolThread::run()
             // wait for work, exiting after the expiry timeout is reached
             expired = !manager->runnableReady.wait(locker.mutex(), manager->expiryTimeout);
             ++manager->activeThreads;
-    
+
             if (expired)
                 --manager->waitingThreads;
         }
@@ -223,7 +223,7 @@ void QThreadPoolPrivate::enqueueTask(QRunnable *runnable, int priority)
 
 int QThreadPoolPrivate::activeThreadCount() const
 {
-    // To improve scalability this function is called without holding 
+    // To improve scalability this function is called without holding
     // the mutex lock -- keep it thread-safe.
     return (allThreads.count()
             - expiredThreads.count()
@@ -301,7 +301,7 @@ bool QThreadPoolPrivate::waitForDone(int msecs)
         QElapsedTimer timer;
         timer.start();
         int t;
-        while (!(queue.isEmpty() && activeThreads == 0) && 
+        while (!(queue.isEmpty() && activeThreads == 0) &&
                ((t = msecs - timer.elapsed()) > 0))
             noActiveThreads.wait(locker.mutex(), t);
     }
@@ -367,11 +367,11 @@ void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
 
     \snippet code/src_corelib_concurrent_qthreadpool.cpp 0
 
-    QThreadPool deletes the QRunnable automatically by default. Use 
+    QThreadPool deletes the QRunnable automatically by default. Use
     QRunnable::setAutoDelete() to change the auto-deletion flag.
 
     QThreadPool supports executing the same QRunnable more than once
-    by calling tryStart(this) from within QRunnable::run(). 
+    by calling tryStart(this) from within QRunnable::run().
     If autoDelete is enabled the QRunnable will be deleted when
     the last thread exits the run function. Calling start()
     multiple times with the same QRunnable when autoDelete is enabled
@@ -595,8 +595,8 @@ void QThreadPool::releaseThread()
 }
 
 /*!
-    Waits up to \a msecs milliseconds for all threads to exit and removes all 
-    threads from the thread pool. Returns true if all threads were removed; 
+    Waits up to \a msecs milliseconds for all threads to exit and removes all
+    threads from the thread pool. Returns true if all threads were removed;
     otherwise it returns false. If \a msecs is -1 (the default), the timeout
     is ignored (waits for the last thread to exit).
 */

@@ -31,7 +31,7 @@
     \brief The QPair class is a template class that stores a pair of items.
 
     \ingroup tools
-    
+
     QPair\<T1, T2\> can be used in your application if the STL \c
     pair type is not available. It stores one value of type T1 and
     one value of type T2. It can be used as a return value for a

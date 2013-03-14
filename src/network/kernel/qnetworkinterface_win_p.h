@@ -112,19 +112,19 @@ typedef struct {
 
 // copied from MSDN online help
 typedef enum {
-  IpPrefixOriginOther = 0, 
-  IpPrefixOriginManual, 
-  IpPrefixOriginWellKnown, 
-  IpPrefixOriginDhcp, 
+  IpPrefixOriginOther = 0,
+  IpPrefixOriginManual,
+  IpPrefixOriginWellKnown,
+  IpPrefixOriginDhcp,
   IpPrefixOriginRouterAdvertisement
 } IP_PREFIX_ORIGIN;
 
 typedef enum {
-  IpSuffixOriginOther = 0, 
-  IpSuffixOriginManual, 
-  IpSuffixOriginWellKnown, 
-  IpSuffixOriginDhcp, 
-  IpSuffixOriginLinkLayerAddress, 
+  IpSuffixOriginOther = 0,
+  IpSuffixOriginManual,
+  IpSuffixOriginWellKnown,
+  IpSuffixOriginDhcp,
+  IpSuffixOriginLinkLayerAddress,
   IpSuffixOriginRandom
 } IP_SUFFIX_ORIGIN;
 
@@ -164,11 +164,11 @@ typedef struct _IP_ADAPTER_UNICAST_ADDRESS {
   ULONG LeaseLifetime;
 } IP_ADAPTER_UNICAST_ADDRESS, *PIP_ADAPTER_UNICAST_ADDRESS;
 
-typedef struct _IP_ADAPTER_ANYCAST_ADDRESS 
+typedef struct _IP_ADAPTER_ANYCAST_ADDRESS
  IP_ADAPTER_ANYCAST_ADDRESS, *PIP_ADAPTER_ANYCAST_ADDRESS;
 
-typedef struct _IP_ADAPTER_MULTICAST_ADDRESS 
- IP_ADAPTER_MULTICAST_ADDRESS, 
+typedef struct _IP_ADAPTER_MULTICAST_ADDRESS
+ IP_ADAPTER_MULTICAST_ADDRESS,
  *PIP_ADAPTER_MULTICAST_ADDRESS;
 
 typedef struct _IP_ADAPTER_DNS_SERVER_ADDRESS
@@ -186,7 +186,7 @@ typedef struct _IP_ADAPTER_PREFIX {
   struct _IP_ADAPTER_PREFIX* Next;
   SOCKET_ADDRESS Address;
   ULONG PrefixLength;
-} IP_ADAPTER_PREFIX, 
+} IP_ADAPTER_PREFIX,
  *PIP_ADAPTER_PREFIX;
 
 typedef struct _IP_ADAPTER_ADDRESSES {
@@ -215,7 +215,7 @@ typedef struct _IP_ADAPTER_ADDRESSES {
   DWORD Ipv6IfIndex;
   DWORD ZoneIndices[16];
   PIP_ADAPTER_PREFIX FirstPrefix;
-} IP_ADAPTER_ADDRESSES, 
+} IP_ADAPTER_ADDRESSES,
  *PIP_ADAPTER_ADDRESSES;
 
 typedef struct {
@@ -227,7 +227,7 @@ typedef struct _IP_ADDR_STRING {
   IP_ADDRESS_STRING IpAddress;
   IP_MASK_STRING IpMask;
   DWORD Context;
-} IP_ADDR_STRING, 
+} IP_ADDR_STRING,
  *PIP_ADDR_STRING;
 
 typedef struct _IP_ADAPTER_INFO {
@@ -249,7 +249,7 @@ typedef struct _IP_ADAPTER_INFO {
   IP_ADDR_STRING SecondaryWinsServer;
   time_t LeaseObtained;
   time_t LeaseExpires;
-} IP_ADAPTER_INFO, 
+} IP_ADAPTER_INFO,
  *PIP_ADAPTER_INFO;
 
 typedef struct {

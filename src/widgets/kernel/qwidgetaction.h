@@ -59,13 +59,13 @@ class Q_WIDGETS_EXPORT QWidgetAction : public QAction
 public:
     explicit QWidgetAction(QObject *parent);
     virtual ~QWidgetAction();
-    
+
     void setDefaultWidget(QWidget *w);
     QWidget *defaultWidget() const;
 
     QWidget *requestWidget(QWidget *parent);
     void releaseWidget(QWidget *widget);
-    
+
 protected:
     virtual bool event(QEvent *);
     virtual bool eventFilter(QObject *, QEvent *);

@@ -289,7 +289,7 @@ void PathDeformWidget::setStyle( QStyle * style )
         return;
 
     m_controls->setStyle(style);
-        
+
     QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
     foreach (QWidget *w, widgets)
         w->setStyle(style);
@@ -481,7 +481,7 @@ void PathDeformRenderer::mousePressEvent(QMouseEvent *e)
         m_offset = m_pos - e->pos();
 
     m_mousePress = e->pos();
-    
+
     // If we're not running in small screen mode, always assume we're dragging
     m_mouseDrag = !m_smallScreen;
 

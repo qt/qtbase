@@ -104,20 +104,20 @@ public:
         maxX(-2e10), maxY(-2e10), minX(2e10), minY(2e10),
         boundingRectDirty(true)
     { }
-    
+
     inline void addRect(const QRectF &rect)
     {
         qreal top = rect.top();
         qreal left = rect.left();
         qreal bottom = rect.bottom();
         qreal right = rect.right();
-    
+
         vertexArray << QOpenGLPoint(left, top)
                     << QOpenGLPoint(right, top)
                     << QOpenGLPoint(right, bottom)
                     << QOpenGLPoint(right, bottom)
                     << QOpenGLPoint(left, bottom)
-                    << QOpenGLPoint(left, top);        
+                    << QOpenGLPoint(left, top);
     }
 
     inline void addQuad(const QRectF &rect)

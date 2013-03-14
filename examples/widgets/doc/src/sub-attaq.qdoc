@@ -31,7 +31,7 @@
 
     \brief This example shows Qt's ability to combine \l{The Animation Framework}{the animation framework}
     and \l{The State Machine Framework}{the state machine framework} to create a game.
-    
+
     \image sub-attaq-demo.png
 
     The purpose of the game is to destroy all submarines to win the current level.

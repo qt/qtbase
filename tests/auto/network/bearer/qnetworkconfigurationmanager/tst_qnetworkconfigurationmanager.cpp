@@ -64,7 +64,7 @@ private slots:
 #ifndef QT_NO_BEARERMANAGEMENT
 void printConfigurationDetails(const QNetworkConfiguration& p)
 {
-    qDebug() << p.name() <<":  isvalid->" <<p.isValid() << " type->"<< p.type() << 
+    qDebug() << p.name() <<":  isvalid->" <<p.isValid() << " type->"<< p.type() <<
                 " roaming->" << p.isRoamingAvailable() << "identifier->" << p.identifier() <<
                 " purpose->" << p.purpose() << " state->" << p.state();
 }
@@ -189,7 +189,7 @@ void tst_QNetworkConfigurationManager::configurationFromIdentifier()
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
     QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
-    
+
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
 
     foreach(QNetworkConfiguration c, configs) {

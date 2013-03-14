@@ -672,8 +672,8 @@ QNetworkReply *QNetworkAccessManager::head(const QNetworkRequest &request)
 
 /*!
     Posts a request to obtain the contents of the target \a request
-    and returns a new QNetworkReply object opened for reading which emits the 
-    \l{QIODevice::readyRead()}{readyRead()} signal whenever new data 
+    and returns a new QNetworkReply object opened for reading which emits the
+    \l{QIODevice::readyRead()}{readyRead()} signal whenever new data
     arrives.
 
     The contents as well as associated headers will be downloaded.
@@ -687,11 +687,11 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
 
 /*!
     Sends an HTTP POST request to the destination specified by \a request
-    and returns a new QNetworkReply object opened for reading that will 
-    contain the reply sent by the server. The contents of  the \a data 
+    and returns a new QNetworkReply object opened for reading that will
+    contain the reply sent by the server. The contents of  the \a data
     device will be uploaded to the server.
 
-    \a data must be open for reading and must remain valid until the 
+    \a data must be open for reading and must remain valid until the
     finished() signal is emitted for this reply.
 
     \note Sending a POST request on protocols other than HTTP and
@@ -707,7 +707,7 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QIODe
 /*!
     \overload
 
-    Sends the contents of the \a data byte array to the destination 
+    Sends the contents of the \a data byte array to the destination
     specified by \a request.
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const QByteArray &data)
@@ -770,8 +770,8 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QHttpM
     this reply.
 
     Whether anything will be available for reading from the returned
-    object is protocol dependent. For HTTP, the server may send a 
-    small HTML page indicating the upload was successful (or not). 
+    object is protocol dependent. For HTTP, the server may send a
+    small HTML page indicating the upload was successful (or not).
     Other protocols will probably have content in their replies.
 
     \note For HTTP, this request will send a PUT request, which most servers
@@ -807,7 +807,7 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 
     Sends a request to delete the resource identified by the URL of \a request.
 
-    \note This feature is currently available for HTTP only, performing an 
+    \note This feature is currently available for HTTP only, performing an
     HTTP DELETE request.
 
     \sa get(), post(), put(), sendCustomRequest()

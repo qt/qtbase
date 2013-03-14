@@ -370,7 +370,7 @@ bool QIntersectionPoint::isOnLine(const QPodPoint &u, const QPodPoint &v) const
 
     if (((q.x < 0) == (q.y < 0)) != ((p.x < 0) == (p.y < 0)))
         return false; // 'p + offset' and 'q' pass through different quadrants.
-    
+
     // Move all coordinates into the first quadrant.
     quint64 nx, ny;
     if (p.x < 0)
@@ -991,7 +991,7 @@ void QTriangulator<T>::ComplexToSimple::initEdges()
     if (first != m_edges.size())
         m_edges.last().to = m_edges.at(first).from;
     for (int i = 0; i < m_edges.size(); ++i) {
-        m_edges.at(i).originallyPointingUp = m_edges.at(i).pointingUp = 
+        m_edges.at(i).originallyPointingUp = m_edges.at(i).pointingUp =
             m_parent->m_vertices.at(m_edges.at(i).to) < m_parent->m_vertices.at(m_edges.at(i).from);
     }
 }
@@ -1646,7 +1646,7 @@ QTriangulator<T>::ComplexToSimple::DebugDialog::DebugDialog(ComplexToSimple *par
     QDataBuffer<QPodPoint> &vertices = m_parent->m_parent->m_vertices;
     if (vertices.isEmpty())
         return;
-    
+
     int minX, maxX, minY, maxY;
     minX = maxX = vertices.at(0).x;
     minY = maxY = vertices.at(0).y;
@@ -1671,7 +1671,7 @@ void QTriangulator<T>::ComplexToSimple::DebugDialog::paintEvent(QPaintEvent *)
     QDataBuffer<QPodPoint> &vertices = m_parent->m_parent->m_vertices;
     if (vertices.isEmpty())
         return;
-    
+
     qreal halfPointSize = qMin(m_window.width(), m_window.height()) / 300.0;
     p.setWindow(m_window.toRect());
 
@@ -1725,7 +1725,7 @@ void QTriangulator<T>::ComplexToSimple::DebugDialog::paintEvent(QPaintEvent *)
         }
         u += q;
         v += q;
-        p.drawLine(u.x, u.y, v.x, v.y);        
+        p.drawLine(u.x, u.y, v.x, v.y);
     }
 }
 

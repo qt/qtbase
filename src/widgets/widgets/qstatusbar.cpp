@@ -534,7 +534,7 @@ void QStatusBar::reformat()
 }
 
 /*!
-  
+
   Hides the normal status indications and displays the given \a
   message for the specified number of milli-seconds (\a{timeout}). If
   \a{timeout} is 0 (default), the \a {message} remains displayed until
@@ -744,7 +744,7 @@ bool QStatusBar::event(QEvent *e)
             }
         }
     }
-    
+
 // On Mac OS X Leopard it is possible to drag the window by clicking
 // on the tool bar on most applications.
 #ifndef Q_WS_MAC
@@ -755,7 +755,7 @@ bool QStatusBar::event(QEvent *e)
 
     // Enable drag-click only if the status bar is the status bar for a
     // QMainWindow with a unifed toolbar.
-    if (parent() == 0 || qobject_cast<QMainWindow *>(parent()) == 0 || 
+    if (parent() == 0 || qobject_cast<QMainWindow *>(parent()) == 0 ||
         qobject_cast<QMainWindow *>(parent())->unifiedTitleAndToolBarOnMac() == false )
         return QWidget::event(e);
 

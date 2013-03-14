@@ -234,7 +234,7 @@ inline void QFutureInterface<T>::reportResults(const QVector<T> &_results, int b
         this->reportResultsReady(resultCountBefore, store.count());
     } else {
         const int insertIndex = store.addResults(beginIndex, &_results, count);
-        this->reportResultsReady(insertIndex, insertIndex + _results.count());    
+        this->reportResultsReady(insertIndex, insertIndex + _results.count());
     }
 }
 

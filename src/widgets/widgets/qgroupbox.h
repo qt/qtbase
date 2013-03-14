@@ -95,7 +95,7 @@ protected:
     void changeEvent(QEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);  
+    void mouseReleaseEvent(QMouseEvent *event);
     void initStyleOption(QStyleOptionGroupBox *option) const;
 
 

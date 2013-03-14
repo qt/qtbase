@@ -259,7 +259,7 @@ void AbstractItemContainer::updateItemBuffer()
         QModelIndex index;
         if (m_items.count() > 0)
             index = m_items.last()->modelIndex();
-        while (m_items.count() < maxCount) {            
+        while (m_items.count() < maxCount) {
             index = m_itemView->nextIndex(index);
 
             if (!index.isValid())
@@ -311,7 +311,7 @@ void AbstractItemContainer::insertItem(int pos, const QModelIndex &index)
         item = m_prototype->newItemInstance();
 
     if (item) {
-        item->setModel(m_itemView->model());        
+        item->setModel(m_itemView->model());
         item->setModelIndex(index);
         item->setTwoColumns(m_twoColumns);
         m_items.insert(pos, item);
@@ -335,7 +335,7 @@ void AbstractItemContainer::findFirstAndLastVisibleBufferIndex(int &firstVisible
     lastVisibleBufferIndex = -1;
 
     int count = m_items.count();
-    for (int i = 0; i < count; ++i) {        
+    for (int i = 0; i < count; ++i) {
         if (itemVisibleInView(m_items.at(i), viewRect, fullyVisible)) {
             if (firstVisibleBufferIndex == -1)
                 firstVisibleBufferIndex = i;
@@ -359,13 +359,13 @@ int AbstractItemContainer::maxItemCountInItemBuffer() const
 
 void AbstractItemContainer::themeChange()
 {
-    for (int i = 0; i <m_items.count(); ++i) 
+    for (int i = 0; i <m_items.count(); ++i)
         m_items.at(i)->themeChange();
 }
 
-void AbstractItemContainer::updateContent() 
+void AbstractItemContainer::updateContent()
 {
-    for (int i = 0; i <m_items.count(); ++i) 
+    for (int i = 0; i <m_items.count(); ++i)
         m_items.at(i)->updateItemContents();
 }
 
@@ -389,7 +389,7 @@ void AbstractItemContainer::setTwoColumns(const bool enabled)
 }
 
 bool AbstractItemContainer::twoColumns()
-{    
+{
     return m_twoColumns;
 }
 
