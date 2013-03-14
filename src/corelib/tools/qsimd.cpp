@@ -54,7 +54,7 @@
 #      include <intrin.h>
 #    endif
 #  endif
-#elif defined(Q_OS_LINUX) && defined(__arm__)
+#elif defined(Q_OS_LINUX) && (defined(Q_PROCESSOR_ARM) || defined(QT_COMPILER_SUPPORTS_IWMMXT) || defined(QT_COMPILER_SUPPORTS_NEON))
 #include "private/qcore_unix_p.h"
 
 // the kernel header definitions for HWCAP_*
