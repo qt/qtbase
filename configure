@@ -5208,13 +5208,20 @@ if [ "$CFG_KMS" != "no" ]; then
 fi
 
 # Detect libxkbcommon
-if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
+if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null; then
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
     QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-    QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
-    QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
+    QT_CONFIG="$QT_CONFIG xkbcommon"
 else
-    QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
+    echo "WARNING: Qt requires the libxkbcommon version 0.2.0 (or higher)."
+    echo "Not satisfying this requirement will disable the compose key functionality,"
+    echo "which includes text input with dead keys."
+    QMakeVar add DEFINES QT_NO_XKBCOMMON
+fi
+
+if [ -n "$QMAKE_CFLAGS_XKBCOMMON" ] || [ -n "$QMAKE_LIBS_XKBCOMMON" ]; then
+    QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
+    QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
 fi
 
 # EGL Support
@@ -5299,8 +5306,8 @@ fi
 if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
-    QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
 fi
+
 if [ "$CFG_DIRECTFB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG directfb"
     QMakeVar set QMAKE_CFLAGS_DIRECTFB "$QMAKE_CFLAGS_DIRECTFB"
@@ -6640,7 +6647,7 @@ echo "Xi support ............. $CFG_XINPUT"
 echo "Xi2 support ............ $CFG_XINPUT2"
 echo "MIT-SHM support ........ $CFG_MITSHM"
 echo "FontConfig support ..... $CFG_FONTCONFIG"
-echo "XKB Support ............ $CFG_XKB"
+echo "XKB support ............ $CFG_XKB"
 echo "GTK theme support ...... $CFG_QGTKSTYLE"
 
 if [ "$XPLATFORM_MINGW" = "yes" ] ; then
