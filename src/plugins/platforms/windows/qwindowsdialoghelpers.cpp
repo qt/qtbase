@@ -1059,12 +1059,12 @@ QString QWindowsNativeFileDialogBase::libraryItemDefaultSaveFolder(IShellItem *i
 
 #else // !Q_OS_WINCE && __IShellLibrary_INTERFACE_DEFINED__
 
-QStringList QWindowsNativeFileDialogBase::libraryItemPaths(IShellItem *)
+QStringList QWindowsNativeFileDialogBase::libraryItemFolders(IShellItem *)
 {
     return QStringList();
 }
 
-QString QWindowsNativeFileDialogBase::libraryDefaultSaveFolder(IShellItem *)
+QString QWindowsNativeFileDialogBase::libraryItemDefaultSaveFolder(IShellItem *)
 {
     return QString();
 }
