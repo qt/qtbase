@@ -482,7 +482,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
                                 0xFFFF, 0xFFFF, 0xFFFF, 0, 0, 0);
     }
 
-    if (cursor && cshape >= 0 && cshape < Qt::LastCursor) {
+    if (cursor && cshape >= 0 && cshape < Qt::LastCursor && connection()->hasXFixes()) {
         const char *name = cursorNames[cshape];
         xcb_xfixes_set_cursor_name(conn, cursor, strlen(name), name);
     }
