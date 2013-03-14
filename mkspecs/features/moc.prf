@@ -38,15 +38,17 @@ win32:count(INCLUDEPATH, 40, >) {
 }
 
 defineReplace(mocCmdBase) {
+    RET =
     !isEmpty(WIN_INCLUDETEMP) {
-        RET =
         contains(TEMPLATE, "vc.*") {
             RET += $$mocinclude.commands
         }
-        RET += $$QMAKE_MOC $(DEFINES) @$$WIN_INCLUDETEMP $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$QMAKE_MOC_OPTIONS
-        return($$RET)
+        incvar = @$$WIN_INCLUDETEMP
+    } else {
+        incvar = $(INCPATH)
     }
-    return($$QMAKE_MOC $(DEFINES) $(INCPATH) $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$QMAKE_MOC_OPTIONS)
+    RET += $$QMAKE_MOC $(DEFINES) $$incvar $$join(QMAKE_COMPILER_DEFINES, " -D", -D) $$QMAKE_MOC_OPTIONS
+    return($$RET)
 }
 
 #moc headers
