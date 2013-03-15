@@ -240,7 +240,7 @@ void tst_QLockFile::staleLockFromCrashedProcess()
     // tryLock detects and removes the stale lock (since the PID is dead)
 #ifdef Q_OS_WIN
     // It can take a bit of time on Windows, though.
-    QVERIFY(secondLock.tryLock(2000));
+    QVERIFY(secondLock.tryLock(30000));
 #else
     QVERIFY(secondLock.tryLock());
 #endif
