@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <qglobal.h>
-#include <qlibraryinfo.h>
 #include <stdlib.h>
 #include "codemarker.h"
 #include "codeparser.h"
@@ -260,17 +259,6 @@ static void processQdocconfFile(const QString &fileName)
     config.setStringList(CONFIG_SHOWINTERNAL, QStringList(showInternal ? "true" : "false"));
     config.setStringList(CONFIG_NOLINKERRORS, QStringList(noLinkErrors ? "true" : "false"));
     config.setStringList(CONFIG_OBSOLETELINKS, QStringList(obsoleteLinks ? "true" : "false"));
-
-    /*
-      If QT_INSTALL_DOCS is not set, set it here so it can be used from
-      the qdocconf files.
-    */
-    QString qt_install_docs = qgetenv("QT_INSTALL_DOCS");
-    if (qt_install_docs.isEmpty()) {
-        documentationPath = QLibraryInfo::rawLocation(QLibraryInfo::DocumentationPath,
-                                                      QLibraryInfo::EffectivePaths);
-        qputenv("QT_INSTALL_DOCS", documentationPath.toLatin1());
-    }
 
     /*
       With the default configuration values in place, load
