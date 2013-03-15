@@ -162,7 +162,7 @@ public:
     QSockNotType::List sn_pending_list;
 
     QAtomicInt wakeUps;
-    bool interrupt;
+    QAtomicInt interrupt; // bool
 };
 
 QT_END_NAMESPACE
