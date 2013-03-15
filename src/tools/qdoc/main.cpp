@@ -309,7 +309,7 @@ static void processQdocconfFile(const QString &fileName)
       Load the language translators, if the configuration specifies any.
      */
     QStringList fileNames = config.getStringList(CONFIG_TRANSLATORS);
-    QStringList::Iterator fn = fileNames.constBegin();
+    QStringList::ConstIterator fn = fileNames.constBegin();
     while (fn != fileNames.constEnd()) {
         QTranslator *translator = new QTranslator(0);
         if (!translator->load(*fn))
