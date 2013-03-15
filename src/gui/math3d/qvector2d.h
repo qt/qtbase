@@ -82,6 +82,9 @@ public:
     QVector2D normalized() const;
     void normalize();
 
+    float distanceToPoint(const QVector2D &point) const;
+    float distanceToLine(const QVector2D& point, const QVector2D& direction) const;
+
     QVector2D &operator+=(const QVector2D &vector);
     QVector2D &operator-=(const QVector2D &vector);
     QVector2D &operator*=(float factor);

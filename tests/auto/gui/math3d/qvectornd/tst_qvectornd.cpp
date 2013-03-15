@@ -128,12 +128,16 @@ private slots:
     void crossProduct();
     void normal_data();
     void normal();
-    void distanceToPoint_data();
-    void distanceToPoint();
+    void distanceToPoint2_data();
+    void distanceToPoint2();
+    void distanceToPoint3_data();
+    void distanceToPoint3();
     void distanceToPlane_data();
     void distanceToPlane();
-    void distanceToLine_data();
-    void distanceToLine();
+    void distanceToLine2_data();
+    void distanceToLine2();
+    void distanceToLine3_data();
+    void distanceToLine3();
 
     void dotProduct2_data();
     void dotProduct2();
@@ -1791,7 +1795,56 @@ void tst_QVectorND::normal()
 }
 
 // Test distance to point calculations.
-void tst_QVectorND::distanceToPoint_data()
+void tst_QVectorND::distanceToPoint2_data()
+{
+    QTest::addColumn<float>("x1");  // Point to test for distance
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("x2");  // Point to test against
+    QTest::addColumn<float>("y2");
+
+    QTest::addColumn<float>("distance");
+
+    QTest::newRow("null")
+        << 0.0f << 0.0f
+        << 0.0f << 1.0f
+        << 1.0f;
+
+    QTest::newRow("on point")
+        << 1.0f << 1.0f
+        << 1.0f << 1.0f
+        << 0.0f;
+
+    QTest::newRow("off point")
+        << 0.0f << 1.0f
+        << 0.0f << 2.0f
+        << 1.0f;
+
+    QTest::newRow("off point 2")
+        << 0.0f << 0.0f
+        << 0.0f << 2.0f
+        << 2.0f;
+
+    QTest::newRow("minus point")
+        << 0.0f << 0.0f
+        << 0.0f << -2.0f
+        << 2.0f;
+}
+void tst_QVectorND::distanceToPoint2()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, distance);
+
+    QVector2D v1(x1, y1);
+    QVector2D v2(x2, y2);
+
+    QCOMPARE(v1.distanceToPoint(v2), distance);
+}
+
+// Test distance to point calculations.
+void tst_QVectorND::distanceToPoint3_data()
 {
     QTest::addColumn<float>("x1");  // Point to test for distance
     QTest::addColumn<float>("y1");
@@ -1813,8 +1866,8 @@ void tst_QVectorND::distanceToPoint_data()
         << 0.0f;
 
     QTest::newRow("off point")
-        << 0.0f << 0.0f << 0.0f
         << 0.0f << 0.0f << 1.0f
+        << 0.0f << 0.0f << 2.0f
         << 1.0f;
 
     QTest::newRow("off point 2")
@@ -1827,7 +1880,7 @@ void tst_QVectorND::distanceToPoint_data()
         << 0.0f << -2.0f << 0.0f
         << 2.0f;
 }
-void tst_QVectorND::distanceToPoint()
+void tst_QVectorND::distanceToPoint3()
 {
     QFETCH(float, x1);
     QFETCH(float, y1);
@@ -1917,7 +1970,65 @@ void tst_QVectorND::distanceToPlane()
 }
 
 // Test distance to line calculations.
-void tst_QVectorND::distanceToLine_data()
+void tst_QVectorND::distanceToLine2_data()
+{
+    QTest::addColumn<float>("x1");  // Point on line
+    QTest::addColumn<float>("y1");
+    QTest::addColumn<float>("x2");  // Direction of the line
+    QTest::addColumn<float>("y2");
+    QTest::addColumn<float>("x3");  // Point to test for distance
+    QTest::addColumn<float>("y3");
+    QTest::addColumn<float>("distance");
+
+    QTest::newRow("null")
+        << 0.0f << 0.0f
+        << 0.0f << 0.1f
+        << 0.0f << 0.0f
+        << 0.0f;
+
+    QTest::newRow("on line")
+        << 0.0f << 0.0f
+        << 0.0f << 1.0f
+        << 0.0f << 5.0f
+        << 0.0f;
+
+    QTest::newRow("off line")
+        << 0.0f << 0.0f
+        << 0.0f << 1.0f
+        << 1.0f << 0.0f
+        << 1.0f;
+
+    QTest::newRow("off line 2")
+        << 0.0f << 0.0f
+        << 0.0f << 1.0f
+        << -2.0f << 0.0f
+        << 2.0f;
+
+    QTest::newRow("points")
+        << 0.0f << 0.0f
+        << 0.0f << 0.0f
+        << 0.0f << 5.0f
+        << 5.0f;
+}
+
+void tst_QVectorND::distanceToLine2()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, x3);
+    QFETCH(float, y3);
+    QFETCH(float, distance);
+
+    QVector2D v1(x1, y1);
+    QVector2D v2(x2, y2);
+    QVector2D v3(x3, y3);
+
+    QCOMPARE(v3.distanceToLine(v1, v2), distance);
+}
+// Test distance to line calculations.
+void tst_QVectorND::distanceToLine3_data()
 {
     QTest::addColumn<float>("x1");  // Point on line
     QTest::addColumn<float>("y1");
@@ -1960,7 +2071,7 @@ void tst_QVectorND::distanceToLine_data()
         << 0.0f << 5.0f << 0.0f
         << 5.0f;
 }
-void tst_QVectorND::distanceToLine()
+void tst_QVectorND::distanceToLine3()
 {
     QFETCH(float, x1);
     QFETCH(float, y1);

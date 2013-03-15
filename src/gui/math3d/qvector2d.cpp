@@ -229,6 +229,39 @@ void QVector2D::normalize()
 }
 
 /*!
+    \since 5.1
+
+    Returns the distance from this vertex to a point defined by
+    the vertex \a point.
+
+    \sa distanceToLine()
+*/
+float QVector2D::distanceToPoint(const QVector2D& point) const
+{
+    return (*this - point).length();
+}
+
+/*!
+    \since 5.1
+
+    Returns the distance that this vertex is from a line defined
+    by \a point and the unit vector \a direction.
+
+    If \a direction is a null vector, then it does not define a line.
+    In that case, the distance from \a point to this vertex is returned.
+
+    \sa distanceToPoint()
+*/
+float QVector2D::distanceToLine
+        (const QVector2D& point, const QVector2D& direction) const
+{
+    if (direction.isNull())
+        return (*this - point).length();
+    QVector2D p = point + dotProduct(*this - point, direction) * direction;
+    return (*this - p).length();
+}
+
+/*!
     \fn QVector2D &QVector2D::operator+=(const QVector2D &vector)
 
     Adds the given \a vector to this vector and returns a reference to
