@@ -593,6 +593,16 @@ void QThread::run()
 
     \sa Priority, priority(), start()
 */
+void QThread::setPriority(Priority priority)
+{
+    Q_D(QThread);
+    QMutexLocker locker(&d->mutex);
+    if (!d->running) {
+        qWarning("QThread::setPriority: Cannot set priority, thread is not running");
+        return;
+    }
+    d->setPriority(priority);
+}
 
 /*!
     \since 4.1

@@ -142,6 +142,8 @@ public:
     QThreadPrivate(QThreadData *d = 0);
     ~QThreadPrivate();
 
+    void setPriority(QThread::Priority prio);
+
     mutable QMutex mutex;
     QAtomicInt quitLockRef;
 
