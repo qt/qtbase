@@ -62,6 +62,7 @@ class QAuthenticator;
 class QNetworkProxy;
 class QNetworkProxyQuery;
 class QNetworkRequest;
+class QStringList;
 class QUrl;
 class QUrlInfo;
 class QSslConfiguration;
@@ -219,6 +220,7 @@ class QNetworkAccessBackendFactory
 public:
     QNetworkAccessBackendFactory();
     virtual ~QNetworkAccessBackendFactory();
+    virtual QStringList supportedSchemes() const = 0;
     virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
                                           const QNetworkRequest &request) const = 0;
 };

@@ -88,6 +88,7 @@ private:
 class QNetworkAccessFileBackendFactory: public QNetworkAccessBackendFactory
 {
 public:
+    virtual QStringList supportedSchemes() const Q_DECL_OVERRIDE;
     virtual QNetworkAccessBackend *create(QNetworkAccessManager::Operation op,
                                           const QNetworkRequest &request) const;
 };

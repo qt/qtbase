@@ -1159,6 +1159,57 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     return reply;
 }
 
+/*!
+    \since 5.2
+
+    Lists all the URL schemes supported by the access manager.
+
+    \sa supportedSchemesImplementation()
+*/
+QStringList QNetworkAccessManager::supportedSchemes() const
+{
+    QStringList schemes;
+    QNetworkAccessManager *self = const_cast<QNetworkAccessManager *>(this); // We know we call a const slot
+    QMetaObject::invokeMethod(self, "supportedSchemesImplementation", Qt::DirectConnection,
+                              Q_RETURN_ARG(QStringList, schemes));
+    schemes.removeDuplicates();
+    return schemes;
+}
+
+/*!
+    \since 5.2
+
+    Lists all the URL schemes supported by the access manager.
+
+    You should not call this function directly; use
+    QNetworkAccessManager::supportedSchemes() instead.
+
+    Reimplement this slot to provide your own supported schemes
+    in a QNetworkAccessManager subclass. It is for instance necessary
+    when your subclass provides support for new protocols.
+
+    Because of binary compatibility constraints, the supportedSchemes()
+    method (introduced in Qt 5.2) is not virtual. Instead, supportedSchemes()
+    will dynamically detect and call this slot.
+
+    \sa supportedSchemes()
+*/
+QStringList QNetworkAccessManager::supportedSchemesImplementation() const
+{
+    Q_D(const QNetworkAccessManager);
+
+    QStringList schemes = d->backendSupportedSchemes();
+    // Those ones don't exist in backends
+#ifndef QT_NO_HTTP
+    schemes << QStringLiteral("http");
+#ifndef QT_NO_SSL
+    if (QSslSocket::supportsSsl())
+        schemes << QStringLiteral("https");
+#endif
+#endif
+    schemes << QStringLiteral("data");
+    return schemes;
+}
 
 /*!
     \since 5.0

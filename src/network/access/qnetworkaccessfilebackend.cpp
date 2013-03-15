@@ -49,6 +49,17 @@
 
 QT_BEGIN_NAMESPACE
 
+QStringList QNetworkAccessFileBackendFactory::supportedSchemes() const
+{
+    QStringList schemes;
+    schemes << QStringLiteral("file")
+            << QStringLiteral("qrc");
+#if defined(Q_OS_ANDROID)
+    schemes << QStringLiteral("assets");
+#endif
+    return schemes;
+}
+
 QNetworkAccessBackend *
 QNetworkAccessFileBackendFactory::create(QNetworkAccessManager::Operation op,
                                          const QNetworkRequest &request) const

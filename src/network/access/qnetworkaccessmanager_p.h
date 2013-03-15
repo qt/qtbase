@@ -124,6 +124,7 @@ public:
 #endif
 
     QNetworkAccessBackend *findBackend(QNetworkAccessManager::Operation op, const QNetworkRequest &request);
+    QStringList backendSupportedSchemes() const;
 
 #ifndef QT_NO_BEARERMANAGEMENT
     void createSession(const QNetworkConfiguration &config);

@@ -47,6 +47,7 @@
 #include "qnetworkreply_p.h"
 #include "QtCore/qhash.h"
 #include "QtCore/qmutex.h"
+#include "QtCore/qstringlist.h"
 #include "QtNetwork/private/qnetworksession_p.h"
 
 #include "qnetworkaccesscachebackend_p.h"
@@ -108,6 +109,22 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
         }
     }
     return 0;
+}
+
+QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
+{
+    if (QNetworkAccessBackendFactoryData::valid.load()) {
+        QMutexLocker locker(&factoryData()->mutex);
+        QNetworkAccessBackendFactoryData::ConstIterator it = factoryData()->constBegin();
+        QNetworkAccessBackendFactoryData::ConstIterator end = factoryData()->constEnd();
+        QStringList schemes;
+        while (it != end) {
+            schemes += (*it)->supportedSchemes();
+            ++it;
+        }
+        return schemes;
+    }
+    return QStringList();
 }
 
 QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()

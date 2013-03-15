@@ -42,6 +42,7 @@
 #include "qnetworkaccessdebugpipebackend_p.h"
 #include "QtCore/qdatastream.h"
 #include <QCoreApplication>
+#include <QStringList>
 #include <QUrlQuery>
 #include "private/qnoncontiguousbytedevice_p.h"
 
@@ -53,6 +54,11 @@ enum {
     ReadBufferSize = 16384,
     WriteBufferSize = ReadBufferSize
 };
+
+QStringList QNetworkAccessDebugPipeBackendFactory::supportedSchemes() const
+{
+    return QStringList(QStringLiteral("debugpipe"));
+}
 
 QNetworkAccessBackend *
 QNetworkAccessDebugPipeBackendFactory::create(QNetworkAccessManager::Operation op,

@@ -43,6 +43,7 @@
 #include "qnetworkaccessmanager_p.h"
 #include "QtNetwork/qauthenticator.h"
 #include "private/qnoncontiguousbytedevice_p.h"
+#include <QStringList>
 
 #ifndef QT_NO_FTP
 
@@ -59,6 +60,11 @@ static QByteArray makeCacheKey(const QUrl &url)
     return "ftp-connection:" +
         copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery |
                        QUrl::RemoveFragment);
+}
+
+QStringList QNetworkAccessFtpBackendFactory::supportedSchemes() const
+{
+    return QStringList(QStringLiteral("ftp"));
 }
 
 QNetworkAccessBackend *

@@ -97,6 +97,9 @@ public:
     explicit QNetworkAccessManager(QObject *parent = 0);
     ~QNetworkAccessManager();
 
+    // ### Qt 6: turn into virtual
+    QStringList supportedSchemes() const;
+
     void clearAccessCache();
 
 #ifndef QT_NO_NETWORKPROXY
@@ -152,6 +155,9 @@ Q_SIGNALS:
 protected:
     virtual QNetworkReply *createRequest(Operation op, const QNetworkRequest &request,
                                          QIODevice *outgoingData = 0);
+
+protected Q_SLOTS:
+    QStringList supportedSchemesImplementation() const;
 
 private:
     friend class QNetworkReplyImplPrivate;
