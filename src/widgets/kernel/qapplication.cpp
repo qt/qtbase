@@ -965,11 +965,7 @@ QStyle *QApplication::style()
         // Compile-time search for default style
         //
         QString style;
-#ifdef QT_BUILD_INTERNAL
         QString envStyle = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
-#else
-        QString envStyle;
-#endif
         if (!QApplicationPrivate::styleOverride.isEmpty()) {
             style = QApplicationPrivate::styleOverride;
         } else if (!envStyle.isEmpty()) {
