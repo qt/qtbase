@@ -1299,6 +1299,9 @@ QStyleOptionViewItem QItemDelegate::setOptions(const QModelIndex &index,
     if (value.canConvert<QBrush>())
         opt.palette.setBrush(QPalette::Text, qvariant_cast<QBrush>(value));
 
+    // disable style animations for checkboxes etc. within itemviews (QTBUG-30146)
+    opt.styleObject = 0;
+
     return opt;
 }
 
