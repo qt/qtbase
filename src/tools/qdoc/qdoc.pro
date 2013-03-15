@@ -1,7 +1,8 @@
 option(host_build)
-CONFIG += force_bootstrap   # because of weird QLibraryInfo::location() reference
+QT = core xml
 
 DEFINES += \
+    QT_QMLDEVTOOLS_LIB \   # force static exports even if not bootstrapping
     QDOC2_COMPAT
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
