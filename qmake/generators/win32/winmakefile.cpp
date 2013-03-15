@@ -77,7 +77,7 @@ Win32MakefileGenerator::findHighestVersion(const QString &d, const QString &stem
         return vover.first().toInt();
 
     int biggest=-1;
-    if(!project->isActiveConfig("no_versionlink")) {
+    if (project->isActiveConfig("link_highest_lib_version")) {
         static QHash<QString, QStringList> dirEntryListCache;
         QStringList entries = dirEntryListCache.value(bd);
         if (entries.isEmpty()) {

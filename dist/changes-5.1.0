@@ -123,6 +123,17 @@ Qt for Windows CE
 
 
 ****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- qmake
+
+  * Windows: The feature of finding the highest version number of LIBS
+    entries is turned off by default.
+    It can be turned on with "CONFIG += link_highest_lib_version".
+
+
+****************************************************************************
 *                          Plugins                                         *
 ****************************************************************************
 
