@@ -231,6 +231,12 @@ public:
     void ref();
     void deref();
 
+    bool canWaitLocked()
+    {
+        QMutexLocker locker(&postEventList.mutex);
+        return canWait;
+    }
+
     QThread *thread;
     Qt::HANDLE threadId;
     bool quitNow;
