@@ -136,7 +136,8 @@ public:
         SaveAs,
         Preferences,
         Quit,
-        FullScreen
+        FullScreen,
+        Deselect
      };
 
     enum SequenceFormat {
