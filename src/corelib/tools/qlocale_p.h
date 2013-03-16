@@ -234,10 +234,14 @@ public:
 
     QString bcp47Name() const;
 
-    QString languageCode() const; // ### QByteArray::fromRawData would be more optimal
-    QString scriptCode() const;
-    QString countryCode() const;
+    // ### QByteArray::fromRawData would be more optimal
+    inline QString languageCode() const { return QLocalePrivate::languageToCode(QLocale::Language(m_data->m_language_id)); }
+    inline QString scriptCode() const { return QLocalePrivate::scriptToCode(QLocale::Script(m_data->m_script_id)); }
+    inline QString countryCode() const { return QLocalePrivate::countryToCode(QLocale::Country(m_data->m_country_id)); }
 
+    static QString languageToCode(QLocale::Language language);
+    static QString scriptToCode(QLocale::Script script);
+    static QString countryToCode(QLocale::Country country);
     static QLocale::Language codeToLanguage(const QString &code);
     static QLocale::Script codeToScript(const QString &code);
     static QLocale::Country codeToCountry(const QString &code);

@@ -164,14 +164,14 @@ QLocale::Country QLocalePrivate::codeToCountry(const QString &code)
     return QLocale::AnyCountry;
 }
 
-QString QLocalePrivate::languageCode() const
+QString QLocalePrivate::languageToCode(QLocale::Language language)
 {
-    if (m_data->m_language_id == QLocale::AnyLanguage)
+    if (language == QLocale::AnyLanguage)
         return QString();
-    if (m_data->m_language_id == QLocale::C)
+    if (language == QLocale::C)
         return QLatin1String("C");
 
-    const unsigned char *c = language_code_list + 3*(uint(m_data->m_language_id));
+    const unsigned char *c = language_code_list + 3*(uint(language));
 
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
@@ -183,20 +183,20 @@ QString QLocalePrivate::languageCode() const
     return code;
 }
 
-QString QLocalePrivate::scriptCode() const
+QString QLocalePrivate::scriptToCode(QLocale::Script script)
 {
-    if (m_data->m_script_id == QLocale::AnyScript || m_data->m_script_id > QLocale::LastScript)
+    if (script == QLocale::AnyScript || script > QLocale::LastScript)
         return QString();
-    const unsigned char *c = script_code_list + 4*(uint(m_data->m_script_id));
+    const unsigned char *c = script_code_list + 4*(uint(script));
     return QString::fromLatin1((const char *)c, 4);
 }
 
-QString QLocalePrivate::countryCode() const
+QString QLocalePrivate::countryToCode(QLocale::Country country)
 {
-    if (m_data->m_country_id == QLocale::AnyCountry)
+    if (country == QLocale::AnyCountry)
         return QString();
 
-    const unsigned char *c = country_code_list + 3*(uint(m_data->m_country_id));
+    const unsigned char *c = country_code_list + 3*(uint(country));
 
     QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
