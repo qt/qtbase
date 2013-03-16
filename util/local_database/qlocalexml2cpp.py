@@ -554,7 +554,7 @@ def main():
         if to_language != 0:
             cmnt_to = cmnt_to + language_map[to_language][1]
         else:
-            cmnt_from = cmnt_from + "und"
+            cmnt_to = cmnt_to + "und"
         if to_script != 0:
             if cmnt_to:
                 cmnt_to = cmnt_to + "_"

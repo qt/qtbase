@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v22.1.
+    QLocale's data is based on Common Locale Data Repository v23.
 
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
@@ -746,6 +746,7 @@
     \value BengaliScript
     \value BopomofoScript
     \value BrahmiScript
+    \value BrailleScript
     \value BugineseScript
     \value BuhidScript
     \value CanadianAboriginalScript
@@ -771,6 +772,7 @@
     \value HangulScript
     \value HanunooScript
     \value HebrewScript
+    \value HiraganaScript
     \value ImperialAramaicScript
     \value InscriptionalPahlaviScript
     \value InscriptionalParthianScript
