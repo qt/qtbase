@@ -2422,12 +2422,13 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
 
             const int end = si.position + length(&si);
             for (int i = si.position; i < end - 1; ++i) {
-                if (layoutData->string.at(i) == QLatin1Char('&')) {
+                if (layoutData->string.at(i) == QLatin1Char('&')
+                    && !attributes[i + 1].whiteSpace && attributes[i + 1].graphemeBoundary) {
                     const int gp = logClusters[i - si.position];
                     glyphs.attributes[gp].dontPrint = true;
-                    attributes[i + 1].graphemeBoundary = false;
-                    attributes[i + 1].lineBreak = false;
-                    attributes[i + 1].whiteSpace = false;
+                    // emulate grapheme cluster
+                    attributes[i] = attributes[i + 1];
+                    memset(attributes + i + 1, 0, sizeof(QCharAttributes));
                     if (layoutData->string.at(i + 1) == QLatin1Char('&'))
                         ++i;
                 }
