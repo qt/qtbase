@@ -2458,20 +2458,27 @@ QLocale::MeasurementSystem QLocale::measurementSystem() const
 */
 Qt::LayoutDirection QLocale::textDirection() const
 {
-    switch (language()) {
-    case QLocale::Arabic:
-    case QLocale::Hebrew:
-    case QLocale::Persian:
-    case QLocale::Pashto:
-    case QLocale::Urdu:
-    case QLocale::Syriac:
-    case QLocale::Divehi:
+    switch (script()) {
+    case QLocale::ArabicScript:
+    case QLocale::AvestanScript:
+    case QLocale::CypriotScript:
+    case QLocale::HebrewScript:
+    case QLocale::ImperialAramaicScript:
+    case QLocale::InscriptionalPahlaviScript:
+    case QLocale::InscriptionalParthianScript:
+    case QLocale::KharoshthiScript:
+    case QLocale::LydianScript:
+    case QLocale::MandaeanScript:
+    case QLocale::MeroiticCursiveScript:
+    case QLocale::MeroiticScript:
+    case QLocale::SamaritanScript:
+    case QLocale::SyriacScript:
+    case QLocale::ThaanaScript:
+    case QLocale::NkoScript:
+    case QLocale::OldSouthArabianScript:
+    case QLocale::OrkhonScript:
+    case QLocale::PhoenicianScript:
         return Qt::RightToLeft;
-    case QLocale::Punjabi:
-    case QLocale::Uzbek:
-        if (script() == QLocale::ArabicScript)
-            return Qt::RightToLeft;
-        // fall through
     default:
         break;
     }
