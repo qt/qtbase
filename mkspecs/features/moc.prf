@@ -60,7 +60,7 @@ moc_header.input = HEADERS
 moc_header.variable_out = SOURCES
 moc_header.name = MOC ${QMAKE_FILE_IN}
 !contains(TEMPLATE, "vc.*") {
-	!isEmpty(INCLUDETEMP):moc_header.depends += $$INCLUDETEMP
+    !isEmpty(INCLUDETEMP):moc_header.depends += $$INCLUDETEMP
 }
 silent:moc_header.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_header.commands
 QMAKE_EXTRA_COMPILERS += moc_header
@@ -74,7 +74,7 @@ moc_source.output = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EX
 moc_source.input = SOURCES OBJECTIVE_SOURCES
 moc_source.name = MOC ${QMAKE_FILE_IN}
 !contains(TEMPLATE, "vc.*") {
-	!isEmpty(INCLUDETEMP):moc_source.depends += $$INCLUDETEMP
+    !isEmpty(INCLUDETEMP):moc_source.depends += $$INCLUDETEMP
 }
 silent:moc_source.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_source.commands
 QMAKE_EXTRA_COMPILERS += moc_source
