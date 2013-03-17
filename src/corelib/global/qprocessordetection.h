@@ -280,9 +280,9 @@
 #  if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == Q_BIG_ENDIAN || __BYTE_ORDER__ == Q_LITTLE_ENDIAN)
 // Reuse __BYTE_ORDER__ as-is, since our Q_*_ENDIAN #defines match the preprocessor defaults
 #    define Q_BYTE_ORDER __BYTE_ORDER__
-#  elif defined(__BIG_ENDIAN__)
+#  elif defined(__BIG_ENDIAN__) || defined(_big_endian__) || defined(_BIG_ENDIAN)
 #    define Q_BYTE_ORDER Q_BIG_ENDIAN
-#  elif defined(__LITTLE_ENDIAN__)  \
+#  elif defined(__LITTLE_ENDIAN__) || defined(_little_endian__) || defined(_LITTLE_ENDIAN) \
         || defined(_WIN32_WCE) // Windows CE is always little-endian according to MSDN.
 #    define Q_BYTE_ORDER Q_LITTLE_ENDIAN
 #  else
