@@ -2747,10 +2747,28 @@ static bool canConvertMetaObject(int fromId, int toId, QObject *fromObject)
     function if a qobject_cast to the type described by \a targetTypeId would succeed. Note that
     this only works for QObject subclasses which use the Q_OBJECT macro.
 
-    \sa convert()
+    A QVariant containing a sequential container will also return true for this
+    function if the \a targetTypeId is QVariantList. It is possible to iterate over
+    the contents of the container without extracting it as a (copied) QVariantList:
+
+    \snippet code/src_corelib_kernel_qvariant.cpp 9
+
+    This requires that the value_type of the container is itself a metatype. To make it
+    possible to convert or iterate over a sequential container, the qRegisterSequentialConverter
+    method must first be called for the container.
+
+    \sa convert(), QSequentialIterable
 */
 bool QVariant::canConvert(int targetTypeId) const
 {
+    if (targetTypeId == QMetaType::QVariantList
+            && (d.type == QMetaType::QVariantList
+              || d.type == QMetaType::QStringList
+              || QMetaType::hasRegisteredConverterFunction(d.type,
+                    qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>()))) {
+        return true;
+    }
+
     if ((d.type >= QMetaType::User || targetTypeId >= QMetaType::User)
         && QMetaType::hasRegisteredConverterFunction(d.type, targetTypeId)) {
         return true;
@@ -3217,6 +3235,189 @@ QDebug operator<<(QDebug dbg, const QVariant::Type p)
 /*!
     \fn const DataPtr &QVariant::data_ptr() const
     \internal
+*/
+
+/*!
+    \class QSequentialIterable
+
+    \inmodule QtCore
+    \brief The QSequentialIterable class is an iterable interface for a container in a QVariant.
+
+    This class allows several methods of accessing the elements of a container held within
+    a QVariant. An instance of QSequentialIterable can be extracted from a QVariant if it can
+    be converted to a QVariantList.
+
+    \snippet code/src_corelib_kernel_qvariant.cpp 9
+
+    The container itself is not copied before iterating over it.
+
+    \sa QVariant
+*/
+
+/*! \fn QSequentialIterable::QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl)
+
+    \internal
+*/
+
+/*! \fn QSequentialIterable::const_iterator QSequentialIterable::begin() const
+
+    Returns a QSequentialIterable::const_iterator for the beginning of the container. This
+    can be used in stl-style iteration.
+
+    \sa end()
+*/
+
+/*! \fn QSequentialIterable::const_iterator QSequentialIterable::end() const
+
+    Returns a QSequentialIterable::const_iterator for the end of the container. This
+    can be used in stl-style iteration.
+
+    \sa begin()
+*/
+
+/*! \fn QVariant QSequentialIterable::at(int idx) const
+
+    Returns the element at position \a idx in the container.
+*/
+
+/*! \fn int QSequentialIterable::size() const
+
+    Returns the number of elements in the container.
+*/
+
+/*! \fn bool QSequentialIterable::canReverseIterate() const
+
+    Returns whether it is possible to iterate over the container in reverse. This
+    corresponds to the std::bidirectional_iterator_tag iterator trait of the
+    const_iterator of the container.
+*/
+
+/*!
+    \class QSequentialIterable::const_iterator
+
+    \inmodule QtCore
+    \brief The QSequentialIterable::const_iterator allows iteration over a container in a QVariant.
+
+    A QSequentialIterable::const_iterator can only be created by a QSequentialIterable instance,
+    and can be used in a way similar to other stl-style iterators.
+
+    \snippet code/src_corelib_kernel_qvariant.cpp 9
+
+    \sa QSequentialIterable
+*/
+
+
+/*! \fn QSequentialIterable::const_iterator::~const_iterator()
+
+    Destroys the QSequentialIterable::const_iterator.
+*/
+
+/*! \fn QSequentialIterable::const_iterator::const_iterator(const const_iterator &other)
+
+    Creates a copy of \a other.
+*/
+
+/*! \fn QVariant QSequentialIterable::const_iterator::operator*() const
+
+    Returns the current item, converted to a QVariant.
+*/
+
+/*! \fn bool QSequentialIterable::const_iterator::operator==(const const_iterator &other) const
+
+    Returns true if \a other points to the same item as this
+    iterator; otherwise returns false.
+
+    \sa operator!=()
+*/
+
+/*! \fn bool QSequentialIterable::const_iterator::operator!=(const const_iterator &other) const
+
+    Returns true if \a other points to a different item than this
+    iterator; otherwise returns false.
+
+    \sa operator==()
+*/
+
+/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator++()
+
+    The prefix ++ operator (\c{++it}) advances the iterator to the
+    next item in the container and returns an iterator to the new current
+    item.
+
+    Calling this function on QSequentialIterable::end() leads to undefined results.
+
+    \sa operator--()
+*/
+
+/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator++(int)
+
+    \overload
+
+    The postfix ++ operator (\c{it++}) advances the iterator to the
+    next item in the container and returns an iterator to the previously
+    current item.
+*/
+
+/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator--()
+
+    The prefix -- operator (\c{--it}) makes the preceding item
+    current and returns an iterator to the new current item.
+
+    Calling this function on QSequentialIterable::begin() leads to undefined results.
+
+    If the container in the QVariant does not support bi-directional iteration, calling this function
+    leads to undefined results.
+
+    \sa operator++(), canReverseIterate()
+*/
+
+/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator--(int)
+
+    \overload
+
+    The postfix -- operator (\c{it--}) makes the preceding item
+    current and returns an iterator to the previously current item.
+
+    If the container in the QVariant does not support bi-directional iteration, calling this function
+    leads to undefined results.
+
+    \sa canReverseIterate()
+*/
+
+/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator+=(int j)
+
+    Advances the iterator by \a j items.
+
+    \sa operator-=(), operator+()
+*/
+
+/*! \fn QSequentialIterable::const_iterator &QSequentialIterable::const_iterator::operator-=(int j)
+
+    Makes the iterator go back by \a j items.
+
+    If the container in the QVariant does not support bi-directional iteration, calling this function
+    leads to undefined results.
+
+    \sa operator+=(), operator-(), canReverseIterate()
+*/
+
+/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator+(int j) const
+
+    Returns an iterator to the item at \a j positions forward from
+    this iterator.
+
+    \sa operator-(), operator+=()
+*/
+
+/*! \fn QSequentialIterable::const_iterator QSequentialIterable::const_iterator::operator-(int j) const
+
+    Returns an iterator to the item at \a j positions backward from
+    this iterator.
+
+    If the container in the QVariant does not support bi-directional iteration, calling this function
+    leads to undefined results.
+
+    \sa operator+(), operator-=(), canReverseIterate()
 */
 
 QT_END_NAMESPACE

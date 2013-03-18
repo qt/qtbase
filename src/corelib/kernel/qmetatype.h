@@ -534,7 +534,16 @@ private:
     void *constructExtended(void *where, const void *copy = 0) const;
     void destructExtended(void *data) const;
 
+#ifndef Q_NO_TEMPLATE_FRIENDS
+#ifndef Q_QDOC
+    template<typename T>
+    friend bool qRegisterSequentialConverter();
+#endif
+#else
+public:
+#endif
     static bool registerConverterFunction(QtPrivate::AbstractConverterFunction *f, int from, int to);
+private:
 
     Creator m_creator;
     Deleter m_deleter;
@@ -609,6 +618,246 @@ template <>
 struct QMetaTypeFunctionHelper<void, /* Accepted */ true>
         : public QMetaTypeFunctionHelper<void, /* Accepted */ false>
 {};
+
+struct VariantData
+{
+    VariantData(const int metaTypeId_,
+                const void *data_,
+                const uint flags_)
+      : metaTypeId(metaTypeId_)
+      , data(data_)
+      , flags(flags_)
+    {
+    }
+    const int metaTypeId;
+    const void *data;
+    const uint flags;
+};
+
+template<typename const_iterator>
+struct IteratorOwner
+{
+    static void assign(void **ptr, const_iterator iterator)
+    {
+        *ptr = new const_iterator(iterator);
+    }
+
+    static void advance(void **iterator, int step)
+    {
+        const_iterator &it = *static_cast<const_iterator*>(*iterator);
+        std::advance(it, step);
+    }
+
+    static void destroy(void **ptr)
+    {
+        delete static_cast<const_iterator*>(*ptr);
+    }
+
+    static const void *getData(void * const *iterator)
+    {
+        return &**static_cast<const_iterator*>(*iterator);
+    }
+
+    static const void *getData(const_iterator it)
+    {
+        return &*it;
+    }
+};
+template<typename const_iterator>
+struct IteratorOwner<const const_iterator*>
+{
+    static void assign(void **ptr, const const_iterator *iterator )
+    {
+        *ptr = const_cast<const_iterator*>(iterator);
+    }
+
+    static void advance(void **iterator, int step)
+    {
+        const_iterator *it = static_cast<const_iterator*>(*iterator);
+        std::advance(it, step);
+        *iterator = it;
+    }
+
+    static void destroy(void **)
+    {
+    }
+
+    static const void *getData(void * const *iterator)
+    {
+        return *iterator;
+    }
+
+    static const void *getData(const const_iterator *it)
+    {
+        return it;
+    }
+};
+
+enum IteratorCapability
+{
+    ForwardCapability = 1,
+    BiDirectionalCapability = 2,
+    RandomAccessCapability = 4
+};
+
+template<typename T, typename Category = typename std::iterator_traits<typename T::const_iterator>::iterator_category>
+struct CapabilitiesImpl;
+
+template<typename T>
+struct CapabilitiesImpl<T, std::forward_iterator_tag>
+{ enum { IteratorCapabilities = ForwardCapability }; };
+template<typename T>
+struct CapabilitiesImpl<T, std::bidirectional_iterator_tag>
+{ enum { IteratorCapabilities = BiDirectionalCapability | ForwardCapability }; };
+template<typename T>
+struct CapabilitiesImpl<T, std::random_access_iterator_tag>
+{ enum { IteratorCapabilities = RandomAccessCapability | BiDirectionalCapability | ForwardCapability }; };
+
+template<typename T>
+struct ContainerAPI : CapabilitiesImpl<T>
+{
+    static int size(const T *t) { return std::distance(t->begin(), t->end()); }
+};
+
+template<typename T>
+struct ContainerAPI<QList<T> > : CapabilitiesImpl<QList<T> >
+{ static int size(const QList<T> *t) { return t->size(); } };
+
+template<typename T>
+struct ContainerAPI<QVector<T> > : CapabilitiesImpl<QVector<T> >
+{ static int size(const QVector<T> *t) { return t->size(); } };
+
+template<typename T>
+struct ContainerAPI<std::vector<T> > : CapabilitiesImpl<std::vector<T> >
+{ static int size(const std::vector<T> *t) { return t->size(); } };
+
+template<typename T>
+struct ContainerAPI<std::list<T> > : CapabilitiesImpl<std::list<T> >
+{ static int size(const std::list<T> *t) { return t->size(); } };
+
+class QSequentialIterableImpl
+{
+public:
+    const void * _iterable;
+    void *_iterator;
+    int _metaType_id;
+    uint _metaType_flags;
+    uint _iteratorCapabilities;
+    typedef int(*sizeFunc)(const void *p);
+    typedef const void * (*atFunc)(const void *p, int);
+    typedef void (*moveIteratorFunc)(const void *p, void **);
+    typedef void (*advanceFunc)(void **p, int);
+    typedef VariantData (*getFunc)( void * const *p, int metaTypeId, uint flags);
+    typedef void (*destroyIterFunc)(void **p);
+    typedef bool (*equalIterFunc)(void * const *p, void * const *other);
+
+    sizeFunc _size;
+    atFunc _at;
+    moveIteratorFunc _moveToBegin;
+    moveIteratorFunc _moveToEnd;
+    advanceFunc _advance;
+    getFunc _get;
+    destroyIterFunc _destroyIter;
+    equalIterFunc _equalIter;
+
+    template<class T>
+    static int sizeImpl(const void *p)
+    { return ContainerAPI<T>::size(static_cast<const T*>(p)); }
+
+    template<class T>
+    static const void* atImpl(const void *p, int idx)
+    {
+        typename T::const_iterator i = static_cast<const T*>(p)->begin();
+        std::advance(i, idx);
+        return IteratorOwner<typename T::const_iterator>::getData(i);
+    }
+
+    template<class T>
+    static void advanceImpl(void **p, int step)
+    { IteratorOwner<typename T::const_iterator>::advance(p, step); }
+
+    template<class T>
+    static void moveToBeginImpl(const void *container, void **iterator)
+    { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->begin()); }
+
+    template<class T>
+    static void moveToEndImpl(const void *container, void **iterator)
+    { IteratorOwner<typename T::const_iterator>::assign(iterator, static_cast<const T*>(container)->end()); }
+
+    template<class T>
+    static void destroyIterImpl(void **iterator)
+    { IteratorOwner<typename T::const_iterator>::destroy(iterator); }
+
+    template<class T>
+    static bool equalIterImpl(void * const *iterator, void * const *other)
+    { return *static_cast<typename T::const_iterator*>(*iterator) == *static_cast<typename T::const_iterator*>(*other); }
+
+    template<class T>
+    static VariantData getImpl(void * const *iterator, int metaTypeId, uint flags)
+    { return VariantData(metaTypeId, IteratorOwner<typename T::const_iterator>::getData(iterator), flags); }
+
+public:
+    template<class T> QSequentialIterableImpl(const T*p)
+      : _iterable(p)
+      , _iterator(0)
+      , _metaType_id(qMetaTypeId<typename T::value_type>())
+      , _metaType_flags(QTypeInfo<typename T::value_type>::isPointer)
+      , _iteratorCapabilities(ContainerAPI<T>::IteratorCapabilities)
+      , _size(sizeImpl<T>)
+      , _at(atImpl<T>)
+      , _moveToBegin(moveToBeginImpl<T>)
+      , _moveToEnd(moveToEndImpl<T>)
+      , _advance(advanceImpl<T>)
+      , _get(getImpl<T>)
+      , _destroyIter(destroyIterImpl<T>)
+      , _equalIter(equalIterImpl<T>)
+    {
+    }
+
+    QSequentialIterableImpl()
+      : _iterable(0)
+      , _iterator(0)
+      , _metaType_id(QMetaType::UnknownType)
+      , _metaType_flags(0)
+      , _iteratorCapabilities(0)
+      , _size(0)
+      , _at(0)
+      , _moveToBegin(0)
+      , _moveToEnd(0)
+      , _advance(0)
+      , _get(0)
+      , _destroyIter(0)
+      , _equalIter(0)
+    {
+    }
+
+    inline void moveToBegin() { _moveToBegin(_iterable, &_iterator); }
+    inline void moveToEnd() { _moveToEnd(_iterable, &_iterator); }
+    inline bool equal(const QSequentialIterableImpl&other) const { return _equalIter(&_iterator, &other._iterator); }
+    inline QSequentialIterableImpl &advance(int i) {
+      Q_ASSERT(i > 0 || _iteratorCapabilities & BiDirectionalCapability);
+      _advance(&_iterator, i);
+      return *this;
+    }
+
+    inline VariantData getCurrent() const { return _get(&_iterator, _metaType_id, _metaType_flags); }
+
+    VariantData at(int idx) const
+    { return VariantData(_metaType_id, _at(_iterable, idx), _metaType_flags); }
+
+    int size() const { Q_ASSERT(_iterable); return _size(_iterable); }
+
+    inline void destroyIter() { _destroyIter(&_iterator); }
+};
+
+template<typename From>
+struct QSequentialIterableConvertFunctor
+{
+    QSequentialIterableImpl operator()(const From &f) const
+    {
+        return QSequentialIterableImpl(&f);
+    }
+};
 }
 
 class QObject;
@@ -1173,5 +1422,30 @@ QT_END_NAMESPACE
 
 QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
+Q_DECLARE_METATYPE(QtMetaTypePrivate::QSequentialIterableImpl)
+
+QT_BEGIN_NAMESPACE
+
+#ifndef Q_QDOC
+template<typename T>
+#endif
+bool qRegisterSequentialConverter()
+{
+    Q_STATIC_ASSERT_X(QMetaTypeId2<typename T::value_type>::Defined,
+      "The value_type of a sequential container must itself be a metatype.");
+    const int id = qMetaTypeId<T>();
+    const int toId = qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>();
+    if (QMetaType::hasRegisteredConverterFunction(id, toId))
+        return true;
+
+    QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> f;
+    return QMetaType::registerConverterFunction(
+        new QtPrivate::ConverterFunctor<T,
+            QtMetaTypePrivate::QSequentialIterableImpl,
+            QtMetaTypePrivate::QSequentialIterableConvertFunctor<T> >(f),
+          id, toId);
+}
+
+QT_END_NAMESPACE
 
 #endif // QMETATYPE_H

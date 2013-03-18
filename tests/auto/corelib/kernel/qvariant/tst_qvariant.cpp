@@ -239,6 +239,8 @@ private slots:
     void saveNewBuiltinWithOldStream();
 
     void implicitConstruction();
+
+    void iterateContainerElements();
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -3348,6 +3350,169 @@ void tst_QVariant::saveNewBuiltinWithOldStream()
     QCOMPARE(int(data.constData()[1]), 0);
     QCOMPARE(int(data.constData()[2]), 0);
     QCOMPARE(int(data.constData()[3]), 0);
+}
+
+template<typename Container, typename Value_Type = typename Container::value_type>
+struct ContainerAPI
+{
+    static void insert(Container &container, typename Container::value_type value)
+    {
+        container.push_back(value);
+    }
+
+    static bool compare(const QVariant &variant, typename Container::value_type value)
+    {
+        return variant.value<typename Container::value_type>() == value;
+    }
+};
+
+template<typename Container>
+struct ContainerAPI<Container, QString>
+{
+    static void insert(Container &container, int value)
+    {
+        container.push_back(QString::number(value));
+    }
+
+    static bool compare(const QVariant &variant, QString value)
+    {
+        return variant.value<QString>() == value;
+    }
+};
+
+// We have no built-in defines to check the stdlib features.
+// #define TEST_FORWARD_LIST
+
+#ifdef TEST_FORWARD_LIST
+#include <forward_list>
+Q_DECLARE_METATYPE(std::forward_list<int>)
+Q_DECLARE_METATYPE(std::forward_list<QVariant>)
+Q_DECLARE_METATYPE(std::forward_list<QString>)
+
+template<typename Value_Type>
+struct ContainerAPI<std::forward_list<Value_Type> >
+{
+    static void insert(std::forward_list<Value_Type> &container, Value_Type value)
+    {
+        container.push_front(value);
+    }
+    static bool compare(const QVariant &variant, Value_Type value)
+    {
+        return variant.value<Value_Type>() == value;
+    }
+};
+template<>
+struct ContainerAPI<std::forward_list<QString> >
+{
+    static void insert(std::forward_list<QString> &container, int value)
+    {
+        container.push_front(QString::number(value));
+    }
+    static bool compare(const QVariant &variant, QString value)
+    {
+        return variant.value<QString>() == value;
+    }
+};
+#endif
+
+void tst_QVariant::iterateContainerElements()
+{
+#ifdef Q_COMPILER_RANGE_FOR
+
+#define TEST_RANGE_FOR(CONTAINER, VALUE_TYPE) \
+        numSeen = 0; \
+        containerIter = intList.begin(); \
+        for (QVariant v : listIter) { \
+            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, *containerIter)); \
+            ++containerIter; \
+            ++numSeen; \
+        } \
+        QCOMPARE(numSeen, (int)std::distance(intList.begin(), intList.end()));
+
+#else
+
+#define TEST_RANGE_FOR(CONTAINER, VALUE_TYPE)
+
+#endif
+
+#define TEST_SEQUENTIAL_ITERATION(CONTAINER, VALUE_TYPE) \
+    { \
+        int numSeen = 0; \
+        CONTAINER<VALUE_TYPE > intList; \
+        ContainerAPI<CONTAINER<VALUE_TYPE > >::insert(intList, 1); \
+        ContainerAPI<CONTAINER<VALUE_TYPE > >::insert(intList, 2); \
+        ContainerAPI<CONTAINER<VALUE_TYPE > >::insert(intList, 3); \
+        \
+        QVariant listVariant = QVariant::fromValue(intList); \
+        QVERIFY(listVariant.canConvert<QVariantList>()); \
+        QSequentialIterable listIter = listVariant.value<QSequentialIterable>(); \
+        \
+        CONTAINER<VALUE_TYPE >::iterator containerIter = intList.begin(); \
+        const CONTAINER<VALUE_TYPE >::iterator containerEnd = intList.end(); \
+        for (int i = 0; i < listIter.size(); ++i, ++containerIter, ++numSeen) \
+        { \
+            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(listIter.at(i), *containerIter)); \
+        } \
+        QCOMPARE(numSeen, (int)std::distance(intList.begin(), intList.end())); \
+        QCOMPARE(containerIter, containerEnd); \
+        \
+        containerIter = intList.begin(); \
+        numSeen = 0; \
+        Q_FOREACH (const QVariant &v, listIter) { \
+            QVERIFY(ContainerAPI<CONTAINER<VALUE_TYPE > >::compare(v, *containerIter)); \
+            ++containerIter; \
+            ++numSeen; \
+        } \
+        QCOMPARE(numSeen, (int)std::distance(intList.begin(), intList.end())); \
+        TEST_RANGE_FOR(CONTAINER, VALUE_TYPE) \
+    }
+
+    qRegisterSequentialConverter<QVector<int> >();
+    qRegisterSequentialConverter<QVector<QVariant> >();
+    qRegisterSequentialConverter<QVector<QString> >();
+    qRegisterSequentialConverter<QQueue<int> >();
+    qRegisterSequentialConverter<QQueue<QVariant> >();
+    qRegisterSequentialConverter<QQueue<QString> >();
+    qRegisterSequentialConverter<QList<int> >();
+    qRegisterSequentialConverter<QList<QVariant> >();
+    qRegisterSequentialConverter<QList<QString> >();
+    qRegisterSequentialConverter<QStack<int> >();
+    qRegisterSequentialConverter<QStack<QVariant> >();
+    qRegisterSequentialConverter<QStack<QString> >();
+    qRegisterSequentialConverter<std::vector<int> >();
+    qRegisterSequentialConverter<std::vector<QVariant> >();
+    qRegisterSequentialConverter<std::vector<QString> >();
+    qRegisterSequentialConverter<std::list<int> >();
+    qRegisterSequentialConverter<std::list<QVariant> >();
+    qRegisterSequentialConverter<std::list<QString> >();
+
+    TEST_SEQUENTIAL_ITERATION(QVector, int)
+    TEST_SEQUENTIAL_ITERATION(QVector, QVariant)
+    TEST_SEQUENTIAL_ITERATION(QVector, QString)
+    TEST_SEQUENTIAL_ITERATION(QQueue, int)
+    TEST_SEQUENTIAL_ITERATION(QQueue, QVariant)
+    TEST_SEQUENTIAL_ITERATION(QQueue, QString)
+    TEST_SEQUENTIAL_ITERATION(QList, int)
+    TEST_SEQUENTIAL_ITERATION(QList, QVariant)
+    TEST_SEQUENTIAL_ITERATION(QList, QString)
+    TEST_SEQUENTIAL_ITERATION(QStack, int)
+    TEST_SEQUENTIAL_ITERATION(QStack, QVariant)
+    TEST_SEQUENTIAL_ITERATION(QStack, QString)
+    TEST_SEQUENTIAL_ITERATION(std::vector, int)
+    TEST_SEQUENTIAL_ITERATION(std::vector, QVariant)
+    TEST_SEQUENTIAL_ITERATION(std::vector, QString)
+    TEST_SEQUENTIAL_ITERATION(std::list, int)
+    TEST_SEQUENTIAL_ITERATION(std::list, QVariant)
+    TEST_SEQUENTIAL_ITERATION(std::list, QString)
+
+#ifdef TEST_FORWARD_LIST
+    qRegisterSequentialConverter<std::forward_list<int> >();
+    qRegisterSequentialConverter<std::forward_list<QVariant> >();
+    qRegisterSequentialConverter<std::forward_list<QString> >();
+    TEST_SEQUENTIAL_ITERATION(std::forward_list, int)
+    TEST_SEQUENTIAL_ITERATION(std::forward_list, QVariant)
+    TEST_SEQUENTIAL_ITERATION(std::forward_list, QString)
+#endif
 }
 
 QTEST_MAIN(tst_QVariant)

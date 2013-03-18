@@ -134,3 +134,33 @@ return QVariant::fromValue(s);
 QObject *object = getObjectFromSomewhere();
 QVariant data = QVariant::fromValue(object);
 //! [8]
+
+//! [9]
+
+qRegisterSequentialConverter<QList<int> >();
+
+QList<int> intList;
+intList.push_back(7);
+intList.push_back(11);
+intList.push_back(42);
+
+QVariant variant = QVariant::fromValue(intList);
+if (variant.canConvert<QVariantList>()) {
+    QSequentialIterable iterable = variant.value<QSequentialIterable>();
+    // Can use foreach:
+    foreach (const QVariant &v, iterable) {
+        qDebug() << v;
+    }
+    // Can use C++11 range-for:
+    for (const QVariant &v : iterable) {
+        qDebug() << v;
+    }
+    // Can use iterators:
+    QSequentialIterable::const_iterator it = iterable.begin();
+    const QSequentialIterable::const_iterator end = iterable.end();
+    for ( ; it != end; ++it) {
+        qDebug() << *it;
+    }
+}
+
+//! [9]

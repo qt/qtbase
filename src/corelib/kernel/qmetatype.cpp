@@ -1962,6 +1962,18 @@ const QMetaObject *QMetaType::metaObjectForType(int type)
     \sa Q_DECLARE_METATYPE(), QMetaType::type()
 */
 
+/*!
+    \fn bool qRegisterSequentialConverter()
+    \relates QMetaType
+    \since 5.2
+
+    Registers a sequential container so that it can be converted to
+    a QVariantList. If compilation fails, then you probably forgot to
+    Q_DECLARE_METATYPE the value type.
+
+    \sa QVariant::canConvert()
+*/
+
 namespace {
 class TypeInfo {
     template<typename T, bool IsAcceptedType = DefinedTypesFilter::Acceptor<T>::IsAccepted>
