@@ -588,7 +588,7 @@ QT_BEGIN_NAMESPACE
 #define GL_STACK_UNDERFLOW                0x0504
 #endif
 
-typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
+typedef void (QOPENGLF_APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
 
 #endif /* GL_KHR_debug */
 
