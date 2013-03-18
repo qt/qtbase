@@ -56,7 +56,7 @@ PaintedWindow::PaintedWindow()
     format.setSamples(4);
 
     setSurfaceType(QWindow::OpenGLSurface);
-    setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    setFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
     setFormat(format);
 
     create();
