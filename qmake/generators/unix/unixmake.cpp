@@ -142,6 +142,7 @@ UnixMakefileGenerator::init()
     project->values("QMAKE_L_FLAG")
             << (project->isActiveConfig("rvct_linker") ? "--userlibpath "
               : project->isActiveConfig("armcc_linker") ? "-L--userlibpath="
+              : project->isActiveConfig("ti_linker") ? "--search_path="
               : "-L");
     ProStringList ldadd;
     if(!project->isEmpty("QMAKE_LIBDIR")) {
@@ -490,6 +491,8 @@ UnixMakefileGenerator::findLibraries()
                 } else if(opt.startsWith("-l")) {
                     if (project->isActiveConfig("rvct_linker") || project->isActiveConfig("armcc_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
+                    } else if (project->isActiveConfig("ti_linker")) {
+                        (*it) = opt.mid(2);
                     } else {
                         stub = opt.mid(2);
                     }
