@@ -24,11 +24,12 @@
     "QPlainTextEdit",
     "QMenuBar",
     "QMenu",
-    "QHeaderView",
     "QTabBar",
     "QToolBar",
     "QSizeGrip",
-    "QAbstractItemView",
+    "QListView",
+    "QTreeView",
+    "QTableView",
     "QWidget",
     "QSplitter",
     "QSplitterHandle",
@@ -47,7 +48,6 @@
     "QScrollArea",
     "QCalendarWidget",
     "QDockWidget",
-    "QAccessibleWidget",
     "QDesktopScreenWidget"
     ]
 }
