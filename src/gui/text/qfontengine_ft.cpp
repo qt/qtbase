@@ -889,18 +889,28 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     info.yOff = 0;
 
     if ((set && set->outline_drawing) || fetchMetricsOnly) {
-        // If the advance doesn't fit in signed char, don't cache it
-        if (qAbs(info.xOff) >= 128)
-            return 0;
-        g = new Glyph;
-        g->data = 0;
-        g->linearAdvance = slot->linearHoriAdvance >> 10;
         int left  = FLOOR(slot->metrics.horiBearingX);
         int right = CEIL(slot->metrics.horiBearingX + slot->metrics.width);
         int top    = CEIL(slot->metrics.horiBearingY);
         int bottom = FLOOR(slot->metrics.horiBearingY - slot->metrics.height);
-        g->width = TRUNC(right-left);
-        g->height = TRUNC(top-bottom);
+        int width = right-left;
+        int height = top-bottom;
+
+        // If any of the metrics are too large to fit, don't cache them
+        if (qAbs(info.xOff) >= 128
+                || qAbs(TRUNC(top)) >= 128
+                || TRUNC(width) >= 256
+                || TRUNC(height) >= 256
+                || qAbs(TRUNC(left)) >= 128
+                || qAbs(TRUNC(ROUND(slot->advance.x))) >= 128) {
+            return 0;
+        }
+
+        g = new Glyph;
+        g->data = 0;
+        g->linearAdvance = slot->linearHoriAdvance >> 10;
+        g->width = TRUNC(width);
+        g->height = TRUNC(height);
         g->x = TRUNC(left);
         g->y = TRUNC(top);
         g->advance = TRUNC(ROUND(slot->advance.x));
