@@ -704,6 +704,8 @@ private:
     friend class QStyleSheetStyle;
     friend struct QWidgetExceptionCleaner;
     friend class QWidgetWindow;
+    friend class QAccessibleWidget;
+    friend class QAccessibleTable;
 #ifndef QT_NO_GESTURES
     friend class QGestureManager;
     friend class QWinNativePanGestureRecognizer;

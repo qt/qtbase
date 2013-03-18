@@ -809,9 +809,13 @@ void AtSpiAdaptor::windowActivated(QObject* window, bool active)
         return;
 
     QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(window);
-    Q_ASSERT(iface && iface->isValid());
+    Q_ASSERT(iface);
+    Q_ASSERT(!active || iface->isValid());
 
-    QString windowTitle = iface->text(QAccessible::Name);
+    QString windowTitle;
+    // in dtor it may be invalid
+    if (iface->isValid())
+        windowTitle = iface->text(QAccessible::Name);
     delete iface;
 
     QDBusVariant data;

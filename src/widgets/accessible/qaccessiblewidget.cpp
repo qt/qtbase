@@ -55,6 +55,7 @@
 #include <QRubberBand>
 #include <QFocusFrame>
 #include <QMenu>
+#include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -152,6 +153,7 @@ QString Q_WIDGETS_EXPORT qt_accHotKey(const QString &text)
     return QString();
 }
 
+// ### inherit QAccessibleObjectPrivate
 class QAccessibleWidgetPrivate
 {
 public:
@@ -200,6 +202,13 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const Q
     d = new QAccessibleWidgetPrivate();
     d->role = role;
     d->name = name;
+}
+
+bool QAccessibleWidget::isValid() const
+{
+    if (!object() || static_cast<QWidget *>(object())->d_func()->data.in_destructor)
+        return false;
+    return QAccessibleObject::isValid();
 }
 
 /*! \reimp */

@@ -56,6 +56,7 @@ class Q_WIDGETS_EXPORT QAccessibleWidget : public QAccessibleObject, public QAcc
 {
 public:
     explicit QAccessibleWidget(QWidget *o, QAccessible::Role r = QAccessible::Client, const QString& name = QString());
+    bool isValid() const;
 
     QWindow *window() const;
     int childCount() const;
