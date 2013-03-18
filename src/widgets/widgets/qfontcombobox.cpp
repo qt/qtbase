@@ -54,6 +54,88 @@
 
 QT_BEGIN_NAMESPACE
 
+static QFontDatabase::WritingSystem writingSystemFromScript(QLocale::Script script)
+{
+    switch (script) {
+    case QLocale::ArabicScript:
+        return QFontDatabase::Arabic;
+    case QLocale::CyrillicScript:
+        return QFontDatabase::Cyrillic;
+    case QLocale::GurmukhiScript:
+        return QFontDatabase::Gurmukhi;
+    case QLocale::SimplifiedHanScript:
+        return QFontDatabase::SimplifiedChinese;
+    case QLocale::TraditionalHanScript:
+        return QFontDatabase::TraditionalChinese;
+    case QLocale::LatinScript:
+        return QFontDatabase::Latin;
+    case QLocale::ArmenianScript:
+        return QFontDatabase::Armenian;
+    case QLocale::BengaliScript:
+        return QFontDatabase::Bengali;
+    case QLocale::DevanagariScript:
+        return QFontDatabase::Devanagari;
+    case QLocale::GeorgianScript:
+        return QFontDatabase::Georgian;
+    case QLocale::GreekScript:
+        return QFontDatabase::Greek;
+    case QLocale::GujaratiScript:
+        return QFontDatabase::Gujarati;
+    case QLocale::HebrewScript:
+        return QFontDatabase::Hebrew;
+    case QLocale::JapaneseScript:
+        return QFontDatabase::Japanese;
+    case QLocale::KhmerScript:
+        return QFontDatabase::Khmer;
+    case QLocale::KannadaScript:
+        return QFontDatabase::Kannada;
+    case QLocale::KoreanScript:
+        return QFontDatabase::Korean;
+    case QLocale::LaoScript:
+        return QFontDatabase::Lao;
+    case QLocale::MalayalamScript:
+        return QFontDatabase::Malayalam;
+    case QLocale::MyanmarScript:
+        return QFontDatabase::Myanmar;
+    case QLocale::TamilScript:
+        return QFontDatabase::Tamil;
+    case QLocale::TeluguScript:
+        return QFontDatabase::Telugu;
+    case QLocale::ThaanaScript:
+        return QFontDatabase::Thaana;
+    case QLocale::ThaiScript:
+        return QFontDatabase::Thai;
+    case QLocale::TibetanScript:
+        return QFontDatabase::Tibetan;
+    case QLocale::SinhalaScript:
+        return QFontDatabase::Sinhala;
+    case QLocale::SyriacScript:
+        return QFontDatabase::Syriac;
+    case QLocale::OriyaScript:
+        return QFontDatabase::Oriya;
+    case QLocale::OghamScript:
+        return QFontDatabase::Ogham;
+    case QLocale::RunicScript:
+        return QFontDatabase::Runic;
+    case QLocale::NkoScript:
+        return QFontDatabase::Nko;
+    default:
+        return QFontDatabase::Any;
+    }
+}
+
+static QFontDatabase::WritingSystem writingSystemFromLocale()
+{
+    QStringList uiLanguages = QLocale::system().uiLanguages();
+    QLocale::Script script;
+    if (!uiLanguages.isEmpty())
+        script = QLocale(uiLanguages.at(0)).script();
+    else
+        script = QLocale::system().script();
+
+    return writingSystemFromScript(script);
+}
+
 static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool *hasLatin)
 {
     QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase().writingSystems(font.family());
@@ -66,7 +148,22 @@ static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool
     if (writingSystems.isEmpty())
         return QFontDatabase::Any;
 
-    QFontDatabase::WritingSystem system = writingSystems.last();
+    QFontDatabase::WritingSystem system = writingSystemFromLocale();
+
+    if (writingSystems.contains(system))
+        return system;
+
+    if (system == QFontDatabase::TraditionalChinese
+            && writingSystems.contains(QFontDatabase::SimplifiedChinese)) {
+        return QFontDatabase::SimplifiedChinese;
+    }
+
+    if (system == QFontDatabase::SimplifiedChinese
+            && writingSystems.contains(QFontDatabase::TraditionalChinese)) {
+        return QFontDatabase::TraditionalChinese;
+    }
+
+    system = writingSystems.last();
 
     if (!*hasLatin) {
         // we need to show something
