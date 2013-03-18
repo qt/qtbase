@@ -4239,8 +4239,11 @@ void tst_QWidget::isOpaque()
 */
 void tst_QWidget::scroll()
 {
+    const int w = qMin(500, qApp->desktop()->availableGeometry().width() / 2);
+    const int h = qMin(500, qApp->desktop()->availableGeometry().height() / 2);
+
     UpdateWidget updateWidget;
-    updateWidget.resize(500, 500);
+    updateWidget.resize(w, h);
     updateWidget.reset();
     updateWidget.show();
     qApp->setActiveWindow(&updateWidget);
@@ -4251,8 +4254,8 @@ void tst_QWidget::scroll()
         updateWidget.reset();
         updateWidget.scroll(10, 10);
         qApp->processEvents();
-        QRegion dirty(QRect(0, 0, 500, 10));
-        dirty += QRegion(QRect(0, 10, 10, 490));
+        QRegion dirty(QRect(0, 0, w, 10));
+        dirty += QRegion(QRect(0, 10, 10, h - 10));
         QCOMPARE(updateWidget.paintedRegion, dirty);
     }
 
@@ -4261,10 +4264,13 @@ void tst_QWidget::scroll()
         updateWidget.update(0, 0, 10, 10);
         updateWidget.scroll(0, 10);
         qApp->processEvents();
-        QRegion dirty(QRect(0, 0, 500, 10));
+        QRegion dirty(QRect(0, 0, w, 10));
         dirty += QRegion(QRect(0, 10, 10, 10));
         QCOMPARE(updateWidget.paintedRegion, dirty);
     }
+
+    if (updateWidget.width() < 200 || updateWidget.height() < 200)
+         QSKIP("Skip this test due to too small screen geometry.");
 
     {
         updateWidget.reset();
