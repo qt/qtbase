@@ -501,7 +501,7 @@ QRect QAccessibleTable::rect() const
 
 QAccessibleInterface *QAccessibleTable::parent() const
 {
-    if (view()->parent()) {
+    if (view() && view()->parent()) {
         if (qstrcmp("QComboBoxPrivateContainer", view()->parent()->metaObject()->className()) == 0) {
             return QAccessible::queryAccessibleInterface(view()->parent()->parent());
         }
