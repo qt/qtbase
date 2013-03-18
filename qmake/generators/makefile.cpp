@@ -442,6 +442,9 @@ MakefileGenerator::init()
         }
     }
 
+    if (v["QMAKE_CC_O_FLAG"].isEmpty())
+        v["QMAKE_CC_O_FLAG"].append("-o ");
+
     if (v["QMAKE_LINK_O_FLAG"].isEmpty())
         v["QMAKE_LINK_O_FLAG"].append("-o ");
 
