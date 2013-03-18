@@ -735,7 +735,7 @@ void tst_QDockWidget::task169808_setFloating()
         QSize sizeHint() const
         {
             const QRect& deskRect = qApp->desktop()->availableGeometry();
-            return QSize(qMin(300, deskRect.width()), 300);
+            return QSize(qMin(300, deskRect.width() / 2), qMin(300, deskRect.height() / 2));
         }
 
         QSize minimumSizeHint() const
