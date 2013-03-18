@@ -463,24 +463,10 @@ const QTextOption &QTextLayout::textOption() const
 */
 void QTextLayout::setPreeditArea(int position, const QString &text)
 {
-    if (text.isEmpty()) {
-        if (!d->specialData)
-            return;
-        if (d->specialData->addFormats.isEmpty()) {
-            delete d->specialData;
-            d->specialData = 0;
-        } else {
-            d->specialData->preeditText = QString();
-            d->specialData->preeditPosition = -1;
-        }
-    } else {
-        if (!d->specialData)
-            d->specialData = new QTextEngine::SpecialData;
-        d->specialData->preeditPosition = position;
-        d->specialData->preeditText = text;
-    }
-    d->invalidate();
-    d->clearLineData();
+    if (d->preeditAreaPosition() == position && d->preeditAreaText() == text)
+        return;
+    d->setPreeditArea(position, text);
+
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
 }
@@ -493,7 +479,7 @@ void QTextLayout::setPreeditArea(int position, const QString &text)
 */
 int QTextLayout::preeditAreaPosition() const
 {
-    return d->specialData ? d->specialData->preeditPosition : -1;
+    return d->preeditAreaPosition();
 }
 
 /*!
@@ -503,7 +489,7 @@ int QTextLayout::preeditAreaPosition() const
 */
 QString QTextLayout::preeditAreaText() const
 {
-    return d->specialData ? d->specialData->preeditText : QString();
+    return d->preeditAreaText();
 }
 
 
@@ -515,27 +501,10 @@ QString QTextLayout::preeditAreaText() const
 */
 void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 {
-    if (formatList.isEmpty()) {
-        if (!d->specialData)
-            return;
-        if (d->specialData->preeditText.isEmpty()) {
-            delete d->specialData;
-            d->specialData = 0;
-        } else {
-            d->specialData->addFormats = formatList;
-            d->specialData->addFormatIndices.clear();
-        }
-    } else {
-        if (!d->specialData) {
-            d->specialData = new QTextEngine::SpecialData;
-            d->specialData->preeditPosition = -1;
-        }
-        d->specialData->addFormats = formatList;
-        d->indexAdditionalFormats();
-    }
+    d->setAdditionalFormats(formatList);
+
     if (d->block.docHandle())
         d->block.docHandle()->documentChange(d->block.position(), d->block.length());
-    d->resetFontEngineCache();
 }
 
 /*!
@@ -545,21 +514,7 @@ void QTextLayout::setAdditionalFormats(const QList<FormatRange> &formatList)
 */
 QList<QTextLayout::FormatRange> QTextLayout::additionalFormats() const
 {
-    QList<FormatRange> formats;
-    if (!d->specialData)
-        return formats;
-
-    formats = d->specialData->addFormats;
-
-    if (d->specialData->addFormatIndices.isEmpty())
-        return formats;
-
-    const QTextFormatCollection *collection = d->formats();
-
-    for (int i = 0; i < d->specialData->addFormatIndices.count(); ++i)
-        formats[i].format = collection->charFormat(d->specialData->addFormatIndices.at(i));
-
-    return formats;
+    return d->additionalFormats();
 }
 
 /*!

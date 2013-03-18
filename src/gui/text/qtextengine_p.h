@@ -617,12 +617,22 @@ public:
     ItemDecorationList strikeOutList;
     ItemDecorationList overlineList;
 
-    inline bool hasFormats() const { return (block.docHandle() || specialData); }
     inline bool visualCursorMovement() const
     {
         return (visualMovement ||
                 (block.docHandle() ? block.docHandle()->defaultCursorMoveStyle == Qt::VisualMoveStyle : false));
     }
+
+    inline int preeditAreaPosition() const { return specialData ? specialData->preeditPosition : -1; }
+    inline QString preeditAreaText() const { return specialData ? specialData->preeditText : QString(); }
+    void setPreeditArea(int position, const QString &text);
+
+    inline bool hasFormats() const { return block.docHandle() || (specialData && !specialData->addFormats.isEmpty()); }
+    QList<QTextLayout::FormatRange> additionalFormats() const;
+    void setAdditionalFormats(const QList<QTextLayout::FormatRange> &formatList);
+
+private:
+    static void init(QTextEngine *e);
 
     struct SpecialData {
         int preeditPosition;
@@ -635,9 +645,12 @@ public:
     };
     SpecialData *specialData;
 
+    void indexAdditionalFormats();
+    void resolveAdditionalFormats() const;
+
+public:
     bool atWordSeparator(int position) const;
     bool atSpace(int position) const;
-    void indexAdditionalFormats();
 
     QString elidedText(Qt::TextElideMode mode, const QFixed &width, int flags = 0, int from = 0, int count = -1) const;
 
@@ -675,7 +688,6 @@ private:
     void shapeTextWithHarfbuzz(int item) const;
     void splitItem(int item, int pos) const;
 
-    void resolveAdditionalFormats() const;
     int endOfLine(int lineNum);
     int beginningOfLine(int lineNum);
     int getClusterLength(unsigned short *logClusters, const QCharAttributes *attributes, int from, int to, int glyph_pos, int *start);

@@ -1164,7 +1164,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     layoutData->used += si.num_glyphs;
 }
 
-static void init(QTextEngine *e)
+void QTextEngine::init(QTextEngine *e)
 {
     e->ignoreBidi = false;
     e->cacheGlyphs = false;
@@ -1433,10 +1433,11 @@ void QTextEngine::itemize() const
 #ifndef QT_NO_RAWFONT
         if (useRawFont && specialData) {
             int lastIndex = 0;
+            const QTextFormatCollection *collection = formats();
             for (int i = 0; i < specialData->addFormats.size(); ++i) {
                 const QTextLayout::FormatRange &range = specialData->addFormats.at(i);
-                QTextCharFormat format = formats()->charFormat(specialData->addFormatIndices.at(i));
-                if (format.fontCapitalization()) {
+                const QTextCharFormat format = collection->charFormat(specialData->addFormatIndices.at(i));
+                if (format.hasProperty(QTextFormat::FontCapitalization)) {
                     itemizer.generate(lastIndex, range.start - lastIndex, QFont::MixedCase);
                     itemizer.generate(range.start, range.length, format.fontCapitalization());
                     lastIndex = range.start + range.length;
@@ -2209,25 +2210,9 @@ int QTextEngine::formatIndex(const QScriptItem *si) const
 
 QTextCharFormat QTextEngine::format(const QScriptItem *si) const
 {
-    QTextCharFormat format;
-    const QTextFormatCollection *formats = this->formats();
-
-    if (formats)
-        format = formats->charFormat(formatIndex(si));
-
-    if (specialData && specialData->resolvedFormatIndices.isEmpty()) {
-        int end = si->position + length(si);
-        for (int i = 0; i < specialData->addFormats.size(); ++i) {
-            const QTextLayout::FormatRange &r = specialData->addFormats.at(i);
-            if (r.start <= si->position && r.start + r.length >= end) {
-                if (!specialData->addFormatIndices.isEmpty())
-                    format.merge(formats->format(specialData->addFormatIndices.at(i)));
-                else
-                    format.merge(r.format);
-            }
-        }
-    }
-    return format;
+    if (const QTextFormatCollection *formats = this->formats())
+        return formats->charFormat(formatIndex(si));
+    return QTextCharFormat();
 }
 
 void QTextEngine::addRequiredBoundaries() const
@@ -2298,6 +2283,67 @@ bool QTextEngine::atSpace(int position) const
     return false;
 }
 
+void QTextEngine::setPreeditArea(int position, const QString &preeditText)
+{
+    if (preeditText.isEmpty()) {
+        if (!specialData)
+            return;
+        if (specialData->addFormats.isEmpty()) {
+            delete specialData;
+            specialData = 0;
+        } else {
+            specialData->preeditText = QString();
+            specialData->preeditPosition = -1;
+        }
+    } else {
+        if (!specialData)
+            specialData = new SpecialData;
+        specialData->preeditPosition = position;
+        specialData->preeditText = preeditText;
+    }
+    invalidate();
+    clearLineData();
+}
+
+QList<QTextLayout::FormatRange> QTextEngine::additionalFormats() const
+{
+    QList<QTextLayout::FormatRange> formatList;
+    if (!specialData)
+        return formatList;
+
+    formatList = specialData->addFormats;
+    if (!specialData->addFormatIndices.isEmpty()) {
+        const QTextFormatCollection *formats = this->formats();
+        Q_ASSERT(formats);
+        for (int i = 0; i < specialData->addFormatIndices.size(); ++i)
+            formatList[i].format = formats->charFormat(specialData->addFormatIndices.at(i));
+    }
+
+    return formatList;
+}
+
+void QTextEngine::setAdditionalFormats(const QList<QTextLayout::FormatRange> &formatList)
+{
+    if (formatList.isEmpty()) {
+        if (!specialData)
+            return;
+        if (specialData->preeditText.isEmpty()) {
+            delete specialData;
+            specialData = 0;
+        } else {
+            specialData->addFormats.clear();
+            specialData->addFormatIndices.clear();
+        }
+    } else {
+        if (!specialData) {
+            specialData = new SpecialData;
+            specialData->preeditPosition = -1;
+        }
+        specialData->addFormats = formatList;
+        indexAdditionalFormats();
+    }
+    resetFontEngineCache();
+}
 
 void QTextEngine::indexAdditionalFormats()
 {
@@ -2775,13 +2821,9 @@ void QTextEngine::resolveAdditionalFormats() const
         }
 
         foreach (int cur, currentFormats) {
-            const QTextLayout::FormatRange &r = specialData->addFormats.at(cur);
-            Q_ASSERT (r.start <= si->position && r.start + r.length >= end);
-            if (!specialData->addFormatIndices.isEmpty()) {
-                format.merge(collection->format(specialData->addFormatIndices.at(cur)));
-            } else {
-                format.merge(r.format);
-            }
+            Q_ASSERT(specialData->addFormats.at(cur).start <= si->position
+                     && specialData->addFormats.at(cur).start + specialData->addFormats.at(cur).length >= end);
+            format.merge(collection->format(specialData->addFormatIndices.at(cur)));
         }
         indices[i] = collection->indexForFormat(format);
     }
