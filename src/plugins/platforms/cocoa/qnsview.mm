@@ -397,6 +397,8 @@ static QTouchDevice *touchDevice = 0;
 
 - (BOOL)acceptsFirstResponder
 {
+    if (m_window->flags() & Qt::WindowDoesNotAcceptFocus)
+        return NO;
     if ((m_window->flags() & Qt::ToolTip) == Qt::ToolTip)
         return NO;
     return YES;
