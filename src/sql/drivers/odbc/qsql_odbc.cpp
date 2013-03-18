@@ -1592,7 +1592,7 @@ bool QODBCResult::exec()
         }
     }
     r = SQLExecute(d->hStmt);
-    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
         qWarning() << "QODBCResult::exec: Unable to execute statement:" << qODBCWarn(d);
         setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                      "Unable to execute statement"), QSqlError::StatementError, d));

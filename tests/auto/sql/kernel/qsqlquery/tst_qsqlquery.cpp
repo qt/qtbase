@@ -1030,6 +1030,10 @@ void tst_QSqlQuery::isActive()
     QVERIFY_SQL( q, exec( "delete from " + qtest + " where id = 42" ) );
 
     QVERIFY( q.isActive() );
+
+    QVERIFY_SQL( q, exec( "delete from " + qtest + " where id = 42" ) );
+
+    QVERIFY( q.isActive() );
 }
 
 void tst_QSqlQuery::numRowsAffected()
