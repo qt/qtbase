@@ -258,19 +258,19 @@ typedef void*(*QtThreadCallback)(void*);
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
 #if defined(Q_OS_BLACKBERRY)
-    data->eventDispatcher = new QEventDispatcherBlackberry;
+    data->eventDispatcher.storeRelease(new QEventDispatcherBlackberry);
 #else
 #if !defined(QT_NO_GLIB)
     if (qEnvironmentVariableIsEmpty("QT_NO_GLIB")
         && qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")
         && QEventDispatcherGlib::versionSupported())
-        data->eventDispatcher = new QEventDispatcherGlib;
+        data->eventDispatcher.storeRelease(new QEventDispatcherGlib);
     else
 #endif
-    data->eventDispatcher = new QEventDispatcherUNIX;
+    data->eventDispatcher.storeRelease(new QEventDispatcherUNIX);
 #endif
 
-    data->eventDispatcher->startingUp();
+    data->eventDispatcher.load()->startingUp();
 }
 
 #ifndef QT_NO_THREAD
@@ -314,8 +314,8 @@ void *QThreadPrivate::start(void *arg)
         data->quitNow = thr->d_func()->exited;
     }
 
-    if (data->eventDispatcher) // custom event dispatcher set?
-        data->eventDispatcher->startingUp();
+    if (data->eventDispatcher.load()) // custom event dispatcher set?
+        data->eventDispatcher.load()->startingUp();
     else
         createEventDispatcher(data);
 
@@ -358,7 +358,7 @@ void QThreadPrivate::finish(void *arg)
     QThreadStorageData::finish((void **)data);
     locker.relock();
 
-    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.load();
     if (eventDispatcher) {
         d->data->eventDispatcher = 0;
         locker.unlock();

@@ -306,8 +306,9 @@ void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
 
 void QThreadPrivate::createEventDispatcher(QThreadData *data)
 {
-    data->eventDispatcher = new QEventDispatcherWin32;
-    data->eventDispatcher->startingUp();
+    QEventDispatcherWin32 *theEventDispatcher = new QEventDispatcherWin32;
+    data->eventDispatcher.storeRelease(theEventDispatcher);
+    theEventDispatcher->startingUp();
 }
 
 #ifndef QT_NO_THREAD
@@ -328,8 +329,8 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
         data->quitNow = thr->d_func()->exited;
     }
 
-    if (data->eventDispatcher) // custom event dispatcher set?
-        data->eventDispatcher->startingUp();
+    if (data->eventDispatcher.load()) // custom event dispatcher set?
+        data->eventDispatcher.load()->startingUp();
     else
         createEventDispatcher(data);
 
@@ -364,7 +365,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway)
     QThreadStorageData::finish(tls_data);
     locker.relock();
 
-    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher;
+    QAbstractEventDispatcher *eventDispatcher = d->data->eventDispatcher.load();
     if (eventDispatcher) {
         d->data->eventDispatcher = 0;
         locker.unlock();

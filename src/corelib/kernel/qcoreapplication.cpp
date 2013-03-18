@@ -689,7 +689,7 @@ void QCoreApplication::init()
 #ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
-        QCoreApplicationPrivate::eventDispatcher = d->threadData->eventDispatcher;
+        QCoreApplicationPrivate::eventDispatcher = d->threadData->eventDispatcher.load();
     // otherwise we create one
     if (!QCoreApplicationPrivate::eventDispatcher)
         d->createEventDispatcher();
@@ -1031,9 +1031,9 @@ bool QCoreApplication::closingDown()
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     QThreadData *data = QThreadData::current();
-    if (!data->eventDispatcher)
+    if (!data->hasEventDispatcher())
         return;
-    data->eventDispatcher->processEvents(flags);
+    data->eventDispatcher.load()->processEvents(flags);
 }
 
 /*!
@@ -1055,11 +1055,11 @@ void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags)
 void QCoreApplication::processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime)
 {
     QThreadData *data = QThreadData::current();
-    if (!data->eventDispatcher)
+    if (!data->hasEventDispatcher())
         return;
     QElapsedTimer start;
     start.start();
-    while (data->eventDispatcher->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
+    while (data->eventDispatcher.load()->processEvents(flags & ~QEventLoop::WaitForMoreEvents)) {
         if (start.elapsed() > maxtime)
             break;
     }
@@ -1258,8 +1258,9 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
     data->canWait = false;
     locker.unlock();
 
-    if (data->eventDispatcher)
-        data->eventDispatcher->wakeUp();
+    QAbstractEventDispatcher* dispatcher = data->eventDispatcher.loadAcquire();
+    if (dispatcher)
+        dispatcher->wakeUp();
 }
 
 /*!
@@ -1379,8 +1380,8 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
             }
 
             --data->postEventList.recursion;
-            if (!data->postEventList.recursion && !data->canWait && data->eventDispatcher)
-                data->eventDispatcher->wakeUp();
+            if (!data->postEventList.recursion && !data->canWait && data->hasEventDispatcher())
+                data->eventDispatcher.load()->wakeUp();
 
             // clear the global list, i.e. remove everything that was
             // delivered.

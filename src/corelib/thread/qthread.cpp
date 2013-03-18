@@ -752,7 +752,7 @@ QThread::QThread(QThreadPrivate &dd, QObject *parent)
 QAbstractEventDispatcher *QThread::eventDispatcher() const
 {
     Q_D(const QThread);
-    return d->data->eventDispatcher;
+    return d->data->eventDispatcher.load();
 }
 
 /*!
@@ -767,7 +767,7 @@ QAbstractEventDispatcher *QThread::eventDispatcher() const
 void QThread::setEventDispatcher(QAbstractEventDispatcher *eventDispatcher)
 {
     Q_D(QThread);
-    if (d->data->eventDispatcher != 0) {
+    if (d->data->hasEventDispatcher()) {
         qWarning("QThread::setEventDispatcher: An event dispatcher has already been created for this thread");
     } else {
         eventDispatcher->moveToThread(this);
