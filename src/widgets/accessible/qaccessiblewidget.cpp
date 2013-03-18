@@ -205,6 +205,7 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const Q
 /*! \reimp */
 QWindow *QAccessibleWidget::window() const
 {
+    Q_ASSERT(widget());
     return widget()->windowHandle();
 }
 
@@ -343,6 +344,7 @@ QAccessibleWidget::relations(QAccessible::Relation match /*= QAccessible::AllRel
 /*! \reimp */
 QAccessibleInterface *QAccessibleWidget::parent() const
 {
+    Q_ASSERT(widget());
     QObject *parentWidget= widget()->parentWidget();
     if (!parentWidget)
         parentWidget = qApp;
@@ -352,6 +354,7 @@ QAccessibleInterface *QAccessibleWidget::parent() const
 /*! \reimp */
 QAccessibleInterface *QAccessibleWidget::child(int index) const
 {
+    Q_ASSERT(widget());
     QWidgetList childList = childWidgets(widget());
     if (index >= 0 && index < childList.size())
         return QAccessible::queryAccessibleInterface(childList.at(index));

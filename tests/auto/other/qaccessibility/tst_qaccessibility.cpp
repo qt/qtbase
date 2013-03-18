@@ -364,6 +364,24 @@ void tst_QAccessibility::eventTest()
     QVERIFY(QTestAccessibility::containsEvent(&hideEvent));
 
     delete button;
+
+    // Make sure that invalid events don't bring down the system
+    // these events can be in user code.
+    QWidget *widget = new QWidget();
+    QAccessibleEvent ev1(widget, QAccessible::Focus);
+    QAccessible::updateAccessibility(&ev1);
+
+    QAccessibleEvent ev2(widget, QAccessible::Focus);
+    ev2.setChild(7);
+    QAccessible::updateAccessibility(&ev2);
+    delete widget;
+
+    QObject *object = new QObject();
+    QAccessibleEvent ev3(widget, QAccessible::Focus);
+    QAccessible::updateAccessibility(&ev3);
+    delete object;
+
+    QTestAccessibility::clearEvents();
 }
 
 
