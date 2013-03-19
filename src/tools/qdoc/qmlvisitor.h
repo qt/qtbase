@@ -45,7 +45,6 @@
 #include <qstring.h>
 #include "qqmljsastvisitor_p.h"
 #include "node.h"
-#include "tree.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -120,7 +119,6 @@ private:
     QSet<QString> commands;
     QSet<QString> topics;
     QSet<quint32> usedComments;
-    Tree *tree;
     InnerNode *current;
 };
 
