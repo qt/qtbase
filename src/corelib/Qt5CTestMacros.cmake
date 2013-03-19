@@ -135,6 +135,11 @@ function(test_module_includes)
   while(all_args)
     list(GET all_args 0 qtmodule)
     list(GET all_args 1 qtclass)
+    if (${qtclass}_NAMESPACE)
+      set(qtinstancetype ${${qtclass}_NAMESPACE}::${qtclass})
+    else()
+      set(qtinstancetype ${qtclass})
+    endif()
     list(REMOVE_AT all_args 0 1)
     set(includes_string
       "${includes_string}
@@ -145,7 +150,7 @@ function(test_module_includes)
     )
     set(instances_string
     "${instances_string}
-    ${qtclass} local${qtclass};
+    ${qtinstancetype} local${qtclass};
     ")
   endwhile()
 
