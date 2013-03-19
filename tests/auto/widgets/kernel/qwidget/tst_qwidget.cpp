@@ -4239,9 +4239,13 @@ void tst_QWidget::isOpaque()
 */
 void tst_QWidget::scroll()
 {
+    if (m_platform == QStringLiteral("xcb"))
+         QSKIP("X11: Skip unstable test");
+
     UpdateWidget updateWidget;
     updateWidget.resize(500, 500);
     updateWidget.reset();
+    updateWidget.move(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250));
     updateWidget.show();
     qApp->setActiveWindow(&updateWidget);
     QVERIFY(QTest::qWaitForWindowActive(&updateWidget));
@@ -4253,7 +4257,7 @@ void tst_QWidget::scroll()
         qApp->processEvents();
         QRegion dirty(QRect(0, 0, 500, 10));
         dirty += QRegion(QRect(0, 10, 10, 490));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 
     {
@@ -4263,7 +4267,7 @@ void tst_QWidget::scroll()
         qApp->processEvents();
         QRegion dirty(QRect(0, 0, 500, 10));
         dirty += QRegion(QRect(0, 10, 10, 10));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 
     {
@@ -4276,7 +4280,7 @@ void tst_QWidget::scroll()
         dirty += QRegion(QRect(0, 60, 110, 40));
         dirty += QRegion(QRect(50, 100, 60, 10));
         dirty += QRegion(QRect(50, 110, 10, 40));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 
     {
@@ -4287,7 +4291,7 @@ void tst_QWidget::scroll()
         QRegion dirty(QRect(0, 0, 100, 100));
         dirty += QRegion(QRect(100, 100, 100, 10));
         dirty += QRegion(QRect(100, 110, 10, 90));
-        QCOMPARE(updateWidget.paintedRegion, dirty);
+        QTRY_COMPARE(updateWidget.paintedRegion, dirty);
     }
 }
 #endif
