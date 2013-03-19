@@ -3782,7 +3782,7 @@ static HB_Error  Load_ContextPos2( HB_ContextPosFormat2*  cpf2,
   return HB_Err_Ok;
 
 Fail1:
-  for ( m = 0; m < n; n++ )
+  for ( m = 0; m < n; m++ )
     Free_PosClassSet( &pcs[m] );
 
   FREE( pcs );
