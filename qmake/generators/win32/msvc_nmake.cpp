@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-NmakeMakefileGenerator::NmakeMakefileGenerator() : Win32MakefileGenerator(), init_flag(false)
+NmakeMakefileGenerator::NmakeMakefileGenerator() : Win32MakefileGenerator(), init_flag(false), usePCH(false)
 {
 
 }
