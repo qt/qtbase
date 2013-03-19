@@ -4631,7 +4631,7 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
             if [ "$CFG_SQL_sqlite" != "no" ]; then
                 SQLITE_AUTODETECT_FAILED="no"
                 if [ "$CFG_SQLITE" = "system" ]; then
-                    if [ -n "$PKG_CONFIG" ]; then
+                    if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists sqlite3 2>/dev/null; then
                         QT_CFLAGS_SQLITE=`$PKG_CONFIG --cflags sqlite3 2>/dev/null`
                         QT_LFLAGS_SQLITE=`$PKG_CONFIG --libs sqlite3 2>/dev/null`
                     else
