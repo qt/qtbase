@@ -867,8 +867,8 @@ void CppCodeParser::processOtherMetaCommand(const Doc& doc,
         }
     }
     else if (command == COMMAND_REIMP) {
-        if (node->parent() && !node->parent()->isInternal()) {
-            if (node != 0 && node->type() == Node::Function) {
+        if (node != 0 && node->parent() && !node->parent()->isInternal()) {
+            if (node->type() == Node::Function) {
                 FunctionNode *func = (FunctionNode *) node;
                 const FunctionNode *from = func->reimplementedFrom();
                 if (from == 0) {
