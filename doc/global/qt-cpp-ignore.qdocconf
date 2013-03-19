@@ -111,4 +111,5 @@ Cpp.ignoredirectives    = \
                           Q_INTERFACES \
                           Q_PRIVATE_PROPERTY \
                           QT_FORWARD_DECLARE_CLASS \
-                          Q_DECLARE_HANDLE
+                          Q_DECLARE_HANDLE \
+                          Q_REVISION
