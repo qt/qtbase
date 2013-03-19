@@ -4162,7 +4162,12 @@ fi
 
 # Detect C++11 support
 if [ "$CFG_CXX11" != "no" ]; then
-    if compileTest common/c++11 "C++11"; then
+    # Configure detects compiler features based on cross compiler, so we need
+    # to explicitly disable C++11 on Mac to avoid breaking builds where the
+    # host compiler does not support it.
+    if [ "$PLATFORM_MAC" = "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ]; then
+        CFG_CXX11="no"
+    elif compileTest common/c++11 "C++11"; then
         CFG_CXX11="yes"
     elif [ "$CFG_CXX11" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
         echo "C++11 support cannot be enabled due to functionality tests!"
