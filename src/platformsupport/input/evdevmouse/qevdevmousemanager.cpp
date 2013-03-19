@@ -59,7 +59,12 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
 {
     Q_UNUSED(key);
 
-    QStringList args = specification.split(QLatin1Char(':'));
+    QString spec = QString::fromLocal8Bit(qgetenv("QT_QPA_EVDEV_MOUSE_PARAMETERS"));
+
+    if (spec.isEmpty())
+        spec = specification;
+
+    QStringList args = spec.split(QLatin1Char(':'));
     QStringList devices;
 
     foreach (const QString &arg, args) {
