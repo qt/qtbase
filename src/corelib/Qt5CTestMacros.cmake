@@ -134,18 +134,18 @@ function(test_module_includes)
   set(instances_string "")
   while(all_args)
     list(GET all_args 0 qtmodule)
-    list(GET all_args 1 qtinclude)
+    list(GET all_args 1 qtclass)
     list(REMOVE_AT all_args 0 1)
     set(includes_string
       "${includes_string}
-      #include <${qtinclude}>
-      #include <Qt${qtmodule}/${qtinclude}>
+      #include <${qtclass}>
+      #include <Qt${qtmodule}/${qtclass}>
       #include <Qt${qtmodule}>
       #include <Qt${qtmodule}/Qt${qtmodule}>"
     )
     set(instances_string
     "${instances_string}
-    ${qtinclude} local${qtinclude};
+    ${qtclass} local${qtclass};
     ")
   endwhile()
 
