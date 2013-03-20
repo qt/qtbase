@@ -2239,7 +2239,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     if [ -x "$relpath/bin/syncqt" ]; then
         mkdir -p "$outpath/bin"
         echo "#!/bin/sh" >"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" -mkspecsdir \"$outpath/mkspecs\" \"\$@\"" >>"$outpath/bin/syncqt"
+        echo "perl \"$relpath/bin/syncqt\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
 

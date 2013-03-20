@@ -139,7 +139,7 @@ INSTALLS += lib
     else: \
         mod_component_base = $$dirname(_QMAKE_CACHE_)
     QMAKE_SYNCQT += -minimal -module QtCore -module QtDBus -module QtXml \
-        -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
+        -version $$VERSION -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
     contains(QT_CONFIG, zlib):QMAKE_SYNCQT += -module QtZlib
     !silent:message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
