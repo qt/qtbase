@@ -521,7 +521,8 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
         break;
     case PE_Frame: {
 #ifndef QT_NO_ACCESSIBILITY
-        if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)) {
+        if (QStyleHelper::isInstanceOf(option->styleObject, QAccessible::EditableText)
+                || QStyleHelper::isInstanceOf(option->styleObject, QAccessible::StaticText)) {
 #else
         if (false) {
 #endif
