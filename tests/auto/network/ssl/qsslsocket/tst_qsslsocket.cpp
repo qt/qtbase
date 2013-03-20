@@ -706,6 +706,8 @@ void tst_QSslSocket::peerCertificateChain()
     if (!QSslSocket::supportsSsl())
         return;
 
+    QSKIP("QTBUG-29941 - Unstable auto-test due to intermittently unreachable host");
+
     QSslSocketPtr socket = newSocket();
     this->socket = socket.data();
 
