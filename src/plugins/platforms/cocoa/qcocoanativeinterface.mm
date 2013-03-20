@@ -109,6 +109,10 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
     if (resource.toLower() == "setdockmenu")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setDockMenu);
+    if (resource.toLower() == "qmenutonsmenu")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qMenuToNSMenu);
+    if (resource.toLower() == "qmenubartonsmenu")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qMenuBarToNSMenu);
     if (resource.toLower() == "qimagetocgimage")
         return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qImageToCGImage);
     if (resource.toLower() == "cgimagetoqimage")
@@ -188,6 +192,20 @@ void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
     NSMenu *menu = cocoaPlatformMenu->nsMenu();
     // setDockMenu seems to be undocumented, but this is what Qt 4 did.
     [NSApp setDockMenu: menu];
+}
+
+void *QCocoaNativeInterface::qMenuToNSMenu(QPlatformMenu *platformMenu)
+{
+    QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
+    NSMenu *menu = cocoaPlatformMenu->nsMenu();
+    return reinterpret_cast<void *>(menu);
+}
+
+void *QCocoaNativeInterface::qMenuBarToNSMenu(QPlatformMenuBar *platformMenuBar)
+{
+    QCocoaMenuBar *cocoaPlatformMenuBar = static_cast<QCocoaMenuBar *>(platformMenuBar);
+    NSMenu *menu = cocoaPlatformMenuBar->nsMenu();
+    return reinterpret_cast<void *>(menu);
 }
 
 CGImageRef QCocoaNativeInterface::qImageToCGImage(const QImage &image)

@@ -52,6 +52,7 @@ class QWidget;
 class QPlatformPrinterSupport;
 class QPrintEngine;
 class QPlatformMenu;
+class QPlatformMenuBar;
 
 class QCocoaNativeInterface : public QPlatformNativeInterface
 {
@@ -98,6 +99,12 @@ private:
 
     // Dock menu support
     static void setDockMenu(QPlatformMenu *platformMenu);
+
+    // Function to return NSMenu * from QPlatformMenu
+    static void *qMenuToNSMenu(QPlatformMenu *platformMenu);
+
+    // Function to return NSMenu * from QPlatformMenuBar
+    static void *qMenuBarToNSMenu(QPlatformMenuBar *platformMenuBar);
 
     // QImage <-> CGImage conversion functions
     static CGImageRef qImageToCGImage(const QImage &image);
