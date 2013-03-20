@@ -118,7 +118,7 @@ static bool isMouseEvent(NSEvent *ev)
 
     // Windows with a transient parent (such as combobox popup windows)
     // cannot become the main window:
-    if (m_cocoaPlatformWindow->window()->transientParent())
+    if (m_cocoaPlatformWindow && m_cocoaPlatformWindow->window()->transientParent())
         canBecomeMain = NO;
 
     return canBecomeMain;
@@ -155,6 +155,9 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (BOOL)canBecomeKeyWindow
 {
+    if (!m_cocoaPlatformWindow)
+        return NO;
+
     // Only tool or dialog windows should become key:
     if (m_cocoaPlatformWindow->window()->type() == Qt::Tool || m_cocoaPlatformWindow->window()->type() == Qt::Dialog)
         return YES;
