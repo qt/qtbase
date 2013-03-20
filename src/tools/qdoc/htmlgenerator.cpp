@@ -2067,8 +2067,38 @@ QString HtmlGenerator::generateAllQmlMembersFile(const QmlClassNode* qml_cn,
     generateFullName(qml_cn, 0);
     out() << ", including inherited members.</p>\n";
 
-    Section section = sections.first();
-    generateSectionList(section, 0, marker, CodeMarker::Subpage);
+    ClassKeysNodesList& cknl = sections.first().classKeysNodesList_;
+    if (!cknl.isEmpty()) {
+        for (int i=0; i<cknl.size(); i++) {
+            ClassKeysNodes* ckn = cknl[i];
+            const QmlClassNode* qcn = ckn->first;
+            KeysAndNodes& kn = ckn->second;
+            QStringList& keys = kn.first;
+            NodeList& nodes = kn.second;
+            if (nodes.isEmpty())
+                continue;
+            if (i != 0) {
+                out() << "<p>The following members are inherited from ";
+                generateFullName(qcn,0);
+                out() << ".</p>\n";
+            }
+            out() << "<ul>\n";
+            for (int j=0; j<keys.size(); j++) {
+                if (nodes[j]->access() == Node::Private) {
+                    continue;
+                }
+                out() << "<li class=\"fn\">";
+                QString prefix;
+                if (!keys.isEmpty()) {
+                    prefix = keys.at(j).mid(1);
+                    prefix = prefix.left(keys.at(j).indexOf("::")+1);
+                }
+                generateSynopsis(nodes[j], qcn, marker, CodeMarker::Summary, false, &prefix);
+                out() << "</li>\n";
+            }
+            out() << "</ul>\n";
+        }
+    }
 
     generateFooter();
     endSubPage();
