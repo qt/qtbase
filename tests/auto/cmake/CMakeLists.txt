@@ -51,9 +51,11 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.9)
     # Requires INCLUDE_DIRECTORIES target property in CMake 2.8.8
     # and POSITION_INDEPENDENT_CODE target property in 2.8.9
     expect_pass(test_use_modules_function)
+    expect_pass(test_umbrella_config)
 else()
-    message("CMake version older than 2.8.9 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\"")
+    message("CMake version older than 2.8.9 (Found ${CMAKE_VERSION}). Not running test \"test_use_modules_function\" or \"test_umbrella_config\"")
 endif()
+
 expect_pass(test_wrap_cpp_and_resources)
 if (NOT NO_WIDGETS)
     expect_pass(test_dependent_modules)
@@ -118,3 +120,4 @@ test_module_includes(
   ${qt_module_includes}
 )
 expect_pass(test_concurrent_module)
+expect_pass(test_openglextensions_module)

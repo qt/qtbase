@@ -54,7 +54,7 @@ public:
 
     QRectF boundingRect() const;
     void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                          QWidget *widget);                          
+                          QWidget *widget);
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event);

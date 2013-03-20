@@ -1033,7 +1033,7 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
                 adjustment = HB_FIXED_ROUND(adjustment);
 
             if (positions[i].new_advance) {
-                advances[i] = adjustment;
+                ; //advances[i] = adjustment;
             } else {
                 advances[i] += adjustment;
             }

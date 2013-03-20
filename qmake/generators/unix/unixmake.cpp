@@ -142,6 +142,7 @@ UnixMakefileGenerator::init()
     project->values("QMAKE_L_FLAG")
             << (project->isActiveConfig("rvct_linker") ? "--userlibpath "
               : project->isActiveConfig("armcc_linker") ? "-L--userlibpath="
+              : project->isActiveConfig("ti_linker") ? "--search_path="
               : "-L");
     ProStringList ldadd;
     if(!project->isEmpty("QMAKE_LIBDIR")) {
@@ -490,10 +491,12 @@ UnixMakefileGenerator::findLibraries()
                 } else if(opt.startsWith("-l")) {
                     if (project->isActiveConfig("rvct_linker") || project->isActiveConfig("armcc_linker")) {
                         (*it) = "lib" + opt.mid(2) + ".so";
+                    } else if (project->isActiveConfig("ti_linker")) {
+                        (*it) = opt.mid(2);
                     } else {
                         stub = opt.mid(2);
                     }
-                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
+                } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
                     if (opt.length() == 10)
                         ++it;
                     // Skip
@@ -607,11 +610,11 @@ UnixMakefileGenerator::processPrlFiles()
                             break;
                         }
                     }
-                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-F")) {
+                } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-F")) {
                     QMakeLocalFileName f(opt.right(opt.length()-2));
                     if(!frameworkdirs.contains(f))
                         frameworkdirs.insert(fwidx++, f);
-                } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
+                } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
                     if(opt.length() > 11)
                         opt = opt.mid(11);
                     else
@@ -650,7 +653,7 @@ UnixMakefileGenerator::processPrlFiles()
                 ProKey arch("default");
                 ProString opt = l.at(lit).trimmed();
                 if(opt.startsWith("-")) {
-                    if (target_mode == TARG_MACX_MODE && opt.startsWith("-Xarch")) {
+                    if (target_mode == TARG_MAC_MODE && opt.startsWith("-Xarch")) {
                         if (opt.length() > 7) {
                             arch = opt.mid(7).toKey();
                             opt = l.at(++lit);
@@ -658,7 +661,7 @@ UnixMakefileGenerator::processPrlFiles()
                     }
 
                     if (opt.startsWith(libArg) ||
-                       (target_mode == TARG_MACX_MODE && opt.startsWith("-F"))) {
+                       (target_mode == TARG_MAC_MODE && opt.startsWith("-F"))) {
                         if(!lflags[arch].contains(opt))
                             lflags[arch].append(opt);
                     } else if(opt.startsWith("-l") || opt == "-pthread") {
@@ -666,12 +669,12 @@ UnixMakefileGenerator::processPrlFiles()
                         if (lflags[arch].contains(opt))
                             lflags[arch].removeAll(opt);
                         lflags[arch].append(opt);
-                    } else if (target_mode == TARG_MACX_MODE && opt.startsWith("-framework")) {
+                    } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
                         if(opt.length() > 11)
                             opt = opt.mid(11);
                         else {
                             opt = l.at(++lit);
-                            if (target_mode == TARG_MACX_MODE && opt.startsWith("-Xarch"))
+                            if (target_mode == TARG_MAC_MODE && opt.startsWith("-Xarch"))
                                 opt = l.at(++lit); // The user has done the right thing and prefixed each part
                         }
                         bool found = false;
@@ -833,7 +836,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             uninst.append("-$(DEL_FILE) \"" + dst_targ + "\"");
         if(!links.isEmpty()) {
             for(int i = 0; i < links.size(); ++i) {
-                if (target_mode == TARG_UNIX_MODE || target_mode == TARG_MACX_MODE) {
+                if (target_mode == TARG_UNIX_MODE || target_mode == TARG_MAC_MODE) {
                     QString link = Option::fixPathToTargetOS(destdir + links[i], false);
                     int lslash = link.lastIndexOf(Option::dir_sep);
                     if(lslash != -1)

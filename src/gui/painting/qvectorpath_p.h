@@ -60,8 +60,6 @@
 #include <private/qpainter_p.h>
 
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -186,7 +184,5 @@ private:
 Q_GUI_EXPORT const QVectorPath &qtVectorPathForPath(const QPainterPath &path);
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

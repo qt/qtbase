@@ -454,7 +454,7 @@ void tst_QTabWidget::removeTab()
     tw->addTab(new QLabel("5"), "5");
     QCOMPARE(ob.count, 1);
     QCOMPARE(tw->count(), 5);
-    
+
     tw->setCurrentIndex(4);
     QCOMPARE(ob.count,5);
     tw->removeTab(4);
@@ -533,7 +533,7 @@ void tst_QTabWidget::keyboardNavigation()
     tw->setTabEnabled(2, false);
     QTest::keyClick(tw, Qt::Key_Tab, Qt::ControlModifier);
     // TODO: Disabling the current tab will move current tab to the next,
-    // but what if next tab is also disabled. We should look into this. 
+    // but what if next tab is also disabled. We should look into this.
     QVERIFY(tw->currentIndex() < 3 && tw->currentIndex() >= 0);
 }
 

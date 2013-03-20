@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -748,10 +748,10 @@ void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &c,
     \since 4.6
 
     \inmodule QtWidgets
- 
+
     \brief The QTileRules class provides the rules used to draw a
     pixmap or image split into nine segments.
- 
+
     Spliiting is similar to \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}.
 
     \sa Qt::TileRule, QMargins

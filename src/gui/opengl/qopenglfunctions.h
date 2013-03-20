@@ -42,6 +42,8 @@
 #ifndef QOPENGLFUNCTIONS_H
 #define QOPENGLFUNCTIONS_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #ifdef __GLEW_H__
@@ -71,30 +73,7 @@
 #define Q_OPENGL_FUNCTIONS_DEBUG
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
-
-
-// Types that aren't defined in all system's gl.h files.
-typedef ptrdiff_t qopengl_GLintptr;
-typedef ptrdiff_t qopengl_GLsizeiptr;
-
-
-#if defined(APIENTRY) && !defined(QOPENGLF_APIENTRY)
-#   define QOPENGLF_APIENTRY APIENTRY
-#elif defined(GL_APIENTRY) && !defined(QOPENGLF_APIENTRY)
-#   define QOPENGLF_APIENTRY GL_APIENTRY
-#endif
-
-# ifndef QOPENGLF_APIENTRYP
-#   ifdef QOPENGLF_APIENTRY
-#     define QOPENGLF_APIENTRYP QOPENGLF_APIENTRY *
-#   else
-#     define QOPENGLF_APIENTRY
-#     define QOPENGLF_APIENTRYP *
-#   endif
-# endif
 
 struct QOpenGLFunctionsPrivate;
 
@@ -1519,8 +1498,6 @@ inline void QOpenGLFunctions::glVertexAttribPointer(GLuint indx, GLint size, GLe
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 

@@ -58,7 +58,7 @@
     use the isResultReadyAt() function to determine if a result is ready or
     not. For QFuture objects that report more than one result, the
     resultCount() function returns the number of continuous results. This
-    means that it is always safe to iterate through the results from 0 to 
+    means that it is always safe to iterate through the results from 0 to
     resultCount().
 
     QFuture provides a \l{Java-style iterators}{Java-style iterator}

@@ -134,7 +134,7 @@ public:
 
     QString requestSession(const QString &bearerName);
     void releaseSession();
-    
+
       // properties
     QString getState();
     QStringList getAvailableTechnologies();

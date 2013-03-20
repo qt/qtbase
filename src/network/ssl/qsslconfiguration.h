@@ -61,8 +61,6 @@
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qssl.h>
 
-QT_BEGIN_HEADER
-
 #ifndef QT_NO_SSL
 
 QT_BEGIN_NAMESPACE
@@ -101,6 +99,9 @@ public:
     void setPeerVerifyDepth(int depth);
 
     // Certificate & cipher configuration
+    QList<QSslCertificate> localCertificateChain() const;
+    void setLocalCertificateChain(const QList<QSslCertificate> &localChain);
+
     QSslCertificate localCertificate() const;
     void setLocalCertificate(const QSslCertificate &certificate);
 
@@ -129,6 +130,8 @@ public:
 private:
     friend class QSslSocket;
     friend class QSslConfigurationPrivate;
+    friend class QSslSocketBackendPrivate;
+    friend class QSslContext;
     QSslConfiguration(QSslConfigurationPrivate *dd);
     QSharedDataPointer<QSslConfigurationPrivate> d;
 };
@@ -140,7 +143,5 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QSslConfiguration)
 
 #endif  // QT_NO_SSL
-
-QT_END_HEADER
 
 #endif

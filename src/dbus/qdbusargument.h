@@ -55,8 +55,6 @@
 
 #ifndef QT_NO_DBUS
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -397,10 +395,25 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
     return arg;
 }
 
+template <typename T1, typename T2>
+inline QDBusArgument &operator<<(QDBusArgument &arg, const QPair<T1, T2> &pair)
+{
+    arg.beginStructure();
+    arg << pair.first << pair.second;
+    arg.endStructure();
+    return arg;
+}
+
+template <typename T1, typename T2>
+inline const QDBusArgument &operator>>(const QDBusArgument &arg, QPair<T1, T2> &pair)
+{
+    arg.beginStructure();
+    arg >> pair.first >> pair.second;
+    arg.endStructure();
+    return arg;
+}
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

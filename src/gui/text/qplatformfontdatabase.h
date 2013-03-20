@@ -59,8 +59,6 @@
 #include <QtGui/QFontDatabase>
 #include <QtGui/private/qfont_p.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -98,9 +96,9 @@ class Q_GUI_EXPORT QPlatformFontDatabase
 public:
     virtual ~QPlatformFontDatabase();
     virtual void populateFontDatabase();
-    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QUnicodeTables::Script script);
-    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
-    virtual QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
+    virtual QFontEngineMulti *fontEngineMulti(QFontEngine *fontEngine, QChar::Script script);
+    virtual QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
+    virtual QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     virtual QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     virtual void releaseHandle(void *handle);
 
@@ -114,6 +112,9 @@ public:
     virtual bool fontsAlwaysScalable() const;
     virtual QList<int> standardSizes() const;
 
+    // helper
+    static QSupportedWritingSystems writingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
+
     //callback
     static void registerQPF2Font(const QByteArray &dataArray, void *handle);
     static void registerFont(const QString &familyname, const QString &stylename,
@@ -124,7 +125,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMFONTDATABASE_H

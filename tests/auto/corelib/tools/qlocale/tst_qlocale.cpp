@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <math.h>
-#include <qglobal.h>
+#include <qdebug.h>
 #include <qdir.h>
 #include <qfileinfo.h>
 #include <QScopedArrayPointer>
@@ -712,12 +712,23 @@ void tst_QLocale::double_conversion()
     QFETCH(QString, num_str);
     QFETCH(bool, good);
     QFETCH(double, num);
+    QStringRef num_strRef = num_str.leftRef(-1);
 
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);
 
     bool ok;
     double d = locale.toDouble(num_str, &ok);
+    QCOMPARE(ok, good);
+
+    if (ok) {
+        double diff = d - num;
+        if (diff < 0)
+            diff = -diff;
+        QVERIFY(diff <= MY_DOUBLE_EPSILON);
+    }
+
+    d = locale.toDouble(num_strRef, &ok);
     QCOMPARE(ok, good);
 
     if (ok) {
@@ -787,6 +798,7 @@ void tst_QLocale::long_long_conversion()
     QFETCH(QString, num_str);
     QFETCH(bool, good);
     QFETCH(qlonglong, num);
+    QStringRef num_strRef = num_str.leftRef(-1);
 
     QLocale locale(locale_name);
     QCOMPARE(locale.name(), locale_name);
@@ -795,9 +807,14 @@ void tst_QLocale::long_long_conversion()
     qlonglong l = locale.toLongLong(num_str, &ok);
     QCOMPARE(ok, good);
 
-    if (ok) {
+    if (ok)
         QCOMPARE(l, num);
-    }
+
+    l = locale.toLongLong(num_strRef, &ok);
+    QCOMPARE(ok, good);
+
+    if (ok)
+        QCOMPARE(l, num);
 }
 
 void tst_QLocale::long_long_conversion_extra()
@@ -1281,7 +1298,7 @@ static QString getWinLocaleInfo(LCTYPE type)
     int cnt = GetLocaleInfo(id, type, 0, 0) * 2;
 
     if (cnt == 0) {
-        qWarning("QLocale: empty windows locale info (%d)", type);
+        qWarning().nospace() << "QLocale: empty windows locale info (" <<  type << ')';
         return QString();
     }
     cnt /= sizeof(wchar_t);
@@ -1289,7 +1306,7 @@ static QString getWinLocaleInfo(LCTYPE type)
     cnt = GetLocaleInfo(id, type, buf.data(), cnt);
 
     if (cnt == 0) {
-        qWarning("QLocale: empty windows locale info (%d)", type);
+        qWarning().nospace() << "QLocale: empty windows locale info (" << type << ')';
         return QString();
     }
     return QString::fromWCharArray(buf.data());
@@ -1680,6 +1697,9 @@ void tst_QLocale::dateFormat()
 
     const QLocale ja("ja_JP");
     QCOMPARE(ja.dateFormat(QLocale::ShortFormat), QLatin1String("yyyy/MM/dd"));
+
+    const QLocale ir("ga_IE");
+    QCOMPARE(ir.dateFormat(QLocale::ShortFormat), QLatin1String("dd/MM/yyyy"));
 }
 
 void tst_QLocale::timeFormat()

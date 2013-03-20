@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     app.setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
     MainWindow window;
-    window.show();   
+    window.show();
 
     return app.exec();
 }

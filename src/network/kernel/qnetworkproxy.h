@@ -48,8 +48,6 @@
 
 #ifndef QT_NO_NETWORKPROXY
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -219,8 +217,6 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkProxy &proxy);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkProxy)
-
-QT_END_HEADER
 
 #endif // QT_NO_NETWORKPROXY
 

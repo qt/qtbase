@@ -394,7 +394,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 
 /*!
     \fn Tab::Tab(qreal pos, TabType tabType, QChar delim = QChar())
-    
+
     Creates a tab with the given position, tab type, and delimiter
     (\a pos, \a tabType, \a delim).
 

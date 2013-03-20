@@ -61,7 +61,7 @@
     \enum QSslError::SslError
 
     Describes all recognized errors that can occur during an SSL handshake.
-    
+
     \value NoError
     \value UnableToGetIssuerCertificate
     \value UnableToDecryptCertificateSignature
@@ -108,7 +108,7 @@ public:
 };
 
 /*!
-    Constructs a QSslError object with no error and default certificate. 
+    Constructs a QSslError object with no error and default certificate.
 
 */
 

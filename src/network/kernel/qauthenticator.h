@@ -45,8 +45,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -64,7 +62,7 @@ public:
 
     bool operator==(const QAuthenticator &other) const;
     inline bool operator!=(const QAuthenticator &other) const { return !operator==(other); }
-    
+
     QString user() const;
     void setUser(const QString &user);
 
@@ -85,7 +83,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

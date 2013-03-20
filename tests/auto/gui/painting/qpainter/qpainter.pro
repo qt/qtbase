@@ -4,7 +4,6 @@ TARGET = tst_qpainter
 
 QT += testlib
 qtHaveModule(widgets): QT += widgets widgets-private
-qtHaveModule(widgets):!wince*: QT += printsupport
 
 SOURCES  += tst_qpainter.cpp
 

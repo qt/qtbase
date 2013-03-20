@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -724,7 +724,7 @@ bool QAbstractSliderPrivate::scrollByDelta(Qt::Orientation orientation, Qt::Keyb
 #else
         // Native UI-elements on Mac can scroll hundreds of lines at a time as
         // a result of acceleration. So keep the same behaviour in Qt, and
-        // don't restrict stepsToScroll to certain maximum (pageStep): 
+        // don't restrict stepsToScroll to certain maximum (pageStep):
         stepsToScroll = int(offset_accumulated);
 #endif
         offset_accumulated -= int(offset_accumulated);

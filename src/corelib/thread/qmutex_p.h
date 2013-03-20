@@ -70,6 +70,8 @@
 #  define QT_LINUX_FUTEX
 #endif
 
+struct timespec;
+
 QT_BEGIN_NAMESPACE
 
 class QMutexData
@@ -136,6 +138,13 @@ public:
 };
 #endif //QT_LINUX_FUTEX
 
+
+#ifdef Q_OS_UNIX
+// helper functions for qmutex_unix.cpp and qwaitcondition_unix.cpp
+// they are in qwaitcondition_unix.cpp actually
+void qt_initialize_pthread_cond(pthread_cond_t *cond, const char *where);
+void qt_abstime_for_timeout(struct timespec *ts, int timeout);
+#endif
 
 QT_END_NAMESPACE
 

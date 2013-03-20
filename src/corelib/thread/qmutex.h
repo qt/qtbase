@@ -46,8 +46,6 @@
 #include <QtCore/qatomic.h>
 #include <new>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -210,7 +208,5 @@ typedef QMutex QBasicMutex;
 #endif // QT_NO_THREAD or Q_QDOC
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMUTEX_H

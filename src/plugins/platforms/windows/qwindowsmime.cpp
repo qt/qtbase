@@ -703,14 +703,14 @@ QWindowsMimeURI::QWindowsMimeURI()
 
 bool QWindowsMimeURI::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
-    if (getCf(formatetc) == CF_HDROP) {
+    if (mimeData->hasUrls() && getCf(formatetc) == CF_HDROP) {
         QList<QUrl> urls = mimeData->urls();
         for (int i=0; i<urls.size(); i++) {
             if (!urls.at(i).toLocalFile().isEmpty())
                 return true;
         }
     }
-    return (getCf(formatetc) == CF_INETURL_W || getCf(formatetc) == CF_INETURL) && mimeData->hasFormat(QStringLiteral("text/uri-list"));
+    return (getCf(formatetc) == CF_INETURL_W || getCf(formatetc) == CF_INETURL) && mimeData->hasUrls();
 }
 
 bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData, STGMEDIUM *pmedium) const

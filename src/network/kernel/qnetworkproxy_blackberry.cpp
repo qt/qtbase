@@ -63,14 +63,36 @@ QT_BEGIN_NAMESPACE
 
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
 {
-    QNetworkProxy proxy;
+    if (query.url().scheme() == QLatin1String("file")
+            || query.url().scheme() == QLatin1String("qrc"))
+        return QList<QNetworkProxy>() << QNetworkProxy(QNetworkProxy::NoProxy);
 
-    if (query.queryType() != QNetworkProxyQuery::UrlRequest) {
+    if (query.queryType() != QNetworkProxyQuery::UrlRequest
+            && query.queryType() != QNetworkProxyQuery::TcpSocket) {
         qWarning("Unsupported query type: %d", query.queryType());
         return QList<QNetworkProxy>() << QNetworkProxy(QNetworkProxy::NoProxy);
     }
 
-    QUrl url  = query.url();
+    QUrl url;
+    if (query.queryType() == QNetworkProxyQuery::UrlRequest) {
+        url = query.url();
+    } else if (query.queryType() == QNetworkProxyQuery::TcpSocket
+               && !query.peerHostName().isEmpty()) {
+        url.setHost(query.peerHostName());
+        switch (query.peerPort()) {
+        case 443:
+            url.setScheme(QStringLiteral("https"));
+            break;
+        case 21:
+            url.setScheme(QStringLiteral("ftp"));
+            break;
+        default:
+            // for unknown ports, we just pretend we are dealing
+            // with a HTTP URL, otherwise we will not get a proxy
+            // from the netstatus API
+            url.setScheme(QStringLiteral("http"));
+        }
+    }
 
     if (!url.isValid()) {
         qWarning("Invalid URL: %s", qPrintable(url.toString()));
@@ -111,6 +133,8 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         netstatus_free_proxy_details(&details);
         return QList<QNetworkProxy>() << QNetworkProxy(QNetworkProxy::NoProxy);
     }
+
+    QNetworkProxy proxy;
 
     QString protocol = query.protocolTag();
     if (protocol.startsWith(QLatin1String("http"), Qt::CaseInsensitive)) { // http, https

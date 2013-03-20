@@ -53,6 +53,12 @@
 # define BORLAND_STDCALL
 #endif
 
+static int pluginVariable = 0xc0ffee;
+LIB_EXPORT int *pointerAddress()
+{
+    return &pluginVariable;
+}
+
 LIB_EXPORT int BORLAND_STDCALL version()
 {
     return 1;

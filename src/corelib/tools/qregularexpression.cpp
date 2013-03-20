@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
@@ -49,6 +50,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qatomic.h>
 
 #include <pcre.h>
 
@@ -725,6 +727,13 @@ QT_BEGIN_NAMESPACE
         that (in this text) there are other characters beyond the end of the
         subject string. This can lead to surprising results; see the discussion
         in the \l{partial matching} section for more details.
+
+    \value NoMatch
+        No matching is done. This value is returned as the match type by a
+        default constructed QRegularExpressionMatch or
+        QRegularExpressionMatchIterator. Using this match type is not very
+        useful for the user, as no matching ever happens. This enum value
+        has been introduced in Qt 5.1.
 */
 
 /*!
@@ -793,7 +802,7 @@ struct QRegularExpressionPrivate : QSharedData
     void cleanCompiledPattern();
     void compilePattern();
     void getPatternInfo();
-    pcre16_extra *optimizePattern();
+    void optimizePattern();
 
     QRegularExpressionMatchPrivate *doMatch(const QString &subject,
                                             int offset,
@@ -819,7 +828,7 @@ struct QRegularExpressionPrivate : QSharedData
     // objects themselves; when the private is copied (i.e. a detach happened)
     // they are set to 0
     pcre16 *compiledPattern;
-    pcre16_extra *studyData;
+    QAtomicPointer<pcre16_extra> studyData;
     const char *errorString;
     int errorOffset;
     int capturingCount;
@@ -834,7 +843,7 @@ struct QRegularExpressionMatchPrivate : QSharedData
                                    const QString &subject,
                                    QRegularExpression::MatchType matchType,
                                    QRegularExpression::MatchOptions matchOptions,
-                                   int capturingCount);
+                                   int capturingCount = 0);
 
     QRegularExpressionMatch nextMatch() const;
 
@@ -926,10 +935,10 @@ QRegularExpressionPrivate::QRegularExpressionPrivate(const QRegularExpressionPri
 void QRegularExpressionPrivate::cleanCompiledPattern()
 {
     pcre16_free(compiledPattern);
-    pcre16_free_study(studyData);
+    pcre16_free_study(studyData.load());
     usedCount = 0;
     compiledPattern = 0;
-    studyData = 0;
+    studyData.store(0);
     usingCrLfNewlines = false;
     errorOffset = -1;
     capturingCount = 0;
@@ -959,7 +968,7 @@ void QRegularExpressionPrivate::compilePattern()
         return;
 
     Q_ASSERT(errorCode == 0);
-    Q_ASSERT(studyData == 0); // studying (=>optimizing) is always done later
+    Q_ASSERT(studyData.load() == 0); // studying (=>optimizing) is always done later
     errorOffset = -1;
 
     getPatternInfo();
@@ -971,12 +980,13 @@ void QRegularExpressionPrivate::compilePattern()
 void QRegularExpressionPrivate::getPatternInfo()
 {
     Q_ASSERT(compiledPattern);
+    Q_ASSERT(studyData.load() == 0);
 
     pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_CAPTURECOUNT, &capturingCount);
 
     // detect the settings for the newline
     unsigned long int patternNewlineSetting;
-    pcre16_fullinfo(compiledPattern, studyData, PCRE_INFO_OPTIONS, &patternNewlineSetting);
+    pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_OPTIONS, &patternNewlineSetting);
     patternNewlineSetting &= PCRE_NEWLINE_CR  | PCRE_NEWLINE_LF | PCRE_NEWLINE_CRLF
             | PCRE_NEWLINE_ANY | PCRE_NEWLINE_ANYCRLF;
     if (patternNewlineSetting == 0) {
@@ -1004,6 +1014,14 @@ void QRegularExpressionPrivate::getPatternInfo()
     usingCrLfNewlines = (patternNewlineSetting == PCRE_NEWLINE_CRLF) ||
             (patternNewlineSetting == PCRE_NEWLINE_ANY) ||
             (patternNewlineSetting == PCRE_NEWLINE_ANYCRLF);
+
+    int hasJOptionChanged;
+    pcre16_fullinfo(compiledPattern, 0, PCRE_INFO_JCHANGED, &hasJOptionChanged);
+    if (hasJOptionChanged) {
+        qWarning("QRegularExpressionPrivate::getPatternInfo(): the pattern '%s'\n"
+                 "    is using the (?J) option; duplicate capturing group names are not supported by Qt",
+                 qPrintable(pattern));
+    }
 }
 
 
@@ -1084,17 +1102,18 @@ static bool isJitEnabled()
     leaving studyData to NULL); but before calling pcre16_exec to perform the
     match, another thread performs the studying and sets studyData to something
     else. Although the assignment to studyData is itself atomic, the release of
-    the memory pointed by studyData isn't. Therefore, the current studyData
-    value is returned and used by doMatch.
+    the memory pointed by studyData isn't. Therefore, we work on a local copy
+    (localStudyData) before using storeRelease on studyData. In doMatch there's
+    the corresponding loadAcquire.
 */
-pcre16_extra *QRegularExpressionPrivate::optimizePattern()
+void QRegularExpressionPrivate::optimizePattern()
 {
     Q_ASSERT(compiledPattern);
 
     QMutexLocker lock(&mutex);
 
-    if (studyData || (++usedCount != qt_qregularexpression_optimize_after_use_count))
-        return studyData;
+    if (studyData.load() || (++usedCount != qt_qregularexpression_optimize_after_use_count))
+        return;
 
     static const bool enableJit = isJitEnabled();
 
@@ -1103,15 +1122,15 @@ pcre16_extra *QRegularExpressionPrivate::optimizePattern()
         studyOptions |= PCRE_STUDY_JIT_COMPILE;
 
     const char *err;
-    studyData = pcre16_study(compiledPattern, studyOptions, &err);
+    pcre16_extra * const localStudyData = pcre16_study(compiledPattern, studyOptions, &err);
 
-    if (studyData && studyData->flags & PCRE_EXTRA_EXECUTABLE_JIT)
-        pcre16_assign_jit_stack(studyData, qtPcreCallback, 0);
+    if (localStudyData && localStudyData->flags & PCRE_EXTRA_EXECUTABLE_JIT)
+        pcre16_assign_jit_stack(localStudyData, qtPcreCallback, 0);
 
-    if (!studyData && err)
+    if (!localStudyData && err)
         qWarning("QRegularExpressionPrivate::optimizePattern(): pcre_study failed: %s", err);
 
-    return studyData;
+    studyData.storeRelease(localStudyData);
 }
 
 /*!
@@ -1193,19 +1212,33 @@ QRegularExpressionMatchPrivate *QRegularExpressionPrivate::doMatch(const QString
     QRegularExpression re(*const_cast<QRegularExpressionPrivate *>(this));
 
     if (offset < 0 || offset > subject.length())
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions, 0);
+        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
 
     if (!compiledPattern) {
         qWarning("QRegularExpressionPrivate::doMatch(): called on an invalid QRegularExpression object");
-        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions, 0);
+        return new QRegularExpressionMatchPrivate(re, subject, matchType, matchOptions);
     }
 
+    // skip optimizing and doing the actual matching if NoMatch type was requested
+    if (matchType == QRegularExpression::NoMatch) {
+        QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
+                                                                                  matchType, matchOptions);
+        priv->isValid = true;
+        return priv;
+    }
+
+    // capturingCount doesn't include the implicit "0" capturing group
     QRegularExpressionMatchPrivate *priv = new QRegularExpressionMatchPrivate(re, subject,
                                                                               matchType, matchOptions,
-                                                                              capturingCount);
+                                                                              capturingCount + 1);
 
     // this is mutex protected
-    const pcre16_extra *currentStudyData = const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
+    const_cast<QRegularExpressionPrivate *>(this)->optimizePattern();
+
+    // work with a local copy of the study data, as we are running pcre_exec
+    // potentially more than once, and we don't want to run call it
+    // with different study data
+    const pcre16_extra * const currentStudyData = studyData.loadAcquire();
 
     int pcreOptions = convertToPcreOptions(matchOptions);
 
@@ -1311,8 +1344,10 @@ QRegularExpressionMatchPrivate::QRegularExpressionMatchPrivate(const QRegularExp
       hasMatch(false), hasPartialMatch(false), isValid(false)
 {
     Q_ASSERT(capturingCount >= 0);
-    const int captureOffsetsCount = (capturingCount + 1) * 3;
-    capturedOffsets.resize(captureOffsetsCount);
+    if (capturingCount > 0) {
+        const int captureOffsetsCount = capturingCount * 3;
+        capturedOffsets.resize(captureOffsetsCount);
+    }
 }
 
 
@@ -1468,6 +1503,8 @@ void QRegularExpression::setPatternOptions(PatternOptions options)
     Returns the number of capturing groups inside the pattern string,
     or -1 if the regular expression is not valid.
 
+    \note The implicit capturing group 0 is \e{not} included in the returned number.
+
     \sa isValid()
 */
 int QRegularExpression::captureCount() const
@@ -1475,6 +1512,71 @@ int QRegularExpression::captureCount() const
     if (!isValid()) // will compile the pattern
         return -1;
     return d->capturingCount;
+}
+
+/*!
+    \since 5.1
+
+    Returns a list of captureCount() + 1 elements, containing the names of the
+    named capturing groups in the pattern string. The list is sorted such that
+    the element of the list at position \c{i} is the name of the \c{i}-th
+    capturing group, if it has a name, or an empty string if that capturing
+    group is unnamed.
+
+    For instance, given the regular expression
+
+    \code
+        (?<day>\d\d)-(?<month>\d\d)-(?<year>\d\d\d\d) (\w+) (?<name>\w+)
+    \endcode
+
+    namedCaptureGroups() will return the following list:
+
+    \code
+        ("", "day", "month", "year", "", "name")
+    \endcode
+
+    which corresponds to the fact that the capturing group #0 (corresponding to
+    the whole match) has no name, the capturing group #1 has name "day", the
+    capturing group #2 has name "month", etc.
+
+    If the regular expression is not valid, returns an empty list.
+
+    \sa isValid(), QRegularExpressionMatch::captured(), QString::isEmpty()
+*/
+QStringList QRegularExpression::namedCaptureGroups() const
+{
+    if (!isValid()) // isValid() will compile the pattern
+        return QStringList();
+
+    // namedCapturingTable will point to a table of
+    // namedCapturingTableEntryCount entries, each one of which
+    // contains one ushort followed by the name, NUL terminated.
+    // The ushort is the numerical index of the name in the pattern.
+    // The length of each entry is namedCapturingTableEntrySize.
+    ushort *namedCapturingTable;
+    int namedCapturingTableEntryCount;
+    int namedCapturingTableEntrySize;
+
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMETABLE, &namedCapturingTable);
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMECOUNT, &namedCapturingTableEntryCount);
+    pcre16_fullinfo(d->compiledPattern, 0, PCRE_INFO_NAMEENTRYSIZE, &namedCapturingTableEntrySize);
+
+    QStringList result;
+
+    // no QList::resize nor fill is available. The +1 is for the implicit group #0
+    result.reserve(d->capturingCount + 1);
+    for (int i = 0; i < d->capturingCount + 1; ++i)
+        result.append(QString());
+
+    for (int i = 0; i < namedCapturingTableEntryCount; ++i) {
+        const ushort * const currentNamedCapturingTableRow = namedCapturingTable +
+                                                             namedCapturingTableEntrySize * i;
+
+        const int index = *currentNamedCapturingTableRow;
+        result[index] = QString::fromUtf16(currentNamedCapturingTableRow + 1);
+    }
+
+    return result;
 }
 
 /*!
@@ -1636,6 +1738,26 @@ QString QRegularExpression::escape(const QString &str)
 
     result.squeeze();
     return result;
+}
+
+/*!
+    \since 5.1
+
+    Constructs a valid, empty QRegularExpressionMatch object. The regular
+    expression is set to a default-constructed one; the match type to
+    QRegularExpression::NoMatch and the match options to
+    QRegularExpression::NoMatchOption.
+
+    The object will report no match through the hasMatch() and the
+    hasPartialMatch() member functions.
+*/
+QRegularExpressionMatch::QRegularExpressionMatch()
+    : d(new QRegularExpressionMatchPrivate(QRegularExpression(),
+                                           QString(),
+                                           QRegularExpression::NoMatch,
+                                           QRegularExpression::NoMatchOption))
+{
+    d->isValid = true;
 }
 
 /*!
@@ -1978,6 +2100,26 @@ bool QRegularExpressionMatch::isValid() const
 */
 QRegularExpressionMatchIterator::QRegularExpressionMatchIterator(QRegularExpressionMatchIteratorPrivate &dd)
     : d(&dd)
+{
+}
+
+/*!
+    \since 5.1
+
+    Constructs an empty, valid QRegularExpressionMatchIterator object. The
+    regular expression is set to a default-constructed one; the match type to
+    QRegularExpression::NoMatch and the match options to
+    QRegularExpression::NoMatchOption.
+
+    Invoking the hasNext() member function on the constructed object will
+    return false, as the iterator is not iterating on a valid sequence of
+    matches.
+*/
+QRegularExpressionMatchIterator::QRegularExpressionMatchIterator()
+    : d(new QRegularExpressionMatchIteratorPrivate(QRegularExpression(),
+                                                   QRegularExpression::NoMatch,
+                                                   QRegularExpression::NoMatchOption,
+                                                   QRegularExpressionMatch()))
 {
 }
 

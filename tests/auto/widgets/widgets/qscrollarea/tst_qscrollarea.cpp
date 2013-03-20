@@ -120,7 +120,7 @@ void tst_QScrollArea::ensureMicroFocusVisible_Task_167838()
     parent->setLayout(new QVBoxLayout);
     QWidget *child = new WidgetWithMicroFocus;
     parent->layout()->addWidget(child);
-    parent->resize(300, 300); 
+    parent->resize(300, 300);
     scrollArea.setWidget(parent);
     scrollArea.ensureWidgetVisible(child, 10, 10);
     QRect microFocus = child->inputMethodQuery(Qt::ImMicroFocus).toRect();

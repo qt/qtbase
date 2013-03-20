@@ -45,8 +45,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qmetatype.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -99,6 +97,7 @@ public:
     static QVector3D normal
         (const QVector3D& v1, const QVector3D& v2, const QVector3D& v3);
 
+    float distanceToPoint(const QVector3D& point) const;
     float distanceToPlane(const QVector3D& plane, const QVector3D& normal) const;
     float distanceToPlane(const QVector3D& plane1, const QVector3D& plane2, const QVector3D& plane3) const;
     float distanceToLine(const QVector3D& point, const QVector3D& direction) const;
@@ -275,7 +274,5 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QVector3D &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

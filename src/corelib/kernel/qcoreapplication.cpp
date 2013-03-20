@@ -42,9 +42,11 @@
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
 
+#ifndef QT_NO_QOBJECT
 #include "qabstracteventdispatcher.h"
 #include "qcoreevent.h"
 #include "qeventloop.h"
+#endif
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
 #include <qdebug.h>
@@ -55,10 +57,12 @@
 #include <private/qprocess_p.h>
 #include <qstandardpaths.h>
 #include <qtextcodec.h>
+#ifndef QT_NO_QOBJECT
 #include <qthread.h>
 #include <qthreadpool.h>
 #include <qthreadstorage.h>
 #include <private/qthread_p.h>
+#endif
 #include <qelapsedtimer.h>
 #include <qlibraryinfo.h>
 #include <qvarlengtharray.h>
@@ -66,6 +70,7 @@
 #include <private/qfunctions_p.h>
 #include <private/qlocale_p.h>
 
+#ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX)
 #  if defined(Q_OS_BLACKBERRY)
 #    include "qeventdispatcher_blackberry_p.h"
@@ -78,10 +83,10 @@
 #    include "qeventdispatcher_unix_p.h"
 #  endif
 #endif
-
 #ifdef Q_OS_WIN
 #  include "qeventdispatcher_win_p.h"
 #endif
+#endif // QT_NO_QOBJECT
 
 #ifdef Q_OS_MAC
 #  include "qcore_mac_p.h"
@@ -91,6 +96,7 @@
 
 #ifdef Q_OS_UNIX
 #  include <locale.h>
+#  include <unistd.h>
 #endif
 
 #ifdef Q_OS_VXWORKS
@@ -99,6 +105,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_QOBJECT
 class QMutexUnlocker
 {
 public:
@@ -113,6 +120,7 @@ private:
 
     QMutex *mtx;
 };
+#endif
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 extern QString qAppFileName();
@@ -183,19 +191,47 @@ void QCoreApplicationPrivate::processCommandLineArguments()
 
 // Support for introspection
 
+#ifndef QT_NO_QOBJECT
 QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set = { 0, 0, 0, 0 };
 
 void qt_register_signal_spy_callbacks(const QSignalSpyCallbackSet &callback_set)
 {
     qt_signal_spy_callback_set = callback_set;
 }
+#endif
 
 extern "C" void Q_CORE_EXPORT qt_startup_hook()
 {
 }
 
+typedef QList<QtStartUpFunction> QStartUpFuncList;
+Q_GLOBAL_STATIC(QStartUpFuncList, preRList)
 typedef QList<QtCleanUpFunction> QVFuncList;
 Q_GLOBAL_STATIC(QVFuncList, postRList)
+#ifndef QT_NO_QOBJECT
+static QBasicMutex globalPreRoutinesMutex;
+#endif
+
+/*!
+    \internal
+
+    Adds a global routine that will be called from the QCoreApplication
+    constructor. The public API is Q_COREAPP_STARTUP_FUNCTION.
+*/
+void qAddPreRoutine(QtStartUpFunction p)
+{
+    QStartUpFuncList *list = preRList();
+    if (!list)
+        return;
+    // Due to C++11 parallel dynamic initialization, this can be called
+    // from multiple threads.
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(&globalPreRoutinesMutex);
+#endif
+    if (QCoreApplication::instance())
+        p();
+    list->prepend(p); // in case QCoreApplication is re-created, see qt_call_pre_routines
+}
 
 void qAddPostRoutine(QtCleanUpFunction p)
 {
@@ -211,6 +247,21 @@ void qRemovePostRoutine(QtCleanUpFunction p)
     if (!list)
         return;
     list->removeAll(p);
+}
+
+static void qt_call_pre_routines()
+{
+    QStartUpFuncList *list = preRList();
+    if (!list)
+        return;
+#ifndef QT_NO_THREAD
+    QMutexLocker locker(&globalPreRoutinesMutex);
+#endif
+    // Unlike qt_call_post_routines, we don't empty the list, because
+    // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
+    // the function to be executed every time QCoreApplication is created.
+    for (int i = 0; i < list->count(); ++i)
+        list->at(i)();
 }
 
 void Q_CORE_EXPORT qt_call_post_routines()
@@ -230,12 +281,15 @@ void Q_CORE_EXPORT qt_call_post_routines()
 }
 
 
+// initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
+static bool qt_locale_initialized = false;
+
+#ifndef QT_NO_QOBJECT
+
 // app starting up if false
 bool QCoreApplicationPrivate::is_app_running = false;
  // app closing down if true
 bool QCoreApplicationPrivate::is_app_closing = false;
-// initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
-static bool qt_locale_initialized = false;
 
 Q_CORE_EXPORT uint qGlobalPostedEventsCount()
 {
@@ -243,13 +297,16 @@ Q_CORE_EXPORT uint qGlobalPostedEventsCount()
     return currentThreadData->postEventList.size() - currentThreadData->postEventList.startOffset;
 }
 
-QCoreApplication *QCoreApplication::self = 0;
 QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = 0;
-uint QCoreApplicationPrivate::attribs = (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
 
 #ifdef Q_OS_UNIX
 Qt::HANDLE qt_application_thread_id = 0;
 #endif
+
+#endif // QT_NO_QOBJECT
+
+QCoreApplication *QCoreApplication::self = 0;
+uint QCoreApplicationPrivate::attribs = (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
 
 struct QCoreApplicationData {
     QCoreApplicationData() {
@@ -261,13 +318,6 @@ struct QCoreApplicationData {
 #ifndef QT_NO_LIBRARY
         delete app_libpaths;
 #endif
-
-        // cleanup the QAdoptedThread created for the main() thread
-       if (QCoreApplicationPrivate::theMainThread) {
-           QThreadData *data = QThreadData::get2(QCoreApplicationPrivate::theMainThread);
-           QCoreApplicationPrivate::theMainThread = 0;
-           data->deref(); // deletes the data and the adopted thread
-       }
     }
 
 #ifdef Q_OS_BLACKBERRY
@@ -309,20 +359,29 @@ struct QCoreApplicationData {
 
 Q_GLOBAL_STATIC(QCoreApplicationData, coreappdata)
 
+#ifndef QT_NO_QOBJECT
 static bool quitLockRefEnabled = true;
+#endif
 
 QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint flags)
-    : QObjectPrivate()
-    , argc(aargc)
+    :
+#ifndef QT_NO_QOBJECT
+      QObjectPrivate(),
+#endif
+      argc(aargc)
     , argv(aargv)
 #ifdef Q_OS_WIN
     , origArgc(aargc)
     , origArgv(new char *[aargc])
 #endif
     , application_type(0)
+#ifndef QT_NO_QOBJECT
     , in_exec(false)
     , aboutToQuitEmitted(false)
     , threadData_clean(false)
+#else
+    , q_ptr(0)
+#endif
 {
     app_compile_version = flags & 0xffffff;
     static const char *const empty = "";
@@ -330,26 +389,34 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv, uint 
         argc = 0;
         argv = (char **)&empty; // ouch! careful with QCoreApplication::argv()!
     }
-    QCoreApplicationPrivate::is_app_closing = false;
-
-#if defined(Q_OS_UNIX)
-    qt_application_thread_id = QThread::currentThreadId();
-#elif defined(Q_OS_WIN)
+#ifdef Q_OS_WIN
     qCopy(argv, argv + argc, origArgv);
 #endif
+
+#ifndef QT_NO_QOBJECT
+    QCoreApplicationPrivate::is_app_closing = false;
+
+#  if defined(Q_OS_UNIX)
+    qt_application_thread_id = QThread::currentThreadId();
+#  endif
 
     // note: this call to QThread::currentThread() may end up setting theMainThread!
     if (QThread::currentThread() != theMainThread)
         qWarning("WARNING: QApplication was not created in the main() thread.");
+#endif
 }
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
+#ifndef QT_NO_QOBJECT
     cleanupThreadData();
+#endif
 #ifdef Q_OS_WIN
     delete [] origArgv;
 #endif
 }
+
+#ifndef QT_NO_QOBJECT
 
 void QCoreApplicationPrivate::cleanupThreadData()
 {
@@ -422,6 +489,8 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
     Q_UNUSED(thr);
 }
 #endif
+
+#endif // QT_NO_QOBJECT
 
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 {
@@ -544,13 +613,18 @@ void QCoreApplicationPrivate::initLocale()
     \internal
  */
 QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
+#ifdef QT_NO_QOBJECT
+    : d_ptr(&p)
+#else
     : QObject(p, 0)
+#endif
 {
     init();
     // note: it is the subclasses' job to call
     // QCoreApplicationPrivate::eventDispatcher->startingUp();
 }
 
+#ifndef QT_NO_QOBJECT
 /*!
     Flushes the platform specific event queues.
 
@@ -567,6 +641,7 @@ void QCoreApplication::flush()
     if (self && self->d_func()->eventDispatcher)
         self->d_func()->eventDispatcher->flush();
 }
+#endif
 
 /*!
     Constructs a Qt kernel application. Kernel applications are
@@ -587,16 +662,23 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
                                    , int _internal
 #endif
                                    )
+#ifdef QT_NO_QOBJECT
+    : d_ptr(new QCoreApplicationPrivate(argc, argv, _internal))
+#else
     : QObject(*new QCoreApplicationPrivate(argc, argv, _internal))
+#endif
 {
     init();
+#ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::eventDispatcher->startingUp();
+#endif
 }
 
 
 // ### move to QCoreApplicationPrivate constructor?
 void QCoreApplication::init()
 {
+    d_ptr->q_ptr = this;
     Q_D(QCoreApplication);
 
     QCoreApplicationPrivate::initLocale();
@@ -604,6 +686,7 @@ void QCoreApplication::init()
     Q_ASSERT_X(!self, "QCoreApplication", "there should be only one application object");
     QCoreApplication::self = this;
 
+#ifndef QT_NO_QOBJECT
     // use the event dispatcher created by the app programmer (if any)
     if (!QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher = d->threadData->eventDispatcher;
@@ -618,16 +701,19 @@ void QCoreApplication::init()
     }
 
     d->threadData->eventDispatcher = QCoreApplicationPrivate::eventDispatcher;
+#endif
 
 #ifndef QT_NO_LIBRARY
     if (coreappdata()->app_libpaths)
         d->appendApplicationPathToLibraryPaths();
 #endif
 
+#ifndef QT_NO_QOBJECT
 #if defined(Q_OS_UNIX) && !(defined(QT_NO_PROCESS))
     // Make sure the process manager thread object is created in the main
     // thread.
     QProcessPrivate::initializeProcessManager();
+#endif
 #endif
 
 #ifdef QT_EVAL
@@ -637,9 +723,12 @@ void QCoreApplication::init()
 
     d->processCommandLineArguments();
 
+    qt_call_pre_routines();
     qt_startup_hook();
 
+#ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_running = true; // No longer starting up.
+#endif
 }
 
 /*!
@@ -650,8 +739,10 @@ QCoreApplication::~QCoreApplication()
     qt_call_post_routines();
 
     self = 0;
+#ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_closing = true;
     QCoreApplicationPrivate::is_app_running = false;
+#endif
 
 #if !defined(QT_NO_THREAD)
     // Synchronize and stop the global thread pool threads.
@@ -665,10 +756,12 @@ QCoreApplication::~QCoreApplication()
         globalThreadPool->waitForDone();
 #endif
 
+#ifndef QT_NO_QOBJECT
     d_func()->threadData->eventDispatcher = 0;
     if (QCoreApplicationPrivate::eventDispatcher)
         QCoreApplicationPrivate::eventDispatcher->closingDown();
     QCoreApplicationPrivate::eventDispatcher = 0;
+#endif
 
 #ifndef QT_NO_LIBRARY
     delete coreappdata()->app_libpaths;
@@ -709,6 +802,8 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
     return QCoreApplicationPrivate::testAttribute(attribute);
 }
 
+
+#ifndef QT_NO_QOBJECT
 
 /*!
     \property QCoreApplication::quitLockEnabled
@@ -1572,6 +1667,8 @@ void QCoreApplication::quit()
   \sa quit()
 */
 
+#endif // QT_NO_QOBJECT
+
 #ifndef QT_NO_TRANSLATION
 /*!
     Adds the translation file \a translationFile to the list of
@@ -1613,8 +1710,11 @@ bool QCoreApplication::installTranslator(QTranslator *translationFile)
         return false;
 #endif
 
+#ifndef QT_NO_QOBJECT
     QEvent ev(QEvent::LanguageChange);
     QCoreApplication::sendEvent(self, &ev);
+#endif
+
     return true;
 }
 
@@ -1636,10 +1736,12 @@ bool QCoreApplication::removeTranslator(QTranslator *translationFile)
         return false;
     QCoreApplicationPrivate *d = self->d_func();
     if (d->translators.removeAll(translationFile)) {
+#ifndef QT_NO_QOBJECT
         if (!self->closingDown()) {
             QEvent ev(QEvent::LanguageChange);
             QCoreApplication::sendEvent(self, &ev);
         }
+#endif
         return true;
     }
     return false;
@@ -1748,6 +1850,19 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
 {
     return QCoreApplication::self
            && QCoreApplication::self->d_func()->translators.contains(translator);
+}
+
+#else
+
+QString QCoreApplication::translate(const char *context, const char *sourceText,
+                                    const char *disambiguation, int n)
+{
+    Q_UNUSED(context)
+    Q_UNUSED(disambiguation)
+    QString ret = QString::fromUtf8(sourceText);
+    if (n >= 0)
+        ret.replace(QLatin1String("%n"), QString::number(n));
+    return ret;
 }
 
 #endif //QT_NO_TRANSLATE
@@ -2001,9 +2116,23 @@ QStringList QCoreApplication::arguments()
     \sa organizationDomain, applicationName
 */
 
+/*!
+  \fn void QCoreApplication::organizationNameChanged()
+  \internal
+
+  While not useful from C++ due to how organizationName is normally set once on
+  startup, this is still needed for QML so that bindings are reevaluated after
+  that initial change.
+*/
 void QCoreApplication::setOrganizationName(const QString &orgName)
 {
+    if (coreappdata()->orgName == orgName)
+        return;
     coreappdata()->orgName = orgName;
+#ifndef QT_NO_QOBJECT
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->organizationNameChanged();
+#endif
 }
 
 QString QCoreApplication::organizationName()
@@ -2029,9 +2158,21 @@ QString QCoreApplication::organizationName()
 
     \sa organizationName, applicationName, applicationVersion
 */
+/*!
+  \fn void QCoreApplication::organizationDomainChanged()
+  \internal
+
+  Primarily for QML, see organizationNameChanged.
+*/
 void QCoreApplication::setOrganizationDomain(const QString &orgDomain)
 {
+    if (coreappdata()->orgDomain == orgDomain)
+        return;
     coreappdata()->orgDomain = orgDomain;
+#ifndef QT_NO_QOBJECT
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->organizationDomainChanged();
+#endif
 }
 
 QString QCoreApplication::organizationDomain()
@@ -2051,9 +2192,21 @@ QString QCoreApplication::organizationDomain()
 
     \sa organizationName, organizationDomain, applicationVersion, applicationFilePath
 */
+/*!
+  \fn void QCoreApplication::applicationNameChanged()
+  \internal
+
+  Primarily for QML, see organizationNameChanged.
+*/
 void QCoreApplication::setApplicationName(const QString &application)
 {
+    if (coreappdata()->application == application)
+        return;
     coreappdata()->application = application;
+#ifndef QT_NO_QOBJECT
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->applicationNameChanged();
+#endif
 }
 
 QString QCoreApplication::applicationName()
@@ -2080,9 +2233,21 @@ Q_CORE_EXPORT QString qt_applicationName_noFallback()
 
     \sa applicationName, organizationName, organizationDomain
 */
+/*!
+  \fn void QCoreApplication::applicationVersionChanged()
+  \internal
+
+  Primarily for QML, see organizationNameChanged.
+*/
 void QCoreApplication::setApplicationVersion(const QString &version)
 {
+    if (coreappdata()->applicationVersion == version)
+        return;
     coreappdata()->applicationVersion = version;
+#ifndef QT_NO_QOBJECT
+    if (QCoreApplication::self)
+        emit QCoreApplication::self->applicationVersionChanged();
+#endif
 }
 
 QString QCoreApplication::applicationVersion()
@@ -2231,6 +2396,8 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 
 #endif //QT_NO_LIBRARY
 
+#ifndef QT_NO_QOBJECT
+
 /*!
     Installs an event filter \a filterObj for all native events
     received by the application in the main thread.
@@ -2325,6 +2492,33 @@ void QCoreApplication::setEventDispatcher(QAbstractEventDispatcher *eventDispatc
         mainThread = QThread::currentThread(); // will also setup theMainThread
     mainThread->setEventDispatcher(eventDispatcher);
 }
+
+#endif // QT_NO_QOBJECT
+
+/*!
+    \macro Q_COREAPP_STARTUP_FUNCTION(QtStartUpFunction ptr)
+    \since 5.1
+    \relates QCoreApplication
+    \reentrant
+
+    Adds a global function that will be called from the QCoreApplication
+    constructor. This macro is normally used to initialize libraries
+    for program-wide functionality, without requiring the application to
+    call into the library for initialization.
+
+    The function specified by \a ptr should take no arguments and should
+    return nothing. For example:
+
+    \snippet code/src_corelib_kernel_qcoreapplication.cpp 3
+
+    Note that the startup function will run at the end of the QCoreApplication constructor,
+    before any GUI initialization. If GUI code is required in the function,
+    use a timer (or a queued invocation) to perform the initialization later on,
+    from the event loop.
+
+    If QCoreApplication is deleted and another QCoreApplication is created,
+    the startup function will be invoked again.
+*/
 
 /*!
     \fn void qAddPostRoutine(QtCleanUpFunction ptr)

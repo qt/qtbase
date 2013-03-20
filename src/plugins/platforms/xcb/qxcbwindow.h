@@ -87,6 +87,9 @@ public:
     void setParent(const QPlatformWindow *window);
 
     bool isExposed() const;
+    bool isEmbedded(const QPlatformWindow *parentWindow) const;
+    QPoint mapToGlobal(const QPoint &pos) const;
+    QPoint mapFromGlobal(const QPoint &pos) const;
 
     void setWindowTitle(const QString &title);
     void setWindowIcon(const QIcon &icon);
@@ -106,6 +109,8 @@ public:
     void setCursor(xcb_cursor_t cursor);
 
     QSurfaceFormat format() const;
+
+    void windowEvent(QEvent *event);
 
     bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 
@@ -158,6 +163,9 @@ private:
     void updateDoesNotAcceptFocus(bool doesNotAcceptFocus);
 
     QRect windowToWmGeometry(QRect r) const;
+    void sendXEmbedMessage(xcb_window_t window, long message,
+                           long detail = 0, long data1 = 0, long data2 = 0);
+    void handleXEmbedMessage(const xcb_client_message_event_t *event);
 
     void create();
     void destroy();
@@ -185,6 +193,7 @@ private:
     bool m_deferredActivation;
     bool m_deferredExpose;
     bool m_configureNotifyPending;
+    bool m_embedded;
     xcb_window_t m_netWmUserTimeWindow;
 
     QSurfaceFormat m_format;

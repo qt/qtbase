@@ -159,6 +159,11 @@ private slots:
 
     void followSignal();
 
+    void connectDisconnect_data();
+    void connectDisconnect();
+    void connectDisconnectPeer_data();
+    void connectDisconnectPeer();
+
     void createErrors_data();
     void createErrors();
 
@@ -196,6 +201,15 @@ private:
     QProcess proc;
 };
 
+class SignalReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    int callCount;
+    SignalReceiver() : callCount(0) {}
+public slots:
+    void receive() { ++callCount; }
+};
 
 tst_QDBusAbstractInterface::tst_QDBusAbstractInterface()
 {
@@ -1017,21 +1031,87 @@ void tst_QDBusAbstractInterface::followSignal()
     // now the signal must have been received:
     QCOMPARE(s.size(), 1);
     QVERIFY(s.at(0).size() == 0);
-    s.clear();
 
-    // disconnect the signal
-    disconnect(p.data(), SIGNAL(voidSignal()), &QTestEventLoop::instance(), 0);
+    // cleanup:
+    con.interface()->unregisterService(serviceToFollow);
+}
 
-    // emit the signal again:
+void tst_QDBusAbstractInterface::connectDisconnect_data()
+{
+    QTest::addColumn<int>("connectCount");
+    QTest::addColumn<int>("disconnectCount");
+
+    // we don't actually need multiple disconnects
+    // QObject::disconnect() disconnects all matching rules
+    // we'd have to use QMetaObject::disconnectOne if we wanted just one
+    QTest::newRow("null") << 0 << 0;
+    QTest::newRow("connect-disconnect") << 1 << 1;
+    QTest::newRow("connect-disconnect-wildcard") << 1 << -1;
+    QTest::newRow("connect-twice") << 2 << 0;
+    QTest::newRow("connect-twice-disconnect") << 2 << 1;
+    QTest::newRow("connect-twice-disconnect-wildcard") << 2 << -1;
+}
+
+void tst_QDBusAbstractInterface::connectDisconnect()
+{
+    QFETCH(int, connectCount);
+    QFETCH(int, disconnectCount);
+
+    Pinger p = getPinger();
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    // connect the exitLoop slot first
+    // if the disconnect() below does something weird, we'll get a timeout
+    QTestEventLoop::instance().connect(p.data(), SIGNAL(voidSignal()), SLOT(exitLoop()));
+
+    SignalReceiver sr;
+    for (int i = 0; i < connectCount; ++i)
+        sr.connect(p.data(), SIGNAL(voidSignal()), SLOT(receive()));
+    if (disconnectCount)
+        QObject::disconnect(p.data(), disconnectCount > 0 ? SIGNAL(voidSignal()) : 0, &sr, SLOT(receive()));
+
     emit targetObj.voidSignal();
     QTestEventLoop::instance().enterLoop(2);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    // and now it mustn't have been received
-    QVERIFY(s.isEmpty());
+    if (disconnectCount != 0)
+        QCOMPARE(sr.callCount, 0);
+    else
+        QCOMPARE(sr.callCount, connectCount);
+}
 
-    // cleanup:
-    con.interface()->unregisterService(serviceToFollow);
+void tst_QDBusAbstractInterface::connectDisconnectPeer_data()
+{
+    connectDisconnect_data();
+}
+
+void tst_QDBusAbstractInterface::connectDisconnectPeer()
+{
+    QFETCH(int, connectCount);
+    QFETCH(int, disconnectCount);
+
+    Pinger p = getPingerPeer();
+    QVERIFY2(p, "Not connected to D-Bus");
+
+    // connect the exitLoop slot first
+    // if the disconnect() below does something weird, we'll get a timeout
+    QTestEventLoop::instance().connect(p.data(), SIGNAL(voidSignal()), SLOT(exitLoop()));
+
+    SignalReceiver sr;
+    for (int i = 0; i < connectCount; ++i)
+        sr.connect(p.data(), SIGNAL(voidSignal()), SLOT(receive()));
+    if (disconnectCount)
+        QObject::disconnect(p.data(), disconnectCount > 0 ? SIGNAL(voidSignal()) : 0, &sr, SLOT(receive()));
+
+    QDBusMessage req = QDBusMessage::createMethodCall(serviceName, objectPath, interfaceName, "voidSignal");
+    QVERIFY(QDBusConnection::sessionBus().send(req));
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    if (disconnectCount != 0)
+        QCOMPARE(sr.callCount, 0);
+    else
+        QCOMPARE(sr.callCount, connectCount);
 }
 
 void tst_QDBusAbstractInterface::createErrors_data()

@@ -10537,7 +10537,7 @@ static unsigned short const sjis208ibmvdc_unicode[] = {
 
 uint QJpUnicodeConv::sjisibmvdcToUnicode(uint h, uint l) const
 {
-    if (((rule & IBM_VDC) || (rule & Microsoft_CP932))  && IsSjisIBMVDCChar1(h)) 
+    if (((rule & IBM_VDC) || (rule & Microsoft_CP932))  && IsSjisIBMVDCChar1(h))
           return sjis208ibmvdc_unicode[((h - 0x00fa)*189 + (l-0x0040))];
     else
         return 0;
@@ -10632,9 +10632,9 @@ static unsigned short const cp932_ed_ee_unicode[] = {
 uint QJpUnicodeConv::cp932ToUnicode(uint h, uint l) const
 {
     if (rule & Microsoft_CP932) {
-        if (h == 0x0087 && (l >= 0x0040 && l <= 0x009c)) 
+        if (h == 0x0087 && (l >= 0x0040 && l <= 0x009c))
             return cp932_87_unicode[l-0x0040];
-        else if ((h == 0x00ed || h == 0x00ee)  && (l >= 0x0040 && l <= 0x00fc)) 
+        else if ((h == 0x00ed || h == 0x00ee)  && (l >= 0x0040 && l <= 0x00fc))
             return cp932_ed_ee_unicode[((h - 0x00ed)*189 + (l-0x0040))];
     }
     return 0;

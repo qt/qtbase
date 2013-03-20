@@ -56,7 +56,7 @@ integrity:SOURCES += thread/qmutex_unix.cpp \
 		thread/qwaitcondition_unix.cpp
 
 unix: {
-    macx-* {
+    mac {
         SOURCES += thread/qmutex_mac.cpp
     } else:linux-*:!linux-lsb-* {
         SOURCES += thread/qmutex_linux.cpp

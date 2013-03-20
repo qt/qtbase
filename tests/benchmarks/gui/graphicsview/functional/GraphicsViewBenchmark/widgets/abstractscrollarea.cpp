@@ -54,11 +54,11 @@ AbstractScrollArea::AbstractScrollArea(QGraphicsWidget *parent)
     , m_prevVerticalValue(0.0)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    setContentsMargins(0, 0, 0, 0);     
+    setContentsMargins(0, 0, 0, 0);
 
     m_horizontalScrollBar = new ScrollBar(Qt::Horizontal, this);
     m_horizontalScrollBar->hide();
-    m_horizontalScrollBar->setContentsMargins(0, 0, 0, 0); 
+    m_horizontalScrollBar->setContentsMargins(0, 0, 0, 0);
     m_horizontalScrollBarPolicy = Qt::ScrollBarAsNeeded;
     m_horizontalScrollBar->setZValue(zValue()+1); // Raise scroll bar to top
     m_horizontalScrollBar->setVisible(false);
@@ -70,7 +70,7 @@ AbstractScrollArea::AbstractScrollArea(QGraphicsWidget *parent)
 
     m_verticalScrollBar = new ScrollBar(Qt::Vertical, this);
     m_verticalScrollBar->hide();
-    m_verticalScrollBar->setContentsMargins(0, 0, 0, 0); 
+    m_verticalScrollBar->setContentsMargins(0, 0, 0, 0);
     m_verticalScrollBarPolicy = Qt::ScrollBarAsNeeded;
     m_verticalScrollBar->setZValue(zValue()+1); // Raise scroll bar to top
     m_verticalScrollBar->setVisible(false);
@@ -153,8 +153,8 @@ bool AbstractScrollArea::event(QEvent *e)
 {
     if (e->type() == QEvent::ApplicationLayoutDirectionChange
        || e->type() == QEvent::LayoutDirectionChange) {
-    } else if (e->type() == QEvent::GraphicsSceneResize) {        
-        QGraphicsSceneResizeEvent *event = 
+    } else if (e->type() == QEvent::GraphicsSceneResize) {
+        QGraphicsSceneResizeEvent *event =
             static_cast<QGraphicsSceneResizeEvent*>(e);
 
         QSizeF newSize = event->newSize();
@@ -186,7 +186,7 @@ void AbstractScrollArea::scrollContentsBy(qreal dx, qreal dy)
 
 void AbstractScrollArea::verticalScrollStart()
 {
-    m_prevVerticalValue = m_verticalScrollBar->sliderPosition(); 
+    m_prevVerticalValue = m_verticalScrollBar->sliderPosition();
 }
 
 void AbstractScrollArea::verticalScroll(qreal value)
@@ -200,7 +200,7 @@ void AbstractScrollArea::verticalScroll(qreal value)
 
 void AbstractScrollArea::horizontalScrollStart()
 {
-    m_prevHorizontalValue = m_horizontalScrollBar->sliderPosition(); 
+    m_prevHorizontalValue = m_horizontalScrollBar->sliderPosition();
 }
 
 void AbstractScrollArea::horizontalScroll(qreal value)

@@ -123,7 +123,7 @@ void PlayState::onEntry(QEvent *)
     levelState->addTransition(winTransition);
 
     //This state is an animation when the score changed
-    UpdateScoreState *scoreState = new UpdateScoreState(this, levelState);
+    UpdateScoreState *scoreState = new UpdateScoreState(levelState);
 
     //This transition update the score when a submarine die
     UpdateScoreTransition *scoreTransition = new UpdateScoreTransition(scene, this, levelState);
@@ -275,7 +275,7 @@ void WinState::onExit(QEvent *)
 }
 
 /** UpdateScore State */
-UpdateScoreState::UpdateScoreState(PlayState *g, QState *parent) : QState(parent), game(g)
+UpdateScoreState::UpdateScoreState(QState *parent) : QState(parent)
 {
 }
 

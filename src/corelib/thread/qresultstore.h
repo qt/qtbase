@@ -49,7 +49,6 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qdebug.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -149,7 +148,7 @@ protected:
     bool m_filterMode;
     QMap<int, ResultItem> pendingResults;
     int filteredResults;
-    
+
 };
 
 template <typename T>
@@ -234,7 +233,6 @@ public:
 #endif //Q_QDOC
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_QFUTURE
 

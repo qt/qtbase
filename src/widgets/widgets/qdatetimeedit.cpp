@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -981,9 +981,9 @@ QSize QDateTimeEdit::sizeHint() const
         int h = d->edit->sizeHint().height();
         int w = 0;
         QString s;
-        s = d->textFromValue(d->minimum) + QLatin1String("   ");
+        s = d->textFromValue(d->minimum) + QLatin1Char(' ');
         w = qMax<int>(w, fm.width(s));
-        s = d->textFromValue(d->maximum) + QLatin1String("   ");
+        s = d->textFromValue(d->maximum) + QLatin1Char(' ');
         w = qMax<int>(w, fm.width(s));
         if (d->specialValueText.size()) {
             s = d->specialValueText;
@@ -1000,19 +1000,8 @@ QSize QDateTimeEdit::sizeHint() const
         } else
 #endif
         {
-            QSize extra(35, 6);
             QStyleOptionSpinBox opt;
             initStyleOption(&opt);
-            opt.rect.setSize(hint + extra);
-            extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
-                                                QStyle::SC_SpinBoxEditField, this).size();
-            // get closer to final result by repeating the calculation
-            opt.rect.setSize(hint + extra);
-            extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
-                                                QStyle::SC_SpinBoxEditField, this).size();
-            hint += extra;
-
-            opt.rect = rect();
             d->cachedSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this)
                                 .expandedTo(QApplication::globalStrut());
         }
@@ -1022,6 +1011,7 @@ QSize QDateTimeEdit::sizeHint() const
     }
     return d->cachedSizeHint;
 }
+
 
 /*!
   \reimp

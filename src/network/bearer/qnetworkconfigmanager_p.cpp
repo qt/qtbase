@@ -70,7 +70,7 @@ void QNetworkConfigurationManagerPrivate::initialize()
 {
     //Two stage construction, because we only want to do this heavyweight work for the winner of the Q_GLOBAL_STATIC race.
     bearerThread = new QThread();
-    bearerThread->setObjectName(QStringLiteral("bearerThread"));
+    bearerThread->setObjectName(QStringLiteral("Qt bearer thread"));
 
     bearerThread->moveToThread(QCoreApplicationPrivate::mainThread()); // because cleanup() is called in main thread context.
     moveToThread(bearerThread);

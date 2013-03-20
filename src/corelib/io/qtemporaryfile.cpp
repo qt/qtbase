@@ -44,10 +44,9 @@
 #ifndef QT_NO_TEMPORARYFILE
 
 #include "qplatformdefs.h"
+#include "private/qtemporaryfile_p.h"
 #include "private/qfile_p.h"
-#include "private/qfsfileengine_p.h"
 #include "private/qsystemerror_p.h"
-#include "private/qfilesystemengine_p.h"
 
 #if !defined(Q_OS_WIN)
 #include "private/qcore_unix_p.h"       // overrides QT_OPEN
@@ -218,36 +217,6 @@ static bool createFileFromTemplate(NativeFileHandle &file,
 }
 
 //************* QTemporaryFileEngine
-class QTemporaryFileEngine : public QFSFileEngine
-{
-    Q_DECLARE_PRIVATE(QFSFileEngine)
-public:
-    QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
-        : QFSFileEngine(), filePathIsTemplate(fileIsTemplate),
-          filePathWasTemplate(fileIsTemplate)
-    {
-        Q_D(QFSFileEngine);
-        d->fileEntry = QFileSystemEntry(file);
-
-        if (!filePathIsTemplate)
-            QFSFileEngine::setFileName(file);
-    }
-
-    ~QTemporaryFileEngine();
-
-    bool isReallyOpen();
-    void setFileName(const QString &file);
-    void setFileTemplate(const QString &fileTemplate);
-
-    bool open(QIODevice::OpenMode flags);
-    bool remove();
-    bool rename(const QString &newName);
-    bool close();
-
-    bool filePathIsTemplate;
-    bool filePathWasTemplate;
-};
-
 QTemporaryFileEngine::~QTemporaryFileEngine()
 {
     QFSFileEngine::close();
@@ -398,6 +367,12 @@ bool QTemporaryFileEngine::rename(const QString &newName)
     return QFSFileEngine::rename(newName);
 }
 
+bool QTemporaryFileEngine::renameOverwrite(const QString &newName)
+{
+    QFSFileEngine::close();
+    return QFSFileEngine::renameOverwrite(newName);
+}
+
 bool QTemporaryFileEngine::close()
 {
     // Don't close the file, just seek to the front.
@@ -407,19 +382,6 @@ bool QTemporaryFileEngine::close()
 }
 
 //************* QTemporaryFilePrivate
-class QTemporaryFilePrivate : public QFilePrivate
-{
-    Q_DECLARE_PUBLIC(QTemporaryFile)
-
-protected:
-    QTemporaryFilePrivate();
-    ~QTemporaryFilePrivate();
-
-    QAbstractFileEngine *engine() const;
-
-    bool autoRemove;
-    QString templateName;
-};
 
 QTemporaryFilePrivate::QTemporaryFilePrivate() : autoRemove(true)
 {
@@ -440,7 +402,7 @@ QAbstractFileEngine *QTemporaryFilePrivate::engine() const
     return fileEngine;
 }
 
-static QString defaultTemplateName()
+QString QTemporaryFilePrivate::defaultTemplateName()
 {
     QString baseName;
 #if defined(QT_BUILD_CORE_LIB)
@@ -506,7 +468,7 @@ QTemporaryFile::QTemporaryFile()
     : QFile(*new QTemporaryFilePrivate)
 {
     Q_D(QTemporaryFile);
-    d->templateName = defaultTemplateName();
+    d->templateName = QTemporaryFilePrivate::defaultTemplateName();
 }
 
 QTemporaryFile::QTemporaryFile(const QString &templateName)
@@ -529,7 +491,7 @@ QTemporaryFile::QTemporaryFile()
     : QFile(*new QTemporaryFilePrivate, 0)
 {
     Q_D(QTemporaryFile);
-    d->templateName = defaultTemplateName();
+    d->templateName = QTemporaryFilePrivate::defaultTemplateName();
 }
 
 /*!
@@ -565,7 +527,7 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
     : QFile(*new QTemporaryFilePrivate, parent)
 {
     Q_D(QTemporaryFile);
-    d->templateName = defaultTemplateName();
+    d->templateName = QTemporaryFilePrivate::defaultTemplateName();
 }
 
 /*!

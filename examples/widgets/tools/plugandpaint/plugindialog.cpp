@@ -58,7 +58,7 @@ PluginDialog::PluginDialog(const QString &path, const QStringList &fileNames,
     QDialog(parent),
     label(new QLabel),
     treeWidget(new QTreeWidget),
-    okButton(new QPushButton(tr("OK")))    
+    okButton(new QPushButton(tr("OK")))
 {
     treeWidget->setAlternatingRowColors(false);
     treeWidget->setSelectionMode(QAbstractItemView::NoSelection);

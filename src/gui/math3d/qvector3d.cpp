@@ -348,6 +348,19 @@ QVector3D QVector3D::normal
 }
 
 /*!
+    \since 5.1
+
+    Returns the distance from this vertex to a point defined by
+    the vertex \a point.
+
+    \sa distanceToPlane(), distanceToLine()
+*/
+float QVector3D::distanceToPoint(const QVector3D& point) const
+{
+    return (*this - point).length();
+}
+
+/*!
     Returns the distance from this vertex to a plane defined by
     the vertex \a plane and a \a normal unit vector.  The \a normal
     parameter is assumed to have been normalized to a unit vector.

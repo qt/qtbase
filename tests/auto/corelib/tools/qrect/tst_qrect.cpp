@@ -41,6 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <qrect.h>
+#include <qmargins.h>
 #include <limits.h>
 #include <qdebug.h>
 
@@ -133,6 +134,7 @@ private slots:
     void newMoveTopLeft();
     void newMoveBottomRight_data();
     void newMoveBottomRight();
+    void margins();
 
     void translate_data();
     void translate();
@@ -3484,6 +3486,25 @@ void tst_QRect::newMoveBottomRight()
     QCOMPARE(r,nr);
 }
 
+void tst_QRect::margins()
+{
+    const QRect rectangle = QRect(QPoint(10, 10), QSize(50 ,50));
+    const QMargins margins = QMargins(2, 3, 4, 5);
+
+    const QRect added = rectangle + margins;
+    QCOMPARE(added, QRect(QPoint(8, 7), QSize(56, 58)));
+    QCOMPARE(added, margins + rectangle);
+    QCOMPARE(added, rectangle.marginsAdded(margins));
+
+    QRect a = rectangle;
+    a += margins;
+    QCOMPARE(added, a);
+
+    a = rectangle;
+    a -= margins;
+    QCOMPARE(a, QRect(QPoint(12, 13), QSize(44, 42)));
+    QCOMPARE(a, rectangle.marginsRemoved(margins));
+}
 
 void tst_QRect::translate_data()
 {

@@ -48,8 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_BEGIN_HEADER
-
 #ifndef QT_NO_DRAGANDDROP
 
 class QMouseEvent;
@@ -119,8 +117,6 @@ private:
 };
 
 #endif // QT_NO_DRAGANDDROP
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -50,7 +50,6 @@
 // We mean it.
 //
 
-QT_BEGIN_HEADER        
 
 #define IDR_MAIN_MENU       102
 #define IDR_MAIN_MENU2      103
@@ -89,6 +88,4 @@ QT_BEGIN_HEADER
 #define IDM_MENU6           40008
 #define IDM_MENU7           40009
 #define IDM_MENU8           40010
-
-QT_END_HEADER
 

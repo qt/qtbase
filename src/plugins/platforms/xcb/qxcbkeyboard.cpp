@@ -1081,6 +1081,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
     int qtcode = 0;
     int count = chars.count();
     QString string = translateKeySym(sym, state, qtcode, modifiers, chars, count);
+    string.truncate(count);
 
     bool isAutoRepeat = false;
 
@@ -1102,7 +1103,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
 
     bool filtered = false;
     if (inputContext) {
-        QKeyEvent event(type, qtcode, modifiers, code, sym, state, string.left(count), isAutoRepeat, count);
+        QKeyEvent event(type, qtcode, modifiers, code, sym, state, string, isAutoRepeat, count);
         event.setTimestamp(time);
         filtered = inputContext->filterEvent(&event);
     }
@@ -1114,7 +1115,7 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
             QWindowSystemInterface::handleContextMenuEvent(window, false, pos, globalPos, modifiers);
         }
         QWindowSystemInterface::handleExtendedKeyEvent(window, time, type, qtcode, modifiers,
-                                                       code, sym, state, string.left(count), isAutoRepeat);
+                                                       code, sym, state, string, isAutoRepeat);
     }
 
     if (isAutoRepeat && type == QEvent::KeyRelease) {
@@ -1130,13 +1131,13 @@ void QXcbKeyboard::handleKeyEvent(QWindow *window, QEvent::Type type, xcb_keycod
         }
 
         if (!filtered && inputContext) {
-            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, code, sym, state, string.left(count), isAutoRepeat, count);
+            QKeyEvent event(QEvent::KeyPress, qtcode, modifiers, code, sym, state, string, isAutoRepeat, count);
             event.setTimestamp(time);
             filtered = inputContext->filterEvent(&event);
         }
         if (!filtered)
             QWindowSystemInterface::handleExtendedKeyEvent(window, time, QEvent::KeyPress, qtcode, modifiers,
-                                                           code, sym, state, string.left(count), isAutoRepeat);
+                                                           code, sym, state, string, isAutoRepeat);
     }
 }
 

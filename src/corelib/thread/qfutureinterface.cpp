@@ -288,7 +288,7 @@ void QFutureInterfaceBase::waitForResult(int resultIndex)
         return;
     lock.unlock();
 
-    // To avoid deadlocks and reduce the number of threads used, try to 
+    // To avoid deadlocks and reduce the number of threads used, try to
     // run the runnable in the current thread.
     QThreadPool::globalInstance()->d_func()->stealRunnable(d->runnable);
 

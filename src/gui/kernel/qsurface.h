@@ -47,8 +47,6 @@
 
 #include <QtCore/qsize.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -60,7 +58,8 @@ class Q_GUI_EXPORT QSurface
 {
 public:
     enum SurfaceClass {
-        Window
+        Window,
+        Offscreen
     };
 
     enum SurfaceType {
@@ -88,7 +87,5 @@ protected:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif //QSURFACE_H

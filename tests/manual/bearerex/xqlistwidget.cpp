@@ -42,7 +42,7 @@
 #include "xqlistwidget.h"
 
 XQListWidget::XQListWidget(QWidget* parent) : QListWidget(parent)
-{    
+{
 }
 
 void XQListWidget::keyPressEvent(QKeyEvent* event)
@@ -59,7 +59,7 @@ void XQListWidget::keyPressEvent(QKeyEvent* event)
             focusNextChild();
             break;
         }
-        default: 
+        default:
         {
             QListWidget::keyPressEvent(event);
         }

@@ -62,8 +62,6 @@
 #include <QtWidgets/qapplication.h>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *w, QEvent::Type t, int k, Qt::KeyboardModifiers mods, const QString & text = QString(), bool autorep = false, ushort count = 1);
@@ -297,7 +295,5 @@ namespace QTest
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTESTKEYBOARD_H

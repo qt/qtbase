@@ -52,7 +52,7 @@
 ItemRecyclingList::ItemRecyclingList(const int itemBuffer, QGraphicsWidget * parent)
     : ItemRecyclingListView(parent),
       m_listModel(new ListModel(this))
-{    
+{
     ListItemContainer *container = new ListItemContainer(itemBuffer, this, this);
     container->setParentItem(this);
     ItemRecyclingListView::setContainer(container);
@@ -153,7 +153,7 @@ void ItemRecyclingList::themeChange()
                 item->setBackgroundBrush(Theme::p()->listItemBackgroundBrushEven());
                 item->setBackgroundOpacity(Theme::p()->listItemBackgroundOpacityEven());
             }
-    
+
             // Update borders
             item->setBorderPen(Theme::p()->listItemBorderPen());
             item->setRounding(Theme::p()->listItemRounding());
@@ -177,7 +177,7 @@ void ItemRecyclingList::keyPressEvent(QKeyEvent *event)
     static qreal step = 0.0;
     static bool repeat = false;
     int interval = keyPressInterval.elapsed();
-    
+
     ScrollBar* sb = verticalScrollBar();
     qreal currentValue = sb->sliderPosition();
 
@@ -193,11 +193,11 @@ void ItemRecyclingList::keyPressEvent(QKeyEvent *event)
             step = m_listModel->item(0)->size().height();
         repeat = false;
     }
-    
+
     if(event->key() == Qt::Key_Up ) { //Up Arrow
         sb->setSliderPosition(currentValue - step);
     }
-    
+
     if(event->key() == Qt::Key_Down ) { //Down Arrow
         sb->setSliderPosition(currentValue + step);
     }
@@ -255,7 +255,7 @@ void ItemRecyclingList::setTwoColumns(const bool enabled)
 }
 
 bool ItemRecyclingList::twoColumns()
-{    
+{
     return m_container->twoColumns();
 }
 

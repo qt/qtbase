@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_ibase.h
+HEADERS += $$PWD/qsql_ibase_p.h
 SOURCES += $$PWD/qsql_ibase.cpp
 
 unix {

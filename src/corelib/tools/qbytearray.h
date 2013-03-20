@@ -66,8 +66,6 @@
 #endif
 
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -609,8 +607,6 @@ inline QByteArray qUncompress(const QByteArray& data)
 Q_DECLARE_SHARED(QByteArray)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #ifdef QT_USE_QSTRINGBUILDER
 #include <QtCore/qstring.h>

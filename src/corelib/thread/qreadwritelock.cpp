@@ -93,7 +93,7 @@ QT_BEGIN_NAMESPACE
     \sa QReadLocker, QWriteLocker, QMutex, QSemaphore
 */
 
-/*! 
+/*!
     \enum QReadWriteLock::RecursionMode
     \since 4.4
 

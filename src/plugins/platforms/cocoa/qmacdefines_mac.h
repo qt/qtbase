@@ -79,14 +79,10 @@
  */
 
 /* This is just many defines. Therefore it doesn't need things like:
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 Yes, it is an informative comment ;-)
 */

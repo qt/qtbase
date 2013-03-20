@@ -49,9 +49,11 @@
 
 #include <QtPlatformSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtPlatformSupport/private/qgenericunixeventdispatcher_p.h>
+#include <QtPlatformSupport/private/qeglconvenience_p.h>
 #include <QtPlatformSupport/private/qeglplatformcontext_p.h>
+#include <QtPlatformSupport/private/qeglpbuffer_p.h>
 
-#if !defined(QT_NO_EVDEV)
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
 #include <QtPlatformSupport/private/qevdevmousemanager_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
@@ -61,6 +63,7 @@
 #include <QtGui/QSurfaceFormat>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <QtGui/QOffscreenSurface>
 #include <qpa/qplatformcursor.h>
 
 #include "qeglfscontext.h"
@@ -74,13 +77,13 @@ QEglFSIntegration::QEglFSIntegration()
 {
     QGuiApplicationPrivate::instance()->setEventDispatcher(mEventDispatcher);
 
-#if !defined(QT_NO_EVDEV)
+#if !defined(QT_NO_EVDEV) && !defined(Q_OS_ANDROID)
     new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */, this);
     new QEvdevMouseManager(QLatin1String("EvdevMouse"), QString() /* spec */, this);
     new QEvdevTouchScreenHandlerThread(QString() /* spec */, this);
 #endif
 
-    hooks->platformInit();
+    QEglFSHooks::hooks()->platformInit();
 
     EGLint major, minor;
 
@@ -89,7 +92,7 @@ QEglFSIntegration::QEglFSIntegration()
         qFatal("EGL error");
     }
 
-    mDisplay = eglGetDisplay(hooks ? hooks->platformDisplay() : EGL_DEFAULT_DISPLAY);
+    mDisplay = eglGetDisplay(QEglFSHooks::hooks() ? QEglFSHooks::hooks()->platformDisplay() : EGL_DEFAULT_DISPLAY);
     if (mDisplay == EGL_NO_DISPLAY) {
         qWarning("Could not open egl display\n");
         qFatal("EGL error");
@@ -119,13 +122,13 @@ QEglFSIntegration::~QEglFSIntegration()
     delete mScreen;
 
     eglTerminate(mDisplay);
-    hooks->platformDestroy();
+    QEglFSHooks::hooks()->platformDestroy();
 }
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
 {
     // We assume that devices will have more and not less capabilities
-    if (hooks && hooks->hasCapability(cap))
+    if (QEglFSHooks::hooks() && QEglFSHooks::hooks()->hasCapability(cap))
         return true;
 
     switch (cap) {
@@ -150,7 +153,13 @@ QPlatformBackingStore *QEglFSIntegration::createPlatformBackingStore(QWindow *wi
 
 QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    return new QEglFSContext(context->format(), 0 /*share*/, mDisplay);
+    return new QEglFSContext(QEglFSHooks::hooks()->surfaceFormatFor(context->format()), context->shareHandle(), mDisplay);
+}
+
+QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    QEglFSScreen *screen = static_cast<QEglFSScreen *>(surface->screen()->handle());
+    return new QEGLPbuffer(screen->display(), QEglFSHooks::hooks()->surfaceFormatFor(surface->requestedFormat()), surface);
 }
 
 QPlatformFontDatabase *QEglFSIntegration::fontDatabase() const
@@ -199,6 +208,31 @@ void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QO
         return handle->eglContext();
 
     return 0;
+}
+
+EGLConfig QEglFSIntegration::chooseConfig(EGLDisplay display, const QSurfaceFormat &format)
+{
+    class Chooser : public QEglConfigChooser {
+    public:
+        Chooser(EGLDisplay display, QEglFSHooks *hooks)
+            : QEglConfigChooser(display)
+            , m_hooks(hooks)
+        {
+        }
+
+    protected:
+        bool filterConfig(EGLConfig config) const
+        {
+            return m_hooks->filterConfig(display(), config) && QEglConfigChooser::filterConfig(config);
+        }
+
+    private:
+        QEglFSHooks *m_hooks;
+    };
+
+    Chooser chooser(display, QEglFSHooks::hooks());
+    chooser.setSurfaceFormat(format);
+    return chooser.chooseConfig();
 }
 
 QT_END_NAMESPACE

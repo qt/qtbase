@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 template<class TYPE, size_t COUNT>
-class myTemplate : 
+class myTemplate :
       QString,
       QVector<TYPE, QList<COUNT>>
 {};
 
 template<class TYPE, size_t COUNT>
-class myTemplate2 : 
+class myTemplate2 :
       QString,
       QVector<TYPE, QList< (4 >> 2) >>
 {};

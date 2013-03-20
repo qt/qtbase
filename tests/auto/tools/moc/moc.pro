@@ -11,7 +11,6 @@ TARGET = tst_moc
 
 INCLUDEPATH += testproject/include testproject
 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
 cross_compile: DEFINES += MOC_CROSS_COMPILED
 
 HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-newlines.h oldstyle-casts.h \
@@ -27,6 +26,7 @@ HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-n
 
 
 if(*-g++*|*-icc*|*-clang*|*-llvm):!irix-*:!win32-*: HEADERS += os9-newlines.h win-newlines.h
+if(*-g++*|*-clang*): HEADERS += dollars.h
 SOURCES += tst_moc.cpp
 
 QT -= gui

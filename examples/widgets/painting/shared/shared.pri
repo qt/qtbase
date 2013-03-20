@@ -1,6 +1,6 @@
 INCLUDEPATH += $$PWD
 
-qtHaveModule(opengl) {
+qtHaveModule(opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2)  {
     DEFINES += QT_OPENGL_SUPPORT
     QT += opengl widgets
 }

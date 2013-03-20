@@ -57,7 +57,7 @@
     change the auto-deletion flag.
 
     QThreadPool supports executing the same QRunnable more than once
-    by calling QThreadPool::tryStart(this) from within the run() function. 
+    by calling QThreadPool::tryStart(this) from within the run() function.
     If autoDelete is enabled the QRunnable will be deleted when
     the last thread exits the run function. Calling QThreadPool::start()
     multiple times with the same QRunnable when autoDelete is enabled

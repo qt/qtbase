@@ -52,7 +52,7 @@ class inputmethodhints : public QMainWindow
 public:
     inputmethodhints(QWidget *parent = 0);
     ~inputmethodhints();
-    
+
 public slots:
     void checkboxChanged(int);
 

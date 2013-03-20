@@ -82,7 +82,7 @@ MainView::~MainView()
 }
 
 void MainView::setTestWidget(QGraphicsWidget *testWidget)
-{ 
+{
     if (!testWidget)
         return;
 
@@ -99,7 +99,7 @@ void MainView::setTestWidget(QGraphicsWidget *testWidget)
 QGraphicsWidget *MainView::takeTestWidget()
 {
     if (m_testWidget) {
-        m_mainLayout->removeItem(m_testWidget);       
+        m_mainLayout->removeItem(m_testWidget);
         QGraphicsWidget *tmp = m_testWidget;
         m_testWidget = 0;
         return tmp;
@@ -229,30 +229,30 @@ void MainView::keyPressEvent(QKeyEvent *event)
         else
             showFullScreen();
     }
- 
+
     //S60 3.x specific
     if(m_menu->menuVisible()) {
         m_menu->keyPressEvent(event);
         return;
     }
-    
+
     if(event->key() == 16777235 ) { //Up Arrow
         GvbWidget* widget = qobject_cast<GvbWidget*>(m_testWidget);
         if(widget)
             widget->keyPressEvent(event);
     }
-    
+
     if(event->key() == 16777237 ) { //Down Arrow
         GvbWidget* widget = qobject_cast<GvbWidget*>(m_testWidget);
         if(widget)
             widget->keyPressEvent(event);
     }
-    
+
     if(event->key() == 17825792 ) { //LSK
         if(!m_menu->menuVisible())
             m_menu->menuShowHide();
     }
-    
+
     if(event->key() == 17825793 ) { //RSK
         QApplication::quit();
     }
@@ -265,7 +265,7 @@ void MainView::construct()
 #ifndef QT_NO_OPENGL
     if (m_enableOpenGL) {
         qDebug() << "OpenGL enabled";
-        m_scene->setSortCacheEnabled(false);        
+        m_scene->setSortCacheEnabled(false);
         setViewport(new QGLWidget);
 
         // Qt doc says: This is the preferred update mode for
@@ -311,7 +311,7 @@ void MainView::construct()
     m_mainLayout->addItem(m_topBar);
     m_topBar->setZValue(1);
     connect(m_topBar, SIGNAL(clicked(bool)), m_menu, SLOT(menuShowHide()));
-    
+
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setContentsMargins(0,0,0,0);

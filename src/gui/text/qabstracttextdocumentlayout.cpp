@@ -183,7 +183,7 @@ QT_BEGIN_NAMESPACE
    This signal is emitted when the specified \a block has been updated.
 
    Subclasses of QAbstractTextDocumentLayout should emit this signal when
-   the layout of \a block has changed in order to repaint. 
+   the layout of \a block has changed in order to repaint.
 */
 
 /*!

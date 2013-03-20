@@ -94,6 +94,7 @@ private slots:
     void multiWordNamedColorXPM();
 
     void supportedFormats();
+    void supportedMimeTypes();
 
     void readFromDevice_data();
     void readFromDevice();
@@ -569,6 +570,26 @@ void tst_QImageReader::supportedFormats()
 
     // check that the list does not contain duplicates
     QCOMPARE(formatSet.size(), formats.size());
+}
+
+void tst_QImageReader::supportedMimeTypes()
+{
+    QList<QByteArray> mimeTypes = QImageReader::supportedMimeTypes();
+    QList<QByteArray> sortedMimeTypes = mimeTypes;
+    qSort(sortedMimeTypes);
+
+    // check that the list is sorted
+    QCOMPARE(mimeTypes, sortedMimeTypes);
+
+    QSet<QByteArray> mimeTypeSet;
+    foreach (QByteArray mimeType, mimeTypes)
+        mimeTypeSet << mimeType;
+
+    // check the list as a minimum contains image/bmp
+    QVERIFY(mimeTypeSet.contains("image/bmp"));
+
+    // check that the list does not contain duplicates
+    QCOMPARE(mimeTypeSet.size(), mimeTypes.size());
 }
 
 void tst_QImageReader::setBackgroundColor_data()

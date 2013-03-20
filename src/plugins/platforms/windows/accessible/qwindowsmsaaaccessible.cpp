@@ -54,7 +54,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qsettings.h>
 #include <QtGui/qaccessible.h>
-#include <QtGui/qaccessible2.h>
+#include <QtGui/private/qaccessible2_p.h>
 #include <QtGui/qguiapplication.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <QtGui/qwindow.h>

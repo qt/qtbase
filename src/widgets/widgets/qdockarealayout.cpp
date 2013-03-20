@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -2004,7 +2004,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
             //we need to make sure the element is in the list so the dock widget can eventually be docked correctly
             if (!testing)
                 item_list.append(item);
-            
+
             //here we need to make sure we change the item in the item_list
             QDockAreaLayoutItem &lastItem = testing ? item : item_list.last();
 

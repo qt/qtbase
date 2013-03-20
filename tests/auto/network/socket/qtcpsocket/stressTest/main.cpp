@@ -62,6 +62,6 @@ int main(int argc, char **argv)
     }
 
     Test test(type);
-    
+
     return app.exec();
 }

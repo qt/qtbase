@@ -69,6 +69,7 @@ private slots:
     void stateInFinishedSignal();
     void resume();
     void restart();
+    void setPaused();
 
 protected slots:
     void finishedSlot();
@@ -679,6 +680,28 @@ void tst_QTimeLine::restart()
     QCOMPARE(timeLine.state(), QTimeLine::Running);
     QCOMPARE(timeLine.currentFrame(), timeLine.startFrame());
     QCOMPARE(timeLine.currentTime(), 0);
+}
+
+void tst_QTimeLine::setPaused()
+{
+    QTimeLine timeLine(1000);
+    {
+        QCOMPARE(timeLine.currentTime(), 0);
+        timeLine.start();
+        QTest::qWait(250);
+        timeLine.setPaused(true);
+        int oldCurrentTime = timeLine.currentTime();
+        QVERIFY(oldCurrentTime > 0);
+        QVERIFY(oldCurrentTime < 1000);
+        QTest::qWait(1000);
+        timeLine.setPaused(false);
+        QTest::qWait(250);
+        int currentTime = timeLine.currentTime();
+        QVERIFY(currentTime > 0);
+        QVERIFY(currentTime > oldCurrentTime);
+        QVERIFY(currentTime < 1000);
+        timeLine.stop();
+    }
 }
 
 QTEST_MAIN(tst_QTimeLine)

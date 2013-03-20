@@ -48,8 +48,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qpair.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -123,7 +121,5 @@ void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to,
 #endif //QT_NO_ANIMATION
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif //QVARIANTANIMATION_H

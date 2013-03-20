@@ -42,6 +42,7 @@
 #include "qglfunctions.h"
 #include "qgl_p.h"
 #include "QtGui/private/qopenglcontext_p.h"
+#include <private/qopengl_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -225,7 +226,7 @@ static int qt_gl_resolve_features()
                    QGLFunctions::CompressedTextures |
                    QGLFunctions::Multisample |
                    QGLFunctions::StencilSeparate;
-    QGLExtensionMatcher extensions;
+    QOpenGLExtensionMatcher extensions;
     if (extensions.match("GL_OES_texture_npot"))
         features |= QGLFunctions::NPOTTextures;
     if (extensions.match("GL_IMG_texture_npot"))
@@ -236,7 +237,7 @@ static int qt_gl_resolve_features()
                    QGLFunctions::Buffers |
                    QGLFunctions::CompressedTextures |
                    QGLFunctions::Multisample;
-    QGLExtensionMatcher extensions;
+    QOpenGLExtensionMatcher extensions;
     if (extensions.match("GL_OES_framebuffer_object"))
         features |= QGLFunctions::Framebuffers;
     if (extensions.match("GL_OES_blend_equation_separate"))
@@ -253,7 +254,7 @@ static int qt_gl_resolve_features()
 #else
     int features = 0;
     QGLFormat::OpenGLVersionFlags versions = QGLFormat::openGLVersionFlags();
-    QGLExtensionMatcher extensions;
+    QOpenGLExtensionMatcher extensions;
 
     // Recognize features by extension name.
     if (extensions.match("GL_ARB_multitexture"))

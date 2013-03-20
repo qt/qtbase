@@ -187,7 +187,7 @@ void tst_QStandardItem::getSetData()
             item.setBackground(backgroundColor);
             QCOMPARE(item.background().color(), backgroundColor);
 
-            QColor textColor((i == i) ? Qt::green : Qt::cyan);
+            QColor textColor((i == 1) ? Qt::green : Qt::cyan);
             item.setForeground(textColor);
             QCOMPARE(item.foreground().color(), textColor);
 

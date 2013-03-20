@@ -99,6 +99,33 @@ void QInputMethod::setInputItemTransform(const QTransform &transform)
     emit cursorRectangleChanged();
 }
 
+
+/*!
+    \since 5.1
+
+    Returns the input item's geometry in input item coordinates.
+
+    \sa setInputItemRectangle()
+*/
+QRectF QInputMethod::inputItemRectangle() const
+{
+    Q_D(const QInputMethod);
+    return d->inputRectangle;
+}
+
+/*!
+    \since 5.1
+
+    Sets the input item's geometry to be \a rect, in input item coordinates.
+    This needs to be updated by the focused window like QQuickCanvas whenever
+    item is moved inside the scene, or focus is changed.
+*/
+void QInputMethod::setInputItemRectangle(const QRectF &rect)
+{
+    Q_D(QInputMethod);
+    d->inputRectangle = rect;
+}
+
 /*!
     \property QInputMethod::cursorRectangle
     \brief Input item's cursor rectangle in window coordinates.

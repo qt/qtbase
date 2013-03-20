@@ -42,13 +42,13 @@
 #ifndef QOPENGLPAINTDEVICE_H
 #define QOPENGLPAINTDEVICE_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglcontext.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -70,6 +70,7 @@ public:
     QOpenGLContext *context() const;
     QSize size() const;
     void setSize(const QSize &size);
+    void setDevicePixelRatio(qreal devicePixelRatio);
 
     qreal dotsPerMeterX() const;
     qreal dotsPerMeterY() const;
@@ -90,8 +91,6 @@ protected:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 

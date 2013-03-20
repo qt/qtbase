@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-/*! 
+/*!
     \class QtIcoHandler
     \since 4.4
     \brief The QtIcoHandler class provides support for the ICO image format.

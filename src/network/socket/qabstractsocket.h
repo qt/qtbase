@@ -48,8 +48,6 @@
 #include <QtCore/qdebug.h>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -241,7 +239,5 @@ QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QAbstractSocket::SocketState)
 Q_DECLARE_METATYPE(QAbstractSocket::SocketError)
-
-QT_END_HEADER
 
 #endif // QABSTRACTSOCKET_H

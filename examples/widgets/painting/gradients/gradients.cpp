@@ -362,7 +362,7 @@ GradientWidget::GradientWidget(QWidget *parent)
     connect(showSourceButton, SIGNAL(clicked()), m_renderer, SLOT(showSource()));
 #ifdef QT_OPENGL_SUPPORT
     connect(enableOpenGLButton, SIGNAL(clicked(bool)), m_renderer, SLOT(enableOpenGL(bool)));
-#endif    
+#endif
     connect(whatsThisButton, SIGNAL(clicked(bool)), m_renderer, SLOT(setDescriptionEnabled(bool)));
     connect(whatsThisButton, SIGNAL(clicked(bool)),
             m_renderer->hoverPoints(), SLOT(setDisabled(bool)));

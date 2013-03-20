@@ -45,7 +45,7 @@
 #include <QGraphicsEffect>
 #include <QPixmapCache>
 
-class ListItemCache : public QGraphicsEffect 
+class ListItemCache : public QGraphicsEffect
 {
     Q_OBJECT
 

@@ -126,6 +126,7 @@ void QMakeEvaluator::initStatics()
     statics.strforever = QLatin1String("forever");
     statics.strhost_build = QLatin1String("host_build");
     statics.strTEMPLATE = ProKey("TEMPLATE");
+    statics.strQMAKE_PLATFORM = ProKey("QMAKE_PLATFORM");
 #ifdef PROEVALUATOR_FULL
     statics.strREQUIRES = ProKey("REQUIRES");
 #endif
@@ -263,48 +264,55 @@ ProStringList QMakeEvaluator::split_value_list(const QString &vals, const ProFil
 {
     QString build;
     ProStringList ret;
-    QStack<char> quote;
-
-    const ushort SPACE = ' ';
-    const ushort LPAREN = '(';
-    const ushort RPAREN = ')';
-    const ushort SINGLEQUOTE = '\'';
-    const ushort DOUBLEQUOTE = '"';
-    const ushort BACKSLASH = '\\';
 
     if (!source)
         source = currentProFile();
 
-    ushort unicode;
     const QChar *vals_data = vals.data();
     const int vals_len = vals.length();
-    int parens = 0;
+    ushort quote = 0;
+    bool hadWord = false;
     for (int x = 0; x < vals_len; x++) {
-        unicode = vals_data[x].unicode();
-        if (x != (int)vals_len-1 && unicode == BACKSLASH &&
-            (vals_data[x+1].unicode() == SINGLEQUOTE || vals_data[x+1].unicode() == DOUBLEQUOTE)) {
-            build += vals_data[x++]; //get that 'escape'
-        } else if (!quote.isEmpty() && unicode == quote.top()) {
-            quote.pop();
-        } else if (unicode == SINGLEQUOTE || unicode == DOUBLEQUOTE) {
-            quote.push(unicode);
-        } else if (unicode == RPAREN) {
-            --parens;
-        } else if (unicode == LPAREN) {
-            ++parens;
+        ushort unicode = vals_data[x].unicode();
+        if (unicode == quote) {
+            quote = 0;
+            continue;
         }
-
-        if (!parens && quote.isEmpty() && vals_data[x] == SPACE) {
-            ret << ProString(build).setSource(source);
-            build.clear();
-        } else {
-            build += vals_data[x];
+        switch (unicode) {
+        case '"':
+        case '\'':
+            quote = unicode;
+            hadWord = true;
+            continue;
+        case ' ':
+        case '\t':
+            if (!quote) {
+                if (hadWord) {
+                    ret << ProString(build).setSource(source);
+                    build.clear();
+                    hadWord = false;
+                }
+                continue;
+            }
+            build += QChar(unicode);
+            break;
+        case '\\':
+            if (x + 1 != vals_len) {
+                ushort next = vals_data[++x].unicode();
+                if (next == '\'' || next == '"' || next == '\\')
+                    unicode = next;
+                else
+                    --x;
+            }
+            // fallthrough
+        default:
+            hadWord = true;
+            build += QChar(unicode);
+            break;
         }
     }
-    if (!build.isEmpty())
+    if (hadWord)
         ret << ProString(build).setSource(source);
-    if (parens)
-        deprecationWarning(fL1S("Unmatched parentheses are deprecated."));
     return ret;
 }
 
@@ -924,6 +932,8 @@ void QMakeEvaluator::visitProVariable(
 
     if (varName == statics.strTEMPLATE)
         setTemplate();
+    else if (varName == statics.strQMAKE_PLATFORM)
+        updateFeaturePaths();
 #ifdef PROEVALUATOR_FULL
     else if (varName == statics.strREQUIRES)
         checkRequirements(values(varName));
@@ -1217,7 +1227,6 @@ bool QMakeEvaluator::loadSpec()
     }
     if (!loadSpecInternal())
         return false;
-    updateFeaturePaths(); // The spec extends the feature search path, so rebuild the cache.
     if (!m_conffile.isEmpty()
         && evaluateFile(m_conffile, QMakeHandler::EvalConfigFile, LoadProOnly) != ReturnTrue) {
         return false;

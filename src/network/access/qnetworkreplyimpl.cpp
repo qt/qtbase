@@ -879,6 +879,14 @@ void QNetworkReplyImplPrivate::redirectionRequested(const QUrl &target)
     attributes.insert(QNetworkRequest::RedirectionTargetAttribute, target);
 }
 
+void QNetworkReplyImplPrivate::encrypted()
+{
+#ifndef QT_NO_SSL
+    Q_Q(QNetworkReplyImpl);
+    emit q->encrypted();
+#endif
+}
+
 void QNetworkReplyImplPrivate::sslErrors(const QList<QSslError> &errors)
 {
 #ifndef QT_NO_SSL

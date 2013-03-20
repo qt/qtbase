@@ -62,7 +62,7 @@
     \l{QAbstractItemModel::}{fetchMore()} and
     \l{QAbstractItemModel::}{canFetchMore()} from QAbstractItemModel.
     These functions are called by the item view when it needs more
-    items. 
+    items.
 
     The \c setDirPath() function sets the directory the model will
     work on. We emit \c numberPopulated() each time we add a batch of

@@ -76,14 +76,14 @@ static qint64 absoluteToMSecs(qint64 cpuTime)
     return absoluteToNSecs(cpuTime) / 1000000;
 }
 
-timeval qt_gettime() Q_DECL_NOTHROW
+timespec qt_gettime() Q_DECL_NOTHROW
 {
-    timeval tv;
+    timespec tv;
 
     uint64_t cpu_time = mach_absolute_time();
     uint64_t nsecs = absoluteToNSecs(cpu_time);
     tv.tv_sec = nsecs / 1000000000ull;
-    tv.tv_usec = (nsecs / 1000) - (tv.tv_sec * 1000000);
+    tv.tv_nsec = nsecs - (tv.tv_sec * 1000000000ull);
     return tv;
 }
 

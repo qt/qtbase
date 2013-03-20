@@ -61,7 +61,7 @@
 #  define QT_NO_GETIFADDRS
 #endif
 
-#ifdef Q_OS_LINUX_ANDROID
+#ifdef Q_OS_ANDROID
 // android lacks if_nameindex
 # define QT_NO_IPV6IFNAME
 #endif
@@ -328,9 +328,9 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
                 }
                 break;
             }
-        if ( if_it != interfaces.end() ) 
+        if ( if_it != interfaces.end() )
             continue;
-        
+
         QNetworkInterfacePrivate *iface = new QNetworkInterfacePrivate;
         interfaces << iface;
         iface->index = ifindex;

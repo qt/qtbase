@@ -47,8 +47,6 @@
 #include <QtGui/qpagedpaintdevice.h>
 #include <QtPrintSupport/qtprintsupportglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -169,6 +167,9 @@ public:
     void setPaperSize(const QSizeF &paperSize, Unit unit);
     QSizeF paperSize(Unit unit) const;
 
+    void setPaperName(const QString &paperName);
+    QString paperName() const;
+
     void setPageOrder(PageOrder);
     PageOrder pageOrder() const;
 
@@ -266,7 +267,5 @@ private:
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPRINTER_H

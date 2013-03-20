@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Richard J. Moore <rich@kde.org>.
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -40,12 +41,51 @@
 ****************************************************************************/
 
 #include <qcryptographichash.h>
+#include <qiodevice.h>
 
+#include "../../3rdparty/sha1/sha1.cpp"
+
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+// qdoc only needs SHA-1
 #include "../../3rdparty/md5/md5.h"
 #include "../../3rdparty/md5/md5.cpp"
 #include "../../3rdparty/md4/md4.h"
 #include "../../3rdparty/md4/md4.cpp"
-#include "../../3rdparty/sha1/sha1.cpp"
+
+typedef unsigned char BitSequence;
+typedef unsigned long long DataLength;
+typedef enum { SUCCESS = 0, FAIL = 1, BAD_HASHLEN = 2 } HashReturn;
+
+#include "../../3rdparty/sha3/KeccakSponge.c"
+typedef spongeState hashState;
+
+#include "../../3rdparty/sha3/KeccakNISTInterface.c"
+
+/*
+  This lets us choose between SHA3 implementations at build time.
+ */
+typedef spongeState SHA3Context;
+typedef HashReturn (SHA3Init)(hashState *state, int hashbitlen);
+typedef HashReturn (SHA3Update)(hashState *state, const BitSequence *data, DataLength databitlen);
+typedef HashReturn (SHA3Final)(hashState *state, BitSequence *hashval);
+
+#if QT_POINTER_SIZE == 8 // 64 bit version
+
+#include "../../3rdparty/sha3/KeccakF-1600-opt64.c"
+
+static SHA3Init * const sha3Init = Init;
+static SHA3Update * const sha3Update = Update;
+static SHA3Final * const sha3Final = Final;
+
+#else // 32 bit optimised fallback
+
+#include "../../3rdparty/sha3/KeccakF-1600-opt32.c"
+
+static SHA3Init * const sha3Init = Init;
+static SHA3Update * const sha3Update = Update;
+static SHA3Final * const sha3Final = Final;
+
+#endif
 
 /*
     These #defines replace the typedefs needed by the RFC6234 code. Normally
@@ -88,8 +128,6 @@ static int SHA384_512AddLength(SHA512Context *context, unsigned int length);
 #undef uint68_t
 #undef int_least16_t
 
-#include <qiodevice.h>
-
 static inline int SHA224_256AddLength(SHA256Context *context, unsigned int length)
 {
   QT_PREPEND_NAMESPACE(quint32) addTemp;
@@ -100,6 +138,7 @@ static inline int SHA384_512AddLength(SHA512Context *context, unsigned int lengt
   QT_PREPEND_NAMESPACE(quint64) addTemp;
   return SHA384_512AddLengthM(context, length);
 }
+#endif // QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 
 QT_BEGIN_NAMESPACE
 
@@ -108,13 +147,16 @@ class QCryptographicHashPrivate
 public:
     QCryptographicHash::Algorithm method;
     union {
+        Sha1State sha1Context;
+#ifndef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
         MD5Context md5Context;
         md4_context md4Context;
-        Sha1State sha1Context;
         SHA224Context sha224Context;
         SHA256Context sha256Context;
         SHA384Context sha384Context;
         SHA512Context sha512Context;
+        SHA3Context sha3Context;
+#endif
     };
     QByteArray result;
 };
@@ -141,10 +183,14 @@ public:
   \value Md4 Generate an MD4 hash sum
   \value Md5 Generate an MD5 hash sum
   \value Sha1 Generate an SHA-1 hash sum
-  \value Sha224 Generate an SHA-224 hash sum. Introduced in Qt 5.0
-  \value Sha256 Generate an SHA-256 hash sum. Introduced in Qt 5.0
-  \value Sha384 Generate an SHA-384 hash sum. Introduced in Qt 5.0
-  \value Sha512 Generate an SHA-512 hash sum. Introduced in Qt 5.0
+  \value Sha224 Generate an SHA-224 hash sum (SHA-2). Introduced in Qt 5.0
+  \value Sha256 Generate an SHA-256 hash sum (SHA-2). Introduced in Qt 5.0
+  \value Sha384 Generate an SHA-384 hash sum (SHA-2). Introduced in Qt 5.0
+  \value Sha512 Generate an SHA-512 hash sum (SHA-2). Introduced in Qt 5.0
+  \value Sha3_224 Generate an SHA3-224 hash sum. Introduced in Qt 5.1
+  \value Sha3_256 Generate an SHA3-256 hash sum. Introduced in Qt 5.1
+  \value Sha3_384 Generate an SHA3-384 hash sum. Introduced in Qt 5.1
+  \value Sha3_512 Generate an SHA3-512 hash sum. Introduced in Qt 5.1
 */
 
 /*!
@@ -171,14 +217,20 @@ QCryptographicHash::~QCryptographicHash()
 void QCryptographicHash::reset()
 {
     switch (d->method) {
+    case Sha1:
+        sha1InitState(&d->sha1Context);
+        break;
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    default:
+        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+        Q_UNREACHABLE();
+        break;
+#else
     case Md4:
         md4_init(&d->md4Context);
         break;
     case Md5:
         MD5Init(&d->md5Context);
-        break;
-    case Sha1:
-        sha1InitState(&d->sha1Context);
         break;
     case Sha224:
         SHA224Reset(&d->sha224Context);
@@ -192,6 +244,19 @@ void QCryptographicHash::reset()
     case Sha512:
         SHA512Reset(&d->sha512Context);
         break;
+    case Sha3_224:
+        sha3Init(&d->sha3Context, 224);
+        break;
+    case Sha3_256:
+        sha3Init(&d->sha3Context, 256);
+        break;
+    case Sha3_384:
+        sha3Init(&d->sha3Context, 384);
+        break;
+    case Sha3_512:
+        sha3Init(&d->sha3Context, 512);
+        break;
+#endif
     }
     d->result.clear();
 }
@@ -203,14 +268,20 @@ void QCryptographicHash::reset()
 void QCryptographicHash::addData(const char *data, int length)
 {
     switch (d->method) {
+    case Sha1:
+        sha1Update(&d->sha1Context, (const unsigned char *)data, length);
+        break;
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    default:
+        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+        Q_UNREACHABLE();
+        break;
+#else
     case Md4:
         md4_update(&d->md4Context, (const unsigned char *)data, length);
         break;
     case Md5:
         MD5Update(&d->md5Context, (const unsigned char *)data, length);
-        break;
-    case Sha1:
-        sha1Update(&d->sha1Context, (const unsigned char *)data, length);
         break;
     case Sha224:
         SHA224Input(&d->sha224Context, reinterpret_cast<const unsigned char *>(data), length);
@@ -224,7 +295,20 @@ void QCryptographicHash::addData(const char *data, int length)
     case Sha512:
         SHA512Input(&d->sha512Context, reinterpret_cast<const unsigned char *>(data), length);
         break;
-    }    
+    case Sha3_224:
+        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
+        break;
+    case Sha3_256:
+        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
+        break;
+    case Sha3_384:
+        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
+        break;
+    case Sha3_512:
+        sha3Update(&d->sha3Context, reinterpret_cast<const BitSequence *>(data), length*8);
+        break;
+#endif
+    }
     d->result.clear();
 }
 
@@ -266,10 +350,23 @@ bool QCryptographicHash::addData(QIODevice* device)
 */
 QByteArray QCryptographicHash::result() const
 {
-    if (!d->result.isEmpty()) 
+    if (!d->result.isEmpty())
         return d->result;
 
     switch (d->method) {
+    case Sha1: {
+        Sha1State copy = d->sha1Context;
+        d->result.resize(20);
+        sha1FinalizeState(&copy);
+        sha1ToHash(&copy, (unsigned char *)d->result.data());
+        break;
+    }
+#ifdef QT_CRYPTOGRAPHICHASH_ONLY_SHA1
+    default:
+        Q_ASSERT_X(false, "QCryptographicHash", "Method not compiled in");
+        Q_UNREACHABLE();
+        break;
+#else
     case Md4: {
         md4_context copy = d->md4Context;
         d->result.resize(MD4_RESULTLEN);
@@ -280,13 +377,6 @@ QByteArray QCryptographicHash::result() const
         MD5Context copy = d->md5Context;
         d->result.resize(16);
         MD5Final(&copy, (unsigned char *)d->result.data());
-        break;
-    }
-    case Sha1: {
-        Sha1State copy = d->sha1Context;
-        d->result.resize(20);
-        sha1FinalizeState(&copy);
-        sha1ToHash(&copy, (unsigned char *)d->result.data());
         break;
     }
     case Sha224: {
@@ -313,6 +403,31 @@ QByteArray QCryptographicHash::result() const
         SHA512Result(&copy, reinterpret_cast<unsigned char *>(d->result.data()));
         break;
     }
+    case Sha3_224: {
+        SHA3Context copy = d->sha3Context;
+        d->result.resize(224/8);
+        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        break;
+    }
+    case Sha3_256: {
+        SHA3Context copy = d->sha3Context;
+        d->result.resize(256/8);
+        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        break;
+    }
+    case Sha3_384: {
+        SHA3Context copy = d->sha3Context;
+        d->result.resize(384/8);
+        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        break;
+    }
+    case Sha3_512: {
+        SHA3Context copy = d->sha3Context;
+        d->result.resize(512/8);
+        sha3Final(&copy, reinterpret_cast<BitSequence *>(d->result.data()));
+        break;
+    }
+#endif
     }
     return d->result;
 }

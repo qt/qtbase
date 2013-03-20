@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -237,7 +237,7 @@ private:
     \since 5.0
 
     \inmodule QtWidgets
- 
+
     With kinetic scrolling, the user can push the widget in a given
     direction and it will continue to scroll in this direction until it is
     stopped either by the user or by friction.  Aspects of inertia, friction

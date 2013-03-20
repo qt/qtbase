@@ -44,7 +44,7 @@
 #include "iaccessible2.h"
 #include "qwindowsaccessibility.h"
 
-#include <QtGui/qaccessible2.h>
+#include <QtGui/private/qaccessible2_p.h>
 #include <QtGui/qclipboard.h>
 #include <QtWidgets/qapplication.h>
 #include <QtCore/qdebug.h>

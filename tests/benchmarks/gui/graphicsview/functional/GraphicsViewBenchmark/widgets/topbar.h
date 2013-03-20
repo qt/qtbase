@@ -55,7 +55,7 @@ class QFont;
 class TopBar : public GvbWidget
 {
     Q_OBJECT
-    
+
 public:
     enum Orientation
     {
@@ -63,33 +63,34 @@ public:
         Landscape,
         None
     };
-    
+
 public:
     TopBar(QGraphicsView* mainView, QGraphicsWidget* parent);
     ~TopBar();
-    
+
 public:
     void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0 );
     QRectF boundingRect() const;
     void resizeEvent(QGraphicsSceneResizeEvent *event);
-    inline QPoint getStatusBarLocation() { return m_topBarStatusBarMiddlePoint + 
-        m_topBarStatusBarMiddle.rect().bottomLeft(); }
-    
+    inline QPoint getStatusBarLocation()
+    {
+        return m_topBarStatusBarMiddlePoint + m_topBarStatusBarMiddle.rect().bottomLeft();
+    }
+
 public slots:
     void themeChange();
-    
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    
+
 signals:
     void clicked(bool checked = false);
-    
+
 private:
-    QSizeF sizeHint(Qt::SizeHint which, 
+    QSizeF sizeHint(Qt::SizeHint which,
         const QSizeF &constraint = QSizeF()) const;
     void setDefaultSizes();
-    
-    
+
 private:
     Q_DISABLE_COPY(TopBar)
 
@@ -100,7 +101,7 @@ private:
     //Fonts
     QFont m_titleFont;
     QFont m_statusFont;
-    
+
     //Pixmaps
     QPixmap m_topBarPixmap;
     QPixmap m_topBarUserIcon;
@@ -108,7 +109,7 @@ private:
     QPixmap m_topBarStatusBarLeft;
     QPixmap m_topBarStatusBarRight;
     QPixmap m_topBarStatusBarMiddle;
-    
+
     //Drawing points
     QPoint m_topBarUserIconPoint;
     QPoint m_topBarUserStatusPoint;
@@ -117,7 +118,7 @@ private:
     QPoint m_topBarStatusBarMiddlePoint;
     QPoint m_topBarStatusBarTextPoint;
     QPoint m_topBarTitlePoint;
-    
+
     //Sizes
     QHash<QString, QSize> m_sizesBlue;
     QHash<QString, QSize> m_sizesLime;

@@ -42,6 +42,8 @@
 #ifndef QOPENGLSHADERPROGRAM_H
 #define QOPENGLSHADERPROGRAM_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtGui/qopengl.h>
@@ -49,8 +51,6 @@
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector4d.h>
 #include <QtGui/qmatrix4x4.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -65,8 +65,12 @@ class Q_GUI_EXPORT QOpenGLShader : public QObject
 public:
     enum ShaderTypeBit
     {
-        Vertex          = 0x0001,
-        Fragment        = 0x0002
+        Vertex                 = 0x0001,
+        Fragment               = 0x0002,
+        Geometry               = 0x0004,
+        TessellationControl    = 0x0008,
+        TessellationEvaluation = 0x0010,
+        Compute                = 0x0020
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBit)
 
@@ -127,6 +131,17 @@ public:
     void release();
 
     GLuint programId() const;
+
+    int maxGeometryOutputVertices() const;
+
+    void setPatchVertexCount(int count);
+    int patchVertexCount() const;
+
+    void setDefaultOuterTessellationLevels(const QVector<float> &levels);
+    QVector<float> defaultOuterTessellationLevels() const;
+
+    void setDefaultInnerTessellationLevels(const QVector<float> &levels);
+    QVector<float> defaultInnerTessellationLevels() const;
 
     void bindAttributeLocation(const char *name, int location);
     void bindAttributeLocation(const QByteArray& name, int location);
@@ -292,8 +307,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 

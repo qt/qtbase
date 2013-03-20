@@ -4,7 +4,7 @@
 setPen NoPen
 setBrush black
 
-translate 10 10 
+translate 10 10
 
 begin_block testblock
 drawRect 0   0 10 10
@@ -75,9 +75,9 @@ drawChord 180  100 19 19 0 4320
 
 end_block
 
-setPen red 
+setPen red
 translate 0 150
-repeat_block testblock 
+repeat_block testblock
 
 setRenderHint LineAntialiasing
 

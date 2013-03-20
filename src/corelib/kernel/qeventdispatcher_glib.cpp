@@ -131,9 +131,9 @@ struct GTimerSource
 
 static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
 {
-    timeval tv = { 0l, 0l };
+    timespec tv = { 0l, 0l };
     if (!(src->processEventsFlags & QEventLoop::X11ExcludeTimers) && src->timerList.timerWait(tv))
-        *timeout = (tv.tv_sec * 1000) + ((tv.tv_usec + 999) / 1000);
+        *timeout = (tv.tv_sec * 1000) + ((tv.tv_nsec + 999999) / 1000 / 1000);
     else
         *timeout = -1;
 
@@ -293,12 +293,14 @@ static GSourceFuncs postEventSourceFuncs = {
 QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     : mainContext(context)
 {
+#if GLIB_MAJOR_VERSION == 2 && GLIB_MINOR_VERSION < 32
     if (qEnvironmentVariableIsEmpty("QT_NO_THREADED_GLIB")) {
         static QBasicMutex mutex;
         QMutexLocker locker(&mutex);
         if (!g_thread_supported())
             g_thread_init(NULL);
     }
+#endif
 
     if (mainContext) {
         g_main_context_ref(mainContext);

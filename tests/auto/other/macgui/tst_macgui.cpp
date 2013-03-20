@@ -41,7 +41,7 @@
 
 
 #include <QApplication>
-#include <QMessageBox> 
+#include <QMessageBox>
 #include <QtTest/QtTest>
 #include <QSplashScreen>
 #include <QScrollBar>
@@ -55,7 +55,7 @@ class tst_MacGui : public GuiTester
 Q_OBJECT
 private slots:
     void scrollbarPainting();
-    
+
     void dummy();
     void splashScreenModality();
     void nonModalOrder();
@@ -216,7 +216,7 @@ void tst_MacGui::spinBoxArrowButtons()
     spinBox2.move(0, 100);
     colorWidget.show();
     QTest::qWait(100);
-    
+
     // Grab an unfocused spin box.
     const QImage noFocus = grabWindowContents(&colorWidget).toImage();
 

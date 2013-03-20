@@ -77,7 +77,7 @@ public:
 
     //called by QNetworkSession constructor and ensures
     //that the state is immediately updated (w/o actually opening
-    //a session). Also this function should take care of 
+    //a session). Also this function should take care of
     //notification hooks to discover future state changes.
     void syncStateWithInterface();
 

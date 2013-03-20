@@ -81,6 +81,7 @@ public:
     bool open(QIODevice::OpenMode flags, FILE *fh);
     bool close();
     bool flush();
+    bool syncToDisk();
     qint64 size() const;
     qint64 pos() const;
     bool seek(qint64);
@@ -88,6 +89,7 @@ public:
     bool remove();
     bool copy(const QString &newName);
     bool rename(const QString &newName);
+    bool renameOverwrite(const QString &newName);
     bool link(const QString &newName);
     bool mkdir(const QString &dirName, bool createParentDirectories) const;
     bool rmdir(const QString &dirName, bool recurseParentDirectories) const;
@@ -149,6 +151,7 @@ public:
     bool nativeClose();
     bool closeFdFh();
     bool nativeFlush();
+    bool nativeSyncToDisk();
     bool flushFh();
     qint64 nativeSize() const;
 #ifndef Q_OS_WIN

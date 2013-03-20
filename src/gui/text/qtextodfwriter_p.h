@@ -41,6 +41,9 @@
 
 #ifndef QTEXTODFWRITER_H
 #define QTEXTODFWRITER_H
+
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_TEXTODFWRITER
 
 //

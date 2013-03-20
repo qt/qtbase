@@ -1081,18 +1081,16 @@ void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
     }
 }
 
-bool QPaintEngineEx::supportsTransformations(QFontEngine *fontEngine, const QTransform &m) const
+bool QPaintEngineEx::requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &t) const
 {
-    Q_UNUSED(fontEngine);
-
-    if (!m.isAffine())
-        return true;
-
-    return false;
+    return t.type() >= QTransform::TxProject;
 }
 
 bool QPaintEngineEx::shouldDrawCachedGlyphs(QFontEngine *fontEngine, const QTransform &m) const
 {
+    if (fontEngine->glyphFormat == QFontEngineGlyphCache::Raster_ARGB)
+        return true;
+
     qreal pixelSize = fontEngine->fontDef.pixelSize;
     return (pixelSize * pixelSize * qAbs(m.determinant())) <
             QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;

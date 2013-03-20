@@ -51,7 +51,7 @@ AddressBook::AddressBook(QWidget *parent)
     QLabel *addressLabel = new QLabel(tr("Address:"));
     addressText = new QTextEdit;
     addressText->setReadOnly(true);
-    
+
     addButton = new QPushButton(tr("&Add"));
     addButton->show();
     submitButton = new QPushButton(tr("&Submit"));
@@ -68,7 +68,7 @@ AddressBook::AddressBook(QWidget *parent)
     connect(addButton, SIGNAL(clicked()), this, SLOT(addContact()));
     connect(submitButton, SIGNAL(clicked()), this, SLOT(submitContact()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-//! [connecting navigation signals]    
+//! [connecting navigation signals]
     connect(nextButton, SIGNAL(clicked()), this, SLOT(next()));
     connect(previousButton, SIGNAL(clicked()), this, SLOT(previous()));
 //! [connecting navigation signals]
@@ -107,7 +107,7 @@ void AddressBook::addContact()
     nameLine->setReadOnly(false);
     nameLine->setFocus(Qt::OtherFocusReason);
     addressText->setReadOnly(false);
-    
+
     addButton->setEnabled(false);
 //! [disabling navigation]
     nextButton->setEnabled(false);
@@ -121,7 +121,7 @@ void AddressBook::submitContact()
 {
     QString name = nameLine->text();
     QString address = addressText->toPlainText();
-    
+
     if (name.isEmpty() || address.isEmpty()) {
         QMessageBox::information(this, tr("Empty Field"),
             tr("Please enter a name and address."));
@@ -159,20 +159,20 @@ void AddressBook::cancel()
 {
     nameLine->setText(oldName);
     addressText->setText(oldAddress);
-   
+
     if (contacts.isEmpty()) {
         nameLine->clear();
         addressText->clear();
     }
-    
+
     nameLine->setReadOnly(true);
     addressText->setReadOnly(true);
     addButton->setEnabled(true);
-    
+
     int number = contacts.size();
     nextButton->setEnabled(number > 1);
     previousButton->setEnabled(number > 1);
-    
+
     submitButton->hide();
     cancelButton->hide();
 }

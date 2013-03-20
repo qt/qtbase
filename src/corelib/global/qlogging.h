@@ -49,7 +49,6 @@
 #pragma qt_no_master_include
 #endif
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 /*
@@ -172,6 +171,4 @@ Q_CORE_EXPORT QtMessageHandler qInstallMessageHandler(QtMessageHandler);
 Q_CORE_EXPORT void qSetMessagePattern(const QString &messagePattern);
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #endif // QLOGGING_H

@@ -155,7 +155,7 @@ void tst_QLayout::geometry()
 
 void tst_QLayout::smartMaxSize()
 {
-    QVector<int> expectedWidths; 
+    QVector<int> expectedWidths;
 
     QFile f(QFINDTESTDATA("baseline/smartmaxsize"));
 
@@ -170,9 +170,9 @@ void tst_QLayout::smartMaxSize()
     f.close();
 
     int sizeCombinations[] = { 0, 10, 20, QWIDGETSIZE_MAX};
-    QSizePolicy::Policy policies[] = {  QSizePolicy::Fixed, 
-                                        QSizePolicy::Minimum, 
-                                        QSizePolicy::Maximum, 
+    QSizePolicy::Policy policies[] = {  QSizePolicy::Fixed,
+                                        QSizePolicy::Minimum,
+                                        QSizePolicy::Maximum,
                                         QSizePolicy::Preferred,
                                         QSizePolicy::Expanding,
                                         QSizePolicy::MinimumExpanding,
@@ -250,7 +250,7 @@ void tst_QLayout::setContentsMargins()
     MyLayout layout;
     layout.invalidated = false;
     int left, top, right, bottom;
-    
+
     layout.setContentsMargins(52, 53, 54, 55);
     QVERIFY(layout.invalidated);
     layout.invalidated = false;
@@ -260,7 +260,7 @@ void tst_QLayout::setContentsMargins()
     QCOMPARE(top, 53);
     QCOMPARE(right, 54);
     QCOMPARE(bottom, 55);
- 
+
     layout.setContentsMargins(52, 53, 54, 55);
     QVERIFY(!layout.invalidated);
 }

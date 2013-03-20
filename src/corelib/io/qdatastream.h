@@ -50,8 +50,6 @@
 #error qdatastream.h must be included before any header file that defines Status
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -87,8 +85,9 @@ public:
         Qt_4_7 = Qt_4_6,
         Qt_4_8 = Qt_4_7,
         Qt_4_9 = Qt_4_8,
-        Qt_5_0 = 13
-#if QT_VERSION >= 0x050100
+        Qt_5_0 = 13,
+        Qt_5_1 = Qt_5_0
+#if QT_VERSION >= 0x050200
 #error Add the datastream version for this Qt version
 #endif
     };
@@ -433,7 +432,5 @@ inline QDataStream& operator<<(QDataStream& s, const QPair<T1, T2>& p)
 #endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDATASTREAM_H

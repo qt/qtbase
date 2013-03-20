@@ -66,7 +66,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QQuaternion::QQuaternion()
 
-    Constructs an identity quaternion, i.e. with coordinates (1, 0, 0, 0).
+    Constructs an identity quaternion (1, 0, 0, 0), i.e. with the vector (0, 0, 0)
+    and scalar 1.
 */
 
 /*!
@@ -257,7 +258,7 @@ QQuaternion QQuaternion::normalized() const
 }
 
 /*!
-    Normalizes the currect quaternion in place.  Nothing happens if this
+    Normalizes the current quaternion in place.  Nothing happens if this
     is a null quaternion or the length of the quaternion is very close to 1.
 
     \sa length(), normalized()

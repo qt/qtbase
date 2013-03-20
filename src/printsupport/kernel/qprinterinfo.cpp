@@ -222,6 +222,25 @@ QList<QPrinter::PaperSize> QPrinterInfo::supportedPaperSizes() const
     return d->paperSizes;
 }
 
+/*!
+    Returns a list of all the paper names supported by the driver with the
+    corresponding size in millimeters.
+
+    Not all printer drivers support this query, so the list may be empty.
+
+    \since 5.1
+*/
+
+QList<QPair<QString, QSizeF> > QPrinterInfo::supportedSizesWithNames() const
+{
+    Q_D(const QPrinterInfo);
+    if (!isNull() && !d->hasPaperNames) {
+        d->paperNames = QPlatformPrinterSupportPlugin::get()->supportedSizesWithNames(*this);
+        d->hasPaperNames = true;
+    }
+    return d->paperNames;
+}
+
 QList<QPrinterInfo> QPrinterInfo::availablePrinters()
 {
     QPlatformPrinterSupport *ps = QPlatformPrinterSupportPlugin::get();

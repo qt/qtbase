@@ -303,15 +303,50 @@ QVariant QJsonDocument::toVariant() const
  */
 QByteArray QJsonDocument::toJson() const
 {
+    return toJson(Indented);
+}
+
+/*!
+    \enum QJsonDocument::JsonFormat
+
+    This value defines the format of the JSON byte array produced
+    when converting to a QJsonDocument using toJson().
+
+    \value Indented Defines human readable output as follows:
+        \code
+        {
+            "Array": [
+                true,
+                999,
+                "string"
+            ],
+            "Key": "Value",
+            "null": null
+        }
+        \endcode
+
+    \value Compact Defines a compact output as follows:
+        \code
+        {"Array": [true,999,"string"],"Key": "Value","null": null}
+        \endcode
+  */
+
+/*!
+    Converts the QJsonDocument to a UTF-8 encoded JSON document in the provided \a format.
+
+    \sa fromJson(), JsonFormat
+ */
+QByteArray QJsonDocument::toJson(JsonFormat format) const
+{
     if (!d)
         return QByteArray();
 
     QByteArray json;
 
     if (d->header->root()->isArray())
-        QJsonPrivate::Writer::arrayToJson(static_cast<QJsonPrivate::Array *>(d->header->root()), json, 0);
+        QJsonPrivate::Writer::arrayToJson(static_cast<QJsonPrivate::Array *>(d->header->root()), json, 0, (format == Compact));
     else
-        QJsonPrivate::Writer::objectToJson(static_cast<QJsonPrivate::Object *>(d->header->root()), json, 0);
+        QJsonPrivate::Writer::objectToJson(static_cast<QJsonPrivate::Object *>(d->header->root()), json, 0, (format == Compact));
 
     return json;
 }

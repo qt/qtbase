@@ -58,8 +58,7 @@
 #include <QPointer>
 #include <QMutex>
 #include <QList>
-
-QT_BEGIN_HEADER
+#include <QWaitCondition>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,7 +89,9 @@ public:
         TabletEnterProximity = UserInputEvent | 0x15,
         TabletLeaveProximity = UserInputEvent | 0x16,
         PlatformPanel = UserInputEvent | 0x17,
-        ContextMenu = UserInputEvent | 0x18
+        ContextMenu = UserInputEvent | 0x18,
+        ApplicationStateChanged = 0x19,
+        FlushEvents = 0x20
     };
 
     class WindowSystemEvent {
@@ -138,10 +139,11 @@ public:
 
     class ActivatedWindowEvent : public WindowSystemEvent {
     public:
-        explicit ActivatedWindowEvent(QWindow *activatedWindow)
-            : WindowSystemEvent(ActivatedWindow), activated(activatedWindow)
+        explicit ActivatedWindowEvent(QWindow *activatedWindow, Qt::FocusReason r)
+            : WindowSystemEvent(ActivatedWindow), activated(activatedWindow), reason(r)
         { }
         QPointer<QWindow> activated;
+        Qt::FocusReason reason;
     };
 
     class WindowStateChangedEvent : public WindowSystemEvent {
@@ -152,6 +154,22 @@ public:
 
         QPointer<QWindow> window;
         Qt::WindowState newState;
+    };
+
+    class ApplicationStateChangedEvent : public WindowSystemEvent {
+    public:
+        ApplicationStateChangedEvent(Qt::ApplicationState newState)
+            : WindowSystemEvent(ApplicationStateChanged), newState(newState)
+        { }
+
+        Qt::ApplicationState newState;
+    };
+
+    class FlushEventsEvent : public WindowSystemEvent {
+    public:
+        FlushEventsEvent()
+            : WindowSystemEvent(FlushEvents)
+        { }
     };
 
     class UserEvent : public WindowSystemEvent {
@@ -287,9 +305,12 @@ public:
     class FileOpenEvent : public WindowSystemEvent {
     public:
         FileOpenEvent(const QString& fileName)
-            : WindowSystemEvent(FileOpen), fileName(fileName)
+            : WindowSystemEvent(FileOpen), url(QUrl::fromLocalFile(fileName))
         { }
-        QString fileName;
+        FileOpenEvent(const QUrl &url)
+            : WindowSystemEvent(FileOpen), url(url)
+        { }
+        QUrl url;
     };
 
     class TabletEvent : public InputEvent {
@@ -367,9 +388,10 @@ public:
         mutable QMutex mutex;
     public:
         WindowSystemEventList() : impl(), mutex() {}
-        ~WindowSystemEventList()
-        { const QMutexLocker locker(&mutex); qDeleteAll(impl); impl.clear(); }
+        ~WindowSystemEventList() { clear(); }
 
+        void clear()
+        { const QMutexLocker locker(&mutex); qDeleteAll(impl); impl.clear(); }
         void prepend(WindowSystemEvent *e)
         { const QMutexLocker locker(&mutex); impl.prepend(e); }
         WindowSystemEvent *takeFirstOrReturnNull()
@@ -400,7 +422,7 @@ public:
             const QMutexLocker locker(&mutex);
             for (int i = 0; i < impl.size(); ++i) {
                 if (impl.at(i) == e) {
-                    impl.removeAt(i);
+                    delete impl.takeAt(i);
                     break;
                 }
             }
@@ -421,10 +443,12 @@ public:
     static QElapsedTimer eventTime;
     static bool synchronousWindowsSystemEvents;
 
+    static QWaitCondition eventsFlushed;
+    static QMutex flushEventMutex;
+
     static QList<QTouchEvent::TouchPoint> convertTouchPoints(const QList<QWindowSystemInterface::TouchPoint> &points, QEvent::Type *type);
 };
 
-QT_END_HEADER
 QT_END_NAMESPACE
 
 #endif // QWINDOWSYSTEMINTERFACE_P_H

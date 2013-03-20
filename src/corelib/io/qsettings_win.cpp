@@ -569,7 +569,7 @@ QWinSettingsPrivate::~QWinSettingsPrivate()
 {
     if (deleteWriteHandleOnExit && writeHandle() != 0) {
 #if defined(Q_OS_WINCE)
-        remove(regList.at(0).key()); 
+        remove(regList.at(0).key());
 #else
         QString emptyKey;
         DWORD res = RegDeleteKey(writeHandle(), reinterpret_cast<const wchar_t *>(emptyKey.utf16()));

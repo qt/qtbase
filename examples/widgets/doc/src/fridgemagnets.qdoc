@@ -230,7 +230,7 @@
     top-level corner of the drag pixmap, to be the point we calculated
     above. This makes the process of dragging the label feel more natural
     because the cursor always points to the same place on the label
-    during the drag operation. 
+    during the drag operation.
 
     We start the drag operation using QDrag's \l{QDrag::}{exec()} function,
     requesting that the magnet is copied when the drag is completed.

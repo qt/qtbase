@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -68,7 +69,7 @@ class tst_QObject : public QObject
 private slots:
     void initTestCase();
     void disconnect();
-    void connectByName();
+    void connectSlotsByName();
     void connectSignalsToSignalsWithDefaultArguments();
     void receivers();
     void normalize();
@@ -140,9 +141,21 @@ private slots:
     void returnValue2_data();
     void returnValue2();
     void connectVirtualSlots();
+    void connectPrivateSlots();
     void connectFunctorArgDifference();
+    void connectFunctorOverloads();
     void disconnectDoesNotLeakFunctor();
 };
+
+struct QObjectCreatedOnShutdown
+{
+    QObjectCreatedOnShutdown() {}
+    ~QObjectCreatedOnShutdown()
+    {
+        QObject();
+    }
+};
+static QObjectCreatedOnShutdown s_qobjectCreatedOnShutdown;
 
 class SenderObject : public QObject
 {
@@ -368,6 +381,7 @@ public:
     void emitSignalWithParams(int i) { emit signalWithParams(i); }
     void emitSignalWithParams(int i, QString string) { emit signalWithParams(i, string); }
     void emitSignalManyParams(int i1, int i2, int i3, QString string, bool onoff) { emit signalManyParams(i1, i2, i3, string, onoff); }
+    void emitSignalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy) { emit signalManyParams(i1, i2, i3, string, onoff, dummy); }
     void emitSignalManyParams2(int i1, int i2, int i3, QString string, bool onoff) { emit signalManyParams2(i1, i2, i3, string, onoff); }
     void emitSignalLoopBack() { emit signalLoopBack(); }
 
@@ -386,158 +400,89 @@ class AutoConnectReceiver : public QObject
     Q_OBJECT
 
 public:
+    QList<int> called_slots;
+
     AutoConnectReceiver()
     {
-        reset();
-
         connect(this, SIGNAL(on_Sender_signalLoopBack()), this, SLOT(slotLoopBack()));
     }
 
-    void reset() {
-        called_slot10 = 0;
-        called_slot9 = 0;
-        called_slot8 = 0;
-        called_slot7 = 0;
-        called_slot6 = 0;
-        called_slot5 = 0;
-        called_slot4 = 0;
-        called_slot3 = 0;
-        called_slot2 = 0;
-        called_slot1 = 0;
-    }
-
-    int called_slot1;
-    int called_slot2;
-    int called_slot3;
-    int called_slot4;
-    int called_slot5;
-    int called_slot6;
-    int called_slot7;
-    int called_slot8;
-    int called_slot9;
-    int called_slot10;
-
-    bool called(int slot) {
-        switch (slot) {
-        case 1: return called_slot1;
-        case 2: return called_slot2;
-        case 3: return called_slot3;
-        case 4: return called_slot4;
-        case 5: return called_slot5;
-        case 6: return called_slot6;
-        case 7: return called_slot7;
-        case 8: return called_slot8;
-        case 9: return called_slot9;
-        case 10: return called_slot10;
-        default: return false;
-        }
-    }
+    void emitSignalNoParams() { emit signalNoParams(); }
+    void emit_signal_with_underscore() { emit signal_with_underscore(); }
 
 public slots:
-    void on_Sender_signalNoParams() { ++called_slot1; }
-    void on_Sender_signalWithParams(int i = 0) { ++called_slot2; Q_UNUSED(i); }
-    void on_Sender_signalWithParams(int i, QString string) { ++called_slot3; Q_UNUSED(i);Q_UNUSED(string); }
-    void on_Sender_signalManyParams() { ++called_slot4; }
-    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff) { ++called_slot5; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
+    void on_Sender_signalNoParams() { called_slots << 1; }
+    void on_Sender_signalWithParams(int i = 0) { called_slots << 2; Q_UNUSED(i); }
+    void on_Sender_signalWithParams(int i, QString string) { called_slots << 3; Q_UNUSED(i);Q_UNUSED(string); }
+    void on_Sender_signalManyParams() { called_slots << 4; }
+    void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff)
+    { called_slots << 5; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
     void on_Sender_signalManyParams(int i1, int i2, int i3, QString string, bool onoff, bool dummy)
-    { ++called_slot6; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); Q_UNUSED(dummy);}
+    { called_slots << 6; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); Q_UNUSED(dummy);}
     void on_Sender_signalManyParams2(int i1, int i2, int i3, QString string, bool onoff)
-    { ++called_slot7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
-    void slotLoopBack() { ++called_slot8; }
+    { called_slots << 7; Q_UNUSED(i1);Q_UNUSED(i2);Q_UNUSED(i3);Q_UNUSED(string);Q_UNUSED(onoff); }
+    void slotLoopBack() { called_slots << 8; }
+    void on_Receiver_signalNoParams() { called_slots << 9; }
+    void on_Receiver_signal_with_underscore() { called_slots << 10; }
 
 protected slots:
-    void o() { ++called_slot9; }
-    void on() { ++called_slot10; }
+    void o() { called_slots << -1; }
+    void on() { called_slots << -1; }
+    void on_() { called_slots << -1; }
+    void on_something() { called_slots << -1; }
+    void on_child_signal() { called_slots << -1; }
 
 signals:
     void on_Sender_signalLoopBack();
+    void signalNoParams();
+    void signal_with_underscore();
 };
 
-void tst_QObject::connectByName()
+void tst_QObject::connectSlotsByName()
 {
     AutoConnectReceiver receiver;
+    receiver.setObjectName("Receiver");
     AutoConnectSender sender(&receiver);
     sender.setObjectName("Sender");
 
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::connectSlotsByName: No matching signal for on_child_signal()");
+    QTest::ignoreMessage(QtWarningMsg, "QMetaObject::connectSlotsByName: Connecting slot on_Sender_signalManyParams() with the first of the following compatible signals: (\"signalManyParams(int,int,int,QString,bool)\", \"signalManyParams(int,int,int,QString,bool,bool)\") ");
     QMetaObject::connectSlotsByName(&receiver);
 
+    receiver.called_slots.clear();
     sender.emitSignalNoParams();
-    QCOMPARE(receiver.called(1), true);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 1);
 
+    receiver.called_slots.clear();
     sender.emitSignalWithParams(0);
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), true);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 2);
 
+    receiver.called_slots.clear();
     sender.emitSignalWithParams(0, "string");
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), true);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 3);
 
+    receiver.called_slots.clear();
     sender.emitSignalManyParams(1, 2, 3, "string", true);
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), true);
-    QCOMPARE(receiver.called(5), true);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    sender.emitSignalManyParams(1, 2, 3, "string", true, false);
+    // the slot '4' (signalManyParams()) will get connected
+    // to either of the two signalManyParams(...) overloads
+    QCOMPARE(receiver.called_slots, QList<int>() << 4 << 5 << 6);
 
+    receiver.called_slots.clear();
     sender.emitSignalManyParams2(1, 2, 3, "string", true);
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), true);
-    QCOMPARE(receiver.called(8), false);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 7);
 
+    receiver.called_slots.clear();
     sender.emitSignalLoopBack();
-    QCOMPARE(receiver.called(1), false);
-    QCOMPARE(receiver.called(2), false);
-    QCOMPARE(receiver.called(3), false);
-    QCOMPARE(receiver.called(4), false);
-    QCOMPARE(receiver.called(5), false);
-    QCOMPARE(receiver.called(6), false);
-    QCOMPARE(receiver.called(7), false);
-    QCOMPARE(receiver.called(8), true);
-    QCOMPARE(receiver.called(9), false);
-    QCOMPARE(receiver.called(10), false);
-    receiver.reset();
+    QCOMPARE(receiver.called_slots, QList<int>() << 8);
+
+    receiver.called_slots.clear();
+    receiver.emitSignalNoParams();
+    QCOMPARE(receiver.called_slots, QList<int>() << 9);
+
+    receiver.called_slots.clear();
+    receiver.emit_signal_with_underscore();
+    QCOMPARE(receiver.called_slots, QList<int>() << 10);
 }
 
 void tst_QObject::qobject_castTemplate()
@@ -1436,9 +1381,11 @@ public:
 
 public slots:
     void slot1(CustomType ct);
+    void slot2(const QList<CustomType> &ct);
 
 signals:
     void signal1(CustomType ct);
+    void signal2(const QList<CustomType> &ct);
 
 public:
     CustomType received;
@@ -1447,6 +1394,8 @@ public:
 void QCustomTypeChecker::slot1(CustomType ct)
 { received = ct; }
 
+void QCustomTypeChecker::slot2(const QList< CustomType >& ct)
+{ received = ct[0]; }
 
 void tst_QObject::customTypes()
 {
@@ -4657,6 +4606,21 @@ void tst_QObject::customTypesPointer()
         QCOMPARE(qRegisterMetaType<CustomType>("CustomType"), idx);
         QCOMPARE(QMetaType::type("CustomType"), idx);
         QVERIFY(QMetaType::isRegistered(idx));
+
+        // Test auto registered type  (QList<CustomType>)
+        QList<CustomType> list;
+        QCOMPARE(instanceCount, 4);
+        list.append(t1);
+        QCOMPARE(instanceCount, 5);
+        QVERIFY(connect(&checker, &QCustomTypeChecker::signal2,
+                        &checker, &QCustomTypeChecker::slot2, Qt::QueuedConnection));
+        emit checker.signal2(list);
+        QCOMPARE(instanceCount, 5); //because the list is implicitly shared.
+        list.clear();
+        QCOMPARE(instanceCount, 5);
+        QCoreApplication::processEvents();
+        QCOMPARE(checker.received.value(), t1.value());
+        QCOMPARE(instanceCount, 4);
     }
     QCOMPARE(instanceCount, 3);
 }
@@ -5535,6 +5499,72 @@ void tst_QObject::connectVirtualSlots()
     */
 }
 
+#ifndef QT_BUILD_INTERNAL
+void tst_QObject::connectPrivateSlots()
+{QSKIP("Needs QT_BUILD_INTERNAL");}
+#else
+class ConnectToPrivateSlotPrivate;
+
+class ConnectToPrivateSlot :public QObject {
+    Q_OBJECT
+public:
+    ConnectToPrivateSlot();
+    void test(SenderObject *obj1) ;
+    Q_DECLARE_PRIVATE(ConnectToPrivateSlot)
+};
+
+class ConnectToPrivateSlotPrivate : public QObjectPrivate {
+public:
+    Q_DECLARE_PUBLIC(ConnectToPrivateSlot)
+    int receivedCount;
+    QVariant receivedValue;
+
+    void thisIsAPrivateSlot() {
+        receivedCount++;
+    };
+
+    void thisIsAPrivateSlotWithArg(const QVariant &v) {
+        receivedCount++;
+        receivedValue = v;
+    };
+};
+
+ConnectToPrivateSlot::ConnectToPrivateSlot(): QObject(*new ConnectToPrivateSlotPrivate) {}
+
+void ConnectToPrivateSlot::test(SenderObject* obj1) {
+    Q_D(ConnectToPrivateSlot);
+    d->receivedCount = 0;
+    QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal1, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
+    QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal7, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlotWithArg));
+    QCOMPARE(d->receivedCount, 0);
+    obj1->signal1();
+    QCOMPARE(d->receivedCount, 1);
+    QCOMPARE(d->receivedValue, QVariant());
+    obj1->signal7(666, QLatin1Literal("_"));
+    QCOMPARE(d->receivedCount, 2);
+    QCOMPARE(d->receivedValue, QVariant(666));
+    QVERIFY(QObjectPrivate::connect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot, Qt::UniqueConnection));
+    QVERIFY(!QObjectPrivate::connect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot, Qt::UniqueConnection));
+    obj1->signal2();
+    QCOMPARE(d->receivedCount, 3);
+    QVERIFY(QObjectPrivate::disconnect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
+    obj1->signal2();
+    QCOMPARE(d->receivedCount, 3);
+    QVERIFY(!QObjectPrivate::disconnect(obj1, &SenderObject::signal2, d, &ConnectToPrivateSlotPrivate::thisIsAPrivateSlot));
+}
+
+void tst_QObject::connectPrivateSlots()
+{
+    SenderObject sender;
+    {
+        ConnectToPrivateSlot o;
+        o.test(&sender);
+    }
+    sender.signal7(777, QLatin1String("check that deleting the object properly disconnected"));
+    sender.signal1();
+}
+#endif
+
 struct SlotFunctor
 {
     void operator()() {}
@@ -5568,6 +5598,131 @@ void tst_QObject::connectFunctorArgDifference()
 #endif
 
     QVERIFY(true);
+}
+
+struct ComplexFunctor {
+    ComplexFunctor(int &overload, QList<QVariant> &result) : overload(overload), result(result) {}
+    void operator()(int a, int b) {
+        overload = 1;
+        result << a << b;
+    }
+    void operator()(double a, double b) {
+        overload = 2;
+        result << a << b;
+    }
+    void operator()(const QString &s) {
+        overload = 3;
+        result << s;
+    }
+    void operator()(const QString &) const {
+        Q_ASSERT(!"Should not be called because the non-const one should");
+        overload = -1;
+    }
+    template<typename T1, typename T2, typename T3, typename T4>
+    void operator()(const T1 &t1, const T2 &t2, const T3 &t3, const T4 &t4) {
+        overload = 4;
+        result << QVariant::fromValue(t1) << QVariant::fromValue(t2) << QVariant::fromValue(t3) << QVariant::fromValue(t4);
+    }
+    int &overload;
+    QList<QVariant> &result;
+protected:
+    void operator()() const {
+        Q_ASSERT(!"Should not be called because it is protected");
+        overload = -1;
+    }
+};
+
+struct ComplexFunctorDeriv : ComplexFunctor {
+    ComplexFunctorDeriv(int &overload, QList<QVariant> &result) : ComplexFunctor(overload, result) {}
+
+    void operator()() const {
+        overload = 10;
+    }
+    void operator()(int a, int b) {
+        overload = 11;
+        result << a << b;
+    }
+    using ComplexFunctor::operator();
+private:
+    void operator()(int) {
+        Q_ASSERT(!"Should not be called because it is private");
+        overload = -1;
+    }
+};
+
+class FunctorArgDifferenceObject : public QObject
+{
+    Q_OBJECT
+signals:
+    void signal_ii(int,int);
+    void signal_iiS(int,int, const QString &);
+    void signal_dd(double,double);
+    void signal_ddS(double,double, const QString &);
+    void signal_S(const QString &);
+    void signal_SSSS(const QString &, const QString &, const QString &, const QString &);
+    void signal_iiSS(int, int, const QString &, const QString &);
+    void signal_VV(const QVariant &, const QVariant &);
+};
+
+template<typename Functor, typename Signal>
+void connectFunctorOverload_impl(Signal signal, int expOverload, QList<QVariant> expResult)
+{
+    FunctorArgDifferenceObject obj;
+    int overload;
+    QList<QVariant> result;
+    QVERIFY(QObject::connect(&obj, signal, Functor(overload, result)));
+
+    obj.signal_ii(1,2);
+    obj.signal_iiS(3,4,"5");
+    obj.signal_dd(6.6,7.7);
+    obj.signal_ddS(8.8,9.9,"10");
+    obj.signal_S("11");
+    obj.signal_SSSS("12", "13", "14", "15");
+    obj.signal_iiSS(16, 17, "18", "19");
+    obj.signal_VV(20,21);
+
+    QCOMPARE(overload, expOverload);
+    QCOMPARE(result, expResult);
+}
+
+void tst_QObject::connectFunctorOverloads()
+{
+#if defined (Q_COMPILER_DECLTYPE) && defined (Q_COMPILER_VARIADIC_TEMPLATES)
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_ii, 1,
+                                (QList<QVariant>() << 1 << 2));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_iiS, 1,
+                                (QList<QVariant>() << 3 << 4));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_dd, 2,
+                                (QList<QVariant>() << 6.6 << 7.7));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_ddS, 2,
+                                (QList<QVariant>() << 8.8 << 9.9));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_S, 3,
+                                (QList<QVariant>() << QString("11")));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_SSSS, 4,
+                                (QList<QVariant>() << QString("12") << QString("13") << QString("14") << QString("15")));
+    connectFunctorOverload_impl<ComplexFunctor>(&FunctorArgDifferenceObject::signal_iiSS, 4,
+                                (QList<QVariant>() << 16 << 17 << QString("18") << QString("19")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_ii, 11,
+                                (QList<QVariant>() << 1 << 2));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_iiS, 11,
+                                (QList<QVariant>() << 3 << 4));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_dd, 2,
+                                (QList<QVariant>() << 6.6 << 7.7));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_ddS, 2,
+                                (QList<QVariant>() << 8.8 << 9.9));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_S, 3,
+                                (QList<QVariant>() << QString("11")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_SSSS, 4,
+                                (QList<QVariant>() << QString("12") << QString("13") << QString("14") << QString("15")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_iiSS, 4,
+                                (QList<QVariant>() << 16 << 17 << QString("18") << QString("19")));
+    connectFunctorOverload_impl<ComplexFunctorDeriv>(&FunctorArgDifferenceObject::signal_VV, 10,
+                                (QList<QVariant>()));
+
+
+#else
+    QSKIP("Does not compile without C++11 variadic template");
+#endif
 }
 
 static int countedStructObjectsCount = 0;

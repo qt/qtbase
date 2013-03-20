@@ -46,7 +46,6 @@
 #include <QtCore/QObject>
 #include "struct_marshallers_p.h"
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QSpiDBusCache : public QObject
@@ -67,6 +66,5 @@ public Q_SLOTS:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif /* Q_SPI_CACHE_H */

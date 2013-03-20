@@ -148,7 +148,7 @@
 
     QtConcurrent::filter(), QtConcurrent::filtered(), and
     QtConcurrent::filteredReduced() accept function objects, which can be used to
-    add state to a function call. The result_type typedef must define the 
+    add state to a function call. The result_type typedef must define the
     result type of the function call operator:
 
     \snippet code/src_concurrent_qtconcurrentfilter.cpp 13

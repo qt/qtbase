@@ -56,7 +56,7 @@ ListItemContainer::ListItemContainer(int bufferSize, ItemRecyclingList *view, QG
     , m_layout(new QGraphicsLinearLayout(Qt::Vertical))
     , m_listItemCaching(false)
 {
-    setContentsMargins(0,0,0,0);    
+    setContentsMargins(0,0,0,0);
     m_layout->setContentsMargins(0,0,0,0);
     m_layout->setSpacing(0);
     setLayout(m_layout);
@@ -80,13 +80,13 @@ bool ListItemContainer::listItemCaching() const
 }
 
 void ListItemContainer::setListItemCaching(const bool enabled)
-{    
+{
     if (m_listItemCaching == enabled)
         return;
 
     m_listItemCaching = enabled;
 
-    const int itemCount = m_layout->count(); 
+    const int itemCount = m_layout->count();
 
     for (int i = 0; i < itemCount; ++i)
         setListItemCaching(enabled, i);

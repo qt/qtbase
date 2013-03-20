@@ -30,7 +30,7 @@
   \title Font Sampler Example
   \ingroup examples-painting
   \brief The Font Sampler example shows how to preview and print multi-page documents.
-  
+
   The Font Sampler example shows how to preview and print multi-page documents.
 
   \image fontsampler-example.png

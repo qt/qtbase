@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qaccessible2.h"
+#include "qaccessible2_p.h"
 #include <QtGui/QGuiApplication>
 #include "qclipboard.h"
 #include "qtextboundaryfinder.h"

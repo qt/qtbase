@@ -53,6 +53,6 @@ int main(int argc, char **argv)
 
     splitter.resize(600, 400);
     splitter.show();
-    
+
     return app.exec();
 }

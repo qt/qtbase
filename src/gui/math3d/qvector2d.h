@@ -45,8 +45,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qmetatype.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -83,6 +81,9 @@ public:
 
     QVector2D normalized() const;
     void normalize();
+
+    float distanceToPoint(const QVector2D &point) const;
+    float distanceToLine(const QVector2D& point, const QVector2D& direction) const;
 
     QVector2D &operator+=(const QVector2D &vector);
     QVector2D &operator-=(const QVector2D &vector);
@@ -251,7 +252,5 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QVector2D &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

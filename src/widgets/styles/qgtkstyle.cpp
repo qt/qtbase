@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -2121,7 +2121,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             label.state = bflags;
             GtkWidget *gtkButton = d->gtkWidget("GtkToolButton.GtkButton");
             QPalette pal = toolbutton->palette;
-            if (option->state & State_Enabled && 
+            if (option->state & State_Enabled &&
                 option->state & State_MouseOver && !(widget && widget->testAttribute(Qt::WA_SetPalette))) {
                 GdkColor gdkText = d->gtk_widget_get_style(gtkButton)->fg[GTK_STATE_PRELIGHT];
                 QColor textColor = QColor(gdkText.red>>8, gdkText.green>>8, gdkText.blue>>8);
@@ -2971,7 +2971,7 @@ void QGtkStyle::drawControl(ControlElement element,
 
             if (option->state & State_Sunken)
                 shadow = GTK_SHADOW_IN;
-            
+
             gtkPainter->paintBox(gtkTreeHeader, "button", option->rect.adjusted(-1, 0, 0, 0), state, shadow, d->gtk_widget_get_style(gtkTreeHeader));
         }
 
@@ -3171,7 +3171,8 @@ void QGtkStyle::drawControl(ControlElement element,
 
 #ifndef QT_NO_COMBOBOX
 
-            if (qobject_cast<const QComboBox*>(widget))
+            if (qobject_cast<const QComboBox*>(widget) ||
+                (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
                 ignoreCheckMark = true; // Ignore the checkmarks provided by the QComboMenuDelegate
 
 #endif
@@ -3912,7 +3913,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
         break;
     case CT_SpinBox:
         // QSpinBox does some nasty things that depends on CT_LineEdit
-        newSize = size + QSize(0, -d->gtk_widget_get_style(d->gtkWidget("GtkSpinButton"))->ythickness * 2);
+        newSize = newSize + QSize(0, -d->gtk_widget_get_style(d->gtkWidget("GtkSpinButton"))->ythickness * 2);
         break;
     case CT_RadioButton:
     case CT_CheckBox:

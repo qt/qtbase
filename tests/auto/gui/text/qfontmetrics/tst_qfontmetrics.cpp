@@ -281,7 +281,7 @@ void tst_QFontMetrics::inFontUcs4()
     }
 
     {
-        QFontEngine *engine = QFontPrivate::get(font)->engineForScript(QUnicodeTables::Common);
+        QFontEngine *engine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
         QGlyphLayout glyphs;
         glyphs.numGlyphs = 3;
         uint buf[3];

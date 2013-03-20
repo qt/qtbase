@@ -83,7 +83,6 @@ void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class prox
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
 #endif
     {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
         // The following code replaces the _implementation_ for the selector we want to hack
         // (originalSel) with the implementation found in proxyClass. Then it creates
         // a new 'backup' method inside baseClass containing the old, original,
@@ -104,7 +103,6 @@ void qt_cocoa_change_implementation(Class baseClass, SEL originalSel, Class prox
             Method backupMethod = class_getInstanceMethod(proxyClass, backupSel);
             class_addMethod(baseClass, backupSel, originalImp, method_getTypeEncoding(backupMethod));
         }
-#endif
     }
 }
 
@@ -114,11 +112,9 @@ void qt_cocoa_change_back_implementation(Class baseClass, SEL originalSel, SEL b
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5)
 #endif
     {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
         Method originalMethod = class_getInstanceMethod(baseClass, originalSel);
         Method backupMethodInBaseClass = class_getInstanceMethod(baseClass, backupSel);
         method_setImplementation(originalMethod, method_getImplementation(backupMethodInBaseClass));
-#endif
     }
 }
 

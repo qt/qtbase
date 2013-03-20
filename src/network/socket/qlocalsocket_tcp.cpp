@@ -214,29 +214,30 @@ void QLocalSocketPrivate::errorOccurred(QLocalSocket::LocalSocketError error, co
         q->emit stateChanged(state);
 }
 
-void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
+bool QLocalSocket::open(OpenMode openMode)
 {
     Q_D(QLocalSocket);
-    if (state() == ConnectedState
-        || state() == ConnectingState)
-        return;
+    if (state() == ConnectedState || state() == ConnectingState) {
+        setErrorString(tr("Trying to connect while connection is in progress"));
+        emit error(QLocalSocket::OperationError);
+        return false;
+    }
 
     d->errorString.clear();
     d->state = ConnectingState;
     emit stateChanged(d->state);
 
-    if (name.isEmpty()) {
+    if (d->serverName.isEmpty()) {
         d->errorOccurred(ServerNotFoundError,
                          QLatin1String("QLocalSocket::connectToServer"));
-        return;
+        return false;
     }
 
-    d->serverName = name;
     const QLatin1String prefix("QLocalServer/");
     if (name.startsWith(prefix))
-        d->fullServerName = name;
+        d->fullServerName = d->serverName;
     else
-        d->fullServerName = prefix + name;
+        d->fullServerName = prefix + d->serverName;
 
     QSettings settings(QLatin1String("QtProject"), QLatin1String("Qt"));
     bool ok;
@@ -244,10 +245,11 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     if (!ok) {
         d->errorOccurred(ServerNotFoundError,
                          QLatin1String("QLocalSocket::connectToServer"));
-        return;
+        return false;
     }
     d->tcpSocket->connectToHost(QHostAddress::LocalHost, port, openMode);
     QIODevice::open(openMode);
+    return true;
 }
 
 bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,

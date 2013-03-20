@@ -535,11 +535,11 @@ void QTextTablePrivate::update() const
     Rows and columns within a QTextTable can be merged and split using
     the mergeCells() and splitCell() functions. However, only cells that span multiple
     rows or columns can be split. (Merging or splitting does not increase or decrease
-    the number of rows and columns.) 
+    the number of rows and columns.)
 
     Note that if you have merged multiple columns and rows into one cell, you will not
-    be able to split the merged cell into new cells spanning over more than one row 
-    or column. To be able to split cells spanning over several rows and columns you 
+    be able to split the merged cell into new cells spanning over more than one row
+    or column. To be able to split cells spanning over several rows and columns you
     need to do this over several iterations.
 
     \table 80%

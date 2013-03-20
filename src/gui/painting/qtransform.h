@@ -50,12 +50,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 
-#if defined(Q_OS_VXWORKS) && defined(m_type)
-#  undef m_type
-#endif
-
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -388,7 +382,5 @@ inline QTransform operator -(const QTransform &a, qreal n)
 { QTransform t(a); t -= n; return t; }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTRANSFORM_H

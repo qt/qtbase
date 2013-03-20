@@ -55,7 +55,7 @@ class GLWidget : public QGLWidget {
 public:
     GLWidget(QWidget *parent = 0);
     ~GLWidget();
-public slots: 
+public slots:
     void setScaling(int scale);
     void setLogo();
     void setTexture();

@@ -47,7 +47,6 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusVariant>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QDBusServiceWatcher;
@@ -83,6 +82,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // DBUSCONNECTION_H

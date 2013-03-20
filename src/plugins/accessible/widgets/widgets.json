@@ -47,5 +47,7 @@
     "QScrollArea",
     "QCalendarWidget",
     "QDockWidget",
-    "QAccessibleWidget" ]
+    "QAccessibleWidget",
+    "QDesktopScreenWidget"
+    ]
 }

@@ -46,8 +46,6 @@
 #include <QtGui/qtextformat.h>
 #include <QtGui/qglyphrun.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -328,7 +326,5 @@ private:
 Q_DECLARE_TYPEINFO(QTextFragment, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTEXTOBJECT_H

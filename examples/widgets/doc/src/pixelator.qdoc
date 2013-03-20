@@ -216,7 +216,7 @@
 
     This enables the items to be drawn without any gaps between them. Removing
     the headers also prevents the user from adjusting the sizes of individual
-    rows and columns. 
+    rows and columns.
 
     We also set the minimum section size to 1 on the headers. If we
     didn't, the headers would default to a larger size, preventing

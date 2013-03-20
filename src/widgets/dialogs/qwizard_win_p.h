@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_WIZARD
 #ifndef QT_NO_STYLE_WINDOWSVISTA
 
@@ -87,6 +89,7 @@ public:
     QVistaHelper(QWizard *wizard);
     ~QVistaHelper();
     enum TitleBarChangeType { NormalTitleBar, ExtendedTitleBar };
+    void updateCustomMargins(bool vistaMargins);
     bool setDWMTitleBar(TitleBarChangeType type);
     void setTitleBarIconAndCaptionVisible(bool visible);
     void mouseEvent(QEvent *event);
@@ -94,9 +97,8 @@ public:
     void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
     QVistaBackButton *backButton() const { return backButton_; }
-    void disconnectBackButton() { if (backButton_) backButton_->disconnect(); }
+    void disconnectBackButton();
     void hideBackButton() { if (backButton_) backButton_->hide(); }
-    void setWindowPosHack();
     QColor basicWindowFrameColor();
     enum VistaState { VistaAero, VistaBasic, Classic, Dirty };
     static VistaState vistaState();
@@ -105,12 +107,13 @@ public:
         return int(QStyleHelper::dpiScaled(
                 QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ? 4 : 6));
     }
-    static int topOffset() {
-        static int aeroOffset = QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS7 ?
-                                QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
-        return (titleBarSize() + (vistaState() == VistaAero ? aeroOffset : 3)); }
+    static int topOffset();
+
+    static HDC backingStoreDC(const QWidget *wizard, QPoint *offset);
+
 private:
     static HFONT getCaptionFont(HANDLE hTheme);
+    HWND wizardHWND() const;
     bool drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc);
     static bool drawBlackRect(const QRect &rect, HDC hdc);
 

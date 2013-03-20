@@ -380,7 +380,7 @@ void QSyntaxHighlighter::rehighlight()
     \since 4.6
 
     Reapplies the highlighting to the given QTextBlock \a block.
-    
+
     \sa rehighlight()
 */
 void QSyntaxHighlighter::rehighlightBlock(const QTextBlock &block)

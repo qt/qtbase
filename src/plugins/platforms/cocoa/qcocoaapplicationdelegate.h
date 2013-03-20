@@ -93,19 +93,6 @@
 
 @class QT_MANGLE_NAMESPACE(QCocoaMenuLoader);
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
-
-@protocol NSApplicationDelegate <NSObject>
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification;
-- (void)application:(NSApplication *)sender openFiles:(NSArray *)filenames;
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender;
-- (void)applicationDidBecomeActive:(NSNotification *)notification;
-- (void)applicationDidResignActive:(NSNotification *)notification;
-@end
-
-#endif
-
 @interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) : NSObject <NSApplicationDelegate> {
     bool startedQuit;
     NSMenu *dockMenu;

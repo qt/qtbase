@@ -49,6 +49,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
+#include <QtGui/QWindow>
 
 #include <QtCore/QDebug>
 #include <QtCore/QScopedArrayPointer>
@@ -236,6 +237,9 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
         platformWindow->setFlag(QWindowsWindow::AutoMouseCapture);
         if (QWindowsContext::verboseEvents)
             qDebug() << "Automatic mouse capture " << window;
+        // Implement "Click to focus" for native child windows.
+        if (!window->isTopLevel() && QGuiApplication::focusWindow() != window)
+            window->requestActivate();
     } else if (platformWindow->hasMouseCapture()
                && platformWindow->testFlag(QWindowsWindow::AutoMouseCapture)
                && (msg.message == WM_LBUTTONUP || msg.message == WM_MBUTTONUP

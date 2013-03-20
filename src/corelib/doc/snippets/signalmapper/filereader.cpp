@@ -73,7 +73,7 @@ FileReader::FileReader(QWidget *parent)
 /*
 //! [2]
     //slower due to signature normalization at runtime
-    
+
     connect(signalMapper, SIGNAL(mapped(const QString &)),
         this, SLOT(readFile(const QString &)));
 //! [2]
@@ -93,7 +93,7 @@ FileReader::FileReader(QWidget *parent)
 void FileReader::readFile(const QString &filename)
 {
     QFile file(filename);
-    
+
     if (!file.open(QIODevice::ReadOnly)) {
         QMessageBox::information(this, tr("Unable to open file"),
             file.errorString());

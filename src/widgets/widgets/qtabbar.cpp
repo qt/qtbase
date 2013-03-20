@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -80,7 +80,7 @@ inline static bool verticalTabs(QTabBar::Shape shape)
 
 void QTabBarPrivate::updateMacBorderMetrics()
 {
-#if (defined Q_WS_MAC) && (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+#if defined(Q_WS_MAC)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
         Q_Q(QTabBar);
         ::HIContentBorderMetrics metrics;

@@ -49,9 +49,9 @@ BearerEx::BearerEx(QWidget* parent)
      : QMainWindow(parent)
 {
     setupUi(this);
-    
+
     createMenus();
-    
+
     connect(&m_NetworkConfigurationManager, SIGNAL(updateCompleted()), this, SLOT(configurationsUpdateCompleted()));
     connect(&m_NetworkConfigurationManager, SIGNAL(configurationAdded(QNetworkConfiguration)),
             this, SLOT(configurationAdded(QNetworkConfiguration)));
@@ -79,19 +79,19 @@ void BearerEx::showConfigurations()
 {
     listWidget->clear();
     QListWidgetItem* listItem;
-    
+
     QNetworkConfiguration defaultConfig = m_NetworkConfigurationManager.defaultConfiguration();
     if (defaultConfig.type() == QNetworkConfiguration::UserChoice) {
         listItem = new QListWidgetItem();
         QFont font = listItem->font();
         font.setBold(true);
         font.setUnderline(true);
-        listItem->setFont(font);        
+        listItem->setFont(font);
         listItem->setText("       UserChoice");
         listItem->setData(Qt::UserRole, QVariant::fromValue(defaultConfig));
         listWidget->addItem(listItem);
     }
-    
+
     QList<QNetworkConfiguration> configurations = m_NetworkConfigurationManager.allConfigurations();
     for (int i=0; i<configurations.count(); i++)
     {
@@ -102,7 +102,7 @@ void BearerEx::showConfigurations()
         } else if (configurations[i].type() == QNetworkConfiguration::ServiceNetwork) {
             text.append("(SNAP,");
         }
-        
+
         if ((configurations[i].state() & QNetworkConfiguration::Active) == QNetworkConfiguration::Active) {
             text.append("Act) ");
         } else if ((configurations[i].state() & QNetworkConfiguration::Discovered) == QNetworkConfiguration::Discovered) {
@@ -111,12 +111,12 @@ void BearerEx::showConfigurations()
             text.append("Def) ");
         }
         text.append(configurations[i].name());
-        
+
         if (defaultConfig.isValid() && defaultConfig == configurations[i]) {
             QFont font = listItem->font();
             font.setBold(true);
             font.setUnderline(true);
-            listItem->setFont(font);        
+            listItem->setFont(font);
         }
         listItem->setText(text);
         listItem->setData(Qt::UserRole, QVariant::fromValue(configurations[i]));
@@ -151,7 +151,7 @@ void BearerEx::on_createSessionButton_clicked()
     QListWidgetItem* item = listWidget->currentItem();
     if (!item) {
         return;
-    }    
+    }
     QNetworkConfiguration networkConfiguration = qvariant_cast<QNetworkConfiguration>(item->data(Qt::UserRole));
     int newTabIndex = mainTabWidget->count();
     SessionTab* newTab = new SessionTab(&networkConfiguration,&m_NetworkConfigurationManager,eventListWidget,newTabIndex-1);
@@ -184,7 +184,7 @@ void BearerEx::onlineStateChanged(bool isOnline)
     QListWidgetItem* listItem = new QListWidgetItem();
     QFont font = listItem->font();
     font.setBold(true);
-    listItem->setFont(font);        
+    listItem->setFont(font);
     if (isOnline) {
         listItem->setText(QString("> Online"));
     } else {
@@ -231,7 +231,7 @@ DetailedInfoDialog::DetailedInfoDialog(QNetworkConfiguration* apNetworkConfigura
 
     tableWidget->setColumnCount(2);
     int rowCount = 2;
-    
+
     if (apNetworkConfiguration->type() == QNetworkConfiguration::ServiceNetwork) {
         rowCount = rowCount + apNetworkConfiguration->children().count();
     }
@@ -274,7 +274,7 @@ SessionTab::SessionTab(QNetworkConfiguration* apNetworkConfiguration,
     connect(m_NetworkSession, SIGNAL(opened()), this, SLOT(opened()));
     connect(m_NetworkSession, SIGNAL(closed()), this, SLOT(closed()));
     connect(m_NetworkSession, SIGNAL(error(QNetworkSession::SessionError)), this, SLOT(error(QNetworkSession::SessionError)));
-    
+
     if (apNetworkConfiguration->type() == QNetworkConfiguration::InternetAccessPoint) {
         snapLabel->hide();
         snapLineEdit->hide();
@@ -342,7 +342,7 @@ void SessionTab::on_openSessionButton_clicked()
 {
     m_NetworkSession->open();
     if (m_NetworkSession->isOpen()) {
-        newState(m_NetworkSession->state()); 
+        newState(m_NetworkSession->state());
     }
 }
 
@@ -350,7 +350,7 @@ void SessionTab::on_closeSessionButton_clicked()
 {
     m_NetworkSession->close();
     if (!m_NetworkSession->isOpen()) {
-        newState(m_NetworkSession->state()); 
+        newState(m_NetworkSession->state());
     }
 }
 
@@ -414,10 +414,10 @@ void SessionTab::opened()
     QListWidgetItem* listItem = new QListWidgetItem();
     QFont font = listItem->font();
     font.setBold(true);
-    listItem->setFont(font);        
+    listItem->setFont(font);
     listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+QString("Opened"));
     m_eventListWidget->addItem(listItem);
-    
+
     QVariant identifier = m_NetworkSession->sessionProperty("ActiveConfiguration");
     if (!identifier.isNull()) {
         QString configId = identifier.toString();
@@ -445,7 +445,7 @@ void SessionTab::closed()
     QListWidgetItem* listItem = new QListWidgetItem();
     QFont font = listItem->font();
     font.setBold(true);
-    listItem->setFont(font);        
+    listItem->setFont(font);
     listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+QString("Closed"));
     m_eventListWidget->addItem(listItem);
 }
@@ -492,10 +492,10 @@ void SessionTab::on_dataObjectChanged(const QString &newObjectType)
 }
 
 
-void SessionTab::stateChanged(QNetworkSession::State state)    
+void SessionTab::stateChanged(QNetworkSession::State state)
 {
     newState(state);
-    
+
     QListWidgetItem* listItem = new QListWidgetItem();
     listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+stateString(state));
     m_eventListWidget->addItem(listItem);
@@ -527,7 +527,7 @@ void SessionTab::error(QNetworkSession::SessionError error)
     QListWidgetItem* listItem = new QListWidgetItem();
     QMessageBox msgBox;
     msgBox.setStandardButtons(QMessageBox::Close);
-    
+
     QString errorString;
     switch (error)
     {
@@ -549,7 +549,7 @@ void SessionTab::error(QNetworkSession::SessionError error)
     }
     listItem->setText(QString("S")+QString::number(m_index)+QString(" - ")+errorString);
     m_eventListWidget->addItem(listItem);
-    
+
     msgBox.setText(errorString);
     msgBox.exec();
 }

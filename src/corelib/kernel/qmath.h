@@ -42,11 +42,13 @@
 #ifndef QMATH_H
 #define QMATH_H
 
+#if 0
+#pragma qt_class(QtMath)
+#endif
+
 #include <math.h>
 
 #include <QtCore/qglobal.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -264,8 +266,26 @@ inline qreal qFastCos(qreal x)
     return qt_sine_table[si] - (qt_sine_table[ci] + 0.5 * qt_sine_table[si] * d) * d;
 }
 
-QT_END_NAMESPACE
+Q_DECL_CONSTEXPR inline float qDegreesToRadians(float degrees)
+{
+    return degrees * float(M_PI/180);
+}
 
-QT_END_HEADER
+Q_DECL_CONSTEXPR inline double qDegreesToRadians(double degrees)
+{
+    return degrees * (M_PI / 180);
+}
+
+Q_DECL_CONSTEXPR inline float qRadiansToDegrees(float radians)
+{
+    return radians * float(180/M_PI);
+}
+
+Q_DECL_CONSTEXPR inline double qRadiansToDegrees(double radians)
+{
+    return radians * (180 / M_PI);
+}
+
+QT_END_NAMESPACE
 
 #endif // QMATH_H

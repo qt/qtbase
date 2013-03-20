@@ -47,8 +47,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -235,7 +233,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QDir &dir);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QDIR_H

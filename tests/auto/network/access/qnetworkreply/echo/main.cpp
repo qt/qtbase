@@ -48,7 +48,7 @@ int main(int argc, char **)
         printf("echos all its input to its output.\n");
         return 1;
     }
-    
+
     QFile file;
     file.open(stdin, QFile::ReadWrite);
     QByteArray data = file.readAll();

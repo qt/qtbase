@@ -49,10 +49,9 @@
 #error qrect.h must be included before any header file that defines topLeft
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
+class QMargins;
 
 class Q_CORE_EXPORT QRect
 {
@@ -138,6 +137,11 @@ public:
     inline QRect united(const QRect &other) const;
     inline QRect intersected(const QRect &other) const;
     bool intersects(const QRect &r) const;
+
+    inline QRect marginsAdded(const QMargins &margins) const;
+    inline QRect marginsRemoved(const QMargins &margins) const;
+    inline QRect &operator+=(const QMargins &margins);
+    inline QRect &operator-=(const QMargins &margins);
 
 #if QT_DEPRECATED_SINCE(5, 0)
     QT_DEPRECATED QRect unite(const QRect &r) const { return united(r); }
@@ -785,7 +789,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QRectF &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QRECT_H

@@ -85,12 +85,12 @@ int main(int argc, char *argv[])
     QByteArray byteArray;
     QDataStream stream(&byteArray, QIODevice::WriteOnly);
     stream << m;
-    
+
     // display
     qDebug() << m.id << m.releaseDate << m.title;
 
     Movie m2;
-    
+
     int id2;
     QString title2;
     QDate date2;

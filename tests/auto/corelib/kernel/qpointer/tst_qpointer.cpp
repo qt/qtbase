@@ -65,6 +65,7 @@ private slots:
     void threadSafety();
 
     void qvariantCast();
+    void constPointer();
 };
 
 void tst_QPointer::constructors()
@@ -384,6 +385,12 @@ void tst_QPointer::qvariantCast()
 //     QPointer<int> sop = qPointerFromVariant<int>(v);
 }
 
+void tst_QPointer::constPointer()
+{
+    // Compile-time test that QPointer<const T> works.
+    QPointer<const QFile> fp = new QFile;
+    delete fp.data();
+}
 
 
 QTEST_MAIN(tst_QPointer)

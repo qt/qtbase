@@ -44,15 +44,11 @@
 
 #include <qpa/qplatformcursor.h>
 
-#define EGL_EGLEXT_PROTOTYPES 1
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
 QT_BEGIN_NAMESPACE
 
 class QKmsScreen;
 class gbm_device;
+class gbm_bo;
 
 class QKmsCursor : public QPlatformCursor
 {
@@ -61,12 +57,12 @@ public:
     ~QKmsCursor();
 
     void pointerEvent(const QMouseEvent &event);
-    void changeCursor(QCursor *widgetCursor, QWindow *window);
+    void changeCursor(QCursor *windowCursor, QWindow *window);
 
 private:
     QKmsScreen *m_screen;
     gbm_device *m_graphicsBufferManager;
-    EGLImageKHR m_eglImage;
+    gbm_bo *m_cursorBufferObject;
     QPlatformCursorImage *m_cursorImage;
     bool m_moved;
 };

@@ -1,5 +1,3 @@
-DEFINES += QT_COMPILES_IN_HARFBUZZ
-
 !win32|contains(QT_CONFIG, freetype):!mac {
     include($$PWD/basic/basic.pri)
 }

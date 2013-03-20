@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -59,8 +59,6 @@
 #ifdef QT_INCLUDE_COMPAT
 #include <QtGui/qevent.h>
 #endif
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -593,6 +591,8 @@ public:
 
     QWindow *windowHandle() const;
 
+    static QWidget *createWindowContainer(QWindow *window, QWidget *parent=0, Qt::WindowFlags flags=0);
+
     friend class QDesktopScreenWidget;
 
 Q_SIGNALS:
@@ -854,7 +854,5 @@ inline bool QWidget::testAttribute(Qt::WidgetAttribute attribute) const
 #define QWIDGETSIZE_MAX ((1<<24)-1)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWIDGET_H

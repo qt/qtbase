@@ -241,7 +241,7 @@ bool QRelation::isValid()
 
 
 
-QRelatedTableModel::QRelatedTableModel(QRelation *rel, QObject *parent, QSqlDatabase db) : 
+QRelatedTableModel::QRelatedTableModel(QRelation *rel, QObject *parent, QSqlDatabase db) :
     QSqlTableModel(parent, db), firstSelect(true), relation(rel)
 {
 }

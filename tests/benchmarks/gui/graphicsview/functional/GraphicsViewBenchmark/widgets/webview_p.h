@@ -71,7 +71,7 @@ public:
     QTimer motionTimer;
 };
 
-class WebViewCache : public QGraphicsEffect 
+class WebViewCache : public QGraphicsEffect
 {
     Q_OBJECT
 

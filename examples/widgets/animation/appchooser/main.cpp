@@ -108,7 +108,7 @@ void createStates(const QObjectList &objects,
 void createAnimations(const QObjectList &objects, QStateMachine *machine)
 {
     for (int i=0; i<objects.size(); ++i)
-        machine->addDefaultAnimation(new QPropertyAnimation(objects.at(i), "geometry"));    
+        machine->addDefaultAnimation(new QPropertyAnimation(objects.at(i), "geometry"));
 }
 
 int main(int argc, char **argv)

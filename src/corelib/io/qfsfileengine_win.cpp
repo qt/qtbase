@@ -198,11 +198,21 @@ bool QFSFileEnginePrivate::nativeFlush()
         return true;
     }
 
-    // Windows native mode; flushing is
-    // unnecessary. FlushFileBuffers(), the equivalent of sync() or
-    // fsync() on Unix, does a low-level flush to the disk, and we
-    // don't expose an API for this.
+    // Windows native mode; flushing is unnecessary.
     return true;
+}
+
+/*
+    \internal
+    \since 5.1
+*/
+bool QFSFileEnginePrivate::nativeSyncToDisk()
+{
+    if (fh || fd != -1) {
+        // stdlib / stdio mode. No API available.
+        return false;
+    }
+    return FlushFileBuffers(fileHandle);
 }
 
 /*
@@ -504,6 +514,17 @@ bool QFSFileEngine::rename(const QString &newName)
     bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret)
         setError(QFile::RenameError, error.toString());
+    return ret;
+}
+
+bool QFSFileEngine::renameOverwrite(const QString &newName)
+{
+    Q_D(QFSFileEngine);
+    bool ret = ::MoveFileEx((wchar_t*)d->fileEntry.nativeFilePath().utf16(),
+                            (wchar_t*)QFileSystemEntry(newName).nativeFilePath().utf16(),
+                            MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED) != 0;
+    if (!ret)
+        setError(QFile::RenameError, QSystemError(::GetLastError(), QSystemError::NativeError).toString());
     return ret;
 }
 

@@ -61,7 +61,7 @@
 
     The constructor of the \c Window class can be explained in three parts.
     In the first part, we set up the widgets used for the user interface:
-    
+
     \snippet itemviews/simplewidgetmapper/window.cpp Set up widgets
 
     We also set up the buddy relationships between various labels and the

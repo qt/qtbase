@@ -75,6 +75,9 @@ private slots:
     void operator_divide();
     void division();
 
+    void dotProduct_data();
+    void dotProduct();
+
     void operator_unary_plus_data();
     void operator_unary_plus();
 
@@ -288,6 +291,29 @@ void tst_QPointF::division()
         p /= sqrt(dot(p, p));
         qFuzzyCompare(dot(p, p), 1);
     }
+}
+
+void tst_QPointF::dotProduct_data()
+{
+    QTest::addColumn<QPointF>("point1");
+    QTest::addColumn<QPointF>("point2");
+    QTest::addColumn<qreal>("expected");
+
+    QTest::newRow("(0, 0) dot (0, 0)") << QPointF(0, 0) << QPointF(0, 0) << qreal(0);
+    QTest::newRow("(10, 0) dot (0, 10)") << QPointF(10, 0) << QPointF(0, 10)<< qreal(0);
+    QTest::newRow("(0, 10) dot (10, 0)") << QPointF(0, 10) << QPointF(10, 0) << qreal(0);
+    QTest::newRow("(10, 20) dot (-10, -20)") << QPointF(10, 20) << QPointF(-10, -20) << qreal(-500);
+    QTest::newRow("(10.1, 20.2) dot (-10.1, -20.2)") << QPointF(10.1, 20.2) << QPointF(-10.1, -20.2) << qreal(-510.05);
+    QTest::newRow("(-10.1, -20.2) dot (10.1, 20.2)") << QPointF(-10.1, -20.2) << QPointF(10.1, 20.2) << qreal(-510.05);
+}
+
+void tst_QPointF::dotProduct()
+{
+    QFETCH(QPointF, point1);
+    QFETCH(QPointF, point2);
+    QFETCH(qreal, expected);
+
+    QCOMPARE(QPointF::dotProduct(point1, point2), expected);
 }
 
 void tst_QPointF::operator_unary_plus_data()

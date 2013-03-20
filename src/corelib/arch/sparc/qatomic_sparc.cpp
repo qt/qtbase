@@ -60,7 +60,7 @@ Q_CORE_EXPORT int q_atomic_lock_int(volatile int *addr)
                 sched_yield();
                 returnValue = *addr;
             } while (returnValue == INT_MIN);
-            
+
             // try again
             returnValue = q_atomic_trylock_int(addr);
         } while (returnValue == INT_MIN);

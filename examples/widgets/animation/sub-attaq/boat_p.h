@@ -68,7 +68,7 @@ class KeyStopTransition : public QKeyEventTransition
 {
 public:
     KeyStopTransition(Boat *b, QEvent::Type t, int k)
-    : QKeyEventTransition(b, t, k), boat(b), key(k)
+    : QKeyEventTransition(b, t, k), boat(b)
     {
     }
 protected:
@@ -80,7 +80,6 @@ protected:
     }
 private:
     Boat * boat;
-    int key;
 };
 
 //These transtion test if we have to move the boat (i.e current speed was 0 or another value)

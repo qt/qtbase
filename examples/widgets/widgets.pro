@@ -19,7 +19,8 @@ SUBDIRS       = \
                 statemachine \
                 tools \
                 tutorials \
-                widgets
+                widgets \
+                windowcontainer
 
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
 contains(DEFINES, QT_NO_DRAGANDDROP): SUBDIRS -= draganddrop

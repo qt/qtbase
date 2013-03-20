@@ -60,10 +60,10 @@ QVariant FileListModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-    
+
     if (index.row() >= fileList.size() || index.row() < 0)
         return QVariant();
-    
+
     if (role == Qt::DisplayRole) {
         return fileList.at(index.row());
     } else if (role == Qt::BackgroundRole) {
@@ -94,7 +94,7 @@ void FileListModel::fetchMore(const QModelIndex & /* index */)
     int itemsToFetch = qMin(100, remainder);
 
     beginInsertRows(QModelIndex(), fileCount, fileCount+itemsToFetch-1);
-    
+
     fileCount += itemsToFetch;
 
     endInsertRows();

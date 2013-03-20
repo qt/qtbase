@@ -374,7 +374,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
     \value UnboundedIntersection The two lines intersect, but not
     within the range defined by their lengths. This will be the case
-    if the lines are not parallel. 
+    if the lines are not parallel.
 
     intersect() will also return this value if the intersect point is
     within the start and end point of only one of the lines.
@@ -499,9 +499,9 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
     Sets the length of the line to the given \a length. QLineF will
     move the end point - p2() - of the line to give the line its new length.
-    
+
     If the line is a null line, the length will remain zero regardless
-    of the length specified. 
+    of the length specified.
 
     \sa length(), isNull()
 */

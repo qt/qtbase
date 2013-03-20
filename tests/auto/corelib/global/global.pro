@@ -7,4 +7,6 @@ SUBDIRS=\
     qnumeric \
     qrand \
     qlogging \
-    qtendian
+    qtendian \
+    qglobalstatic \
+

@@ -70,7 +70,7 @@
     \endlist
 
     \section1 Qt's Layout Classes
-    
+
     Qt's layout classes were designed for hand-written C++ code, allowing
     measurements to be specified in pixels for simplicity, so they are easy to
     understand and use. The code generated for forms created using Qt Designer also
@@ -136,11 +136,11 @@
     the fifth argument to QGridLayout::addWidget().
 
     QFormLayout will add two widgets on a row, commonly a QLabel and a QLineEdit
-    to create forms. Adding a QLabel and a QLineEdit on the same row will set 
-    the QLineEdit as the QLabel's buddy. The following code will use the 
+    to create forms. Adding a QLabel and a QLineEdit on the same row will set
+    the QLineEdit as the QLabel's buddy. The following code will use the
     QFormLayout to place three \l{QPushButton}{QPushButtons} and a corresponding
-    QLineEdit on a row. 
-    
+    QLineEdit on a row.
+
     \snippet layouts/layouts.cpp 18
     \snippet layouts/layouts.cpp 19
     \snippet layouts/layouts.cpp 20
@@ -327,7 +327,7 @@
     Then we define two functions that iterate over the layout: \c{itemAt()}
     and \c{takeAt()}. These functions are used internally by the layout system
     to handle deletion of widgets. They are also available for application
-    programmers. 
+    programmers.
 
     \c{itemAt()} returns the item at the given index. \c{takeAt()} removes the
     item at the given index, and returns it. In this case we use the list index
@@ -348,7 +348,7 @@
     \snippet code/doc_src_layout.cpp 4
 
     The layout takes over responsibility of the items added. Since QLayoutItem
-    does not inherit QObject, we must delete the items manually. In the 
+    does not inherit QObject, we must delete the items manually. In the
     destructor, we remove each item from the list using \c{takeAt()}, and
     then delete it.
 

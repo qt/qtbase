@@ -52,8 +52,6 @@
 # include <utility>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -96,8 +94,6 @@ Q_DECLARE_SHARED(QDBusUnixFileDescriptor)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusUnixFileDescriptor)
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif // QDBUSUNIXFILEDESCRIPTOR_H

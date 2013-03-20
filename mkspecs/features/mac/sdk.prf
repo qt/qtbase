@@ -1,8 +1,53 @@
-!isEmpty(QMAKE_MAC_SDK) {
-    !macx-xcode:!macx-pbuilder {
-        QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK
-        QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK
-        QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK
-        QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK
-    }
+
+isEmpty(QMAKE_MAC_SDK): \
+    error("QMAKE_MAC_SDK must be set when using CONFIG += sdk.")
+
+contains(QMAKE_MAC_SDK, .*/.*): \
+    error("QMAKE_MAC_SDK can only contain short-form SDK names (eg. macosx, iphoneos)")
+
+QMAKE_MAC_SDK_PATH = $$system("xcodebuild -sdk $$QMAKE_MAC_SDK -version Path 2>/dev/null")
+isEmpty(QMAKE_MAC_SDK_PATH): error("Could not resolve SDK path for \'$$QMAKE_MAC_SDK\'")
+
+!equals(MAKEFILE_GENERATOR, XCODE) {
+    QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+    QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+    QMAKE_OBJECTIVE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH
+    QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH
+}
+
+sysrootified =
+for(val, QMAKE_INCDIR_OPENGL): sysrootified += $${QMAKE_MAC_SDK_PATH}$$val
+QMAKE_INCDIR_OPENGL = $$sysrootified
+
+# Resolve SDK version of various tools
+for(tool, $$list(QMAKE_CC QMAKE_CXX QMAKE_FIX_RPATH QMAKE_AR QMAKE_RANLIB QMAKE_LINK QMAKE_LINK_SHLIB)) {
+    value = $$eval($$tool)
+    isEmpty(value): next()
+
+    sysrooted = $$system("xcrun -sdk $$QMAKE_MAC_SDK -find $$first(value)")
+    $$tool = $$sysrooted $$member(value, 1, -1)
+}
+
+# We use xml as the output format instead of json since plutil on 10.6 does not have that option
+QMAKE_MAC_PLATFORM_NAME = $$system("plutil -convert xml1 \"$$QMAKE_MAC_SDK_PATH/SDKSettings.plist\" -o - | " \
+    "sed '/^<!DOCTYPE/d' | " \ # Don't look up http://www.apple.com/DTDs/PropertyList-1.0.dtd
+    "PERL5LIB= xpath 'string(//key[.=\"PLATFORM_NAME\"]/following-sibling::*[1])' 2>&1 | " \
+    "sed 's/.*Value: \\(.*\\)/\\1/'")
+
+isEmpty(QMAKE_MAC_PLATFORM_NAME): error("Could not resolve platform name for SDK '$$QMAKE_MAC_SDK'")
+
+!equals(MAKEFILE_GENERATOR, XCODE) {
+    # FIXME: Get the version_min_flag out of the platform's 'Native Build System.xcspec'
+    version_identifier = $$replace(QMAKE_MAC_PLATFORM_NAME, iphonesimulator, ios-simulator)
+
+    ios:!host_build: \
+        deployment_target = $$QMAKE_IOS_DEPLOYMENT_TARGET
+    else: \
+        deployment_target = $$QMAKE_MACOSX_DEPLOYMENT_TARGET
+
+    version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
+    QMAKE_CFLAGS += $$version_min_flag
+    QMAKE_CXXFLAGS += $$version_min_flag
+    QMAKE_OBJECTIVE_CFLAGS += $$version_min_flag
+    QMAKE_LFLAGS += $$version_min_flag
 }

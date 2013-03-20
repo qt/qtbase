@@ -204,7 +204,7 @@ public:
         Q_UNUSED(option);
         Q_UNUSED(widget);
         painter->setPen(QPen(QColor(100, 100, 100), 3.0));
-        painter->drawRect(QRect(1.5, 1.5, m_size.width() - 3, m_size.height() - 3));
+        painter->drawRect(QRectF(1.5, 1.5, m_size.width() - 3, m_size.height() - 3));
     }
 
     QSizeF m_size;

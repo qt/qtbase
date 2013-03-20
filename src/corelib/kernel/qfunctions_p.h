@@ -72,8 +72,5 @@
 #  define Q_STATIC_GLOBAL_INLINE_OPERATOR static inline
 #endif
 
-QT_BEGIN_HEADER
-QT_END_HEADER
-
 #endif
 

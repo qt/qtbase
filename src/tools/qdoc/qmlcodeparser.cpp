@@ -86,6 +86,8 @@ QT_BEGIN_NAMESPACE
   Constructs the QML code parser.
  */
 QmlCodeParser::QmlCodeParser()
+    : lexer( 0 ),
+      parser( 0 )
 {
 }
 

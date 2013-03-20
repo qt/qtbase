@@ -235,6 +235,8 @@ private slots:
     void testDelegateDestroyEditor();
     void testClickedSignal();
     void testChangeEditorState();
+    void deselectInSingleSelection();
+    void testNoActivateOnDisabledItem();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1597,6 +1599,71 @@ void tst_QAbstractItemView::testChangeEditorState()
 
     model.emitDataChanged();
     // No segfault - the test passes.
+}
+
+void tst_QAbstractItemView::deselectInSingleSelection()
+{
+    QTableView view;
+    QStandardItemModel s;
+    s.setRowCount(10);
+    s.setColumnCount(10);
+    view.setModel(&s);
+    view.show();
+    view.setSelectionMode(QAbstractItemView::SingleSelection);
+    view.setEditTriggers(QAbstractItemView::NoEditTriggers);
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    // mouse
+    QModelIndex index22 = s.index(2, 2);
+    QRect rect22 = view.visualRect(index22);
+    QPoint clickpos = rect22.center();
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, clickpos);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+
+    // second click with modifier however does select
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, clickpos);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+
+    // keyboard
+    QTest::keyClick(&view, Qt::Key_Space, Qt::NoModifier);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QTest::keyClick(&view, Qt::Key_Space, Qt::ControlModifier);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 0);
+
+    // second keypress with modifier however does select
+    QTest::keyClick(&view, Qt::Key_Space, Qt::ControlModifier);
+    QCOMPARE(view.currentIndex(), index22);
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+}
+
+void tst_QAbstractItemView::testNoActivateOnDisabledItem()
+{
+    QTreeView treeView;
+    QStandardItemModel model(1, 1);
+    QStandardItem *item = new QStandardItem("item");
+    model.setItem(0, 0, item);
+    item->setFlags(Qt::NoItemFlags);
+    treeView.setModel(&model);
+    treeView.show();
+
+    QApplication::setActiveWindow(&treeView);
+    QVERIFY(QTest::qWaitForWindowActive(&treeView));
+
+    QSignalSpy activatedSpy(&treeView, SIGNAL(activated(QModelIndex)));
+
+    // Ensure clicking on a disabled item doesn't emit itemActivated.
+    QModelIndex itemIndex = treeView.model()->index(0, 0);
+    QPoint clickPos = treeView.visualRect(itemIndex).center();
+    QTest::mouseClick(treeView.viewport(), Qt::LeftButton, 0, clickPos);
+
+    QCOMPARE(activatedSpy.count(), 0);
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

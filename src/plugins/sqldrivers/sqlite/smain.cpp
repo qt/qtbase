@@ -41,7 +41,7 @@
 
 #include <qsqldriverplugin.h>
 #include <qstringlist.h>
-#include "../../../../src/sql/drivers/sqlite/qsql_sqlite.h"
+#include "../../../../src/sql/drivers/sqlite/qsql_sqlite_p.h"
 
 QT_BEGIN_NAMESPACE
 

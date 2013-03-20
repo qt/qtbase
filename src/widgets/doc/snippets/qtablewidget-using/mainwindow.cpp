@@ -117,7 +117,7 @@ void MainWindow::averageItems()
     foreach (item, selected) {
         bool ok;
         double value = item->text().toDouble(&ok);
-        
+
         if (ok && !item->text().isEmpty()) {
             total += value;
             number++;

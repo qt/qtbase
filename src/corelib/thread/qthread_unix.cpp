@@ -204,6 +204,11 @@ static void clear_thread_data()
     pthread_setspecific(current_thread_data_key, 0);
 }
 
+void QThreadData::clearCurrentThreadData()
+{
+    clear_thread_data();
+}
+
 QThreadData *QThreadData::current()
 {
     QThreadData *data = get_thread_data();
@@ -287,7 +292,7 @@ static void setCurrentThreadName(pthread_t threadId, const char *name)
 
 void *QThreadPrivate::start(void *arg)
 {
-#if !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_ANDROID)
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 #endif
     pthread_cleanup_push(QThreadPrivate::finish, arg);
@@ -326,7 +331,7 @@ void *QThreadPrivate::start(void *arg)
 #endif
 
     emit thr->started(QThread::QPrivateSignal());
-#if !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_ANDROID)
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_testcancel();
 #endif
@@ -415,6 +420,13 @@ int QThread::idealThreadCount() Q_DECL_NOTHROW
     // IRIX
     cores = (int)sysconf(_SC_NPROC_ONLN);
 #elif defined(Q_OS_INTEGRITY)
+#if (__INTEGRITY_MAJOR_VERSION >= 10)
+    // Integrity V10+ does support multicore CPUs
+    Value processorCount;
+    if (GetProcessorCount(CurrentTask(), &processorCount) == 0)
+        cores = processorCount;
+    else
+#endif
     // as of aug 2008 Integrity only supports one single core CPU
     cores = 1;
 #elif defined(Q_OS_VXWORKS)
@@ -488,8 +500,20 @@ static bool calculateUnixPriority(int priority, int *sched_policy, int *sched_pr
 #endif
     const int highestPriority = QThread::TimeCriticalPriority;
 
-    int prio_min = sched_get_priority_min(*sched_policy);
-    int prio_max = sched_get_priority_max(*sched_policy);
+    int prio_min;
+    int prio_max;
+#if defined(Q_OS_VXWORKS) && defined(VXWORKS_DKM)
+    // for other scheduling policies than SCHED_RR or SCHED_FIFO
+    prio_min = SCHED_FIFO_LOW_PRI;
+    prio_max = SCHED_FIFO_HIGH_PRI;
+
+    if ((*sched_policy == SCHED_RR) || (*sched_policy == SCHED_FIFO))
+#endif
+    {
+    prio_min = sched_get_priority_min(*sched_policy);
+    prio_max = sched_get_priority_max(*sched_policy);
+    }
+
     if (prio_min == -1 || prio_max == -1)
         return false;
 
@@ -612,7 +636,7 @@ void QThread::start(Priority priority)
 
 void QThread::terminate()
 {
-#if !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_ANDROID)
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 
@@ -654,7 +678,7 @@ void QThread::setTerminationEnabled(bool enabled)
                "Current thread was not started with QThread.");
 
     Q_UNUSED(thr)
-#if defined(Q_OS_LINUX_ANDROID)
+#if defined(Q_OS_ANDROID)
     Q_UNUSED(enabled);
 #else
     pthread_setcancelstate(enabled ? PTHREAD_CANCEL_ENABLE : PTHREAD_CANCEL_DISABLE, NULL);

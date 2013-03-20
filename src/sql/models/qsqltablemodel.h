@@ -45,8 +45,6 @@
 #include <QtSql/qsqldatabase.h>
 #include <QtSql/qsqlquerymodel.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -139,7 +137,5 @@ protected:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSQLTABLEMODEL_H

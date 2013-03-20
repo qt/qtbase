@@ -48,6 +48,7 @@
 #include <QFileIconProvider>
 #include <QTreeView>
 #include <QHeaderView>
+#include <QStandardPaths>
 #include <QTime>
 #include <QStyle>
 #include <QtGlobal>
@@ -109,6 +110,7 @@ private slots:
     void setData_data();
     void setData();
 
+    void sortPersistentIndex();
     void sort_data();
     void sort();
 
@@ -207,27 +209,30 @@ void tst_QFileSystemModel::rootPath()
     QCOMPARE(rootChanged.count(), 0);
 
     QString oldRootPath = model->rootPath();
-    root = model->setRootPath(QDir::homePath());
+    const QStringList documentPaths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
+    QVERIFY(!documentPaths.isEmpty());
+    const QString documentPath = documentPaths.front();
+    root = model->setRootPath(documentPath);
 
     QTRY_VERIFY(model->rowCount(root) >= 0);
-    QCOMPARE(model->rootPath(), QString(QDir::homePath()));
+    QCOMPARE(model->rootPath(), QString(documentPath));
     QCOMPARE(rootChanged.count(), oldRootPath == model->rootPath() ? 0 : 1);
-    QCOMPARE(model->rootDirectory().absolutePath(), QDir::homePath());
+    QCOMPARE(model->rootDirectory().absolutePath(), documentPath);
 
     model->setRootPath(QDir::rootPath());
     int oldCount = rootChanged.count();
     oldRootPath = model->rootPath();
-    root = model->setRootPath(QDir::homePath() + QLatin1String("/."));
+    root = model->setRootPath(documentPath + QLatin1String("/."));
     QTRY_VERIFY(model->rowCount(root) >= 0);
-    QCOMPARE(model->rootPath(), QDir::homePath());
+    QCOMPARE(model->rootPath(), documentPath);
     QCOMPARE(rootChanged.count(), oldRootPath == model->rootPath() ? oldCount : oldCount + 1);
-    QCOMPARE(model->rootDirectory().absolutePath(), QDir::homePath());
+    QCOMPARE(model->rootDirectory().absolutePath(), documentPath);
 
-    QDir newdir = QDir::home();
+    QDir newdir = documentPath;
     if (newdir.cdUp()) {
         oldCount = rootChanged.count();
         oldRootPath = model->rootPath();
-        root = model->setRootPath(QDir::homePath() + QLatin1String("/.."));
+        root = model->setRootPath(documentPath + QLatin1String("/.."));
         QTRY_VERIFY(model->rowCount(root) >= 0);
         QCOMPARE(model->rootPath(), newdir.path());
         QCOMPARE(rootChanged.count(), oldCount + 1);
@@ -310,9 +315,9 @@ void tst_QFileSystemModel::naturalCompare()
 void tst_QFileSystemModel::readOnly()
 {
     QCOMPARE(model->isReadOnly(), true);
-    QTemporaryFile file;
+    QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
     file.open();
-    QModelIndex root = model->setRootPath(QDir::tempPath());
+    QModelIndex root = model->setRootPath(flatDirTestPath);
 
     QTRY_VERIFY(model->rowCount(root) > 0);
     QVERIFY(!(model->flags(model->index(file.fileName())) & Qt::ItemIsEditable));
@@ -358,7 +363,10 @@ void tst_QFileSystemModel::iconProvider()
     delete p;
 
     QFileSystemModel *myModel = new QFileSystemModel();
-    myModel->setRootPath(QDir::homePath());
+    const QStringList documentPaths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
+    QVERIFY(!documentPaths.isEmpty());
+    const QString documentPath = documentPaths.front();
+    myModel->setRootPath(documentPath);
     //Let's wait to populate the model
     QTest::qWait(250);
     //We change the provider, icons must me updated
@@ -791,6 +799,19 @@ void tst_QFileSystemModel::setData()
     QTRY_COMPARE(model->rowCount(root), files.count());
 }
 
+void tst_QFileSystemModel::sortPersistentIndex()
+{
+    QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
+    file.open();
+    QModelIndex root = model->setRootPath(flatDirTestPath);
+    QTRY_VERIFY(model->rowCount(root) > 0);
+
+    QPersistentModelIndex idx = model->index(0, 1, root);
+    model->sort(0, Qt::AscendingOrder);
+    model->sort(0, Qt::DescendingOrder);
+    QVERIFY(idx.column() != 0);
+}
+
 class MyFriendFileSystemModel : public QFileSystemModel
 {
     friend class tst_QFileSystemModel;
@@ -806,18 +827,6 @@ void tst_QFileSystemModel::sort_data()
 
 void tst_QFileSystemModel::sort()
 {
-    QTemporaryFile file;
-    file.open();
-    QModelIndex root = model->setRootPath(QDir::tempPath());
-    QTRY_VERIFY(model->rowCount(root) > 0);
-
-    QPersistentModelIndex idx = model->index(0, 1, root);
-    model->sort(0, Qt::AscendingOrder);
-    model->sort(0, Qt::DescendingOrder);
-    QVERIFY(idx.column() != 0);
-
-    model->setRootPath(QDir::homePath());
-
     QFETCH(bool, fileDialogMode);
 
     MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();

@@ -62,6 +62,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qdatabuffer_p.h>
 #include <private/qtriangulatingstroker_p.h>
+#include <private/qopenglextensions_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -155,7 +156,8 @@ public:
     void setRenderTextActive(bool);
 
     bool isNativePaintingActive() const;
-    bool supportsTransformations(QFontEngine *, const QTransform &) const { return true; }
+    bool requiresPretransformedGlyphPositions(QFontEngine *, const QTransform &) const { return false; }
+    bool shouldDrawCachedGlyphs(QFontEngine *, const QTransform &) const;
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
@@ -190,7 +192,7 @@ public:
     void updateBrushUniforms();
     void updateMatrix();
     void updateCompositionMode();
-    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id = -1);
+    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id = GLuint(-1));
 
     void resetGLState();
 
@@ -226,6 +228,7 @@ public:
     void setBrush(const QBrush& brush);
     void transferMode(EngineMode newMode);
     bool prepareForDraw(bool srcPixelsAreOpaque); // returns true if the program has changed
+    bool prepareForCachedGlyphDraw(const QFontEngineGlyphCache &cache);
     inline void useSimpleShader();
     inline GLuint location(const QGLEngineShaderManager::Uniform uniform) {
         return shaderManager->getUniformLocation(uniform);
@@ -253,6 +256,8 @@ public:
     QGLContext *ctx;
     EngineMode mode;
     QFontEngineGlyphCache::Type glyphCacheType;
+
+    QOpenGLExtensions funcs;
 
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
@@ -315,9 +320,9 @@ void QGL2PaintEngineExPrivate::setVertexAttributePointer(unsigned int arrayIndex
 
     vertexAttribPointers[arrayIndex] = pointer;
     if (arrayIndex == QT_OPACITY_ATTR)
-        glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
+        funcs.glVertexAttribPointer(arrayIndex, 1, GL_FLOAT, GL_FALSE, 0, pointer);
     else
-        glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
+        funcs.glVertexAttribPointer(arrayIndex, 2, GL_FLOAT, GL_FALSE, 0, pointer);
 }
 
 QT_END_NAMESPACE

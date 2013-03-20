@@ -467,9 +467,6 @@ typedef QPair<int, int> Position;
 typedef QVector<QPair<int, int> > Selection;
 typedef QVector<QVector<QString> > StringTable;
 typedef QVector<QString> StringTableRow;
-Q_DECLARE_METATYPE(Position)
-Q_DECLARE_METATYPE(Selection)
-Q_DECLARE_METATYPE(StringTable)
 
 static StringTableRow qStringTableRow(const QString &s1, const QString &s2, const QString &s3)
 {
@@ -1922,8 +1919,6 @@ public:
 
 void tst_QAbstractItemModel::testDataChanged()
 {
-    qRegisterMetaType<QVector<int> >();
-
     CustomRoleModel model;
 
     QSignalSpy withRoles(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)));

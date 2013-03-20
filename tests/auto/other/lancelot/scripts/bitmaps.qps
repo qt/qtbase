@@ -122,12 +122,12 @@ translate 110 0
 save
   translate 20 -10
   rotate 10
-  setBackgroundMode Transparent  
+  setBackgroundMode Transparent
   repeat_block draw_subrected
 restore
 
 translate 110 0
-save 
+save
   translate 20 -10
   rotate 10
   setBackgroundMode Opaque

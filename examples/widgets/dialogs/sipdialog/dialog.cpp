@@ -91,7 +91,7 @@ Dialog::Dialog()
 //! [Dialog constructor part5]
     connect(button, SIGNAL(clicked()),
         qApp, SLOT(closeAllWindows()));
-    connect(QApplication::desktop(), SIGNAL(workAreaResized(int)), 
+    connect(QApplication::desktop(), SIGNAL(workAreaResized(int)),
         this, SLOT(desktopResized(int)));
 }
 //! [Dialog constructor part5]

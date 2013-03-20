@@ -364,7 +364,7 @@ public:
     template<typename T>
     inline xcb_generic_event_t *checkEvent(T &checker);
 
-    typedef bool (*PeekFunc)(xcb_generic_event_t *);
+    typedef bool (*PeekFunc)(QXcbConnection *, xcb_generic_event_t *);
     void addPeekFunc(PeekFunc f);
 
     inline xcb_timestamp_t time() const { return m_time; }

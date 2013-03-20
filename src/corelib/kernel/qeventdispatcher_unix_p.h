@@ -61,9 +61,7 @@
 #include "QtCore/qvarlengtharray.h"
 #include "private/qtimerinfo_unix_p.h"
 
-#if defined(Q_OS_VXWORKS)
-#  include <sys/times.h>
-#else
+#if !defined(Q_OS_VXWORKS)
 #  include <sys/time.h>
 #  if (!defined(Q_OS_HPUX) || defined(__ia64)) && !defined(Q_OS_NACL)
 #    include <sys/select.h>
@@ -132,7 +130,7 @@ protected:
 
     virtual int select(int nfds,
                        fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-                       timeval *timeout);
+                       timespec *timeout);
 };
 
 class Q_CORE_EXPORT QEventDispatcherUNIXPrivate : public QAbstractEventDispatcherPrivate
@@ -143,11 +141,14 @@ public:
     QEventDispatcherUNIXPrivate();
     ~QEventDispatcherUNIXPrivate();
 
-    int doSelect(QEventLoop::ProcessEventsFlags flags, timeval *timeout);
+    int doSelect(QEventLoop::ProcessEventsFlags flags, timespec *timeout);
     virtual int initThreadWakeUp();
     virtual int processThreadWakeUp(int nsel);
 
     bool mainThread;
+
+    // note for eventfd(7) support:
+    // if thread_pipe[1] is -1, then eventfd(7) is in use and is stored in thread_pipe[0]
     int thread_pipe[2];
 
     // highest fd for all socket notifiers

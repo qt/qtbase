@@ -1450,7 +1450,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     bool readEnabled = selectForRead && readNotifier && readNotifier->isEnabled();
     if (readEnabled)
         readNotifier->setEnabled(false);
-    
+
     fd_set fds;
 
     int ret = 0;

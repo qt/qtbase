@@ -180,7 +180,7 @@ void HttpWindow::httpFinished()
                                  tr("Download failed: %1.")
                                  .arg(reply->errorString()));
         downloadButton->setEnabled(true);
-    } else if (!redirectionTarget.isNull()) {        
+    } else if (!redirectionTarget.isNull()) {
         QUrl newUrl = url.resolved(redirectionTarget.toUrl());
         if (QMessageBox::question(this, tr("HTTP"),
                                   tr("Redirect to %1 ?").arg(newUrl.toString()),
@@ -256,7 +256,7 @@ void HttpWindow::sslErrors(QNetworkReply*,const QList<QSslError> &errors)
             errorString += ", ";
         errorString += error.errorString();
     }
-    
+
     if (QMessageBox::warning(this, tr("HTTP"),
                              tr("One or more SSL errors has occurred: %1").arg(errorString),
                              QMessageBox::Ignore | QMessageBox::Abort) == QMessageBox::Ignore) {

@@ -40,12 +40,12 @@
   generation facilities.
 
   \tableofcontents
-  
+
   \section1 Classes Supporting Printing
 
   The following classes support the selecting and setting up of printers and
   printing output.
-  
+
   \annotatedlist printing
 
   \section1 Paint Devices and Printing

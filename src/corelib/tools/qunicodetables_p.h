@@ -83,118 +83,11 @@ struct Properties {
     ushort wordBreakClass      : 8; /* 4 used */
     ushort sentenceBreakClass  : 8; /* 4 used */
     ushort lineBreakClass      : 8; /* 6 used */
-    ushort script              : 8; /* 5 used */
+    ushort script              : 8; /* 7 used */
 };
 
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);
-
-// See http://www.unicode.org/reports/tr24/tr24-5.html
-enum Script {
-    Common,
-    Greek,
-    Cyrillic,
-    Armenian,
-    Hebrew,
-    Arabic,
-    Syriac,
-    Thaana,
-    Devanagari,
-    Bengali,
-    Gurmukhi,
-    Gujarati,
-    Oriya,
-    Tamil,
-    Telugu,
-    Kannada,
-    Malayalam,
-    Sinhala,
-    Thai,
-    Lao,
-    Tibetan,
-    Myanmar,
-    Georgian,
-    Hangul,
-    Ogham,
-    Runic,
-    Khmer,
-    Nko,
-    Inherited,
-    ScriptCount = Inherited,
-    Latin = Common,
-    Ethiopic = Common,
-    Cherokee = Common,
-    CanadianAboriginal = Common,
-    Mongolian = Common,
-    Hiragana = Common,
-    Katakana = Common,
-    Bopomofo = Common,
-    Han = Common,
-    Yi = Common,
-    OldItalic = Common,
-    Gothic = Common,
-    Deseret = Common,
-    Tagalog = Common,
-    Hanunoo = Common,
-    Buhid = Common,
-    Tagbanwa = Common,
-    Limbu = Common,
-    TaiLe = Common,
-    LinearB = Common,
-    Ugaritic = Common,
-    Shavian = Common,
-    Osmanya = Common,
-    Cypriot = Common,
-    Braille = Common,
-    Buginese = Common,
-    Coptic = Common,
-    NewTaiLue = Common,
-    Glagolitic = Common,
-    Tifinagh = Common,
-    SylotiNagri = Common,
-    OldPersian = Common,
-    Kharoshthi = Common,
-    Balinese = Common,
-    Cuneiform = Common,
-    Phoenician = Common,
-    PhagsPa = Common,
-    Sundanese = Common,
-    Lepcha = Common,
-    OlChiki = Common,
-    Vai = Common,
-    Saurashtra = Common,
-    KayahLi = Common,
-    Rejang = Common,
-    Lycian = Common,
-    Carian = Common,
-    Lydian = Common,
-    Cham = Common,
-    TaiTham = Common,
-    TaiViet = Common,
-    Avestan = Common,
-    EgyptianHieroglyphs = Common,
-    Samaritan = Common,
-    Lisu = Common,
-    Bamum = Common,
-    Javanese = Common,
-    MeeteiMayek = Common,
-    ImperialAramaic = Common,
-    OldSouthArabian = Common,
-    InscriptionalParthian = Common,
-    InscriptionalPahlavi = Common,
-    OldTurkic = Common,
-    Kaithi = Common,
-    Batak = Common,
-    Brahmi = Common,
-    Mandaic = Common,
-    Chakma = Common,
-    MeroiticCursive = Common,
-    MeroiticHieroglyphs = Common,
-    Miao = Common,
-    Sharada = Common,
-    SoraSompeng = Common,
-    Takri = Common
-};
 
 enum GraphemeBreakClass {
     GraphemeBreak_Other,
@@ -273,10 +166,6 @@ inline SentenceBreakClass sentenceBreakClass(QChar ch)
 Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);
 inline LineBreakClass lineBreakClass(QChar ch)
 { return lineBreakClass(ch.unicode()); }
-
-Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4);
-inline Script script(QChar ch)
-{ return script(ch.unicode()); }
 
 } // namespace QUnicodeTables
 

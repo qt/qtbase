@@ -49,11 +49,19 @@
 #import <Cocoa/Cocoa.h>
 
 QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share)
-    : m_format(format)
+    : m_context(nil),
+      m_shareContext(nil),
+      m_format(format)
 {
+    // we only support OpenGL contexts under Cocoa
+    if (m_format.renderableType() == QSurfaceFormat::DefaultRenderableType)
+        m_format.setRenderableType(QSurfaceFormat::OpenGL);
+    if (m_format.renderableType() != QSurfaceFormat::OpenGL)
+        return;
+
     QCocoaAutoReleasePool pool; // For the SG Canvas render thread
 
-    NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(format));
+    NSOpenGLPixelFormat *pixelFormat = static_cast <NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(m_format));
     m_shareContext = share ? static_cast<QCocoaGLContext *>(share)->nsOpenGLContext() : nil;
 
     m_context = [NSOpenGLContext alloc];
@@ -70,6 +78,10 @@ QCocoaGLContext::QCocoaGLContext(const QSurfaceFormat &format, QPlatformOpenGLCo
     const GLint interval = 1;
     [m_context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
+    if (format.alphaBufferSize() > 0) {
+        int zeroOpacity = 0;
+        [m_context setValues:&zeroOpacity forParameter:NSOpenGLCPSurfaceOpacity];
+    }
 }
 
 QCocoaGLContext::~QCocoaGLContext()

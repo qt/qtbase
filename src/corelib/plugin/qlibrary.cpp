@@ -79,8 +79,6 @@ QT_BEGIN_NAMESPACE
 #  define QT_NO_DEBUG_PLUGIN_CHECK
 #endif
 
-static QBasicMutex qt_library_mutex;
-
 /*!
     \class QLibrary
     \inmodule QtCore
@@ -339,46 +337,134 @@ static void installCoverageTool(QLibraryPrivate *libPrivate)
 #endif
 }
 
-typedef QMap<QString, QLibraryPrivate*> LibraryMap;
+class QLibraryStore
+{
+public:
+    inline ~QLibraryStore();
+    static inline QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version);
+    static inline void releaseLibrary(QLibraryPrivate *lib);
 
-struct LibraryData {
+    static inline void cleanup();
+
+private:
+    static inline QLibraryStore *instance();
+
+    // all members and instance() are protected by qt_library_mutex
+    typedef QMap<QString, QLibraryPrivate*> LibraryMap;
     LibraryMap libraryMap;
-    QSet<QLibraryPrivate*> loadedLibs;
 };
 
-Q_GLOBAL_STATIC(LibraryData, libraryData)
+static QBasicMutex qt_library_mutex;
+static QLibraryStore *qt_library_data = 0;
 
-static LibraryMap *libraryMap()
+QLibraryStore::~QLibraryStore()
 {
-    LibraryData *data = libraryData();
-    return data ? &data->libraryMap : 0;
+    qt_library_data = 0;
+}
+
+inline void QLibraryStore::cleanup()
+{
+    QLibraryStore *data = qt_library_data;
+    if (!data)
+        return;
+
+    // find any libraries that are still loaded but have a no one attached to them
+    LibraryMap::Iterator it = data->libraryMap.begin();
+    for (; it != data->libraryMap.end(); ++it) {
+        QLibraryPrivate *lib = it.value();
+        if (lib->libraryRefCount.load() == 1) {
+            if (lib->libraryUnloadCount.load() > 0) {
+                Q_ASSERT(lib->pHnd);
+                lib->libraryUnloadCount.store(1);
+#ifdef __GLIBC__
+                // glibc has a bug in unloading from global destructors
+                // see https://bugzilla.novell.com/show_bug.cgi?id=622977
+                // and http://sourceware.org/bugzilla/show_bug.cgi?id=11941
+                lib->unload(QLibraryPrivate::NoUnloadSys);
+#else
+                lib->unload();
+#endif
+            }
+            delete lib;
+            it.value() = 0;
+        }
+    }
+
+    if (qt_debug_component()) {
+        // dump all objects that remain
+        foreach (QLibraryPrivate *lib, data->libraryMap) {
+            if (lib)
+                qDebug() << "On QtCore unload," << lib->fileName << "was leaked, with"
+                         << lib->libraryRefCount.load() << "users";
+        }
+    }
+
+    delete data;
+}
+
+static void qlibraryCleanup()
+{
+    QLibraryStore::cleanup();
+}
+Q_DESTRUCTOR_FUNCTION(qlibraryCleanup)
+
+// must be called with a locked mutex
+QLibraryStore *QLibraryStore::instance()
+{
+    if (Q_UNLIKELY(!qt_library_data))
+        qt_library_data = new QLibraryStore;
+    return qt_library_data;
+}
+
+inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, const QString &version)
+{
+    QMutexLocker locker(&qt_library_mutex);
+    QLibraryStore *data = instance();
+
+    // check if this library is already loaded
+    QLibraryPrivate *lib = data->libraryMap.value(fileName);
+    if (!lib)
+        lib = new QLibraryPrivate(fileName, version);
+
+    // track this library
+    data->libraryMap.insert(fileName, lib);
+
+    lib->libraryRefCount.ref();
+    return lib;
+}
+
+inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
+{
+    QMutexLocker locker(&qt_library_mutex);
+    QLibraryStore *data = instance();
+
+    if (lib->libraryRefCount.deref()) {
+        // still in use
+        return;
+    }
+
+    // no one else is using
+    Q_ASSERT(lib->libraryUnloadCount.load() == 0);
+
+    QLibraryPrivate *that = data->libraryMap.take(lib->fileName);
+    Q_ASSERT(lib == that);
+    Q_UNUSED(that);
+    delete lib;
 }
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
     : pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0),
       loadHints(0),
-      libraryRefCount(1), libraryUnloadCount(0), pluginState(MightBeAPlugin)
-{ libraryMap()->insert(canonicalFileName, this); }
+      libraryRefCount(0), libraryUnloadCount(0), pluginState(MightBeAPlugin)
+{ }
 
 QLibraryPrivate *QLibraryPrivate::findOrCreate(const QString &fileName, const QString &version)
 {
-    QMutexLocker locker(&qt_library_mutex);
-    if (QLibraryPrivate *lib = libraryMap()->value(fileName)) {
-        lib->libraryRefCount.ref();
-        return lib;
-    }
-
-    return new QLibraryPrivate(fileName, version);
+    return QLibraryStore::findOrCreate(fileName, version);
 }
 
 QLibraryPrivate::~QLibraryPrivate()
 {
-    LibraryMap * const map = libraryMap();
-    if (map) {
-        QLibraryPrivate *that = map->take(fileName);
-        Q_ASSERT(this == that);
-	Q_UNUSED(that);
-    }
 }
 
 QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
@@ -391,9 +477,10 @@ QFunctionPointer QLibraryPrivate::resolve(const char *symbol)
 
 bool QLibraryPrivate::load()
 {
-    libraryUnloadCount.ref();
-    if (pHnd)
+    if (pHnd) {
+        libraryUnloadCount.ref();
         return true;
+    }
     if (fileName.isEmpty())
         return false;
 
@@ -403,32 +490,27 @@ bool QLibraryPrivate::load()
     if (ret) {
         //when loading a library we add a reference to it so that the QLibraryPrivate won't get deleted
         //this allows to unload the library at a later time
-        if (LibraryData *lib = libraryData()) {
-            lib->loadedLibs += this;
-            libraryRefCount.ref();
-        }
-
+        libraryUnloadCount.ref();
+        libraryRefCount.ref();
         installCoverageTool(this);
     }
 
     return ret;
 }
 
-bool QLibraryPrivate::unload()
+bool QLibraryPrivate::unload(UnloadFlag flag)
 {
     if (!pHnd)
         return false;
-    if (!libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
+    if (libraryUnloadCount.load() > 0 && !libraryUnloadCount.deref()) { // only unload if ALL QLibrary instance wanted to
         delete inst.data();
-        if  (unload_sys()) {
+        if (flag == NoUnloadSys || unload_sys()) {
             if (qt_debug_component())
-                qWarning() << "QLibraryPrivate::unload succeeded on" << fileName;
+                qWarning() << "QLibraryPrivate::unload succeeded on" << fileName
+                           << (flag == NoUnloadSys ? "(faked)" : "");
             //when the library is unloaded, we release the reference on it so that 'this'
             //can get deleted
-            if (LibraryData *lib = libraryData()) {
-                if (lib->loadedLibs.remove(this))
-                    libraryRefCount.deref();
-            }
+            libraryRefCount.deref();
             pHnd = 0;
             instance = 0;
         }
@@ -439,9 +521,7 @@ bool QLibraryPrivate::unload()
 
 void QLibraryPrivate::release()
 {
-    QMutexLocker locker(&qt_library_mutex);
-    if (!libraryRefCount.deref())
-        delete this;
+    QLibraryStore::releaseLibrary(this);
 }
 
 bool QLibraryPrivate::loadPlugin()
@@ -631,7 +711,7 @@ void QLibraryPrivate::updatePluginState()
                 hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, dwFlags);
                 SetErrorMode(oldmode);
 #else
-                temporary_load =  load_sys();
+                temporary_load =  load();
 #endif
             }
             QtPluginQueryVerificationDataFunction getMetaData = NULL;
@@ -656,11 +736,10 @@ void QLibraryPrivate::updatePluginState()
             if (getMetaData)
                 ret = qt_get_metadata(getMetaData, this, &exceptionThrown);
 
+            if (temporary_load)
+                unload();
             if (!exceptionThrown) {
-                if (!ret) {
-                    if (temporary_load)
-                        unload_sys();
-                } else {
+                if (ret) {
                     success = true;
                 }
                 retryLoadLibrary = false;

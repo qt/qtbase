@@ -197,7 +197,7 @@ void TextEdit::setupFileActions()
 #ifndef QT_NO_PRINTER
     a = new QAction(QIcon::fromTheme("document-print", QIcon(rsrcPath + "/fileprint.png")),
                     tr("&Print..."), this);
-    a->setPriority(QAction::LowPriority);    
+    a->setPriority(QAction::LowPriority);
     a->setShortcut(QKeySequence::Print);
     connect(a, SIGNAL(triggered()), this, SLOT(filePrint()));
     tb->addAction(a);
@@ -511,7 +511,7 @@ bool TextEdit::fileSaveAs()
 
 void TextEdit::filePrint()
 {
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     QPrinter printer(QPrinter::HighResolution);
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
     if (textEdit->textCursor().hasSelection())
@@ -525,7 +525,7 @@ void TextEdit::filePrint()
 
 void TextEdit::filePrintPreview()
 {
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     QPrinter printer(QPrinter::HighResolution);
     QPrintPreviewDialog preview(&printer, this);
     connect(&preview, SIGNAL(paintRequested(QPrinter*)), SLOT(printPreview(QPrinter*)));

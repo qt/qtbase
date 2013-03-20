@@ -78,6 +78,7 @@ public:
     virtual ~QFontEngineGlyphCache() { }
 
     Type cacheType() const { return m_type; }
+    const QTransform &transform() const { return m_transform; }
 
     QTransform m_transform;
     QFontEngineGlyphCache::Type m_type;

@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_PRINTER
 #include "private/qpaintengine_p.h"
 #include <QtPrintSupport/qtprintsupportglobal.h>

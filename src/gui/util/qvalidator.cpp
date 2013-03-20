@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -501,9 +502,6 @@ void QIntValidator::setTop(int top)
     setRange(bottom(), top);
 }
 
-
-#ifndef QT_NO_REGEXP
-
 /*!
     \internal
 */
@@ -519,6 +517,8 @@ QValidator::QValidator(QValidatorPrivate &d, QObject *parent)
         : QObject(d, parent)
 {
 }
+
+#ifndef QT_NO_REGEXP
 
 class QDoubleValidatorPrivate : public QValidatorPrivate
 {
@@ -905,6 +905,159 @@ void QRegExpValidator::setRegExp(const QRegExp& rx)
 }
 
 #endif
+
+#ifndef QT_NO_REGULAREXPRESSION
+
+/*!
+    \class QRegularExpressionValidator
+    \brief The QRegularExpressionValidator class is used to check a string
+    against a regular expression.
+
+    \since 5.1
+
+    QRegularExpressionValidator uses a regular expression (regexp) to
+    determine whether an input string is \l Acceptable, \l
+    Intermediate, or \l Invalid. The regexp can either be supplied
+    when the QRegularExpressionValidator is constructed, or at a later time.
+
+    If the regexp partially matches against the string, the result is
+    considered \l Intermediate. For example, "" and "A" are \l Intermediate for
+    the regexp \b{[A-Z][0-9]} (whereas "_" would be \l Invalid).
+
+    QRegularExpressionValidator automatically wraps the regular expression in
+    the \c{\\A} and \c{\\z} anchors; in other words, it always attempts to do
+    an exact match.
+
+    Example of use:
+    \snippet code/src_gui_util_qvalidator.cpp 5
+
+    Below we present some examples of validators. In practice they would
+    normally be associated with a widget as in the example above.
+
+    \snippet code/src_gui_util_qvalidator.cpp 6
+
+    \sa QRegularExpression, QIntValidator, QDoubleValidator, QRegExpValidator
+*/
+
+class QRegularExpressionValidatorPrivate : public QValidatorPrivate
+{
+    Q_DECLARE_PUBLIC(QRegularExpressionValidator)
+
+public:
+    QRegularExpression origRe; // the one set by the user
+    QRegularExpression usedRe; // the one actually used
+    void setRegularExpression(const QRegularExpression &re);
+};
+
+/*!
+    Constructs a validator with a \a parent object that accepts
+    any string (including an empty one) as valid.
+*/
+
+QRegularExpressionValidator::QRegularExpressionValidator(QObject *parent)
+    : QValidator(*new QRegularExpressionValidatorPrivate, parent)
+{
+    // origRe in the private will be an empty QRegularExpression,
+    // and therefore this validator will match any string.
+}
+
+/*!
+    Constructs a validator with a \a parent object that
+    accepts all strings that match the regular expression \a re.
+*/
+
+QRegularExpressionValidator::QRegularExpressionValidator(const QRegularExpression &re, QObject *parent)
+    : QValidator(*new QRegularExpressionValidatorPrivate, parent)
+{
+    Q_D(QRegularExpressionValidator);
+    d->setRegularExpression(re);
+}
+
+
+/*!
+    Destroys the validator.
+*/
+
+QRegularExpressionValidator::~QRegularExpressionValidator()
+{
+}
+
+/*!
+    Returns \l Acceptable if \a input is matched by the regular expression for
+    this validator, \l Intermediate if it has matched partially (i.e. could be
+    a valid match if additional valid characters are added), and \l Invalid if
+    \a input is not matched.
+
+    In case the \a input is not matched, the \a pos parameter is set to
+    the length of the \a input parameter; otherwise, it is not modified.
+
+    For example, if the regular expression is \b{\\w\\d\\d} (word-character,
+    digit, digit) then "A57" is \l Acceptable, "E5" is \l Intermediate, and
+    "+9" is \l Invalid.
+
+    \sa QRegularExpression::match()
+*/
+
+QValidator::State QRegularExpressionValidator::validate(QString &input, int &pos) const
+{
+    Q_D(const QRegularExpressionValidator);
+
+    // We want a validator with an empty QRegularExpression to match anything;
+    // since we're going to do an exact match (by using d->usedRe), first check if the rx is empty
+    // (and, if so, accept the input).
+    if (d->origRe.pattern().isEmpty())
+        return Acceptable;
+
+    const QRegularExpressionMatch m = d->usedRe.match(input, 0, QRegularExpression::PartialPreferCompleteMatch);
+    if (m.hasMatch()) {
+        return Acceptable;
+    } else if (m.hasPartialMatch()) {
+        return Intermediate;
+    } else {
+        pos = input.size();
+        return Invalid;
+    }
+}
+
+/*!
+    \property QRegularExpressionValidator::regularExpression
+    \brief the regular expression used for validation
+
+    By default, this property contains a regular expression with an empty
+    pattern (which therefore matches any string).
+*/
+
+QRegularExpression QRegularExpressionValidator::regularExpression() const
+{
+    Q_D(const QRegularExpressionValidator);
+    return d->origRe;
+}
+
+void QRegularExpressionValidator::setRegularExpression(const QRegularExpression &re)
+{
+    Q_D(QRegularExpressionValidator);
+    d->setRegularExpression(re);
+}
+
+/*!
+    \internal
+
+    Sets \a re as the regular expression. It wraps the regexp that's actually used
+    between \\A and \\z, therefore forcing an exact match.
+*/
+void QRegularExpressionValidatorPrivate::setRegularExpression(const QRegularExpression &re)
+{
+    Q_Q(QRegularExpressionValidator);
+
+    if (origRe != re) {
+        usedRe = origRe = re; // copies also the pattern options
+        usedRe.setPattern(QStringLiteral("\\A(?:") + re.pattern() + QStringLiteral(")\\z"));
+        emit q->regularExpressionChanged(re);
+        emit q->changed();
+    }
+}
+
+#endif // QT_NO_REGULAREXPRESSION
 
 QT_END_NAMESPACE
 

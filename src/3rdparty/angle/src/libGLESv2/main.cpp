@@ -14,6 +14,8 @@
 
 #include "libGLESv2/Framebuffer.h"
 
+#ifndef QT_OPENGL_ES_2_ANGLE_STATIC
+
 static DWORD currentTLS = TLS_OUT_OF_INDEXES;
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
@@ -72,14 +74,30 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved
     return TRUE;
 }
 
+static gl::Current *current()
+{
+    return (gl::Current*)TlsGetValue(currentTLS);
+}
+
+#else // !QT_OPENGL_ES_2_ANGLE_STATIC
+
+static inline gl::Current *current()
+{
+    // No precautions for thread safety taken as ANGLE is used single-threaded in Qt.
+    static gl::Current curr = { 0, 0 };
+    return &curr;
+}
+
+#endif // QT_OPENGL_ES_2_ANGLE_STATIC
+
 namespace gl
 {
 void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 {
-    Current *current = (Current*)TlsGetValue(currentTLS);
+    Current *curr = current();
 
-    current->context = context;
-    current->display = display;
+    curr->context = context;
+    curr->display = display;
 
     if (context && display && surface)
     {
@@ -89,9 +107,7 @@ void makeCurrent(Context *context, egl::Display *display, egl::Surface *surface)
 
 Context *getContext()
 {
-    Current *current = (Current*)TlsGetValue(currentTLS);
-
-    return current->context;
+    return current()->context;
 }
 
 Context *getNonLostContext()
@@ -115,9 +131,7 @@ Context *getNonLostContext()
 
 egl::Display *getDisplay()
 {
-    Current *current = (Current*)TlsGetValue(currentTLS);
-
-    return current->display;
+    return current()->display;
 }
 
 IDirect3DDevice9 *getDevice()

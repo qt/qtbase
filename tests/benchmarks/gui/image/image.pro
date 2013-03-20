@@ -6,5 +6,5 @@ SUBDIRS = \
         qpixmap \
         qpixmapcache
 
-!qtHaveModule(widgets): SUBDIRS -= \
+!qtHaveModule(widgets)|!qtHaveModule(network): SUBDIRS -= \
         qimagereader

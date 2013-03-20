@@ -4,7 +4,7 @@
 path_addRect hor 0 0 50 10
 path_addRect ver 0 0 10 50
 
-translate 10 10 
+translate 10 10
 setPen NoPen
 
 begin_block clipping
@@ -13,7 +13,7 @@ save
   setBrush 0x7f7fff
   save
     setClipPath hor
-    drawRect 0 0 100 100 
+    drawRect 0 0 100 100
 
     setClipPath ver IntersectClip
     setBrush black CrossPattern
@@ -21,18 +21,18 @@ save
   restore
 
   translate 100 0
-  save 
+  save
     setClipPath hor
     drawRect 0 0 100 100
 
     setClipPath ver ReplaceClip
     setBrush black CrossPattern
-    drawRect 0 0 100 100 
+    drawRect 0 0 100 100
   restore
 
   translate 100 0
-  save 
-    setClipPath hor 
+  save
+    setClipPath hor
     drawRect 0 0 100 100
 
     setClipPath ver UniteClip

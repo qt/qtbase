@@ -3,6 +3,7 @@ SUBDIRS=\
    qabstracttextdocumentlayout \
    qcssparser \
    qfont \
+   qfontcache \
    qfontdatabase \
    qfontmetrics \
    qglyphrun \
@@ -27,6 +28,7 @@ contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
 win32:SUBDIRS -= qtextpiecetable
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
+           qfontcache \
            qcssparser \
            qstatictext \
            qtextlayout \

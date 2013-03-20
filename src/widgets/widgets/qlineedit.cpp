@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -139,9 +139,9 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
 
     The length of the text can be constrained to maxLength(). The text
     can be arbitrarily constrained using a validator() or an
-    inputMask(), or both. When switching between a validator and an input mask 
-    on the same line edit, it is best to clear the validator or input mask to 
-    prevent undefined behavior. 
+    inputMask(), or both. When switching between a validator and an input mask
+    on the same line edit, it is best to clear the validator or input mask to
+    prevent undefined behavior.
 
 
     A related class is QTextEdit which allows multi-line, rich text
@@ -1758,7 +1758,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
         QObject::disconnect(d->control->completer(), 0, this, 0);
     }
 #endif
-    update();
+    QWidget::focusOutEvent(e);
 }
 
 /*!\reimp
@@ -1801,7 +1801,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     int minRB = qMax(0, -fm.minRightBearing());
 
     if (d->control->text().isEmpty()) {
-        if (!hasFocus() && !d->placeholderText.isEmpty()) {
+        if (!d->placeholderText.isEmpty()) {
             QColor col = pal.text().color();
             col.setAlpha(128);
             QPen oldpen = p.pen();
@@ -1810,7 +1810,6 @@ void QLineEdit::paintEvent(QPaintEvent *)
             QString elidedText = fm.elidedText(d->placeholderText, Qt::ElideRight, lineRect.width());
             p.drawText(lineRect, va, elidedText);
             p.setPen(oldpen);
-            return;
         }
     }
 

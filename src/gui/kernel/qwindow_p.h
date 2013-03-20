@@ -59,8 +59,6 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/QIcon>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #define QWINDOWSIZE_MAX ((1<<24)-1)
@@ -85,6 +83,7 @@ public:
         , visible(false)
         , exposed(false)
         , windowState(Qt::WindowNoState)
+        , visibility(QWindow::Hidden)
         , resizeEventPending(true)
         , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
@@ -99,6 +98,7 @@ public:
         , screen(0)
 #ifndef QT_NO_CURSOR
         , cursor(Qt::ArrowCursor)
+        , hasCursor(false)
 #endif
     {
         isWindow = true;
@@ -110,6 +110,7 @@ public:
 
     void maybeQuitOnLastWindowClosed();
 #ifndef QT_NO_CURSOR
+    void setCursor(const QCursor *c = 0);
     void applyCursor();
 #endif
 
@@ -123,6 +124,8 @@ public:
 
     virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
 
+    void updateVisibility();
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;
@@ -135,12 +138,14 @@ public:
     QIcon windowIcon;
     QRect geometry;
     Qt::WindowState windowState;
+    QWindow::Visibility visibility;
     bool resizeEventPending;
     bool receivedExpose;
     PositionPolicy positionPolicy;
     bool positionAutomatic;
     Qt::ScreenOrientation contentOrientation;
     qreal opacity;
+    QRegion mask;
 
     QSize minimumSize;
     QSize maximumSize;
@@ -155,12 +160,11 @@ public:
 
 #ifndef QT_NO_CURSOR
     QCursor cursor;
+    bool hasCursor;
 #endif
 };
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWINDOW_P_H

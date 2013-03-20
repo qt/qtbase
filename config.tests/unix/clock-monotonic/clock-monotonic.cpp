@@ -50,7 +50,7 @@ int main(int, char **)
 #else
 #  error "Feature _POSIX_MONOTONIC_CLOCK not available"
     // MIPSpro doesn't understand #error, so force a compiler error
-    force_compiler_error = true; 
+    force_compiler_error = true;
 #endif
     return 0;
 }

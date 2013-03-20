@@ -25,7 +25,7 @@
 **
 ****************************************************************************/
 
-/*! 
+/*!
     \example tools/regexp
     \title Regular Expressions Example
     \ingroup examples-widgets-tools

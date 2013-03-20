@@ -93,4 +93,9 @@ QList<QPrinter::PaperSize> QWindowsPrinterSupport::supportedPaperSizes(const QPr
     return QWin32PrintEngine::supportedPaperSizes(printerInfo);
 }
 
+QList<QPair<QString, QSizeF> >QWindowsPrinterSupport::supportedSizesWithNames(const QPrinterInfo &printerInfo) const
+{
+    return QWin32PrintEngine::supportedSizesWithNames(printerInfo);
+}
+
 QT_END_NAMESPACE

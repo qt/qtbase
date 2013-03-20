@@ -51,10 +51,10 @@ AddressBook::AddressBook(QWidget *parent)
 //! [setting readonly 1]
     QLabel *addressLabel = new QLabel(tr("Address:"));
     addressText = new QTextEdit;
-//! [setting readonly 2]    
+//! [setting readonly 2]
     addressText->setReadOnly(true);
 //! [setting readonly 2]
-   
+
 //! [pushbutton declaration]
     addButton = new QPushButton(tr("&Add"));
     addButton->show();
@@ -94,7 +94,7 @@ void AddressBook::addContact()
 
     nameLine->clear();
     addressText->clear();
-    
+
     nameLine->setReadOnly(false);
     nameLine->setFocus(Qt::OtherFocusReason);
     addressText->setReadOnly(false);
@@ -110,7 +110,7 @@ void AddressBook::submitContact()
 {
     QString name = nameLine->text();
     QString address = addressText->toPlainText();
-    
+
     if ( name.isEmpty()|| address.isEmpty()) {
         QMessageBox::information(this, tr("Empty Field"),
             tr("Please enter a name and address."));
@@ -152,6 +152,6 @@ void AddressBook::cancel()
 
     addButton->setEnabled(true);
     submitButton->hide();
-    cancelButton->hide();    
+    cancelButton->hide();
 }
 //! [cancel]

@@ -128,33 +128,33 @@ void QLocalSocketPrivate::destroyPipeHandles()
     }
 }
 
-void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
+bool QLocalSocket::open(OpenMode openMode)
 {
     Q_D(QLocalSocket);
     if (state() == ConnectedState || state() == ConnectingState) {
         setErrorString(tr("Trying to connect while connection is in progress"));
         emit error(QLocalSocket::OperationError);
-        return;
+        return false;
     }
 
     d->error = QLocalSocket::UnknownSocketError;
     d->errorString = QString();
     d->state = ConnectingState;
     emit stateChanged(d->state);
-    if (name.isEmpty()) {
+    if (d->serverName.isEmpty()) {
         d->error = QLocalSocket::ServerNotFoundError;
         setErrorString(QLocalSocket::tr("%1: Invalid name").arg(QLatin1String("QLocalSocket::connectToServer")));
         d->state = UnconnectedState;
         emit error(d->error);
         emit stateChanged(d->state);
-        return;
+        return false;
     }
 
     QString pipePath = QLatin1String("\\\\.\\pipe\\");
-    if (name.startsWith(pipePath))
-        d->fullServerName = name;
+    if (d->serverName.startsWith(pipePath))
+        d->fullServerName = d->serverName;
     else
-        d->fullServerName = pipePath + name;
+        d->fullServerName = pipePath + d->serverName;
     // Try to open a named pipe
     HANDLE localSocket;
     forever {
@@ -184,15 +184,15 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     if (localSocket == INVALID_HANDLE_VALUE) {
         d->setErrorString(QLatin1String("QLocalSocket::connectToServer"));
         d->fullServerName = QString();
-        return;
+        return false;
     }
 
     // we have a valid handle
-    d->serverName = name;
     if (setSocketDescriptor((qintptr)localSocket, ConnectedState, openMode)) {
         d->handle = localSocket;
         emit connected();
     }
+    return true;
 }
 
 // This is reading from the buffer

@@ -64,8 +64,6 @@
 #include <QtCore/QHash>
 #include <QtCore/QSet>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -215,6 +213,9 @@ public:
         //QWidgetPrivate::deleteTLSysExtra()
     }
 
+    mutable QHash<QOpenGLVersionProfile, QAbstractOpenGLFunctions *> versionFunctions;
+    mutable QHash<QOpenGLVersionStatus, QOpenGLVersionFunctionsBackend *> versionFunctionsBackend;
+
     void *qGLContextHandle;
     void (*qGLContextDeleteFunction)(void *handle);
 
@@ -258,8 +259,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 #endif // QOPENGLCONTEXT_P_H

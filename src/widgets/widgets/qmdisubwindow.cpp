@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -182,14 +182,6 @@ static const QStyle::SubControl SubControls[] =
     QStyle::SC_TitleBarContextHelpButton // 9
 };
 static const int NumSubControls = sizeof(SubControls) / sizeof(SubControls[0]);
-
-static const QStyle::StandardPixmap ButtonPixmaps[] =
-{
-    QStyle::SP_TitleBarMinButton,
-    QStyle::SP_TitleBarNormalButton,
-    QStyle::SP_TitleBarCloseButton
-};
-static const int NumButtonPixmaps = sizeof(ButtonPixmaps) / sizeof(ButtonPixmaps[0]);
 
 static const Qt::WindowFlags CustomizeWindowFlags =
       Qt::FramelessWindowHint

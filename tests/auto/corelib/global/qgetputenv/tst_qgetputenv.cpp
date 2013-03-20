@@ -75,6 +75,13 @@ void tst_QGetPutEnv::getSetCheck()
     QVERIFY(result == "supervalue");
 
     qputenv(varName,QByteArray());
+
+    // Now test qunsetenv
+    QVERIFY(qunsetenv(varName));
+    QVERIFY(!qEnvironmentVariableIsSet(varName));
+    QVERIFY(qEnvironmentVariableIsEmpty(varName));
+    result = qgetenv(varName);
+    QCOMPARE(result, QByteArray());
 }
 
 QTEST_MAIN(tst_QGetPutEnv)

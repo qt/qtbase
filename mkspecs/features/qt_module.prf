@@ -27,6 +27,17 @@ isEmpty(VERSION): error("Module does not define version.")
 # unless overridden. Host builds are always static
 host_build|staticlib: CONFIG += static
 
+host_build {
+    QT -= gui   # no host module will ever use gui
+    force_bootstrap {
+        !build_pass: CONFIG += release
+        contains(QT, core(-private)?|xml) {
+            QT -= core core-private xml
+            QT += bootstrap-private
+        }
+    }
+}
+
 ucmodule = $$upper($$MODULE)
 
 isEmpty(MODULE_INCNAME): MODULE_INCNAME = $$TARGET
@@ -74,13 +85,6 @@ contains(TARGET, QtAddOn.*): \
 else: \
     DEFINES += QT_BUILD_$${ucmodule}_LIB
 
-contains(QT_CONFIG, reduce_exports):CONFIG += hide_symbols
-unix:contains(QT_CONFIG, reduce_relocations):CONFIG += bsymbolic_functions
-contains(QT_CONFIG, largefile):CONFIG += largefile
-contains(QT_CONFIG, separate_debug_info):CONFIG += separate_debug_info
-contains(QT_CONFIG, separate_debug_info_nocopy):CONFIG += separate_debug_info_nocopy
-contains(QT_CONFIG, c++11):CONFIG += c++11
-
 #mac frameworks
 mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
    #QMAKE_FRAMEWORK_VERSION = 4.0
@@ -114,6 +118,8 @@ aix-g++* {
      QMAKE_CFLAGS   += -mminimal-toc
      QMAKE_CXXFLAGS += -mminimal-toc
 }
+
+android: CONFIG += qt_android_deps
 
 #install directives
 load(qt_installs)
@@ -169,6 +175,7 @@ win32 {
 TARGET = $$qtLibraryTarget($$TARGET$$QT_LIBINFIX) #do this towards the end
 
 load(qt_targets)
+load(qt_common)
 
 win32:DEFINES+=_USE_MATH_DEFINES
 

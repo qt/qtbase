@@ -69,7 +69,7 @@ namespace QSharedMemoryPrivate
 #include "qsystemsemaphore.h"
 #include "private/qobject_p.h"
 
-#if !defined(Q_OS_WIN) && !defined(Q_OS_LINUX_ANDROID)
+#if !defined(Q_OS_WIN) && !defined(Q_OS_ANDROID)
 #  include <sys/sem.h>
 #endif
 

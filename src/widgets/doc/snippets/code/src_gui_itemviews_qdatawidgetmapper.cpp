@@ -57,7 +57,7 @@ mapper->addMapping(ageSpinBox, 1);
 
 
 //! [2]
-QDataWidgetMapper *mapper = new QDataWidgetMapper(); 
+QDataWidgetMapper *mapper = new QDataWidgetMapper();
 connect(myTableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
         mapper, SLOT(setCurrentModelIndex(QModelIndex)));
 //! [2]

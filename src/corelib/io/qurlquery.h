@@ -50,8 +50,6 @@
 #include <QtCore/qstringlist.h>
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QUrlQueryPrivate;
@@ -172,7 +170,5 @@ inline QList<QByteArray> QUrl::allEncodedQueryItemValues(const QByteArray &key) 
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QURLQUERY_H

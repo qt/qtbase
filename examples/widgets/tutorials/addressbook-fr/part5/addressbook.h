@@ -68,9 +68,9 @@ public slots:
     void submitContact();
     void cancel();
     void removeContact();
-//! [findContact() declaration]    
+//! [findContact() declaration]
     void findContact();
-//! [findContact() declaration]    
+//! [findContact() declaration]
     void next();
     void previous();
 
@@ -80,9 +80,9 @@ private:
     QPushButton *addButton;
     QPushButton *editButton;
     QPushButton *removeButton;
-//! [findButton declaration]        
+//! [findButton declaration]
     QPushButton *findButton;
-//! [findButton declaration] 
+//! [findButton declaration]
     QPushButton *submitButton;
     QPushButton *cancelButton;
     QPushButton *nextButton;
@@ -91,9 +91,9 @@ private:
     QTextEdit *addressText;
 
     QMap<QString, QString> contacts;
-//! [FindDialog declaration]     
+//! [FindDialog declaration]
     FindDialog *dialog;
-//! [FindDialog declaration]     
+//! [FindDialog declaration]
     QString oldName;
     QString oldAddress;
     Mode currentMode;

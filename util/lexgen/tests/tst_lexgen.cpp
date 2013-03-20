@@ -227,7 +227,7 @@ void tst_LexGen::lexgen_data()
     d.cd("testdata");
     foreach (QString test, d.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         QString dir = d.absoluteFilePath(test) + '/';
-        QTest::newRow(qPrintable(test)) 
+        QTest::newRow(qPrintable(test))
             << dir + "rules.lexgen"
             << dir + "input"
             << dir + "output"

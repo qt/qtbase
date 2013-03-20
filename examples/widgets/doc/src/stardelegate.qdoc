@@ -257,7 +257,7 @@
     \l{QAbstractItemView::editTriggers()}{edit triggers}, so that the
     editor is opened with a single click when the star rating item is
     selected.
-    
+
     The \c populateTableWidget() function fills the QTableWidget with
     data:
 

@@ -287,8 +287,14 @@ QXcbCursor::QXcbCursor(QXcbConnection *conn, QXcbScreen *screen)
 
 QXcbCursor::~QXcbCursor()
 {
+    xcb_connection_t *conn = xcb_connection();
     if (!--cursorCount)
-        xcb_close_font(xcb_connection(), cursorFont);
+        xcb_close_font(conn, cursorFont);
+
+    foreach (xcb_cursor_t cursor, m_bitmapCursorMap)
+        xcb_free_cursor(conn, cursor);
+    foreach (xcb_cursor_t cursor, m_shapeCursorMap)
+        xcb_free_cursor(conn, cursor);
 }
 
 #ifndef QT_NO_CURSOR
@@ -300,18 +306,20 @@ void QXcbCursor::changeCursor(QCursor *cursor, QWindow *widget)
     else
         // No X11 cursor control when there is no widget under the cursor
         return;
-    
-    xcb_cursor_t c;
-    if (cursor->shape() == Qt::BitmapCursor) {
-        qint64 id = cursor->pixmap().cacheKey();
-        if (!m_bitmapCursorMap.contains(id))
-            m_bitmapCursorMap.insert(id, createBitmapCursor(cursor));
-        c = m_bitmapCursorMap.value(id);
-    } else {
-        int id = cursor->shape();
-        if (!m_shapeCursorMap.contains(id))
-            m_shapeCursorMap.insert(id, createFontCursor(cursor->shape()));
-        c = m_shapeCursorMap.value(id);
+
+    xcb_cursor_t c = XCB_CURSOR_NONE;
+    if (cursor) {
+        if (cursor->shape() == Qt::BitmapCursor) {
+            qint64 id = cursor->pixmap().cacheKey();
+            if (!m_bitmapCursorMap.contains(id))
+                m_bitmapCursorMap.insert(id, createBitmapCursor(cursor));
+            c = m_bitmapCursorMap.value(id);
+        } else {
+            int id = cursor->shape();
+            if (!m_shapeCursorMap.contains(id))
+                m_shapeCursorMap.insert(id, createFontCursor(cursor->shape()));
+            c = m_shapeCursorMap.value(id);
+        }
     }
 
     w->setCursor(c);

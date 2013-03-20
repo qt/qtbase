@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -877,7 +877,12 @@ void QWidgetPrivate::createTLSysExtra()
             extra->topextra->window->setMinimumSize(QSize(extra->minw, extra->minh));
         if (extra->maxw != QWIDGETSIZE_MAX || extra->maxh != QWIDGETSIZE_MAX)
             extra->topextra->window->setMaximumSize(QSize(extra->maxw, extra->maxh));
+#ifdef Q_OS_WIN
+        if (q->inherits("QTipLabel") || q->inherits("QAlphaWidget"))
+            extra->topextra->window->setProperty("_q_windowsDropShadow", QVariant(true));
+#endif
     }
+
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
@@ -989,6 +994,12 @@ static inline void applyCursor(QWidget *w, QCursor c)
         window->setCursor(c);
 }
 
+static inline void unsetCursor(QWidget *w)
+{
+    if (QWindow *window = w->windowHandle())
+        window->unsetCursor();
+}
+
 void qt_qpa_set_cursor(QWidget *w, bool force)
 {
     if (!w->testAttribute(Qt::WA_WState_Created))
@@ -1022,11 +1033,11 @@ void qt_qpa_set_cursor(QWidget *w, bool force)
         else
             // Enforce the windows behavior of clearing the cursor on
             // disabled widgets.
-            applyCursor(nativeParent, Qt::ArrowCursor);
+            unsetCursor(nativeParent);
     } else {
-        applyCursor(nativeParent, Qt::ArrowCursor);
+        unsetCursor(nativeParent);
     }
 }
-#endif //QT_NO_CURSOR 
+#endif //QT_NO_CURSOR
 
 QT_END_NAMESPACE

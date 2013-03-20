@@ -471,6 +471,10 @@ private slots:
     void httpDownloadPerformanceDownloadBuffer_data();
     void httpDownloadPerformanceDownloadBuffer();
     void httpsRequestChain();
+    void httpsUpload();
+
+private:
+    void runHttpsUploadRequest(const QByteArray &data, const QNetworkRequest &request);
 };
 
 void tst_qnetworkreply::initTestCase()
@@ -825,6 +829,28 @@ void tst_qnetworkreply::httpsRequestChain()
 
 }
 
+void tst_qnetworkreply::runHttpsUploadRequest(const QByteArray &data, const QNetworkRequest &request)
+{
+    QNetworkReply* reply = manager.post(request, data);
+    reply->ignoreSslErrors();
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(15);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    reply->deleteLater();
+}
+
+void tst_qnetworkreply::httpsUpload()
+{
+    QByteArray data = QByteArray(2*1024*1024+1, '\177');
+    QNetworkRequest request(QUrl("https://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
+//    for (int a = 0; a < 10; ++a)
+//        runHttpsUploadRequest(data, request); // to warmup all TCP connections
+    QBENCHMARK {
+        runHttpsUploadRequest(data, request);
+    }
+}
 
 
 QTEST_MAIN(tst_qnetworkreply)

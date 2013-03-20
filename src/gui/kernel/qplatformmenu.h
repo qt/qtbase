@@ -57,8 +57,6 @@
 #include <QtGui/QKeySequence>
 #include <QtGui/QIcon>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QPlatformMenu;
@@ -80,6 +78,7 @@ public:
     virtual void setIsSeparator(bool isSeparator) = 0;
     virtual void setFont(const QFont &font) = 0;
     virtual void setRole(MenuRole role) = 0;
+    virtual void setCheckable(bool checkable) = 0;
     virtual void setChecked(bool isChecked) = 0;
     virtual void setShortcut(const QKeySequence& shortcut) = 0;
     virtual void setEnabled(bool enabled) = 0;
@@ -101,8 +100,19 @@ public:
     virtual quintptr tag()const = 0;
 
     virtual void setText(const QString &text) = 0;
+    virtual void setIcon(const QIcon &icon) = 0;
     virtual void setEnabled(bool enabled) = 0;
     virtual void setVisible(bool visible) = 0;
+    virtual void setMinimumWidth(int width) { Q_UNUSED(width); }
+    virtual void setFont(const QFont &font) { Q_UNUSED(font); }
+
+    virtual void showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
+    {
+        Q_UNUSED(parentWindow);
+        Q_UNUSED(pos);
+        Q_UNUSED(item);
+        setVisible(true);
+    }
 
     virtual QPlatformMenuItem *menuItemAt(int position) const = 0;
     virtual QPlatformMenuItem *menuItemForTag(quintptr tag) const = 0;
@@ -124,8 +134,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif
 

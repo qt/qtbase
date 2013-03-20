@@ -57,8 +57,6 @@
 
 #include <QtGui/QClipboard>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -75,8 +73,6 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_CLIPBOARD
 

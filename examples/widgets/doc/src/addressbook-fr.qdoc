@@ -36,7 +36,7 @@
 
     \image addressbook-tutorial-screenshot.png
 
-    Ce tutoriel va nous amener à découvrir quelques technologies fondamentales fournies 
+    Ce tutoriel va nous amener à découvrir quelques technologies fondamentales fournies
     par Qt, tel que:
 
     \list
@@ -124,7 +124,7 @@
     réutilisé dans d'autres projets
     \endlist
 
-    Comme Qt ne fournit pas de widget standard pour un carnet d'adresses, nous 
+    Comme Qt ne fournit pas de widget standard pour un carnet d'adresses, nous
     partirons d'une classe de widget Qt standard et y ajouterons des fonctionnalités.
     La classe \c AddressBook crée dans ce tutoriel peut être réutilisée si on a besoin d'un
     widget carnet d'adresses basique.
@@ -148,12 +148,12 @@
     dans \c nameLine et \c addressText sont nécessaires à de nombreuses méthodes
     du carnet d'adresses.
 
-    Il n'est pas nécessaire de déclarer les objets QLabel que nous allons utiliser 
+    Il n'est pas nécessaire de déclarer les objets QLabel que nous allons utiliser
     puisque nous n'aurons pas besoin d'y faire référence après leur création.
     La façon dont Qt gère la parenté des objets est traitée dans la section suivante.
 
     La macro Q_OBJECT implémente des fonctionnalités parmi les plus avancées de Qt.
-    Pour le moment, il est bon de voir la macro Q_OBJECT comme un raccourci nous 
+    Pour le moment, il est bon de voir la macro Q_OBJECT comme un raccourci nous
     permettant d'utiliser les méthodes \l{QObject::}{tr()} et \l{QObject::}{connect()}.
 
     Nous en avons maintenant terminé avec le fichier \c addressbook.h et allons
@@ -295,13 +295,13 @@
 
     Le bouton \c addButton est affiché en invoquant la méthode \l{QPushButton::show()}
     {show()}, tandis que \c submitButton et \c cancelButton sont cachés en invoquant
-    \l{QPushButton::hide()}{hide()}. Ces deux boutons ne seront affichés que lorsque 
+    \l{QPushButton::hide()}{hide()}. Ces deux boutons ne seront affichés que lorsque
     l'utilisateur cliquera sur "Add", et ceci est géré par la méthode \c addContact()
     décrite plus loin.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp connecting signals and slots
 
-    Nous connectons le signal \l{QPushButton::clicked()}{clicked()} de chaque bouton 
+    Nous connectons le signal \l{QPushButton::clicked()}{clicked()} de chaque bouton
     au slot qui gèrera l'action.
     L'image ci-dessous illustre ceci:
 
@@ -379,8 +379,8 @@
 
     \snippet tutorials/addressbook/part2/addressbook.cpp cancel
 
-    L'idée générale pour augmenter la flexibilité lors de l'ajout d'un 
-    contact est de donner la possiblité de cliquer sur "Add" 
+    L'idée générale pour augmenter la flexibilité lors de l'ajout d'un
+    contact est de donner la possiblité de cliquer sur "Add"
     ou "Cancel" à n'importe quel moment.
     L'organigramme ci-dessous reprend l'ensemble des interactions dévelopées
     jusqu'ici:
@@ -458,15 +458,15 @@
     \c mainLayout.
     \image addressbook-tutorial-part3-labeled-layout.png
 
-    Dans notre méthode \c addContact(), nous avons desactivé ces boutons 
-    pour être sûr que l'utilisateur n'utilise pas la navigation lors de 
+    Dans notre méthode \c addContact(), nous avons desactivé ces boutons
+    pour être sûr que l'utilisateur n'utilise pas la navigation lors de
     l'ajout d'un contact.
 
     \snippet tutorials/addressbook/part3/addressbook.cpp disabling navigation
 
     Dans notre méthode \c submitContact(), nous activons les boutons de
     navigation, \c nextButton et \c previousButton, en fonction de la
-    taille de \c contacts. Commen mentionné plus tôt, la navigation n'est 
+    taille de \c contacts. Commen mentionné plus tôt, la navigation n'est
     activée que si il y a plus d'un contact dans le carnet d'adresses.
     Les lignes suivantes montrent comment faire cela:
 
@@ -475,13 +475,13 @@
     Nous incluons aussi ces lignes de code dans le bouton \c cancel().
 
     Souvenez vous que nous voulons émuler une liste-liée ciruculaire à
-    l'aide de l'objet QMap, \c contacts. Pour faire cela, nous obtenons un itérateur 
+    l'aide de l'objet QMap, \c contacts. Pour faire cela, nous obtenons un itérateur
     sur \c contact dans la méthode \c next(), et ensuite:
 
     \list
         \li Si l'itérateur n'est pas à la fin de \c contacts, nous l'incrémentons
         \li Si l'itérateur est à la fin de \c contacts, nous changeons sa position
-        jusqu'au début de \c contacts. Cela donne l'illusion que notre QMap 
+        jusqu'au début de \c contacts. Cela donne l'illusion que notre QMap
         fonctionne comme une liste circulaire.
     \endlist
 
@@ -490,7 +490,7 @@
     Une fois que nous avons itéré jusqu'à l'objet recherché dans \c contacts,
     nous affichons son contenu sur \c nameLine et \c addressText.
 
-    De la même façon, pour la méthode \c previous(), nous obtenons un 
+    De la même façon, pour la méthode \c previous(), nous obtenons un
     itérateur sur \c contacts et ensuite:
 
     \list
@@ -522,7 +522,7 @@
     \image addressbook-tutorial-screenshot.png
 
     Nous avons maintenant un carnet d'adresses qui ne se contente pas de
-    lister des contacts de façon ordonnée, mais permet également la 
+    lister des contacts de façon ordonnée, mais permet également la
     navigation. Il serait pratique d'inclure des fonctions telles qu'éditer et
     supprimer, afin que les détails associés à un contact puissent être
     modifiés lorsque c'est nécessaire. Cependant, cela requiert une légère
@@ -563,7 +563,7 @@
     \dots
     \snippet tutorials/addressbook/part4/addressbook.h mode declaration
 
-    Enfin, on déclare \c currentMode pour garder une trace du mode 
+    Enfin, on déclare \c currentMode pour garder une trace du mode
     actuellement utilisé.
 
     \section1 Implémentation de la classe AddressBook
@@ -637,7 +637,7 @@
     avant de tester sa valeur.
 
     Chacun des boutons est ensuite activé ou désactivé, en fonction du mode.
-    Le code source pour les cas \c AddingMode et \c EditingMode est visible 
+    Le code source pour les cas \c AddingMode et \c EditingMode est visible
     ci-dessous:
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 1
@@ -840,7 +840,7 @@
 
     \section1 Définition de la classe AddressBook
 
-    On déclare deux slots publics, \c saveToFile() et \c loadFromFile(), 
+    On déclare deux slots publics, \c saveToFile() et \c loadFromFile(),
     ainsi que deux objets QPushButton, \c loadButton et \c saveButton.
 
     \snippet tutorials/addressbook/part6/addressbook.h save and load functions declaration
@@ -863,11 +863,11 @@
     \snippet tutorials/addressbook/part6/addressbook.cpp tooltip 2
 
     Bien qu'on ne cite pas le code correspondant ici, nous ajoutons ces deux boutons au
-    layout de droite, \c button1Layout, comme pour les fonctionnalités précédentes, et 
+    layout de droite, \c button1Layout, comme pour les fonctionnalités précédentes, et
     nous connectons leurs signaux
     \l{QPushButton::clicked()}{clicked()} à leurs slots respectifs.
 
-    Pour la sauvegarde, on commence par récupérer le nom de fichier 
+    Pour la sauvegarde, on commence par récupérer le nom de fichier
     \c fileName, en utilisant QFileDialog::getSaveFileName(). C'est une
     méthode pratique fournie par QFileDialog, qui ouvre une boîte de
     dialogue modale et permet à l'utilisateur d'entrer un nom de fichier ou
@@ -966,7 +966,7 @@
     \section1 Définition de la classe AddressBook
 
     Nous ajoutons un objet QPushButton, \c exportButton, et un slot
-    public correspondant, \c exportAsVCard(), à notre classe \c AddressBook 
+    public correspondant, \c exportAsVCard(), à notre classe \c AddressBook
     dans le fichier \c addressbook.h.
 
     \snippet tutorials/addressbook/part7/addressbook.h exportAsVCard() declaration
@@ -1001,7 +1001,7 @@
     cela échoue, nous affichons un QMessageBox pour informer l'utilisateur
     à propos de l'origine du problème et nous quittons la méthode. Sinon, nous passons le
     fichier comme paramètre pour créer un objet QTextStream, \c out. De la même façon que
-    QDataStream, la classe QTextStream fournit les fonctionnalités pour 
+    QDataStream, la classe QTextStream fournit les fonctionnalités pour
     lire et écrire des fichiers de texte. Grâce à celà, le fichier \c{.vcf}
     généré pourra être ouvert et édité à l'aide d'un simple éditeur de texte.
 
@@ -1014,7 +1014,7 @@
     à un nom de famille défini ou non. Si oui, nous utilions les détails de
     \c nameList pour remplir le champ, dans le cas contraire on écrit uniquement le contenu
     de \c firstName.
- 
+
     \snippet tutorials/addressbook/part7/addressbook.cpp export function part3
 
     Nous continuons en écrivant l'adresse du contact. Les points-virgules
@@ -1026,7 +1026,7 @@
     \snippet tutorials/addressbook/part7/addressbook.cpp export function part4
 
     À la fin de la méthode, un QMessageBox est affiché pour informer l'utilisateur
-    que la vCard a été exportée avec succès. 
+    que la vCard a été exportée avec succès.
 
     \e{vCard est une marque déposée de \l{http://www.imc.org}
     {Internet Mail Consortium}}.

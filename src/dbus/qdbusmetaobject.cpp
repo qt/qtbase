@@ -77,7 +77,7 @@ private:
         QVarLengthArray<int, 4> outputTypes;
         int flags;
     };
-    
+
     struct Property {
         QByteArray typeName;
         QByteArray signature;
@@ -92,14 +92,14 @@ private:
     QMap<QByteArray, Method> signals_;
     QMap<QByteArray, Method> methods;
     QMap<QByteArray, Property> properties;
-    
+
     const QDBusIntrospection::Interface *data;
     QString interface;
 
     Type findType(const QByteArray &signature,
                   const QDBusIntrospection::Annotations &annotations,
                   const char *direction = "Out", int id = -1);
-    
+
     void parseMethods();
     void parseSignals();
     void parseProperties();
@@ -258,7 +258,7 @@ void QDBusMetaObjectGenerator::parseMethods()
             mm.inputTypes.append(type.id);
 
             mm.parameterNames.append(arg.name.toLatin1());
-            
+
             prototype.append(type.name);
             prototype.append(',');
         }
@@ -331,7 +331,7 @@ void QDBusMetaObjectGenerator::parseSignals()
             mm.inputTypes.append(type.id);
 
             mm.parameterNames.append(arg.name.toLatin1());
-            
+
             prototype.append(type.name);
             prototype.append(',');
         }
@@ -361,7 +361,7 @@ void QDBusMetaObjectGenerator::parseProperties()
         Type type = findType(p.type.toLatin1(), p.annotations);
         if (type.id == QVariant::Invalid)
             continue;
-        
+
         QByteArray name = p.name.toLatin1();
         mp.signature = p.type.toLatin1();
         mp.type = type.id;
@@ -564,7 +564,7 @@ void QDBusMetaObjectGenerator::writeWithoutXml(const QString &interface)
 
     char *stringdata = new char[name.length() + 1];
     stringdata[name.length()] = '\0';
-    
+
     d.data = reinterpret_cast<uint*>(header);
     d.relatedMetaObjects = 0;
     d.static_metacall = 0;
@@ -615,7 +615,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
     if (we)
         return we;
     // still nothing?
-    
+
     if (parsed.isEmpty()) {
         // object didn't return introspection
         we = new QDBusMetaObject;
@@ -627,7 +627,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
         // merge all interfaces
         it = parsed.constBegin();
         QDBusIntrospection::Interface merged = *it.value().constData();
- 
+
         for (++it; it != end; ++it) {
             merged.annotations.unite(it.value()->annotations);
             merged.methods.unite(it.value()->methods);

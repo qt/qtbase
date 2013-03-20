@@ -527,26 +527,26 @@ void tst_QSyntaxHighlighter::rehighlight()
 void tst_QSyntaxHighlighter::rehighlightBlock()
 {
     TestHighlighter *hl = new TestHighlighter(doc);
-    
+
     cursor.movePosition(QTextCursor::Start);
     cursor.beginEditBlock();
     cursor.insertText("Hello");
     cursor.insertBlock();
     cursor.insertText("World");
     cursor.endEditBlock();
-    
+
     hl->callCount = 0;
     hl->highlightedText.clear();
     QTextBlock block = doc->begin();
     hl->rehighlightBlock(block);
-    
+
     QCOMPARE(hl->highlightedText, QString("Hello"));
     QCOMPARE(hl->callCount, 1);
-    
+
     hl->callCount = 0;
     hl->highlightedText.clear();
     hl->rehighlightBlock(block.next());
-    
+
     QCOMPARE(hl->highlightedText, QString("World"));
     QCOMPARE(hl->callCount, 1);
 }

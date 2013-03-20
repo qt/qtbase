@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -52,9 +52,10 @@
 #include <qevent.h>
 #include <qpen.h>
 #include <qdebug.h>
+#include <QMetaMethod>
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
-#include <qaccessible2.h>
+#include <private/qaccessible2_p.h>
 #endif
 
 #include <private/qtreeview_p.h>
@@ -748,6 +749,8 @@ void QTreeView::expand(const QModelIndex &index)
 {
     Q_D(QTreeView);
     if (!d->isIndexValid(index))
+        return;
+    if (index.flags() & Qt::ItemNeverHasChildren)
         return;
     if (d->delayedPendingLayout) {
         //A complete relayout is going to be performed, just store the expanded index, no need to layout.
@@ -2644,7 +2647,17 @@ void QTreeView::expandAll()
 void QTreeView::collapseAll()
 {
     Q_D(QTreeView);
+    QSet<QPersistentModelIndex> old_expandedIndexes;
+    old_expandedIndexes = d->expandedIndexes;
     d->expandedIndexes.clear();
+    if (!signalsBlocked() && isSignalConnected(QMetaMethod::fromSignal(&QTreeView::collapsed))) {
+        QSet<QPersistentModelIndex>::const_iterator i = old_expandedIndexes.constBegin();
+        for (; i != old_expandedIndexes.constEnd(); ++i) {
+            const QPersistentModelIndex &mi = (*i);
+            if (mi.isValid() && !(mi.flags() & Qt::ItemNeverHasChildren))
+                emit collapsed(mi);
+        }
+    }
     doItemsLayout();
 }
 
@@ -2658,6 +2671,8 @@ void QTreeView::expandToDepth(int depth)
 {
     Q_D(QTreeView);
     d->viewItems.clear();
+    QSet<QPersistentModelIndex> old_expandedIndexes;
+    old_expandedIndexes = d->expandedIndexes;
     d->expandedIndexes.clear();
     d->interruptDelayedItemsLayout();
     d->layout(-1);
@@ -2668,6 +2683,29 @@ void QTreeView::expandToDepth(int depth)
             d->storeExpanded(d->viewItems.at(i).index);
         }
     }
+
+    bool someSignalEnabled = isSignalConnected(QMetaMethod::fromSignal(&QTreeView::collapsed));
+    someSignalEnabled |= isSignalConnected(QMetaMethod::fromSignal(&QTreeView::expanded));
+
+    if (!signalsBlocked() && someSignalEnabled) {
+        // emit signals
+        QSet<QPersistentModelIndex> collapsedIndexes = old_expandedIndexes - d->expandedIndexes;
+        QSet<QPersistentModelIndex>::const_iterator i = collapsedIndexes.constBegin();
+        for (; i != collapsedIndexes.constEnd(); ++i) {
+            const QPersistentModelIndex &mi = (*i);
+            if (mi.isValid() && !(mi.flags() & Qt::ItemNeverHasChildren))
+                emit collapsed(mi);
+        }
+
+        QSet<QPersistentModelIndex> expandedIndexs = d->expandedIndexes - old_expandedIndexes;
+        i = expandedIndexs.constBegin();
+        for (; i != expandedIndexs.constEnd(); ++i) {
+            const QPersistentModelIndex &mi = (*i);
+            if (mi.isValid() && !(mi.flags() & Qt::ItemNeverHasChildren))
+                emit expanded(mi);
+        }
+    }
+
     updateGeometries();
     d->viewport->update();
 }
@@ -2887,6 +2925,9 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
 
     if (item == -1 || viewItems.at(item).expanded)
         return;
+    const QModelIndex index = viewItems.at(item).index;
+    if (index.flags() & Qt::ItemNeverHasChildren)
+        return;
 
 #ifndef QT_NO_ANIMATION
     if (emitSignal && animationsEnabled)
@@ -2896,7 +2937,6 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (state != QAbstractItemView::AnimatingState)
         stateBeforeAnimation = state;
     q->setState(QAbstractItemView::ExpandingState);
-    const QModelIndex index = viewItems.at(item).index;
     storeExpanded(index);
     viewItems[item].expanded = true;
     layout(item);
@@ -3189,9 +3229,9 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
             item->expanded = false;
             item->total = 0;
             item->hasMoreSiblings = false;
-            if (recursiveExpanding || isIndexExpanded(current)) {
-                if (recursiveExpanding)
-                    expandedIndexes.insert(current);
+            if ((recursiveExpanding && !(current.flags() & Qt::ItemNeverHasChildren)) || isIndexExpanded(current)) {
+                if (recursiveExpanding && storeExpanded(current) && !q->signalsBlocked())
+                    emit q->expanded(current);
                 item->expanded = true;
                 layout(last, recursiveExpanding, afterIsUninitialized);
                 item = &viewItems[last];

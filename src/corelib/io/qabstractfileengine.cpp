@@ -400,6 +400,19 @@ bool QAbstractFileEngine::close()
 }
 
 /*!
+    \since 5.1
+
+    Flushes and syncs the file to disk.
+
+    Returns true if successful; otherwise returns false.
+    The default implementation always returns false.
+*/
+bool QAbstractFileEngine::syncToDisk()
+{
+    return false;
+}
+
+/*!
     Flushes the open file, returning true if successful; otherwise returns
     false.
 
@@ -490,6 +503,24 @@ bool QAbstractFileEngine::copy(const QString &newName)
     \sa setFileName()
  */
 bool QAbstractFileEngine::rename(const QString &newName)
+{
+    Q_UNUSED(newName);
+    return false;
+}
+
+/*!
+    \since 5.1
+
+    Requests that the file be renamed to \a newName in the file
+    system. If the new name already exists, it must be overwritten.
+    If the operation succeeds, returns true; otherwise returns
+    false.
+
+    This virtual function must be reimplemented by all subclasses.
+
+    \sa setFileName()
+ */
+bool QAbstractFileEngine::renameOverwrite(const QString &newName)
 {
     Q_UNUSED(newName);
     return false;

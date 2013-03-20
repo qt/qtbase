@@ -53,9 +53,6 @@
 #include <qthread.h>
 #include <limits.h>
 #if !defined(Q_OS_WINCE)
-#ifndef QT_NO_WIDGETS
-#include <qprinter.h>
-#endif
 #include <math.h>
 #endif
 #include <qpaintengine.h>

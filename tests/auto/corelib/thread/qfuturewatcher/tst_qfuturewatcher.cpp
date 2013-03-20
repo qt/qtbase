@@ -797,7 +797,7 @@ public:
     ResultReadyTester(QFutureWatcher<int> *watcher)
     :m_watcher(watcher), filter(false), ok(true), count(0)
     {
-        
+
     }
 public slots:
     void resultReadyAt(int index)
@@ -834,7 +834,7 @@ void tst_QFutureWatcher::incrementalMapResults()
     connect(&watcher, SIGNAL(resultReadyAt(int)), &resultReadyTester, SLOT(resultReadyAt(int)));
 
     const int count = 10000;
-    QList<int> ints; 
+    QList<int> ints;
     for (int i = 0; i < count; ++i)
         ints << i;
 
@@ -846,7 +846,7 @@ void tst_QFutureWatcher::incrementalMapResults()
     QCOMPARE(resultReadyTester.count, count);
     QVERIFY(resultReadyTester.ok);
     QVERIFY(watcher.isFinished());
-    future.waitForFinished(); 
+    future.waitForFinished();
 }
 
 bool filterer(int i)
@@ -873,7 +873,7 @@ void tst_QFutureWatcher::incrementalFilterResults()
     connect(&watcher, SIGNAL(resultReadyAt(int)), &resultReadyTester, SLOT(resultReadyAt(int)));
 
     const int count = 10000;
-    QList<int> ints; 
+    QList<int> ints;
     for (int i = 0; i < count; ++i)
         ints << i;
 
@@ -885,12 +885,12 @@ void tst_QFutureWatcher::incrementalFilterResults()
     QCOMPARE(resultReadyTester.count, count / 2);
     QVERIFY(resultReadyTester.ok);
     QVERIFY(watcher.isFinished());
-    future.waitForFinished(); 
+    future.waitForFinished();
 }
 
 void tst_QFutureWatcher::qfutureSynchronizer()
 {
-    int taskCount = 1000; 
+    int taskCount = 1000;
     QTime t;
     t.start();
 

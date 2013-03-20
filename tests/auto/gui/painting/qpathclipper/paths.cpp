@@ -127,7 +127,7 @@ QPainterPath Paths::body()
     path.cubicTo(105.28125,81.341000, 89.784000,65.812500, 70.531250,65.812500);
     path.lineTo(54.437500,65.812500);
     path.closeSubpath();
-        
+
     return path;
 }
 
@@ -143,7 +143,7 @@ QPainterPath Paths::mailbox()
     path.lineTo(443.62570,100.11509);
     path.lineTo(355.22951,136.82424);
     path.closeSubpath();
-    
+
     return path;
 }
 
@@ -271,7 +271,7 @@ QPainterPath Paths::lips()
     path.cubicTo(283.58862,123.78263, 270.15105,136.64382, 243.62716,155.61729);
     path.cubicTo(217.47805,174.32266, 199.38332,176.65905, 177.02257,176.65905);
     path.closeSubpath();
-        
+
     return path;
 }
 
@@ -290,14 +290,14 @@ QPainterPath Paths::bezier2()
     QPainterPath path;
     path.moveTo(200,200);
     path.cubicTo(200,125, 500,100, 500,500);
-    
+
     return path;
 }
 
 QPainterPath Paths::random1()
 {
     QPainterPath path;
-    
+
     path.moveTo(65.714286,91.428571);
     path.lineTo(217.14286, 102.85714);
     path.cubicTo(219.04762, 106.66666,
@@ -341,7 +341,7 @@ QPainterPath Paths::random1()
 QPainterPath Paths::random2()
 {
     QPainterPath path;
-    
+
     path.moveTo(314.28571,160);
     path.cubicTo(434.28571,125.71429,
                  505.71429,200,
@@ -573,7 +573,7 @@ QPainterPath Paths::triangle1()
 }
 
 QPainterPath Paths::triangle2()
-{  
+{
     QPainterPath path;
 
     path.moveTo(0, 120);

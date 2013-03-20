@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -56,46 +56,33 @@ QT_BEGIN_NAMESPACE
 
 static QFontDatabase::WritingSystem writingSystemForFont(const QFont &font, bool *hasLatin)
 {
-    *hasLatin = true;
-
     QList<QFontDatabase::WritingSystem> writingSystems = QFontDatabase().writingSystems(font.family());
 //     qDebug() << font.family() << writingSystems;
 
     // this just confuses the algorithm below. Vietnamese is Latin with lots of special chars
-    writingSystems.removeAll(QFontDatabase::Vietnamese);
-
-    QFontDatabase::WritingSystem system = QFontDatabase::Any;
-
-    if (!writingSystems.contains(QFontDatabase::Latin)) {
-        *hasLatin = false;
-        // we need to show something
-        if (writingSystems.count())
-            system = writingSystems.last();
-    } else {
-        writingSystems.removeAll(QFontDatabase::Latin);
-    }
+    writingSystems.removeOne(QFontDatabase::Vietnamese);
+    *hasLatin = writingSystems.removeOne(QFontDatabase::Latin);
 
     if (writingSystems.isEmpty())
-        return system;
+        return QFontDatabase::Any;
 
-    if (writingSystems.count() == 1 && writingSystems.at(0) > QFontDatabase::Cyrillic) {
-        system = writingSystems.at(0);
-        return system;
-    }
+    QFontDatabase::WritingSystem system = writingSystems.last();
 
-    if (writingSystems.count() <= 2
-        && writingSystems.last() > QFontDatabase::Armenian
-        && writingSystems.last() < QFontDatabase::Vietnamese) {
-        system = writingSystems.last();
+    if (!*hasLatin) {
+        // we need to show something
         return system;
     }
 
-    if (writingSystems.count() <= 5
-        && writingSystems.last() >= QFontDatabase::SimplifiedChinese
-        && writingSystems.last() <= QFontDatabase::Korean)
-        system = writingSystems.last();
+    if (writingSystems.count() == 1 && system > QFontDatabase::Cyrillic)
+        return system;
 
-    return system;
+    if (writingSystems.count() <= 2 && system > QFontDatabase::Armenian && system < QFontDatabase::Vietnamese)
+        return system;
+
+    if (writingSystems.count() <= 5 && system >= QFontDatabase::SimplifiedChinese && system <= QFontDatabase::Korean)
+        return system;
+
+    return QFontDatabase::Any;
 }
 
 class QFontFamilyDelegate : public QAbstractItemDelegate

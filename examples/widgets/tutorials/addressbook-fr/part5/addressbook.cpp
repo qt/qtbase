@@ -81,19 +81,19 @@ AddressBook::AddressBook(QWidget *parent)
     connect(editButton, SIGNAL(clicked()), this, SLOT(editContact()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
     connect(removeButton, SIGNAL(clicked()), this, SLOT(removeContact()));
-//! [signals and slots for find]    
+//! [signals and slots for find]
     connect(findButton, SIGNAL(clicked()), this, SLOT(findContact()));
-//! [signals and slots for find]        
+//! [signals and slots for find]
     connect(nextButton, SIGNAL(clicked()), this, SLOT(next()));
     connect(previousButton, SIGNAL(clicked()), this, SLOT(previous()));
-    
+
     QVBoxLayout *buttonLayout1 = new QVBoxLayout;
     buttonLayout1->addWidget(addButton);
     buttonLayout1->addWidget(editButton);
     buttonLayout1->addWidget(removeButton);
-//! [adding findButton to layout]        
+//! [adding findButton to layout]
     buttonLayout1->addWidget(findButton);
-//! [adding findButton to layout]            
+//! [adding findButton to layout]
     buttonLayout1->addWidget(submitButton);
     buttonLayout1->addWidget(cancelButton);
     buttonLayout1->addStretch();
@@ -145,7 +145,7 @@ void AddressBook::submitContact()
    }
 
     if (currentMode == AddingMode) {
-        
+
         if (!contacts.contains(name)) {
             contacts.insert(name, address);
             QMessageBox::information(this, tr("Add Successful"),
@@ -155,7 +155,7 @@ void AddressBook::submitContact()
                 tr("Sorry, \"%1\" is already in your address book.").arg(name));
         }
     } else if (currentMode == EditingMode) {
-        
+
         if (oldName != name) {
             if (!contacts.contains(name)) {
                 QMessageBox::information(this, tr("Edit Successful"),
@@ -196,7 +196,7 @@ void AddressBook::removeContact()
             QMessageBox::Yes | QMessageBox::No);
 
         if (button == QMessageBox::Yes) {
-            
+
             previous();
             contacts.remove(name);
 
@@ -241,7 +241,7 @@ void AddressBook::previous()
     nameLine->setText(i.key());
     addressText->setText(i.value());
 }
-//! [findContact() function] 
+//! [findContact() function]
 void AddressBook::findContact()
 {
     dialog->show();
@@ -261,7 +261,7 @@ void AddressBook::findContact()
 
     updateInterface(NavigationMode);
 }
-//! [findContact() function] 
+//! [findContact() function]
 
 void AddressBook::updateInterface(Mode mode)
 {
@@ -288,7 +288,7 @@ void AddressBook::updateInterface(Mode mode)
         break;
 
     case NavigationMode:
-        
+
         if (contacts.isEmpty()) {
             nameLine->clear();
             addressText->clear();

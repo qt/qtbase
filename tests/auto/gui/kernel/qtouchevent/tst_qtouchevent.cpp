@@ -414,7 +414,7 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
     // QGraphicsView
     {
         QGraphicsScene scene;
-        tst_QTouchEventGraphicsItem root, child, grandchild;        
+        tst_QTouchEventGraphicsItem root, child, grandchild;
         QGraphicsView view(&scene);
         scene.addItem(&root);
         root.setPos(100, 100);
@@ -778,7 +778,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     QVERIFY(rightWidget.seenTouchBegin);
     QVERIFY(!rightWidget.seenTouchUpdate);
     QVERIFY(!rightWidget.seenTouchEnd);
-    QCOMPARE(leftWidget.touchBeginPoints.count(), 1);    
+    QCOMPARE(leftWidget.touchBeginPoints.count(), 1);
     QCOMPARE(rightWidget.touchBeginPoints.count(), 1);
     {
         QTouchEvent::TouchPoint leftTouchPoint = leftWidget.touchBeginPoints.first();
@@ -1633,4 +1633,4 @@ void tst_QTouchEvent::testMultiDevice()
 
 QTEST_MAIN(tst_QTouchEvent)
 
-#include "tst_qtouchevent.moc"      
+#include "tst_qtouchevent.moc"

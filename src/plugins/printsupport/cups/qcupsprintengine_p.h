@@ -97,6 +97,7 @@ public:
 
     void updatePaperSize();
     void setPaperSize();
+    void setPaperName();
     void setCupsDefaults();
 
 private:

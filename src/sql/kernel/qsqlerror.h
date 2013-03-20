@@ -45,8 +45,6 @@
 #include <QtCore/qstring.h>
 #include <QtSql/qsql.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -71,15 +69,18 @@ public:
     ~QSqlError();
 
     QString driverText() const;
-    void setDriverText(const QString& driverText);
     QString databaseText() const;
-    void setDatabaseText(const QString& databaseText);
     ErrorType type() const;
-    void setType(ErrorType type);
     int number() const;
-    void setNumber(int number);
     QString text() const;
     bool isValid() const;
+
+#if QT_DEPRECATED_SINCE(5, 1)
+    QT_DEPRECATED void setDriverText(const QString &driverText);
+    QT_DEPRECATED void setDatabaseText(const QString &databaseText);
+    QT_DEPRECATED void setType(ErrorType type);
+    QT_DEPRECATED void setNumber(int number);
+#endif
 
 private:
     QString driverError;
@@ -93,7 +94,5 @@ Q_SQL_EXPORT QDebug operator<<(QDebug, const QSqlError &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSQLERROR_H

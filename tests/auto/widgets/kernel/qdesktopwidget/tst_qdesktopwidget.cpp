@@ -42,6 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtWidgets/QDesktopWidget>
+#include <QtGui/QWindow>
 #include <QDebug>
 
 class tst_QDesktopWidget : public QObject
@@ -63,6 +64,7 @@ private slots:
     void screenNumberForQPoint();
     void availableGeometry();
     void screenGeometry();
+    void topLevels();
 };
 
 tst_QDesktopWidget::tst_QDesktopWidget()
@@ -175,6 +177,21 @@ void tst_QDesktopWidget::screenGeometry()
         total = desktopWidget->screenGeometry(i);
         available = desktopWidget->availableGeometry(i);
     }
+}
+
+void tst_QDesktopWidget::topLevels()
+{
+    // Desktop widgets/windows should not be listed as top-levels.
+    int topLevelDesktopWidgets = 0;
+    int topLevelDesktopWindows = 0;
+    foreach (const QWidget *w, QApplication::topLevelWidgets())
+        if (w->windowType() == Qt::Desktop)
+            topLevelDesktopWidgets++;
+    foreach (const QWindow *w, QGuiApplication::topLevelWindows())
+        if (w->type() == Qt::Desktop)
+            topLevelDesktopWindows++;
+    QCOMPARE(topLevelDesktopWidgets, 0);
+    QCOMPARE(topLevelDesktopWindows, 0);
 }
 
 QTEST_MAIN(tst_QDesktopWidget)

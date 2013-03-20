@@ -258,6 +258,23 @@ bool QFSFileEnginePrivate::nativeFlush()
 
 /*!
     \internal
+    \since 5.1
+*/
+bool QFSFileEnginePrivate::nativeSyncToDisk()
+{
+    Q_Q(QFSFileEngine);
+#if defined(_POSIX_SYNCHRONIZED_IO) && _POSIX_SYNCHRONIZED_IO > 0
+    const int ret = fdatasync(nativeHandle());
+#else
+    const int ret = fsync(nativeHandle());
+#endif
+    if (ret != 0)
+        q->setError(QFile::WriteError, qt_error_string(errno));
+    return ret == 0;
+}
+
+/*!
+    \internal
 */
 qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 {
@@ -386,6 +403,12 @@ bool QFSFileEngine::copy(const QString &newName)
         setError(QFile::CopyError, error.toString());
     }
     return ret;
+}
+
+bool QFSFileEngine::renameOverwrite(const QString &newName)
+{
+    // On Unix, rename() overwrites.
+    return rename(newName);
 }
 
 bool QFSFileEngine::rename(const QString &newName)

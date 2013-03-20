@@ -46,8 +46,6 @@
 
 #include <limits.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -98,7 +96,5 @@ public:
 #endif // QT_NO_THREAD
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWAITCONDITION_H

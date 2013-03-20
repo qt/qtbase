@@ -63,8 +63,8 @@ AbstractItemView::~AbstractItemView()
 
 /*virtual*/
 void AbstractItemView::setModel(QAbstractItemModel *model, AbstractViewItem *prototype)
-{    
-    if( m_model == model || !model)
+{
+    if (m_model == model || !model)
         return;
 
     if (m_model) {
@@ -236,7 +236,7 @@ void AbstractItemView::currentIndexChanged(const QModelIndex &current, const QMo
 
 /*virtual*/
 void AbstractItemView::currentSelectionChanged(const QItemSelection &selected,
-                                                 const QItemSelection &deselected)
+                                               const QItemSelection &deselected)
 {
    Q_UNUSED(selected)
    Q_UNUSED(deselected)
@@ -259,7 +259,6 @@ void AbstractItemView::rowsAboutToBeInserted(const QModelIndex &index, int start
 
     // TODO implement
 }
-
 
 /*virtual*/
 void AbstractItemView::rowsAboutToBeRemoved(const QModelIndex &index,int start, int end)
@@ -346,7 +345,7 @@ bool AbstractItemView::event(QEvent *e)
         m_container->resize(this->size().width()-verticalScrollBar()->size().width(),
                             m_container->preferredHeight());
 
-        if(verticalScrollBar()->sliderPosition() > verticalScrollBar()->sliderSize())
+        if (verticalScrollBar()->sliderPosition() > verticalScrollBar()->sliderSize())
             verticalScrollBar()->setSliderPosition(verticalScrollBar()->sliderSize());
 
         result = true;
@@ -371,7 +370,7 @@ void AbstractItemView::refreshContainerGeometry()
     ScrollBar *sb = verticalScrollBar();
 
     if (sb) {
-        AbstractViewItem *item = m_container->itemAt(0);        
+        AbstractViewItem *item = m_container->itemAt(0);
         if (item) {
             qreal oneItemH = item->size().height();
             sb->setSliderSize(oneItemH*m_model->rowCount(m_rootIndex)-size().height());
@@ -394,10 +393,9 @@ void AbstractItemView::scrollContentsBy(qreal dx, qreal dy)
     qreal itemH = 1;
 
     AbstractViewItem *item = m_container->itemAt(0);
-    if(item && item->size().height() > 1) {
+    if (item && item->size().height() > 1) {
         itemH = item->size().height();
-    }
-    else if(item && item->preferredHeight() > 1) {
+    } else if (item && item->preferredHeight() > 1) {
         itemH = item->preferredHeight();
     }
 
@@ -407,8 +405,7 @@ void AbstractItemView::scrollContentsBy(qreal dx, qreal dy)
     if ((vpy+m_container->size().height()-dy > pos().y()+size().height()) &&
         (qAbs(dy) < itemH) && (vpy-dy <= 0)) {
         m_container->setPos(vpx, vpy-dy);
-    }
-    else {        
+    } else {
         qreal vPos = verticalScrollBar()->sliderPosition();
         int startRow =  m_model->index(vPos/itemH, 0).row();
         int itemsInContainer = m_container->itemCount();
@@ -428,13 +425,13 @@ void AbstractItemView::scrollContentsBy(qreal dx, qreal dy)
     }
 }
 
-void AbstractItemView::changeTheme() 
+void AbstractItemView::changeTheme()
 {
     if (m_container)
         m_container->themeChange();
 }
 
-void AbstractItemView::updateViewContent() 
+void AbstractItemView::updateViewContent()
 {
     if (m_container)
         m_container->updateContent();

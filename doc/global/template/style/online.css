@@ -127,7 +127,6 @@ margin-left: 20px;
 text-align:left
 }
 .nav-main-content{
-font-weight:bold;
 margin-right: 20px;
 display:inline-block;
 }
@@ -156,9 +155,7 @@ left: 30px;
 }
 .qtref{
 display: block;
-position: relative;
 top: -76px;
-height:15px;
 z-index: 1;
 font-size:11px;
 padding-right:10px;
@@ -171,7 +168,7 @@ text-align: right;
 float:right;
 z-index:1;
 padding-right:10px;
-vertical-align:top;
+padding-top:4px;
 }
 
 
@@ -196,16 +193,12 @@ margin-left:30px;
 .breadcrumb{
 display: block;
 position: relative;
-top:-20px;
-/*border-top:2px solid #ffffff;*/
-border-bottom: 1px solid #cecece;
-background-color:#F2F2F2;
 z-index:1;
 height:20px;
 padding:0px;
 margin:0px;
 padding-left:10px;
-padding-top:2px;
+padding-top:12px;
 margin-left:-5px;
 margin-right:-5px;
 }
@@ -216,7 +209,6 @@ margin-right:-5px;
 }
 
 .breadcrumb ul li{
-background-color:#F2F2F2;
 list-style-type:none;
 padding:0;
 margin:0;
@@ -236,7 +228,6 @@ padding-left:20px;
 
 
 .breadcrumb li a{
-color:#2C418D;
 display:block;
 text-decoration:none;
 background:url(../images/arrow.png);
@@ -506,10 +497,15 @@ text-align: left;
 
 .cpp{
 display: block;
-margin: 10;
-overflow: hidden;
-overflow-x: hidden;
-overflow-y: hidden;
+margin: 10px;
+overflow: auto;
+padding: 20px 20px 20px 20px;
+}
+
+.js{
+display: block;
+margin: 10px;
+overflow: auto;
 padding: 20px 20px 20px 20px;
 }
 
@@ -539,10 +535,8 @@ padding: 3px 15px 3px 0;
 
 .qml{
 display: block;
-margin: 10;
-overflow: hidden;
-overflow-x: hidden;
-overflow-y: hidden;
+margin: 10px;
+overflow: auto;
 padding: 20px 20px 20px 20px;
 }
 
@@ -576,6 +570,7 @@ Content table
 @media print{
 .toc {
 float: right;
+clear: right;
 padding-bottom: 10px;
 padding-top: 50px;
 width: 100%;
@@ -587,7 +582,10 @@ background-repeat:no-repeat;
 
 @media screen{
 .toc{
-clear:both;
+clear: both;
+clear: right;
+position: relative;
+top: 83px;
 float:right;
 vertical-align:top;
 -moz-border-radius: 7px 7px 7px 7px;
@@ -602,11 +600,7 @@ padding-bottom:10px;
 height: auto;
 width: 200px;
 text-align:left;
-z-index:2;
 margin-left:20px;
-margin-right:20px;
-margin-top:0px;
-padding-top:0px;
 }
 }
 

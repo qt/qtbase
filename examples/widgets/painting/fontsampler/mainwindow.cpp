@@ -241,7 +241,7 @@ QMap<QString, StyleItems> MainWindow::currentPageMap()
     return pageMap;
 }
 
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
 void MainWindow::on_printAction_triggered()
 {
     pageMap = currentPageMap();

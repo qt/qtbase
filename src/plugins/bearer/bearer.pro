@@ -9,7 +9,7 @@ linux*:qtHaveModule(dbus) {
 win32:SUBDIRS += generic
 blackberry:SUBDIRS += blackberry
 win32:!wince*:SUBDIRS += nativewifi
-macx:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
-macx:SUBDIRS += generic
+mac:contains(QT_CONFIG, corewlan):SUBDIRS += corewlan
+mac:SUBDIRS += generic
 
 isEmpty(SUBDIRS):SUBDIRS = generic

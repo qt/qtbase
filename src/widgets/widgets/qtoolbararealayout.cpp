@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -810,7 +810,7 @@ QLayoutItem *QToolBarAreaLayout::insertToolBar(QToolBar *before, QToolBar *toolB
     QInternal::DockPosition pos = findToolBar(before);
     if (pos == QInternal::DockCount)
         return 0;
-    
+
     return docks[pos].insertToolBar(before, toolBar);
 }
 
@@ -869,7 +869,7 @@ void QToolBarAreaLayout::insertItem(QToolBar *before, QLayoutItem *item)
     QInternal::DockPosition pos = findToolBar(before);
     if (pos == QInternal::DockCount)
         return;
-    
+
     docks[pos].insertItem(before, item);
 }
 

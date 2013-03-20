@@ -1,4 +1,4 @@
-linux-*:contains(QT_CONFIG, evdev) {
+linux:contains(QT_CONFIG, evdev) {
     HEADERS += $$PWD/qdevicediscovery_p.h
 
     contains(QT_CONFIG, libudev) {

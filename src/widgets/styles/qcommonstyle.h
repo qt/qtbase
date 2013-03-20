@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qstyle.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QCommonStylePrivate;
@@ -53,7 +51,7 @@ class QCommonStylePrivate;
 class Q_WIDGETS_EXPORT QCommonStyle: public QStyle
 {
     Q_OBJECT
-    
+
 public:
     QCommonStyle();
     ~QCommonStyle();
@@ -104,7 +102,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QCOMMONSTYLE_H

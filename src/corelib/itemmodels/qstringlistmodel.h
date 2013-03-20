@@ -45,8 +45,6 @@
 #include <QtCore/qabstractitemmodel.h>
 #include <QtCore/qstringlist.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -85,7 +83,5 @@ private:
 #endif // QT_NO_STRINGLISTMODEL
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSTRINGLISTMODEL_H

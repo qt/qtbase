@@ -46,6 +46,7 @@
 #include <QtCore/qfileinfo.h>
 #include <qpalette.h>
 #include <qtextformat.h>
+#include <qiconloader_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -271,5 +272,20 @@ QPlatformSystemTrayIcon *QPlatformTheme::createPlatformSystemTrayIcon() const
     return 0;
 }
 #endif
+
+/*!
+   Factory function for the QIconEngine used by QIcon::fromTheme(). By default this
+   function returns a QIconLoaderEngine, but subclasses can reimplement it to
+   provide their own.
+
+   It is especially useful to benefit from some platform specific facilities or
+   optimizations like an inter-process cache in systems mostly built with Qt.
+
+   \since 5.1
+*/
+QIconEngine *QPlatformTheme::createIconEngine(const QString &iconName) const
+{
+    return new QIconLoaderEngine(iconName);
+}
 
 QT_END_NAMESPACE

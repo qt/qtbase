@@ -79,6 +79,13 @@ p *= 2.5;    // p becomes (-3, 10)
 //! [5]
 
 
+//! [16]
+QPoint p( 3, 7);
+QPoint q(-1, 4);
+int lengthSquared = QPoint::dotProduct(p, q);   // lengthSquared becomes 25
+//! [16]
+
+
 //! [6]
 QPoint p(-3, 10);
 p /= 2.5;           // p becomes (-1, 4)
@@ -147,3 +154,10 @@ p *= 2.5;    // p becomes (-2.75, 10.25)
 QPointF p(-2.75, 10.25);
 p /= 2.5;           // p becomes (-1.1, 4.1)
 //! [15]
+
+
+//! [17]
+QPointF p( 3.1, 7.1);
+QPointF q(-1.0, 4.1);
+int lengthSquared = QPointF::dotProduct(p, q);   // lengthSquared becomes 26.01
+//! [17]

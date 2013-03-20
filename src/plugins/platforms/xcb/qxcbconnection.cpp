@@ -184,7 +184,7 @@ void QXcbConnection::updateScreens()
                         activeScreens << screen;
                         ++screenNumber;
                         if (!primaryScreen && primary) {
-                            if (primary->output == XCB_NONE || outputs[i] == primary->output) {
+                            if (m_primaryScreen == xcbScreenNumber && (primary->output == XCB_NONE || outputs[i] == primary->output)) {
                                 primaryScreen = screen;
                                 siblings.prepend(siblings.takeLast());
 #ifdef Q_XCB_DEBUG
@@ -1066,7 +1066,7 @@ void QXcbConnection::processXcbEvents()
             while (it != m_peekFuncs.end()) {
                 // These callbacks return true if the event is what they were
                 // waiting for, remove them from the list in that case.
-                if ((*it)(event))
+                if ((*it)(this, event))
                     it = m_peekFuncs.erase(it);
                 else
                     ++it;
@@ -1086,7 +1086,7 @@ void QXcbConnection::processXcbEvents()
     // Indicate with a null event that the event the callbacks are waiting for
     // is not in the queue currently.
     Q_FOREACH (PeekFunc f, m_peekFuncs)
-        f(0);
+        f(this, 0);
     m_peekFuncs.clear();
 
     xcb_flush(xcb_connection());

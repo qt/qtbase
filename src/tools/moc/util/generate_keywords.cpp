@@ -268,7 +268,7 @@ inline bool is_ident_start(char s)
 {
     return ((s >= 'a' && s <= 'z')
             || (s >= 'A' && s <= 'Z')
-            || s == '_'
+            || s == '_' || s == '$'
         );
 }
 
@@ -277,7 +277,7 @@ inline bool is_ident_char(char s)
     return ((s >= 'a' && s <= 'z')
             || (s >= 'A' && s <= 'Z')
             || (s >= '0' && s <= '9')
-            || s == '_'
+            || s == '_' || s == '$'
         );
 }
 struct State
@@ -360,8 +360,9 @@ void makeTable(const Keyword keywords[])
         newState(states, pre?"PP_CHARACTER":"CHARACTER", c);
     for (c = 'A'; c <= 'Z'; ++c)
         newState(states, pre?"PP_CHARACTER":"CHARACTER", c);
-    c = '_';
-    newState(states, pre?"PP_CHARACTER":"CHARACTER", c);
+
+    newState(states, pre?"PP_CHARACTER":"CHARACTER", '_');
+    newState(states, pre?"PP_CHARACTER":"CHARACTER", '$');
 
     // add digits
     for (c = '0'; c <= '9'; ++c)

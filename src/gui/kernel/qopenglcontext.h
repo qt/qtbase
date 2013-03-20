@@ -42,6 +42,8 @@
 #ifndef QOPENGLCONTEXT_H
 #define QOPENGLCONTEXT_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_OPENGL
 
 #include <QtCore/qnamespace.h>
@@ -58,8 +60,10 @@
 #endif
 
 #include <QtGui/qopengl.h>
+#include <QtGui/qopenglversionfunctions.h>
 
-QT_BEGIN_HEADER
+#include <QtCore/qhash.h>
+#include <QtCore/qpair.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -70,6 +74,50 @@ class QPlatformOpenGLContext;
 
 class QScreen;
 class QSurface;
+
+class QOpenGLVersionProfilePrivate;
+
+class Q_GUI_EXPORT QOpenGLVersionProfile
+{
+public:
+    QOpenGLVersionProfile();
+    explicit QOpenGLVersionProfile(const QSurfaceFormat &format);
+    QOpenGLVersionProfile(const QOpenGLVersionProfile &other);
+    ~QOpenGLVersionProfile();
+
+    QOpenGLVersionProfile &operator=(const QOpenGLVersionProfile &rhs);
+
+    QPair<int, int> version() const;
+    void setVersion(int majorVersion, int minorVersion);
+
+    QSurfaceFormat::OpenGLContextProfile profile() const;
+    void setProfile(QSurfaceFormat::OpenGLContextProfile profile);
+
+    bool hasProfiles() const;
+    bool isLegacyVersion() const;
+    bool isValid() const;
+
+private:
+    QOpenGLVersionProfilePrivate* d;
+};
+
+inline uint qHash(const QOpenGLVersionProfile &v, uint seed)
+{
+    return qHash(static_cast<int>(v.profile() * 1000)
+               + v.version().first * 100 + v.version().second * 10, seed);
+}
+
+inline bool operator==(const QOpenGLVersionProfile &lhs, const QOpenGLVersionProfile &rhs)
+{
+    if (lhs.profile() != rhs.profile())
+        return false;
+    return lhs.version() == rhs.version();
+}
+
+inline bool operator!=(const QOpenGLVersionProfile &lhs, const QOpenGLVersionProfile &rhs)
+{
+    return !operator==(lhs, rhs);
+}
 
 class Q_GUI_EXPORT QOpenGLContextGroup : public QObject
 {
@@ -129,6 +177,15 @@ public:
 
     QOpenGLFunctions *functions() const;
 
+    QAbstractOpenGLFunctions *versionFunctions(const QOpenGLVersionProfile &versionProfile = QOpenGLVersionProfile()) const;
+
+    template<class TYPE>
+    TYPE *versionFunctions() const
+    {
+        QOpenGLVersionProfile v = TYPE::versionProfile();
+        return static_cast<TYPE*>(versionFunctions(v));
+    }
+
     QSet<QByteArray> extensions() const;
     bool hasExtension(const QByteArray &extension) const;
 
@@ -149,17 +206,21 @@ private:
     friend class QOpenGL2PaintEngineExPrivate;
     friend class QSGDistanceFieldGlyphCache;
     friend class QWidgetPrivate;
+    friend class QAbstractOpenGLFunctionsPrivate;
 
     void *qGLContextHandle() const;
     void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
     void deleteQGLContext();
 
+    QOpenGLVersionFunctionsBackend* functionsBackend(const QOpenGLVersionStatus &v) const;
+    void insertFunctionsBackend(const QOpenGLVersionStatus &v,
+                                QOpenGLVersionFunctionsBackend *backend);
+    void removeFunctionsBackend(const QOpenGLVersionStatus &v);
+
     void destroy();
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 

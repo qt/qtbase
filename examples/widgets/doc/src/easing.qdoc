@@ -31,7 +31,7 @@
 
     \brief The Easing Curves example shows how to use easing curves to
     control the speed of an animation.
-    
+
     \image easing-example.png
 
 */

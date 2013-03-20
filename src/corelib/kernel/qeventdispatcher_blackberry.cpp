@@ -271,13 +271,13 @@ void QEventDispatcherBlackberry::unregisterSocketNotifier(QSocketNotifier *notif
     }
 }
 
-static inline int timevalToMillisecs(const timeval &tv)
+static inline int timespecToMillisecs(const timespec &tv)
 {
-    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    return (tv.tv_sec * 1000) + (tv.tv_nsec / 1000000);
 }
 
 int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
-                                       timeval *timeout)
+                                       timespec *timeout)
 {
     Q_UNUSED(nfds);
     Q_D(QEventDispatcherBlackberry);
@@ -306,9 +306,9 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
     // Convert timeout to milliseconds
     int timeoutTotal = -1;
     if (timeout)
-        timeoutTotal = timevalToMillisecs(*timeout);
+        timeoutTotal = timespecToMillisecs(*timeout);
     int timeoutLeft = timeoutTotal;
-    timeval startTime = qt_gettime();
+    timespec startTime = qt_gettime();
 
     // This loop exists such that we can drain the bps event queue of all native events
     // more efficiently than if we were to return control to Qt after each event. This
@@ -332,16 +332,16 @@ int QEventDispatcherBlackberry::select(int nfds, fd_set *readfds, fd_set *writef
             // Update the timeout
             // Clock source is monotonic, so we can recalculate how much timeout is left
             if (timeoutTotal != -1) {
-                timeval t2 = qt_gettime();
+                timespec t2 = qt_gettime();
                 timeoutLeft = timeoutTotal
-                              - (timevalToMillisecs(t2) - timevalToMillisecs(startTime));
+                              - (timespecToMillisecs(t2) - timespecToMillisecs(startTime));
                 if (timeoutLeft < 0)
                     timeoutLeft = 0;
             }
 
-            timeval tnext;
+            timespec tnext;
             if (d->timerList.timerWait(tnext)) {
-                int timeoutNext = timevalToMillisecs(tnext);
+                int timeoutNext = timespecToMillisecs(tnext);
                 if (timeoutNext < timeoutLeft || timeoutTotal == -1) {
                     timeoutTotal = timeoutLeft = timeoutNext;
                     startTime = qt_gettime();

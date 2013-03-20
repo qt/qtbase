@@ -196,6 +196,7 @@ protected slots:
     void authenticationRequired(QAuthenticator *auth);
     void metaDataChanged();
     void redirectionRequested(const QUrl &destination);
+    void encrypted();
     void sslErrors(const QList<QSslError> &errors);
     void emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 

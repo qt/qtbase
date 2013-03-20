@@ -15,13 +15,13 @@ save
   drawPixmap the_pixmap 0 0
 
   # sub recting
-  translate 120 0 
+  translate 120 0
   drawPixmap the_pixmap  0  0  40  40  0  0  40  40
   drawPixmap the_pixmap 60  0  40  40 60  0  40  40
   drawPixmap the_pixmap  0 60  40  40  0 60  40  40
   drawPixmap the_pixmap 60 60  40  40 60 60  40  40
   drawPixmap the_pixmap  0 40  40  20  0 40  40  20
-  drawPixmap the_pixmap 60 40  40  20 60 40  40  20 
+  drawPixmap the_pixmap 60 40  40  20 60 40  40  20
   drawPixmap the_pixmap 40  0  20 100 40  0  20 100
 
   # subrecting w/scale
@@ -30,15 +30,15 @@ save
   drawPixmap the_pixmap 50 0 50 50 25 0 25 25
   drawPixmap the_pixmap 0 50 50 50 0 25 25 25
   drawPixmap the_pixmap 50 50 50 50 25 25 25 25
-  
+
   # subrecting w/scale & smooth xform
   translate 120 0
-  setRenderHint SmoothPixmapTransformation 
+  setRenderHint SmoothPixmapTransformation
   drawPixmap the_pixmap 0 0 50 50 0 0 25 25
   drawPixmap the_pixmap 50 0 50 50 25 0 25 25
   drawPixmap the_pixmap 0 50 50 50 0 25 25 25
   drawPixmap the_pixmap 50 50 50 50 25 25 25 25
-  
+
 
   # Rotation w/o smooth xform
   translate 120 0

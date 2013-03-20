@@ -69,7 +69,7 @@ void tst_DateTime::qurl() const
 {
     QFETCH(QUrl, operandA);
     QFETCH(QUrl, operandB);
-    
+
     QCOMPARE(operandA, operandB);
 }
 

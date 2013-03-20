@@ -63,7 +63,7 @@ struct TorrentBlock
                 && offset == other.offset
                 && length == other.length;
     }
-    
+
     int pieceIndex;
     int offset;
     int length;

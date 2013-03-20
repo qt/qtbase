@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -2138,9 +2138,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->save();
             p->setClipRect(opt->rect);
 
-            QRect checkRect = subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
-            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, vopt, widget);
-            QRect textRect = subElementRect(SE_ItemViewItemText, vopt, widget);
+            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+            QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
+            QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
 
             // draw the background
             proxy()->drawPrimitive(PE_PanelItemViewItem, opt, p, widget);
@@ -3003,7 +3003,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
     case SE_ToolBarHandle:
         if (const QStyleOptionToolBar *tbopt = qstyleoption_cast<const QStyleOptionToolBar *>(opt)) {
             if (tbopt->features & QStyleOptionToolBar::Movable) {
-                ///we need to access the widget here because the style option doesn't 
+                ///we need to access the widget here because the style option doesn't
                 //have all the information we need (ie. the layout's margin)
                 const QToolBar *tb = qobject_cast<const QToolBar*>(widget);
                 const int margin = tb && tb->layout() ? tb->layout()->margin() : 2;
@@ -4808,6 +4808,16 @@ QSize QCommonStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                       }
         break;
 #endif // QT_NO_ITEMVIEWS
+#ifndef QT_NO_SPINBOX
+    case CT_SpinBox:
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            // Add button + frame widths
+            int buttonWidth = 20;
+            int fw = vopt->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, vopt, widget) : 0;
+            sz += QSize(buttonWidth + 2*fw, 2*fw);
+        }
+        break;
+#endif
     case CT_ScrollBar:
     case CT_MenuBar:
     case CT_Menu:
@@ -5090,9 +5100,16 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
             ret = theme->themeHint(QPlatformTheme::ToolButtonStyle).toInt();
         break;
     case SH_RequestSoftwareInputPanel:
+#ifdef Q_OS_ANDROID
+        ret = RSIP_OnMouseClick;
+#else
         ret = RSIP_OnMouseClickAndAlreadyFocused;
+#endif
         break;
     case SH_ScrollBar_Transient:
+        ret = false;
+        break;
+    case SH_Menu_SupportsSections:
         ret = false;
         break;
     default:

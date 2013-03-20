@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qaction.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -61,13 +59,13 @@ class Q_WIDGETS_EXPORT QWidgetAction : public QAction
 public:
     explicit QWidgetAction(QObject *parent);
     virtual ~QWidgetAction();
-    
+
     void setDefaultWidget(QWidget *w);
     QWidget *defaultWidget() const;
 
     QWidget *requestWidget(QWidget *parent);
     void releaseWidget(QWidget *widget);
-    
+
 protected:
     virtual bool event(QEvent *);
     virtual bool eventFilter(QObject *, QEvent *);
@@ -84,7 +82,5 @@ private:
 #endif // QT_NO_ACTION
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWIDGETACTION_H

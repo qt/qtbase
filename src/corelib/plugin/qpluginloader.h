@@ -44,14 +44,7 @@
 
 #include <QtCore/qlibrary.h>
 
-#if defined(QT_NO_LIBRARY) && defined(Q_OS_WIN)
-#undef QT_NO_LIBRARY
-#pragma message("QT_NO_LIBRARY is not supported on Windows")
-#endif
-
 #ifndef QT_NO_LIBRARY
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -92,8 +85,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_LIBRARY
 

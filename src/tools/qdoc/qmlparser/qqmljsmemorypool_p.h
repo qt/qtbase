@@ -60,7 +60,6 @@
 #include <QtCore/qdebug.h>
 
 #include <cstring>
-#include <stdlib.h>
 
 QT_QML_BEGIN_NAMESPACE
 

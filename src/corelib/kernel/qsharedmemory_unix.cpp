@@ -151,9 +151,6 @@ key_t QSharedMemoryPrivate::handle()
   */
 int QSharedMemoryPrivate::createUnixKeyFile(const QString &fileName)
 {
-    if (QFile::exists(fileName))
-        return 0;
-
     int fd = qt_safe_open(QFile::encodeName(fileName).constData(),
             O_EXCL | O_CREAT | O_RDWR, 0640);
     if (-1 == fd) {

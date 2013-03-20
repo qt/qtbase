@@ -293,7 +293,7 @@ void tst_MacNativeEvents::testMouseEnter()
 
 void tst_MacNativeEvents::testChildDialogInFrontOfModalParent()
 {
-    // Test that a child dialog of a modal parent dialog is 
+    // Test that a child dialog of a modal parent dialog is
     // in front of the parent, and active:
     QDialog parent;
     parent.setWindowModality(Qt::ApplicationModal);

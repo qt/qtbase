@@ -41,7 +41,7 @@
 #include "qcocoaaccessibility.h"
 #include "qcocoaaccessibilityelement.h"
 #include <qaccessible.h>
-#include <qaccessible2.h>
+#include <QtGui/private/qaccessible2_p.h>
 #include <private/qcore_mac_p.h>
 
 #ifndef QT_NO_COCOA_ACCESSIBILITY

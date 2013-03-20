@@ -45,8 +45,6 @@
 #include <QObject>
 #include <QString>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
@@ -82,7 +80,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QEVDEVMOUSEHANDLER_P_H

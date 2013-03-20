@@ -57,7 +57,7 @@ public:
 private slots:
     void print() {
         QPrinter printer(QPrinter::HighResolution);
-        
+
         printer.setOutputFileName("test.pdf");
 
 //! [0]

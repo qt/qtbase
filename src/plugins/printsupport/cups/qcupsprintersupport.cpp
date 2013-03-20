@@ -86,6 +86,11 @@ QList<QPrinter::PaperSize> QCupsPrinterSupport::supportedPaperSizes(const QPrint
     return QCUPSSupport::getCupsPrinterPaperSizes(printerIndex(printerInfo));
 }
 
+QList<QPair<QString, QSizeF> > QCupsPrinterSupport::supportedSizesWithNames(const QPrinterInfo &printerInfo) const
+{
+    return QCUPSSupport::getCupsPrinterPaperSizesWithNames(printerIndex(printerInfo));
+}
+
 void QCupsPrinterSupport::loadCups()
 {
     cupsGetDests = (CupsGetDests) m_cups.resolve("cupsGetDests");

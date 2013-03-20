@@ -154,7 +154,7 @@ void tst_QWMatrix::mapping_data()
 			       << QRect( 0, 0, 30, 40 )
 			       << QPolygon( QRect( -300, -400, 300, 400 ) );
 
-#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+#if (defined(Q_OS_WIN) || defined(Q_OS_WINCE)) && !defined(M_PI)
 #define M_PI 3.14159265897932384626433832795f
 #endif
 

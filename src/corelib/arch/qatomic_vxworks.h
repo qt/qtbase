@@ -42,8 +42,6 @@
 #ifndef QATOMIC_VXWORKS_H
 #define QATOMIC_VXWORKS_H
 
-QT_BEGIN_HEADER
-
 #if defined(__ppc)
 #  include <QtCore/qatomic_power.h>
 #else // generic implementation with taskLock()
@@ -56,13 +54,27 @@ QT_BEGIN_HEADER
 #  include <vxWorksCommon.h>
 #  include <taskLib.h>
 #else
+#if defined(_WRS_KERNEL)
 extern "C" int taskLock();
 extern "C" int taskUnlock();
+#else
+inline int taskLock() { return 0; }
+inline int taskUnlock() { return 0; }
+#endif
 #endif
 
 
 
 QT_BEGIN_NAMESPACE
+
+#if 0
+// silence syncqt warnings
+QT_END_NAMESPACE
+QT_END_HEADER
+
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
 
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_NOT_NATIVE
 
@@ -314,7 +326,5 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 QT_END_NAMESPACE
 
 #endif // generic implementation with taskLock()
-
-QT_END_HEADER
 
 #endif // QATOMIC_VXWORKS_H

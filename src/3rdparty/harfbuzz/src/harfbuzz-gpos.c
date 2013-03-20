@@ -3193,6 +3193,9 @@ static HB_Error  Lookup_MarkMarkPos( GPOS_Instance*    gpi,
     j--;
   }
 
+  if ( i > buffer->in_pos )
+    return HB_Err_Not_Covered;
+
   error = _HB_OPEN_Coverage_Index( &mmp->Mark2Coverage, IN_GLYPH( j ),
 			  &mark2_index );
   if ( error )
@@ -5349,12 +5352,12 @@ static HB_Error  Lookup_ChainContextPos2(
   if ( error )
     return error;
 
+  if (ccpf2->MaxInputLength < 1)
+    return HB_Err_Not_Covered;
+
   if ( ALLOC_ARRAY( backtrack_classes, ccpf2->MaxBacktrackLength, HB_UShort ) )
     return error;
   known_backtrack_classes = 0;
-
-  if (ccpf2->MaxInputLength < 1)
-    return HB_Err_Not_Covered;
 
   if ( ALLOC_ARRAY( input_classes, ccpf2->MaxInputLength, HB_UShort ) )
     goto End3;

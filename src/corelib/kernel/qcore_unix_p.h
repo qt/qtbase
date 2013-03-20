@@ -100,49 +100,49 @@ using namespace QT_PREPEND_NAMESPACE(QtLibcSupplement);
 
 QT_BEGIN_NAMESPACE
 
-// Internal operator functions for timevals
-inline timeval &normalizedTimeval(timeval &t)
+// Internal operator functions for timespecs
+inline timespec &normalizedTimespec(timespec &t)
 {
-    while (t.tv_usec >= 1000000) {
+    while (t.tv_nsec >= 1000000000) {
         ++t.tv_sec;
-        t.tv_usec -= 1000000;
+        t.tv_nsec -= 1000000000;
     }
-    while (t.tv_usec < 0) {
+    while (t.tv_nsec < 0) {
         --t.tv_sec;
-        t.tv_usec += 1000000;
+        t.tv_nsec += 1000000000;
     }
     return t;
 }
-inline bool operator<(const timeval &t1, const timeval &t2)
-{ return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_usec < t2.tv_usec); }
-inline bool operator==(const timeval &t1, const timeval &t2)
-{ return t1.tv_sec == t2.tv_sec && t1.tv_usec == t2.tv_usec; }
-inline timeval &operator+=(timeval &t1, const timeval &t2)
+inline bool operator<(const timespec &t1, const timespec &t2)
+{ return t1.tv_sec < t2.tv_sec || (t1.tv_sec == t2.tv_sec && t1.tv_nsec < t2.tv_nsec); }
+inline bool operator==(const timespec &t1, const timespec &t2)
+{ return t1.tv_sec == t2.tv_sec && t1.tv_nsec == t2.tv_nsec; }
+inline timespec &operator+=(timespec &t1, const timespec &t2)
 {
     t1.tv_sec += t2.tv_sec;
-    t1.tv_usec += t2.tv_usec;
-    return normalizedTimeval(t1);
+    t1.tv_nsec += t2.tv_nsec;
+    return normalizedTimespec(t1);
 }
-inline timeval operator+(const timeval &t1, const timeval &t2)
+inline timespec operator+(const timespec &t1, const timespec &t2)
 {
-    timeval tmp;
+    timespec tmp;
     tmp.tv_sec = t1.tv_sec + t2.tv_sec;
-    tmp.tv_usec = t1.tv_usec + t2.tv_usec;
-    return normalizedTimeval(tmp);
+    tmp.tv_nsec = t1.tv_nsec + t2.tv_nsec;
+    return normalizedTimespec(tmp);
 }
-inline timeval operator-(const timeval &t1, const timeval &t2)
+inline timespec operator-(const timespec &t1, const timespec &t2)
 {
-    timeval tmp;
+    timespec tmp;
     tmp.tv_sec = t1.tv_sec - (t2.tv_sec - 1);
-    tmp.tv_usec = t1.tv_usec - (t2.tv_usec + 1000000);
-    return normalizedTimeval(tmp);
+    tmp.tv_nsec = t1.tv_nsec - (t2.tv_nsec + 1000000000);
+    return normalizedTimespec(tmp);
 }
-inline timeval operator*(const timeval &t1, int mul)
+inline timespec operator*(const timespec &t1, int mul)
 {
-    timeval tmp;
+    timespec tmp;
     tmp.tv_sec = t1.tv_sec * mul;
-    tmp.tv_usec = t1.tv_usec * mul;
-    return normalizedTimeval(tmp);
+    tmp.tv_nsec = t1.tv_nsec * mul;
+    return normalizedTimespec(tmp);
 }
 
 inline void qt_ignore_sigpipe()
@@ -335,11 +335,11 @@ static inline pid_t qt_safe_waitpid(pid_t pid, int *status, int options)
 #endif
 
 // in qelapsedtimer_mac.cpp or qtimestamp_unix.cpp
-timeval qt_gettime() Q_DECL_NOTHROW;
+timespec qt_gettime() Q_DECL_NOTHROW;
 void qt_nanosleep(timespec amount);
 
 Q_CORE_EXPORT int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
-                                 const struct timeval *tv);
+                                 const struct timespec *tv);
 
 // according to X/OPEN we have to define semun ourselves
 // we use prefix as on some systems sem.h will have it

@@ -66,12 +66,12 @@ public slots:
 
 public slots:
     void menuShowHide();
-	
+
 private:
     void init();
     void menuShow();
     void menuHide();
-	
+
 private:
     Q_DISABLE_COPY(Menu)
     QGraphicsView* m_Parent;
@@ -81,4 +81,4 @@ private:
     int m_currentSelectedIndex;
 };
 
-#endif // __MENU_H__ 
+#endif // __MENU_H__

@@ -116,7 +116,7 @@ void GLWidget::initializeGL()
     gear3 = makeGear(reflectance3, 1.3, 2.0, 0.5, 0.7, 10);
 
     glEnable(GL_NORMALIZE);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);    
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void GLWidget::paintGL()

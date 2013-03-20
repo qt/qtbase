@@ -213,12 +213,32 @@ void Elision::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
-void PropertyNameAndValueList::accept0(Visitor *visitor)
+void PropertyNameAndValue::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
-        for (PropertyNameAndValueList *it = this; it; it = it->next) {
-            accept(it->name, visitor);
-            accept(it->value, visitor);
+        accept(name, visitor);
+        accept(value, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void PropertyGetterSetter::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        accept(name, visitor);
+        accept(formals, visitor);
+        accept(functionBody, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void PropertyAssignmentList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        for (PropertyAssignmentList *it = this; it; it = it->next) {
+            accept(it->assignment, visitor);
         }
     }
 
@@ -834,6 +854,13 @@ void UiObjectInitializer::accept0(Visitor *visitor)
         accept(members, visitor);
     }
 
+    visitor->endVisit(this);
+}
+
+void UiParameterList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+    }
     visitor->endVisit(this);
 }
 

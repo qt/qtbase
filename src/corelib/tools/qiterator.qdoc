@@ -25,7 +25,7 @@
 **
 ****************************************************************************/
 
-/*! 
+/*!
     \class QListIterator
     \inmodule QtCore
 
@@ -78,7 +78,7 @@
     \sa QMutableListIterator, QList::const_iterator
 */
 
-/*! 
+/*!
     \class QLinkedListIterator
     \inmodule QtCore
 
@@ -126,7 +126,7 @@
     \sa QMutableLinkedListIterator, QLinkedList::const_iterator
 */
 
-/*! 
+/*!
     \class QVectorIterator
     \inmodule QtCore
     \brief The QVectorIterator class provides a Java-style const iterator for QVector and QStack.
@@ -178,7 +178,7 @@
     \sa QMutableVectorIterator, QVector::const_iterator
 */
 
-/*! 
+/*!
     \class QSetIterator
     \inmodule QtCore
     \brief The QSetIterator class provides a Java-style const iterator for QSet.
@@ -225,7 +225,7 @@
     \sa QMutableSetIterator, QSet::const_iterator
 */
 
-/*! 
+/*!
     \class QMutableListIterator
     \inmodule QtCore
 
@@ -291,7 +291,7 @@
     \sa QListIterator, QList::iterator
 */
 
-/*! 
+/*!
     \class QMutableLinkedListIterator
     \inmodule QtCore
 
@@ -352,7 +352,7 @@
     \sa QLinkedListIterator, QLinkedList::iterator
 */
 
-/*! 
+/*!
     \class QMutableVectorIterator
     \inmodule QtCore
 
@@ -418,7 +418,7 @@
     \sa QVectorIterator, QVector::iterator
 */
 
-/*! 
+/*!
     \class QMutableSetIterator
     \inmodule QtCore
     \since 4.2
@@ -869,7 +869,7 @@
     \sa remove(), setValue()
 */
 
-/*! 
+/*!
     \class QMapIterator
     \inmodule QtCore
 
@@ -921,7 +921,7 @@
     \sa QMutableMapIterator, QMap::const_iterator
 */
 
-/*! 
+/*!
     \class QHashIterator
     \inmodule QtCore
 
@@ -973,7 +973,7 @@
     \sa QMutableHashIterator, QHash::const_iterator
 */
 
-/*! 
+/*!
     \class QMutableMapIterator
     \inmodule QtCore
 
@@ -1038,7 +1038,7 @@
     \sa QMapIterator, QMap::iterator
 */
 
-/*! 
+/*!
     \class QMutableHashIterator
     \inmodule QtCore
 

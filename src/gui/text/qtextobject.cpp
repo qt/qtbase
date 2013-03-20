@@ -636,7 +636,7 @@ QTextFrame::iterator QTextFrame::begin() const
 
 /*!
     Returns an iterator pointing to the position past the last document element inside the frame.
-    Please see the document \l{STL-Style Iterators} for more information.    
+    Please see the document \l{STL-Style Iterators} for more information.
     \sa begin()
 */
 QTextFrame::iterator QTextFrame::end() const

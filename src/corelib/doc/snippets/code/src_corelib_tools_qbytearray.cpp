@@ -405,7 +405,7 @@ QString tmp = "test";
 QByteArray text = tmp.toLocal8Bit();
 char *data = new char[text.size()]
 strcpy(data, text.data());
-delete [] data; 
+delete [] data;
 //! [46]
 
 //! [47]

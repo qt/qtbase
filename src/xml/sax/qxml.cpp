@@ -3037,10 +3037,10 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     A common way to perform incremental parsing is to connect the \c
     readyRead() signal of a \l{QNetworkReply} {network reply} a slot,
     and handle the incoming data there. See QNetworkAccessManager.
-    
+
     Aspects of the parsing behavior can be adapted using setFeature()
     and setProperty().
-    
+
     \snippet code/src_xml_sax_qxml.cpp 0
 
     QXmlSimpleReader is not reentrant. If you want to use the class

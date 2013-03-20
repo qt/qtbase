@@ -99,7 +99,7 @@ void ImageViewer::print()
 //! [5] //! [6]
 {
     Q_ASSERT(imageLabel->pixmap());
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
 //! [6] //! [7]
     QPrintDialog dialog(&printer, this);
 //! [7] //! [8]

@@ -48,8 +48,6 @@
 
 #ifndef QT_NO_NETWORKINTERFACE
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -100,7 +98,7 @@ public:
         CanMulticast = 0x20
     };
     Q_DECLARE_FLAGS(InterfaceFlags, InterfaceFlag)
-    
+
     QNetworkInterface();
     QNetworkInterface(const QNetworkInterface &other);
     QNetworkInterface &operator=(const QNetworkInterface &other);
@@ -136,8 +134,6 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkInterface &networ
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_NETWORKINTERFACE
 

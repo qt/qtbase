@@ -38,7 +38,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets> 
+#include <QtWidgets>
 
 #include "button.h"
 

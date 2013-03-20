@@ -47,8 +47,6 @@
 
 #ifndef QT_NO_DBUS
 
-QT_BEGIN_HEADER
-
 struct DBusError;
 
 QT_BEGIN_NAMESPACE
@@ -128,8 +126,6 @@ Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusError &);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusError)
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

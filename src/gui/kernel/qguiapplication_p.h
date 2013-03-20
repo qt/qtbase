@@ -65,8 +65,6 @@
 #include "private/qshortcutmap_p.h"
 #include <qicon.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
@@ -128,6 +126,8 @@ public:
 
     static void processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e);
     static void processWindowStateChangedEvent(QWindowSystemInterfacePrivate::WindowStateChangedEvent *e);
+
+    static void processApplicationStateChangedEvent(QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e);
 
     static void processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e);
 
@@ -201,6 +201,7 @@ public:
     static bool tabletState;
     static QWindow *tabletPressTarget;
     static QWindow *currentMouseWindow;
+    static Qt::ApplicationState applicationState;
 
 #ifndef QT_NO_CLIPBOARD
     static QClipboard *qt_clipboard;
@@ -292,7 +293,5 @@ Q_GUI_EXPORT bool operator==(const QGuiApplicationPrivate::ActiveTouchPointsKey 
                              const QGuiApplicationPrivate::ActiveTouchPointsKey &b);
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGUIAPPLICATION_P_H

@@ -57,8 +57,8 @@
 #include "qqmljsastfwd_p.h"
 #include "qqmljsmemorypool_p.h"
 
-#include <qstring.h>
-#include <qset.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qset.h>
 
 QT_QML_BEGIN_NAMESPACE
 

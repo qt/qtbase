@@ -66,7 +66,7 @@ class QVariant;
 class QAbstractFileEngineIterator;
 class QAbstractFileEnginePrivate;
 
-class Q_AUTOTEST_EXPORT QAbstractFileEngine
+class Q_CORE_EXPORT QAbstractFileEngine
 {
 public:
     enum FileFlag {
@@ -124,6 +124,7 @@ public:
     virtual bool open(QIODevice::OpenMode openMode);
     virtual bool close();
     virtual bool flush();
+    virtual bool syncToDisk();
     virtual qint64 size() const;
     virtual qint64 pos() const;
     virtual bool seek(qint64 pos);
@@ -131,6 +132,7 @@ public:
     virtual bool remove();
     virtual bool copy(const QString &newName);
     virtual bool rename(const QString &newName);
+    virtual bool renameOverwrite(const QString &newName);
     virtual bool link(const QString &newName);
     virtual bool mkdir(const QString &dirName, bool createParentDirectories) const;
     virtual bool rmdir(const QString &dirName, bool recurseParentDirectories) const;
@@ -208,7 +210,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractFileEngine::FileFlags)
 
-class Q_AUTOTEST_EXPORT QAbstractFileEngineHandler
+class Q_CORE_EXPORT QAbstractFileEngineHandler
 {
 public:
     QAbstractFileEngineHandler();
@@ -217,7 +219,7 @@ public:
 };
 
 class QAbstractFileEngineIteratorPrivate;
-class Q_AUTOTEST_EXPORT QAbstractFileEngineIterator
+class Q_CORE_EXPORT QAbstractFileEngineIterator
 {
 public:
     QAbstractFileEngineIterator(QDir::Filters filters, const QStringList &nameFilters);

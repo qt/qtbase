@@ -45,8 +45,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qdatetime.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QLibraryInfo
@@ -102,7 +100,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QLIBRARYINFO_H

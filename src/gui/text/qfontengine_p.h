@@ -60,16 +60,10 @@
 #include "private/qtextengine_p.h"
 #include "private/qfont_p.h"
 
-
-
 #include <private/qfontengineglyphcache_p.h>
-
-struct glyph_metrics_t;
-typedef unsigned int glyph_t;
 
 QT_BEGIN_NAMESPACE
 
-class QChar;
 class QPainterPath;
 
 struct QGlyphLayout;
@@ -81,6 +75,7 @@ struct QGlyphLayout;
     ((quint32)(ch4)) \
    )
 
+typedef void (*qt_destroy_func_t) (void *user_data);
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
@@ -112,7 +107,8 @@ public:
         Format_Render = Format_None,
         Format_Mono,
         Format_A8,
-        Format_A32
+        Format_A32,
+        Format_ARGB
     };
 
     enum ShaperFlag {
@@ -165,11 +161,6 @@ public:
 
     /* returns 0 as glyph index for non existent glyphs */
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const = 0;
-
-    /**
-     * This is a callback from harfbuzz. The font engine uses the font-system in use to find out the
-     * advances of each glyph and set it on the layout.
-     */
     virtual void recalcAdvances(QGlyphLayout *, ShaperFlags) const {}
     virtual void doKerning(QGlyphLayout *, ShaperFlags) const;
 
@@ -191,6 +182,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
+    virtual QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
                                            GlyphFormat neededFormat,
                                            const QTransform &t = QTransform(),
@@ -241,7 +233,7 @@ public:
         return canRender(utf16, utf16len);
     }
 
-    virtual bool supportsTransformations(const QTransform &transform) const;
+    virtual bool supportsTransformation(const QTransform &transform) const;
 
     virtual Type type() const = 0;
 
@@ -250,11 +242,11 @@ public:
 
     virtual QFontEngine *cloneWithSize(qreal /*pixelSize*/) const { return 0; }
 
-    HB_Font harfbuzzFont() const;
-    HB_Face harfbuzzFace() const;
-    HB_Face initializedHarfbuzzFace() const;
+    void *harfbuzzFont() const;
+    void *harfbuzzFace() const;
+    bool supportsScript(QChar::Script script) const;
 
-    virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
+    virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
 
     void setGlyphCache(const void *key, QFontEngineGlyphCache *data);
     QFontEngineGlyphCache *glyphCache(const void *key, QFontEngineGlyphCache::Type type, const QTransform &transform) const;
@@ -274,12 +266,15 @@ public:
 
     QAtomicInt ref;
     QFontDef fontDef;
+
+    mutable void *font_;
+    mutable qt_destroy_func_t font_destroy_func;
+    mutable void *face_;
+    mutable qt_destroy_func_t face_destroy_func;
+
     uint cache_cost; // amount of mem used in kb by the font
-    int cache_count;
     uint fsType : 16;
     bool symbol;
-    mutable HB_FontRec hbFont;
-    mutable HB_Face hbFace;
     struct KernPair {
         uint left_right;
         QFixed adjust;

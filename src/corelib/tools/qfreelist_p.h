@@ -55,8 +55,6 @@
 
 #include <QtCore/qatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -287,7 +285,5 @@ inline void QFreeList<T, ConstantsType>::release(int id)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QFREELIST_P_H

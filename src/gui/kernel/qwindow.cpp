@@ -115,6 +115,9 @@ QT_BEGIN_NAMESPACE
     windowing systems that do not make this information visible to the
     application, isExposed() will simply return the same value as isVisible().
 
+    QWindow::Visibility queried through visibility() is a convenience API
+    combining the functions of visible() and windowState().
+
     \section1 Rendering
 
     There are two Qt APIs that can be used to render content into a window,
@@ -228,6 +231,120 @@ QWindow::~QWindow()
 }
 
 /*!
+    \enum QWindow::Visibility
+    \since 5.1
+
+    This enum describes what part of the screen the window occupies or should
+    occupy.
+
+    \value Windowed The window occupies part of the screen, but not necessarily
+    the entire screen. This state will occur only on windowing systems which
+    support showing multiple windows simultaneously. In this state it is
+    possible for the user to move and resize the window manually, if
+    WindowFlags permit it and if it is supported by the windowing system.
+
+    \value Minimized The window is reduced to an entry or icon on the task bar,
+    dock, task list or desktop, depending on how the windowing system handles
+    minimized windows.
+
+    \value Maximized The window occupies one entire screen, and the titlebar is
+    still visible. On most windowing systems this is the state achieved by
+    clicking the maximize button on the toolbar.
+
+    \value FullScreen The window occupies one entire screen, is not resizable,
+    and there is no titlebar. On some platforms which do not support showing
+    multiple simultaneous windows, this can be the usual visibility when the
+    window is not hidden.
+
+    \value AutomaticVisibility This means to give the window a default visible
+    state, which might be fullscreen or windowed depending on the platform.
+    It can be given as a parameter to setVisibility but will never be
+    read back from the visibility accessor.
+
+    \value Hidden The window is not visible in any way, however it may remember
+    a latent visibility which can be restored by setting AutomaticVisibility.
+*/
+
+/*!
+    \property QWindow::visibility
+    \brief the screen-occupation state of the window
+    \since 5.1
+
+    Visibility is whether the window should appear in the windowing system as
+    normal, minimized, maximized, fullscreen or hidden.
+
+    To set the visibility to AutomaticVisibility means to give the window
+    a default visible state, which might be fullscreen or windowed depending on
+    the platform.
+    When reading the visibility property you will always get the actual state,
+    never AutomaticVisibility.
+*/
+QWindow::Visibility QWindow::visibility() const
+{
+    Q_D(const QWindow);
+    return d->visibility;
+}
+
+void QWindow::setVisibility(Visibility v)
+{
+    switch (v) {
+    case Hidden:
+        hide();
+        break;
+    case AutomaticVisibility:
+        show();
+        break;
+    case Windowed:
+        showNormal();
+        break;
+    case Minimized:
+        showMinimized();
+        break;
+    case Maximized:
+        showMaximized();
+        break;
+    case FullScreen:
+        showFullScreen();
+        break;
+    default:
+        Q_ASSERT(false);
+        break;
+    }
+}
+
+void QWindowPrivate::updateVisibility()
+{
+    Q_Q(QWindow);
+
+    QWindow::Visibility old = visibility;
+
+    if (visible) {
+        switch (windowState) {
+        case Qt::WindowMinimized:
+            visibility = QWindow::Minimized;
+            break;
+        case Qt::WindowMaximized:
+            visibility = QWindow::Maximized;
+            break;
+        case Qt::WindowFullScreen:
+            visibility = QWindow::FullScreen;
+            break;
+        case Qt::WindowNoState:
+            visibility = QWindow::Windowed;
+            break;
+        default:
+            Q_ASSERT(false);
+            break;
+        }
+    } else {
+        visibility = QWindow::Hidden;
+    }
+
+    if (visibility != old)
+        emit q->visibilityChanged(visibility);
+}
+
+/*!
     Sets the \a surfaceType of the window.
 
     Specifies whether the window is meant for raster rendering with
@@ -276,6 +393,7 @@ void QWindow::setVisible(bool visible)
         return;
     d->visible = visible;
     emit visibleChanged(visible);
+    d->updateVisibility();
 
     if (!d->platformWindow)
         create();
@@ -296,7 +414,7 @@ void QWindow::setVisible(bool visible)
     }
 
 #ifndef QT_NO_CURSOR
-    if (visible)
+    if (visible && d->hasCursor)
         d->applyCursor();
 #endif
     d->platformWindow->setVisible(visible);
@@ -356,6 +474,10 @@ void QWindow::create()
 WId QWindow::winId() const
 {
     Q_D(const QWindow);
+
+    if (type() == Qt::ForeignWindow)
+        return WId(property("_q_foreignWinId").value<WId>());
+
     if(!d->platformWindow)
         const_cast<QWindow *>(this)->create();
 
@@ -381,8 +503,11 @@ QWindow *QWindow::parent() const
     the clip of the window, so it will be clipped to the \a parent window.
 
     Setting \a parent to be 0 will make the window become a top level window.
-*/
 
+    If \a parent is a window created by fromWinId(), then the current window
+    will be embedded inside \a parent, if the platform supports it. Window
+    embedding is currently supported only by the X11 platform plugin.
+*/
 void QWindow::setParent(QWindow *parent)
 {
     Q_D(QWindow);
@@ -654,7 +779,9 @@ void QWindow::lower()
 }
 
 /*!
-    Sets the window's opacity in the windowing system to \a level.
+    \property QWindow::opacity
+    \brief The opacity of the window in the windowing system.
+    \since 5.1
 
     If the windowing system supports window opacity, this can be used to fade the
     window in and out, or to make it semitransparent.
@@ -662,15 +789,58 @@ void QWindow::lower()
     A value of 1.0 or above is treated as fully opaque, whereas a value of 0.0 or below
     is treated as fully transparent. Values inbetween represent varying levels of
     translucency between the two extremes.
+
+    The default value is 1.0.
 */
 void QWindow::setOpacity(qreal level)
 {
     Q_D(QWindow);
-    if (level == d->opacity) // #fixme: Add property for 5.1
+    if (level == d->opacity)
         return;
     d->opacity = level;
-    if (d->platformWindow)
+    if (d->platformWindow) {
         d->platformWindow->setOpacity(level);
+        emit opacityChanged(level);
+    }
+}
+
+qreal QWindow::opacity() const
+{
+    Q_D(const QWindow);
+    return d->opacity;
+}
+
+/*!
+    Sets the mask of the window.
+
+    The mask is a hint to the windowing system that the application does not
+    want to receive mouse or touch input outside the given \a region.
+
+    The window manager may or may not choose to display any areas of the window
+    not included in the mask, thus it is the application's responsibility to
+    clear to transparent the areas that are not part of the mask.
+
+    Setting the mask before the window has been created has no effect.
+*/
+void QWindow::setMask(const QRegion &region)
+{
+    Q_D(QWindow);
+    if (!d->platformWindow)
+        return;
+    d->platformWindow->setMask(region);
+    d->mask = region;
+}
+
+/*!
+    Returns the mask set on the window.
+
+    The mask is a hint to the windowing system that the application does not
+    want to receive mouse or touch input outside the given region.
+*/
+QRegion QWindow::mask() const
+{
+    Q_D(const QWindow);
+    return d->mask;
 }
 
 /*!
@@ -735,6 +905,7 @@ bool QWindow::isActive() const
 /*!
     \property QWindow::contentOrientation
     \brief the orientation of the window's contents
+    \since 5.1
 
     This is a hint to the window manager in case it needs to display
     additional content like popups, dialogs, status bars, or similar
@@ -809,6 +980,7 @@ void QWindow::setWindowState(Qt::WindowState state)
         d->platformWindow->setWindowState(state);
     d->windowState = state;
     emit windowStateChanged(d->windowState);
+    d->updateVisibility();
 }
 
 /*!
@@ -990,6 +1162,7 @@ void QWindow::setHeight(int arg)
 /*!
     \property QWindow::minimumWidth
     \brief the minimum width of the window's geometry
+    \since 5.1
 */
 void QWindow::setMinimumWidth(int w)
 {
@@ -999,6 +1172,7 @@ void QWindow::setMinimumWidth(int w)
 /*!
     \property QWindow::minimumHeight
     \brief the minimum height of the window's geometry
+    \since 5.1
 */
 void QWindow::setMinimumHeight(int h)
 {
@@ -1031,6 +1205,7 @@ void QWindow::setMaximumSize(const QSize &size)
 /*!
     \property QWindow::maximumWidth
     \brief the maximum width of the window's geometry
+    \since 5.1
 */
 void QWindow::setMaximumWidth(int w)
 {
@@ -1040,6 +1215,7 @@ void QWindow::setMaximumWidth(int w)
 /*!
     \property QWindow::maximumHeight
     \brief the maximum height of the window's geometry
+    \since 5.1
 */
 void QWindow::setMaximumHeight(int h)
 {
@@ -1731,6 +1907,7 @@ bool QWindow::event(QEvent *ev)
     case QEvent::WindowStateChange: {
         Q_D(QWindow);
         emit windowStateChanged(d->windowState);
+        d->updateVisibility();
         break;
     }
 
@@ -1945,6 +2122,34 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 
 }
 
+/*!
+    Creates a local representation of a window created by another process or by
+    using native libraries below Qt.
+
+    Given the handle \a id to a native window, this method creates a QWindow
+    object which can be used to represent the window when invoking methods like
+    setParent() and setTransientParent().
+    This can be used, on platforms which support it, to embed a window inside a
+    container or to make a window stick on top of a window created by another
+    process.
+
+    \sa setParent()
+    \sa setTransientParent()
+*/
+QWindow *QWindow::fromWinId(WId id)
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ForeignWindows)) {
+        qWarning() << "QWindow::fromWinId(): platform plugin does not support foreign windows.";
+        return 0;
+    }
+
+    QWindow *window = new QWindow;
+    window->setFlags(Qt::ForeignWindow);
+    window->setProperty("_q_foreignWinId", QVariant::fromValue(id));
+    window->create();
+    return window;
+}
+
 #ifndef QT_NO_CURSOR
 /*!
     \brief set the cursor shape for this window
@@ -1966,13 +2171,7 @@ void QWindowPrivate::maybeQuitOnLastWindowClosed()
 void QWindow::setCursor(const QCursor &cursor)
 {
     Q_D(QWindow);
-    d->cursor = cursor;
-    // Only attempt to set cursor and emit signal if there is an actual platform cursor
-    if (d->screen->handle()->cursor()) {
-        d->applyCursor();
-        QEvent event(QEvent::CursorChange);
-        QGuiApplication::sendEvent(this, &event);
-    }
+    d->setCursor(&cursor);
 }
 
 /*!
@@ -1980,7 +2179,8 @@ void QWindow::setCursor(const QCursor &cursor)
  */
 void QWindow::unsetCursor()
 {
-    setCursor(Qt::ArrowCursor);
+    Q_D(QWindow);
+    d->setCursor(0);
 }
 
 /*!
@@ -1994,14 +2194,39 @@ QCursor QWindow::cursor() const
     return d->cursor;
 }
 
+void QWindowPrivate::setCursor(const QCursor *newCursor)
+{
+
+    Q_Q(QWindow);
+    if (newCursor) {
+        const Qt::CursorShape newShape = newCursor->shape();
+        if (newShape <= Qt::LastCursor && hasCursor && newShape == cursor.shape())
+            return; // Unchanged and no bitmap/custom cursor.
+        cursor = *newCursor;
+        hasCursor = true;
+    } else {
+        if (!hasCursor)
+            return;
+        cursor = QCursor(Qt::ArrowCursor);
+        hasCursor = false;
+    }
+    // Only attempt to set cursor and emit signal if there is an actual platform cursor
+    if (screen->handle()->cursor()) {
+        applyCursor();
+        QEvent event(QEvent::CursorChange);
+        QGuiApplication::sendEvent(q, &event);
+    }
+}
+
 void QWindowPrivate::applyCursor()
 {
     Q_Q(QWindow);
     if (platformWindow) {
         if (QPlatformCursor *platformCursor = screen->handle()->cursor()) {
-            QCursor *oc = QGuiApplication::overrideCursor();
-            QCursor c = oc ? *oc : cursor;
-            platformCursor->changeCursor(&c, q);
+            QCursor *c = QGuiApplication::overrideCursor();
+            if (!c && hasCursor)
+                c = &cursor;
+            platformCursor->changeCursor(c, q);
         }
     }
 }

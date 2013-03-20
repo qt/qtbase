@@ -55,6 +55,7 @@ Window::Window()
     echoComboBox->addItem(tr("No Echo"));
 
     echoLineEdit = new QLineEdit;
+    echoLineEdit->setPlaceholderText("Placeholder Text");
     echoLineEdit->setFocus();
 //! [0]
 
@@ -68,6 +69,7 @@ Window::Window()
     validatorComboBox->addItem(tr("Double validator"));
 
     validatorLineEdit = new QLineEdit;
+    validatorLineEdit->setPlaceholderText("Placeholder Text");
 //! [1]
 
 //! [2]
@@ -80,6 +82,7 @@ Window::Window()
     alignmentComboBox->addItem(tr("Right"));
 
     alignmentLineEdit = new QLineEdit;
+    alignmentLineEdit->setPlaceholderText("Placeholder Text");
 //! [2]
 
 //! [3]
@@ -93,6 +96,7 @@ Window::Window()
     inputMaskComboBox->addItem(tr("License key"));
 
     inputMaskLineEdit = new QLineEdit;
+    inputMaskLineEdit->setPlaceholderText("Placeholder Text");
 //! [3]
 
 //! [4]
@@ -104,6 +108,7 @@ Window::Window()
     accessComboBox->addItem(tr("True"));
 
     accessLineEdit = new QLineEdit;
+    accessLineEdit->setPlaceholderText("Placeholder Text");
 //! [4]
 
 //! [5]

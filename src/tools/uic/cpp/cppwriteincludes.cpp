@@ -88,8 +88,8 @@ WriteIncludes::WriteIncludes(Uic *uic)
     // and create a re-mapping of the old header "qclass.h" to it. Do not do this
     // for the "Phonon::Someclass" classes, however.
     const QString namespaceDelimiter = QLatin1String("::");
-    const ClassInfoEntry *classLibEnd = qclass_lib_map + sizeof(qclass_lib_map)/sizeof(ClassInfoEntry);    
-    for(const ClassInfoEntry *it = qclass_lib_map; it < classLibEnd;  ++it) {        
+    const ClassInfoEntry *classLibEnd = qclass_lib_map + sizeof(qclass_lib_map)/sizeof(ClassInfoEntry);
+    for (const ClassInfoEntry *it = qclass_lib_map; it < classLibEnd;  ++it) {
         const QString klass = QLatin1String(it->klass);
         const QString module = QLatin1String(it->module);
         QLatin1String header = QLatin1String(it->header);
@@ -173,7 +173,7 @@ void WriteIncludes::insertIncludeForClass(const QString &className, QString head
         if (!header.isEmpty())
             break;
 
-        // Known class        
+        // Known class
         const StringMap::const_iterator it = m_classToHeader.constFind(className);
         if (it != m_classToHeader.constEnd()) {
             header = it.value();

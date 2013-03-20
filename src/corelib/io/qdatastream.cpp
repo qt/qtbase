@@ -251,7 +251,7 @@ QT_BEGIN_NAMESPACE
         return retVal;
 
 enum {
-    DefaultStreamVersion = QDataStream::Qt_5_0
+    DefaultStreamVersion = QDataStream::Qt_5_1
 };
 
 /*!
@@ -539,6 +539,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_4_8 Same as Qt_4_6.
     \value Qt_4_9 Same as Qt_4_6.
     \value Qt_5_0 Version 13 (Qt 5.0)
+    \value Qt_5_1 Same as Qt_5_0.
 
     \sa setVersion(), version()
 */
@@ -742,7 +743,7 @@ QDataStream &QDataStream::operator>>(bool &i)
 */
 
 QDataStream &QDataStream::operator>>(float &f)
-{    
+{
     if (version() >= QDataStream::Qt_4_6
         && floatingPointPrecision() == QDataStream::DoublePrecision) {
         double d;

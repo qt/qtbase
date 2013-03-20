@@ -103,7 +103,9 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         d->cupsOptions = value.toStringList();
         break;
     case PPK_CupsStringPageSize:
+    case PPK_PaperName:
         d->cupsStringPageSize = value.toString();
+        d->setPaperName();
         break;
     case PPK_PrinterName:
         // prevent setting the defaults again for the same printer
@@ -140,6 +142,7 @@ QVariant QCupsPrintEngine::property(PrintEnginePropertyKey key) const
         ret = d->cupsOptions;
         break;
     case PPK_CupsStringPageSize:
+    case PPK_PaperName:
         ret = d->cupsStringPageSize;
         break;
     default:
@@ -284,6 +287,7 @@ void QCupsPrintEnginePrivate::setPaperSize()
         QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(printerPaperSize));
 
         if (cups.currentPPD()) {
+            cupsStringPageSize = QLatin1String("Custom");
             const ppd_option_t* pageSizes = cups.pageSizes();
             for (int i = 0; i < pageSizes->num_choices; ++i) {
                 QByteArray cupsPageSize = pageSizes->choices[i].choice;
@@ -293,7 +297,7 @@ void QCupsPrintEnginePrivate::setPaperSize()
                 if (qAbs(size.width - tmpCupsPaperRect.width()) < 5  && qAbs(size.height - tmpCupsPaperRect.height()) < 5) {
                     cupsPaperRect = tmpCupsPaperRect;
                     cupsPageRect = tmpCupsPageRect;
-
+                    cupsStringPageSize = pageSizes->choices[i].text;
                     leftMargin = cupsPageRect.x() - cupsPaperRect.x();
                     topMargin = cupsPageRect.y() - cupsPaperRect.y();
                     rightMargin = cupsPaperRect.right() - cupsPageRect.right();
@@ -303,6 +307,43 @@ void QCupsPrintEnginePrivate::setPaperSize()
                     break;
                 }
             }
+        }
+    }
+}
+
+void QCupsPrintEnginePrivate::setPaperName()
+{
+    if (QCUPSSupport::isAvailable()) {
+        QCUPSSupport cups;
+        if (cups.currentPPD()) {
+            const ppd_option_t* pageSizes = cups.pageSizes();
+            bool foundPaperName = false;
+            for (int i = 0; i < pageSizes->num_choices; ++i) {
+                if (cupsStringPageSize == pageSizes->choices[i].text) {
+                    foundPaperName = true;
+                    QByteArray cupsPageSize = pageSizes->choices[i].choice;
+                    cupsPaperRect = cups.paperRect(cupsPageSize);
+                    cupsPageRect = cups.pageRect(cupsPageSize);
+                    leftMargin = cupsPageRect.x() - cupsPaperRect.x();
+                    topMargin = cupsPageRect.y() - cupsPaperRect.y();
+                    rightMargin = cupsPaperRect.right() - cupsPageRect.right();
+                    bottomMargin = cupsPaperRect.bottom() - cupsPageRect.bottom();
+                    printerPaperSize = QPrinter::Custom;
+                    customPaperSize = cupsPaperRect.size();
+                    for (int ps = 0; ps < QPrinter::NPageSize; ++ps) {
+                        QPdf::PaperSize size = QPdf::paperSize(QPrinter::PaperSize(ps));
+                        if (qAbs(size.width - cupsPaperRect.width()) < 5 && qAbs(size.height - cupsPaperRect.height()) < 5) {
+                            printerPaperSize = static_cast<QPrinter::PaperSize>(ps);
+                            customPaperSize = QSize();
+                            break;
+                        }
+                    }
+                    updatePaperSize();
+                    break;
+                }
+            }
+            if (!foundPaperName)
+                cupsStringPageSize = QString();
         }
     }
 }
@@ -348,8 +389,10 @@ void QCupsPrintEnginePrivate::setCupsDefaults()
             const ppd_option_t* pageSizes = cups.pageSizes();
             QByteArray cupsPageSize;
             for (int i = 0; i < pageSizes->num_choices; ++i) {
-                if (static_cast<int>(pageSizes->choices[i].marked) == 1)
+                if (static_cast<int>(pageSizes->choices[i].marked) == 1) {
                     cupsPageSize = pageSizes->choices[i].choice;
+                    cupsStringPageSize = pageSizes->choices[i].text;
+                }
             }
 
             cupsOptions = cups.options();

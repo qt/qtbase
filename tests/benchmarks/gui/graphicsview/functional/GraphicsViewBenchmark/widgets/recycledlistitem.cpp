@@ -57,7 +57,7 @@ RecycledListItem::RecycledListItem(QGraphicsWidget *parent)
 {
     m_item->setMinimumWidth(MinItemWidth);
     setContentsMargins(0,0,0,0);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);    
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout->addItem(m_item, 0, 0);
     setLayout(m_layout);
     m_layout->setContentsMargins(0,0,0,0);
@@ -118,7 +118,7 @@ void RecycledListItem::resizeEvent(QGraphicsSceneResizeEvent *event)
 
 void RecycledListItem::updateItemContents()
 {
-    AbstractViewItem::updateItemContents();    
+    AbstractViewItem::updateItemContents();
     if (m_model && m_index.isValid())
         setData(m_model->data(m_index,Qt::DisplayRole), Qt::DisplayRole);
 }

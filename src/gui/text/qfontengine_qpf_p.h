@@ -208,7 +208,7 @@ public:
     FT_Face lockFace() const;
     void unlockFace() const;
     void doKerning(QGlyphLayout *g, ShaperFlags flags) const;
-    virtual HB_Error getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints);
+    virtual int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
     virtual QFixed emSquareSize() const;
 #endif
 

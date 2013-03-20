@@ -44,8 +44,6 @@
 
 #include <QtCore/qatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -111,7 +109,5 @@ public:
 #define Q_REFCOUNT_INITIALIZE_STATIC { Q_BASIC_ATOMIC_INITIALIZER(-1) }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

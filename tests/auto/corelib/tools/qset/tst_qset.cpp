@@ -79,6 +79,7 @@ private slots:
     void javaIterator();
     void javaMutableIterator();
     void makeSureTheComfortFunctionsCompile();
+    void initializerList();
 };
 
 void tst_QSet::operator_eq()
@@ -916,6 +917,27 @@ void tst_QSet::makeSureTheComfortFunctionsCompile()
     set1 = set2 & set3;
     set1 = set2 + set3;
     set1 = set2 - set3;
+}
+
+void tst_QSet::initializerList()
+{
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    QSet<int> set{1, 2, 3, 4, 5};
+    QCOMPARE(set.count(), 5);
+    QVERIFY(set.contains(1));
+    QVERIFY(set.contains(2));
+    QVERIFY(set.contains(3));
+    QVERIFY(set.contains(4));
+    QVERIFY(set.contains(5));
+
+    QSet<int> emptySet{};
+    QVERIFY(emptySet.isEmpty());
+
+    QSet<int> set3{{}, {}, {}};
+    QVERIFY(!set3.isEmpty());
+#else
+    QSKIP("Compiler doesn't support initializer lists");
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QSet)

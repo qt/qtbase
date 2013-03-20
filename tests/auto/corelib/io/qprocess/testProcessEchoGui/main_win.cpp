@@ -50,8 +50,8 @@ int APIENTRY WinMain(HINSTANCE /* hInstance */,
 
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    
-    HANDLE hStderr = GetStdHandle(STD_ERROR_HANDLE); 
+
+    HANDLE hStderr = GetStdHandle(STD_ERROR_HANDLE);
 
     for (;;) {
 

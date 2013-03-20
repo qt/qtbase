@@ -537,7 +537,7 @@ QSize ValueExtractor::sizeValue(const Declaration &decl)
                      lengthValueFromData(qvariant_cast<LengthData>(v.at(1)), f));
     }
 
-    LengthData x[2] = { {0, LengthData::None }, {0, LengthData::None} };   
+    LengthData x[2] = { {0, LengthData::None }, {0, LengthData::None} };
     if (decl.d->values.count() > 0)
         x[0] = lengthValue(decl.d->values.at(0));
     if (decl.d->values.count() > 1)
@@ -917,7 +917,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
 
     if (decl.d->values.isEmpty())
         return;
-    
+
     BorderData data;
     data.width.number = 0;
     data.width.unit = LengthData::None;
@@ -1465,7 +1465,7 @@ QRect Declaration::rectValue() const
 {
     if (d->values.count() != 1)
         return QRect();
-    
+
     if (d->parsed.isValid())
         return qvariant_cast<QRect>(d->parsed);
 
@@ -1934,7 +1934,7 @@ QVector<StyleRule> StyleSelector::styleRulesForNode(NodePtr node)
         return rules;
 
     QMap<uint, StyleRule> weightedRules; // (spec, rule) that will be sorted below
-    
+
     //prune using indexed stylesheet
     for (int sheetIdx = 0; sheetIdx < styleSheets.count(); ++sheetIdx) {
         const StyleSheet &styleSheet = styleSheets.at(sheetIdx);

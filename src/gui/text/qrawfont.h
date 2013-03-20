@@ -53,8 +53,6 @@
 
 #if !defined(QT_NO_RAWFONT)
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -66,6 +64,13 @@ public:
         PixelAntialiasing,
         SubPixelAntialiasing
     };
+
+    enum LayoutFlag {
+        SeparateAdvances = 0,
+        KernedAdvances = 1,
+        UseDesignMetrics = 2
+    };
+    Q_DECLARE_FLAGS(LayoutFlags, LayoutFlag)
 
     QRawFont();
     QRawFont(const QString &fileName,
@@ -95,8 +100,10 @@ public:
 
     QVector<quint32> glyphIndexesForString(const QString &text) const;
     inline QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const;
+    inline QVector<QPointF> advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, LayoutFlags layoutFlags) const;
     bool glyphIndexesForChars(const QChar *chars, int numChars, quint32 *glyphIndexes, int *numGlyphs) const;
     bool advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const;
+    bool advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs, LayoutFlags layoutFlags) const;
 
     QImage alphaMapForGlyph(quint32 glyphIndex,
                             AntialiasingType antialiasingType = SubPixelAntialiasing,
@@ -147,17 +154,22 @@ private:
 
 Q_DECLARE_SHARED(QRawFont)
 
-inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+Q_DECLARE_OPERATORS_FOR_FLAGS(QRawFont::LayoutFlags)
+
+inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, QRawFont::LayoutFlags layoutFlags) const
 {
     QVector<QPointF> advances(glyphIndexes.size());
-    if (advancesForGlyphIndexes(glyphIndexes.constData(), advances.data(), glyphIndexes.size()))
+    if (advancesForGlyphIndexes(glyphIndexes.constData(), advances.data(), glyphIndexes.size(), layoutFlags))
         return advances;
     return QVector<QPointF>();
 }
 
-QT_END_NAMESPACE
+inline QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+{
+    return advancesForGlyphIndexes(glyphIndexes, QRawFont::SeparateAdvances);
+}
 
-QT_END_HEADER
+QT_END_NAMESPACE
 
 #endif // QT_NO_RAWFONT
 

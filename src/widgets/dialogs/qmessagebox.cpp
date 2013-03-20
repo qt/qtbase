@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -1222,6 +1222,30 @@ void QMessageBox::setTextFormat(Qt::TextFormat format)
     d->label->setWordWrap(format == Qt::RichText
                     || (format == Qt::AutoText && Qt::mightBeRichText(d->label->text())));
     d->updateSize();
+}
+
+/*!
+    \property QMessageBox::textInteractionFlags
+    \since 5.1
+
+    Specifies how the label of the message box should interact with user
+    input.
+
+    The default value depends on the style.
+
+    \sa QStyle::SH_MessageBox_TextInteractionFlags
+*/
+
+Qt::TextInteractionFlags QMessageBox::textInteractionFlags() const
+{
+    Q_D(const QMessageBox);
+    return d->label->textInteractionFlags();
+}
+
+void QMessageBox::setTextInteractionFlags(Qt::TextInteractionFlags flags)
+{
+    Q_D(QMessageBox);
+    d->label->setTextInteractionFlags(flags);
 }
 
 /*!

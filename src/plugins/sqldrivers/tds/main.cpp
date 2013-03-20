@@ -47,7 +47,7 @@
 #define _WINSCARD_H_
 #include <windows.h>
 #endif
-#include "../../../sql/drivers/tds/qsql_tds.h"
+#include "../../../sql/drivers/tds/qsql_tds_p.h"
 
 QT_BEGIN_NAMESPACE
 

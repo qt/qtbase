@@ -467,8 +467,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
             QString tmp = args.at(0).toQString(m_tmp1);
             for (int i = 1; i < args.count(); ++i)
                 tmp = tmp.arg(args.at(i).toQString(m_tmp2));
-            // Note: this depends on split_value_list() making a deep copy
-            ret = split_value_list(tmp);
+            ret << ProString(tmp);
         }
         break;
     case E_FORMAT_NUMBER:
@@ -561,7 +560,7 @@ ProStringList QMakeEvaluator::evaluateBuiltinExpand(
                         src = s;
                         break;
                     }
-                ret = split_value_list(before + var.join(glue) + after, src);
+                ret << ProString(before + var.join(glue) + after).setSource(src);
             }
         }
         break;

@@ -51,7 +51,7 @@ class DummyDataGenerator : public QObject
 public:
     DummyDataGenerator();
     ~DummyDataGenerator();
-    
+
 public:
     void Reset();
     QString randomPhoneNumber(QString indexNumber);
@@ -60,7 +60,7 @@ public:
     QString randomName();
     QString randomIconItem();
     QString randomStatusItem();
-    
+
 private:
     QStringList m_countryCodes;
     QStringList m_firstNamesF;
@@ -69,4 +69,4 @@ private:
     bool m_isMale;
 };
 
-#endif // __DUMMYDATAGEN_H__ 
+#endif // __DUMMYDATAGEN_H__

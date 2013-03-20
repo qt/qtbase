@@ -48,8 +48,8 @@
 #include <qtextstream.h>
 #include <qset.h>
 
-#include "qdbusmetatype.h"
-#include <qdbusintrospection_p.h>
+#include <qdbusmetatype.h>
+#include <private/qdbusintrospection_p.h>
 
 #include <stdio.h>
 #include <stdlib.h>

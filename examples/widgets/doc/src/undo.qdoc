@@ -35,7 +35,7 @@
     \image undodemo.png
 
     Qt's undo framework is an implementation of the Command
-    pattern, which provides advanced undo/redo functionality. 
+    pattern, which provides advanced undo/redo functionality.
 
     To show the abilities of the framework, we have implemented a
     small diagram application in which the diagram items are geometric

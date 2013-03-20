@@ -100,7 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 //! [3]
     lineEdit = new QLineEdit;
-    
+
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(modelLabel, 0, 0); layout->addWidget(modelCombo, 0, 1);
     layout->addWidget(modeLabel, 1, 0);  layout->addWidget(modeCombo, 1, 1);

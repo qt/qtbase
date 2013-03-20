@@ -68,7 +68,7 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
     // Mouse release position - mouse press position
     QVector2D diff = QVector2D(e->localPos()) - mousePressPosition;
 
-    // Rotation axis is perpendicular to the mouse position difference 
+    // Rotation axis is perpendicular to the mouse position difference
     // vector
     QVector3D n = QVector3D(diff.y(), diff.x(), 0.0).normalized();
 

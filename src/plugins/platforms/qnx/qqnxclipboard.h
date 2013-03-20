@@ -42,6 +42,8 @@
 #ifndef QQNXCLIPBOARD_H
 #define QQNXCLIPBOARD_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_CLIPBOARD
 #include <qpa/qplatformclipboard.h>
 

@@ -62,7 +62,7 @@ public:
     virtual QRectF boundingRect() const;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-    int nodeCount() const; 
+    int nodeCount() const;
     Node *node(int idx) const;
 
     void setDrawSticks(bool on);
@@ -90,7 +90,7 @@ private:
 
     Node *m_nodes[NodeCount];
     qreal m_perfectBoneLengths[BoneCount];
-    
+
     uint m_sticks : 1;
     uint m_isDead : 1;
     uint m_reserved : 30;

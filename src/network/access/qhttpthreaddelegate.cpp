@@ -315,6 +315,7 @@ void QHttpThreadDelegate::startRequest()
         connect(httpReply,SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
         connect(httpReply,SIGNAL(dataReadProgress(qint64,qint64)), this, SLOT(dataReadProgressSlot(qint64,qint64)));
 #ifndef QT_NO_SSL
+        connect(httpReply,SIGNAL(encrypted()), this, SLOT(encryptedSlot()));
         connect(httpReply,SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(sslErrorsSlot(QList<QSslError>)));
 #endif
 
@@ -589,6 +590,14 @@ void QHttpThreadDelegate::cacheCredentialsSlot(const QHttpNetworkRequest &reques
 
 
 #ifndef QT_NO_SSL
+void QHttpThreadDelegate::encryptedSlot()
+{
+    if (!httpReply)
+        return;
+
+    emit encrypted();
+}
+
 void QHttpThreadDelegate::sslErrorsSlot(const QList<QSslError> &errors)
 {
     if (!httpReply)

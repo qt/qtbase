@@ -46,8 +46,6 @@
 #include <limits.h>
 #include <new>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #undef QT_QCONTIGUOUSCACHE_DEBUG
@@ -463,7 +461,5 @@ inline T QContiguousCache<T>::takeLast()
 { T t = last(); removeLast(); return t; }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

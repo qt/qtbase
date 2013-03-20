@@ -54,7 +54,6 @@
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qvector.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -140,7 +139,7 @@ class ReduceKernel
 
 public:
     ReduceKernel(ReduceOptions _reduceOptions)
-        : reduceOptions(_reduceOptions), progress(0), resultsMapSize(0), 
+        : reduceOptions(_reduceOptions), progress(0), resultsMapSize(0),
           threadCount(QThreadPool::globalInstance()->maxThreadCount())
     { }
 
@@ -247,7 +246,6 @@ struct SequenceHolder2 : public Base
 } // namespace QtConcurrent
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_CONCURRENT
 

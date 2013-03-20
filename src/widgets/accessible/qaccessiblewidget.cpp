@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qaccessiblewidget.h"
+#include "qaccessiblewidget_p.h"
 
 #ifndef QT_NO_ACCESSIBILITY
 
@@ -64,7 +64,7 @@ static QList<QWidget*> childWidgets(const QWidget *widget)
     QList<QWidget*> widgets;
     for (int i = 0; i < list.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(list.at(i));
-        if (w && !w->isWindow() 
+        if (w && !w->isWindow()
             && !qobject_cast<QFocusFrame*>(w)
 #if !defined(QT_NO_MENU)
             && !qobject_cast<QMenu*>(w)
@@ -383,6 +383,8 @@ int QAccessibleWidget::childCount() const
 /*! \reimp */
 int QAccessibleWidget::indexOfChild(const QAccessibleInterface *child) const
 {
+    if (!child)
+        return -1;
     QWidgetList cl = childWidgets(widget());
     return cl.indexOf(qobject_cast<QWidget *>(child->object()));
 }

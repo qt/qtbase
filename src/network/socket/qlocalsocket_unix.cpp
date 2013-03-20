@@ -221,14 +221,14 @@ void QLocalSocketPrivate::errorOccurred(QLocalSocket::LocalSocketError error, co
         q->emit stateChanged(state);
 }
 
-void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
+bool QLocalSocket::open(OpenMode openMode)
 {
     Q_D(QLocalSocket);
     if (state() == ConnectedState || state() == ConnectingState) {
         QString errorString = d->generateErrorString(QLocalSocket::OperationError, QLatin1String("QLocalSocket::connectToserver"));
         setErrorString(errorString);
         emit error(QLocalSocket::OperationError);
-        return;
+        return false;
     }
 
     d->errorString.clear();
@@ -236,17 +236,17 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     d->state = ConnectingState;
     emit stateChanged(d->state);
 
-    if (name.isEmpty()) {
+    if (d->serverName.isEmpty()) {
         d->errorOccurred(ServerNotFoundError,
                 QLatin1String("QLocalSocket::connectToServer"));
-        return;
+        return false;
     }
 
     // create the socket
     if (-1 == (d->connectingSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0))) {
         d->errorOccurred(UnsupportedSocketOperationError,
                         QLatin1String("QLocalSocket::connectToServer"));
-        return;
+        return false;
     }
     // set non blocking so we can try to connect and it won't wait
     int flags = fcntl(d->connectingSocket, F_GETFL, 0);
@@ -254,13 +254,14 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
         || -1 == (fcntl(d->connectingSocket, F_SETFL, flags | O_NONBLOCK))) {
         d->errorOccurred(UnknownSocketError,
                 QLatin1String("QLocalSocket::connectToServer"));
-        return;
+        return false;
     }
 
     // _q_connectToSocket does the actual connecting
-    d->connectingName = name;
+    d->connectingName = d->serverName;
     d->connectingOpenMode = openMode;
     d->_q_connectToSocket();
+    return true;
 }
 
 /*!

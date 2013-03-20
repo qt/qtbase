@@ -110,6 +110,7 @@ private slots:
     void saveAndLoadCustom();
     void metaObject();
     void constexprMetaTypeIds();
+    void constRefs();
 };
 
 struct Foo { int i; };
@@ -169,7 +170,7 @@ protected:
             const QByteArray name = QString("Bar%1_%2").arg(i).arg((size_t)QThread::currentThreadId()).toLatin1();
             const char *nm = name.constData();
             int tp = qRegisterMetaType<Bar>(nm);
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
             pthread_yield();
 #endif
             QMetaType info(tp);
@@ -1759,6 +1760,17 @@ void tst_QMetaType::constexprMetaTypeIds()
     Q_UNUSED(metaType);
 #else
     QSKIP("The test needs a compiler supporting constexpr");
+#endif
+}
+
+void tst_QMetaType::constRefs()
+{
+    QCOMPARE(::qMetaTypeId<const int &>(), ::qMetaTypeId<int>());
+    QCOMPARE(::qMetaTypeId<const QString &>(), ::qMetaTypeId<QString>());
+    QCOMPARE(::qMetaTypeId<const CustomMovable &>(), ::qMetaTypeId<CustomMovable>());
+    QCOMPARE(::qMetaTypeId<const QList<CustomMovable> &>(), ::qMetaTypeId<QList<CustomMovable> >());
+#if defined(Q_COMPILER_CONSTEXPR)
+    Q_STATIC_ASSERT(::qMetaTypeId<const int &>() == ::qMetaTypeId<int>());
 #endif
 }
 

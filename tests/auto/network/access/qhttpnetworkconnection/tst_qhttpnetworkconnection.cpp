@@ -875,17 +875,17 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
             request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Get);
         else
             request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt", QHttpNetworkRequest::Head);
-        
+
         if (i % 2 || i % 3)
             request->setPipeliningAllowed(true);
-        
+
         if (i % 3)
             request->setPriority(QHttpNetworkRequest::HighPriority);
         else if (i % 5)
             request->setPriority(QHttpNetworkRequest::NormalPriority);
         else if (i % 7)
             request->setPriority(QHttpNetworkRequest::LowPriority);
-        
+
         requests.append(request);
         QHttpNetworkReply *reply = connection.sendRequest(*request);
         replies.append(reply);

@@ -47,7 +47,6 @@
 
 #ifndef QT_NO_CONCURRENT
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -297,7 +296,6 @@ struct MapResultType<QStringList, U(C::*)() const>
 #endif //Q_QDOC
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_CONCURRENT
 

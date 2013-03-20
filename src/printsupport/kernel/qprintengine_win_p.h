@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_PRINTER
 
 #include <QtGui/qpaintengine.h>
@@ -104,6 +106,7 @@ public:
     void releaseDC(HDC) const;
 
     static QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &printerInfo);
+    static QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo);
     static void queryDefaultPrinter(QString &name, QString &program, QString &port);
 
 private:

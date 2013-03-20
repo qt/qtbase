@@ -44,6 +44,7 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
 #include <QFormLayout>
 #include <QSpacerItem>
 #include <QGroupBox>
@@ -105,11 +106,13 @@ inline void setComboBoxValue(QComboBox *c, int v)
     c->setCurrentIndex(c->findData(QVariant(v)));
 }
 
-static inline void addButton(const QString &description, QBoxLayout *layout, QObject *receiver, const char *slotFunc)
+static inline QPushButton *addButton(const QString &description, QGridLayout *layout,
+                                     int &row, int column, QObject *receiver, const char *slotFunc)
 {
     QPushButton *button = new QPushButton(description);
     QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
-    layout->addWidget(button);
+    layout->addWidget(button, row++, column);
+    return button;
 }
 
 // A line edit for editing the label fields of the dialog, keeping track of whether it has
@@ -159,6 +162,8 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     , m_selectedFileName(new QLineEdit(this))
     , m_nameFilters(new QPlainTextEdit)
     , m_selectedNameFilter(new QLineEdit(this))
+    , m_deleteNonModalDialogButton(0)
+    , m_deleteModalDialogButton(0)
 {
     // Options
     QGroupBox *optionsGroupBox = new QGroupBox(tr("Options"));
@@ -197,19 +202,24 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     labelsLayout->addRow(tr("Reject label:"), m_labelLineEdits.back());
 
     // Buttons
-    QVBoxLayout *buttonLayout = new QVBoxLayout;
-    buttonLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Ignored, QSizePolicy::MinimumExpanding));
-    addButton(tr("Show modal"), buttonLayout, this, SLOT(showModal()));
-    addButton(tr("Show non-modal"), buttonLayout, this, SLOT(showNonModal()));
-    addButton(tr("getOpenFileName"), buttonLayout, this, SLOT(getOpenFileName()));
-    addButton(tr("getOpenFileNames"), buttonLayout, this, SLOT(getOpenFileNames()));
-    addButton(tr("getSaveFileName"), buttonLayout, this, SLOT(getSaveFileName()));
-    addButton(tr("getExistingDirectory"), buttonLayout, this, SLOT(getExistingDirectory()));
-    addButton(tr("Restore defaults"), buttonLayout, this, SLOT(restoreDefaults()));
     QGroupBox *buttonsGroupBox = new QGroupBox(tr("Show"));
-    QHBoxLayout *buttonsGroupLayout = new QHBoxLayout(buttonsGroupBox);
-    buttonsGroupLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding, QSizePolicy::Ignored));
-    buttonsGroupLayout->addLayout(buttonLayout);
+    QGridLayout *buttonLayout = new QGridLayout(buttonsGroupBox);
+    int row = 0;
+    int column = 0;
+    addButton(tr("Exec modal"), buttonLayout, row, column, this, SLOT(execModal()));
+    addButton(tr("Show modal"), buttonLayout, row, column, this, SLOT(showModal()));
+    m_deleteModalDialogButton =
+        addButton(tr("Delete modal"), buttonLayout, row, column, this, SLOT(deleteModalDialog()));
+    addButton(tr("Show non-modal"), buttonLayout, row, column, this, SLOT(showNonModal()));
+    m_deleteNonModalDialogButton =
+        addButton(tr("Delete non-modal"), buttonLayout, row, column, this, SLOT(deleteNonModalDialog()));
+    row = 0;
+    column++;
+    addButton(tr("getOpenFileName"), buttonLayout, row, column, this, SLOT(getOpenFileName()));
+    addButton(tr("getOpenFileNames"), buttonLayout, row, column, this, SLOT(getOpenFileNames()));
+    addButton(tr("getSaveFileName"), buttonLayout, row, column, this, SLOT(getSaveFileName()));
+    addButton(tr("getExistingDirectory"), buttonLayout, row, column, this, SLOT(getExistingDirectory()));
+    addButton(tr("Restore defaults"), buttonLayout, row, column, this, SLOT(restoreDefaults()));
 
     // Main layout
     QGridLayout *gridLayout = new QGridLayout(this);
@@ -218,25 +228,75 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     gridLayout->addWidget(labelsGroupBox, 1, 0);
     gridLayout->addWidget(buttonsGroupBox, 1, 1);
 
+    enableDeleteModalDialogButton();
+    enableDeleteNonModalDialogButton();
     restoreDefaults();
 }
 
-void FileDialogPanel::showModal()
+void FileDialogPanel::execModal()
 {
     QFileDialog dialog(this);
     applySettings(&dialog);
+    connect(&dialog, SIGNAL(accepted()), this, SLOT(accepted()));
     dialog.setWindowTitle(tr("Modal File Dialog Qt %1").arg(QLatin1String(QT_VERSION_STR)));
     dialog.exec();
 }
 
+void FileDialogPanel::showModal()
+{
+    if (m_modalDialog.isNull()) {
+        static int  n = 0;
+        m_modalDialog = new QFileDialog(this);
+        m_modalDialog->setModal(true);
+        connect(m_modalDialog.data(), SIGNAL(accepted()), this, SLOT(accepted()));
+        m_modalDialog->setWindowTitle(tr("Modal File Dialog #%1 Qt %2")
+                                      .arg(++n)
+                                      .arg(QLatin1String(QT_VERSION_STR)));
+        enableDeleteModalDialogButton();
+    }
+    applySettings(m_modalDialog);
+    m_modalDialog->show();
+}
+
 void FileDialogPanel::showNonModal()
 {
-    QFileDialog *dialog = new QFileDialog(this);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-    applySettings(dialog);
-    dialog->setWindowTitle(tr("Non-Modal File Dialog Qt %1").arg(QLatin1String(QT_VERSION_STR)));
-    dialog->show();
+    if (m_nonModalDialog.isNull()) {
+        static int  n = 0;
+        m_nonModalDialog = new QFileDialog(this);
+        connect(m_nonModalDialog.data(), SIGNAL(accepted()), this, SLOT(accepted()));
+        m_nonModalDialog->setWindowTitle(tr("Non-Modal File Dialog #%1 Qt %2")
+                                         .arg(++n)
+                                         .arg(QLatin1String(QT_VERSION_STR)));
+        enableDeleteNonModalDialogButton();
+    }
+    applySettings(m_nonModalDialog);
+    m_nonModalDialog->show();
 }
+
+void FileDialogPanel::deleteNonModalDialog()
+{
+    if (!m_nonModalDialog.isNull())
+        delete m_nonModalDialog;
+    enableDeleteNonModalDialogButton();
+}
+
+void FileDialogPanel::deleteModalDialog()
+{
+    if (!m_modalDialog.isNull())
+        delete m_modalDialog;
+    enableDeleteModalDialogButton();
+}
+
+void FileDialogPanel::enableDeleteNonModalDialogButton()
+{
+    m_deleteNonModalDialogButton->setEnabled(!m_nonModalDialog.isNull());
+}
+
+void FileDialogPanel::enableDeleteModalDialogButton()
+{
+    m_deleteModalDialogButton->setEnabled(!m_modalDialog.isNull());
+}
+
 
 QString FileDialogPanel::filterString() const
 {
@@ -340,7 +400,9 @@ void FileDialogPanel::applySettings(QFileDialog *d) const
     d->setFileMode(comboBoxValue<QFileDialog::FileMode>(m_fileMode));
     d->setOptions(options());
     d->setDefaultSuffix(m_defaultSuffix->text().trimmed());
-    d->setDirectory(m_directory->text().trimmed());
+    const QString directory = m_directory->text().trimmed();
+    if (!directory.isEmpty())
+        d->setDirectory(directory);
     const QString file = m_selectedFileName->text().trimmed();
     if (!file.isEmpty())
        d->selectFile(file);
@@ -350,7 +412,6 @@ void FileDialogPanel::applySettings(QFileDialog *d) const
         d->selectNameFilter(filter);
     foreach (LabelLineEdit *l, m_labelLineEdits)
         l->apply(d);
-    connect(d, SIGNAL(accepted()), this, SLOT(accepted()));
 }
 
 void FileDialogPanel::accepted()

@@ -84,6 +84,9 @@ private slots:
 
     void insert();
     void checkMostLeftNode();
+    void initializerList();
+    void testInsertWithHint();
+    void testInsertMultiWithHint();
 };
 
 typedef QMap<QString, QString> StringMap;
@@ -937,6 +940,18 @@ void tst_QMap::qmultimap_specific()
     QVERIFY(map2.remove(42,5));
     QVERIFY(map1 == map2);
     }
+
+    map1.insert(map1.constBegin(), -1, -1);
+    QCOMPARE(map1.size(), 45);
+    map1.insert(map1.constBegin(), -1, -1);
+    QCOMPARE(map1.size(), 46);
+    map1.insert(map1.constBegin(), -2, -2);
+    QCOMPARE(map1.size(), 47);
+    map1.insert(map1.constBegin(), 5, 5); // Invald hint
+    QCOMPARE(map1.size(), 48);
+    map1.insert(map1.constBegin(), 5, 5); // Invald hint
+    QCOMPARE(map1.size(), 49);
+    sanityCheckTree(map1, __LINE__);
 }
 
 void tst_QMap::const_shared_null()
@@ -1128,6 +1143,152 @@ void tst_QMap::checkMostLeftNode()
     map.erase(map.begin());
     sanityCheckTree(map, __LINE__);
 }
+
+void tst_QMap::initializerList()
+{
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    QMap<int, QString> map{{1, "hello"}, {2, "initializer_list"}};
+    QCOMPARE(map.count(), 2);
+    QVERIFY(map[1] == "hello");
+    QVERIFY(map[2] == "initializer_list");
+
+    QMultiMap<QString, int> multiMap{{"il", 1}, {"il", 2}, {"il", 3}};
+    QCOMPARE(multiMap.count(), 3);
+    QList<int> values = multiMap.values("il");
+    QCOMPARE(values.count(), 3);
+
+    QMap<int, int> emptyMap{};
+    QVERIFY(emptyMap.isEmpty());
+
+    QMap<char, char> emptyPairs{{}, {}};
+    QVERIFY(!emptyPairs.isEmpty());
+
+    QMultiMap<double, double> emptyMultiMap{};
+    QVERIFY(emptyMultiMap.isEmpty());
+
+    QMultiMap<float, float> emptyPairs2{{}, {}};
+    QVERIFY(!emptyPairs2.isEmpty());
+#else
+    QSKIP("Compiler doesn't support initializer lists");
+#endif
+}
+
+void tst_QMap::testInsertWithHint()
+{
+    QMap<int, int> map;
+    map.setSharable(false);
+
+    // Check with end hint();
+    map.insert(map.constEnd(), 3, 1);     // size == 1
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 5, 1);     // size = 2
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 50, 1);    // size = 3
+    sanityCheckTree(map, __LINE__);
+    QMap<int, int>::const_iterator key75(map.insert(map.constEnd(), 75, 1)); // size = 4
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 100, 1);   // size = 5
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 105, 1);   // size = 6
+    sanityCheckTree(map, __LINE__);
+    map.insert(map.constEnd(), 10, 5); // invalid hint and size = 7
+    sanityCheckTree(map, __LINE__);
+    QMap<int, int>::iterator lastkey = map.insert(map.constEnd(), 105, 12); // overwrite
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(lastkey.value(), 12);
+    QCOMPARE(lastkey.key(), 105);
+    QCOMPARE(map.size(), 7);
+
+    // With regular hint
+    map.insert(key75, 75, 100); // overwrite current key
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 7);
+    QCOMPARE(key75.key(), 75);
+    QCOMPARE(key75.value(), 100);
+
+    map.insert(key75, 50, 101); // overwrite previous value
+    QMap<int, int>::const_iterator key50(key75);
+    --key50;
+    QCOMPARE(map.size(), 7);
+    QCOMPARE(key50.key(), 50);
+    QCOMPARE(key50.value(), 101);
+
+    map.insert(key75, 17, 125);     // invalid hint - size 8
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 8);
+
+    // begin
+    map.insert(map.constBegin(), 1, 1);  // size 9
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 9);
+
+    map.insert(map.constBegin(), 1, 10);  // overwrite existing (leftmost) value
+    QCOMPARE(map.constBegin().value(), 10);
+
+    map.insert(map.constBegin(), 47, 47); // wrong hint  - size 10
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 10);
+
+    // insert with right == 0
+    QMap<int, int>::const_iterator i1 (map.insert(key75, 70, 12)); // overwrite
+    map.insert(i1, 69, 12);  // size 12
+
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 12);
+}
+
+void tst_QMap::testInsertMultiWithHint()
+{
+    QMap<int, int> map;
+    map.setSharable(false);
+
+    typedef QMap<int, int>::const_iterator cite; // Hack since we define QT_STRICT_ITERATORS
+    map.insertMulti(cite(map.end()), 64, 65);
+    map[128] = 129;
+    map[256] = 257;
+    sanityCheckTree(map, __LINE__);
+
+    map.insertMulti(cite(map.end()), 512, 513);
+    map.insertMulti(cite(map.end()), 512, 513 * 2);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 5);
+    map.insertMulti(cite(map.end()), 256, 258); // wrong hint
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 6);
+
+    QMap<int, int>::iterator i = map.insertMulti(map.constBegin(), 256, 259); // wrong hint
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 7);
+
+    QMap<int, int>::iterator j = map.insertMulti(map.constBegin(), 69, 66);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 8);
+
+    j = map.insertMulti(cite(j), 68, 259);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 9);
+
+    j = map.insertMulti(cite(j), 67, 67);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 10);
+
+    i = map.insertMulti(cite(i), 256, 259);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 11);
+
+    i = map.insertMulti(cite(i), 256, 260);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 12);
+
+    map.insertMulti(cite(i), 64, 67);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 13);
+
+    map.insertMulti(map.constBegin(), 20, 20);
+    sanityCheckTree(map, __LINE__);
+    QCOMPARE(map.size(), 14);
+}
+
 
 QTEST_APPLESS_MAIN(tst_QMap)
 #include "tst_qmap.moc"

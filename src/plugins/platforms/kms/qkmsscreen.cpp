@@ -124,10 +124,14 @@ void QKmsScreen::initializeScreenMode()
 
     drmModeConnector *connector = drmModeGetConnector(m_device->fd(), m_connectorId);
     drmModeModeInfo *mode = 0;
-    if (connector->count_modes > 0)
-        mode = &connector->modes[0];
-    else
-        mode = &builtin_1024x768;
+    for (int i = 0; i < connector->count_modes; ++i) {
+        if (connector->modes[i].type & DRM_MODE_TYPE_PREFERRED) {
+            mode = &connector->modes[i];
+            break;
+        }
+    }
+    if (!mode)
+        mode = mode = &builtin_1024x768;
 
     drmModeEncoder *encoder = drmModeGetEncoder(m_device->fd(), connector->encoders[0]);
     if (encoder == 0)

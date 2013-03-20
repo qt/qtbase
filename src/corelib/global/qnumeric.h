@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -64,7 +62,5 @@ Q_CORE_EXPORT double qInf();
 #define Q_QNAN (QT_PREPEND_NAMESPACE(qQNaN)())
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QNUMERIC_H

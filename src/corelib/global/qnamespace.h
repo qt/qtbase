@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -65,7 +63,7 @@ Qt {
     Q_ENUMS(ScrollBarPolicy FocusPolicy ContextMenuPolicy)
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
     Q_ENUMS(FillRule MaskMode BGMode ClipOperation SizeMode)
-    Q_ENUMS(Axis Corner LayoutDirection SizeHint Orientation DropAction)
+    Q_ENUMS(Axis Corner Edge LayoutDirection SizeHint Orientation DropAction)
     Q_FLAGS(Alignment Orientations DropActions)
     Q_FLAGS(DockWidgetAreas ToolBarAreas)
     Q_ENUMS(DockWidgetArea ToolBarArea)
@@ -286,6 +284,7 @@ public:
         SplashScreen = ToolTip | Dialog,
         Desktop = 0x00000010 | Window,
         SubWindow = 0x00000012,
+        ForeignWindow = 0x00000020 | Window,
 
         WindowType_Mask = 0x000000ff,
         MSWindowsFixedSizeDialogHint = 0x00000100,
@@ -326,6 +325,15 @@ public:
     };
 
     Q_DECLARE_FLAGS(WindowStates, WindowState)
+
+    enum ApplicationState {
+        ApplicationSuspended    = 0x00000000,
+        ApplicationHidden       = 0x00000001,
+        ApplicationInactive     = 0x00000002,
+        ApplicationActive       = 0x00000004
+    };
+
+    Q_DECLARE_FLAGS(ApplicationStates, ApplicationState)
 
     enum ScreenOrientation {
         PrimaryOrientation           = 0x00000000,
@@ -490,6 +498,7 @@ public:
         AA_X11InitThreads = 10,
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
+        AA_UseHighDpiPixmaps = 13,
 
         // Add new attributes before this line
         AA_AttributeCount
@@ -1194,6 +1203,13 @@ public:
         BottomRightCorner = 0x00003
     };
 
+    enum Edge {
+        TopEdge = 0x00001,
+        LeftEdge = 0x00002,
+        RightEdge = 0x00004,
+        BottomEdge = 0x00008
+    };
+
     enum ConnectionType {
         AutoConnection,
         DirectConnection,
@@ -1300,6 +1316,8 @@ public:
 
         ImhPreferLatin = 0x200,
 
+        ImhMultiLine = 0x400,
+
         ImhDigitsOnly = 0x10000,
         ImhFormattedNumbersOnly = 0x20000,
         ImhUppercaseOnly = 0x40000,
@@ -1397,7 +1415,8 @@ public:
         ItemIsDropEnabled = 8,
         ItemIsUserCheckable = 16,
         ItemIsEnabled = 32,
-        ItemIsTristate = 64
+        ItemIsTristate = 64,
+        ItemNeverHasChildren = 128
     };
     Q_DECLARE_FLAGS(ItemFlags, ItemFlag)
 
@@ -1602,7 +1621,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QNAMESPACE_H

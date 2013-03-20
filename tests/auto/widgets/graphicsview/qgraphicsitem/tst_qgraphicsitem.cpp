@@ -424,6 +424,7 @@ private slots:
     void activate();
     void setActivePanelOnInactiveScene();
     void activationOnShowHide();
+    void deactivateInactivePanel();
     void moveWhileDeleting();
     void ensureDirtySceneTransform();
     void focusScope();
@@ -2204,7 +2205,6 @@ void tst_QGraphicsItem::sceneMatrix()
 void tst_QGraphicsItem::setMatrix()
 {
     QGraphicsScene scene;
-    qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy spy(&scene, SIGNAL(changed(QList<QRectF>)));
     QRectF unrotatedRect(-12, -34, 56, 78);
     QGraphicsRectItem item(unrotatedRect, 0);
@@ -9030,6 +9030,40 @@ public:
     }
 };
 
+void tst_QGraphicsItem::deactivateInactivePanel()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *panel1 = scene.addRect(QRectF(0, 0, 10, 10));
+    panel1->setFlag(QGraphicsItem::ItemIsPanel);
+
+    QGraphicsItem *panel2 = scene.addRect(QRectF(0, 0, 10, 10));
+    panel2->setFlag(QGraphicsItem::ItemIsPanel);
+
+    QEvent event(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &event);
+
+    panel1->setActive(true);
+    QVERIFY(scene.isActive());
+    QVERIFY(panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QCOMPARE(scene.activePanel(), panel1);
+
+    panel2->setActive(true);
+    QVERIFY(panel2->isActive());
+    QVERIFY(!panel1->isActive());
+    QCOMPARE(scene.activePanel(), panel2);
+
+    panel2->setActive(false);
+    QVERIFY(panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QCOMPARE(scene.activePanel(), panel1);
+
+    panel2->setActive(false);
+    QVERIFY(panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QCOMPARE(scene.activePanel(), panel1);
+}
+
 void tst_QGraphicsItem::moveWhileDeleting()
 {
     QGraphicsScene scene;
@@ -10333,23 +10367,24 @@ void tst_QGraphicsItem::modality_clickFocus()
     EventSpy2 rect1Spy(&scene, rect1);
     EventSpy2 rect2Spy(&scene, rect2);
 
-    // activate rect1, it should not get focus
+    // activate rect1, it should get focus
     rect1->setActive(true);
-    QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect1);
 
-    // focus stays unset when rect2 becomes modal
+    // focus stays when rect2 becomes modal
     rect2->setPanelModality(QGraphicsItem::SceneModal);
-    QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect1);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 1);
     QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
     QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 0);
     QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 0);
 
     // clicking on rect1 should not set it's focus item
+    rect1->clearFocus();
     sendMouseClick(&scene, QPointF(-25, -25));
     QCOMPARE(rect1->focusItem(), (QGraphicsItem *) 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 1);
     QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 0);
     QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 0);
 
@@ -10357,33 +10392,34 @@ void tst_QGraphicsItem::modality_clickFocus()
     rect2->setActive(true);
     sendMouseClick(&scene, QPointF(75, 75));
     QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect2);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 1);
     QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
     QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 0);
 
     // clicking on rect1 does *not* give it focus
     rect1->setActive(true);
+    rect1->clearFocus();
     sendMouseClick(&scene, QPointF(-25, -25));
     QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 2);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 2);
     QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
     QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 1);
 
     // focus doesn't change when leaving modality either
     rect2->setPanelModality(QGraphicsItem::NonModal);
     QCOMPARE(scene.focusItem(), (QGraphicsItem *) 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 0);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 2);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 2);
     QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
     QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 1);
 
     // click on rect1, it should get focus now
     sendMouseClick(&scene, QPointF(-25, -25));
     QCOMPARE(scene.focusItem(), (QGraphicsItem *) rect1);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 1);
-    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusIn], 3);
+    QCOMPARE(rect1Spy.counts[QEvent::FocusOut], 2);
     QCOMPARE(rect2Spy.counts[QEvent::FocusIn], 1);
     QCOMPARE(rect2Spy.counts[QEvent::FocusOut], 1);
 }

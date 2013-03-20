@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -47,8 +47,6 @@
 #include <QtCore/private/qobject_p.h>
 #include <QtGui/private/qevent_p.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -72,6 +70,7 @@ protected:
 
     void handleCloseEvent(QCloseEvent *);
     void handleEnterLeaveEvent(QEvent *);
+    void handleFocusInEvent(QFocusEvent *);
     void handleKeyEvent(QKeyEvent *);
     void handleMouseEvent(QMouseEvent *);
     void handleNonClientAreaMouseEvent(QMouseEvent *);
@@ -102,6 +101,12 @@ private slots:
 private:
     void updateGeometry();
 
+    enum FocusWidgets {
+        FirstFocusWidget,
+        LastFocusWidget
+    };
+    QWidget *getFocusWidget(FocusWidgets fw);
+
     QWidget *m_widget;
     QPointer<QWidget> m_implicit_mouse_grabber;
 #ifndef QT_NO_DRAGANDDROP
@@ -110,7 +115,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QWIDGETWINDOW_QPA_P_H

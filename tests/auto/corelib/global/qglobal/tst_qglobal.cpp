@@ -55,6 +55,8 @@ private slots:
     void checkptr();
     void qstaticassert();
     void qConstructorFunction();
+    void qCoreAppStartupFunction();
+    void qCoreAppStartupFunctionRestart();
     void isEnum();
     void qAlignOf();
 };
@@ -303,6 +305,33 @@ void tst_QGlobal::qConstructorFunction()
     QCOMPARE(qConstructorFunctionValue, 123);
 }
 
+static int qStartupFunctionValue;
+static void myStartupFunc()
+{
+   Q_ASSERT(QCoreApplication::instance());
+   if (QCoreApplication::instance())
+       qStartupFunctionValue += 124;
+}
+
+Q_COREAPP_STARTUP_FUNCTION(myStartupFunc)
+
+void tst_QGlobal::qCoreAppStartupFunction()
+{
+    QCOMPARE(qStartupFunctionValue, 0);
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qglobal") };
+    QCoreApplication app(argc, argv);
+    QCOMPARE(qStartupFunctionValue, 124);
+}
+
+void tst_QGlobal::qCoreAppStartupFunctionRestart()
+{
+    qStartupFunctionValue = 0;
+    qCoreAppStartupFunction();
+    qStartupFunctionValue = 0;
+    qCoreAppStartupFunction();
+}
+
 struct isEnum_A {
     int n_;
 };
@@ -532,5 +561,5 @@ void tst_QGlobal::qAlignOf()
 #undef TEST_AlignOf_RValueRef
 #undef TEST_AlignOf_impl
 
-QTEST_MAIN(tst_QGlobal)
+QTEST_APPLESS_MAIN(tst_QGlobal)
 #include "tst_qglobal.moc"

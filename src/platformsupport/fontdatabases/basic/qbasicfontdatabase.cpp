@@ -60,82 +60,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#define SimplifiedChineseCsbBit 18
-#define TraditionalChineseCsbBit 20
-#define JapaneseCsbBit 17
-#define KoreanCsbBit 21
-
-static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
-        // Any,
-    { 127, 127 },
-        // Latin,
-    { 0, 127 },
-        // Greek,
-    { 7, 127 },
-        // Cyrillic,
-    { 9, 127 },
-        // Armenian,
-    { 10, 127 },
-        // Hebrew,
-    { 11, 127 },
-        // Arabic,
-    { 13, 127 },
-        // Syriac,
-    { 71, 127 },
-    //Thaana,
-    { 72, 127 },
-    //Devanagari,
-    { 15, 127 },
-    //Bengali,
-    { 16, 127 },
-    //Gurmukhi,
-    { 17, 127 },
-    //Gujarati,
-    { 18, 127 },
-    //Oriya,
-    { 19, 127 },
-    //Tamil,
-    { 20, 127 },
-    //Telugu,
-    { 21, 127 },
-    //Kannada,
-    { 22, 127 },
-    //Malayalam,
-    { 23, 127 },
-    //Sinhala,
-    { 73, 127 },
-    //Thai,
-    { 24, 127 },
-    //Lao,
-    { 25, 127 },
-    //Tibetan,
-    { 70, 127 },
-    //Myanmar,
-    { 74, 127 },
-        // Georgian,
-    { 26, 127 },
-        // Khmer,
-    { 80, 127 },
-        // SimplifiedChinese,
-    { 126, 127 },
-        // TraditionalChinese,
-    { 126, 127 },
-        // Japanese,
-    { 126, 127 },
-        // Korean,
-    { 56, 127 },
-        // Vietnamese,
-    { 0, 127 }, // same as latin1
-        // Other,
-    { 126, 127 },
-        // Ogham,
-    { 78, 127 },
-        // Runic,
-    { 79, 127 },
-        // Nko,
-    { 14, 127 },
-};
-
 typedef struct {
     quint16 majorVersion;
     quint16 minorVersion;
@@ -167,58 +91,10 @@ typedef struct {
     quint16 stringOffset;
 } NAME_RECORD;
 
-QSupportedWritingSystems QBasicFontDatabase::determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2])
-{
-    QSupportedWritingSystems writingSystems;
-    bool hasScript = false;
-
-    int i;
-    for(i = 0; i < QFontDatabase::WritingSystemsCount; i++) {
-        int bit = requiredUnicodeBits[i][0];
-        int index = bit/32;
-        int flag =  1 << (bit&31);
-        if (bit != 126 && unicodeRange[index] & flag) {
-            bit = requiredUnicodeBits[i][1];
-            index = bit/32;
-
-            flag =  1 << (bit&31);
-            if (bit == 127 || unicodeRange[index] & flag) {
-                writingSystems.setSupported(QFontDatabase::WritingSystem(i));
-                hasScript = true;
-                // qDebug("font %s: index=%d, flag=%8x supports script %d", familyName.latin1(), index, flag, i);
-            }
-        }
-    }
-    if(codePageRange[0] & (1 << SimplifiedChineseCsbBit)) {
-        writingSystems.setSupported(QFontDatabase::SimplifiedChinese);
-        hasScript = true;
-        //qDebug("font %s supports Simplified Chinese", familyName.latin1());
-    }
-    if(codePageRange[0] & (1 << TraditionalChineseCsbBit)) {
-        writingSystems.setSupported(QFontDatabase::TraditionalChinese);
-        hasScript = true;
-        //qDebug("font %s supports Traditional Chinese", familyName.latin1());
-    }
-    if(codePageRange[0] & (1 << JapaneseCsbBit)) {
-        writingSystems.setSupported(QFontDatabase::Japanese);
-        hasScript = true;
-        //qDebug("font %s supports Japanese", familyName.latin1());
-    }
-    if(codePageRange[0] & (1 << KoreanCsbBit)) {
-        writingSystems.setSupported(QFontDatabase::Korean);
-        hasScript = true;
-        //qDebug("font %s supports Korean", familyName.latin1());
-    }
-    if (!hasScript)
-        writingSystems.setSupported(QFontDatabase::Symbol);
-
-    return writingSystems;
-}
-
 static inline bool scriptRequiresOpenType(int script)
 {
-    return ((script >= QUnicodeTables::Syriac && script <= QUnicodeTables::Sinhala)
-            || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
+    return ((script >= QChar::Script_Syriac && script <= QChar::Script_Sinhala)
+            || script == QChar::Script_Khmer || script == QChar::Script_Nko);
 }
 
 void QBasicFontDatabase::populateFontDatabase()
@@ -242,7 +118,7 @@ void QBasicFontDatabase::populateFontDatabase()
     }
 }
 
-QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *usrPtr)
+QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QChar::Script script, void *usrPtr)
 {
     QFontEngineFT *engine;
     FontFile *fontfile = static_cast<FontFile *> (usrPtr);
@@ -262,8 +138,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QFontDef &fontDef, QUnicodeTab
         delete engine;
         engine = 0;
     } else if (scriptRequiresOpenType(script)) {
-        HB_Face hbFace = engine->initializedHarfbuzzFace();
-        if (!hbFace || !hbFace->supported_scripts[script]) {
+        if (!engine->supportsScript(script)) {
             delete engine;
             engine = 0;
         }
@@ -337,7 +212,7 @@ QFontEngine *QBasicFontDatabase::fontEngine(const QByteArray &fontData, qreal pi
     return fe;
 }
 
-QStringList QBasicFontDatabase::fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const
+QStringList QBasicFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(family);
     Q_UNUSED(style);
@@ -415,7 +290,7 @@ QStringList QBasicFontDatabase::addTTFile(const QByteArray &fontData, const QByt
                 quint32(os2->ulCodePageRange2)
             };
 
-            writingSystems = determineWritingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
+            writingSystems = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRange, codePageRange);
 
             if (os2->usWeightClass == 0)
                 ;

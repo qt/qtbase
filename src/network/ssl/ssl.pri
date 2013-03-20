@@ -14,7 +14,8 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
                ssl/qsslsocket_openssl_symbols_p.h \
                ssl/qsslsocket_p.h \
                ssl/qsslcertificateextension.h \
-               ssl/qsslcertificateextension_p.h
+               ssl/qsslcertificateextension_p.h \
+               ssl/qsslcontext_p.h
     SOURCES += ssl/qssl.cpp \
                ssl/qsslcertificate.cpp \
 	       ssl/qsslconfiguration.cpp \
@@ -24,7 +25,8 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
                ssl/qsslsocket.cpp \
                ssl/qsslsocket_openssl.cpp \
                ssl/qsslsocket_openssl_symbols.cpp \
-               ssl/qsslcertificateextension.cpp
+               ssl/qsslcertificateextension.cpp \
+               ssl/qsslcontext.cpp
 
     # Add optional SSL libs
     # Static linking of OpenSSL with msvc:

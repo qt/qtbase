@@ -1572,7 +1572,7 @@ QColor QColor::toRgb() const
                 // achromatic case
                 color.ct.argb.red = color.ct.argb.green = color.ct.argb.blue = ct.ahsl.lightness;
             } else if (ct.ahsl.lightness == 0) {
-                // lightness 0 
+                // lightness 0
                 color.ct.argb.red = color.ct.argb.green = color.ct.argb.blue = 0;
             } else {
                 // chromatic case

@@ -134,7 +134,7 @@ QNetworkConfigurationManagerPrivate *qNetworkConfigurationManagerPrivate()
     \sa QNetworkConfiguration
 */
 
-/*! 
+/*!
     \fn void QNetworkConfigurationManager::configurationAdded(const QNetworkConfiguration &config)
 
     This signal is emitted whenever a new network configuration is added to the system. The new

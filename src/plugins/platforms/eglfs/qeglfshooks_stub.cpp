@@ -46,20 +46,86 @@
 #include <linux/fb.h>
 #include <sys/ioctl.h>
 
+#include <private/qmath_p.h>
+#include <private/qcore_unix_p.h>
+
 QT_BEGIN_NAMESPACE
+
+// file descriptor for the frame buffer
+// this is a global static to keep the QEglFSHooks interface as clean as possible
+static int framebuffer = -1;
+
+const char *QEglFSHooks::fbDeviceName() const
+{
+    return "/dev/fb0";
+}
 
 void QEglFSHooks::platformInit()
 {
-    Q_UNUSED(hooks);
+    framebuffer = qt_safe_open(fbDeviceName(), O_RDONLY);
+
+    if (framebuffer == -1)
+        qWarning("EGLFS: Failed to open %s", fbDeviceName());
 }
 
 void QEglFSHooks::platformDestroy()
 {
+    if (framebuffer != -1)
+        close(framebuffer);
 }
 
 EGLNativeDisplayType QEglFSHooks::platformDisplay() const
 {
     return EGL_DEFAULT_DISPLAY;
+}
+
+QSizeF QEglFSHooks::physicalScreenSize() const
+{
+    static QSizeF size;
+    if (size.isEmpty()) {
+
+        // Note: in millimeters
+        int width = qgetenv("QT_QPA_EGLFS_PHYSICAL_WIDTH").toInt();
+        int height = qgetenv("QT_QPA_EGLFS_PHYSICAL_HEIGHT").toInt();
+
+        if (width && height) {
+            // no need to read fb0
+            size.setWidth(width);
+            size.setHeight(height);
+            return size;
+        }
+
+        struct fb_var_screeninfo vinfo;
+        int w = -1;
+        int h = -1;
+
+        if (framebuffer != -1) {
+            if (ioctl(framebuffer, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("EGLFS: Could not query variable screen info.");
+            } else {
+                w = vinfo.width;
+                h = vinfo.height;
+            }
+        }
+
+        const int defaultPhysicalDpi = 100;
+        size.setWidth(w <= 0 ? vinfo.xres * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(w));
+        size.setHeight(h <= 0 ? vinfo.yres * Q_MM_PER_INCH / defaultPhysicalDpi : qreal(h));
+
+        if (w <= 0 || h <= 0) {
+            qWarning("EGLFS: Unable to query physical screen size, defaulting to %d dpi.\n"
+                     "EGLFS: To override, set QT_QPA_EGLFS_PHYSICAL_WIDTH "
+                     "and QT_QPA_EGLFS_PHYSICAL_HEIGHT (in millimeters).",
+                     defaultPhysicalDpi);
+        }
+
+        // override fb0 from environment var setting
+        if (width)
+            size.setWidth(width);
+        if (height)
+            size.setWidth(height);
+    }
+    return size;
 }
 
 QSize QEglFSHooks::screenSize() const
@@ -78,17 +144,28 @@ QSize QEglFSHooks::screenSize() const
         }
 
         struct fb_var_screeninfo vinfo;
-        int fd = open("/dev/fb0", O_RDONLY);
 
-        if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-                qWarning("Could not query variable screen info.");
-            else
-                size = QSize(vinfo.xres, vinfo.yres);
+        int xres = -1;
+        int yres = -1;
 
-            close(fd);
-        } else {
-            qWarning("Failed to open /dev/fb0 to detect screen resolution.");
+        if (framebuffer != -1) {
+            if (ioctl(framebuffer, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+                qWarning("EGLFS: Could not query variable screen info.");
+            } else {
+                xres = vinfo.xres;
+                yres = vinfo.yres;
+            }
+        }
+
+        const int defaultWidth = 800;
+        const int defaultHeight = 600;
+        size.setWidth(xres <= 0 ? defaultWidth : xres);
+        size.setHeight(yres <= 0 ? defaultHeight : yres);
+
+        if (xres <= 0 || yres <= 0) {
+            qWarning("EGLFS: Unable to query screen resolution, defaulting to %dx%d.\n"
+                     "EGLFS: To override, set QT_QPA_EGLFS_WIDTH and QT_QPA_EGLFS_HEIGHT.",
+                     defaultWidth, defaultHeight);
         }
 
         // override fb0 from environment var setting
@@ -107,21 +184,25 @@ int QEglFSHooks::screenDepth() const
 
     if (depth == 0) {
         struct fb_var_screeninfo vinfo;
-        int fd = open("/dev/fb0", O_RDONLY);
 
-        if (fd != -1) {
-            if (ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) == -1)
-                qWarning("Could not query variable screen info.");
+        if (framebuffer != -1) {
+            if (ioctl(framebuffer, FBIOGET_VSCREENINFO, &vinfo) == -1)
+                qWarning("EGLFS: Could not query variable screen info.");
             else
                 depth = vinfo.bits_per_pixel;
+        }
 
-            close(fd);
-        } else {
-            qWarning("Failed to open /dev/fb0 to detect screen depth.");
+        const int defaultDepth = 32;
+
+        if (depth <= 0) {
+            depth = defaultDepth;
+
+            qWarning("EGLFS: Unable to query screen depth, defaulting to %d.\n"
+                     "EGLFS: To override, set QT_QPA_EGLFS_DEPTH.", defaultDepth);
         }
     }
 
-    return depth == 0 ? 32 : depth;
+    return depth;
 }
 
 QImage::Format QEglFSHooks::screenFormat() const
@@ -132,6 +213,11 @@ QImage::Format QEglFSHooks::screenFormat() const
 QSurfaceFormat QEglFSHooks::surfaceFormatFor(const QSurfaceFormat &inputFormat) const
 {
     return inputFormat;
+}
+
+bool QEglFSHooks::filterConfig(EGLDisplay, EGLConfig) const
+{
+    return true;
 }
 
 EGLNativeWindowType QEglFSHooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
@@ -156,6 +242,18 @@ QEglFSCursor *QEglFSHooks::createCursor(QEglFSScreen *screen) const
 {
     Q_UNUSED(screen);
     return 0;
+}
+
+void QEglFSHooks::waitForVSync() const
+{
+#if defined(FBIO_WAITFORVSYNC)
+    static const bool forceSync = qgetenv("QT_QPA_EGLFS_FORCEVSYNC").toInt();
+    if (forceSync && framebuffer != -1) {
+        int arg = 0;
+        if (ioctl(framebuffer, FBIO_WAITFORVSYNC, &arg) == -1)
+            qWarning("Could not wait for vsync.");
+    }
+#endif
 }
 
 #ifndef EGLFS_PLATFORM_HOOKS

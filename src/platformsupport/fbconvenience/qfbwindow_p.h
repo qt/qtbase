@@ -58,7 +58,7 @@ public:
     virtual void raise();
     virtual void lower();
 
-    void setGeometry(const QRect &rect);
+    virtual void setGeometry(const QRect &rect);
 
     virtual void setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;

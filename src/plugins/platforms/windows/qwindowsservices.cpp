@@ -44,6 +44,7 @@
 
 #include <QtCore/QUrl>
 #include <QtCore/QDebug>
+#include <QtCore/QDir>
 
 #include <shlobj.h>
 #ifndef Q_OS_WINCE
@@ -57,7 +58,8 @@ enum { debug = 0 };
 static inline bool shellExecute(const QString &file)
 {
 #ifndef Q_OS_WINCE
-    const quintptr result = (quintptr)ShellExecute(0, 0, (wchar_t*)file.utf16(), 0, 0, SW_SHOWNORMAL);
+    const QString nativeFilePath = QDir::toNativeSeparators(file);
+    const quintptr result = (quintptr)ShellExecute(0, 0, (wchar_t*)nativeFilePath.utf16(), 0, 0, SW_SHOWNORMAL);
     // ShellExecute returns a value greater than 32 if successful
     if (result <= 32) {
         qWarning("ShellExecute '%s' failed (error %s).", qPrintable(file), qPrintable(QString::number(result)));

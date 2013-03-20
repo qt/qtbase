@@ -167,6 +167,14 @@
            to left button mouse events instead. This attribute is enabled
            by default.
 
+    \value AA_UseHighDpiPixmaps Make QIcon::pixmap() generate high-dpi pixmaps
+           that can be larger than the requested size. Such pixmaps will have
+           devicePixelRatio set to a value higher than 1.
+
+           After setting this attribute application code that uses pixmap
+           sizes in layout geometry calculations should typically divide by
+           QPixmap::devicePixelRatio() to get device-independent layout geometry.
+
     \omitvalue AA_AttributeCount
 */
 
@@ -1710,6 +1718,17 @@
 */
 
 /*!
+    \enum Qt::Edge
+
+    This enum type specifies an edge in a rectangle:
+
+    \value TopEdge    The top edge of the rectangle.
+    \value LeftEdge   The left edge of the rectangle.
+    \value RightEdge  The right edge of the rectangle.
+    \value BottomEdge The bottom edge of the rectangle.
+*/
+
+/*!
     \enum Qt::ScrollBarPolicy
 
     This enum type describes the various modes of QAbstractScrollArea's scroll
@@ -1780,6 +1799,36 @@
     \value WindowFullScreen The window fills the entire screen without any frame around it.
     \value WindowActive The window is the active window, i.e. it has keyboard focus.
 
+*/
+
+/*!
+    \enum Qt::ApplicationState
+
+    \keyword application state
+
+    This enum type is used to specify the current state of the application.
+
+    The states are
+
+    \value ApplicationSuspended    The application is about to suspend. When entering this state, the
+                                   application should save its state, cease all activities, and be
+                                   prepared for code execution to stop. While suspended, the
+                                   application can be killed at any time without further warnings
+                                   (e.g. when low memory forces the OS to purge suspended applications).
+    \value ApplicationHidden       The application is hidden and runs in the background. This
+                                   is the normal state for applications that need to do background
+                                   processing, like playing music, while the user interacts with
+                                   other applications. The application should free up all graphical
+                                   resources when entering this state.
+    \value ApplicationInactive     The application is visible, but not selected to be in front.
+                                   On desktop platforms, this typically means that the user
+                                   activated another application. On mobile platforms, it is
+                                   more common to enter this state when the OS is interrupting
+                                   the user with e.g. incoming calls or SMS-messages.
+                                   While in this state, consider reducing CPU-intensive tasks.
+    \value ApplicationActive       The application is visible and selected to be in front.
+
+    \since 5.1
 */
 
 /*!
@@ -1935,6 +1984,10 @@
 
     \value SubWindow  Indicates that this widget is a sub-window, such
                       as a QMdiSubWindow widget.
+
+    \value ForeignWindow Indicates that this window object is a handle
+                         representing a native platform window created by
+                         another process or by manually using native code.
 
     There are also a number of flags which you can use to customize
     the appearance of top-level windows. These have no effect on other
@@ -2315,6 +2368,8 @@
     \value ImhTime                   The text editor functions as a time field.
     \value ImhPreferLatin            Latin characters are preferred (but not required).
 
+    \value ImhMultiLine              Multiple lines can be entered into the text field.
+
     Flags that restrict input (exclusive flags):
 
     \value ImhDigitsOnly             Only digits are allowed.
@@ -2441,6 +2496,7 @@
     \value ItemIsUserCheckable It can be checked or unchecked by the user.
     \value ItemIsEnabled The user can interact with the item.
     \value ItemIsTristate The item is checkable with three separate states.
+    \value ItemNeverHasChildren The item never has child items.
 
     Note that checkable items need to be given both a suitable set of flags
     and an initial state, indicating whether the item is checked or not.

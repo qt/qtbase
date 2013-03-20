@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -67,6 +67,7 @@
 #include "qwidgetaction.h"
 #include "qtoolbutton.h"
 #include "qpushbutton.h"
+#include "qtooltip.h"
 #include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
 #include <private/qguiapplication_p.h>
@@ -259,12 +260,15 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     bool previousWasSeparator = true; // this is true to allow removing the leading separators
     for(int i = 0; i <= lastVisibleAction; i++) {
         QAction *action = actions.at(i);
+        const bool isSection = action->isSeparator() && (!action->text().isEmpty() || !action->icon().isNull());
+        const bool isPlainSeparator = (isSection && !q->style()->styleHint(QStyle::SH_Menu_SupportsSections))
+                                   || (action->isSeparator() && !isSection);
 
         if (!action->isVisible() ||
-            (collapsibleSeparators && previousWasSeparator && action->isSeparator()))
+            (collapsibleSeparators && previousWasSeparator && isPlainSeparator))
             continue; // we continue, this action will get an empty QRect
 
-        previousWasSeparator = action->isSeparator();
+        previousWasSeparator = isPlainSeparator;
 
         //let the style modify the above size..
         QStyleOptionMenuItem opt;
@@ -1510,6 +1514,54 @@ QAction *QMenu::addSeparator()
 }
 
 /*!
+    \since 5.1
+
+    This convenience function creates a new section action, i.e. an
+    action with QAction::isSeparator() returning true but also
+    having \a text hint, and adds the new action to this menu's list
+    of actions. It returns the newly created action.
+
+    The rendering of the hint is style and platform dependent. Widget
+    styles can use the text information in the rendering for sections,
+    or can choose to ignore it and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::addAction()
+*/
+QAction *QMenu::addSection(const QString &text)
+{
+    QAction *action = new QAction(text, this);
+    action->setSeparator(true);
+    addAction(action);
+    return action;
+}
+
+/*!
+    \since 5.1
+
+    This convenience function creates a new section action, i.e. an
+    action with QAction::isSeparator() returning true but also
+    having \a text and \a icon hints, and adds the new action to this menu's
+    list of actions. It returns the newly created action.
+
+    The rendering of the hints is style and platform dependent. Widget
+    styles can use the text and icon information in the rendering for sections,
+    or can choose to ignore them and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::addAction()
+*/
+QAction *QMenu::addSection(const QIcon &icon, const QString &text)
+{
+    QAction *action = new QAction(icon, text, this);
+    action->setSeparator(true);
+    addAction(action);
+    return action;
+}
+
+/*!
     This convenience function inserts \a menu before action \a before
     and returns the menus menuAction().
 
@@ -1535,6 +1587,55 @@ QAction *QMenu::insertMenu(QAction *before, QMenu *menu)
 QAction *QMenu::insertSeparator(QAction *before)
 {
     QAction *action = new QAction(this);
+    action->setSeparator(true);
+    insertAction(before, action);
+    return action;
+}
+
+/*!
+    \since 5.1
+
+    This convenience function creates a new title action, i.e. an
+    action with QAction::isSeparator() returning true but also having
+    \a text hint. The function inserts the newly created action
+    into this menu's list of actions before action \a before and
+    returns it.
+
+    The rendering of the hint is style and platform dependent. Widget
+    styles can use the text information in the rendering for sections,
+    or can choose to ignore it and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::insertAction(), addSection()
+*/
+QAction *QMenu::insertSection(QAction *before, const QString &text)
+{
+    QAction *action = new QAction(text, this);
+    action->setSeparator(true);
+    insertAction(before, action);
+    return action;
+}
+
+/*!
+    \since 5.1
+
+    This convenience function creates a new title action, i.e. an
+    action with QAction::isSeparator() returning true but also having
+    \a text and \a icon hints. The function inserts the newly created action
+    into this menu's list of actions before action \a before and returns it.
+
+    The rendering of the hints is style and platform dependent. Widget
+    styles can use the text and icon information in the rendering for sections,
+    or can choose to ignore them and render sections like simple separators.
+
+    QMenu takes ownership of the returned QAction.
+
+    \sa QWidget::insertAction(), addSection()
+*/
+QAction *QMenu::insertSection(QAction *before, const QIcon &icon, const QString &text)
+{
+    QAction *action = new QAction(icon, text, this);
     action->setSeparator(true);
     insertAction(before, action);
     return action;
@@ -2368,6 +2469,19 @@ QMenu::event(QEvent *e)
         if (d->currentAction)
             d->popupAction(d->currentAction, 0, false);
         break;
+#ifndef QT_NO_TOOLTIP
+    case QEvent::ToolTip:
+        if (d->toolTipsVisible) {
+            const QHelpEvent *ev = static_cast<const QHelpEvent*>(e);
+            if (const QAction *action = actionAt(ev->pos())) {
+                const QString toolTip = action->d_func()->tooltip;
+                if (!toolTip.isEmpty())
+                    QToolTip::showText(ev->globalPos(), toolTip, this);
+                return true;
+            }
+        }
+        break;
+#endif // QT_NO_TOOLTIP
 #ifndef QT_NO_WHATSTHIS
     case QEvent::QueryWhatsThis:
         e->setAccepted(d->whatsThis.size());
@@ -2826,7 +2940,7 @@ QMenu::timerEvent(QTimerEvent *e)
     }
 }
 
-void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
+static void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
 {
     item->setText(action->text());
     item->setIsSeparator(action->isSeparator());
@@ -2834,6 +2948,7 @@ void copyActionToPlatformItem(const QAction *action, QPlatformMenuItem* item)
         item->setIcon(action->icon());
     item->setVisible(action->isVisible());
     item->setShortcut(action->shortcut());
+    item->setCheckable(action->isCheckable());
     item->setChecked(action->isChecked());
     item->setFont(action->font());
     item->setRole((QPlatformMenuItem::MenuRole) action->menuRole());
@@ -3087,6 +3202,32 @@ void QMenu::setSeparatorsCollapsible(bool collapse)
     }
     if (d->platformMenu)
         d->platformMenu->syncSeparatorsCollapsible(collapse);
+}
+
+/*!
+  \property QMenu::toolTipsVisible
+  \since 5.1
+
+  \brief whether tooltips of menu actions should be visible
+
+  This property specifies whether action menu entries show
+  their tooltip.
+
+  By default, this property is false.
+*/
+bool QMenu::toolTipsVisible() const
+{
+    Q_D(const QMenu);
+    return d->toolTipsVisible;
+}
+
+void QMenu::setToolTipsVisible(bool visible)
+{
+    Q_D(QMenu);
+    if (d->toolTipsVisible == visible)
+        return;
+
+    d->toolTipsVisible = visible;
 }
 
 QT_END_NAMESPACE

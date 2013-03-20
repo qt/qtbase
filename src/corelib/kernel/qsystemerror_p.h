@@ -66,14 +66,14 @@ public:
         StandardLibraryError,
         NativeError
     };
-    
+
     inline QSystemError(int error, ErrorScope scope);
     inline QSystemError();
-    
+
     QString toString();
     inline ErrorScope scope();
     inline int error();
-    
+
     //data members
     int errorCode;
     ErrorScope errorScope;

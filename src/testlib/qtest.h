@@ -60,8 +60,6 @@
 #include <QtCore/qrect.h>
 
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -70,12 +68,12 @@ namespace QTest
 
 template<> inline char *toString(const QLatin1String &str)
 {
-    return qstrdup(str.latin1());
+    return qstrdup(qPrintable(QString(str)));
 }
 
 template<> inline char *toString(const QString &str)
 {
-    return qstrdup(str.toLatin1().constData());
+    return qstrdup(qPrintable(str));
 }
 
 template<> inline char *toString(const QByteArray &ba)
@@ -87,29 +85,29 @@ template<> inline char *toString(const QByteArray &ba)
 template<> inline char *toString(const QTime &time)
 {
     return time.isValid()
-        ? qstrdup(time.toString(QLatin1String("hh:mm:ss.zzz")).toLatin1().constData())
+        ? qstrdup(qPrintable(time.toString(QLatin1String("hh:mm:ss.zzz"))))
         : qstrdup("Invalid QTime");
 }
 
 template<> inline char *toString(const QDate &date)
 {
     return date.isValid()
-        ? qstrdup(date.toString(QLatin1String("yyyy/MM/dd")).toLatin1().constData())
+        ? qstrdup(qPrintable(date.toString(QLatin1String("yyyy/MM/dd"))))
         : qstrdup("Invalid QDate");
 }
 
 template<> inline char *toString(const QDateTime &dateTime)
 {
     return dateTime.isValid()
-        ? qstrdup((dateTime.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")) +
-                  (dateTime.timeSpec() == Qt::LocalTime ? QLatin1String("[local time]") : QLatin1String("[UTC]"))).toLatin1().constData())
+        ? qstrdup(qPrintable(dateTime.toString(QLatin1String("yyyy/MM/dd hh:mm:ss.zzz")) +
+                             (dateTime.timeSpec() == Qt::LocalTime ? QLatin1String("[local time]") : QLatin1String("[UTC]"))))
         : qstrdup("Invalid QDateTime");
 }
 #endif // QT_NO_DATESTRING
 
 template<> inline char *toString(const QChar &c)
 {
-    return qstrdup(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16)).toLatin1().constData());
+    return qstrdup(qPrintable(QString::fromLatin1("QChar: '%1' (0x%2)").arg(c).arg(QString::number(static_cast<int>(c.unicode()), 16))));
 }
 
 template<> inline char *toString(const QPoint &p)
@@ -145,7 +143,7 @@ template<> inline char *toString(const QRectF &s)
 template<> inline char *toString(const QUrl &uri)
 {
     if (!uri.isValid())
-        return qstrdup(QByteArray("Invalid URL: " + uri.errorString().toLatin1()).constData());
+        return qstrdup(qPrintable(QStringLiteral("Invalid URL: ") + uri.errorString()));
     return qstrdup(uri.toEncoded().constData());
 }
 
@@ -161,7 +159,7 @@ template<> inline char *toString(const QVariant &v)
         if (!v.isNull()) {
             vstring.append(',');
             if (v.canConvert(QVariant::String)) {
-                vstring.append(qvariant_cast<QString>(v).toLatin1());
+                vstring.append(qvariant_cast<QString>(v).toLocal8Bit());
             }
             else {
                 vstring.append("<value not representable as string>");
@@ -186,9 +184,9 @@ inline bool qCompare(QLatin1String const &t1, QString const &t2, const char *act
     return qCompare(QString(t1), t2, actual, expected, file, line);
 }
 
-template<>
-inline bool qCompare(QStringList const &t1, QStringList const &t2,
-                    const char *actual, const char *expected, const char *file, int line)
+template <typename T>
+inline bool qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual, const char *expected,
+                    const char *file, int line)
 {
     char msg[1024];
     msg[0] = '\0';
@@ -196,21 +194,28 @@ inline bool qCompare(QStringList const &t1, QStringList const &t2,
     const int actualSize = t1.count();
     const int expectedSize = t2.count();
     if (actualSize != expectedSize) {
-        qsnprintf(msg, sizeof(msg), "Compared QStringLists have different sizes.\n"
+        qsnprintf(msg, sizeof(msg), "Compared lists have different sizes.\n"
                   "   Actual   (%s) size: '%d'\n"
                   "   Expected (%s) size: '%d'", actual, actualSize, expected, expectedSize);
         isOk = false;
     }
     for (int i = 0; isOk && i < actualSize; ++i) {
-        if (t1.at(i) != t2.at(i)) {
-            qsnprintf(msg, sizeof(msg), "Compared QStringLists differ at index %d.\n"
+        if (!(t1.at(i) == t2.at(i))) {
+            qsnprintf(msg, sizeof(msg), "Compared lists differ at index %d.\n"
                       "   Actual   (%s): '%s'\n"
-                      "   Expected (%s): '%s'", i, actual, t1.at(i).toLatin1().constData(),
-                      expected, t2.at(i).toLatin1().constData());
+                      "   Expected (%s): '%s'", i, actual, toString(t1.at(i)),
+                      expected, toString(t2.at(i)));
             isOk = false;
         }
     }
     return compare_helper(isOk, msg, 0, 0, actual, expected, file, line);
+}
+
+template <>
+inline bool qCompare(QStringList const &t1, QStringList const &t2, const char *actual, const char *expected,
+                            const char *file, int line)
+{
+    return qCompare<QString>(t1, t2, actual, expected, file, line);
 }
 
 template <typename T>
@@ -225,6 +230,48 @@ inline bool qCompare(QFlags<T> const &t1, int const &t2, const char *actual, con
                     const char *file, int line)
 {
     return qCompare(int(t1), t2, actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(qint64 const &t1, qint32 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(t1, static_cast<qint64>(t2), actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(qint64 const &t1, quint32 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(t1, static_cast<qint64>(t2), actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(quint64 const &t1, quint32 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(t1, static_cast<quint64>(t2), actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(qint32 const &t1, qint64 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(static_cast<qint64>(t1), t2, actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(quint32 const &t1, qint64 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(static_cast<qint64>(t1), t2, actual, expected, file, line);
+}
+
+template<>
+inline bool qCompare(quint32 const &t1, quint64 const &t2, const char *actual,
+                    const char *expected, const char *file, int line)
+{
+    return qCompare(static_cast<quint64>(t1), t2, actual, expected, file, line);
 }
 
 }
@@ -293,7 +340,5 @@ int main(int argc, char *argv[]) \
     TestObject tc; \
     return QTest::qExec(&tc, argc, argv); \
 }
-
-QT_END_HEADER
 
 #endif

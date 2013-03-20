@@ -76,7 +76,7 @@ public:
 
     int resultFormat() const
         { return m_resultFormat; }
-    void setResultFormat(int resultFormat) 
+    void setResultFormat(int resultFormat)
         { m_resultFormat = resultFormat; }
 
     const QSize& size() const
@@ -86,7 +86,7 @@ public:
 
     int angle() const
         { return m_angle; }
-    void setAngle(int angle) 
+    void setAngle(int angle)
         { m_angle = angle; }
 
     const Options& options() const
@@ -106,9 +106,9 @@ private:
     QString m_outputFileName;
     int m_resultFormat;
     QSize m_size;
-    int m_angle;    
+    int m_angle;
     int m_listItemCount;
-    Options m_options;    
+    Options m_options;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Settings::Options)

@@ -93,11 +93,6 @@ static inline QDate fixedDate(int y, int m, int d)
     return result;
 }
 
-static inline qint64 floordiv(qint64 a, qint64 b)
-{
-    return (a - (a < 0 ? b-1 : 0)) / b;
-}
-
 static inline qint64 floordiv(qint64 a, int b)
 {
     return (a - (a < 0 ? b-1 : 0)) / b;
@@ -549,8 +544,8 @@ int QDate::weekNumber(int *yearNumber) const
     \li 12 = "Dec"
     \endlist
 
-    The month names will be localized according to the system's locale
-    settings.
+    The month names will be localized according to the system's default
+    locale settings.
 
     Returns an empty string if the date is invalid.
 
@@ -596,8 +591,8 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
     \li 12 = "December"
     \endlist
 
-    The month names will be localized according to the system's locale
-    settings.
+    The month names will be localized according to the system's default
+    locale settings.
 
     Returns an empty string if the date is invalid.
 
@@ -638,8 +633,8 @@ QString QDate::longMonthName(int month, MonthNameType type)
     \li 7 = "Sun"
     \endlist
 
-    The day names will be localized according to the system's locale
-    settings.
+    The day names will be localized according to the system's default
+    locale settings.
 
     Returns an empty string if the date is invalid.
 
@@ -680,8 +675,8 @@ QString QDate::shortDayName(int weekday, MonthNameType type)
     \li 7 = "Sunday"
     \endlist
 
-    The day names will be localized according to the system's locale
-    settings.
+    The day names will be localized according to the system's default
+    locale settings.
 
     Returns an empty string if the date is invalid.
 
@@ -718,8 +713,8 @@ QString QDate::longDayName(int weekday, MonthNameType type)
     If the \a format is Qt::TextDate, the string is formatted in
     the default way. QDate::shortDayName() and QDate::shortMonthName()
     are used to generate the string, so the day and month names will
-    be localized names. An example of this formatting is
-    "Sat May 20 1995".
+    be localized names using the default locale from the system. An
+    example of this formatting is "Sat May 20 1995".
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
@@ -2409,9 +2404,9 @@ uint QDateTime::toTime_t() const
     (Qt::UTC). On systems that do not support time zones this function
     will behave as if local time were Qt::UTC.
 
-    Note that there are possible values for \a msecs that lie outside the
-    valid range of QDateTime, both negative and positive. The behavior of
-    this function is undefined for those values.
+    Note that passing the minimum of \c qint64
+    (\c{std::numeric_limits<qint64>::min()}) to \a msecs will result in
+    undefined behavior.
 
     \sa toMSecsSinceEpoch(), setTime_t()
 */
@@ -4015,7 +4010,7 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
         time = QTime();
         return QDateTimePrivate::LocalUnknown;
     } else {
-        int deltaDays = fakeDate.daysTo(date);
+        qint64 deltaDays = fakeDate.daysTo(date);
         date = QDate(brokenDown->tm_year + 1900, brokenDown->tm_mon + 1, brokenDown->tm_mday);
         time = QTime(brokenDown->tm_hour, brokenDown->tm_min, brokenDown->tm_sec, time.msec());
         date = date.addDays(deltaDays);
@@ -4093,7 +4088,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
         date = QDate(1970, 1, 1);
         time = QTime();
     } else {
-        int deltaDays = fakeDate.daysTo(date);
+        qint64 deltaDays = fakeDate.daysTo(date);
         date = QDate(brokenDown->tm_year + 1900, brokenDown->tm_mon + 1, brokenDown->tm_mday);
         time = QTime(brokenDown->tm_hour, brokenDown->tm_min, brokenDown->tm_sec, time.msec());
         date = date.addDays(deltaDays);

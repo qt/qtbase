@@ -1155,9 +1155,6 @@ void QPainterPrivate::updateState(QPainterState *newState)
     should antialias text if possible, and the \l
     {RenderHint}{QPainter::SmoothPixmapTransform} indicates that the
     engine should use a smooth pixmap transformation algorithm.
-    \l {RenderHint}{HighQualityAntialiasing} is an OpenGL-specific rendering hint
-    indicating that the engine should use fragment programs and offscreen
-    rendering for antialiasing.
 
     The renderHints() function returns a flag that specifies the
     rendering hints that are set for this painter.  Use the
@@ -1409,9 +1406,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     a smooth pixmap transformation algorithm (such as bilinear) rather
     than nearest neighbor.
 
-    \value HighQualityAntialiasing An OpenGL-specific rendering hint
-    indicating that the engine should use fragment programs and offscreen
-    rendering for antialiasing.
+    \value HighQualityAntialiasing This value is obsolete and will be ignored,
+    use the Antialiasing render hint instead.
 
     \value NonCosmeticDefaultPen This value is obsolete, the default for QPen
     is now non-cosmetic.
@@ -5552,13 +5548,13 @@ void QPainter::drawGlyphRun(const QPointF &position, const QGlyphRun &glyphRun)
     QVarLengthArray<QFixedPoint, 128> fixedPointPositions(count);
 
     QRawFontPrivate *fontD = QRawFontPrivate::get(font);
-    bool supportsTransformations = d->extended
-        ? d->extended->supportsTransformations(fontD->fontEngine, d->state->matrix)
-        : d->engine->type() == QPaintEngine::CoreGraphics || d->state->matrix.isAffine();
+    bool engineRequiresPretransformedGlyphPositions = d->extended
+        ? d->extended->requiresPretransformedGlyphPositions(fontD->fontEngine, d->state->matrix)
+        : d->engine->type() != QPaintEngine::CoreGraphics && !d->state->matrix.isAffine();
 
     for (int i=0; i<count; ++i) {
         QPointF processedPosition = position + glyphPositions[i];
-        if (!supportsTransformations)
+        if (engineRequiresPretransformedGlyphPositions)
             processedPosition = d->state->transform().map(processedPosition);
         fixedPointPositions[i] = QFixedPoint::fromPointF(processedPosition);
     }
@@ -5616,13 +5612,13 @@ void QPainterPrivate::drawGlyphs(const quint32 *glyphArray, QFixedPoint *positio
 
         QVarLengthArray<QFixed, 128> advances(glyphCount);
         QVarLengthArray<QGlyphJustification, 128> glyphJustifications(glyphCount);
-        QVarLengthArray<HB_GlyphAttributes, 128> glyphAttributes(glyphCount);
-        memset(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(HB_GlyphAttributes));
+        QVarLengthArray<QGlyphAttributes, 128> glyphAttributes(glyphCount);
+        memset(glyphAttributes.data(), 0, glyphAttributes.size() * sizeof(QGlyphAttributes));
         memset(advances.data(), 0, advances.size() * sizeof(QFixed));
         memset(glyphJustifications.data(), 0, glyphJustifications.size() * sizeof(QGlyphJustification));
 
         textItem.glyphs.numGlyphs = glyphCount;
-        textItem.glyphs.glyphs = reinterpret_cast<HB_Glyph *>(const_cast<quint32 *>(glyphArray));
+        textItem.glyphs.glyphs = const_cast<glyph_t *>(glyphArray);
         textItem.glyphs.offsets = positions;
         textItem.glyphs.advances_x = advances.data();
         textItem.glyphs.advances_y = advances.data();
@@ -5738,16 +5734,20 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
         return;
     }
 
-    QFontEngine *fe = staticText_d->font.d->engineForScript(QUnicodeTables::Common);
+    QFontEngine *fe = staticText_d->font.d->engineForScript(QChar::Script_Common);
     if (fe->type() == QFontEngine::Multi)
         fe = static_cast<QFontEngineMulti *>(fe)->engine(0);
-    bool supportsTransformations = d->extended->supportsTransformations(fe,
-                                                                        d->state->matrix);
-    if (supportsTransformations && !staticText_d->untransformedCoordinates) {
-        staticText_d->untransformedCoordinates = true;
-        staticText_d->needsRelayout = true;
-    } else if (!supportsTransformations && staticText_d->untransformedCoordinates) {
+
+    bool engineRequiresPretransform = d->extended->requiresPretransformedGlyphPositions(fe, d->state->matrix);
+    if (staticText_d->untransformedCoordinates && engineRequiresPretransform) {
+        // The coordinates are untransformed, and the engine can't deal with that
+        // nativly, so we have to pre-transform the static text.
         staticText_d->untransformedCoordinates = false;
+        staticText_d->needsRelayout = true;
+    } else if (!staticText_d->untransformedCoordinates && !engineRequiresPretransform) {
+        // The coordinates are already transformed, but the engine can handle that
+        // nativly, so undo the transform of the static text.
+        staticText_d->untransformedCoordinates = true;
         staticText_d->needsRelayout = true;
     }
 
@@ -5841,11 +5841,11 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         return;
 
     if (tf & Qt::TextBypassShaping) {
-        // Skip harfbuzz complex shaping, shape using glyph advances only
+        // Skip complex shaping, shape using glyph advances only
         int len = str.length();
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(len);
-        QFontEngine *fontEngine = d->state->font.d->engineForScript(QUnicodeTables::Common);
+        QFontEngine *fontEngine = d->state->font.d->engineForScript(QChar::Script_Common);
         if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0)) {
             glyphs.resize(numGlyphs);
             if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))

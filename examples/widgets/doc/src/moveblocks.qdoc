@@ -43,7 +43,7 @@
         \li \c StateSwitcher inherits QState and can add
               \c {StateSwitchTransition}s to other states.
               When entered, it will randomly transition to one of these
-              states. 
+              states.
         \li \c StateSwitchTransition is a custom transition that
            triggers on \c{StateSwitchEvent}s.
         \li \c StateSwitchEvent is a QEvent that triggers \c{StateSwitchTransition}s.
@@ -152,7 +152,7 @@
     \c StateSwitcher is a state designed for a particular purpose and
     will always be a top-level state. We use \c m_stateCount to keep
     track of how many states we are managing, and \c m_lastIndex to
-    remember which state was the last state to which we transitioned. 
+    remember which state was the last state to which we transitioned.
 
     \snippet animation/moveblocks/main.cpp 11
 

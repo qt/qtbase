@@ -70,7 +70,7 @@
 
     And thats it.  A perfectly reasonable cache, using minimal memory for a very large
     list.  In this case the accessor for getting the words into the cache
-    generates random information rather than fixed information.  This allows you 
+    generates random information rather than fixed information.  This allows you
     to see how the cache range is kept for a local number of rows when running the
     example.
 

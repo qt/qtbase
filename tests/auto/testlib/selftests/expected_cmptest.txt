@@ -22,26 +22,34 @@ FAIL!  : tst_Cmptest::compare_tostring(both non-null user type) Compared values 
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(214)]
 PASS   : tst_Cmptest::compareQStringLists(empty lists)
 PASS   : tst_Cmptest::compareQStringLists(equal lists)
-FAIL!  : tst_Cmptest::compareQStringLists(last item different) Compared QStringLists differ at index 2.
+FAIL!  : tst_Cmptest::compareQStringLists(last item different) Compared lists differ at index 2.
    Actual   (opA): 'string3'
    Expected (opB): 'DIFFERS'
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(308)]
-FAIL!  : tst_Cmptest::compareQStringLists(second-last item different) Compared QStringLists differ at index 2.
+FAIL!  : tst_Cmptest::compareQStringLists(second-last item different) Compared lists differ at index 2.
    Actual   (opA): 'string3'
    Expected (opB): 'DIFFERS'
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(308)]
-FAIL!  : tst_Cmptest::compareQStringLists(prefix) Compared QStringLists have different sizes.
+FAIL!  : tst_Cmptest::compareQStringLists(prefix) Compared lists have different sizes.
    Actual   (opA) size: '2'
    Expected (opB) size: '1'
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(308)]
-FAIL!  : tst_Cmptest::compareQStringLists(short list second) Compared QStringLists have different sizes.
+FAIL!  : tst_Cmptest::compareQStringLists(short list second) Compared lists have different sizes.
    Actual   (opA) size: '12'
    Expected (opB) size: '1'
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(308)]
-FAIL!  : tst_Cmptest::compareQStringLists(short list first) Compared QStringLists have different sizes.
+FAIL!  : tst_Cmptest::compareQStringLists(short list first) Compared lists have different sizes.
    Actual   (opA) size: '1'
    Expected (opB) size: '12'
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(308)]
+FAIL!  : tst_Cmptest::compareQListInt() Compared lists differ at index 2.
+   Actual   (int1): '3'
+   Expected (int2): '4'
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(316)]
+FAIL!  : tst_Cmptest::compareQListDouble() Compared lists differ at index 0.
+   Actual   (double1): '1.5'
+   Expected (double2): '1'
+   Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(323)]
 PASS   : tst_Cmptest::compareQPixmaps(both null)
 FAIL!  : tst_Cmptest::compareQPixmaps(one null) Compared QPixmaps differ.
    Actual   (opA).isNull(): 1
@@ -79,5 +87,5 @@ FAIL!  : tst_Cmptest::compareQImages(different format) Compared QImages differ i
 FAIL!  : tst_Cmptest::compareQImages(different pixels) Compared values are not the same
    Loc: [/home/user/dev/qt5/qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(360)]
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 11 passed, 18 failed, 0 skipped
+Totals: 11 passed, 20 failed, 0 skipped
 ********* Finished testing of tst_Cmptest *********

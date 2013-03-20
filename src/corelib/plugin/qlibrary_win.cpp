@@ -46,10 +46,7 @@
 #include "qfileinfo.h"
 #include <private/qfilesystementry_p.h>
 
-#if defined(QT_NO_LIBRARY) && defined(Q_OS_WIN)
-#undef QT_NO_LIBRARY
-#pragma message("QT_NO_LIBRARY is not supported on Windows")
-#endif
+#ifndef QT_NO_LIBRARY
 
 #include <qt_windows.h>
 
@@ -166,3 +163,5 @@ QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
     return QFunctionPointer(address);
 }
 QT_END_NAMESPACE
+
+#endif // QT_NO_LIBRARY

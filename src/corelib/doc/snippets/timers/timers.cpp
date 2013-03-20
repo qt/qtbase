@@ -74,5 +74,5 @@ Foo::Foo()
 
 int main()
 {
-    
+
 }

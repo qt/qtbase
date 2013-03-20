@@ -709,40 +709,40 @@ void tst_QChar::lineBreakClass()
 
 void tst_QChar::script()
 {
-    QVERIFY(QUnicodeTables::script(0x0020u) == QUnicodeTables::Common);
-    QVERIFY(QUnicodeTables::script(0x0041u) == QUnicodeTables::Common); // ### Latin
-    QVERIFY(QUnicodeTables::script(0x0375u) == QUnicodeTables::Greek);
-    QVERIFY(QUnicodeTables::script(0x0400u) == QUnicodeTables::Cyrillic);
-    QVERIFY(QUnicodeTables::script(0x0531u) == QUnicodeTables::Armenian);
-    QVERIFY(QUnicodeTables::script(0x0591u) == QUnicodeTables::Hebrew);
-    QVERIFY(QUnicodeTables::script(0x0600u) == QUnicodeTables::Arabic);
-    QVERIFY(QUnicodeTables::script(0x0700u) == QUnicodeTables::Syriac);
-    QVERIFY(QUnicodeTables::script(0x0780u) == QUnicodeTables::Thaana);
-    QVERIFY(QUnicodeTables::script(0x07c0u) == QUnicodeTables::Nko);
-    QVERIFY(QUnicodeTables::script(0x0900u) == QUnicodeTables::Devanagari);
-    QVERIFY(QUnicodeTables::script(0x0981u) == QUnicodeTables::Bengali);
-    QVERIFY(QUnicodeTables::script(0x0a01u) == QUnicodeTables::Gurmukhi);
-    QVERIFY(QUnicodeTables::script(0x0a81u) == QUnicodeTables::Gujarati);
-    QVERIFY(QUnicodeTables::script(0x0b01u) == QUnicodeTables::Oriya);
-    QVERIFY(QUnicodeTables::script(0x0b82u) == QUnicodeTables::Tamil);
-    QVERIFY(QUnicodeTables::script(0x0c01u) == QUnicodeTables::Telugu);
-    QVERIFY(QUnicodeTables::script(0x0c82u) == QUnicodeTables::Kannada);
-    QVERIFY(QUnicodeTables::script(0x0d02u) == QUnicodeTables::Malayalam);
-    QVERIFY(QUnicodeTables::script(0x0d82u) == QUnicodeTables::Sinhala);
-    QVERIFY(QUnicodeTables::script(0x0e01u) == QUnicodeTables::Thai);
-    QVERIFY(QUnicodeTables::script(0x0e81u) == QUnicodeTables::Lao);
-    QVERIFY(QUnicodeTables::script(0x0f00u) == QUnicodeTables::Tibetan);
-    QVERIFY(QUnicodeTables::script(0x1000u) == QUnicodeTables::Myanmar);
-    QVERIFY(QUnicodeTables::script(0x10a0u) == QUnicodeTables::Georgian);
-    QVERIFY(QUnicodeTables::script(0x1100u) == QUnicodeTables::Hangul);
-    QVERIFY(QUnicodeTables::script(0x1680u) == QUnicodeTables::Ogham);
-    QVERIFY(QUnicodeTables::script(0x16a0u) == QUnicodeTables::Runic);
-    QVERIFY(QUnicodeTables::script(0x1780u) == QUnicodeTables::Khmer);
-    QVERIFY(QUnicodeTables::script(0x200cu) == QUnicodeTables::Inherited);
-    QVERIFY(QUnicodeTables::script(0x200du) == QUnicodeTables::Inherited);
-    QVERIFY(QUnicodeTables::script(0x1018au) == QUnicodeTables::Greek);
-    QVERIFY(QUnicodeTables::script(0x1f130u) == QUnicodeTables::Common);
-    QVERIFY(QUnicodeTables::script(0xe0100u) == QUnicodeTables::Inherited);
+    QVERIFY(QChar::script(0x0020u) == QChar::Script_Common);
+    QVERIFY(QChar::script(0x0041u) == QChar::Script_Latin);
+    QVERIFY(QChar::script(0x0375u) == QChar::Script_Greek);
+    QVERIFY(QChar::script(0x0400u) == QChar::Script_Cyrillic);
+    QVERIFY(QChar::script(0x0531u) == QChar::Script_Armenian);
+    QVERIFY(QChar::script(0x0591u) == QChar::Script_Hebrew);
+    QVERIFY(QChar::script(0x0600u) == QChar::Script_Arabic);
+    QVERIFY(QChar::script(0x0700u) == QChar::Script_Syriac);
+    QVERIFY(QChar::script(0x0780u) == QChar::Script_Thaana);
+    QVERIFY(QChar::script(0x07c0u) == QChar::Script_Nko);
+    QVERIFY(QChar::script(0x0900u) == QChar::Script_Devanagari);
+    QVERIFY(QChar::script(0x0981u) == QChar::Script_Bengali);
+    QVERIFY(QChar::script(0x0a01u) == QChar::Script_Gurmukhi);
+    QVERIFY(QChar::script(0x0a81u) == QChar::Script_Gujarati);
+    QVERIFY(QChar::script(0x0b01u) == QChar::Script_Oriya);
+    QVERIFY(QChar::script(0x0b82u) == QChar::Script_Tamil);
+    QVERIFY(QChar::script(0x0c01u) == QChar::Script_Telugu);
+    QVERIFY(QChar::script(0x0c82u) == QChar::Script_Kannada);
+    QVERIFY(QChar::script(0x0d02u) == QChar::Script_Malayalam);
+    QVERIFY(QChar::script(0x0d82u) == QChar::Script_Sinhala);
+    QVERIFY(QChar::script(0x0e01u) == QChar::Script_Thai);
+    QVERIFY(QChar::script(0x0e81u) == QChar::Script_Lao);
+    QVERIFY(QChar::script(0x0f00u) == QChar::Script_Tibetan);
+    QVERIFY(QChar::script(0x1000u) == QChar::Script_Myanmar);
+    QVERIFY(QChar::script(0x10a0u) == QChar::Script_Georgian);
+    QVERIFY(QChar::script(0x1100u) == QChar::Script_Hangul);
+    QVERIFY(QChar::script(0x1680u) == QChar::Script_Ogham);
+    QVERIFY(QChar::script(0x16a0u) == QChar::Script_Runic);
+    QVERIFY(QChar::script(0x1780u) == QChar::Script_Khmer);
+    QVERIFY(QChar::script(0x200cu) == QChar::Script_Inherited);
+    QVERIFY(QChar::script(0x200du) == QChar::Script_Inherited);
+    QVERIFY(QChar::script(0x1018au) == QChar::Script_Greek);
+    QVERIFY(QChar::script(0x1f130u) == QChar::Script_Common);
+    QVERIFY(QChar::script(0xe0100u) == QChar::Script_Inherited);
 }
 
 void tst_QChar::normalization_data()

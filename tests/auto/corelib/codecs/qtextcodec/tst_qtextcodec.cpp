@@ -84,6 +84,7 @@ private slots:
     void utfHeaders_data();
     void utfHeaders();
 
+    void codecForHtml_data();
     void codecForHtml();
 
     void codecForUtfText_data();
@@ -1853,23 +1854,81 @@ void tst_QTextCodec::utfHeaders()
     }
 }
 
-void tst_QTextCodec::codecForHtml()
+void tst_QTextCodec::codecForHtml_data()
 {
-    QByteArray html("<html><head></head><body>blah</body></html>");
+    QTest::addColumn<QByteArray>("html");
+    QTest::addColumn<int>("defaultCodecMib");
+    QTest::addColumn<int>("expectedMibEnum");
 
-    QCOMPARE(QTextCodec::codecForHtml(html)->mibEnum(), 4); // latin 1
+    int noDefault = -1;
+    int fallback = 4; // latin 1
+    QByteArray html = "<html><head></head><body>blah</body></html>";
+    QTest::newRow("no charset, latin 1") << html << noDefault << fallback;
 
-    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 106); // UTF-8
+    QTest::newRow("no charset, default UTF-8") << html << 106 << 106;
 
     html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=ISO-8859-15\" /></head></html>";
-    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 111); // latin 15
+    QTest::newRow("latin 15, default UTF-8") << html << 106 << 111;
 
     html = "<html><head><meta content=\"text/html; charset=ISO-8859-15\" http-equiv=\"content-type\" /></head></html>";
-    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 111); // latin 15
+    QTest::newRow("latin 15, default UTF-8 (#2)") << html << 106 << 111;
 
+    html = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><title>Test</title></head>";
+    QTest::newRow("UTF-8, no default") << html << noDefault << 106;
+
+    html = "<!DOCTYPE html><html><head><meta charset=\"ISO_8859-1:1987\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><title>Test</title></head>";
+    QTest::newRow("latin 1, no default") << html << noDefault << 4;
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset=\"utf-8\"><title>Test</title></head>";
+    QTest::newRow("UTF-8, no default (#2)") << html << noDefault << 106;
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8/></head></html>";
+    QTest::newRow("UTF-8, no quotes") << html << noDefault << 106;
+
+    html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset='UTF-8'/></head></html>";
+    QTest::newRow("UTF-8, single quotes") << html << noDefault << 106;
+
+    html = "<!DOCTYPE html><html><head><meta charset=utf-8><title>Test</title></head>";
+    QTest::newRow("UTF-8, > terminator") << html << noDefault << 106;
+
+    html = "<!DOCTYPE html><html><head><meta charset= utf-8 ><title>Test</title></head>";
+    QTest::newRow("UTF-8, > terminator with spaces") << html << noDefault << 106;
+
+    html = "<!DOCTYPE html><html><head><meta charset= utf/8 ><title>Test</title></head>";
+    QTest::newRow("UTF-8, > teminator with early backslash)") << html << noDefault << 106;
+
+    // Test invalid charsets.
     html = "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=invalid-foo\" /></head></html>";
-    QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(106))->mibEnum(), 106); // UTF-8
-    QCOMPARE(QTextCodec::codecForHtml(html)->mibEnum(), 4); // latin 1
+    QTest::newRow("invalid charset, no default") << html << noDefault << fallback;
+    QTest::newRow("invalid charset, default UTF-8") << html << 106 << 106;
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset=\"";
+    html.prepend(QByteArray().fill(' ', 512 - html.size()));
+    QTest::newRow("invalid charset (large header)") << html << noDefault << fallback;
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset=\"utf-8";
+    QTest::newRow("invalid charset (no closing double quote)") << html << noDefault << fallback;
+
+    html = "<!DOCTYPE html><html><head><meta http-equiv=\"X-UA-Compatible\" content=\"IE=9,chrome=1\"><meta charset='utf-8";
+    QTest::newRow("invalid charset (no closing single quote)") << html << noDefault << fallback;
+
+    html = "<!DOCTYPE html><html><head><meta charset=utf-8 foo=bar><title>Test</title></head>";
+    QTest::newRow("invalid (space terminator)") << html << noDefault << fallback;
+
+    html = "<!DOCTYPE html><html><head><meta charset=\" utf' 8 /><title>Test</title></head>";
+    QTest::newRow("invalid charset, early terminator (')") << html << noDefault << fallback;
+}
+
+void tst_QTextCodec::codecForHtml()
+{
+    QFETCH(QByteArray, html);
+    QFETCH(int, defaultCodecMib);
+    QFETCH(int, expectedMibEnum);
+
+    if (defaultCodecMib != -1)
+        QCOMPARE(QTextCodec::codecForHtml(html, QTextCodec::codecForMib(defaultCodecMib))->mibEnum(), expectedMibEnum);
+    else // Test one parameter version when there is no default codec.
+        QCOMPARE(QTextCodec::codecForHtml(html)->mibEnum(), expectedMibEnum);
 }
 
 void tst_QTextCodec::codecForUtfText_data()

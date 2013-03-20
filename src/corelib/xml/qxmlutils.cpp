@@ -70,7 +70,7 @@ bool QXmlUtils::rangeContains(RangeIter begin, RangeIter end, const QChar c)
 
     // check the first two ranges "manually" as characters in that
     // range are checked very often and we avoid the binary search below.
- 
+
     if (cp <= begin->max)
         return cp >= begin->min;
 

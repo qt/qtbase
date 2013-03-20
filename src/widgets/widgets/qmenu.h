@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,8 +51,6 @@
 #include <windef.h> // for HMENU
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -72,6 +70,7 @@ private:
     Q_PROPERTY(QString title READ title WRITE setTitle)
     Q_PROPERTY(QIcon icon READ icon WRITE setIcon)
     Q_PROPERTY(bool separatorsCollapsible READ separatorsCollapsible WRITE setSeparatorsCollapsible)
+    Q_PROPERTY(bool toolTipsVisible READ toolTipsVisible WRITE setToolTipsVisible)
 
 public:
     explicit QMenu(QWidget *parent = 0);
@@ -94,8 +93,13 @@ public:
 
     QAction *addSeparator();
 
+    QAction *addSection(const QString &text);
+    QAction *addSection(const QIcon &icon, const QString &text);
+
     QAction *insertMenu(QAction *before, QMenu *menu);
     QAction *insertSeparator(QAction *before);
+    QAction *insertSection(QAction *before, const QString &text);
+    QAction *insertSection(QAction *before, const QIcon &icon, const QString &text);
 
     bool isEmpty() const;
     void clear();
@@ -140,6 +144,9 @@ public:
 
     bool separatorsCollapsible() const;
     void setSeparatorsCollapsible(bool collapse);
+
+    bool toolTipsVisible() const;
+    void setToolTipsVisible(bool visible);
 
 Q_SIGNALS:
     void aboutToShow();
@@ -200,7 +207,5 @@ private:
 #endif // QT_NO_MENU
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMENU_H

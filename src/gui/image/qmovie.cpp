@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-/*! 
+/*!
     \class QMovie
 
     \inmodule QtGui
@@ -150,7 +150,7 @@
     copy of the frame.
 */
 
-/*! 
+/*!
     \fn void QMovie::stateChanged(QMovie::MovieState state)
 
     This signal is emitted every time the state of the movie changes. The new
@@ -203,23 +203,23 @@ public:
     inline QFrameInfo(bool endMark)
         : pixmap(QPixmap()), delay(QMOVIE_INVALID_DELAY), endMark(endMark)
     { }
-    
+
     inline QFrameInfo()
         : pixmap(QPixmap()), delay(QMOVIE_INVALID_DELAY), endMark(false)
     { }
-    
+
     inline QFrameInfo(const QPixmap &pixmap, int delay)
         : pixmap(pixmap), delay(delay), endMark(false)
     { }
-    
+
     inline bool isValid()
     {
         return endMark || !(pixmap.isNull() && (delay == QMOVIE_INVALID_DELAY));
     }
-    
+
     inline bool isEndMarker()
     { return endMark; }
-    
+
     static inline QFrameInfo endMarker()
     { return QFrameInfo(true); }
 };

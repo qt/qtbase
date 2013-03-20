@@ -49,8 +49,6 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -184,7 +182,5 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QMatrix &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QMATRIX_H

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -169,7 +169,7 @@ public:
     void removeToolBar(QToolBar *toolBar);
     void insertToolBarBreak(QToolBar *before);
     void removeToolBarBreak(QToolBar *before);
-    void moveToolBar(QToolBar *toolbar, int pos); 
+    void moveToolBar(QToolBar *toolbar, int pos);
 
     QList<int> gapIndex(const QPoint &pos, int *maxDistance) const;
     bool insertGap(const QList<int> &path, QLayoutItem *item);
@@ -215,7 +215,7 @@ public:
     void insertToolBarBreak(QToolBar *before);
     void removeToolBarBreak(QToolBar *before);
     void addToolBarBreak(QInternal::DockPosition pos);
-    void moveToolBar(QToolBar *toolbar, int pos); 
+    void moveToolBar(QToolBar *toolbar, int pos);
 
     void insertItem(QInternal::DockPosition pos, QLayoutItem *item);
     void insertItem(QToolBar *before, QLayoutItem *item);

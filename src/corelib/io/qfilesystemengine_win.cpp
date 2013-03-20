@@ -145,7 +145,9 @@ Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 static QString qfsPrivateCurrentDir = QLatin1String("");
 // As none of the functions we try to resolve do exist on Windows CE
 // we use QT_NO_LIBRARY to shorten everything up a little bit.
+#ifndef QT_NO_LIBRARY
 #define QT_NO_LIBRARY 1
+#endif
 #endif
 
 #if !defined(QT_NO_LIBRARY)

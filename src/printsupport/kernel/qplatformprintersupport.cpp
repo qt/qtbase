@@ -82,6 +82,11 @@ QList<QPrinter::PaperSize> QPlatformPrinterSupport::supportedPaperSizes(const QP
     return QList<QPrinter::PaperSize>();
 }
 
+QList<QPair<QString, QSizeF> > QPlatformPrinterSupport::supportedSizesWithNames(const QPrinterInfo &) const
+{
+    return QList<QPair<QString, QSizeF> >();
+}
+
 QList<QPrinterInfo> QPlatformPrinterSupport::availablePrinters()
 {
     return m_printers;

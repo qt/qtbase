@@ -100,7 +100,7 @@ QLatin1String brushTypes[] = {
 class BlendBench : public QObject
 {
     Q_OBJECT
-private slots:		
+private slots:
     void blendBench_data();
     void blendBench();
 

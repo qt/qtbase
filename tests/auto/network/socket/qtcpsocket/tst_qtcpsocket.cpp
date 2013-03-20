@@ -238,7 +238,6 @@ private:
 
     mutable int proxyAuthCalled;
 
-    bool gotClosedSignal;
     int numConnections;
     static int loopLevel;
 

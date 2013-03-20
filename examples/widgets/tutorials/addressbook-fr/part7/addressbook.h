@@ -74,7 +74,7 @@ public slots:
     void loadFromFile();
 //! [exportAsVCard() declaration]
     void exportAsVCard();
-//! [exportAsVCard() declaration]       
+//! [exportAsVCard() declaration]
 
 private:
     void updateInterface(Mode mode);
@@ -89,9 +89,9 @@ private:
     QPushButton *previousButton;
     QPushButton *loadButton;
     QPushButton *saveButton;
-//! [exportButton declaration] 
+//! [exportButton declaration]
     QPushButton *exportButton;
-//! [exportButton declaration]     
+//! [exportButton declaration]
     QLineEdit *nameLine;
     QTextEdit *addressText;
 

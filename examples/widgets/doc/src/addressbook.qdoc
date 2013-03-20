@@ -273,7 +273,7 @@
 
     \snippet itemviews/addressbook/addresswidget.cpp 4a
 
-    Next we extract data from the row the user intends to 
+    Next we extract data from the row the user intends to
     edit. This data is displayed in an instance of \c AddDialog
     with a different window title. The \c table is only
     updated if changes have been made to data in \c aDialog.

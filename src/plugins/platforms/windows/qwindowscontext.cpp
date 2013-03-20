@@ -368,56 +368,53 @@ void QWindowsContext::setKeyGrabber(QWindow *w)
 }
 
 // Window class registering code (from qapplication_win.cpp)
-// If 0 is passed as the widget pointer, register a window class
-// for QWidget as default. This is used in QGLTemporaryContext
-// during GL initialization, where we don't want to use temporary
-// QWidgets or QGLWidgets, neither do we want to have separate code
-// to register window classes.
 
 QString QWindowsContext::registerWindowClass(const QWindow *w, bool isGL)
 {
-    const Qt::WindowFlags flags = w ? w->flags() : (Qt::WindowFlags)0;
+    Q_ASSERT(w);
+    const Qt::WindowFlags flags = w->flags();
     const Qt::WindowFlags type = flags & Qt::WindowType_Mask;
-
-    uint style = 0;
-    bool icon = false;
-    QString cname = QStringLiteral("Qt5");
-    if (w && isGL) {
-        cname += QStringLiteral("QGLWindow");
-        style = CS_DBLCLKS|CS_OWNDC;
-        icon  = true;
-    } else if (w && (flags & Qt::MSWindowsOwnDC)) {
-        cname += QStringLiteral("QWindowOwnDC");
-        style = CS_DBLCLKS|CS_OWNDC;
-        icon  = true;
-    } else if (w && (type == Qt::Tool || type == Qt::ToolTip)) {
-        style = CS_DBLCLKS;
-        if (w->inherits("QTipLabel") || w->inherits("QAlphaWidget")) {
-            if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-                && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))) {
-                style |= CS_DROPSHADOW;
-            }
-            cname += QStringLiteral("QToolTip");
-        } else {
-            cname += QStringLiteral("QTool");
-        }
-        style |= CS_SAVEBITS;
-        icon = false;
-    } else if (w && (type == Qt::Popup)) {
-        cname += QStringLiteral("QPopup");
-        style = CS_DBLCLKS|CS_SAVEBITS;
-        if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-            && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
-            style |= CS_DROPSHADOW;
-        icon = false;
-    } else {
-        cname += QStringLiteral("QWindow");
-        style = CS_DBLCLKS;
-        icon  = true;
+    // Determine style and icon.
+    uint style = CS_DBLCLKS;
+    bool icon = true;
+    if (isGL || (flags & Qt::MSWindowsOwnDC))
+        style |= CS_OWNDC;
+    if ((QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)
+        && (type == Qt::Popup || w->property("_q_windowsDropShadow").toBool())) {
+        style |= CS_DROPSHADOW;
     }
+    if (type == Qt::Tool || type == Qt::ToolTip || type == Qt::Popup) {
+        style |= CS_SAVEBITS; // Save/restore background
+        icon = false;
+    }
+    // Create a unique name for the flag combination
+    QString cname = QStringLiteral("Qt5QWindow");
+    switch (type) {
+    case Qt::Tool:
+        cname += QStringLiteral("Tool");
+        break;
+    case Qt::ToolTip:
+        cname += QStringLiteral("ToolTip");
+        break;
+    case Qt::Popup:
+        cname += QStringLiteral("Popup");
+        break;
+    default:
+        break;
+    }
+    if (isGL)
+        cname += QStringLiteral("GL");
+    if (style & CS_DROPSHADOW)
+        cname += QStringLiteral("DropShadow");
+    if (style & CS_SAVEBITS)
+        cname += QStringLiteral("SaveBits");
+    if (style & CS_OWNDC)
+        cname += QStringLiteral("OwnDC");
+    if (icon)
+        cname += QStringLiteral("Icon");
 
     HBRUSH brush = 0;
-    if (w && !isGL)
+    if (!isGL)
         brush = GetSysColorBrush(COLOR_WINDOW);
     return registerWindowClass(cname, qWindowsWndProc, style, brush, icon);
 }
@@ -783,7 +780,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             d->m_creationContext->obtainedGeometry.moveTo(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
             return true;
         case QtWindows::CalculateSize:
-            return false;
+            return QWindowsGeometryHint::handleCalculateSize(d->m_creationContext->customMargins, msg, result);
         default:
             break;
         }
@@ -818,12 +815,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         platformWindow->getSizeHints(reinterpret_cast<MINMAXINFO *>(lParam));
         return true;// maybe available on some SDKs revisit WM_NCCALCSIZE
     case QtWindows::CalculateSize:
-        // NCCALCSIZE_PARAMS structure if wParam==TRUE
-        if (wParam && QWindowsContext::verboseWindows) {
-            const NCCALCSIZE_PARAMS *ncp = reinterpret_cast<NCCALCSIZE_PARAMS *>(lParam);
-            qDebug() << platformWindow->window() << *ncp;
-        }
-        break;
+        return QWindowsGeometryHint::handleCalculateSize(platformWindow->customMargins(), msg, result);
 #endif
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam);

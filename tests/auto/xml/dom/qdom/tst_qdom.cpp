@@ -1684,7 +1684,7 @@ static const QChar umlautName[] =
 
 /*!
   \internal
- 
+
   Write a german umlaut to a QByteArray, via a QTextStream.
  */
 void tst_QDom::germanUmlautToByteArray() const
@@ -1701,7 +1701,7 @@ void tst_QDom::germanUmlautToByteArray() const
     ts.setCodec("UTF-8");
     ts << d.toString();
     buffer.close();
-    
+
     QByteArray baseline("<a");
 
     /* http://www.fileformat.info/info/unicode/char/00FC/index.htm */
@@ -1714,7 +1714,7 @@ void tst_QDom::germanUmlautToByteArray() const
 
 /*!
   \internal
- 
+
   Write a german umlaut to a QFile, via a QTextStream.
  */
 void tst_QDom::germanUmlautToFile() const
@@ -1757,15 +1757,15 @@ void tst_QDom::germanUmlautToFile() const
 
 void tst_QDom::setInvalidDataPolicy() const
 {
-    QDomImplementation::setInvalidDataPolicy(QDomImplementation::ReturnNullNode); 
-    QDomDocument doc; 
-    QDomElement elem = doc.createElement("invalid name"); 
+    QDomImplementation::setInvalidDataPolicy(QDomImplementation::ReturnNullNode);
+    QDomDocument doc;
+    QDomElement elem = doc.createElement("invalid name");
     QVERIFY(elem.isNull());
 }
 
 void tst_QDom::crashInSetContent() const
 {
-    QDomImplementation::setInvalidDataPolicy(QDomImplementation::ReturnNullNode); 
+    QDomImplementation::setInvalidDataPolicy(QDomImplementation::ReturnNullNode);
     QDomDocument docImport;
 
     QCOMPARE(docImport.setContent(QLatin1String("<a:>text</a:>"), true), false);
@@ -1774,7 +1774,7 @@ void tst_QDom::crashInSetContent() const
 
 void tst_QDom::doubleNamespaceDeclarations() const
 {
-    QDomDocument doc; 
+    QDomDocument doc;
 
     QString testFile = QFINDTESTDATA("doubleNamespaces.xml");
     if (testFile.isEmpty())
@@ -1782,7 +1782,7 @@ void tst_QDom::doubleNamespaceDeclarations() const
     QFile file(testFile);
     QVERIFY(file.open(QIODevice::ReadOnly));
 
-    QXmlSimpleReader reader; 
+    QXmlSimpleReader reader;
 
     QXmlInputSource source(&file);
     QVERIFY(doc.setContent(&source, &reader));

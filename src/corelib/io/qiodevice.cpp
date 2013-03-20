@@ -1372,7 +1372,7 @@ qint64 QIODevice::write(const char *data, qint64 maxSize)
     \since 4.5
 
     \overload
- 
+
     Writes data from a zero-terminated string of 8-bit characters to the
     device. Returns the number of bytes that were actually written, or
     -1 if an error occurred. This is equivalent to

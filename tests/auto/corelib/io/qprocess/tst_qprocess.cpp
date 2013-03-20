@@ -81,6 +81,7 @@ private slots:
     void getSetCheck();
     void constructing();
     void simpleStart();
+    void startWithOpen();
     void execute();
     void startDetached();
     void crashTest();
@@ -283,6 +284,25 @@ void tst_QProcess::simpleStart()
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(1).at(0)), QProcess::Running);
     QCOMPARE(qvariant_cast<QProcess::ProcessState>(spy.at(2).at(0)), QProcess::NotRunning);
 }
+
+//-----------------------------------------------------------------------------
+void tst_QProcess::startWithOpen()
+{
+    QProcess p;
+    QTest::ignoreMessage(QtWarningMsg, "QProcess::start: program not set");
+    QCOMPARE(p.open(QIODevice::ReadOnly), false);
+
+    p.setProgram("testProcessNormal/testProcessNormal");
+    QCOMPARE(p.program(), QString("testProcessNormal/testProcessNormal"));
+
+    p.setArguments(QStringList() << "arg1" << "arg2");
+    QCOMPARE(p.arguments().size(), 2);
+
+    QVERIFY(p.open(QIODevice::ReadOnly));
+    QCOMPARE(p.openMode(), QIODevice::ReadOnly);
+    QVERIFY(p.waitForFinished(5000));
+}
+
 //-----------------------------------------------------------------------------
 void tst_QProcess::execute()
 {
@@ -1256,7 +1276,6 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlot()
     process->start("testProcessEcho/testProcessEcho");
     QVERIFY(process->waitForStarted(5000));
 
-    qRegisterMetaType<qint64>("qint64");
     QSignalSpy spy(process, SIGNAL(bytesWritten(qint64)));
     QVERIFY(spy.isValid());
     process->write("f");

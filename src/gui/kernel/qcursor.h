@@ -45,8 +45,6 @@
 #include <QtCore/qpoint.h>
 #include <QtGui/qwindowdefs.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -109,7 +107,7 @@ public:
     static void setPos(QScreen *screen, int x, int y);
     inline static void setPos(const QPoint &p) { setPos(p.x(), p.y()); }
     inline static void setPos(QScreen *screen, const QPoint &p) { setPos(screen, p.x(), p.y()); }
-    
+
 private:
     QCursorData *d;
 };
@@ -129,7 +127,5 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QCursor &);
 #endif // QT_NO_CURSOR
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QCURSOR_H

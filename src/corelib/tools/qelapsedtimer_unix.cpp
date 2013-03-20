@@ -43,8 +43,12 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "qelapsedtimer.h"
+#ifdef Q_OS_VXWORKS
+#include "qfunctions_vxworks.h"
+#else
 #include <sys/time.h>
 #include <time.h>
+#endif
 #include <unistd.h>
 
 #include <qatomic.h>
@@ -168,14 +172,14 @@ static inline void do_gettime(qint64 *sec, qint64 *frac)
 }
 
 // used in qcore_unix.cpp and qeventdispatcher_unix.cpp
-timeval qt_gettime() Q_DECL_NOTHROW
+struct timespec qt_gettime() Q_DECL_NOTHROW
 {
     qint64 sec, frac;
     do_gettime(&sec, &frac);
 
-    timeval tv;
+    timespec tv;
     tv.tv_sec = sec;
-    tv.tv_usec = frac / 1000;
+    tv.tv_nsec = frac;
 
     return tv;
 }

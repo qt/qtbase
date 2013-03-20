@@ -380,7 +380,7 @@ void PathStrokeWidget::setStyle( QStyle * style )
     if (m_controls != 0)
     {
         m_controls->setStyle(style);
-        
+
         QList<QWidget *> widgets = m_controls->findChildren<QWidget *>();
         foreach (QWidget *w, widgets)
             w->setStyle(style);
@@ -544,7 +544,7 @@ void PathStrokeRenderer::mousePressEvent(QMouseEvent *e)
         setAnimation(false);
         mouseMoveEvent(e);
     }
-    
+
     // If we're not running in small screen mode, always assume we're dragging
     m_mouseDrag = !m_smallScreen;
     m_mousePress = e->pos();

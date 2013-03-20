@@ -1,0 +1,69 @@
+
+CONFIG(qt):contains(QT, gui):equals(TEMPLATE, app): CONFIG += gui_app
+
+isEmpty(MAKEFILE_GENERATOR) {
+    gui_app:app_bundle: \
+        # For applications we want Xcode project files
+        MAKEFILE_GENERATOR = XCODE
+    else: \
+        # For libs, etc we still want regular Makefiles
+        MAKEFILE_GENERATOR = UNIX
+}
+
+gui_app {
+    # We have to do the link and dependency resolution for the platform plugin
+    # manually, since QTPLUGIN and the prl lookup logic does not support
+    # the -force_load link style. The -force_load option ensures that all
+    # symbols from the static library are included, not just the ones the
+    # linker have seen a use for so far. We need this because we load the platform
+    # plugin from the platform plugin itself, using Q_IMPORT_PLUGIN.
+    lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/libqios$$qtPlatformTargetSuffix()
+    LIBS += "-force_load $${lib_path_and_base}.$${QMAKE_EXTENSION_STATICLIB}"
+    LIBS += $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
+
+    # Which means we don't want the auto-generated import for the platform plugin
+    CONFIG -= import_qpa_plugin
+
+    !no_main_wrapper {
+        # We link the iosmain library manually as well, since it's not really a plugin
+        lib_name = qiosmain
+        lib_path_and_base = $$[QT_INSTALL_PLUGINS/get]/platforms/lib$${lib_name}$$qtPlatformTargetSuffix()
+        LIBS += -L$$[QT_INSTALL_PLUGINS/get]/platforms -l$${lib_name}$$qtPlatformTargetSuffix()
+        LIBS += $$fromfile($${lib_path_and_base}.prl, QMAKE_PRL_LIBS)
+        DEFINES += main=qt_main
+    }
+}
+
+contains(MAKEFILE_GENERATOR, XCODE) {
+    ios_device_family.name = TARGETED_DEVICE_FAMILY
+    ios_device_family.value = $$QMAKE_IOS_TARGETED_DEVICE_FAMILY
+    QMAKE_MAC_XCODE_SETTINGS += ios_device_family
+}
+
+isEmpty(QT_ARCH) {
+    # The iPhoneOS and iPhoneSimulator targets share the same toolchain,
+    # so when configure runs the arch tests it passes the correct sysroot,
+    # but we fail to pick up the architecture since we're not passing -arch
+    # yet. Xcode does not seem to have a way to run the shared toolchain
+    # in a way that will automatically  do this (for example xcrun -sdk).
+    contains(QMAKE_MAC_SDK, iphoneos.*): QT_ARCH = armv7
+    else: QT_ARCH = i386 # Simulator
+} else {
+    # Fix up the QT_ARCH to be more specific
+    equals(QT_ARCH, arm) {
+        # Samsung S5PC100, Apple A4, A5, A5X
+        QT_ARCH = armv7
+
+        # FIXME: How do we support armv7s when Qt can't do universal builds?
+    }
+}
+
+!equals(MAKEFILE_GENERATOR, XCODE) {
+    arch_flag = -arch $$QT_ARCH
+    QMAKE_CFLAGS           += $$arch_flag
+    QMAKE_CXXFLAGS         += $$arch_flag
+    QMAKE_OBJECTIVE_CFLAGS += $$arch_flag
+    QMAKE_LFLAGS           += $$arch_flag
+}
+
+load(default_post)

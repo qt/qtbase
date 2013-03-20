@@ -91,10 +91,16 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QObject *parent, const QNetworkRequ
 
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
-        if (url.scheme() == QLatin1String("qrc"))
+        if (url.scheme() == QLatin1String("qrc")) {
             fileName = QLatin1Char(':') + url.path();
-        else
-            fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
+        } else {
+#if defined(Q_OS_ANDROID)
+            if (url.scheme() == QLatin1String("assets"))
+                fileName = QLatin1String("assets:") + url.path();
+            else
+#endif
+                fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
+        }
     }
 
     QFileInfo fi(fileName);

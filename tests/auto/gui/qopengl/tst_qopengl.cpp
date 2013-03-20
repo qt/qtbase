@@ -47,6 +47,7 @@
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>
+#include <QtGui/QOffscreenSurface>
 
 #include <QtTest/QtTest>
 
@@ -57,12 +58,18 @@ class tst_QOpenGL : public QObject
 Q_OBJECT
 
 private slots:
+    void sharedResourceCleanup_data();
     void sharedResourceCleanup();
+    void multiGroupSharedResourceCleanup_data();
     void multiGroupSharedResourceCleanup();
+    void multiGroupSharedResourceCleanupCustom_data();
     void multiGroupSharedResourceCleanupCustom();
+    void fboSimpleRendering_data();
     void fboSimpleRendering();
+    void fboRendering_data();
     void fboRendering();
     void fboHandleNulledAfterContextDestroyed();
+    void openGLPaintDevice_data();
     void openGLPaintDevice();
     void aboutToBeDestroyed();
     void QTBUG15621_triangulatingStrokerDivZero();
@@ -129,16 +136,43 @@ struct SharedResource : public QOpenGLSharedResource
     SharedResourceTracker *tracker;
 };
 
+static QSurface *createSurface(int surfaceClass)
+{
+    if (surfaceClass == int(QSurface::Window)) {
+        QWindow *window = new QWindow;
+        window->setSurfaceType(QWindow::OpenGLSurface);
+        window->setGeometry(0, 0, 10, 10);
+        window->create();
+        return window;
+    } else if (surfaceClass == int(QSurface::Offscreen)) {
+        QOffscreenSurface *offscreenSurface = new QOffscreenSurface;
+        offscreenSurface->create();
+        return offscreenSurface;
+    }
+    return 0;
+}
+
+static void common_data()
+{
+    QTest::addColumn<int>("surfaceClass");
+
+    QTest::newRow("Using QWindow") << int(QSurface::Window);
+    QTest::newRow("Using QOffscreenSurface") << int(QSurface::Offscreen);
+}
+
+void tst_QOpenGL::sharedResourceCleanup_data()
+{
+    common_data();
+}
+
 void tst_QOpenGL::sharedResourceCleanup()
 {
-    QWindow window;
-    window.setSurfaceType(QWindow::OpenGLSurface);
-    window.setGeometry(0, 0, 10, 10);
-    window.create();
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext *ctx = new QOpenGLContext;
     ctx->create();
-    ctx->makeCurrent(&window);
+    ctx->makeCurrent(surface.data());
 
     SharedResourceTracker tracker;
     SharedResource *resource = new SharedResource(&tracker);
@@ -165,7 +199,7 @@ void tst_QOpenGL::sharedResourceCleanup()
     QCOMPARE(tracker.freeResourceCalls, 0);
     QCOMPARE(tracker.destructorCalls, 0);
 
-    ctx2->makeCurrent(&window);
+    ctx2->makeCurrent(surface.data());
 
     // freeResource() should now have been called
     QCOMPARE(tracker.invalidateResourceCalls, 0);
@@ -192,17 +226,20 @@ void tst_QOpenGL::sharedResourceCleanup()
     QCOMPARE(tracker.destructorCalls, 1);
 }
 
+void tst_QOpenGL::multiGroupSharedResourceCleanup_data()
+{
+    common_data();
+}
+
 void tst_QOpenGL::multiGroupSharedResourceCleanup()
 {
-    QWindow window;
-    window.setSurfaceType(QWindow::OpenGLSurface);
-    window.setGeometry(0, 0, 10, 10);
-    window.create();
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     for (int i = 0; i < 10; ++i) {
         QOpenGLContext *gl = new QOpenGLContext();
         gl->create();
-        gl->makeCurrent(&window);
+        gl->makeCurrent(surface.data());
         {
             // Cause QOpenGLMultiGroupSharedResource instantiation.
             QOpenGLFunctions func(gl);
@@ -214,16 +251,19 @@ void tst_QOpenGL::multiGroupSharedResourceCleanup()
     // Shouldn't crash when application exits.
 }
 
+void tst_QOpenGL::multiGroupSharedResourceCleanupCustom_data()
+{
+    common_data();
+}
+
 void tst_QOpenGL::multiGroupSharedResourceCleanupCustom()
 {
-    QWindow window;
-    window.setSurfaceType(QWindow::OpenGLSurface);
-    window.setGeometry(0, 0, 10, 10);
-    window.create();
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext *ctx = new QOpenGLContext();
     ctx->create();
-    ctx->makeCurrent(&window);
+    ctx->makeCurrent(surface.data());
 
     QOpenGLMultiGroupSharedResource multiGroupSharedResource;
     SharedResource *resource = multiGroupSharedResource.value<SharedResource>(ctx);
@@ -350,17 +390,20 @@ void qt_opengl_check_test_pattern(const QImage& img)
     QFUZZY_COMPARE_PIXELS(img.pixel(192, 64), QColor(Qt::green).rgb());
 }
 
+void tst_QOpenGL::fboSimpleRendering_data()
+{
+    common_data();
+}
 
 void tst_QOpenGL::fboSimpleRendering()
 {
-    QWindow window;
-    window.setSurfaceType(QWindow::OpenGLSurface);
-    window.setGeometry(0, 0, 10, 10);
-    window.create();
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
+
     QOpenGLContext ctx;
     ctx.create();
 
-    ctx.makeCurrent(&window);
+    ctx.makeCurrent(surface.data());
 
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
@@ -386,6 +429,11 @@ void tst_QOpenGL::fboSimpleRendering()
     delete fbo;
 }
 
+void tst_QOpenGL::fboRendering_data()
+{
+    common_data();
+}
+
 // NOTE: This tests that CombinedDepthStencil attachment works by assuming the
 //       GL2 engine is being used and is implemented the same way as it was when
 //       this autotest was written. If this is not the case, there may be some
@@ -397,14 +445,13 @@ void tst_QOpenGL::fboRendering()
     QSKIP("QTBUG-22617");
 #endif
 
-    QWindow window;
-    window.setSurfaceType(QWindow::OpenGLSurface);
-    window.setGeometry(0, 0, 10, 10);
-    window.create();
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
+
     QOpenGLContext ctx;
     ctx.create();
 
-    ctx.makeCurrent(&window);
+    ctx.makeCurrent(surface.data());
 
     if (!QOpenGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QOpenGLFramebufferObject not supported on this platform");
@@ -461,16 +508,19 @@ void tst_QOpenGL::fboHandleNulledAfterContextDestroyed()
     QCOMPARE(fbo->handle(), 0U);
 }
 
+void tst_QOpenGL::openGLPaintDevice_data()
+{
+    common_data();
+}
+
 void tst_QOpenGL::openGLPaintDevice()
 {
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(__x86_64__)
     QSKIP("QTBUG-22617");
 #endif
 
-    QWindow window;
-    window.setSurfaceType(QWindow::OpenGLSurface);
-    window.setGeometry(0, 0, 128, 128);
-    window.create();
+    QFETCH(int, surfaceClass);
+    QScopedPointer<QSurface> surface(createSurface(surfaceClass));
 
     QOpenGLContext ctx;
     ctx.create();
@@ -478,7 +528,7 @@ void tst_QOpenGL::openGLPaintDevice()
     QSurfaceFormat format = ctx.format();
     if (format.majorVersion() < 2)
         QSKIP("This test requires at least OpenGL 2.0");
-    ctx.makeCurrent(&window);
+    ctx.makeCurrent(surface.data());
 
     QImage image(128, 128, QImage::Format_RGB32);
     QPainter p(&image);

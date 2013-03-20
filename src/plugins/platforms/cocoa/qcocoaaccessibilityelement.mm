@@ -43,7 +43,7 @@
 #include "qcocoahelpers.h"
 
 #include <QAccessible>
-#include "QAccessibleActionInterface"
+#include <QtGui/private/qaccessible2_p.h>
 
 #import <AppKit/NSAccessibility.h>
 

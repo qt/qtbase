@@ -42,7 +42,7 @@ CFLAGS_BARE = -c -Fo./ \
               -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_COMPRESS \
               -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
               -DUNICODE
-CFLAGS   = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch $(CFLAGS_BARE) $(CFLAGS)
+CFLAGS   = -Yuqmake_pch.h -FIqmake_pch.h -Fpqmake_pch.pch $(CFLAGS_BARE) $(CFLAGS) $(EXTRA_CPPFLAGS)
 
 CXXFLAGS_BARE = $(CFLAGS_BARE)
 CXXFLAGS = $(CFLAGS)
@@ -65,10 +65,6 @@ OBJS        = project.obj main.obj ioutils.obj proitems.obj \
               msvc_nmake.obj msvc_vcproj.obj msvc_vcxproj.obj \
               msvc_objectmodel.obj msbuild_objectmodel.obj registry.obj \
               gbuild.obj cesdkhandler.obj
-
-!IFDEF QMAKE_OPENSOURCE_EDITION
-CFLAGS      = $(CFLAGS) -DQMAKE_OPENSOURCE_EDITION
-!ENDIF
 
 #qt code
 QTOBJS= \

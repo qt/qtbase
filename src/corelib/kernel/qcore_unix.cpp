@@ -60,8 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline bool time_update(struct timeval *tv, const struct timeval &start,
-                               const struct timeval &timeout)
+static inline bool time_update(struct timespec *tv, const struct timespec &start,
+                               const struct timespec &timeout)
 {
     if (!QElapsedTimer::isMonotonic()) {
         // we cannot recalculate the timeout without a monotonic clock as the time may have changed
@@ -69,13 +69,13 @@ static inline bool time_update(struct timeval *tv, const struct timeval &start,
     }
 
     // clock source is monotonic, so we can recalculate how much timeout is left
-    struct timeval now = qt_gettime();
+    struct timespec now = qt_gettime();
     *tv = timeout + start - now;
     return tv->tv_sec >= 0;
 }
 
 int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
-                   const struct timeval *orig_timeout)
+                   const struct timespec *orig_timeout)
 {
     if (!orig_timeout) {
         // no timeout -> block forever
@@ -84,13 +84,20 @@ int qt_safe_select(int nfds, fd_set *fdread, fd_set *fdwrite, fd_set *fdexcept,
         return ret;
     }
 
-    timeval start = qt_gettime();
-    timeval timeout = *orig_timeout;
+    timespec start = qt_gettime();
+    timespec timeout = *orig_timeout;
 
     // loop and recalculate the timeout as needed
     int ret;
     forever {
-        ret = ::select(nfds, fdread, fdwrite, fdexcept, &timeout);
+#ifndef Q_OS_QNX
+        ret = ::pselect(nfds, fdread, fdwrite, fdexcept, &timeout, 0);
+#else
+        timeval timeoutVal;
+        timeoutVal.tv_sec = timeout.tv_sec;
+        timeoutVal.tv_usec = timeout.tv_nsec / 1000;
+        ret = ::select(nfds, fdread, fdwrite, fdexcept, &timeoutVal);
+#endif
         if (ret != -1 || errno != EINTR)
             return ret;
 

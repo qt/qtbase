@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -139,7 +139,7 @@
     \fn void QButtonGroup::buttonPressed(QAbstractButton *button)
     \since 4.2
 
-    This signal is emitted when the given \a button is pressed down. 
+    This signal is emitted when the given \a button is pressed down.
 
     \sa QAbstractButton::pressed()
 */
@@ -158,7 +158,7 @@
     \fn void QButtonGroup::buttonReleased(QAbstractButton *button)
     \since 4.2
 
-    This signal is emitted when the given \a button is released. 
+    This signal is emitted when the given \a button is released.
 
     \sa QAbstractButton::released()
 */

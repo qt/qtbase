@@ -70,10 +70,10 @@ public slots:
     void findContact();
     void next();
     void previous();
-//! [save and load functions declaration]    
+//! [save and load functions declaration]
     void saveToFile();
     void loadFromFile();
-//! [save and load functions declaration]    
+//! [save and load functions declaration]
 
 private:
     void updateInterface(Mode mode);
@@ -86,10 +86,10 @@ private:
     QPushButton *cancelButton;
     QPushButton *nextButton;
     QPushButton *previousButton;
-//! [save and load buttons declaration]        
+//! [save and load buttons declaration]
     QPushButton *loadButton;
     QPushButton *saveButton;
-//! [save and load buttons declaration]            
+//! [save and load buttons declaration]
     QLineEdit *nameLine;
     QTextEdit *addressText;
 

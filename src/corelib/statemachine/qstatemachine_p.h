@@ -185,7 +185,7 @@ public:
     void unregisterTransition(QAbstractTransition *transition);
     void unregisterAllTransitions();
     void handleTransitionSignal(QObject *sender, int signalIndex,
-                                void **args);    
+                                void **args);
 
     void postInternalEvent(QEvent *e);
     void postExternalEvent(QEvent *e);
@@ -195,7 +195,7 @@ public:
     bool isExternalEventQueueEmpty();
     void processEvents(EventProcessingMode processingMode);
     void cancelAllDelayedEvents();
-    
+
 #ifndef QT_NO_PROPERTIES
     typedef QPair<QPointer<QObject>, QByteArray> RestorableId;
     QHash<QAbstractState*, QHash<RestorableId, QVariant> > registeredRestorablesForState;
@@ -235,7 +235,7 @@ public:
     bool animated;
 
     QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
-        initializeAnimation(QAbstractAnimation *abstractAnimation, 
+        initializeAnimation(QAbstractAnimation *abstractAnimation,
                             const QPropertyAssignment &prop);
 
     QHash<QAbstractState*, QList<QAbstractAnimation*> > animationsForState;
@@ -274,7 +274,7 @@ public:
     QHash<int, DelayedEvent> delayedEvents;
     QHash<int, int> timerIdToDelayedEventId;
     QMutex delayedEventsMutex;
-  
+
     typedef QEvent* (*f_cloneEvent)(QEvent*);
     struct Handler {
         f_cloneEvent cloneEvent;

@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_odbc.h
+HEADERS += $$PWD/qsql_odbc_p.h
 SOURCES += $$PWD/qsql_odbc.cpp
 
 unix {

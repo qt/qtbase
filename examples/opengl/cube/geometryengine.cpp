@@ -50,7 +50,7 @@ struct VertexData
 };
 
 GeometryEngine::GeometryEngine()
-{    
+{
 }
 
 GeometryEngine::~GeometryEngine()

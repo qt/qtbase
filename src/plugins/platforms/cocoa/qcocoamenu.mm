@@ -47,6 +47,8 @@
 #include <QtCore/QtDebug>
 #include "qcocoaapplication.h"
 #include "qcocoamenuloader.h"
+#include "qcocoawindow.h"
+#import "qnsview.h"
 
 static inline QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *getMenuLoader()
 {
@@ -131,6 +133,20 @@ void QCocoaMenu::setText(const QString &text)
     QString stripped = qt_mac_removeAmpersandEscapes(text);
     [m_nativeMenu setTitle:QCFString::toNSString(stripped)];
     [m_nativeItem setTitle:QCFString::toNSString(stripped)];
+}
+
+void QCocoaMenu::setMinimumWidth(int width)
+{
+    m_nativeMenu.minimumWidth = width;
+}
+
+void QCocoaMenu::setFont(const QFont &font)
+{
+    if (font.resolve()) {
+        NSFont *customMenuFont = [NSFont fontWithName:QCFString::toNSString(font.family())
+                                  size:font.pointSize()];
+        m_nativeMenu.font = customMenuFont;
+    }
 }
 
 void QCocoaMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatformMenuItem *before)
@@ -290,9 +306,26 @@ void QCocoaMenu::setVisible(bool visible)
     [m_nativeItem setSubmenu:(visible ? m_nativeMenu : nil)];
 }
 
+void QCocoaMenu::showPopup(const QWindow *parentWindow, QPoint pos, const QPlatformMenuItem *item)
+{
+    QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : 0;
+    NSView *view = cocoaWindow ? cocoaWindow->contentView() : nil;
+    NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
+    NSPoint nsPos = NSMakePoint(pos.x(), pos.y());
+    [m_nativeMenu popUpMenuPositioningItem:nsItem atLocation:nsPos inView:view];
+
+    // The call above blocks, and also swallows any mouse release event,
+    // so we need to clear any mouse button that triggered the menu popup.
+    if ([view isKindOfClass:[QNSView class]])
+        [(QNSView *)view resetMouseButtons];
+}
+
 QPlatformMenuItem *QCocoaMenu::menuItemAt(int position) const
 {
-    return m_menuItems.at(position);
+    if (0 <= position && position < m_menuItems.count())
+        return m_menuItems.at(position);
+
+    return 0;
 }
 
 QPlatformMenuItem *QCocoaMenu::menuItemForTag(quintptr tag) const

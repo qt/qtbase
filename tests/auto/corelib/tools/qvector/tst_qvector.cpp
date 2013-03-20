@@ -236,6 +236,7 @@ private slots:
     void removeInt() const;
     void removeMovable() const;
     void removeCustom() const;
+    void removeFirstLast() const;
     void resizePOD_data() const;
     void resizePOD() const;
     void resizeComplexMovable_data() const;
@@ -1392,6 +1393,103 @@ void tst_QVector::removeCustom() const
     remove<Custom>();
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
 }
+
+struct RemoveLastTestClass
+{
+    RemoveLastTestClass() { other = 0; deleted = false; }
+    RemoveLastTestClass *other;
+    bool deleted;
+    ~RemoveLastTestClass()
+    {
+        deleted = true;
+        if (other)
+            other->other = 0;
+    }
+};
+
+void tst_QVector::removeFirstLast() const
+{
+    // pop_pack - pop_front
+    QVector<int> t, t2;
+    t.append(1);
+    t.append(2);
+    t.append(3);
+    t.append(4);
+    t2 = t;
+    t.pop_front();
+    QCOMPARE(t.size(), 3);
+    QCOMPARE(t.at(0), 2);
+    t.pop_back();
+    QCOMPARE(t.size(), 2);
+    QCOMPARE(t.at(0), 2);
+    QCOMPARE(t.at(1), 3);
+
+    // takefirst - takeLast
+    int n1 = t2.takeLast();
+    QCOMPARE(t2.size(), 3);
+    QCOMPARE(n1, 4);
+    QCOMPARE(t2.at(0), 1);
+    QCOMPARE(t2.at(2), 3);
+    n1 = t2.takeFirst();
+    QCOMPARE(t2.size(), 2);
+    QCOMPARE(n1, 1);
+    QCOMPARE(t2.at(0), 2);
+    QCOMPARE(t2.at(1), 3);
+
+    // remove first
+    QVector<int> x, y;
+    x.append(1);
+    x.append(2);
+    y = x;
+    x.removeFirst();
+    QCOMPARE(x.size(), 1);
+    QCOMPARE(y.size(), 2);
+    QCOMPARE(x.at(0), 2);
+
+    // remove Last
+    QVector<RemoveLastTestClass> v;
+    v.resize(2);
+    v[0].other = &(v[1]);
+    v[1].other = &(v[0]);
+    // Check dtor - complex type
+    QVERIFY(v.at(0).other != 0);
+    v.removeLast();
+    QVERIFY(v.at(0).other == 0);
+    QCOMPARE(v.at(0).deleted, false);
+    // check iterator
+    int count = 0;
+    for (QVector<RemoveLastTestClass>::const_iterator i = v.constBegin(); i != v.constEnd(); ++i) {
+        ++count;
+        QVERIFY(i->other == 0);
+        QCOMPARE(i->deleted, false);
+    }
+    // Check size
+    QCOMPARE(count, 1);
+    QCOMPARE(v.size(), 1);
+    v.removeLast();
+    QCOMPARE(v.size(), 0);
+    // Check if we do correct realloc
+    QVector<int> v2, v3;
+    v2.append(1);
+    v2.append(2);
+    v3 = v2; // shared
+    v2.removeLast();
+    QCOMPARE(v2.size(), 1);
+    QCOMPARE(v3.size(), 2);
+    QCOMPARE(v2.at(0), 1);
+    QCOMPARE(v3.at(0), 1);
+    QCOMPARE(v3.at(1), 2);
+
+    // Remove last with shared
+    QVector<int> z1, z2;
+    z1.append(9);
+    z2 = z1;
+    z1.removeLast();
+    QCOMPARE(z1.size(), 0);
+    QCOMPARE(z2.size(), 1);
+    QCOMPARE(z2.at(0), 9);
+}
+
 
 void tst_QVector::resizePOD_data() const
 {

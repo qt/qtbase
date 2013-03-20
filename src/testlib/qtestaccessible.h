@@ -47,6 +47,8 @@
 #pragma qt_no_master_include
 #endif
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_ACCESSIBILITY
 
 #define QVERIFY_EVENT(event) \
@@ -58,8 +60,6 @@
 #include <QtGui/qguiapplication.h>
 #include <QtTest/qtest_global.h>
 #include <QtTest/qtestsystem.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -265,8 +265,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_ACCESSIBILITY
 #endif // QTESTACCESSIBLE_H
