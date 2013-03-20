@@ -139,6 +139,9 @@ private:
     friend class QOpenGLMultiGroupSharedResource;
 };
 
+
+class QOpenGLTextureHelper;
+
 class Q_GUI_EXPORT QOpenGLContext : public QObject
 {
     Q_OBJECT
@@ -207,6 +210,7 @@ private:
     friend class QSGDistanceFieldGlyphCache;
     friend class QWidgetPrivate;
     friend class QAbstractOpenGLFunctionsPrivate;
+    friend class QOpenGLTexturePrivate;
 
     void *qGLContextHandle() const;
     void setQGLContextHandle(void *handle,void (*qGLContextDeleteFunction)(void *));
@@ -216,6 +220,11 @@ private:
     void insertFunctionsBackend(const QOpenGLVersionStatus &v,
                                 QOpenGLVersionFunctionsBackend *backend);
     void removeFunctionsBackend(const QOpenGLVersionStatus &v);
+
+#if !defined(QT_OPENGL_ES_2)
+    QOpenGLTextureHelper* textureFunctions() const;
+    void setTextureFunctions(QOpenGLTextureHelper* textureFuncs);
+#endif
 
     void destroy();
 };

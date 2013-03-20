@@ -77,7 +77,11 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                    opengl/qopenglfunctions_4_2_compatibility.h \
                    opengl/qopenglfunctions_4_3_compatibility.h \
                    opengl/qopenglqueryhelper_p.h \
-                   opengl/qopengltimerquery.h
+                   opengl/qopengltimerquery.h \
+                   opengl/qopengltexture.h \
+                   opengl/qopengltexture_p.h \
+                   opengl/qopengltexturehelper_p.h \
+                   opengl/qopenglpixeltransferoptions.h
 
         SOURCES += opengl/qopenglfunctions_1_0.cpp \
                    opengl/qopenglfunctions_1_1.cpp \
@@ -101,7 +105,10 @@ contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles2) {
                    opengl/qopenglfunctions_4_1_compatibility.cpp \
                    opengl/qopenglfunctions_4_2_compatibility.cpp \
                    opengl/qopenglfunctions_4_3_compatibility.cpp \
-                   opengl/qopengltimerquery.cpp
+                   opengl/qopengltimerquery.cpp \
+                   opengl/qopengltexture.cpp \
+                   opengl/qopengltexturehelper.cpp \
+                   opengl/qopenglpixeltransferoptions.cpp
     }
 
     contains(QT_CONFIG, opengles2) {

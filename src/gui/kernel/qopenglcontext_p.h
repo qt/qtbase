@@ -186,6 +186,7 @@ private:
 
 class QPaintEngineEx;
 class QOpenGLFunctions;
+class QOpenGLTextureHelper;
 
 class Q_GUI_EXPORT QOpenGLContextPrivate : public QObjectPrivate
 {
@@ -199,6 +200,7 @@ public:
         , screen(0)
         , surface(0)
         , functions(0)
+        , textureFunctions(0)
         , current_fbo(0)
         , max_texture_size(-1)
         , workaround_brokenFBOReadBack(false)
@@ -228,6 +230,7 @@ public:
     QSurface *surface;
     QOpenGLFunctions *functions;
     mutable QSet<QByteArray> extensionNames;
+    QOpenGLTextureHelper* textureFunctions;
 
     GLuint current_fbo;
     GLint max_texture_size;

@@ -56,6 +56,10 @@
 #include <private/qopenglextensions_p.h>
 #include <private/qopenglversionfunctionsfactory_p.h>
 
+#if !defined(QT_OPENGL_ES_2)
+#include <private/qopengltexturehelper_p.h>
+#endif
+
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -523,6 +527,10 @@ void QOpenGLContext::destroy()
     d->versionFunctions.clear();
     qDeleteAll(d->versionFunctionsBackend);
     d->versionFunctionsBackend.clear();
+#if !defined(QT_OPENGL_ES_2)
+    delete d->textureFunctions;
+    d->textureFunctions = 0;
+#endif
 }
 
 /*!
@@ -975,6 +983,26 @@ void QOpenGLContext::removeFunctionsBackend(const QOpenGLVersionStatus &v)
     Q_D(QOpenGLContext);
     d->versionFunctionsBackend.remove(v);
 }
+
+#if !defined(QT_OPENGL_ES_2)
+/*!
+    \internal
+*/
+QOpenGLTextureHelper* QOpenGLContext::textureFunctions() const
+{
+    Q_D(const QOpenGLContext);
+    return d->textureFunctions;
+}
+
+/*!
+    \internal
+*/
+void QOpenGLContext::setTextureFunctions(QOpenGLTextureHelper* textureFuncs)
+{
+    Q_D(QOpenGLContext);
+    d->textureFunctions = textureFuncs;
+}
+#endif
 
 /*!
     \class QOpenGLContextGroup
