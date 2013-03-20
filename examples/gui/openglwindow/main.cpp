@@ -80,7 +80,7 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
 
     QSurfaceFormat format;
-    format.setSamples(4);
+    format.setSamples(16);
 
     TriangleWindow window;
     window.setFormat(format);
@@ -136,7 +136,8 @@ void TriangleWindow::initialize()
 //! [5]
 void TriangleWindow::render()
 {
-    glViewport(0, 0, width(), height());
+    const qreal retinaScale = devicePixelRatio();
+    glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
     glClear(GL_COLOR_BUFFER_BIT);
 
