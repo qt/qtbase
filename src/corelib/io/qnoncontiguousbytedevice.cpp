@@ -388,8 +388,8 @@ bool QNonContiguousByteDeviceIoDeviceImpl::reset()
 {
     if (resetDisabled)
         return false;
-
-    if (device->seek(initialPosition)) {
+    bool reset = (initialPosition == 0) ? device->reset() : device->seek(initialPosition);
+    if (reset) {
         eof = false; // assume eof is false, it will be true after a read has been attempted
         return true;
     }
