@@ -2938,8 +2938,9 @@ bool QVariant::convert(const int type, void *ptr) const
     which means that two values can be equal even if one of them is null and
     another is not.
 
-    \warning This function doesn't support custom types registered
-    with qRegisterMetaType().
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
 */
 /*!
     \fn bool operator!=(const QVariant &v1, const QVariant &v2)
@@ -2948,8 +2949,9 @@ bool QVariant::convert(const int type, void *ptr) const
 
     Returns false if \a v1 and \a v2 are equal; otherwise returns true.
 
-    \warning This function doesn't support custom types registered
-    with qRegisterMetaType().
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
 */
 
 /*! \fn bool QVariant::operator==(const QVariant &v) const
@@ -2962,8 +2964,9 @@ bool QVariant::convert(const int type, void *ptr) const
     type is not the same as this variant's type. See canConvert() for
     a list of possible conversions.
 
-    \warning This function doesn't support custom types registered
-    with qRegisterMetaType().
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
 */
 
 /*!
@@ -2972,8 +2975,61 @@ bool QVariant::convert(const int type, void *ptr) const
     Compares this QVariant with \a v and returns true if they are not
     equal; otherwise returns false.
 
-    \warning This function doesn't support custom types registered
-    with qRegisterMetaType().
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
+*/
+
+/*!
+    \fn bool QVariant::operator<(const QVariant &v) const
+
+    Compares this QVariant with \a v and returns true if this is less than \a v.
+
+    \note Comparability might not be availabe for the type stored in this QVariant
+    or in \a v.
+
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
+*/
+
+/*!
+    \fn bool QVariant::operator<=(const QVariant &v) const
+
+    Compares this QVariant with \a v and returns true if this is less or equal than \a v.
+
+    \note Comparability might not be available for the type stored in this QVariant
+    or in \a v.
+
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
+*/
+
+/*!
+    \fn bool QVariant::operator>(const QVariant &v) const
+
+    Compares this QVariant with \a v and returns true if this is larger than \a v.
+
+    \note Comparability might not be available for the type stored in this QVariant
+    or in \a v.
+
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
+*/
+
+/*!
+    \fn bool QVariant::operator>=(const QVariant &v) const
+
+    Compares this QVariant with \a v and returns true if this is larger or equal than \a v.
+
+    \note Comparability might not be available for the type stored in this QVariant
+    or in \a v.
+
+    \warning To make this function work with a custom type registered with
+    qRegisterMetaType(), its comparison operator must be registered using
+    QMetaType::registerComparators().
 */
 
 static bool qIsNumericType(uint tp)
@@ -2992,6 +3048,7 @@ static bool qIsFloatingPoint(uint tp)
  */
 bool QVariant::cmp(const QVariant &v) const
 {
+    QVariant v1 = *this;
     QVariant v2 = v;
     if (d.type != v2.d.type) {
         if (qIsNumericType(d.type) && qIsNumericType(v.d.type)) {
@@ -3000,10 +3057,63 @@ bool QVariant::cmp(const QVariant &v) const
             else
                 return toLongLong() == v.toLongLong();
         }
-        if (!v2.canConvert(d.type) || !v2.convert(d.type))
+        if (!v2.canConvert(v1.d.type) || !v2.convert(v1.d.type))
             return false;
     }
-    return handlerManager[d.type]->compare(&d, &v2.d);
+    if (v1.d.type >= QMetaType::User) {
+        int result;
+        if (QMetaType::compare(QT_PREPEND_NAMESPACE(constData(v1.d)), QT_PREPEND_NAMESPACE(constData(v2.d)), v1.d.type, &result))
+            return result == 0;
+    }
+    return handlerManager[v1.d.type]->compare(&v1.d, &v2.d);
+}
+
+/*!
+    \internal
+ */
+int QVariant::compare(const QVariant &v) const
+{
+    if (cmp(v))
+        return 0;
+    QVariant v1 = *this;
+    QVariant v2 = v;
+    if (v1.d.type != v2.d.type) {
+        // if both types differ, try to convert
+        if (v2.canConvert(v1.d.type)) {
+            QVariant temp = v2;
+            if (temp.convert(v1.d.type))
+                v2 = temp;
+        }
+        if (v1.d.type != v2.d.type && v1.canConvert(v2.d.type)) {
+            QVariant temp = v1;
+            if (temp.convert(v2.d.type))
+                v1 = temp;
+        }
+        if (v1.d.type != v2.d.type) {
+            // if conversion fails, default to toString
+            return v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
+        }
+    }
+    if (v1.d.type >= QMetaType::User) {
+        int result;
+        if (QMetaType::compare(QT_PREPEND_NAMESPACE(constData(d)), QT_PREPEND_NAMESPACE(constData(v2.d)), d.type, &result))
+            return result;
+    }
+    if (qIsNumericType(v1.d.type)) {
+        if (qIsFloatingPoint(v1.d.type))
+            return v1.toReal() < v2.toReal() ? -1 : 1;
+        else
+            return v1.toLongLong() < v2.toLongLong() ? -1 : 1;
+    }
+    switch (v1.d.type) {
+    case QVariant::Date:
+        return v1.toDate() < v2.toDate() ? -1 : 1;
+    case QVariant::Time:
+        return v1.toTime() < v2.toTime() ? -1 : 1;
+    case QVariant::DateTime:
+        return v1.toDateTime() < v2.toDateTime() ? -1 : 1;
+    }
+    return v1.toString().compare(v2.toString(), Qt::CaseInsensitive);
 }
 
 /*!
@@ -3052,7 +3162,14 @@ QDebug operator<<(QDebug dbg, const QVariant &v)
     dbg.nospace() << "QVariant(";
     if (typeId != QMetaType::UnknownType) {
         dbg.nospace() << QMetaType::typeName(typeId) << ", ";
-        handlerManager[typeId]->debugStream(dbg, v);
+        bool userStream = false;
+        if (typeId >= QMetaType::User)
+            userStream = QMetaType::debugStream(dbg, constData(v.d), typeId);
+        bool canConvertToString = v.canConvert<QString>();
+        if (!userStream && canConvertToString)
+            dbg << v.toString();
+        else if (!userStream)
+            handlerManager[typeId]->debugStream(dbg, v);
     } else {
         dbg.nospace() << "Invalid";
     }

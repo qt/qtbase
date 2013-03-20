@@ -420,38 +420,34 @@ public:
     int alias;
 };
 
-class QMetaTypeConversionRegistry
+template<typename T, typename Key>
+class QMetaTypeFunctionRegistry
 {
 public:
-    typedef QPair<int, int> Key;
-
-    ~QMetaTypeConversionRegistry()
+    ~QMetaTypeFunctionRegistry()
     {
         const QWriteLocker locker(&lock);
         map.clear();
     }
 
-    bool contains(int from, int to) const
+    bool contains(Key k) const
     {
-        const Key k(from, to);
         const QReadLocker locker(&lock);
         return map.contains(k);
     }
 
-    bool insertIfNotContains(int from, int to, const QtPrivate::AbstractConverterFunction *f)
+    bool insertIfNotContains(Key k, const T *f)
     {
-        const Key k(from, to);
         const QWriteLocker locker(&lock);
-        const QtPrivate::AbstractConverterFunction* &fun = map[k];
+        const T* &fun = map[k];
         if (fun != 0)
             return false;
         fun = f;
         return true;
     }
 
-    const QtPrivate::AbstractConverterFunction *function(int from, int to) const
+    const T *function(Key k) const
     {
-        const Key k(from, to);
         const QReadLocker locker(&lock);
         return map.value(k, 0);
     }
@@ -464,8 +460,15 @@ public:
     }
 private:
     mutable QReadWriteLock lock;
-    QHash<Key, const QtPrivate::AbstractConverterFunction *> map;
+    QHash<Key, const T *> map;
 };
+
+typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractConverterFunction,QPair<int,int> >
+QMetaTypeConverterRegistry;
+typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractComparatorFunction,int>
+QMetaTypeComparatorRegistry;
+typedef QMetaTypeFunctionRegistry<QtPrivate::AbstractDebugStreamFunction,int>
+QMetaTypeDebugStreamRegistry;
 
 namespace
 {
@@ -478,7 +481,9 @@ union CheckThatItIsPod
 Q_DECLARE_TYPEINFO(QCustomTypeInfo, Q_MOVABLE_TYPE);
 Q_GLOBAL_STATIC(QVector<QCustomTypeInfo>, customTypes)
 Q_GLOBAL_STATIC(QReadWriteLock, customTypesLock)
-Q_GLOBAL_STATIC(QMetaTypeConversionRegistry, customTypesConversionRegistry)
+Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
+Q_GLOBAL_STATIC(QMetaTypeComparatorRegistry, customTypesComparatorRegistry)
+Q_GLOBAL_STATIC(QMetaTypeDebugStreamRegistry, customTypesDebugStreamRegistry)
 
 /*!
     \fn bool QMetaType::registerConverter()
@@ -512,6 +517,23 @@ Q_GLOBAL_STATIC(QMetaTypeConversionRegistry, customTypesConversionRegistry)
 */
 
 /*!
+    \fn bool QMetaType::registerComparators()
+    \since 5.2
+    Registers comparison operetarors for the user-registered type T. This requires T to have
+    both an operator== and an operator<.
+    Returns true if the registration succeeded, otherwise false.
+*/
+
+#ifndef QT_NO_DEBUG_STREAM
+/*!
+    \fn bool QMetaType::registerDebugStreamOperator()
+    Registers the debug stream operator for the user-registered type T. This requires T to have
+    an operator<<(QDebug dbg, T).
+    Returns true if the registration succeeded, otherwise false.
+*/
+#endif
+
+/*!
     Registers function \a f as converter function from type id \a from to \a to.
     If there's already a conversion registered, this does nothing but deleting \a f.
     Returns true if the registration succeeded, otherwise false.
@@ -520,7 +542,7 @@ Q_GLOBAL_STATIC(QMetaTypeConversionRegistry, customTypesConversionRegistry)
 */
 bool QMetaType::registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to)
 {
-    if (!customTypesConversionRegistry()->insertIfNotContains(from, to, f)) {
+    if (!customTypesConversionRegistry()->insertIfNotContains(qMakePair(from, to), f)) {
         qWarning("Type conversion already registered from type %s to type %s",
                  QMetaType::typeName(from), QMetaType::typeName(to));
         return false;
@@ -538,6 +560,58 @@ void QMetaType::unregisterConverterFunction(int from, int to)
     customTypesConversionRegistry()->remove(from, to);
 }
 
+bool QMetaType::registerComparatorFunction(const QtPrivate::AbstractComparatorFunction *f, int type)
+{
+    if (!customTypesComparatorRegistry()->insertIfNotContains(type, f)) {
+        qWarning("Comparators already registered for type %s", QMetaType::typeName(type));
+        return false;
+    }
+    return true;
+}
+
+/*!
+    \fn bool QMetaType::hasRegisteredComparators()
+    Returns true, if the meta type system has registered comparators for type T.
+    \since 5.2
+ */
+
+/*!
+    Returns true, if the meta type system has registered comparators for type id \a typeId.
+    \since 5.2
+ */
+bool QMetaType::hasRegisteredComparators(int typeId)
+{
+    return customTypesComparatorRegistry()->contains(typeId);
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+bool QMetaType::registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f,
+                                                    int type)
+{
+    if (!customTypesDebugStreamRegistry()->insertIfNotContains(type, f)) {
+        qWarning("Debug stream operator already registered for type %s", QMetaType::typeName(type));
+        return false;
+    }
+    return true;
+}
+
+/*!
+    \fn bool QMetaType::hasRegisteredDebugStreamOperator()
+    Returns true, if the meta type system has a registered debug stream operator for type T.
+    \since 5.2
+ */
+
+/*!
+    Returns true, if the meta type system has a registered debug stream operator for type
+    id \a typeId.
+    \since 5.2
+*/
+bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
+{
+    return customTypesDebugStreamRegistry()->contains(typeId);
+}
+#endif
+
 /*!
     Converts the object at \a from from \a fromTypeId to the preallocated space at \a to
     typed \a toTypeId. Returns true, if the conversion succeeded, otherwise false.
@@ -545,8 +619,42 @@ void QMetaType::unregisterConverterFunction(int from, int to)
 */
 bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
 {
-    const QtPrivate::AbstractConverterFunction * const f = customTypesConversionRegistry()->function(fromTypeId, toTypeId);
+    const QtPrivate::AbstractConverterFunction * const f =
+        customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
     return f && f->convert(f, from, to);
+}
+
+/*!
+    Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
+    \a result is set to less than, equal to or greater than zero, if \a lhs is less than, equal to
+    or greater than \a rhs. Returns true, if the comparison succeeded, otherwiess false.
+    \since 5.2
+*/
+bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
+{
+    const QtPrivate::AbstractComparatorFunction * const f =
+        customTypesComparatorRegistry()->function(typeId);
+    if (!f)
+        return false;
+    if (f->equals(f, lhs, rhs))
+        *result = 0;
+    else
+        *result = f->lessThan(f, lhs, rhs) ? -1 : 1;
+    return true;
+}
+
+/*!
+    Streams the object at \a rhs of type \a typeId to the debug stream \a dbg. Returns true
+    on success, otherwise false.
+    \since 5.2
+*/
+bool QMetaType::debugStream(QDebug& dbg, const void *rhs, int typeId)
+{
+    const QtPrivate::AbstractDebugStreamFunction * const f = customTypesDebugStreamRegistry()->function(typeId);
+    if (!f)
+        return false;
+    f->stream(f, dbg, rhs);
+    return true;
 }
 
 /*!
@@ -563,7 +671,7 @@ bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId
 */
 bool QMetaType::hasRegisteredConverterFunction(int fromTypeId, int toTypeId)
 {
-    return customTypesConversionRegistry()->contains(fromTypeId, toTypeId);
+    return customTypesConversionRegistry()->contains(qMakePair(fromTypeId, toTypeId));
 }
 
 #ifndef QT_NO_DATASTREAM

@@ -43,6 +43,8 @@
 #include <QtCore>
 #include <QtTest/QtTest>
 
+#include "tst_qvariant_common.h"
+
 #ifdef Q_OS_LINUX
 # include <pthread.h>
 #endif
@@ -113,6 +115,9 @@ private slots:
     void constRefs();
     void convertCustomType_data();
     void convertCustomType();
+    void compareCustomType_data();
+    void compareCustomType();
+    void customDebugStream();
 };
 
 struct Foo { int i; };
@@ -1821,7 +1826,7 @@ struct CustomConvertibleType
 {
     explicit CustomConvertibleType(const QVariant &foo = QVariant()) : m_foo(foo) {}
     virtual ~CustomConvertibleType() {}
-    QString toString() const { return QLatin1String("CustomConvertibleType::toString()"); }
+    QString toString() const { return m_foo.toString(); }
     operator QPoint() const { return QPoint(12, 34); }
     template<typename To>
     To convert() const { return s_value.value<To>();}
@@ -1833,6 +1838,8 @@ struct CustomConvertibleType
     static bool s_ok;
 };
 
+bool operator<(const CustomConvertibleType &lhs, const CustomConvertibleType &rhs)
+{ return lhs.m_foo < rhs.m_foo; }
 bool operator==(const CustomConvertibleType &lhs, const CustomConvertibleType &rhs)
 { return lhs.m_foo == rhs.m_foo; }
 bool operator!=(const CustomConvertibleType &lhs, const CustomConvertibleType &rhs)
@@ -1851,6 +1858,16 @@ struct CustomConvertibleType2
     QVariant m_foo;
 };
 
+struct CustomDebugStreamableType
+{
+    QString toString() const { return "test"; }
+};
+
+QDebug operator<<(QDebug dbg, const CustomDebugStreamableType&)
+{
+    return dbg << "string-content";
+}
+
 bool operator==(const CustomConvertibleType2 &lhs, const CustomConvertibleType2 &rhs)
 { return lhs.m_foo == rhs.m_foo; }
 bool operator!=(const CustomConvertibleType2 &lhs, const CustomConvertibleType2 &rhs)
@@ -1858,6 +1875,7 @@ bool operator!=(const CustomConvertibleType2 &lhs, const CustomConvertibleType2 
 
 Q_DECLARE_METATYPE(CustomConvertibleType);
 Q_DECLARE_METATYPE(CustomConvertibleType2);
+Q_DECLARE_METATYPE(CustomDebugStreamableType);
 
 template<typename T, typename U>
 U convert(const T &t)
@@ -2095,6 +2113,73 @@ void tst_QMetaType::convertCustomType()
     v = QVariant::fromValue(testCustom);
     QVERIFY(v.canConvert(::qMetaTypeId<CustomConvertibleType2>()));
     QCOMPARE(v.value<CustomConvertibleType2>().m_foo, testCustom.m_foo);
+}
+
+void tst_QMetaType::compareCustomType_data()
+{
+    QMetaType::registerComparators<CustomConvertibleType>();
+
+    QTest::addColumn<QVariantList>("unsorted");
+    QTest::addColumn<QVariantList>("sorted");
+
+    QTest::newRow("int") << (QVariantList() << 37 << 458 << 1 << 243 << -4 << 383)
+                         << (QVariantList() << -4 << 1 << 37 << 243 << 383 << 458);
+
+    QTest::newRow("dobule") << (QVariantList() << 4934.93 << 0.0 << 302.39 << -39.0)
+                            << (QVariantList() << -39.0 << 0.0 << 302.39 << 4934.93);
+
+    QTest::newRow("QString") << (QVariantList() << "Hello" << "World" << "this" << "is" << "a" << "test")
+                             << (QVariantList() << "a" << "Hello" << "is" << "test" << "this" << "World");
+
+    QTest::newRow("QTime") << (QVariantList() << QTime(14, 39) << QTime(0, 0) << QTime(18, 18) << QTime(9, 27))
+                           << (QVariantList() << QTime(0, 0) << QTime(9, 27) << QTime(14, 39) << QTime(18, 18));
+
+    QTest::newRow("QDate") << (QVariantList() << QDate(2013, 3, 23) << QDate(1900, 12, 1) << QDate(2001, 2, 2) << QDate(1982, 12, 16))
+                           << (QVariantList() << QDate(1900, 12, 1) << QDate(1982, 12, 16) << QDate(2001, 2, 2) << QDate(2013, 3, 23));
+
+    QTest::newRow("mixed")   << (QVariantList() << "Hello" << "World" << QChar('a') << 38 << QChar('z') << -39 << 4.6)
+                             << (QVariantList() << -39 << 4.6 << 38 << QChar('a') << "Hello" << "World" << QChar('z'));
+
+    QTest::newRow("custom") << (QVariantList() << QVariant::fromValue(CustomConvertibleType(1)) << QVariant::fromValue(CustomConvertibleType(100)) << QVariant::fromValue(CustomConvertibleType(50)))
+                            << (QVariantList() << QVariant::fromValue(CustomConvertibleType(1)) << QVariant::fromValue(CustomConvertibleType(50)) << QVariant::fromValue(CustomConvertibleType(100)));
+}
+
+void tst_QMetaType::compareCustomType()
+{
+    QFETCH(QVariantList, unsorted);
+    QFETCH(QVariantList, sorted);
+    qSort(unsorted);
+    QCOMPARE(unsorted, sorted);
+}
+
+struct MessageHandlerCustom : public MessageHandler
+{
+    MessageHandlerCustom(const int typeId)
+        : MessageHandler(typeId, handler)
+    {}
+    static void handler(QtMsgType, const QMessageLogContext &, const QString &msg)
+    {
+        QCOMPARE(msg.trimmed(), expectedMessage.trimmed());
+    }
+    static QString expectedMessage;
+};
+
+QString MessageHandlerCustom::expectedMessage;
+
+void tst_QMetaType::customDebugStream()
+{
+    MessageHandlerCustom handler(::qMetaTypeId<CustomDebugStreamableType>());
+    QVariant v1 = QVariant::fromValue(CustomDebugStreamableType());
+    handler.expectedMessage = "QVariant(CustomDebugStreamableType, )";
+    qDebug() << v1;
+
+    QMetaType::registerConverter<CustomDebugStreamableType, QString>(&CustomDebugStreamableType::toString);
+    handler.expectedMessage = "QVariant(CustomDebugStreamableType, \"test\")";
+    qDebug() << v1;
+
+    QMetaType::registerDebugStreamOperator<CustomDebugStreamableType>();
+    handler.expectedMessage = "QVariant(CustomDebugStreamableType, string-content)";
+    qDebug() << v1;
 }
 
 // Compile-time test, it should be possible to register function pointer types

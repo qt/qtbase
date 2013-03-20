@@ -222,6 +222,74 @@ To convertImplicit(const From& from)
     return from;
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+struct AbstractDebugStreamFunction
+{
+    typedef void (*Stream)(const AbstractDebugStreamFunction *, QDebug&, const void *);
+    typedef void (*Destroy)(AbstractDebugStreamFunction *);
+    explicit AbstractDebugStreamFunction(Stream s = 0, Destroy d = 0)
+        : stream(s), destroy(d) {}
+    Q_DISABLE_COPY(AbstractDebugStreamFunction)
+    Stream stream;
+    Destroy destroy;
+};
+
+template<typename T>
+struct BuiltInDebugStreamFunction : public AbstractDebugStreamFunction
+{
+    BuiltInDebugStreamFunction()
+        : AbstractDebugStreamFunction(stream, destroy) {}
+    static void stream(const AbstractDebugStreamFunction *, QDebug& dbg, const void *r)
+    {
+        const T *rhs = static_cast<const T *>(r);
+        operator<<(dbg, *rhs);
+    }
+
+    static void destroy(AbstractDebugStreamFunction *_this)
+    {
+        delete static_cast<BuiltInDebugStreamFunction *>(_this);
+    }
+};
+#endif
+
+struct AbstractComparatorFunction
+{
+    typedef bool (*LessThan)(const AbstractComparatorFunction *, const void *, const void *);
+    typedef bool (*Equals)(const AbstractComparatorFunction *, const void *, const void *);
+    typedef void (*Destroy)(AbstractComparatorFunction *);
+    explicit AbstractComparatorFunction(LessThan lt = 0, Equals e = 0, Destroy d = 0)
+        : lessThan(lt), equals(e), destroy(d) {}
+    Q_DISABLE_COPY(AbstractComparatorFunction)
+    LessThan lessThan;
+    Equals equals;
+    Destroy destroy;
+};
+
+template<typename T>
+struct BuiltInComparatorFunction : public AbstractComparatorFunction
+{
+    BuiltInComparatorFunction()
+        : AbstractComparatorFunction(lessThan, equals, destroy) {}
+    static bool lessThan(const AbstractComparatorFunction *, const void *l, const void *r)
+    {
+        const T *lhs = static_cast<const T *>(l);
+        const T *rhs = static_cast<const T *>(r);
+        return *lhs < *rhs;
+    }
+
+    static bool equals(const AbstractComparatorFunction *, const void *l, const void *r)
+    {
+        const T *lhs = static_cast<const T *>(l);
+        const T *rhs = static_cast<const T *>(r);
+        return *lhs == *rhs;
+    }
+
+    static void destroy(AbstractComparatorFunction *_this)
+    {
+        delete static_cast<BuiltInComparatorFunction *>(_this);
+    }
+};
+
 struct AbstractConverterFunction
 {
     typedef bool (*Converter)(const AbstractConverterFunction *, const void *, void*);
@@ -437,6 +505,43 @@ public:
     inline void destruct(void *data) const;
 
 public:
+    template<typename T>
+    static bool registerComparators()
+    {
+        Q_STATIC_ASSERT_X((!QMetaTypeId2<T>::IsBuiltIn),
+            "QMetaType::registerComparators: The type must be a custom type.");
+
+        const int typeId = qMetaTypeId<T>();
+        static const QtPrivate::BuiltInComparatorFunction<T> f;
+        return registerComparatorFunction( &f, typeId);
+    }
+    template<typename T>
+    static bool hasRegisteredComparators()
+    {
+        return hasRegisteredComparators(qMetaTypeId<T>());
+    }
+    static bool hasRegisteredComparators(int typeId);
+
+
+#ifndef QT_NO_DEBUG_STREAM
+    template<typename T>
+    static bool registerDebugStreamOperator()
+    {
+        Q_STATIC_ASSERT_X((!QMetaTypeId2<T>::IsBuiltIn),
+            "QMetaType::registerDebugStreamOperator: The type must be a custom type.");
+
+        const int typeId = qMetaTypeId<T>();
+        static const QtPrivate::BuiltInDebugStreamFunction<T> f;
+        return registerDebugStreamOperatorFunction(&f, typeId);
+    }
+    template<typename T>
+    static bool hasRegisteredDebugStreamOperator()
+    {
+        return hasRegisteredDebugStreamOperator(qMetaTypeId<T>());
+    }
+    static bool hasRegisteredDebugStreamOperator(int typeId);
+#endif
+
     // implicit conversion supported like double -> float
     template<typename From, typename To>
     static bool registerConverter()
@@ -490,6 +595,8 @@ public:
 #endif
 
     static bool convert(const void *from, int fromTypeId, void *to, int toTypeId);
+    static bool compare(const void *lhs, const void *rhs, int typeId, int* result);
+    static bool debugStream(QDebug& dbg, const void *rhs, int typeId);
 
     template<typename From, typename To>
     static bool hasRegisteredConverterFunction()
@@ -526,6 +633,11 @@ private:
     void destroyExtended(void *data) const;
     void *constructExtended(void *where, const void *copy = 0) const;
     void destructExtended(void *data) const;
+
+    static bool registerComparatorFunction(const QtPrivate::AbstractComparatorFunction *f, int type);
+#ifndef QT_NO_DEBUG_STREAM
+    static bool registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f, int type);
+#endif
 
 #ifndef Q_NO_TEMPLATE_FRIENDS
 #ifndef Q_QDOC

@@ -433,6 +433,14 @@ class Q_CORE_EXPORT QVariant
     { return cmp(v); }
     inline bool operator!=(const QVariant &v) const
     { return !cmp(v); }
+    inline bool operator<(const QVariant &v) const
+    { return compare(v) < 0; }
+    inline bool operator<=(const QVariant &v) const
+    { return compare(v) <= 0; }
+    inline bool operator>(const QVariant &v) const
+    { return compare(v) > 0; }
+    inline bool operator>=(const QVariant &v) const
+    { return compare(v) >= 0; }
 
 protected:
     friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
@@ -450,6 +458,7 @@ public:
     Private d;
     void create(int type, const void *copy);
     bool cmp(const QVariant &other) const;
+    int compare(const QVariant &other) const;
     bool convert(const int t, void *ptr) const;
 
 private:
