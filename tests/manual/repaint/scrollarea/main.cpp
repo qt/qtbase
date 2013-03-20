@@ -42,7 +42,6 @@
 #include <QtWidgets>
 #include "../shared/shared.h"
 
-
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -57,8 +56,7 @@ int main(int argc, char **argv)
 
     scrollView.resize(600, 400);
     scrollView.show();
-    
-    
+
     return app.exec();
 }
 

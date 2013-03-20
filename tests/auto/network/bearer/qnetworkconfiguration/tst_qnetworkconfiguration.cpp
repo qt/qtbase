@@ -96,7 +96,7 @@ void tst_QNetworkConfiguration::invalidPoint()
 void tst_QNetworkConfiguration::comparison()
 {
     //test copy constructor and assignment operator
-    //compare invalid connection points 
+    //compare invalid connection points
     QNetworkConfiguration pt1;
     QVERIFY(!pt1.isValid());
     QVERIFY(pt1.type() == QNetworkConfiguration::Invalid);
@@ -110,7 +110,7 @@ void tst_QNetworkConfiguration::comparison()
     QVERIFY(pt1.state() == pt2.state());
     QVERIFY(pt1.purpose() == pt2.purpose());
 
-    
+
     QNetworkConfiguration pt3;
     pt3 = pt1;
     QVERIFY(pt1==pt3);
@@ -170,12 +170,12 @@ void tst_QNetworkConfiguration::isRoamingAvailable()
 {
     QNetworkConfigurationManager manager;
     QList<QNetworkConfiguration> configs = manager.allConfigurations();
-    
+
     //force update to get maximum list
     QSignalSpy spy(&manager, SIGNAL(updateCompleted()));
     manager.updateConfigurations(); //initiate scans
     QTRY_VERIFY_WITH_TIMEOUT(spy.count() == 1, TestTimeOut); //wait for scan to complete
-    
+
     foreach(QNetworkConfiguration c, configs)
     {
         QVERIFY(QNetworkConfiguration::UserChoice != c.type());

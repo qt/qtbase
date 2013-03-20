@@ -50,8 +50,6 @@
 #include <QHash>
 #include <QSocketNotifier>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QEvdevMouseManager : public QObject
@@ -78,8 +76,6 @@ private:
     int m_xoffset;
     int m_yoffset;
 };
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 

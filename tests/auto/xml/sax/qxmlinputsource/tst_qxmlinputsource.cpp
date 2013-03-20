@@ -72,7 +72,7 @@ private slots:
 void tst_QXmlInputSource::reset() const
 {
     const QString input(QString::fromLatin1("<element attribute1='value1' attribute2='value2'/>"));
-   
+
     QXmlSimpleReader reader;
     QXmlDefaultHandler handler;
     reader.setContentHandler(&handler);
@@ -100,7 +100,7 @@ void tst_QXmlInputSource::reset() const
 void tst_QXmlInputSource::resetSimplified() const
 {
     const QString input(QString::fromLatin1("<element/>"));
-   
+
     QXmlSimpleReader reader;
 
     QXmlInputSource source;

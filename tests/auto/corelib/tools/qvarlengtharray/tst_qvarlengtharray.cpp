@@ -58,6 +58,7 @@ private slots:
     void count();
     void first();
     void last();
+    void squeeze();
 };
 
 int fooCtor = 0;
@@ -651,6 +652,29 @@ void tst_QVarLengthArray::last()
     list.removeLast();
     QCOMPARE(list.last(), 27);
     QCOMPARE(list.length(), 1);
+}
+
+void tst_QVarLengthArray::squeeze()
+{
+    QVarLengthArray<int> list;
+    int sizeOnStack = list.capacity();
+    int sizeOnHeap = sizeOnStack * 2;
+    list.resize(0);
+    QCOMPARE(list.capacity(), sizeOnStack);
+    list.resize(sizeOnHeap);
+    QCOMPARE(list.capacity(), sizeOnHeap);
+    list.resize(sizeOnStack);
+    QCOMPARE(list.capacity(), sizeOnHeap);
+    list.resize(0);
+    QCOMPARE(list.capacity(), sizeOnHeap);
+    list.squeeze();
+    QCOMPARE(list.capacity(), sizeOnStack);
+    list.resize(sizeOnStack);
+    list.squeeze();
+    QCOMPARE(list.capacity(), sizeOnStack);
+    list.resize(sizeOnHeap);
+    list.squeeze();
+    QCOMPARE(list.capacity(), sizeOnHeap);
 }
 
 QTEST_APPLESS_MAIN(tst_QVarLengthArray)

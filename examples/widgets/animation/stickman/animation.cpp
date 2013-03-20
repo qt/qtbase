@@ -45,13 +45,13 @@
 #include <QIODevice>
 #include <QDataStream>
 
-class Frame 
+class Frame
 {
 public:
     Frame() {
     }
 
-    int nodeCount() const 
+    int nodeCount() const
     {
         return m_nodePositions.size();
     }
@@ -70,7 +70,7 @@ public:
     {
         m_nodePositions[idx] = pos;
     }
-    
+
 private:
     QVector<QPointF> m_nodePositions;
 };
@@ -81,7 +81,7 @@ Animation::Animation()
     m_frames.append(new Frame);
 }
 
-Animation::~Animation() 
+Animation::~Animation()
 {
     qDeleteAll(m_frames);
 }
@@ -89,10 +89,10 @@ Animation::~Animation()
 void Animation::setTotalFrames(int totalFrames)
 {
     while (m_frames.size() < totalFrames)
-        m_frames.append(new Frame);    
+        m_frames.append(new Frame);
 
     while (totalFrames < m_frames.size())
-        delete m_frames.takeLast();    
+        delete m_frames.takeLast();
 }
 
 int Animation::totalFrames() const
@@ -165,15 +165,15 @@ void Animation::load(QIODevice *device)
 
     QDataStream stream(device);
     stream >> m_name;
-    
+
     int frameCount;
     stream >> frameCount;
 
     for (int i=0; i<frameCount; ++i) {
-        
+
         int nodeCount;
         stream >> nodeCount;
-        
+
         Frame *frame = new Frame;
         frame->setNodeCount(nodeCount);
 

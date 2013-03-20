@@ -47,6 +47,14 @@ incredibuild_xge {
     CONFIG = incredibuild_xge $$CONFIG
 }
 
+silent {
+    # Ensure that we process silent.prf last, as it will mangle QMAKE_CXX
+    # and friends in a way that some of the other features (sdk.prf and
+    # simd.prf eg) do not handle.
+    CONFIG -= silent
+    CONFIG = silent $$CONFIG
+}
+
 force_debug_info:win32 {
     load(resolve_target)
     QMAKE_CLEAN += $$replace(QMAKE_RESOLVED_TARGET, ...$, pdb)  # for the debug case it is hardcoded in qmake

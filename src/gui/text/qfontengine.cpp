@@ -135,7 +135,7 @@ static HB_Fixed hb_getFontMetric(HB_Font font, HB_FontMetric metric)
     return 0;
 }
 
-HB_Error QFontEngine::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
+int QFontEngine::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
     Q_UNUSED(glyph)
     Q_UNUSED(flags)
@@ -149,7 +149,7 @@ HB_Error QFontEngine::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 poi
 static HB_Error hb_getPointInOutline(HB_Font font, HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
 {
     QFontEngine *fe = (QFontEngine *)font->userData;
-    return fe->getPointInOutline(glyph, flags, point, xpos, ypos, nPoints);
+    return (HB_Error)fe->getPointInOutline(glyph, flags, point, (QFixed *)xpos, (QFixed *)ypos, (quint32 *)nPoints);
 }
 
 static const HB_FontClass hb_fontClass = {
@@ -165,27 +165,80 @@ static HB_Error hb_getSFntTable(void *font, HB_Tag tableTag, HB_Byte *buffer, HB
     return HB_Err_Ok;
 }
 
+static void hb_freeFace(void *face)
+{
+    qHBFreeFace((HB_Face)face);
+}
+
+
+#ifdef QT_BUILD_INTERNAL
+// for testing purpose only, not thread-safe!
+static QList<QFontEngine *> *enginesCollector = 0;
+
+Q_AUTOTEST_EXPORT void QFontEngine_startCollectingEngines()
+{
+    delete enginesCollector;
+    enginesCollector = new QList<QFontEngine *>();
+}
+
+Q_AUTOTEST_EXPORT QList<QFontEngine *> QFontEngine_stopCollectingEngines()
+{
+    Q_ASSERT(enginesCollector);
+    QList<QFontEngine *> ret = *enginesCollector;
+    delete enginesCollector;
+    enginesCollector = 0;
+    return ret;
+}
+#endif // QT_BUILD_INTERNAL
+
+
 // QFontEngine
 
 QFontEngine::QFontEngine()
-    : QObject(), ref(0)
+    : QObject(), ref(0),
+      font_(0), font_destroy_func(0),
+      face_(0), face_destroy_func(0)
 {
-    cache_count = 0;
     fsType = 0;
     symbol = false;
-    memset(&hbFont, 0, sizeof(hbFont));
-    hbFont.klass = &hb_fontClass;
-    hbFont.userData = this;
 
-    hbFace = 0;
+    {
+        HB_FontRec *hbFont = (HB_FontRec *) malloc(sizeof(HB_FontRec));
+        Q_CHECK_PTR(hbFont);
+        memset(hbFont, 0, sizeof(HB_FontRec));
+        hbFont->klass = &hb_fontClass;
+        hbFont->userData = this;
+
+        font_ = (void *)hbFont;
+        font_destroy_func = free;
+    }
+
     glyphFormat = -1;
     m_subPixelPositionCount = 0;
+
+#ifdef QT_BUILD_INTERNAL
+    if (enginesCollector)
+        enginesCollector->append(this);
+#endif
 }
 
 QFontEngine::~QFontEngine()
 {
     m_glyphCaches.clear();
-    qHBFreeFace(hbFace);
+
+    if (font_ && font_destroy_func) {
+        font_destroy_func(font_);
+        font_ = 0;
+    }
+    if (face_ && face_destroy_func) {
+        face_destroy_func(face_);
+        face_ = 0;
+    }
+
+#ifdef QT_BUILD_INTERNAL
+    if (enginesCollector)
+        enginesCollector->removeOne(this);
+#endif
 }
 
 QFixed QFontEngine::lineThickness() const
@@ -206,34 +259,37 @@ QFixed QFontEngine::underlinePosition() const
     return ((lineThickness() * 2) + 3) / 6;
 }
 
-HB_Font QFontEngine::harfbuzzFont() const
+void *QFontEngine::harfbuzzFont() const
 {
-    if (!hbFont.x_ppem) {
+    HB_FontRec *hbFont = (HB_FontRec *)font_;
+    if (!hbFont->x_ppem) {
         QFixed emSquare = emSquareSize();
-        hbFont.x_ppem = fontDef.pixelSize;
-        hbFont.y_ppem = fontDef.pixelSize * fontDef.stretch / 100;
-        hbFont.x_scale = (QFixed(hbFont.x_ppem * (1 << 16)) / emSquare).value();
-        hbFont.y_scale = (QFixed(hbFont.y_ppem * (1 << 16)) / emSquare).value();
+        hbFont->x_ppem = fontDef.pixelSize;
+        hbFont->y_ppem = fontDef.pixelSize * fontDef.stretch / 100;
+        hbFont->x_scale = (QFixed(hbFont->x_ppem * (1 << 16)) / emSquare).value();
+        hbFont->y_scale = (QFixed(hbFont->y_ppem * (1 << 16)) / emSquare).value();
     }
-    return &hbFont;
+    return font_;
 }
 
-HB_Face QFontEngine::harfbuzzFace() const
+void *QFontEngine::harfbuzzFace() const
 {
-    if (!hbFace) {
-        hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
+    if (!face_) {
+        HB_Face hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
         Q_CHECK_PTR(hbFace);
+        if (hbFace->font_for_init != 0)
+            hbFace = qHBLoadFace(hbFace);
+
+        face_ = (void *)hbFace;
+        face_destroy_func = hb_freeFace;
     }
-    return hbFace;
+    return face_;
 }
 
-HB_Face QFontEngine::initializedHarfbuzzFace() const
+bool QFontEngine::supportsScript(QChar::Script script) const
 {
-    HB_Face face = harfbuzzFace();
-    if (face != 0 && face->font_for_init != 0)
-        face = qHBLoadFace(face);
-
-    return face;
+    HB_Face hbFace = (HB_Face)harfbuzzFace();
+    return hbFace->supported_scripts[script_to_hbscript(script)];
 }
 
 glyph_metrics_t QFontEngine::boundingBox(glyph_t glyph, const QTransform &matrix)
@@ -268,9 +324,9 @@ QFixed QFontEngine::averageCharWidth() const
     return bb.xoff;
 }
 
-bool QFontEngine::supportsTransformations(const QTransform &transform) const
+bool QFontEngine::supportsTransformation(const QTransform &transform) const
 {
-    return (transform.type() >= QTransform::TxProject);
+    return transform.type() < QTransform::TxProject;
 }
 
 void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform &matrix, QTextItem::RenderFlags flags,
@@ -647,6 +703,13 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition
     }
 
     return rgbMask;
+}
+
+QImage QFontEngine::bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform&)
+{
+    Q_UNUSED(subPixelPosition);
+
+    return QImage();
 }
 
 QFixed QFontEngine::subPixelPositionForX(QFixed x) const
@@ -1194,7 +1257,7 @@ bool QFontEngineBox::stringToCMap(const QChar *, int len, QGlyphLayout *glyphs, 
         return false;
     }
 
-    memset(glyphs->glyphs, 0, len * sizeof(HB_Glyph));
+    memset(glyphs->glyphs, 0, len * sizeof(glyph_t));
 
     *nglyphs = len;
     glyphs->numGlyphs = len;
@@ -1352,11 +1415,8 @@ QFontEngineMulti::~QFontEngineMulti()
 {
     for (int i = 0; i < engines.size(); ++i) {
         QFontEngine *fontEngine = engines.at(i);
-        if (fontEngine) {
-            fontEngine->ref.deref();
-            if (fontEngine->cache_count == 0 && fontEngine->ref.load() == 0)
-                delete fontEngine;
-        }
+        if (fontEngine && !fontEngine->ref.deref())
+            delete fontEngine;
     }
 }
 

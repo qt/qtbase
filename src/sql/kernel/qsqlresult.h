@@ -46,8 +46,6 @@
 #include <QtCore/qvector.h>
 #include <QtSql/qsql.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -61,9 +59,9 @@ class QSqlResultPrivate;
 
 class Q_SQL_EXPORT QSqlResult
 {
+    Q_DECLARE_PRIVATE(QSqlResult)
     friend class QSqlQuery;
     friend class QSqlTableModelPrivate;
-    friend class QSqlResultPrivate;
 
 public:
     virtual ~QSqlResult();
@@ -76,6 +74,7 @@ protected:
     };
 
     explicit QSqlResult(const QSqlDriver * db);
+    QSqlResult(QSqlResultPrivate &dd, const QSqlDriver *db);
     int at() const;
     QString lastQuery() const;
     QSqlError lastError() const;
@@ -134,15 +133,12 @@ protected:
     virtual bool nextResult();
     void resetBindCount(); // HACK
 
-private:
-    QSqlResultPrivate* d;
+    QSqlResultPrivate *d_ptr;
 
 private:
     Q_DISABLE_COPY(QSqlResult)
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSQLRESULT_H

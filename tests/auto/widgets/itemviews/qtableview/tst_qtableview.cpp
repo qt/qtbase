@@ -437,6 +437,7 @@ public:
                      this, SLOT(itemSelectionChanged(QItemSelection,QItemSelection)));
     }
 
+    // enum CursorAction and moveCursor() are protected in QTableView.
     enum CursorAction {
         MoveUp       = QAbstractItemView::MoveUp,
         MoveDown     = QAbstractItemView::MoveDown,
@@ -450,7 +451,7 @@ public:
         MovePrevious = QAbstractItemView::MovePrevious
     };
 
-    QModelIndex moveCursor(QtTestTableView::CursorAction cursorAction,
+    QModelIndex doMoveCursor(QtTestTableView::CursorAction cursorAction,
                            Qt::KeyboardModifiers modifiers)
     {
         return QTableView::moveCursor((QAbstractItemView::CursorAction)cursorAction, modifiers);
@@ -1192,7 +1193,7 @@ void tst_QTableView::moveCursor()
     QModelIndex index = model.index(startRow, startColumn);
     view.setCurrentIndex(index);
 
-    QModelIndex newIndex = view.moveCursor((QtTestTableView::CursorAction)cursorMoveAction,
+    QModelIndex newIndex = view.doMoveCursor((QtTestTableView::CursorAction)cursorMoveAction,
                                            (Qt::KeyboardModifiers)modifier);
     // expected fails, task 119433
     if(newIndex.row() == -1)
@@ -1339,7 +1340,7 @@ void tst_QTableView::moveCursorStrikesBack()
     int newRow = -1;
     int newColumn = -1;
     foreach (int cursorMoveAction, cursorMoveActions) {
-        QModelIndex newIndex = view.moveCursor((QtTestTableView::CursorAction)cursorMoveAction, 0);
+        QModelIndex newIndex = view.doMoveCursor((QtTestTableView::CursorAction)cursorMoveAction, 0);
         view.setCurrentIndex(newIndex);
         newRow = newIndex.row();
         newColumn = newIndex.column();

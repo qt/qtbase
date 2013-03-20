@@ -552,7 +552,7 @@ void Widget::replaceFunction()
     //! [86]
     QString equis = "xxxxxx";
     equis.replace("xx", "x");
-    // equis == "xxx"    
+    // equis == "xxx"
     //! [86]
 
     //! [87]

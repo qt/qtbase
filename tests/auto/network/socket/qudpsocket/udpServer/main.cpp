@@ -68,10 +68,10 @@ private slots:
         qint64 bytes = serverSocket.readDatagram(data, sizeof(data), &senderAddress, &senderPort);
         if (bytes == 1 && data[0] == '\0')
             QCoreApplication::instance()->quit();
-        
+
         for (int i = 0; i < bytes; ++i)
             data[i] += 1;
-        serverSocket.writeDatagram(data, bytes, senderAddress, senderPort);        
+        serverSocket.writeDatagram(data, bytes, senderAddress, senderPort);
     }
 
 private:
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     QCoreApplication app(argc, argv);
 
     Server server(app.arguments().at(1).toInt());
-    
+
     return app.exec();
 }
 

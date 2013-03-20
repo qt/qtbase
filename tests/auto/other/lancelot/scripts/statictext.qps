@@ -50,7 +50,25 @@ save
     drawStaticText 0 80 "scaled sansserif 10pt, bold italic"
   restore
 
-  translate 0 100
+  translate 200 200
+  setPen black
+  save
+    scale -1 -1
+
+    setFont "sansserif" 10 normal
+    drawStaticText 0 20 "flipped sansserif 10pt, normal"
+
+    setFont "sansserif" 12 normal
+    drawStaticText 0 40 "flipped sansserif 12pt, normal"
+
+    setFont "sansserif" 10 bold
+    drawStaticText 0 60 "flipped sansserif 12pt, bold"
+
+    setFont "sansserif" 10 bold italic
+    drawStaticText 0 80 "flipped sansserif 10pt, bold italic"
+  restore
+
+  translate -200 20
   setPen black
   save
     translate 200 90
@@ -91,26 +109,26 @@ restore
 end_block
 
 translate 250 0
-drawStaticText 25 520 "clipped to rectangle"
+drawStaticText 25 640 "clipped to rectangle"
 save
   setPen #3f000000
   setBrush nobrush
-  drawRect 20 0 100 500
-  setClipRect 20 0 100 500
+  drawRect 20 0 100 620
+  setClipRect 20 0 100 620
   setPen black
   repeat_block text_drawing
 restore
 
 translate 150 0
-drawStaticText 25 520 "clipped to path"
+drawStaticText 25 640 "clipped to path"
 save
   path_moveTo clip 20 0
   path_cubicTo clip 0 200  40 400  20 400
-  path_lineTo clip 30 500
+  path_lineTo clip 30 620
   path_lineTo clip 30 0
   path_lineTo clip 40 0
-  path_lineTo clip 40 500
-  path_lineTo clip 120 500
+  path_lineTo clip 40 620
+  path_lineTo clip 120 620
   path_lineTo clip 120 0
   path_lineTo clip 20 0
   setPen #3f000000

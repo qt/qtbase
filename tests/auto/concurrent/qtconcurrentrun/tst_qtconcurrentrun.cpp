@@ -137,10 +137,10 @@ public:
 void tst_QtConcurrentRun::returnValue()
 {
     QFuture<int> f;
-    
+
     f = run(returnInt0);
     QCOMPARE(f.result(), 10);
-    
+
     A a;
     f = run(&a, &A::member0);
     QCOMPARE(f.result(), 10);
@@ -214,7 +214,7 @@ void tst_QtConcurrentRun::functionObject()
 {
     QFuture<void> f;
     TestClass c;
-    
+
     f = run(c);
     f = run(&c);
     f = run(c, 10);

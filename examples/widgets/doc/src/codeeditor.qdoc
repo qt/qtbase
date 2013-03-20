@@ -60,7 +60,7 @@
 
     We will now move on to the definitions and implementations of \c
     CodeEditor and \c LineNumberArea. Let's start with the \c
-    LineNumberArea class. 
+    LineNumberArea class.
 
     \section1 The LineNumberArea Class
 
@@ -130,7 +130,7 @@
     \snippet widgets/codeeditor/codeeditor.cpp resizeEvent
 
     When the size of the editor changes, we also need to resize the
-    line number area. 
+    line number area.
 
     \snippet widgets/codeeditor/codeeditor.cpp cursorPositionChanged
 
@@ -155,7 +155,7 @@
 
     The \c lineNumberAreaPaintEvent() is called from \c LineNumberArea
     whenever it receives a paint event. We start off by painting the
-    widget's background. 
+    widget's background.
 
     \snippet widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_1
 
@@ -163,11 +163,11 @@
     numbers in the extra area for each line. Notice that in a plain
     text edit each line will consist of one QTextBlock; though, if
     line wrapping is enabled, a line may span several rows in the text
-    edit's viewport. 
+    edit's viewport.
 
     We get the top and bottom y-coordinate of the first text block,
     and adjust these values by the height of the current text block in
-    each iteration in the loop. 
+    each iteration in the loop.
 
     \snippet widgets/codeeditor/codeeditor.cpp extraAreaPaintEvent_2
 
@@ -183,7 +183,7 @@
 
     In addition to line numbers, you can add more to the extra area,
     for instance, break points.
-        
+
     QSyntaxHighlighter gives the possibility to add user data to each
     text block with
     \l{QSyntaxHighlighter::}{setCurrentBlockUserData()}. This can be

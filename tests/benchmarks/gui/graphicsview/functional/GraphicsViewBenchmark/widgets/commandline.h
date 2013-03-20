@@ -44,7 +44,7 @@
 
 #include "settings.h"
 
-bool readSettingsFromCommandLine(int argc, 
+bool readSettingsFromCommandLine(int argc,
                                  char *argv[],
                                  Settings& settings);
 

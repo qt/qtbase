@@ -223,6 +223,7 @@ public:
     ~QThreadData();
 
     static QThreadData *current();
+    static void clearCurrentThreadData();
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
        tray specification, including recent versions of KDE and GNOME.
     \li All supported versions of Mac OS X. Note that the Growl
        notification system must be installed for
-       QSystemTrayIcon::showMessage() to display messages.
+       QSystemTrayIcon::showMessage() to display messages on Mac OS X prior to 10.8 (Mountain Lion).
     \endlist
 
     To check whether a system tray is present on the user's desktop,
@@ -379,7 +379,7 @@ bool QSystemTrayIcon::supportsMessages()
 
     On Mac OS X, the Growl notification system must be installed for this function to
     display messages.
- 
+
     \sa show(), supportsMessages()
   */
 void QSystemTrayIcon::showMessage(const QString& title, const QString& msg,

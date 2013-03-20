@@ -49,7 +49,7 @@
 class TableModel : public QAbstractTableModel
 {
     Q_OBJECT
-    
+
 public:
     TableModel(QObject *parent = 0);
     TableModel(QList<QPair<QString, QString> > listofPairs, QObject *parent = 0);

@@ -116,6 +116,8 @@ public:
     bool setMouseGrabEnabled(bool grab);
     QMargins frameMargins() const;
 
+    void requestActivateWindow();
+
     WId winId() const;
     void setParent(const QPlatformWindow *window);
 
@@ -158,6 +160,8 @@ protected:
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
     void syncWindowState(Qt::WindowState newState);
+
+    void updateOpaque();
 
 // private:
 public: // for QNSView

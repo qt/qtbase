@@ -2226,12 +2226,12 @@ int mapper(const int &i)
 void tst_QtConcurrentMap::incrementalResults()
 {
     const int count = 200;
-    QList<int> ints; 
+    QList<int> ints;
     for (int i=0; i < count; ++i)
         ints << i;
 
     QFuture<int> future = QtConcurrent::mapped(ints, mapper);
-    
+
     QList<int> results;
 
     while (future.isFinished() == false) {
@@ -2311,7 +2311,7 @@ void tst_QtConcurrentMap::stlContainers()
     QCOMPARE(list2.size(), (std::vector<int>::size_type)(2));
 
     QtConcurrent::mapped(list, mapper).waitForFinished();
-    
+
     QtConcurrent::blockingMap(list, multiplyBy2Immutable);
 }
 

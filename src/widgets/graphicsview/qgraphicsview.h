@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -46,8 +46,6 @@
 #include <QtGui/qpainter.h>
 #include <QtWidgets/qscrollarea.h>
 #include <QtWidgets/qgraphicsscene.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -148,6 +146,7 @@ public:
 #ifndef QT_NO_RUBBERBAND
     Qt::ItemSelectionMode rubberBandSelectionMode() const;
     void setRubberBandSelectionMode(Qt::ItemSelectionMode mode);
+    QRect rubberBandRect() const;
 #endif
 
     CacheMode cacheMode() const;
@@ -227,6 +226,11 @@ public Q_SLOTS:
     void updateScene(const QList<QRectF> &rects);
     void invalidateScene(const QRectF &rect = QRectF(), QGraphicsScene::SceneLayers layers = QGraphicsScene::AllLayers);
     void updateSceneRect(const QRectF &rect);
+
+#ifndef QT_NO_RUBBERBAND
+Q_SIGNALS:
+    void rubberBandChanged(QRect viewportRect, QPointF fromScenePoint, QPointF toScenePoint);
+#endif
 
 protected Q_SLOTS:
     void setupViewport(QWidget *widget);
@@ -309,7 +313,5 @@ inline QPolygon QGraphicsView::mapFromScene(qreal ax, qreal ay, qreal w, qreal h
 #endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGRAPHICSVIEW_H

@@ -52,7 +52,6 @@
 
 #include <cups/cups.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 typedef int (*CupsGetDests)(cups_dest_t **dests);
@@ -68,6 +67,7 @@ public:
     virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
     virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
+    virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &) const;
     virtual QString printerOption(const QPrinterInfo &printer, const QString &key) const;
     virtual PrinterOptions printerOptions(const QPrinterInfo &printer) const;
 
@@ -86,7 +86,6 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_PRINTER
 #endif // QCUPSPRINTERSUPPORT_H

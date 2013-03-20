@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QQMLJSASTFWD_P_H
-#define QQMLJSASTFWD_P_H
+#ifndef QQMLJSAST_FWD_P_H
+#define QQMLJSAST_FWD_P_H
 
 #include "qqmljsglobal_p.h"
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 
 //
 //  W A R N I N G
@@ -64,7 +64,7 @@ namespace QQmlJS { namespace AST {
 class SourceLocation
 {
 public:
-    explicit SourceLocation(quint32 offset = 0, quint32 length = 0, quint32 line = 0, quint32 column = 0)
+    SourceLocation(quint32 offset = 0, quint32 length = 0, quint32 line = 0, quint32 column = 0)
         : offset(offset), length(length),
           startLine(line), startColumn(column)
     { }
@@ -98,7 +98,9 @@ class ArrayLiteral;
 class ObjectLiteral;
 class ElementList;
 class Elision;
-class PropertyNameAndValueList;
+class PropertyAssignmentList;
+class PropertyGetterSetter;
+class PropertyNameAndValue;
 class PropertyName;
 class IdentifierPropertyName;
 class StringLiteralPropertyName;
@@ -168,6 +170,7 @@ class UiProgram;
 class UiImportList;
 class UiImport;
 class UiPublicMember;
+class UiParameterList;
 class UiObjectDefinition;
 class UiObjectInitializer;
 class UiObjectBinding;

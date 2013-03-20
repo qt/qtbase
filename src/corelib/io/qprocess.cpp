@@ -458,6 +458,9 @@ void QProcessPrivate::Channel::clear()
     the program you want to run as arguments to start(). Arguments
     are supplied as individual strings in a QStringList.
 
+    Alternatively, you can set the program to run with setProgram()
+    and setArguments(), and then call start() or open().
+
     For example, the following code snippet runs the analog clock
     example in the Fusion style on X11 platforms by passing strings
     containing "-style" and "fusion" as two items in the list of
@@ -1946,6 +1949,58 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
         return;
     }
 
+    d->program = program;
+    d->arguments = arguments;
+
+    open(mode);
+}
+
+/*!
+    \since 5.1
+    \overload
+
+    Starts the program set by setProgram() with arguments set by setArguments().
+    The OpenMode is set to \a mode.
+
+    This method is a convenient alias to open().
+
+    \sa open(), setProgram(), setArguments()
+ */
+void QProcess::start(OpenMode mode)
+{
+    open(mode);
+}
+
+/*!
+    Starts the program set by setProgram() in a new process, if none is already
+    running, passing the command line arguments set by setArguments(). The OpenMode
+    is set to \a mode.
+
+    The QProcess object will immediately enter the Starting state. If the
+    process starts successfully, QProcess will emit started(); otherwise,
+    error() will be emitted. If the QProcess object is already running a
+    process, a warning may be printed at the console, the function will return false,
+    and the existing process will continue running.
+
+    \note Processes are started asynchronously, which means the started()
+    and error() signals may be delayed. Call waitForStarted() to make
+    sure the process has started (or has failed to start) and those signals
+    have been emitted. In this regard, a true return value merly means the process
+    was correcty initialized, not that the program was actually started.
+
+*/
+bool QProcess::open(OpenMode mode)
+{
+    Q_D(QProcess);
+    if (d->processState != NotRunning) {
+        qWarning("QProcess::start: Process is already running");
+        return false;
+    }
+    if (d->program.isEmpty()) {
+        qWarning("QProcess::start: program not set");
+        return false;
+    }
+
 #if defined QPROCESS_DEBUG
     qDebug() << "QProcess::start(" << program << ',' << arguments << ',' << mode << ')';
 #endif
@@ -1967,14 +2022,13 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
     d->stdoutChannel.closed = false;
     d->stderrChannel.closed = false;
 
-    d->program = program;
-    d->arguments = arguments;
-
     d->exitCode = 0;
     d->exitStatus = NormalExit;
     d->processError = QProcess::UnknownError;
     d->errorString.clear();
     d->startProcess();
+
+    return true;
 }
 
 
@@ -2074,6 +2128,24 @@ QString QProcess::program() const
 }
 
 /*!
+    \since 5.1
+
+    Set the \a program to use when starting the process.
+    That function must be call before open()
+
+    \sa start(), setArguments(), program()
+*/
+void QProcess::setProgram(const QString &program)
+{
+    Q_D(QProcess);
+    if (d->processState != NotRunning) {
+        qWarning("QProcess::setProgram: Process is already running");
+        return;
+    }
+    d->program = program;
+}
+
+/*!
     Returns the command line arguments the process was last started with.
 
     \sa start()
@@ -2082,6 +2154,24 @@ QStringList QProcess::arguments() const
 {
     Q_D(const QProcess);
     return d->arguments;
+}
+
+/*!
+    \since 5.1
+
+    Set the \a arguments to pass to the called program when starting the process.
+    That function must be call before  open()
+
+    \sa start(), setProgram(), arguments()
+*/
+void QProcess::setArguments(const QStringList &arguments)
+{
+    Q_D(QProcess);
+    if (d->processState != NotRunning) {
+        qWarning("QProcess::setProgram: Process is already running");
+        return;
+    }
+    d->arguments = arguments;
 }
 
 /*!

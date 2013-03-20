@@ -46,7 +46,6 @@
 
 #include <stdlib.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 template <typename T>
@@ -97,7 +96,6 @@ public:
     {
         T *oldD = this->d;
         Cleanup::cleanup(oldD);
-        this->d = 0;
     }
 
     inline T &operator*() const
@@ -239,6 +237,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QSCOPEDPOINTER_H

@@ -899,6 +899,7 @@ def main():
     qlocaleh_temp_file.write("        RhaetoRomance = Romansh,\n")
     qlocaleh_temp_file.write("        Chewa = Nyanja,\n")
     qlocaleh_temp_file.write("        Frisian = WesternFrisian,\n")
+    qlocaleh_temp_file.write("        Uigur = Uighur,\n")
     qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
     qlocaleh_temp_file.write("    };\n")
 

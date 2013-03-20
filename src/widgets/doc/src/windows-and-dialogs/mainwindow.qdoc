@@ -49,7 +49,7 @@
     be listed in the desktop's task bar. This is usually only wanted for one
     window in the application, the \e{primary window}.
 
-    In addition, a QWidget that has a parent can become a window by setting the 
+    In addition, a QWidget that has a parent can become a window by setting the
     Qt::Window flag. Depending on the window management system
     such \e{secondary windows} are usually stacked on top of their respective parent
     window, and not have a task bar entry of their own.

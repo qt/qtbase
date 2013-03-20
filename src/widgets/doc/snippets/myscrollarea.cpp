@@ -121,7 +121,7 @@ int main(int argv, char **args)
     MyScrollArea area(&label);
     area.resize(300, 300);
     area.show();
-    
+
     area.setWidget(&label);
 
     return app.exec();

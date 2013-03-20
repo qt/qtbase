@@ -416,12 +416,12 @@ void QTextDocument::redo(QTextCursor *cursor)
 }
 
 /*! \enum QTextDocument::Stacks
-  
+
   \value UndoStack              The undo stack.
   \value RedoStack              The redo stack.
   \value UndoAndRedoStacks      Both the undo and redo stacks.
 */
-        
+
 /*!
     \since 4.7
     Clears the stacks specified by \a stacksToClear.

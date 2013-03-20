@@ -64,6 +64,14 @@ private slots:
     void iterator_begin();
 
     void ctorStdMap();
+
+    void insertion_int_intx();
+    void insertion_int_int_with_hint1();
+    void insertion_int_int2();
+    void insertion_int_int_with_hint2();
+
+    void insertion_string_int2();
+    void insertion_string_int2_hint();
 };
 
 
@@ -73,6 +81,44 @@ void tst_QMap::insertion_int_int()
     QBENCHMARK {
         for (int i = 0; i < 100000; ++i)
             map.insert(i, i);
+    }
+}
+
+void tst_QMap::insertion_int_intx()
+{
+    // This is the same test - but executed later.
+    // The results in the beginning of the test seems to be a somewhat inaccurate.
+    QMap<int, int> map;
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i)
+            map.insert(i, i);
+    }
+}
+
+void tst_QMap::insertion_int_int_with_hint1()
+{
+    QMap<int, int> map;
+    QBENCHMARK {
+        for (int i = 0; i < 100000; ++i)
+            map.insert(map.constEnd(), i, i);
+    }
+}
+
+void tst_QMap::insertion_int_int2()
+{
+    QMap<int, int> map;
+    QBENCHMARK {
+        for (int i = 100000; i >= 0; --i)
+            map.insert(i, i);
+    }
+}
+
+void tst_QMap::insertion_int_int_with_hint2()
+{
+    QMap<int, int> map;
+    QBENCHMARK {
+        for (int i = 100000; i >= 0; --i)
+            map.insert(map.constBegin(), i, i);
     }
 }
 
@@ -203,6 +249,38 @@ void tst_QMap::ctorStdMap()
     }
 }
 
+class XString : public QString
+{
+public:
+    bool operator < (const XString& x) const // an expensive operator <
+    {
+        return toInt() < x.toInt();
+    }
+};
+
+void tst_QMap::insertion_string_int2()
+{
+    QMap<XString, int> map;
+    QBENCHMARK {
+        for (int i = 1; i < 5000; ++i) {
+            XString str;
+            str.setNum(i);
+            map.insert(str, i);
+        }
+    }
+}
+
+void tst_QMap::insertion_string_int2_hint()
+{
+    QMap<XString, int> map;
+    QBENCHMARK {
+        for (int i = 1; i < 5000; ++i) {
+            XString str;
+            str.setNum(i);
+            map.insert(map.end(), str, i);
+        }
+    }
+}
 
 QTEST_MAIN(tst_QMap)
 

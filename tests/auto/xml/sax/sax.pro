@@ -1,6 +1,8 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-   qxmlinputsource \
    qxml \
+
+qtHaveModule(network): SUBDIRS += \
+   qxmlinputsource \
    qxmlsimplereader \
 

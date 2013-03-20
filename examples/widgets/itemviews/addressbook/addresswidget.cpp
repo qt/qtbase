@@ -52,7 +52,7 @@ AddressWidget::AddressWidget(QWidget *parent)
     connect(newAddressTab, SIGNAL(sendDetails(QString, QString)),
         this, SLOT(addEntry(QString, QString)));
 
-    addTab(newAddressTab, "Address Book");    
+    addTab(newAddressTab, "Address Book");
 
     setupTabs();
 }
@@ -60,13 +60,13 @@ AddressWidget::AddressWidget(QWidget *parent)
 
 //! [2]
 void AddressWidget::addEntry()
-{    
+{
     AddDialog aDialog;
 
     if (aDialog.exec()) {
         QString name = aDialog.nameText->text();
         QString address = aDialog.addressText->toPlainText();
-        
+
         addEntry(name, address);
     }
 }
@@ -74,7 +74,7 @@ void AddressWidget::addEntry()
 
 //! [3]
 void AddressWidget::addEntry(QString name, QString address)
-{    
+{
     QList<QPair<QString, QString> >list = table->getList();
     QPair<QString, QString> pair(name, address);
 
@@ -110,14 +110,14 @@ void AddressWidget::editEntry()
         QModelIndex nameIndex = table->index(row, 0, QModelIndex());
         QVariant varName = table->data(nameIndex, Qt::DisplayRole);
         name = varName.toString();
-    
+
         QModelIndex addressIndex = table->index(row, 1, QModelIndex());
         QVariant varAddr = table->data(addressIndex, Qt::DisplayRole);
         address = varAddr.toString();
     }
 //! [4a]
-    
-//! [4b]    
+
+//! [4b]
     AddDialog aDialog;
     aDialog.setWindowTitle(tr("Edit a Contact"));
 
@@ -141,7 +141,7 @@ void AddressWidget::removeEntry()
     QTableView *temp = static_cast<QTableView*>(currentWidget());
     QSortFilterProxyModel *proxy = static_cast<QSortFilterProxyModel*>(temp->model());
     QItemSelectionModel *selectionModel = temp->selectionModel();
-    
+
     QModelIndexList indexes = selectionModel->selectedRows();
 
     foreach (QModelIndex index, indexes) {
@@ -163,7 +163,7 @@ void AddressWidget::setupTabs()
 
     for (int i = 0; i < groups.size(); ++i) {
         QString str = groups.at(i);
-        
+
         proxyModel = new QSortFilterProxyModel(this);
         proxyModel->setSourceModel(table);
 
@@ -181,7 +181,7 @@ void AddressWidget::setupTabs()
         proxyModel->setFilterRegExp(QRegExp(newStr, Qt::CaseInsensitive));
         proxyModel->setFilterKeyColumn(0);
         proxyModel->sort(0, Qt::AscendingOrder);
-    
+
         connect(tableView->selectionModel(),
             SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SIGNAL(selectionChanged(QItemSelection)));

@@ -47,6 +47,9 @@
 #endif
 
 #include "qdebug.h"
+#include <private/qtextstream_p.h>
+
+QT_BEGIN_NAMESPACE
 
 // This file is needed to force compilation of QDebug into the kernel library.
 
@@ -170,6 +173,8 @@
     between writes.
 
     \since 5.0
+
+    \sa QDebugStateSaver
 */
 
 /*!
@@ -179,6 +184,8 @@
     automatic insertion of spaces is disabled.
 
     \since 5.0
+
+    \sa QDebugStateSaver
 */
 
 /*!
@@ -321,3 +328,69 @@
     \fn QDebug &QDebug::operator<<(QTextStreamManipulator m)
     \internal
 */
+
+/*!
+    \class QDebugStateSaver
+
+    \brief Convenience class for custom QDebug operators
+
+    Saves the settings used by QDebug, and restores them upon destruction.
+
+    The automatic insertion of spaces between writes is one of the settings
+    that QDebugStateSaver stores for the duration of the current block.
+
+    The settings of the internal QTextStream are also saved and restored,
+    so that using << hex in a QDebug operator doesn't affect other QDebug
+    operators.
+
+    \since 5.1
+*/
+
+class QDebugStateSaverPrivate
+{
+public:
+    QDebugStateSaverPrivate(QDebug &dbg)
+        : m_dbg(dbg),
+          m_spaces(dbg.autoInsertSpaces()),
+          m_streamParams(dbg.stream->ts.d_ptr->params)
+    {
+    }
+    void restoreState()
+    {
+        m_dbg.setAutoInsertSpaces(m_spaces);
+        m_dbg.stream->ts.d_ptr->params = m_streamParams;
+    }
+
+    QDebug &m_dbg;
+
+    // QDebug state
+    const bool m_spaces;
+
+    // QTextStream state
+    const QTextStreamPrivate::Params m_streamParams;
+};
+
+
+/*!
+    Creates a QDebugStateSaver instance, which saves the settings
+    currently used by \a dbg.
+
+    \sa QDebug::setAutoInsertSpaces(), QDebug::autoInsertSpaces()
+*/
+QDebugStateSaver::QDebugStateSaver(QDebug &dbg)
+    : d(new QDebugStateSaverPrivate(dbg))
+{
+}
+
+/*!
+    Destroyes a QDebugStateSaver instance, which restores the settings
+    used by \a dbg when the QDebugStateSaver instance was created.
+
+    \sa QDebug::setAutoInsertSpaces(), QDebug::autoInsertSpaces()
+*/
+QDebugStateSaver::~QDebugStateSaver()
+{
+    d->restoreState();
+}
+
+QT_END_NAMESPACE

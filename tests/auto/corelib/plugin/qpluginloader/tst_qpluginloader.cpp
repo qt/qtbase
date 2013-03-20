@@ -99,13 +99,19 @@
 
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
-    return QFINDTESTDATA(QString("bin/%1%2%3").arg(PREFIX).arg(fileName).arg(SUFFIX));
+    QString libname = QFINDTESTDATA(QString("bin/%1%2%3").arg(PREFIX).arg(fileName).arg(SUFFIX));
+    QFileInfo fi(libname);
+    if (fi.exists())
+        return fi.canonicalFilePath();
+    return libname;
 }
 
 QT_FORWARD_DECLARE_CLASS(QPluginLoader)
 class tst_QPluginLoader : public QObject
 {
     Q_OBJECT
+public slots:
+    void cleanup();
 private slots:
     void errorString();
     void loadHints();
@@ -117,7 +123,24 @@ private slots:
 #endif
     void relativePath();
     void reloadPlugin();
+    void preloadedPlugin_data();
+    void preloadedPlugin();
 };
+
+void tst_QPluginLoader::cleanup()
+{
+    // check if the library/plugin was leaked
+    // we can't use QPluginLoader::isLoaded here because on some platforms the plugin is always loaded by QPluginLoader.
+    // Also, if this test fails once, it will keep on failing because we can't force the unload,
+    // so we report it only once.
+    static bool failedAlready = false;
+    if (!failedAlready) {
+        QLibrary lib(sys_qualifiedLibraryName("theplugin"));
+        failedAlready = true;
+        QVERIFY2(!lib.isLoaded(), "Plugin was leaked - will not check again");
+        failedAlready = false;
+    }
+}
 
 void tst_QPluginLoader::errorString()
 {
@@ -334,6 +357,50 @@ void tst_QPluginLoader::reloadPlugin()
     PluginInterface *instance2 = qobject_cast<PluginInterface*>(loader.instance());
     QVERIFY(instance2);
     QCOMPARE(instance2->pluginName(), QLatin1String("Plugin ok"));
+
+    QVERIFY(loader.unload());
+}
+
+void tst_QPluginLoader::preloadedPlugin_data()
+{
+    QTest::addColumn<bool>("doLoad");
+    QTest::addColumn<QString>("libname");
+    QTest::newRow("create-plugin") << false << sys_qualifiedLibraryName("theplugin");
+    QTest::newRow("load-plugin") << true << sys_qualifiedLibraryName("theplugin");
+    QTest::newRow("create-non-plugin") << false << sys_qualifiedLibraryName("tst_qpluginloaderlib");
+    QTest::newRow("load-non-plugin") << true << sys_qualifiedLibraryName("tst_qpluginloaderlib");
+}
+
+void tst_QPluginLoader::preloadedPlugin()
+{
+    // check that using QPluginLoader does not interfere with QLibrary
+    QFETCH(QString, libname);
+    QLibrary lib(libname);
+    QVERIFY(lib.load());
+
+    typedef int *(*pf_t)();
+    pf_t pf = (pf_t)lib.resolve("pointerAddress");
+    QVERIFY(pf);
+
+    int *pluginVariable = pf();
+    QVERIFY(pluginVariable);
+    QCOMPARE(*pluginVariable, 0xc0ffee);
+
+    {
+        // load the plugin
+        QPluginLoader loader(libname);
+        QFETCH(bool, doLoad);
+        if (doLoad && loader.load()) {
+            // unload() returns false because QLibrary has it loaded
+            QVERIFY(!loader.unload());
+        }
+    }
+
+    QVERIFY(lib.isLoaded());
+
+    // if the library was unloaded behind our backs, the following will crash:
+    QCOMPARE(*pluginVariable, 0xc0ffee);
+    QVERIFY(lib.unload());
 }
 
 QTEST_MAIN(tst_QPluginLoader)

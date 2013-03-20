@@ -70,9 +70,10 @@ struct QHolder {
 
 class Q_SQL_EXPORT QSqlResultPrivate
 {
+
 public:
-    QSqlResultPrivate(QSqlResult *d)
-      : q(d),
+    QSqlResultPrivate()
+      : q_ptr(0),
         idx(QSql::BeforeFirstRow),
         active(false),
         isSel(false),
@@ -81,6 +82,7 @@ public:
         bindCount(0),
         binds(QSqlResult::PositionalBinding)
     { }
+    virtual ~QSqlResultPrivate() { }
 
     void clearValues()
     {
@@ -116,7 +118,7 @@ public:
     QString namedToPositionalBinding(const QString &query);
     QString holderAt(int index) const;
 
-    QSqlResult *q;
+    QSqlResult *q_ptr;
     QPointer<QSqlDriver> sqldriver;
     int idx;
     QString sql;

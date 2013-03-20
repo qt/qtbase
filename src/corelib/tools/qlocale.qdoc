@@ -289,7 +289,8 @@
     \value Turkish
     \value Turkmen
     \value Twi Obsolete, please use Akan
-    \value Uigur
+    \value Uighur
+    \value Uigur Obsolete, please use Uighur
     \value Ukrainian
     \value Urdu
     \value Uzbek
@@ -401,6 +402,57 @@
     \value Kako
     \value Meta
     \value Ngiemboon
+    \value Aragonese
+    \value Akkadian
+    \value AncientEgyptian
+    \value AncientGreek
+    \value Aramaic
+    \value Balinese
+    \value Bamun
+    \value BatakToba
+    \value Buginese
+    \value Buhid
+    \value Carian
+    \value Chakma
+    \value ClassicalMandaic
+    \value Coptic
+    \value Dogri
+    \value EasternCham
+    \value EasternKayah
+    \value Etruscan
+    \value Gothic
+    \value Hanunoo
+    \value Ingush
+    \value LargeFloweryMiao
+    \value Lepcha
+    \value Limbu
+    \value Lisu
+    \value Lu
+    \value Lycian
+    \value Lydian
+    \value Mandingo
+    \value Manipuri
+    \value Meroitic
+    \value NorthernThai
+    \value OldIrish
+    \value OldNorse
+    \value OldPersian
+    \value OldTurkish
+    \value Pahlavi
+    \value Parthian
+    \value Phoenician
+    \value PrakritLanguage
+    \value Rejang
+    \value Sabaean
+    \value Samaritan
+    \value Santali
+    \value Saurashtra
+    \value Sora
+    \value Sylheti
+    \value Tagbanwa
+    \value TaiDam
+    \value TaiNua
+    \value Ugaritic
     \omitvalue LastLanguage
 
     \sa language(), languageToString()
@@ -686,42 +738,109 @@
 
     \value AnyScript
     \value ArabicScript
+    \value ArmenianScript
+    \value AvestanScript
+    \value BalineseScript
+    \value BamumScript
+    \value BatakScript
+    \value BengaliScript
+    \value BopomofoScript
+    \value BrahmiScript
+    \value BugineseScript
+    \value BuhidScript
+    \value CanadianAboriginalScript
+    \value CarianScript
+    \value ChakmaScript
+    \value ChamScript
+    \value CherokeeScript
+    \value CopticScript
+    \value CypriotScript
     \value CyrillicScript
     \value DeseretScript
-    \value GurmukhiScript
-    \value SimplifiedHanScript same as SimplifiedChineseScript
-    \value SimplifiedChineseScript same as SimplifiedHanScript
-    \value TraditionalHanScript same as TraditionalChineseScript
-    \value TraditionalChineseScript same as TraditionalHanScript
-    \value LatinScript
-    \value MongolianScript
-    \value TifinaghScript
-    \value ArmenianScript
-    \value BengaliScript
-    \value CherokeeScript
     \value DevanagariScript
+    \value EgyptianHieroglyphsScript
     \value EthiopicScript
+    \value FraserScript
     \value GeorgianScript
+    \value GlagoliticScript
+    \value GothicScript
     \value GreekScript
     \value GujaratiScript
+    \value GurmukhiScript
+    \value HanScript
+    \value HangulScript
+    \value HanunooScript
     \value HebrewScript
+    \value ImperialAramaicScript
+    \value InscriptionalPahlaviScript
+    \value InscriptionalParthianScript
     \value JapaneseScript
-    \value KhmerScript
+    \value JavaneseScript
+    \value KaithiScript
     \value KannadaScript
+    \value KatakanaScript
+    \value KayahLiScript
+    \value KharoshthiScript
+    \value KhmerScript
     \value KoreanScript
+    \value LannaScript
     \value LaoScript
+    \value LatinScript
+    \value LepchaScript
+    \value LimbuScript
+    \value LinearBScript
+    \value LycianScript
+    \value LydianScript
     \value MalayalamScript
+    \value MandaeanScript
+    \value MeiteiMayekScript
+    \value MeroiticScript
+    \value MeroiticCursiveScript
+    \value MongolianScript
     \value MyanmarScript
+    \value NkoScript
+    \value NewTaiLueScript
+    \value OghamScript
+    \value OlChikiScript
+    \value OldItalicScript
+    \value OldPersianScript
+    \value OldSouthArabianScript
     \value OriyaScript
+    \value OrkhonScript
+    \value OsmanyaScript
+    \value PhagsPaScript
+    \value PhoenicianScript
+    \value PollardPhoneticScript
+    \value RejangScript
+    \value RunicScript
+    \value SamaritanScript
+    \value SaurashtraScript
+    \value SharadaScript
+    \value ShavianScript
+    \value SimplifiedHanScript same as SimplifiedChineseScript
+    \value SimplifiedChineseScript same as SimplifiedHanScript
+    \value SinhalaScript
+    \value SoraSompengScript
+    \value CuneiformScript
+    \value SundaneseScript
+    \value SylotiNagriScript
+    \value SyriacScript
+    \value TagalogScript
+    \value TagbanwaScript
+    \value TaiLeScript
+    \value TaiVietScript
+    \value TakriScript
     \value TamilScript
     \value TeluguScript
     \value ThaanaScript
     \value ThaiScript
     \value TibetanScript
-    \value SinhalaScript
-    \value SyriacScript
-    \value YiScript
+    \value TifinaghScript
+    \value TraditionalHanScript same as TraditionalChineseScript
+    \value TraditionalChineseScript same as TraditionalHanScript
+    \value UgariticScript
     \value VaiScript
+    \value YiScript
     \omitvalue LastScript
 
     \sa script(), scriptToString(), languageToString()

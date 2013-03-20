@@ -15,7 +15,7 @@ save
     setPen black 1 SolidLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 2 SolidLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -25,7 +25,7 @@ save
     setPen black 2 SolidLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 6 SolidLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -36,8 +36,8 @@ save
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
   restore
-  
-  
+
+
   translate 100 0
   save
     setPen black 1 DotLine FlatCap BevelJoin
@@ -49,7 +49,7 @@ save
     setPen black 1 DotLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 2 DotLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -59,7 +59,7 @@ save
     setPen black 2 DotLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 6 DotLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -70,7 +70,7 @@ save
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
   restore
-  
+
   translate 100 0
   save
     setPen black 1 DashLine FlatCap BevelJoin
@@ -82,7 +82,7 @@ save
     setPen black 1 DashLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 2 DashLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -92,7 +92,7 @@ save
     setPen black 2 DashLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 6 DashLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -103,9 +103,9 @@ save
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
   restore
-  
+
   translate 100 0
-  
+
   save
     setPen black 1 DashDotLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
@@ -116,7 +116,7 @@ save
     setPen black 1 DashDotLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 2 DashDotLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -126,7 +126,7 @@ save
     setPen black 2 DashDotLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 6 DashDotLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -137,7 +137,7 @@ save
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
   restore
- 
+
   translate 100 0
 
   save
@@ -150,7 +150,7 @@ save
     setPen black 1 DashDotDotLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 2 DashDotDotLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -160,7 +160,7 @@ save
     setPen black 2 DashDotDotLine RoundCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 4 DashDotDotLine FlatCap BevelJoin
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
@@ -187,7 +187,7 @@ save
     pen_setDashPattern [1 4 9 4 27 4]
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 2 SolidLine FlatCap BevelJoin
     pen_setDashPattern [1 4 9 4 27 4]
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
@@ -200,7 +200,7 @@ save
     pen_setDashPattern [1 4 9 4 27 4]
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
     translate 0 40
-  
+
     setPen black 4 SolidLine FlatCap BevelJoin
     pen_setDashPattern [1 4 9 4 27 4]
     drawPolyline [0 0 80 0 80 30 40 20 0 30]
@@ -217,7 +217,7 @@ save
 
 restore
 end_block
-  
+
 translate 0 400
 setRenderHint Antialiasing
 repeat_block draw

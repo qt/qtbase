@@ -55,7 +55,7 @@ class SimpleListViewPrivate
 
 public:
 
-    SimpleListViewPrivate(SimpleListView *button) 
+    SimpleListViewPrivate(SimpleListView *button)
         : m_content(0)
         , m_layout(0)
         , m_twoColumns(false)
@@ -100,7 +100,7 @@ public:
 
         m_content->resize(q->viewport()->size().width(),
                         m_layout->preferredHeight());
-        const bool clip = 
+        const bool clip =
             m_content->size().width() > q->viewport()->size().width()
                 || m_content->size().height() > q->viewport()->size().height();
 
@@ -161,7 +161,7 @@ public:
 
         const QString defaultIcon = Theme::p()->pixmapPath()+"contact_default_icon.svg";
         const int itemCount = m_layout->count();
-    
+
         for (int i=0; i<itemCount; ++i) {
             ListItem* item = static_cast<ListItem*>(m_layout->itemAt(i));
 
@@ -251,7 +251,7 @@ public:
                 QGraphicsLayoutItem *item = m_layout->itemAt(i);
                 m_layout->removeAt(i);
                 moveditems.append(item);
-            }            
+            }
             for ( int i = 0; i < moveditems.count(); ++i)
                 m_layout->addItem(moveditems.at(i), i, 1);
 
@@ -267,7 +267,7 @@ public:
                     moveditems.append(m_layout->itemAt(i));
                 else
                     moveditems.insert(moveditems.begin(), m_layout->itemAt(i));
-                m_layout->removeAt(i);                
+                m_layout->removeAt(i);
             }
             for (int i = 0; i<moveditems.count(); ++i) {
                 m_layout->addItem(moveditems.at(i), m_layout->count(), 0);
@@ -292,17 +292,17 @@ public:
     bool m_listItemCaching;
 };
 
-SimpleListView::SimpleListView(QGraphicsWidget *parent) 
+SimpleListView::SimpleListView(QGraphicsWidget *parent)
     : AbstractScrollArea(parent)
     , d_ptr(new SimpleListViewPrivate(this))
-{ 
+{
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setContentsMargins(0, 0, 0, 0);
     verticalScrollBar()->hide();
     horizontalScrollBar()->hide();
 }
 
-SimpleListView::~SimpleListView() 
+SimpleListView::~SimpleListView()
 {
     Q_D(SimpleListView);
 
@@ -403,7 +403,7 @@ bool SimpleListView::listItemCaching() const
 void SimpleListView::setListItemCaching(bool enabled)
 {
     Q_D(SimpleListView);
-    
+
     if (d->m_listItemCaching == enabled)
         return;
 
@@ -430,13 +430,13 @@ void SimpleListView::scrollContentsBy(qreal dx, qreal dy)
 
     if (newy < miny)
         newy = miny;
-    else if (newy > 0) 
+    else if (newy > 0)
         newy = 0.0;
 
     d->m_content->setPos(contentPos.x(), newy);
 }
 
-void SimpleListView::resizeEvent(QGraphicsSceneResizeEvent *event) 
+void SimpleListView::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
     Q_D(SimpleListView);
 
@@ -446,7 +446,7 @@ void SimpleListView::resizeEvent(QGraphicsSceneResizeEvent *event)
 }
 
 QSizeF SimpleListView::sizeHint(Qt::SizeHint which, const QSizeF & constraint) const
-{ 
+{
     Q_D(const SimpleListView);
 
     if (which == Qt::PreferredSize)

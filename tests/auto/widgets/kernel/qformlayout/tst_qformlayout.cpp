@@ -169,11 +169,11 @@ void tst_QFormLayout::rowCount()
     fl->addRow(tr("Label 2"), new QLineEdit);
     fl->addRow(tr("Label 3"), new QLineEdit);
     QCOMPARE(fl->rowCount(), 3);
-    
+
     fl->addRow(new QWidget);
     fl->addRow(new QHBoxLayout);
     QCOMPARE(fl->rowCount(), 5);
-    
+
     fl->insertRow(1, tr("Label 0.5"), new QLineEdit);
     QCOMPARE(fl->rowCount(), 6);
 
@@ -206,7 +206,7 @@ void tst_QFormLayout::buddies()
     fl->addRow(le3);
     QWidget *label3 = fl->labelForField(le3);
     QVERIFY(label3 == 0);
-    
+
     //TODO: empty label?
 
     delete w;

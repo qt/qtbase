@@ -47,8 +47,6 @@
 #ifdef Q_OS_WIN
 #include "QtCore/qt_windows.h"
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QWinEventNotifierPrivate;
@@ -82,8 +80,6 @@ protected:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // Q_OS_WIN
 

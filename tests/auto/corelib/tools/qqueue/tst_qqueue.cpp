@@ -63,15 +63,15 @@ void tst_QQueue::enqueue_dequeue_data()
 
 void tst_QQueue::enqueue_dequeue()
 {
-    QFETCH(int, num_items);    
-    
-    int *values = new int[num_items];    
-    QQueue<int>  queue_v;    
-    QQueue<int*> queue_p;    
+    QFETCH(int, num_items);
+
+    int *values = new int[num_items];
+    QQueue<int>  queue_v;
+    QQueue<int*> queue_p;
 
     QVERIFY(queue_v.empty());
     QVERIFY(queue_p.empty());
-    
+
     for (int i = 0; i < num_items; i++ ) {
         values[i] = i;
         queue_p.enqueue(values + i);
@@ -84,11 +84,11 @@ void tst_QQueue::enqueue_dequeue()
         v = queue_v.head();
         p = queue_p.head();
         QCOMPARE(*p, v);
-        QCOMPARE(v, i);       
+        QCOMPARE(v, i);
         v = queue_v.dequeue();
         p = queue_p.dequeue();
-        QCOMPARE(*p, v);        
-        QCOMPARE(v, values[i]);        
+        QCOMPARE(*p, v);
+        QCOMPARE(v, values[i]);
     }
     QVERIFY(queue_v.empty());
     QVERIFY(queue_p.empty());

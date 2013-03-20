@@ -222,7 +222,7 @@ void QVariantAnimationPrivate::updateInterpolator()
         interpolator = getInterpolator(type);
     else
         interpolator = 0;
-    
+
     //we make sure that the interpolator is always set to something
     if (!interpolator)
         interpolator = &defaultInterpolator;
@@ -252,7 +252,7 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
                                                                            qMakePair(progress, QVariant()),
                                                                            animationValueLessThan);
         if (it == keyValues.constBegin()) {
-            //the item pointed to by it is the start element in the range    
+            //the item pointed to by it is the start element in the range
             if (it->first == 0 && keyValues.count() > 1) {
                 currentInterval.start = *it;
                 currentInterval.end = *(it+1);

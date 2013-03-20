@@ -215,7 +215,7 @@ void WidgetGallery::createBottomLeftTabWidget()
                               "Like a diamond in the sky.\n"
                               "Twinkle, twinkle, little star,\n"
                               "How I wonder what you are!\n"));
-                     
+
     QHBoxLayout *tab2hbox = new QHBoxLayout;
     tab2hbox->setMargin(5);
     tab2hbox->addWidget(textEdit);

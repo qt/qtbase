@@ -6,7 +6,7 @@ translate 50 50
 
 # Pixmaps at 0.1 offset, unclipped
 begin_block draw_pixmaps
-save  
+save
   drawPixmap border.png 0 0
   translate 20.1 0.1
   drawPixmap border.png 0 0
@@ -27,7 +27,7 @@ save
   translate 20.1 0.1
   drawPixmap border.png 0 0
   translate 20.1 0.1
-  
+
   drawPixmap border.png 0 0
   translate 20.1 0.1
   drawPixmap border.png 0 0
@@ -49,12 +49,12 @@ save
   drawPixmap border.png 0 0
   translate 20.1 0.1
 restore
-end_block 
+end_block
 
 # Tiled pixmaps at 0.1 offsets, unclipped
 translate 0 50
 begin_block draw_tiled
-save  
+save
   drawTiledPixmap border.png 0 0 16 16 0 0
   translate 20.1 0.1
   drawTiledPixmap border.png 0 0 16 16 0 0
@@ -75,7 +75,7 @@ save
   translate 20.1 0.1
   drawTiledPixmap border.png 0 0 16 16 0 0
   translate 20.1 0.1
-  
+
   drawTiledPixmap border.png 0 0 16 16 0 0
   translate 20.1 0.1
   drawTiledPixmap border.png 0 0 16 16 0 0
@@ -97,7 +97,7 @@ save
   drawTiledPixmap border.png 0 0 16 16 0 0
   translate 20.1 0.1
 restore
-end_block 
+end_block
 
 
 path_moveTo clip 0 0

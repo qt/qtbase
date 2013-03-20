@@ -182,7 +182,7 @@ void Dialog::loadFromMemory()
  */
 void Dialog::detach()
 {
-    if (!sharedMemory.detach()) 
+    if (!sharedMemory.detach())
         ui.label->setText(tr("Unable to detach from shared memory."));
 }
 

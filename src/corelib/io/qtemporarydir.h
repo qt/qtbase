@@ -45,8 +45,6 @@
 #include <QtCore/qdir.h>
 #include <QtCore/QScopedPointer>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -78,7 +76,5 @@ private:
 #endif // QT_NO_TEMPORARYFILE
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTEMPORARYDIR_H

@@ -57,7 +57,7 @@ void addingSubWindowsExample()
 {
     QWidget *internalWidget1 = new QWidget;
     QWidget *internalWidget2 = new QWidget;
-    
+
 //! [1]
     QMdiArea mdiArea;
     QMdiSubWindow *subWindow1 = new QMdiSubWindow;

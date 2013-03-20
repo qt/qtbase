@@ -52,7 +52,7 @@ private slots:
     void lookup();
 };
 
-template <typename T> 
+template <typename T>
 void testInsert(int size)
 {
     T container;
@@ -69,7 +69,7 @@ void tst_associative_containers::insert_data()
     QTest::addColumn<int>("size");
 
     for (int size = 10; size < 20000; size += 100) {
-    
+
         const QByteArray sizeString = QByteArray::number(size);
 
         QTest::newRow(QByteArray("hash--" + sizeString).constData()) << true << size;
@@ -86,9 +86,9 @@ void tst_associative_containers::insert()
     QMap<int, int> testMap;
 
     if (useHash) {
-        testInsert<QHash<int, int> >(size);        
+        testInsert<QHash<int, int> >(size);
     } else {
-        testInsert<QMap<int, int> >(size);        
+        testInsert<QMap<int, int> >(size);
     }
 }
 
@@ -101,7 +101,7 @@ void tst_associative_containers::lookup_data()
     QTest::addColumn<int>("size");
 
     for (int size = 10; size < 20000; size += 100) {
-    
+
         const QByteArray sizeString = QByteArray::number(size);
 
         QTest::newRow(QByteArray("hash--" + sizeString).constData()) << true << size;
@@ -109,11 +109,11 @@ void tst_associative_containers::lookup_data()
     }
 }
 
-template <typename T> 
+template <typename T>
 void testLookup(int size)
 {
     T container;
-    
+
     for (int i = 0; i < size; ++i)
         container.insert(i, i);
 
@@ -122,7 +122,7 @@ void testLookup(int size)
     QBENCHMARK {
         for (int i = 0; i < size; ++i)
             val = container.value(i);
-        
+
     }
 }
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -116,14 +116,14 @@ static void resolveAygLibs()
     }
 }
 
-static void qt_wce_enable_soft_key(HWND handle, uint command) 
+static void qt_wce_enable_soft_key(HWND handle, uint command)
 {
     resolveAygLibs();
     if (ptrEnableSoftKey)
         ptrEnableSoftKey(handle, command, false, true);
 }
 
-static void qt_wce_disable_soft_key(HWND handle, uint command) 
+static void qt_wce_disable_soft_key(HWND handle, uint command)
 {
     resolveAygLibs();
     if (ptrEnableSoftKey)
@@ -148,7 +148,7 @@ static QAction* qt_wce_get_quit_action(QList<QAction *> actionItems)
         QAction *action = actionItems.at(i);
         if (action->menuRole() == QAction::QuitRole)
             returnAction = action;
-        else 
+        else
             if (action->menu())
                 returnAction = qt_wce_get_quit_action(action->menu()->actions());
         if (returnAction)
@@ -252,7 +252,7 @@ static void qt_wce_insert_action(HMENU menu, QWceMenuAction *action)
         if (action->action->isCheckable())
             if (action->action->isChecked())
                 CheckMenuItem(menu, action->command, MF_BYCOMMAND | MF_CHECKED);
-            else 
+            else
                 CheckMenuItem(menu, action->command, MF_BYCOMMAND | MF_UNCHECKED);
     }
 }
@@ -264,8 +264,8 @@ static void qt_wce_clear_menu(HMENU hMenu)
 }
 
 /*!
-    \internal 
-    
+    \internal
+
     This function refreshes the native Windows CE menu.
 */
 
@@ -281,8 +281,8 @@ void QMenuBarPrivate::wceRefresh()
 }
 
 /*!
-    \internal 
-    
+    \internal
+
     This function sends native Windows CE commands to Qt menus.
 */
 
@@ -293,8 +293,8 @@ QAction* QMenu::wceCommands(uint command)
 }
 
 /*!
-    \internal 
-    
+    \internal
+
     This function sends native Windows CE commands to Qt menu bars
     and all their child menus.
 */
@@ -457,7 +457,7 @@ void QMenuPrivate::QWceMenuPrivate::addAction(QWceMenuAction *action, QWceMenuAc
 
 /*!
     \internal
-    
+
     This function will return the HMENU used to create the native
     Windows CE menu bar bindings.
 */
@@ -642,7 +642,7 @@ void QMenuBarPrivate::QWceMenuBarPrivate::rebuild()
                 qt_wce_rename_menu_item(menubarHandle, leftButtonCommand, leftButtonAction->text());
                 qt_wce_enable_soft_key(menubarHandle, leftButtonCommand);
             } else {
-                qt_wce_rename_menu_item(menubarHandle, leftButtonCommand, QLatin1String(""));           
+                qt_wce_rename_menu_item(menubarHandle, leftButtonCommand, QLatin1String(""));
                 qt_wce_disable_soft_key(menubarHandle, leftButtonCommand);
             }
         } else {

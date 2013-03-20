@@ -54,7 +54,7 @@ class BencodeParser
 {
 public:
     BencodeParser();
-    
+
     bool parse(const QByteArray &content);
     QString errorString() const;
 

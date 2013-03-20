@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,8 +51,6 @@
 #include <QtGui/qpixmap.h>
 
 class tst_QGraphicsItem;
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -1058,7 +1056,5 @@ QT_BEGIN_NAMESPACE
 #endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGRAPHICSITEM_H

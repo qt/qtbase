@@ -436,7 +436,7 @@
     Same as at(\a i).
 */
 
-/*! 
+/*!
     \fn void QVector::append(const T &value)
 
     Inserts \a value at the end of the vector.
@@ -544,6 +544,48 @@
 
     \sa insert(), replace(), fill()
 */
+
+/*! \fn void QVector::removeFirst()
+    \since 5.1
+    Removes the first item in the vector. Calling this function is
+    equivalent to calling remove(0). The vector must not be empty. If
+    the vector can be empty, call isEmpty() before calling this
+    function.
+
+    \sa remove(), takeFirst(), isEmpty()
+*/
+
+/*! \fn void QVector::removeLast()
+    \since 5.1
+    Removes the last item in the vector. Calling this function is
+    equivalent to calling remove(size() - 1). The vector must not be
+    empty. If the vector can be empty, call isEmpty() before calling
+    this function.
+
+    \sa remove(), takeLast(), removeFirst(), isEmpty()
+*/
+
+/*! \fn T QVector::takeFirst()
+
+    Removes the first item in the vector and returns it. This function
+    assumes the vector is not empty. To avoid failure, call isEmpty()
+    before calling this function.
+
+    \sa takeLast(), removeFirst()
+*/
+
+/*! \fn T QVector::takeLast()
+
+    Removes the last item in the list and returns it. This function
+    assumes the vector is not empty. To avoid failure, call isEmpty()
+    before calling this function.
+
+    If you don't use the return value, removeLast() is more
+    efficient.
+
+    \sa takeFirst(), removeLast()
+*/
+
 
 /*! \fn QVector &QVector::fill(const T &value, int size = -1)
 
@@ -774,13 +816,13 @@
 /*! \fn void QVector::pop_front()
 
     This function is provided for STL compatibility. It is equivalent
-    to erase(begin()).
+    to removeFirst().
 */
 
 /*! \fn void QVector::pop_back()
 
     This function is provided for STL compatibility. It is equivalent
-    to erase(end() - 1).
+    to removeLast().
 */
 
 /*! \fn T& QVector::front()

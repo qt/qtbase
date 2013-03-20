@@ -34,7 +34,8 @@ HEADERS += \
 	kernel/qgesturerecognizer.h \
 	kernel/qgesturemanager_p.h \
         kernel/qdesktopwidget_qpa_p.h \
-        kernel/qwidgetwindow_qpa_p.h
+        kernel/qwidgetwindow_qpa_p.h \
+        kernel/qwindowcontainer_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -62,7 +63,8 @@ SOURCES += \
         kernel/qapplication_qpa.cpp \
         kernel/qdesktopwidget_qpa.cpp \
         kernel/qwidget_qpa.cpp \
-        kernel/qwidgetwindow.cpp
+        kernel/qwidgetwindow.cpp \
+        kernel/qwindowcontainer.cpp
 
 
 # TODO

@@ -45,11 +45,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "5.0.2"
+#define QT_VERSION_STR   "5.1.0"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x050002
+#define QT_VERSION 0x050100
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -151,6 +151,7 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
+// ### Qt6: remove me.
 #define QT_BEGIN_HEADER
 #define QT_END_HEADER
 
@@ -158,7 +159,6 @@ namespace QT_NAMESPACE {}
 #  define QT_LARGEFILE_SUPPORT 64
 #endif
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 /*
@@ -470,7 +470,7 @@ typedef qptrdiff qintptr;
 #  else
 #    define QT_ENSURE_STACK_ALIGNED_FOR_SSE
 #  endif
-#  define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE 
+#  define QT_WIN_CALLBACK CALLBACK QT_ENSURE_STACK_ALIGNED_FOR_SSE
 #endif
 
 typedef int QNoImplicitBoolCast;
@@ -511,6 +511,16 @@ Q_DECL_CONSTEXPR inline const T &qMax(const T &a, const T &b) { return (a < b) ?
 template <typename T>
 Q_DECL_CONSTEXPR inline const T &qBound(const T &min, const T &val, const T &max)
 { return qMax(min, qMin(max, val)); }
+
+#ifdef Q_OS_DARWIN
+#  define QT_MAC_PLATFORM_SDK_EQUAL_OR_ABOVE(osx, ios) \
+    (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && __MAC_OS_X_VERSION_MAX_ALLOWED >= osx) || \
+    (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= ios)
+
+#  define QT_MAC_DEPLOYMENT_TARGET_BELOW(osx, ios) \
+    (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && osx != __MAC_NA && __MAC_OS_X_VERSION_MIN_REQUIRED < osx) || \
+    (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && ios != __IPHONE_NA && __IPHONE_OS_VERSION_MIN_REQUIRED < ios)
+#endif
 
 /*
    Data stream functions are provided by many classes (defined in qdatastream.h)
@@ -662,125 +672,6 @@ typedef void (*QFunctionPointer)();
 
 #if !defined(Q_UNIMPLEMENTED)
 #  define Q_UNIMPLEMENTED() qWarning("%s:%d: %s: Unimplemented code.", __FILE__, __LINE__, Q_FUNC_INFO)
-#endif
-
-#if defined(QT_NO_THREAD)
-
-template <typename T>
-class QGlobalStatic
-{
-public:
-    T *pointer;
-    inline QGlobalStatic(T *p) : pointer(p) { }
-    inline ~QGlobalStatic() { pointer = 0; }
-};
-
-#define Q_GLOBAL_STATIC(TYPE, NAME)                                  \
-    static TYPE *NAME()                                              \
-    {                                                                \
-        static TYPE thisVariable;                                    \
-        static QGlobalStatic<TYPE > thisGlobalStatic(&thisVariable); \
-        return thisGlobalStatic.pointer;                             \
-    }
-
-#define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                  \
-    static TYPE *NAME()                                              \
-    {                                                                \
-        static TYPE thisVariable ARGS;                               \
-        static QGlobalStatic<TYPE > thisGlobalStatic(&thisVariable); \
-        return thisGlobalStatic.pointer;                             \
-    }
-
-#define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER)    \
-    static TYPE *NAME()                                              \
-    {                                                                \
-        static TYPE thisVariable;                                    \
-        static QGlobalStatic<TYPE > thisGlobalStatic(0);             \
-        if (!thisGlobalStatic.pointer) {                             \
-            TYPE *x = thisGlobalStatic.pointer = &thisVariable;      \
-            INITIALIZER;                                             \
-        }                                                            \
-        return thisGlobalStatic.pointer;                             \
-    }
-
-#else
-
-// forward declaration, since qatomic.h needs qglobal.h
-template <typename T> class QBasicAtomicPointer;
-
-// POD for Q_GLOBAL_STATIC
-template <typename T>
-class QGlobalStatic
-{
-public:
-    QBasicAtomicPointer<T> pointer;
-    bool destroyed;
-};
-
-// Created as a function-local static to delete a QGlobalStatic<T>
-template <typename T>
-class QGlobalStaticDeleter
-{
-public:
-    QGlobalStatic<T> &globalStatic;
-    QGlobalStaticDeleter(QGlobalStatic<T> &_globalStatic)
-        : globalStatic(_globalStatic)
-    { }
-
-    inline ~QGlobalStaticDeleter()
-    {
-        delete globalStatic.pointer.load();
-        globalStatic.pointer.store(0);
-        globalStatic.destroyed = true;
-    }
-};
-
-#define Q_GLOBAL_STATIC(TYPE, NAME)                                           \
-    static TYPE *NAME()                                                       \
-    {                                                                         \
-        static QGlobalStatic<TYPE > thisGlobalStatic                          \
-                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer.load() && !thisGlobalStatic.destroyed) { \
-            TYPE *x = new TYPE;                                               \
-            if (!thisGlobalStatic.pointer.testAndSetOrdered(0, x))            \
-                delete x;                                                     \
-            else                                                              \
-                static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
-        }                                                                     \
-        return thisGlobalStatic.pointer.load();                               \
-    }
-
-#define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                           \
-    static TYPE *NAME()                                                       \
-    {                                                                         \
-        static QGlobalStatic<TYPE > thisGlobalStatic                          \
-                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer.load() && !thisGlobalStatic.destroyed) {       \
-            TYPE *x = new TYPE ARGS;                                          \
-            if (!thisGlobalStatic.pointer.testAndSetOrdered(0, x))            \
-                delete x;                                                     \
-            else                                                              \
-                static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
-        }                                                                     \
-        return thisGlobalStatic.pointer.load();                               \
-    }
-
-#define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER)             \
-    static TYPE *NAME()                                                       \
-    {                                                                         \
-        static QGlobalStatic<TYPE > thisGlobalStatic                          \
-                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer.load() && !thisGlobalStatic.destroyed) {       \
-            QScopedPointer<TYPE > x(new TYPE);                                \
-            INITIALIZER;                                                      \
-            if (thisGlobalStatic.pointer.testAndSetOrdered(0, x.data())) {    \
-                static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
-                x.take();                                                     \
-            }                                                                 \
-        }                                                                     \
-        return thisGlobalStatic.pointer.load();                               \
-    }
-
 #endif
 
 Q_DECL_CONSTEXPR static inline bool qFuzzyCompare(double p1, double p2)
@@ -1053,6 +944,7 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
 Q_CORE_EXPORT bool qputenv(const char *varName, const QByteArray& value);
+Q_CORE_EXPORT bool qunsetenv(const char *varName);
 
 Q_CORE_EXPORT bool qEnvironmentVariableIsEmpty(const char *varName) Q_DECL_NOEXCEPT;
 Q_CORE_EXPORT bool qEnvironmentVariableIsSet(const char *varName) Q_DECL_NOEXCEPT;
@@ -1087,7 +979,8 @@ template <typename T> struct QEnableIf<true, T> { typedef T Type; };
 }
 
 QT_END_NAMESPACE
-QT_END_HEADER
+// Q_GLOBAL_STATIC
+#include <QtCore/qglobalstatic.h>
 
 // qDebug and friends
 #include <QtCore/qlogging.h>

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -45,9 +46,8 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qregexp.h>
+#include <QtCore/qregularexpression.h>
 #include <QtCore/qlocale.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -195,10 +195,39 @@ private:
 
 #endif // QT_NO_REGEXP
 
+#ifndef QT_NO_REGULAREXPRESSION
+
+class QRegularExpressionValidatorPrivate;
+
+class Q_GUI_EXPORT QRegularExpressionValidator : public QValidator
+{
+    Q_OBJECT
+    Q_PROPERTY(QRegularExpression regularExpression READ regularExpression WRITE setRegularExpression NOTIFY regularExpressionChanged)
+
+public:
+    explicit QRegularExpressionValidator(QObject *parent = 0);
+    explicit QRegularExpressionValidator(const QRegularExpression &re, QObject *parent = 0);
+    ~QRegularExpressionValidator();
+
+    virtual QValidator::State validate(QString &input, int &pos) const Q_DECL_OVERRIDE;
+
+    QRegularExpression regularExpression() const;
+
+public Q_SLOTS:
+    void setRegularExpression(const QRegularExpression &re);
+
+Q_SIGNALS:
+    void regularExpressionChanged(const QRegularExpression &re);
+
+private:
+    Q_DISABLE_COPY(QRegularExpressionValidator)
+    Q_DECLARE_PRIVATE(QRegularExpressionValidator)
+};
+
+#endif // QT_NO_REGULAREXPRESSION
+
 #endif // QT_NO_VALIDATOR
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QVALIDATOR_H

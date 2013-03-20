@@ -79,7 +79,7 @@ protected:
 
     virtual void scrollContentsBy(qreal dx, qreal dy);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
-    QSizeF sizeHint(Qt::SizeHint which, 
+    QSizeF sizeHint(Qt::SizeHint which,
                     const QSizeF & constraint) const;
 
 private:

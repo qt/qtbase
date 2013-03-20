@@ -50,6 +50,7 @@
 #include <QtCore/qbuffer.h>
 #if !defined(QT_NO_FREETYPE)
 #include "private/qfontengine_ft_p.h"
+#include <private/qharfbuzz_p.h>
 #endif
 #include "private/qcore_unix_p.h" // overrides QT_OPEN
 
@@ -666,9 +667,7 @@ void QFontEngineQPF::draw(QPaintEngine *p, qreal _x, qreal _y, const QTextItemIn
 
 void QFontEngineQPF::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
 {
-    if (renderingFontEngine &&
-        (renderingFontEngine->type() != QFontEngine::Proxy
-         || static_cast<QProxyFontEngine *>(renderingFontEngine)->capabilities() & QAbstractFontEngine::CanOutlineGlyphs)) {
+    if (renderingFontEngine && renderingFontEngine->type() != QFontEngine::Proxy) {
         renderingFontEngine->addOutlineToPath(x, y, glyphs, path, flags);
         return;
     }
@@ -856,12 +855,12 @@ void QFontEngineQPF::doKerning(QGlyphLayout *g, QFontEngine::ShaperFlags flags) 
     QFontEngine::doKerning(g, flags);
 }
 
-HB_Error QFontEngineQPF::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 point, HB_Fixed *xpos, HB_Fixed *ypos, hb_uint32 *nPoints)
+int QFontEngineQPF::getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints)
 {
     if (!freetype)
         return HB_Err_Not_Covered;
     lockFace();
-    HB_Error result = freetype->getPointInOutline(glyph, flags, point, xpos, ypos, nPoints);
+    int result = freetype->getPointInOutline(glyph, flags, point, xpos, ypos, nPoints);
     unlockFace();
     return result;
 }

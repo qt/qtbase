@@ -40,6 +40,9 @@
 ****************************************************************************/
 #ifndef QZIPWRITER_H
 #define QZIPWRITER_H
+
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_TEXTODFWRITER
 
 //

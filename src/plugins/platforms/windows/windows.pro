@@ -102,12 +102,8 @@ contains(QT_CONFIG, opengles2) {
     }
 }
 
-# Enable access to HB_Face in harfbuzz includes included by qfontengine_p.h.
-DEFINES *= QT_COMPILES_IN_HARFBUZZ
-
 contains(QT_CONFIG, freetype) {
     DEFINES *= QT_NO_FONTCONFIG
-    DEFINES *= QT_COMPILES_IN_HARFBUZZ
     QT_FREETYPE_DIR = $$QT_SOURCE_TREE/src/3rdparty/freetype
 
     HEADERS += \

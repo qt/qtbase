@@ -45,15 +45,12 @@
 
 #include <QtCore/qgenericatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
+#pragma qt_sync_skip_header_check
 #pragma qt_sync_stop_processing
 #endif
 
@@ -167,12 +164,20 @@ __asm T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL
 template<> template <typename T> inline
 T QBasicAtomicOps<4>::fetchAndStoreRelaxed(T &_q_value, T newValue) Q_DECL_NOTHROW
 {
+#if defined(__thumb__)
+    register T originalValue;
+    do {
+        originalValue = _q_value;
+    } while (_q_cmpxchg(originalValue, newValue, &_q_value) != 0);
+    return originalValue;
+#else
     T originalValue;
     asm volatile("swp %0,%2,[%3]"
                  : "=&r"(originalValue), "=m" (_q_value)
                  : "r"(newValue), "r"(&_q_value)
                  : "cc", "memory");
     return originalValue;
+#endif
 }
 #endif // Q_CC_RVCT
 
@@ -189,7 +194,5 @@ T QBasicAtomicOps<4>::fetchAndAddRelaxed(T &_q_value, typename QAtomicAdditiveTy
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_ARMV5_H

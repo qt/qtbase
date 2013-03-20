@@ -116,6 +116,11 @@ int runQMake(int argc, char **argv)
             if(!tmp_dir.isEmpty() && QFile::exists(tmp_dir))
                 dir = tmp_dir;
         }
+#ifdef Q_OS_MAC
+        if (fi.fileName().endsWith(QStringLiteral(".pbxproj"))
+            && dir.endsWith(QStringLiteral(".xcodeproj")))
+            dir += QStringLiteral("/..");
+#endif
         if(!dir.isNull() && dir != ".")
             Option::output_dir = dir;
         if(QDir::isRelativePath(Option::output_dir))

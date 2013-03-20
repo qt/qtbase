@@ -49,8 +49,6 @@
 #pragma qt_no_master_include
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -73,7 +71,7 @@ public:
 class QSpontaneKeyEvent
 {
 public:
-    void setSpontaneous() { spont = 1; }
+    void setSpontaneous() { spont = 1; Q_UNUSED(posted) Q_UNUSED(m_accept) Q_UNUSED(reserved) }
     bool spontaneous() { return spont; }
     virtual void dummyFunc() {}
     virtual ~QSpontaneKeyEvent() {}
@@ -111,7 +109,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

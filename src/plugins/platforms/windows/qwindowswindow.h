@@ -67,8 +67,9 @@ class QWindowsEGLStaticContext;
 struct QWindowsGeometryHint
 {
     QWindowsGeometryHint() {}
-    explicit QWindowsGeometryHint(const QWindow *w);
+    explicit QWindowsGeometryHint(const QWindow *w, const QMargins &customMargins);
     static QMargins frame(DWORD style, DWORD exStyle);
+    static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
 #ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXINFO *mmi) const;
     void applyToMinMaxInfo(HWND hwnd, MINMAXINFO *mmi) const;
@@ -84,11 +85,13 @@ struct QWindowsGeometryHint
 
     QSize minimumSize;
     QSize maximumSize;
+    QMargins customMargins;
 };
 
 struct QWindowCreationContext
 {
     QWindowCreationContext(const QWindow *w, const QRect &r,
+                           const QMargins &customMargins,
                            DWORD style, DWORD exStyle);
 #ifndef Q_OS_WINCE //MinMax maybe define struct if not available
     void applyToMinMaxInfo(MINMAXINFO *mmi) const
@@ -101,6 +104,7 @@ struct QWindowCreationContext
     QRect requestedGeometry;
     QRect obtainedGeometry;
     QMargins margins;
+    QMargins customMargins;  // User-defined, additional frame for WM_NCCALCSIZE
     int frameX; // Passed on to CreateWindowEx(), including frame.
     int frameY;
     int frameWidth;
@@ -137,6 +141,7 @@ public:
         Qt::WindowFlags flags;
         QRect geometry;
         QMargins frame; // Do not use directly for windows, see FrameDirty.
+        QMargins customMargins; // User-defined, additional frame for NCCALCSIZE
         HWND hwnd;
         bool embedded;
 
@@ -190,6 +195,9 @@ public:
 
     void setFrameStrutEventsEnabled(bool enabled);
     bool frameStrutEventsEnabled() const { return testFlag(FrameStrutEventsEnabled); }
+
+    QMargins customMargins() const { return m_data.customMargins; }
+    void setCustomMargins(const QMargins &m);
 
 #ifdef QT_OPENGL_ES_2
     EGLSurface eglSurfaceHandle() const { return m_eglSurface;}
@@ -290,17 +298,6 @@ private:
     HICON m_iconBig;
 };
 
-// Conveniences for window frames.
-inline QRect operator+(const QRect &r, const QMargins &m)
-{
-    return r.adjusted(-m.left(), -m.top(), m.right(), m.bottom());
-}
-
-inline QRect operator-(const QRect &r, const QMargins &m)
-{
-    return r.adjusted(m.left(), m.top(), -m.right(), -m.bottom());
-}
-
 // Debug
 QDebug operator<<(QDebug d, const RECT &r);
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO/WM_NCCALCSIZE
@@ -370,5 +367,7 @@ inline void QWindowsWindow::destroyIcon()
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QMargins)
 
 #endif // QWINDOWSWINDOW_H

@@ -71,18 +71,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
+    \fn void QLocalSocket::open(OpenMode openMode)
 
-    Attempts to make a connection to \a name.
+    Equivalent to connectToServer(OpenMode mode).
+    The socket is opened in the given \a openMode to the server defined by setServerName().
 
-    The socket is opened in the given \a openMode and first enters ConnectingState.
-    It then attempts to connect to the address or addresses returned by the lookup.
-    Finally, if a connection is established, QLocalSocket enters ConnectedState
-    and emits connected().
+    Note that unlike in most other QIODevice subclasses, open() may not open the device directly.
+    The function return false if the socket was already connected or if the server to connect
+    to was not defined and true in any other case. The connected() or error() signals will be
+    emitted once the device is actualy open (or the connection failed).
 
-    At any point, the socket can emit error() to signal that an error occurred.
-
-    See also state(), serverName(), and waitForConnected().
+    See connectToServer() for more details.
 */
 
 /*!
@@ -354,8 +353,62 @@ QLocalSocket::~QLocalSocket()
 }
 
 /*!
-    Returns the name of the peer as specified by connectToServer(), or an
-    empty QString if connectToServer() has not been called or it failed.
+    \since 5.1
+
+    Attempts to make a connection to serverName().
+    setServerName() must be called before you open the connection.
+    Alternatively you can use connectToServer(const QString &name, OpenMode openMode);
+
+    The socket is opened in the given \a openMode and first enters ConnectingState.
+    If a connection is established, QLocalSocket enters ConnectedState and emits connected().
+
+    After calling this function, the socket can emit error() to signal that an error occurred.
+
+    \sa state(), serverName(), waitForConnected()
+*/
+void QLocalSocket::connectToServer(OpenMode openMode)
+{
+    open(openMode);
+}
+
+/*! \overload
+
+    Set the server \a name and attempts to make a connection to it.
+
+    The socket is opened in the given \a openMode and first enters ConnectingState.
+    If a connection is established, QLocalSocket enters ConnectedState and emits connected().
+
+    After calling this function, the socket can emit error() to signal that an error occurred.
+
+    \sa state(), serverName(), waitForConnected()
+*/
+void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
+{
+    setServerName(name);
+    open(openMode);
+}
+
+/*!
+    \since 5.1
+
+    Set the \a name of the peer to connect to.
+    On Windows name is the name of a named pipe; on Unix name is the name of a local domain socket.
+
+    This function must be called when the socket is not connected.
+*/
+void QLocalSocket::setServerName(const QString & name)
+{
+    Q_D(QLocalSocket);
+    if (d->state != UnconnectedState) {
+        qWarning("QLocalSocket::setServerName() called while not in unconnected state");
+        return;
+    }
+    d->serverName = name;
+}
+
+/*!
+    Returns the name of the peer as specified by setServerName(), or an
+    empty QString if setServerName() has not been called or connectToServer() failed.
 
     \sa connectToServer(), fullServerName()
 

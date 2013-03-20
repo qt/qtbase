@@ -28,6 +28,13 @@ Requires:
 Name: CssParser
 SeeAlso: ???
 
+Feature: REGULAREXPRESSION
+Description: Perl-compatible regular expression APIs
+Section: Kernel
+Requires:
+Name: QRegularExpression
+SeeAlso: ???
+
 Feature: CONCURRENT
 Description: Provides a high-level multi-threaded APIs
 Section: Kernel
@@ -318,7 +325,7 @@ SeeAlso: ???
 Feature: COMBOBOX
 Description: Supports comboboxes presenting a list of options to the user.
 Section: Widgets
-Requires: LINEEDIT STANDARDITEMMODEL LISTVIEW 
+Requires: LINEEDIT STANDARDITEMMODEL LISTVIEW
 Name: QComboBox
 SeeAlso: ???
 
@@ -509,7 +516,7 @@ SeeAlso: ???
 Feature: WHATSTHIS
 Description: Supports displaying "What's this" help.
 Section: Widgets
-Requires: TOOLBUTTON 
+Requires: TOOLBUTTON
 Name: QWhatsThis
 SeeAlso: ???
 
@@ -629,7 +636,7 @@ SeeAlso: ???
 Feature: DIRMODEL
 Description: Supports a data model for the local filesystem.
 Section: ItemViews
-Requires: ITEMVIEWS FILESYSTEMMODEL 
+Requires: ITEMVIEWS FILESYSTEMMODEL
 Name: QDirModel
 SeeAlso: ???
 
@@ -1023,7 +1030,7 @@ SeeAlso: ???
 Feature: SYSTEMTRAYICON
 Description: Provides an icon for an application in the system tray.
 Section: Utilities
-Requires: 
+Requires:
 Name: QSystemTrayIcon
 SeeAlso: ???
 

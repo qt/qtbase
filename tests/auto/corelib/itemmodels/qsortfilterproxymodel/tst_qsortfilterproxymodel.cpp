@@ -54,6 +54,8 @@ typedef QList<int> IntList;
 typedef QPair<int, int> IntPair;
 typedef QList<IntPair> IntPairList;
 
+Q_DECLARE_METATYPE(QList<QPersistentModelIndex>)
+
 class tst_QSortFilterProxyModel : public QObject
 {
     Q_OBJECT
@@ -134,6 +136,7 @@ private slots:
 
     void testMultipleProxiesWithSelection();
     void mapSelectionFromSource();
+    void testResetInternalData();
     void filteredColumns();
     void headerDataChanged();
 
@@ -142,6 +145,8 @@ private slots:
 
     void hierarchyFilterInvalidation();
     void simpleFilterInvalidation();
+
+    void chainedProxyModelRoleNames();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
@@ -174,9 +179,7 @@ tst_QSortFilterProxyModel::tst_QSortFilterProxyModel()
 
 void tst_QSortFilterProxyModel::initTestCase()
 {
-    qRegisterMetaType<IntList>("IntList");
-    qRegisterMetaType<IntPair>("IntPair");
-    qRegisterMetaType<IntPairList>("IntPairList");
+    qRegisterMetaType<QList<QPersistentModelIndex> >();
     m_model = new QStandardItemModel(0, 1);
     m_proxy = new QSortFilterProxyModel();
     m_proxy->setSourceModel(m_model);
@@ -3242,7 +3245,142 @@ void tst_QSortFilterProxyModel::resetInvalidate()
     QCOMPARE(ok, works);
 }
 
-Q_DECLARE_METATYPE(QList<QPersistentModelIndex>)
+/**
+ * A proxy which changes the background color for items ending in 'y' or 'r'
+ */
+class CustomDataProxy : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+public:
+    CustomDataProxy(QObject *parent = 0)
+        : QSortFilterProxyModel(parent)
+    {
+        setDynamicSortFilter(true);
+    }
+
+    void setSourceModel(QAbstractItemModel *sourceModel)
+    {
+        // It would be possible to use only the modelReset signal of the source model to clear
+        // the data in *this, however, this requires that the slot is connected
+        // before QSortFilterProxyModel::setSourceModel is called, and even then depends
+        // on the order of invocation of slots being the same as the order of connection.
+        // ie, not reliable.
+//         connect(sourceModel, SIGNAL(modelReset()), SLOT(resetInternalData()));
+        QSortFilterProxyModel::setSourceModel(sourceModel);
+        // Making the connect after the setSourceModel call clears the data too late.
+//         connect(sourceModel, SIGNAL(modelReset()), SLOT(resetInternalData()));
+
+        // This could be done in data(), but the point is to need to cache something in the proxy
+        // which needs to be cleared on reset.
+        for (int i = 0; i < sourceModel->rowCount(); ++i)
+        {
+            if (sourceModel->index(i, 0).data().toString().endsWith(QLatin1Char('y')))
+            {
+                m_backgroundColours.insert(i, Qt::blue);
+            } else if (sourceModel->index(i, 0).data().toString().endsWith(QLatin1Char('r')))
+            {
+                m_backgroundColours.insert(i, Qt::red);
+            }
+        }
+    }
+
+    QVariant data(const QModelIndex &index, int role) const
+    {
+        if (role != Qt::BackgroundRole)
+            return QSortFilterProxyModel::data(index, role);
+        return m_backgroundColours.value(index.row());
+    }
+
+private slots:
+  void resetInternalData()
+  {
+      m_backgroundColours.clear();
+  }
+
+private:
+    QHash<int, QColor> m_backgroundColours;
+};
+
+class ModelObserver : public QObject
+{
+    Q_OBJECT
+public:
+  ModelObserver(QAbstractItemModel *model, QObject *parent = 0)
+    : QObject(parent), m_model(model)
+  {
+    connect(m_model, SIGNAL(modelAboutToBeReset()), SLOT(modelAboutToBeReset()));
+    connect(m_model, SIGNAL(modelReset()), SLOT(modelReset()));
+  }
+
+public slots:
+  void modelAboutToBeReset()
+  {
+    int reds = 0, blues = 0;
+    for (int i = 0; i < m_model->rowCount(); ++i)
+    {
+      QColor color = m_model->index(i, 0).data(Qt::BackgroundRole).value<QColor>();
+      if (color == Qt::blue)
+        ++blues;
+      if (color == Qt::red)
+        ++reds;
+    }
+    QCOMPARE(blues, 11);
+    QCOMPARE(reds, 4);
+  }
+
+  void modelReset()
+  {
+    int reds = 0, blues = 0;
+    for (int i = 0; i < m_model->rowCount(); ++i)
+    {
+      QColor color = m_model->index(i, 0).data(Qt::BackgroundRole).value<QColor>();
+      if (color == Qt::blue)
+        ++blues;
+      if (color == Qt::red)
+        ++reds;
+    }
+    QCOMPARE(reds, 0);
+    QCOMPARE(blues, 0);
+  }
+
+private:
+  QAbstractItemModel * const m_model;
+
+};
+
+void tst_QSortFilterProxyModel::testResetInternalData()
+{
+
+    QStringListModel model(QStringList() << "Monday"
+                                         << "Tuesday"
+                                         << "Wednesday"
+                                         << "Thursday"
+                                         << "Friday"
+                                         << "January"
+                                         << "February"
+                                         << "March"
+                                         << "April"
+                                         << "May"
+                                         << "Saturday"
+                                         << "June"
+                                         << "Sunday"
+                                         << "July"
+                                         << "August"
+                                         << "September"
+                                         << "October"
+                                         << "November"
+                                         << "December");
+
+    CustomDataProxy proxy;
+    proxy.setSourceModel(&model);
+
+    ModelObserver observer(&proxy);
+
+    // Cause the source model to reset.
+    model.setStringList(QStringList() << "Spam" << "Eggs");
+
+}
 
 void tst_QSortFilterProxyModel::testParentLayoutChanged()
 {
@@ -3275,8 +3413,6 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
 
     proxy2.setSourceModel(&proxy);
     proxy2.setObjectName("proxy2");
-
-    qRegisterMetaType<QList<QPersistentModelIndex> >();
 
     QSignalSpy dataChangedSpy(&model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
 
@@ -3411,8 +3547,6 @@ private:
 
 void tst_QSortFilterProxyModel::moveSourceRows()
 {
-    qRegisterMetaType<QList<QPersistentModelIndex> >();
-
     DynamicTreeModel model;
 
     {
@@ -3635,6 +3769,45 @@ void tst_QSortFilterProxyModel::simpleFilterInvalidation()
     model.insertRow(0, new QStandardItem("extra"));
 }
 
+class CustomRoleNameModel : public QAbstractListModel
+{
+    Q_OBJECT
+public:
+    CustomRoleNameModel(QObject *parent = 0) : QAbstractListModel(parent) {}
+
+    QVariant data(const QModelIndex &index, int role) const
+    {
+        Q_UNUSED(index);
+        Q_UNUSED(role);
+        return QVariant();
+    }
+
+    int rowCount(const QModelIndex &parent = QModelIndex()) const
+    {
+        Q_UNUSED(parent);
+        return 0;
+    }
+
+    QHash<int, QByteArray> roleNames() const
+    {
+        QHash<int, QByteArray> rn = QAbstractListModel::roleNames();
+        rn[Qt::UserRole + 1] = "custom";
+        return rn;
+    }
+};
+
+void tst_QSortFilterProxyModel::chainedProxyModelRoleNames()
+{
+    QSortFilterProxyModel proxy1;
+    QSortFilterProxyModel proxy2;
+    CustomRoleNameModel customModel;
+
+    proxy2.setSourceModel(&proxy1);
+
+    // changing the sourceModel of proxy1 must also update roleNames of proxy2
+    proxy1.setSourceModel(&customModel);
+    QVERIFY(proxy2.roleNames().value(Qt::UserRole + 1) == "custom");
+}
 
 QTEST_MAIN(tst_QSortFilterProxyModel)
 #include "tst_qsortfilterproxymodel.moc"

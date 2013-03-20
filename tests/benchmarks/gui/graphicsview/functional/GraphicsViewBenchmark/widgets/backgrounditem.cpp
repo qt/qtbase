@@ -59,7 +59,6 @@ BackgroundItem::BackgroundItem(const QString &filename, QGraphicsWidget *parent)
 
 BackgroundItem::~BackgroundItem()
 {
-    
 }
 
 void BackgroundItem::resizeEvent(QGraphicsSceneResizeEvent *event)

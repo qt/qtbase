@@ -45,8 +45,6 @@
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -67,7 +65,5 @@ public:
 #endif // QT_NO_LIBRARY
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGENERICPLUGIN_H

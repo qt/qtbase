@@ -60,7 +60,7 @@ AddressBook::AddressBook(QWidget *parent)
     mainLayout->addWidget(addressText, 1, 1);
 //! [layout]
 
-//![setting the layout]    
+//![setting the layout]
     setLayout(mainLayout);
     setWindowTitle(tr("Simple Address Book"));
 }

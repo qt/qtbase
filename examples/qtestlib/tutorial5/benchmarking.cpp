@@ -81,7 +81,7 @@ void TestBenchmark::multiple()
     QFETCH(bool, useLocaleCompare);
     QString str1 = QLatin1String("This is a test string");
     QString str2 = QLatin1String("This is a test string");
-    
+
     int result;
     if (useLocaleCompare) {
         QBENCHMARK {
@@ -101,7 +101,7 @@ void TestBenchmark::series_data()
 {
     QTest::addColumn<bool>("useLocaleCompare");
     QTest::addColumn<int>("stringSize");
-    
+
     for (int i = 1; i < 10000; i += 2000) {
         QByteArray size = QByteArray::number(i);
         QTest::newRow(("locale aware compare--" + size).constData()) << true << i;

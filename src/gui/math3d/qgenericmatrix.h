@@ -46,8 +46,6 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qdatastream.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -400,7 +398,5 @@ Q_DECLARE_METATYPE(QMatrix3x3)
 Q_DECLARE_METATYPE(QMatrix3x4)
 Q_DECLARE_METATYPE(QMatrix4x2)
 Q_DECLARE_METATYPE(QMatrix4x3)
-
-QT_END_HEADER
 
 #endif

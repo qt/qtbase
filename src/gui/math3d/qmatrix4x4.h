@@ -48,8 +48,6 @@
 #include <QtGui/qgenericmatrix.h>
 #include <QtCore/qrect.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -1118,7 +1116,5 @@ QT_DEPRECATED QGenericMatrix<N, M, float> qGenericMatrixFromMatrix4x4(const QMat
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

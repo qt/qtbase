@@ -1,6 +1,8 @@
 option(host_build)
+CONFIG += force_bootstrap   # because of weird QLibraryInfo::location() reference
 
-DEFINES += QDOC2_COMPAT
+DEFINES += QDOC2_COMPAT \
+           QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
                $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser
@@ -69,7 +71,7 @@ SOURCES += atom.cpp \
 
 ### QML/JS Parser ###
 
-include(qmlparser/qmlparser.pri)
+include(qmlparser/parser.pri)
 
 HEADERS += jscodemarker.h \
             qmlcodemarker.h \

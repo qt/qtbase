@@ -803,13 +803,8 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
                 return false;
 
             if (options & QDBusConnectionPrivate::VirtualObject) {
-                // technically the check for children needs to go even deeper
-                if (options & SubPath) {
-                    foreach (const QDBusConnectionPrivate::ObjectTreeNode &child, node->children) {
-                        if (child.obj)
-                            return false;
-                    }
-                }
+                if (options & SubPath && node->activeChildren)
+                    return false;
             } else {
                 if ((options & ExportChildObjects && !node->children.isEmpty()))
                     return false;
@@ -825,8 +820,8 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
 
         // if a virtual object occupies this path, return false
         if (node->obj && (node->flags & QDBusConnectionPrivate::VirtualObject) && (node->flags & QDBusConnection::SubPath)) {
-            qDebug("Cannot register object at %s because QDBusVirtualObject handles all sub-paths.",
-                   qPrintable(path));
+            //qDebug("Cannot register object at %s because QDBusVirtualObject handles all sub-paths.",
+            //       qPrintable(path));
             return false;
         }
 
@@ -840,12 +835,13 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
             // are we allowed to go deeper?
             if (node->flags & ExportChildObjects) {
                 // we're not
-                qDebug("Cannot register object at %s because %s exports its own child objects",
-                       qPrintable(path), qPrintable(pathComponents.at(i)));
+                //qDebug("Cannot register object at %s because %s exports its own child objects",
+                //       qPrintable(path), qPrintable(pathComponents.at(i)));
                 return false;
             }
         } else {
             // add entry
+            ++node->activeChildren;
             node = node->children.insert(it, pathComponents.at(i));
         }
 
@@ -883,35 +879,8 @@ void QDBusConnection::unregisterObject(const QString &path, UnregisterMode mode)
     if (!d || !d->connection || !QDBusUtil::isValidObjectPath(path))
         return;
 
-    QStringList pathComponents = path.split(QLatin1Char('/'));
     QDBusWriteLocker locker(UnregisterObjectAction, d);
-    QDBusConnectionPrivate::ObjectTreeNode *node = &d->rootNode;
-    int i = 1;
-
-    // find the object
-    while (node) {
-        if (pathComponents.count() == i || !path.compare(QLatin1String("/"))) {
-            // found it
-            node->obj = 0;
-            node->flags = 0;
-
-            if (mode == UnregisterTree) {
-                // clear the sub-tree as well
-                node->children.clear();  // can't disconnect the objects because we really don't know if they can
-                                // be found somewhere else in the path too
-            }
-
-            return;
-        }
-
-        QDBusConnectionPrivate::ObjectTreeNode::DataList::Iterator it =
-            std::lower_bound(node->children.begin(), node->children.end(), pathComponents.at(i));
-        if (it == node->children.end() || it->name != pathComponents.at(i))
-            break;              // node not found
-
-        node = it;
-        ++i;
-    }
+    d->unregisterObject(path, mode);
 }
 
 /*!

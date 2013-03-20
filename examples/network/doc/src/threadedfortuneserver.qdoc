@@ -48,8 +48,8 @@
 
     FortuneServer inherits QTcpServer and reimplements
     QTcpServer::incomingConnection(). We also use it for storing the list of
-    random fortunes. 
-    
+    random fortunes.
+
     \snippet threadedfortuneserver/fortuneserver.cpp 0
 
     We use FortuneServer's constructor to simply generate the list of
@@ -71,7 +71,7 @@
     QThread::run(), and it has a signal for reporting errors.
 
     \snippet threadedfortuneserver/fortunethread.cpp 0
-    
+
     FortuneThread's constructor simply stores the socket descriptor and
     fortune text, so that they are available for run() later on.
 
@@ -101,7 +101,7 @@
     But unlike the previous example, we finish off by calling
     QTcpSocket::waitForDisconnected(), which blocks the calling thread until
     the socket has disconnected. Because we are running in a separate thread,
-    the GUI will remain responsive.  
+    the GUI will remain responsive.
 
     \sa {Fortune Server Example}, {Fortune Client Example}, {Blocking Fortune
     Client Example}

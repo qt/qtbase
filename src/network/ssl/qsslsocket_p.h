@@ -59,6 +59,7 @@
 #include <private/qtcpsocket_p.h>
 #include "qsslkey.h"
 #include "qsslconfiguration_p.h"
+#include <private/qsslcontext_p.h>
 
 #include <QtCore/qstringlist.h>
 
@@ -114,12 +115,15 @@ public:
 
     QSslConfigurationPrivate configuration;
     QList<QSslError> sslErrors;
+    QSharedPointer<QSslContext> sslContextPointer;
 
     // if set, this hostname is used for certificate validation instead of the hostname
     // that was used for connecting to.
     QString verificationPeerName;
 
     bool allowRootCertOnDemandLoading;
+
+    static bool s_loadRootCertsOnDemand;
 
     static bool supportsSsl();
     static long sslLibraryVersionNumber();
@@ -155,6 +159,9 @@ public:
     void createPlainSocket(QIODevice::OpenMode openMode);
     static void pauseSocketNotifiers(QSslSocket*);
     static void resumeSocketNotifiers(QSslSocket*);
+    // ### The 2 methods below should be made member methods once the QSslContext class is made public
+    static void checkSettingSslContext(QSslSocket*, QSharedPointer<QSslContext>);
+    static QSharedPointer<QSslContext> sslContext(QSslSocket *socket);
     bool isPaused() const;
     void _q_connectedSlot();
     void _q_hostFoundSlot();
@@ -169,6 +176,8 @@ public:
 #ifdef Q_OS_WIN
     virtual void _q_caRootLoaded(QSslCertificate,QSslCertificate) = 0;
 #endif
+
+    static QList<QByteArray> unixRootCertDirectories(); // used also by QSslContext
 
     virtual qint64 peek(char *data, qint64 maxSize);
     virtual QByteArray peek(qint64 maxSize);
@@ -192,8 +201,6 @@ private:
     static bool s_loadedCiphersAndCerts;
 protected:
     bool verifyErrorsHaveBeenIgnored();
-    static bool s_loadRootCertsOnDemand;
-    static QList<QByteArray> unixRootCertDirectories();
     bool paused;
 };
 

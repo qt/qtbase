@@ -90,6 +90,7 @@ public:
     ~QNetworkAccessManagerPrivate();
 
     void _q_replyFinished();
+    void _q_replyEncrypted();
     void _q_replySslErrors(const QList<QSslError> &errors);
     QNetworkReply *postProcess(QNetworkReply *reply);
     void createCookieJar() const;

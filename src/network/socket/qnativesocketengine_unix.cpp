@@ -1126,9 +1126,9 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     FD_ZERO(&fds);
     FD_SET(socketDescriptor, &fds);
 
-    struct timeval tv;
+    struct timespec tv;
     tv.tv_sec = timeout / 1000;
-    tv.tv_usec = (timeout % 1000) * 1000;
+    tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
 
     int retval;
     if (selectForRead)
@@ -1152,9 +1152,9 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     if (checkWrite)
         FD_SET(socketDescriptor, &fdwrite);
 
-    struct timeval tv;
+    struct timespec tv;
     tv.tv_sec = timeout / 1000;
-    tv.tv_usec = (timeout % 1000) * 1000;
+    tv.tv_nsec = (timeout % 1000) * 1000 * 1000;
 
     int ret;
     ret = qt_safe_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);

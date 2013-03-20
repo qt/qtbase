@@ -85,7 +85,7 @@ void Bubble::move(const QRect &bbox)
     qreal rightOverflow = position.x() + radius - bbox.right();
     qreal topOverflow = position.y() - radius - bbox.top();
     qreal bottomOverflow = position.y() + radius - bbox.bottom();
-    
+
     if (leftOverflow < 0.0) {
         position.setX(position.x() - 2 * leftOverflow);
         vel.setX(-vel.x());

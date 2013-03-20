@@ -374,7 +374,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
         delete temporaryState;
         return QString(uc, len).toLatin1();
     }
- 
+
     size_t outBytesLeft = len;
     QByteArray ba(outBytesLeft, Qt::Uninitialized);
     outBytes = ba.data();

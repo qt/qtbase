@@ -41,7 +41,7 @@
     it is close but not pressed down on it), when a device is pushed
     down and released from it, and when a device is moved on the
     tablet.
-  
+
     The information available in QTabletEvent depends on the device
     used. The tablet in this example has two different devices for
     drawing: a stylus and an airbrush. For both devices the event
@@ -61,23 +61,23 @@
     The example consists of the following:
 
     \list
-        \li The \c MainWindow class inherits QMainWindow and creates
-           the examples menus and connect their slots and signals.
+    \li The \c MainWindow class inherits QMainWindow and creates
+        the examples menus and connect their slots and signals.
     \li The \c TabletCanvas class inherits QWidget and
-	   receives tablet events. It uses the events to paint on a
-           offscreen pixmap, which it draws onto itself.
+        receives tablet events. It uses the events to paint on a
+        offscreen pixmap, which it draws onto itself.
     \li The \c TabletApplication class inherits QApplication. This
-	   class handles tablet events that are not sent to \c tabletEvent(). 
-	   We will look at this later.
+        class handles tablet events that are not sent to \c tabletEvent().
+        We will look at this later.
     \li The \c main() function creates a \c MainWindow and shows it
-	   as a top level window.
+        as a top level window.
     \endlist
 
 
     \section1 MainWindow Class Definition
 
-    The \c MainWindow creates a \c TabletCanvas and sets it as its 
-    center widget. 
+    The \c MainWindow creates a \c TabletCanvas and sets it as its
+    center widget.
 
     \snippet widgets/tablet/mainwindow.h 0
 
@@ -115,10 +115,10 @@
 
     \snippet widgets/tablet/mainwindow.cpp 2
 
-    The \c TabletCanvas class supports two ways by which the alpha 
+    The \c TabletCanvas class supports two ways by which the alpha
     channel of the drawing color can be changed: tablet pressure and
     tilt. We have one action for each and an action if the alpha
-    channel should not be changed. 
+    channel should not be changed.
 
     Here is the implementation of \c lineWidthActionTriggered():
 
@@ -155,12 +155,12 @@
 
     \snippet widgets/tablet/mainwindow.cpp 7
 
-    We show a message box with a short description of the example. 
+    We show a message box with a short description of the example.
 
     \c createActions() creates all actions and action groups of
     the example. We look at the creation of one action group and its
     actions. See the \l{Application Example}{application example} if
-    you want a high-level introduction to QActions. 
+    you want a high-level introduction to QActions.
 
     Here is the implementation of \c createActions:
 
@@ -189,7 +189,7 @@
     \section1 TabletCanvas Class Definition
 
     The \c TabletCanvas class provides a surface on which the
-    user can draw with a tablet. 
+    user can draw with a tablet.
 
     \snippet widgets/tablet/tabletcanvas.h 0
 
@@ -198,7 +198,7 @@
     these; their values decide if it is the tablet pressure or tilt
     that will alter them. We keep a private variable for each, the \c
     alphaChannelType, \c colorSturationType, and \c penWidthType,
-    which we provide access functions for. 
+    which we provide access functions for.
 
     We draw on a QPixmap with \c myPen and \c myBrush using \c
     myColor. The \c saveImage() and \c loadImage() saves and loads
@@ -291,7 +291,7 @@
     -60, 127 equals 0, and 255 equals 60 degrees. The angle measured
     is between the device and the perpendicular of the tablet (see
     QTabletEvent for an illustration).
-         
+
     \snippet widgets/tablet/tabletcanvas.cpp 8
 
     The alpha channel of QColor is given as a number between 0
@@ -301,8 +301,8 @@
     taking the absolute value we get the smallest alpha values (i.e.,
     the color is most transparent) when the pen is perpendicular to
     the tablet. We select the largest of the vertical and horizontal
-    tilt value. 
- 
+    tilt value.
+
     \snippet widgets/tablet/tabletcanvas.cpp 9
 
     The colorsaturation is given as a number between 0 and 255. It is
@@ -317,7 +317,7 @@
     the angle between the device and the perpendicular of the tablet.
 
     \snippet widgets/tablet/tabletcanvas.cpp 11
-   
+
     We finally check whether the pointer is the stylus or the eraser.
     If it is the eraser, we set the color to the background color of
     the pixmap an let the pressure decide the pen width, else we set
@@ -327,7 +327,7 @@
     \section1 TabletApplication Class Definition
 
     We inherit QApplication in this class because we want to
-    reimplement the \l{QApplication::}{event()} function. 
+    reimplement the \l{QApplication::}{event()} function.
 
     \snippet widgets/tablet/tabletapplication.h 0
 
@@ -336,7 +336,7 @@
     and TabletLeaveProximity events are not sendt to the QApplication
     object, while other tablet events are sendt to the QWidget's
     \c event(), which sends them on to \l{QWidget::}{tabletEvent()}.
-    Since we want to handle these events we have implemented \c 
+    Since we want to handle these events we have implemented \c
     TabletApplication.
 
 
@@ -352,7 +352,7 @@
     events is to do work that is dependent on what kind of device is
     used on the tablet. This way, you don't have to do this work
     when other events are generated, which is more frequently than the
-    leave and enter proximity events. We call \c setTabletDevice() in 
+    leave and enter proximity events. We call \c setTabletDevice() in
     \c TabletCanvas.
 
     \section1 The \c main() function

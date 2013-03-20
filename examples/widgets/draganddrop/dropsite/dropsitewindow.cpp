@@ -103,7 +103,7 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
         return;
 //! [updateFormatsTable() part1]
 
-//! [updateFormatsTable() part2]        
+//! [updateFormatsTable() part2]
     foreach (QString format, mimeData->formats()) {
         QTableWidgetItem *formatItem = new QTableWidgetItem(format);
         formatItem->setFlags(Qt::ItemIsEnabled);
@@ -129,7 +129,7 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
                 text.append(hex + " ");
             }
         }
-//! [updateFormatsTable() part3]   
+//! [updateFormatsTable() part3]
 
 //! [updateFormatsTable() part4]
         int row = formatsTable->rowCount();
@@ -137,7 +137,7 @@ void DropSiteWindow::updateFormatsTable(const QMimeData *mimeData)
         formatsTable->setItem(row, 0, new QTableWidgetItem(format));
         formatsTable->setItem(row, 1, new QTableWidgetItem(text));
     }
-    
+
     formatsTable->resizeColumnToContents(0);
 }
-//! [updateFormatsTable() part4] 
+//! [updateFormatsTable() part4]

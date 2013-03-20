@@ -11,6 +11,9 @@ SUBDIRS=\
    qpicture \
    qicon \
 
+!qtHaveModule(network): SUBDIRS -= \
+    qimagereader
+
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
            qpixmapcache \
 

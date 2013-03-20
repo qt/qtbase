@@ -80,6 +80,7 @@ private slots:
     void updateIteratorAfterDeletedItem_and_ContinueIteration_data();
     void updateIteratorAfterDeletedItem_and_ContinueIteration();
     void initializeIterator();
+    void sortingEnabled();
 private:
     QTreeWidget *testWidget;
 };
@@ -1234,6 +1235,32 @@ void tst_QTreeWidgetItemIterator::initializeIterator()
     QTreeWidgetItemIterator it(&tw);
 
     QCOMPARE((*it), static_cast<QTreeWidgetItem*>(0));
+}
+
+void tst_QTreeWidgetItemIterator::sortingEnabled()
+{
+    QTreeWidget *tree = new QTreeWidget;
+    tree->setColumnCount(2);
+    tree->headerItem()->setText(0, "Id");
+    tree->headerItem()->setText(1, "Color");
+
+    tree->setSortingEnabled(true);
+    tree->sortByColumn(0, Qt::AscendingOrder);
+
+    QTreeWidgetItem *second = new QTreeWidgetItem;
+    second->setText(0, "2");
+    second->setText(1, "second");
+    QTreeWidgetItem *first = new QTreeWidgetItem;
+    first->setText(0, "1");
+    first->setText(1, "first");
+
+    tree->addTopLevelItem(second);
+    tree->addTopLevelItem(first);
+
+    QTreeWidgetItemIterator it(tree);
+    QCOMPARE(*it, first);
+    ++it;
+    QCOMPARE(*it, second);
 }
 
 QTEST_MAIN(tst_QTreeWidgetItemIterator)

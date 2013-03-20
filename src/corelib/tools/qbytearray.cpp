@@ -397,7 +397,7 @@ static const quint16 crc_tbl[16] = {
     0xc60c, 0xd68d, 0xe70e, 0xf78f
 };
 
-/*! 
+/*!
     \relates QByteArray
 
     Returns the CRC-16 checksum of the first \a len bytes of \a data.
@@ -422,7 +422,7 @@ quint16 qChecksum(const char *data, uint len)
     return ~crc & 0xffff;
 }
 
-/*!     
+/*!
     \fn QByteArray qCompress(const QByteArray& data, int compressionLevel)
 
     \relates QByteArray
@@ -1370,7 +1370,7 @@ QByteArray::QByteArray(int size, char ch)
 }
 
 /*!
-    \internal 
+    \internal
 
     Constructs a byte array of size \a size with uninitialized contents.
 */
@@ -1904,7 +1904,7 @@ QByteArray &QByteArray::replace(const QByteArray &before, const QByteArray &afte
     QByteArray aft = after;
     if (after.d == d)
         aft.detach();
-    
+
     return replace(before.constData(), before.size(), aft.constData(), aft.size());
 }
 
@@ -1921,7 +1921,7 @@ QByteArray &QByteArray::replace(const char *c, const QByteArray &after)
     QByteArray aft = after;
     if (after.d == d)
         aft.detach();
-    
+
     return replace(c, qstrlen(c), aft.constData(), aft.size());
 }
 
@@ -1954,7 +1954,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
         memcpy(copy, before, bsize);
         b = copy;
     }
-    
+
     QByteArrayMatcher matcher(before, bsize);
     int index = 0;
     int len = d->size;
@@ -2044,8 +2044,8 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
         ::free((char *)a);
     if (b != before)
         ::free((char *)b);
-    
-    
+
+
     return *this;
 }
 
@@ -2274,7 +2274,7 @@ int QByteArray::indexOf(const char *c, int from) const
     const int ol = qstrlen(c);
     if (ol == 1)
         return indexOf(*c, from);
-    
+
     const int l = d->size;
     if (from > d->size || ol + from > l)
         return -1;
@@ -3580,7 +3580,7 @@ QByteArray QByteArray::toBase64() const
     return tmp;
 }
 
-/*! 
+/*!
     \fn QByteArray &QByteArray::setNum(int n, int base)
 
     Sets the byte array to the printed value of \a n in base \a base (10
@@ -3597,21 +3597,21 @@ QByteArray QByteArray::toBase64() const
     \sa number(), toInt()
 */
 
-/*! 
+/*!
     \fn QByteArray &QByteArray::setNum(uint n, int base)
     \overload
 
     \sa toUInt()
 */
 
-/*! 
+/*!
     \fn QByteArray &QByteArray::setNum(short n, int base)
     \overload
 
     \sa toShort()
 */
 
-/*! 
+/*!
     \fn QByteArray &QByteArray::setNum(ushort n, int base)
     \overload
 
@@ -3677,7 +3677,7 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
     return *this;
 }
 
-/*! 
+/*!
     \overload
 
     Sets the byte array to the printed value of \a n, formatted in format
@@ -3736,7 +3736,7 @@ QByteArray &QByteArray::setNum(double n, char f, int prec)
     return *this;
 }
 
-/*! 
+/*!
     \fn QByteArray &QByteArray::setNum(float n, char f, int prec)
     \overload
 
@@ -3806,7 +3806,7 @@ QByteArray QByteArray::number(qulonglong n, int base)
     return s;
 }
 
-/*! 
+/*!
     \overload
 
     Returns a byte array that contains the printed value of \a n,

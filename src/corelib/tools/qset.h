@@ -43,8 +43,9 @@
 #define QSET_H
 
 #include <QtCore/qhash.h>
-
-QT_BEGIN_HEADER
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+#include <initializer_list>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -56,6 +57,14 @@ class QSet
 
 public:
     inline QSet() {}
+#ifdef Q_COMPILER_INITIALIZER_LISTS
+    inline QSet(std::initializer_list<T> list)
+    {
+        reserve(list.size());
+        for (typename std::initializer_list<T>::const_iterator it = list.begin(); it != list.end(); ++it)
+            insert(*it);
+    }
+#endif
     inline QSet(const QSet<T> &other) : q_hash(other.q_hash) {}
 
     inline QSet<T> &operator=(const QSet<T> &other)
@@ -354,7 +363,5 @@ public:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSET_H

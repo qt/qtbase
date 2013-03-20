@@ -162,7 +162,7 @@ void RobotTorso::paint(QPainter *painter,
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    
+
     painter->setBrush(dragOver ? color.light(130) : color);
     painter->drawRoundedRect(-20, -20, 40, 60, 25, 25, Qt::RelativeSize);
     painter->drawEllipse(-25, -20, 20, 20);

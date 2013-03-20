@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -80,7 +80,7 @@ public:
    be shown during application startup.
 
    \inmodule QtWidgets
- 
+
    A splash screen is a widget that is usually displayed when an
    application is being started. Splash screens are often used for
    applications that have long start up times (e.g. database or

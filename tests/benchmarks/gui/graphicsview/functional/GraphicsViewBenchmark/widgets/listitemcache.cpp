@@ -53,7 +53,7 @@ ListItemCache::~ListItemCache()
     QPixmapCache::remove(m_cacheKey);
 }
 
-void ListItemCache::draw(QPainter * painter) 
+void ListItemCache::draw(QPainter * painter)
 {
     QRectF irect = sourceBoundingRect(Qt::LogicalCoordinates);
     QRectF vrect = painter->clipPath().boundingRect();
@@ -80,7 +80,7 @@ void ListItemCache::draw(QPainter * painter)
 
         //qDebug() << "ListItemCache: blitting" << m_visibleRect;
         painter->drawPixmap(0, 0, pixmap);
-    } 
+    }
 }
 
 void ListItemCache::sourceChanged(ChangeFlags)

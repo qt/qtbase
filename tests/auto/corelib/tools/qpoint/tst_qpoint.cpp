@@ -70,6 +70,9 @@ private slots:
     void operator_divide_data();
     void operator_divide();
 
+    void dotProduct_data();
+    void dotProduct();
+
     void operator_unary_plus_data();
     void operator_unary_plus();
 
@@ -269,6 +272,28 @@ void tst_QPoint::operator_divide()
     QCOMPARE(point / divisor, expected);
     point /= divisor;
     QCOMPARE(point, expected);
+}
+
+void tst_QPoint::dotProduct_data()
+{
+    QTest::addColumn<QPoint>("point1");
+    QTest::addColumn<QPoint>("point2");
+    QTest::addColumn<int>("expected");
+
+    QTest::newRow("(0, 0) dot (0, 0)") << QPoint(0, 0) << QPoint(0, 0)<< 0;
+    QTest::newRow("(10, 0) dot (0, 10)") << QPoint(10, 0) << QPoint(0, 10) << 0;
+    QTest::newRow("(0, 10) dot (10, 0)") << QPoint(0, 10) << QPoint(10, 0) << 0;
+    QTest::newRow("(10, 20) dot (-10, -20)") << QPoint(10, 20) << QPoint(-10, -20) << -500;
+    QTest::newRow("(-10, -20) dot (10, 20)") << QPoint(-10, -20) << QPoint(10, 20) << -500;
+}
+
+void tst_QPoint::dotProduct()
+{
+    QFETCH(QPoint, point1);
+    QFETCH(QPoint, point2);
+    QFETCH(int, expected);
+
+    QCOMPARE(QPoint::dotProduct(point1, point2), expected);
 }
 
 void tst_QPoint::operator_unary_plus_data()

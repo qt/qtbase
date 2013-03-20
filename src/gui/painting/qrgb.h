@@ -44,14 +44,13 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
 typedef unsigned int QRgb;                        // RGB triplet
 
-const QRgb  RGB_MASK    = 0x00ffffff;                // masks RGB values
+// non-namespaced Qt global variable
+const Q_DECL_UNUSED QRgb  RGB_MASK    = 0x00ffffff;     // masks RGB values
 
 inline int qRed(QRgb rgb)                // get red part of RGB
 { return ((rgb >> 16) & 0xff); }
@@ -81,7 +80,5 @@ inline bool qIsGray(QRgb rgb)
 { return qRed(rgb) == qGreen(rgb) && qRed(rgb) == qBlue(rgb); }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QRGB_H

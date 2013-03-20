@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -90,7 +90,7 @@ static const int windowsMobileExclusiveIndicatorSize = 14;
 static const int windowsMobileSliderThickness        = 6;
 static const int windowsMobileIconSize               = 16;
 static const int PE_IndicatorArrowUpBig         = 0xf000101;
-static const int PE_IndicatorArrowDownBig       = 0xf000102;  
+static const int PE_IndicatorArrowDownBig       = 0xf000102;
 static const int PE_IndicatorArrowLeftBig       = 0xf000103;
 static const int PE_IndicatorArrowRightBig      = 0xf000104;
 
@@ -241,7 +241,7 @@ static const char *const radiochecked_xpm[] = {
 static const char * const radiochecked_low_xpm[] = {
     "9 9 2 1",
     "         c None",
-    ".        c #000000", 
+    ".        c #000000",
     "   ...   ",
     " ....... ",
     " ....... ",
@@ -3904,39 +3904,39 @@ QColor fromHsl(QColor c)
     qreal ca[3] = {0, 0, 0};
 
     if (s == 0 || h == 1) {
-        // achromatic case 
+        // achromatic case
         ca[0] = ca[1] = ca[2] = l;
-    } else { 
-        // chromatic case 
-        qreal temp2; 
-        if (l < qreal(0.5)) 
-            temp2 = l * (qreal(1.0) + s); 
-        else 
-            temp2 = l + s - (l * s); 
+    } else {
+        // chromatic case
+        qreal temp2;
+        if (l < qreal(0.5))
+            temp2 = l * (qreal(1.0) + s);
+        else
+            temp2 = l + s - (l * s);
 
-        const qreal temp1 = (qreal(2.0) * l) - temp2; 
-        qreal temp3[3] = { h + (qreal(1.0) / qreal(3.0)), 
-            h, 
-            h - (qreal(1.0) / qreal(3.0)) }; 
+        const qreal temp1 = (qreal(2.0) * l) - temp2;
+        qreal temp3[3] = { h + (qreal(1.0) / qreal(3.0)),
+            h,
+            h - (qreal(1.0) / qreal(3.0)) };
 
-        for (int i = 0; i != 3; ++i) { 
-            if (temp3[i] < qreal(0.0)) 
-                temp3[i] += qreal(1.0); 
-            else if (temp3[i] > qreal(1.0)) 
+        for (int i = 0; i != 3; ++i) {
+            if (temp3[i] < qreal(0.0))
+                temp3[i] += qreal(1.0);
+            else if (temp3[i] > qreal(1.0))
                 temp3[i] -= qreal(1.0);
 
             const qreal sixtemp3 = temp3[i] * qreal(6.0);
 
-            if (sixtemp3 < qreal(1.0)) 
-                ca[i] = ((temp1 + (temp2 - temp1) * sixtemp3)); 
-            else if ((temp3[i] * qreal(2.0)) < qreal(1.0)) 
-                ca[i] = (temp2); 
-            else if ((temp3[i] * qreal(3.0)) < qreal(2.0)) 
+            if (sixtemp3 < qreal(1.0))
+                ca[i] = ((temp1 + (temp2 - temp1) * sixtemp3));
+            else if ((temp3[i] * qreal(2.0)) < qreal(1.0))
+                ca[i] = (temp2);
+            else if ((temp3[i] * qreal(3.0)) < qreal(2.0))
                 ca[i] = temp1 + (temp2 -temp1) * (qreal(2.0) /qreal(3.0) - temp3[i]) * qreal(6.0);
             else ca[i] = temp1;
         }
     }
-    
+
     return QColor::fromRgbF(ca[0], ca[1], ca[2]);
 }
 
@@ -3945,7 +3945,7 @@ QColor fromHsl(QColor c)
 
 QColor toHsl(QColor c)
 {
-    QColor color; 
+    QColor color;
     qreal h;
     qreal s;
     qreal l;
@@ -3953,36 +3953,36 @@ QColor toHsl(QColor c)
     const qreal r = c.redF();
     const qreal g = c.greenF();
     const qreal b = c.blueF();
-    const qreal max = Q_MAX_3(r, g, b); 
-    const qreal min = Q_MIN_3(r, g, b); 
-    const qreal delta = max - min;  
-    const qreal delta2 = max + min; 
-    const qreal lightness = qreal(0.5) * delta2; 
+    const qreal max = Q_MAX_3(r, g, b);
+    const qreal min = Q_MIN_3(r, g, b);
+    const qreal delta = max - min;
+    const qreal delta2 = max + min;
+    const qreal lightness = qreal(0.5) * delta2;
     l = (lightness);
-    if (qFuzzyIsNull(delta)) { 
-        // achromatic case, hue is undefined 
+    if (qFuzzyIsNull(delta)) {
+        // achromatic case, hue is undefined
         h = 0;
-        s = 0; 
+        s = 0;
     } else {
-        // chromatic case 
-        qreal hue = 0; 
-        if (lightness < qreal(0.5)) 
-            s = ((delta / delta2)); 
-        else 
-            s = ((delta / (qreal(2.0) - delta2))); 
-        if (qFuzzyCompare(r, max)) { 
-            hue = ((g - b) /delta); 
-        } else if (qFuzzyCompare(g, max)) { 
-            hue = (2.0 + (b - r) / delta); 
-        } else if (qFuzzyCompare(b, max)) { 
-            hue = (4.0 + (r - g) / delta); 
-        } else { 
-            Q_ASSERT_X(false, "QColor::toHsv", "internal error"); 
+        // chromatic case
+        qreal hue = 0;
+        if (lightness < qreal(0.5))
+            s = ((delta / delta2));
+        else
+            s = ((delta / (qreal(2.0) - delta2)));
+        if (qFuzzyCompare(r, max)) {
+            hue = ((g - b) /delta);
+        } else if (qFuzzyCompare(g, max)) {
+            hue = (2.0 + (b - r) / delta);
+        } else if (qFuzzyCompare(b, max)) {
+            hue = (4.0 + (r - g) / delta);
+        } else {
+            Q_ASSERT_X(false, "QColor::toHsv", "internal error");
         }
-        hue *= 60.0; 
-        if (hue < 0.0) 
-            hue += 360.0; 
-        h = (hue * 100); 
+        hue *= 60.0;
+        if (hue < 0.0)
+            hue += 360.0;
+        h = (hue * 100);
     }
 
     h = h / 36000;
@@ -4083,7 +4083,7 @@ void QWindowsMobileStylePrivate::tintListViewHighlight(QColor color)
 
     imageListViewHighlightMiddle = QImage(listviewhighmiddle_xpm);
     tintImage(&imageListViewHighlightMiddle, color, qreal(0.0));
-     
+
      int height = imageListViewHighlightMiddle.height();
      if (!doubleControls) {
          height = height / 2;
@@ -4218,7 +4218,7 @@ void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, co
         QRect r;
         if (rect.isValid())
             r = rect;
-        else 
+        else
             r = option->rect;
         tintImagesHigh(option->palette.highlight().color());
 
@@ -4892,7 +4892,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
             } else {
                 QRect r = QRect(option->rect.x(), option->rect.y(), windowsMobileitemViewCheckBoxSize, windowsMobileitemViewCheckBoxSize);
                 qDrawPlainRect(painter, r, option->palette.shadow().color(), 1);
-            }            
+            }
             if (option->state & State_Enabled)
                 d->imageChecked.setColor(1, option->palette.shadow().color().rgba());
             else
@@ -5129,7 +5129,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                 image.setColor(1, color.rgba());
                 painter->drawImage(option->rect.x() + xoffset, option->rect.y() + yoffset, image);
             }
-            else {                
+            else {
                  QPoint points[7];
                  switch (element) {
                      case PE_IndicatorArrowUp:
@@ -5194,7 +5194,7 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
                         painter->drawLine(points[2], points[3]);
                         painter->drawLine(points[4], points[5]);
                         painter->drawPoint(points[6]);
-                    }                
+                    }
             }
         painter->restore();
         break; }
@@ -5432,7 +5432,7 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
 
    QWindowsMobileStylePrivate *d = const_cast<QWindowsMobileStylePrivate*>(d_func());
 
-   
+
    painter->setClipping(false);
    switch (element) {
    case CE_MenuBarEmptyArea:
@@ -5527,7 +5527,7 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
         break;
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
-            
+
             if (tab->shape == QTabBar::RoundedNorth || tab->shape == QTabBar::RoundedEast ||
                 tab->shape == QTabBar::RoundedSouth || tab->shape == QTabBar::RoundedWest) {
                     d->drawTabBarTab(painter, tab);
@@ -5564,7 +5564,7 @@ void QWindowsMobileStyle::drawControl(ControlElement element, const QStyleOption
             proxy()->drawControl(CE_HeaderSection, header, painter, widget);
             QStyleOptionHeader subopt = *header;
             subopt.rect = proxy()->subElementRect(SE_HeaderLabel, header, widget);
-            if (header->state & State_Sunken) 
+            if (header->state & State_Sunken)
                 subopt.palette.setColor(QPalette::ButtonText, header->palette.brightText().color());
             subopt.state |= QStyle::State_On;
             if (subopt.rect.isValid())
@@ -7079,7 +7079,7 @@ int QWindowsMobileStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, co
        }
         break;
    case PM_ScrollBarExtent: {
-       
+
        if (d->smartphone)
            ret = 9;
        else

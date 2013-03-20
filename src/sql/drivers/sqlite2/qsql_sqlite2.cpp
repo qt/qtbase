@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_sqlite2.h"
+#include "qsql_sqlite2_p.h"
 
 #include <qcoreapplication.h>
 #include <qvariant.h>
@@ -50,6 +50,7 @@
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlquery.h>
+#include <QtSql/private/qsqlcachedresult_p.h>
 #include <qstringlist.h>
 #include <qvector.h>
 
@@ -93,6 +94,30 @@ QSQLite2DriverPrivate::QSQLite2DriverPrivate() : access(0)
 {
     utf8 = (qstrcmp(sqlite_encoding, "UTF-8") == 0);
 }
+
+class QSQLite2ResultPrivate;
+
+class QSQLite2Result : public QSqlCachedResult
+{
+    friend class QSQLite2Driver;
+    friend class QSQLite2ResultPrivate;
+public:
+    explicit QSQLite2Result(const QSQLite2Driver* db);
+    ~QSQLite2Result();
+    QVariant handle() const;
+
+protected:
+    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx);
+    bool reset (const QString& query);
+    int size();
+    int numRowsAffected();
+    QSqlRecord record() const;
+    void detachFromResultSet();
+    void virtual_hook(int id, void *data);
+
+private:
+    QSQLite2ResultPrivate* d;
+};
 
 class QSQLite2ResultPrivate
 {
@@ -170,7 +195,7 @@ void QSQLite2ResultPrivate::init(const char **cnames, int numCols)
     for (int i = 0; i < numCols; ++i) {
         const char* lastDot = strrchr(cnames[i], '.');
         const char* fieldName = lastDot ? lastDot + 1 : cnames[i];
-        
+
         //remove quotations around the field name if any
         QString fieldStr = QString::fromLatin1(fieldName);
         QLatin1Char quote('\"');
@@ -219,7 +244,7 @@ bool QSQLite2ResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int 
         firstRow.clear();
         firstRow.resize(colNum);
     }
-    
+
     switch(res) {
     case SQLITE_ROW:
         // check to see if should fill out columns

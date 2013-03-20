@@ -73,7 +73,7 @@
     have worked through this tutorial, we recommend reading the
     \l{mainwindows/application}{Application} example, which presents a
     small GUI application, with menus, toolbars, a status bar, and so
-    on.  
+    on.
 */
 
 /*!
@@ -199,7 +199,7 @@
 
     Notice that \c addressLabel is positioned using Qt::AlignTop as an
     additional argument. This is to make sure it is not vertically centered in
-    cell (1,0). For a basic overview on Qt Layouts, refer to the 
+    cell (1,0). For a basic overview on Qt Layouts, refer to the
     \l{Layout Management} documentation.
 
     In order to install the layout object onto the widget, we have to invoke
@@ -431,7 +431,7 @@
 
     \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
 
-    The image below is the expected graphical user interface. 
+    The image below is the expected graphical user interface.
 
     \image addressbook-tutorial-part3-screenshot.png
 

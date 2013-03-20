@@ -59,10 +59,6 @@
 
 #include "qlocale.h"
 
-#if defined(Q_OS_BLACKBERRY)
-#include "qsocketnotifier.h"
-#endif
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -238,10 +234,14 @@ public:
 
     QString bcp47Name() const;
 
-    QString languageCode() const; // ### QByteArray::fromRawData would be more optimal
-    QString scriptCode() const;
-    QString countryCode() const;
+    // ### QByteArray::fromRawData would be more optimal
+    inline QString languageCode() const { return QLocalePrivate::languageToCode(QLocale::Language(m_data->m_language_id)); }
+    inline QString scriptCode() const { return QLocalePrivate::scriptToCode(QLocale::Script(m_data->m_script_id)); }
+    inline QString countryCode() const { return QLocalePrivate::countryToCode(QLocale::Country(m_data->m_country_id)); }
 
+    static QString languageToCode(QLocale::Language language);
+    static QString scriptToCode(QLocale::Script script);
+    static QString countryToCode(QLocale::Country country);
     static QLocale::Language codeToLanguage(const QString &code);
     static QLocale::Script codeToScript(const QString &code);
     static QLocale::Country codeToCountry(const QString &code);
@@ -311,13 +311,17 @@ public:
     qint64 stringToLongLong(const QString &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
     quint64 stringToUnsLongLong(const QString &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
 
+    double stringToDouble(const QStringRef &num, bool *ok, GroupSeparatorMode group_sep_mode) const;
+    qint64 stringToLongLong(const QStringRef &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
+    quint64 stringToUnsLongLong(const QStringRef &num, int base, bool *ok, GroupSeparatorMode group_sep_mode) const;
+
 
     static double bytearrayToDouble(const char *num, bool *ok, bool *overflow = 0);
     static qint64 bytearrayToLongLong(const char *num, int base, bool *ok, bool *overflow = 0);
     static quint64 bytearrayToUnsLongLong(const char *num, int base, bool *ok);
 
     typedef QVarLengthArray<char, 256> CharBuff;
-    bool numberToCLocale(const QString &num,
+    bool numberToCLocale(const QChar *str, int len,
     	    	    	  GroupSeparatorMode group_sep_mode,
                           CharBuff *result) const;
     inline char digitToCLocale(QChar c) const;
@@ -372,28 +376,6 @@ inline char QLocalePrivate::digitToCLocale(QChar in) const
 
     return 0;
 }
-
-#if defined(Q_OS_BLACKBERRY)
-class QQNXLocaleData: public QObject
-{
-    Q_OBJECT
-public:
-    QQNXLocaleData();
-    virtual ~QQNXLocaleData();
-
-public Q_SLOTS:
-    void updateMeasurementSystem();
-    void installSocketNotifier();
-
-private:
-    void initialize();
-
-public:
-    uint ppsMeasurement;
-    QSocketNotifier *ppsNotifier;
-    int ppsFd;
-};
-#endif
 
 QString qt_readEscapedFormatString(const QString &format, int *idx);
 bool qt_splitLocaleName(const QString &name, QString &lang, QString &script, QString &cntry);

@@ -133,7 +133,7 @@
     that the entire name and address insertion is treated as a single
     operation by the QTextEdit, so a single undo will revert all the
     insertions.
-    
+
     \snippet mainwindows/dockwidgets/mainwindow.cpp 7
 
     This function works in a similar way to \c insertCustomer(). First
@@ -141,7 +141,7 @@
     replace it with the standard paragraph that the user clicked. Again
     we use a \c beginEditBlock() ... \c endEditBlock() pair so that the
     insertion can be undone as a single operation.
-    
+
     \snippet mainwindows/dockwidgets/mainwindow.cpp 3
 
     Qt's QTextDocument class makes printing documents easy. We simply

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_oci.h"
+#include "qsql_oci_p.h"
 
 #include <qcoreapplication.h>
 #include <qvariant.h>
@@ -51,6 +51,7 @@
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlquery.h>
+#include <QtSql/private/qsqlcachedresult_p.h>
 #include <qstringlist.h>
 #include <qvarlengtharray.h>
 #include <qvector.h>
@@ -99,7 +100,7 @@ enum { QOCIEncoding = 2000 }; // AL16UTF16
 // Always set the OCI_ATTR_CHARSET_FORM to SQLCS_NCHAR is safe
 // because Oracle server will deal with the implicit Conversion
 // Between CHAR and NCHAR.
-// see: http://download.oracle.com/docs/cd/A91202_01/901_doc/appdev.901/a89857/oci05bnd.htm#422705 
+// see: http://download.oracle.com/docs/cd/A91202_01/901_doc/appdev.901/a89857/oci05bnd.htm#422705
 static const ub1 qOraCharsetForm = SQLCS_NCHAR;
 #endif
 
@@ -162,6 +163,33 @@ Q_DECLARE_METATYPE(QOCIRowIdPointer)
 QT_END_INCLUDE_NAMESPACE
 
 class QOCICols;
+struct QOCIResultPrivate;
+
+class Q_EXPORT_SQLDRIVER_OCI QOCIResult : public QSqlCachedResult
+{
+    friend class QOCIDriver;
+    friend struct QOCIResultPrivate;
+    friend class QOCICols;
+public:
+    QOCIResult(const QOCIDriver * db, const QOCIDriverPrivate* p);
+    ~QOCIResult();
+    bool prepare(const QString& query);
+    bool exec();
+    QVariant handle() const;
+
+protected:
+    bool gotoNext(ValueCache &values, int index);
+    bool reset (const QString& query);
+    int size();
+    int numRowsAffected();
+    QSqlRecord record() const;
+    QVariant lastInsertId() const;
+    bool execBatch(bool arrayBind = false);
+    void virtual_hook(int id, void *data);
+
+private:
+    QOCIResultPrivate *d;
+};
 
 struct QOCIResultPrivate
 {
@@ -2183,7 +2211,7 @@ bool QOCIDriver::open(const QString & db,
     // Connect without tnsnames.ora if a hostname is given
     QString connectionString = db;
     if (!hostname.isEmpty())
-        connectionString = 
+        connectionString =
         QString::fromLatin1("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=%1)(Port=%2))"
                 "(CONNECT_DATA=(SID=%3)))").arg(hostname).arg((port > -1 ? port : 1521)).arg(db);
 

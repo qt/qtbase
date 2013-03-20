@@ -51,8 +51,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qobject.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -76,8 +74,10 @@ class QRect;
 class QRectF;
 #ifndef QT_NO_REGEXP
 class QRegExp;
-class QRegularExpression;
 #endif // QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
+class QRegularExpression;
+#endif // QT_NO_REGULAREXPRESSION
 class QTextFormat;
 class QTextLength;
 class QUrl;
@@ -240,11 +240,11 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QLocale &locale);
 #ifndef QT_NO_REGEXP
     QVariant(const QRegExp &regExp);
-#ifndef QT_BOOTSRAPPED
-    QVariant(const QRegularExpression &re);
-#endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGULAREXPRESSION
+    QVariant(const QRegularExpression &re);
+#endif // QT_NO_REGULAREXPRESSION
     QVariant(const QUrl &url);
     QVariant(const QEasingCurve &easing);
     QVariant(const QUuid &uuid);
@@ -253,7 +253,7 @@ class Q_CORE_EXPORT QVariant
     QVariant(const QJsonObject &jsonObject);
     QVariant(const QJsonArray &jsonArray);
     QVariant(const QJsonDocument &jsonDocument);
-#endif
+#endif // QT_BOOTSTRAPPED
 
     QVariant& operator=(const QVariant &other);
 #ifdef Q_COMPILER_RVALUE_REFS
@@ -313,11 +313,11 @@ class Q_CORE_EXPORT QVariant
     QLocale toLocale() const;
 #ifndef QT_NO_REGEXP
     QRegExp toRegExp() const;
-#ifndef QT_BOOTSTRAPPED
-    QRegularExpression toRegularExpression() const;
-#endif // QT_BOOTSTRAPPED
 #endif // QT_NO_REGEXP
 #ifndef QT_BOOTSTRAPPED
+#ifndef QT_NO_REGULAREXPRESSION
+    QRegularExpression toRegularExpression() const;
+#endif // QT_NO_REGULAREXPRESSION
     QUrl toUrl() const;
     QEasingCurve toEasingCurve() const;
     QUuid toUuid() const;
@@ -326,7 +326,7 @@ class Q_CORE_EXPORT QVariant
     QJsonObject toJsonObject() const;
     QJsonArray toJsonArray() const;
     QJsonDocument toJsonDocument() const;
-#endif
+#endif // QT_BOOTSTRAPPED
 
 #ifndef QT_NO_DATASTREAM
     void load(QDataStream &ds);
@@ -484,7 +484,7 @@ public:
 template <typename T>
 inline QVariant qVariantFromValue(const T &t)
 {
-    return QVariant(qMetaTypeId<T>(reinterpret_cast<T *>(0)), &t, QTypeInfo<T>::isPointer);
+    return QVariant(qMetaTypeId<T>(), &t, QTypeInfo<T>::isPointer);
 }
 
 template <>
@@ -494,7 +494,7 @@ template <typename T>
 inline void qVariantSetValue(QVariant &v, const T &t)
 {
     //if possible we reuse the current QVariant private
-    const uint type = qMetaTypeId<T>(reinterpret_cast<T *>(0));
+    const uint type = qMetaTypeId<T>();
     QVariant::Private &d = v.data_ptr();
     if (v.isDetached() && (type == d.type || (type <= uint(QVariant::Char) && d.type <= uint(QVariant::Char)))) {
         d.type = type;
@@ -568,7 +568,7 @@ namespace QtPrivate {
     {
         static T metaType(const QVariant &v)
         {
-            const int vid = qMetaTypeId<T>(static_cast<T *>(0));
+            const int vid = qMetaTypeId<T>();
             if (vid == v.userType())
                 return *reinterpret_cast<const T *>(v.constData());
             if (vid < int(QMetaType::User)) {
@@ -619,7 +619,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QVariant::Type);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QVARIANT_H

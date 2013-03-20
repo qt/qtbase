@@ -195,6 +195,31 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
 */
 
 /*!
+    \fn void QNetworkReply::encrypted()
+    \since 5.1
+
+    This signal is emitted when an SSL/TLS session has successfully
+    completed the initial handshake. At this point, no user data
+    has been transmitted. The signal can be used to perform
+    additional checks on the certificate chain, for example to
+    notify users when the certificate for a website has changed.
+    If the reply does not match the expected criteria then it should
+    be aborted by calling QNetworkReply::abort() by a slot connected
+    to this signal. The SSL configuration in use can be inspected
+    using the QNetworkReply::sslConfiguration() method.
+
+    Internally, QNetworkAccessManager may open multiple connections
+    to a server, in order to allow it process requests in parallel.
+    These connections may be reused, which means that the encrypted()
+    signal would not be emitted. This means that you are only
+    guaranteed to receive this signal for the first connection to a
+    site in the lifespan of the QNetworkAccessManager.
+
+    \sa QSslSocket::encrypted()
+    \sa QNetworkAccessManager::encrypted()
+*/
+
+/*!
     \fn void QNetworkReply::sslErrors(const QList<QSslError> &errors)
 
     This signal is emitted if the SSL/TLS session encountered errors

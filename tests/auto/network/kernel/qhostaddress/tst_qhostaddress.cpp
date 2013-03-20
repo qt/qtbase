@@ -266,7 +266,7 @@ void tst_QHostAddress::specialAddresses_data()
 
     QTest::newRow("null_1") << QString("") << (int)QHostAddress::Null << true;
     QTest::newRow("null_2") << QString("bjarne") << (int)QHostAddress::Null << true;
-    
+
     QTest::newRow("compare_from_null") << QString("") << (int)QHostAddress::Broadcast << false;
 
     QTest::newRow("broadcast_1") << QString("255.255.255.255") << (int)QHostAddress::Any << false;

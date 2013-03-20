@@ -49,6 +49,5 @@
 void (*qcgl_getProcAddress(const QByteArray &procName))();
 QSurfaceFormat qcgl_surfaceFormat();
 void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format);
-CGLContextObj qcgl_createGlContext();
 
 #endif // QMACGLCONVENIENCE_H

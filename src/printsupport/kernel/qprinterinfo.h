@@ -43,10 +43,8 @@
 #define QPRINTERINFO_H
 
 #include <QtCore/QList>
-
+#include <QtCore/QPair>
 #include <QtPrintSupport/QPrinter>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -73,6 +71,7 @@ public:
     bool isDefault() const;
 
     QList<QPrinter::PaperSize> supportedPaperSizes() const;
+    QList<QPair<QString, QSizeF> > supportedSizesWithNames() const;
 
     static QList<QPrinterInfo> availablePrinters();
     static QPrinterInfo defaultPrinter();
@@ -90,7 +89,5 @@ private:
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPRINTERINFO_H

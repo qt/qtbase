@@ -196,7 +196,7 @@ namespace QTest {
 void QPlainTestLogger::outputMessage(const char *str)
 {
 #if defined(Q_OS_WINCE)
-    QString strUtf16 = QString::fromLatin1(str);
+    QString strUtf16 = QString::fromLocal8Bit(str);
     const int maxOutputLength = 255;
     do {
         QString tmp = strUtf16.left(maxOutputLength);

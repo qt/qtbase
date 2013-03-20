@@ -51,8 +51,6 @@
 
 #include <string.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -351,7 +349,5 @@ namespace QTest
 #undef QTEST_COMPARE_DECL
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

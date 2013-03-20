@@ -57,6 +57,10 @@
 #include <slog2.h>
 #endif
 
+#ifdef Q_OS_ANDROID
+#include <android/log.h>
+#endif
+
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE
@@ -72,8 +76,8 @@ static bool isFatal(QtMsgType msgType)
     if (msgType == QtFatalMsg)
         return true;
 
-    if (msgType == QtWarningMsg) {
-        static bool fatalWarnings = qEnvironmentVariableIsSet("QT_FATAL_WARNINGS");
+    if (msgType == QtWarningMsg || msgType == QtCriticalMsg) {
+        static bool fatalWarnings = !qEnvironmentVariableIsEmpty("QT_FATAL_WARNINGS");
         return fatalWarnings;
     }
 
@@ -115,6 +119,7 @@ static bool isFatal(QtMsgType msgType)
 extern bool usingWinMain;
 #endif
 
+#ifdef Q_OS_WIN
 static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const char *s) Q_DECL_NOEXCEPT
 {
     size_t len = qstrlen(s);
@@ -128,6 +133,7 @@ static inline void convert_to_wchar_t_elided(wchar_t *d, size_t space, const cha
         *d++ = *s++;
     *d++ = 0;
 }
+#endif
 
 #if !defined(QT_NO_EXCEPTIONS)
 /*!
@@ -165,9 +171,7 @@ static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap) Q_DECL
     fflush(stderr);
 #endif
 
-    if (msgType == QtFatalMsg
-            || (msgType == QtWarningMsg
-                && qEnvironmentVariableIsSet("QT_FATAL_WARNINGS"))) {
+    if (isFatal(msgType)) {
 #if defined(Q_CC_MSVC) && defined(QT_DEBUG) && defined(_DEBUG) && defined(_CRT_ERROR)
         // get the current report mode
         int reportMode = _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
@@ -521,6 +525,11 @@ static const char functionTokenC[] = "%{function}";
 static const char pidTokenC[] = "%{pid}";
 static const char appnameTokenC[] = "%{appname}";
 static const char threadidTokenC[] = "%{threadid}";
+static const char ifDebugTokenC[] = "%{if-debug}";
+static const char ifWarningTokenC[] = "%{if-warning}";
+static const char ifCriticalTokenC[] = "%{if-critical}";
+static const char ifFatalTokenC[] = "%{if-fatal}";
+static const char endifTokenC[] = "%{endif}";
 static const char emptyTokenC[] = "";
 
 static const char defaultPattern[] = "%{message}";
@@ -607,6 +616,10 @@ void QMessagePattern::setPattern(const QString &pattern)
     tokens = new const char*[lexemes.size() + 1];
     tokens[lexemes.size()] = 0;
 
+    bool nestedIfError = false;
+    bool inIf = false;
+    QString error;
+
     for (int i = 0; i < lexemes.size(); ++i) {
         const QString lexeme = lexemes.at(i);
         if (lexeme.startsWith(QLatin1String("%{"))
@@ -630,23 +643,28 @@ void QMessagePattern::setPattern(const QString &pattern)
                 tokens[i] = appnameTokenC;
             else if (lexeme == QLatin1String(threadidTokenC))
                 tokens[i] = threadidTokenC;
-            else {
+
+#define IF_TOKEN(LEVEL) \
+            else if (lexeme == QLatin1String(LEVEL)) { \
+                if (inIf) \
+                    nestedIfError = true; \
+                tokens[i] = LEVEL; \
+                inIf = true; \
+            }
+            IF_TOKEN(ifDebugTokenC)
+            IF_TOKEN(ifWarningTokenC)
+            IF_TOKEN(ifCriticalTokenC)
+            IF_TOKEN(ifFatalTokenC)
+#undef IF_TOKEN
+            else if (lexeme == QLatin1String(endifTokenC)) {
+                tokens[i] = endifTokenC;
+                if (!inIf && !nestedIfError)
+                    error += QStringLiteral("QT_MESSAGE_PATTERN: %{endif} without an %{if-*}\n");
+                inIf = false;
+            } else {
                 tokens[i] = emptyTokenC;
-
-                QString error = QStringLiteral("QT_MESSAGE_PATTERN: Unknown placeholder %1\n")
+                error += QStringLiteral("QT_MESSAGE_PATTERN: Unknown placeholder %1\n")
                         .arg(lexeme);
-
-#if defined(Q_OS_WINCE)
-                OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
-                continue;
-#elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
-                if (usingWinMain) {
-                    OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
-                    continue;
-                }
-#endif
-                fprintf(stderr, "%s", error.toLocal8Bit().constData());
-                fflush(stderr);
             }
         } else {
             char *literal = new char[lexeme.size() + 1];
@@ -654,6 +672,24 @@ void QMessagePattern::setPattern(const QString &pattern)
             literal[lexeme.size()] = '\0';
             literalsVar.append(literal);
             tokens[i] = literal;
+        }
+    }
+    if (nestedIfError)
+        error += QStringLiteral("QT_MESSAGE_PATTERN: %{if-*} cannot be nested\n");
+    else if (inIf)
+        error += QStringLiteral("QT_MESSAGE_PATTERN: missing %{endif}\n");
+    if (!error.isEmpty()) {
+#if defined(Q_OS_WINCE)
+        OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
+        if (0)
+#elif defined(Q_OS_WIN) && defined(QT_BUILD_CORE_LIB)
+        if (usingWinMain) {
+            OutputDebugString(reinterpret_cast<const wchar_t*>(error.utf16()));
+        } else
+#endif
+        {
+            fprintf(stderr, "%s", error.toLocal8Bit().constData());
+            fflush(stderr);
         }
     }
     literals = new const char*[literalsVar.size() + 1];
@@ -735,10 +771,16 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
     if (pattern->tokens[0] == 0)
         return message;
 
+    bool skip = false;
+
     // we do not convert file, function, line literals to local encoding due to overhead
     for (int i = 0; pattern->tokens[i] != 0; ++i) {
         const char *token = pattern->tokens[i];
-        if (token == messageTokenC) {
+        if (token == endifTokenC) {
+            skip = false;
+        } else if (skip) {
+            // do nothing
+        } else if (token == messageTokenC) {
             message.append(str);
         } else if (token == categoryTokenC) {
             message.append(QLatin1String(context.category));
@@ -770,6 +812,14 @@ Q_CORE_EXPORT QString qMessageFormatString(QtMsgType type, const QMessageLogCont
             message.append(QLatin1String("0x"));
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #endif
+#define HANDLE_IF_TOKEN(LEVEL)  \
+        } else if (token == if##LEVEL##TokenC) { \
+            skip = type != Qt##LEVEL##Msg;
+        HANDLE_IF_TOKEN(Debug)
+        HANDLE_IF_TOKEN(Warning)
+        HANDLE_IF_TOKEN(Critical)
+        HANDLE_IF_TOKEN(Fatal)
+#undef HANDLE_IF_TOKEN
         } else {
             message.append(QLatin1String(token));
         }
@@ -786,6 +836,24 @@ Q_CORE_EXPORT QtMsgHandler qInstallMsgHandler(QtMsgHandler);
 
 static QtMsgHandler msgHandler = 0;                // pointer to debug handler (without context)
 static QtMessageHandler messageHandler = 0;         // pointer to debug handler (with context)
+
+#ifdef Q_OS_ANDROID
+static void android_default_message_handler(QtMsgType type,
+                                  const QMessageLogContext &context,
+                                  const QString &message)
+{
+    android_LogPriority priority;
+    switch (type) {
+    case QtDebugMsg: priority = ANDROID_LOG_DEBUG; break;
+    case QtWarningMsg: priority = ANDROID_LOG_WARN; break;
+    case QtCriticalMsg: priority = ANDROID_LOG_ERROR; break;
+    case QtFatalMsg: priority = ANDROID_LOG_FATAL; break;
+    };
+
+    __android_log_print(priority, "Qt", "%s:%d (%s): %s", qPrintable(context.file), context.line,
+                        qPrintable(context.function), qPrintable(message));
+}
+#endif //Q_OS_ANDROID
 
 /*!
     \internal
@@ -807,6 +875,8 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 
 #if defined(QT_USE_SLOG2)
     slog2_default_handler(type, logMessage.toLocal8Bit().constData());
+#elif defined(Q_OS_ANDROID)
+    android_default_message_handler(type, context, logMessage);
 #else
     fprintf(stderr, "%s", logMessage.toLocal8Bit().constData());
     fflush(stderr);
@@ -819,7 +889,7 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
 static void qDefaultMsgHandler(QtMsgType type, const char *buf)
 {
     QMessageLogContext emptyContext;
-    qDefaultMessageHandler(type, emptyContext, QLatin1String(buf));
+    qDefaultMessageHandler(type, emptyContext, QString::fromLocal8Bit(buf));
 }
 
 static void qt_message_print(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
@@ -1008,6 +1078,15 @@ void qErrnoWarning(int code, const char *msg, ...)
     \row \li \c %{threadid} \li ID of current thread
     \row \li \c %{type} \li "debug", "warning", "critical" or "fatal"
     \endtable
+
+    You can also use conditionals on the type of the message using \c %{if-debug},
+    \c %{if-warning}, \c %{if-critical} or \c %{if-fatal} followed by an \c %{endif}.
+    What is inside the \c %{if-*} and \c %{endif} will only be printed if the type matches.
+
+    Example:
+    \code
+    QT_MESSAGE_PATTERN="[%{if-debug}D%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] %{file}:%{line} - %{message}"
+    \endcode
 
     The default \a pattern is "%{message}".
 

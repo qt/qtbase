@@ -90,7 +90,7 @@ private:
     int yRot;
     int zRot;
     int gear1Rot;
-    
+
     QPoint lastPos;
 };
 

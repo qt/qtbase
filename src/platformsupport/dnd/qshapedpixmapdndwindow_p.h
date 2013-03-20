@@ -48,8 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QT_BEGIN_HEADER
-
 class QShapedPixmapWindow : public QWindow
 {
     Q_OBJECT
@@ -71,8 +69,6 @@ private:
     QPixmap m_pixmap;
     QPoint m_hotSpot;
 };
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 

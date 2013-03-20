@@ -64,25 +64,25 @@ struct ItemData
 Q_DECLARE_METATYPE(ItemData);
 
 ListItem::ListItem(QGraphicsWidget *parent)
-  : GvbWidget(parent),
-    m_txtlayout(new QGraphicsGridLayout()),
-    m_layout(new QGraphicsLinearLayout(Qt::Horizontal)),
-    m_liconlayout(new QGraphicsLinearLayout(Qt::Horizontal)),
-    m_riconlayout(new QGraphicsLinearLayout(Qt::Horizontal))
-    ,m_fonts()
-    ,m_borderPen(Qt::NoPen)
-    ,m_backgroundBrush(QBrush())
-    ,m_backgroundOpacity(1.0)
-    ,m_rounding(0.0, 0.0)
-{ 
+  : GvbWidget(parent)
+  , m_txtlayout(new QGraphicsGridLayout())
+  , m_layout(new QGraphicsLinearLayout(Qt::Horizontal))
+  , m_liconlayout(new QGraphicsLinearLayout(Qt::Horizontal))
+  , m_riconlayout(new QGraphicsLinearLayout(Qt::Horizontal))
+  , m_fonts()
+  , m_borderPen(Qt::NoPen)
+  , m_backgroundBrush(QBrush())
+  , m_backgroundOpacity(1.0)
+  , m_rounding(0.0, 0.0)
+{
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     setContentsMargins(0,4,4,0);
-    m_layout->setContentsMargins(0,0,0,0); 
+    m_layout->setContentsMargins(0,0,0,0);
 
     m_txtlayout->setContentsMargins(0,8,0,8);
     m_liconlayout->setContentsMargins(8,8,8,8);
     m_riconlayout->setContentsMargins(0,8,4,8);
-    
+
     m_layout->insertItem(0, m_liconlayout);
     m_layout->insertItem(1, m_txtlayout);
     m_layout->insertItem(2, m_riconlayout);
@@ -95,47 +95,44 @@ ListItem::ListItem(QGraphicsWidget *parent)
     setLayout(m_layout);
 }
 
-ListItem::~ListItem() 
+ListItem::~ListItem()
 {
-    if ( !m_liconlayout->parentLayoutItem() )
+    if (!m_liconlayout->parentLayoutItem())
         delete m_liconlayout;
 
-    if ( !m_riconlayout->parentLayoutItem() )
+    if (!m_riconlayout->parentLayoutItem())
         delete m_riconlayout;
 }
 
-void ListItem::setIcon( IconItem *iconItem, const IconItemPos iconPos )
+void ListItem::setIcon(IconItem *iconItem, const IconItemPos iconPos)
 {
     if (iconPos == LeftIcon) {
         if (m_liconlayout->count() > 0 && m_liconlayout->itemAt(0)) {
             delete m_liconlayout->itemAt(0);
-            m_liconlayout->addItem( iconItem );
+            m_liconlayout->addItem(iconItem);
+        } else {
+            m_liconlayout->addItem(iconItem);
         }
-        else {
-            m_liconlayout->addItem( iconItem );
-        }
-        m_liconlayout->itemAt(0)->setMaximumSize(58,58);
-    }
-    else if (iconPos == RightIcon) {
+        m_liconlayout->itemAt(0)->setMaximumSize(58, 58);
+    } else if (iconPos == RightIcon) {
         if (m_riconlayout->count() > 0 && m_riconlayout->itemAt(0)) {
             delete m_riconlayout->itemAt(0);
-            m_riconlayout->addItem( iconItem );
+            m_riconlayout->addItem(iconItem);
+        } else {
+            m_riconlayout->addItem(iconItem);
         }
-        else {
-            m_riconlayout->addItem( iconItem );
-        }
-        m_riconlayout->itemAt(0)->setMaximumSize(22,22);
+        m_riconlayout->itemAt(0)->setMaximumSize(22, 22);
     }
     m_layout->invalidate();
 }
 
-IconItem* ListItem::icon( const IconItemPos iconPos )  const
+IconItem* ListItem::icon(const IconItemPos iconPos) const
 {
     QGraphicsLayoutItem* item = 0;
 
     if (iconPos == LeftIcon && m_liconlayout->count() > 0) {
         item = m_liconlayout->itemAt(0);
-    } 
+    }
     else if (iconPos == RightIcon && m_riconlayout->count() > 0) {
         item = m_riconlayout->itemAt(0);
     }
@@ -203,13 +200,13 @@ void ListItem::setData(const QVariant &value, int role)
     ItemData data = value.value<ItemData>();
     QList<ListItem::TextPos> textkeys = data.texts.keys();
 
-    for( int i = 0; i<textkeys.count(); ++i) {
-        setText(data.texts[textkeys.at(i)],textkeys.at(i));
+    for (int i = 0; i<textkeys.count(); ++i) {
+        setText(data.texts[textkeys.at(i)], textkeys.at(i));
         setFont(data.fonts[textkeys.at(i)], textkeys.at(i));
     }
 
     QList<ListItem::IconItemPos> iconkeys = data.icons.keys();
-    for( int i = 0; i<iconkeys.count(); ++i) {
+    for (int i = 0; i<iconkeys.count(); ++i) {
         IconItem *iconItem = icon(iconkeys.at(i));
         if (iconItem)
             iconItem->setFileName(data.icons[iconkeys.at(i)]);
@@ -249,8 +246,7 @@ void ListItem::setText(const QString str, const TextPos position)
         m_txtlayout->addItem(label, position, 0);
         if (m_fonts.contains(position))
             label->setFont(m_fonts[position]);
-    }
-    else {
+    } else {
         Label *titem = static_cast<Label *>(item);
         titem->setText(str);
     }
@@ -290,14 +286,12 @@ void ListItem::paint(QPainter *painter, const QStyleOptionGraphicsItem */*option
     QRectF r = rect();
     r.adjust(penWidth, penWidth, -penWidth, -penWidth);
 
-    if (m_borderPen != Qt::NoPen)
-    {
+    if (m_borderPen != Qt::NoPen) {
         painter->setPen(m_borderPen);
         painter->drawRoundedRect(r, m_rounding.width(), m_rounding.height());
     }
 
-    if (m_backgroundBrush != Qt::NoBrush)
-    {
+    if (m_backgroundBrush != Qt::NoBrush) {
         painter->setPen(Qt::NoPen);
         painter->setBrush(m_backgroundBrush);
         painter->setOpacity(m_backgroundOpacity);

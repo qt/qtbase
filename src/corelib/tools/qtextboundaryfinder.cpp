@@ -41,7 +41,6 @@
 #include <QtCore/qtextboundaryfinder.h>
 #include <QtCore/qvarlengtharray.h>
 
-#include <private/qunicodetables_p.h>
 #include <private/qunicodetools_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -54,39 +53,24 @@ public:
 
 static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int length, QCharAttributes *attributes)
 {
-    QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems;
-
     const ushort *string = reinterpret_cast<const ushort *>(chars);
-    const ushort *unicode = string;
-    // correctly assign script, isTab and isObject to the script analysis
-    const ushort *uc = unicode;
-    const ushort *e = uc + length;
-    int script = QUnicodeTables::Common;
-    int lastScript = QUnicodeTables::Common;
-    const ushort *start = uc;
-    while (uc < e) {
-        int s = QUnicodeTables::script(*uc);
-        if (s != QUnicodeTables::Inherited)
-            script = s;
-        if (*uc == QChar::ObjectReplacementCharacter || *uc == QChar::LineSeparator || *uc == 9) 
-            script = QUnicodeTables::Common;
-        if (script != lastScript) {
-            if (uc != start) {
+
+    QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems;
+    {
+        QVarLengthArray<uchar> scripts(length);
+
+        QUnicodeTools::initScripts(string, length, scripts.data());
+
+        int start = 0;
+        for (int i = start + 1; i <= length; ++i) {
+            if (i == length || scripts[i] != scripts[start]) {
                 QUnicodeTools::ScriptItem item;
-                item.position = start - string;
-                item.script = lastScript;
+                item.position = start;
+                item.script = scripts[start];
                 scriptItems.append(item);
-                start = uc;
+                start = i;
             }
-            lastScript = script;
         }
-        ++uc;
-    }
-    if (uc != start) {
-        QUnicodeTools::ScriptItem item;
-        item.position = start - string;
-        item.script = lastScript;
-        scriptItems.append(item);
     }
 
     QUnicodeTools::CharAttributeOptions options = 0;
@@ -100,7 +84,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     QUnicodeTools::initCharAttributes(string, length, scriptItems.data(), scriptItems.count(), attributes, options);
 }
 
-/*! 
+/*!
     \class QTextBoundaryFinder
     \inmodule QtCore
 

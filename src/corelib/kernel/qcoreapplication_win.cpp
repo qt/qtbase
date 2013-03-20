@@ -43,10 +43,12 @@
 #include "qcoreapplication_p.h"
 #include "qstringlist.h"
 #include "qvector.h"
-#include "qmutex.h"
 #include "qfileinfo.h"
 #include "qcorecmdlineargs_p.h"
+#ifndef QT_NO_QOBJECT
+#include "qmutex.h"
 #include <private/qthread_p.h>
+#endif
 #include <ctype.h>
 #include <qt_windows.h>
 
@@ -156,6 +158,8 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
     Q_UNUSED(instance);
     Q_UNUSED(prevInstance);
 }
+
+#ifndef QT_NO_QOBJECT
 
 void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerId)
 {
@@ -995,5 +999,7 @@ QDebug operator<<(QDebug dbg, const MSG &msg)
     return dbg.nospace();
 }
 #endif
+
+#endif // QT_NO_QOBJECT
 
 QT_END_NAMESPACE

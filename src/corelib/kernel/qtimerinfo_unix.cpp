@@ -77,7 +77,7 @@ QTimerInfoList::QTimerInfoList()
         msPerTick = 1000/ticksPerSecond;
     } else {
         // detected monotonic timers
-        previousTime.tv_sec = previousTime.tv_usec = 0;
+        previousTime.tv_sec = previousTime.tv_nsec = 0;
         previousTicks = 0;
         ticksPerSecond = 0;
         msPerTick = 0;
@@ -87,24 +87,24 @@ QTimerInfoList::QTimerInfoList()
     firstTimerInfo = 0;
 }
 
-timeval QTimerInfoList::updateCurrentTime()
+timespec QTimerInfoList::updateCurrentTime()
 {
     return (currentTime = qt_gettime());
 }
 
 #if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC) && !defined(Q_OS_INTEGRITY)) || defined(QT_BOOTSTRAPPED)
 
-timeval qAbsTimeval(const timeval &t)
+timespec qAbsTimespec(const timespec &t)
 {
-    timeval tmp = t;
+    timespec tmp = t;
     if (tmp.tv_sec < 0) {
         tmp.tv_sec = -tmp.tv_sec - 1;
-        tmp.tv_usec -= 1000000;
+        tmp.tv_nsec -= 1000000000;
     }
-    if (tmp.tv_sec == 0 && tmp.tv_usec < 0) {
-        tmp.tv_usec = -tmp.tv_usec;
+    if (tmp.tv_sec == 0 && tmp.tv_nsec < 0) {
+        tmp.tv_nsec = -tmp.tv_nsec;
     }
-    return normalizedTimeval(tmp);
+    return normalizedTimespec(tmp);
 }
 
 /*
@@ -114,7 +114,7 @@ timeval qAbsTimeval(const timeval &t)
 
   If /a delta is nonzero, delta is set to our best guess at how much the system clock was changed.
 */
-bool QTimerInfoList::timeChanged(timeval *delta)
+bool QTimerInfoList::timeChanged(timespec *delta)
 {
 #ifdef Q_OS_NACL
     Q_UNUSED(delta)
@@ -124,13 +124,13 @@ bool QTimerInfoList::timeChanged(timeval *delta)
     clock_t currentTicks = times(&unused);
 
     clock_t elapsedTicks = currentTicks - previousTicks;
-    timeval elapsedTime = currentTime - previousTime;
+    timespec elapsedTime = currentTime - previousTime;
 
-    timeval elapsedTimeTicks;
+    timespec elapsedTimeTicks;
     elapsedTimeTicks.tv_sec = elapsedTicks / ticksPerSecond;
-    elapsedTimeTicks.tv_usec = (((elapsedTicks * 1000) / ticksPerSecond) % 1000) * 1000;
+    elapsedTimeTicks.tv_nsec = (((elapsedTicks * 1000) / ticksPerSecond) % 1000) * 1000 * 1000;
 
-    timeval dummy;
+    timespec dummy;
     if (!delta)
         delta = &dummy;
     *delta = elapsedTime - elapsedTimeTicks;
@@ -140,16 +140,16 @@ bool QTimerInfoList::timeChanged(timeval *delta)
 
     // If tick drift is more than 10% off compared to realtime, we assume that the clock has
     // been set. Of course, we have to allow for the tick granularity as well.
-    timeval tickGranularity;
+    timespec tickGranularity;
     tickGranularity.tv_sec = 0;
-    tickGranularity.tv_usec = msPerTick * 1000;
-    return elapsedTimeTicks < ((qAbsTimeval(*delta) - tickGranularity) * 10);
+    tickGranularity.tv_nsec = msPerTick * 1000 * 1000;
+    return elapsedTimeTicks < ((qAbsTimespec(*delta) - tickGranularity) * 10);
 }
 
 /*
   repair broken timer
 */
-void QTimerInfoList::timerRepair(const timeval &diff)
+void QTimerInfoList::timerRepair(const timespec &diff)
 {
     // repair all timers
     for (int i = 0; i < size(); ++i) {
@@ -162,7 +162,7 @@ void QTimerInfoList::repairTimersIfNeeded()
 {
     if (QElapsedTimer::isMonotonic())
         return;
-    timeval delta;
+    timespec delta;
     if (timeChanged(&delta))
         timerRepair(delta);
 }
@@ -189,27 +189,27 @@ void QTimerInfoList::timerInsert(QTimerInfo *ti)
     insert(index+1, ti);
 }
 
-inline timeval &operator+=(timeval &t1, int ms)
+inline timespec &operator+=(timespec &t1, int ms)
 {
     t1.tv_sec += ms / 1000;
-    t1.tv_usec += ms % 1000 * 1000;
-    return normalizedTimeval(t1);
+    t1.tv_nsec += ms % 1000 * 1000 * 1000;
+    return normalizedTimespec(t1);
 }
 
-inline timeval operator+(const timeval &t1, int ms)
+inline timespec operator+(const timespec &t1, int ms)
 {
-    timeval t2 = t1;
+    timespec t2 = t1;
     return t2 += ms;
 }
 
-static timeval roundToMillisecond(timeval val)
+static timespec roundToMillisecond(timespec val)
 {
     // always round up
     // worst case scenario is that the first trigger of a 1-ms timer is 0.999 ms late
 
-    int us = val.tv_usec % 1000;
-    val.tv_usec += 1000 - us;
-    return normalizedTimeval(val);
+    int ns = val.tv_nsec % (1000 * 1000);
+    val.tv_nsec += 1000 * 1000 - ns;
+    return normalizedTimespec(val);
 }
 
 #ifdef QTIMERINFO_DEBUG
@@ -226,7 +226,7 @@ QDebug operator<<(QDebug s, Qt::TimerType t)
 }
 #endif
 
-static void calculateCoarseTimerTimeout(QTimerInfo *t, timeval currentTime)
+static void calculateCoarseTimerTimeout(QTimerInfo *t, timespec currentTime)
 {
     // The coarse timer works like this:
     //  - interval under 40 ms: round to even
@@ -245,7 +245,7 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timeval currentTime)
     // The objective is to make most timers wake up at the same time, thereby reducing CPU wakeups.
 
     register uint interval = uint(t->interval);
-    register uint msec = uint(t->timeout.tv_usec) / 1000;
+    register uint msec = uint(t->timeout.tv_nsec) / 1000 / 1000;
     Q_ASSERT(interval >= 20);
 
     // Calculate how much we can round and still keep within 5% error
@@ -327,16 +327,16 @@ static void calculateCoarseTimerTimeout(QTimerInfo *t, timeval currentTime)
 recalculate:
     if (msec == 1000u) {
         ++t->timeout.tv_sec;
-        t->timeout.tv_usec = 0;
+        t->timeout.tv_nsec = 0;
     } else {
-        t->timeout.tv_usec = msec * 1000;
+        t->timeout.tv_nsec = msec * 1000 * 1000;
     }
 
     if (t->timeout < currentTime)
         t->timeout += interval;
 }
 
-static void calculateNextTimeout(QTimerInfo *t, timeval currentTime)
+static void calculateNextTimeout(QTimerInfo *t, timespec currentTime)
 {
     switch (t->timerType) {
     case Qt::PreciseTimer:
@@ -382,9 +382,9 @@ static void calculateNextTimeout(QTimerInfo *t, timeval currentTime)
   Returns the time to wait for the next timer, or null if no timers
   are waiting.
 */
-bool QTimerInfoList::timerWait(timeval &tm)
+bool QTimerInfoList::timerWait(timespec &tm)
 {
-    timeval currentTime = updateCurrentTime();
+    timespec currentTime = updateCurrentTime();
     repairTimersIfNeeded();
 
     // Find first waiting timer not already active
@@ -405,7 +405,7 @@ bool QTimerInfoList::timerWait(timeval &tm)
     } else {
         // no time to wait
         tm.tv_sec  = 0;
-        tm.tv_usec = 0;
+        tm.tv_nsec = 0;
     }
 
     return true;
@@ -418,9 +418,9 @@ bool QTimerInfoList::timerWait(timeval &tm)
 */
 int QTimerInfoList::timerRemainingTime(int timerId)
 {
-    timeval currentTime = updateCurrentTime();
+    timespec currentTime = updateCurrentTime();
     repairTimersIfNeeded();
-    timeval tm = {0, 0};
+    timespec tm = {0, 0};
 
     for (int i = 0; i < count(); ++i) {
         register QTimerInfo *t = at(i);
@@ -428,7 +428,7 @@ int QTimerInfoList::timerRemainingTime(int timerId)
             if (currentTime < t->timeout) {
                 // time to wait
                 tm = roundToMillisecond(t->timeout - currentTime);
-                return tm.tv_sec*1000 + tm.tv_usec/1000;
+                return tm.tv_sec*1000 + tm.tv_nsec/1000/1000;
             } else {
                 return 0;
             }
@@ -451,7 +451,7 @@ void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType time
     t->obj = object;
     t->activateRef = 0;
 
-    timeval expected = updateCurrentTime() + interval;
+    timespec expected = updateCurrentTime() + interval;
 
     switch (timerType) {
     case Qt::PreciseTimer:
@@ -486,10 +486,10 @@ void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType time
         t->interval += 1;
         t->interval >>= 1;
         t->timeout.tv_sec = currentTime.tv_sec + t->interval;
-        t->timeout.tv_usec = 0;
+        t->timeout.tv_nsec = 0;
 
         // if we're past the half-second mark, increase the timeout again
-        if (currentTime.tv_usec > 500*1000)
+        if (currentTime.tv_nsec > 500*1000*1000)
             ++t->timeout.tv_sec;
     }
 
@@ -573,7 +573,7 @@ int QTimerInfoList::activateTimers()
     int n_act = 0, maxCount = 0;
     firstTimerInfo = 0;
 
-    timeval currentTime = updateCurrentTime();
+    timespec currentTime = updateCurrentTime();
     // qDebug() << "Thread" << QThread::currentThreadId() << "woken up at" << currentTime;
     repairTimersIfNeeded();
 

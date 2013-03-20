@@ -748,6 +748,8 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 {
     QFETCH(int, processes);
 
+    QSKIP("This test is unstable: QTBUG-25655");
+
     rememberKey("market");
 
     QProcess producer;

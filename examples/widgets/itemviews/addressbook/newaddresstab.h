@@ -53,7 +53,7 @@ QT_END_NAMESPACE
 class NewAddressTab : public QWidget
 {
     Q_OBJECT
-    
+
 public:
     NewAddressTab(QWidget *parent = 0);
 
@@ -67,7 +67,7 @@ private:
     QLabel *descriptionLabel;
     QPushButton *addButton;
     QVBoxLayout *mainLayout;
-    
+
 };
 //! [0]
 

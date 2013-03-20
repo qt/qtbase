@@ -50,7 +50,7 @@
 
     In this example we show how to create such custom graphics
     scenes and items by implementing classes that inherit
-    QGraphicsScene and QGraphicsItem. 
+    QGraphicsScene and QGraphicsItem.
 
     In particular we show how to:
 
@@ -65,21 +65,21 @@
     The example consists of the following classes:
     \list
     \li \c MainWindow creates the widgets and display
-	   them in a QMainWindow. It also manages the interaction 
-	   between the widgets and the graphics scene, view and 
-	   items.
+        them in a QMainWindow. It also manages the interaction
+        between the widgets and the graphics scene, view and
+        items.
     \li \c DiagramItem inherits QGraphicsPolygonItem and
-	   represents a flowchart shape. 
+        represents a flowchart shape.
     \li \c TextDiagramItem inherits QGraphicsTextItem and
-	   represents text items in the diagram. The class adds
-	   support for moving the item with the mouse, which is not
-	   supported by QGraphicsTextItem.
+        represents text items in the diagram. The class adds
+        support for moving the item with the mouse, which is not
+        supported by QGraphicsTextItem.
     \li \c Arrow inherits QGraphicsLineItem and is an arrow
-	   that connect two DiagramItems. 
+        that connect two DiagramItems.
     \li \c DiagramScene inherits QGraphicsDiagramScene and
-	   provides support for \c DiagramItem, \c Arrow and 
-	   \c DiagramTextItem (In addition to the support already
-	   handled by QGraphicsScene).
+        provides support for \c DiagramItem, \c Arrow and
+        \c DiagramTextItem (In addition to the support already
+        handled by QGraphicsScene).
     \endlist
 
     \section1 MainWindow Class Definition
@@ -88,7 +88,7 @@
 
     The \c MainWindow class creates and lays out the widgets in a
     QMainWindow. The class forwards input from the widgets to the
-    DiagramScene. It also updates its widgets when the diagram 
+    DiagramScene. It also updates its widgets when the diagram
     scene's text item changes, or a diagram item or a diagram text item
     is inserted into the scene.
 
@@ -104,8 +104,8 @@
     \snippet graphicsview/diagramscene/mainwindow.cpp 0
 
     In the constructor we call methods to create the widgets and
-    layouts of the example before we create the diagram scene. 
-    The toolbars must be created after the scene as they connect 
+    layouts of the example before we create the diagram scene.
+    The toolbars must be created after the scene as they connect
     to its signals. We then lay the widgets out in the window.
 
     We connect to the \c itemInserted() and \c textInserted() slots of
@@ -115,20 +115,20 @@
     update the widgets that display font properties if the item
     selected is a \c DiagramTextItem.
 
-    The \c createToolBox() function creates and lays out the widgets 
+    The \c createToolBox() function creates and lays out the widgets
     of the \c toolBox QToolBox. We will not examine it with a
-    high level of detail as it does not deal with graphics framework 
+    high level of detail as it does not deal with graphics framework
     specific functionality. Here is its implementation:
 
     \snippet graphicsview/diagramscene/mainwindow.cpp 21
-    
+
     This part of the function sets up the tabbed widget item that
-    contains the flowchart shapes. An exclusive QButtonGroup always 
+    contains the flowchart shapes. An exclusive QButtonGroup always
     keeps one button checked; we want the group to allow all buttons
     to be unchecked.
     We still use a button group since we can associate user
-    data, which we use to store the diagram type, with each button. 
-    The \c createCellWidget() function sets up the buttons in the 
+    data, which we use to store the diagram type, with each button.
+    The \c createCellWidget() function sets up the buttons in the
     tabbed widget item and is examined later.
 
     The buttons of the background tabbed widget item is set up in the
@@ -137,7 +137,7 @@
     \snippet graphicsview/diagramscene/mainwindow.cpp 22
 
     We set the preferred size of the toolbox as its maximum. This
-    way, more space is given to the graphics view. 
+    way, more space is given to the graphics view.
 
     Here is the \c createActions() function:
 
@@ -202,7 +202,7 @@
     with this function is used in the tool box.
 
     Here is the \c createColorMenu() function:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 30
 
     This function creates a color menu that is used as the
@@ -224,7 +224,7 @@
 
     \snippet graphicsview/diagramscene/mainwindow.cpp 32
 
-    This function creates an icon with a filled rectangle in the 
+    This function creates an icon with a filled rectangle in the
     color of \a color. It is used for creating icons for the color
     menus in the \c fillColorToolButton, \c fontColorToolButton, and
     \c lineColorToolButton.
@@ -240,8 +240,8 @@
     with.
 
     When one of the buttons in the background tabbed widget item is
-    clicked we change the brush; we find out which button it is by 
-    checking its text. 
+    clicked we change the brush; we find out which button it is by
+    checking its text.
 
     Here is the implementation of \c buttonGroupClicked():
 
@@ -255,37 +255,37 @@
     checked at a time.
 
     \c QButtonGroup assigns an id to each button. We have set the id
-    of each button to the diagram type, as given by DiagramItem::DiagramType 
-    that will be inserted into the scene when it is clicked. We can 
-    then use the button id when we set the diagram type with 
+    of each button to the diagram type, as given by DiagramItem::DiagramType
+    that will be inserted into the scene when it is clicked. We can
+    then use the button id when we set the diagram type with
     \c setItemType(). In the case of text we assigned an id that has a
     value that is not in the DiagramType enum.
-    
+
     Here is the implementation of \c deleteItem():
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 3
-    
+
     This slot deletes the selected item, if any, from the scene. It
     deletes the arrows first in order to avoid to delete them twice. If
     the item to be deleted is a \c DiagramItem, we also need to delete
     arrows connected to it; we don't want arrows in the scene that
     aren't connected to items in both ends.
-    
+
     This is the implementation of pointerGroupClicked():
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 4
-    
+
     The \c pointerTypeGroup decides whether the scene is in ItemMove
-    or InsertLine mode. This button group is exclusive, i.e., only 
+    or InsertLine mode. This button group is exclusive, i.e., only
     one button is checked at any time. As with the \c buttonGroup above
     we have assigned an id to the buttons that matches values of the
     DiagramScene::Mode enum, so that we can use the id to set the
     correct mode.
-    
+
     Here is the \c bringToFront() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 5
-    
+
     Several items may collide, i.e., overlap, with each other in
     the scene.  This slot is called when the user requests that an
     item should be placed on top of the items it collides with.
@@ -296,169 +296,169 @@
     lower values. When we bring an item to the front we can loop
     through the items it collides with and set a z-value that is
     higher than all of them.
-    
+
     Here is the \c sendToBack() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 6
-    
+
     This slot works in the same way as \c bringToFront() described
     above, but sets a z-value that is lower than items the item that
     should be send to the back collides with.
-    
+
     This is the implementation of \c itemInserted():
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 7
-    
+
     This slot is called from the \c DiagramScene when an item has been
     added to the scene. We set the mode of the scene back to the mode
     before the item was inserted, which is ItemMove or InsertText
-    depending on which button is checked in the \c pointerTypeGroup. 
+    depending on which button is checked in the \c pointerTypeGroup.
     We must also uncheck the button in the in the \c buttonGroup.
-    
+
     Here is the implementation of \c textInserted():
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 8
-    
+
     We simply set the mode of the scene back to the mode it had before
     the text was inserted.
-    
+
     Here is the \c currentFontChanged() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 9
-    
+
     When the user requests a font change, by using one of the
     widgets in the \c fontToolBar, we create a new QFont object and
     set its properties to match the state of the widgets. This is done
     in \c handleFontChange(), so we simply call that slot.
-    
+
     Here is the \c fontSizeChanged() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 10
-    
+
     When the user requests a font change, by using one of the
     widgets in the \c fontToolBar, we create a new QFont object and
     set its properties to match the state of the widgets. This is done
     in \c handleFontChange(), so we simply call that slot.
-    
+
     Here is the implementation of \c sceneScaleChanged():
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 11
-    
+
     The user can increase or decrease the scale, with the \c
     sceneScaleCombo, the scene is drawn in.
     It is not the scene itself that changes its scale, but only the
-    view.  
-    
+    view.
+
     Here is the \c textColorChanged() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 12
-    
+
     This slot is called when an item in the drop-down menu of the \c
-    fontColorToolButton is pressed. We need to change the icon on 
+    fontColorToolButton is pressed. We need to change the icon on
     the button to the color of the selected QAction. We keep a pointer
     to the selected action in \c textAction. It is in \c
     textButtonTriggered() we change the text color to the color of \c
     textAction, so we call that slot.
-    
+
     Here is the \c itemColorChanged() implementation:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 13
-    
+
     This slot handles requests for changing the color of \c
     DiagramItems in the same manner as \c textColorChanged() does for
     \c DiagramTextItems.
-    
+
     Here is the implementation of \c lineColorChanged():
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 14
-    
+
     This slot handles requests for changing the color of \c Arrows in
     the same manner that \c textColorChanged() does it for \c
     DiagramTextItems.
-    
+
     Here is the \c textButtonTriggered() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 15
-    
+
     \c textAction points to the  QAction of the currently selected menu item
     in the \c fontColorToolButton's color drop-down menu. We have set
     the data of the action to the QColor the action represents, so we
     can simply fetch this when we set the color of text with \c
     setTextColor().
-    
+
     Here is the \c fillButtonTriggered() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 16
-    
+
     \c fillAction points to the selected menu item in the drop-down
     menu of \c fillColorToolButton(). We can therefore use the data of
     this action when we set the item color with \c setItemColor().
-    
+
     Here is the \c lineButtonTriggered() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 17
-    
+
     \c lineAction point to the selected item in the drop-down menu of
-    \c lineColorToolButton. We use its data when we set the arrow 
+    \c lineColorToolButton. We use its data when we set the arrow
     color with \c setLineColor().
-    
+
     Here is the \c handleFontChange() function:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 18
-    
+
     \c handleFontChange() is called when any of the widgets that show
     font properties changes. We create a new QFont object and set its
     properties based on the widgets. We then call the \c setFont()
     function of \c DiagramScene; it is the scene that set the font of
     the \c DiagramTextItems it manages.
-    
+
     Here is the \c itemSelected() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 19
-    
+
     This slot is called when an item in the \c DiagramScene is
     selected. In the case of this example it is only text items that
     emit signals when they are selected, so we do not need to check
     what kind of graphics \a item is.
-    
+
     We set the state of the widgets to match the properties of the
     font of the selected text item.
-    
+
     This is the \c about() slot:
-    
+
     \snippet graphicsview/diagramscene/mainwindow.cpp 20
-    
+
     This slot displays an about box for the example when the user
     selects the about menu item from the help menu.
-    
+
     \section1 DiagramScene Class Definition
-    
+
     The \c DiagramScene class inherits QGraphicsScene and adds
     functionality to handle \c DiagramItems, \c Arrows, and \c
     DiagramTextItems in addition to the items handled by its super
     class.
-    
-    
+
+
     \snippet graphicsview/diagramscene/diagramscene.h 0
-    
+
     In the \c DiagramScene a mouse click can give three different
     actions: the item under the mouse can be moved, an item may be
     inserted, or an arrow may be connected between to diagram items.
     Which action a mouse click has depends on the mode, given by the
     Mode enum, the scene is in. The mode is set with the \c setMode()
     function.
-    
+
     The scene also sets the color of its items and the font of its
     text items.  The colors and font used by the scene can be set with
     the \c setLineColor(), \c setTextColor(), \c setItemColor() and \c
     setFont() functions. The type of \c DiagramItem, given by the
     DiagramItem::DiagramType function, to be created when an item is
     inserted is set with the \c setItemType() slot.
-    
+
     The \c MainWindow and \c DiagramScene share responsibility for
     the examples functionality. \c MainWindow handles the following
     tasks: the deletion of items, text, and arrows; moving diagram
-    items to the back and front; and setting the scale of the scene. 
+    items to the back and front; and setting the scale of the scene.
 
     \section1 DiagramScene Class Implementation
 
@@ -492,12 +492,12 @@
 
     \snippet graphicsview/diagramscene/diagramscene.cpp 3
 
-    This function sets the color the scene will use when creating 
+    This function sets the color the scene will use when creating
     \c DiagramItems. It also changes the color of a selected \c
     DiagramItem.
 
     This is the implementation of \c setFont():
-    
+
     \snippet graphicsview/diagramscene/diagramscene.cpp 4
 
     Set the font to use for new and selected, if a text item is
@@ -511,15 +511,15 @@
     connected to this slot. We remove the item if it has no text.
     If not, we would leak memory and confuse the user as the items
     will be edited when pressed on by the mouse.
-    
+
     The \c mousePressEvent() function handles mouse press event's
     different depending on which mode the \c DiagramScene is in. We
     examine its implementation for each mode:
-    
+
     \snippet graphicsview/diagramscene/diagramscene.cpp 6
 
     We simply create a new \c DiagramItem and add it to the scene at
-    the position the mouse was pressed. Note that the origin of its 
+    the position the mouse was pressed. Note that the origin of its
     local coordinate system will be under the mouse pointer position.
 
     \snippet graphicsview/diagramscene/diagramscene.cpp 7
@@ -534,7 +534,7 @@
     line.
 
     \snippet graphicsview/diagramscene/diagramscene.cpp 8
-    
+
     The \c DiagramTextItem is editable when the
     Qt::TextEditorInteraction flag is set, else it is movable by the
     mouse. We always want the text to be drawn on top of the other
@@ -547,12 +547,12 @@
     can then call the QGraphicsScene implementation, which
     handles movement of items with the mouse. We make this call even
     if we are in another mode making it possible to add an item and
-    then keep the mouse button pressed down and start moving 
+    then keep the mouse button pressed down and start moving
     the item. In the case of text items, this is not possible as they
     do not propagate mouse events when they are editable.
 
     This is the \c mouseMoveEvent() function:
-    
+
     \snippet graphicsview/diagramscene/diagramscene.cpp 10
 
     We must draw the line if we are in InsertMode and the mouse button
@@ -567,7 +567,7 @@
     should be added to the scene:
 
     \snippet graphicsview/diagramscene/diagramscene.cpp 11
-    
+
     First we need to get the items (if any) under the line's start
     and end points. The line itself is the first item at these points,
     so we remove it from the lists. As a precaution, we check if the
@@ -603,7 +603,7 @@
     DiagramScene. It inherits QGraphicsPolygonItem and has a polygon
     for each shape. The enum DiagramType has a value for each of the
     flowchart shapes.
-    
+
     The class has a list of the arrows that are connected to it.
     This is necessary because only the item knows when it is being
     moved (with the \c itemChanged() function) at which time the
@@ -612,7 +612,7 @@
     buttons in \c MainWindow, see \c createColorToolButtonIcon() in
     \c MainWindow.
 
-    The Type enum is a unique identifier of the class. It is used by 
+    The Type enum is a unique identifier of the class. It is used by
     \c qgraphicsitem_cast(), which does dynamic casts of graphics
     items. The UserType constant is the minimum value a custom
     graphics item type can be.
@@ -646,7 +646,7 @@
     item.
 
     Here is the \c addArrow() function:
-    
+
     \snippet graphicsview/diagramscene/diagramitem.cpp 3
 
     This function simply adds the \a arrow to the items \c arrows list.
@@ -695,7 +695,7 @@
     possible to alter the mouse behavior of QGraphicsTextItem.
 
     \section1 DiagramTextItem Implementation
-    
+
     We start with the constructor:
 
     \snippet graphicsview/diagramscene/diagramtextitem.cpp 0
@@ -717,7 +717,7 @@
 
     \c DiagramScene uses the signal emitted when the text item looses
     focus to remove the item if it is empty, i.e., it contains no
-    text. 
+    text.
 
     This is the implementation of \c mouseDoubleClickEvent():
 
@@ -740,7 +740,7 @@
 
     The item's color can be set with \c setColor().
 
-    \c boundingRect() and \c shape() are reimplemented 
+    \c boundingRect() and \c shape() are reimplemented
     from QGraphicsLineItem and are used by the scene
     to check for collisions and selections.
 
@@ -769,7 +769,7 @@
     We need to reimplement this function because the arrow is
     larger than the bounding rectangle of the QGraphicsLineItem. The
     graphics scene uses the bounding rectangle to know which regions
-    of the scene to update. 
+    of the scene to update.
 
     Here is the \c shape() function:
 
@@ -779,14 +779,14 @@
     shape of the item. The QGraphicsLineItem::shape() returns a path
     with a line drawn with the current pen, so we only need to add
     the arrow head. This function is used to check for collisions and
-    selections with the mouse. 
+    selections with the mouse.
 
     Here is the \c updatePosition() slot:
 
     \snippet graphicsview/diagramscene/arrow.cpp 3
 
     This slot updates the arrow by setting the start and end
-    points of its line to the center of the items it connects. 
+    points of its line to the center of the items it connects.
 
     Here is the \c paint() function:
 
@@ -809,7 +809,7 @@
     one of the lines of the polygon. Note that the points in the
     polygon are relative to the local coordinate system of the item.
     We must therefore add the position of the end item to make the
-    coordinates relative to the scene. 
+    coordinates relative to the scene.
 
     \snippet graphicsview/diagramscene/arrow.cpp 6
 

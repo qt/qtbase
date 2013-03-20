@@ -65,7 +65,7 @@ public:
 
 private:
     void resizeEvent(QGraphicsSceneResizeEvent *event);
-    QSizeF sizeHint(Qt::SizeHint which, 
+    QSizeF sizeHint(Qt::SizeHint which,
     const QSizeF &constraint = QSizeF()) const;
 
 private:

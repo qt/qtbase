@@ -56,6 +56,41 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
 bool q_hasEglExtension(EGLDisplay display,const char* extensionName);
 void q_printEglConfig(EGLDisplay display, EGLConfig config);
 
+class QEglConfigChooser
+{
+public:
+    QEglConfigChooser(EGLDisplay display);
+    virtual ~QEglConfigChooser();
+
+    EGLDisplay display() const { return m_display; }
+
+    void setSurfaceType(EGLint surfaceType) { m_surfaceType = surfaceType; }
+    EGLint surfaceType() const { return m_surfaceType; }
+
+    void setSurfaceFormat(const QSurfaceFormat &format) { m_format = format; }
+    QSurfaceFormat surfaceFormat() const { return m_format; }
+
+    void setIgnoreColorChannels(bool ignore) { m_ignore = ignore; }
+    bool ignoreColorChannels() const { return m_ignore; }
+
+    EGLConfig chooseConfig();
+
+protected:
+    virtual bool filterConfig(EGLConfig config) const;
+
+private:
+    QSurfaceFormat m_format;
+    EGLDisplay m_display;
+    EGLint m_surfaceType;
+    bool m_ignore;
+
+    int m_confAttrRed;
+    int m_confAttrGreen;
+    int m_confAttrBlue;
+    int m_confAttrAlpha;
+};
+
+
 QT_END_NAMESPACE
 
 #endif //QEGLCONVENIENCE_H

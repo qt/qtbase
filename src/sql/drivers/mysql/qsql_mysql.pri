@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_mysql.h
+HEADERS += $$PWD/qsql_mysql_p.h
 SOURCES += $$PWD/qsql_mysql.cpp
 
 !isEmpty(MYSQL_PATH) {

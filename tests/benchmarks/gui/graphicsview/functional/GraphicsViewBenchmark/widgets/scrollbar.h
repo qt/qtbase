@@ -77,11 +77,11 @@ public slots:
 
 private:
 
-    void paint(QPainter *painter, 
-        const QStyleOptionGraphicsItem *option, 
+    void paint(QPainter *painter,
+        const QStyleOptionGraphicsItem *option,
         QWidget *widget);
 
-    QSizeF sizeHint(Qt::SizeHint which, 
+    QSizeF sizeHint(Qt::SizeHint which,
         const QSizeF &constraint = QSizeF()) const;
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

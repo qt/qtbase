@@ -65,10 +65,14 @@ public:
     void create();
     void destroy();
 
+    virtual void invalidateSurface();
+    virtual void resetSurface();
+
 private:
     WId m_winid;
     EGLSurface m_surface;
     EGLNativeWindowType m_window;
+    EGLConfig m_config;
     QSurfaceFormat m_format;
 };
 QT_END_NAMESPACE

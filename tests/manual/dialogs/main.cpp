@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "filedialogpanel.h"
+#include "colordialogpanel.h"
+#include "fontdialogpanel.h"
+#include "wizardpanel.h"
 
 #include <QMainWindow>
 #include <QApplication>
@@ -50,7 +53,6 @@
 #include <QKeySequence>
 
 // Test for dialogs, allowing to play with all dialog options for implementing native dialogs.
-// Currently, only QFileDialog is implemented.
 // Compiles with Qt 4.8 and Qt 5.
 
 class MainWindow : public QMainWindow {
@@ -68,6 +70,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     QTabWidget *tabWidget = new QTabWidget;
     tabWidget->addTab(new FileDialogPanel, tr("QFileDialog"));
+    tabWidget->addTab(new ColorDialogPanel, tr("QColorDialog"));
+    tabWidget->addTab(new FontDialogPanel, tr("QFontDialog"));
+    tabWidget->addTab(new WizardPanel, tr("QWizard"));
     setCentralWidget(tabWidget);
 }
 

@@ -176,6 +176,7 @@ public:
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
     void redirectionRequested(const QUrl &target);
+    void encrypted();
     void sslErrors(const QList<QSslError> &errors);
 
     QNetworkAccessBackend *backend;

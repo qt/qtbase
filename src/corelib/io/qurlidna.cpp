@@ -2336,27 +2336,42 @@ Q_AUTOTEST_EXPORT QString qt_punycodeDecoder(const QString &pc)
 }
 
 static const char * const idn_whitelist[] = {
-    "ac", "ar", "at",
+    "ac", "ar", "asia", "at",
     "biz", "br",
-    "cat", "ch", "cl", "cn",
+    "cat", "ch", "cl", "cn", "com",
     "de", "dk",
     "es",
     "fi",
     "gr",
     "hu",
-    "info", "io", "is",
+    "il", "info", "io", "is", "ir",
     "jp",
     "kr",
-    "li", "lt",
+    "li", "lt", "lu", "lv",
     "museum",
-    "no",
+    "name", "net", "no", "nu", "nz",
     "org",
+    "pl", "pr",
     "se", "sh",
-    "th", "tm", "tw",
+    "tel", "th", "tm", "tw",
+    "ua",
     "vn",
+    "xn--fiqs8s",               // China
+    "xn--fiqz9s",               // China
+    "xn--fzc2c9e2c",            // Sri Lanka
+    "xn--j6w193g",              // Hong Kong
+    "xn--kprw13d",              // Taiwan
+    "xn--kpry57d",              // Taiwan
+    "xn--mgba3a4f16a",          // Iran
+    "xn--mgba3a4fra",           // Iran
     "xn--mgbaam7a8h",           // UAE
+    "xn--mgbayh7gpa",           // Jordan
     "xn--mgberp4a5d4ar",        // Saudi Arabia
-    "xn--wgbh1c"                // Egypt
+    "xn--ogbpf8fl",             // Syria
+    "xn--p1ai",                 // Russian Federation
+    "xn--wgbh1c",               // Egypt
+    "xn--wgbl6a",               // Qatar
+    "xn--xkc2al3hye2a"          // Sri Lanka
 };
 static const size_t idn_whitelist_size = sizeof idn_whitelist / sizeof *idn_whitelist;
 

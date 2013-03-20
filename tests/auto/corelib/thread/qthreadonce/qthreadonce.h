@@ -46,8 +46,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
 
-QT_BEGIN_HEADER
-
 
 #ifndef QT_NO_THREAD
 
@@ -107,7 +105,5 @@ public:
 };
 
 #endif // QT_NO_THREAD
-
-QT_END_HEADER
 
 #endif

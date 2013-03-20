@@ -47,8 +47,6 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QObject>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -120,7 +118,5 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QNetworkCookie &);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkCookie)
-
-QT_END_HEADER
 
 #endif

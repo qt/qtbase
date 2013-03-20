@@ -1444,7 +1444,7 @@ void tst_QTableWidget::task231094()
     tw.setCurrentCell(1, 1);
     QCOMPARE(tw.currentRow(), 1);
     QCOMPARE(tw.currentColumn(), 1);
-	
+
     //this would provoke a end-less loop
     QTest::keyClick(&tw, '1');
 

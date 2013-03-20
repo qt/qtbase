@@ -223,6 +223,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn static int QPoint::dotProduct(const QPoint &p1, const QPoint &p2)
+    \since 5.1
+
+    \snippet code/src_corelib_tools_qpoint.cpp 16
+
+    Returns the dot product of \a p1 and \a p2.
+*/
+
+/*!
     \fn bool operator==(const QPoint &p1, const QPoint &p2)
     \relates QPoint
 
@@ -709,6 +718,15 @@ QDebug operator<<(QDebug d, const QPointF &p)
     returns a QPoint object with the rounded coordinates.
 
     \sa QPointF()
+*/
+
+/*!
+    \fn static qreal QPointF::dotProduct(const QPointF &p1, const QPointF &p2)
+    \since 5.1
+
+    \snippet code/src_corelib_tools_qpoint.cpp 17
+
+    Returns the dot product of \a p1 and \a p2.
 */
 
 /*!

@@ -20,7 +20,7 @@
     - x86/x86-64
     - MIPS 32bit (__GNUC__ compilers only)
 */
-#if \
+#if !defined(PCRE_DISABLE_JIT) && (\
     /* ARM */ \
     (defined(__GNUC__) && (defined(__arm__) || defined(__TARGET_ARCH_ARM))) \
     /* x86 32/64 */ \
@@ -29,6 +29,6 @@
     /* MIPS32 */ \
     || (defined(__GNUC__) \
        && (defined(__mips) || defined(__mips__)) \
-       && !(defined(_MIPS_ARCH_MIPS64) || defined(__mips64)))
+       && !(defined(_MIPS_ARCH_MIPS64) || defined(__mips64))))
 #  define SUPPORT_JIT
 #endif

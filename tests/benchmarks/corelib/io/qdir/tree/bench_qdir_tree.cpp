@@ -123,14 +123,14 @@ private slots:
         for (int i=0;i<1000;i++) {
             if ((i % 10) == 0)
                 QVERIFY(fs.createDirectory(QString("%1/directory%2").arg(musicprefix).arg(i/10)));
-            qint64 size = fs.createFileWithContent(QString("%1/directory%2/file%3").arg(musicprefix).arg(i/10).arg(i)); 
+            qint64 size = fs.createFileWithContent(QString("%1/directory%2/file%3").arg(musicprefix).arg(i/10).arg(i));
             QVERIFY(size > 0);
             musicsize += size;
         }
         //Use case: photos - 1000 files in 1 directory
         QVERIFY(fs.createDirectory(photoprefix));
         for (int i=0;i<1000;i++) {
-            qint64 size = fs.createFileWithContent(QString("%1/file%2").arg(photoprefix).arg(i)); 
+            qint64 size = fs.createFileWithContent(QString("%1/file%2").arg(photoprefix).arg(i));
             QVERIFY(size > 0);
             photosize += size;
         }
@@ -141,7 +141,7 @@ private slots:
                 QVERIFY(fs.createDirectory(QString("%1/directory%2").arg(sourceprefix).arg(i/100)));
             if ((i % 10) == 0)
                 QVERIFY(fs.createDirectory(QString("%1/directory%2/subdirectory%3").arg(sourceprefix).arg(i/100).arg(i/10)));
-            qint64 size = fs.createFileWithContent(QString("%1/directory%2/subdirectory%3/file%4").arg(sourceprefix).arg(i/100).arg(i/10).arg(i)); 
+            qint64 size = fs.createFileWithContent(QString("%1/directory%2/subdirectory%3/file%4").arg(sourceprefix).arg(i/100).arg(i/10).arg(i));
             QVERIFY(size > 0);
             sourcesize += size;
         }

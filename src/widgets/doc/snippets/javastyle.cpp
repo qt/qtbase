@@ -103,7 +103,7 @@ QPalette JavaStyle::standardPalette() const
 
     palette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(184, 207, 229));
     palette.setBrush(QPalette::Inactive, QPalette::HighlightedText, Qt::black);
-    
+
     palette.setBrush(QPalette::Disabled, QPalette::Button,
                      QColor(238, 238, 238));
     palette.setBrush(QPalette::Disabled, QPalette::WindowText,
@@ -968,7 +968,7 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
                 painter->setBrush(QColor(200, 221, 242));
                 painter->drawPath(outerPath);
                 painter->setPen(QColor(200, 221, 242));
-                painter->drawRect(QRect(bottomLeft + adjustTabPoint( 
+                painter->drawRect(QRect(bottomLeft + adjustTabPoint(
                                         QPoint(2, -3), tab->shape),
                                         bottomRight + adjustTabPoint(
                                         QPoint(-2, 0), tab->shape)));
@@ -976,7 +976,7 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
                 painter->setBrush(Qt::NoBrush);
                 painter->drawPath(whitePath);
 
-                if (option->state & State_HasFocus) { 
+                if (option->state & State_HasFocus) {
                     painter->setPen(option->palette.color(QPalette::Mid));
                     painter->drawPath(innerPath);
                 }
@@ -1699,7 +1699,7 @@ void JavaStyle::drawComplexControl(ComplexControl control,
             menuOption.rect = menuRect;
 
             QStyleOptionToolButton label = *button;
-            int fw = 5; 
+            int fw = 5;
 
             drawControl(CE_ToolButtonLabel, &label, painter, widget);
             if (button->subControls & SC_ToolButtonMenu) {
@@ -1713,7 +1713,7 @@ void JavaStyle::drawComplexControl(ComplexControl control,
 
                 drawPrimitive(PE_FrameFocusRect, &focusOption, painter, widget);
             }
-            
+
             break;
         }
         case CC_ComboBox: {
@@ -2113,7 +2113,7 @@ void JavaStyle::drawPrimitive(PrimitiveElement element,
                     painter->drawLine(center, QPoint(center.x(),
                                       option->rect.bottom()));
                 }
-                
+
                 if (option->state & State_Children)
                     if (option->state & State_Open)
                         painter->drawPixmap(pixmapRect.topLeft(), closedPixmap);
@@ -2198,7 +2198,7 @@ void JavaStyle::drawPrimitive(PrimitiveElement element,
             painter->drawPoint(center.x() + 1 + add, center.y() + 1 + add);
             break;
         }
-        case PE_FrameDockWidget: { 
+        case PE_FrameDockWidget: {
             drawPrimitive(PE_FrameWindow, option, painter, widget);
             break;
         }
@@ -2226,7 +2226,7 @@ void JavaStyle::drawPrimitive(PrimitiveElement element,
                     painter->drawPoint(offset + xySwitch(QPoint(add + 8, i),
                                        horizontal));
             }
-            
+
             break;
         }
         case PE_IndicatorToolBarSeparator: {
@@ -2591,7 +2591,7 @@ int JavaStyle::styleHint(StyleHint hint, const QStyleOption *option,
             break;
         }
         case QStyle::SH_Menu_Scrollable:
-            ret = 1; 
+            ret = 1;
             break;
         default:
             ret = QCommonStyle::styleHint(hint, option, widget, returnData);
@@ -2719,7 +2719,7 @@ QSize JavaStyle::sizeFromContents(ContentsType type,
             int height = 0;
 
             if (!menuItem->icon.isNull()) {
-                width += 20; 
+                width += 20;
                 height += 20;
             }
             if (!menuItem->text.isEmpty()) {

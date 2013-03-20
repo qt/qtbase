@@ -81,7 +81,7 @@ public slots:
 private slots:
     void constructing();
 #endif
-    
+
 private:
     static int loopLevel;
 };

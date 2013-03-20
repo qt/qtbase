@@ -46,6 +46,7 @@
 #include <QDir>
 
 #include <iostream>
+#include <string>
 
 static const char usage1[] =
 "\nTests various file functionality in Qt\n\n"
@@ -58,11 +59,46 @@ static const char usage2[] =" [KEYWORD] [ARGUMENTS]\n\n"
 "          rmr DIR               remove directory recursively\n"
 "                                using QDir::removeRecursively\n";
 
+static inline std::string permissions(QFile::Permissions permissions)
+{
+    std::string result(10, '-');
+    if (permissions & QFile::ReadOwner)
+        result[1] = 'r';
+    if (permissions & QFile::WriteOwner)
+        result[2] = 'w';
+    if (permissions & QFile::ExeOwner)
+        result[3] = 'x';
+    if (permissions & QFile::ReadGroup)
+        result[4] = 'r';
+    if (permissions & QFile::WriteGroup)
+        result[5] = 'w';
+    if (permissions & QFile::ExeGroup)
+        result[6] = 'x';
+    if (permissions & QFile::ReadOther)
+        result[7] = 'r';
+    if (permissions & QFile::WriteOther)
+        result[8] = 'w';
+    if (permissions & QFile::ExeOther)
+        result[9] = 'x';
+    return result;
+}
+
+static inline std::string permissions(const QFileInfo &fi)
+{
+    std::string result = permissions(fi.permissions());
+    if (fi.isSymLink())
+        result[0] = 'l';
+    else if (fi.isDir())
+        result[0] = 'd';
+    return result;
+}
+
 static int ls(int argCount, char **args)
 {
     for (int i = 0 ; i < argCount; ++i) {
         const QFileInfo fi(QString::fromLocal8Bit(args[i]));
-        std::cout << QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString() << ' ' << fi.size();
+        std::cout << QDir::toNativeSeparators(fi.absoluteFilePath()).toStdString() << ' ' << fi.size()
+                  << ' ' << permissions(fi);
         if (fi.exists())
             std::cout << " [exists]";
         if (fi.isFile())
@@ -73,6 +109,7 @@ static int ls(int argCount, char **args)
         }
         if (fi.isDir())
             std::cout << " [dir]";
+
         std::cout << std::endl;
     }
     return 0;
@@ -110,12 +147,18 @@ static int rm(const char *fileName)
 
 static int rmr(const char *dirName)
 {
+#if QT_VERSION < 0x050000
+    Q_UNUSED(dirName)
+    return 1;
+#else
     QDir dir(QString::fromLocal8Bit(dirName));
     if (!dir.removeRecursively()) {
         qWarning().nospace() << "Failed to remove " << dir.absolutePath();
         return -1;
     }
+
     return 0;
+#endif
 }
 
 int main(int argc, char *argv[])

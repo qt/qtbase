@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -49,7 +49,10 @@
 #include "qwizard.h"
 #include "qpaintengine.h"
 #include "qapplication.h"
+#include <QtCore/QVariant>
+#include <QtCore/QDebug>
 #include <QtGui/QMouseEvent>
+#include <QtGui/QWindow>
 #include <QtWidgets/QDesktopWidget>
 
 // Note, these tests are duplicates in qwindowsxpstyle_p.h.
@@ -66,10 +69,12 @@
 
 #include <uxtheme.h>
 
+Q_DECLARE_METATYPE(QMargins)
+
 QT_BEGIN_NAMESPACE
 
 //DWM related
-typedef struct  {       //MARGINS       
+typedef struct  {       //MARGINS
     int cxLeftWidth;    // width of left border that retains its size
     int cxRightWidth;   // width of right border that retains its size
     int cyTopHeight;    // height of top border that retains its size
@@ -216,9 +221,11 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     QRect r = rect();
     HANDLE theme = pOpenThemeData(0, L"Navigation");
     //RECT rect;
+    QPoint origin;
+    const HDC hdc = QVistaHelper::backingStoreDC(parentWidget(), &origin);
     RECT clipRect;
-    int xoffset = QWidget::mapToParent(r.topLeft()).x() - 1;
-    int yoffset = QWidget::mapToParent(r.topLeft()).y() - 1;
+    int xoffset = origin.x() + QWidget::mapToParent(r.topLeft()).x() - 1;
+    int yoffset = origin.y() + QWidget::mapToParent(r.topLeft()).y() - 1;
 
     clipRect.top = r.top() + yoffset;
     clipRect.bottom = r.bottom() + yoffset;
@@ -233,8 +240,6 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
     else if (underMouse())
         state = WIZ_NAV_BB_HOT;
 
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    HDC hdc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore()));
     pDrawThemeBackground(theme, hdc, WIZ_NAV_BACKBUTTON, state, &clipRect, &clipRect);
 }
 
@@ -251,8 +256,10 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     is_vista = resolveSymbols();
     if (instanceCount++ == 0)
         cachedVistaState = Dirty;
-    if (is_vista)
+    if (is_vista) {
         backButton_ = new QVistaBackButton(wizard);
+        backButton_->hide();
+    }
 
     // Handle diff between Windows 7 and Vista
     iconSpacing = QStyleHelper::dpiScaled(7);
@@ -263,6 +270,26 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
 QVistaHelper::~QVistaHelper()
 {
     --instanceCount;
+}
+
+void QVistaHelper::updateCustomMargins(bool vistaMargins)
+{
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_WINDOWS8)
+        return; // Negative margins are not supported on Windows 8.
+    if (QWindow *window = wizard->windowHandle()) {
+        // Reduce top frame to zero since we paint it ourselves.
+        const QMargins customMargins = vistaMargins ?
+                       QMargins(0, -titleBarSize(), 0, 0) : QMargins();
+        const QVariant customMarginsV = qVariantFromValue(customMargins);
+        // The dynamic property takes effect when creating the platform window.
+        window->setProperty("_q_windowsCustomMargins", customMarginsV);
+        // If a platform window exists, change via native interface.
+        if (QPlatformWindow *platformWindow = window->handle()) {
+            QGuiApplication::platformNativeInterface()->
+                setWindowProperty(platformWindow, QStringLiteral("WindowsCustomMargins"),
+                                  customMarginsV);
+        }
+    }
 }
 
 bool QVistaHelper::isCompositionEnabled()
@@ -291,6 +318,12 @@ QVistaHelper::VistaState QVistaHelper::vistaState()
     return cachedVistaState;
 }
 
+void QVistaHelper::disconnectBackButton()
+{
+    if (backButton_) // Leave QStyleSheetStyle's connections on destroyed() intact.
+        backButton_->disconnect(SIGNAL(clicked()));
+}
+
 QColor QVistaHelper::basicWindowFrameColor()
 {
     DWORD rgb;
@@ -315,9 +348,9 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
             mar.cyTopHeight = 0;
         else
             mar.cyTopHeight = titleBarSize() + topOffset();
-        HWND wizardHandle = QApplicationPrivate::getHWNDForWidget(wizard);
-        HRESULT hr = pDwmExtendFrameIntoClientArea(wizardHandle, &mar);
-        value = SUCCEEDED(hr);
+        if (const HWND wizardHandle = wizardHWND())
+            if (SUCCEEDED(pDwmExtendFrameIntoClientArea(wizardHandle, &mar)))
+                value = true;
     }
     return value;
 }
@@ -327,11 +360,11 @@ Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
 void QVistaHelper::drawTitleBar(QPainter *painter)
 {
     Q_ASSERT(backButton_);
-    QPlatformNativeInterface *nativeInterface = QGuiApplication::platformNativeInterface();
-    QBackingStore *backingStore = backButton_->backingStore();
-    HDC hdc = static_cast<HDC>(nativeInterface->nativeResourceForBackingStore("getDC", backingStore));
+    QPoint origin;
+    const bool isWindow = wizard->isWindow();
+    const HDC hdc = QVistaHelper::backingStoreDC(wizard, &origin);
 
-    if (vistaState() == VistaAero)
+    if (vistaState() == VistaAero && isWindow)
         drawBlackRect(QRect(0, 0, wizard->width(),
                             titleBarSize() + topOffset()), hdc);
     const int btnTop = backButton_->mapToParent(QPoint()).y();
@@ -352,14 +385,20 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
         glowOffset = glowSize();
     }
 
-    drawTitleText(
-        painter, text,
-        QRect(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight),
-        hdc);
+    const QRect textRectangle(titleOffset() - glowOffset, verticalCenter - textHeight / 2, textWidth, textHeight);
+    if (isWindow) {
+        drawTitleText(painter, text, textRectangle, hdc);
+    } else {
+        painter->save();
+        painter->setFont(font);
+        painter->drawText(textRectangle, Qt::AlignVCenter | Qt::AlignHCenter, text);
+        painter->restore();
+    }
 
     const QIcon windowIcon = wizard->windowIcon();
     if (!windowIcon.isNull()) {
-        QRect rect(leftMargin(), verticalCenter - iconSize() / 2, iconSize(), iconSize());
+        const QRect rect(origin.x() + leftMargin(),
+                         origin.y() + verticalCenter - iconSize() / 2, iconSize(), iconSize());
         const HICON hIcon = qt_pixmapToWinHICON(windowIcon.pixmap(iconSize()));
         DrawIconEx(hdc, rect.left(), rect.top(), hIcon, 0, 0, 0, NULL, DI_NORMAL | DI_COMPAT);
         DestroyIcon(hIcon);
@@ -375,8 +414,8 @@ void QVistaHelper::setTitleBarIconAndCaptionVisible(bool visible)
             opt.dwMask = 0;
         else
             opt.dwMask = WIZ_WTNCA_NODRAWICON | WIZ_WTNCA_NODRAWCAPTION;
-        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-        pSetWindowThemeAttribute(handle, WIZ_WTA_NONCLIENT, &opt, sizeof(WIZ_WTA_OPTIONS));
+        if (const HWND handle = wizardHWND())
+            pSetWindowThemeAttribute(handle, WIZ_WTA_NONCLIENT, &opt, sizeof(WIZ_WTA_OPTIONS));
     }
 }
 
@@ -402,13 +441,6 @@ bool QVistaHelper::winEvent(MSG* msg, long* result)
         }
         break;
     }
-//    case WM_NCCALCSIZE: { #fixme: If the frame size is changed, it needs to be communicated to the QWindow.
-//        NCCALCSIZE_PARAMS* lpncsp = (NCCALCSIZE_PARAMS*)msg->lParam;
-//        *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-//        lpncsp->rgrc[0].top -= (vistaState() == VistaAero ? titleBarSize() : 0);
-//
-//        break;
-//    }
     default:
         LRESULT lResult;
         // Pass to DWM to handle
@@ -449,38 +481,6 @@ void QVistaHelper::mouseEvent(QEvent *event)
     }
 }
 
-// The following hack ensures that the titlebar is updated correctly
-// when the wizard style changes to and from AeroStyle. Specifically,
-// this function causes a Windows message of type WM_NCCALCSIZE to
-// be triggered.
-void QVistaHelper::setWindowPosHack()
-{
-    const int x = wizard->geometry().x(); // ignored by SWP_NOMOVE
-    const int y = wizard->geometry().y(); // ignored by SWP_NOMOVE
-    const int w = wizard->width();
-    const int h = wizard->height();
-    HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-    SetWindowPos(handle, 0, x, y, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
-}
-
-// The following hack allows any QWidget subclass to access
-// QWidgetPrivate::topData() without being declared as a
-// friend by QWidget.
-class QHackWidget : public QWidget
-{
-public:
-    Q_DECLARE_PRIVATE(QWidget)
-    QTLWExtra* topData() { return d_func()->topData(); }
-};
-
-void QVistaHelper::collapseTopFrameStrut()
-{
-    QTLWExtra *top = ((QHackWidget *)wizard)->d_func()->topData();
-    int x1, y1, x2, y2;
-    top->frameStrut.getCoords(&x1, &y1, &x2, &y2);
-    top->frameStrut.setCoords(x1, 0, x2, y2);
-}
-
 bool QVistaHelper::handleWinEvent(MSG *message, long *result)
 {
     if (message->message == WIZ_WM_THEMECHANGED || message->message == WIZ_WM_DWMCOMPOSITIONCHANGED)
@@ -489,12 +489,8 @@ bool QVistaHelper::handleWinEvent(MSG *message, long *result)
     bool status = false;
     if (wizard->wizardStyle() == QWizard::AeroStyle && vistaState() == VistaAero) {
         status = winEvent(message, result);
-        if (message->message == WM_NCCALCSIZE) {
-//          if (status) #fixme
-//                collapseTopFrameStrut();
-        } else if (message->message == WM_NCPAINT) {
+        if (message->message == WM_NCPAINT)
             wizard->update();
-        }
     }
     return status;
 }
@@ -598,8 +594,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         msg.message = WM_NCHITTEST;
         msg.wParam  = 0;
         msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-        msg.hwnd = handle;
+        msg.hwnd = wizardHWND();
         winEvent(&msg, &result);
         msg.wParam = result;
         msg.message = WM_NCMOUSEMOVE;
@@ -613,8 +608,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;
             msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-            HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-            msg.hwnd = handle;
+            msg.hwnd = wizardHWND();
             winEvent(&msg, &result);
             msg.wParam = result;
             msg.message = WM_NCLBUTTONDOWN;
@@ -629,8 +623,7 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
             msg.message = WM_NCHITTEST;
             msg.wParam  = 0;
             msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-            HWND handle = QApplicationPrivate::getHWNDForWidget(wizard);
-            msg.hwnd = handle;
+            msg.hwnd = wizardHWND();
             winEvent(&msg, &result);
             msg.wParam = result;
             msg.message = WM_NCLBUTTONUP;
@@ -657,6 +650,31 @@ HFONT QVistaHelper::getCaptionFont(HANDLE hTheme)
     return CreateFontIndirect(&lf);
 }
 
+// Return a HDC for the wizard along with the transformation if the
+// wizard is a child window.
+HDC QVistaHelper::backingStoreDC(const QWidget *wizard, QPoint *offset)
+{
+    HDC hdc = static_cast<HDC>(QGuiApplication::platformNativeInterface()->nativeResourceForBackingStore(QByteArrayLiteral("getDC"), wizard->backingStore()));
+    *offset = QPoint(0, 0);
+    if (!wizard->windowHandle())
+        if (QWidget *nativeParent = wizard->nativeParentWidget())
+            *offset = wizard->mapTo(nativeParent, *offset);
+    return hdc;
+}
+
+HWND QVistaHelper::wizardHWND() const
+{
+    // Obtain the HWND if the wizard is a top-level window.
+    // Do not use winId() as this enforces native children of the parent
+    // widget when called before show() as happens when calling setWizardStyle().
+    if (QWindow *window = wizard->windowHandle())
+        if (window->handle())
+            if (void *vHwnd = QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("handle"), window))
+                return static_cast<HWND>(vHwnd);
+    qWarning().nospace() << "Failed to obtain HWND for wizard.";
+    return 0;
+}
+
 bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc)
 {
     bool value = false;
@@ -677,14 +695,14 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         dib.bmiHeader.biPlanes = 1;
         dib.bmiHeader.biBitCount = 32;
         dib.bmiHeader.biCompression = BI_RGB;
- 
+
         bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
 
         // Set up the DC
         HFONT hCaptionFont = getCaptionFont(hTheme);
         HBITMAP hOldBmp = (HBITMAP)SelectObject(dcMem, (HGDIOBJ) bmp);
         HFONT hOldFont = (HFONT)SelectObject(dcMem, (HGDIOBJ) hCaptionFont);
- 
+
         // Draw the text!
         WIZ_DTTOPTS dto;
         dto.dwSize = sizeof(WIZ_DTTOPTS);
@@ -693,7 +711,7 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
 
         dto.dwFlags = WIZ_DTT_COMPOSITED|WIZ_DTT_GLOWSIZE;
         dto.iGlowSize = glowSize();
- 
+
         pDrawThemeTextEx(hTheme, dcMem, 0, 0, (LPCWSTR)text.utf16(), -1, uFormat, &rctext, &dto );
         BitBlt(hdc, rect.left(), rect.top(), rect.width(), rect.height(), dcMem, 0, 0, SRCCOPY);
         SelectObject(dcMem, (HGDIOBJ) hOldBmp);
@@ -725,7 +743,7 @@ bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
         dib.bmiHeader.biPlanes = 1;
         dib.bmiHeader.biBitCount = 32;
         dib.bmiHeader.biCompression = BI_RGB;
- 
+
         bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
         HBITMAP hOldBmp = (HBITMAP)SelectObject(dcMem, (HGDIOBJ) bmp);
 
@@ -787,6 +805,19 @@ int QVistaHelper::titleOffset()
 {
     int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + textSpacing;
     return leftMargin() + iconOffset;
+}
+
+int QVistaHelper::topOffset()
+{
+    if (vistaState() != VistaAero)
+        return titleBarSize() + 3;
+    static const int aeroOffset =
+        QSysInfo::WindowsVersion == QSysInfo::WV_WINDOWS7 ?
+        QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
+    int result = aeroOffset;
+    if (QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS8)
+        result += titleBarSize();
+    return result;
 }
 
 QT_END_NAMESPACE

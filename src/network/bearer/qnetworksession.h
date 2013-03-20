@@ -54,8 +54,6 @@
 #undef interface
 #endif
 
-QT_BEGIN_HEADER
-
 #include <QtCore/qshareddata.h>
 QT_BEGIN_NAMESPACE
 
@@ -147,8 +145,6 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QNetworkSession::State)
 Q_DECLARE_METATYPE(QNetworkSession::SessionError)
 Q_DECLARE_METATYPE(QNetworkSession::UsagePolicies)
-
-QT_END_HEADER
 
 #endif // QT_NO_BEARERMANAGEMENT
 

@@ -143,7 +143,7 @@ void QNetworkAccessDebugPipeBackend::pushFromSocketToDownstream()
 
         buffer.resize(ReadBufferSize);
         qint64 haveRead = socket.read(buffer.data(), ReadBufferSize);
-        
+
         if (haveRead == -1) {
             hasDownloadFinished = true;
             // this ensures a good last downloadProgress is emitted

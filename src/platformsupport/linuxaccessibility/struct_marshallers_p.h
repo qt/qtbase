@@ -49,7 +49,6 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusObjectPath>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 typedef QList <int> QSpiIntList;
@@ -173,5 +172,4 @@ Q_DECLARE_METATYPE(QSpiAttributeSet)
 Q_DECLARE_METATYPE(QSpiAppUpdate)
 Q_DECLARE_METATYPE(QSpiDeviceEvent)
 
-QT_END_HEADER
 #endif /* Q_SPI_STRUCT_MARSHALLERS_H */

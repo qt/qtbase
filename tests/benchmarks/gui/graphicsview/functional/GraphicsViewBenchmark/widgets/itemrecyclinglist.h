@@ -59,7 +59,7 @@ public:
     virtual ~ItemRecyclingList();
 
     virtual void insertItem(int index, RecycledListItem *item);
-    virtual void addItem(RecycledListItem *item);    
+    virtual void addItem(RecycledListItem *item);
     virtual void clear();
     virtual AbstractViewItem *takeItem(const int row);
     virtual void setItemPrototype(AbstractViewItem* prototype);

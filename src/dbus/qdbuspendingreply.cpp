@@ -185,6 +185,11 @@
     function's return value is undefined (will probably cause an
     assertion failure), so it is important to verify that the
     processing is finished and the reply is valid.
+
+    If the reply does not contain an argument at position \a index or if the
+    reply was an error, this function returns an invalid QVariant. Since D-Bus
+    messages can never contain invalid QVariants, this return can be used to
+    detect an error condition.
 */
 
 /*!
@@ -197,6 +202,11 @@
 
     Note that, if the reply hasn't arrived, this function causes the
     calling thread to block until the reply is processed.
+
+    If the reply does not contain an argument at position \c Index or if the
+    reply was an error, this function returns a \c Type object that is default
+    constructed, which may be indistinguishable from a valid value. To reliably
+    determine whether the message was an error, use isError().
 */
 
 /*!
@@ -211,6 +221,10 @@
 
     Note that, if the reply hasn't arrived, this function causes the
     calling thread to block until the reply is processed.
+
+    If the reply is an error reply, this function returns a default-constructed
+    \c T1 object, which may be indistinguishable from a valid value. To
+    reliably determine whether the message was an error, use isError().
 */
 
 /*!
@@ -225,6 +239,10 @@
 
     Note that, if the reply hasn't arrived, this function causes the
     calling thread to block until the reply is processed.
+
+    If the reply is an error reply, this function returns a default-constructed
+    \c T1 object, which may be indistinguishable from a valid value. To
+    reliably determine whether the message was an error, use isError().
 */
 
 /*!
@@ -260,14 +278,12 @@ void QDBusPendingReplyData::assign(const QDBusMessage &message)
 
 QVariant QDBusPendingReplyData::argumentAt(int index) const
 {
-    if (d)
-        d->waitForFinished();   // bypasses "const"
+    if (!d)
+        return QVariant();
 
-    Q_ASSERT_X(d && index >= 0 && index < d->replyMessage.arguments().count(),
-               "QDBusPendingReply::argumentAt",
-               "Index out of bounds");
+    d->waitForFinished();   // bypasses "const"
 
-    return d->replyMessage.arguments().at(index);
+    return d->replyMessage.arguments().value(index);
 }
 
 void QDBusPendingReplyData::setMetaTypes(int count, const int *types)

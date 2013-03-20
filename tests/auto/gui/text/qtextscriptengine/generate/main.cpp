@@ -81,7 +81,7 @@ void MyEdit::setText(const QString &str)
     result = "Using font '" + e->fontEngine(e->layoutData->items[0])->fontDef.family + "'\n\n";
 
     result += "{ { ";
-    for (int i = 0; i < str.length(); ++i) 
+    for (int i = 0; i < str.length(); ++i)
         result += "0x" + QString::number(str.at(i).unicode(), 16) + ", ";
     result += "0x0 },\n  { ";
     for (int i = 0; i < e->layoutData->items[0].num_glyphs; ++i)

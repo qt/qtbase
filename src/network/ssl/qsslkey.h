@@ -48,8 +48,6 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtNetwork/qssl.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -109,7 +107,5 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QSslKey &key);
 #endif // QT_NO_SSL
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

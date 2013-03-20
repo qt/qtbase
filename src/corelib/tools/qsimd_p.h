@@ -45,8 +45,6 @@
 #include <qglobal.h>
 #include <qatomic.h>
 
-QT_BEGIN_HEADER
-
 /*
  * qt_module_config.prf defines the QT_COMPILER_SUPPORTS_XXX macros.
  * They mean the compiler supports the necessary flags and the headers
@@ -251,7 +249,5 @@ inline uint qCpuHasFeature(CPUFeatures feature)
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSIMD_P_H

@@ -56,7 +56,7 @@
 
 /*!
     \enum QtConcurrent::ReduceOption
-    This enum specifies the order of which results from the map or filter 
+    This enum specifies the order of which results from the map or filter
     function are passed to the reduce function.
 
     \value UnorderedReduce Reduction is done in an arbitrary order.
@@ -197,7 +197,7 @@
 
     QtConcurrent::map(), QtConcurrent::mapped(), and
     QtConcurrent::mappedReduced() accept function objects, which can be used to
-    add state to a function call. The result_type typedef must define the 
+    add state to a function call. The result_type typedef must define the
     result type of the function call operator:
 
     \snippet code/src_concurrent_qtconcurrentmap.cpp 14
@@ -347,7 +347,7 @@
   Calls \a function once for each item from \a begin to \a end and returns a
   container with the results. Specify the type of container as the a template
   argument, like this:
-  
+
   \code
      QList<int> ints = QtConcurrent::blockingMapped<QList<int> >(beginIterator, endIterator, fn);
   \endcode

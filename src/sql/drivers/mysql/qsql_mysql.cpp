@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_mysql.h"
+#include "qsql_mysql_p.h"
 
 #include <qcoreapplication.h>
 #include <qvariant.h>
@@ -166,7 +166,7 @@ class QMYSQLResultPrivate : public QObject
 {
     Q_OBJECT
 public:
-    QMYSQLResultPrivate(const QMYSQLDriver* dp, const QMYSQLResult* d) : driver(dp), result(0), q(d), 
+    QMYSQLResultPrivate(const QMYSQLDriver* dp, const QMYSQLResult* d) : driver(dp), result(0), q(d),
         rowsAffected(0), hasBlobs(false)
 #if MYSQL_VERSION_ID >= 40108
         , stmt(0), meta(0), inBinds(0), outBinds(0)
@@ -788,7 +788,7 @@ bool QMYSQLResult::nextResult()
 {
     if(!d->driver)
         return false;
-#if MYSQL_VERSION_ID >= 40100 
+#if MYSQL_VERSION_ID >= 40100
     setAt(-1);
     setActive(false);
 
@@ -796,7 +796,7 @@ bool QMYSQLResult::nextResult()
         mysql_free_result(d->result);
     d->result = 0;
     setSelect(false);
-   
+
     for (int i = 0; i < d->fields.count(); ++i)
         delete[] d->fields[i].outField;
     d->fields.clear();
@@ -1374,14 +1374,14 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
         if(type & QSql::Tables) {
             QString sql = QLatin1String("select table_name from information_schema.tables where table_schema = '") + QLatin1String(d->mysql->db) + QLatin1String("' and table_type = 'BASE TABLE'");
             q.exec(sql);
-            
+
             while(q.next())
                 tl.append(q.value(0).toString());
         }
         if(type & QSql::Views) {
             QString sql = QLatin1String("select table_name from information_schema.tables where table_schema = '") + QLatin1String(d->mysql->db) + QLatin1String("' and table_type = 'VIEW'");
             q.exec(sql);
-            
+
             while(q.next())
                 tl.append(q.value(0).toString());
         }

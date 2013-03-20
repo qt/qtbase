@@ -69,8 +69,6 @@
 #pragma qt_no_master_include
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -148,7 +146,5 @@ inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, c
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

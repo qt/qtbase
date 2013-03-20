@@ -583,6 +583,30 @@ int QSurfaceFormat::minorVersion() const
 }
 
 /*!
+    Returns a QPair<int, int> representing the OpenGL version.
+
+    Useful for version checks, for example format.version() >= qMakePair(3, 2)
+*/
+QPair<int, int> QSurfaceFormat::version() const
+{
+    return qMakePair(d->major, d->minor);
+}
+
+/*!
+    Sets the desired \a major and \a minor OpenGL versions.
+
+    The default version is 2.0.
+*/
+void QSurfaceFormat::setVersion(int major, int minor)
+{
+    if (d->minor != minor || d->major != major) {
+        detach();
+        d->minor = minor;
+        d->major = major;
+    }
+}
+
+/*!
     Returns true if all the options of the two QSurfaceFormat objects
     \a a and \a b are equal.
 

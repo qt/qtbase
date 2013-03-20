@@ -50,8 +50,6 @@
 #include <QHash>
 #include <QSocketNotifier>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QEvdevKeyboardManager : public QObject
@@ -70,8 +68,6 @@ private:
     QHash<QString,QEvdevKeyboardHandler*> m_keyboards;
     QDeviceDiscovery *m_deviceDiscovery;
 };
-
-QT_END_HEADER
 
 QT_END_NAMESPACE
 

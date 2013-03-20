@@ -376,9 +376,11 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
     if (SUCCEEDED(hr)) {
         for (int i=0; i<glyphs->numGlyphs; ++i) {
             glyphs->advances_x[i] = DESIGN_TO_LOGICAL(glyphMetrics[i].advanceWidth);
-            if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-                glyphs->advances_x[i] = glyphs->advances_x[i].round();
             glyphs->advances_y[i] = 0;
+        }
+        if (fontDef.styleStrategy & QFont::ForceIntegerMetrics) {
+            for (int i = 0; i < glyphs->numGlyphs; ++i)
+                glyphs->advances_x[i] = glyphs->advances_x[i].round();
         }
     } else {
         qErrnoWarning("%s: GetDesignGlyphMetrics failed", __FUNCTION__);

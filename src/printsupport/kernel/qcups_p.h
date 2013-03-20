@@ -121,6 +121,7 @@ public:
 
     static QList<Printer> availableUnixPrinters();
     static QList<QPrinter::PaperSize> getCupsPrinterPaperSizes(int cupsPrinterIndex);
+    static QList<QPair<QString, QSizeF> > getCupsPrinterPaperSizesWithNames(int cupsPrinterIndex);
 
 private:
     void collectMarkedOptions(QStringList& list, const ppd_group_t* group = 0) const;

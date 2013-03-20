@@ -41,7 +41,7 @@
 
 #include <qsqldriverplugin.h>
 #include <qstringlist.h>
-#include "../../../sql/drivers/psql/qsql_psql.h"
+#include "../../../sql/drivers/psql/qsql_psql_p.h"
 
 QT_BEGIN_NAMESPACE
 

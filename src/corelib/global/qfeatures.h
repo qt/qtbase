@@ -154,6 +154,9 @@
 // Properties
 //#define QT_NO_PROPERTIES
 
+// QRegularExpression
+//#define QT_NO_REGULAREXPRESSION
+
 // Resize Handler
 //#define QT_NO_RESIZEHANDLER
 
@@ -235,7 +238,7 @@
 // QWheelEvent
 //#define QT_NO_WHEELEVENT
 
-// 
+//
 //#define QT_NO_XMLSTREAM
 
 // Animation

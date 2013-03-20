@@ -72,7 +72,7 @@ private slots:
 
 /*! \internal
   This (used to) trigger a crash in:
- 
+
     QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
   which is most easily produced through QSettings.

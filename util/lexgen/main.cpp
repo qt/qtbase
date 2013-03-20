@@ -149,7 +149,7 @@ static QSet<InputType> determineMaxInputSet(const ConfigFile::Section &section)
     if (inputTypeName == "quint8") {
         for (int i = 1; i < 256; ++i)
             set.insert(i);
-    } /* else if ### */ 
+    } /* else if ### */
     else {
         qWarning("Error: Unknown input type '%s'", qPrintable(inputTypeName));
         return QSet<InputType>();
@@ -313,7 +313,7 @@ int main(int argc, char **argv)
             qDebug() << "Error while tokenizing!";
     } else {
         Generator gen(machine, cfg);
-        QTextStream(stdout) 
+        QTextStream(stdout)
             << gen.generate();
     }
 

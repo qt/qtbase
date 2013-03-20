@@ -61,8 +61,6 @@
 
 #include <QtCore/QFile>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QFontEngine;
@@ -267,7 +265,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QFONTENGINE_QPA_P_H

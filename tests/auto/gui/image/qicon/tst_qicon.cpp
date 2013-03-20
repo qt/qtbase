@@ -80,7 +80,7 @@ private:
     const static QIcon staticIcon;
 };
 
-// Creating an icon statically should not cause a crash. 
+// Creating an icon statically should not cause a crash.
 // But we do not officially support this. See QTBUG-8666
 const QIcon tst_QIcon::staticIcon = QIcon::fromTheme("edit-find");
 

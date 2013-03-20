@@ -53,8 +53,6 @@
 
 #ifndef QT_NO_DBUS
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -71,7 +69,7 @@ public:
     }
     inline QDBusReply& operator=(const QDBusMessage &reply)
     {
-        QVariant data(qMetaTypeId(&m_data), reinterpret_cast<void*>(0));
+        QVariant data(qMetaTypeId<Type>(), reinterpret_cast<void*>(0));
         qDBusReplyFill(reply, m_error, data);
         m_data = qvariant_cast<Type>(data);
         return *this;
@@ -113,6 +111,7 @@ public:
     inline bool isValid() const { return !m_error.isValid(); }
 
     inline const QDBusError& error() { return m_error; }
+    inline const QDBusError& error() const { return m_error; }
 
     inline Type value() const
     {
@@ -184,6 +183,7 @@ public:
     inline bool isValid() const { return !m_error.isValid(); }
 
     inline const QDBusError& error() { return m_error; }
+    inline const QDBusError& error() const { return m_error; }
 
 private:
     QDBusError m_error;
@@ -191,8 +191,6 @@ private:
 # endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

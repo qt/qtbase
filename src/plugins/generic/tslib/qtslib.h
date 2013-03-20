@@ -45,8 +45,6 @@
 #include <qobject.h>
 //#include <Qt>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QSocketNotifier;
@@ -71,7 +69,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QTSLIB_H

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -354,6 +354,7 @@ void QWidgetPrivate::updateWidgetTransform()
         QPoint p = q->mapTo(q->topLevelWidget(), QPoint(0,0));
         t.translate(p.x(), p.y());
         qApp->inputMethod()->setInputItemTransform(t);
+        qApp->inputMethod()->setInputItemRectangle(q->rect());
     }
 }
 
@@ -677,7 +678,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     (to move the keyboard focus), and passes on most of the other events to
     one of the more specialized handlers above.
 
-    Events and the mechanism used to deliver them are covered in 
+    Events and the mechanism used to deliver them are covered in
     \l{The Event System}.
 
     \section1 Groups of Functions and Properties
@@ -6137,10 +6138,34 @@ bool QWidget::focusNextPrevChild(bool next)
     if (d->extra && d->extra->proxyWidget)
         return d->extra->proxyWidget->focusNextPrevChild(next);
 #endif
-    QWidget *w = QApplicationPrivate::focusNextPrevChild_helper(this, next);
+
+    bool wrappingOccurred = false;
+    QWidget *w = QApplicationPrivate::focusNextPrevChild_helper(this, next,
+                                                                &wrappingOccurred);
     if (!w) return false;
 
-    w->setFocus(next ? Qt::TabFocusReason : Qt::BacktabFocusReason);
+    Qt::FocusReason reason = next ? Qt::TabFocusReason : Qt::BacktabFocusReason;
+
+    /* If we are about to wrap the focus chain, give the platform
+     * implementation a chance to alter the wrapping behavior.  This is
+     * especially needed when the window is embedded in a window created by
+     * another process.
+     */
+    if (wrappingOccurred) {
+        QWindow *window = windowHandle();
+        if (window != 0) {
+            QWindowPrivate *winp = qt_window_private(window);
+
+            if (winp->platformWindow != 0) {
+                QFocusEvent event(QEvent::FocusIn, reason);
+                event.ignore();
+                winp->platformWindow->windowEvent(&event);
+                if (event.isAccepted()) return true;
+            }
+        }
+    }
+
+    w->setFocus(reason);
     return true;
 }
 
@@ -8575,6 +8600,10 @@ void QWidget::focusOutEvent(QFocusEvent *)
 {
     if (focusPolicy() != Qt::NoFocus || !isWindow())
         update();
+
+    // automatically hide the SIP
+    if (qApp->autoSipEnabled() && testAttribute(Qt::WA_InputMethodEnabled))
+        qApp->inputMethod()->hide();
 }
 
 /*!
@@ -8797,7 +8826,7 @@ void QWidget::inputMethodEvent(QInputMethodEvent *event)
 
     \a query specifies which property is queried.
 
-    \sa inputMethodEvent(), QInputMethodEven, inputMethodHints
+    \sa inputMethodEvent(), QInputMethodEvent, QInputMethodQueryEvent, inputMethodHints
 */
 QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -9097,7 +9126,7 @@ QLayout *QWidget::layout() const
     existing layout manager (returned by layout()) before you can
     call setLayout() with the new layout.
 
-    If \a layout is the layout manger on a different widget, setLayout()
+    If \a layout is the layout manager on a different widget, setLayout()
     will reparent the layout and make it the layout manager for this widget.
 
     Example:
@@ -9255,7 +9284,7 @@ int QWidget::heightForWidth(int w) const
     \since 5.0
 
     Returns true if the widget's preferred height depends on its width; otherwise returns false.
-*/ 
+*/
 bool QWidget::hasHeightForWidth() const
 {
     Q_D(const QWidget);

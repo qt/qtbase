@@ -63,11 +63,20 @@
 #undef QTESTLIB_USE_VALGRIND
 #endif
 
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(Q_OS_ANDROID)
+#define QTESTLIB_USE_PERF_EVENTS
+#else
+#undef QTESTLIB_USE_PERF_EVENTS
+#endif
+
 #include <QtTest/private/qbenchmarkmeasurement_p.h>
 #include <QtCore/QMap>
 #include <QtTest/qtest_global.h>
 #ifdef QTESTLIB_USE_VALGRIND
 #include <QtTest/private/qbenchmarkvalgrind_p.h>
+#endif
+#ifdef QTESTLIB_USE_PERF_EVENTS
+#include <QtTest/private/qbenchmarkperfevents_p.h>
 #endif
 #include <QtTest/private/qbenchmarkevent_p.h>
 #include <QtTest/private/qbenchmarkmetric_p.h>
@@ -137,7 +146,7 @@ public:
 
     QBenchmarkGlobalData();
     ~QBenchmarkGlobalData();
-    enum Mode { WallTime, CallgrindParentProcess, CallgrindChildProcess, TickCounter, EventCounter };
+    enum Mode { WallTime, CallgrindParentProcess, CallgrindChildProcess, PerfCounter, TickCounter, EventCounter };
     void setMode(Mode mode);
     Mode mode() const { return mode_; }
     QBenchmarkMeasurerBase *createMeasurer();
@@ -151,6 +160,7 @@ public:
     bool createChart;
     bool verboseOutput;
     QString callgrindOutFileBase;
+    int minimumTotal;
 private:
     Mode mode_;
 };

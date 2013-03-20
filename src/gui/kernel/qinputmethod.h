@@ -44,8 +44,6 @@
 
 #include <QtCore/qobject.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QInputMethodPrivate;
@@ -68,6 +66,9 @@ class Q_GUI_EXPORT QInputMethod : public QObject
 public:
     QTransform inputItemTransform() const;
     void setInputItemTransform(const QTransform &transform);
+
+    QRectF inputItemRectangle() const;
+    void setInputItemRectangle(const QRectF &rect);
 
     // in window coordinates
     QRectF cursorRectangle() const; // ### what if we have rotations for the item?
@@ -115,7 +116,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif

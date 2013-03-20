@@ -224,7 +224,7 @@ void tst_QStaticText::drawToRect()
 #endif
 
     QVERIFY(imageDrawText.toImage() != m_whiteSquare);
-    QCOMPARE(imageDrawStaticText, imageDrawText);   
+    QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
 void tst_QStaticText::prepareToCorrectData()

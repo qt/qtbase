@@ -62,7 +62,7 @@
 
     For application developers writing user interfaces, Qt provides
     higher level API's, like Qt Quick, that are much more suitable
-    than the enablers found in the Qt GUI module. 
+    than the enablers found in the Qt GUI module.
 
     \section1 Getting started
 

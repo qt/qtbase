@@ -58,14 +58,13 @@ class QBasicFontDatabase : public QPlatformFontDatabase
 {
 public:
     void populateFontDatabase();
-    QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
+    QFontEngine *fontEngine(const QFontDef &fontDef, QChar::Script script, void *handle);
     QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference);
-    QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
+    QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName);
     void releaseHandle(void *handle);
 
     static QStringList addTTFile(const QByteArray &fontData, const QByteArray &file);
-    static QSupportedWritingSystems determineWritingSystemsFromTrueTypeBits(quint32 unicodeRange[4], quint32 codePageRange[2]);
     static QString fontNameFromTTFile(const QString &filename);
 };
 

@@ -48,8 +48,6 @@
 #include <qpa/qplatformnativeinterface.h>
 #include <qpa/qplatformscreen.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QEglFSIntegration : public QPlatformIntegration, public QPlatformNativeInterface
@@ -63,6 +61,7 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
+    QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
     QPlatformNativeInterface *nativeInterface() const;
 
     QPlatformFontDatabase *fontDatabase() const;
@@ -75,6 +74,11 @@ public:
     void *nativeResourceForIntegration(const QByteArray &resource);
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
 
+    QPlatformScreen *screen() const { return mScreen; }
+    static EGLConfig chooseConfig(EGLDisplay display, const QSurfaceFormat &format);
+
+    EGLDisplay display() const { return mDisplay; }
+
 private:
     EGLDisplay mDisplay;
     QAbstractEventDispatcher *mEventDispatcher;
@@ -83,6 +87,5 @@ private:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QEGLFSINTEGRATION_H

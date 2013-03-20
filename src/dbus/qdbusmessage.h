@@ -53,8 +53,6 @@
 #  undef interface
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -129,8 +127,6 @@ Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusMessage &);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QDBusMessage)
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

@@ -46,6 +46,7 @@
 #include "private/qtouchdevice_p.h"
 #include <QAbstractEventDispatcher>
 #include <qpa/qplatformdrag.h>
+#include <qpa/qplatformintegration.h>
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,6 +54,8 @@ QT_BEGIN_NAMESPACE
 
 QElapsedTimer QWindowSystemInterfacePrivate::eventTime;
 bool QWindowSystemInterfacePrivate::synchronousWindowsSystemEvents = false;
+QWaitCondition QWindowSystemInterfacePrivate::eventsFlushed;
+QMutex QWindowSystemInterfacePrivate::flushEventMutex;
 
 //------------------------------------------------------------
 //
@@ -109,9 +112,10 @@ void QWindowSystemInterface::handleEnterLeaveEvent(QWindow *enter, QWindow *leav
     }
 }
 
-void QWindowSystemInterface::handleWindowActivated(QWindow *tlw)
+void QWindowSystemInterface::handleWindowActivated(QWindow *tlw, Qt::FocusReason r)
 {
-    QWindowSystemInterfacePrivate::ActivatedWindowEvent *e = new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw);
+    QWindowSystemInterfacePrivate::ActivatedWindowEvent *e =
+        new QWindowSystemInterfacePrivate::ActivatedWindowEvent(tlw, r);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -119,6 +123,14 @@ void QWindowSystemInterface::handleWindowStateChanged(QWindow *tlw, Qt::WindowSt
 {
     QWindowSystemInterfacePrivate::WindowStateChangedEvent *e =
         new QWindowSystemInterfacePrivate::WindowStateChangedEvent(tlw, newState);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+
+void QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationState newState)
+{
+    Q_ASSERT(QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ApplicationState));
+    QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *e =
+        new QWindowSystemInterfacePrivate::ApplicationStateChangedEvent(newState);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
@@ -505,9 +517,35 @@ void QWindowSystemInterface::handleExposeEvent(QWindow *tlw, const QRegion &regi
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
+void QWindowSystemInterface::deferredFlushWindowSystemEvents()
+{
+    Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
+
+    QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
+    flushWindowSystemEvents();
+    QWindowSystemInterfacePrivate::eventsFlushed.wakeOne();
+}
+
 void QWindowSystemInterface::flushWindowSystemEvents()
 {
-    sendWindowSystemEventsImplementation(QEventLoop::AllEvents);
+    const int count = QWindowSystemInterfacePrivate::windowSystemEventQueue.count();
+    if (!count)
+        return;
+    if (!QGuiApplication::instance()) {
+        qWarning().nospace()
+            << "QWindowSystemInterface::flushWindowSystemEvents() invoked after "
+               "QGuiApplication destruction, discarding " << count << " events.";
+        QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
+        return;
+    }
+    if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+        QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
+        QWindowSystemInterfacePrivate::FlushEventsEvent *e = new QWindowSystemInterfacePrivate::FlushEventsEvent();
+        QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+        QWindowSystemInterfacePrivate::eventsFlushed.wait(&QWindowSystemInterfacePrivate::flushEventMutex);
+    } else {
+        sendWindowSystemEventsImplementation(QEventLoop::AllEvents);
+    }
 }
 
 bool QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
@@ -575,6 +613,12 @@ void QWindowSystemInterface::handleFileOpenEvent(const QString& fileName)
     QGuiApplicationPrivate::processWindowSystemEvent(&e);
 }
 
+void QWindowSystemInterface::handleFileOpenEvent(const QUrl &url)
+{
+    QWindowSystemInterfacePrivate::FileOpenEvent e(url);
+    QGuiApplicationPrivate::processWindowSystemEvent(&e);
+}
+
 void QWindowSystemInterface::handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
                                                int device, int pointerType, qreal pressure, int xTilt, int yTilt,
                                                qreal tangentialPressure, qreal rotation, int z, qint64 uid,
@@ -638,6 +682,13 @@ void QWindowSystemInterface::handleContextMenuEvent(QWindow *w, bool mouseTrigge
             new QWindowSystemInterfacePrivate::ContextMenuEvent(w, mouseTriggered, pos,
                                                                 globalPos, modifiers);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+}
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPoint &p) {
+    dbg.nospace() << "TouchPoint(" << p.id << " @" << p.normalPosition << " press " << p.pressure << " vel " << p.velocity << " state " << (int)p.state;
+    return dbg.space();
 }
 #endif
 

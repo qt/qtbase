@@ -120,9 +120,9 @@
 
 /*!
     \fn int QDesktopWidget::numScreens() const
-    
+
     Returns the number of available screens.
-    
+
     \obsolete
 
     This function is deprecated. Use screenCount instead.
@@ -239,7 +239,7 @@
     \brief the number of screens currently available on the system.
 
     \since 4.6
-    
+
     \sa screenCountChanged()
 */
 
@@ -265,6 +265,6 @@
     \since 4.6
 
     This signal is emitted when the number of screens changes to \a newCount.
-    
+
     \sa screenCount
 */

@@ -93,7 +93,7 @@ AddressBook::AddressBook(QWidget *parent)
     connect(loadButton, SIGNAL(clicked()), this, SLOT(loadFromFile()));
     connect(saveButton, SIGNAL(clicked()), this, SLOT(saveToFile()));
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportAsVCard()));
-    
+
     QVBoxLayout *buttonLayout1 = new QVBoxLayout;
     buttonLayout1->addWidget(addButton);
     buttonLayout1->addWidget(editButton);
@@ -153,7 +153,7 @@ void AddressBook::submitContact()
     }
 
     if (currentMode == AddingMode) {
-        
+
         if (!contacts.contains(name)) {
             contacts.insert(name, address);
             QMessageBox::information(this, tr("Add Successful"),
@@ -163,7 +163,7 @@ void AddressBook::submitContact()
                 tr("Sorry, \"%1\" is already in your address book.").arg(name));
         }
     } else if (currentMode == EditingMode) {
-        
+
         if (oldName != name) {
             if (!contacts.contains(name)) {
                 QMessageBox::information(this, tr("Edit Successful"),
@@ -204,7 +204,7 @@ void AddressBook::removeContact()
             QMessageBox::Yes | QMessageBox::No);
 
         if (button == QMessageBox::Yes) {
-            
+
             previous();
             contacts.remove(name);
 
@@ -298,7 +298,7 @@ void AddressBook::updateInterface(Mode mode)
         break;
 
     case NavigationMode:
-        
+
         if (contacts.isEmpty()) {
             nameLine->clear();
             addressText->clear();
@@ -331,7 +331,7 @@ void AddressBook::saveToFile()
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save Address Book"), "",
         tr("Address Book (*.abk);;All Files (*)"));
-        
+
     if (fileName.isEmpty())
         return;
     else {
@@ -404,14 +404,14 @@ void AddressBook::exportAsVCard()
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Export Contact"), "",
         tr("vCard Files (*.vcf);;All Files (*)"));
-        
+
     if (fileName.isEmpty())
         return;
 
     QFile file(fileName);
 //! [export function part1]
-    
-//! [export function part2]    
+
+//! [export function part2]
     if (!file.open(QIODevice::WriteOnly)) {
         QMessageBox::information(this, tr("Unable to open file"),
             file.errorString());
@@ -425,12 +425,12 @@ void AddressBook::exportAsVCard()
     out << "BEGIN:VCARD" << "\n";
     out << "VERSION:2.1" << "\n";
     out << "N:" << lastName << ";" << firstName << "\n";
-        
-    if (!nameList.isEmpty())            
+
+    if (!nameList.isEmpty())
        out << "FN:" << nameList.join(' ') << "\n";
     else
        out << "FN:" << firstName << "\n";
-//! [export function part3] 
+//! [export function part3]
 
 //! [export function part4]
     address.replace(";", "\\;", Qt::CaseInsensitive);

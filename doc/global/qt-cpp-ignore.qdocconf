@@ -75,12 +75,10 @@ Cpp.ignoretokens        += \
                           QM_EXPORT_XML \
                           QT_ASCII_CAST_WARN \
                           QT_ASCII_CAST_WARN_CONSTRUCTOR \
-                          QT_BEGIN_HEADER \
                           QT_BEGIN_INCLUDE_NAMESPACE \
                           QT_BEGIN_NAMESPACE \
                           QT_BOOTSTRAPPED \
                           QT_DESIGNER_STATIC \
-                          QT_END_HEADER \
                           QT_END_INCLUDE_NAMESPACE \
                           QT_END_NAMESPACE \
                           QT_FASTCALL \

@@ -57,7 +57,7 @@ MainWindow::MainWindow()
     QTimer *timer = new QTimer(this);
     QSlider *slider = new QSlider(this);
     slider->setOrientation(Qt::Horizontal);
-    
+
     slider->setRange(0, 100);
     slider->setSliderPosition(50);
     timer->setInterval(10);

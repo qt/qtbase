@@ -442,7 +442,7 @@ void tst_QDBusMetaObject::types()
 class MethodTest1: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     void method() { }
 };
@@ -452,7 +452,7 @@ const char MethodTest1_xml[] =
 class MethodTest2: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     void method(int) { }
 };
@@ -462,7 +462,7 @@ const char MethodTest2_xml[] =
 class MethodTest3: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     void method(int input0) { Q_UNUSED(input0); }
 };
@@ -472,7 +472,7 @@ const char MethodTest3_xml[] =
 class MethodTest4: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     int method() { return 0; }
 };
@@ -484,7 +484,7 @@ const char MethodTest4_xml2[] =
 class MethodTest5: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     int method(int input0) { return input0; }
 };
@@ -497,7 +497,7 @@ const char MethodTest5_xml[] =
 class MethodTest6: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     int method(int input0, int input1) { Q_UNUSED(input0); return input1; }
 };
@@ -511,7 +511,7 @@ const char MethodTest6_xml[] =
 class MethodTest7: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     int method(int input0, int input1, int &output1) { output1 = input1; return input0; }
 };
@@ -526,7 +526,7 @@ const char MethodTest7_xml[] =
 class MethodTest8: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     int method(int input0, int input1, int &output1, int &output2) { output1 = output2 = input1; return input0; }
 };
@@ -542,7 +542,7 @@ const char MethodTest8_xml[] =
 class MethodTest9: public QObject
 {
     Q_OBJECT
-    
+
 public slots:
     Q_NOREPLY void method(int) { }
 };
@@ -577,7 +577,7 @@ void tst_QDBusMetaObject::methods()
 class SignalTest1: public QObject
 {
     Q_OBJECT
-    
+
 signals:
     void signal();
 };
@@ -587,7 +587,7 @@ const char SignalTest1_xml[] =
 class SignalTest2: public QObject
 {
     Q_OBJECT
-    
+
 signals:
     void signal(int);
 };
@@ -597,7 +597,7 @@ const char SignalTest2_xml[] =
 class SignalTest3: public QObject
 {
     Q_OBJECT
-    
+
 signals:
     void signal(int output0);
 };
@@ -607,7 +607,7 @@ const char SignalTest3_xml[] =
 class SignalTest4: public QObject
 {
     Q_OBJECT
-    
+
 signals:
     void signal(int output0, int);
 };

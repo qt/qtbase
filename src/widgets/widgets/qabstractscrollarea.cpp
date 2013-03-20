@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -452,7 +452,7 @@ void QAbstractScrollAreaPrivate::layoutChildren()
     // no corner widget. Also, on the Mac we paint if there is a native
     // (transparent) sizegrip in the area where a corner widget would be.
     if ((needv && needh && hasCornerWidget == false && scrollOverlap == 0)
-        || ((needv || needh) 
+        || ((needv || needh)
 #ifdef Q_WS_MAC
         && hasMacSizeGrip
 #endif

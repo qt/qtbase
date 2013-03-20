@@ -20,3 +20,4 @@ wince*:SUBDIRS -= qabstractprintdialog
           qsidebar \
 
 mac:qinputdialog.CONFIG += no_check_target # QTBUG-25496
+win32-g++*: SUBDIRS -= qfilesystemmodel # QTBUG-29403

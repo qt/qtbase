@@ -405,7 +405,7 @@ void MingwMakefileGenerator::writeBuildRulesPart(QTextStream &t)
             t << "\n\t" << objectsLinkLine << " " ;
         }
     } else if (project->first("TEMPLATE") != "aux") {
-        t << "\n\t" << "$(LINKER) $(LFLAGS) -o $(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
+        t << "\n\t" << "$(LINKER) $(LFLAGS) " << var("QMAKE_LINK_O_FLAG") << "$(DESTDIR_TARGET) " << objectsLinkLine << " " << " $(LIBS)";
     }
     if(!project->isEmpty("QMAKE_POST_LINK"))
         t << "\n\t" <<var("QMAKE_POST_LINK");
@@ -431,7 +431,7 @@ void MingwMakefileGenerator::writeRcFilePart(QTextStream &t)
 
     if (!rc_file.isEmpty()) {
         t << escapeDependencyPath(var("RES_FILE")) << ": " << rc_file << "\n\t"
-          << var("QMAKE_RC") << " -i " << rc_file << " -o " << var("RES_FILE") 
+          << var("QMAKE_RC") << " -i " << rc_file << " -o " << var("RES_FILE")
           << incPathStr << " $(DEFINES)" << endl << endl;
     }
 }

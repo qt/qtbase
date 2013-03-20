@@ -42,6 +42,8 @@
 #ifndef QICONLOADER_P_H
 #define QICONLOADER_P_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_ICON
 //
 //  W A R N I N G

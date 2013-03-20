@@ -59,6 +59,7 @@ QBenchmarkGlobalData::QBenchmarkGlobalData()
     , medianIterationCount(-1)
     , createChart(false)
     , verboseOutput(false)
+    , minimumTotal(-1)
     , mode_(WallTime)
 {
     setMode(mode_);
@@ -86,6 +87,10 @@ QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
 #ifdef QTESTLIB_USE_VALGRIND
     } else if (mode_ == CallgrindChildProcess || mode_ == CallgrindParentProcess) {
         measurer = new QBenchmarkCallgrindMeasurer;
+#endif
+#ifdef QTESTLIB_USE_PERF_EVENTS
+    } else if (mode_ == PerfCounter) {
+        measurer = new QBenchmarkPerfEventsMeasurer;
 #endif
 #ifdef HAVE_TICK_COUNTER
     } else if (mode_ == TickCounter) {

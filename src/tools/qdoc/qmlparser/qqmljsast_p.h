@@ -57,7 +57,7 @@
 #include "qqmljsglobal_p.h"
 #include "qqmljsmemorypool_p.h"
 
-#include <qstring.h>
+#include <QtCore/qstring.h>
 
 QT_QML_BEGIN_NAMESPACE
 
@@ -176,8 +176,10 @@ public:
         Kind_PreDecrementExpression,
         Kind_PreIncrementExpression,
         Kind_Program,
+        Kind_PropertyAssignmentList,
+        Kind_PropertyGetterSetter,
         Kind_PropertyName,
-        Kind_PropertyNameAndValueList,
+        Kind_PropertyNameAndValue,
         Kind_RegExpLiteral,
         Kind_ReturnStatement,
         Kind_SourceElement,
@@ -487,7 +489,7 @@ public:
     ObjectLiteral():
         properties (0) { kind = K; }
 
-    ObjectLiteral(PropertyNameAndValueList *plist):
+    ObjectLiteral(PropertyAssignmentList *plist):
         properties (plist) { kind = K; }
 
     virtual void accept0(Visitor *visitor);
@@ -499,7 +501,7 @@ public:
     { return rbraceToken; }
 
 // attributes
-    PropertyNameAndValueList *properties;
+    PropertyAssignmentList *properties;
     SourceLocation lbraceToken;
     SourceLocation rbraceToken;
 };
@@ -603,22 +605,59 @@ public:
     SourceLocation propertyNameToken;
 };
 
-class QML_PARSER_EXPORT PropertyNameAndValueList: public Node
+class QML_PARSER_EXPORT PropertyAssignment: public Node
 {
 public:
-    QQMLJS_DECLARE_AST_NODE(PropertyNameAndValueList)
+    PropertyAssignment() {}
+};
 
-    PropertyNameAndValueList(PropertyName *n, ExpressionNode *v):
-        name (n), value (v), next (this)
-        { kind = K; }
+class QML_PARSER_EXPORT PropertyAssignmentList: public Node
+{
+public:
+    QQMLJS_DECLARE_AST_NODE(PropertyAssignmentList)
 
-    PropertyNameAndValueList(PropertyNameAndValueList *previous, PropertyName *n, ExpressionNode *v):
-        name (n), value (v)
+    PropertyAssignmentList(PropertyAssignment *assignment)
+        : assignment(assignment)
+        , next(this)
+    { kind = K; }
+
+    PropertyAssignmentList(PropertyAssignmentList *previous, PropertyAssignment *assignment)
+        : assignment(assignment)
     {
         kind = K;
         next = previous->next;
         previous->next = this;
     }
+
+    inline PropertyAssignmentList *finish ()
+    {
+        PropertyAssignmentList *front = next;
+        next = 0;
+        return front;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return assignment->firstSourceLocation(); }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return next ? next->lastSourceLocation() : assignment->lastSourceLocation(); }
+
+// attributes
+    PropertyAssignment *assignment;
+    PropertyAssignmentList *next;
+    SourceLocation commaToken;
+};
+
+class QML_PARSER_EXPORT PropertyNameAndValue: public PropertyAssignment
+{
+public:
+    QQMLJS_DECLARE_AST_NODE(PropertyNameAndValue)
+
+    PropertyNameAndValue(PropertyName *n, ExpressionNode *v)
+        : name(n), value(v)
+    { kind = K; }
 
     virtual void accept0(Visitor *visitor);
 
@@ -626,25 +665,51 @@ public:
     { return name->firstSourceLocation(); }
 
     virtual SourceLocation lastSourceLocation() const
-    {
-        if (next)
-            return next->lastSourceLocation();
-        return value->lastSourceLocation();
-    }
-
-    inline PropertyNameAndValueList *finish ()
-    {
-        PropertyNameAndValueList *front = next;
-        next = 0;
-        return front;
-    }
+    { return value->lastSourceLocation(); }
 
 // attributes
     PropertyName *name;
-    ExpressionNode *value;
-    PropertyNameAndValueList *next;
     SourceLocation colonToken;
+    ExpressionNode *value;
     SourceLocation commaToken;
+};
+
+class QML_PARSER_EXPORT PropertyGetterSetter: public PropertyAssignment
+{
+public:
+    QQMLJS_DECLARE_AST_NODE(PropertyGetterSetter)
+
+    enum Type {
+        Getter,
+        Setter
+    };
+
+    PropertyGetterSetter(PropertyName *n, FunctionBody *b)
+        : type(Getter), name(n), formals(0), functionBody (b)
+    { kind = K; }
+
+    PropertyGetterSetter(PropertyName *n, FormalParameterList *f, FunctionBody *b)
+        : type(Setter), name(n), formals(f), functionBody (b)
+    { kind = K; }
+
+    virtual void accept0(Visitor *visitor);
+
+    virtual SourceLocation firstSourceLocation() const
+    { return getSetToken; }
+
+    virtual SourceLocation lastSourceLocation() const
+    { return rbraceToken; }
+
+// attributes
+    Type type;
+    SourceLocation getSetToken;
+    PropertyName *name;
+    SourceLocation lparenToken;
+    FormalParameterList *formals;
+    SourceLocation rparenToken;
+    SourceLocation lbraceToken;
+    FunctionBody *functionBody;
+    SourceLocation rbraceToken;
 };
 
 class QML_PARSER_EXPORT IdentifierPropertyName: public PropertyName
@@ -1642,7 +1707,7 @@ class QML_PARSER_EXPORT CaseBlock: public Node
 public:
     QQMLJS_DECLARE_AST_NODE(CaseBlock)
 
-    explicit CaseBlock(CaseClauses *c, DefaultClause *d = 0, CaseClauses *r = 0):
+    CaseBlock(CaseClauses *c, DefaultClause *d = 0, CaseClauses *r = 0):
         clauses (c), defaultClause (d), moreClauses (r)
         { kind = K; }
 
@@ -2402,7 +2467,7 @@ public:
         previous->next = this;
     }
 
-    virtual void accept0(Visitor *) {}
+    virtual void accept0(Visitor *);
 
     virtual SourceLocation firstSourceLocation() const
     { return propertyTypeToken; }

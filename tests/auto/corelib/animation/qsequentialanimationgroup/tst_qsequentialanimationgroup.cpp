@@ -44,7 +44,6 @@
 #include <QtCore/qsequentialanimationgroup.h>
 
 Q_DECLARE_METATYPE(QAbstractAnimation::State)
-Q_DECLARE_METATYPE(QAbstractAnimation*)
 
 class tst_QSequentialAnimationGroup : public QObject
 {
@@ -84,7 +83,6 @@ private slots:
 void tst_QSequentialAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
-    qRegisterMetaType<QAbstractAnimation*>("QAbstractAnimation*");
 }
 
 void tst_QSequentialAnimationGroup::construction()

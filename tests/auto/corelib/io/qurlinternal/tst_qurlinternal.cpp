@@ -649,6 +649,20 @@ void tst_QUrlInternal::ace_testsuite_data()
         << "xn----rmckbbajlc6dj7bxne2c.xn--wgbh1c"
         << "."
         << egyptianIDN;
+
+    QString russianIDN = QString::fromUtf8("\321\217\320\275\320\264\320\265\320\272\321\201.\321\200\321\204");
+    QTest::newRow("russian-tld-ace")
+        << "xn--d1acpjx3f.xn--p1ai"
+        << "xn--d1acpjx3f.xn--p1ai"
+        << "."
+        << russianIDN;
+
+    QString taiwaneseIDN = QString::fromUtf8("\345\217\260\345\214\227\346\214\211\346\221\251.\345\217\260\347\201\243");
+    QTest::newRow("taiwanese-tld-ace")
+        << "xn--djrptm67aikb.xn--kpry57d"
+        << "xn--djrptm67aikb.xn--kpry57d"
+        << "."
+        << taiwaneseIDN;
 }
 
 void tst_QUrlInternal::ace_testsuite()

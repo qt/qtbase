@@ -46,7 +46,9 @@
 #include "qplatformdefs.h"
 #include "qfunctions_vxworks.h"
 
+#if defined(_WRS_KERNEL)
 #include <vmLib.h>
+#endif
 #include <selectLib.h>
 #include <ioLib.h>
 
@@ -74,10 +76,12 @@ void *lfind(const void* key, const void* base, size_t* elements, size_t size,
 // no rand_r(), but rand()
 // NOTE: this implementation is wrong for multi threaded applications,
 // but there is no way to get it right on VxWorks (in kernel mode)
+#if defined(_WRS_KERNEL)
 int rand_r(unsigned int * /*seedp*/)
 {
     return rand();
 }
+#endif
 
 // no usleep() support
 int usleep(unsigned int usec)
@@ -92,7 +96,7 @@ int usleep(unsigned int usec)
 // gettimeofday() is declared, but is missing from the library
 // It IS however defined in the Curtis-Wright X11 libraries, so
 // we have to make the symbol 'weak'
-#if defined(Q_CC_DIAB)
+#if defined(Q_CC_DIAB) && !defined(VXWORKS_DKM) && !defined(VXWORKS_RTP)
 #  pragma weak gettimeofday
 #endif
 int gettimeofday(struct timeval *tv, void /*struct timezone*/ *)
@@ -118,7 +122,11 @@ int gettimeofday(struct timeval *tv, void /*struct timezone*/ *)
 // neither getpagesize() or sysconf(_SC_PAGESIZE) are available
 int getpagesize()
 {
+#if defined(_WRS_KERNEL)
     return vmPageSizeGet();
+#else
+    return sysconf(_SC_PAGESIZE);
+#endif
 }
 
 // symlinks are not supported (lstat is now just a call to stat - see qplatformdefs.h)

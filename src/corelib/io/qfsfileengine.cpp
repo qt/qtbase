@@ -419,6 +419,17 @@ bool QFSFileEngine::flush()
 }
 
 /*!
+    \reimp
+*/
+bool QFSFileEngine::syncToDisk()
+{
+    Q_D(QFSFileEngine);
+    if ((d->openMode & QIODevice::WriteOnly) == 0)
+        return true;
+    return d->nativeSyncToDisk();
+}
+
+/*!
     \internal
 */
 bool QFSFileEnginePrivate::flushFh()
@@ -905,6 +916,11 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 */
 
 /*! \fn bool QFSFileEngine::rename(const QString &newName)
+  \reimp
+*/
+
+
+/*! \fn bool QFSFileEngine::renameOverwrite(const QString &newName)
   \reimp
 */
 

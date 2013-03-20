@@ -60,8 +60,8 @@ SimpleList::SimpleList(QGraphicsWidget *parent)
 }
 
 /*virtual*/
-SimpleList::~SimpleList() 
-{  
+SimpleList::~SimpleList()
+{
 }
 
 void SimpleList::addItem(ListItem *item)
@@ -116,7 +116,7 @@ void SimpleList::keyPressEvent(QKeyEvent *event)
     static qreal step = 0.0;
     static bool repeat = false;
     int interval = keyPressInterval.elapsed();
-    
+
     ScrollBar* sb = verticalScrollBar();
     qreal currentValue = sb->sliderPosition();
 
@@ -132,11 +132,11 @@ void SimpleList::keyPressEvent(QKeyEvent *event)
             step = itemAt(0)->size().height();
         repeat = false;
     }
-    
+
     if(event->key() == Qt::Key_Up ) { //Up Arrow
         sb->setSliderPosition(currentValue - step);
     }
-    
+
     if(event->key() == Qt::Key_Down ) { //Down Arrow
         sb->setSliderPosition(currentValue + step);
     }

@@ -57,11 +57,13 @@
 #  define __IMAGECAPTURE__
 #endif
 
-#if defined(QT_BUILD_QMAKE) || defined(QT_BOOTSTRAPPED)
+#if defined(QT_BOOTSTRAPPED)
 #include <ApplicationServices/ApplicationServices.h>
 #else
 #include <CoreFoundation/CoreFoundation.h>
 #endif
+
+#include "qglobal.h"
 
 #ifndef Q_OS_IOS
 #include <CoreServices/CoreServices.h>
@@ -136,15 +138,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#if (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_5)
-#ifndef __LP64__
-	typedef float CGFloat;
-        typedef int NSInteger;
-        typedef unsigned int NSUInteger;
-	#define SRefCon SInt32
-	#define URefCon UInt32
-#endif
-#endif
 
 #endif // QCORE_MAC_P_H

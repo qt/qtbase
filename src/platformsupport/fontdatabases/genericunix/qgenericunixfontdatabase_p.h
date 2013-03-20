@@ -42,6 +42,8 @@
 #ifndef QGENERICUNIXFONTDATABASE_H
 #define QGENERICUNIXFONTDATABASE_H
 
+#include <QtCore/qglobal.h>
+
 #ifdef Q_FONTCONFIGDATABASE
 #include <QtPlatformSupport/private/qfontconfigdatabase_p.h>
 typedef QFontconfigDatabase QGenericUnixFontDatabase;

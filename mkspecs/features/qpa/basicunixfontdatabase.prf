@@ -1,5 +1,3 @@
-DEFINES += QT_COMPILES_IN_HARFBUZZ
-
 contains(QT_CONFIG, system-freetype) {
     LIBS += -lfreetype
 }

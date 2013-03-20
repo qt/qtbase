@@ -50,7 +50,7 @@ class ButtonPrivate {
 
 public:
 
-    ButtonPrivate(Button *button) 
+    ButtonPrivate(Button *button)
        : down(false)
        , q_ptr(button)
     {
@@ -65,7 +65,7 @@ public:
 Button::Button(const QString &text, QGraphicsItem *parent, QSizeF minimumSize)
     : QGraphicsWidget(parent)
     , d_ptr(new ButtonPrivate(this)), m_background(), m_selected(false)
-{ 
+{
     Q_D(Button);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     //setCacheMode(QGraphicsItem::ItemCoordinateCache);
@@ -105,13 +105,13 @@ QString Button::text()
     return d->textItem->text();
 }
 
-void Button::paint(QPainter *painter, 
-        const QStyleOptionGraphicsItem *option, 
+void Button::paint(QPainter *painter,
+        const QStyleOptionGraphicsItem *option,
         QWidget *widget)
 {
     Q_UNUSED(widget);
     Q_UNUSED(option);
-    
+
     if(!m_background.isNull())
         painter->drawPixmap(QPoint(), m_background);
     if(m_selected) {
@@ -121,8 +121,8 @@ void Button::paint(QPainter *painter,
     }
 }
 
-QSizeF Button::sizeHint(Qt::SizeHint which, 
-        const QSizeF &constraint) const 
+QSizeF Button::sizeHint(Qt::SizeHint which,
+        const QSizeF &constraint) const
 {
     Q_D(const Button);
 
@@ -146,7 +146,7 @@ QSizeF Button::sizeHint(Qt::SizeHint which,
 void Button::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(Button);
-    
+
     if (event->button() != Qt::LeftButton ||
                   !sceneBoundingRect().contains(event->scenePos()))
         return;
@@ -162,7 +162,7 @@ void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(Button);
 
-    if (!d->down || event->button() != Qt::LeftButton) 
+    if (!d->down || event->button() != Qt::LeftButton)
         return;
 
     d->down = false;
@@ -184,11 +184,11 @@ void Button::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
     Q_D(Button);
     QGraphicsWidget::resizeEvent(event);
-    
+
     QRectF rect = d->textItem->boundingRect();
     QRectF buttonrect = this->boundingRect();
     d->textItem->setPos((buttonrect.width() - rect.width())/2, (buttonrect.height() - rect.height())/2 );
-    
+
     QSize currentSize = buttonrect.size().toSize();
     if( m_background.size() != currentSize && (currentSize.width() > 0 && currentSize.height() > 0)  ) {
         m_background = Theme::p()->pixmap("status_field_middle.svg", buttonrect.size().toSize());

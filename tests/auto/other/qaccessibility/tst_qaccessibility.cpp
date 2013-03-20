@@ -58,7 +58,9 @@
 #endif
 #include <QtTest/QtTest>
 #include <QtGui>
+#include <QtGui/private/qaccessible2_p.h>
 #include <QtWidgets>
+#include <QtWidgets/private/qaccessiblewidget_p.h>
 #include <math.h>
 #include <qpa/qplatformnativeinterface.h>
 
@@ -768,12 +770,40 @@ void tst_QAccessibility::actionTest()
 
 void tst_QAccessibility::applicationTest()
 {
+    {
     QLatin1String name = QLatin1String("My Name");
     qApp->setApplicationName(name);
-    QAccessibleInterface *interface = QAccessible::queryAccessibleInterface(qApp);
+    QAIPtr interface(QAccessible::queryAccessibleInterface(qApp));
     QCOMPARE(interface->text(QAccessible::Name), name);
+    QCOMPARE(interface->text(QAccessible::Description), qApp->applicationFilePath());
+    QCOMPARE(interface->text(QAccessible::Value), QString());
     QCOMPARE(interface->role(), QAccessible::Application);
-    delete interface;
+    QCOMPARE(interface->window(), static_cast<QWindow*>(0));
+    QCOMPARE(interface->parent(), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->focusChild(), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->indexOfChild(0), -1);
+    QCOMPARE(interface->child(0), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->child(-1), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->child(1), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->childCount(), 0);
+
+    QWidget widget;
+    widget.show();
+    qApp->setActiveWindow(&widget);
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    QAIPtr widgetIface(QAccessible::queryAccessibleInterface(&widget));
+    QCOMPARE(interface->childCount(), 1);
+    QAIPtr focus(interface->focusChild());
+    QCOMPARE(focus->object(), &widget);
+    QCOMPARE(interface->indexOfChild(0), -1);
+    QCOMPARE(interface->indexOfChild(widgetIface.data()), 0);
+    QAIPtr child(interface->child(0));
+    QCOMPARE(child->object(), &widget);
+    QCOMPARE(interface->child(-1), static_cast<QAccessibleInterface*>(0));
+    QCOMPARE(interface->child(1), static_cast<QAccessibleInterface*>(0));
+    }
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::mainWindowTest()
@@ -2701,6 +2731,76 @@ void tst_QAccessibility::tableTest()
     QCOMPARE(table2->rowDescription(0), QString("v1"));
     QCOMPARE(table2->rowDescription(1), QString("v2"));
     QCOMPARE(table2->rowDescription(2), QString("v3"));
+
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    QVERIFY(!table2->selectRow(0));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    QVERIFY(table2->selectRow(0));
+    QVERIFY(table2->selectRow(1));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->setSelectionMode(QAbstractItemView::MultiSelection);
+    QVERIFY(table2->selectRow(0));
+    QVERIFY(table2->isRowSelected(1));
+    QVERIFY(table2->unselectRow(0));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->setSelectionBehavior(QAbstractItemView::SelectColumns);
+    QVERIFY(!table2->selectRow(0));
+    QVERIFY(!table2->isRowSelected(0));
+    tableView->clearSelection();
+    QCOMPARE(table2->selectedColumnCount(), 0);
+    QCOMPARE(table2->selectedRowCount(), 0);
+    QVERIFY(table2->selectColumn(1));
+    QVERIFY(table2->isColumnSelected(1));
+    tableView->clearSelection();
+    tableView->setSelectionMode(QAbstractItemView::ContiguousSelection);
+    table2->selectColumn(0);
+    table2->selectColumn(2);
+    QVERIFY(!(table2->isColumnSelected(2) && table2->isColumnSelected(0)));
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tableView->setSelectionMode(QAbstractItemView::MultiSelection);
+    table2->selectColumn(1);
+    table2->selectRow(1);
+    QVERIFY(table2->isColumnSelected(1));
+    QVERIFY(table2->isRowSelected(1));
+
+    QAIPtr cell4(table2->cellAt(2,2));
+    QVERIFY(cell1->actionInterface());
+    QVERIFY(cell1->tableCellInterface());
+
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    QVERIFY(!cell1->tableCellInterface()->isSelected());
+    QVERIFY(cell1->actionInterface()->actionNames().contains(QAccessibleActionInterface::toggleAction()));
+    cell1->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell2->tableCellInterface()->isSelected());
+
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectColumns);
+    cell3->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell4->tableCellInterface()->isSelected());
+
+    tableView->clearSelection();
+    tableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+    cell1->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell1->tableCellInterface()->isSelected());
+    cell2->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(!cell1->tableCellInterface()->isSelected());
+
+    tableView->clearSelection();
+    tableView->setSelectionMode(QAbstractItemView::MultiSelection);
+    cell1->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    cell2->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell1->tableCellInterface()->isSelected());
+    QVERIFY(cell2->tableCellInterface()->isSelected());
+    cell2->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+    QVERIFY(cell1->tableCellInterface()->isSelected());
+    QVERIFY(!cell2->tableCellInterface()->isSelected());
 
     delete tableView;
 

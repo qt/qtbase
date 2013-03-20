@@ -42,15 +42,21 @@
 #ifndef QCOREAPPLICATION_H
 #define QCOREAPPLICATION_H
 
+#include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
+#ifndef QT_NO_QOBJECT
 #include <QtCore/qobject.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qeventloop.h>
+#else
+#include <QtCore/qscopedpointer.h>
+#endif
 
+#ifndef QT_NO_QOBJECT
 #if defined(Q_OS_WIN) && !defined(tagMSG)
 typedef struct tagMSG MSG;
 #endif
-
-QT_BEGIN_HEADER
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -65,14 +71,19 @@ class QAbstractNativeEventFilter;
 
 #define qApp QCoreApplication::instance()
 
-class Q_CORE_EXPORT QCoreApplication : public QObject
+class Q_CORE_EXPORT QCoreApplication
+#ifndef QT_NO_QOBJECT
+    : public QObject
+#endif
 {
+#ifndef QT_NO_QOBJECT
     Q_OBJECT
-    Q_PROPERTY(QString applicationName READ applicationName WRITE setApplicationName)
-    Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion)
-    Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName)
-    Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain)
+    Q_PROPERTY(QString applicationName READ applicationName WRITE setApplicationName NOTIFY applicationNameChanged)
+    Q_PROPERTY(QString applicationVersion READ applicationVersion WRITE setApplicationVersion NOTIFY applicationVersionChanged)
+    Q_PROPERTY(QString organizationName READ organizationName WRITE setOrganizationName NOTIFY organizationNameChanged)
+    Q_PROPERTY(QString organizationDomain READ organizationDomain WRITE setOrganizationDomain NOTIFY organizationDomainChanged)
     Q_PROPERTY(bool quitLockEnabled READ isQuitLockEnabled WRITE setQuitLockEnabled)
+#endif
 
     Q_DECLARE_PRIVATE(QCoreApplication)
 public:
@@ -103,6 +114,7 @@ public:
 
     static QCoreApplication *instance() { return self; }
 
+#ifndef QT_NO_QOBJECT
     static int exec();
     static void processEvents(QEventLoop::ProcessEventsFlags flags = QEventLoop::AllEvents);
     static void processEvents(QEventLoop::ProcessEventsFlags flags, int maxtime);
@@ -120,6 +132,7 @@ public:
 
     static bool startingUp();
     static bool closingDown();
+#endif
 
     static QString applicationDirPath();
     static QString applicationFilePath();
@@ -148,6 +161,7 @@ public:
         { return translate(context, key, disambiguation, n); }
 #endif
 
+#ifndef QT_NO_QOBJECT
     static void flush();
 
     void installNativeEventFilter(QAbstractNativeEventFilter *filterObj);
@@ -166,17 +180,29 @@ Q_SIGNALS:
 #endif
     );
 
+    void organizationNameChanged();
+    void organizationDomainChanged();
+    void applicationNameChanged();
+    void applicationVersionChanged();
+
 protected:
     bool event(QEvent *);
 
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
+#endif // QT_NO_QOBJECT
 
 protected:
     QCoreApplication(QCoreApplicationPrivate &p);
 
+#ifdef QT_NO_QOBJECT
+    QScopedPointer<QCoreApplicationPrivate> d_ptr;
+#endif
+
 private:
+#ifndef QT_NO_QOBJECT
     static bool sendSpontaneousEvent(QObject *receiver, QEvent *event);
     bool notifyInternal(QObject *receiver, QEvent *event);
+#endif
 
     void init();
 
@@ -184,7 +210,6 @@ private:
 
     Q_DISABLE_COPY(QCoreApplication)
 
-    friend class QEventDispatcherUNIXPrivate;
     friend class QApplication;
     friend class QApplicationPrivate;
     friend class QGuiApplication;
@@ -193,46 +218,59 @@ private:
     friend class QWidget;
     friend class QWidgetWindow;
     friend class QWidgetPrivate;
+#ifndef QT_NO_QOBJECT
+    friend class QEventDispatcherUNIXPrivate;
     friend class QCocoaEventDispatcherPrivate;
     friend bool qt_sendSpontaneousEvent(QObject*, QEvent*);
+#endif
     friend Q_CORE_EXPORT QString qAppName();
     friend class QClassFactory;
 };
 
+#ifndef QT_NO_QOBJECT
 inline bool QCoreApplication::sendEvent(QObject *receiver, QEvent *event)
 {  if (event) event->spont = false; return self ? self->notifyInternal(receiver, event) : false; }
 
 inline bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 { if (event) event->spont = true; return self ? self->notifyInternal(receiver, event) : false; }
+#endif
 
-#ifdef QT_NO_TRANSLATION
-inline QString QCoreApplication::translate(const char *, const char *sourceText, const char *, int)
-{
-    return QString::fromUtf8(sourceText);
-}
+#ifdef QT_NO_DEPRECATED
+#  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context)
+#else
+#  define QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context) \
+    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
+        { return QCoreApplication::translate(#context, sourceText, disambiguation, n); }
 #endif
 
 #define Q_DECLARE_TR_FUNCTIONS(context) \
 public: \
     static inline QString tr(const char *sourceText, const char *disambiguation = 0, int n = -1) \
         { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
-    QT_DEPRECATED static inline QString trUtf8(const char *sourceText, const char *disambiguation = 0, int n = -1) \
-        { return QCoreApplication::translate(#context, sourceText, disambiguation, n); } \
+    QT_DECLARE_DEPRECATED_TR_FUNCTIONS(context) \
 private:
 
+typedef void (*QtStartUpFunction)();
 typedef void (*QtCleanUpFunction)();
 
+Q_CORE_EXPORT void qAddPreRoutine(QtStartUpFunction);
 Q_CORE_EXPORT void qAddPostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT void qRemovePostRoutine(QtCleanUpFunction);
 Q_CORE_EXPORT QString qAppName();                // get application name
 
+#define Q_COREAPP_STARTUP_FUNCTION(AFUNC) \
+    static void AFUNC ## _ctor_function() {  \
+        qAddPreRoutine(AFUNC);        \
+    }                                 \
+    Q_CONSTRUCTOR_FUNCTION(AFUNC ## _ctor_function)
+
+#ifndef QT_NO_QOBJECT
 #if defined(Q_OS_WIN) && !defined(QT_NO_DEBUG_STREAM)
 Q_CORE_EXPORT QString decodeMSG(const MSG &);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const MSG &);
 #endif
+#endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QCOREAPPLICATION_H

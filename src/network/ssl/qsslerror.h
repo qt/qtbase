@@ -46,8 +46,6 @@
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qsslcertificate.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -106,7 +104,7 @@ public:
     SslError error() const;
     QString errorString() const;
     QSslCertificate certificate() const;
-    
+
 private:
     QScopedPointer<QSslErrorPrivate> d;
 };
@@ -125,7 +123,5 @@ QT_END_NAMESPACE
 #ifndef QT_NO_SSL
 Q_DECLARE_METATYPE(QList<QSslError>)
 #endif
-
-QT_END_HEADER
 
 #endif

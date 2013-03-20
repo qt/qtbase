@@ -677,13 +677,13 @@ void QTextOdfWriter::writeFrameFormat(QXmlStreamWriter &writer, QTextFrameFormat
     writer.writeEndElement(); // style
 
 // TODO consider putting the following properties in a qt-namespace.
-// Position   position () const 
-// qreal   border () const 
-// QBrush   borderBrush () const 
-// BorderStyle   borderStyle () const 
-// qreal   padding () const 
-// QTextLength   width () const 
-// QTextLength   height () const 
+// Position   position () const
+// qreal   border () const
+// QBrush   borderBrush () const
+// BorderStyle   borderStyle () const
+// qreal   padding () const
+// QTextLength   width () const
+// QTextLength   height () const
 // PageBreakFlags   pageBreakPolicy () const
 }
 

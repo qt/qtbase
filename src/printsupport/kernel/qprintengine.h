@@ -45,8 +45,6 @@
 #include <QtCore/qvariant.h>
 #include <QtPrintSupport/qprinter.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -86,6 +84,7 @@ public:
         PPK_PageMargins,
         PPK_CopyCount,
         PPK_SupportsMultipleCopies,
+        PPK_PaperName,
         PPK_PaperSize = PPK_PageSize,
 
         PPK_CustomBase = 0xff00
@@ -105,7 +104,5 @@ public:
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPRINTENGINE_H

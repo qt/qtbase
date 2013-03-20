@@ -55,8 +55,6 @@
 #include <qpa/qplatformscreen.h>
 #include <QtGui/qsurfaceformat.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -77,6 +75,8 @@ class QPlatformDialogHelper;
 class QPlatformSharedGraphicsCache;
 class QPlatformServices;
 class QKeyEvent;
+class QPlatformOffscreenSurface;
+class QOffscreenSurface;
 
 class Q_GUI_EXPORT QPlatformIntegration
 {
@@ -88,7 +88,9 @@ public:
         SharedGraphicsCache,
         BufferQueueingOpenGL,
         WindowMasks,
-        MultipleWindows
+        MultipleWindows,
+        ApplicationState,
+        ForeignWindows
     };
 
     virtual ~QPlatformIntegration() { }
@@ -148,12 +150,12 @@ public:
     virtual QStringList themeNames() const;
     virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
 
+    virtual QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
+
 protected:
     void screenAdded(QPlatformScreen *screen);
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMINTEGRATION_H

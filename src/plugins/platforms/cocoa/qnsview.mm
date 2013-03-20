@@ -304,6 +304,11 @@ static QTouchDevice *touchDevice = 0;
     [self setNeedsDisplayInRect:NSMakeRect(br.x(), br.y(), br.width(), br.height())];
 }
 
+- (BOOL) hasMask
+{
+    return m_maskData != 0;
+}
+
 - (void) setMaskRegion:(const QRegion *)region
 {
     m_shouldInvalidateWindowShadow = true;
@@ -397,8 +402,27 @@ static QTouchDevice *touchDevice = 0;
     return YES;
 }
 
+- (BOOL)becomeFirstResponder
+{
+    QWindow *focusWindow = m_window;
+
+    // For widgets we need to do a bit of trickery as the window
+    // to activate is the window of the top-level widget.
+    if (m_window->metaObject()->className() == QStringLiteral("QWidgetWindow")) {
+        while (focusWindow->parent()) {
+            focusWindow = focusWindow->parent();
+        }
+    }
+    QWindowSystemInterface::handleWindowActivated(focusWindow);
+    return YES;
+}
+
 - (BOOL)acceptsFirstResponder
 {
+    if (m_window->flags() & Qt::WindowDoesNotAcceptFocus)
+        return NO;
+    if ((m_window->flags() & Qt::ToolTip) == Qt::ToolTip)
+        return NO;
     return YES;
 }
 
@@ -445,6 +469,11 @@ static QTouchDevice *touchDevice = 0;
         NSPoint screenPoint = [window convertBaseToScreen : NSMakePoint(nsWindowPoint.x, nsWindowPoint.y)];
         *qtScreenPoint = QPoint(screenPoint.x, qt_mac_flipYCoordinate(screenPoint.y));
     }
+}
+
+- (void)resetMouseButtons
+{
+    m_buttons = Qt::NoButton;
 }
 
 - (void)handleMouseEvent:(NSEvent *)theEvent

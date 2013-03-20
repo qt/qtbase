@@ -49,8 +49,6 @@
 #include <QtWidgets/qcombobox.h>
 #include <QtSql/qsqlrelationaltablemodel.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -109,8 +107,6 @@ void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex 
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_WIDGETS_LIB
 

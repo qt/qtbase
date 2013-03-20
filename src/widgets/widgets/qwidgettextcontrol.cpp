@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -1726,12 +1726,13 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
 {
     Q_Q(QWidgetTextControl);
 
+    const QTextCursor oldSelection = cursor;
     if (sendMouseEventToInputContext(
             e, QEvent::MouseButtonRelease, button, pos, modifiers, buttons, globalPos)) {
+        repaintOldAndNewSelection(oldSelection);
         return;
     }
 
-    const QTextCursor oldSelection = cursor;
     const int oldCursorPos = cursor.position();
 
 #ifndef QT_NO_DRAGANDDROP

@@ -45,6 +45,7 @@
 
 #include "qrawfont.h"
 #include "qrawfont_p.h"
+#include "qplatformfontdatabase.h"
 
 #include <QtCore/qendian.h>
 
@@ -122,6 +123,20 @@ QT_BEGIN_NAMESPACE
     \value SubPixelAntialiasing Will rasterize by measuring the coverage of each subpixel,
            returning a separate alpha value for each of the red, green and blue components of
            each pixel.
+*/
+
+/*!
+    \enum QRawFont::LayoutFlag
+    \since 5.1
+
+    This enum tells the function advancesForGlyphIndexes() how to calculate the advances.
+
+    \value SeparateAdvances Will calculate the advance for each glyph separately.
+    \value KernedAdvances Will apply kerning between adjacent glyphs. Note that OpenType GPOS based
+           kerning is currently not supported.
+    \value UseDesignMetrics Use design metrics instead of hinted metrics adjusted to the resolution
+           of the paint device.
+           Can be OR-ed with any of the options above.
 */
 
 /*!
@@ -509,44 +524,81 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
 }
 
 /*!
-    \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+   \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes, LayoutFlags layoutFlags) const
+   \since 5.1
 
    Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
    give the distance from the position of a given glyph to where the next glyph should be drawn
-   to make it appear as if the two glyphs are unspaced.
+   to make it appear as if the two glyphs are unspaced. How the advances are calculated is
+   controlled by \a layoutFlags.
 
    \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
 */
 
 /*!
+   \fn QVector<QPointF> QRawFont::advancesForGlyphIndexes(const QVector<quint32> &glyphIndexes) const
+
+   \overload
+
+   Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
+   give the distance from the position of a given glyph to where the next glyph should be drawn
+   to make it appear as if the two glyphs are unspaced. The advance of each glyph is calculated
+   separately.
+
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+*/
+
+/*!
+   \since 5.1
+
    Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
    give the distance from the position of a given glyph to where the next glyph should be drawn
    to make it appear as if the two glyphs are unspaced. The glyph indexes are given with the
    array \a glyphIndexes while the results are returned through \a advances, both of them must
-   have \a numGlyphs elements.
+   have \a numGlyphs elements. How the advances are calculated is controlled by \a layoutFlags.
 
    \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
 */
-bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const
+bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs, LayoutFlags layoutFlags) const
 {
     Q_ASSERT(glyphIndexes && advances);
     if (!d->isValid() || numGlyphs <= 0)
         return false;
 
     QGlyphLayout glyphs;
-    glyphs.glyphs = const_cast<HB_Glyph *>(glyphIndexes);
+    glyphs.glyphs = const_cast<glyph_t *>(glyphIndexes);
     glyphs.numGlyphs = numGlyphs;
     QVarLengthArray<QFixed> advances_x(numGlyphs);
     QVarLengthArray<QFixed> advances_y(numGlyphs);
     glyphs.advances_x = advances_x.data();
     glyphs.advances_y = advances_y.data();
 
-    d->fontEngine->recalcAdvances(&glyphs, 0);
+    bool design = layoutFlags & UseDesignMetrics;
+
+    d->fontEngine->recalcAdvances(&glyphs, design ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlag(0));
+    if (layoutFlags & KernedAdvances)
+        d->fontEngine->doKerning(&glyphs, design ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlag(0));
 
     for (int i=0; i<numGlyphs; ++i)
         advances[i] = QPointF(glyphs.advances_x[i].toReal(), glyphs.advances_y[i].toReal());
 
     return true;
+}
+
+/*!
+   \overload
+
+   Returns the QRawFont's advances for each of the \a glyphIndexes in pixel units. The advances
+   give the distance from the position of a given glyph to where the next glyph should be drawn
+   to make it appear as if the two glyphs are unspaced. The glyph indexes are given with the
+   array \a glyphIndexes while the results are returned through \a advances, both of them must
+   have \a numGlyphs elements. The advance of each glyph is calculated separately
+
+   \sa QTextLine::horizontalAdvance(), QFontMetricsF::width()
+*/
+bool QRawFont::advancesForGlyphIndexes(const quint32 *glyphIndexes, QPointF *advances, int numGlyphs) const
+{
+    return QRawFont::advancesForGlyphIndexes(glyphIndexes, advances, numGlyphs, SeparateAdvances);
 }
 
 /*!
@@ -574,9 +626,6 @@ QByteArray QRawFont::fontTable(const char *tagName) const
     return d->fontEngine->getSfntTable(qToBigEndian(*tagId));
 }
 
-// From qfontdatabase.cpp
-extern QList<QFontDatabase::WritingSystem> qt_determine_writing_systems_from_truetype_bits(quint32 unicodeRange[4], quint32 codePageRange[2]);
-
 /*!
    Returns a list of writing systems supported by the font according to designer supplied
    information in the font file. Please note that this does not guarantee support for a
@@ -590,6 +639,7 @@ extern QList<QFontDatabase::WritingSystem> qt_determine_writing_systems_from_tru
 */
 QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
 {
+    QList<QFontDatabase::WritingSystem> writingSystems;
     if (d->isValid()) {
         QByteArray os2Table = fontTable("OS/2");
         if (os2Table.size() > 86) {
@@ -606,11 +656,15 @@ QList<QFontDatabase::WritingSystem> QRawFont::supportedWritingSystems() const
                 unicodeRanges[i] = qFromBigEndian(bigEndianUnicodeRanges[i]);
             }
 
-            return qt_determine_writing_systems_from_truetype_bits(unicodeRanges, codepageRanges);
+            QSupportedWritingSystems ws = QPlatformFontDatabase::writingSystemsFromTrueTypeBits(unicodeRanges, codepageRanges);
+            for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
+                if (ws.supported(QFontDatabase::WritingSystem(i)))
+                    writingSystems.append(QFontDatabase::WritingSystem(i));
+            }
         }
     }
 
-    return QList<QFontDatabase::WritingSystem>();
+    return writingSystems;
 }
 
 /*!
@@ -684,8 +738,7 @@ void QRawFont::setPixelSize(qreal pixelSize)
     if (d->fontEngine != 0)
         d->fontEngine->ref.ref();
 
-    oldFontEngine->ref.deref();
-    if (oldFontEngine->cache_count == 0 && oldFontEngine->ref.load() == 0)
+    if (!oldFontEngine->ref.deref())
         delete oldFontEngine;
 }
 
@@ -696,8 +749,7 @@ void QRawFontPrivate::cleanUp()
 {
     platformCleanUp();
     if (fontEngine != 0) {
-        fontEngine->ref.deref();
-        if (fontEngine->cache_count == 0 && fontEngine->ref.load() == 0)
+        if (!fontEngine->ref.deref())
             delete fontEngine;
         fontEngine = 0;
     }

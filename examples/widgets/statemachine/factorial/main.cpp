@@ -78,7 +78,7 @@ public:
 
 Q_SIGNALS:
     void xChanged(int value);
-    
+
 private:
     int m_x;
     int m_fac;

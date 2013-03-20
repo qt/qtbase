@@ -69,11 +69,11 @@ class Employee
         setName(name);
     }
 //! [2] //! [7]
-    Employee(const Employee &other) 
-          : d (other.d) 
-    { 
-    } 
-//! [7]  
+    Employee(const Employee &other)
+          : d (other.d)
+    {
+    }
+//! [7]
 //! [3]
     void setId(int id) { d->id = id; }
 //! [3] //! [4]

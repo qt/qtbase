@@ -22,7 +22,7 @@ begin_block drawing
   drawRect 300 -500000 1000000 1000000
 
   drawPath path
-  
+
 end_block
 
 save

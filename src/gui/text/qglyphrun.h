@@ -49,8 +49,6 @@
 
 #if !defined(QT_NO_RAWFONT)
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -129,8 +127,6 @@ private:
 Q_DECLARE_SHARED(QGlyphRun)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_RAWFONT
 

@@ -29,6 +29,7 @@ HEADERS +=  \
         tools/qlocale_data_p.h \
         tools/qmap.h \
         tools/qmargins.h \
+        tools/qmessageauthenticationcode.h \
         tools/qcontiguouscache.h \
         tools/qpodlist_p.h \
         tools/qpair.h \
@@ -82,6 +83,7 @@ SOURCES += \
         tools/qpoint.cpp \
         tools/qmap.cpp \
         tools/qmargins.cpp \
+        tools/qmessageauthenticationcode.cpp \
         tools/qcontiguouscache.cpp \
         tools/qrect.cpp \
         tools/qregexp.cpp \
@@ -103,6 +105,10 @@ SOURCES += \
 !nacl:mac: {
     SOURCES += tools/qelapsedtimer_mac.cpp
     OBJECTIVE_SOURCES += tools/qlocale_mac.mm
+}
+else:blackberry {
+    SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_blackberry.cpp
+    HEADERS += tools/qlocale_blackberry.h
 }
 else:unix:SOURCES += tools/qelapsedtimer_unix.cpp tools/qlocale_unix.cpp
 else:win32:SOURCES += tools/qelapsedtimer_win.cpp tools/qlocale_win.cpp
@@ -132,7 +138,7 @@ pcre {
     LIBS_PRIVATE += -lpcre16
 }
 
-DEFINES += HB_EXPORT=Q_CORE_EXPORT
+INCLUDEPATH += ../3rdparty/harfbuzz/src
 HEADERS += ../3rdparty/harfbuzz/src/harfbuzz.h
 SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            ../3rdparty/harfbuzz/src/harfbuzz-gdef.c \
@@ -146,7 +152,8 @@ SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
 HEADERS += tools/qharfbuzz_p.h
 
 INCLUDEPATH += ../3rdparty/md5 \
-               ../3rdparty/md4
+               ../3rdparty/md4 \
+               ../3rdparty/sha3
 
 # Note: libm should be present by default becaue this is C++
 !macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm

@@ -41,7 +41,7 @@
 
 #include <qsqldriverplugin.h>
 #include <qstringlist.h>
-#include "../../../sql/drivers/odbc/qsql_odbc.h"
+#include "../../../sql/drivers/odbc/qsql_odbc_p.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -46,27 +46,42 @@
 
 #ifndef QT_NO_QOBJECT
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QVariant;
 
-class QPointerBase
+template <class T>
+class QPointer
 {
-    QWeakPointer<QObject> wp;
+    template<typename U>
+    struct TypeSelector
+    {
+        typedef QObject Type;
+    };
+    template<typename U>
+    struct TypeSelector<const U>
+    {
+        typedef const QObject Type;
+    };
+    typedef typename TypeSelector<T>::Type QObjectType;
+    QWeakPointer<QObjectType> wp;
+public:
+    inline QPointer() { }
+    inline QPointer(T *p) : wp(p, true) { }
+    // compiler-generated copy/move ctor/assignment operators are fine!
+    inline ~QPointer() { }
 
-protected:
-    inline QPointerBase() : wp() { }
-    inline QPointerBase(QObject *p) : wp(p, true) { }
-    // compiler-generated copy/move ctor/assignment operators are fine! (even though public)
-    inline ~QPointerBase() { }
+    inline QPointer<T> &operator=(T* p)
+    { wp.assign(static_cast<QObjectType*>(p)); return *this; }
 
-    inline QObject* data() const
-    { return wp.data(); }
-
-    inline void assign(QObject *p)
-    { wp.assign(p); }
+    inline T* data() const
+    { return static_cast<T*>( wp.data()); }
+    inline T* operator->() const
+    { return data(); }
+    inline T& operator*() const
+    { return *data(); }
+    inline operator T*() const
+    { return data(); }
 
     inline bool isNull() const
     { return wp.isNull(); }
@@ -74,38 +89,7 @@ protected:
     inline void clear()
     { wp.clear(); }
 };
-
-template <class T>
-class QPointer : private QPointerBase
-{
-public:
-    inline QPointer() { }
-    inline QPointer(T *p) : QPointerBase(p) { }
-    // compiler-generated copy/move ctor/assignment operators are fine!
-    inline ~QPointer() { }
-
-    inline QPointer<T> &operator=(T* p)
-    { QPointerBase::assign(p); return *this; }
-
-    inline T* data() const
-    { return static_cast<T*>(QPointerBase::data()); }
-    inline T* operator->() const
-    { return data(); }
-    inline T& operator*() const
-    { return *data(); }
-    inline operator T*() const
-    { return data(); }
-#ifdef Q_QDOC
-    inline bool isNull() const;
-    inline void clear();
-#else
-    using QPointerBase::isNull;
-    using QPointerBase::clear;
-#endif
-};
 template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_MOVABLE_TYPE);
-
-#if (!defined(Q_CC_SUN) || (__SUNPRO_CC >= 0x580)) // ambiguity between const T * and T *
 
 template <class T>
 inline bool operator==(const T *o, const QPointer<T> &p)
@@ -114,18 +98,6 @@ inline bool operator==(const T *o, const QPointer<T> &p)
 template<class T>
 inline bool operator==(const QPointer<T> &p, const T *o)
 { return p.operator->() == o; }
-
-#else
-
-template<class T>
-inline bool operator==(const void *o, const QPointer<T> &p)
-{ return o == p.operator->(); }
-
-template<class T>
-inline bool operator==(const QPointer<T> &p, const void *o)
-{ return p.operator->() == o; }
-
-#endif
 
 template <class T>
 inline bool operator==(T *o, const QPointer<T> &p)
@@ -139,9 +111,6 @@ template<class T>
 inline bool operator==(const QPointer<T> &p1, const QPointer<T> &p2)
 { return p1.operator->() == p2.operator->(); }
 
-
-#if (!defined(Q_CC_SUN) || (__SUNPRO_CC >= 0x580)) // ambiguity between const T * and T *
-
 template <class T>
 inline bool operator!=(const T *o, const QPointer<T> &p)
 { return o != p.operator->(); }
@@ -149,18 +118,6 @@ inline bool operator!=(const T *o, const QPointer<T> &p)
 template<class T>
 inline bool operator!= (const QPointer<T> &p, const T *o)
 { return p.operator->() != o; }
-
-#else
-
-template<class T>
-inline bool operator!= (const void *o, const QPointer<T> &p)
-{ return o != p.operator->(); }
-
-template<class T>
-inline bool operator!= (const QPointer<T> &p, const void *o)
-{ return p.operator->() != o; }
-
-#endif
 
 template <class T>
 inline bool operator!=(T *o, const QPointer<T> &p)
@@ -174,17 +131,6 @@ template<class T>
 inline bool operator!= (const QPointer<T> &p1, const QPointer<T> &p2)
 { return p1.operator->() != p2.operator->() ; }
 
-// Make MSVC < 1400 (2005) handle "if (NULL == p)" syntax
-#if defined(Q_CC_MSVC) && (_MSC_VER < 1400)
-template<class T>
-inline bool operator== (int i, const QPointer<T> &p)
-{ Q_ASSERT(i == 0); return !i && p.isNull(); }
-
-template<class T>
-inline bool operator!= (int i, const QPointer<T> &p)
-{ Q_ASSERT(i == 0); return !i && !p.isNull(); }
-#endif
-
 template<typename T>
 QPointer<T>
 qPointerFromVariant(const QVariant &variant)
@@ -193,8 +139,6 @@ qPointerFromVariant(const QVariant &variant)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_QOBJECT
 

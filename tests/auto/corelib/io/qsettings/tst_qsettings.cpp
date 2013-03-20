@@ -694,7 +694,9 @@ void tst_QSettings::testErrorHandling()
 #ifdef Q_OS_WIN
     QSKIP("Windows doesn't support most file modes, including read-only directories, so this test is moot.");
 #elif defined(Q_OS_UNIX)
+#if !defined(Q_OS_VXWORKS)  // VxWorks does not have users/groups
     if (::getuid() == 0)
+#endif
         QSKIP("Running this test as root doesn't work, since file perms do not bother him");
 #else
     QFETCH(int, filePerms);

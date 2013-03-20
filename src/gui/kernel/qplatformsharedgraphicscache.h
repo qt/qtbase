@@ -54,8 +54,6 @@
 #include <QtCore/qobject.h>
 #include <QtGui/qimage.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class Q_GUI_EXPORT QPlatformSharedGraphicsCache: public QObject
@@ -102,7 +100,5 @@ Q_SIGNALS:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMSHAREDGRAPHICSCACHE_H

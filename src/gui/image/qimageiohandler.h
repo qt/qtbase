@@ -46,8 +46,6 @@
 #include <QtCore/qfactoryinterface.h>
 #include <QtCore/qscopedpointer.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -141,7 +139,5 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QImageIOPlugin::Capabilities)
 #endif // QT_NO_IMAGEFORMATPLUGIN
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QIMAGEIOHANDLER_H

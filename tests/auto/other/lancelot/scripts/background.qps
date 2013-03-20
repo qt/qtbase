@@ -14,12 +14,12 @@ path_lineTo path 0 50
 bitmap_load bitmap.png bitmap
 
 begin_block drawing
-  save 
+  save
     drawRect 0 0 50 50
 
     translate 60 0
     drawEllipse 0 0 50 50
-  
+
     translate 60 0
     drawPolygon [0 0 50 0 25 50 25 25]
 
@@ -28,9 +28,9 @@ begin_block drawing
 
     translate 60 0
     drawPie 0 0 50 50 1440 2000
-    
+
     translate 60 0
-    drawChord 0 0 50 50 1440 2000 
+    drawChord 0 0 50 50 1440 2000
 
     translate 60 0
     drawLine 0 0 50 0
@@ -44,10 +44,10 @@ begin_block drawing
     drawArc 0 0 50 50 1440 2000
 
     translate 60 0
-    drawText 0 10 "Jambi-Bambi"    
+    drawText 0 10 "Jambi-Bambi"
 
     translate 80 0
-    drawPixmap bitmap 0 0 
+    drawPixmap bitmap 0 0
   restore
 
   save
@@ -57,7 +57,7 @@ begin_block drawing
 
     translate 60 0
     drawEllipse 0 0 50 50
-  
+
     translate 60 0
     drawPolygon [0 0 50 0 25 50 25 25]
 
@@ -66,9 +66,9 @@ begin_block drawing
 
     translate 60 0
     drawPie 0 0 50 50 1440 2000
-    
+
     translate 60 0
-    drawChord 0 0 50 50 1440 2000 
+    drawChord 0 0 50 50 1440 2000
 
     translate 60 0
     drawLine 0 0 50 0
@@ -82,10 +82,10 @@ begin_block drawing
     drawArc 0 0 50 50 1440 2000
 
     translate 60 0
-    drawText 0 10 "Jambi-Bambi"    
+    drawText 0 10 "Jambi-Bambi"
 
     translate 80 0
-    drawPixmap bitmap 0 0 
+    drawPixmap bitmap 0 0
   restore
 end_block
 
@@ -102,12 +102,12 @@ repeat_block drawing
 translate 0 160
 setBackgroundMode Transparent
 setPen ff7f7f 4 dashline flatcap beveljoin
-repeat_block drawing    
+repeat_block drawing
 
 translate 0 160
 setBackgroundMode OpaqueMode
 setPen ff7f7f 4 dashline flatcap beveljoin
-repeat_block drawing    
+repeat_block drawing
 
 resetMatrix
 

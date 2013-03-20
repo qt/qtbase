@@ -82,7 +82,7 @@ public slots:
         QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile"));
         if (zeroCopy)
             request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 10*1024*1024);
-                
+
         QNetworkReply *reply = netmanager.get(
                 QNetworkRequest(
                 QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/bigfile")

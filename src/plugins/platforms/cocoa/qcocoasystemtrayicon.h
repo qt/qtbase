@@ -43,6 +43,8 @@
 #ifndef QCOCOASYSTEMTRAYICON_P_H
 #define QCOCOASYSTEMTRAYICON_P_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_SYSTEMTRAYICON
 
 #include "QtCore/qstring.h"

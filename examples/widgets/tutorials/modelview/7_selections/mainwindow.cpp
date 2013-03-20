@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     europeItem->  appendRow(italyItem);
     italyItem->   appendRow(romeItem);
     italyItem->   appendRow(veronaItem);
-    
+
     //register the model
     treeView->setModel(standardModel);
     treeView->expandAll();

@@ -13,12 +13,21 @@ load(qt_build_paths)
 
 !build_pass {
     qtPrepareTool(QMAKE_SYNCQT, syncqt)
-    contains(QT_CONFIG, private_tests): \   # -developer-build
-        QMAKE_SYNCQT += -check-includes
-    QMAKE_SYNCQT += -module $$MODULE_INCNAME -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs -outdir $$MODULE_BASE_OUTDIR $$MODULE_BASE_DIR
+    minimal_syncqt {
+        QMAKE_SYNCQT += -minimal $$QMAKE_SYNCQT_OPTIONS
+    } else {
+        contains(QT_CONFIG, private_tests): \   # -developer-build
+            QMAKE_SYNCQT += -check-includes
+        QMAKE_SYNCQT += -module $$MODULE_INCNAME
+    }
+    QMAKE_SYNCQT += \
+        -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs \
+        -outdir $$MODULE_BASE_OUTDIR $$MODULE_BASE_DIR
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 }
+
+minimal_syncqt: return()
 
 #load up the headers info
 include($$MODULE_BASE_OUTDIR/include/$$MODULE_INCNAME/headers.pri, "", true)

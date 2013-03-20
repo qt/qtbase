@@ -55,8 +55,6 @@
 
 #include "qopenglfunctions.h"
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -192,7 +190,5 @@ inline void QOpenGLExtensions::glGetBufferSubData(GLenum target, qopengl_GLintpt
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QOPENGL_EXTENSIONS_P_H

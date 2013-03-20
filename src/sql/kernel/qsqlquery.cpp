@@ -325,7 +325,7 @@ bool QSqlQuery::isNull(int field) const
 }
 
 /*!
-  
+
   Executes the SQL in \a query. Returns true and sets the query state
   to \l{isActive()}{active} if the query was successful; otherwise
   returns false. The \a query string must use syntax appropriate for
@@ -579,7 +579,7 @@ bool QSqlQuery::seek(int index, bool relative)
 }
 
 /*!
-  
+
   Retrieves the next record in the result, if available, and positions
   the query on the retrieved record. Note that the result must be in
   the \l{isActive()}{active} state and isSelect() must return true
@@ -783,7 +783,7 @@ bool QSqlQuery::isValid() const
 }
 
 /*!
-  
+
   Returns true if the query is \e{active}. An active QSqlQuery is one
   that has been \l{QSqlQuery::exec()} {exec()'d} successfully but not
   yet finished with.  When you are finished with an active query, you
@@ -1143,7 +1143,7 @@ QString QSqlQuery::executedQuery() const
   behavior is undefined.
 
   For MySQL databases the row's auto-increment field will be returned.
-    
+
   \note For this function to work in PSQL, the table table must
   contain OIDs, which may not have been created by default.  Check the
   \c default_with_oids configuration variable to be sure.
@@ -1199,7 +1199,7 @@ QSql::NumericalPrecisionPolicy QSqlQuery::numericalPrecisionPolicy() const
   call this function, but it may be helpful in order to free resources
   such as locks or cursors if you intend to re-use the query at a
   later time.
-    
+
   Sets the query to inactive. Bound values retain their values.
 
   \sa prepare(), exec(), isActive()
@@ -1216,7 +1216,7 @@ void QSqlQuery::finish()
 
 /*!
   \since 4.4
- 
+
   Discards the current result set and navigates to the next if available.
 
   Some databases are capable of returning multiple result sets for
@@ -1224,7 +1224,7 @@ void QSqlQuery::finish()
   multiple statements). If multiple result sets are available after
   executing a query this function can be used to navigate to the next
   result set(s).
-    
+
   If a new result set is available this function will return true.
   The query will be repositioned on an \e invalid record in the new
   result set and must be navigated to a valid record before data

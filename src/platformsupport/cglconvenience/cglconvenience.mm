@@ -61,6 +61,7 @@ void (*qcgl_getProcAddress(const QByteArray &procName))()
 QSurfaceFormat qcgl_surfaceFormat()
 {
     QSurfaceFormat format;
+    format.setRenderableType(QSurfaceFormat::OpenGL);
     format.setRedBufferSize(8);
     format.setGreenBufferSize(8);
     format.setBlueBufferSize(8);
@@ -125,13 +126,3 @@ void *qcgl_createNSOpenGLPixelFormat(const QSurfaceFormat &format)
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs.constData()];
     return pixelFormat;
 }
-
-CGLContextObj qcgl_createGlContext()
-{
-    CGLContextObj context;
-    NSOpenGLPixelFormat *format = reinterpret_cast<NSOpenGLPixelFormat *>(qcgl_createNSOpenGLPixelFormat(qcgl_surfaceFormat()));
-    CGLPixelFormatObj cglFormat = static_cast<CGLPixelFormatObj>([format CGLPixelFormatObj]);
-    CGLCreateContext(cglFormat ,NULL, &context);
-    return context;
-}
-

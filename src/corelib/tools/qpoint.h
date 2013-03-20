@@ -44,8 +44,6 @@
 
 #include <QtCore/qnamespace.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -75,6 +73,9 @@ public:
     inline QPoint &operator*=(int factor);
 
     inline QPoint &operator/=(qreal divisor);
+
+    Q_DECL_CONSTEXPR static inline int dotProduct(const QPoint &p1, const QPoint &p2)
+    { return p1.xp * p2.xp + p1.yp * p2.yp; }
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QPoint &, const QPoint &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QPoint &, const QPoint &);
@@ -232,6 +233,9 @@ public:
     inline QPointF &operator-=(const QPointF &p);
     inline QPointF &operator*=(qreal c);
     inline QPointF &operator/=(qreal c);
+
+    Q_DECL_CONSTEXPR static inline qreal dotProduct(const QPointF &p1, const QPointF &p2)
+    { return p1.xp * p2.xp + p1.yp * p2.yp; }
 
     friend Q_DECL_CONSTEXPR inline bool operator==(const QPointF &, const QPointF &);
     friend Q_DECL_CONSTEXPR inline bool operator!=(const QPointF &, const QPointF &);
@@ -392,7 +396,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug d, const QPointF &p);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPOINT_H

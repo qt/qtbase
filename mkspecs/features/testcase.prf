@@ -32,7 +32,7 @@ contains(MUNGED_TARGET,.*/.*):check.commands = cd $(DESTDIR) &&
 # Allow for a custom test runner script
 check.commands += $(TESTRUNNER)
 
-macx {
+mac {
     app_bundle: check.commands += ./$(QMAKE_TARGET).app/Contents/MacOS/$(QMAKE_TARGET)
     else:       check.commands += ./$(QMAKE_TARGET)
 }

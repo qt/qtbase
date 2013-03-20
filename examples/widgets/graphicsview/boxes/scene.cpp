@@ -567,7 +567,7 @@ void Scene::initGL()
     m_environmentProgram->link();
 
     const int NOISE_SIZE = 128; // for a different size, B and BM in fbm.c must also be changed
-    m_noise = new GLTexture3D(NOISE_SIZE, NOISE_SIZE, NOISE_SIZE); 
+    m_noise = new GLTexture3D(NOISE_SIZE, NOISE_SIZE, NOISE_SIZE);
     QRgb *data = new QRgb[NOISE_SIZE * NOISE_SIZE * NOISE_SIZE];
     memset(data, 0, NOISE_SIZE * NOISE_SIZE * NOISE_SIZE * sizeof(QRgb));
     QRgb *p = data;

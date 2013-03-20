@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -519,7 +517,5 @@ Q_OUTOFLINE_TEMPLATE RandomAccessIterator qBinaryFindHelper(RandomAccessIterator
 } //namespace QAlgorithmsPrivate
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QALGORITHMS_H

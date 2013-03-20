@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
     \ingroup painting
     \since 4.6
 
-    \brief The QMargins class defines the four margins of a rectangle. 
+    \brief The QMargins class defines the four margins of a rectangle.
 
     QMargin defines a set of four margins; left, top, right and bottom,
     that describe the size of the borders surrounding a rectangle.
@@ -155,6 +155,240 @@ QT_BEGIN_NAMESPACE
     \relates QMargins
 
     Returns true if \a m1 and \a m2 are different; otherwise returns false.
+*/
+
+/*!
+    \fn QRect operator+(const QRect &rectangle, const QMargins &margins)
+    \relates QRect
+
+    Returns the \a rectangle grown by the \a margins.
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect operator+(const QMargins &margins, const QRect &rectangle)
+    \relates QRect
+    \overload
+
+    Returns the \a rectangle grown by the \a margins.
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::marginsAdded(const QMargins &margins) const
+
+    Returns a rectangle grown by the \a margins.
+
+    \sa operator+=(), marginsRemoved(), operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::operator+=(const QMargins &margins) const
+
+    Adds the \a margins to the rectangle, growing it.
+
+    \sa marginsAdded(), marginsRemoved(), operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::marginsRemoved(const QMargins &margins) const
+
+    Removes the \a margins from the rectangle, shrinking it.
+
+    \sa marginsAdded(), operator+=(), operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QRect QRect::operator -=(const QMargins &margins) const
+
+    Returns a rectangle shrunk by the \a margins.
+
+    \sa marginsRemoved(), operator+=(), marginsAdded()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator+(const QMargins &m1, const QMargins &m2)
+    \relates QMargins
+
+    Returns a QMargins object that is the sum of the given margins, \a m1
+    and \a m2; each component is added separately.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator-(const QMargins &m1, const QMargins &m2)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by subtracting \a m2 from
+    \a m1; each component is subtracted separately.
+
+    \sa QMargins::operator+=(), QMargins::operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(const QMargins &margins, int factor)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(int factor, const QMargins &margins)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(const QMargins &margins, qreal factor)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator*(qreal factor, const QMargins &margins)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by multiplying each component
+    of the given \a margins by \a factor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator/(const QMargins &margins, int divisor)
+    \relates QMargins
+
+    Returns a QMargins object that is formed by dividing the components of
+    the given \a margins by the given \a divisor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn const QMargins operator/(const QMargins &, qreal)
+    \relates QMargins
+    \overload
+
+    Returns a QMargins object that is formed by dividing the components of
+    the given \a margins by the given \a divisor.
+
+    \sa QMargins::operator*=(), QMargins::operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins operator-(const QMargins &margins)
+    \relates QMargins
+
+    Returns a QMargin object that is formed by negating all components of \a margins.
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator+=(const QMargins &margins)
+
+    Add each component of \a margins to the respective component of this object
+    and returns a reference to it.
+
+    \sa operator-=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator-=(const QMargins &margins)
+
+    Subtract each component of \a margins from the respective component of this object
+    and returns a reference to it.
+
+    \sa operator+=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator*=(int factor)
+
+    Multiplies each component of this object by \a factor
+    and returns a reference to it.
+
+    \sa operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator*=(qreal factor)
+    \overload
+
+    Multiplies each component of this object by \a factor
+    and returns a reference to it.
+
+    \sa operator/=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator/=(int divisor)
+
+    Divides each component of this object by \a divisor
+    and returns a reference to it.
+
+    \sa operator*=()
+
+    \since 5.1
+*/
+
+/*!
+    \fn QMargins &operator/=(qreal divisor)
+
+    \overload
+
+    \sa operator*=()
+
+    \since 5.1
 */
 
 /*****************************************************************************

@@ -744,7 +744,10 @@ void QTimeLine::setPaused(bool paused)
         d->timerId = 0;
         d->setState(Paused);
     } else if (!paused && d->state == Paused) {
+        // Same as resume()
         d->timerId = startTimer(d->updateInterval);
+        d->startTime = d->currentTime;
+        d->timer.start();
         d->setState(Running);
     }
 }

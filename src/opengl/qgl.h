@@ -53,7 +53,6 @@
 
 #include <QtGui/QSurfaceFormat>
 
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -344,7 +343,6 @@ private:
     friend struct QGLGlyphTexture;
     friend class QGLContextGroup;
     friend class QGLPixmapBlurFilter;
-    friend class QGLExtensions;
     friend class QGLTexture;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
     friend class QGLFramebufferObject;
@@ -524,8 +522,6 @@ inline bool QGLFormat::sampleBuffers() const
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_OPENGL
 #endif // QGL_H

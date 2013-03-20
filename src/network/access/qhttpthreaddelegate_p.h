@@ -135,6 +135,7 @@ signals:
     void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
 #endif
 #ifndef QT_NO_SSL
+    void encrypted();
     void sslErrors(const QList<QSslError> &, bool *, QList<QSslError> *);
     void sslConfigurationChanged(const QSslConfiguration);
 #endif
@@ -164,6 +165,7 @@ protected slots:
     void dataReadProgressSlot(qint64 done, qint64 total);
     void cacheCredentialsSlot(const QHttpNetworkRequest &request, QAuthenticator *authenticator);
 #ifndef QT_NO_SSL
+    void encryptedSlot();
     void sslErrorsSlot(const QList<QSslError> &errors);
 #endif
 

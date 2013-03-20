@@ -599,7 +599,7 @@ void tst_QUndoGroup::addStackAndDie()
 {
     // Test that QUndoStack doesn't keep a reference to QUndoGroup after the
     // group is deleted.
-    QUndoStack *stack = new QUndoStack; 
+    QUndoStack *stack = new QUndoStack;
     QUndoGroup *group = new QUndoGroup;
     group->addStack(stack);
     delete group;

@@ -101,7 +101,7 @@ void Window::setupModel()
     QStringList items;
     items << tr("Home") << tr("Work") << tr("Other");
     typeModel = new QStringListModel(items, this);
-    
+
     model = new QStandardItemModel(5, 3, this);
     QStringList names;
     names << "Alice" << "Bob" << "Carol" << "Donald" << "Emma";
@@ -115,7 +115,7 @@ void Window::setupModel()
 
     QStringList types;
     types << "0" << "1" << "2" << "0" << "2";
-    
+
     for (int row = 0; row < 5; ++row) {
       QStandardItem *item = new QStandardItem(names[row]);
       model->setItem(row, 0, item);

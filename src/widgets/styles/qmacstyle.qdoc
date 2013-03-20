@@ -104,43 +104,43 @@
 */
 
 /*! \fn void QMacStyle::polish(QPalette &pal)
-    \reimp 
+    \reimp
 */
 
 /*! \fn void QMacStyle::polish(QApplication *)
-    \reimp 
+    \reimp
 */
 
 /*! \fn void QMacStyle::unpolish(QApplication *)
-    \reimp 
+    \reimp
 */
 
 /*! \fn void QMacStyle::polish(QWidget* w)
-    \reimp 
+    \reimp
 */
 
 /*! \fn void QMacStyle::unpolish(QWidget* w)
-    \reimp 
+    \reimp
 */
 
 /*! \fn int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QWidget *widget) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn QPalette QMacStyle::standardPalette() const
-    \reimp 
+    \reimp
 */
 
 /*! \fn int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w, QStyleHintReturn *hret) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn QPixmap QMacStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap, const QStyleOption *opt) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt, const QWidget *widget) const
-    \reimp 
+    \reimp
 */
 
 /*!
@@ -199,41 +199,41 @@
 
 /*! \fn void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const
 
-    \reimp 
+    \reimp
 */
 
 /*! \fn void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter *p, const QWidget *w) const
 
-    \reimp 
+    \reimp
 */
 
 /*! \fn QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt, const QWidget *widget) const
 
-    \reimp 
+    \reimp
 */
 
 /*! \fn void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p, const QWidget *widget) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, const QPoint &pt, const QWidget *widget) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt, const QSize &csz, const QWidget *widget) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn void QMacStyle::drawItemText(QPainter *p, const QRect &r, int flags, const QPalette &pal, bool enabled, const QString &text, QPalette::ColorRole textRole) const
-    \reimp 
+    \reimp
 */
 
 /*! \fn bool QMacStyle::event(QEvent *e)
-    \reimp 
+    \reimp
 */
 
 /*! \fn QIcon QMacStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption *opt, const QWidget *widget) const

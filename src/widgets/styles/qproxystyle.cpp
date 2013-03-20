@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
     \since 4.6
 
     \inmodule QtWidgets
- 
+
     A QProxyStyle wraps a QStyle (usually the default system style) for the
     purpose of dynamically overriding painting or other specific style behavior.
 
@@ -108,10 +108,9 @@ void QProxyStylePrivate::ensureBaseStyle() const
 }
 
 /*!
-  Constructs a QProxyStyle object for overriding behavior in \a style
-  or in the current application \l{QStyle}{style} if \a style is 0
-  (default). Normally \a style is 0, because you want to override
-  behavior in the system style.
+  Constructs a QProxyStyle object for overriding behavior in the
+  specified base \a style, or in the current \l{QApplication::style}
+  {application style} if base \a style is not specified.
 
   Ownership of \a style is transferred to QProxyStyle.
 */
@@ -119,6 +118,26 @@ QProxyStyle::QProxyStyle(QStyle *style) :
     QCommonStyle(*new QProxyStylePrivate())
 {
     Q_D(QProxyStyle);
+    if (style) {
+        d->baseStyle = style;
+        style->setProxy(this);
+        style->setParent(this); // Take ownership
+    }
+}
+
+/*!
+    Constructs a QProxyStyle object for overriding behavior in
+    the base style specified by style \a key, or in the current
+    \l{QApplication::style}{application style} if the specified
+    style \a key is unrecognized.
+
+    \sa QStyleFactory::create()
+*/
+QProxyStyle::QProxyStyle(const QString &key) :
+    QCommonStyle(*new QProxyStylePrivate())
+{
+    Q_D(QProxyStyle);
+    QStyle *style = QStyleFactory::create(key);
     if (style) {
         d->baseStyle = style;
         style->setProxy(this);

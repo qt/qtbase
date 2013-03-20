@@ -71,7 +71,7 @@
     \section1 Important Classes
 
     These classes form the basis of the Qt Object Model.
-    
+
     \annotatedlist objectmodel
 
     \target Identity vs Value
@@ -108,7 +108,7 @@
     at runtime that are not declared in the C++ class. If we copy a Qt
     Object, should the copy include the properties that were added to
     the original?
-    
+
     \endlist
 
     For these reasons, Qt Objects should be treated as identities, not

@@ -68,8 +68,8 @@ public slots:
 private slots:
     void standardButtons();
     void testConstructor1();
-    void testConstrurtor2();
-    void testConstrurtor2_data();
+    void testConstructor2();
+    void testConstructor2_data();
     void testConstructor3();
     void testConstructor3_data();
     void setOrientation_data();
@@ -146,7 +146,7 @@ void tst_QDialogButtonBox::layoutReuse()
     delete box;
 }
 
-void tst_QDialogButtonBox::testConstrurtor2_data()
+void tst_QDialogButtonBox::testConstructor2_data()
 {
     QTest::addColumn<int>("orientation");
 
@@ -154,7 +154,7 @@ void tst_QDialogButtonBox::testConstrurtor2_data()
     QTest::newRow("vertical") << int(Qt::Vertical);
 }
 
-void tst_QDialogButtonBox::testConstrurtor2()
+void tst_QDialogButtonBox::testConstructor2()
 {
     QFETCH(int, orientation);
     Qt::Orientation orient = Qt::Orientation(orientation);

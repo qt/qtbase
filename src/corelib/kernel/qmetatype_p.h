@@ -221,7 +221,7 @@ template<> struct TypeDefinition<QPointF> { static const bool IsAvailable = fals
 #ifdef QT_NO_REGEXP
 template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = false; };
 #endif
-#if defined(QT_BOOTSTRAPPED) || defined(QT_NO_REGEXP)
+#if defined(QT_BOOTSTRAPPED) || defined(QT_NO_REGULAREXPRESSION)
 template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
 #endif
 #ifdef QT_NO_SHORTCUT

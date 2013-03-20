@@ -89,7 +89,7 @@ int main(int argc, char * argv[])
     optionsMenu->addMenu("Settings");
     optionsMenu->addMenu("Standard");
     optionsMenu->addMenu("Extended");
-    
+
     QMenu *subMenu = helpMenu->addMenu("Help");
     subMenu->addAction("Index");
     subMenu->addSeparator();

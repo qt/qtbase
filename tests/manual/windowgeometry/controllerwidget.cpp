@@ -311,7 +311,7 @@ public:
         , m_backingStore(new QBackingStore(this))
     {
         setObjectName(QStringLiteral("window"));
-        setWindowTitle(tr("TestWindow"));
+        setTitle(tr("TestWindow"));
     }
 
 protected:
@@ -363,9 +363,9 @@ private:
     virtual QPoint objectMapToGlobal(const QObject *o, const QPoint &p) const
         { return static_cast<const QWindow *>(o)->mapToGlobal(p); }
     virtual Qt::WindowFlags objectWindowFlags(const QObject *o) const
-        { return static_cast<const QWindow *>(o)->windowFlags(); }
+        { return static_cast<const QWindow *>(o)->flags(); }
     virtual void setObjectWindowFlags(QObject *o, Qt::WindowFlags f)
-        { static_cast<QWindow *>(o)->setWindowFlags(f); }
+        { static_cast<QWindow *>(o)->setFlags(f); }
 
     WindowStateControl *m_stateControl;
 };
@@ -374,7 +374,7 @@ WindowControl::WindowControl(QWindow *w )
     : BaseWindowControl(w)
     , m_stateControl(new WindowStateControl(WindowStateControl::WantVisibleCheckBox | WindowStateControl::WantMinimizeRadioButton))
 {
-    setTitle(w->windowTitle());
+    setTitle(w->title());
     QGroupBox *stateGroupBox = new QGroupBox(tr("State"));
     QVBoxLayout *l = new QVBoxLayout(stateGroupBox);
     l->addWidget(m_stateControl);
@@ -454,7 +454,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
 
 #if QT_VERSION >= 0x050000
     x += 300;
-    m_testWindow->setWindowFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint
+    m_testWindow->setFlags(Qt::Window | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint
                                  | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint
                                  | Qt::WindowTitleHint | Qt::WindowFullscreenButtonHint);
     m_testWindow->setFramePosition(QPoint(x, y));
@@ -467,7 +467,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
         m_testWindow->showFullScreen();
     else
         m_testWindow->show();
-    m_testWindow->setWindowTitle(tr("TestWindow"));
+    m_testWindow->setTitle(tr("TestWindow"));
 #endif
 
     QWidget *central = new QWidget ;

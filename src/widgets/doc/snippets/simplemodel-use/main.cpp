@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     title->setBackgroundRole(QPalette::Base);
     title->setMargin(8);
     layout->addWidget(title);
-    
+
 //! [0]
     QFileSystemModel *model = new QFileSystemModel;
     QModelIndex parentIndex = model->index(QDir::currentPath());

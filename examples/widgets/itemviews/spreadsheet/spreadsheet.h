@@ -77,7 +77,7 @@ public slots:
     void actionSubtract();
     void actionAdd();
     void actionMultiply();
-    void actionDivide();  
+    void actionDivide();
 
 protected:
     void setupContextMenu();

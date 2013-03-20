@@ -154,7 +154,7 @@ void MainWindow::openImage(const QString &fileName)
 
 void MainWindow::printImage()
 {
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     if (model->rowCount(QModelIndex())*model->columnCount(QModelIndex()) > 90000) {
 	    QMessageBox::StandardButton answer;
 	    answer = QMessageBox::question(this, tr("Large Image Size"),
@@ -226,7 +226,7 @@ void MainWindow::printImage()
             tr("The printing process was canceled."), QMessageBox::Cancel);
     }
 #else
-    QMessageBox::information(this, tr("Printing canceled"), 
+    QMessageBox::information(this, tr("Printing canceled"),
         tr("Printing is not supported on this Qt build"), QMessageBox::Cancel);
 #endif
 }

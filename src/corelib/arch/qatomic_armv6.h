@@ -45,15 +45,12 @@
 
 #include <QtCore/qgenericatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
+#pragma qt_sync_skip_header_check
 #pragma qt_sync_stop_processing
 #endif
 
@@ -728,7 +725,5 @@ void QBasicAtomicOps<size>::orderedMemoryFence(const T &) Q_DECL_NOTHROW
 #undef Q_COMPILER_MEMORY_BARRIER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_ARMV6_H

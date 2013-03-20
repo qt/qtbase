@@ -3,7 +3,7 @@
 contains(QT_CONFIG, accessibility) {
     HEADERS += \
         accessible/qaccessible.h \
-        accessible/qaccessible2.h \
+        accessible/qaccessible2_p.h \
         accessible/qaccessibleobject.h \
         accessible/qaccessibleplugin.h \
         accessible/qplatformaccessibility.h

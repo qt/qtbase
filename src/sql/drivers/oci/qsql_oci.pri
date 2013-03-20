@@ -1,4 +1,4 @@
-HEADERS += $$PWD/qsql_oci.h
+HEADERS += $$PWD/qsql_oci_p.h
 SOURCES += $$PWD/qsql_oci.cpp
 
 unix {
@@ -6,4 +6,4 @@ unix {
 } else {
     LIBS *= -loci
 }
-macx:QMAKE_LFLAGS += -Wl,-flat_namespace,-U,_environ
+mac:QMAKE_LFLAGS += -Wl,-flat_namespace,-U,_environ

@@ -1,26 +1,12 @@
 option(host_build)
+QT = core-private
+force_bootstrap: QT += bootstrap_dbus-private
+else: QT += dbus-private
+DEFINES += QT_NO_CAST_FROM_ASCII
+QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
 
 include(../moc/moc.pri)
 
-DEFINES += QT_NO_CAST_FROM_ASCII
-
-INCLUDEPATH += $$QT_BUILD_TREE/include \
-                   $$QT_BUILD_TREE/include/QtDBus \
-                   $$QT_BUILD_TREE/include/QtDBus/$$QT_VERSION \
-                   $$QT_BUILD_TREE/include/QtDBus/$$QT_VERSION/QtDBus \
-                   $$QT_SOURCE_TREE/src/dbus
-
-!isEmpty(DBUS_PATH): INCLUDEPATH += $$DBUS_PATH/include
-
-QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
-
-SOURCES += qdbuscpp2xml.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbusmetatype.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbusutil.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbusmisc.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbusargument.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbusextratypes.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbus_symbols.cpp \
-          $$QT_SOURCE_TREE/src/dbus/qdbusunixfiledescriptor.cpp
+SOURCES += qdbuscpp2xml.cpp
 
 load(qt_tool)

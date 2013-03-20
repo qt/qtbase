@@ -63,6 +63,8 @@ public:
     int depth() const;
     QImage::Format format() const;
 
+    QSizeF physicalSize() const;
+
     QPlatformCursor *cursor() const;
 
     EGLDisplay display() const { return m_dpy; }

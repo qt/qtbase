@@ -95,10 +95,10 @@ public:
 
     void setResourceRoot(const QString &root) { m_resourceRoot = root; }
     QString resourceRoot() const { return m_resourceRoot; }
-    
+
     void setUseNameSpace(bool v) { m_useNameSpace = v; }
     bool useNameSpace() const { return m_useNameSpace; }
-    
+
     QStringList failedResources() const { return m_failedResources; }
 
 private:

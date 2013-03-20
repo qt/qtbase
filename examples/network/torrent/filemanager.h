@@ -65,7 +65,7 @@ public:
 
     inline void setMetaInfo(const MetaInfo &info) { metaInfo = info; }
     inline void setDestinationFolder(const QString &directory) { destinationPath = directory; }
-    
+
     int read(int pieceIndex, int offset, int length);
     void write(int pieceIndex, int offset, const QByteArray &data);
     void verifyPiece(int pieceIndex);

@@ -1,12 +1,17 @@
 TEMPLATE = subdirs
 
-SUBDIRS += minimal
+android:!android-no-sdk: SUBDIRS += android
+
+SUBDIRS += minimal offscreen
 
 contains(QT_CONFIG, xcb) {
     SUBDIRS += xcb
 }
 
-mac:!ios: SUBDIRS += cocoa
+mac {
+    ios: SUBDIRS += ios
+    else: SUBDIRS += cocoa
+}
 
 win32: SUBDIRS += windows
 

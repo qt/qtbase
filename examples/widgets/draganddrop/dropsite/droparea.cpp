@@ -87,7 +87,7 @@ void DropArea::dropEvent(QDropEvent *event)
         setText(mimeData->html());
         setTextFormat(Qt::RichText);
     } else if (mimeData->hasText()) {
-        setText(mimeData->text());    
+        setText(mimeData->text());
         setTextFormat(Qt::PlainText);
     } else if (mimeData->hasUrls()) {
         QList<QUrl> urlList = mimeData->urls();
@@ -102,7 +102,7 @@ void DropArea::dropEvent(QDropEvent *event)
     }
 //! [dropEvent() function part2]
 
-//! [dropEvent() function part3]    
+//! [dropEvent() function part3]
     setBackgroundRole(QPalette::Dark);
     event->acceptProposedAction();
 }

@@ -71,7 +71,7 @@ private slots:
     void rotateRight();
 
     void timerEvent(QTimerEvent *);
-    
+
 private:
     QGraphicsView *graphicsView;
     QLabel *label;

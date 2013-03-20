@@ -60,7 +60,7 @@ int StringListModel::rowCount(const QModelIndex &parent) const
 
 
 #ifdef 0
-// This represents a read-only version of data(), an early stage in the 
+// This represents a read-only version of data(), an early stage in the
 // development of the example leading to an editable StringListModel.
 
 /*!
@@ -103,7 +103,7 @@ QVariant StringListModel::data(const QModelIndex &index, int role) const
 
     if (index.row() >= stringList.size())
         return QVariant();
-        
+
     if (role == Qt::DisplayRole || role == Qt::EditRole)
         return stringList.at(index.row());
     else

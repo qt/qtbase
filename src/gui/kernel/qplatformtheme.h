@@ -53,10 +53,9 @@
 
 #include <QtCore/QtGlobal>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
+class QIconEngine;
 class QMenu;
 class QMenuBar;
 class QPlatformMenuItem;
@@ -272,11 +271,11 @@ public:
     virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
     virtual QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size) const;
 
+    virtual QIconEngine *createIconEngine(const QString &iconName) const;
+
     static QVariant defaultThemeHint(ThemeHint hint);
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMTHEME_H

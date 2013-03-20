@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -88,9 +88,9 @@ public:
     // On mac we want a standard blue color used when the system palette is used
     bool isMacSystemPalette(const QPalette &pal) const {
         Q_UNUSED(pal);
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
         const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette();
-        if (themePalette->color(QPalette::Normal, QPalette::Highlight) ==
+        if (themePalette && themePalette->color(QPalette::Normal, QPalette::Highlight) ==
                 pal.color(QPalette::Normal, QPalette::Highlight) &&
             themePalette->color(QPalette::Normal, QPalette::HighlightedText) ==
                 pal.color(QPalette::Normal, QPalette::HighlightedText))

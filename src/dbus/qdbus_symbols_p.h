@@ -176,7 +176,7 @@ DEFINEFUNC(dbus_bool_t , dbus_timeout_handle, (DBusTimeout      *timeout),
 
 DEFINEFUNC(dbus_bool_t  , dbus_watch_get_enabled, (DBusWatch        *watch),
            (watch), return)
-DEFINEFUNC(int , dbus_watch_get_fd, (DBusWatch        *watch),
+DEFINEFUNC(int , dbus_watch_get_unix_fd, (DBusWatch        *watch),
            (watch), return)
 DEFINEFUNC(unsigned int , dbus_watch_get_flags, (DBusWatch        *watch),
            (watch), return)

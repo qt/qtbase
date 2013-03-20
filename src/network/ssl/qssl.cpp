@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \enum QSsl::KeyType
 
     Describes the two types of keys QSslKey supports.
-    
+
     \value PrivateKey A private key.
     \value PublicKey A public key.
 */

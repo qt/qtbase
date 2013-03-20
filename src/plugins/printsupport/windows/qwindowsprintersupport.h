@@ -44,7 +44,6 @@
 
 #include <qpa/qplatformprintersupport.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QWin32PrintEngine;
@@ -58,9 +57,9 @@ public:
     virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
     virtual QPaintEngine *createPaintEngine(QPrintEngine *printEngine, QPrinter::PrinterMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
+    virtual QList<QPair<QString, QSizeF> >supportedSizesWithNames(const QPrinterInfo &printerInfo) const;
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // WINDOWSPRINTERSUPPORT_H

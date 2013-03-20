@@ -2,6 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2013 Intel Corporation.
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -125,7 +126,7 @@ shellArgumentListToQMakeList()
 
 # Helper function for getQMakeConf. It parses include statements in
 # qmake.conf and prints out the expanded file
-getQMakeConf1()
+expandQMakeConf()
 {
     while read line; do case "$line" in
         include*)
@@ -136,7 +137,7 @@ getQMakeConf1()
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            getQMakeConf1 "$conf_file"
+            expandQMakeConf "$conf_file"
         ;;
         *load\(device_config\)*)
             conf_file="$DEVICE_VARS_FILE"
@@ -144,7 +145,7 @@ getQMakeConf1()
                 echo "WARNING: Unable to find file $conf_file" >&2
                 continue
             fi
-            getQMakeConf1 "$conf_file"
+            expandQMakeConf "$conf_file"
         ;;
         *)
             echo "$line"
@@ -152,12 +153,18 @@ getQMakeConf1()
     esac; done < "$1"
 }
 
-getQMakeConf2()
+extractQMakeVariables()
 {
     $AWK '
 BEGIN {
     values["LITERAL_WHITESPACE"] = " "
     values["LITERAL_DOLLAR"] = "$"
+}
+/^!?host_build:/ {
+    scopeStart = index($0, ":") + 1
+    condition = substr($0, 0, scopeStart - 2)
+    if (condition != "'"$1"'") { next }
+    $0 = substr($0, scopeStart)
 }
 /^[_A-Z0-9.]+[ \t]*\+?=/ {
     valStart = index($0, "=") + 1
@@ -183,13 +190,26 @@ BEGIN {
         }
         ovalue = ovalue values[var]
     }
-    ovalue = ovalue value
+    value = ovalue value
+
+    ovalue = ""
+    while (match(value, /\$\$system\(("[^"]*"|[^)]*)\)/)) {
+        ovalue = ovalue substr(value, 1, RSTART - 1)
+        cmd = substr(value, RSTART + 9, RLENGTH - 10)
+        gsub(/^"|"$/, "", cmd)
+        value = substr(value, RSTART + RLENGTH)
+        while ((cmd | getline line) > 0) {
+            ovalue = ovalue line
+        }
+        close(cmd)
+    }
+    value = ovalue value
 
     combinedValue = values[variable]
     if (append == 1 && length(combinedValue) > 0) {
-        combinedValue = combinedValue " " ovalue
+        combinedValue = combinedValue " " value
     } else {
-        combinedValue = ovalue
+        combinedValue = value
     }
     values[variable] = combinedValue
 }
@@ -201,9 +221,56 @@ END {
 '
 }
 
-getQMakeConf3()
+getSingleQMakeVariable()
 {
     echo "$2" | $AWK "/^($1)=/ { print substr(\$0, index(\$0, \"=\") + 1) }"
+}
+
+macSDKify()
+{
+    # Normally we take care of sysrootifying in sdk.prf, but configure extracts some
+    # values before qmake is even built, so we have to duplicate the logic here.
+
+    sdk=$(getSingleQMakeVariable "QMAKE_MAC_SDK" "$1")
+    if [ -z "$sdk" ]; then echo "QMAKE_MAC_SDK must be set when building on Mac" >&2; exit 1; fi
+    sysroot=$(xcodebuild -sdk $sdk -version Path 2>/dev/null)
+    if [ -z "$sysroot" ]; then echo "Failed to resolve SDK path for '$sdk'" >&2; exit 1; fi
+
+    case "$sdk" in
+        macosx*)
+            version_min_flag="-mmacosx-version-min=$(getSingleQMakeVariable QMAKE_MACOSX_DEPLOYMENT_TARGET "$1")"
+        ;;
+        iphoneos*)
+            version_min_flag="-miphoneos-version-min=$(getSingleQMakeVariable QMAKE_IOS_DEPLOYMENT_TARGET "$1")"
+        ;;
+        iphonesimulator*)
+            version_min_flag="-mios-simulator-version-min=$(getSingleQMakeVariable QMAKE_IOS_DEPLOYMENT_TARGET "$1")"
+        ;;
+        *)
+        ;;
+    esac
+
+    echo "$1" | while read line; do
+        case "$line" in
+            QMAKE_CC=*|QMAKE_CXX=*|QMAKE_FIX_RPATH=*|QMAKE_AR=*|QMAKE_RANLIB=*|QMAKE_LINK=*|QMAKE_LINK_SHLIB=*)
+                # Prefix tool with toolchain path
+                var=$(echo "$line" | cut -d '=' -f 1)
+                val=$(echo "$line" | cut -d '=' -f 2-)
+                sdk_val=$(xcrun -sdk $sdk -find $(echo $val | cut -d ' ' -f 1))
+                val=$(echo $sdk_val $(echo $val | cut -s -d ' ' -f 2-))
+                echo "$var=$val"
+            ;;
+            QMAKE_CFLAGS=*|QMAKE_CXXFLAGS=*|QMAKE_OBJECTIVE_CFLAGS=*)
+                echo "$line -isysroot $sysroot $version_min_flag"
+            ;;
+            QMAKE_LFLAGS=*)
+                echo "$line -Wl,-syslibroot,$sysroot $version_min_flag"
+            ;;
+            *)
+                echo "$line"
+            ;;
+        esac
+    done
 }
 
 # relies on $QMAKESPEC being set correctly. parses include statements in
@@ -211,17 +278,19 @@ getQMakeConf3()
 getQMakeConf()
 {
     if [ -z "$specvals" ]; then
-        specvals=`getQMakeConf1 "$QMAKESPEC/qmake.conf" | getQMakeConf2`
+        specvals=`expandQMakeConf "$QMAKESPEC/qmake.conf" | extractQMakeVariables "host_build"`
+        if [ "$BUILD_ON_MAC" = "yes" ]; then specvals=$(macSDKify "$specvals"); fi
     fi
-    getQMakeConf3 "$1" "$specvals"
+    getSingleQMakeVariable "$1" "$specvals"
 }
 
 getXQMakeConf()
 {
     if [ -z "$xspecvals" ]; then
-        xspecvals=`getQMakeConf1 "$XQMAKESPEC/qmake.conf" | getQMakeConf2`
+        xspecvals=`expandQMakeConf "$XQMAKESPEC/qmake.conf" | extractQMakeVariables "!host_build"`
+        if [ "$BUILD_ON_MAC" = "yes" ]; then xspecvals=$(macSDKify "$xspecvals"); fi
     fi
-    getQMakeConf3 "$1" "$xspecvals"
+    getSingleQMakeVariable "$1" "$xspecvals"
 }
 
 compilerSupportsFlag()
@@ -368,6 +437,12 @@ PLATFORM_MAC=no
 if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
     PLATFORM_MAC=maybe
+fi
+BUILD_ON_MSYS=no
+HOST_DIRLIST_SEP=":"
+if [ "$OSTYPE" = "msys" ]; then
+    HOST_DIRLIST_SEP=";"
+    BUILD_ON_MSYS=yes
 fi
 
 #-----------------------------------------------------------------------------
@@ -733,7 +808,7 @@ QMakeVar add styles "mac fusion windows"
 unset QTDIR
 
 # the minimum version of libdbus-1 that we require:
-MIN_DBUS_1_VERSION=0.93
+MIN_DBUS_1_VERSION=1.2
 
 # initalize internal variables
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
@@ -844,10 +919,10 @@ CFG_GETADDRINFO=auto
 CFG_IPV6IFNAME=auto
 CFG_GETIFADDRS=auto
 CFG_INOTIFY=auto
+CFG_EVENTFD=auto
 CFG_RPATH=yes
 CFG_FRAMEWORK=auto
 CFG_MAC_HARFBUZZ=no
-CFG_SDK=
 DEFINES=
 D_FLAGS=
 I_FLAGS=
@@ -856,6 +931,7 @@ RPATH_FLAGS=
 W_FLAGS=
 QCONFIG_FLAGS=
 XPLATFORM=              # This seems to be the QMAKESPEC, like "linux-g++"
+XPLATFORM_ANDROID=no
 XPLATFORM_MINGW=no      # Whether target platform is MinGW (win32-g++*)
 XPLATFORM_MAEMO=no
 XPLATFORM_QNX=no
@@ -876,6 +952,7 @@ CFG_PCRE=auto
 QPA_PLATFORM_GUARD=yes
 CFG_CXX11=auto
 CFG_DIRECTWRITE=no
+CFG_WERROR=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -935,6 +1012,15 @@ CFG_SQL_oci=no
 CFG_SQL_db2=no
 
 CFG_SQL_AVAILABLE=
+
+# Android vars
+CFG_DEFAULT_ANDROID_NDK_ROOT=$ANDROID_NDK_ROOT
+CFG_DEFAULT_ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT
+CFG_DEFAULT_ANDROID_PLATFORM=android-9
+CFG_DEFAULT_ANDROID_TARGET_ARCH=armeabi-v7a
+CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION=4.7
+CFG_DEFAULT_ANDROID_NDK_HOST=$ANDROID_NDK_HOST
+
 if [ -d "$relpath/src/plugins/sqldrivers" ]; then
   for a in "$relpath/src/plugins/sqldrivers/"*; do
      if [ -d "$a" ]; then
@@ -996,7 +1082,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-skip|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-skip|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig|-android-sdk|-android-ndk|-android-ndk-platform|-android-ndk-host|-android-arch|-android-toolchain-version)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1299,8 +1385,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            CFG_SDK="$VAL"
-            DeviceVar set QMAKE_MAC_SDK "$VAL"
+            DeviceVar set !host_build:QMAKE_MAC_SDK "$VAL"
         else
             UNKNOWN_OPT=yes
         fi
@@ -2130,6 +2215,31 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    warnings-are-errors|Werror)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_WERROR="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    android-sdk)
+        CFG_DEFAULT_ANDROID_SDK_ROOT="$VAL"
+        ;;
+    android-ndk)
+        CFG_DEFAULT_ANDROID_NDK_ROOT="$VAL"
+        ;;
+    android-ndk-platform)
+        CFG_DEFAULT_ANDROID_PLATFORM="$VAL"
+        ;;
+    android-ndk-host)
+        CFG_DEFAULT_ANDROID_NDK_HOST="$VAL"
+        ;;
+    android-arch)
+        CFG_DEFAULT_ANDROID_TARGET_ARCH="$VAL"
+        ;;
+    android-toolchain-version)
+        CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2335,20 +2445,25 @@ if [ -z "$PLATFORM" ]; then
     PLATFORM_NOTES=
     case "$UNAME_SYSTEM:$UNAME_RELEASE" in
      Darwin:*)
-         OSX_VERSION=`uname -r | cut -d. -f1`
-         # Select compiler. Use g++ unless we find a usable Clang version
-         PLATFORM=macx-g++
-         if [ "$OSX_VERSION" -ge 12 ]; then
-            # We're on Mountain Lion or above. Use Clang. Don't advertise gcc.
+        # Select compiler. Use g++ unless we find a usable Clang version. Note that
+        # we are checking the "Apple" clang/LLVM version number, not the actual
+        # clang/LLVM version number that the Apple version was based on. We look
+        # for Apple clang version 3.0 or higher, which was branched off LLVM 3.0
+        # from SVN, and first included in Xcode 4.2. Also note that we do not care
+        # about the OS version, since we're not using the clang version that comes
+        # with the system. We use 'xcrun' to check the clang version that's part of
+        # the Xcode installation.
+        if [ "$(xcrun -sdk macosx clang -v 2>&1 | sed -n 's/.*version \([0-9]\).*/\1/p')" -ge 3 ]; then
             PLATFORM=macx-clang
-         elif [ "$OSX_VERSION" -eq 11 ]; then
-             # We're on Lion. Check if we have a supported Clang version
-             if [ "$(clang -v 2>&1 | grep -Po '(?<=version )[\d]')" -ge 3 ]; then
-                     PLATFORM=macx-clang
-                     PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
-             fi
-         fi
-         ;;
+
+            # Advertise g++ as an alternative on Lion and below
+            if [ "$(uname -r | cut -d. -f1)" -le 11 ]; then
+                PLATFORM_NOTES="\n    - Also available for Mac OS X: macx-g++\n"
+            fi
+        else
+            PLATFORM=macx-g++
+        fi
+        ;;
      AIX:*)
         #PLATFORM=aix-g++
         #PLATFORM=aix-g++-64
@@ -2502,8 +2617,89 @@ fi
 [ -z "$XPLATFORM" ] && XPLATFORM="$PLATFORM"
 
 case `basename "$XPLATFORM"` in win32-g++*) XPLATFORM_MINGW=yes;; esac
-case "$XPLATFORM" in *-maemo*) XPLATFORM_MAEMO=yes;; esac
-case "$XPLATFORM" in *qnx-*|*blackberry-*) XPLATFORM_QNX=yes;; esac
+case "$XPLATFORM" in
+    *-maemo*)
+        XPLATFORM_MAEMO=yes
+        ;;
+    *qnx-*|*blackberry-*)
+        XPLATFORM_QNX=yes
+        ;;
+    *ios*)
+        XPLATFORM_IOS=yes
+        ;;
+    # XPLATFORM_ANDROID should not be set for unsupported/android-g++
+    *unsupported*)
+        ;;
+    *android-g++*)
+        XPLATFORM_ANDROID=yes
+        ;;
+esac
+
+if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
+        case $PLATFORM in
+        linux-*-64)
+            if [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/linux-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86_64
+            else
+                CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            fi
+            ;;
+        linux-*)
+            CFG_DEFAULT_ANDROID_NDK_HOST=linux-x86
+            ;;
+        macx-*)
+            CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86
+            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/darwin-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=darwin-x86_64
+            fi
+            ;;
+        win32-*)
+            CFG_DEFAULT_ANDROID_NDK_HOST=windows
+            if [ ! -z "$NATIVE_64_ARCH" ] && [ -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/windows-x86_64" ]; then
+                CFG_DEFAULT_ANDROID_NDK_HOST=windows-x86_64
+            fi
+            ;;
+        esac
+    fi
+
+    if [ "$OPT_HELP" != "yes" ]; then
+        if [ -z "$CFG_DEFAULT_ANDROID_NDK_ROOT" ]; then
+            echo
+            echo "Can not find Android NDK. Please use -android-ndk option to specify one"
+            exit 1
+        fi
+        if [ -z "$CFG_DEFAULT_ANDROID_SDK_ROOT" ]; then
+            echo
+            echo "Can not find Android SDK. Please use -android-sdk option to specify one"
+            exit 1
+        fi
+        if [ -z "CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt" ]; then
+            echo
+            echo "Can not detect Android NDK toolchain. Please use -android-toolchain-version to specify"
+            exit 1
+        fi
+        if [ -z "$CFG_DEFAULT_ANDROID_NDK_HOST" ] || [ ! -d "$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST" ]; then
+            echo
+            echo "Can not detect the android host. Please use -android-ndk-host option to specify one"
+            exit 1
+        fi
+
+        QT_QPA_DEFAULT_PLATFORM="android"
+        CFG_LARGEFILE="no"
+
+        # FIXME: Qt Creator requires this to be in the lib/ directory of Qt. This line can be removed
+        # once it's fixed to get the file directly from the NDK.
+        cp -f $CFG_DEFAULT_ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/libs/$CFG_DEFAULT_ANDROID_TARGET_ARCH/libgnustl_shared.so $outpath/lib
+
+        DeviceVar set DEFAULT_ANDROID_SDK_ROOT "$CFG_DEFAULT_ANDROID_SDK_ROOT"
+        DeviceVar set DEFAULT_ANDROID_NDK_ROOT "$CFG_DEFAULT_ANDROID_NDK_ROOT"
+        DeviceVar set DEFAULT_ANDROID_PLATFORM "$CFG_DEFAULT_ANDROID_PLATFORM"
+        DeviceVar set DEFAULT_ANDROID_NDK_HOST "$CFG_DEFAULT_ANDROID_NDK_HOST"
+        DeviceVar set DEFAULT_ANDROID_TARGET_ARCH "$CFG_DEFAULT_ANDROID_TARGET_ARCH"
+        DeviceVar set DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION "$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION"
+    fi
+fi
 
 if [ -d "$PLATFORM" ]; then
   QMAKESPEC="$PLATFORM"
@@ -2612,25 +2808,9 @@ if [ "$CFG_FORCEDEBUGINFO" = "yes" ]; then
     QMAKE_CONFIG="$QMAKE_CONFIG force_debug_info"
 fi
 
-# pass on $CFG_SDK to the arch/configure tests.
-if [ -n "$CFG_SDK" ]; then
-    MAC_SDK_FLAG="-sdk $CFG_SDK"
-else
-    MAC_SDK_FLAG=
-fi
-
-# find the default framework value
-if [ "$BUILD_ON_MAC" = "yes" ]; then
-    if [ "$CFG_FRAMEWORK" = "auto" ]; then
-        CFG_FRAMEWORK="$CFG_SHARED"
-    elif [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_SHARED" = "no" ]; then
-	echo
-	echo "WARNING: Using static linking will disable the use of Mac frameworks."
-	echo
-        CFG_FRAMEWORK="no"
-    fi
-else
-    CFG_FRAMEWORK=no
+# iOS builds should be static to be able to submit to the App Store
+if [ "$XPLATFORM_IOS" = "yes" ]; then
+    CFG_SHARED="no"
 fi
 
 # disable GTK style support auto-detection on Mac
@@ -2641,6 +2821,32 @@ fi
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
+
+if [ "$OPT_HELP" != "yes" ] && [ "$XPLATFORM_ANDROID" = "yes" ] ; then
+    ANDROID_NDK_TOOLS_PREFIX=
+    ANDROID_PLATFORM_ARCH=
+    case $CFG_DEFAULT_ANDROID_TARGET_ARCH in
+        armeabi*)
+            ANDROID_NDK_TOOLS_PREFIX=arm-linux-androideabi
+            ANDROID_PLATFORM_ARCH=arch-arm
+            ;;
+        x86)
+            ANDROID_NDK_TOOLS_PREFIX=x86
+            ANDROID_PLATFORM_ARCH=arch-x86
+            ;;
+        mips)
+            ANDROID_NDK_TOOLS_PREFIX=mipsel-linux-android
+            ANDROID_PLATFORM_ARCH=arch-mips
+            ;;
+        *)
+            echo "ERROR: Unknown android arch $CFG_DEFAULT_ANDROID_TARGET_ARCH"
+            exit 1
+            ;;
+    esac
+    QMAKE_CONF_COMPILER=$CFG_DEFAULT_ANDROID_NDK_ROOT/toolchains/$ANDROID_NDK_TOOLS_PREFIX-$CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION/prebuilt/$CFG_DEFAULT_ANDROID_NDK_HOST/bin/$ANDROID_NDK_TOOLS_PREFIX-g++
+    TEST_COMPILER="$QMAKE_CONF_COMPILER --sysroot=$CFG_DEFAULT_ANDROID_NDK_ROOT/platforms/$CFG_DEFAULT_ANDROID_PLATFORM/$ANDROID_PLATFORM_ARCH/"
+fi
+
 if [ "$XPLATFORM_SYMBIAN_SBSV2" = "no" ]; then
     if [ -z "$TEST_COMPILER" ]; then
         echo "ERROR: Cannot set the compiler for the configuration tests"
@@ -2751,7 +2957,7 @@ fi
 # auto-detect default include and library search paths
 gccout=`$TEST_COMPILER $SYSROOT_FLAG $TEST_COMPILER_CXXFLAGS -xc++ -E -v - < /dev/null 2>&1 > /dev/null`
 libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
-DEFAULT_LIBDIRS=`IFS=:; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
+DEFAULT_LIBDIRS=`IFS=${HOST_DIRLIST_SEP}; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
 DEFAULT_INCDIRS=`echo "$gccout" | awk '
 /^End of search/ { yup=0 }
 / \(framework directory\)$/ { next }
@@ -3308,6 +3514,10 @@ Additional options:
  *  -no-system-proxies .. Do not use system network proxies by default.
     -system-proxies ..... Use system network proxies by default.
 
+    -no-warnings-are-errors Make warnings be treated normally
+    -warnings-are-errors  Make warnings be treated as errors
+                          (enabled if -developer-build is active)
+
  $GBN  -no-glib ........... Do not compile Glib support.
  $GBY  -glib .............. Compile Glib support.
 EOF
@@ -3344,14 +3554,39 @@ Qt/Mac only:
                          link tools against those frameworks.
     -no-framework ...... Do not build Qt as a series of frameworks.
 
-    -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. This option requires gcc 4.
-                         To use a different SDK with gcc 3.3, set the SDKROOT environment variable.
+    -sdk <sdk> ......... Build Qt using Apple provided SDK <sdk>. The argument should be
+                         one of the available SDKs as listed by 'xcodebuild -showsdks'.
 
     -harfbuzz .......... Use HarfBuzz to do text layout instead of Core Text when possible.
  *  -no-harfbuzz ....... Disable HarfBuzz on Mac. It can still be enabled by setting
                          QT_ENABLE_HARFBUZZ environment variable.
 
 EOF
+fi
+
+if [ "$XPLATFORM_ANDROID" = "yes" ]; then
+    cat << EOF
+
+Android options:
+    -android-sdk path .............. The Android SDK root path.
+                                     (default $CFG_DEFAULT_ANDROID_SDK_ROOT)
+
+    -android-ndk path .............. The Android NDK root path.
+                                     (default $CFG_DEFAULT_ANDROID_NDK_ROOT)
+
+    -android-ndk-platform .......... Sets the android platform
+                                     (default $CFG_DEFAULT_ANDROID_PLATFORM)
+
+    -android-ndk-host .............. Sets the android NDK host (linux-x86, linux-x86_64, etc.)
+                                     (default $CFG_DEFAULT_ANDROID_NDK_HOST)
+
+    -android-arch .................. Sets the android architecture (armeabi, armeabi-v7a, x86, mips)
+                                     (default $CFG_DEFAULT_ANDROID_TARGET_ARCH)
+
+    -android-toolchain-version ..... Sets the android toolchain version
+                                     (default $CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION)
+EOF
+
 fi
 
    [ "x$ERROR" = "xyes" ] && exit 1
@@ -3662,10 +3897,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         setBootstrapVariable QMAKE_CXXFLAGS
         setBootstrapVariable QMAKE_LFLAGS
 
-        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -DQMAKE_OPENSOURCE_EDITION"
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DQMAKE_OPENSOURCE_EDITION"
-        fi
         if [ "$CFG_RELEASE_QMAKE" = "yes" ]; then
             setBootstrapVariable QMAKE_CFLAGS_RELEASE
             setBootstrapVariable QMAKE_CXXFLAGS_RELEASE
@@ -3684,22 +3915,48 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
                 EXTRA_LFLAGS="\$(QMAKE_LFLAGS_RPATH)\"$rpath\" $EXTRA_LFLAGS"
             done
         fi
+        if [ "$BUILD_ON_MSYS" = "yes" ]; then
+            EXTRA_CFLAGS="-DUNICODE"
+            EXTRA_CXXFLAGS="-DUNICODE"
+            EXTRA_OBJS="qfilesystemengine_win.o \
+                        qfilesystemiterator_win.o \
+                        qfsfileengine_win.o \
+                        qlocale_win.o \
+                        qsettings_win.o \
+                        qsystemlibrary.o \
+                        registry.o"
+            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/corelib/io/qfilesystemengine_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocale_win.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp\" \
+                        \"\$(SOURCE_PATH)/tools/shared/windows/registry.cpp\""
+            EXTRA_LFLAGS="-static -s -lole32 -luuid -ladvapi32 -lkernel32"
+            EXEEXT=".exe"
+        else
+            EXTRA_OBJS="qfilesystemengine_unix.o \
+                        qfilesystemiterator_unix.o \
+                        qfsfileengine_unix.o \
+                        qlocale_unix.o"
+            EXTRA_SRCS="\"\$(SOURCE_PATH)/src/corelib/io/qfilesystemengine_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfilesystemiterator_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/tools/qlocal_unix.cpp\""
+            EXEEXT=
+        fi
         if [ "$BUILD_ON_MAC" = "yes" ]; then
-            echo "export MACOSX_DEPLOYMENT_TARGET = 10.6" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
             EXTRA_CFLAGS="$EXTRA_CFLAGS \$(CARBON_CFLAGS)"
             EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(CARBON_CFLAGS)"
-            EXTRA_OBJS="qsettings_mac.o qcore_mac.o"
-            EXTRA_SRCS="\"$relpath/src/corelib/io/qsettings_mac.cpp\" \"$relpath/src/corelib/kernel/qcore_mac.cpp\""
-	    if [ '!' -z "$CFG_SDK" ]; then
-		echo "SDK_LFLAGS =-Wl,-syslibroot,$CFG_SDK" >>"$mkfile"
-		echo "SDK_CFLAGS =-isysroot $CFG_SDK" >>"$mkfile"
-		EXTRA_CFLAGS="$EXTRA_CFLAGS \$(SDK_CFLAGS)"
-		EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS \$(SDK_CFLAGS)"
-		EXTRA_LFLAGS="$EXTRA_LFLAGS \$(SDK_LFLAGS)"
-            fi
+            EXTRA_OBJS="$EXTRA_OBJS \
+                        qsettings_mac.o \
+                        qcore_mac.o"
+            EXTRA_SRCS="$EXTRA_SRCS \
+                        \"\$(SOURCE_PATH)/src/corelib/io/qsettings_mac.cpp\" \
+                        \"\$(SOURCE_PATH)/src/corelib/kernel/qcore_mac.cpp\""
         fi
         if [ '!' -z "$D_FLAGS" ]; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $D_FLAGS"
@@ -3712,13 +3969,25 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	adjrelpath=`echo "$relpath" | sed 's/ /\\\\\\\\ /g'`
 	adjoutpath=`echo "$outpath" | sed 's/ /\\\\\\\\ /g'`
 	adjqmakespec=`echo "$QMAKESPEC" | sed 's/ /\\\\\\\\ /g'`
-        sed -e "s,@SOURCE_PATH@,$adjrelpath,g" -e "s,@BUILD_PATH@,$adjoutpath,g" \
-            -e "s,@QMAKE_CFLAGS@,$EXTRA_CFLAGS,g" -e "s,@QMAKE_LFLAGS@,$EXTRA_LFLAGS,g" \
-            -e "s,@QMAKE_CXXFLAGS@,$EXTRA_CXXFLAGS,g" \
-            -e "s,@QT_INSTALL_BINS@,\$(INSTALL_ROOT)$QMAKE_BIN_DIR,g" \
-            -e "s,@QT_INSTALL_DATA@,\$(INSTALL_ROOT)$QMAKE_DATA_DIR,g" \
-            -e "s,@QMAKE_QTOBJS@,$EXTRA_OBJS,g" -e "s,@QMAKE_QTSRCS@,$EXTRA_SRCS,g" \
-            -e "s,@QMAKESPEC@,$adjqmakespec,g" -e "s,@QT_VERSION@,$QT_VERSION,g" "$in_mkfile" >>"$mkfile"
+
+        echo "BUILD_PATH = $adjoutpath" >> "$mkfile"
+        echo "SOURCE_PATH = $adjrelpath" >> "$mkfile"
+        echo "QMAKESPEC = $adjqmakespec" >> "$mkfile"
+        echo "QT_VERSION = $QT_VERSION" >> "$mkfile"
+        echo "EXTRA_CFLAGS = $EXTRA_CFLAGS" >> "$mkfile"
+        echo "EXTRA_CXXFLAGS = $EXTRA_CXXFLAGS" >> "$mkfile"
+        echo "QTOBJS = $EXTRA_OBJS" >> "$mkfile"
+        echo "QTSRCS = $EXTRA_SRCS" >> "$mkfile"
+        echo "LFLAGS = $EXTRA_LFLAGS" >> "$mkfile"
+        echo "QT_INSTALL_BINS = \$(INSTALL_ROOT)$QMAKE_BIN_DIR" >> "$mkfile"
+        echo "QT_INSTALL_DATA = \$(INSTALL_ROOT)$QMAKE_DATA_DIR" >> "$mkfile"
+        echo "EXEEXT = $EXEEXT" >> "$mkfile"
+        echo "RM_F = rm -f" >> "$mkfile"
+        echo "RM_RF = rm -rf" >> "$mkfile"
+        if [ $QT_EDITION = "QT_EDITION_OPENSOURCE" ]; then
+            echo "EXTRA_CPPFLAGS = -DQMAKE_OPENSOURCE_EDITION" >> "$mkfile"
+        fi
+        cat "$in_mkfile" >> "$mkfile"
 
         if "$WHICH" makedepend >/dev/null 2>&1 && grep 'depend:' "$mkfile" >/dev/null 2>&1; then
             (cd "$outpath/qmake" && "$MAKE" -f "$mkfile" depend) >/dev/null 2>&1
@@ -3750,6 +4019,20 @@ if cmp -s "$DEVICE_VARS_FILE" "$DEVICE_VARS_OUTFILE"; then
 else
     mv -f $DEVICE_VARS_FILE "$DEVICE_VARS_OUTFILE"
     DEVICE_VARS_FILE="$DEVICE_VARS_OUTFILE"
+fi
+
+#-------------------------------------------------------------------------------
+# Verify makespec
+#-------------------------------------------------------------------------------
+QMAKE_OUTPUT=`$outpath/bin/qmake -E -nocache -spec "$XQMAKESPEC" "QT=" /dev/null 2>&1 >/dev/null`
+if [ $? != "0" ]; then
+    echo "Failed to process makespec for platform '$XPLATFORM'"
+    if [ "$OPT_VERBOSE" = "yes" ]; then
+        echo "$QMAKE_OUTPUT"
+    else
+        echo "Turn on verbose messaging (-v) to see the final report."
+    fi
+    exit 101
 fi
 
 #-------------------------------------------------------------------------------
@@ -3829,7 +4112,7 @@ compileTest()
     path=config.tests/$1
     name=$2
     shift 2
-    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS $MAC_SDK_FLAG "$@"
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" "$path" "$name" $I_FLAGS $D_FLAGS $L_FLAGS "$@"
 }
 
 #-------------------------------------------------------------------------------
@@ -3838,7 +4121,7 @@ compileTest()
 
 # Use config.tests/arch/arch.pro to have the compiler tell us what the target architecture is
 OUTFILE=$outpath/arch.result
-"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG" $MAC_SDK_FLAG
+"$unixtests/arch.test" "$XQMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "target"
 if [ $? -eq 0 ]; then
     eval `cat "$OUTFILE"`
 else
@@ -3851,7 +4134,7 @@ rm -f "$OUTFILE" 2>/dev/null
 
 if [ "$QMAKESPEC" != "$XQMAKESPEC" ]; then
     # Do the same test again, using the host compiler
-    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "CFG_HOST" $MAC_SDK_FLAG
+    SYSROOT_FLAG= "$unixtests/arch.test" "$QMAKESPEC" $OPT_VERBOSE "$relpath" "$outpath" "$OUTFILE" "host"
     if [ $? -eq 0 ]; then
         eval `cat "$OUTFILE"`
     else
@@ -3951,7 +4234,7 @@ if [ "${CFG_AVX}" = "auto" ]; then
            *g++*|*-clang*)
                # Some clang versions produce internal compiler errors compiling Qt AVX code
                case `$TEST_COMPILER --version` in
-                   Apple\ clang\ version\ 2*|Apple\ clang\ version\ 3.0*)
+                   Apple\ clang\ version\ [23]*)
                        CFG_AVX=no
                        if [ "$OPT_VERBOSE" = "yes" ]; then
                            echo 'AVX support disabled for blacklisted clang compiler'
@@ -3995,7 +4278,8 @@ fi
 
 # detect neon support
 if [ "$CFG_ARCH" = "arm" ] && [ "${CFG_NEON}" = "auto" ]; then
-    if compileTest unix/neon "neon"; then
+    # The iOS toolchain has trouble building the pixman NEON draw-helpers
+    if [ "$XPLATFORM_IOS" != "yes" ] && compileTest unix/neon "neon"; then
 	CFG_NEON=yes
     else
 	CFG_NEON=no
@@ -4027,6 +4311,7 @@ elif [ "$CFG_ARCH" != "mips" ]; then
 fi
 
 [ "$XPLATFORM_MINGW" = "yes" ] && QMakeVar add styles "windowsxp windowsvista"
+[ "$XPLATFORM_ANDROID" = "yes" ] && QMakeVar add styles "android"
 
 # detect zlib
 if [ "$CFG_ZLIB" = "no" ]; then
@@ -4491,14 +4776,17 @@ fi
 # auto-detect GTK style support
 if [ "$CFG_GLIB" = "yes" -a "$CFG_QGTKSTYLE" != "no" ]; then
     if [ -n "$PKG_CONFIG" ]; then
-        QT_CFLAGS_QGTKSTYLE=`$PKG_CONFIG --cflags gtk+-2.0 ">=" 2.18 atk 2>/dev/null`
-        QT_LIBS_QGTKSTYLE=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
+        QT_CFLAGS_QGTK2=`$PKG_CONFIG --cflags gtk+-2.0 ">=" 2.18 atk 2>/dev/null`
+        QT_LIBS_QGTK2=`$PKG_CONFIG --libs gtk+-2.0 2>/dev/null`
+        QT_LIBS_QGOBJECT=`$PKG_CONFIG --libs gobject-2.0 2>/dev/null`
     fi
-    if [ -n "$QT_CFLAGS_QGTKSTYLE" ] ; then
+    if [ -n "$QT_CFLAGS_QGTK2" ] ; then
         CFG_QGTKSTYLE=yes
-        QT_CONFIG="$QT_CONFIG gtkstyle"
-        QMakeVar set QT_CFLAGS_QGTKSTYLE "$QT_CFLAGS_QGTKSTYLE"
-        QMakeVar set QT_LIBS_QGTKSTYLE "$QT_LIBS_QGTKSTYLE"
+        QT_CONFIG="$QT_CONFIG gtk2 gtkstyle"
+        QMakeVar set QT_CFLAGS_QGTKSTYLE "$QT_CFLAGS_QGTK2"
+        QMakeVar set QT_LIBS_QGTKSTYLE "$QT_LIBS_QGOBJECT"
+        QMakeVar set QT_CFLAGS_QGTK2 "$QT_CFLAGS_QGTK2"
+        QMakeVar set QT_LIBS_QGTK2 "$QT_LIBS_QGTK2"
     else
         if [ "$CFG_QGTKSTYLE" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             echo "Gtk theme support cannot be enabled due to functionality tests!"
@@ -4920,13 +5208,20 @@ if [ "$CFG_KMS" != "no" ]; then
 fi
 
 # Detect libxkbcommon
-if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists xkbcommon 2>/dev/null; then
+if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null; then
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
     QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
-    QMAKE_CFLAGS_XCB="$QMAKE_CFLAGS_XCB $QMAKE_CFLAGS_XKBCOMMON"
-    QMAKE_LIBS_XCB="$QMAKE_LIBS_XCB $QMAKE_LIBS_XKBCOMMON"
+    QT_CONFIG="$QT_CONFIG xkbcommon"
 else
-    QMAKE_DEFINES_XCB=QT_NO_XCB_XKB
+    echo "WARNING: Qt requires the libxkbcommon version 0.2.0 (or higher)."
+    echo "Not satisfying this requirement will disable the compose key functionality,"
+    echo "which includes text input with dead keys."
+    QMakeVar add DEFINES QT_NO_XKBCOMMON
+fi
+
+if [ -n "$QMAKE_CFLAGS_XKBCOMMON" ] || [ -n "$QMAKE_LIBS_XKBCOMMON" ]; then
+    QMakeVar set QMAKE_CFLAGS_XKBCOMMON "$QMAKE_CFLAGS_XKBCOMMON"
+    QMakeVar set QMAKE_LIBS_XKBCOMMON "$QMAKE_LIBS_XKBCOMMON"
 fi
 
 # EGL Support
@@ -5011,8 +5306,8 @@ fi
 if [ -n "$QMAKE_CFLAGS_XCB" ] || [ -n "$QMAKE_LIBS_XCB" ]; then
     QMakeVar set QMAKE_CFLAGS_XCB "$QMAKE_CFLAGS_XCB"
     QMakeVar set QMAKE_LIBS_XCB "$QMAKE_LIBS_XCB"
-    QMakeVar set QMAKE_DEFINES_XCB "$QMAKE_DEFINES_XCB"
 fi
+
 if [ "$CFG_DIRECTFB" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG directfb"
     QMakeVar set QMAKE_CFLAGS_DIRECTFB "$QMAKE_CFLAGS_DIRECTFB"
@@ -5033,7 +5328,7 @@ if [ "$BUILD_ON_MAC" = "yes" ]; then
     fi
 fi
 
-if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ]; then
+if [ "$BUILD_ON_MAC" = "no" ] && [ "$XPLATFORM_MINGW" = "no" ] && [ "$XPLATFORM_QNX" = "no" ] && [ "$XPLATFORM_ANDROID" = "no" ]; then
     if [ "$CFG_XCB" = "no" ] && [ "$CFG_EGLFS" = "no" ] && [ "$CFG_DIRECTFB" = "no" ] && [ "$CFG_LINUXFB" = "no" ] && [ "$CFG_KMS" = "no" ]; then
         if [ "$QPA_PLATFORM_GUARD" = "yes" ] &&
             ( [ "$ORIG_CFG_XCB" = "auto" ] || [ "$ORIG_CFG_EGLFS" = "auto" ] || [ "$ORIG_CFG_DIRECTFB" = "auto" ] || [ "$ORIG_CFG_LINUXFB" = "auto" ] || [ "$ORIG_CFG_KMS" = "auto" ] ); then
@@ -5129,6 +5424,23 @@ if [ "$CFG_INOTIFY" != "no" ]; then
     fi
 fi
 
+# find if the platform provides eventfd
+if [ "$CFG_EVENTFD" != "no" ]; then
+    if compileTest unix/eventfd "eventfd"; then
+        CFG_EVENTFD=yes
+    else
+        if [ "$CFG_EVENTFD" = "yes" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+            echo "eventfd support cannot be enabled due to functionality tests!"
+            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+            echo " If you believe this message is in error you may use the continue"
+            echo " switch (-continue) to $0 to continue."
+            exit 101
+        else
+            CFG_EVENTFD=no
+        fi
+    fi
+fi
+
 # find if the platform provides if_nametoindex (ipv6 interface name support)
 if [ "$CFG_IPV6IFNAME" != "no" ]; then
     if compileTest unix/ipv6ifname "IPv6 interface name"; then
@@ -5170,7 +5482,7 @@ if [ "$CFG_OPENSSL" != "no" ]; then
             CFG_OPENSSL=yes
         fi
     else
-        if ( [ "$CFG_OPENSSL" = "yes" ] || [ "$CFG_OPENSSL" = "linked" ] ) && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+        if ( [ "$CFG_OPENSSL" = "yes" ] || [ "$CFG_OPENSSL" = "linked" ] ) && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]  && [ "$XPLATFORM_ANDROID" = "no" ]; then
             echo "OpenSSL support cannot be enabled due to functionality tests!"
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
@@ -5417,6 +5729,9 @@ if [ "$CFG_GETIFADDRS" = "yes" ]; then
 fi
 if [ "$CFG_INOTIFY" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG inotify"
+fi
+if [ "$CFG_EVENTFD" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG eventfd"
 fi
 if [ "$CFG_LIBJPEG" = "no" ]; then
     CFG_JPEG="no"
@@ -5739,6 +6054,19 @@ if [ "$CFG_QML_DEBUG" = "no" ]; then
 fi
 
 case "$QMAKE_CONF_COMPILER" in
+*clang++*)
+    # Clang
+    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n '
+/^Apple clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_APPLE_CLANG_MAJOR_VERSION=\1; QT_APPLE_CLANG_MINOR_VERSION=\2/;p;q;}
+/^clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_CLANG_MAJOR_VERSION=\1; QT_CLANG_MINOR_VERSION=\2/;p;q;}'`
+    eval "$COMPILER_VERSION"
+    ;;
+*icpc)
+    # Intel CC
+    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n '
+s/icpc version \([0-9]*\)\.\([0-9]*\)\.\([0-9]*\) .*$/QT_ICC_MAJOR_VERSION=\1; QT_ICC_MINOR_VERSION=\2; QT_ICC_PATCH_VERSION=\3/p'`
+    eval "$COMPILER_VERSION"
+    ;;
 *g++*)
     # GNU C++
     COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -dumpversion 2>/dev/null`
@@ -5894,6 +6222,7 @@ QMakeVar set sql-plugins "$SQL_PLUGINS"
 [ "$CFG_IPV6IFNAME" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_IPV6IFNAME"
 [ "$CFG_GETIFADDRS" = "no" ] && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_GETIFADDRS"
 [ "$CFG_INOTIFY" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_INOTIFY"
+[ "$CFG_EVENTFD" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_EVENTFD"
 [ "$CFG_NIS" = "no" ]        && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_NIS"
 [ "$CFG_OPENSSL" = "no" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_OPENSSL QT_NO_SSL"
 [ "$CFG_OPENSSL" = "linked" ]&& QCONFIG_FLAGS="$QCONFIG_FLAGS QT_LINKED_OPENSSL"
@@ -6023,6 +6352,11 @@ else
 fi
 if [ "$CFG_DEV" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG private_tests"
+    if [ "$CFG_WERROR" != "no" ]; then
+        QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
+    fi
+elif [ "$CFG_WERROR" = "yes" ]; then
+    QMAKE_CONFIG="$QMAKE_CONFIG warnings_are_errors"
 fi
 
 cat >>"$QTCONFIG.tmp" <<EOF
@@ -6077,6 +6411,19 @@ if [ -n "$QT_GCC_MAJOR_VERSION" ]; then
     echo "QT_GCC_MAJOR_VERSION = $QT_GCC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_MINOR_VERSION = $QT_GCC_MINOR_VERSION" >> "$QTCONFIG.tmp"
     echo "QT_GCC_PATCH_VERSION = $QT_GCC_PATCH_VERSION" >> "$QTCONFIG.tmp"
+fi
+if [ -n "$QT_ICC_MAJOR_VERSION" ]; then
+    echo "QT_ICC_MAJOR_VERSION = $QT_ICC_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_ICC_MINOR_VERSION = $QT_ICC_MINOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_ICC_PATCH_VERSION = $QT_ICC_PATCH_VERSION" >> "$QTCONFIG.tmp"
+fi
+if [ -n "$QT_CLANG_MAJOR_VERSION" ]; then
+    echo "QT_CLANG_MAJOR_VERSION = $QT_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_CLANG_MINOR_VERSION = $QT_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
+fi
+if [ -n "$QT_APPLE_CLANG_MAJOR_VERSION" ]; then
+    echo "QT_APPLE_CLANG_MAJOR_VERSION = $QT_APPLE_CLANG_MAJOR_VERSION" >> "$QTCONFIG.tmp"
+    echo "QT_APPLE_CLANG_MINOR_VERSION = $QT_APPLE_CLANG_MINOR_VERSION" >> "$QTCONFIG.tmp"
 fi
 
 if [ -n "$QMAKE_INCDIR_OPENGL_ES2" ]; then
@@ -6300,7 +6647,7 @@ echo "Xi support ............. $CFG_XINPUT"
 echo "Xi2 support ............ $CFG_XINPUT2"
 echo "MIT-SHM support ........ $CFG_MITSHM"
 echo "FontConfig support ..... $CFG_FONTCONFIG"
-echo "XKB Support ............ $CFG_XKB"
+echo "XKB support ............ $CFG_XKB"
 echo "GTK theme support ...... $CFG_QGTKSTYLE"
 
 if [ "$XPLATFORM_MINGW" = "yes" ] ; then

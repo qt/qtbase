@@ -55,8 +55,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qhash.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_PRINTER
@@ -74,7 +72,7 @@ public:
     virtual QPrintEngine *createNativePrintEngine(QPrinter::PrinterMode printerMode);
     virtual QPaintEngine *createPaintEngine(QPrintEngine *, QPrinter::PrinterMode printerMode);
     virtual QList<QPrinter::PaperSize> supportedPaperSizes(const QPrinterInfo &) const;
-
+    virtual QList<QPair<QString, QSizeF> > supportedSizesWithNames(const QPrinterInfo &printerInfo) const;
     virtual QList<QPrinterInfo> availablePrinters();
     virtual QPrinterInfo defaultPrinter();
     virtual QPrinterInfo printerInfo(const QString &printerName);
@@ -97,7 +95,5 @@ protected:
 #endif // QT_NO_PRINTER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPLATFORMPRINTERSUPPORT_H

@@ -46,8 +46,6 @@
 #include <QTimer>
 #include <QDataStream>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 namespace QEvdevKeyboardMap {
@@ -197,7 +195,5 @@ private:
 
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QEVDEVKEYBOARDHANDLER_P_H

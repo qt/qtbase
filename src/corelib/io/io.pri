@@ -18,14 +18,19 @@ HEADERS +=  \
         io/qipaddress_p.h \
         io/qiodevice.h \
         io/qiodevice_p.h \
+        io/qlockfile.h \
+        io/qlockfile_p.h \
         io/qnoncontiguousbytedevice_p.h \
         io/qprocess.h \
         io/qprocess_p.h \
         io/qtextstream.h \
+        io/qtextstream_p.h \
         io/qtemporarydir.h \
         io/qtemporaryfile.h \
+        io/qtemporaryfile_p.h \
         io/qresource_p.h \
         io/qresource_iterator_p.h \
+        io/qsavefile.h \
         io/qstandardpaths.h \
         io/qurl.h \
         io/qurl_p.h \
@@ -58,6 +63,7 @@ SOURCES += \
         io/qfileinfo.cpp \
         io/qipaddress.cpp \
         io/qiodevice.cpp \
+        io/qlockfile.cpp \
         io/qnoncontiguousbytedevice.cpp \
         io/qprocess.cpp \
         io/qtextstream.cpp \
@@ -65,6 +71,7 @@ SOURCES += \
         io/qtemporaryfile.cpp \
         io/qresource.cpp \
         io/qresource_iterator.cpp \
+        io/qsavefile.cpp \
         io/qstandardpaths.cpp \
         io/qurl.cpp \
         io/qurlidna.cpp \
@@ -81,6 +88,7 @@ SOURCES += \
 win32 {
         SOURCES += io/qsettings_win.cpp
         SOURCES += io/qfsfileengine_win.cpp
+        SOURCES += io/qlockfile_win.cpp
 
         SOURCES += io/qfilesystemwatcher_win.cpp
         HEADERS += io/qfilesystemwatcher_win_p.h
@@ -105,15 +113,15 @@ win32 {
         SOURCES += \
                 io/qfsfileengine_unix.cpp \
                 io/qfilesystemengine_unix.cpp \
+                io/qlockfile_unix.cpp \
                 io/qprocess_unix.cpp \
                 io/qfilesystemiterator_unix.cpp \
 
-        !nacl:macx-*: {
-            SOURCES += io/qfilesystemengine_mac.cpp
+        !nacl:mac: {
             SOURCES += io/qsettings_mac.cpp
         }
-        macx-*: {
-            !ios {
+        mac {
+            macx {
                 SOURCES += io/qstandardpaths_mac.cpp
             } else {
                 SOURCES += io/qstandardpaths_unix.cpp
@@ -124,13 +132,13 @@ win32 {
             SOURCES += io/qstandardpaths_unix.cpp
         }
 
-        linux-*|if(qnx:contains(QT_CONFIG, inotify)) {
+        linux|if(qnx:contains(QT_CONFIG, inotify)) {
             SOURCES += io/qfilesystemwatcher_inotify.cpp
             HEADERS += io/qfilesystemwatcher_inotify_p.h
         }
 
         !nacl {
-            freebsd-*|macx-*|darwin-*|openbsd-*:{
+            freebsd-*|mac|darwin-*|openbsd-*:{
                 SOURCES += io/qfilesystemwatcher_kqueue.cpp
                 HEADERS += io/qfilesystemwatcher_kqueue_p.h
             }

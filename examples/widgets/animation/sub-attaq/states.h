@@ -70,7 +70,6 @@ private :
     QStateMachine *machine;
     int currentLevel;
     int score;
-    QState *parallelChild;
 
     friend class UpdateScoreState;
     friend class UpdateScoreTransition;
@@ -103,7 +102,6 @@ protected:
     void onExit(QEvent *);
 private :
     GraphicsScene *scene;
-    Boat *boat;
 };
 
 class LostState : public QState
@@ -135,10 +133,8 @@ private :
 class UpdateScoreState : public QState
 {
 public:
-    UpdateScoreState(PlayState *game, QState *parent);
+    UpdateScoreState(QState *parent);
 private:
-    QPropertyAnimation *scoreAnimation;
-    PlayState *game;
 };
 
 //These transtion is used to update the score
@@ -174,7 +170,6 @@ protected:
     virtual bool eventTest(QEvent *event);
 private:
     PlayState *game;
-    int key;
 };
 
 #endif // STATES_H

@@ -46,7 +46,7 @@
 #include <qlistview.h>
 #include <qtreeview.h>
 #include <private/qtreewidget_p.h>
-#include <qaccessible2.h>
+#include <QtGui/private/qaccessible2_p.h>
 #include <QDebug>
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -299,9 +299,28 @@ bool QAccessibleTable::selectRow(int row)
     if (!view()->model() || !view()->selectionModel())
         return false;
     QModelIndex index = view()->model()->index(row, 0, view()->rootIndex());
-    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
+
+    if (!index.isValid() || view()->selectionBehavior() == QAbstractItemView::SelectColumns)
         return false;
-    view()->selectionModel()->select(index, QItemSelectionModel::Select);
+
+    switch (view()->selectionMode()) {
+    case QAbstractItemView::NoSelection:
+        return false;
+    case QAbstractItemView::SingleSelection:
+        if (view()->selectionBehavior() != QAbstractItemView::SelectRows && columnCount() > 1 )
+            return false;
+        view()->clearSelection();
+        break;
+    case QAbstractItemView::ContiguousSelection:
+        if ((!row || !view()->selectionModel()->isRowSelected(row - 1, view()->rootIndex()))
+            && !view()->selectionModel()->isRowSelected(row + 1, view()->rootIndex()))
+            view()->clearSelection();
+        break;
+    default:
+        break;
+    }
+
+    view()->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
     return true;
 }
 
@@ -310,9 +329,26 @@ bool QAccessibleTable::selectColumn(int column)
     if (!view()->model() || !view()->selectionModel())
         return false;
     QModelIndex index = view()->model()->index(0, column, view()->rootIndex());
-    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
+
+    if (!index.isValid() || view()->selectionBehavior() == QAbstractItemView::SelectRows)
         return false;
-    view()->selectionModel()->select(index, QItemSelectionModel::Select);
+
+    switch (view()->selectionMode()) {
+    case QAbstractItemView::NoSelection:
+        return false;
+    case QAbstractItemView::SingleSelection:
+        if (view()->selectionBehavior() != QAbstractItemView::SelectColumns && rowCount() > 1)
+            return false;
+    case QAbstractItemView::ContiguousSelection:
+        if ((!column || !view()->selectionModel()->isColumnSelected(column - 1, view()->rootIndex()))
+            && !view()->selectionModel()->isColumnSelected(column + 1, view()->rootIndex()))
+            view()->clearSelection();
+        break;
+    default:
+        break;
+    }
+
+    view()->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Columns);
     return true;
 }
 
@@ -320,10 +356,35 @@ bool QAccessibleTable::unselectRow(int row)
 {
     if (!view()->model() || !view()->selectionModel())
         return false;
+
     QModelIndex index = view()->model()->index(row, 0, view()->rootIndex());
-    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
+    if (!index.isValid())
         return false;
-    view()->selectionModel()->select(index, QItemSelectionModel::Deselect);
+
+    QItemSelection selection(index, index);
+
+    switch (view()->selectionMode()) {
+    case QAbstractItemView::SingleSelection:
+        //In SingleSelection and ContiguousSelection once an item
+        //is selected, there's no way for the user to unselect all items
+        if (selectedRowCount() == 1)
+            return false;
+        break;
+    case QAbstractItemView::ContiguousSelection:
+        if (selectedRowCount() == 1)
+            return false;
+
+        if ((!row || view()->selectionModel()->isRowSelected(row - 1, view()->rootIndex()))
+            && view()->selectionModel()->isRowSelected(row + 1, view()->rootIndex())) {
+            //If there are rows selected both up the current row and down the current rown,
+            //the ones which are down the current row will be deselected
+            selection = QItemSelection(index, view()->model()->index(rowCount() - 1, 0, view()->rootIndex()));
+        }
+    default:
+        break;
+    }
+
+    view()->selectionModel()->select(selection, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
     return true;
 }
 
@@ -331,10 +392,35 @@ bool QAccessibleTable::unselectColumn(int column)
 {
     if (!view()->model() || !view()->selectionModel())
         return false;
+
     QModelIndex index = view()->model()->index(0, column, view()->rootIndex());
-    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
+    if (!index.isValid())
         return false;
-    view()->selectionModel()->select(index, QItemSelectionModel::Columns & QItemSelectionModel::Deselect);
+
+    QItemSelection selection(index, index);
+
+    switch (view()->selectionMode()) {
+    case QAbstractItemView::SingleSelection:
+        //In SingleSelection and ContiguousSelection once an item
+        //is selected, there's no way for the user to unselect all items
+        if (selectedColumnCount() == 1)
+            return false;
+        break;
+    case QAbstractItemView::ContiguousSelection:
+        if (selectedColumnCount() == 1)
+            return false;
+
+        if ((!column || view()->selectionModel()->isColumnSelected(column - 1, view()->rootIndex()))
+            && view()->selectionModel()->isColumnSelected(column + 1, view()->rootIndex())) {
+            //If there are columns selected both at the left of the current row and at the right
+            //of the current rown, the ones which are at the right will be deselected
+            selection = QItemSelection(index, view()->model()->index(0, columnCount() - 1, view()->rootIndex()));
+        }
+    default:
+        break;
+    }
+
+    view()->selectionModel()->select(selection, QItemSelectionModel::Deselect | QItemSelectionModel::Columns);
     return true;
 }
 
@@ -415,7 +501,7 @@ QRect QAccessibleTable::rect() const
 
 QAccessibleInterface *QAccessibleTable::parent() const
 {
-    if (view()->parent()) {
+    if (view() && view()->parent()) {
         if (qstrcmp("QComboBoxPrivateContainer", view()->parent()->metaObject()->className()) == 0) {
             return QAccessible::queryAccessibleInterface(view()->parent()->parent());
         }
@@ -576,9 +662,28 @@ bool QAccessibleTree::selectRow(int row)
     if (!view()->selectionModel())
         return false;
     QModelIndex index = indexFromLogical(row);
-    if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
+
+    if (!index.isValid() || view()->selectionBehavior() == QAbstractItemView::SelectColumns)
         return false;
-    view()->selectionModel()->select(index, QItemSelectionModel::Select);
+
+    switch (view()->selectionMode()) {
+    case QAbstractItemView::NoSelection:
+        return false;
+    case QAbstractItemView::SingleSelection:
+        if ((view()->selectionBehavior() != QAbstractItemView::SelectRows) && (columnCount() > 1))
+            return false;
+        view()->clearSelection();
+        break;
+    case QAbstractItemView::ContiguousSelection:
+        if ((!row || !view()->selectionModel()->isRowSelected(row - 1, view()->rootIndex()))
+            && !view()->selectionModel()->isRowSelected(row + 1, view()->rootIndex()))
+            view()->clearSelection();
+        break;
+    default:
+        break;
+    }
+
+    view()->selectionModel()->select(index, QItemSelectionModel::Select | QItemSelectionModel::Rows);
     return true;
 }
 
@@ -595,6 +700,8 @@ void *QAccessibleTableCell::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::TableCellInterface)
         return static_cast<QAccessibleTableCellInterface*>(this);
+    if (t == QAccessible::ActionInterface)
+        return static_cast<QAccessibleActionInterface*>(this);
     return 0;
 }
 
@@ -666,6 +773,89 @@ int QAccessibleTableCell::rowIndex() const
 bool QAccessibleTableCell::isSelected() const
 {
     return view->selectionModel()->isSelected(m_index);
+}
+
+QStringList QAccessibleTableCell::actionNames() const
+{
+    QStringList names;
+    names << toggleAction();
+    return names;
+}
+
+void QAccessibleTableCell::doAction(const QString& actionName)
+{
+    if (actionName == toggleAction()) {
+        if (isSelected())
+            unselectCell();
+        else
+            selectCell();
+    }
+}
+
+QStringList QAccessibleTableCell::keyBindingsForAction(const QString &) const
+{
+    return QStringList();
+}
+
+
+void QAccessibleTableCell::selectCell()
+{
+    QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
+    if (!m_index.isValid() || (selectionMode == QAbstractItemView::NoSelection))
+        return;
+
+    QSharedPointer<QAccessibleTableInterface> cellTable(table()->tableInterface());
+
+    switch (view->selectionBehavior()) {
+    case QAbstractItemView::SelectItems:
+        break;
+    case QAbstractItemView::SelectColumns:
+        if (cellTable.data())
+            cellTable->selectColumn(m_index.column());
+        return;
+    case QAbstractItemView::SelectRows:
+        if (cellTable.data())
+            cellTable->selectRow(m_index.row());
+        return;
+    }
+
+    if (selectionMode == QAbstractItemView::SingleSelection) {
+        view->clearSelection();
+    }
+
+    view->selectionModel()->select(m_index, QItemSelectionModel::Select);
+}
+
+void QAccessibleTableCell::unselectCell()
+{
+
+    QAbstractItemView::SelectionMode selectionMode = view->selectionMode();
+    if (!m_index.isValid() || (selectionMode & QAbstractItemView::NoSelection))
+        return;
+
+    QSharedPointer<QAccessibleTableInterface> cellTable(table()->tableInterface());
+
+    switch (view->selectionBehavior()) {
+    case QAbstractItemView::SelectItems:
+        break;
+    case QAbstractItemView::SelectColumns:
+        if (cellTable.data())
+            cellTable->unselectColumn(m_index.column());
+        return;
+    case QAbstractItemView::SelectRows:
+        if (cellTable.data())
+            cellTable->unselectRow(m_index.row());
+        return;
+    }
+
+    //If the mode is not MultiSelection or ExtendedSelection and only
+    //one cell is selected it cannot be unselected by the user
+    if ((selectionMode != QAbstractItemView::MultiSelection)
+        && (selectionMode != QAbstractItemView::ExtendedSelection)
+        && (view->selectionModel()->selectedIndexes().count() <= 1))
+        return;
+
+    view->selectionModel()->select(m_index, QItemSelectionModel::Deselect);
 }
 
 void QAccessibleTableCell::rowColumnExtents(int *row, int *column, int *rowExtents, int *columnExtents, bool *selected) const
@@ -856,14 +1046,11 @@ bool QAccessibleTableHeaderCell::isValid() const
 
 QAccessibleInterface *QAccessibleTableHeaderCell::parent() const
 {
-    if (false) {
 #ifndef QT_NO_TREEVIEW
-    } else if (qobject_cast<const QTreeView*>(view)) {
+    if (qobject_cast<const QTreeView*>(view))
         return new QAccessibleTree(view);
 #endif
-    } else {
-        return new QAccessibleTable(view);
-    }
+    return new QAccessibleTable(view);
 }
 
 QAccessibleInterface *QAccessibleTableHeaderCell::child(int) const

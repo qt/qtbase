@@ -289,7 +289,7 @@ static int qt_gl_resolve_features()
     return features;
 #else
     int features = 0;
-    //QOpenGLFormat::OpenGLVersionFlags versions = QOpenGLFormat::openGLVersionFlags();
+    QSurfaceFormat format = QOpenGLContext::currentContext()->format();
     QOpenGLExtensionMatcher extensions;
 
     // Recognize features by extension name.
@@ -327,6 +327,10 @@ static int qt_gl_resolve_features()
                 QOpenGLFunctions::StencilSeparate |
                 QOpenGLFunctions::BlendEquationSeparate |
                 QOpenGLFunctions::NPOTTextures;
+
+    if (format.majorVersion() >= 3)
+        features |= QOpenGLFunctions::Framebuffers;
+
     return features;
 #endif
 }
@@ -349,10 +353,13 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::BGRATextureFormat;
 
 #else
+    QSurfaceFormat format = QOpenGLContext::currentContext()->format();
     extensions |= QOpenGLExtensions::ElementIndexUint | QOpenGLExtensions::MapBuffer;
 
     // Recognize features by extension name.
-    if (extensionMatcher.match("GL_ARB_framebuffer_object")) {
+    if (format.majorVersion() >= 3
+        || extensionMatcher.match("GL_ARB_framebuffer_object"))
+    {
         extensions |= QOpenGLExtensions::FramebufferMultisample |
                       QOpenGLExtensions::FramebufferBlit |
                       QOpenGLExtensions::PackedDepthStencil;

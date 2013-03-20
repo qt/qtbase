@@ -43,20 +43,24 @@
 
 #include <QObject>
 
-class GadgetWithNoEnums { 
+class GadgetWithNoEnums
+{
     Q_GADGET
-    public: 
-        GadgetWithNoEnums() {} 
-        virtual ~GadgetWithNoEnums() {} 
-}; 
- 
-class DerivedGadgetWithEnums : public GadgetWithNoEnums { 
-    Q_GADGET 
-            Q_ENUMS( FooEnum ) 
-    public: 
-        enum FooEnum { FooValue }; 
-        DerivedGadgetWithEnums() {} 
-        ~DerivedGadgetWithEnums() {} 
+
+public:
+    GadgetWithNoEnums() {}
+    virtual ~GadgetWithNoEnums() {}
+};
+
+class DerivedGadgetWithEnums : public GadgetWithNoEnums
+{
+    Q_GADGET
+    Q_ENUMS( FooEnum )
+
+public:
+    enum FooEnum { FooValue };
+    DerivedGadgetWithEnums() {}
+    ~DerivedGadgetWithEnums() {}
 };
 
 #endif

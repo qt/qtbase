@@ -101,6 +101,9 @@ public:
     void getUTC(QDate &outDate, QTime &outTime) const;
     static QDateTime addMSecs(const QDateTime &dt, qint64 msecs);
     static void addMSecs(QDate &utcDate, QTime &utcTime, qint64 msecs);
+
+    static inline qint64 minJd() { return QDate::minJd(); }
+    static inline qint64 maxJd() { return QDate::maxJd(); }
 };
 
 #ifndef QT_BOOTSTRAPPED

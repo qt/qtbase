@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -150,7 +150,7 @@ QSizePolicy::operator QVariant() const
     \brief The QWidgetItem class is a layout item that represents a widget.
 
     \inmodule QtWidgets
- 
+
     Normally, you don't need to use this class directly. Qt's
     built-in layout managers provide the following functions for
     manipulating widgets in layouts:
@@ -446,20 +446,20 @@ void QWidgetItem::setGeometry(const QRect &rect)
     QRect r = !wid->testAttribute(Qt::WA_LayoutUsesWidgetRect)
             ? fromLayoutItemRect(wid->d_func(), rect)
             : rect;
-    const QSize widgetRectSurplus = r.size() - rect.size(); 
+    const QSize widgetRectSurplus = r.size() - rect.size();
 
-    /* 
-       For historical reasons, this code is done using widget rect 
-       coordinates, not layout item rect coordinates. However, 
-       QWidgetItem's sizeHint(), maximumSize(), and heightForWidth() 
-       all work in terms of layout item rect coordinates, so we have to 
-       add or subtract widgetRectSurplus here and there. The code could 
-       be much simpler if we did everything using layout item rect 
-       coordinates and did the conversion right before the call to 
-       QWidget::setGeometry(). 
-     */ 
+    /*
+       For historical reasons, this code is done using widget rect
+       coordinates, not layout item rect coordinates. However,
+       QWidgetItem's sizeHint(), maximumSize(), and heightForWidth()
+       all work in terms of layout item rect coordinates, so we have to
+       add or subtract widgetRectSurplus here and there. The code could
+       be much simpler if we did everything using layout item rect
+       coordinates and did the conversion right before the call to
+       QWidget::setGeometry().
+     */
 
-    QSize s = r.size().boundedTo(maximumSize() + widgetRectSurplus);  
+    QSize s = r.size().boundedTo(maximumSize() + widgetRectSurplus);
     int x = r.x();
     int y = r.y();
     if (align & (Qt::AlignHorizontal_Mask | Qt::AlignVertical_Mask)) {
@@ -474,8 +474,8 @@ void QWidgetItem::setGeometry(const QRect &rect)
             s.setWidth(qMin(s.width(), pref.width()));
         if (align & Qt::AlignVertical_Mask) {
             if (hasHeightForWidth())
-                s.setHeight(qMin(s.height(), 
-                                 heightForWidth(s.width() - widgetRectSurplus.width()) 
+                s.setHeight(qMin(s.height(),
+                                 heightForWidth(s.width() - widgetRectSurplus.width())
                                  + widgetRectSurplus.height()));
             else
                 s.setHeight(qMin(s.height(), pref.height()));

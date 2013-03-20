@@ -142,7 +142,7 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item);
 
 #define HB_IsControlChar(uc) \
     ((uc >= 0x200b && uc <= 0x200f /* ZW Space, ZWNJ, ZWJ, LRM and RLM */) \
-     || (uc >= 0x2028 && uc <= 0x202f /* LS, PS, LRE, RLE, PDF, LRO, RLO, NNBSP */) \
+     || (uc >= 0x2028 && uc <= 0x202e /* LS, PS, LRE, RLE, PDF, LRO, RLO */) \
      || (uc >= 0x206a && uc <= 0x206f /* ISS, ASS, IAFS, AFS, NADS, NODS */))
 
 HB_Bool HB_ConvertStringToGlyphIndices(HB_ShaperItem *shaper_item);

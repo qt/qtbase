@@ -124,7 +124,7 @@ public:
     qint64 uploadedBytes() const;
     int connectedPeerCount() const;
     int seedCount() const;
-   
+
     // Accessors for the tracker
     QByteArray peerId() const;
     QByteArray infoHash() const;
@@ -142,7 +142,7 @@ signals:
 
     void downloadCompleted();
     void peerInfoUpdated();
-    
+
     void dataSent(int uploadedBytes);
     void dataReceived(int downloadedBytes);
     void progressUpdated(int percentProgress);

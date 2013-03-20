@@ -52,7 +52,8 @@ private slots:
     void warningWithoutDebug() const;
     void criticalWithoutDebug() const;
     void debugWithBool() const;
-    void debugNoSpaces() const;
+    void debugSpaceHandling() const;
+    void stateSaver() const;
     void veryLongWarningMessage() const;
     void qDebugQStringRef() const;
     void qDebugQLatin1String() const;
@@ -150,7 +151,36 @@ void tst_QDebug::debugWithBool() const
     QCOMPARE(QString::fromLatin1(s_function), function);
 }
 
-void tst_QDebug::debugNoSpaces() const
+class MyPoint
+{
+public:
+    MyPoint(int val1, int val2)
+        : v1(val1), v2(val2) {}
+    int v1;
+    int v2;
+};
+QDebug operator<< (QDebug s, const MyPoint& point)
+{
+    const QDebugStateSaver saver(s);
+    return s.nospace() << "MyPoint(" << point.v1 << ", " << point.v2 << ")";
+}
+
+class MyLine
+{
+public:
+    MyLine(const MyPoint& point1, const MyPoint& point2)
+        : p1(point1), p2(point2) {}
+    MyPoint p1;
+    MyPoint p2;
+};
+QDebug operator<< (QDebug s, const MyLine& line)
+{
+    const QDebugStateSaver saver(s);
+    s.nospace() << "MyLine(" << line.p1 << ", " << line.p2 << ")";
+    return s;
+}
+
+void tst_QDebug::debugSpaceHandling() const
 {
     MessageHandlerSetter mhs(myMessageHandler);
     {
@@ -166,8 +196,26 @@ void tst_QDebug::debugNoSpaces() const
         d << "key=" << "value";
         d.space();
         d << 1 << 2;
+        MyLine line(MyPoint(10, 11), MyPoint (12, 13));
+        d << line;
+        // With the old implementation of MyPoint doing dbg.nospace() << ...; dbg.space() we ended up with
+        // MyLine(MyPoint(10, 11) ,  MyPoint(12, 13) )
     }
-    QCOMPARE(s_msg, QString::fromLatin1("  foo key=value 1 2 "));
+    QCOMPARE(s_msg, QString::fromLatin1("  foo key=value 1 2 MyLine(MyPoint(10, 11), MyPoint(12, 13))"));
+}
+
+void tst_QDebug::stateSaver() const
+{
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        {
+            QDebugStateSaver saver(d);
+            d.nospace() << hex << right << qSetFieldWidth(3) << qSetPadChar('0') << 42;
+        }
+        d.space() << 42;
+    }
+    QCOMPARE(s_msg, QString::fromLatin1("02a 42 "));
 }
 
 void tst_QDebug::veryLongWarningMessage() const

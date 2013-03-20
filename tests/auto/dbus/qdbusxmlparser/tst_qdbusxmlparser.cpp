@@ -96,7 +96,7 @@ void tst_QDBusXmlParser::parsing_data()
 
     QTest::newRow("null") << QString() << 0 << 0 << 0 << introspection;
     QTest::newRow("empty") << QString("") << 0 << 0 << 0 << introspection;
-    
+
     QTest::newRow("junk") << "<junk/>" << 0 << 0 << 0 << introspection;
     QTest::newRow("interface-inside-junk") << "<junk><interface name=\"iface.iface1\" /></junk>"
                                            << 0 << 0 << 0 << introspection;
@@ -429,7 +429,7 @@ void tst_QDBusXmlParser::signals__data()
     QTest::newRow("one-out-no-direction") <<
         "<signal name=\"Signal\">"
         "<arg type=\"s\"/>"
-        "</signal>" << map;    
+        "</signal>" << map;
 
     // two args with name
     signal.outputArgs << arg("i", "bar");

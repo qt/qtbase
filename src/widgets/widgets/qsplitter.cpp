@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -1665,7 +1665,7 @@ bool QSplitter::restoreState(const QByteArray &state)
     have a stretch factor of \a stretch.
 
     \a stretch is not the effective stretch factor; the effective
-    stretch factor is calculated by taking the initial size of the 
+    stretch factor is calculated by taking the initial size of the
     widget and multiplying it with \a stretch.
 
     This function is provided for convenience. It is equivalent to

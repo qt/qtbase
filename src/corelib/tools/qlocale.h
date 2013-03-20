@@ -47,8 +47,6 @@
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -69,6 +67,7 @@ class Q_CORE_EXPORT QLocale
     Q_ENUMS(Country)
     Q_ENUMS(MeasurementSystem)
     friend class QString;
+    friend class QStringRef;
     friend class QByteArray;
     friend class QIntValidator;
     friend class QDoubleValidatorPrivate;
@@ -207,7 +206,7 @@ public:
         Turkish = 125,
         Turkmen = 126,
         Tahitian = 127,
-        Uigur = 128,
+        Uighur = 128,
         Ukrainian = 129,
         Urdu = 130,
         Uzbek = 131,
@@ -340,6 +339,57 @@ public:
         Kako = 258,
         Meta = 259,
         Ngiemboon = 260,
+        Aragonese = 261,
+        Akkadian = 262,
+        AncientEgyptian = 263,
+        AncientGreek = 264,
+        Aramaic = 265,
+        Balinese = 266,
+        Bamun = 267,
+        BatakToba = 268,
+        Buginese = 269,
+        Buhid = 270,
+        Carian = 271,
+        Chakma = 272,
+        ClassicalMandaic = 273,
+        Coptic = 274,
+        Dogri = 275,
+        EasternCham = 276,
+        EasternKayah = 277,
+        Etruscan = 278,
+        Gothic = 279,
+        Hanunoo = 280,
+        Ingush = 281,
+        LargeFloweryMiao = 282,
+        Lepcha = 283,
+        Limbu = 284,
+        Lisu = 285,
+        Lu = 286,
+        Lycian = 287,
+        Lydian = 288,
+        Mandingo = 289,
+        Manipuri = 290,
+        Meroitic = 291,
+        NorthernThai = 292,
+        OldIrish = 293,
+        OldNorse = 294,
+        OldPersian = 295,
+        OldTurkish = 296,
+        Pahlavi = 297,
+        Parthian = 298,
+        Phoenician = 299,
+        PrakritLanguage = 300,
+        Rejang = 301,
+        Sabaean = 302,
+        Samaritan = 303,
+        Santali = 304,
+        Saurashtra = 305,
+        Sora = 306,
+        Sylheti = 307,
+        Tagbanwa = 308,
+        TaiDam = 309,
+        TaiNua = 310,
+        Ugaritic = 311,
         Norwegian = NorwegianBokmal,
         Moldavian = Romanian,
         SerboCroatian = Serbian,
@@ -353,7 +403,8 @@ public:
         RhaetoRomance = Romansh,
         Chewa = Nyanja,
         Frisian = WesternFrisian,
-        LastLanguage = Ngiemboon
+        Uigur = Uighur,
+        LastLanguage = Ugaritic
     };
 
     enum Script {
@@ -393,9 +444,76 @@ public:
         SyriacScript = 33,
         YiScript = 34,
         VaiScript = 35,
+        AvestanScript = 36,
+        BalineseScript = 37,
+        BamumScript = 38,
+        BatakScript = 39,
+        BopomofoScript = 40,
+        BrahmiScript = 41,
+        BugineseScript = 42,
+        BuhidScript = 43,
+        CanadianAboriginalScript = 44,
+        CarianScript = 45,
+        ChakmaScript = 46,
+        ChamScript = 47,
+        CopticScript = 48,
+        CypriotScript = 49,
+        EgyptianHieroglyphsScript = 50,
+        FraserScript = 51,
+        GlagoliticScript = 52,
+        GothicScript = 53,
+        HanScript = 54,
+        HangulScript = 55,
+        HanunooScript = 56,
+        ImperialAramaicScript = 57,
+        InscriptionalPahlaviScript = 58,
+        InscriptionalParthianScript = 59,
+        JavaneseScript = 60,
+        KaithiScript = 61,
+        KatakanaScript = 62,
+        KayahLiScript = 63,
+        KharoshthiScript = 64,
+        LannaScript = 65,
+        LepchaScript = 66,
+        LimbuScript = 67,
+        LinearBScript = 68,
+        LycianScript = 69,
+        LydianScript = 70,
+        MandaeanScript = 71,
+        MeiteiMayekScript = 72,
+        MeroiticScript = 73,
+        MeroiticCursiveScript = 74,
+        NkoScript = 75,
+        NewTaiLueScript = 76,
+        OghamScript = 77,
+        OlChikiScript = 78,
+        OldItalicScript = 79,
+        OldPersianScript = 80,
+        OldSouthArabianScript = 81,
+        OrkhonScript = 82,
+        OsmanyaScript = 83,
+        PhagsPaScript = 84,
+        PhoenicianScript = 85,
+        PollardPhoneticScript = 86,
+        RejangScript = 87,
+        RunicScript = 88,
+        SamaritanScript = 89,
+        SaurashtraScript = 90,
+        SharadaScript = 91,
+        ShavianScript = 92,
+        SoraSompengScript = 93,
+        CuneiformScript = 94,
+        SundaneseScript = 95,
+        SylotiNagriScript = 96,
+        TagalogScript = 97,
+        TagbanwaScript = 98,
+        TaiLeScript = 99,
+        TaiVietScript = 100,
+        TakriScript = 101,
+        UgariticScript = 102,
         SimplifiedChineseScript = SimplifiedHanScript,
         TraditionalChineseScript = TraditionalHanScript,
-        LastScript = VaiScript
+        LastScript = UgariticScript
     };
     enum Country {
         AnyCountry = 0,
@@ -712,6 +830,15 @@ public:
     float toFloat(const QString &s, bool *ok = 0) const;
     double toDouble(const QString &s, bool *ok = 0) const;
 
+    short toShort(const QStringRef &s, bool *ok = 0) const;
+    ushort toUShort(const QStringRef &s, bool *ok = 0) const;
+    int toInt(const QStringRef &s, bool *ok = 0) const;
+    uint toUInt(const QStringRef &s, bool *ok = 0) const;
+    qlonglong toLongLong(const QStringRef &s, bool *ok = 0) const;
+    qulonglong toULongLong(const QStringRef &s, bool *ok = 0) const;
+    float toFloat(const QStringRef &s, bool *ok = 0) const;
+    double toDouble(const QStringRef &s, bool *ok = 0) const;
+
     QString toString(qlonglong i) const;
     QString toString(qulonglong i) const;
     inline QString toString(short i) const;
@@ -842,7 +969,5 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QLocale &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QLOCALE_H

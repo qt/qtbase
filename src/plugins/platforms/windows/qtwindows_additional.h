@@ -126,6 +126,10 @@ typedef struct tagUPDATELAYEREDWINDOWINFO {
 // IME.
 #define IMR_CONFIRMRECONVERTSTRING      0x0005
 
+#ifndef MAPVK_VK_TO_CHAR
+#  define MAPVK_VK_TO_CHAR 2
+#endif
+
 #endif // if defined(Q_CC_MINGW)
 
 /* Touch is supported from Windows 7 onwards and data structures

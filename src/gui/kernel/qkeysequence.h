@@ -45,8 +45,6 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -138,7 +136,8 @@ public:
         SaveAs,
         Preferences,
         Quit,
-        FullScreen
+        FullScreen,
+        Deselect
      };
 
     enum SequenceFormat {
@@ -164,6 +163,9 @@ public:
 
     QString toString(SequenceFormat format = PortableText) const;
     static QKeySequence fromString(const QString &str, SequenceFormat format = PortableText);
+
+    static QList<QKeySequence> listFromString(const QString &str, SequenceFormat format = PortableText);
+    static QString listToString(const QList<QKeySequence> &list, SequenceFormat format = PortableText);
 
     SequenceMatch matches(const QKeySequence &seq) const;
     static QKeySequence mnemonic(const QString &text);
@@ -230,7 +232,5 @@ public:
 #endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QKEYSEQUENCE_H

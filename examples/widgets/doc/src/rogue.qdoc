@@ -151,7 +151,7 @@
 
     When we enter \c quitState, we update the status bar of the
     window.
-    
+
     \c QKeyEventTransition is a utility class that removes the hassle
     of implementing transitions for \l{QKeyEvent}s. We simply need to
     specify the key on which the transition should trigger and the
@@ -161,7 +161,7 @@
 
     The transition from \c inputState allows triggering the quit state
     when the player types \c {q}.
-    
+
     \snippet statemachine/rogue/window.cpp 5
 
     The machine is set up, so it's time to start it.

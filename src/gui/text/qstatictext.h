@@ -50,14 +50,12 @@
 #include <QtGui/qfont.h>
 #include <QtGui/qtextoption.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
 class QStaticTextPrivate;
 class Q_GUI_EXPORT QStaticText
-{    
+{
 public:
     enum PerformanceHint {
         ModerateCaching,
@@ -106,7 +104,5 @@ Q_DECLARE_SHARED(QStaticText)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QStaticText)
-
-QT_END_HEADER
 
 #endif // QSTATICTEXT_H

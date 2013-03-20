@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     window->show();
 //! [5]
     }
-    
+
     {
 //! [6]
     QWidget *window = new QWidget;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     window->show();
 //! [11]
     }
-    
+
     {
 //! [12]
     QWidget *window = new QWidget;
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     window->setWindowTitle("QFormLayout");
 //! [23]
     window->show();
-//! [23]    
+//! [23]
     }
 
     {

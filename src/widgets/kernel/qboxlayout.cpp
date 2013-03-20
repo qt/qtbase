@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -248,7 +248,7 @@ void QBoxLayoutPrivate::effectiveMargins(int *left, int *top, int *right, int *b
                 if (right)
                     r = qMax(r, wr.right() - lir.right());
             }
-        }        
+        }
     }
 #endif
     if (left)
@@ -509,7 +509,7 @@ void QBoxLayoutPrivate::calcHfw(int w)
 
     \list
     \li setContentsMargins() sets the width of the outer border on
-       each side of the widget. This is the width of the reserved space 
+       each side of the widget. This is the width of the reserved space
        along each of the QBoxLayout's four sides.
     \li setSpacing() sets the width between neighboring boxes. (You
        can use addSpacing() to get more space at a particular spot.)
@@ -595,7 +595,7 @@ int QBoxLayout::spacing() const
 
 /*!
   Reimplements QLayout::setSpacing(). Sets the spacing
-  property to \a spacing. 
+  property to \a spacing.
 
   \sa QLayout::setSpacing(), spacing()
  */

@@ -20,6 +20,7 @@ qlocale \
 qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
 qnetworkreply \
+qpainfo \
 qscreen \
 qssloptions \
 qtabletevent \
@@ -34,11 +35,14 @@ windowflags \
 windowgeometry \
 windowmodality \
 widgetgrab \
+xembed-raster \
+xembed-widgets \
 dialogs
 
 !contains(QT_CONFIG, openssl):!contains(QT_CONFIG, openssl-linked):SUBDIRS -= qssloptions
 
-# disable some tests on wince because of missing dependencies
-wince*:SUBDIRS -= \
-    lance windowmodality \
-    network_remote_stresstest network_stresstest
+win32 {
+    SUBDIRS -= network_remote_stresstest network_stresstest
+    # disable some tests on wince because of missing dependencies
+    wince*:SUBDIRS -= lance windowmodality
+}

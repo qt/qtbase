@@ -64,6 +64,8 @@
 #include <QtTest/private/qbenchmark_p.h>
 #include <QtTest/private/cycle_p.h>
 
+#include <numeric>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,7 +84,7 @@
 #include <time.h>
 #endif
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #endif
 
@@ -1341,11 +1343,17 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
 #ifdef QTESTLIB_USE_VALGRIND
          " -callgrind          : Use callgrind to time benchmarks\n"
 #endif
+#ifdef QTESTLIB_USE_PERF_EVENTS
+         " -perf               : Use Linux perf events to time benchmarks\n"
+         " -perfcounter name   : Use the counter named 'name'\n"
+         " -perfcounterlist    : Lists the counters available\n"
+#endif
 #ifdef HAVE_TICK_COUNTER
          " -tickcounter        : Use CPU tick counters to time benchmarks\n"
 #endif
          " -eventcounter       : Counts events received during benchmarks\n"
          " -minimumvalue n     : Sets the minimum acceptable measurement value\n"
+         " -minimumtotal n     : Sets the minimum acceptable total for repeated executions of a test function\n"
          " -iterations  n      : Sets the number of accumulation iterations.\n"
          " -median  n          : Sets the number of median iterations.\n"
          " -vb                 : Print out verbose benchmarking information.\n";
@@ -1481,6 +1489,25 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
             QBenchmarkGlobalData::current->callgrindOutFileBase =
                 QBenchmarkValgrindUtils::outFileBase();
 #endif
+#ifdef QTESTLIB_USE_PERF_EVENTS
+        } else if (strcmp(argv[i], "-perf") == 0) {
+            if (QBenchmarkPerfEventsMeasurer::isAvailable()) {
+                // perf available
+                QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::PerfCounter);
+            } else {
+                fprintf(stderr, "WARNING: Linux perf events not available. Using the walltime measurer.\n");
+            }
+        } else if (strcmp(argv[i], "-perfcounter") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "-perfcounter needs an extra parameter with the name of the counter\n");
+                exit(1);
+            } else {
+                QBenchmarkPerfEventsMeasurer::setCounter(argv[++i]);
+            }
+        } else if (strcmp(argv[i], "-perfcounterlist") == 0) {
+            QBenchmarkPerfEventsMeasurer::listCounters();
+            exit(0);
+#endif
 #ifdef HAVE_TICK_COUNTER
         } else if (strcmp(argv[i], "-tickcounter") == 0) {
             QBenchmarkGlobalData::current->setMode(QBenchmarkGlobalData::TickCounter);
@@ -1493,6 +1520,13 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, char *argv[], bool qml)
                 exit(1);
             } else {
                 QBenchmarkGlobalData::current->walltimeMinimum = qToInt(argv[++i]);
+            }
+        } else if (strcmp(argv[i], "-minimumtotal") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "-minimumtotal needs an extra parameter to indicate the minimum total measurement\n");
+                exit(1);
+            } else {
+                QBenchmarkGlobalData::current->minimumTotal = qToInt(argv[++i]);
             }
         } else if (strcmp(argv[i], "-iterations") == 0) {
             if (i + 1 >= argc) {
@@ -1623,6 +1657,15 @@ struct QTestDataSetter
     }
 };
 
+namespace {
+
+qreal addResult(qreal current, const QBenchmarkResult& r)
+{
+    return current + r.value;
+}
+
+}
+
 static void qInvokeTestMethodDataEntry(char *slot)
 {
     /* Benchmarking: for each median iteration*/
@@ -1631,6 +1674,7 @@ static void qInvokeTestMethodDataEntry(char *slot)
     int i = (QBenchmarkGlobalData::current->measurer->needsWarmupIteration()) ? -1 : 0;
 
     QList<QBenchmarkResult> results;
+    bool minimumTotalReached = false;
     do {
         QBenchmarkTestMethodData::current->beginDataRun();
 
@@ -1689,8 +1733,16 @@ static void qInvokeTestMethodDataEntry(char *slot)
                 }
             }
         }
+
+        // Verify if the minimum total measurement is reached, if it was specified:
+        if (QBenchmarkGlobalData::current->minimumTotal == -1) {
+            minimumTotalReached = true;
+        } else {
+            const qreal total = std::accumulate(results.begin(), results.end(), 0.0, addResult);
+            minimumTotalReached = (total >= QBenchmarkGlobalData::current->minimumTotal);
+        }
     } while (isBenchmark
-             && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount())
+             && ((++i < QBenchmarkGlobalData::current->adjustMedianIterationCount()) || !minimumTotalReached)
              && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
 
     // If the test is a benchmark, finalize the result after all iterations have finished.
@@ -2078,7 +2130,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     int callgrindChildExitCode = 0;
 #endif
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     bool macNeedsActivate = qApp && (qstrcmp(qApp->metaObject()->className(), "QApplication") == 0);
     IOPMAssertionID powerID;
 #endif
@@ -2093,7 +2145,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     SetErrorMode(SetErrorMode(0) | SEM_NOGPFAULTERRORBOX);
 #endif
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     if (macNeedsActivate) {
         CFStringRef reasonForActivity= CFSTR("No Display Sleep");
         IOReturn ok = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, reasonForActivity, &powerID);
@@ -2146,7 +2198,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
          }
 
         QTestLog::stopLogging();
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
          if (macNeedsActivate) {
              IOPMAssertionRelease(powerID);
          }
@@ -2163,7 +2215,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
     QSignalDumper::endDump();
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
      if (macNeedsActivate) {
          IOPMAssertionRelease(powerID);
      }
@@ -2684,11 +2736,39 @@ bool QTest::compare_string_helper(const char *t1, const char *t2, const char *ac
     \internal
 */
 
+/*! \fn bool QTest::qCompare(QList<T> const &t1, QList<T> const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
 /*! \fn bool QTest::qCompare(QFlags<T> const &t1, T const &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
 
 /*! \fn bool QTest::qCompare(QFlags<T> const &t1, int const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(qint64 const &t1, qint32 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(qint64 const &t1, quint32 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(quint64 const &t1, quint32 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(qint32 const &t1, qint64 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(quint32 const &t1, qint64 const &t2, const char *actual, const char *expected, const char *file, int line)
+    \internal
+*/
+
+/*! \fn bool QTest::qCompare(quint32 const &t1, quint64 const &t2, const char *actual, const char *expected, const char *file, int line)
     \internal
 */
 

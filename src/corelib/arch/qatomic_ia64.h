@@ -45,15 +45,12 @@
 
 #include <QtCore/qgenericatomic.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
+#pragma qt_sync_skip_header_check
 #pragma qt_sync_stop_processing
 #endif
 
@@ -222,28 +219,28 @@ inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
 inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
 {
     register int expectedValueCopy = expectedValue;
-    return (static_cast<int>(_InterlockedCompareExchange(&_q_value, 
-							 newValue, 
-							 expectedValueCopy))
-	    == expectedValue);
+    return (static_cast<int>(_InterlockedCompareExchange(&_q_value,
+                                                         newValue,
+                                                         expectedValueCopy))
+            == expectedValue);
 }
 
 inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
 {
     register int expectedValueCopy = expectedValue;
-    return (static_cast<int>(_InterlockedCompareExchange_acq(reinterpret_cast<volatile uint *>(&_q_value), 
-							     newValue, 
-							     expectedValueCopy)) 
-	    == expectedValue);
+    return (static_cast<int>(_InterlockedCompareExchange_acq(reinterpret_cast<volatile uint *>(&_q_value),
+                                                             newValue,
+                                                             expectedValueCopy))
+            == expectedValue);
 }
 
 inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 {
     register int expectedValueCopy = expectedValue;
-    return (static_cast<int>(_InterlockedCompareExchange_rel(reinterpret_cast<volatile uint *>(&_q_value), 
-							     newValue, 
-							     expectedValueCopy)) 
-	    == expectedValue);
+    return (static_cast<int>(_InterlockedCompareExchange_rel(reinterpret_cast<volatile uint *>(&_q_value),
+                                                             newValue,
+                                                             expectedValueCopy))
+            == expectedValue);
 }
 
 inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
@@ -289,10 +286,10 @@ template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 {
     register T *expectedValueCopy = expectedValue;
-    return (_InterlockedCompareExchangePointer(reinterpret_cast<void * volatile*>(&_q_value), 
-					       newValue, 
-					       expectedValueCopy)
-	    == expectedValue);
+    return (_InterlockedCompareExchangePointer(reinterpret_cast<void * volatile*>(&_q_value),
+                                               newValue,
+                                               expectedValueCopy)
+            == expectedValue);
 }
 
 template <typename T>
@@ -304,7 +301,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValu
     };
     x = &_q_value;
     register T *expectedValueCopy = expectedValue;
-    return (_InterlockedCompareExchange64_acq(p, quintptr(newValue), quintptr(expectedValueCopy)) 
+    return (_InterlockedCompareExchange64_acq(p, quintptr(newValue), quintptr(expectedValueCopy))
 	    == quintptr(expectedValue));
 }
 
@@ -1088,7 +1085,5 @@ T QBasicAtomicOps<size>::fetchAndAddOrdered(T &_q_value, typename QAtomicAdditiv
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QATOMIC_IA64_H

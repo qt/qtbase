@@ -611,7 +611,7 @@ void tst_QWizard::addPage()
     arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toInt(), N + 52);
 
-    QTest::ignoreMessage(QtWarningMsg,"QWizard::setPage: Cannot insert null page");    
+    QTest::ignoreMessage(QtWarningMsg,"QWizard::setPage: Cannot insert null page");
     wizard.addPage(0); // generates a warning
     QCOMPARE(spy.count(), 0);
     delete parent;
@@ -638,7 +638,7 @@ void tst_QWizard::setPage()
     QCOMPARE(wizard.nextId(), -1);
 
     page = new QWizardPage(parent);
-    QTest::ignoreMessage(QtWarningMsg,"QWizard::setPage: Cannot insert page with ID -1");    
+    QTest::ignoreMessage(QtWarningMsg,"QWizard::setPage: Cannot insert page with ID -1");
     wizard.setPage(-1, page);   // gives a warning and does nothing
     QCOMPARE(spy.count(), 0);
     QVERIFY(!wizard.page(-2));
@@ -2453,7 +2453,7 @@ private:
 
         QLayout *layout_ = new QVBoxLayout(this);
         layout_->addWidget(treeWidget = new QTreeWidget);
- 
+
         QSizePolicy policy = sizePolicy();
         policy.setVerticalPolicy(verticalPolicy);
         treeWidget->setSizePolicy(policy);

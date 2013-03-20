@@ -49,6 +49,7 @@
 
 // For QSignalSpy slot connections.
 Q_DECLARE_METATYPE(Qt::ScreenOrientation)
+Q_DECLARE_METATYPE(QWindow::Visibility)
 
 class tst_QWindow: public QObject
 {
@@ -75,6 +76,8 @@ private slots:
     void inputReentrancy();
     void tabletEvents();
     void windowModality_QTBUG27039();
+    void visibility();
+    void mask();
 
     void initTestCase()
     {
@@ -1077,6 +1080,60 @@ void tst_QWindow::windowModality_QTBUG27039()
 
     // modal B has been hidden, modal A should be unblocked again
     QCOMPARE(modalA.mousePressedCount, 1);
+}
+
+void tst_QWindow::visibility()
+{
+    qRegisterMetaType<Qt::WindowModality>("QWindow::Visibility");
+
+    QWindow window;
+    QSignalSpy spy(&window, SIGNAL(visibilityChanged(QWindow::Visibility)));
+
+    window.setVisibility(QWindow::AutomaticVisibility);
+    QVERIFY(window.isVisible());
+    QVERIFY(window.visibility() != QWindow::Hidden);
+    QVERIFY(window.visibility() != QWindow::AutomaticVisibility);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    window.setVisibility(QWindow::Hidden);
+    QVERIFY(!window.isVisible());
+    QCOMPARE(window.visibility(), QWindow::Hidden);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    window.setVisibility(QWindow::FullScreen);
+    QVERIFY(window.isVisible());
+    QCOMPARE(window.windowState(), Qt::WindowFullScreen);
+    QCOMPARE(window.visibility(), QWindow::FullScreen);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    window.setWindowState(Qt::WindowNoState);
+    QCOMPARE(window.visibility(), QWindow::Windowed);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    window.setVisible(false);
+    QCOMPARE(window.visibility(), QWindow::Hidden);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+}
+
+void tst_QWindow::mask()
+{
+    QRegion mask = QRect(10, 10, 800 - 20, 600 - 20);
+
+    QWindow window;
+    window.resize(800, 600);
+    window.setMask(mask);
+
+    QCOMPARE(window.mask(), QRegion());
+
+    window.create();
+    window.setMask(mask);
+
+    QCOMPARE(window.mask(), mask);
 }
 
 #include <tst_qwindow.moc>

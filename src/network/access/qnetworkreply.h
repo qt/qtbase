@@ -49,8 +49,6 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkAccessManager>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -150,6 +148,7 @@ Q_SIGNALS:
     void finished();
     void error(QNetworkReply::NetworkError);
 #ifndef QT_NO_SSL
+    void encrypted();
     void sslErrors(const QList<QSslError> &errors);
 #endif
 
@@ -181,7 +180,5 @@ private:
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QNetworkReply::NetworkError)
-
-QT_END_HEADER
 
 #endif

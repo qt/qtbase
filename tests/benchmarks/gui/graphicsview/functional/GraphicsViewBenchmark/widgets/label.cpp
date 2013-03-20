@@ -43,7 +43,7 @@
 
 #include "label.h"
 
-Label::Label(const QString& text, QGraphicsItem *parent) 
+Label::Label(const QString &text, QGraphicsItem *parent)
     : GvbWidget(parent)
 {
     m_textItem = new QGraphicsSimpleTextItem(this);
@@ -58,8 +58,8 @@ Label::~Label()
 {
 }
 
-void Label::setText(const QString& text) 
-{ 
+void Label::setText(const QString &text)
+{
     m_textItem->setText(text);
     prepareGeometryChange();
 }
@@ -74,22 +74,20 @@ void Label::setFont(const QFont font)
     m_textItem->setFont(font);
 }
 
-void Label::resizeEvent(QGraphicsSceneResizeEvent *event) 
+void Label::resizeEvent(QGraphicsSceneResizeEvent *event)
 {
     GvbWidget::resizeEvent(event);
 }
 
 QSizeF Label::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
-    switch (which)
-    {
+    switch (which) {
     case Qt::MinimumSize:
         // fall thru
-    case Qt::PreferredSize:
-        {
+    case Qt::PreferredSize: {
         QFontMetricsF fm(m_textItem->font());
         return QSizeF(fm.width(m_textItem->text()), fm.height());
-        }
+    }
     default:
         return GvbWidget::sizeHint(which, constraint);
     }

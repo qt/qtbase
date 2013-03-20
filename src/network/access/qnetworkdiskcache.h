@@ -44,8 +44,6 @@
 
 #include <QtNetwork/qabstractnetworkcache.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -90,7 +88,5 @@ private:
 #endif // QT_NO_NETWORKDISKCACHE
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QNETWORKDISKCACHE_H

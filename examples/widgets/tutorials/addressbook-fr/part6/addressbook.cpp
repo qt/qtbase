@@ -71,9 +71,9 @@ AddressBook::AddressBook(QWidget *parent)
     previousButton->setEnabled(false);
 
     loadButton = new QPushButton(tr("&Load..."));
-//! [tooltip 1]    
+//! [tooltip 1]
     loadButton->setToolTip(tr("Load contacts from a file"));
-//! [tooltip 1]        
+//! [tooltip 1]
     saveButton = new QPushButton(tr("Sa&ve..."));
 //! [tooltip 2]
     saveButton->setToolTip(tr("Save contacts to a file"));
@@ -92,7 +92,7 @@ AddressBook::AddressBook(QWidget *parent)
     connect(previousButton, SIGNAL(clicked()), this, SLOT(previous()));
     connect(loadButton, SIGNAL(clicked()), this, SLOT(loadFromFile()));
     connect(saveButton, SIGNAL(clicked()), this, SLOT(saveToFile()));
-    
+
     QVBoxLayout *buttonLayout1 = new QVBoxLayout;
     buttonLayout1->addWidget(addButton);
     buttonLayout1->addWidget(editButton);
@@ -151,7 +151,7 @@ void AddressBook::submitContact()
     }
 
     if (currentMode == AddingMode) {
-        
+
         if (!contacts.contains(name)) {
             contacts.insert(name, address);
             QMessageBox::information(this, tr("Add Successful"),
@@ -161,7 +161,7 @@ void AddressBook::submitContact()
                 tr("Sorry, \"%1\" is already in your address book.").arg(name));
         }
     } else if (currentMode == EditingMode) {
-        
+
         if (oldName != name) {
             if (!contacts.contains(name)) {
                 QMessageBox::information(this, tr("Edit Successful"),
@@ -202,7 +202,7 @@ void AddressBook::removeContact()
             QMessageBox::Yes | QMessageBox::No);
 
         if (button == QMessageBox::Yes) {
-            
+
             previous();
             contacts.remove(name);
 
@@ -296,7 +296,7 @@ void AddressBook::updateInterface(Mode mode)
         break;
 
     case NavigationMode:
-        
+
         if (contacts.isEmpty()) {
             nameLine->clear();
             addressText->clear();
@@ -341,12 +341,12 @@ void AddressBook::saveToFile()
             return;
         }
 
-//! [saveToFile() function part2]        
+//! [saveToFile() function part2]
 //! [saveToFile() function part3]
         QDataStream out(&file);
         out.setVersion(QDataStream::Qt_4_5);
         out << contacts;
-    }       
+    }
 }
 //! [saveToFile() function part3]
 
@@ -362,15 +362,15 @@ void AddressBook::loadFromFile()
     if (fileName.isEmpty())
         return;
     else {
-        
+
         QFile file(fileName);
-        
+
         if (!file.open(QIODevice::ReadOnly)) {
             QMessageBox::information(this, tr("Unable to open file"),
                 file.errorString());
             return;
         }
-        
+
         QDataStream in(&file);
         in.setVersion(QDataStream::Qt_4_5);
         contacts.empty();   // empty existing contacts

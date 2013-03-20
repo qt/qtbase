@@ -290,52 +290,52 @@ static void checkState(QSignalSpy &redoTextChangedSpy,
                        const bool _undoChanged,
                        const bool _redoChanged)
 {
-    QCOMPARE(stack.count(), _count); 
-    QCOMPARE(stack.isClean(), _clean); 
-    QCOMPARE(stack.index(), _index); 
-    QCOMPARE(stack.canUndo(), _canUndo); 
-    QCOMPARE(stack.undoText(), QString(_undoText)); 
-    QCOMPARE(stack.canRedo(), _canRedo); 
-    QCOMPARE(stack.redoText(), QString(_redoText)); 
-    if (_indexChanged) { 
-        QCOMPARE(indexChangedSpy.count(), 1); 
-        QCOMPARE(indexChangedSpy.at(0).at(0).toInt(), _index); 
-        indexChangedSpy.clear(); 
-    } else { 
-        QCOMPARE(indexChangedSpy.count(), 0); 
-    } 
-    if (_cleanChanged) { 
-        QCOMPARE(cleanChangedSpy.count(), 1); 
-        QCOMPARE(cleanChangedSpy.at(0).at(0).toBool(), _clean); 
-        cleanChangedSpy.clear(); 
-    } else { 
-        QCOMPARE(cleanChangedSpy.count(), 0); 
-    } 
-    if (_undoChanged) { 
-        QCOMPARE(canUndoChangedSpy.count(), 1); 
-        QCOMPARE(canUndoChangedSpy.at(0).at(0).toBool(), _canUndo); 
-        QCOMPARE(undoAction->isEnabled(), _canUndo); 
-        QCOMPARE(undoTextChangedSpy.count(), 1); 
-        QCOMPARE(undoTextChangedSpy.at(0).at(0).toString(), QString(_undoText)); 
-        QCOMPARE(undoAction->text(), glue("foo", _undoText)); 
-        canUndoChangedSpy.clear(); 
-        undoTextChangedSpy.clear(); 
-    } else { 
-        QCOMPARE(canUndoChangedSpy.count(), 0); 
-        QCOMPARE(undoTextChangedSpy.count(), 0); 
-    } 
-    if (_redoChanged) { 
-        QCOMPARE(canRedoChangedSpy.count(), 1); 
-        QCOMPARE(canRedoChangedSpy.at(0).at(0).toBool(), _canRedo); 
-        QCOMPARE(redoAction->isEnabled(), _canRedo); 
-        QCOMPARE(redoTextChangedSpy.count(), 1); 
-        QCOMPARE(redoTextChangedSpy.at(0).at(0).toString(), QString(_redoText)); 
-        QCOMPARE(redoAction->text(), glue("bar", _redoText)); 
-        canRedoChangedSpy.clear(); 
-        redoTextChangedSpy.clear(); 
-    } else { 
-        QCOMPARE(canRedoChangedSpy.count(), 0); 
-        QCOMPARE(redoTextChangedSpy.count(), 0); 
+    QCOMPARE(stack.count(), _count);
+    QCOMPARE(stack.isClean(), _clean);
+    QCOMPARE(stack.index(), _index);
+    QCOMPARE(stack.canUndo(), _canUndo);
+    QCOMPARE(stack.undoText(), QString(_undoText));
+    QCOMPARE(stack.canRedo(), _canRedo);
+    QCOMPARE(stack.redoText(), QString(_redoText));
+    if (_indexChanged) {
+        QCOMPARE(indexChangedSpy.count(), 1);
+        QCOMPARE(indexChangedSpy.at(0).at(0).toInt(), _index);
+        indexChangedSpy.clear();
+    } else {
+        QCOMPARE(indexChangedSpy.count(), 0);
+    }
+    if (_cleanChanged) {
+        QCOMPARE(cleanChangedSpy.count(), 1);
+        QCOMPARE(cleanChangedSpy.at(0).at(0).toBool(), _clean);
+        cleanChangedSpy.clear();
+    } else {
+        QCOMPARE(cleanChangedSpy.count(), 0);
+    }
+    if (_undoChanged) {
+        QCOMPARE(canUndoChangedSpy.count(), 1);
+        QCOMPARE(canUndoChangedSpy.at(0).at(0).toBool(), _canUndo);
+        QCOMPARE(undoAction->isEnabled(), _canUndo);
+        QCOMPARE(undoTextChangedSpy.count(), 1);
+        QCOMPARE(undoTextChangedSpy.at(0).at(0).toString(), QString(_undoText));
+        QCOMPARE(undoAction->text(), glue("foo", _undoText));
+        canUndoChangedSpy.clear();
+        undoTextChangedSpy.clear();
+    } else {
+        QCOMPARE(canUndoChangedSpy.count(), 0);
+        QCOMPARE(undoTextChangedSpy.count(), 0);
+    }
+    if (_redoChanged) {
+        QCOMPARE(canRedoChangedSpy.count(), 1);
+        QCOMPARE(canRedoChangedSpy.at(0).at(0).toBool(), _canRedo);
+        QCOMPARE(redoAction->isEnabled(), _canRedo);
+        QCOMPARE(redoTextChangedSpy.count(), 1);
+        QCOMPARE(redoTextChangedSpy.at(0).at(0).toString(), QString(_redoText));
+        QCOMPARE(redoAction->text(), glue("bar", _redoText));
+        canRedoChangedSpy.clear();
+        redoTextChangedSpy.clear();
+    } else {
+        QCOMPARE(canRedoChangedSpy.count(), 0);
+        QCOMPARE(redoTextChangedSpy.count(), 0);
     }
 }
 

@@ -40,8 +40,8 @@
 
 //! [0]
 Q_PROPERTY(type name
-           READ getFunction
-           [WRITE setFunction]
+           (READ getFunction [WRITE setFunction] |
+            MEMBER memberName [(READ getFunction | WRITE setFunction)])
            [RESET resetFunction]
            [NOTIFY notifySignal]
            [REVISION int]
@@ -130,3 +130,20 @@ object->setProperty("priority", "VeryHigh");
 //! [7]
 Q_CLASSINFO("Version", "3.0.0")
 //! [7]
+
+//! [8]
+    Q_PROPERTY(QColor color MEMBER m_color NOTIFY colorChanged)
+    Q_PROPERTY(qreal spacing MEMBER m_spacing NOTIFY spacingChanged)
+    Q_PROPERTY(QString text MEMBER m_text NOTIFY textChanged)
+    ...
+signals:
+    void colorChanged();
+    void spacingChanged();
+    void textChanged(const QString &newText);
+
+private:
+    QColor  m_color;
+    qreal   m_spacing;
+    QString m_text;
+//! [8]
+

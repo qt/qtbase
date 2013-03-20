@@ -11,7 +11,7 @@ contains(QT_CONFIG, opengles1) {
 } else {
     INCLUDEPATH += $$QMAKE_INCDIR_OPENGL
     !isEmpty(QMAKE_LIBDIR_OPENGL):QMAKE_LIBDIR += $$QMAKE_LIBDIR_OPENGL
-    target_qt:LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_QT
+    target_qt:LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
     else:LIBS += $$QMAKE_LIBS_OPENGL
 }
 

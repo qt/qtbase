@@ -50,8 +50,8 @@ QImage scale(const QString &imageFileName)
     return image.scaled(QSize(imageSize, imageSize), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
-Images::Images(QWidget *parent) 
-: QWidget(parent)
+Images::Images(QWidget *parent)
+    : QWidget(parent)
 {
     setWindowTitle(tr("Image loading and scaling example"));
     resize(800, 600);
@@ -66,11 +66,11 @@ Images::Images(QWidget *parent)
     cancelButton = new QPushButton(tr("Cancel"));
     cancelButton->setEnabled(false);
     connect(cancelButton, SIGNAL(clicked()), imageScaling, SLOT(cancel()));
-   
+
     pauseButton = new QPushButton(tr("Pause/Resume"));
     pauseButton->setEnabled(false);
     connect(pauseButton, SIGNAL(clicked()), imageScaling, SLOT(togglePaused()));
-   
+
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(openButton);
     buttonLayout->addWidget(cancelButton);
@@ -101,7 +101,7 @@ void Images::open()
     }
 
     // Show a file open dialog at QStandardPaths::PicturesLocation.
-    QStringList files = QFileDialog::getOpenFileNames(this, tr("Select Images"), 
+    QStringList files = QFileDialog::getOpenFileNames(this, tr("Select Images"),
                             QStandardPaths::writableLocation(QStandardPaths::PicturesLocation),
                             "*.jpg *.png");
 
@@ -143,4 +143,3 @@ void Images::finished()
 }
 
 #endif // QT_NO_CONCURRENT
-

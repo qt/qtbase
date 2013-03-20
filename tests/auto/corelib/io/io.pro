@@ -14,12 +14,14 @@ SUBDIRS=\
     qfilesystemwatcher \
     qiodevice \
     qipaddress \
+    qlockfile \
     qnodebug \
     qprocess \
     qprocess-noapplication \
     qprocessenvironment \
     qresourceengine \
     qsettings \
+    qsavefile \
     qstandardpaths \
     qtemporarydir \
     qtemporaryfile \
@@ -33,6 +35,12 @@ SUBDIRS=\
     SUBDIRS -=\
         qwinoverlappedionotifier
 }
+
+!qtHaveModule(network): SUBDIRS -= \
+    qfile \
+    qiodevice \
+    qprocess \
+    qtextstream
 
 !contains(QT_CONFIG, private_tests): SUBDIRS -= \
     qabstractfileengine \

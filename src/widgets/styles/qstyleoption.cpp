@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -206,7 +206,7 @@ void QStyleOption::init(const QWidget *widget)
     if (!(state & QStyle::State_Active) && !qt_mac_can_clickThrough(widget))
         state &= ~QStyle::State_Enabled;
 #endif
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
     switch (QMacStyle::widgetSizePolicy(widget)) {
     case QMacStyle::SizeSmall:
         state |= QStyle::State_Small;
@@ -374,7 +374,7 @@ QStyleOption &QStyleOption::operator=(const QStyleOption &other)
     parameters for drawing a focus rectangle with QStyle.
 
     \inmodule QtWidgets
- 
+
     For performance reasons, the access to the member variables is
     direct (i.e., using the \c . or \c -> operator). This low-level feel
     makes the structures straightforward to use and emphasizes that
@@ -458,7 +458,7 @@ QStyleOptionFocusRect::QStyleOptionFocusRect(int version)
     parameters for drawing a frame.
 
     \inmodule QtWidgets
- 
+
     QStyleOptionFrame is used for drawing several built-in Qt widgets,
     including QFrame, QGroupBox, QLineEdit, and QMenu.
 
@@ -738,7 +738,7 @@ QStyleOptionGroupBox::QStyleOptionGroupBox(int version)
     parameters for drawing a header.
 
     \inmodule QtWidgets
- 
+
     QStyleOptionHeader contains all the information that QStyle
     functions need to draw the item views' header pane, header sort
     arrow, and header label.
@@ -925,7 +925,7 @@ QStyleOptionHeader::QStyleOptionHeader(int version)
     parameters for drawing buttons.
 
     \inmodule QtWidgets
- 
+
     QStyleOptionButton contains all the information that QStyle
     functions need to draw graphical elements like QPushButton,
     QCheckBox, and QRadioButton.
@@ -1237,7 +1237,7 @@ QStyleOptionToolBar::QStyleOptionToolBar(int version)
     parameters for drawing a tab bar.
 
     \inmodule QtWidgets
- 
+
     The QStyleOptionTab class is used for drawing several built-in Qt
     widgets including \l QTabBar and the panel for \l QTabWidget.
 
@@ -1662,7 +1662,7 @@ QStyleOptionProgressBar::QStyleOptionProgressBar(int version)
     parameter necessary for drawing a menu item.
 
     \inmodule QtWidgets
- 
+
     QStyleOptionMenuItem contains all the information that QStyle
     functions need to draw the menu items from \l QMenu. It is also
     used for drawing other menu-related widgets.
@@ -1862,7 +1862,7 @@ QStyleOptionMenuItem::QStyleOptionMenuItem(int version)
     common to all complex controls.
 
     \inmodule QtWidgets
- 
+
     This class is not used on its own. Instead it is used to derive
     other complex control options, for example QStyleOptionSlider and
     QStyleOptionSpinBox.
@@ -1953,7 +1953,7 @@ QStyleOptionComplex::QStyleOptionComplex(int version, int type)
     parameters needed for drawing a slider.
 
     \inmodule QtWidgets
- 
+
     QStyleOptionSlider contains all the information that QStyle
     functions need to draw QSlider and QScrollBar.
 
@@ -2152,7 +2152,7 @@ QStyleOptionSlider::QStyleOptionSlider(int version)
     parameters necessary for drawing a spin box.
 
     \inmodule QtWidgets
- 
+
     QStyleOptionSpinBox contains all the information that QStyle
     functions need to draw QSpinBox and QDateTimeEdit.
 
@@ -2257,7 +2257,7 @@ QStyleOptionSpinBox::QStyleOptionSpinBox(int version)
     parameters for drawing a dock widget.
 
     \inmodule QtWidgets
- 
+
     QStyleOptionDockWidget contains all the information that QStyle
     functions need to draw graphical elements like QDockWidget.
 

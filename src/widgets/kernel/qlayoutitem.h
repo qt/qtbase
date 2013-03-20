@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -47,12 +47,10 @@
 
 #include <limits.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
-static const int QLAYOUTSIZE_MAX = INT_MAX/256/16;
+static const Q_DECL_UNUSED int QLAYOUTSIZE_MAX = INT_MAX/256/16;
 
 class QLayout;
 class QLayoutItem;
@@ -179,7 +177,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QLAYOUTITEM_H

@@ -1200,6 +1200,19 @@ void tst_QDBusConnection::registerVirtualObject()
         QVERIFY(!con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
         QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
     }
+
+    {
+        // Register object, make sure no SubPath handling object can be registered on a parent path.
+        // (same as above, but deeper)
+        QObject objectAtSubPath;
+        QVERIFY(con.registerObject(childChildPath, &objectAtSubPath));
+        QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(&objectAtSubPath));
+
+        VirtualObject obj;
+        QVERIFY(!con.registerVirtualObject(path, &obj, QDBusConnection::SubPath));
+        QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
+    }
+
     QCOMPARE(con.objectRegisteredAt(path), static_cast<QObject *>(0));
     QCOMPARE(con.objectRegisteredAt(childPath), static_cast<QObject *>(0));
     QCOMPARE(con.objectRegisteredAt(childChildPath), static_cast<QObject *>(0));

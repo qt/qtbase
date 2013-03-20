@@ -64,7 +64,7 @@ void CustomProxy::paintWindowFrame(QPainter *painter, const QStyleOptionGraphics
                                    QWidget *widget)
 {
     const QColor color(0, 0, 0, 64);
-   
+
     QRectF r = windowFrameRect();
     QRectF right(r.right(), r.top() + 10, 10, r.height() - 10);
     QRectF bottom(r.left() + 10, r.bottom(), r.width(), 10);
@@ -159,7 +159,7 @@ void CustomProxy::zoomIn()
 {
     if (timeLine->direction() != QTimeLine::Forward)
         timeLine->setDirection(QTimeLine::Forward);
-    if (timeLine->state() == QTimeLine::NotRunning) 
+    if (timeLine->state() == QTimeLine::NotRunning)
         timeLine->start();
 }
 
@@ -167,6 +167,6 @@ void CustomProxy::zoomOut()
 {
     if (timeLine->direction() != QTimeLine::Backward)
         timeLine->setDirection(QTimeLine::Backward);
-    if (timeLine->state() == QTimeLine::NotRunning) 
+    if (timeLine->state() == QTimeLine::NotRunning)
         timeLine->start();
 }

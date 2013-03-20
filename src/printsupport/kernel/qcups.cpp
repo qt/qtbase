@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+extern double qt_multiplierForUnit(QPrinter::Unit unit, int resolution);
+
 typedef int (*CupsGetDests)(cups_dest_t **dests);
 typedef void (*CupsFreeDests)(int num_dests, cups_dest_t *dests);
 typedef const char* (*CupsGetPPD)(const char *printer);
@@ -499,6 +501,25 @@ QList<QPrinter::PaperSize> QCUPSSupport::getCupsPrinterPaperSizes(int cupsPrinte
     }
     return result;
 }
+
+QList<QPair<QString, QSizeF> > QCUPSSupport::getCupsPrinterPaperSizesWithNames(int cupsPrinterIndex)
+{
+    QList<QPair<QString, QSizeF> > result;
+    if (!QCUPSSupport::isAvailable() || cupsPrinterIndex < 0)
+        return result;
+    // Find paper sizes from CUPS.
+    QCUPSSupport cups;
+    cups.setCurrentPrinter(cupsPrinterIndex);
+    if (const ppd_option_t* size = cups.pageSizes()) {
+        for (int j = 0; j < size->num_choices; ++j) {
+            double multiplier = qt_multiplierForUnit(QPrinter::Millimeter, 0); // resolution is not needed here
+            QSize sz = cups.paperRect(size->choices[j].choice).size();
+            result.append(qMakePair(QString::fromUtf8(size->choices[j].text), QSizeF(sz.width() / multiplier, sz.height() / multiplier)));
+        }
+    }
+    return result;
+}
+
 
 QT_END_NAMESPACE
 

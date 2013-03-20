@@ -226,7 +226,7 @@ QClipboard::~QClipboard()
     the global clipboard.
 
     \value Selection  indicates that data should be stored and retrieved from
-    the global mouse selection. Support for \c Selection is provided only on 
+    the global mouse selection. Support for \c Selection is provided only on
     systems with a global mouse selection (e.g. X11).
 
     \value FindBuffer indicates that data should be stored and retrieved from
@@ -344,7 +344,7 @@ void QClipboard::setText(const QString &text, Mode mode)
     clipboard is used.  If \a mode is QClipboard::Clipboard, the
     image is retrieved from the global clipboard.  If \a mode is
     QClipboard::Selection, the image is retrieved from the global
-    mouse selection. 
+    mouse selection.
 
     \sa setImage(), pixmap(), mimeData(), QImage::isNull()
 */
@@ -459,7 +459,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
     \sa mimeData()
 */
 
-/*! 
+/*!
     \fn void QClipboard::clear(Mode mode)
     Clear the clipboard contents.
 
@@ -467,7 +467,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
     clipboard is used.  If \a mode is QClipboard::Clipboard, this
     function clears the global clipboard contents.  If \a mode is
     QClipboard::Selection, this function clears the global mouse
-    selection contents. If \a mode is QClipboard::FindBuffer, this 
+    selection contents. If \a mode is QClipboard::FindBuffer, this
     function clears the search string buffer.
 
     \sa QClipboard::Mode, supportsSelection()
@@ -521,21 +521,21 @@ bool QClipboard::ownsFindBuffer() const
     return ownsMode(FindBuffer);
 }
 
-/*! 
+/*!
     \internal
     \fn bool QClipboard::supportsMode(Mode mode) const;
     Returns true if the clipboard supports the clipboard mode speacified by \a mode;
     otherwise returns false.
 */
 
-/*! 
+/*!
     \internal
     \fn bool QClipboard::ownsMode(Mode mode) const;
     Returns true if the clipboard supports the clipboard data speacified by \a mode;
     otherwise returns false.
 */
 
-/*! 
+/*!
     \internal
     Emits the appropriate changed signal for \a mode.
 */

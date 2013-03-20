@@ -58,11 +58,11 @@ public:
 
     enum { Type = UserType + 2 };
     int type() const { return Type; }
-    
+
 protected:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    
+
 private:
     Node *source, *dest;
 

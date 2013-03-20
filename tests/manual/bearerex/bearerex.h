@@ -88,7 +88,7 @@ private Q_SLOTS:
     void configurationAdded(const QNetworkConfiguration& config);
     void configurationRemoved(const QNetworkConfiguration& config);
     void onlineStateChanged(bool isOnline);
-    void configurationChanged(const QNetworkConfiguration & config);     
+    void configurationChanged(const QNetworkConfiguration & config);
 
 private:
     QNetworkConfigurationManager m_NetworkConfigurationManager;
@@ -112,8 +112,8 @@ public:
     SessionTab(QNetworkConfiguration* apNetworkConfiguration = 0, QNetworkConfigurationManager* configManager = 0,
                QListWidget* eventListWidget = 0,  int index = 0, BearerEx* parent = 0);
     ~SessionTab();
-    
-    QString stateString(QNetworkSession::State state);    
+
+    QString stateString(QNetworkSession::State state);
 
 private Q_SLOTS:
     void on_createQNetworkAccessManagerButton_clicked();
@@ -125,7 +125,7 @@ private Q_SLOTS:
     void on_dataObjectChanged(const QString& newObjectType);
     void on_alrButton_clicked();
     void finished(quint32 errorCode, qint64 dataReceived, QString errorType);
-    
+
     void newConfigurationActivated();
     void preferredConfigurationChanged(const QNetworkConfiguration& config, bool isSeamless);
     void stateChanged(QNetworkSession::State state);

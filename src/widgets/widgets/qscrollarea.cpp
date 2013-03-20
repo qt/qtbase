@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -240,7 +240,7 @@ QWidget *QScrollArea::widget() const
     The \a widget becomes a child of the scroll area, and will be
     destroyed when the scroll area is deleted or when a new widget is
     set.
-    
+
     The widget's \l{QWidget::setAutoFillBackground()}{autoFillBackground}
     property will be set to \c{true}.
 

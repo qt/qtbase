@@ -58,7 +58,7 @@ MainWindow::MainWindow()
 void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
-    
+
     openAct = new QAction(tr("&Open..."), this);
     fileMenu->addAction(openAct);
     connect(openAct, SIGNAL(triggered()), this, SLOT(openFile()));
@@ -79,7 +79,7 @@ void MainWindow::createMenus()
     addAct = new QAction(tr("&Add Entry..."), this);
     toolMenu->addAction(addAct);
     connect(addAct, SIGNAL(triggered()), addressWidget, SLOT(addEntry()));
-    
+
 //! [1b]
     editAct = new QAction(tr("&Edit Entry..."), this);
     editAct->setEnabled(false);
@@ -120,7 +120,7 @@ void MainWindow::saveFile()
 void MainWindow::updateActions(const QItemSelection &selection)
 {
     QModelIndexList indexes = selection.indexes();
-    
+
     if (!indexes.isEmpty()) {
         removeAct->setEnabled(true);
         editAct->setEnabled(true);

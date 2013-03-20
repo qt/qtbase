@@ -94,10 +94,10 @@ int main(int argc, char **argv)
 
     if (!QDBusConnection::sessionBus().registerService(SERVICE_NAME)) {
         fprintf(stderr, "%s\n",
-                qPrintable(QDBusConnection::sessionBus().lastError().message()));        
+                qPrintable(QDBusConnection::sessionBus().lastError().message()));
         exit(1);
     }
-    
+
     app.exec();
     return 0;
 }

@@ -51,12 +51,22 @@ QT_BEGIN_NAMESPACE
 static bool containsTLDEntry(const QString &entry)
 {
     int index = qt_hash(entry) % tldCount;
-    int currentDomainIndex = tldIndices[index];
-    while (currentDomainIndex < tldIndices[index+1]) {
-        QString currentEntry = QString::fromUtf8(tldData + currentDomainIndex);
+
+    // select the right chunk from the big table
+    short chunk = 0;
+    uint chunkIndex = tldIndices[index], offset = 0;
+    while (tldIndices[index] >= tldChunks[chunk] && chunk < tldChunkCount) {
+        chunkIndex -= tldChunks[chunk];
+        offset += tldChunks[chunk];
+        chunk++;
+    }
+
+    // check all the entries from the given index
+    while (chunkIndex < tldIndices[index+1] - offset) {
+        QString currentEntry = QString::fromUtf8(tldData[chunk] + chunkIndex);
         if (currentEntry == entry)
             return true;
-        currentDomainIndex += qstrlen(tldData + currentDomainIndex) + 1; // +1 for the ending \0
+        chunkIndex += qstrlen(tldData[chunk] + chunkIndex) + 1; // +1 for the ending \0
     }
     return false;
 }

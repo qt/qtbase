@@ -50,8 +50,6 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qscopedpointer.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -425,8 +423,6 @@ private:
 #endif // QT_NO_XMLSTREAMWRITER
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_XMLSTREAM
 #endif // QXMLSTREAM_H

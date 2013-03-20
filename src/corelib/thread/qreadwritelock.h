@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -230,7 +228,5 @@ private:
 #endif // QT_NO_THREAD
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QREADWRITELOCK_H

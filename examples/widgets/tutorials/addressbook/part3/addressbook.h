@@ -65,16 +65,16 @@ public slots:
 //! [navigation functions]
     void next();
     void previous();
-//! [navigation functions]    
+//! [navigation functions]
 
 private:
     QPushButton *addButton;
     QPushButton *submitButton;
     QPushButton *cancelButton;
-//! [navigation pushbuttons]    
+//! [navigation pushbuttons]
     QPushButton *nextButton;
     QPushButton *previousButton;
-//! [navigation pushbuttons]    
+//! [navigation pushbuttons]
     QLineEdit *nameLine;
     QTextEdit *addressText;
 

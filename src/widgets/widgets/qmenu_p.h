@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -84,7 +84,8 @@ class QMenuPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QMenu)
 public:
     QMenuPrivate() : itemsDirty(0), maxIconWidth(0), tabWidth(0), ncols(0),
-                      collapsibleSeparators(true), activationRecursionGuard(false), hasHadMouse(0), aboutToHide(0), motions(0),
+                      collapsibleSeparators(true), toolTipsVisible(false),
+                      activationRecursionGuard(false), hasHadMouse(0), aboutToHide(0), motions(0),
                       currentAction(0),
 #ifdef QT_KEYPAD_NAVIGATION
                       selectAction(0),
@@ -123,6 +124,7 @@ public:
     QRect popupGeometry(int screen = -1) const;
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
+    uint toolTipsVisible : 1;
     QSize adjustMenuSizeForScreen(const QRect & screen);
     int getLastVisibleAction() const;
 

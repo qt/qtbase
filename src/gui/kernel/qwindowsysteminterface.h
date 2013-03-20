@@ -62,8 +62,6 @@
 #include <QtCore/QEventLoop>
 #include <QtGui/QVector2D>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QMimeData;
@@ -137,8 +135,11 @@ public:
     static void handleEnterEvent(QWindow *w, const QPointF &local = QPointF(), const QPointF& global = QPointF());
     static void handleLeaveEvent(QWindow *w);
     static void handleEnterLeaveEvent(QWindow *enter, QWindow *leave, const QPointF &local = QPointF(), const QPointF& global = QPointF());
-    static void handleWindowActivated(QWindow *w);
+    static void handleWindowActivated(QWindow *w, Qt::FocusReason r = Qt::OtherFocusReason);
+
     static void handleWindowStateChanged(QWindow *w, Qt::WindowState newState);
+
+    static void handleApplicationStateChanged(Qt::ApplicationState newState);
 
     static void handleExposeEvent(QWindow *tlw, const QRegion &region);
 
@@ -160,6 +161,7 @@ public:
     static void handleThemeChange(QWindow *tlw);
 
     static void handleFileOpenEvent(const QString& fileName);
+    static void handleFileOpenEvent(const QUrl &url);
 
     static void handleTabletEvent(QWindow *w, ulong timestamp, bool down, const QPointF &local, const QPointF &global,
                                   int device, int pointerType, qreal pressure, int xTilt, int yTilt,
@@ -185,12 +187,17 @@ public:
     static bool sendWindowSystemEvents(QEventLoop::ProcessEventsFlags flags);
     static void setSynchronousWindowsSystemEvents(bool enable);
     static void flushWindowSystemEvents();
+    static void deferredFlushWindowSystemEvents();
     static int windowSystemEventsQueued();
 
 private:
     static bool sendWindowSystemEventsImplementation(QEventLoop::ProcessEventsFlags flags);
 };
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QWindowSystemInterface::TouchPoint &p);
+#endif
+
 QT_END_NAMESPACE
-QT_END_HEADER
+
 #endif // QWINDOWSYSTEMINTERFACE_H

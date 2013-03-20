@@ -199,6 +199,17 @@ QPlatformServices *QPlatformIntegration::services() const
     \value MultipleWindows The platform supports multiple QWindows, i.e. does some kind
     of compositing either client or server side. Some platforms might only support a
     single fullscreen window.
+
+    \value ApplicationState The platform handles the application state explicitly.
+    This means that QEvent::ApplicationActivate and QEvent::ApplicationDeativate
+    will not be posted automatically. Instead, the platform must handle application
+    state explicitly by using QWindowSystemInterface::handleApplicationStateChanged().
+    If not set, application state will follow window activation, which is the normal
+    behavior for desktop platforms.
+
+    \value ForeignWindows The platform allows creating QWindows which represent
+    native windows created by other processes or anyway created by using native
+    libraries.
  */
 
 
@@ -358,6 +369,17 @@ class QPlatformTheme *QPlatformIntegration::createPlatformTheme(const QString &n
 {
     Q_UNUSED(name)
     return new QPlatformTheme;
+}
+
+/*!
+   Factory function for QOffscreenSurface. An offscreen surface will typically be implemented with a
+   pixel buffer (pbuffer). If the platform doesn't support offscreen surfaces, an invisible window
+   will be used by QOffscreenSurface instead.
+*/
+QPlatformOffscreenSurface *QPlatformIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const
+{
+    Q_UNUSED(surface)
+    return 0;
 }
 
 QT_END_NAMESPACE

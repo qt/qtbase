@@ -16,6 +16,12 @@ win32-g++*:QMAKE_CXXFLAGS_CXX11 = -std=gnu++0x
 
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 
+ANDROID_JAR_DEPENDENCIES = \
+    jar/QtAndroid.jar
+ANDROID_LIB_DEPENDENCIES = \
+    plugins/platforms/android/libqtforandroid.so \
+    libs/libgnustl_shared.so
+
 load(qt_module)
 
 include(animation/animation.pri)
@@ -63,10 +69,19 @@ ctest_macros_file.input = $$PWD/Qt5CTestMacros.cmake
 ctest_macros_file.output = $$DESTDIR/cmake/Qt5Core/Qt5CTestMacros.cmake
 ctest_macros_file.CONFIG = verbatim
 
-QMAKE_SUBSTITUTES += ctest_macros_file
+cmake_umbrella_config_file.input = $$PWD/Qt5Config.cmake.in
+cmake_umbrella_config_file.output = $$DESTDIR/cmake/Qt5/Qt5Config.cmake
+
+cmake_umbrella_config_version_file.input = $$PWD/../../mkspecs/features/data/cmake/Qt5ConfigVersion.cmake.in
+cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake
+
+cmake_qt5_umbrella_module_files.files = $$cmake_umbrella_config_file.output $$cmake_umbrella_config_version_file.output
+cmake_qt5_umbrella_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5
+
+QMAKE_SUBSTITUTES += ctest_macros_file cmake_umbrella_config_file cmake_umbrella_config_version_file
 
 ctest_qt5_module_files.files += $$ctest_macros_file.output
 
 ctest_qt5_module_files.path = $$[QT_INSTALL_LIBS]/cmake/Qt5Core
 
-INSTALLS += ctest_qt5_module_files
+INSTALLS += ctest_qt5_module_files cmake_qt5_umbrella_module_files

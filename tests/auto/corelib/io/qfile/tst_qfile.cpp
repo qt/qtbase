@@ -80,6 +80,12 @@ QT_END_NAMESPACE
 # include <sys/statfs.h>
 #elif defined(Q_OS_WINCE)
 # include <qplatformdefs.h>
+#elif defined(Q_OS_VXWORKS)
+# include <fcntl.h>
+#if defined(_WRS_KERNEL)
+#undef QT_OPEN
+#define QT_OPEN(path, oflag) ::open(path, oflag, 0)
+#endif
 #endif
 
 #ifdef Q_OS_QNX
@@ -487,11 +493,6 @@ void tst_QFile::open_data()
     QTest::addColumn<bool>("ok");
     QTest::addColumn<QFile::FileError>("status");
 
-#ifdef Q_OS_MAC
-    static const QString denied("Operation not permitted");
-#else
-    static const QString denied("Permission denied");
-#endif
     QTest::newRow( "exist_readOnly"  )
         << m_testFile << int(QIODevice::ReadOnly)
         << true << QFile::NoError;
@@ -551,7 +552,7 @@ void tst_QFile::open()
 
     QFETCH( bool, ok );
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
     if (::getuid() == 0)
         // root and Chuck Norris don't care for file permissions. Skip.
         QSKIP("Running this test as root doesn't make sense");
@@ -1321,7 +1322,7 @@ void tst_QFile::copyFallback()
     QVERIFY(QFile::exists("file-copy-destination.txt"));
     QVERIFY(!file.isOpen());
 
-    file.close(); 
+    file.close();
     QFile::setPermissions("file-copy-destination.txt",
             QFile::ReadOwner | QFile::WriteOwner);
 }
@@ -2248,7 +2249,7 @@ static QByteArray getLargeDataBlock()
 
     if (array.isNull())
     {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
         int resizeSize = 1024 * 1024; // WinCE does not have much space
 #else
         int resizeSize = 64 * 1024 * 1024;
@@ -2438,7 +2439,9 @@ void tst_QFile::rename()
 
 #if defined(Q_OS_UNIX)
     if (strcmp(QTest::currentDataTag(), "renamefile -> /etc/renamefile") == 0) {
+#if !defined(Q_OS_VXWORKS)
         if (::getuid() == 0)
+#endif
             QSKIP("Running this test as root doesn't make sense");
     }
 #endif
@@ -2925,8 +2928,8 @@ void tst_QFile::map()
     // exotic test to make sure that multiple maps work
 
     // note: windows ce does not reference count mutliple maps
-    // it's essentially just the same reference but it 
-    // cause a resource lock on the file which prevents it 
+    // it's essentially just the same reference but it
+    // cause a resource lock on the file which prevents it
     // from being removed    uchar *memory1 = file.map(0, file.size());
     uchar *memory1 = file.map(0, file.size());
     QCOMPARE(file.error(), QFile::NoError);
@@ -2947,6 +2950,7 @@ void tst_QFile::map()
 
     file.close();
 
+#if !defined(Q_OS_VXWORKS)
 #if defined(Q_OS_UNIX)
     if (::getuid() != 0)
         // root always has permissions
@@ -2961,6 +2965,7 @@ void tst_QFile::map()
         QVERIFY(!memory);
         QVERIFY(file.setPermissions(originalPermissions));
     }
+#endif
     QVERIFY(file.remove());
 }
 
@@ -3342,7 +3347,7 @@ void tst_QFile::autocloseHandle()
     {
         QFile file("readonlyfile");
         QVERIFY(openFile(file, QIODevice::ReadOnly, OpenStream, QFile::DontCloseHandle));
-        QCOMPARE(file.handle(), QT_FILENO(stream_));
+        QCOMPARE(file.handle(), int(QT_FILENO(stream_)));
         file.close();
         QCOMPARE(file.handle(), -1);
         //file is not closed, read should succeed

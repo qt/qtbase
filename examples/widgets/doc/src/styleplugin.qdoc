@@ -43,7 +43,7 @@
     from that class, and adding a macro. In this example we extend Qt
     by adding a new GUI look and feel (i.e., making a new QStyle
     available). A high-level introduction to plugins is given in the
-    plugin \l{How to Create Qt Plugins}{overview document}. 
+    plugin \l{How to Create Qt Plugins}{overview document}.
 
     Plugins that provide new styles inherit the QStylePlugin base
     class. Style plugins are loaded by Qt and made available through
@@ -72,7 +72,7 @@
     \section1 SimpleStylePlugin Class Definition
 
     \c SimpleStylePlugin inherits QStylePlugin and is the plugin
-    class. 
+    class.
 
     \snippet tools/styleplugin/plugin/simplestyleplugin.h 0
 

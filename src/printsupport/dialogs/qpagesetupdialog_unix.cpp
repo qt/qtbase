@@ -360,7 +360,7 @@ void QPageSetupWidget::setupPrinter() const
     else {
         m_printer->setPaperSize(static_cast<QPrinter::PaperSize>(ps));
     }
-
+    m_printer->setPaperName(widget.paperSize->currentText());
 #ifdef PSD_ENABLE_PAPERSOURCE
     m_printer->setPaperSource((QPrinter::PaperSource)widget.paperSource->currentIndex());
 #endif
@@ -380,16 +380,22 @@ void QPageSetupWidget::selectPrinter()
 
         int cupsDefaultSize = 0;
         QSize qtPreferredSize = m_printer->paperSize(QPrinter::Point).toSize();
+        QString qtPaperName = m_printer->paperName();
         bool preferredSizeMatched = false;
         for (int i = 0; i < numChoices; ++i) {
             widget.paperSize->addItem(QString::fromLocal8Bit(pageSizes->choices[i].text), QByteArray(pageSizes->choices[i].choice));
             if (static_cast<int>(pageSizes->choices[i].marked) == 1)
                 cupsDefaultSize = i;
-            QRect cupsPaperSize = cups.paperRect(pageSizes->choices[i].choice);
-            QSize diff = cupsPaperSize.size() - qtPreferredSize;
-            if (qAbs(diff.width()) < 5 && qAbs(diff.height()) < 5) {
+            if (qtPaperName == QString::fromLocal8Bit(pageSizes->choices[i].text)) {
                 widget.paperSize->setCurrentIndex(i);
                 preferredSizeMatched = true;
+            } else {
+                QRect cupsPaperSize = cups.paperRect(pageSizes->choices[i].choice);
+                QSize diff = cupsPaperSize.size() - qtPreferredSize;
+                if (qAbs(diff.width()) < 5 && qAbs(diff.height()) < 5) {
+                    widget.paperSize->setCurrentIndex(i);
+                    preferredSizeMatched = true;
+                }
             }
         }
         if (!preferredSizeMatched)
@@ -452,7 +458,7 @@ void QPageSetupWidget::_q_paperSizeChanged()
     bool custom = size == QPrinter::Custom;
 
 #if !defined(QT_NO_CUPS) && !defined(QT_NO_LIBRARY)
-    custom = custom ? m_cups : custom;
+    custom = custom && m_cups && (m_printer->paperName() == QLatin1String("Custom"));
 #endif
 
     widget.paperWidth->setEnabled(custom);

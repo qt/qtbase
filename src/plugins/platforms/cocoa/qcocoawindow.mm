@@ -420,6 +420,8 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         NSInteger level = this->windowLevel(flags);
         [m_nsWindow setStyleMask:styleMask];
         [m_nsWindow setLevel:level];
+        [m_nsWindow setIgnoresMouseEvents:((flags & Qt::ToolTip) == Qt::ToolTip) ? YES : NO];
+        // TODO deal with WindowTransparentForInput; setIgnoresMouseEvents is too extreme, you can't click the titlebar
         setWindowShadow(flags);
     }
 
@@ -534,20 +536,30 @@ void QCocoaWindow::propagateSizeHints()
     }
 }
 
+void QCocoaWindow::updateOpaque()
+{
+    bool translucent = window()->format().alphaBufferSize() > 0
+            || window()->opacity() < 1
+            || (m_contentView && [m_contentView hasMask]);
+    [m_nsWindow setOpaque:!translucent];
+}
+
+
 void QCocoaWindow::setOpacity(qreal level)
 {
-    if (m_nsWindow)
+    if (m_nsWindow) {
         [m_nsWindow setAlphaValue:level];
+        updateOpaque();
+    }
 }
 
 void QCocoaWindow::setMask(const QRegion &region)
 {
-    if (m_nsWindow) {
-        [m_nsWindow setOpaque:NO];
+    if (m_nsWindow)
         [m_nsWindow setBackgroundColor:[NSColor clearColor]];
-    }
 
     [m_qtView setMaskRegion:&region];
+    updateOpaque();
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)
@@ -691,6 +703,13 @@ void QCocoaWindow::recreateWindow(const QPlatformWindow *parentWindow)
         setOpacity(opacity);
 }
 
+void QCocoaWindow::requestActivateWindow()
+{
+    NSWindow *window = [m_contentView window];
+    [ window makeFirstResponder : m_contentView ];
+    [ window makeKeyWindow ];
+}
+
 NSWindow * QCocoaWindow::createNSWindow()
 {
     QCocoaAutoReleasePool pool;
@@ -753,6 +772,12 @@ NSWindow * QCocoaWindow::createNSWindow()
 
     NSInteger level = windowLevel(flags);
     [createdWindow setLevel:level];
+
+    if (window()->format().alphaBufferSize() > 0) {
+        [createdWindow setBackgroundColor:[NSColor clearColor]];
+        [createdWindow setOpaque:NO];
+    }
+
     m_windowModality = window()->modality();
     return createdWindow;
 }

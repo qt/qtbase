@@ -53,7 +53,7 @@ TextEdit::TextEdit(QWidget *parent)
 : QTextEdit(parent), c(0)
 {
     setPlainText(tr("This TextEdit provides autocompletions for words that have more than"
-                    " 3 characters. You can trigger autocompletion using ") + 
+                    " 3 characters. You can trigger autocompletion using ") +
                     QKeySequence("Ctrl+E").toString(QKeySequence::NativeText));
 }
 //! [0]
@@ -133,7 +133,7 @@ void TextEdit::keyPressEvent(QKeyEvent *e)
        case Qt::Key_Escape:
        case Qt::Key_Tab:
        case Qt::Key_Backtab:
-            e->ignore(); 
+            e->ignore();
             return; // let the completer do default behavior
        default:
            break;
@@ -154,7 +154,7 @@ void TextEdit::keyPressEvent(QKeyEvent *e)
     bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
     QString completionPrefix = textUnderCursor();
 
-    if (!isShortcut && (hasModifier || e->text().isEmpty()|| completionPrefix.length() < 3 
+    if (!isShortcut && (hasModifier || e->text().isEmpty()|| completionPrefix.length() < 3
                       || eow.contains(e->text().right(1)))) {
         c->popup()->hide();
         return;

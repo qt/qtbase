@@ -263,6 +263,132 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QChar::Script
+    \since 5.1
+
+    This enum type defines the Unicode script property values.
+
+    For details about the Unicode script property values see
+    \l{http://www.unicode.org/reports/tr24/}{Unicode Standard Annex #24}.
+
+    In order to conform to C/C++ naming conventions "Script_" is prepended
+    to the codes used in the Unicode Standard.
+
+    \value Script_Unknown    For unassigned, private-use, noncharacter, and surrogate code points.
+    \value Script_Inherited  For characters that may be used with multiple scripts
+                             and that inherit their script from the preceding characters.
+                             These include nonspacing marks, enclosing marks,
+                             and zero width joiner/non-joiner characters.
+    \value Script_Common     For characters that may be used with multiple scripts
+                             and that do not inherit their script from the preceding characters.
+
+    \value Script_Latin
+    \value Script_Greek
+    \value Script_Cyrillic
+    \value Script_Armenian
+    \value Script_Hebrew
+    \value Script_Arabic
+    \value Script_Syriac
+    \value Script_Thaana
+    \value Script_Devanagari
+    \value Script_Bengali
+    \value Script_Gurmukhi
+    \value Script_Gujarati
+    \value Script_Oriya
+    \value Script_Tamil
+    \value Script_Telugu
+    \value Script_Kannada
+    \value Script_Malayalam
+    \value Script_Sinhala
+    \value Script_Thai
+    \value Script_Lao
+    \value Script_Tibetan
+    \value Script_Myanmar
+    \value Script_Georgian
+    \value Script_Hangul
+    \value Script_Ethiopic
+    \value Script_Cherokee
+    \value Script_CanadianAboriginal
+    \value Script_Ogham
+    \value Script_Runic
+    \value Script_Khmer
+    \value Script_Mongolian
+    \value Script_Hiragana
+    \value Script_Katakana
+    \value Script_Bopomofo
+    \value Script_Han
+    \value Script_Yi
+    \value Script_OldItalic
+    \value Script_Gothic
+    \value Script_Deseret
+    \value Script_Tagalog
+    \value Script_Hanunoo
+    \value Script_Buhid
+    \value Script_Tagbanwa
+    \value Script_Coptic
+    \value Script_Limbu
+    \value Script_TaiLe
+    \value Script_LinearB
+    \value Script_Ugaritic
+    \value Script_Shavian
+    \value Script_Osmanya
+    \value Script_Cypriot
+    \value Script_Braille
+    \value Script_Buginese
+    \value Script_NewTaiLue
+    \value Script_Glagolitic
+    \value Script_Tifinagh
+    \value Script_SylotiNagri
+    \value Script_OldPersian
+    \value Script_Kharoshthi
+    \value Script_Balinese
+    \value Script_Cuneiform
+    \value Script_Phoenician
+    \value Script_PhagsPa
+    \value Script_Nko
+    \value Script_Sundanese
+    \value Script_Lepcha
+    \value Script_OlChiki
+    \value Script_Vai
+    \value Script_Saurashtra
+    \value Script_KayahLi
+    \value Script_Rejang
+    \value Script_Lycian
+    \value Script_Carian
+    \value Script_Lydian
+    \value Script_Cham
+    \value Script_TaiTham
+    \value Script_TaiViet
+    \value Script_Avestan
+    \value Script_EgyptianHieroglyphs
+    \value Script_Samaritan
+    \value Script_Lisu
+    \value Script_Bamum
+    \value Script_Javanese
+    \value Script_MeeteiMayek
+    \value Script_ImperialAramaic
+    \value Script_OldSouthArabian
+    \value Script_InscriptionalParthian
+    \value Script_InscriptionalPahlavi
+    \value Script_OldTurkic
+    \value Script_Kaithi
+    \value Script_Batak
+    \value Script_Brahmi
+    \value Script_Mandaic
+    \value Script_Chakma
+    \value Script_MeroiticCursive
+    \value Script_MeroiticHieroglyphs
+    \value Script_Miao
+    \value Script_Sharada
+    \value Script_SoraSompeng
+    \value Script_Takri
+
+    \omitvalue ScriptCount
+
+    \sa script()
+*/
+
+/*!
     \enum QChar::Direction
 
     This enum type defines the Unicode direction attributes. See the
@@ -1156,6 +1282,27 @@ unsigned char QChar::combiningClass(uint ucs4)
     if (ucs4 > LastValidCodePoint)
         return 0;
     return (unsigned char) qGetProp(ucs4)->combiningClass;
+}
+
+/*!
+    \fn QChar::Script QChar::script() const
+    \since 5.1
+
+    Returns the Unicode script property value for this character.
+*/
+
+/*!
+    \overload
+    \since 5.1
+
+    Returns the Unicode script property value for the character specified in
+    its UCS-4-encoded form as \a ucs4.
+*/
+QChar::Script QChar::script(uint ucs4)
+{
+    if (ucs4 > LastValidCodePoint)
+        return QChar::Script_Unknown;
+    return (QChar::Script) qGetProp(ucs4)->script;
 }
 
 /*!

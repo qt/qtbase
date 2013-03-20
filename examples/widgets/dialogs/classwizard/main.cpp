@@ -48,7 +48,7 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(classwizard);
-    
+
     QApplication app(argc, argv);
 
 #ifndef QT_NO_TRANSLATION

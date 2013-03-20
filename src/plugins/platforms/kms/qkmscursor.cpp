@@ -48,22 +48,17 @@ QT_BEGIN_NAMESPACE
 QKmsCursor::QKmsCursor(QKmsScreen *screen)
     : m_screen(screen),
       m_graphicsBufferManager(screen->device()->gbmDevice()),
+      m_cursorBufferObject(gbm_bo_create(m_graphicsBufferManager, 64, 64, GBM_FORMAT_ARGB8888,
+                                         GBM_BO_USE_CURSOR_64X64|GBM_BO_USE_WRITE)),
+      m_cursorImage(new QPlatformCursorImage(0, 0, 0, 0, 0, 0)),
       m_moved(false)
 {
-    gbm_bo *bo = gbm_bo_create(m_graphicsBufferManager, 64, 64,
-                               GBM_BO_FORMAT_ARGB8888,
-                               GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_RENDERING);
-
-    m_eglImage = eglCreateImageKHR(m_screen->device()->eglDisplay(), 0, EGL_NATIVE_PIXMAP_KHR,
-                                   bo, 0);
-    gbm_bo_destroy(bo);
-    m_cursorImage = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
 }
 
 QKmsCursor::~QKmsCursor()
 {
-    drmModeSetCursor(m_screen->device()->fd(), m_screen->crtcId(),
-                     0, 0, 0);
+    drmModeSetCursor(m_screen->device()->fd(), m_screen->crtcId(), 0, 0, 0);
+    gbm_bo_destroy(m_cursorBufferObject);
 }
 
 void QKmsCursor::pointerEvent(const QMouseEvent &event)
@@ -78,57 +73,30 @@ void QKmsCursor::pointerEvent(const QMouseEvent &event)
     }
 }
 
-void QKmsCursor::changeCursor(QCursor *widgetCursor, QWindow *window)
+void QKmsCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
     Q_UNUSED(window)
 
     if (!m_moved)
         drmModeMoveCursor(m_screen->device()->fd(), m_screen->crtcId(), 0, 0);
 
-    if (widgetCursor->shape() != Qt::BitmapCursor) {
-        m_cursorImage->set(widgetCursor->shape());
+    const Qt::CursorShape newShape = windowCursor ? windowCursor->shape() : Qt::ArrowCursor;
+    if (newShape != Qt::BitmapCursor) {
+        m_cursorImage->set(newShape);
     } else {
-        m_cursorImage->set(widgetCursor->pixmap().toImage(),
-                           widgetCursor->hotSpot().x(),
-                           widgetCursor->hotSpot().y());
+        m_cursorImage->set(windowCursor->pixmap().toImage(),
+                           windowCursor->hotSpot().x(),
+                           windowCursor->hotSpot().y());
     }
 
-    if ((m_cursorImage->image()->width() > 64) || (m_cursorImage->image()->width() > 64)) {
-        qWarning("failed to set hardware cursor: larger than 64x64.");
-        return;
-    }
+    if ((m_cursorImage->image()->width() > 64) || (m_cursorImage->image()->width() > 64))
+        qWarning("Warning: cursor larger than 64x64; only 64x64 pixels will be shown.");
 
-    QImage cursorImage = m_cursorImage->image()->convertToFormat(QImage::Format_RGB32);
+    QImage cursorImage = m_cursorImage->image()->
+            convertToFormat(QImage::Format_ARGB32).copy(0, 0, 64, 64);
+    gbm_bo_write(m_cursorBufferObject, cursorImage.constBits(), cursorImage.byteCount());
 
-    //Load cursor image into EGLImage
-    GLuint cursorTexture;
-    glGenTextures(1, &cursorTexture);
-    glBindTexture(GL_TEXTURE_2D, cursorTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-    //TODO: Format may be wrong here, need a color icon to test.
-    if (m_eglImage != EGL_NO_IMAGE_KHR) {
-        glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, cursorImage.width(),
-                        cursorImage.height(), GL_RGBA,
-                        GL_UNSIGNED_BYTE, cursorImage.constBits());
-    } else {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cursorImage.width(),
-                     cursorImage.height(), 0, GL_RGBA,
-                     GL_UNSIGNED_BYTE, cursorImage.constBits());
-    }
-
-    //EGLImage needs to contain sprite before calling this:
-    gbm_bo *bufferObject = gbm_bo_import(m_graphicsBufferManager, GBM_BO_IMPORT_EGL_IMAGE,
-                                         m_eglImage, GBM_BO_USE_CURSOR_64X64);
-    quint32 handle = gbm_bo_get_handle(bufferObject).u32;
-
-    gbm_bo_destroy(bufferObject);
-
+    quint32 handle = gbm_bo_get_handle(m_cursorBufferObject).u32;
     int status = drmModeSetCursor(m_screen->device()->fd(),
                                   m_screen->crtcId(), handle, 64, 64);
 

@@ -46,8 +46,6 @@
 #include <QString>
 #include <QThread>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QEvdevTabletData;
@@ -81,7 +79,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QEVDEVTABLET_P_H

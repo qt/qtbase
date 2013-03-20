@@ -46,7 +46,6 @@
 
 #ifndef QT_NO_QFUTURE
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -81,7 +80,7 @@ public:
                  m_futures[i].cancel();
             }
         }
-        
+
         for (int i = 0; i < m_futures.count(); ++i) {
              m_futures[i].waitForFinished();
          }
@@ -113,8 +112,6 @@ protected:
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #endif // QT_NO_QFUTURE
 
 #endif // QFUTURESYNCHRONIZER_H

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -198,6 +199,14 @@ public:
     inline void connectNotify(const QMetaMethod &signal);
     inline void disconnectNotify(const QMetaMethod &signal);
 
+    template <typename Func1, typename Func2>
+    static inline QMetaObject::Connection connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
+                                                  const typename QtPrivate::FunctionPointer<Func2>::Object *receiverPrivate, Func2 slot,
+                                                  Qt::ConnectionType type = Qt::AutoConnection);
+
+    template <typename Func1, typename Func2>
+    static inline bool disconnect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
+                                  const typename QtPrivate::FunctionPointer<Func2>::Object *receiverPrivate, Func2 slot);
 public:
     ExtraData *extraData;    // extra data set by the user
     QThreadData *threadData; // id of the thread that owns the object
@@ -267,6 +276,74 @@ inline void QObjectPrivate::disconnectNotify(const QMetaMethod &signal)
     q_ptr->disconnectNotify(signal);
 }
 
+namespace QtPrivate {
+template<typename Func, typename Args, typename R> class QPrivateSlotObject : public QSlotObjectBase
+{
+    typedef QtPrivate::FunctionPointer<Func> FuncType;
+    Func function;
+    static void impl(int which, QSlotObjectBase *this_, QObject *r, void **a, bool *ret)
+    {
+        switch (which) {
+            case Destroy:
+                delete static_cast<QPrivateSlotObject*>(this_);
+                break;
+            case Call:
+                FuncType::template call<Args, R>(static_cast<QPrivateSlotObject*>(this_)->function,
+                                                 static_cast<typename FuncType::Object *>(QObjectPrivate::get(r)), a);
+                break;
+            case Compare:
+                *ret = *reinterpret_cast<Func *>(a) == static_cast<QPrivateSlotObject*>(this_)->function;
+                break;
+            case NumOperations: ;
+        }
+    }
+public:
+    explicit QPrivateSlotObject(Func f) : QSlotObjectBase(&impl), function(f) {}
+};
+} //namespace QtPrivate
+
+template <typename Func1, typename Func2>
+inline QMetaObject::Connection QObjectPrivate::connect(const typename QtPrivate::FunctionPointer<Func1>::Object *sender, Func1 signal,
+                                                       const typename QtPrivate::FunctionPointer<Func2>::Object *receiverPrivate, Func2 slot,
+                                                       Qt::ConnectionType type)
+{
+    typedef QtPrivate::FunctionPointer<Func1> SignalType;
+    typedef QtPrivate::FunctionPointer<Func2> SlotType;
+    reinterpret_cast<typename SignalType::Object *>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<typename SignalType::Object *>(0));
+
+    //compilation error if the arguments does not match.
+    Q_STATIC_ASSERT_X(int(SignalType::ArgumentCount) >= int(SlotType::ArgumentCount),
+                      "The slot requires more arguments than the signal provides.");
+    Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
+                      "Signal and slot arguments are not compatible.");
+    Q_STATIC_ASSERT_X((QtPrivate::AreArgumentsCompatible<typename SlotType::ReturnType, typename SignalType::ReturnType>::value),
+                      "Return type of the slot is not compatible with the return type of the signal.");
+
+    const int *types = 0;
+    if (type == Qt::QueuedConnection || type == Qt::BlockingQueuedConnection)
+        types = QtPrivate::ConnectionTypes<typename SignalType::Arguments>::types();
+
+    return QObject::connectImpl(sender, reinterpret_cast<void **>(&signal),
+        receiverPrivate->q_func(), reinterpret_cast<void **>(&slot),
+        new QtPrivate::QPrivateSlotObject<Func2, typename QtPrivate::List_Left<typename SignalType::Arguments, SlotType::ArgumentCount>::Value,
+                                        typename SignalType::ReturnType>(slot),
+        type, types, &SignalType::Object::staticMetaObject);
+}
+
+template <typename Func1, typename Func2>
+bool QObjectPrivate::disconnect(const typename QtPrivate::FunctionPointer< Func1 >::Object* sender, Func1 signal,
+                                const typename QtPrivate::FunctionPointer< Func2 >::Object* receiverPrivate, Func2 slot)
+{
+    typedef QtPrivate::FunctionPointer<Func1> SignalType;
+    typedef QtPrivate::FunctionPointer<Func2> SlotType;
+    reinterpret_cast<typename SignalType::Object *>(0)->qt_check_for_QOBJECT_macro(*reinterpret_cast<typename SignalType::Object *>(0));
+    //compilation error if the arguments does not match.
+    Q_STATIC_ASSERT_X((QtPrivate::CheckCompatibleArguments<typename SignalType::Arguments, typename SlotType::Arguments>::value),
+                      "Signal and slot arguments are not compatible.");
+    return QObject::disconnectImpl(sender, reinterpret_cast<void **>(&signal),
+                          receiverPrivate->q_func(), reinterpret_cast<void **>(&slot),
+                          &SignalType::Object::staticMetaObject);
+}
 
 Q_DECLARE_TYPEINFO(QObjectPrivate::Connection, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QObjectPrivate::Sender, Q_MOVABLE_TYPE);

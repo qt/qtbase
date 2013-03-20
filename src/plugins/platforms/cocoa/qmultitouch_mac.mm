@@ -42,8 +42,6 @@
 #include "qmultitouch_mac_p.h"
 #include "qcocoahelpers.h"
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
-
 QT_BEGIN_NAMESPACE
 
 QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
@@ -214,6 +212,3 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
 }
 
 QT_END_NAMESPACE
-
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
-

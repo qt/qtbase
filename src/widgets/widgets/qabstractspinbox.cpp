@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -825,14 +825,13 @@ QSize QAbstractSpinBox::sizeHint() const
         ensurePolished();
 
         const QFontMetrics fm(fontMetrics());
-        int h = d->edit->sizeHint().height() + 4;
+        int h = d->edit->sizeHint().height();
         int w = 0;
         QString s;
-        s = d->prefix + d->textFromValue(d->minimum) + d->suffix + QLatin1Char(' ');
-        s.truncate(18);
+        QString fixedContent =  d->prefix + d->suffix + QLatin1Char(' ');
+        s = d->textFromValue(d->minimum) + fixedContent;
         w = qMax(w, fm.width(s));
-        s = d->prefix + d->textFromValue(d->maximum) + d->suffix + QLatin1Char(' ');
-        s.truncate(18);
+        s = d->textFromValue(d->maximum) + fixedContent;
         w = qMax(w, fm.width(s));
         if (d->specialValueText.size()) {
             s = d->specialValueText;
@@ -857,27 +856,29 @@ QSize QAbstractSpinBox::minimumSizeHint() const
 {
     Q_D(const QAbstractSpinBox);
     if (d->cachedMinimumSizeHint.isEmpty()) {
+        //Use the prefix and range to calculate the minimumSizeHint
         ensurePolished();
 
         const QFontMetrics fm(fontMetrics());
         int h = d->edit->minimumSizeHint().height();
-        int w = fm.width(QLatin1String("1000"));
+        int w = 0;
+
+        QString s;
+        QString fixedContent =  d->prefix + QLatin1Char(' ');
+        s = d->textFromValue(d->minimum) + fixedContent;
+        w = qMax(w, fm.width(s));
+        s = d->textFromValue(d->maximum) + fixedContent;
+        w = qMax(w, fm.width(s));
+
+        if (d->specialValueText.size()) {
+            s = d->specialValueText;
+            w = qMax(w, fm.width(s));
+        }
         w += 2; // cursor blinking space
 
         QStyleOptionSpinBox opt;
         initStyleOption(&opt);
         QSize hint(w, h);
-        QSize extra(35, 6);
-        opt.rect.setSize(hint + extra);
-        extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
-                                                QStyle::SC_SpinBoxEditField, this).size();
-        // get closer to final result by repeating the calculation
-        opt.rect.setSize(hint + extra);
-        extra += hint - style()->subControlRect(QStyle::CC_SpinBox, &opt,
-                                                QStyle::SC_SpinBoxEditField, this).size();
-        hint += extra;
-
-        opt.rect = rect();
 
         d->cachedMinimumSizeHint = style()->sizeFromContents(QStyle::CT_SpinBox, &opt, hint, this)
                                    .expandedTo(QApplication::globalStrut());
@@ -1724,7 +1725,8 @@ void QAbstractSpinBoxPrivate::setRange(const QVariant &min, const QVariant &max)
     clearCache();
     minimum = min;
     maximum = (variantCompare(min, max) < 0 ? max : min);
-    cachedSizeHint = QSize(); // minimumSizeHint doesn't care about min/max
+    cachedSizeHint = QSize();
+    cachedMinimumSizeHint = QSize(); // minimumSizeHint cares about min/max
 
     reset();
     if (!(bound(value) == value)) {

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -46,8 +46,6 @@
 #include <QtCore/qstring.h>
 #include <QtGui/qpixmap.h>
 #include <QtCore/qvariant.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -109,7 +107,5 @@ private:
 #endif // QT_NO_ITEMVIEWS
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSTYLEDITEMDELEGATE_H

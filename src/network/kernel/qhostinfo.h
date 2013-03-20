@@ -46,8 +46,6 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qhostaddress.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -97,7 +95,5 @@ private:
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QHostInfo)
-
-QT_END_HEADER
 
 #endif // QHOSTINFO_H

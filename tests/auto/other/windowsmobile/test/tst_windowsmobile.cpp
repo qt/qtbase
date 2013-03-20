@@ -133,7 +133,7 @@ void compareScreenshots(const QString &image1, const QString &image2)
     QPainter p1(&screenShot);
     QPainter p2(&original);
 
-    //screenShot.save("scr1.png", "PNG");    
+    //screenShot.save("scr1.png", "PNG");
     p1.fillRect(0, 0, desktopFrameRect.width(), desktopClientRect.y(), Qt::black);
     p2.fillRect(0, 0, desktopFrameRect.width(), desktopClientRect.y(), Qt::black);
 

@@ -44,8 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -107,7 +105,5 @@ Q_OUTOFLINE_TEMPLATE QPair<T1, T2> qMakePair(const T1 &x, const T2 &y)
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPAIR_H

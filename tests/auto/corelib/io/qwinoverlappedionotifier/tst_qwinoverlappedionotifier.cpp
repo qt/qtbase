@@ -251,21 +251,24 @@ void tst_QWinOverlappedIoNotifier::multipleOperations()
 
     // start async read on client
     QByteArray clientReadBuffer(377, Qt::Uninitialized);
-    OVERLAPPED clientReadOverlapped = {0};
+    OVERLAPPED clientReadOverlapped;
+    ZeroMemory(&clientReadOverlapped, sizeof(clientReadOverlapped));
     BOOL readSuccess = ReadFile(hClient, clientReadBuffer.data(), clientReadBuffer.size(),
                                 NULL, &clientReadOverlapped);
     QVERIFY(readSuccess || GetLastError() == ERROR_IO_PENDING);
 
     // start async write client -> server
     QByteArray clientDataToWrite(233, 'B');
-    OVERLAPPED clientWriteOverlapped = {0};
+    OVERLAPPED clientWriteOverlapped;
+    ZeroMemory(&clientWriteOverlapped, sizeof(clientWriteOverlapped));
     BOOL writeSuccess = WriteFile(hClient, clientDataToWrite.data(), clientDataToWrite.size(),
                              NULL, &clientWriteOverlapped);
     QVERIFY(writeSuccess || GetLastError() == ERROR_IO_PENDING);
 
     // start async write server -> client
     QByteArray serverDataToWrite(144, 'A');
-    OVERLAPPED serverOverlapped = {0};
+    OVERLAPPED serverOverlapped;
+    ZeroMemory(&serverOverlapped, sizeof(serverOverlapped));
     writeSuccess = WriteFile(hServer, serverDataToWrite.data(), serverDataToWrite.size(),
                                   NULL, &serverOverlapped);
     QVERIFY(writeSuccess || GetLastError() == ERROR_IO_PENDING);
@@ -284,9 +287,9 @@ void tst_QWinOverlappedIoNotifier::multipleOperations()
     QTRY_COMPARE(sink.notifications.count(), 2);
     foreach (const NotifierSink::IOResult &r, sink.notifications) {
         QCOMPARE(r.errorCode, DWORD(ERROR_SUCCESS));
-        if (r.bytes == serverDataToWrite.count())
+        if (r.bytes == DWORD(serverDataToWrite.count()))
             QCOMPARE(r.overlapped, &clientReadOverlapped);
-        else if (r.bytes == clientDataToWrite.count())
+        else if (r.bytes == DWORD(clientDataToWrite.count()))
             QCOMPARE(r.overlapped, &clientWriteOverlapped);
         else
             QVERIFY2(false, "Unexpected number of bytes received.");

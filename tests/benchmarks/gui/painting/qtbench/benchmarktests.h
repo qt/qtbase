@@ -487,7 +487,7 @@ public:
         m_pixmaps.clear();
         m_currentPixmap = 0;
         QRect m_bounds = QRect(0,0,p->device()->width(), p->device()->height());
-        switch (m_mode) {          
+        switch (m_mode) {
         case PainterMode:
             m_size = (p->boundingRect(m_bounds, 0, m_text)).size();
 //            m_rect = m_rect.translated(-m_rect.topLeft());

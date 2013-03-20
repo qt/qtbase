@@ -53,6 +53,6 @@ int main()
         if (msg.message == WM_CLOSE)
             PostQuitMessage(0);
     }
-    
+
     return int(msg.wParam);
 }

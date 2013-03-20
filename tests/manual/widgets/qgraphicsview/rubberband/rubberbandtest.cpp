@@ -60,11 +60,12 @@ public:
 
 class MyGraphicsView : public QGraphicsView
 {
-
+    Q_OBJECT
 public:
-    MyGraphicsView() : QGraphicsView()
+    MyGraphicsView(QWidget *w, QLabel *l) : QGraphicsView(w), rubberbandLabel(l)
     {
         setDragMode(QGraphicsView::RubberBandDrag);
+        connect(this, SIGNAL(rubberBandChanged(QRect, QPointF, QPointF)), this, SLOT(updateRubberbandInfo(QRect, QPointF, QPointF)));
     }
 protected:
     void mouseMoveEvent(QMouseEvent *event)
@@ -81,26 +82,46 @@ protected:
         if (yglobal > bottomPos)
             verticalScrollBar()->setValue(verticalScrollBar()->value() + 10);
     }
+
+protected slots:
+    void updateRubberbandInfo(QRect r, QPointF from, QPointF to)
+    {
+        QString textToShow;
+        QDebug s(&textToShow);
+        s << r << from << to;
+        rubberbandLabel->setText(textToShow);
+    }
+protected:
+    QLabel *rubberbandLabel;
 };
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    MyGraphicsView v;
+
+    QWidget w;
+    w.setLayout(new QVBoxLayout);
+    QLabel *l = new QLabel(&w);
+    MyGraphicsView *v = new MyGraphicsView(&w, l);
+
+    w.layout()->addWidget(v);
+    w.layout()->addWidget(l);
 
     QGraphicsScene s(0.0, 0.0, 5000.0, 5000.0);
-    v.setScene(&s);
-    v.setInteractive(true);
-    v.setRubberBandSelectionMode(Qt::IntersectsItemBoundingRect);
-    s.addRect( (qreal) 0.0, 0.0, 1000.0, 50.0, QPen(),QBrush(QColor(0,0,255)));
+    v->setScene(&s);
+    v->setInteractive(true);
+    v->setRubberBandSelectionMode(Qt::IntersectsItemBoundingRect);
 
     for (int u = 0; u < 100; ++u)
-        for (int v = 0; v < 100; ++v) {
+        for (int n = 0; n < 100; ++n) {
             MyGraphicsItem *item = new MyGraphicsItem();
-            item->setRect(QRectF(v * 80.0, u * 80.0, 50.0, 20.0));
+            item->setRect(QRectF(n * 80.0, u * 80.0, 50.0, 20.0));
             s.addItem(item);
         }
-    v.show();
+
+    w.show();
     app.exec();
     return 0;
 }
+
+#include "rubberbandtest.moc"

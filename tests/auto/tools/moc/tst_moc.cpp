@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -447,15 +448,6 @@ public:
 #endif
 #endif
 
-static QString srcify(const char *path)
-{
-#ifndef Q_OS_IRIX
-    return QString(SRCDIR) + QLatin1Char('/') + QLatin1String(path);
-#else
-    return QString(QLatin1String(path));
-#endif
-}
-
 class CtorTestClass : public QObject
 {
     Q_OBJECT
@@ -480,6 +472,8 @@ CtorTestClass::CtorTestClass(QObject *parent)
 
 CtorTestClass::CtorTestClass(int, int, int) {}
 
+class PrivatePropertyTest;
+
 class tst_Moc : public QObject
 {
     Q_OBJECT
@@ -487,9 +481,15 @@ class tst_Moc : public QObject
     Q_PROPERTY(bool user1 READ user1 USER true )
     Q_PROPERTY(bool user2 READ user2 USER false)
     Q_PROPERTY(bool user3 READ user3 USER userFunction())
+    Q_PROPERTY(QString member1 MEMBER sMember)
+    Q_PROPERTY(QString member2 MEMBER sMember READ member2)
+    Q_PROPERTY(QString member3 MEMBER sMember WRITE setMember3)
+    Q_PROPERTY(QString member4 MEMBER sMember NOTIFY member4Changed)
+    Q_PROPERTY(QString member5 MEMBER sMember NOTIFY member5Changed)
+    Q_PROPERTY(QString member6 MEMBER sConst CONSTANT)
 
 public:
-    inline tst_Moc() {}
+    inline tst_Moc() : sConst("const") {}
 
 private slots:
     void initTestCase();
@@ -546,6 +546,9 @@ private slots:
     void cxx11Enums_data();
     void cxx11Enums();
     void returnRefs();
+    void memberProperties_data();
+    void memberProperties();
+    void memberProperties2();
     void privateSignalConnection();
     void finalClasses_data();
     void finalClasses();
@@ -553,6 +556,7 @@ private slots:
     void explicitOverrideControl();
     void autoPropertyMetaTypeRegistration();
     void autoMethodArgumentMetaTypeRegistration();
+    void autoSignalSpyMetaTypeRegistration();
     void parseDefines();
     void preprocessorOnly();
     void unterminatedFunctionMacro();
@@ -565,6 +569,8 @@ signals:
     void sigWithCustomType(const MyStruct);
     void constSignal1() const;
     void constSignal2(int arg) const;
+    void member4Changed();
+    void member5Changed(const QString &newVal);
 
 private:
     bool user1() { return true; };
@@ -572,14 +578,23 @@ private:
     bool user3() { return false; };
     bool userFunction(){ return false; };
     template <class T> void revisions_T();
+    QString member2() const { return sMember; }
+    void setMember3( const QString &sVal ) { sMember = sVal; }
 
 private:
+    QString m_sourceDirectory;
     QString qtIncludePath;
     class PrivateClass;
+    QString sMember;
+    const QString sConst;
+    PrivatePropertyTest *pPPTest;
 };
 
 void tst_Moc::initTestCase()
 {
+    const QString testHeader = QFINDTESTDATA("backslash-newlines.h");
+    QVERIFY(!testHeader.isEmpty());
+    m_sourceDirectory = QFileInfo(testHeader).absolutePath();
 #if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     QProcess proc;
     proc.start("qmake", QStringList() << "-query" << "QT_INSTALL_HEADERS");
@@ -626,7 +641,7 @@ void tst_Moc::oldStyleCasts()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(srcify("/oldstyle-casts.h")));
+    proc.start("moc", QStringList(m_sourceDirectory + QStringLiteral("/oldstyle-casts.h")));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -656,15 +671,16 @@ void tst_Moc::warnOnExtraSignalSlotQualifiaction()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(srcify("extraqualification.h")));
+    const QString header = m_sourceDirectory + QStringLiteral("/extraqualification.h");
+    proc.start("moc", QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/extraqualification.h:53: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
-                QString(SRCDIR) + QString("/extraqualification.h:56: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
+    QCOMPARE(mocWarning, header +
+                QString(":53: Warning: Function declaration Test::badFunctionDeclaration contains extra qualification. Ignoring as signal or slot.\n") +
+                header + QString(":56: Warning: parsemaybe: Function declaration Test::anotherOne contains extra qualification. Ignoring as signal or slot.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -694,7 +710,7 @@ void tst_Moc::inputFileNameWithDotsButNoExtension()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.setWorkingDirectory(QString(SRCDIR) + "/task71021");
+    proc.setWorkingDirectory(m_sourceDirectory + QStringLiteral("/task71021"));
     proc.start("moc", QStringList("../Header"));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
@@ -933,16 +949,16 @@ void tst_Moc::warnOnMultipleInheritance()
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     QStringList args;
-    args << "-I" << qtIncludePath + "/QtGui"
-         << srcify("warn-on-multiple-qobject-subclasses.h");
+    const QString header = m_sourceDirectory + QStringLiteral("/warn-on-multiple-qobject-subclasses.h");
+    args << "-I" << qtIncludePath + "/QtGui" << header;
     proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/warn-on-multiple-qobject-subclasses.h:53: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
+    QCOMPARE(mocWarning, header +
+                QString(":53: Warning: Class Bar inherits from two QObject subclasses QWindow and Foo. This is not supported!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -956,16 +972,16 @@ void tst_Moc::forgottenQInterface()
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
     QStringList args;
-    args << "-I" << qtIncludePath + "/QtCore"
-         << srcify("forgotten-qinterface.h");
+    const QString header = m_sourceDirectory + QStringLiteral("/forgotten-qinterface.h");
+    args << "-I" << qtIncludePath + "/QtCore" << header;
     proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/forgotten-qinterface.h:55: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
+    QCOMPARE(mocWarning, header +
+                QString(":55: Warning: Class Test implements the interface MyInterface but does not list it in Q_INTERFACES. qobject_cast to MyInterface will not work!\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -976,7 +992,7 @@ void tst_Moc::os9Newline()
 #if !defined(SKIP_NEWLINE_TEST)
     const QMetaObject &mo = Os9Newlines::staticMetaObject;
     QVERIFY(mo.indexOfSlot("testSlot()") != -1);
-    QFile f(srcify("os9-newlines.h"));
+    QFile f(m_sourceDirectory + QStringLiteral("/os9-newlines.h"));
     QVERIFY(f.open(QIODevice::ReadOnly)); // no QIODevice::Text!
     QByteArray data = f.readAll();
     f.close();
@@ -990,7 +1006,7 @@ void tst_Moc::winNewline()
 #if !defined(SKIP_NEWLINE_TEST)
     const QMetaObject &mo = WinNewlines::staticMetaObject;
     QVERIFY(mo.indexOfSlot("testSlot()") != -1);
-    QFile f(srcify("win-newlines.h"));
+    QFile f(m_sourceDirectory + QStringLiteral("/win-newlines.h"));
     QVERIFY(f.open(QIODevice::ReadOnly)); // no QIODevice::Text!
     QByteArray data = f.readAll();
     f.close();
@@ -1037,8 +1053,8 @@ void tst_Moc::frameworkSearchPath()
 #endif
 #if defined(Q_OS_UNIX) && !defined(QT_NO_PROCESS)
     QStringList args;
-    args << "-F" << srcify(".")
-         << srcify("interface-from-framework.h")
+    args << "-F" << m_sourceDirectory + QStringLiteral("/.")
+         << m_sourceDirectory + QStringLiteral("/interface-from-framework.h")
          ;
 
     QProcess proc;
@@ -1075,7 +1091,7 @@ void tst_Moc::templateGtGt()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(srcify("template-gtgt.h")));
+    proc.start("moc", QStringList(m_sourceDirectory + QStringLiteral("/template-gtgt.h")));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -1094,7 +1110,7 @@ void tst_Moc::defineMacroViaCmdline()
 
     QStringList args;
     args << "-DFOO";
-    args << srcify("macro-on-cmdline.h");
+    args << m_sourceDirectory + QStringLiteral("/macro-on-cmdline.h");
 
     proc.start("moc", args);
     QVERIFY(proc.waitForFinished());
@@ -1164,25 +1180,38 @@ class PrivatePropertyTest : public QObject
     Q_PRIVATE_PROPERTY(d, int bar READ bar WRITE setBar)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, int plop READ plop WRITE setPlop)
     Q_PRIVATE_PROPERTY(PrivatePropertyTest::d_func(), int baz READ baz WRITE setBaz)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub MEMBER mBlub)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub2 MEMBER mBlub READ blub)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub3 MEMBER mBlub WRITE setBlub)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub4 MEMBER mBlub NOTIFY blub4Changed)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub5 MEMBER mBlub NOTIFY blub5Changed)
+    Q_PRIVATE_PROPERTY(PrivatePropertyTest::d, QString blub6 MEMBER mConst CONSTANT)
     class MyDPointer {
     public:
-        MyDPointer() : mBar(0), mPlop(0) {}
+        MyDPointer() : mConst("const"), mBar(0), mPlop(0) {}
         int bar() { return mBar ; }
         void setBar(int value) { mBar = value; }
         int plop() { return mPlop ; }
         void setPlop(int value) { mPlop = value; }
         int baz() { return mBaz ; }
         void setBaz(int value) { mBaz = value; }
+        QString blub() const { return mBlub; }
+        void setBlub(const QString &value) { mBlub = value; }
+        QString mBlub;
+        const QString mConst;
     private:
         int mBar;
         int mPlop;
         int mBaz;
     };
 public:
-    PrivatePropertyTest() : mFoo(0), d (new MyDPointer) {}
+    PrivatePropertyTest(QObject *parent = 0) : QObject(parent), mFoo(0), d (new MyDPointer) {}
     int foo() { return mFoo ; }
     void setFoo(int value) { mFoo = value; }
     MyDPointer *d_func() {return d;}
+signals:
+    void blub4Changed();
+    void blub5Changed(const QString &newBlub);
 private:
     int mFoo;
     MyDPointer *d;
@@ -1229,14 +1258,15 @@ void tst_Moc::warnOnPropertyWithoutREAD()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(srcify("warn-on-property-without-read.h")));
+    const QString header = m_sourceDirectory + QStringLiteral("/warn-on-property-without-read.h");
+    proc.start("moc", QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, QString(SRCDIR) +
-                QString("/warn-on-property-without-read.h:46: Warning: Property declaration foo has no READ accessor function. The property will be invalid.\n"));
+    QCOMPARE(mocWarning, header +
+                QString(":46: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1339,14 +1369,15 @@ void tst_Moc::warnOnVirtualSignal()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(srcify("pure-virtual-signals.h")));
+    const QString header = m_sourceDirectory + QStringLiteral("/pure-virtual-signals.h");
+    proc.start("moc", QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocWarning, QString(SRCDIR) + QString("/pure-virtual-signals.h:48: Warning: Signals cannot be declared virtual\n") +
-                         QString(SRCDIR) + QString("/pure-virtual-signals.h:50: Warning: Signals cannot be declared virtual\n"));
+    QCOMPARE(mocWarning, header + QString(":48: Warning: Signals cannot be declared virtual\n") +
+                         header + QString(":50: Warning: Signals cannot be declared virtual\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1451,15 +1482,16 @@ void tst_Moc::notifyError()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList(srcify("error-on-wrong-notify.h")));
+    const QString header = m_sourceDirectory + QStringLiteral("/error-on-wrong-notify.h");
+    proc.start("moc", QStringList(header));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 1);
     QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
     QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(mocOut.isEmpty());
     QString mocError = QString::fromLocal8Bit(proc.readAllStandardError());
-    QCOMPARE(mocError, QString(SRCDIR) +
-        QString("/error-on-wrong-notify.h:52: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
+    QCOMPARE(mocError, header +
+        QString(":52: Error: NOTIFY signal 'fooChanged' of property 'foo' does not exist in class ClassWithWrongNOTIFY.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -1640,7 +1672,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function or associated MEMBER variable. The property will be invalid.");
 
     // Passing "-nn" should NOT suppress the warning
     QTest::newRow("Invalid property warning with -nn")
@@ -1648,7 +1680,7 @@ void tst_Moc::warnings_data()
         << (QStringList() << "-nn")
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has no READ accessor function. The property will be invalid.");
+        << QString("standard input:1: Warning: Property declaration x has no READ accessor function or associated MEMBER variable. The property will be invalid.");
 
     // Passing "-nw" should suppress the warning
     QTest::newRow("Invalid property warning with -nw")
@@ -1780,6 +1812,103 @@ void tst_Moc::returnRefs()
     QVERIFY(mobj->indexOfMethod("myInvokableReturningConstRef()") != -1);
     // Those two functions are copied from the qscriptextqobject test in qtscript
     // they used to cause miscompilation of the moc generated file.
+}
+
+void tst_Moc::memberProperties_data()
+{
+    QTest::addColumn<int>("object");
+    QTest::addColumn<QString>("property");
+    QTest::addColumn<QString>("signal");
+    QTest::addColumn<QString>("writeValue");
+    QTest::addColumn<bool>("expectedWriteResult");
+    QTest::addColumn<QString>("expectedReadResult");
+
+    pPPTest = new PrivatePropertyTest( this );
+
+    QTest::newRow("MEMBER property")
+            << 0 << "member1" << "" << "abc" << true << "abc";
+    QTest::newRow("MEMBER property with READ function")
+            << 0 << "member2" << "" << "def" << true << "def";
+    QTest::newRow("MEMBER property with WRITE function")
+            << 0 << "member3" << "" << "ghi" << true << "ghi";
+    QTest::newRow("MEMBER property with NOTIFY")
+            << 0 << "member4" << "member4Changed()" << "lmn" << true << "lmn";
+    QTest::newRow("MEMBER property with NOTIFY(value)")
+            << 0 << "member5" << "member5Changed(const QString&)" << "opq" << true << "opq";
+    QTest::newRow("MEMBER property with CONSTANT")
+            << 0 << "member6" << "" << "test" << false << "const";
+    QTest::newRow("private MEMBER property")
+            << 1 << "blub" << "" << "abc" << true << "abc";
+    QTest::newRow("private MEMBER property with READ function")
+            << 1 << "blub2" << "" << "def" << true << "def";
+    QTest::newRow("private MEMBER property with WRITE function")
+            << 1 << "blub3" << "" << "ghi" << true << "ghi";
+    QTest::newRow("private MEMBER property with NOTIFY")
+            << 1 << "blub4" << "blub4Changed()" << "jkl" << true << "jkl";
+    QTest::newRow("private MEMBER property with NOTIFY(value)")
+            << 1 << "blub5" << "blub5Changed(const QString&)" << "mno" << true << "mno";
+    QTest::newRow("private MEMBER property with CONSTANT")
+            << 1 << "blub6" << "" << "test" << false << "const";
+}
+
+void tst_Moc::memberProperties()
+{
+    QFETCH(int, object);
+    QFETCH(QString, property);
+    QFETCH(QString, signal);
+    QFETCH(QString, writeValue);
+    QFETCH(bool, expectedWriteResult);
+    QFETCH(QString, expectedReadResult);
+
+    QObject *pObj = (object == 0) ? this : static_cast<QObject*>(pPPTest);
+
+    QString sSignalDeclaration;
+    if (!signal.isEmpty())
+        sSignalDeclaration = QString(SIGNAL(%1)).arg(signal);
+    else
+        QTest::ignoreMessage(QtWarningMsg, "QSignalSpy: Not a valid signal, use the SIGNAL macro");
+    QSignalSpy notifySpy(pObj, sSignalDeclaration.toLatin1().constData());
+
+    int index = pObj->metaObject()->indexOfProperty(property.toLatin1().constData());
+    QVERIFY(index != -1);
+    QMetaProperty prop = pObj->metaObject()->property(index);
+
+    QCOMPARE(prop.write(pObj, writeValue), expectedWriteResult);
+
+    QVariant readValue = prop.read(pObj);
+    QCOMPARE(readValue.toString(), expectedReadResult);
+
+    if (!signal.isEmpty())
+    {
+        QCOMPARE(notifySpy.count(), 1);
+        if (prop.notifySignal().parameterNames().size() > 0) {
+            QList<QVariant> arguments = notifySpy.takeFirst();
+            QCOMPARE(arguments.size(), 1);
+            QCOMPARE(arguments.at(0).toString(), expectedReadResult);
+        }
+
+        notifySpy.clear();
+        // a second write with the same value should not cause the signal to be emitted again
+        QCOMPARE(prop.write(pObj, writeValue), expectedWriteResult);
+        QCOMPARE(notifySpy.count(), 0);
+    }
+}
+
+//this used to fail to compile
+class ClassWithOneMember  : public QObject {
+    Q_PROPERTY(int member MEMBER member)
+    Q_OBJECT
+public:
+    int member;
+};
+
+void tst_Moc::memberProperties2()
+{
+    ClassWithOneMember o;
+    o.member = 442;
+    QCOMPARE(o.property("member").toInt(), 442);
+    QVERIFY(o.setProperty("member", 6666));
+    QCOMPARE(o.member, 6666);
 }
 
 class SignalConnectionTester : public QObject
@@ -2389,6 +2518,7 @@ struct CustomObject8 {};
 struct CustomObject9 {};
 struct CustomObject10 {};
 struct CustomObject11 {};
+struct CustomObject12 {};
 
 Q_DECLARE_METATYPE(CustomObject3)
 Q_DECLARE_METATYPE(CustomObject4)
@@ -2399,6 +2529,7 @@ Q_DECLARE_METATYPE(CustomObject8)
 Q_DECLARE_METATYPE(CustomObject9)
 Q_DECLARE_METATYPE(CustomObject10)
 Q_DECLARE_METATYPE(CustomObject11)
+Q_DECLARE_METATYPE(CustomObject12)
 
 class AutoRegistrationObject : public QObject
 {
@@ -2521,6 +2652,9 @@ public slots:
     void ref2(QList<int>&) {}
     void ref3(CustomQObject2&) {}
     void ref4(QSharedPointer<CustomQObject2>&) {}
+
+signals:
+    void someSignal(CustomObject12);
 };
 
 void tst_Moc::autoPropertyMetaTypeRegistration()
@@ -2583,6 +2717,16 @@ void tst_Moc::autoMethodArgumentMetaTypeRegistration()
     const QMetaObject *metaObject = aro.metaObject();
 
     int i = metaObject->methodOffset(); // Start after QObject built-in slots;
+
+    while (i < metaObject->methodCount()) {
+        // Skip over signals so we start at the first slot.
+        const QMetaMethod method = metaObject->method(i);
+        if (method.methodType() == QMetaMethod::Signal)
+            ++i;
+        else
+            break;
+
+    }
 
 #define TYPE_LOOP(TYPE) \
     { \
@@ -2710,6 +2854,26 @@ void tst_Moc::autoMethodArgumentMetaTypeRegistration()
 
 }
 
+void tst_Moc::autoSignalSpyMetaTypeRegistration()
+{
+    AutoRegistrationObject aro;
+
+    QVector<int> methodArgMetaTypeIds;
+
+    const QMetaObject *metaObject = aro.metaObject();
+
+    int i = metaObject->indexOfSignal(QMetaObject::normalizedSignature("someSignal(CustomObject12)"));
+
+    QVERIFY(i > 0);
+
+    QCOMPARE(QMetaType::type("CustomObject12"), (int)QMetaType::UnknownType);
+
+    QSignalSpy spy(&aro, SIGNAL(someSignal(CustomObject12)));
+
+    QVERIFY(QMetaType::type("CustomObject12") != QMetaType::UnknownType);
+    QCOMPARE(QMetaType::type("CustomObject12"), qMetaTypeId<CustomObject12>());
+}
+
 void tst_Moc::parseDefines()
 {
     const QMetaObject *mo = &PD_NAMESPACE::PD_CLASSNAME::staticMetaObject;
@@ -2790,7 +2954,7 @@ void tst_Moc::preprocessorOnly()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList() << "-E" << srcify("/pp-dollar-signs.h"));
+    proc.start("moc", QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/pp-dollar-signs.h"));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 0);
     QByteArray mocOut = proc.readAllStandardOutput();
@@ -2811,7 +2975,7 @@ void tst_Moc::unterminatedFunctionMacro()
 #endif
 #if defined(Q_OS_LINUX) && defined(Q_CC_GNU) && !defined(QT_NO_PROCESS)
     QProcess proc;
-    proc.start("moc", QStringList() << "-E" << srcify("/unterminated-function-macro.h"));
+    proc.start("moc", QStringList() << "-E" << m_sourceDirectory + QStringLiteral("/unterminated-function-macro.h"));
     QVERIFY(proc.waitForFinished());
     QCOMPARE(proc.exitCode(), 1);
     QCOMPARE(proc.readAllStandardOutput(), QByteArray());

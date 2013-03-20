@@ -883,7 +883,7 @@ static QBrush qBrushData(int index)
             return custom;
         }
     case 7:
-        QLinearGradient gradient(QPoint(2.718, 3.142), QPoint(3.1337, 42));
+        QLinearGradient gradient(QPointF(2.718, 3.142), QPointF(3.1337, 42));
         gradient.setCoordinateMode(QGradient::ObjectBoundingMode);
         gradient.setSpread(QGradient::ReflectSpread);
         gradient.setInterpolationMode(QGradient::ComponentInterpolation);

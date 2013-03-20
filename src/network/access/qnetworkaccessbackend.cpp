@@ -340,6 +340,13 @@ void QNetworkAccessBackend::redirectionRequested(const QUrl &target)
     reply->redirectionRequested(target);
 }
 
+void QNetworkAccessBackend::encrypted()
+{
+#ifndef QT_NO_SSL
+    reply->encrypted();
+#endif
+}
+
 void QNetworkAccessBackend::sslErrors(const QList<QSslError> &errors)
 {
 #ifndef QT_NO_SSL

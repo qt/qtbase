@@ -1122,7 +1122,6 @@ void tst_QMenuBar::check_menuPosition()
 
 void tst_QMenuBar::task223138_triggered()
 {
-    qRegisterMetaType<QAction *>("QAction *");
     //we create a window with submenus and we check that both menubar and menus get the triggered signal
     QMainWindow win;
     QMenu *menu = win.menuBar()->addMenu("test");

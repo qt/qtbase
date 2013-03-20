@@ -47,14 +47,14 @@
 
 ListWidget::ListWidget(QGraphicsWidget * parent)
   : GvbWidget(parent),
-    m_layout(new QGraphicsLinearLayout(Qt::Vertical)), 
+    m_layout(new QGraphicsLinearLayout(Qt::Vertical)),
     m_listView(new SimpleListView(this))
-{ 
+{
     //listView->setViewport(listView->content());
     //listView->content()->setParentItem(listView);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setContentsMargins(0,0,0,0);
-    m_layout->setContentsMargins(0,0,0,0); 
+    m_layout->setContentsMargins(0,0,0,0);
     m_listView->setContentsMargins(0,0,0,0);
     m_layout->addItem(m_listView);
     setLayout(m_layout);
@@ -64,7 +64,7 @@ ListWidget::ListWidget(QGraphicsWidget * parent)
     m_listView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
-ListWidget::~ListWidget() 
+ListWidget::~ListWidget()
 {
 
 }

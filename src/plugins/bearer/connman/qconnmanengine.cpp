@@ -574,7 +574,7 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
         QNetworkConfigurationPrivatePointer ptr(cpPriv);
         accessPointConfigurations.insert(ptr->id, ptr);
         foundConfigurations.append(cpPriv);
-        configInterfaces[cpPriv->id] = serv->getInterface(); 
+        configInterfaces[cpPriv->id] = serv->getInterface();
 
         locker.unlock();
         emit configurationAdded(ptr);

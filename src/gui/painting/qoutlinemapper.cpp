@@ -48,8 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-
 #define qreal_to_fixed_26_6(f) (int(f * 64))
 
 

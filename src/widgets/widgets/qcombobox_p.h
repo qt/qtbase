@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -282,8 +282,8 @@ private:
     QComboBox *mCombo;
 };
 
-// Note that this class is intentionally not using QStyledItemDelegate 
-// Vista does not use the new theme for combo boxes and there might 
+// Note that this class is intentionally not using QStyledItemDelegate
+// Vista does not use the new theme for combo boxes and there might
 // be other side effects from using the new class
 class QComboBoxDelegate : public QItemDelegate
 { Q_OBJECT

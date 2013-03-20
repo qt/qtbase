@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -44,8 +44,6 @@
 
 #include <QtWidgets/qframe.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -67,7 +65,7 @@ class Q_WIDGETS_EXPORT QProgressBar : public QWidget
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(bool invertedAppearance READ invertedAppearance WRITE setInvertedAppearance)
     Q_PROPERTY(Direction textDirection READ textDirection WRITE setTextDirection)
-    Q_PROPERTY(QString format READ format WRITE setFormat)
+    Q_PROPERTY(QString format READ format WRITE setFormat RESET resetFormat)
 
 public:
     enum Direction { TopToBottom, BottomToTop };
@@ -98,6 +96,7 @@ public:
     QProgressBar::Direction textDirection() const;
 
     void setFormat(const QString &format);
+    void resetFormat();
     QString format() const;
 
 public Q_SLOTS:
@@ -124,7 +123,5 @@ private:
 #endif // QT_NO_PROGRESSBAR
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPROGRESSBAR_H

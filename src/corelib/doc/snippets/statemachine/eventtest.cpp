@@ -55,11 +55,11 @@ protected:
             if (wrappedEvent->type() == QEvent::KeyPress) {
                 QKeyEvent *keyEvent = static_cast<QKeyEvent *>(wrappedEvent);
                 // Do your event test
-            }       
+            }
         }
         return false;
     }
-//![0]      
+//![0]
 
     void onTransition(QEvent *event)
     {

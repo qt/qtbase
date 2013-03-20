@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -45,7 +45,7 @@
     \since 4.2
 
     \inmodule QtWidgets
- 
+
     You can use QCompleter to provide auto completions in any Qt
     widget, such as QLineEdit and QComboBox.
     When the user starts typing a word, QCompleter suggests possible ways of

@@ -18,9 +18,7 @@ testcocoon {
     load(testcocoon)
 }
 
-mac {
-    LIBS_PRIVATE += -framework Cocoa
-}
+mac:!ios: LIBS_PRIVATE += -framework Cocoa
 
 CONFIG += simd
 

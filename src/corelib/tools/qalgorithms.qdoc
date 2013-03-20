@@ -70,7 +70,7 @@
     \snippet code/doc_src_qalgorithms.cpp 1
 
     Different algorithms can have different requirements for the
-    iterators they accept. For example, qFill() accepts two 
+    iterators they accept. For example, qFill() accepts two
     \l {forward iterators}. The iterator types required are specified
     for each algorithm. If an iterator of the wrong type is passed (for
     example, if QList::ConstIterator is passed as an \l {output
@@ -369,7 +369,7 @@ of \a value in the variable passed as a reference in argument \a n.
     This is the same as qSort(\a{container}.begin(), \a{container}.end());
 */
 
-/*! 
+/*!
     \fn void qStableSort(RandomAccessIterator begin, RandomAccessIterator end)
     \relates <QtAlgorithms>
 
@@ -393,7 +393,7 @@ of \a value in the variable passed as a reference in argument \a n.
     \sa qSort(), {random access iterators}
 */
 
-/*! 
+/*!
     \fn void qStableSort(RandomAccessIterator begin, RandomAccessIterator end, LessThan lessThan)
     \relates <QtAlgorithms>
 
@@ -406,7 +406,7 @@ of \a value in the variable passed as a reference in argument \a n.
     in case-insensitive alphabetical order:
 
     \snippet code/doc_src_qalgorithms.cpp 16
-    
+
     Note that earlier versions of Qt allowed using a lessThan function that took its
     arguments by non-const reference. From 4.3 and on this is no longer possible,
     the arguments has to be passed by const reference or value.
@@ -423,7 +423,7 @@ of \a value in the variable passed as a reference in argument \a n.
     property is often useful when sorting user-visible data.
 */
 
-/*! 
+/*!
     \fn void qStableSort(Container &container)
     \relates <QtAlgorithms>
 
@@ -470,7 +470,7 @@ of \a value in the variable passed as a reference in argument \a n.
     specified by the \a lessThan object.
 */
 
-/*! 
+/*!
     \fn void qLowerBound(const Container &container, const T &value)
     \relates <QtAlgorithms>
 
@@ -520,7 +520,7 @@ of \a value in the variable passed as a reference in argument \a n.
     specified by the \a lessThan object.
 */
 
-/*! 
+/*!
     \fn void qUpperBound(const Container &container, const T &value)
     \relates <QtAlgorithms>
 
@@ -568,7 +568,7 @@ of \a value in the variable passed as a reference in argument \a n.
     specified by the \a lessThan object.
 */
 
-/*! 
+/*!
     \fn void qBinaryFind(const Container &container, const T &value)
     \relates <QtAlgorithms>
 
@@ -578,7 +578,7 @@ of \a value in the variable passed as a reference in argument \a n.
 */
 
 
-/*! 
+/*!
     \fn void qDeleteAll(ForwardIterator begin, ForwardIterator end)
     \relates <QtAlgorithms>
 
@@ -601,7 +601,7 @@ of \a value in the variable passed as a reference in argument \a n.
     \sa {forward iterators}
 */
 
-/*! 
+/*!
     \fn void qDeleteAll(const Container &c)
     \relates <QtAlgorithms>
 

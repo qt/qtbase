@@ -42,6 +42,11 @@
 #ifndef QT_WINDOWS_H
 #define QT_WINDOWS_H
 
+#if 0
+#pragma qt_sync_skip_header_check
+#pragma qt_sync_stop_processing
+#endif
+
 #if defined(Q_CC_BOR)
 // Borland's windows.h does not set these correctly, resulting in
 // unusable WinSDK standard dialogs

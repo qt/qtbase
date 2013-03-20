@@ -44,7 +44,7 @@
 #ifndef QBASICATOMIC_H
 #define QBASICATOMIC_H
 
-#if defined(QT_MOC) || defined(QT_BUILD_QMAKE) || defined(QT_RCC) || defined(QT_UIC) || defined(QT_BOOTSTRAPPED)
+#if defined(QT_BOOTSTRAPPED)
 #  include <QtCore/qatomic_bootstrap.h>
 
 // Compiler dependent implementation
@@ -101,15 +101,11 @@
 // Only include if the implementation has been ported to QAtomicOps
 #ifndef QOLDBASICATOMIC_H
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 #if 0
 // silence syncqt warnings
 QT_END_NAMESPACE
-QT_END_HEADER
-
 #pragma qt_no_master_include
 #pragma qt_sync_stop_processing
 #endif
@@ -270,8 +266,6 @@ public:
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QOLDBASICATOMIC_H
 

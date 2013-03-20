@@ -89,7 +89,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <locale.h>
-#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_LINUX_ANDROID)
+#if defined (_XOPEN_UNIX) && !defined(Q_OS_QNX) && !defined(Q_OS_OSF) && !defined(Q_OS_ANDROID)
 # include <langinfo.h>
 #endif
 
@@ -1043,28 +1043,30 @@ QString QTextDecoder::toUnicode(const QByteArray &ba)
 QTextCodec *QTextCodec::codecForHtml(const QByteArray &ba, QTextCodec *defaultCodec)
 {
     // determine charset
-    int pos;
-    QTextCodec *c = 0;
-
-    c = QTextCodec::codecForUtfText(ba, c);
+    QTextCodec *c = QTextCodec::codecForUtfText(ba, 0);
     if (!c) {
         QByteArray header = ba.left(512).toLower();
-        if ((pos = header.indexOf("http-equiv=")) != -1) {
-            if ((pos = header.lastIndexOf("meta ", pos)) != -1) {
-                pos = header.indexOf("charset=", pos) + int(strlen("charset="));
-                if (pos != -1) {
-                    int pos2 = header.indexOf('\"', pos+1);
-                    QByteArray cs = header.mid(pos, pos2-pos);
-                    //            qDebug("found charset: %s", cs.data());
-                    c = QTextCodec::codecForName(cs);
+        int pos = header.indexOf("meta ");
+        if (pos != -1) {
+            pos = header.indexOf("charset=", pos);
+            if (pos != -1) {
+                pos += qstrlen("charset=");
+
+                int pos2 = pos;
+                // The attribute can be closed with either """, "'", ">" or "/",
+                // none of which are valid charset characters.
+                while (++pos2 < header.size()) {
+                    char ch = header.at(pos2);
+                    if (ch == '\"' || ch == '\'' || ch == '>') {
+                        c = QTextCodec::codecForName(header.mid(pos, pos2 - pos));
+                        return c ? c : defaultCodec;
+                    }
                 }
             }
         }
     }
-    if (!c)
-        c = defaultCodec;
 
-    return c;
+    return defaultCodec;
 }
 
 /*!

@@ -368,7 +368,7 @@ bool QFileSystemIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo
     // If we're doing flat iteration, we're done.
     if (!(iteratorFlags & QFileSystemIterator::Subdirectories))
         return false;
-    
+
     // Never follow non-directory entries
     if (!fileInfo.isDir())
         return false;
@@ -378,7 +378,7 @@ bool QFileSystemIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo
     if (fileInfo.fileName() == QLatin1String(".") || fileInfo.fileName() == QLatin1String(".."))
         return false;
 
-      
+
     // Check symlinks
     if (fileInfo.isSymLink() && !(iteratorFlags & QFileSystemIterator::FollowSymlinks)) {
         // Follow symlinks only if FollowSymlinks was passed
@@ -388,10 +388,10 @@ bool QFileSystemIteratorPrivate::shouldFollowDirectory(const QFileInfo &fileInfo
     // Stop link loops
     if (visitedLinks.contains(fileInfo.canonicalFilePath()))
         return false;
-    
+
     return true;
 }
-    
+
 
 /*!
     \internal
@@ -454,7 +454,7 @@ bool QFileSystemIteratorPrivate::matchesFilters(const QAbstractFileEngineIterato
             return false;
     }
 #endif
-    
+
     bool dotOrDotDot = (fileName == QLatin1String(".") || fileName == QLatin1String(".."));
     if ((filters & QDir::NoDotAndDotDot) && dotOrDotDot)
         return false;
@@ -495,7 +495,7 @@ bool QFileSystemIteratorPrivate::matchesFilters(const QAbstractFileEngineIterato
                                            || (!fi.exists() && fi.isSymLink()))) {
         return false;
     }
-    
+
     return true;
 }
 #endif
@@ -608,7 +608,7 @@ bool QFileSystemIterator::atEnd() const
     This function is provided for the convenience when iterating single
     directories. For recursive iteration, you should call filePath() or
     fileInfo() instead.
-    
+
     \sa filePath(), fileInfo()
 */
 QString QFileSystemIterator::fileName() const

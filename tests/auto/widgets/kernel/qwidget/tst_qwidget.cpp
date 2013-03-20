@@ -412,6 +412,7 @@ private slots:
 
     void keyboardModifiers();
     void mouseDoubleClickBubbling_QTBUG29680();
+    void largerThanScreen_QTBUG30142();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -5632,6 +5633,7 @@ void tst_QWidget::showHideShowX11()
     qApp->installNativeEventFilter(&w);
 
     w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     w.hide();
 
     QEventLoop eventLoop;
@@ -10077,6 +10079,21 @@ void tst_QWidget::mouseDoubleClickBubbling_QTBUG29680()
     QTest::mouseDClick(&child, Qt::LeftButton);
 
     QTRY_VERIFY(parent.triggered);
+}
+
+void tst_QWidget::largerThanScreen_QTBUG30142()
+{
+    QWidget widget;
+    widget.resize(200, 4000);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QVERIFY(widget.frameGeometry().y() >= 0);
+
+    QWidget widget2;
+    widget2.resize(10000, 400);
+    widget2.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget2));
+    QVERIFY(widget2.frameGeometry().x() >= 0);
 }
 
 QTEST_MAIN(tst_QWidget)

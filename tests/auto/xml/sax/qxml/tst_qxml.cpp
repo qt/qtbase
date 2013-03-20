@@ -62,7 +62,7 @@ class MyXmlEntityResolver : public QXmlEntityResolver
 {
 public:
     MyXmlEntityResolver() : QXmlEntityResolver() {}
-    QString errorString() const { return QString(); } 
+    QString errorString() const { return QString(); }
     bool resolveEntity(const QString &, const QString &, QXmlInputSource *&) { return false; }
 };
 
@@ -88,7 +88,7 @@ class MyXmlErrorHandler : public QXmlErrorHandler
 {
 public:
     MyXmlErrorHandler() : QXmlErrorHandler() {}
-    QString errorString() const { return QString(); } 
+    QString errorString() const { return QString(); }
     bool error(const QXmlParseException &) { return false; }
     bool fatalError(const QXmlParseException &) { return false; }
     bool warning(const QXmlParseException &) { return false; }
@@ -193,7 +193,7 @@ void tst_QXml::interpretedAs0D() const
     };
 
     const QString document(QLatin1String("<element ") +
-                           QChar(0x010D) + 
+                           QChar(0x010D) +
                            QLatin1String("reated-by=\"an attr value\"/>"));
 
     QString testFile = QFINDTESTDATA("0x010D.xml");

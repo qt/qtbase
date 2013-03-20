@@ -46,8 +46,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -138,8 +136,14 @@ public:
 
     void start(const QString &program, const QStringList &arguments, OpenMode mode = ReadWrite);
     void start(const QString &command, OpenMode mode = ReadWrite);
+    void start(OpenMode mode = ReadWrite);
+    bool open(OpenMode mode = ReadWrite) Q_DECL_OVERRIDE;
+
     QString program() const;
+    void setProgram(const QString &program);
+
     QStringList arguments() const;
+    void setArguments(const QStringList & arguments);
 
     ProcessChannelMode readChannelMode() const;
     void setReadChannelMode(ProcessChannelMode mode);
@@ -260,7 +264,5 @@ private:
 #endif // QT_NO_PROCESS
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QPROCESS_H

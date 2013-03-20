@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qsql_sqlite.h"
+#include "qsql_sqlite_p.h"
 
 #include <qcoreapplication.h>
 #include <qvariant.h>
@@ -47,6 +47,7 @@
 #include <qsqlfield.h>
 #include <qsqlindex.h>
 #include <qsqlquery.h>
+#include <QtSql/private/qsqlcachedresult_p.h>
 #include <qstringlist.h>
 #include <qvector.h>
 #include <qdebug.h>
@@ -67,7 +68,7 @@ Q_DECLARE_METATYPE(sqlite3_stmt*)
 
 QT_BEGIN_NAMESPACE
 
-static QString _q_escapeIdentifier(const QString &identifier) 
+static QString _q_escapeIdentifier(const QString &identifier)
 {
     QString res = identifier;
     if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
@@ -105,6 +106,33 @@ static QSqlError qMakeError(sqlite3 *access, const QString &descr, QSqlError::Er
                      QString(reinterpret_cast<const QChar *>(sqlite3_errmsg16(access))),
                      type, errorCode);
 }
+
+class QSQLiteResultPrivate;
+
+class QSQLiteResult : public QSqlCachedResult
+{
+    friend class QSQLiteDriver;
+    friend class QSQLiteResultPrivate;
+public:
+    explicit QSQLiteResult(const QSQLiteDriver* db);
+    ~QSQLiteResult();
+    QVariant handle() const;
+
+protected:
+    bool gotoNext(QSqlCachedResult::ValueCache& row, int idx);
+    bool reset(const QString &query);
+    bool prepare(const QString &query);
+    bool exec();
+    int size();
+    int numRowsAffected();
+    QVariant lastInsertId() const;
+    QSqlRecord record() const;
+    void detachFromResultSet();
+    void virtual_hook(int id, void *data);
+
+private:
+    QSQLiteResultPrivate* d;
+};
 
 class QSQLiteDriverPrivate
 {

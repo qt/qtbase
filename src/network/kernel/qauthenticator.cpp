@@ -852,7 +852,6 @@ QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge,
 //************************Global variables***************************
 
 const int blockSize = 64; //As per RFC2104 Block-size is 512 bits
-const int nDigestLen = 16; //Trunctaion Length of the Hmac-Md5 digest
 const quint8 respversion = 1;
 const quint8 hirespversion = 1;
 

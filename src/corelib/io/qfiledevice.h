@@ -45,8 +45,6 @@
 #include <QtCore/qiodevice.h>
 #include <QtCore/qstring.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QFileDevicePrivate;
@@ -141,7 +139,5 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFileDevice::Permissions)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QFILEDEVICE_H

@@ -49,7 +49,6 @@
 #include <QtCore/qfutureinterface.h>
 #include <QtCore/qstring.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 
@@ -269,7 +268,6 @@ QFuture<void> qToVoidFuture(const QFuture<T> &future)
 }
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
 #endif // QT_NO_QFUTURE
 

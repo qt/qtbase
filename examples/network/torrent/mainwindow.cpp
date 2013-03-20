@@ -130,7 +130,7 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *newTorrentAction = new QAction(QIcon(":/icons/bottom.png"), tr("Add &new torrent"), this);
     pauseTorrentAction = new QAction(QIcon(":/icons/player_pause.png"), tr("&Pause torrent"), this);
     removeTorrentAction = new QAction(QIcon(":/icons/player_stop.png"), tr("&Remove torrent"), this);
-    
+
     // File menu
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(newTorrentAction);

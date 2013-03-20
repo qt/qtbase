@@ -235,7 +235,7 @@ void MainWindow::openDialog()
 //! [17]
 void MainWindow::printFile()
 {
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && !defined(QT_NO_PRINTDIALOG)
     QTextEdit *editor = static_cast<QTextEdit*>(letters->currentWidget());
 //! [18]
     QPrinter printer;

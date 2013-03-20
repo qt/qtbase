@@ -45,8 +45,6 @@
 #include <qpa/qplatformservices.h>
 #include <QtCore/QString>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 class QGenericUnixServices : public QPlatformServices
@@ -65,7 +63,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QGENERICUNIXDESKTOPSERVICES_H

@@ -44,7 +44,7 @@
 #include "qunicodetables_p.h"
 #include "qvarlengtharray.h"
 
-#include <private/harfbuzz-shaper.h>
+#include "qharfbuzz_p.h"
 
 #define FLAG(x) (1 << (x))
 
@@ -610,12 +610,12 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
         scriptItems.reserve(numItems);
         int start = 0;
         for (int i = start + 1; i < numItems; ++i) {
-            if (items[i].script == items[start].script)
+            if (script_to_hbscript(items[i].script) == script_to_hbscript(items[start].script))
                 continue;
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = items[i].position - items[start].position;
-            item.script = (HB_Script)items[start].script;
+            item.script = script_to_hbscript(items[start].script);
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
             start = i;
@@ -624,7 +624,7 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
             HB_ScriptItem item;
             item.pos = items[start].position;
             item.length = length - items[start].position;
-            item.script = (HB_Script)items[start].script;
+            item.script = script_to_hbscript(items[start].script);
             item.bidiLevel = 0; // unused
             scriptItems.append(item);
         }
@@ -633,6 +633,51 @@ Q_CORE_EXPORT void initCharAttributes(const ushort *string, int length,
                                      scriptItems.constData(), scriptItems.size(),
                                      reinterpret_cast<HB_CharAttributes *>(attributes));
     }
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// The Unicode script property. See http://www.unicode.org/reports/tr24/ (some very old version)
+//
+// ----------------------------------------------------------------------------
+
+Q_CORE_EXPORT void initScripts(const ushort *string, int length, uchar *scripts)
+{
+    int sor = 0;
+    int eor = -1;
+    uchar script = QChar::Script_Common;
+    for (int i = 0; i < length; ++i) {
+        eor = i;
+        uint ucs4 = string[i];
+        if (QChar::isHighSurrogate(ucs4) && i + 1 < length) {
+            ushort low = string[i + 1];
+            if (QChar::isLowSurrogate(low)) {
+                ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                ++i;
+            }
+        }
+
+        const QUnicodeTables::Properties *prop = QUnicodeTables::properties(ucs4);
+
+        if (Q_LIKELY(prop->script == script || prop->script == QChar::Script_Inherited))
+            continue;
+
+        // Never break between a combining mark (gc= Mc, Mn or Me) and its base character.
+        // Thus, a combining mark — whatever its script property value is — should inherit
+        // the script property value of its base character.
+        static const int test = (FLAG(QChar::Mark_NonSpacing) | FLAG(QChar::Mark_SpacingCombining) | FLAG(QChar::Mark_Enclosing));
+        if (Q_UNLIKELY(FLAG(prop->category) & test))
+            continue;
+
+        while (sor < eor)
+            scripts[sor++] = script;
+
+        script = prop->script;
+    }
+    eor = length;
+    while (sor < eor)
+        scripts[sor++] = script;
 }
 
 } // namespace QUnicodeTools

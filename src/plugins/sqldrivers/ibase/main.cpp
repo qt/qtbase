@@ -41,7 +41,7 @@
 
 #include <qsqldriverplugin.h>
 #include <qstringlist.h>
-#include "../../../sql/drivers/ibase/qsql_ibase.h"
+#include "../../../sql/drivers/ibase/qsql_ibase_p.h"
 
 QT_BEGIN_NAMESPACE
 

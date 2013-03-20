@@ -174,28 +174,28 @@ void tst_QPicture::operator_lt_lt()
 {
     // streaming of null pictures
     {
-	QPicture pic1, pic2;
-	QByteArray ba( 100, 0 );
-	QDataStream str1( &ba, QIODevice::WriteOnly );
-	str1 << pic1;
-	QDataStream str2( &ba, QIODevice::ReadOnly );
-	str2 >> pic2;
- 	QVERIFY( pic2.isNull() );
+        QPicture pic1, pic2;
+        QByteArray ba( 100, 0 );
+        QDataStream str1( &ba, QIODevice::WriteOnly );
+        str1 << pic1;
+        QDataStream str2( &ba, QIODevice::ReadOnly );
+        str2 >> pic2;
+        QVERIFY( pic2.isNull() );
     }
 
     // picture with a simple line, checking bitwise equality
     {
-	QPicture pic1, pic2;
-	QPainter p( &pic1 );
-	p.drawLine( 10, 20, 30, 40 );
-	p.end();
-	QByteArray ba( 10 * pic1.size(), 0 );
-	QDataStream str1( &ba, QIODevice::WriteOnly );
-	str1 << pic1;
-	QDataStream str2( &ba, QIODevice::ReadOnly );
-	str2 >> pic2;
-	QCOMPARE( pic1.size(), pic2.size() );
-	QVERIFY( memcmp( pic1.data(), pic2.data(), pic1.size() ) == 0 );
+        QPicture pic1, pic2;
+        QPainter p( &pic1 );
+        p.drawLine( 10, 20, 30, 40 );
+        p.end();
+        QByteArray ba( 10 * pic1.size(), 0 );
+        QDataStream str1( &ba, QIODevice::WriteOnly );
+        str1 << pic1;
+        QDataStream str2( &ba, QIODevice::ReadOnly );
+        str2 >> pic2;
+        QCOMPARE( pic1.size(), pic2.size() );
+        QVERIFY( memcmp( pic1.data(), pic2.data(), pic1.size() ) == 0 );
     }
 }
 
@@ -268,7 +268,6 @@ void tst_QPicture::boundaryValues_data()
 
     QTest::newRow("min x, max y") << INT_MIN << INT_MAX;
     QTest::newRow("max x, min y") << INT_MAX << INT_MIN;
-
 }
 
 void tst_QPicture::boundaryValues()
@@ -283,8 +282,6 @@ void tst_QPicture::boundaryValues()
     painter.drawPoint(QPoint(x, y));
 
     painter.end();
-
-    
 }
 
 

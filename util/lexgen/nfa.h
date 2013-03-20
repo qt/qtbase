@@ -92,7 +92,7 @@ public:
     static NFA applyQuantity(const NFA &a, int minOccurrences, int maxOccurrences);
 
     void setTerminationSymbol(const QString &symbol);
-    
+
     DFA toDFA() const;
 
     inline bool isEmpty() const { return states.isEmpty(); }
@@ -113,7 +113,7 @@ private:
 
     inline void assertValidState(int state)
     { Q_UNUSED(state); Q_ASSERT(state >= 0); Q_ASSERT(state < states.count()); }
-    
+
 #if defined(AUTOTEST)
 public:
 #endif

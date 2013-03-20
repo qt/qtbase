@@ -24,6 +24,7 @@ HEADERS += \
         kernel/qplatformthemefactory_p.h \
         kernel/qplatformthemeplugin.h \
         kernel/qplatformwindow.h \
+        kernel/qplatformoffscreensurface.h \
         kernel/qplatformwindow_p.h \
         kernel/qplatformcursor.h \
         kernel/qplatformclipboard.h \
@@ -34,6 +35,7 @@ HEADERS += \
         kernel/qguiapplication_p.h \
         kernel/qwindow_p.h \
         kernel/qwindow.h \
+        kernel/qoffscreensurface.h \
         kernel/qplatformsurface.h \
         kernel/qsurface.h \
         kernel/qclipboard.h \
@@ -81,6 +83,7 @@ SOURCES += \
         kernel/qplatformthemefactory.cpp \
         kernel/qplatformthemeplugin.cpp \
         kernel/qplatformwindow.cpp \
+        kernel/qplatformoffscreensurface.cpp \
         kernel/qplatformcursor.cpp \
         kernel/qplatformclipboard.cpp \
         kernel/qplatformnativeinterface.cpp \
@@ -88,6 +91,7 @@ SOURCES += \
         kernel/qsurfaceformat.cpp \
         kernel/qguiapplication.cpp \
         kernel/qwindow.cpp \
+        kernel/qoffscreensurface.cpp \
         kernel/qplatformsurface.cpp \
         kernel/qsurface.cpp \
         kernel/qclipboard.cpp \

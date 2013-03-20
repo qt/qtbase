@@ -78,7 +78,7 @@ void ScrollerPrivate::stopScrolling()
         m_scrollTimer.stop();
 }
 
-//Maps screen coordinates to scrollArea coordinates though current m_eventViewport widget 
+//Maps screen coordinates to scrollArea coordinates though current m_eventViewport widget
 QPointF ScrollerPrivate::mapToScrollArea(const QPoint &point)
 {
     if (!m_scrollArea || !m_eventViewport)
@@ -106,7 +106,7 @@ bool ScrollerPrivate::eventFilter(QObject *obj, QEvent *event)
             && event->type() != QEvent::GraphicsSceneKeyReleased*/))
         return false;
 
-    QGraphicsSceneMouseEvent* mouseEvent = 
+    QGraphicsSceneMouseEvent* mouseEvent =
         static_cast<QGraphicsSceneMouseEvent*>(event);
 
     m_eventViewport = mouseEvent->widget();
@@ -130,7 +130,7 @@ bool ScrollerPrivate::eventFilter(QObject *obj, QEvent *event)
             m_cursorPos = QCursor::pos();
             m_state = ManualScrolling;
 
-            if (!m_scrollTimer.isActive()) 
+            if (!m_scrollTimer.isActive())
                 m_scrollTimer.start(UpdateScrollingInterval);
             else {
                 m_scrollTimer.stop();
@@ -154,7 +154,7 @@ bool ScrollerPrivate::eventFilter(QObject *obj, QEvent *event)
             ScrollBar *hscroll = m_scrollArea->horizontalScrollBar();
             ScrollBar *vscroll = m_scrollArea->verticalScrollBar();
 
-            QPointF d = m_scrollFactor * (mapToScrollArea(QCursor::pos()) - mapToScrollArea(m_cursorPos)); 
+            QPointF d = m_scrollFactor * (mapToScrollArea(QCursor::pos()) - mapToScrollArea(m_cursorPos));
 
             hscroll->setSliderPosition(hscroll->sliderPosition() - d.x());
             vscroll->setSliderPosition(vscroll->sliderPosition() - d.y());
@@ -249,7 +249,7 @@ void ScrollerPrivate::updateScrolling()
 
             hscroll->setSliderPosition(hscroll->sliderPosition() - m_scrollFactor * d.x());
             vscroll->setSliderPosition(vscroll->sliderPosition() - m_scrollFactor * d.y());
-        } else { 
+        } else {
             m_state = Stopped;
             scrollOngoing = false;
         }

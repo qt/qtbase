@@ -49,8 +49,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringmatcher.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -99,12 +97,12 @@ public:
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     inline QStringList filter(const QRegularExpression &re) const;
     inline QStringList &replaceInStrings(const QRegularExpression &re, const QString &after);
     inline int indexOf(const QRegularExpression &re, int from = 0) const;
     inline int lastIndexOf(const QRegularExpression &re, int from = -1) const;
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
 #if !defined(Q_NO_USING_KEYWORD)
@@ -141,12 +139,12 @@ namespace QtPrivate {
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     void Q_CORE_EXPORT QStringList_replaceInStrings(QStringList *that, const QRegularExpression &rx, const QString &after);
     QStringList Q_CORE_EXPORT QStringList_filter(const QStringList *that, const QRegularExpression &re);
     int Q_CORE_EXPORT QStringList_indexOf(const QStringList *that, const QRegularExpression &re, int from);
     int Q_CORE_EXPORT QStringList_lastIndexOf(const QStringList *that, const QRegularExpression &re, int from);
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 }
 
@@ -220,7 +218,7 @@ inline int QStringList::lastIndexOf(QRegExp &rx, int from) const
 #endif
 
 #ifndef QT_BOOTSTRAPPED
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
 inline QStringList &QStringList::replaceInStrings(const QRegularExpression &rx, const QString &after)
 {
     QtPrivate::QStringList_replaceInStrings(this, rx, after);
@@ -241,7 +239,7 @@ inline int QStringList::lastIndexOf(const QRegularExpression &rx, int from) cons
 {
     return QtPrivate::QStringList_lastIndexOf(this, rx, from);
 }
-#endif // QT_NO_REGEXP
+#endif // QT_NO_REGULAREXPRESSION
 #endif // QT_BOOTSTRAPPED
 
 #ifndef QT_NO_DATASTREAM
@@ -256,7 +254,5 @@ inline QDataStream &operator<<(QDataStream &out, const QStringList &list)
 #endif // QT_NO_DATASTREAM
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QSTRINGLIST_H

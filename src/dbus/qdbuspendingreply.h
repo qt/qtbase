@@ -49,8 +49,6 @@
 
 #ifndef QT_NO_DBUS
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -107,6 +105,10 @@ namespace QDBusPendingReplyTypes {
         static inline void fillMetaTypes(int *)
         { }
     };
+
+    struct TypeIsVoid {};
+    template <typename T> struct NotVoid       { typedef T Type; };
+    template <>           struct NotVoid<void> { typedef TypeIsVoid Type; };
 } // namespace QDBusPendingReplyTypes
 
 template<typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void,
@@ -168,9 +170,7 @@ public:
     template<int Index> inline
     const typename Select<Index>::Type argumentAt() const
     {
-        // static assert?
-        Q_ASSERT_X(Index < count() && Index >= 0, "QDBusPendingReply::argumentAt",
-                   "Index out of bounds");
+        Q_STATIC_ASSERT_X(Index >= 0 && Index < Count, "Index out of bounds");
         typedef typename Select<Index>::Type ResultType;
         return qdbus_cast<ResultType>(argumentAt(Index), 0);
     }
@@ -180,7 +180,7 @@ public:
         return argumentAt<0>();
     }
 
-    inline operator typename Select<0>::Type() const
+    inline operator typename QDBusPendingReplyTypes::NotVoid<T1>::Type() const
     {
         return argumentAt<0>();
     }
@@ -209,8 +209,6 @@ private:
 };
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_DBUS
 #endif

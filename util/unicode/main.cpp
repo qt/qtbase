@@ -540,6 +540,137 @@ static void initLineBreak()
 }
 
 
+static QHash<QByteArray, QChar::Script> scriptMap;
+
+static void initScriptMap()
+{
+    struct Scrpt {
+        QChar::Script script;
+        const char *name;
+    } scripts[] = {
+        // general
+        { QChar::Script_Unknown,                "Unknown" },
+        { QChar::Script_Inherited,              "Inherited" },
+        { QChar::Script_Common,                 "Common" },
+        // pre-4.0
+        { QChar::Script_Latin,                  "Latin" },
+        { QChar::Script_Greek,                  "Greek" },
+        { QChar::Script_Cyrillic,               "Cyrillic" },
+        { QChar::Script_Armenian,               "Armenian" },
+        { QChar::Script_Hebrew,                 "Hebrew" },
+        { QChar::Script_Arabic,                 "Arabic" },
+        { QChar::Script_Syriac,                 "Syriac" },
+        { QChar::Script_Thaana,                 "Thaana" },
+        { QChar::Script_Devanagari,             "Devanagari" },
+        { QChar::Script_Bengali,                "Bengali" },
+        { QChar::Script_Gurmukhi,               "Gurmukhi" },
+        { QChar::Script_Gujarati,               "Gujarati" },
+        { QChar::Script_Oriya,                  "Oriya" },
+        { QChar::Script_Tamil,                  "Tamil" },
+        { QChar::Script_Telugu,                 "Telugu" },
+        { QChar::Script_Kannada,                "Kannada" },
+        { QChar::Script_Malayalam,              "Malayalam" },
+        { QChar::Script_Sinhala,                "Sinhala" },
+        { QChar::Script_Thai,                   "Thai" },
+        { QChar::Script_Lao,                    "Lao" },
+        { QChar::Script_Tibetan,                "Tibetan" },
+        { QChar::Script_Myanmar,                "Myanmar" },
+        { QChar::Script_Georgian,               "Georgian" },
+        { QChar::Script_Hangul,                 "Hangul" },
+        { QChar::Script_Ethiopic,               "Ethiopic" },
+        { QChar::Script_Cherokee,               "Cherokee" },
+        { QChar::Script_CanadianAboriginal,     "CanadianAboriginal" },
+        { QChar::Script_Ogham,                  "Ogham" },
+        { QChar::Script_Runic,                  "Runic" },
+        { QChar::Script_Khmer,                  "Khmer" },
+        { QChar::Script_Mongolian,              "Mongolian" },
+        { QChar::Script_Hiragana,               "Hiragana" },
+        { QChar::Script_Katakana,               "Katakana" },
+        { QChar::Script_Bopomofo,               "Bopomofo" },
+        { QChar::Script_Han,                    "Han" },
+        { QChar::Script_Yi,                     "Yi" },
+        { QChar::Script_OldItalic,              "OldItalic" },
+        { QChar::Script_Gothic,                 "Gothic" },
+        { QChar::Script_Deseret,                "Deseret" },
+        { QChar::Script_Tagalog,                "Tagalog" },
+        { QChar::Script_Hanunoo,                "Hanunoo" },
+        { QChar::Script_Buhid,                  "Buhid" },
+        { QChar::Script_Tagbanwa,               "Tagbanwa" },
+        { QChar::Script_Coptic,                 "Coptic" },
+        // 4.0
+        { QChar::Script_Limbu,                  "Limbu" },
+        { QChar::Script_TaiLe,                  "TaiLe" },
+        { QChar::Script_LinearB,                "LinearB" },
+        { QChar::Script_Ugaritic,               "Ugaritic" },
+        { QChar::Script_Shavian,                "Shavian" },
+        { QChar::Script_Osmanya,                "Osmanya" },
+        { QChar::Script_Cypriot,                "Cypriot" },
+        { QChar::Script_Braille,                "Braille" },
+        // 4.1
+        { QChar::Script_Buginese,               "Buginese" },
+        { QChar::Script_NewTaiLue,              "NewTaiLue" },
+        { QChar::Script_Glagolitic,             "Glagolitic" },
+        { QChar::Script_Tifinagh,               "Tifinagh" },
+        { QChar::Script_SylotiNagri,            "SylotiNagri" },
+        { QChar::Script_OldPersian,             "OldPersian" },
+        { QChar::Script_Kharoshthi,             "Kharoshthi" },
+        // 5.0
+        { QChar::Script_Balinese,               "Balinese" },
+        { QChar::Script_Cuneiform,              "Cuneiform" },
+        { QChar::Script_Phoenician,             "Phoenician" },
+        { QChar::Script_PhagsPa,                "PhagsPa" },
+        { QChar::Script_Nko,                    "Nko" },
+        // 5.1
+        { QChar::Script_Sundanese,              "Sundanese" },
+        { QChar::Script_Lepcha,                 "Lepcha" },
+        { QChar::Script_OlChiki,                "OlChiki" },
+        { QChar::Script_Vai,                    "Vai" },
+        { QChar::Script_Saurashtra,             "Saurashtra" },
+        { QChar::Script_KayahLi,                "KayahLi" },
+        { QChar::Script_Rejang,                 "Rejang" },
+        { QChar::Script_Lycian,                 "Lycian" },
+        { QChar::Script_Carian,                 "Carian" },
+        { QChar::Script_Lydian,                 "Lydian" },
+        { QChar::Script_Cham,                   "Cham" },
+        // 5.2
+        { QChar::Script_TaiTham,                "TaiTham" },
+        { QChar::Script_TaiViet,                "TaiViet" },
+        { QChar::Script_Avestan,                "Avestan" },
+        { QChar::Script_EgyptianHieroglyphs,    "EgyptianHieroglyphs" },
+        { QChar::Script_Samaritan,              "Samaritan" },
+        { QChar::Script_Lisu,                   "Lisu" },
+        { QChar::Script_Bamum,                  "Bamum" },
+        { QChar::Script_Javanese,               "Javanese" },
+        { QChar::Script_MeeteiMayek,            "MeeteiMayek" },
+        { QChar::Script_ImperialAramaic,        "ImperialAramaic" },
+        { QChar::Script_OldSouthArabian,        "OldSouthArabian" },
+        { QChar::Script_InscriptionalParthian,  "InscriptionalParthian" },
+        { QChar::Script_InscriptionalPahlavi,   "InscriptionalPahlavi" },
+        { QChar::Script_OldTurkic,              "OldTurkic" },
+        { QChar::Script_Kaithi,                 "Kaithi" },
+        // 6.0
+        { QChar::Script_Batak,                  "Batak" },
+        { QChar::Script_Brahmi,                 "Brahmi" },
+        { QChar::Script_Mandaic,                "Mandaic" },
+        // 6.1
+        { QChar::Script_Chakma,                 "Chakma" },
+        { QChar::Script_MeroiticCursive,        "MeroiticCursive" },
+        { QChar::Script_MeroiticHieroglyphs,    "MeroiticHieroglyphs" },
+        { QChar::Script_Miao,                   "Miao" },
+        { QChar::Script_Sharada,                "Sharada" },
+        { QChar::Script_SoraSompeng,            "SoraSompeng" },
+        { QChar::Script_Takri,                  "Takri" },
+        // unhandled
+        { QChar::Script_Unknown,                0 }
+    };
+    Scrpt *p = scripts;
+    while (p->name) {
+        scriptMap.insert(p->name, p->script);
+        ++p;
+    }
+}
+
+
 // Keep this one in sync with the code in createPropertyInfo
 static const char *property_string =
     "struct Properties {\n"
@@ -562,7 +693,7 @@ static const char *property_string =
     "    ushort wordBreakClass      : 8; /* 4 used */\n"
     "    ushort sentenceBreakClass  : 8; /* 4 used */\n"
     "    ushort lineBreakClass      : 8; /* 6 used */\n"
-    "    ushort script              : 8; /* 5 used */\n"
+    "    ushort script              : 8; /* 7 used */\n"
     "};\n\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4);\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2);\n"
@@ -584,10 +715,6 @@ static const char *methods =
     "Q_CORE_EXPORT LineBreakClass QT_FASTCALL lineBreakClass(uint ucs4);\n"
     "inline LineBreakClass lineBreakClass(QChar ch)\n"
     "{ return lineBreakClass(ch.unicode()); }\n"
-    "\n"
-    "Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4);\n"
-    "inline Script script(QChar ch)\n"
-    "{ return script(ch.unicode()); }\n"
     "\n";
 
 static const int SizeOfPropertiesStruct = 20;
@@ -745,7 +872,7 @@ struct UnicodeData {
         p.graphemeBreakClass = GraphemeBreak_Other;
         p.wordBreakClass = WordBreak_Other;
         p.sentenceBreakClass = SentenceBreak_Other;
-        p.script = 0; // Common
+        p.script = QChar::Script_Unknown;
         propertyIndex = -1;
         excludedComposition = false;
     }
@@ -1830,42 +1957,6 @@ static void readBlocks()
 }
 #endif
 
-static QList<QByteArray> scriptNames;
-static QList<int> scriptMap;
-
-static const char *specialScripts[] = {
-    "Common",
-    "Greek",
-    "Cyrillic",
-    "Armenian",
-    "Hebrew",
-    "Arabic",
-    "Syriac",
-    "Thaana",
-    "Devanagari",
-    "Bengali",
-    "Gurmukhi",
-    "Gujarati",
-    "Oriya",
-    "Tamil",
-    "Telugu",
-    "Kannada",
-    "Malayalam",
-    "Sinhala",
-    "Thai",
-    "Lao",
-    "Tibetan",
-    "Myanmar",
-    "Georgian",
-    "Hangul",
-    "Ogham",
-    "Runic",
-    "Khmer",
-    "Nko",
-    "Inherited"
-};
-enum { specialScriptsCount = sizeof(specialScripts) / sizeof(const char *) };
-
 static void readScripts()
 {
     qDebug("Reading Scripts.txt");
@@ -1875,13 +1966,6 @@ static void readScripts()
         qFatal("Couldn't find Scripts.txt");
 
     f.open(QFile::ReadOnly);
-
-    int scriptsCount = specialScriptsCount;
-    // ### preserve the old ordering (temporary)
-    for (int i = 0; i < specialScriptsCount; ++i) {
-        scriptNames.append(specialScripts[i]);
-        scriptMap.append(i);
-    }
 
     while (!f.atEnd()) {
         QByteArray line = f.readLine();
@@ -1914,55 +1998,15 @@ static void readScripts()
             Q_ASSERT(ok);
         }
 
-        int scriptIndex = scriptNames.indexOf(scriptName);
-        if (scriptIndex == -1) {
-            scriptIndex = scriptNames.size();
-            scriptNames.append(scriptName);
-
-            // is the script alias for 'Common'?
-            int s = specialScriptsCount;
-            while (--s > 0) {
-                if (scriptName == specialScripts[s])
-                    break;
-            }
-            scriptMap.append(s > 0 ? scriptsCount++ : 0);
-        }
+        if (!scriptMap.contains(scriptName))
+            qFatal("Unhandled script property value: %s", scriptName.constData());
+        QChar::Script script = scriptMap.value(scriptName, QChar::Script_Unknown);
 
         for (int codepoint = first; codepoint <= last; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
-            ud.p.script = scriptMap.at(scriptIndex);
+            ud.p.script = script;
         }
     }
-}
-
-static QByteArray createScriptEnumDeclaration()
-{
-    QByteArray declaration;
-
-    declaration += "// See http://www.unicode.org/reports/tr24/tr24-5.html\n";
-    declaration += "enum Script {\n    Common";
-
-    // output the ones with special processing first
-    for (int i = 1; i < scriptNames.size(); ++i) {
-        if (scriptMap.at(i) == 0)
-            continue;
-        declaration += ",\n    ";
-        declaration += scriptNames.at(i);
-    }
-    declaration += ",\n    ScriptCount = Inherited";
-
-    // output the ones that are an alias for 'Common'
-    for (int i = 1; i < scriptNames.size(); ++i) {
-        if (scriptMap.at(i) != 0)
-            continue;
-        declaration += ",\n    ";
-        declaration += scriptNames.at(i);
-        declaration += " = Common";
-    }
-
-    declaration += "\n};\n\n";
-
-    return declaration;
 }
 
 #if 0
@@ -2214,7 +2258,7 @@ static QByteArray createPropertyInfo()
         out += ", ";
         out += QByteArray::number( p.lineBreakClass );
         out += ", ";
-//     "        ushort script              : 8; /* 5 used */\n"
+//     "        ushort script              : 8; /* 7 used */\n"
         out += QByteArray::number( p.script );
         out += " },";
     }
@@ -2263,11 +2307,7 @@ static QByteArray createPropertyInfo()
            "{\n"
            "    return (LineBreakClass)qGetProp(ucs4)->lineBreakClass;\n"
            "}\n"
-           "\n"
-           "Q_CORE_EXPORT Script QT_FASTCALL script(uint ucs4)\n"
-           "{\n"
-           "    return (Script)qGetProp(ucs4)->script;\n"
-           "}\n\n";
+           "\n";
 
     return out;
 }
@@ -2725,6 +2765,7 @@ int main(int, char **)
     initWordBreak();
     initSentenceBreak();
     initLineBreak();
+    initScriptMap();
 
     readUnicodeData();
     readBidiMirroring();
@@ -2746,7 +2787,6 @@ int main(int, char **)
     QByteArray compositions = createCompositionInfo();
     QByteArray ligatures = createLigatureInfo();
     QByteArray normalizationCorrections = createNormalizationCorrections();
-    QByteArray scriptEnumDeclaration = createScriptEnumDeclaration();
 
     QByteArray header =
         "/****************************************************************************\n"
@@ -2837,7 +2877,6 @@ int main(int, char **)
     f.write("#define UNICODE_DATA_VERSION "DATA_VERSION_STR"\n\n");
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
-    f.write(scriptEnumDeclaration);
     f.write(grapheme_break_class_string);
     f.write(word_break_class_string);
     f.write(sentence_break_class_string);

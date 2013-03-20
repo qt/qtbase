@@ -49,7 +49,7 @@
 
 #include <string>
 
-#if defined(Q_OS_LINUX_ANDROID)
+#if defined(Q_OS_ANDROID)
 // std::wstring is disabled on android's glibc, as bionic lacks certain features
 // that libstdc++ checks for (like mbcslen).
 namespace std
@@ -64,14 +64,13 @@ namespace std
 #error qstring.h must be included before any header file that defines truncate
 #endif
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
 class QCharRef;
 class QRegExp;
 class QRegularExpression;
+class QRegularExpressionMatch;
 class QString;
 class QStringList;
 class QTextCodec;
@@ -335,10 +334,11 @@ public:
     inline bool contains(QRegExp &rx) const { return indexOf(rx) != -1; }
 #endif
 
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     int indexOf(const QRegularExpression &re, int from = 0) const;
     int lastIndexOf(const QRegularExpression &re, int from = -1) const;
     bool contains(const QRegularExpression &re) const;
+    bool contains(const QRegularExpression &re, QRegularExpressionMatch *match) const; // ### Qt 6: merge overloads
     int count(const QRegularExpression &re) const;
 #endif
 
@@ -356,7 +356,7 @@ public:
 #ifndef QT_NO_REGEXP
     QString section(const QRegExp &reg, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     QString section(const QRegularExpression &re, int start, int end = -1, SectionFlags flags = SectionDefault) const;
 #endif
     QString left(int n) const Q_REQUIRED_RESULT;
@@ -432,7 +432,7 @@ public:
     inline QString &remove(const QRegExp &rx)
     { return replace(rx, QString()); }
 #endif
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     QString &replace(const QRegularExpression &re, const QString  &after);
     inline QString &remove(const QRegularExpression &re)
     { return replace(re, QString()); }
@@ -447,7 +447,7 @@ public:
 #ifndef QT_NO_REGEXP
     QStringList split(const QRegExp &sep, SplitBehavior behavior = KeepEmptyParts) const Q_REQUIRED_RESULT;
 #endif
-#ifndef QT_NO_REGEXP
+#ifndef QT_NO_REGULAREXPRESSION
     QStringList split(const QRegularExpression &sep, SplitBehavior behavior = KeepEmptyParts) const Q_REQUIRED_RESULT;
 #endif
     enum NormalizationForm {
@@ -884,6 +884,8 @@ public:
     QChar::Decomposition decompositionTag() const { return QChar(*this).decompositionTag(); }
     uchar combiningClass() const { return QChar(*this).combiningClass(); }
 
+    inline QChar::Script script() const { return QChar(*this).script(); }
+
     QChar::UnicodeVersion unicodeVersion() const { return QChar(*this).unicodeVersion(); }
 
     inline uchar cell() const { return QChar(*this).cell(); }
@@ -1171,13 +1173,17 @@ class Q_CORE_EXPORT QStringRef {
     int m_position;
     int m_size;
 public:
+    // ### Qt 6: make this constructor constexpr, after the destructor is made trivial
     inline QStringRef():m_string(0), m_position(0), m_size(0){}
     inline QStringRef(const QString *string, int position, int size);
     inline QStringRef(const QString *string);
+
+    // ### Qt 6: remove this copy constructor, the implicit one is fine
     inline QStringRef(const QStringRef &other)
         :m_string(other.m_string), m_position(other.m_position), m_size(other.m_size)
         {}
 
+    // ### Qt 6: remove this destructor, the implicit one is fine
     inline ~QStringRef(){}
     inline const QString *string() const { return m_string; }
     inline int position() const { return m_position; }
@@ -1271,6 +1277,18 @@ public:
     int localeAwareCompare(const QStringRef &s) const;
     static int localeAwareCompare(const QStringRef &s1, const QString &s2);
     static int localeAwareCompare(const QStringRef &s1, const QStringRef &s2);
+
+    QStringRef trimmed() const Q_REQUIRED_RESULT;
+    short  toShort(bool *ok = 0, int base = 10) const;
+    ushort toUShort(bool *ok = 0, int base = 10) const;
+    int toInt(bool *ok = 0, int base = 10) const;
+    uint toUInt(bool *ok = 0, int base = 10) const;
+    long toLong(bool *ok = 0, int base = 10) const;
+    ulong toULong(bool *ok = 0, int base = 10) const;
+    qlonglong toLongLong(bool *ok = 0, int base = 10) const;
+    qulonglong toULongLong(bool *ok = 0, int base = 10) const;
+    float toFloat(bool *ok = 0) const;
+    double toDouble(bool *ok = 0) const;
 };
 Q_DECLARE_TYPEINFO(QStringRef, Q_PRIMITIVE_TYPE);
 
@@ -1385,8 +1403,6 @@ QT_DEPRECATED inline QString escape(const QString &plain) {
 }
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
 #include <QtCore/qstringbuilder.h>

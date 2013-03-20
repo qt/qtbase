@@ -83,7 +83,6 @@ public:
 private:
     typedef QMap<QString, DomCustomWidget*> NameCustomWidgetMap;
     NameCustomWidgetMap m_customWidgets;
-    bool m_scriptsActivated;
 };
 
 QT_END_NAMESPACE

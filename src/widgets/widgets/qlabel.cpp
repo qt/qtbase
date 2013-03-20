@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtWidgets module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -1032,20 +1032,6 @@ void QLabel::paintEvent(QPaintEvent *)
             d->ensureTextLayouted();
 
             QAbstractTextDocumentLayout::PaintContext context;
-            if (!isEnabled() && !d->control &&
-                // We cannot support etched for rich text controls because custom
-                // colors and links will override the light palette
-                style->styleHint(QStyle::SH_EtchDisabledText, &opt, this)) {
-                context.palette = opt.palette;
-                context.palette.setColor(QPalette::Text, context.palette.light().color());
-                painter.save();
-                painter.translate(lr.x() + 1, lr.y() + 1);
-                painter.setClipRect(lr.translated(-lr.x() - 1, -lr.y() - 1));
-                QAbstractTextDocumentLayout *layout = d->control->document()->documentLayout();
-                layout->draw(&painter, context);
-                painter.restore();
-            }
-
             // Adjust the palette
             context.palette = opt.palette;
 

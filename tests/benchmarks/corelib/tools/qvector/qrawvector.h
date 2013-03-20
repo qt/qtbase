@@ -55,8 +55,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-QT_BEGIN_HEADER
-
 QT_BEGIN_NAMESPACE
 
 
@@ -102,7 +100,7 @@ public:
     static T *fromBase(void *d)
     { return (T*)((char*)d + offsetOfTypedData()); }
 
-    inline QRawVector() 
+    inline QRawVector()
     { m_begin = fromBase(0); m_alloc = m_size = 0; realloc(m_size, m_alloc, true); }
     explicit QRawVector(int size);
     QRawVector(int size, const T &t);
@@ -751,7 +749,5 @@ Q_DECLARE_SEQUENTIAL_ITERATOR(RawVector)
 Q_DECLARE_MUTABLE_SEQUENTIAL_ITERATOR(RawVector)
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QRAWVECTOR_H

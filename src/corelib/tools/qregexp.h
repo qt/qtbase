@@ -42,11 +42,11 @@
 #ifndef QREGEXP_H
 #define QREGEXP_H
 
+#include <QtCore/qglobal.h>
+
 #ifndef QT_NO_REGEXP
 
 #include <QtCore/qstring.h>
-
-QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
@@ -128,8 +128,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QRegExp &);
 #endif
 
 QT_END_NAMESPACE
-
-QT_END_HEADER
 
 #endif // QT_NO_REGEXP
 
