@@ -131,22 +131,24 @@ FILES="
     pcre16_valid_utf16.c
     pcre16_version.c
     pcre16_xclass.c
+    sljit/sljitConfig.h
+    sljit/sljitConfigInternal.h
+    sljit/sljitExecAllocator.c
     sljit/sljitLir.c
     sljit/sljitLir.h
-    sljit/sljitNativePPC_common.c
-    sljit/sljitNativeX86_common.c
+    sljit/sljitNativeARM_Thumb2.c
     sljit/sljitNativeARM_v5.c
-    sljit/sljitNativeX86_32.c
-    sljit/sljitNativeX86_64.c
+    sljit/sljitNativeMIPS_32.c
+    sljit/sljitNativeMIPS_common.c
     sljit/sljitNativePPC_32.c
     sljit/sljitNativePPC_64.c
-    sljit/sljitConfig.h
-    sljit/sljitNativeMIPS_32.c
+    sljit/sljitNativePPC_common.c
+    sljit/sljitNativeSPARC_32.c
+    sljit/sljitNativeSPARC_common.c
+    sljit/sljitNativeX86_32.c
+    sljit/sljitNativeX86_64.c
+    sljit/sljitNativeX86_common.c
     sljit/sljitUtils.c
-    sljit/sljitNativeMIPS_common.c
-    sljit/sljitExecAllocator.c
-    sljit/sljitConfigInternal.h
-    sljit/sljitNativeARM_Thumb2.c
 "
 
 for i in $FILES; do
