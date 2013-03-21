@@ -234,7 +234,7 @@ bool QLocalSocket::open(OpenMode openMode)
     }
 
     const QLatin1String prefix("QLocalServer/");
-    if (name.startsWith(prefix))
+    if (d->serverName.startsWith(prefix))
         d->fullServerName = d->serverName;
     else
         d->fullServerName = prefix + d->serverName;
