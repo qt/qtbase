@@ -61,7 +61,7 @@ QString QSqlResultPrivate::holderAt(int index) const
 }
 
 // return a unique id for bound names
-QString QSqlResultPrivate::fieldSerial(int i)
+QString QSqlResultPrivate::fieldSerial(int i) const
 {
     ushort arr[] = { ':', 'f', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     ushort *ptr = &arr[1];
@@ -81,7 +81,7 @@ static bool qIsAlnum(QChar ch)
     return u - 'a' < 26 || u - 'A' < 26 || u - '0' < 10 || u == '_';
 }
 
-QString QSqlResultPrivate::positionalToNamedBinding(const QString &query, QString (fieldSerialFunc)(int idx))
+QString QSqlResultPrivate::positionalToNamedBinding(const QString &query) const
 {
     int n = query.size();
 
@@ -106,7 +106,7 @@ QString QSqlResultPrivate::positionalToNamedBinding(const QString &query, QStrin
             result += ch;
         } else {
             if (ch == QLatin1Char('?')) {
-                result += fieldSerialFunc(count++);
+                result += fieldSerial(count++);
             } else {
                 if (ch == QLatin1Char('\'') || ch == QLatin1Char('"') || ch == QLatin1Char('`'))
                     closingQuote = ch;
@@ -594,7 +594,7 @@ bool QSqlResult::savePrepare(const QString& query)
     d->executedQuery = d->namedToPositionalBinding(query);
 
     if (driver()->hasFeature(QSqlDriver::NamedPlaceholders))
-        d->executedQuery = QSqlResultPrivate::positionalToNamedBinding(query);
+        d->executedQuery = d->positionalToNamedBinding(query);
 
     return prepare(d->executedQuery);
 }
@@ -680,7 +680,7 @@ void QSqlResult::bindValue(int index, const QVariant& val, QSql::ParamType param
 {
     Q_D(QSqlResult);
     d->binds = PositionalBinding;
-    d->indexes[QSqlResultPrivate::fieldSerial(index)].append(index);
+    d->indexes[d->fieldSerial(index)].append(index);
     if (d->values.count() <= index)
         d->values.resize(index + 1);
     d->values[index] = val;

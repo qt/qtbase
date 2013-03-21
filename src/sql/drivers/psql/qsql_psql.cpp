@@ -202,7 +202,7 @@ public:
         preparedQueriesEnabled(false)
     { }
 
-    static QString fieldSerial(int i) { return QLatin1Char('$') + QString::number(i + 1); }
+    QString fieldSerial(int i) const { return QLatin1Char('$') + QString::number(i + 1); }
     void deallocatePreparedStmt();
     const QPSQLDriverPrivate * privDriver() const {Q_Q(const QPSQLResult); return reinterpret_cast<const QPSQLDriver *>(q->driver())->d; }
 
@@ -594,7 +594,7 @@ bool QPSQLResult::prepare(const QString &query)
         d->deallocatePreparedStmt();
 
     const QString stmtId = qMakePreparedStmtId();
-    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(QSqlResultPrivate::positionalToNamedBinding(query, QPSQLResultPrivate::fieldSerial));
+    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(d->positionalToNamedBinding(query));
 
     PGresult *result = d->privDriver()->exec(stmt);
 
