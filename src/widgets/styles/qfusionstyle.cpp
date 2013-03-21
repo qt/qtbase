@@ -1086,7 +1086,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
     case CE_ToolBar:
         if (const QStyleOptionToolBar *toolBar = qstyleoption_cast<const QStyleOptionToolBar *>(option)) {
             // Reserve the beveled appearance only for mainwindow toolbars
-            if (!(widget && qobject_cast<const QMainWindow*> (widget->parentWidget())))
+            if (widget && !(qobject_cast<const QMainWindow*> (widget->parentWidget())))
                 break;
 
             // Draws the light line above and the dark line below menu bars and
