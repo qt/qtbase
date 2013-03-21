@@ -229,6 +229,7 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
 */
 QTextBoundaryFinder::~QTextBoundaryFinder()
 {
+    Q_UNUSED(unused);
     if (freePrivate)
         free(d);
 }

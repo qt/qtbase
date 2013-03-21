@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 */
 QAbstractNativeEventFilter::QAbstractNativeEventFilter()
 {
+    Q_UNUSED(d);
 }
 
 /*!
