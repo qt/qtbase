@@ -215,7 +215,7 @@ QWindow *QWindowsAccessibility::windowHelper(const QAccessibleInterface *iface)
     QWindow *window = iface->window();
     if (!window) {
         QAccessibleInterface *acc = iface->parent();
-        while (acc && !window) {
+        while (acc && acc->isValid() && !window) {
             window = acc->window();
             QAccessibleInterface *par = acc->parent();
             delete acc;
