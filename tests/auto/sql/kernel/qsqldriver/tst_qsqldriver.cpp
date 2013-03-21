@@ -77,7 +77,7 @@ void tst_QSqlDriver::initTestCase_data()
 void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
 {
     QSqlQuery q(db);
-    const QString relTEST1(qTableName("relTEST1", __FILE__));
+    const QString relTEST1(qTableName("relTEST1", __FILE__, db));
 
     if(tst_Databases::isPostgreSQL(db))
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
@@ -102,7 +102,7 @@ void tst_QSqlDriver::cleanupTestCase()
 {
     foreach (const QString &dbName, dbs.dbNames) {
         QSqlDatabase db = QSqlDatabase::database(dbName);
-        tst_Databases::safeDropTable( db, qTableName( "relTEST1", __FILE__ ) );
+        tst_Databases::safeDropTable(db, qTableName("relTEST1", __FILE__, db));
     }
     dbs.close();
 }
@@ -121,7 +121,7 @@ void tst_QSqlDriver::record()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tablename(qTableName("relTEST1", __FILE__));
+    QString tablename(qTableName("relTEST1", __FILE__, db));
     QStringList fields;
     fields << "id" << "name" << "title_key" << "another_title_key";
 
@@ -178,7 +178,7 @@ void tst_QSqlDriver::primaryIndex()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tablename(qTableName("relTEST1", __FILE__));
+    QString tablename(qTableName("relTEST1", __FILE__, db));
     //check that we can get primary index using unquoted mixed case table name
     QSqlIndex index = db.driver()->primaryIndex(tablename);
     QCOMPARE(index.count(), 1);

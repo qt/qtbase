@@ -96,14 +96,26 @@ static QString qGetHostName()
 // to prevent nameclashes on our database server, each machine
 // will use its own set of table names. Call this function to get
 // "tablename_hostname"
-inline static QString qTableName( const QString& prefix, const char *sourceFileName )
+inline QString fixupTableName(const QString &tableName, QSqlDatabase db)
 {
-    return QLatin1String("dbtst")+QString::number(qHash(QLatin1String(sourceFileName) + "_" + qGetHostName().replace( "-", "_" )), 16)+"_"+prefix;
+    QString tbName = tableName;
+    // On Oracle we are limited to 30 character tablenames
+    QSqlDriverPrivate *d = static_cast<QSqlDriverPrivate *>(QObjectPrivate::get(db.driver()));
+    if (d && d->dbmsType == QSqlDriverPrivate::Oracle)
+        tbName.truncate(30);
+    return tbName;
 }
 
-inline static QString qTableName( const QString& prefix, QSqlDriver* driver )
+inline static QString qTableName(const QString& prefix, const char *sourceFileName, QSqlDatabase db)
 {
-    return driver->escapeIdentifier( prefix + "_" + qGetHostName(), QSqlDriver::TableName );
+    return fixupTableName(QString(QLatin1String("dbtst") + QString::number(qHash(QLatin1String(sourceFileName) +
+                          "_" + qGetHostName().replace( "-", "_" )), 16) + "_" + prefix), db);
+}
+
+inline static QString qTableName(const QString& prefix, QSqlDatabase db)
+{
+    return fixupTableName(QString(db.driver()->escapeIdentifier(prefix + "_" + qGetHostName(), QSqlDriver::TableName)),
+                          db);
 }
 
 inline static bool testWhiteSpaceNames( const QString &name )
@@ -467,6 +479,8 @@ public:
     {
         if (db.driverName().startsWith("QPSQL"))
             return QLatin1String("timestamp");
+        if (db.driverName().startsWith("QOCI") && getOraVersion(db) >= 9)
+            return QLatin1String("timestamp(0)");
         return QLatin1String("datetime");
     }
 

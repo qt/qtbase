@@ -53,7 +53,7 @@
 #include <pthread.h>
 #endif
 
-const QString qtest(qTableName("qtest", __FILE__));
+const QString qtest(qTableName("qtest", __FILE__, QSqlDatabase()));
 // set this define if Oracle is built with threading support
 //#define QOCI_THREADED
 
@@ -303,7 +303,7 @@ void tst_QSqlThread::dropTestTables()
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
-        tst_Databases::safeDropTables(db, QStringList() << qtest << qTableName("qtest2", __FILE__) << qTableName("emptytable", __FILE__));
+        tst_Databases::safeDropTables(db, QStringList() << qtest << qTableName("qtest2", __FILE__, db) << qTableName("emptytable", __FILE__, db));
     }
 }
 
@@ -316,10 +316,10 @@ void tst_QSqlThread::createTestTables()
         QVERIFY_SQL(q, exec("create table " + qtest
                        + "(id int NOT NULL primary key, name varchar(20), title int)"));
 
-        QVERIFY_SQL(q, exec("create table " + qTableName("qtest2", __FILE__)
+        QVERIFY_SQL(q, exec("create table " + qTableName("qtest2", __FILE__, db)
                        + "(id int NOT NULL primary key, title varchar(20))"));
 
-        QVERIFY_SQL(q, exec("create table " + qTableName("emptytable", __FILE__)
+        QVERIFY_SQL(q, exec("create table " + qTableName("emptytable", __FILE__, db)
                        + "(id int NOT NULL primary key)"));
     }
 }
@@ -335,9 +335,9 @@ void tst_QSqlThread::repopulateTestTables()
         QVERIFY_SQL(q, exec("insert into " + qtest + " values(2, 'trond', 2)"));
         QVERIFY_SQL(q, exec("insert into " + qtest + " values(3, 'vohi', 3)"));
 
-        QVERIFY_SQL(q, exec("delete from " + qTableName("qtest2", __FILE__)));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__) + " values(1, 'herr')"));
-        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__) + " values(2, 'mister')"));
+        QVERIFY_SQL(q, exec("delete from " + qTableName("qtest2", __FILE__, db)));
+        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__, db) + " values(1, 'herr')"));
+        QVERIFY_SQL(q, exec("insert into " + qTableName("qtest2", __FILE__, db) + " values(2, 'mister')"));
     }
 }
 

@@ -45,9 +45,9 @@
 #include <QtSql>
 #include <QtSql/private/qsqltablemodel_p.h>
 
-const QString test(qTableName("test", __FILE__)),
-                   test2(qTableName("test2", __FILE__)),
-                   test3(qTableName("test3", __FILE__));
+const QString test(qTableName("test", __FILE__, QSqlDatabase())),
+                   test2(qTableName("test2", __FILE__, QSqlDatabase())),
+                   test3(qTableName("test3", __FILE__, QSqlDatabase()));
 
 
 class tst_QSqlTableModel : public QObject
@@ -176,18 +176,18 @@ void tst_QSqlTableModel::dropTestTables()
         tableNames << test
                    << test2
                    << test3
-                   << qTableName("test4", __FILE__)
-                   << qTableName("emptytable", __FILE__)
-                   << qTableName("bigtable", __FILE__)
-                   << qTableName("foo", __FILE__)
-                   << qTableName("pktest", __FILE__);
+                   << qTableName("test4", __FILE__, db)
+                   << qTableName("emptytable", __FILE__, db)
+                   << qTableName("bigtable", __FILE__, db)
+                   << qTableName("foo", __FILE__, db)
+                   << qTableName("pktest", __FILE__, db);
         if (testWhiteSpaceNames(db.driverName()))
-            tableNames << qTableName("qtestw hitespace", db.driver());
+            tableNames << qTableName("qtestw hitespace", db);
 
         tst_Databases::safeDropTables(db, tableNames);
 
         if (db.driverName().startsWith("QPSQL")) {
-            q.exec("DROP SCHEMA " + qTableName("testschema", __FILE__) + " CASCADE");
+            q.exec("DROP SCHEMA " + qTableName("testschema", __FILE__, db) + " CASCADE");
         }
     }
 }
@@ -205,19 +205,19 @@ void tst_QSqlTableModel::createTestTables()
         QVERIFY_SQL( q, exec("create table " + test3 + "(id int, random varchar(20), randomtwo varchar(20))"));
 
         if(!tst_Databases::isSqlServer(db))
-            QVERIFY_SQL( q, exec("create table " + qTableName("test4", __FILE__) + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
+            QVERIFY_SQL(q, exec("create table " + qTableName("test4", __FILE__, db) + "(column1 varchar(50), column2 varchar(50), column3 varchar(50))"));
         else
-            QVERIFY_SQL( q, exec("create table " + qTableName("test4", __FILE__) + "(column1 varchar(50), column2 varchar(50) NULL, column3 varchar(50))"));
+            QVERIFY_SQL(q, exec("create table " + qTableName("test4", __FILE__, db) + "(column1 varchar(50), column2 varchar(50) NULL, column3 varchar(50))"));
 
 
-        QVERIFY_SQL( q, exec("create table " + qTableName("emptytable", __FILE__) + "(id int)"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("emptytable", __FILE__, db) + "(id int)"));
 
         if (testWhiteSpaceNames(db.driverName())) {
-            QString qry = "create table " + qTableName("qtestw hitespace", db.driver()) + " ("+ db.driver()->escapeIdentifier("a field", QSqlDriver::FieldName) + " int)";
+            QString qry = "create table " + qTableName("qtestw hitespace", db) + " ("+ db.driver()->escapeIdentifier("a field", QSqlDriver::FieldName) + " int)";
             QVERIFY_SQL( q, exec(qry));
         }
 
-        QVERIFY_SQL( q, exec("create table "+qTableName("pktest", __FILE__)+"(id int not null primary key, a varchar(20))"));
+        QVERIFY_SQL(q, exec("create table " + qTableName("pktest", __FILE__, db) + "(id int not null primary key, a varchar(20))"));
     }
 }
 
@@ -343,7 +343,7 @@ void tst_QSqlTableModel::selectRow()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tbl = qTableName("pktest", __FILE__);
+    QString tbl = qTableName("pktest", __FILE__, db);
     QSqlQuery q(db);
     q.exec("DELETE FROM " + tbl);
     q.exec("INSERT INTO " + tbl + " (id, a) VALUES (0, 'a')");
@@ -403,7 +403,7 @@ void tst_QSqlTableModel::selectRowOverride()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tbl = qTableName("pktest", __FILE__);
+    QString tbl = qTableName("pktest", __FILE__, db);
     QSqlQuery q(db);
     q.exec("DELETE FROM " + tbl);
     q.exec("INSERT INTO " + tbl + " (id, a) VALUES (0, 'a')");
@@ -827,7 +827,7 @@ void tst_QSqlTableModel::insertRowFailure()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("pktest", __FILE__));
+    model.setTable(qTableName("pktest", __FILE__, db));
     model.setEditStrategy(submitpolicy);
 
     QSqlRecord values = model.record();
@@ -975,7 +975,7 @@ void tst_QSqlTableModel::insertWithAutoColumn()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tbl = qTableName("autoColumnTest", __FILE__);
+    QString tbl = qTableName("autoColumnTest", __FILE__, db);
     QSqlQuery q(db);
     q.exec("DROP TABLE " + tbl);
     QVERIFY_SQL(q, exec("CREATE TABLE " + tbl + "(id INTEGER PRIMARY KEY AUTOINCREMENT, val TEXT)"));
@@ -1378,8 +1378,8 @@ void tst_QSqlTableModel::revert()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QString tblA = qTableName("revertATest", __FILE__);
-    QString tblB = qTableName("revertBTest", __FILE__);
+    QString tblA = qTableName("revertATest", __FILE__, db);
+    QString tblB = qTableName("revertBTest", __FILE__, db);
     QSqlQuery q(db);
     q.exec("PRAGMA foreign_keys = ON;");
     q.exec("DROP TABLE " + tblB);
@@ -1646,7 +1646,7 @@ void tst_QSqlTableModel::emptyTable()
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 0);
 
-    model.setTable(qTableName("emptytable", __FILE__));
+    model.setTable(qTableName("emptytable", __FILE__, db));
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.columnCount(), 1);
 
@@ -1670,9 +1670,9 @@ void tst_QSqlTableModel::tablesAndSchemas()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-    q.exec("DROP SCHEMA " + qTableName("testschema", __FILE__) + " CASCADE");
-    QVERIFY_SQL( q, exec("create schema " + qTableName("testschema", __FILE__)));
-    QString tableName = qTableName("testschema", __FILE__) + '.' + qTableName("testtable", __FILE__);
+    q.exec("DROP SCHEMA " + qTableName("testschema", __FILE__, db) + " CASCADE");
+    QVERIFY_SQL( q, exec("create schema " + qTableName("testschema", __FILE__, db)));
+    QString tableName = qTableName("testschema", __FILE__, db) + '.' + qTableName("testtable", __FILE__, db);
     QVERIFY_SQL( q, exec("create table " + tableName + "(id int)"));
     QVERIFY_SQL( q, exec("insert into " + tableName + " values(1)"));
     QVERIFY_SQL( q, exec("insert into " + tableName + " values(2)"));
@@ -1693,7 +1693,7 @@ void tst_QSqlTableModel::whitespaceInIdentifiers()
     if (!testWhiteSpaceNames(db.driverName()))
         QSKIP("DBMS doesn't support whitespaces in identifiers");
 
-    QString tableName = qTableName("qtestw hitespace", db.driver());
+    QString tableName = qTableName("qtestw hitespace", db);
 
     QSqlTableModel model(0, db);
     model.setTable(tableName);
@@ -1711,10 +1711,10 @@ void tst_QSqlTableModel::primaryKeyOrder()
     if(tst_Databases::isPostgreSQL(db))
         QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
-    QVERIFY_SQL( q, exec("create table "+qTableName("foo", __FILE__)+"(a varchar(20), id int not null primary key, b varchar(20))"));
+    QVERIFY_SQL(q, exec("create table " + qTableName("foo", __FILE__, db) + "(a varchar(20), id int not null primary key, b varchar(20))"));
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("foo", __FILE__));
+    model.setTable(qTableName("foo", __FILE__, db));
 
     QSqlIndex pk = model.primaryKey();
     QCOMPARE(pk.count(), 1);
@@ -1783,7 +1783,7 @@ void tst_QSqlTableModel::sqlite_bigTable()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    const QString bigtable(qTableName("bigtable", __FILE__));
+    const QString bigtable(qTableName("bigtable", __FILE__, db));
 
     bool hasTransactions = db.driver()->hasFeature(QSqlDriver::Transactions);
     if (hasTransactions) QVERIFY(db.transaction());
@@ -1865,7 +1865,7 @@ void tst_QSqlTableModel::submitAllOnInvalidTable()
 
     // setTable returns a void, so the error can only be caught by
     // manually checking lastError(). ### Qt5: This should be changed!
-    model.setTable(qTableName("invalidTable", __FILE__));
+    model.setTable(qTableName("invalidTable", __FILE__, db));
     QCOMPARE(model.lastError().type(), QSqlError::StatementError);
 
     // This will give us an empty record which is expected behavior
@@ -1975,7 +1975,7 @@ void tst_QSqlTableModel::tableModifyWithBlank()
     CHECK_DATABASE(db);
 
     QSqlTableModel model(0, db);
-    model.setTable(qTableName("test4", __FILE__));
+    model.setTable(qTableName("test4", __FILE__, db));
     model.select();
 
     //generate a time stamp for the test. Add one second to the current time to make sure
