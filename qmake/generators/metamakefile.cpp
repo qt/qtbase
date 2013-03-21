@@ -385,18 +385,16 @@ SubdirsMetaMakefileGenerator::write()
     const QString &output_name = Option::output.fileName();
     for(int i = 0; ret && i < subs.count(); i++) {
         const Subdir *sub = subs.at(i);
-        qmake_setpwd(subs.at(i)->input_dir);
-        Option::output_dir = QFileInfo(subs.at(i)->output_dir).absoluteFilePath();
-        if(Option::output_dir.at(Option::output_dir.length()-1) != QLatin1Char('/'))
-            Option::output_dir += QLatin1Char('/');
-        Option::output.setFileName(subs.at(i)->output_file);
+        qmake_setpwd(sub->input_dir);
+        Option::output_dir = QFileInfo(sub->output_dir).absoluteFilePath();
+        Option::output.setFileName(sub->output_file);
         if(i != subs.count()-1) {
             for (int ind = 0; ind < sub->indent; ++ind)
                 printf(" ");
             printf("Writing %s\n", QDir::cleanPath(Option::output_dir+"/"+
                                                    Option::output.fileName()).toLatin1().constData());
         }
-        if (!(ret = subs.at(i)->makefile->write()))
+        if (!(ret = sub->makefile->write()))
             break;
         //restore because I'm paranoid
         qmake_setpwd(pwd);

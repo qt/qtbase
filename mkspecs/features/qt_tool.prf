@@ -37,8 +37,7 @@ load(qt_common)
 # If we are doing a prefix build, create a "module" pri which enables
 # qtPrepareTool() to work with the non-installed build.
 # Non-bootstrapped tools always need this because of the environment setup.
-!build_pass:if(!host_build|!force_bootstrap|prefix_build) {
-
+!build_pass:if(!host_build|!force_bootstrap|force_independent) {
     isEmpty(MODULE):MODULE = $$TARGET
 
     MODULE_DEPENDS = $$replace(QT, -private$, )

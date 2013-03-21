@@ -128,8 +128,19 @@ contains(QT_CONFIG, zlib) {
 contains(QT_CONFIG,icu) {
     SOURCES += tools/qlocale_icu.cpp
     DEFINES += QT_USE_ICU
-    win32:LIBS_PRIVATE += -licuin -licuuc
-    else:LIBS_PRIVATE += -licui18n -licuuc
+    win32 {
+        CONFIG(static, static|shared) {
+            CONFIG(debug, debug|release) {
+                LIBS_PRIVATE += -lsicuind -lsicuucd -lsicudtd
+            } else {
+                LIBS_PRIVATE += -lsicuin -lsicuuc -lsicudt
+            }
+        } else {
+            LIBS_PRIVATE += -licuin -licuuc
+        }
+    } else {
+        LIBS_PRIVATE += -licui18n -licuuc
+    }
 }
 
 pcre {

@@ -236,13 +236,10 @@ defineTest(qtAddToolEnv) {
 
 defineTest(qtAddTargetEnv) {
     deps = $$replace(QT, -private$, )
-    deps = $$resolve_depends(deps, "QT.")
+    deps = $$resolve_depends(deps, "QT.", ".depends" ".private_depends" ".run_depends")
     !isEmpty(deps) {
-        for(dep, deps) {
+        for(dep, deps): \
             deppath += $$shell_path($$eval(QT.$${dep}.libs))
-            for(rpath, QT.$${dep}.rpath_link): \
-                deppath += $$shell_path($$rpath)
-        }
         equals(QMAKE_HOST.os, Windows) {
             deppath.name = PATH
         } else:contains(QMAKE_HOST.os, Linux|FreeBSD) {
