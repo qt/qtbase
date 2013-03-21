@@ -88,6 +88,7 @@ QT_END_NAMESPACE
 - (BOOL)acceptsFirstResponder;
 - (BOOL)becomeFirstResponder;
 - (BOOL)hasMask;
+- (BOOL)isOpaque;
 
 - (void)resetMouseButtons;
 

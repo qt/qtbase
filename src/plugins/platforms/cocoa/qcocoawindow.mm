@@ -505,6 +505,14 @@ bool QCocoaWindow::isExposed() const
     return m_isExposed;
 }
 
+bool QCocoaWindow::isOpaque() const
+{
+    bool translucent = (window()->format().alphaBufferSize() > 0
+                        || window()->opacity() < 1
+                        || (m_contentView && [m_contentView hasMask]));
+    return !translucent;
+}
+
 void QCocoaWindow::propagateSizeHints()
 {
     QCocoaAutoReleasePool pool;
@@ -543,20 +551,11 @@ void QCocoaWindow::propagateSizeHints()
     }
 }
 
-void QCocoaWindow::updateOpaque()
-{
-    bool translucent = window()->format().alphaBufferSize() > 0
-            || window()->opacity() < 1
-            || (m_contentView && [m_contentView hasMask]);
-    [m_nsWindow setOpaque:!translucent];
-}
-
-
 void QCocoaWindow::setOpacity(qreal level)
 {
     if (m_nsWindow) {
         [m_nsWindow setAlphaValue:level];
-        updateOpaque();
+        [m_nsWindow setOpaque: isOpaque()];
     }
 }
 
@@ -566,7 +565,7 @@ void QCocoaWindow::setMask(const QRegion &region)
         [m_nsWindow setBackgroundColor:[NSColor clearColor]];
 
     [m_qtView setMaskRegion:&region];
-    updateOpaque();
+    [m_nsWindow setOpaque: isOpaque()];
 }
 
 bool QCocoaWindow::setKeyboardGrabEnabled(bool grab)

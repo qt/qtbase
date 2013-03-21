@@ -310,6 +310,11 @@ static QTouchDevice *touchDevice = 0;
     return m_maskData != 0;
 }
 
+- (BOOL) isOpaque
+{
+    return m_platformWindow->isOpaque();
+}
+
 - (void) setMaskRegion:(const QRegion *)region
 {
     m_shouldInvalidateWindowShadow = true;

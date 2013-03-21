@@ -109,6 +109,7 @@ public:
     void raise();
     void lower();
     bool isExposed() const;
+    bool isOpaque() const;
     void propagateSizeHints();
     void setOpacity(qreal level);
     void setMask(const QRegion &region);
@@ -160,8 +161,6 @@ protected:
     QRect windowGeometry() const;
     QCocoaWindow *parentCocoaWindow() const;
     void syncWindowState(Qt::WindowState newState);
-
-    void updateOpaque();
 
 // private:
 public: // for QNSView
