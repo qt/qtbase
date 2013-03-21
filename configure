@@ -6059,11 +6059,11 @@ if [ "$CFG_QML_DEBUG" = "no" ]; then
 fi
 
 case "$QMAKE_CONF_COMPILER" in
-*clang++*)
+*clang*)
     # Clang
-    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n '
-/^Apple clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_APPLE_CLANG_MAJOR_VERSION=\1; QT_APPLE_CLANG_MINOR_VERSION=\2/;p;q;}
-/^clang version /{s///; s/^\([0-9]*\)\.\([0-9]*\).*$/QT_CLANG_MAJOR_VERSION=\1; QT_CLANG_MINOR_VERSION=\2/;p;q;}'`
+    COMPILER_VERSION=`${QMAKE_CONF_COMPILER} -v 2>&1 | sed -n -E '
+/^Apple (clang|LLVM) version /{s///; s/^([0-9]*)\.([0-9]*).*$/QT_APPLE_CLANG_MAJOR_VERSION=\1; QT_APPLE_CLANG_MINOR_VERSION=\2/;p;q;}
+/^clang version /{s///; s/^([0-9]*)\.([0-9]*).*$/QT_CLANG_MAJOR_VERSION=\1; QT_CLANG_MINOR_VERSION=\2/;p;q;}'`
     eval "$COMPILER_VERSION"
     ;;
 *icpc)
