@@ -39,7 +39,11 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QGraphicsView>
+#include <QGraphicsRectItem>
+#include <QDesktopWidget>
+#include <QApplication>
+#include <QDebug>
 
 class DesktopView : public QGraphicsView
 {

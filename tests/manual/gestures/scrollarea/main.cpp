@@ -39,7 +39,17 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QSlider>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QMainWindow>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QGestureEvent>
+#include <QPanGesture>
+#include <QDebug>
 
 #include "mousepangesturerecognizer.h"
 

@@ -39,6 +39,10 @@
 ****************************************************************************/
 
 #include "currency.h"
+#include <QLineEdit>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QLocale>
 
 CurrencyWidget::CurrencyWidget()
 {

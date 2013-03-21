@@ -39,7 +39,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QDialog>
+#include <QFontDatabase>
+#include <QPainter>
+#include <QTime>
+#include <QTimer>
 
 static const int lastMeasurementsCount = 50;
 

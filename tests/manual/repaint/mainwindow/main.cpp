@@ -39,7 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QMainWindow>
+#include <QToolBar>
+#include <QDockWidget>
+#include <QStatusBar>
+#include <QSpinBox>
+#include <QAction>
+
 #include "../shared/shared.h"
 
 int main(int argc, char **argv)

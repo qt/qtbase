@@ -46,3 +46,6 @@ win32 {
     # disable some tests on wince because of missing dependencies
     wince*:SUBDIRS -= lance windowmodality
 }
+
+lessThan(QT_MAJOR_VERSION, 5): SUBDIRS -= bearerex lance qnetworkaccessmanager/qget qnetworkreply \
+qpainfo qscreen  socketengine xembed-raster xembed-widgets

@@ -40,6 +40,13 @@
 
 #include "window.h"
 
+#include <QComboBox>
+#include <QLocale>
+#include <QLabel>
+#include <QTabWidget>
+#include <QHBoxLayout>
+#include <QEvent>
+
 Window::Window()
 {
     localeCombo = new QComboBox;

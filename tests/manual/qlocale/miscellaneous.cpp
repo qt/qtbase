@@ -40,6 +40,10 @@
 
 #include "miscellaneous.h"
 
+#include <QLineEdit>
+#include <QVBoxLayout>
+#include <QLabel>
+
 MiscWidget::MiscWidget()
 {
     QGridLayout *l = new QGridLayout;

@@ -39,7 +39,15 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QStringList>
+#include <QVector>
+#include <QFile>
+#include <QDir>
+#include <QPainter>
+#include <QFontMetrics>
+#include <QImage>
+#include <QXmlStreamReader>
 
 static const int fontPixelSize = 25;
 static const QLatin1String fontFamily("Series 60 Sans");

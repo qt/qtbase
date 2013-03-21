@@ -39,8 +39,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "../shared/shared.h"
+
+#include <QApplication>
+#include <QMainWindow>
+#include <QTableWidget>
+#include <QPaintEvent>
 
 class CellWidget : public QWidget
 {

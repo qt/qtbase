@@ -39,7 +39,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QMainWindow>
+#include <QPaintEvent>
 #include <QDebug>
 
 class MyWidget : public QWidget

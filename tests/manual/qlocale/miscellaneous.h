@@ -41,7 +41,11 @@
 #ifndef MISCELLANEOUS_H
 #define MISCELLANEOUS_H
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QLocale>
+
+class QLineEdit;
+class QLabel;
 
 class MiscWidget : public QWidget
 {

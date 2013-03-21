@@ -39,7 +39,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QMainWindow>
+#include <QScrollArea>
+
 #include "../shared/shared.h"
 
 int main(int argc, char **argv)

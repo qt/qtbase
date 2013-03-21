@@ -39,7 +39,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QtWidgets>
+#include <QLineEdit>
+#include <QApplication>
+#include <QTableView>
+#include <QStandardItemModel>
+#include <QItemDelegate>
+#include <QDebug>
 
 class ExampleEditor : public QLineEdit
 {

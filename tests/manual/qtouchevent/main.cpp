@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
 #include <QtTest>
 
 #include "ui_form.h"
@@ -55,6 +55,7 @@ public:
     {
         setAttribute(Qt::WA_QuitOnClose, false);
         setupUi(this);
+        setWindowTitle(QT_VERSION_STR);
     }
 
     void closeEvent(QCloseEvent *event)

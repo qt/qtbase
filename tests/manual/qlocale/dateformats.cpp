@@ -40,6 +40,13 @@
 
 #include "dateformats.h"
 
+#include <QLineEdit>
+#include <QScrollArea>
+#include <QGridLayout>
+#include <QComboBox>
+#include <QLabel>
+#include <QDateTime>
+
 DateFormatsWidget::DateFormatsWidget()
 {
     scrollArea = new QScrollArea;

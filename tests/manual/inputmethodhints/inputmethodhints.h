@@ -42,7 +42,7 @@
 #ifndef INPUTMETHODHINTS_H
 #define INPUTMETHODHINTS_H
 
-#include <QtWidgets/QMainWindow>
+#include <QMainWindow>
 #include "ui_inputmethodhints.h"
 
 class inputmethodhints : public QMainWindow

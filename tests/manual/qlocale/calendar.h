@@ -41,7 +41,17 @@
 #ifndef CALENDAR_H
 #define CALENDAR_H
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QDate>
+#include <QLocale>
+
+class QComboBox;
+class QGridLayout;
+class QGroupBox;
+class QCalendarWidget;
+class QLabel;
+class QDateEdit;
+class QCheckBox;
 
 class CalendarWidget : public QWidget
 {

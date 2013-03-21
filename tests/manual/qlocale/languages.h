@@ -41,7 +41,11 @@
 #ifndef LANGUAGES_H
 #define LANGUAGES_H
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QLocale>
+
+class QLabel;
+class QListWidget;
 
 class LanguagesWidget : public QWidget
 {

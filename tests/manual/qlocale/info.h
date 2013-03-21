@@ -41,7 +41,12 @@
 #ifndef INFO_H
 #define INFO_H
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QLocale>
+
+class QLineEdit;
+class QScrollArea;
+class QGridLayout;
 
 class InfoWidget : public QWidget
 {

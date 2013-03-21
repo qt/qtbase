@@ -39,7 +39,12 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QWidget>
+#include <QHBoxLayout>
+#include <QApplication>
+#include <QPainter>
+#include <QImage>
+#include <QImageReader>
 
 class MyWidget : public QWidget
 {
