@@ -318,6 +318,13 @@ struct QCoreApplicationData {
 #ifndef QT_NO_LIBRARY
         delete app_libpaths;
 #endif
+#ifndef QT_NO_QOBJECT
+        // cleanup the QAdoptedThread created for the main() thread
+        if (QCoreApplicationPrivate::theMainThread) {
+            QThreadData *data = QThreadData::get2(QCoreApplicationPrivate::theMainThread);
+            data->deref(); // deletes the data and the adopted thread
+        }
+#endif
     }
 
 #ifdef Q_OS_BLACKBERRY
