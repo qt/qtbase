@@ -293,6 +293,10 @@ private:
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDateTime &);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QDateTime &);
 #endif
+
+#if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_DATESTRING)
+    friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QDateTime &);
+#endif
 };
 Q_DECLARE_SHARED(QDateTime)
 
