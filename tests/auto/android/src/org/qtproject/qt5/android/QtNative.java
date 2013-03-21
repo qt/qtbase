@@ -34,6 +34,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MotionEvent;
 
@@ -294,6 +295,9 @@ public class QtNative extends Application
         }
     }
 
+    private static void updateSelection(final int selStart, final int selEnd, final int candidatesStart, final int candidatesEnd)
+    {
+    }
 
     private static void showSoftwareKeyboard(final int x, final int y
                                         , final int width, final int height
@@ -327,6 +331,11 @@ public class QtNative extends Application
         });
     }
 
+    private static boolean isSoftwareKeyboardVisible()
+    {
+        return false;
+    }
+
     private static void setFullScreen(final boolean fullScreen)
     {
         runAction(new Runnable() {
@@ -338,10 +347,41 @@ public class QtNative extends Application
         });
     }
 
+    private static void registerClipboardManager()
+    {
+    }
+
+    private static void setClipboardText(String text)
+    {
+    }
+
+    private static boolean hasClipboardText()
+    {
+        return false;
+    }
+
+    private static String getClipboardText()
+    {
+        return "Qt";
+    }
+
+    private static void openContextMenu()
+    {
+    }
+
+    private static void closeContextMenu()
+    {
+    }
+
+    private static void resetOptionsMenu()
+    {
+    }
+
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels,
                     int screenHeightPixels, int desktopWidthPixels,
                     int desktopHeightPixels, double XDpi, double YDpi);
+    public static native void handleOrientationChanged(int newOrientation);
     // screen methods
 
     private static void showOptionsMenu()
@@ -395,6 +435,7 @@ public class QtNative extends Application
     public static native void touchBegin(int winId);
     public static native void touchAdd(int winId, int pointerId, int action, boolean primary, int x, int y, float size, float pressure);
     public static native void touchEnd(int winId, int action);
+    public static native void longPress(int winId, int x, int y);
     // pointer methods
 
     // keyboard methods
@@ -413,9 +454,13 @@ public class QtNative extends Application
     public static native void updateWindow();
     // window methods
 
-    // options menu methods
-    public static native void createOptionsMenu(Menu menu);
-    public static native boolean prepareOptionsMenu(Menu menu);
-    public static native boolean optionsItemSelected(int groupId, int itemId);
-    // options menu methods
+    // menu methods
+    public static native boolean onPrepareOptionsMenu(Menu menu);
+    public static native boolean onOptionsItemSelected(int itemId, boolean checked);
+    public static native void onOptionsMenuClosed(Menu menu);
+
+    public static native void onCreateContextMenu(ContextMenu menu);
+    public static native boolean onContextItemSelected(int itemId, boolean checked);
+    public static native void onContextMenuClosed(Menu menu);
+    // menu methods
 }
