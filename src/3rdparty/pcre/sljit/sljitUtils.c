@@ -30,7 +30,37 @@
 
 #if (defined SLJIT_EXECUTABLE_ALLOCATOR && SLJIT_EXECUTABLE_ALLOCATOR) || (defined SLJIT_UTIL_GLOBAL_LOCK && SLJIT_UTIL_GLOBAL_LOCK)
 
-#ifdef _WIN32
+#if (defined SLJIT_SINGLE_THREADED && SLJIT_SINGLE_THREADED)
+
+#if (defined SLJIT_EXECUTABLE_ALLOCATOR && SLJIT_EXECUTABLE_ALLOCATOR)
+
+static SLJIT_INLINE void allocator_grab_lock(void)
+{
+	/* Always successful. */
+}
+
+static SLJIT_INLINE void allocator_release_lock(void)
+{
+	/* Always successful. */
+}
+
+#endif /* SLJIT_EXECUTABLE_ALLOCATOR */
+
+#if (defined SLJIT_UTIL_GLOBAL_LOCK && SLJIT_UTIL_GLOBAL_LOCK)
+
+SLJIT_API_FUNC_ATTRIBUTE void SLJIT_CALL sljit_grab_lock(void)
+{
+	/* Always successful. */
+}
+
+SLJIT_API_FUNC_ATTRIBUTE void SLJIT_CALL sljit_release_lock(void)
+{
+	/* Always successful. */
+}
+
+#endif /* SLJIT_UTIL_GLOBAL_LOCK */
+
+#elif defined(_WIN32) /* SLJIT_SINGLE_THREADED */
 
 #include "windows.h"
 
@@ -76,9 +106,9 @@ SLJIT_API_FUNC_ATTRIBUTE void SLJIT_CALL sljit_release_lock(void)
 
 #else /* _WIN32 */
 
-#include "pthread.h"
-
 #if (defined SLJIT_EXECUTABLE_ALLOCATOR && SLJIT_EXECUTABLE_ALLOCATOR)
+
+#include <pthread.h>
 
 static pthread_mutex_t allocator_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -95,6 +125,8 @@ static SLJIT_INLINE void allocator_release_lock(void)
 #endif /* SLJIT_EXECUTABLE_ALLOCATOR */
 
 #if (defined SLJIT_UTIL_GLOBAL_LOCK && SLJIT_UTIL_GLOBAL_LOCK)
+
+#include <pthread.h>
 
 static pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -116,17 +148,57 @@ SLJIT_API_FUNC_ATTRIBUTE void SLJIT_CALL sljit_release_lock(void)
 /*  Stack                                                                   */
 /* ------------------------------------------------------------------------ */
 
-#if (defined SLJIT_UTIL_STACK && SLJIT_UTIL_STACK)
+#if (defined SLJIT_UTIL_STACK && SLJIT_UTIL_STACK) || (defined SLJIT_EXECUTABLE_ALLOCATOR && SLJIT_EXECUTABLE_ALLOCATOR)
 
 #ifdef _WIN32
 #include "windows.h"
 #else
+/* Provides mmap function. */
 #include <sys/mman.h>
+/* For detecting the page size. */
 #include <unistd.h>
+
+#ifndef MAP_ANON
+
+#include <fcntl.h>
+
+/* Some old systems does not have MAP_ANON. */
+static sljit_si dev_zero = -1;
+
+#if (defined SLJIT_SINGLE_THREADED && SLJIT_SINGLE_THREADED)
+
+static SLJIT_INLINE sljit_si open_dev_zero(void)
+{
+	dev_zero = open("/dev/zero", O_RDWR);
+	return dev_zero < 0;
+}
+
+#else /* SLJIT_SINGLE_THREADED */
+
+#include <pthread.h>
+
+static pthread_mutex_t dev_zero_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static SLJIT_INLINE sljit_si open_dev_zero(void)
+{
+	pthread_mutex_lock(&dev_zero_mutex);
+	dev_zero = open("/dev/zero", O_RDWR);
+	pthread_mutex_unlock(&dev_zero_mutex);
+	return dev_zero < 0;
+}
+
+#endif /* SLJIT_SINGLE_THREADED */
+
 #endif
 
+#endif
+
+#endif /* SLJIT_UTIL_STACK || SLJIT_EXECUTABLE_ALLOCATOR */
+
+#if (defined SLJIT_UTIL_STACK && SLJIT_UTIL_STACK)
+
 /* Planning to make it even more clever in the future. */
-static sljit_w sljit_page_align = 0;
+static sljit_sw sljit_page_align = 0;
 
 SLJIT_API_FUNC_ATTRIBUTE struct sljit_stack* SLJIT_CALL sljit_allocate_stack(sljit_uw limit, sljit_uw max_limit)
 {
@@ -165,7 +237,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_stack* SLJIT_CALL sljit_allocate_stack(slj
 		return NULL;
 
 #ifdef _WIN32
-	base.ptr = VirtualAlloc(0, max_limit, MEM_RESERVE, PAGE_READWRITE);
+	base.ptr = VirtualAlloc(NULL, max_limit, MEM_RESERVE, PAGE_READWRITE);
 	if (!base.ptr) {
 		SLJIT_FREE(stack);
 		return NULL;
@@ -178,7 +250,17 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_stack* SLJIT_CALL sljit_allocate_stack(slj
 		return NULL;
 	}
 #else
-	base.ptr = mmap(0, max_limit, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+#ifdef MAP_ANON
+	base.ptr = mmap(NULL, max_limit, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+#else
+	if (dev_zero < 0) {
+		if (open_dev_zero()) {
+			SLJIT_FREE(stack);
+			return NULL;
+		}
+	}
+	base.ptr = mmap(NULL, max_limit, PROT_READ | PROT_WRITE, MAP_PRIVATE, dev_zero, 0);
+#endif
 	if (base.ptr == MAP_FAILED) {
 		SLJIT_FREE(stack);
 		return NULL;
@@ -203,7 +285,7 @@ SLJIT_API_FUNC_ATTRIBUTE void SLJIT_CALL sljit_free_stack(struct sljit_stack* st
 	SLJIT_FREE(stack);
 }
 
-SLJIT_API_FUNC_ATTRIBUTE sljit_w SLJIT_CALL sljit_stack_resize(struct sljit_stack* stack, sljit_uw new_limit)
+SLJIT_API_FUNC_ATTRIBUTE sljit_sw SLJIT_CALL sljit_stack_resize(struct sljit_stack* stack, sljit_uw new_limit)
 {
 	sljit_uw aligned_old_limit;
 	sljit_uw aligned_new_limit;
@@ -232,10 +314,12 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_w SLJIT_CALL sljit_stack_resize(struct sljit_stac
 	}
 	aligned_new_limit = (new_limit + sljit_page_align) & ~sljit_page_align;
 	aligned_old_limit = (stack->limit + sljit_page_align) & ~sljit_page_align;
+	/* If madvise is available, we release the unnecessary space. */
+#if defined(POSIX_MADV_DONTNEED)
 	if (aligned_new_limit < aligned_old_limit)
-#if defined(__QNXNTO__) || defined(__LSB_VERSION__)
 		posix_madvise((void*)aligned_new_limit, aligned_old_limit - aligned_new_limit, POSIX_MADV_DONTNEED);
-#else
+#elif defined(MADV_DONTNEED)
+	if (aligned_new_limit < aligned_old_limit)
 		madvise((void*)aligned_new_limit, aligned_old_limit - aligned_new_limit, MADV_DONTNEED);
 #endif
 	stack->limit = new_limit;

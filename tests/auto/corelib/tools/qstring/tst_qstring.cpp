@@ -1164,8 +1164,6 @@ void tst_QString::indexOf()
             options |= QRegularExpression::CaseInsensitiveOption;
 
         QRegularExpression re(QRegularExpression::escape(needle), options);
-        QEXPECT_FAIL("data58", "QRegularExpression does not support case folding", Continue);
-        QEXPECT_FAIL("data59", "QRegularExpression does not support case folding", Continue);
         QCOMPARE( haystack.indexOf(re, startpos), resultpos );
     }
 
