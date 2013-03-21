@@ -46,6 +46,7 @@
 #include "qqnxvirtualkeyboardbps.h"
 #include "qqnxfiledialoghelper.h"
 
+#include <QCoreApplication>
 #include <QAbstractEventDispatcher>
 #include <QDebug>
 
@@ -247,6 +248,11 @@ bool QQnxBpsEventFilter::handleNavigatorEvent(bps_event_t *event)
         m_navigatorEventHandler->handleWindowGroupDeactivated(id);
         break;
     }
+
+    case NAVIGATOR_LOW_MEMORY:
+        qWarning() << "QGuiApplication based process" << QCoreApplication::applicationPid()
+                   << "received \"NAVIGATOR_LOW_MEMORY\" event";
+        return false;
 
     default:
         qBpsEventFilterDebug() << Q_FUNC_INFO << "Unhandled navigator event. code=" << bps_event_get_code(event);
