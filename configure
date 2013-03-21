@@ -5217,8 +5217,8 @@ if [ -n "$PKG_CONFIG" ] && $PKG_CONFIG --exists "xkbcommon >= 0.2.0" 2>/dev/null
     QMAKE_CFLAGS_XKBCOMMON="`$PKG_CONFIG --cflags xkbcommon 2>/dev/null`"
     QMAKE_LIBS_XKBCOMMON="`$PKG_CONFIG --libs xkbcommon 2>/dev/null`"
     QT_CONFIG="$QT_CONFIG xkbcommon"
-else
-    echo "WARNING: Qt requires the libxkbcommon version 0.2.0 (or higher)."
+elif [ "$CFG_XCB" != "no" ]; then
+    echo "WARNING: XCB support enabled but libxkbcommon 0.2.0 (or higher) not found."
     echo "Not satisfying this requirement will disable the compose key functionality,"
     echo "which includes text input with dead keys."
     QMakeVar add DEFINES QT_NO_XKBCOMMON
