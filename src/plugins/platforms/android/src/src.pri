@@ -1,6 +1,6 @@
 load(qt_plugin)
 
-QT += core-private gui-private widgets-private platformsupport-private
+QT += core-private gui-private platformsupport-private
 
 CONFIG += qpa/genericunixfontdatabase
 
