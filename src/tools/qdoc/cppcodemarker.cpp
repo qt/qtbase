@@ -142,8 +142,8 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
         name = linkTag(node, name);
     name = "<@name>" + name + "</@name>";
 
-    if (style == Detailed && !node->parent()->name().isEmpty() &&
-            node->type() != Node::Property)
+    if ((style == Detailed) && !node->parent()->name().isEmpty() &&
+        (node->type() != Node::Property) && !node->isQmlNode())
         name.prepend(taggedNode(node->parent()) + "::");
 
     switch (node->type()) {
