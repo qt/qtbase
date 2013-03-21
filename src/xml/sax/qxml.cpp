@@ -985,12 +985,22 @@ void QXmlNamespaceSupport::reset()
 
     Constructs an empty attribute list.
 */
+QXmlAttributes::QXmlAttributes()
+{
+    // ### In Qt 5.0, this function was inlined and d was not initialized
+    // The member cannot be used until Qt 6.0
+    Q_UNUSED(d);
+}
 
 /*!
     \fn QXmlAttributes::~QXmlAttributes()
 
     Destroys the attributes object.
 */
+QXmlAttributes::~QXmlAttributes()
+{
+}
+
 
 /*!
     Looks up the index of an attribute by the qualified name \a qName.
@@ -2400,11 +2410,21 @@ events are reported.
 
     Constructs a handler for use with subclasses of QXmlReader.
 */
+QXmlDefaultHandler::QXmlDefaultHandler()
+{
+    // ### In Qt 5.0, this function was inlined and d was not initialized
+    // The member cannot be used until Qt 6.0
+    Q_UNUSED(d);
+}
+
 /*!
     \fn QXmlDefaultHandler::~QXmlDefaultHandler()
 
     Destroys the handler.
 */
+QXmlDefaultHandler::~QXmlDefaultHandler()
+{
+}
 
 /*!
     \reimp
