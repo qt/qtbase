@@ -377,8 +377,9 @@ void QWindowsVistaStyle::drawPrimitive(PrimitiveElement element, const QStyleOpt
 
                     // The end state of the transition is simply the result we would have painted
                     // if the style was not animated.
+                    styleOption->styleObject = 0;
                     styleOption->state = option->state;
-                    drawPrimitive(element, styleOption, &endPainter, widget);
+                    proxy()->drawPrimitive(element, styleOption, &endPainter, widget);
 
 
                     t->setEndImage(endImage);
