@@ -120,7 +120,6 @@ private:
     QSet<QString> commands;
     QSet<QString> topics;
     QSet<quint32> usedComments;
-    Tree *tree;
     InnerNode *current;
 };
 
