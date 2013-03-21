@@ -1196,18 +1196,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-R,,'`
         fi
         ;;
-    -largefile)
-        VAR="largefile"
-        VAL="yes"
-        ;;
-    -l?*|-l)
+    -l)  # -lfoo is handled differently
         VAR="add_link"
-        if [ "$1" = "-l" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-l,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -F?*|-F)
         VAR="add_fpath"
@@ -1218,14 +1210,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-F,,'`
         fi
         ;;
-    -fw?*|-fw)
+    -fw)  # -fwfoo is handled differently
         VAR="add_framework"
-        if [ "$1" = "-fw" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-fw,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -W*)
         VAR="add_warn"
@@ -1504,7 +1492,7 @@ while [ "$#" -gt 0 ]; do
     device-option)
         DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
         DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
-        DeviceVar set $DEV_VAR $DEV_VAL
+        DeviceVar set $DEV_VAR "$DEV_VAL"
         ;;
     qpa)
         QT_QPA_DEFAULT_PLATFORM="$VAL"
@@ -2240,6 +2228,16 @@ while [ "$#" -gt 0 ]; do
     android-toolchain-version)
         CFG_DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION="$VAL"
         ;;
+    l*)  # -lfoo
+        L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        ;;
+    fw*)  # -fwfoo
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2351,7 +2349,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     if [ -x "$relpath/bin/syncqt" ]; then
         mkdir -p "$outpath/bin"
         echo "#!/bin/sh" >"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" -mkspecsdir \"$outpath/mkspecs\" \"\$@\"" >>"$outpath/bin/syncqt"
+        echo "perl \"$relpath/bin/syncqt\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
 
@@ -3855,7 +3853,7 @@ setBootstrapVariable()
 
 # build qmake
 if true; then ###[ '!' -f "$outpath/bin/qmake" ];
-    echo "Creating qmake. Please wait..."
+    echo "Creating qmake..."
 
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
@@ -3999,6 +3997,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
     (cd "$outpath/qmake"; "$MAKE") || exit 2
 fi # Build qmake
+
+echo "Running configuration tests..."
 
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself

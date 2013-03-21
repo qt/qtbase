@@ -42,6 +42,7 @@ CONFIG += minimal_syncqt
 QMAKE_SYNCQT_OPTIONS = -module QtCore -module QtDBus -module QtXml
 contains(QT_CONFIG, zlib): \
     QMAKE_SYNCQT_OPTIONS += -module QtZlib
+QMAKE_SYNCQT_OPTIONS += -version $$QT_VERSION
 
 load(qt_module)
 

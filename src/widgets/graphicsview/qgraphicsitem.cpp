@@ -745,9 +745,6 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qinputmethod.h>
 #include <QtWidgets/qgraphicseffect.h>
-#ifndef QT_NO_ACCESSIBILITY
-# include "qaccessible.h"
-#endif
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
@@ -7357,12 +7354,6 @@ void QGraphicsItem::updateMicroFocus()
                 if (scene()->views().at(i) == fw) {
                     if (qApp)
                         qApp->inputMethod()->update(Qt::ImQueryAll);
-
-#ifndef QT_NO_ACCESSIBILITY
-                    // ##### is this correct
-                    if (toGraphicsObject())
-                        QAccessible::updateAccessibility(toGraphicsObject(), 0, QAccessible::StateChanged);
-#endif
                     break;
                     }
                 }

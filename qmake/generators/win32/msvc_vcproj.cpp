@@ -434,18 +434,21 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                 projLookup.insert(profileKey, fi.absoluteFilePath());
             }
             QString oldpwd = qmake_getpwd();
+            QString oldoutpwd = Option::output_dir;
             QMakeProject tmp_proj;
             QString dir = fi.absolutePath(), fn = fi.fileName();
             if (!dir.isEmpty()) {
                 if (!qmake_setpwd(dir))
                     fprintf(stderr, "Cannot find directory: %s", dir.toLatin1().constData());
             }
+            Option::output_dir = Option::globals->shadowedPath(QDir::cleanPath(fi.absoluteFilePath()));
             if (tmp_proj.read(fn)) {
                 // Check if all requirements are fulfilled
                 if (!tmp_proj.isEmpty("QMAKE_FAILED_REQUIREMENTS")) {
                     fprintf(stderr, "Project file(%s) not added to Solution because all requirements not met:\n\t%s\n",
                         fn.toLatin1().constData(), tmp_proj.values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
                     qmake_setpwd(oldpwd);
+                    Option::output_dir = oldoutpwd;
                     continue;
                 }
                 if (tmp_proj.first("TEMPLATE") == "vcsubdirs") {
@@ -460,13 +463,10 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     // and to be able to extract all the dependencies
                     Option::QMAKE_MODE old_mode = Option::qmake_mode;
                     Option::qmake_mode = Option::QMAKE_GENERATE_NOTHING;
-                    QString old_output_dir = Option::output_dir;
-                    Option::output_dir = QFileInfo(fileFixify(dir, qmake_getpwd(), Option::output_dir)).canonicalFilePath();
                     VcprojGenerator tmp_vcproj;
                     tmp_vcproj.setNoIO(true);
                     tmp_vcproj.setProjectFile(&tmp_proj);
                     Option::qmake_mode = old_mode;
-                    Option::output_dir = old_output_dir;
 
                     // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
                     QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION"));
@@ -578,6 +578,7 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                 }
 nextfile:
                 qmake_setpwd(oldpwd);
+                Option::output_dir = oldoutpwd;
             }
         }
     }

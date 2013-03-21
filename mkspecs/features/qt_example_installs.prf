@@ -26,7 +26,7 @@ defineTest(addInstallFiles) {
 }
 
 probase = $$relative_path($$_PRO_FILE_PWD_, $$dirname(_QMAKE_CONF_)/examples)
-!isEmpty(probase):!contains(probase, ^\\..*) {
+!isEmpty(probase):!contains(probase, ^\\..*):!isEmpty(_QMAKE_CACHE_) {
     for(ex, EXAMPLE_FILES): \
         sourcefiles += $$files($$absolute_path($$ex, $$_PRO_FILE_PWD_))
     for(res, RESOURCES) {

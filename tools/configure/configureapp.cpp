@@ -172,7 +172,7 @@ Configure::Configure(int& argc, char** argv)
                 QTextStream stream(&syncqt_bat);
                 stream << "@echo off" << endl
                        << "call " << QDir::toNativeSeparators(sourcePath + "/bin/syncqt.bat")
-                       << " -mkspecsdir \"" << QDir::toNativeSeparators(buildPath) << "/mkspecs\" %*" << endl;
+                       << " %*" << endl;
                 syncqt_bat.close();
             }
         }
@@ -2032,7 +2032,8 @@ bool Configure::checkAvailability(const QString &part)
 
     else if (part == "ICU")
         available = findFile("unicode/utypes.h") && findFile("unicode/ucol.h") && findFile("unicode/ustring.h")
-                        && (findFile("icuin.lib") || findFile("libicuin.lib")); // libicun.lib if compiled with mingw
+                        && (findFile("icuin.lib") || findFile("sicuin.lib")
+                              || findFile("libicuin.lib") || findFile("libsicuin.lib")); // "lib" prefix for mingw, 's' prefix for static
 
     else if (part == "ANGLE") {
         available = checkAngleAvailability();
@@ -2141,6 +2142,8 @@ bool Configure::checkAvailability(const QString &part)
 */
 void Configure::autoDetection()
 {
+    cout << "Running configuration tests..." << endl;
+
     if (dictionary["C++11"] == "auto") {
         if (!dictionary["QMAKESPEC"].contains("msvc"))
             dictionary["C++11"] = tryCompileProject("common/c++11") ? "yes" : "no";

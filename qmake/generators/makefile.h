@@ -81,7 +81,7 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     QString spec;
     bool init_opath_already, init_already, no_io;
     QHash<QString, bool> init_compiler_already;
-    QString chkdir, chkfile, chkglue;
+    QString makedir, chkexists;
     QString build_args(const QString &outdir=QString());
 
     //internal caches

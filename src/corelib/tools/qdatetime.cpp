@@ -260,8 +260,7 @@ static QString fmtDateTime(const QString& f, const QTime* dt = 0, const QDate* d
     If the specified date is invalid, the date is not set and
     isValid() returns false.
 
-    \warning Years 0 to 99 are interpreted as is, i.e., years
-             0-99.
+    \warning Years 1 to 99 are interpreted as is. Year 0 is invalid.
 
     \sa isValid()
 */
@@ -1483,10 +1482,7 @@ int QTime::msec() const
 
     If \a format is Qt::ISODate, the string format corresponds to the
     ISO 8601 extended specification for representations of dates,
-    which is also HH:MM:SS. (However, contrary to ISO 8601, dates
-    before 15 October 1582 are handled as Julian dates, not Gregorian
-    dates. See \l{QDate G and J} {Use of Gregorian and Julian
-    Calendars}. This might change in a future version of Qt.)
+    which is also HH:MM:SS.
 
     If the \a format is Qt::SystemLocaleShortDate or
     Qt::SystemLocaleLongDate, the string format depends on the locale
@@ -1555,9 +1551,9 @@ QString QTime::toString(Qt::DateFormat format) const
     \row \li z \li the milliseconds without leading zeroes (0 to 999)
     \row \li zzz \li the milliseconds with leading zeroes (000 to 999)
     \row \li AP or A
-         \li use AM/PM display. \e AP will be replaced by either "AM" or "PM".
+         \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
     \row \li ap or a
-         \li use am/pm display. \e ap will be replaced by either "am" or "pm".
+         \li use am/pm display. \e a/ap will be replaced by either "am" or "pm".
     \row \li t \li the timezone (for example "CEST")
     \endtable
 
@@ -3754,8 +3750,7 @@ static bool hasUnquotedAP(const QString &f)
     for (int i=0; i<max; ++i) {
         if (f.at(i) == quote) {
             inquote = !inquote;
-        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')
-            && i + 1 < max && f.at(i + 1).toUpper() == QLatin1Char('P')) {
+        } else if (!inquote && f.at(i).toUpper() == QLatin1Char('A')) {
             return true;
         }
     }

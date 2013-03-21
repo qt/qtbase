@@ -18,10 +18,9 @@ load(qt_build_paths)
     } else {
         contains(QT_CONFIG, private_tests): \   # -developer-build
             QMAKE_SYNCQT += -check-includes
-        QMAKE_SYNCQT += -module $$MODULE_INCNAME
+        QMAKE_SYNCQT += -module $$MODULE_INCNAME -version $$VERSION
     }
     QMAKE_SYNCQT += \
-        -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs \
         -outdir $$MODULE_BASE_OUTDIR $$MODULE_BASE_DIR
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")

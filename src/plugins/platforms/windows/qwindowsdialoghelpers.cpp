@@ -1340,7 +1340,9 @@ static inline QString appendSuffix(const QString &fileName, const QString &filte
     if (suffixPos < 0)
         return fileName;
     suffixPos += 3;
-    int endPos = filter.indexOf(QLatin1Char(';'), suffixPos + 1);
+    int endPos = filter.indexOf(QLatin1Char(' '), suffixPos + 1);
+    if (endPos < 0)
+        endPos = filter.indexOf(QLatin1Char(';'), suffixPos + 1);
     if (endPos < 0)
         endPos = filter.indexOf(QLatin1Char(')'), suffixPos + 1);
     if (endPos < 0)
