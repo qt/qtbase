@@ -350,6 +350,26 @@ static const char *getFcFamilyForStyleHint(const QFont::StyleHint style)
     return stylehint;
 }
 
+static bool isSymbolFont(FontFile *fontFile)
+{
+    if (fontFile == 0 || fontFile->fileName.isEmpty())
+        return false;
+
+    QFontEngine::FaceId id;
+    id.filename = fontFile->fileName.toLocal8Bit();
+    id.index = fontFile->indexValue;
+
+    QFreetypeFace *f = QFreetypeFace::getFace(id);
+    if (f == 0) {
+        qWarning("isSymbolFont: Couldn't open face %s/%d", id.filename.data(), id.index);
+        return false;
+    }
+
+    bool hasSymbolMap = f->symbol_map;
+    f->release(id);
+    return hasSymbolMap;
+}
+
 void QFontconfigDatabase::populateFontDatabase()
 {
     FcFontSet  *fonts;
@@ -468,6 +488,9 @@ void QFontconfigDatabase::populateFontDatabase()
         FontFile *fontFile = new FontFile;
         fontFile->fileName = QLatin1String((const char *)file_value);
         fontFile->indexValue = indexValue;
+
+        if (isSymbolFont(fontFile))
+            writingSystems.setSupported(QFontDatabase::Other);
 
         QFont::Style style = (slant_value == FC_SLANT_ITALIC)
                          ? QFont::StyleItalic
