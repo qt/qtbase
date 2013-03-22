@@ -70,7 +70,7 @@ namespace QTest
     }
 
 #ifdef QT_GUI_LIB
-    inline static bool qWaitForWindowActive(QWindow *window, int timeout = 1000)
+    inline static bool qWaitForWindowActive(QWindow *window, int timeout = 5000)
     {
         QElapsedTimer timer;
         timer.start();
@@ -99,7 +99,7 @@ namespace QTest
         return window->isActive();
     }
 
-    inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 1000)
+    inline static bool qWaitForWindowExposed(QWindow *window, int timeout = 5000)
     {
         QElapsedTimer timer;
         timer.start();
