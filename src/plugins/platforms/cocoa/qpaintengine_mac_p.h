@@ -208,45 +208,6 @@ inline void QCoreGraphicsPaintEnginePrivate::restoreGraphicsState()
     CGContextRestoreGState(hd);
 }
 
-class QMacQuartzPaintDevice : public QPaintDevice
-{
-public:
-    QMacQuartzPaintDevice(CGContextRef cg, int width, int height, int bytesPerLine)
-        : mCG(cg), mWidth(width), mHeight(height), mBytesPerLine(bytesPerLine)
-    { }
-    int devType() const { return QInternal::MacQuartz; }
-    CGContextRef cgContext() const { return mCG; }
-    int metric(PaintDeviceMetric metric) const {
-        switch (metric) {
-        case PdmWidth:
-            return mWidth;
-        case PdmHeight:
-            return mHeight;
-        case PdmWidthMM:
-            return (qt_defaultDpiX() * mWidth) / 2.54;
-        case PdmHeightMM:
-            return (qt_defaultDpiY() * mHeight) / 2.54;
-        case PdmNumColors:
-            return 0;
-        case PdmDepth:
-            return 32;
-        case PdmDpiX:
-        case PdmPhysicalDpiX:
-            return qt_defaultDpiX();
-        case PdmDpiY:
-        case PdmPhysicalDpiY:
-            return qt_defaultDpiY();
-        }
-        return 0;
-    }
-    QPaintEngine *paintEngine() const { qWarning("This function should never be called."); return 0; }
-private:
-    CGContextRef mCG;
-    int mWidth;
-    int mHeight;
-    int mBytesPerLine;
-};
-
 QT_END_NAMESPACE
 
 #endif // QPAINTENGINE_MAC_P_H
