@@ -1063,7 +1063,6 @@ void QIcon::setThemeName(const QString &name)
 */
 QString QIcon::themeName()
 {
-    QIconLoader::instance()->ensureInitialized();
     return QIconLoader::instance()->themeName();
 }
 
