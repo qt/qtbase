@@ -50,7 +50,7 @@
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
 
-#ifdef QQNXGLCONTEXT_DEBUG
+#if defined(QQNXGLCONTEXT_DEBUG)
 #define qGLContextDebug qDebug
 #else
 #define qGLContextDebug QT_NO_QDEBUG_MACRO

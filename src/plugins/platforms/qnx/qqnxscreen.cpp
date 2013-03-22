@@ -49,7 +49,7 @@
 
 #include <errno.h>
 
-#ifdef QQNXSCREEN_DEBUG
+#if defined(QQNXSCREEN_DEBUG)
 #define qScreenDebug qDebug
 #else
 #define qScreenDebug QT_NO_QDEBUG_MACRO

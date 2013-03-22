@@ -51,7 +51,7 @@
 #include <QTimer>
 #include <QWindow>
 
-#ifdef QQNXFILEDIALOGHELPER_DEBUG
+#if defined(QQNXFILEDIALOGHELPER_DEBUG)
 #define qFileDialogHelperDebug qDebug
 #else
 #define qFileDialogHelperDebug QT_NO_QDEBUG_MACRO

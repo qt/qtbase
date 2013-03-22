@@ -51,7 +51,7 @@ class QQnxCursor : public QPlatformCursor
 public:
     QQnxCursor();
 
-#ifndef QT_NO_CURSOR
+#if !defined(QT_NO_CURSOR)
     void changeCursor(QCursor *windowCursor, QWindow *window);
 #endif
     void setPos(const QPoint &pos);

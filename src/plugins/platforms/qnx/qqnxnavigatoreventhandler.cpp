@@ -45,7 +45,7 @@
 #include <QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
 
-#ifdef QQNXNAVIGATOREVENTHANDLER_DEBUG
+#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
 #define qNavigatorEventHandlerDebug qDebug
 #else
 #define qNavigatorEventHandlerDebug QT_NO_QDEBUG_MACRO

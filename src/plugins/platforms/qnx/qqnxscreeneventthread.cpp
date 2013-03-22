@@ -49,7 +49,7 @@
 
 #include <cctype>
 
-#ifdef QQNXSCREENEVENTTHREAD_DEBUG
+#if defined(QQNXSCREENEVENTTHREAD_DEBUG)
 #define qScreenEventThreadDebug qDebug
 #else
 #define qScreenEventThreadDebug QT_NO_QDEBUG_MACRO

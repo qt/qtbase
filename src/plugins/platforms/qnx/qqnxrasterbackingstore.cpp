@@ -46,7 +46,7 @@
 
 #include <errno.h>
 
-#ifdef QQNXRASTERBACKINGSTORE_DEBUG
+#if defined(QQNXRASTERBACKINGSTORE_DEBUG)
 #define qRasterBackingStoreDebug qDebug
 #else
 #define qRasterBackingStoreDebug QT_NO_QDEBUG_MACRO

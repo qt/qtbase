@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_CLIPBOARD
+#if !defined(QT_NO_CLIPBOARD)
 
 #include "qqnxclipboard.h"
 
@@ -53,7 +53,7 @@
 #include <clipboard/clipboard.h>
 #include <errno.h>
 
-#ifdef QQNXCLIPBOARD_DEBUG
+#if defined(QQNXCLIPBOARD_DEBUG)
 #define qClipboardDebug qDebug
 #else
 #define qClipboardDebug QT_NO_QDEBUG_MACRO

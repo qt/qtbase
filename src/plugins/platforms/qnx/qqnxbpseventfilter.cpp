@@ -53,7 +53,7 @@
 #include <bps/navigator.h>
 #include <bps/screen.h>
 
-#ifdef QQNXBPSEVENTFILTER_DEBUG
+#if defined(QQNXBPSEVENTFILTER_DEBUG)
 #define qBpsEventFilterDebug qDebug
 #else
 #define qBpsEventFilterDebug QT_NO_QDEBUG_MACRO

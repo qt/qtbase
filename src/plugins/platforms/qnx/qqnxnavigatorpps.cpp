@@ -44,7 +44,7 @@
 #include <QDebug>
 #include <private/qcore_unix_p.h>
 
-#ifdef QQNXNAVIGATOR_DEBUG
+#if defined(QQNXNAVIGATOR_DEBUG)
 #define qNavigatorDebug qDebug
 #else
 #define qNavigatorDebug QT_NO_QDEBUG_MACRO

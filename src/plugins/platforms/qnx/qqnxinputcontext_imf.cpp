@@ -61,13 +61,13 @@
 #include <process.h>
 #include <sys/keycodes.h>
 
-#ifdef QQNXINPUTCONTEXT_IMF_EVENT_DEBUG
+#if defined(QQNXINPUTCONTEXT_IMF_EVENT_DEBUG)
 #define qInputContextIMFEventDebug qDebug
 #else
 #define qInputContextIMFEventDebug QT_NO_QDEBUG_MACRO
 #endif
 
-#ifdef QQNXINPUTCONTEXT_DEBUG
+#if defined(QQNXINPUTCONTEXT_DEBUG)
 #define qInputContextDebug qDebug
 #else
 #define qInputContextDebug QT_NO_QDEBUG_MACRO

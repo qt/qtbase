@@ -50,7 +50,7 @@
 #include <errno.h>
 #include <sys/keycodes.h>
 
-#ifdef QQNXSCREENEVENT_DEBUG
+#if defined(QQNXSCREENEVENT_DEBUG)
 #define qScreenEventDebug qDebug
 #else
 #define qScreenEventDebug QT_NO_QDEBUG_MACRO

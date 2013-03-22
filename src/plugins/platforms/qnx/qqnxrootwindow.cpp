@@ -46,7 +46,7 @@
 #include <QtCore/QUuid>
 #include <QtCore/QDebug>
 
-#ifdef QQNXROOTWINDOW_DEBUG
+#if defined(QQNXROOTWINDOW_DEBUG)
 #define qRootWindowDebug qDebug
 #else
 #define qRootWindowDebug QT_NO_QDEBUG_MACRO

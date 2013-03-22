@@ -44,7 +44,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_CLIPBOARD
+#if !defined(QT_NO_CLIPBOARD)
 #include <qpa/qplatformclipboard.h>
 
 QT_BEGIN_NAMESPACE

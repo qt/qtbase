@@ -43,7 +43,7 @@
 
 #include <QtCore/QDebug>
 
-#ifdef QQNXCURSOR_DEBUG
+#if defined(QQNXCURSOR_DEBUG)
 #define qCursorDebug qDebug
 #else
 #define qCursorDebug QT_NO_QDEBUG_MACRO
@@ -55,7 +55,7 @@ QQnxCursor::QQnxCursor()
 {
 }
 
-#ifndef QT_NO_CURSOR
+#if !defined(QT_NO_CURSOR)
 void QQnxCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
     Q_UNUSED(windowCursor);

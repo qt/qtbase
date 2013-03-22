@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qqnxwindow.h"
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
 #include "qqnxglcontext.h"
 #endif
 #include "qqnxintegration.h"
@@ -53,12 +53,12 @@
 
 #include <errno.h>
 
-#ifdef Q_OS_BLACKBERRY
+#if defined(Q_OS_BLACKBERRY)
 #include <sys/pps.h>
 #include <bps/navigator.h>
 #endif
 
-#ifdef QQNXWINDOW_DEBUG
+#if defined(QQNXWINDOW_DEBUG)
 #define qWindowDebug qDebug
 #else
 #define qWindowDebug QT_NO_QDEBUG_MACRO
@@ -72,7 +72,7 @@ QQnxWindow::QQnxWindow(QWindow *window, screen_context_t context)
       m_window(0),
       m_currentBufferIndex(-1),
       m_previousBufferIndex(-1),
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
       m_platformOpenGLContext(0),
 #endif
       m_screen(0),
@@ -353,7 +353,7 @@ void QQnxWindow::setBufferSize(const QSize &size)
 
     // Create window buffers if they do not exist
     if (m_bufferSize.isEmpty()) {
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
         // Get pixel format from EGL config if using OpenGL;
         // otherwise inherit pixel format of window's screen
         if (m_platformOpenGLContext != 0) {
@@ -666,7 +666,7 @@ void QQnxWindow::gainedFocus()
     QWindowSystemInterface::handleWindowActivated(window());
 }
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
 void QQnxWindow::setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext)
 {
     // This function does not take ownership of the platform gl context.

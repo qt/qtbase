@@ -47,7 +47,7 @@
 #include <QtCore/QDebug>
 #include <QtGui/QGuiApplication>
 
-#ifdef QQNXINPUTCONTEXT_DEBUG
+#if defined(QQNXINPUTCONTEXT_DEBUG)
 #define qInputContextDebug qDebug
 #else
 #define qInputContextDebug QT_NO_QDEBUG_MACRO

@@ -46,7 +46,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-#ifdef QQNXBUFFER_DEBUG
+#if defined(QQNXBUFFER_DEBUG)
 #define qBufferDebug qDebug
 #else
 #define qBufferDebug QT_NO_QDEBUG_MACRO

@@ -49,7 +49,7 @@
 #include <QtGui/QImage>
 #include <QtCore/QMutex>
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
 #include <EGL/egl.h>
 #endif
 
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 // all surfaces double buffered
 #define MAX_BUFFER_COUNT    2
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
 class QQnxGLContext;
 #endif
 class QQnxScreen;
@@ -108,7 +108,7 @@ public:
     QQnxScreen *screen() const { return m_screen; }
     const QList<QQnxWindow*>& children() const { return m_childWindows; }
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
     void setPlatformOpenGLContext(QQnxGLContext *platformOpenGLContext);
     QQnxGLContext *platformOpenGLContext() const { return m_platformOpenGLContext; }
 #endif
@@ -144,7 +144,7 @@ private:
     QRegion m_previousDirty;
     QRegion m_scrolled;
 
-#ifndef QT_NO_OPENGL
+#if !defined(QT_NO_OPENGL)
     QQnxGLContext *m_platformOpenGLContext;
 #endif
     QQnxScreen *m_screen;

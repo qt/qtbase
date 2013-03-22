@@ -56,7 +56,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#ifdef QQNXVIRTUALKEYBOARD_DEBUG
+#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
 #define qVirtualKeyboardDebug qDebug
 #else
 #define qVirtualKeyboardDebug QT_NO_QDEBUG_MACRO
