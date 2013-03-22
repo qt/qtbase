@@ -191,7 +191,10 @@ void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
     QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
     NSMenu *menu = cocoaPlatformMenu->nsMenu();
     // setDockMenu seems to be undocumented, but this is what Qt 4 did.
-    [NSApp setDockMenu: menu];
+    if ([NSApp respondsToSelector:@selector(setDockMenu:)])
+        [NSApp setDockMenu: menu];
+    else
+        qWarning("Could not set dock menu: [NSApp setDockMenu] is not available.");
 }
 
 void *QCocoaNativeInterface::qMenuToNSMenu(QPlatformMenu *platformMenu)
