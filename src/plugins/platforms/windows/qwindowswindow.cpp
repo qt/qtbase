@@ -791,13 +791,16 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_iconSmall(0),
     m_iconBig(0)
 {
-    if (aWindow->surfaceType() == QWindow::OpenGLSurface)
-        setFlag(OpenGLSurface);
     // Clear the creation context as the window can be found in QWindowsContext's map.
     QWindowsContext::instance()->setWindowCreationContext(QSharedPointer<QWindowCreationContext>());
     QWindowsContext::instance()->addWindow(m_data.hwnd, this);
+    const Qt::WindowType type = aWindow->type();
+    if (type == Qt::Desktop)
+        return; // No further handling for Qt::Desktop
+    if (aWindow->surfaceType() == QWindow::OpenGLSurface)
+        setFlag(OpenGLSurface);
     if (aWindow->isTopLevel()) {
-        switch (aWindow->type()) {
+        switch (type) {
         case Qt::Window:
         case Qt::Dialog:
         case Qt::Sheet:
@@ -811,8 +814,13 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
         }
     }
 #ifndef Q_OS_WINCE
-    if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
-        QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0);
+    if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch) {
+        if (QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0)) {
+            setFlag(TouchRegistered);
+        } else {
+            qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(aWindow->objectName()));
+        }
+    }
 #endif // !Q_OS_WINCE
     setWindowState(aWindow->windowState());
     const qreal opacity = qt_window_private(aWindow)->opacity;
@@ -824,7 +832,7 @@ QWindowsWindow::~QWindowsWindow()
 {
 #ifndef Q_OS_WINCE
     QWindowSystemInterface::flushWindowSystemEvents();
-    if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
+    if (testFlag(TouchRegistered))
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
 #endif // !Q_OS_WINCE
     destroyWindow();
