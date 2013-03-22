@@ -6,4 +6,3 @@ qtHaveModule(widgets) QT += widgets
 SOURCES += tst_qtextdocumentlayout.cpp
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

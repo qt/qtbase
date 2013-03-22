@@ -9,4 +9,3 @@ QT += gui-private testlib
 requires(contains(QT_CONFIG,private_tests))
 
 unix:!mac:LIBS+=-lm
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

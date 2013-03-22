@@ -5,4 +5,3 @@ QT += gui testlib
 SOURCES  += tst_qstandarditem.cpp
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

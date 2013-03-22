@@ -9,4 +9,3 @@ QT += testlib
 SOURCES += tst_qabstracttextdocumentlayout.cpp
 linux: CONFIG += insignificant_test
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

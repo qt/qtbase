@@ -11,4 +11,3 @@ wince* {
     additionalFiles.path = .
     DEPLOYMENT += additionalFiles
 }
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

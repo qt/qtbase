@@ -8,4 +8,3 @@ SOURCES  += tst_qregion.cpp
 
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0

@@ -7,4 +7,3 @@ SOURCES  += tst_qpolygon.cpp
 unix:!mac:LIBS+=-lm
 
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
