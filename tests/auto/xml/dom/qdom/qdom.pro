@@ -11,4 +11,3 @@ wince* {
    }
 }
 TESTDATA += testdata/* doubleNamespaces.xml umlaut.xml
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
