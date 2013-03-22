@@ -1291,7 +1291,7 @@ static QTouchDevice *touchDevice = 0;
                        NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
                        NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
                        NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
-                       NSRTFDPboardType, NSHTMLPboardType, NSPICTPboardType,
+                       NSRTFDPboardType, NSHTMLPboardType,
                        NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
                        NSFilesPromisePboardType, NSInkTextPboardType,
                        NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
