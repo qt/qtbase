@@ -509,7 +509,7 @@ bool QCocoaWindow::isOpaque() const
 {
     bool translucent = (window()->format().alphaBufferSize() > 0
                         || window()->opacity() < 1
-                        || (m_contentView && [m_contentView hasMask]));
+                        || (m_qtView && [m_qtView hasMask]));
     return !translucent;
 }
 
