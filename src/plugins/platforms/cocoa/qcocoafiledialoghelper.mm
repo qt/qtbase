@@ -586,7 +586,7 @@ QString QCocoaFileDialogHelper::directory() const
 {
     QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *delegate = static_cast<QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *>(mDelegate);
     if (delegate)
-        return QCFString::toQString([delegate->mSavePanel directory]);
+        return QCFString::toQString([[delegate->mSavePanel directoryURL] path]);
     return QString();
 }
 
