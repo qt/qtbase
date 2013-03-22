@@ -172,7 +172,7 @@ QWindowsUser32DLL::QWindowsUser32DLL() :
     updateLayeredWindowIndirect(0),
     isHungAppWindow(0),
     registerTouchWindow(0), unregisterTouchWindow(0),
-    getTouchInputInfo(0), closeTouchInputHandle(0)
+    getTouchInputInfo(0), closeTouchInputHandle(0), setProcessDPIAware(0)
 {
 }
 
@@ -187,6 +187,7 @@ void QWindowsUser32DLL::init()
 
     updateLayeredWindowIndirect = (UpdateLayeredWindowIndirect)(library.resolve("UpdateLayeredWindowIndirect"));
     isHungAppWindow = (IsHungAppWindow)library.resolve("IsHungAppWindow");
+    setProcessDPIAware = (SetProcessDPIAware)library.resolve("SetProcessDPIAware");
 }
 
 bool QWindowsUser32DLL::initTouch()
@@ -252,7 +253,7 @@ struct QWindowsContextPrivate {
     QSet<QString> m_registeredWindowClassNames;
     HandleBaseWindowHash m_windows;
     HDC m_displayContext;
-    const int m_defaultDPI;
+    int m_defaultDPI;
     QWindowsKeyMapper m_keyMapper;
     QWindowsMouseHandler m_mouseHandler;
     QWindowsMimeConverter m_mimeConverter;
@@ -266,8 +267,6 @@ struct QWindowsContextPrivate {
 
 QWindowsContextPrivate::QWindowsContextPrivate() :
     m_systemInfo(0),
-    m_displayContext(GetDC(0)),
-    m_defaultDPI(GetDeviceCaps(m_displayContext,LOGPIXELSY)),
     m_oleInitializeResult(OleInitialize(NULL)),
     m_eventType(QByteArrayLiteral("windows_generic_MSG")),
     m_lastActiveWindow(0), m_asyncExpose(0)
@@ -276,6 +275,11 @@ QWindowsContextPrivate::QWindowsContextPrivate() :
     QWindowsContext::user32dll.init();
     QWindowsContext::shell32dll.init();
 #endif
+    // Ensure metrics functions report correct data, QTBUG-30063.
+    if (QWindowsContext::user32dll.setProcessDPIAware)
+        QWindowsContext::user32dll.setProcessDPIAware();
+    m_displayContext = GetDC(0);
+    m_defaultDPI = GetDeviceCaps(m_displayContext, LOGPIXELSY);
 
     const QSysInfo::WinVersion ver = QSysInfo::windowsVersion();
 #ifndef Q_OS_WINCE
