@@ -119,10 +119,12 @@ private:
 private slots:
     virtual void sendEvent(QObject *receiver, QInputMethodEvent *event);
     virtual void sendEvent(QObject *receiver, QInputMethodQueryEvent *event);
+    void updateCursorPosition();
 
 private:
     ExtractedText m_extractedText;
     QString m_composingText;
+    QMetaObject::Connection m_updateCursorPosConnection;
 };
 
 QT_END_NAMESPACE
