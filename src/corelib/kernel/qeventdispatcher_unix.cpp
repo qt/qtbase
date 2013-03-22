@@ -320,8 +320,6 @@ QEventDispatcherUNIX::QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObj
 
 QEventDispatcherUNIX::~QEventDispatcherUNIX()
 {
-    Q_D(QEventDispatcherUNIX);
-    d->threadData->eventDispatcher = 0;
 }
 
 int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
