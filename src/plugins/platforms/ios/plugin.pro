@@ -4,7 +4,7 @@ PLUGIN_TYPE = platforms
 load(qt_plugin)
 
 QT += core-private gui-private platformsupport-private
-LIBS += -framework UIKit -framework QuartzCore
+LIBS += -framework Foundation -framework UIKit -framework QuartzCore
 
 OBJECTIVE_SOURCES = \
     plugin.mm \
