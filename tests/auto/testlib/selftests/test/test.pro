@@ -18,4 +18,3 @@ RESOURCES += ../selftests.qrc
 include(../selftests.pri)
 for(file, SUBPROGRAMS): TEST_HELPER_INSTALLS += "../$${file}/$${file}"
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
