@@ -206,7 +206,6 @@ static void cleanupCocoaApplicationDelegate()
             // events while the event loop is still running.
             const QWindowList topLevels = QGuiApplication::topLevelWindows();
             for (int i = 0; i < topLevels.size(); ++i) {
-                QWindow *window = topLevels.at(i);
                 topLevels.at(i)->close();
             }
 
