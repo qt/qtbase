@@ -140,20 +140,6 @@ typedef enum {
     HB_ScriptCount = HB_Script_Inherited
 } HB_Script;
 
-typedef enum {
-    HB_NoJustification= 0,   /* Justification can't be applied after this glyph */
-    HB_Arabic_Space   = 1,   /* This glyph represents a space inside arabic text */
-    HB_Character      = 2,   /* Inter-character justification point follows this glyph */
-    HB_Space          = 4,   /* This glyph represents a blank outside an Arabic run */
-    HB_Arabic_Normal  = 7,   /* Normal Middle-Of-Word glyph that connects to the right (begin) */
-    HB_Arabic_Waw     = 8,   /* Next character is final form of Waw/Ain/Qaf/Fa */
-    HB_Arabic_BaRa    = 9,   /* Next two chars are Ba + Ra/Ya/AlefMaksura */
-    HB_Arabic_Alef    = 10,  /* Next character is final form of Alef/Tah/Lam/Kaf/Gaf */
-    HB_Arabic_HaaDal  = 11,  /* Next character is final form of Haa/Dal/Taa Marbutah */
-    HB_Arabic_Seen    = 12,  /* Initial or Medial form Of Seen/Sad */
-    HB_Arabic_Kashida = 13   /* Kashida(U+640) in middle of word */
-} HB_JustificationClass;
-
 #ifdef  __xlC__
 typedef unsigned hb_bitfield;
 #else

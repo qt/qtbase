@@ -59,9 +59,9 @@
 #include <algorithm>
 #include <stdlib.h>
 
+#ifndef QT_NO_RAWFONT
 #include "qfontengine_qpa_p.h"
-
-#include <private/qharfbuzz_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -838,21 +838,6 @@ void QTextEngine::bidiReorder(int numItems, const quint8 *levels, int *visualOrd
 #endif
 }
 
-// ask the font engine to find out which glyphs (as an index in the specific font) to use for the text in one item.
-static bool stringToGlyphs(HB_ShaperItem *item, QGlyphLayout *glyphs, QFontEngine *fontEngine)
-{
-    int nGlyphs = item->num_glyphs;
-
-    QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
-    if (item->item.bidiLevel % 2)
-        shaperFlags |= QFontEngine::RightToLeft;
-
-    bool result = fontEngine->stringToCMap(reinterpret_cast<const QChar *>(item->string + item->item.pos), item->item.length, glyphs, &nGlyphs, shaperFlags);
-    item->num_glyphs = nGlyphs;
-    glyphs->numGlyphs = nGlyphs;
-    return result;
-}
-
 // shape all the items that intersect with the line, taking tab widths into account to find out what text actually fits in the line.
 void QTextEngine::shapeLine(const QScriptLine &line)
 {
@@ -940,12 +925,12 @@ void QTextEngine::shapeText(int item) const
     }
     if (wordSpacing != 0) {
         for (int i = 0; i < si.num_glyphs; ++i) {
-            if (glyphs.attributes[i].justification == HB_Space
-                || glyphs.attributes[i].justification == HB_Arabic_Space) {
+            if (glyphs.attributes[i].justification == QGlyphAttributes::Space
+                || glyphs.attributes[i].justification == QGlyphAttributes::Arabic_Space) {
                 // word spacing only gets added once to a consecutive run of spaces (see CSS spec)
                 if (i + 1 == si.num_glyphs
-                    ||(glyphs.attributes[i+1].justification != HB_Space
-                       && glyphs.attributes[i+1].justification != HB_Arabic_Space))
+                    ||(glyphs.attributes[i+1].justification != QGlyphAttributes::Space
+                       && glyphs.attributes[i+1].justification != QGlyphAttributes::Arabic_Space))
                     glyphs.advances_x[i] += wordSpacing;
             }
         }
@@ -973,10 +958,31 @@ static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLa
     }
 }
 
+QT_BEGIN_INCLUDE_NAMESPACE
+
+#include <private/qharfbuzz_p.h>
+
+QT_END_INCLUDE_NAMESPACE
+
 Q_STATIC_ASSERT(sizeof(HB_Glyph) == sizeof(glyph_t));
 Q_STATIC_ASSERT(sizeof(HB_GlyphAttributes) == sizeof(QGlyphAttributes));
 Q_STATIC_ASSERT(sizeof(HB_Fixed) == sizeof(QFixed));
 Q_STATIC_ASSERT(sizeof(HB_FixedPoint) == sizeof(QFixedPoint));
+
+// ask the font engine to find out which glyphs (as an index in the specific font) to use for the text in one item.
+static bool stringToGlyphs(HB_ShaperItem *item, QGlyphLayout *glyphs, QFontEngine *fontEngine)
+{
+    int nGlyphs = item->num_glyphs;
+
+    QFontEngine::ShaperFlags shaperFlags(QFontEngine::GlyphIndicesOnly);
+    if (item->item.bidiLevel % 2)
+        shaperFlags |= QFontEngine::RightToLeft;
+
+    bool result = fontEngine->stringToCMap(reinterpret_cast<const QChar *>(item->string + item->item.pos), item->item.length, glyphs, &nGlyphs, shaperFlags);
+    item->num_glyphs = nGlyphs;
+    glyphs->numGlyphs = nGlyphs;
+    return result;
+}
 
 /// take the item from layoutData->items and
 void QTextEngine::shapeTextWithHarfbuzz(int item) const
@@ -1821,7 +1827,7 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
     point->type = type;
     point->glyph = glyph;
 
-    if (type >= HB_Arabic_Normal) {
+    if (type >= QGlyphAttributes::Arabic_Normal) {
         QChar ch(0x640); // Kashida character
         QGlyphLayoutArray<8> glyphs;
         int nglyphs = 7;
@@ -1829,7 +1835,7 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
         if (glyphs.glyphs[0] && glyphs.advances_x[0] != 0) {
             point->kashidaWidth = glyphs.advances_x[0];
         } else {
-            point->type = HB_NoJustification;
+            point->type = QGlyphAttributes::NoJustification;
             point->kashidaWidth = 0;
         }
     }
@@ -1897,7 +1903,7 @@ void QTextEngine::justify(const QScriptLine &line)
     for (int i = 0; i < nItems; ++i) {
         QScriptItem &si = layoutData->items[firstItem + i];
 
-        int kashida_type = HB_Arabic_Normal;
+        int kashida_type = QGlyphAttributes::Arabic_Normal;
         int kashida_pos = -1;
 
         int start = qMax(line.from - si.position, 0);
@@ -1921,11 +1927,11 @@ void QTextEngine::justify(const QScriptLine &line)
             int justification = g.attributes[i].justification;
 
             switch(justification) {
-            case HB_NoJustification:
+            case QGlyphAttributes::NoJustification:
                 break;
-            case HB_Space          :
+            case QGlyphAttributes::Space          :
                 // fall through
-            case HB_Arabic_Space   :
+            case QGlyphAttributes::Arabic_Space   :
                 if (kashida_pos >= 0) {
 //                     qDebug("kashida position at %d in word", kashida_pos);
                     set(&justificationPoints[nPoints], kashida_type, g.mid(kashida_pos), fontEngine(si));
@@ -1936,19 +1942,19 @@ void QTextEngine::justify(const QScriptLine &line)
                     }
                 }
                 kashida_pos = -1;
-                kashida_type = HB_Arabic_Normal;
+                kashida_type = QGlyphAttributes::Arabic_Normal;
                 // fall through
-            case HB_Character      :
+            case QGlyphAttributes::Character      :
                 set(&justificationPoints[nPoints++], justification, g.mid(i), fontEngine(si));
                 maxJustify = qMax(maxJustify, justification);
                 break;
-            case HB_Arabic_Normal  :
-            case HB_Arabic_Waw     :
-            case HB_Arabic_BaRa    :
-            case HB_Arabic_Alef    :
-            case HB_Arabic_HaaDal  :
-            case HB_Arabic_Seen    :
-            case HB_Arabic_Kashida :
+            case QGlyphAttributes::Arabic_Normal  :
+            case QGlyphAttributes::Arabic_Waw     :
+            case QGlyphAttributes::Arabic_BaRa    :
+            case QGlyphAttributes::Arabic_Alef    :
+            case QGlyphAttributes::Arabic_HaaDal  :
+            case QGlyphAttributes::Arabic_Seen    :
+            case QGlyphAttributes::Arabic_Kashida :
                 if (justification >= kashida_type) {
                     kashida_pos = i;
                     kashida_type = justification;
@@ -1977,9 +1983,9 @@ void QTextEngine::justify(const QScriptLine &line)
 //     qDebug("     minKashida=%f, need=%f", minKashida.toReal(), need.toReal());
 
     // distribute in priority order
-    if (maxJustify >= HB_Arabic_Normal) {
+    if (maxJustify >= QGlyphAttributes::Arabic_Normal) {
         while (need >= minKashida) {
-            for (int type = maxJustify; need >= minKashida && type >= HB_Arabic_Normal; --type) {
+            for (int type = maxJustify; need >= minKashida && type >= QGlyphAttributes::Arabic_Normal; --type) {
                 for (int i = 0; need >= minKashida && i < nPoints; ++i) {
                     if (justificationPoints[i].type == type && justificationPoints[i].kashidaWidth <= need) {
                         justificationPoints[i].glyph.justifications->nKashidas++;
@@ -1996,7 +2002,7 @@ void QTextEngine::justify(const QScriptLine &line)
     if (!need)
         goto end;
 
-    maxJustify = qMin(maxJustify, (int)HB_Space);
+    maxJustify = qMin(maxJustify, int(QGlyphAttributes::Space));
     for (int type = maxJustify; need != 0 && type > 0; --type) {
         int n = 0;
         for (int i = 0; i < nPoints; ++i) {
