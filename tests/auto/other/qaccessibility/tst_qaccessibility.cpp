@@ -377,7 +377,7 @@ void tst_QAccessibility::eventTest()
     delete widget;
 
     QObject *object = new QObject();
-    QAccessibleEvent ev3(widget, QAccessible::Focus);
+    QAccessibleEvent ev3(object, QAccessible::Focus);
     QAccessible::updateAccessibility(&ev3);
     delete object;
 
