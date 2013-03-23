@@ -877,19 +877,48 @@ void QTextEngine::shapeText(int item) const
     if (si.num_glyphs)
         return;
 
-    shapeTextWithHarfbuzz(item);
-
     si.width = 0;
+    si.glyph_data_offset = layoutData->used;
 
-    if (!si.num_glyphs)
-        return;
-    QGlyphLayout glyphs = shapedGlyphs(&si);
+    const ushort *string = reinterpret_cast<const ushort *>(layoutData->string.constData()) + si.position;
+    const int itemLength = length(item);
 
+    if (!ensureSpace(itemLength))
+        return; // ### report OOM error somehow
+
+    QString casedString;
+    if (si.analysis.flags && si.analysis.flags <= QScriptAnalysis::SmallCaps) {
+        casedString.resize(itemLength);
+        ushort *uc = reinterpret_cast<ushort *>(casedString.data());
+        for (int i = 0; i < itemLength; ++i) {
+            uint ucs4 = string[i];
+            if (QChar::isHighSurrogate(ucs4) && i + 1 < itemLength) {
+                uint low = string[i + 1];
+                if (QChar::isLowSurrogate(low)) {
+                    ++i;
+                    ucs4 = QChar::surrogateToUcs4(ucs4, low);
+                    ucs4 = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
+                                                                           : QChar::toUpper(ucs4);
+                    // high part never changes in simple casing
+                    uc[i] = QChar::lowSurrogate(ucs4);
+                }
+            } else {
+                uc[i] = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
+                                                                        : QChar::toUpper(ucs4);
+            }
+        }
+        string = reinterpret_cast<const ushort *>(casedString.constData());
+    }
+
+    QFontEngine *fontEngine = this->fontEngine(si, &si.ascent, &si.descent, &si.leading);
+
+    bool kerningEnabled;
     bool letterSpacingIsAbsolute;
     QFixed letterSpacing, wordSpacing;
 #ifndef QT_NO_RAWFONT
     if (useRawFont) {
         QTextCharFormat f = format(&si);
+        kerningEnabled = f.fontKerning();
         wordSpacing = QFixed::fromReal(f.fontWordSpacing());
         letterSpacing = QFixed::fromReal(f.fontLetterSpacing());
         letterSpacingIsAbsolute = true;
@@ -897,6 +926,7 @@ void QTextEngine::shapeText(int item) const
 #endif
     {
         QFont font = this->font(si);
+        kerningEnabled = font.d->kerning;
         letterSpacingIsAbsolute = font.d->letterSpacingIsAbsolute;
         letterSpacing = font.d->letterSpacing;
         wordSpacing = font.d->wordSpacing;
@@ -904,6 +934,13 @@ void QTextEngine::shapeText(int item) const
         if (letterSpacingIsAbsolute && letterSpacing.value())
             letterSpacing *= font.d->dpi / qt_defaultDpiY();
     }
+
+    si.num_glyphs = shapeTextWithHarfbuzz(si, string, itemLength, fontEngine, kerningEnabled);
+    if (!si.num_glyphs)
+        return; // ### report shaping errors somehow
+    layoutData->used += si.num_glyphs;
+
+    QGlyphLayout glyphs = shapedGlyphs(&si);
 
     if (letterSpacing != 0) {
         for (int i = 1; i < si.num_glyphs; ++i) {
@@ -939,14 +976,6 @@ void QTextEngine::shapeText(int item) const
     for (int i = 0; i < si.num_glyphs; ++i)
         si.width += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
 }
-
-static inline bool hasCaseChange(const QScriptItem &si)
-{
-    return si.analysis.flags == QScriptAnalysis::SmallCaps ||
-           si.analysis.flags == QScriptAnalysis::Uppercase ||
-           si.analysis.flags == QScriptAnalysis::Lowercase;
-}
-
 
 static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
 {
@@ -984,60 +1013,16 @@ static bool stringToGlyphs(HB_ShaperItem *item, QGlyphLayout *glyphs, QFontEngin
     return result;
 }
 
-/// take the item from layoutData->items and
-void QTextEngine::shapeTextWithHarfbuzz(int item) const
+int QTextEngine::shapeTextWithHarfbuzz(QScriptItem &si, const ushort *string, int itemLength, QFontEngine *fontEngine, bool kerningEnabled) const
 {
-    QScriptItem &si = layoutData->items[item];
-
-    si.glyph_data_offset = layoutData->used;
-
-    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent, &si.leading);
-
-    bool kerningEnabled;
-#ifndef QT_NO_RAWFONT
-    if (useRawFont) {
-        QTextCharFormat f = format(&si);
-        kerningEnabled = f.fontKerning();
-    } else
-#endif
-        kerningEnabled = this->font(si).d->kerning;
-
     HB_ShaperItem entire_shaper_item;
     memset(&entire_shaper_item, 0, sizeof(entire_shaper_item));
-    entire_shaper_item.string = reinterpret_cast<const HB_UChar16 *>(layoutData->string.constData());
-    entire_shaper_item.stringLength = layoutData->string.length();
+    entire_shaper_item.string = reinterpret_cast<const HB_UChar16 *>(string);
+    entire_shaper_item.stringLength = itemLength;
     entire_shaper_item.item.script = script_to_hbscript(si.analysis.script);
-    entire_shaper_item.item.pos = si.position;
-    entire_shaper_item.item.length = length(item);
+    entire_shaper_item.item.pos = 0;
+    entire_shaper_item.item.length = itemLength;
     entire_shaper_item.item.bidiLevel = si.analysis.bidiLevel;
-
-    QVarLengthArray<HB_UChar16, 256> casedString;
-    if (hasCaseChange(si)) {
-        if (casedString.size() < static_cast<int>(entire_shaper_item.item.length))
-            casedString.resize(entire_shaper_item.item.length);
-        HB_UChar16 *uc = casedString.data();
-        for (uint i = 0; i < entire_shaper_item.item.length; ++i) {
-            uint ucs4 = entire_shaper_item.string[si.position + i];
-            if (QChar::isHighSurrogate(ucs4)) {
-                uc[i] = ucs4; // high part never changes in simple casing
-                if (i + 1 < entire_shaper_item.item.length) {
-                    ushort low = entire_shaper_item.string[si.position + i + 1];
-                    if (QChar::isLowSurrogate(low)) {
-                        ucs4 = QChar::surrogateToUcs4(ucs4, low);
-                        ucs4 = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
-                                                                               : QChar::toUpper(ucs4);
-                        uc[++i] = QChar::lowSurrogate(ucs4);
-                    }
-                }
-            } else {
-                uc[i] = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
-                                                                        : QChar::toUpper(ucs4);
-            }
-        }
-        entire_shaper_item.item.pos = 0;
-        entire_shaper_item.string = uc;
-        entire_shaper_item.stringLength = entire_shaper_item.item.length;
-    }
 
     entire_shaper_item.shaperFlags = 0;
     if (!kerningEnabled)
@@ -1045,18 +1030,17 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     if (option.useDesignMetrics())
         entire_shaper_item.shaperFlags |= HB_ShaperFlag_UseDesignMetrics;
 
-    entire_shaper_item.num_glyphs = qMax(layoutData->glyphLayout.numGlyphs - layoutData->used, int(entire_shaper_item.item.length));
-    if (!ensureSpace(entire_shaper_item.num_glyphs))
-        return;
+    entire_shaper_item.num_glyphs = itemLength;
+
     QGlyphLayout initialGlyphs = availableGlyphs(&si).mid(0, entire_shaper_item.num_glyphs);
 
-    if (!stringToGlyphs(&entire_shaper_item, &initialGlyphs, font)) {
+    if (!stringToGlyphs(&entire_shaper_item, &initialGlyphs, fontEngine)) {
         if (!ensureSpace(entire_shaper_item.num_glyphs))
-            return;
+            return 0;
         initialGlyphs = availableGlyphs(&si).mid(0, entire_shaper_item.num_glyphs);
-        if (!stringToGlyphs(&entire_shaper_item, &initialGlyphs, font)) {
+        if (!stringToGlyphs(&entire_shaper_item, &initialGlyphs, fontEngine)) {
             // ############ if this happens there's a bug in the fontengine
-            return;
+            return 0;
         }
     }
 
@@ -1066,7 +1050,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
     itemBoundaries[0] = entire_shaper_item.item.pos;
     itemBoundaries[1] = 0;
 
-    if (font->type() == QFontEngine::Multi) {
+    if (fontEngine->type() == QFontEngine::Multi) {
         uint lastEngine = 0;
         int charIdx = entire_shaper_item.item.pos;
         const int stringEnd = charIdx + entire_shaper_item.item.length;
@@ -1105,17 +1089,16 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         if (shaper_item.num_glyphs < shaper_item.item.length)
             shaper_item.num_glyphs = shaper_item.item.length;
 
-        QFontEngine *actualFontEngine = font;
+        QFontEngine *actualFontEngine = fontEngine;
         uint engineIdx = 0;
-        if (font->type() == QFontEngine::Multi) {
+        if (fontEngine->type() == QFontEngine::Multi) {
             engineIdx = uint(availableGlyphs(&si).glyphs[glyph_pos] >> 24);
 
-            actualFontEngine = static_cast<QFontEngineMulti *>(font)->engine(engineIdx);
+            actualFontEngine = static_cast<QFontEngineMulti *>(fontEngine)->engine(engineIdx);
+            si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
+            si.descent = qMax(actualFontEngine->descent(), si.descent);
+            si.leading = qMax(actualFontEngine->leading(), si.leading);
         }
-
-        si.ascent = qMax(actualFontEngine->ascent(), si.ascent);
-        si.descent = qMax(actualFontEngine->descent(), si.descent);
-        si.leading = qMax(actualFontEngine->leading(), si.leading);
 
         shaper_item.font = (HB_Font)actualFontEngine->harfbuzzFont();
         shaper_item.face = (HB_Face)actualFontEngine->harfbuzzFace();
@@ -1126,7 +1109,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
 
         do {
             if (!ensureSpace(glyph_pos + shaper_item.num_glyphs + remaining_glyphs))
-                return;
+                return 0;
 
             const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
             if (shaper_item.num_glyphs > shaper_item.item.length)
@@ -1143,8 +1126,6 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
             }
 
             shaper_item.log_clusters = logClusters(&si) + shaper_item.item.pos - entire_shaper_item.item.pos;
-
-//          qDebug("    .. num_glyphs=%d, used=%d, item.num_glyphs=%d", num_glyphs, used, shaper_item.num_glyphs);
         } while (!qShapeItem(&shaper_item)); // this does the actual shaping via harfbuzz.
 
         QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
@@ -1164,10 +1145,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         glyph_pos += shaper_item.num_glyphs;
     }
 
-//     qDebug("    -> item: script=%d num_glyphs=%d", shaper_item.script, shaper_item.num_glyphs);
-    si.num_glyphs = glyph_pos;
-
-    layoutData->used += si.num_glyphs;
+    return glyph_pos;
 }
 
 void QTextEngine::init(QTextEngine *e)
