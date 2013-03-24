@@ -75,6 +75,9 @@ public:
 
     void cancelWriting();
 
+    void setDirectWriteFallback(bool enabled);
+    bool directWriteFallback() const;
+
 protected:
     qint64 writeData(const char *data, qint64 len) Q_DECL_OVERRIDE;
 
