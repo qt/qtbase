@@ -279,6 +279,7 @@ void *QFontEngine::harfbuzzFace() const
         Q_CHECK_PTR(hbFace);
         if (hbFace->font_for_init != 0)
             hbFace = qHBLoadFace(hbFace);
+        hbFace->isSymbolFont = symbol;
 
         face_ = (void *)hbFace;
         face_destroy_func = hb_freeFace;
